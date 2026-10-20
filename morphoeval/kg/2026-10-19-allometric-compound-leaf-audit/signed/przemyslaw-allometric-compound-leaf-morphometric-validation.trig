@@ -1,0 +1,107 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub1: <https://w3id.org/np/RAiQRX6WFsvKhNARYeLDmd0MVt9JB64n99sTgIbU-dGrk/> .
+@prefix this: <https://w3id.org/np/RAiQRX6WFsvKhNARYeLDmd0MVt9JB64n99sTgIbU-dGrk> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/37> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cell.2019.05.011>,
+            <https://doi.org/10.1038/ng.189>,
+            <https://doi.org/10.1073/pnas.1015162108>,
+            <https://doi.org/10.1126/science.1248384> .
+
+    <https://doi.org/10.1016/j.cell.2019.05.011> dcterms:date "2019"^^xsd:gYear ;
+        dcterms:title "A growth-based framework for leaf shape development and diversity" .
+
+    <https://doi.org/10.1038/ng.189> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "A developmental framework for dissected leaf formation in the Arabidopsis relative Cardamine hirsuta" .
+
+    <https://doi.org/10.1073/pnas.1015162108> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "Model for the regulation of Arabidopsis thaliana leaf margin development" .
+
+    <https://doi.org/10.1126/science.1248384> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Leaf shape evolution through duplication, regulatory diversification, and loss of a homeobox gene" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-przemyslaw-allometric-compound-leaf> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-przemyslaw-allometric-compound-leaf-morphometric-validation> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-przemyslaw-allometric-compound-leaf-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Bilsborough et al. (2011), Barkoulas et al. (2008), Vlad et al. (2014) & Kierzkowski et al. (2019) growing leaf margin PIN1-Auxin-CUC2-RCO feedback loop and serration vs compound leaflet dissection — Morphometric validation: 54/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Exposes only 3 scalar numbers in `measure_morphoeval()` without reference comparisons, statistical p-values, dissection depth indices I_D, intercalary wavelength scaling, or specimen leaflet morphometrics." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2011-przemyslaw-allometric-compound-leaf.py L58–L65: Minimal 3-number dictionary without reference comparison or p-values <https://github.com/fractastical/morpholib/blob/8871db0/2011-przemyslaw-allometric-compound-leaf.py#L58-L65>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-measurement-cuc2-auxin-contrast>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-measurement-wt-auxin-contrast> ;
+        pk:hasScore "0.54"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-measurement-cuc2-auxin-contrast> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "cuc2_auxin_contrast = 0.30551411140321183 auxin_units" ;
+        schema:measurementTechnique "1D static ring cuc2=0 auxin contrast" ;
+        schema:name "cuc2_auxin_contrast" ;
+        schema:unitText "auxin_units" ;
+        schema:value "0.30551411140321183" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-measurement-wt-auxin-contrast> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "wt_auxin_contrast = 0.3055141114033264 auxin_units" ;
+        schema:measurementTechnique "1D static ring WT auxin contrast" ;
+        schema:name "wt_auxin_contrast" ;
+        schema:unitText "auxin_units" ;
+        schema:value "0.3055141114033264" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 037 Pass 1 Assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "v23G1tXfLEQhe+mdZMxS4spRYQ7z1XLGH+0P4RogQQUSNaXC/IKOwDdA3sbRpQSljXHEsrh2cUrhvUFK6k7RLLhgKtaz36Fsq4n8djuPo/3TOcSwTpx2Dz9lVlbzhq1SoxZLujYOJPYTEuKWd6B8yH933DVIoDOjgTDWBPQc5Rq8GnWA1a09yRa6o/i+r7AzT0rgc3gz/j+KOuG5fSXH3eEYS4o0Vqr2g9DQyjFag0/iD+rcnRDCxN8cIfx5DnaS2BhT5xEpaLlLv3eSckN8X6lSfHQ/0r0pmf00NNizR+U/BdThXKCVUGifVD/43+IVv/s9PssUGpuHwPsHDL7XhQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Bilsborough et al. (2011), Barkoulas et al. (2008), Vlad et al. (2014) & Kierzkowski et al. (2019) growing leaf margin PIN1-Auxin-CUC2-RCO feedback loop and serration vs compound leaflet dissection — Morphometric validation 54/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T01:29:00Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-przemyslaw-allometric-compound-leaf-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/37> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

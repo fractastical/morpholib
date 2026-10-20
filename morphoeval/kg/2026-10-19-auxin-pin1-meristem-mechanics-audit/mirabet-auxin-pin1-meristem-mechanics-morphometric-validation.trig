@@ -1,0 +1,97 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-mirabet-auxin-pin1-meristem-mechanics> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-mirabet-auxin-pin1-meristem-mechanics-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-mirabet-auxin-pin1-meristem-mechanics-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Hamant et al. (2008) & Heisler et al. (2010) pressurized SAM shell stress tensor, cortical microtubule alignment, and PIN1-auxin phyllotactic mechanics — Morphometric validation: 52/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Exposes only 2 trivial analytical ratios in `measure_morphoeval()` without ODE simulation error metrics, statistical p-values, ablation reorientation fractions, phyllotactic divergence angles, or specimen segmentation morphometrics." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2008-hamant-meristem-microtubule-stress.py L44–L60: Only 2 analytical measurements without uncertainty or p-values <https://github.com/fractastical/morpholib/blob/8871db0/2008-hamant-meristem-microtubule-stress.py#L44-L60>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-measurement-cylindrical-flank-hoop-to-axial-stress-ratio>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-measurement-spherical-dome-stress-anisotropy> ;
+        pk:hasScore "0.52"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-measurement-cylindrical-flank-hoop-to-axial-stress-ratio> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "cylindrical_flank_hoop_to_axial_stress_ratio = 2.0 ratio" ;
+        schema:measurementTechnique "Analytical thin-shell Laplace-Young ratio sigma_theta / sigma_z on cylindrical stem flank" ;
+        schema:name "cylindrical_flank_hoop_to_axial_stress_ratio" ;
+        schema:unitText "ratio" ;
+        schema:value "2.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-measurement-cylindrical-flank-hoop-to-axial-stress-ratio-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-measurement-cylindrical-flank-hoop-to-axial-stress-ratio-reference> a schema:PropertyValue ;
+        dct:source "Hamant et al. (2008) Science 322:1650-1655 Fig. 1" ;
+        schema:value "2.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-measurement-spherical-dome-stress-anisotropy> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "spherical_dome_stress_anisotropy = 0.0 dimensionless" ;
+        schema:measurementTechnique "Analytical thin-shell stress anisotropy (sigma_1 - sigma_2)/(sigma_1 + sigma_2) on spherical dome" ;
+        schema:name "spherical_dome_stress_anisotropy" ;
+        schema:unitText "dimensionless" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-measurement-spherical-dome-stress-anisotropy-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-measurement-spherical-dome-stress-anisotropy-reference> a schema:PropertyValue ;
+        dct:source "Hamant et al. (2008) Science 322:1650-1655 Fig. 1" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 033 Pass 1 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/33> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1073/pnas.0509839103>,
+            <https://doi.org/10.1126/science.1165594>,
+            <https://doi.org/10.1371/journal.pbio.1000516>,
+            <https://doi.org/10.1371/journal.pcbi.1002389> .
+    <https://doi.org/10.1073/pnas.0509839103> dct:date "2006"^^xsd:gYear ;
+        dct:title "An auxin-driven polarized transport model for phyllotaxis" .
+    <https://doi.org/10.1126/science.1165594> dct:date "2008"^^xsd:gYear ;
+        dct:title "Developmental Patterning by Mechanical Signals in Arabidopsis" .
+    <https://doi.org/10.1371/journal.pbio.1000516> dct:date "2010"^^xsd:gYear ;
+        dct:title "Alignment between PIN1 Polarity and Microtubule Orientation in the Shoot Apical Meristem Reveals a Tight Coupling between Morphogenesis and Auxin Transport" .
+    <https://doi.org/10.1371/journal.pcbi.1002389> dct:date "2012"^^xsd:gYear ;
+        dct:title "Noise and Robustness in Phyllotaxis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Hamant et al. (2008) & Heisler et al. (2010) pressurized SAM shell stress tensor, cortical microtubule alignment, and PIN1-auxin phyllotactic mechanics — Morphometric validation 52/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:18:28Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-mirabet-auxin-pin1-meristem-mechanics-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/33> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

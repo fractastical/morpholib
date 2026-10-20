@@ -1,0 +1,78 @@
+sim_id: bonabeau-social-wasp-comb-hexagons
+math_family: "Stigmergic Local Wall-Sharing Rule P_init(k) ∝ exp(β k) (k ∈ {2, 3} shared walls) on a 2D/3D Hexagonal Lattice + Honeycomb Perimeter-to-Area Economy & Topological 5–7 Disclination Pairs"
+model_spec:
+  model: "Karsai & Pénzes (1993) J. Theor. Biol. 161:505-525, Theraulaz & Bonabeau (1995) Science 269:686-688, and Smith et al. (2021) PNAS 118:e2103605118 stigmergic hexagonal wasp comb lattice growth, shared-wall paper pulp economy, and 5-7 topological disclination pairs"
+  beta_wild_type: 5.5
+  beta_eden_random: 0.0
+  R_rings_default: 6
+  N_cells_default: 127
+  worker_cell_diameter_mm: 4.6
+  reproductive_cell_diameter_mm: 6.0
+  size_ratio_lambda_default: 1.30
+  seed: 1995
+  inputs:
+    - datasets/social_wasp_comb_hexagons/social_wasp_comb_hexagons_reference.json
+    - datasets/social_wasp_comb_hexagons/polistes_wasp_comb_specimen.jpg
+    - datasets/social_wasp_comb_hexagons/scout_manifest.json
+    - datasets/social_wasp_comb_hexagons/paper_citations.bib
+equations:
+  - law_name: "Centered Hexagonal Ring Progression & 6R Perimeter Ring Increment Law"
+    formula: "N(R) = 1 + 3 R (R + 1),  ΔN(R + 1) = N(R + 1) - N(R) = 6 (R + 1)  ⇒  N(0) = 1,  N(R + 1) > N(R)"
+    lean_decl: "MathOfBiology.Loop_096.centered_hex_cells"
+    lean_theorem: "MathOfBiology.Loop_096.centered_hexagonal_ring_progression"
+    lean_locus: "morphoeval/lean/loops/Loop_096_social_wasp_comb_hexagons.lean#L25-L53"
+    lean_code: |
+      def centered_hex_cells (R : Nat) : Nat :=
+        1 + 3 * R * (R + 1)
+      def ring_perimeter_increment (R : Nat) : Nat :=
+        6 * (R + 1)
+      theorem centered_hexagonal_ring_progression (R : Nat) :
+          centered_hex_cells 0 = 1 ∧
+          centered_hex_cells (R + 1) = centered_hex_cells R + ring_perimeter_increment R ∧
+          centered_hex_cells (R + 1) > centered_hex_cells R
+    variables: "R: number of concentric hexagonal rings around central founder cell; N(R): total brood cells in R rings; ΔN(R + 1): number of perimeter cells added in ring R + 1"
+    role: "Establishes the exact centered hexagonal number progression N(R) = 1 + 3R(R+1) and 6R ring perimeter increment achieved when stigmergic wasps prioritize 3-wall pockets over 2-wall corner pockets"
+    source_citation: "Karsai & Pénzes (1993) J. Theor. Biol. 161:505-525; Theraulaz & Bonabeau (1995) Science 269:686-688; Karsai & Pénzes (2000) Behav. Ecol. 11:387-395"
+    code_locus: "1998-bonabeau-social-wasp-comb-hexagons.py#L95-L155"
+
+  - law_name: "Shared-Wall Paper Pulp Economy & Asymptotic 3-Wall Hexagonal Optimality Law"
+    formula: "W(R) = 3 N(R) + 6 R + 3 < 6 N(R) = W_isolated(R)  (∀ R ≥ 1),  W(R)/N(R) → 3.0 as R → ∞"
+    lean_decl: "MathOfBiology.Loop_096.compact_comb_walls"
+    lean_theorem: "MathOfBiology.Loop_096.shared_wall_pulp_economy_and_asymptotic_excess"
+    lean_locus: "morphoeval/lean/loops/Loop_096_social_wasp_comb_hexagons.lean#L64-L86"
+    lean_code: |
+      def compact_comb_walls (R : Nat) : Nat :=
+        3 * centered_hex_cells R + 6 * R + 3
+      def unshared_isolated_walls (R : Nat) : Nat :=
+        6 * centered_hex_cells R
+      def pulp_walls_saved (R : Nat) : Nat :=
+        unshared_isolated_walls R - compact_comb_walls R
+      theorem shared_wall_pulp_economy_and_asymptotic_excess (R : Nat) :
+          compact_comb_walls 0 = 6 ∧
+          compact_comb_walls R - 3 * centered_hex_cells R = 6 * R + 3 ∧
+          compact_comb_walls (R + 1) < unshared_isolated_walls (R + 1) ∧
+          pulp_walls_saved (R + 1) > 0
+    variables: "W(R): total distinct shared and boundary cell walls in an R-ring hexagonal comb; W_isolated(R): 6 N(R) walls for unshared cells; S_saved(R): paper pulp walls saved by hexagonal wall-sharing"
+    role: "Proves that shared-wall hexagonal combs strictly reduce paper pulp wall count below 6 N(R) for all R >= 1 and approach 3 walls per cell (50% savings) as comb radius R grows"
+    source_citation: "Karsai & Pénzes (1993) J. Theor. Biol. 161:505-525; Karsai & Pénzes (2000) Behav. Ecol. 11:387-395; Hales (2001) Discrete Comput. Geom. 25:1-22"
+    code_locus: "1998-bonabeau-social-wasp-comb-hexagons.py#L158-L295"
+
+  - law_name: "Euler Topological Charge Neutrality of 5-7 Disclination Pairs at Caste Transitions"
+    formula: "q(z) = 6 - z  ⇒  q(6) = 0,  q(5) = +1,  q(7) = -1,  n_pairs · (q(5) + q(7)) = 0"
+    lean_decl: "MathOfBiology.Loop_096.topological_charge"
+    lean_theorem: "MathOfBiology.Loop_096.euler_disclination_dipole_charge_neutrality"
+    lean_locus: "morphoeval/lean/loops/Loop_096_social_wasp_comb_hexagons.lean#L97-L114"
+    lean_code: |
+      def topological_charge (z : Int) : Int :=
+        6 - z
+      def disclination_dipole_net_charge (n_pairs : Int) : Int :=
+        n_pairs * (topological_charge 5 + topological_charge 7)
+      theorem euler_disclination_dipole_charge_neutrality (n_pairs : Int) :
+          topological_charge 6 = 0 ∧
+          topological_charge 5 = 1 ∧
+          topological_charge 7 = -1 ∧
+          disclination_dipole_net_charge n_pairs = 0
+    variables: "z: polygon coordination number (5 = pentagon, 6 = hexagon, 7 = heptagon); q(z) = 6 - z: Euler topological disclination charge; n_pairs: number of paired 5-7 dislocations"
+    role: "Proves that pentagon-heptagon (5-7) topological disclination pairs inserted to bridge worker-to-reproductive cell size transitions have zero net Euler topological charge"
+    source_citation: "Smith, Napp, Gravish, Seeley & Petersen (2021) PNAS 118:e2103605118 Figs. 2-4"
+    code_locus: "1998-bonabeau-social-wasp-comb-hexagons.py#L300-L430"

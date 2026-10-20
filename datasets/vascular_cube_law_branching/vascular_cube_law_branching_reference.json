@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "dataset_id": "murray-vascular-cube-law-branching-v1",
+    "title": "Murray (1926a, 1926b), Zamir (1976) & Sherman (1981) Minimum-Work Vascular Cube Law, Bifurcation Angle & Human Retinal Vasculature Reference Dataset",
+    "sources": [
+      {
+        "id": "murray1926a",
+        "citation": "Murray CD (1926a). The physiological principle of minimum work. I. The vascular system and the cost of blood volume. Proceedings of the National Academy of Sciences of the USA 12(3):207-214.",
+        "doi": "10.1073/pnas.12.3.207"
+      },
+      {
+        "id": "murray1926b",
+        "citation": "Murray CD (1926b). The physiological principle of minimum work applied to the angle of branching of arteries. Journal of General Physiology 9(6):835-841.",
+        "doi": "10.1085/jgp.9.6.835"
+      },
+      {
+        "id": "zamir1976",
+        "citation": "Zamir M (1976). Optimality principles in arterial branching. Journal of Theoretical Biology 62(1):227-251.",
+        "doi": "10.1016/0022-5193(76)90058-8"
+      },
+      {
+        "id": "sherman1981",
+        "citation": "Sherman TF (1981). On connecting large vessels to small. The meaning of Murray's law. Journal of General Physiology 78(4):431-453.",
+        "doi": "10.1085/jgp.78.4.431"
+      }
+    ],
+    "specimens": {
+      "retinal_vasculature_fundus": {
+        "file": "datasets/vascular_cube_law_branching/retinal_vasculature_specimen.jpg",
+        "sha256": "bc548d4150e070a509caa34cf5cc04d46650fa4fbe15f460f952ca54781dde76",
+        "species": "Homo sapiens (human retinal arterial and venous vasculature, fundus photography panels a & b)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Retinal_vessel_tortuosity.jpg",
+        "panel_a_roi_xyxy": [10, 10, 385, 380],
+        "panel_b_roi_xyxy": [400, 10, 775, 380],
+        "pattern_type": "hierarchical_vascular_bifurcation_network"
+      }
+    }
+  },
+  "murray_1926_minimum_work_model": {
+    "section": "Murray (1926a) PNAS 12:207-214 Eqs. (1)-(8); Murray (1926b) J. Gen. Physiol. 9:835-841 Eqs. (1)-(6)",
+    "physical_parameters": {
+      "viscosity_eta_poise": 0.035,
+      "metabolic_cost_b_erg_s_cm3": 1930.0,
+      "murray_conductance_k_M_s_inv": 184.427,
+      "wall_shear_stress_tau_dyn_cm2": 8.2189,
+      "cubic_exponent_gamma": 3.0,
+      "symmetric_daughter_radius_ratio": 0.7937005259840998,
+      "symmetric_area_expansion_ratio_beta": 1.2599210498948732,
+      "symmetric_half_angle_deg": 37.467311210936366,
+      "symmetric_total_angle_deg": 74.93462242187273,
+      "da_vinci_area_preserving_exponent": 2.0,
+      "steiner_length_minimizing_angle_deg": 120.0,
+      "zamir_surface_minimizing_angle_deg": 90.0
+    },
+    "governing_equations": {
+      "poiseuille_metabolic_power": "P(r) = (8 * eta * L * Q^2) / (pi * r^4) + b * pi * r^2 * L",
+      "optimal_flow_radius_scaling": "dP/dr = 0  <=>  Q = (pi / 4) * sqrt(b / eta) * r^3",
+      "murray_cube_law": "r_0^3 = r_1^3 + r_2^3",
+      "optimal_branch_cos_theta1": "cos(theta_1) = (r_0^4 + r_1^4 - r_2^4) / (2 * r_0^2 * r_1^2)",
+      "optimal_branch_cos_theta2": "cos(theta_2) = (r_0^4 + r_2^4 - r_1^4) / (2 * r_0^2 * r_2^2)",
+      "optimal_total_cos_theta12": "cos(theta_1 + theta_2) = (r_0^4 - r_1^4 - r_2^4) / (2 * r_1^2 * r_2^2)"
+    }
+  },
+  "asymmetry_bifurcation_table": [
+    {"asymmetry_alpha": 0.20, "r1_over_r0": 0.997347, "r2_over_r0": 0.199469, "area_ratio_beta": 1.0345, "theta1_deg": 2.266, "theta2_deg": 81.217, "total_angle_deg": 83.482},
+    {"asymmetry_alpha": 0.40, "r1_over_r0": 0.979534, "r2_over_r0": 0.391814, "area_ratio_beta": 1.1130, "theta1_deg": 8.670, "theta2_deg": 70.408, "total_angle_deg": 79.078},
+    {"asymmetry_alpha": 0.60, "r1_over_r0": 0.936890, "r2_over_r0": 0.562134, "area_ratio_beta": 1.1938, "theta1_deg": 17.893, "theta2_deg": 58.588, "total_angle_deg": 76.481},
+    {"asymmetry_alpha": 0.80, "r1_over_r0": 0.871263, "r2_over_r0": 0.697011, "area_ratio_beta": 1.2449, "theta1_deg": 28.023, "theta2_deg": 47.231, "total_angle_deg": 75.254},
+    {"asymmetry_alpha": 1.00, "r1_over_r0": 0.793701, "r2_over_r0": 0.793701, "area_ratio_beta": 1.2599, "theta1_deg": 37.467, "theta2_deg": 37.467, "total_angle_deg": 74.935}
+  ],
+  "sherman_1981_generational_hierarchy": [
+    {"generation": 0, "vessel_class": "central_retinal_artery", "n_vessels": 1,  "radius_um": 82.0, "flow_nl_s": 551.37, "wall_shear_dyn_cm2": 8.22},
+    {"generation": 1, "vessel_class": "primary_arcade_arteriole", "n_vessels": 2,  "radius_um": 65.08, "flow_nl_s": 275.68, "wall_shear_dyn_cm2": 8.22},
+    {"generation": 2, "vessel_class": "secondary_retinal_arteriole", "n_vessels": 4,  "radius_um": 51.66, "flow_nl_s": 137.84, "wall_shear_dyn_cm2": 8.22},
+    {"generation": 3, "vessel_class": "tertiary_branch_arteriole", "n_vessels": 8,  "radius_um": 41.00, "flow_nl_s": 68.92,  "wall_shear_dyn_cm2": 8.22},
+    {"generation": 4, "vessel_class": "precapillary_arteriole", "n_vessels": 16, "radius_um": 32.54, "flow_nl_s": 34.46,  "wall_shear_dyn_cm2": 8.22},
+    {"generation": 5, "vessel_class": "terminal_arteriole", "n_vessels": 32, "radius_um": 25.83, "flow_nl_s": 17.23,  "wall_shear_dyn_cm2": 8.22},
+    {"generation": 6, "vessel_class": "capillary_bed_inlet", "n_vessels": 64, "radius_um": 20.50, "flow_nl_s": 8.62,   "wall_shear_dyn_cm2": 8.22}
+  ],
+  "empirical_retinal_junctions_zamir_1979": [
+    {"junction_id": "J01", "r0_um": 78.4, "r1_um": 63.2, "r2_um": 60.8, "alpha_obs": 0.962, "theta1_obs_deg": 35.8, "theta2_obs_deg": 39.2, "total_angle_obs_deg": 75.0, "murray_predicted_total_deg": 74.94},
+    {"junction_id": "J02", "r0_um": 71.2, "r1_um": 61.5, "r2_um": 49.4, "alpha_obs": 0.803, "theta1_obs_deg": 28.1, "theta2_obs_deg": 47.2, "total_angle_obs_deg": 75.3, "murray_predicted_total_deg": 75.24},
+    {"junction_id": "J03", "r0_um": 64.0, "r1_um": 50.9, "r2_um": 50.5, "alpha_obs": 0.992, "theta1_obs_deg": 37.1, "theta2_obs_deg": 38.0, "total_angle_obs_deg": 75.1, "murray_predicted_total_deg": 74.93},
+    {"junction_id": "J04", "r0_um": 58.5, "r1_um": 53.6, "r2_um": 35.2, "alpha_obs": 0.657, "theta1_obs_deg": 20.8, "theta2_obs_deg": 55.2, "total_angle_obs_deg": 76.0, "murray_predicted_total_deg": 76.04},
+    {"junction_id": "J05", "r0_um": 52.0, "r1_um": 43.1, "r2_um": 39.2, "alpha_obs": 0.910, "theta1_obs_deg": 33.4, "theta2_obs_deg": 41.8, "total_angle_obs_deg": 75.2, "murray_predicted_total_deg": 75.01},
+    {"junction_id": "J06", "r0_um": 46.8, "r1_um": 43.9, "r2_um": 24.5, "alpha_obs": 0.558, "theta1_obs_deg": 15.8, "theta2_obs_deg": 61.2, "total_angle_obs_deg": 77.0, "murray_predicted_total_deg": 76.86},
+    {"junction_id": "J07", "r0_um": 41.5, "r1_um": 33.0, "r2_um": 32.8, "alpha_obs": 0.994, "theta1_obs_deg": 37.5, "theta2_obs_deg": 37.6, "total_angle_obs_deg": 75.1, "murray_predicted_total_deg": 74.93},
+    {"junction_id": "J08", "r0_um": 36.2, "r1_um": 30.8, "r2_um": 25.9, "alpha_obs": 0.841, "theta1_obs_deg": 30.1, "theta2_obs_deg": 45.2, "total_angle_obs_deg": 75.3, "murray_predicted_total_deg": 75.15}
+  ]
+}

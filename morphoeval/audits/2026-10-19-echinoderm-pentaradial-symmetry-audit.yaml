@@ -1,0 +1,157 @@
+# MorphoEval Pass 1 (v1) Audit — Morris (2012), Mooi & David (1998/2008) & Meinhardt (2008) Echinoderm Pentaradial Symmetry, 2026-10-19
+#
+# Dual-agent Pass 1 baseline assessment of `2005-meinhardt-echinoderm-pentaradial-symmetry.py` (v1, 166 lines):
+#   - Primary assessor: Gemini 4 Argon — 54.1 / 100
+#   - Independent second assessor rubric evaluation — 51.3 / 100
+#   - Dual-agent consensus score: 52.7 / 100
+
+audit:
+  id: 2026-10-19-echinoderm-pentaradial-symmetry-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 baseline assessment)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 1 rubric verification)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/75
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2005-meinhardt-echinoderm-pentaradial-symmetry.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  morris2012:
+    title: "Homology and the evolution of echinoderm pentaradiality"
+    authors: "Morris VB"
+    venue: "Evolution & Development 14(4):313-326 (2012)"
+    doi: 10.1111/j.1525-142X.2012.00552.x
+  mooidavid1998:
+    title: "Evolution Within a Bizarre Phylum: Homologies of the First Echinoderms"
+    authors: "Mooi R, David B"
+    venue: "American Zoologist 38(6):965-974 (1998)"
+    doi: 10.1093/icb/38.6.965
+  loven1874:
+    title: "Études sur les Échinoïdées"
+    authors: "Lovén S"
+    venue: "Kongliga Svenska Vetenskaps-Akademiens Handlingar 11(7):1-91 (1874)"
+    doi: 10.5962/bhl.title.46385
+  duboc2005:
+    title: "Left-right asymmetry in the sea urchin embryo is regulated by Nodal signaling on the right side"
+    authors: "Duboc V, Röttinger E, Lapraz F, Besnardeau L, Lepage T"
+    venue: "Developmental Cell 9(1):147-158 (2005)"
+    doi: 10.1016/j.devcel.2005.05.008
+  meinhardt2008:
+    title: "Models of biological pattern formation: from elementary steps to the organization of embryonic axes"
+    authors: "Meinhardt H"
+    venue: "Current Topics in Developmental Biology 81:1-63 (2008)"
+    doi: 10.1016/S0070-2153(07)81001-5
+
+simulations:
+  - id: meinhardt-echinoderm-pentaradial-symmetry
+    name: "Morris (2012), Mooi & David (1998) & Meinhardt (2008) echinoderm bilateral-to-pentaradial hydrocoel ring symmetry breaking & Lovén's Law"
+    organism: "Strongylocentrotus purpuratus & Tripneustes gratilla (Echinoidea crown-group echinoderms)"
+    script: 2005-meinhardt-echinoderm-pentaradial-symmetry.py
+    output: docs/media/echinoderm_pentaradial_symmetry_comparison.png
+    extra_outputs:
+      - docs/media/echinoderm_pentaradial_symmetry_growth.gif
+    status: evaluated
+    source_refs:
+      - morris2012
+      - mooidavid1998
+      - loven1874
+      - duboc2005
+      - meinhardt2008
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2005-meinhardt-echinoderm-pentaradial-symmetry.py`
+      (consensus score 52.7/100). Evaluates an algebraic dispersion curve on a static circle
+      to pick m* = 5 (72 deg), but omits a genuine Gierer-Meinhardt reaction-diffusion PDE
+      simulation on a closing hydrocoel crescent-to-ring domain, omits Lovén's Law (1874)
+      asymmetric initiation sequence (II, IV, I, III, V) and biserial peristomial plate
+      enlargement (ba-ab-ba-ab-ab), omits Duboc et al. (2005) right-sided Nodal knockdown
+      twin-rudiment (2x5 = 10 podia) perturbation, lacks polar Fourier C_5 harmonic
+      segmentation of the vendored Tripneustes gratilla echinoid test specimen, and lacks
+      runtime SHA-256 dataset verification.
+    scores:
+      model-fidelity:
+        value: 54
+        rationale: >-
+          Evaluates a static algebraic dispersion curve sigma(m) and analytic cosine ring
+          envelope to illustrate m* = 5, but omits time-stepping the Gierer-Meinhardt
+          activator-inhibitor PDE during hydrocoel crescent-to-ring closure, omits Lovén's
+          Law (II, IV, I, III, V) sequential initiation, and omits Duboc et al. (2005)
+          Nodal left-right twin-rudiment (2x5) symmetry breaking.
+        evidence:
+          - {file: 2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [33, 82], note: "Algebraic dispersion and static cosine ring envelope without PDE integration, Lovén's Law, or Nodal L-R perturbations", supports: true}
+      specimen-match:
+        value: 46
+        rationale: >-
+          Displays the vendored Tripneustes gratilla regular echinoid test specimen in
+          Panel D without performing polar Fourier C_5 harmonic analysis or detecting
+          the 5 ambulacral ray angles and 72.0 deg inter-ray spacings.
+        evidence:
+          - {file: 2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [106, 108], note: "Raw imshow of Tripneustes gratilla test without polar Fourier C_5 segmentation", supports: false}
+      parameter-expressivity:
+        value: 49
+        rationale: >-
+          Evaluates 4 ring radii in the GIF loop, but lacks a full mode-selection staircase
+          across 2*pi*R_ring/lambda_c spanning m in {3, 4, 5, 6, 7}, lacks Nodal LOF/GOF
+          perturbation sweeps, and provides no CLI parameter flags.
+        evidence:
+          - {file: 2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [118, 134], note: "Basic 4-radius loop without full mode staircase or CLI parameter overrides", supports: false}
+      morphometric-validation:
+        value: 50
+        rationale: >-
+          Exposes only 2 scalar metrics in `measure_morphoeval()` without testing the
+          hydrocoel ring mode staircase, Lovén's Law ray initiation rank correlation,
+          Duboc Nodal LOF 2x5 twin-rudiment podia count, or specimen C_5 Fourier power.
+        evidence:
+          - {file: 2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [137, 159], note: "Only 2 baseline metrics in measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 62
+        rationale: >-
+          Vendors `datasets/echinoderm_pentaradial_symmetry/` with 5 BibTeX references
+          and the CC BY-SA 4.0 Tripneustes gratilla test micrograph, but does not verify
+          SHA-256 digests at runtime.
+        evidence:
+          - {file: datasets/echinoderm_pentaradial_symmetry/echinoderm_pentaradial_symmetry_reference.json, lines: [1, 125], note: "Reference JSON present but not SHA-256 checked in script", supports: true}
+      code-traceability:
+        value: 55
+        rationale: >-
+          Header docstring cites Morris (2012), Mooi & David (1998), and Meinhardt (2008),
+          but does not map functions to the 3 machine-checked Lean 4 theorems in
+          `Loop_075_echinoderm_pentaradial_symmetry.lean`.
+        evidence:
+          - {file: 2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1, 11], note: "Brief header docstring without Lean 4 theorem mapping", supports: false}
+      repro-package:
+        value: 53
+        rationale: >-
+          Provides `--self-test` and `--skip-gif`, but `self_test()` checks only 3 basic
+          assertions and lacks bitwise determinism and SHA-256 integrity checks.
+        evidence:
+          - {file: 2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [162, 168], note: "Minimal 4-line self_test()", supports: false}
+    remediation:
+      - "Implement a time-stepped Gierer-Meinhardt activator-inhibitor reaction-diffusion PDE on a closing hydrocoel crescent-to-ring domain, demonstrating spontaneous m^* = 5 (Delta_theta = 72 deg) lobe formation and sequential anterior-to-posterior initiation matching Lovén's Law (II, IV, I, III, V) and the asymmetric biserial peristomial plate law (Ib, IIb, IIIa, IVa, Va)."
+      - "Implement the full hydrocoel circumference-to-wavelength mode selection staircase m^* in {3, 4, 5, 6, 7} vs 2*pi*R_ring/lambda_c alongside a homogeneous sub-threshold negative control (D_h = D_a, zero spatial Turing instability)."
+      - "Implement Duboc et al. (2005) right-sided Nodal/BMP2-4 left-right symmetry breaking and its perturbations: wild-type single left rudiment (1x5 = 5 podia), Nodal morpholino knockdown bilateral twin rudiments (2x5 = 10 podia), and ectopic bilateral Nodal overexpression (0 podia)."
+      - "Implement automated polar Fourier C_5 harmonic segmentation (`segment_echinoid_test_specimen`) on `echinoderm_pentaradial_test_specimen.jpg` to detect the 5 ambulacral rays (72.0 +/- 1.4 deg spacing, C_5 fundamental power fraction 0.9255), plus runtime SHA-256 dataset verification, 9 morphometrics in `measure_morphoeval()`, and an 8-check `self_test()` suite."

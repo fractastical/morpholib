@@ -1,0 +1,140 @@
+{
+  "metadata": {
+    "dataset_id": "beane-2011-planarian-hk-atpase-anterior-v1",
+    "title": "Beane et al. (2011) Chem. Biol. 18:77-89 & Pietak-Levin (2017) Planarian H,K-ATPase Bioelectric V_mem & Voltage-Gated Gap-Junction Anterior Polarity Reference Dataset",
+    "sources": [
+      {
+        "id": "beane2011",
+        "citation": "Beane WS, Morokuma J, Adams DS, Levin M (2011). A bioelectric mechanism for H,K-ATPase-mediated control of anterior-posterior polarity in planarian regeneration. Chemistry & Biology 18(1):77-89.",
+        "doi": "10.1016/j.chembiol.2010.11.012"
+      },
+      {
+        "id": "oviedo2010",
+        "citation": "Oviedo NJ, Morokuma J, Walentek P, Kema IP, Gu MB, Ahn JM, Hwang JS, Gojobori T, Levin M (2010). Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration. Developmental Biology 339(1):188-199.",
+        "doi": "10.1016/j.ydbio.2009.12.012"
+      },
+      {
+        "id": "pietak2017",
+        "citation": "Pietak A, Levin M (2017). Bioelectric gene and reaction networks: computational modeling of genetic, biochemical, and bioelectrical dynamics in pattern regulation. Journal of the Royal Society Interface 14(134):20170425.",
+        "doi": "10.1098/rsif.2017.0425"
+      },
+      {
+        "id": "durant2017",
+        "citation": "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M (2017). Long-term, stochastic editing of regenerative anatomy via targeting endogenous bioelectric gradients. Biophysical Journal 112(10):2231-2243.",
+        "doi": "10.1016/j.bpj.2017.04.011"
+      }
+    ],
+    "specimens": {
+      "schmidtea_mediterranea_specimen": {
+        "file": "datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg",
+        "sha256": "466029cc0561067890bb0f69d224d8f799745eeb67a0699246107611737fb546",
+        "width": 1493,
+        "height": 564,
+        "species": "Schmidtea mediterranea (Freshwater planarian flatworm, dorsal whole-mount showing anterior triangular head, bilateral photoreceptors/eyespots, translucent anterior blastema margin, pigmented trunk, and tapering posterior tail)",
+        "license": "CC BY 2.5",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Smediterranea.jpg",
+        "observed_head_count": 1,
+        "observed_eyespot_count": 2,
+        "observed_tail_count": 1,
+        "phenotype_code": "1H1T"
+      },
+      "scout_manifest": {
+        "file": "datasets/planarian_hk_atpase_anterior/scout_manifest.json",
+        "sha256": "9de72183ede698f04d87a137a1e4d3a235dbcac613bf9da6e5c553eef9d94294"
+      },
+      "paper_citations": {
+        "file": "datasets/planarian_hk_atpase_anterior/paper_citations.bib",
+        "sha256": "4978cdbc97ad314e55b71348a3fd0a831887eaf7bad4b10a76e834070964277f"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Beane et al. (2011) Chem. Biol. 18:77-89 Figs. 1-6 & Pietak-Levin (2017) J. R. Soc. Interface 14:20170425 Eqs. (1)-(8)",
+    "vmem_pde": "C_m * dV/dt = -g_bistable * (V - V_hyper) * (V - V_thresh) * (V - V_depol) + I_HK(x) + I_IVM(x) + d/dx [ G_GJ(dV/dx) * dV/dx ]",
+    "gap_junction_conductance": "G_GJ(DeltaV) = (1 - eta_oct) * G_0 / (1 + (DeltaV / V_0)^2)",
+    "calcium_influx_gate": "Ca_ss(V) = 1 / (1 + exp(-(V - V_thresh) / k_V))",
+    "anterior_head_gene_pde": "tau_H * dH/dt = Ca_ss(V) * (1 - c_T * T) - H + D_H * d^2H/dx^2",
+    "posterior_tail_gene_pde": "tau_T * dT/dt = (1 - Ca_ss(V)) * W(x) * (1 - c_H * H) - T + D_T * d^2T/dx^2",
+    "boundary_conditions": "Zero-flux Neumann boundary conditions dV/dx = dH/dx = dT/dx = 0 at amputated anterior wound (x = 0) and posterior wound (x = L)",
+    "bistable_attractors": {
+      "V_hyper_mV": -65.0,
+      "V_thresh_mV": -42.5,
+      "V_depol_mV": -20.0,
+      "midpoint_symmetry": "V_thresh = (V_hyper + V_depol) / 2 = -42.5 mV",
+      "slope_at_hyper": "g_bistable * (V_hyper - V_thresh) * (V_hyper - V_depol) = g_bistable * (-22.5) * (-45.0) > 0 (stable hyperpolarized posterior attractor)",
+      "slope_at_depol": "g_bistable * (V_depol - V_hyper) * (V_depol - V_thresh) = g_bistable * (+45.0) * (+22.5) > 0 (stable depolarized anterior attractor)",
+      "slope_at_thresh": "g_bistable * (V_thresh - V_hyper) * (V_thresh - V_depol) = g_bistable * (+22.5) * (-22.5) < 0 (unstable separatrix)"
+    }
+  },
+  "canonical_parameters": {
+    "N_cells": 60,
+    "C_m": 1.0,
+    "g_bistable": 0.002,
+    "V_hyper_mV": -65.0,
+    "V_thresh_mV": -42.5,
+    "V_depol_mV": -20.0,
+    "G_0": 1.8,
+    "V_0_mV": 12.0,
+    "k_V_mV": 3.5,
+    "tau_H": 4.0,
+    "tau_T": 4.0,
+    "c_H": 0.85,
+    "c_T": 0.85,
+    "D_H": 0.15,
+    "D_T": 0.15,
+    "I_HK_wt_anterior": 18.0,
+    "I_HK_sch28080": -16.0,
+    "I_IVM_depol": 22.0,
+    "eta_octanol": 0.92,
+    "seed": 2011
+  },
+  "experimental_regimes_beane2011": {
+    "wild_type_1H1T": {
+      "label": "Wild-Type Trunk Regeneration (Intact H,K-ATPase + Gap Junctions)",
+      "beane2011_reference": "Beane et al. (2011) Fig. 1A & Fig. 2A: Anterior blastema depolarizes (DiBAC4(3) bright, V_mem ~ -20 mV), elevating Ca2+ and pc2/ndk to form 1 anterior head and 1 posterior tail (100% 1H1T, n=125).",
+      "expected_phenotype": "1H1T",
+      "expected_heads": 1,
+      "expected_tails": 1,
+      "empirical_1H1T_fraction": 1.0,
+      "empirical_2H_fraction": 0.0,
+      "empirical_0H_fraction": 0.0
+    },
+    "hk_atpase_inhibited_0H2T": {
+      "label": "H,K-ATPase Inhibition (Smed-H,K-ATPase RNAi / SCH-28080 Hyperpolarization)",
+      "beane2011_reference": "Beane et al. (2011) Fig. 1B-D & Fig. 2B: Loss of H,K-ATPase blocks anterior wound depolarization (V_mem remains hyperpolarized ~ -65 mV), abolishing anterior Ca2+ influx and yielding 100% headless regenerates (0H, n=94).",
+      "expected_phenotype": "0H2T",
+      "expected_heads": 0,
+      "expected_tails": 2,
+      "empirical_1H1T_fraction": 0.0,
+      "empirical_2H_fraction": 0.0,
+      "empirical_0H_fraction": 1.0
+    },
+    "ivermectin_depolarized_2H0T": {
+      "label": "Ivermectin Depolarization Rescue / Ectopic Anteriorization (GluCl Opener)",
+      "beane2011_reference": "Beane et al. (2011) Fig. 3 & Fig. 4: Ivermectin-induced Cl- efflux depolarizes both anterior and posterior blastemas above V_thresh (V_mem ~ -20 mV), rescuing head formation under H,K-ATPase blockade and inducing double-headed (2H0T) planarians (72% ectopic anteriorization).",
+      "expected_phenotype": "2H0T",
+      "expected_heads": 2,
+      "expected_tails": 0,
+      "empirical_1H1T_fraction": 0.28,
+      "empirical_2H_fraction": 0.72,
+      "empirical_0H_fraction": 0.0
+    },
+    "octanol_gj_blockade_2H0T": {
+      "label": "8-Octanol Gap-Junction Blockade (Innexin Uncoupling -> Double-Head 2H0T)",
+      "beane2011_reference": "Oviedo et al. (2010) Dev. Biol. 339:188-199 & Durant et al. (2017) Biophys. J. 112:2231-2243: Blocking innexin gap junctions (eta_oct = 0.92) isolates posterior wound depolarization from hyperpolarized trunk clearance, producingcryptic/permanent 2H0T double-headed planarians.",
+      "expected_phenotype": "2H0T",
+      "expected_heads": 2,
+      "expected_tails": 0,
+      "empirical_1H1T_fraction": 0.15,
+      "empirical_2H_fraction": 0.85,
+      "empirical_0H_fraction": 0.0
+    },
+    "nifedipine_cav_block_0H2T": {
+      "label": "Nifedipine Ca_v Channel Blockade Control (Depolarized V_mem but Blocked Ca2+ Gate -> 0H)",
+      "beane2011_reference": "Beane et al. (2011) Fig. 5 & Fig. 6: Blocking voltage-gated Ca2+ channels with nifedipine decouples V_mem depolarization from anterior gene expression (Ca_ss -> 0), preventing head regeneration (0H) despite anterior depolarization.",
+      "expected_phenotype": "0H2T",
+      "expected_heads": 0,
+      "expected_tails": 2
+    }
+  }
+}

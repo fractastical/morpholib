@@ -1,0 +1,80 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sick-wnt-dkk-hair-follicle> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sick-wnt-dkk-hair-follicle-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sick-wnt-dkk-hair-follicle-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Sick et al. (2006) & Andl et al. (2002) WNT/DKK reaction-diffusion hair follicle spacing, secondary wave insertion & transgenic phenotypes — Reproducibility package: 92/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Deterministic RNG (`seed=2006`), 8-check `self_test()` suite (L829-889) verifying SHA-256 locks, JSON parameter parity, Jacobian/dispersion signs, 4 -> 8 primary-to-secondary inter-follicular wave insertion, 2D WT (16) vs K14-Wnt++ (32) vs enlarged (+45% area) vs Dkk1++ (0) vs equal-diffusion control (0), ectopic Dkk1 dosage sweep, domain scaling r >= 0.98, 16-placode specimen segmentation, and bitwise two-run determinism, plus 30-frame animated GIF at `docs/media/wnt_dkk_hair_follicle_growth.gif`." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-repro-package-2> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2002-sick-wnt-dkk-hair-follicle.py L829–L889" ;
+        dct:description "Comprehensive 8-check self_test() suite including SHA-256 locks, secondary wave doubling, transgenic phenotypes, and bitwise determinism" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3cb5ea9/2002-sick-wnt-dkk-hair-follicle.py#L829-L889> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/wnt_dkk_hair_follicle_growth.gif (generated output)" ;
+        dct:description "30-frame animated GIF of Phase 1 primary placode wave + 2D epidermal formation and Phase 2 inter-follicular secondary wave insertion — docs/media/wnt_dkk_hair_follicle_growth.gif: rendered output of 2002-sick-wnt-dkk-hair-follicle.py at 3cb5ea9, image/gif, 886582 B, 792×342 px, 30 frames, artifact_sha256 8a98d4e25cf40ec0d5680f1a2340dc6284b80982cbf8755518c725b2004678e2 (sha256 8a98d4e25cf40ec0d5680f1a2340dc6284b80982cbf8755518c725b2004678e2), spec_fingerprint b199744003e12310e28662e653c933212ba7a7794558fe627f0cafadb3ab526e" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + MorphoEval Dual-Rubric Assessor" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00289234>,
+            <https://doi.org/10.1016/S1534-5807(02)00167-3>,
+            <https://doi.org/10.1126/science.1130088>,
+            <https://doi.org/10.1186/1471-213X-4-4> .
+    <https://doi.org/10.1007/BF00289234> dct:date "1972"^^xsd:gYear ;
+        dct:title "A theory of biological pattern formation" .
+    <https://doi.org/10.1016/S1534-5807(02)00167-3> dct:date "2002"^^xsd:gYear ;
+        dct:title "WNT signals are required for the initiation of hair follicle development" .
+    <https://doi.org/10.1126/science.1130088> dct:date "2006"^^xsd:gYear ;
+        dct:title "WNT and DKK determine hair follicle spacing through a reaction-diffusion mechanism" .
+    <https://doi.org/10.1186/1471-213X-4-4> dct:date "2004"^^xsd:gYear ;
+        dct:title "Dynamic expression of a glutamate decarboxylase gene in multiple non-neural tissues during mouse development" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sick et al. (2006) & Andl et al. (2002) WNT/DKK reaction-diffusion hair follicle spacing, secondary wave insertion & transgenic phenotypes — Reproducibility package 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:14:42Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sick-wnt-dkk-hair-follicle-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

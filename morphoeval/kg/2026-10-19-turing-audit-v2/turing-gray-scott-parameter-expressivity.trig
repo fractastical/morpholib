@@ -1,0 +1,81 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-turing-gray-scott> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-turing-gray-scott-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-turing-gray-scott-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Turing (1952), Pearson (1993) & Kondo-Asai (1995) reaction-diffusion morphogenesis — Parameter expressivity: 81/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Maps all 12 Pearson (1993) pattern classes (alpha through mu) onto the (k, F) bifurcation diagram (Panel C2), simulates 5 distinct initialization/parameter regimes in `PEARSON_REGIMES`, executes a 5-point diffusivity-ratio sweep across d = Du/Dv in {1.0, 1.25, 1.5, 2.0, 2.5} (`run_diffusivity_ratio_sweep`, L515-536) spanning the analytical Turing threshold, and wires `--F`, `--k`, `--Du`, `--Dv`, `--N`, `--steps`, and `--seed` CLI arguments into the solver (L939-954, L1385-1425)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-parameter-expressivity-2> ;
+        pk:hasScore "0.81"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "1952-turing-morpho.py L515–L536" ;
+        dct:description "5-point diffusivity ratio sweep across d = Du/Dv" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/b9976f8/1952-turing-morpho.py#L515-L536> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "1952-turing-morpho.py L939–L954" ;
+        dct:description "CLI parameter overrides wired into PEARSON_REGIMES" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/b9976f8/1952-turing-morpho.py#L939-L954> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/369215a0>,
+            <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1126/science.261.5118.189> .
+    <https://doi.org/10.1038/369215a0> dct:date "1994"^^xsd:gYear ;
+        dct:title "Experimental observation of self-replicating spots in a reaction-diffusion system" .
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1126/science.261.5118.189> dct:date "1993"^^xsd:gYear ;
+        dct:title "Complex patterns in a simple system" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Turing (1952), Pearson (1993) & Kondo-Asai (1995) reaction-diffusion morphogenesis — Parameter expressivity 81/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T23:45:22Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-turing-gray-scott-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

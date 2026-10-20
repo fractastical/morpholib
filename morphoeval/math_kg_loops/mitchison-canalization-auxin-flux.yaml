@@ -1,0 +1,76 @@
+sim_id: mitchison-canalization-auxin-flux
+math_family: "With-the-Flux Auxin Canalization & PIN1 Carrier-Allocated Venation Topology"
+model_spec:
+  model: "Mitchison (1980) Proc. R. Soc. Lond. B 207:79-109, Mitchison (1981) Phil. Trans. R. Soc. B 295:461-471, and Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236:366-375 quadratic flux-driven diffusivity/PIN1-carrier canalization ODEs (dD_ij/dt = alpha*phi_ij^p + beta - gamma*D_ij), vein concentration drainage (S_vein < S_parenchyma), Sachs (1981) transverse stem incision bypass regeneration, and open-tree vs closed-areole leaf venation topology"
+  alpha_flux_gain: 1.0
+  beta_basal_diffusivity_rate: 0.02
+  gamma_decay_rate: 0.20
+  quadratic_exponent_p: 2.0
+  source_flux_Phi: 2.0
+  seed: 1980
+  inputs:
+    - datasets/auxin_canalization_leaf_veins/auxin_canalization_leaf_veins_reference.json
+    - datasets/auxin_canalization_leaf_veins/leaf_venation_canalization_specimen.jpg
+    - datasets/auxin_canalization_leaf_veins/scout_manifest.json
+    - datasets/auxin_canalization_leaf_veins/paper_citations.bib
+equations:
+  - id: mitchison-canalization-auxin-flux-1
+    law_name: "Mitchison (1980) Linear vs Quadratic Flux-Canalization Symmetry Breaking Law"
+    formula: "dD_ij/dt = α |φ_ij|^p + β - γ D_ij;  D_2 dD_1/dt - D_1 dD_2/dt = β(D_2 - D_1) (p=1, diffuse)  vs  (D_1 - D_2)(α (ΔS)^2 D_1 D_2 - β) (p=2, winner-take-all canalization)"
+    lean_decl: "MathOfBiology.Loop_034.quadratic_canalization_rhs"
+    lean_theorem: "MathOfBiology.Loop_034.mitchison_1980_quadratic_vs_linear_symmetry_breaking"
+    lean_locus: "morphoeval/lean/loops/Loop_034_auxin_canalization_leaf_veins.lean#L29-L48"
+    lean_code: |
+      def linear_canalization_rhs (alpha beta gamma dS D : Int) : Int :=
+        alpha * (D * dS) + beta - gamma * D
+      def quadratic_canalization_rhs (alpha beta gamma dS D : Int) : Int :=
+        alpha * (D * dS) * (D * dS) + beta - gamma * D
+      theorem mitchison_1980_quadratic_vs_linear_symmetry_breaking
+          (alpha beta gamma dS D1 D2 : Int) :
+          D2 * linear_canalization_rhs alpha beta gamma dS D1 -
+            D1 * linear_canalization_rhs alpha beta gamma dS D2 = beta * (D2 - D1) ∧
+          D2 * quadratic_canalization_rhs alpha beta gamma dS D1 -
+            D1 * quadratic_canalization_rhs alpha beta gamma dS D2 =
+            (D1 - D2) * (alpha * dS * dS * D1 * D2 - beta)
+    variables: "D_ij: intercellular auxin diffusivity across cell wall (i,j); φ_ij = D_ij(S_i - S_j): auxin flux; p: feedback exponent (p<=1 diffuse sheet, p=2 single-cell strand); α: flux reinforcement gain; β: basal diffusivity synthesis; γ: carrier degradation rate"
+    role: "Proves why linear feedback (p <= 1) damps conductivity perturbations back to a broad diffuse sheet whereas quadratic feedback (p = 2) triggers supercritical pitchfork winner-take-all symmetry breaking into 1-cell-wide vascular strands"
+    source_citation: "Mitchison (1980) Proc. R. Soc. Lond. B 207(1166):79-109 Eqs. 2-6 & Fig. 1"
+    code_locus: "1997-mitchison-canalization-auxin-flux.py#L95-L215"
+
+  - id: mitchison-canalization-auxin-flux-2
+    law_name: "Mitchison (1980) Canalized Vein Auxin Concentration Drainage Law (S_vein < S_parenchyma)"
+    formula: "D^*(φ) = (α φ^2 + β)/γ,  S(φ) = φ / D^*(φ)  ⇒  S_par - S_vein = (φ_vein - φ_par)(α φ_vein φ_par - β) / (γ D_vein D_par) > 0"
+    lean_decl: "MathOfBiology.Loop_034.drainage_conc_diff_scaled"
+    lean_theorem: "MathOfBiology.Loop_034.mitchison_1980_vein_concentration_drainage"
+    lean_locus: "morphoeval/lean/loops/Loop_034_auxin_canalization_leaf_veins.lean#L66-L78"
+    lean_code: |
+      def steady_conductivity_scaled (alpha beta phi : Int) : Int :=
+        alpha * phi * phi + beta
+      def drainage_conc_diff_scaled (alpha beta phi_vein phi_par : Int) : Int :=
+        phi_par * steady_conductivity_scaled alpha beta phi_vein -
+          phi_vein * steady_conductivity_scaled alpha beta phi_par
+      theorem mitchison_1980_vein_concentration_drainage (alpha beta phi_vein phi_par : Int) :
+          drainage_conc_diff_scaled alpha beta phi_vein phi_par =
+            (phi_vein - phi_par) * (alpha * phi_vein * phi_par - beta)
+    variables: "S_vein, S_par: steady-state auxin concentration inside the canalized vascular strand vs surrounding parenchyma; φ_vein, φ_par: axial auxin flux in vein vs parenchyma"
+    role: "Proves that quadratic flux-driven conductivity growth drops the auxin concentration inside a canalizing vein below that of surrounding parenchyma (S_vein < S_par), turning the differentiating vein into a lateral drainage sink that recruits tributaries and bypasses stem wounds (Sachs 1981)"
+    source_citation: "Mitchison (1980) Proc. R. Soc. Lond. B 207:79-109 Fig. 2 & pp. 83-87; Sachs (1981) Adv. Bot. Res. 9:151-262"
+    code_locus: "1997-mitchison-canalization-auxin-flux.py#L220-L355"
+
+  - id: mitchison-canalization-auxin-flux-3
+    law_name: "Mitchison (1981) & Feugier et al. (2005) Polar Carrier-Allocated Intercellular Flux Conservation Law"
+    formula: "φ_{i→j} = P_ij S_i - P_ji S_j + D_0(S_i - S_j),  φ_{i→j} + φ_{j→i} = 0;  dP_ij/dt = F(φ_{i→j}, P_cell) - γ P_ij"
+    lean_decl: "MathOfBiology.Loop_034.polar_canalization_flux"
+    lean_theorem: "MathOfBiology.Loop_034.feugier_2005_polar_flux_conservation"
+    lean_locus: "morphoeval/lean/loops/Loop_034_auxin_canalization_leaf_veins.lean#L92-L103"
+    lean_code: |
+      def polar_canalization_flux (P_ij P_ji D0 S_i S_j : Int) : Int :=
+        P_ij * S_i - P_ji * S_j + D0 * (S_i - S_j)
+      theorem feugier_2005_polar_flux_conservation (P_ij P_ji D0 S_i S_j S : Int) :
+          polar_canalization_flux P_ij P_ji D0 S_i S_j +
+            polar_canalization_flux P_ji P_ij D0 S_j S_i = 0 ∧
+          polar_canalization_flux P_ij P_ji D0 S S = (P_ij - P_ji) * S
+    variables: "P_ij: directed PIN1 efflux carrier permeability on membrane face i→j; S_i: cytoplasmic auxin concentration in cell i; D_0: apoplastic passive diffusivity; β_1 = E - V + C: venation graph cycle rank (areole loop count)"
+    role: "Guarantees exact pairwise intercellular auxin conservation while enabling polar transport against concentration gradients and governing the Feugier et al. (2005) topological transition between open hierarchical venation trees (β_1 = 0) and closed-areole venation loops (β_1 > 0)"
+    source_citation: "Mitchison (1981) Phil. Trans. R. Soc. B 295:461-471 Eqs. 1-5; Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236:366-375 Eqs. 1-9 & Figs. 3-7"
+    code_locus: "1997-mitchison-canalization-auxin-flux.py#L360-L495"

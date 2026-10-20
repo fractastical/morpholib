@@ -1,0 +1,71 @@
+sim_id: murray-vascular-cube-law-branching
+slot: 52
+slot_id: slot-052-vascular-cube-law-branching
+math_family: "Minimum-Work Vascular Bifurcation Law & Poiseuille-Metabolic Variational Calculus"
+model_spec:
+  model: "Murray (1926a, 1926b) Poiseuille viscous dissipation + metabolic blood-volume cost minimization (r_0^3 = r_1^3 + r_2^3 and optimal bifurcation angle cosine law) + Zamir (1976) / Sherman (1981) human retinal arteriole hierarchy"
+  viscosity_eta_poise: 0.035
+  metabolic_cost_b_erg_s_cm3: 1930.0
+  cubic_exponent_gamma: 3.0
+  symmetric_daughter_radius_ratio: 0.7937005259840998
+  symmetric_total_angle_deg: 74.93462242187273
+  tree_generations: 7
+  seed: 1926
+  inputs:
+    - datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json
+    - datasets/vascular_cube_law_branching/retinal_vasculature_specimen.jpg
+equations:
+  - law_name: "Murray (1926a) Poiseuille Viscous Power & Metabolic Volume Cost Functional"
+    formula: "P(r) = (8 η L Q^2) / (π r^4) + b π r^2 L,   ∂P/∂r = 0 ⟹ Q = (π/4)√(b/η) r^3 ∧ P_met(r_*) = 2 P_visc(r_*)"
+    lean_decl: "MathOfBiology.Loop_052.murray_stationarity_residual"
+    lean_theorem: "MathOfBiology.Loop_052.murray_stationarity_viscous_twice_metabolic"
+    lean_locus: "morphoeval/lean/loops/Loop_052_vascular_cube_law_branching.lean#L33-L49"
+    lean_code: |
+      def murray_stationarity_residual (p_visc p_met : Int) : Int := 2 * p_met - 4 * p_visc
+      def murray_total_power (p_visc p_met : Int) : Int := p_visc + p_met
+      theorem murray_stationarity_viscous_twice_metabolic (p_visc : Int) :
+          murray_stationarity_residual p_visc (2 * p_visc) = 0 ∧
+          murray_total_power p_visc (2 * p_visc) = 3 * p_visc := by
+        simp [murray_stationarity_residual, murray_total_power]; omega
+    variables: "r: vessel lumen radius; L: vessel segment length; Q: volumetric blood flow; η: blood dynamic viscosity; b: metabolic maintenance power per unit blood volume"
+    role: "Minimizes combined cardiac pumping work and metabolic cost of blood volume, yielding Q ∝ r^3 and constant wall shear stress τ_w = √(η b) across all vessel generations"
+    source_citation: "Murray (1926a) Proc. Natl. Acad. Sci. USA 12(3):207-214 Eqs. (1)-(6)"
+    code_locus: "1959-murray-vascular-cube-law-branching.py#L100-L147"
+  - law_name: "Murray (1926a) Cubic Radius Conservation & Generational Tree Invariance"
+    formula: "Q_0 = Q_1 + Q_2 ∧ Q_i = k_M r_i^3 ⟹ r_0^3 = r_1^3 + r_2^3 = ∑_{k ∈ leaves(T)} r_k^3"
+    lean_decl: "MathOfBiology.Loop_052.murray_flow"
+    lean_theorem: "MathOfBiology.Loop_052.murray_cube_law_generational_invariance"
+    lean_locus: "morphoeval/lean/loops/Loop_052_vascular_cube_law_branching.lean#L56-L78"
+    lean_code: |
+      def vessel_cube (r : Nat) : Nat := r * r * r
+      def murray_flow (k_M r : Nat) : Nat := k_M * vessel_cube r
+      theorem murray_cube_law_generational_invariance
+          (k_M r1 r2 c0 c1 c2 c11 c12 c21 c22 : Nat)
+          (h_gen1 : c0 = c1 + c2) (h_left : c1 = c11 + c12) (h_right : c2 = c21 + c22) :
+          murray_flow k_M r1 + murray_flow k_M r2 = k_M * (vessel_cube r1 + vessel_cube r2) ∧
+          c0 = c11 + c12 + c21 + c22 := by
+        constructor
+        · simp [murray_flow, Nat.left_distrib]
+        · omega
+    variables: "r_0: parent artery radius; r_1, r_2: daughter branch radii; k_M = (π/4)√(b/η): Murray hydraulic-metabolic conductance constant"
+    role: "Governs daughter radius reduction r_1/r_0 = 2^{-1/3} ≈ 0.7937 and cross-sectional area expansion β = (r_1^2 + r_2^2)/r_0^2 = 2^{1/3} ≈ 1.2599 across arterial trees"
+    source_citation: "Murray (1926a) Proc. Natl. Acad. Sci. USA 12(3):207-214; Sherman (1981) J. Gen. Physiol. 78(4):431-453"
+    code_locus: "1959-murray-vascular-cube-law-branching.py#L284-L378"
+  - law_name: "Murray (1926b) Optimal Arterial Bifurcation Angle Cosine Law"
+    formula: "cos(θ_1) = (r_0^4 + r_1^4 - r_2^4) / (2 r_0^2 r_1^2),  cos(θ_2) = (r_0^4 + r_2^4 - r_1^4) / (2 r_0^2 r_2^2),  θ_1 + θ_2|_{r_1=r_2} = arccos(2^{1/3} - 1) = 74.93°"
+    lean_decl: "MathOfBiology.Loop_052.murray_cos_num1"
+    lean_theorem: "MathOfBiology.Loop_052.murray_bifurcation_cosine_symmetry"
+    lean_locus: "morphoeval/lean/loops/Loop_052_vascular_cube_law_branching.lean#L85-L110"
+    lean_code: |
+      def pow4 (r : Int) : Int := r * r * r * r
+      def murray_cos_num1 (r0 r1 r2 : Int) : Int := pow4 r0 + pow4 r1 - pow4 r2
+      def murray_cos_num2 (r0 r1 r2 : Int) : Int := pow4 r0 + pow4 r2 - pow4 r1
+      theorem murray_bifurcation_cosine_symmetry (r0 r1 r2 r : Int) :
+          murray_cos_num1 r0 r1 r2 + murray_cos_num2 r0 r1 r2 = 2 * pow4 r0 ∧
+          murray_cos_num1 r0 r r = pow4 r0 ∧
+          murray_cos_num2 r0 r r = pow4 r0 := by
+        simp [murray_cos_num1, murray_cos_num2]; omega
+    variables: "θ_1, θ_2: daughter deflection angles relative to parent vessel axis; α = r_2/r_1 ∈ (0,1]: daughter radius asymmetry ratio"
+    role: "Determines optimal Y-junction branching geometry minimizing combined viscous + volume cost; predicts θ_1 = θ_2 = 37.47° (total 74.93°) for symmetric bifurcations and wider deflection for smaller side branches"
+    source_citation: "Murray (1926b) J. Gen. Physiol. 9(6):835-841 Eqs. (3)-(6); Zamir (1976) J. Theor. Biol. 62(1):227-251"
+    code_locus: "1959-murray-vascular-cube-law-branching.py#L154-L279"

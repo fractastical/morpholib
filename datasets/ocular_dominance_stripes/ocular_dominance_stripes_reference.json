@@ -1,0 +1,130 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "miller-ocular-dominance-stripes",
+  "slot": 87,
+  "title": "Miller, Keller & Stryker (1989), Swindale (1980) & Hubel, Wiesel & LeVay (1977) Correlation-Based Hebbian Ocular Dominance Stripes & Critical-Period Monocular Deprivation Plasticity in Macaque Primary Visual Cortex (V1 Layer IVC)",
+  "primary_papers": [
+    {
+      "citation": "Miller KD, Keller JB, Stryker MP (1989) Ocular dominance column development: analysis and simulation. Science 245(4918):605-615",
+      "doi": "10.1126/science.2762813"
+    },
+    {
+      "citation": "Hubel DH, Wiesel TN, LeVay S (1977) Plasticity of ocular dominance columns in monkey striate cortex. Phil. Trans. R. Soc. Lond. B 278(961):377-409",
+      "doi": "10.1098/rstb.1977.0050"
+    },
+    {
+      "citation": "Swindale NV (1980) A model for the formation of ocular dominance stripes. Proc. R. Soc. Lond. B 208(1171):243-264",
+      "doi": "10.1098/rspb.1980.0051"
+    },
+    {
+      "citation": "Stryker MP, Harris WA (1986) Binocular impulse blockade prevents the formation of ocular dominance columns in cat visual cortex. J. Neurosci. 6(8):2117-2133",
+      "doi": "10.1523/JNEUROSCI.06-08-02117.1986"
+    }
+  ],
+  "governing_equations": {
+    "synaptic_sum_and_difference_modes": "S_Sigma(x) = S^L(x) + S^R(x),   S_Delta(x) = S^L(x) - S^R(x)",
+    "subtractive_synaptic_normalization": "dS_Sigma/dt = 0  ==>  S^L(x,t) + S^R(x,t) = S_total = const",
+    "hebbian_ocular_dominance_pde": "dS_Delta/dt = (A * I * C_Delta) * S_Delta - gamma * S_Delta - S_Delta^3 + b_MD",
+    "mexican_hat_cortical_interaction": "I(r) = exp(-r^2 / (2 * sigma_E^2)) - kappa_I * exp(-r^2 / (2 * sigma_I^2))",
+    "fourier_bandpass_filter": "K_hat(k) = exp(-0.5 * sigma_E^2 * k^2) - kappa_I * exp(-0.5 * sigma_I^2 * k^2)",
+    "fourier_dispersion_relation": "omega(k) = C_Delta * A_hat(k) * K_hat(k) - gamma",
+    "characteristic_wavenumber_squared": "k_c^2 = 2 * ln(kappa_I * sigma_I^2 / sigma_E^2) / (sigma_I^2 - sigma_E^2),   lambda_c = 2 * pi / k_c"
+  },
+  "canonical_parameters": {
+    "grid_N": 96,
+    "domain_size_um": 6400.0,
+    "dx_um": 66.66666666666667,
+    "sigma_E_um": 109.0,
+    "sigma_I_um": 218.0,
+    "kappa_I": 0.75,
+    "sigma_arbor_um": 95.0,
+    "C_LL_normal": 1.0,
+    "C_LR_normal": 0.20,
+    "C_Delta_normal": 0.80,
+    "gamma_decay": 0.12,
+    "b_MD_deprived": -0.36,
+    "b_MD_reverse": 0.28,
+    "expected_kc_inv_um": 0.00785146,
+    "expected_lambda_c_um": 800.26,
+    "expected_single_column_width_um": 400.13,
+    "steps": 180,
+    "dt": 0.14,
+    "seed": 1989
+  },
+  "experimental_regimes": [
+    {
+      "id": "normal_binocular_stripes",
+      "description": "Normal binocular vision in Macaca mulatta V1 Layer IVC (C_Delta = 0.80, b_MD = 0.0): equal left/right retinal activity correlation drives 50/50 labyrinthine ocular dominance stripes with characteristic wavelength lambda_c ~ 800 um (400 um single-eye column width)",
+      "C_Delta": 0.80,
+      "b_MD": 0.0,
+      "sigma_E_um": 109.0,
+      "sigma_I_um": 218.0,
+      "expected_left_area_fraction": 0.50,
+      "expected_wavelength_um": 800.0,
+      "expected_segregated": true
+    },
+    {
+      "id": "hubel_wiesel_monocular_deprivation",
+      "description": "Hubel, Wiesel & LeVay (1977) critical-period monocular deprivation (MD) of Left eye (C_Delta = 0.80, b_MD = -0.36): open Right eye expands across Layer IVC while deprived Left eye stripes shrink into narrow bands and isolated islands (f_L ~ 0.24)",
+      "C_Delta": 0.80,
+      "b_MD": -0.36,
+      "sigma_E_um": 109.0,
+      "sigma_I_um": 218.0,
+      "expected_left_area_fraction": 0.24,
+      "expected_wavelength_um": 800.0,
+      "expected_segregated": true
+    },
+    {
+      "id": "strabismus_decorrelated_broad_columns",
+      "description": "Strabismus / interocular decorrelation (C_LR = -0.25 => C_Delta = 1.25, b_MD = 0.0, sigma_E = 122 um, sigma_I = 244 um): heightened interocular competition sharpens column borders and broadens stripe wavelength to ~895 um while preserving 50/50 eye balance",
+      "C_Delta": 1.25,
+      "b_MD": 0.0,
+      "sigma_E_um": 122.0,
+      "sigma_I_um": 244.0,
+      "expected_left_area_fraction": 0.50,
+      "expected_wavelength_um": 895.0,
+      "expected_segregated": true
+    },
+    {
+      "id": "ttx_bilateral_impulse_blockade",
+      "description": "Stryker & Harris (1986) bilateral intraocular TTX retinal impulse blockade (C_Delta = 0.0, b_MD = 0.0): abolishing correlated retinal spiking makes omega(k) = -gamma < 0 for all k, completely preventing ocular dominance column segregation",
+      "C_Delta": 0.0,
+      "b_MD": 0.0,
+      "sigma_E_um": 109.0,
+      "sigma_I_um": 218.0,
+      "expected_left_area_fraction": 0.50,
+      "expected_wavelength_um": 0.0,
+      "expected_segregated": false
+    },
+    {
+      "id": "reverse_suture_critical_period_rescue",
+      "description": "Hubel, Wiesel & LeVay (1977) early critical-period reverse suture (C_Delta = 0.80, b_MD = +0.28): opening the deprived Left eye and suturing the Right eye reverses competitive dominance, expanding Left-eye territory to f_L ~ 0.69",
+      "C_Delta": 0.80,
+      "b_MD": 0.28,
+      "sigma_E_um": 109.0,
+      "sigma_I_um": 218.0,
+      "expected_left_area_fraction": 0.69,
+      "expected_wavelength_um": 800.0,
+      "expected_segregated": true
+    }
+  ],
+  "specimen_provenance": {
+    "tangential_odc_file": "datasets/ocular_dominance_stripes/odc_tangential_pattern_specimen.png",
+    "tangential_odc_source": "Wikimedia Commons File:ODCsim.png (tangential V1 ocular dominance stripe pattern)",
+    "tangential_odc_license": "CC BY-SA 3.0",
+    "tangential_odc_dimensions_px": [370, 364],
+    "tangential_odc_sha256": "fac59bb151b4eb1d7096b37739326bb50ae945b998442aa0bd757a6323645ea8",
+    "histology_v1_file": "datasets/ocular_dominance_stripes/macaque_striate_cortex_specimen.jpg",
+    "histology_v1_species": "Macaca mulatta (rhesus macaque primary visual striate cortex V1 Layers 1-6)",
+    "histology_v1_source": "Wikimedia Commons File:Visual (striate) cortex.jpg (BrainMaps.org Nissl-stained V1 cross-section showing Layer 4A/4B/4C)",
+    "histology_v1_license": "CC0 1.0 Public Domain",
+    "histology_v1_dimensions_px": [1500, 1125],
+    "histology_v1_sha256": "fe74eb6f9db7dea194787d6181a9e8882804f350aff6e4d134108cd925aef4cd"
+  },
+  "sha256_digests": {
+    "datasets/ocular_dominance_stripes/scout_manifest.json": "2f54657c6b0c2050cb04c874ea1189f1f9626e89d06cec5cc97496d7e4f1dbca",
+    "datasets/ocular_dominance_stripes/paper_citations.bib": "29c3ea74bae42954656902680f5641d1bd8b1f1bc53e2ad002fe6ac151d2c4af",
+    "datasets/ocular_dominance_stripes/odc_tangential_pattern_specimen.png": "fac59bb151b4eb1d7096b37739326bb50ae945b998442aa0bd757a6323645ea8",
+    "datasets/ocular_dominance_stripes/macaque_striate_cortex_specimen.jpg": "fe74eb6f9db7dea194787d6181a9e8882804f350aff6e4d134108cd925aef4cd"
+  }
+}

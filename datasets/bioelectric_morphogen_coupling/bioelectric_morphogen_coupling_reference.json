@@ -1,0 +1,126 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "pietak-bioelectric-morphogen-coupling",
+  "slot": 82,
+  "title": "Pietak & Levin (2017) & Pietak & Levin (2016) Bioelectric Gene & Reaction Networks: Electrodiffusive Nernst-Planck Serotonin (5-HT) Transport Through Voltage-Gated Gap Junctions & Cryptic Two-Headed Planarian Memory",
+  "primary_papers": [
+    {
+      "citation": "Pietak A, Levin M (2017) Bioelectric gene and reaction networks: computational modelling of genetic, biochemical and bioelectrical dynamics in pattern regulation. J. R. Soc. Interface 14(134):20170425",
+      "doi": "10.1098/rsif.2017.0425"
+    },
+    {
+      "citation": "Pietak A, Levin M (2016) Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine. Front. Bioeng. Biotechnol. 4:55",
+      "doi": "10.3389/fbioe.2016.00055"
+    },
+    {
+      "citation": "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M (2017) Long-Term, Stochastic Editing of Regenerative Anatomy via Targeting Endogenous Bioelectric Gradients. Biophys. J. 112(10):2231-2243",
+      "doi": "10.1016/j.bpj.2017.04.011"
+    },
+    {
+      "citation": "Oviedo NJ, Morokuma J, Walentek P, Kema IP, Gu MB, Ahn JM, Hwang JS, Gojobori T, Levin M (2010) Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration. Dev. Biol. 339(1):188-199",
+      "doi": "10.1016/j.ydbio.2009.12.012"
+    }
+  ],
+  "governing_equations": {
+    "nernst_planck_gj_flux": "J_s(x,t) = -D_s * G_gj(DeltaV) * (dc/dx + (z * F / (R * T)) * c * dV/dx)",
+    "gap_junction_voltage_gate": "G_gj(DeltaV) = (1 - eta_oct) * G_0 / (1 + (DeltaV / V_0)^2)",
+    "boltzmann_equilibrium_ratio": "c_post / c_ant = exp(-(z * F / (R * T)) * (V_post - V_ant)) = exp(-z * (V_post - V_ant) / V_T)",
+    "camp_pka_feedback_ode": "tau_M * dM/dt = c^2 / (K_c^2 + c^2) + alpha_loop * B^2 / (K_B^2 + B^2) - M",
+    "beta_catenin_posterior_pde": "tau_B * dB/dt = (M^2 / (K_M^2 + M^2)) * (1 / (1 + (E / K_E)^2)) - B + D_B * d^2B/dx^2",
+    "erk_anterior_head_pde": "tau_E * dE/dt = 1 / (1 + (B / K_BE)^2) - E + D_E * d^2E/dx^2",
+    "bistable_membrane_voltage_pde": "C_m * dV/dt = -g_bistable * (V - V_hyper) * (V - V_thresh) * (V - V_depol) + I_wound(x) - I_K_feedback * B(x,t) + d/dx [ G_gj(dV/dx) * dV/dx ]"
+  },
+  "canonical_parameters": {
+    "N_cells": 60,
+    "z_serotonin": 1,
+    "V_T_mV": 25.85,
+    "D_s": 1.2,
+    "G_0": 1.8,
+    "V_0_mV": 14.0,
+    "V_ant_wt_mV": -20.0,
+    "V_post_wt_mV": -60.0,
+    "V_thresh_mV": -40.0,
+    "g_bistable": 0.002,
+    "c_total_mean_uM": 1.0,
+    "K_c_uM": 0.95,
+    "K_M": 0.48,
+    "K_B": 0.45,
+    "K_E": 0.50,
+    "K_BE": 0.42,
+    "alpha_loop": 0.55,
+    "I_K_feedback": 16.0,
+    "D_B": 0.12,
+    "D_E": 0.12,
+    "seed": 2017
+  },
+  "experimental_regimes": [
+    {
+      "id": "wild_type_1H1T",
+      "description": "Wild-type planarian trunk fragment with anterior depolarization (-20 mV), posterior hyperpolarization (-60 mV), and open gap junctions (eta_oct=0): cationic 5-HT (z=+1) electrophoreses to the posterior wound (c_post/c_ant = 4.70), activating cAMP/PKA -> beta-catenin B(L) and suppressing posterior ERK E(L) -> 1 Head + 1 Tail (1H1T)",
+      "eta_oct": 0.0,
+      "expected_c_post_over_c_ant": 4.70,
+      "expected_heads": 1,
+      "expected_tails": 1,
+      "expected_phenotype": "1H1T"
+    },
+    {
+      "id": "octanol_pulse_2H0T",
+      "description": "8-Octanol gap-junction blockade (eta_oct=0.92): blocks Nernst-Planck 5-HT electrophoresis into the posterior wound, collapsing posterior cAMP/PKA and beta-catenin and inducing bilateral ERK activation and depolarization -> 2 Heads + 0 Tails (2H0T)",
+      "eta_oct": 0.92,
+      "expected_c_post_over_c_ant": 1.0,
+      "expected_heads": 2,
+      "expected_tails": 0,
+      "expected_phenotype": "2H0T"
+    },
+    {
+      "id": "cryptic_memory_washout_2H0T",
+      "description": "Cryptic/permanent bioelectric memory after transient 8-octanol exposure (t in [0, t_wash]) followed by complete washout (eta_oct -> 0 for t > t_wash) and secondary cut: symmetric depolarized V_mem (-20 mV at both poles, DeltaV_AP = 0) and mutual B/E bistability lock in 2H0T double-head regeneration indefinitely after drug removal",
+      "eta_oct_initial": 0.92,
+      "eta_oct_washout": 0.0,
+      "expected_c_post_over_c_ant": 1.0,
+      "expected_heads": 2,
+      "expected_tails": 0,
+      "expected_phenotype": "2H0T"
+    },
+    {
+      "id": "sch28080_hyperpolarized_0H2T",
+      "description": "H,K-ATPase inhibition / hyperpolarization (SCH-28080, V_ant = V_post = -60 mV) with uniform 5-HT / elevated cAMP-PKA agonist (forskolin/IBMX): bilateral beta-catenin stabilization suppresses ERK at both wounds -> 0 Heads + 2 Tails (0H2T headless)",
+      "eta_oct": 0.0,
+      "expected_c_post_over_c_ant": 1.0,
+      "expected_heads": 0,
+      "expected_tails": 2,
+      "expected_phenotype": "0H2T"
+    },
+    {
+      "id": "uncharged_morphogen_control_z0",
+      "description": "Zero-valence Nernst-Planck ablation control (z = 0): neutral morphogen experiences zero electrophoretic drift despite normal 40 mV AP bioelectric gradient, yielding flat concentration c_post/c_ant = 1.00 and abolishing posterior tail polarity (2H0T)",
+      "z_override": 0,
+      "expected_c_post_over_c_ant": 1.0,
+      "expected_heads": 2,
+      "expected_tails": 0,
+      "expected_phenotype": "2H0T"
+    },
+    {
+      "id": "bioelectric_reset_rescue_1H1T",
+      "description": "Targeted posterior K+ channel hyperpolarization rescue applied to a cryptic 2H0T worm: re-establishing V_post = -60 mV restores posterior 5-HT Nernst-Planck electrophoresis (c_post/c_ant = 4.70) and resets regeneration from 2H0T back to wild-type 1H1T",
+      "eta_oct": 0.0,
+      "expected_c_post_over_c_ant": 4.70,
+      "expected_heads": 1,
+      "expected_tails": 1,
+      "expected_phenotype": "1H1T"
+    }
+  ],
+  "specimen_provenance": {
+    "file": "datasets/bioelectric_morphogen_coupling/planarian_ap_polarity_specimen.jpg",
+    "species": "Schmidtea mediterranea",
+    "source": "Wikimedia Commons File:Smediterranea.jpg",
+    "license": "CC BY 2.5",
+    "dimensions_px": [1493, 564],
+    "sha256": "466029cc0561067890bb0f69d224d8f799745eeb67a0699246107611737fb546"
+  },
+  "sha256_digests": {
+    "datasets/bioelectric_morphogen_coupling/scout_manifest.json": "bc8a4a2c8e734e1dd555ef8630edf4c34c798ffd1588619a0289290cc42b8004",
+    "datasets/bioelectric_morphogen_coupling/paper_citations.bib": "c446e775222f552c0edf0df27f8e7413b1ba68098018a3f3ed604b718bd7cbe7",
+    "datasets/bioelectric_morphogen_coupling/planarian_ap_polarity_specimen.jpg": "466029cc0561067890bb0f69d224d8f799745eeb67a0699246107611737fb546"
+  }
+}

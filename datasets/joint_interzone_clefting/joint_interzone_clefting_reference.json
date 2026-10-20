@@ -1,0 +1,208 @@
+{
+  "metadata": {
+    "dataset_id": "kavanagh-2013-hiscock-2017-joint-interzone-clefting-v1",
+    "title": "Kavanagh et al. (2013) PNAS 110:18190-18195, Hiscock et al. (2017) Dev. Cell 41:459-465 & Hartmann & Tabin (2001) Cell 104:341-351 Synovial Joint Interzone Segmentation & Phalangeal Inhibitory Cascade Reference Dataset",
+    "sources": [
+      {
+        "id": "kavanagh2013",
+        "citation": "Kavanagh KD, Shoval O, Winslow BB, Alon U, Leary BP, Kan A, Tabin CJ (2013). Developmental bias in the evolution of phalanges. PNAS 110(45):18190-18195.",
+        "doi": "10.1073/pnas.1315213110"
+      },
+      {
+        "id": "hiscock2017",
+        "citation": "Hiscock TW, Tschopp P, Tabin CJ (2017). On the formation of digits and joints during limb development. Developmental Cell 41(5):459-465.",
+        "doi": "10.1016/j.devcel.2017.04.021"
+      },
+      {
+        "id": "hartmann2001",
+        "citation": "Hartmann C, Tabin CJ (2001). Wnt-14 plays a pivotal role in inducing synovial joint formation in the developing appendicular skeleton. Cell 104(3):341-351.",
+        "doi": "10.1016/S0092-8674(01)00222-7"
+      },
+      {
+        "id": "brunet1998",
+        "citation": "Brunet LJ, McMahon JA, McMahon AP, Harland RM (1998). Noggin, cartilage morphogenesis, and joint formation in the mammalian skeleton. Science 280(5368):1455-1457.",
+        "doi": "10.1126/science.280.5368.1455"
+      },
+      {
+        "id": "storm1994",
+        "citation": "Storm EE, Huynh TV, Copeland NG, Jenkins NA, Kingsley DM, Lee SJ (1994). Limb alterations in brachypodism mice due to mutations in a new member of the TGF-beta superfamily. Nature 368(6472):639-643.",
+        "doi": "10.1038/368639a0"
+      }
+    ],
+    "specimens": {
+      "tetrapod_digit_interzone_specimen": {
+        "file": "datasets/joint_interzone_clefting/tetrapod_digit_interzone_specimen.jpg",
+        "sha256": "995e43a2a0cf781547dc8f573685a533013cea3502fb2ebbb9c1fc8a6cb14e90",
+        "width": 552,
+        "height": 640,
+        "species": "Tetrapod autopod anteroposterior radiograph exhibiting segmented proximal (P1), middle (P2), and distal (P3) phalanges separated by radiolucent MCP, PIP, and DIP synovial joint interzone clefts",
+        "license": "CC BY-SA 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Polydactyly_01_Rhand_AP.jpg",
+        "digit_rays": [
+          {
+            "digit_id": "Digit_II",
+            "mcp_xy": [195, 345],
+            "tip_xy": [168, 55],
+            "pip_Window_frac": [0.42, 0.58],
+            "dip_Window_frac": [0.72, 0.86],
+            "expected_P1_px": 150.0,
+            "expected_P2_px": 97.0,
+            "expected_P3_px": 44.0
+          },
+          {
+            "digit_id": "Digit_III",
+            "mcp_xy": [266, 336],
+            "tip_xy": [261, 32],
+            "pip_Window_frac": [0.42, 0.58],
+            "dip_Window_frac": [0.72, 0.86],
+            "expected_P1_px": 149.0,
+            "expected_P2_px": 98.0,
+            "expected_P3_px": 57.0
+          },
+          {
+            "digit_id": "Digit_IV",
+            "mcp_xy": [337, 348],
+            "tip_xy": [347, 52],
+            "pip_Window_frac": [0.42, 0.58],
+            "dip_Window_frac": [0.72, 0.86],
+            "expected_P1_px": 139.0,
+            "expected_P2_px": 99.0,
+            "expected_P3_px": 58.0
+          }
+        ],
+        "expected_interphalangeal_clefts_per_digit": 2,
+        "expected_total_synovial_clefts_per_digit": 3,
+        "expected_mean_P2_fraction": 0.3301
+      },
+      "scout_manifest": {
+        "file": "datasets/joint_interzone_clefting/scout_manifest.json",
+        "sha256": "1ae24e293d2062b2bd117c1b8d3eb74094cd667079a1f5fcae706c4eef1cbcce"
+      },
+      "paper_citations": {
+        "file": "datasets/joint_interzone_clefting/paper_citations.bib",
+        "sha256": "4d966fca533780af9267a998b5bfd43ac1a2d443cf05ed85b292f06e9c0a15ba"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Kavanagh et al. (2013) PNAS 110:18190-18195 Figs. 1-4; Hiscock et al. (2017) Dev. Cell 41:459-465; Hartmann & Tabin (2001) Cell 104:341-351",
+    "arithmetic_cascade_law": "P_n = P_1 * (1 + (n - 1) * (A - I) / I) = P_1 + (n - 1) * Delta",
+    "symmetric_midpoint_ic_law": "P_2 = 0.5 * (P_1 + P_3)  <=>  P_2 / P_1 = 0.5 + 0.5 * (P_3 / P_1)  <=>  P_2 / (P_1 + P_2 + P_3) = 1 / 3",
+    "asymmetric_molar_ic_law": "P_2 / P_1 = 1 / 3 + (2 / 3) * (P_3 / P_1)",
+    "bmp_gdf5_noggin_interzone_pde": "dG/dt = f_G * G + f_N * N - G^3 + D_G * d2G/dx2;  dN/dt = g_G * G + g_N * N + D_N * d2N/dx2;  Sox9_cartilage(x,t) = S_0 * (1 - G_PFR(x,t)) * (1 - H_cleft(G(x,t)))",
+    "distal_pfr_wavelength_modulation": "lambda_n = lambda_0 * (1 - alpha_taper * (n - 1)),  Delta = -alpha_taper * P_1 < 0  =>  P_1 > P_2 > P_3",
+    "baseline_parameters": {
+      "f_G": 1.60,
+      "f_N": -2.40,
+      "g_G": 1.90,
+      "g_N": -2.10,
+      "D_G": 0.12,
+      "D_N": 1.80,
+      "alpha_taper": 0.28,
+      "L_initial": 3.20,
+      "L_final": 12.00,
+      "v_elongation": 0.88,
+      "ell_pfr": 1.65,
+      "cleft_threshold_G": 0.22,
+      "noggin_dose": 1.0,
+      "gdf5_dose": 1.0
+    }
+  },
+  "cross_clade_tetrapod_morphospace": [
+    {"taxon_id": "camelus_cursorial_d3", "species": "Camelus dromedarius (Cursorial Artiodactyl D3)", "ecotype": "cursorial", "P1_mm": 88.0, "P2_mm": 54.0, "P3_mm": 21.0, "P3_over_P1": 0.2386, "P2_over_P1_obs": 0.6136, "P2_over_P1_ic_sym": 0.6193, "P2_over_P1_ic_asym": 0.4924, "P2_fraction": 0.3313},
+    {"taxon_id": "canis_cursorial_d3", "species": "Canis lupus (Cursorial Carnivore D3)", "ecotype": "cursorial", "P1_mm": 32.0, "P2_mm": 20.8, "P3_mm": 9.8, "P3_over_P1": 0.3063, "P2_over_P1_obs": 0.6500, "P2_over_P1_ic_sym": 0.6531, "P2_over_P1_ic_asym": 0.5375, "P2_fraction": 0.3323},
+    {"taxon_id": "alligator_d3", "species": "Alligator mississippiensis (Archosaur D3)", "ecotype": "cursorial", "P1_mm": 28.5, "P2_mm": 19.2, "P3_mm": 10.2, "P3_over_P1": 0.3579, "P2_over_P1_obs": 0.6737, "P2_over_P1_ic_sym": 0.6789, "P2_over_P1_ic_asym": 0.5719, "P2_fraction": 0.3316},
+    {"taxon_id": "gallus_chick_d3_prox", "species": "Gallus gallus (Chick Pedal D3 Proximal Triad)", "ecotype": "avian_chick", "P1_mm": 14.2, "P2_mm": 10.1, "P3_mm": 6.1, "P3_over_P1": 0.4296, "P2_over_P1_obs": 0.7113, "P2_over_P1_ic_sym": 0.7148, "P2_over_P1_ic_asym": 0.6197, "P2_fraction": 0.3322},
+    {"taxon_id": "mus_musculus_wt_d3", "species": "Mus musculus (Wild-Type Hindlimb D3)", "ecotype": "generalist", "P1_mm": 4.20, "P2_mm": 3.06, "P3_mm": 1.94, "P3_over_P1": 0.4619, "P2_over_P1_obs": 0.7286, "P2_over_P1_ic_sym": 0.7310, "P2_over_P1_ic_asym": 0.6413, "P2_fraction": 0.3326},
+    {"taxon_id": "homo_sapiens_d3", "species": "Homo sapiens (Manual Digit III)", "ecotype": "generalist", "P1_mm": 44.6, "P2_mm": 29.4, "P3_mm": 17.2, "P3_over_P1": 0.3857, "P2_over_P1_obs": 0.6592, "P2_over_P1_ic_sym": 0.6928, "P2_over_P1_ic_asym": 0.5904, "P2_fraction": 0.3224},
+    {"taxon_id": "didelphis_marsupial_d3", "species": "Didelphis virginiana (Generalist Marsupial D3)", "ecotype": "generalist", "P1_mm": 11.5, "P2_mm": 8.9, "P3_mm": 6.4, "P3_over_P1": 0.5565, "P2_over_P1_obs": 0.7739, "P2_over_P1_ic_sym": 0.7783, "P2_over_P1_ic_asym": 0.7043, "P2_fraction": 0.3321},
+    {"taxon_id": "iguana_squamate_d3", "species": "Iguana iguana (Scansorial Squamate D3)", "ecotype": "generalist", "P1_mm": 16.0, "P2_mm": 13.0, "P3_mm": 10.1, "P3_over_P1": 0.6313, "P2_over_P1_obs": 0.8125, "P2_over_P1_ic_sym": 0.8156, "P2_over_P1_ic_asym": 0.7542, "P2_fraction": 0.3325},
+    {"taxon_id": "macaca_primate_d3", "species": "Macaca mulatta (Arboreal Primate D3)", "ecotype": "arboreal_grasping", "P1_mm": 24.0, "P2_mm": 20.4, "P3_mm": 16.9, "P3_over_P1": 0.7042, "P2_over_P1_obs": 0.8500, "P2_over_P1_ic_sym": 0.8521, "P2_over_P1_ic_asym": 0.8028, "P2_fraction": 0.3328},
+    {"taxon_id": "tarsius_grasping_d3", "species": "Tarsius syrichta (Clinging Primate D3)", "ecotype": "arboreal_grasping", "P1_mm": 15.2, "P2_mm": 13.6, "P3_mm": 12.1, "P3_over_P1": 0.7961, "P2_over_P1_obs": 0.8947, "P2_over_P1_ic_sym": 0.8980, "P2_over_P1_ic_asym": 0.8640, "P2_fraction": 0.3325},
+    {"taxon_id": "petaurus_glider_d4", "species": "Petaurus breviceps (Arboreal Glider D4)", "ecotype": "arboreal_grasping", "P1_mm": 9.8, "P2_mm": 9.2, "P3_mm": 8.6, "P3_over_P1": 0.8776, "P2_over_P1_obs": 0.9388, "P2_over_P1_ic_sym": 0.9388, "P2_over_P1_ic_asym": 0.9184, "P2_fraction": 0.3333},
+    {"taxon_id": "choloepus_sloth_d3", "species": "Choloepus didactylus (Suspensory Sloth D3)", "ecotype": "arboreal_grasping", "P1_mm": 34.0, "P2_mm": 33.4, "P3_mm": 32.8, "P3_over_P1": 0.9647, "P2_over_P1_obs": 0.9824, "P2_over_P1_ic_sym": 0.9824, "P2_over_P1_ic_asym": 0.9765, "P2_fraction": 0.3340}
+  ],
+  "genetic_and_signaling_perturbations": {
+    "section": "Brunet et al. (1998) Science 280:1455-1457 (Nog-/-); Storm et al. (1994) Nature 368:639-643 (Gdf5 bp/bp); Hartmann & Tabin (2001) Cell 104:341-351 (Wnt9a/Wnt14); Kavanagh et al. (2013) PNAS 110:18190-18195",
+    "conditions": [
+      {
+        "condition_id": "wild_type_triphalangeal",
+        "label": "Wild-Type Digit III (3 Phalanges, 3 Synovial Joints: MCP, PIP, DIP)",
+        "noggin_dose": 1.0,
+        "gdf5_dose": 1.0,
+        "wnt9a_gain": 1.0,
+        "alpha_taper": 0.28,
+        "diffusion_enabled": true,
+        "n_joints_expected": 3,
+        "n_phalanges_expected": 3,
+        "P3_over_P1_expected": 0.44,
+        "P2_over_P1_expected": 0.72
+      },
+      {
+        "condition_id": "noggin_null_fusion",
+        "label": "Noggin Null (Nog-/-): Unopposed BMP Hyper-Chondrogenesis & Complete Joint Ablation",
+        "noggin_dose": 0.0,
+        "gdf5_dose": 0.15,
+        "wnt9a_gain": 0.10,
+        "alpha_taper": 0.28,
+        "diffusion_enabled": true,
+        "n_joints_expected": 0,
+        "n_phalanges_expected": 1,
+        "P3_over_P1_expected": 0.0,
+        "P2_over_P1_expected": 0.0
+      },
+      {
+        "condition_id": "gdf5_brachypodism_bp",
+        "label": "Gdf5 Loss-of-Function (bp/bp Brachypodism): Proximal Interphalangeal (PIP) Joint Fusion",
+        "noggin_dose": 0.65,
+        "gdf5_dose": 0.25,
+        "wnt9a_gain": 0.55,
+        "alpha_taper": 0.34,
+        "diffusion_enabled": true,
+        "n_joints_expected": 2,
+        "n_phalanges_expected": 2,
+        "P3_over_P1_expected": 0.36,
+        "P2_over_P1_expected": 0.0
+      },
+      {
+        "condition_id": "wnt9a_ectopic_clefting",
+        "label": "Ectopic Wnt9a (Wnt-14) Overexpression: Short-Wavelength Supernumerary Joint Clefts",
+        "noggin_dose": 1.25,
+        "gdf5_dose": 1.35,
+        "wnt9a_gain": 1.65,
+        "alpha_taper": 0.18,
+        "diffusion_enabled": true,
+        "n_joints_expected": 4,
+        "n_phalanges_expected": 4,
+        "P3_over_P1_expected": 0.64,
+        "P2_over_P1_expected": 0.82
+      },
+      {
+        "condition_id": "sustained_pfr_fgf_equal_phalanges",
+        "label": "Sustained Distal PFR-FGF8 Signaling (Delta -> 0): Equal-Length Phalanges (P1 ~ P2 ~ P3)",
+        "noggin_dose": 1.0,
+        "gdf5_dose": 1.0,
+        "wnt9a_gain": 1.0,
+        "alpha_taper": 0.04,
+        "diffusion_enabled": true,
+        "n_joints_expected": 3,
+        "n_phalanges_expected": 3,
+        "P3_over_P1_expected": 0.92,
+        "P2_over_P1_expected": 0.96
+      },
+      {
+        "condition_id": "zero_diffusion_ablation_control",
+        "label": "Zero-Diffusion Negative Control (D_G = D_N = 0): Homogeneous Cartilage Rod",
+        "noggin_dose": 1.0,
+        "gdf5_dose": 1.0,
+        "wnt9a_gain": 1.0,
+        "alpha_taper": 0.28,
+        "diffusion_enabled": false,
+        "n_joints_expected": 0,
+        "n_phalanges_expected": 1,
+        "P3_over_P1_expected": 0.0,
+        "P2_over_P1_expected": 0.0
+      }
+    ]
+  }
+}

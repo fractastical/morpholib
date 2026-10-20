@@ -1,0 +1,94 @@
+sim_id: przemyslaw-allometric-compound-leaf
+math_family: "1D/2D Growing Epidermal Margin Auxin–PIN1–CUC2 Feedback Loop & Differential Margin Outgrowth"
+model_spec:
+  model: "Bilsborough, Runions, Barkoulas, Jenkins, Hasson, Galinha, Laufs, Hay, Prusinkiewicz & Tsiantis (2011) PNAS 108(8):3424-3429, Barkoulas et al. (2008) Nature Genetics 40(9):1136-1141, Vlad et al. (2014) Science 343(6172):780-783, and Kierzkowski et al. (2019) Cell 177(6):1405-1418 growing leaf margin epidermal feedback model coupling Loop 1 (CUC2-promoted PIN1 up-the-gradient polarization rho_{ij} propto (1 + gamma_CUC2 * C_i) * exp(beta * A_j) creating periodic auxin convergence maxima at tooth/leaflet tips), Loop 2 (Auxin transcriptional repression of CUC2, C_i = C_max / (1 + (A_i / K_A)^n), restricting CUC2 to inter-tooth sinuses), and Loop 3 (differential normal margin outgrowth v_n(s) = v_0 * [A(s)^m / (K_g^m + A(s)^m)] * (1 - eta_sinus * C(s)) with intercalary tooth insertion at critical wavelength lambda_c), comparing smooth margins in cuc2-1/cuc2-1D against serrated Arabidopsis WT and deeply dissected compound leaflets in Cardamine hirsuta via RCO sinus repression"
+  auxin_production_sigma_A: 0.24
+  auxin_turnover_mu_A: 0.12
+  apoplastic_diffusion_D_A: 0.18
+  polar_transport_rate_T_pin: 0.85
+  up_gradient_sensitivity_beta: 1.65
+  cuc2_pin_promotion_gamma: 2.40
+  auxin_cuc2_repression_K_A: 1.45
+  auxin_cuc2_hill_n: 3.0
+  growth_half_saturation_K_g: 1.10
+  arabidopsis_wt_sinus_repression_eta: 0.42
+  cardamine_rco_sinus_repression_eta: 0.88
+  critical_interpeak_wavelength_lambda_c: 14.0
+  seed: 2011
+  inputs:
+    - datasets/allometric_compound_leaf/allometric_compound_leaf_reference.json
+    - datasets/allometric_compound_leaf/cardamine_hirsuta_compound_leaf_specimen.jpg
+    - datasets/allometric_compound_leaf/scout_manifest.json
+    - datasets/allometric_compound_leaf/paper_citations.bib
+equations:
+  - id: przemyslaw-allometric-compound-leaf-1
+    law_name: "Bilsborough et al. (2011) Complementary Spatial Antiphase of Auxin Tooth Peaks vs CUC2 Sinus Maxima and CUC2-Promoted Up-the-Gradient PIN1 Polarization Law"
+    formula: "C_i = C_{max} / (1 + (A_i / K_A)^n),  w_{ij} = (1 + γ_{CUC2} C_i) e^{β A_j}  ⇒  (A_{tip} > K_A > A_{sinus} ⇒ C_{tip} < C_{sinus})  ∧  (w_{i,high} - w_{i,low})|_{C_i} - (w_{i,high} - w_{i,low})|_{0} = γ_{CUC2} C_i (e^{β A_{high}} - e^{β A_{low}})"
+    lean_decl: "MathOfBiology.Loop_037.pin1_polarization_weight"
+    lean_theorem: "MathOfBiology.Loop_037.bilsborough_2011_auxin_cuc2_antiphase_and_pin1_promotion"
+    lean_locus: "morphoeval/lean/loops/Loop_037_allometric_compound_leaf.lean#L36-L61"
+    lean_code: |
+      def pin1_polarization_weight (gamma C_i B_j : Int) : Int :=
+        (1 + gamma * C_i) * B_j
+      theorem bilsborough_2011_auxin_cuc2_antiphase_and_pin1_promotion
+          (C_max K_n A_tip_n A_sinus_n gamma C_i B_high B_low : Int)
+          (hC : C_max > 0) (hK : K_n > 0) (hA : A_tip_n > A_sinus_n) :
+          C_max * K_n * (K_n + A_tip_n) - C_max * K_n * (K_n + A_sinus_n) =
+            C_max * K_n * (A_tip_n - A_sinus_n) ∧
+          C_max * K_n * (A_tip_n - A_sinus_n) > 0 ∧
+          (pin1_polarization_weight gamma C_i B_high - pin1_polarization_weight gamma C_i B_low) -
+            (pin1_polarization_weight gamma 0 B_high - pin1_polarization_weight gamma 0 B_low) =
+            gamma * C_i * (B_high - B_low)
+    variables: "A_i: epidermal margin auxin concentration in cell i; C_i: CUC2 transcription factor expression in cell i; K_A: auxin repression half-saturation threshold; γ_{CUC2}: CUC2 promotion strength on PIN1 up-the-gradient polarization; B_j = e^{β A_j}: Boltzmann up-the-gradient auxin weight"
+    role: "Proves that transcriptional repression of CUC2 by auxin enforces strict spatial antiphase between auxin tooth peaks (A_{tip} > K_A) and CUC2 sinus maxima (C_{sinus} > C_{tip}), while CUC2 in the sinus flanks amplifies up-the-gradient PIN1 polarization toward nascent auxin maxima"
+    source_citation: "Bilsborough et al. (2011) PNAS 108(8):3424-3429 Figs. 1-2 & SI Appendix Eqs. 1-6; Barkoulas et al. (2008) Nat. Genet. 40:1136-1141"
+    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L105-L240"
+
+  - id: przemyslaw-allometric-compound-leaf-2
+    law_name: "Bilsborough et al. (2011) Smooth Margin Collapse under cuc2 Loss-of-Function or Unrepressed Ectopic CUC2 Law"
+    formula: "v_n(s) = G_A(s) (1 - η_{sinus} C(s))  ⇒  v_n(tip) - v_n(sinus) = (G_{tip} - G_{sinus})(1 - η_{sinus} C_{tip}) + G_{sinus} η_{sinus} (C_{sinus} - C_{tip}) = 0  when  (C ≡ 0 ∨ C ≡ C_0) ∧ G_{tip} = G_{sinus}"
+    lean_decl: "MathOfBiology.Loop_037.margin_outgrowth_velocity"
+    lean_theorem: "MathOfBiology.Loop_037.bilsborough_2011_mutant_smooth_margin_collapse"
+    lean_locus: "morphoeval/lean/loops/Loop_037_allometric_compound_leaf.lean#L81-L97"
+    lean_code: |
+      def margin_outgrowth_velocity (G_A S_max eta C : Int) : Int :=
+        G_A * (S_max - eta * C)
+      theorem bilsborough_2011_mutant_smooth_margin_collapse
+          (G_0 G_tip G_sinus S_max eta C_0 C_tip C_sinus : Int) :
+          margin_outgrowth_velocity G_0 S_max eta 0 -
+            margin_outgrowth_velocity G_0 S_max eta 0 = 0 ∧
+          margin_outgrowth_velocity G_0 S_max eta C_0 -
+            margin_outgrowth_velocity G_0 S_max eta C_0 = 0 ∧
+          margin_outgrowth_velocity G_tip S_max eta C_tip -
+            margin_outgrowth_velocity G_sinus S_max eta C_sinus =
+            (G_tip - G_sinus) * (S_max - eta * C_tip) + G_sinus * eta * (C_sinus - C_tip)
+    variables: "v_n(s): normal margin outgrowth velocity at arc-length s; G_A(s) = v_0 A(s)^m / (K_g^m + A(s)^m): auxin-promoted growth factor; η_{sinus}: sinus growth repression coefficient; C(s): CUC2 concentration"
+    role: "Proves why both cuc2-1 loss-of-function (C = 0) and unrepressed uniform ectopic CUC2 expression (C = C_0 without auxin repression) abolish differential margin outgrowth (v_n(tip) - v_n(sinus) = 0, I_D = 0), collapsing serrated margins into smooth untoothed blades"
+    source_citation: "Bilsborough et al. (2011) PNAS 108(8):3424-3429 Figs. 2-4"
+    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L243-L455"
+
+  - id: przemyslaw-allometric-compound-leaf-3
+    law_name: "Vlad et al. (2014) & Kierzkowski et al. (2019) RCO Sinus Growth Repression Enhances Tooth-to-Leaflet Dissection Depth Index Law"
+    formula: "I_D(η) = (R_{tip} - R_{sinus}(η)) / R_{tip},  D(η_{Cardamine}) - D(η_{Arabidopsis}) = T G_{sinus} C_{sinus} (η_{Cardamine} - η_{Arabidopsis}) > 0  for  η_{Cardamine} > η_{Arabidopsis}"
+    lean_decl: "MathOfBiology.Loop_037.dissection_depth_numerator"
+    lean_theorem: "MathOfBiology.Loop_037.kierzkowski_2019_rco_compound_leaflet_dissection_enhancement"
+    lean_locus: "morphoeval/lean/loops/Loop_037_allometric_compound_leaf.lean#L118-L148"
+    lean_code: |
+      def tip_radius (R_0 T G_tip S_max : Int) : Int :=
+        R_0 + T * G_tip * S_max
+      def sinus_radius (R_0 T G_sinus S_max eta C_sinus : Int) : Int :=
+        R_0 + T * G_sinus * (S_max - eta * C_sinus)
+      def dissection_depth_numerator (R_0 T G_tip G_sinus S_max eta C_sinus : Int) : Int :=
+        tip_radius R_0 T G_tip S_max - sinus_radius R_0 T G_sinus S_max eta C_sinus
+      theorem kierzkowski_2019_rco_compound_leaflet_dissection_enhancement
+          (R_0 T G_tip G_sinus S_max eta_Cardamine eta_Arabidopsis C_sinus : Int)
+          (hT : T > 0) (hG : G_sinus > 0) (hC : C_sinus > 0) (hEta : eta_Cardamine > eta_Arabidopsis) :
+          dissection_depth_numerator R_0 T G_tip G_sinus S_max eta_Cardamine C_sinus -
+            dissection_depth_numerator R_0 T G_tip G_sinus S_max eta_Arabidopsis C_sinus =
+            T * G_sinus * C_sinus * (eta_Cardamine - eta_Arabidopsis) ∧
+          dissection_depth_numerator R_0 T G_tip G_sinus S_max eta_Cardamine C_sinus >
+            dissection_depth_numerator R_0 T G_tip G_sinus S_max eta_Arabidopsis C_sinus
+    variables: "R_{tip}, R_{sinus}(η): radial margin outgrowth at tooth/leaflet tips and sinuses after time T from primordium radius R_0; η_{Arabidopsis}, η_{Cardamine}: sinus growth repression strength without (Arabidopsis) vs with (Cardamine hirsuta) RCO homeobox expression; I_D = (R_{tip} - R_{sinus}) / R_{tip}: tooth-to-leaflet dissection depth index"
+    role: "Proves that local RCO sinus growth repression in Cardamine hirsuta (η_{Cardamine} > η_{Arabidopsis}) strictly increases the tooth-to-sinus dissection depth R_{tip} - R_{sinus} without retarding tip outgrowth, transforming shallow Arabidopsis serrations into deeply incised compound leaflets reaching the rachis"
+    source_citation: "Vlad et al. (2014) Science 343(6172):780-783 Figs. 1-4; Kierzkowski et al. (2019) Cell 177(6):1405-1418 Figs. 2-6"
+    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L458-L620"

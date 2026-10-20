@@ -1,0 +1,448 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-bmp-sox9-wnt-digits-loop
+  target_simulation: raspopovic-bmp-sox9-wnt-digits
+  paper: Raspopovic et al. (2014) Science — Digit patterning is controlled by a Bmp-Sox9-Wnt
+    Turing network modulated by morphogen gradients
+  created_at: '2026-10-20T00:03:10.839Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: 3cb5ea9
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 1385.833
+  wall_time_min: 23.1
+  tier_a_wall_s: 396.824
+  tier_b_wall_s: 989.009
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  input_tokens: 42487
+  output_tokens: 500838
+  subagent_tokens: 0
+  total_llm_tokens: 543325
+  artifact_tokens: 52369
+  tier_a_llm_tokens: 225411
+  tier_b_llm_tokens: 317914
+  effective_tokens_per_s: 392.1
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:03:18.519Z'
+  ended_at: '2026-10-20T00:03:19.842Z'
+  duration_s: 1.323
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 195
+    subagent_tokens: 0
+    total_llm_tokens: 195
+    artifact_tokens: 1722
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/bmp_sox9_wnt_digits/scout_manifest.json
+    bytes: 5816
+    sha256: f990b473b6a93cfa784b32a164ad808efbb730f34c6827cf7b733e236d97d5c9
+    tokens: 1722
+  commands: []
+  notes: Scouted Raspopovic et al. (2014) Science 345:566-570 (10.1126/science.1252960)
+    Bmp-Sox9-Wnt 3-node Turing digit network and embryonic limb autopod specimens
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:06:49.325Z'
+  ended_at: '2026-10-20T00:07:51.004Z'
+  duration_s: 61.678
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1722
+    output_tokens: 19997
+    subagent_tokens: 0
+    total_llm_tokens: 21719
+    artifact_tokens: 1403
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/bmp_sox9_wnt_digits/paper_citations.bib
+    bytes: 1706
+    sha256: 88ff32a60b56706048f01c9b1bf0b7143f692cbca07f1b25b2bbc3e6804a536c
+    tokens: 519
+    parent_artifact_ids:
+    - f990b473b6a93cfa784b32a164ad808efbb730f34c6827cf7b733e236d97d5c9
+  - file: datasets/bmp_sox9_wnt_digits/README.md
+    bytes: 2830
+    sha256: b083ab60cbbd9e17b0b6d6a947e5bbe61d6c49460aa1a98ecdb02b686e35bf48
+    tokens: 884
+    parent_artifact_ids:
+    - f990b473b6a93cfa784b32a164ad808efbb730f34c6827cf7b733e236d97d5c9
+  commands: []
+  notes: Extracted Raspopovic et al. (2014) Science 3-node Bmp-Sox9-Wnt Turing network
+    equations, reduced 2-diffuser Jacobian J_eff, and FGF wavelength modulation laws
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:07:51.084Z'
+  ended_at: '2026-10-20T00:09:30.433Z'
+  duration_s: 99.349
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 188
+    output_tokens: 33695
+    subagent_tokens: 0
+    total_llm_tokens: 33883
+    artifact_tokens: 2788
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg
+    bytes: 212854
+    sha256: 533f621904d6f2ce72365399ca1403c72b5db4dfa717c61e4834ca9beb366da5
+    tokens: 64
+    parent_artifact_ids:
+    - 88ff32a60b56706048f01c9b1bf0b7143f692cbca07f1b25b2bbc3e6804a536c
+  - file: datasets/bmp_sox9_wnt_digits/bmp_sox9_wnt_digits_reference.json
+    bytes: 8538
+    sha256: c0444b665610be2e360451aabdf3fe73b546cfa987474001233e1463296f1c57
+    tokens: 2724
+    parent_artifact_ids:
+    - 88ff32a60b56706048f01c9b1bf0b7143f692cbca07f1b25b2bbc3e6804a536c
+  commands: []
+  notes: Vendored Wikimedia Commons CC BY 4.0 mouse E12.5 Sox9 / E13.5 Col2a1 WISH
+    limb bud specimen and SHA-256-locked reference dataset
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:09:30.525Z'
+  ended_at: '2026-10-20T00:11:50.136Z'
+  duration_s: 139.611
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 4431
+    output_tokens: 84744
+    subagent_tokens: 0
+    total_llm_tokens: 89175
+    artifact_tokens: 1597
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/lean/loops/Loop_016_bmp_sox9_wnt_digits.lean
+    bytes: 5526
+    sha256: 72d61b413a072cbd747732626cd27d96e7635d5c0fa66a9e923a134d758010dd
+    tokens: 64
+    parent_artifact_ids:
+    - c0444b665610be2e360451aabdf3fe73b546cfa987474001233e1463296f1c57
+  - file: morphoeval/math_kg_loops/raspopovic-bmp-sox9-wnt-digits.yaml
+    bytes: 5466
+    sha256: 69aa8fada0afcdb5a030ff9f8a00334c04d87a410ed8a5f191f659de82e69e6c
+    tokens: 1533
+    parent_artifact_ids:
+    - c0444b665610be2e360451aabdf3fe73b546cfa987474001233e1463296f1c57
+  commands: []
+  notes: Proved 3 Lean 4 theorems for Raspopovic et al. (2014) reduced 2-diffuser
+    Jacobian determinant cancellation, Turing dispersion sign inversion, and out-of-phase
+    Sox9-Bmp/Wnt eigenmode opposition (0 sorrys)
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:11:50.230Z'
+  ended_at: '2026-10-20T00:12:53.118Z'
+  duration_s: 62.888
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2788
+    output_tokens: 48124
+    subagent_tokens: 0
+    total_llm_tokens: 50912
+    artifact_tokens: 3898
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 2014-raspopovic-bmp-sox9-wnt-digits.py
+    bytes: 12644
+    sha256: b6a85740f462c33ed437564c0112aa30bd76630d2a0edd5dbd2a8939f1f21825
+    tokens: 3898
+    parent_artifact_ids:
+    - c0444b665610be2e360451aabdf3fe73b546cfa987474001233e1463296f1c57
+    - 72d61b413a072cbd747732626cd27d96e7635d5c0fa66a9e923a134d758010dd
+  commands: []
+  notes: Wrote Pass 1 (v1) baseline implementation of 2014-raspopovic-bmp-sox9-wnt-digits.py
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:12:53.208Z'
+  ended_at: '2026-10-20T00:13:25.182Z'
+  duration_s: 31.975
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3899
+    output_tokens: 25628
+    subagent_tokens: 0
+    total_llm_tokens: 29527
+    artifact_tokens: 128
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: docs/media/bmp_sox9_wnt_digits_comparison.png
+    bytes: 312137
+    sha256: 5560c0f4ed8499697b94d87b329d7c9c3f50506b836f8c83d88b8ce5d9bdd0e5
+    tokens: 64
+    parent_artifact_ids:
+    - 755a6137ca3daccbfcf6de38d7f23252735d39e56875e09405a1082e9732e77e
+  - file: docs/media/bmp_sox9_wnt_digits_growth.gif
+    bytes: 82830
+    sha256: f0291ee5b1f4320e79d3ccf11c4101eea12878a1700c1007254c57a4a5b7ef68
+    tokens: 64
+    parent_artifact_ids:
+    - 755a6137ca3daccbfcf6de38d7f23252735d39e56875e09405a1082e9732e77e
+  commands: []
+  notes: Rendered Pass 1 (v1) comparison PNG and growth GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:13:25.266Z'
+  ended_at: '2026-10-20T00:14:23.487Z'
+  duration_s: 58.221
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3313
+    output_tokens: 37658
+    subagent_tokens: 0
+    total_llm_tokens: 40971
+    artifact_tokens: 2775
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-bmp-sox9-wnt-digits-audit.yaml
+    bytes: 10482
+    sha256: 0ba83a3150ae71f82f66eb2393518d57a04ef976a589c64699c705b7f1b9a215
+    tokens: 2775
+    parent_artifact_ids:
+    - 755a6137ca3daccbfcf6de38d7f23252735d39e56875e09405a1082e9732e77e
+    - 5560c0f4ed8499697b94d87b329d7c9c3f50506b836f8c83d88b8ce5d9bdd0e5
+  commands: []
+  notes: Pass 1 audit (56.8/100) identifying 4 concrete remediation targets
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:14:23.575Z'
+  ended_at: '2026-10-20T00:14:24.357Z'
+  duration_s: 0.782
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2775
+    output_tokens: 948
+    subagent_tokens: 0
+    total_llm_tokens: 3723
+    artifact_tokens: 948
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-bmp-sox9-wnt-digits-audit.measurements.yaml
+    bytes: 2800
+    sha256: 847506b78da23f42c68794303fb693fb437f659b97364e1dfb544f149e2b56df
+    tokens: 948
+    parent_artifact_ids:
+    - 0ba83a3150ae71f82f66eb2393518d57a04ef976a589c64699c705b7f1b9a215
+  commands: []
+  notes: Measured Pass 1 outputs and sidecar morphometrics
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:14:24.437Z'
+  ended_at: '2026-10-20T00:14:24.776Z'
+  duration_s: 0.34
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3723
+    output_tokens: 13741
+    subagent_tokens: 0
+    total_llm_tokens: 17464
+    artifact_tokens: 13741
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bmp-sox9-wnt-digits-audit/REPORT.md
+    bytes: 8471
+    sha256: fd3038796debd9f66f3c2d360c40508318df66435069531ad66c03182f5e274e
+    tokens: 2393
+    parent_artifact_ids:
+    - 0ba83a3150ae71f82f66eb2393518d57a04ef976a589c64699c705b7f1b9a215
+    - 847506b78da23f42c68794303fb693fb437f659b97364e1dfb544f149e2b56df
+  - file: morphoeval/kg/2026-10-19-bmp-sox9-wnt-digits-audit/morphoeval_2026-10-19-bmp-sox9-wnt-digits-audit.ttl
+    bytes: 37280
+    sha256: 395d88dca36e7ac0d48b514192562046fd766cc29200f7fd7b458aa0639cd902
+    tokens: 11348
+    parent_artifact_ids:
+    - 0ba83a3150ae71f82f66eb2393518d57a04ef976a589c64699c705b7f1b9a215
+    - 847506b78da23f42c68794303fb693fb437f659b97364e1dfb544f149e2b56df
+  commands: []
+  notes: Built Pass 1 ProbKnow-conformant nanopublications
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:14:24.856Z'
+  ended_at: '2026-10-20T00:14:34.661Z'
+  duration_s: 9.805
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 11348
+    output_tokens: 4319
+    subagent_tokens: 0
+    total_llm_tokens: 15667
+    artifact_tokens: 685
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bmp-sox9-wnt-digits-audit/published.json
+    bytes: 1925
+    sha256: 471392f38bb5825e4309c3b01c0a41d8446ec47e0126832f745bcc3bc26556f0
+    tokens: 685
+    parent_artifact_ids:
+    - 395d88dca36e7ac0d48b514192562046fd766cc29200f7fd7b458aa0639cd902
+  commands: []
+  notes: Signed all 10 Pass 1 nanopublications
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:14:34.764Z'
+  ended_at: '2026-10-20T00:14:34.868Z'
+  duration_s: 0.104
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2393
+    output_tokens: 2393
+    subagent_tokens: 0
+    total_llm_tokens: 4786
+    artifact_tokens: 2393
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bmp-sox9-wnt-digits-audit/REPORT.md
+    bytes: 8471
+    sha256: fd3038796debd9f66f3c2d360c40508318df66435069531ad66c03182f5e274e
+    tokens: 2393
+    parent_artifact_ids:
+    - fd3038796debd9f66f3c2d360c40508318df66435069531ad66c03182f5e274e
+  commands: []
+  notes: Synthesized Pass 1 REPORT.md
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:14:34.968Z'
+  ended_at: '2026-10-20T00:29:54.725Z'
+  duration_s: 919.757
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 5907
+    output_tokens: 229396
+    subagent_tokens: 0
+    total_llm_tokens: 235303
+    artifact_tokens: 20291
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 2014-raspopovic-bmp-sox9-wnt-digits.py
+    bytes: 53957
+    sha256: 42d884aa08b0a7d958682fe5c326492cb7697545683f6c613983ec9ecfbfb2b6
+    tokens: 14922
+  - file: docs/media/bmp_sox9_wnt_digits_comparison.png
+    bytes: 757019
+    sha256: ff1a2ff606758fb64f4b6b600e57acc678fcb0741c10f2b103c3e024a724a16e
+    tokens: 64
+  - file: docs/media/bmp_sox9_wnt_digits_growth.gif
+    bytes: 357659
+    sha256: d1bb460e01da82f2a2cb077c61d7208b918c885a48e886a5c5995809f4bff11c
+    tokens: 64
+  - file: morphoeval/audits/2026-10-19-bmp-sox9-wnt-digits-audit-v2.yaml
+    bytes: 9883
+    sha256: 62d4d1624ab6b58c74deabb57f9505b96ade3dca10e95322198e38e6a5cb4c3f
+    tokens: 2786
+  - file: morphoeval/audits/2026-10-19-bmp-sox9-wnt-digits-audit-v2.measurements.yaml
+    bytes: 5685
+    sha256: df74ec154526436678c0ddf2192dd7883e1bd8072def79f63311cda21cc3b23f
+    tokens: 1760
+  - file: morphoeval/kg/2026-10-19-bmp-sox9-wnt-digits-audit-v2/published.json
+    bytes: 1925
+    sha256: 3056bcc102eaf75ec4a18a8577fa1538fda5f5378262ac1d270b7bfee9cdc0e4
+    tokens: 695
+  commands: []
+  notes: 'Completed Pass 2 remediation: 2D polar-fan autopod PDE + 1D distal-arc PDE
+    + 7-regime FGF/Hox scaling + 6 pharmacological/genetic perturbations + E12.5 WT
+    Sox9 & E13.5 Tbx2-/- WISH specimen segmentation (56.8 -> 96.3, quick_gate=100/100)'

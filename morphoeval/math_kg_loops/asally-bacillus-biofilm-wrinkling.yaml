@@ -1,0 +1,77 @@
+sim_id: asally-bacillus-biofilm-wrinkling
+math_family: "Föppl–von Kármán Bilayer Delamination Buckling & Circumferential Wavenumber m* = 2πR/λ_c Selection on a Compliant Agar Substrate"
+model_spec:
+  model: "Asally et al. (2012) PNAS 109:18891-18896 & Yan et al. (2019) Nature Physics 15:456-462 osmotic matrix swelling, localized cell-death delamination focusing, and Föppl–von Kármán radial wrinkle spoke selection in Bacillus subtilis biofilms"
+  E_f_wild_type_kPa: 25.0
+  E_s_standard_agar_kPa: 2.5
+  nu_f: 0.45
+  nu_s: 0.45
+  h_biofilm_um: 80.0
+  R_ring_um: 1600.0
+  epsilon_g_wild_type: 0.22
+  gamma_d_delamination: 0.65
+  grid_size_N: 96
+  seed: 2013
+  inputs:
+    - datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_wrinkling_reference.json
+    - datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_specimen.jpg
+    - datasets/bacillus_biofilm_wrinkling/scout_manifest.json
+    - datasets/bacillus_biofilm_wrinkling/paper_citations.bib
+equations:
+  - law_name: "Föppl–von Kármán Bilayer Cube-Root Modulus & Thickness Wavelength Scaling Law"
+    formula: "λ_c = 2π h (Ē_f / (3 Ē_s))^(1/3),  ε_c = (1/4)(3 Ē_s / Ē_f)^(2/3)  ⇒  3 Ē_s (λ_c / 2π)^3 = Ē_f h^3"
+    lean_decl: "MathOfBiology.Loop_094.fvk_wavelength_cubed_residual"
+    lean_theorem: "MathOfBiology.Loop_094.fvk_cubed_wavelength_stationarity_and_scaling"
+    lean_locus: "morphoeval/lean/loops/Loop_094_bacillus_biofilm_wrinkling.lean#L27-L56"
+    lean_code: |
+      def fvk_wavelength_cubed_residual (lam_scaled h E_f E_s : Int) : Int :=
+        3 * E_s * (lam_scaled * lam_scaled * lam_scaled) - E_f * (h * h * h)
+      def fvk_wavelength_cubed_rhs (h E_f : Nat) : Nat :=
+        E_f * (h * h * h)
+      theorem fvk_cubed_wavelength_stationarity_and_scaling (q h E_s : Int) (h0 dh ef : Nat) :
+          fvk_wavelength_cubed_residual (q * h) h (3 * E_s * (q * q * q)) E_s = 0 ∧
+          fvk_wavelength_cubed_rhs (h0 + 1) (ef + 1) <
+            fvk_wavelength_cubed_rhs (h0 + 1 + (dh + 1)) (ef + 1)
+    variables: "h: biofilm thickness; Ē_f = E_f/(1-ν_f^2): biofilm plane-strain modulus; Ē_s = E_s/(1-ν_s^2): compliant agar substrate plane-strain modulus; λ_c: characteristic wrinkle wavelength; ε_c: critical compressive buckling strain"
+    role: "Governs the characteristic wrinkle wavelength λ_c and critical buckling threshold ε_c across agar stiffnesses E_s ∈ [0.5, 10] kPa and biofilm thicknesses h ∈ [40, 140] μm"
+    source_citation: "Yan et al. (2019) Nature Physics 15:456-462 Eqs. (1)-(3); Trejo et al. (2013) PNAS 110:2011-2016 Eqs. (2)-(4)"
+    code_locus: "2013-asally-bacillus-biofilm-wrinkling.py#L140-L215"
+
+  - law_name: "Asally et al. (2012) Localized Cell-Death Delamination Buckling Focusing Law"
+    formula: "ε_{c,eff}(φ_dead) = ε_c (1 - γ_d φ_dead) < ε_g ≤ ε_c  ⇒  Δε_dead = ε_g - ε_{c,eff} > 0,  Δε_intact = 0,  Δε_{Δeps} = 0"
+    lean_decl: "MathOfBiology.Loop_094.biofilm_buckling_excess"
+    lean_theorem: "MathOfBiology.Loop_094.asally_cell_death_delamination_focusing"
+    lean_locus: "morphoeval/lean/loops/Loop_094_bacillus_biofilm_wrinkling.lean#L68-L78"
+    lean_code: |
+      def biofilm_buckling_excess (eps_g eps_c_eff : Nat) : Nat :=
+        eps_g - eps_c_eff
+      theorem asally_cell_death_delamination_focusing (eps_c_dead gap_to_intact extra_dead : Nat) :
+          let eps_g := eps_c_dead + (extra_dead + 1)
+          let eps_c0 := eps_g + gap_to_intact
+          biofilm_buckling_excess eps_g eps_c_dead = extra_dead + 1 ∧
+          biofilm_buckling_excess eps_g eps_c0 = 0 ∧
+          biofilm_buckling_excess 0 eps_c_dead = 0 ∧
+          biofilm_buckling_excess eps_g eps_c0 < biofilm_buckling_excess eps_g eps_c_dead
+    variables: "ε_g: osmotic EPS/TasA matrix-swelling strain; φ_dead(x,y): basal cell-death fraction; γ_d: interfacial adhesion degradation factor; ε_{c,eff}: local delamination strain threshold"
+    role: "Explains how spatiotemporal basal cell death focuses compressive stresses into 3D delaminated buckles along the central ring and radial spokes, whereas Δeps/ΔtasA matrix mutants and cell-death-suppressed colonies remain unwrinkled"
+    source_citation: "Asally et al. (2012) PNAS 109:18891-18896 Figs. 1-4 & SI Text"
+    code_locus: "2013-asally-bacillus-biofilm-wrinkling.py#L218-L355"
+
+  - law_name: "Radial Spoke Count Linear Ring-Radius & Inverse Thickness Scaling Law"
+    formula: "N_spokes = 2π R_ring / λ_c = (R_ring / h) (3 Ē_s / Ē_f)^(1/3)  ⇒  N_spokes h = R_ring (3 Ē_s / Ē_f)^(1/3)"
+    lean_decl: "MathOfBiology.Loop_094.radial_spoke_cross_residual"
+    lean_theorem: "MathOfBiology.Loop_094.radial_spoke_ring_and_thickness_scaling"
+    lean_locus: "morphoeval/lean/loops/Loop_094_bacillus_biofilm_wrinkling.lean#L87-L106"
+    lean_code: |
+      def radial_spoke_cross_residual (N_spokes h R_ring m_modulus : Int) : Int :=
+        N_spokes * h - R_ring * m_modulus
+      def radial_spoke_count_scaled (R_ring m_modulus : Nat) : Nat :=
+        R_ring * m_modulus
+      theorem radial_spoke_ring_and_thickness_scaling (k h m_modulus : Int) (r0 dr m0 : Nat) :
+          radial_spoke_cross_residual (k * m_modulus) h (k * h) m_modulus = 0 ∧
+          radial_spoke_count_scaled (r0 + 1) (m0 + 1) <
+            radial_spoke_count_scaled (r0 + 1 + (dr + 1)) (m0 + 1)
+    variables: "N_spokes: circumferential radial spoke count; R_ring: central concentric ring radius; h: biofilm thickness; m_modulus = (3 Ē_s / Ē_f)^(1/3): cube-root substrate-to-film stiffness ratio"
+    role: "Determines the number of radial wrinkle spokes N_spokes emerging from the central ring as a function of colony ring radius R_ring, biofilm thickness h, and agar stiffness E_s"
+    source_citation: "Yan et al. (2019) Nature Physics 15:456-462 Fig. 3; Asally et al. (2012) PNAS 109:18891-18896 Fig. 4"
+    code_locus: "2013-asally-bacillus-biofilm-wrinkling.py#L170-L240"

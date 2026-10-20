@@ -1,0 +1,147 @@
+{
+  "metadata": {
+    "dataset_id": "wolpert-french-flag-morphogen-v1",
+    "slot": 11,
+    "slot_id": "slot-011-french-flag-morphogen",
+    "title": "Wolpert (1969) French Flag Positional Information, Tickle-Wolpert (1975) Chick Limb ZPA Digit Specification & Ben-Zvi-Barkai (2010) Expansion-Repression Scaling Reference Dataset",
+    "sources": [
+      {
+        "id": "wolpert1969",
+        "citation": "Wolpert L (1969). Positional information and the spatial pattern of cellular differentiation. Journal of Theoretical Biology 25(1):1-47.",
+        "doi": "10.1016/S0022-5193(69)80016-0"
+      },
+      {
+        "id": "crick1970",
+        "citation": "Crick F (1970). Diffusion in embryogenesis. Nature 225(5231):420-422.",
+        "doi": "10.1038/225420a0"
+      },
+      {
+        "id": "tickle1975",
+        "citation": "Tickle C, Summerbell D, Wolpert L (1975). Positional signalling and specification of digits in chick limb morphogenesis. Nature 254(5497):199-202.",
+        "doi": "10.1038/254199a0"
+      },
+      {
+        "id": "riddle1993",
+        "citation": "Riddle RD, Johnson RL, Laufer E, Tabin C (1993). Sonic hedgehog mediates the polarizing activity of the ZPA. Cell 75(7):1401-1416.",
+        "doi": "10.1016/0092-8674(93)90626-2"
+      },
+      {
+        "id": "benzvi2010",
+        "citation": "Ben-Zvi D, Barkai N (2010). Scaling of morphogen gradients by an expansion-repression integral feedback control. PNAS 107(15):6924-6929.",
+        "doi": "10.1073/pnas.0912734107"
+      }
+    ],
+    "specimens": {
+      "gallus_gallus_embryo_72h": {
+        "file": "datasets/french_flag_morphogen/french_flag_specimen.jpg",
+        "sha256": "7163e90c56e1316e6398849083a6e48955cd20b124a6df7cf2178247cedd0c4f",
+        "species": "Gallus gallus domesticus (72h HH18-20 embryo in ovo with radial area vasculosa and budding limb primordia)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Embryo_in_chicken_egg_(Gallus_domesticus)_after_72_hours_of_incubation.jpg",
+        "width": 639,
+        "height": 852,
+        "organizer_center_xy": [268, 388],
+        "max_radial_profile_px": 220.0,
+        "fitted_sdd_lambda_px": 37.03,
+        "fitted_sdd_c0": 1.0766,
+        "fitted_sdd_bg": 0.0163,
+        "radial_fit_pearson_r": 0.9963,
+        "radial_fit_rmse": 0.0219
+      }
+    }
+  },
+  "wolpert_1969_french_flag_model": {
+    "section": "Wolpert (1969) J. Theor. Biol. 25:1-47, Sections 2-4 & Figs. 1-4",
+    "linear_source_sink": {
+      "equation": "D * d^2c/dx^2 = 0 on x in [0, L], c(0) = c0, c(L) = 0  =>  c_lin(x) = c0 * (1 - x / L)",
+      "c0": 1.0,
+      "threshold_T1": 0.6666666666666666,
+      "threshold_T2": 0.3333333333333333,
+      "fractional_boundary_x1_over_L": 0.3333333333333333,
+      "fractional_boundary_x2_over_L": 0.6666666666666666,
+      "zone_proportions": {
+        "blue_proximal": 0.3333333333333333,
+        "white_intermediate": 0.3333333333333333,
+        "red_distal": 0.3333333333333333
+      },
+      "scale_invariant": true
+    },
+    "sdd_exponential_decay": {
+      "equation": "dc/dt = D * d^2c/dx^2 - k * c  =>  c_SDD(x) = c0 * exp(-x / lambda), lambda = sqrt(D / k)",
+      "D_um2_s": 10.0,
+      "k_s_inv": 0.0025,
+      "lambda_um": 63.245553203367585,
+      "reference_domain_L0_um": 300.0,
+      "c0": 1.0,
+      "threshold_T1_exp": 0.20556858387320892,
+      "threshold_T2_exp": 0.04225844270518678,
+      "positional_error_formula": "sigma_x(x_i) = sigma_c / |dc/dx(x_i)| = (lambda / T_i) * sigma_c",
+      "scale_invariant": false,
+      "note": "Thresholds T1 = exp(-100/lambda) and T2 = exp(-200/lambda) give exact 1/3 : 1/3 : 1/3 French Flag proportions at reference length L0 = 300 um, but fail to scale when L changes unless lambda scales with L."
+    },
+    "expansion_repression_scaling": {
+      "section": "Ben-Zvi & Barkai (2010) PNAS 107:6924-6929, Eqs. (1)-(4)",
+      "equation": "dc/dt = D(E) * d^2c/dx^2 - k(E) * c;  dE/dt = D_E * d^2E/dx^2 + alpha_E * H(T_rep - c(L,t)) - beta_E * E",
+      "pinned_distal_concentration_T_rep": 0.008651695203120634,
+      "effective_lambda_ratio_lambda_over_L": 0.21081851067789195,
+      "scaled_zone_proportions": {
+        "blue_proximal": 0.3333333333333333,
+        "white_intermediate": 0.3333333333333333,
+        "red_distal": 0.3333333333333333
+      },
+      "scale_invariant": true
+    }
+  },
+  "tickle_wolpert_1975_chick_limb_zpa": {
+    "section": "Tickle, Summerbell & Wolpert (1975) Nature 254:199-202 & Riddle et al. (1993) Cell 75:1401-1416",
+    "organism": "Gallus gallus wing bud (HH20-HH28 anteroposterior axis, ~500 um -> 1000 um)",
+    "morphogen": "Sonic hedgehog (Shh) secreted by posterior Zone of Polarizing Activity (ZPA)",
+    "thresholds_normalized": {
+      "T_digit4": 0.45,
+      "T_digit3": 0.18,
+      "T_digit2": 0.05
+    },
+    "experimental_regimes": [
+      {
+        "regime_id": "wild_type_posterior_zpa",
+        "description": "Normal chick wing bud with single posterior ZPA at x = 0",
+        "posterior_source": 1.0,
+        "anterior_graft": 0.0,
+        "expected_digit_sequence": ["4", "3", "2"],
+        "digit_count": 3
+      },
+      {
+        "regime_id": "anterior_zpa_graft_duplication",
+        "description": "Tickle et al. (1975) classic ZPA graft to anterior margin (x = L) producing mirror-image duplication",
+        "posterior_source": 1.0,
+        "anterior_graft": 1.0,
+        "expected_digit_sequence": ["4", "3", "2", "2", "3", "4"],
+        "digit_count": 6
+      },
+      {
+        "regime_id": "attenuated_anterior_zpa_graft",
+        "description": "Irradiated / fewer-cell ZPA graft at anterior margin (c_ant = 0.35 * c0) specifying up to digit 3 anteriorly",
+        "posterior_source": 1.0,
+        "anterior_graft": 0.35,
+        "expected_digit_sequence": ["4", "3", "2", "3"],
+        "digit_count": 4
+      },
+      {
+        "regime_id": "zpa_ablation_or_cyclopamine",
+        "description": "Negative control: ZPA excision / Shh signaling blockade (c(x) < T_digit2 everywhere)",
+        "posterior_source": 0.0,
+        "anterior_graft": 0.0,
+        "expected_digit_sequence": [],
+        "digit_count": 0
+      }
+    ],
+    "domain_growth_scaling_table": [
+      {"stage_hh": "HH18", "ap_length_um": 180.0, "unscaled_sdd_blue_frac": 0.5556, "unscaled_sdd_white_frac": 0.4444, "unscaled_sdd_red_frac": 0.0000, "scaled_er_blue_frac": 0.3333, "scaled_er_white_frac": 0.3333, "scaled_er_red_frac": 0.3333},
+      {"stage_hh": "HH20", "ap_length_um": 240.0, "unscaled_sdd_blue_frac": 0.4167, "unscaled_sdd_white_frac": 0.4167, "unscaled_sdd_red_frac": 0.1667, "scaled_er_blue_frac": 0.3333, "scaled_er_white_frac": 0.3333, "scaled_er_red_frac": 0.3333},
+      {"stage_hh": "HH22", "ap_length_um": 300.0, "unscaled_sdd_blue_frac": 0.3333, "unscaled_sdd_white_frac": 0.3333, "unscaled_sdd_red_frac": 0.3333, "scaled_er_blue_frac": 0.3333, "scaled_er_white_frac": 0.3333, "scaled_er_red_frac": 0.3333},
+      {"stage_hh": "HH24", "ap_length_um": 420.0, "unscaled_sdd_blue_frac": 0.2381, "unscaled_sdd_white_frac": 0.2381, "unscaled_sdd_red_frac": 0.5238, "scaled_er_blue_frac": 0.3333, "scaled_er_white_frac": 0.3333, "scaled_er_red_frac": 0.3333},
+      {"stage_hh": "HH26", "ap_length_um": 540.0, "unscaled_sdd_blue_frac": 0.1852, "unscaled_sdd_white_frac": 0.1852, "unscaled_sdd_red_frac": 0.6296, "scaled_er_blue_frac": 0.3333, "scaled_er_white_frac": 0.3333, "scaled_er_red_frac": 0.3333},
+      {"stage_hh": "HH28", "ap_length_um": 660.0, "unscaled_sdd_blue_frac": 0.1515, "unscaled_sdd_white_frac": 0.1515, "unscaled_sdd_red_frac": 0.6970, "scaled_er_blue_frac": 0.3333, "scaled_er_white_frac": 0.3333, "scaled_er_red_frac": 0.3333}
+    ]
+  }
+}

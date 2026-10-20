@@ -1,0 +1,75 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bischof-xenopus-craniofacial-remap> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bischof-xenopus-craniofacial-remap-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bischof-xenopus-craniofacial-remap-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Vandenberg, Adams & Levin (2012) & Pinet et al. (2019) Picasso tadpole craniofacial attractor remodeling — MorphoEval overall 56.8/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 baseline assessment of `2019-bischof-xenopus-craniofacial-remap.py` (57.8/100). The baseline script implements uncoupled forward Euler relaxation of 5 craniofacial landmarks across Nieuwkoop-Faber stages 45 to 65 and contrasts wild-type and Picasso closed-loop remodeling against the open-loop fixed-vector null hypothesis, but omits the inter-organ relational spring coupling matrix C_ij((x_i - x_j) - (x_i^* - x_j^*)), RK4 integration, unilateral caudal eye rotation and lateral jaw translocation regimes, GM6001 MMP inhibition blockade ablation (Pinet et al. 2019), and empirical CV segmentation of bilateral dorsolateral eyes and head contour on `xenopus_craniofacial_specimen.jpg`. Overall 56.8/100 (faithfulness 54.6, reproducibility 62.0); rubric morphoeval 0.1.0; checkpoint commit 317bc3c; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 60, Morphological realism / specimen match 50, Parameter expressivity 56, Morphometric validation 54, Source and data traceability 66, Code-to-model traceability 60, Reproducibility package 60. Output judged: docs/media/xenopus_craniofacial_remap_comparison.png: rendered output of 2019-bischof-xenopus-craniofacial-remap.py at 317bc3c, image/png, 459463 B, 1320×1020 px, artifact_sha256 a86899230e609b51a50bac412582a64db9353a784f6424c59c7910e41b3a1ede (sha256 a86899230e609b51a50bac412582a64db9353a784f6424c59c7910e41b3a1ede), spec_fingerprint b508063893dc2ba283709bbd6f8bccfb0c0050e2d4a352a6be0037d6b7fbad04. Dual provenance: spec_fingerprint: b508063893dc2ba283709bbd6f8bccfb0c0050e2d4a352a6be0037d6b7fbad04; artifact_sha256: a86899230e609b51a50bac412582a64db9353a784f6424c59c7910e41b3a1ede; input_dataset_sha256: {datasets/xenopus_craniofacial_remap/paper_citations.bib=f5f4d62c485aca75..., datasets/xenopus_craniofacial_remap/scout_manifest.json=96534373d259eb28..., datasets/xenopus_craniofacial_remap/xenopus_craniofacial_remap_reference.json=2656eaab51beb4ca..., datasets/xenopus_craniofacial_remap/xenopus_craniofacial_specimen.jpg=8832f70a57f3d1c4...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add automated PCA craniofacial axis, triangular head-contour width profile, snout apex, and bilateral dorsolateral eye segmentation on `xenopus_craniofacial_specimen.jpg`, and render a 9-panel dark-mode synthesis figure and 24-frame animated GIF.",
+            "remediation needed: Implement the full coupled Procrustes landmark attractor ODE dx_i/dt = eta_MMP * [-K_i*(x_i - x_i^*) - sum_j C_ij*((x_i - x_j) - (x_i^* - x_j^*))] with 4th-order Runge-Kutta (RK4) integration and exact Lyapunov energy V(X) tracking.",
+            "remediation needed: Simulate all 6 canonical regimes across NF stages 45->65: Wild-Type, Picasso scrambled closed-loop, Caudal lateral eye rotation, Lateral jaw/mouth translocation, Open-loop fixed-vector null model, and GM6001 MMP inhibitor blockade (eta_MMP=0.04)." ;
+        pk:hasScore "0.568"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/dvdy.23770>,
+            <https://doi.org/10.1098/rsif.2016.0555>,
+            <https://doi.org/10.1242/dev.073759>,
+            <https://doi.org/10.1242/dev.175893> .
+    <https://doi.org/10.1002/dvdy.23770> dct:date "2012"^^xsd:gYear ;
+        dct:title "Normalized shape and location of perturbed craniofacial structures in the Xenopus tadpole reveal an innate ability to achieve correct morphology" .
+    <https://doi.org/10.1098/rsif.2016.0555> dct:date "2016"^^xsd:gYear ;
+        dct:title "Top-down models in biology: explanation and control of complex living systems above the molecular level" .
+    <https://doi.org/10.1242/dev.073759> dct:date "2012"^^xsd:gYear ;
+        dct:title "Transmembrane voltage potential controls embryonic eye patterning in Xenopus laevis" .
+    <https://doi.org/10.1242/dev.175893> dct:date "2019"^^xsd:gYear ;
+        dct:title "Adaptive correction of craniofacial defects in pre-metamorphic Xenopus laevis tadpoles involves thyroid hormone-independent tissue remodeling" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Vandenberg, Adams & Levin (2012) & Pinet et al. (2019) Picasso tadpole craniofacial attractor remodeling — MorphoEval overall 56.8/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:11:18Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bischof-xenopus-craniofacial-remap-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-bischof-xenopus-craniofacial-remap> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

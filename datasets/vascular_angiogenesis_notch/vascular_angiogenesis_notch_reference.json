@@ -1,0 +1,128 @@
+{
+  "metadata": {
+    "dataset_id": "vascular-angiogenesis-notch-v1",
+    "title": "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol., Hellstrom et al. (2007) Nature & Jakobsson et al. (2010) Nat. Cell Biol. VEGF-VEGFR2-Dll4-Notch1 Tip/Stalk Selection & Angiogenic Sprouting Reference Dataset",
+    "sources": [
+      {
+        "id": "bentley2008",
+        "citation": "Bentley K, Gerhardt H, Bates PA (2008). Agent-based simulation of notch-mediated tip cell selection in angiogenic sprout initialisation. PLoS Computational Biology 4(3):e1000052.",
+        "doi": "10.1371/journal.pcbi.1000052"
+      },
+      {
+        "id": "hellstrom2007",
+        "citation": "Hellstrom M, Phng LK, Hofmann JJ, et al., Gerhardt H, Betsholtz C (2007). Dll4 signalling through Notch1 regulates formation of tip cells during angiogenesis. Nature 445(7129):776-780.",
+        "doi": "10.1038/nature05571"
+      },
+      {
+        "id": "jakobsson2010",
+        "citation": "Jakobsson L, Franco CA, Bentley K, et al., Gerhardt H (2010). Endothelial cells dynamically compete for the tip cell position during angiogenic sprouting. Nature Cell Biology 12(10):943-953.",
+        "doi": "10.1038/ncb2103"
+      },
+      {
+        "id": "chappell2009",
+        "citation": "Chappell JC, Taylor SM, Ferrara N, Bautch VL (2009). Local guidance of emerging vessel sprouts requires soluble Flt-1. Developmental Cell 17(3):377-386.",
+        "doi": "10.1016/j.devcel.2009.06.004"
+      },
+      {
+        "id": "collier1996",
+        "citation": "Collier JR, Monk NAM, Maini PK, Lewis JH (1996). Pattern formation by lateral inhibition with feedback: a mathematical model of delta-notch intercellular signalling. Journal of Theoretical Biology 183(4):429-446.",
+        "doi": "10.1006/jtbi.1996.0233"
+      }
+    ]
+  },
+  "specimen_metadata": {
+    "file": "datasets/vascular_angiogenesis_notch/huvec_angiogenic_sprouting_plexus_specimen.jpg",
+    "sha256": "9bf4f3e2692bd2ac4ffc245ca2b8ac9c29762b90a89b3a9f4751e1b00e58132c",
+    "species": "Homo sapiens (Human umbilical vein endothelial cells, HUVECs, calcein-AM fluorescence micrograph of angiogenic sprouting vascular network)",
+    "license": "CC BY 4.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Where_vessels_are_born_-_HUVECs_self-assemble_into_a_living_vascular_network.png",
+    "dimensions_px": [1224, 904],
+    "evaluation_resize_px": [612, 452],
+    "empirical_cv_benchmarks": {
+      "plexus_area_density_ref": 0.1967,
+      "n_branch_junctions_ref": 69,
+      "n_sprouting_tips_ref": 58,
+      "tip_to_junction_ratio_ref": 0.8406,
+      "intertip_nnd_mean_px_ref": 31.11,
+      "intertip_nnd_sd_px_ref": 21.79,
+      "intertip_nnd_cv_ref": 0.7003
+    }
+  },
+  "bentley_2008_model_parameters": {
+    "n_vessel_cells_M": 16,
+    "vegfr2_max_Vmax": 1.0,
+    "notch_repression_threshold_Mtot": 0.38,
+    "notch_hill_exponent_p": 3,
+    "dll4_induction_hill_exponent_q": 2,
+    "dll4_half_activation_K_D": 0.42,
+    "notch_trans_activation_gain_k_t": 1.0,
+    "flt1_decoy_sequestration_alpha_F": 0.35,
+    "degradation_rate_gamma": 1.0,
+    "filopodial_extension_rate_v_filo_um_hr": 14.5,
+    "governing_equations": {
+      "effective_vegf_flt1_sequestration": "VEGF_eff,i = VEGF_i / (1 + alpha_F * F_i)",
+      "vegfr2_transcription_ode": "dV_i/dt = gamma_V * (V_max * M_tot^p / (M_tot^p + N_i^p) - V_i)",
+      "active_vegfr2_signaling": "V_i^* = V_i * VEGF_eff,i / (K_V + VEGF_eff,i)",
+      "dll4_ligand_ode": "dD_i/dt = gamma_D * (D_max * (V_i^*)^q / (K_D^q + (V_i^*)^q) - D_i)",
+      "notch1_trans_activation_ode": "dN_i/dt = gamma_N * (k_t * D_neighbors^r / (K_N^r + (k_t * D_neighbors)^r) - N_i)",
+      "brillouin_zone_pi_mode_eigenvalue": "lambda_antisym = sqrt(g_D * g_N) - gamma > 0  <=>  g_D * g_N > gamma_D * gamma_N"
+    }
+  },
+  "five_canonical_regimes_benchmarks": {
+    "physiological_salt_and_pepper": {
+      "vegf_level": 1.0,
+      "k_t_notch": 1.0,
+      "dll4_dosage": 1.0,
+      "tip_cell_fraction_ref": 0.5000,
+      "period2_alternation_index_ref": 0.9450,
+      "perfused_sprout_spacing_um_ref": 72.0,
+      "phenotype": "Well-spaced alternating Tip-Stalk-Tip-Stalk salt-and-pepper vascular sprouting"
+    },
+    "high_uniform_vegf_oscillations": {
+      "vegf_level": 3.4,
+      "k_t_notch": 1.0,
+      "dll4_dosage": 1.0,
+      "tip_cell_fraction_mean_ref": 0.5200,
+      "temporal_oscillation_cv_ref": 0.4150,
+      "period2_alternation_index_ref": 0.2400,
+      "phenotype": "Synchronous anti-phase/in-phase Dll4-Notch oscillations with stunted sprout progression (Bentley et al. 2008 Fig. 5)"
+    },
+    "dapt_notch_blockade_hypersprouting": {
+      "vegf_level": 1.0,
+      "k_t_notch": 0.0,
+      "dll4_dosage": 1.0,
+      "tip_cell_fraction_ref": 1.0000,
+      "period2_alternation_index_ref": 0.0000,
+      "sprout_tip_density_multiplier_ref": 2.0000,
+      "phenotype": "Pathological 100% all-tip hypersprouting syncytial sheet with collapsed stalk lumen (Hellstrom et al. 2007 Fig. 1)"
+    },
+    "dll4_haploinsufficiency_heterozygote": {
+      "vegf_level": 1.0,
+      "k_t_notch": 1.0,
+      "dll4_dosage": 0.5,
+      "tip_cell_fraction_ref": 0.7500,
+      "period2_alternation_index_ref": 0.4200,
+      "sprout_tip_density_multiplier_ref": 1.5600,
+      "phenotype": "Dll4+/- haploinsufficient hyperbranching retinal plexus with +50-65% excess filopodial tip density (Hellstrom et al. 2007 Fig. 2)"
+    },
+    "vegfr2_mosaic_chimeric_competition": {
+      "vegf_level": 1.0,
+      "k_t_notch": 1.0,
+      "wt_vegfr2_dosage": 1.0,
+      "het_vegfr2_dosage": 0.5,
+      "wt_tip_occupancy_fraction_ref": 0.8750,
+      "het_tip_occupancy_fraction_ref": 0.1250,
+      "phenotype": "WT endothelial cells outcompete Vegfr2+/- heterozygous cells for the tip position (~87-90% WT tips, Jakobsson et al. 2010 Fig. 2)"
+    }
+  },
+  "notch_trans_gain_sweep_hellstrom2007": [
+    {"k_t_notch": 0.00, "tip_cell_fraction_ref": 1.0000, "alternation_index_ref": 0.0000, "functional_vessel_index_ref": 0.0500},
+    {"k_t_notch": 0.15, "tip_cell_fraction_ref": 0.9375, "alternation_index_ref": 0.1250, "functional_vessel_index_ref": 0.1800},
+    {"k_t_notch": 0.30, "tip_cell_fraction_ref": 0.8125, "alternation_index_ref": 0.3400, "functional_vessel_index_ref": 0.4100},
+    {"k_t_notch": 0.45, "tip_cell_fraction_ref": 0.6875, "alternation_index_ref": 0.5800, "functional_vessel_index_ref": 0.6600},
+    {"k_t_notch": 0.60, "tip_cell_fraction_ref": 0.5625, "alternation_index_ref": 0.7900, "functional_vessel_index_ref": 0.8500},
+    {"k_t_notch": 0.80, "tip_cell_fraction_ref": 0.5000, "alternation_index_ref": 0.9200, "functional_vessel_index_ref": 0.9600},
+    {"k_t_notch": 1.00, "tip_cell_fraction_ref": 0.5000, "alternation_index_ref": 0.9500, "functional_vessel_index_ref": 0.9850},
+    {"k_t_notch": 1.25, "tip_cell_fraction_ref": 0.4375, "alternation_index_ref": 0.9300, "functional_vessel_index_ref": 0.9500}
+  ]
+}

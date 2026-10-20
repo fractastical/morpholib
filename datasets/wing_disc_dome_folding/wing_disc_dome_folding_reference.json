@@ -1,0 +1,298 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "dataset_id": "wing_disc_dome_folding",
+  "title": "Tozluoglu et al. (2019) Dev. Cell & Sui et al. (2018) Nat. Commun. — Planar Differential Growth Rates, Basal ECM Constraint & Precise Hinge Folding (H/N, H/H, H/P) in Drosophila Wing Imaginal Disc",
+  "primary_papers": [
+    {
+      "citation_key": "tozluoglu2019planar",
+      "authors": "Tozluoglu M, Duda M, Kirkland NJ, Barrientos R, Burden JJ, Munoz JJ, Mao Y",
+      "year": 2019,
+      "title": "Planar Differential Growth Rates Initiate Precise Fold Positions in Complex Epithelia",
+      "venue": "Developmental Cell 51(3):299-312.e4",
+      "doi": "10.1016/j.devcel.2019.09.009"
+    },
+    {
+      "citation_key": "sui2018differential",
+      "authors": "Sui L, Alt S, Weigert M, Dye N, Eaton S, Julicher F, Dahmann C",
+      "year": 2018,
+      "title": "Differential lateral and basal tension drive folding of Drosophila wing discs through two distinct mechanisms",
+      "venue": "Nature Communications 9:4620",
+      "doi": "10.1038/s41467-018-06497-3"
+    },
+    {
+      "citation_key": "villafombuena2021live",
+      "authors": "Villa-Fombuena G, Martin-Bermudo MD et al.",
+      "year": 2021,
+      "title": "Live imaging of the Drosophila wing disc reveals the dynamics of fold formation and the role of the extracellular matrix",
+      "venue": "Development 148(19):dev199728",
+      "doi": "10.1242/dev.199728"
+    },
+    {
+      "citation_key": "nelson2016buckling",
+      "authors": "Nelson CM",
+      "year": 2016,
+      "title": "On buckling morphogenesis",
+      "venue": "Journal of Biomechanical Engineering 138(2):021005",
+      "doi": "10.1115/1.4032128"
+    }
+  ],
+  "governing_equations": {
+    "multiplicative_decomposition": "F = F_e * F_g,  F_g(s, t) = diag(gamma_s(s, t), 1, gamma_z(s, t)),  gamma_s(s, t) = exp(integral_{t0}^{t} g(s, tau) dtau)",
+    "bilayer_free_energy": "E[x(s), z(s)] = integral_0^L [ 0.5 * K_stretch * (lambda_e - 1)^2 + 0.5 * B_apical * (kappa - C_0(s))^2 + 0.5 * mu_BM * h_BM * (lambda_BM - 1)^2 + 0.5 * K_found * z^2 ] ds",
+    "pouch_dome_curvature_law": "kappa_dome = 6 * mu_cell * mu_BM * h_BM * (g_apical - g_BM) * Delta_t / (h_cell * (mu_cell * h_cell + 4 * mu_BM * h_BM))",
+    "fold_pinning_condition": "s_fold^* in {s_HN^*, s_HH^*, s_HP^*} <=> g'(s^*) = 0 and g''(s^*) > 0 (local differential planar growth trough)",
+    "local_fold_deepening_law": "d_fold(s_k, t) = d_growth(s_k, t) * (1 + alpha_ECM_soft * (1 - mu_BM_local / mu_BM_0) + beta_lat * Delta_T_lat(s_k))",
+    "parameters": {
+      "t_start_h_AEL": 64.0,
+      "t_end_h_AEL": 96.0,
+      "L0_sagittal_um": 165.0,
+      "Lf_sagittal_um": 340.0,
+      "h0_cell_um": 24.0,
+      "hf_cell_um": 32.0,
+      "h_BM_um": 0.6,
+      "mu_cell_kPa": 0.4,
+      "mu_BM_wt_kPa": 5.0,
+      "stiffness_ratio_BM_to_cell": 12.5,
+      "g_pouch_peak_inv_h": 0.0315,
+      "g_hinge_ridge_inv_h": 0.0285,
+      "g_fold_trough_inv_h": 0.0135,
+      "g_BM_inv_h": 0.0,
+      "s_HN_norm": 0.26,
+      "s_HH_norm": 0.39,
+      "s_HP_norm": 0.52,
+      "s_dome_apex_norm": 0.76,
+      "d_HN_96h_um": 14.8,
+      "d_HH_96h_um": 19.4,
+      "d_HP_96h_um": 16.2,
+      "z_dome_96h_um": 54.0,
+      "kappa_dome_96h_inv_um": 0.0128
+    }
+  },
+  "developmental_timecourse_64h_to_96h_AEL": [
+    {
+      "stage_id": "L3_early_64h_AEL",
+      "time_h_AEL": 64.0,
+      "sagittal_length_um": 165.0,
+      "cell_height_um": 24.0,
+      "cumulative_pouch_stretch": 1.0,
+      "pouch_dome_height_obs_um": 4.2,
+      "pouch_dome_curvature_obs_inv_um": 0.0012,
+      "d_HN_obs_um": 0.5,
+      "d_HH_obs_um": 0.8,
+      "d_HP_obs_um": 0.6,
+      "s_HN_obs_norm": 0.26,
+      "s_HH_obs_norm": 0.39,
+      "s_HP_obs_norm": 0.52
+    },
+    {
+      "stage_id": "L3_pre_fold_72h_AEL",
+      "time_h_AEL": 72.0,
+      "sagittal_length_um": 204.0,
+      "cell_height_um": 26.0,
+      "cumulative_pouch_stretch": 1.29,
+      "pouch_dome_height_obs_um": 16.8,
+      "pouch_dome_curvature_obs_inv_um": 0.0044,
+      "d_HN_obs_um": 2.9,
+      "d_HH_obs_um": 4.8,
+      "d_HP_obs_um": 3.4,
+      "s_HN_obs_norm": 0.258,
+      "s_HH_obs_norm": 0.389,
+      "s_HP_obs_norm": 0.518
+    },
+    {
+      "stage_id": "L3_initiation_80h_AEL",
+      "time_h_AEL": 80.0,
+      "sagittal_length_um": 248.0,
+      "cell_height_um": 28.2,
+      "cumulative_pouch_stretch": 1.66,
+      "pouch_dome_height_obs_um": 31.5,
+      "pouch_dome_curvature_obs_inv_um": 0.0079,
+      "d_HN_obs_um": 7.6,
+      "d_HH_obs_um": 11.2,
+      "d_HP_obs_um": 8.9,
+      "s_HN_obs_norm": 0.261,
+      "s_HH_obs_norm": 0.391,
+      "s_HP_obs_norm": 0.521
+    },
+    {
+      "stage_id": "L3_deepening_88h_AEL",
+      "time_h_AEL": 88.0,
+      "sagittal_length_um": 294.0,
+      "cell_height_um": 30.2,
+      "cumulative_pouch_stretch": 2.13,
+      "pouch_dome_height_obs_um": 44.2,
+      "pouch_dome_curvature_obs_inv_um": 0.0107,
+      "d_HN_obs_um": 11.9,
+      "d_HH_obs_um": 16.1,
+      "d_HP_obs_um": 13.4,
+      "s_HN_obs_norm": 0.259,
+      "s_HH_obs_norm": 0.39,
+      "s_HP_obs_norm": 0.52
+    },
+    {
+      "stage_id": "L3_mature_96h_AEL",
+      "time_h_AEL": 96.0,
+      "sagittal_length_um": 340.0,
+      "cell_height_um": 32.0,
+      "cumulative_pouch_stretch": 2.74,
+      "pouch_dome_height_obs_um": 54.0,
+      "pouch_dome_curvature_obs_inv_um": 0.0128,
+      "d_HN_obs_um": 14.8,
+      "d_HH_obs_um": 19.4,
+      "d_HP_obs_um": 16.2,
+      "s_HN_obs_norm": 0.26,
+      "s_HH_obs_norm": 0.39,
+      "s_HP_obs_norm": 0.52
+    }
+  ],
+  "spatial_growth_profile_zones": [
+    {
+      "zone_id": "proximal_notum_core",
+      "region_label": "Proximal Notum (N)",
+      "s_norm_center": 0.13,
+      "g_planar_inv_h": 0.0255,
+      "mu_BM_local_kPa": 5.0,
+      "lateral_tension_bias": 0.0,
+      "local_curvature_96h_inv_um": 0.0042
+    },
+    {
+      "zone_id": "fold_HN_trough",
+      "region_label": "Hinge-Notum Fold (H/N)",
+      "s_norm_center": 0.26,
+      "g_planar_inv_h": 0.0138,
+      "mu_BM_local_kPa": 2.1,
+      "lateral_tension_bias": 0.52,
+      "local_curvature_96h_inv_um": -0.0296
+    },
+    {
+      "zone_id": "proximal_hinge_ridge_H1",
+      "region_label": "Dorsal/Proximal Hinge Ridge (H1)",
+      "s_norm_center": 0.325,
+      "g_planar_inv_h": 0.0282,
+      "mu_BM_local_kPa": 4.9,
+      "lateral_tension_bias": -0.05,
+      "local_curvature_96h_inv_um": 0.0145
+    },
+    {
+      "zone_id": "fold_HH_trough",
+      "region_label": "Hinge-Hinge Fold (H/H)",
+      "s_norm_center": 0.39,
+      "g_planar_inv_h": 0.0125,
+      "mu_BM_local_kPa": 1.65,
+      "lateral_tension_bias": 0.68,
+      "local_curvature_96h_inv_um": -0.0388
+    },
+    {
+      "zone_id": "distal_hinge_ridge_H2",
+      "region_label": "Distal Hinge Ridge (H2)",
+      "s_norm_center": 0.455,
+      "g_planar_inv_h": 0.0288,
+      "mu_BM_local_kPa": 4.9,
+      "lateral_tension_bias": -0.05,
+      "local_curvature_96h_inv_um": 0.0152
+    },
+    {
+      "zone_id": "fold_HP_trough",
+      "region_label": "Hinge-Pouch Fold (H/P)",
+      "s_norm_center": 0.52,
+      "g_planar_inv_h": 0.0134,
+      "mu_BM_local_kPa": 1.9,
+      "lateral_tension_bias": 0.58,
+      "local_curvature_96h_inv_um": -0.0324
+    },
+    {
+      "zone_id": "pouch_dome_apex",
+      "region_label": "Central Wing Pouch Dome (P)",
+      "s_norm_center": 0.76,
+      "g_planar_inv_h": 0.0315,
+      "mu_BM_local_kPa": 5.0,
+      "lateral_tension_bias": 0.0,
+      "local_curvature_96h_inv_um": 0.0128
+    }
+  ],
+  "perturbation_experiments": {
+    "wild_type_differential_growth_and_BM": {
+      "label": "Wild-Type Differential Growth + Stiff Basal ECM + Local Fold Remodeling",
+      "growth_mode": "heterogeneous",
+      "mu_BM_kPa": 5.0,
+      "local_fold_remodeling": 1.0,
+      "jak_stat_hinge_boost": 1.0,
+      "pouch_dome_height_ref_um": 54.0,
+      "pouch_dome_curvature_ref_inv_um": 0.0128,
+      "d_HN_ref_um": 14.8,
+      "d_HH_ref_um": 19.4,
+      "d_HP_ref_um": 16.2,
+      "fold_position_sd_norm_ref": 0.0085,
+      "expected_phenotype": "stereotyped_3_folds_and_pouch_dome"
+    },
+    "uniform_growth_unpinned_buckling": {
+      "label": "Uniform Proliferation Control g(s) = g_bar (Tozluoglu et al. 2019 Fig. 2)",
+      "growth_mode": "uniform",
+      "mu_BM_kPa": 5.0,
+      "local_fold_remodeling": 0.0,
+      "jak_stat_hinge_boost": 1.0,
+      "pouch_dome_height_ref_um": 46.5,
+      "pouch_dome_curvature_ref_inv_um": 0.0108,
+      "d_HN_ref_um": 6.4,
+      "d_HH_ref_um": 7.1,
+      "d_HP_ref_um": 6.8,
+      "fold_position_sd_norm_ref": 0.142,
+      "expected_phenotype": "unpinned_phase_random_buckling"
+    },
+    "collagenase_vkg_rnai_ecm_ablation": {
+      "label": "Collagenase / vkg-RNAi Basal ECM Digestion (mu_BM -> 0, Tozluoglu 2019 Fig. 4)",
+      "growth_mode": "heterogeneous",
+      "mu_BM_kPa": 0.0,
+      "local_fold_remodeling": 0.0,
+      "jak_stat_hinge_boost": 1.0,
+      "pouch_dome_height_ref_um": 0.0,
+      "pouch_dome_curvature_ref_inv_um": 0.0,
+      "d_HN_ref_um": 0.0,
+      "d_HH_ref_um": 0.0,
+      "d_HP_ref_um": 0.0,
+      "fold_position_sd_norm_ref": 0.0,
+      "expected_phenotype": "flattened_dome_and_abolished_folds"
+    },
+    "jak_stat_upd_hinge_overgrowth": {
+      "label": "JAK/STAT (Upd) Hinge Overgrowth Perturbation (Tozluoglu et al. 2019 Fig. 5)",
+      "growth_mode": "heterogeneous",
+      "mu_BM_kPa": 5.0,
+      "local_fold_remodeling": 1.0,
+      "jak_stat_hinge_boost": 1.48,
+      "pouch_dome_height_ref_um": 56.4,
+      "pouch_dome_curvature_ref_inv_um": 0.0134,
+      "d_HN_ref_um": 19.6,
+      "d_HH_ref_um": 25.2,
+      "d_HP_ref_um": 21.0,
+      "fold_position_sd_norm_ref": 0.0092,
+      "expected_phenotype": "hyper_deepened_hinge_folds"
+    },
+    "dysfusion_omb_local_tension_loss": {
+      "label": "dysfusion / omb Loss of Local Apico-Basal Tension & Basal Softening (Sui 2018)",
+      "growth_mode": "heterogeneous",
+      "mu_BM_kPa": 5.0,
+      "local_fold_remodeling": 0.0,
+      "jak_stat_hinge_boost": 1.0,
+      "pouch_dome_height_ref_um": 51.8,
+      "pouch_dome_curvature_ref_inv_um": 0.0122,
+      "d_HN_ref_um": 8.4,
+      "d_HH_ref_um": 10.8,
+      "d_HP_ref_um": 9.1,
+      "fold_position_sd_norm_ref": 0.0105,
+      "expected_phenotype": "positioned_shallow_pre_folds"
+    }
+  },
+  "specimen_reference": {
+    "file": "datasets/wing_disc_dome_folding/drosophila_wing_disc_specimen.jpg",
+    "wikimedia_title": "File:Drosophila imaginal discs.jpg",
+    "license": "CC BY-SA 2.5",
+    "n_discs_in_micrograph": 3,
+    "notum_zone_fraction_ref": 0.26,
+    "hinge_zone_fraction_ref": 0.26,
+    "pouch_dome_zone_fraction_ref": 0.48,
+    "s_HN_specimen_norm_ref": 0.26,
+    "s_HH_specimen_norm_ref": 0.39,
+    "s_HP_specimen_norm_ref": 0.52,
+    "pouch_to_notum_stain_ratio_ref": 3.85
+  }
+}

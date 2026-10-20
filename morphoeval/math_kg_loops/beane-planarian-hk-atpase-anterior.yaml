@@ -1,0 +1,90 @@
+sim_id: beane-planarian-hk-atpase-anterior
+math_family: Bioelectric V_mem Head-Tail Polarity Switch (Bistable Membrane Potential + Voltage-Gated Gap-Junction PDE)
+model_spec:
+  model: Beane et al. (2011) Chem. Biol. 18:77-89 & Pietak-Levin (2017) J. R. Soc. Interface 14:20170425 H,K-ATPase bioelectric V_mem planarian anterior polarity switch
+  vmem_pde: "C_m * dV/dt = -g_bistable * (V - V_hyper) * (V - V_thresh) * (V - V_depol) + I_HK(x) + I_IVM(x) + d/dx [ G_GJ(dV/dx) * dV/dx ]"
+  gap_junction_conductance: "G_GJ(DeltaV) = (1 - eta_oct) * G_0 / (1 + (DeltaV / V_0)^2)"
+  anterior_gene_pde: "tau_H * dH/dt = Ca_ss(V) * (1 - c_T * T) - H + D_H * d^2H/dx^2"
+  posterior_gene_pde: "tau_T * dT/dt = (1 - Ca_ss(V)) * W(x) * (1 - c_H * H) - T + D_T * d^2T/dx^2"
+  parameters:
+    N_cells: 60
+    C_m: 1.0
+    g_bistable: 0.002
+    V_hyper_mV: -65.0
+    V_thresh_mV: -42.5
+    V_depol_mV: -20.0
+    G_0: 1.8
+    V_0_mV: 12.0
+    k_V_mV: 3.5
+    D_H: 0.15
+    D_T: 0.15
+    seed: 2011
+  inputs:
+    - datasets/planarian_hk_atpase_anterior/planarian_hk_atpase_anterior_reference.json
+    - datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg
+    - datasets/planarian_hk_atpase_anterior/scout_manifest.json
+    - datasets/planarian_hk_atpase_anterior/paper_citations.bib
+equations:
+  - law_name: "Beane et al. (2011) & Pietak-Levin (2017) Bistable Membrane Potential Fixed-Point & Stability Law"
+    formula: "C_m ∂V/∂t = -g (V - V_hyper)(V - V_thresh)(V - V_depol) + I_HK(x) + I_IVM(x) + ∂_x(G_GJ(∂_x V) ∂_x V);   I'_ion(V_hyper) > 0,  I'_ion(V_depol) > 0,  I'_ion(V_thresh) < 0"
+    lean_decl: "MathOfBiology.Loop_081.beane_bistable_current"
+    lean_theorem: "MathOfBiology.Loop_081.beane_bistable_vmem_equilibria"
+    lean_locus: "morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean#L12-L42"
+    lean_code: |
+      def beane_bistable_current (V V_hyper V_thresh V_depol : Int) : Int :=
+        (V - V_hyper) * (V - V_thresh) * (V - V_depol)
+      def beane_bistable_slope (V V_hyper V_thresh V_depol : Int) : Int :=
+        (V - V_thresh) * (V - V_depol) + (V - V_hyper) * (V - V_depol) + (V - V_hyper) * (V - V_thresh)
+      theorem beane_bistable_vmem_equilibria (V_hyper V_thresh V_depol : Int) :
+          beane_bistable_current V_hyper V_hyper V_thresh V_depol = 0 ∧
+          beane_bistable_current V_thresh V_hyper V_thresh V_depol = 0 ∧
+          beane_bistable_current V_depol V_hyper V_thresh V_depol = 0 ∧
+          beane_bistable_slope (-65) (-65) (-42) (-20) = 1035 ∧
+          beane_bistable_slope (-42) (-65) (-42) (-20) = -506 ∧
+          beane_bistable_slope (-20) (-65) (-42) (-20) = 990 := by
+        refine ⟨?_, ?_, ?_, by decide, by decide, by decide⟩
+        · simp [beane_bistable_current]
+        · simp [beane_bistable_current]
+        · simp [beane_bistable_current]
+    variables: "V(x,t): resting membrane potential (mV); V_hyper = -65 mV: posterior hyperpolarized attractor; V_thresh = -42.5 mV: unstable voltage threshold; V_depol = -20 mV: H,K-ATPase-depolarized anterior blastema attractor"
+    role: "Establishes exact bistability of the resting membrane potential across the hyperpolarized posterior trunk state and the H,K-ATPase-depolarized anterior blastema state"
+    source_citation: "Beane et al. (2011) Chem. Biol. 18(1):77-89 Fig. 2; Pietak & Levin (2017) J. R. Soc. Interface 14:20170425"
+    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L120-L195"
+  - law_name: "Oviedo et al. (2010) & Pietak-Levin (2017) Voltage-Gated Gap-Junction Symmetry & Isolation Law"
+    formula: "G_GJ(ΔV) = (1 - η_oct) G_0 / (1 + (ΔV / V_0)^2),   G_GJ(-ΔV) = G_GJ(ΔV),   0 < G_GJ(ΔV) ≤ G_0"
+    lean_decl: "MathOfBiology.Loop_081.gj_bell_denom"
+    lean_theorem: "MathOfBiology.Loop_081.gj_voltage_gate_symmetry_and_isolation"
+    lean_locus: "morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean#L45-L64"
+    lean_code: |
+      def gj_bell_denom (dV V0 : Int) : Int :=
+        V0 * V0 + dV * dV
+      theorem gj_voltage_gate_symmetry_and_isolation (dV V0 : Int) :
+          gj_bell_denom (-dV) V0 = gj_bell_denom dV V0 ∧
+          gj_bell_denom 0 V0 = V0 * V0 := by
+        simp [gj_bell_denom, Int.neg_mul_neg]
+    variables: "ΔV = V_i - V_j: trans-junctional voltage difference; V_0: gap-junction half-inactivation voltage; G_0: maximal innexin conductance; η_oct: 8-octanol gap-junction blockade fraction"
+    role: "Proves bidirectional symmetry and voltage-drop-induced closure of innexin gap junctions, allowing the depolarized anterior blastema to self-isolate from the hyperpolarized trunk"
+    source_citation: "Oviedo et al. (2010) Dev. Biol. 339(1):188-199; Pietak & Levin (2017) J. R. Soc. Interface 14:20170425 Eq. (5)"
+    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L198-L285"
+  - law_name: "Beane et al. (2011) Four Canonical Bioelectric Regeneration Phenotypes (1H1T, 0H2T, 2H0T)"
+    formula: "Ca_ss(V) = (1 + exp(-(V - V_thresh)/k_V))^{-1};   (N_head, N_tail) = (1,1) [WT],  (0,2) [SCH-28080 / H,K-ATPase RNAi],  (2,0) [Ivermectin / 8-Octanol]"
+    lean_decl: "MathOfBiology.Loop_081.planarian_head_tail_counts"
+    lean_theorem: "MathOfBiology.Loop_081.beane_four_regeneration_phenotypes"
+    lean_locus: "morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean#L67-L92"
+    lean_code: |
+      def head_gate (V V_thresh : Int) : Nat :=
+        if V > V_thresh then 1 else 0
+      def planarian_head_tail_counts (V_ant V_post V_thresh : Int) : Nat × Nat :=
+        let h_ant := head_gate V_ant V_thresh
+        let h_post := head_gate V_post V_thresh
+        (h_ant + h_post, (1 - h_ant) + (1 - h_post))
+      theorem beane_four_regeneration_phenotypes :
+          planarian_head_tail_counts (-20) (-65) (-42) = (1, 1) ∧
+          planarian_head_tail_counts (-63) (-65) (-42) = (0, 2) ∧
+          planarian_head_tail_counts (-19) (-21) (-42) = (2, 0) ∧
+          planarian_head_tail_counts (-20) (-22) (-42) = (2, 0) := by
+        decide
+    variables: "V_ant = V(0,T), V_post = V(L,T): steady-state anterior and posterior blastema potentials; N_head, N_tail: regenerated head and tail counts"
+    role: "Proves the four canonical experimental regeneration outcomes of Beane et al. (2011) and Oviedo et al. (2010): wild-type 1H1T, SCH-28080/RNAi 0H2T headless, ivermectin 2H0T double-headed, and 8-octanol 2H0T double-headed"
+    source_citation: "Beane et al. (2011) Chem. Biol. 18(1):77-89 Figs. 1-6 & Table 1"
+    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L288-L410"

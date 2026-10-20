@@ -1,0 +1,79 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-caleo-cajal-dendritic-wiring> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law — MorphoEval overall 93.7/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 2 (v2) evaluation of `2007-caleo-cajal-dendritic-wiring.py` (overall weighted score: 93.8/100, up from 54.1/100 in v1). The remediated script implements the full Cuntz et al. (2010) PLoS Comput. Biol. greedy MST algorithm across balancing factor bf in [0.0, 1.0], matching the Cajal wiring-vs-conduction-delay Pareto trade-off for W(bf)/W(0) (Pearson r = 1.0000, RMSE = 0.0042, p = 1.81e-19) and P(bf)/P(1) (Pearson r = 0.99969, RMSE = 0.0067, p = 7.18e-11) while outperforming a random spanning tree ablation control by 10.43x; verifies the Wen & Chklovskii (2008) 2D planar (alpha_2D = 0.4797 +- 0.0168 vs 0.50) and 3D volumetric (alpha_3D = 0.6495 +- 0.0456 vs 0.67) scaling laws and Rall's (1959) 3/2 electrotonic impedance-matching law (ratio = 1.0000, RMSE = 1.27e-16); and segments Santiago Ramón y Cajal's (1899) human cerebellar Purkinje neuron specimen (`cajal_purkinje_dendritic_arbor_specimen.jpg`, fractal dimension D_f = 1.7817 +- 0.0248, Sholl peak = 73 intersections, 62 bifurcation hubs). Overall 93.7/100 (faithfulness 93.6, reproducibility 93.9); rubric morphoeval 0.1.0; checkpoint commit 8871db0; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 95, Morphological realism / specimen match 93, Parameter expressivity 92, Morphometric validation 94, Source and data traceability 95, Code-to-model traceability 94, Reproducibility package 93. Output judged: docs/media/cajal_dendritic_wiring_comparison.png: rendered output of 2007-caleo-cajal-dendritic-wiring.py at 8871db0, image/png, 1031857 B, 2475×1560 px, artifact_sha256 d8a5eea145746b4df580c95c55b83255c17ede5c82986441d0dadf63208aca34 (sha256 d8a5eea145746b4df580c95c55b83255c17ede5c82986441d0dadf63208aca34), spec_fingerprint 65e3c72ac65a22385fb52843461a2a9e01a8932acae7aee74903464a3af2096f. Dual provenance: spec_fingerprint: 65e3c72ac65a22385fb52843461a2a9e01a8932acae7aee74903464a3af2096f; artifact_sha256: d8a5eea145746b4df580c95c55b83255c17ede5c82986441d0dadf63208aca34; input_dataset_sha256: {datasets/cajal_dendritic_wiring/cajal_dendritic_wiring_reference.json=e437ed8419f90b10..., datasets/cajal_dendritic_wiring/cajal_purkinje_dendritic_arbor_specimen.jpg=6255a396655b56c4..., datasets/cajal_dendritic_wiring/paper_citations.bib=6925a1fc3e146cab..., datasets/cajal_dendritic_wiring/scout_manifest.json=2440e61b14fedf53...}. Supersedes audit: 2026-10-19-cajal-dendritic-wiring-audit. Claim boundary: reported_in_source: Cuntz, Forstner, Borst & Häusser (2010) PLoS Comput. Biol. 6(8):e1000877 & Cuntz et al. (2007) PNAS 104:13319-13324 greedy Minimum Spanning Tree dendritic growth rule minimizing C(u, v) = ||u - v|| + bf * path(u, root) across balancing factor bf in [0, 1] to balance Ramón y Cajal's (1899) conservation of cytoplasmic wiring length W and conduction time P | Wen & Chklovskii (2008) J. Neurophysiol. 99:2320-2328 & Cuntz et al. (2010) dimensional wiring scaling laws W propto N^(1/2) A^(1/2) in 2D planar arbors (Purkinje / Drosophila Class IV da) and W propto N^(2/3) V^(1/3) in 3D volumetric arbors (cortical pyramidal) | Rall (1959) Exp. Neurol. 1:491-527 electrotonic input-conductance impedance-matching power law d_parent^(3/2) = sum_k d_daughter_k^(3/2) with symmetric parent-to-daughter diameter ratio d_p / d_d = 2^(2/3) = 1.5874; reconstructed_in_script: Full Cuntz et al. (2010) greedy MST solver (`grow_cuntz_dendritic_tree`) across 8 balancing factors bf in [0.0, 1.0] on N = 160 synaptic carriers, reproducing normalized wiring cost W(bf)/W(0) (Pearson r = 1.0000, RMSE = 0.0042, p = 1.81e-19) and normalized conduction path P(bf)/P(1) (Pearson r = 0.99969, RMSE = 0.0067, p = 7.18e-11), plus a random spanning tree negative control (10.43x wiring inflation) | Log-log OLS scaling law verification across N in [25, 320] confirming 2D planar scaling exponent alpha_2D = 0.4797 +- 0.0168 (vs theoretical 0.5000, r = 0.99755, p = 8.96e-6), 3D volumetric scaling exponent alpha_3D = 0.6495 +- 0.0456 (vs theoretical 0.6667, r = 0.99028, p = 1.41e-4), and bf = 1.0 star limit exponent alpha_star = 0.9996 | Bottom-up Rall 3/2 electrotonic diameter assignment verifying (sum d_daughter^(3/2))/d_parent^(3/2) = 1.0000 (RMSE = 1.27e-16 across 40 bifurcations) | Computer-vision segmentation of Santiago Ramón y Cajal's (1899) human cerebellar Purkinje neuron drawing (`cajal_purkinje_dendritic_arbor_specimen.jpg`, Museo Cajal 328 Madrid) extracting box-counting fractal dimension D_f = 1.7817 +- 0.0248, peak Sholl intersection count = 73 at r = 420.0 px (r/R_max = 0.6176), and 62 primary/secondary bifurcation hubs; transfer_boundary: 2D planar fan and 3D cubic Euclidean carrier-point greedy MST arbors with Rall 3/2 passive electrotonic diameter tapering mapped to Cajal's Golgi-stained Purkinje neuron drawing; does_not_claim: Active voltage-gated Ca2+ / Na+ dendritic spike kinetics or activity-dependent filopodial synaptotropic retraction at single-channel resolution." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Couple passive Rall 3/2 electrotonic cable segments to active dendritic Ca2+ spike conductance equations to evaluate synaptic coincidence detection across varying Cuntz balancing factors." ;
+        pk:hasScore "0.937"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 058 Pass 2 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/58> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0014-4886(59)90046-9>,
+            <https://doi.org/10.1073/pnas.0704731104>,
+            <https://doi.org/10.1152/jn.00280.2007>,
+            <https://doi.org/10.1371/journal.pcbi.1000251>,
+            <https://doi.org/10.1371/journal.pcbi.1000877>,
+            <https://doi.org/10.5962/bhl.title.48637> .
+    <https://doi.org/10.1016/0014-4886(59)90046-9> dct:date "1959"^^xsd:gYear ;
+        dct:title "Branching dendritic trees and motoneuron membrane resistivity" .
+    <https://doi.org/10.1073/pnas.0704731104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Optimization principles of dendritic structure" .
+    <https://doi.org/10.1152/jn.00280.2007> dct:date "2008"^^xsd:gYear ;
+        dct:title "A Cost-Benefit Analysis of Neuronal Morphology" .
+    <https://doi.org/10.1371/journal.pcbi.1000251> dct:date "2008"^^xsd:gYear ;
+        dct:title "A Quantitative Description of Sensory Neuron Organization in Drosophila: From Individual Dendritic Trees to the Population" .
+    <https://doi.org/10.1371/journal.pcbi.1000877> dct:date "2010"^^xsd:gYear ;
+        dct:title "One Rule to Grow Them All: A General Theory of Neuronal Dendritic Trees" .
+    <https://doi.org/10.5962/bhl.title.48637> dct:date "1899"^^xsd:gYear ;
+        dct:title "Textura del Sistema Nervioso del Hombre y de los Vertebrados" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law — MorphoEval overall 93.7/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T02:16:50Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/58>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-caleo-cajal-dendritic-wiring> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

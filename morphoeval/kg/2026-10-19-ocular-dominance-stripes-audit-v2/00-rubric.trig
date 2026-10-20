@@ -1,0 +1,87 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> a skos:Concept,
+            pk:Concept ;
+        rdfs:label "Code-to-model traceability" ;
+        dct:description "[reproducibility, weight 8/100, id morphoeval/0.1.0/code-traceability] Can each modelling step in the code be traced to a specific equation, section or figure of the source?" ;
+        skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+    <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> a skos:Concept,
+            pk:Concept ;
+        rdfs:label "Model fidelity to source" ;
+        dct:description "[faithfulness, weight 20/100, id morphoeval/0.1.0/model-fidelity] Does the code implement the equations / algorithm of the cited source model as published (not a loose analogue), with parameters defined the way the source defines them?" ;
+        skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+    <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> a skos:Concept,
+            pk:Concept ;
+        rdfs:label "Morphometric validation" ;
+        dct:description "[faithfulness, weight 15/100, id morphoeval/0.1.0/morphometric-validation] Are quantitative morphometrics computed on the output and compared against values measured on real specimens or reported in the literature?" ;
+        skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+    <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> a skos:Concept,
+            pk:Concept ;
+        rdfs:label "Parameter expressivity" ;
+        dct:description "[faithfulness, weight 10/100, id morphoeval/0.1.0/parameter-expressivity] Does each morphospace parameter visibly and monotonically control the feature of form it is supposed to control across its stated range?" ;
+        skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+    <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> a skos:Concept,
+            pk:Concept ;
+        rdfs:label "Reproducibility package" ;
+        dct:description "[reproducibility, weight 12/100, id morphoeval/0.1.0/repro-package] Pinned dependencies, deterministic seeds, documented invocation, and a known-good environment; environment-induced result corruption counts against this dimension." ;
+        skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+    <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> a skos:Concept,
+            pk:Concept ;
+        rdfs:label "Source and data traceability" ;
+        dct:description "[reproducibility, weight 10/100, id morphoeval/0.1.0/source-traceability] Are the source paper (DOI/PMID), code repository and any input data resolvable identifiers, and is input provenance recorded?" ;
+        skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+    <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> a skos:Concept,
+            pk:Concept ;
+        rdfs:label "Morphological realism / specimen match" ;
+        dct:description "[faithfulness, weight 25/100, id morphoeval/0.1.0/specimen-match] Does the rendered output resemble real specimens of the organism and/or the source authors' own figures, judged side by side? Distinct morphologies must be visually distinct." ;
+        skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+    <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> a skos:Concept,
+            pk:Concept ;
+        rdfs:label "MorphoEval simulation-faithfulness rubric v0.1.0" ;
+        dct:description "Weighted 0-100 rubric for the faithfulness of a morphology simulation to its organism and source model; Overall = weighted mean. Each score is a pk:LLMClaimAssessment (ProbKnow rubric-assessment template) of the pk:Claim pkr:claim/morphoeval-<sim> against one dimension (dct:subject the dimension concept, pk:assessmentType morphoeval/<version>/<dimension>) with pk:hasScore = score/100 — an uncalibrated rubric score, not a probability — and a pk:hasVerdict band; the overall score has the rubric itself as dct:subject and is also the pk:weightOfEvidence of the claim." ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/main/morphoeval/rubric.yaml> ;
+        skos:narrower <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability>,
+            <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity>,
+            <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation>,
+            <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package>,
+            <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability>,
+            <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "MorphoEval rubric v0.1.0" ;
+        dct:created "2026-10-20T01:44:56Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Concept ;
+        npx:introduces <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAbjeus1yO4SqlPLnpIWNLS6nvW0DGF3879tVduuE0y00/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

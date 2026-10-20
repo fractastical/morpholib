@@ -1,0 +1,151 @@
+# MorphoEval audit — Vandenberg, Adams & Levin (2012) & Pinet et al. (2019) Xenopus Craniofacial Remodeling, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2019-bischof-xenopus-craniofacial-remap.py` (Slot 085) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-xenopus-craniofacial-remap-loop`.
+
+audit:
+  id: 2026-10-19-xenopus-craniofacial-remap-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2019-bischof-xenopus-craniofacial-remap.py` in
+      `2026-10-19-xenopus-craniofacial-remap-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  vandenberg2012:
+    title: "Normalized shape and location of perturbed craniofacial structures in the Xenopus tadpole reveal an innate ability to achieve correct morphology"
+    authors: "Vandenberg LN, Adams DS, Levin M"
+    venue: "Developmental Dynamics 241(5):863-878 (2012)"
+    doi: 10.1002/dvdy.23770
+  pinet2019:
+    title: "Adaptive correction of craniofacial defects in pre-metamorphic Xenopus laevis tadpoles involves thyroid hormone-independent tissue remodeling"
+    authors: "Pinet K, Deolankar M, Leung B, McLaughlin KA"
+    venue: "Development 146(14):dev175893 (2019)"
+    doi: 10.1242/dev.175893
+  pezzulo2016:
+    title: "Top-down models in biology: explanation and control of complex living systems above the molecular level"
+    authors: "Pezzulo G, Levin M"
+    venue: "Journal of the Royal Society Interface 13(124):20160555 (2016)"
+    doi: 10.1098/rsif.2016.0555
+  pai2012:
+    title: "Transmembrane voltage potential controls embryonic eye patterning in Xenopus laevis"
+    authors: "Pai VP, Aw S, Shomrat T, Lemire JM, Levin M"
+    venue: "Development 139(2):313-323 (2012)"
+    doi: 10.1242/dev.073759
+
+simulations:
+  - id: bischof-xenopus-craniofacial-remap
+    name: "Vandenberg, Adams & Levin (2012) & Pinet et al. (2019) Picasso tadpole craniofacial attractor remodeling"
+    organism: "Xenopus laevis African clawed frog tadpole and froglet"
+    script: 2019-bischof-xenopus-craniofacial-remap.py
+    output: docs/media/xenopus_craniofacial_remap_comparison.png
+    extra_outputs:
+      - docs/media/xenopus_craniofacial_remap_growth.gif
+    status: evaluated
+    source_refs:
+      - vandenberg2012
+      - pinet2019
+      - pezzulo2016
+      - pai2012
+    summary: >-
+      Pass 1 baseline assessment of `2019-bischof-xenopus-craniofacial-remap.py` (57.8/100).
+      The baseline script implements uncoupled forward Euler relaxation of 5 craniofacial
+      landmarks across Nieuwkoop-Faber stages 45 to 65 and contrasts wild-type and Picasso
+      closed-loop remodeling against the open-loop fixed-vector null hypothesis, but omits
+      the inter-organ relational spring coupling matrix C_ij((x_i - x_j) - (x_i^* - x_j^*)),
+      RK4 integration, unilateral caudal eye rotation and lateral jaw translocation regimes,
+      GM6001 MMP inhibition blockade ablation (Pinet et al. 2019), and empirical CV
+      segmentation of bilateral dorsolateral eyes and head contour on
+      `xenopus_craniofacial_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 60
+        rationale: >-
+          Implements single-landmark target homing -K_i*(x_i - x_i^*) and open-loop fixed
+          vector translation (L50-98), but omits the inter-organ relational coupling matrix
+          sum_j C_ij*((x_i - x_j) - (x_i^* - x_j^*)) and explicit Lyapunov energy dissipation
+          verification dV/dt <= 0.
+        evidence:
+          - {file: 2019-bischof-xenopus-craniofacial-remap.py, lines: [50, 98], note: "Uncoupled Euler Procrustes landmark relaxation and open-loop vector null model", supports: false}
+      specimen-match:
+        value: 50
+        rationale: >-
+          Vendors `datasets/xenopus_craniofacial_remap/xenopus_craniofacial_specimen.jpg`
+          (CC BY 4.0 dorsal Xenopus laevis micrograph), but Pass 1 only displays the raw
+          image without automated CV segmentation of the dorsal head contour, snout apex,
+          or bilateral dorsolateral eye landmarks.
+        evidence:
+          - {file: 2019-bischof-xenopus-craniofacial-remap.py, lines: [135, 142], note: "Raw specimen display without CV segmentation of bilateral eyes or head contour", supports: false}
+          - {file: docs/media/xenopus_craniofacial_remap_comparison.png, lines: [0, 0], note: "4-panel Pass 1 baseline comparison figure", supports: true}
+      parameter-expressivity:
+        value: 56
+        rationale: >-
+          Evaluates only 3 regimes (wild-type, Picasso closed-loop, and open-loop null),
+          omitting unilateral caudal eye rotation, lateral jaw/mouth translocation, GM6001
+          MMP inhibitor blockade (`eta_mmp = 0.04`), and a 2D (perturbation amplitude,
+          MMP mobility) Procrustes morphospace sweep.
+        evidence:
+          - {file: 2019-bischof-xenopus-craniofacial-remap.py, lines: [101, 134], note: "3-regime baseline evaluation without caudal eye, jaw translocation, or MMP blockade", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Reports only 2 scalar Procrustes error metrics in `measure_morphoeval()`, lacking
+          bilateral asymmetry restoration metrics, MMP blockade residual defect, specimen
+          inter-eye / head-width morphometrics, and 6-regime Procrustes trajectory RMSE.
+        evidence:
+          - {file: 2019-bischof-xenopus-craniofacial-remap.py, lines: [167, 192], note: "Baseline 2-metric measure_morphoeval() hook", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `xenopus_craniofacial_remap_reference.json`,
+          `paper_citations.bib`, and `xenopus_craniofacial_specimen.jpg` with SHA-256
+          verification linking Vandenberg, Adams & Levin (2012) and Pinet et al. (2019).
+        evidence:
+          - {file: 2019-bischof-xenopus-craniofacial-remap.py, lines: [34, 48], note: "SHA-256 verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Links baseline functions to Vandenberg et al. (2012) and Pinet et al. (2019),
+          requiring full mapping to the 3 Lean 4 theorems in
+          `Loop_085_xenopus_craniofacial_remap.lean`.
+        evidence:
+          - {file: 2019-bischof-xenopus-craniofacial-remap.py, lines: [1, 16], note: "Module docstring citing Vandenberg, Adams & Levin (2012) and Pinet et al. (2019)", supports: true}
+      repro-package:
+        value: 60
+        rationale: >-
+          Provides `--self-test` and deterministic execution, requiring expansion to an
+          8-check verification suite covering all 6 experimental regimes, Lyapunov decrease,
+          bilateral symmetry restoration, and specimen CV segmentation.
+        evidence:
+          - {file: 2019-bischof-xenopus-craniofacial-remap.py, lines: [195, 203], note: "Baseline self-test checks", supports: true}
+    remediation:
+      - "Implement the full coupled Procrustes landmark attractor ODE dx_i/dt = eta_MMP * [-K_i*(x_i - x_i^*) - sum_j C_ij*((x_i - x_j) - (x_i^* - x_j^*))] with 4th-order Runge-Kutta (RK4) integration and exact Lyapunov energy V(X) tracking."
+      - "Simulate all 6 canonical regimes across NF stages 45->65: Wild-Type, Picasso scrambled closed-loop, Caudal lateral eye rotation, Lateral jaw/mouth translocation, Open-loop fixed-vector null model, and GM6001 MMP inhibitor blockade (eta_MMP=0.04)."
+      - "Add automated PCA craniofacial axis, triangular head-contour width profile, snout apex, and bilateral dorsolateral eye segmentation on `xenopus_craniofacial_specimen.jpg`, and render a 9-panel dark-mode synthesis figure and 24-frame animated GIF."

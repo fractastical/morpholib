@@ -1,0 +1,64 @@
+sim_id: savin-gut-looping-differential-growth
+math_family: "Kirchhoff Elastic Rod & Stretched Neo-Hookean Dorsal Mesentery Differential-Growth Buckling"
+model_spec:
+  model: "Savin et al. (2011) Nature 476:57-62 Kirchhoff rod + neo-Hookean dorsal mesentery differential-growth gut looping"
+  c_lambda: 4.55
+  c_R: 1.68
+  rod_nodes_N: 120
+  seed: 2011
+  inputs:
+    - datasets/gut_looping_differential_growth/gut_looping_differential_growth_reference.json
+    - datasets/gut_looping_differential_growth/intestine_mesentery_specimen.jpg
+    - datasets/gut_looping_differential_growth/scout_manifest.json
+    - datasets/gut_looping_differential_growth/paper_citations.bib
+equations:
+  - law_name: "Savin et al. (2011) Differential Growth Strain & Surgical Mesentery Ablation Law"
+    formula: "ε = (L_t - L_m) / L_m = L_t / L_m - 1;  ε = 0 ⇔ L_t = L_m (zero buckling force)"
+    lean_decl: "MathOfBiology.Loop_062.diff_growth_excess"
+    lean_theorem: "MathOfBiology.Loop_062.savin_equal_growth_zero_strain"
+    lean_locus: "morphoeval/lean/loops/Loop_062_gut_looping_differential_growth.lean#L24-L35"
+    lean_code: |
+      def diff_growth_excess (L_t L_m : Int) : Int :=
+        L_t - L_m
+      theorem savin_equal_growth_zero_strain (L : Int) :
+          diff_growth_excess L L = 0 ∧
+          ∀ dL : Nat, diff_growth_excess (L + Int.ofNat (dL + 1)) L = Int.ofNat (dL + 1)
+    variables: "L_t: relaxed intestinal tube length (mm); L_m: relaxed dorsal mesentery attachment length (mm); ε: differential growth strain"
+    role: "Quantifies the compressive mechanical mismatch driving midgut looping and predicts complete uncoiling upon surgical mesentery dissection or zero differential growth"
+    source_citation: "Savin et al. (2011) Nature 476:57-62 Fig. 1d-g & p. 58"
+    code_locus: "2011-savin-gut-looping-differential-growth.py#L140-L230"
+
+  - law_name: "Savin et al. (2011) Cube-Law Wavelength & Loop Radius Scaling Law"
+    formula: "U_tot(λ) = B_t / λ^2 + K_m λ  ⇒  ∂U_tot/∂λ = 0  ⇔  λ = c_λ (E_t I_t / (E_m h_m))^(1/3),  R = c_R (E_t I_t / (E_m h_m))^(1/3)"
+    lean_decl: "MathOfBiology.Loop_062.savin_euler_lagrange_residual"
+    lean_theorem: "MathOfBiology.Loop_062.savin_cube_law_stationarity"
+    lean_locus: "morphoeval/lean/loops/Loop_062_gut_looping_differential_growth.lean#L53-L58"
+    lean_code: |
+      def savin_euler_lagrange_residual (lam B_t K_m : Int) : Int :=
+        K_m * (lam * lam * lam) - 2 * B_t
+      theorem savin_cube_law_stationarity (lam K_m : Int) :
+          savin_euler_lagrange_residual lam (K_m * (lam * lam * lam)) (2 * K_m) = 0 := by
+        simp [savin_euler_lagrange_residual, Int.mul_assoc, Int.mul_comm, Int.mul_left_comm]
+    variables: "λ: gut loop wavelength (mm); R: mean loop radius of curvature (mm); B_t = E_t I_t: gut rod bending stiffness; K_m = E_m h_m: mesenteric sheet tensile stiffness; ℓ_* = (E_t I_t / (E_m h_m))^(1/3)"
+    role: "Predicts embryonic gut loop wavelength and radius across chick ontogeny (E8-E16) and across 4 vertebrate species (zebra finch, quail, chick, mouse) without free species-specific parameters"
+    source_citation: "Savin et al. (2011) Nature 476:57-62 pp. 59-61, Figs. 3e-f & 4e-f"
+    code_locus: "2011-savin-gut-looping-differential-growth.py#L140-L310"
+
+  - law_name: "Hollow Annular Gut Tube Area Moment of Inertia Factorization Law"
+    formula: "I_t = (π / 4) (R_t^4 - R_i^4) = (π / 4) (R_t - R_i)(R_t + R_i)(R_t^2 + R_i^2) > 0  for R_t > R_i"
+    lean_decl: "MathOfBiology.Loop_062.savin_annular_inertia_scaled"
+    lean_theorem: "MathOfBiology.Loop_062.savin_annular_inertia_factorization"
+    lean_locus: "morphoeval/lean/loops/Loop_062_gut_looping_differential_growth.lean#L73-L86"
+    lean_code: |
+      def savin_annular_inertia_scaled (R_t R_i : Int) : Int :=
+        R_t * R_t * R_t * R_t - R_i * R_i * R_i * R_i
+      def savin_annular_inertia_factored (R_t R_i : Int) : Int :=
+        (R_t - R_i) * (R_t + R_i) * (R_t * R_t + R_i * R_i)
+      theorem savin_annular_inertia_factorization (R_t R_i : Int) :
+          savin_annular_inertia_scaled R_t R_i = savin_annular_inertia_factored R_t R_i ∧
+          savin_annular_inertia_scaled 2 1 = 15 ∧
+          savin_annular_inertia_scaled 3 1 = 80
+    variables: "R_t: outer gut tube radius (mm); R_i: inner lumen radius (mm); I_t: second moment of area (mm^4)"
+    role: "Determines the quartic sensitivity of gut bending stiffness B_t = E_t I_t to outer and inner lumen radii during embryonic growth"
+    source_citation: "Savin et al. (2011) Nature 476:57-62 p. 59 & Supplementary Information Sec. S2"
+    code_locus: "2011-savin-gut-looping-differential-growth.py#L140-L185"

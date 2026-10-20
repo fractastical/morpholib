@@ -1,0 +1,91 @@
+sim_id: cooke-clock-and-wavefront
+math_family: Clock-and-Wavefront Somite Segmentation (Kinematic Phase-Gating & Thom-Zeeman Cusp Catastrophe)
+model_spec:
+  model: "Cooke & Zeeman (1976) clock-and-wavefront somite segmentation S = v * T_c, N = L / (v * T_c), and Thom-Zeeman cusp catastrophe wavefront dchi/dt = -(chi^3 - a(x,t)*chi - b_osc(x,t))/tau_chi"
+  governing_equations:
+    somite_wavelength: "S = v * T_c"
+    somite_number: "N = L / (v * T_c)"
+    size_invariance: "v = L / T_total => N = T_total / T_c"
+    cusp_wavefront_ode: "tau_chi * dchi/dt = -(chi^3 - tanh((v*t - x)/sigma_w)*chi - (b_0 + A_c*cos(2*pi*t/T_c - k_phi*x)))"
+  canonical_parameters:
+    L_normal_mm: 4.0
+    L_miniature_mm: 2.4
+    T_c_min: 45.0
+    T_total_min: 1800.0
+    N_invariant: 40
+  inputs:
+    - datasets/clock_and_wavefront/clock_and_wavefront_reference.json
+    - datasets/clock_and_wavefront/somite_embryo_specimen.jpg
+    - datasets/clock_and_wavefront/scout_manifest.json
+equations:
+  - id: cooke-clock-and-wavefront-1
+    law_name: "Cooke & Zeeman (1976) Somite Wavelength Law"
+    title: "Cooke & Zeeman (1976) Somite Wavelength Law"
+    formula: "S = v * T_c;  S(k * v, T_c) = k * S(v, T_c);  S(v, 2 * T_c) = 2 * S(v, T_c)"
+    latex: "S = v \\, T_c"
+    ascii: "S = v * T_c"
+    lean_decl: "MathOfBiology.Loop_021.somite_length"
+    lean_theorem: "MathOfBiology.Loop_021.cooke_zeeman_1976_wavelength_period_scaling"
+    lean_file: morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L18-L41"
+    lean_code: |-
+      def somite_length (v T_c : Nat) : Nat := v * T_c
+      theorem cooke_zeeman_1976_wavelength_period_scaling (k v T_c : Nat) :
+          somite_length (k * v) T_c = k * somite_length v T_c ∧
+          somite_length v (2 * T_c) = 2 * somite_length v T_c
+    lean_declaration: |-
+      theorem cooke_zeeman_1976_wavelength_period_scaling (k v T_c : Nat) :
+          somite_length (k * v) T_c = k * somite_length v T_c ∧
+          somite_length v (2 * T_c) = 2 * somite_length v T_c
+    variables: "S: anteroposterior somite length (um); v: determination wavefront regression velocity (um/min); T_c: intracellular segmentation clock period (min)"
+    role: "Determines the spatial period S of serially repeated somite blocks from wavefront velocity v and oscillator period T_c"
+    source_citation: "Cooke & Zeeman (1976) J. Theor. Biol. 58(2):455-476 Sections 2-3"
+    code_locus: "1976-cooke-clock-and-wavefront.py#L88-L108"
+  - id: cooke-clock-and-wavefront-2
+    law_name: "Cooke (1975) & Cooke-Zeeman (1976) Embryo Size-Invariance Scaling Law"
+    title: "Cooke (1975) & Cooke-Zeeman (1976) Embryo Size-Invariance Scaling Law"
+    formula: "N = L / (v * T_c);  v = L / T_total => N = T_total / T_c (invariant under embryo length scaling L' = alpha * L_0)"
+    latex: "N = \\frac{L}{v \\, T_c}, \\quad v = \\frac{L}{T_{\\text{total}}} \\implies N = \\frac{T_{\\text{total}}}{T_c}"
+    ascii: "N = L / (v * T_c); v' = alpha * v_0 and L' = alpha * L_0 => N' = N_0"
+    lean_decl: "MathOfBiology.Loop_021.segmented_axis_length"
+    lean_theorem: "MathOfBiology.Loop_021.cooke_1975_miniature_embryo_size_invariance"
+    lean_file: morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L25-L54"
+    lean_code: |-
+      def segmented_axis_length (N v T_c : Nat) : Nat := N * somite_length v T_c
+      theorem cooke_1975_miniature_embryo_size_invariance (scale N v_0 T_c : Nat) :
+          segmented_axis_length N (scale * v_0) T_c =
+            scale * segmented_axis_length N v_0 T_c
+    lean_declaration: |-
+      theorem cooke_1975_miniature_embryo_size_invariance (scale N v_0 T_c : Nat) :
+          segmented_axis_length N (scale * v_0) T_c =
+            scale * segmented_axis_length N v_0 T_c
+    variables: "N: total somite number; L: anteroposterior body axis length (mm); scale: embryo size reduction ratio; T_total: total segmentation duration (min)"
+    role: "Proves that proportional scaling of wavefront velocity v with body length L preserves total somite count N ~ 40 in surgically reduced Xenopus embryos"
+    source_citation: "Cooke (1975) Nature 254:196-199 Table 1; Cooke & Zeeman (1976) J. Theor. Biol. 58(2):455-476 Section 4"
+    code_locus: "1976-cooke-clock-and-wavefront.py#L115-L142"
+  - id: cooke-clock-and-wavefront-3
+    law_name: "Thom-Zeeman Cusp Catastrophe Wavefront Bifurcation"
+    title: "Thom-Zeeman Cusp Catastrophe Wavefront Bifurcation"
+    formula: "tau_chi * dchi/dt = -(chi^3 - a(x,t) * chi - b_osc(x,t));  a(x,t) = tanh((v*t - x)/sigma_w)"
+    latex: "\\tau_\\chi \\frac{\\partial \\chi}{\\partial t} = -\\bigl(\\chi^3 - a(x,t)\\,\\chi - b_{\\text{osc}}(x,t)\\bigr)"
+    ascii: "tau_chi * dchi/dt = -(chi^3 - a(x,t)*chi - b_osc(x,t))"
+    lean_decl: "MathOfBiology.Loop_021.cusp_catastrophe_residual"
+    lean_theorem: "MathOfBiology.Loop_021.zeeman_1976_cusp_wavefront_bifurcation"
+    lean_file: morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L56-L70"
+    lean_code: |-
+      def cusp_catastrophe_residual (chi a b : Int) : Int := chi * chi * chi - a * chi - b
+      theorem zeeman_1976_cusp_wavefront_bifurcation :
+          cusp_catastrophe_residual 0 (-1) 0 = 0 ∧
+          cusp_catastrophe_residual 1 1 0 = 0 ∧
+          cusp_catastrophe_residual (-1) 1 0 = 0
+    lean_declaration: |-
+      theorem zeeman_1976_cusp_wavefront_bifurcation :
+          cusp_catastrophe_residual 0 (-1) 0 = 0 ∧
+          cusp_catastrophe_residual 1 1 0 = 0 ∧
+          cusp_catastrophe_residual (-1) 1 0 = 0
+    variables: "chi: cellular determination/adhesion state; a(x,t): wavefront unfolding parameter; b_osc(x,t): clock-modulated asymmetry parameter"
+    role: "Converts smooth anterior-posterior wavefront progression into sharp, discrete inter-somitic boundary clefts gated by the segmentation clock phase"
+    source_citation: "Cooke & Zeeman (1976) J. Theor. Biol. 58(2):455-476 Figs. 2-4"
+    code_locus: "1976-cooke-clock-and-wavefront.py#L145-L246"

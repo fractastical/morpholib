@@ -1,0 +1,50 @@
+sim_id: brodland-differential-interfacial-tension-sorting
+math_family: Differential Interfacial Tension Hypothesis (DITH) & Young-Dupré Cell-Doublet Mechanics
+equations:
+  - law_name: Brodland (2002) Differential Interfacial Tension Law & Blebbistatin Equal-Cortex Null Identity
+    formula: "γ_{αβ} = β_α^{cort} + β_β^{cort} - ω_{αβ}^{adh},  γ_{α0} = β_α^{cort};  β_E = β_M = β ⇒ γ_{M0} - γ_{E0} = 0"
+    lean_decl: MathOfBiology.Loop_044.dith_gamma_ab
+    lean_theorem: MathOfBiology.Loop_044.dith_blebbistatin_equal_cortex_null_sorting
+    lean_locus: morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean#L17-L40
+    lean_code: |-
+      def dith_gamma_ab (beta_a beta_b omega_ab : Int) : Int :=
+        beta_a + beta_b - omega_ab
+      theorem dith_blebbistatin_equal_cortex_null_sorting (beta : Int) :
+          dith_gamma_ab beta beta (2 * beta) = 0 ∧ dith_spreading_diff beta beta = 0
+    variables: "β_α^{cort}, β_β^{cort}: actomyosin cell-cortex tensions; ω_{αβ}^{adh}: cadherin adhesion energy; γ_{αβ}: effective cell-cell interfacial tension"
+    role: "Decomposes macroscopic cell-cell interfacial tension into actomyosin cortical tension minus cadherin adhesion and proves that Myosin-II inhibition zeroes the sorting force"
+    source_citation: "Brodland (2002) J. Biomech. Eng. 124(2):188-197 Eqs. (1)-(4); Krieg et al. (2008) Nature Cell Biology 10(4):429-436 Fig. 3"
+    code_locus: "2002-brodland-differential-interfacial-tension-sorting.py#L97-L145"
+  - law_name: Krieg et al. (2008) Zebrafish Germ-Layer Cortical Tension Hierarchy & caMLCK Sorting Reversal
+    formula: "Wild-type: β_E (50) < β_M (95) < β_N (130 pN/μm), 0 < γ_{EM} < β_M - β_E;  caMLCK ectoderm: β_{E+caMLCK} (145) > β_M (95) ⇒ inverted engulfment"
+    lean_decl: MathOfBiology.Loop_044.dith_spreading_diff
+    lean_theorem: MathOfBiology.Loop_044.krieg_2008_germ_layer_hierarchy_and_camlc_reversal
+    lean_locus: morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean#L42-L63
+    lean_code: |-
+      theorem krieg_2008_germ_layer_hierarchy_and_camlc_reversal :
+          (50 < 95 ∧ 95 < 130) ∧
+          dith_gamma_ab 50 95 115 = 30 ∧
+          dith_spreading_diff 50 95 = 45 ∧
+          (0 < dith_gamma_ab 50 95 115 ∧ dith_gamma_ab 50 95 115 < dith_spreading_diff 50 95) ∧
+          dith_spreading_diff 145 95 = -50 ∧
+          (0 < dith_gamma_ab 145 95 210 ∧ dith_gamma_ab 145 95 210 < dith_spreading_diff 95 145)
+    variables: "β_E, β_M, β_N: AFM cortical tensions of zebrafish ectoderm, mesoderm, and endoderm progenitors (pN/μm); γ_{EM}: ectoderm-mesoderm interfacial tension"
+    role: "Predicts concentric germ-layer engulfment in wild-type zebrafish gastrulae and sorting reversal when ectodermal cortex tension is elevated via caMLCK"
+    source_citation: "Krieg et al. (2008) Nature Cell Biology 10(4):429-436 Figs. 1-4"
+    code_locus: "2002-brodland-differential-interfacial-tension-sorting.py#L284-L617"
+  - law_name: Maître et al. (2012) Young-Dupré Cell-Doublet Contact Angle & Normalized Contact Radius Law
+    formula: "cos(θ) = 1 - γ_{cc} / (2 γ_{cm}),  r_c / R_{cell} = sin(θ) = √(1 - cos^2(θ))"
+    lean_decl: MathOfBiology.Loop_044.young_dupre_num
+    lean_theorem: MathOfBiology.Loop_044.maitre_2012_young_dupre_contact_bounds
+    lean_locus: morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean#L65-L89
+    lean_code: |-
+      def young_dupre_num (gamma_cm gamma_cc : Int) : Int :=
+        2 * gamma_cm - gamma_cc
+      theorem maitre_2012_young_dupre_contact_bounds (gamma_cm gamma_cc dgamma : Int) :
+          young_dupre_num gamma_cm (2 * gamma_cm) = 0 ∧
+          young_dupre_num gamma_cm 0 = 2 * gamma_cm ∧
+          young_dupre_num gamma_cm (gamma_cc + dgamma) = young_dupre_num gamma_cm gamma_cc - dgamma
+    variables: "θ: equilibrium cell-doublet contact half-angle; γ_{cc}: cell-cell interfacial tension; γ_{cm}: cell-medium cortical tension; r_c/R_{cell}: normalized contact radius"
+    role: "Determines the equilibrium geometry of adhering zebrafish progenitor doublets from the ratio of cell-cell interfacial tension to cell-medium cortical tension"
+    source_citation: "Maître et al. (2012) Science 338(6104):253-256 Eq. (1) & Figs. 1-3"
+    code_locus: "2002-brodland-differential-interfacial-tension-sorting.py#L148-L190"

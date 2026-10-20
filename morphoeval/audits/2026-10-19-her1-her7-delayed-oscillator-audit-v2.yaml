@@ -1,0 +1,192 @@
+# MorphoEval audit — Lewis (2003) Zebrafish her1/her7 Delayed Oscillator & Notch Coupling, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2003-lewis-her1-her7-delayed-oscillator.py` (Slot 022)
+# superseding `2026-10-19-her1-her7-delayed-oscillator-audit` in `2026-10-19-her1-her7-delayed-oscillator-loop`.
+
+audit:
+  id: 2026-10-19-her1-her7-delayed-oscillator-audit-v2
+  supersedes_audit_id: 2026-10-19-her1-her7-delayed-oscillator-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2003-lewis-her1-her7-delayed-oscillator.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-her1-her7-delayed-oscillator-loop`).
+
+references:
+  lewis2003:
+    title: "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator"
+    authors: "Lewis J"
+    venue: "Current Biology 13(16):1398-1408 (2003)"
+    doi: 10.1016/S0960-9822(03)00534-7
+  giudicelli2007:
+    title: "Setting the tempo in development: an investigation of the zebrafish somite clock mechanism"
+    authors: "Giudicelli F, Ozbudak EM, Wright GJ, Lewis J"
+    venue: "PLoS Biology 5(6):e150 (2007)"
+    doi: 10.1371/journal.pbio.0050150
+  herrgen2010:
+    title: "Intercellular coupling regulates the period of the segmentation clock"
+    authors: "Herrgen L, Ares S, Morelli LG, Schroter C, Julicher F, Oates AC"
+    venue: "Current Biology 20(14):1244-1253 (2010)"
+    doi: 10.1016/j.cub.2010.06.034
+  schroter2012:
+    title: "Topology and dynamics of the zebrafish segmentation clock core circuit"
+    authors: "Schroter C, Ares S, Morelli LG, Isakova A, Koo B-K, Julicher F, Oates AC"
+    venue: "PLoS Biology 10(7):e1001364 (2012)"
+    doi: 10.1371/journal.pbio.1001364
+
+simulations:
+  - id: lewis-her1-her7-delayed-oscillator
+    name: "Lewis (2003) zebrafish her1/her7 autoinhibitory delay differential oscillator and DeltaC-Notch synchronization"
+    organism: "Danio rerio (zebrafish presomitic mesoderm & paraxial somites)"
+    script: 2003-lewis-her1-her7-delayed-oscillator.py
+    output: docs/media/her1_her7_delayed_oscillator_comparison.png
+    extra_outputs:
+      - docs/media/her1_her7_delayed_oscillator_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Lewis (2003) Current Biology 13:1398-1408 single-cell her1/her7 delay differential equations dp/dt = a m(t - T_p) - b p(t) and dm/dt = k / (1 + (p(t - T_m)/p_0)^n) - c m(t)"
+        - "Supercritical Hopf bifurcation threshold T_tot = T_m + T_p > T_crit, oscillation period rule T_osc ~ 2*(T_m + T_p + tau_p + tau_m) ~ 30 min at 28 C, and DeltaC-Notch synchronization vs bea/des/aei mutant desynchronization after 5-7 anterior somites"
+      reconstructed_in_script:
+        - "4th-order Runge-Kutta method-of-steps DDE integrator verifying total delay invariance (T_m - delta, T_p + delta), Hopf threshold T_crit = 7.54 min, subcritical intron-deletion damping (0 late peaks), and cycloheximide arrest (a=0 -> m*=143.5 molecules)"
+        - "32-cell stochastic PSM phase-oscillator ensemble reproducing wild-type Notch-coupled synchrony (R_sync = 0.9840, 14/14 intact somites) vs Notch mutant desynchronization after 6 intact anterior somites (late R_sync = 0.2316)"
+        - "Bilateral dorsal somite row DoG peak and inter-somitic cleft segmentation on zebrafish_somites_specimen.jpg (48.47 px mean spacing, symmetry ratio 0.9605)"
+      transfer_boundary:
+        - "Single-cell her1/her7 DDE and 1D stochastic Kuramoto-Notch PSM chain mapped to dorsal vertebrate SEM somite metameres"
+      does_not_claim:
+        - "Full 2D spatial traveling kinematic phase waves with Doppler tailbud shortening or explicit Hes6 heterodimer stoichiometry"
+    source_refs:
+      - lewis2003
+      - giudicelli2007
+      - herrgen2010
+      - schroter2012
+    summary: >-
+      Pass 2 post-remediation evaluation of `2003-lewis-her1-her7-delayed-oscillator.py` (91.1/100,
+      up from 58.9/100 in Pass 1; +32.2 overall). The remediated script integrates Lewis's (2003)
+      autoinhibitory her1/her7 delay differential equations via a 4th-order Runge-Kutta method-of-steps
+      solver, derives the exact characteristic-equation Hopf bifurcation threshold T_crit = 7.54 min
+      around the fixed point (m* = 8.27, p* = 161.76 molecules), verifies total-delay invariance
+      T_tot = T_m + T_p, reproduces all 5 experimental regimes across Lewis (2003), Giudicelli et al.
+      (2007), and Herrgen et al. (2010) (WT T_osc = 30.01 min, pure her7 fast branch 24.65 min, pure
+      her1 slow branch 36.65 min, Notch delay slowing 32.45 min, and intron-deletion/CHX arrest
+      0.0 min; Pearson r = 0.9999, RMSE = 0.174 min), models multicellular DeltaC-Notch phase
+      synchronization (WT R_sync = 0.9840 vs bea/des/aei mutant preserving 6 anterior somites before
+      dropping to R_sync = 0.2316), and segments the vendored vertebrate SEM specimen
+      (`zebrafish_somites_specimen.jpg`, 8 upper and 9 lower somites, mean spacing 48.47 px),
+      backed by 3 machine-checked Lean 4 theorems in `Loop_022_her1_her7_delayed_oscillator.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Faithfully implements Lewis's (2003) single-cell her1/her7 autoinhibitory DDEs
+          dp/dt = a m(t - T_p) - b p(t) and dm/dt = k / (1 + (p(t - T_m)/p_0)^n) - c m(t), exact
+          characteristic-root Hopf bifurcation threshold T_crit = 7.54 min, Box 1 period law,
+          and multicellular DeltaC-Notch stochastic synchronization (L115-395), verified by
+          3 machine-checked Lean 4 theorems (0 sorrys) in
+          `morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean`.
+        evidence:
+          - {file: 2003-lewis-her1-her7-delayed-oscillator.py, lines: [115, 255], note: "RK4 method-of-steps DDE solver, fixed-point root finder, and exact Hopf threshold T_crit = 7.54 min", supports: true}
+          - {file: 2003-lewis-her1-her7-delayed-oscillator.py, lines: [305, 395], note: "32-cell stochastic DeltaC-Notch coupled PSM simulator reproducing WT synchrony and bea/des/aei 6-somite anterior preservation", supports: true}
+          - {file: morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean, lines: [27, 98], note: "3 machine-checked Lean 4 theorems (0 sorrys) for protein balance, delay invariance, period sensitivity, and Notch phase contraction", supports: true}
+      specimen-match:
+        value: 87
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 dorsal vertebrate embryo SEM
+          (`datasets/her1_her7_delayed_oscillator/zebrafish_somites_specimen.jpg`) and segments both
+          bilateral paraxial somite rows flanking the neural tube (`segment_zebrafish_somites_specimen`,
+          L400-475), extracting 8 upper somites (mean spacing 47.43 px, CV = 0.1965) and 9 lower
+          somites (mean spacing 49.38 px, CV = 0.2012), bilateral mean spacing 48.47 px, bilateral
+          symmetry ratio 0.9605, and phase-aligned waveform correlation (Panels E-F).
+        evidence:
+          - {file: 2003-lewis-her1-her7-delayed-oscillator.py, lines: [400, 475], note: "Bilateral dorsal somite DoG peak & inter-somitic cleft segmentation on zebrafish_somites_specimen.jpg", supports: true}
+          - {file: docs/media/her1_her7_delayed_oscillator_comparison.png, lines: [0, 0], note: "6-panel synthesis figure including DDE traces, Hopf morphospace, Notch vs bea/des/aei synchrony, 5-regime validation, SEM segmentation, and waveform fit", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          Evaluates all 5 experimental regimes from Lewis (2003), Giudicelli et al. (2007), and
+          Herrgen et al. (2010) (WT coupled her1/her7, pure her7 fast loop, pure her1 slow loop,
+          DeltaC-Notch collective delay slowing, and intron-deletion / CHX arrest), maps the 2D
+          Hopf bifurcation and period morphospace T_osc(T_m + T_p, b) across T_tot in [1, 16] min
+          and decay rate b in [0.10, 0.45] min^-1 (Panel B), includes subcritical delay (T_tot =
+          2.0 min < T_crit) and cycloheximide (a = 0) negative controls (Panel A), and exposes CLI
+          flags (`--Tm`, `--Tp`, `--kappa`, `--seed`).
+        evidence:
+          - {file: 2003-lewis-her1-her7-delayed-oscillator.py, lines: [260, 300], note: "5-regime zebrafish segmentation clock period evaluator", supports: true}
+          - {file: 2003-lewis-her1-her7-delayed-oscillator.py, lines: [610, 645], note: "2D (T_tot, b) Hopf bifurcation and oscillation period morphospace contour", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: >-
+          Extracts 5 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L480-560): wild-type oscillation period T_osc = 30.01 min vs
+          30.0 min (DDE period = 33.62 min, mRNA amplitude = 22.9 molecules), supercritical Hopf
+          critical delay threshold T_crit = 7.54 min vs 7.54 min (fixed point m* = 8.27, p* = 161.76),
+          DeltaC-Notch wild-type synchronization order parameter R_sync = 0.9840 vs 0.965 (with
+          Notch mutant preserving 6 anterior somites before dropping to R_sync = 0.2316), 5-regime
+          Pearson correlation r = 0.9999 (p = 2.67e-7, RMSE = 0.174 min), and bilateral SEM specimen
+          somite spacing 48.47 +/- 9.69 px (CV = 0.1999, symmetry ratio = 0.9605).
+        evidence:
+          - {file: 2003-lewis-her1-her7-delayed-oscillator.py, lines: [480, 560], note: "5 quantitative MorphoEval measurements with analytical and empirical references, Kuramoto R, Pearson r, and RMSE", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/her1_her7_delayed_oscillator/` with `scout_manifest.json`,
+          `her1_her7_delayed_oscillator_reference.json`, `zebrafish_somites_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.1016/S0960-9822(03)00534-7`,
+          `10.1371/journal.pbio.0050150`, `10.1016/j.cub.2010.06.034`,
+          `10.1371/journal.pbio.1001364`), and `README.md`, with runtime SHA-256 verification
+          (`verify_dataset_integrity`, L75-110).
+        evidence:
+          - {file: 2003-lewis-her1-her7-delayed-oscillator.py, lines: [75, 110], note: "Runtime SHA-256 verification of datasets/her1_her7_delayed_oscillator/ artifacts", supports: true}
+          - {file: datasets/her1_her7_delayed_oscillator/her1_her7_delayed_oscillator_reference.json, lines: [1, 165], note: "Vendored Lewis (2003) DDE equations, Hopf locus, 5-regime perturbation table, and specimen metadata", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Every computational section and docstring maps directly to numbered equations and figures
+          in Lewis (2003) Current Biology Eqs. 1-2, Box 1, Figs. 2-6, and the 3 Lean 4 theorems in
+          `Loop_022_her1_her7_delayed_oscillator.lean` and
+          `morphoeval/math_kg_loops/lewis-her1-her7-delayed-oscillator.yaml`.
+        evidence:
+          - {file: 2003-lewis-her1-her7-delayed-oscillator.py, lines: [1, 58], note: "Module docstring linking equations to Lewis (2003) and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/lewis-her1-her7-delayed-oscillator.yaml, lines: [1, 95], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic RNG (`seed=2003`), standalone `--self-test` suite verifying SHA-256 dataset
+          integrity, Hopf critical threshold T_crit = 7.54 min, total delay invariance (T_m - delta,
+          T_p + delta), subcritical intron-deletion damping (0 late peaks), cycloheximide arrest
+          (a = 0 -> m* = k/c), bitwise two-run PSM synchrony determinism (`atol=0.0`), Notch mutant
+          6-somite anterior preservation, and specimen segmentation (`run_self_test`, L780-845),
+          plus rendered PNG and GIF outputs in `docs/media/`.
+        evidence:
+          - {file: 2003-lewis-her1-her7-delayed-oscillator.py, lines: [780, 845], note: "Deterministic --self-test suite verifying SHA-256 digests, DDE invariance, negative controls, and morphometrics", supports: true}
+          - {file: docs/media/her1_her7_delayed_oscillator_growth.gif, lines: [0, 0], note: "24-frame animated GIF comparing wild-type Notch-coupled vs bea/des/aei uncoupled somite segmentation", supports: true}
+    remediation:
+      - "Extend the 32-cell stochastic phase chain to a full 2D multicellular DDE lattice with explicit delayed DeltaC protein translation and Notch intracellular domain (NICD) cleavage kinetics."
+      - "Couple the anterior-to-posterior spatial phase gradient to the Schröter et al. (2012) Her1/Her7/Hes6 heterodimerization truth table."

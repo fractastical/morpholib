@@ -1,0 +1,142 @@
+# MorphoEval Pass 1 (v1) Audit — Tero et al. (2010) Science 327:439-442 & Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. 244:553-564
+# Adaptive Physarum Tube Conductivity Network & Murray/Steiner Phase Transition (Slot 057)
+
+audit:
+  id: 2026-10-19-physarum-transport-network-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 057 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/57
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2010-tero-physarum-transport-network.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  tero2010:
+    title: "Rules for Biologically Inspired Adaptive Network Design"
+    authors: "Tero A, Takagi S, Saigusa T, Ito K, Bebber DP, Fricker MD, Yumiki K, Kobayashi R, Nakagaki T"
+    venue: "Science 327(5964):439-442 (2010)"
+    doi: 10.1126/science.1177894
+  tero2007:
+    title: "A mathematical model for adaptive transport network in path finding by true slime mold"
+    authors: "Tero A, Kobayashi R, Nakagaki T"
+    venue: "Journal of Theoretical Biology 244(4):553-564 (2007)"
+    doi: 10.1016/j.jtbi.2006.07.015
+  nakagaki2000:
+    title: "Maze-solving by an amoeboid organism"
+    authors: "Nakagaki T, Yamada H, Toth A"
+    venue: "Nature 407(6803):470 (2000)"
+    doi: 10.1038/35035159
+  murray1926:
+    title: "The Physiological Principle of Minimum Work: I. The Vascular System and the Cost of Blood Volume"
+    authors: "Murray CD"
+    venue: "Proceedings of the National Academy of Sciences 12(3):207-214 (1926)"
+    doi: 10.1073/pnas.12.3.207
+
+simulations:
+  - id: tero-physarum-transport-network
+    name: "Tero et al. (2010) Science & Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. adaptive Physarum tube conductivity network, shortest-path phase transition, Murray's cube law, and Tokyo rail Pareto trade-off"
+    organism: "Physarum polycephalum (acellular plasmodial slime mold)"
+    script: 2010-tero-physarum-transport-network.py
+    output: docs/media/physarum_transport_network_comparison.png
+    extra_outputs:
+      - docs/media/physarum_transport_network_growth.gif
+    status: evaluated
+    source_refs:
+      - tero2010
+      - tero2007
+      - nakagaki2000
+      - murray1926
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2010-tero-physarum-transport-network.py`
+      (weighted score: 53.6/100). The Pass 1 baseline integrates only a 2-edge parallel
+      ODE at gamma=0.6 and gamma=1.8 without solving the multi-node Kirchhoff linear
+      system sum_j (D_ij/L_ij)*(p_i - p_j) = S_i across stochastic multi-food-source
+      pairs, omits the Tero et al. (2010) Fig. 3/4 phase transition sweep across
+      gamma in [0.6, 2.4] measuring normalized Total Length (TL_MST), Transport
+      Efficiency (MD_MST), and Fault Tolerance (FT), omits Murray's cube law
+      (r_0^3 = r_1^3 + r_2^3) verification at gamma = 4/3, and does not segment the
+      vendored Physarum polycephalum plasmodial specimen photograph.
+    scores:
+      model-fidelity:
+        value: 55
+        rationale: >-
+          Integrates a 2-path parallel ODE at gamma=0.6 and gamma=1.8 (L25-64), but omits
+          the full graph Laplacian Kirchhoff pressure solver across multi-node food sources,
+          Tero et al. (2010) Fig. 3/4 TL_MST / MD_MST / FT Pareto trade-off curves, and
+          Murray's cube law verification at gamma = 4/3.
+        evidence:
+          - {file: 2010-tero-physarum-transport-network.py, lines: [25, 64], note: "2-edge parallel ODE without multi-node Kirchhoff Laplacian solver or multi-source switching", supports: true}
+      specimen-match:
+        value: 45
+        rationale: >-
+          Vendors `datasets/physarum_transport_network/physarum_polycephalum_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, skeletonize, or measure vein-width
+          hierarchy, enclosed anastomosing loops, or Y-junction Murray cubic radius ratios.
+        evidence:
+          - {file: 2010-tero-physarum-transport-network.py, lines: [91, 134], note: "Renders 2-panel time-series plot without specimen segmentation", supports: false}
+      parameter-expressivity:
+        value: 50
+        rationale: >-
+          Evaluates only two gamma values (0.6 and 1.8) in a 2-edge toy circuit without
+          sweeping gamma across [0.6, 2.4], testing Murray's exponent gamma = 4/3, or
+          exposing CLI parameter overrides.
+        evidence:
+          - {file: 2010-tero-physarum-transport-network.py, lines: [67, 88], note: "Only two gamma points evaluated without full phase transition sweep", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          Exposes only 2 scalar measurements in `measure_morphoeval()` without TL_MST,
+          MD_MST, Fault Tolerance FT, Pearson correlation p-values, Murray cubic ratios,
+          or specimen CV morphometrics.
+        evidence:
+          - {file: 2010-tero-physarum-transport-network.py, lines: [67, 88], note: "Only 2 scalar metrics without dispersion or statistical tests", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `physarum_transport_network_reference.json`
+          with verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at
+          runtime.
+        evidence:
+          - {file: datasets/physarum_transport_network/physarum_transport_network_reference.json, lines: [1, 165], note: "Reference JSON present on disk but not verified at runtime in Pass 1", supports: true}
+      code-traceability:
+        value: 56
+        rationale: >-
+          Module docstring cites Tero et al. (2010) and Tero et al. (2007), but lacks
+          explicit equation-to-code and Lean 4 theorem mappings.
+        evidence:
+          - {file: 2010-tero-physarum-transport-network.py, lines: [1, 10], note: "Minimal docstring without Lean 4 theorem loci", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Includes a minimal 2-assertion `--self-test` flag, but lacks SHA-256 dataset
+          integrity checks, multi-source Kirchhoff conservation checks, and negative
+          ablation controls.
+        evidence:
+          - {file: 2010-tero-physarum-transport-network.py, lines: [137, 143], note: "Minimal 2-line self-test without SHA-256 or graph-level invariant checks", supports: false}
+    remediation:
+      - "Implement the full graph Laplacian Kirchhoff pressure solver sum_j (D_ij/L_ij)*(p_i - p_j) = S_i coupled to adaptive tube conductivity ODEs across a 2D multi-node Kanto/Physarum food-source network with stochastic source-sink pair switching."
+      - "Sweep gamma across [0.6, 2.4] to compute normalized Total Length (TL_MST), Transport Efficiency (MD_MST), and Fault Tolerance (FT), reproducing Tero et al. (2010) Science Fig. 3/4 and Tokyo rail Pareto optimality at gamma = 1.8."
+      - "Verify Murray's cube law (r_0^3 = r_1^3 + r_2^3) at gamma = 4/3 on Y-junction bifurcations and verify two-path shortest-path selection across gamma < 1, gamma = 1, and gamma > 1."
+      - "Segment and skeletonize the vendored Physarum polycephalum specimen photograph (`physarum_polycephalum_specimen.jpg`) to extract the vein-width hierarchy, closed anastomosing loop count (Betti-1), and empirical Y-junction Murray cubic radius ratio, backed by SHA-256 integrity checks and a comprehensive `--self-test` suite."

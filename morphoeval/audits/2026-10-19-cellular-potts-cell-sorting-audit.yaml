@@ -1,0 +1,171 @@
+# MorphoEval audit — Graner & Glazier (1992) PRL / Glazier & Graner (1993) PRE Cellular Potts Cell Sorting, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `1992-graner-cellular-potts-cell-sorting.py` (v1, 250 lines) prior to
+# Step 12 remediation in `2026-10-19-cellular-potts-cell-sorting-loop`.
+
+audit:
+  id: 2026-10-19-cellular-potts-cell-sorting-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b9976f8
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `1992-graner-cellular-potts-cell-sorting.py` prior to
+      Pass 2 remediation in `2026-10-19-cellular-potts-cell-sorting-loop`.
+
+references:
+  graner1992:
+    title: "Simulation of biological cell sorting using a two-dimensional extended Potts model"
+    authors: "Graner F, Glazier JA"
+    venue: "Physical Review Letters 69(13):2013-2016 (1992)"
+    doi: 10.1103/PhysRevLett.69.2013
+  glazier1993:
+    title: "Simulation of the differential adhesion driven rearrangement of biological cells"
+    authors: "Glazier JA, Graner F"
+    venue: "Physical Review E 47(3):2128-2154 (1993)"
+    doi: 10.1103/PhysRevE.47.2128
+  steinberg1963:
+    title: "Reconstruction of tissues by dissociated cells"
+    authors: "Steinberg MS"
+    venue: "Science 141(3579):401-408 (1963)"
+    doi: 10.1126/science.141.3579.401
+  gierer1972:
+    title: "Regeneration of Hydra from reaggregated cells"
+    authors: "Gierer A, Berking S, Bode H, David CN, Flick K, Hansmann G, Schaller H, Trenkner E"
+    venue: "Nature New Biology 239(91):98-101 (1972)"
+    doi: 10.1038/newbio239098a0
+  foty1996:
+    title: "Surface tensions of embryonic tissues predict their mutual envelopment behavior"
+    authors: "Foty RA, Pfleger CM, Forgacs G, Steinberg MS"
+    venue: "Development 122(5):1611-1620 (1996)"
+    doi: 10.1242/dev.122.5.1611
+
+simulations:
+  - id: graner-cellular-potts-cell-sorting
+    name: "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting"
+    organism: "Hydra attenuata (endoderm/ectoderm reaggregates) & Gallus gallus embryonic cell spheroids"
+    script: 1992-graner-cellular-potts-cell-sorting.py
+    output: docs/media/cellular_potts_cell_sorting_comparison.png
+    extra_outputs:
+      - docs/media/cellular_potts_cell_sorting_growth.gif
+    status: evaluated
+    source_refs:
+      - graner1992
+      - glazier1993
+      - steinberg1963
+      - gierer1972
+      - foty1996
+    summary: >-
+      Pass 1 (v1) evaluation of `1992-graner-cellular-potts-cell-sorting.py` (56.8/100).
+      The v1 baseline implements the Graner & Glazier (1992) 2D extended large-Q Cellular
+      Potts Model (CPM) Hamiltonian and surface tensions gamma_LD, gamma_LM, gamma_DM for
+      canonical complete sorting (`0 < gamma_LD < gamma_DM - gamma_LM`) plus an equal-adhesion
+      negative control (`gamma_LD = 0`), but omits the remaining three canonical phase regimes
+      (partial sorting / lens formation `gamma_LD > |gamma_LM - gamma_DM|`, checkerboard mixing
+      `gamma_LD < 0`, and cell dissociation `gamma_LM < 0`), omits Glazier & Graner's (1993)
+      zero-temperature `T = 0` lattice pinning arrest vs high-temperature `T >> J` thermal
+      melting controls, does not load or segment the vendored confocal embryonic cell aggregate
+      specimen (`embryonic_cell_aggregate_specimen.jpg`), and exposes no CLI parameter flags
+      beyond `--self-test`.
+    scores:
+      model-fidelity:
+        value: 67
+        rationale: >-
+          Implements the Graner & Glazier (1992) PRL Eqs. (2)-(3) interfacial tension
+          formulas (`compute_cpm_tensions`, L28-44) and the 2D extended Cellular Potts
+          Hamiltonian with 8-neighbor bond energies and quadratic volume elasticity
+          (`simulate_cpm_sorting_v1`, L47-177) for complete engulfment (`gamma_LD=3`)
+          and an equal-adhesion negative control (`gamma_LD=0`). However, v1 omits
+          partial sorting / lens formation (`gamma_LD > gamma_DM - gamma_LM`), checkerboard
+          mixing (`gamma_LD < 0`), cell dissociation (`gamma_LM < 0`), and Glazier & Graner's
+          (1993) zero-temperature `T = 0` pinning arrest vs high-`T` melting controls.
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [28, 44], note: "Graner & Glazier (1992) PRL Eqs. 2-3 surface tension formulas gamma_LD, gamma_LM, gamma_DM", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [47, 177], note: "2D Cellular Potts solver simulates only complete sorting and equal-adhesion control, omitting partial lens, checkerboard, dissociation, and T=0 pinning arrest", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/cellular_potts_cell_sorting/embryonic_cell_aggregate_specimen.jpg`
+          is vendored on disk, the v1 script never loads, verifies, or segments the confocal
+          embryonic cell aggregate specimen (`render_outputs_v1`, L180-213) and renders only
+          a 3-panel synthetic figure.
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [180, 213], note: "render_outputs_v1 renders 3 synthetic panels without loading or segmenting embryonic_cell_aggregate_specimen.jpg", supports: false}
+          - {file: docs/media/cellular_potts_cell_sorting_comparison.png, lines: [0, 0], note: "3-panel synthetic figure without biological specimen segmentation or radial fluorescence overlay", supports: false}
+      parameter-expressivity:
+        value: 45
+        rationale: >-
+          Evaluates only 2 hardcoded parameter sets (`J_LD=11` sorting vs `J=10` control)
+          without a continuous sweep across `J_LD` (or `gamma_LD`), without mapping temperature
+          regimes (`T = 0` pinning arrest, `T = 10` optimal sorting, `T = 80` thermal melting),
+          and without CLI parameter flags (`main`, L257-266).
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [183, 184], note: "Only 2 hardcoded parameter points evaluated in render_outputs_v1", supports: false}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [257, 266], note: "CLI parser only accepts --self-test", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          Computes normalized radial separation `(r_L - r_D)/R_agg` and final heterotypic
+          boundary fraction `L_LD / L_total` (`measure_morphoeval`, L216-247), but does not
+          fit Graner & Glazier's (1992) Fig. 3 logarithmic boundary decay law `L_het(t) ~ A - B ln(t)`,
+          does not compare simulated radial density profiles against the segmented confocal
+          specimen, and does not quantify `T = 0` pinning arrest vs `T = 10` sorting.
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [216, 247], note: "4 basic synthetic measurements without specimen profile correlation or logarithmic decay fit", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Module docstring cites Graner & Glazier (1992) and Glazier & Graner (1993) DOIs
+          (L5-6) and `datasets/cellular_potts_cell_sorting/` exists on disk, but the v1 script
+          does not load `cellular_potts_cell_sorting_reference.json` or verify SHA-256 digests
+          at runtime.
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [5, 7], note: "Cites 2 DOIs in docstring but omits runtime loading and SHA-256 verification of reference dataset", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions correspond to CPM surface tensions and Metropolis spin copy updates, and
+          `morphoeval/lean/loops/Loop_042_cellular_potts_cell_sorting.lean` proves 3 theorems,
+          but v1 docstrings lack equation-by-equation mappings to Graner & Glazier (1992)
+          Eqs. 1-3 & Fig. 3 and Glazier & Graner (1993) Table I & Section III.B.
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [28, 177], note: "Baseline functions lack detailed equation-number citations to Graner & Glazier (1992) and Glazier & Graner (1993)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_042_cellular_potts_cell_sorting.lean, lines: [1, 99], note: "3 machine-checked Lean 4 theorems for CPM surface tensions, 4 phase regimes, and volume elasticity", supports: true}
+      repro-package:
+        value: 67
+        rationale: >-
+          Uses deterministic `np.random.default_rng(1992)` and provides `--self-test` and
+          `measure_morphoeval()` (L216-255), but `self_test()` checks only 2 basic assertions
+          without SHA-256 dataset verification, 4-regime phase classification parity,
+          temperature pinning checks, or two-run bitwise determinism checks.
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [250, 255], note: "Minimal 2-check self_test() without SHA-256 verification or determinism check", supports: false}
+    remediation:
+      - "Simulate all 4 canonical thermodynamic phase regimes of Graner & Glazier (1992) / Glazier & Graner (1993) (`complete_sorting_engulfment` 0 < gamma_LD < gamma_DM - gamma_LM, `partial_sorting_lens` gamma_LD > |gamma_LM - gamma_DM|, `checkerboard_mixing` gamma_LD < 0, and `cell_dissociation` gamma_LM < 0) plus the equal-adhesion negative control (`gamma_LD = 0`) and a 7-point continuous J_LD sweep across both phase boundaries."
+      - "Implement Glazier & Graner (1993) Section III.B fluctuation temperature controls comparing zero-temperature `T = 0` lattice pinning arrest, optimal `T = 10` thermal sorting with logarithmic boundary decay `L_het(t) ~ A - B ln(t)` (Graner & Glazier 1992 Fig. 3), and high-temperature `T = 80` thermal melting."
+      - "Load and SHA-256-verify `datasets/cellular_potts_cell_sorting/cellular_potts_cell_sorting_reference.json` and `embryonic_cell_aggregate_specimen.jpg`, segment the inner GFP-positive dark-type bolus and outer polygonal RFP-outlined light-type tissue matrix, compare empirical vs. simulated radial density profiles (Pearson r and RMSE), and expose full CLI flags."

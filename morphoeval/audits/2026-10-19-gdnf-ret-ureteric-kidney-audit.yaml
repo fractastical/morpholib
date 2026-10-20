@@ -1,0 +1,165 @@
+# MorphoEval audit — Menshykau & Iber (2013) Phys. Biol. & Short et al. (2014) Dev. Cell GDNF-RET Kidney Ureteric Bud Branching, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2014-menshykau-gdnf-ret-ureteric-kidney.py` (212 lines)
+# prior to Step 12 remediation in `2026-10-19-gdnf-ret-ureteric-kidney-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.8 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `compute_turing_dispersion` (L53-77) evaluates only the linearized 1D dispersion
+#      polynomial without integrating the coupled 2D/3D mesenchymal GDNF + epithelial RET
+#      + Wnt11 + Sprouty1 reaction-diffusion PDEs or growing a spatial ureteric bud tree.
+#   2. `evaluate_baseline_generations` (L80-97) uses an idealized symmetric 2^g formula
+#      (RMSE = 46.8 tips across g=1..8) instead of simulating mixed dichotomous (m=2, 88%)
+#      and trichotomous (m=3, 12%) ampulla splitting with Horton-Strahler R_b and R_L ratios.
+#   3. The perturbation suite (Spry1-/- ectopic supernumerary budding, exogenous GDNF bead
+#      attraction, BMP4 stalk-elongation inhibition, and Gdnf-/-/Ret-/- renal agenesis)
+#      and biological specimen segmentation (`kidney_ureteric_tree_specimen.jpg`) are omitted.
+
+audit:
+  id: 2026-10-19-gdnf-ret-ureteric-kidney-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 055 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/55
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2014-menshykau-gdnf-ret-ureteric-kidney.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-gdnf-ret-ureteric-kidney-loop`.
+
+references:
+  menshykau2013:
+    title: "Kidney branching morphogenesis under the control of a ligand-receptor-based Turing mechanism"
+    authors: "Menshykau D, Iber D"
+    venue: "Physical Biology 10(4):046003 (2013)"
+    doi: 10.1088/1478-3975/10/4/046003
+  short2014:
+    title: "Global spatiotemporal control of branching morphogenesis in the developing mouse kidney"
+    authors: "Short KM, Combes AN, Lefevre J, Ju AL, Georgas KM, Lamberton T, Cairncross O, Rumballe BA, Taylor HS, Teasdale RD, Hamilton NA, Little MH, Smyth IM"
+    venue: "Developmental Cell 29(2):188-202 (2014)"
+    doi: 10.1016/j.devcel.2014.02.017
+  watanabe2004:
+    title: "Real-time analysis of ureteric bud branching morphogenesis in vitro"
+    authors: "Watanabe T, Costantini F"
+    venue: "Developmental Biology 271(1):98-106 (2004)"
+    doi: 10.1016/j.ydbio.2004.09.019
+  basson2005:
+    title: "Sprouty1 is a critical regulator of GDNF/RET-mediated kidney induction"
+    authors: "Basson MA, Akbulut S, Watson-Karsten J, Licht JD, Martin GR, Costantini F"
+    venue: "Developmental Cell 8(2):229-239 (2005)"
+    doi: 10.1016/j.devcel.2004.12.004
+
+simulations:
+  - id: menshykau-gdnf-ret-ureteric-kidney
+    name: "Menshykau & Iber (2013) & Short et al. (2014) GDNF-RET-Wnt11-Sprouty1 kidney ureteric bud Turing branching morphogenesis"
+    organism: "Mouse embryonic metanephric kidney ureteric bud & cap mesenchyme (Mus musculus, E11.5-E15.5)"
+    script: 2014-menshykau-gdnf-ret-ureteric-kidney.py
+    output: docs/media/gdnf_ret_ureteric_kidney_comparison.png
+    extra_outputs:
+      - docs/media/gdnf_ret_ureteric_kidney_growth.gif
+    status: evaluated
+    source_refs:
+      - menshykau2013
+      - short2014
+      - watanabe2004
+      - basson2005
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2014-menshykau-gdnf-ret-ureteric-kidney.py`
+      (overall weighted score: 56.8/100). The v1 script evaluates the homogeneous
+      steady state (R*, G*) and linearized Turing dispersion polynomial of the
+      Schnakenberg GDNF-RET system, but replaces spatial PDE integration and growing
+      ureteric tree branching with a hardcoded cosine profile and symmetric 2^g tip
+      formula, omits Horton-Strahler R_b / R_L morphometry and the 5-condition
+      perturbation suite (Spry1-/-, GDNF bead, BMP4 inhibition, Gdnf-/-/Ret-/- agenesis),
+      and does not segment the vendored E12.5 kidney ureteric bud specimen image.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Computes the exact homogeneous steady state (R*, G*) = (a + rho_G, rho_G/(a+rho_G)^2)
+          and Schnakenberg Turing dispersion relation Re(lambda(k)) (L33-77), backed by
+          3 Lean 4 theorems in `Loop_055_gdnf_ret_ureteric_kidney.lean`. However, it does
+          not numerically integrate the 2D coupled mesenchymal GDNF + epithelial RET +
+          Wnt11 + Sprouty1 reaction-diffusion PDEs or grow a spatial ureteric tree, and
+          omits the Gdnf-/-/Ret-/- renal agenesis negative control.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [33, 77], note: "Exact Schnakenberg GDNF-RET steady state and linearized Turing dispersion polynomial", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [80, 97], note: "Uses ideal 2^g tip power law without coupled reaction-diffusion PDE or growing ureteric tree solver", supports: false}
+      specimen-match:
+        value: 38
+        rationale: >-
+          Compares generation tip counts against Short et al. (2014) OPT measurements
+          (L80-97), but never loads, segments, or displays the vendored E12.5 metanephric
+          kidney specimen micrograph `datasets/gdnf_ret_ureteric_kidney/kidney_ureteric_tree_specimen.jpg`.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [80, 97], note: "Compares against Short et al. (2014) tabular tip counts without loading or segmenting kidney_ureteric_tree_specimen.jpg", supports: false}
+          - {file: docs/media/gdnf_ret_ureteric_kidney_comparison.png, lines: [0, 0], note: "4-panel v1 plot lacks biological specimen segmentation and spatial ureteric tree panels", supports: false}
+      parameter-expressivity:
+        value: 48
+        rationale: >-
+          Evaluates wild-type Turing dispersion and generation index g=1..8 (L53-97),
+          but omits the circumferential ampulla radius sweep across m=1,2,3,4 modes,
+          omits the 5-condition genetic/signaling perturbation suite (WT, Spry1-/-,
+          GDNF bead, BMP4 stalk inhibition, Gdnf-/-/Ret-/- agenesis), and exposes no
+          CLI parameter overrides (L188-205).
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [188, 205], note: "CLI exposes only --self-test, --verify-only, and --skip-gif without physical parameter overrides", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          `measure_morphoeval()` (L156-178) returns only 2 metrics (steady-state R*^2*G*
+          and ideal 2^g tip correlation with high RMSE = 46.8 tips), without measuring
+          Horton-Strahler bifurcation ratio R_b, length ratio R_L, circumferential mode
+          selection, perturbation deltas, or computer-vision specimen tip/calyx metrics.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [156, 178], note: "Only 2 baseline metrics in measure_morphoeval() without Horton-Strahler ratios or specimen CV metrics", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Loads `datasets/gdnf_ret_ureteric_kidney/gdnf_ret_ureteric_kidney_reference.json`
+          and cites Menshykau & Iber (2013) and Short et al. (2014) (L1-10, L29-30),
+          but performs no runtime SHA-256 verification of the 4 dataset files.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [29, 31], note: "Loads REF_JSON without runtime SHA-256 cryptographic verification", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Docstrings summarize steady-state and dispersion equations (L33-77), but lack
+          explicit mappings to Menshykau & Iber (2013) Eqs. (1)-(7), Short et al. (2014)
+          Figs. 2-4, Watanabe & Costantini (2004), Basson et al. (2005), and the 3 Lean 4
+          theorems in `Loop_055_gdnf_ret_ureteric_kidney.lean`.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [33, 77], note: "Brief docstrings without explicit paper equation/figure or Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Provides `--self-test` and `--verify-only` flags (L181-205), but `self_test()`
+          checks only 3 scalar assertions without testing SHA-256 integrity, PDE pattern
+          emergence, Horton-Strahler tree invariants, renal agenesis negative control,
+          or two-run bitwise determinism.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [181, 187], note: "Minimal 3-line self_test() without PDE, ablation, or determinism checks", supports: false}
+    remediation:
+      - "Implement a 2D/3D coupled mesenchymal GDNF + epithelial RET + Wnt11 + Sprouty1 reaction-diffusion solver and growing ureteric tree generator across E11.5-E15.5 (generations g=1..8) that reproduces Short et al. (2014) tip counts, Horton-Strahler bifurcation ratio R_b approx 2.08, length ratio R_L approx 1.38, and bilateral (m=2) vs trifurcating (m=3) ampulla mode selection."
+      - "Implement the 5-condition perturbation suite: Wild-Type dichotomous ureteric tree, Spry1-/- ectopic supernumerary budding & trifurcation, exogenous GDNF-soaked bead attraction & ampulla swelling, BMP4 stalk-elongation inhibition, and Gdnf-/-/Ret-/- renal agenesis negative control."
+      - "Implement OpenCV/SciPy computer-vision segmentation of `datasets/gdnf_ret_ureteric_kidney/kidney_ureteric_tree_specimen.jpg` extracting E12.5 wild-type (Panel A) vs hypomorphic mutant (Panel B) ureteric tip counts, skeletonized branch lengths, calyx bifurcation angles, and pErk1/2 tip signaling ratios."
+      - "Add runtime SHA-256 verification of all 4 dataset files, expose CLI overrides (`--rho-G`, `--gamma`, `--D-ratio`, `--bmp4`, `--seed`), and expand `measure_morphoeval()` and `self_test()` to 9 quantitative morphometrics and 8 verification checks."

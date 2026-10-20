@@ -1,0 +1,148 @@
+# MorphoEval Pass 1 (v1) Audit — Cuntz, Forstner, Borst & Häusser (2010) PLoS Comput. Biol. 6(8):e1000877 & Cuntz et al. (2007) PNAS 104:13319-13324
+# Ramón y Cajal Minimum-Wiring-Length & Conduction-Delay Greedy Steiner Dendritic Trees + Rall's 3/2 Power Law (Slot 058)
+
+audit:
+  id: 2026-10-19-cajal-dendritic-wiring-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 058 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/58
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2007-caleo-cajal-dendritic-wiring.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  cuntz2010:
+    title: "One Rule to Grow Them All: A General Theory of Neuronal Dendritic Trees"
+    authors: "Cuntz H, Forstner F, Borst A, Häusser M"
+    venue: "PLoS Computational Biology 6(8):e1000877 (2010)"
+    doi: 10.1371/journal.pcbi.1000877
+  cuntz2007:
+    title: "Optimization principles of dendritic structure"
+    authors: "Cuntz H, Borst A, Segev I"
+    venue: "Proceedings of the National Academy of Sciences 104(33):13319-13324 (2007)"
+    doi: 10.1073/pnas.0704731104
+  cuntz2008:
+    title: "A Quantitative Description of Sensory Neuron Organization in Drosophila: From Individual Dendritic Trees to the Population"
+    authors: "Cuntz H, Forstner F, Haag J, Borst A"
+    venue: "PLoS Computational Biology 4(12):e1000251 (2008)"
+    doi: 10.1371/journal.pcbi.1000251
+  rall1959:
+    title: "Branching dendritic trees and motoneuron membrane resistivity"
+    authors: "Rall W"
+    venue: "Experimental Neurology 1(5):491-527 (1959)"
+    doi: 10.1016/0014-4886(59)90046-9
+  wen2008:
+    title: "A Cost-Benefit Analysis of Neuronal Morphology"
+    authors: "Wen Q, Chklovskii DB"
+    venue: "Journal of Neurophysiology 99(5):2320-2328 (2008)"
+    doi: 10.1152/jn.00280.2007
+
+simulations:
+  - id: caleo-cajal-dendritic-wiring
+    name: "Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law"
+    organism: "Drosophila melanogaster (Class I-IV da sensory neurons), Homo sapiens & Mus musculus (cerebellar Purkinje cells and cortical pyramidal cells)"
+    script: 2007-caleo-cajal-dendritic-wiring.py
+    output: docs/media/cajal_dendritic_wiring_comparison.png
+    extra_outputs:
+      - docs/media/cajal_dendritic_wiring_growth.gif
+    status: evaluated
+    source_refs:
+      - cuntz2010
+      - cuntz2007
+      - cuntz2008
+      - rall1959
+      - wen2008
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2007-caleo-cajal-dendritic-wiring.py`
+      (weighted score: 54.1/100). The Pass 1 baseline implements only a minimal 2-point
+      comparison at bf=0.0 and bf=0.8 on N=80 circular points without sweeping the full
+      Cuntz et al. (2010) Pareto trade-off curve across bf in [0, 1], omits Rall's (1959)
+      3/2 electrotonic diameter power law tapering (d_p^(3/2) = d_1^(3/2) + d_2^(3/2)),
+      omits the Wen-Chklovskii / Cuntz 2D (W propto N^(1/2) A^(1/2)) and 3D (W propto N^(2/3) V^(1/3))
+      wiring scaling laws, omits a random non-optimal spanning tree negative control, and
+      does not segment or analyze the vendored Santiago Ramón y Cajal (1899) Purkinje
+      dendritic arbor specimen (`cajal_purkinje_dendritic_arbor_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Implements basic greedy MST attachment at bf=0.0 and bf=0.8 (L27-57), but omits
+          Rall's 3/2 electrotonic diameter tapering, 2D vs 3D Wen-Chklovskii scaling laws,
+          cell-type specific carrier distributions (Purkinje / Drosophila Class IV vs
+          pyramidal vs motoneuron / Class I), and Sholl intersection curves.
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [27, 57], note: "Basic 2D greedy MST without Rall 3/2 diameter tapering or 2D/3D scaling laws", supports: true}
+      specimen-match:
+        value: 44
+        rationale: >-
+          Vendors `datasets/cajal_dendritic_wiring/cajal_purkinje_dendritic_arbor_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, skeletonize, or compute Sholl
+          intersections, branch-point counts, or box-counting fractal dimension on the
+          Cajal Purkinje cell specimen.
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [88, 134], note: "Renders only 2 synthetic trees without loading or segmenting Cajal specimen", supports: false}
+      parameter-expressivity:
+        value: 50
+        rationale: >-
+          Evaluates only two balancing factors (bf = 0.0 and bf = 0.8) without sweeping
+          bf across [0.0, 1.0], sweeping carrier count N across 2D and 3D domains, or
+          exposing CLI parameter overrides.
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [60, 85], note: "Only two hard-coded bf points evaluated", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          Returns only 2 scalar metrics in `measure_morphoeval()` without Pareto curve
+          Pearson correlations, p-values, 2D/3D power-law scaling exponents, Rall 3/2
+          impedance ratios, random spanning tree ablation control, or empirical Sholl/fractal
+          specimen metrics.
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [60, 85], note: "Only 2 scalar metrics without dispersion, p-values, or negative controls", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `cajal_dendritic_wiring_reference.json` with
+          verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at runtime.
+        evidence:
+          - {file: datasets/cajal_dendritic_wiring/cajal_dendritic_wiring_reference.json, lines: [1, 108], note: "Reference JSON present on disk but not verified at runtime in Pass 1", supports: true}
+      code-traceability:
+        value: 56
+        rationale: >-
+          Module docstring cites Cuntz et al. (2007, 2010), but lacks explicit equation-to-code
+          and Lean 4 theorem mappings.
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1, 8], note: "Minimal docstring without Lean 4 theorem loci", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Includes a minimal 3-line `--self-test` flag, but lacks SHA-256 dataset integrity
+          checks, tree topology invariants, Rall 3/2 checks, and random spanning tree
+          negative controls.
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [137, 141], note: "Minimal self-test without SHA-256 or graph-level invariant checks", supports: false}
+    remediation:
+      - "Implement the full Cuntz et al. (2010) TREES-toolbox greedy MST algorithm across balancing factor bf in [0, 1], reproducing cerebellar Purkinje / Drosophila Class IV da (bf=0.20), cortical pyramidal / Class III (bf=0.40), and motoneuron / Class I (bf=0.70) arbors alongside a random non-optimal spanning tree negative control."
+      - "Verify the Wen & Chklovskii (2008) / Cuntz et al. (2010) 2D planar (W propto N^(1/2) A^(1/2)) and 3D volumetric (W propto N^(2/3) V^(1/3)) wiring scaling laws across N in [25, 320] and implement Rall's (1959) 3/2 electrotonic diameter tapering law d_parent^(3/2) = sum_k d_daughter_k^(3/2)."
+      - "Segment and skeletonize Santiago Ramón y Cajal's (1899) human cerebellar Purkinje neuron specimen (`cajal_purkinje_dendritic_arbor_specimen.jpg`) to extract the empirical Sholl intersection profile, skeletonized branch-point count, and box-counting fractal dimension (D_f = 1.7817), backed by runtime SHA-256 integrity checks and an 8-suite `--self-test`."

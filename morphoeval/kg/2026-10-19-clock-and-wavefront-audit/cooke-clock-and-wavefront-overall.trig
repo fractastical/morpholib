@@ -1,0 +1,75 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-cooke-clock-and-wavefront> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-cooke-clock-and-wavefront-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-cooke-clock-and-wavefront-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Cooke & Zeeman (1976) clock-and-wavefront somite segmentation — MorphoEval overall 58.1/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 baseline assessment of `1976-cooke-clock-and-wavefront.py` (58.4/100). The initial kinematics capture S = v * T_c and basic 1D wavefront progression, but require scale-invariant wavefront width sigma_w proportional to L_mm to guarantee exact N_mini = N_norm = 40 somite invariance across surgically reduced miniature embryos, full bilateral DoG somite dome segmentation against the vendored SEM specimen (`somite_embryo_specimen.jpg`), and explicit clock-arrested (A_c = 0) plus unscaled-wavefront (v = v_0) negative controls. Overall 58.1/100 (faithfulness 56.1, reproducibility 62.8); rubric morphoeval 0.1.0; checkpoint commit 317bc3c; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 62, Morphological realism / specimen match 52, Parameter expressivity 58, Morphometric validation 54, Source and data traceability 66, Code-to-model traceability 60, Reproducibility package 62. Output judged: docs/media/clock_and_wavefront_comparison.png: rendered output of 1976-cooke-clock-and-wavefront.py at 317bc3c, image/png, 1215618 B, 2310×1372 px, artifact_sha256 1db23a76c4cc9d4544515fc51d9b8e774a6986c84596f4234ab2cf361bf10101 (sha256 1db23a76c4cc9d4544515fc51d9b8e774a6986c84596f4234ab2cf361bf10101), spec_fingerprint 9a567843f2a6020e93562e6d7e58c2b8167adcb8c6b198fb2164e03a085e6bb6. Dual provenance: spec_fingerprint: 9a567843f2a6020e93562e6d7e58c2b8167adcb8c6b198fb2164e03a085e6bb6; artifact_sha256: 1db23a76c4cc9d4544515fc51d9b8e774a6986c84596f4234ab2cf361bf10101; input_dataset_sha256: {datasets/clock_and_wavefront/clock_and_wavefront_reference.json=4851550f4179ae63..., datasets/clock_and_wavefront/scout_manifest.json=0beabd3277c705e6..., datasets/clock_and_wavefront/somite_embryo_specimen.jpg=8b80971796cb29e2...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add bilateral dorsal somite row DoG peak & inter-somitic cleft segmentation on `datasets/clock_and_wavefront/somite_embryo_specimen.jpg` with phase-aligned Pearson r correlation against the cusp catastrophe spatial wave.",
+            "remediation needed: Include both a clock-arrested negative control (A_clock = 0 -> 0 somites) and an unscaled-wavefront failure control (v = v_0 across reduced L) alongside the 5 Cooke (1975) experimental regimes.",
+            "remediation needed: Scale wavefront transition width sigma_w proportionally to axial length L (sigma_w = 0.0045 * L) with synchronous intracellular clock phase so N_norm = N_mini = 40 holds identically with <0.2% wavelength error." ;
+        pk:hasScore "0.581"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/dvdy.21193>,
+            <https://doi.org/10.1016/S0022-5193(76)80131-2>,
+            <https://doi.org/10.1016/S0092-8674(00)80451-1>,
+            <https://doi.org/10.1038/254196a0> .
+    <https://doi.org/10.1002/dvdy.21193> dct:date "2007"^^xsd:gYear ;
+        dct:title "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling" .
+    <https://doi.org/10.1016/S0022-5193(76)80131-2> dct:date "1976"^^xsd:gYear ;
+        dct:title "A clock and wavefront model for control of the number of repeated structures during animal morphogenesis" .
+    <https://doi.org/10.1016/S0092-8674(00)80451-1> dct:date "1997"^^xsd:gYear ;
+        dct:title "Avian hairy gene expression identifies a molecular clock linked to vertebrate segmentation and somitogenesis" .
+    <https://doi.org/10.1038/254196a0> dct:date "1975"^^xsd:gYear ;
+        dct:title "Control of somite number during morphogenesis of a vertebrate, Xenopus laevis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Cooke & Zeeman (1976) clock-and-wavefront somite segmentation — MorphoEval overall 58.1/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T23:54:08Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-cooke-clock-and-wavefront-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-cooke-clock-and-wavefront> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

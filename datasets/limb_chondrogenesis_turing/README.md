@@ -1,0 +1,30 @@
+# `datasets/limb_chondrogenesis_turing/` — Newman & Frisch (1979) *Science* Chick Limb Chondrogenesis Eigenmodes Dataset
+
+Formal SHA-256-locked reference dataset and *Gallus gallus* forelimb skeleton specimen for `1979-newman-limb-chondrogenesis-turing.py` (Slot 012 of the 100-Loop Infinite Morphospace Campaign).
+
+## Contents
+
+1. **`limb_chondrogenesis_turing_reference.json`**
+   - **Newman & Frisch (1979) *Science* 205(4407):662–668 (`doi:10.1126/science.462174`)**:
+     - 3D Helmholtz/Turing standing-wave eigenmodes in the uncondensed apical mesenchyme box $[0, L_{\text{AP}}] \times [0, L_{\text{DV}}] \times [0, L_{\text{PD}}(t)]$ beneath the Apical Ectodermal Ridge (AER):
+       $$\Phi_{m, n}(x, y, z) = \cos\!\left(\frac{m \pi x}{L_{\text{AP}}}\right) \cos\!\left(\frac{n \pi y}{L_{\text{DV}}}\right) \sin\!\left(\frac{\pi z}{L_{\text{PD}}(t)}\right)$$
+     - Nonlinear 2-component fibronectin/TGF-$\beta$ activator-inhibitor Turing reaction-diffusion PDE coupled to proximodistal progress-zone depth reduction $L_{\text{PD}}(t)$ and hyaluronidase-mediated effective diffusivity decrease $D_{\text{eff}}(t)$:
+       $$\frac{\partial u}{\partial t} = f_u(z)\,u + f_v\,v - u^3 + D_u \nabla^2 u, \qquad \frac{\partial v}{\partial t} = g_u(z)\,u + g_v\,v + D_v \nabla^2 v$$
+     - Sequential proximodistal skeletal mode transitions across Hamburger-Hamilton (HH) stages in *Gallus gallus*:
+       - **HH20–21 Stylopod ($L_{\text{PD}} = 500\,\mu\text{m}$):** $m = 1$ ($1$ element: humerus in wing / femur in leg).
+       - **HH24 Zeugopod ($L_{\text{PD}} = 250\,\mu\text{m}$):** $m = 2$ ($2$ parallel elements: radius + ulna in wing / tibia + fibula in leg).
+       - **HH27–28 Autopod ($L_{\text{PD}} = 140\,\mu\text{m}$):** $m = 3$ in chick wing ($3$ digits: II, III, IV) and $m = 4$ in chick hindlimb ($4$ pedal digits: I–IV).
+     - **AER Excision Truncation Series (Saunders 1948; Summerbell et al. 1973; Newman & Frisch 1979)**:
+       - Excision at HH20 truncates limb to stylopod only ($[1, 0, 0]$ elements); excision at HH24 yields stylopod + zeugopod ($[1, 2, 0]$ elements); intact AER yields full $[1, 2, 3]$ chick wing skeleton.
+
+2. **`chick_wing_skeleton_specimen.jpg`**
+   - *Gallus gallus* forelimb osteological specimen showing the proximal-to-distal transition from humerus (stylopod, $m=1$) $\to$ radius and ulna (zeugopod, $m=2$) $\to$ carpus and digits II, III, IV (autopod, $m=3$).
+   - Source: [Wikimedia Commons `File:Gallus_wingbones_01.JPG`](https://commons.wikimedia.org/wiki/File:Gallus_wingbones_01.JPG) (Author: Conty, License: CC BY 3.0).
+   - SHA-256: `771e26f9fe8c813de108d87086e896597b450c09e8e9a706bb0f1edddeb26e41`.
+
+3. **`scout_manifest.json`**
+   - Step 1 (`01_scout`) OpenAlex + Wikimedia Commons discovery dossier for Slot 012.
+   - SHA-256: `7f3605aa11f5e07752820298d27a4a8fc3a8d0508e2863a03046f6b858115262`.
+
+4. **`paper_citations.bib`**
+   - BibTeX citations for Newman & Frisch (1979), Saunders (1948), Summerbell et al. (1973), Hentschel et al. (2004), and Stewart et al. (2017).

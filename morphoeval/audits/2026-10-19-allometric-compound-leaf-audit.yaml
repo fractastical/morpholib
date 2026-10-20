@@ -1,0 +1,142 @@
+# MorphoEval Pass 1 (v1) Audit — Bilsborough et al. (2011) PNAS, Barkoulas et al. (2008) Nat. Genet. & Kierzkowski et al. (2019) Cell
+# PIN1–Auxin–CUC2 Feedback Loop & Leaf Margin Serration vs Compound Leaflet Dissection (Slot 037)
+
+audit:
+  id: 2026-10-19-allometric-compound-leaf-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 037 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/37
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2011-przemyslaw-allometric-compound-leaf.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  bilsborough2011:
+    title: "Model for the regulation of Arabidopsis thaliana leaf margin development"
+    authors: "Bilsborough GD, Runions A, Barkoulas M, Jenkins HW, Hasson A, Galinha C, Laufs P, Hay A, Prusinkiewicz P, Tsiantis M"
+    venue: "Proceedings of the National Academy of Sciences 108(8):3424-3429 (2011)"
+    doi: 10.1073/pnas.1015162108
+  barkoulas2008:
+    title: "A developmental framework for dissected leaf formation in the Arabidopsis relative Cardamine hirsuta"
+    authors: "Barkoulas M, Hay A, Kougioumoutzi E, Tsiantis M"
+    venue: "Nature Genetics 40(9):1136-1141 (2008)"
+    doi: 10.1038/ng.189
+  vlad2014:
+    title: "Leaf shape evolution through duplication, regulatory diversification, and loss of a homeobox gene"
+    authors: "Vlad D, Kierzkowski D, Rast MI, Vuolo F, Dello Ioio R, Galinha C, et al., Tsiantis M"
+    venue: "Science 343(6172):780-783 (2014)"
+    doi: 10.1126/science.1248384
+  kierzkowski2019:
+    title: "A growth-based framework for leaf shape development and diversity"
+    authors: "Kierzkowski D, Runions A, Vuolo F, Strauss S, Lymbouridou R, Routier-Kierzkowska AL, et al., Tsiantis M"
+    venue: "Cell 177(6):1405-1418 (2019)"
+    doi: 10.1016/j.cell.2019.05.011
+
+simulations:
+  - id: przemyslaw-allometric-compound-leaf
+    name: "Bilsborough et al. (2011), Barkoulas et al. (2008), Vlad et al. (2014) & Kierzkowski et al. (2019) growing leaf margin PIN1-Auxin-CUC2-RCO feedback loop and serration vs compound leaflet dissection"
+    organism: "Arabidopsis thaliana / Cardamine hirsuta (growing leaf margin epidermis, serration teeth, and compound leaflets)"
+    script: 2011-przemyslaw-allometric-compound-leaf.py
+    output: docs/media/allometric_compound_leaf_comparison.png
+    extra_outputs:
+      - docs/media/allometric_compound_leaf_growth.gif
+    status: evaluated
+    source_refs:
+      - bilsborough2011
+      - barkoulas2008
+      - vlad2014
+      - kierzkowski2019
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2011-przemyslaw-allometric-compound-leaf.py`
+      (weighted score: 54.4/100). The Pass 1 script integrates only a static 1D periodic
+      ring of 48 margin cells for wild-type and `cuc2` loss-of-function without a growing
+      1D/2D leaf blade contour PDE, without intercalary tooth/leaflet insertion when
+      inter-peak arc-length exceeds critical wavelength lambda_c, without the full 6-genotype
+      morphospace comparison (`cuc2-1`, `cuc2-1D` unrepressed uniform CUC2, *Arabidopsis*
+      WT Col-0, `mir164a-4`, *Cardamine* `rco` mutant, and *Cardamine hirsuta* WT compound
+      leaflets with RCO sinus growth repression), and without empirical CV segmentation of
+      the vendored *Cardamine hirsuta* specimen photograph.
+    scores:
+      model-fidelity:
+        value: 55
+        rationale: >-
+          Integrates a static 1D ring of 48 epidermal cells with up-the-gradient PIN1
+          polarization and Auxin-CUC2 mutual antagonism (L22-55), but omits the growing
+          2D leaf margin contour PDE v_n(s) = v_0 [A(s)^m/(K_g^m+A(s)^m)] (1 - eta C(s)),
+          intercalary tooth/leaflet insertion at critical wavelength lambda_c, unrepressed
+          ectopic `cuc2-1D` control, and *Cardamine hirsuta* RCO sinus growth repression.
+        evidence:
+          - {file: 2011-przemyslaw-allometric-compound-leaf.py, lines: [22, 55], note: "Static 1D ring ODE without growing 2D leaf contour PDE, intercalary insertion at lambda_c, or RCO sinus repression", supports: true}
+      specimen-match:
+        value: 45
+        rationale: >-
+          Vendors `datasets/allometric_compound_leaf/cardamine_hirsuta_compound_leaf_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, or extract leaflet lobe count,
+          dissection perimeter ratio, or radial tip-to-sinus dissection index I_D from the
+          specimen image.
+        evidence:
+          - {file: 2011-przemyslaw-allometric-compound-leaf.py, lines: [68, 111], note: "Renders 2-panel 1D concentration plot without loading or segmenting specimen image", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates only gamma_cuc2 = 2.4 and 0.0 on a static ring without sweeping the
+          6-genotype *Arabidopsis*/*Cardamine* morphospace, growth stages P3-P6, or exposing
+          CLI parameter overrides.
+        evidence:
+          - {file: 2011-przemyslaw-allometric-compound-leaf.py, lines: [58, 65], note: "Only two static parameter points evaluated without genotype sweep or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Exposes only 3 scalar numbers in `measure_morphoeval()` without reference
+          comparisons, statistical p-values, dissection depth indices I_D, intercalary
+          wavelength scaling, or specimen leaflet morphometrics.
+        evidence:
+          - {file: 2011-przemyslaw-allometric-compound-leaf.py, lines: [58, 65], note: "Minimal 3-number dictionary without reference comparison or p-values", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `allometric_compound_leaf_reference.json` with
+          verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at runtime.
+        evidence:
+          - {file: datasets/allometric_compound_leaf/allometric_compound_leaf_reference.json, lines: [1, 148], note: "Reference JSON present on disk but not verified in Pass 1 script", supports: true}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Module docstring cites Bilsborough et al. (2011), but lacks explicit equation-to-code
+          and Lean 4 theorem mappings (`Loop_037_allometric_compound_leaf.lean`).
+        evidence:
+          - {file: 2011-przemyslaw-allometric-compound-leaf.py, lines: [1, 5], note: "Minimal docstring without Lean 4 theorem mapping", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Includes a 1-assertion `--self-test`, but lacks SHA-256 dataset integrity
+          verification, `cuc2-1D` ectopic unrepressed negative control, and multi-law
+          invariant checks.
+        evidence:
+          - {file: 2011-przemyslaw-allometric-compound-leaf.py, lines: [114, 118], note: "Single-assertion self-test without SHA-256 or multi-law checks", supports: false}
+    remediation:
+      - "Implement a growing 1D/2D leaf margin contour PDE solver coupling Loop 1 (CUC2-promoted PIN1 up-the-gradient polarization rho_{ij} propto (1 + gamma_CUC2 C_i) exp(beta A_j)), Loop 2 (Auxin transcriptional repression of CUC2, C_i = C_max / (1 + (A_i/K_A)^n)), and Loop 3 (differential normal margin outgrowth v_n(s) = v_0 [A(s)^m/(K_g^m + A(s)^m)] (1 - eta_sinus C(s))) with intercalary cell division and new auxin peak insertion whenever inter-peak arc-length exceeds critical wavelength lambda_c across developmental stages P3-P6."
+      - "Simulate the full 6-genotype morphospace panel: `cuc2-1` loss-of-function smooth margin (C = 0), `cuc2-1D` unrepressed uniform CUC2 negative control (C = C_0), *Arabidopsis thaliana* Col-0 wild-type shallow serration (eta = 0.42), `mir164a-4` deep serration (eta = 0.65), *Cardamine hirsuta* `rco` mutant simplified lobes (eta = 0.48), and *Cardamine hirsuta* wild-type pinnate compound leaflets with RCO sinus growth repression (eta = 0.88)."
+      - "Segment the SHA-256-verified *Cardamine hirsuta* compound leaf specimen (`cardamine_hirsuta_compound_leaf_specimen.jpg`) to extract foliage area fraction, 32 compound leaflet lobes, perimeter dissection ratio P/(2*sqrt(pi*A)) = 4.0939, and radial tip-to-sinus dissection depth index I_D = 0.5202, and expose an 8-check deterministic `--self-test` suite."

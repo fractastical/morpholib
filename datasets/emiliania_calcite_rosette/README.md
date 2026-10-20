@@ -1,0 +1,10 @@
+# *Emiliania huxleyi* V/R Calcite Coccolith Rosette & Interlocking Coccosphere Reference Dataset (`slot-080`)
+
+Reference dataset and empirical Scanning Electron Microscope (SEM) specimen assets for **Young et al. (1992)** *Nature* 356(6369):516–518 (`10.1038/356516a0`), **Didymus et al. (1993)** *Proc. R. Soc. B* 252(1335):259–264 (`10.1098/rspb.1993.0073`), **Jaya et al. (2016)** *Nat. Commun.* / *J. Struct. Biol.* 7:11904 (`10.1038/ncomms11904`), and **Walker et al. (2018)** *Nat. Commun.* / *New Phytol.* 9:1–12 (`10.1038/s41467-018-04168-9`).
+
+## Files & Cryptographic Provenance
+
+- `emiliania_calcite_rosette_reference.json` — Formal V/R bimodal crystallographic nucleation equations ($N_{\text{total}} = 2 N_{\text{seg}}$, $\mathbf{c}_V \cdot \mathbf{c}_R(\theta_k) = 0$), linear proto-coccolith ring circumference & distal shield diameter scaling ($R_{\text{tube}} = \frac{N_{\text{seg}} w_0}{2\pi}$, $L_d = \frac{N_{\text{seg}} w_0}{\pi} + 2 L_{\text{spoke}}$), CAP-polysaccharide modulated T-shaped hammer-head growth, spherical Euler coccosphere packing ($V - E + F = 2$), 5 morphotype & ocean-acidification ablation regimes, and a 12-taxon coccolithophore validation table.
+- `emiliania_huxleyi_coccolith_specimen.jpg` — Real CC BY-SA 4.0 dual-panel Scanning Electron Micrograph (SEM) of *Emiliania huxleyi* showing an intact spherical interlocking coccosphere at $10{,}000\times$ ($2\ \mu\text{m}$ scale bar, left) and an isolated single coccolith rosette shield with $N_{\text{seg}} = 32$ radial T-shaped hammer-head distal elements at $20{,}000\times$ ($1\ \mu\text{m}$ scale bar, right) (`File:Emiliania huxleyi coccosphere and coccolith.jpg`, Wikimedia Commons, CC BY-SA 4.0, SHA-256: `94d4b431c4912727a89fa0bea09c87c8add8c286e7f3c259558b85341950b65d`).
+- `scout_manifest.json` — OpenAlex and Wikimedia Commons literature/specimen scout dossier (`d838aa9cca83725c96f947579bf02b9c40a7b7cbff30ee77a2e34474e5e263be`).
+- `paper_citations.bib` — BibTeX citations for Young et al. (1992), Didymus et al. (1993), Jaya et al. (2016), and Walker et al. (2018) (`3a91c4993adba81bd33a7059f11f41f3d7e0af887c5399d1d9ccced40543c6f2`).

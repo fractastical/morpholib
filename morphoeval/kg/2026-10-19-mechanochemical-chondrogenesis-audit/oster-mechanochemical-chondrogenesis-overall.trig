@@ -1,0 +1,75 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-oster-mechanochemical-chondrogenesis> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-oster-mechanochemical-chondrogenesis-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-oster-mechanochemical-chondrogenesis-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) mechanochemical limb chondrogenesis — MorphoEval overall 58.0/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 baseline assessment of `1983-oster-mechanochemical-chondrogenesis.py` (57.8/100). The initial implementation formulates the Oster, Murray & Harris (1983) and Oster, Murray & Maini (1985) coupled cell-density and viscoelastic ECM equations, but requires exact consistency between the analytical marginal stability curve tau_eff(k^2) and the PDE diffusive-mitotic damping parameters so that subcritical traction (tau = 0.85 < tau_c) is strictly stable across all wavenumbers, alongside full morphological cross-section segmentation of both the 4-digit forelimb and 5-digit hindlimb urodele specimen (`salamander_limb_cartilage_specimen.jpg`). Overall 58.0/100 (faithfulness 56.3, reproducibility 62.0); rubric morphoeval 0.1.0; checkpoint commit 317bc3c; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 60, Morphological realism / specimen match 54, Parameter expressivity 58, Morphometric validation 54, Source and data traceability 66, Code-to-model traceability 60, Reproducibility package 60. Output judged: docs/media/mechanochemical_chondrogenesis_comparison.png: rendered output of 1983-oster-mechanochemical-chondrogenesis.py at 317bc3c, image/png, 788718 B, 2352×1400 px, artifact_sha256 cae9696ef2245adac8562044612d7f3410d85abb23870b25f25efdbd2d1f2185 (sha256 cae9696ef2245adac8562044612d7f3410d85abb23870b25f25efdbd2d1f2185), spec_fingerprint 909c74c2382cbfcf862f8ea9a8529469edfc30728d6d46f34f2904fe31ee564f. Dual provenance: spec_fingerprint: 909c74c2382cbfcf862f8ea9a8529469edfc30728d6d46f34f2904fe31ee564f; artifact_sha256: cae9696ef2245adac8562044612d7f3410d85abb23870b25f25efdbd2d1f2185; input_dataset_sha256: {datasets/mechanochemical_chondrogenesis/mechanochemical_chondrogenesis_reference.json=fc4767274ebd8ea8..., datasets/mechanochemical_chondrogenesis/salamander_limb_cartilage_specimen.jpg=8030c8291c3a6d5b..., datasets/mechanochemical_chondrogenesis/scout_manifest.json=cb9d73c33c4113e4...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Apply morphological binary opening/closing on `salamander_limb_cartilage_specimen.jpg` to reject thin pointer lines and segment both the [1, 2, 4] forelimb (humerus -> ulna+radius -> digits I-IV) and [1, 2, 5] hindlimb (femur -> tibia+fibula -> digits I-V) branching hierarchies.",
+            "remediation needed: Calibrate the canonical mechanochemical parameters (D_1=0.28, D_2=0.015, E_eff=1.0, s=0.85, r=0.32) to the exact marginal stability curve tau_eff(k^2) so tau_c = 1.2776 and subcritical tau=0.85 < tau_c is strictly stable (sigma(k) < 0 for all k > 0, 0 condensations).",
+            "remediation needed: Verify all 5 proximo-distal regimes (m = 0, 1, 2, 4, 5) in the coupled 1D cell-ECM PDE solver and render the 6-panel synthesis figure and 24-frame growth animation." ;
+        pk:hasScore "0.58"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/978-1-4615-6983-1_6>,
+            <https://doi.org/10.1093/imammb/1.1.51>,
+            <https://doi.org/10.1242/dev.78.1.83>,
+            <https://doi.org/10.1242/dev.89.1.93> .
+    <https://doi.org/10.1007/978-1-4615-6983-1_6> dct:date "1986"^^xsd:gYear ;
+        dct:title "A morphogenetic approach to the origin and basic organization of the tetrapod limb" .
+    <https://doi.org/10.1093/imammb/1.1.51> dct:date "1984"^^xsd:gYear ;
+        dct:title "Generation of biological pattern and form" .
+    <https://doi.org/10.1242/dev.78.1.83> dct:date "1983"^^xsd:gYear ;
+        dct:title "Mechanical aspects of mesenchymal morphogenesis" .
+    <https://doi.org/10.1242/dev.89.1.93> dct:date "1985"^^xsd:gYear ;
+        dct:title "A model for chondrogenic condensations in the developing limb: the role of extracellular matrix and cell tractions" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) mechanochemical limb chondrogenesis — MorphoEval overall 58.0/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:40:53Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-oster-mechanochemical-chondrogenesis-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-oster-mechanochemical-chondrogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

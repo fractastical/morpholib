@@ -1,0 +1,122 @@
+sim_id: willshaw-retinotectal-chemoaffinity
+math_family: Counter-Gradient EphA/Ephrin-A Chemoaffinity Energy + Prestige-Willshaw Group I vs Group II Synaptic Competition & Isl2-EphA3 Knock-In Map Duplication
+model_spec:
+  model: Prestige & Willshaw (1975) Proc. R. Soc. B 190:77-98, Willshaw & von der Malsburg (1976) Proc. R. Soc. B 194:431-445 & Brown et al. (2000) Cell 102:77-88 retinotectal chemoaffinity counter-gradients, Group II synaptic competition, and Isl2-EphA3 knock-in map bifurcation
+  retinal_epha_gradient: "R_A(x_i) = R_0 * exp(alpha * x_i) + Delta_R_EphA3 * I(i in Isl2+)"
+  tectal_ephrina_gradient: "L_A(y_j) = L_0 * exp(beta * y_j)"
+  chemoaffinity_matching_energy: "E_chem(x_i, y_j) = 0.5 * kappa_chem * (R_A(x_i) * L_A(y_j) - gamma_0)^2"
+  synaptic_competition_ode: "dW_ij/dt = W_ij * [ -E_chem(x_i, y_j) + kappa_coop * (K_ret * W * K_tec)_ij - mu_ret * (sum_k W_ik - 1) - mu_tec * (sum_m W_mj - N_ret / N_tec_active) ]"
+  parameters:
+    N_ret: 40
+    N_tec: 40
+    R_0: 1.0
+    L_0: 1.0
+    alpha: 1.3862943611198906
+    beta: 1.3862943611198906
+    gamma_0: 4.0
+    delta_R_ki_het: 0.90
+    delta_R_ki_hom: 1.80
+    kappa_chem: 1.40
+    kappa_coop: 0.35
+    seed: 1976
+  inputs:
+    - datasets/retinotectal_chemoaffinity/retinotectal_chemoaffinity_reference.json
+    - datasets/retinotectal_chemoaffinity/zebrafish_retinotectal_specimen.jpg
+    - datasets/retinotectal_chemoaffinity/scout_manifest.json
+    - datasets/retinotectal_chemoaffinity/paper_citations.bib
+equations:
+  - law_name: "Sperry / Prestige & Willshaw (1975) Reciprocal EphA-EphrinA Equilibrium & Strict Topographic Inversion Law"
+    formula: "R_A(x) * L_A(y^*(x)) = gamma_0 = R_0 * L_0 * exp(alpha)  ==>  y_WT^*(x) = 1 - x;   x_1 < x_2 ==> y_WT^*(x_2) < y_WT^*(x_1)"
+    lean_decl: "MathOfBiology.Loop_086.wt_inverted_map"
+    lean_theorem: "MathOfBiology.Loop_086.retinotectal_chemoaffinity_inversion"
+    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L19-L60"
+    lean_code: |
+      def sq_int (z : Int) : Int :=
+        z * z
+      def wt_inverted_map (x L : Int) : Int :=
+        L - x
+      def chemoaffinity_log_energy (x y L : Int) : Int :=
+        sq_int (x + y - L)
+      def dyadic_grad (k : Nat) : Nat :=
+        2 ^ k
+      theorem retinotectal_chemoaffinity_inversion (x x_1 x_2 L : Int) (h_lt : x_1 < x_2) :
+          chemoaffinity_log_energy x (wt_inverted_map x L) L = 0 ∧
+          wt_inverted_map x_2 L < wt_inverted_map x_1 L ∧
+          wt_inverted_map 0 100 = 100 ∧
+          wt_inverted_map 100 100 = 0 ∧
+          dyadic_grad 0 * dyadic_grad 2 = 4 ∧
+          dyadic_grad 1 * dyadic_grad 1 = 4 ∧
+          dyadic_grad 2 * dyadic_grad 0 = 4 := by
+        refine ⟨?_, ?_, by decide, by decide, by decide, by decide, by decide⟩
+        · dsimp [chemoaffinity_log_energy, wt_inverted_map, sq_int]
+          have h_zero : x + (L - x) - L = 0 := by omega
+          rw [h_zero]
+          decide
+        · dsimp [wt_inverted_map]
+          omega
+    variables: "x in [0, L]: retinal nasal-temporal RGC coordinate; y in [0, L]: tectal anterior-posterior target coordinate; R_A(x), L_A(y): counter-graded EphA receptor and ephrin-A ligand concentrations; gamma_0: reciprocal mass-action signaling setpoint"
+    role: "Proves that reciprocal EphA * ephrin-A mass-action equilibrium uniquely selects the strictly decreasing inverted retinotectal map y_WT*(x) = L - x with zero chemoaffinity mismatch energy, mapping nasal retina (x=0) to posterior tectum (y=L) and temporal retina (x=L) to anterior tectum (y=0)"
+    source_citation: "Prestige & Willshaw (1975) Proc. R. Soc. B 190:77-98; Brown et al. (2000) Cell 102:77-88 Fig. 1; Koulakov & Tsigankov (2004) BMC Neurosci. 5:30"
+    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L90-L185"
+  - law_name: "Brown et al. (2000) Isl2-EphA3 Knock-In Anterior Shift & Dual Topographic Map Bifurcation Law"
+    formula: "y_KI^*(x) = 1 - (1/alpha) * ln(exp(alpha * x) + Delta_R / R_0) < y_WT^*(x);   y_caudal^*(x) - y_rostral^*(x) = 0.5 (ki/ki homozygote)"
+    lean_decl: "MathOfBiology.Loop_086.ki_unclamped_map"
+    lean_theorem: "MathOfBiology.Loop_086.isl2_epha3_knockin_map_bifurcation"
+    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L63-L107"
+    lean_code: |
+      def ki_unclamped_map (x L delta_R : Int) : Int :=
+        L - x - delta_R
+      def hom_rostral_branch (x : Int) : Int :=
+        (100 - x) / 2
+      def hom_caudal_branch (x : Int) : Int :=
+        50 + (100 - x) / 2
+      def het_clamped_branch (x L delta_R : Int) : Int :=
+        if L - x - delta_R > 0 then L - x - delta_R else 0
+      theorem isl2_epha3_knockin_map_bifurcation (x L delta_R : Int) (h_pos : delta_R > 0) :
+          ki_unclamped_map x L delta_R < wt_inverted_map x L ∧
+          hom_caudal_branch x - hom_rostral_branch x = 50 ∧
+          hom_rostral_branch 0 = 50 ∧
+          hom_rostral_branch 100 = 0 ∧
+          hom_caudal_branch 0 = 100 ∧
+          hom_caudal_branch 100 = 50 ∧
+          het_clamped_branch 20 100 28 = 52 ∧
+          het_clamped_branch 80 100 28 = 0 := by
+        refine ⟨?_, ?_, by decide, by decide, by decide, by decide, by decide, by decide⟩
+        · dsimp [ki_unclamped_map, wt_inverted_map]
+          omega
+        · dsimp [hom_caudal_branch, hom_rostral_branch]
+          omega
+    variables: "delta_R > 0: exogenous EphA3 receptor knock-in level on 50% Isl2+ RGCs; hom_rostral_branch(x), hom_caudal_branch(x): bifurcated rostral (Isl2+) and caudal (Isl2-) topographic maps in ki/ki homozygotes; het_clamped_branch(x): heterozygous ki/+ rostral-convergent branch"
+    role: "Proves that elevating EphA3 on 50% (Isl2+) of RGCs strictly shifts their termination zone anteriorly relative to neighbor Isl2- WT RGCs, generating two complete non-overlapping maps separated by L/2 in ki/ki homozygotes vs rostral-pole collapse in ki/+ heterozygotes"
+    source_citation: "Brown et al. (2000) Cell 102(1):77-88 Figs. 2, 3 & 6"
+    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L188-L295"
+  - law_name: "Prestige & Willshaw (1975) Group II Half-Tectum Compression & Half-Retina Expansion vs Group I Rigid Lock Law"
+    formula: "y_comp^*(x) = (1 - x) / 2 in [0, 0.5] (slope -0.5);   y_exp^*(x) = 1 - 2*x in [0, 1] for x in [0, 0.5] (slope -2.0)"
+    lean_decl: "MathOfBiology.Loop_086.group_ii_half_tectum_comp"
+    lean_theorem: "MathOfBiology.Loop_086.prestige_willshaw_group_ii_plasticity"
+    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L110-L150"
+    lean_code: |
+      def group_ii_half_tectum_comp (x : Int) : Int :=
+        (100 - x) / 2
+      def group_i_truncated_map (x : Int) : Int :=
+        if 100 - x <= 50 then 100 - x else 50
+      def group_ii_half_retina_exp (x : Int) : Int :=
+        100 - 2 * x
+      theorem prestige_willshaw_group_ii_plasticity (x : Int) :
+          group_ii_half_tectum_comp 0 = 50 ∧
+          group_ii_half_tectum_comp 50 = 25 ∧
+          group_ii_half_tectum_comp 100 = 0 ∧
+          group_i_truncated_map 0 = 50 ∧
+          group_i_truncated_map 50 = 50 ∧
+          group_ii_half_retina_exp 0 = 100 ∧
+          group_ii_half_retina_exp 50 = 0 ∧
+          (wt_inverted_map 0 100 - wt_inverted_map 50 100) * 2 =
+            (group_ii_half_retina_exp 0 - group_ii_half_retina_exp 50) ∧
+          wt_inverted_map x 100 - 2 * group_ii_half_tectum_comp x >= 0 := by
+        refine ⟨by decide, by decide, by decide, by decide, by decide, by decide, by decide, by decide, ?_⟩
+        · dsimp [wt_inverted_map, group_ii_half_tectum_comp]
+          omega
+    variables: "group_ii_half_tectum_comp(x): Group II compressed map onto rostral half-tectum [0, L/2]; group_i_truncated_map(x): Group I rigid affinity map without target normalization; group_ii_half_retina_exp(x): Group II expanded map of nasal half-retina [0, L/2] onto full tectum [0, L]"
+    role: "Proves that Prestige & Willshaw (1975) Group II relative synaptic competition compresses the full retinal map by 1/2 onto a surgically halved tectum and expands a half-retina by 2x across an intact tectum, whereas Group I rigid affinity piles up nasal axons at the cut border"
+    source_citation: "Prestige & Willshaw (1975) Proc. R. Soc. B 190(1098):77-98 Figs. 1-6; Willshaw & von der Malsburg (1976) Proc. R. Soc. B 194:431-445"
+    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L220-L335"

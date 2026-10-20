@@ -1,0 +1,74 @@
+sim_id: hannezo-epithelial-buckling-3d
+math_family: "3D Incompressible Vertex / Continuum Epithelial Energy with Apical (Gamma_a), Basal (Gamma_b), and Lateral (Gamma_l) Surface Tensions & Substrate Elastic Foundation"
+model_spec:
+  model: "Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32 & Krajnc & Ziherl (2015) Phys. Rev. E 92:052713 3D incompressible epithelial monolayer aspect-ratio scaling and apico-basal buckling"
+  c_hexagonal_factor: 3.7224194364
+  V0_cell_um3: 1000.0
+  squamous_threshold_aspect: 0.65
+  columnar_threshold_aspect: 1.50
+  K_sub_reference_mN_m3: 0.018
+  grid_size_N: 64
+  seed: 2016
+  inputs:
+    - datasets/epithelial_buckling_3d/epithelial_buckling_3d_reference.json
+    - datasets/epithelial_buckling_3d/epithelial_sheet_buckling_specimen.jpg
+    - datasets/epithelial_buckling_3d/scout_manifest.json
+    - datasets/epithelial_buckling_3d/paper_citations.bib
+equations:
+  - law_name: "Hannezo–Prost–Joanny 3D Epithelial Equilibrium Aspect-Ratio & Squamous-Cuboidal-Columnar Scaling Law"
+    formula: "E_cell(A) = (Γ_a + Γ_b) A + c Γ_l V_0 / (2√A)  ⇒  ∂E_cell/∂A = 0  ⇔  h_0 = (c Γ_l √V_0 / [4(Γ_a + Γ_b)])^(2/3),  h_0 / d_0 = c Γ_l / [4(Γ_a + Γ_b)]"
+    lean_decl: "MathOfBiology.Loop_047.aspect_stationarity_residual"
+    lean_theorem: "MathOfBiology.Loop_047.hannezo_equilibrium_aspect_ratio_hierarchy"
+    lean_locus: "morphoeval/lean/loops/Loop_047_epithelial_buckling_3d.lean#L31-L65"
+    lean_code: |
+      def aspect_stationarity_residual (Ga_Gb c_Gl d0 h0 : Int) : Int :=
+        4 * Ga_Gb * d0 - c_Gl * h0
+      def epithelial_morphology_class (c_Gl four_Ga_Gb : Nat) : Nat :=
+        if c_Gl < four_Ga_Gb then 0
+        else if c_Gl == four_Ga_Gb then 1
+        else 2
+      theorem hannezo_equilibrium_aspect_ratio_hierarchy (Ga_Gb k : Int) (g base delta : Nat) :
+          aspect_stationarity_residual Ga_Gb (4 * Ga_Gb) k k = 0 ∧
+          epithelial_morphology_class g (g + base + 1) = 0 ∧
+          epithelial_morphology_class (g + 1) (g + 1) = 1 ∧
+          epithelial_morphology_class (g + delta + 2) (g + 1) = 2
+    variables: "Γ_a, Γ_b: apical and basal actomyosin surface tensions; Γ_l: lateral cell-cell tension; V_0 = A_0 h_0: conserved 3D cell volume; c = 2√(2√3) ≈ 3.7224: hexagonal perimeter factor; h_0/d_0: equilibrium cell aspect ratio"
+    role: "Determines the universal equilibrium cell height h_0 and aspect ratio h_0/d_0 continuously spanning squamous (h_0/d_0 < 1), cuboidal (h_0/d_0 ≈ 1), and tall columnar (h_0/d_0 > 1) epithelia"
+    source_citation: "Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32 Eqs. (1)-(4); Krajnc & Ziherl (2015) Phys. Rev. E 92:052713 Eqs. (5)-(9)"
+    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L145-L215"
+
+  - law_name: "Single-Cell Energy Convexity (E''(A^*) > 0) & Elastic Substrate Buckling Wavenumber Stationarity"
+    formula: "E''_cell(A^*) = 3 c Γ_l V_0 / (8 (A^*)^(5/2)) > 0,  N_c(q) = κ_eff q^2 + K_sub / q^2  ⇒  κ_eff q_c^4 = K_sub,  λ_c = 2π (κ_eff / K_sub)^(1/4)"
+    lean_decl: "MathOfBiology.Loop_047.cell_energy_hessian_num"
+    lean_theorem: "MathOfBiology.Loop_047.flat_monolayer_convexity_and_buckling_stationarity"
+    lean_locus: "morphoeval/lean/loops/Loop_047_epithelial_buckling_3d.lean#L78-L90"
+    lean_code: |
+      def cell_energy_hessian_num (c Gamma_l V_0 : Nat) : Nat :=
+        3 * c * Gamma_l * V_0
+      def buckling_quartic_residual (q kappa_eff K_sub : Int) : Int :=
+        kappa_eff * (q * q * q * q) - K_sub
+      theorem flat_monolayer_convexity_and_buckling_stationarity (c gl v0 : Nat) (q kappa_eff : Int) :
+          cell_energy_hessian_num (c + 1) (gl + 1) (v0 + 1) > 0 ∧
+          buckling_quartic_residual q kappa_eff (kappa_eff * (q * q * q * q)) = 0
+    variables: "E''_cell(A^*): second derivative of single-cell energy at equilibrium area A^*; κ_eff: effective monolayer bending modulus; K_sub: stromal elastic foundation stiffness; λ_c: critical buckling wavelength"
+    role: "Guarantees mechanical stability of flat epithelial sheets below the critical homeostatic buckling pressure and selects the characteristic folding wavelength λ_c = 2π(κ_eff / K_sub)^(1/4) above threshold"
+    source_citation: "Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32 Eqs. (6)-(11)"
+    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L218-L295"
+
+  - law_name: "Apico-Basal Differential Tension & Spontaneous Curvature Sign Reversal Law"
+    formula: "C_0 ∝ (Γ_a - Γ_b) / (Γ_l h_0),  C_0(Γ_b, Γ_a) = -C_0(Γ_a, Γ_b),  Γ_a > Γ_b ⇒ C_0 > 0 (apical constriction),  Γ_b > Γ_a ⇒ C_0 < 0 (basal constriction)"
+    lean_decl: "MathOfBiology.Loop_047.spontaneous_curvature_num"
+    lean_theorem: "MathOfBiology.Loop_047.apicobasal_spontaneous_curvature_sign_reversal"
+    lean_locus: "morphoeval/lean/loops/Loop_047_epithelial_buckling_3d.lean#L103-L119"
+    lean_code: |
+      def spontaneous_curvature_num (Gamma_a Gamma_b : Int) : Int :=
+        Gamma_a - Gamma_b
+      theorem apicobasal_spontaneous_curvature_sign_reversal (Ga Gb : Int) (base dG : Nat) :
+          spontaneous_curvature_num Ga Gb = -spontaneous_curvature_num Gb Ga ∧
+          spontaneous_curvature_num Ga Ga = 0 ∧
+          spontaneous_curvature_num (Int.ofNat (base + dG + 1)) (Int.ofNat base) > 0 ∧
+          spontaneous_curvature_num (Int.ofNat base) (Int.ofNat (base + dG + 1)) < 0
+    variables: "ΔΓ = Γ_a - Γ_b: apico-basal differential surface tension; C_0: spontaneous monolayer curvature; h_0: equilibrium cell height"
+    role: "Explains how apical actomyosin enrichment (Γ_a > Γ_b) vs basal tension enrichment (Γ_b > Γ_a) reverses the polarity of epithelial folds and drives acinar closure when |C_0| exceeds substrate confinement"
+    source_citation: "Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32 Eq. (5) & Fig. 2; Krajnc & Ziherl (2015) Phys. Rev. E 92:052713 Eq. (14); Sui et al. (2018) Nat. Commun. 9:4620"
+    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L225-L340"

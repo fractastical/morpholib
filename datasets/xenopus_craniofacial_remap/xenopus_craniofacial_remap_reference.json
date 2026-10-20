@@ -1,0 +1,171 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "bischof-xenopus-craniofacial-remap",
+  "slot": 85,
+  "title": "Vandenberg, Adams & Levin (2012) & Pinet et al. (2019) Picasso Tadpole Craniofacial Attractor Remodeling and Procrustes Target-Morphology Error Minimization",
+  "primary_papers": [
+    {
+      "citation": "Vandenberg LN, Adams DS, Levin M (2012) Normalized shape and location of perturbed craniofacial structures in the Xenopus tadpole reveal an innate ability to achieve correct morphology. Developmental Dynamics 241(5):863-878",
+      "doi": "10.1002/dvdy.23770"
+    },
+    {
+      "citation": "Pinet K, Deolankar M, Leung B, McLaughlin KA (2019) Adaptive correction of craniofacial defects in pre-metamorphic Xenopus laevis tadpoles involves thyroid hormone-independent tissue remodeling. Development 146(14):dev175893",
+      "doi": "10.1242/dev.175893"
+    },
+    {
+      "citation": "Pezzulo G, Levin M (2016) Top-down models in biology: explanation and control of complex living systems above the molecular level. Journal of the Royal Society Interface 13(124):20160555",
+      "doi": "10.1098/rsif.2016.0555"
+    },
+    {
+      "citation": "Pai VP, Aw S, Shomrat T, Lemire JM, Levin M (2012) Transmembrane voltage potential controls embryonic eye patterning in Xenopus laevis. Development 139(2):313-323",
+      "doi": "10.1242/dev.073759"
+    }
+  ],
+  "governing_equations": {
+    "procrustes_attractor_ode": "dx_i/dt = eta_MMP * [ -K_i * (x_i - x_i^*) - sum_j C_ij * ((x_i - x_j) - (x_i^* - x_j^*)) ]",
+    "lyapunov_procrustes_energy": "V(X) = (1/2) * sum_i K_i ||x_i - x_i^*||^2 + (1/4) * sum_{i,j} C_ij ||(x_i - x_j) - (x_i^* - x_j^*)||^2",
+    "lyapunov_dissipation_rate": "dV/dt = -eta_MMP * sum_i ||K_i (x_i - x_i^*) + sum_j C_ij ((x_i - x_j) - (x_i^* - x_j^*))||^2 <= 0",
+    "open_loop_fixed_displacement_null": "dx_i^open/dt = (x_i^* - x_i^WT(0)) / T  ==>  x_i^open(T) - x_i^* = x_i(0) - x_i^WT(0) != 0",
+    "procrustes_rms_distance": "D_P(X, X^*) = sqrt( (1/N) * sum_{i=1}^N ||x_i - x_i^*||^2 )",
+    "bilateral_asymmetry_index": "A_sym(X) = (1/2) * ( ||(x_L_eye + x_R_eye)_x|| + ||y_L_eye - y_R_eye|| + ||(x_L_naris + x_R_naris)_x|| + ||y_L_naris - y_R_naris|| )"
+  },
+  "canonical_parameters": {
+    "nf_stage_start": 45,
+    "nf_stage_end": 65,
+    "t_max_stages": 20.0,
+    "dt_stages": 0.05,
+    "K_eye": 0.26,
+    "K_naris": 0.30,
+    "K_jaw": 0.28,
+    "C_coupled": 0.08,
+    "eta_mmp_wt": 1.0,
+    "eta_mmp_gm6001_inhibited": 0.04,
+    "landmarks": [
+      "left_eye",
+      "right_eye",
+      "left_naris",
+      "right_naris",
+      "jaw_mouth"
+    ],
+    "wt_nf45_landmarks": [
+      [-0.52, 0.15],
+      [0.52, 0.15],
+      [-0.22, 0.48],
+      [0.22, 0.48],
+      [0.0, 0.62]
+    ],
+    "target_nf65_landmarks": [
+      [-0.34, 0.28],
+      [0.34, 0.28],
+      [-0.16, 0.56],
+      [0.16, 0.56],
+      [0.0, 0.72]
+    ],
+    "seed": 2019
+  },
+  "experimental_regimes": [
+    {
+      "id": "wild_type_unperturbed_remodeling",
+      "description": "Unperturbed wild-type Xenopus laevis craniofacial remodeling from NF stage 45 tadpole to NF stage 65 froglet: lateral eyes migrate dorsomedially and rostrally while jaws and nares converge smoothly to the target froglet configuration X^*",
+      "control_law": "closed_loop_attractor",
+      "eta_mmp": 1.0,
+      "perturbation_deltas": [
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [0.0, 0.0]
+      ],
+      "expected_final_procrustes_error": 0.0,
+      "expected_bilateral_asymmetry": 0.0
+    },
+    {
+      "id": "picasso_scrambled_craniofacial_closed_loop",
+      "description": "Vandenberg, Adams & Levin (2012) surgical/teratogenic 'Picasso tadpole' with severely scrambled left eye (shifted caudally and medially), right eye (shifted rostrally and laterally), asymmetric nares, and laterally translocated jaw: closed-loop attractor dynamics reroute organ trajectories through novel paths to converge to X^* by NF stage 65",
+      "control_law": "closed_loop_attractor",
+      "eta_mmp": 1.0,
+      "perturbation_deltas": [
+        [0.18, -0.36],
+        [0.22, 0.28],
+        [-0.16, -0.22],
+        [0.19, -0.18],
+        [-0.32, -0.24]
+      ],
+      "expected_final_procrustes_error": 0.0,
+      "expected_bilateral_asymmetry": 0.0
+    },
+    {
+      "id": "caudal_lateral_eye_rotation_closed_loop",
+      "description": "Vandenberg et al. (2012) unilateral caudal/dorsal eye translocation onto the posterior head/flank border: displaced left eye exhibits accelerated rostromedial velocity and catches up with the unperturbed contralateral right eye to restore bilateral symmetry",
+      "control_law": "closed_loop_attractor",
+      "eta_mmp": 1.0,
+      "perturbation_deltas": [
+        [0.14, -0.52],
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [0.0, 0.0]
+      ],
+      "expected_final_procrustes_error": 0.0,
+      "expected_bilateral_asymmetry": 0.0
+    },
+    {
+      "id": "lateral_jaw_mouth_translocation_closed_loop",
+      "description": "Vandenberg et al. (2012) lateral mouth/jaw displacement and naris rotation: off-midline jaw and nares migrate medially and anteriorly back to the midline target X^*",
+      "control_law": "closed_loop_attractor",
+      "eta_mmp": 1.0,
+      "perturbation_deltas": [
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [-0.18, -0.20],
+        [0.14, 0.16],
+        [0.42, -0.28]
+      ],
+      "expected_final_procrustes_error": 0.0,
+      "expected_bilateral_asymmetry": 0.0
+    },
+    {
+      "id": "open_loop_fixed_displacement_null",
+      "description": "Vandenberg, Adams & Levin (2012) Fig. 1 open-loop hardwired displacement null hypothesis: each organ moves by its wild-type vector Delta_WT = x_i^* - x_i^WT(0) regardless of starting position, permanently preserving the initial Picasso scramble error ||Delta X(0)|| at NF stage 65",
+      "control_law": "open_loop_fixed_vector",
+      "eta_mmp": 1.0,
+      "perturbation_deltas": [
+        [0.18, -0.36],
+        [0.22, 0.28],
+        [-0.16, -0.22],
+        [0.19, -0.18],
+        [-0.32, -0.24]
+      ],
+      "expected_final_procrustes_error": 0.3408,
+      "expected_bilateral_asymmetry": 0.56
+    },
+    {
+      "id": "mmp_inhibitor_gm6001_blockade_ablation",
+      "description": "Pinet et al. (2019) matrix metalloproteinase (MMP) inhibition blockade (GM6001, eta_MMP = 0.04): suppressing ECM remodeling arrests adaptive craniofacial error correction in Picasso tadpoles, leaving severe residual Procrustes deformity",
+      "control_law": "closed_loop_attractor",
+      "eta_mmp": 0.04,
+      "perturbation_deltas": [
+        [0.18, -0.36],
+        [0.22, 0.28],
+        [-0.16, -0.22],
+        [0.19, -0.18],
+        [-0.32, -0.24]
+      ],
+      "expected_final_procrustes_error": 0.2442,
+      "expected_bilateral_asymmetry": 0.402
+    }
+  ],
+  "specimen_provenance": {
+    "file": "datasets/xenopus_craniofacial_remap/xenopus_craniofacial_specimen.jpg",
+    "species": "Xenopus laevis",
+    "source": "Wikimedia Commons File:Xenopus laevis (10.3897-zookeys.1022.51422) Figure 4.jpg",
+    "license": "CC BY 4.0",
+    "dimensions_px": [1512, 1441],
+    "sha256": "8832f70a57f3d1c4f998ef0b567cddafaf6a885d2c90522327ecbda95f5a68b3"
+  },
+  "sha256_digests": {
+    "datasets/xenopus_craniofacial_remap/scout_manifest.json": "96534373d259eb281c52914c7f7e9c723d458bc7d96b18ac70376cd93343c73a",
+    "datasets/xenopus_craniofacial_remap/paper_citations.bib": "f5f4d62c485aca759b843060b76d6af04855e9b073d28a071ecffbdb05e637f7",
+    "datasets/xenopus_craniofacial_remap/xenopus_craniofacial_specimen.jpg": "8832f70a57f3d1c4f998ef0b567cddafaf6a885d2c90522327ecbda95f5a68b3"
+  }
+}

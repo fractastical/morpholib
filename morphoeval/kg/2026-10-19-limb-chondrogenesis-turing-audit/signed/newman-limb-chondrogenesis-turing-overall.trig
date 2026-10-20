@@ -1,0 +1,96 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAg76YQc4I_9KYC_XhEePflJkQgalWIXCob_rqokV0a1w/> .
+@prefix this: <https://w3id.org/np/RAg76YQc4I_9KYC_XhEePflJkQgalWIXCob_rqokV0a1w> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-newman-limb-chondrogenesis-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-newman-limb-chondrogenesis-turing-overall> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-newman-limb-chondrogenesis-turing-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Newman & Frisch (1979) Science 3D Helmholtz/Turing standing-wave eigenmodes and proximodistal 1 -> 2 -> 3 skeletal chondrogenesis in developing Gallus gallus wing bud — MorphoEval overall 45.6/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Pass 1 (v1) baseline evaluation of `1979-newman-limb-chondrogenesis-turing.py` (overall weighted score: 47.4 / 100). The v1 baseline script computes the analytical critical mode number m = sqrt((Dv*fu + Du*gv)/(2*Du*Dv)) for stylopod (m=1) and autopod (m=3), but synthesizes spatial condensations via a closed-form trigonometric formula (`synthesize_standing_wave_box`) rather than numerically integrating the nonlinear cubic-saturated 2-component fibronectin/TGF-beta Turing reaction-diffusion PDE coupled to the shrinking apical progress zone L_PD(t) and frozen proximal chondrogenic compartments; omits the 4-digit chick hindlimb stage (HH28, m=4), AER surgical excision truncation controls (HH20 and HH24 excisions), and equal-diffusion / hyaluronate-excess negative controls; does not load or segment the vendored Gallus gallus wing skeleton specimen; and returns only 2 analytical scalar measurements without PDE peak counts or specimen morphometrics. Overall 45.6/100 (faithfulness 38.6, reproducibility 62.1); rubric morphoeval 0.1.0; checkpoint commit 8871db0; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 48, Morphological realism / specimen match 28, Parameter expressivity 44, Morphometric validation 40, Source and data traceability 60, Code-to-model traceability 56, Reproducibility package 68. Output judged: docs/media/limb_chondrogenesis_turing_comparison.png: rendered output of 1979-newman-limb-chondrogenesis-turing.py at 8871db0, image/png, 198805 B, 1307×429 px, artifact_sha256 9508d38c1641902f41ae3bb78b22063c03fbbe63c3c0a00bd358a6598898315f (sha256 9508d38c1641902f41ae3bb78b22063c03fbbe63c3c0a00bd358a6598898315f), spec_fingerprint 381dc7883b80c95da9d476a5865f816bf3bb5de908cfdb8ef8c6bbef3a244a82. Dual provenance: spec_fingerprint: 381dc7883b80c95da9d476a5865f816bf3bb5de908cfdb8ef8c6bbef3a244a82; artifact_sha256: 9508d38c1641902f41ae3bb78b22063c03fbbe63c3c0a00bd358a6598898315f; input_dataset_sha256: {datasets/limb_chondrogenesis_turing/chick_wing_skeleton_specimen.jpg=771e26f9fe8c813d..., datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json=c30d742bbf2a990a..., datasets/limb_chondrogenesis_turing/scout_manifest.json=7f3605aa11f5e077...}." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Expose full CLI parameters (--stage, --L-PD-um, --Du, --Dv, --fv, --gv, --steps, --seed), expand `measure_morphoeval()` to 8 reference-backed morphometric measurements, and upgrade `docs/media/limb_chondrogenesis_turing_comparison.png` (8-panel synthesis figure) and `docs/media/limb_chondrogenesis_turing_growth.gif` (sequential proximodistal outgrowth + AER excision animation).",
+            "remediation needed: Load and SHA-256-verify `datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json`, `chick_wing_skeleton_specimen.jpg`, `scout_manifest.json`, and `paper_citations.bib` at runtime; segment the humerus (1 bone), radius+ulna (2 bones), and carpometacarpus/digits II-IV (3 elements) directly from the Gallus gallus wing specimen; and compare specimen bone counts and transverse spacing ratios against the nonlinear Turing PDE.",
+            "remediation needed: Replace the static cosine-sine heuristic with a genuine nonlinear 2-component cubic-saturated Turing reaction-diffusion PDE solver (du/dt = f_u(L_PD, D_eff)*u + f_v*v - u^3 + D_u*Lap(u), dv/dt = g_u(L_PD, D_eff)*u + g_v*v + D_v*Lap(v)) with zero-flux Neumann anteroposterior boundaries (x in {0, L_AP}) and pinned/apical proximodistal boundaries (z in [0, L_PD(t)]), plus a 2D composite proximodistal limb bud solver that freezes stylopod (m=1) -> zeugopod (m=2) -> autopod (m=3) compartments sequentially.",
+            "remediation needed: Simulate all 4 developmental regimes from Newman & Frisch (1979) Table 1 (HH20 stylopod L_PD=500 um -> 1 humerus; HH24 zeugopod L_PD=250 um -> 2 radius+ulna; HH27 wing autopod L_PD=140 um -> 3 digits II-IV; HH28 hindlimb autopod L_PD=115 um -> 4 pedal digits I-IV), the 3-step AER surgical excision truncation series ([1,0,0] -> [1,2,0] -> [1,2,3] elements), and dual negative controls (equal diffusion Du=Dv=0.5 and hyaluronate-excess sub-Turing fu=1.5)." ;
+        pk:hasScore "0.456"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 012 autonomous loop assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "Sss+HsMU02Hhm91LYYAZkOhRc376+KfvO9UxUWBcqbobN+6A3GSqIyhjX7fdRFFdogo/lX8Uazj9YSHNYCDO89HE7HA1xe1XIYLI2SyHscvTIMcRLZTcRYwpmUSZfbW1CQL6GKCMJay8+A4gmwfGK9VtR8tD+PwVrD/QvgJpWWqnLA5UDBON6CS0fixuPpB/PECZa0FxH6g0FShDmILDaRbgg4gO/PULlXf9+LtY140c6s+g8nGiy6QaPerPrXgbOKpSCVenIW93l76Yu4d28wHiDLn0Zvv2T+EnlOYT/imzBRMalblgO5CoIs/pnB4y+D0gSkb9LpRT8KehWpCy0Q==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Newman & Frisch (1979) Science 3D Helmholtz/Turing standing-wave eigenmodes and proximodistal 1 -> 2 -> 3 skeletal chondrogenesis in developing Gallus gallus wing bud — MorphoEval overall 45.6/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T00:35:08Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-newman-limb-chondrogenesis-turing-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-newman-limb-chondrogenesis-turing> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1002/jez.1401080304> dcterms:date "1948"^^xsd:gYear ;
+        dcterms:title "The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm" .
+
+    <https://doi.org/10.1038/244492a0> dcterms:date "1973"^^xsd:gYear ;
+        dcterms:title "Positional information in chick limb morphogenesis" .
+
+    <https://doi.org/10.1098/rspb.2004.2772> dcterms:date "1549"^^xsd:gYear ;
+        dcterms:title "Dynamical mechanisms for skeletal pattern formation in the vertebrate limb" .
+
+    <https://doi.org/10.1126/science.462174> dcterms:date "1979"^^xsd:gYear ;
+        dcterms:title "Dynamics of skeletal pattern formation in developing chick limb" .
+
+    <https://doi.org/10.1186/s13227-017-0084-8> dcterms:date "2017"^^xsd:gYear ;
+        dcterms:title "The evolutionary origin of digit patterning" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jez.1401080304>,
+            <https://doi.org/10.1038/244492a0>,
+            <https://doi.org/10.1098/rspb.2004.2772>,
+            <https://doi.org/10.1126/science.462174>,
+            <https://doi.org/10.1186/s13227-017-0084-8> .
+}
+

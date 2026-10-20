@@ -1,0 +1,454 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-drosophila-ventral-furrow-loop
+  target_simulation: 2012-he-drosophila-ventral-furrow.py
+  paper: Conte et al. (2012) PLoS ONE 7:e49973; Martin et al. (2009) Nature 457:495-499;
+    He et al. (2014) Nature 508:392-396
+  created_at: '2026-10-20T01:18:56.273Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: 2a34864
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 9.235
+  wall_time_min: 0.15
+  tier_a_wall_s: 6.979
+  tier_b_wall_s: 2.256
+  cpu_user_s: 3.93
+  cpu_sys_s: 0.69
+  input_tokens: 233
+  output_tokens: 13506
+  subagent_tokens: 0
+  total_llm_tokens: 13739
+  artifact_tokens: 36225
+  tier_a_llm_tokens: 7989
+  tier_b_llm_tokens: 5750
+  effective_tokens_per_s: 1487.7
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:18:56.357Z'
+  ended_at: '2026-10-20T01:18:58.265Z'
+  duration_s: 1.853
+  cpu_user_s: 0.9
+  cpu_sys_s: 0.02
+  max_rss_mb: 34.0
+  runs_count: 1
+  tokens:
+    input_tokens: 30
+    output_tokens: 63
+    subagent_tokens: 0
+    total_llm_tokens: 93
+    artifact_tokens: 1583
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/drosophila_ventral_furrow/scout_manifest.json
+    bytes: 5638
+    sha256: 0c6354ab1d934ba37fd34e35649c381535c9a595e26224e52959895c156e8c1f
+    tokens: 1583
+  commands:
+  - command: ./venv/bin/python3 morphoeval/scout_literature.py --slot 46 --out datasets/drosophila_ventral_furrow/scout_manifest.json
+    exit_code: 0
+    wall_s: 1.853
+    cpu_user_s: 0.9
+    cpu_sys_s: 0.02
+    stdout_tokens: 63
+  notes: Completed literature scouting for slot-046-drosophila-ventral-furrow (Conte
+    et al. 2012 PLoS ONE, Martin et al. 2009 Nature, He et al. 2014 Nature)
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:20:23.175Z'
+  ended_at: '2026-10-20T01:20:23.269Z'
+  duration_s: 0.094
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 3808
+    subagent_tokens: 0
+    total_llm_tokens: 3808
+    artifact_tokens: 3808
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_reference.json
+    bytes: 8444
+    sha256: 5c6f1960cef1be196732c27119f92f56413f2f2951282125687dff8203fed4e5
+    tokens: 2269
+  - file: datasets/drosophila_ventral_furrow/paper_citations.bib
+    bytes: 1490
+    sha256: 2e27f2dba9211a91e7a7f3eb81b465c311d3a909533817f6e4f0133dd903d8f2
+    tokens: 451
+  - file: datasets/drosophila_ventral_furrow/README.md
+    bytes: 3987
+    sha256: 2a88c2c3d97b655c2f4e9d2b1bb2465fca10e22389fb9e70f456066c198fed59
+    tokens: 1088
+  commands: []
+  notes: Extracted Conte et al. (2012), Martin et al. (2009), and He et al. (2014)
+    equations and 6-regime biomechanical reference table
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:20:23.361Z'
+  ended_at: '2026-10-20T01:20:23.454Z'
+  duration_s: 0.093
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2333
+    subagent_tokens: 0
+    total_llm_tokens: 2333
+    artifact_tokens: 2333
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_specimen.jpg
+    bytes: 331500
+    sha256: f426366f7ede436da44782b28ebac9bd013cace1f8fe44b6ed382b77ad86c419
+    tokens: 64
+  - file: datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_reference.json
+    bytes: 8444
+    sha256: 5c6f1960cef1be196732c27119f92f56413f2f2951282125687dff8203fed4e5
+    tokens: 2269
+  commands: []
+  notes: Vendored CC BY 4.0 Drosophila melanogaster ventral furrow confocal cross-section
+    specimen and locked SHA-256 digests
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:21:19.595Z'
+  ended_at: '2026-10-20T01:22:11.462Z'
+  duration_s: 3.972
+  cpu_user_s: 0.32
+  cpu_sys_s: 0.47
+  max_rss_mb: 396.5
+  runs_count: 2
+  tokens:
+    input_tokens: 32
+    output_tokens: 588
+    subagent_tokens: 0
+    total_llm_tokens: 620
+    artifact_tokens: 1637
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean
+    bytes: 7825
+    sha256: 79e305fc3f4babdbed3e8c29ca79489456a0e7edb4ea681e0ed2409faac75c48
+    tokens: 64
+  - file: morphoeval/math_kg_loops/he-drosophila-ventral-furrow.yaml
+    bytes: 6271
+    sha256: c37bdfd7a8788eab9b57efd80401741867be2036b949caa0e7c87b53e0e39d17
+    tokens: 1573
+  commands:
+  - command: lean morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean
+    exit_code: 1
+    wall_s: 2.006
+    cpu_user_s: 0.14
+    cpu_sys_s: 0.23
+    stdout_tokens: 492
+  - command: lean morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean
+    exit_code: 0
+    wall_s: 1.966
+    cpu_user_s: 0.18
+    cpu_sys_s: 0.24
+    stdout_tokens: 96
+  notes: Verified 3 standalone Lean 4 theorems (0 sorrys) in Loop_046_drosophila_ventral_furrow.lean
+    and registered Math KG laws; Verified 3 standalone Lean 4 theorems (0 sorrys)
+    in Loop_046_drosophila_ventral_furrow.lean and registered Math KG laws
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:23:37.769Z'
+  ended_at: '2026-10-20T01:23:38.056Z'
+  duration_s: 0.236
+  cpu_user_s: 0.2
+  cpu_sys_s: 0.02
+  max_rss_mb: 62.8
+  runs_count: 1
+  tokens:
+    input_tokens: 23
+    output_tokens: 557
+    subagent_tokens: 0
+    total_llm_tokens: 580
+    artifact_tokens: 3312
+    method: explicit+BPE
+  artifacts:
+  - file: 2012-he-drosophila-ventral-furrow.py
+    bytes: 12040
+    sha256: 618249a7231c762e1912b842d4a79662d52613ae477cad7ad7bd8881f9bafd5f
+    tokens: 3312
+  commands:
+  - command: ./venv/bin/python3 2012-he-drosophila-ventral-furrow.py --self-test
+    exit_code: 0
+    wall_s: 0.236
+    cpu_user_s: 0.2
+    cpu_sys_s: 0.02
+    stdout_tokens: 557
+  notes: Implemented Pass 1 baseline script 2012-he-drosophila-ventral-furrow.py and
+    passed --self-test
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:23:38.130Z'
+  ended_at: '2026-10-20T01:23:38.913Z'
+  duration_s: 0.731
+  cpu_user_s: 0.67
+  cpu_sys_s: 0.04
+  max_rss_mb: 103.1
+  runs_count: 1
+  tokens:
+    input_tokens: 19
+    output_tokens: 536
+    subagent_tokens: 0
+    total_llm_tokens: 555
+    artifact_tokens: 128
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/drosophila_ventral_furrow_comparison.png
+    bytes: 112787
+    sha256: 877d89b820fd2debb25ddbc99e3f627bbe99a15a7327f54c18c26df702ed6ae5
+    tokens: 64
+  - file: docs/media/drosophila_ventral_furrow_growth.gif
+    bytes: 47089
+    sha256: 4f58b554e41e1663de0a2f12d13e1a818e554b897d539703473672384e9b313a
+    tokens: 64
+  commands:
+  - command: ./venv/bin/python3 2012-he-drosophila-ventral-furrow.py
+    exit_code: 0
+    wall_s: 0.731
+    cpu_user_s: 0.67
+    cpu_sys_s: 0.04
+    stdout_tokens: 536
+  notes: Rendered Pass 1 baseline comparison PNG and growth GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:23:38.996Z'
+  ended_at: '2026-10-20T01:23:39.103Z'
+  duration_s: 0.107
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2148
+    subagent_tokens: 0
+    total_llm_tokens: 2148
+    artifact_tokens: 2148
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-drosophila-ventral-furrow-audit.yaml
+    bytes: 8463
+    sha256: f8b76941a32aa7b3318b4c65eedd1321e262888b65abbe824184a42ff8fa62dd
+    tokens: 2148
+  commands: []
+  notes: Completed Pass 1 dual-assessor audit (59.0/100)
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:23:39.186Z'
+  ended_at: '2026-10-20T01:23:39.605Z'
+  duration_s: 0.367
+  cpu_user_s: 0.32
+  cpu_sys_s: 0.03
+  max_rss_mb: 89.4
+  runs_count: 1
+  tokens:
+    input_tokens: 33
+    output_tokens: 675
+    subagent_tokens: 0
+    total_llm_tokens: 708
+    artifact_tokens: 843
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-drosophila-ventral-furrow-audit.measurements.yaml
+    bytes: 2770
+    sha256: f433c72434e743ec1cdfee2193628e4ec874edf558b20f7da59c25f69d0b2d8b
+    tokens: 843
+  commands:
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-drosophila-ventral-furrow-audit.yaml
+    exit_code: 0
+    wall_s: 0.367
+    cpu_user_s: 0.32
+    cpu_sys_s: 0.03
+    stdout_tokens: 675
+  notes: Measured Pass 1 outputs via measure_outputs.py
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:23:39.682Z'
+  ended_at: '2026-10-20T01:23:40.057Z'
+  duration_s: 0.32
+  cpu_user_s: 0.29
+  cpu_sys_s: 0.02
+  max_rss_mb: 44.7
+  runs_count: 1
+  tokens:
+    input_tokens: 42
+    output_tokens: 145
+    subagent_tokens: 0
+    total_llm_tokens: 187
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-drosophila-ventral-furrow-audit.yaml
+      --no-resolve-heads --conform
+    exit_code: 0
+    wall_s: 0.32
+    cpu_user_s: 0.29
+    cpu_sys_s: 0.02
+    stdout_tokens: 145
+  notes: Built Pass 1 ProbKnow-conformant nanopublications
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:23:40.134Z'
+  ended_at: '2026-10-20T01:23:40.718Z'
+  duration_s: 0.529
+  cpu_user_s: 0.47
+  cpu_sys_s: 0.03
+  max_rss_mb: 54.7
+  runs_count: 1
+  tokens:
+    input_tokens: 31
+    output_tokens: 501
+    subagent_tokens: 0
+    total_llm_tokens: 532
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands:
+  - command: ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-drosophila-ventral-furrow-audit
+    exit_code: 0
+    wall_s: 0.529
+    cpu_user_s: 0.47
+    cpu_sys_s: 0.03
+    stdout_tokens: 501
+  notes: Signed and verified Pass 1 nanopubs
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:23:59.123Z'
+  ended_at: '2026-10-20T01:23:59.220Z'
+  duration_s: 0.097
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2038
+    subagent_tokens: 0
+    total_llm_tokens: 2038
+    artifact_tokens: 2038
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-drosophila-ventral-furrow-audit/REPORT.md
+    bytes: 7583
+    sha256: db68cadb3c6d8d4c35430d06ba56256fcd960810a8f25ae77bc5d6df37d113d3
+    tokens: 2038
+  commands: []
+  notes: Synthesized Pass 1 audit report
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:28:43.321Z'
+  ended_at: '2026-10-20T01:28:44.215Z'
+  duration_s: 0.836
+  cpu_user_s: 0.76
+  cpu_sys_s: 0.06
+  max_rss_mb: 188.0
+  runs_count: 1
+  tokens:
+    input_tokens: 23
+    output_tokens: 114
+    subagent_tokens: 0
+    total_llm_tokens: 137
+    artifact_tokens: 18395
+    method: explicit+BPE
+  artifacts:
+  - file: 2012-he-drosophila-ventral-furrow.py
+    bytes: 54482
+    sha256: cd2717bcd10b39a3bddfddb9e10a51334171b2ab28b8b936b288e81f5c8140dc
+    tokens: 14778
+  - file: docs/media/drosophila_ventral_furrow_comparison.png
+    bytes: 685556
+    sha256: 08844a6e7b1fb107ab56e2044cf753c193fd1c53940818b9e442ec8cb8f25403
+    tokens: 64
+  - file: docs/media/drosophila_ventral_furrow_growth.gif
+    bytes: 1106104
+    sha256: 5988ec19429f583323930674a6aa190383a5deb0f695af2238244a09febef761
+    tokens: 64
+  - file: morphoeval/audits/2026-10-19-drosophila-ventral-furrow-audit-v2.yaml
+    bytes: 13266
+    sha256: 870904b9de9385bc62103fd12f5fd23dbe7552d77bc3a8acf809488785d9381b
+    tokens: 3489
+  commands:
+  - command: ./venv/bin/python3 2012-he-drosophila-ventral-furrow.py --self-test
+    exit_code: 0
+    wall_s: 0.836
+    cpu_user_s: 0.76
+    cpu_sys_s: 0.06
+    stdout_tokens: 114
+  notes: 'Completed Pass 2 remediation: full 6-regime Conte et al. (2012) & Martin
+    et al. (2009) simulator, RK2 ratcheted pulse ODE, 2D morphospace, and 4-stage
+    confocal specimen segmentation'

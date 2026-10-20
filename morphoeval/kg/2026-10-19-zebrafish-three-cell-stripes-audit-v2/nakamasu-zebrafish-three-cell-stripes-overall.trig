@@ -1,0 +1,73 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-nakamasu-zebrafish-three-cell-stripes> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace — MorphoEval overall 92.1/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 2 (v2) post-remediation evaluation of `2009-nakamasu-zebrafish-three-cell-stripes.py` (overall weighted score: 92.1 / 100, up +42.3 points from 49.8 / 100 in Pass 1). The remediated script integrates the nonlinear 3-species Nakamasu et al. (2009) reaction-diffusion PDE for melanophores (u), xanthophores (v), and long-range diffusible survival factor (w) with zero-flux Neumann boundary conditions via a spectral DCT-II IMEX solver; reproduces in silico laser-ablation experiments (83.4% melanophore loss upon flanking xanthophore interstripe ablation and boundary-guided horizontal stripe regeneration); sweeps the 4-regime *leopard* (cx41.8 / gja5b) spot-to-labyrinth-to-stripe morphospace; verifies dual negative controls (equal diffusion Dw = Du = 0.02 and ablated mutual repulsion bu = av = 0); segments 4 trunk melanophore stripes and interstripes on a SHA-256-locked adult Danio rerio photograph; and backs its core laws with 3 machine-checked Lean 4 theorems in `morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean`. Overall 92.1/100 (faithfulness 91.7, reproducibility 93.0); rubric morphoeval 0.1.0; checkpoint commit 8871db0; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 94, Morphological realism / specimen match 90, Parameter expressivity 91, Morphometric validation 92, Source and data traceability 95, Code-to-model traceability 92, Reproducibility package 92. Output judged: docs/media/zebrafish_three_cell_stripes_comparison.png: rendered output of 2009-nakamasu-zebrafish-three-cell-stripes.py at 8871db0, image/png, 1037223 B, 2133×1326 px, artifact_sha256 06e14d2e148a7cd75234ef8e7f3d3d203f925f5ca91afbcb6abe93be86da9902 (sha256 06e14d2e148a7cd75234ef8e7f3d3d203f925f5ca91afbcb6abe93be86da9902), spec_fingerprint e325ab05dbc489df59ad15e0ad7e5ce094c3a9ea9e524b654d3adbb036c29214. Dual provenance: spec_fingerprint: e325ab05dbc489df59ad15e0ad7e5ce094c3a9ea9e524b654d3adbb036c29214; artifact_sha256: 06e14d2e148a7cd75234ef8e7f3d3d203f925f5ca91afbcb6abe93be86da9902; input_dataset_sha256: {datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg=850b2d4a94c7cbcb..., datasets/zebrafish_three_cell_stripes/scout_manifest.json=d19df92d7c80de8a..., datasets/zebrafish_three_cell_stripes/zebrafish_three_cell_stripes_reference.json=fcc1809ce2e992bc...}. Supersedes audit: 2026-10-19-zebrafish-three-cell-stripes-audit." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Couple the 3-species continuum PDE to discrete agent-based iridophore S-to-L shape transitions (Volkening & Sandstede 2015) across growing juvenile-to-adult zebrafish fins." ;
+        pk:hasScore "0.921"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 007 autonomous loop assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/sj.embor.7400757>,
+            <https://doi.org/10.1073/pnas.0607790104>,
+            <https://doi.org/10.1073/pnas.0808622106>,
+            <https://doi.org/10.1126/science.1212821> .
+    <https://doi.org/10.1038/sj.embor.7400757> dct:date "2006"^^xsd:gYear ;
+        dct:title "Spot pattern of leopard Danio is caused by mutation in the zebrafish connexin41.8 gene" .
+    <https://doi.org/10.1073/pnas.0607790104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Pattern regulation in the stripe of zebrafish suggests an underlying dynamic and autonomous mechanism" .
+    <https://doi.org/10.1073/pnas.0808622106> dct:date "2009"^^xsd:gYear ;
+        dct:title "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns" .
+    <https://doi.org/10.1126/science.1212821> dct:date "2012"^^xsd:gYear ;
+        dct:title "Pigment pattern formation by contact-dependent depolarization" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace — MorphoEval overall 92.1/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:16:08Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-nakamasu-zebrafish-three-cell-stripes> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

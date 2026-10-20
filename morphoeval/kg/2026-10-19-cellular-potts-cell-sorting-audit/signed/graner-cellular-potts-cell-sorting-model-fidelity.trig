@@ -1,0 +1,98 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RA_O_eVBTekK2KssJBhfjOA6ebL_-1i7YH0CxGaLCqsXs/> .
+@prefix this: <https://w3id.org/np/RA_O_eVBTekK2KssJBhfjOA6ebL_-1i7YH0CxGaLCqsXs> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/newbio239098a0>,
+            <https://doi.org/10.1103/PhysRevE.47.2128>,
+            <https://doi.org/10.1103/PhysRevLett.69.2013>,
+            <https://doi.org/10.1126/science.141.3579.401>,
+            <https://doi.org/10.1242/dev.122.5.1611> .
+
+    <https://doi.org/10.1038/newbio239098a0> dcterms:date "1972"^^xsd:gYear ;
+        dcterms:title "Regeneration of Hydra from reaggregated cells" .
+
+    <https://doi.org/10.1103/PhysRevE.47.2128> dcterms:date "1993"^^xsd:gYear ;
+        dcterms:title "Simulation of the differential adhesion driven rearrangement of biological cells" .
+
+    <https://doi.org/10.1103/PhysRevLett.69.2013> dcterms:date "1992"^^xsd:gYear ;
+        dcterms:title "Simulation of biological cell sorting using a two-dimensional extended Potts model" .
+
+    <https://doi.org/10.1126/science.141.3579.401> dcterms:date "1963"^^xsd:gYear ;
+        dcterms:title "Reconstruction of tissues by dissociated cells" .
+
+    <https://doi.org/10.1242/dev.122.5.1611> dcterms:date "1996"^^xsd:gYear ;
+        dcterms:title "Surface tensions of embryonic tissues predict their mutual envelopment behavior" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-graner-cellular-potts-cell-sorting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting — Model fidelity to source: 67/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Implements the Graner & Glazier (1992) PRL Eqs. (2)-(3) interfacial tension formulas (`compute_cpm_tensions`, L28-44) and the 2D extended Cellular Potts Hamiltonian with 8-neighbor bond energies and quadratic volume elasticity (`simulate_cpm_sorting_v1`, L47-177) for complete engulfment (`gamma_LD=3`) and an equal-adhesion negative control (`gamma_LD=0`). However, v1 omits partial sorting / lens formation (`gamma_LD > gamma_DM - gamma_LM`), checkerboard mixing (`gamma_LD < 0`), cell dissociation (`gamma_LM < 0`), and Glazier & Graner's (1993) zero-temperature `T = 0` pinning arrest vs high-`T` melting controls." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "1992-graner-cellular-potts-cell-sorting.py L47–L177: 2D Cellular Potts solver simulates only complete sorting and equal-adhesion control, omitting partial lens, checkerboard, dissociation, and T=0 pinning arrest <https://github.com/fractastical/morpholib/blob/b9976f8/1992-graner-cellular-potts-cell-sorting.py#L47-L177>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-model-fidelity-1> ;
+        pk:hasScore "0.67"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "1992-graner-cellular-potts-cell-sorting.py L28–L44" ;
+        dcterms:description "Graner & Glazier (1992) PRL Eqs. 2-3 surface tension formulas gamma_LD, gamma_LM, gamma_DM" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/b9976f8/1992-graner-cellular-potts-cell-sorting.py#L28-L44> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "otn2dG2V4dlXFjOZ5hygGaavV2sjxh1nCf5+JvKdSaEvC+gevee7cpHQfrH8lx1pdC/nAPf4WbdIGF6nJmDKJArFIyTHpWSymJDGzX1WPfaYhx5uPsnMlOQ7TEioCf/yXjGtbKd/GtZKxjXZN2LXUyw4GNF5akQYLyaMsyoE31whdneH32naCfNDyRZjiVtvjsYrWolswGRqdw+m6qkVxc+LklQYjv4fdmPtVNbIea/DmdXj25e0GoQqeYBE/vV8gGtduaiWRrtYOnDuA9ZQmUo+xcTkSzmV4MC/o7D8Suc0G0ukc8GlJQ6S3Q4UbpXaC5sN05LhGJod53fPXrCLUw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting — Model fidelity to source 67/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T00:40:21Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

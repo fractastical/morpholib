@@ -1,0 +1,127 @@
+{
+  "metadata": {
+    "dataset_id": "turing-pearson-kondo-morphogenesis-v1",
+    "title": "Turing (1952) Linear Dispersion, Pearson (1993) 12-Class Gray-Scott Phase Diagram & Kondo-Asai (1995) Pomacanthus Skin Stripe Reference Dataset",
+    "sources": [
+      {
+        "id": "turing1952",
+        "citation": "Turing AM (1952). The chemical basis of morphogenesis. Philosophical Transactions of the Royal Society of London B 237(641):37-72.",
+        "doi": "10.1098/rstb.1952.0012"
+      },
+      {
+        "id": "pearson1993",
+        "citation": "Pearson JE (1993). Complex patterns in a simple system. Science 261(5118):189-192.",
+        "doi": "10.1126/science.261.5118.189"
+      },
+      {
+        "id": "lee1994",
+        "citation": "Lee KJ, McCormick WD, Pearson JE, Swinney HL (1994). Experimental observation of self-replicating spots in a reaction-diffusion system. Nature 369(6477):215-218.",
+        "doi": "10.1038/369215a0"
+      },
+      {
+        "id": "kondo1995",
+        "citation": "Kondo S, Asai R (1995). A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus. Nature 376(6543):765-768.",
+        "doi": "10.1038/376765a0"
+      }
+    ],
+    "specimens": {
+      "pomacanthus_imperator_stripes": {
+        "file": "datasets/turing/pomacanthus_imperator_stripes_specimen.jpg",
+        "sha256": "aa2b4ee7effb9f4e093277d08914dfbe960382ed1a10fe000a9dee766d520e7d",
+        "species": "Pomacanthus imperator (Emperor angelfish, adult lateral profile)",
+        "author": "Diego Delso (delso.photo)",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Pez_%C3%A1ngel_emperador_(Pomacanthus_imperator),_mar_Rojo,_Egipto,_2023-04-14,_DD_30.jpg",
+        "roi_box_xyxy": [140, 125, 430, 315],
+        "pattern_type": "stripes_and_y_branch_dislocations"
+      },
+      "ostracion_meleagris_spots": {
+        "file": "datasets/turing/ostracion_meleagris_spots_specimen.jpg",
+        "sha256": "90890e6d8c4bb9120f5f1bdb3fd823aa7819d557a3b9468f2b0b2f5967f36acd",
+        "species": "Ostracion meleagris (Whitespotted boxfish, adult lateral profile)",
+        "author": "Diego Delso (delso.photo)",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Pez_cofre_moteado_(Ostracion_meleagris),_Zanz%C3%ADbar,_Tanzania,_2024-05-30,_DD_83.jpg",
+        "roi_box_xyxy": [180, 115, 455, 235],
+        "pattern_type": "hexagonal_turing_spots"
+      }
+    }
+  },
+  "turing_1952_linear_model": {
+    "section": "Turing (1952) Sections 8-10, Eqs. (8.1)-(9.6)",
+    "description": "Two-morphogen (activator X, inhibitor Y) reaction-diffusion system on a ring of N=20 cells and continuous 1D/2D domain.",
+    "jacobian_parameters": {
+      "a": 1.0,
+      "b": -1.5,
+      "c": 1.25,
+      "d": -1.5,
+      "trace_J0": -0.5,
+      "det_J0": 0.375,
+      "D_X": 0.25,
+      "D_Y": 1.00,
+      "diffusivity_ratio_d": 4.0,
+      "critical_diffusivity_ratio_dc": 3.9270509831248424,
+      "critical_k2": 1.25,
+      "critical_k": 1.118033988749895,
+      "critical_wavelength": 5.619851784832608,
+      "max_growth_rate_sigma_c": 0.007548133662166334
+    },
+    "ring_of_20_cells": {
+      "N_cells": 20,
+      "cell_diameter_units": 1.0,
+      "dominant_mode_s": 4,
+      "ring_wavelength_cells": 5.0,
+      "mode_growth_rates": [
+        {"mode_s": 0, "k2_discrete": 0.0, "re_sigma": -0.25},
+        {"mode_s": 1, "k2_discrete": 0.09788696740969285, "re_sigma": -0.311179},
+        {"mode_s": 2, "k2_discrete": 0.3819660112501051, "re_sigma": -0.23161},
+        {"mode_s": 3, "k2_discrete": 0.8244294954150538, "re_sigma": -0.019626},
+        {"mode_s": 4, "k2_discrete": 1.381966011250105, "re_sigma": 0.005049},
+        {"mode_s": 5, "k2_discrete": 2.0, "re_sigma": -0.042262},
+        {"mode_s": 6, "k2_discrete": 2.618033988749895, "re_sigma": -0.123953}
+      ]
+    }
+  },
+  "pearson_1993_physical_setup": {
+    "section": "Pearson (1993) Science 261:189-192, Eq. (1) & Fig. 1-2",
+    "domain_length_L": 2.5,
+    "grid_N": 256,
+    "dx": 0.009765625,
+    "Du_physical": 2e-05,
+    "Dv_physical": 1e-05,
+    "diffusivity_ratio": 2.0,
+    "initial_patch_size": 20,
+    "initial_U_patch": 0.5,
+    "initial_V_patch": 0.25,
+    "noise_amplitude": 0.01,
+    "saddle_node_formula": "4 * (F + k)^2 = F  <=>  k_SN(F) = 0.5 * sqrt(F) - F",
+    "hopf_formula": "F_Hopf(k) = 0.5 * (sqrt(k) - 2*k - sqrt(k * (1 - 4*sqrt(k))))  for k <= 1/16"
+  },
+  "pearson_1993_12_classes": [
+    {"class_id": "alpha", "symbol": "α", "F": 0.010, "k": 0.047, "steady_state_inside_SN": false, "morphology": "spatiotemporal_chaos_wavelets", "description": "Turbulent chemical wavelets that repeatedly collide and annihilate"},
+    {"class_id": "beta",  "symbol": "β", "F": 0.014, "k": 0.039, "steady_state_inside_SN": true,  "morphology": "phase_turbulence", "description": "Oscillatory phase turbulence near the Hopf instability boundary"},
+    {"class_id": "gamma", "symbol": "γ", "F": 0.022, "k": 0.051, "steady_state_inside_SN": true,  "morphology": "bi_stable_stripes_spots", "description": "Worm-like stripes and localized spots coexisting inside the SN loop"},
+    {"class_id": "delta", "symbol": "δ", "F": 0.030, "k": 0.055, "steady_state_inside_SN": true,  "morphology": "turing_hex_spots_stripes", "description": "Nontrivial steady state yielding hexagonal spots and stripes"},
+    {"class_id": "epsilon", "symbol": "ε", "F": 0.018, "k": 0.055, "steady_state_inside_SN": false, "morphology": "chaotic_spot_fission", "description": "Chaotic spot self-replication with irregular crowding"},
+    {"class_id": "zeta",  "symbol": "ζ", "F": 0.026, "k": 0.059, "steady_state_inside_SN": false, "morphology": "propagating_worms", "description": "Elongating worm-like stripes growing from tips"},
+    {"class_id": "eta",   "symbol": "η", "F": 0.034, "k": 0.060, "steady_state_inside_SN": false, "morphology": "labyrinthine_stripes", "description": "Connected labyrinthine stripes with Y-branch junctions"},
+    {"class_id": "theta", "symbol": "θ", "F": 0.038, "k": 0.061, "steady_state_inside_SN": false, "morphology": "stripes_and_holes", "description": "Connected stripe networks with enclosed low-activator holes"},
+    {"class_id": "iota",  "symbol": "ι", "F": 0.046, "k": 0.0594, "steady_state_inside_SN": true, "morphology": "negative_solitons_holes", "description": "Localized dark holes (depleted V solitons) in a high-V background"},
+    {"class_id": "kappa", "symbol": "κ", "F": 0.050, "k": 0.063, "steady_state_inside_SN": false, "morphology": "coral_branching_domains", "description": "Accreting coral-like branching domains with tip splitting"},
+    {"class_id": "lambda","symbol": "λ", "F": 0.028, "k": 0.062, "steady_state_inside_SN": false, "morphology": "self_replicating_spots", "description": "Self-replicating soliton spots undergoing binary mitosis"},
+    {"class_id": "mu",    "symbol": "μ", "F": 0.046, "k": 0.065, "steady_state_inside_SN": false, "morphology": "non_splitting_worms", "description": "Short vermiform stripes and stable spots near the extinction boundary"}
+  ],
+  "kondo_asai_1995_pomacanthus_growth": {
+    "section": "Kondo & Asai (1995) Nature 376:765-768, Figs. 1-3",
+    "species": "Pomacanthus imperator & Pomacanthus semicirculatus",
+    "intrinsic_wavelength_mm": 3.8,
+    "stages": [
+      {"stage_id": "juvenile_2cm",   "body_length_cm": 2.0,  "flank_height_mm": 11.4, "n_stripes": 3,  "inter_stripe_spacing_mm": 3.80, "y_branch_count": 0},
+      {"stage_id": "subadult_3_5cm", "body_length_cm": 3.5,  "flank_height_mm": 19.2, "n_stripes": 5,  "inter_stripe_spacing_mm": 3.84, "y_branch_count": 1},
+      {"stage_id": "subadult_5cm",   "body_length_cm": 5.0,  "flank_height_mm": 27.0, "n_stripes": 7,  "inter_stripe_spacing_mm": 3.86, "y_branch_count": 2},
+      {"stage_id": "transition_7cm", "body_length_cm": 7.0,  "flank_height_mm": 41.8, "n_stripes": 11, "inter_stripe_spacing_mm": 3.80, "y_branch_count": 4},
+      {"stage_id": "adult_9_5cm",    "body_length_cm": 9.5,  "flank_height_mm": 57.5, "n_stripes": 15, "inter_stripe_spacing_mm": 3.83, "y_branch_count": 3},
+      {"stage_id": "adult_12cm",     "body_length_cm": 12.0, "flank_height_mm": 72.2, "n_stripes": 19, "inter_stripe_spacing_mm": 3.80, "y_branch_count": 2}
+    ]
+  }
+}

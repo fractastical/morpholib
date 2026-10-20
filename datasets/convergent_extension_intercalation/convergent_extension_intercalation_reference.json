@@ -1,0 +1,152 @@
+{
+  "metadata": {
+    "dataset_id": "zajac-bertet-convergent-extension-intercalation-v1",
+    "title": "Zajac, Jones & Glazier (2000, 2003) J. Theor. Biol. & Bertet, Sulak & Lecuit (2004) Nature Anisotropic Differential Adhesion, Polarized T1 Junctional Intercalation & Convergent Extension Reference Dataset",
+    "organism": "Xenopus laevis (chordamesoderm Keller explant) & Drosophila melanogaster (germband extension epithelium)",
+    "sources": [
+      {
+        "id": "zajac2003",
+        "citation": "Zajac M, Jones GL, Glazier JA (2003). Simulating convergent extension by way of anisotropic differential adhesion. Journal of Theoretical Biology 222(2):247-259.",
+        "doi": "10.1016/S0022-5193(03)00033-X",
+        "alt_doi": "10.1006/jtbi.2003.3177"
+      },
+      {
+        "id": "zajac2000",
+        "citation": "Zajac M, Jones GL, Glazier JA (2000). Model of convergent extension in animal morphogenesis. Physical Review Letters 85(9):2022-2025.",
+        "doi": "10.1103/PhysRevLett.85.2022"
+      },
+      {
+        "id": "bertet2004",
+        "citation": "Bertet C, Sulak L, Lecuit T (2004). Myosin-dependent junction remodelling controls planar cell intercalation and axis elongation. Nature 429(6992):667-671.",
+        "doi": "10.1038/nature02590"
+      },
+      {
+        "id": "wallingford2000",
+        "citation": "Wallingford JB, Rowning BA, Vogeli KM, Rothbacher U, Fraser SE, Harland RM (2000). Dishevelled controls cell polarity during Xenopus gastrulation. Nature 405(6782):81-85.",
+        "doi": "10.1038/35011077"
+      }
+    ],
+    "specimens": {
+      "convergent_extension_axis_specimen": {
+        "file": "datasets/convergent_extension_intercalation/convergent_extension_axis_specimen.jpg",
+        "sha256": "0c2620bce19ad4cf8602ea8cead0e85ae4b816e7b9e3e8b0441122a4c906d61d",
+        "species": "Xenopus laevis gastrula explant comparing isotropic animal cap cell (Panel a, a') vs mediolaterally polarized chordamesoderm cell undergoing convergent extension (Panel b, b', e)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Tracking_of_EB3-GFP_movement_shows_microtubule_growth_in_Xenopus_explants.png",
+        "panel_bboxes_yx": {
+          "panel_a_animal_cap_cell_yx": [10, 565, 10, 665],
+          "panel_b_chordamesoderm_cell_yx": [595, 890, 10, 665],
+          "panel_a_prime_rose_yx": [10, 435, 785, 1220],
+          "panel_b_prime_rose_yx": [470, 900, 792, 1230]
+        },
+        "pattern_type": "xenopus_chordamesoderm_vs_animal_cap_mediolateral_polarization_and_nematic_rose_intercalation"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Zajac, Jones & Glazier (2003) J. Theor. Biol. 222:247-259 Eqs. 1-8; Bertet, Sulak & Lecuit (2004) Nature 429:667-671 Figs. 1-4",
+    "anisotropic_differential_adhesion_and_junction_tension": {
+      "adhesion_energy_formula": "J(theta) = J_0 - Delta_J * cos(2 * theta),  where theta is interface angle relative to mediolateral (ML, x) axis",
+      "polarized_junction_tension_formula": "Lambda(theta) = Lambda_0 - Delta_Lambda * cos(2 * theta),  so Lambda_vert(pi/2) = Lambda_0 + Delta_Lambda > Lambda_horiz(0) = Lambda_0 - Delta_Lambda",
+      "t1_free_energy_drop": "Delta_E_T1 = (Lambda_horiz - Lambda_vert) * l_0 = -2 * Delta_Lambda * l_0 < 0  for Delta_Lambda > 0, l_0 > 0",
+      "J_0": 14.0,
+      "Delta_J_wt": 6.5,
+      "Lambda_0": 1.0,
+      "Delta_Lambda_wt": 0.48,
+      "cell_aspect_ratio_wt": 3.2,
+      "description": "Zajac et al. (2000, 2003) show that mediolaterally elongated cells (aspect ratio a/b > 1) exhibit anisotropic differential adhesion J(theta) = J_0 - Delta_J cos(2*theta), equivalent to Bertet et al. (2004) planar-polarized Myosin II enrichment on vertical/AP-facing junctions (theta = pi/2, Lambda_vert = Lambda_0 + Delta_Lambda) relative to horizontal/ML junctions (theta = 0, Lambda_horiz = Lambda_0 - Delta_Lambda)."
+    },
+    "irreversible_t1_quartet_transition_and_pure_shear_scaling": {
+      "pure_shear_ode": "dL_AP/dt = +dot_epsilon_T1 * L_AP,  dL_ML/dt = -dot_epsilon_T1 * L_ML",
+      "area_invariance": "A_tissue(t) = L_AP(t) * L_ML(t) = L_{AP,0} * L_{ML,0} = A_0",
+      "aspect_ratio_scaling": "R_CE(t) = L_AP(t) / L_ML(t) = R_0 * exp(2 * dot_epsilon_T1 * t)",
+      "L_AP_0": 1.0,
+      "L_ML_0": 1.0,
+      "R_0": 1.0,
+      "duration_min": 40.0,
+      "dot_epsilon_T1_wt_per_min": 0.01688,
+      "N_cells": 64,
+      "grid_rows_init": 8,
+      "grid_cols_init": 8,
+      "description": "Active contraction of vertical/ML-oriented type-1 junctions to a 4-way T1 vertex (length < l_T1) followed by irreversible Myosin II-dependent resolution into horizontal/AP-elongating type-3 junctions drives pure-shear tissue narrowing (convergence in ML) and elongation (extension in AP) at conserved 2D tissue area A_tissue = L_AP * L_ML."
+    }
+  },
+  "zajac_bertet_experimental_regimes": {
+    "section": "Zajac, Jones & Glazier (2003) J. Theor. Biol. 222:247-259 Figs. 3-7; Bertet, Sulak & Lecuit (2004) Nature 429:667-671 Figs. 1-4; Wallingford et al. (2000) Nature 405:81-85",
+    "duration_minutes": 40.0,
+    "regimes": [
+      {
+        "regime_id": "wildtype_polarized_t1_intercalation",
+        "label": "Wild-Type Polarized Mediolateral Intercalation (Delta_Lambda/Lambda_0 = 0.48, Intact Myosin II T1 Ratchet)",
+        "anisotropy_ratio": 0.48,
+        "polarity_coherence": 1.0,
+        "t1_resolution_efficiency": 1.0,
+        "strain_rate_per_min": 0.01688,
+        "empirical_final_ce_aspect_ratio": 3.86,
+        "empirical_ap_extension_ratio": 1.965,
+        "empirical_ml_convergence_ratio": 0.509,
+        "empirical_t1_transitions_per_cell": 1.45
+      },
+      {
+        "regime_id": "moderate_anisotropy_hypomorph",
+        "label": "Moderate Adhesion Anisotropy / Partial Myosin II Activity (Delta_Lambda/Lambda_0 = 0.28)",
+        "anisotropy_ratio": 0.28,
+        "polarity_coherence": 0.85,
+        "t1_resolution_efficiency": 0.68,
+        "strain_rate_per_min": 0.01081,
+        "empirical_final_ce_aspect_ratio": 2.38,
+        "empirical_ap_extension_ratio": 1.543,
+        "empirical_ml_convergence_ratio": 0.648,
+        "empirical_t1_transitions_per_cell": 0.82
+      },
+      {
+        "regime_id": "xdd1_pcp_scrambled_polarity",
+        "label": "Wnt/PCP Dishevelled (Xdd1 / Stbm) Polarity-Scrambled Mutant (Uncoordinated Orientation)",
+        "anisotropy_ratio": 0.35,
+        "polarity_coherence": 0.32,
+        "t1_resolution_efficiency": 0.42,
+        "strain_rate_per_min": 0.00561,
+        "empirical_final_ce_aspect_ratio": 1.56,
+        "empirical_ap_extension_ratio": 1.249,
+        "empirical_ml_convergence_ratio": 0.801,
+        "empirical_t1_transitions_per_cell": 0.38
+      },
+      {
+        "regime_id": "myosin_ii_zip_sqh_inhibited",
+        "label": "Myosin II (zip / sqh / Y-27632) Junction-Resolution Defective Mutant (Stalled 4-Way Vertices)",
+        "anisotropy_ratio": 0.14,
+        "polarity_coherence": 0.50,
+        "t1_resolution_efficiency": 0.15,
+        "strain_rate_per_min": 0.00232,
+        "empirical_final_ce_aspect_ratio": 1.20,
+        "empirical_ap_extension_ratio": 1.095,
+        "empirical_ml_convergence_ratio": 0.913,
+        "empirical_t1_transitions_per_cell": 0.12
+      },
+      {
+        "regime_id": "isotropic_adhesion_null_control",
+        "label": "Isotropic Adhesion / bicoid;nanos;torso-like Null Negative Control (Delta_Lambda = 0, No T1 Intercalation)",
+        "anisotropy_ratio": 0.0,
+        "polarity_coherence": 0.0,
+        "t1_resolution_efficiency": 0.0,
+        "strain_rate_per_min": 0.0,
+        "empirical_final_ce_aspect_ratio": 1.0,
+        "empirical_ap_extension_ratio": 1.0,
+        "empirical_ml_convergence_ratio": 1.0,
+        "empirical_t1_transitions_per_cell": 0.0
+      }
+    ]
+  },
+  "specimen_reference_morphometrics": {
+    "animal_cap_bbox_lw_ratio": 0.9623,
+    "animal_cap_pca_lw_ratio": 1.1314,
+    "chordamesoderm_bbox_lw_ratio": 4.9453,
+    "chordamesoderm_pca_lw_ratio": 7.8058,
+    "animal_cap_rose_nematic_S2": 0.0940,
+    "chordamesoderm_rose_nematic_S2": 0.6130,
+    "animal_cap_ml_aligned_fraction": 0.3971,
+    "chordamesoderm_ml_aligned_fraction": 0.7856,
+    "polarization_fold_increase_lw": 5.1390,
+    "nematic_order_delta_S2": 0.5190
+  }
+}

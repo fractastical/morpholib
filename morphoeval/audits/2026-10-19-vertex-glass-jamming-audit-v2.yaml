@@ -1,0 +1,195 @@
+# MorphoEval audit — Bi, Lopez, Schwarz & Manning (2015) Nature Physics & Park et al. (2015) Nature Materials Vertex Glass Unjamming, 2026-10-19 (v2)
+#
+# Pass 2 assessment of `2015-bi-vertex-glass-jamming.py` (v2, 835 lines) after
+# completing Step 12 closed-loop remediation (`2026-10-19-vertex-glass-jamming-loop`).
+
+audit:
+  id: 2026-10-19-vertex-glass-jamming-audit-v2
+  supersedes_audit_id: 2026-10-19-vertex-glass-jamming-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0cb0132
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2015-bi-vertex-glass-jamming.py` after
+      completing the 12-step closed remediation loop (`2026-10-19-vertex-glass-jamming-loop`).
+
+references:
+  bi2015:
+    title: "A density-independent rigidity transition in biological tissues"
+    authors: "Bi D, Lopez JH, Schwarz JM, Manning ML"
+    venue: "Nature Physics 11(12):1074-1079 (2015)"
+    doi: 10.1038/nphys3471
+  park2015:
+    title: "Unjamming and cell shape in the asthmatic airway epithelium"
+    authors: "Park J-A, Kim JH, Bi D, Mitchel JA, Qazvini NT, Tantisira K, Park CY, McGill M, Kim S-H, Gweon B, Notbohm J, Steward Jr R, Burger S, Randell SH, Kho AT, Tambe DT, Hardin C, Shore SA, Green FHY, Weiss ST, Butler JP, Manning ML, Fredberg JJ"
+    venue: "Nature Materials 14(10):1040-1048 (2015)"
+    doi: 10.1038/nmat4357
+  bi2016:
+    title: "Motility-driven glass and jamming transitions in biological tissues"
+    authors: "Bi D, Yang X, Marchetti MC, Manning ML"
+    venue: "Physical Review X 6(2):021011 (2016)"
+    doi: 10.1103/PhysRevX.6.021011
+  atia2018:
+    title: "Geometric constraints during epithelial jamming"
+    authors: "Atia L, Bi D, Sharma Y, Mitchel JA, Gweon B, Koehler SA, DeCamp SJ, Lan B, Kim JH, Hirsch R, Pegoraro AF, Lee KH, Starr JR, Weitz DA, Martin AC, Park J-A, Butler JP, Fredberg JJ"
+    venue: "Nature Physics 14(6):613-620 (2018)"
+    doi: 10.1038/s41567-018-0089-9
+  staple2010:
+    title: "Mechanics and remodelling of cell packings in epithelia"
+    authors: "Staple DB, Farhadifar R, Röper J-C, Aigouy B, Eaton S, Jülicher F"
+    venue: "The European Physical Journal E 33(2):117-127 (2010)"
+    doi: 10.1140/epje/i2010-10677-0
+
+simulations:
+  - id: bi-vertex-glass-jamming
+    name: "Bi et al. (2015) & Park et al. (2015) zero-temperature shape-index unjamming & asthmatic bronchial epithelial rigidity transition"
+    organism: "Human (Homo sapiens) bronchial epithelial monolayer & Drosophila epithelial sheet"
+    script: 2015-bi-vertex-glass-jamming.py
+    output: docs/media/vertex_glass_jamming_comparison.png
+    extra_outputs:
+      - docs/media/vertex_glass_jamming_growth.gif
+    status: evaluated
+    source_refs:
+      - bi2015
+      - park2015
+      - bi2016
+      - atia2018
+      - staple2010
+    claim_boundary:
+      reported_in_source:
+        - "Bi, Lopez, Schwarz & Manning (2015) Nature Physics Eqs. 1-2 & Figs. 1-4: dimensionless vertex energy e = (1/2) sum [(a_i - 1)^2 + r(p_i - p_0)^2] exhibits a density-independent rigidity transition at critical target shape index p_0^* approx 3.813 (> p_5 approx 3.8119 > p_hex approx 3.7224), where T1 energy barrier Delta e_T1(p_0) and static shear modulus G(p_0) vanish identically for p_0 >= p_0^*."
+        - "Park et al. (2015) Nature Materials Figs. 1-4 & Atia et al. (2018) Nature Physics Figs. 1-2: primary human bronchial epithelial cells (HBECs) from non-asthmatic donors jam into a solid monolayer by Day 14 (q = 3.792 < 3.813), whereas asthmatic donor HBECs (q = 3.955 > 3.813) and mechanically compressed HBECs (30 cm H2O, q = 3.945 > 3.813) remain unjammed, with standardized cell shapes obeying a universal k-Gamma distribution."
+      reconstructed_in_script:
+        - "2D periodic confluent monolayer vertex-Voronoi simulation across 4 regimes (Non-Asthmatic Solid p_0=3.70, Critical Point p_0^*=3.813, Asthmatic Fluid p_0=3.955, and Zero-Perimeter-Modulus Ablation r=0.0), 8-point p_0 phase sweep in [3.55, 4.00], and Park et al. (2015) Days 3-18 bronchial maturation trajectories."
+        - "Junction-guided Voronoi segmentation of the human in situ monolayer micrograph (`human_epithelial_monolayer_specimen.jpg`, N=101 interior cells, <q>=3.7961, k-Gamma correlation r = 0.9334)."
+      transfer_boundary:
+        - "2D apical polygonal projection of pseudostratified bronchial and simple monolayer epithelia."
+      does_not_claim:
+        - "Does not model 3D mucociliary beating hydrodynamics or sub-epithelial airway smooth muscle contraction."
+    summary: >-
+      Pass 2 (v2) evaluation of `2015-bi-vertex-glass-jamming.py` (90.9/100, up from
+      57.3/100 in Pass 1; +33.6 points). The remediated script implements the full Bi et al.
+      (2015) dimensionless vertex energy functional, evaluates T1 energy barrier
+      `Delta e_T1(p_0)` and static shear modulus `G(p_0)` scaling across the critical threshold
+      `p_0^* = 3.813`, simulates 4 distinct mechanical regimes (solid jammed `p_0=3.70, <q>=3.7756`,
+      critical `p_0=3.813`, asthmatic fluid `p_0=3.955, <q>=3.9362`, and `r=0.0` ablation control),
+      executes an 8-point continuous `p_0` sweep (`r = 0.9646`), models the Park et al. (2015)
+      bronchial maturation timecourse (`r = 0.9962`), segments `N=101` cells from the
+      SHA-256-locked human monolayer micrograph (`<q> = 3.7961`, Atia et al. 2018 `k`-Gamma
+      `r = 0.9334`), and is backed by 4 machine-checked Lean 4 theorems in
+      `Loop_045_vertex_glass_jamming.lean`.
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          Faithfully implements the Bi et al. (2015) Eq. (2) dimensionless vertex energy
+          functional (`compute_cell_vertex_energy`, L95-115), regular polygon geometric shape
+          bounds (`regular_polygon_shape_index`, L118-128), zero-temperature T1 energy barrier
+          `Delta e_T1(p_0)` and static shear modulus `G(p_0)` scaling across `p_0^* = 3.813`
+          (`compute_t1_barrier_and_shear_modulus`, L131-183), Atia et al. (2018) `k`-Gamma
+          probability density (`k_gamma_pdf`, L186-194), and 2D periodic vertex-Voronoi
+          relaxation across solid, critical, asthmatic fluid, and `r=0` ablation regimes
+          (`simulate_vertex_unjamming_regime`, L245-380). Backed by 4 machine-checked Lean 4
+          theorems (0 sorrys).
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [95, 194], note: "Bi et al. (2015) Eq. 2 vertex energy, regular polygon bounds, T1 barrier & shear modulus scaling, and k-Gamma PDF", supports: true}
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [245, 380], note: "2D periodic monolayer simulator across solid, critical, asthmatic fluid, and r=0 ablation regimes", supports: true}
+          - {file: morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean, lines: [20, 148], note: "4 machine-checked Lean 4 theorems for vertex energy ground state, hexagon-pentagon-critical bounds, T1 barrier vanishing, and asthma vs control separation", supports: true}
+      specimen-match:
+        value: 89
+        rationale: >-
+          Vendors and SHA-256-verifies the human in situ monolayer micrograph
+          (`datasets/vertex_glass_jamming/human_epithelial_monolayer_specimen.jpg`, CC BY-SA 4.0),
+          segments `N=101` interior polygonal cells via nuclear-seeded, junction-guided
+          Voronoi tessellation (`segment_human_monolayer_specimen`, L465-565), measures
+          empirical mean shape index `<q> = 3.7961` (near `p_0^* = 3.813` and Park et al. 2015
+          Day 14 control `3.792`), and matches the Atia et al. (2018) universal `k`-Gamma
+          standardized shape distribution (`k = 2.15`) with Pearson `r = 0.9334` (`RMSE = 0.1235`,
+          Panels A5 & B5).
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [465, 565], note: "CV segmentation of human monolayer specimen (N=101 cells, <q>=3.7961, k-Gamma r=0.9334)", supports: true}
+          - {file: docs/media/vertex_glass_jamming_comparison.png, lines: [0, 0], note: "10-panel synthesis figure showing segmented human monolayer overlay (Panel A5) and k-Gamma universal distribution match (Panel B5)", supports: true}
+      parameter-expressivity:
+        value: 89
+        rationale: >-
+          Simulates 4 distinct regimes (Solid Jammed `p_0=3.70`, Critical `p_0=3.813`,
+          Asthmatic Fluid `p_0=3.955`, and Perimeter-Modulus Ablation `r=0.0`, Panels A1-A4),
+          executes an 8-point continuous `p_0` sweep across `[3.55, 4.00]` (`run_p0_phase_sweep`,
+          L383-420, Panels B1-B2), models Park et al. (2015) Days 3-18 non-asthmatic vs.
+          asthmatic maturation and `30 cm H2O` bronchospasm compression (`simulate_park_2015_bronchial_maturation`,
+          L423-460, Panels B3-B4), and exposes full CLI flags (`--p0-solid`, `--p0-fluid`, `--r`,
+          `--steps`, `--seed`, `--self-test`, L775-825).
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [383, 460], note: "8-point p0 phase sweep and Park et al. (2015) bronchial maturation & compression trajectories", supports: true}
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [775, 825], note: "Full CLI parameter interface wired into run_all_regimes_and_render", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Computes 8 quantitative morphometrics in `measure_morphoeval()` (L675-735),
+          including solid jammed `<q> = 3.7756` (vs `3.792` ref), asthmatic fluid `<q> = 3.9362`
+          (vs `3.955` ref), critical threshold `p_0^* = 3.813`, 8-point phase sweep `<q>(p_0)`
+          correlation `r = 0.9646` (`RMSE = 0.0308`), static shear modulus drop
+          `Delta G = 0.0565`, Park et al. (2015) bronchial maturation correlation `r = 0.9962`
+          (asthmatic `r = 0.9922`), segmented specimen `<q> = 3.7961` (`N = 101` cells), and
+          Atia et al. (2018) `k`-Gamma distribution correlation `r = 0.9334`.
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [383, 460], note: "Phase sweep and bronchial maturation Pearson r and RMSE validations", supports: true}
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [675, 735], note: "8 quantitative morphometric validations in measure_morphoeval()", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/vertex_glass_jamming/` with `vertex_glass_jamming_reference.json`,
+          `human_epithelial_monolayer_specimen.jpg`, `paper_citations.bib` (5 DOIs: Bi et al.
+          2015, Park et al. 2015, Bi et al. 2016, Atia et al. 2018, Staple et al. 2010),
+          `scout_manifest.json`, and `README.md`, with runtime SHA-256 verification
+          (`verify_reference_dataset`, L74-90).
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [74, 90], note: "Runtime SHA-256 verification of reference dataset and human monolayer specimen micrograph", supports: true}
+          - {file: datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json, lines: [1, 108], note: "Vendored Bi et al. (2015), Park et al. (2015), and Atia et al. (2018) reference dataset", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Module and function docstrings map every equation to Bi et al. (2015) Nature Physics
+          Eqs. 1-2 & Figs. 1-4, Park et al. (2015) Nature Materials Figs. 1-4, Atia et al.
+          (2018) Nature Physics Figs. 1-2, and the 4 Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean`.
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [1, 38], note: "Module docstring mapping equations to primary literature DOIs and Lean 4 declarations", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic RNG (`seed=2015`), fast execution (<7s full render, <2s `--self-test`),
+          8-check `self_test()` suite (L738-772) verifying SHA-256 integrity, Lean 4 energy
+          equilibrium parity, hexagon-pentagon-critical geometric bounds, T1 barrier vanishing,
+          solid vs. fluid phase sweep correlation, bronchial maturation & specimen segmentation,
+          and two-run bitwise determinism (`np.array_equal`).
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [738, 772], note: "8-check self_test() suite including SHA-256 check and two-run bitwise determinism", supports: true}
+    remediation:
+      - "Couple the zero-temperature vertex energy to self-propelled active Brownian motility forces (v_0, D_r) as in Bi et al. (2016) Physical Review X 6:021011 to map the 3D (p_0, v_0, D_r) glass transition surface."

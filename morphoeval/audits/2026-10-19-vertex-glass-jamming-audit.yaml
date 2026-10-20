@@ -1,0 +1,170 @@
+# MorphoEval audit — Bi, Lopez, Schwarz & Manning (2015) Nature Physics & Park et al. (2015) Nature Materials Vertex Glass Unjamming, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `2015-bi-vertex-glass-jamming.py` (v1, 218 lines) prior to
+# Step 12 remediation in `2026-10-19-vertex-glass-jamming-loop`.
+
+audit:
+  id: 2026-10-19-vertex-glass-jamming-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0cb0132
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2015-bi-vertex-glass-jamming.py` prior to
+      Pass 2 remediation in `2026-10-19-vertex-glass-jamming-loop`.
+
+references:
+  bi2015:
+    title: "A density-independent rigidity transition in biological tissues"
+    authors: "Bi D, Lopez JH, Schwarz JM, Manning ML"
+    venue: "Nature Physics 11(12):1074-1079 (2015)"
+    doi: 10.1038/nphys3471
+  park2015:
+    title: "Unjamming and cell shape in the asthmatic airway epithelium"
+    authors: "Park J-A, Kim JH, Bi D, Mitchel JA, Qazvini NT, Tantisira K, Park CY, McGill M, Kim S-H, Gweon B, Notbohm J, Steward Jr R, Burger S, Randell SH, Kho AT, Tambe DT, Hardin C, Shore SA, Green FHY, Weiss ST, Butler JP, Manning ML, Fredberg JJ"
+    venue: "Nature Materials 14(10):1040-1048 (2015)"
+    doi: 10.1038/nmat4357
+  bi2016:
+    title: "Motility-driven glass and jamming transitions in biological tissues"
+    authors: "Bi D, Yang X, Marchetti MC, Manning ML"
+    venue: "Physical Review X 6(2):021011 (2016)"
+    doi: 10.1103/PhysRevX.6.021011
+  atia2018:
+    title: "Geometric constraints during epithelial jamming"
+    authors: "Atia L, Bi D, Sharma Y, Mitchel JA, Gweon B, Koehler SA, DeCamp SJ, Lan B, Kim JH, Hirsch R, Pegoraro AF, Lee KH, Starr JR, Weitz DA, Martin AC, Park J-A, Butler JP, Fredberg JJ"
+    venue: "Nature Physics 14(6):613-620 (2018)"
+    doi: 10.1038/s41567-018-0089-9
+  staple2010:
+    title: "Mechanics and remodelling of cell packings in epithelia"
+    authors: "Staple DB, Farhadifar R, Röper J-C, Aigouy B, Eaton S, Jülicher F"
+    venue: "The European Physical Journal E 33(2):117-127 (2010)"
+    doi: 10.1140/epje/i2010-10677-0
+
+simulations:
+  - id: bi-vertex-glass-jamming
+    name: "Bi et al. (2015) & Park et al. (2015) zero-temperature shape-index unjamming & asthmatic bronchial epithelial rigidity transition"
+    organism: "Human (Homo sapiens) bronchial epithelial monolayer & Drosophila epithelial sheet"
+    script: 2015-bi-vertex-glass-jamming.py
+    output: docs/media/vertex_glass_jamming_comparison.png
+    extra_outputs:
+      - docs/media/vertex_glass_jamming_growth.gif
+    status: evaluated
+    source_refs:
+      - bi2015
+      - park2015
+      - bi2016
+      - atia2018
+      - staple2010
+    summary: >-
+      Pass 1 (v1) evaluation of `2015-bi-vertex-glass-jamming.py` (57.3/100).
+      The v1 baseline implements the Bi et al. (2015) Nature Physics Eq. (2) dimensionless
+      vertex energy `e = 0.5 * sum [(a_i - 1)^2 + r * (p_i - p_0)^2]` and simulates two points
+      (`p_0 = 3.70` solid vs `p_0 = 3.95` fluid), but omits explicit T1 energy barrier
+      `Delta e_T1(p_0)` and shear modulus `G(p_0)` scaling across `p_0^* = 3.813`, omits the
+      Park et al. (2015) Nature Materials non-asthmatic vs. asthmatic human bronchial
+      epithelium ALI maturation timecourse and bronchospasm compression perturbation, does
+      not load or segment the vendored human monolayer micrograph
+      (`human_epithelial_monolayer_specimen.jpg`), and exposes no CLI parameter flags beyond
+      `--self-test`.
+    scores:
+      model-fidelity:
+        value: 67
+        rationale: >-
+          Evaluates the Bi et al. (2015) Eq. (2) dimensionless single-cell vertex energy
+          (`compute_cell_vertex_energy`, L35-50) and simulates periodic Voronoi cell packing
+          below and above `p_0^* = 3.813` (`simulate_unjamming_v1`, L74-122). However, v1
+          omits the analytical T1 topological rearrangement barrier `Delta e_T1(p_0)` and
+          static shear modulus `G(p_0)` scaling laws (Bi et al. 2015 Figs. 2-3), omits
+          Park et al. (2015) human bronchial epithelial maturation and bronchospasm
+          unjamming dynamics, and omits Atia et al. (2018) `k`-Gamma shape-index universality.
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [35, 50], note: "Bi et al. (2015) Eq. 2 dimensionless vertex energy functional", supports: true}
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [74, 122], note: "Baseline Voronoi simulation lacks explicit T1 barrier Delta e_T1(p0), shear modulus G(p0), and asthmatic bronchial maturation model", supports: false}
+      specimen-match:
+        value: 34
+        rationale: >-
+          Although `datasets/vertex_glass_jamming/human_epithelial_monolayer_specimen.jpg`
+          is vendored in the repository, the v1 script never loads, verifies, or segments the
+          human monolayer micrograph (`render_outputs_v1`, L125-182) and renders only a
+          3-panel synthetic plot.
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [125, 182], note: "render_outputs_v1 renders 3 synthetic panels without loading or segmenting human_epithelial_monolayer_specimen.jpg", supports: false}
+          - {file: docs/media/vertex_glass_jamming_comparison.png, lines: [0, 0], note: "3-panel synthetic figure lacking biological specimen segmentation overlay or empirical q=P/sqrt(A) distribution match", supports: false}
+      parameter-expressivity:
+        value: 45
+        rationale: >-
+          Evaluates only two discrete parameter points (`p_0 = 3.70` and `p_0 = 3.95`) without
+          a continuous `p_0` phase sweep across the solid-to-fluid transition at `p_0^* = 3.813`,
+          without comparing non-asthmatic control vs. asthmatic vs. mechanically compressed
+          bronchial epithelium, without a zero-contractility / ablation control (`r = 0`),
+          and without CLI flags for `--p0`, `--r`, `--steps`, or `--seed` (L214-218).
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [128, 129], note: "Only two p0 values (3.70 and 3.95) simulated in v1", supports: false}
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [214, 218], note: "CLI parser only accepts --self-test", supports: false}
+      morphometric-validation:
+        value: 53
+        rationale: >-
+          Computes 3 basic metrics (`solid_mean_shape_index_q`, `fluid_mean_shape_index_q`,
+          `critical_shape_index_p0_star`, L185-204), but does not compare simulated `Delta e_T1(p_0)`,
+          `G(p_0)`, or observed `<q>(p_0)` across an 8-point phase sweep against Bi et al. (2015)
+          reference values, does not validate Park et al. (2015) Days 3-18 bronchial epithelial
+          maturation curves, and does not extract empirical cell shape indices `q = P/sqrt(A)`
+          from the biological specimen micrograph.
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [185, 204], note: "Only 3 summary metrics without Bi et al. (2015) phase-sweep correlation, Park et al. (2015) asthma timecourse validation, or specimen q distribution match", supports: false}
+      source-traceability:
+        value: 63
+        rationale: >-
+          Module docstring cites Bi et al. (2015) and Park et al. (2015) DOIs (L5-6) and
+          `datasets/vertex_glass_jamming/` exists on disk, but the v1 script does not load
+          `vertex_glass_jamming_reference.json` or verify SHA-256 digests at runtime.
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [5, 11], note: "Cites 2 DOIs in docstring but omits runtime loading and SHA-256 verification of reference dataset", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions map to the Bi et al. (2015) vertex energy equation, and
+          `morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean` proves 4 machine-checked
+          theorems, but v1 docstrings lack equation-by-equation mappings to Bi et al. (2015)
+          Figs. 2-4, Park et al. (2015) Figs. 1-4, and Atia et al. (2018) k-Gamma scaling.
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [35, 122], note: "Baseline functions lack detailed equation-number citations to T1 barrier scaling, asthma unjamming, and k-Gamma universality", supports: false}
+          - {file: morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean, lines: [1, 148], note: "4 machine-checked Lean 4 theorems for vertex energy, hexagon-pentagon-critical bounds, T1 barrier vanishing, and asthma vs control separation", supports: true}
+      repro-package:
+        value: 68
+        rationale: >-
+          Uses deterministic `np.random.default_rng(2015)` and provides `--self-test` and
+          `measure_morphoeval()` (L185-212), but `self_test()` checks only 2 basic assertions
+          without SHA-256 dataset verification, Lean theorem parity checks, or two-run
+          bitwise determinism verification.
+        evidence:
+          - {file: 2015-bi-vertex-glass-jamming.py, lines: [207, 212], note: "Minimal 2-check self_test() without SHA-256 verification or determinism check", supports: false}
+    remediation:
+      - "Implement explicit T1 topological rearrangement energy barrier Delta e_T1(p_0) and static shear modulus G(p_0) scaling across an 8-point p_0 phase sweep spanning solid jammed (p_0 < 3.813) and fluid unjammed (p_0 >= 3.813) regimes, plus a perimeter-elasticity ablation control (r = 0)."
+      - "Model the Park et al. (2015) Nature Materials human bronchial epithelial cell (HBEC) air-liquid interface maturation timecourse (Days 3-18) for non-asthmatic control vs. asthmatic donors and 30 cm H2O mechanical bronchospasm compression, plus Atia et al. (2018) universal k-Gamma shape-index scaling."
+      - "Load and SHA-256-verify `datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json` and `human_epithelial_monolayer_specimen.jpg`, segment the dark junctional boundaries and blue nuclear seeds via watershed/Voronoi tessellation to extract empirical cell shape indices q = P/sqrt(A) and polygon classes P(n), and validate against the k-Gamma distribution."

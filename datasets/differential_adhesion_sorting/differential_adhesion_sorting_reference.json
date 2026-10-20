@@ -1,0 +1,215 @@
+{
+  "metadata": {
+    "dataset_id": "steinberg-glazier-graner-differential-adhesion-v1",
+    "title": "Steinberg (1963, 1970) Differential Adhesion Hypothesis, Graner & Glazier (1992) Cellular Potts Hamiltonian & Foty et al. (1996) Chick Embryo Surface Tension Reference Dataset",
+    "organism": "Gallus gallus (Chick embryo dissociated tissue aggregates)",
+    "sources": [
+      {
+        "id": "steinberg1963",
+        "citation": "Steinberg MS (1963). Reconstruction of tissues by dissociated cells. Science 141(3579):401-408.",
+        "doi": "10.1126/science.141.3579.401"
+      },
+      {
+        "id": "steinberg1970",
+        "citation": "Steinberg MS (1970). Does differential adhesion govern self-assembly processes in histogenesis? Equilibrium configurations and the emergence of a hierarchy among populations of embryonic cells. Journal of Experimental Zoology 173(4):395-433.",
+        "doi": "10.1002/jez.1401730406"
+      },
+      {
+        "id": "graner1992",
+        "citation": "Graner F, Glazier JA (1992). Simulation of biological cell sorting using a two-dimensional extended Potts model. Physical Review Letters 69(13):2013-2016.",
+        "doi": "10.1103/PhysRevLett.69.2013"
+      },
+      {
+        "id": "glazier1993",
+        "citation": "Glazier JA, Graner F (1993). Simulation of the differential adhesion driven rearrangement of biological cells. Physical Review E 47(3):2128-2154.",
+        "doi": "10.1103/PhysRevE.47.2128"
+      },
+      {
+        "id": "foty1996",
+        "citation": "Foty RA, Pfleger CM, Forgacs G, Steinberg MS (1996). Surface tensions of embryonic tissues predict their mutual envelopment behavior. Development 122(5):1611-1620.",
+        "doi": "10.1242/dev.122.5.1611"
+      }
+    ],
+    "specimens": {
+      "cell_sorting_specimen": {
+        "file": "datasets/differential_adhesion_sorting/cell_sorting_specimen.jpg",
+        "sha256": "9b31f7b855d90faa4c561311702d1dfe81c552ece7d3cc8215a0ff82ddd6412c",
+        "species": "Embryoid body multicellular spheroid (confocal fluorescence microscopy of inner GFP-positive cohesive cluster sorted inside outer RFP/membrane-stained embryonic cortex)",
+        "license": "CC BY 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Constru%E2%80%A1%C3%86o_de_Uma_Imagem_com_Microscopia_Confocal_-_Embryoid_Bodies_(C%E2%80%9Alulas_Estaminais).jpg",
+        "merged_panel_yx": [310, 570, 162, 424],
+        "green_panel_yx": [6, 266, 6, 266],
+        "red_panel_yx": [6, 266, 310, 570],
+        "pattern_type": "concentric_core_shell_spheroid_sorting"
+      }
+    }
+  },
+  "steinberg_dah_interfacial_tensions": {
+    "section": "Steinberg (1963) Science 141:401-408; Graner & Glazier (1992) PRL 69:2013-2016 Eqs. (1)-(3)",
+    "definitions": {
+      "gamma_AB": "J_AB - (J_AA + J_BB) / 2",
+      "gamma_AM": "J_AM - J_AA / 2  (with J_MM = 0)",
+      "gamma_BM": "J_BM - J_BB / 2  (with J_MM = 0)",
+      "spreading_coefficient_S_A_on_B": "gamma_BM - gamma_AM - gamma_AB"
+    },
+    "canonical_graner_glazier_1992_parameters": {
+      "description": "Type A = light (outer enveloping shell, lower cohesion), Type B = dark (inner core, higher cohesion), M = medium",
+      "J_AA": 14.0,
+      "J_BB": 2.0,
+      "J_AB": 11.0,
+      "J_AM": 16.0,
+      "J_BM": 16.0,
+      "J_MM": 0.0,
+      "gamma_AB": 3.0,
+      "gamma_AM": 9.0,
+      "gamma_BM": 15.0,
+      "gamma_BM_minus_gamma_AM": 6.0,
+      "target_area_A0": 16,
+      "lambda_area": 1.0,
+      "temperature_T": 10.0,
+      "regime": "complete_engulfment_sorting"
+    },
+    "thermodynamic_phase_regimes": [
+      {
+        "regime_id": "checkerboard_mixing",
+        "label": "Checkerboard / Cell Mixing",
+        "condition": "gamma_AB < 0  (2 * J_AB < J_AA + J_BB)",
+        "J_AA": 14.0,
+        "J_BB": 14.0,
+        "J_AB": 4.0,
+        "J_AM": 16.0,
+        "J_BM": 16.0,
+        "gamma_AB": -10.0,
+        "gamma_AM": 9.0,
+        "gamma_BM": 9.0,
+        "expected_radial_separation_sign": 0,
+        "expected_heterotypic_fraction_range": [0.55, 0.85]
+      },
+      {
+        "regime_id": "complete_engulfment",
+        "label": "Complete Engulfment (Concentric Sorting)",
+        "condition": "0 < gamma_AB < gamma_BM - gamma_AM",
+        "J_AA": 14.0,
+        "J_BB": 2.0,
+        "J_AB": 11.0,
+        "J_AM": 16.0,
+        "J_BM": 16.0,
+        "gamma_AB": 3.0,
+        "gamma_AM": 9.0,
+        "gamma_BM": 15.0,
+        "expected_radial_separation_sign": 1,
+        "expected_heterotypic_fraction_range": [0.08, 0.24]
+      },
+      {
+        "regime_id": "partial_engulfment",
+        "label": "Partial Engulfment (Acorn / Doublet Lens)",
+        "condition": "gamma_AB > gamma_BM - gamma_AM > 0",
+        "J_AA": 14.0,
+        "J_BB": 2.0,
+        "J_AB": 16.0,
+        "J_AM": 16.0,
+        "J_BM": 16.0,
+        "gamma_AB": 8.0,
+        "gamma_AM": 9.0,
+        "gamma_BM": 15.0,
+        "expected_radial_separation_sign": 1,
+        "expected_heterotypic_fraction_range": [0.04, 0.16]
+      },
+      {
+        "regime_id": "cell_dissociation",
+        "label": "Cell Dissociation into Medium",
+        "condition": "gamma_AM < 0 or gamma_BM < 0",
+        "J_AA": 14.0,
+        "J_BB": 2.0,
+        "J_AB": 11.0,
+        "J_AM": 2.0,
+        "J_BM": 16.0,
+        "gamma_AB": 3.0,
+        "gamma_AM": -5.0,
+        "gamma_BM": 15.0,
+        "expected_radial_separation_sign": 1,
+        "expected_heterotypic_fraction_range": [0.10, 0.50]
+      },
+      {
+        "regime_id": "equal_adhesion_control",
+        "label": "Equal-Adhesion Negative Control (gamma_AB = 0)",
+        "condition": "J_AA = J_BB = J_AB, gamma_AB = 0, gamma_BM - gamma_AM = 0",
+        "J_AA": 10.0,
+        "J_BB": 10.0,
+        "J_AB": 10.0,
+        "J_AM": 16.0,
+        "J_BM": 16.0,
+        "gamma_AB": 0.0,
+        "gamma_AM": 11.0,
+        "gamma_BM": 11.0,
+        "expected_radial_separation_sign": 0,
+        "expected_heterotypic_fraction_range": [0.35, 0.58]
+      }
+    ]
+  },
+  "foty_steinberg_1996_chick_embryo_hierarchy": {
+    "section": "Foty, Pfleger, Forgacs & Steinberg (1996) Development 122(5):1611-1620, Table 1 & Fig. 4",
+    "organism": "Gallus gallus (chick embryo stages 24-28)",
+    "unit": "dyn/cm",
+    "tissues": [
+      {
+        "rank_inner_to_outer": 1,
+        "tissue_id": "limb_bud_precartilage",
+        "tissue_name": "Limb bud precartilage (mesoderm)",
+        "embryonic_day": 4.0,
+        "surface_tension_dyn_cm": 20.1,
+        "sem_dyn_cm": 0.5,
+        "model_gamma_M_scaled": 15.0,
+        "enveloped_by": ["pigmented_epithelium", "heart_ventricle", "embryonic_liver", "neural_retina"]
+      },
+      {
+        "rank_inner_to_outer": 2,
+        "tissue_id": "pigmented_epithelium",
+        "tissue_name": "Pigmented epithelium of retina",
+        "embryonic_day": 5.0,
+        "surface_tension_dyn_cm": 12.6,
+        "sem_dyn_cm": 0.3,
+        "model_gamma_M_scaled": 11.5,
+        "enveloped_by": ["heart_ventricle", "embryonic_liver", "neural_retina"]
+      },
+      {
+        "rank_inner_to_outer": 3,
+        "tissue_id": "heart_ventricle",
+        "tissue_name": "Heart ventricle myocardium",
+        "embryonic_day": 5.0,
+        "surface_tension_dyn_cm": 8.5,
+        "sem_dyn_cm": 0.2,
+        "model_gamma_M_scaled": 9.0,
+        "enveloped_by": ["embryonic_liver", "neural_retina"]
+      },
+      {
+        "rank_inner_to_outer": 4,
+        "tissue_id": "embryonic_liver",
+        "tissue_name": "Embryonic liver parenchyma",
+        "embryonic_day": 5.0,
+        "surface_tension_dyn_cm": 4.6,
+        "sem_dyn_cm": 0.2,
+        "model_gamma_M_scaled": 6.8,
+        "enveloped_by": ["neural_retina"]
+      },
+      {
+        "rank_inner_to_outer": 5,
+        "tissue_id": "neural_retina",
+        "tissue_name": "Neural retina",
+        "embryonic_day": 5.5,
+        "surface_tension_dyn_cm": 1.6,
+        "sem_dyn_cm": 0.1,
+        "model_gamma_M_scaled": 4.5,
+        "enveloped_by": []
+      }
+    ],
+    "binary_envelopment_pairs": [
+      {"inner_B": "limb_bud_precartilage", "outer_A": "pigmented_epithelium", "sigma_B": 20.1, "sigma_A": 12.6, "delta_sigma": 7.5},
+      {"inner_B": "pigmented_epithelium", "outer_A": "heart_ventricle", "sigma_B": 12.6, "sigma_A": 8.5, "delta_sigma": 4.1},
+      {"inner_B": "heart_ventricle", "outer_A": "embryonic_liver", "sigma_B": 8.5, "sigma_A": 4.6, "delta_sigma": 3.9},
+      {"inner_B": "embryonic_liver", "outer_A": "neural_retina", "sigma_B": 4.6, "sigma_A": 1.6, "delta_sigma": 3.0},
+      {"inner_B": "limb_bud_precartilage", "outer_A": "heart_ventricle", "sigma_B": 20.1, "sigma_A": 8.5, "delta_sigma": 11.6},
+      {"inner_B": "heart_ventricle", "outer_A": "neural_retina", "sigma_B": 8.5, "sigma_A": 1.6, "delta_sigma": 6.9}
+    ]
+  }
+}

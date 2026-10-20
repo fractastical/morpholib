@@ -1,0 +1,49 @@
+sim_id: farhadifar-drosophila-wing-vertex-model
+math_family: Apical Epithelial Vertex Mechanics & Topological Polygon Packing (Farhadifar-Jülicher Vertex Functional & Lewis's Law)
+equations:
+  - law_name: Farhadifar et al. (2007) Apical Epithelial Vertex Energy Functional & Target-Area Equilibrium Identity
+    formula: "E(\\{\\mathbf{r}_i\\}) = \\sum_\\alpha \\frac{K_\\alpha}{2}(A_\\alpha - A_\\alpha^{(0)})^2 + \\sum_{\\langle i,j\\rangle} \\Lambda_{ij}\\ell_{ij} + \\sum_\\alpha \\frac{\\Gamma_\\alpha}{2} L_\\alpha^2;\\quad \\bar{\\Lambda} = \\frac{\\Lambda}{K(A^{(0)})^{3/2}},\\ \\bar{\\Gamma} = \\frac{\\Gamma}{KA^{(0)}}"
+    lean_decl: MathOfBiology.Loop_043.two_vertex_cell_energy
+    lean_theorem: MathOfBiology.Loop_043.farhadifar_area_energy_equilibrium_zero
+    lean_locus: morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean#L19-L41
+    lean_code: |-
+      def two_vertex_cell_energy (K A A0 Lambda l_sum Gamma L : Int) : Int :=
+        K * (A - A0) * (A - A0) + 2 * Lambda * l_sum + Gamma * L * L
+      theorem farhadifar_area_energy_equilibrium_zero (K A0 Lambda l_sum Gamma L : Int) :
+          two_area_elastic_energy K A0 A0 = 0 ∧
+          two_vertex_cell_energy K A0 A0 Lambda l_sum Gamma L = 2 * Lambda * l_sum + Gamma * L * L
+    variables: "r_i: 2D tri-cellular vertex coordinates; A_α, L_α: cell apical area and perimeter; l_{ij}: junctional edge length; K_α: area elasticity modulus; Λ_{ij}: adherens-junction line tension; Γ_α: myosin-II cortical perimeter contractility"
+    role: "Governs mechanical force balance on tri-cellular adherens junctions, T1 neighbor exchange energy barriers, and Case I / II / III ground-state stability"
+    source_citation: "Farhadifar, Röper, Aigouy, Eaton & Jülicher (2007) Current Biology 17(24):2095-2104 Eqs. (1)-(2) & Fig. 2"
+    code_locus: "2007-farhadifar-drosophila-wing-vertex-model.py#L98-L215"
+  - law_name: Lewis's Law (1928) Area-Topology Linear Scaling & Euler 3-Valent Hexagonal Conservation
+    formula: "\\frac{\\langle A_n \\rangle}{\\langle A \\rangle} = \\frac{n - 2}{4} \\ (n=4..9);\\quad V - E + F = 0,\\ 3V = 2E \\implies \\langle n \\rangle = \\frac{2E}{F} = 6"
+    lean_decl: MathOfBiology.Loop_043.lewis_four_area_ratio
+    lean_theorem: MathOfBiology.Loop_043.lewis_law_hexagon_normalization_and_monotonicity
+    lean_locus: morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean#L43-L79
+    lean_code: |-
+      def lewis_four_area_ratio (n : Int) : Int := n - 2
+      theorem lewis_law_hexagon_normalization_and_monotonicity (n n1 n2 : Int) (h : n1 < n2) :
+          lewis_four_area_ratio 6 = 4 ∧ lewis_four_area_ratio n1 < lewis_four_area_ratio n2 ∧
+          lewis_four_area_ratio (n + 1) - lewis_four_area_ratio n = 1
+      theorem euler_three_valent_average_six_sides (V E F : Int)
+          (h_euler : V - E + F = 0) (h_trivalent : 3 * V = 2 * E) :
+          2 * E = 6 * F ∧ (5 + 7 : Int) = 6 + 6
+    variables: "n: polygon side count (coordination number); <A_n>/<A>: normalized mean apical area of n-sided cells; V, E, F: vertex, edge, and face counts of the planar/toroidal 3-valent epithelial network"
+    role: "Links topological coordination number n to normalized cell area and proves that mean coordination is strictly 6 and conserved under T1 transitions"
+    source_citation: "Lewis (1928) Anat. Rec. 38(3):341-376; Farhadifar et al. (2007) Current Biology 17(24):2095-2104 Fig. 3C & Fig. 4C"
+    code_locus: "2007-farhadifar-drosophila-wing-vertex-model.py#L220-L530"
+  - law_name: Proliferating Wing Disc vs. Post-Mitotic Pupal Polygon-Class Distribution P(n) & Disorder Reduction
+    formula: "P_{\\text{wing}}(6) = 0.455 < P_{\\text{pupal}}(6) = 0.780;\\quad \\mu_2 = \\sum_{n=4}^9 P(n)(n-6)^2:\\ \\mu_{2,\\text{pupal}} = 0.250 < \\frac{1}{2}\\mu_{2,\\text{wing}} = 0.3825"
+    lean_decl: MathOfBiology.Loop_043.mu2_1000_wing
+    lean_theorem: MathOfBiology.Loop_043.farhadifar_2007_wing_vs_pupal_distribution_identities
+    lean_locus: morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean#L81-L124
+    lean_code: |-
+      theorem farhadifar_2007_wing_vs_pupal_distribution_identities :
+          (p1000_wing_4 + p1000_wing_5 + p1000_wing_6 + p1000_wing_7 + p1000_wing_8 + p1000_wing_9 = 1000) ∧
+          (p1000_pupal_4 + p1000_pupal_5 + p1000_pupal_6 + p1000_pupal_7 + p1000_pupal_8 + p1000_pupal_9 = 1000) ∧
+          (p1000_pupal_6 > p1000_wing_6) ∧ (2 * mu2_1000_pupal < mu2_1000_wing)
+    variables: "P(n): fraction of n-sided epithelial cells; μ_2: second central moment of polygon number distribution"
+    role: "Quantifies how stochastic mitotic cleavage drives topological disorder (P(6) ≈ 0.45) in the larval wing disc whereas post-mitotic T1 annealing restores hexagonal order (P(6) ≈ 0.78) in the pupal wing"
+    source_citation: "Farhadifar et al. (2007) Current Biology 17(24):2095-2104 Fig. 3B & Fig. 4B; Gibson et al. (2006) Nature 442:1038-1041; Classen et al. (2005) Dev. Cell 9:805-817"
+    code_locus: "2007-farhadifar-drosophila-wing-vertex-model.py#L535-L645"

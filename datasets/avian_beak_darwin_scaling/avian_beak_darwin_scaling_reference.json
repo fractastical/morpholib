@@ -1,0 +1,376 @@
+{
+  "metadata": {
+    "dataset_id": "campas-2010-avian-beak-darwin-scaling-v1",
+    "title": "Campas et al. (2010) PNAS, Abzhanov et al. (2004) Science & Abzhanov et al. (2006) Nature — Darwin's Finch Affine Scaling-and-Shear & Bmp4/Calmodulin Morphospace Dataset",
+    "sources": [
+      {
+        "id": "campas2010",
+        "citation": "Campas O, Mallarino R, Herrel A, Abzhanov A, Brenner MP (2010). Scaling and shear transformations capture beak shape diversity in Darwin's finches. Proceedings of the National Academy of Sciences 107(8):3356-3360.",
+        "doi": "10.1073/pnas.0911575107"
+      },
+      {
+        "id": "abzhanov2004",
+        "citation": "Abzhanov A, Protas M, Grant BR, Grant PR, Tabin CJ (2004). Bmp4 and morphological variation of beaks in Darwin's finches. Science 305(5689):1462-1465.",
+        "doi": "10.1126/science.1098095"
+      },
+      {
+        "id": "abzhanov2006",
+        "citation": "Abzhanov A, Kuo WP, Hartmann C, Grant BR, Grant PR, Tabin CJ (2006). The calmodulin pathway and evolution of elongated beak morphology in Darwin's finches. Nature 442(7102):563-567.",
+        "doi": "10.1038/nature04843"
+      },
+      {
+        "id": "fritz2014",
+        "citation": "Fritz JA, Brancale J, Tokita M, Burns KJ, Hawkins MB, Abzhanov A, Brenner MP (2014). Shared developmental programme strongly constrains beak shape diversity in songbirds. Journal of the Royal Society Interface 11(96):20140284.",
+        "doi": "10.1098/rsif.2014.0284"
+      }
+    ],
+    "specimens": {
+      "darwin_finches_specimen": {
+        "file": "datasets/avian_beak_darwin_scaling/darwin_finches_specimen.jpg",
+        "sha256": "5ea7ada14a01ba77d532e9c254195c409ef669fabb5f9a3e5d3de1568621bdfa",
+        "width": 960,
+        "height": 724,
+        "species": "John Gould (1845) Darwin's finches lithograph: 1. Geospiza magnirostris, 2. Geospiza fortis, 3. Camarhynchus parvulus (Geospiza parvula), 4. Certhidea olivacea",
+        "license": "Public Domain (1845 Voyage of the Beagle / Wikimedia Commons)",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Darwin%27s_finches_by_Gould.jpg",
+        "sub_specimens": [
+          {
+            "id": "gould_1_geospiza_magnirostris",
+            "species": "Geospiza magnirostris",
+            "group": "A",
+            "quad_yx_bounds": [40, 340, 20, 470],
+            "beak_tip_to_base_x_rel": [12, 195]
+          },
+          {
+            "id": "gould_2_geospiza_fortis",
+            "species": "Geospiza fortis",
+            "group": "A",
+            "quad_yx_bounds": [40, 340, 480, 940],
+            "beak_tip_to_base_x_rel": [2, 150]
+          },
+          {
+            "id": "gould_3_camarhynchus_parvulus",
+            "species": "Camarhynchus parvulus",
+            "group": "B",
+            "quad_yx_bounds": [340, 625, 20, 470],
+            "beak_tip_to_base_x_rel": [42, 148]
+          },
+          {
+            "id": "gould_4_certhidea_olivacea",
+            "species": "Certhidea olivacea",
+            "group": "C",
+            "quad_yx_bounds": [340, 625, 480, 940],
+            "beak_tip_to_base_x_rel": [17, 152]
+          }
+        ],
+        "pattern_type": "darwin_finches_beak_culmen_profiles"
+      },
+      "scout_manifest": {
+        "file": "datasets/avian_beak_darwin_scaling/scout_manifest.json",
+        "sha256": "4b321120fd7b273656d1f20e89aa9c5aeb47bfef844b04022679b66f24584ed0"
+      },
+      "paper_citations": {
+        "file": "datasets/avian_beak_darwin_scaling/paper_citations.bib",
+        "sha256": "f0b9fb929ffd2d09be0f276e6b197c32e913a051a97b3f84daf4fa199a2e7634"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Campas et al. (2010) PNAS 107(8):3356-3360, Eqs. (1)-(3) & Figs. 1-4; Abzhanov et al. (2004, 2006)",
+    "affine_scaling_shear_matrix": "M(s_L, s_D, gamma) = [[1, gamma], [0, 1]] @ [[s_L, 0], [0, s_D]] = [[s_L, gamma * s_D], [0, s_D]]",
+    "determinant_law": "det(M(s_L, s_D, gamma)) = s_L * s_D > 0 for s_L > 0, s_D > 0",
+    "canonical_beak_profile": "y_0(x_0) = a_0 * x_0^n + c_2 * x_0^2, where x_0 in [0, 1] is normalized distance from beak tip",
+    "bmp4_cam_growth_law": "s_D(b) = s_D0 * (1 + alpha_B * (b - 1)),  s_W(b) = s_W0 * (1 + alpha_W * (b - 1)),  s_L(c) = s_L0 * (1 + alpha_C * (c - 1))",
+    "bending_resistance_index": "I_beam = (W * D^3) / (12 * L)",
+    "canonical_parameters": {
+      "n_power": 1.85,
+      "a_0": 0.52,
+      "c_2": 0.14,
+      "alpha_B": 0.78,
+      "alpha_W": 0.72,
+      "alpha_C": 0.68
+    }
+  },
+  "darwin_finch_species": [
+    {
+      "species": "Geospiza magnirostris",
+      "common_name": "Large Ground Finch",
+      "genus": "Geospiza",
+      "scaling_group": "A",
+      "diet_guild": "large_hard_seeds_crushing",
+      "L_mm": 15.6,
+      "D_mm": 16.8,
+      "W_mm": 14.2,
+      "s_L": 1.37,
+      "s_D": 2.21,
+      "s_W": 2.09,
+      "gamma_shear": 0.0,
+      "bmp4_index": 2.55,
+      "cam_index": 1.18,
+      "bite_force_N": 70.2
+    },
+    {
+      "species": "Geospiza conirostris",
+      "common_name": "Large Cactus Finch",
+      "genus": "Geospiza",
+      "scaling_group": "A",
+      "diet_guild": "cactus_and_hard_seeds",
+      "L_mm": 14.8,
+      "D_mm": 12.1,
+      "W_mm": 10.6,
+      "s_L": 1.30,
+      "s_D": 1.59,
+      "s_W": 1.56,
+      "gamma_shear": 0.0,
+      "bmp4_index": 1.76,
+      "cam_index": 1.35,
+      "bite_force_N": 41.5
+    },
+    {
+      "species": "Geospiza fortis",
+      "common_name": "Medium Ground Finch",
+      "genus": "Geospiza",
+      "scaling_group": "A",
+      "diet_guild": "medium_seeds_crushing",
+      "L_mm": 11.4,
+      "D_mm": 11.0,
+      "W_mm": 9.6,
+      "s_L": 1.00,
+      "s_D": 1.45,
+      "s_W": 1.41,
+      "gamma_shear": 0.0,
+      "bmp4_index": 1.58,
+      "cam_index": 1.00,
+      "bite_force_N": 29.8
+    },
+    {
+      "species": "Geospiza fuliginosa",
+      "common_name": "Small Ground Finch",
+      "genus": "Geospiza",
+      "scaling_group": "A",
+      "diet_guild": "small_soft_seeds",
+      "L_mm": 8.6,
+      "D_mm": 7.6,
+      "W_mm": 6.8,
+      "s_L": 0.75,
+      "s_D": 1.00,
+      "s_W": 1.00,
+      "gamma_shear": 0.0,
+      "bmp4_index": 1.00,
+      "cam_index": 0.88,
+      "bite_force_N": 11.4
+    },
+    {
+      "species": "Geospiza difficilis",
+      "common_name": "Sharp-beaked Ground Finch",
+      "genus": "Geospiza",
+      "scaling_group": "A",
+      "diet_guild": "omnivore_basal_seed_eater",
+      "L_mm": 10.2,
+      "D_mm": 7.9,
+      "W_mm": 7.1,
+      "s_L": 0.89,
+      "s_D": 1.04,
+      "s_W": 1.04,
+      "gamma_shear": 0.0,
+      "bmp4_index": 1.05,
+      "cam_index": 1.08,
+      "bite_force_N": 12.1
+    },
+    {
+      "species": "Geospiza scandens",
+      "common_name": "Common Cactus Finch",
+      "genus": "Geospiza",
+      "scaling_group": "A",
+      "diet_guild": "cactus_nectar_pollen_probing",
+      "L_mm": 14.9,
+      "D_mm": 9.1,
+      "W_mm": 8.0,
+      "s_L": 1.31,
+      "s_D": 1.20,
+      "s_W": 1.18,
+      "gamma_shear": 0.0,
+      "bmp4_index": 1.26,
+      "cam_index": 1.92,
+      "bite_force_N": 16.5
+    },
+    {
+      "species": "Platyspiza crassirostris",
+      "common_name": "Vegetarian Finch",
+      "genus": "Platyspiza",
+      "scaling_group": "B",
+      "diet_guild": "buds_leaves_fruit_crushing",
+      "L_mm": 11.2,
+      "D_mm": 11.8,
+      "W_mm": 10.2,
+      "s_L": 0.98,
+      "s_D": 1.55,
+      "s_W": 1.50,
+      "gamma_shear": -0.28,
+      "bmp4_index": 1.70,
+      "cam_index": 0.92,
+      "bite_force_N": 33.4
+    },
+    {
+      "species": "Camarhynchus psittacula",
+      "common_name": "Large Tree Finch",
+      "genus": "Camarhynchus",
+      "scaling_group": "B",
+      "diet_guild": "bark_beetles_wood_biting",
+      "L_mm": 10.6,
+      "D_mm": 10.4,
+      "W_mm": 8.9,
+      "s_L": 0.93,
+      "s_D": 1.37,
+      "s_W": 1.31,
+      "gamma_shear": -0.26,
+      "bmp4_index": 1.47,
+      "cam_index": 0.95,
+      "bite_force_N": 24.6
+    },
+    {
+      "species": "Camarhynchus pauper",
+      "common_name": "Medium Tree Finch",
+      "genus": "Camarhynchus",
+      "scaling_group": "B",
+      "diet_guild": "insects_and_larvae",
+      "L_mm": 9.8,
+      "D_mm": 8.8,
+      "W_mm": 7.7,
+      "s_L": 0.86,
+      "s_D": 1.16,
+      "s_W": 1.13,
+      "gamma_shear": -0.25,
+      "bmp4_index": 1.21,
+      "cam_index": 0.94,
+      "bite_force_N": 16.2
+    },
+    {
+      "species": "Camarhynchus parvulus",
+      "common_name": "Small Tree Finch",
+      "genus": "Camarhynchus",
+      "scaling_group": "B",
+      "diet_guild": "small_insects_gleaning",
+      "L_mm": 7.9,
+      "D_mm": 6.9,
+      "W_mm": 6.1,
+      "s_L": 0.69,
+      "s_D": 0.91,
+      "s_W": 0.90,
+      "gamma_shear": -0.24,
+      "bmp4_index": 0.88,
+      "cam_index": 0.84,
+      "bite_force_N": 9.3
+    },
+    {
+      "species": "Cactospiza pallida",
+      "common_name": "Woodpecker Finch",
+      "genus": "Cactospiza",
+      "scaling_group": "B",
+      "diet_guild": "tool_using_arthropod_probing",
+      "L_mm": 12.8,
+      "D_mm": 8.5,
+      "W_mm": 7.4,
+      "s_L": 1.12,
+      "s_D": 1.12,
+      "s_W": 1.09,
+      "gamma_shear": -0.22,
+      "bmp4_index": 1.15,
+      "cam_index": 1.48,
+      "bite_force_N": 13.8
+    },
+    {
+      "species": "Cactospiza heliobates",
+      "common_name": "Mangrove Finch",
+      "genus": "Cactospiza",
+      "scaling_group": "B",
+      "diet_guild": "mangrove_insect_probing",
+      "L_mm": 12.2,
+      "D_mm": 8.1,
+      "W_mm": 7.1,
+      "s_L": 1.07,
+      "s_D": 1.07,
+      "s_W": 1.04,
+      "gamma_shear": -0.23,
+      "bmp4_index": 1.09,
+      "cam_index": 1.41,
+      "bite_force_N": 12.4
+    },
+    {
+      "species": "Certhidea olivacea",
+      "common_name": "Green Warbler-Finch",
+      "genus": "Certhidea",
+      "scaling_group": "C",
+      "diet_guild": "foliage_insect_probing",
+      "L_mm": 9.4,
+      "D_mm": 4.5,
+      "W_mm": 4.2,
+      "s_L": 0.82,
+      "s_D": 0.59,
+      "s_W": 0.62,
+      "gamma_shear": 0.34,
+      "bmp4_index": 0.52,
+      "cam_index": 1.38,
+      "bite_force_N": 3.2
+    },
+    {
+      "species": "Pinaroloxias inornata",
+      "common_name": "Cocos Finch",
+      "genus": "Pinaroloxias",
+      "scaling_group": "C",
+      "diet_guild": "nectar_and_insect_foraging",
+      "L_mm": 11.6,
+      "D_mm": 5.8,
+      "W_mm": 5.2,
+      "s_L": 1.02,
+      "s_D": 0.76,
+      "s_W": 0.76,
+      "gamma_shear": 0.31,
+      "bmp4_index": 0.69,
+      "cam_index": 1.54,
+      "bite_force_N": 5.8
+    }
+  ],
+  "signaling_and_shear_perturbations": [
+    {
+      "condition": "wild_type_fuliginosa",
+      "label": "Wild-Type (G. fuliginosa baseline)",
+      "bmp4_fold": 1.0,
+      "cam_fold": 0.88,
+      "gamma_shear": 0.0,
+      "D_over_L_obs": 0.8837,
+      "W_over_L_obs": 0.7907,
+      "bite_index_rel_obs": 1.0
+    },
+    {
+      "condition": "rcas_bmp4_overexpression",
+      "label": "RCAS::Bmp4 Gain-of-Function (-> G. magnirostris)",
+      "bmp4_fold": 2.55,
+      "cam_fold": 0.88,
+      "gamma_shear": 0.0,
+      "D_over_L_obs": 1.9535,
+      "W_over_L_obs": 1.6744,
+      "bite_index_rel_obs": 22.8
+    },
+    {
+      "condition": "rcas_noggin_inhibition",
+      "label": "RCAS::Noggin BMP Antagonist (Reduced Depth/Width)",
+      "bmp4_fold": 0.45,
+      "cam_fold": 0.88,
+      "gamma_shear": 0.0,
+      "D_over_L_obs": 0.5042,
+      "W_over_L_obs": 0.4773,
+      "bite_index_rel_obs": 0.112
+    },
+    {
+      "condition": "rcas_cam_overexpression",
+      "label": "RCAS::CaM Gain-of-Function (-> G. scandens Elongation)",
+      "bmp4_fold": 1.0,
+      "cam_fold": 1.92,
+      "gamma_shear": 0.0,
+      "D_over_L_obs": 0.5065,
+      "W_over_L_obs": 0.4532,
+      "bite_index_rel_obs": 0.573
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+# MorphoEval audit — Steinberg (1963, 1970) / Graner & Glazier (1992) Differential Adhesion Cell Sorting, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `1964-steinberg-differential-adhesion-sorting.py` (v1, 232 lines) prior to
+# Step 12 remediation in `2026-10-19-differential-adhesion-sorting-loop`.
+
+audit:
+  id: 2026-10-19-differential-adhesion-sorting-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b9976f8
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `1964-steinberg-differential-adhesion-sorting.py` prior to
+      Pass 2 remediation in `2026-10-19-differential-adhesion-sorting-loop`.
+
+references:
+  steinberg1963:
+    title: "Reconstruction of tissues by dissociated cells"
+    authors: "Steinberg MS"
+    venue: "Science 141(3579):401-408 (1963)"
+    doi: 10.1126/science.141.3579.401
+  steinberg1970:
+    title: "Does differential adhesion govern self-assembly processes in histogenesis? Equilibrium configurations and the emergence of a hierarchy among populations of embryonic cells"
+    authors: "Steinberg MS"
+    venue: "Journal of Experimental Zoology 173(4):395-433 (1970)"
+    doi: 10.1002/jez.1401730406
+  graner1992:
+    title: "Simulation of biological cell sorting using a two-dimensional extended Potts model"
+    authors: "Graner F, Glazier JA"
+    venue: "Physical Review Letters 69(13):2013-2016 (1992)"
+    doi: 10.1103/PhysRevLett.69.2013
+  glazier1993:
+    title: "Simulation of the differential adhesion driven rearrangement of biological cells"
+    authors: "Glazier JA, Graner F"
+    venue: "Physical Review E 47(3):2128-2154 (1993)"
+    doi: 10.1103/PhysRevE.47.2128
+  foty1996:
+    title: "Surface tensions of embryonic tissues predict their mutual envelopment behavior"
+    authors: "Foty RA, Pfleger CM, Forgacs G, Steinberg MS"
+    venue: "Development 122(5):1611-1620 (1996)"
+    doi: 10.1242/dev.122.5.1611
+
+simulations:
+  - id: steinberg-differential-adhesion-sorting
+    name: "Steinberg (1963, 1970) & Graner-Glazier (1992) differential adhesion cell sorting"
+    organism: "Chick embryo (Gallus gallus) dissociated tissue aggregates & multicellular embryoid body spheroids"
+    script: 1964-steinberg-differential-adhesion-sorting.py
+    output: docs/media/differential_adhesion_sorting_comparison.png
+    extra_outputs:
+      - docs/media/differential_adhesion_sorting_growth.gif
+    status: evaluated
+    source_refs:
+      - steinberg1963
+      - steinberg1970
+      - graner1992
+      - glazier1993
+      - foty1996
+    summary: >-
+      Pass 1 (v1) evaluation of `1964-steinberg-differential-adhesion-sorting.py` (57.3/100).
+      The v1 baseline implements the Graner & Glazier (1992) 2D Cellular Potts Hamiltonian
+      and Steinberg's interfacial tensions gamma_AB, gamma_AM, gamma_BM for canonical
+      complete engulfment plus an equal-adhesion negative control, but omits the remaining
+      three thermodynamic regimes (checkerboard mixing gamma_AB < 0, partial engulfment
+      gamma_AB > gamma_BM - gamma_AM, and cell dissociation gamma_AM < 0), does not load or
+      segment the vendored confocal embryoid body specimen (`cell_sorting_specimen.jpg`),
+      does not validate Foty & Steinberg's (1996) 5-tissue Gallus gallus surface tension
+      hierarchy, and exposes no CLI parameter flags beyond `--self-test`.
+    scores:
+      model-fidelity:
+        value: 68
+        rationale: >-
+          Implements Steinberg's interfacial tension definitions (`compute_interfacial_tensions`,
+          L27-37) and the 2D extended Cellular Potts Model Hamiltonian with 8-neighbor
+          adhesion energy and quadratic area elasticity (`simulate_potts_sorting_v1`,
+          L40-156) plus an equal-adhesion negative control (`J_AA=J_BB=J_AB=10`). However,
+          v1 only simulates 2 of the 5 regimes, omitting checkerboard mixing (`gamma_AB < 0`),
+          partial engulfment (`gamma_AB > gamma_BM - gamma_AM`), and cell dissociation
+          (`gamma_AM < 0`), and does not verify the Foty et al. (1996) 5-tissue surface
+          tension transitive envelopment hierarchy.
+        evidence:
+          - {file: 1964-steinberg-differential-adhesion-sorting.py, lines: [27, 37], note: "Steinberg/Graner-Glazier interfacial tension definitions gamma_AB, gamma_AM, gamma_BM", supports: true}
+          - {file: 1964-steinberg-differential-adhesion-sorting.py, lines: [40, 156], note: "2D Cellular Potts solver simulates only complete engulfment and equal-adhesion control, omitting checkerboard, partial engulfment, and dissociation", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/differential_adhesion_sorting/cell_sorting_specimen.jpg` is
+          vendored in the repository, the v1 script never loads, verifies, or segments the
+          confocal embryoid body specimen image (`render_outputs_v1`, L159-189) and shows
+          only a 3-panel synthetic plot.
+        evidence:
+          - {file: 1964-steinberg-differential-adhesion-sorting.py, lines: [159, 189], note: "render_outputs_v1 renders 3 synthetic panels without loading or segmenting cell_sorting_specimen.jpg", supports: false}
+          - {file: docs/media/differential_adhesion_sorting_comparison.png, lines: [0, 0], note: "3-panel synthetic figure lacking biological specimen overlay or radial fluorescence comparison", supports: false}
+      parameter-expressivity:
+        value: 46
+        rationale: >-
+          Simulates only 2 parameter points (`J_AB=11` sorting vs `J=10` control) without a
+          continuous sweep across heterotypic adhesion `J_AB` (or `gamma_AB`), without
+          mapping the 2D `(gamma_AB, gamma_BM - gamma_AM)` phase diagram, and without CLI
+          flags for `J_AA`, `J_BB`, `J_AB`, `T`, `lam`, or `mcs` (L221-229).
+        evidence:
+          - {file: 1964-steinberg-differential-adhesion-sorting.py, lines: [160, 162], note: "Only 2 hardcoded parameter sets evaluated in render_outputs_v1", supports: false}
+          - {file: 1964-steinberg-differential-adhesion-sorting.py, lines: [221, 229], note: "CLI parser only accepts --self-test", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          Computes normalized radial core-shell separation `(r_A - r_B)/R_agg` and
+          heterotypic boundary fraction `L_AB / L_total` (`measure_morphoeval`, L192-211),
+          but does not compare simulated radial density profiles against segmented
+          embryoid body fluorescence profiles, does not fit logarithmic boundary-length
+          decay `L_AB(t) ~ a - b*ln(t)` (Graner & Glazier 1992 Fig. 3), and does not
+          validate the Foty et al. (1996) 5-tissue *Gallus gallus* envelopment hierarchy.
+        evidence:
+          - {file: 1964-steinberg-differential-adhesion-sorting.py, lines: [192, 211], note: "4 basic synthetic measurements without specimen segmentation or logarithmic decay fit", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Module docstring cites Steinberg (1963) and Graner & Glazier (1992) DOIs (L6-9)
+          and `datasets/differential_adhesion_sorting/` exists on disk, but the v1 script
+          does not load `differential_adhesion_sorting_reference.json` or verify SHA-256
+          digests at runtime.
+        evidence:
+          - {file: 1964-steinberg-differential-adhesion-sorting.py, lines: [6, 9], note: "Cites 2 DOIs in docstring but omits runtime loading and SHA-256 verification of reference dataset", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions correspond to interfacial tension formulas and Cellular Potts updates,
+          and `morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean` proves 4
+          theorems, but v1 docstrings lack equation-by-equation mappings to Graner & Glazier
+          (1992) Eqs. 1-3, Glazier & Graner (1993) Table I, and Foty et al. (1996) Table 1.
+        evidence:
+          - {file: 1964-steinberg-differential-adhesion-sorting.py, lines: [27, 156], note: "Baseline functions lack detailed equation-number citations to Graner & Glazier (1992) and Foty et al. (1996)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean, lines: [1, 118], note: "4 machine-checked Lean 4 theorems for DAH interfacial tensions and Foty hierarchy", supports: true}
+      repro-package:
+        value: 68
+        rationale: >-
+          Uses deterministic `np.random.default_rng(1963)` and provides `--self-test` and
+          `measure_morphoeval()` (L192-218), but `self_test()` checks only 2 basic assertions
+          without SHA-256 dataset verification, phase-regime classification parity, or
+          two-run bitwise determinism checks.
+        evidence:
+          - {file: 1964-steinberg-differential-adhesion-sorting.py, lines: [214, 219], note: "Minimal 2-check self_test() without SHA-256 verification or determinism check", supports: false}
+    remediation:
+      - "Simulate all 5 thermodynamic regimes of Steinberg (1963) & Graner-Glazier (1992) (`checkerboard_mixing` gamma_AB < 0, `complete_engulfment` 0 < gamma_AB < gamma_BM - gamma_AM, `partial_engulfment` gamma_AB > gamma_BM - gamma_AM, `cell_dissociation` gamma_AM < 0, and `equal_adhesion_control` gamma_AB = 0) plus a 7-point continuous sweep across J_AB spanning both phase boundaries."
+      - "Load and SHA-256-verify `datasets/differential_adhesion_sorting/differential_adhesion_sorting_reference.json` and `cell_sorting_specimen.jpg`, segment the GFP-positive inner core and RFP-positive outer cortex of the embryoid body specimen, and compare empirical vs. simulated radial density profiles (Pearson r, RMSE, and normalized radial core-shell separation)."
+      - "Validate Foty, Pfleger, Forgacs & Steinberg (1996) Development Table 1 empirical Gallus gallus 5-tissue surface tension hierarchy (20.1 > 12.6 > 8.5 > 4.6 > 1.6 dyn/cm) and logarithmic heterotypic boundary decay L_AB(t) ~ a - b*ln(t), and expose full CLI flags."

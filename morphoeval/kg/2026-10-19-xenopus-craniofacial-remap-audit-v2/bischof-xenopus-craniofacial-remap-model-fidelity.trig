@@ -1,0 +1,86 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bischof-xenopus-craniofacial-remap> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bischof-xenopus-craniofacial-remap-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bischof-xenopus-craniofacial-remap-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Vandenberg, Adams & Levin (2012) & Pinet et al. (2019) Picasso tadpole craniofacial attractor remodeling — Model fidelity to source: 94/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Faithfully implements the coupled Procrustes landmark attractor ODE dx_i/dt = eta_MMP * [-K_i*(x_i - x_i^*) - sum_j C_ij*((x_i - x_j) - (x_i^* - x_j^*))] with RK4 integration, exact Procrustes Lyapunov energy functional V(X) (L72-195), and exact spectral propagator across the 15x15 (alpha_pert, eta_MMP) morphospace (L235-295), verified by 3 standalone Lean 4 theorems (0 sorrys) in `morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean`." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bischof-xenopus-craniofacial-remap-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bischof-xenopus-craniofacial-remap-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bischof-xenopus-craniofacial-remap-model-fidelity-3> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bischof-xenopus-craniofacial-remap-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2019-bischof-xenopus-craniofacial-remap.py L72–L165" ;
+        dct:description "Inter-organ coupling matrix C_ij, Procrustes Lyapunov functional V(X), and closed-loop attractor RHS" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/2019-bischof-xenopus-craniofacial-remap.py#L72-L165> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bischof-xenopus-craniofacial-remap-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2019-bischof-xenopus-craniofacial-remap.py L168–L252" ;
+        dct:description "RK4 Procrustes landmark integrator across NF stages 45->65 vs open-loop vector null model" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/2019-bischof-xenopus-craniofacial-remap.py#L168-L252> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bischof-xenopus-craniofacial-remap-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean L18–L129" ;
+        dct:description "3 machine-checked Lean 4 theorems (0 sorrys) for Lyapunov decrease, open-loop divergence/MMP arrest, and bilateral symmetry restoration" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean#L18-L129> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/dvdy.23770>,
+            <https://doi.org/10.1098/rsif.2016.0555>,
+            <https://doi.org/10.1242/dev.073759>,
+            <https://doi.org/10.1242/dev.175893> .
+    <https://doi.org/10.1002/dvdy.23770> dct:date "2012"^^xsd:gYear ;
+        dct:title "Normalized shape and location of perturbed craniofacial structures in the Xenopus tadpole reveal an innate ability to achieve correct morphology" .
+    <https://doi.org/10.1098/rsif.2016.0555> dct:date "2016"^^xsd:gYear ;
+        dct:title "Top-down models in biology: explanation and control of complex living systems above the molecular level" .
+    <https://doi.org/10.1242/dev.073759> dct:date "2012"^^xsd:gYear ;
+        dct:title "Transmembrane voltage potential controls embryonic eye patterning in Xenopus laevis" .
+    <https://doi.org/10.1242/dev.175893> dct:date "2019"^^xsd:gYear ;
+        dct:title "Adaptive correction of craniofacial defects in pre-metamorphic Xenopus laevis tadpoles involves thyroid hormone-independent tissue remodeling" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Vandenberg, Adams & Levin (2012) & Pinet et al. (2019) Picasso tadpole craniofacial attractor remodeling — Model fidelity to source 94/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:15:45Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bischof-xenopus-craniofacial-remap-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

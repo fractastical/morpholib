@@ -1,0 +1,159 @@
+# MorphoEval audit — Manukyan et al. (2017) Ocellated Lizard (Timon lepidus) Skin-Scale Cellular Automaton, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2015-manukyan-ocellated-lizard-ca.py` (v1, 147 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-ocellated-lizard-ca-loop`).
+
+audit:
+  id: 2026-10-19-ocellated-lizard-ca-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Slot 009 autonomous loop assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2015-manukyan-ocellated-lizard-ca.py`
+      prior to Step 12 remediation in `2026-10-19-ocellated-lizard-ca-loop`.
+
+references:
+  manukyan2017:
+    title: "A living mesoscopic cellular automaton made of skin scales"
+    authors: "Manukyan L, Montandon SA, Fofonjka A, Smirnov S, Milinkovitch MC"
+    venue: "Nature 544(7649):173-179 (2017)"
+    doi: 10.1038/nature22031
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    venue: "Nature 376(6543):765-768 (1995)"
+    doi: 10.1038/376765a0
+  fofonjka2021:
+    title: "Reaction-diffusion in a growing 3D domain of skin scales generates a discrete cellular automaton"
+    authors: "Fofonjka A, Milinkovitch MC"
+    venue: "Nature Communications 12:2433 (2021)"
+    doi: 10.1038/s41467-021-22525-1
+  zakany2023:
+    title: "Simple Reaction-Diffusion Modeling Predicts Inconspicuous Neighborhood-Dependent Color Subclustering of Lizard Scales"
+    authors: "Zakany S, Milinkovitch MC"
+    venue: "Physical Review X 13(4):041011 (2023)"
+    doi: 10.1103/PhysRevX.13.041011
+
+simulations:
+  - id: manukyan-ocellated-lizard-ca
+    name: "Manukyan et al. (2017) Nature hexagonal skin-scale border thickness reduction & outer-totalistic cellular automaton"
+    organism: "Ocellated / jeweled lizard (Timon lepidus) dorsal skin scale labyrinth"
+    script: 2015-manukyan-ocellated-lizard-ca.py
+    output: docs/media/ocellated_lizard_ca_comparison.png
+    extra_outputs:
+      - docs/media/ocellated_lizard_ca_growth.gif
+    status: evaluated
+    source_refs:
+      - manukyan2017
+      - kondo1995
+      - fofonjka2021
+      - zakany2023
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2015-manukyan-ocellated-lizard-ca.py`
+      (overall weighted score: 48.8 / 100). The v1 script implements the discrete
+      2D hexagonal outer-totalistic cellular automaton transition probabilities
+      from Manukyan et al. (2017), but omits the underlying continuous Kondo-Asai
+      reaction-diffusion PDE on a hexagonal skin-scale domain with inter-scale
+      border thickness reduction D_border = P * D_interior (the central physical
+      mechanism of the Nature paper showing how PDEs discretize into a scale-level
+      CA); lacks negative controls (P = 0.0 insulated scales, P = 1.0 smooth
+      continuum skin without scale borders, and equal-diffusion d = 1.0); never
+      loads or segments the vendored Timon lepidus dorsal scale photograph; and
+      exposes only 2 scalar measurements without CLI parameter flags.
+    scores:
+      model-fidelity:
+        value: 50
+        rationale: >-
+          Implements the 6-neighbor hexagonal outer-totalistic cellular automaton
+          (`count_hex_green_neighbors` and `simulate_hex_ca`, L27-74), but completely
+          omits the continuous reaction-diffusion PDE with periodic scale-border
+          thickness reduction D_border = P * D_interior (Manukyan et al. 2017 Fig. 4
+          & Methods Eqs. 1-8) that explains why continuous morphogen diffusion
+          discretizes into monochromatic hexagonal skin scales.
+        evidence:
+          - {file: 2015-manukyan-ocellated-lizard-ca.py, lines: [27, 74], note: "Hexagonal outer-totalistic CA implemented without continuous scale-border reaction-diffusion PDE", supports: false}
+      specimen-match:
+        value: 28
+        rationale: >-
+          Although `datasets/ocellated_lizard_ca/timon_lepidus_specimen.jpg` is
+          vendored on disk, the v1 script never loads, segments, or displays the
+          biological *Timon lepidus* specimen photograph (`docs/media/ocellated_lizard_ca_comparison.png`
+          shows only a 2-panel synthetic CA grid and histogram) and performs no
+          quantitative comparison against empirical dorsal green/black scale lattices.
+        evidence:
+          - {file: 2015-manukyan-ocellated-lizard-ca.py, lines: [77, 108], note: "2-panel synthetic CA figure without Timon lepidus specimen segmentation", supports: false}
+          - {file: docs/media/ocellated_lizard_ca_comparison.png, lines: [0, 0], note: "Synthetic 2-panel plot lacking biological specimen comparison", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Runs only a single fixed CA realization without sweeping the scale-border
+          thickness reduction factor P in {0.0, 0.08, 0.17, 0.45, 1.0}, without
+          negative controls (P=0.0 insulated scales, P=1.0 unattenuated continuum
+          Turing waves, or d=1.0 equal diffusion), and without CLI flags for P,
+          diffusivity ratio d, lattice size, steps, or seed (L136-143).
+        evidence:
+          - {file: 2015-manukyan-ocellated-lizard-ca.py, lines: [42, 74], note: "Single fixed parameter run; no P sweep or negative controls", supports: false}
+          - {file: 2015-manukyan-ocellated-lizard-ca.py, lines: [136, 143], note: "CLI exposes only --self-test", supports: false}
+      morphometric-validation:
+        value: 42
+        rationale: >-
+          `measure_morphoeval()` (L111-129) returns only 2 CA summary numbers
+          (mean green neighbors and green fraction) without measuring PDE vs CA
+          histogram Jensen-Shannon / L1 convergence, intra-scale vs inter-scale
+          concentration variance (bimodality), negative-control suppression, or
+          segmented *Timon lepidus* dorsal scale neighbor statistics.
+        evidence:
+          - {file: 2015-manukyan-ocellated-lizard-ca.py, lines: [111, 129], note: "Only 2 scalar CA metrics returned; no PDE-to-CA or specimen morphometrics", supports: false}
+      source-traceability:
+        value: 62
+        rationale: >-
+          Module docstring cites Manukyan et al. (2017) DOI `10.1038/nature22031`,
+          but the v1 script does not load `ocellated_lizard_ca_reference.json` or
+          verify SHA-256 digests of `datasets/ocellated_lizard_ca/` at runtime.
+        evidence:
+          - {file: 2015-manukyan-ocellated-lizard-ca.py, lines: [1, 10], note: "Single DOI in header; no runtime SHA-256 verification of datasets/ocellated_lizard_ca/", supports: false}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Functions have brief docstrings (L27-74) but lack explicit mappings to
+          Manukyan et al. (2017) Figs. 2-4, Methods Eqs. (1)-(8), Kondo & Asai
+          (1995) reaction kinetics, and the 3 machine-checked Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean`.
+        evidence:
+          - {file: 2015-manukyan-ocellated-lizard-ca.py, lines: [27, 74], note: "Docstrings omit explicit equation numbers and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Uses deterministic `np.random.default_rng(2017)` and `--self-test`
+          (L132-137), but `self_test()` checks only 2 coarse bounds without
+          verifying dataset SHA-256 locks, PDE-to-CA convergence, negative controls,
+          specimen segmentation, or bitwise two-run determinism.
+        evidence:
+          - {file: 2015-manukyan-ocellated-lizard-ca.py, lines: [132, 137], note: "Minimal 2-assertion self_test() without SHA-256, PDE, specimen, or determinism checks", supports: false}
+    remediation:
+      - "Implement the continuous reaction-diffusion PDE on a 2D hexagonal skin-scale domain with spatially modulated scale-border diffusivity D_s(x) = P * D_s,interior at inter-scale borders (Manukyan et al. 2017 Fig. 4 & Methods Eqs. 1-8), demonstrating how P = 0.17 discretizes continuous Turing waves into monochromatic hexagonal scales whose neighbor histogram converges to the outer-totalistic CA."
+      - "Implement formal negative and ablation controls: (1) insulated scale borders P = 0.0 (testing Lean Theorem 2 where zero border flux freezes juvenile noise), (2) homogeneous continuum skin P = 1.0 without scale border thinning (where smooth Turing waves cut across scale boundaries, degrading intra-scale uniformity), and (3) equal-diffusion control d = Dv/Du = 1.0 (abolishing Turing instability)."
+      - "Load and SHA-256-verify `datasets/ocellated_lizard_ca/ocellated_lizard_ca_reference.json`, `timon_lepidus_specimen.jpg`, `scout_manifest.json`, and `paper_citations.bib` at runtime; segment individual green and black dorsal scales from `timon_lepidus_specimen.jpg`; and compare biological Delaunay nearest-neighbor green/black degree distributions against both the scale-border PDE and the hexagonal CA."
+      - "Sweep all 5 border thickness reduction regimes P in {0.0, 0.08, 0.17, 0.45, 1.0}, expose full CLI parameters (--P, --d, --rows, --cols, --steps, --seed), expand `measure_morphoeval()` to 8 reference-backed morphometric measurements, and upgrade `docs/media/ocellated_lizard_ca_comparison.png` (8 panels) and `docs/media/ocellated_lizard_ca_growth.gif`."

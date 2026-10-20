@@ -1,0 +1,446 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-retinotectal-chemoaffinity-loop
+  target_simulation: 1976-willshaw-retinotectal-chemoaffinity.py
+  paper: Prestige & Willshaw (1975) Proc. R. Soc. B 190:77-98; Brown et al. (2000)
+    Cell 102:77-88
+  created_at: '2026-10-20T01:20:39.215Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: 2a34864
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 687.711
+  wall_time_min: 11.46
+  tier_a_wall_s: 291.139
+  tier_b_wall_s: 396.572
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  input_tokens: 15456
+  output_tokens: 349948
+  subagent_tokens: 0
+  total_llm_tokens: 365404
+  artifact_tokens: 44090
+  tier_a_llm_tokens: 133072
+  tier_b_llm_tokens: 232332
+  effective_tokens_per_s: 531.3
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:20:45.157Z'
+  ended_at: '2026-10-20T01:20:46.653Z'
+  duration_s: 1.496
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 3916
+    subagent_tokens: 0
+    total_llm_tokens: 3916
+    artifact_tokens: 733
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/retinotectal_chemoaffinity/scout_manifest.json
+    bytes: 2607
+    sha256: 5ccb8a42580e507024b1ce82344260c035b8ba795974b5c8e1ae3f9913e81935
+    tokens: 733
+  commands: []
+  notes: Completed literature and Wikimedia Commons scouting for slot 86 (retinotectal
+    chemoaffinity)
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:21:01.318Z'
+  ended_at: '2026-10-20T01:23:27.428Z'
+  duration_s: 146.11
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 188
+    output_tokens: 48459
+    subagent_tokens: 0
+    total_llm_tokens: 48647
+    artifact_tokens: 1592
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/retinotectal_chemoaffinity/paper_citations.bib
+    bytes: 1596
+    sha256: aad29a956cd55dc1658f3221ad64ffe187feefc73da44bb813f48bb340e0909e
+    tokens: 491
+    parent_artifact_ids:
+    - 5ccb8a42580e507024b1ce82344260c035b8ba795974b5c8e1ae3f9913e81935
+  - file: datasets/retinotectal_chemoaffinity/README.md
+    bytes: 3530
+    sha256: 0b5e0055bac2b3127bdb4d4e54ed072802879250f5cd6cddd1017473bbdf576c
+    tokens: 1101
+    parent_artifact_ids:
+    - 5ccb8a42580e507024b1ce82344260c035b8ba795974b5c8e1ae3f9913e81935
+  commands: []
+  notes: Extracted Prestige & Willshaw (1975) and Brown et al. (2000) equations and
+    BibTeX citations
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:23:27.510Z'
+  ended_at: '2026-10-20T01:23:27.592Z'
+  duration_s: 0.081
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1224
+    output_tokens: 2259
+    subagent_tokens: 0
+    total_llm_tokens: 3483
+    artifact_tokens: 2259
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/retinotectal_chemoaffinity/zebrafish_retinotectal_specimen.jpg
+    bytes: 180194
+    sha256: e16ecb3325a48823c83838109780a83b54fb3cb20b89b6d0b2bb378c6495b755
+    tokens: 64
+    parent_artifact_ids:
+    - 5ccb8a42580e507024b1ce82344260c035b8ba795974b5c8e1ae3f9913e81935
+    - aad29a956cd55dc1658f3221ad64ffe187feefc73da44bb813f48bb340e0909e
+  - file: datasets/retinotectal_chemoaffinity/retinotectal_chemoaffinity_reference.json
+    bytes: 7174
+    sha256: 86046fcab644c7a31b2c87b5d40778e0a92c393c0d66b2dcdd2e157e95264ad4
+    tokens: 2195
+    parent_artifact_ids:
+    - 5ccb8a42580e507024b1ce82344260c035b8ba795974b5c8e1ae3f9913e81935
+    - aad29a956cd55dc1658f3221ad64ffe187feefc73da44bb813f48bb340e0909e
+  commands: []
+  notes: Vendored 72 hpf Danio rerio larval retina confocal specimen (CC BY-SA 4.0)
+    and SHA-256 reference dataset
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:23:27.665Z'
+  ended_at: '2026-10-20T01:25:19.856Z'
+  duration_s: 112.191
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 188
+    output_tokens: 63666
+    subagent_tokens: 0
+    total_llm_tokens: 63854
+    artifact_tokens: 2325
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean
+    bytes: 8351
+    sha256: 2b83b1a4b856fdfb8e1bb1daabd1cf87b95f6222f1f9c9dac9cf9d38e50f791e
+    tokens: 64
+    parent_artifact_ids:
+    - 86046fcab644c7a31b2c87b5d40778e0a92c393c0d66b2dcdd2e157e95264ad4
+  - file: morphoeval/math_kg_loops/willshaw-retinotectal-chemoaffinity.yaml
+    bytes: 8441
+    sha256: 02b5bce63602c3cb2e6868df22f5b1c09204aee1eb8f8db4fbe31b8ea1ecc9e1
+    tokens: 2261
+    parent_artifact_ids:
+    - 86046fcab644c7a31b2c87b5d40778e0a92c393c0d66b2dcdd2e157e95264ad4
+  commands: []
+  notes: Verified 3 standalone Lean 4 theorems (0 sorrys) in Loop_086_retinotectal_chemoaffinity.lean
+    and registered math_kg_loops YAML
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:25:19.967Z'
+  ended_at: '2026-10-20T01:25:50.222Z'
+  duration_s: 30.254
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2325
+    output_tokens: 8456
+    subagent_tokens: 0
+    total_llm_tokens: 10781
+    artifact_tokens: 2263
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 1976-willshaw-retinotectal-chemoaffinity.py
+    bytes: 7847
+    sha256: d466b429cd86397b0d6ce1d5c2eece889d1a4cb5f5fed556cc3122c63b40eaf0
+    tokens: 2263
+    parent_artifact_ids:
+    - 2b83b1a4b856fdfb8e1bb1daabd1cf87b95f6222f1f9c9dac9cf9d38e50f791e
+    - 02b5bce63602c3cb2e6868df22f5b1c09204aee1eb8f8db4fbe31b8ea1ecc9e1
+  commands: []
+  notes: Implemented Pass 1 baseline script 1976-willshaw-retinotectal-chemoaffinity.py
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:25:50.296Z'
+  ended_at: '2026-10-20T01:25:51.303Z'
+  duration_s: 1.007
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2263
+    output_tokens: 128
+    subagent_tokens: 0
+    total_llm_tokens: 2391
+    artifact_tokens: 128
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: docs/media/retinotectal_chemoaffinity_comparison.png
+    bytes: 413209
+    sha256: f19fc94ecfbc8595859748ac2db860d7be48578ec498607d7bd8f90ffcdccf60
+    tokens: 64
+    parent_artifact_ids:
+    - d466b429cd86397b0d6ce1d5c2eece889d1a4cb5f5fed556cc3122c63b40eaf0
+  - file: docs/media/retinotectal_chemoaffinity_growth.gif
+    bytes: 48874
+    sha256: e49fb37c2d45c7fbc1f9bbe56abdfc321e8285857547379f8272b4af5d4e6386
+    tokens: 64
+    parent_artifact_ids:
+    - d466b429cd86397b0d6ce1d5c2eece889d1a4cb5f5fed556cc3122c63b40eaf0
+  commands: []
+  notes: Generated Pass 1 baseline comparison PNG and growth GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:25:51.379Z'
+  ended_at: '2026-10-20T01:26:05.547Z'
+  duration_s: 14.169
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2327
+    output_tokens: 4036
+    subagent_tokens: 0
+    total_llm_tokens: 6363
+    artifact_tokens: 2206
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-retinotectal-chemoaffinity-audit.yaml
+    bytes: 8814
+    sha256: 0865cc6a28ae8306fe8cef0bde9a6bebb1a90920c1a316413f331ddc9313cb28
+    tokens: 2206
+    parent_artifact_ids:
+    - d466b429cd86397b0d6ce1d5c2eece889d1a4cb5f5fed556cc3122c63b40eaf0
+    - f19fc94ecfbc8595859748ac2db860d7be48578ec498607d7bd8f90ffcdccf60
+  commands: []
+  notes: Completed Pass 1 dual-assessor MorphoEval audit (57.3/100)
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:26:05.696Z'
+  ended_at: '2026-10-20T01:26:06.186Z'
+  duration_s: 0.489
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2206
+    output_tokens: 793
+    subagent_tokens: 0
+    total_llm_tokens: 2999
+    artifact_tokens: 793
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-retinotectal-chemoaffinity-audit.measurements.yaml
+    bytes: 2518
+    sha256: cfebaf11efc5a129580d47497108fc22640a88461ff0a603bbe2d70f4c459839
+    tokens: 793
+    parent_artifact_ids:
+    - 0865cc6a28ae8306fe8cef0bde9a6bebb1a90920c1a316413f331ddc9313cb28
+  commands: []
+  notes: Measured Pass 1 baseline outputs
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:26:06.273Z'
+  ended_at: '2026-10-20T01:26:06.739Z'
+  duration_s: 0.466
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2999
+    output_tokens: 0
+    subagent_tokens: 0
+    total_llm_tokens: 2999
+    artifact_tokens: 0
+    method: calibrated-bpe-regex
+  artifacts: []
+  commands: []
+  notes: Built Pass 1 MorphoEval KG
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:26:06.821Z'
+  ended_at: '2026-10-20T01:26:23.621Z'
+  duration_s: 16.799
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 656
+    output_tokens: 19696
+    subagent_tokens: 0
+    total_llm_tokens: 20352
+    artifact_tokens: 656
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-retinotectal-chemoaffinity-audit/published.json
+    bytes: 1970
+    sha256: d0ebde38b0f68919cf1f983f4e3978486d56ec686bdae9436380c4708d2aaa9f
+    tokens: 656
+    parent_artifact_ids:
+    - d0ebde38b0f68919cf1f983f4e3978486d56ec686bdae9436380c4708d2aaa9f
+  commands: []
+  notes: Signed and verified 10 Pass 1 nanopublications
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:26:23.700Z'
+  ended_at: '2026-10-20T01:26:23.784Z'
+  duration_s: 0.084
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 656
+    output_tokens: 11118
+    subagent_tokens: 0
+    total_llm_tokens: 11774
+    artifact_tokens: 11118
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-retinotectal-chemoaffinity-audit/morphoeval_2026-10-19-retinotectal-chemoaffinity-audit.ttl
+    bytes: 38541
+    sha256: 71b2e6f5af692596e364d43896a9a1bdf43604016bf9a2eee4a94fc65458ee31
+    tokens: 11118
+    parent_artifact_ids:
+    - d0ebde38b0f68919cf1f983f4e3978486d56ec686bdae9436380c4708d2aaa9f
+  commands: []
+  notes: Verified Pass 1 KG graph
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:26:23.861Z'
+  ended_at: '2026-10-20T01:32:28.426Z'
+  duration_s: 364.565
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 424
+    output_tokens: 187421
+    subagent_tokens: 0
+    total_llm_tokens: 187845
+    artifact_tokens: 20017
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 1976-willshaw-retinotectal-chemoaffinity.py
+    bytes: 48611
+    sha256: f4f56be483596a38d6049250344d0f033ec75fa8a5cb373bc36fcd037bbfcaf5
+    tokens: 13715
+    parent_artifact_ids:
+    - 0865cc6a28ae8306fe8cef0bde9a6bebb1a90920c1a316413f331ddc9313cb28
+  - file: docs/media/retinotectal_chemoaffinity_comparison.png
+    bytes: 898070
+    sha256: c1f0088ab7aec507c657c7913003673aef0829ca8f48a31826824e1aaa0c9a0b
+    tokens: 64
+    parent_artifact_ids:
+    - 0865cc6a28ae8306fe8cef0bde9a6bebb1a90920c1a316413f331ddc9313cb28
+  - file: docs/media/retinotectal_chemoaffinity_growth.gif
+    bytes: 722433
+    sha256: f44590e232d144e7cc5ce2e15b16086ae592500a7b8850518cda18a4a02e229e
+    tokens: 64
+    parent_artifact_ids:
+    - 0865cc6a28ae8306fe8cef0bde9a6bebb1a90920c1a316413f331ddc9313cb28
+  - file: morphoeval/audits/2026-10-19-retinotectal-chemoaffinity-audit-v2.yaml
+    bytes: 13071
+    sha256: ff6555f3a181d01d73b43c73193677dd9d2bdc1c89820b65526b489d713850e6
+    tokens: 3335
+    parent_artifact_ids:
+    - 0865cc6a28ae8306fe8cef0bde9a6bebb1a90920c1a316413f331ddc9313cb28
+  - file: morphoeval/audits/2026-10-19-retinotectal-chemoaffinity-audit-v2.measurements.yaml
+    bytes: 7495
+    sha256: 7b191b530a6c6cf2fd14269292a06a13ad6c513b63adf72f43703de7161bd5ec
+    tokens: 2161
+    parent_artifact_ids:
+    - 0865cc6a28ae8306fe8cef0bde9a6bebb1a90920c1a316413f331ddc9313cb28
+  - file: morphoeval/kg/2026-10-19-retinotectal-chemoaffinity-audit-v2/published.json
+    bytes: 1970
+    sha256: c86bcfa70a76ced6d8fc2a31b08898729044dbaf5bb0cc7ec909692b4d24d15b
+    tokens: 678
+    parent_artifact_ids:
+    - 0865cc6a28ae8306fe8cef0bde9a6bebb1a90920c1a316413f331ddc9313cb28
+  commands: []
+  notes: Completed Pass 2 remediation (+35.1 score improvement to 92.4/100) and signed
+    10 superseding nanopublications

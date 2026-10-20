@@ -1,0 +1,171 @@
+# MorphoEval audit — Gierer & Meinhardt (1972) Hydra Activator-Inhibitor Morphogenesis, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `1972-gierer-hydra-activator-inhibitor.py` (v1 baseline, 241 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-hydra-activator-inhibitor-loop`):
+#   - Primary assessor: Gemini 4 Argon (Cursor agent) — 58.6 / 100
+#   - Second assessor rubric criteria: 51.4 / 100
+#   - Pass 1 consensus score: 55.0 / 100
+#
+# Concrete Pass 1 defects driving Step 12 -> Pass 2 remediation:
+#   1. Only intact 1D polar body column (N=60) is simulated: Gierer & Meinhardt's (1972)
+#      central biological test—surgical bisection and autonomous head regeneration of the
+#      basal fragment after removing the long-range inhibitor source (Fig. 3)—is omitted,
+#      as is Meinhardt's (1993) periodic circular tentacle-ring PDE (6 tentacles).
+#   2. No equal-diffusion negative/ablation control (D_a = D_h = 0.015, d = 1.0 < d_c = 5.8284)
+#      or diffusivity-ratio sweep across d = D_h / D_a is executed in the script.
+#   3. Specimen photograph `hydra_vulgaris_specimen.jpg` is displayed raw in Panel 3
+#      without any computer-vision segmentation of the Hydra body column axis, apical
+#      hypostome, or the 6 radial tentacles, and without runtime SHA-256 verification.
+#   4. No allometric domain-length scaling sweep L in {20..95} testing linear peak
+#      insertion N_peaks ~ L / lambda_c with Pearson r, RMSE, and CV metrics.
+
+audit:
+  id: 2026-10-19-hydra-activator-inhibitor-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + MorphoEval Dual-Rubric Assessor"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 3cb5ea9
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1972-gierer-hydra-activator-inhibitor.py`
+      prior to Step 12 remediation in `2026-10-19-hydra-activator-inhibitor-loop`.
+
+references:
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    doi: 10.1007/BF00289234
+  meinhardt1974:
+    title: "Applications of a theory of biological pattern formation based on lateral inhibition"
+    authors: "Meinhardt H, Gierer A"
+    venue: "Journal of Cell Science 15(2):321-346 (1974)"
+    doi: 10.1242/jcs.15.2.321
+  meinhardt1993:
+    title: "A model for pattern formation of hypostome, tentacles, and foot in hydra: how to form structures close to each other, how to form them at a distance"
+    authors: "Meinhardt H"
+    venue: "Developmental Biology 157(2):321-333 (1993)"
+    doi: 10.1006/dbio.1993.1138
+  meinhardt2012:
+    title: "Modeling pattern formation in hydra: a route to understanding essential steps in development"
+    authors: "Meinhardt H"
+    venue: "International Journal of Developmental Biology 56(6-8):447-462 (2012)"
+    doi: 10.1387/ijdb.113483hm
+
+simulations:
+  - id: gierer-hydra-activator-inhibitor
+    name: "Gierer & Meinhardt (1972) Hydra vulgaris activator-inhibitor morphogenesis"
+    organism: "Freshwater cnidarian polyp (Hydra vulgaris) apical hypostome polarity & radial tentacle ring"
+    script: 1972-gierer-hydra-activator-inhibitor.py
+    output: docs/media/hydra_activator_inhibitor_comparison.png
+    extra_outputs:
+      - docs/media/hydra_activator_inhibitor_growth.gif
+    status: evaluated
+    source_refs:
+      - gierer1972
+      - meinhardt1974
+      - meinhardt1993
+      - meinhardt2012
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `1972-gierer-hydra-activator-inhibitor.py`
+      (55.0/100). The v1 baseline implements the 1D Gierer-Meinhardt (1972) Eqs. (15a)-(15b)
+      activator-inhibitor PDE on a 60-cell apico-basal column and computes the analytical
+      dispersion relation sigma(k) and critical diffusivity ratio d_c = (sqrt(2)+1)^2 = 5.8284,
+      but omits surgical bisection head regeneration (Gierer & Meinhardt 1972 Fig. 3),
+      periodic sub-hypostomal tentacle-ring morphogenesis (Meinhardt 1993), equal-diffusion
+      negative control (D_a = D_h), allometric domain-scaling peak insertion, and automated
+      computer-vision segmentation of the vendored Hydra vulgaris specimen image.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: >-
+          Implements Gierer & Meinhardt (1972) Eqs. (15a)-(15b) 1D PDE with zero-flux
+          Neumann boundary conditions (L85-134) and exact linear stability analysis
+          (L38-82, d_c = 5.8284, a_* = 1.5, h_* = 2.25). However, v1 omits Gierer &
+          Meinhardt's signature surgical bisection and head regeneration experiment
+          (Fig. 3), omits periodic circular ring morphogenesis for the tentacle whorl
+          (Meinhardt 1993), and runs no equal-diffusion negative control (D_a = D_h).
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [38, 82], note: "Linear stability analysis computing d_c = (sqrt(2)+1)^2 and dispersion curve", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [85, 134], note: "1D polar column solver without bisection regeneration or equal-diffusion negative control", supports: false}
+      specimen-match:
+        value: 38
+        rationale: >-
+          Displays `datasets/hydra_activator_inhibitor/hydra_vulgaris_specimen.jpg` in
+          Panel 3 (L164-168), but performs zero computer-vision segmentation of the
+          translucent Hydra body column, apical hypostome, or the 6 radiating tentacles,
+          and does not simulate the periodic 6-tentacle ring to match the specimen.
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [164, 168], note: "Raw imshow of Hydra specimen without segmentation or tentacle angular detection", supports: false}
+          - {file: docs/media/hydra_activator_inhibitor_comparison.png, lines: [0, 0], note: "3-panel baseline figure showing raw specimen without morphometric overlay", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Simulates only a single parameter point (d = D_h/D_a = 30, N = 60) with no
+          diffusivity-ratio sweep across d_c = 5.8284, no domain-length sweep L, and no
+          CLI parameter overrides beyond `--self-test` (L227-237).
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [227, 237], note: "CLI exposes only --self-test without PDE parameter flags or regime sweeps", supports: false}
+      morphometric-validation:
+        value: 45
+        rationale: >-
+          `measure_morphoeval()` reports only 3 basic scalars (d_c, a_*, and apical peak
+          index, L190-215) without uncertainty metrics (CV, std, RMSE, Pearson r), without
+          negative-control contrast, and without specimen tentacle count / angular spacing
+          comparison.
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [190, 215], note: "Only 3 scalar measurements without CV/RMSE/r or specimen tentacle morphometrics", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `datasets/hydra_activator_inhibitor/` with `hydra_activator_inhibitor_reference.json`,
+          `hydra_vulgaris_specimen.jpg`, `scout_manifest.json`, and `paper_citations.bib`,
+          but v1 script does not verify SHA-256 digests of the dataset files at runtime or
+          assert JSON-to-code parameter parity in `self_test()`.
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [34, 36], note: "Loads reference JSON path but performs no runtime SHA-256 verification", supports: false}
+      code-traceability:
+        value: 64
+        rationale: >-
+          Docstring cites Gierer & Meinhardt (1972) Eqs. (15a)-(15b), but lacks explicit
+          mappings to Gierer & Meinhardt (1972) Fig. 2-3 (regeneration), Meinhardt (1993)
+          (tentacle ring), and the 3 Lean 4 theorems in `Loop_001_hydra_activator_inhibitor.lean`.
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [1, 18], note: "Baseline module header without Lean 4 theorem or regeneration figure mappings", supports: false}
+      repro-package:
+        value: 65
+        rationale: >-
+          Includes deterministic `np.random.default_rng(1972)` and a basic `self_test()`
+          (L218-225), but does not test bitwise two-run determinism, SHA-256 dataset locks,
+          equal-diffusion control decay, or surgical head regeneration recovery.
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [218, 225], note: "4-assertion baseline self_test() without bitwise determinism or SHA-256 check", supports: false}
+    remediation:
+      - "Implement Gierer & Meinhardt (1972) Fig. 3 surgical bisection and head regeneration experiment (cutting the 60-cell column at x = 30 after apical peak formation and verifying autonomous regeneration of a new apical hypostome peak in the basal fragment once long-range inhibitor decays)."
+      - "Implement Meinhardt (1993) periodic circular tentacle-ring reaction-diffusion simulation (C = 50 cells, periodic BCs) producing 6 evenly spaced tentacle primordia, paired with an equal-diffusion negative control (D_a = D_h = 0.015, d = 1.0 < d_c = 5.8284) and a 6-point diffusivity-ratio sweep across d in {1.0, 3.0, 5.0, 8.0, 15.0, 30.0}."
+      - "Implement automated computer-vision segmentation of `datasets/hydra_activator_inhibitor/hydra_vulgaris_specimen.jpg` to extract the Hydra polyp silhouette, apico-basal body axis, apical hypostome centroid, and angular positions/spacing CV of the 6 radiating tentacles, plus an allometric domain-length scaling sweep L in {20, 35, 50, 65, 80, 95} with Pearson r and RMSE."
+      - "Add runtime SHA-256 verification of all files in `datasets/hydra_activator_inhibitor/`, expand `measure_morphoeval()` to 8 quantitative measurements with reference values, CV/RMSE/r uncertainty, and negative-control delta, expose full CLI flags, and upgrade the comparison figure to a 9-panel publication synthesis."

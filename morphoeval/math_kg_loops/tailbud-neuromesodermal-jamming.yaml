@@ -1,0 +1,62 @@
+sim_id: tailbud-neuromesodermal-jamming
+math_family: Active Fluid-to-Solid Jamming Transition & Bingham Viscoplastic Axis Elongation (Mongera-Kim-Campas Active Foam Mechanics)
+equations:
+  - law_name: Extracellular Space Compaction & Rigidity-Percolation Supracellular Yield Stress Law
+    formula: "\\phi_{\\text{pack}}(x) = 1 - \\phi_{\\text{ECS}}(x),\\qquad \\sigma_y(x) = \\sigma_0 \\max\\!\\left(0,\\, \\phi_{\\text{pack}}(x) - \\phi_c\\right)^\\beta = \\sigma_0 \\max\\!\\left(0,\\, \\phi_{\\text{ECS,crit}} - \\phi_{\\text{ECS}}(x)\\right)^\\beta"
+    lean_decl: MathOfBiology.Loop_030.yield_stress_scaled
+    lean_theorem: MathOfBiology.Loop_030.rigidity_percolation_yield_stress_onset
+    lean_locus: morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean#L20-L72
+    lean_code: |-
+      def cell_packing_milli (phi_ecs : Int) : Int := 1000 - phi_ecs
+      def yield_stress_scaled (sigma_0 phi_pack phi_c : Int) : Int :=
+        if phi_c < phi_pack then sigma_0 * (phi_pack - phi_c) else 0
+      theorem rigidity_percolation_yield_stress_onset
+          (sigma_0 phi_fluid phi_solid phi_1 phi_2 phi_c phi_ecs_post phi_ecs_ant : Int)
+          (h_fluid : phi_fluid <= phi_c) (h_solid : phi_c < phi_solid)
+          (h_sub : phi_c <= phi_1) (h_order : phi_1 < phi_2) (h_ecs : phi_ecs_ant < phi_ecs_post) :
+          yield_stress_scaled sigma_0 phi_fluid phi_c = 0 ∧
+          yield_stress_scaled 1 phi_solid phi_c > 0 ∧
+          cell_packing_milli phi_ecs_post < cell_packing_milli phi_ecs_ant ∧
+          yield_stress_scaled 1 phi_1 phi_c < yield_stress_scaled 1 phi_2 phi_c
+    variables: "phi_ECS(x): extracellular space volume fraction (0.145 in MPZ -> 0.049 in A-PSM); phi_pack(x) = 1 - phi_ECS(x): cell packing fraction; phi_c approx 0.860: Maxwell isostatic rigidity-percolation threshold; sigma_y(x): ferrofluid-measured supracellular yield stress (Pa)"
+    role: "Establishes how posterior-to-anterior compaction of extracellular spaces drives cell packing across the rigidity-percolation threshold phi_c = 0.860, generating a 10-fold anterior surge in tissue yield stress"
+    source_citation: "Mongera et al. (2018) Nature 561(7723):401-405 Figs. 1-3; Kim et al. (2021) Nature Physics 17(7):859-866 Eqs. 1-4"
+    code_locus: "2022-tailbud-neuromesodermal-jamming.py#L90-L175"
+  - law_name: Active Tension Fluctuation vs. Yield-Stress Caging & Kramers/Bingham Fluid-to-Solid Crossover
+    formula: "\\Delta\\sigma_{\\text{cage}}(x) = \\sigma_y(x) - \\sigma_A(x),\\qquad \\dot{\\gamma}_p(x) = \\frac{\\max(0,\\, \\sigma_{\\text{eff}}(x) - \\sigma_y(x))}{\\eta_p},\\qquad k_{T1}(x) = k_0 \\exp\\!\\left(-c_B \\left(\\frac{\\sigma_y(x)}{\\sigma_A(x)}\\right)^{\\gamma_k}\\right)"
+    lean_decl: MathOfBiology.Loop_030.bingham_plastic_rate_num
+    lean_theorem: MathOfBiology.Loop_030.active_fluctuation_fluid_to_solid_jamming_crossover
+    lean_locus: morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean#L36-L95
+    lean_code: |-
+      def net_jamming_barrier (sigma_y sigma_A : Int) : Int := sigma_y - sigma_A
+      def bingham_plastic_rate_num (sigma_eff sigma_y : Int) : Int :=
+        if sigma_y < sigma_eff then sigma_eff - sigma_y else 0
+      theorem active_fluctuation_fluid_to_solid_jamming_crossover
+          (sigma_y_mpz sigma_A_mpz sigma_y_apsm sigma_A_apsm : Int)
+          (h_mpz_fluid : sigma_y_mpz < sigma_A_mpz) (h_apsm_solid : sigma_A_apsm <= sigma_y_apsm) :
+          net_jamming_barrier sigma_y_mpz sigma_A_mpz < 0 ∧
+          bingham_plastic_rate_num sigma_A_mpz sigma_y_mpz > 0 ∧
+          net_jamming_barrier sigma_y_apsm sigma_A_apsm >= 0 ∧
+          bingham_plastic_rate_num sigma_A_apsm sigma_y_apsm = 0
+    variables: "sigma_A(x): cell-scale non-muscle Myosin-II active tension fluctuations (50 Pa in MPZ -> 13 Pa in A-PSM); k_T1(x): rate of T1 topological neighbor exchanges (min^-1); eta_p: plastic viscosity"
+    role: "Proves that active tension fluctuations fluidize the posterior MPZ (sigma_A > sigma_y) via frequent T1 neighbor exchanges, whereas rising yield stress freezes T1 rearrangements into a solid state in the PSM (sigma_y >= sigma_A)"
+    source_citation: "Mongera et al. (2018) Nature 561:401-405 Fig. 2; Kim et al. (2021) Nature Physics 17:859-866 Figs. 2-4"
+    code_locus: "2022-tailbud-neuromesodermal-jamming.py#L140-L245"
+  - law_name: Solid A-PSM Mechanical Backstop Rectification & cdh2 (N-Cadherin) Knockdown Bilateral Asymmetry Law
+    formula: "v_{\\text{elong}} = J_{\\text{MPZ}} \\frac{\\sigma_{y,\\text{APSM}}}{\\sigma_{y,\\text{APSM}} + \\sigma_{y,\\text{MPZ}} + \\sigma_{\\text{ref}}},\\qquad \\phi_{\\text{pack}}^{\\text{cdh2}}(x) = 1 - \\phi_{\\text{ECS}}^{\\text{cdh2}}(x) < \\phi_c \\implies \\sigma_{y,\\text{APSM}}^{\\text{cdh2}} \\to 0"
+    lean_decl: MathOfBiology.Loop_030.rectified_posterior_flux_num
+    lean_theorem: MathOfBiology.Loop_030.mongera_2018_wt_vs_cdh2_backstop_collapse
+    lean_locus: morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean#L97-L162
+    lean_code: |-
+      theorem mongera_2018_wt_vs_cdh2_backstop_collapse :
+          (cell_packing_milli phi_ecs_wt_mpz < phi_c_milli ∧
+           phi_c_milli < cell_packing_milli phi_ecs_wt_ppsm ∧
+           cell_packing_milli phi_ecs_wt_ppsm < cell_packing_milli phi_ecs_wt_apsm) ∧
+          (yield_stress_scaled 1 (cell_packing_milli phi_ecs_wt_apsm) phi_c_milli = 91 ∧
+           yield_stress_scaled 1 (cell_packing_milli phi_ecs_wt_apsm) phi_c_milli > sigma_A_wt_apsm) ∧
+          (cell_packing_milli phi_ecs_cdh2_apsm < phi_c_milli ∧
+           yield_stress_scaled 1 (cell_packing_milli phi_ecs_cdh2_apsm) phi_c_milli = 0)
+    variables: "J_MPZ: dorsal-medial progenitor cell influx into MPZ; sigma_y_APSM: anterior PSM backstop yield stress; phi_ecs_cdh2_apsm = 0.148 > phi_ECS_crit = 0.140: expanded extracellular space in N-cadherin morphants"
+    role: "Proves that the jammed A-PSM acts as an internal mechanical backstop that channels fluid MPZ cell addition into unidirectional posterior elongation and preserves left-right symmetry, whereas cdh2 knockdown unjams the PSM and induces bilateral asymmetry"
+    source_citation: "Mongera et al. (2018) Nature 561:401-405 Fig. 4; Lawton et al. (2013) Development 140:573-582"
+    code_locus: "2022-tailbud-neuromesodermal-jamming.py#L250-L435"

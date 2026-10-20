@@ -1,0 +1,183 @@
+# MorphoEval audit — King, Ocko & Mahadevan (2015) PNAS, Ocko et al. (2017) PNAS & Ocko, Heyde & Mahadevan (2019) PNAS Solar-Powered Termite Mound Convective Chimneys & Pheromone Morphogenesis, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2015-ocko-termite-mound-convective-chimneys.py` (223 lines)
+# prior to Step 12 remediation in `2026-10-19-termite-mound-convective-chimneys-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.8 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `compute_thermosiphon_velocities` (L34-47) and `compute_peclet_aspect_ratio` (L50-61)
+#      evaluate only closed-form algebraic scaling laws (`u_f = K_buoy * dT` and `H/R = 1 + eta*Pe`)
+#      rather than solving the coupled 24-hour diurnal solar-thermal PDE with thermal inertia
+#      phase lag between exterior surface flutes and the central chimney, or solving the
+#      Ocko, Heyde & Mahadevan (2019) PNAS advection-diffusion-deposition moving-boundary
+#      morphogenesis PDE `d_t c + u . grad c = D_c laplacian(c) - gamma_c c`.
+#   2. `evaluate_baseline_diurnal_table` (L77-96) omits the 7-point convective Péclet
+#      morphogenesis sweep (`Pe in [0.0, 4.2]`), the 6-point geographic latitude equatorward
+#      spire tilt sweep (`|phi_lat| in [0, 24] deg S`), the *Macrotermes michaelseni* vs
+#      *Odontotermes obesus* taxon comparison, and the shaded/isothermal dome ablation control.
+#   3. The vendored CC BY-SA 4.0 cathedral termite mound photograph
+#      `datasets/termite_mound_convective_chimneys/macrotermes_cathedral_mound_specimen.jpg`
+#      is never loaded, segmented, or analyzed for mound silhouette aspect ratio `H/W`,
+#      spire taper half-angle, or vertical surface flute ridges in
+#      `termite_mound_convective_chimneys_comparison.png`.
+#   4. Runtime SHA-256 verification of dataset assets and CLI parameter overrides
+#      (`--peclet`, `--delta-t-day`, `--latitude-deg`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-termite-mound-convective-chimneys-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 097 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/97
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e93f00e
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2015-ocko-termite-mound-convective-chimneys.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-termite-mound-convective-chimneys-loop`.
+
+references:
+  ocko2017:
+    title: "Solar-powered ventilation of African termite mounds"
+    authors: "Ocko SA, King H, Andreen D, Bardunias P, Turner JS, Soar R, Mahadevan L"
+    venue: "Proceedings of the National Academy of Sciences 114(40):10620-10624 (2017)"
+    doi: 10.1073/pnas.1713534114
+  ocko2019:
+    title: "Morphogenesis of termite mounds"
+    authors: "Ocko SA, Heyde A, Mahadevan L"
+    venue: "Proceedings of the National Academy of Sciences 116(9):3379-3384 (2019)"
+    doi: 10.1073/pnas.1818759116
+  king2015:
+    title: "Termite mounds harness diurnal temperature oscillations for ventilation"
+    authors: "King H, Ocko S, Mahadevan L"
+    venue: "Proceedings of the National Academy of Sciences 112(37):11589-11593 (2015)"
+    doi: 10.1073/pnas.1423242112
+  korb2003:
+    title: "Thermoregulation and ventilation of termite mounds"
+    authors: "Korb J"
+    venue: "Naturwissenschaften 90(5):212-219 (2003)"
+    doi: 10.1007/s00114-002-0401-4
+  oberst2020:
+    title: "Revisiting stigmergy in light of multi-functional, biogenic, termite structures as communication channel"
+    authors: "Oberst SM, Lai JCS, Martin R, Halkon B"
+    venue: "Computational and Structural Biotechnology Journal 18:2522-2534 (2020)"
+    doi: 10.1016/j.csbj.2020.08.012
+
+simulations:
+  - id: ocko-termite-mound-convective-chimneys
+    name: "King, Ocko & Mahadevan (2015) PNAS, Ocko et al. (2017) PNAS & Ocko, Heyde & Mahadevan (2019) PNAS solar-powered diurnal thermosiphon ventilation and convective pheromone morphogenesis of cathedral termite mounds"
+    organism: "Macrotermes michaelseni / Odontotermes obesus (Fungus-cultivating mound-building termites)"
+    script: 2015-ocko-termite-mound-convective-chimneys.py
+    output: docs/media/termite_mound_convective_chimneys_comparison.png
+    extra_outputs:
+      - docs/media/termite_mound_convective_chimneys_growth.gif
+    status: evaluated
+    source_refs:
+      - ocko2017
+      - ocko2019
+      - king2015
+      - korb2003
+      - oberst2020
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2015-ocko-termite-mound-convective-chimneys.py`
+      (overall weighted score: 56.8/100). The v1 script implements algebraic formulas for
+      diurnal thermosiphon flow reversal (`u_flute = K_buoy * dT`, `u_chimney = -(A_f/A_c) * u_flute`),
+      convective Péclet aspect ratio scaling (`H/R = 1 + eta_Pe * Pe`), and Taylor–Aris
+      CO₂ dispersion (`D_eff = D_0 + alpha_TA * u_flute^2`), but lacks a coupled 24-hour
+      diurnal thermal-buoyancy PDE solver with nest CO₂ mass-balance clearance, lacks the
+      Ocko et al. (2019) PNAS moving-boundary pheromone advection-diffusion-deposition
+      solver across `Pe` and solar latitude tilt `phi_lat`, omits the *Macrotermes michaelseni*
+      vs *Odontotermes obesus* and shaded/isothermal dome controls, and never loads or
+      segments the vendored cathedral termite mound specimen (`macrotermes_cathedral_mound_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Implements algebraic formulas for Boussinesq thermosiphon velocity, convective
+          Péclet aspect ratio scaling, and Taylor–Aris CO₂ dispersion (L34-74), backed by
+          3 Lean 4 theorems in `Loop_097_termite_mound_convective_chimneys.lean`. However,
+          it does not integrate the coupled 24-hour diurnal solar-thermal ODE/PDE for
+          flute-chimney temperature and nest CO₂ clearance or the Ocko et al. (2019)
+          moving-boundary pheromone advection-diffusion-deposition solver.
+        evidence:
+          - {file: 2015-ocko-termite-mound-convective-chimneys.py, lines: [34, 74], note: "Algebraic thermosiphon velocity, Peclet aspect ratio, and Taylor-Aris dispersion formulas", supports: true}
+          - {file: 2015-ocko-termite-mound-convective-chimneys.py, lines: [77, 96], note: "Evaluates static table lookup rather than solving coupled diurnal thermal-CO2 and moving-boundary pheromone PDEs", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/termite_mound_convective_chimneys/macrotermes_cathedral_mound_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or extracts mound
+          silhouette aspect ratio `H/W`, spire taper half-angle, or vertical surface
+          flute ridge count from the biological specimen photograph.
+        evidence:
+          - {file: 2015-ocko-termite-mound-convective-chimneys.py, lines: [77, 155], note: "Renders 4 analytic plots without loading or segmenting macrotermes_cathedral_mound_specimen.jpg", supports: false}
+          - {file: docs/media/termite_mound_convective_chimneys_comparison.png, lines: [0, 0], note: "4-panel v1 plot omits cathedral mound specimen segmentation, latitude spire tilt, and species controls", supports: false}
+      parameter-expressivity:
+        value: 51
+        rationale: >-
+          Evaluates the 9-point diurnal temperature table (L77-96), but omits the 7-point
+          convective Péclet morphogenesis sweep `Pe in [0.0, 4.2]`, omits the 6-point
+          geographic latitude equatorward spire tilt sweep `|phi_lat| in [0.0, 24.0] deg S`,
+          omits the *Macrotermes* vs *Odontotermes* vs shaded isothermal dome controls,
+          and exposes no CLI parameter overrides.
+        evidence:
+          - {file: 2015-ocko-termite-mound-convective-chimneys.py, lines: [77, 96], note: "Single diurnal table evaluation without Peclet sweep, latitude tilt sweep, species/ablation controls, or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 53
+        rationale: >-
+          `measure_morphoeval()` (L188-200) reports only 4 scalar values without Pearson r,
+          p-value, RMSE, diurnal velocity and CO₂ correlations, convective Péclet `H/W`
+          correlation, equatorward latitude tilt correlation, or empirical specimen CV
+          silhouette metrics.
+        evidence:
+          - {file: 2015-ocko-termite-mound-convective-chimneys.py, lines: [188, 200], note: "Only 4 scalar baseline numbers without statistical tests, negative controls, or specimen segmentation", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Vendors `datasets/termite_mound_convective_chimneys/` with 5 primary DOIs in
+          `paper_citations.bib` (`10.1073/pnas.1713534114`, `10.1073/pnas.1818759116`,
+          `10.1073/pnas.1423242112`, `10.1007/s00114-002-0401-4`, `10.1016/j.csbj.2020.08.012`),
+          `scout_manifest.json`, and `termite_mound_convective_chimneys_reference.json`,
+          but lacks runtime SHA-256 verification in `2015-ocko-termite-mound-convective-chimneys.py`.
+        evidence:
+          - {file: datasets/termite_mound_convective_chimneys/termite_mound_convective_chimneys_reference.json, lines: [1, 145], note: "Reference JSON with diurnal trajectory, Peclet morphogenesis sweep, latitude tilt sweep, and controls", supports: true}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Links module docstrings to King et al. (2015), Ocko et al. (2017, 2019), and
+          the 3 Lean 4 theorems in `Loop_097_termite_mound_convective_chimneys.lean` (L1-14),
+          but lacks trace links for moving-boundary pheromone morphogenesis, equatorward
+          solar spire tilt, and CV flute segmentation.
+        evidence:
+          - {file: 2015-ocko-termite-mound-convective-chimneys.py, lines: [1, 14], note: "Baseline docstring linking King et al. (2015), Ocko et al. (2017, 2019), and Loop_097 Lean theorems", supports: true}
+      repro-package:
+        value: 64
+        rationale: >-
+          Provides `--self-test` (`L203-215`) checking basic velocity sign and Péclet ratio,
+          but lacks SHA-256 asset verification, PDE mass-conservation assertions, latitude
+          tilt checks, and two-run bitwise determinism verification.
+        evidence:
+          - {file: 2015-ocko-termite-mound-convective-chimneys.py, lines: [203, 215], note: "Minimal 3-assertion self_test() without SHA-256 or PDE determinism checks", supports: false}
+    remediation:
+      - "Implement a coupled 24-hour diurnal solar-thermal buoyancy thermosiphon & nest CO2 clearance solver resolving daytime East/North/West flute updrafts, central chimney downdrafts, nighttime flow reversal, and Taylor-Aris oscillatory CO2 ventilation."
+      - "Implement the Ocko, Heyde & Mahadevan (2019) PNAS moving-boundary mound morphogenesis solver coupling upward convective pheromone advection-diffusion (Pe = u_0 H_0 / D_c) to threshold soil deposition across the 7-point Peclet sweep Pe in [0.0, 4.2] and the 6-point geographic latitude equatorward spire tilt sweep |phi_lat| in [0.0, 24.0] deg S."
+      - "Implement the species & ablation controls comparing Macrotermes michaelseni (Namibia cathedral spire, Pe = 3.2), Odontotermes obesus (India fluted mound, Pe = 2.3), and the shaded/isothermal no-buoyancy dome negative control (Delta T = 0 K, Pe = 0.0 -> H/W = 0.50)."
+      - "Segment the vendored CC BY-SA 4.0 cathedral termite mound photograph (`macrotermes_cathedral_mound_specimen.jpg`) to extract mound silhouette aspect ratio H/W, spire taper half-angle, equatorward tilt angle, and vertical surface flute ridge count, and enforce runtime SHA-256 verification."

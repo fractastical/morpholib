@@ -1,0 +1,180 @@
+# MorphoEval audit — Sekimura, Madzvamuse, Wathen & Maini (2000) Proc. R. Soc. B, Madzvamuse et al. (2002) J. Math. Biol. & Timmermans/Thompson et al. (2014) Nature Papilio dardanus Wing Mimicry Patterning, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2016-sekimura-papilio-wing-stripe-mimicry.py` (201 lines)
+# prior to Step 12 remediation in `2026-10-19-papilio-wing-stripe-mimicry-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.4 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `synthesize_planar_eigenmode_field` (L68-86) evaluates a static planar rectangular
+#      cosine proxy rather than numerically integrating the coupled 2D anisotropic
+#      Gierer–Meinhardt reaction–diffusion PDE (du/dt = gamma*(a - b*u + u^2/v) + div(D_u grad u),
+#      dv/dt = gamma*(u^2 - v) + div(D_v grad v)) on a curved Papilio dardanus forewing domain
+#      with anterior/posterior Dirichlet/Robin boundary source gradients.
+#   2. Evaluates only the 4 morph points without executing the 6-point threshold u_th
+#      melanic expansion sweep, the 5-point anisotropic diffusivity ratio epsilon = D_perp/D_par
+#      stripe-to-transverse band orientation sweep, or the equal-diffusion (d = 1.0) and
+#      homogeneous boundary negative controls.
+#   3. The vendored CC BY-SA 4.0 Papilio dardanus cenea butterfly photograph
+#      `datasets/papilio_wing_stripe_mimicry/papilio_dardanus_cenea_specimen.jpg` is never
+#      loaded, segmented for wing contour, melanic vs light patch area fractions, or spot/band
+#      orientation in `papilio_wing_stripe_mimicry_comparison.png`.
+#   4. Runtime SHA-256 verification of dataset assets and CLI parameter overrides
+#      (`--a`, `--b`, `--d`, `--gamma`, `--epsilon`, `--u-th`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-papilio-wing-stripe-mimicry-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 099 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/99
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e93f00e
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2016-sekimura-papilio-wing-stripe-mimicry.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-papilio-wing-stripe-mimicry-loop`.
+
+references:
+  sekimura2000:
+    title: "A model for colour pattern formation in the butterfly wing of Papilio dardanus"
+    authors: "Sekimura T, Madzvamuse A, Wathen AJ, Maini PK"
+    venue: "Proceedings of the Royal Society of London B 267(1446):851-859 (2000)"
+    doi: 10.1098/rspb.2000.1081
+  madzvamuse2002:
+    title: "A numerical approach to the study of spatial pattern formation in the ligaments of arcoid bivalves and on the wing of the butterfly Papilio dardanus"
+    authors: "Madzvamuse A, Thomas RDK, Sekimura T, Maini PK"
+    venue: "Journal of Mathematical Biology 44(5):489-509 (2002)"
+    doi: 10.1007/s002850100133
+  thompson2014:
+    title: "Comparative genomics of the mimicry switch in Papilio dardanus"
+    authors: "Timmermans MJTN, Baxter SW, Clark R, ..., Thompson MJ, Jiggins CD, Vogler AP"
+    venue: "Nature 507(7490):96-99 (2014)"
+    doi: 10.1038/nature12979
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    doi: 10.1007/BF00289234
+  nijhout1991:
+    title: "The Development and Evolution of Butterfly Wing Patterns"
+    authors: "Nijhout HF"
+    venue: "Smithsonian Institution Press, Washington, DC (1991)"
+    doi: 10.5962/bhl.title.119515
+
+simulations:
+  - id: sekimura-papilio-wing-stripe-mimicry
+    name: "Sekimura et al. (2000) Proc. R. Soc. B, Madzvamuse et al. (2002) J. Math. Biol. & Thompson et al. (2014) Nature anisotropic Gierer–Meinhardt butterfly wing pattern formation and Batesian mimicry polymorphism in Papilio dardanus"
+    organism: "Papilio dardanus (African mocker swallowtail female mimetic morphs: hippocoonides, trophonius, cenea, planemoides)"
+    script: 2016-sekimura-papilio-wing-stripe-mimicry.py
+    output: docs/media/papilio_wing_stripe_mimicry_comparison.png
+    extra_outputs:
+      - docs/media/papilio_wing_stripe_mimicry_growth.gif
+    status: evaluated
+    source_refs:
+      - sekimura2000
+      - madzvamuse2002
+      - thompson2014
+      - gierer1972
+      - nijhout1991
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2016-sekimura-papilio-wing-stripe-mimicry.py`
+      (overall weighted score: 56.4/100). The v1 script computes the Gierer–Meinhardt
+      homogeneous steady state u0 = (a+1)/b = 1.1, v0 = u0^2 = 1.21, Jacobian J0, and
+      critical diffusivity ratio d_c = 8.2384, but approximates spatial wing patterns
+      via a static planar harmonic proxy (`synthesize_planar_eigenmode_field`, L68-86)
+      rather than solving the 2D anisotropic Gierer–Meinhardt PDE on a curved forewing
+      mesh with margin boundary conditions, omits the 6-point threshold u_th sweep,
+      5-point anisotropy epsilon orientation sweep, and equal-diffusion negative control,
+      and never loads or segments the vendored Papilio dardanus specimen image
+      (`papilio_dardanus_cenea_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Computes the exact Gierer–Meinhardt homogeneous steady state (u0, v0), Jacobian
+          entries, and critical Turing diffusivity ratio d_c = 8.2384 (`compute_gm_steady_state`,
+          L37-65), backed by 3 Lean 4 theorems in `Loop_099_papilio_wing_stripe_mimicry.lean`.
+          However, `synthesize_planar_eigenmode_field` (L68-86) substitutes a static planar
+          cosine formula for time-stepping the nonlinear 2D anisotropic Gierer–Meinhardt PDE
+          on the curved Papilio dardanus forewing domain with vein-aligned diffusivity tensor
+          D = diag(1, epsilon) and boundary margin source gradients.
+        evidence:
+          - {file: 2016-sekimura-papilio-wing-stripe-mimicry.py, lines: [37, 65], note: "Exact Gierer-Meinhardt steady state (u0=1.1, v0=1.21), Jacobian J0, and critical diffusivity ratio d_c=8.2384", supports: true}
+          - {file: 2016-sekimura-papilio-wing-stripe-mimicry.py, lines: [68, 86], note: "Static planar cosine proxy instead of 2D anisotropic Gierer-Meinhardt PDE solver on curved butterfly forewing domain", supports: false}
+      specimen-match:
+        value: 36
+        rationale: >-
+          Although `datasets/papilio_wing_stripe_mimicry/papilio_dardanus_cenea_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or quantifies wing contour,
+          melanic vs light patch area fractions, or band orientation from the biological
+          specimen photograph.
+        evidence:
+          - {file: 2016-sekimura-papilio-wing-stripe-mimicry.py, lines: [89, 113], note: "Evaluates planar morph proxies without loading or segmenting papilio_dardanus_cenea_specimen.jpg", supports: false}
+          - {file: docs/media/papilio_wing_stripe_mimicry_comparison.png, lines: [0, 0], note: "4-panel v1 plot shows rectangular cosine proxies without curved wing geometry or biological specimen segmentation", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates the 4 female mimetic morph configurations (L89-113), but omits the
+          6-point threshold u_th melanic expansion sweep, the 5-point anisotropic diffusivity
+          epsilon stripe-to-band orientation sweep, the equal-diffusion (d = 1.0) and
+          homogeneous-boundary negative controls, and CLI parameter overrides.
+        evidence:
+          - {file: 2016-sekimura-papilio-wing-stripe-mimicry.py, lines: [89, 113], note: "Evaluates 4 morph points without threshold sweep, anisotropy orientation sweep, negative controls, or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          `measure_morphoeval()` (L149-186) reports only 4 scalar metrics without Pearson r,
+          p-value, RMSE, anisotropic stripe orientation angle, negative-control amplitude
+          suppression, or empirical specimen wing segmentation metrics.
+        evidence:
+          - {file: 2016-sekimura-papilio-wing-stripe-mimicry.py, lines: [149, 186], note: "Only 4 baseline metrics without statistical correlations, negative controls, or specimen CV validation", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Vendors `datasets/papilio_wing_stripe_mimicry/` with 5 primary DOIs in
+          `paper_citations.bib` (`10.1098/rspb.2000.1081`, `10.1007/s002850100133`,
+          `10.1038/nature12979`, `10.1007/BF00289234`, `10.5962/bhl.title.119515`),
+          `scout_manifest.json`, and `papilio_wing_stripe_mimicry_reference.json`, but lacks
+          runtime SHA-256 verification in `2016-sekimura-papilio-wing-stripe-mimicry.py`.
+        evidence:
+          - {file: datasets/papilio_wing_stripe_mimicry/papilio_wing_stripe_mimicry_reference.json, lines: [1, 145], note: "Reference JSON with Gierer-Meinhardt parameters, 4 mimetic morphs, threshold sweep, and anisotropy sweep", supports: true}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Links module docstrings to Sekimura et al. (2000), Madzvamuse et al. (2002), and
+          the 3 Lean 4 theorems in `Loop_099_papilio_wing_stripe_mimicry.lean` (L1-21),
+          but lacks trace links for curved forewing PDE discretization, vein-directed
+          anisotropy tensor D = diag(1, epsilon), and boundary gradient switching.
+        evidence:
+          - {file: 2016-sekimura-papilio-wing-stripe-mimicry.py, lines: [1, 21], note: "Baseline docstring linking Sekimura et al. (2000), Madzvamuse et al. (2002), and Loop_099 Lean theorems", supports: true}
+      repro-package:
+        value: 64
+        rationale: >-
+          Provides `--self-test` (`L189-197`) checking steady state and threshold ordering,
+          but lacks SHA-256 asset verification, two-run bitwise determinism checks on the
+          nonlinear PDE solver, and specimen segmentation assertions.
+        evidence:
+          - {file: 2016-sekimura-papilio-wing-stripe-mimicry.py, lines: [189, 197], note: "Minimal 3-assertion self_test() without SHA-256 or PDE determinism checks", supports: false}
+    remediation:
+      - "Replace the static planar cosine proxy with a full 2D anisotropic Gierer-Meinhardt reaction-diffusion PDE solver on a curved Papilio dardanus forewing domain with vein-aligned diffusivity tensor D = diag(1, epsilon) and proximal-to-distal margin boundary profiles."
+      - "Reproduce all 4 Sekimura et al. (2000) female Batesian mimetic morphs (hippocoonides broad diagonal patch, trophonius brick-red median patch, cenea fragmented spots, planemoides transverse band) plus the 6-point threshold u_th sweep and 5-point anisotropy epsilon orientation sweep."
+      - "Implement equal-diffusion (d = 1.0 < d_c) and homogeneous-boundary negative controls verifying Turing pattern suppression and boundary-gradient role."
+      - "Segment the vendored CC BY-SA 4.0 Papilio dardanus specimen photograph (`papilio_dardanus_cenea_specimen.jpg`) to extract wing contour, melanic vs light patch area fractions, discrete light patch count, and dominant pattern orientation angle, and enforce runtime SHA-256 verification."

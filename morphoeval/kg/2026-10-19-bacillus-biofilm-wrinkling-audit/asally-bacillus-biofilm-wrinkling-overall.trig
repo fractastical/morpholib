@@ -1,0 +1,76 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-asally-bacillus-biofilm-wrinkling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-asally-bacillus-biofilm-wrinkling-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-asally-bacillus-biofilm-wrinkling-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Asally et al. (2012) PNAS & Yan et al. (2019) Nature Physics osmotic matrix swelling, localized cell-death delamination, and Föppl–von Kármán radial wrinkle spokes in Bacillus subtilis biofilms — MorphoEval overall 53.5/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 (v1) baseline evaluation of `2013-asally-bacillus-biofilm-wrinkling.py` (overall weighted score: 56.2/100). The v1 script implements the Föppl–von Kármán bilayer characteristic wavelength lambda_c = 2*pi*h*(E_bar_f/(3*E_bar_s))^(1/3), critical compressive buckling strain epsilon_c = 0.25*(3*E_bar_s/E_bar_f)^(2/3), and radial spoke count N_spokes = 2*pi*R_ring/lambda_c across the 7-point agar stiffness sweep E_s in [0.5, 10.0] kPa, but uses a closed-form polar cosine ansatz instead of relaxing a 2D Föppl–von Kármán + localized cell-death delamination energy functional F[w], omits the biofilm thickness sweep h in [40, 140] um, Delta eps / Delta tasA matrix-deficient mutant and artificial score-guided spoke controls, and does not segment the vendored macrocolony biofilm specimen (`bacillus_biofilm_specimen.jpg`). Overall 53.5/100 (faithfulness 47.2, reproducibility 68.0); rubric morphoeval 0.1.0; checkpoint commit e93f00e; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 58, Morphological realism / specimen match 35, Parameter expressivity 49, Morphometric validation 52, Source and data traceability 74, Code-to-model traceability 68, Reproducibility package 63. Output judged: docs/media/bacillus_biofilm_wrinkling_comparison.png: rendered output of 2013-asally-bacillus-biofilm-wrinkling.py at e93f00e, image/png, 212694 B, 1680×1400 px, artifact_sha256 9799ba47f741b45ebe1677a6ea2ccf5fca372bdb8723754e0f55739d0a798926 (sha256 9799ba47f741b45ebe1677a6ea2ccf5fca372bdb8723754e0f55739d0a798926), spec_fingerprint 80d4742b3055639fafb02a0909f223313e723e53cf52d4df159742cd92171fba. Dual provenance: spec_fingerprint: 80d4742b3055639fafb02a0909f223313e723e53cf52d4df159742cd92171fba; artifact_sha256: 9799ba47f741b45ebe1677a6ea2ccf5fca372bdb8723754e0f55739d0a798926; input_dataset_sha256: {datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_specimen.jpg=0ab531dfc2ded692..., datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_wrinkling_reference.json=7d866d4d5136d397..., datasets/bacillus_biofilm_wrinkling/paper_citations.bib=ae278450d6851340..., datasets/bacillus_biofilm_wrinkling/scout_manifest.json=d546628168a39289...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Implement Asally et al. (2012) PNAS Figs. 1-4 genetic and mechanical controls: wild-type NCIB 3610, Delta epsA-O / Delta tasA matrix-deficient flat mutant, FeCl3/D-Leu cell-death-suppressed control, and artificial mechanical-score templates guiding custom spoke counts (m = 6, m = 8).",
+            "remediation needed: Implement both the 7-point agar stiffness sweep E_s in [0.5, 10.0] kPa (verifying cube-root scaling exponent -1/3) and the 6-point biofilm thickness sweep h in [40, 140] um (verifying linear wavelength and inverse spoke scaling).",
+            "remediation needed: Replace the closed-form polar ansatz with a 2D circular colony Föppl–von Kármán + localized cell-death delamination L-BFGS-B free-energy minimizer F[w] that relaxes biofilm height w(x,y) into a central concentric ring and outer radial spokes.",
+            "remediation needed: Segment the vendored CC BY-SA 3.0 Bacillus subtilis macrocolony specimen (`bacillus_biofilm_specimen.jpg`) to extract isolated macrocolonies, focal colony radial spoke count N_spokes, and angular spoke spacing CV, and enforce runtime SHA-256 verification." ;
+        pk:hasScore "0.535"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 094 Pass 1 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/94> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/s41567-018-0392-9>,
+            <https://doi.org/10.1073/pnas.1102300108>,
+            <https://doi.org/10.1073/pnas.1212429109>,
+            <https://doi.org/10.1073/pnas.1217178110> .
+    <https://doi.org/10.1038/s41567-018-0392-9> dct:date "2019"^^xsd:gYear ;
+        dct:title "Mechanical instability and interfacial energy drive biofilm morphogenesis" .
+    <https://doi.org/10.1073/pnas.1102300108> dct:date "2012"^^xsd:gYear ;
+        dct:title "Osmotic spreading of Bacillus subtilis biofilms driven by an extracellular matrix" .
+    <https://doi.org/10.1073/pnas.1212429109> dct:date "2012"^^xsd:gYear ;
+        dct:title "Localized cell death focuses mechanical forces during 3D patterning in a biofilm" .
+    <https://doi.org/10.1073/pnas.1217178110> dct:date "2013"^^xsd:gYear ;
+        dct:title "Elasticity and wrinkled morphology of Bacillus subtilis pellicles" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Asally et al. (2012) PNAS & Yan et al. (2019) Nature Physics osmotic matrix swelling, localized cell-death delamination, and Föppl–von Kármán radial wrinkle spokes in Bacillus subtilis biofilms — MorphoEval overall 53.5/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:24:34Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-asally-bacillus-biofilm-wrinkling-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/94>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-asally-bacillus-biofilm-wrinkling> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

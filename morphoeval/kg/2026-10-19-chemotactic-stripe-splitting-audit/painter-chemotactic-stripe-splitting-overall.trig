@@ -1,0 +1,75 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-painter-chemotactic-stripe-splitting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-painter-chemotactic-stripe-splitting-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-painter-chemotactic-stripe-splitting-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Painter, Maini & Othmer (1999) chemotactic stripe splitting & stripe-spot selection — MorphoEval overall 54.0/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 baseline assessment of `1999-painter-chemotactic-stripe-splitting.py` (54.4/100). The initial script computes the analytical equal-diffusivity chemotactic bifurcation threshold chi_c = 4.5 and critical wavelength lambda_c = 4.4429, but uses a kinematic mode approximation rather than integrating the full nonlinear Keller-Segel-Painter PDE dn/dt = D_n Lap(n) - div(n chi(c) grad(c)) + r n (1 - n/n_0) and dc/dt = D_c Lap(c) + alpha n / (1 + beta n) - gamma c on a growing domain, lacks 2D stripe-vs-spot selection simulation, and lacks automated computer-vision segmentation of the vendored Myxococcus xanthus specimen (`chemotactic_pattern_specimen.jpg`). Overall 54.0/100 (faithfulness 51.7, reproducibility 59.2); rubric morphoeval 0.1.0; checkpoint commit 317bc3c; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 56, Morphological realism / specimen match 48, Parameter expressivity 52, Morphometric validation 52, Source and data traceability 64, Code-to-model traceability 58, Reproducibility package 56. Output judged: docs/media/chemotactic_stripe_splitting_comparison.png: rendered output of 1999-painter-chemotactic-stripe-splitting.py at 317bc3c, image/png, 468870 B, 1200×504 px, artifact_sha256 fdbda2565a00f3883c2fd1ab25aa233e8d978633cb71373ebd77f9d058d47f14 (sha256 fdbda2565a00f3883c2fd1ab25aa233e8d978633cb71373ebd77f9d058d47f14), spec_fingerprint 91fb31037b136e4adc1e8bdd7b6c8097f7eaab327a03b1266cf7114f22d5f57f. Dual provenance: spec_fingerprint: 91fb31037b136e4adc1e8bdd7b6c8097f7eaab327a03b1266cf7114f22d5f57f; artifact_sha256: fdbda2565a00f3883c2fd1ab25aa233e8d978633cb71373ebd77f9d058d47f14; input_dataset_sha256: {datasets/chemotactic_stripe_splitting/chemotactic_pattern_specimen.jpg=7b1780ffcb70f313..., datasets/chemotactic_stripe_splitting/chemotactic_stripe_splitting_reference.json=2c37ed1ab3d26a08..., datasets/chemotactic_stripe_splitting/scout_manifest.json=4b4e20a991f65c81...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add computer-vision segmentation of `datasets/chemotactic_stripe_splitting/chemotactic_pattern_specimen.jpg` to extract both the right-hand chemotactic rippling ridge wavelength (in px and um via the 500 um scale bar) and the left-hand yellow fruiting-body spot aggregates, plus runtime SHA-256 dataset verification.",
+            "remediation needed: Implement 2D Keller-Segel-Painter chemotactic pattern selection comparing labyrinthine chemotactic stripes vs hexagonal fruiting-body spot aggregates.",
+            "remediation needed: Replace the kinematic 1D approximation with a full conservative finite-difference/spectral Keller-Segel-Painter PDE solver integrating dn/dt = D_n Lap(n) - div(n chi(c) grad(c)) + r n (1 - n/n_0) and dc/dt = D_c Lap(c) + alpha n / (1 + beta n) - gamma c across growing domain stages L / lambda_c in {1, 2, 4, 8} plus a subcritical negative control (chi = 3.0 < chi_c = 4.5 -> 0 peaks)." ;
+        pk:hasScore "0.54"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF02458621>,
+            <https://doi.org/10.1016/0022-5193(70)90092-5>,
+            <https://doi.org/10.1016/j.physd.2010.09.011>,
+            <https://doi.org/10.1073/pnas.96.10.5549> .
+    <https://doi.org/10.1007/BF02458621> dct:date "1992"^^xsd:gYear ;
+        dct:title "Analysis of propagating pattern in a chemotaxis system" .
+    <https://doi.org/10.1016/0022-5193(70)90092-5> dct:date "1970"^^xsd:gYear ;
+        dct:title "Initiation of slime mold aggregation viewed as an instability" .
+    <https://doi.org/10.1016/j.physd.2010.09.011> dct:date "2011"^^xsd:gYear ;
+        dct:title "Spatio-temporal chaos in a chemotaxis model" .
+    <https://doi.org/10.1073/pnas.96.10.5549> dct:date "1999"^^xsd:gYear ;
+        dct:title "Stripe and spotilihood in chemotactic pattern formation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Painter, Maini & Othmer (1999) chemotactic stripe splitting & stripe-spot selection — MorphoEval overall 54.0/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:05:32Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-painter-chemotactic-stripe-splitting-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-painter-chemotactic-stripe-splitting> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

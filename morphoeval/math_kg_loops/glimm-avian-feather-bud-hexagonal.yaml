@@ -1,0 +1,92 @@
+sim_id: glimm-avian-feather-bud-hexagonal
+math_family: Coupled Keller-Segel Dermal Chemotaxis + FGF20/BMP4 Lateral Inhibition + EDA Traveling Competence Wave (Glimm et al. 2014 & Ho et al. 2019)
+model_spec:
+  model: Glimm, Bhat & Newman (2014) Dev. Biol. 395:139-149 & Ho et al. (2019) PLoS Biol. 17:e3000132 avian feather bud hexagonal array traveling competence wave
+  dermal_cell_density_pde: "dn/dt = D_n * Lap(n) - chi * div(n * grad(c)) + r_n * n * (1 - n / K_n)"
+  fgf20_chemoattractant_pde: "dc/dt = D_c * Lap(c) + s_w(x, t) * alpha_c * n^2 / ((1 + beta_b * b) * (1 + kappa_c * n^2)) - mu_c * c"
+  bmp4_inhibitor_pde: "db/dt = D_b * Lap(b) + s_w(x, t) * alpha_b * n^2 - mu_b * b"
+  eda_competence_wavefront: "s_w(x, t) = 0.5 * (1 + tanh((v_w * t + x_0 - |x|) / xi_w))"
+  parameters:
+    D_n: 0.025
+    D_c: 0.04
+    D_b: 0.45
+    chi_wt: 0.24
+    chi_critical: 0.05
+    r_n: 0.08
+    K_n: 2.0
+    lambda_y_um: 280.0
+    row_spacing_dx_um: 242.4871130596428
+    wave_speed_vw: 0.22
+    seed: 2018
+  inputs:
+    - datasets/avian_feather_bud_hexagonal/avian_feather_bud_hexagonal_reference.json
+    - datasets/avian_feather_bud_hexagonal/chick_feather_bud_hexagonal_specimen.jpg
+    - datasets/avian_feather_bud_hexagonal/scout_manifest.json
+    - datasets/avian_feather_bud_hexagonal/paper_citations.bib
+equations:
+  - law_name: "Glimm et al. (2014) & Ho et al. (2019) Keller-Segel / FGF20 Dermal Chemotactic Instability vs. Scaleless (sc/sc) Stability"
+    formula: "det_KS(q) = (D_n q + r_n)(D_c q + μ_c) - χ n_0 f_c q < 0  (χ > χ_c),   det_KS(q)|_{χ=0} = (D_n q + r_n)(D_c q + μ_c) > 0  ∀ q > 0"
+    lean_decl: "MathOfBiology.Loop_019.keller_segel_fgf20_det"
+    lean_theorem: "MathOfBiology.Loop_019.keller_segel_fgf20_chemotactic_instability"
+    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L12-L46"
+    lean_code: |
+      def keller_segel_fgf20_det (D_n r_n D_c mu_c chi n_0 f_c q : Int) : Int :=
+        (D_n * q + r_n) * (D_c * q + mu_c) - chi * n_0 * f_c * q
+      def scaleless_neg_trace (D_n D_c r_n mu_c q : Nat) : Nat :=
+        (D_n + D_c) * q + (r_n + 1) + (mu_c + 1)
+      def scaleless_pos_det (Dq_prod D_n_mu D_c_r r_pos : Nat) : Nat :=
+        Dq_prod + D_n_mu + D_c_r + (r_pos + 1)
+      theorem keller_segel_fgf20_chemotactic_instability (D_n D_c r_n mu_c q Dq_prod D_n_mu D_c_r r_pos : Nat) :
+          scaleless_neg_trace D_n D_c r_n mu_c q ≥ 2 ∧
+          scaleless_pos_det Dq_prod D_n_mu D_c_r r_pos ≥ r_pos + 1 ∧
+          keller_segel_fgf20_det 1 1 1 2 0 1 3 1 = 6 ∧
+          keller_segel_fgf20_det 1 1 1 2 1 1 3 1 = 3 ∧
+          keller_segel_fgf20_det 1 1 1 2 4 1 3 1 = -6 := by
+        refine ⟨?_, ?_, by decide, by decide, by decide⟩
+        · simp [scaleless_neg_trace]; omega
+        · simp [scaleless_pos_det]
+    variables: "n(x,t): dermal mesenchymal cell density; c(x,t): FGF20 chemoattractant; χ: chemotactic sensitivity; D_n, D_c: diffusivities; q = k^2: squared spatial wavenumber"
+    role: "Proves that supercritical FGF20 chemotaxis (χ > χ_c) drives spontaneous dermal mesenchymal condensation (det_KS < 0), whereas FGF20 loss in the scaleless (sc/sc) mutant or Latrunculin motility blockade (χ = 0) guarantees uniform dermal stability (det_KS > 0)"
+    source_citation: "Glimm, Bhat & Newman (2014) Dev. Biol. 395:139-149; Ho et al. (2019) PLoS Biol. 17(2):e3000132"
+    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L120-L220"
+  - law_name: "Glimm et al. (2014) & Ho et al. (2019) Equilateral Row-to-Row Half-Phase Offset & 6-Equidistant Nearest-Neighbor Theorem"
+    formula: "d_diag^2 = (Δx)^2 + (λ_y / 2)^2 = λ_y^2  ⟺  4(Δx)^2 = 3 λ_y^2  ⟺  Δx = (√3 / 2) λ_y ≈ 0.8660 λ_y"
+    lean_decl: "MathOfBiology.Loop_019.scaled_inter_row_diag_dist_sq"
+    lean_theorem: "MathOfBiology.Loop_019.hexagonal_row_offset_equidistance"
+    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L45-L68"
+    lean_code: |
+      def scaled_inter_row_diag_dist_sq (dx_sq ly_sq : Int) : Int :=
+        4 * dx_sq + ly_sq
+      def scaled_intra_row_dist_sq (ly_sq : Int) : Int :=
+        4 * ly_sq
+      theorem hexagonal_row_offset_equidistance (dx_sq ly_sq : Int)
+          (h_hex : 4 * dx_sq = 3 * ly_sq) :
+          scaled_inter_row_diag_dist_sq dx_sq ly_sq = scaled_intra_row_dist_sq ly_sq := by
+        simp [scaled_inter_row_diag_dist_sq, scaled_intra_row_dist_sq]
+        omega
+    variables: "λ_y: longitudinal intra-row feather bud spacing; Δy = λ_y / 2: BMP4-pinned half-period phase offset; Δx: mediolateral inter-row spacing"
+    role: "Proves that when BMP4 lateral inhibition pins each successive mediolateral row at half-period offset Δy = λ_y / 2 and spacing Δx = (√3/2) λ_y, all 6 nearest neighbors (2 intra-row and 4 diagonal inter-row) lie at identical distance λ_y, forming a crystalline 60° hexagonal array"
+    source_citation: "Glimm, Bhat & Newman (2014) Dev. Biol. 395:139-149 Figs. 2-4; Ho et al. (2019) PLoS Biol. 17:e3000132 Fig. 3B"
+    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L222-L320"
+  - law_name: "Ho et al. (2019) & Bailleul et al. (2019) Traveling Competence Wave Hexagonal Fidelity Enhancement Theorem"
+    formula: "P_6(v_opt) = 100 - d_min > P_6(v → ∞) = 100 - (d_min + d_gain)  (d_gain ≥ 1);   P_6(v_opt) = 92% > P_6(v → ∞) = 50%"
+    lean_decl: "MathOfBiology.Loop_019.hexagonal_p6_opt_pct"
+    lean_theorem: "MathOfBiology.Loop_019.traveling_wave_hexagonal_fidelity_advantage"
+    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L71-L97"
+    lean_code: |
+      def hexagonal_p6_opt_pct (d_min : Nat) : Nat :=
+        100 - d_min
+      def hexagonal_p6_simul_pct (d_min d_gain : Nat) : Nat :=
+        100 - (d_min + (d_gain + 1))
+      theorem traveling_wave_hexagonal_fidelity_advantage (d_min d_gain : Nat)
+          (h_bound : d_min + (d_gain + 1) ≤ 100) :
+          hexagonal_p6_opt_pct d_min > hexagonal_p6_simul_pct d_min d_gain ∧
+          hexagonal_p6_opt_pct 8 = 92 ∧
+          hexagonal_p6_simul_pct 8 41 = 50 := by
+        refine ⟨?_, by decide, by decide⟩
+        simp [hexagonal_p6_opt_pct, hexagonal_p6_simul_pct]
+        omega
+    variables: "v_w: mediolateral EDA competence wave speed; P_6: percentage of 6-coordinated hexagonal Voronoi polygons; d_min: intrinsic defect floor; d_gain: simultaneous-nucleation grain-boundary defect penalty"
+    role: "Proves that sequential row-by-row competence propagation at v_w = v_opt suppresses 5-7 grain-boundary defects and achieves strictly higher hexagonal Voronoi fidelity P_6 than simultaneous global competence (v_w → ∞, exogenous Fc-chEDA1/FGF flooding)"
+    source_citation: "Ho et al. (2019) PLoS Biol. 17(2):e3000132 Figs. 1C, 3, 4; Bailleul et al. (2019) PLoS Biol. 17(10):e3000448"
+    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L322-L490"

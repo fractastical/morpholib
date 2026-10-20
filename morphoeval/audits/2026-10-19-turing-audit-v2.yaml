@@ -1,0 +1,218 @@
+# MorphoEval audit — Turing (1952) / Pearson (1993) / Kondo & Asai (1995) Reaction-Diffusion Morphogenesis, 2026-10-19 (v2)
+#
+# Dual-agent Pass 2 assessment of `1952-turing-morpho.py` (v2, 1,434 lines) after
+# completing the 12-step closed remediation loop (`2026-10-19-turing-morpho-loop`):
+#   - Primary assessor: Gemini 4 Argon (Cursor agent) — 91.9 / 100
+#   - Independent second assessor: Claude Sonnet 5.5 High (subagent 826c6028-10df-4445-bb20-774a141618ed) — 79.1 / 100
+#   - Dual-agent consensus score: 85.5 / 100 (up from 38.0 / 100 in v1; +47.5 overall, +54.0 on 2nd assessor)
+#
+# Key remediation improvements verified by both assessors:
+#   1. Turing (1952) Sections 8-10 linear instability and N=20 cell ring implemented
+#      (`compute_turing_1952_dispersion_and_ring`, L163-244), computing the exact
+#      dispersion relation sigma(k^2), critical diffusivity ratio d_c = 3.927051,
+#      critical wavenumber k_c = 1.118034 rad/cell (lambda_c = 5.6199 cells), and
+#      ring mode s* = 4 (4 peaks around the 20-cell ring), with exact parity assertions
+#      against `datasets/turing/turing_reference.json` in `self_test()`.
+#   2. Pearson (1993) exact Saddle-Node (4*(F+k)^2 = F) and Hopf (F_Hopf(k) where
+#      tr(J_0) = k - V_+^2 = 0 to machine precision, max |tr(J_0)| = 2.36e-16) curves
+#      implemented (`compute_pearson_bifurcation_curves`, L327-350), all 12 Pearson
+#      pattern classes (alpha through mu) plotted on the (k, F) diagram, and a genuine
+#      steady-state Turing labyrinth (F=0.054, k=0.0616, Du=0.20, Dv=0.10, sigma(k_c)=+0.00164)
+#      paired with an equal-diffusion control (Du=Dv=0.20, sigma=-0.00224, std_V=1.91e-7)
+#      around the identical nontrivial steady state (U_*, V_*), plus a 5-point
+#      diffusivity-ratio sweep across d in {1.0, 1.25, 1.5, 2.0, 2.5}.
+#   3. Real biological specimen segmentation (`segment_biological_turing_specimens`,
+#      L706-845) on SHA-256-locked photographs of adult `Pomacanthus imperator`
+#      (Kondo & Asai 1995, inter-stripe wavelength 9.55 px, CV = 0.149, 22 Y-branch
+#      dislocations) and `Ostracion meleagris` (121 spotted boxfish Turing spots),
+#      plus a white-noise-initialized 1D Turing PDE across growing domains (`r = 0.9981`
+#      against empirical Pomacanthus stripe counts).
+#   4. 4 machine-checked Lean 4 theorems in `morphoeval/lean/MathOfBiology.lean`
+#      Section 5 (`gray_scott_homogeneous_equilibrium`, `turing_equal_diffusion_no_instability`,
+#      `turing_differential_diffusion_instability`, `pearson_saddle_node_discriminant`)
+#      matching the exact 4x-scaled Jacobian (4, -6, 5, -6) and steady-state Hopf
+#      trace identity of `1952-turing-morpho.py`.
+
+audit:
+  id: 2026-10-19-turing-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent subagent 826c6028-10df-4445-bb20-774a141618ed)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b9976f8
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) dual-agent evaluation of `1952-turing-morpho.py` after completing
+      the 12-step closed remediation loop (`2026-10-19-turing-morpho-loop`).
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  pearson1993:
+    title: "Complex patterns in a simple system"
+    authors: "Pearson JE"
+    venue: "Science 261(5118):189-192 (1993)"
+    doi: 10.1126/science.261.5118.189
+  lee1994:
+    title: "Experimental observation of self-replicating spots in a reaction-diffusion system"
+    authors: "Lee KJ, McCormick WD, Pearson JE, Swinney HL"
+    venue: "Nature 369(6477):215-218 (1994)"
+    doi: 10.1038/369215a0
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    venue: "Nature 376(6543):765-768 (1995)"
+    doi: 10.1038/376765a0
+
+simulations:
+  - id: turing-gray-scott
+    name: "Turing (1952), Pearson (1993) & Kondo-Asai (1995) reaction-diffusion morphogenesis"
+    organism: "Marine angelfish (Pomacanthus imperator) skin stripes, spotted boxfish (Ostracion meleagris) spots & Gray-Scott chemical patterns"
+    script: 1952-turing-morpho.py
+    output: turing_pearson_morphospace.png
+    extra_outputs:
+      - docs/media/turing_gray_scott.gif
+      - turing_pearson_metrics.csv
+    status: evaluated
+    source_refs:
+      - turing1952
+      - pearson1993
+      - lee1994
+      - kondo1995
+    summary: >-
+      Pass 2 (v2) dual-agent evaluation of `1952-turing-morpho.py` (Gemini 4 Argon
+      91.9/100 + Claude Sonnet 5.5 High 79.1/100; consensus 85.5/100, up from 38.0/100
+      in v1). The remediated script implements Turing's (1952) Sections 8-10 two-morphogen
+      linear dispersion relation sigma(k^2) and N=20 ring-of-cells morphogenesis (mode
+      s*=4, lambda_c=5.62 cells); computes Pearson's (1993) exact Saddle-Node (4*(F+k)^2=F)
+      and Hopf (max |tr(J_0)| = 2.36e-16) bifurcation curves with all 12 pattern classes
+      (alpha through mu); pairs a genuine steady-state Turing labyrinth (F=0.054, k=0.0616,
+      Du=0.20, Dv=0.10, sigma=+0.00164) with an equal-diffusion control (Du=Dv=0.20,
+      std_V=1.91e-7) around the same nontrivial steady state; and segments SHA-256-locked
+      photographs of Pomacanthus imperator skin stripes (spacing 9.55 px, CV=0.149, 22
+      Y-junctions) and Ostracion meleagris hexagonal spots (121 spots) alongside a
+      white-noise-initialized 1D PDE test of Kondo & Asai's (1995) stripe-insertion law
+      (r=0.9981).
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          Implements both Turing's (1952) Sections 8-10 linearized two-morphogen
+          reaction-diffusion dispersion relation sigma(k^2) + discrete N=20 ring-of-cells
+          model (L163-244, d_c=3.927051, k_c=1.118034 rad/cell, dominant mode s*=4) and
+          Pearson's (1993) 2D periodic Gray-Scott PDE with exact Saddle-Node
+          (4*(F+k)^2 = F) and Hopf (F_Hopf(k) where max |tr(J_0)| = 2.36e-16) bifurcation
+          curves (L327-426). The equal-diffusion negative control (Du=Dv=0.20 at F=0.054,
+          k=0.0616) is initialized around the exact nontrivial homogeneous steady state
+          (U_*, V_*) and verified against the supercritical Turing state (Du=0.20,
+          Dv=0.10, sigma=+0.00164). Backed by 4 Lean 4 theorems in `MathOfBiology.lean`
+          Section 5.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [163, 244], note: "Turing (1952) Sec. 8-10 linear dispersion relation sigma(k^2) and N=20 cell ring solver", supports: true}
+          - {file: 1952-turing-morpho.py, lines: [327, 426], note: "Pearson (1993) exact Saddle-Node & Hopf curves and steady-state linear dispersion", supports: true}
+          - {file: morphoeval/lean/MathOfBiology.lean, lines: [195, 283], note: "4 machine-checked Lean 4 theorems for Gray-Scott and Turing instability", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          Vendors and SHA-256-verifies real CC BY-SA 4.0 biological specimen photographs
+          of adult `Pomacanthus imperator` skin stripes (`pomacanthus_imperator_stripes_specimen.jpg`)
+          and `Ostracion meleagris` boxfish spots (`ostracion_meleagris_spots_specimen.jpg`),
+          segments the yellow/blue angelfish stripes and medial-axis Y-branch dislocations
+          (mean inter-stripe spacing 9.55 px, CV=0.149, 22 macroscopic Y-junctions) and
+          121 boxfish Turing spots (L706-845), and differentiates Pearson's single-patch
+          self-replicating spot regime (A1, `pearson_center`) from domain-filling
+          quasi-hexagonal spots (A2), labyrinthine stripes (A3), and steady-state Turing
+          labyrinth (A4).
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [706, 845], note: "Pomacanthus stripe + Y-junction segmentation and Ostracion DoG spot segmentation", supports: true}
+          - {file: turing_pearson_morphospace.png, lines: [0, 0], note: "15-panel synthesis figure displaying 5 Gray-Scott fields, 5 radial PSDs, and 5 theory/specimen panels (C1-C5)", supports: true}
+      parameter-expressivity:
+        value: 81
+        rationale: >-
+          Maps all 12 Pearson (1993) pattern classes (alpha through mu) onto the (k, F)
+          bifurcation diagram (Panel C2), simulates 5 distinct initialization/parameter
+          regimes in `PEARSON_REGIMES`, executes a 5-point diffusivity-ratio sweep across
+          d = Du/Dv in {1.0, 1.25, 1.5, 2.0, 2.5} (`run_diffusivity_ratio_sweep`, L515-536)
+          spanning the analytical Turing threshold, and wires `--F`, `--k`, `--Du`, `--Dv`,
+          `--N`, `--steps`, and `--seed` CLI arguments into the solver (L939-954, L1385-1425).
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [515, 536], note: "5-point diffusivity ratio sweep across d = Du/Dv", supports: true}
+          - {file: 1952-turing-morpho.py, lines: [939, 954], note: "CLI parameter overrides wired into PEARSON_REGIMES", supports: true}
+      morphometric-validation:
+        value: 75
+        rationale: >-
+          Upgrades 2D FFT radial power spectrum estimation with 3-point parabolic sub-bin
+          interpolation (`_parabolic_subbin_peak`, L539-550) resolving distinct wavelengths
+          across all four patterned regimes (k* = 10.89, 12.10, 11.89, 11.50 cycles/box;
+          lambda* = 14.69, 13.23, 13.46, 13.92 px), compares the steady-state Turing
+          labyrinth wavelength lambda* = 13.92 px directly against analytical lambda_c =
+          11.92 px (16.7% difference), quantifies Pomacanthus inter-stripe spacing (9.55 px,
+          CV = 0.149) and Ostracion nearest-neighbor spot spacing (21.5 px), and runs a
+          white-noise-initialized 1D Turing PDE across growing domains (`r = 0.9981` against
+          Kondo & Asai 1995 empirical stripe counts, L672-703).
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [539, 646], note: "Sub-bin parabolic wavenumber peak estimation and analytical lambda_c comparison", supports: true}
+          - {file: 1952-turing-morpho.py, lines: [672, 703], note: "White-noise-initialized 1D Turing PDE growing-domain stripe count simulation (r=0.9981)", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/turing/` with `turing_reference.json`,
+          `pomacanthus_imperator_stripes_specimen.jpg`,
+          `ostracion_meleagris_spots_specimen.jpg`, `paper_citations.bib` (4 primary DOIs:
+          `10.1098/rstb.1952.0012`, `10.1126/science.261.5118.189`, `10.1038/369215a0`,
+          `10.1038/376765a0`), and `datasets/turing/README.md`, with runtime SHA-256
+          cryptographic verification (`EXPECTED_SHA256`, L91-125) and JSON-to-code parity
+          assertions in `self_test()` (L1288-1308).
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [91, 125], note: "Runtime SHA-256 verification of datasets/turing/ reference JSON and specimen images", supports: true}
+          - {file: datasets/turing/turing_reference.json, lines: [1, 145], note: "Vendored Turing 1952, Pearson 1993 12-class, and Kondo & Asai 1995 reference dataset", supports: true}
+      code-traceability:
+        value: 89
+        rationale: >-
+          Every computational section and function docstring maps directly to numbered
+          sections, equations, and figures in Turing (1952) Sections 8-10, Pearson (1993)
+          Eq. 1 & Figs. 1-2, Lee et al. (1994) Fig. 2, and Kondo & Asai (1995) Figs. 1-2,
+          as well as the 4 Lean 4 theorems in `morphoeval/lean/MathOfBiology.lean` Section 5.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [18, 66], note: "Module docstring mapping equations to Turing (1952), Pearson (1993), and Kondo & Asai (1995)", supports: true}
+      repro-package:
+        value: 89
+        rationale: >-
+          Deterministic RNG (`seed=1952`), pinned `requirements.lock.txt`, comprehensive
+          `--self-test` suite verifying Turing (1952) dispersion + JSON parity, exact Hopf
+          curve `|tr(J_0)| < 1e-12`, diffusivity-ratio sweep monotonicity, sub-bin spectral
+          rings, analytical vs. nonlinear wavelength agreement, biological specimen
+          segmentation, and two-run bitwise determinism (`np.allclose(..., atol=0.0)`),
+          plus byte-synchronized animated GIF outputs at `docs/media/turing_gray_scott.gif`
+          and `turing_patterns_black_neon.gif`.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [1263, 1383], note: "Comprehensive 8-check self_test() suite including JSON parity, Hopf trace, sweep monotonicity, and bitwise determinism", supports: true}
+    remediation:
+      - "Calibrate a 2D growing-domain PDE simulation with adiabatic domain expansion L(t) to observe spontaneous Y-branch stripe insertion events in 2D space-time."
+      - "Add manual ground-truth landmark annotations for Pomacanthus imperator Y-junction coordinates to benchmark automated skeleton junction recall and precision."

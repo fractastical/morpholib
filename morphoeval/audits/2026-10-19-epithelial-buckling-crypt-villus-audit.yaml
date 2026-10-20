@@ -1,0 +1,176 @@
+# MorphoEval audit — Hannezo, Prost & Joanny (2011) PRL & Shyer et al. (2013) Science Sequential Smooth-Muscle Mucosal Buckling, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2013-shyer-intestinal-villi-buckling.py` (220 lines)
+# prior to Step 12 remediation in `2026-10-19-epithelial-buckling-crypt-villus-loop`:
+#   - Primary assessor: Gemini 4 Argon — 55.8 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `generate_parametric_mucosal_surface` (L56-85) uses a closed-form 2D Fourier ansatz
+#      rather than minimizing the Hannezo-Shyer Föppl-von Kármán / neo-Hookean mucosal
+#      free-energy functional F[w] = int [0.5*B_e*(laplacian w)^2 - 0.5*N_x*(dw/dx)^2
+#      - 0.5*N_y*(dw/dy)^2 + 0.5*K_s*w^2 - (alpha_3/6)*w^3 + (alpha_4/24)*w^4] dx dy.
+#   2. `evaluate_chick_stages` (L88-115) evaluates only the 6 Chick (Gallus gallus, E6-E16)
+#      stages and omits the 12-point cross-stage/cross-species wavelength scaling collapse
+#      across Chick (Gallus gallus), Quail (Coturnix japonica), and Mouse (Mus musculus),
+#      as well as Shyer et al.'s (2013) Figs. 2-4 FK506 smooth-muscle ablation and surgical
+#      slit rescue controls (FK506 at E6 -> smooth; FK506 at E11 -> ridges; FK506 at E14 -> zigzags).
+#   3. The vendored CC0 biological histology specimen `datasets/epithelial_buckling_crypt_villus/intestinal_villi_crypts_specimen.jpg`
+#      is not loaded, segmented, or analyzed for hexagonal villus coordination number Z and
+#      bond-orientational order |Psi_6| in `epithelial_buckling_crypt_villus_comparison.png`.
+#   4. Runtime SHA-256 verification of dataset assets and CLI parameter overrides
+#      (`--epsilon-x`, `--epsilon-y`, `--alpha3`, `--E-ratio`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-epithelial-buckling-crypt-villus-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 063 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/63
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e93f00e
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2013-shyer-intestinal-villi-buckling.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-epithelial-buckling-crypt-villus-loop`.
+
+references:
+  shyer2013:
+    title: "Villification: how the gut gets its villi"
+    authors: "Shyer AE, Tallinen T, Nerurkar NL, Wei Z, Gil ES, Kaplan DL, Tabin CJ, Mahadevan L"
+    venue: "Science 342(6155):212-218 (2013)"
+    doi: 10.1126/science.1238842
+  hannezo2011:
+    title: "Instabilities of monolayered epithelia: coupled bending and polarity-driven forces"
+    authors: "Hannezo E, Prost J, Joanny J-F"
+    venue: "Physical Review Letters 107(7):078104 (2011)"
+    doi: 10.1103/PhysRevLett.107.078104
+  tallinen2013:
+    title: "Surface sulci in squeezed slabs"
+    authors: "Tallinen T, Biggins JS, Mahadevan L"
+    venue: "Physical Review Letters 110(2):024302 (2013)"
+    doi: 10.1103/PhysRevLett.110.024302
+  walton2012:
+    title: "Hedgehog-responsive mesenchymal clusters direct patterned epithelial folding in the developing mouse intestine"
+    authors: "Walton KD, Kolterud A, Czerwinski MJ, Bell MJ, Prakash A, Kushwaha J, Grosse AS, Schnell S, Gumucio DL"
+    venue: "Proceedings of the National Academy of Sciences 109(39):15817-15822 (2012)"
+    doi: 10.1073/pnas.1205669109
+
+simulations:
+  - id: shyer-intestinal-villi-buckling
+    name: "Hannezo et al. (2011) PRL & Shyer et al. (2013) Science sequential smooth-muscle mucosal buckling into ridges, zigzags, and hexagonal villi"
+    organism: "Vertebrate embryonic gut mucosa (Gallus gallus, Coturnix japonica, Mus musculus)"
+    script: 2013-shyer-intestinal-villi-buckling.py
+    output: docs/media/epithelial_buckling_crypt_villus_comparison.png
+    extra_outputs:
+      - docs/media/epithelial_buckling_crypt_villus_growth.gif
+    status: evaluated
+    source_refs:
+      - shyer2013
+      - hannezo2011
+      - tallinen2013
+      - walton2012
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2013-shyer-intestinal-villi-buckling.py`
+      (overall weighted score: 55.8/100). The v1 script implements the Hannezo-Shyer
+      mucosal bending rigidity B_e = E_e*h_e^3/(12*(1-nu^2)), mesenchymal foundation
+      stiffness K_s = E_s/H_s, and quartic buckling wavelength scaling lambda_* ~ (B_e/K_s)^(1/4)
+      across Chick E6-E16, but relies on a closed-form 2D Fourier ansatz instead of
+      minimizing the Föppl-von Kármán / neo-Hookean mucosal energy functional F[w],
+      omits the 12-point 3-species comparative collapse (chick, quail, mouse) and
+      stage-specific FK506 smooth-muscle ablation / surgical slit controls, and does
+      not segment the vendored histology specimen (`intestinal_villi_crypts_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 57
+        rationale: >-
+          Computes mucosal bending rigidity B_e = E_e*h_e^3/(12*(1-nu^2)), stromal
+          foundation stiffness K_s = E_s/H_s, and characteristic wavelength
+          lambda_* ~ 2*pi*(B_e/K_s)^(1/4) (L39-53), backed by 3 Lean 4 theorems in
+          `Loop_063_epithelial_buckling_crypt_villus.lean`. However, `generate_parametric_mucosal_surface`
+          (L56-85) uses a hardcoded Fourier superposition rather than minimizing the
+          coupled Föppl-von Kármán + neo-Hookean free-energy functional F[w], and lacks
+          FK506/surgical smooth-muscle ablation controls.
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [39, 53], note: "Exact mucosal bending rigidity B_e, foundation stiffness K_s, and quartic wavelength lambda_*", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [56, 85], note: "Closed-form 2D Fourier ansatz instead of Föppl-von Kármán energy minimization", supports: false}
+      specimen-match:
+        value: 34
+        rationale: >-
+          Although `datasets/epithelial_buckling_crypt_villus/intestinal_villi_crypts_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or measures hexagonal
+          villus coordination and bond-orientational order |Psi_6| on the biological
+          histology specimen, and compares only against 6 Chick stages without Quail or
+          Mouse comparative data.
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [88, 115], note: "Evaluates only Chick E6-E16 tabular points without loading or segmenting intestinal_villi_crypts_specimen.jpg", supports: false}
+          - {file: docs/media/epithelial_buckling_crypt_villus_comparison.png, lines: [0, 0], note: "4-panel v1 plot lacks histology specimen segmentation and 3-species collapse panels", supports: false}
+      parameter-expressivity:
+        value: 48
+        rationale: >-
+          Evaluates 6 embryonic stages of Chick (E6-E16) across smooth, ridge, zigzag,
+          and hexagonal villi regimes (L88-115), but omits the 12-point 3-species
+          morphospace collapse (Chick, Quail, Mouse), omits the 5 FK506/surgical
+          smooth-muscle ablation conditions (E6, E10 slit, E11, E14, WT E16), and
+          exposes no CLI parameter overrides.
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [88, 115], note: "Single-species Chick E6-E16 evaluation without FK506/surgical ablation sweep or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          `measure_morphoeval()` (L181-213) reports only 3 analytic wavelength numbers
+          (Chick E10, E14, E16) without 2D spectral/FFT wavelength extraction from a
+          relaxed energy minimizer, without zigzag chevron angle theta_zz or hexagonal
+          order |Psi_6| measurements, without FK506 negative-control deltas, and without
+          specimen image morphometrics.
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [181, 213], note: "Only 3 basic wavelength metrics without p-values, FFT/Delaunay hexagonal order, or specimen segmentation", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Vendors `datasets/epithelial_buckling_crypt_villus/` with 4 primary DOIs in
+          `paper_citations.bib` (`10.1126/science.1238842`, `10.1103/PhysRevLett.107.078104`,
+          `10.1103/PhysRevLett.110.024302`, `10.1073/pnas.1205669109`), `scout_manifest.json`,
+          and `epithelial_buckling_crypt_villus_reference.json`, but lacks runtime SHA-256
+          verification in `2013-shyer-intestinal-villi-buckling.py`.
+        evidence:
+          - {file: datasets/epithelial_buckling_crypt_villus/epithelial_buckling_crypt_villus_reference.json, lines: [1, 240], note: "Reference JSON with Chick E6-E16, 3-species collapse, and FK506 control tables", supports: true}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Links module docstrings to Shyer et al. (2013) Science, Hannezo et al. (2011)
+          PRL, and the 3 Lean 4 theorems in `Loop_063_epithelial_buckling_crypt_villus.lean`
+          (L1-21), but lacks trace links for Föppl-von Kármán energy minimization and
+          FK506 smooth-muscle ablation experiments.
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1, 21], note: "Baseline docstring linking Shyer (2013), Hannezo (2011), and Loop_063 Lean theorems", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Provides `--self-test` (`L216-223`) checking stage count and basic amplitude
+          bounds, but lacks SHA-256 asset verification, two-run bitwise determinism
+          checks on an energy minimizer, and FK506 ablation assertions.
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [216, 223], note: "Minimal 3-assertion self_test() without SHA-256 or ablation checks", supports: false}
+    remediation:
+      - "Replace the closed-form 2D Fourier ansatz with a 2D pseudo-spectral / L-BFGS-B Föppl-von Kármán + neo-Hookean stromal foundation free-energy minimizer F[w] that relaxes mucosal height w(x,y) across smooth, 1D ridge, 2D herringbone zigzag, and hexagonal villus-crypt regimes."
+      - "Implement the 12-point comparative wavelength scaling collapse across Chick (Gallus gallus), Quail (Coturnix japonica), and Mouse (Mus musculus) with Pearson r, p-value, RMSE, and log-log scaling slope."
+      - "Implement Shyer et al. (2013) Figs. 2-4 FK506 smooth-muscle inhibition and surgical muscle-slit rescue controls (FK506 at E6 -> smooth; surgical slit at E10 -> flat; FK506 at E11 -> arrested at ridges; FK506 at E14 -> arrested at zigzags; WT E16 -> hexagonal villi)."
+      - "Segment the vendored CC0 intestinal villi histology micrograph (`intestinal_villi_crypts_specimen.jpg`) to extract villus centroids, Delaunay triangulation coordination number Z, hexagonal bond-orientational order |Psi_6|, and inter-villus spacing CV, and enforce runtime SHA-256 verification."

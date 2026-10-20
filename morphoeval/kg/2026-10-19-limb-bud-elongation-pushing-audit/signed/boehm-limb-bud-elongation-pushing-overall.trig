@@ -1,0 +1,99 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAhIgtvCfmdKTFpkfHUKvh6W-8CiIFyrWJ3n5hnpqpFQM/> .
+@prefix this: <https://w3id.org/np/RAhIgtvCfmdKTFpkfHUKvh6W-8CiIFyrWJ3n5hnpqpFQM> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-boehm-limb-bud-elongation-pushing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-boehm-limb-bud-elongation-pushing-overall> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-boehm-limb-bud-elongation-pushing-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Boehm et al. (2010) & Gros et al. (2010) vertebrate limb bud oriented cell division & Wnt5a/FGF8 pushing vs proliferation-gradient hypothesis — MorphoEval overall 54.6/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Pass 1 (v1) evaluation of `2015-boehm-limb-bud-elongation-pushing.py` (57.3/100). The v1 baseline simulates a 1D/2D boundary contour comparing Model I (isotropic proliferation gradient) against Model II (directional Wnt5a/FGF8 pushing), but omits a full 2D/3D continuum artificial-compressibility pressure-Poisson & Stokes velocity solver (`-nabla p + (1/Re)*nabla^2 v + nabla . sigma_active = 0`, `nabla . v = s(x)`), omits the 5-order-of-magnitude Reynolds number sensitivity sweep (`Re in [10^-6, 10^-1]`), omits the Wnt5a-/- bulbous mutant and Hooke-Jeeves inverse-optimization analysis, does not load or segment `mouse_limb_bud_specimen.jpg`, and exposes no CLI flags beyond `--self-test`. Overall 54.6/100 (faithfulness 49.5, reproducibility 66.7); rubric morphoeval 0.1.0; checkpoint commit 317bc3c; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 66, Morphological realism / specimen match 35, Parameter expressivity 46, Morphometric validation 54, Source and data traceability 64, Code-to-model traceability 68, Reproducibility package 68. Output judged: docs/media/limb_bud_elongation_pushing_comparison.png: rendered output of 2015-boehm-limb-bud-elongation-pushing.py at 317bc3c, image/png, 119117 B, 1890×602 px, artifact_sha256 bd430e6fba9f2cdcaa8f288d9ecdad5104e827f3b0ec29fcbb53ee707c96bf45 (sha256 bd430e6fba9f2cdcaa8f288d9ecdad5104e827f3b0ec29fcbb53ee707c96bf45), spec_fingerprint 4c3f0cfc301e2c955c4f4f6c7d2e02e3996ca3b4cd571d212368d55baab36b29. Dual provenance: spec_fingerprint: 4c3f0cfc301e2c955c4f4f6c7d2e02e3996ca3b4cd571d212368d55baab36b29; artifact_sha256: bd430e6fba9f2cdcaa8f288d9ecdad5104e827f3b0ec29fcbb53ee707c96bf45." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Implement a 2D/3D continuum viscoelastic/Stokes limb bud growth solver with artificial-compressibility pressure-Poisson coupling (`nabla^2 p = (nabla . v - s(x))/(beta * dtau)`), comparing Model I (isotropic proliferation gradient), Model II (Wnt5a/JNK oriented cell division/intercalation active stress + AER-FGF8/MAPK chemotactic velocity field), Wnt5a-/- bulbous mutant, uniform-Tc control, and FGF-only motility across E11.0-E11.25 (6h) and E9.5-E11.5 (`L_PD/W_AP > 2.1`), plus the 5-decade Reynolds number sweep (`Re in [10^-6, 10^-1]`) and Hooke-Jeeves inverse-optimization demonstration.",
+            "remediation needed: Load and SHA-256-verify `datasets/limb_bud_elongation_pushing/limb_bud_elongation_pushing_reference.json` and `mouse_limb_bud_specimen.jpg`, segment the E11.0 (`St0`) and E11.25 (`St1`) OPT 3D iso-surfaces (Panels D, E), Dorsal/Posterior `St0`-in-`St1` overlays (Panel F), and 3D tetrahedral mesh (Panel G), and quantify empirical PD elongation and aspect-ratio changes.",
+            "remediation needed: Validate the 5-regime PD elongation and E11.5 aspect-ratio hierarchy against Boehm et al. (2010) and Gros et al. (2010) empirical benchmarks (Pearson r, RMSE), expand `measure_morphoeval()` to 8 reference-anchored metrics, and expose full CLI flags." ;
+        pk:hasScore "0.546"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "vsFR6dlrtXkfSnn/IEeADoqotHYykPIqdgAnN+ji2yN8ZywkvSI2HadtFVrOeOgSi6rKyDo75zaOuwSHoX8G6iV1sw/X9sS14c+WJil1Qsh91y1OqGKVWf4IMqGvVuOP4hthaWXRdw+KOub6Y/4uHagOWYf9Ij9efEMGRrbNmMVYDQEi4PxbDvTY0AgrB0VBTU74c5wzewLyfl7bSXVCfrPgPnpa8Xj/kno3PmBwh1e9YA4l2R4PlQk/rlKx5BGu4G9e6+Ca3aZFQ9VDWMxlLtGgAx5bdVbV6yU+XdZzpGeZeKycDeDjMEdqsluJlnOdymOvLJ3sFYwIhvcN3w0wPA==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Boehm et al. (2010) & Gros et al. (2010) vertebrate limb bud oriented cell division & Wnt5a/FGF8 pushing vs proliferation-gradient hypothesis — MorphoEval overall 54.6/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T01:20:03Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-boehm-limb-bud-elongation-pushing-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-boehm-limb-bud-elongation-pushing> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1006/jtbi.1998.0876> dcterms:date "1999"^^xsd:gYear ;
+        dcterms:title "A mathematical model for outgrowth and spatial patterning of the vertebrate limb bud" .
+
+    <https://doi.org/10.1007/s11538-008-9334-y> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "Growth based morphogenesis of vertebrate limb bud" .
+
+    <https://doi.org/10.1016/j.cub.2010.09.063> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "WNT5A/JNK and FGF/MAPK pathways regulate the cellular events shaping the vertebrate limb bud" .
+
+    <https://doi.org/10.1242/dev.046987> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Oriented cell division in the primitive streak contributes to vertebrate axis extension and limb bud initiation" .
+
+    <https://doi.org/10.1371/journal.pbio.1000420> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "The role of spatially controlled cell proliferation in limb bud morphogenesis" .
+
+    <https://doi.org/10.1371/journal.pbio.1000421> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Limbs made to measure" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/jtbi.1998.0876>,
+            <https://doi.org/10.1007/s11538-008-9334-y>,
+            <https://doi.org/10.1016/j.cub.2010.09.063>,
+            <https://doi.org/10.1242/dev.046987>,
+            <https://doi.org/10.1371/journal.pbio.1000420>,
+            <https://doi.org/10.1371/journal.pbio.1000421> .
+}
+

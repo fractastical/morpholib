@@ -1,0 +1,79 @@
+sim_id: onuff-joint-interzone-clefting
+math_family: "Coupled BMP-GDF5-Noggin Reaction-Diffusion Turing-Wavefront Synovial Joint Interzone Segmentation & Kavanagh (2013) Phalangeal Inhibitory Cascade"
+model_spec:
+  model: "Kavanagh et al. (2013) PNAS 110:18190-18195 & Hiscock et al. (2017) Dev. Cell 41:459-465 BMP-GDF5-Noggin synovial joint interzone segmentation and developmental inhibitory cascade"
+  f_G: 1.60
+  f_N: -2.40
+  g_G: 1.90
+  g_N: -2.10
+  D_G: 0.12
+  D_N: 1.80
+  alpha_taper: 0.28
+  seed: 2016
+  inputs:
+    - datasets/joint_interzone_clefting/joint_interzone_clefting_reference.json
+    - datasets/joint_interzone_clefting/tetrapod_digit_interzone_specimen.jpg
+    - datasets/joint_interzone_clefting/scout_manifest.json
+    - datasets/joint_interzone_clefting/paper_citations.bib
+equations:
+  - law_name: "Kavanagh et al. (2013) Arithmetic Inhibitory Cascade Midpoint & One-Third Invariant Law"
+    formula: "P_n = P_1 [1 + (n-1)(A-I)/I] = P_1 + (n-1)Δ  ⇒  2 P_2 = P_1 + P_3,  P_2 / P_1 = 1/2 + (1/2)(P_3 / P_1),  3 P_2 = P_1 + P_2 + P_3"
+    lean_decl: "MathOfBiology.Loop_018.phalanx_len"
+    lean_theorem: "MathOfBiology.Loop_018.kavanagh_inhibitory_cascade_midpoint_and_third"
+    lean_locus: "morphoeval/lean/loops/Loop_018_joint_interzone_clefting.lean#L28-L44"
+    lean_code: |
+      def phalanx_len (p1 delta n : Int) : Int :=
+        p1 + (n - 1) * delta
+      def digit_total_3 (p1 delta : Int) : Int :=
+        phalanx_len p1 delta 1 + phalanx_len p1 delta 2 + phalanx_len p1 delta 3
+      theorem kavanagh_inhibitory_cascade_midpoint_and_third (p1 delta : Int) :
+          2 * phalanx_len p1 delta 2 = phalanx_len p1 delta 1 + phalanx_len p1 delta 3 ∧
+          3 * phalanx_len p1 delta 2 = digit_total_3 p1 delta ∧
+          phalanx_len 150 (-53) 2 = 97 ∧
+          digit_total_3 150 (-53) = 291
+    variables: "P_1, P_2, P_3: proximal, middle, and distal phalanx lengths; A: distal mesenchymal activation; I: proximal condensation lateral inhibition; Δ = P_1(A - I)/I: cascade increment"
+    role: "Proves that sequential inhibitory cascade segmentation constrains triphalangeal tetrapod digits to the exact affine line P_2 = (P_1 + P_3)/2 with middle phalanx occupying exactly 1/3 of total phalangeal length"
+    source_citation: "Kavanagh et al. (2013) PNAS 110(45):18190-18195 Figs. 1-2 & Eqs. 1-3"
+    code_locus: "2016-onuff-joint-interzone-clefting.py#L130-L245"
+
+  - law_name: "Hiscock et al. (2017) Distal PFR-FGF Tapering & BMP-GDF5-Noggin Turing Dispersion Sign Inversion Law"
+    formula: "Δ = P_1(A - I)/I < 0  ⇒  P_1 > P_2 > P_3;  Δ_disp(q^2) = (D_G q^2 - f_G)(D_N q^2 - g_N) - f_N g_G,  Δ_disp(0) > 0,  Δ_disp(q_c^2) < 0"
+    lean_decl: "MathOfBiology.Loop_018.gdf5_noggin_disp_det"
+    lean_theorem: "MathOfBiology.Loop_018.pfr_tapering_and_gdf5_noggin_turing_inversion"
+    lean_locus: "morphoeval/lean/loops/Loop_018_joint_interzone_clefting.lean#L57-L71"
+    lean_code: |
+      def gdf5_noggin_disp_det (f_G f_N g_G g_N D_G D_N q2 : Int) : Int :=
+        (D_G * q2 - f_G) * (D_N * q2 - g_N) - f_N * g_G
+      theorem pfr_tapering_and_gdf5_noggin_turing_inversion (p1 delta : Int) (hd : delta ≤ -1) :
+          phalanx_len p1 delta 1 > phalanx_len p1 delta 2 ∧
+          phalanx_len p1 delta 2 > phalanx_len p1 delta 3 ∧
+          (160 + (-210) : Int) = -50 ∧
+          gdf5_noggin_disp_det 160 (-240) 190 (-210) 12 180 0 = 12000 ∧
+          gdf5_noggin_disp_det 160 (-240) 190 (-210) 12 180 1 = -12120
+    variables: "G: GDF5/Wnt9a synovial interzone activator; N: diffusible Noggin BMP antagonist; D_G, D_N: diffusion coefficients; q: spatial wavenumber; Δ < 0: distal PFR-FGF decay increment"
+    role: "Establishes diffusion-driven Turing nucleation of periodic Gdf5+/Wnt9a+ synovial joint interzones and strict proximal-to-distal phalanx tapering P_1 > P_2 > P_3 under a decaying distal PFR-FGF gradient"
+    source_citation: "Hiscock, Tschopp & Tabin (2017) Dev. Cell 41:459-465; Hartmann & Tabin (2001) Cell 104:341-351"
+    code_locus: "2016-onuff-joint-interzone-clefting.py#L165-L340"
+
+  - law_name: "Brunet et al. (1998) & Storm et al. (1994) Noggin/Gdf5 Loss-of-Function Joint Cleft Ablation Law"
+    formula: "Noggin = 0 (Nog-/-)  ⇒  N_joints = 0,  N_phalanges = 1 (continuous fused Sox9+ cartilage rod);  Gdf5 bp/bp  ⇒  PIP joint fusion (N_joints = 2)"
+    lean_decl: "MathOfBiology.Loop_018.active_synovial_joints"
+    lean_theorem: "MathOfBiology.Loop_018.noggin_gdf5_joint_cleft_ablation"
+    lean_locus: "morphoeval/lean/loops/Loop_018_joint_interzone_clefting.lean#L82-L102"
+    lean_code: |
+      def active_synovial_joints (nog_dose gdf5_dose tau_cleft : Nat) : Nat :=
+        let amp := nog_dose * gdf5_dose
+        if amp ≥ 3 * tau_cleft then 3
+        else if amp ≥ 2 * tau_cleft then 2
+        else if amp ≥ tau_cleft then 1
+        else 0
+      theorem noggin_gdf5_joint_cleft_ablation (gdf5_dose : Nat) :
+          active_synovial_joints 0 gdf5_dose 25 = 0 ∧
+          segmented_phalanges 0 gdf5_dose 25 = 1 ∧
+          active_synovial_joints 7 8 25 = 2 ∧
+          active_synovial_joints 10 10 25 = 3 ∧
+          segmented_phalanges 10 10 25 = 3
+    variables: "nog_dose: Noggin BMP-antagonist dosage; gdf5_dose: GDF5 interzone signaling dosage; tau_cleft: chondrogenic repression threshold for synovial cavitation"
+    role: "Proves why Noggin null (Nog-/-) embryos fail to repress BMP chondrogenesis in prospective interzones, abolishing all synovial joint clefts (N_joints = 0) into a single continuous cartilaginous rod, whereas Gdf5 brachypodism (bp/bp) selectively fuses proximal interphalangeal joints"
+    source_citation: "Brunet et al. (1998) Science 280:1455-1457; Storm et al. (1994) Nature 368:639-643"
+    code_locus: "2016-onuff-joint-interzone-clefting.py#L345-L490"

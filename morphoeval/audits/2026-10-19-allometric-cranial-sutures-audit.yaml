@@ -1,0 +1,149 @@
+# MorphoEval audit — Miura et al. (2009) & Jaslow (1990) Cranial Suture Fractal Interdigitation, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2020-bailleul-allometric-cranial-sutures.py` (Slot 020) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-allometric-cranial-sutures-loop`.
+
+audit:
+  id: 2026-10-19-allometric-cranial-sutures-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2020-bailleul-allometric-cranial-sutures.py` in
+      `2026-10-19-allometric-cranial-sutures-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  miura2009:
+    title: "Mechanism of cranial suture fractal interdigitation"
+    authors: "Miura T, Perlyn CA, Kinboshi M, Ogihara N, Morriss-Kay GM"
+    venue: "Proceedings of the National Academy of Sciences 106(27):11218-11223 (2009)"
+    doi: 10.1073/pnas.0813269106
+  jaslow1990:
+    title: "Mechanical properties of cranial sutures"
+    authors: "Jaslow CR"
+    venue: "Journal of Biomechanics 23(4):313-321 (1990)"
+    doi: 10.1016/0021-9290(90)90059-C
+  khonsari2013:
+    title: "A mathematical model for mechanotransduction at the early steps of suture formation"
+    authors: "Khonsari RH, Olivier J, Vigneaux P, Sanchez S, Tafforeau P, Ahlberg PE, Di Rocco F, Bresch D, Corre P, Ohazama A, Sharpe PT, Calvez V"
+    venue: "Proceedings of the Royal Society B 280(1759):20122670 (2013)"
+    doi: 10.1098/rspb.2012.2670
+  zollikofer2011:
+    title: "A bidirectional interface growth model for cranial interosseous suture morphogenesis"
+    authors: "Zollikofer CPE, Weissmann JD"
+    venue: "Journal of Anatomy 219(2):100-114 (2011)"
+    doi: 10.1111/j.1469-7580.2011.01386.x
+
+simulations:
+  - id: bailleul-allometric-cranial-sutures
+    name: "Miura et al. (2009) & Jaslow (1990) cranial suture fractal interdigitation and Kuramoto-Sivashinsky osteogenic instability"
+    organism: "Homo sapiens and Mus musculus sagittal and lambdoid calvarial skull sutures"
+    script: 2020-bailleul-allometric-cranial-sutures.py
+    output: docs/media/allometric_cranial_sutures_comparison.png
+    extra_outputs:
+      - docs/media/allometric_cranial_sutures_growth.gif
+    status: evaluated
+    source_refs:
+      - miura2009
+      - jaslow1990
+      - khonsari2013
+      - zollikofer2011
+    summary: >-
+      Pass 1 baseline assessment of `2020-bailleul-allometric-cranial-sutures.py` (57.3/100).
+      The baseline script implements a 1D single-valued linear spectral amplification of
+      the Kuramoto-Sivashinsky dispersion relation omega(k) = alpha*k^2 - beta*k^4 - gamma
+      for sagittal vs mechanically unloaded sutures, but omits the nonlinear KPZ normal-growth
+      coupling (v_0/2)*(dh/dx)^2, 2D bidirectional overhanging phase-field / normal-front
+      interdigitation (needed to reach SII > 2.5 and box-counting fractal dimension D_f ~ 1.35),
+      infant neonatal, adult lambdoid, and FGFR2 Apert craniosynostosis regimes, Jaslow (1990)
+      bending energy absorption quantification, and automated CV suture trace segmentation on
+      `human_sagittal_suture_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Implements linear fourth-order dispersion omega(k) = alpha*k^2 - beta*k^4 - gamma
+          on a single-valued 1D graph h(x, t) (L46-81), omitting pseudo-spectral semi-implicit
+          / ETDRK4 integration of the nonlinear KPZ term (v_0/2)*(dh/dx)^2 + stochastic osteogenic
+          noise eta(x,t) and 2D overhanging bone-finger interdigitation from Miura et al. (2009).
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [46, 81], note: "Linear single-valued spectral evolution without KPZ nonlinearity or 2D overhanging front", supports: false}
+      specimen-match:
+        value: 50
+        rationale: >-
+          Vendors `datasets/allometric_cranial_sutures/human_sagittal_suture_specimen.jpg`
+          (CC BY-SA 3.0 human calvaria showing sagittal, coronal, and lambdoid sutures), but
+          Pass 1 only renders the raw photograph without automated CV segmentation of the
+          interdigitated sagittal suture trace, box-counting fractal dimension D_f, or SII.
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [88, 114], note: "Raw specimen display without CV suture contour extraction or fractal box-counting", supports: false}
+          - {file: docs/media/allometric_cranial_sutures_comparison.png, lines: [0, 0], note: "4-panel Pass 1 baseline figure", supports: true}
+      parameter-expressivity:
+        value: 55
+        rationale: >-
+          Evaluates only 2 regimes (sagittal vs mechanically unloaded), omitting neonatal
+          infant flat suture, adult hyper-interdigitated lambdoid suture, FGFR2 Apert
+          craniosynostosis fusion, and a 2D (alpha, beta) morphospace sweep.
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [85, 112], note: "2-regime baseline evaluation without infant, lambdoid, or FGFR2 craniosynostosis regimes", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Reports only 2 single-valued SII scalars in `measure_morphoeval()`, omitting
+          log-log box-counting fractal dimension D_f, power spectral density scaling slope,
+          Jaslow (1990) bending energy absorption, and empirical specimen suture D_f and SII.
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [137, 161], note: "2-metric baseline measure_morphoeval() hook", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `allometric_cranial_sutures_reference.json`,
+          `paper_citations.bib`, and `human_sagittal_suture_specimen.jpg` with SHA-256
+          verification linking Miura et al. (2009) and Jaslow (1990).
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [34, 43], note: "SHA-256 verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Links baseline dispersion to Miura et al. (2009), requiring full alignment with
+          all 3 Lean 4 theorems in `Loop_020_allometric_cranial_sutures.lean`.
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [1, 8], note: "Baseline docstring citing Miura et al. (2009) and Jaslow (1990)", supports: true}
+      repro-package:
+        value: 60
+        rationale: >-
+          Provides `--self-test` and deterministic seed execution, requiring expansion to
+          an 8-check verification suite covering all 5 developmental/pathological regimes,
+          box-counting fractal dimension D_f, Jaslow energy scaling, and specimen CV extraction.
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [164, 173], note: "Baseline self-test checks", supports: true}
+    remediation:
+      - "Implement pseudo-spectral semi-implicit / ETDRK4 Kuramoto-Sivashinsky + KPZ nonlinear normal-growth cascade and 2D bidirectional overhanging phase-field / normal-front interdigitation producing multi-valued suture fingers with D_f ~ 1.35 and SII > 2.5."
+      - "Simulate all 5 canonical regimes (infant neonatal flat suture, adult sagittal fractal suture, adult lambdoid hyper-interdigitated suture, mechanical unloading null control, and FGFR2 Apert craniosynostosis fusion) plus a 15x15 (alpha, beta) morphospace and Jaslow (1990) bending energy curve."
+      - "Add automated CV extraction of the sagittal suture trace on `human_sagittal_suture_specimen.jpg`, measure empirical box-counting fractal dimension D_f and SII, and render a 9-panel dark-mode comparison figure and 24-frame animated GIF."

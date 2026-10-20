@@ -1,0 +1,76 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-jonsson-auxin-pin1-meristem> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Jönsson et al. (2006) & Smith et al. (2006) up-the-gradient PIN1 polarization and polar auxin transport model for shoot apical meristem phyllotaxis — MorphoEval overall 53.3/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 (v1) baseline evaluation of `2006-jonsson-auxin-pin1-meristem.py` (weighted score: 53.8/100). The Pass 1 baseline script implements only a 32-cell 1D periodic ring without a 2D cellular L1 meristem dome topology, radial growth advection and primordial auxin depletion sinks, dispersion-relation eigenvalue verification, transitions across the 4 phyllotactic regimes (spiral 137.5 deg, distichous 180 deg, decussate 90 deg, tricussate 120 deg), NPA/pin1 pharmacological block and exogenous IAA microdroplet rescue experiments, or segmentation of the vendored Aeonium tabuliforme spiral rosette specimen. Overall 53.3/100 (faithfulness 50.5, reproducibility 59.7); rubric morphoeval 0.1.0; checkpoint commit 0cb0132; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 56, Morphological realism / specimen match 45, Parameter expressivity 51, Morphometric validation 52, Source and data traceability 68, Code-to-model traceability 58, Reproducibility package 54. Output judged: docs/media/auxin_pin1_phyllotaxis_comparison.png: rendered output of 2006-jonsson-auxin-pin1-meristem.py at 0cb0132, image/png, 55606 B, 1200×504 px, artifact_sha256 6b600014785b8ea36e7a34928c1ae7ce27f40434a97419b7a2ec2b96d1083969 (sha256 6b600014785b8ea36e7a34928c1ae7ce27f40434a97419b7a2ec2b96d1083969), spec_fingerprint 722bfcfebddd9b7a82c1bd7b9d04a028378c8556fe894a24ae273b6224593820. Dual provenance: spec_fingerprint: 722bfcfebddd9b7a82c1bd7b9d04a028378c8556fe894a24ae273b6224593820; artifact_sha256: 6b600014785b8ea36e7a34928c1ae7ce27f40434a97419b7a2ec2b96d1083969; input_dataset_sha256: {datasets/auxin_pin1_phyllotaxis/auxin_pin1_phyllotaxis_reference.json=96d4b539eaaf1649..., datasets/auxin_pin1_phyllotaxis/paper_citations.bib=9fe96650b32df64b..., datasets/auxin_pin1_phyllotaxis/rosette_phyllotaxis_specimen.jpg=ec50801b52dabc46..., datasets/auxin_pin1_phyllotaxis/scout_manifest.json=2e474ee5544f04f4...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Implement a 2D cellular L1 shoot apical meristem (SAM) dome + peripheral organogenic ring simulator with up-the-gradient Boltzmann PIN1 allocation P_ij = P_i exp(c_1 a_j) / sum_k exp(c_1 a_k), active + diffusive auxin transport, radial growth advection, and vascular sink depletion.",
+            "remediation needed: Implement quantitative transitions across all 4 phyllotactic regimes of Smith et al. (2006) & Jönsson et al. (2006): Spiral Fibonacci (137.5 deg), Distichous alternate (180 deg), Decussate opposite pairs (90 deg), and Tricussate whorled triplets (120 deg), plus linear Turing-like instability dispersion analysis.",
+            "remediation needed: Implement the Reinhardt et al. (2003) / Smith et al. (2006) perturbation experiments: NPA / pin1 polar transport block (T = 0 -> bare pin-formed apex with 0 primordia) and localized exogenous IAA lanolin microdroplet rescue (inducing a single primordium at phi_paste = 60 deg).",
+            "remediation needed: Segment the vendored Aeonium tabuliforme spiral rosette specimen (`rosette_phyllotaxis_specimen.jpg`) to extract leaf primordia centroids, radial phyllotactic scaling, and Fibonacci parastichy spirals, with full SHA-256 verification and an 8-check `--self-test` suite." ;
+        pk:hasScore "0.533"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 032 Pass 1 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/32> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cub.2005.09.052>,
+            <https://doi.org/10.1038/nature02081>,
+            <https://doi.org/10.1073/pnas.0509839103>,
+            <https://doi.org/10.1073/pnas.0510457103> .
+    <https://doi.org/10.1016/j.cub.2005.09.052> dct:date "2005"^^xsd:gYear ;
+        dct:title "Patterns of auxin transport and gene expression during primordium development revealed by live imaging of the Arabidopsis inflorescence meristem" .
+    <https://doi.org/10.1038/nature02081> dct:date "2003"^^xsd:gYear ;
+        dct:title "Regulation of phyllotaxis by polar auxin transport" .
+    <https://doi.org/10.1073/pnas.0509839103> dct:date "2006"^^xsd:gYear ;
+        dct:title "An auxin-driven polarized transport model for phyllotaxis" .
+    <https://doi.org/10.1073/pnas.0510457103> dct:date "2006"^^xsd:gYear ;
+        dct:title "A plausible model of phyllotaxis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Jönsson et al. (2006) & Smith et al. (2006) up-the-gradient PIN1 polarization and polar auxin transport model for shoot apical meristem phyllotaxis — MorphoEval overall 53.3/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:35:24Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/32>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-jonsson-auxin-pin1-meristem> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

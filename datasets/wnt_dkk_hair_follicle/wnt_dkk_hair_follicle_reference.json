@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "dataset_id": "sick-2006-wnt-dkk-hair-follicle-v1",
+    "title": "Sick et al. (2006) Science 314:1447-1450 & Andl et al. (2002) Dev. Cell 2:643-653 WNT/DKK Reaction-Diffusion Hair Follicle Spacing Reference Dataset",
+    "sources": [
+      {
+        "id": "sick2006",
+        "citation": "Sick S, Reinker S, Timmer J, Schlake T (2006). WNT and DKK determine hair follicle spacing through a reaction-diffusion mechanism. Science 314(5804):1447-1450.",
+        "doi": "10.1126/science.1130088"
+      },
+      {
+        "id": "andl2002",
+        "citation": "Andl T, Reddy ST, Gaddapara T, Millar SE (2002). WNT signals are required for the initiation of hair follicle development. Developmental Cell 2(5):643-653.",
+        "doi": "10.1016/S1534-5807(02)00167-3"
+      },
+      {
+        "id": "gierer1972",
+        "citation": "Gierer A, Meinhardt H (1972). A theory of biological pattern formation. Kybernetik 12(1):30-39.",
+        "doi": "10.1007/BF00289234"
+      },
+      {
+        "id": "maddox2004",
+        "citation": "Maddox DM, Condie BG (2004). Dynamic expression of a glutamate decarboxylase gene in multiple non-neural tissues during mouse development. BMC Developmental Biology 4:4.",
+        "doi": "10.1186/1471-213X-4-4"
+      }
+    ],
+    "specimens": {
+      "hair_follicle_placode_specimen": {
+        "file": "datasets/wnt_dkk_hair_follicle/hair_follicle_placode_specimen.jpg",
+        "sha256": "f48a7d76ae5984e50c79fe2c2f0fd446f78ac39860d82a5a87b59a676c61af19",
+        "width": 1200,
+        "height": 2018,
+        "species": "Mus musculus (Embryonic E12.5-E13.5 whole-mount in situ hybridization showing quasi-hexagonal vibrissa/hair follicle placode rows and epidermal cross-sections)",
+        "author": "Dennis M. Maddox and Brian G. Condie (BMC Developmental Biology 4:4, 2004)",
+        "license": "CC BY 2.5",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Gad1_transcripts_in_the_developing_vibrissae.jpg",
+        "panel_b_roi_xyxy": [625, 30, 1165, 460],
+        "observed_placode_count": 16,
+        "pattern_type": "periodic_follicular_placode_lattice_with_inhibitory_halos"
+      },
+      "scout_manifest": {
+        "file": "datasets/wnt_dkk_hair_follicle/scout_manifest.json",
+        "sha256": "39fe775496e89c5150f884eaded96283f321c29eb9ba02284be6e9d54921de31"
+      },
+      "paper_citations": {
+        "file": "datasets/wnt_dkk_hair_follicle/paper_citations.bib",
+        "sha256": "473c1747b6bcb451d238feb8deb245fcf112302220c8b91a9b91073b810ad7f2"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Sick et al. (2006) Science 314:1447-1450 & Supporting Online Material (Meinhardt-Gierer WNT/DKK Saturating Activator-Inhibitor PDE)",
+    "wnt_activator_pde": "dw/dt = rho_w + c_w * w^2 / (h * (1 + kappa * w^2)) - mu_w * w + D_w * Lap(w)",
+    "dkk_inhibitor_pde": "dh/dt = rho_h + c_h * w^2 - mu_h * h + D_h * Lap(h)",
+    "boundary_conditions": "Periodic or zero-flux Neumann boundary conditions on embryonic epidermal sheet Omega",
+    "unsaturated_basal_free_steady_state": {
+      "w_star_formula": "(c_w / c_h) * (mu_h / mu_w)",
+      "h_star_formula": "(c_w / c_h) * (mu_h / mu_w)^2",
+      "trace_J0_formula": "mu_w - mu_h",
+      "det_J0_formula": "mu_w * mu_h"
+    },
+    "linear_stability_invariants": {
+      "homogeneous_stability_condition": "mu_h > mu_w (DKK inhibitor turns over faster than WNT activator so tr(J_0) < 0 and det(J_0) > 0)",
+      "critical_diffusivity_ratio_formula": "d_c = (D_h / D_w)_c = (sqrt(2) + 1)^2 = 3 + 2*sqrt(2) = 5.8284271247461903",
+      "interfollicular_insertion_law": "When epidermal domain expands from L to 2*L, existing primary follicles at x = 0 and x = 2*L leave an uninhibited midpoint at x = L where DKK decays below the autocatalytic threshold, triggering secondary wave placode insertion."
+    }
+  },
+  "canonical_parameters": {
+    "c_w": 0.05,
+    "c_h": 0.05,
+    "mu_w": 0.02,
+    "mu_h": 0.03,
+    "rho_w_wt": 0.001,
+    "rho_h_wt": 0.0,
+    "kappa_wt": 0.02,
+    "D_w": 0.015,
+    "D_h": 0.45,
+    "diffusivity_ratio_d": 30.0,
+    "critical_diffusivity_ratio_dc": 5.8284271247461903,
+    "wnt_range_lw": 0.8660254037844386,
+    "dkk_range_lh": 3.872983346207417,
+    "range_ratio_lh_over_lw": 4.47213595499958,
+    "unsaturated_w_star": 1.5,
+    "unsaturated_h_star": 2.25,
+    "seed": 2006
+  },
+  "experimental_phenotypes": {
+    "wild_type_primary_wave": {
+      "description": "Wild-type E14.5 primary hair follicle placode wave (N=42x42, rho_w = 0.001, rho_h = 0.0, kappa = 0.02, D_w = 0.015, D_h = 0.45): regular array of 16 WNT-high placodes surrounded by DKK1/DKK2 lateral inhibition halos, matching the 16 segmented placodes in Panel B of the Mus musculus specimen.",
+      "N_grid": 42,
+      "rho_w": 0.001,
+      "rho_h": 0.0,
+      "kappa": 0.02,
+      "D_w": 0.015,
+      "D_h": 0.45,
+      "expected_placode_count": 16
+    },
+    "secondary_wave_interfollicular_insertion": {
+      "description": "Sick et al. (2006) Figs. 3-4: 2x epidermal expansion between E14.5 (N=40) and E16.5 (N=80) reduces DKK concentration midway between the 4 primary follicles, triggering de novo insertion of 4 secondary hair follicle placodes in the inter-follicular spaces (total 8 placodes, exact 2.0x doubling).",
+      "N_primary": 40,
+      "N_secondary": 80,
+      "expected_primary_peaks": 4,
+      "expected_secondary_peaks": 8,
+      "expected_peak_doubling_ratio": 2.0
+    },
+    "k14_wnt_overexpression": {
+      "description": "Sick et al. (2006) Fig. 2B-D: Transgenic epidermal WNT overexpression (elevated rho_w = 0.004, D_w = 0.008, D_h = 0.32, kappa = 0.015) increases follicular density from 16 to 22 closely spaced clustered placodes.",
+      "rho_w": 0.004,
+      "rho_h": 0.0,
+      "kappa": 0.015,
+      "D_w": 0.008,
+      "D_h": 0.32,
+      "expected_placode_count": 22
+    },
+    "enlarged_ringing_follicles_saturated": {
+      "description": "Sick et al. (2006) Fig. 3-4: High autocatalytic saturation (kappa = 0.025, D_w = 0.025, D_h = 0.65) shifts small spots to enlarged plateau/ring-like follicular domains (mean area increases from 21.4 px to 31.0 px while count drops to 12).",
+      "rho_w": 0.001,
+      "rho_h": 0.0,
+      "kappa": 0.025,
+      "D_w": 0.025,
+      "D_h": 0.65,
+      "expected_placode_count": 12
+    },
+    "dkk1_transgenic_blockade": {
+      "description": "Andl et al. (2002) Dev. Cell 2:643-653 & Sick et al. (2006) Fig. 4: High ectopic Dkk1 expression (rho_h = 0.12) floods the epidermis with long-range inhibitor, clamping WNT below the autocatalytic threshold and abolishing all placode initiation (0 placodes).",
+      "rho_w": 0.001,
+      "rho_h": 0.12,
+      "kappa": 0.02,
+      "expected_placode_count": 0
+    },
+    "equal_diffusion_negative_control": {
+      "description": "Equal-diffusion ablation control (D_w = D_h = 0.015, d = 1.0 < d_c = 5.8284): perturbations decay exponentially to the spatially uniform epidermal state with 0 placodes.",
+      "D_w": 0.015,
+      "D_h": 0.015,
+      "diffusivity_ratio_d": 1.0,
+      "expected_placode_count": 0
+    }
+  }
+}

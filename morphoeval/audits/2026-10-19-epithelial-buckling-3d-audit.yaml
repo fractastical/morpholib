@@ -1,0 +1,177 @@
+# MorphoEval audit — Hannezo, Prost & Joanny (2014) PNAS & Krajnc & Ziherl (2015) PRE 3D Epithelial Sheet Morphology & Apico-Basal Buckling, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2016-hannezo-epithelial-buckling-3d.py` (226 lines)
+# prior to Step 12 remediation in `2026-10-19-epithelial-buckling-3d-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.4 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `generate_cosine_buckled_profile` (L74-82) uses a closed-form 1D cosine ansatz
+#      rather than numerically minimizing the coupled 3D epithelial cell + substrate
+#      bending energy functional via L-BFGS-B across the full 2D phase diagram in
+#      (Gamma_l / Gamma_a, K_sub) spanning flat squamous, flat cuboidal, flat columnar,
+#      buckled mucosal folds, and closed spherical acini.
+#   2. `evaluate_baseline_tissues` (L85-107) evaluates only the 8 Mus musculus rows and
+#      omits the Drosophila melanogaster wing-disc and follicular epithelial rows (12 total),
+#      as well as the 5 perturbation controls (E-cadherin knockdown flattening, apical
+#      Myosin-II hyperactivation folding, basal tension hyperactivation curvature inversion,
+#      and soft-substrate spherical acinus formation).
+#   3. The vendored CC0 histology specimen `datasets/epithelial_buckling_3d/epithelial_sheet_buckling_specimen.jpg`
+#      is not loaded, segmented, or analyzed for epithelial layer height h_0, lateral cell
+#      width d_0, aspect ratio h_0/d_0, or fold wavelength lambda_c.
+#   4. Runtime SHA-256 verification of dataset assets and CLI parameter overrides
+#      (`--gamma-a`, `--gamma-b`, `--gamma-l`, `--k-sub`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-epithelial-buckling-3d-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 047 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/47
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e93f00e
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2016-hannezo-epithelial-buckling-3d.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-epithelial-buckling-3d-loop`.
+
+references:
+  hannezo2014:
+    title: "Theory of epithelial sheet morphology in three dimensions"
+    authors: "Hannezo E, Prost J, Joanny J-F"
+    venue: "Proceedings of the National Academy of Sciences 111(1):27-32 (2014)"
+    doi: 10.1073/pnas.1321766111
+  krajnc2015:
+    title: "Theory of epithelial elasticity"
+    authors: "Krajnc M, Ziherl P"
+    venue: "Physical Review E 92(5):052713 (2015)"
+    doi: 10.1103/PhysRevE.92.052713
+  storgel2016:
+    title: "Quantitative Morphology of Epithelial Folds"
+    authors: "Štorgel N, Krajnc M, Mrak P, Štrus J, Ziherl P"
+    venue: "Biophysical Journal 110(1):269-277 (2016)"
+    doi: 10.1016/j.bpj.2015.11.024
+  sui2018:
+    title: "Differential lateral and basal tension drive folding of Drosophila wing discs through two distinct mechanisms"
+    authors: "Sui L, Alt S, Weigert M, Dye N, Eaton S, Jülicher F, Dahmann C"
+    venue: "Nature Communications 9:4620 (2018)"
+    doi: 10.1038/s41467-018-06497-3
+
+simulations:
+  - id: hannezo-epithelial-buckling-3d
+    name: "Hannezo, Prost & Joanny (2014) PNAS & Krajnc & Ziherl (2015) PRE 3D epithelial sheet morphology (squamous-to-cuboidal-to-columnar scaling & apico-basal buckling)"
+    organism: "Mus musculus / Drosophila melanogaster epithelial monolayers"
+    script: 2016-hannezo-epithelial-buckling-3d.py
+    output: docs/media/epithelial_buckling_3d_comparison.png
+    extra_outputs:
+      - docs/media/epithelial_buckling_3d_growth.gif
+    status: evaluated
+    source_refs:
+      - hannezo2014
+      - krajnc2015
+      - storgel2016
+      - sui2018
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2016-hannezo-epithelial-buckling-3d.py`
+      (overall weighted score: 56.4/100). The v1 script implements the Hannezo-Prost-Joanny
+      (2014) 3D incompressible single-cell energy E_cell(A) = (Gamma_a + Gamma_b)*A +
+      c*Gamma_l*V_0/(2*sqrt(A)), equilibrium height h_0, aspect ratio h_0/d_0, and critical
+      buckling wavelength lambda_c = 2*pi*(kappa_eff/K_sub)^(1/4), backed by 3 Lean 4
+      theorems in `Loop_047_epithelial_buckling_3d.lean`, but relies on a closed-form
+      cosine buckling ansatz instead of L-BFGS-B energy minimization, omits the full 2D
+      (Gamma_l/Gamma_a, K_sub) 5-regime phase diagram and Drosophila comparative tissues,
+      omits E-cadherin knockdown and Myosin-II hyperactivation perturbations, and does not
+      segment the vendored histology specimen (`epithelial_sheet_buckling_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Computes equilibrium cell height h_0, width d_0, aspect ratio h_0/d_0 =
+          c*Gamma_l/[4*(Gamma_a+Gamma_b)], bending modulus kappa_eff, spontaneous curvature
+          C_0, and buckling wavelength lambda_c = 2*pi*(kappa_eff/K_sub)^(1/4) (L46-72),
+          backed by 3 Lean 4 theorems in `Loop_047_epithelial_buckling_3d.lean`. However,
+          `generate_cosine_buckled_profile` (L74-82) uses a closed-form cosine ansatz
+          instead of minimizing the coupled 3D epithelial + substrate energy functional,
+          and omits the 5-regime (Gamma_l/Gamma_a, K_sub) phase diagram.
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [46, 72], note: "Analytic Hannezo et al. (2014) equilibrium aspect ratio, cell height, and buckling wavelength", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [74, 82], note: "Closed-form 1D cosine buckling ansatz rather than L-BFGS-B energy minimization", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/epithelial_buckling_3d/epithelial_sheet_buckling_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or measures epithelial
+          layer height h_0, cell width d_0, aspect ratio h_0/d_0, or fold wavelength
+          lambda_c on the biological histology micrograph, and evaluates only 8 Mus musculus
+          rows without Drosophila melanogaster comparative tissues.
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [85, 107], note: "Evaluates only Mus musculus rows and ignores epithelial_sheet_buckling_specimen.jpg", supports: false}
+          - {file: docs/media/epithelial_buckling_3d_comparison.png, lines: [0, 0], note: "4-panel v1 plot lacks histology specimen segmentation and 2D phase diagram panels", supports: false}
+      parameter-expressivity:
+        value: 49
+        rationale: >-
+          Evaluates 8 mouse epithelial rows across squamous, cuboidal, and columnar
+          regimes (L85-107), but omits the 4 Drosophila melanogaster comparative rows,
+          omits the 2D (Gamma_l/Gamma_a, K_sub) phase diagram across all 5 regimes,
+          omits the 5 genetic/pharmacological perturbations (E-cadherin knockdown,
+          apical Myosin-II hyperactivation, basal tension inversion, soft-substrate acini),
+          and exposes no CLI parameter overrides.
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [85, 107], note: "Single-species subset without perturbation controls, 2D phase diagram, or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 53
+        rationale: >-
+          `measure_morphoeval()` (L175-207) reports only 3 analytic aspect-ratio values
+          without cross-species Pearson r, p-value, RMSE, log-log scaling slope, without
+          L-BFGS-B buckled wavelength/curvature metrics, without E-cadherin/Myosin-II
+          perturbation deltas, and without specimen CV morphometrics.
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [175, 207], note: "Only 3 basic aspect-ratio metrics without statistical tests or specimen segmentation", supports: false}
+      source-traceability:
+        value: 75
+        rationale: >-
+          Vendors `datasets/epithelial_buckling_3d/` with 4 primary DOIs in
+          `paper_citations.bib` (`10.1073/pnas.1321766111`, `10.1103/PhysRevE.92.052713`,
+          `10.1016/j.bpj.2015.11.024`, `10.1038/s41467-018-06497-3`), `scout_manifest.json`,
+          and `epithelial_buckling_3d_reference.json`, but lacks runtime SHA-256 verification.
+        evidence:
+          - {file: datasets/epithelial_buckling_3d/epithelial_buckling_3d_reference.json, lines: [1, 275], note: "Reference JSON with 12 comparative tissues, 5 perturbations, and specimen metrics", supports: true}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Links module docstrings to Hannezo et al. (2014) PNAS, Krajnc & Ziherl (2015)
+          PRE, Štorgel et al. (2016) Biophys. J., and `Loop_047_epithelial_buckling_3d.lean`
+          (L1-25), but lacks trace links for L-BFGS-B buckling minimization and
+          E-cadherin/Myosin-II perturbation experiments.
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [1, 25], note: "Baseline docstring linking Hannezo (2014), Krajnc & Ziherl (2015), and Loop_047 Lean theorems", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Provides `--self-test` (`L210-217`) checking mouse tissue count and basic
+          aspect-ratio bounds, but lacks SHA-256 asset verification, two-run bitwise
+          determinism checks on an energy minimizer, and perturbation assertions.
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [210, 217], note: "Minimal 3-assertion self_test() without SHA-256 or perturbation checks", supports: false}
+    remediation:
+      - "Replace the closed-form cosine buckling ansatz with a coupled 3D epithelial cell + substrate bending energy minimizer (L-BFGS-B) across the full 2D phase diagram in (Gamma_l / Gamma_a, K_sub) spanning flat squamous, cuboidal, columnar, buckled folds, and spherical acini."
+      - "Evaluate all 12 comparative epithelial tissues across Mus musculus and Drosophila melanogaster with Pearson r, p-value, RMSE, and log-log scaling exponent."
+      - "Implement all 5 genetic/mechanical perturbation controls: wild-type buckled columnar folds, E-cadherin knockdown flattening (Gamma_l/Gamma_a depleted -> flat squamous), apical Myosin-II hyperactivation (Gamma_a >> Gamma_b -> apical constriction folding), basal tension hyperactivation (Gamma_b >> Gamma_a -> spontaneous curvature sign reversal), and soft-substrate spherical acinus closure."
+      - "Segment the vendored CC0 histology micrograph (`epithelial_sheet_buckling_specimen.jpg`) to measure epithelial monolayer height h_0, lateral cell width d_0, aspect ratio h_0/d_0, and fold wavelength lambda_c, and enforce runtime SHA-256 verification."

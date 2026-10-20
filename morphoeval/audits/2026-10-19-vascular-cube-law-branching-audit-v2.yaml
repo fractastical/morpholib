@@ -1,0 +1,179 @@
+# MorphoEval audit — Murray (1926a, 1926b) / Zamir (1976) / Sherman (1981) Minimum-Work Vascular Cube Law & Bifurcation Angles, 2026-10-19 (v2)
+#
+# Pass 2 superseding assessment of `1959-murray-vascular-cube-law-branching.py` (v2, 1,090 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-vascular-cube-law-branching-loop`).
+
+audit:
+  id: 2026-10-19-vascular-cube-law-branching-audit-v2
+  supersedes_audit_id: 2026-10-19-vascular-cube-law-branching-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Loop 052 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2 remediated) evaluation of `1959-murray-vascular-cube-law-branching.py`
+      after completing the 12-step closed remediation loop
+      (`2026-10-19-vascular-cube-law-branching-loop`).
+
+references:
+  murray1926a:
+    title: "The physiological principle of minimum work. I. The vascular system and the cost of blood volume"
+    authors: "Murray CD"
+    venue: "Proceedings of the National Academy of Sciences of the USA 12(3):207-214 (1926)"
+    doi: 10.1073/pnas.12.3.207
+  murray1926b:
+    title: "The physiological principle of minimum work applied to the angle of branching of arteries"
+    authors: "Murray CD"
+    venue: "Journal of General Physiology 9(6):835-841 (1926)"
+    doi: 10.1085/jgp.9.6.835
+  zamir1976:
+    title: "Optimality principles in arterial branching"
+    authors: "Zamir M"
+    venue: "Journal of Theoretical Biology 62(1):227-251 (1976)"
+    doi: 10.1016/0022-5193(76)90058-8
+  sherman1981:
+    title: "On connecting large vessels to small. The meaning of Murray's law"
+    authors: "Sherman TF"
+    venue: "Journal of General Physiology 78(4):431-453 (1981)"
+    doi: 10.1085/jgp.78.4.431
+
+simulations:
+  - id: murray-vascular-cube-law-branching
+    name: "Murray (1926a, 1926b), Zamir (1976) & Sherman (1981) minimum-work vascular cube law & arterial branching angles"
+    organism: "Homo sapiens (human retinal arterial and microvascular bifurcation network)"
+    script: 1959-murray-vascular-cube-law-branching.py
+    output: docs/media/vascular_cube_law_branching_comparison.png
+    extra_outputs:
+      - docs/media/vascular_cube_law_branching_growth.gif
+    status: evaluated
+    source_refs:
+      - murray1926a
+      - murray1926b
+      - zamir1976
+      - sherman1981
+    summary: >-
+      Pass 2 (v2 remediated) evaluation of `1959-murray-vascular-cube-law-branching.py`
+      (90.9/100, up from 51.4/100 in Pass 1; +39.5 overall). The remediated script
+      implements Murray's (1926a) Poiseuille + metabolic cost functional P(r),
+      stationarity partition P_met(r*)/P_visc(r*) = 2.0, scale-invariant wall shear
+      stress tau_w = sqrt(eta*b) = 8.2189 dyn/cm^2 across all 7 Sherman (1981) arteriole
+      generations, and Murray's (1926b) full asymmetric bifurcation cosine laws
+      cos(theta_1), cos(theta_2) across alpha = r_2/r_1 in (0, 1]; compares against
+      competing Zamir (1976) surface-drag (90 deg), Steiner length-minimum (120 deg),
+      and Da Vinci area-preserving (gamma=2, +134.8% excess tree power) ablation
+      controls; segments N=19 Y-junctions on the SHA-256-verified human retinal fundus
+      specimen (`retinal_vasculature_specimen.jpg`, mean angle 79.28 deg, cube-law ratio
+      0.917, tortuosity B/A = 1.015x); and is backed by 3 machine-checked Lean 4
+      theorems in `morphoeval/lean/loops/Loop_052_vascular_cube_law_branching.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Implements Murray's (1926a) Poiseuille + metabolic power functional P(r),
+          stationarity radius r*, and exact wall shear stress invariance tau_w =
+          sqrt(eta*b) = 8.2189 dyn/cm^2 across 7 vascular generations (L100-147,
+          L284-338), plus Murray's (1926b) full asymmetric bifurcation angle laws
+          cos(theta_1) and cos(theta_2) alongside Zamir's (1976) surface-drag (90 deg),
+          Steiner's length-minimizing (120 deg), and Da Vinci's area-preserving (gamma=2)
+          negative controls (L154-279, L340-421). Backed by 3 machine-checked Lean 4
+          theorems (0 `sorry`s) in `Loop_052_vascular_cube_law_branching.lean`.
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [100, 219], note: "Poiseuille + metabolic power functional, wall shear stress invariance, and asymmetric bifurcation cosine laws", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [284, 378], note: "7-generation Sherman (1981) hierarchy and exponent sweep proving global power minimum at gamma* = 3.000", supports: true}
+          - {file: morphoeval/lean/loops/Loop_052_vascular_cube_law_branching.lean, lines: [33, 110], note: "3 machine-checked Lean 4 theorems for Murray stationarity, cubic conservation, and cosine numerator symmetry", supports: true}
+      specimen-match:
+        value: 87
+        rationale: >-
+          Segments the SHA-256-locked human retinal fundus vasculature specimen
+          (`datasets/vascular_cube_law_branching/retinal_vasculature_specimen.jpg`,
+          Panels A and B) using green-channel hemoglobin top-hat enhancement,
+          Zhang-Suen 1-pixel skeletonization, and Euclidean distance transform (EDT)
+          lumen caliber mapping (L427-616), extracting N=19 Y-junction bifurcations
+          (mean angle 79.28 ± 17.34 deg vs Murray 74.93-80 deg theoretical range;
+          mean cube-law ratio 0.917 ± 0.246; Panel B/A tortuosity ratio 1.015x) and
+          displaying both skeleton and EDT caliber overlays in Panel E of the 6-panel
+          synthesis figure.
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [427, 616], note: "Zhang-Suen 1-pixel retinal skeletonization, EDT lumen radius mapping, and Y-junction angle/caliber extraction", supports: true}
+          - {file: docs/media/vascular_cube_law_branching_comparison.png, lines: [0, 0], note: "6-panel synthesis figure including Panel E human retinal fundus segmentation and Panel F angle histogram", supports: true}
+      parameter-expressivity:
+        value: 89
+        rationale: >-
+          Sweeps daughter radius asymmetry alpha = r_2/r_1 across [0.15, 1.0], sweeps
+          branching exponent gamma across [1.8, 4.2] (121 grid points, confirming global
+          power minimum at gamma* = 3.000), compares three angle optimality regimes
+          (`murray_volume`, `zamir_surface`, `steiner_length`), and exposes CLI flags
+          `--alpha`, `--gamma`, `--eta`, `--b`, `--r0-um`, `--generations`, and `--seed`
+          (L1057-1086).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [340, 421], note: "121-point gamma power sweep and multi-regime 2D vascular tree builder", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1057, 1086], note: "Full CLI parameter overrides wired into render_outputs()", supports: true}
+      morphometric-validation:
+        value: 89
+        rationale: >-
+          `measure_morphoeval()` reports 8 quantitative morphometrics with reference
+          values, uncertainty/dispersion statistics (RMSE, Pearson r, p-value, SD, CV),
+          and negative-control ablation deltas (L891-985): empirical human retinal
+          junctions J01-J08 achieve total-angle RMSE = 0.134 deg and branch-angle
+          Pearson r = 0.9999 (p = 2.4e-26), cube-law conservation ratio
+          (r_1^3+r_2^3)^(1/3)/r_0 = 0.9956 ± 0.0033 (CV = 0.0033) vs Da Vinci gamma=2
+          control 1.1091 (+11.4% bias and +134.8% excess tree power), and segmented
+          fundus Y-junction angle mean = 79.28 deg (N = 19).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [221, 279], note: "Empirical human retinal junction validation (RMSE = 0.134 deg, Pearson r = 0.9999, cube-law vs Da Vinci parity)", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [891, 985], note: "8-metric MorphoEval suite with reference values, dispersion stats, and ablation controls", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/vascular_cube_law_branching/` with
+          `vascular_cube_law_branching_reference.json`, `retinal_vasculature_specimen.jpg`
+          (Wikimedia Commons CC BY 4.0), `paper_citations.bib` (4 primary DOIs:
+          `10.1073/pnas.12.3.207`, `10.1085/jgp.9.6.835`, `10.1016/0022-5193(76)90058-8`,
+          `10.1085/jgp.78.4.431`), `scout_manifest.json`, and `README.md`, with runtime
+          SHA-256 verification (`verify_dataset_integrity`, L72-93).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [72, 93], note: "Runtime SHA-256 verification of vendored retinal specimen and reference JSON", supports: true}
+          - {file: datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json, lines: [1, 96], note: "Complete reference JSON with Murray (1926a,b), Sherman (1981), and Zamir (1979) tables", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Every computational section and docstring in `1959-murray-vascular-cube-law-branching.py`
+          maps explicitly to numbered equations in Murray (1926a) Eqs. 1-8, Murray
+          (1926b) Eqs. 3-6, Zamir (1976) Table 1, Sherman (1981) Table I, and the 3
+          Lean 4 theorems in `Loop_052_vascular_cube_law_branching.lean` (L1-35, L95-220).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1, 35], note: "Module header mapping all 4 papers and 3 Lean 4 theorems to code sections", supports: true}
+          - {file: morphoeval/math_kg_loops/murray-vascular-cube-law-branching.yaml, lines: [1, 74], note: "Math KG loop registration linking equations, Lean 4 theorems, and Python code loci", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          `self_test()` (L988-1054) executes 7 automated verification suites covering
+          SHA-256 dataset integrity, symmetric & asymmetric angle parity, stationarity
+          P_met/P_visc = 2.0, gamma* = 3.000 global minimum, empirical retinal junction
+          RMSE/r, fundus image Y-junction segmentation, and two-run bitwise determinism.
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [988, 1054], note: "7-suite self_test() including JSON parity, specimen segmentation, and bitwise determinism", supports: true}
+    remediation:
+      - "Extend 2D retinal vascular tree synthesis to 3D curved hemispherical retinal cup geometry with coupled arteriovenous interdigitation."
+      - "Incorporate non-Newtonian Fahraeus-Lindqvist apparent blood viscosity eta(r) in pre-capillary arterioles (r < 25 um) to quantify the shift in optimal exponent from gamma = 3.0 toward gamma ≈ 2.7."

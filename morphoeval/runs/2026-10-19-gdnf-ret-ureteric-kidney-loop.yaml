@@ -1,0 +1,452 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-gdnf-ret-ureteric-kidney-loop
+  target_simulation: menshykau-gdnf-ret-ureteric-kidney
+  paper: Menshykau & Iber (2013) Phys. Biol. 10:046003 & Short et al. (2014) Dev.
+    Cell 29:188-202 — Kidney Ureteric Bud GDNF-RET Turing Branching Morphogenesis
+  created_at: '2026-10-20T02:30:27.392Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: 33e07ad
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 832.985
+  wall_time_min: 13.88
+  tier_a_wall_s: 450.615
+  tier_b_wall_s: 382.37
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  input_tokens: 23128
+  output_tokens: 294662
+  subagent_tokens: 0
+  total_llm_tokens: 317790
+  artifact_tokens: 46495
+  tier_a_llm_tokens: 180576
+  tier_b_llm_tokens: 137214
+  effective_tokens_per_s: 381.5
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:30:27.470Z'
+  ended_at: '2026-10-20T02:33:19.992Z'
+  duration_s: 172.523
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 188
+    output_tokens: 63532
+    subagent_tokens: 0
+    total_llm_tokens: 63720
+    artifact_tokens: 828
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/gdnf_ret_ureteric_kidney/scout_manifest.json
+    bytes: 3011
+    sha256: 60b78a1876b45c42eb1aeffb592003c16e5df5dc486573211856568945f616fe
+    tokens: 828
+  commands: []
+  notes: Scouted Menshykau & Iber (2013), Short et al. (2014), Watanabe & Costantini
+    (2004), and Wikimedia Commons E12.5 metanephric ureteric tree specimen
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:33:20.081Z'
+  ended_at: '2026-10-20T02:33:20.178Z'
+  duration_s: 0.097
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 828
+    output_tokens: 1610
+    subagent_tokens: 0
+    total_llm_tokens: 2438
+    artifact_tokens: 1610
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/gdnf_ret_ureteric_kidney/paper_citations.bib
+    bytes: 2110
+    sha256: 62f203a6f4125269a5011605147c8cb1f9f4c47fa6bc99c4edbe4ca7c45db331
+    tokens: 629
+    parent_artifact_ids:
+    - 60b78a1876b45c42eb1aeffb592003c16e5df5dc486573211856568945f616fe
+  - file: datasets/gdnf_ret_ureteric_kidney/README.md
+    bytes: 3257
+    sha256: 3e2767e796ed07556067787b96ba93979f9fa50f35777beb33a4ade37e164bf2
+    tokens: 981
+    parent_artifact_ids:
+    - 60b78a1876b45c42eb1aeffb592003c16e5df5dc486573211856568945f616fe
+  commands: []
+  notes: Extracted Menshykau & Iber (2013) GDNF-RET cooperative binding Turing PDEs
+    and Short et al. (2014) Horton-Strahler ureteric tree scaling
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:33:20.260Z'
+  ended_at: '2026-10-20T02:33:20.345Z'
+  duration_s: 0.085
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 629
+    output_tokens: 3511
+    subagent_tokens: 0
+    total_llm_tokens: 4140
+    artifact_tokens: 3511
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/gdnf_ret_ureteric_kidney/kidney_ureteric_tree_specimen.jpg
+    bytes: 108801
+    sha256: dceaf5044c7014e44bf8a9ab0e728a670255e68952454f1e65c3d7a3412feff7
+    tokens: 64
+    parent_artifact_ids:
+    - 62f203a6f4125269a5011605147c8cb1f9f4c47fa6bc99c4edbe4ca7c45db331
+  - file: datasets/gdnf_ret_ureteric_kidney/gdnf_ret_ureteric_kidney_reference.json
+    bytes: 11335
+    sha256: 8f7910ca67a34e52a56429e0b894e24aa002c10cbe46ce2b644df2d2c98a77e4
+    tokens: 3447
+    parent_artifact_ids:
+    - 62f203a6f4125269a5011605147c8cb1f9f4c47fa6bc99c4edbe4ca7c45db331
+  commands: []
+  notes: Vendored SHA-256-locked E12.5 metanephric ureteric tree specimen and Short
+    et al. (2014) reference dataset
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:33:20.419Z'
+  ended_at: '2026-10-20T02:35:34.145Z'
+  duration_s: 133.726
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 376
+    output_tokens: 40361
+    subagent_tokens: 0
+    total_llm_tokens: 40737
+    artifact_tokens: 1491
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/lean/loops/Loop_055_gdnf_ret_ureteric_kidney.lean
+    bytes: 5149
+    sha256: 2d69e1bb2c28747929aa4745018e146a61f92b799f3a5e7ae8ecff8c604ffac7
+    tokens: 64
+    parent_artifact_ids:
+    - 8f7910ca67a34e52a56429e0b894e24aa002c10cbe46ce2b644df2d2c98a77e4
+  - file: morphoeval/math_kg_loops/menshykau-gdnf-ret-ureteric-kidney.yaml
+    bytes: 5331
+    sha256: 015fa17a6068df1789891dff6ccbf079751c9efffd5b5981c06049f459342e2f
+    tokens: 1427
+    parent_artifact_ids:
+    - 8f7910ca67a34e52a56429e0b894e24aa002c10cbe46ce2b644df2d2c98a77e4
+  commands: []
+  notes: Verified 3 Lean 4 theorems (0 sorrys) in Loop_055_gdnf_ret_ureteric_kidney.lean
+    and isolated math KG spec
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:35:34.236Z'
+  ended_at: '2026-10-20T02:37:58.219Z'
+  duration_s: 143.983
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3511
+    output_tokens: 63181
+    subagent_tokens: 0
+    total_llm_tokens: 66692
+    artifact_tokens: 2721
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 2014-menshykau-gdnf-ret-ureteric-kidney.py
+    bytes: 9235
+    sha256: 4fec17e6a0fff395fa769a2a62dba8121493ee9b059f270b5bee91a1552e407e
+    tokens: 2721
+    parent_artifact_ids:
+    - 8f7910ca67a34e52a56429e0b894e24aa002c10cbe46ce2b644df2d2c98a77e4
+    - 2d69e1bb2c28747929aa4745018e146a61f92b799f3a5e7ae8ecff8c604ffac7
+  commands: []
+  notes: Implemented Pass 1 (v1) baseline script for GDNF-RET ureteric bud branching
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:37:58.303Z'
+  ended_at: '2026-10-20T02:37:58.503Z'
+  duration_s: 0.201
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2721
+    output_tokens: 128
+    subagent_tokens: 0
+    total_llm_tokens: 2849
+    artifact_tokens: 128
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: docs/media/gdnf_ret_ureteric_kidney_comparison.png
+    bytes: 162204
+    sha256: b6dffcc27cc9e87cd955dce6c687a8cd9da250d930f2a985ca3e0ae5ad93512c
+    tokens: 64
+    parent_artifact_ids:
+    - 4fec17e6a0fff395fa769a2a62dba8121493ee9b059f270b5bee91a1552e407e
+  - file: docs/media/gdnf_ret_ureteric_kidney_growth.gif
+    bytes: 18153
+    sha256: 80463988bbc55f77e499a316d3af0cd7d7fff06aaffd433f7bc7efb3c2239043
+    tokens: 64
+    parent_artifact_ids:
+    - 4fec17e6a0fff395fa769a2a62dba8121493ee9b059f270b5bee91a1552e407e
+  commands: []
+  notes: Rendered Pass 1 (v1) comparison figure and growth GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:37:58.606Z'
+  ended_at: '2026-10-20T02:37:58.694Z'
+  duration_s: 0.088
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2785
+    output_tokens: 2725
+    subagent_tokens: 0
+    total_llm_tokens: 5510
+    artifact_tokens: 2725
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-gdnf-ret-ureteric-kidney-audit.yaml
+    bytes: 10759
+    sha256: ec8bbb614655528dcc86e50c79ce457c4e32a6b35c227c5de35d8010ee382385
+    tokens: 2725
+    parent_artifact_ids:
+    - 4fec17e6a0fff395fa769a2a62dba8121493ee9b059f270b5bee91a1552e407e
+    - b6dffcc27cc9e87cd955dce6c687a8cd9da250d930f2a985ca3e0ae5ad93512c
+  commands: []
+  notes: Completed Pass 1 (v1) audit (overall score 56.8/100)
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:37:58.769Z'
+  ended_at: '2026-10-20T02:37:59.425Z'
+  duration_s: 0.656
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2725
+    output_tokens: 856
+    subagent_tokens: 0
+    total_llm_tokens: 3581
+    artifact_tokens: 856
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-gdnf-ret-ureteric-kidney-audit.measurements.yaml
+    bytes: 2537
+    sha256: a31f1258247a705dd646eccdcb4244139b837bcf7766e699b7a520dd0224251d
+    tokens: 856
+    parent_artifact_ids:
+    - ec8bbb614655528dcc86e50c79ce457c4e32a6b35c227c5de35d8010ee382385
+  commands: []
+  notes: Measured Pass 1 (v1) outputs and morphometrics
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:37:59.499Z'
+  ended_at: '2026-10-20T02:37:59.991Z'
+  duration_s: 0.492
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3581
+    output_tokens: 2416
+    subagent_tokens: 0
+    total_llm_tokens: 5997
+    artifact_tokens: 2416
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-gdnf-ret-ureteric-kidney-audit/menshykau-gdnf-ret-ureteric-kidney-overall.trig
+    bytes: 8036
+    sha256: 3bdb3dc0bb18685315939ee1699d84a8bcd0b0c4502029abbda0c82f29b1551b
+    tokens: 2416
+    parent_artifact_ids:
+    - ec8bbb614655528dcc86e50c79ce457c4e32a6b35c227c5de35d8010ee382385
+    - a31f1258247a705dd646eccdcb4244139b837bcf7766e699b7a520dd0224251d
+  commands: []
+  notes: Generated 10 Pass 1 ProbKnow-conformant nanopublications
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:38:00.071Z'
+  ended_at: '2026-10-20T02:38:00.814Z'
+  duration_s: 0.743
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2416
+    output_tokens: 2756
+    subagent_tokens: 0
+    total_llm_tokens: 5172
+    artifact_tokens: 2756
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-gdnf-ret-ureteric-kidney-audit/signed/menshykau-gdnf-ret-ureteric-kidney-overall.trig
+    bytes: 9185
+    sha256: 13e64dd59a644b23afa74dd9b15ce141cb4496714e38b9571f8c2c3ab9e4744c
+    tokens: 2756
+    parent_artifact_ids:
+    - 3bdb3dc0bb18685315939ee1699d84a8bcd0b0c4502029abbda0c82f29b1551b
+  commands: []
+  notes: Cryptographically signed and verified 10 Pass 1 nanopubs
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:38:00.892Z'
+  ended_at: '2026-10-20T02:38:00.981Z'
+  duration_s: 0.09
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2756
+    output_tokens: 2299
+    subagent_tokens: 0
+    total_llm_tokens: 5055
+    artifact_tokens: 2299
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-gdnf-ret-ureteric-kidney-audit/REPORT.md
+    bytes: 8459
+    sha256: 27150ee2456f8043faee72b33c17f9f869525d948740d8ecd40e6151adab8879
+    tokens: 2299
+    parent_artifact_ids:
+    - 13e64dd59a644b23afa74dd9b15ce141cb4496714e38b9571f8c2c3ab9e4744c
+  commands: []
+  notes: Synthesized Pass 1 audit report and knowledge graph
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:38:01.059Z'
+  ended_at: '2026-10-20T02:44:21.360Z'
+  duration_s: 380.301
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 612
+    output_tokens: 111287
+    subagent_tokens: 0
+    total_llm_tokens: 111899
+    artifact_tokens: 25154
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 2014-menshykau-gdnf-ret-ureteric-kidney.py
+    bytes: 62803
+    sha256: 7005c5fe58a16f0f10f153eeba574321b34c840fdbb18605f9308c1d76120aeb
+    tokens: 16840
+    parent_artifact_ids:
+    - ec8bbb614655528dcc86e50c79ce457c4e32a6b35c227c5de35d8010ee382385
+  - file: docs/media/gdnf_ret_ureteric_kidney_comparison.png
+    bytes: 684450
+    sha256: 8ed95e1faa0495f0195cd2295d050033c61115d06b70efa577faf6bd2c435fa8
+    tokens: 64
+    parent_artifact_ids:
+    - ec8bbb614655528dcc86e50c79ce457c4e32a6b35c227c5de35d8010ee382385
+  - file: docs/media/gdnf_ret_ureteric_kidney_growth.gif
+    bytes: 195334
+    sha256: d53c746a8248a909c73bd82c7bd4f3655cd396a08160d7d8918984f4c7230448
+    tokens: 64
+    parent_artifact_ids:
+    - ec8bbb614655528dcc86e50c79ce457c4e32a6b35c227c5de35d8010ee382385
+  - file: morphoeval/audits/2026-10-19-gdnf-ret-ureteric-kidney-audit-v2.yaml
+    bytes: 13027
+    sha256: 3844fc8ff00b2ca6cc105c24399ce9a4f0ba1e9685473a5dde9a953c6a015405
+    tokens: 3524
+    parent_artifact_ids:
+    - ec8bbb614655528dcc86e50c79ce457c4e32a6b35c227c5de35d8010ee382385
+  - file: morphoeval/audits/2026-10-19-gdnf-ret-ureteric-kidney-audit-v2.measurements.yaml
+    bytes: 6459
+    sha256: 7b2cbe4b0db3b10f98f0ddcb4574732bf481161ff60b48879fc48cb982a7cf71
+    tokens: 1978
+    parent_artifact_ids:
+    - ec8bbb614655528dcc86e50c79ce457c4e32a6b35c227c5de35d8010ee382385
+  - file: morphoeval/kg/2026-10-19-gdnf-ret-ureteric-kidney-audit-v2/signed/menshykau-gdnf-ret-ureteric-kidney-overall.trig
+    bytes: 8541
+    sha256: 503d884f9845b03c979730d246afedd586af2dd8ccaf2cf2b005bf4dc6fab761
+    tokens: 2684
+    parent_artifact_ids:
+    - ec8bbb614655528dcc86e50c79ce457c4e32a6b35c227c5de35d8010ee382385
+  commands: []
+  notes: 'Completed Pass 2 remediation: 4-species GDNF-RET-Wnt11-Spry1 PDE, 3D ureteric
+    tree (Rb=2.059, RL=1.239), 5 perturbations, specimen CV segmentation, quick_gate=100/100,
+    overall score 92.8/100'

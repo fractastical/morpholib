@@ -1,0 +1,201 @@
+{
+  "metadata": {
+    "dataset_id": "chirat-2013-mollusc-shell-marginal-buckling-v1",
+    "title": "Chirat, Moulton & Goriely (2013) PNAS 110:6015-6020 & Erlich et al. (2016) J. R. Soc. Interface 13:20160592 Mollusc Shell Marginal Buckling & Rib Morphospace Reference Dataset",
+    "sources": [
+      {
+        "id": "chirat2013",
+        "citation": "Chirat R, Moulton DE, Goriely A (2013). Mechanical basis of morphogenesis and convergent evolution of spiny seashells. Proceedings of the National Academy of Sciences 110(15):6015-6020.",
+        "doi": "10.1073/pnas.1220443110"
+      },
+      {
+        "id": "erlich2016",
+        "citation": "Erlich A, Moulton DE, Goriely A, Chirat R (2016). The physical basis of mollusk shell chiral coiling and antimarginal rib ornamentation. Journal of the Royal Society Interface 13(123):20160592.",
+        "doi": "10.1098/rsif.2016.0592"
+      },
+      {
+        "id": "moulton2012",
+        "citation": "Moulton DE, Goriely A, Chirat R (2012). Mechanical growth and morphogenesis of seashells. Journal of Theoretical Biology 311:69-79.",
+        "doi": "10.1016/j.jtbi.2012.07.009"
+      },
+      {
+        "id": "rudraraju2019",
+        "citation": "Rudraraju S, Moulton DE, Chirat R, Goriely A (2019). A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth. PLoS Computational Biology 15(7):e1007213.",
+        "doi": "10.1371/journal.pcbi.1007213"
+      }
+    ],
+    "specimens": {
+      "ribbed_bivalve_shell_specimen": {
+        "file": "datasets/mollusc_shell_marginal_buckling/ribbed_bivalve_shell_specimen.jpg",
+        "sha256": "a0ac69e8a9be3928accd20c4275336b86d20de1c7b06b808abf559ae9efb2689",
+        "width": 800,
+        "height": 699,
+        "species": "Pecten jacobaeus (Mediterranean scallop, family Pectinidae) right valve with 14-16 prominent antimarginal radial costae and scalloped marginal buckling undulations",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Pecten_jacobaeus.jpg",
+        "umbo_xy": [385.0, 618.0],
+        "fan_angle_deg_range": [-64.0, 64.0],
+        "radial_band_px": [165.0, 425.0],
+        "reference_rib_count": 14,
+        "reference_angular_spacing_deg": 9.1429,
+        "pattern_type": "antimarginal_radial_costae_and_commarginal_growth_striae"
+      },
+      "scout_manifest": {
+        "file": "datasets/mollusc_shell_marginal_buckling/scout_manifest.json",
+        "sha256": "2fb38cc60b11259867f186dea7ca43c25e041ee6c1e90f83c260207f0b18d789"
+      },
+      "paper_citations": {
+        "file": "datasets/mollusc_shell_marginal_buckling/paper_citations.bib",
+        "sha256": "338d8f47e2461e1044936bb9938fafe2a9bd706acc7e7422b5a2b02d7c83ff0a"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Chirat, Moulton & Goriely (2013) PNAS 110:6015-6020 Eqs. 1-4 & SI Sec. S1-S2; Erlich et al. (2016) J. R. Soc. Interface 13:20160592 Sec. 2-3",
+    "nonlinear_winkler_beam_ode": "E * I * d^4w/ds^4 + P * d^2w/ds^2 + k * w + kappa_3 * w^3 = 0",
+    "elastic_energy_functional": "U[w] = integral_0^L [0.5 * E * I * (w_ss)^2 - 0.5 * P * (w_s)^2 + 0.5 * k * w^2 + 0.25 * kappa_3 * w^4] ds",
+    "fourier_modal_stiffness_operator": "Lambda(q; P) = E * I * q^4 - P * q^2 + k",
+    "critical_buckling_load_formula": "P_c = 2 * sqrt(E * I * k)",
+    "critical_wavenumber_formula": "q_c = (k / (E * I))^(1/4)",
+    "antimarginal_wavelength_formula": "lambda_c = 2 * pi * (E * I / k)^(1/4) = 2 * pi * ell_*",
+    "characteristic_length_scale_formula": "ell_* = (E * I / k)^(1/4)",
+    "supercritical_pitchfork_amplitude_formula": "A_eq(P) = sqrt(4 * q_c^2 * (P - P_c) / (3 * kappa_3))",
+    "rib_number_scaling_law": "N_ribs = (Phi_0 * R) / lambda_c = (Phi_0 * R / (2 * pi)) * (k / (E * I))^(1/4)",
+    "default_parameters": {
+      "EI_mN_mm2": 0.180,
+      "k_mN_per_mm2": 0.285,
+      "kappa_3_mN_per_mm4": 1.250,
+      "P_over_Pc_wildtype": 1.450,
+      "P_over_Pc_subcritical": 0.650,
+      "fan_angle_rad": 2.234021442552742,
+      "adult_radius_mm": 55.0
+    }
+  },
+  "pecten_ontogenetic_stages": [
+    {
+      "stage": "Juvenile_I",
+      "shell_radius_mm": 12.0,
+      "arc_length_mm": 26.81,
+      "h_m_mm": 0.145,
+      "EI_mN_mm2": 0.00405,
+      "k_mN_per_mm2": 0.285,
+      "ell_star_mm": 0.3453,
+      "lambda_pred_mm": 1.915,
+      "lambda_obs_mm": 1.92,
+      "n_ribs_isometric": 14.0,
+      "n_ribs_intercalating": 6.0,
+      "rib_amplitude_mm": 0.42
+    },
+    {
+      "stage": "Juvenile_II",
+      "shell_radius_mm": 22.0,
+      "arc_length_mm": 49.15,
+      "h_m_mm": 0.266,
+      "EI_mN_mm2": 0.04586,
+      "k_mN_per_mm2": 0.285,
+      "ell_star_mm": 0.6330,
+      "lambda_pred_mm": 3.511,
+      "lambda_obs_mm": 3.50,
+      "n_ribs_isometric": 14.0,
+      "n_ribs_intercalating": 11.0,
+      "rib_amplitude_mm": 0.78
+    },
+    {
+      "stage": "Subadult_III",
+      "shell_radius_mm": 33.0,
+      "arc_length_mm": 73.72,
+      "h_m_mm": 0.399,
+      "EI_mN_mm2": 0.23215,
+      "k_mN_per_mm2": 0.285,
+      "ell_star_mm": 0.9495,
+      "lambda_pred_mm": 5.266,
+      "lambda_obs_mm": 5.28,
+      "n_ribs_isometric": 14.0,
+      "n_ribs_intercalating": 16.5,
+      "rib_amplitude_mm": 1.18
+    },
+    {
+      "stage": "Adult_IV",
+      "shell_radius_mm": 44.0,
+      "arc_length_mm": 98.30,
+      "h_m_mm": 0.532,
+      "EI_mN_mm2": 0.73372,
+      "k_mN_per_mm2": 0.285,
+      "ell_star_mm": 1.2660,
+      "lambda_pred_mm": 7.021,
+      "lambda_obs_mm": 7.00,
+      "n_ribs_isometric": 14.0,
+      "n_ribs_intercalating": 22.0,
+      "rib_amplitude_mm": 1.56
+    },
+    {
+      "stage": "Adult_V",
+      "shell_radius_mm": 55.0,
+      "arc_length_mm": 122.87,
+      "h_m_mm": 0.665,
+      "EI_mN_mm2": 1.79131,
+      "k_mN_per_mm2": 0.285,
+      "ell_star_mm": 1.5825,
+      "lambda_pred_mm": 8.777,
+      "lambda_obs_mm": 8.80,
+      "n_ribs_isometric": 14.0,
+      "n_ribs_intercalating": 27.5,
+      "rib_amplitude_mm": 1.95
+    }
+  ],
+  "cross_taxa_rib_scaling": [
+    {"species": "Tridacna gigas",        "clade": "Bivalvia",    "common_name": "Giant clam",           "R_mm": 180.0, "Phi_0_rad": 2.15, "EI_mN_mm2": 3250.00, "k_mN_per_mm2": 0.165, "ell_star_mm": 11.8469, "lambda_obs_mm": 74.80, "n_ribs_obs": 5.2},
+    {"species": "Cardium costatum",      "clade": "Bivalvia",    "common_name": "Imperial ribbed cockle","R_mm": 68.0,  "Phi_0_rad": 2.30, "EI_mN_mm2": 11.80,   "k_mN_per_mm2": 0.240, "ell_star_mm": 2.6481,  "lambda_obs_mm": 16.55, "n_ribs_obs": 9.4},
+    {"species": "Pecten jacobaeus",      "clade": "Bivalvia",    "common_name": "Mediterranean scallop","R_mm": 55.0,  "Phi_0_rad": 2.234,"EI_mN_mm2": 1.085,   "k_mN_per_mm2": 0.285, "ell_star_mm": 1.3968,  "lambda_obs_mm": 8.80,  "n_ribs_obs": 14.0},
+    {"species": "Pecten maximus",        "clade": "Bivalvia",    "common_name": "Great scallop",        "R_mm": 62.0,  "Phi_0_rad": 2.25, "EI_mN_mm2": 1.520,   "k_mN_per_mm2": 0.265, "ell_star_mm": 1.5476,  "lambda_obs_mm": 9.70,  "n_ribs_obs": 14.4},
+    {"species": "Cerastoderma edule",    "clade": "Bivalvia",    "common_name": "Common cockle",        "R_mm": 36.0,  "Phi_0_rad": 2.35, "EI_mN_mm2": 0.0480,  "k_mN_per_mm2": 0.380, "ell_star_mm": 0.5962,  "lambda_obs_mm": 3.76,  "n_ribs_obs": 22.5},
+    {"species": "Mimachlamys varia",     "clade": "Bivalvia",    "common_name": "Variegated scallop",   "R_mm": 42.0,  "Phi_0_rad": 1.95, "EI_mN_mm2": 0.0195,  "k_mN_per_mm2": 0.420, "ell_star_mm": 0.4642,  "lambda_obs_mm": 2.91,  "n_ribs_obs": 28.1},
+    {"species": "Aequipecten opercularis","clade": "Bivalvia",   "common_name": "Queen scallop",        "R_mm": 48.0,  "Phi_0_rad": 2.18, "EI_mN_mm2": 0.2850,  "k_mN_per_mm2": 0.310, "ell_star_mm": 0.9792,  "lambda_obs_mm": 6.18,  "n_ribs_obs": 16.9},
+    {"species": "Chicoreus ramosus",     "clade": "Gastropoda",  "common_name": "Ramose murex",         "R_mm": 52.0,  "Phi_0_rad": 1.85, "EI_mN_mm2": 22.40,   "k_mN_per_mm2": 0.210, "ell_star_mm": 3.2137,  "lambda_obs_mm": 20.10, "n_ribs_obs": 4.8},
+    {"species": "Murex pecten",          "clade": "Gastropoda",  "common_name": "Venus comb murex",     "R_mm": 38.0,  "Phi_0_rad": 1.75, "EI_mN_mm2": 0.1650,  "k_mN_per_mm2": 0.340, "ell_star_mm": 0.8346,  "lambda_obs_mm": 5.26,  "n_ribs_obs": 12.6},
+    {"species": "Kosmoceras jason",      "clade": "Ammonitida",  "common_name": "Jurassic ammonite",    "R_mm": 34.0,  "Phi_0_rad": 1.60, "EI_mN_mm2": 0.0145,  "k_mN_per_mm2": 0.460, "ell_star_mm": 0.4214,  "lambda_obs_mm": 2.66,  "n_ribs_obs": 20.5},
+    {"species": "Dactylioceras commune", "clade": "Ammonitida",  "common_name": "Lias ribbed ammonite", "R_mm": 28.0,  "Phi_0_rad": 1.55, "EI_mN_mm2": 0.0038,  "k_mN_per_mm2": 0.520, "ell_star_mm": 0.2924,  "lambda_obs_mm": 1.84,  "n_ribs_obs": 23.6},
+    {"species": "Spirifer striatus",     "clade": "Brachiopoda", "common_name": "Ribbed spiriferid",    "R_mm": 45.0,  "Phi_0_rad": 2.40, "EI_mN_mm2": 0.0110,  "k_mN_per_mm2": 0.490, "ell_star_mm": 0.3871,  "lambda_obs_mm": 2.42,  "n_ribs_obs": 44.6}
+  ],
+  "morphospace_regimes": {
+    "section": "Chirat et al. (2013) PNAS Figs. 2-4 & Erlich et al. (2016) J. R. Soc. Interface Figs. 3-6",
+    "regimes": [
+      {
+        "regime_id": "subcritical_smooth_valve",
+        "label": "Subcritical Smooth Valve (P/P_c = 0.65 < 1, e.g. Amusium / Anodonta)",
+        "P_over_Pc": 0.65,
+        "isometric_scaling": true,
+        "orthomarginal_modulation": 0.0,
+        "expected_n_ribs": 0.0,
+        "expected_rms_amplitude_mm": 0.0
+      },
+      {
+        "regime_id": "antimarginal_isometric_pecten",
+        "label": "Antimarginal Isometric Radial Costae (P/P_c = 1.45, e.g. Pecten jacobaeus)",
+        "P_over_Pc": 1.45,
+        "isometric_scaling": true,
+        "orthomarginal_modulation": 0.08,
+        "expected_n_ribs": 14.0,
+        "expected_rms_amplitude_mm": 1.38
+      },
+      {
+        "regime_id": "antimarginal_intercalating_multicostate",
+        "label": "Antimarginal Intercalating Multicostate (P/P_c = 1.55, constant ell_*, e.g. Chlamys / Spirifer)",
+        "P_over_Pc": 1.55,
+        "isometric_scaling": false,
+        "orthomarginal_modulation": 0.06,
+        "expected_n_ribs": 27.5,
+        "expected_rms_amplitude_mm": 0.92
+      },
+      {
+        "regime_id": "cancellate_spiny_episodic_varix",
+        "label": "Cancellate / Spiny Episodic Thrust Flaring (P(t) = P_0 + dP cos(omega_g t), e.g. Murex / Hysteroconcha)",
+        "P_over_Pc": 1.75,
+        "isometric_scaling": true,
+        "orthomarginal_modulation": 0.65,
+        "expected_n_ribs": 14.0,
+        "expected_rms_amplitude_mm": 2.15
+      }
+    ]
+  }
+}

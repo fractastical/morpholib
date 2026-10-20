@@ -1,0 +1,163 @@
+# MorphoEval audit — Nakamasu et al. (2009) Zebrafish Three-Variable Pigment-Cell Reaction-Diffusion & Stripe Morphogenesis, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2009-nakamasu-zebrafish-three-cell-stripes.py` (v1, 147 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-zebrafish-three-cell-stripes-loop`).
+
+audit:
+  id: 2026-10-19-zebrafish-three-cell-stripes-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Slot 007 autonomous loop assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2009-nakamasu-zebrafish-three-cell-stripes.py`
+      prior to Step 12 remediation in `2026-10-19-zebrafish-three-cell-stripes-loop`.
+
+references:
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    venue: "Proceedings of the National Academy of Sciences 106(21):8429-8434 (2009)"
+    doi: 10.1073/pnas.0808622106
+  yamaguchi2007:
+    title: "Pattern regulation in the stripe of zebrafish suggests an underlying dynamic and autonomous mechanism"
+    authors: "Yamaguchi M, Yoshimoto E, Kondo S"
+    venue: "Proceedings of the National Academy of Sciences 104(12):4790-4793 (2007)"
+    doi: 10.1073/pnas.0607790104
+  watanabe2006:
+    title: "Spot pattern of leopard Danio is caused by mutation in the zebrafish connexin41.8 gene"
+    authors: "Watanabe M, Iwashita M, Ishii M, Kurachi Y, Kawakami A, Kondo S, Okada N"
+    venue: "EMBO Reports 7(9):893-897 (2006)"
+    doi: 10.1038/sj.embor.7400757
+  inaba2012:
+    title: "Pigment pattern formation by contact-dependent depolarization"
+    authors: "Inaba M, Yamanaka H, Kondo S"
+    venue: "Science 335(6069):677 (2012)"
+    doi: 10.1126/science.1212821
+
+simulations:
+  - id: nakamasu-zebrafish-three-cell-stripes
+    name: "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace"
+    organism: "Zebrafish (Danio rerio) melanophore-xanthophore-iridophore flank stripes"
+    script: 2009-nakamasu-zebrafish-three-cell-stripes.py
+    output: docs/media/zebrafish_three_cell_stripes_comparison.png
+    extra_outputs:
+      - docs/media/zebrafish_three_cell_stripes_growth.gif
+    status: evaluated
+    source_refs:
+      - nakamasu2009
+      - yamaguchi2007
+      - watanabe2006
+      - inaba2012
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2009-nakamasu-zebrafish-three-cell-stripes.py`
+      (overall weighted score: 49.8 / 100). The v1 script computes the linear dispersion
+      curve sigma(k) of the 3-variable Nakamasu et al. (2009) melanophore-xanthophore-factor
+      matrix J0 - k^2 D (k_c = 3.41, lambda_c = 1.84), but approximates spatial stripes
+      via a static cosine formula (`synthesize_cosine_stripes`) rather than numerically
+      integrating the nonlinear 3-species piecewise-saturated reaction-diffusion PDE for
+      (u, v, w) with zero-flux Neumann boundaries; omits in silico laser-ablation
+      regeneration and xanthophore-depletion survival collapse (Nakamasu 2009 Figs. 2-3);
+      omits the leopard (cx41.8) spot-to-labyrinth-to-stripe morphospace sweep and dual
+      negative controls; does not load or segment the vendored Danio rerio specimen
+      photograph; and returns only 2 analytical measurements without CLI parameter flags.
+    scores:
+      model-fidelity:
+        value: 52
+        rationale: >-
+          Evaluates the 3x3 Jacobian J0 and linear Turing dispersion curve sigma(k)
+          of Nakamasu et al. (2009) across k in [0, 6.5] (L27-68), but `synthesize_cosine_stripes`
+          (L71-79) uses a heuristic cosine wave rather than integrating the coupled
+          3-variable nonlinear reaction-diffusion PDE for melanophores (u), xanthophores (v),
+          and long-range survival factor (w) with saturating production clip(a*u + b*v + d*w + e, 0, F_max),
+          and omits both laser-ablation regeneration polarity (Figs. 2-3) and horizontal
+          myoseptum / iridophore X0 pioneer guidance.
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [27, 68], note: "Exact 3x3 Jacobian J0 and linear dispersion relation sigma(k)", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [71, 79], note: "Heuristic cosine superposition instead of nonlinear 3-species (u,v,w) reaction-diffusion PDE + laser ablation solver", supports: false}
+      specimen-match:
+        value: 28
+        rationale: >-
+          Although `datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg` is
+          vendored in the repository, the v1 script never loads, segments, or displays
+          the biological zebrafish photograph (`docs/media/zebrafish_three_cell_stripes_comparison.png`
+          shows only 2 synthetic panels), and performs no quantitative comparison
+          against Danio rerio flank inter-stripe wavelength or horizontal anisotropy.
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [82, 111], note: "2-panel synthetic plot without biological Danio rerio specimen panel or stripe segmentation", supports: false}
+          - {file: docs/media/zebrafish_three_cell_stripes_comparison.png, lines: [0, 0], note: "2-panel synthetic figure lacking Danio rerio flank stripe comparison", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Renders a single static cosine field without sweeping the *leopard* (cx41.8)
+          mutant spot -> labyrinth -> wild-type guided stripe -> inverse spot morphospace
+          (Nakamasu 2009 Fig. 5; Watanabe et al. 2006), without laser-ablation perturbations,
+          without equal-diffusion (D_w = D_u) or mutual-repulsion ablation negative controls,
+          and without CLI flags for kinetic or diffusive parameters (L139-145).
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [82, 98], note: "Single static synthetic pattern without leopard morphospace sweep or negative controls", supports: false}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [139, 145], note: "CLI exposes only --self-test", supports: false}
+      morphometric-validation:
+        value: 44
+        rationale: >-
+          `measure_morphoeval()` (L114-135) returns only 2 analytical scalar values
+          (k_c and lambda_c) without measuring Routh-Hurwitz invariants, 2D PDE
+          melanophore-xanthophore anti-phase correlation, xanthophore laser-ablation
+          melanophore survival loss, negative-control quenching, or biological Danio
+          rerio inter-stripe spacing CV and horizontal orientation anisotropy.
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [114, 135], note: "Only 2 analytical measurements returned; no PDE, laser-ablation, or specimen morphometrics", supports: false}
+      source-traceability:
+        value: 62
+        rationale: >-
+          Header cites Nakamasu et al. (2009) DOI `10.1073/pnas.0808622106` and
+          `datasets/zebrafish_three_cell_stripes/` exists on disk, but the v1 script
+          does not load `zebrafish_three_cell_stripes_reference.json` or verify SHA-256
+          digests at runtime.
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [1, 10], note: "Single DOI in docstring; no runtime SHA-256 verification of datasets/zebrafish_three_cell_stripes/", supports: false}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Basic docstrings are present for linear dispersion (L27-68), but functions
+          lack explicit equation and figure mappings to Nakamasu et al. (2009) Figs. 2-5
+          & SI Eqs. (1)-(6), Watanabe et al. (2006) *leopard* cx41.8 alleles, and the
+          3 Lean 4 theorems in `Loop_007_zebrafish_three_cell_stripes.lean`.
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [27, 79], note: "Docstrings omit explicit equation numbers and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Includes deterministic `np.random.default_rng(2009)` and `--self-test`
+          (L138-144), but `self_test()` checks only 2 basic inequalities without
+          verifying dataset SHA-256 locks, 3-species PDE convergence, laser-ablation
+          response, negative-control quenching, specimen segmentation, or bitwise
+          determinism across two runs.
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [138, 144], note: "Minimal 4-line self_test() without SHA-256, PDE, laser-ablation, specimen, or determinism checks", supports: false}
+    remediation:
+      - "Replace `synthesize_cosine_stripes` with a genuine 2D nonlinear 3-species (u, v, w) reaction-diffusion PDE solver (spectral DCT-II IMEX with zero-flux Neumann boundary conditions and piecewise-saturating synthesis rates) modeling wild-type horizontal myoseptum-guided stripes, unguided labyrinthine stripes, and *leopard* (cx41.8) mutant spot regimes."
+      - "Simulate Nakamasu et al. (2009) Figs. 2-3 laser-ablation experiments in silico: (1) selective xanthophore interstripe ablation demonstrating melanophore stripe survival collapse when long-range w support is removed, and (2) rectangular stripe ablation demonstrating directional horizontal stripe regeneration vs isotropic spot/labyrinth fill-in."
+      - "Implement dual formal negative controls around the homogeneous steady state: (1) equal-diffusion control D_w = D_u = D_v = 0.02 (testing Lean Theorem 3), and (2) ablated short-range mutual repulsion b_u = a_v = 0.0 (testing Lean Theorem 1 where det J_uv > 0 prevents pigment segregation)."
+      - "Load and SHA-256-verify `datasets/zebrafish_three_cell_stripes/zebrafish_three_cell_stripes_reference.json`, `danio_rerio_specimen.jpg`, `scout_manifest.json`, and `paper_citations.bib`; segment the dark melanophore stripes and yellow/iridescent interstripes from `danio_rerio_specimen.jpg`; expose full CLI flags; expand `measure_morphoeval()` to 8 reference-backed morphometrics; and render an 8-panel comparison PNG and 6-frame growth GIF."

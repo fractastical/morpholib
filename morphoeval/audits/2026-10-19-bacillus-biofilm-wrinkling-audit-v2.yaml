@@ -1,0 +1,196 @@
+# MorphoEval audit — Asally et al. (2012) PNAS & Yan et al. (2019) Nature Physics Bacillus subtilis Biofilm Wrinkling, 2026-10-19 (v2)
+#
+# Pass 2 (v2) evaluation of `2013-asally-bacillus-biofilm-wrinkling.py` (680 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-bacillus-biofilm-wrinkling-loop`):
+#   - Primary assessor: Gemini 4 Argon — 93.6 / 100 (up from 56.2 / 100 in v1; +37.4 overall)
+#
+# Key remediation improvements verified in Pass 2:
+#   1. Implemented a 2D circular colony Föppl–von Kármán + localized cell-death delamination
+#      free-energy minimizer (`relax_fvk_biofilm_colony`, L178-297) solved via pseudo-spectral
+#      preconditioning and L-BFGS-B that relaxes biofilm height w(x,y) into a central concentric
+#      ring (R_ring = 1.60 mm) and N_spokes = 13 outer radial spokes on standard 1.5% agar
+#      (E_s = 2.5 kPa, h = 80 um, w_max = 162.0 um, lambda_sim = 773.32 um).
+#   2. Implemented the 7-point agar substrate stiffness sweep E_s in [0.5, 10.0] kPa
+#      (`evaluate_agar_stiffness_sweep`, L303-355; Pearson r = 1.0000, p = 3.74e-12,
+#      RMSE = 1.94 um, log-log exponent |-0.3338 ± 0.0008| vs theoretical 1/3) and the
+#      6-point biofilm thickness scaling sweep h in [40, 140] um (`evaluate_thickness_scaling_sweep`,
+#      L358-390; Pearson r = 1.0000, p = 4.57e-11, log-log exponent 0.9999 ± 0.0017).
+#   3. Implemented all 5 Asally et al. (2012) PNAS Figs. 1-4 genetic and mechanical-score
+#      controls (`evaluate_genetic_and_mechanical_controls`, L393-425): Wild-Type NCIB 3610
+#      (13 spokes, 162.0 um), Delta epsA-O / Delta tasA matrix-deficient mutant (0 spokes,
+#      0.0 um flat), FeCl3/D-Leu cell-death-suppressed control (0 spokes, 0.0 um flat), and
+#      artificial mechanical-score templates guiding m = 6 spokes (168.0 um) and m = 8 spokes
+#      (165.0 um).
+#   4. Implemented computer-vision segmentation and DoG radial ridge detection
+#      (`segment_bacillus_biofilm_specimen`, L431-505) on the SHA-256-locked CC BY-SA 3.0
+#      specimen `datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_specimen.jpg`
+#      (n = 11 isolated macrocolonies, focal colony N_spokes = 12 radial spokes, mean angular
+#      spacing = 30.0 deg, spacing CV = 0.3156), plus runtime SHA-256 verification of all 4
+#      dataset assets (`verify_dataset_integrity`, L69-85).
+
+audit:
+  id: 2026-10-19-bacillus-biofilm-wrinkling-audit-v2
+  supersedes: 2026-10-19-bacillus-biofilm-wrinkling-audit
+  supersedes_audit_id: 2026-10-19-bacillus-biofilm-wrinkling-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 094 Pass 2 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/94
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e93f00e
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2013-asally-bacillus-biofilm-wrinkling.py` after
+      completing Step 12 closed-loop remediation in `2026-10-19-bacillus-biofilm-wrinkling-loop`.
+
+references:
+  asally2012:
+    title: "Localized cell death focuses mechanical forces during 3D patterning in a biofilm"
+    authors: "Asally M, Kittisopikul M, Rue P, Du Y, Hu Z, Cagatay T, Robinson AB, Lu H, Garcia-Ojalvo J, Suel GM"
+    venue: "Proceedings of the National Academy of Sciences 109(46):18891-18896 (2012)"
+    doi: 10.1073/pnas.1212429109
+  yan2019:
+    title: "Mechanical instability and interfacial energy drive biofilm morphogenesis"
+    authors: "Yan J, Fei C, Mao S, Moreau A, Wingreen NS, Kosmrlj A, Stone HA, Bassler BL"
+    venue: "Nature Physics 15(5):456-462 (2019)"
+    doi: 10.1038/s41567-018-0392-9
+  trejo2013:
+    title: "Elasticity and wrinkled morphology of Bacillus subtilis pellicles"
+    authors: "Trejo M, Douarche C, Bailleux V, Poulard C, Mariot S, Regeard C, Raspaud E"
+    venue: "Proceedings of the National Academy of Sciences 110(6):2011-2016 (2013)"
+    doi: 10.1073/pnas.1217178110
+  seminara2012:
+    title: "Osmotic spreading of Bacillus subtilis biofilms driven by an extracellular matrix"
+    authors: "Seminara A, Angelini TE, Wilking JN, Vlamakis H, Ebrahim S, Kolter R, Weitz DA, Brenner MP"
+    venue: "Proceedings of the National Academy of Sciences 109(4):1116-1121 (2012)"
+    doi: 10.1073/pnas.1102300108
+
+simulations:
+  - id: asally-bacillus-biofilm-wrinkling
+    name: "Asally et al. (2012) PNAS & Yan et al. (2019) Nature Physics osmotic matrix swelling, localized cell-death delamination, and Föppl–von Kármán radial wrinkle spokes in Bacillus subtilis biofilms"
+    organism: "Bacillus subtilis (NCIB 3610 wild-type and matrix/cell-death mutant biofilm macrocolonies)"
+    script: 2013-asally-bacillus-biofilm-wrinkling.py
+    output: docs/media/bacillus_biofilm_wrinkling_comparison.png
+    extra_outputs:
+      - docs/media/bacillus_biofilm_wrinkling_growth.gif
+    status: evaluated
+    source_refs:
+      - asally2012
+      - yan2019
+      - trejo2013
+      - seminara2012
+    summary: >-
+      Pass 2 (v2) evaluation of `2013-asally-bacillus-biofilm-wrinkling.py` (overall
+      weighted score: 93.6/100, up from 56.2/100 in v1). The remediated script relaxes a
+      2D circular colony Föppl–von Kármán + localized cell-death delamination free-energy
+      functional via pseudo-spectral L-BFGS-B minimization, reproducing the wild-type
+      central concentric ring and N_spokes = 13 outer radial spokes; validates the 7-point
+      agar stiffness sweep E_s in [0.5, 10.0] kPa (r = 1.0000, RMSE = 1.94 um, log-log
+      exponent -0.3338 ± 0.0008 vs -1/3) and 6-point biofilm thickness sweep h in [40, 140] um
+      (r = 1.0000, slope = 0.9999 ± 0.0017); verifies all 5 genetic and artificial
+      mechanical-score controls (WT, Delta eps/tasA flat mutant, FeCl3 cell-death
+      suppression, guided m=6 and m=8 spoke templates); and segments the SHA-256-locked
+      CC BY-SA 3.0 specimen (`bacillus_biofilm_specimen.jpg`, n = 11 colonies, focal
+      N_spokes = 12, mean spoke angle = 30.0 deg, spacing CV = 0.3156).
+    scores:
+      model-fidelity:
+        value: 95
+        rationale: >-
+          Implements plane-strain Föppl–von Kármán bilayer buckling mechanics
+          (`compute_fvk_wavelength_and_strain`, L91-147), spatiotemporal basal cell-death
+          patterning (`build_cell_death_template`, L153-175), and a 2D pseudo-spectral +
+          L-BFGS-B energy minimizer (`relax_fvk_biofilm_colony`, L178-297) with genetic and
+          artificial score controls (`evaluate_genetic_and_mechanical_controls`, L393-425),
+          backed by 3 machine-checked Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_094_bacillus_biofilm_wrinkling.lean`.
+        evidence:
+          - {file: 2013-asally-bacillus-biofilm-wrinkling.py, lines: [91, 147], note: "Exact Föppl-von Kármán bilayer wavelength lambda_c, critical strain epsilon_c, cell-death delamination threshold, and spoke count N_spokes", supports: true}
+          - {file: 2013-asally-bacillus-biofilm-wrinkling.py, lines: [178, 297], note: "2D circular colony pseudo-spectral + L-BFGS-B Föppl-von Kármán + cell-death delamination energy minimizer", supports: true}
+          - {file: morphoeval/lean/loops/Loop_094_bacillus_biofilm_wrinkling.lean, lines: [14, 108], note: "3 standalone Lean 4 theorems proving FvK cubed wavelength stationarity, cell-death delamination focusing, and radial spoke scaling (0 sorrys)", supports: true}
+      specimen-match:
+        value: 92
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY-SA 3.0 Bacillus subtilis macrocolony
+          biofilm photograph `datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_specimen.jpg`,
+          segments n = 11 isolated circular macrocolonies across the agar plate, and extracts
+          N_spokes = 12 radial wrinkle ridges (mean angular spacing = 30.0 deg, CV = 0.3156)
+          on the focal colony (`segment_bacillus_biofilm_specimen`, L431-505).
+        evidence:
+          - {file: 2013-asally-bacillus-biofilm-wrinkling.py, lines: [431, 505], note: "Macrocolony segmentation and DoG circumferential radial spoke ridge detection on bacillus_biofilm_specimen.jpg", supports: true}
+          - {file: docs/media/bacillus_biofilm_wrinkling_comparison.png, lines: [0, 0], note: "6-panel synthesis figure comparing 2D FvK buckling, agar & thickness scaling, mutant/score controls, and specimen spoke segmentation", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Spans the 7-point agar stiffness sweep E_s in [0.5, 10.0] kPa (L303-355), the
+          6-point biofilm thickness sweep h in [40, 140] um (L358-390), 5 genetic and
+          mechanical-score controls (WT, Delta eps/tasA, FeCl3 cell-death suppression,
+          guided m=6 and m=8 templates, L393-425), and exposes `--E-s-kPa`, `--h-um`,
+          `--epsilon-g`, `--artificial-spokes`, and `--seed` CLI overrides (L652-676).
+        evidence:
+          - {file: 2013-asally-bacillus-biofilm-wrinkling.py, lines: [303, 425], note: "7-point agar stiffness sweep, 6-point thickness sweep, and 5 genetic/mechanical-score controls", supports: true}
+          - {file: 2013-asally-bacillus-biofilm-wrinkling.py, lines: [652, 676], note: "CLI overrides for E_s, h, epsilon_g, artificial spokes, and seed", supports: true}
+      morphometric-validation:
+        value: 94
+        rationale: >-
+          `measure_morphoeval()` (L511-606) computes 9 reference-anchored morphometric
+          measurements with uncertainty and statistical tests: agar stiffness wavelength
+          Pearson r = 1.0000 (p = 3.74e-12, RMSE = 1.94 um), log-log agar stiffness
+          exponent |alpha_E| = 0.3338 ± 0.0008 (ref 0.3333), thickness wavelength Pearson
+          r = 1.0000 (p = 4.57e-11, slope = 0.9999 ± 0.0017), relaxed FvK standard-agar
+          wavelength 773.32 um (ref 750.0 um), WT spoke count 13 (ref 13), Delta eps/tasA
+          mutant amplitude 0.0 um (ref 0.0 um), guided m=6 score spoke count 6 (ref 6),
+          specimen focal spoke count 12 (ref 13), and specimen mean spoke angle 30.0 deg
+          (ref 27.69 deg).
+        evidence:
+          - {file: 2013-asally-bacillus-biofilm-wrinkling.py, lines: [511, 606], note: "9 quantitative morphometrics with p-values, RMSE, log-log slopes, mutant negative controls, and specimen spoke metrics", supports: true}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Vendors `datasets/bacillus_biofilm_wrinkling/` with 4 primary DOIs in
+          `paper_citations.bib` (`10.1073/pnas.1212429109`, `10.1038/s41567-018-0392-9`,
+          `10.1073/pnas.1217178110`, `10.1073/pnas.1102300108`), `scout_manifest.json`,
+          `bacillus_biofilm_wrinkling_reference.json`, and `bacillus_biofilm_specimen.jpg`,
+          all verified at runtime via SHA-256 checks (`verify_dataset_integrity`, L69-85).
+        evidence:
+          - {file: 2013-asally-bacillus-biofilm-wrinkling.py, lines: [69, 85], note: "Runtime SHA-256 verification of all 4 dataset files in datasets/bacillus_biofilm_wrinkling/", supports: true}
+          - {file: datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_wrinkling_reference.json, lines: [1, 210], note: "SHA-256-locked reference dataset with agar sweep, thickness sweep, and genetic/mechanical controls", supports: true}
+      code-traceability:
+        value: 93
+        rationale: >-
+          Module and function docstrings map every governing equation and control to Asally
+          et al. (2012) PNAS Figs. 1-4, Yan et al. (2019) Nature Physics Eqs. (1)-(3),
+          Trejo et al. (2013) PNAS, Seminara et al. (2012) PNAS, and the 3 formal Lean 4
+          theorems in `morphoeval/lean/loops/Loop_094_bacillus_biofilm_wrinkling.lean`
+          (L1-35, L91-215).
+        evidence:
+          - {file: 2013-asally-bacillus-biofilm-wrinkling.py, lines: [1, 35], note: "Explicit equation-to-paper and Lean 4 theorem traceability in module header", supports: true}
+      repro-package:
+        value: 94
+        rationale: >-
+          8-point `self_test()` suite (`L612-649`) verifying SHA-256 dataset integrity,
+          agar stiffness cube-root scaling slope (-1/3), biofilm thickness linear scaling,
+          WT vs Delta eps/tasA and FeCl3 cell-death controls, artificial m=6 and m=8 spoke
+          guidance, specimen colony & spoke segmentation, and two-run bitwise determinism
+          (`np.allclose(..., atol=0.0)`).
+        evidence:
+          - {file: 2013-asally-bacillus-biofilm-wrinkling.py, lines: [612, 649], note: "8-check self_test() verifying SHA-256 digests, scaling laws, mutant controls, CV specimen, and bitwise determinism", supports: true}
+    remediation:
+      - "Couple the 2D circular Föppl–von Kármán delamination solver to a 3D poroelastic osmotic water-transport PDE resolving radial fluid influx from the agar into the expanding biofilm channel network."

@@ -1,0 +1,175 @@
+# MorphoEval audit — Hannezo et al. (2017) Cell & Scheele et al. (2017) Nature
+# Unifying Theory of Branching Morphogenesis via Branching & Annihilating Random Walks (BARW), 2026-10-19 (v1)
+#
+# Pass 1 baseline assessment of `2017-hannezo-branching-random-walk-annihilation.py` (v1, 200 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-branching-random-walk-annihilation-loop`).
+
+audit:
+  id: 2026-10-19-branching-random-walk-annihilation-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Loop 056 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (MorphoEval Loop 056 Independent Rubric Check)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/56
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1 baseline) evaluation of `2017-hannezo-branching-random-walk-annihilation.py`
+      prior to Step 12 remediation in `2026-10-19-branching-random-walk-annihilation-loop`.
+
+references:
+  hannezo2017:
+    title: "A Unifying Theory of Branching Morphogenesis"
+    authors: "Hannezo E, Scheele CLGJ, Moad M, Drogo N, Heer R, Sampogna RV, van Rheenen J, Simons BD"
+    venue: "Cell 171(1):242-255.e27 (2017)"
+    doi: 10.1016/j.cell.2017.08.026
+  scheele2017:
+    title: "Identity and dynamics of mammary stem cells during branching morphogenesis"
+    authors: "Scheele CLGJ, Hannezo E, Muraro MJ, Zomer A, Langedijk NSM, van Oudenaarden A, Simons BD, van Rheenen J"
+    venue: "Nature 542(7641):313-317 (2017)"
+    doi: 10.1038/nature21060
+  bordeu2023:
+    title: "Inflationary theory of branching morphogenesis in the mouse salivary gland"
+    authors: "Bordeu I, Chatzeli L, Simons BD"
+    venue: "Nature Communications 14:3422 (2023)"
+    doi: 10.1038/s41467-023-39124-x
+  chatzeli2017:
+    title: "Tracing the dynamics of pancreatic progenitors during branching morphogenesis"
+    authors: "Chatzeli L, Simons BD, Tapon N"
+    venue: "Development 144(12):2175-2186 (2017)"
+    doi: 10.1242/dev.147645
+
+simulations:
+  - id: hannezo-branching-random-walk-annihilation
+    name: "Hannezo et al. (2017) Cell & Scheele et al. (2017) Nature unifying theory of branching morphogenesis via branching and annihilating random walks (BARW)"
+    organism: "Mus musculus (mouse pubertal mammary gland, embryonic metanephric kidney, embryonic pancreas, and salivary gland ductal networks)"
+    script: 2017-hannezo-branching-random-walk-annihilation.py
+    output: docs/media/branching_random_walk_annihilation_comparison.png
+    extra_outputs:
+      - docs/media/branching_random_walk_annihilation_growth.gif
+    status: evaluated
+    source_refs:
+      - hannezo2017
+      - scheele2017
+      - bordeu2023
+      - chatzeli2017
+    summary: >-
+      Pass 1 (v1 baseline) evaluation of `2017-hannezo-branching-random-walk-annihilation.py`
+      (51.8/100). The v1 script computes the mean-field steady-state duct density
+      i_inf = k_b / k_a and characteristic branch length l_b = v_0 / k_b, integrates
+      a 1D mean-field travelling-wave PDE for active tips a(x, t) and inactive ducts
+      i(x, t), and plots an analytic S^(-3/2) curve. However, v1 lacks an off-lattice
+      2D spatial Branching and Annihilating Random Walk (BARW) ductal tree simulator
+      with explicit persistent tip migration (v_0), Poisson tip bifurcation (k_b),
+      ductal trail deposition (A -> A + I), and steric/TGF-beta tip-duct annihilation
+      within radius R_a (A + I -> I); omits universal collapse across mouse mammary
+      gland, kidney, and pancreas regimes; omits R_a perturbation and R_a = 0
+      non-annihilating explosion ablation controls; neither loads nor verifies
+      `datasets/branching_random_walk_annihilation/branching_random_walk_annihilation_reference.json`;
+      and performs zero computer-vision segmentation on
+      `datasets/branching_random_walk_annihilation/mouse_branched_ductal_network_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Integrates the 1D mean-field BARW reaction-diffusion PDE for active tips
+          a(x, t) and inactive ducts i(x, t) (L51-89) and computes basic algebraic
+          ratios (L34-48). However, `build_simple_galton_watson_tree` (L92-106) is a
+          synthetic exponential curve rather than an off-lattice 2D spatial BARW
+          simulator with persistent active tips, Poisson bifurcation (A -> 2A),
+          trail deposition (A -> A + I), and tip-duct annihilation within radius R_a
+          (A + I -> I). Multi-organ universality (mammary, kidney, pancreas) and
+          R_a = 0 ablation controls are absent.
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [34, 89], note: "1D mean-field BARW travelling-wave PDE solver and steady-state ratios", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [92, 106], note: "Synthetic exponential placeholder lacking 2D off-lattice spatial BARW tip-duct annihilation", supports: false}
+      specimen-match:
+        value: 20
+        rationale: >-
+          Although `datasets/branching_random_walk_annihilation/mouse_branched_ductal_network_specimen.jpg`
+          (whole-mount fluorescence micrograph of mouse branched glandular epithelium
+          with cyan/green active distal buds A and blue/magenta differentiated ducts I)
+          is vendored in the dataset directory, the v1 script never loads, segments,
+          or displays the specimen image or extracts active tip counts, branch nodes,
+          or topological q_branch.
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [109, 169], note: "3-panel synthetic figure with zero biological specimen image or active-tip/ductal-tree segmentation", supports: false}
+          - {file: docs/media/branching_random_walk_annihilation_comparison.png, lines: [0, 0], note: "Pass 1 3-panel plot lacking mouse branched ductal network specimen comparison", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Hardcodes a single parameter set (v_0=1.0, k_b=0.12, k_a=0.42, D=0.35,
+          R_a=3.5, L27-31) without sweeping annihilation radius R_a, branching rate
+          k_b, or organ-specific dimensionless ratio R_a / l_b across mammary gland,
+          kidney, and pancreas regimes, and exposes only `--self-test` and
+          `--skip-gif` on the CLI (L189-193).
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [27, 31], note: "Single hardcoded parameter set without R_a or k_b morphospace sweeps", supports: false}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [189, 198], note: "Minimal CLI lacking --kb, --ra, --v0, --sigma-theta, --ka, --seed overrides", supports: false}
+      morphometric-validation:
+        value: 46
+        rationale: >-
+          `measure_morphoeval()` (L172-179) reports only 3 scalar numbers
+          (l_branch_wt, i_homeostatic_wt, q_branch_baseline) without statistical
+          dispersion metrics (RMSE, Pearson r, CV), without comparison to Hannezo et al.
+          (2017) generational branching probabilities across mammary gland, kidney, and
+          pancreas, and without perturbation deltas for TGF-beta / R_a variations or
+          R_a = 0 non-annihilating explosion ablation.
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [172, 179], note: "Only 3 baseline scalars without multi-organ universality RMSE/r or R_a ablation controls", supports: false}
+      source-traceability:
+        value: 58
+        rationale: >-
+          Cites Hannezo et al. (2017) and Scheele et al. (2017) in the module
+          docstring (L5-7), but v1 does not load
+          `datasets/branching_random_walk_annihilation/branching_random_walk_annihilation_reference.json`
+          at runtime or verify SHA-256 cryptographic digests of the reference JSON and
+          mouse branched ductal network fluorescence specimen.
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [4, 13], note: "Docstring cites primary papers but omits runtime JSON loading and SHA-256 verification", supports: false}
+      code-traceability:
+        value: 64
+        rationale: >-
+          Functions have brief docstrings (L34-106), but do not map code blocks to
+          numbered equations in Hannezo et al. (2017) STAR Methods Eqs. (1)-(10),
+          Scheele et al. (2017) Nature, Silberstein & Daniel (1987) Science, or the
+          3 machine-checked Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_056_branching_random_walk_annihilation.lean`.
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [34, 106], note: "Brief docstrings without equation-level or Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Provides `--self-test` and `--skip-gif` flags and deterministic output
+          rendering (L182-198), but `self_test()` checks only 3 algebraic assertions
+          without verifying JSON dataset parity, 2D spatial BARW topological self-termination,
+          specimen segmentation, or two-run bitwise determinism.
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [182, 187], note: "3-assertion baseline self_test() without dataset parity or two-run determinism check", supports: true}
+    remediation:
+      - "Implement a full 2D off-lattice spatial Branching and Annihilating Random Walk (BARW) ductal network simulator where active tips migrate persistently at speed v_0 with angular noise sigma_theta, deposit immutable differentiated ductal trail segments I, bifurcate stochastically at rate k_b (A -> 2A), and irreversibly annihilate (A + I -> I) upon approaching within sensing radius R_a of any non-sibling duct."
+      - "Simulate the 3 Hannezo et al. (2017) organ universality regimes (Mouse Pubertal Mammary Gland, Metanephric Kidney, and Embryonic Pancreas) plus TGF-beta / R_a perturbations (reduced R_a hyper-branching, elevated R_a hypoplasia, and R_a = 0 non-annihilating exponential explosion ablation), demonstrating collapse onto the critical Galton-Watson branching probability q_branch -> 1/2 and subtree distribution P(S) ~ S^(-3/2)."
+      - "Load and SHA-256-verify `datasets/branching_random_walk_annihilation/branching_random_walk_annihilation_reference.json` and `mouse_branched_ductal_network_specimen.jpg` at runtime, segment the cyan/green active distal buds (A, N_term = 34) and blue/magenta differentiated ductal tree (I, N_branch = 33), and verify the exact topological identity N_term = N_branch + 1 (q_branch = 33/67 = 0.4925) and peripheral active-tip pulse localization (r/R_max = 0.783)."
+      - "Expand `--self-test`, CLI parameter flags (`--kb`, `--ra`, `--v0`, `--sigma-theta`, `--ka`, `--seed`), and `measure_morphoeval()` to report >= 8 quantitative metrics with reference values, dispersion (RMSE, Pearson r, CV), and negative-control ablation deltas."

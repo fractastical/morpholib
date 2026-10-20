@@ -1,0 +1,72 @@
+sim_id: meinhardt-echinoderm-pentaradial-symmetry
+math_family: "Circular-Ring Activator-Inhibitor Mode m=5 Selection (k_m = m / R_ring), Lovén's Law (II, IV, I, III, V) Ocular/Ambulacral Ordering & Duboc Nodal Left-Right Rudiment Multiplicity"
+model_spec:
+  model: "Morris (2012) Evol. Dev. + Mooi & David (1998) Extraxial-Axial Theory + Lovén (1874) Ocular/Ambulacral Law + Duboc et al. (2005) Dev. Cell Nodal L-R Asymmetry + Meinhardt (2008) Circular-Ring Gierer-Meinhardt Reaction-Diffusion"
+  governing_pde: "da/dt = (D_a / R_ring(t)^2) d^2a/dtheta^2 + rho_a (a^2 / h - a) + rho_0 G_crescent(theta, t),   dh/dt = (D_h / R_ring(t)^2) d^2h/dtheta^2 + rho_h (a^2 - h)"
+  mode_selection_law: "mu_m = (m / R_ring)^2,   m^* = round(2*pi * R_ring / lambda_c) = 5 (Delta_theta = 72 deg) for 2*pi * R_ring / lambda_c in (4.5, 5.5)"
+  loven_sequence_law: "Initiation order (II, IV, I, III, V) = (C, A, D, B, E); peristomial enlargement Ib, IIb, IIIa, IVa, Va (ba-ab-ba-ab-ab)"
+  nodal_rudiment_law: "N_podia = 5 * (I(Nodal_L = 0) + I(Nodal_R = 0)) in {5 (WT), 10 (Nodal LOF 2x5), 0 (Nodal GOF)}"
+  R_ring_um: 75.0
+  lambda_c_um: 94.2478
+  D_a_um2_per_s: 0.45
+  D_h_um2_per_s: 18.0
+  seed: 2005
+  inputs:
+    - datasets/echinoderm_pentaradial_symmetry/echinoderm_pentaradial_symmetry_reference.json
+    - datasets/echinoderm_pentaradial_symmetry/echinoderm_pentaradial_test_specimen.jpg
+    - datasets/echinoderm_pentaradial_symmetry/scout_manifest.json
+equations:
+  - law_name: "Circular Hydrocoel Ring Laplacian Eigenvalue & Pentaradial Mode m^* = 5 Selection Law"
+    formula: "- (1 / R_ring^2) d^2(cos(m theta))/dtheta^2 = (m^2 / R_ring^2) cos(m theta),   m^* = argmax_m sigma(m / R_ring) = 5 (Delta_theta = 72 deg) when 2*pi R_ring / lambda_c in (4.5, 5.5)"
+    lean_decl: "MathOfBiology.Loop_075.hydrocoel_turing_growth_score"
+    lean_theorem: "MathOfBiology.Loop_075.hydrocoel_ring_pentaradial_mode5_selection"
+    lean_locus: "morphoeval/lean/loops/Loop_075_echinoderm_pentaradial_symmetry.lean#L24-L85"
+    lean_code: |
+      def ring_laplacian_eigen_num (m : Nat) : Nat := m * m
+      def hydrocoel_angular_period_deg (m : Nat) : Nat := 360 / m
+      theorem hydrocoel_ring_pentaradial_mode5_selection :
+          ring_laplacian_eigen_num 5 = 25 ∧
+          hydrocoel_angular_period_deg 5 = 72 ∧
+          5 * hydrocoel_angular_period_deg 5 = 360 ∧
+          hydrocoel_turing_growth_score 5 50 > hydrocoel_turing_growth_score 4 50 ∧
+          hydrocoel_turing_growth_score 5 50 > hydrocoel_turing_growth_score 6 50 := by decide
+    variables: "m in {3, 4, 5, 6, 7}: azimuthal harmonic mode on closed hydrocoel ring; R_ring: hydrocoel ring radius (um); lambda_c: Turing critical wavelength (um); Delta_theta = 360 deg / m: inter-ambulacral angular spacing"
+    role: "Governs spontaneous symmetry breaking of the closed circular left hydrocoel ring into 5 primary podia lobes spaced at 72 deg, while explaining 4-rayed (90 deg) and 6-rayed (60 deg) teratological variants under ring-radius perturbations"
+    source_citation: "Meinhardt (2008) Curr. Top. Dev. Biol. 81:1-63; Morris (2012) Evol. Dev. 14(4):313-326"
+    code_locus: "2005-meinhardt-echinoderm-pentaradial-symmetry.py#L145-L310"
+  - law_name: "Lovén's Law (1874) & Morris (2012) Hydrocoel Crescent Initiation Ordering (II, IV, I, III, V)"
+    formula: "Initiation rank r in {1..5} -> Ray (II, IV, I, III, V) = (C, A, D, B, E);   Peristomial biserial dominance: (Ib, IIb, IIIa, IVa, Va) = (ba, ba, ab, ab, ab)"
+    lean_decl: "MathOfBiology.Loop_075.loven_initiation_rank_to_ray"
+    lean_theorem: "MathOfBiology.Loop_075.loven_law_crescent_ordering_and_asymmetric_biserial_rule"
+    lean_locus: "morphoeval/lean/loops/Loop_075_echinoderm_pentaradial_symmetry.lean#L91-L154"
+    lean_code: |
+      def loven_initiation_rank_to_ray : Nat → Nat
+        | 1 => 2 | 2 => 4 | 3 => 1 | 4 => 3 | 5 => 5 | _ => 0
+      theorem loven_law_crescent_ordering_and_asymmetric_biserial_rule :
+          loven_initiation_rank_to_ray 1 = 2 ∧
+          loven_initiation_rank_to_ray 5 = 5 ∧
+          (loven_b_column_enlarged 1 + loven_b_column_enlarged 2 +
+           loven_b_column_enlarged 3 + loven_b_column_enlarged 4 +
+           loven_b_column_enlarged 5) = 2 := by decide
+    variables: "r in {1..5}: developmental initiation rank during crescent-to-ring closure; I..V: Lovén ambulacral ray indices; (a, b): counter-clockwise half-ambulacral plate columns"
+    role: "Explains how progressive anterior-to-posterior activation along the closing bilateral hydrocoel crescent generates Lovén's invariant asymmetric biserial peristomial plate law across Echinoidea"
+    source_citation: "Lovén (1874) K. Sven. Vetensk.-Akad. Handl. 11(7):1-91; Mooi & David (1998) Am. Zool. 38:965-974; Morris (2012) Evol. Dev. 14:313-326"
+    code_locus: "2005-meinhardt-echinoderm-pentaradial-symmetry.py#L315-L385"
+  - law_name: "Duboc et al. (2005) Right-Sided Nodal Signaling & Bilateral Twin-Rudiment Multiplicity Law"
+    formula: "N_rings = I(Nodal_L = 0) + I(Nodal_R = 0),   N_podia = 5 * N_rings in {5 (WT: Nodal_R = 1), 10 (Nodal LOF: Nodal_L = Nodal_R = 0, twin 2x5 rudiments), 0 (Nodal GOF: Nodal_L = Nodal_R = 1)}"
+    lean_decl: "MathOfBiology.Loop_075.total_primary_podia"
+    lean_theorem: "MathOfBiology.Loop_075.duboc_nodal_left_right_rudiment_multiplicity"
+    lean_locus: "morphoeval/lean/loops/Loop_075_echinoderm_pentaradial_symmetry.lean#L160-L192"
+    lean_code: |
+      def active_hydrocoel_rings (nodal_left nodal_right : Nat) : Nat :=
+        (if nodal_left == 0 then 1 else 0) + (if nodal_right == 0 then 1 else 0)
+      def total_primary_podia (m_ring nodal_left nodal_right : Nat) : Nat :=
+        m_ring * active_hydrocoel_rings nodal_left nodal_right
+      theorem duboc_nodal_left_right_rudiment_multiplicity :
+          total_primary_podia 5 0 1 = 5 ∧
+          total_primary_podia 5 0 0 = 10 ∧
+          total_primary_podia 5 1 1 = 0 := by decide
+    variables: "nodal_left, nodal_right in {0, 1}: left/right ectodermal Nodal signaling activity; N_rings: number of functional hydrocoel rings; N_podia: total primary podia lobes"
+    role: "Links bilateral pluteus left-right axis specification (right-sided Nodal/BMP2-4 cascade) to asymmetric restriction of pentaradial adult rudiment formation to the left hydrocoel"
+    source_citation: "Duboc et al. (2005) Dev. Cell 9(1):147-158"
+    code_locus: "2005-meinhardt-echinoderm-pentaradial-symmetry.py#L390-L445"

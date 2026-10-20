@@ -1,0 +1,80 @@
+sim_id: hannezo-branching-random-walk-annihilation
+slot: 56
+slot_id: slot-056-branching-random-walk-annihilation
+math_family: "Stochastic Branching and Annihilating Random Walk (BARW), Critical Galton-Watson Tree Topology & Fisher-KPP Travelling Wavefront"
+model_spec:
+  model: "Hannezo et al. (2017) Cell 171:242-255 & Scheele et al. (2017) Nature 542:313-317 Unifying Theory of Branching Morphogenesis via Branching and Annihilating Random Walks (BARW)"
+  v0_tip_speed: 1.0
+  kb_branching_rate_wt: 0.12
+  Ra_annihilation_radius_wt: 3.5
+  ka_mean_field_annihilation_wt: 0.42
+  D_tip_diffusivity: 0.35
+  sigma_theta_angular_noise_rad: 0.18
+  critical_galton_watson_q_branch: 0.50
+  seed: 2017
+  inputs:
+    - datasets/branching_random_walk_annihilation/branching_random_walk_annihilation_reference.json
+    - datasets/branching_random_walk_annihilation/mouse_branched_ductal_network_specimen.jpg
+    - datasets/branching_random_walk_annihilation/scout_manifest.json
+    - datasets/branching_random_walk_annihilation/paper_citations.bib
+equations:
+  - id: hannezo-branching-random-walk-annihilation-1
+    law_name: "Hannezo et al. (2017) Topological Binary-Tree Balance & Critical Galton-Watson Branching Law"
+    formula: "A_final = 1 + N_branch - N_term = 0  =>  N_term = N_branch + 1,  N_total = 2 N_branch + 1,  q_branch = N_branch / (N_branch + N_term) = N_branch / (2 N_branch + 1) -> 1/2 = q_term"
+    lean_decl: "MathOfBiology.Loop_056.active_tips_remaining"
+    lean_theorem: "MathOfBiology.Loop_056.hannezo_topological_tree_balance_and_critical_branching"
+    lean_locus: "morphoeval/lean/loops/Loop_056_branching_random_walk_annihilation.lean#L46-L73"
+    lean_code: |
+      def active_tips_remaining (n_branch n_term : Int) : Int := 1 + n_branch - n_term
+      def total_tree_segments (n_branch n_term : Int) : Int := n_branch + n_term
+      theorem hannezo_topological_tree_balance_and_critical_branching (n_branch : Int) :
+          active_tips_remaining n_branch (n_branch + 1) = 0 ∧
+          total_tree_segments n_branch (n_branch + 1) = 2 * n_branch + 1 ∧
+          2 * n_branch < total_tree_segments n_branch (n_branch + 1) ∧
+          active_tips_remaining 33 34 = 0 ∧
+          total_tree_segments 33 34 = 67 := by
+        simp [active_tips_remaining, total_tree_segments]; omega
+    variables: "N_branch: number of dichotomous tip bifurcation events (A -> 2A); N_term: number of tip-duct annihilation/termination events (A + I -> I); q_branch: ensemble branching probability"
+    role: "Proves that any finite self-terminating binary ductal tree starting from 1 primary stalk satisfies N_term = N_branch + 1, tuning the tree automatically to a critical Galton-Watson process (q_branch -> 1/2) with universal P(S) ~ S^(-3/2) subtree size scaling"
+    source_citation: "Hannezo et al. (2017) Cell 171(1):242-255 Eqs. (1)-(3); Scheele et al. (2017) Nature 542:313-317"
+    code_locus: "2017-hannezo-branching-random-walk-annihilation.py#L115-L245"
+
+  - id: hannezo-branching-random-walk-annihilation-2
+    law_name: "Hannezo et al. (2017) Mean-Field BARW Travelling-Wave PDE & Homeostatic Duct Density Law"
+    formula: "∂_t a = D ∇^2 a - v_0 ∇·(u_p a) + k_b a - k_a a (a + i),  ∂_t i = v_0 a;  a_∞ = 0,  i_∞ = c_0 k_b / k_a ∝ k_b / (v_0 R_a)"
+    lean_decl: "MathOfBiology.Loop_056.active_tip_reaction"
+    lean_theorem: "MathOfBiology.Loop_056.hannezo_barw_homeostatic_steady_state"
+    lean_locus: "morphoeval/lean/loops/Loop_056_branching_random_walk_annihilation.lean#L80-L110"
+    lean_code: |
+      def active_tip_reaction (kb ka a i : Int) : Int := kb * a - ka * a * (a + i)
+      def duct_deposition_rate (v0 a : Int) : Int := v0 * a
+      def per_tip_net_growth (kb ka a i : Int) : Int := kb - ka * (a + i)
+      theorem hannezo_barw_homeostatic_steady_state (kb ka v0 i_inf : Int) :
+          active_tip_reaction kb ka 0 i_inf = 0 ∧
+          duct_deposition_rate v0 0 = 0 ∧
+          per_tip_net_growth (ka * i_inf) ka 0 i_inf = 0 := by
+        simp [active_tip_reaction, duct_deposition_rate, per_tip_net_growth]; omega
+    variables: "a(x,t): active proliferative tip density; i(x,t): differentiated inactive duct density; D: tip effective diffusivity; v_0: tip speed; k_b: Poisson bifurcation rate; k_a: tip-duct annihilation kernel"
+    role: "Establishes that an invading pulse of active tips a(x,t) self-extinguishes behind the Fisher-KPP wavefront (a_∞ = 0) while depositing a uniform homeostatic plateau of differentiated ducts i_∞ ∝ k_b / k_a"
+    source_citation: "Hannezo et al. (2017) Cell 171(1):242-255 STAR Methods Eqs. (4)-(10)"
+    code_locus: "2017-hannezo-branching-random-walk-annihilation.py#L250-L365"
+
+  - id: hannezo-branching-random-walk-annihilation-3
+    law_name: "Hannezo et al. (2017) & Silberstein & Daniel (1987) Annihilation-Radius Hyper-Branching Density Scaling & Explosion Ablation Law"
+    formula: "i_∞(R_a) ∝ k_b / (v_0 R_a)  =>  i_∞(R_a,hypo) < i_∞(R_a,WT) < i_∞(R_a,hyper);  for R_a = 0 (no annihilation): N_active(g) = 2^g -> ∞"
+    lean_decl: "MathOfBiology.Loop_056.homeostatic_density_scaled"
+    lean_theorem: "MathOfBiology.Loop_056.hannezo_annihilation_radius_scaling_and_explosion_ablation"
+    lean_locus: "morphoeval/lean/loops/Loop_056_branching_random_walk_annihilation.lean#L117-L148"
+    lean_code: |
+      def homeostatic_density_scaled (ra_10 : Nat) : Nat := 10000 / ra_10
+      def unarrested_branch_step (n : Nat) : Nat := 2 * n
+      def unarrested_gen5 (n : Nat) : Nat :=
+        unarrested_branch_step (unarrested_branch_step (unarrested_branch_step (unarrested_branch_step (unarrested_branch_step n))))
+      theorem hannezo_annihilation_radius_scaling_and_explosion_ablation (n : Nat) :
+          homeostatic_density_scaled 70 < homeostatic_density_scaled 35 ∧
+          homeostatic_density_scaled 35 < homeostatic_density_scaled 17 ∧
+          unarrested_gen5 n = 32 * n ∧ 0 < unarrested_gen5 1
+    variables: "R_a: tip-duct steric/TGF-beta sensing and annihilation radius; g: branching generation; N_active(g): active tip count under R_a = 0 ablation"
+    role: "Proves that attenuating TGF-beta signaling (reducing R_a) produces hyper-dense ductal trees while exogenous TGF-beta (increasing R_a) yields sparse hypoplastic trees, whereas complete ablation of annihilation (R_a = 0) destroys self-termination and triggers exponential tip explosion"
+    source_citation: "Hannezo et al. (2017) Cell 171(1):242-255 Fig. 4; Silberstein & Daniel (1987) Science 237:291-293"
+    code_locus: "2017-hannezo-branching-random-walk-annihilation.py#L370-L535"

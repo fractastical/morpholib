@@ -1,0 +1,186 @@
+# MorphoEval audit — Yamanaka et al. (2023), Miao et al. (2023) & Adhyapok et al. (2021) Epithelial Somite Rosette Mechanics, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2021-yaman-somitoid-chirality-buckling.py` (Slot 029)
+# superseding `2026-10-19-somitoid-chirality-buckling-audit` in `2026-10-19-somitoid-chirality-buckling-loop`.
+
+audit:
+  id: 2026-10-19-somitoid-chirality-buckling-audit-v2
+  supersedes_audit_id: 2026-10-19-somitoid-chirality-buckling-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2021-yaman-somitoid-chirality-buckling.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-somitoid-chirality-buckling-loop`).
+
+references:
+  yamanaka2023:
+    title: "Reconstituting human somitogenesis in vitro"
+    authors: "Yamanaka Y, Hamidi S, Yoshioka-Kobayashi K, Munira S, Sunadome K, Zhang Y, Kurokawa Y, Ericsson R, Mieda A, Thompson JL, Kerwin J, Lisgo S, Yamamoto T, Moris N, Martinez-Arias A, Tsujimura T, Alev C"
+    venue: "Nature 614(7948):509-520 (2023)"
+    doi: 10.1038/s41586-022-05649-2
+  miao2023:
+    title: "Reconstruction and deconstruction of human somitogenesis in vitro"
+    authors: "Miao Y, Djeffal Y, De Simone A, Zhu K, Lee JG, Lu Z, Silberfeld A, Rao J, Tarazona OA, Reiter A, Pourquie O"
+    venue: "Nature 614(7948):500-508 (2023)"
+    doi: 10.1038/s41586-022-05655-4
+  adhyapok2021:
+    title: "A mechanical model of early somite segmentation"
+    authors: "Adhyapok P, Piatkowska AM, Norman MJ, Clendenon SG, Stern CD, Glazier JA, Belmonte JM"
+    venue: "Developmental Cell 56(9):1312-1324 (2021)"
+    doi: 10.1016/j.devcel.2021.03.026
+  sanaki2022:
+    title: "Periodic formation of epithelial somites from human pluripotent stem cells"
+    authors: "Sanaki-Matsumiya M, Matsuda M, Gritti N, Nakaki F, Sharpe J, Trivedi V, Ebisuya M"
+    venue: "Nature Communications 13(1):2325 (2022)"
+    doi: 10.1038/s41467-022-29967-1
+
+simulations:
+  - id: yaman-somitoid-chirality-buckling
+    name: "Yamanaka et al. (2023), Miao et al. (2023) & Adhyapok et al. (2021) epithelial somite rosette vertex mechanics and mesenchymal-to-epithelial transition (MET) model"
+    organism: "Homo sapiens / Mus musculus (in vitro axioloid / somitoid epithelial somite rosettes)"
+    script: 2021-yaman-somitoid-chirality-buckling.py
+    output: docs/media/somitoid_chirality_buckling_comparison.png
+    extra_outputs:
+      - docs/media/somitoid_chirality_buckling_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Yamanaka et al. (2023) Nature 614:509-520 & Miao et al. (2023) Nature 614:500-508 discovery that Matrigel ECM embedding and RhoA/ROCK-dependent apical actomyosin constriction drive epithelial somite rosette polarization and central somitecoel lumen formation in human axioloids and somitoids"
+        - "Adhyapok et al. (2021) Dev. Cell 56:1312-1324 mechanical vertex/cellular-Potts model demonstrating that combined apical constriction (gamma_ap > gamma_bas) and EphA4/ephrinB2 heterotypic boundary repulsion (gamma_het > gamma_hom) govern somite rounding and inter-somitic cleft separation"
+        - "Y-27632 ROCK inhibition or absence of Matrigel ECM abolishes the apico-basal tension differential (gamma_ap -> gamma_bas) and prevents polarized epithelial somite rosette morphogenesis"
+      reconstructed_in_script:
+        - "2D 32-vertex apico-basal differential interfacial tension relaxation solver for an N=16 wedge-cell somite rosette matching the exact analytical polygon equilibrium ratio (WT L_ap/L_bas = 0.3030 vs 0.3030 analytical and 0.305 empirical)"
+        - "6-regime experimental perturbation series (WT +10% Matrigel, Calpeptin hyper-constriction, Low 2.5% Matrigel, EphA4/ephrinB2 knockdown, Y-27632 ROCK inhibition, and Minus-Matrigel control; Pearson r = 0.9989, RMSE = 0.0086)"
+        - "EphA4/ephrinB2 inter-somitic cleft sorting energy barrier (Delta_E_cleft = 75.60 pN, S_cleft = 0.8189 in WT vs 0.0930 in Eph/ephrin KD), 2D phase diagram over (gamma_ap/gamma_lat, Matrigel %), and bilateral somite rosette segmentation on somitoid_rosette_specimen.jpg (45.38 px mean spacing, CV = 0.2010)"
+      transfer_boundary:
+        - "2D cross-sectional vertex mechanics of an N-cell epithelial somite rosette and Young-Dupre inter-somitic cleft balance compared with dorsal vertebrate somite SEM metameric periodicity"
+      does_not_claim:
+        - "Full 3D sclerotome/dermomyotome lineage regionalization following late somite maturation"
+    source_refs:
+      - yamanaka2023
+      - miao2023
+      - adhyapok2021
+      - sanaki2022
+    summary: >-
+      Pass 2 post-remediation evaluation of `2021-yaman-somitoid-chirality-buckling.py` (91.9/100,
+      up from 60.1/100 in Pass 1; +31.8 overall). The remediated script implements a 2D 32-vertex
+      apico-basal differential interfacial tension L-BFGS-B relaxation solver for an N=16 wedge-cell
+      somite rosette, reproducing exact agreement with the analytical polygon equilibrium ratio
+      (WT L_ap/L_bas = 0.3030 vs 0.3030 analytical and 0.305 empirical), Y-27632 ROCK-inhibited
+      lumen dilation (L_ap/L_bas = 0.7013, R_in* = 19.65 um vs 7.72 um in WT), and Minus-Matrigel
+      depolarization (0.5562), evaluating all 6 experimental regimes from Yamanaka et al. (2023),
+      Miao et al. (2023), and Adhyapok et al. (2021) (Pearson r = 0.9989, RMSE = 0.0086),
+      quantifying EphA4/ephrinB2 inter-somitic cleft separation (S_cleft = 0.8189 vs 0.0930 in
+      Eph/ephrin KD), mapping the 2D phase diagram over apical tension and Matrigel concentration,
+      and segmenting bilateral somite rosettes on `somitoid_rosette_specimen.jpg` (45.38 px spacing,
+      CV = 0.2010, dome/cleft contrast = 1.189x), backed by 3 machine-checked Lean 4 theorems in
+      `Loop_029_somitoid_chirality_buckling.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Faithfully implements the 2D apico-basal differential interfacial tension vertex energy
+          functional E = sum_i [0.5*K_A*(A_i - A_0)^2 + gamma_ap*L_{ap,i} + gamma_lat*L_{lat,i} + gamma_bas*L_{bas,i}]
+          alongside the exact analytical polygon and continuum equilibrium laws, EphA4/ephrinB2
+          inter-somitic cleft sorting energy barrier, and Y-27632 / Minus-Matrigel negative controls
+          (L118-375), verified by 3 machine-checked Lean 4 theorems (0 sorrys) in
+          `morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean`.
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [118, 285], note: "Analytical wedge equilibrium and 2D 32-vertex L-BFGS-B somite rosette relaxation solver", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [288, 375], note: "EphA4/ephrinB2 cleft sorting energy barrier and 6-regime experimental perturbation evaluator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean, lines: [24, 119], note: "3 machine-checked Lean 4 theorems (0 sorrys) on apical wedge tapering, Eph/ephrin cleft sorting energy, and Y-27632 curvature collapse", supports: true}
+      specimen-match:
+        value: 89
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 dorsal vertebrate embryo somite rosette SEM
+          (`datasets/somitoid_chirality_buckling/somitoid_rosette_specimen.jpg`) and segments
+          both bilateral somite rosette rows (`segment_somite_rosette_specimen`, L418-505),
+          extracting rosette centers, inter-somitic clefts, bilateral mean spacing 45.38 px
+          (CV = 0.2010), radial dome-to-cleft intensity contrast (1.189x), and periodic waveform
+          fit (Panels E-F).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [418, 505], note: "Bilateral somite rosette center, cleft, and radial annular contrast segmentation on somitoid_rosette_specimen.jpg", supports: true}
+          - {file: docs/media/somitoid_chirality_buckling_comparison.png, lines: [0, 0], note: "6-panel dark-theme synthesis figure comparing 2D vertex rosettes, energy landscape, Matrigel phase diagram, 6-regime benchmark, and SEM specimen segmentation", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Evaluates all 6 experimental regimes from Yamanaka et al. (2023), Miao et al. (2023),
+          and Adhyapok et al. (2021) (WT +10% Matrigel, Calpeptin hyper-constriction, Low 2.5%
+          Matrigel, EphA4/ephrinB2 boundary knockdown, Y-27632 ROCK inhibition, and Minus-Matrigel
+          control) plus a 28x28 2D phase diagram over (gamma_ap/gamma_lat, Matrigel ECM %).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [305, 415], note: "6-regime perturbation series and 28x28 2D (gamma_ap, Matrigel %) phase diagram", supports: true}
+      morphometric-validation:
+        value: 93
+        rationale: >-
+          Extracts 5 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L510-575): WT apical-to-basal ratio 0.3030 vs 0.3030 analytical
+          (0.305 empirical), Y-27632 ROCK-inhibited ratio dilation 0.7013 vs 0.7013 analytical
+          (0.700 empirical), 6-regime perturbation Pearson r = 0.9989 (RMSE = 0.0086),
+          EphA4/ephrinB2 cleft separation index 0.8189 (vs 0.0930 in KD), and bilateral specimen
+          rosette spacing 45.38 px (CV = 0.2010).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [510, 575], note: "5 quantitative MorphoEval measurements with analytical and empirical references, CV, Pearson r, and RMSE", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/somitoid_chirality_buckling/` with `scout_manifest.json`,
+          `somitoid_chirality_buckling_reference.json`, `somitoid_rosette_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.1038/s41586-022-05649-2`,
+          `10.1038/s41586-022-05655-4`, `10.1016/j.devcel.2021.03.026`,
+          `10.1038/s41467-022-29967-1`), and `README.md`, with runtime SHA-256 verification
+          (`verify_dataset_integrity`, L88-115).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [88, 115], note: "Runtime SHA-256 verification of datasets/somitoid_chirality_buckling/ artifacts", supports: true}
+          - {file: datasets/somitoid_chirality_buckling/somitoid_chirality_buckling_reference.json, lines: [1, 185], note: "Vendored vertex energy equations, equilibrium lumen ratio laws, and 6-regime experimental perturbation table", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Every computational section and docstring maps directly to numbered figures in
+          Yamanaka et al. (2023) Nature, Miao et al. (2023) Nature, and Adhyapok et al. (2021)
+          Dev. Cell and the 3 Lean 4 theorems in `Loop_029_somitoid_chirality_buckling.lean` and
+          `morphoeval/math_kg_loops/yaman-somitoid-chirality-buckling.yaml`.
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [1, 56], note: "Module docstring linking vertex equations to Yamanaka (2023), Miao (2023), Adhyapok (2021), and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/yaman-somitoid-chirality-buckling.yaml, lines: [1, 115], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic RNG (`seed=2021`), standalone `--self-test` suite verifying SHA-256
+          dataset integrity, bitwise two-run vertex relaxation determinism (`atol=0.0`),
+          analytical-to-vertex ratio agreement (<0.015), Y-27632 & Minus-Matrigel negative
+          controls, Eph/ephrin cleft knockdown collapse, and specimen segmentation
+          (`run_self_test`, L800-845), plus rendered PNG and GIF outputs in `docs/media/`.
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [800, 845], note: "Deterministic --self-test suite verifying SHA-256 digests, bitwise vertex determinism, negative controls, and morphometrics", supports: true}
+          - {file: docs/media/somitoid_chirality_buckling_growth.gif, lines: [0, 0], note: "20-frame animated GIF comparing WT MET apical constriction and lumen narrowing against Y-27632 ROCK-inhibited control", supports: true}
+    remediation:
+      - "Extend the 2D cross-sectional wedge-rosette vertex model to a 3D apical-basal polyhedral scutoid shell to capture 3D somitecoel lumen pressurization."
+      - "Couple MESP2/RIPPLY2 wavefront arrest directly from a live HES7 delayed oscillator into the spatiotemporal activation of EphA4/ephrinB2 and RhoA/ROCK line tensions."

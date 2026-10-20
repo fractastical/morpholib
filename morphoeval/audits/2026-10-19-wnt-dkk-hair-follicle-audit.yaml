@@ -1,0 +1,173 @@
+# MorphoEval audit — Sick et al. (2006) WNT/DKK Hair Follicle Spacing Morphogenesis, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `2002-sick-wnt-dkk-hair-follicle.py` (v1 baseline, 189 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-wnt-dkk-hair-follicle-loop`):
+#   - Primary assessor: Gemini 4 Argon (Cursor agent) — 59.0 / 100
+#   - Second assessor rubric criteria: 52.0 / 100
+#   - Pass 1 consensus score: 55.5 / 100
+#
+# Concrete Pass 1 defects driving Step 12 -> Pass 2 remediation:
+#   1. Only static 2D primary wave (N=56) is simulated: Sick et al.'s (2006) central
+#      developmental experiment—2x embryonic epidermal domain expansion (E14.5 -> E16.5)
+#      driving secondary inter-follicular wave placode insertion midway between primary
+#      follicles—is omitted, as are the transgenic K14-Wnt overexpression high-density
+#      clustering phenotype (Fig. 2B-D), saturated enlarged/ringing follicles (Fig. 3-4),
+#      and Dkk1 transgenic blockade (Andl et al. 2002, 0 placodes).
+#   2. No equal-diffusion negative/ablation control (D_w = D_h = 0.01, d = 1.0 < d_c = 5.8284)
+#      or diffusivity-ratio / ectopic Dkk1 parameter sweep is executed.
+#   3. Specimen photograph `hair_follicle_placode_specimen.jpg` is displayed raw in Panel 3
+#      without any computer-vision segmentation of the Mus musculus whole-mount in situ
+#      hybridization follicle placode array or nearest-neighbor Delaunay/Voronoi spacing
+#      analysis, and without runtime SHA-256 verification.
+#   4. `measure_morphoeval()` reports only 3 basic scalars without uncertainty statistics
+#      (CV, std, RMSE, Pearson r) or negative-control contrast.
+
+audit:
+  id: 2026-10-19-wnt-dkk-hair-follicle-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + MorphoEval Dual-Rubric Assessor"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 3cb5ea9
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2002-sick-wnt-dkk-hair-follicle.py`
+      prior to Step 12 remediation in `2026-10-19-wnt-dkk-hair-follicle-loop`.
+
+references:
+  sick2006:
+    title: "WNT and DKK determine hair follicle spacing through a reaction-diffusion mechanism"
+    authors: "Sick S, Reinker S, Timmer J, Schlake T"
+    venue: "Science 314(5804):1447-1450 (2006)"
+    doi: 10.1126/science.1130088
+  andl2002:
+    title: "WNT signals are required for the initiation of hair follicle development"
+    authors: "Andl T, Reddy ST, Gaddapara T, Millar SE"
+    venue: "Developmental Cell 2(5):643-653 (2002)"
+    doi: 10.1016/S1534-5807(02)00167-3
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    doi: 10.1007/BF00289234
+  maddox2004:
+    title: "Dynamic expression of a glutamate decarboxylase gene in multiple non-neural tissues during mouse development"
+    authors: "Maddox DM, Condie BG"
+    venue: "BMC Developmental Biology 4:4 (2004)"
+    doi: 10.1186/1471-213X-4-4
+
+simulations:
+  - id: sick-wnt-dkk-hair-follicle
+    name: "Sick et al. (2006) WNT/DKK activator-inhibitor hair follicle spacing morphogenesis"
+    organism: "Embryonic mouse (Mus musculus) epidermal hair follicle placode lattice & inter-follicular wave insertion"
+    script: 2002-sick-wnt-dkk-hair-follicle.py
+    output: docs/media/wnt_dkk_hair_follicle_comparison.png
+    extra_outputs:
+      - docs/media/wnt_dkk_hair_follicle_growth.gif
+    status: evaluated
+    source_refs:
+      - sick2006
+      - andl2002
+      - gierer1972
+      - maddox2004
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2002-sick-wnt-dkk-hair-follicle.py`
+      (55.5/100). The v1 baseline implements the 2D saturating Meinhardt-Gierer WNT/DKK
+      reaction-diffusion equations on a 56x56 periodic grid and computes the linear
+      dispersion relation sigma(k) and critical diffusivity ratio d_c = (sqrt(2)+1)^2 = 5.8284,
+      but omits primary-to-secondary inter-follicular wave insertion upon 2x epidermal
+      expansion (Sick et al. 2006 Figs. 3-4), omits K14-Wnt overexpression high-density
+      clustering and Dkk1 transgenic enlargement/blockade phenotypes, runs no equal-diffusion
+      negative control (D_w = D_h), and performs no computer-vision segmentation of the
+      vendored Mus musculus follicle placode specimen image.
+    scores:
+      model-fidelity:
+        value: 63
+        rationale: >-
+          Implements the 2D saturating WNT/DKK activator-inhibitor PDE (L66-109) and linear
+          dispersion curve (L34-55), but omits Sick et al.'s (2006) primary -> secondary
+          inter-follicular wave insertion upon 2x epidermal expansion, omits K14-Wnt
+          overexpression and Dkk1 transgenic phenotypes, and runs no equal-diffusion
+          negative control (D_w = D_h).
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [34, 55], note: "Linear stability analysis computing d_c = (sqrt(2)+1)^2 and dispersion curve", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [66, 109], note: "Single-regime 2D wild-type solver without secondary inter-follicular insertion, K14-Wnt/Dkk1 phenotypes, or equal-diffusion control", supports: false}
+      specimen-match:
+        value: 38
+        rationale: >-
+          Displays `datasets/wnt_dkk_hair_follicle/hair_follicle_placode_specimen.jpg` raw
+          in Panel 3 (L126-128), performing zero computer-vision segmentation of the
+          in situ hybridization follicle placodes or inter-placode nearest-neighbor spacing.
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [126, 128], note: "Raw imshow of specimen without placode segmentation or nearest-neighbor spacing analysis", supports: false}
+          - {file: docs/media/wnt_dkk_hair_follicle_comparison.png, lines: [0, 0], note: "3-panel baseline figure showing raw specimen without morphometric overlay", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Simulates only a single wild-type parameter point (d = 40, rho_w = 0.001, rho_h = 0)
+          with no transgenic parameter sweep across rho_w (K14-Wnt) or rho_h (Dkk1), no
+          domain expansion sweep, and no CLI parameter overrides beyond `--self-test` (L180-188).
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [180, 188], note: "CLI exposes only --self-test without PDE parameter flags or transgenic sweeps", supports: false}
+      morphometric-validation:
+        value: 46
+        rationale: >-
+          `measure_morphoeval()` reports only 3 basic scalars (d_c, w_*, and wild-type
+          placode count, L141-169) without uncertainty metrics (CV, std, RMSE, Pearson r),
+          without negative-control contrast, and without specimen nearest-neighbor spacing
+          or secondary wave insertion validation.
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [141, 169], note: "Only 3 scalar measurements without CV/RMSE/r or specimen placode morphometrics", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `datasets/wnt_dkk_hair_follicle/` with `wnt_dkk_hair_follicle_reference.json`,
+          `hair_follicle_placode_specimen.jpg`, `scout_manifest.json`, and `paper_citations.bib`,
+          but v1 script does not verify SHA-256 digests of the dataset files at runtime or
+          assert JSON-to-code parameter parity in `self_test()`.
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [26, 29], note: "Defines dataset paths but performs no runtime SHA-256 verification", supports: false}
+      code-traceability:
+        value: 64
+        rationale: >-
+          Docstring cites Sick et al. (2006) and Andl et al. (2002), but lacks explicit
+          mappings to Sick et al. (2006) Figs. 2-4 (primary/secondary waves, K14-Wnt, Dkk1)
+          and the 3 Lean 4 theorems in `Loop_006_wnt_dkk_hair_follicle.lean`.
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [1, 12], note: "Baseline module header without Lean 4 theorem or transgenic figure mappings", supports: false}
+      repro-package:
+        value: 65
+        rationale: >-
+          Includes deterministic `np.random.default_rng(2006)` and a basic `self_test()`
+          (L172-178), but does not test bitwise two-run determinism, SHA-256 dataset locks,
+          equal-diffusion control decay, or secondary inter-follicular wave insertion.
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [172, 178], note: "4-assertion baseline self_test() without bitwise determinism or SHA-256 check", supports: false}
+    remediation:
+      - "Implement Sick et al. (2006) Figs. 3-4 primary wave (E14.5) -> 2x epidermal expansion -> secondary inter-follicular wave insertion (E16.5) showing de novo placode formation at the uninhibited midpoints between primary follicles."
+      - "Implement Sick et al. (2006) Fig. 2-4 & Andl et al. (2002) transgenic phenotype suite in 2D: (a) Wild-Type regular placode lattice, (b) K14-Wnt overexpression high-density clustered placodes (elevated rho_w), (c) saturated enlarged/ringing follicles (elevated kappa & moderate DKK), (d) Dkk1 transgenic blockade (high rho_h -> 0 placodes), and (e) equal-diffusion negative control (D_w = D_h = 0.01 -> 0 placodes)."
+      - "Implement automated computer-vision segmentation of `datasets/wnt_dkk_hair_follicle/hair_follicle_placode_specimen.jpg` (Mus musculus E12.5-E13.5 in situ hybridization placode array) to extract individual dark-purple stained follicle placode centroids, areas, and nearest-neighbor spacing CV, plus an allometric domain-length scaling sweep."
+      - "Add runtime SHA-256 verification of all files in `datasets/wnt_dkk_hair_follicle/`, expand `measure_morphoeval()` to 7 quantitative measurements with reference values, CV/RMSE/r uncertainty, and negative-control delta, expose full CLI flags, and upgrade the comparison figure to a 9-panel publication synthesis."

@@ -1,0 +1,79 @@
+sim_id: yan-vibrio-biofilm-nematic-fountain
+math_family: "Hertzian Rod-on-Substrate Radial Compression Stress & Critical Verticalization Instability (P(r) = (1/2) ζ g (R^2 - r^2) ≥ P_c(L_cell))"
+model_spec:
+  model: "Beroz et al. (2018) Nature Physics 14:954-960 & Hartmann et al. (2019) Nature Physics 15:251-256 parabolic radial compression stress, Hertzian rod-on-substrate peeling verticalization, and 3D nematic fountain flow in Vibrio cholerae biofilms"
+  L_0_wild_type_um: 2.1
+  d_cell_um: 0.8
+  h_monolayer_um: 0.8
+  g_growth_rate_per_h: 1.15
+  zeta_wild_type_Pa_h_per_um: 1.6
+  kappa_wild_type_Pa_per_um2: 0.575
+  sigma_c0_wild_type_Pa: 55.2
+  R_c0_wild_type_um: 9.798
+  R_mature_colony_um: 22.0
+  grid_size_N: 96
+  seed: 2018
+  inputs:
+    - datasets/vibrio_biofilm_nematic_fountain/vibrio_biofilm_nematic_fountain_reference.json
+    - datasets/vibrio_biofilm_nematic_fountain/vibrio_cholerae_biofilm_specimen.jpg
+    - datasets/vibrio_biofilm_nematic_fountain/scout_manifest.json
+    - datasets/vibrio_biofilm_nematic_fountain/paper_citations.bib
+equations:
+  - law_name: "Parabolic Radial Compression Stress Center Peak & Margin Vanishing Law"
+    formula: "σ_{rr}(r) = (ζ g / (4 h)) (R^2 - r^2) = κ (R^2 - r^2)  ⇒  σ_{rr}(R) = 0,  σ_{rr}(0) = κ R^2 > σ_{rr}(r > 0)"
+    lean_decl: "MathOfBiology.Loop_095.radial_compression_stress"
+    lean_theorem: "MathOfBiology.Loop_095.parabolic_radial_stress_center_peak_and_edge_zero"
+    lean_locus: "morphoeval/lean/loops/Loop_095_vibrio_biofilm_nematic_fountain.lean#L25-L48"
+    lean_code: |
+      def radial_compression_stress (kappa R r : Int) : Int :=
+        kappa * (R * R - r * r)
+      def radial_stress_nat (kappa r_sq_diff : Nat) : Nat :=
+        kappa * r_sq_diff
+      theorem parabolic_radial_stress_center_peak_and_edge_zero (kappa R : Int) (k0 r0 gap : Nat) :
+          radial_compression_stress kappa R R = 0 ∧
+          radial_compression_stress kappa R 0 = kappa * (R * R) ∧
+          radial_stress_nat (k0 + 1) ((r0 + 1) + (gap + 1)) >
+            radial_stress_nat (k0 + 1) (gap + 1)
+    variables: "r: radial coordinate from colony center; R: expanding biofilm radius; ζ: RbmA/Bap1/RbmC cell-substrate friction coefficient; g: exponential growth rate; h: monolayer thickness; κ = ζ g / (4 h)"
+    role: "Establishes the parabolic radial compressive stress profile across an expanding Vibrio cholerae monolayer peaking at r = 0 and vanishing at r = R"
+    source_citation: "Beroz et al. (2018) Nature Physics 14:954-960 Eq. (1) & SI Text"
+    code_locus: "2019-yan-vibrio-biofilm-nematic-fountain.py#L95-L150"
+
+  - law_name: "Critical Verticalization Radius Onset & RbmA Friction-Loss Control Law"
+    formula: "R_c = √(σ_c / κ),  r_vert^2 = max(0, R^2 - R_c^2)  ⇒  κ (R^2 - r_vert^2) = σ_c,  r_vert(ΔrbmA) = 0"
+    lean_decl: "MathOfBiology.Loop_095.verticalization_front_sq"
+    lean_theorem: "MathOfBiology.Loop_095.verticalization_front_onset_and_rbmA_control"
+    lean_locus: "morphoeval/lean/loops/Loop_095_vibrio_biofilm_nematic_fountain.lean#L59-L79"
+    lean_code: |
+      def verticalization_front_sq (R_sq R_c_sq : Nat) : Nat :=
+        R_sq - R_c_sq
+      def front_stress_residual (kappa R_sq r_vert_sq sigma_c : Int) : Int :=
+        kappa * (R_sq - r_vert_sq) - sigma_c
+      theorem verticalization_front_onset_and_rbmA_control
+          (kappa R_c_sq dr_sq : Int) (rc2 excess2 sub_gap : Nat) :
+          front_stress_residual kappa (R_c_sq + dr_sq) dr_sq (kappa * R_c_sq) = 0 ∧
+          verticalization_front_sq (rc2 + (excess2 + 1)) rc2 = excess2 + 1 ∧
+          verticalization_front_sq rc2 (rc2 + sub_gap) = 0
+    variables: "R_c: critical colony radius at verticalization onset; r_vert: radius of the central verticalized core; σ_c: Hertzian rod-on-substrate peeling threshold"
+    role: "Governs the onset and radial propagation of the verticalization front r_vert(R) = √(R^2 - R_c^2) and proves that ΔrbmA / Δbap1ΔrbmC low-friction mutants remain flat (r_vert = 0)"
+    source_citation: "Beroz et al. (2018) Nature Physics 14:954-960 Figs. 1-4; Yan et al. (2016) PNAS 113:E5337-E5343"
+    code_locus: "2019-yan-vibrio-biofilm-nematic-fountain.py#L152-L280"
+
+  - law_name: "Inverse Cell-Length Buckling Threshold & Cephalexin vs A22 Expansion Law"
+    formula: "L σ_c(L) = L_0 σ_{c0},  L R_c(L)^2 = L_0 R_{c0}^2  ⇒  r_vert^2(L_cephalexin) > r_vert^2(L_A22)"
+    lean_decl: "MathOfBiology.Loop_095.cell_length_buckling_product_residual"
+    lean_theorem: "MathOfBiology.Loop_095.cell_length_inverse_buckling_and_cephalexin_expansion"
+    lean_locus: "morphoeval/lean/loops/Loop_095_vibrio_biofilm_nematic_fountain.lean#L90-L106"
+    lean_code: |
+      def cell_length_buckling_product_residual (L sigma_c L0 sigma_c0 : Int) : Int :=
+        L * sigma_c - L0 * sigma_c0
+      theorem cell_length_inverse_buckling_and_cephalexin_expansion
+          (k L L0 : Int) (rc_long_sq delta_rc_sq extra_R_sq : Nat) :
+          let rc_short_sq := rc_long_sq + (delta_rc_sq + 1)
+          let R_sq := rc_short_sq + (extra_R_sq + 1)
+          cell_length_buckling_product_residual L (k * L0) L0 (k * L) = 0 ∧
+          verticalization_front_sq R_sq rc_short_sq < verticalization_front_sq R_sq rc_long_sq
+    variables: "L: rod cell length; L_0: wild-type rod length (2.1 μm); σ_c(L): cell-length-dependent peeling buckling stress; R_c(L): critical verticalization colony radius"
+    role: "Explains why cephalexin-elongated cells verticalize at smaller colony radii R_c and form larger verticalized cores than A22-shortened cells"
+    source_citation: "Beroz et al. (2018) Nature Physics 14:954-960 Figs. 2-3; Hartmann et al. (2019) Nature Physics 15:251-256"
+    code_locus: "2019-yan-vibrio-biofilm-nematic-fountain.py#L285-L385"

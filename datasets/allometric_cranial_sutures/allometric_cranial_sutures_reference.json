@@ -1,0 +1,126 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "bailleul-allometric-cranial-sutures",
+  "slot": 20,
+  "title": "Miura et al. (2009) PNAS 106:11218-11223 & Jaslow (1990) J. Biomech. 23:313-321 Cranial Suture Fractal Interdigitation via Kuramoto-Sivashinsky / KPZ Osteogenic Front Instability",
+  "primary_papers": [
+    {
+      "citation": "Miura T, Perlyn CA, Kinboshi M, Ogihara N, Morriss-Kay GM (2009) Mechanism of cranial suture fractal interdigitation. Proceedings of the National Academy of Sciences 106(27):11218-11223",
+      "doi": "10.1073/pnas.0813269106"
+    },
+    {
+      "citation": "Jaslow CR (1990) Mechanical properties of cranial sutures. Journal of Biomechanics 23(4):313-321",
+      "doi": "10.1016/0021-9290(90)90059-C"
+    },
+    {
+      "citation": "Khonsari RH, Olivier J, Vigneaux P, Sanchez S, Tafforeau P, Ahlberg PE, Di Rocco F, Bresch D, Corre P, Ohazama A, Sharpe PT, Calvez V (2013) A mathematical model for mechanotransduction at the early steps of suture formation. Proceedings of the Royal Society B 280(1759):20122670",
+      "doi": "10.1098/rspb.2012.2670"
+    },
+    {
+      "citation": "Zollikofer CPE, Weissmann JD (2011) A bidirectional interface growth model for cranial interosseous suture morphogenesis. Journal of Anatomy 219(2):100-114",
+      "doi": "10.1111/j.1469-7580.2011.01386.x"
+    }
+  ],
+  "governing_equations": {
+    "kuramoto_sivashinsky_kpz_interface_pde": "dh/dt = -alpha * d^2h/dx^2 - beta * d^4h/dx^4 + (v_0 / 2) * (dh/dx)^2 - gamma * h + eta(x, t)",
+    "linear_dispersion_relation": "omega(k) = alpha * k^2 - beta * k^4 - gamma",
+    "most_unstable_wavenumber": "k_max = sqrt(alpha / (2 * beta)),  lambda_max = 2 * pi * sqrt(2 * beta / alpha),  omega_max = alpha^2 / (4 * beta) - gamma",
+    "coupled_2d_osteogenic_phase_field": "du/dt = D_u * nabla^2 u + a_u * u * (1 - u) * (u - 1/2 + c_0 * v) - b_u * v;  dv/dt = D_v * nabla^2 v + a_v * u - b_v * v",
+    "suture_interdigitation_index": "SII = L_arc / L_chord = (1 / L) * integral_0^L sqrt(1 + |ds/dl|^2) dl >= 1.0",
+    "fractal_box_counting_dimension": "N(epsilon) ~ epsilon^(-D_f),  S(k) ~ k^(-(5 - 2 * D_f)),  D_f in [1.0, 1.50]",
+    "jaslow_bending_energy_absorption": "E_bend(SII) = E_0 * (1 + kappa_J * (SII - 1.0))"
+  },
+  "canonical_parameters": {
+    "domain_length_mm": 64.0,
+    "n_grid_1d": 256,
+    "alpha_sagittal": 1.20,
+    "beta_sagittal": 0.60,
+    "v0_nonlinear": 0.85,
+    "gamma_confinement": 0.045,
+    "noise_sigma": 0.14,
+    "alpha_lambdoid": 1.48,
+    "beta_lambdoid": 0.52,
+    "alpha_infant": 0.12,
+    "alpha_unloaded_null": -0.35,
+    "alpha_fgfr2_apert_synostosis": -0.60,
+    "jaslow_kappa_energy": 0.72,
+    "t_max": 32.0,
+    "dt": 0.02,
+    "seed": 2020
+  },
+  "experimental_regimes": [
+    {
+      "id": "infant_neonatal_flat_suture",
+      "description": "Neonatal / infant calvarial suture prior to masticatory and intracranial tensile loading: weak osteogenic front instability produces a nearly smooth linear midline suture with SII ~ 1.05 and box-counting dimension D_f ~ 1.04",
+      "alpha": 0.12,
+      "beta": 0.60,
+      "v0": 0.25,
+      "gamma": 0.12,
+      "noise_sigma": 0.03,
+      "overhang_coupling": 0.05,
+      "expected_df_range": [1.01, 1.12],
+      "expected_sii_range": [1.01, 1.22]
+    },
+    {
+      "id": "adult_sagittal_fractal_suture",
+      "description": "Adult Homo sapiens / Mus musculus sagittal suture between paired parietal bones (Miura et al. 2009 Figs. 1-4): BMP4/FGF2 osteogenic front instability balanced by fourth-order surface-tension smoothing and bidirectional overhanging front propagation yields self-affine fractal interdigitation (D_f ~ 1.35, SII ~ 2.75)",
+      "alpha": 1.20,
+      "beta": 0.60,
+      "v0": 0.85,
+      "gamma": 0.045,
+      "noise_sigma": 0.14,
+      "overhang_coupling": 0.68,
+      "expected_df_range": [1.28, 1.44],
+      "expected_sii_range": [2.20, 3.60]
+    },
+    {
+      "id": "adult_lambdoid_hyper_interdigitated_suture",
+      "description": "Adult lambdoid suture between parietal and occipital bones subjected to high nuchal/masticatory mechanical strain (Jaslow 1990; Miura et al. 2009): elevated osteogenic destabilization alpha = 1.48 and lower fourth-order stiffness beta = 0.52 drive dense multi-scale dendritic interdigitation (D_f ~ 1.41, SII ~ 3.35)",
+      "alpha": 1.48,
+      "beta": 0.52,
+      "v0": 1.05,
+      "gamma": 0.040,
+      "noise_sigma": 0.16,
+      "overhang_coupling": 0.82,
+      "expected_df_range": [1.33, 1.48],
+      "expected_sii_range": [2.60, 4.20]
+    },
+    {
+      "id": "mechanical_unloading_null_control",
+      "description": "Miura et al. (2009) surgical removal of dura mater / intracranial mechanical unloading control (alpha = -0.35 <= 0): all spatial wavenumbers have negative growth rate omega(k) <= 0, collapsing suture interdigitation to a flat line (D_f -> 1.01, SII -> 1.01)",
+      "alpha": -0.35,
+      "beta": 0.60,
+      "v0": 0.0,
+      "gamma": 0.08,
+      "noise_sigma": 0.015,
+      "overhang_coupling": 0.0,
+      "expected_df_range": [1.00, 1.05],
+      "expected_sii_range": [1.00, 1.05]
+    },
+    {
+      "id": "fgfr2_apert_craniosynostosis_fusion",
+      "description": "FGFR2 gain-of-function craniosynostosis (Apert/Crouzon syndrome, Miura et al. 2009; Khonsari et al. 2013): premature osteoblast differentiation across the mesenchymal suture gap eliminates the Twist1/Noggin inhibitory cleft, arresting wavelength selection and fusing the suture into a rigid flat seam (D_f -> 1.00, SII -> 1.00)",
+      "alpha": -0.60,
+      "beta": 0.80,
+      "v0": 0.0,
+      "gamma": 0.25,
+      "noise_sigma": 0.005,
+      "overhang_coupling": 0.0,
+      "expected_df_range": [1.00, 1.03],
+      "expected_sii_range": [1.00, 1.02]
+    }
+  ],
+  "specimen_provenance": {
+    "file": "datasets/allometric_cranial_sutures/human_sagittal_suture_specimen.jpg",
+    "species": "Homo sapiens",
+    "source": "Wikimedia Commons File:Sagittal suture 2.jpg (Superior view of adult human calvaria showing interdigitated sagittal, coronal, and lambdoid sutures)",
+    "license": "CC BY-SA 3.0",
+    "dimensions_px": [960, 720],
+    "sha256": "b3c411a6a47137708e4922c1b0f0381b67a3c1e885dc4d016fb0f7bb2f4eaf13"
+  },
+  "sha256_digests": {
+    "datasets/allometric_cranial_sutures/scout_manifest.json": "226c072307597439c420ed63e072337b85a3f7589d616e9fdcb015f37426d5d6",
+    "datasets/allometric_cranial_sutures/paper_citations.bib": "bffc86bbbd2dd3d64b987c843a02f10519e40cfc84375c288037b982b5770d46",
+    "datasets/allometric_cranial_sutures/human_sagittal_suture_specimen.jpg": "b3c411a6a47137708e4922c1b0f0381b67a3c1e885dc4d016fb0f7bb2f4eaf13"
+  }
+}

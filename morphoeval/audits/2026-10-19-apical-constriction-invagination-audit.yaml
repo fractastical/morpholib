@@ -1,0 +1,151 @@
+# MorphoEval audit — Odell et al. (1981) & Martin et al. (2009) Apical Constriction Invagination, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `1981-odell-apical-constriction-invagination.py` (Slot 092) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-apical-constriction-invagination-loop`.
+
+audit:
+  id: 2026-10-19-apical-constriction-invagination-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1981-odell-apical-constriction-invagination.py` in
+      `2026-10-19-apical-constriction-invagination-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  odell1981:
+    title: "The mechanical basis of morphogenesis. I. Epithelial folding and morphogenesis"
+    authors: "Odell GM, Oster G, Alberch P, Burnside B"
+    venue: "Developmental Biology 85(2):446-462 (1981)"
+    doi: 10.1016/0012-1606(81)90434-6
+  martin2009:
+    title: "Pulsed contractions of an actin-myosin network drive apical constriction"
+    authors: "Martin AC, Kaschube M, Wieschaus EF"
+    venue: "Nature 457(7228):495-499 (2009)"
+    doi: 10.1038/nature07522
+  conte2008:
+    title: "A 3D finite element model of ventral furrow invagination in the Drosophila melanogaster embryo"
+    authors: "Conte V, Munoz JJ, Miodownik M"
+    venue: "Journal of the Mechanical Behavior of Biomedical Materials 1(2):188-198 (2008)"
+    doi: 10.1016/j.jmbbm.2007.10.002
+  polyakov2014:
+    title: "Passive mechanical forces control cell-shape change during Drosophila ventral furrow formation"
+    authors: "Polyakov O, He B, Swan M, Shaevitz JW, Kaschube M, Wieschaus E"
+    venue: "Biophysical Journal 107(4):998-1010 (2014)"
+    doi: 10.1016/j.bpj.2014.07.013
+
+simulations:
+  - id: odell-apical-constriction-invagination
+    name: "Odell, Oster, Alberch & Burnside (1981) / Martin, Kaschube & Wieschaus (2009) stretch-activated apical purse-string constriction and ventral furrow invagination"
+    organism: "Drosophila melanogaster (gastrulating embryo ventral furrow epithelium)"
+    script: 1981-odell-apical-constriction-invagination.py
+    output: docs/media/apical_constriction_invagination_comparison.png
+    extra_outputs:
+      - docs/media/apical_constriction_invagination_growth.gif
+    status: evaluated
+    source_refs:
+      - odell1981
+      - martin2009
+      - conte2008
+      - polyakov2014
+    summary: >-
+      Pass 1 baseline assessment of `1981-odell-apical-constriction-invagination.py` (60.9/100).
+      The initial script implements the 64-cell Odell et al. (1981) viscoelastic purse-string ring
+      and incompressible trapezoidal cell area conservation A_i = A_0 = 262.4 um^2, but requires
+      explicit analytical verification of the bistable rest-length exponential decay
+      L_0(t) = L_2 + (L_1 - L_2) exp(-t/tau_0), non-linear delay-coupled mechanical buckling alignment
+      against the 4-stage confocal Drosophila ventral furrow specimen (`drosophila_ventral_furrow_specimen.jpg`),
+      and full claim-boundary provenance pinning.
+    scores:
+      model-fidelity:
+        value: 64
+        rationale: >-
+          Implements Odell et al.'s (1981) bistable apical rest-length ODE tau_0 dL_0/dt = -(L_0 - L_target)
+          and incompressible cell area conservation A_i = 0.5*(L_ap + L_bas)*h_i = A_0 (L120-265),
+          but Pass 1 lacks an explicit analytical vs numerical convergence check on the single-cell
+          excitable rest-length relaxation L_0(t) = L_2 + (L_1 - L_2) exp(-t/tau_0) and non-linear
+          viscous-buckling delay between apical constriction and tissue invagination depth.
+        evidence:
+          - {file: 1981-odell-apical-constriction-invagination.py, lines: [120, 155], note: "Bistable apical target rest-length law and incompressible wedge geometry", supports: true}
+          - {file: 1981-odell-apical-constriction-invagination.py, lines: [230, 415], note: "64-cell viscoelastic purse-string ring simulator requiring buckling delay coupling", supports: false}
+      specimen-match:
+        value: 56
+        rationale: >-
+          Vendors `datasets/apical_constriction_invagination/drosophila_ventral_furrow_specimen.jpg`
+          (CC BY 4.0 confocal time-series of Drosophila ventral furrow formation stained for DAPI,
+          Neurotactin, and Myosin II), but Pass 1 linear time-sampling yields only r = 0.7489 against
+          the 4-stage confocal DV compression trajectory because invagination buckling lags initial
+          apical flattening (Stage 1 -> Stage 2).
+        evidence:
+          - {file: 1981-odell-apical-constriction-invagination.py, lines: [490, 585], note: "4-stage confocal specimen segmentation requiring nonlinear buckling-phase alignment", supports: false}
+          - {file: docs/media/apical_constriction_invagination_comparison.png, lines: [0, 0], note: "Panel F confocal 4-stage transverse cross-section overlay", supports: true}
+      parameter-expressivity:
+        value: 61
+        rationale: >-
+          Simulates the 5 genetic and mechanical regimes (Wild-Type Twist+Snail, No-Stretch blockade,
+          concertina mutant, snail unratcheted mutant, and twist;snail double mutant) and a 9x9
+          morphospace grid, but needs finer 2D morphospace resolution and explicit rest-length
+          relaxation convergence diagnostics.
+        evidence:
+          - {file: 1981-odell-apical-constriction-invagination.py, lines: [425, 485], note: "5-regime perturbation evaluator and 2D morphospace sweep", supports: false}
+      morphometric-validation:
+        value: 58
+        rationale: >-
+          Reports wild-type invagination depth D_inv = 38.0 um and apical width L_ap = 2.10 um,
+          but Pass 1 needs >= 7 measurements including the analytical rest-length ODE L2 error and
+          buckling-delay-aligned 4-stage specimen trajectory correlation (r > 0.99).
+        evidence:
+          - {file: 1981-odell-apical-constriction-invagination.py, lines: [590, 695], note: "Dynamic MorphoEval measurement suite", supports: false}
+      source-traceability:
+        value: 65
+        rationale: >-
+          Vendors `scout_manifest.json`, `apical_constriction_invagination_reference.json`,
+          `paper_citations.bib`, and `drosophila_ventral_furrow_specimen.jpg` with SHA-256 digests,
+          linking Odell et al. (1981) Dev. Biol. and Martin et al. (2009) Nature.
+        evidence:
+          - {file: 1981-odell-apical-constriction-invagination.py, lines: [75, 115], note: "SHA-256 cryptographic verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Links functions to Odell et al. (1981) Eqs. 1-4, Martin et al. (2009) Figs. 1-4,
+          and Lean 4 theorems in `morphoeval/lean/loops/Loop_092_apical_constriction_invagination.lean`.
+        evidence:
+          - {file: 1981-odell-apical-constriction-invagination.py, lines: [1, 55], note: "Module docstring mapping equations to Odell et al. (1981) and Martin et al. (2009) and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 60
+        rationale: >-
+          Includes `--self-test` and deterministic seed=1981, requiring full analytical ODE convergence
+          verification and nonlinear buckling-delay specimen alignment in Pass 2.
+        evidence:
+          - {file: 1981-odell-apical-constriction-invagination.py, lines: [790, 845], note: "Self-test suite with bitwise determinism, area conservation, and negative controls", supports: true}
+          - {file: morphoeval/lean/loops/Loop_092_apical_constriction_invagination.lean, lines: [17, 132], note: "3 machine-checked Lean 4 theorems (0 sorrys)", supports: true}
+    remediation:
+      - "Verify single-cell analytical rest-length relaxation L_0(t) = L_2 + (L_1 - L_2) exp(-t/tau_0) convergence (L2 relative error < 0.001) and add explicit non-linear mechanical buckling delay coupling between apical constriction and furrow depth."
+      - "Align the 4-stage confocal Drosophila ventral furrow DV compression trajectory (`drosophila_ventral_furrow_specimen.jpg`) with the delay-coupled buckling curve to achieve stage progression Pearson r > 0.99."
+      - "Refine 2D morphospace resolution (15x15 grid) and add full `claim_boundary` provenance metadata."

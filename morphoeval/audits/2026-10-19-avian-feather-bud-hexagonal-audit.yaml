@@ -1,0 +1,176 @@
+# MorphoEval audit — Glimm et al. (2014) & Ho et al. (2019) Avian Feather Bud Hexagonal Array & Traveling Competence Wave, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `2018-glimm-avian-feather-bud-hexagonal.py` (v1 baseline, 165 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-avian-feather-bud-hexagonal-loop`):
+#   - Primary assessor: Gemini 4 Argon (Cursor agent) — 58.6 / 100
+#   - Second assessor rubric criteria: 53.4 / 100
+#   - Pass 1 consensus score: 56.0 / 100
+#
+# Concrete Pass 1 defects driving Step 12 -> Pass 2 remediation:
+#   1. Only a single wave speed (v_w = 0.22) is simulated: omits the central comparative
+#      experiment of Ho et al. (2019) Figs. 1C, 3, 4 and Glimm et al. (2014) Figs. 3-6
+#      contrasting row-by-row traveling-wave propagation (high hexagonal fidelity P_6 >= 0.85,
+#      half-period phase pinning Delta_y = lambda_y/2, Delta_x = (sqrt(3)/2)*lambda_y) against
+#      simultaneous global competence (v_w -> inf, Fc-chEDA1 / exogenous FGF flooding, defective
+#      polycrystalline Voronoi packing with P_6 approx 0.45-0.55) and Ecto-D2 / LDN retarded
+#      wave narrowing (v_w = 0.5x WT).
+#   2. No negative or mutant controls are executed: omits the *scaleless* (`sc/sc`, FGF20-null,
+#      chi = 0 < chi_c) mutant and Latrunculin A / Blebbistatin actomyosin motility blockade
+#      (chi = 0.01 < chi_c), both of which abolish dermal mesenchymal condensation (0 buds).
+#   3. Specimen photograph `chick_feather_bud_hexagonal_specimen.jpg` (Ho et al. 2019 PLOS Biol.
+#      17:e3000132 Fig. 3) is displayed raw in Panel C without computer-vision segmentation of
+#      the 24 feather primordia in Panel B, without Voronoi polygon-class P_6 or bond-orientational
+#      |psi_6| computation, and without runtime SHA-256 verification.
+#   4. `measure_morphoeval()` reports only 3 basic scalars without Voronoi P_6, |psi_6|,
+#      nearest-neighbor spacing CV, wave-speed sweep correlation, or mutant negative-control delta.
+
+audit:
+  id: 2026-10-19-avian-feather-bud-hexagonal-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + MorphoEval Dual-Rubric Assessor"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 3cb5ea9
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2018-glimm-avian-feather-bud-hexagonal.py`
+      prior to Step 12 remediation in `2026-10-19-avian-feather-bud-hexagonal-loop`.
+
+references:
+  glimm2014:
+    title: "Modeling happens in rows: Traveling waves in dermal condensation of avian feather primordia"
+    authors: "Glimm T, Bhat R, Newman SA"
+    venue: "Developmental Biology 395(1):139-149 (2014)"
+    doi: 10.1016/j.ydbio.2014.08.030
+  ho2019:
+    title: "Feather arrays are patterned by interacting signaling and mechanical waves"
+    authors: "Ho WKW, Freem L, Zhao D, Painter KJ, Woolley TE, Gaffney EA, et al."
+    venue: "PLOS Biology 17(2):e3000132 (2019)"
+    doi: 10.1371/journal.pbio.3000132
+  michon2008:
+    title: "BMP2 and BMP7 Play Antagonistic Roles in Feather Primordium Formation: A Mechanistic Model"
+    authors: "Michon F, Forest L, Collomb E, Demongeot J, Dhouailly D"
+    venue: "PLOS ONE 3(4):e1942 (2008)"
+    doi: 10.1371/journal.pone.0001942
+  bailleul2019:
+    title: "Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning"
+    authors: "Bailleul R, Curantz C, Desmarquet-Trin Dinh C, Hidalgo M, Touboul J, Manceau M"
+    venue: "PLOS Biology 17(10):e3000448 (2019)"
+    doi: 10.1371/journal.pbio.3000448
+
+simulations:
+  - id: glimm-avian-feather-bud-hexagonal
+    name: "Glimm et al. (2014) & Ho et al. (2019) avian feather bud hexagonal array & traveling competence wave"
+    organism: "Embryonic chick (Gallus gallus) dorsal skin feather tract E6.5-E9.5 hexagonal feather primordia array"
+    script: 2018-glimm-avian-feather-bud-hexagonal.py
+    output: docs/media/avian_feather_bud_hexagonal_comparison.png
+    extra_outputs:
+      - docs/media/avian_feather_bud_hexagonal_growth.gif
+    status: evaluated
+    source_refs:
+      - glimm2014
+      - ho2019
+      - michon2008
+      - bailleul2019
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2018-glimm-avian-feather-bud-hexagonal.py`
+      (56.0/100). The v1 baseline computes the Keller-Segel / FGF20 linear dispersion
+      curve and integrates a single 2D dermal chemotaxis + FGF20/BMP4 PDE regime at
+      one wave speed (v_w = 0.22), but omits Voronoi polygon-class P_6 and bond-orientational
+      |psi_6| lattice order analysis, omits the traveling-wave vs simultaneous-competence
+      (Fc-chEDA1 / exogenous FGF flooding, v_w -> inf) comparison, omits Ecto-D2 wave
+      narrowing, omits *scaleless* (FGF20-null, chi = 0) and Latrunculin mechanical
+      ablation controls, and performs zero computer-vision segmentation on the vendored
+      Gallus gallus dorsal feather tract specimen image.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: >-
+          Implements the linear Keller-Segel + FGF20 dispersion relation (L27-49) and a
+          single 2D dermal chemotaxis + FGF20/BMP4 PDE integration (L52-97), but omits
+          sequential row-by-row phase pinning metrics, simultaneous global competence
+          (v_w -> inf), *scaleless* FGF20-null (chi = 0), and Latrunculin mechanical
+          blockade controls.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [27, 49], note: "Linear Keller-Segel + FGF20 dispersion curve and critical chi_c", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [52, 97], note: "Single-regime 2D solver without v_w sweep, simultaneous competence, or scaleless/Latrunculin controls", supports: false}
+      specimen-match:
+        value: 38
+        rationale: >-
+          Displays `datasets/avian_feather_bud_hexagonal/chick_feather_bud_hexagonal_specimen.jpg`
+          raw in Panel C (L117-119) with zero computer-vision segmentation of the 24 feather
+          primordia in Panel B or the +24h/+48h tract expansion in Panel A.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [117, 119], note: "Raw imshow of specimen without feather bud segmentation or Voronoi P_6 analysis", supports: false}
+          - {file: docs/media/avian_feather_bud_hexagonal_comparison.png, lines: [0, 0], note: "3-panel baseline figure showing raw specimen without morphometric overlay", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Simulates only one parameter point (v_w = 0.22, chi = 0.24) without sweeping
+          wave speed v_w from row-by-row propagation to simultaneous competence (v_w -> inf),
+          without sweeping chemotactic sensitivity chi across chi_c, and without CLI flags
+          beyond `--self-test` (L169-177).
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [169, 177], note: "CLI exposes only --self-test without v_w, chi, or perturbation flags", supports: false}
+      morphometric-validation:
+        value: 46
+        rationale: >-
+          `measure_morphoeval()` reports only 3 basic scalars (sqrt(3)/2 ratio, chi_c,
+          and raw peak count, L136-158) without Voronoi hexagonal fraction P_6,
+          bond-orientational order |psi_6|, nearest-neighbor spacing CV, or specimen
+          morphometrics.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [136, 158], note: "Only 3 basic scalars without Voronoi P_6, |psi_6|, or specimen validation", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `datasets/avian_feather_bud_hexagonal/` with `avian_feather_bud_hexagonal_reference.json`,
+          `chick_feather_bud_hexagonal_specimen.jpg`, `scout_manifest.json`, and `paper_citations.bib`,
+          but v1 script does not verify SHA-256 digests at runtime or load the reference JSON.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [20, 24], note: "Defines specimen path without SHA-256 verification or reference JSON loading", supports: false}
+      code-traceability:
+        value: 64
+        rationale: >-
+          Header docstring cites Glimm et al. (2014) and Ho et al. (2019), but lacks explicit
+          mappings to the 3 Lean 4 theorems in `Loop_019_avian_feather_bud_hexagonal.lean`
+          and the experimental perturbation panels (Fc-chEDA1, Ecto-D2, Latrunculin, scaleless).
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [1, 10], note: "Minimal baseline header without Lean 4 theorem or perturbation figure mappings", supports: false}
+      repro-package:
+        value: 65
+        rationale: >-
+          Includes deterministic `np.random.default_rng(2018)` and a 4-assertion `self_test()`
+          (L161-167), but does not test SHA-256 locks, Voronoi P_6 advantage of traveling
+          wave over simultaneous competence, *scaleless*/Latrunculin ablation, specimen
+          segmentation, or bitwise two-run determinism.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [161, 167], note: "4-assertion baseline self_test() without SHA-256 or bitwise determinism checks", supports: false}
+    remediation:
+      - "Upgrade the 2D dermal chemotaxis + FGF20/BMP4 + EDA traveling competence wave solver to explicitly resolve row-by-row half-period phase pinning (Delta_y = lambda_y/2, Delta_x = (sqrt(3)/2)*lambda_y) and sweep wave speed v_w from optimal row-by-row propagation (P_6 >= 0.85, |psi_6| >= 0.82) to simultaneous global competence (v_w -> inf, Fc-chEDA1 / exogenous FGF flooding, P_6 approx 0.45-0.55) and Ecto-D2 wave retardation (v_w = 0.5x WT, narrowed tract)."
+      - "Implement the *scaleless* (`sc/sc`, FGF20-null, chi = 0.0 < chi_c) mutant and Latrunculin A / Blebbistatin actomyosin motility blockade (chi = 0.01 < chi_c) negative controls, plus a chemotactic sensitivity sweep across chi in [0, 0.32] verifying the critical threshold chi_c."
+      - "Implement automated computer-vision segmentation of `datasets/avian_feather_bud_hexagonal/chick_feather_bud_hexagonal_specimen.jpg` (Ho et al. 2019 PLOS Biol. 17:e3000132 Fig. 3): extract all 24 feather primordia in Panel B, construct their Voronoi tessellation and Delaunay neighbor graph (P_6 = 0.750, P_567 = 1.000, |psi_6| = 0.5265, NN spacing CV = 0.1974), and quantify the E6.5+24h -> E6.5+48h feather tract expansion ratio in Panel A."
+      - "Add runtime SHA-256 verification of all 4 dataset files, expand `measure_morphoeval()` to 8 quantitative morphometrics with uncertainty statistics and negative-control contrast, expose full CLI flags, and upgrade the comparison figure to an 8-panel publication synthesis."

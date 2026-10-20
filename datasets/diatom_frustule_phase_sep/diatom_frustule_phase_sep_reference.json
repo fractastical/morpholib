@@ -1,0 +1,178 @@
+{
+  "metadata": {
+    "dataset_id": "sumper-lenoci-diatom-frustule-phase-sep-v1",
+    "title": "Sumper (2002) Hierarchical LCPA Phase Separation & Lenoci-Camp (2008) Cahn-Hilliard Diatom Biosilica Reference Dataset",
+    "organism": "Coscinodiscus wailesii (Centric marine diatom, Bacillariophyceae)",
+    "sources": [
+      {
+        "id": "sumper2002",
+        "citation": "Sumper M (2002). A phase separation model for the nanopatterning of diatom biosilica. Science 295(5564):2430-2433.",
+        "doi": "10.1126/science.1070026"
+      },
+      {
+        "id": "lenoci2008",
+        "citation": "Lenoci L, Camp PJ (2008). Self-assembly of hierarchical nanostructures in diatom biosilica. Langmuir 24(1):217-223.",
+        "doi": "10.1021/la7022784"
+      },
+      {
+        "id": "losic2006",
+        "citation": "Losic D, Rosengarten G, Mitchell JG, Voelcker NH (2006). Pore architecture of diatom frustules: potential nanostructured membranes for molecular and particle separations. Journal of Nanoscience and Nanotechnology 6(4):982-989.",
+        "doi": "10.1166/jnn.2006.174"
+      },
+      {
+        "id": "cahnhilliard1958",
+        "citation": "Cahn JW, Hilliard JE (1958). Free energy of a nonuniform system. I. Interfacial free energy. Journal of Chemical Physics 28(2):258-267.",
+        "doi": "10.1063/1.1744102"
+      }
+    ],
+    "specimens": {
+      "coscinodiscus_wailesii_valve_sem": {
+        "file": "datasets/diatom_frustule_phase_sep/coscinodiscus_diatom_specimen.jpg",
+        "sha256": "47aca39b720b67b1b46754c89f679425db1012e92131277a3d09b1562274a1ad",
+        "species": "Coscinodiscus wailesii (inner and external valve plates, SEM 2x3 hierarchy)",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Inner_and_external_plates_of_a_single_valve_of_the_centric_diatom_Coscinodiscus_wailesii.webp",
+        "width_px": 1350,
+        "height_px": 1507,
+        "roi_foramen_xyxy": [
+          60,
+          70,
+          620,
+          440
+        ],
+        "roi_cribrum_xyxy": [
+          60,
+          1030,
+          620,
+          1420
+        ],
+        "segmented_reference_metrics": {
+          "foramen_pore_count": 139,
+          "foramen_mean_diameter_px": 24.01,
+          "foramen_diameter_cv": 0.133,
+          "foramen_mean_pitch_px": 34.8,
+          "foramen_pitch_cv": 0.075,
+          "foramen_diameter_to_pitch_ratio": 0.69,
+          "foramen_hexatic_psi6_mean": 0.764,
+          "cribrum_secondary_pore_count": 74,
+          "cribrum_mean_diameter_px": 8.48
+        }
+      }
+    }
+  },
+  "cahn_hilliard_governing_model": {
+    "section": "Lenoci & Camp (2008) Langmuir 24:217-223 Eqs. (1)-(6); Cahn & Hilliard (1958) J. Chem. Phys. 28:258",
+    "free_energy_functional": "F[phi] = int_Omega [ (1/4)*(phi^2 - 1)^2 + (epsilon^2 / 2)*|grad(phi)|^2 ] dx",
+    "chemical_potential": "mu(phi) = phi^3 - phi - epsilon^2 * laplacian(phi)",
+    "governing_pde": "d(phi)/dt = M * laplacian(phi^3 - phi - epsilon^2 * laplacian(phi))",
+    "mass_conservation_law": "d/dt int_Omega phi(x, t) dx = 0 (periodic / zero-flux boundary conditions)",
+    "linear_spinodal_dispersion": {
+      "formula": "sigma(k) = M * k^2 * (1 - 3*phi0^2 - epsilon^2 * k^2)",
+      "spinodal_condition": "1 - 3*phi0^2 > 0  <=>  |phi0| < 1/sqrt(3) = 0.577350269",
+      "critical_wavenumber_kc": "k_c = sqrt((1 - 3*phi0^2) / (2 * epsilon^2))",
+      "cutoff_wavenumber_k0": "k_0 = sqrt((1 - 3*phi0^2) / epsilon^2) = sqrt(2) * k_c",
+      "characteristic_wavelength": "lambda_c = 2 * pi / k_c = 2 * pi * sqrt(2) * epsilon / sqrt(1 - 3*phi0^2)",
+      "max_growth_rate_sigma_c": "sigma(k_c) = M * (1 - 3*phi0^2)^2 / (4 * epsilon^2)"
+    },
+    "canonical_parameters": {
+      "M": 1.0,
+      "phi0_droplet": -0.3,
+      "phi0_bicontinuous": 0.0,
+      "phi0_outside_spinodal_control": -0.65,
+      "epsilon_primary": 1.5,
+      "epsilon_secondary": 0.65,
+      "alpha_droplet": 0.73,
+      "kc_droplet": 0.40276819911981904,
+      "k0_droplet": 0.5696002496878354,
+      "lambda_c_droplet_px": 15.600003478205112,
+      "sigma_max_droplet": 0.0592111111111111,
+      "alpha_control": -0.2675
+    }
+  },
+  "sumper_2002_hierarchical_tiers": {
+    "section": "Sumper (2002) Science 295:2430-2433 Figs. 1-4; Losic et al. (2006) J. Nanosci. Nanotechnol. 6:982 Table 1",
+    "species": "Coscinodiscus wailesii",
+    "scaling_ratio_rho": 0.18,
+    "tiers": [
+      {
+        "generation": 1,
+        "tier_id": "areola_foramen",
+        "name": "Primary Areola / Foramen Chamber",
+        "pore_diameter_nm": 1250.0,
+        "pore_diameter_sd_nm": 120.0,
+        "lattice_pitch_nm": 1850.0,
+        "lattice_pitch_sd_nm": 110.0,
+        "diameter_to_pitch_ratio": 0.6757,
+        "subpores_per_parent": 1,
+        "epsilon_model": 1.5
+      },
+      {
+        "generation": 2,
+        "tier_id": "cribrum",
+        "name": "Secondary Cribrum Pore Array",
+        "pore_diameter_nm": 220.0,
+        "pore_diameter_sd_nm": 28.0,
+        "lattice_pitch_nm": 380.0,
+        "lattice_pitch_sd_nm": 35.0,
+        "diameter_to_pitch_ratio": 0.5789,
+        "subpores_per_parent": 12,
+        "epsilon_model": 0.65
+      },
+      {
+        "generation": 3,
+        "tier_id": "cribrella",
+        "name": "Tertiary Cribrella Sieve Pores",
+        "pore_diameter_nm": 42.0,
+        "pore_diameter_sd_nm": 6.0,
+        "lattice_pitch_nm": 75.0,
+        "lattice_pitch_sd_nm": 9.0,
+        "diameter_to_pitch_ratio": 0.56,
+        "subpores_per_parent": 7,
+        "epsilon_model": 0.28
+      }
+    ]
+  },
+  "parameter_sweep_regimes": [
+    {
+      "regime_id": "droplet_hex_primary",
+      "label": "Off-critical LCPA droplets (foramen array)",
+      "phi0": -0.3,
+      "epsilon": 1.5,
+      "inside_spinodal": true,
+      "expected_topology": "discrete_hexagonal_droplets"
+    },
+    {
+      "regime_id": "bicontinuous_labyrinth",
+      "label": "Critical symmetric spinodal (external mesh)",
+      "phi0": 0.0,
+      "epsilon": 1.5,
+      "inside_spinodal": true,
+      "expected_topology": "bicontinuous_honeycomb_network"
+    },
+    {
+      "regime_id": "fine_cribrum_quench",
+      "label": "Secondary fine-scale quench (cribrum scale)",
+      "phi0": -0.28,
+      "epsilon": 0.9,
+      "inside_spinodal": true,
+      "expected_topology": "high_wavenumber_cribrum_pores"
+    },
+    {
+      "regime_id": "hierarchical_two_stage",
+      "label": "Sumper-Lenoci hierarchical foramen + cribrum",
+      "phi0": -0.3,
+      "epsilon": 1.5,
+      "epsilon_stage2": 0.65,
+      "inside_spinodal": true,
+      "expected_topology": "nested_pores_within_pores"
+    },
+    {
+      "regime_id": "outside_spinodal_control",
+      "label": "Negative control outside spinodal (|phi0| > 1/sqrt(3))",
+      "phi0": -0.65,
+      "epsilon": 1.5,
+      "inside_spinodal": false,
+      "expected_topology": "homogeneous_stable_no_pores"
+    }
+  ]
+}

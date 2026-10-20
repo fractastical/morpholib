@@ -1,0 +1,97 @@
+sim_id: dubrulle-fgf8-wavefront-somitogenesis
+math_family: Advection-Reaction mRNA Decay Wavefront & Threshold Phase-Gating (Somitogenesis)
+model_spec:
+  model: "Dubrulle, McGrew & Pourquie (2001) Cell / Dubrulle & Pourquie (2004) Nature cell-autonomous fgf8 mRNA decay advection-reaction PDE dm/dt + v_g*dm/dx = -k_d*m, determination front x* = (v_g/k_d)*ln(m_0/m_crit), and ectopic FGF8 bead / SU5402 somite size perturbation S_n = v_g*T_c - Delta_x*"
+  governing_equations:
+    advection_decay_pde: "dm/dt + v_g * dm/dx = -k_d * m  =>  m(x) = m_0 * exp(-k_d * x / v_g)"
+    determination_front: "x_star = (v_g / k_d) * ln(m_0 / m_crit)"
+    somite_size_law: "S_0 = v_g * T_c;  S_n = v_g * T_c - Delta_x_star_n"
+    bead_pair_conservation: "S_ant + S_post = (v_g * T_c - delta_x) + (v_g * T_c + delta_x) = 2 * v_g * T_c"
+  canonical_parameters:
+    v_g_um_per_min: 1.6666666666666667
+    T_c_min: 90.0
+    S_0_um: 150.0
+    t_half_min: 150.0
+    k_d_per_min: 0.004620981203732968
+    m_0: 1.0
+    m_crit: 0.145
+    x_star_um: 696.46
+  inputs:
+    - datasets/fgf8_wavefront_somitogenesis/fgf8_wavefront_somitogenesis_reference.json
+    - datasets/fgf8_wavefront_somitogenesis/chick_somite_psm_specimen.jpg
+    - datasets/fgf8_wavefront_somitogenesis/scout_manifest.json
+equations:
+  - id: dubrulle-fgf8-wavefront-somitogenesis-1
+    law_name: "Dubrulle & Pourquie (2004) Cell-Autonomous fgf8 mRNA Advection-Decay PDE"
+    title: "Dubrulle & Pourquie (2004) Cell-Autonomous fgf8 mRNA Advection-Decay PDE"
+    formula: "dm/dt + v_g * dm/dx = -k_d * m  =>  m(x) = m_0 * exp(-k_d * x / v_g)"
+    latex: "\\frac{\\partial m}{\\partial t} + v_g \\frac{\\partial m}{\\partial x} = -k_d m(x,t) \\implies m(x) = m_0 \\exp\\!\\left(-\\frac{k_d x}{v_g}\\right)"
+    ascii: "dm/dt + v_g * dm/dx = -k_d * m => m(x) = m_0 * exp(-k_d * x / v_g)"
+    lean_decl: "MathOfBiology.Loop_024.fgf8_advection_decay_residual"
+    lean_theorem: "MathOfBiology.Loop_024.dubrulle_2004_advection_decay_characteristic_balance"
+    lean_file: morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean#L24-L43"
+    lean_code: |-
+      def fgf8_advection_decay_residual (v_g dm_dx k_d m : Int) : Int :=
+        v_g * dm_dx + k_d * m
+      theorem dubrulle_2004_advection_decay_characteristic_balance (v_g k_d c : Int) :
+          fgf8_advection_decay_residual v_g (-(k_d * c)) k_d (v_g * c) = 0
+    lean_declaration: |-
+      theorem dubrulle_2004_advection_decay_characteristic_balance (v_g k_d c : Int) :
+          fgf8_advection_decay_residual v_g (-(k_d * c)) k_d (v_g * c) = 0
+    variables: "m(x,t): intracellular fgf8 mRNA concentration; v_g: posterior tailbud axis elongation velocity (um/min); k_d: fgf8 mRNA decay rate constant (min^-1)"
+    role: "Converts temporal intracellular fgf8 mRNA decay in tailbud-derived cells into a steady spatial exponential gradient along the presomitic mesoderm"
+    source_citation: "Dubrulle & Pourquie (2004) Nature 427(6973):419-422 Figs. 1-3"
+    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L95-L135"
+  - id: dubrulle-fgf8-wavefront-somitogenesis-2
+    law_name: "Dubrulle et al. (2001, 2004) Determination Front Threshold Positioning Law"
+    title: "Dubrulle et al. (2001, 2004) Determination Front Threshold Positioning Law"
+    formula: "x_star = (v_g / k_d) * ln(m_0 / m_crit)"
+    latex: "x^* = \\frac{v_g}{k_d} \\ln\\!\\left(\\frac{m_0}{m_{\\text{crit}}}\\right)"
+    ascii: "x_star = (v_g / k_d) * ln(m_0 / m_crit)"
+    lean_decl: "MathOfBiology.Loop_024.determination_front_position"
+    lean_theorem: "MathOfBiology.Loop_024.dubrulle_2001_determination_front_scaling"
+    lean_file: morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean#L45-L66"
+    lean_code: |-
+      def determination_front_position (lambda_m L_log : Nat) : Nat :=
+        lambda_m * L_log
+      theorem dubrulle_2001_determination_front_scaling (k lambda_m L_log delta_L : Nat) :
+          determination_front_position (k * lambda_m) L_log =
+            k * determination_front_position lambda_m L_log ∧
+          determination_front_position lambda_m (L_log + delta_L) =
+            determination_front_position lambda_m L_log + lambda_m * delta_L
+    lean_declaration: |-
+      theorem dubrulle_2001_determination_front_scaling (k lambda_m L_log delta_L : Nat) :
+          determination_front_position (k * lambda_m) L_log =
+            k * determination_front_position lambda_m L_log ∧
+          determination_front_position lambda_m (L_log + delta_L) =
+            determination_front_position lambda_m L_log + lambda_m * delta_L
+    variables: "x_star: distance from posterior tailbud to determination front (um); m_0: tailbud fgf8 mRNA level; m_crit: permissive FGF threshold for segmentation competence"
+    role: "Positions the PSM determination front (somite level -IV/-III boundary) where decaying FGF8 falls below m_crit to unlock Mesp2/cMeso-1 activation"
+    source_citation: "Dubrulle, McGrew & Pourquie (2001) Cell 106(2):219-232 Figs. 2-4; Dubrulle & Pourquie (2004) Nature 427:419-422"
+    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L138-L165"
+  - id: dubrulle-fgf8-wavefront-somitogenesis-3
+    law_name: "Dubrulle et al. (2001) Ectopic FGF8 Bead & SU5402 Somite Size Perturbation Law"
+    title: "Dubrulle et al. (2001) Ectopic FGF8 Bead & SU5402 Somite Size Perturbation Law"
+    formula: "S_n = v_g * T_c - Delta_x_star_n;  S_ant + S_post = (v_g * T_c - delta_x) + (v_g * T_c + delta_x) = 2 * v_g * T_c"
+    latex: "S_n = v_g T_c - \\Delta x^*_n, \\quad S_{\\text{ant}} + S_{\\text{post}} = 2 v_g T_c"
+    ascii: "S_n = v_g * T_c - Delta_x_star_n; S_ant + S_post = 2 * v_g * T_c"
+    lean_decl: "MathOfBiology.Loop_024.perturbed_somite_length"
+    lean_theorem: "MathOfBiology.Loop_024.dubrulle_2001_fgf8_bead_somite_pair_conservation"
+    lean_file: morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean#L68-L87"
+    lean_code: |-
+      def perturbed_somite_length (v_g T_c delta_x : Int) : Int :=
+        v_g * T_c - delta_x
+      theorem dubrulle_2001_fgf8_bead_somite_pair_conservation (v_g T_c delta_x : Int) :
+          perturbed_somite_length v_g T_c delta_x +
+            perturbed_somite_length v_g T_c (-delta_x) = 2 * (v_g * T_c)
+    lean_declaration: |-
+      theorem dubrulle_2001_fgf8_bead_somite_pair_conservation (v_g T_c delta_x : Int) :
+          perturbed_somite_length v_g T_c delta_x +
+            perturbed_somite_length v_g T_c (-delta_x) = 2 * (v_g * T_c)
+    variables: "S_n: anteroposterior length of somite n (um); T_c: segmentation clock period (min); delta_x: transient anterior displacement of determination front by ectopic FGF8 bead (um)"
+    role: "Explains why an ectopic FGF8 bead grafted into the PSM produces compressed small somites anterior to the bead followed by an enlarged catch-up somite posterior to the bead while SU5402 produces enlarged somites"
+    source_citation: "Dubrulle, McGrew & Pourquie (2001) Cell 106(2):219-232 Figs. 1-3"
+    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L168-L295"

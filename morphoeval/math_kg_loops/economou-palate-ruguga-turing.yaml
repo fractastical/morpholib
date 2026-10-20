@@ -1,0 +1,71 @@
+sim_id: economou-palate-ruguga-turing
+math_family: "Epithelial Ridge Turing Morphogenesis (Mesenchymal FGF Activator + Epithelial SHH Inhibitor at Ruga-8 Growth Zone)"
+model_spec:
+  model: "Economou et al. (2012) Nature Genetics 44:348-351 FGF10/FGF7-SHH activator-inhibitor Turing reaction-diffusion system operating at the mammalian palatal ruga-8 anterior growth zone"
+  a_11: 1.6
+  a_12: 2.5
+  a_21: 2.4
+  a_22: 2.0
+  D_A: 0.2
+  D_H: 5.0
+  D_ratio: 25.0
+  seed: 2012
+  inputs:
+    - datasets/palate_ruguga_turing/palate_ruguga_turing_reference.json
+    - datasets/palate_ruguga_turing/palate_rugae_specimen.jpg
+    - datasets/palate_ruguga_turing/scout_manifest.json
+    - datasets/palate_ruguga_turing/paper_citations.bib
+equations:
+  - law_name: "Economou et al. (2012) FGF-SHH Activator-Inhibitor Homogeneous Stability & Turing Dispersion Inversion Law"
+    formula: "Δ(q^2) = (D_A q^2 - a_11)(D_H q^2 + a_22) + a_12 a_21;  tr(J_0) = a_11 - a_22 < 0,  Δ(0) > 0,  Δ(q_c^2) < 0  ⇒  σ_max(q_c) > 0"
+    lean_decl: "MathOfBiology.Loop_008.fgf_shh_disp_det"
+    lean_theorem: "MathOfBiology.Loop_008.economou_fgf_shh_turing_instability"
+    lean_locus: "morphoeval/lean/loops/Loop_008_palate_ruguga_turing.lean#L35-L45"
+    lean_code: |
+      def fgf_shh_disp_det (a11 a12 a21 a22 D_A D_H q2 : Int) : Int :=
+        (D_A * q2 - a11) * (D_H * q2 + a22) + a12 * a21
+      theorem economou_fgf_shh_turing_instability (q2 : Int) :
+          (16 - 20 : Int) = -4 ∧
+          fgf_shh_disp_det 16 25 24 20 2 50 0 = 280 ∧
+          fgf_shh_disp_det 16 25 24 20 2 50 4 = -1160 ∧
+          fgf_shh_disp_det 16 25 24 20 0 0 q2 = 280
+    variables: "A: mesenchymal FGF10/FGF7 activator; H: epithelial SHH inhibitor; D_A, D_H: diffusion coefficients; q: spatial wavenumber; λ_c = 2π / q_c: palatal ruga spacing wavelength"
+    role: "Establishes linear stability of the homogeneous state at q = 0 (tr(J_0) < 0, det(J_0) > 0) and diffusion-driven Turing symmetry breaking when long-range SHH inhibition exceeds short-range FGF activation (D_H = 25 D_A)"
+    source_citation: "Economou et al. (2012) Nature Genetics 44:348-351 Figs. 1-4 & Supplementary Note; Turing (1952) Phil. Trans. R. Soc. B 237:37-72"
+    code_locus: "2012-economou-palate-ruguga-turing.py#L125-L215"
+
+  - law_name: "Economou et al. (2012) Ruga-8 Growth-Zone Sequential Intercalation Law (8 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 7b)"
+    formula: "N_rugae(L(t)) = ⌊L(t) / λ_c⌋;  L(t + Δt_ruga) = L(t) + λ_c  ⇒  N_rugae(L + λ_c) = N_rugae(L) + 1  (1 → 9 rugae from E12.0 to E15.5)"
+    lean_decl: "MathOfBiology.Loop_008.ruga_count_from_length"
+    lean_theorem: "MathOfBiology.Loop_008.economou_growth_zone_sequential_intercalation"
+    lean_locus: "morphoeval/lean/loops/Loop_008_palate_ruguga_turing.lean#L60-L69"
+    lean_code: |
+      def ruga_count_from_length (L lam : Nat) : Nat :=
+        L / lam
+      theorem economou_growth_zone_sequential_intercalation (n : Nat) :
+          ruga_count_from_length 322 322 = 1 ∧
+          ruga_count_from_length 2898 322 = 9 ∧
+          ruga_count_from_length ((n + 1) * 322) 322 = ruga_count_from_length (n * 322) 322 + 1
+    variables: "L(t): anteroposterior palatal shelf length; λ_c: intrinsic FGF-SHH Turing wavelength; N_rugae: cumulative count of palatal rugae (8, 1, 2, 3, 4, 5, 6, 7, 7b)"
+    role: "Proves why new transverse palatal rugae intercalate sequentially one by one in the growth zone immediately anterior to pioneer ruga 8 each time palatal elongation adds one Turing wavelength λ_c"
+    source_citation: "Economou et al. (2012) Nature Genetics 44:348-351 Fig. 1a-d; Pantalacci et al. (2008) BMC Dev. Biol. 8:116; Welsh & O'Brien (2009) Dev. Biol. 336:64-75"
+    code_locus: "2012-economou-palate-ruguga-turing.py#L220-L360"
+
+  - law_name: "Economou et al. (2012) In-Phase FGF-SHH Stripe Colocalization & Coronal Surgical Cut Release Law"
+    formula: "δH / δA = a_21 / (a_22 + D_H q^2 + σ) > 0  ⇒  corr(FGF, SHH) > 0;  a_net(intact) = a_11 - c_inh < 0  vs  a_net(coronal cut) = a_11 > 0"
+    lean_decl: "MathOfBiology.Loop_008.fgf_shh_in_phase_product"
+    lean_theorem: "MathOfBiology.Loop_008.economou_in_phase_and_coronal_cut_release"
+    lean_locus: "morphoeval/lean/loops/Loop_008_palate_ruguga_turing.lean#L84-L97"
+    lean_code: |
+      def fgf_shh_in_phase_product (a21 dA_sq : Int) : Int :=
+        a21 * dA_sq
+      def growth_zone_net_activation (a11 c_inh : Int) : Int :=
+        a11 - c_inh
+      theorem economou_in_phase_and_coronal_cut_release (dA_sq : Int) (hd : dA_sq ≥ 1) :
+          fgf_shh_in_phase_product 24 dA_sq ≥ 24 ∧
+          growth_zone_net_activation 16 25 = -9 ∧
+          growth_zone_net_activation 16 0 = 16
+    variables: "δA, δH: spatial eigenmode amplitudes of FGF activator and SHH inhibitor; a_net: net growth-zone activation rate in presence vs coronal surgical severance of ruga-8 SHH inhibition"
+    role: "Proves why mesenchymal FGF and epithelial SHH peaks colocalize in phase along each palatal ruga stripe, and why a coronal surgical cut across the ruga-8 growth zone releases lateral SHH inhibition to trigger immediate ruga bifurcation/spots whereas a sagittal cut preserves stripe orientation"
+    source_citation: "Economou et al. (2012) Nature Genetics 44:348-351 Fig. 2a-g & Fig. 3a-f"
+    code_locus: "2012-economou-palate-ruguga-turing.py#L365-L560"

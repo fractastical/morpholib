@@ -1,0 +1,65 @@
+sim_id: cartwright-nacre-spiral-dislocation-terraces
+math_family: "Burton-Cabrera-Frank (BCF) Screw-Dislocation Eikonal Step-Flow & Chiral Defect Pair Dynamics"
+model_spec:
+  model: "Cartwright & Checa (2007) J. R. Soc. Interface + Cartwright et al. (2009) PNAS Burton-Cabrera-Frank screw-dislocation spiral and Frank-Read target terrace dynamics in molluscan nacre"
+  step_velocity_law: "v_n(kappa) = v_inf * (1 - r_c * kappa),   v(r) = v_inf * (1 - r_c / r)"
+  archimedean_pitch_law: "lambda_0 = (2 * pi / omega_0) * r_c ≈ 18.9848 * r_c ≈ 19 * r_c"
+  angular_frequency_law: "omega = omega_0 * (v_inf / r_c) ≈ 0.3310 * (v_inf / r_c)"
+  v_inf_um_per_hr: 1.25
+  r_c_um: 0.42
+  h_0_um: 0.50
+  seed: 2007
+  inputs:
+    - datasets/nacre_spiral_dislocation_terraces/nacre_spiral_dislocation_terraces_reference.json
+    - datasets/nacre_spiral_dislocation_terraces/nacre_aragonite_tablets_specimen.jpg
+    - datasets/nacre_spiral_dislocation_terraces/scout_manifest.json
+equations:
+  - law_name: "Burton-Cabrera-Frank (1951) & Cartwright-Checa (2007) Gibbs-Thomson Curved Terrace Step Velocity Law"
+    formula: "v_n(κ) = v_∞ (1 - r_c κ),   v(r) = v_∞ (1 - r_c / r)   (r ≥ r_c)"
+    lean_decl: "MathOfBiology.Loop_073.gibbs_thomson_velocity_num"
+    lean_theorem: "MathOfBiology.Loop_073.bcf_gibbs_thomson_critical_arrest"
+    lean_locus: "morphoeval/lean/loops/Loop_073_nacre_spiral_dislocation_terraces.lean#L24-L48"
+    lean_code: |
+      def gibbs_thomson_velocity_num (v_inf r r_c : Int) : Int :=
+        v_inf * (r - r_c)
+      theorem bcf_gibbs_thomson_critical_arrest (v_inf r_c : Int) :
+          gibbs_thomson_velocity_num v_inf r_c r_c = 0 ∧
+          gibbs_thomson_velocity_num 5 6 4 = 10 := by
+        simp [gibbs_thomson_velocity_num]
+    variables: "v_n: normal aragonite terrace step velocity; v_∞: planar straight-step velocity; r_c: critical Gibbs-Thomson nucleation radius; r = 1/κ: local terrace curvature radius"
+    role: "Arrests mineral terrace propagation at the critical curvature radius r = r_c and drives outer terrace turns faster than inner turns until a steady rotating spiral forms"
+    source_citation: "Burton, Cabrera & Frank (1951) Phil. Trans. R. Soc. A 243:299-358 Eq. (18); Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504 Sec. 2"
+    code_locus: "2007-cartwright-nacre-spiral-dislocation-terraces.py#L130-L240"
+  - law_name: "BCF Archimedean Spiral Terrace Pitch & Vertical Nacre Accretion Scaling Law"
+    formula: "λ_0 = (2π / ω_0) r_c ≈ 18.9848 r_c ≈ 19 r_c,   ω = ω_0 (v_∞ / r_c),   V_z = h_0 v_∞ / λ_0"
+    lean_decl: "MathOfBiology.Loop_073.bcf_archimedean_pitch"
+    lean_theorem: "MathOfBiology.Loop_073.bcf_archimedean_terrace_pitch_scaling"
+    lean_locus: "morphoeval/lean/loops/Loop_073_nacre_spiral_dislocation_terraces.lean#L54-L78"
+    lean_code: |
+      def bcf_archimedean_pitch (r_c : Nat) : Nat := 19 * r_c
+      def nacre_vertical_growth_invariant (h_0 v_inf : Nat) : Nat := h_0 * v_inf
+      theorem bcf_archimedean_terrace_pitch_scaling (k r_c h_0 v_inf : Nat) :
+          bcf_archimedean_pitch (r_c * k) = bcf_archimedean_pitch r_c * k ∧
+          nacre_vertical_growth_invariant h_0 v_inf = v_inf * h_0 := by
+        simp [bcf_archimedean_pitch, nacre_vertical_growth_invariant, Nat.mul_assoc, Nat.mul_comm]
+    variables: "λ_0: asymptotic Archimedean inter-step terrace spacing; ω_0 ≈ 0.3310: BCF dimensionless eigenvalue; h_0 ≈ 0.50 µm: inter-lamellar chitin-protein mortar spacing; V_z: vertical column/sheet growth rate"
+    role: "Determines the universal ratio λ_0 / r_c ≈ 19 separating tightly wound gastropod tower nacre (Haliotis, Gibbula) from broad bivalve terraced sheet nacre (Pteria, Pinctada)"
+    source_citation: "Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504 Sec. 2-3; Burton, Cabrera & Frank (1951) Phil. Trans. R. Soc. A 243:299-358"
+    code_locus: "2007-cartwright-nacre-spiral-dislocation-terraces.py#L140-L330"
+  - law_name: "Cartwright et al. (2009) Chiral Dislocation Dipole & Frank-Read Target Terrace Law"
+    formula: "b_net = b_1 + b_2: (+b, -b) ⇒ b_net = 0 (closed target rings for d > 2 r_c; annihilation for d ≤ 2 r_c); (+b, +b) ⇒ b_net = 2b (double spiral)"
+    lean_decl: "MathOfBiology.Loop_073.net_burgers_charge"
+    lean_theorem: "MathOfBiology.Loop_073.cartwright_frank_read_topological_burgers_algebra"
+    lean_locus: "morphoeval/lean/loops/Loop_073_nacre_spiral_dislocation_terraces.lean#L84-L108"
+    lean_code: |
+      def net_burgers_charge (b_1 b_2 : Int) : Int := b_1 + b_2
+      def frank_read_nucleation_excess (d r_c : Int) : Int := d - 2 * r_c
+      theorem cartwright_frank_read_topological_burgers_algebra (b : Int) :
+          net_burgers_charge b (-b) = 0 ∧
+          net_burgers_charge b b = 2 * b ∧
+          frank_read_nucleation_excess 8 4 = 0 := by
+        dsimp [net_burgers_charge, frank_read_nucleation_excess]; omega
+    variables: "b_1, b_2 ∈ {±1}: screw dislocation Burgers chiralities; d: inter-core separation; 2 r_c: critical Frank-Read pinch-off diameter"
+    role: "Explains how opposite-chirality screw-dislocation dipoles (+b, -b) act as biological Frank-Read sources emitting closed concentric target terraces in bivalve sheet nacre when d > 2 r_c while pinching off below 2 r_c"
+    source_citation: "Cartwright, Checa, Escribano & Sainz-Díaz (2009) PNAS 106(26):10499-10504 Figs. 1-4; Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504"
+    code_locus: "2007-cartwright-nacre-spiral-dislocation-terraces.py#L245-L450"

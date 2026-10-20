@@ -1,0 +1,147 @@
+{
+  "metadata": {
+    "dataset_id": "painter-1999-chemotactic-stripe-splitting-v1",
+    "title": "Painter, Maini & Othmer (1999) Keller-Segel Chemotactic Pattern Formation, Equal-Diffusivity Instability & Domain-Growth Stripe-Splitting Reference Dataset",
+    "sources": [
+      {
+        "id": "painter1999",
+        "citation": "Painter KJ, Maini PK, Othmer HG (1999). Stripe and spotilihood in chemotactic pattern formation. Proceedings of the National Academy of Sciences USA 96(10):5549-5554.",
+        "doi": "10.1073/pnas.96.10.5549"
+      },
+      {
+        "id": "keller1970",
+        "citation": "Keller EF, Segel LA (1970). Initiation of slime mold aggregation viewed as an instability. Journal of Theoretical Biology 26(3):399-415.",
+        "doi": "10.1016/0022-5193(70)90092-5"
+      },
+      {
+        "id": "myerscough1992",
+        "citation": "Myerscough MR, Murray JD (1992). Analysis of propagating pattern in a chemotaxis system. Bulletin of Mathematical Biology 54(1):77-94.",
+        "doi": "10.1007/BF02458621"
+      },
+      {
+        "id": "painter2011",
+        "citation": "Painter KJ, Hillen T (2011). Spatio-temporal chaos in a chemotaxis model. Physica D: Nonlinear Phenomena 240(4-5):363-375.",
+        "doi": "10.1016/j.physd.2010.09.011"
+      }
+    ],
+    "specimens": {
+      "myxococcus_xanthus_chemotactic_stripes_and_fruiting_bodies": {
+        "file": "datasets/chemotactic_stripe_splitting/chemotactic_pattern_specimen.jpg",
+        "sha256": "7b1780ffcb70f31342f1a37f3776dcb07f624fc5d2cf37f0f51aa11daefa345e",
+        "species": "Myxococcus xanthus (social bacterium exhibiting periodic chemotactic/rippling stripe ridges and fruiting-body spot aggregates, 500 um scale bar)",
+        "author": "Jens Boenigk / Wikimedia Commons",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Myxococcus_xanthus_fruiting_bodies_and_rippling.png",
+        "stripe_roi_xyxy": [290, 90, 540, 460],
+        "spot_roi_xyxy": [40, 70, 310, 480],
+        "scale_bar_um": 500.0,
+        "pattern_type": "coexisting_chemotactic_stripe_ridges_and_spot_aggregates"
+      }
+    },
+    "scout_manifest": {
+      "file": "datasets/chemotactic_stripe_splitting/scout_manifest.json",
+      "sha256": "4b4e20a991f65c81542fa6a014557e5379bbd6a64b0e6a97231e6e5b4f01ea2b"
+    }
+  },
+  "keller_segel_painter_1999_system": {
+    "section": "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Eqs. (1)-(6) & Figs. 1-4",
+    "governing_pde": {
+      "n_eq": "dn/dt = D_n * Lap(n) - div(n * chi(c) * grad(c)) + r * n * (1 - n / n_0)",
+      "c_eq": "dc/dt = D_c * Lap(c) + alpha * n / (1 + beta * n) - gamma * c",
+      "chemotactic_sensitivity": "chi(c) = chi_0 / (1 + kappa * c)^2  (with kappa = 0 for constant sensitivity chi(c) = chi_0)",
+      "boundary_condition": "Zero-flux (Neumann) n_hat . grad(n) = n_hat . grad(c) = 0 on domain boundary"
+    },
+    "canonical_parameters": {
+      "D_n": 1.0,
+      "D_c": 1.0,
+      "r": 1.0,
+      "n0": 1.0,
+      "alpha": 8.0,
+      "beta": 1.0,
+      "gamma": 4.0,
+      "chi": 6.0,
+      "n_star": 1.0,
+      "c_star": 1.0,
+      "s_star": 2.0,
+      "trace_M0": -5.0,
+      "det_M0": 4.0,
+      "chi_critical": 4.5,
+      "chi_eff": 12.0,
+      "chi_eff_critical": 9.0,
+      "k2_minus": 0.6277186767309857,
+      "k2_critical": 2.0,
+      "k2_plus": 6.372281323269014,
+      "k_critical": 1.4142135623730951,
+      "wavelength_critical": 4.442882938158366
+    },
+    "equal_diffusivity_theorem": {
+      "statement": "Unlike two-species reaction-diffusion systems where D_u = D_v strictly precludes Turing instability, the Keller-Segel-Painter chemotactic-RD system undergoes spatial pattern bifurcation at equal diffusivity D_n = D_c = D whenever n_0 * chi(c*) * s* > (sqrt(r * D_c) + sqrt(gamma * D_n))^2.",
+      "pure_rd_chi_zero_det_at_kc": 14.0,
+      "subcritical_chi_4p0_det_at_kc": 2.0,
+      "critical_chi_4p5_det_at_kc": 0.0,
+      "supercritical_chi_6p0_det_at_kc": -6.0
+    }
+  },
+  "domain_growth_stripe_splitting_regimes": {
+    "section": "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Figs. 1-3 (1D & 2D Exponential/Linear Domain Growth & Mode Doubling)",
+    "growth_law": "L(t) = L_0 * exp(rho_g * t) or discrete domain scale stages L / lambda_c in {1, 2, 4, 8}",
+    "regimes": [
+      {
+        "regime_id": "subcritical_no_chemotaxis_control",
+        "label": "Subcritical Chemotaxis Control (chi = 3.0 < chi_c = 4.5, D_n = D_c = 1.0)",
+        "chi": 3.0,
+        "domain_length_L": 17.771531752633464,
+        "predicted_stripe_peaks": 0,
+        "observed_stripe_peaks": 0,
+        "description": "Below critical chemotactic sensitivity chi_c = 4.5, det M(k^2) > 0 for all wavenumbers k^2 >= 0; perturbations decay to homogeneous equilibrium (n*, c*) = (1, 1)."
+      },
+      {
+        "regime_id": "stage1_fundamental_1stripe",
+        "label": "Initial Domain Stage L_1 = 1 * lambda_c (s = 1)",
+        "chi": 6.0,
+        "domain_length_L": 4.442882938158366,
+        "predicted_stripe_peaks": 1,
+        "observed_stripe_peaks": 1,
+        "description": "At initial domain length L_1 = lambda_c = 4.443, a single interior chemotactic cell-density stripe (N = 1 peak) is stabilized."
+      },
+      {
+        "regime_id": "stage2_doubled_2stripes",
+        "label": "First Stripe-Splitting Stage L_2 = 2 * lambda_c (s = 2)",
+        "chi": 6.0,
+        "domain_length_L": 8.885765876316732,
+        "predicted_stripe_peaks": 2,
+        "observed_stripe_peaks": 2,
+        "description": "As domain length doubles to 2 * lambda_c = 8.886, the trough depletes chemoattractant below threshold and the primary stripe splits / inserts into N = 2 equidistant stripes."
+      },
+      {
+        "regime_id": "stage3_quadrupled_4stripes",
+        "label": "Second Stripe-Splitting Cascade L_3 = 4 * lambda_c (s = 4)",
+        "chi": 6.0,
+        "domain_length_L": 17.771531752633464,
+        "predicted_stripe_peaks": 4,
+        "observed_stripe_peaks": 4,
+        "description": "Second domain doubling to 4 * lambda_c = 17.772 triggers synchronous bifurcating stripe splitting from N = 2 to N = 4 peaks with invariant spacing lambda_c = 4.443."
+      },
+      {
+        "regime_id": "stage4_octupled_8stripes",
+        "label": "Third Stripe-Splitting Cascade L_4 = 8 * lambda_c (s = 8)",
+        "chi": 6.0,
+        "domain_length_L": 35.54306350526693,
+        "predicted_stripe_peaks": 8,
+        "observed_stripe_peaks": 8,
+        "description": "Third domain doubling to 8 * lambda_c = 35.543 yields N = 8 periodic chemotactic cell-density stripes via continuous peak splitting."
+      }
+    ],
+    "stripe_vs_spot_selection_2d": {
+      "section": "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Section 'Stripes Versus Spots in Two Dimensions' & Fig. 4",
+      "stripe_regime": {
+        "description": "Symmetric cubic saturation (large beta or balanced logistic-chemotactic feedback around n = n_0) suppresses quadratic resonant triad interactions, stabilizing 2D labyrinthine chemotactic stripes.",
+        "anisotropy_or_euler_target": "connected_labyrinthine_ridges"
+      },
+      "spot_regime": {
+        "description": "Strong quadratic chemotactic self-focusing div(n chi grad c) with weak saturation drives hexagonal spot/fruiting-body droplets.",
+        "anisotropy_or_euler_target": "isolated_circular_aggregates"
+      }
+    }
+  }
+}

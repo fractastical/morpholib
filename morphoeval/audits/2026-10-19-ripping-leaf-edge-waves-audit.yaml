@@ -1,0 +1,146 @@
+# MorphoEval audit — Sharon, Roman, Marder & Swinney (2002) Nature Ripping Leaf Edge Waves, 2026-10-19 (v1)
+#
+# Pass 1 (v1) baseline evaluation of `2002-sharon-ripping-leaf-edge-waves.py`
+# before Step 12 closed-loop remediation:
+#   - Primary assessor: Gemini 4 Argon — 56.2 / 100
+
+audit:
+  id: 2026-10-19-ripping-leaf-edge-waves-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 067 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/67
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2002-sharon-ripping-leaf-edge-waves.py`
+      prior to Step 12 remediation.
+
+references:
+  sharon2002:
+    title: "Mechanics: Buckling cascades in free sheets"
+    authors: "Sharon E, Roman B, Marder M, Shin G-S, Swinney HL"
+    venue: "Nature 419(6907):579-580 (2002)"
+    doi: 10.1038/419579a
+  audoly2003:
+    title: "Self-Similar Structures near Boundaries in Strained Systems"
+    authors: "Audoly B, Boudaoud A"
+    venue: "Physical Review Letters 91(8):086105 (2003)"
+    doi: 10.1103/PhysRevLett.91.086105
+  liang2009:
+    title: "The shape of a long leaf"
+    authors: "Liang H, Mahadevan L"
+    venue: "Proceedings of the National Academy of Sciences 106(52):22049-22054 (2009)"
+    doi: 10.1073/pnas.0911954106
+  sharon2004:
+    title: "Leaves, Flowers and Garbage Bags: Making Waves"
+    authors: "Sharon E, Marder M, Swinney HL"
+    venue: "American Scientist 92(3):254-261 (2004)"
+    doi: 10.1511/2004.3.254
+
+simulations:
+  - id: sharon-ripping-leaf-edge-waves
+    name: "Sharon et al. (2002) Nature / Audoly & Boudaoud (2003) PRL Non-Euclidean Edge Buckling Cascades in Ruffled Leaf Margins"
+    organism: "Lactuca sativa cv. 'Lollo Bionda' (Ruffled garden lettuce) & Brassica oleracea (Curly kale)"
+    script: 2002-sharon-ripping-leaf-edge-waves.py
+    output: docs/media/ripping_leaf_edge_waves_comparison.png
+    extra_outputs:
+      - docs/media/ripping_leaf_edge_waves_growth.gif
+    status: evaluated
+    source_refs:
+      - sharon2002
+      - audoly2003
+      - liang2009
+      - sharon2004
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2002-sharon-ripping-leaf-edge-waves.py`
+      (overall weighted score: 56.2/100). The baseline evaluates the analytical isometric
+      aspect ratio A/lambda and plots a kinematic sinusoidal superposition, but lacks
+      variational L-BFGS-B minimization of the 2D non-Euclidean Föppl-von Kármán thin-sheet
+      energy E = E_stretch + E_bend across sheet thickness t and marginal growth profile g_yy(x),
+      omits the Brioschi negative Gaussian curvature profile K(x) < 0, omits the Liang & Mahadevan
+      (2009) saddle-to-ripple transition and multi-system taxon comparison, and does not segment
+      the vendored Lactuca sativa 'Lollo Bionda' ruffled leaf specimen image.
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Evaluates analytical g_yy(x) and single-mode aspect ratio (`target_metric_gyy`,
+          `analytical_aspect_ratio`, L26-35), but uses a fixed kinematic sine sum
+          (`synthesize_baseline_surface`, L38-58) without L-BFGS-B minimization of the
+          non-Euclidean Föppl-von Kármán stretching + bending energy or Brioschi Gaussian
+          curvature K(x) verification.
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [26, 58], note: "Kinematic sine superposition without Föppl-von Kármán energy minimization", supports: true}
+      specimen-match:
+        value: 46
+        rationale: >-
+          Does not load or segment the vendored Lactuca sativa 'Lollo Bionda' specimen
+          photograph `datasets/ripping_leaf_edge_waves/lactuca_sativa_edge_waves_specimen.jpg`
+          and renders only a 2-panel baseline plot.
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [61, 86], note: "2-panel baseline figure without specimen image segmentation", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates only a single default parameter tuple without sweeping inward distance x,
+          sheet thickness t (Liang & Mahadevan 2009 saddle-to-ripple transition), or CLI
+          parameter overrides.
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [38, 58], note: "Fixed default parameter tuple without thickness or taxon sweeps", supports: false}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          `measure_morphoeval()` (L109-133) returns only 2 basic analytical scalars without
+          multi-generation cascade wavelength/amplitude correlations, self-similar collapse
+          verification, or specimen image segmentation metrics.
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [109, 133], note: "Only 2 baseline analytical measurements returned", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `datasets/ripping_leaf_edge_waves/` with 4 DOIs in `paper_citations.bib`,
+          `scout_manifest.json`, reference JSON, and Lactuca sativa specimen JPEG, but
+          the baseline script does not enforce runtime SHA-256 verification.
+        evidence:
+          - {file: datasets/ripping_leaf_edge_waves/paper_citations.bib, lines: [1, 39], note: "4 primary DOIs vendored", supports: true}
+      code-traceability:
+        value: 61
+        rationale: >-
+          Cites Sharon et al. (2002), Audoly & Boudaoud (2003), and Liang & Mahadevan (2009)
+          in module docstring, but lacks function-level equation mappings to the 3 Lean 4
+          theorems in `Loop_067_ripping_leaf_edge_waves.lean`.
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1, 11], note: "Brief baseline header without Lean 4 theorem mappings", supports: true}
+      repro-package:
+        value: 63
+        rationale: >-
+          Provides `--self-test` (`L136-141`), but checks only two analytical values without
+          SHA-256 dataset verification, multi-generation cascade relaxation checks, or
+          bitwise solver determinism checks.
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [136, 141], note: "Minimal 2-assertion baseline self_test()", supports: true}
+    remediation:
+      - "Implement a variational L-BFGS-B energy minimizer for the 2D non-Euclidean Föppl-von Kármán thin-sheet energy functional E = E_stretch + E_bend across sheet thickness t and marginal growth profile g_yy(x) = 1 + g_0 exp(-x/ell), reproducing the multi-generation Fourier buckling cascade spectrum and self-similar collapse of w(x, y)/lambda(x)."
+      - "Compute the exact Brioschi intrinsic Gaussian curvature K(x) < 0 profile, evaluate the Liang & Mahadevan (2009) saddle-to-ripple transition across dimensionless strain-to-thickness parameter Gamma = g_0*(ell/t)^2, and verify the flat Euclidean metric negative control (g_0 = 0 => w = 0, K = 0)."
+      - "Implement computer-vision segmentation of `datasets/ripping_leaf_edge_waves/lactuca_sativa_edge_waves_specimen.jpg` (*Lactuca sativa* cv. 'Lollo Bionda'), extracting the ruffled canopy boundary and multi-scale marginal wave wavelengths & amplitudes across coarse lobes and fine micro-ruffles."
+      - "Enforce runtime SHA-256 verification of all 4 dataset files, expand `measure_morphoeval()` to 9 quantitative reference-anchored metrics, and upgrade the figure to a 6-panel synthesis layout."

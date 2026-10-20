@@ -1,0 +1,70 @@
+sim_id: nelson-airway-mucosal-creasing
+math_family: "Cylindrical Neo-Hookean Bilayer Morphoelastic Buckling, Post-Buckling Period-Doubling & Sulcal Creasing Driving Hagen–Poiseuille Airway Resistance"
+model_spec:
+  model: "Wiggs et al. (1997) J. Appl. Physiol. 83:1814-1821, Li et al. (2011) JMPS 59:758-774, Jin et al. (2011) JAM 78:031009 & Eskandari et al. (2015) J. Theor. Biol. 403:209-218 cylindrical bilayer mucosal buckling, period-doubling, and Poiseuille lumen occlusion"
+  R_0_um: 600.0
+  c_fold_occlusion: 2.35
+  alpha_period_doubling: 0.42
+  beta_sulcal_crease: 0.28
+  epsilon_crease_universal: 0.35
+  n_theta_grid: 360
+  seed: 2018
+  inputs:
+    - datasets/airway_mucosal_creasing/airway_mucosal_creasing_reference.json
+    - datasets/airway_mucosal_creasing/bronchiole_mucosal_rosette_specimen.jpg
+    - datasets/airway_mucosal_creasing/scout_manifest.json
+    - datasets/airway_mucosal_creasing/paper_citations.bib
+equations:
+  - law_name: "Cylindrical Bilayer Mucosal Buckling Wavenumber & Inverse Thickness Scaling Law"
+    formula: "λ_c = 2π h_m (μ_m / (3 μ_s))^(1/3),  m* = (R_0 / h_m) (3 μ_s / μ_m)^(1/3)  ⇒  h_asthma > h_normal ⟹ m*_asthma < m*_normal"
+    lean_decl: "MathOfBiology.Loop_068.scaled_fold_mode_normal"
+    lean_theorem: "MathOfBiology.Loop_068.inverse_mucosal_thickness_fold_scaling"
+    lean_locus: "morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean#L31-L46"
+    lean_code: |
+      def scaled_fold_mode_normal (c_geom h0 dh : Nat) : Nat :=
+        (c_geom + 1) * (h0 + dh + 2)
+      def scaled_fold_mode_asthma (c_geom h0 : Nat) : Nat :=
+        (c_geom + 1) * (h0 + 1)
+      theorem inverse_mucosal_thickness_fold_scaling (c_geom h0 dh : Nat) :
+          (h0 + 1) < (h0 + dh + 2) ∧
+          scaled_fold_mode_asthma c_geom h0 < scaled_fold_mode_normal c_geom h0 dh
+    variables: "R_0: inner luminal radius; h_m: epithelial/basement-membrane mucosal thickness; μ_m, μ_s: mucosal and submucosal shear moduli; m*: circumferential rosette fold number"
+    role: "Determines why thin healthy bronchioles buckle into many shallow rosette folds (m* ≈ 14) whereas thickened asthmatic airways buckle into a few deep folds (m* ≈ 5–6)"
+    source_citation: "Li, Cao, Feng & Gao (2011) J. Mech. Phys. Solids 59:758-774 Eq. (18); Eskandari, Pfaller & Kuhl (2015) J. Theor. Biol. 403:209-218 Eq. (14)"
+    code_locus: "2018-nelson-airway-mucosal-creasing.py#L145-L205"
+
+  - law_name: "Inextensible Mucosal Perimeter Fold-Depth & Lumen-Area Occlusion Law"
+    formula: "A_lumen(ε_θ, m) = A_ASM(ε_θ) - A_wall - (P_0^2 Δ_fold(ε_θ)) / (8π m)  ⇒  m_asthma < m_normal ⟹ A_lumen(m_asthma) < A_lumen(m_normal)"
+    lean_decl: "MathOfBiology.Loop_068.open_lumen_area_scaled"
+    lean_theorem: "MathOfBiology.Loop_068.inextensible_perimeter_lumen_occlusion"
+    lean_locus: "morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean#L61-L82"
+    lean_code: |
+      def fold_occlusion_penalty_scaled (k_fold m_other : Nat) : Nat :=
+        (k_fold + 1) * m_other
+      def open_lumen_area_scaled (a_net k_fold m_self m_other : Nat) : Int :=
+        (a_net : Int) - ↑((k_fold + 1) * m_other) + 0 * (m_self : Int)
+      theorem inextensible_perimeter_lumen_occlusion (a_net k_fold m0 dm : Nat) :
+          fold_occlusion_penalty_scaled k_fold (m0 + 1) <
+            fold_occlusion_penalty_scaled k_fold (m0 + dm + 2) ∧
+          open_lumen_area_scaled a_net k_fold (m0 + 1) (m0 + dm + 2) <
+            open_lumen_area_scaled a_net k_fold (m0 + dm + 2) (m0 + 1)
+    variables: "P_0 = 2π R_0: inextensible mucosal perimeter; ε_θ: ASM circumferential shortening strain; m: integer fold mode number; A_lumen: open luminal cross-sectional area"
+    role: "Proves that at identical smooth-muscle shortening ε_θ, lower circumferential mode number m forces deeper inward fold intrusion and smaller open luminal area"
+    source_citation: "Wiggs, Hrousis, Drazen & Kamm (1997) J. Appl. Physiol. 83:1814-1821 Eqs. (2)-(6); Jin, Auguste, Hayward & Suo (2011) J. Appl. Mech. 78:031009"
+    code_locus: "2018-nelson-airway-mucosal-creasing.py#L210-L365"
+
+  - law_name: "Hagen–Poiseuille Quadratic Lumen-Area Airway Resistance Amplification Law"
+    formula: "R_flow / R_flow,0 = (A_0 / A_lumen)^2  ⇒  0 < A_asthma < A_normal ⟹ R_flow,asthma > R_flow,normal"
+    lean_decl: "MathOfBiology.Loop_068.poiseuille_conductance_sq"
+    lean_theorem: "MathOfBiology.Loop_068.poiseuille_quadratic_area_resistance_amplification"
+    lean_locus: "morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean#L95-L106"
+    lean_code: |
+      def poiseuille_conductance_sq (a_lumen : Nat) : Nat :=
+        a_lumen * a_lumen
+      theorem poiseuille_quadratic_area_resistance_amplification (a0 da : Nat) :
+          (a0 + 1) < (a0 + da + 2) ∧
+          poiseuille_conductance_sq (a0 + 1) < poiseuille_conductance_sq (a0 + da + 2)
+    variables: "R_flow: laminar Hagen–Poiseuille airway resistance; A_0 = π R_0^2: relaxed baseline lumen area; A_asthma, A_normal: constricted lumen areas"
+    role: "Governs the catastrophic (>15-fold) surge in airflow resistance during asthmatic bronchoconstriction due to period-doubling and deep mucosal creasing"
+    source_citation: "Wiggs, Hrousis, Drazen & Kamm (1997) J. Appl. Physiol. 83:1814-1821 Eq. (7)"
+    code_locus: "2018-nelson-airway-mucosal-creasing.py#L180-L208"

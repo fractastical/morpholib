@@ -1,0 +1,582 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-avian-beak-darwin-scaling-loop
+  target_simulation: alberti-avian-beak-darwin-scaling
+  paper: Campas, Mallarino, Herrel, Abzhanov & Brenner (2010) PNAS 107(8):3356-3360
+    — Scaling and shear transformations capture beak shape diversity in Darwin's finches
+  created_at: '2026-10-20T02:24:45.536Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: 33e07ad
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 19.051
+  wall_time_min: 0.32
+  tier_a_wall_s: 11.798
+  tier_b_wall_s: 7.253
+  cpu_user_s: 8.85
+  cpu_sys_s: 1.69
+  input_tokens: 24308
+  output_tokens: 24911
+  subagent_tokens: 0
+  total_llm_tokens: 49219
+  artifact_tokens: 76192
+  tier_a_llm_tokens: 6823
+  tier_b_llm_tokens: 42396
+  effective_tokens_per_s: 2583.5
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:24:45.731Z'
+  ended_at: '2026-10-20T02:24:48.016Z'
+  duration_s: 2.203
+  cpu_user_s: 1.35
+  cpu_sys_s: 0.03
+  max_rss_mb: 34.4
+  runs_count: 1
+  tokens:
+    input_tokens: 30
+    output_tokens: 61
+    subagent_tokens: 0
+    total_llm_tokens: 91
+    artifact_tokens: 710
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/avian_beak_darwin_scaling/scout_manifest.json
+    bytes: 2503
+    sha256: 4b321120fd7b273656d1f20e89aa9c5aeb47bfef844b04022679b66f24584ed0
+    tokens: 710
+  commands:
+  - command: ./venv/bin/python3 morphoeval/scout_literature.py --slot 70 --out datasets/avian_beak_darwin_scaling/scout_manifest.json
+    exit_code: 0
+    wall_s: 2.203
+    cpu_user_s: 1.35
+    cpu_sys_s: 0.03
+    stdout_tokens: 61
+  notes: Scouted Campas et al. (2010) PNAS 107:3356-3360, Abzhanov et al. (2004) Science,
+    Abzhanov et al. (2006) Nature, and Wikimedia Commons Darwin's finch specimens
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:27:34.938Z'
+  ended_at: '2026-10-20T02:27:35.028Z'
+  duration_s: 0.09
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 710
+    output_tokens: 1261
+    subagent_tokens: 0
+    total_llm_tokens: 1971
+    artifact_tokens: 1261
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/avian_beak_darwin_scaling/paper_citations.bib
+    bytes: 1687
+    sha256: f0b9fb929ffd2d09be0f276e6b197c32e913a051a97b3f84daf4fa199a2e7634
+    tokens: 499
+    parent_artifact_ids:
+    - 4b321120fd7b273656d1f20e89aa9c5aeb47bfef844b04022679b66f24584ed0
+  - file: datasets/avian_beak_darwin_scaling/README.md
+    bytes: 2434
+    sha256: 4508f0c08e4ed5f62485c873b09a2e9aa4809f6c704f3fb108f2bfab3b794f26
+    tokens: 762
+    parent_artifact_ids:
+    - 4b321120fd7b273656d1f20e89aa9c5aeb47bfef844b04022679b66f24584ed0
+  commands: []
+  notes: Extracted Campas et al. (2010) PNAS affine scaling-and-shear laws and Abzhanov
+    et al. (2004, 2006) Bmp4/CaM tables
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:27:35.101Z'
+  ended_at: '2026-10-20T02:27:35.191Z'
+  duration_s: 0.089
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 499
+    output_tokens: 3582
+    subagent_tokens: 0
+    total_llm_tokens: 4081
+    artifact_tokens: 3582
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/avian_beak_darwin_scaling/darwin_finches_specimen.jpg
+    bytes: 152427
+    sha256: 5ea7ada14a01ba77d532e9c254195c409ef669fabb5f9a3e5d3de1568621bdfa
+    tokens: 64
+    parent_artifact_ids:
+    - f0b9fb929ffd2d09be0f276e6b197c32e913a051a97b3f84daf4fa199a2e7634
+  - file: datasets/avian_beak_darwin_scaling/avian_beak_darwin_scaling_reference.json
+    bytes: 11619
+    sha256: cf6430de0c52d725004a18fc5517900b0dba9b10af7935c03e4a534d0d40f10a
+    tokens: 3518
+    parent_artifact_ids:
+    - f0b9fb929ffd2d09be0f276e6b197c32e913a051a97b3f84daf4fa199a2e7634
+  commands: []
+  notes: Vendored Wikimedia Commons Public Domain 1845 Gould Darwin's finches specimen
+    and locked SHA-256 digests
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:28:32.154Z'
+  ended_at: '2026-10-20T02:29:59.198Z'
+  duration_s: 7.691
+  cpu_user_s: 0.7
+  cpu_sys_s: 0.96
+  max_rss_mb: 393.8
+  runs_count: 5
+  tokens:
+    input_tokens: 80
+    output_tokens: 523
+    subagent_tokens: 0
+    total_llm_tokens: 603
+    artifact_tokens: 1453
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean
+    bytes: 5106
+    sha256: 22b49c75caa11bdc27417773e1fbcf628c3275c6600fde17a0ab0e9e7cfc2e4c
+    tokens: 64
+    parent_artifact_ids:
+    - cf6430de0c52d725004a18fc5517900b0dba9b10af7935c03e4a534d0d40f10a
+  - file: morphoeval/math_kg_loops/alberti-avian-beak-darwin-scaling.yaml
+    bytes: 4915
+    sha256: 8ea22f5317456cf9c4cfed9a36767f4c8428700dc99baf18fe75110fe44fd95b
+    tokens: 1389
+    parent_artifact_ids:
+    - cf6430de0c52d725004a18fc5517900b0dba9b10af7935c03e4a534d0d40f10a
+  commands:
+  - command: lean morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean
+    exit_code: 1
+    wall_s: 2.298
+    cpu_user_s: 0.14
+    cpu_sys_s: 0.24
+    stdout_tokens: 270
+  - command: lean morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean
+    exit_code: 1
+    wall_s: 2.278
+    cpu_user_s: 0.16
+    cpu_sys_s: 0.26
+    stdout_tokens: 143
+  - command: lean morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean
+    exit_code: 1
+    wall_s: 1.584
+    cpu_user_s: 0.14
+    cpu_sys_s: 0.19
+    stdout_tokens: 81
+  - command: lean morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean
+    exit_code: 1
+    wall_s: 1.122
+    cpu_user_s: 0.13
+    cpu_sys_s: 0.16
+    stdout_tokens: 28
+  - command: lean morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean
+    exit_code: 0
+    wall_s: 0.409
+    cpu_user_s: 0.13
+    cpu_sys_s: 0.11
+    stdout_tokens: 1
+  notes: Proved 3 Lean 4 theorems for Campas-Brenner affine shear-scaling invariance,
+    Abzhanov Bmp4-Calmodulin decoupling, and quartic Bmp4 bending resistance (0 sorrys);
+    Verified 3 Lean 4 theorems in Loop_070_avian_beak_darwin_scaling.lean (0 sorrys);
+    Verified 3 Lean 4 theorems in Loop_070_avian_beak_darwin_scaling.lean (0 sorrys);
+    Verified 3 Lean 4 theorems in Loop_070_avian_beak_darwin_scaling.lean (0 sorrys);
+    Verified 3 Lean 4 theorems in Loop_070_avian_beak_darwin_scaling.lean (0 sorrys)
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:30:49.377Z'
+  ended_at: '2026-10-20T02:30:50.219Z'
+  duration_s: 0.78
+  cpu_user_s: 0.5
+  cpu_sys_s: 0.08
+  max_rss_mb: 116.4
+  runs_count: 1
+  tokens:
+    input_tokens: 25
+    output_tokens: 30
+    subagent_tokens: 0
+    total_llm_tokens: 55
+    artifact_tokens: 3006
+    method: explicit+BPE
+  artifacts:
+  - file: 2021-alberti-avian-beak-darwin-scaling.py
+    bytes: 10469
+    sha256: c81ff8b7b2d5056aef86deb4ca3dfc3134ddc34da7d1ea811b6190ac56348684
+    tokens: 3006
+    parent_artifact_ids:
+    - cf6430de0c52d725004a18fc5517900b0dba9b10af7935c03e4a534d0d40f10a
+    - 22b49c75caa11bdc27417773e1fbcf628c3275c6600fde17a0ab0e9e7cfc2e4c
+  commands:
+  - command: ./venv/bin/python3 2021-alberti-avian-beak-darwin-scaling.py --self-test
+    exit_code: 0
+    wall_s: 0.78
+    cpu_user_s: 0.5
+    cpu_sys_s: 0.08
+    stdout_tokens: 30
+  notes: Pass 1 (v1) baseline implementation of 2021-alberti-avian-beak-darwin-scaling.py
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:30:50.299Z'
+  ended_at: '2026-10-20T02:30:51.310Z'
+  duration_s: 0.945
+  cpu_user_s: 0.83
+  cpu_sys_s: 0.09
+  max_rss_mb: 162.5
+  runs_count: 1
+  tokens:
+    input_tokens: 21
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 22
+    artifact_tokens: 128
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/avian_beak_darwin_scaling_comparison.png
+    bytes: 197687
+    sha256: 777aca548970785f1b2714e16a896382627d991abc3020061ca0d810886d63ee
+    tokens: 64
+    parent_artifact_ids:
+    - c81ff8b7b2d5056aef86deb4ca3dfc3134ddc34da7d1ea811b6190ac56348684
+  - file: docs/media/avian_beak_darwin_scaling_growth.gif
+    bytes: 53753
+    sha256: d5a66c629cbb8385c8f1b66d147deefd16fe1fa46967add781baf899e1746fc7
+    tokens: 64
+    parent_artifact_ids:
+    - c81ff8b7b2d5056aef86deb4ca3dfc3134ddc34da7d1ea811b6190ac56348684
+  commands:
+  - command: ./venv/bin/python3 2021-alberti-avian-beak-darwin-scaling.py
+    exit_code: 0
+    wall_s: 0.945
+    cpu_user_s: 0.83
+    cpu_sys_s: 0.09
+    stdout_tokens: 1
+  notes: Rendered Pass 1 comparison PNG and growth GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:31:50.641Z'
+  ended_at: '2026-10-20T02:43:59.380Z'
+  duration_s: 0.2
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 2
+  tokens:
+    input_tokens: 16946
+    output_tokens: 9341
+    subagent_tokens: 0
+    total_llm_tokens: 26287
+    artifact_tokens: 6455
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-avian-beak-darwin-scaling-audit.yaml
+    bytes: 11120
+    sha256: e4e217aceee1a740fecdb54cefd572526348718b4cfd5c014cb5f3b466e9570e
+    tokens: 2886
+    parent_artifact_ids:
+    - 2c9fb657fa326ad2796dc40c49d62ad19e528386455391577c419355fb93de98
+    - a0ac22243980d6bf367a0a4c2f5f5a5d10949001f38f0fb7dd8931c466a33a77
+  - file: morphoeval/audits/2026-10-19-avian-beak-darwin-scaling-audit-v2.yaml
+    bytes: 13522
+    sha256: dbcaed417a5fb53cb0123d29cf24fc479426ab2760145624a4af766e0149a927
+    tokens: 3569
+    parent_artifact_ids:
+    - 2c9fb657fa326ad2796dc40c49d62ad19e528386455391577c419355fb93de98
+    - a0ac22243980d6bf367a0a4c2f5f5a5d10949001f38f0fb7dd8931c466a33a77
+  commands: []
+  notes: Pass 1 audit (56.6/100) identifying 4 concrete remediation targets; Pass
+    2 audit (93.2/100, up from 56.6/100 in Pass 1)
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:31:50.854Z'
+  ended_at: '2026-10-20T02:44:00.360Z'
+  duration_s: 1.614
+  cpu_user_s: 1.09
+  cpu_sys_s: 0.15
+  max_rss_mb: 133.4
+  runs_count: 2
+  tokens:
+    input_tokens: 73
+    output_tokens: 566
+    subagent_tokens: 0
+    total_llm_tokens: 639
+    artifact_tokens: 2826
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-avian-beak-darwin-scaling-audit.measurements.yaml
+    bytes: 2842
+    sha256: d0ff20079d6123e013205016d74e167ae621fa0eb264fa34a8ebe1817a20f83b
+    tokens: 901
+    parent_artifact_ids:
+    - dbcaed417a5fb53cb0123d29cf24fc479426ab2760145624a4af766e0149a927
+  - file: morphoeval/audits/2026-10-19-avian-beak-darwin-scaling-audit-v2.measurements.yaml
+    bytes: 6316
+    sha256: b23b5d54eb505aa0b0fd3ea17b9d687f408890a4c0ac74111fbf6d7b7c74e7a4
+    tokens: 1925
+    parent_artifact_ids:
+    - dbcaed417a5fb53cb0123d29cf24fc479426ab2760145624a4af766e0149a927
+  commands:
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-avian-beak-darwin-scaling-audit.yaml
+    exit_code: 0
+    wall_s: 0.792
+    cpu_user_s: 0.53
+    cpu_sys_s: 0.07
+    stdout_tokens: 145
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-avian-beak-darwin-scaling-audit-v2.yaml
+    exit_code: 0
+    wall_s: 0.822
+    cpu_user_s: 0.56
+    cpu_sys_s: 0.08
+    stdout_tokens: 421
+  notes: Measured Pass 1 outputs and sidecar morphometrics; Measured Pass 2 outputs
+    and verified quick_gate=100/100
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:31:51.799Z'
+  ended_at: '2026-10-20T02:44:01.156Z'
+  duration_s: 1.087
+  cpu_user_s: 0.87
+  cpu_sys_s: 0.04
+  max_rss_mb: 45.9
+  runs_count: 2
+  tokens:
+    input_tokens: 115
+    output_tokens: 311
+    subagent_tokens: 0
+    total_llm_tokens: 426
+    artifact_tokens: 35766
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit/REPORT.md
+    bytes: 8551
+    sha256: 2e7dc6308b011388290761c43dfedf2b3fffbc3f93194c9a17a516e9bf32eb3c
+    tokens: 2362
+    parent_artifact_ids:
+    - e4e217aceee1a740fecdb54cefd572526348718b4cfd5c014cb5f3b466e9570e
+    - d0ff20079d6123e013205016d74e167ae621fa0eb264fa34a8ebe1817a20f83b
+  - file: morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit/morphoeval_2026-10-19-avian-beak-darwin-scaling-audit.ttl
+    bytes: 38641
+    sha256: c1a4501d2f678d8e02583fa034c041b24feb18d9fa7a13536c15308ae33bfa69
+    tokens: 11413
+    parent_artifact_ids:
+    - e4e217aceee1a740fecdb54cefd572526348718b4cfd5c014cb5f3b466e9570e
+    - d0ff20079d6123e013205016d74e167ae621fa0eb264fa34a8ebe1817a20f83b
+  - file: morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit-v2/REPORT.md
+    bytes: 11588
+    sha256: 6ccf1ef5c5a5768337f3044cf732cd7571d1a52253c5745d6fe739b278d0c90b
+    tokens: 3328
+    parent_artifact_ids:
+    - dbcaed417a5fb53cb0123d29cf24fc479426ab2760145624a4af766e0149a927
+    - b23b5d54eb505aa0b0fd3ea17b9d687f408890a4c0ac74111fbf6d7b7c74e7a4
+  - file: morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit-v2/morphoeval_2026-10-19-avian-beak-darwin-scaling-audit-v2.ttl
+    bytes: 61903
+    sha256: 9afcffff08c9af27ed718327886a9d8ccb2057106c1f7571d2c7d36541947a97
+    tokens: 18663
+    parent_artifact_ids:
+    - dbcaed417a5fb53cb0123d29cf24fc479426ab2760145624a4af766e0149a927
+    - b23b5d54eb505aa0b0fd3ea17b9d687f408890a4c0ac74111fbf6d7b7c74e7a4
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-avian-beak-darwin-scaling-audit.yaml
+      --no-resolve-heads --conform
+    exit_code: 0
+    wall_s: 0.457
+    cpu_user_s: 0.38
+    cpu_sys_s: 0.02
+    stdout_tokens: 151
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-avian-beak-darwin-scaling-audit-v2.yaml
+      --supersede-from morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit --no-resolve-heads
+      --conform
+    exit_code: 0
+    wall_s: 0.63
+    cpu_user_s: 0.49
+    cpu_sys_s: 0.02
+    stdout_tokens: 160
+  notes: Built Pass 1 ProbKnow-conformant nanopublications; Built Pass 2 superseding
+    ProbKnow-conformant nanopublications
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:31:52.418Z'
+  ended_at: '2026-10-20T02:44:02.251Z'
+  duration_s: 1.451
+  cpu_user_s: 1.14
+  cpu_sys_s: 0.08
+  max_rss_mb: 57.0
+  runs_count: 2
+  tokens:
+    input_tokens: 69
+    output_tokens: 1058
+    subagent_tokens: 0
+    total_llm_tokens: 1127
+    artifact_tokens: 1375
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit/published.json
+    bytes: 1952
+    sha256: 4a248b8bc29eda71b2f30684c723d973f73bff6af3c5217de373fc6494651f2f
+    tokens: 683
+    parent_artifact_ids:
+    - c1a4501d2f678d8e02583fa034c041b24feb18d9fa7a13536c15308ae33bfa69
+  - file: morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit-v2/published.json
+    bytes: 1952
+    sha256: 24ad7b3d7149bfca25254024eaabc011b04e18ff40bfdc2464baeb792b414f4f
+    tokens: 692
+    parent_artifact_ids:
+    - 9afcffff08c9af27ed718327886a9d8ccb2057106c1f7571d2c7d36541947a97
+  commands:
+  - command: ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit
+    exit_code: 0
+    wall_s: 0.551
+    cpu_user_s: 0.48
+    cpu_sys_s: 0.03
+    stdout_tokens: 520
+  - command: ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit-v2
+    exit_code: 0
+    wall_s: 0.9
+    cpu_user_s: 0.66
+    cpu_sys_s: 0.05
+    stdout_tokens: 538
+  notes: Signed and verified all 10 Pass 1 nanopublications; Signed and verified all
+    10 Pass 2 superseding nanopublications
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:31:53.122Z'
+  ended_at: '2026-10-20T02:44:02.497Z'
+  duration_s: 0.223
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 2
+  tokens:
+    input_tokens: 5690
+    output_tokens: 8052
+    subagent_tokens: 0
+    total_llm_tokens: 13742
+    artifact_tokens: 5690
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit/REPORT.md
+    bytes: 8551
+    sha256: 2e7dc6308b011388290761c43dfedf2b3fffbc3f93194c9a17a516e9bf32eb3c
+    tokens: 2362
+    parent_artifact_ids:
+    - 6ccf1ef5c5a5768337f3044cf732cd7571d1a52253c5745d6fe739b278d0c90b
+  - file: morphoeval/kg/2026-10-19-avian-beak-darwin-scaling-audit-v2/REPORT.md
+    bytes: 11588
+    sha256: 6ccf1ef5c5a5768337f3044cf732cd7571d1a52253c5745d6fe739b278d0c90b
+    tokens: 3328
+    parent_artifact_ids:
+    - 6ccf1ef5c5a5768337f3044cf732cd7571d1a52253c5745d6fe739b278d0c90b
+  commands: []
+  notes: Synthesized Pass 1 REPORT.md; Synthesized Pass 2 REPORT.md
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:42:32.673Z'
+  ended_at: '2026-10-20T02:42:35.422Z'
+  duration_s: 2.678
+  cpu_user_s: 2.37
+  cpu_sys_s: 0.26
+  max_rss_mb: 308.4
+  runs_count: 1
+  tokens:
+    input_tokens: 50
+    output_tokens: 125
+    subagent_tokens: 0
+    total_llm_tokens: 175
+    artifact_tokens: 13940
+    method: explicit+BPE
+  artifacts:
+  - file: 2021-alberti-avian-beak-darwin-scaling.py
+    bytes: 51560
+    sha256: 2c9fb657fa326ad2796dc40c49d62ad19e528386455391577c419355fb93de98
+    tokens: 13812
+    parent_artifact_ids:
+    - e4e217aceee1a740fecdb54cefd572526348718b4cfd5c014cb5f3b466e9570e
+  - file: docs/media/avian_beak_darwin_scaling_comparison.png
+    bytes: 542135
+    sha256: a0ac22243980d6bf367a0a4c2f5f5a5d10949001f38f0fb7dd8931c466a33a77
+    tokens: 64
+    parent_artifact_ids:
+    - e4e217aceee1a740fecdb54cefd572526348718b4cfd5c014cb5f3b466e9570e
+  - file: docs/media/avian_beak_darwin_scaling_growth.gif
+    bytes: 234920
+    sha256: 9f1537c80e89b5cc05c299879c931a29b4abc948744f13622fa8d593eba056a7
+    tokens: 64
+    parent_artifact_ids:
+    - e4e217aceee1a740fecdb54cefd572526348718b4cfd5c014cb5f3b466e9570e
+  commands:
+  - command: bash -c ./venv/bin/python3 2021-alberti-avian-beak-darwin-scaling.py
+      --self-test && ./venv/bin/python3 2021-alberti-avian-beak-darwin-scaling.py
+    exit_code: 0
+    wall_s: 2.678
+    cpu_user_s: 2.37
+    cpu_sys_s: 0.26
+    stdout_tokens: 125
+  notes: 'Remediated all 4 Pass 1 audit findings in 2021-alberti-avian-beak-darwin-scaling.py
+    (v2): 14-species affine scaling+shear collapse, Bmp4/Noggin/CaM perturbations,
+    Gould (1845) specimen CV contour segmentation, and SHA-256 verification'

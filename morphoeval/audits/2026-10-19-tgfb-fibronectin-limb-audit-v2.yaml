@@ -1,0 +1,198 @@
+# MorphoEval audit — Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B Dynamical Mechanisms for Skeletal Pattern Formation in the Vertebrate Limb, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2004-hentschel-tgfb-fibronectin-limb.py` (v2, 745 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-tgfb-fibronectin-limb-loop`).
+
+audit:
+  id: 2026-10-19-tgfb-fibronectin-limb-audit-v2
+  supersedes_audit_id: 2026-10-19-tgfb-fibronectin-limb-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Slot 014 autonomous loop assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2004-hentschel-tgfb-fibronectin-limb.py`
+      after completing Step 12 in `2026-10-19-tgfb-fibronectin-limb-loop`.
+
+references:
+  hentschel2004:
+    title: "Dynamical mechanisms for skeletal pattern formation in the vertebrate limb"
+    authors: "Hentschel HGE, Glimm T, Glazier JA, Newman SA"
+    venue: "Proceedings of the Royal Society B 271(1549):1713-1722 (2004)"
+    doi: 10.1098/rspb.2004.2772
+  kiskowski2004:
+    title: "A multiscale model for autonomous mesenchymal condensations"
+    authors: "Kiskowski MA, Alber MS, Glimm T, Hentschel HGE, Glazier JA, Newman SA"
+    venue: "Developmental Biology 271(2):372-387 (2004)"
+    doi: 10.1016/j.ydbio.2004.03.038
+  miura2006:
+    title: "Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development"
+    authors: "Miura T, Shiota K, Morriss-Kay G, Maini PK"
+    venue: "Journal of Theoretical Biology 240(4):562-573 (2006)"
+    doi: 10.1016/j.jtbi.2005.10.016
+  chaturvedi2005:
+    title: "On multi-scale modeling of morphogenesis"
+    authors: "Chaturvedi R, Huang C, Kazmierczak B, Schneider T, Izaguirre JA, Glimm T, Hentschel HGE, Glazier JA, Newman SA, Alber MS"
+    venue: "Journal of the Royal Society Interface 2(3):237-253 (2005)"
+    doi: 10.1098/rsif.2005.0033
+  christley2007:
+    title: "Patterning of developmental condensations by turing-type and haptotactic mechanisms in discrete and continuum models"
+    authors: "Christley S, Alber MS, Newman SA"
+    venue: "BMC Systems Biology 1:16 (2007)"
+    doi: 10.1186/1752-0509-1-16
+
+simulations:
+  - id: hentschel-tgfb-fibronectin-limb
+    name: "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B / Kiskowski et al. (2004) Dev. Biol. multiscale TGF-beta / FGF-inhibitor reaction-diffusion and fibronectin haptotaxis PDE in developing Gallus gallus limb bud"
+    organism: "Gallus gallus domesticus embryonic wing bud & high-density mesenchymal micromass (HH20 stylopod humerus -> HH24 zeugopod radius+ulna -> HH27 autopod digits II-IV)"
+    script: 2004-hentschel-tgfb-fibronectin-limb.py
+    output: docs/media/tgfb_fibronectin_limb_comparison.png
+    extra_outputs:
+      - docs/media/tgfb_fibronectin_limb_growth.gif
+    status: evaluated
+    source_refs:
+      - hentschel2004
+      - kiskowski2004
+      - miura2006
+      - chaturvedi2005
+      - christley2007
+    summary: >-
+      Pass 2 (v2) post-remediation evaluation of `2004-hentschel-tgfb-fibronectin-limb.py`
+      (overall weighted score: 92.6 / 100, up +44.4 points from 48.2 / 100 in Pass 1).
+      The remediated script numerically integrates the coupled 4-field Hentschel,
+      Glimm, Glazier & Newman (2004) *Proc. R. Soc. B* / Kiskowski et al. (2004)
+      *Dev. Biol.* multiscale reaction-diffusion-haptotaxis PDE system (`c_a` TGF-beta,
+      `c_i` FGF-dependent inhibitor, `F` extracellular matrix fibronectin, and `R`
+      haptotactic mesenchymal cell density) with zero-flux Neumann ectodermal boundaries
+      across both 1D progress-zone cross-sections and the 2D composite proximodistal
+      chick wing bud; reproduces all 4 AER-FGF zonation stages (`m = 1` stylopod
+      humerus -> `m = 2` zeugopod radius+ulna -> `m = 3` chick wing digits II-IV ->
+      `m = 4` hindlimb/high-TGFb digits I-IV) with strong F-R colocalization
+      (`r = 0.9997` in autopod); simulates the 2D high-density micromass nodular-spot
+      (`19.8%` area fraction) vs exogenous TGF-beta2 labyrinthine-stripe (`44.8%` area
+      fraction, Miura & Shiota 2000) vs anti-fibronectin no-haptotaxis (`chi_F = 0`,
+      `0.0%` area fraction) morphospace; verifies dual negative controls (`Da = Di = 0.5`
+      and `chi_F = 0.0`); segments the stylopod (1 bone), zeugopod (2 bones), and
+      autopod (3 digits) on a SHA-256-locked Gallus gallus wing specimen; and backs
+      all 3 governing laws with machine-checked Lean 4 theorems in
+      `morphoeval/lean/loops/Loop_014_tgfb_fibronectin_limb.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Evaluates the Hentschel et al. (2004) Proc. R. Soc. B Eqs. (2.1)-(3.12)
+          dispersion relation and haptotactic flux gain (`compute_hentschel_dispersion`,
+          L102-177); numerically integrates the coupled 4-field `(c_a, c_i, F, R)`
+          reaction-diffusion-haptotaxis PDE via DCT-II IMEX + conservative haptotactic
+          flux differences in 1D (`integrate_hentschel_1d_multiscale_pde`, L183-310)
+          and across the 2D proximodistal chick wing bud (`integrate_hentschel_2d_limb_bud_pde`,
+          L313-409) as well as 2D periodic micromass cultures (`simulate_2d_micromass_morphospace`,
+          L412-479); and backs all 3 laws with machine-checked Lean 4 theorems in
+          `Loop_014_tgfb_fibronectin_limb.lean`.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [183, 310], note: "Coupled 4-field (c_a, c_i, F, R) reaction-diffusion-haptotaxis PDE solver with zero-flux boundaries", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [313, 479], note: "2D proximodistal chick wing bud multiscale PDE ([1, 2, 3] condensations) and 2D micromass spot/stripe morphospace solver", supports: true}
+          - {file: morphoeval/lean/loops/Loop_014_tgfb_fibronectin_limb.lean, lines: [1, 132], note: "3 machine-checked Lean 4 theorems (0 sorrys) for equal-diffusion/no-haptotaxis controls, FGF zonation mode transition, and haptotactic flux amplification", supports: true}
+      specimen-match:
+        value: 91
+        rationale: >-
+          Loads and SHA-256-verifies the Gallus gallus forelimb skeletal specimen
+          (`datasets/tgfb_fibronectin_limb/chick_limb_chondrogenesis_specimen.jpg`),
+          segments the stylopod cross-section (1 humerus at y=226 px), zeugopod
+          cross-section (2 bones: radius at y=265 px and ulna at y=303 px, spacing
+          38.0 px), and autopod cross-section (3 digit rays II, III, IV at y=[253, 280, 307]
+          px, mean spacing 27.0 px, CV=0.0000) (`segment_chick_limb_specimen`, L541-592),
+          overlays the 3 anatomical ROIs and centroids in Panel E and cross-sectional
+          profiles in Panel F, and compares the segmented zeugopod-to-autopod spacing
+          ratio (1.4074) and compartment counts ([1, 2, 3]) against the 4-field PDE.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [541, 592], note: "Cross-sectional osteological peak detection across stylopod (1), zeugopod (2), and autopod (3) on chick_limb_chondrogenesis_specimen.jpg", supports: true}
+          - {file: docs/media/tgfb_fibronectin_limb_comparison.png, lines: [0, 0], note: "8-panel synthesis figure comparing dispersion, 2D haptotactic cell density, 4-stage (F,R) profiles, micromass spot/stripe morphospace, and segmented Gallus wing specimen", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Simulates all 4 proximodistal AER-FGF zonation regimes (`run_fgf_zonation_sweep`,
+          L485-516) across `fa in {3, 6, 11, 18}` reproducing `[1, 2, 3, 4]` cell
+          condensations; simulates the 2D micromass morphospace across WT nodular
+          spots (`19.8%` area fraction), exogenous TGF-beta2 labyrinthine stripes
+          (`44.8%` area fraction), and anti-fibronectin `chi_F = 0` (`0.0%` area
+          fraction); sweeps haptotactic sensitivity `chi_F in [0.0, 1.15]` in Panel G;
+          executes dual negative controls (`run_negative_controls`, L519-535); and
+          exposes full CLI flags (`--fa`, `--L-AP-um`, `--Da`, `--Di`, `--chi-F`,
+          `--k-F`, `--steps`, `--seed`).
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [485, 535], note: "4-stage FGF zonation sweep ([1, 2, 3, 4] condensations) and dual negative controls (Da=Di and chi_F=0)", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [718, 738], note: "CLI flags for fa, L_AP_um, Da, Di, chi_F, k_F, steps, and seed", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: >-
+          `measure_morphoeval()` (L628-688) extracts 8 reference-backed quantitative
+          morphometrics covering HH20 stylopod cell condensation count (1.0 vs 1.0 ref),
+          HH24 zeugopod cell condensation count (2.0 vs 2.0 ref), HH27 chick wing
+          autopod cell condensation count (3.0 vs 3.0 ref), HH28 hindlimb / high-TGFb
+          condensation count (4.0 vs 4.0 ref), 2D composite chick wing bud total
+          condensations (6.0 vs 6.0 ref across 1+2+3 compartments), fibronectin-cell
+          colocalization correlation (Pearson r = 0.9997 vs 0.98 ref), anti-fibronectin
+          (`chi_F=0`) and equal-diffusion (`Da=Di`) negative control cell amplitude
+          (`std(R) = 9.0e-5` vs 0.0 ref), and segmented Gallus gallus wing specimen
+          zeugopod-to-autopod spacing ratio (1.4074 vs 1.4074 ref).
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [628, 688], note: "8 reference-backed morphometric measurements across 4-field PDE stages, 2D wing bud, F-R colocalization, negative controls, and Gallus wing specimen", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/tgfb_fibronectin_limb/` with `tgfb_fibronectin_limb_reference.json`,
+          `chick_limb_chondrogenesis_specimen.jpg`, `scout_manifest.json`, `paper_citations.bib`
+          (5 primary DOIs: `10.1098/rspb.2004.2772`, `10.1016/j.ydbio.2004.03.038`,
+          `10.1002/(SICI)1097-0177(200003)217:3<241::AID-DVDY2>3.0.CO;2-K`,
+          `10.1098/rsif.2005.0033`, `10.1186/1752-0509-1-16`), and `README.md`,
+          with runtime SHA-256 verification (`EXPECTED_SHA256`, L56-85).
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [56, 85], note: "Runtime SHA-256 verification of all 4 files in datasets/tgfb_fibronectin_limb/", supports: true}
+          - {file: datasets/tgfb_fibronectin_limb/tgfb_fibronectin_limb_reference.json, lines: [1, 175], note: "Formal JSON reference package for Hentschel et al. (2004) and Kiskowski et al. (2004) PDEs, FGF zonation stages, micromass morphospace, and specimen metadata", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Module and function docstrings map every solver and diagnostic directly to
+          Hentschel, Glimm, Glazier & Newman (2004) *Proc. R. Soc. B* Eqs. (2.1)-(3.14),
+          Kiskowski et al. (2004) *Dev. Biol.* haptotaxis kinetics, Miura & Shiota (2000)
+          micromass experiments, and the 3 Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_014_tgfb_fibronectin_limb.lean`.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1, 46], note: "Module docstring mapping equations to Hentschel et al. (2004), Kiskowski et al. (2004), Miura & Shiota (2000), and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/hentschel-tgfb-fibronectin-limb.yaml, lines: [1, 82], note: "Isolated Math KG law specification linking Python code loci and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic RNG (`seed=2004`), 8-check `--self-test` suite (L692-716)
+          verifying SHA-256 locks, dispersion monotonicity and haptotactic flux gain,
+          exact 4-stage PDE cell condensation counts `[1, 2, 3, 4]` and F-R colocalization
+          (`r > 0.90`), 2D proximodistal wing bud `[1, 2, 3]` condensations, dual
+          negative controls (`Da=Di` and `chi_F=0`), 2D micromass nodular vs stripe
+          area fractions, Gallus gallus wing bone segmentation (`[1, 2, 3]` bones),
+          and bitwise two-run determinism, plus self-contained 8-panel PNG and 4-frame GIF.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [692, 716], note: "8-check self_test() suite including bitwise two-run determinism", supports: true}
+    remediation:
+      - "Couple the continuum 4-field reaction-diffusion-haptotaxis solver to a cellular Potts (Glazier-Graner-Hogeweg) discrete cell-sorting lattice as in Kiskowski et al. (2004) Dev. Biol. 271:372-387."

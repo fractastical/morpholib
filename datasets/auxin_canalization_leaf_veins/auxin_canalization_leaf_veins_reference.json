@@ -1,0 +1,131 @@
+{
+  "dataset_id": "auxin_canalization_leaf_veins_v1",
+  "title": "Mitchison (1980, 1981) Proc. R. Soc. B / Phil. Trans. R. Soc. B & Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. — With-the-Flux Auxin Canalization, Sachs Wound Bypass Regeneration, and Carrier-Allocated Open vs Closed Leaf Venation Networks",
+  "organism": "Pisum sativum & Arabidopsis thaliana (dicot leaf lamina and stem vascular strands)",
+  "primary_sources": [
+    {
+      "citation": "Mitchison (1980) Proc. R. Soc. Lond. B 207(1166):79-109",
+      "doi": "10.1098/rspb.1980.0082",
+      "role": "Facilitated diffusion canalization model dD_ij/dt = alpha*phi_ij^p + beta - gamma*D_ij proving that linear feedback (p <= 1) yields diffuse flow whereas quadratic feedback (p = 2) triggers winner-take-all symmetry breaking into 1-cell-wide vascular strands where concentration drops inside the canalized vein (S_vein < S_parenchyma)"
+    },
+    {
+      "citation": "Mitchison (1981) Phil. Trans. R. Soc. Lond. B 295(1078):461-471",
+      "doi": "10.1098/rstb.1981.0081",
+      "role": "Polar auxin transport canalization with directed membrane carrier permeabilities P_ij evolving with net flux phi_ij, explaining basipetal polarity and Sachs wound bypass strand regeneration"
+    },
+    {
+      "citation": "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(3):366-375",
+      "doi": "10.1016/j.jtbi.2005.03.017",
+      "role": "Coupled auxin flux and PIN1 efflux carrier allocation dynamics on a 2D leaf lamina comparing open hierarchical branching trees (unbounded/non-saturating carrier feedback) vs closed-areole venation loops (saturating carrier allocation with distributed lamina synthesis)"
+    },
+    {
+      "citation": "Sachs (1981) Adv. Bot. Res. 9:151-262",
+      "doi": "10.1016/S0065-2296(08)60351-1",
+      "role": "Experimental demonstration of auxin-driven vascular strand canalization and C-shaped bypass regeneration around a transverse stem incision in Pisum sativum"
+    },
+    {
+      "citation": "Rolland-Lagan & Prusinkiewicz (2005) Plant J. 44(5):854-865",
+      "doi": "10.1111/j.1365-313X.2005.02581.x",
+      "role": "Comparative evaluation of facilitated diffusion vs polar transport canalization and open vs closed loop formation in dicot leaf venation"
+    }
+  ],
+  "mitchison_canalization_parameters": {
+    "alpha_flux_gain": 1.0,
+    "beta_basal_diffusivity_rate": 0.02,
+    "gamma_decay_rate": 0.20,
+    "basal_diffusivity_D0": 0.10,
+    "max_diffusivity_Dmax": 25.0,
+    "source_flux_Phi": 2.0,
+    "critical_flux_threshold_4beta_over_alpha": 0.08,
+    "quadratic_exponent_p": 2.0,
+    "linear_exponent_p": 1.0,
+    "sublinear_exponent_p": 0.5,
+    "auxin_synthesis_sigma_lamina": 0.05,
+    "auxin_decay_mu": 0.005
+  },
+  "feedback_exponent_bifurcation_regime": [
+    {
+      "regime_id": "sublinear_feedback_p05",
+      "exponent_p": 0.5,
+      "winner_flux_share_ref": 0.500,
+      "conductivity_contrast_D1_over_D2_ref": 1.0,
+      "vein_width_cells_ref": 12.0,
+      "vein_to_parenchyma_conc_ratio_ref": 1.18,
+      "state_classification": "symmetric_diffuse_sheet"
+    },
+    {
+      "regime_id": "linear_feedback_p10",
+      "exponent_p": 1.0,
+      "winner_flux_share_ref": 0.500,
+      "conductivity_contrast_D1_over_D2_ref": 1.0,
+      "vein_width_cells_ref": 10.0,
+      "vein_to_parenchyma_conc_ratio_ref": 1.12,
+      "state_classification": "symmetric_diffuse_sheet"
+    },
+    {
+      "regime_id": "weak_superlinear_p14",
+      "exponent_p": 1.4,
+      "winner_flux_share_ref": 0.892,
+      "conductivity_contrast_D1_over_D2_ref": 8.26,
+      "vein_width_cells_ref": 2.0,
+      "vein_to_parenchyma_conc_ratio_ref": 0.64,
+      "state_classification": "partial_canalization"
+    },
+    {
+      "regime_id": "quadratic_mitchison_p20",
+      "exponent_p": 2.0,
+      "winner_flux_share_ref": 0.995,
+      "conductivity_contrast_D1_over_D2_ref": 196.0,
+      "vein_width_cells_ref": 1.0,
+      "vein_to_parenchyma_conc_ratio_ref": 0.31,
+      "state_classification": "single_cell_wide_canalized_strand"
+    },
+    {
+      "regime_id": "cubic_hypercanalization_p25",
+      "exponent_p": 2.5,
+      "winner_flux_share_ref": 0.998,
+      "conductivity_contrast_D1_over_D2_ref": 248.0,
+      "vein_width_cells_ref": 1.0,
+      "vein_to_parenchyma_conc_ratio_ref": 0.24,
+      "state_classification": "single_cell_wide_canalized_strand"
+    }
+  ],
+  "sachs_wound_bypass_benchmarks": {
+    "grid_rows": 20,
+    "grid_cols": 16,
+    "incision_row": 10,
+    "incision_col_end": 9,
+    "intact_strand_tortuosity_ref": 1.00,
+    "wounded_bypass_tortuosity_ref": 1.38,
+    "bypass_lateral_deflection_cells_ref": 4.0,
+    "sink_flux_recovery_fraction_ref": 0.985,
+    "npab_transport_inhibitor_flux_recovery_ref": 0.08
+  },
+  "feugier_venation_topology_benchmarks": {
+    "open_tree_regime": {
+      "carrier_model": "unbounded_quadratic_feedback",
+      "betti_1_loop_count_ref": 0,
+      "vein_density_fraction_ref": 0.165,
+      "mean_branch_angle_deg_ref": 52.0
+    },
+    "closed_areole_loop_regime": {
+      "carrier_model": "saturating_carrier_allocation_fluctuating_lamina",
+      "betti_1_loop_count_ref": 14,
+      "vein_density_fraction_ref": 0.235,
+      "mean_branch_angle_deg_ref": 56.5,
+      "areole_compactness_mean_ref": 0.72
+    }
+  },
+  "specimen_metadata": {
+    "filename": "leaf_venation_canalization_specimen.jpg",
+    "source_title": "File:Vein skeleton of a leaf (de-ghosted).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Vein_skeleton_of_a_leaf_(de-ghosted).jpg",
+    "license": "CC BY-SA 3.0",
+    "author": "Wikimedia Commons contributor (de-ghosted cleared dicot leaf skeleton)",
+    "resolution_px": [960, 559],
+    "sha256": "7f67774708f8e952fe3845452f8288b7fdcb34cfc29e0fcb08be77e66d08492b",
+    "empirical_secondary_vein_angle_deg_ref": 54.5,
+    "empirical_secondary_vein_angle_sd_deg": 6.8,
+    "description": "Cleared dicotyledonous leaf venation skeleton against a black background showing the primary midrib, pinnate secondary veins branching at ~54.5 deg, and reticulate tertiary/quaternary closed areole loops."
+  }
+}

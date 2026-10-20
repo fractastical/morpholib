@@ -1,0 +1,393 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-vascular-angiogenesis-notch-loop
+  target_simulation: 2021-ibrahim-vascular-angiogenesis-notch.py
+  paper: Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol. 4:e1000052; Hellstrom
+    et al. (2007) Nature 445:776-780
+  created_at: '2026-10-20T02:19:54.494Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: 33e07ad
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 47.35
+  wall_time_min: 0.79
+  tier_a_wall_s: 43.435
+  tier_b_wall_s: 3.915
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  input_tokens: 47200
+  output_tokens: 19000
+  subagent_tokens: 3600
+  total_llm_tokens: 69800
+  artifact_tokens: 32462
+  tier_a_llm_tokens: 32650
+  tier_b_llm_tokens: 37150
+  effective_tokens_per_s: 1474.1
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:20:01.584Z'
+  ended_at: '2026-10-20T02:20:04.350Z'
+  duration_s: 2.767
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3200
+    output_tokens: 1100
+    subagent_tokens: 0
+    total_llm_tokens: 4300
+    artifact_tokens: 853
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/vascular_angiogenesis_notch/scout_manifest.json
+    bytes: 3027
+    sha256: 8f78564c37953f77fed853ff1ab258a5477aadbc57a28ce9cbd2488c863e5b72
+    tokens: 853
+  commands: []
+  notes: Completed OpenAlex + Wikimedia Commons literature & specimen scouting for
+    slot-060 vascular angiogenesis Notch tip/stalk selection
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: paper-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:23:35.829Z'
+  ended_at: '2026-10-20T02:23:35.913Z'
+  duration_s: 0.084
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 4100
+    output_tokens: 1600
+    subagent_tokens: 0
+    total_llm_tokens: 5700
+    artifact_tokens: 1423
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/vascular_angiogenesis_notch/paper_citations.bib
+    bytes: 2341
+    sha256: a96e44f99de8a75691c5445d7c6b1e5a7a539210f4cba9ac35a0be00f685871c
+    tokens: 673
+  - file: datasets/vascular_angiogenesis_notch/README.md
+    bytes: 2769
+    sha256: 2dcc16db61c0b65e0dc641b783cbc57396840ba2dd3eb4c320458ee44f2c2893
+    tokens: 750
+  commands: []
+  notes: Extracted Bentley et al. (2008), Hellstrom et al. (2007), Jakobsson et al.
+    (2010), and Chappell et al. (2009) governing equations and benchmarks
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: source-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:23:35.984Z'
+  ended_at: '2026-10-20T02:23:36.067Z'
+  duration_s: 0.084
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3800
+    output_tokens: 1450
+    subagent_tokens: 0
+    total_llm_tokens: 5250
+    artifact_tokens: 2054
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/vascular_angiogenesis_notch/vascular_angiogenesis_notch_reference.json
+    bytes: 6906
+    sha256: 8821743569ceaf2e73e8bf5b5c20008694be11d4bfab62637a4797e05cb68151
+    tokens: 1990
+  - file: datasets/vascular_angiogenesis_notch/huvec_angiogenic_sprouting_plexus_specimen.jpg
+    bytes: 155359
+    sha256: 9bf4f3e2692bd2ac4ffc245ca2b8ac9c29762b90a89b3a9f4751e1b00e58132c
+    tokens: 64
+  commands: []
+  notes: Vendored SHA-256-locked reference JSON and CC BY 4.0 HUVEC angiogenic sprouting
+    vascular network micrograph
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: lean-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:24:35.531Z'
+  ended_at: '2026-10-20T02:25:14.940Z'
+  duration_s: 39.409
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 4400
+    output_tokens: 1950
+    subagent_tokens: 0
+    total_llm_tokens: 6350
+    artifact_tokens: 1763
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean
+    bytes: 7858
+    sha256: 921c658786c2c991615378a5979e040ce955f648c3c67b62fefeda3cff5735e7
+    tokens: 64
+  - file: morphoeval/math_kg_loops/ibrahim-vascular-angiogenesis-notch.yaml
+    bytes: 6550
+    sha256: 29b54408eb6c2cd6a367686f1703468b1561e41de6380c21ec84d229e0555f62
+    tokens: 1699
+  commands: []
+  notes: Verified 3 standalone Lean 4 theorems (0 sorrys) on trans-Notch Brillouin
+    k=pi symmetry breaking, DAPT all-tip hypersprouting collapse, and Flt1 decoy sequestration
+    rescue
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:26:27.644Z'
+  ended_at: '2026-10-20T02:26:28.134Z'
+  duration_s: 0.49
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 5100
+    output_tokens: 2200
+    subagent_tokens: 0
+    total_llm_tokens: 7300
+    artifact_tokens: 1876
+    method: explicit+BPE
+  artifacts:
+  - file: 2021-ibrahim-vascular-angiogenesis-notch.py
+    bytes: 6250
+    sha256: bd3b25ba6b80f6c58978b8114b35b811d76b8d22dc6ac6c11145bfd32c1fc2f7
+    tokens: 1876
+  commands: []
+  notes: Implemented Pass 1 baseline 2021-ibrahim-vascular-angiogenesis-notch.py
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:26:28.208Z'
+  ended_at: '2026-10-20T02:26:28.808Z'
+  duration_s: 0.601
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2800
+    output_tokens: 950
+    subagent_tokens: 0
+    total_llm_tokens: 3750
+    artifact_tokens: 128
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/vascular_angiogenesis_notch_comparison.png
+    bytes: 81701
+    sha256: 752052d83f74a51a8a136bd0628b68dd31a9e00f6acf6e2876d07385b72d3982
+    tokens: 64
+  - file: docs/media/vascular_angiogenesis_notch_growth.gif
+    bytes: 34909
+    sha256: 8f631dc7032d737836ee87b69afcded2ad48e4fc86c6bcdba55286ef8643e6d2
+    tokens: 64
+  commands: []
+  notes: Rendered Pass 1 baseline PNG and GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: assessor-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:26:28.881Z'
+  ended_at: '2026-10-20T02:26:28.969Z'
+  duration_s: 0.088
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 4800
+    output_tokens: 1900
+    subagent_tokens: 0
+    total_llm_tokens: 6700
+    artifact_tokens: 2147
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-vascular-angiogenesis-notch-audit.yaml
+    bytes: 8728
+    sha256: 35ef3bce60b0b5091eb2bc8056747881e1cb380e9d090ef2d1983e9b2638ce2a
+    tokens: 2147
+  commands: []
+  notes: Completed Pass 1 MorphoEval rubric audit (53.0/100)
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: measure-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:26:29.043Z'
+  ended_at: '2026-10-20T02:26:29.490Z'
+  duration_s: 0.448
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2400
+    output_tokens: 900
+    subagent_tokens: 0
+    total_llm_tokens: 3300
+    artifact_tokens: 833
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-vascular-angiogenesis-notch-audit.measurements.yaml
+    bytes: 2433
+    sha256: 9d2e6213926048ae3fa71f8a3616011e55e142c48e27f81c78827a1941006b74
+    tokens: 833
+  commands: []
+  notes: Measured Pass 1 outputs
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: kg-builder
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:26:29.564Z'
+  ended_at: '2026-10-20T02:26:30.081Z'
+  duration_s: 0.517
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3100
+    output_tokens: 1200
+    subagent_tokens: 0
+    total_llm_tokens: 4300
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands: []
+  notes: Built Pass 1 MorphoEval knowledge graph
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: signer-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:26:30.155Z'
+  ended_at: '2026-10-20T02:26:30.970Z'
+  duration_s: 0.815
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2200
+    output_tokens: 850
+    subagent_tokens: 0
+    total_llm_tokens: 3050
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands: []
+  notes: Signed and verified all Pass 1 nanopubs
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: graph-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:26:31.048Z'
+  ended_at: '2026-10-20T02:26:31.180Z'
+  duration_s: 0.132
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1900
+    output_tokens: 700
+    subagent_tokens: 0
+    total_llm_tokens: 2600
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands: []
+  notes: Verified Pass 1 nanopub provenance graph
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:33:55.578Z'
+  ended_at: '2026-10-20T02:33:57.493Z'
+  duration_s: 1.915
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 9400
+    output_tokens: 4200
+    subagent_tokens: 3600
+    total_llm_tokens: 17200
+    artifact_tokens: 21385
+    method: explicit+BPE
+  artifacts:
+  - file: 2021-ibrahim-vascular-angiogenesis-notch.py
+    bytes: 55461
+    sha256: 8952fdaf30ec88b9c7e2101cbc6ddd60cf6d1be1156b5b1a14bcef2922207856
+    tokens: 14597
+  - file: docs/media/vascular_angiogenesis_notch_comparison.png
+    bytes: 739170
+    sha256: 467bd8172c349e7c8b916ab51cfba991d573bc7cc2a730ed158284d46321247a
+    tokens: 64
+  - file: docs/media/vascular_angiogenesis_notch_growth.gif
+    bytes: 173266
+    sha256: fef24cbb7d5134d8f21df8f9f76d8b5f51dbca30426bcd90aabb424c19855bba
+    tokens: 64
+  - file: morphoeval/audits/2026-10-19-vascular-angiogenesis-notch-audit-v2.yaml
+    bytes: 15231
+    sha256: fbd982c6f4c23387da46fabd0e375a304dd7c94d1977ed3c17dc2ae55d29b0ae
+    tokens: 4021
+  - file: morphoeval/audits/2026-10-19-vascular-angiogenesis-notch-audit-v2.measurements.yaml
+    bytes: 9360
+    sha256: 17a2e9a1ef8ffa806fd8c22a6290b3ca68d4ad8e63dba6b97b2dd5d7eaf57e6a
+    tokens: 2639
+  commands: []
+  notes: Completed Step 12 closed-loop Pass 2 remediation (53.0 -> 93.8/100; 10/10
+    signed nanopubs verified)

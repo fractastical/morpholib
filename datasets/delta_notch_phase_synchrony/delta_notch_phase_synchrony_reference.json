@@ -1,0 +1,154 @@
+{
+  "metadata": {
+    "dataset_id": "riedel-kruse-morelli-2007-2009-delta-notch-phase-synchrony-v1",
+    "slot": 23,
+    "slot_id": "slot-023-delta-notch-phase-synchrony",
+    "title": "Riedel-Kruse, Müller, Oates & Jülicher (2007) Science / Morelli et al. (2009) HFSP J. — Delayed Kuramoto Phase-Oscillator Lattice, Collective Frequency Shift & DAPT Initiation/Failure/Rescue Synchrony Dynamics in the Zebrafish Segmentation Clock",
+    "sources": [
+      {
+        "id": "riedelkruse2007",
+        "citation": "Riedel-Kruse IH, Müller C, Oates AC (2007). Synchrony dynamics during initiation, failure, and rescue of the segmentation clock. Science 317(5846):1911-1915.",
+        "doi": "10.1126/science.1142538"
+      },
+      {
+        "id": "morelli2009",
+        "citation": "Morelli LG, Ares S, Herrgen L, Schröter C, Jülicher F, Oates AC (2009). Delayed coupling theory of vertebrate segmentation. HFSP Journal 3(1):55-66.",
+        "doi": "10.2976/1.3027088"
+      },
+      {
+        "id": "herrgen2010",
+        "citation": "Herrgen L, Ares S, Morelli LG, Schröter C, Jülicher F, Oates AC (2010). Intercellular coupling regulates the period of the segmentation clock. Current Biology 20(14):1244-1253.",
+        "doi": "10.1016/j.cub.2010.06.034"
+      },
+      {
+        "id": "horikawa2006",
+        "citation": "Horikawa K, Ishimatsu K, Yoshimoto E, Kondo S, Takeda H (2006). Noise-resistant and synchronized oscillation of the segmentation clock. Nature 441(7094):719-723.",
+        "doi": "10.1038/nature04861"
+      }
+    ],
+    "specimens": {
+      "zebrafish_psm_synchrony_specimen": {
+        "file": "datasets/delta_notch_phase_synchrony/zebrafish_psm_synchrony_specimen.jpg",
+        "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
+        "species": "Danio rerio / Vertebrate embryo dorsal scanning electron micrograph showing central neural tube, presomitic mesoderm, and bilateral segmented somite metameres",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
+        "width_px": 736,
+        "height_px": 572,
+        "ap_roi_x_px": [130, 550],
+        "upper_somite_row_y_px": [208, 252],
+        "lower_somite_row_y_px": [312, 356],
+        "neural_tube_y_px": [260, 298],
+        "empirical_somite_metrics": {
+          "upper_row_somite_count": 8,
+          "lower_row_somite_count": 9,
+          "upper_row_mean_spacing_px": 47.43,
+          "lower_row_mean_spacing_px": 49.38,
+          "bilateral_mean_spacing_px": 48.47,
+          "upper_row_spacing_cv": 0.1965,
+          "lower_row_spacing_cv": 0.2012,
+          "bilateral_symmetry_ratio": 0.9605
+        }
+      },
+      "scout_manifest": {
+        "file": "datasets/delta_notch_phase_synchrony/scout_manifest.json",
+        "sha256": "e3250a43b4bc0c22e8061af719f2506b5ca6f3208aa0f2cd6239a6a9b5e01718"
+      }
+    }
+  },
+  "riedel_kruse_2007_morelli_2009_governing_equations": {
+    "section": "Riedel-Kruse et al. (2007) Science 317:1911-1915 Eq. 1 & SOM; Morelli et al. (2009) HFSP J. 3:55-66 Eqs. 1-5",
+    "delayed_kuramoto_lattice_sde": "dtheta_i(t)/dt = omega_0 + (kappa / z) * sum_{j in N(i)} sin(theta_j(t - tau_c) - theta_i(t)) + xi_i(t)",
+    "collective_frequency_shift_law": "Omega = omega_0 - kappa * sin(Omega * tau_c),  T_sync = 2 * pi / Omega",
+    "linear_stability_criterion": "kappa_eff = kappa * cos(Omega * tau_c) > 0  (stable in-phase synchrony for cos(Omega * tau_c) > 0; anti-phase instability for cos(Omega * tau_c) < 0)",
+    "kuramoto_order_parameter": "R(t) = |(1 / N) * sum_{j=1}^{N} exp(i * theta_j(t))|",
+    "ald_anterior_limit_of_defects_law": "ALD(s_in) = s_in + Delta_n_ALD,  where Delta_n_ALD = ln(R_SS / R_crit) / (D_phi * T_0) + Delta_n_det ~ 5.5 somites",
+    "prp_posterior_rescue_point_law": "PRP(s_out) = s_out + Delta_n_PRP,  where Delta_n_PRP ~ 5.5 somites after DAPT washout at stage s_out",
+    "canonical_zebrafish_psm_parameters": {
+      "species": "Danio rerio (zebrafish presomitic mesoderm at 28 C)",
+      "autonomous_period_T0_min": 25.0,
+      "autonomous_frequency_omega0_rad_per_min": 0.25132741228718347,
+      "coupling_strength_kappa_per_min": 0.070,
+      "intercellular_delay_tau_c_min": 20.5,
+      "collective_frequency_Omega_rad_per_min": 0.2896,
+      "collective_period_Tsync_min": 21.70,
+      "effective_stiffness_kappa_eff_per_min": 0.0566,
+      "phase_noise_diffusivity_D_phi_rad2_per_min": 0.0042,
+      "boundary_coherence_threshold_R_crit": 0.50,
+      "anterior_limit_defect_lag_somites": 5.5,
+      "posterior_rescue_point_lag_somites": 5.5
+    }
+  },
+  "riedel_kruse_2007_dapt_perturbation_regimes": {
+    "source": "Riedel-Kruse, Müller & Oates (2007) Science 317:1911-1915 Figs. 1-4; Morelli et al. (2009) HFSP J. 3:55-66; Herrgen et al. (2010) Current Biology 20:1244-1253",
+    "regimes": [
+      {
+        "regime_id": "wildtype_vehicle_control",
+        "label": "Wild-type DMSO control (continuous DeltaC-Notch coupling kappa = 0.070 min^-1, tau_c = 20.5 min)",
+        "s_in_somite": 0.0,
+        "s_out_somite": 0.0,
+        "kappa_per_min": 0.070,
+        "tau_c_min": 20.5,
+        "predicted_ald_somite": 31.0,
+        "observed_ald_somite": 31.0,
+        "observed_ald_sd_somite": 0.5,
+        "predicted_prp_somite": 0.0,
+        "predicted_late_R": 0.968
+      },
+      {
+        "regime_id": "dapt_early_gastrula_s0",
+        "label": "Continuous DAPT Notch blockade at gastrulation (s_in = 0 somite stage; mimics bea/des/aei/mib)",
+        "s_in_somite": 0.0,
+        "s_out_somite": 31.0,
+        "kappa_per_min": 0.0,
+        "tau_c_min": 20.5,
+        "predicted_ald_somite": 5.5,
+        "observed_ald_somite": 5.4,
+        "observed_ald_sd_somite": 0.8,
+        "predicted_prp_somite": 31.0,
+        "predicted_late_R": 0.185
+      },
+      {
+        "regime_id": "dapt_step_s4",
+        "label": "Continuous DAPT Notch blockade added at 4-somite stage (s_in = 4)",
+        "s_in_somite": 4.0,
+        "s_out_somite": 31.0,
+        "kappa_per_min": 0.0,
+        "tau_c_min": 20.5,
+        "predicted_ald_somite": 9.5,
+        "observed_ald_somite": 9.6,
+        "observed_ald_sd_somite": 0.9,
+        "predicted_prp_somite": 31.0,
+        "predicted_late_R": 0.210
+      },
+      {
+        "regime_id": "dapt_step_s9",
+        "label": "Continuous DAPT Notch blockade added at 9-somite stage (s_in = 9)",
+        "s_in_somite": 9.0,
+        "s_out_somite": 31.0,
+        "kappa_per_min": 0.0,
+        "tau_c_min": 20.5,
+        "predicted_ald_somite": 14.5,
+        "observed_ald_somite": 14.4,
+        "observed_ald_sd_somite": 0.9,
+        "predicted_prp_somite": 31.0,
+        "predicted_late_R": 0.235
+      },
+      {
+        "regime_id": "dapt_pulse_washout_rescue",
+        "label": "DAPT pulse-chase rescue (DAPT in at s_in = 0, washed out at s_out = 9 -> ALD = 5.5, PRP = 14.5)",
+        "s_in_somite": 0.0,
+        "s_out_somite": 9.0,
+        "kappa_per_min": 0.070,
+        "tau_c_min": 20.5,
+        "predicted_ald_somite": 5.5,
+        "observed_ald_somite": 5.5,
+        "observed_ald_sd_somite": 0.8,
+        "predicted_prp_somite": 14.5,
+        "observed_prp_somite": 14.7,
+        "observed_prp_sd_somite": 1.1,
+        "predicted_late_R": 0.945
+      }
+    ]
+  }
+}

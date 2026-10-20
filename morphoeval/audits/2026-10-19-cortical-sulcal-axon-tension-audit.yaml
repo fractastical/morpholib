@@ -1,0 +1,174 @@
+# MorphoEval audit — Van Essen (1997) Nature, Hilgetag & Barbas (2006) PLoS Comput. Biol. & Mota & Herculano-Houzel (2015) Science Cortical Sulcal Axon Tension, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2020-karbowski-cortical-sulcal-axon-tension.py` (219 lines)
+# prior to Step 12 remediation in `2026-10-19-cortical-sulcal-axon-tension-loop`:
+#   - Primary assessor: Gemini 4 Argon — 55.8 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `generate_parametric_coronal_ribbon` (L44-67) prescribes a harmonic cosine
+#      ansatz for the coronal cortical ribbon rather than minimizing the coupled
+#      elastoplastic cortical bending + viscoelastic cortico-cortical white-matter
+#      axonal spring energy functional F_axon = sum_{i<j} K_ij C_ij (||x_i - x_j|| - L_{0,ij})_+
+#      + E_bend(kappa) coupled to towed-axon growth dL_{0,ij}/dt = gamma_a (T_ij - tau_0)_+.
+#   2. Omits the 12-species Mota & Herculano-Houzel (2015) Science universal cortical
+#      folding scaling law A_T * sqrt(h) = k * A_E^(5/4) (log-log slope 1.25) across
+#      Rodentia, Lagomorpha, Carnivora, Artiodactyla, Cetacea, and Primates, as well
+#      as axonal tension ablation / callosotomy (k_a = 0) and hyper-tension controls.
+#   3. The vendored coronal human brain specimen `datasets/cortical_sulcal_axon_tension/coronal_cortex_axon_tracts_specimen.jpg`
+#      is not loaded, segmented into gyral crowns, sulcal fundi, pial/white-matter
+#      boundaries, or measured for empirical gyral-vs-sulcal cortical thickness ratio
+#      and local Gyrification Index.
+#   4. Runtime SHA-256 verification of the 4 dataset files and CLI parameter overrides
+#      (`--axon-stiffness`, `--bending-modulus`, `--towed-gamma`, `--growth-g`, `--seed`)
+#      are missing.
+
+audit:
+  id: 2026-10-19-cortical-sulcal-axon-tension-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 090 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/90
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2020-karbowski-cortical-sulcal-axon-tension.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-cortical-sulcal-axon-tension-loop`.
+
+references:
+  vanessen1997:
+    title: "A tension-based theory of morphogenesis and compact wiring in the central nervous system"
+    authors: "Van Essen DC"
+    venue: "Nature 385(6614):313-318 (1997)"
+    doi: 10.1038/385313a0
+  hilgetag2006:
+    title: "Role of Mechanical Factors in the Morphology of the Primate Cerebral Cortex"
+    authors: "Hilgetag CC, Barbas H"
+    venue: "PLoS Computational Biology 2(3):e22 (2006)"
+    doi: 10.1371/journal.pcbi.0020022
+  mota2015:
+    title: "Cortical folding scales universally with surface area and thickness, not number of neurons"
+    authors: "Mota B, Herculano-Houzel S"
+    venue: "Science 349(6243):74-77 (2015)"
+    doi: 10.1126/science.aaa9101
+  toro2005:
+    title: "A Morphogenetic Model for the Development of Cortical Convolutions"
+    authors: "Toro R, Burnod Y"
+    venue: "Cerebral Cortex 15(12):1900-1913 (2005)"
+    doi: 10.1093/cercor/bhi068
+
+simulations:
+  - id: karbowski-cortical-sulcal-axon-tension
+    name: "Van Essen (1997), Hilgetag & Barbas (2006) & Mota & Herculano-Houzel (2015) cortico-cortical axonal tension and cortical folding"
+    organism: "Primate & mammalian cerebral cortex and white-matter tracts (Homo sapiens, Macaca mulatta, Pan troglodytes, Tursiops truncatus, Felis catus, Mus musculus)"
+    script: 2020-karbowski-cortical-sulcal-axon-tension.py
+    output: docs/media/cortical_sulcal_axon_tension_comparison.png
+    extra_outputs:
+      - docs/media/cortical_sulcal_axon_tension_growth.gif
+    status: evaluated
+    source_refs:
+      - vanessen1997
+      - hilgetag2006
+      - mota2015
+      - toro2005
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2020-karbowski-cortical-sulcal-axon-tension.py`
+      (overall weighted score: 55.8/100). The v1 script computes analytical chord-vs-arc
+      wiring savings (Van Essen 1997) and isometric cortical column volume conservation
+      (Hilgetag & Barbas 2006), but uses a synthetic cosine contour instead of solving
+      coupled viscoelastic cortico-cortical axonal tension mechanics across a connectivity
+      matrix C_ij with towed-axon growth, omits the 12-species Mota & Herculano-Houzel
+      (2015) universal scaling collapse and axonal ablation controls, and does not segment
+      the vendored coronal brain specimen image.
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Computes analytical chord-vs-arc wiring volume savings (L32-35) and Hilgetag &
+          Barbas (2006) isometric column thickness h = h0 / lambda_t (L38-41), backed by
+          3 Lean 4 theorems in `Loop_090_cortical_sulcal_axon_tension.lean`. However,
+          `generate_parametric_coronal_ribbon` (L44-67) prescribes a synthetic harmonic
+          curve rather than relaxing a coupled elastoplastic cortical ribbon + viscoelastic
+          white-matter axonal tension network over connectivity matrix C_ij with towed-axon
+          growth dL_0/dt = gamma_a(T_ij - tau_0)_+ and axonal ablation controls.
+        evidence:
+          - {file: 2020-karbowski-cortical-sulcal-axon-tension.py, lines: [32, 41], note: "Analytical chord-vs-arc wiring saving and isometric laminar thickness formulas", supports: true}
+          - {file: 2020-karbowski-cortical-sulcal-axon-tension.py, lines: [44, 67], note: "Synthetic cosine coronal contour instead of viscoelastic axonal tension relaxation", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/cortical_sulcal_axon_tension/coronal_cortex_axon_tracts_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or displays the coronal
+          brain specimen image, and does not evaluate the 12-species mammalian scaling dataset.
+        evidence:
+          - {file: 2020-karbowski-cortical-sulcal-axon-tension.py, lines: [70, 91], note: "Evaluates only 4 analytical pair rows without loading coronal_cortex_axon_tracts_specimen.jpg", supports: false}
+          - {file: docs/media/cortical_sulcal_axon_tension_comparison.png, lines: [0, 0], note: "4-panel v1 plot lacks coronal brain specimen segmentation and 12-species MHH collapse", supports: false}
+      parameter-expressivity:
+        value: 47
+        rationale: >-
+          Evaluates 4 connectivity pairs and 3 laminar zones (L70-91, L125-136), but omits
+          the 12-species Mota & Herculano-Houzel (2015) scaling collapse, lacks axonal
+          tension ablation / callosotomy (k_a = 0) and hyper-connected tract controls, and
+          exposes no CLI overrides for k_a, B_c, gamma_a, growth_g, or seed (L204-214).
+        evidence:
+          - {file: 2020-karbowski-cortical-sulcal-axon-tension.py, lines: [204, 214], note: "CLI exposes only --self-test and --skip-gif without physical parameter overrides", supports: false}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          `measure_morphoeval()` (L164-192) reports 3 analytical metrics, but does not
+          measure emergent wiring economy or gyral/sulcal thickness ratios from a relaxed
+          mechanical network, does not compute the 12-species MHH universal scaling exponent
+          alpha = 1.25, and extracts zero computer-vision metrics from the coronal brain
+          specimen image.
+        evidence:
+          - {file: 2020-karbowski-cortical-sulcal-axon-tension.py, lines: [164, 192], note: "Only 3 analytical metrics returned without mechanical relaxation or specimen CV metrics", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Reads `datasets/cortical_sulcal_axon_tension/cortical_sulcal_axon_tension_reference.json`
+          and cites Van Essen (1997), Hilgetag & Barbas (2006), and Mota & Herculano-Houzel
+          (2015) (L4-11), but does not perform runtime SHA-256 verification of the 4 dataset
+          files.
+        evidence:
+          - {file: 2020-karbowski-cortical-sulcal-axon-tension.py, lines: [28, 29], note: "Loads REF_JSON without runtime SHA-256 verification", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Documents the chord-vs-arc and laminar volume formulas (L32-41), but lacks explicit
+          equation-to-code mappings to Van Essen (1997) Fig. 1-3, Hilgetag & Barbas (2006)
+          Eq. 1-4 & Fig. 2-6, Mota & Herculano-Houzel (2015) Eq. 3-5, and the 3 Lean 4
+          theorems in `Loop_090_cortical_sulcal_axon_tension.lean`.
+        evidence:
+          - {file: 2020-karbowski-cortical-sulcal-axon-tension.py, lines: [32, 67], note: "Brief docstrings without explicit paper figure/equation or Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Includes `--self-test` and `--skip-gif` flags (L195-215), but `self_test()` runs
+          only 3 basic assertions without checking SHA-256 dataset integrity, axonal tension
+          ablation invariants, 12-species MHH power-law collapse, or two-run bitwise
+          determinism.
+        evidence:
+          - {file: 2020-karbowski-cortical-sulcal-axon-tension.py, lines: [195, 202], note: "Minimal 3-check self_test() without determinism or ablation verification", supports: false}
+    remediation:
+      - "Replace the parametric cosine ribbon with a coupled 2D coronal elastoplastic cortical ribbon + viscoelastic cortico-cortical white-matter axonal tract network over connectivity matrix C_ij with towed-axon rest-length adaptation dL_{0,ij}/dt = gamma_a * max(0, T_ij - tau_0) and L-BFGS-B mechanical relaxation, demonstrating outward gyral folding across strongly connected regions and inward sulcal fundi at weakly connected boundaries."
+      - "Implement axonal tension ablation / callosotomy (k_a = 0), hyper-connected tract (k_a = 2.40), and lissencephalic (k_a = 0, g = 1.0) controls, plus Hilgetag & Barbas (2006) gyral-vs-sulcal laminar thickness profiling (h_gyrus / h_fundus) and the full 12-species Mota & Herculano-Houzel (2015) universal scaling collapse log10(A_T * sqrt(h)) = 1.25 * log10(A_E) + log10(k)."
+      - "Implement computer-vision segmentation of `datasets/cortical_sulcal_axon_tension/coronal_cortex_axon_tracts_specimen.jpg` to extract pial and white-matter contours, outward gyral crowns vs inward sulcal fundi, empirical gyral-to-sulcal cortical thickness ratio h_gyrus / h_fundus, and coronal Gyrification Index GI."
+      - "Add runtime SHA-256 verification of all 4 files in `datasets/cortical_sulcal_axon_tension/`, expose full CLI parameters (`--axon-stiffness`, `--bending-modulus`, `--towed-gamma`, `--growth-g`, `--seed`), and expand `self_test()` and `measure_morphoeval()` to 9 quantitative reference-anchored metrics."

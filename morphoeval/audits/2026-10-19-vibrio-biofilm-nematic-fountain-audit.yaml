@@ -1,0 +1,174 @@
+# MorphoEval audit — Beroz et al. (2018) Nature Physics & Hartmann et al. (2019) Nature Physics Vibrio cholerae Biofilm Nematic Verticalization & Fountain Flow, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2019-yan-vibrio-biofilm-nematic-fountain.py` (194 lines)
+# prior to Step 12 remediation in `2026-10-19-vibrio-biofilm-nematic-fountain-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.4 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `generate_parametric_verticalization_field` (L56-75) uses a closed-form radial tanh
+#      ansatz for vertical nematic order S_z(x,y) and dome height H(x,y) rather than solving
+#      a variational Landau-de Gennes / Frank-Oseen nematic tilt free-energy minimizer
+#      F[theta] coupled to 3D fountain-flow dome extrusion.
+#   2. `evaluate_cell_length_sweep` (L78-91) evaluates only the 7-point cell-length sweep
+#      and omits the 8-point radial expansion trajectory R(t) in [6.0, 25.0] um, the
+#      Delta rbmA cell-cell cohesion mutant and Delta bap1 Delta rbmC substrate-adhesion
+#      mutant flat-monolayer controls.
+#   3. The vendored Public Domain CDC PHIL micrograph `datasets/vibrio_biofilm_nematic_fountain/vibrio_cholerae_biofilm_specimen.jpg`
+#      is never loaded, segmented, or analyzed for rod cell count, major/minor axes, empirical
+#      aspect ratio L/d, or 2D nematic orientation field in `vibrio_biofilm_nematic_fountain_comparison.png`.
+#   4. Runtime SHA-256 verification of dataset assets and CLI parameter overrides
+#      (`--L-cell-um`, `--R-colony-um`, `--zeta`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-vibrio-biofilm-nematic-fountain-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 095 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/95
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e93f00e
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2019-yan-vibrio-biofilm-nematic-fountain.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-vibrio-biofilm-nematic-fountain-loop`.
+
+references:
+  beroz2018:
+    title: "Verticalization of bacterial biofilms"
+    authors: "Beroz F, Yan J, Meir Y, Sabass B, Stone HA, Bassler BL, Wingreen NS"
+    venue: "Nature Physics 14(9):954-960 (2018)"
+    doi: 10.1038/s41567-018-0170-4
+  hartmann2019:
+    title: "Emergence of three-dimensional order and structure in growing biofilms"
+    authors: "Hartmann R, Singh PK, Pearce P, Mok R, Song B, Diaz-Pascual F, Dunkel J, Drescher K"
+    venue: "Nature Physics 15(3):251-256 (2019)"
+    doi: 10.1038/s41567-018-0356-9
+  yan2016:
+    title: "Vibrio cholerae biofilm growth program and architecture revealed by single-cell live imaging"
+    authors: "Yan J, Sharo AG, Stone HA, Wingreen NS, Bassler BL"
+    venue: "Proceedings of the National Academy of Sciences 113(36):E5337-E5343 (2016)"
+    doi: 10.1073/pnas.1611494113
+  drescher2016:
+    title: "Architectural transitions in Vibrio cholerae biofilms at single-cell resolution"
+    authors: "Drescher K, Dunkel J, Nadell CD, van Teeffelen S, Grin I, Wingreen NS, Stone HA, Bassler BL"
+    venue: "Proceedings of the National Academy of Sciences 113(14):E2066-E2072 (2016)"
+    doi: 10.1073/pnas.1601702113
+
+simulations:
+  - id: yan-vibrio-biofilm-nematic-fountain
+    name: "Beroz et al. (2018) Nature Physics & Hartmann et al. (2019) Nature Physics 3D rod-cell nematic verticalization and fountain flow in growing Vibrio cholerae biofilms"
+    organism: "Vibrio cholerae (wild-type, Delta rbmA, Delta bap1 Delta rbmC, and A22/cephalexin cell-length-perturbed biofilms)"
+    script: 2019-yan-vibrio-biofilm-nematic-fountain.py
+    output: docs/media/vibrio_biofilm_nematic_fountain_comparison.png
+    extra_outputs:
+      - docs/media/vibrio_biofilm_nematic_fountain_growth.gif
+    status: evaluated
+    source_refs:
+      - beroz2018
+      - hartmann2019
+      - yan2016
+      - drescher2016
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2019-yan-vibrio-biofilm-nematic-fountain.py`
+      (overall weighted score: 56.4/100). The v1 script implements the parabolic radial
+      compressive stress profile sigma_rr(r) = kappa*(R^2 - r^2), the inverse cell-length
+      peeling buckling threshold sigma_c(L) = sigma_c0*(L_0/L), and the verticalization
+      front radius r_vert(R, L) = sqrt(R^2 - R_c(L)^2) across the 7-point A22/cephalexin
+      cell-length sweep, but uses a closed-form radial tanh ansatz instead of relaxing a
+      2D/axisymmetric Landau-de Gennes nematic director & fountain-flow energy functional,
+      omits the 8-point radial expansion trajectory and Delta rbmA / Delta bap1 Delta rbmC
+      adhesion-loss flat-monolayer controls, and does not segment the vendored Vibrio
+      cholerae micrograph (`vibrio_cholerae_biofilm_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Computes parabolic radial stress coefficient kappa = zeta*g/(4*h), inverse
+          cell-length buckling stress sigma_c(L), critical radius R_c(L), and verticalization
+          front r_vert (L34-53), backed by 3 Lean 4 theorems in
+          `Loop_095_vibrio_biofilm_nematic_fountain.lean`. However,
+          `generate_parametric_verticalization_field` (L56-75) uses a hardcoded radial tanh
+          ansatz rather than relaxing a nematic director tilt & fountain-flow energy
+          functional, and lacks Delta rbmA and Delta bap1 Delta rbmC mutant controls.
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [34, 53], note: "Exact parabolic radial stress kappa*(R^2 - r^2), critical radius R_c(L), and verticalization front r_vert", supports: true}
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [56, 75], note: "Closed-form radial tanh ansatz instead of variational nematic director tilt and fountain-flow relaxation", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/vibrio_biofilm_nematic_fountain/vibrio_cholerae_biofilm_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or extracts rod cell
+          count, major/minor axes, aspect ratio L/d, or 2D nematic orientation from the
+          biological specimen image.
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [78, 91], note: "Evaluates only 7-point cell-length table without loading or segmenting vibrio_cholerae_biofilm_specimen.jpg", supports: false}
+          - {file: docs/media/vibrio_biofilm_nematic_fountain_comparison.png, lines: [0, 0], note: "4-panel v1 plot lacks Vibrio cholerae specimen segmentation, mutant controls, and radial expansion trajectory", supports: false}
+      parameter-expressivity:
+        value: 50
+        rationale: >-
+          Evaluates 7 cell lengths L in [1.4, 4.5] um (L78-91), but omits the 8-point
+          radial expansion trajectory R(t) in [6.0, 25.0] um, omits the 5 genetic and
+          pharmacological controls (WT, Delta rbmA, Delta bap1 Delta rbmC, A22 short rods,
+          cephalexin long rods), and exposes no CLI parameter overrides.
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [78, 91], note: "Single 7-point cell-length sweep without radial expansion trajectory, mutant controls, or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          `measure_morphoeval()` (L146-181) reports only 4 analytic numbers (WT R_c, WT
+          r_vert, A22 R_c, cephalexin R_c) without Pearson r, p-value, RMSE, log-log
+          inverse square-root scaling slope, radial expansion front correlation, Delta rbmA
+          negative-control verticalization delta, or specimen rod aspect ratio L/d.
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [146, 181], note: "Only 4 analytic metrics without statistical tests, mutant controls, or specimen segmentation", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Vendors `datasets/vibrio_biofilm_nematic_fountain/` with 4 primary DOIs in
+          `paper_citations.bib` (`10.1038/s41567-018-0170-4`, `10.1038/s41567-018-0356-9`,
+          `10.1073/pnas.1611494113`, `10.1073/pnas.1601702113`), `scout_manifest.json`,
+          and `vibrio_biofilm_nematic_fountain_reference.json`, but lacks runtime SHA-256
+          verification in `2019-yan-vibrio-biofilm-nematic-fountain.py`.
+        evidence:
+          - {file: datasets/vibrio_biofilm_nematic_fountain/vibrio_biofilm_nematic_fountain_reference.json, lines: [1, 215], note: "Reference JSON with cell-length sweep, radial expansion trajectory, and genetic/pharmacological controls", supports: true}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Links module docstrings to Beroz et al. (2018) Nature Physics, Hartmann et al.
+          (2019) Nature Physics, and the 3 Lean 4 theorems in
+          `Loop_095_vibrio_biofilm_nematic_fountain.lean` (L1-11), but lacks trace links
+          for variational nematic tilt relaxation, 3D fountain-flow dome extrusion, and
+          Delta rbmA adhesion-loss controls.
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [1, 11], note: "Baseline docstring linking Beroz (2018), Hartmann (2019), and Loop_095 Lean theorems", supports: true}
+      repro-package:
+        value: 64
+        rationale: >-
+          Provides `--self-test` (`L184-189`) checking cell-length sweep monotonicity,
+          but lacks SHA-256 asset verification, two-run bitwise determinism checks on an
+          energy minimizer, and mutant/ablation assertions.
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [184, 189], note: "Minimal 3-assertion self_test() without SHA-256 or mutant control checks", supports: false}
+    remediation:
+      - "Replace the closed-form radial tanh ansatz with a 2D/axisymmetric Landau-de Gennes nematic tilt L-BFGS-B free-energy minimizer coupled to 3D fountain-flow dome extrusion H(x,y)."
+      - "Implement both the 7-point A22/WT/cephalexin cell-length sweep L in [1.4, 4.5] um (verifying inverse square-root critical radius scaling R_c ~ L^-0.5) and the 8-point radial expansion trajectory R(t) in [6.0, 25.0] um (verifying r_vert(t) = sqrt(R(t)^2 - R_c^2))."
+      - "Implement all 5 genetic and pharmacological controls: wild-type rugose, Delta rbmA cell-cell cohesion mutant, Delta bap1 Delta rbmC substrate-adhesion mutant, A22 short rods, and cephalexin long rods."
+      - "Segment the vendored Public Domain Vibrio cholerae micrograph (`vibrio_cholerae_biofilm_specimen.jpg`) to extract individual rod cells, empirical aspect ratio L/d, and 2D nematic orientation order, and enforce runtime SHA-256 verification."

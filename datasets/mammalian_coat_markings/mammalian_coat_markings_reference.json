@@ -1,0 +1,136 @@
+{
+  "metadata": {
+    "dataset_id": "murray-1981-mammalian-coat-markings-v1",
+    "title": "Murray (1981) Thomas Substrate-Inhibition Reaction-Diffusion Pre-Pattern & Conical Tail Eigenmode Transition Reference Dataset",
+    "sources": [
+      {
+        "id": "murray1981",
+        "citation": "Murray JD (1981). A pre-pattern formation mechanism for animal coat markings. Journal of Theoretical Biology 88(1):161-199.",
+        "doi": "10.1016/0022-5193(81)90334-9"
+      },
+      {
+        "id": "thomas1975",
+        "citation": "Thomas D (1975). Artificial enzyme membranes: transport, memory, and oscillations. Biochimie 57(4):499-507.",
+        "doi": "10.1016/S0300-9084(75)80312-9"
+      },
+      {
+        "id": "murray1988",
+        "citation": "Murray JD (1988). How the leopard gets its spots. Scientific American 258(3):80-87.",
+        "doi": "10.1038/scientificamerican0388-80"
+      },
+      {
+        "id": "liu2006",
+        "citation": "Liu RT, Liaw SS, Maini PK (2006). Two-stage Turing model for generating pigment patterns on the leopard and the jaguar. Physical Review E 74(1):011914.",
+        "doi": "10.1103/PhysRevE.74.011914"
+      }
+    ],
+    "specimens": {
+      "panthera_pardus_kruger": {
+        "file": "datasets/mammalian_coat_markings/panthera_pardus_specimen.jpg",
+        "sha256": "86533a5dcf9cfee6755343024fce8a8d9cf29f124866e610fd8e322b1662278e",
+        "species": "Panthera pardus pardus (African leopard, adult lateral profile with rosetted flank and banded distal tail)",
+        "author": "Bernard DUPONT (Kruger National Park, South Africa)",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Leopard_(Panthera_pardus_pardus)_Kruger.jpg",
+        "flank_roi_xyxy": [200, 130, 390, 240],
+        "tail_roi_xyxy": [410, 115, 560, 225],
+        "pattern_type": "spotted_rosetted_torso_with_distal_tail_rings"
+      }
+    },
+    "scout_manifest": {
+      "file": "datasets/mammalian_coat_markings/scout_manifest.json",
+      "sha256": "28eabc9cf247b03e2720b1cc457536d2da82b199e8686cd930cd9f373afabdab"
+    }
+  },
+  "thomas_1975_murray_1981_kinetics": {
+    "section": "Murray (1981) Section 2, Eqs. (4)-(16), Table 1 & Fig. 2",
+    "governing_pde": {
+      "u_eq": "du/dt = gamma * (a - u - rho*u*v / (1 + u + K*u^2)) + Lap(u)",
+      "v_eq": "dv/dt = gamma * (alpha*(b - v) - rho*u*v / (1 + u + K*u^2)) + d * Lap(v)",
+      "boundary_condition": "Zero-flux (Neumann) n . grad(u) = n . grad(v) = 0 on domain boundary"
+    },
+    "canonical_parameters": {
+      "a": 92.0,
+      "b": 64.0,
+      "alpha": 1.5,
+      "rho": 18.5,
+      "K": 0.1,
+      "d": 10.0,
+      "u0": 9.933833290866753,
+      "v0": 9.289222193911168,
+      "fu": 2.521877928290935,
+      "fv": -8.834558148966052,
+      "gu": 3.521877928290935,
+      "gv": -10.334558148966052,
+      "trace_J0": -7.812680220675117,
+      "det_J0": 5.051740822216278,
+      "d_critical": 9.629184805232896,
+      "gamma_k2_minus": 0.523585240649892,
+      "gamma_k2_critical": 0.7442110566971649,
+      "gamma_k2_plus": 0.9648368727444378
+    }
+  },
+  "conical_tail_eigenmode_transition": {
+    "section": "Murray (1981) Section 4, Eqs. (26)-(32), Figs. 9-12",
+    "theorem_statement": "A spotted animal can have a striped (ringed) tail, but a striped animal cannot have a spotted tail.",
+    "tapered_cylinder_geometry": {
+      "length_L": 10.0,
+      "r_base": 1.80,
+      "r_tip": 0.35,
+      "gamma": 8.0,
+      "effective_wavenumber_formula": "k_{n,m}^2(r) = (n * pi / L)^2 + (m / r)^2 in [gamma * k_-^2, gamma * k_+^2]",
+      "critical_circumferential_radius_m1": 0.752709,
+      "transition_x_over_L": 0.72227
+    },
+    "scale_gamma_regimes": [
+      {
+        "regime_id": "subcritical_uniform_coat",
+        "gamma": 0.4,
+        "species_example": "Mus musculus (small mammal / mouse)",
+        "unstable_modes_count": 0,
+        "predicted_pattern": "uniform_unpatterned_coat",
+        "description": "Domain scale gamma too small to fit even the n=1 fundamental mode inside [gamma*k_-^2, gamma*k_+^2]"
+      },
+      {
+        "regime_id": "narrow_tail_1d_rings",
+        "gamma": 3.5,
+        "species_example": "Acinonyx jubatus / Felis catus distal tail",
+        "unstable_modes_count": 4,
+        "predicted_pattern": "axial_periodic_rings_m0",
+        "description": "Circumferential m>=1 modes exceed upper Turing cutoff; pure axial m=0 stripes/rings dominate"
+      },
+      {
+        "regime_id": "tapered_tail_spot_to_ring",
+        "gamma": 8.0,
+        "species_example": "Panthera pardus / Panthera onca tapered tail",
+        "unstable_modes_count": 5,
+        "predicted_pattern": "proximal_spots_m1_to_distal_rings_m0",
+        "description": "Broad proximal tail base (r > r_crit) supports m>=1 spots; narrow distal tip (r < r_crit) supports only m=0 rings"
+      },
+      {
+        "regime_id": "adult_flank_2d_spots",
+        "gamma": 25.0,
+        "species_example": "Panthera pardus adult torso flank",
+        "unstable_modes_count": 15,
+        "predicted_pattern": "two_dimensional_spots_and_rosettes",
+        "description": "Multiple 2D (nx, ny) eigenmodes unstable across both axial and circumferential axes"
+      },
+      {
+        "regime_id": "megafauna_dense_crowd",
+        "gamma": 120.0,
+        "species_example": "Giraffa camelopardalis / Elephas maximus",
+        "unstable_modes_count": 70,
+        "predicted_pattern": "high_mode_polygonal_or_nearly_uniform",
+        "description": "Very large scale factor gamma crowds many high-order modes, approaching fine-scale or uniform appearance"
+      }
+    ]
+  },
+  "empirical_coat_benchmarks": {
+    "panthera_pardus_flank": {
+      "rosette_inter_center_wavelength_px": 9.8,
+      "rosette_spacing_cv_target": 0.24,
+      "expected_flank_markings_range": [110, 190],
+      "tail_distal_anisotropy_ratio_min": 1.35
+    }
+  }
+}

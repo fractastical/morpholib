@@ -1,0 +1,180 @@
+# MorphoEval audit — Kavanagh et al. (2013) PNAS & Hiscock et al. (2017) Dev. Cell Synovial Joint Interzone Clefting & Phalangeal Inhibitory Cascade, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2016-onuff-joint-interzone-clefting.py` (267 lines)
+# prior to Step 12 remediation in `2026-10-19-joint-interzone-clefting-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.4 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `simulate_1d_joint_clefting` (L79-119) evaluates an analytical Gaussian interzone
+#      profile rather than integrating a growing-domain 1D/2D coupled BMP-GDF5-Noggin
+#      reaction-diffusion PDE modulated by a distal Phalanx-Forming Region (PFR) FGF8
+#      gradient, and omits the zero-diffusion (D_G = D_N = 0) negative control.
+#   2. Evaluates only the wild-type triphalangeal condition and omits the genetic and
+#      developmental perturbation experiments of Brunet et al. (1998) Science (Nog-/-
+#      complete joint ablation -> continuous cartilaginous rod), Storm et al. (1994)
+#      Nature (Gdf5 bp/bp brachypodism proximal interphalangeal fusion), Hartmann &
+#      Tabin (2001) Cell (ectopic Wnt9a supernumerary joint clefting), and sustained
+#      PFR-FGF8 equal-phalanx signaling.
+#   3. The vendored vertebrate autopod radiograph specimen
+#      `datasets/joint_interzone_clefting/tetrapod_digit_interzone_specimen.jpg` is never
+#      loaded, segmented for MCP/PIP/DIP synovial joint interzone clefts or P1/P2/P3
+#      phalangeal lengths, or displayed in `joint_interzone_clefting_comparison.png`.
+#   4. Runtime SHA-256 verification of the 4 files in `datasets/joint_interzone_clefting/`
+#      and CLI parameter overrides (`--noggin-dose`, `--gdf5-dose`, `--alpha-taper`,
+#      `--D-ratio`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-joint-interzone-clefting-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 018 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/18
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 45d4150
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2016-onuff-joint-interzone-clefting.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-joint-interzone-clefting-loop`.
+
+references:
+  kavanagh2013:
+    title: "Developmental bias in the evolution of phalanges"
+    authors: "Kavanagh KD, Shoval O, Winslow BB, Alon U, Leary BP, Kan A, Tabin CJ"
+    venue: "PNAS 110(45):18190-18195 (2013)"
+    doi: 10.1073/pnas.1315213110
+  hiscock2017:
+    title: "On the formation of digits and joints during limb development"
+    authors: "Hiscock TW, Tschopp P, Tabin CJ"
+    venue: "Developmental Cell 41(5):459-465 (2017)"
+    doi: 10.1016/j.devcel.2017.04.021
+  hartmann2001:
+    title: "Wnt-14 plays a pivotal role in inducing synovial joint formation in the developing appendicular skeleton"
+    authors: "Hartmann C, Tabin CJ"
+    venue: "Cell 104(3):341-351 (2001)"
+    doi: 10.1016/S0092-8674(01)00222-7
+  brunet1998:
+    title: "Noggin, cartilage morphogenesis, and joint formation in the mammalian skeleton"
+    authors: "Brunet LJ, McMahon JA, McMahon AP, Harland RM"
+    venue: "Science 280(5368):1455-1457 (1998)"
+    doi: 10.1126/science.280.5368.1455
+  storm1994:
+    title: "Limb alterations in brachypodism mice due to mutations in a new member of the TGF-beta superfamily"
+    authors: "Storm EE, Huynh TV, Copeland NG, Jenkins NA, Kingsley DM, Lee SJ"
+    venue: "Nature 368(6472):639-643 (1994)"
+    doi: 10.1038/368639a0
+
+simulations:
+  - id: onuff-joint-interzone-clefting
+    name: "Kavanagh et al. (2013) phalangeal Inhibitory Cascade & Hiscock et al. (2017) BMP-GDF5-Noggin synovial joint interzone segmentation"
+    organism: "Gallus gallus / Mus musculus tetrapod autopod digits & synovial joint interzones"
+    script: 2016-onuff-joint-interzone-clefting.py
+    output: docs/media/joint_interzone_clefting_comparison.png
+    extra_outputs:
+      - docs/media/joint_interzone_clefting_growth.gif
+    status: evaluated
+    source_refs:
+      - kavanagh2013
+      - hiscock2017
+      - hartmann2001
+      - brunet1998
+      - storm1994
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2016-onuff-joint-interzone-clefting.py`
+      (overall weighted score: 56.4/100). The v1 script computes the 2x2 GDF5-Noggin
+      Turing dispersion curve, evaluates the analytical Kavanagh et al. (2013)
+      Inhibitory Cascade line P2/P1 = 1/2 + (1/2)(P3/P1), and plots a 1D wild-type
+      3-joint profile, but lacks a growing-domain 1D/2D reaction-diffusion PDE solver
+      with distal PFR-FGF wavefront modulation, omits the Nog-/-, Gdf5 bp/bp, Wnt9a,
+      and zero-diffusion perturbation controls, and never loads or segments the vendored
+      tetrapod digit radiograph specimen image.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Computes the 2x2 GDF5-Noggin Turing dispersion relation (L36-62) and analytical
+          Kavanagh et al. (2013) Inhibitory Cascade trajectory (L65-76), backed by 3 Lean 4
+          theorems in `Loop_018_joint_interzone_clefting.lean`. However, `simulate_1d_joint_clefting`
+          (L79-119) uses an analytical Gaussian profile rather than integrating a growing-domain
+          1D/2D BMP-GDF5-Noggin reaction-diffusion PDE with distal PFR-FGF gradient modulation
+          and zero-diffusion (D_G = D_N = 0) ablation control.
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [36, 76], note: "GDF5-Noggin Turing dispersion relation and Kavanagh (2013) Inhibitory Cascade equations", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [79, 119], note: "Uses analytical Gaussian profile instead of growing-domain 1D/2D reaction-diffusion PDE and omits D=0 control", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/joint_interzone_clefting/tetrapod_digit_interzone_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or displays the
+          vertebrate autopod radiograph specimen image.
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [122, 187], note: "4-panel v1 plot never loads or segments tetrapod_digit_interzone_specimen.jpg", supports: false}
+      parameter-expressivity:
+        value: 48
+        rationale: >-
+          Evaluates only the single wild-type triphalangeal condition (L79-119) without
+          simulating the 6 genetic/signaling perturbation regimes (`Nog-/-` joint fusion,
+          `Gdf5 bp/bp` brachypodism PIP fusion, `Wnt9a` ectopic supernumerary clefting,
+          sustained PFR-FGF equal-length phalanges, and `D=0` ablation control) or the
+          12-taxon cross-clade regression, and exposes no CLI parameter overrides (L248-262).
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [248, 262], note: "CLI exposes only --self-test and --skip-gif without Noggin/Gdf5/taper parameter overrides", supports: false}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          `measure_morphoeval()` (L214-239) returns only 3 baseline metrics (lambda_c,
+          wild-type P2 fraction, and wild-type joint count) without evaluating the 12-taxon
+          Kavanagh et al. (2013) Inhibitory Cascade regression (Pearson r, p-value, RMSE),
+          perturbation joint counts, or computer-vision segmentation of P1, P2, P3 and
+          MCP/PIP/DIP synovial joint clefts on the radiograph specimen.
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [214, 239], note: "Only 3 baseline metrics returned in measure_morphoeval() without cross-clade or specimen CV metrics", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Loads `datasets/joint_interzone_clefting/joint_interzone_clefting_reference.json`
+          and cites Kavanagh et al. (2013) PNAS (L1-9), but does not perform runtime
+          SHA-256 verification of the 4 dataset files.
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [31, 33], note: "Loads REF_JSON without runtime SHA-256 cryptographic verification", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions compute dispersion and analytical cascade ratios (L36-119), but lack
+          explicit equation-level docstrings cross-referencing Kavanagh et al. (2013)
+          PNAS Figs. 1-3, Hiscock et al. (2017) Dev. Cell, Hartmann & Tabin (2001) Cell,
+          Brunet et al. (1998) Science, and the 3 Lean 4 theorems in
+          `Loop_018_joint_interzone_clefting.lean`.
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [36, 119], note: "Brief docstrings without explicit paper figure/equation or Lean 4 theorem mappings", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Provides `--self-test` and `--skip-gif` flags (L242-262), but `self_test()` runs
+          only 3 basic assertions without verifying SHA-256 dataset integrity, growing-domain
+          PDE convergence, `Nog-/-` and `D=0` joint ablation controls, cross-clade IC
+          regression, specimen phalanx segmentation, or two-run bitwise determinism.
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [242, 247], note: "Minimal 3-check self_test() without determinism, ablation, or specimen verification", supports: false}
+    remediation:
+      - "Implement a growing-domain 1D and 2D chondrogenic digit-ray reaction-diffusion PDE solver for GDF5/Wnt9a and Noggin modulated by a distal Phalanx-Forming Region (PFR) FGF8 gradient alongside the zero-diffusion (D_G = D_N = 0) negative control."
+      - "Simulate all 6 genetic and developmental perturbation conditions (Wild-Type 3 joints, Nog-/- complete joint fusion 0 joints, Gdf5 bp/bp proximal PIP fusion 2 joints, Wnt9a ectopic overexpression 4 joints, sustained PFR-FGF equal-length phalanges, and D=0 ablation control) and evaluate the 12-taxon cross-clade Kavanagh et al. (2013) Inhibitory Cascade morphospace regression."
+      - "Implement computer-vision axial intensity profile segmentation of `datasets/joint_interzone_clefting/tetrapod_digit_interzone_specimen.jpg` across Digits II, III, and IV to detect the radiolucent MCP, PIP, and DIP synovial joint interzone clefts and quantify empirical phalanx lengths P1, P2, P3 and P2/(P1+P2+P3) against the 1/3 Inhibitory Cascade law."
+      - "Add runtime SHA-256 verification of all 4 files in `datasets/joint_interzone_clefting/`, expose full CLI parameter overrides (`--noggin-dose`, `--gdf5-dose`, `--alpha-taper`, `--D-ratio`, `--seed`), and expand `measure_morphoeval()` to 9 metrics and `self_test()` to 8 comprehensive checks."

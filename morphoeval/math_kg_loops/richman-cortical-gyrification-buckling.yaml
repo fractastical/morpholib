@@ -1,0 +1,61 @@
+sim_id: richman-cortical-gyrification-buckling
+math_family: "Neo-Hookean Multiplicative Cortical Growth & Elastic Subcortical Buckling / Sulcal Creasing"
+model_spec:
+  model: "Richman et al. (1975) Science 189:18-21 & Tallinen et al. (2014 PNAS 111:12667-12672, 2016 Nature Physics 12:588-593) cortical gyrification folding"
+  c_lambda_equal_modulus: 4.356517371567222
+  critical_growth_threshold_g_c: 1.18
+  cortical_nodes_N: 240
+  seed: 2014
+  inputs:
+    - datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json
+    - datasets/cortical_gyrification_folding/cerebral_cortex_gyri_specimen.jpg
+    - datasets/cortical_gyrification_folding/scout_manifest.json
+    - datasets/cortical_gyrification_folding/paper_citations.bib
+equations:
+  - law_name: "Tallinen et al. (2014) Multiplicative Cortical Growth Decomposition & Critical Buckling Threshold"
+    formula: "F = F_e G,  G = diag(g, 1);  Δg = g - g_c = 0 ⇔ g = g_c (lissencephalic threshold)"
+    lean_decl: "MathOfBiology.Loop_061.cortical_growth_excess"
+    lean_theorem: "MathOfBiology.Loop_061.tallinen_critical_growth_threshold"
+    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L24-L35"
+    lean_code: |
+      def cortical_growth_excess (g g_c : Int) : Int :=
+        g - g_c
+      theorem tallinen_critical_growth_threshold (g_c : Int) :
+          cortical_growth_excess g_c g_c = 0 ∧
+          ∀ dg : Nat, cortical_growth_excess (g_c + Int.ofNat (dg + 1)) g_c = Int.ofNat (dg + 1)
+    variables: "F: total deformation gradient; F_e: elastic deformation gradient; G: tangential cortical growth tensor with linear factor g; g_c = 1.18: critical sulcal creasing threshold"
+    role: "Establishes the multiplicative growth decomposition of tangential cortical expansion relative to the subcortical white-matter core and the critical threshold separating lissencephaly (g <= g_c) from gyrencephaly (g > g_c)"
+    source_citation: "Tallinen et al. (2014) PNAS 111:12667-12672 Eq. (1) & Fig. 1-2; Tallinen et al. (2016) Nature Physics 12:588-593"
+    code_locus: "1975-richman-cortical-gyrification-buckling.py#L120-L185"
+
+  - law_name: "Richman et al. (1975) & Tallinen et al. (2014) Cube-Law Sulcal Wavelength Scaling"
+    formula: "U_tot(λ) ~ μ_c h^3 / λ^2 + 3 μ_s λ  ⇒  ∂U_tot/∂λ = 0  ⇔  λ = 2π h (μ_c / (3 μ_s))^(1/3)"
+    lean_decl: "MathOfBiology.Loop_061.richman_wavelength_residual"
+    lean_theorem: "MathOfBiology.Loop_061.richman_cube_law_wavelength_stationarity"
+    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L51-L60"
+    lean_code: |
+      def richman_wavelength_residual (lam h mu_c mu_s : Int) : Int :=
+        3 * mu_s * (lam * lam * lam) - 2 * mu_c * (h * h * h)
+      theorem richman_cube_law_wavelength_stationarity (h mu_s : Int) :
+          richman_wavelength_residual h h (3 * mu_s) (2 * mu_s) = 0 ∧
+          richman_wavelength_residual (2 * h) h (24 * mu_s) (2 * mu_s) = 0
+    variables: "λ: sulcal folding wavelength (mm); h: cortical gray-matter thickness (mm); μ_c: cortical shear modulus (kPa); μ_s: subcortical white-matter shear modulus (kPa)"
+    role: "Predicts linear scaling of gyral/sulcal wavelength with cortical thickness h and cube-root scaling with cortical-to-subcortical stiffness ratio across normal, polymicrogyric, and comparative mammalian brains"
+    source_citation: "Richman et al. (1975) Science 189:18-21 Eq. (1) & Table 1; Tallinen et al. (2014) PNAS 111:12667-12672 Fig. 3-4"
+    code_locus: "1975-richman-cortical-gyrification-buckling.py#L140-L240"
+
+  - law_name: "Zilles et al. (1988) & Tallinen et al. (2016) Gyrification Index Buried Sulcal Perimeter Law"
+    formula: "GI = P_pial / P_hull = 1 + (2 N_sulci d_sulcus) / P_hull ≥ 1.0  (GI = 1.0 ⇔ N_sulci = 0)"
+    lean_decl: "MathOfBiology.Loop_061.gyrification_perimeter_excess"
+    lean_theorem: "MathOfBiology.Loop_061.gyrification_index_sulcal_excess"
+    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L74-L83"
+    lean_code: |
+      def gyrification_perimeter_excess (P_hull n_sulci d_sulcus : Int) : Int :=
+        (P_hull + 2 * n_sulci * d_sulcus) - P_hull
+      theorem gyrification_index_sulcal_excess (P_hull n_sulci d_sulcus : Int) :
+          gyrification_perimeter_excess P_hull 0 d_sulcus = 0 ∧
+          gyrification_perimeter_excess P_hull n_sulci d_sulcus = 2 * n_sulci * d_sulcus
+    variables: "GI: coronal gyrification index; P_pial: total pial contour perimeter (mm); P_hull: outer convex hull perimeter (mm); N_sulci: number of sulcal infoldings; d_sulcus: mean sulcal depth (mm)"
+    role: "Quantifies the ratio of total pial surface contour to outer convex hull perimeter across human fetal gestation (GW22-GW38) and across 11 mammalian species"
+    source_citation: "Zilles et al. (1988) Anat. Embryol. 179:173-179; Tallinen et al. (2016) Nature Physics 12:588-593 Fig. 3-4"
+    code_locus: "1975-richman-cortical-gyrification-buckling.py#L245-L345"

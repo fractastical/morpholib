@@ -1,0 +1,190 @@
+# MorphoEval audit — Cooke & Zeeman (1976) Clock-and-Wavefront Somite Segmentation, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `1976-cooke-clock-and-wavefront.py` (Slot 021)
+# superseding `2026-10-19-clock-and-wavefront-audit` in `2026-10-19-clock-and-wavefront-loop`.
+
+audit:
+  id: 2026-10-19-clock-and-wavefront-audit-v2
+  supersedes_audit_id: 2026-10-19-clock-and-wavefront-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `1976-cooke-clock-and-wavefront.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-clock-and-wavefront-loop`).
+
+references:
+  cooke1976:
+    title: "A clock and wavefront model for control of the number of repeated structures during animal morphogenesis"
+    authors: "Cooke J, Zeeman EC"
+    venue: "Journal of Theoretical Biology 58(2):455-476 (1976)"
+    doi: 10.1016/S0022-5193(76)80131-2
+  cooke1975:
+    title: "Control of somite number during morphogenesis of a vertebrate, Xenopus laevis"
+    authors: "Cooke J"
+    venue: "Nature 254(5497):196-199 (1975)"
+    doi: 10.1038/254196a0
+  palmeirim1997:
+    title: "Avian hairy gene expression identifies a molecular clock linked to vertebrate segmentation and somitogenesis"
+    authors: "Palmeirim I, Henrique D, Ish-Horowicz D, Pourquie O"
+    venue: "Cell 91(5):639-648 (1997)"
+    doi: 10.1016/S0092-8674(00)80451-1
+  goldbeter2007:
+    title: "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling"
+    authors: "Goldbeter A, Gonze D, Pourquie O"
+    venue: "Developmental Dynamics 236(6):1495-1508 (2007)"
+    doi: 10.1002/dvdy.21193
+
+simulations:
+  - id: cooke-clock-and-wavefront
+    name: "Cooke & Zeeman (1976) clock-and-wavefront somite segmentation"
+    organism: "Xenopus laevis & Gallus gallus vertebrate paraxial mesoderm somites"
+    script: 1976-cooke-clock-and-wavefront.py
+    output: docs/media/clock_and_wavefront_comparison.png
+    extra_outputs:
+      - docs/media/clock_and_wavefront_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Cooke & Zeeman (1976) J. Theor. Biol. 58:455-476 kinematic somite wavelength law S = v * T_c and Thom-Zeeman cusp catastrophe wavefront manifold"
+        - "Cooke (1975) Nature 254:196-199 Xenopus laevis blastula size-reduction invariance (N ~ 40 somites across normal and miniature embryos)"
+      reconstructed_in_script:
+        - "1D anteroposterior Thom-Zeeman cusp catastrophe ODE tau_chi*dchi/dt = -(chi^3 - a(x,t)*chi - b_osc(x,t)) with proportional wavefront width scaling"
+        - "Bilateral dorsal somite row DoG peak and inter-somitic cleft segmentation on somite_embryo_specimen.jpg (48.47 px mean spacing, symmetry ratio 0.9605)"
+      transfer_boundary:
+        - "1D anteroposterior paraxial mesoderm axis mapped to dorsal vertebrate SEM somite rows"
+      does_not_claim:
+        - "Full 3D viscoelastic epithelialization mechanics of somite rosette boundary rotation or explicit Delta-Notch intercellular delay coupling (covered in Slots 022-023)"
+    source_refs:
+      - cooke1976
+      - cooke1975
+      - palmeirim1997
+      - goldbeter2007
+    summary: >-
+      Pass 2 post-remediation evaluation of `1976-cooke-clock-and-wavefront.py` (90.4/100,
+      up from 58.4/100 in Pass 1; +32.0 overall). The remediated script integrates the
+      Thom-Zeeman cusp catastrophe wavefront ODE tau_chi*dchi/dt = -(chi^3 - a(x,t)*chi - b_osc(x,t))
+      with proportional wavefront transition scaling, achieving 0.13% somite wavelength
+      accuracy (S_sim = 100.13 um vs S = 100.0 um, CV = 0.0025), exact somite count
+      invariance across normal (L = 4.0 mm, N = 40) and miniature (L = 2.4 mm, S = 60.08 um,
+      N = 40) embryos, a clock-doubled perturbation (T_c = 90 min -> N = 20, S = 200.25 um),
+      a clock-arrested negative control (A_clock = 0 -> 0 somites), and automated bilateral
+      DoG somite segmentation on `somite_embryo_specimen.jpg` (8 upper and 9 lower somites,
+      mean spacing 48.47 px, bilateral symmetry ratio 0.9605), backed by 3 machine-checked
+      Lean 4 theorems in `Loop_021_clock_and_wavefront.lean`.
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          Faithfully implements Cooke & Zeeman's (1976) Sections 2-5 kinematic laws
+          (S = v * T_c, N = L / (v * T_c)) and Thom-Zeeman cusp catastrophe ODE
+          tau_chi * dchi/dt = -(chi^3 - a(x,t)*chi - b_osc(x,t)) with irreversible
+          post-wavefront commitment mobility (L88-246), reproducing S_sim = 100.13 um
+          (0.13% error vs analytical 100.0 um) and exact N_norm = N_mini = 40 size
+          invariance, verified by 3 machine-checked Lean 4 theorems (0 sorrys) in
+          `morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean`.
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [88, 108], note: "Analytical somite wavelength S = v * T_c and count N = L / (v * T_c)", supports: true}
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [145, 246], note: "Thom-Zeeman cusp catastrophe clock-and-wavefront spatiotemporal solver", supports: true}
+          - {file: morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean, lines: [18, 72], note: "3 machine-checked Lean 4 theorems (0 sorrys) for wavelength scaling, size invariance, and cusp bifurcation", supports: true}
+      specimen-match:
+        value: 87
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 dorsal vertebrate embryo SEM
+          (`datasets/clock_and_wavefront/somite_embryo_specimen.jpg`) and segments both
+          bilateral paraxial somite rows flanking the neural tube (`segment_vertebrate_somite_specimen`,
+          L252-319), extracting 8 upper somites (mean spacing 47.43 px, CV = 0.1965) and
+          9 lower somites (mean spacing 49.38 px, CV = 0.2012), bilateral mean spacing
+          48.47 px, bilateral symmetry ratio 0.9605, and phase-aligned cusp waveform
+          correlation (Panels E-F).
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [252, 319], note: "Bilateral dorsal somite DoG peak & inter-somitic cleft segmentation on somite_embryo_specimen.jpg", supports: true}
+          - {file: docs/media/clock_and_wavefront_comparison.png, lines: [0, 0], note: "6-panel synthesis figure including kymograph, somite trains, morphospace contour, size-invariance scaling, SEM segmentation, and waveform fit", supports: true}
+      parameter-expressivity:
+        value: 89
+        rationale: >-
+          Evaluates 5 experimental regimes from Cooke (1975) and Cooke & Zeeman (1976)
+          (normal 4.0 mm, reduced 3.0 mm, miniature 2.4 mm, 2x clock period T_c=90 min,
+          and 1.5x wavefront velocity), maps the continuous 2D parameter morphospace
+          S(v, T_c) = v * T_c across v in [1.0, 3.6] um/min and T_c in [25, 100] min
+          (Panel C), compares proportional wavefront scaling (v ~ L) against an unscaled
+          wavefront failure control (v = v_0, Panel D), and includes a clock-arrested
+          ablation control (A_clock = 0 -> 0 somites, Panel B) plus CLI flags (`--L-mm`,
+          `--Tc-min`, `--T-total-min`, `--seed`).
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [115, 142], note: "5-regime Cooke (1975) size-regulation and clock/wavefront perturbation evaluator", supports: true}
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [445, 495], note: "2D (v, T_c) morphospace contour surface and proportional vs unscaled wavefront sweep", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Extracts 5 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L322-395): simulated somite wavelength S_sim = 100.13 um
+          vs analytical 100.0 um (0.13% error, CV = 0.0025), miniature-to-normal somite
+          count invariance ratio 1.0000 vs Cooke (1975) 0.9851, clock-doubled vs
+          clock-arrested somite delta (20 vs 0 somites), bilateral SEM specimen somite
+          spacing 48.47 +/- 9.69 px (CV = 0.1999, symmetry ratio = 0.9605), and 5-regime
+          Cooke (1975) somite count RMSE = 0.2898 somites (Pearson r = 0.9995, p = 1.44e-5).
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [322, 395], note: "5 quantitative MorphoEval measurements with analytical and empirical references, CV, Pearson r, and RMSE", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/clock_and_wavefront/` with `scout_manifest.json`,
+          `clock_and_wavefront_reference.json`, `somite_embryo_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.1016/S0022-5193(76)80131-2`,
+          `10.1038/254196a0`, `10.1016/S0092-8674(00)80451-1`, `10.1002/dvdy.21193`), and
+          `README.md`, with runtime SHA-256 verification (`verify_dataset_integrity`, L62-84).
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [62, 84], note: "Runtime SHA-256 verification of datasets/clock_and_wavefront/ artifacts", supports: true}
+          - {file: datasets/clock_and_wavefront/clock_and_wavefront_reference.json, lines: [1, 136], note: "Vendored Cooke & Zeeman (1976) equations, Cooke (1975) empirical table, and specimen metadata", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Every computational section and docstring maps directly to numbered sections
+          and figures in Cooke & Zeeman (1976) Sections 2-5 and Figs. 2-4, Cooke (1975)
+          Table 1, and the 3 Lean 4 theorems in `Loop_021_clock_and_wavefront.lean` and
+          `morphoeval/math_kg_loops/cooke-clock-and-wavefront.yaml`.
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [1, 50], note: "Module docstring linking equations to Cooke & Zeeman (1976), Cooke (1975), and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/cooke-clock-and-wavefront.yaml, lines: [1, 61], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic RNG (`seed=1976`), standalone `--self-test` suite verifying
+          SHA-256 dataset integrity, analytical wavelength and size invariance, bitwise
+          two-run solver determinism (`atol=0.0`), <0.2% wavelength error, miniature
+          embryo N_mini = N_norm = 40 invariance, clock-arrested N_null = 0 control, and
+          specimen segmentation (`run_self_test`, L568-615), plus rendered PNG and GIF
+          outputs in `docs/media/`.
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [568, 615], note: "Deterministic --self-test suite verifying SHA-256 digests, bitwise determinism, and morphometrics", supports: true}
+          - {file: docs/media/clock_and_wavefront_growth.gif, lines: [0, 0], note: "24-frame animated GIF of sequential anterior-to-posterior somite budding", supports: true}
+    remediation:
+      - "Couple the 1D Thom-Zeeman cusp wavefront to a 2D vertex-model paraxial mesoderm sheet to simulate epithelial rosette cleft rotation."
+      - "Integrate spatial FGF8/Wnt3a vs Retinoic Acid reaction-diffusion bistability (Goldbeter et al. 2007) to derive wavefront velocity v endogenously from posterior tailbud elongation."

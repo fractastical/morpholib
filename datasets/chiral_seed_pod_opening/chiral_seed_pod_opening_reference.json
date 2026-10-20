@@ -1,0 +1,124 @@
+{
+  "metadata": {
+    "dataset_id": "chiral_seed_pod_opening",
+    "title": "Armon, Efrati, Kupferman & Sharon (2011) Science / Efrati et al. (2009) JMPS — Incompatible Non-Euclidean Shell Elasticity & Helicoid-to-Helical-Ribbon Pitchfork Bifurcation in Bauhinia variegata Chiral Seed Pod Opening",
+    "version": "1.0.0",
+    "created_at": "2026-10-19",
+    "primary_dois": [
+      "10.1126/science.1203874",
+      "10.1016/j.jmps.2008.12.004",
+      "10.1039/c3sm52313f",
+      "10.1038/nature03185"
+    ],
+    "specimens": {
+      "bauhinia_chiral_seed_pod_specimen": {
+        "file": "datasets/chiral_seed_pod_opening/bauhinia_chiral_seed_pod_specimen.jpg",
+        "source_title": "File:Bauhinia variegata MHNT.BOT.2011.3.22.jpg",
+        "source_url": "https://upload.wikimedia.org/wikipedia/commons/9/90/Bauhinia_variegata_MHNT.BOT.2011.3.22.jpg",
+        "organism": "Bauhinia variegata (Orchid tree dehisced chiral helical seed pod valves, intact pre-dehisced flat pod, and seeds; Muséum de Toulouse MHNT.BOT.2011.3.22)",
+        "license": "CC BY-SA 3.0",
+        "width_px": 960,
+        "height_px": 623,
+        "valves_roi_xyxy": [150, 60, 928, 452],
+        "intact_pod_roi_xyxy": [35, 325, 855, 585]
+      }
+    }
+  },
+  "governing_equations": {
+    "incompatible_shell_energy": "E[a, b] = E_stretch[a - a_0] + E_bend[b - b_0], where a_0 = I (flat reference metric, K_flat = 0) and b_0 = diag(kappa_0, -kappa_0) in the +-45 deg cellulose microfibril frame",
+    "gauss_theorema_egregium_incompatibility": "K_target = det(b_0) = -kappa_0^2 < 0 != K(a_0) = 0 => no zero-energy isometric immersion exists for W > 0",
+    "rotated_target_curvature_tensor": "b_0(theta) = [[kappa_0 * cos(2*theta), kappa_0 * sin(2*theta)], [kappa_0 * sin(2*theta), -kappa_0 * cos(2*theta)]] in strip (s, t) coordinates at cutting angle theta",
+    "dimensionless_foppl_von_karman_width": "w_tilde = W * sqrt(kappa_0 / h)",
+    "critical_pitchfork_width": "w_tilde_c(nu) = (16 * (1 + nu) / sqrt(1 - nu^2))^(1/4)",
+    "reduced_non_euclidean_energy_density": "U(H, D; w_tilde) = ((1 + nu)/(1 - nu)) * H^2 + (D - kappa_0)^2 + Lambda(w_tilde) * (D^2 - H^2)^2, where H = (kappa_1 + kappa_2)/2, D = (kappa_1 - kappa_2)/2, and K = H^2 - D^2",
+    "narrow_helicoid_regime": "For w_tilde <= w_tilde_c: H*(w_tilde) = 0, kappa_s(theta=45 deg) = 0, tau(theta=45 deg) = D*(w_tilde) => Pure-Twist Helicoid with helix radius R = 0",
+    "wide_cylindrical_ribbon_regime": "For w_tilde > w_tilde_c: H*(w_tilde) = +- ((1 - nu)/2) * kappa_0 * sqrt(1 - (w_tilde_c / w_tilde)^4), D*(w_tilde) = ((1 - nu)/2) * kappa_0 => Cylindrical Helical Ribbon with H_inf = ((1 - nu)/2) * kappa_0 and K -> 0",
+    "ribbon_helix_geometry": "kappa_s = H + D * cos(2*theta), tau = D * sin(2*theta), R = |kappa_s| / (kappa_s^2 + tau^2), P = 2 * pi * |tau| / (kappa_s^2 + tau^2)"
+  },
+  "default_parameters": {
+    "kappa0_cm_inv": 0.42,
+    "h_valve_cm": 0.095,
+    "W_valve_cm": 1.80,
+    "L_valve_cm": 18.0,
+    "nu_poisson": 0.30,
+    "theta_natural_deg": 45.0,
+    "Y_modulus_MPa": 420.0,
+    "seed": 2011
+  },
+  "width_bifurcation_sweep_theta_45": [
+    {"w_tilde": 0.50, "H_over_kappa0_obs": 0.0000, "D_over_kappa0_obs": 0.9614, "R_kappa0_obs": 0.0000, "P_kappa0_over_2pi_obs": 1.0402, "regime": "pure_twist_helicoid"},
+    {"w_tilde": 1.00, "H_over_kappa0_obs": 0.0000, "D_over_kappa0_obs": 0.7298, "R_kappa0_obs": 0.0000, "P_kappa0_over_2pi_obs": 1.3703, "regime": "pure_twist_helicoid"},
+    {"w_tilde": 1.50, "H_over_kappa0_obs": 0.0000, "D_over_kappa0_obs": 0.5161, "R_kappa0_obs": 0.0000, "P_kappa0_over_2pi_obs": 1.9376, "regime": "pure_twist_helicoid"},
+    {"w_tilde": 2.00, "H_over_kappa0_obs": 0.0000, "D_over_kappa0_obs": 0.3816, "R_kappa0_obs": 0.0000, "P_kappa0_over_2pi_obs": 2.6203, "regime": "pure_twist_helicoid"},
+    {"w_tilde": 2.1609, "H_over_kappa0_obs": 0.0000, "D_over_kappa0_obs": 0.3500, "R_kappa0_obs": 0.0000, "P_kappa0_over_2pi_obs": 2.8571, "regime": "critical_pitchfork_point"},
+    {"w_tilde": 2.50, "H_over_kappa0_obs": 0.2314, "D_over_kappa0_obs": 0.3500, "R_kappa0_obs": 1.3144, "P_kappa0_over_2pi_obs": 1.9881, "regime": "cylindrical_helical_ribbon"},
+    {"w_tilde": 3.00, "H_over_kappa0_obs": 0.3005, "D_over_kappa0_obs": 0.3500, "R_kappa0_obs": 1.4121, "P_kappa0_over_2pi_obs": 1.6447, "regime": "cylindrical_helical_ribbon"},
+    {"w_tilde": 4.00, "H_over_kappa0_obs": 0.3344, "D_over_kappa0_obs": 0.3500, "R_kappa0_obs": 1.4271, "P_kappa0_over_2pi_obs": 1.4937, "regime": "cylindrical_helical_ribbon"},
+    {"w_tilde": 6.00, "H_over_kappa0_obs": 0.3470, "D_over_kappa0_obs": 0.3500, "R_kappa0_obs": 1.4285, "P_kappa0_over_2pi_obs": 1.4410, "regime": "cylindrical_helical_ribbon"},
+    {"w_tilde": 8.00, "H_over_kappa0_obs": 0.3491, "D_over_kappa0_obs": 0.3500, "R_kappa0_obs": 1.4286, "P_kappa0_over_2pi_obs": 1.4325, "regime": "cylindrical_helical_ribbon"},
+    {"w_tilde": 10.00, "H_over_kappa0_obs": 0.3496, "D_over_kappa0_obs": 0.3500, "R_kappa0_obs": 1.4286, "P_kappa0_over_2pi_obs": 1.4302, "regime": "cylindrical_helical_ribbon"}
+  ],
+  "cutting_angle_chirality_sweep_w_tilde_4": [
+    {"theta_deg": 0.0, "kappa_s_over_kappa0_obs": 0.6844, "tau_over_kappa0_obs": 0.0000, "R_cm_obs": 3.4792, "P_cm_obs": 0.0000, "morphology": "achiral_circular_ring"},
+    {"theta_deg": 15.0, "kappa_s_over_kappa0_obs": 0.6375, "tau_over_kappa0_obs": 0.1750, "R_cm_obs": 3.4805, "P_cm_obs": 6.0014, "morphology": "low_pitch_chiral_coil"},
+    {"theta_deg": 30.0, "kappa_s_over_kappa0_obs": 0.5094, "tau_over_kappa0_obs": 0.3031, "R_cm_obs": 3.4573, "P_cm_obs": 12.9268, "morphology": "intermediate_chiral_helix"},
+    {"theta_deg": 45.0, "kappa_s_over_kappa0_obs": 0.3344, "tau_over_kappa0_obs": 0.3500, "R_cm_obs": 3.3979, "P_cm_obs": 22.3455, "morphology": "bauhinia_maximal_twist_ribbon"},
+    {"theta_deg": 60.0, "kappa_s_over_kappa0_obs": 0.1594, "tau_over_kappa0_obs": 0.3031, "R_cm_obs": 3.2389, "P_cm_obs": 38.6874, "morphology": "steep_pitch_chiral_ribbon"},
+    {"theta_deg": 75.0, "kappa_s_over_kappa0_obs": 0.0313, "tau_over_kappa0_obs": 0.1750, "R_cm_obs": 2.3601, "P_cm_obs": 82.9304, "morphology": "near_helicoidal_strip"},
+    {"theta_deg": 90.0, "kappa_s_over_kappa0_obs": -0.0156, "tau_over_kappa0_obs": 0.0000, "R_cm_obs": 152.502, "P_cm_obs": 0.0000, "morphology": "achiral_transverse_ring"}
+  ],
+  "pod_and_mimetic_specimens_table": [
+    {
+      "specimen_id": "Bauhinia_variegata_mature_valve",
+      "species": "Bauhinia variegata (wide mature pod valve)",
+      "source": "Armon et al. (2011) Science 333:1726-1730 Fig. 1 & Fig. 4",
+      "kappa0_cm_inv": 0.42,
+      "h_cm": 0.095,
+      "W_cm": 1.80,
+      "nu": 0.30,
+      "w_tilde": 3.781,
+      "helix_radius_cm_obs": 3.39,
+      "helix_pitch_cm_obs": 22.70,
+      "regime": "cylindrical_helical_ribbon"
+    },
+    {
+      "specimen_id": "Bauhinia_variegata_narrow_strip",
+      "species": "Bauhinia variegata (surgically narrowed valve strip)",
+      "source": "Armon et al. (2011) Science 333:1726-1730 Fig. 4C",
+      "kappa0_cm_inv": 0.42,
+      "h_cm": 0.095,
+      "W_cm": 0.65,
+      "nu": 0.30,
+      "w_tilde": 1.365,
+      "helix_radius_cm_obs": 0.00,
+      "helix_pitch_cm_obs": 26.20,
+      "regime": "pure_twist_helicoid"
+    },
+    {
+      "specimen_id": "Erythrina_corallodendron_valve",
+      "species": "Erythrina corallodendron (Coral tree pod valve)",
+      "source": "Armon et al. (2011) Science 333:1726-1730 p. 1726",
+      "kappa0_cm_inv": 0.55,
+      "h_cm": 0.085,
+      "W_cm": 1.45,
+      "nu": 0.32,
+      "w_tilde": 3.687,
+      "helix_radius_cm_obs": 2.66,
+      "helix_pitch_cm_obs": 17.95,
+      "regime": "cylindrical_helical_ribbon"
+    },
+    {
+      "specimen_id": "Biomimetic_prestressed_latex_bilayer",
+      "species": "Pre-stretched orthogonal latex bilayer ribbon",
+      "source": "Armon et al. (2011) Science 333:1726-1730 Fig. 2 & Fig. 3",
+      "kappa0_cm_inv": 0.80,
+      "h_cm": 0.110,
+      "W_cm": 2.20,
+      "nu": 0.48,
+      "w_tilde": 5.933,
+      "helix_radius_cm_obs": 2.40,
+      "helix_pitch_cm_obs": 15.20,
+      "regime": "cylindrical_helical_ribbon"
+    }
+  ]
+}

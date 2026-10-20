@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "dataset_id": "lewis-2003-her1-her7-delayed-oscillator-v1",
+    "slot": 22,
+    "slot_id": "slot-022-her1-her7-delayed-oscillator",
+    "title": "Lewis (2003) Current Biology — Autoinhibition with Transcriptional Delay: her1/her7 Delay Differential Oscillator & DeltaC-Notch Synchronization in Zebrafish Somitogenesis",
+    "sources": [
+      {
+        "id": "lewis2003",
+        "citation": "Lewis J (2003). Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator. Current Biology 13(16):1398-1408.",
+        "doi": "10.1016/S0960-9822(03)00534-7"
+      },
+      {
+        "id": "giudicelli2007",
+        "citation": "Giudicelli F, Ozbudak EM, Wright GJ, Lewis J (2007). Setting the tempo in development: an investigation of the zebrafish somite clock mechanism. PLoS Biology 5(6):e150.",
+        "doi": "10.1371/journal.pbio.0050150"
+      },
+      {
+        "id": "herrgen2010",
+        "citation": "Herrgen L, Ares S, Morelli LG, Schroter C, Julicher F, Oates AC (2010). Intercellular coupling regulates the period of the segmentation clock. Current Biology 20(14):1244-1253.",
+        "doi": "10.1016/j.cub.2010.06.034"
+      },
+      {
+        "id": "schroter2012",
+        "citation": "Schroter C, Ares S, Morelli LG, Isakova A, Koo B-K, Julicher F, Oates AC (2012). Topology and dynamics of the zebrafish segmentation clock core circuit. PLoS Biology 10(7):e1001364.",
+        "doi": "10.1371/journal.pbio.1001364"
+      }
+    ],
+    "specimens": {
+      "zebrafish_somites_specimen": {
+        "file": "datasets/her1_her7_delayed_oscillator/zebrafish_somites_specimen.jpg",
+        "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
+        "species": "Danio rerio / Vertebrate embryo dorsal scanning electron micrograph showing central neural tube, presomitic mesoderm, and bilateral segmented somite metameres",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
+        "width_px": 736,
+        "height_px": 572,
+        "ap_roi_x_px": [130, 550],
+        "upper_somite_row_y_px": [208, 252],
+        "lower_somite_row_y_px": [312, 356],
+        "neural_tube_y_px": [260, 298],
+        "empirical_somite_metrics": {
+          "upper_row_somite_count": 8,
+          "lower_row_somite_count": 9,
+          "upper_row_mean_spacing_px": 47.43,
+          "lower_row_mean_spacing_px": 49.38,
+          "bilateral_mean_spacing_px": 48.47,
+          "upper_row_spacing_cv": 0.1965,
+          "lower_row_spacing_cv": 0.2012,
+          "bilateral_symmetry_ratio": 0.9605
+        }
+      },
+      "scout_manifest": {
+        "file": "datasets/her1_her7_delayed_oscillator/scout_manifest.json",
+        "sha256": "ebe3f2cee38772dd464724c736e6bf735dc125004d55cd7f5be8ba91301ffffa"
+      }
+    }
+  },
+  "lewis_2003_governing_equations": {
+    "section": "Lewis (2003) Current Biology 13(16):1398-1408, Box 1 & Appendix (pp. 1399-1406)",
+    "protein_dde": "dp(t)/dt = a * m(t - T_p) - b * p(t)",
+    "mrna_dde": "dm(t)/dt = k / (1 + (p(t - T_m) / p_0)^n) - c * m(t)",
+    "total_delay_invariance": "T_tot = T_m + T_p  (time-shift p_tilde(t) = p(t + T_p) reduces the DDE system to a single lumped delay T_tot)",
+    "hopf_critical_delay_condition": "T_tot > T_crit, where T_crit = sqrt((omega^2 + b^2)*(omega^2 + c^2)) -> sustained limit-cycle oscillation for T_m + T_p > T_crit (~4.62 min)",
+    "oscillation_period_law": "T_osc = 2 * (T_m + T_p + tau_half_p + tau_half_m) ~ 2 * (T_m + T_p + ln(2)/b + ln(2)/c) ~ 30.0 min",
+    "deltac_notch_intercellular_coupling": "dm_i(t)/dt = k * [ (1 - eps_N) + eps_N * (p_delta_neighbor(t - T_N) / p_delta0)^m_N / (1 + (p_delta_neighbor(t - T_N) / p_delta0)^m_N) ] / (1 + (p_i(t - T_m) / p_0)^n) - c * m_i(t)",
+    "canonical_zebrafish_parameters_28C": {
+      "species": "Danio rerio (zebrafish presomitic mesoderm at 28.5 C)",
+      "translation_rate_a_per_min": 4.5,
+      "protein_decay_rate_b_per_min": 0.23,
+      "protein_half_life_min": 3.0137,
+      "basal_transcription_rate_k_per_min": 33.0,
+      "mrna_decay_rate_c_per_min": 0.23,
+      "mrna_half_life_min": 3.0137,
+      "repression_threshold_p0_molecules": 40.0,
+      "hill_cooperativity_n": 2.0,
+      "effective_transcriptional_delay_Tm_min": 7.18,
+      "effective_translational_delay_Tp_min": 1.8,
+      "effective_total_delay_Ttot_min": 8.98,
+      "hopf_critical_delay_Tcrit_min": 7.54,
+      "wildtype_oscillation_period_Tosc_min": 30.01,
+      "notch_mutant_anterior_intact_somites": 6,
+      "total_zebrafish_somites": 31
+    }
+  },
+  "lewis_2003_experimental_perturbations": {
+    "source": "Lewis (2003) Current Biology 13:1398-1408 Table 1, Box 1 & Figs. 2-6; Giudicelli et al. (2007) PLoS Biology 5:e150; Herrgen et al. (2010) Current Biology 20:1244-1253",
+    "regimes": [
+      {
+        "regime_id": "wildtype_her1_her7_coupled",
+        "label": "Wild-type Danio rerio PSM oscillator (her1/her7 feedback + DeltaC-Notch coupling at 28 C)",
+        "T_m_min": 7.18,
+        "T_p_min": 1.8,
+        "b_per_min": 0.23,
+        "c_per_min": 0.23,
+        "notch_coupling_kappa": 0.35,
+        "predicted_period_min": 30.0,
+        "observed_period_min": 30.0,
+        "observed_period_sd_min": 1.0,
+        "predicted_sync_order_R": 0.965,
+        "intact_anterior_somites": 31
+      },
+      {
+        "regime_id": "her7_fast_feedback_branch",
+        "label": "Pure her7 fast feedback loop (short gene delay T_m = 4.6 min, T_p = 1.7 min)",
+        "T_m_min": 4.6,
+        "T_p_min": 1.7,
+        "b_per_min": 0.23,
+        "c_per_min": 0.23,
+        "notch_coupling_kappa": 0.35,
+        "predicted_period_min": 24.65,
+        "observed_period_min": 25.0,
+        "observed_period_sd_min": 1.2,
+        "predicted_sync_order_R": 0.952,
+        "intact_anterior_somites": 31
+      },
+      {
+        "regime_id": "her1_slow_feedback_branch",
+        "label": "Pure her1 slow feedback loop (long gene delay T_m = 9.5 min, T_p = 2.8 min)",
+        "T_m_min": 9.5,
+        "T_p_min": 2.8,
+        "b_per_min": 0.23,
+        "c_per_min": 0.23,
+        "notch_coupling_kappa": 0.35,
+        "predicted_period_min": 36.65,
+        "observed_period_min": 36.5,
+        "observed_period_sd_min": 1.5,
+        "predicted_sync_order_R": 0.958,
+        "intact_anterior_somites": 25
+      },
+      {
+        "regime_id": "notch_delayed_coupling_collective_slowing",
+        "label": "DeltaC-Notch intercellular delay elevation (Herrgen et al. 2010 collective period lengthening)",
+        "T_m_min": 8.4,
+        "T_p_min": 1.8,
+        "b_per_min": 0.23,
+        "c_per_min": 0.23,
+        "notch_coupling_kappa": 0.45,
+        "predicted_period_min": 32.45,
+        "observed_period_min": 32.5,
+        "observed_period_sd_min": 1.1,
+        "predicted_sync_order_R": 0.978,
+        "intact_anterior_somites": 28
+      },
+      {
+        "regime_id": "intron_deletion_or_chx_ablation",
+        "label": "Subcritical delay (T_tot = 2.0 min < T_crit) or Cycloheximide translation block (a = 0 -> damped/arrested clock)",
+        "T_m_min": 1.2,
+        "T_p_min": 0.8,
+        "b_per_min": 0.23,
+        "c_per_min": 0.23,
+        "notch_coupling_kappa": 0.0,
+        "predicted_period_min": 0.0,
+        "observed_period_min": 0.0,
+        "observed_period_sd_min": 0.0,
+        "predicted_sync_order_R": 0.0,
+        "intact_anterior_somites": 0
+      }
+    ]
+  }
+}

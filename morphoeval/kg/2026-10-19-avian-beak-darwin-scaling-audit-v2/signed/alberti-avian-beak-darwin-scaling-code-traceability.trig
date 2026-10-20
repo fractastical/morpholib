@@ -1,0 +1,93 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RA25NPobzRyf-I2fhC1U-wll9dEujlBTatHU6voM2mnXo/> .
+@prefix this: <https://w3id.org/np/RA25NPobzRyf-I2fhC1U-wll9dEujlBTatHU6voM2mnXo> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/70> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature04843>,
+            <https://doi.org/10.1073/pnas.0911575107>,
+            <https://doi.org/10.1098/rsif.2014.0284>,
+            <https://doi.org/10.1126/science.1098095> .
+
+    <https://doi.org/10.1038/nature04843> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "The calmodulin pathway and evolution of elongated beak morphology in Darwin's finches" .
+
+    <https://doi.org/10.1073/pnas.0911575107> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Scaling and shear transformations capture beak shape diversity in Darwin's finches" .
+
+    <https://doi.org/10.1098/rsif.2014.0284> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Shared developmental programme strongly constrains beak shape diversity in songbirds" .
+
+    <https://doi.org/10.1126/science.1098095> dcterms:date "2004"^^xsd:gYear ;
+        dcterms:title "Bmp4 and morphological variation of beaks in Darwin's finches" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-alberti-avian-beak-darwin-scaling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-alberti-avian-beak-darwin-scaling-code-traceability> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-alberti-avian-beak-darwin-scaling-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Campas et al. (2010) PNAS affine scaling-and-shear transformation + Abzhanov et al. (2004, 2006) Bmp4/Calmodulin beak morphogenesis — Code-to-model traceability: 93/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Module and function docstrings map every equation to Campas et al. (2010) PNAS Eqs. (1)-(3) & Figs. 1-4, Abzhanov et al. (2004) Science Figs. 2-4, Abzhanov et al. (2006) Nature Figs. 2-4, Fritz et al. (2014) J. R. Soc. Interface, and the 3 formal Lean 4 theorems in `morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean` (L1-48, L112-189)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-code-traceability-1> ;
+        pk:hasScore "0.93"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2021-alberti-avian-beak-darwin-scaling.py L1–L48" ;
+        dcterms:description "Explicit equation-to-paper and Lean 4 theorem traceability in module header" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/33e07ad/2021-alberti-avian-beak-darwin-scaling.py#L1-L48> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 070 Pass 2 Assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "PgM3obB1Uvgq0fKZE1AiMnYfvHt3O778VNKv+qL71f+t+0FKMid51T4gD/RVHKVHKfxIlR7qsFjy0wiqnTFpRNcb+YlfomJw6ZZ+CLm0G0vxGs9MVX/ggCsu4Qbzqhix7xyLTHit3SxrUHqLivIMjwdBGgWZZmGlGH95OJOK4htw4VtEsuvGFjng4RqYKLx/zUsgYX7nL6Ls0bt4wUCo5VN3Z3YkRmNph0nQHMdmmHPlp8kJSai3/5HKz8QM43M246QPce9KREpEaAo9tSMn7KDu7p/UzVOqLz9+w48BgmFaXICYT22o5rpTDsf9QTnoqCicV8bGKY66zIhwTtSPMg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Campas et al. (2010) PNAS affine scaling-and-shear transformation + Abzhanov et al. (2004, 2006) Bmp4/Calmodulin beak morphogenesis — Code-to-model traceability 93/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T02:44:00Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-alberti-avian-beak-darwin-scaling-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/70> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

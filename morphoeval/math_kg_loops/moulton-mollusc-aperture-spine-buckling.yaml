@@ -1,0 +1,82 @@
+sim_id: moulton-mollusc-aperture-spine-buckling
+math_family: "Kirchhoff-Clebsch Elastica on Unilateral Foundation & Hierarchical Multi-Stage Mantle Spine Buckling"
+model_spec:
+  model: "Moulton, Goriely & Chirat (2015) J. Theor. Biol. 364:420-430 & Chirat, Moulton & Goriely (2013) PNAS 110:6015-6020 hierarchical mollusc aperture spine folding and secondary fractal frond serration"
+  E_modulus_MPa: 12.0
+  K_s_foundation_MPa_per_mm: 0.48
+  h1_primary_mm: 0.42
+  h2_secondary_mm: 0.0708
+  h3_tertiary_mm: 0.0245
+  k2_over_k1_chicoreus: 3.80
+  gamma_c_critical: 1.08
+  gamma_fold_tubular: 1.42
+  gamma_murex_varix: 1.68
+  seed: 2015
+  inputs:
+    - datasets/mollusc_aperture_spine_buckling/mollusc_aperture_spine_buckling_reference.json
+    - datasets/mollusc_aperture_spine_buckling/murex_pecten_aperture_specimen.jpg
+    - datasets/mollusc_aperture_spine_buckling/scout_manifest.json
+    - datasets/mollusc_aperture_spine_buckling/paper_citations.bib
+equations:
+  - law_name: "Moulton, Goriely & Chirat (2015) Multi-Generational Fractal Fronding Wavenumber Cascade"
+    formula: "k_i^* = (3 K_s / (E h_i^3))^(1/4);  h_3 < h_2 < h_1  ⇒  k_3^* > k_2^* > k_1^*,  k_2^* / k_1^* = (h_1 / h_2)^(3/4) ≈ 3.8"
+    lean_decl: "MathOfBiology.Loop_077.frond_cascade_gap"
+    lean_theorem: "MathOfBiology.Loop_077.moulton_secondary_frond_cascade"
+    lean_locus: "morphoeval/lean/loops/Loop_077_mollusc_aperture_spine_buckling.lean#L21-L55"
+    lean_code: |
+      def frond_wavenumber_residual (E_h3 k4 K_s : Int) : Int :=
+        E_h3 * k4 - 3 * K_s
+      def frond_cascade_gap (h_coarse h_fine : Int) : Int :=
+        h_coarse * h_coarse * h_coarse - h_fine * h_fine * h_fine
+      theorem moulton_secondary_frond_cascade (E_h3 K_s : Int) :
+          frond_wavenumber_residual E_h3 (3 * K_s) (E_h3 * K_s) = 0 ∧
+          frond_cubic_thickness 1 < frond_cubic_thickness 2 ∧
+          frond_cubic_thickness 2 < frond_cubic_thickness 6 ∧
+          frond_cascade_gap 6 1 = 215 ∧
+          frond_cascade_gap 6 2 = 208
+    variables: "h_1, h_2, h_3: primary, secondary, and tertiary distal mantle margin thicknesses (mm); K_s: unilateral calcified shell foundation stiffness (MPa/mm); E: mantle Young's modulus (MPa); k_i^*: characteristic buckling wavenumber (mm^-1)"
+    role: "Proves that distal thinning of an already buckled primary spine crest reduces flexural rigidity D_i ~ E h_i^3, cascading the instability to higher wavenumbers k_2^*/k_1^* ≈ 3.8 and k_3^* > k_2^* to form secondary and tertiary fractal frond serrations in Chicoreus ramosus"
+    source_citation: "Moulton, Goriely & Chirat (2015) J. Theor. Biol. 364:420-430 Sec. 3-4 & Figs. 5-8"
+    code_locus: "2015-moulton-mollusc-aperture-spine-buckling.py#L140-L315"
+
+  - law_name: "Moulton, Goriely & Chirat (2015) Tubular vs Open-Gutter Spine Folding Closure Criterion"
+    formula: "Δx_neck(γ) = w_base (1 - (γ - γ_c)/(γ_fold - γ_c));  γ ≥ γ_fold ⇔ Δx_neck(γ) ≤ 0 (tubular base closure)"
+    lean_decl: "MathOfBiology.Loop_077.spine_neck_gap"
+    lean_theorem: "MathOfBiology.Loop_077.moulton_tubular_spine_closure_criterion"
+    lean_locus: "morphoeval/lean/loops/Loop_077_mollusc_aperture_spine_buckling.lean#L61-L90"
+    lean_code: |
+      def spine_neck_gap (w_base gamma_fold gamma : Int) : Int :=
+        w_base * (gamma_fold - gamma)
+      def is_tubular_sealed (w_base gamma_fold gamma : Int) : Bool :=
+        decide (spine_neck_gap w_base gamma_fold gamma ≤ 0)
+      theorem moulton_tubular_spine_closure_criterion (w_base gamma_fold : Int) :
+          spine_neck_gap w_base gamma_fold gamma_fold = 0 ∧
+          spine_neck_gap 4 142 130 = 48 ∧
+          is_tubular_sealed 4 142 130 = false ∧
+          is_tubular_sealed 4 142 142 = true ∧
+          spine_neck_gap 4 142 168 = -104 ∧
+          is_tubular_sealed 4 142 168 = true
+    variables: "γ: incremental circumferential mantle growth stretch; γ_c: critical buckling stretch threshold; γ_fold: elastica self-contact folding threshold; Δx_neck: basal neck opening width (mm)"
+    role: "Governs the topological transition from an open-gutter spine or flared frond apex (γ_c < γ < γ_fold, Chicoreus distal frond) to a self-contacting sealed hollow tubular spine (γ ≥ γ_fold, Murex pecten siphonal comb spines)"
+    source_citation: "Moulton, Goriely & Chirat (2015) J. Theor. Biol. 364:420-430 Sec. 2.2-3.1 & Chirat, Moulton & Goriely (2013) PNAS 110:6015-6020 Fig. 3"
+    code_locus: "2015-moulton-mollusc-aperture-spine-buckling.py#L210-L395"
+
+  - law_name: "Episodic Triradiate Varix Rest-Period Spine Periodicity & Subcritical Smooth Whorl Law"
+    formula: "A_spine^2(γ) = A_0^2 max(0, γ(φ) - γ_c);  γ(φ) ≤ γ_c ⇒ A_spine = 0 (smooth inter-varix whorl);  3 Δφ_varix = 360° (Δφ_varix = 120°)"
+    lean_decl: "MathOfBiology.Loop_077.episodic_varix_amplitude_sq"
+    lean_theorem: "MathOfBiology.Loop_077.moulton_episodic_varix_rest_period"
+    lean_locus: "morphoeval/lean/loops/Loop_077_mollusc_aperture_spine_buckling.lean#L96-L125"
+    lean_code: |
+      def episodic_varix_amplitude_sq (A0_sq gamma gamma_c : Nat) : Nat :=
+        A0_sq * (gamma - gamma_c)
+      def triradiate_whorl_period_deg (n_varices_per_whorl delta_phi_deg : Nat) : Nat :=
+        n_varices_per_whorl * delta_phi_deg
+      theorem moulton_episodic_varix_rest_period (A0_sq gamma_c dgamma : Nat) :
+          episodic_varix_amplitude_sq A0_sq gamma_c gamma_c = 0 ∧
+          episodic_varix_amplitude_sq A0_sq 0 gamma_c = 0 ∧
+          episodic_varix_amplitude_sq A0_sq (gamma_c + (dgamma + 1)) gamma_c = A0_sq * (dgamma + 1) ∧
+          triradiate_whorl_period_deg 3 120 = 360
+    variables: "φ: helicospiral whorl accretion angle (deg); γ(φ): episodic mantle growth profile; γ_c: critical buckling threshold; A_spine: radial spine outgrowth amplitude (mm); Δφ_varix = 120°: angular spacing between successive varices"
+    role: "Proves that subcritical inter-varix mantle growth (γ ≤ γ_c) yields smooth unspined shell whorls while periodic rest-period growth bursts every Δφ = 120° produce three phase-locked triradiate spine rows per whorl"
+    source_citation: "Chirat, Moulton & Goriely (2013) PNAS 110:6015-6020 pp. 6016-6019 & Moulton, Goriely & Chirat (2012) J. Theor. Biol. 311:69-79"
+    code_locus: "2015-moulton-mollusc-aperture-spine-buckling.py#L400-L485"

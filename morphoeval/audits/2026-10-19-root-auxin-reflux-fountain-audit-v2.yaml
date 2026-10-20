@@ -1,0 +1,191 @@
+# MorphoEval Pass 2 (v2) Audit — Grieneisen, Xu, Marée, Hogeweg & Scheres (2007) Nature & Mähönen et al. (2014) Nature
+# Reverse-Fountain Root Tip Auxin Reflux Capacitor, Quiescent Center Exponential Accumulation & PLETHORA Zonality, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2014-grieneisen-root-auxin-reflux-fountain.py` (Slot 038)
+# superseding `2026-10-19-root-auxin-reflux-fountain-audit` in `2026-10-19-root-auxin-reflux-fountain-loop`:
+#   - Primary assessor: Gemini 4 Argon — 93.3 / 100 (up from 54.4 / 100 in v1; +38.9 overall)
+
+audit:
+  id: 2026-10-19-root-auxin-reflux-fountain-audit-v2
+  supersedes: 2026-10-19-root-auxin-reflux-fountain-audit
+  supersedes_audit_id: 2026-10-19-root-auxin-reflux-fountain-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 038 Pass 2 Assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/38
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2014-grieneisen-root-auxin-reflux-fountain.py` after
+      completing Step 12 closed-loop remediation in `2026-10-19-root-auxin-reflux-fountain-loop`.
+
+references:
+  grieneisen2007:
+    title: "Auxin can act as a local morphogen to pattern root tissues"
+    authors: "Grieneisen VA, Xu J, Marée AFM, Hogeweg P, Scheres B"
+    venue: "Nature 449(7165):1008-1013 (2007)"
+    doi: 10.1038/nature06215
+  mahonen2014:
+    title: "PLETHORA gradient formation mechanism separates auxin responses"
+    authors: "Mähönen AP, ten Tusscher K, Siligato R, Smetana O, Díaz-Triviño S, Salojärvi J, Wachsman G, Prasad K, Heidstra R, Scheres B"
+    venue: "Nature 515(7525):125-129 (2014)"
+    doi: 10.1038/nature13663
+  blilou2005:
+    title: "The PIN auxin efflux facilitator network controls growth and patterning in Arabidopsis roots"
+    authors: "Blilou I, Xu J, Wildwater M, Willemsen V, Paponov I, Friml J, Heidstra R, Aida M, Palme K, Scheres B"
+    venue: "Nature 433(7021):39-44 (2005)"
+    doi: 10.1038/nature03184
+  sabatini1999:
+    title: "An auxin-dependent distal organizer of pattern and polarity in the Arabidopsis root"
+    authors: "Sabatini S, Beis D, Wolkenfelt H, Murfett J, Guilfoyle T, Malamy J, Benfey P, Leyser O, Bechtold N, Weisbeek P, Scheres B"
+    venue: "Cell 99(5):463-472 (1999)"
+    doi: 10.1016/S0092-8674(00)81535-4
+
+simulations:
+  - id: grieneisen-root-auxin-reflux-fountain
+    name: "Grieneisen et al. (2007) Nature & Mähönen et al. (2014) Nature reverse-fountain root tip auxin reflux capacitor, Quiescent Center exponential accumulation, and PLETHORA meristem zonality"
+    organism: "Arabidopsis thaliana (primary root apex: vascular stele, pericycle/endodermis, cortex, epidermis/lateral root cap, quiescent center, and columella)"
+    script: 2014-grieneisen-root-auxin-reflux-fountain.py
+    output: docs/media/root_auxin_reflux_fountain_comparison.png
+    extra_outputs:
+      - docs/media/root_auxin_reflux_fountain_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Grieneisen, Xu, Marée, Hogeweg & Scheres (2007) Nature 449:1008-1013 2D multi-file root apex reverse-fountain auxin reflux loop (downward PIN1 stele transport +v_s, lateral PIN3/PIN4/PIN7 columella/QC redistribution, upward PIN2 epidermal/LRC transport -v_e, and inward lateral PIN1/PIN2/PIN3 reflux k_lat across cortex/endodermis), generating an exponential Quiescent Center (QC) auxin capacitor (>100-fold peak) that remains self-sustaining after shoot decapitation (J_in = 0) and regenerates a shifted proximal QC peak after distal laser ablation"
+        - "Mähönen et al. (2014) Nature 515:125-129 slow auxin-induced PLETHORA (PLT1/PLT2) transcription factor synthesis, cell-to-cell movement, and growth dilution creating a smooth axial PLT dosage gradient that positions Meristematic Zone (P >= Theta_MZ), Elongation Zone (Theta_EZ <= P < Theta_MZ), and Differentiation Zone (P < Theta_EZ) boundaries"
+      reconstructed_in_script:
+        - "2D 5-tissue root tip cellular lattice solver (32 axial rows x 9 radial files: epidermis/LRC, cortex, endodermis/pericycle, stele, and distal columella/QC) verifying counter-current vascular-epidermal flux conservation (error 2e-15 <= 1e-12) and reproducing all 6 experimental regimes: Wild-Type (132.05x QC amplification at z=37.5 um), shoot decapitation J_in=0 autonomy (115.56x, retaining 87.5% of WT peak), pin2/eir1 mutant (54.1x, z_MZ=210 um), lateral-PIN ablation k_lat=0 (10.38x, z_MZ=90 um), NPA blockade (1.31x, z_MZ=0 um), and QC laser ablation regenerating a proximal QC peak at z=97.5 um (+60 um shift)"
+        - "Coupled PLETHORA (PLT1/2) reaction-diffusion-dilution solver achieving Pearson r = 0.9929 (p = 7.47e-5) against published Meristematic Zone boundaries across all 6 perturbation regimes and r = 0.9851 along the WT axial profile"
+        - "Empirical CV segmentation of the 3-panel Arabidopsis thaliana primary root meristem confocal micrograph (`arabidopsis_root_meristem_specimen.jpg`, CC BY-SA 4.0, 1527x513 px) extracting root meristem area fraction (0.2561), N = 113 DAPI-stained nuclei (intercellular spacing 18.3394 +- 0.5790 px SE), N = 125 Alexa Fluor 488 mitotic phragmoplast/spindle divisions, and apical-to-proximal nuclear density ratio (1.1182)"
+      transfer_boundary:
+        - "2D radial-axial 5-tissue cellular root apex reflux capacitor and PLETHORA dosage thresholds mapped to confocal Arabidopsis root meristem nuclear and mitotic architecture"
+      does_not_claim:
+        - "Subcellular cell-wall mechanical viscoplasticity or 3D gravitropic root bending curvature"
+    source_refs:
+      - grieneisen2007
+      - mahonen2014
+      - blilou2005
+      - sabatini1999
+    summary: >-
+      Pass 2 (v2) evaluation of `2014-grieneisen-root-auxin-reflux-fountain.py` (overall
+      weighted score: 93.3/100, up from 54.4/100 in v1). The remediated script implements
+      the 2D 5-tissue Arabidopsis root tip cellular lattice solver (stele, endodermis/pericycle,
+      cortex, epidermis/LRC, and columella/QC) verifying exact vascular-epidermal counter-current
+      flux conservation (|J_stele + J_epidermis| = 2e-15); reproduces all 6 Grieneisen et al.
+      (2007) & Mähönen et al. (2014) experimental regimes (Wild-Type 132.05x QC peak, shoot
+      decapitation J_in=0 retaining 115.56x / 87.5% autonomy, pin2/eir1 shootward loss,
+      k_lat=0 lateral reflux ablation, NPA polar transport blockade 1.31x, and QC laser-ablation
+      proximal regeneration shifting the QC peak from 37.5 um to 97.5 um; meristem boundary
+      Pearson r = 0.9929, p = 7.47e-5); and segments the SHA-256-locked 3-panel Arabidopsis
+      primary root meristem confocal micrograph (`arabidopsis_root_meristem_specimen.jpg`,
+      N = 113 DAPI nuclei, N = 125 mitotic divisions, spacing 18.3394 +- 0.5790 px SE).
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Implements the 2D 5-tissue radial-axial root tip reflux capacitor and PLETHORA
+          zonality solver (`verify_vascular_epidermal_reflux_conservation`,
+          `simulate_2d_root_reflux_lattice`, `run_six_perturbation_regimes`, L107-464)
+          covering stele, pericycle/endodermis, cortex, epidermis/LRC, and columella/QC
+          across all 6 canonical regimes (WT, shoot decapitation, pin2/eir1, lateral-PIN
+          ablation, NPA blockade, and QC laser ablation), backed by 3 machine-checked
+          Lean 4 theorems in `morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean`.
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [107, 191], note: "Law 1 vascular-epidermal counter-current reflux conservation and closed-tip balance solver", supports: true}
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [195, 464], note: "2D 5-tissue root tip reflux capacitor and Mähönen (2014) PLETHORA zonality solver across 6 experimental regimes", supports: true}
+          - {file: morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean, lines: [12, 130], note: "3 machine-checked Lean 4 theorems for reflux conservation, QC capacitor amplification vs collapse, and PLETHORA boundary monotonicity (0 sorrys)", supports: true}
+      specimen-match:
+        value: 92
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY-SA 4.0 3-panel confocal micrograph of an
+          Arabidopsis thaliana primary root meristem (`arabidopsis_root_meristem_specimen.jpg`,
+          1527x513 px), segments the root apex body (`segment_arabidopsis_root_specimen`,
+          L468-552, area fraction 0.2561), and extracts N = 113 DAPI nuclear files (spacing
+          18.3394 +- 0.5790 px SE), N = 125 Alexa Fluor 488 mitotic phragmoplast/spindle
+          divisions, and apical-to-proximal nuclear density ratio (1.1182).
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [468, 552], note: "Dual-channel DAPI nuclear file + Alexa Fluor 488 mitotic division CV segmentation on Arabidopsis root meristem confocal micrograph", supports: true}
+          - {file: docs/media/root_auxin_reflux_fountain_comparison.png, lines: [0, 0], note: "6-panel synthesis figure comparing 2D WT capacitor, QC laser-ablation shift, 6-regime stele auxin & PLETHORA profiles, zone boundary bar chart, and confocal CV segmentation", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Evaluates all 6 experimental perturbation regimes (`run_six_perturbation_regimes`,
+          L406-464: Wild-Type, shoot decapitation J_in=0, pin2/eir1, lateral-PIN ablation
+          k_lat=0, NPA blockade, and QC laser ablation) and exposes CLI parameter overrides
+          `--D`, `--vs`, `--ve`, `--klat`, and `--alpha-plt` (L928-942).
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [406, 464], note: "6-regime perturbation sweep across WT, decapitation, pin2, k_lat=0, NPA, and QC ablation", supports: true}
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [928, 942], note: "CLI flags for D, vs, ve, klat, and alpha-plt", supports: true}
+      morphometric-validation:
+        value: 93
+        rationale: >-
+          `measure_morphoeval()` (L556-670) computes 9 reference-anchored morphometric
+          measurements with uncertainty, Pearson r/p-values, and negative controls:
+          counter-current flux conservation error 2e-15 (ref 0.0), WT QC amplification
+          132.05x (ref 142.5x, r = 1.0, vs 1.31x in NPA and 10.38x in k_lat=0), shoot
+          decapitation autonomous retention 115.56x (87.5% of WT), QC laser-ablation
+          regenerated peak at z = 97.5 um (+60 um proximal shift from 37.5 um), WT PLETHORA
+          meristem boundary z_MZ = 300.0 um (vs 210 um in pin2, 90 um in k_lat=0, 0 um in NPA),
+          6-regime meristem boundary Pearson r = 0.9929 (p = 7.47e-5), and 3 empirical
+          confocal root meristem metrics (113 DAPI nuclei, 18.3394 +- 0.5790 px spacing,
+          apical/proximal density ratio 1.1182).
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [556, 670], note: "9 reference-anchored morphometric measurements with uncertainty, p-values, and NPA/k_lat=0 negative controls", supports: true}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Vendors `datasets/root_auxin_reflux_fountain/` with 4 primary BibTeX citations
+          and verified DOIs (`10.1038/nature06215`, `10.1038/nature13663`, `10.1038/nature03184`,
+          `10.1016/S0092-8674(00)81535-4`), `scout_manifest.json`,
+          `root_auxin_reflux_fountain_reference.json`, and `arabidopsis_root_meristem_specimen.jpg`,
+          all verified at runtime via SHA-256 checksums (`verify_dataset_integrity`, L82-95).
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [82, 95], note: "Runtime SHA-256 checksum verification of all 4 dataset files", supports: true}
+          - {file: datasets/root_auxin_reflux_fountain/root_auxin_reflux_fountain_reference.json, lines: [1, 145], note: "SHA-256-locked reference dataset with 6-regime reflux and PLETHORA benchmarks and confocal specimen metadata", supports: true}
+      code-traceability:
+        value: 93
+        rationale: >-
+          Module and function docstrings map every equation to Grieneisen et al. (2007)
+          Nature 449:1008-1013 Figs. 1-4, Mähönen et al. (2014) Nature 515:125-129 Figs. 1-4,
+          and the 3 formal Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean` (L1-42, L107-464).
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [1, 42], note: "Explicit equation-to-paper and Lean 4 theorem traceability in module docstring", supports: true}
+      repro-package:
+        value: 93
+        rationale: >-
+          8-point `run_self_test()` suite (`L873-925`) verifying SHA-256 dataset integrity,
+          Law 1 vascular-epidermal counter-current flux and closed-tip mass conservation,
+          Law 2 exponential QC amplification (>100x) vs k_lat=0 and NPA collapse, shoot
+          decapitation capacitor autonomy (>80% retention at J_in=0), QC laser-ablation
+          proximal shift (+60 um), Law 3 PLETHORA meristem boundary monotonicity (r = 0.9929),
+          empirical confocal root meristem segmentation (113 nuclei, 125 mitotic divisions),
+          and 9-metric `measure_morphoeval()` determinism.
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [873, 925], note: "8-check deterministic self-test suite passing in < 1s", supports: true}
+    remediation:
+      - "Couple the 2D 5-tissue auxin-PLETHORA root tip lattice to a growing cellular vertex/CPM mechanics solver with explicit mitotic cell division and asymmetric gravistimulation (PIN3/PIN7 columella relocalization) to model dynamic root bending."

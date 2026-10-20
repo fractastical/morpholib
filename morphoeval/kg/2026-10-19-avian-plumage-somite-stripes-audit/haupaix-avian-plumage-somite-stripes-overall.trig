@@ -1,0 +1,76 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-haupaix-avian-plumage-somite-stripes> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Haupaix et al. (2018) & Inaba et al. (2019) somite-prepatterned Agouti signaling and melanocyte gap-junction reaction-diffusion in galliform plumage stripes — MorphoEval overall 46.3/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 (v1) baseline evaluation of `2018-haupaix-avian-plumage-somite-stripes.py` (overall weighted score: 48.0 / 100). The v1 script implements only a static 1D Gaussian threshold profile for Japanese quail *Agouti* stripes, omitting the coupled 2D somitic *Agouti* prepattern + Connexin40/melanocyte activator-inhibitor reaction-diffusion PDE (Haupaix et al. 2018; Inaba et al. 2019), omitting the 5-species comparative galliform stripe width panel, omitting heterospecific somite-to-dermis chimera grafting simulations and exogenous *Agouti* bead implantations, failing to load or segment the vendored *Coturnix japonica* dorsal plumage specimen photograph, and returning only 2 scalar metrics. Overall 46.3/100 (faithfulness 39.0, reproducibility 63.3); rubric morphoeval 0.1.0; checkpoint commit 8871db0; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 48, Morphological realism / specimen match 28, Parameter expressivity 44, Morphometric validation 42, Source and data traceability 62, Code-to-model traceability 58, Reproducibility package 68. Output judged: docs/media/avian_plumage_somite_stripes_comparison.png: rendered output of 2018-haupaix-avian-plumage-somite-stripes.py at 8871db0, image/png, 51839 B, 1080×456 px, artifact_sha256 02e43fa9a09c165fdbe30288a07b86756d896b7509ec5647f9471be53a60ab00 (sha256 02e43fa9a09c165fdbe30288a07b86756d896b7509ec5647f9471be53a60ab00), spec_fingerprint 02a8479af5560c95d12d26c94859ee0f020f922c46969b9a4243ec2f1ee4dce8. Dual provenance: spec_fingerprint: 02a8479af5560c95d12d26c94859ee0f020f922c46969b9a4243ec2f1ee4dce8; artifact_sha256: 02e43fa9a09c165fdbe30288a07b86756d896b7509ec5647f9471be53a60ab00; input_dataset_sha256: {datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json=6029de05099340f7..., datasets/avian_plumage_somite_stripes/galliform_chick_stripes_specimen.jpg=78337aba30f62614..., datasets/avian_plumage_somite_stripes/scout_manifest.json=acb7ac44b807e24b...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Expose full CLI parameters (--species, --bead-dose, --beta-agouti, --d-ratio, --steps, --seed), expand `measure_morphoeval()` to 8 reference-backed morphometric measurements, and upgrade `docs/media/avian_plumage_somite_stripes_comparison.png` (8 panels) and `docs/media/avian_plumage_somite_stripes_growth.gif` (6 frames).",
+            "remediation needed: Implement heterospecific somite-to-dermis chimera grafting simulations (quail <-> pheasant and guineafowl -> quail, verifying Lean Theorem 2 donor autonomy) and the 5-regime exogenous *Agouti* protein bead / RNAi dose sweep (verifying Lean Theorem 1 period conservation and reciprocal black-stripe narrowing), plus formal negative controls (somite prepattern ablation beta_A = 0 breaking longitudinal orientation and equal-diffusion d = 1.0 abolishing self-organized sharpening).",
+            "remediation needed: Implement the coupled 2D somitic *Agouti* (*Asip*) prepattern + Connexin40/melanocyte activator-inhibitor reaction-diffusion PDE (Haupaix et al. 2018 Science Figs. 1-4; Inaba et al. 2019 Science Figs. 2-4), demonstrating how somite-derived dermal Agouti stripes orient and set the width of yellow pheomelanin (u >= theta_A) and black eumelanin (u < theta_A) bands across all 5 galliform species (quail, pheasant, guineafowl, partridge, turkey).",
+            "remediation needed: Load and SHA-256-verify `datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json`, `galliform_chick_stripes_specimen.jpg`, `scout_manifest.json`, and `paper_citations.bib` at runtime; segment dorsal longitudinal yellow/buff pheomelanin and dark brown/black eumelanin stripes from `galliform_chick_stripes_specimen.jpg`; and compare empirical stripe count, period, yellow fraction, and Ashman bimodality D against PDE predictions." ;
+        pk:hasScore "0.463"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 010 autonomous loop assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1126/science.1230374>,
+            <https://doi.org/10.1126/science.aar4777>,
+            <https://doi.org/10.1126/science.aaw1969>,
+            <https://doi.org/10.1371/journal.pbio.3000448> .
+    <https://doi.org/10.1126/science.1230374> dct:date "2013"^^xsd:gYear ;
+        dct:title "Topology of feather melanocyte progenitor niche allows complex pigment patterns to emerge" .
+    <https://doi.org/10.1126/science.aar4777> dct:date "2018"^^xsd:gYear ;
+        dct:title "The periodicelly striped plumage of galliform chicks is prepatterned by somitic Agouti signaling" .
+    <https://doi.org/10.1126/science.aaw1969> dct:date "2019"^^xsd:gYear ;
+        dct:title "Instructive role of melanocytes during body pigment pattern formation" .
+    <https://doi.org/10.1371/journal.pbio.3000448> dct:date "2019"^^xsd:gYear ;
+        dct:title "Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Haupaix et al. (2018) & Inaba et al. (2019) somite-prepatterned Agouti signaling and melanocyte gap-junction reaction-diffusion in galliform plumage stripes — MorphoEval overall 46.3/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:33:03Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-haupaix-avian-plumage-somite-stripes> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

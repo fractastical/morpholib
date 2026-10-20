@@ -1,0 +1,164 @@
+# MorphoEval audit — Raspopovic et al. (2014) Science Bmp-Sox9-Wnt 3-Node Turing Digit Network, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2014-raspopovic-bmp-sox9-wnt-digits.py` (297 lines)
+# prior to Step 12 remediation in `2026-10-19-bmp-sox9-wnt-digits-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.8 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `simulate_1d_distal_arc` (L91-145) integrates only a 1D arc with explicit finite
+#      differences and lacks a 2D fan-shaped embryonic autopod reaction-diffusion PDE
+#      with distal AER-FGF + Hoxd gradient modulation preventing radial digit bifurcation
+#      (Raspopovic et al. 2014 Fig. 4A-D) and lacks the zero-diffusion (D_B=D_W=0) negative control.
+#   2. Evaluates only the wild-type pentadactyl condition and omits the pharmacological
+#      and genetic perturbation experiments of Raspopovic et al. (2014) Figs. 2F-G & 3A-F
+#      (LDN-193189 BMP receptor inhibition, CHIR99021 Wnt activation, IWP-2 Wnt secretion
+#      inhibition, and Hox/Tbx2 short-wavelength polydactyly).
+#   3. The vendored biological specimen `datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg`
+#      (E12.5 Sox9 & E13.5 Col2a1 WISH mouse limb buds) is never loaded, segmented, or
+#      compared in `bmp_sox9_wnt_digits_comparison.png`.
+#   4. Runtime SHA-256 verification of the 4 files in `datasets/bmp_sox9_wnt_digits/` and
+#      CLI parameter overrides (`--k-bs`, `--k-sb`, `--k-sw`, `--D-ratio`, `--fgf-scale`, `--seed`)
+#      are missing.
+
+audit:
+  id: 2026-10-19-bmp-sox9-wnt-digits-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 016 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/16
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 45d4150
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2014-raspopovic-bmp-sox9-wnt-digits.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-bmp-sox9-wnt-digits-loop`.
+
+references:
+  raspopovic2014:
+    title: "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients"
+    authors: "Raspopovic J, Marcon L, Russo L, Sharpe J"
+    venue: "Science 345(6196):566-570 (2014)"
+    doi: 10.1126/science.1252960
+  sheth2012:
+    title: "Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism"
+    authors: "Sheth R, Marcon L, Bastida MF, Junco M, Quintana L, Dahn R, Kmita M, Sharpe J, Ros MA"
+    venue: "Science 338(6113):1476-1480 (2012)"
+    doi: 10.1126/science.1226804
+  marcon2016:
+    title: "High-throughput mathematical analysis identifies Turing networks for patterning with equally diffusing signals"
+    authors: "Marcon L, Diego X, Sharpe J, Muller P"
+    venue: "eLife 5:e14022 (2016)"
+    doi: 10.7554/eLife.14022
+
+simulations:
+  - id: raspopovic-bmp-sox9-wnt-digits
+    name: "Raspopovic et al. (2014) 3-node Bmp-Sox9-Wnt Turing digit patterning network modulated by distal FGF"
+    organism: "Embryonic mouse autopod (Mus musculus, E11.5-E13.5)"
+    script: 2014-raspopovic-bmp-sox9-wnt-digits.py
+    output: docs/media/bmp_sox9_wnt_digits_comparison.png
+    extra_outputs:
+      - docs/media/bmp_sox9_wnt_digits_growth.gif
+    status: evaluated
+    source_refs:
+      - raspopovic2014
+      - sheth2012
+      - marcon2016
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2014-raspopovic-bmp-sox9-wnt-digits.py`
+      (overall weighted score: 56.8/100). The v1 script constructs the 3-node Bmp-Sox9-Wnt
+      Jacobian J_3 and reduced 2-diffuser Jacobian J_eff, evaluates the dispersion relation
+      sigma(q), and simulates a 1D distal autopod arc producing 5 out-of-phase Sox9 peaks
+      (r_SB < -0.95), but lacks a 2D fan-shaped embryonic autopod PDE with distal AER-FGF
+      wavelength modulation, omits the LDN-193189/CHIR99021/IWP-2/polydactyly/zero-diffusion
+      perturbation controls, and does not segment the vendored E12.5 Sox9 / E13.5 Col2a1
+      WISH limb bud specimen image.
+    scores:
+      model-fidelity:
+        value: 59
+        rationale: >-
+          Implements the 3-node Bmp-Sox9-Wnt Jacobian J_3 (D_S = 0) and reduced 2-diffuser
+          Jacobian J_eff (L35-59),dispersion curve Re(sigma(q)) (L62-88), and 1D reaction-diffusion
+          integration along a constant-parameter arc (L91-145), backed by 3 Lean 4 theorems in
+          `Loop_016_bmp_sox9_wnt_digits.lean`. However, it omits the 2D fan-shaped limb bud
+          autopod domain where distal AER-FGF gradient modulation prevents radial digit
+          bifurcation, and lacks the zero-diffusion (D_B = D_W = 0) negative control.
+        evidence:
+          - {file: 2014-raspopovic-bmp-sox9-wnt-digits.py, lines: [35, 88], note: "Exact 3-node J_3 and reduced 2-diffuser J_eff Jacobian and Turing dispersion relation", supports: true}
+          - {file: 2014-raspopovic-bmp-sox9-wnt-digits.py, lines: [91, 145], note: "Only 1D constant-parameter arc simulated without 2D fan-shaped autopod FGF gradient modulation or D=0 negative control", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg` is vendored
+          on disk, the v1 script never loads, segments, or displays the E12.5 Sox9 / E13.5
+          Col2a1 WISH mouse limb bud specimen image.
+        evidence:
+          - {file: 2014-raspopovic-bmp-sox9-wnt-digits.py, lines: [148, 224], note: "4-panel v1 plot never loads or segments sox9_limb_digits_specimen.jpg", supports: false}
+      parameter-expressivity:
+        value: 48
+        rationale: >-
+          Simulates only the wild-type baseline parameter set in 1D (L91-145) and plots
+          tabular FGF wavelength values without simulating the 7-point FGF/Hox wavelength
+          sweep or the 6 pharmacological/genetic perturbation conditions (LDN-193189 BMP
+          inhibition, CHIR99021 Wnt activation, IWP-2 Wnt inhibition, Hox/Tbx2 polydactyly,
+          and zero-diffusion control), and exposes no CLI parameter overrides (L285-295).
+        evidence:
+          - {file: 2014-raspopovic-bmp-sox9-wnt-digits.py, lines: [285, 295], note: "CLI exposes only --self-test and --skip-gif without kinetic or diffusion parameter overrides", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          `measure_morphoeval()` (L247-278) returns only 3 baseline metrics (lambda_c,
+          r(Sox9, Bmp), and wild-type digit count) without evaluating the 7-point FGF/Hox
+          wavelength regression (Pearson r, p-value, RMSE), pharmacological perturbation
+          digit counts, or computer-vision segmentation of the wild-type (5 digits) and
+          polydactylous (6 digits) WISH specimen panels.
+        evidence:
+          - {file: 2014-raspopovic-bmp-sox9-wnt-digits.py, lines: [247, 278], note: "Only 3 baseline metrics returned in measure_morphoeval() without perturbation or specimen CV metrics", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Loads `datasets/bmp_sox9_wnt_digits/bmp_sox9_wnt_digits_reference.json` and cites
+          Raspopovic et al. (2014) `10.1126/science.1252960` (L1-11), but does not perform
+          runtime SHA-256 verification of the 4 dataset files.
+        evidence:
+          - {file: 2014-raspopovic-bmp-sox9-wnt-digits.py, lines: [31, 33], note: "Loads REF_JSON without runtime SHA-256 cryptographic verification", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions compute J_3, J_eff, and 1D reaction-diffusion dynamics (L35-145), but
+          lack explicit equation-level docstrings cross-referencing Raspopovic et al. (2014)
+          Figs. 2-4, Marcon et al. (2016) eLife, Sheth et al. (2012) Science, and the 3
+          Lean 4 theorems in `Loop_016_bmp_sox9_wnt_digits.lean`.
+        evidence:
+          - {file: 2014-raspopovic-bmp-sox9-wnt-digits.py, lines: [35, 145], note: "Brief docstrings without explicit paper figure/equation or Lean 4 theorem mappings", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Provides `--self-test` and `--skip-gif` flags (L280-295), but `self_test()` runs
+          only 3 basic assertions without verifying SHA-256 dataset integrity, determinant
+          cancellation identity, zero-diffusion negative control, perturbation ordering,
+          specimen segmentation, or two-run bitwise determinism.
+        evidence:
+          - {file: 2014-raspopovic-bmp-sox9-wnt-digits.py, lines: [280, 287], note: "Minimal 3-check self_test() without determinism, ablation, or specimen verification", supports: false}
+    remediation:
+      - "Implement a 2D fan-shaped embryonic autopod reaction-diffusion PDE solver for Bmp-Sox9-Wnt modulated by a distal AER-FGF + Hoxd gradient alongside the 1D distal-arc solver and zero-diffusion (D_B = D_W = 0) negative control."
+      - "Simulate the full 7-point distal FGF/Hox wavelength-scaling series (N_digits from 3.5 to 7.0) and all 6 pharmacological/genetic perturbation conditions (Wild-Type 5 digits, LDN-193189 BMP inhibition, CHIR99021 Wnt activation, IWP-2 Wnt inhibition, Tbx2/Hox polydactyly 6 digits, and D=0 ablation control)."
+      - "Implement computer-vision segmentation of `datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg` across Panel O (E12.5 wild-type Sox9 WISH, 5 digit rays), Panel K (E13.5 wild-type Col2a1 WISH, 5 digit rays), and Panel L (E13.5 Tbx2-/- polydactylous Col2a1 WISH, 6 digit rays) to quantify empirical digit ray count, inter-digit angular wavelength spacing, and CV."
+      - "Add runtime SHA-256 verification of all 4 files in `datasets/bmp_sox9_wnt_digits/`, expose full CLI parameter overrides (`--k-bs`, `--k-sb`, `--k-sw`, `--D-ratio`, `--fgf-scale`, `--seed`), and expand `measure_morphoeval()` to 9 metrics and `self_test()` to 8 comprehensive checks."

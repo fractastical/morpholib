@@ -1,0 +1,56 @@
+sim_id: bi-vertex-glass-jamming
+math_family: Zero-Temperature Shape-Index Unjamming (Bi-Manning Vertex Rigidity Transition & Asthmatic Bronchial Epithelial Jamming)
+equations:
+  - law_name: Bi et al. (2015) Dimensionless Vertex Energy Functional & Target-Shape Ground-State Identity
+    formula: "e = \\frac{E}{K_A A_0^2} = \\frac{1}{2}\\sum_{i=1}^N \\left[(a_i - 1)^2 + r(p_i - p_0)^2\\right],\\quad a_i = \\frac{A_i}{A_0},\\ p_i = \\frac{P_i}{\\sqrt{A_0}},\\ r = \\frac{K_P}{K_A A_0},\\ p_0 = \\frac{P_0}{\\sqrt{A_0}}"
+    lean_decl: MathOfBiology.Loop_045.two_cell_vertex_energy
+    lean_theorem: MathOfBiology.Loop_045.bi_vertex_energy_nonneg_and_ground_state_zero
+    lean_locus: morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean#L20-L53
+    lean_code: |-
+      def two_cell_vertex_energy (a_i a_0 r p_i p_0 : Int) : Int :=
+        (a_i - a_0) * (a_i - a_0) + r * (p_i - p_0) * (p_i - p_0)
+      theorem bi_vertex_energy_nonneg_and_ground_state_zero (a_0 r p_i p_0 d : Int) :
+          area_deviation_sq a_0 a_0 = 0 ∧
+          two_cell_vertex_energy a_0 a_0 r p_0 p_0 = 0 ∧
+          two_cell_vertex_energy a_0 a_0 r p_i p_0 = r * shape_index_deviation_sq p_i p_0 ∧
+          0 <= d * d
+    variables: "a_i: normalized cell area A_i/A_0; p_i: normalized cell perimeter P_i/sqrt(A_0); p_0: target cell shape index P_0/sqrt(A_0); r: dimensionless perimeter-to-area elasticity ratio K_P/(K_A A_0)"
+    role: "Governs mechanical force balance in confluent epithelial monolayers where competition between cortical contractility and cell-cell adhesion sets the target shape index p_0"
+    source_citation: "Bi, Lopez, Schwarz & Manning (2015) Nature Physics 11(12):1074-1079 Eqs. (1)-(2)"
+    code_locus: "2015-bi-vertex-glass-jamming.py#L95-L170"
+  - law_name: Regular Hexagon, Pentagon & Critical Unjamming Shape-Index Bounds (p_hex < p_5 < p_0^*)
+    formula: "p_{\\text{hex}} = \\sqrt{8\\sqrt{3}} \\approx 3.7224 < p_5 = \\sqrt{20\\tan(\\pi/5)} \\approx 3.8119 < p_0^* \\approx 3.813;\\quad p_{\\text{hex}}^2 \\approx 13.856 < (p_0^*)^2 \\approx 14.539"
+    lean_decl: MathOfBiology.Loop_045.p0_star_milli
+    lean_theorem: MathOfBiology.Loop_045.shape_index_hexagon_pentagon_critical_bounds
+    lean_locus: morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean#L55-L83
+    lean_code: |-
+      def p_hex_milli : Int := 3722
+      def p_pent_milli : Int := 3812
+      def p0_star_milli : Int := 3813
+      theorem shape_index_hexagon_pentagon_critical_bounds :
+          (p_hex_milli * p_hex_milli < p_pent_milli * p_pent_milli) ∧
+          (p_pent_milli * p_pent_milli < p0_star_milli * p0_star_milli) ∧
+          (p_hex_10k ^ 4 < 192 * (10000 ^ 4)) ∧ (192 * (10000 ^ 4) < (p_hex_10k + 1) ^ 4)
+    variables: "p_hex: regular hexagon shape index (2*sqrt(2*sqrt(3)) ≈ 3.7224); p_5: regular pentagon shape index (≈ 3.8119); p_0^*: disordered confluent rigidity transition point (≈ 3.813)"
+    role: "Establishes the geometric bounds separating ordered hexagonal crystals (p_hex ≈ 3.722) from the disordered pentagonal/polygonal jamming threshold (p_0^* ≈ 3.813)"
+    source_citation: "Bi, Lopez, Schwarz & Manning (2015) Nature Physics 11(12):1074-1079 pp. 1074-1076 & Fig. 2"
+    code_locus: "2015-bi-vertex-glass-jamming.py#L65-L185"
+  - law_name: Zero-Temperature T1 Energy Barrier & Shear Modulus Vanishing Above Critical Shape Index p_0^*
+    formula: "\\Delta e_{\\text{T1}}(p_0),\\ G(p_0) \\propto r(p_0^* - p_0)_+^\\beta = \\begin{cases} > 0 & p_0 < p_0^* \\approx 3.813 \\text{ (solid jammed)} \\\\ 0 & p_0 \\ge p_0^* \\approx 3.813 \\text{ (fluid unjammed)} \\end{cases}"
+    lean_decl: MathOfBiology.Loop_045.t1_barrier_scaled
+    lean_theorem: MathOfBiology.Loop_045.unjamming_rigidity_and_t1_barrier_vanishing
+    lean_locus: morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean#L85-L148
+    lean_code: |-
+      def t1_barrier_scaled (r p0 p0_star : Int) : Int :=
+        if p0 < p0_star then r * (p0_star - p0) else 0
+      theorem unjamming_rigidity_and_t1_barrier_vanishing
+          (r p_fluid p_solid p1 p2 p0_star : Int)
+          (h_fluid : p0_star <= p_fluid) (h_solid : p_solid < p0_star)
+          (h_order : p1 < p2) (h_sub : p2 <= p0_star) :
+          t1_barrier_scaled r p_fluid p0_star = 0 ∧
+          t1_barrier_scaled 1 p_solid p0_star > 0 ∧
+          t1_barrier_scaled 1 p2 p0_star < t1_barrier_scaled 1 p1 p0_star
+    variables: "Δe_T1(p_0): dimensionless T1 topological neighbor-exchange energy barrier; G(p_0): macroscopic static shear modulus; q = <P_i/sqrt(A_i)>: observed cell shape index in human bronchial epithelium"
+    role: "Proves that tissue rigidity and T1 rearrangement barriers vanish identically for p_0 >= p_0^* = 3.813 and separates jammed non-asthmatic bronchial epithelium (q_14 = 3.792 < 3.813) from unjammed asthmatic epithelium (q_14 = 3.955 > 3.813)"
+    source_citation: "Bi et al. (2015) Nature Physics 11:1074-1079 Figs. 2-3; Park et al. (2015) Nature Materials 14:1040-1048 Figs. 1-4"
+    code_locus: "2015-bi-vertex-glass-jamming.py#L140-L435"

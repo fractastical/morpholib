@@ -1,0 +1,133 @@
+{
+  "metadata": {
+    "dataset_id": "manukyan-2017-ocellated-lizard-ca-v1",
+    "title": "Manukyan et al. (2017) Nature — Ocellated Lizard (Timon lepidus) Skin-Scale Mesoscopic Cellular Automaton & Scale-Border Reaction-Diffusion Reference Dataset",
+    "sources": [
+      {
+        "id": "manukyan2017",
+        "citation": "Manukyan L, Montandon SA, Fofonjka A, Smirnov S, Milinkovitch MC (2017). A living mesoscopic cellular automaton made of skin scales. Nature 544(7649):173-179.",
+        "doi": "10.1038/nature22031"
+      },
+      {
+        "id": "kondo1995",
+        "citation": "Kondo S, Asai R (1995). A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus. Nature 376(6543):765-768.",
+        "doi": "10.1038/376765a0"
+      },
+      {
+        "id": "fofonjka2021",
+        "citation": "Fofonjka A, Milinkovitch MC (2021). Reaction-diffusion in a growing 3D domain of skin scales generates a discrete cellular automaton. Nature Communications 12:2433.",
+        "doi": "10.1038/s41467-021-22525-1"
+      },
+      {
+        "id": "zakany2023",
+        "citation": "Zakany S, Milinkovitch MC (2023). Simple Reaction-Diffusion Modeling Predicts Inconspicuous Neighborhood-Dependent Color Subclustering of Lizard Scales. Physical Review X 13(4):041011.",
+        "doi": "10.1103/PhysRevX.13.041011"
+      }
+    ],
+    "specimens": {
+      "timon_lepidus_dorsal": {
+        "file": "datasets/ocellated_lizard_ca/timon_lepidus_specimen.jpg",
+        "sha256": "bc8e149849e6729d3eb9d4b6507daf6ad440ac50d97546ad4ef29db79c9b91cf",
+        "species": "Timon lepidus (Adult ocellated / jeweled lizard showing bimodal green and black hexagonal dorsal skin scales arranged in labyrinthine chains)",
+        "author": "Danelu (Wikimedia Commons)",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Timon_Lepidus_danelu.jpg",
+        "dorsal_roi_xyxy": [120, 180, 320, 360],
+        "head_roi_xyxy": [320, 90, 480, 210],
+        "pattern_type": "discrete_hexagonal_scale_labyrinth_green_and_black"
+      }
+    },
+    "scout_manifest": {
+      "file": "datasets/ocellated_lizard_ca/scout_manifest.json",
+      "sha256": "e5bca2d8766b49e70b149cad4bf068d8b93192157b57de770973193cc36cab2c"
+    }
+  },
+  "scale_border_reaction_diffusion_model": {
+    "section": "Manukyan et al. (2017) Nature 544:173-179, Figs. 2-4 & Methods Eqs. (1)-(8)",
+    "governing_pde": {
+      "u_eq": "du/dt = F(u, v) - gamma_u * u + div(D_u(x) * grad(u)),  F(u, v) = clip(c_u * u + c_v * v + c_0, 0, F_max)",
+      "v_eq": "dv/dt = G(u, v) - gamma_v * v + div(D_v(x) * grad(v)),  G(u, v) = clip(d_u * u + d_v * v + d_0, 0, G_max)",
+      "scale_border_diffusivity": "D_s(x) = D_s,interior inside hexagonal scale cores |x - x_i| < R_scale; D_s(x) = P * D_s,interior on inter-scale borders",
+      "boundary_condition": "Periodic or zero-flux Neumann boundary conditions on hexagonal scale lattice"
+    },
+    "canonical_parameters": {
+      "P_border_reduction": 0.17,
+      "D_u_interior": 1.0,
+      "D_v_interior": 20.0,
+      "diffusivity_ratio_d": 20.0,
+      "c_u": 0.60,
+      "c_v": -0.75,
+      "c_0": 0.12,
+      "gamma_u": 0.30,
+      "d_u": 0.80,
+      "d_v": 0.0,
+      "d_0": 0.0,
+      "gamma_v": 0.45,
+      "F_max": 1.20,
+      "G_max": 1.50,
+      "target_green_fraction": 0.44,
+      "scale_bimodality_ashman_D_min": 2.5
+    }
+  },
+  "hexagonal_outer_totalistic_ca": {
+    "section": "Manukyan et al. (2017) Nature 544:173-179, Figs. 3-4 (Mesoscopic Cellular Automaton Reduction)",
+    "lattice_geometry": "2D 6-regular hexagonal grid of N_rows x N_cols skin scales with 6 first-nearest neighbors per interior scale",
+    "transition_probabilities_juvenile_to_adult": {
+      "description": "Empirical & theoretical outer-totalistic state-flip probabilities p(S_i -> 1 - S_i | n_green) per developmental step as a function of green neighbor count n_green in {0..6}",
+      "p_green_to_black_by_n_green": [0.52, 0.34, 0.18, 0.01, 0.10, 0.48, 0.82],
+      "p_black_to_green_by_n_green": [0.76, 0.50, 0.18, 0.05, 0.01, 0.005, 0.002],
+      "labyrinth_fixed_point_n_green": 3
+    },
+    "adult_neighbor_histogram_targets": {
+      "n_green_values": [0, 1, 2, 3, 4, 5, 6],
+      "green_scale_neighbor_hist_ref": [0.015, 0.095, 0.330, 0.375, 0.145, 0.035, 0.005],
+      "black_scale_neighbor_hist_ref": [0.020, 0.105, 0.285, 0.365, 0.175, 0.042, 0.008],
+      "green_scale_mean_n_green_ref": 2.665,
+      "black_scale_mean_n_green_ref": 2.728,
+      "black_scale_mean_n_black_ref": 3.272,
+      "modal_n_green_for_green_scales": 3,
+      "modal_n_black_for_black_scales": 3
+    },
+    "border_reduction_P_regimes": [
+      {
+        "regime_id": "insulated_decoupled_scales",
+        "P": 0.0,
+        "predicted_pattern": "frozen_random_juvenile_noise",
+        "description": "Zero inter-scale diffusivity (P=0): scales cannot exchange morphogens across borders; no labyrinthine correlation forms"
+      },
+      {
+        "regime_id": "strong_border_thinning_ca",
+        "P": 0.08,
+        "predicted_pattern": "sharp_discrete_scale_automaton",
+        "description": "Strong border constriction (P=0.08): ultra-high intra-scale uniformity and discrete scale-by-scale switching"
+      },
+      {
+        "regime_id": "timon_lepidus_physiological",
+        "P": 0.17,
+        "predicted_pattern": "canonical_labyrinthine_scale_automaton",
+        "description": "Physiological Timon lepidus border thickness ratio (P=0.17): monochromatic scales with neighbor histogram peaking at n_green=3"
+      },
+      {
+        "regime_id": "moderate_border_thinning",
+        "P": 0.45,
+        "predicted_pattern": "partially_discretized_turing_labyrinth",
+        "description": "Moderate border constriction (P=0.45): scales remain mostly uniform but occasional intra-scale gradients appear"
+      },
+      {
+        "regime_id": "homogeneous_continuum_skin",
+        "P": 1.0,
+        "predicted_pattern": "smooth_continuum_turing_waves_cutting_scales",
+        "description": "Unattenuated continuum PDE (P=1.0, no scale border thinning): smooth reaction-diffusion bands cut across scale boundaries, reducing intra-scale color bimodality"
+      }
+    ]
+  },
+  "empirical_specimen_benchmarks": {
+    "timon_lepidus_dorsal": {
+      "expected_segmented_scales_range": [80, 260],
+      "green_scale_fraction_target": 0.44,
+      "green_scale_fraction_tolerance": [0.28, 0.62],
+      "mean_green_neighbors_of_green_target": 2.75,
+      "modal_green_neighbors_target": 3
+    }
+  }
+}

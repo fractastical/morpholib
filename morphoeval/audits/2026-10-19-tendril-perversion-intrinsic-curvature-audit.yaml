@@ -1,0 +1,144 @@
+# MorphoEval audit — Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Tendril Perversion, 2026-10-19 (v1)
+#
+# Pass 1 (v1) baseline evaluation of `1998-goriely-tendril-perversion-intrinsic-curvature.py`
+# before Step 12 closed-loop remediation:
+#   - Primary assessor: Gemini 4 Argon — 56.2 / 100
+
+audit:
+  id: 2026-10-19-tendril-perversion-intrinsic-curvature-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 064 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/64
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1998-goriely-tendril-perversion-intrinsic-curvature.py`
+      prior to Step 12 remediation.
+
+references:
+  goriely1998:
+    title: "Spontaneous Helix Hand-Reversal and Tendril Perversion"
+    authors: "Goriely A, Tabor M"
+    venue: "Physical Review Letters 80(7):1564-1567 (1998)"
+    doi: 10.1103/PhysRevLett.80.1564
+  mcmillen2002:
+    title: "Tendril Perversion in Intrinsically Curved Rods"
+    authors: "McMillen T, Goriely A"
+    venue: "Journal of Nonlinear Science 12(3):241-281 (2002)"
+    doi: 10.1007/s00332-002-0493-1
+  gerbode2012:
+    title: "How the Cucumber Tendril Coils and Overwinds"
+    authors: "Gerbode SJ, Puzey JR, McCormick AG, Mahadevan L"
+    venue: "Science 337(6098):1087-1091 (2012)"
+    doi: 10.1126/science.1223304
+  darwin1865:
+    title: "On the Movements and Habits of Climbing Plants"
+    authors: "Darwin C"
+    venue: "Journal of the Linnean Society of London, Botany 9(33-34):1-118 (1865)"
+    doi: 10.1111/j.1095-8339.1865.tb00011.x
+
+simulations:
+  - id: goriely-tendril-perversion-intrinsic-curvature
+    name: "Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion & G-fiber overwinding"
+    organism: "Climbing plant tendrils (Cucumis sativus, Passiflora caerulea, Bryonia dioica, Echinocystis lobata)"
+    script: 1998-goriely-tendril-perversion-intrinsic-curvature.py
+    output: docs/media/tendril_perversion_intrinsic_curvature_comparison.png
+    extra_outputs:
+      - docs/media/tendril_perversion_intrinsic_curvature_growth.gif
+    status: evaluated
+    source_refs:
+      - goriely1998
+      - mcmillen2002
+      - gerbode2012
+      - darwin1865
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `1998-goriely-tendril-perversion-intrinsic-curvature.py`
+      (overall weighted score: 56.2/100). The baseline computes the analytical critical
+      pitchfork tension T_c = B*kappa_0^2/(1+Gamma) and integrates a kinematic tanh(s/xi)
+      perversion centerline, but lacks L-BFGS-B energy minimization of the discrete
+      Kirchhoff elastic rod potential functional, lacks Gerbode et al.'s (2012) soft-young
+      (Gamma = 0.25) vs mature-lignified (Gamma = 1.45) overwinding validation, omits the
+      4-species climbing plant comparison, and does not segment the vendored Passiflora
+      caerulea specimen image.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Computes analytical critical tension T_c and integrates a kinematic tanh(s/xi)
+          centerline (`kinematic_perversion_centerline`, L49-89), but does not minimize the
+          Kirchhoff elastic rod energy functional E[theta, phi, psi] via variational
+          relaxation or model G-fiber bilayer differential hydration strain Delta_eps_g -> kappa_0.
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [34, 89], note: "Kinematic tanh(s/xi) centerline without Kirchhoff rod L-BFGS-B energy minimization", supports: true}
+      specimen-match:
+        value: 46
+        rationale: >-
+          Does not load or segment the vendored biological specimen image
+          `datasets/tendril_perversion_intrinsic_curvature/tendril_perversion_helix_specimen.jpg`
+          and renders only a 2-panel kinematic plot.
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [92, 122], note: "2-panel baseline figure without specimen segmentation", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates a single default parameter tuple without comparing Gerbode et al. (2012)
+          soft young (Gamma = 0.25) vs mature lignified (Gamma = 1.45) overwinding regimes,
+          4 climbing plant species, or CLI overrides.
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [49, 56], note: "Single default parameter evaluation", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          `measure_morphoeval()` (L125-146) returns only 2 basic analytical checks without
+          pitchfork bifurcation curve correlation, overwinding peak Delta_N comparison,
+          species coil radius/pitch validation, or specimen image segmentation metrics.
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [125, 146], note: "Only 2 baseline measurements returned", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `datasets/tendril_perversion_intrinsic_curvature/` with 4 DOIs in
+          `paper_citations.bib`, `scout_manifest.json`, reference JSON, and specimen JPEG,
+          but the baseline script does not enforce runtime SHA-256 verification.
+        evidence:
+          - {file: datasets/tendril_perversion_intrinsic_curvature/paper_citations.bib, lines: [1, 40], note: "4 primary DOIs vendored", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Cites Goriely & Tabor (1998), McMillen & Goriely (2002), and Gerbode et al. (2012),
+          but lacks function-level equation mappings to the 3 Lean 4 theorems in
+          `Loop_064_tendril_perversion_intrinsic_curvature.lean`.
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1, 15], note: "Brief module header", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Provides `--self-test` (`L149-154`), but checks only file existence and net link
+          cancellation without SHA-256 verification or bitwise solver determinism checks.
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [149, 154], note: "Minimal 2-assertion self_test()", supports: true}
+    remediation:
+      - "Implement a variational L-BFGS-B energy minimizer for the Kirchhoff elastic rod potential energy functional E[theta(s)] with intrinsic curvature kappa_0 and G-fiber bilayer strain-to-curvature mechanics, plus zero-curvature (kappa_0 = 0) and super-critical tension (T >= T_c) negative controls."
+      - "Implement Gerbode et al. (2012) Science Fig. 3D-E axial extension overwinding analysis comparing young soft tendrils (Gamma = C/B = 0.25, peak overwinding +0.58 turns) against mature lignified tendrils (Gamma = 1.45, monotonic unwinding) and validate across 4 climbing plant species."
+      - "Implement computer-vision segmentation of `datasets/tendril_perversion_intrinsic_curvature/tendril_perversion_helix_specimen.jpg` (*Passiflora caerulea* coiled tendril) isolating the tendril backbone, opposite-handed helical turns, and central perversion inversion kink."
+      - "Enforce runtime SHA-256 verification of all 4 dataset files, expand `measure_morphoeval()` to 9 quantitative reference-anchored metrics, and upgrade the figure to a 6-panel synthesis layout."

@@ -1,0 +1,192 @@
+# MorphoEval audit — Farhadifar, Röper, Aigouy, Eaton & Jülicher (2007) Drosophila Wing Epithelial Vertex Model, 2026-10-19 (v2)
+#
+# Pass 2 assessment of `2007-farhadifar-drosophila-wing-vertex-model.py` (v2, 858 lines) after
+# completing Step 12 closed-loop remediation (`2026-10-19-drosophila-wing-vertex-model-loop`).
+
+audit:
+  id: 2026-10-19-drosophila-wing-vertex-model-audit-v2
+  supersedes_audit_id: 2026-10-19-drosophila-wing-vertex-model-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b9976f8
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2007-farhadifar-drosophila-wing-vertex-model.py` after
+      completing the 12-step closed remediation loop (`2026-10-19-drosophila-wing-vertex-model-loop`).
+
+references:
+  farhadifar2007:
+    title: "The influence of cell mechanics, cell-cell interactions, and proliferation on epithelial packing"
+    authors: "Farhadifar R, Röper JC, Aigouy B, Eaton S, Jülicher F"
+    venue: "Current Biology 17(24):2095-2104 (2007)"
+    doi: 10.1016/j.cub.2007.11.049
+  gibson2006:
+    title: "The emergence of geometric order in proliferating metazoan epithelia"
+    authors: "Gibson MC, Patel AB, Nagpal R, Perrimon N"
+    venue: "Nature 442(7106):1038-1041 (2006)"
+    doi: 10.1038/nature05014
+  classen2005:
+    title: "Hexagonal packing of Drosophila wing epithelial cells by the planar cell polarity pathway"
+    authors: "Classen AK, Anderson KI, Marois E, Eaton S"
+    venue: "Developmental Cell 9(6):805-817 (2005)"
+    doi: 10.1016/j.devcel.2005.10.016
+  nagai2001:
+    title: "A dynamic cell model for the formation of epithelial tissues"
+    authors: "Nagai T, Honda H"
+    venue: "Philosophical Magazine B 81(7):699-719 (2001)"
+    doi: 10.1080/13642810108205772
+  lewis1928:
+    title: "The correlation between cell division and the shapes and sizes of prismatic cells in the epidermis of Cucumis"
+    authors: "Lewis FT"
+    venue: "The Anatomical Record 38(3):341-376 (1928)"
+    doi: 10.1002/ar.1090380305
+
+simulations:
+  - id: farhadifar-drosophila-wing-vertex-model
+    name: "Farhadifar et al. (2007) Drosophila wing disc apical vertex model & Lewis's law epithelial packing"
+    organism: "Fruit fly (Drosophila melanogaster) 3rd-instar larval wing imaginal disc & pupal wing epithelium"
+    script: 2007-farhadifar-drosophila-wing-vertex-model.py
+    output: docs/media/drosophila_wing_vertex_model_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_wing_vertex_model_growth.gif
+    status: evaluated
+    source_refs:
+      - farhadifar2007
+      - gibson2006
+      - classen2005
+      - nagai2001
+      - lewis1928
+    claim_boundary:
+      reported_in_source:
+        - "Farhadifar, Röper, Aigouy, Eaton & Jülicher (2007) Current Biology Eqs. 1-2 & Fig. 2A: apical epithelial vertex energy functional E({r_i}) = sum (K/2)(A_alpha - A^(0))^2 + sum Lambda_{ij} l_{ij} + sum (Gamma/2) L_alpha^2 parameterized by (Lambda_bar, Gamma_bar), partitioning ground states into Case I (rigid hexagonal, canonical wing disc Lambda_bar=0.12, Gamma_bar=0.04), Case II (soft network), and Case III (cell collapse)."
+        - "Farhadifar et al. (2007) Fig. 3-4, Gibson et al. (2006) Nature & Classen et al. (2005) Dev. Cell: proliferating 3rd-instar Drosophila wing disc exhibits P(6) approx 0.455 (mu_2 = 0.765) and obeys Lewis's Law <A_n>/<A> = (n-2)/4, whereas post-mitotic pupal wing annealing increases P(6) to ~0.78 (mu_2 = 0.250)."
+      reconstructed_in_script:
+        - "2D periodic apical vertex packing and mitotic cleavage simulation across 4 mechanical regimes (Proliferating Wing Disc, Post-Mitotic Pupal Wing, High-Contractility Case I, and Soft Case II), 2D (Lambda_bar, Gamma_bar) phase diagram, UV laser junction ablation recoil curves, and 7-point continuous Lambda_bar sweep."
+        - "Junction-guided Voronoi-watershed segmentation of the apical junction-stained polygonal epithelial micrograph (`drosophila_wing_epithelium_specimen.jpg`, N=37 interior cells, P(6)=0.4865, P(n) correlation r = 0.9913)."
+      transfer_boundary:
+        - "2D apical junctional projection of 3D pseudostratified/columnar wing imaginal disc epithelial cells."
+      does_not_claim:
+        - "Does not model basal extracellular matrix curvature or 3D apico-basal scutoid transitions."
+    summary: >-
+      Pass 2 (v2) evaluation of `2007-farhadifar-drosophila-wing-vertex-model.py` (90.9/100,
+      up from 57.7/100 in Pass 1; +33.2 points). The remediated script implements the full
+      Farhadifar et al. (2007) apical vertex energy functional, classifies the 2D
+      `(Lambda_bar, Gamma_bar)` ground-state phase diagram across Cases I, II, and III,
+      simulates all 4 mechanical/developmental regimes (proliferating larval wing disc
+      `P(6)=0.440, r=0.9820`, annealed pupal wing `P(6)=0.840, mu_2=0.160`, high-contractility
+      cortex `Gamma_bar=0.10`, and soft Case II network `Lambda_bar=-0.25`), models UV laser
+      adherens-junction ablation recoil (`v_0 = 0.22 um/s`), segments the SHA-256-locked
+      apical junction-stained epithelial specimen (`drosophila_wing_epithelium_specimen.jpg`,
+      `N=37` cells, `P(n)` Pearson `r = 0.9913`), and is backed by 4 machine-checked Lean 4
+      theorems in `Loop_043_drosophila_wing_vertex_model.lean`.
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          Faithfully implements the Farhadifar et al. (2007) Eq. (1)-(2) apical vertex energy
+          functional (`compute_single_cell_vertex_energy`, L98-126), analytical ground-state
+          phase classification across Case I, Case II, and Case III (`classify_farhadifar_ground_state`,
+          L129-178), UV laser adherens-junction ablation recoil kinetics (`simulate_laser_ablation_recoil`,
+          L181-209), Lewis's Law (1928) linear area-side scaling (`lewis_law_ratio`, L212-218),
+          and 2D periodic vertex packing across proliferating larval, annealed pupal,
+          high-contractility, and soft Case II regimes (`simulate_vertex_regime`, L258-404).
+          Backed by 4 machine-checked Lean 4 theorems (0 sorrys).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [98, 209], note: "Farhadifar et al. (2007) Eq. 1-2 vertex energy, Case I/II/III phase diagram classifier, and UV laser ablation recoil model", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [258, 404], note: "2D periodic vertex packing & mitotic cleavage simulator across all 4 regimes", supports: true}
+          - {file: morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean, lines: [19, 124], note: "4 machine-checked Lean 4 theorems for vertex energy equilibrium, Lewis's Law, Euler 3-valent conservation, and P(n) disorder reduction", supports: true}
+      specimen-match:
+        value: 89
+        rationale: >-
+          Vendors and SHA-256-verifies the apical junction-stained polygonal epithelial
+          monolayer micrograph (`datasets/drosophila_wing_vertex_model/drosophila_wing_epithelium_specimen.jpg`,
+          CC BY-SA 4.0), segments `N=37` contiguous interior epithelial cells via junction-guided
+          centroidal Voronoi-watershed tessellation (`segment_epithelial_specimen`, L441-551),
+          and matches the Farhadifar et al. (2007) empirical wing disc polygon distribution
+          `P(n)` across `n=4..9` with Pearson `r = 0.9913` (`RMSE = 0.0235`, `P(6) = 0.4865`
+          vs `0.455` reference, Panel A5 & B2).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [441, 551], note: "Junction-guided Voronoi-watershed segmentation of apical epithelial specimen (N=37 cells, r=0.9913)", supports: true}
+          - {file: docs/media/drosophila_wing_vertex_model_comparison.png, lines: [0, 0], note: "10-panel synthesis figure showing segmented epithelial specimen overlay (Panel A5) and P(n)/Lewis's Law comparisons (Panels B2-B3)", supports: true}
+      parameter-expressivity:
+        value: 89
+        rationale: >-
+          Maps the complete 2D `(Lambda_bar, Gamma_bar)` ground-state phase diagram across
+          Cases I, II, and III (Panel B1), simulates 4 distinct regimes (Panels A1-A4),
+          executes a 7-point continuous parameter sweep across `Lambda_bar` in `[-0.30, +0.20]`
+          spanning the soft-to-rigid transition (`run_lambda_bar_sweep`, L407-434, Panel B5),
+          and exposes full CLI flags (`--lambda-bar`, `--gamma-bar`, `--steps`, `--seed`,
+          `--self-test`, L800-845).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [407, 434], note: "7-point continuous Lambda_bar sweep across Case II and Case I regimes", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [800, 845], note: "Full CLI parameter interface wired into run_all_regimes_and_render", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Computes 8 quantitative morphometrics in `measure_morphoeval()` (L705-765),
+          including proliferating wing disc `P(6) = 0.440` (vs `0.455` ref, `P(n)` Pearson
+          `r = 0.9820`), post-mitotic pupal wing `P(6) = 0.840` (vs `0.780` ref), topological
+          disorder reduction ratio `mu_2(pupal)/mu_2(wing) = 0.2581 < 0.5`, Lewis's Law
+          correlation `r = 0.9994` (`RMSE = 0.0686`), Euler mean coordination `<n> = 5.96`,
+          segmented specimen `P(n)` correlation `r = 0.9913`, and UV laser ablation initial
+          recoil velocity `v_0 = 0.220 um/s`.
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [370, 404], note: "Computation of P(n), second central moment mu_2, area CV, and Lewis's Law Pearson r & RMSE", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [705, 765], note: "8 quantitative morphometric validations in measure_morphoeval()", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/drosophila_wing_vertex_model/` with
+          `drosophila_wing_vertex_model_reference.json`, `drosophila_wing_epithelium_specimen.jpg`,
+          `paper_citations.bib` (5 DOIs: Farhadifar et al. 2007, Gibson et al. 2006, Classen et al.
+          2005, Nagai & Honda 2001, Lewis 1928), `scout_manifest.json`, and `README.md`, with
+          runtime SHA-256 verification (`verify_reference_dataset`, L76-91).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [76, 91], note: "Runtime SHA-256 verification of reference dataset and epithelial specimen micrograph", supports: true}
+          - {file: datasets/drosophila_wing_vertex_model/drosophila_wing_vertex_model_reference.json, lines: [1, 173], note: "Vendored Farhadifar et al. (2007), Gibson et al. (2006), Classen et al. (2005), and Lewis (1928) reference dataset", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Module and function docstrings map every equation to Farhadifar et al. (2007)
+          Current Biology Eqs. 1-2 & Figs. 2-4, Gibson et al. (2006), Classen et al. (2005),
+          Lewis (1928), and the 4 Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean`.
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1, 38], note: "Module docstring mapping equations to primary literature DOIs and Lean 4 declarations", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic RNG (`seed=2007`), fast execution (<6s full render, <1s `--self-test`),
+          8-check `self_test()` suite (L768-797) verifying SHA-256 integrity, Lean 4 energy
+          equilibrium parity, Case I/II/III phase classification, Lewis's Law monotonicity,
+          larval vs. pupal packing order, specimen segmentation correlation, and two-run
+          bitwise determinism (`np.array_equal`).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [768, 797], note: "8-check self_test() suite including SHA-256 check and two-run bitwise determinism", supports: true}
+    remediation:
+      - "Couple the 2D apical vertex network to an explicit planar cell polarity (PCP) Frizzled/Strabismus edge-asymmetry tensor on individual bonds to model anisotropic wing-blade elongation during pupal hinge contraction."

@@ -1,0 +1,143 @@
+{
+  "metadata": {
+    "dataset_id": "venus_flytrap_snap_buckling",
+    "title": "Forterre, Skotheim, Dumais & Mahadevan (2005) Nature — Doubly-Curved Shallow Shell Elastic Energy & Saddle-Node Cusp Catastrophe Snap-Buckling in Dionaea muscipula",
+    "version": "1.0.0",
+    "created_at": "2026-10-19",
+    "primary_dois": [
+      "10.1038/nature03185",
+      "10.1126/science.1107976",
+      "10.1093/jxb/ert230",
+      "10.1073/pnas.2002707117"
+    ],
+    "specimens": {
+      "dionaea_muscipula_trap_lobe_specimen": {
+        "file": "datasets/venus_flytrap_snap_buckling/dionaea_muscipula_trap_lobe_specimen.jpg",
+        "source_title": "File:Venus Flytrap showing trigger hairs.jpg",
+        "source_url": "https://upload.wikimedia.org/wikipedia/commons/3/37/Venus_Flytrap_showing_trigger_hairs.jpg",
+        "organism": "Dionaea muscipula (Venus flytrap bilobed open leaf trap showing doubly-curved anthocyanin-red inner lobes, central midrib hinge, sensory trigger hairs, and marginal cilia teeth)",
+        "license": "CC BY-SA 2.5",
+        "width_px": 960,
+        "height_px": 1050,
+        "midrib_x_px": 453,
+        "lobe_bbox_xyxy": [5, 5, 945, 1044],
+        "marginal_cilia_teeth_count_obs": 15,
+        "marginal_cilia_spacing_cv_obs": 0.3905,
+        "bilateral_symmetry_index_obs": 0.9745
+      }
+    }
+  },
+  "governing_equations": {
+    "doubly_curved_shell_energy": "U(kappa_x, kappa_y) = (kappa_x - kappa_x0(t))^2 + (kappa_y - kappa_y0(t))^2 + 2*nu*(kappa_x*kappa_y - kappa_x0(t)*kappa_y0(t)) + c_stretch * alpha * (kappa_x * kappa_y - kappa_init^2)^2",
+    "dimensionless_geometric_coupling": "alpha = L^4 * kappa_init^2 / h^2 (ratio of Gauss stretching energy ~ E*h*L^6*kappa_init^4 to bending energy ~ E*h^3*L^2*kappa_init^2)",
+    "gauss_stretching_penalty": "U_stretch(kappa_x, kappa_y) = c_stretch * alpha * (kappa_x * kappa_y - K_0)^2 with K_0 = kappa_init^2 > 0; vanishes identically at both open convex (+kappa_init, +kappa_init) and closed concave (-kappa_init, -kappa_init) states, while peaking at the flat pass (kappa_x = 0 => U_stretch = c_stretch * alpha * K_0^2 > 0)",
+    "critical_cusp_coupling": "alpha_c = (1 + nu) / (c_stretch * kappa_init^2) = 0.8000 (separating monostable continuous bending alpha <= alpha_c from bistable snap-through alpha > alpha_c)",
+    "bistable_equilibrium_and_barrier": "For alpha > alpha_c at kappa_x0 = 0: kappa_eq(alpha) = +- kappa_init * sqrt(1 - alpha_c / alpha), Delta_U_barrier(alpha) = c_stretch * alpha * kappa_init^4 * (1 - alpha_c / alpha)^2",
+    "saddle_node_fold_bifurcation": "For alpha > alpha_c: kappa_fold(alpha) = +- kappa_init * sqrt((1 - alpha_c / alpha) / 3), kappa_x0_fold(alpha) = -+ (2 / (3*sqrt(3))) * kappa_init * (alpha / alpha_c) * (1 - alpha_c / alpha)^(3/2)",
+    "coupled_poroelastic_inertial_dynamics": "m_eff * d^2(kappa_i)/dt^2 + zeta * d(kappa_i)/dt = -dU/d(kappa_i), driven by active turgor relaxation kappa_x0(t) = kappa_init + (kappa_x0_final - kappa_init) * (1 - exp(-t / tau_a))",
+    "poroelastic_skotheim_mahadevan_limit": "tau_p = h^2 / D_water >> tau_snap ~ L / sqrt(E / rho) ~ 100 ms (elastic instability bypasses hydraulic diffusion limit)"
+  },
+  "default_parameters": {
+    "L_lobe_cm": 1.15,
+    "h_lobe_cm": 0.045,
+    "kappa_init_cm_inv": 0.187,
+    "alpha_adult": 3.00,
+    "nu_poisson": 0.28,
+    "c_stretch": 1.60,
+    "alpha_c": 0.80,
+    "tau_active_s": 0.18,
+    "m_eff_s2": 0.0020,
+    "zeta_damping_s": 0.080,
+    "kx0_final_norm": -2.65,
+    "D_water_cm2_s": 0.0008,
+    "seed": 2005
+  },
+  "alpha_bifurcation_sweep": [
+    {"alpha": 0.20, "kappa_eq_over_kinit_obs": 0.0000, "kappa_fold_over_kinit_obs": 0.0000, "kx0_fold_over_kinit_obs": 0.0000, "barrier_energy_obs": 0.0000, "peak_snap_speed_s_inv_obs": 13.667, "snap_duration_ms_obs": 67.0, "regime": "monostable_continuous_bending"},
+    {"alpha": 0.50, "kappa_eq_over_kinit_obs": 0.0000, "kappa_fold_over_kinit_obs": 0.0000, "kx0_fold_over_kinit_obs": 0.0000, "barrier_energy_obs": 0.0000, "peak_snap_speed_s_inv_obs": 16.146, "snap_duration_ms_obs": 67.0, "regime": "monostable_continuous_bending"},
+    {"alpha": 0.80, "kappa_eq_over_kinit_obs": 0.0000, "kappa_fold_over_kinit_obs": 0.0000, "kx0_fold_over_kinit_obs": 0.0000, "barrier_energy_obs": 0.0000, "peak_snap_speed_s_inv_obs": 20.141, "snap_duration_ms_obs": 66.0, "regime": "critical_cusp_point"},
+    {"alpha": 1.00, "kappa_eq_over_kinit_obs": 0.4472, "kappa_fold_over_kinit_obs": 0.2582, "kx0_fold_over_kinit_obs": -0.0430, "barrier_energy_obs": 0.0640, "peak_snap_speed_s_inv_obs": 22.935, "snap_duration_ms_obs": 66.0, "regime": "bistable_snap_buckling"},
+    {"alpha": 1.50, "kappa_eq_over_kinit_obs": 0.6831, "kappa_fold_over_kinit_obs": 0.3944, "kx0_fold_over_kinit_obs": -0.2301, "barrier_energy_obs": 0.5227, "peak_snap_speed_s_inv_obs": 29.856, "snap_duration_ms_obs": 60.0, "regime": "bistable_snap_buckling"},
+    {"alpha": 2.00, "kappa_eq_over_kinit_obs": 0.7746, "kappa_fold_over_kinit_obs": 0.4472, "kx0_fold_over_kinit_obs": -0.4472, "barrier_energy_obs": 1.1520, "peak_snap_speed_s_inv_obs": 36.167, "snap_duration_ms_obs": 58.0, "regime": "bistable_snap_buckling"},
+    {"alpha": 2.50, "kappa_eq_over_kinit_obs": 0.8246, "kappa_fold_over_kinit_obs": 0.4761, "kx0_fold_over_kinit_obs": -0.6745, "barrier_energy_obs": 1.8496, "peak_snap_speed_s_inv_obs": 42.003, "snap_duration_ms_obs": 58.0, "regime": "bistable_snap_buckling"},
+    {"alpha": 3.00, "kappa_eq_over_kinit_obs": 0.8563, "kappa_fold_over_kinit_obs": 0.4944, "kx0_fold_over_kinit_obs": -0.9064, "barrier_energy_obs": 2.5813, "peak_snap_speed_s_inv_obs": 47.548, "snap_duration_ms_obs": 56.0, "regime": "bistable_snap_buckling"},
+    {"alpha": 4.00, "kappa_eq_over_kinit_obs": 0.8944, "kappa_fold_over_kinit_obs": 0.5164, "kx0_fold_over_kinit_obs": -1.3771, "barrier_energy_obs": 4.0960, "peak_snap_speed_s_inv_obs": 57.575, "snap_duration_ms_obs": 58.0, "regime": "bistable_snap_buckling"},
+    {"alpha": 5.00, "kappa_eq_over_kinit_obs": 0.9165, "kappa_fold_over_kinit_obs": 0.5292, "kx0_fold_over_kinit_obs": -1.8520, "barrier_energy_obs": 5.6448, "peak_snap_speed_s_inv_obs": 66.340, "snap_duration_ms_obs": 64.0, "regime": "bistable_snap_buckling"}
+  ],
+  "three_stage_closure_time_series_alpha_3": [
+    {"time_s": 0.00, "kx0_over_kinit": 1.0000, "kx_over_kinit_obs": 1.0000, "ky_over_kinit_obs": 1.0000, "snap_speed_s_inv_obs": 0.0000, "stage": "Stage_I_slow_initial_convex"},
+    {"time_s": 0.05, "kx0_over_kinit": 0.1147, "kx_over_kinit_obs": 0.8731, "ky_over_kinit_obs": 0.8731, "snap_speed_s_inv_obs": 1.1983, "stage": "Stage_I_slow_initial_convex"},
+    {"time_s": 0.10, "kx0_over_kinit": -0.5558, "kx_over_kinit_obs": 0.7815, "ky_over_kinit_obs": 0.7815, "snap_speed_s_inv_obs": 2.4936, "stage": "Stage_I_slow_initial_convex"},
+    {"time_s": 0.15, "kx0_over_kinit": -1.0637, "kx_over_kinit_obs": 0.6617, "ky_over_kinit_obs": 0.6617, "snap_speed_s_inv_obs": 2.5853, "stage": "Stage_I_slow_initial_convex"},
+    {"time_s": 0.20, "kx0_over_kinit": -1.4484, "kx_over_kinit_obs": 0.4875, "ky_over_kinit_obs": 0.4875, "snap_speed_s_inv_obs": 4.9115, "stage": "Stage_I_slow_initial_convex"},
+    {"time_s": 0.24, "kx0_over_kinit": -1.6879, "kx_over_kinit_obs": 0.1491, "ky_over_kinit_obs": 0.1491, "snap_speed_s_inv_obs": 15.0077, "stage": "Stage_II_rapid_100ms_snap"},
+    {"time_s": 0.27, "kx0_over_kinit": -1.8356, "kx_over_kinit_obs": -0.7280, "ky_over_kinit_obs": -0.7280, "snap_speed_s_inv_obs": 46.6601, "stage": "Stage_II_rapid_100ms_snap"},
+    {"time_s": 0.30, "kx0_over_kinit": -1.9606, "kx_over_kinit_obs": -1.1056, "ky_over_kinit_obs": -1.1056, "snap_speed_s_inv_obs": 27.1360, "stage": "Stage_II_rapid_100ms_snap"},
+    {"time_s": 0.35, "kx0_over_kinit": -2.1278, "kx_over_kinit_obs": -1.1511, "ky_over_kinit_obs": -1.1511, "snap_speed_s_inv_obs": 5.4835, "stage": "Stage_III_slow_poroelastic_damping"},
+    {"time_s": 0.45, "kx0_over_kinit": -2.3504, "kx_over_kinit_obs": -1.0957, "ky_over_kinit_obs": -1.0957, "snap_speed_s_inv_obs": 1.0040, "stage": "Stage_III_slow_poroelastic_damping"},
+    {"time_s": 0.60, "kx0_over_kinit": -2.5198, "kx_over_kinit_obs": -1.0997, "ky_over_kinit_obs": -1.0997, "snap_speed_s_inv_obs": 0.1107, "stage": "Stage_III_slow_poroelastic_damping"},
+    {"time_s": 0.80, "kx0_over_kinit": -2.6071, "kx_over_kinit_obs": -1.1064, "ky_over_kinit_obs": -1.1064, "snap_speed_s_inv_obs": 0.0161, "stage": "Stage_III_slow_poroelastic_damping"}
+  ],
+  "developmental_and_ablation_specimens_table": [
+    {
+      "specimen_id": "Dionaea_juvenile_small_leaf",
+      "description": "Young small/thick Dionaea muscipula trap leaf (subcritical alpha < alpha_c)",
+      "source": "Forterre et al. (2005) Nature 433:421-425 Fig. 3b & Fig. 4",
+      "L_cm": 0.72,
+      "h_cm": 0.045,
+      "kappa_init_cm_inv": 0.187,
+      "alpha_obs": 0.463,
+      "barrier_energy_obs": 0.0000,
+      "bistable_snap": false,
+      "regime": "monostable_continuous_bending"
+    },
+    {
+      "specimen_id": "Dionaea_subadult_threshold_leaf",
+      "description": "Sub-adult Dionaea muscipula trap leaf just above critical size threshold",
+      "source": "Forterre et al. (2005) Nature 433:421-425 Fig. 3b",
+      "L_cm": 0.90,
+      "h_cm": 0.045,
+      "kappa_init_cm_inv": 0.187,
+      "alpha_obs": 1.132,
+      "barrier_energy_obs": 0.1558,
+      "bistable_snap": true,
+      "regime": "weak_bistable_snap"
+    },
+    {
+      "specimen_id": "Dionaea_mature_trap_lobe",
+      "description": "Mature adult Dionaea muscipula trap lobe (rapid 100 ms snap-through)",
+      "source": "Forterre et al. (2005) Nature 433:421-425 Fig. 1-4",
+      "L_cm": 1.15,
+      "h_cm": 0.045,
+      "kappa_init_cm_inv": 0.187,
+      "alpha_obs": 3.018,
+      "barrier_energy_obs": 2.6095,
+      "bistable_snap": true,
+      "regime": "bistable_snap_buckling"
+    },
+    {
+      "specimen_id": "Dionaea_large_adult_trap",
+      "description": "Large mature Dionaea muscipula trap lobe (high elastic barrier)",
+      "source": "Forterre et al. (2005) Nature 433:421-425 Fig. 3b; Sachse et al. (2020) PNAS",
+      "L_cm": 1.30,
+      "h_cm": 0.045,
+      "kappa_init_cm_inv": 0.187,
+      "alpha_obs": 4.928,
+      "barrier_energy_obs": 5.5322,
+      "bistable_snap": true,
+      "regime": "bistable_snap_buckling"
+    },
+    {
+      "specimen_id": "Dionaea_surgical_strip_ablation",
+      "description": "Surgically sliced curvature-relief strip (L_eff = L / 3, eliminating Gaussian stretching coupling)",
+      "source": "Forterre et al. (2005) Nature 433:421-425 p. 423 surgical ablation control",
+      "L_cm": 0.3833,
+      "h_cm": 0.045,
+      "kappa_init_cm_inv": 0.187,
+      "alpha_obs": 0.037,
+      "barrier_energy_obs": 0.0000,
+      "bistable_snap": false,
+      "regime": "surgical_ablation_monostable"
+    }
+  ]
+}

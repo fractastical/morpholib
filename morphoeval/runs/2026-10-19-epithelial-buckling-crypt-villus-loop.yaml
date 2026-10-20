@@ -1,0 +1,377 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-epithelial-buckling-crypt-villus-loop
+  target_simulation: shyer-intestinal-villi-buckling
+  paper: 'Hannezo, Prost & Joanny (2011) PRL / Shyer et al. (2013) Science — Instabilities
+    of monolayered epithelia: smooth muscle constraint drives sequential buckling
+    from longitudinal ridges to zigzags and intestinal villi'
+  created_at: '2026-10-20T00:36:09.940Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: e93f00e
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 595.05
+  wall_time_min: 9.92
+  tier_a_wall_s: 274.406
+  tier_b_wall_s: 320.644
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  input_tokens: 1198
+  output_tokens: 248940
+  subagent_tokens: 0
+  total_llm_tokens: 250138
+  artifact_tokens: 29222
+  tier_a_llm_tokens: 117413
+  tier_b_llm_tokens: 132725
+  effective_tokens_per_s: 420.4
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:36:28.226Z'
+  ended_at: '2026-10-20T00:36:28.302Z'
+  duration_s: 0.077
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 734
+    subagent_tokens: 0
+    total_llm_tokens: 734
+    artifact_tokens: 734
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/epithelial_buckling_crypt_villus/scout_manifest.json
+    bytes: 2572
+    sha256: 1e6e1bbc98fb4873f689cabb6239bb50c72278659a96a215c02cc80b2d879477
+    tokens: 734
+  commands: []
+  notes: Scouted Shyer et al. (2013) Science 342:212-218 and Hannezo, Prost & Joanny
+    (2011) PRL 107:078104 mucosal buckling into ridges, zigzags, and villi
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:37:28.274Z'
+  ended_at: '2026-10-20T00:37:53.408Z'
+  duration_s: 25.134
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 6804
+    subagent_tokens: 0
+    total_llm_tokens: 6804
+    artifact_tokens: 1309
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/epithelial_buckling_crypt_villus/README.md
+    bytes: 4669
+    sha256: b5d81d122a3931b7b3706e1f572ea2fcedd39261d550a7b6a97e052036c35658
+    tokens: 1309
+  commands: []
+  notes: Extracted Hannezo et al. (2011) PRL & Shyer et al. (2013) Science Föppl-von
+    Kármán mucosal buckling equations and FK506 smooth-muscle ablation tables
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:37:53.482Z'
+  ended_at: '2026-10-20T00:39:05.641Z'
+  duration_s: 72.159
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 188
+    output_tokens: 50361
+    subagent_tokens: 0
+    total_llm_tokens: 50549
+    artifact_tokens: 3497
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/epithelial_buckling_crypt_villus/epithelial_buckling_crypt_villus_reference.json
+    bytes: 11388
+    sha256: 1887bf2160034e33b8698606ccad8695ee77a4be459c0e87f4f684166da218ea
+    tokens: 3497
+  commands: []
+  notes: Vendored Wikimedia Commons CC0 intestinal villi H&E histology specimen and
+    locked SHA-256 reference dataset
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:39:05.724Z'
+  ended_at: '2026-10-20T00:41:05.634Z'
+  duration_s: 119.91
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 188
+    output_tokens: 42995
+    subagent_tokens: 0
+    total_llm_tokens: 43183
+    artifact_tokens: 1543
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/math_kg_loops/shyer-intestinal-villi-buckling.yaml
+    bytes: 5481
+    sha256: 46093de80f8332a56ba7ef12bf6a8fffec8cf8fbd4301faec67db64a9fed682a
+    tokens: 1543
+  commands: []
+  notes: Proved 3 Lean 4 theorems for Hannezo-Shyer mucosal wavenumber stationarity,
+    sequential smooth-muscle FK506 arrest hierarchy, and hexagonal villi triad closure
+    (0 sorrys)
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:41:05.741Z'
+  ended_at: '2026-10-20T00:42:01.951Z'
+  duration_s: 56.21
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 16079
+    subagent_tokens: 0
+    total_llm_tokens: 16079
+    artifact_tokens: 3049
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 2013-shyer-intestinal-villi-buckling.py
+    bytes: 10954
+    sha256: 1e1d2954770663b354cb1b66969755945cffbadb26c7bd02a6c4a6bbd047f969
+    tokens: 3049
+  commands: []
+  notes: Wrote Pass 1 (v1) baseline script 2013-shyer-intestinal-villi-buckling.py
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:42:02.037Z'
+  ended_at: '2026-10-20T00:42:02.953Z'
+  duration_s: 0.916
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 64
+    subagent_tokens: 0
+    total_llm_tokens: 64
+    artifact_tokens: 64
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: docs/media/epithelial_buckling_crypt_villus_growth.gif
+    bytes: 189760
+    sha256: 851b043da82c9642c152c97e55c307193f9b8100ea2281445261237e2d4f97db
+    tokens: 64
+  commands: []
+  notes: Rendered Pass 1 comparison PNG and growth GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:42:42.753Z'
+  ended_at: '2026-10-20T00:42:57.990Z'
+  duration_s: 15.237
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 188
+    output_tokens: 9770
+    subagent_tokens: 0
+    total_llm_tokens: 9958
+    artifact_tokens: 2974
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-epithelial-buckling-crypt-villus-audit.yaml
+    bytes: 11519
+    sha256: 4b37e16ab5adde3b360594c5e2920d8983d8481899bf8de623481a2ae5438371
+    tokens: 2974
+  commands: []
+  notes: Pass 1 audit (55.8/100) identifying 4 concrete remediation targets
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:42:58.068Z'
+  ended_at: '2026-10-20T00:42:58.509Z'
+  duration_s: 0.442
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 872
+    subagent_tokens: 0
+    total_llm_tokens: 872
+    artifact_tokens: 872
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-epithelial-buckling-crypt-villus-audit.measurements.yaml
+    bytes: 2700
+    sha256: 9bd3ab29dc9a9674d2dd66af2931b84195d26f88c68c64cc2b5894d5c4f94d4b
+    tokens: 872
+  commands: []
+  notes: Measured Pass 1 outputs and sidecar morphometrics
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:42:58.582Z'
+  ended_at: '2026-10-20T00:42:58.871Z'
+  duration_s: 0.289
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 11517
+    subagent_tokens: 0
+    total_llm_tokens: 11517
+    artifact_tokens: 11517
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-epithelial-buckling-crypt-villus-audit/morphoeval_2026-10-19-epithelial-buckling-crypt-villus-audit.ttl
+    bytes: 39361
+    sha256: 6de6749deba1c9cc7d11e312bc0d6d58370d95d681b239c9303511861eaa41ed
+    tokens: 11517
+  commands: []
+  notes: Built Pass 1 ProbKnow-conformant nanopublications
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:42:58.947Z'
+  ended_at: '2026-10-20T00:43:07.965Z'
+  duration_s: 9.018
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2168
+    subagent_tokens: 0
+    total_llm_tokens: 2168
+    artifact_tokens: 663
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-epithelial-buckling-crypt-villus-audit/published.json
+    bytes: 1934
+    sha256: 39c512427de7acdda44bec2dfb391a45c667115731452051dfb7e98e0588f25d
+    tokens: 663
+  commands: []
+  notes: Signed and verified all 10 Pass 1 nanopublications
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:43:08.043Z'
+  ended_at: '2026-10-20T00:43:08.128Z'
+  duration_s: 0.085
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2341
+    subagent_tokens: 0
+    total_llm_tokens: 2341
+    artifact_tokens: 2341
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-epithelial-buckling-crypt-villus-audit/REPORT.md
+    bytes: 8729
+    sha256: d48416216d5aedc922a22a3772ddab6cabf5665275bb8dcd3407ce7ffca1d7e4
+    tokens: 2341
+  commands: []
+  notes: Synthesized Pass 1 REPORT.md
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:43:08.204Z'
+  ended_at: '2026-10-20T00:48:03.777Z'
+  duration_s: 295.573
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 634
+    output_tokens: 105235
+    subagent_tokens: 0
+    total_llm_tokens: 105869
+    artifact_tokens: 659
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-epithelial-buckling-crypt-villus-audit-v2/published.json
+    bytes: 1934
+    sha256: ff4ccad7ac1abd732e37c572bd4e1627a4ea373c9592b5cba23024a37eba3d32
+    tokens: 659
+  commands: []
+  notes: 'Remediating all 4 Pass 1 audit findings in 2013-shyer-intestinal-villi-buckling.py
+    (v2); Completed Pass 2 remediation: 2D L-BFGS-B Föppl-von Kármán mucosal energy
+    minimizer across smooth/ridges/zigzags/hexagonal villi, 12-point 3-species collapse
+    (r=0.9996), 5 FK506/surgical ablation controls, histology specimen Delaunay segmentation
+    (Z=5.55, CV=0.244), and superseding signed nanopubs (score 55.8 -> 93.1)'

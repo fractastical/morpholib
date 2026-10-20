@@ -1,0 +1,172 @@
+# MorphoEval audit — Economou et al. (2012) Nature Genetics Mammalian Palate Rugae Growth-Zone Turing Morphogenesis, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2012-economou-palate-ruguga-turing.py` (295 lines)
+# prior to Step 12 remediation in `2026-10-19-palate-ruguga-turing-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.2 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `simulate_1d_palatal_transect` (L88-145) integrates only a static 1D fixed-length
+#      domain L=29.0 and lacks the 2D growing palatal shelf reaction-diffusion PDE with
+#      a localized anterior-posterior growth zone immediately anterior to pioneer ruga 8
+#      generating the sequential intercalation order `8 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 7b`
+#      (Economou et al. 2012 Fig. 1a-d; Pantalacci et al. 2008 BMC Dev. Biol. 8:116) and
+#      lacks the equal-diffusion (D_A = D_H = 0.2) negative control.
+#   2. Evaluates only the wild-type baseline in 1D and omits the surgical incision and
+#      pharmacological/genetic perturbation suite of Economou et al. (2012) Figs. 2-4:
+#      coronal surgical cut across the ruga-8 growth zone (causing ruga bifurcation/spots),
+#      sagittal surgical cut (preserving parallel stripe orientation), cyclopamine SHH
+#      inhibition (broadened/merged rugae), exogenous FGF10 bead / Spry2-/-;Spry4+/-
+#      hyperactive FGF signaling (high-density fragmented rugae), and equal-diffusion control.
+#   3. The vendored biological specimen `datasets/palate_ruguga_turing/palate_rugae_specimen.jpg`
+#      (mammalian hard palate transverse rugae specimen, CC BY-SA 3.0) is never loaded,
+#      segmented, or compared in `palate_ruguga_turing_comparison.png`.
+#   4. Runtime SHA-256 verification of the 4 files in `datasets/palate_ruguga_turing/` and
+#      CLI parameter overrides (`--a11`, `--a12`, `--a21`, `--a22`, `--D-ratio`, `--growth-rate`, `--seed`)
+#      are missing.
+
+audit:
+  id: 2026-10-19-palate-ruguga-turing-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 008 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/8
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 45d4150
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2012-economou-palate-ruguga-turing.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-palate-ruguga-turing-loop`.
+
+references:
+  economou2012palate:
+    title: "Periodic stripe formation by a Turing mechanism operating at growth zones in the mammalian palate"
+    authors: "Economou AD, Ohazama A, Porntaveetus T, Sharpe PT, Kondo S, Basson MA, Gritli-Linde A, Cobourne MT, Green JBA"
+    venue: "Nature Genetics 44(3):348-351 (2012)"
+    doi: 10.1038/ng.1090
+  pantalacci2008rugae:
+    title: "Patterning of palatal rugae through sequential addition reveals an anterior/posterior boundary in palatal development"
+    authors: "Pantalacci S, Prochazka J, Martin A, Sterba O, Peterka M, Laudet V"
+    venue: "BMC Developmental Biology 8:116 (2008)"
+    doi: 10.1186/1471-213X-8-116
+  welsh2009tbx1:
+    title: "Signaling integration in the rugae growth zone directs anteroposterior palatal outgrowth"
+    authors: "Welsh IC, O'Brien TP"
+    venue: "Developmental Biology 336(1):64-75 (2009)"
+    doi: 10.1016/j.ydbio.2009.09.028
+
+simulations:
+  - id: economou-palate-ruguga-turing
+    name: "Economou et al. (2012) FGF10/FGF7-SHH activator-inhibitor Turing stripe mechanism at mammalian palatal growth zones"
+    organism: "Mammalian secondary hard palate (Mus musculus E12.0-E15.5 & Equus caballus Rugae palatinae)"
+    script: 2012-economou-palate-ruguga-turing.py
+    output: docs/media/palate_ruguga_turing_comparison.png
+    extra_outputs:
+      - docs/media/palate_ruguga_turing_growth.gif
+    status: evaluated
+    source_refs:
+      - economou2012palate
+      - pantalacci2008rugae
+      - welsh2009tbx1
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2012-economou-palate-ruguga-turing.py`
+      (overall weighted score: 56.2/100). The v1 script constructs the 2-component
+      FGF-SHH activator-inhibitor reaction Jacobian J_0, evaluates the Turing dispersion
+      relation Re(sigma(q)), and integrates a static 1D domain producing 9 in-phase
+      FGF and SHH peaks (r_AH > 0.95), but lacks a 2D growing palatal shelf PDE with a
+      localized ruga-8 anterior growth zone driving sequential `8 -> 1..7b` stripe
+      intercalation, omits the coronal vs sagittal surgical cuts and cyclopamine/FGF10-bead
+      perturbations, and does not segment the vendored mammalian hard palate rugae specimen.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Implements the 2x2 FGF-SHH activator-inhibitor Jacobian J_0 (L36-43), dispersion
+          curve Re(sigma(q)) (L46-85), and 1D reaction-diffusion solver (L88-145), backed
+          by 3 Lean 4 theorems in `Loop_008_palate_ruguga_turing.lean`. However, it integrates
+          only a static fixed-length 1D domain without modeling 2D anteroposterior growth-zone
+          elongation anterior to ruga 8 (`8 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 7b`) or the
+          equal-diffusion (D_A = D_H) negative control.
+        evidence:
+          - {file: 2012-economou-palate-ruguga-turing.py, lines: [36, 85], note: "2x2 FGF-SHH reaction Jacobian J_0 and wavenumber dispersion curve Re(sigma(q))", supports: true}
+          - {file: 2012-economou-palate-ruguga-turing.py, lines: [88, 145], note: "Static 1D fixed-length solver without 2D ruga-8 growth-zone sequential intercalation or equal-diffusion negative control", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/palate_ruguga_turing/palate_rugae_specimen.jpg` is vendored
+          on disk, the v1 script never loads, segments, or displays the mammalian hard
+          palate transverse rugae specimen image.
+        evidence:
+          - {file: 2012-economou-palate-ruguga-turing.py, lines: [148, 210], note: "4-panel v1 plot never loads or segments palate_rugae_specimen.jpg", supports: false}
+      parameter-expressivity:
+        value: 47
+        rationale: >-
+          Simulates only the wild-type 1D parameter set (L88-145) and plots tabular
+          elongation values without simulating the 9-stage sequential growth-zone
+          intercalation trajectory or the 6 surgical and pharmacological perturbation
+          conditions (coronal cut across ruga-8 growth zone causing bifurcation/spots,
+          sagittal cut preserving parallel stripes, cyclopamine SHH blockade, exogenous
+          FGF10 bead / Spry2/4 hyperactivation, and equal-diffusion control), and exposes
+          no CLI parameter overrides (L275-290).
+        evidence:
+          - {file: 2012-economou-palate-ruguga-turing.py, lines: [275, 290], note: "CLI exposes only --self-test and --skip-gif without kinetic, diffusion, or surgical parameter overrides", supports: false}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          `measure_morphoeval()` (L234-267) returns only 3 baseline metrics (lambda_c,
+          r(FGF, SHH), and 1D wild-type rugae count) without evaluating the 9-stage
+          sequential growth-zone intercalation regression (Pearson r, p-value, RMSE),
+          coronal vs sagittal cut stripe anisotropy / bifurcation index, cyclopamine /
+          FGF10 perturbation counts, or computer-vision segmentation of left and right
+          palatal shelf rugae in the biological specimen.
+        evidence:
+          - {file: 2012-economou-palate-ruguga-turing.py, lines: [234, 267], note: "Only 3 baseline metrics returned in measure_morphoeval() without surgical, pharmacological, or specimen CV metrics", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Loads `datasets/palate_ruguga_turing/palate_ruguga_turing_reference.json` and
+          cites Economou et al. (2012) `10.1038/ng.1090` (L1-11), but does not perform
+          runtime SHA-256 verification of the 4 dataset files.
+        evidence:
+          - {file: 2012-economou-palate-ruguga-turing.py, lines: [32, 33], note: "Loads REF_JSON without runtime SHA-256 cryptographic verification", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions compute J_0, Re(sigma(q)), and 1D reaction-diffusion dynamics (L36-145),
+          but lack explicit equation-level docstrings cross-referencing Economou et al.
+          (2012) Figs. 1-4, Pantalacci et al. (2008), Welsh & O'Brien (2009), and the 3
+          Lean 4 theorems in `Loop_008_palate_ruguga_turing.lean`.
+        evidence:
+          - {file: 2012-economou-palate-ruguga-turing.py, lines: [36, 145], note: "Brief docstrings without explicit paper figure/equation or Lean 4 theorem mappings", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Provides `--self-test` and `--skip-gif` flags (L275-290), but `self_test()` runs
+          only 3 basic assertions without verifying SHA-256 dataset integrity, sequential
+          growth-zone intercalation (`8 -> 1..7b`), coronal vs sagittal surgical cut
+          phenotypes, cyclopamine/FGF10 perturbations, equal-diffusion negative control,
+          specimen segmentation, or two-run bitwise determinism.
+        evidence:
+          - {file: 2012-economou-palate-ruguga-turing.py, lines: [270, 278], note: "Minimal 3-check self_test() without determinism, surgical/drug perturbation, or specimen verification", supports: false}
+    remediation:
+      - "Implement a 1D & 2D growing palatal shelf reaction-diffusion PDE solver with a localized ruga-8 anterior growth zone that sequentially intercalates rugae in the developmental order `8 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 7b` alongside the equal-diffusion (D_A = D_H = 0.2) negative control."
+      - "Simulate the full 6-condition surgical and pharmacological perturbation suite of Economou et al. (2012) Figs. 2-4: Wild-Type intact palate (9 transverse rugae), Sagittal surgical cut (AP-parallel incision preserving stripe orientation), Coronal surgical cut across the ruga-8 growth zone (releasing SHH inhibition to trigger ruga bifurcation and spots), Cyclopamine SHH blockade (broadened/merged rugae), Exogenous FGF10 bead / Spry2-/-;Spry4+/- FGF hyperactivation (high-density ectopic rugae/repulsion), and Equal-Diffusion negative control (0 rugae)."
+      - "Implement computer-vision DoG ridge segmentation of `datasets/palate_ruguga_turing/palate_rugae_specimen.jpg` across both the left palatal shelf (`[320, 220, 420, 1760]`, 15 rugae) and right palatal shelf (`[500, 220, 600, 1760]`, 16 rugae) to quantify empirical transverse ruga count, inter-ruga AP wavelength spacing, and CV."
+      - "Add runtime SHA-256 verification of all 4 files in `datasets/palate_ruguga_turing/`, expose full CLI parameter overrides (`--a11`, `--a12`, `--a21`, `--a22`, `--D-ratio`, `--growth-rate`, `--seed`), and expand `measure_morphoeval()` to 9 metrics and `self_test()` to 8 comprehensive checks."

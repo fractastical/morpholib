@@ -1,0 +1,365 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-auxin-pin1-phyllotaxis-loop
+  target_simulation: jonsson-auxin-pin1-meristem
+  paper: Smith et al. (2006) PNAS / Jönsson et al. (2006) PNAS — A plausible model
+    of phyllotaxis and auxin-driven PIN1 polarization in the shoot apical meristem
+  created_at: '2026-10-20T00:31:48.693Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: e93f00e
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 37.092
+  wall_time_min: 0.62
+  tier_a_wall_s: 1.059
+  tier_b_wall_s: 36.033
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  input_tokens: 26200
+  output_tokens: 9880
+  subagent_tokens: 1750
+  total_llm_tokens: 37830
+  artifact_tokens: 12138
+  tier_a_llm_tokens: 18710
+  tier_b_llm_tokens: 19120
+  effective_tokens_per_s: 1019.9
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:32:13.377Z'
+  ended_at: '2026-10-20T00:32:13.452Z'
+  duration_s: 0.075
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1950
+    output_tokens: 650
+    subagent_tokens: 0
+    total_llm_tokens: 2600
+    artifact_tokens: 1690
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/auxin_pin1_phyllotaxis/scout_manifest.json
+    bytes: 5779
+    sha256: 2e474ee5544f04f427b8fcf7a6b5389f21cc38fcfd5794f56923e07e50880944
+    tokens: 1690
+  commands: []
+  notes: Scouted Slot 32 Jönsson et al. (2006) PNAS & Smith et al. (2006) PNAS up-the-gradient
+    Auxin-PIN1 phyllotaxis model
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: paper-extractor
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:33:13.726Z'
+  ended_at: '2026-10-20T00:33:13.808Z'
+  duration_s: 0.082
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3200
+    output_tokens: 1180
+    subagent_tokens: 0
+    total_llm_tokens: 4380
+    artifact_tokens: 1865
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/auxin_pin1_phyllotaxis/auxin_pin1_phyllotaxis_reference.json
+    bytes: 6524
+    sha256: 96d4b539eaaf164913396ff1058fe6d7fbadd82c50e048d1a1f057831b762911
+    tokens: 1865
+  commands: []
+  notes: Extracted Smith et al. (2006) PNAS & Jönsson et al. (2006) PNAS up-the-gradient
+    PIN1 polarization law, active vs diffusive auxin transport ODEs, Turing-like instability
+    threshold, 4 phyllotactic modes, and NPA/IAA perturbation benchmarks
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: dataset-curator
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:33:13.881Z'
+  ended_at: '2026-10-20T00:33:13.959Z'
+  duration_s: 0.078
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2150
+    output_tokens: 820
+    subagent_tokens: 0
+    total_llm_tokens: 2970
+    artifact_tokens: 697
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/auxin_pin1_phyllotaxis/README.md
+    bytes: 2341
+    sha256: 0857bbb5a7b914c54b98397df229a5c79d99cbbd6fde1e7d3ef0967eb6597a08
+    tokens: 697
+  commands: []
+  notes: Vendored CC BY-SA 3.0 Aeonium tabuliforme spiral rosette specimen (File:Aeonium
+    tabuliforme 0.jpg, SHA-256 locked) and reference documentation
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: lean-formalizer
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:34:14.723Z'
+  ended_at: '2026-10-20T00:34:14.799Z'
+  duration_s: 0.076
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2900
+    output_tokens: 1080
+    subagent_tokens: 0
+    total_llm_tokens: 3980
+    artifact_tokens: 1657
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/math_kg_loops/jonsson-auxin-pin1-meristem.yaml
+    bytes: 5800
+    sha256: 60e937697157efcbb04a1fc8174ef35f1eea49139a2abecfcf9bd13eff32a1f1
+    tokens: 1657
+  commands: []
+  notes: Proved 3 Lean 4 theorems (0 sorrys) for up-the-gradient PIN1 allocation,
+    intercellular polar+diffusive flux conservation, and Turing-like transport instability
+    / NPA collapse
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:11.439Z'
+  ended_at: '2026-10-20T00:35:12.106Z'
+  duration_s: 0.667
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2350
+    output_tokens: 920
+    subagent_tokens: 0
+    total_llm_tokens: 3270
+    artifact_tokens: 1164
+    method: explicit+BPE
+  artifacts:
+  - file: 2006-jonsson-auxin-pin1-meristem.py
+    bytes: 3760
+    sha256: 83ddbc8f90d9515c873741fdd442570c0139455a4e5c2dd0c6655a2d1f7422a3
+    tokens: 1164
+  commands: []
+  notes: Pass 1 baseline 1D ring Auxin-PIN1 polarization script
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: renderer-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:12.181Z'
+  ended_at: '2026-10-20T00:35:12.261Z'
+  duration_s: 0.081
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1100
+    output_tokens: 410
+    subagent_tokens: 0
+    total_llm_tokens: 1510
+    artifact_tokens: 64
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/auxin_pin1_phyllotaxis_growth.gif
+    bytes: 100396
+    sha256: aac506904f4fd23d0e69624edaabac709349ac732a12594caa69799dc0a2b4c3
+    tokens: 64
+  commands: []
+  notes: Rendered Pass 1 baseline PNG and GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: primary-assessor
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:12.335Z'
+  ended_at: '2026-10-20T00:35:12.416Z'
+  duration_s: 0.081
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3100
+    output_tokens: 1080
+    subagent_tokens: 1750
+    total_llm_tokens: 5930
+    artifact_tokens: 2055
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-auxin-pin1-phyllotaxis-audit.yaml
+    bytes: 8448
+    sha256: a0d7577213367754d89d319ab60c0ca7e218810b4dba5f14fb590001f8972cc1
+    tokens: 2055
+  commands: []
+  notes: Pass 1 audit scored 53.8/100; identified 4 remediation defects
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: morphometrics-engine
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:12.488Z'
+  ended_at: '2026-10-20T00:35:12.925Z'
+  duration_s: 0.438
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1350
+    output_tokens: 480
+    subagent_tokens: 0
+    total_llm_tokens: 1830
+    artifact_tokens: 752
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-auxin-pin1-phyllotaxis-audit.measurements.yaml
+    bytes: 2193
+    sha256: c97877838db111474278a88690f860e953bc7a07eaedd5c91cce9dcc11af417b
+    tokens: 752
+  commands: []
+  notes: Fingerprinted Pass 1 outputs and measurements
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: kg-builder
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:12.997Z'
+  ended_at: '2026-10-20T00:35:25.078Z'
+  duration_s: 12.081
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1450
+    output_tokens: 510
+    subagent_tokens: 0
+    total_llm_tokens: 1960
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands: []
+  notes: Built Pass 1 RDF knowledge graph
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: nanopub-signer
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:25.168Z'
+  ended_at: '2026-10-20T00:35:38.041Z'
+  duration_s: 12.874
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 900
+    output_tokens: 310
+    subagent_tokens: 0
+    total_llm_tokens: 1210
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands: []
+  notes: Signed 10 Pass 1 Trusty URI nanopublications
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: nanopub-publisher
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:38.128Z'
+  ended_at: '2026-10-20T00:35:38.222Z'
+  duration_s: 0.094
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 850
+    output_tokens: 290
+    subagent_tokens: 0
+    total_llm_tokens: 1140
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands: []
+  notes: Verified Pass 1 signed nanopub bundle via dry-run
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: remediator-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:41:27.740Z'
+  ended_at: '2026-10-20T00:41:38.205Z'
+  duration_s: 10.465
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 4900
+    output_tokens: 2150
+    subagent_tokens: 0
+    total_llm_tokens: 7050
+    artifact_tokens: 2194
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-auxin-pin1-phyllotaxis-audit-v2.measurements.yaml
+    bytes: 7730
+    sha256: 2c51b3f3c24fcad36abf8071f9d116b389c9eed8484e4a851addb9c9ea6a23ba
+    tokens: 2194
+  commands: []
+  notes: 'Remediated all 4 Pass 1 defects: 180-cell 2D L1 SAM Auxin-PIN1 ODE solver,
+    Turing-like dispersion + Boltzmann PIN1 verification, 4 phyllotactic mode regimes
+    (Spiral, Distichous, Decussate, Tricussate), NPA/pin1 block + IAA microdroplet
+    rescue, and Aeonium tabuliforme spiral rosette segmentation (Pass 2 score: 92.8/100,
+    quick_gate: 100/100)'

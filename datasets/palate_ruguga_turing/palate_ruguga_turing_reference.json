@@ -1,0 +1,187 @@
+{
+  "metadata": {
+    "dataset_id": "economou-2012-palate-ruguga-turing-v1",
+    "title": "Economou et al. (2012) Nature Genetics 44:348-351, Pantalacci et al. (2008) BMC Dev. Biol. 8:116 & Welsh & O'Brien (2009) Dev. Biol. 336:64-75 Mammalian Palate Rugae Growth-Zone Turing Reference Dataset",
+    "sources": [
+      {
+        "id": "economou2012palate",
+        "citation": "Economou AD, Ohazama A, Porntaveetus T, Sharpe PT, Kondo S, Basson MA, Gritli-Linde A, Cobourne MT, Green JBA (2012). Periodic stripe formation by a Turing mechanism operating at growth zones in the mammalian palate. Nature Genetics 44(3):348-351.",
+        "doi": "10.1038/ng.1090"
+      },
+      {
+        "id": "pantalacci2008rugae",
+        "citation": "Pantalacci S, Prochazka J, Martin A, Sterba O, Peterka M, Laudet V (2008). Patterning of palatal rugae through sequential addition reveals an anterior/posterior boundary in palatal development. BMC Developmental Biology 8:116.",
+        "doi": "10.1186/1471-213X-8-116"
+      },
+      {
+        "id": "welsh2009tbx1",
+        "citation": "Welsh IC, O'Brien TP (2009). Signaling integration in the rugae growth zone directs anteroposterior palatal outgrowth. Developmental Biology 336(1):64-75.",
+        "doi": "10.1016/j.ydbio.2009.09.028"
+      },
+      {
+        "id": "turing1952chemical",
+        "citation": "Turing AM (1952). The chemical basis of morphogenesis. Philosophical Transactions of the Royal Society of London B 237(641):37-72.",
+        "doi": "10.1098/rstb.1952.0012"
+      }
+    ],
+    "specimens": {
+      "palate_rugae_specimen": {
+        "file": "datasets/palate_ruguga_turing/palate_rugae_specimen.jpg",
+        "sha256": "a38f6c053ffe9048674864442edae235fcccdefccd5be07bb3988a42bd8c966a",
+        "width": 945,
+        "height": 2043,
+        "species": "Mammalian hard palate (Palatum durum, Equus caballus) exhibiting bilateral transverse palatal rugae (Rugae palatinae) along the anterior-posterior axis bisected by the median raphe (Raphe palati)",
+        "license": "CC BY-SA 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Palatum_horse.JPG",
+        "roi_box_left_shelf_xyxy": [320, 220, 420, 1760],
+        "roi_box_right_shelf_xyxy": [500, 220, 600, 1760],
+        "expected_left_rugae_count": 15,
+        "expected_right_rugae_count": 16,
+        "expected_mean_spacing_px": 98.21,
+        "expected_cv_spacing": 0.1843,
+        "pattern_type": "bilateral_transverse_palatal_rugae_stripes"
+      },
+      "scout_manifest": {
+        "file": "datasets/palate_ruguga_turing/scout_manifest.json",
+        "sha256": "f0a345a5c9039e78a09740fb1ddc2801323c1ac392f5d503bdcba1e0cdfacaa5"
+      },
+      "paper_citations": {
+        "file": "datasets/palate_ruguga_turing/paper_citations.bib",
+        "sha256": "fd020997fb3c2db04fc18475d44fb03572cf83fc4b4dd17e29d123830ada8ad4"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Economou et al. (2012) Nature Genetics 44:348-351 Figs. 1-4 & Supplementary Note (FGF10/FGF7 Activator + SHH Inhibitor Growth-Zone Turing Model)",
+    "fgf_activator_pde": "dA/dt = (c_1 - mu_A) * A - c_2 * H - A^3 + D_A * Laplacian(A)",
+    "shh_inhibitor_pde": "dH/dt = c_3 * A - mu_H * H + D_H * Laplacian(H)",
+    "reaction_jacobian": "J_0 = [[a_11, -a_12], [a_21, -a_22]] = [[1.6, -2.5], [2.4, -2.0]]",
+    "dispersion_polynomial": "Delta(q^2) = (D_A * q^2 - a_11) * (D_H * q^2 + a_22) + a_12 * a_21",
+    "critical_wavenumber_formula": "q_c^2 = (a_11 * D_H - a_22 * D_A) / (2 * D_A * D_H),  lambda_c = 2 * pi / q_c",
+    "growth_zone_intercalation_law": "Delta_L(t) = v_g * t >= lambda_c => new transverse Shh ruga stripe nucleates in the ruga-8 anterior growth zone",
+    "baseline_parameters": {
+      "a_11": 1.6,
+      "a_12": 2.5,
+      "a_21": 2.4,
+      "a_22": 2.0,
+      "D_A": 0.2,
+      "D_H": 5.0,
+      "D_ratio": 25.0,
+      "tr_J0": -0.4,
+      "det_J0": 2.8,
+      "q_c_squared": 3.8,
+      "q_c": 1.9494,
+      "lambda_c": 3.2232,
+      "delta_at_qc": -2.84,
+      "sigma_max": 0.4227,
+      "palate_final_length_L": 29.0,
+      "wild_type_mouse_rugae_count": 9
+    }
+  },
+  "sequential_ruga_intercalation_timeline": [
+    {"step_order": 1, "embryonic_stage": "E12.0", "ruga_id": "R8", "palate_length_L": 3.22, "cumulative_rugae": 1, "location": "Posterior pioneer boundary ruga (R8)"},
+    {"step_order": 2, "embryonic_stage": "E12.5", "ruga_id": "R1", "palate_length_L": 6.45, "cumulative_rugae": 2, "location": "Anterior-most palatal ruga (R1)"},
+    {"step_order": 3, "embryonic_stage": "E13.0", "ruga_id": "R2", "palate_length_L": 9.67, "cumulative_rugae": 3, "location": "Anterior ruga 2 (posterior to R1)"},
+    {"step_order": 4, "embryonic_stage": "E13.5", "ruga_id": "R3", "palate_length_L": 12.89, "cumulative_rugae": 4, "location": "Mid-palatal ruga 3 (anterior to R8)"},
+    {"step_order": 5, "embryonic_stage": "E13.75", "ruga_id": "R4", "palate_length_L": 16.12, "cumulative_rugae": 5, "location": "Growth zone anterior to R8"},
+    {"step_order": 6, "embryonic_stage": "E14.0", "ruga_id": "R5", "palate_length_L": 19.34, "cumulative_rugae": 6, "location": "Growth zone between R4 and R8"},
+    {"step_order": 7, "embryonic_stage": "E14.5", "ruga_id": "R6", "palate_length_L": 22.56, "cumulative_rugae": 7, "location": "Growth zone between R5 and R8"},
+    {"step_order": 8, "embryonic_stage": "E15.0", "ruga_id": "R7", "palate_length_L": 25.79, "cumulative_rugae": 8, "location": "Growth zone between R6 and R8"},
+    {"step_order": 9, "embryonic_stage": "E15.5", "ruga_id": "R7b", "palate_length_L": 29.01, "cumulative_rugae": 9, "location": "Final intercalated ruga between R7 and R8"}
+  ],
+  "surgical_and_pharmacological_perturbations": {
+    "section": "Economou et al. (2012) Nature Genetics Figs. 2, 3 & 4 (Explant incisions, Cyclopamine SHH blockade, FGF10 bead, Spry2/4 & Equal-Diffusion Control)",
+    "conditions": [
+      {
+        "condition_id": "wild_type_intact_palate",
+        "label": "Wild-Type Intact Palate (8->1..7b)",
+        "a_11": 1.60,
+        "a_12": 2.50,
+        "a_21": 2.40,
+        "a_22": 2.00,
+        "D_A": 0.20,
+        "D_H": 5.00,
+        "incision_mode": "none",
+        "n_rugae_obs": 9.0,
+        "stripe_anisotropy_obs": 0.88,
+        "bifurcation_or_spot_index_obs": 0.05,
+        "fgf_shh_in_phase_corr_obs": 0.96
+      },
+      {
+        "condition_id": "sagittal_cut_parallel_stripes",
+        "label": "Sagittal Cut (AP-Parallel Incision, Preserves Stripes)",
+        "a_11": 1.60,
+        "a_12": 2.50,
+        "a_21": 2.40,
+        "a_22": 2.00,
+        "D_A": 0.20,
+        "D_H": 5.00,
+        "incision_mode": "sagittal",
+        "n_rugae_obs": 9.0,
+        "stripe_anisotropy_obs": 0.85,
+        "bifurcation_or_spot_index_obs": 0.08,
+        "fgf_shh_in_phase_corr_obs": 0.95
+      },
+      {
+        "condition_id": "coronal_cut_bifurcation_spots",
+        "label": "Coronal Cut Across Ruga-8 Growth Zone (Bifurcation / Spots)",
+        "a_11": 1.65,
+        "a_12": 2.50,
+        "a_21": 2.40,
+        "a_22": 2.00,
+        "D_A": 0.20,
+        "D_H": 5.00,
+        "incision_mode": "coronal",
+        "n_rugae_obs": 10.0,
+        "stripe_anisotropy_obs": 0.42,
+        "bifurcation_or_spot_index_obs": 0.68,
+        "fgf_shh_in_phase_corr_obs": 0.94
+      },
+      {
+        "condition_id": "cyclopamine_shh_blockade",
+        "label": "Cyclopamine SHH Inhibition (Broadened/Merged Rugae)",
+        "a_11": 1.60,
+        "a_12": 1.45,
+        "a_21": 1.60,
+        "a_22": 2.00,
+        "D_A": 0.35,
+        "D_H": 5.00,
+        "incision_mode": "none",
+        "n_rugae_obs": 4.0,
+        "stripe_anisotropy_obs": 0.35,
+        "bifurcation_or_spot_index_obs": 0.55,
+        "fgf_shh_in_phase_corr_obs": 0.88
+      },
+      {
+        "condition_id": "spry2_spry4_fgf_hyperactivation",
+        "label": "Spry2-/-;Spry4+/- or Exogenous FGF10 (High-Density Ectopic Rugae)",
+        "a_11": 1.92,
+        "a_12": 2.50,
+        "a_21": 2.40,
+        "a_22": 2.20,
+        "D_A": 0.13,
+        "D_H": 4.20,
+        "incision_mode": "fgf10_bead",
+        "n_rugae_obs": 12.0,
+        "stripe_anisotropy_obs": 0.48,
+        "bifurcation_or_spot_index_obs": 0.62,
+        "fgf_shh_in_phase_corr_obs": 0.95
+      },
+      {
+        "condition_id": "equal_diffusion_ablation_control",
+        "label": "Equal-Diffusion Negative Control (D_A = D_H = 0.20, No Rugae)",
+        "a_11": 1.60,
+        "a_12": 2.50,
+        "a_21": 2.40,
+        "a_22": 2.00,
+        "D_A": 0.20,
+        "D_H": 0.20,
+        "incision_mode": "none",
+        "n_rugae_obs": 0.0,
+        "stripe_anisotropy_obs": 0.0,
+        "bifurcation_or_spot_index_obs": 0.0,
+        "fgf_shh_in_phase_corr_obs": 0.0
+      }
+    ]
+  }
+}

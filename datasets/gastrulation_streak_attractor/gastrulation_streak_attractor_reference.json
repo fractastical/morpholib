@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "dataset_id": "saadaoui-serra-rozbicki-gastrulation-streak-attractor-v1",
+    "title": "Saadaoui et al. (2020) Science, Serra et al. (2023) Nature Methods & Rozbicki et al. (2015) Nature Cell Biology Avian Gastrulation Tensile Ring, Polonaise Twin-Vortex Stokes Flow & Primitive Streak Attractor Reference Dataset",
+    "organism": "Gallus gallus (chick epiblast disc Stage EGK XII to HH3+ primitive streak formation)",
+    "sources": [
+      {
+        "id": "saadaoui2020",
+        "citation": "Saadaoui M, Rocancourt D, Roussel J, Corson F, Gros J (2020). A tensile ring drives tissue flows to shape the gastrulating amniote embryo. Science 367(6476):453-458.",
+        "doi": "10.1126/science.aaw1965"
+      },
+      {
+        "id": "serra2023",
+        "citation": "Serra M, Serrano Nájera G, Chuai M, Plum AM, Santhosh S, Spurlin JW, Saadaoui M, Gros J, Weijer CJ, Mahadevan L (2023). A mechanochemical model recapitulates distinct vertebrate gastrulation modes. Science Advances / Nature Methods Dynamic Morphogenetic Skeleton framework.",
+        "doi": "10.1038/s41592-023-02009-y"
+      },
+      {
+        "id": "rozbicki2015",
+        "citation": "Rozbicki E, Chuai M, Karjalainen AI, Song F, Sang HM, Martin R, Knölker HJ, MacDonald MP, Weijer CJ (2015). Myosin-II-mediated cell shape changes and cell intercalation contribute to primitive streak formation. Nature Cell Biology 17(4):397-408.",
+        "doi": "10.1038/ncb3138"
+      },
+      {
+        "id": "vasiev2010",
+        "citation": "Vasiev B, Balter A, Chaplain M, Glazier JA, Weijer CJ (2010). Modeling gastrulation in the chick embryo: formation of the primitive streak. PLoS ONE 5(5):e10571.",
+        "doi": "10.1371/journal.pone.0010571"
+      }
+    ],
+    "specimens": {
+      "chick_primitive_streak_specimen": {
+        "file": "datasets/gastrulation_streak_attractor/chick_primitive_streak_specimen.jpg",
+        "sha256": "2e25656cfaa35f3d6b30f491170384d41f7d35cc651d88a743baadc9dd816e08",
+        "species": "Gallus gallus whole-mount blastoderm micrographs across HH1 (Koller's sickle crescent), HH2 (condensing midline + Polonaise twin-vortex PIV velocity field), and HH3+ (elongated primitive streak) stained for Wnt8c and Chordin (Vasiev et al. 2010 PLoS ONE 5:e10571 Fig. 1)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Critical_stages_of_the_development_of_the_primitive_streak_in_the_chick_embryo_a.jpg",
+        "panel_a_hh1_roi_yx": [15, 315, 15, 395],
+        "panel_d_hh2_roi_yx": [340, 645, 15, 395],
+        "panel_f_piv_roi_yx": [340, 645, 825, 1210],
+        "panel_g_hh3_roi_yx": [665, 970, 15, 395],
+        "pattern_type": "whole_blastoderm_kollers_sickle_to_primitive_streak_and_polonaise_vortex_flow"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Saadaoui et al. (2020) Science 367:453-458 Eqs. S1-S12, Figs. 1-4; Serra et al. (2023) mechanochemical active nematic model Eqs. 1-6; Rozbicki et al. (2015) Nat. Cell Biol. 17:397-408",
+    "viscous_epiblast_stokes_pde": {
+      "operator": "eta * nabla^2 v + eta_b * nabla(nabla . v) = -nabla . (m * Q) + nabla p_ing",
+      "polonaise_streamfunction": "psi(r, theta) = V_dip * r * (1 - (r/R)^2)^2 * sin(theta), with v_r = (1/r) d_theta psi, v_theta = -d_r psi",
+      "circulation_conservation": "Gamma_L + Gamma_R = int_{y>0} omega dA + int_{y<0} omega dA = 0, omega(x, -y) = -omega(x, y)",
+      "epiblast_radius_R_mm": 1.15,
+      "blastoderm_outer_radius_R_AO_mm": 1.80,
+      "ring_radius_r0_mm": 0.82,
+      "ring_width_sigma_r_mm": 0.14,
+      "bulk_to_shear_viscosity_ratio": 1.6,
+      "grid_n": 64,
+      "description": "2D viscous Stokes balance on the circular epiblast disc of radius R = 1.15 mm (area pellucida bounded by the area opaca margin). A posterior-graded marginal tensile Myosin-II ring m(theta) = m_0 + Delta_m cos(theta) drives tangential contraction at the posterior pole and counter-rotating Polonaise twin vortices across the disc."
+    },
+    "active_nematic_myosin_feedback_pde": {
+      "cable_density_evolution": "Dm/Dt = d_t m + v . nabla m = alpha_m * m * (1 - m / m_sat) - beta_m * (nabla . v) * m",
+      "nematic_director_evolution": "D Q_{ij} / Dt = lambda_E * m * E^{dev}_{ij} + (omega_{ik} Q_{kj} - Q_{ik} omega_{kj}) - gamma_Q * Q_{ij} + D_Q * nabla^2 Q_{ij}",
+      "midline_strain_rate": "E_{xx}(x, 0) = d_x v_x > 0 (AP extension), E_{yy}(x, 0) = d_y v_y < 0 (mediolateral convergence)",
+      "ftle_attractor_ridge": "Lambda_T(x_0) = (1 / (2 T)) * ln(lambda_max(C(x_0, T))), C = (nabla Phi_0^T)^T (nabla Phi_0^T)",
+      "alpha_m_hr_inv": 0.45,
+      "beta_m_ingression": 1.25,
+      "lambda_E_alignment": 1.80,
+      "description": "Strain-rate alignment and self-amplifying mechanical feedback rotate and advect initially tangential posterior Myosin-II cables (Koller's sickle, Q_{yy} > 0, Q_{xx} < 0) into an elongated anteroposterior midline primitive streak ridge (Lambda_T high-FTLE attracting Lagrangian skeleton)."
+    }
+  },
+  "saadaoui_serra_experimental_regimes": {
+    "section": "Saadaoui et al. (2020) Science 367:453-458 Figs. 1-4; Serra et al. (2023) Figs. 2-5; Rozbicki et al. (2015) Nat. Cell Biol. 17:397-408 Figs. 3-6",
+    "duration_hours": 8.0,
+    "regimes": [
+      {
+        "regime_id": "wildtype_hh1_to_hh3_polonaise_streak",
+        "label": "Wild-Type Chick Epiblast (HH1 Posterior Crescent -> HH3 Linear Midline Primitive Streak + Polonaise Twin Vortices)",
+        "m0_base": 0.40,
+        "delta_m_dipole": 0.85,
+        "quadrupole_m2": 0.0,
+        "ingression_beta": 1.0,
+        "rock_activity": 1.0,
+        "empirical_streak_ap_ml_aspect_ratio": 4.25,
+        "empirical_streak_length_mm": 1.18,
+        "empirical_peak_polonaise_speed_um_min": 2.40,
+        "empirical_vortex_circulation_symmetry": 1.00,
+        "empirical_ftle_ridge_anisotropy": 3.85
+      },
+      {
+        "regime_id": "fgf_inhibited_su5402_circular_ring",
+        "label": "FGF Receptor Inhibition (SU5402 / Symmetric Ring Delta_m=0 -> Circular Central Ring Pit, No Linear Streak)",
+        "m0_base": 0.90,
+        "delta_m_dipole": 0.0,
+        "quadrupole_m2": 0.0,
+        "ingression_beta": 0.95,
+        "rock_activity": 1.0,
+        "empirical_streak_ap_ml_aspect_ratio": 1.00,
+        "empirical_streak_length_mm": 0.34,
+        "empirical_peak_polonaise_speed_um_min": 0.72,
+        "empirical_vortex_circulation_symmetry": 1.00,
+        "empirical_ftle_ridge_anisotropy": 1.00
+      },
+      {
+        "regime_id": "ectopic_vg1_wnt_twin_streaks",
+        "label": "Anterior + Posterior Vg1/Wnt Misexpression (Bipolar Marginal Rings -> Twin Opposing Primitive Streaks & 4-Vortex Flow)",
+        "m0_base": 0.45,
+        "delta_m_dipole": 0.15,
+        "quadrupole_m2": 0.82,
+        "ingression_beta": 1.0,
+        "rock_activity": 1.0,
+        "empirical_streak_ap_ml_aspect_ratio": 3.45,
+        "empirical_streak_length_mm": 0.96,
+        "empirical_peak_polonaise_speed_um_min": 2.05,
+        "empirical_vortex_circulation_symmetry": 1.00,
+        "empirical_ftle_ridge_anisotropy": 3.20
+      },
+      {
+        "regime_id": "ingression_blocked_nodal_sb431542",
+        "label": "Mesendoderm Ingression Block (SB431542 / Epiboly Without Apical Ingression Sink beta_m=0 -> Broad Short Crescent)",
+        "m0_base": 0.35,
+        "delta_m_dipole": 0.65,
+        "quadrupole_m2": 0.0,
+        "ingression_beta": 0.0,
+        "rock_activity": 0.85,
+        "empirical_streak_ap_ml_aspect_ratio": 2.15,
+        "empirical_streak_length_mm": 0.68,
+        "empirical_peak_polonaise_speed_um_min": 1.48,
+        "empirical_vortex_circulation_symmetry": 1.00,
+        "empirical_ftle_ridge_anisotropy": 2.05
+      },
+      {
+        "regime_id": "rock_inhibited_y27632_flow_arrest",
+        "label": "ROCK Inhibition (Y-27632 / Blebbistatin Myosin-II Contractility Collapse -> Arrested Polonaise Flow & No Streak)",
+        "m0_base": 0.05,
+        "delta_m_dipole": 0.04,
+        "quadrupole_m2": 0.0,
+        "ingression_beta": 0.05,
+        "rock_activity": 0.05,
+        "empirical_streak_ap_ml_aspect_ratio": 0.42,
+        "empirical_streak_length_mm": 0.18,
+        "empirical_peak_polonaise_speed_um_min": 0.12,
+        "empirical_vortex_circulation_symmetry": 1.00,
+        "empirical_ftle_ridge_anisotropy": 1.05
+      }
+    ]
+  },
+  "specimen_reference_morphometrics": {
+    "hh1_sickle_ap_height_px": 61,
+    "hh1_sickle_ml_width_px": 183,
+    "hh1_sickle_ap_ml_aspect_ratio": 0.3333,
+    "hh2_condensing_ap_ml_aspect_ratio": 0.5235,
+    "hh3_streak_ap_height_px": 135,
+    "hh3_streak_ml_width_px": 81,
+    "hh3_streak_ap_ml_aspect_ratio": 1.6667,
+    "streak_elongation_fold_change_hh3_over_hh1": 5.0000,
+    "area_pellucida_to_opaca_radius_ratio": 0.6406,
+    "biological_ap_to_ao_radius_ratio": 0.6389,
+    "polonaise_piv_bilateral_symmetry_index": 0.9705
+  }
+}

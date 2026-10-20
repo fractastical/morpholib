@@ -1,0 +1,142 @@
+# MorphoEval Pass 1 (v1) Audit — Jönsson et al. (2006) PNAS & Smith et al. (2006) PNAS
+# Up-the-Gradient Auxin-PIN1 Polarized Transport & Phyllotaxis in the Shoot Apical Meristem (Slot 032)
+
+audit:
+  id: 2026-10-19-auxin-pin1-phyllotaxis-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 032 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/32
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0cb0132
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2006-jonsson-auxin-pin1-meristem.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  jonsson2006:
+    title: "An auxin-driven polarized transport model for phyllotaxis"
+    authors: "Jönsson H, Heisler MG, Shapiro BE, Meyerowitz EM, Mjolsness E"
+    venue: "Proceedings of the National Academy of Sciences 103(5):1633-1638 (2006)"
+    doi: 10.1073/pnas.0509839103
+  smith2006:
+    title: "A plausible model of phyllotaxis"
+    authors: "Smith RS, Guyomarc'h S, Mandel T, Reinhardt D, Kuhlemeier C, Prusinkiewicz P"
+    venue: "Proceedings of the National Academy of Sciences 103(5):1301-1306 (2006)"
+    doi: 10.1073/pnas.0510457103
+  reinhardt2003:
+    title: "Regulation of phyllotaxis by polar auxin transport"
+    authors: "Reinhardt D, Pesce ER, Stieger P, Mandel T, Baltensperger K, Bennett M, Traas J, Friml J, Kuhlemeier C"
+    venue: "Nature 426(6964):255-260 (2003)"
+    doi: 10.1038/nature02081
+  heisler2005:
+    title: "Patterns of auxin transport and gene expression during primordium development revealed by live imaging of the Arabidopsis inflorescence meristem"
+    authors: "Heisler MG, Ohno C, Das P, Sieber P, Reddy GV, Long JA, Meyerowitz EM"
+    venue: "Current Biology 15(21):1899-1911 (2005)"
+    doi: 10.1016/j.cub.2005.09.052
+
+simulations:
+  - id: jonsson-auxin-pin1-meristem
+    name: "Jönsson et al. (2006) & Smith et al. (2006) up-the-gradient PIN1 polarization and polar auxin transport model for shoot apical meristem phyllotaxis"
+    organism: "Arabidopsis thaliana & Aeonium tabuliforme (shoot apical meristem L1 epidermis & spiral rosette phyllotaxis)"
+    script: 2006-jonsson-auxin-pin1-meristem.py
+    output: docs/media/auxin_pin1_phyllotaxis_comparison.png
+    extra_outputs:
+      - docs/media/auxin_pin1_phyllotaxis_growth.gif
+    status: evaluated
+    source_refs:
+      - jonsson2006
+      - smith2006
+      - reinhardt2003
+      - heisler2005
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2006-jonsson-auxin-pin1-meristem.py`
+      (weighted score: 53.8/100). The Pass 1 baseline script implements only a 32-cell
+      1D periodic ring without a 2D cellular L1 meristem dome topology, radial growth
+      advection and primordial auxin depletion sinks, dispersion-relation eigenvalue
+      verification, transitions across the 4 phyllotactic regimes (spiral 137.5 deg,
+      distichous 180 deg, decussate 90 deg, tricussate 120 deg), NPA/pin1 pharmacological
+      block and exogenous IAA microdroplet rescue experiments, or segmentation of the
+      vendored Aeonium tabuliforme spiral rosette specimen.
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Implements a minimal 1D periodic ring with Boltzmann PIN1 weights exp(c_1 a_j)
+          and active + diffusive auxin transport (L22-50), but omits the 2D cellular L1
+          shoot apical meristem dome with central zone (CZ) vs peripheral organogenic
+          ring (PZ), radial tissue advection and primordial vascular sink depletion,
+          linearized Turing-like dispersion analysis, and 4-mode phyllotactic transitions.
+        evidence:
+          - {file: 2006-jonsson-auxin-pin1-meristem.py, lines: [22, 50], note: "1D periodic ring ODE only without 2D L1 meristem dome or radial advection", supports: true}
+      specimen-match:
+        value: 45
+        rationale: >-
+          Vendors `datasets/auxin_pin1_phyllotaxis/rosette_phyllotaxis_specimen.jpg`
+          on disk, but Pass 1 neither loads nor segments the Aeonium tabuliforme spiral
+          rosette to compare leaf primordia centroids, divergence angles, or parastichy
+          windings against the simulation.
+        evidence:
+          - {file: 2006-jonsson-auxin-pin1-meristem.py, lines: [75, 102], note: "2-panel 1D ring plot without empirical rosette specimen comparison", supports: false}
+      parameter-expressivity:
+        value: 51
+        rationale: >-
+          Runs a single hardcoded parameter tuple without sweeping the meristem ring-to-spacing
+          ratio Gamma across spiral (137.5 deg), distichous (180 deg), decussate (90 deg),
+          and tricussate (120 deg) phyllotactic modes, or testing NPA polar-transport block
+          and IAA paste rescue.
+        evidence:
+          - {file: 2006-jonsson-auxin-pin1-meristem.py, lines: [22, 31], note: "Single fixed parameter point without CLI overrides or regime sweeps", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          Exposes only 2 static parameter ratios in `measure_morphoeval()` (L53-72)
+          without divergence angle statistics, parastichy counts, PIN1 flux conservation
+          checks, NPA/IAA perturbation metrics, or specimen segmentation validation.
+        evidence:
+          - {file: 2006-jonsson-auxin-pin1-meristem.py, lines: [53, 72], note: "Only 2 baseline analytical parameters without error bars or p-values", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `auxin_pin1_phyllotaxis_reference.json` with
+          verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at runtime.
+        evidence:
+          - {file: datasets/auxin_pin1_phyllotaxis/auxin_pin1_phyllotaxis_reference.json, lines: [1, 120], note: "Reference JSON present on disk but not verified in Pass 1 script", supports: true}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Module header cites Jönsson et al. (2006) and Smith et al. (2006), but lacks
+          explicit equation-to-code-line and Lean 4 theorem mappings.
+        evidence:
+          - {file: 2006-jonsson-auxin-pin1-meristem.py, lines: [1, 15], note: "Minimal docstring without Lean 4 theorem mapping", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Generates PNG and GIF outputs deterministically, but lacks a `--self-test`
+          verification suite, SHA-256 checksum guards, and perturbation controls.
+        evidence:
+          - {file: 2006-jonsson-auxin-pin1-meristem.py, lines: [75, 106], note: "No --self-test flag or automated invariant checks in Pass 1", supports: false}
+    remediation:
+      - "Implement a 2D cellular L1 shoot apical meristem (SAM) dome + peripheral organogenic ring simulator with up-the-gradient Boltzmann PIN1 allocation P_ij = P_i exp(c_1 a_j) / sum_k exp(c_1 a_k), active + diffusive auxin transport, radial growth advection, and vascular sink depletion."
+      - "Implement quantitative transitions across all 4 phyllotactic regimes of Smith et al. (2006) & Jönsson et al. (2006): Spiral Fibonacci (137.5 deg), Distichous alternate (180 deg), Decussate opposite pairs (90 deg), and Tricussate whorled triplets (120 deg), plus linear Turing-like instability dispersion analysis."
+      - "Implement the Reinhardt et al. (2003) / Smith et al. (2006) perturbation experiments: NPA / pin1 polar transport block (T = 0 -> bare pin-formed apex with 0 primordia) and localized exogenous IAA lanolin microdroplet rescue (inducing a single primordium at phi_paste = 60 deg)."
+      - "Segment the vendored Aeonium tabuliforme spiral rosette specimen (`rosette_phyllotaxis_specimen.jpg`) to extract leaf primordia centroids, radial phyllotactic scaling, and Fibonacci parastichy spirals, with full SHA-256 verification and an 8-check `--self-test` suite."

@@ -1,0 +1,102 @@
+{
+  "metadata": {
+    "dataset_id": "meinhardt-2005-echinoderm-pentaradial-symmetry-v1",
+    "title": "Morris (2012) Evol. Dev. 14:313-326, Mooi & David (1998/2008) Extraxial-Axial Theory, Lovén (1874) Ocular/Ambulacral Law, Duboc et al. (2005) Dev. Cell 9:147-158 & Meinhardt (2008) Circular-Ring Activator-Inhibitor Mode m=5 Selection in Echinoderm Metamorphosis",
+    "sources": [
+      {
+        "id": "morris2012",
+        "citation": "Morris VB (2012). Homology and the evolution of echinoderm pentaradiality. Evolution & Development 14(4):313-326.",
+        "doi": "10.1111/j.1525-142X.2012.00552.x"
+      },
+      {
+        "id": "mooidavid1998",
+        "citation": "Mooi R, David B (1998). Evolution Within a Bizarre Phylum: Homologies of the First Echinoderms. American Zoologist 38(6):965-974.",
+        "doi": "10.1093/icb/38.6.965"
+      },
+      {
+        "id": "loven1874",
+        "citation": "Lovén S (1874). Études sur les Échinoïdées. Kongliga Svenska Vetenskaps-Akademiens Handlingar 11(7):1-91.",
+        "doi": "10.5962/bhl.title.46385"
+      },
+      {
+        "id": "duboc2005",
+        "citation": "Duboc V, Röttinger E, Lapraz F, Besnardeau L, Lepage T (2005). Left-right asymmetry in the sea urchin embryo is regulated by Nodal signaling on the right side. Developmental Cell 9(1):147-158.",
+        "doi": "10.1016/j.devcel.2005.05.008"
+      },
+      {
+        "id": "meinhardt2008",
+        "citation": "Meinhardt H (2008). Models of biological pattern formation: from elementary steps to the organization of embryonic axes. Current Topics in Developmental Biology 81:1-63.",
+        "doi": "10.1016/S0070-2153(07)81001-5"
+      }
+    ],
+    "specimens": {
+      "echinoderm_pentaradial_test_specimen": {
+        "file": "datasets/echinoderm_pentaradial_symmetry/echinoderm_pentaradial_test_specimen.jpg",
+        "sha256": "953b2f7e380296278a4a7b9152db50ed9e55d93ff61ddfd3b6b169390df0a399",
+        "width": 720,
+        "height": 505,
+        "species": "Tripneustes gratilla (Linnaeus, 1758) — Camarodont regular echinoid test (aboral view) displaying five pigmented lavender-purple ambulacral rays (I-V) with paired biserial pore-pair/tubercle columns radiating at 72.0 deg intervals from the central periproct/apical system, alternating with five creamy-white interambulacral zones (1-5)",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Tripneustes_gratilla_test.jpg",
+        "periproct_center_px": [348.69, 241.46],
+        "annulus_radii_px": [45.0, 155.0],
+        "reference_ambulacral_rays_count": 5,
+        "reference_detected_ray_angles_deg": [45, 118, 190, 260, 331],
+        "reference_inter_ray_spacings_deg": [73, 72, 70, 71, 74],
+        "reference_mean_angular_spacing_deg": 72.0,
+        "reference_angular_spacing_std_deg": 1.4142,
+        "reference_c5_fundamental_power_fraction": 0.9255,
+        "reference_pentaradial_c5_c10_power_fraction": 0.9425,
+        "reference_a5_over_max_non5_ratio": 6.3041,
+        "pattern_type": "echinoid_pentaradial_c5_ambulacra_with_biserial_c10_overtone"
+      },
+      "scout_manifest": {
+        "file": "datasets/echinoderm_pentaradial_symmetry/scout_manifest.json",
+        "sha256": "0b333ebe2a2ed5246cc828f7d6844de2a10b8a0d11c95720a243cbd9285605ee"
+      },
+      "paper_citations": {
+        "file": "datasets/echinoderm_pentaradial_symmetry/paper_citations.bib",
+        "sha256": "fd436211809ea80d0d039ec1e52e6279bbc1b10ef1a11639f5e73e47a56c2e0d"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Morris (2012) Evol. Dev. 14(4):313-326; Mooi & David (1998) Am. Zool. 38:965-974; Lovén (1874) K. Sven. Vetensk.-Akad. Handl. 11(7):1-91; Duboc et al. (2005) Dev. Cell 9:147-158; Meinhardt (2008) Curr. Top. Dev. Biol. 81:1-63",
+    "hydrocoel_ring_gierer_meinhardt_pde": "da/dt = (D_a / R_ring(t)^2) * d^2a/dtheta^2 + rho_a * (a^2 / h - a) + rho_0 * G_crescent(theta, t),   dh/dt = (D_h / R_ring(t)^2) * d^2h/dtheta^2 + rho_h * (a^2 - h)",
+    "circular_ring_laplacian_eigenvalue_law": "- (1 / R_ring^2) * d^2(cos(m*theta))/dtheta^2 = mu_m * cos(m*theta),   mu_m = k_m^2 = (m / R_ring)^2",
+    "turing_angular_dispersion_relation": "sigma(m; R_ring) = sigma_max - alpha_disp * ((m / R_ring)^2 - k_c^2)^2,   k_c = 2*pi / lambda_c,   m^* = argmax_{m in Z_+} sigma(m; R_ring) = round(2*pi * R_ring / lambda_c)",
+    "pentaradial_m5_window_law": "m^* = 5  (Delta_theta = 360 deg / 5 = 72 deg)  iff  2*pi * R_ring / lambda_c in (4.5, 5.5),   i.e.  R_ring / lambda_c in (0.7162, 0.8754)",
+    "crescent_to_ring_closure_law": "Delta_Theta_open(t) = 2*pi * (1 - gamma_close * (1 - exp(-t / tau_close))),   sequential anterior-to-posterior activation along open crescent generates Lovén sequence (II, IV, I, III, V) = (C, A, D, B, E)",
+    "duboc_nodal_lr_rudiment_law": "N_rudiments = I(Nodal_left == 0) + I(Nodal_right == 0),   N_primary_podia = 5 * N_rudiments in {5 (WT: right Nodal), 10 (Nodal LOF: bilateral twin rudiments 2x5), 0 (Nodal GOF: bilateral Nodal repression)}",
+    "default_parameters": {
+      "R_ring_um": 75.0,
+      "lambda_c_um": 94.2478,
+      "circumference_wavelength_ratio": 5.0,
+      "D_a_um2_per_s": 0.45,
+      "D_h_um2_per_s": 18.0,
+      "rho_a_per_s": 0.08,
+      "rho_h_per_s": 0.20,
+      "rho_0_per_s": 0.002,
+      "tau_close_s": 180.0
+    }
+  },
+  "hydrocoel_ring_mode_selection_table": [
+    {"mode_m": 3, "symmetry_name": "Trimerous (Edrioasteroid / Helicoplacoid-like)", "circumference_over_lambda_c": 3.0, "R_ring_um": 45.0,  "angular_spacing_deg": 120.0, "dispersion_growth_rate": 0.0480, "biological_phenotype": "Hypomorphic small-hydrocoel trimerous variant (3 primary podia at 120 deg)"},
+    {"mode_m": 4, "symmetry_name": "Tetramerous (Teratological 4-rayed urchin)",     "circumference_over_lambda_c": 4.0, "R_ring_um": 60.0,  "angular_spacing_deg": 90.0,  "dispersion_growth_rate": 0.0480, "biological_phenotype": "Sub-threshold hydrocoel ring radius producing 4-rayed tetramerous test (90 deg)"},
+    {"mode_m": 5, "symmetry_name": "Pentaradial Wild-Type (Eleutherozoa Crown Law)", "circumference_over_lambda_c": 5.0, "R_ring_um": 75.0,  "angular_spacing_deg": 72.0,  "dispersion_growth_rate": 0.0480, "biological_phenotype": "Canonical wild-type S. purpuratus / echinoid hydrocoel ring (5 primary podia at 72 deg)"},
+    {"mode_m": 6, "symmetry_name": "Hexamerous (Teratological 6-rayed variant)",     "circumference_over_lambda_c": 6.0, "R_ring_um": 90.0,  "angular_spacing_deg": 60.0,  "dispersion_growth_rate": 0.0480, "biological_phenotype": "Hyper-expanded hydrocoel ring circumference producing 6-rayed hexamerous test (60 deg)"},
+    {"mode_m": 7, "symmetry_name": "Heptamerous (Multi-armed asteroid-like)",        "circumference_over_lambda_c": 7.0, "R_ring_um": 105.0, "angular_spacing_deg": 51.43, "dispersion_growth_rate": 0.0480, "biological_phenotype": "Large-ring supernumerary 7-rayed instability regime (51.43 deg)"}
+  ],
+  "loven_law_ray_sequence_table": [
+    {"initiation_rank": 1, "loven_ray": "II",  "carpenter_ray": "C", "anatomical_sector": "Anterior-right (right somatocoel border)", "ring_angle_deg": 72.0,  "enlarged_peristomial_column": "b", "pair_code": "ba", "b_larger_flag": 1, "initiation_delay_hpf": 0.0},
+    {"initiation_rank": 2, "loven_ray": "IV",  "carpenter_ray": "A", "anatomical_sector": "Anterior-left (oral hood side)",           "ring_angle_deg": 216.0, "enlarged_peristomial_column": "a", "pair_code": "ab", "b_larger_flag": 0, "initiation_delay_hpf": 2.5},
+    {"initiation_rank": 3, "loven_ray": "I",   "carpenter_ray": "D", "anatomical_sector": "Posterior-right",                          "ring_angle_deg": 0.0,   "enlarged_peristomial_column": "b", "pair_code": "ba", "b_larger_flag": 1, "initiation_delay_hpf": 5.0},
+    {"initiation_rank": 4, "loven_ray": "III", "carpenter_ray": "B", "anatomical_sector": "Anterior median (frontal ambulacrum)",     "ring_angle_deg": 144.0, "enlarged_peristomial_column": "a", "pair_code": "ab", "b_larger_flag": 0, "initiation_delay_hpf": 7.5},
+    {"initiation_rank": 5, "loven_ray": "V",   "carpenter_ray": "E", "anatomical_sector": "Posterior-left (hydropore closure tip)",   "ring_angle_deg": 288.0, "enlarged_peristomial_column": "a", "pair_code": "ab", "b_larger_flag": 0, "initiation_delay_hpf": 10.0}
+  ],
+  "nodal_left_right_perturbations": [
+    {"condition_id": "wild_type",          "label": "Wild-Type (Right-side Nodal + BMP2/4 repression of right hydrocoel)", "nodal_left": 0, "nodal_right": 1, "active_hydrocoel_rings": 1, "primary_podia_count": 5,  "symmetry_class": "Single left pentaradial rudiment (1x5 = 5 podia)", "source": "Duboc et al. (2005) Dev. Cell 9:147-158 Fig. 1"},
+    {"condition_id": "nodal_morpholino",   "label": "Nodal Morpholino Knockdown (Loss of right-side repression)",          "nodal_left": 0, "nodal_right": 0, "active_hydrocoel_rings": 2, "primary_podia_count": 10, "symmetry_class": "Bilateral twin pentaradial rudiments (2x5 = 10 podia)", "source": "Duboc et al. (2005) Dev. Cell 9:147-158 Fig. 4"},
+    {"condition_id": "nodal_overexpress",  "label": "Ectopic Bilateral Nodal Overexpression (Activin/Nodal mRNA)",         "nodal_left": 1, "nodal_right": 1, "active_hydrocoel_rings": 0, "primary_podia_count": 0,  "symmetry_class": "Arrested bilateral larva without adult rudiment (0 podia)", "source": "Duboc et al. (2005) Dev. Cell 9:147-158 Fig. 5"}
+  ]
+}

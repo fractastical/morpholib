@@ -1,0 +1,175 @@
+# MorphoEval audit — Menshykau & Iber (2013) Phys. Biol., Zubkov et al. (2015) Bull. Math. Biol. & Watanabe & Costantini (2004) Dev. Biol.
+# Kidney Ureteric Bud GDNF-RET-Wnt11 Turing Branching Morphogenesis, 2026-10-19 (v1)
+#
+# Pass 1 baseline assessment of `2012-menshykau-fgf10-shh-lung-turing.py` (v1, 211 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-kidney-ureteric-bud-gdnf-ret-loop`).
+
+audit:
+  id: 2026-10-19-kidney-ureteric-bud-gdnf-ret-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Loop 054 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (MorphoEval Loop 054 Independent Rubric Check)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/54
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1 baseline) evaluation of `2012-menshykau-fgf10-shh-lung-turing.py`
+      prior to Step 12 remediation in `2026-10-19-kidney-ureteric-bud-gdnf-ret-loop`.
+
+references:
+  menshykau2013:
+    title: "Kidney branching morphogenesis under the control of a ligand-receptor-based Turing mechanism"
+    authors: "Menshykau D, Iber D"
+    venue: "Physical Biology 10(4):046003 (2013)"
+    doi: 10.1088/1478-3975/10/4/046003
+  zubkov2015:
+    title: "A spatially-averaged mathematical model of kidney branching morphogenesis"
+    authors: "Zubkov VS, Combes AN, Little MH, Byrne HM"
+    venue: "Bulletin of Mathematical Biology 77(4):565-595 (2015)"
+    doi: 10.1007/s11538-015-0073-9
+  watanabe2004:
+    title: "Real-time analysis of ureteric bud branching morphogenesis in vitro"
+    authors: "Watanabe T, Costantini F"
+    venue: "Developmental Biology 271(1):98-106 (2004)"
+    doi: 10.1016/j.ydbio.2004.03.025
+  basson2005:
+    title: "Sprouty1 is a critical regulator of GDNF/RET-mediated kidney induction"
+    authors: "Basson MA, Akbulut S, Watson-Karsten J, Licht JD, Martin GR, Costantini F"
+    venue: "Developmental Cell 8(2):229-239 (2005)"
+    doi: 10.1016/j.devcel.2004.12.004
+
+simulations:
+  - id: menshykau-fgf10-shh-lung-turing
+    name: "Menshykau & Iber (2013), Zubkov et al. (2015) & Watanabe & Costantini (2004) kidney ureteric bud GDNF-RET-Wnt11 Turing branching morphogenesis"
+    organism: "Mus musculus (embryonic E11.5-E13.5 mouse metanephric kidney ureteric bud tree & metanephric mesenchyme)"
+    script: 2012-menshykau-fgf10-shh-lung-turing.py
+    output: docs/media/kidney_ureteric_bud_gdnf_ret_comparison.png
+    extra_outputs:
+      - docs/media/kidney_ureteric_bud_gdnf_ret_growth.gif
+    status: evaluated
+    source_refs:
+      - menshykau2013
+      - zubkov2015
+      - watanabe2004
+      - basson2005
+    summary: >-
+      Pass 1 (v1 baseline) evaluation of `2012-menshykau-fgf10-shh-lung-turing.py`
+      (52.4/100). The v1 script computes the homogeneous steady state (R*, G*) =
+      (a + b, b / (a + b)^2) and linearized Turing dispersion curve of the
+      Menshykau & Iber (2013) Schnakenberg-type GDNF-RET reaction-diffusion system,
+      integrates a 1D ampulla arc profile, and draws a purely geometric symmetric
+      binary tree. However, v1 omits dichotomous vs trichotomous tip-splitting mode
+      selection across normalized tip radius R_tip / lambda_c, omits 2D self-avoiding
+      ureteric tree growth driven by local mesenchymal GDNF consumption sinks (-gamma R^2 G),
+      omits Spry1-/- hyper-branching, exogenous GDNF bead supernumerary budding, and
+      Gdnf+/- or PRR^(UB-/-) hypoplasia controls, neither loads nor verifies
+      `datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_bud_gdnf_ret_reference.json`,
+      and performs zero biological specimen segmentation on
+      `datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_tree_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Evaluates the homogeneous steady state (R*, G*), Jacobian entries, and
+          linearized Turing dispersion relation Re(sigma(k)) (L37-94), and runs a
+          1D explicit Euler reaction-diffusion solver on an isolated arc (L97-125).
+          However, the ureteric tree in `build_symmetric_ureteric_tree` (L128-142) is
+          a hardcoded geometric binary recursion rather than a self-avoiding tree
+          coupled to a 2D mesenchymal GDNF diffusion-consumption PDE field; moreover,
+          tip-splitting mode transitions (elongation m=1 vs dichotomous m=2 vs
+          trichotomous m=3 as a function of rho_tip = pi*R_tip/lambda_c) and genetic/bead
+          perturbations (Spry1-/-, Gdnf+/-, exogenous GDNF bead) are absent.
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [37, 94], note: "Homogeneous steady state and linear Turing dispersion curve for GDNF-RET", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [128, 142], note: "Uncoupled geometric binary tree lacking 2D mesenchymal GDNF consumption sink and self-avoidance", supports: false}
+      specimen-match:
+        value: 22
+        rationale: >-
+          Although `datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_tree_specimen.jpg`
+          (E12.5 mouse metanephros GFP ureteric bud branching in wild-type Panel A vs
+          hypoplastic mutant Panel B and pErk1/2 immunofluorescence in Panels D-I) is
+          vendored in the dataset directory, the v1 script never loads, segments, or
+          displays the specimen image or extracts ureteric tip counts and skeleton
+          branch metrics from the microscopy panels.
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [145, 195], note: "3-panel synthetic figure with zero biological specimen image or GFP ureteric tree segmentation", supports: false}
+          - {file: docs/media/kidney_ureteric_bud_gdnf_ret_comparison.png, lines: [0, 0], note: "Pass 1 3-panel plot lacking E12.5 mouse metanephros ureteric bud specimen comparison", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Hardcodes a single wild-type parameter tuple (D_R=0.02, D_G=1.0, a=0.10,
+          b=0.90, gamma=25.0, L29-34) without sweeping tip radius R_tip / lambda_c,
+          reaction scaling gamma, or mesenchymal GDNF production b across the
+          Turing instability morphospace, and exposes only `--self-test` and
+          `--skip-gif` on the CLI (L214-218).
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [29, 34], note: "Single hardcoded parameter set without tip-radius or (a, b, gamma) morphospace sweeps", supports: false}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [214, 224], note: "Minimal CLI lacking --a-ret, --b-gdnf, --gamma, --d-ratio, --generations, --seed overrides", supports: false}
+      morphometric-validation:
+        value: 48
+        rationale: >-
+          `measure_morphoeval()` (L198-209) reports only 3 scalar steady-state values
+          (R_star_wt, G_star_wt, lambda_c_wt) without statistical dispersion metrics
+          (RMSE, Pearson r, CV), without comparison to Watanabe & Costantini (2004)
+          E11.0-E13.5 branching generation tip counts and branch angles, and without
+          perturbation deltas for Spry1-/- hyper-branching, GDNF bead ectopic budding,
+          or Gdnf+/- / PRR^(UB-/-) hypoplasia.
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [198, 209], note: "Only 3 algebraic steady-state scalars without E11.0-E13.5 generation RMSE/r or perturbation controls", supports: false}
+      source-traceability:
+        value: 58
+        rationale: >-
+          Cites Menshykau & Iber (2013) and Watanabe & Costantini (2004) in the module
+          docstring (L5-7), but v1 does not load
+          `datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_bud_gdnf_ret_reference.json`
+          at runtime or verify SHA-256 cryptographic digests of the reference JSON and
+          E12.5 mouse metanephros ureteric bud specimen image.
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [4, 15], note: "Docstring cites primary papers but omits runtime JSON loading and SHA-256 verification", supports: false}
+      code-traceability:
+        value: 64
+        rationale: >-
+          Functions have concise docstrings (L37-130), but do not map code blocks to
+          numbered equations in Menshykau & Iber (2013) Eqs. (1)-(7), Zubkov et al.
+          (2015), Watanabe & Costantini (2004) Table 1, Basson et al. (2005), or the
+          3 machine-checked Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean`.
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [37, 142], note: "Brief docstrings without equation-level or Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Provides `--self-test` and `--skip-gif` flags and deterministic output
+          rendering (L203-224), but `self_test()` checks only 3 steady-state assertions
+          without verifying JSON dataset parity, specimen segmentation, tip-splitting
+          mode transitions, or two-run bitwise determinism.
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [203, 211], note: "3-assertion baseline self_test() without dataset parity or two-run determinism check", supports: true}
+    remediation:
+      - "Implement semi-implicit (IMEX) Schnakenberg GDNF-RET reaction-diffusion solver across ureteric bud ampulla radii R_tip to demonstrate the exact transition from single-peak elongation (rho_tip < 1.5) to canonical dichotomous tip splitting (1.5 <= rho_tip < 2.5, m = 2 lateral R^2*G hotspots with apical cleft) and trichotomous trifurcation (rho_tip >= 2.5, m = 3 hotspots)."
+      - "Implement a 2D self-avoiding ureteric tree branching simulator coupled to a 2D mesenchymal GDNF diffusion-consumption PDE field (where growing tips consume local GDNF via -gamma*R^2*G and steer up-gradient while mutually repelling via GDNF sink depletion), and simulate all 4 experimental regimes: Wild-Type control, Gdnf+/- or PRR^(UB-/-) hypoplasia, Spry1-/- hyper-branching (Basson et al. 2005), and exogenous GDNF-soaked bead ectopic budding."
+      - "Load and SHA-256-verify `datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_bud_gdnf_ret_reference.json` and `kidney_ureteric_tree_specimen.jpg` at runtime, segment the E12.5 mouse metanephros whole-mount GFP ureteric bud trees in Panel A (wild-type control, 12 tips) and Panel B (hypoplastic mutant, 6 tips) plus pErk1/2 immunofluorescence intensity in Panels D-I, and extract medial-axis skeleton length, terminal tip counts, and WT-to-mutant tip ratio."
+      - "Expand `--self-test`, CLI parameter flags (`--a-ret`, `--b-gdnf`, `--gamma`, `--d-ratio`, `--generations`, `--seed`), and `measure_morphoeval()` to report >= 8 quantitative metrics with reference values, dispersion (RMSE, Pearson r, CV), and negative-control ablation deltas."

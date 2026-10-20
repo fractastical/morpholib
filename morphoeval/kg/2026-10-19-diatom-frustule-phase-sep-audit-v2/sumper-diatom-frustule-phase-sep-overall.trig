@@ -1,0 +1,74 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sumper-diatom-frustule-phase-sep> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation — MorphoEval overall 89.3/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 2 (v2) remediated evaluation of `2002-sumper-diatom-frustule-phase-sep.py` (consensus score 89.0/100, up from 51.6/100 in Pass 1). The remediated script implements Lenoci & Camp's (2008) two-stage quenched hierarchical Cahn-Hilliard phase separation (53 Stage-1 foramina at eps_1=1.50 containing 102 nested Stage-2 cribrum sub-pores at eps_2=0.65), analytical spinodal dispersion sigma(k) with an outside-spinodal negative control (phi0=-0.65 -> 0 pores, std_phi=1.93e-3), a 5-point interfacial wavelength sweep (r=0.9865, RMSE=0.95 px), and automated CV segmentation of n=139 primary foramina (d/a=0.690 vs ref 0.6757, |psi_6|=0.764) and n=74 secondary cribrum sub-pores on the SHA-256-locked *Coscinodiscus wailesii* SEM micrograph, backed by 4 machine-checked Lean 4 theorems. Overall 89.3/100 (faithfulness 88.5, reproducibility 91.3); rubric morphoeval 0.1.0; checkpoint commit HEAD; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 92, Morphological realism / specimen match 87, Parameter expressivity 86, Morphometric validation 88, Source and data traceability 93, Code-to-model traceability 91, Reproducibility package 90. Output judged: docs/media/diatom_frustule_phase_sep_comparison.png: rendered output of 2002-sumper-diatom-frustule-phase-sep.py at HEAD, image/png, 876795 B, 2775×1380 px, artifact_sha256 c762c88f7077832bcaba47fc14a16f3307dd4761d93167ff546b6be3fba5cb54 (sha256 c762c88f7077832bcaba47fc14a16f3307dd4761d93167ff546b6be3fba5cb54), spec_fingerprint 42daf8406b78c3205a6436f49e13b3d0bd7cf77c46e21bab32d26f1699bd22a7. Dual provenance: spec_fingerprint: 42daf8406b78c3205a6436f49e13b3d0bd7cf77c46e21bab32d26f1699bd22a7; artifact_sha256: c762c88f7077832bcaba47fc14a16f3307dd4761d93167ff546b6be3fba5cb54; input_dataset_sha256: {datasets/diatom_frustule_phase_sep/coscinodiscus_diatom_specimen.jpg=47aca39b720b67b1..., datasets/diatom_frustule_phase_sep/diatom_frustule_phase_sep_reference.json=b6ffc32e8bdecb23..., datasets/diatom_frustule_phase_sep/scout_manifest.json=0eea5a04552420e8...}. Supersedes audit: 2026-10-19-diatom-frustule-phase-sep-audit." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Couple the 2D Cahn-Hilliard equation to a radially advancing centrifuge-driven silica precipitation front to model radial rib (costae) striation near the Coscinodiscus valve margin.",
+            "remediation needed: Extend the two-stage hierarchical quench to an explicit 3-stage 512x512 grid simulation resolving tertiary cribrella pores simultaneously within a single domain." ;
+        pk:hasScore "0.893"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Pass 2 remediated assessment)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1021/la7022784>,
+            <https://doi.org/10.1063/1.1744102>,
+            <https://doi.org/10.1126/science.1070026>,
+            <https://doi.org/10.1166/jnn.2006.174> .
+    <https://doi.org/10.1021/la7022784> dct:date "2008"^^xsd:gYear ;
+        dct:title "Self-assembly of hierarchical nanostructures in diatom biosilica" .
+    <https://doi.org/10.1063/1.1744102> dct:date "1958"^^xsd:gYear ;
+        dct:title "Free energy of a nonuniform system. I. Interfacial free energy" .
+    <https://doi.org/10.1126/science.1070026> dct:date "2002"^^xsd:gYear ;
+        dct:title "A phase separation model for the nanopatterning of diatom biosilica" .
+    <https://doi.org/10.1166/jnn.2006.174> dct:date "2006"^^xsd:gYear ;
+        dct:title "Pore architecture of diatom frustules: potential nanostructured membranes for molecular and particle separations" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation — MorphoEval overall 89.3/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T23:58:36Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-sumper-diatom-frustule-phase-sep> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,75 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-zajac-convergent-extension-intercalation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-zajac-convergent-extension-intercalation-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-zajac-convergent-extension-intercalation-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Zajac, Jones & Glazier (2000, 2003) / Bertet, Sulak & Lecuit (2004) anisotropic differential adhesion and polarized T1 junctional intercalation in convergent extension — MorphoEval overall 60.7/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 baseline assessment of `2003-zajac-convergent-extension-intercalation.py` (61.2/100). The initial script implements the 64-cell Zajac et al. (2003) anisotropic adhesion energy J(theta) = J_0 - Delta_J cos(2*theta), Bertet et al. (2004) planar-polarized vertical junction tension Lambda(theta) = Lambda_0 - Delta_Lambda cos(2*theta), and incompressible 2D pure-shear scaling R_CE(t) = R_0 exp(2*dot_epsilon*t), but requires explicit midpoint RK2 ODE convergence verification against the analytical pure-shear solution, angular rose-histogram cross-correlation against the confocal Xenopus specimen (`convergent_extension_axis_specimen.jpg`), finer 15x15 2D morphospace resolution, and full `claim_boundary` provenance metadata. Overall 60.7/100 (faithfulness 60.0, reproducibility 62.2); rubric morphoeval 0.1.0; checkpoint commit 317bc3c; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 64, Morphological realism / specimen match 57, Parameter expressivity 61, Morphometric validation 59, Source and data traceability 65, Code-to-model traceability 62, Reproducibility package 60. Output judged: docs/media/convergent_extension_intercalation_comparison.png: rendered output of 2003-zajac-convergent-extension-intercalation.py at 317bc3c, image/png, 766141 B, 2408×1428 px, artifact_sha256 a11c5fb7b4c7f5f6341d299c41a798581da67d2fcb854b952069a39d1810e432 (sha256 a11c5fb7b4c7f5f6341d299c41a798581da67d2fcb854b952069a39d1810e432), spec_fingerprint 70c0d2a81cec84a4a194e326ee3833640573b76865ed3d8f4c5ff14fdbf4448d. Dual provenance: spec_fingerprint: 70c0d2a81cec84a4a194e326ee3833640573b76865ed3d8f4c5ff14fdbf4448d; artifact_sha256: a11c5fb7b4c7f5f6341d299c41a798581da67d2fcb854b952069a39d1810e432; input_dataset_sha256: {datasets/convergent_extension_intercalation/convergent_extension_axis_specimen.jpg=0c2620bce19ad4cf..., datasets/convergent_extension_intercalation/convergent_extension_intercalation_reference.json=5e3d70d1a6711a38..., datasets/convergent_extension_intercalation/scout_manifest.json=66a1e6f4d0f0a745...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add explicit midpoint RK2 ODE integration and analytical convergence verification against R_CE(t) = R_0 exp(2*dot_epsilon_T1*t) (L2 relative error < 1e-6).",
+            "remediation needed: Compute angular rose-histogram profile correlation between the Zajac-Bertet cos(2*theta) / von Mises planar polarity distribution and the empirical Xenopus chordamesoderm rose diagram (Panel b' in `convergent_extension_axis_specimen.jpg`, r > 0.96).",
+            "remediation needed: Upgrade the 2D parameter morphospace grid to 15x15, expand `measure_morphoeval()` to 7 reference-pinned metrics, and add full `claim_boundary` provenance metadata." ;
+        pk:hasScore "0.607"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0022-5193(03)00033-X>,
+            <https://doi.org/10.1038/35011077>,
+            <https://doi.org/10.1038/nature02590>,
+            <https://doi.org/10.1103/PhysRevLett.85.2022> .
+    <https://doi.org/10.1016/S0022-5193(03)00033-X> dct:date "2003"^^xsd:gYear ;
+        dct:title "Simulating convergent extension by way of anisotropic differential adhesion" .
+    <https://doi.org/10.1038/35011077> dct:date "2000"^^xsd:gYear ;
+        dct:title "Dishevelled controls cell polarity during Xenopus gastrulation" .
+    <https://doi.org/10.1038/nature02590> dct:date "2004"^^xsd:gYear ;
+        dct:title "Myosin-dependent junction remodelling controls planar cell intercalation and axis elongation" .
+    <https://doi.org/10.1103/PhysRevLett.85.2022> dct:date "2000"^^xsd:gYear ;
+        dct:title "Model of convergent extension in animal morphogenesis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Zajac, Jones & Glazier (2000, 2003) / Bertet, Sulak & Lecuit (2004) anisotropic differential adhesion and polarized T1 junctional intercalation in convergent extension — MorphoEval overall 60.7/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:52:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-zajac-convergent-extension-intercalation-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-zajac-convergent-extension-intercalation> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

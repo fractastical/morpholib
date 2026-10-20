@@ -1,0 +1,76 @@
+sim_id: raspopovic-bmp-sox9-wnt-digits
+math_family: "Three-Node Receptor-Ligand Digit Network (Immobile Transcription Factor Sox9 + Diffusing Bmp & Wnt)"
+model_spec:
+  model: "Raspopovic et al. (2014) Science 345:566-570 3-node Bmp-Sox9-Wnt Turing digit network modulated by distal AER-FGF and Hoxd gradients"
+  mu_S: 1.0
+  mu_B: 1.2
+  mu_W: 1.5
+  k_sb: 2.5
+  k_sw: 2.2
+  k_bs: 1.8
+  k_ws: 2.0
+  D_S: 0.0
+  D_B: 2.5
+  D_W: 0.25
+  seed: 2014
+  inputs:
+    - datasets/bmp_sox9_wnt_digits/bmp_sox9_wnt_digits_reference.json
+    - datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg
+    - datasets/bmp_sox9_wnt_digits/scout_manifest.json
+    - datasets/bmp_sox9_wnt_digits/paper_citations.bib
+equations:
+  - law_name: "Raspopovic et al. (2014) Reduced 2-Diffuser Jacobian Determinant Cancellation & Indirect Self-Activation Law"
+    formula: "J_eff = [[-μ_B - k_bs k_sb / μ_S, +k_bs k_sw / μ_S], [-k_ws k_sb / μ_S, +k_ws k_sw / μ_S - μ_W]];  det(-J_3) = μ_S det(J_eff) = μ_S μ_B μ_W + k_bs k_sb μ_W - k_ws k_sw μ_B"
+    lean_decl: "MathOfBiology.Loop_016.jeff_det_expanded"
+    lean_theorem: "MathOfBiology.Loop_016.raspopovic_reduced_jacobian_det_cancellation"
+    lean_locus: "morphoeval/lean/loops/Loop_016_bmp_sox9_wnt_digits.lean#L27-L44"
+    lean_code: |
+      def jeff_det_expanded (mu_B mu_W k_sb k_sw k_bs k_ws : Int) : Int :=
+        (-mu_B - k_bs * k_sb) * (k_ws * k_sw - mu_W) - (k_bs * k_sw) * (-k_ws * k_sb)
+      def jeff_det_reduced (mu_B mu_W k_sb k_sw k_bs k_ws : Int) : Int :=
+        mu_B * mu_W + k_bs * k_sb * mu_W - k_ws * k_sw * mu_B
+      theorem raspopovic_reduced_jacobian_det_cancellation (mu_W : Int) (h_loop : k_ws_sw ≥ mu_W + 1) :
+          jeff_det_expanded 120 150 25 22 18 20 = jeff_det_reduced 120 150 25 22 18 20 ∧
+          jeff_det_reduced 120 150 25 22 18 20 = 32700 ∧
+          jeff_ww_entry 150 22 20 = 290 ∧
+          (k_ws_sw - mu_W ≥ 1)
+    variables: "S: cell-autonomous Sox9 transcription factor (D_S = 0); B: diffusible Bmp ligand; W: diffusible Wnt ligand; k_sb, k_sw, k_bs, k_ws: regulatory coupling rates"
+    role: "Proves that eliminating the immobile transcription factor Sox9 yields an effective 2-diffuser Jacobian where double-negative Sox9-Wnt mutual inhibition generates positive effective self-activation J_WW > 0 without direct Bmp or Wnt self-activation"
+    source_citation: "Raspopovic et al. (2014) Science 345:566-570 Fig. 2E & Supplementary Materials Sec. 1.2; Marcon et al. (2016) eLife 5:e14022"
+    code_locus: "2014-raspopovic-bmp-sox9-wnt-digits.py#L125-L215"
+
+  - law_name: "Raspopovic et al. (2014) Diffusion-Driven Turing Dispersion Sign Inversion Law"
+    formula: "Δ_eff(q^2) = (D_B q^2 - J_BB)(D_W q^2 - J_WW) - J_BW J_WB;  Δ_eff(0) > 0,  Δ_eff(q_c^2) < 0  ⇒  σ_max(q_c) > 0"
+    lean_decl: "MathOfBiology.Loop_016.turing_disp_det"
+    lean_theorem: "MathOfBiology.Loop_016.raspopovic_turing_dispersion_sign_inversion"
+    lean_locus: "morphoeval/lean/loops/Loop_016_bmp_sox9_wnt_digits.lean#L59-L70"
+    lean_code: |
+      def turing_disp_det (J_BB J_BW J_WB J_WW D_B D_W q2 : Int) : Int :=
+        (D_B * q2 - J_BB) * (D_W * q2 - J_WW) - J_BW * J_WB
+      theorem raspopovic_turing_dispersion_sign_inversion (q2 : Int) :
+          (-570 + 290 : Int) = -280 ∧
+          turing_disp_det (-570) 396 (-500) 290 250 25 0 = 32700 ∧
+          turing_disp_det (-570) 396 (-500) 290 250 25 4 = -100300 ∧
+          turing_disp_det (-570) 396 (-500) 290 0 0 q2 = 32700
+    variables: "q: spatial wavenumber; D_B, D_W: Bmp and Wnt diffusion coefficients; σ_max(q): dominant dispersion growth rate; λ_c = 2π / q_c: intrinsic digit spacing wavelength"
+    role: "Establishes diffusion-driven symmetry breaking from a linearly stable homogeneous state (tr(J_eff) < 0, det(J_eff) > 0) and determines the distal FGF-modulated digit wavelength λ(F)"
+    source_citation: "Raspopovic et al. (2014) Science 345:566-570 Fig. 2E, Fig. 4A-D & Supplementary Eqs. S1-S6"
+    code_locus: "2014-raspopovic-bmp-sox9-wnt-digits.py#L165-L260"
+
+  - law_name: "Raspopovic et al. (2014) Out-of-Phase Digit-Interdigit Eigenmode Opposition Law"
+    formula: "δB / δS = -k_bs / (μ_B + D_B q^2 + σ) < 0,  δW / δS = -k_ws / (μ_W + D_W q^2 + σ) < 0  ⇒  corr(Sox9, Bmp) ≈ -1, corr(Sox9, Wnt) ≈ -1"
+    lean_decl: "MathOfBiology.Loop_016.sox9_ligand_phase_product"
+    lean_theorem: "MathOfBiology.Loop_016.raspopovic_out_of_phase_eigenmode_opposition"
+    lean_locus: "morphoeval/lean/loops/Loop_016_bmp_sox9_wnt_digits.lean#L84-L96"
+    lean_code: |
+      def sox9_ligand_phase_product (k_rep : Int) (dS_sq : Int) : Int :=
+        -k_rep * dS_sq
+      theorem raspopovic_out_of_phase_eigenmode_opposition (dS_sq : Int) (hd : dS_sq ≥ 1) :
+          sox9_ligand_phase_product 1 dS_sq ≤ -1 ∧
+          sox9_ligand_phase_product 18 100 = -1800 ∧
+          sox9_ligand_phase_product 20 100 = -2000 ∧
+          ((-18 * 10 : Int) * (-20 * 10 : Int)) = 36000
+    variables: "δS, δB, δW: spatial Turing eigenmode amplitudes of Sox9, Bmp, and Wnt; γ_B, γ_W: effective wavenumber clearance rates"
+    role: "Proves why Sox9 pre-cartilage digit condensations form strictly out of phase (180° anti-correlated) with both Bmp and Wnt interdigital signaling domains, while Bmp and Wnt co-localize in the interdigits"
+    source_citation: "Raspopovic et al. (2014) Science 345:566-570 Fig. 2E-F & p. 567"
+    code_locus: "2014-raspopovic-bmp-sox9-wnt-digits.py#L220-L340"

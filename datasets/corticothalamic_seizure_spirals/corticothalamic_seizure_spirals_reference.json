@@ -1,0 +1,131 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "ermentrout-corticothalamic-seizure-spirals",
+  "slot": 89,
+  "title": "Huang et al. (2004, 2010) & Pinto & Ermentrout (2001) Wilson-Cowan / Pinto-Ermentrout Neocortical Spiral Wave Dynamics & Phase Singularity Topology",
+  "primary_papers": [
+    {
+      "citation": "Huang X, Xu W, Liang J, Takagaki K, Gao X, Wu JY (2010) Spiral Waves in Neocortex. Journal of Neuroscience 30(30):10158-10164",
+      "doi": "10.1523/JNEUROSCI.2547-10.2010"
+    },
+    {
+      "citation": "Huang X, Troy WC, Yang Q, Ma H, Laing CR, Schiff SJ, Wu JY (2004) Spiral Waves in Disinhibited Mammalian Neocortex. Journal of Neuroscience 24(44):9897-9902",
+      "doi": "10.1523/JNEUROSCI.2705-04.2004"
+    },
+    {
+      "citation": "Pinto DJ, Ermentrout GB (2001) Spatially Structured Activity in Synaptically Coupled Neuronal Networks: I. Traveling Fronts and Pulses. SIAM Journal on Applied Mathematics 62(1):206-225",
+      "doi": "10.1137/S0036139900346453"
+    },
+    {
+      "citation": "Townsend RG, Solomon SS, Chen SC, Pietersen ANJ, Martin PR, Solomon SG, Gong P (2015) Emergence of Complex Wave Patterns in Primate Cerebral Cortex. Journal of Neuroscience 35(11):4657-4662",
+      "doi": "10.1523/JNEUROSCI.4663-14.2015"
+    }
+  ],
+  "governing_equations": {
+    "pinto_ermentrout_wilson_cowan_pde": "tau_u * du(x,t)/dt = -u + D_u * nabla^2 u + F(w_ee * (K_e * u)(x,t) - g_a * a(x,t) + I_ext),   tau_a * da(x,t)/dt = -a + u",
+    "sigmoidal_firing_rate_and_kernel": "F(z) = 1 / (1 + exp(-beta_f * (z - theta_f))),   K_e(r) = (1 / (2 * pi * sigma_e^2)) * exp(-r^2 / (2 * sigma_e^2))",
+    "hopf_trace_determinant_bifurcation": "Tr(J_0) = (w_ee * F'_0 - 1)/tau_u - 1/tau_a = 0,   Det(J_0) = ((1 - w_ee * F'_0) + g_a * F'_0)/(tau_u * tau_a) > 0",
+    "hilbert_phase_and_topological_winding": "Z(x,t) = (u - u_bar) + i * (a - a_bar) = A(x,t) * exp(i * phi(x,t)),   W = (1 / (2*pi)) * oint_C nabla phi . dl in {-1, 0, +1}",
+    "radial_core_amplitude_reduction": "A(r) = A_inf * tanh(r / r_core),   A(x_core) = 0 at the topological phase singularity (Huang et al. 2010 Fig. 3)",
+    "spiral_dispersion_and_chirality_conservation": "lambda_spiral = c_wave / f_rot,   sum_i W_i = 0 for spiral pairs nucleated from a broken planar wave front"
+  },
+  "canonical_parameters": {
+    "N_grid": 64,
+    "domain_mm": 6.0,
+    "tau_u_ms": 10.0,
+    "tau_a_ms": 35.0,
+    "D_u_mm2_ms": 0.012,
+    "w_ee": 6.4,
+    "g_a": 4.2,
+    "beta_f": 4.0,
+    "theta_f": 0.45,
+    "I_ext": 0.12,
+    "sigma_e_mm": 0.42,
+    "f_rot_hz_ref": 10.5,
+    "c_wave_mm_s_ref": 45.0,
+    "lambda_mm_ref": 4.29,
+    "r_core_mm_ref": 0.55,
+    "seed": 2013
+  },
+  "experimental_regimes": [
+    {
+      "id": "ccw_single_spiral_singularity",
+      "description": "Counterclockwise (W = +1) rotating neocortical spiral wave in partially disinhibited tangential slice (Huang et al. 2004, 2010): 10.5 Hz theta/alpha rotation with sharp phase singularity core amplitude drop A(0) -> 0",
+      "winding_target": 1,
+      "w_ee": 6.4,
+      "g_a": 4.2,
+      "sigma_e_mm": 0.42,
+      "expected_f_rot_hz": 10.5,
+      "expected_c_mm_s": 45.0,
+      "expected_core_amp_ratio": 0.12
+    },
+    {
+      "id": "cw_chiral_mirror_spiral",
+      "description": "Clockwise (W = -1) mirror-chirality rotating spiral wave: identical rotation frequency f_rot and radial core deficit A(r) = A_inf tanh(r/r_core) with opposite topological charge W = -1",
+      "winding_target": -1,
+      "w_ee": 6.4,
+      "g_a": 4.2,
+      "sigma_e_mm": 0.42,
+      "expected_f_rot_hz": 10.5,
+      "expected_c_mm_s": 45.0,
+      "expected_core_amp_ratio": 0.12
+    },
+    {
+      "id": "figure_eight_counter_rotating_dipole",
+      "description": "Broken planar cortical wave front nucleating a counter-rotating chirality-neutral spiral pair (W_+ = +1, W_- = -1, net topological charge sum W_i = 0, Huang et al. 2004 Fig. 4 & Townsend et al. 2015)",
+      "winding_target": 0,
+      "n_singularities": 2,
+      "w_ee": 6.4,
+      "g_a": 4.2,
+      "sigma_e_mm": 0.42,
+      "expected_net_winding": 0,
+      "expected_total_abs_winding": 2
+    },
+    {
+      "id": "expanded_axonal_footprint_fast_spiral",
+      "description": "Pinto & Ermentrout (2001) expanded horizontal excitatory footprint (sigma_e = 0.63 mm, D_u = 0.024 mm^2/ms): increases wave propagation speed c approx 66 mm/s and spiral wavelength lambda = c / f_rot",
+      "winding_target": 1,
+      "w_ee": 6.8,
+      "g_a": 4.2,
+      "sigma_e_mm": 0.63,
+      "expected_f_rot_hz": 10.8,
+      "expected_c_mm_s": 66.0,
+      "expected_lambda_mm": 6.11
+    },
+    {
+      "id": "planar_traveling_wave_no_defect",
+      "description": "Unbroken planar cortical traveling wave front across the 6x6 mm tangential sheet: uniform phase gradient without topological defects (W_total = 0, N_singularities = 0)",
+      "winding_target": 0,
+      "n_singularities": 0,
+      "w_ee": 6.4,
+      "g_a": 4.2,
+      "sigma_e_mm": 0.42,
+      "expected_net_winding": 0,
+      "expected_total_abs_winding": 0
+    },
+    {
+      "id": "cnqx_ampa_blockade_quiescent_control",
+      "description": "Huang et al. (2004, 2010) CNQX / AMPA glutamatergic receptor blockade control (w_ee = 0.8 < w_crit): sub-Hopf trace Tr(J_0) < 0 abolishes self-sustained spiral oscillation and collapses wave amplitude",
+      "winding_target": 0,
+      "n_singularities": 0,
+      "w_ee": 0.8,
+      "g_a": 4.2,
+      "sigma_e_mm": 0.42,
+      "expected_f_rot_hz": 0.0,
+      "expected_amp_rms": 0.0
+    }
+  ],
+  "specimen_provenance": {
+    "file": "datasets/corticothalamic_seizure_spirals/rat_neocortical_tangential_sheet_specimen.jpg",
+    "species": "Rattus norvegicus (tangential section of somatosensory neocortex Layer IV cortical sheet stained with cytochrome oxidase)",
+    "source": "Wikimedia Commons File:RatBarrelFieldCOstain.jpg (tangential neocortical cytochrome oxidase histology micrograph)",
+    "license": "Public domain",
+    "dimensions_px": [2048, 1536],
+    "sha256": "c4fdfb27cd39c842406116f00674c56013f6fc90d872f9995682c7bd47c1e32c"
+  },
+  "sha256_digests": {
+    "datasets/corticothalamic_seizure_spirals/scout_manifest.json": "e31d28291faa189abf4428c8ce7e4a7fbe5eb2e39eb5212b53cc4b7035371444",
+    "datasets/corticothalamic_seizure_spirals/paper_citations.bib": "2ea747169ffdca2a5b2a4934f8f30b240906360bafa48622c27c0076f752b559",
+    "datasets/corticothalamic_seizure_spirals/rat_neocortical_tangential_sheet_specimen.jpg": "c4fdfb27cd39c842406116f00674c56013f6fc90d872f9995682c7bd47c1e32c"
+  }
+}

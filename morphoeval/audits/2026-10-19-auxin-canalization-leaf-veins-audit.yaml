@@ -1,0 +1,139 @@
+# MorphoEval Pass 1 (v1) Audit — Mitchison (1980, 1981) Proc. R. Soc. B / Phil. Trans. R. Soc. B & Feugier et al. (2005) J. Theor. Biol.
+# With-the-Flux Auxin Canalization & Leaf Venation Networks (Slot 034)
+
+audit:
+  id: 2026-10-19-auxin-canalization-leaf-veins-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 034 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/34
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1997-mitchison-canalization-auxin-flux.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  mitchison1980:
+    title: "A model for vein formation in higher plants"
+    authors: "Mitchison GJ"
+    venue: "Proceedings of the Royal Society of London B 207(1166):79-109 (1980)"
+    doi: 10.1098/rspb.1980.0082
+  mitchison1981:
+    title: "The polar transport of auxin and vein pattern in plants"
+    authors: "Mitchison GJ"
+    venue: "Philosophical Transactions of the Royal Society of London B 295(1078):461-471 (1981)"
+    doi: 10.1098/rstb.1981.0081
+  feugier2005:
+    title: "Self-organization of vascular systems in plant leaves: Inter-dependent dynamics of auxin flux and carrier proteins"
+    authors: "Feugier FG, Mochizuki A, Iwasa Y"
+    venue: "Journal of Theoretical Biology 236(3):366-375 (2005)"
+    doi: 10.1016/j.jtbi.2005.03.017
+  sachs1981:
+    title: "The Control of the Patterned Differentiation of Vascular Tissues"
+    authors: "Sachs T"
+    venue: "Advances in Botanical Research 9:151-262 (1981)"
+    doi: 10.1016/S0065-2296(08)60351-1
+
+simulations:
+  - id: mitchison-canalization-auxin-flux
+    name: "Mitchison (1980, 1981) & Feugier, Mochizuki & Iwasa (2005) with-the-flux auxin canalization, Sachs wound bypass regeneration, and open vs closed leaf venation loops"
+    organism: "Pisum sativum & Arabidopsis thaliana (dicot leaf lamina & stem vascular strands)"
+    script: 1997-mitchison-canalization-auxin-flux.py
+    output: docs/media/auxin_canalization_leaf_veins_comparison.png
+    extra_outputs:
+      - docs/media/auxin_canalization_leaf_veins_growth.gif
+    status: evaluated
+    source_refs:
+      - mitchison1980
+      - mitchison1981
+      - feugier2005
+      - sachs1981
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `1997-mitchison-canalization-auxin-flux.py`
+      (weighted score: 54.5/100). The Pass 1 script integrates only a minimal 2-channel
+      ODE model at p=1 and p=2 without a 2D cellular leaf lamina graph, vein concentration
+      drainage verification (S_vein < S_parenchyma), Sachs (1981) transverse stem incision
+      bypass regeneration, Feugier et al. (2005) open-tree vs closed-areole venation loop
+      topology, or segmentation of the cleared dicot leaf venation specimen.
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Integrates a 2-channel Mitchison ODE for p=1 and p=2 (L21-48), but omits 2D
+          cellular lamina PDE/network integration, explicit proof and numerical verification
+          of concentration drainage inside the canalized strand (S_vein < S_parenchyma),
+          Sachs (1981) transverse stem wound bypass regeneration, and Feugier et al. (2005)
+          PIN1 carrier-allocation open-tree vs closed-areole loop bifurcation.
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [21, 48], note: "Minimal 2-channel ODE without 2D cellular lamina or polar carrier allocation", supports: true}
+      specimen-match:
+        value: 46
+        rationale: >-
+          Vendors `datasets/auxin_canalization_leaf_veins/leaf_venation_canalization_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, skeletonize, or extract secondary vein
+          branching angles or closed areole loops from the cleared leaf specimen.
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [71, 108], note: "Renders 2-panel time-series plot without specimen segmentation", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates only p=1.0 and p=2.0 in a 2-channel toy system without sweeping the
+          feedback exponent p across [0.5, 2.5], stem incision geometries, NPA polar
+          transport inhibition, or open vs closed carrier-allocation regimes.
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [51, 68], note: "Only two parameter points evaluated without CLI overrides", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Exposes only 2 scalar measurements in `measure_morphoeval()` without statistical
+          p-values, vein concentration drop ratios, wound bypass tortuosity, Betti-1 loop
+          counts, or specimen venation morphometrics.
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [51, 68], note: "Only 2 scalar measurements without uncertainty or p-values", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `auxin_canalization_leaf_veins_reference.json`
+          with verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at
+          runtime.
+        evidence:
+          - {file: datasets/auxin_canalization_leaf_veins/auxin_canalization_leaf_veins_reference.json, lines: [1, 130], note: "Reference JSON present on disk but not verified in Pass 1 script", supports: true}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Module docstring cites Mitchison (1980), but lacks explicit equation-to-code
+          and Lean 4 theorem mappings.
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1, 10], note: "Minimal docstring without Lean 4 theorem mapping", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Generates PNG and GIF outputs deterministically, but lacks a `--self-test`
+          suite, SHA-256 integrity checks, and NPA transport inhibitor negative controls.
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [71, 112], note: "No --self-test flag or automated invariant checks in Pass 1", supports: false}
+    remediation:
+      - "Implement a 2D cellular leaf lamina canalization PDE/network solver sweeping feedback exponent p in [0.5, 2.5], demonstrating diffuse flow for p <= 1 and 1-cell-wide winner-take-all vascular strands with S_vein < S_parenchyma for p = 2."
+      - "Implement Sachs (1969, 1981) transverse stem incision wound-bypass simulation on a 2D cellular epicotyl grid, plus an NPA polar transport inhibitor negative control."
+      - "Implement Feugier, Mochizuki & Iwasa (2005) PIN1 carrier-allocation dynamics comparing open hierarchical branching trees (Betti-1 = 0) against closed-areole venation loops (Betti-1 > 0)."
+      - "Segment and skeletonize the vendored cleared dicot leaf venation specimen (`leaf_venation_canalization_specimen.jpg`) to extract the midrib, secondary vein branching angles, and closed polygonal areole loops, with SHA-256 verification and `--self-test` suite."

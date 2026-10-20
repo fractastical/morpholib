@@ -1,0 +1,148 @@
+# MorphoEval audit — Pezzulo & Levin (2015) / Friston et al. (2015) Bioelectric Target Morphology Memory, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2015-pezzulo-bioelectric-target-morphology-memory.py` (Slot 084) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-bioelectric-target-morphology-memory-loop`.
+
+audit:
+  id: 2026-10-19-bioelectric-target-morphology-memory-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b2936f6
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2015-pezzulo-bioelectric-target-morphology-memory.py` in
+      `2026-10-19-bioelectric-target-morphology-memory-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  pezzulo2015:
+    title: "Re-membering the body: applications of computational neuroscience to the top-down control of regeneration of limbs and other complex organs"
+    authors: "Pezzulo G, Levin M"
+    venue: "Journal of the Royal Society Interface 12(110):20150772 (2015)"
+    doi: 10.1098/rsif.2015.0772
+  friston2015:
+    title: "Knowing one's place: a free-energy approach to pattern regulation"
+    authors: "Friston K, Levin M, Sengupta B, Pezzulo G"
+    venue: "Journal of the Royal Society Interface 12(105):20141383 (2015)"
+    doi: 10.1098/rsif.2014.1383
+  pezzulo2016:
+    title: "Top-down models in biology: explanation and control of complex living systems above the molecular level"
+    authors: "Pezzulo G, Levin M"
+    venue: "Journal of the Royal Society Interface 13(124):20160555 (2016)"
+    doi: 10.1098/rsif.2016.0555
+  vandenberg2012:
+    title: "Normalized shape and location of perturbed craniofacial structures in the Xenopus tadpole reveal an innate ability to achieve correct morphology"
+    authors: "Vandenberg LN, Adams DS, Levin M"
+    venue: "Developmental Dynamics 241(5):863-878 (2012)"
+    doi: 10.1002/dvdy.23770
+
+simulations:
+  - id: pezzulo-bioelectric-target-morphology-memory
+    name: "Pezzulo & Levin (2015) / Friston et al. (2015) bioelectric target morphology memory and Variational Free Energy homeostasis"
+    organism: "Ambystoma mexicanum (axolotl salamander) regenerating forelimb"
+    script: 2015-pezzulo-bioelectric-target-morphology-memory.py
+    output: docs/media/bioelectric_target_morphology_memory_comparison.png
+    extra_outputs:
+      - docs/media/bioelectric_target_morphology_memory_growth.gif
+    status: evaluated
+    source_refs:
+      - pezzulo2015
+      - friston2015
+      - pezzulo2016
+      - vandenberg2012
+    summary: >-
+      Pass 1 baseline assessment of `2015-pezzulo-bioelectric-target-morphology-memory.py` (59.6/100).
+      The initial active-inference ODE captures Variational Free Energy minimization F(mu, x)
+      for scalar limb length L(t) -> L*, but requires 3-segment proximodistal decomposition
+      (stylopod, zeugopod, autopod) with spatial bioelectric V_mem(s,t) kymograph tracking,
+      articulated forelimb skeleton and width profile segmentation on `salamander_limb_regeneration_specimen.jpg`,
+      and explicit inclusion of both the Farinella-Ferruzza tail-to-limb translocation remodeling
+      regime and Singer (1952) denervation sensory-precision (Pi_s = 0) arrest negative control.
+    scores:
+      model-fidelity:
+        value: 63
+        rationale: >-
+          Implements the Pezzulo & Levin (2015) and Friston et al. (2015) Variational Free Energy
+          functional F(mu, x) = (1/2)*Pi_s*||x - mu||^2 + (1/2)*Pi_p*||mu - mu_target||^2 and
+          coupled perception-action gradient flow (L126-198), but Pass 1 requires 3-segment
+          proximodistal resolution (stylopod, zeugopod, autopod) and organ-identity remodeling psi(t).
+        evidence:
+          - {file: 2015-pezzulo-bioelectric-target-morphology-memory.py, lines: [126, 198], note: "Variational Free Energy functional and active-inference gradient flow invariants", supports: true}
+          - {file: 2015-pezzulo-bioelectric-target-morphology-memory.py, lines: [204, 340], note: "Multi-segment proximodistal limb & organ identity active-inference solver", supports: false}
+      specimen-match:
+        value: 54
+        rationale: >-
+          Vendors `datasets/bioelectric_target_morphology_memory/salamander_limb_regeneration_specimen.jpg`
+          (CC BY-SA 3.0 whole-mount of Ambystoma mexicanum), but Pass 1 lacks automated piecewise
+          forelimb skeleton tracking (shoulder, elbow, wrist, autopod) and 40-bin perpendicular
+          limb width segmentation compared against 2D reconstructed limb silhouettes.
+        evidence:
+          - {file: 2015-pezzulo-bioelectric-target-morphology-memory.py, lines: [440, 540], note: "Axolotl forelimb skeleton and width segmentation routine", supports: false}
+          - {file: docs/media/bioelectric_target_morphology_memory_comparison.png, lines: [0, 0], note: "Comparison figure with Ambystoma mexicanum specimen overlay", supports: true}
+      parameter-expressivity:
+        value: 59
+        rationale: >-
+          Tests proximal (L_0 = 0.20) vs distal (L_0 = 0.70) amputation equifinality, but needs
+          the Farinella-Ferruzza tail-to-limb graft remodeling regime, rewritten bioelectric
+          setpoint memory (mu_target' = 1.45), and Singer (1952) denervation arrest (Pi_s = 0)
+          alongside a 2D (L_0, mu_target) morphospace phase diagram.
+        evidence:
+          - {file: 2015-pezzulo-bioelectric-target-morphology-memory.py, lines: [345, 435], note: "5-regime active-inference evaluator and 2D (L_0, mu_target) phase grid", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          Reports regenerated length convergence, but Pass 1 requires quantitative proximal-to-distal
+          initial blastema velocity ratio (8/3 = 2.6667), specimen forelimb width Pearson r and
+          segment-proportion RMSE, and 5-regime target length RMSE.
+        evidence:
+          - {file: 2015-pezzulo-bioelectric-target-morphology-memory.py, lines: [770, 880], note: "MorphoEval measurement hook measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `bioelectric_target_morphology_memory_reference.json`,
+          `paper_citations.bib`, and `salamander_limb_regeneration_specimen.jpg` with SHA-256
+          digests linking Pezzulo & Levin (2015) and Friston, Levin et al. (2015).
+        evidence:
+          - {file: 2015-pezzulo-bioelectric-target-morphology-memory.py, lines: [85, 118], note: "SHA-256 cryptographic verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Links functions to Pezzulo & Levin (2015) Figs. 1-4, Friston et al. (2015) Eqs. (2.1)-(2.6),
+          and Lean 4 theorems in `morphoeval/lean/loops/Loop_084_bioelectric_target_morphology_memory.lean`.
+        evidence:
+          - {file: 2015-pezzulo-bioelectric-target-morphology-memory.py, lines: [1, 60], note: "Module docstring mapping equations to Pezzulo & Levin (2015) and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Includes `--self-test` and deterministic seed=2015, requiring completion of the 8-check
+          verification suite covering all 5 experimental regimes and forelimb width segmentation.
+        evidence:
+          - {file: 2015-pezzulo-bioelectric-target-morphology-memory.py, lines: [885, 955], note: "Self-test suite with bitwise determinism and 5-regime assertions", supports: true}
+    remediation:
+      - "Decompose limb state x(t) into 3 proximodistal segments (stylopod, zeugopod, autopod) plus organ identity psi(t) in [-1, +1] and track the spatial bioelectric V_mem(s,t) kymograph during outgrowth."
+      - "Add automated 3-segment forelimb skeleton and 40-bin perpendicular width segmentation on `datasets/bioelectric_target_morphology_memory/salamander_limb_regeneration_specimen.jpg`, plus 2D articulated 4-digit limb silhouette synthesis."
+      - "Include Farinella-Ferruzza tail-to-limb translocation remodeling, rewritten bioelectric setpoint memory (mu_target' = 1.45), and Singer (1952) denervation sensory-precision blockade (Pi_s = 0) alongside a 2D (L_0, mu_target) morphospace phase diagram."

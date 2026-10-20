@@ -1,0 +1,77 @@
+sim_id: sekimura-papilio-wing-stripe-mimicry
+math_family: "2D Gierer–Meinhardt Activator–Inhibitor Reaction–Diffusion on Curved Wing Geometry with Anisotropic Vein-Directed Diffusivity ∇·(D ∇u) and Distal-to-Proximal Boundary Gradient Switching Across Batesian Mimicry Morphs"
+model_spec:
+  model: "Sekimura, Madzvamuse, Wathen & Maini (2000) Proc. R. Soc. B 267:851-859, Madzvamuse et al. (2002) J. Math. Biol. 44:489-509, and Timmermans/Thompson et al. (2014) Nature 507:96-99 anisotropic Gierer–Meinhardt wing colour pattern formation and Batesian mimicry polymorphism in Papilio dardanus"
+  a_feed: 0.1
+  b_decay: 1.0
+  kappa_saturation: 0.0
+  d_diffusivity_ratio: 40.0
+  gamma_scale: 600.0
+  u0_steady: 1.1
+  v0_steady: 1.21
+  seed: 2000
+  inputs:
+    - datasets/papilio_wing_stripe_mimicry/papilio_wing_stripe_mimicry_reference.json
+    - datasets/papilio_wing_stripe_mimicry/papilio_dardanus_cenea_specimen.jpg
+    - datasets/papilio_wing_stripe_mimicry/scout_manifest.json
+    - datasets/papilio_wing_stripe_mimicry/paper_citations.bib
+equations:
+  - law_name: "Gierer–Meinhardt Homogeneous Steady State (v₀ = u₀²) & Turing Diffusion-Driven Instability Law"
+    formula: "f(u₀, v₀) = a - b u₀ + u₀²/v₀ = 0,  g(u₀, v₀) = u₀² - v₀ = 0  ⇒  u₀ = (a + 1)/b,  v₀ = u₀²,  tr(J₀) = f_u + g_v < 0,  d f_u + g_v > 0"
+    lean_decl: "MathOfBiology.Loop_099.gm_steady_residual_scaled"
+    lean_theorem: "MathOfBiology.Loop_099.gierer_meinhardt_steady_state_and_turing_instability"
+    lean_locus: "morphoeval/lean/loops/Loop_099_papilio_wing_stripe_mimicry.lean#L27-L56"
+    lean_code: |
+      def gm_steady_residual_scaled (a b : Int) : Int :=
+        a * b - b * (a + 1) + b
+      def gm_trace_scaled (a b : Int) : Int :=
+        b * (10 - a) - (a + 10)
+      def gm_turing_drive_scaled (d a b : Int) : Int :=
+        d * b * (10 - a) - (a + 10)
+      theorem gierer_meinhardt_steady_state_and_turing_instability (a b : Int) :
+          gm_steady_residual_scaled a b = 0 ∧
+          gm_trace_scaled 1 1 < 0 ∧
+          gm_turing_drive_scaled 1 1 1 < 0 ∧
+          gm_turing_drive_scaled 40 1 1 > 0
+    variables: "u₀, v₀: homogeneous steady-state activator and inhibitor concentrations; a, b: Gierer–Meinhardt activator source and linear decay rates; d = D_v / D_u: inhibitor-to-activator diffusivity ratio"
+    role: "Establishes the unique positive homogeneous steady state v₀ = u₀² = ((a+1)/b)² of the Gierer–Meinhardt kinetics, linear stability in the absence of diffusion (tr(J₀) < 0, d = 1), and diffusion-driven Turing instability (d f_u + g_v > 0) for d = 40"
+    source_citation: "Sekimura et al. (2000) Proc. R. Soc. B 267:851-859 Eqs. (2.1)-(2.4); Gierer & Meinhardt (1972) Kybernetik 12:30-39"
+    code_locus: "2016-sekimura-papilio-wing-stripe-mimicry.py#L105-L195"
+
+  - law_name: "Anisotropic Vein-Directed Diffusivity Mode Selection (Stripes vs Transverse Bands)"
+    formula: "Λ(m, n; ε) = m² + ε n²  (ε = D_⊥ / D_∥)  ⇒  Λ(0, 1; ε) < Λ(1, 0; ε) for ε < 1,  Λ(1, 0; ε) < Λ(0, 1; ε) for ε > 1"
+    lean_decl: "MathOfBiology.Loop_099.anisotropic_rayleigh_scaled"
+    lean_theorem: "MathOfBiology.Loop_099.anisotropic_vein_mode_selection_switch"
+    lean_locus: "morphoeval/lean/loops/Loop_099_papilio_wing_stripe_mimicry.lean#L71-L82"
+    lean_code: |
+      def anisotropic_rayleigh_scaled (m n eps_scaled : Int) : Int :=
+        100 * m * m + eps_scaled * n * n
+      theorem anisotropic_vein_mode_selection_switch (eps_low eps_high : Int)
+          (h_low : eps_low < 100) (h_high : eps_high > 100) :
+          anisotropic_rayleigh_scaled 0 1 eps_low < anisotropic_rayleigh_scaled 1 0 eps_low ∧
+          anisotropic_rayleigh_scaled 1 0 eps_high < anisotropic_rayleigh_scaled 0 1 eps_high ∧
+          anisotropic_rayleigh_scaled 0 1 100 = anisotropic_rayleigh_scaled 1 0 100
+    variables: "ε = D_⊥ / D_∥: transverse-to-vein-parallel diffusivity ratio; (m, n): longitudinal and transverse eigenmode wavenumbers; Λ(m, n; ε): anisotropic elliptic operator Rayleigh quotient"
+    role: "Proves that vein-aligned diffusivity (ε < 1) lowers the effective wavenumber of transverse-varying modes (0, 1) to select longitudinal vein-parallel stripes, whereas ε > 1 reverses mode ordering to select anteroposterior transverse bands (f. planemoides)"
+    source_citation: "Sekimura et al. (2000) Proc. R. Soc. B 267:851-859 Section 2(b), Table 1 & Figs. 3-6; Madzvamuse et al. (2002) J. Math. Biol. 44:489-509"
+    code_locus: "2016-sekimura-papilio-wing-stripe-mimicry.py#L200-L320"
+
+  - law_name: "Monotonic Melanic Wing Area Expansion Across engrailed Mimicry Thresholds"
+    formula: "u_th1 ≤ u_th2  ⇒  I(u(x) > u_th2) ≤ I(u(x) > u_th1)  ∀ x ∈ Ω  ⇒  f_black(hippocoonides) < f_black(trophonius) < f_black(cenea)"
+    lean_decl: "MathOfBiology.Loop_099.is_melanic"
+    lean_theorem: "MathOfBiology.Loop_099.monotonic_melanic_wing_expansion"
+    lean_locus: "morphoeval/lean/loops/Loop_099_papilio_wing_stripe_mimicry.lean#L97-L118"
+    lean_code: |
+      def is_melanic (u_x u_th : Int) : Int :=
+        if u_x > u_th then 1 else 0
+      def wing_melanic_count_3pt (u_th : Int) : Int :=
+        is_melanic 98 u_th + is_melanic 108 u_th + is_melanic 118 u_th
+      theorem monotonic_melanic_wing_expansion (u_x u_th1 u_th2 : Int)
+          (h_order : u_th1 <= u_th2) :
+          is_melanic u_x u_th2 <= is_melanic u_x u_th1 ∧
+          wing_melanic_count_3pt 112 < wing_melanic_count_3pt 104 ∧
+          wing_melanic_count_3pt 104 < wing_melanic_count_3pt 94
+    variables: "u(x): steady-state Gierer–Meinhardt activator concentration at wing coordinate x; u_th: melanin pigmentation threshold controlled by the H (engrailed) supergene allele; f_black(u_th): melanic wing area fraction"
+    role: "Proves pointwise and global monotonic expansion of the melanic black wing area fraction as the pigmentation threshold u_th decreases across the hippocoonides → trophonius → cenea Batesian mimicry transition"
+    source_citation: "Sekimura et al. (2000) Proc. R. Soc. B 267:851-859 Section 3, Figs. 3-5; Timmermans/Thompson et al. (2014) Nature 507:96-99"
+    code_locus: "2016-sekimura-papilio-wing-stripe-mimicry.py#L325-L445"

@@ -1,0 +1,417 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-bacillus-biofilm-wrinkling-loop
+  target_simulation: 2013-asally-bacillus-biofilm-wrinkling.py
+  paper: Asally et al. (2012) PNAS 109:18891-18896; Yan et al. (2019) Nature Physics
+    15:456-462
+  created_at: '2026-10-20T01:18:07.663Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: 2a34864
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 632.509
+  wall_time_min: 10.54
+  tier_a_wall_s: 301.923
+  tier_b_wall_s: 330.586
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  input_tokens: 4240
+  output_tokens: 324882
+  subagent_tokens: 0
+  total_llm_tokens: 329122
+  artifact_tokens: 36666
+  tier_a_llm_tokens: 120962
+  tier_b_llm_tokens: 208160
+  effective_tokens_per_s: 520.3
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:18:07.752Z'
+  ended_at: '2026-10-20T01:18:09.782Z'
+  duration_s: 2.03
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 1558
+    subagent_tokens: 0
+    total_llm_tokens: 1558
+    artifact_tokens: 1558
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/bacillus_biofilm_wrinkling/scout_manifest.json
+    bytes: 5593
+    sha256: d546628168a3928913aec59f8bdfaf0c12f92a9e676e762ce3b4e2b37e3fa149
+    tokens: 1558
+  commands: []
+  notes: Scouting Bacillus subtilis biofilm wrinkling literature and specimen assets;
+    Scouted Asally et al. (2012) PNAS and Yan et al. (2019) Nature Physics on Bacillus
+    subtilis biofilm Föppl-von Kármán wrinkling and localized cell-death delamination
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:18:21.170Z'
+  ended_at: '2026-10-20T01:21:43.988Z'
+  duration_s: 202.818
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2008
+    output_tokens: 79360
+    subagent_tokens: 0
+    total_llm_tokens: 81368
+    artifact_tokens: 1841
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/bacillus_biofilm_wrinkling/README.md
+    bytes: 4399
+    sha256: 59517e832df80146abf74d4f4bb12031a63f040b538542297050447fa3bed942
+    tokens: 1242
+  - file: datasets/bacillus_biofilm_wrinkling/paper_citations.bib
+    bytes: 2163
+    sha256: ae278450d685134055ba9c9ab2da0b7cd55fcfdf613e619ed4396dbcfe0bd110
+    tokens: 599
+  commands: []
+  notes: Extracting mathematical model from Asally et al. (2012) PNAS, Trejo et al.
+    (2013) PNAS, and Yan et al. (2019) Nature Physics; Extracted Föppl-von Kármán
+    bilayer buckling, cell-death delamination threshold, and radial spoke number scaling
+    equations from Asally et al. (2012) PNAS and Yan et al. (2019) Nature Physics
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:21:44.092Z'
+  ended_at: '2026-10-20T01:21:44.173Z'
+  duration_s: 0.081
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2818
+    subagent_tokens: 0
+    total_llm_tokens: 2818
+    artifact_tokens: 2818
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_wrinkling_reference.json
+    bytes: 9023
+    sha256: 7d866d4d5136d39761809b2616cb1162e82ff057696fbbbc26e1e2100b33af2e
+    tokens: 2754
+  - file: datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_specimen.jpg
+    bytes: 361344
+    sha256: 0ab531dfc2ded6929d463c1f26f942f8b7baf34af181b07253dce11b9f987f90
+    tokens: 64
+  commands: []
+  notes: 'Vendoring Bacillus subtilis macrocolony biofilm specimen and reference JSON
+    with SHA-256 verification; Vendored CC BY-SA 3.0 Bacillus subtilis macrocolony
+    biofilm specimen (SHA-256: 0ab531df...) and reference dataset JSON'
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:21:44.245Z'
+  ended_at: '2026-10-20T01:22:42.377Z'
+  duration_s: 58.133
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 17087
+    subagent_tokens: 0
+    total_llm_tokens: 17087
+    artifact_tokens: 1646
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/lean/loops/Loop_094_bacillus_biofilm_wrinkling.lean
+    bytes: 5789
+    sha256: e14b8111fb506ad452564b26180b33d1c252383f60f900c2fa975330d921cc9b
+    tokens: 64
+  - file: morphoeval/math_kg_loops/asally-bacillus-biofilm-wrinkling.yaml
+    bytes: 5902
+    sha256: 8d1bb4dc59bbe1556e53eaf28b05fbcbdf13ec51f111692b92f62022aee70098
+    tokens: 1582
+  commands: []
+  notes: Proving 3 Lean 4 theorems on Föppl-von Kármán biofilm wrinkling, localized
+    cell-death delamination, and radial spoke scaling; Verified 3 standalone Lean
+    4 theorems (0 sorrys) in Loop_094_bacillus_biofilm_wrinkling.lean and registered
+    Math KG laws
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:22:42.453Z'
+  ended_at: '2026-10-20T01:23:20.579Z'
+  duration_s: 38.126
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1856
+    output_tokens: 16147
+    subagent_tokens: 0
+    total_llm_tokens: 18003
+    artifact_tokens: 2551
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 2013-asally-bacillus-biofilm-wrinkling.py
+    bytes: 9087
+    sha256: 7dada19eb04073b5ae0a8fabc4648746a3b5cf748a2255afb6e00af3ca36869b
+    tokens: 2551
+  commands: []
+  notes: Implementing Pass 1 baseline script 2013-asally-bacillus-biofilm-wrinkling.py;
+    Implemented Pass 1 baseline 2013-asally-bacillus-biofilm-wrinkling.py and verified
+    --self-test
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:23:20.659Z'
+  ended_at: '2026-10-20T01:23:21.393Z'
+  duration_s: 0.735
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 128
+    subagent_tokens: 0
+    total_llm_tokens: 128
+    artifact_tokens: 128
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: docs/media/bacillus_biofilm_wrinkling_comparison.png
+    bytes: 212694
+    sha256: 9799ba47f741b45ebe1677a6ea2ccf5fca372bdb8723754e0f55739d0a798926
+    tokens: 64
+  - file: docs/media/bacillus_biofilm_wrinkling_growth.gif
+    bytes: 400577
+    sha256: 2f7b5dae2ee91000a60ebe087eba367583af0b6a909893fab681257b3d157f05
+    tokens: 64
+  commands: []
+  notes: Rendering Pass 1 comparison PNG and growth GIF; Rendered Pass 1 bacillus_biofilm_wrinkling_comparison.png
+    and bacillus_biofilm_wrinkling_growth.gif
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:23:21.468Z'
+  ended_at: '2026-10-20T01:24:06.348Z'
+  duration_s: 44.881
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 188
+    output_tokens: 34190
+    subagent_tokens: 0
+    total_llm_tokens: 34378
+    artifact_tokens: 3026
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-bacillus-biofilm-wrinkling-audit.yaml
+    bytes: 11698
+    sha256: a35fe3bda02fda40362939396a3cd133fc4c692b5a68c7bf780fd96a08f79c9e
+    tokens: 3026
+  commands: []
+  notes: Auditing Pass 1 baseline script across 7 MorphoEval rubric dimensions; Completed
+    Pass 1 v1 audit (score 56.2/100) identifying 4 remediation targets
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:24:06.439Z'
+  ended_at: '2026-10-20T01:24:34.495Z'
+  duration_s: 28.056
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 7802
+    subagent_tokens: 0
+    total_llm_tokens: 7802
+    artifact_tokens: 999
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-bacillus-biofilm-wrinkling-audit.measurements.yaml
+    bytes: 3203
+    sha256: f62593ec4ecaa2e31d34425a0be18e65a8002043bfc6dc0ed301e1895b9cc732
+    tokens: 999
+  commands: []
+  notes: Measuring Pass 1 outputs with measure_outputs.py; Measured Pass 1 outputs
+    and image fingerprints
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:24:34.572Z'
+  ended_at: '2026-10-20T01:24:34.989Z'
+  duration_s: 0.416
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 0
+    subagent_tokens: 0
+    total_llm_tokens: 0
+    artifact_tokens: 0
+    method: calibrated-bpe-regex
+  artifacts: []
+  commands: []
+  notes: Building Pass 1 ProbKnow-conformant nanopublications; Built 10 Pass 1 nanopublications
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:24:35.065Z'
+  ended_at: '2026-10-20T01:24:47.448Z'
+  duration_s: 12.384
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 1515
+    subagent_tokens: 0
+    total_llm_tokens: 1515
+    artifact_tokens: 673
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bacillus-biofilm-wrinkling-audit/published.json
+    bytes: 1952
+    sha256: 72e5376865d852fb9bcd57450f7afb8e822e548efeba04b7efee7920e318375f
+    tokens: 673
+  commands: []
+  notes: Signing and verifying Pass 1 nanopublications; Signed and verified all 10
+    Pass 1 nanopublications
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:24:47.535Z'
+  ended_at: '2026-10-20T01:24:47.619Z'
+  duration_s: 0.083
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2512
+    subagent_tokens: 0
+    total_llm_tokens: 2512
+    artifact_tokens: 2512
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bacillus-biofilm-wrinkling-audit/REPORT.md
+    bytes: 9244
+    sha256: d3704192edf838cb59d31317e292324f847ccb3a577d538f880faf6b12b17823
+    tokens: 2512
+  commands: []
+  notes: Verifying Pass 1 public report; Synthesized Pass 1 audit report
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:24:47.696Z'
+  ended_at: '2026-10-20T01:28:52.462Z'
+  duration_s: 244.766
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 188
+    output_tokens: 161765
+    subagent_tokens: 0
+    total_llm_tokens: 161953
+    artifact_tokens: 18914
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 2013-asally-bacillus-biofilm-wrinkling.py
+    bytes: 48853
+    sha256: c35d90e260a69df3ca0d19e6bfaeb32b2fa95e15e5f79751b54c0064c6032042
+    tokens: 12880
+  - file: docs/media/bacillus_biofilm_wrinkling_comparison.png
+    bytes: 692871
+    sha256: 68b793a887248a1043ff93072882c4552ea9070e6af8a2036074f6a15acf9574
+    tokens: 64
+  - file: docs/media/bacillus_biofilm_wrinkling_growth.gif
+    bytes: 376282
+    sha256: 164b92dc106f285f085c0e2d6dacfa15b9b206778b3c6f11167c3ffb1c76b023
+    tokens: 64
+  - file: morphoeval/audits/2026-10-19-bacillus-biofilm-wrinkling-audit-v2.yaml
+    bytes: 13384
+    sha256: 38b4e8b32d397d848bea1e984ac299c0c0861b76e88dcc6564ce3528b731b8df
+    tokens: 3598
+  - file: morphoeval/audits/2026-10-19-bacillus-biofilm-wrinkling-audit-v2.measurements.yaml
+    bytes: 5710
+    sha256: 9e88c3e6bb92d3fe442bd745379ab880a6cefae3ba1d22b155453fac50468fb4
+    tokens: 1652
+  - file: morphoeval/kg/2026-10-19-bacillus-biofilm-wrinkling-audit-v2/published.json
+    bytes: 1952
+    sha256: 6f861b3e9e96da18e9abe64d2b0280cdc9ffa666037a7c5bee95ed7dfa25b923
+    tokens: 656
+  commands: []
+  notes: Executing Step 12 Pass 2 remediation of 2013-asally-bacillus-biofilm-wrinkling.py;
+    Completed Pass 2 remediation (+37.4 score gain to 93.6/100, quick_gate 100/100,
+    10 signed & verified v2 nanopubs)

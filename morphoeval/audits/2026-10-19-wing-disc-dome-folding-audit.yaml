@@ -1,0 +1,175 @@
+# MorphoEval audit — Tozluoglu et al. (2019) Dev. Cell & Sui et al. (2018) Nat. Commun. Drosophila Wing Disc Dome & Hinge Folding, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2020-tozluoglu-wing-disc-dome-folding.py` (255 lines)
+# prior to Step 12 remediation in `2026-10-19-wing-disc-dome-folding-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.8 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `generate_analytic_wing_disc_profile` (L66-92) uses a closed-form 1D Gaussian-cleft
+#      + parabolic-dome ansatz rather than numerically minimizing the 2D sagittal apico-basal
+#      bilayer morphoelastic energy functional (multiplicative decomposition F = F_e * F_g
+#      coupled to stiff basal basement membrane mu_BM >> mu_cell and local fold remodeling)
+#      via L-BFGS-B from 64 h to 96 h AEL.
+#   2. `evaluate_baseline_timecourse` (L95-124) evaluates only wild-type timepoints and
+#      omits the 5 crucial mechanical/genetic perturbation controls: uniform-growth
+#      unpinned buckling control (g(s) = g_bar, showing phase-random buckling),
+#      Collagenase / vkg-RNAi basal ECM digestion (mu_BM -> 0, showing dome flattening
+#      and fold abolition), JAK/STAT (Upd) hinge overgrowth hyper-folding, and
+#      dysfusion / omb loss of local tension/ECM remodeling.
+#   3. The vendored CC BY-SA 2.5 Drosophila melanogaster third-instar wing imaginal disc
+#      micrograph (`datasets/wing_disc_dome_folding/drosophila_wing_disc_specimen.jpg`)
+#      is not loaded, segmented, or analyzed for wing disc contour, pouch/hinge/notum
+#      zones, or H/N, H/H, and H/P fold transition coordinates.
+#   4. Runtime SHA-256 verification of dataset assets and CLI parameter overrides
+#      (`--mu-bm`, `--g-pouch`, `--jak-stat-boost`, `--remodeling`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-wing-disc-dome-folding-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 049 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/49
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e93f00e
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2020-tozluoglu-wing-disc-dome-folding.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-wing-disc-dome-folding-loop`.
+
+references:
+  tozluoglu2019:
+    title: "Planar Differential Growth Rates Initiate Precise Fold Positions in Complex Epithelia"
+    authors: "Tozluoglu M, Duda M, Kirkland NJ, Barrientos R, Burden JJ, Munoz JJ, Mao Y"
+    venue: "Developmental Cell 51(3):299-312.e4 (2019)"
+    doi: 10.1016/j.devcel.2019.09.009
+  sui2018:
+    title: "Differential lateral and basal tension drive folding of Drosophila wing discs through two distinct mechanisms"
+    authors: "Sui L, Alt S, Weigert M, Dye N, Eaton S, Julicher F, Dahmann C"
+    venue: "Nature Communications 9:4620 (2018)"
+    doi: 10.1038/s41467-018-06497-3
+  villafombuena2021:
+    title: "Live imaging of the Drosophila wing disc reveals the dynamics of fold formation and the role of the extracellular matrix"
+    authors: "Villa-Fombuena G, Martin-Bermudo MD et al."
+    venue: "Development 148(19):dev199728 (2021)"
+    doi: 10.1242/dev.199728
+  nelson2016:
+    title: "On buckling morphogenesis"
+    authors: "Nelson CM"
+    venue: "Journal of Biomechanical Engineering 138(2):021005 (2016)"
+    doi: 10.1115/1.4032128
+
+simulations:
+  - id: tozluoglu-wing-disc-dome-folding
+    name: "Tozluoglu et al. (2019) Dev. Cell & Sui et al. (2018) Nat. Commun. Drosophila wing imaginal disc planar differential growth, basal ECM dome & H/N, H/H, H/P hinge folding"
+    organism: "Drosophila melanogaster (third-instar larval wing imaginal disc, 64h-96h AEL)"
+    script: 2020-tozluoglu-wing-disc-dome-folding.py
+    output: docs/media/wing_disc_dome_folding_comparison.png
+    extra_outputs:
+      - docs/media/wing_disc_dome_folding_growth.gif
+    status: evaluated
+    source_refs:
+      - tozluoglu2019
+      - sui2018
+      - villafombuena2021
+      - nelson2016
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2020-tozluoglu-wing-disc-dome-folding.py`
+      (overall weighted score: 56.8/100). The v1 script implements the analytic bilayer
+      pouch dome curvature formula and a 64 h to 96 h AEL wild-type timecourse backed by
+      3 Lean 4 theorems in `Loop_049_wing_disc_dome_folding.lean`, but relies on a
+      closed-form Gaussian-cleft + parabolic-dome ansatz instead of L-BFGS-B minimization
+      of the 2D sagittal apico-basal bilayer morphoelastic energy functional, omits the
+      uniform-growth unpinned buckling control, Collagenase / vkg-RNAi basal ECM ablation
+      control, JAK/STAT hinge overgrowth, and dysfusion/omb perturbations, and does not
+      segment the vendored Drosophila wing disc micrograph (`drosophila_wing_disc_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Computes analytic bilayer pouch dome curvature kappa_dome from apical-vs-basal
+          differential growth and basal ECM stiffness (L48-63), backed by 3 Lean 4
+          theorems in `Loop_049_wing_disc_dome_folding.lean`. However,
+          `generate_analytic_wing_disc_profile` (L66-92) uses a closed-form Gaussian
+          ansatz rather than solving the 2D sagittal apico-basal bilayer morphoelastic
+          energy functional F = F_e * F_g via L-BFGS-B.
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [48, 63], note: "Analytic bilayer pouch dome curvature formula from Tozluoglu et al. (2019)", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [66, 92], note: "Closed-form 1D Gaussian-cleft + parabolic-dome ansatz rather than L-BFGS-B morphoelastic energy minimization", supports: false}
+      specimen-match:
+        value: 36
+        rationale: >-
+          Although `datasets/wing_disc_dome_folding/drosophila_wing_disc_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or measures the 3
+          Drosophila wing imaginal discs, their pouch/hinge/notum reporter zones, or
+          empirical H/N, H/H, and H/P fold boundary positions.
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [95, 124], note: "Evaluates only wild-type timecourse table and ignores drosophila_wing_disc_specimen.jpg", supports: false}
+          - {file: docs/media/wing_disc_dome_folding_comparison.png, lines: [0, 0], note: "4-panel v1 figure lacks wing disc specimen CV segmentation and perturbation comparison panels", supports: false}
+      parameter-expressivity:
+        value: 50
+        rationale: >-
+          Evaluates the 5 wild-type developmental stages from 64 h to 96 h AEL (L95-124),
+          but omits the 5 perturbation regimes (wild-type heterogeneous growth, uniform
+          growth unpinned buckling across replicate seeds, Collagenase / vkg-RNAi ECM
+          ablation, JAK/STAT hinge overgrowth, and dysfusion/omb local tension loss) and
+          exposes no CLI parameter overrides.
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [95, 124], note: "Wild-type timecourse only without perturbation controls or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          `measure_morphoeval()` (L196-231) reports only 3 basic wild-type numbers
+          without 64h-96h developmental trajectory Pearson r, p-value, RMSE, without
+          7-zone spatial curvature correlation, without replicate positional variance
+          comparison (heterogeneous pinned vs uniform unpinned buckling), without
+          Collagenase ECM ablation collapse checks, and without specimen CV metrics.
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [196, 231], note: "Only 3 basic metrics without statistical correlation or specimen segmentation", supports: false}
+      source-traceability:
+        value: 76
+        rationale: >-
+          Vendors `datasets/wing_disc_dome_folding/` with 4 primary DOIs in
+          `paper_citations.bib` (`10.1016/j.devcel.2019.09.009`, `10.1038/s41467-018-06497-3`,
+          `10.1242/dev.199728`, `10.1115/1.4032128`), `scout_manifest.json`, and
+          `wing_disc_dome_folding_reference.json`, but lacks runtime SHA-256 verification.
+        evidence:
+          - {file: datasets/wing_disc_dome_folding/wing_disc_dome_folding_reference.json, lines: [1, 240], note: "Reference JSON with 64h-96h timecourse, 7 spatial zones, 5 perturbations, and specimen metrics", supports: true}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Links module docstrings to Tozluoglu et al. (2019) Dev. Cell, Sui et al. (2018)
+          Nat. Commun., Villa-Fombuena et al. (2021) Development, and
+          `Loop_049_wing_disc_dome_folding.lean` (L1-21), but lacks trace links for
+          L-BFGS-B bilayer morphoelastic energy minimization and perturbation controls.
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [1, 21], note: "Baseline docstring linking Tozluoglu (2019), Sui (2018), and Loop_049 Lean theorems", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Provides `--self-test` (`L234-241`) checking stage count and basic dome height,
+          but lacks SHA-256 asset verification, two-run bitwise determinism checks on an
+          energy minimizer, and perturbation assertions.
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [234, 241], note: "Minimal 3-assertion self_test() without SHA-256 or perturbation checks", supports: false}
+    remediation:
+      - "Replace the closed-form 1D Gaussian ansatz with a 2D sagittal apico-basal bilayer morphoelastic cross-section solver (L-BFGS-B minimization of stretching + bending + basal ECM tether energy under multiplicative growth F = F_e * F_g) from 64 h to 96 h AEL."
+      - "Implement all 5 experimental and genetic perturbation conditions: wild-type heterogeneous growth + stiff basal ECM + local remodeling, uniform proliferation unpinned buckling control across replicate seeds, Collagenase / vkg-RNAi basal ECM removal flattening control (mu_BM -> 0), JAK/STAT (Upd) hinge overgrowth, and dysfusion / omb loss of local tension/ECM softening."
+      - "Segment the vendored CC BY-SA 2.5 Drosophila melanogaster wing imaginal disc micrograph (`drosophila_wing_disc_specimen.jpg`) to extract wing disc contours, pouch/hinge/notum reporter zones, and empirical H/N, H/H, and H/P fold transition coordinates, and enforce runtime SHA-256 verification."

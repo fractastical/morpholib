@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "dataset_id": "thomas-2013-coral-calice-septa-insertion-v1",
+    "title": "Milne-Edwards & Haime (1848) Ann. Sci. Nat. Zool. 9:37-89, Kunth (1869) Z. Dtsch. Geol. Ges. 21:647-688, Kaandorp & Kübler (2001) & Chindapol et al. (2013) PLoS Comput. Biol. 9(1):e1002849 Hexacorallian Septal Insertion Cycles & Advection-Diffusion Coral Calice Reference Dataset",
+    "sources": [
+      {
+        "id": "milneedwards1848",
+        "citation": "Milne-Edwards H, Haime J (1848). Recherches sur les polypiers. Premier mémoire: Observations sur la structure et le développement des polypiers en général. Annales des Sciences Naturelles, Zoologie (Série 3) 9:37-89.",
+        "doi": "10.5962/bhl.title.11574"
+      },
+      {
+        "id": "kaandorp2001",
+        "citation": "Kaandorp JA, Kübler JE (2001). The Algorithmic Beauty of Seaweeds, Sponges and Corals. Springer-Verlag, Berlin.",
+        "doi": "10.1007/978-3-662-04339-4"
+      },
+      {
+        "id": "chindapol2013",
+        "citation": "Chindapol N, Kaandorp JA, Cronemberger C, Mass T, Genin A (2013). Modelling Growth and Form of the Scleractinian Coral Pocillopora verrucosa and the Influence of Hydrodynamics. PLoS Computational Biology 9(1):e1002849.",
+        "doi": "10.1371/journal.pcbi.1002849"
+      },
+      {
+        "id": "kunth1869",
+        "citation": "Kunth A (1869). Beiträge zur Kenntniss fossiler Korallen. 2. Das Wachsthumsgesetz der Zoantharia rugosa und über Calceola sandalina. Zeitschrift der Deutschen Geologischen Gesellschaft 21:647-688.",
+        "doi": "10.1127/zdgg/21/1869/647"
+      },
+      {
+        "id": "cairns2012",
+        "citation": "Cairns SD, Kitahara MV (2012). An illustrated key to the genera and subgenera of the Recent azooxanthellate Scleractinia (Cnidaria, Anthozoa), with an attached glossary. ZooKeys 227:1-47.",
+        "doi": "10.3897/zookeys.227.3612"
+      }
+    ],
+    "specimens": {
+      "scleractinian_coral_septa_specimen": {
+        "file": "datasets/coral_calice_septa_insertion/scleractinian_coral_septa_specimen.jpg",
+        "sha256": "904035c93684336102acb95bced6a16c1dd720e46092b19c0331837698c6bffa",
+        "width": 442,
+        "height": 987,
+        "species": "Caryophyllia (Caryophyllia) quadragenaria (Alcock, 1902) — solitary Scleractinian cup coral showing top-down calice view (upper panel, rows 0..440) with 4 hexameral Milne-Edwards cycles of radiating septa (S1..S4, 40 visible outer septa at 9.0 deg mean spacing), pali crown, and fascicular columella, plus side profile view of the costate trochoid corallum (middle panel)",
+        "license": "CC BY 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:ZooKeys_-_Caryophyllia_(caryophyllia)_quadragenaria.jpeg",
+        "calice_roi_y_range_px": [0, 440],
+        "calice_center_px": [207.17, 214.38],
+        "calice_radius_px": 204.50,
+        "calibration_mm_per_px": 0.02445,
+        "reference_calice_diameter_mm": 10.0,
+        "reference_outer_septa_count": 40,
+        "reference_angular_spacing_deg": 9.0,
+        "reference_major_septa_reach_ratio": 0.4741,
+        "reference_minor_septa_reach_ratio": 0.3299,
+        "reference_reach_hierarchy_ratio": 1.4368,
+        "pattern_type": "hexacorallian_cyclic_radial_septa_s1_s4_with_central_columella"
+      },
+      "scout_manifest": {
+        "file": "datasets/coral_calice_septa_insertion/scout_manifest.json",
+        "sha256": "325761c7cb0d58db893172b965c87bf252c244e60c99ffcfb73e418483e41b58"
+      },
+      "paper_citations": {
+        "file": "datasets/coral_calice_septa_insertion/paper_citations.bib",
+        "sha256": "156b2c3cca2ef939f13d198c6640bd82ba2108c1ef481d8a8da0868522173eff"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Milne-Edwards & Haime (1848) Ann. Sci. Nat. Zool. 9:37-89; Kunth (1869) Z. Dtsch. Geol. Ges. 21:647-688; Kaandorp & Kübler (2001) Ch. 4-6; Chindapol et al. (2013) PLoS Comput. Biol. 9(1):e1002849 Eqs. (1)-(8)",
+    "milne_edwards_cycle_insertion_count": "n_1 = 6,   n_k = 6 * 2^(k-2) for k >= 2 (new septa inserted in cycle k at the midpoints of all existing interseptal loculi)",
+    "milne_edwards_cumulative_septa_law": "N_hex(k) = sum_{j=1}^k n_j = 6 * 2^(k-1) in {6, 12, 24, 48, 96, 192} for cycle k = 1..6",
+    "perimeter_wavelength_threshold_law": "2 * pi * R_k = N_hex(k) * lambda_s  =>  R_k = (3 * lambda_s / pi) * 2^(k-1),   k(R) = 1 + floor(log2(pi * R / (3 * lambda_s)))",
+    "septal_radial_reach_hierarchy_law": "L_k / R = alpha_k = alpha_1 * q_reach^(k-1) with alpha_1 > alpha_2 > alpha_3 > alpha_4 > alpha_5 (strictly decreasing radial reach with cycle order k)",
+    "kunth_rugosa_serial_quadrant_law": "N_rugosa(m) = 6 + 4 * m (6 protosepta: cardinal, counter, 2 alar, 2 counter-lateral; plus 4*m metasepta inserted serially in 4 fossulae)",
+    "chindapol_peclet_advection_diffusion_law": "u . grad(c) = D * laplacian(c),   Pe = U * L / D,   j_n(theta; Pe) = j_0 * (1 + beta_Pe * sqrt(Pe) * cos(theta) + gamma_Pe * (Pe / (1 + Pe)) * cos(2*theta)),   A_1(Pe) = (j_upstream - j_downstream) / (j_upstream + j_downstream) = beta_Pe * sqrt(Pe) / (1 + gamma_Pe * Pe / (1 + Pe))",
+    "default_parameters": {
+      "lambda_s_mm": 0.5236,
+      "R_1_mm": 0.50,
+      "R_2_mm": 1.00,
+      "R_3_mm": 2.00,
+      "R_4_mm": 4.00,
+      "R_5_mm": 8.00,
+      "alpha_1": 0.78,
+      "alpha_2": 0.62,
+      "alpha_3": 0.46,
+      "alpha_4": 0.31,
+      "alpha_5": 0.19,
+      "columella_radius_ratio": 0.18,
+      "beta_Pe": 0.18,
+      "gamma_Pe": 0.12
+    }
+  },
+  "milne_edwards_cycles_table": [
+    {"cycle": 1, "label": "S1 (Primary protosepta)",     "new_septa_inserted": 6,  "cumulative_septa_N_k": 6,  "angular_spacing_deg": 60.0,  "threshold_radius_mm": 0.50, "radial_reach_alpha_k": 0.78, "rugosa_stage_m": 0, "rugosa_septa_N_m": 6},
+    {"cycle": 2, "label": "S2 (Secondary cycle)",        "new_septa_inserted": 6,  "cumulative_septa_N_k": 12, "angular_spacing_deg": 30.0,  "threshold_radius_mm": 1.00, "radial_reach_alpha_k": 0.62, "rugosa_stage_m": 1, "rugosa_septa_N_m": 10},
+    {"cycle": 3, "label": "S3 (Tertiary cycle)",         "new_septa_inserted": 12, "cumulative_septa_N_k": 24, "angular_spacing_deg": 15.0,  "threshold_radius_mm": 2.00, "radial_reach_alpha_k": 0.46, "rugosa_stage_m": 2, "rugosa_septa_N_m": 14},
+    {"cycle": 4, "label": "S4 (Quaternary cycle)",       "new_septa_inserted": 24, "cumulative_septa_N_k": 48, "angular_spacing_deg": 7.5,   "threshold_radius_mm": 4.00, "radial_reach_alpha_k": 0.31, "rugosa_stage_m": 3, "rugosa_septa_N_m": 18},
+    {"cycle": 5, "label": "S5 (Quinary cycle)",          "new_septa_inserted": 48, "cumulative_septa_N_k": 96, "angular_spacing_deg": 3.75,  "threshold_radius_mm": 8.00, "radial_reach_alpha_k": 0.19, "rugosa_stage_m": 4, "rugosa_septa_N_m": 22}
+  ],
+  "cross_taxa_corallite_septa_table": [
+    {"species": "Pocillopora verrucosa",      "clade": "Scleractinia (Pocilloporidae)", "max_cycle_k": 2, "calice_diam_mm": 1.2,  "predicted_septa_N_k": 12, "observed_septa_mean": 12.0, "major_minor_reach_ratio": 1.28, "typical_peclet_Pe": 25.0},
+    {"species": "Favia favus",                "clade": "Scleractinia (Faviidae)",       "max_cycle_k": 3, "calice_diam_mm": 4.5,  "predicted_septa_N_k": 24, "observed_septa_mean": 24.5, "major_minor_reach_ratio": 1.38, "typical_peclet_Pe": 12.0},
+    {"species": "Caryophyllia quadragenaria", "clade": "Scleractinia (Caryophylliidae)","max_cycle_k": 4, "calice_diam_mm": 10.0, "predicted_septa_N_k": 48, "observed_septa_mean": 40.0, "major_minor_reach_ratio": 1.44, "typical_peclet_Pe": 4.0},
+    {"species": "Caryophyllia smithii",       "clade": "Scleractinia (Caryophylliidae)","max_cycle_k": 4, "calice_diam_mm": 14.0, "predicted_septa_N_k": 48, "observed_septa_mean": 48.0, "major_minor_reach_ratio": 1.48, "typical_peclet_Pe": 6.0},
+    {"species": "Balanophyllia elegans",      "clade": "Scleractinia (Dendrophylliidae)","max_cycle_k": 4,"calice_diam_mm": 11.5, "predicted_septa_N_k": 48, "observed_septa_mean": 48.0, "major_minor_reach_ratio": 1.52, "typical_peclet_Pe": 8.0},
+    {"species": "Stephanophyllia complicata", "clade": "Scleractinia (Micrabaciidae)",  "max_cycle_k": 5, "calice_diam_mm": 18.0, "predicted_septa_N_k": 96, "observed_septa_mean": 96.0, "major_minor_reach_ratio": 1.62, "typical_peclet_Pe": 2.0},
+    {"species": "Fungia fungites",            "clade": "Scleractinia (Fungiidae)",      "max_cycle_k": 6, "calice_diam_mm": 85.0, "predicted_septa_N_k": 192,"observed_septa_mean": 192.0,"major_minor_reach_ratio": 1.74, "typical_peclet_Pe": 10.0}
+  ],
+  "peclet_flow_symmetry_sweep": [
+    {"Pe": 0.0,  "regime": "Pure Diffusion (Hydrostatic Still Water, Pe = 0)",          "upstream_downstream_ratio": 1.0000, "dipole_asymmetry_index": 0.0000, "calice_ellipticity": 1.0000},
+    {"Pe": 1.0,  "regime": "Weak Laminar Advection (Pe = 1)",                           "upstream_downstream_ratio": 1.3805, "dipole_asymmetry_index": 0.1698, "calice_ellipticity": 1.0600},
+    {"Pe": 4.0,  "regime": "Moderate Reef Boundary-Layer Flow (Pe = 4)",                "upstream_downstream_ratio": 1.9394, "dipole_asymmetry_index": 0.3283, "calice_ellipticity": 1.0960},
+    {"Pe": 16.0, "regime": "Advection-Dominated Upstream Thinning (Pe = 16)",           "upstream_downstream_ratio": 4.4697, "dipole_asymmetry_index": 0.6471, "calice_ellipticity": 1.1129},
+    {"Pe": 36.0, "regime": "Strong Unidirectional Surge Flow (Pe = 36, Chindapol 2013)","upstream_downstream_ratio": 14.3750, "dipole_asymmetry_index": 0.9672, "calice_ellipticity": 1.1168}
+  ]
+}

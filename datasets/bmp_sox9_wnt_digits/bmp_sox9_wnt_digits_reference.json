@@ -1,0 +1,187 @@
+{
+  "metadata": {
+    "dataset_id": "raspopovic-2014-bmp-sox9-wnt-digits-v1",
+    "title": "Raspopovic et al. (2014) Science 345:566-570, Sheth et al. (2012) Science 338:1476-1480 & Marcon et al. (2016) eLife 5:e14022 Bmp-Sox9-Wnt 3-Node Turing Digit Patterning Reference Dataset",
+    "sources": [
+      {
+        "id": "raspopovic2014",
+        "citation": "Raspopovic J, Marcon L, Russo L, Sharpe J (2014). Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients. Science 345(6196):566-570.",
+        "doi": "10.1126/science.1252960"
+      },
+      {
+        "id": "sheth2012",
+        "citation": "Sheth R, Marcon L, Bastida MF, Junco M, Quintana L, Dahn R, Kmita M, Sharpe J, Ros MA (2012). Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism. Science 338(6113):1476-1480.",
+        "doi": "10.1126/science.1226804"
+      },
+      {
+        "id": "marcon2016",
+        "citation": "Marcon L, Diego X, Sharpe J, Muller P (2016). High-throughput mathematical analysis identifies Turing networks for patterning with equally diffusing signals. eLife 5:e14022.",
+        "doi": "10.7554/eLife.14022"
+      },
+      {
+        "id": "farin2013",
+        "citation": "Farin HF, Ludtke THW, Schmidt MK, Placzko S, Schuster-Gossler K, Petry M, Christoffels VM, Kispert A (2013). Tbx2 terminates Shh/Fgf signaling in the developing mouse limb bud by direct repression of Gremlin1. PLoS Genetics 9(4):e1003467.",
+        "doi": "10.1371/journal.pgen.1003467"
+      }
+    ],
+    "specimens": {
+      "sox9_limb_digits_specimen": {
+        "file": "datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg",
+        "sha256": "533f621904d6f2ce72365399ca1403c72b5db4dfa717c61e4834ca9beb366da5",
+        "width": 960,
+        "height": 1071,
+        "species": "Mus musculus embryonic hindlimb autopod whole-mount in situ hybridization (E12.5 Sox9 Panels O-P and E13.5 Col2a1 Panels K-L)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Duplication_of_digit_4_is_preceded_by_reduced_apoptosis_and_expanded_chondrogenesis_in_the_posterior_limb_mesenchyme.png",
+        "roi_box_panel_O_sox9_wt_xyxy": [508, 644, 722, 832],
+        "roi_box_panel_K_col2a1_wt_xyxy": [508, 432, 722, 625],
+        "roi_box_panel_L_col2a1_polydactyly_xyxy": [735, 432, 949, 625],
+        "wrist_origin_local_xy": [28, 96],
+        "distal_arc_radius_range_px": [92, 146],
+        "expected_wt_digits": 5,
+        "expected_polydactyl_digits": 6,
+        "pattern_type": "radial_pentadactyl_sox9_digit_rays"
+      },
+      "scout_manifest": {
+        "file": "datasets/bmp_sox9_wnt_digits/scout_manifest.json",
+        "sha256": "f990b473b6a93cfa784b32a164ad808efbb730f34c6827cf7b733e236d97d5c9"
+      },
+      "paper_citations": {
+        "file": "datasets/bmp_sox9_wnt_digits/paper_citations.bib",
+        "sha256": "88ff32a60b56706048f01c9b1bf0b7143f692cbca07f1b25b2bbc3e6804a536c"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Raspopovic et al. (2014) Science 345:566-570, Fig. 2E-G, Fig. 4A-D & Supplementary Materials Eqs. S1-S6",
+    "sox9_pde": "dS/dt = -mu_S * S + k_sb * B - k_sw * W - S^3  (cell-autonomous, D_S = 0)",
+    "bmp_pde": "dB/dt = -k_bs(x) * S - mu_B * B + D_B * Laplacian(B)",
+    "wnt_pde": "dW/dt = -k_ws * S - mu_W * W + D_W * Laplacian(W)",
+    "full_3node_jacobian": "J_3 = [[-mu_S, k_sb, -k_sw], [-k_bs, -mu_B, 0], [-k_ws, 0, -mu_W]]",
+    "reduced_2diffuser_jacobian": "J_eff = [[-mu_B - k_bs*k_sb/mu_S, +k_bs*k_sw/mu_S], [-k_ws*k_sb/mu_S, +k_ws*k_sw/mu_S - mu_W]]",
+    "determinant_reduction_identity": "det(-J_3) = mu_S * det(J_eff) = mu_S * mu_B * mu_W + k_bs * k_sb * mu_W - k_ws * k_sw * mu_B",
+    "out_of_phase_eigenmode_law": "delta_B / delta_S = -k_bs / (mu_B + D_B * q^2 + sigma) < 0 and delta_W / delta_S = -k_ws / (mu_W + D_W * q^2 + sigma) < 0",
+    "fgf_modulation_law": "k_bs(x) = k_bs0 * (1 + alpha_fgf * FGF(x)),  lambda_Turing(F) = 2 * pi / q_c(F)",
+    "baseline_parameters": {
+      "mu_S": 1.0,
+      "mu_B": 1.2,
+      "mu_W": 1.5,
+      "k_sb": 2.5,
+      "k_sw": 2.2,
+      "k_bs": 1.8,
+      "k_ws": 2.0,
+      "D_S": 0.0,
+      "D_B": 2.5,
+      "D_W": 0.25,
+      "tr_J3": -3.7,
+      "det_neg_J3": 3.27,
+      "tr_Jeff": -2.8,
+      "det_Jeff": 3.27,
+      "Jeff_BB": -5.7,
+      "Jeff_BW": 3.96,
+      "Jeff_WB": -5.0,
+      "Jeff_WW": 2.9,
+      "q_c_3node": 1.57,
+      "lambda_c_3node": 4.0020,
+      "sigma_max_3node": 0.2608
+    }
+  },
+  "fgf_hox_wavelength_scaling": [
+    {"fgf_level": 0.60, "k_bs_eff": 1.44, "q_c": 1.98, "lambda_pred": 3.1733, "lambda_obs": 3.18, "n_digits_pred": 7.0, "n_digits_obs": 7.0, "genotype": "Gli3-/-; Hoxd11-13-/- (severe polydactyly)"},
+    {"fgf_level": 0.80, "k_bs_eff": 1.62, "q_c": 1.77, "lambda_pred": 3.5498, "lambda_obs": 3.55, "n_digits_pred": 6.0, "n_digits_obs": 6.0, "genotype": "Tbx2-/- or Gli3+/- (hexadactyly)"},
+    {"fgf_level": 0.90, "k_bs_eff": 1.71, "q_c": 1.67, "lambda_pred": 3.7624, "lambda_obs": 3.76, "n_digits_pred": 5.5, "n_digits_obs": 5.5, "genotype": "Hoxd13+/- mild wavelength shift"},
+    {"fgf_level": 1.00, "k_bs_eff": 1.80, "q_c": 1.57, "lambda_pred": 4.0020, "lambda_obs": 4.00, "n_digits_pred": 5.0, "n_digits_obs": 5.0, "genotype": "Wild-Type E12.5 Mus musculus (pentadactyly)"},
+    {"fgf_level": 1.12, "k_bs_eff": 1.91, "q_c": 1.44, "lambda_pred": 4.3633, "lambda_obs": 4.36, "n_digits_pred": 4.5, "n_digits_obs": 4.5, "genotype": "Sub-optimal AER-FGF reduction"},
+    {"fgf_level": 1.25, "k_bs_eff": 2.02, "q_c": 1.31, "lambda_pred": 4.7963, "lambda_obs": 4.80, "n_digits_pred": 4.0, "n_digits_obs": 4.0, "genotype": "Fgf8 hypomorph (oligodactyly, 4 digits)"},
+    {"fgf_level": 1.42, "k_bs_eff": 2.15, "q_c": 1.12, "lambda_pred": 5.6100, "lambda_obs": 5.61, "n_digits_pred": 3.5, "n_digits_obs": 3.5, "genotype": "Fgf4/Fgf8 compound reduction (3-4 digits)"}
+  ],
+  "pharmacological_and_genetic_perturbations": {
+    "section": "Raspopovic et al. (2014) Science Fig. 2F-G & Fig. 3A-F (E11.5-E12.5 limb culture perturbations)",
+    "conditions": [
+      {
+        "condition_id": "wild_type_pentadactyl",
+        "label": "Wild-Type Control (Pentadactyly)",
+        "k_sb": 2.50,
+        "k_sw": 2.20,
+        "k_bs": 1.80,
+        "k_ws": 2.00,
+        "D_B": 2.50,
+        "D_W": 0.25,
+        "n_digits_obs": 5.0,
+        "sox9_bmp_corr_obs": -0.98,
+        "sox9_wnt_corr_obs": -0.99,
+        "sox9_area_fraction_obs": 0.42
+      },
+      {
+        "condition_id": "bmp_inhibition_LDN193189",
+        "label": "BMP Receptor Inhibition (LDN-193189 / Noggin)",
+        "k_sb": 0.55,
+        "k_sw": 2.20,
+        "k_bs": 1.80,
+        "k_ws": 2.00,
+        "D_B": 2.50,
+        "D_W": 0.25,
+        "n_digits_obs": 1.0,
+        "sox9_bmp_corr_obs": -0.85,
+        "sox9_wnt_corr_obs": -0.88,
+        "sox9_area_fraction_obs": 0.10
+      },
+      {
+        "condition_id": "wnt_activation_CHIR99021",
+        "label": "Wnt / beta-Catenin Activation (CHIR99021 / BIO)",
+        "k_sb": 2.50,
+        "k_sw": 3.10,
+        "k_bs": 1.80,
+        "k_ws": 1.35,
+        "D_B": 2.50,
+        "D_W": 0.25,
+        "n_digits_obs": 2.0,
+        "sox9_bmp_corr_obs": -0.92,
+        "sox9_wnt_corr_obs": -0.95,
+        "sox9_area_fraction_obs": 0.18
+      },
+      {
+        "condition_id": "wnt_inhibition_IWP2",
+        "label": "Wnt Secretion Inhibition (IWP-2 / Dickkopf1)",
+        "k_sb": 2.85,
+        "k_sw": 1.25,
+        "k_bs": 1.45,
+        "k_ws": 2.20,
+        "D_B": 2.50,
+        "D_W": 0.25,
+        "n_digits_obs": 6.0,
+        "sox9_bmp_corr_obs": -0.96,
+        "sox9_wnt_corr_obs": -0.97,
+        "sox9_area_fraction_obs": 0.62
+      },
+      {
+        "condition_id": "hox_fgf_polydactyly",
+        "label": "Distal Hox/Tbx2 Mutant Polydactyly (Short Wavelength)",
+        "k_sb": 2.50,
+        "k_sw": 2.20,
+        "k_bs": 1.55,
+        "k_ws": 2.00,
+        "D_B": 2.05,
+        "D_W": 0.20,
+        "n_digits_obs": 6.0,
+        "sox9_bmp_corr_obs": -0.98,
+        "sox9_wnt_corr_obs": -0.99,
+        "sox9_area_fraction_obs": 0.48
+      },
+      {
+        "condition_id": "no_diffusion_ablation_control",
+        "label": "Zero-Diffusion / Equal-Rate Negative Control (D_B = D_W = 0)",
+        "k_sb": 2.50,
+        "k_sw": 2.20,
+        "k_bs": 1.80,
+        "k_ws": 2.00,
+        "D_B": 0.0,
+        "D_W": 0.0,
+        "n_digits_obs": 0.0,
+        "sox9_bmp_corr_obs": 0.0,
+        "sox9_wnt_corr_obs": 0.0,
+        "sox9_area_fraction_obs": 0.0
+      }
+    ]
+  }
+}

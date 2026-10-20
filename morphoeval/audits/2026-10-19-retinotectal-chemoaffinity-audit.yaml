@@ -1,0 +1,151 @@
+# MorphoEval audit — Prestige & Willshaw (1975) & Brown et al. (2000) Retinotectal Chemoaffinity & Synaptic Competition, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `1976-willshaw-retinotectal-chemoaffinity.py` (Slot 086) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-retinotectal-chemoaffinity-loop`.
+
+audit:
+  id: 2026-10-19-retinotectal-chemoaffinity-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1976-willshaw-retinotectal-chemoaffinity.py` in
+      `2026-10-19-retinotectal-chemoaffinity-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  prestige1975:
+    title: "On a role for competition in the formation of patterned neural connexions"
+    authors: "Prestige MC, Willshaw DJ"
+    venue: "Proceedings of the Royal Society of London B 190(1098):77-98 (1975)"
+    doi: 10.1098/rspb.1975.0087
+  brown2000:
+    title: "Topographic mapping from the retina to the midbrain is controlled by relative but not absolute levels of EphA receptor signaling"
+    authors: "Brown A, Yates PA, Burrola P, Ortuno D, Vaidya A, Jessell TM, Pfaff SL, O'Leary DDM, Lemke G"
+    venue: "Cell 102(1):77-88 (2000)"
+    doi: 10.1016/S0092-8674(00)00012-X
+  willshaw1976:
+    title: "How patterned neural connections can be set up by self-organization"
+    authors: "Willshaw DJ, von der Malsburg C"
+    venue: "Proceedings of the Royal Society of London B 194(1117):431-445 (1976)"
+    doi: 10.1098/rspb.1976.0087
+  koulakov2004:
+    title: "A stochastic model for retinocollicular map development"
+    authors: "Koulakov AA, Tsigankov DN"
+    venue: "BMC Neuroscience 5:30 (2004)"
+    doi: 10.1186/1471-2202-5-30
+
+simulations:
+  - id: willshaw-retinotectal-chemoaffinity
+    name: "Prestige & Willshaw (1975) & Brown et al. (2000) EphA/ephrin-A retinotectal chemoaffinity & synaptic competition"
+    organism: "Danio rerio zebrafish / Mus musculus vertebrate retinotectal-retinocollicular projection"
+    script: 1976-willshaw-retinotectal-chemoaffinity.py
+    output: docs/media/retinotectal_chemoaffinity_comparison.png
+    extra_outputs:
+      - docs/media/retinotectal_chemoaffinity_growth.gif
+    status: evaluated
+    source_refs:
+      - prestige1975
+      - brown2000
+      - willshaw1976
+      - koulakov2004
+    summary: >-
+      Pass 1 baseline assessment of `1976-willshaw-retinotectal-chemoaffinity.py` (57.3/100).
+      The baseline script evaluates a 1D pointwise argmin of the chemoaffinity energy
+      E_chem(x,y) = 0.5*(R_A(x)*L_A(y) - gamma_0)^2 for wild-type and uncoupled knock-in
+      shifts, but omits the 2D synaptic weight matrix ODE dW_ij/dt with Prestige-Willshaw
+      Group II row/column synaptic competition and cooperative neighborhood coupling,
+      cannot reproduce caudal displacement of wild-type Isl2- axons in Isl2-EphA3 ki/ki
+      homozygotes or linear half-tectum compression / half-retina expansion, omits the
+      Ephrin-A2/A5 double-knockout scrambled control, and displays the 72 hpf Danio rerio
+      retinal confocal specimen without automated CV segmentation.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Evaluates only uncoupled 1D energy minimization argmin_y E_chem(x_i, y_j) (L52-88),
+          omitting the 2D synaptic weight matrix W_ij ODE, Prestige-Willshaw Group II dual
+          homeostatic competition, and cooperative axonal-dendritic neighborhood coupling.
+        evidence:
+          - {file: 1976-willshaw-retinotectal-chemoaffinity.py, lines: [52, 88], note: "Uncoupled 1D pointwise argmin without 2D synaptic weight matrix W_ij competition", supports: false}
+      specimen-match:
+        value: 50
+        rationale: >-
+          Vendors `datasets/retinotectal_chemoaffinity/zebrafish_retinotectal_specimen.jpg`
+          (CC BY-SA 4.0 confocal micrograph of 72 hpf Danio rerio larval retina), but Pass 1
+          only displays the raw image without automated CV segmentation of the concentric
+          retinal neural rings, radial intensity profile, or nasal-temporal angular RGC arc.
+        evidence:
+          - {file: 1976-willshaw-retinotectal-chemoaffinity.py, lines: [115, 118], note: "Raw specimen display without CV segmentation of retinal rings or angular RGC profile", supports: false}
+          - {file: docs/media/retinotectal_chemoaffinity_comparison.png, lines: [0, 0], note: "4-panel Pass 1 baseline comparison figure", supports: true}
+      parameter-expressivity:
+        value: 55
+        rationale: >-
+          Covers only 3 static curves (WT argmin, uncoupled KI argmin, Group I truncation),
+          omitting heterozygous ki/+ vs homozygous ki/ki Group II bifurcation, surgical
+          half-tectum compression (slope -0.50), surgical half-retina expansion (slope -2.00),
+          Ephrin-A2/A5 DKO scrambled control, and a 2D (Delta_R_EphA3, mu_comp) morphospace sweep.
+        evidence:
+          - {file: 1976-willshaw-retinotectal-chemoaffinity.py, lines: [63, 78], note: "3 static curves without Group II compression/expansion or DKO control", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Reports only 2 baseline metrics in `measure_morphoeval()`, lacking ki/ki dual-map
+          rostral/caudal branch separation under Group II competition, half-tectum compression
+          slope (-0.50), half-retina expansion slope (-2.00), Ephrin-A2/A5 DKO polarity collapse,
+          and specimen radial/angular CV morphometrics.
+        evidence:
+          - {file: 1976-willshaw-retinotectal-chemoaffinity.py, lines: [143, 166], note: "Baseline 2-metric measure_morphoeval() hook", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `retinotectal_chemoaffinity_reference.json`,
+          `paper_citations.bib`, and `zebrafish_retinotectal_specimen.jpg` with SHA-256
+          verification linking Prestige & Willshaw (1975) and Brown et al. (2000).
+        evidence:
+          - {file: 1976-willshaw-retinotectal-chemoaffinity.py, lines: [37, 49], note: "SHA-256 verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Links baseline functions to Prestige & Willshaw (1975) and Brown et al. (2000),
+          requiring full alignment with all 3 Lean 4 theorems in
+          `Loop_086_retinotectal_chemoaffinity.lean`.
+        evidence:
+          - {file: 1976-willshaw-retinotectal-chemoaffinity.py, lines: [1, 12], note: "Baseline docstring citing Prestige & Willshaw (1975) and Brown et al. (2000)", supports: true}
+      repro-package:
+        value: 60
+        rationale: >-
+          Provides `--self-test` and deterministic execution, requiring expansion to an
+          8-check verification suite covering all 6 experimental regimes, Lean 4 invariants,
+          specimen CV segmentation, and bitwise two-run determinism.
+        evidence:
+          - {file: 1976-willshaw-retinotectal-chemoaffinity.py, lines: [169, 177], note: "Baseline self-test checks", supports: true}
+    remediation:
+      - "Implement the full 2D synaptic weight matrix ODE dW_ij/dt with Prestige-Willshaw Group II Sinkhorn-Knopp homeostatic row/column competition and cooperative retinal-tectal neighborhood coupling."
+      - "Simulate all 6 canonical regimes: Wild-Type inverted map (slope -1.00), Brown et al. (2000) Isl2-EphA3/+ heterozygous and Isl2-EphA3/EphA3 homozygous duplicated maps, Prestige & Willshaw (1975) Group II half-tectum compression (slope -0.50) and half-retina expansion (slope -2.00), and Ephrin-A2/A5 DKO scrambled control."
+      - "Add automated CV segmentation of the 72 hpf Danio rerio confocal retinal specimen (concentric inner/outer retinal lamina rings, radial fluorescence profile, and nasal-to-temporal RGC arc), and render a 9-panel dark-mode synthesis figure and 24-frame animated GIF."

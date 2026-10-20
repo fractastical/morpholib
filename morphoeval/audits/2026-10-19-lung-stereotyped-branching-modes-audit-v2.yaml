@@ -1,0 +1,187 @@
+# MorphoEval audit — Metzger et al. (2008) / Menshykau et al. (2012, 2014) Lung Stereotyped Branching Modes (D, P, O), 2026-10-19 (v2)
+#
+# Pass 2 superseding assessment of `2008-metzger-lung-stereotyped-branching.py` (v2, 855 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-lung-stereotyped-branching-modes-loop`).
+
+audit:
+  id: 2026-10-19-lung-stereotyped-branching-modes-audit-v2
+  supersedes_audit_id: 2026-10-19-lung-stereotyped-branching-modes-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Loop 053 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2 remediated) evaluation of `2008-metzger-lung-stereotyped-branching.py`
+      after completing the 12-step closed remediation loop
+      (`2026-10-19-lung-stereotyped-branching-modes-loop`).
+
+references:
+  metzger2008:
+    title: "The branching programme of mouse lung development"
+    authors: "Metzger RJ, Klein OD, Martin GR, Krasnow MA"
+    venue: "Nature 453(7196):745-750 (2008)"
+    doi: 10.1038/nature07005
+  menshykau2012:
+    title: "Branch mode selection during early lung development"
+    authors: "Menshykau D, Kraemer C, Iber D"
+    venue: "Development 139(24):4506-4514 (2012)"
+    doi: 10.1242/dev.081679
+  menshykau2014:
+    title: "An interplay of geometry and signaling enables directional lung branching morphogenesis"
+    authors: "Menshykau D, Blanc P, Unal E, Sapoval M, Iber D"
+    venue: "PLoS Computational Biology 10(2):e1003421 (2014)"
+    doi: 10.1371/journal.pcbi.1003421
+  blanc2012:
+    title: "A role for canonical Wnt signaling in epithelial branching during embryonic mouse lung development"
+    authors: "Blanc P, Coste K, Pouchin P, Azais JM, Blanchon L, Gallot D, Sapin V"
+    venue: "PLoS ONE 7(7):e41643 (2012)"
+    doi: 10.1371/journal.pone.0041643
+
+simulations:
+  - id: metzger-lung-stereotyped-branching
+    name: "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O) and FGF10-SHH-Ptch1 Turing mode selection"
+    organism: "Mus musculus (embryonic E11-E15 mouse bronchial tree)"
+    script: 2008-metzger-lung-stereotyped-branching.py
+    output: docs/media/lung_stereotyped_branching_modes_comparison.png
+    extra_outputs:
+      - docs/media/lung_stereotyped_branching_modes_growth.gif
+    status: evaluated
+    source_refs:
+      - metzger2008
+      - menshykau2012
+      - menshykau2014
+      - blanc2012
+    summary: >-
+      Pass 2 (v2 remediated) evaluation of `2008-metzger-lung-stereotyped-branching.py`
+      (91.1/100, up from 50.3/100 in Pass 1; +40.8 overall). The remediated script
+      implements Metzger et al.'s (2008) full compound 3D lobar branching grammar
+      (Domain Branching D_m with 90 deg circumferential domain shifts followed by
+      Planar P Delta_phi = 0 deg margin and Orthogonal O Delta_phi = 90 deg interior
+      bifurcations, satisfying the exact 4m + 1 = 17 active-tip law); couples it to
+      Menshykau et al.'s (2012, 2014) mesenchymal FGF10 + epithelial SHH/Ptch1
+      receptor-ligand Schnakenberg-type Turing reaction-diffusion system (lambda_T =
+      1.4229, k_c^2 = 19.50) and semi-implicit spectral PDE mode switch; validates
+      against 8 empirical E12.5-E14.5 mouse lung lineages (dihedral RMSE = 1.98 deg,
+      r = 0.9994) and the E11.0-E14.5 distal tip timecourse (r = 1.0000); segments
+      N = 32 3-arm bronchial junctions on the SHA-256-locked mammalian bronchial tree
+      specimen (`bronchial_tree_specimen.jpg`, mean angle 76.49 ± 14.61 deg, caliber
+      ratio 0.8826); and is backed by 3 machine-checked Lean 4 theorems in
+      `morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Implements Metzger et al.'s (2008) 3D orthonormal Bishop/Frenet frame
+          branching grammar for Domain Branching (D), Planar Bifurcation (P,
+          Delta_phi = 0 deg), and Orthogonal Bifurcation (O, Delta_phi = 90 deg),
+          proving the 4m + 1 = 17 active-tip composition law and global 3D clearance
+          optimum at Delta_phi* = 90 deg (+61.9% over Planar and +12.5% over randomized
+          dihedral control, L102-328), alongside Menshykau et al.'s (2012, 2014)
+          FGF10-SHH-Ptch1 receptor-ligand reaction-diffusion dispersion relation and
+          semi-implicit spectral PDE mode switch (L334-465). Backed by 3 machine-checked
+          Lean 4 theorems (0 `sorry`s) in `Loop_053_lung_stereotyped_branching_modes.lean`.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [102, 328], note: "3D compound D->P->P and D->O->O lobar grammar and 181-point dihedral sweep proving Delta_phi* = 90.0 deg", supports: true}
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [334, 465], note: "Menshykau et al. (2012, 2014) FGF10-SHH-Ptch1 Turing dispersion relation and spectral PDE mode switch", supports: true}
+          - {file: morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean, lines: [36, 106], note: "3 machine-checked Lean 4 theorems for tip multiplicity, dihedral periodicity, and receptor-ligand steady state", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          Segments the SHA-256-locked mammalian bronchial tree specimen
+          (`datasets/lung_stereotyped_branching_modes/bronchial_tree_specimen.jpg`)
+          via chromatic tissue separation, conducting airway vs alveolar sac cluster
+          partitioning, Euclidean distance transform (EDT) lumen caliber mapping, and
+          Zhang-Suen 1-pixel skeletonization (L522-652), extracting N = 32 3-arm
+          bronchial junctions with mean branching angle 76.49 ± 14.61 deg (CV = 0.191,
+          closely matching the 75.0 deg Planar/Orthogonal bifurcation and 68.0 deg
+          Domain sprouting reference angles) and mean daughter-to-parent caliber ratio
+          0.8826 ± 0.1066.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [522, 652], note: "Chromatic airway/alveolar segmentation, Zhang-Suen skeletonization, and N=32 3-arm junction extraction", supports: true}
+          - {file: docs/media/lung_stereotyped_branching_modes_comparison.png, lines: [0, 0], note: "6-panel synthesis figure displaying Panel E segmented bronchial tree specimen and Panel F angle histogram", supports: true}
+      parameter-expressivity:
+        value: 89
+        rationale: >-
+          Sweeps cleavage-plane dihedral rotation Delta_phi across [0, 180] deg (181
+          grid points), compares compound margin (`D-P-P`) vs interior (`D-O-O`) vs
+          randomized-dihedral (`RANDOM-RANDOM`) trees, simulates both low-elongation
+          apical bifurcation and high-elongation lateral domain budding plus an
+          equal-diffusion (`D_F = D_R`) negative control, and exposes CLI flags
+          `--mode-seq`, `--dihedral-deg`, `--bif-angle-deg`, `--domain-angle-deg`,
+          `--a-f`, `--d-ratio`, and `--seed` (L815-851).
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [275, 328], note: "181-point dihedral rotation sweep and Monte Carlo random-dihedral ablation control", supports: true}
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [815, 851], note: "CLI parameter overrides wired into render_outputs()", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          `measure_morphoeval()` reports 8 quantitative morphometrics with reference
+          values, dispersion statistics (RMSE, Pearson r, p-value, SD, CV), and
+          negative-control ablation deltas (L698-776): exact 4m + 1 = 17 active tips,
+          optimal dihedral angle 90.0 deg (+61.88% clearance gain over Planar),
+          transverse isotropy contrast 0.4818, Turing wavelength lambda_T = 1.4229
+          (equal-diffusion control amplitude 0.00077 vs 2.04), E12.5-E14.5 lineage
+          dihedral RMSE = 1.98 deg (r = 0.9994, p = 5.4e-10), E11.0-E14.5 tip-count
+          Pearson r = 1.0000, segmented specimen junction angle 76.49 ± 14.61 deg
+          (N = 32), and segmented caliber ratio 0.8826 ± 0.1066.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [471, 516], note: "Empirical E11-E15 mouse lung lineage and developmental timecourse validation", supports: true}
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [698, 776], note: "8-metric MorphoEval suite with reference values, dispersion stats, and ablation deltas", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/lung_stereotyped_branching_modes/` with
+          `lung_stereotyped_branching_modes_reference.json`,
+          `bronchial_tree_specimen.jpg` (Wikimedia Commons CC BY 2.5),
+          `paper_citations.bib` (4 primary DOIs: `10.1038/nature07005`,
+          `10.1242/dev.081679`, `10.1371/journal.pcbi.1003421`,
+          `10.1371/journal.pone.0041643`), `scout_manifest.json`, and `README.md`, with
+          runtime SHA-256 verification (`verify_dataset_integrity`, L74-95).
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [74, 95], note: "Runtime SHA-256 verification of bronchial_tree_specimen.jpg and reference JSON", supports: true}
+          - {file: datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json, lines: [1, 108], note: "Reference JSON encoding Metzger (2008) subroutines, Menshykau (2014) Turing parameters, and E11-E15 benchmarks", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Every computational section and docstring in
+          `2008-metzger-lung-stereotyped-branching.py` maps explicitly to Metzger et
+          al. (2008) Figs. 1-4, Menshykau et al. (2012, 2014) Eqs. 1-5, and the 3
+          machine-checked Lean 4 theorems in
+          `Loop_053_lung_stereotyped_branching_modes.lean` (L1-35, L102-465).
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [1, 35], note: "Header docstring cross-referencing all 4 papers and 3 Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/metzger-lung-stereotyped-branching.yaml, lines: [1, 72], note: "Math KG loop registration linking equations, Lean 4 theorems, and Python code loci", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          `self_test()` (L779-812) executes 6 automated verification suites covering
+          SHA-256 dataset integrity, 4m + 1 tip multiplicity, Delta_phi* = 90 deg
+          global clearance optimization, FGF10-SHH-Ptch1 Turing dispersion &
+          equal-diffusion ablation, empirical E11-E15 mouse lung lineage correlation,
+          specimen junction segmentation, and two-run bitwise determinism.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [779, 812], note: "Comprehensive self_test() suite with deterministic assertions", supports: true}
+    remediation:
+      - "Couple the 1D epithelial-tip FGF10-SHH-Ptch1 reaction-diffusion solver to a moving 3D phase-field or boundary-element mesenchymal pleura cavity to simulate pleura-constrained lobe flattening directly."
+      - "Extend the E11-E15 bronchial lineage grammar to include stochastic terminal saccular-to-alveolar septation beyond E16.5."

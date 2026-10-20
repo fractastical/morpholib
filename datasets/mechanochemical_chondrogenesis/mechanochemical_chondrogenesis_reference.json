@@ -1,0 +1,142 @@
+{
+  "metadata": {
+    "dataset_id": "oster-murray-1983-1985-mechanochemical-chondrogenesis-v1",
+    "slot": 13,
+    "slot_id": "slot-013-mechanochemical-chondrogenesis",
+    "title": "Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) Mechanochemical Chondrogenesis, Limb Condensation Bifurcation & Salamander Limb Skeleton Dataset",
+    "sources": [
+      {
+        "id": "oster1983",
+        "citation": "Oster GF, Murray JD, Harris AK (1983). Mechanical aspects of mesenchymal morphogenesis. Journal of Embryology and Experimental Morphology 78(1):83-125.",
+        "doi": "10.1242/dev.78.1.83"
+      },
+      {
+        "id": "oster1985",
+        "citation": "Oster GF, Murray JD, Maini PK (1985). A model for chondrogenic condensations in the developing limb: the role of extracellular matrix and cell tractions. Journal of Embryology and Experimental Morphology 89(1):93-112.",
+        "doi": "10.1242/dev.89.1.93"
+      },
+      {
+        "id": "murray1984",
+        "citation": "Murray JD, Oster GF (1984). Generation of biological pattern and form. IMA Journal of Mathematics Applied in Medicine and Biology 1(1):51-75.",
+        "doi": "10.1093/imammb/1.1.51"
+      },
+      {
+        "id": "shubin1986",
+        "citation": "Shubin NH, Alberch P (1986). A morphogenetic approach to the origin and basic organization of the tetrapod limb. Evolutionary Biology 20:319-387.",
+        "doi": "10.1007/978-1-4615-6983-1_6"
+      }
+    ],
+    "specimens": {
+      "salamander_limb_cartilage_specimen": {
+        "file": "datasets/mechanochemical_chondrogenesis/salamander_limb_cartilage_specimen.jpg",
+        "sha256": "8030c8291c3a6d5b0efa746c63c1d5d9b143027645613dc1446e4431a6d60b94",
+        "species": "Oedipina ecuatoriana / Urodela salamander forelimb (humerus -> ulna+radius -> 4 digits I-IV) and hindlimb (femur -> tibia+fibula -> 5 digits I-V) skeletal micro-CT reconstruction",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Oedipina_ecuatoriana_(10.7717-peerj.9934)_Fig-13-full.png",
+        "width_px": 960,
+        "height_px": 781,
+        "forelimb_roi_x_px": [120, 440],
+        "hindlimb_roi_x_px": [580, 920],
+        "empirical_branching_metrics": {
+          "forelimb_stylopod_count": 1,
+          "forelimb_zeugopod_count": 2,
+          "forelimb_autopod_digit_count": 4,
+          "forelimb_zeugopod_spacing_px": 54.0,
+          "forelimb_autopod_mean_spacing_px": 39.3333,
+          "forelimb_autopod_spacing_cv": 0.0119,
+          "hindlimb_stylopod_count": 1,
+          "hindlimb_zeugopod_count": 2,
+          "hindlimb_autopod_digit_count": 5,
+          "hindlimb_zeugopod_spacing_px": 55.0,
+          "hindlimb_autopod_mean_spacing_px": 41.5,
+          "hindlimb_autopod_spacing_cv": 0.1912
+        }
+      },
+      "scout_manifest": {
+        "file": "datasets/mechanochemical_chondrogenesis/scout_manifest.json",
+        "sha256": "cb9d73c33c4113e46b58a8e3992861e2d91d4965461911e4808e2802e1ede6b0"
+      }
+    }
+  },
+  "oster_murray_1983_1985_governing_equations": {
+    "section": "Oster, Murray & Harris (1983) J. Embryol. Exp. Morph. 78:83-125 Eqs. (1)-(12); Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 Eqs. (1)-(9)",
+    "cell_conservation_pde": "dn/dt = D_1 * laplacian(n) - D_2 * biharmonic(n) - div(n * du/dt) + r * n * (N_0 - n)",
+    "ecm_mechanical_balance_pde": "div(mu_1 * d_eps/dt + mu_2 * div(du/dt) * I + E' * (eps + nu' * theta * I) + (tau * n^2 / (1 + lambda * n^2)) * I) = s * rho * u",
+    "ecm_mass_conservation_pde": "drho/dt = -div(rho * du/dt)",
+    "linearized_dispersion_relation": "mu * k^4 * sigma(k) + [mu * D_2 * k^6 + (mu * D_1 + E_eff - tau_eff * n_0) * k^4 + (s + mu * r * N_0) * k^2] + [D_2 * s * k^4 + (D_1 * s + r * N_0 * (E_eff - tau_eff * n_0)) * k^2 + r * N_0 * s] = 0",
+    "critical_traction_bifurcation": "tau_eff > tau_c = E_eff + D_1 * s / (r * N_0) + 2 * sqrt(D_2 * s * E_eff)",
+    "critical_wavenumber_squared": "k_c^2 = sqrt((r * N_0 * s) / (D_2 * E_eff_reduced))",
+    "state_variables": {
+      "n": "Mesenchymal chondroblast cell density (dimensionless normalized to equilibrium N_0 = 1)",
+      "rho": "Extracellular matrix (ECM / hyaluronate-collagen-fibronectin) density",
+      "u": "ECM viscoelastic displacement vector field",
+      "theta": "ECM dilation div(u)",
+      "tau": "Cell traction force coefficient per unit cell density with contact-inhibition saturation lambda"
+    },
+    "canonical_parameters": {
+      "D_1": 0.08,
+      "D_2": 0.0025,
+      "E_eff": 1.0,
+      "mu_visc": 0.25,
+      "s_tether": 0.5,
+      "r_mitotic": 0.2,
+      "N_0": 1.0,
+      "lambda_sat": 0.5,
+      "tau_subcritical": 0.85,
+      "tau_stylopod": 1.48,
+      "tau_zeugopod": 1.72,
+      "tau_autopod": 2.05
+    }
+  },
+  "tetrapod_limb_branching_hierarchy_table": {
+    "source": "Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 Figs. 4-9; Shubin & Alberch (1986) Evol. Biol. 20:319-387",
+    "description": "As the developing limb bud elongates and flattens distally (increasing aspect ratio W/L_c or effective traction tau_eff), the unstable mechanochemical wavenumber mode m = round(W / lambda_c) transitions through 1 -> 2 -> 4 (urodele forelimb) and 1 -> 2 -> 5 (urodele hindlimb).",
+    "zones": [
+      {
+        "zone_id": "subcritical_mesenchyme",
+        "label": "Pre-condensation undifferentiated limb bud mesenchyme (tau < tau_c)",
+        "domain_width_W": 1.0,
+        "effective_traction_tau": 0.85,
+        "predicted_condensation_count": 0,
+        "observed_forelimb_elements": 0,
+        "observed_hindlimb_elements": 0
+      },
+      {
+        "zone_id": "stylopod_focal_condensation",
+        "label": "Proximal Stylopod (Humerus / Femur focal condensation, mode m=1)",
+        "domain_width_W": 1.0,
+        "effective_traction_tau": 1.48,
+        "predicted_condensation_count": 1,
+        "observed_forelimb_elements": 1,
+        "observed_hindlimb_elements": 1
+      },
+      {
+        "zone_id": "zeugopod_y_bifurcation",
+        "label": "Middle Zeugopod (Radius + Ulna / Tibia + Fibula Y-bifurcation, mode m=2)",
+        "domain_width_W": 2.0,
+        "effective_traction_tau": 1.72,
+        "predicted_condensation_count": 2,
+        "observed_forelimb_elements": 2,
+        "observed_hindlimb_elements": 2
+      },
+      {
+        "zone_id": "autopod_urodele_forelimb",
+        "label": "Distal Urodele Forelimb Autopod (Metacarpals & Digits I-IV, mode m=4)",
+        "domain_width_W": 4.0,
+        "effective_traction_tau": 2.02,
+        "predicted_condensation_count": 4,
+        "observed_forelimb_elements": 4,
+        "observed_hindlimb_elements": 4
+      },
+      {
+        "zone_id": "autopod_urodele_hindlimb",
+        "label": "Distal Urodele Hindlimb / Pentadactyl Autopod (Metatarsals & Digits I-V, mode m=5)",
+        "domain_width_W": 5.0,
+        "effective_traction_tau": 2.15,
+        "predicted_condensation_count": 5,
+        "observed_forelimb_elements": 4,
+        "observed_hindlimb_elements": 5
+      }
+    ]
+  }
+}

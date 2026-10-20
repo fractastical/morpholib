@@ -1,0 +1,78 @@
+sim_id: pringle-roman-esco-fractal-inflorescence
+math_family: "Coupled Floral Identity Gene-Regulatory Network (TFL1 -| LFY <-> AP1/CAL + SOC1/AGL24) & Recursive Spiral Phyllotaxis with Accelerating Plastochron"
+model_spec:
+  model: "Azpeitia et al. (2021) Science 373:192-197 & Prusinkiewicz et al. (2007) Science 316:1452-1456 coupled TFL1-LFY-AP1/CAL-SOC1 floral gene-regulatory network ODEs and 3D multi-order recursive phyllotactic meristem tree with linearly decreasing plastochron Delta_t(t) = Delta_t0 / (1 + beta * t)"
+  golden_divergence_angle_deg: 137.507764
+  base_plastochron_rate_r0: 1.0
+  cauliflower_plastochron_accel_beta: 0.0
+  romanesco_plastochron_accel_beta: 0.085
+  self_similar_scale_ratio_lambda: 0.382
+  max_recursion_order_n: 4
+  seed: 2021
+  inputs:
+    - datasets/roman_esco_fractal_inflorescence/roman_esco_fractal_inflorescence_reference.json
+    - datasets/roman_esco_fractal_inflorescence/romanesco_brassica_oleracea_specimen.jpg
+    - datasets/roman_esco_fractal_inflorescence/scout_manifest.json
+    - datasets/roman_esco_fractal_inflorescence/paper_citations.bib
+equations:
+  - id: pringle-roman-esco-fractal-inflorescence-1
+    law_name: "Azpeitia et al. (2021) & Prusinkiewicz et al. (2007) AP1/CAL Floral GRN Bistability Collapse & Iterative Shoot Reversion Law"
+    formula: "d[AP1]/dt = g_AP1 (α_A L² + α_AA A²)/((1 + L² + A²)(1 + (T/K_TA)²)) - γ A;  g_AP1 = 0 ⇒ A* = 0, T* = T_shoot > T*_WT, S* = S_basal + ΔS_LFY > S_basal"
+    lean_decl: "MathOfBiology.Loop_040.ap1_steady"
+    lean_theorem: "MathOfBiology.Loop_040.azpeitia_2021_ap1_cal_grn_shoot_reversion"
+    lean_locus: "morphoeval/lean/loops/Loop_040_roman_esco_fractal_inflorescence.lean#L27-L56"
+    lean_code: |
+      def ap1_steady (g_ap1 a_floral : Int) : Int := g_ap1 * a_floral
+      def tfl1_steady (t_shoot g_ap1 r_repress : Int) : Int := t_shoot - g_ap1 * r_repress
+      def soc1_memory (s_basal lfy_spike : Int) : Int := s_basal + lfy_spike
+      theorem azpeitia_2021_ap1_cal_grn_shoot_reversion
+          (g_ap1 a_floral t_shoot r_repress s_basal lfy_spike : Int)
+          (hg : g_ap1 > 0) (ha : a_floral > 0) (hr : r_repress > 0) (hlfy : lfy_spike > 0) :
+          ap1_steady 0 a_floral = 0 ∧
+          ap1_steady g_ap1 a_floral > 0 ∧
+          tfl1_steady t_shoot 0 r_repress = t_shoot ∧
+          tfl1_steady t_shoot 0 r_repress > tfl1_steady t_shoot g_ap1 r_repress ∧
+          soc1_memory s_basal lfy_spike > s_basal
+    variables: "g_AP1 in {0, 1}: AP1/CAL locus functional dosage; L: LFY concentration; A: AP1/CAL floral commitment level; T: TFL1 shoot meristem identity factor; S: SOC1/AGL24/FUL floral memory factor"
+    role: "Proves that loss of AP1/CAL in ap1 cal and Brassica curd mutants abolishes the floral commitment fixed point while preserving transient LFY-induced SOC1 floral memory (bract suppression) and high TFL1 shoot identity, causing recursive inflorescence branching"
+    source_citation: "Azpeitia et al. (2021) Science 373(6551):192-197 Figs. 1-2; Prusinkiewicz et al. (2007) Science 316:1452-1456"
+    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L105-L235"
+
+  - id: pringle-roman-esco-fractal-inflorescence-2
+    law_name: "Azpeitia et al. (2021) Accelerating Plastochron Quadratic Primordium Accumulation Law"
+    formula: "Δt(t) = Δt_0 / (1 + β t),  r_p(t) = r_0 + β t  ⇒  N_Rom(T) = r_0 T + ½ β T² > r_0 T = N_Caul(T)  (for β > 0)"
+    lean_decl: "MathOfBiology.Loop_040.twice_primordia_count"
+    lean_theorem: "MathOfBiology.Loop_040.azpeitia_2021_accelerating_plastochron_surplus"
+    lean_locus: "morphoeval/lean/loops/Loop_040_roman_esco_fractal_inflorescence.lean#L72-L89"
+    lean_code: |
+      def twice_primordia_count (r0 beta T : Int) : Int :=
+        2 * r0 * T + beta * T * T
+      theorem azpeitia_2021_accelerating_plastochron_surplus (r0 beta T : Int)
+          (hbeta : beta > 0) (hT : T > 0) :
+          twice_primordia_count r0 0 T = 2 * r0 * T ∧
+          twice_primordia_count r0 beta T - twice_primordia_count r0 0 T = beta * T * T ∧
+          twice_primordia_count r0 beta T > twice_primordia_count r0 0 T
+    variables: "Δt(t): plastochron interval between consecutive lateral primordia; r_0 = 1/Δt_0: basal initiation rate; β: plastochron acceleration rate; N(T): cumulative primordia initiated by meristem age T"
+    role: "Proves that linear plastochron acceleration β > 0 generates a quadratic surplus of lateral meristems ½ β T² over constant-plastochron cauliflower (β = 0), shifting contact parastichy numbers from (8, 13) to (13, 21)"
+    source_citation: "Azpeitia et al. (2021) Science 373(6551):192-197 Figs. 3-4"
+    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L240-L395"
+
+  - id: pringle-roman-esco-fractal-inflorescence-3
+    law_name: "Azpeitia et al. (2021) Conical vs Hemispherical Curd Aspect Ratio Amplification Law"
+    formula: "H(β, T) = H_0 + dz · β · T,  (H/R)(β_2) > (H/R)(β_1) > (H/R)(0) = H_0 / R_0  (for 0 < β_1 < β_2)"
+    lean_decl: "MathOfBiology.Loop_040.curd_height"
+    lean_theorem: "MathOfBiology.Loop_040.azpeitia_2021_conical_aspect_amplification"
+    lean_locus: "morphoeval/lean/loops/Loop_040_roman_esco_fractal_inflorescence.lean#L102-L131"
+    lean_code: |
+      def curd_height (h0 dz beta T : Int) : Int :=
+        h0 + dz * beta * T
+      theorem azpeitia_2021_conical_aspect_amplification (h0 dz beta1 beta2 T : Int)
+          (hdz : dz > 0) (hT : T > 0) (hb1 : beta1 > 0) (hb12 : beta1 < beta2) :
+          curd_height h0 dz 0 T = h0 ∧
+          curd_height h0 dz beta1 T > h0 ∧
+          curd_height h0 dz beta2 T - curd_height h0 dz beta1 T = dz * (beta2 - beta1) * T ∧
+          curd_height h0 dz beta1 T < curd_height h0 dz beta2 T
+    variables: "H(β, T): axial height of meristematic cone; R: basal curd radius; dz: vertical internode displacement per plastochron acceleration unit; β: plastochron acceleration coefficient"
+    role: "Proves that conical height and height-to-radius aspect ratio H/R increase strictly monotonically with plastochron acceleration β, transforming a flat hemispherical cauliflower dome (β = 0, H/R ≈ 0.56) into a pointed self-similar Romanesco cone (β = 0.085, H/R ≈ 1.48)"
+    source_citation: "Azpeitia et al. (2021) Science 373(6551):192-197 Fig. 4"
+    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L400-L510"

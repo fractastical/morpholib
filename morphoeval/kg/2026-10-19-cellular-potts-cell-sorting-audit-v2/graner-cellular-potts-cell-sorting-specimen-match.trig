@@ -1,0 +1,83 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-graner-cellular-potts-cell-sorting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting — Morphological realism / specimen match: 89/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Vendors and SHA-256-verifies the confocal fluorescence embryonic cell aggregate specimen (`datasets/cellular_potts_cell_sorting/embryonic_cell_aggregate_specimen.jpg`, CC BY 3.0), segments the GFP-positive inner dark-type cell bolus (`r_D/R = 0.49`) and outer polygonal RFP-outlined light-type tissue matrix (`r_L/R = 0.77`, empirical `Δr = +0.2793` vs simulated `Δr = +0.3317`, L525-626), and overlays empirical vs. simulated radial occupancy profiles across 12 concentric annuli (`Pearson r = 0.9612, RMSE = 0.154`, Panel B4)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-2> ;
+        pk:hasScore "0.89"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "1992-graner-cellular-potts-cell-sorting.py L525–L626" ;
+        dct:description "Confocal embryonic cell aggregate GFP core and RFP shell segmentation and radial profile comparison" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/b9976f8/1992-graner-cellular-potts-cell-sorting.py#L525-L626> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/cellular_potts_cell_sorting_comparison.png (generated output)" ;
+        dct:description "10-panel synthesis figure displaying all 4 CPM phase regimes, T=0 pinning control, specimen segmentation (B3), and radial profile match (B4) — docs/media/cellular_potts_cell_sorting_comparison.png: rendered output of 1992-graner-cellular-potts-cell-sorting.py at b9976f8, image/png, 625763 B, 3000×1260 px, artifact_sha256 94cf7dc29ecf10cff051dd93ee95b5ee2557e2bab5b85948a912a902322f4ffe (sha256 94cf7dc29ecf10cff051dd93ee95b5ee2557e2bab5b85948a912a902322f4ffe), spec_fingerprint 7cdd3f38f0e6192e614f25f3f47d81cb4d09870705b0e0dca1d1d4dbca9f4cc0" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/newbio239098a0>,
+            <https://doi.org/10.1103/PhysRevE.47.2128>,
+            <https://doi.org/10.1103/PhysRevLett.69.2013>,
+            <https://doi.org/10.1126/science.141.3579.401>,
+            <https://doi.org/10.1242/dev.122.5.1611> .
+    <https://doi.org/10.1038/newbio239098a0> dct:date "1972"^^xsd:gYear ;
+        dct:title "Regeneration of Hydra from reaggregated cells" .
+    <https://doi.org/10.1103/PhysRevE.47.2128> dct:date "1993"^^xsd:gYear ;
+        dct:title "Simulation of the differential adhesion driven rearrangement of biological cells" .
+    <https://doi.org/10.1103/PhysRevLett.69.2013> dct:date "1992"^^xsd:gYear ;
+        dct:title "Simulation of biological cell sorting using a two-dimensional extended Potts model" .
+    <https://doi.org/10.1126/science.141.3579.401> dct:date "1963"^^xsd:gYear ;
+        dct:title "Reconstruction of tissues by dissociated cells" .
+    <https://doi.org/10.1242/dev.122.5.1611> dct:date "1996"^^xsd:gYear ;
+        dct:title "Surface tensions of embryonic tissues predict their mutual envelopment behavior" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting — Morphological realism / specimen match 89/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:45:44Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

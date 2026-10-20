@@ -1,0 +1,415 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-limb-chondrogenesis-turing-loop
+  target_simulation: newman-limb-chondrogenesis-turing
+  paper: Newman & Frisch (1979) Science — Dynamics of skeletal pattern formation in
+    developing chick limb
+  created_at: '2026-10-20T00:29:51.165Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: e93f00e
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 575.975
+  wall_time_min: 9.6
+  tier_a_wall_s: 151.628
+  tier_b_wall_s: 424.347
+  cpu_user_s: 1.49
+  cpu_sys_s: 0.2
+  input_tokens: 906
+  output_tokens: 237992
+  subagent_tokens: 0
+  total_llm_tokens: 238898
+  artifact_tokens: 30725
+  tier_a_llm_tokens: 49432
+  tier_b_llm_tokens: 189466
+  effective_tokens_per_s: 414.8
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:30:30.822Z'
+  ended_at: '2026-10-20T00:30:30.903Z'
+  duration_s: 0.081
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 1029
+    subagent_tokens: 0
+    total_llm_tokens: 1029
+    artifact_tokens: 1029
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/limb_chondrogenesis_turing/scout_manifest.json
+    bytes: 3594
+    sha256: 7f3605aa11f5e07752820298d27a4a8fc3a8d0508e2863a03046f6b858115262
+    tokens: 1029
+  commands: []
+  notes: 'Scouting Slot 012: Newman & Frisch (1979) Science 205:662-668 Dynamics of
+    skeletal pattern formation in developing chick limb; Completed Step 1 scout dossier
+    with zero collision detected'
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:30:30.979Z'
+  ended_at: '2026-10-20T00:33:01.553Z'
+  duration_s: 150.574
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 376
+    output_tokens: 42882
+    subagent_tokens: 0
+    total_llm_tokens: 43258
+    artifact_tokens: 920
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/limb_chondrogenesis_turing/README.md
+    bytes: 3042
+    sha256: 97f01f2a01facb786ef1ef516c176aa0f0996ca57dd7ea57e2a5cbfdae2c9317
+    tokens: 920
+  commands: []
+  notes: Extracting Newman & Frisch (1979) Science Helmholtz/Turing standing-wave
+    eigenmodes and chick wing skeletal morphogenesis parameters; Extracted Newman
+    & Frisch (1979) Science Eqs. 1-7, standing-wave eigenmodes, and chick wing 1->2->3
+    transition parameters
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:33:01.641Z'
+  ended_at: '2026-10-20T00:33:01.718Z'
+  duration_s: 0.078
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2250
+    subagent_tokens: 0
+    total_llm_tokens: 2250
+    artifact_tokens: 2250
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json
+    bytes: 7712
+    sha256: c30d742bbf2a990a50d5dcc637d333a62f145eb3d912d9cc02cca2b7b565f2c0
+    tokens: 2250
+  commands: []
+  notes: Vendoring Gallus gallus wing skeleton specimen and pinning SHA-256 digests
+    in limb_chondrogenesis_turing_reference.json; Vendored chick_wing_skeleton_specimen.jpg
+    and limb_chondrogenesis_turing_reference.json with SHA-256 provenance
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:33:56.463Z'
+  ended_at: '2026-10-20T00:33:57.084Z'
+  duration_s: 0.387
+  cpu_user_s: 0.11
+  cpu_sys_s: 0.09
+  max_rss_mb: 391.3
+  runs_count: 2
+  tokens:
+    input_tokens: 25
+    output_tokens: 1578
+    subagent_tokens: 0
+    total_llm_tokens: 1603
+    artifact_tokens: 1577
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/math_kg_loops/newman-limb-chondrogenesis-turing.yaml
+    bytes: 5760
+    sha256: 484b74eb7badc9ffb98f054c827da35f6591f344fbfb48f2f6eb656d2682549c
+    tokens: 1577
+  commands:
+  - command: /Users/jdietz/.elan/bin/lean morphoeval/lean/loops/Loop_012_limb_chondrogenesis_turing.lean
+    exit_code: 0
+    wall_s: 0.387
+    cpu_user_s: 0.11
+    cpu_sys_s: 0.09
+    stdout_tokens: 1
+  notes: Proving 3 Lean 4 theorems in Loop_012_limb_chondrogenesis_turing.lean and
+    writing newman-limb-chondrogenesis-turing.yaml; Verified 3 Lean 4 theorems in
+    Loop_012_limb_chondrogenesis_turing.lean (0 sorrys) and registered newman-limb-chondrogenesis-turing.yaml
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:07.065Z'
+  ended_at: '2026-10-20T00:35:07.145Z'
+  duration_s: 0.08
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 1271
+    subagent_tokens: 0
+    total_llm_tokens: 1271
+    artifact_tokens: 1271
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: 1979-newman-limb-chondrogenesis-turing.py
+    bytes: 4447
+    sha256: 62c958c8f180ebb108321253612e86a2d9562f667295af9f49faca9076213b2f
+    tokens: 1271
+  commands: []
+  notes: 'Pass 1: Writing v1 baseline 1979-newman-limb-chondrogenesis-turing.py; Pass
+    1: Completed v1 baseline 1979-newman-limb-chondrogenesis-turing.py'
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:07.218Z'
+  ended_at: '2026-10-20T00:35:07.690Z'
+  duration_s: 0.428
+  cpu_user_s: 0.38
+  cpu_sys_s: 0.03
+  max_rss_mb: 91.3
+  runs_count: 1
+  tokens:
+    input_tokens: 20
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 21
+    artifact_tokens: 64
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/limb_chondrogenesis_turing_growth.gif
+    bytes: 136954
+    sha256: 5d2b45e8490a837c44bbc09a15734561b3237ce05dce0633be1e4105c02a895b
+    tokens: 64
+  commands:
+  - command: ./venv/bin/python3 1979-newman-limb-chondrogenesis-turing.py
+    exit_code: 0
+    wall_s: 0.428
+    cpu_user_s: 0.38
+    cpu_sys_s: 0.03
+    stdout_tokens: 1
+  notes: 'Pass 1: Rendered baseline comparison PNG and growth GIF'
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:35:07.763Z'
+  ended_at: '2026-10-20T00:35:07.842Z'
+  duration_s: 0.079
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2811
+    subagent_tokens: 0
+    total_llm_tokens: 2811
+    artifact_tokens: 2811
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-limb-chondrogenesis-turing-audit.yaml
+    bytes: 11235
+    sha256: 1fe32a2958aadfec3840882df1ce686418157908fa6a79de47204833153983b5
+    tokens: 2811
+  commands: []
+  notes: 'Pass 1: Auditing v1 baseline 1979-newman-limb-chondrogenesis-turing.py across
+    7 rubric dimensions; Pass 1 audit score: 47.4 / 100; identified 4 remediation
+    targets'
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:35:07.916Z'
+  ended_at: '2026-10-20T00:35:08.312Z'
+  duration_s: 0.351
+  cpu_user_s: 0.3
+  cpu_sys_s: 0.03
+  max_rss_mb: 88.9
+  runs_count: 1
+  tokens:
+    input_tokens: 34
+    output_tokens: 122
+    subagent_tokens: 0
+    total_llm_tokens: 156
+    artifact_tokens: 718
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-limb-chondrogenesis-turing-audit.measurements.yaml
+    bytes: 2217
+    sha256: 0da573c8089f19a7cdc1bc792144021f90ce7fe3f3bdb8b20fbaed6e9f7653b4
+    tokens: 718
+  commands:
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-limb-chondrogenesis-turing-audit.yaml
+    exit_code: 0
+    wall_s: 0.351
+    cpu_user_s: 0.3
+    cpu_sys_s: 0.03
+    stdout_tokens: 122
+  notes: 'Pass 1: Measured outputs and sidecar morphometrics'
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:35:08.395Z'
+  ended_at: '2026-10-20T00:35:08.727Z'
+  duration_s: 0.287
+  cpu_user_s: 0.23
+  cpu_sys_s: 0.02
+  max_rss_mb: 44.0
+  runs_count: 1
+  tokens:
+    input_tokens: 43
+    output_tokens: 148
+    subagent_tokens: 0
+    total_llm_tokens: 191
+    artifact_tokens: 11066
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-limb-chondrogenesis-turing-audit/morphoeval_2026-10-19-limb-chondrogenesis-turing-audit.ttl
+    bytes: 38104
+    sha256: a041f0ffccdd449e5ab800e6b5220f344ac50a85306ad73ae985d454c1d65192
+    tokens: 11066
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-limb-chondrogenesis-turing-audit.yaml
+      --conform --no-resolve-heads
+    exit_code: 0
+    wall_s: 0.287
+    cpu_user_s: 0.23
+    cpu_sys_s: 0.02
+    stdout_tokens: 148
+  notes: 'Pass 1: Built ProbKnow-conformant TriG nanopublications'
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:35:17.559Z'
+  ended_at: '2026-10-20T00:35:18.139Z'
+  duration_s: 0.533
+  cpu_user_s: 0.47
+  cpu_sys_s: 0.03
+  max_rss_mb: 54.5
+  runs_count: 1
+  tokens:
+    input_tokens: 32
+    output_tokens: 496
+    subagent_tokens: 0
+    total_llm_tokens: 528
+    artifact_tokens: 3028
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-limb-chondrogenesis-turing-audit/signed/newman-limb-chondrogenesis-turing-overall.trig
+    bytes: 10221
+    sha256: dac9ae2c4a3c616d0135b56b25a0ed65343fe00afb35f62abc0256956091b40b
+    tokens: 3028
+  commands:
+  - command: ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-limb-chondrogenesis-turing-audit
+    exit_code: 0
+    wall_s: 0.533
+    cpu_user_s: 0.47
+    cpu_sys_s: 0.03
+    stdout_tokens: 496
+  notes: 'Pass 1: Signed all 10 TriG nanopublications with RSA key and trusty URIs'
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:35:18.214Z'
+  ended_at: '2026-10-20T00:35:18.296Z'
+  duration_s: 0.082
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2506
+    subagent_tokens: 0
+    total_llm_tokens: 2506
+    artifact_tokens: 2506
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-limb-chondrogenesis-turing-audit/REPORT.md
+    bytes: 9471
+    sha256: c2a107eefd950c109cdced154a5ab8cc5a4d8c6fe113f75adeaec14c8662f56c
+    tokens: 2506
+  commands: []
+  notes: 'Pass 1: Verifying REPORT.md and RDF knowledge graph; Pass 1 KG report verified
+    (47.4 / 100, quick_gate=47/100)'
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:18.370Z'
+  ended_at: '2026-10-20T00:42:21.385Z'
+  duration_s: 423.015
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 376
+    output_tokens: 182898
+    subagent_tokens: 0
+    total_llm_tokens: 183274
+    artifact_tokens: 3485
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-limb-chondrogenesis-turing-audit-v2/REPORT.md
+    bytes: 12240
+    sha256: 5c12dd87b8909e8d8a925c08b12cd407a7437a0039103e88fd4d3262ee83bc54
+    tokens: 3485
+  commands: []
+  notes: 'Pass 2: Remediating 1979-newman-limb-chondrogenesis-turing.py with nonlinear
+    2-component Turing PDE in shrinking progress zone, 4-stage mode series (1->2->3->4),
+    AER surgical truncation series, dual negative controls, and Gallus gallus wing
+    bone segmentation; Pass 2 remediation complete: score 47.4 -> 92.3 (+44.9), quick_gate=100/100
+    (validated)'

@@ -1,0 +1,68 @@
+sim_id: metzger-lung-stereotyped-branching
+slot: 53
+slot_id: slot-053-lung-stereotyped-branching
+math_family: "Stereotyped Branching Subroutine Grammar (D, P, O) & FGF10-SHH-Ptch1 Receptor-Ligand Turing Switch"
+model_spec:
+  model: "Metzger, Klein, Martin & Krasnow (2008) Nature 3D branching programme (Domain Branching D, Planar Bifurcation P, Orthogonal Bifurcation O) coupled with Menshykau, Kraemer & Iber (2012, 2014) FGF10-SHH-Ptch1 receptor-ligand reaction-diffusion mode selection"
+  domain_sprout_angle_deg: 68.0
+  bifurcation_half_angle_deg: 37.5
+  planar_dihedral_rotation_deg: 0.0
+  orthogonal_dihedral_rotation_deg: 90.0
+  diffusion_ratio_D_F_over_D_R: 50.0
+  a_R: 0.1
+  a_F: 0.9
+  mu_R: 1.0
+  seed: 2008
+  inputs:
+    - datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json
+    - datasets/lung_stereotyped_branching_modes/bronchial_tree_specimen.jpg
+equations:
+  - law_name: "Metzger (2008) Domain & Bifurcation Tip-Multiplicity Composition Law"
+    formula: "T_D(m) = m + 1,   T_P(n) = T_O(n) = 2 n,   (T_{P/O} ∘ T_{P/O})(n) = 4 n,   T_{D_m → (P/O)^2} = 4 m + 1"
+    lean_decl: "MathOfBiology.Loop_053.domain_composite_tips"
+    lean_theorem: "MathOfBiology.Loop_053.metzger_subroutine_tip_multiplicity"
+    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L36-L54"
+    lean_code: |
+      def bifurcate_tips (n : Nat) : Nat := 2 * n
+      def domain_composite_tips (m : Nat) : Nat := bifurcate_tips (bifurcate_tips m) + 1
+      theorem metzger_subroutine_tip_multiplicity (n m : Nat) :
+          bifurcate_tips (bifurcate_tips n) = 4 * n ∧
+          domain_composite_tips m = 4 * m + 1 := by
+        simp [bifurcate_tips, domain_composite_tips]; omega
+    variables: "m: number of lateral domain buds along a parent airway trunk; n: number of active distal airway tips entering a planar or orthogonal bifurcation subroutine"
+    role: "Determines exact distal bronchial tip counts across compound Domain (D) -> Planar (P) / Orthogonal (O) lineage trees in E11-E15 mouse lung lobes"
+    source_citation: "Metzger, Klein, Martin & Krasnow (2008) Nature 453(7196):745-750 Figs. 2-4"
+    code_locus: "2008-metzger-lung-stereotyped-branching.py#L105-L215"
+  - law_name: "Metzger (2008) Planar (Δφ = 0°) Invariance vs Orthogonal (Δφ = 90°) Dihedral Rotation Law"
+    formula: "φ_{g+1}^{(P)} = φ_g + 0°,   φ_{g+1}^{(O)} = φ_g + 90°  ⟹  φ_{g+2}^{(O)} - φ_g = 180° (mod 180° ≡ 0°)"
+    lean_decl: "MathOfBiology.Loop_053.orthogonal_step_deg"
+    lean_theorem: "MathOfBiology.Loop_053.metzger_planar_orthogonal_dihedral_periodicity"
+    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L61-L79"
+    lean_code: |
+      def planar_step_deg (phi : Int) : Int := phi + 0
+      def orthogonal_step_deg (phi : Int) : Int := phi + 90
+      theorem metzger_planar_orthogonal_dihedral_periodicity (phi : Int) :
+          planar_step_deg (planar_step_deg phi) = phi ∧
+          orthogonal_step_deg (orthogonal_step_deg phi) - phi = 180 := by
+        simp [planar_step_deg, orthogonal_step_deg]; omega
+    variables: "φ_g: cleavage-plane dihedral azimuth at branching generation g; Δφ ∈ {0°, 90°}: dihedral rotation between parent and daughter bifurcation planes"
+    role: "Partitions flat lobar margin sheets (Planar P, Δφ = 0°, coplanar hull flatness → 0) from 3D space-filling lobar interiors (Orthogonal O, Δφ = 90°, isotropic 3D rosette)"
+    source_citation: "Metzger, Klein, Martin & Krasnow (2008) Nature 453(7196):745-750 Fig. 3"
+    code_locus: "2008-metzger-lung-stereotyped-branching.py#L220-L335"
+  - law_name: "Menshykau et al. (2012, 2014) FGF10-SHH-Ptch1 Receptor-Ligand Turing Switch"
+    formula: "∂_t R = D_R ∇^2 R + γ(a_R - μ_R R + R^2 F),   ∂_t F = D_F ∇^2 F + γ(a_F - R^2 F),   (R^*, F^*) = ((a_R+a_F)/μ_R, a_F/(R^*)^2)"
+    lean_decl: "MathOfBiology.Loop_053.receptor_reaction"
+    lean_theorem: "MathOfBiology.Loop_053.menshykau_fgf10_shh_receptor_ligand_steady_state"
+    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L86-L106"
+    lean_code: |
+      def receptor_reaction (a_R mu_R_R r2_F : Int) : Int := a_R - mu_R_R + r2_F
+      def ligand_reaction (a_F r2_F : Int) : Int := a_F - r2_F
+      theorem menshykau_fgf10_shh_receptor_ligand_steady_state (a_R a_F mu_R_R r2_F : Int) :
+          receptor_reaction a_R mu_R_R r2_F + ligand_reaction a_F r2_F = a_R + a_F - mu_R_R ∧
+          receptor_reaction a_R (a_R + a_F) a_F = 0 ∧
+          ligand_reaction a_F a_F = 0 := by
+        simp [receptor_reaction, ligand_reaction]; omega
+    variables: "R: epithelial Ptch1/SHH receptor complex concentration; F: mesenchymal FGF10 ligand concentration; D_R, D_F: diffusion coefficients (D_F/D_R = 50); a_R, a_F: basal production rates; μ_R: receptor removal rate"
+    role: "Biochemical Turing instability that selects between apical tip splitting (Planar/Orthogonal bifurcation at low elongation speed v_g < v_crit) and periodic lateral budding (Domain branching at high elongation speed v_g > v_crit)"
+    source_citation: "Menshykau, Kraemer & Iber (2012) Development 139:4506-4514; Menshykau et al. (2014) PLoS Comput. Biol. 10(2):e1003421 Eqs. (1)-(5)"
+    code_locus: "2008-metzger-lung-stereotyped-branching.py#L340-L470"

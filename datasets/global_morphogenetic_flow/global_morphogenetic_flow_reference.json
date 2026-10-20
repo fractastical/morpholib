@@ -1,0 +1,153 @@
+{
+  "metadata": {
+    "dataset_id": "streichan-mayer-lefebvre-global-morphogenetic-flow-v1",
+    "title": "Streichan et al. (2018) eLife, Mayer et al. (2010) Nature & Lefebvre et al. (2023) eLife Compressible Viscous Stokes-Brinkman Global Morphogenetic Flow & Drosophila Germband Extension Reference Dataset",
+    "organism": "Drosophila melanogaster (whole-embryo cellular blastoderm & germband extension stages 6-8)",
+    "sources": [
+      {
+        "id": "streichan2018",
+        "citation": "Streichan SJ, Lefebvre MF, Noppe N, Hufnagel L, Shraiman BI (2018). Global morphogenetic flow is accurately predicted by the spatial distribution of myosin. eLife 7:e27454.",
+        "doi": "10.7554/eLife.27454"
+      },
+      {
+        "id": "mayer2010",
+        "citation": "Mayer M, Depken M, Bois JS, Julicher F, Grill SW (2010). Anisotropies in cortical tension reveal the physical basis of polarizing cortical flows. Nature 467(7315):617-621.",
+        "doi": "10.1038/nature09376"
+      },
+      {
+        "id": "lefebvre2023",
+        "citation": "Lefebvre MF, Claussen NH, Mitchell NP, Gustafson HJ, Streichan SJ (2023). Geometric control of myosin II orientation during axis elongation. eLife 12:e78787.",
+        "doi": "10.7554/eLife.78787"
+      },
+      {
+        "id": "brauns2024",
+        "citation": "Brauns F, Claussen NH, Lefebvre MF, Wieschaus EF, Shraiman BI (2024). The geometric basis of epithelial convergent extension. eLife 13:RP95521.",
+        "doi": "10.7554/eLife.95521"
+      }
+    ],
+    "specimens": {
+      "drosophila_germband_extension_specimen": {
+        "file": "datasets/global_morphogenetic_flow/drosophila_germband_extension_specimen.jpg",
+        "sha256": "2d7fad8f57edcadf3ccc80636e45dee9187f09d0f108595b12f50df040c63e39",
+        "species": "Drosophila melanogaster whole-embryo confocal micrograph during early gastrulation and germband extension (IDR0151 / Clark et al. 2022 eLife 11:e78902)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Image_Data_Resource_-_idr0151_-_15177681.jpg",
+        "embryo_bbox_yx": [12, 486, 11, 1143],
+        "trunk_stripe_roi_yx": [131, 382, 294, 940],
+        "pattern_type": "whole_embryo_pair_rule_patterned_germband_extension_and_posterior_midgut_invagination"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Streichan et al. (2018) eLife 7:e27454 Eqs. 1-4, Figs. 1-5; Mayer et al. (2010) Nature 467:617-621 Eq. 1; Lefebvre et al. (2023) eLife 12:e78787 Figs. 1-4",
+    "stokes_brinkman_pde": {
+      "operator": "eta * nabla^2 v + eta_b * nabla(nabla . v) - xi * v = -nabla . sigma_a",
+      "fourier_symbol": "L_{ij}(k) = (eta * |k|^2 + xi) * delta_{ij} + eta_b * k_i * k_j",
+      "hydrodynamic_length_um": "ell_H = sqrt(eta / xi) = 180.0 um (range 100-300 um across vitelline friction regimes)",
+      "bulk_to_shear_viscosity_ratio": 1.5,
+      "embryo_length_L_AP_um": 500.0,
+      "embryo_circumference_L_DV_um": 420.0,
+      "embryo_width_DV_um": 210.0,
+      "grid_nx": 64,
+      "grid_ny": 48,
+      "description": "Overdamped 2D compressible viscous Stokes-Brinkman balance on the cartographic blastoderm surface M. Long-range hydrodynamic screening length ell_H = sqrt(eta/xi) ~ 180 um couples ventrolateral DV myosin cable contraction and posterior midgut invagination into a global 4-vortex embryonic flow field."
+    },
+    "active_nematic_myosin_stress_tensor": {
+      "formula": "sigma^a_{ij}(x) = alpha_iso * m_iso(x) * delta_{ij} + alpha_aniso * m_aniso(x) * Q_{ij}(x)",
+      "nematic_tensor": "Q_{ij} = n_i * n_j - 0.5 * delta_{ij}, Tr(Q) = Q_{xx} + Q_{yy} = 0",
+      "dv_cable_director": "n = e_DV = (0, 1) => Q_{yy} = +0.5, Q_{xx} = -0.5, Q_{xy} = 0",
+      "alpha_iso_norm": 1.0,
+      "alpha_aniso_norm": 1.85,
+      "description": "Trace-free active nematic stress tensor Q_{ij} aligned with dorsoventral (DV) junctional Myosin-II cables (Q_{yy} = +0.5 > 0, Q_{xx} = -0.5 < 0) generates simultaneous DV convergence (dv_y/dy < 0) and AP germband extension (dv_x/dx > 0), while isotropic apical myosin in the posterior midgut (PMG) primordium drives tissue sink compression (nabla . v < 0)."
+    }
+  },
+  "streichan_2018_experimental_regimes": {
+    "section": "Streichan et al. (2018) eLife 7:e27454 Figs. 2-5; Lefebvre et al. (2023) eLife 12:e78787 Figs. 2-4",
+    "duration_minutes": 30.0,
+    "regimes": [
+      {
+        "regime_id": "wildtype_gbe_anisotropic_plus_pmg",
+        "label": "Wild-Type GBE (DV Anisotropic Myosin Cables + Isotropic PMG Invagination, Streichan 2018 Fig. 2)",
+        "aniso_gain": 1.0,
+        "iso_pmg_gain": 1.0,
+        "ell_H_um": 180.0,
+        "eta_b_over_eta": 1.5,
+        "empirical_flow_correlation_r": 0.924,
+        "empirical_variance_explained_R2": 0.854,
+        "empirical_peak_ap_velocity_um_min": 6.40,
+        "empirical_gbe_extension_ratio": 1.92
+      },
+      {
+        "regime_id": "anisotropic_dv_cables_only",
+        "label": "DV Anisotropic Myosin Cables Only (No Isotropic PMG Invagination Sink, alpha_iso=0)",
+        "aniso_gain": 1.0,
+        "iso_pmg_gain": 0.0,
+        "ell_H_um": 180.0,
+        "eta_b_over_eta": 1.5,
+        "empirical_flow_correlation_r": 0.835,
+        "empirical_variance_explained_R2": 0.697,
+        "empirical_peak_ap_velocity_um_min": 4.95,
+        "empirical_gbe_extension_ratio": 1.66
+      },
+      {
+        "regime_id": "twist_snail_ventral_furrow_mutant",
+        "label": "twist / snail Ventral Mesoderm Mutant (Preserved Ectodermal DV Cables + PMG Sink, Streichan 2018 Fig. 4)",
+        "aniso_gain": 0.88,
+        "iso_pmg_gain": 0.92,
+        "ell_H_um": 180.0,
+        "eta_b_over_eta": 1.5,
+        "empirical_flow_correlation_r": 0.892,
+        "empirical_variance_explained_R2": 0.796,
+        "empirical_peak_ap_velocity_um_min": 5.65,
+        "empirical_gbe_extension_ratio": 1.79
+      },
+      {
+        "regime_id": "isotropic_myosin_only_no_nematic_q",
+        "label": "Isotropic Myosin Assumption (alpha_aniso=0, Streichan 2018 Fig. 2 Null Tensor Test)",
+        "aniso_gain": 0.0,
+        "iso_pmg_gain": 1.0,
+        "ell_H_um": 180.0,
+        "eta_b_over_eta": 1.5,
+        "empirical_flow_correlation_r": 0.415,
+        "empirical_variance_explained_R2": 0.172,
+        "empirical_peak_ap_velocity_um_min": 2.15,
+        "empirical_gbe_extension_ratio": 1.21
+      },
+      {
+        "regime_id": "eve_pair_rule_mutant",
+        "label": "even-skipped (eve) Pair-Rule Mutant (Severely Reduced DV Myosin Anisotropy, Streichan 2018 Fig. 4)",
+        "aniso_gain": 0.24,
+        "iso_pmg_gain": 0.75,
+        "ell_H_um": 180.0,
+        "eta_b_over_eta": 1.5,
+        "empirical_flow_correlation_r": 0.562,
+        "empirical_variance_explained_R2": 0.316,
+        "empirical_peak_ap_velocity_um_min": 2.60,
+        "empirical_gbe_extension_ratio": 1.28
+      },
+      {
+        "regime_id": "bcd_nos_tsl_maternal_triple_mutant",
+        "label": "bcd nos tsl Maternal AP-Null Triple Mutant (Zero DV Anisotropy & Zero PMG Flow, Streichan 2018 Fig. 4)",
+        "aniso_gain": 0.0,
+        "iso_pmg_gain": 0.0,
+        "ell_H_um": 180.0,
+        "eta_b_over_eta": 1.5,
+        "empirical_flow_correlation_r": 0.0,
+        "empirical_variance_explained_R2": 0.0,
+        "empirical_peak_ap_velocity_um_min": 0.0,
+        "empirical_gbe_extension_ratio": 1.00
+      }
+    ]
+  },
+  "specimen_reference_morphometrics": {
+    "embryo_width_ap_px": 1133,
+    "embryo_height_dv_px": 475,
+    "embryo_ap_dv_aspect_ratio": 2.3853,
+    "biological_ap_dv_aspect_ratio": 2.3810,
+    "ellipsoidal_solidity": 0.9383,
+    "pair_rule_stripe_count": 8,
+    "mean_stripe_spacing_px": 75.86,
+    "dv_cable_gradient_anisotropy": 1.0419,
+    "dorsal_posterior_invagination_indent_px": 122.0
+  }
+}

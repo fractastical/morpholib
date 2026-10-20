@@ -1,0 +1,149 @@
+{
+  "metadata": {
+    "dataset_id": "sheth-2012-hox-turing-polydactyly-v1",
+    "title": "Sheth et al. (2012) Science — Distal Hox/Gli3 Dose Modulation of Turing Wavelength & Polydactyly Reference Dataset",
+    "sources": [
+      {
+        "id": "sheth2012",
+        "citation": "Sheth R, Marcon L, Bastida MF, Junco M, Quintana L, Dahn R, Kmita M, Sharpe J, Ros MA (2012). Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism. Science 338(6113):1476-1480.",
+        "doi": "10.1126/science.1226804"
+      },
+      {
+        "id": "raspopovic2014",
+        "citation": "Raspopovic J, Marcon L, Russo L, Sharpe J (2014). Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients. Science 345(6196):566-570.",
+        "doi": "10.1126/science.1252960"
+      },
+      {
+        "id": "newman1979",
+        "citation": "Newman SA, Frisch HL (1979). Dynamics of skeletal pattern formation in developing chick limb. Science 205(4407):662-668.",
+        "doi": "10.1126/science.462174"
+      },
+      {
+        "id": "miura2006",
+        "citation": "Miura T, Shiota K, Morriss-Kay G, Maini PK (2006). Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development. Journal of Theoretical Biology 240(4):562-573.",
+        "doi": "10.1016/j.jtbi.2005.10.016"
+      }
+    ],
+    "specimens": {
+      "vertebrate_hexadactyl_autopod": {
+        "file": "datasets/hox_turing_polydactyly/vertebrate_autopod_digits_specimen.jpg",
+        "sha256": "995e43a2a0cf781547dc8f573685a533013cea3502fb2ebbb9c1fc8a6cb14e90",
+        "species": "Homo sapiens / vertebrate postaxial hexadactylous autopod AP radiograph (6 metacarpals and phalangeal digit rays on a fan-shaped distal hand plate)",
+        "author": "Dr.icken / Wikimedia Commons",
+        "license": "CC BY-SA 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Polydactyly_01_Rhand_AP.jpg",
+        "image_shape_hw": [640, 552],
+        "transverse_phalangeal_band_y": [280, 400],
+        "expected_digit_rays": 6,
+        "expected_digit_x_px": [49, 184, 265, 343, 420, 509],
+        "expected_mean_interdigit_px": 92.0,
+        "expected_central_interdigit_cv": 0.058
+      }
+    },
+    "scout_manifest": {
+      "file": "datasets/hox_turing_polydactyly/scout_manifest.json",
+      "sha256": "c0608869f6d213a4b1b557968bddb544e9c58f0dbec460061979254edd930f80"
+    }
+  },
+  "sheth_2012_hox_turing_kinetics": {
+    "section": "Sheth et al. (2012) Science 338:1476-1480 Figs. 1-4 & Supplementary Materials Eqs. (S1)-(S6)",
+    "governing_pde": {
+      "u_eq": "du/dt = f_u(H) * u + f_v * v - u^3 + D_u * Lap(u)",
+      "v_eq": "dv/dt = g_u(H) * u + g_v * v + D_v * Lap(v)",
+      "hox_modulation_law": "k_c(H) = k_max - (k_max - k_wt) * H = 14.0 - 9.0 * H,  f_u(H) = 2.0 + k_c(H)^2,  g_u(H) = 200.0 * f_u(H) + 25.0 * k_c(H)^4 - 4.5 * |tr(J_{k_c})|",
+      "boundary_condition": "Zero-flux Neumann n . grad(u) = n . grad(v) = 0 on distal fan-shaped autopod domain"
+    },
+    "canonical_parameters": {
+      "Du": 0.5,
+      "Dv": 50.0,
+      "diffusivity_ratio_d": 100.0,
+      "fv": -1.0,
+      "gv": -200.0,
+      "k_wt": 5.0,
+      "k_max": 14.0,
+      "autopod_arc_length_nondim": 6.283185307179586,
+      "autopod_arc_length_um": 2500.0,
+      "proximal_narrow_arc_factor": 0.35
+    }
+  },
+  "allelic_series_genotypes": [
+    {
+      "genotype_id": "WT_pentadactyl",
+      "label": "Wild-Type (Hoxa13+/+; Hoxd11-13+/+; Gli3+/+)",
+      "hox_dose_H": 1.0,
+      "fu": 27.0,
+      "kc": 5.0,
+      "kc_squared": 25.0,
+      "wavelength_nondim": 1.2566370614359172,
+      "wavelength_um": 500.0,
+      "predicted_digits": 5,
+      "empirical_digits_range": [5.0, 5.0],
+      "empirical_source": "Sheth et al. (2012) Fig. 1A, Fig. 2G (WT = 5.0 digits)"
+    },
+    {
+      "genotype_id": "Gli3_null",
+      "label": "Gli3-/- (Hoxa13+/+; Hoxd11-13+/+; Gli3-/-)",
+      "hox_dose_H": 0.7777777777777778,
+      "fu": 51.0,
+      "kc": 7.0,
+      "kc_squared": 49.0,
+      "wavelength_nondim": 0.8975979010256552,
+      "wavelength_um": 357.14285714285717,
+      "predicted_digits": 7,
+      "empirical_digits_range": [6.0, 7.5],
+      "empirical_source": "Sheth et al. (2012) Fig. 1B, Fig. 2G (Gli3-/- = 6.8 +/- 0.4 digits)"
+    },
+    {
+      "genotype_id": "Hoxd_het_Gli3_null",
+      "label": "Hoxa13+/+; Hoxd11-13+/-; Gli3-/-",
+      "hox_dose_H": 0.6666666666666666,
+      "fu": 66.0,
+      "kc": 8.0,
+      "kc_squared": 64.0,
+      "wavelength_nondim": 0.7853981633974483,
+      "wavelength_um": 312.5,
+      "predicted_digits": 8,
+      "empirical_digits_range": [7.5, 8.5],
+      "empirical_source": "Sheth et al. (2012) Fig. 1C, Fig. 2G (Hoxd11-13+/-;Gli3-/- = 7.9 +/- 0.5 digits)"
+    },
+    {
+      "genotype_id": "Hoxd_null_Gli3_null",
+      "label": "Hoxa13+/+; Hoxd11-13-/-; Gli3-/-",
+      "hox_dose_H": 0.5555555555555556,
+      "fu": 83.0,
+      "kc": 9.0,
+      "kc_squared": 81.0,
+      "wavelength_nondim": 0.6981317007977318,
+      "wavelength_um": 277.77777777777777,
+      "predicted_digits": 9,
+      "empirical_digits_range": [8.5, 10.0],
+      "empirical_source": "Sheth et al. (2012) Fig. 1D, Fig. 2G (Hoxd11-13-/-;Gli3-/- = 9.2 +/- 0.6 digits)"
+    },
+    {
+      "genotype_id": "Hoxa13_het_Hoxd_null_Gli3_null",
+      "label": "Hoxa13+/-; Hoxd11-13-/-; Gli3-/-",
+      "hox_dose_H": 0.3333333333333333,
+      "fu": 123.0,
+      "kc": 11.0,
+      "kc_squared": 121.0,
+      "wavelength_nondim": 0.5711986642890533,
+      "wavelength_um": 227.27272727272728,
+      "predicted_digits": 11,
+      "empirical_digits_range": [10.5, 11.8],
+      "empirical_source": "Sheth et al. (2012) Fig. 1E, Fig. 2G (Hoxa13+/-;Hoxd11-13-/-;Gli3-/- = 11.1 +/- 0.6 digits)"
+    },
+    {
+      "genotype_id": "Hoxa13_null_Hoxd_null_Gli3_null",
+      "label": "Hoxa13-/-; Hoxd11-13-/-; Gli3-/- (Complete Distal Hox/Gli3 Triple Null)",
+      "hox_dose_H": 0.0,
+      "fu": 198.0,
+      "kc": 14.0,
+      "kc_squared": 196.0,
+      "wavelength_nondim": 0.4487989505128276,
+      "wavelength_um": 178.57142857142858,
+      "predicted_digits": 14,
+      "empirical_digits_range": [13.0, 14.5],
+      "empirical_source": "Sheth et al. (2012) Fig. 1G, Fig. 2G (Hoxa13-/-;Hoxd11-13-/-;Gli3-/- = 13.6 +/- 0.7 digits at constant PD/AP autopod size)"
+    }
+  ]
+}

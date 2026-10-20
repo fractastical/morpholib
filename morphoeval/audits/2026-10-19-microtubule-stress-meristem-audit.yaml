@@ -1,0 +1,151 @@
+# MorphoEval Pass 1 (v1) Audit — Bozorg, Krupinski & Jönsson (2014) PLoS Comput. Biol., Sampathkumar et al. (2014) eLife & Hamant et al. (2008) Science
+# Shoot Apical Meristem Shell Stress Anisotropy, Stress-vs-Strain Cue Discrimination & Katanin Boundary Morphogenesis (Slot 036)
+
+audit:
+  id: 2026-10-19-microtubule-stress-meristem-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 036 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/36
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2008-hamant-microtubule-stress-meristem.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  bozorg2014:
+    title: "Stress and Strain Provide Positional and Directional Cues in Development"
+    authors: "Bozorg B, Krupinski P, Jönsson H"
+    venue: "PLoS Computational Biology 10(1):e1003410 (2014)"
+    doi: 10.1371/journal.pcbi.1003410
+  sampathkumar2014:
+    title: "Subcellular and supracellular mechanical stress prescribes cytoskeleton behavior in Arabidopsis cotyledon pavement cells"
+    authors: "Sampathkumar A, Krupinski P, Wightman R, Milani P, Berquand A, Boudaoud A, Hamant O, Jönsson H, Meyerowitz EM"
+    venue: "eLife 3:e01967 (2014)"
+    doi: 10.7554/eLife.01967
+  hamant2008:
+    title: "Developmental Patterning by Mechanical Signals in Arabidopsis"
+    authors: "Hamant O, Heisler MG, Jönsson H, Krupinski P, Uyttewaal M, Boudaoud A, Meyerowitz EM, Traas J"
+    venue: "Science 322(5908):1650-1655 (2008)"
+    doi: 10.1126/science.1165594
+  uyttewaal2012:
+    title: "Mechanical Stress Acts via Katanin to Amplify Differences in Growth Rate between Adjacent Cells in Arabidopsis"
+    authors: "Uyttewaal M, Burian A, Alim K, Landrein B, Borowska-Wykręt D, Dedieu A, Peaucelle A, Ludynia M, Traas J, Boudaoud A, Kwiatkowska D, Hamant O"
+    venue: "Cell 149(2):439-451 (2012)"
+    doi: 10.1016/j.cell.2012.02.048
+
+simulations:
+  - id: hamant-microtubule-stress-meristem
+    name: "Bozorg et al. (2014), Sampathkumar et al. (2014), Hamant et al. (2008) & Uyttewaal et al. (2012) shoot apical meristem pressurized shell stress tensor, stress-vs-strain CMT alignment, and katanin organ boundary morphogenesis"
+    organism: "Arabidopsis thaliana (shoot apical meristem L1 epidermal shell, organ-meristem saddle boundary, cylindrical stem, and epidermal cells)"
+    script: 2008-hamant-microtubule-stress-meristem.py
+    output: docs/media/microtubule_stress_meristem_comparison.png
+    extra_outputs:
+      - docs/media/microtubule_stress_meristem_growth.gif
+    status: evaluated
+    source_refs:
+      - bozorg2014
+      - sampathkumar2014
+      - hamant2008
+      - uyttewaal2012
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2008-hamant-microtubule-stress-meristem.py`
+      (weighted score: 54.0/100). The Pass 1 baseline script evaluates only algebraic
+      Young-Laplace sphere and cylinder formulas (`compute_baseline_shell_stresses`,
+      L25-40) without a 2D/3D finite-element or vertex shell turgor stress + anisotropic
+      viscoplastic Lockhart growth solver across all 4 canonical SAM zones (Central Dome
+      K > 0, Peripheral Flank, Organ-Meristem Saddle Boundary K < 0, and Cylindrical Stem),
+      without the Bozorg et al. (2014) stress-vs-strain directional cue discrimination
+      experiment, without laser cell-ablation ring reorientation or lateral compression
+      clamp perturbations, without `bot1`/`ktn1` katanin or Oryzalin microtubule
+      depolymerization controls, and without structure-tensor / cell-wall segmentation of
+      the vendored *Arabidopsis thaliana* shoot apical meristem micrograph.
+    scores:
+      model-fidelity:
+        value: 54
+        rationale: >-
+          Computes only closed-form algebraic sphere and cylinder Young-Laplace stress
+          ratios (`compute_baseline_shell_stresses`, L25-40), omitting the negative-Gaussian-curvature
+          organ-meristem saddle boundary (K = kappa_1 * kappa_2 < 0), the Bozorg et al.
+          (2014) stress-vs-strain feedback comparison, anisotropic viscoplastic Lockhart
+          cell-wall growth, laser single-cell ablation ring stress reorientation, and
+          katanin (`bot1`/`ktn1`) / Oryzalin feedback gain perturbations.
+        evidence:
+          - {file: 2008-hamant-microtubule-stress-meristem.py, lines: [25, 40], note: "Algebraic sphere/cylinder Young-Laplace formula only; omits saddle boundary FEM, stress-vs-strain cue comparison, ablation ring, and katanin/oryzalin controls", supports: true}
+      specimen-match:
+        value: 44
+        rationale: >-
+          Vendors `datasets/microtubule_stress_meristem/arabidopsis_meristem_boundary_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, or compute structure-tensor cell-wall
+          nematic orientation and boundary crease curvature from the histological specimen.
+        evidence:
+          - {file: 2008-hamant-microtubule-stress-meristem.py, lines: [71, 106], note: "Renders 2-panel schematic bar chart without loading or segmenting the Arabidopsis SAM micrograph", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates only a single static parameter point (P = 0.50 MPa, R = 40 um, h = 0.25 um)
+          without sweeping across the 4 SAM curvature zones, 5 experimental perturbation
+          regimes, or exposing CLI overrides.
+        evidence:
+          - {file: 2008-hamant-microtubule-stress-meristem.py, lines: [25, 40], note: "Single fixed parameter point without zone sweep, perturbation sweep, or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 53
+        rationale: >-
+          Exposes only 3 unreferenced algebraic numbers in `measure_morphoeval()` (L43-68)
+          without reference values, uncertainty bounds, Pearson correlations, p-values,
+          stress-vs-strain cue discrimination metrics, or empirical specimen measurements.
+        evidence:
+          - {file: 2008-hamant-microtubule-stress-meristem.py, lines: [43, 68], note: "Minimal 3-metric list lacking reference values, uncertainty, p-values, and negative controls", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `microtubule_stress_meristem_reference.json`
+          in `datasets/microtubule_stress_meristem/`, but the Pass 1 script does not verify
+          SHA-256 dataset checksums or load reference benchmarks at runtime.
+        evidence:
+          - {file: datasets/microtubule_stress_meristem/microtubule_stress_meristem_reference.json, lines: [1, 165], note: "Reference JSON present on disk but not loaded or SHA-256-verified in Pass 1 script", supports: true}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Contains only a brief top-level docstring without mapping functions to Bozorg
+          et al. (2014), Sampathkumar et al. (2014), Hamant et al. (2008), Uyttewaal et al.
+          (2012), or the 3 Lean 4 theorems in `Loop_036_microtubule_stress_meristem.lean`.
+        evidence:
+          - {file: 2008-hamant-microtubule-stress-meristem.py, lines: [1, 10], note: "Minimal docstring without equation-by-equation or Lean 4 theorem traceability", supports: false}
+      repro-package:
+        value: 56
+        rationale: >-
+          Supports `--verify-only` with a single assertion on the 2:1 cylinder stress ratio
+          (L109-116), but lacks a comprehensive self-test suite covering SHA-256 integrity,
+          Lean 4 algebraic laws, stress-vs-strain cue discrimination, ablation ring
+          reorientation, and specimen CV segmentation.
+        evidence:
+          - {file: 2008-hamant-microtubule-stress-meristem.py, lines: [109, 116], note: "Single cylinder ratio check without comprehensive self-test suite", supports: false}
+    remediation:
+      - "Upgrade `2008-hamant-microtubule-stress-meristem.py` to solve the 2D/3D Finite-Element / Vertex Shell Turgor Stress + Anisotropic Viscoplastic Lockhart Growth equations across all 4 canonical SAM zones (Central Dome K>0, Peripheral Flank, Organ-Meristem Saddle Boundary K<0, and Cylindrical Stem sigma_theta/sigma_z = 2)."
+      - "Implement Bozorg et al. (2014) stress-vs-strain cue comparison, laser single-cell ablation ring circumferential reorientation, lateral compression clamp perturbation, and `bot1`/`ktn1` + Oryzalin microtubule depolymerization ablation controls."
+      - "Add structure-tensor & cell-wall segmentation on `datasets/microtubule_stress_meristem/arabidopsis_meristem_boundary_specimen.jpg` and render a 6-panel publication figure."

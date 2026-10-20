@@ -1,0 +1,66 @@
+sim_id: sumper-diatom-frustule-phase-sep
+math_family: "Fourth-Order Cahn-Hilliard Spinodal Phase Separation PDE & Hierarchical Hexagonal Packing"
+model_spec:
+  model: "Sumper (2002) Science LCPA phase separation + Lenoci & Camp (2008) Langmuir hierarchical Cahn-Hilliard biosilica PDE"
+  governing_pde: "d(phi)/dt = M * laplacian(phi^3 - phi - epsilon^2 * laplacian(phi))"
+  dispersion_relation: "sigma(k) = M * k^2 * (1 - 3*phi0^2 - epsilon^2 * k^2)"
+  grid_resolution: [128, 128]
+  M: 1.0
+  phi0_droplet: -0.30
+  epsilon_primary: 1.50
+  epsilon_secondary: 0.65
+  seed: 2002
+  inputs:
+    - datasets/diatom_frustule_phase_sep/diatom_frustule_phase_sep_reference.json
+    - datasets/diatom_frustule_phase_sep/coscinodiscus_diatom_specimen.jpg
+    - datasets/diatom_frustule_phase_sep/scout_manifest.json
+equations:
+  - law_name: "Cahn-Hilliard (1958) / Lenoci & Camp (2008) Double-Well Chemical Potential & Binodal Phase Equilibria"
+    formula: "μ(φ) = φ^3 - φ - ε^2 ∇^2 φ,   μ_bulk(±1) = 0,   μ_bulk(-φ) = -μ_bulk(φ)"
+    lean_decl: "MathOfBiology.Loop_071.cahn_hilliard_bulk_mu"
+    lean_theorem: "MathOfBiology.Loop_071.cahn_hilliard_binodal_equilibria"
+    lean_locus: "morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean#L21-L39"
+    lean_code: |
+      def cahn_hilliard_bulk_mu (phi : Int) : Int := phi * phi * phi - phi
+      theorem cahn_hilliard_binodal_equilibria :
+          cahn_hilliard_bulk_mu 1 = 0 ∧
+          cahn_hilliard_bulk_mu (-1) = 0 ∧
+          cahn_hilliard_bulk_mu 0 = 0 := by decide
+    variables: "φ(x,y,t) ∈ [-1, 1]: order parameter (+1 silica wall, -1 LCPA droplet pore); ε: interfacial thickness parameter"
+    role: "Defines the bistable double-well free energy driving spontaneous demixing of LCPA microdroplets from precipitating biosilica within the diatom SDV"
+    source_citation: "Lenoci & Camp (2008) Langmuir 24(1):217-223 Eqs. (1)-(3); Cahn & Hilliard (1958) J. Chem. Phys. 28:258"
+    code_locus: "2002-sumper-diatom-frustule-phase-sep.py#L140-L245"
+  - law_name: "Fourth-Order Cahn-Hilliard Spinodal Dispersion & Wavelength Selection Law"
+    formula: "∂_t φ = M ∇^2(φ^3 - φ - ε^2 ∇^2 φ) ⟹ σ(k) = M k^2 (1 - 3 φ_0^2 - ε^2 k^2),  k_c = √((1 - 3 φ_0^2)/(2 ε^2)),  λ_c = 2π / k_c"
+    lean_decl: "MathOfBiology.Loop_071.cahn_hilliard_dispersion"
+    lean_theorem: "MathOfBiology.Loop_071.cahn_hilliard_spinodal_band_selection"
+    lean_locus: "morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean#L48-L69"
+    lean_code: |
+      def cahn_hilliard_dispersion (M alpha eps_sq q : Int) : Int :=
+        M * q * (alpha - eps_sq * q)
+      theorem cahn_hilliard_mass_conservation_zero_mode (M alpha eps_sq : Int) :
+          cahn_hilliard_dispersion M alpha eps_sq 0 = 0 := by simp [cahn_hilliard_dispersion]
+      theorem cahn_hilliard_spinodal_band_selection :
+          cahn_hilliard_dispersion 1 4 1 2 = 4 ∧
+          cahn_hilliard_dispersion 1 4 1 4 = 0 ∧
+          cahn_hilliard_dispersion 1 (-2) 1 1 = -3 := by decide
+    variables: "M: mobility; φ_0: mean composition; α = 1 - 3 φ_0^2: spinodal instability drive; q = k^2: squared wavenumber; k_c: fastest-growing wavenumber"
+    role: "Selects the characteristic pore spacing λ_c = 2π/k_c inside the spinodal (|φ_0| < 1/√3) while guaranteeing exact mass conservation (σ(0)=0) and stability outside the spinodal"
+    source_citation: "Lenoci & Camp (2008) Langmuir 24(1):217-223 Section 2; Sumper (2002) Science 295:2430"
+    code_locus: "2002-sumper-diatom-frustule-phase-sep.py#L140-L310"
+  - law_name: "Sumper (2002) Hierarchical LCPA Droplet Subdivision & Centered Hexagonal Packing Law"
+    formula: "d_m = d_1 ρ^{m-1},   a_m = a_1 ρ^{m-1},   H(R) = 1 + 3 R (R + 1) ∈ {1, 7, 19, 37, ...}"
+    lean_decl: "MathOfBiology.Loop_071.centered_hexagonal_droplets"
+    lean_theorem: "MathOfBiology.Loop_071.sumper_2002_hierarchical_hex_packing"
+    lean_locus: "morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean#L78-L96"
+    lean_code: |
+      def centered_hexagonal_droplets (R : Nat) : Nat := 1 + 3 * R * (R + 1)
+      theorem sumper_2002_hierarchical_hex_packing (s0 ratio : Nat) :
+          sumper_tier_scale s0 ratio 2 = ratio * (ratio * s0) ∧
+          centered_hexagonal_droplets 1 = 7 ∧
+          centered_hexagonal_droplets 2 = 19 := by
+        simp [sumper_tier_scale, centered_hexagonal_droplets]
+    variables: "m ∈ {1, 2, 3}: hierarchical tier (foramen, cribrum, cribrella); ρ ≈ 0.18: inter-tier scale ratio; R: hexagonal ring number"
+    role: "Explains the self-similar hierarchical nesting of 7 to 19 secondary cribrum pores inside each primary hexagonal areola and tertiary cribrella sieve pores in Coscinodiscus"
+    source_citation: "Sumper (2002) Science 295(5564):2430-2433 Figs. 1-4; Losic et al. (2006) J. Nanosci. Nanotechnol. 6:982"
+    code_locus: "2002-sumper-diatom-frustule-phase-sep.py#L315-L420"

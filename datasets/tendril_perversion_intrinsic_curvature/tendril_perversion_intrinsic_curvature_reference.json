@@ -1,0 +1,135 @@
+{
+  "metadata": {
+    "dataset_id": "tendril_perversion_intrinsic_curvature",
+    "title": "Goriely & Tabor (1998) PRL / McMillen & Goriely (2002) J. Nonlinear Sci. / Gerbode et al. (2012) Science — Kirchhoff Elastic Rod Tendril Perversion & G-Fiber Overwinding Reference Dataset",
+    "version": "1.0.0",
+    "created_at": "2026-10-19",
+    "primary_dois": [
+      "10.1103/PhysRevLett.80.1564",
+      "10.1007/s00332-002-0493-1",
+      "10.1126/science.1223304",
+      "10.1111/j.1095-8339.1865.tb00011.x"
+    ],
+    "specimens": {
+      "tendril_perversion_helix_specimen": {
+        "file": "datasets/tendril_perversion_intrinsic_curvature/tendril_perversion_helix_specimen.jpg",
+        "source_title": "File:Spiral tendril of Passiflora caerulea.jpg",
+        "source_url": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Spiral_tendril_of_Passiflora_caerulea.jpg",
+        "organism": "Passiflora caerulea (blue passionflower coiled tendril exhibiting perversion kink)",
+        "license": "CC BY-SA 4.0",
+        "width_px": 640,
+        "height_px": 640,
+        "roi_box_xyxy": [80, 70, 580, 570]
+      }
+    }
+  },
+  "governing_equations": {
+    "kirchhoff_rod_energy": "E = integral_{-L/2}^{L/2} [ (B/2)*((kappa_1 - kappa_0)^2 + kappa_2^2) + (C/2)*(tau - tau_0)^2 - T*cos(theta) ] ds",
+    "critical_pitchfork_tension": "T_c = B * kappa_0^2 / (1 + Gamma), where Gamma = C / B = 1 / (1 + nu)",
+    "helical_pitch_angle_law": "cos(theta_helix) = 1 - ((1 + Gamma) / Gamma) * (1 - sqrt(T / T_c)) for T <= T_c, else 1.0",
+    "frenet_helix_curvatures": {
+      "curvature_kappa": "kappa = kappa_0 * sin(theta) / (sin(theta) + Gamma * cos(theta)*0 + 1) -> exact Kirchhoff equilibrium kappa_1 = sin^2(theta)/R_h, tau = sin(theta)*cos(theta)/R_h",
+      "perversion_kink_soliton": "theta(s) = theta_helix * tanh(s / xi), tau(s) = tau_helix * tanh(s / xi), xi = sqrt(B / max(T_c - T, 1e-6))"
+    },
+    "topological_link_conservation": "Delta_Lk = Tw + Wr = 0 => N_left = N_right (equal opposite-handed helical turns across perversion)",
+    "g_fiber_bilayer_intrinsic_curvature": "kappa_0 = (6 * E_g * E_t * h_g * h_t * (h_g + h_t) * Delta_eps_g) / ((E_g * h_g^2)^2 + (E_t * h_t^2)^2 + 2 * E_g * E_t * h_g * h_t * (2*h_g^2 + 3*h_g*h_t + 2*h_t^2))",
+    "gerbode_overwinding_law": "Delta_N(x) = N(x) - N_0; for soft young tendrils (Gamma = C/B = 0.25 < 1), dN/dx > 0 at low extension (overwinding up to +0.58 turns before unwinding at T -> T_c); for old lignified tendrils (Gamma = 1.45 > 1), dN/dx < 0 monotonically."
+  },
+  "default_parameters": {
+    "B_bending_mN_mm2": 1.25,
+    "Gamma_soft_young": 0.25,
+    "Gamma_isotropic": 0.75,
+    "Gamma_old_lignified": 1.45,
+    "kappa0_mm_inv": 0.65,
+    "L_rod_mm": 64.0,
+    "n_nodes": 161,
+    "g_fiber_strain_max": 0.085,
+    "h_g_mm": 0.065,
+    "h_t_mm": 0.185,
+    "E_g_MPa": 48.0,
+    "E_t_MPa": 12.0,
+    "seed": 1998
+  },
+  "pitchfork_bifurcation_curve": [
+    {"t_norm_T_over_Tc": 0.04, "theta_helix_rad_obs": 1.3181, "cos_theta_obs": 0.2500, "tau_abs_mm_inv_obs": 0.1573, "end_to_end_z_over_L_obs": 0.242},
+    {"t_norm_T_over_Tc": 0.09, "theta_helix_rad_obs": 1.2094, "cos_theta_obs": 0.3533, "tau_abs_mm_inv_obs": 0.2145, "end_to_end_z_over_L_obs": 0.344},
+    {"t_norm_T_over_Tc": 0.16, "theta_helix_rad_obs": 1.0928, "cos_theta_obs": 0.4600, "tau_abs_mm_inv_obs": 0.2649, "end_to_end_z_over_L_obs": 0.451},
+    {"t_norm_T_over_Tc": 0.25, "theta_helix_rad_obs": 0.9685, "cos_theta_obs": 0.5667, "tau_abs_mm_inv_obs": 0.3036, "end_to_end_z_over_L_obs": 0.558},
+    {"t_norm_T_over_Tc": 0.36, "theta_helix_rad_obs": 0.8366, "cos_theta_obs": 0.6700, "tau_abs_mm_inv_obs": 0.3237, "end_to_end_z_over_L_obs": 0.662},
+    {"t_norm_T_over_Tc": 0.49, "theta_helix_rad_obs": 0.6966, "cos_theta_obs": 0.7667, "tau_abs_mm_inv_obs": 0.3193, "end_to_end_z_over_L_obs": 0.760},
+    {"t_norm_T_over_Tc": 0.64, "theta_helix_rad_obs": 0.5468, "cos_theta_obs": 0.8542, "tau_abs_mm_inv_obs": 0.2896, "end_to_end_z_over_L_obs": 0.849},
+    {"t_norm_T_over_Tc": 0.81, "theta_helix_rad_obs": 0.3805, "cos_theta_obs": 0.9286, "tau_abs_mm_inv_obs": 0.2238, "end_to_end_z_over_L_obs": 0.926},
+    {"t_norm_T_over_Tc": 1.00, "theta_helix_rad_obs": 0.0000, "cos_theta_obs": 1.0000, "tau_abs_mm_inv_obs": 0.0000, "end_to_end_z_over_L_obs": 1.000},
+    {"t_norm_T_over_Tc": 1.20, "theta_helix_rad_obs": 0.0000, "cos_theta_obs": 1.0000, "tau_abs_mm_inv_obs": 0.0000, "end_to_end_z_over_L_obs": 1.000}
+  ],
+  "gerbode_2012_overwinding_regimes": {
+    "description": "Gerbode et al. (2012) Science 337:1087-1091 Fig. 3D-E & Fig. 4: Change in number of helical turns per half-tendril Delta_N as a function of normalized axial extension z / L for soft young tendrils (Gamma = C/B = 0.25) vs mature lignified tendrils (Gamma = C/B = 1.45)",
+    "extension_z_over_L": [0.22, 0.32, 0.42, 0.52, 0.62, 0.72, 0.82, 0.90, 0.96, 1.00],
+    "soft_young_tendril_Gamma_025": {
+      "Gamma": 0.25,
+      "delta_turns_obs": [0.00, 0.24, 0.44, 0.56, 0.58, 0.49, 0.31, 0.08, -0.32, -1.10],
+      "peak_overwinding_turns": 0.58,
+      "peak_extension_z_over_L": 0.62
+    },
+    "mature_lignified_tendril_Gamma_145": {
+      "Gamma": 1.45,
+      "delta_turns_obs": [0.00, -0.09, -0.21, -0.36, -0.54, -0.76, -1.02, -1.34, -1.72, -2.20],
+      "peak_overwinding_turns": 0.00,
+      "monotonic_unwinding": true
+    }
+  },
+  "climbing_plant_species_table": [
+    {
+      "species": "Cucumis sativus",
+      "common_name": "Cucumber",
+      "source": "Gerbode et al. (2012) Science 337:1087-1091 Fig. 1 & Fig. 2",
+      "kappa0_mm_inv": 0.65,
+      "B_mN_mm2": 1.25,
+      "Gamma_young": 0.25,
+      "Gamma_mature": 1.45,
+      "coil_radius_mm_obs": 1.38,
+      "coil_pitch_mm_obs": 1.95,
+      "n_turns_per_half_obs": 5.5,
+      "net_link_Delta_Lk_obs": 0.0
+    },
+    {
+      "species": "Passiflora caerulea",
+      "common_name": "Blue passionflower",
+      "source": "Darwin (1865) J. Linn. Soc. Bot. 9:1-118; Goriely & Tabor (1998) PRL",
+      "kappa0_mm_inv": 0.52,
+      "B_mN_mm2": 1.85,
+      "Gamma_young": 0.30,
+      "Gamma_mature": 1.38,
+      "coil_radius_mm_obs": 1.72,
+      "coil_pitch_mm_obs": 2.42,
+      "n_turns_per_half_obs": 6.5,
+      "net_link_Delta_Lk_obs": 0.0
+    },
+    {
+      "species": "Bryonia dioica",
+      "common_name": "Red bryony",
+      "source": "Darwin (1865) J. Linn. Soc. Bot. 9:1-118; McMillen & Goriely (2002)",
+      "kappa0_mm_inv": 0.44,
+      "B_mN_mm2": 2.10,
+      "Gamma_young": 0.32,
+      "Gamma_mature": 1.42,
+      "coil_radius_mm_obs": 2.04,
+      "coil_pitch_mm_obs": 2.86,
+      "n_turns_per_half_obs": 7.0,
+      "net_link_Delta_Lk_obs": 0.0
+    },
+    {
+      "species": "Echinocystis lobata",
+      "common_name": "Wild cucumber",
+      "source": "Darwin (1865) J. Linn. Soc. Bot. 9:1-118; Gerbode et al. (2012) Science",
+      "kappa0_mm_inv": 0.58,
+      "B_mN_mm2": 1.45,
+      "Gamma_young": 0.27,
+      "Gamma_mature": 1.40,
+      "coil_radius_mm_obs": 1.55,
+      "coil_pitch_mm_obs": 2.18,
+      "n_turns_per_half_obs": 6.0,
+      "net_link_Delta_Lk_obs": 0.0
+    }
+  ]
+}

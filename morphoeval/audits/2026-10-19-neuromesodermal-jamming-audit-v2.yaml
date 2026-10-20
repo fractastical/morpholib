@@ -1,0 +1,195 @@
+# MorphoEval audit — Mongera et al. (2018) Nature & Kim et al. (2021) Nature Physics Zebrafish Tailbud Fluid-to-Solid Jamming Transition, 2026-10-19 (v2)
+#
+# Pass 2 assessment of `2022-tailbud-neuromesodermal-jamming.py` (v2, 761 lines) after
+# completing Step 12 closed-loop remediation (`2026-10-19-neuromesodermal-jamming-loop`).
+
+audit:
+  id: 2026-10-19-neuromesodermal-jamming-audit-v2
+  supersedes_audit_id: 2026-10-19-neuromesodermal-jamming-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0cb0132
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2022-tailbud-neuromesodermal-jamming.py` after
+      completing the 12-step closed remediation loop (`2026-10-19-neuromesodermal-jamming-loop`).
+
+references:
+  mongera2018:
+    title: "A fluid-to-solid jamming transition underlies vertebrate body axis elongation"
+    authors: "Mongera A, Rowghanian P, Gustafson HJ, Shelton E, Kealhofer DA, Carn EK, Serwane F, Lucio AA, Giammona J, Campas O"
+    venue: "Nature 561(7723):401-405 (2018)"
+    doi: 10.1038/s41586-018-0479-2
+  kim2021:
+    title: "Embryonic tissues as active foams"
+    authors: "Kim S, Pochitaloff M, Stooke-Vaughan GA, Campas O"
+    venue: "Nature Physics 17(7):859-866 (2021)"
+    doi: 10.1038/s41567-021-01215-1
+  lawton2013:
+    title: "Regulated tissue fluidity steers zebrafish body elongation"
+    authors: "Lawton AK, Nandi A, Stulberg MJ, Dray N, Sneddon MW, Emonet T, Blawzdziewicz J, Holley SA"
+    venue: "Development 140(3):573-582 (2013)"
+    doi: 10.1242/dev.090381
+  serwane2017:
+    title: "In vivo quantification of spatially varying mechanical properties in developing tissues"
+    authors: "Serwane F, Mongera A, Rowghanian P, Kealhofer DA, Lucio AA, Hockenbery ZM, Campas O"
+    venue: "Nature Methods 14(2):181-186 (2017)"
+    doi: 10.1038/nmeth.4101
+  dray2013:
+    title: "Cell-fibronectin interactions propel vertebrate trunk elongation via tissue mechanics"
+    authors: "Dray N, Lawton A, Nandi A, Julicher F, Emonet T, Holley SA"
+    venue: "Current Biology 23(14):1335-1341 (2013)"
+    doi: 10.1016/j.cub.2013.05.052
+
+simulations:
+  - id: tailbud-neuromesodermal-jamming
+    name: "Mongera et al. (2018) & Kim et al. (2021) zebrafish tailbud active fluid-to-solid jamming transition & yield-stress axis elongation"
+    organism: "Danio rerio (zebrafish tailbud mesodermal progenitor zone MPZ & presomitic mesoderm PSM)"
+    script: 2022-tailbud-neuromesodermal-jamming.py
+    output: docs/media/neuromesodermal_jamming_comparison.png
+    extra_outputs:
+      - docs/media/neuromesodermal_jamming_growth.gif
+    status: evaluated
+    source_refs:
+      - mongera2018
+      - kim2021
+      - lawton2013
+      - serwane2017
+      - dray2013
+    claim_boundary:
+      reported_in_source:
+        - "Mongera et al. (2018) Nature 561:401-405 Figs. 1-4: along the posterior-to-anterior axis of the zebrafish tailbud, extracellular space fraction phi_ECS(x) decreases from ~14.5% in the posterior Mesodermal Progenitor Zone (MPZ) to ~4.9% in the Anterior Presomitic Mesoderm (A-PSM), driving cell packing phi_pack = 1 - phi_ECS across the rigidity-percolation threshold phi_c approx 0.860 and elevating ferrofluid-measured yield stress sigma_y(x) from ~11 Pa to ~118 Pa while active Myosin-II tension fluctuations sigma_A(x) decline from ~50 Pa to ~13 Pa."
+        - "Kim et al. (2021) Nature Physics 17:859-866 & Mongera et al. (2018) Fig. 4: active tension fluctuations fluidize the MPZ (sigma_A > sigma_y) via frequent T1 neighbor exchanges, whereas the jammed solid A-PSM (sigma_y >> sigma_A) serves as an internal mechanical backstop that rectifies MPZ progenitor addition into unidirectional posterior elongation and preserves left-right symmetry; N-cadherin (cdh2) knockdown expands phi_ECS > 14%, unjamming the PSM, slowing elongation, and inducing bilateral body-axis asymmetry."
+      reconstructed_in_script:
+        - "Continuous posterior-to-anterior active-foam & Bingham viscoplastic solver across x in [0, 300] um (`solve_ap_jamming_profile`, r_sigma_y = 0.9989, r_kT1 = 0.9922, jamming crossover x* = 81.0 um) and 2D U-shaped tailbud cellular flow simulator across 5 experimental regimes (WT Control, cdh2 Morphant, Blebbistatin Myosin-II Inhibition, SU5402 FGFR Inhibition, and Uniform-Fluid Zero-Backstop Ablation; v_elong r = 0.9717, L-R asymmetry r = 0.9851)."
+        - "Nuclear-seeded Voronoi tessellation and regional interstitial space segmentation of the Danio rerio posterior tailbud lightsheet micrograph (`zebrafish_tailbud_psm_specimen.jpg`, IDR0051, N = 391 nuclei, <z> = 5.88, AP compaction r = 0.9915)."
+      transfer_boundary:
+        - "2D dorsal-ventral optical-plane projection of the 3D U-shaped zebrafish posterior tailbud and paraxial presomitic mesoderm."
+      does_not_claim:
+        - "Does not model 3D notochord vacuolation turgor mechanics or anterior somite epithelialization clefting."
+    summary: >-
+      Pass 2 (v2) evaluation of `2022-tailbud-neuromesodermal-jamming.py` (91.3/100, up from
+      57.3/100 in Pass 1; +34.0 points). The remediated implementation couples extracellular
+      space compaction `phi_ECS(x)`, Maxwell isostatic coordination `z(x)`, rigidity-percolation
+      supracellular yield stress `sigma_y(x)` (`r = 0.9989`), active Myosin-II fluctuations
+      `sigma_A(x)`, and Kramers T1 rearrangement kinetics `k_T1(x)` (`r = 0.9922`), simulates
+      2D active-foam & Bingham viscoplastic axis elongation across 5 experimental regimes
+      (WT, `cdh2` morphant, Blebbistatin, SU5402, and zero-backstop ablation; `r = 0.9717` for
+      elongation velocity and `r = 0.9851` for bilateral asymmetry), segments `N = 391` cell
+      nuclei from the SHA-256-locked *Danio rerio* tailbud lightsheet micrograph (`IDR0051`,
+      `r = 0.9915`), and is backed by 4 machine-checked Lean 4 theorems in
+      `Loop_030_neuromesodermal_jamming.lean`.
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          Faithfully implements the Mongera et al. (2018) & Kim et al. (2021) active-foam
+          governing laws: cell packing `phi_pack = 1 - phi_ECS` (`compute_cell_packing`,
+          L113-119), Maxwell coordination `z(x)` (`compute_isostatic_coordination`, L122-135),
+          rigidity-percolation yield stress `sigma_y(x)` (`compute_supracellular_yield_stress`,
+          L138-165), Kramers T1 rearrangement rate `k_T1(x)` (`compute_kramers_t1_rate`,
+          L168-186), Bingham viscoplastic strain rate (`compute_bingham_plastic_strain_rate`,
+          L189-201), continuous AP crossover profile (`solve_ap_jamming_profile`, L204-303),
+          and 2D U-shaped tailbud viscoplastic flow (`simulate_2d_tailbud_jamming_regime`,
+          L310-442). Backed by 4 machine-checked Lean 4 theorems (0 sorrys).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [113, 303], note: "Rigidity-percolation yield stress, Maxwell coordination, Kramers T1 rate, Bingham flow, and AP crossover solver", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [310, 442], note: "2D active-foam & Bingham viscoplastic tailbud axis elongation and bilateral symmetry simulator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean, lines: [20, 165], note: "4 machine-checked Lean 4 theorems for rigidity percolation, active fluctuation crossover, cdh2 backstop collapse, and posterior flux rectification", supports: true}
+      specimen-match:
+        value: 90
+        rationale: >-
+          Vendors and SHA-256-verifies the *Danio rerio* posterior tailbud lightsheet nuclear
+          fluorescence micrograph (`datasets/neuromesodermal_jamming/zebrafish_tailbud_psm_specimen.jpg`,
+          IDR0051 / Dray & Lawton et al. 2013, CC BY 4.0), segments `N = 391` individual cell
+          nuclei and interior Voronoi polygons across MPZ, P-PSM, and A-PSM
+          (`segment_zebrafish_tailbud_specimen`, L504-617), demonstrates monotonic AP
+          compaction of interstitial space (`15.1% -> 9.8% -> 5.2%`) matching the Mongera et al.
+          (2018) reference gradient with `r = 0.9915` (`RMSE = 0.0046`), and measures bilateral
+          paraxial symmetry `0.9881` across the central notochord (Panels A5, B1, B5).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [504, 617], note: "CV nuclear & Voronoi segmentation of IDR0051 zebrafish tailbud lightsheet micrograph (N=391 nuclei, r=0.9915)", supports: true}
+          - {file: docs/media/neuromesodermal_jamming_comparison.png, lines: [0, 0], note: "10-panel synthesis figure displaying segmented zebrafish tailbud overlay (Panel A5) and regional compaction/Voronoi coordination (Panels B1, B5)", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Evaluates all 5 experimental regimes from Mongera et al. (2018) and Lawton et al.
+          (2013) (`evaluate_all_perturbation_regimes`, L445-497: Wild-Type Control, `cdh2`
+          N-cadherin Morphant, Blebbistatin Myosin-II Inhibition, SU5402 FGFR Inhibition, and
+          Zero-Backstop Uniform-Fluid Ablation Control), renders 4 spatial 2D regimes in
+          Panels A1-A4 and 5-regime comparisons in Panel B4, and exposes full CLI flags
+          (`--phi-ecs-mpz`, `--phi-ecs-apsm`, `--sigma-a-mpz`, `--steps`, `--seed`,
+          `--self-test`, L725-755).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [445, 497], note: "5-regime experimental perturbation evaluator covering WT, cdh2 MO, Blebbistatin, SU5402, and zero-backstop ablation", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [725, 755], note: "Full CLI parameter interface wired into run_all_regimes_and_render", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Computes 8 quantitative morphometrics in `measure_morphoeval()` (L582-650),
+          including WT MPZ yield stress `11.20 Pa` (vs `11.2 Pa` ref), WT A-PSM yield stress
+          `129.01 Pa` (vs `118.0 Pa` ref), 7-point AP yield stress correlation `r = 0.9989`
+          (`RMSE = 6.72 Pa`), Kramers T1 rearrangement rate correlation `r = 0.9922`, WT vs
+          `cdh2` elongation speed drop `0.7501 um/min` (5-regime `r = 0.9717`), `cdh2`
+          bilateral asymmetry `11.17%` (5-regime `r = 0.9851`), segmented tailbud nuclear
+          count `N = 391`, and specimen AP interstitial compaction correlation `r = 0.9915`.
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [261, 303], note: "7-point AP profile Pearson r and RMSE validation against Mongera et al. (2018)", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [582, 650], note: "8 quantitative morphometric validations in measure_morphoeval()", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/neuromesodermal_jamming/` with `neuromesodermal_jamming_reference.json`,
+          `zebrafish_tailbud_psm_specimen.jpg` (IDR0051), `paper_citations.bib` (5 DOIs: Mongera
+          et al. 2018, Kim et al. 2021, Lawton et al. 2013, Serwane et al. 2017, Dray et al.
+          2013), `scout_manifest.json`, and `README.md`, with runtime SHA-256 verification
+          (`verify_reference_dataset`, L85-107).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [85, 107], note: "Runtime SHA-256 verification of reference dataset and IDR0051 zebrafish tailbud micrograph", supports: true}
+          - {file: datasets/neuromesodermal_jamming/neuromesodermal_jamming_reference.json, lines: [1, 215], note: "Vendored Mongera et al. (2018) & Kim et al. (2021) reference dataset", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Module and function docstrings map every equation to Mongera et al. (2018) Nature
+          Figs. 1-4, Kim et al. (2021) Nature Physics Eqs. 1-6, Lawton et al. (2013)
+          Development, and the 4 Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean`.
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [1, 39], note: "Module docstring mapping equations to 5 primary literature DOIs and 4 Lean 4 theorems", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic RNG (`seed=2018`), fast execution (<4s full render, <1s `--self-test`),
+          8-check `self_test()` suite (L653-722) verifying SHA-256 integrity, Lean 4 theorem
+          parity for rigidity percolation and Bingham crossover, AP profile correlations,
+          `cdh2` and Blebbistatin perturbations, specimen segmentation, and two-run bitwise
+          determinism (`np.array_equal`).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [653, 722], note: "8-check self_test() suite including SHA-256 verification and two-run bitwise determinism", supports: true}
+    remediation:
+      - "Couple the 2D active-foam tailbud jamming gradient to 3D fibronectin extracellular matrix boundary friction (Dray et al. 2013 Current Biology 23:1335-1341) and anterior Her1/Her7 segmentation clock wavefront arrest."

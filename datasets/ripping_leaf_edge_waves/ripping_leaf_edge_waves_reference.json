@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "dataset_id": "ripping_leaf_edge_waves",
+    "title": "Sharon, Roman, Marder & Swinney (2002) Nature / Audoly & Boudaoud (2003) PRL / Liang & Mahadevan (2009) PNAS — Non-Euclidean Metric Edge Buckling Waves & Self-Similar Wrinkle Cascades in Ruffled Leaf Margins",
+    "version": "1.0.0",
+    "created_at": "2026-10-19",
+    "primary_dois": [
+      "10.1038/419579a",
+      "10.1103/PhysRevLett.91.086105",
+      "10.1073/pnas.0911954106",
+      "10.1511/2004.3.254"
+    ],
+    "specimens": {
+      "lactuca_sativa_edge_waves_specimen": {
+        "file": "datasets/ripping_leaf_edge_waves/lactuca_sativa_edge_waves_specimen.jpg",
+        "source_title": "File:Lactuca sativa 'Lollo Bionda'.jpg",
+        "source_url": "https://upload.wikimedia.org/wikipedia/commons/0/02/Lactuca_sativa_%27Lollo_Bionda%27.jpg",
+        "organism": "Lactuca sativa cv. 'Lollo Bionda' (Ruffled garden lettuce exhibiting multi-generation self-similar edge buckling waves)",
+        "license": "CC BY-SA 4.0",
+        "width_px": 960,
+        "height_px": 960,
+        "canopy_roi_xyxy": [90, 90, 880, 860]
+      }
+    }
+  },
+  "governing_equations": {
+    "foppl_von_karman_energy": "E[u, w] = int [ t * ||grad u + (1/2) grad w otimes grad w - eps_target(x)||^2 + (t^3 / 12(1 - nu^2)) * ||grad^2 w||^2 ] dx dy",
+    "target_riemannian_metric": "ds^2 = dx^2 + g_yy(x) dy^2,  g_yy(x) = 1 + g_0 * exp(-x / ell),  eps_y(x) = (1/2)*(g_yy(x) - 1) = (1/2)*g_0*exp(-x / ell)",
+    "intrinsic_gaussian_curvature": "K(x) = -(1 / sqrt(g_yy(x))) * d^2(sqrt(g_yy(x))) / dx^2 = -(2*g_yy*g_yy'' - (g_yy')^2) / (4 * g_yy^2) < 0",
+    "isometric_arc_length_conservation": "1 + (1/4) * sum_{m=1..M} (2*pi*A_m(x) / lambda_m)^2 = g_yy(x)  =>  A_m(x) / lambda_m = sqrt(w_m(x) * (g_yy(x) - 1)) / pi",
+    "subharmonic_cascade_scaling": "lambda_{m} / lambda_{m+1} = r_cascade in [3, 5],  x_m = c_x * lambda_m,  lambda_loc(x) = c_lambda * x + lambda_min(t)",
+    "saddle_to_ripple_dimensionless_control": "Gamma = g_0 * (ell / t)^2;  Gamma < Gamma_c => global saddle (M=1),  Gamma > Gamma_c => multi-generation edge ripple cascade (M >= 3)"
+  },
+  "default_parameters": {
+    "g0_edge_excess": 0.64,
+    "ell_decay_mm": 12.0,
+    "t_sheet_mm": 0.22,
+    "W_width_mm": 36.0,
+    "L_length_mm": 90.0,
+    "nu_poisson": 0.35,
+    "r_cascade_ratio": 3.5,
+    "n_generations": 4,
+    "lambda_1_mm": 44.1,
+    "seed": 2002
+  },
+  "cascade_generations_table": [
+    {
+      "generation": 1,
+      "label": "G1 Primary Macro-Wave",
+      "wavelength_mm_obs": 44.10,
+      "penetration_depth_mm_obs": 18.90,
+      "edge_amplitude_mm_obs": 6.45,
+      "aspect_ratio_A_over_lambda_obs": 0.1463
+    },
+    {
+      "generation": 2,
+      "label": "G2 Secondary Sub-Harmonic Wave",
+      "wavelength_mm_obs": 12.60,
+      "penetration_depth_mm_obs": 5.40,
+      "edge_amplitude_mm_obs": 1.84,
+      "aspect_ratio_A_over_lambda_obs": 0.1460
+    },
+    {
+      "generation": 3,
+      "label": "G3 Tertiary Marginal Ripple",
+      "wavelength_mm_obs": 3.60,
+      "penetration_depth_mm_obs": 1.54,
+      "edge_amplitude_mm_obs": 0.526,
+      "aspect_ratio_A_over_lambda_obs": 0.1461
+    },
+    {
+      "generation": 4,
+      "label": "G4 Quaternary Micro-Ruffle (Thickness Cutoff)",
+      "wavelength_mm_obs": 1.029,
+      "penetration_depth_mm_obs": 0.441,
+      "edge_amplitude_mm_obs": 0.150,
+      "aspect_ratio_A_over_lambda_obs": 0.1458
+    }
+  ],
+  "distance_from_edge_profile_sweep": [
+    {"x_mm": 0.0, "g_yy_obs": 1.6400, "K_gaussian_mm_inv2_obs": -0.001091, "lambda_loc_mm_obs": 0.880, "rms_slope_obs": 0.5657},
+    {"x_mm": 1.5, "g_yy_obs": 1.5648, "K_gaussian_mm_inv2_obs": -0.001027, "lambda_loc_mm_obs": 4.380, "rms_slope_obs": 0.5314},
+    {"x_mm": 3.0, "g_yy_obs": 1.4984, "K_gaussian_mm_inv2_obs": -0.000963, "lambda_loc_mm_obs": 7.880, "rms_slope_obs": 0.4992},
+    {"x_mm": 6.0, "g_yy_obs": 1.3882, "K_gaussian_mm_inv2_obs": -0.000835, "lambda_loc_mm_obs": 14.880, "rms_slope_obs": 0.4406},
+    {"x_mm": 10.0, "g_yy_obs": 1.2781, "K_gaussian_mm_inv2_obs": -0.000673, "lambda_loc_mm_obs": 24.213, "rms_slope_obs": 0.3729},
+    {"x_mm": 15.0, "g_yy_obs": 1.1834, "K_gaussian_mm_inv2_obs": -0.000496, "lambda_loc_mm_obs": 35.880, "rms_slope_obs": 0.3028},
+    {"x_mm": 22.0, "g_yy_obs": 1.1023, "K_gaussian_mm_inv2_obs": -0.000307, "lambda_loc_mm_obs": 52.213, "rms_slope_obs": 0.2261},
+    {"x_mm": 30.0, "g_yy_obs": 1.0525, "K_gaussian_mm_inv2_obs": -0.000169, "lambda_loc_mm_obs": 70.880, "rms_slope_obs": 0.1621},
+    {"x_mm": 36.0, "g_yy_obs": 1.0319, "K_gaussian_mm_inv2_obs": -0.000106, "lambda_loc_mm_obs": 84.880, "rms_slope_obs": 0.1263}
+  ],
+  "thickness_and_taxon_specimens_table": [
+    {
+      "specimen_id": "Torn_plastic_sheet_Sharon2002",
+      "system": "Irreversible plastic edge-stretched polyethylene sheet (Sharon et al. 2002)",
+      "source": "Sharon, Roman, Marder & Swinney (2002) Nature 419:579-580 Fig. 1-3",
+      "g0_edge_excess": 0.72,
+      "ell_decay_mm": 10.0,
+      "t_sheet_mm": 0.12,
+      "r_cascade": 3.60,
+      "n_active_generations_obs": 5,
+      "edge_aspect_A_over_lambda_obs": 0.1580,
+      "min_wavelength_mm_obs": 0.56
+    },
+    {
+      "specimen_id": "Lactuca_sativa_Lollo_Bionda",
+      "system": "Lactuca sativa cv. 'Lollo Bionda' ruffled leaf blade (auxin marginal growth)",
+      "source": "Sharon et al. (2002) Nature 419:579-580 Fig. 1c & Sharon et al. (2004) Am. Sci.",
+      "g0_edge_excess": 0.64,
+      "ell_decay_mm": 12.0,
+      "t_sheet_mm": 0.22,
+      "r_cascade": 3.50,
+      "n_active_generations_obs": 4,
+      "edge_aspect_A_over_lambda_obs": 0.1461,
+      "min_wavelength_mm_obs": 1.03
+    },
+    {
+      "specimen_id": "Brassica_oleracea_kale_margin",
+      "system": "Brassica oleracea var. sabellica (Curly kale leaf margin)",
+      "source": "Audoly & Boudaoud (2003) PRL 91:086105 & Liang & Mahadevan (2009) PNAS",
+      "g0_edge_excess": 0.85,
+      "ell_decay_mm": 14.0,
+      "t_sheet_mm": 0.35,
+      "r_cascade": 3.40,
+      "n_active_generations_obs": 4,
+      "edge_aspect_A_over_lambda_obs": 0.1718,
+      "min_wavelength_mm_obs": 1.63
+    },
+    {
+      "specimen_id": "Hosta_lancifolia_long_leaf_saddle",
+      "system": "Hosta lancifolia thick weakly-strained leaf blade (global saddle / 2-wave mode)",
+      "source": "Liang & Mahadevan (2009) PNAS 106:22049-22054 Fig. 2-4",
+      "g0_edge_excess": 0.14,
+      "ell_decay_mm": 15.0,
+      "t_sheet_mm": 0.85,
+      "r_cascade": 3.20,
+      "n_active_generations_obs": 1,
+      "edge_aspect_A_over_lambda_obs": 0.0696,
+      "min_wavelength_mm_obs": 39.70
+    }
+  ]
+}

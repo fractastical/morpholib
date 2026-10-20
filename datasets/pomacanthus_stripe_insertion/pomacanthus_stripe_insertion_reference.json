@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "dataset_id": "kondo-asai-1995-pomacanthus-stripe-insertion-v1",
+    "title": "Kondo & Asai (1995) Piecewise-Linear Saturating Gierer-Meinhardt Reaction-Diffusion Wave, Growing-Domain Mid-Trough Stripe Insertion (Pomacanthus semicirculatus) & 2D Y-Branch Unzipping (Pomacanthus imperator) Reference Dataset",
+    "sources": [
+      {
+        "id": "kondo1995",
+        "citation": "Kondo S, Asai R (1995). A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus. Nature 376(6543):765-768.",
+        "doi": "10.1038/376765a0"
+      },
+      {
+        "id": "gierer1972",
+        "citation": "Gierer A, Meinhardt H (1972). A theory of biological pattern formation. Kybernetik 12(1):30-39.",
+        "doi": "10.1007/BF00289234"
+      },
+      {
+        "id": "crampin1999",
+        "citation": "Crampin EJ, Gaffney EA, Maini PK (1999). Reaction and diffusion on growing domains: scenarios for robust pattern formation. Bulletin of Mathematical Biology 61(6):1093-1120.",
+        "doi": "10.1006/bulm.1999.0131"
+      },
+      {
+        "id": "kondo2009",
+        "citation": "Kondo S, Iwashita M, Yamaguchi M (2009). How animals get their skin patterns: fish pigment pattern as a live Turing wave. International Journal of Developmental Biology 53(5-6):851-856.",
+        "doi": "10.1387/ijdb.072502sk"
+      }
+    ],
+    "specimens": {
+      "pomacanthus_semicirculatus_juvenile_stripes": {
+        "file": "datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg",
+        "sha256": "5564f850c1905fb676889fc409d2cf82779d183184616f101547d8f9b85c6871",
+        "species": "Pomacanthus semicirculatus (Semicircle angelfish juvenile, Kasai Rinkai Park Aquarium, Tokyo, showing alternating primary white stripes and newly inserted secondary blue/white mid-trough stripes)",
+        "author": "Totti / Wikimedia Commons",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Pomacanthus_semicirculatus_juvenile_Kasai_aquarium.jpg",
+        "flank_roi_xyxy": [155, 115, 535, 365],
+        "body_length_reference_mm": 40.0,
+        "pattern_type": "alternating_primary_and_inserted_secondary_stripes"
+      }
+    },
+    "scout_manifest": {
+      "file": "datasets/pomacanthus_stripe_insertion/scout_manifest.json",
+      "sha256": "bf877731da64b97b22c53a6f3bb3c5908b6b32b768fc5a849deaeaf53aab2172"
+    }
+  },
+  "kondo_asai_1995_piecewise_linear_rd_system": {
+    "section": "Kondo & Asai (1995) Nature 376(6543):765-768 Fig. 1 legend & Methods",
+    "governing_pde": {
+      "activator_eq": "dA/dt = F(A, I) - g_A * A + D_A * Lap(A),  where F(A, I) = min(F_max, max(0, c_1 * A + c_2 * I + c_3))",
+      "inhibitor_eq": "dI/dt = G(A, I) - g_I * I + D_I * Lap(A_or_I),  where G(A, I) = min(G_max, max(0, c_4 * A + c_5))",
+      "growing_domain_law": "L(t) = L_0 * exp(gamma * t)  (uniform isotropic/axial skin expansion with dilution/metric scaling D / L(t)^2)",
+      "boundary_condition": "Zero-flux (Neumann) or periodic domain boundary"
+    },
+    "canonical_parameters_fig1": {
+      "c1": 0.08,
+      "c2": -0.08,
+      "c3": 0.05,
+      "c4": 0.10,
+      "c5": -0.15,
+      "g_A": 0.03,
+      "g_I": 0.06,
+      "D_A": 0.007,
+      "D_I": 0.10,
+      "F_max": 0.20,
+      "G_max": 0.50,
+      "A_star": 3.0,
+      "I_star": 2.5,
+      "F_star": 0.09,
+      "G_star": 0.15,
+      "f_A": 0.05,
+      "f_I": -0.08,
+      "g_prime_A": 0.10,
+      "g_prime_I": -0.06,
+      "trace_J0": -0.01,
+      "det_J0": 0.005,
+      "diffusivity_ratio_d": 14.285714285714286,
+      "critical_diffusivity_ratio_dc": 10.259644256269407,
+      "k2_minus": 0.9613690877600816,
+      "k2_critical": 3.2714285714285714,
+      "k2_plus": 5.581488055097061,
+      "k_critical": 1.8087090909066987,
+      "wavelength_critical_cells": 3.4738515551173927,
+      "det_M_at_k2_3_scaled_1e6": -2440
+    }
+  },
+  "pomacanthus_semicirculatus_insertion_cascade": {
+    "section": "Kondo & Asai (1995) Nature 376:765-768 Figs. 1-2 (1D Mid-Trough New Stripe Insertion in P. semicirculatus)",
+    "species": "Pomacanthus semicirculatus",
+    "mechanism": "As body length doubles (2 -> 4 -> 8 -> 16 cm), inter-stripe spacing stretches toward 2 * lambda_c; inhibitor I(x,t) falls below threshold at the midpoint between adjacent primary stripes, triggering de novo secondary activator peak insertion that restores wavelength lambda_c.",
+    "regimes": [
+      {
+        "regime_id": "subcritical_inhibitor_diffusion_control",
+        "label": "Subcritical Inhibitor Diffusion Control (D_I = 0.050, d = 7.14 < d_c = 10.26)",
+        "D_A": 0.007,
+        "D_I": 0.050,
+        "domain_scale_s": 2,
+        "body_length_cm": 4.0,
+        "domain_length_L": 20.843109330704356,
+        "predicted_stripes": 0,
+        "observed_stripes": 0,
+        "description": "When D_I / D_A = 7.14 < d_c = 10.26, det M(k^2) > 0 for all k^2 >= 0; perturbations decay to homogeneous pigment state (A*, I*) = (3.0, 2.5)."
+      },
+      {
+        "regime_id": "juvenile_2cm_3stripes",
+        "label": "Juvenile Stage s = 1 (Body Length 2.0 cm -> 3 Primary Stripes)",
+        "D_A": 0.007,
+        "D_I": 0.10,
+        "domain_scale_s": 1,
+        "body_length_cm": 2.0,
+        "domain_length_L": 10.421554665352178,
+        "predicted_stripes": 3,
+        "observed_stripes": 3,
+        "description": "Juvenile P. semicirculatus (< 2 cm) exhibits 3 equidistant vertical white/blue stripes at intrinsic wavelength lambda_c = 3.474 units."
+      },
+      {
+        "regime_id": "subadult_4cm_6stripes",
+        "label": "First Doubling Stage s = 2 (Body Length 4.0 cm -> 6 Stripes via 3 Mid-Trough Insertions)",
+        "D_A": 0.007,
+        "D_I": 0.10,
+        "domain_scale_s": 2,
+        "body_length_cm": 4.0,
+        "domain_length_L": 20.843109330704356,
+        "predicted_stripes": 6,
+        "observed_stripes": 6,
+        "description": "At 4 cm body length, new thinner secondary stripes emerge in the middle of each inter-stripe trough, doubling total stripe count from 3 to 6."
+      },
+      {
+        "regime_id": "subadult_8cm_12stripes",
+        "label": "Second Doubling Stage s = 4 (Body Length 8.0 cm -> 12 Stripes via 6 Mid-Trough Insertions)",
+        "D_A": 0.007,
+        "D_I": 0.10,
+        "domain_scale_s": 4,
+        "body_length_cm": 8.0,
+        "domain_length_L": 41.68621866140871,
+        "predicted_stripes": 12,
+        "observed_stripes": 12,
+        "description": "As earlier secondary stripes widen to full intensity and body length reaches 8 cm, a second wave of mid-trough insertions yields 12 stripes."
+      },
+      {
+        "regime_id": "adult_16cm_24stripes",
+        "label": "Third Doubling Stage s = 8 (Body Length 16.0 cm -> 24 Stripes via 12 Mid-Trough Insertions)",
+        "D_A": 0.007,
+        "D_I": 0.10,
+        "domain_scale_s": 8,
+        "body_length_cm": 16.0,
+        "domain_length_L": 83.37243732281742,
+        "predicted_stripes": 24,
+        "observed_stripes": 24,
+        "description": "At 16 cm body length, the third doubling stage stabilizes 24 periodic stripes while preserving homeostatic inter-stripe wavelength lambda_c."
+      }
+    ]
+  },
+  "pomacanthus_imperator_y_branch_unzipping": {
+    "section": "Kondo & Asai (1995) Nature 376:765-768 Figs. 3-4 (2D Y-Junction Branch Point Horizontal Unzipping in P. imperator)",
+    "species": "Pomacanthus imperator",
+    "mechanism": "In adult P. imperator horizontal stripes, dorso-ventral flank expansion widens interior inter-stripe spacing toward 2 * lambda_c while anterior/posterior boundary spacing remains fixed; a Y-shaped branch dislocation forms and migrates horizontally across the flank like a zipper, increasing stripe number from N to N + 1.",
+    "initial_anterior_stripes": 4,
+    "initial_posterior_stripes": 3,
+    "final_stripes_after_unzipping": 4,
+    "branch_point_displacement_fraction": 0.65
+  }
+}

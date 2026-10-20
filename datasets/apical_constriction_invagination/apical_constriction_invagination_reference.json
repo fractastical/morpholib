@@ -1,0 +1,143 @@
+{
+  "metadata": {
+    "dataset_id": "odell-martin-apical-constriction-invagination-v1",
+    "title": "Odell, Oster, Alberch & Burnside (1981) Dev. Biol. & Martin, Kaschube & Wieschaus (2009) Nature Viscoelastic Stretch-Activated Apical Purse-String Constriction and Epithelial Ventral Furrow Invagination Reference Dataset",
+    "organism": "Drosophila melanogaster (ventral furrow gastrulation) & Strongylocentrotus purpuratus (archenteron invagination)",
+    "sources": [
+      {
+        "id": "odell1981",
+        "citation": "Odell GM, Oster G, Alberch P, Burnside B (1981). The mechanical basis of morphogenesis. I. Epithelial folding and morphogenesis. Developmental Biology 85(2):446-462.",
+        "doi": "10.1016/0012-1606(81)90434-6"
+      },
+      {
+        "id": "martin2009",
+        "citation": "Martin AC, Kaschube M, Wieschaus EF (2009). Pulsed contractions of an actin-myosin network drive apical constriction. Nature 457(7228):495-499.",
+        "doi": "10.1038/nature07522"
+      },
+      {
+        "id": "conte2008",
+        "citation": "Conte V, Munoz JJ, Miodownik M (2008). A 3D finite element model of ventral furrow invagination in the Drosophila melanogaster embryo. J. Mech. Behav. Biomed. Mater. 1(2):188-198.",
+        "doi": "10.1016/j.jmbbm.2007.10.002"
+      },
+      {
+        "id": "polyakov2014",
+        "citation": "Polyakov O, He B, Swan M, Shaevitz JW, Kaschube M, Wieschaus E (2014). Passive mechanical forces control cell-shape change during Drosophila ventral furrow formation. Biophysical Journal 107(4):998-1010.",
+        "doi": "10.1016/j.bpj.2014.07.013"
+      }
+    ],
+    "specimens": {
+      "drosophila_ventral_furrow_specimen": {
+        "file": "datasets/apical_constriction_invagination/drosophila_ventral_furrow_specimen.jpg",
+        "sha256": "f426366f7ede436da44782b28ebac9bd013cace1f8fe44b6ed382b77ad86c419",
+        "species": "Drosophila melanogaster gastrulating embryo (Blue DAPI nuclei, Green Neurotactin cell membranes, Red Myosin II heavy chain apical enrichment)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Ventral_furrow_formation_in_drosophila_embryo.png",
+        "panel_b_stages": {
+          "stage1_blastoderm_yx": [490, 860, 15, 368],
+          "stage2_flattening_yx": [494, 858, 402, 756],
+          "stage3_invagination_yx": [505, 844, 790, 1142],
+          "stage4_internalized_tube_yx": [511, 839, 1176, 1531]
+        },
+        "pattern_type": "four_stage_transverse_ventral_furrow_apical_constriction_invagination"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Odell et al. (1981) Dev. Biol. 85:446-462 Eqs. 1-6; Martin et al. (2009) Nature 457:495-499 Figs. 1-4; Polyakov et al. (2014) Biophys. J. 107:998-1010",
+    "bistable_apical_purse_string_ode": {
+      "formula": "tau_0 * dL_{0,i}/dt = -(L_{0,i} - L_target(L_{ap,i})),  L_target(L_{ap,i}) = L_1 if L_{ap,i} <= L_thresh else L_2 (0 < L_2 < L_1)",
+      "active_tension": "T_{ap,i} = k_ap * (L_{ap,i} - L_{0,i}) + mu_ap * dL_{ap,i}/dt",
+      "L_1_um": 8.2,
+      "L_2_um": 1.6,
+      "L_thresh_um": 8.55,
+      "tau_0_s": 45.0,
+      "pulse_period_s": 82.0,
+      "k_ap": 3.5,
+      "k_bas": 1.2,
+      "k_lat": 1.8,
+      "description": "Odell et al. (1981) stretch-activated apical actomyosin purse-string rest-length contraction coupled with Martin et al. (2009) Twist-driven myosin pulses (period ~82 s) and Snail-mediated ratchet stabilization."
+    },
+    "incompressible_cytoplasmic_area_and_wedge_curvature": {
+      "area_conservation": "A_i = 0.5 * (L_{ap,i} + L_{bas,i}) * h_i = A_0",
+      "spontaneous_curvature": "kappa_i = 2 * (L_{bas,i} - L_{ap,i}) / (h_i * (L_{bas,i} + L_{ap,i})) = (L_{bas,i} - L_{ap,i}) / A_0",
+      "A_0_um2": 262.4,
+      "h_0_um": 32.0,
+      "R_embryo_um": 83.2,
+      "N_cells": 64,
+      "N_meso": 16,
+      "description": "Incompressible cell volume (2D cross-sectional area A_i = A_0 = 262.4 um^2) forces apically constricting cells (L_{ap,i} < L_{bas,i}) to elongate apicobasally and adopt a wedge geometry with positive inward spontaneous curvature kappa_i > 0."
+    }
+  },
+  "martin_odell_experimental_regimes": {
+    "section": "Martin, Kaschube & Wieschaus (2009) Nature 457:495-499 Figs. 1-4; Odell, Oster, Alberch & Burnside (1981) Dev. Biol. 85:446-462 Figs. 6-9",
+    "duration_minutes": 12.0,
+    "regimes": [
+      {
+        "regime_id": "wildtype_twist_snail_ratchet",
+        "label": "Wild-Type (Intact Twist Pulses + Snail Ratchet + Stretch Propagation, N_meso=16)",
+        "ratchet_efficiency": 1.0,
+        "pulse_amplitude": 1.0,
+        "stretch_propagation": true,
+        "empirical_final_apical_width_um": 2.1,
+        "empirical_constriction_ratio": 0.2561,
+        "empirical_invagination_depth_um": 38.0,
+        "empirical_wedge_curvature_inv_um": 0.0312
+      },
+      {
+        "regime_id": "local_nonpropagating_no_stretch",
+        "label": "Stretch-Propagation Blockade (Central Initiators Only, N_init=6, L_thresh -> inf)",
+        "ratchet_efficiency": 1.0,
+        "pulse_amplitude": 1.0,
+        "stretch_propagation": false,
+        "empirical_final_apical_width_um": 3.9,
+        "empirical_constriction_ratio": 0.4756,
+        "empirical_invagination_depth_um": 21.0,
+        "empirical_wedge_curvature_inv_um": 0.0198
+      },
+      {
+        "regime_id": "cta_delayed_uncoordinated",
+        "label": "concertina (cta / Fog-Galpha12/13) Mutant (Uncoordinated Stochastic Constriction)",
+        "ratchet_efficiency": 0.55,
+        "pulse_amplitude": 0.75,
+        "stretch_propagation": false,
+        "empirical_final_apical_width_um": 4.6,
+        "empirical_constriction_ratio": 0.5610,
+        "empirical_invagination_depth_um": 15.5,
+        "empirical_wedge_curvature_inv_um": 0.0156
+      },
+      {
+        "regime_id": "snail_mutant_unratcheted",
+        "label": "snail Mutant (Twist Myosin Pulses Without Ratchet Stabilization)",
+        "ratchet_efficiency": 0.12,
+        "pulse_amplitude": 0.85,
+        "stretch_propagation": false,
+        "empirical_final_apical_width_um": 6.9,
+        "empirical_constriction_ratio": 0.8415,
+        "empirical_invagination_depth_um": 4.5,
+        "empirical_wedge_curvature_inv_um": 0.0053
+      },
+      {
+        "regime_id": "twist_snail_null_control",
+        "label": "twist; snail Double Mutant / Y-27632 ROCK Inhibition Negative Control (No Constriction)",
+        "ratchet_efficiency": 0.0,
+        "pulse_amplitude": 0.0,
+        "stretch_propagation": false,
+        "empirical_final_apical_width_um": 8.2,
+        "empirical_constriction_ratio": 1.0,
+        "empirical_invagination_depth_um": 0.0,
+        "empirical_wedge_curvature_inv_um": 0.0
+      }
+    ]
+  },
+  "specimen_reference_morphometrics": {
+    "stage1_dv_ml_aspect": 1.0482,
+    "stage2_dv_ml_aspect": 1.0282,
+    "stage3_dv_ml_aspect": 0.9631,
+    "stage4_dv_ml_aspect": 0.9239,
+    "dv_compression_px": 42.0,
+    "ml_width_mean_px": 353.5,
+    "ml_width_cv": 0.0036,
+    "mesoderm_area_internalization_fraction": 0.1458,
+    "apical_front_advance_px": 21.0
+  }
+}

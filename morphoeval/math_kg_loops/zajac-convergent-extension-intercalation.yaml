@@ -1,0 +1,83 @@
+sim_id: zajac-convergent-extension-intercalation
+math_family: Anisotropic Cell-Cell Adhesion, Polarized Mediolateral Junction Tension & Pure-Shear T1 Intercalation Mechanics
+model_spec:
+  model: "Zajac, Jones & Glazier (2000, 2003) J. Theor. Biol. / Bertet, Sulak & Lecuit (2004) Nature anisotropic differential adhesion, planar-polarized Myosin II vertical junction contraction, and irreversible T1 quartet intercalation driving convergent extension"
+  N_cells: 64
+  grid_rows_init: 8
+  grid_cols_init: 8
+  J_0: 14.0
+  Delta_J_wt: 6.5
+  Lambda_0: 1.0
+  Delta_Lambda_wt: 0.48
+  dot_epsilon_T1_wt_per_min: 0.01688
+  duration_min: 40.0
+  seed: 2003
+  inputs:
+    - datasets/convergent_extension_intercalation/convergent_extension_intercalation_reference.json
+    - datasets/convergent_extension_intercalation/convergent_extension_axis_specimen.jpg
+    - datasets/convergent_extension_intercalation/scout_manifest.json
+equations:
+  - law_name: Zajac, Jones & Glazier (2003) Anisotropic Differential Adhesion & Bertet, Sulak & Lecuit (2004) Polarized T1 Junction Tension Law
+    formula: "J(theta) = J_0 - Delta_J * cos(2 * theta),  Lambda(theta) = Lambda_0 - Delta_Lambda * cos(2 * theta);  Lambda_vert(pi/2) = Lambda_0 + Delta_Lambda > Lambda_horiz(0) = Lambda_0 - Delta_Lambda;  Delta_E_T1(l_0) = (Lambda_horiz - Lambda_vert) * l_0 = -2 * Delta_Lambda * l_0 < 0"
+    lean_decl: MathOfBiology.Loop_093.t1_quartet_energy_change
+    lean_theorem: MathOfBiology.Loop_093.zajac_bertet_polarized_t1_energy_drop
+    lean_locus: morphoeval/lean/loops/Loop_093_convergent_extension_intercalation.lean#L17-L68
+    lean_code: |-
+      def junction_tension_vertical (Lambda_0 Delta_Lambda : Int) : Int :=
+        Lambda_0 + Delta_Lambda
+      def junction_tension_horizontal (Lambda_0 Delta_Lambda : Int) : Int :=
+        Lambda_0 - Delta_Lambda
+      def t1_quartet_energy_change (Lambda_0 Delta_Lambda l_0 : Int) : Int :=
+        (junction_tension_horizontal Lambda_0 Delta_Lambda -
+         junction_tension_vertical Lambda_0 Delta_Lambda) * l_0
+      theorem zajac_bertet_polarized_t1_energy_drop
+          (Lambda_0 Delta_Lambda l_0 : Int)
+          (hAniso : Delta_Lambda > 0) (hLen : l_0 > 0) :
+          junction_tension_vertical Lambda_0 Delta_Lambda >
+            junction_tension_horizontal Lambda_0 Delta_Lambda ∧
+          t1_quartet_energy_change Lambda_0 Delta_Lambda l_0 < 0 ∧
+          t1_quartet_energy_change Lambda_0 0 l_0 = 0
+    variables: "theta: junction angle relative to mediolateral (ML, x) axis; J_0, Delta_J: isotropic and anisotropic adhesion coefficients; Lambda_0, Delta_Lambda: isotropic and Myosin II planar-polarized line tensions; l_0: junction length resolved across a 4-way T1 vertex"
+    role: "Proves that planar-polarized mediolateral adhesion / Myosin II enrichment (Delta_Lambda > 0) elevates vertical AP-facing junction tension above horizontal ML junction tension and drives a strictly negative interfacial energy drop across vertical-to-horizontal T1 neighbor exchanges"
+    source_citation: "Zajac, Jones & Glazier (2003) J. Theor. Biol. 222(2):247-259 Eqs. 1-4; Bertet, Sulak & Lecuit (2004) Nature 429(6992):667-671 Figs. 1-3"
+    code_locus: "2003-zajac-convergent-extension-intercalation.py#L120-L195"
+  - law_name: Incompressible 2D Pure-Shear Tissue Area Conservation & Aspect Ratio Exponential Scaling Law
+    formula: "dL_AP/dt = +dot_epsilon_T1 * L_AP,  dL_ML/dt = -dot_epsilon_T1 * L_ML;  A_tissue(t) = L_AP(t) * L_ML(t) = A_0;  R_CE(t) = L_AP(t) / L_ML(t) = R_0 * exp(2 * dot_epsilon_T1 * t)"
+    lean_decl: MathOfBiology.Loop_093.aspect_ratio_cross_diff
+    lean_theorem: MathOfBiology.Loop_093.pure_shear_incompressible_aspect_ratio_amplification
+    lean_locus: morphoeval/lean/loops/Loop_093_convergent_extension_intercalation.lean#L70-L120
+    lean_code: |-
+      def tissue_area_2d (L_AP L_ML : Int) : Int :=
+        L_AP * L_ML
+      def aspect_ratio_cross_diff (L_AP_new L_ML_new L_AP_old L_ML_old : Int) : Int :=
+        L_AP_new * L_ML_old - L_AP_old * L_ML_new
+      theorem pure_shear_incompressible_aspect_ratio_amplification
+          (L_AP L_ML_new s : Int)
+          (hLAP : L_AP > 0) (hLML : L_ML_new > 0) (hScale : s > 1) :
+          tissue_area_2d (s * L_AP) L_ML_new = tissue_area_2d L_AP (s * L_ML_new) ∧
+          aspect_ratio_cross_diff (s * L_AP) L_ML_new L_AP (s * L_ML_new) > 0
+    variables: "L_AP(t), L_ML(t): anteroposterior length and mediolateral width of the intercalating tissue; dot_epsilon_T1: T1 intercalation pure-shear strain rate; A_tissue: conserved 2D tissue area; R_CE: convergent-extension aspect ratio L_AP / L_ML"
+    role: "Proves that pure-shear mediolateral convergence coupled with anteroposterior extension strictly conserves 2D tissue area A_tissue = L_AP * L_ML while quadratically/exponentially amplifying tissue aspect ratio R_CE(t) = R_0 * exp(2 * dot_epsilon_T1 * t)"
+    source_citation: "Zajac, Jones & Glazier (2000) Phys. Rev. Lett. 85:2022-2025; Zajac, Jones & Glazier (2003) J. Theor. Biol. 222(2):247-259 Eqs. 5-8"
+    code_locus: "2003-zajac-convergent-extension-intercalation.py#L198-L270"
+  - law_name: Zajac et al. (2003) & Bertet et al. (2004) Five-Regime Convergent Extension Perturbation Hierarchy
+    formula: "R_WT (3.86) > R_modAniso (2.38) > R_Xdd1_PCP (1.56) > R_MyoII_inhib (1.20) > R_isotropic_null (1.00);  (N_T1/N_cell)_WT (1.45) > modAniso (0.82) > Xdd1_PCP (0.38) > MyoII_inhib (0.12) > isotropic_null (0.00)"
+    lean_decl: MathOfBiology.Loop_093.rce100_wildtype
+    lean_theorem: MathOfBiology.Loop_093.zajac_bertet_five_regime_perturbation_hierarchy
+    lean_locus: morphoeval/lean/loops/Loop_093_convergent_extension_intercalation.lean#L122-L163
+    lean_code: |-
+      theorem zajac_bertet_five_regime_perturbation_hierarchy :
+          (rce100_wildtype > rce100_moderate_aniso ∧
+           rce100_moderate_aniso > rce100_xdd1_pcp_mutant ∧
+           rce100_xdd1_pcp_mutant > rce100_myo2_inhibited ∧
+           rce100_myo2_inhibited > rce100_isotropic_null ∧
+           rce100_isotropic_null = 100) ∧
+          (t1_per_cell100_wildtype > t1_per_cell100_moderate_aniso ∧
+           t1_per_cell100_moderate_aniso > t1_per_cell100_xdd1_pcp_mutant ∧
+           t1_per_cell100_xdd1_pcp_mutant > t1_per_cell100_myo2_inhibited ∧
+           t1_per_cell100_myo2_inhibited > t1_per_cell100_isotropic_null ∧
+           t1_per_cell100_isotropic_null = 0)
+    variables: "R_CE: final tissue aspect ratio L_AP / L_ML after 40 min of convergent extension; N_T1 / N_cell: cumulative T1 neighbor-exchange transitions per cell"
+    role: "Establishes the strict quantitative ordering of convergent-extension aspect ratio and T1 intercalation rate across wild-type polarized adhesion, moderate anisotropy hypomorph, Wnt/PCP Dishevelled (Xdd1/stbm) scrambled polarity mutant, Myosin II (zip/sqh) junction-resolution mutant, and isotropic adhesion negative control"
+    source_citation: "Zajac, Jones & Glazier (2003) J. Theor. Biol. 222(2):247-259 Figs. 3-7; Bertet, Sulak & Lecuit (2004) Nature 429(6992):667-671 Figs. 1-4; Wallingford et al. (2000) Nature 405:81-85"
+    code_locus: "2003-zajac-convergent-extension-intercalation.py#L275-L465"

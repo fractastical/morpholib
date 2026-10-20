@@ -1,0 +1,80 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sheth-hox-turing-polydactyly> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sheth-hox-turing-polydactyly-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sheth-hox-turing-polydactyly-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Sheth et al. (2012) Science distal Hoxa13/Hoxd11-13 + Gli3 dose modulation of Turing digit wavelength on a fan-shaped embryonic autopod — Morphological realism / specimen match: 90/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Loads and SHA-256-verifies the postaxial hexadactylous vertebrate autopod AP radiograph (`datasets/hox_turing_polydactyly/vertebrate_autopod_digits_specimen.jpg`), segments all 6 skeletal digit rays at x = [49, 184, 265, 343, 420, 509] px across the phalangeal ROI y in [280, 400] and traces their longitudinal phalangeal-metacarpal axes (L398-448), overlays the segmented skeletal axes in Panel E and peak detections in Panel F, and compares normalized inter-digit wavelength regularity (central Digits 2-6 CV = 0.0580) against the nonlinear Turing PDE in Panel H." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-specimen-match-2> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "2012-sheth-hox-turing-polydactyly.py L398–L448" ;
+        dct:description "Skeletal digit ray peak detection, longitudinal axis tracing, and inter-digit wavelength CV on vertebrate_autopod_digits_specimen.jpg" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2012-sheth-hox-turing-polydactyly.py#L398-L448> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/hox_turing_polydactyly_comparison.png (generated output)" ;
+        dct:description "8-panel synthesis figure comparing theoretical dispersion, 2D fan limb PDEs, 6-genotype allelic series, and segmented hexadactylous autopod radiograph — docs/media/hox_turing_polydactyly_comparison.png: rendered output of 2012-sheth-hox-turing-polydactyly.py at 8871db0, image/png, 725726 B, 2193×1323 px, artifact_sha256 dfa8cd3145a6bc603c86306ef4b4b1364dde5e2f875ee9290209fe26a6e6511f (sha256 dfa8cd3145a6bc603c86306ef4b4b1364dde5e2f875ee9290209fe26a6e6511f), spec_fingerprint 4ba645a060b448f2c2c1acc18c47a660ef9f21e12216d12473ce8eae3ddb3de8" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 015 autonomous loop assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2005.10.016>,
+            <https://doi.org/10.1126/science.1226804>,
+            <https://doi.org/10.1126/science.1252960>,
+            <https://doi.org/10.1126/science.462174> .
+    <https://doi.org/10.1016/j.jtbi.2005.10.016> dct:date "2006"^^xsd:gYear ;
+        dct:title "Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development" .
+    <https://doi.org/10.1126/science.1226804> dct:date "2012"^^xsd:gYear ;
+        dct:title "Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism" .
+    <https://doi.org/10.1126/science.1252960> dct:date "2014"^^xsd:gYear ;
+        dct:title "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients" .
+    <https://doi.org/10.1126/science.462174> dct:date "1979"^^xsd:gYear ;
+        dct:title "Dynamics of skeletal pattern formation in developing chick limb" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sheth et al. (2012) Science distal Hoxa13/Hoxd11-13 + Gli3 dose modulation of Turing digit wavelength on a fan-shaped embryonic autopod — Morphological realism / specimen match 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:18:02Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sheth-hox-turing-polydactyly-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,197 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-turing-gray-scott> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-turing-gray-scott-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-turing-gray-scott-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Turing (1952), Pearson (1993) & Kondo-Asai (1995) reaction-diffusion morphogenesis — Morphometric validation: 75/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Upgrades 2D FFT radial power spectrum estimation with 3-point parabolic sub-bin interpolation (`_parabolic_subbin_peak`, L539-550) resolving distinct wavelengths across all four patterned regimes (k* = 10.89, 12.10, 11.89, 11.50 cycles/box; lambda* = 14.69, 13.23, 13.46, 13.92 px), compares the steady-state Turing labyrinth wavelength lambda* = 13.92 px directly against analytical lambda_c = 11.92 px (16.7% difference), quantifies Pomacanthus inter-stripe spacing (9.55 px, CV = 0.149) and Ostracion nearest-neighbor spot spacing (21.5 px), and runs a white-noise-initialized 1D Turing PDE across growing domains (`r = 0.9981` against Kondo & Asai 1995 empirical stripe counts, L672-703)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-connected-high-v-components-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-dominant-wavelength-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-fraction-of-pattern-pixels-changed-first-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-ostracion-meleagris-segmented-turing-spots-dog-delaunay>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pattern-coverage-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-coral-labyrinth-f-0-054-k-0-0616-spectral-ring-wavenumber-k>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-mitosis-spots-f-0-028-k-0-062-connected-components-vs-coral-labyrinth>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pomacanthus-imperator-segmented-skin-stripe-wavelength>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-steady-state-equal-diffusion-negative-control-du-dv-0-20-spectral-wavenumber-k>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-turing-1952-sec-8-9-analytical-critical-wavelength-c-2-k-c>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-morphometric-validation-2> ;
+        pk:hasScore "0.75"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-connected-high-v-components-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "connected high-V components (last frame) = 560 count" ;
+        schema:measurementTechnique "scipy.ndimage.label on the yellow mask" ;
+        schema:name "connected high-V components (last frame)" ;
+        schema:unitText "count" ;
+        schema:value "560" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-dominant-wavelength-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "dominant wavelength (last frame) = 40.0 grid cells" ;
+        dct:description "Gray–Scott f=0.055,k=0.062 labyrinth; no specimen or literature wavelength recorded" ;
+        schema:measurementTechnique "peak of the radial power spectrum of the axes-box image, scaled to the N=200 grid" ;
+        schema:name "dominant wavelength (last frame)" ;
+        schema:unitText "grid cells" ;
+        schema:value "40.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-fraction-of-pattern-pixels-changed-first-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "fraction of pattern pixels changed, first→last frame = 0.0 fraction" ;
+        dct:description "≈0 means the GIF shows a frozen pattern" ;
+        schema:measurementTechnique "XOR of yellow masks of frame 0 and the last frame" ;
+        schema:name "fraction of pattern pixels changed, first→last frame" ;
+        schema:unitText "fraction" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-fraction-of-pattern-pixels-changed-first-last-frame-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-fraction-of-pattern-pixels-changed-first-last-frame-reference> a schema:PropertyValue ;
+        schema:value ">0 for an evolving simulation" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-ostracion-meleagris-segmented-turing-spots-dog-delaunay> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Ostracion meleagris segmented Turing spots (DoG + Delaunay) = 121 spots" ;
+        dct:description "mean Delaunay nearest-neighbor spacing = 10.71 px (CV = 0.394)" ;
+        schema:measurementTechnique "Difference-of-Gaussians segmented spots on SHA-256-locked boxfish specimen ROI" ;
+        schema:name "Ostracion meleagris segmented Turing spots (DoG + Delaunay)" ;
+        schema:unitText "spots" ;
+        schema:value "121" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-ostracion-meleagris-segmented-turing-spots-dog-delaunay-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-ostracion-meleagris-segmented-turing-spots-dog-delaunay-reference> a schema:PropertyValue ;
+        dct:source "Turing 1952 / Pearson 1993 spot lattice" ;
+        schema:value ">=15 hexagonal spots" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pattern-coverage-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "pattern coverage (last frame) = 0.0095 fraction" ;
+        schema:measurementTechnique "fraction of axes box in the high-V (yellow) band" ;
+        schema:name "pattern coverage (last frame)" ;
+        schema:unitText "fraction" ;
+        schema:value "0.0095" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-coral-labyrinth-f-0-054-k-0-0616-spectral-ring-wavenumber-k> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Pearson coral labyrinth (F=0.054, k=0.0616) spectral ring wavenumber k* = 11.487 cycles / domain" ;
+        dct:description "λ* = 13.93 grid cells (analytical λ_c = 11.92), ring sharpness = 968.1" ;
+        schema:measurementTechnique "sub-bin parabolic peak of 2D radial PSD P(k) on N=160x160 grid" ;
+        schema:name "Pearson coral labyrinth (F=0.054, k=0.0616) spectral ring wavenumber k*" ;
+        schema:unitText "cycles / domain" ;
+        schema:value "11.487" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-coral-labyrinth-f-0-054-k-0-0616-spectral-ring-wavenumber-k-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-coral-labyrinth-f-0-054-k-0-0616-spectral-ring-wavenumber-k-reference> a schema:PropertyValue ;
+        dct:source "Pearson 1993 Science 261:189 Pattern κ (inside Saddle-Node)" ;
+        schema:value ">0 (Turing band-pass ring)" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-mitosis-spots-f-0-028-k-0-062-connected-components-vs-coral-labyrinth> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth = 52 count" ;
+        dct:description "spots remain disconnected whereas coral labyrinth percolates" ;
+        schema:measurementTechnique "connected high-activator components in self-replicating spot regime" ;
+        schema:name "Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth" ;
+        schema:unitText "count" ;
+        schema:value "52" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-mitosis-spots-f-0-028-k-0-062-connected-components-vs-coral-labyrinth-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-mitosis-spots-f-0-028-k-0-062-connected-components-vs-coral-labyrinth-reference> a schema:PropertyValue ;
+        dct:source "Pearson 1993 Science 261:189 Pattern λ vs Pattern κ" ;
+        schema:value "1" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pomacanthus-imperator-segmented-skin-stripe-wavelength> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Pomacanthus imperator segmented skin stripe wavelength = 9.55 px" ;
+        dct:description "CV = 0.149, topological Y-branch junctions = 22, ontogenetic r = 0.9981" ;
+        schema:measurementTechnique "mean dorsoventral inter-stripe peak spacing on SHA-256-locked specimen ROI" ;
+        schema:name "Pomacanthus imperator segmented skin stripe wavelength" ;
+        schema:unitText "px" ;
+        schema:value "9.55" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pomacanthus-imperator-segmented-skin-stripe-wavelength-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pomacanthus-imperator-segmented-skin-stripe-wavelength-reference> a schema:PropertyValue ;
+        dct:source "Kondo & Asai 1995 Nature 376:765-768" ;
+        schema:value "8–16 px (CV < 0.35)" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-steady-state-equal-diffusion-negative-control-du-dv-0-20-spectral-wavenumber-k> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "steady-state equal-diffusion negative control (Du=Dv=0.20) spectral wavenumber k* = 0.0 cycles / domain" ;
+        dct:description "spatial σ_V = 4.70e-07, ring sharpness = 0.0" ;
+        schema:measurementTechnique "dominant wavenumber when differential diffusivity is removed around nontrivial steady state (U_*, V_*)" ;
+        schema:name "steady-state equal-diffusion negative control (Du=Dv=0.20) spectral wavenumber k*" ;
+        schema:unitText "cycles / domain" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-steady-state-equal-diffusion-negative-control-du-dv-0-20-spectral-wavenumber-k-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-steady-state-equal-diffusion-negative-control-du-dv-0-20-spectral-wavenumber-k-reference> a schema:PropertyValue ;
+        dct:source "Turing 1952 Phil. Trans. R. Soc. B 237:37 (diffusion-driven instability requires Du != Dv)" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-turing-1952-sec-8-9-analytical-critical-wavelength-c-2-k-c> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Turing (1952) Sec. 8-9 analytical critical wavelength λ_c = 2π/k_c = 5.62 cells" ;
+        dct:description "d = 4.00 > d_c = 3.927, N=20 ring dominant mode s* = 4" ;
+        schema:measurementTechnique "2*pi / sqrt((d*D_X + a*D_Y) / (2*D_X*D_Y)) on 2-morphogen activator-inhibitor system" ;
+        schema:name "Turing (1952) Sec. 8-9 analytical critical wavelength λ_c = 2π/k_c" ;
+        schema:unitText "cells" ;
+        schema:value "5.62" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-turing-1952-sec-8-9-analytical-critical-wavelength-c-2-k-c-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-turing-1952-sec-8-9-analytical-critical-wavelength-c-2-k-c-reference> a schema:PropertyValue ;
+        dct:source "Turing 1952 Phil. Trans. R. Soc. B 237:37 Sec. 8-9" ;
+        schema:value "5.62" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "1952-turing-morpho.py L539–L646" ;
+        dct:description "Sub-bin parabolic wavenumber peak estimation and analytical lambda_c comparison" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/b9976f8/1952-turing-morpho.py#L539-L646> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "1952-turing-morpho.py L672–L703" ;
+        dct:description "White-noise-initialized 1D Turing PDE growing-domain stripe count simulation (r=0.9981)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/b9976f8/1952-turing-morpho.py#L672-L703> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/369215a0>,
+            <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1126/science.261.5118.189> .
+    <https://doi.org/10.1038/369215a0> dct:date "1994"^^xsd:gYear ;
+        dct:title "Experimental observation of self-replicating spots in a reaction-diffusion system" .
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1126/science.261.5118.189> dct:date "1993"^^xsd:gYear ;
+        dct:title "Complex patterns in a simple system" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Turing (1952), Pearson (1993) & Kondo-Asai (1995) reaction-diffusion morphogenesis — Morphometric validation 75/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T23:45:22Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-turing-gray-scott-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

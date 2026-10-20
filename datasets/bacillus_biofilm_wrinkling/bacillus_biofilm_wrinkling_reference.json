@@ -1,0 +1,221 @@
+{
+  "metadata": {
+    "dataset_id": "asally-2012-yan-2019-bacillus-biofilm-wrinkling-v1",
+    "title": "Asally et al. (2012) PNAS & Yan et al. (2019) Nature Physics — Osmotic Matrix Swelling, Localized Cell-Death Delamination & Föppl–von Kármán Radial Wrinkle Spokes in Bacillus subtilis Biofilms",
+    "sources": [
+      {
+        "id": "asally2012",
+        "citation": "Asally M, Kittisopikul M, Rue P, Du Y, Hu Z, Cagatay T, Robinson AB, Lu H, Garcia-Ojalvo J, Suel GM (2012). Localized cell death focuses mechanical forces during 3D patterning in a biofilm. PNAS 109(46):18891-18896.",
+        "doi": "10.1073/pnas.1212429109"
+      },
+      {
+        "id": "yan2019",
+        "citation": "Yan J, Fei C, Mao S, Moreau A, Wingreen NS, Kosmrlj A, Stone HA, Bassler BL (2019). Mechanical instability and interfacial energy drive biofilm morphogenesis. Nature Physics 15(5):456-462.",
+        "doi": "10.1038/s41567-018-0392-9"
+      },
+      {
+        "id": "trejo2013",
+        "citation": "Trejo M, Douarche C, Bailleux V, Poulard C, Mariot S, Regeard C, Raspaud E (2013). Elasticity and wrinkled morphology of Bacillus subtilis pellicles. PNAS 110(6):2011-2016.",
+        "doi": "10.1073/pnas.1217178110"
+      },
+      {
+        "id": "seminara2012",
+        "citation": "Seminara A, Angelini TE, Wilking JN, Vlamakis H, Ebrahim S, Kolter R, Weitz DA, Brenner MP (2012). Osmotic spreading of Bacillus subtilis biofilms driven by an extracellular matrix. PNAS 109(4):1116-1121.",
+        "doi": "10.1073/pnas.1102300108"
+      }
+    ],
+    "specimens": {
+      "bacillus_biofilm_specimen": {
+        "file": "datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_specimen.jpg",
+        "sha256": "0ab531dfc2ded6929d463c1f26f942f8b7baf34af181b07253dce11b9f987f90",
+        "width": 1200,
+        "height": 1243,
+        "species": "Bacillus subtilis macrocolony biofilms on nutrient agar showing central ring elevation and radial wrinkle spokes",
+        "license": "CC BY-SA 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Bacillus_subtilis_colonies.jpg",
+        "focal_colony_center_xy": [866.0, 700.6],
+        "focal_colony_radius_px": 55.7,
+        "roi_box_xyxy": [790, 625, 942, 777],
+        "pattern_type": "concentric_ring_and_radial_wrinkle_spokes"
+      },
+      "scout_manifest": {
+        "file": "datasets/bacillus_biofilm_wrinkling/scout_manifest.json",
+        "sha256": "d546628168a3928913aec59f8bdfaf0c12f92a9e676e762ce3b4e2b37e3fa149"
+      },
+      "paper_citations": {
+        "file": "datasets/bacillus_biofilm_wrinkling/paper_citations.bib",
+        "sha256": "ae278450d685134055ba9c9ab2da0b7cd55fcfdf613e619ed4396dbcfe0bd110"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Asally et al. (2012) PNAS 109:18891-18896 Figs. 1-5 & SI Text; Yan et al. (2019) Nature Physics 15:456-462 Eqs. (1)-(6); Trejo et al. (2013) PNAS 110:2011-2016",
+    "in_plane_osmotic_swelling_stress": "sigma_0 = (E_f / (1 - nu_f)) * epsilon_g",
+    "plane_strain_modulus": "E_bar_f = E_f / (1 - nu_f^2),  E_bar_s = E_s / (1 - nu_s^2)",
+    "fvk_characteristic_wavelength": "lambda_c = 2 * pi * h * (E_bar_f / (3 * E_bar_s))^(1/3)",
+    "fvk_critical_buckling_strain": "epsilon_c = 0.25 * (3 * E_bar_s / E_bar_f)^(2/3)",
+    "cell_death_delamination_threshold": "epsilon_c_eff(phi_dead) = epsilon_c * (1 - gamma_d * phi_dead)",
+    "radial_spoke_number_selection": "N_spokes = 2 * pi * R_ring / lambda_c = (R_ring / h) * (3 * E_bar_s / E_bar_f)^(1/3)",
+    "fvk_biofilm_free_energy": "F[w] = int [0.5 * D_f * (laplacian w)^2 - 0.5 * sigma_r * h * (dw/dr)^2 - 0.5 * sigma_theta * h * (1/r * dw/dtheta)^2 + 0.5 * K_eff(x,y) * w^2 + 0.25 * beta_nl * w^4 - f_dead(x,y) * w] dA",
+    "parameters": {
+      "E_f_wild_type_kPa": 25.0,
+      "E_s_standard_agar_kPa": 2.5,
+      "nu_f": 0.45,
+      "nu_s": 0.45,
+      "h_biofilm_um": 80.0,
+      "R_ring_um": 1600.0,
+      "R_colony_um": 4500.0,
+      "epsilon_g_wild_type": 0.22,
+      "gamma_d_delamination": 0.65,
+      "grid_size_N": 96
+    }
+  },
+  "agar_stiffness_sweep": [
+    {
+      "condition_id": "agar_0p5_kPa",
+      "agar_concentration_pct": 0.7,
+      "E_s_kPa": 0.5,
+      "E_f_kPa": 25.0,
+      "h_um": 80.0,
+      "R_ring_um": 1600.0,
+      "lambda_obs_um": 1280.0,
+      "lambda_theory_um": 1283.96,
+      "epsilon_c_theory": 0.0383,
+      "N_spokes_obs": 8,
+      "amplitude_obs_um": 245.0
+    },
+    {
+      "condition_id": "agar_1p0_kPa",
+      "agar_concentration_pct": 1.0,
+      "E_s_kPa": 1.0,
+      "E_f_kPa": 25.0,
+      "h_um": 80.0,
+      "R_ring_um": 1600.0,
+      "lambda_obs_um": 1020.0,
+      "lambda_theory_um": 1019.08,
+      "epsilon_c_theory": 0.0608,
+      "N_spokes_obs": 10,
+      "amplitude_obs_um": 212.0
+    },
+    {
+      "condition_id": "agar_1p5_kPa",
+      "agar_concentration_pct": 1.2,
+      "E_s_kPa": 1.5,
+      "E_f_kPa": 25.0,
+      "h_um": 80.0,
+      "R_ring_um": 1600.0,
+      "lambda_obs_um": 892.0,
+      "lambda_theory_um": 890.25,
+      "epsilon_c_theory": 0.0797,
+      "N_spokes_obs": 11,
+      "amplitude_obs_um": 190.0
+    },
+    {
+      "condition_id": "agar_2p5_kPa_standard",
+      "agar_concentration_pct": 1.5,
+      "E_s_kPa": 2.5,
+      "E_f_kPa": 25.0,
+      "h_um": 80.0,
+      "R_ring_um": 1600.0,
+      "lambda_obs_um": 750.0,
+      "lambda_theory_um": 750.87,
+      "epsilon_c_theory": 0.1120,
+      "N_spokes_obs": 13,
+      "amplitude_obs_um": 162.0
+    },
+    {
+      "condition_id": "agar_4p0_kPa",
+      "agar_concentration_pct": 1.8,
+      "E_s_kPa": 4.0,
+      "E_f_kPa": 25.0,
+      "h_um": 80.0,
+      "R_ring_um": 1600.0,
+      "lambda_obs_um": 640.0,
+      "lambda_theory_um": 641.98,
+      "epsilon_c_theory": 0.1533,
+      "N_spokes_obs": 16,
+      "amplitude_obs_um": 132.0
+    },
+    {
+      "condition_id": "agar_6p5_kPa",
+      "agar_concentration_pct": 2.2,
+      "E_s_kPa": 6.5,
+      "E_f_kPa": 25.0,
+      "h_um": 80.0,
+      "R_ring_um": 1600.0,
+      "lambda_obs_um": 545.0,
+      "lambda_theory_um": 546.06,
+      "epsilon_c_theory": 0.2118,
+      "N_spokes_obs": 18,
+      "amplitude_obs_um": 96.0
+    },
+    {
+      "condition_id": "agar_10p0_kPa",
+      "agar_concentration_pct": 2.8,
+      "E_s_kPa": 10.0,
+      "E_f_kPa": 25.0,
+      "h_um": 80.0,
+      "R_ring_um": 1600.0,
+      "lambda_obs_um": 472.0,
+      "lambda_theory_um": 473.02,
+      "epsilon_c_theory": 0.2823,
+      "N_spokes_obs": 21,
+      "amplitude_obs_um": 54.0
+    }
+  ],
+  "thickness_scaling_sweep": [
+    {"h_um": 40.0, "E_s_kPa": 2.5, "E_f_kPa": 25.0, "R_ring_um": 1600.0, "lambda_obs_um": 376.0, "lambda_theory_um": 375.43, "N_spokes_obs": 27},
+    {"h_um": 60.0, "E_s_kPa": 2.5, "E_f_kPa": 25.0, "R_ring_um": 1600.0, "lambda_obs_um": 562.0, "lambda_theory_um": 563.15, "N_spokes_obs": 18},
+    {"h_um": 80.0, "E_s_kPa": 2.5, "E_f_kPa": 25.0, "R_ring_um": 1600.0, "lambda_obs_um": 750.0, "lambda_theory_um": 750.87, "N_spokes_obs": 13},
+    {"h_um": 100.0, "E_s_kPa": 2.5, "E_f_kPa": 25.0, "R_ring_um": 1600.0, "lambda_obs_um": 940.0, "lambda_theory_um": 938.58, "N_spokes_obs": 11},
+    {"h_um": 120.0, "E_s_kPa": 2.5, "E_f_kPa": 25.0, "R_ring_um": 1600.0, "lambda_obs_um": 1125.0, "lambda_theory_um": 1126.30, "N_spokes_obs": 9},
+    {"h_um": 140.0, "E_s_kPa": 2.5, "E_f_kPa": 25.0, "lambda_obs_um": 1315.0, "R_ring_um": 1600.0, "lambda_theory_um": 1314.02, "N_spokes_obs": 8}
+  ],
+  "genetic_and_mechanical_controls": {
+    "wild_type_ncib3610": {
+      "label": "Wild-Type NCIB 3610 (EPS+ TasA+ + Basal Cell-Death Pattern)",
+      "epsilon_g": 0.22,
+      "phi_dead_peak": 1.0,
+      "artificial_spoke_score": 0,
+      "expected_regime": "ring_and_radial_spokes",
+      "amplitude_obs_um": 162.0,
+      "N_spokes_obs": 13
+    },
+    "delta_eps_tasA_mutant": {
+      "label": "Matrix-Deficient Mutant (Delta epsA-O / Delta tasA -> Flat Unwrinkled)",
+      "epsilon_g": 0.015,
+      "phi_dead_peak": 0.15,
+      "artificial_spoke_score": 0,
+      "expected_regime": "flat_unwrinkled",
+      "amplitude_obs_um": 0.0,
+      "N_spokes_obs": 0
+    },
+    "cell_death_suppressed_fe_overload": {
+      "label": "Cell-Death Suppressed (FeCl3 / D-Leu -> Reduced Buckling without Focusing)",
+      "epsilon_g": 0.10,
+      "phi_dead_peak": 0.0,
+      "artificial_spoke_score": 0,
+      "expected_regime": "flat_unwrinkled",
+      "amplitude_obs_um": 0.0,
+      "N_spokes_obs": 0
+    },
+    "artificial_score_6_spokes": {
+      "label": "Artificial Cell-Death / Mechanical Score Pattern (Guided m = 6 Radial Spokes)",
+      "epsilon_g": 0.22,
+      "phi_dead_peak": 1.0,
+      "artificial_spoke_score": 6,
+      "expected_regime": "guided_artificial_spokes",
+      "amplitude_obs_um": 168.0,
+      "N_spokes_obs": 6
+    },
+    "artificial_score_8_spokes": {
+      "label": "Artificial Cell-Death / Mechanical Score Pattern (Guided m = 8 Radial Spokes)",
+      "epsilon_g": 0.22,
+      "phi_dead_peak": 1.0,
+      "artificial_spoke_score": 8,
+      "expected_regime": "guided_artificial_spokes",
+      "amplitude_obs_um": 165.0,
+      "N_spokes_obs": 8
+    }
+  }
+}

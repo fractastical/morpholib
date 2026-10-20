@@ -1,0 +1,95 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAm9qd--no5STGYc0Fe4KHobOgRtXHIlQmP_7DjfgXg1I/> .
+@prefix this: <https://w3id.org/np/RAm9qd--no5STGYc0Fe4KHobOgRtXHIlQmP_7DjfgXg1I> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jez.1401730406>,
+            <https://doi.org/10.1103/PhysRevE.47.2128>,
+            <https://doi.org/10.1103/PhysRevLett.69.2013>,
+            <https://doi.org/10.1126/science.141.3579.401>,
+            <https://doi.org/10.1242/dev.122.5.1611> .
+
+    <https://doi.org/10.1002/jez.1401730406> dcterms:date "1970"^^xsd:gYear ;
+        dcterms:title "Does differential adhesion govern self-assembly processes in histogenesis? Equilibrium configurations and the emergence of a hierarchy among populations of embryonic cells" .
+
+    <https://doi.org/10.1103/PhysRevE.47.2128> dcterms:date "1993"^^xsd:gYear ;
+        dcterms:title "Simulation of the differential adhesion driven rearrangement of biological cells" .
+
+    <https://doi.org/10.1103/PhysRevLett.69.2013> dcterms:date "1992"^^xsd:gYear ;
+        dcterms:title "Simulation of biological cell sorting using a two-dimensional extended Potts model" .
+
+    <https://doi.org/10.1126/science.141.3579.401> dcterms:date "1963"^^xsd:gYear ;
+        dcterms:title "Reconstruction of tissues by dissociated cells" .
+
+    <https://doi.org/10.1242/dev.122.5.1611> dcterms:date "1996"^^xsd:gYear ;
+        dcterms:title "Surface tensions of embryonic tissues predict their mutual envelopment behavior" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-steinberg-differential-adhesion-sorting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-steinberg-differential-adhesion-sorting-overall> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-steinberg-differential-adhesion-sorting-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Steinberg (1963, 1970) & Graner-Glazier (1992) differential adhesion cell sorting — MorphoEval overall 54.8/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Pass 1 (v1) evaluation of `1964-steinberg-differential-adhesion-sorting.py` (57.3/100). The v1 baseline implements the Graner & Glazier (1992) 2D Cellular Potts Hamiltonian and Steinberg's interfacial tensions gamma_AB, gamma_AM, gamma_BM for canonical complete engulfment plus an equal-adhesion negative control, but omits the remaining three thermodynamic regimes (checkerboard mixing gamma_AB < 0, partial engulfment gamma_AB > gamma_BM - gamma_AM, and cell dissociation gamma_AM < 0), does not load or segment the vendored confocal embryoid body specimen (`cell_sorting_specimen.jpg`), does not validate Foty & Steinberg's (1996) 5-tissue Gallus gallus surface tension hierarchy, and exposes no CLI parameter flags beyond `--self-test`. Overall 54.8/100 (faithfulness 49.6, reproducibility 66.7); rubric morphoeval 0.1.0; checkpoint commit b9976f8; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 68, Morphological realism / specimen match 35, Parameter expressivity 46, Morphometric validation 52, Source and data traceability 64, Code-to-model traceability 68, Reproducibility package 68. Output judged: docs/media/differential_adhesion_sorting_comparison.png: rendered output of 1964-steinberg-differential-adhesion-sorting.py at b9976f8, image/png, 84361 B, 1680×560 px, artifact_sha256 874f4784a13f5781f808cefad5655203cfc96f4ea35c03bcb21e6722ef038606 (sha256 874f4784a13f5781f808cefad5655203cfc96f4ea35c03bcb21e6722ef038606), spec_fingerprint 439c3a9015bc8fdc9014e2aa3a89cd71cffc876fcd81d0cb0b2f88bbf798d5a9. Dual provenance: spec_fingerprint: 439c3a9015bc8fdc9014e2aa3a89cd71cffc876fcd81d0cb0b2f88bbf798d5a9; artifact_sha256: 874f4784a13f5781f808cefad5655203cfc96f4ea35c03bcb21e6722ef038606." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Load and SHA-256-verify `datasets/differential_adhesion_sorting/differential_adhesion_sorting_reference.json` and `cell_sorting_specimen.jpg`, segment the GFP-positive inner core and RFP-positive outer cortex of the embryoid body specimen, and compare empirical vs. simulated radial density profiles (Pearson r, RMSE, and normalized radial core-shell separation).",
+            "remediation needed: Simulate all 5 thermodynamic regimes of Steinberg (1963) & Graner-Glazier (1992) (`checkerboard_mixing` gamma_AB < 0, `complete_engulfment` 0 < gamma_AB < gamma_BM - gamma_AM, `partial_engulfment` gamma_AB > gamma_BM - gamma_AM, `cell_dissociation` gamma_AM < 0, and `equal_adhesion_control` gamma_AB = 0) plus a 7-point continuous sweep across J_AB spanning both phase boundaries.",
+            "remediation needed: Validate Foty, Pfleger, Forgacs & Steinberg (1996) Development Table 1 empirical Gallus gallus 5-tissue surface tension hierarchy (20.1 > 12.6 > 8.5 > 4.6 > 1.6 dyn/cm) and logarithmic heterotypic boundary decay L_AB(t) ~ a - b*ln(t), and expose full CLI flags." ;
+        pk:hasScore "0.548"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "S6KV+s/rhyG/79D2eAHgb6hdPD6wyah/5Ol5L6p5tURvfjjJyryrLaegwq56ifRMoIzR8axluED4arolVmfgq2NOeOl32rm6Uh/TMrTcyw9Tp/y3kbYyETMUdfxt2f49UOXhuRV/jP3UQn9Vs/hl/6xEks5t6tXKn59RBtN3XWdnrJLLX8VIGr1g1k+QkKAsPAAWfZKM1P3nF0B6Y13vni3JH4XANB/GqTxOkacafsESClVVH0es8vKOz/UFkw7cn7uKx0NxWBjt4FCHYI/abfIX94+zpja37L5TBkE0qQZXnoAWNkx+WjpgIxyvTaKcvFa4wIgfByPKEsFwos2cKQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Steinberg (1963, 1970) & Graner-Glazier (1992) differential adhesion cell sorting — MorphoEval overall 54.8/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-19T23:53:09Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-steinberg-differential-adhesion-sorting-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-steinberg-differential-adhesion-sorting> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

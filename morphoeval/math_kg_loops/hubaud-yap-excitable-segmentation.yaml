@@ -1,0 +1,108 @@
+sim_id: hubaud-yap-excitable-segmentation
+math_family: Excitable FitzHugh-Nagumo Somite Clock Gated by YAP Mechanotransduction
+model_spec:
+  model: "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171(3):668-682 excitable FitzHugh-Nagumo (FHN) fast-slow relaxation oscillator model of the mouse presomitic mesoderm (PSM) segmentation clock gated by YAP mechanotransduction: tau_u du/dt = u - u^3/3 - v + I_eff(Y_nuc, J_Dll1) + D_u nabla^2 u, tau_v dv/dt = u + a - b v, where nuclear YAP suppresses I_eff = I_basal + J_Dll1 - gamma_YAP * Y_nuc"
+  governing_equations:
+    fast_activator_pde: "tau_u * du/dt = u - u^3 / 3 - v + I_eff(Y_nuc, J_Dll1) + D_u * nabla^2 u"
+    slow_inhibitor_ode: "tau_v * dv/dt = u + a - b * v,  epsilon = tau_u / tau_v"
+    yap_excitability_current: "I_eff = I_basal + J_Dll1 - gamma_YAP * Y_nuc(A_cell, E_sub)"
+    hopf_bifurcation_threshold: "Tr(tau_u * J(u^*)) = 1 - (u^*)^2 - epsilon * b = 0  <=>  |u_H| = sqrt(1 - epsilon * b)"
+  canonical_parameters:
+    a: 0.7
+    b: 0.8
+    epsilon: 0.08
+    tau_u_min: 3.78
+    tau_v_min: 47.25
+    I_basal: 0.82
+    gamma_YAP: 0.80
+    u_hopf_abs: 0.967470929795826
+    D_u_um2_per_min: 18.0
+  inputs:
+    - datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json
+    - datasets/yap_excitable_segmentation/mouse_psm_somites_specimen.jpg
+    - datasets/yap_excitable_segmentation/scout_manifest.json
+equations:
+  - id: hubaud-yap-excitable-segmentation-1
+    law_name: "Hubaud et al. (2017) FitzHugh-Nagumo Cubic Fast Nullcline Extrema & Barrier Law"
+    title: "Hubaud et al. (2017) FitzHugh-Nagumo Cubic Fast Nullcline Extrema & Barrier Law"
+    formula: "f(u) = u - u^3 / 3,  f'(u) = 1 - u^2 = 0 at u = +/- 1,  Delta_f = f(+1) - f(-1) = 4/3"
+    latex: "f(u) = u - \\frac{u^3}{3}, \\quad f'(u) = 1 - u^2 = 0 \\iff u = \\pm 1, \\quad f(1) - f(-1) = \\frac{4}{3}"
+    ascii: "f(u) = u - u^3 / 3, f'(u) = 1 - u^2 = 0 at u = +/- 1, f(1) - f(-1) = 4/3"
+    lean_decl: "MathOfBiology.Loop_027.fhn_cubic_deriv"
+    lean_theorem: "MathOfBiology.Loop_027.hubaud_2017_fhn_cubic_nullcline_extrema"
+    lean_file: morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean
+    lean_locus: "morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean#L22-L49"
+    lean_code: |-
+      def fhn_cubic_scaled (u : Int) : Int :=
+        3 * u - u * u * u
+      def fhn_cubic_deriv (u : Int) : Int :=
+        1 - u * u
+      theorem hubaud_2017_fhn_cubic_nullcline_extrema :
+          fhn_cubic_deriv 1 = 0 ∧
+          fhn_cubic_deriv (-1) = 0 ∧
+          fhn_cubic_deriv 0 = 1 ∧
+          fhn_cubic_scaled 1 - fhn_cubic_scaled (-1) = 4
+    lean_declaration: |-
+      theorem hubaud_2017_fhn_cubic_nullcline_extrema :
+          fhn_cubic_deriv 1 = 0 ∧
+          fhn_cubic_deriv (-1) = 0 ∧
+          fhn_cubic_deriv 0 = 1 ∧
+          fhn_cubic_scaled 1 - fhn_cubic_scaled (-1) = 4
+    variables: "u: fast activator (Notch / LuVeLu Lfng-Venus / Hes7 activity); v: slow negative-feedback recovery variable; f(u) = u - u^3/3: cubic fast nullcline nonlinearity"
+    role: "Defines the N-shaped folded cubic nullcline knees at u = +/- 1 that separate monostable excitable quiescence (|u^*| > 1) from autonomous relaxation oscillations (|u^*| < 1)"
+    source_citation: "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171(3):668-682 Fig. 3 & STAR Methods"
+    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L120-L210"
+  - id: hubaud-yap-excitable-segmentation-2
+    law_name: "Hubaud et al. (2017) Supercritical Hopf Stability Boundary vs Quiescent Branch Law"
+    title: "Hubaud et al. (2017) Supercritical Hopf Stability Boundary vs Quiescent Branch Law"
+    formula: "Tr(tau_u * J(u^*)) = 1 - (u^*)^2 - epsilon * b,  |u_H| = sqrt(1 - epsilon * b)"
+    latex: "\\operatorname{Tr}(\\tau_u J(u^*)) = 1 - (u^*)^2 - \\epsilon b, \\quad |u_H| = \\sqrt{1 - \\epsilon b}"
+    ascii: "Tr(tau_u * J(u^*)) = 1 - (u^*)^2 - epsilon * b, |u_H| = sqrt(1 - epsilon * b)"
+    lean_decl: "MathOfBiology.Loop_027.fhn_jacobian_trace"
+    lean_theorem: "MathOfBiology.Loop_027.hubaud_2017_hopf_vs_quiescent_stability"
+    lean_file: morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean
+    lean_locus: "morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean#L51-L75"
+    lean_code: |-
+      def fhn_jacobian_trace (M eps_b u_sq : Int) : Int :=
+        M * (1 - u_sq) - eps_b
+      theorem hubaud_2017_hopf_vs_quiescent_stability (M eps_b : Int)
+          (h_pos : 0 < eps_b) (h_fast_slow : eps_b < M) :
+          fhn_jacobian_trace M eps_b 0 > 0 ∧
+          fhn_jacobian_trace M eps_b 1 < 0
+    lean_declaration: |-
+      theorem hubaud_2017_hopf_vs_quiescent_stability (M eps_b : Int)
+          (h_pos : 0 < eps_b) (h_fast_slow : eps_b < M) :
+          fhn_jacobian_trace M eps_b 0 > 0 ∧
+          fhn_jacobian_trace M eps_b 1 < 0
+    variables: "u^*: nullcline intersection fixed point; epsilon = tau_u / tau_v: fast-slow timescale ratio (0.08); b: slow recovery damping parameter (0.8)"
+    role: "Proves that the fixed point is unstable (Tr J > 0, autonomous limit cycle) on the middle branch |u^*| < sqrt(1 - epsilon*b) and stable (Tr J < 0, excitable quiescent) on the outer branches |u^*| >= 1"
+    source_citation: "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171(3):668-682 Figs. 3-4 & STAR Methods"
+    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L215-L310"
+  - id: hubaud-yap-excitable-segmentation-3
+    law_name: "Hubaud et al. (2017) YAP Mechanotransduction Excitability Gating & Latrunculin A Rescue Law"
+    title: "Hubaud et al. (2017) YAP Mechanotransduction Excitability Gating & Latrunculin A Rescue Law"
+    formula: "I_eff(Y_nuc, J_Dll1) = I_basal + J_Dll1 - gamma_YAP * Y_nuc,  Delta I_eff = gamma_YAP * Delta Y_nuc"
+    latex: "I_{\\text{eff}} = I_{\\text{basal}} + J_{\\text{Dll1}} - \\gamma_{\\text{YAP}} Y_{\\text{nuc}}, \\quad I_{\\text{eff}}(Y_{\\text{high}} - \\Delta Y) - I_{\\text{eff}}(Y_{\\text{high}}) = \\gamma_{\\text{YAP}}\\,\\Delta Y > 0"
+    ascii: "I_eff = I_basal + J_Dll1 - gamma_YAP * Y_nuc, Delta I_eff = gamma_YAP * Delta Y_nuc"
+    lean_decl: "MathOfBiology.Loop_027.yap_effective_current"
+    lean_theorem: "MathOfBiology.Loop_027.hubaud_2017_latrunculin_yap_inhibition_rescue"
+    lean_file: morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean
+    lean_locus: "morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean#L77-L98"
+    lean_code: |-
+      def yap_effective_current (I_basal J_Dll1 gamma_YAP Y_nuc : Int) : Int :=
+        I_basal + J_Dll1 - gamma_YAP * Y_nuc
+      theorem hubaud_2017_latrunculin_yap_inhibition_rescue
+          (I_basal J_Dll1 gamma_YAP Y_high delta_Y : Int) :
+          yap_effective_current I_basal J_Dll1 gamma_YAP (Y_high - delta_Y) -
+            yap_effective_current I_basal J_Dll1 gamma_YAP Y_high =
+            gamma_YAP * delta_Y
+    lean_declaration: |-
+      theorem hubaud_2017_latrunculin_yap_inhibition_rescue
+          (I_basal J_Dll1 gamma_YAP Y_high delta_Y : Int) :
+          yap_effective_current I_basal J_Dll1 gamma_YAP (Y_high - delta_Y) -
+            yap_effective_current I_basal J_Dll1 gamma_YAP Y_high =
+            gamma_YAP * delta_Y
+    variables: "I_eff: net excitability current; Y_nuc: nuclear YAP translocation fraction [0, 1]; J_Dll1: Notch-Dll1 intercellular coupling input; gamma_YAP: YAP excitability threshold gain"
+    role: "Proves that inhibiting nuclear YAP (Latrunculin A, Y-27632 Rockout, soft substrate, Yap1 KO) raises I_eff across the Hopf threshold to ignite autonomous Hes7/Lfng oscillations, whereas Yap5SA locks quiescence"
+    source_citation: "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171(3):668-682 Figs. 4-6"
+    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L315-L420"

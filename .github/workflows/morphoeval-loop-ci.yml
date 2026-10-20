@@ -1,0 +1,71 @@
+# .github/workflows/morphoeval-loop-ci.yml
+# =============================================================================
+# Zero-Conflict Isolation & Verification Gate for Cloud Agent Loop PRs
+# (`morphoeval/loop-*`).
+#
+# Verifies on every PR opened by a Cursor Cloud Agent:
+#   1. ZERO existing tracked files were modified or deleted (`validate_loop_isolation.py`)
+#   2. The new `<year>-<author>-<slug>.py --self-test` passes
+#   3. The isolated Lean 4 module (`morphoeval/lean/loops/Loop_<NNN>_<slug>.lean`)
+#      compiles under the Lean 4 kernel with 0 errors and 0 `sorry`s
+#   4. The ProbKnow nanopublications pass `--check --conform` and `@nanopub/sign`
+# =============================================================================
+
+name: MorphoEval Cloud Loop PR Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "morphoeval/lean/loops/**"
+      - "morphoeval/math_kg_loops/**"
+      - "morphoeval/audits/**"
+      - "datasets/**"
+      - "[0-9][0-9][0-9][0-9]-*.py"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-isolated-loop:
+    name: Zero-Conflict Isolation, Lean 4 & Nanopub Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install rdflib pyyaml
+
+      - name: Install Lean 4 via elan
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:stable
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Verify Zero-Conflict File Isolation & Loop Artifacts
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          NEW_SCRIPT=$(git diff --name-only --diff-filter=A origin/main...HEAD | grep -E '^[0-9]{4}-.*\.py$' | head -n 1 || true)
+          NEW_LEAN=$(git diff --name-only --diff-filter=A origin/main...HEAD | grep -E '^morphoeval/lean/loops/Loop_.*\.lean$' | head -n 1 || true)
+          NEW_MATH=$(git diff --name-only --diff-filter=A origin/main...HEAD | grep -E '^morphoeval/math_kg_loops/.*\.yaml$' | head -n 1 || true)
+          NEW_AUDITS=$(git diff --name-only --diff-filter=A origin/main...HEAD | grep -E '^morphoeval/audits/.*-audit(-v2)?\.yaml$' | tr '\n' ' ' || true)
+
+          CMD=(python3 morphoeval/validate_loop_isolation.py --base origin/main)
+          if [ -n "$NEW_SCRIPT" ]; then CMD+=(--script "$NEW_SCRIPT"); fi
+          if [ -n "$NEW_LEAN" ]; then CMD+=(--lean-file "$NEW_LEAN"); fi
+          if [ -n "$NEW_MATH" ]; then CMD+=(--math-spec "$NEW_MATH"); fi
+          if [ -n "$NEW_AUDITS" ]; then CMD+=(--audit $NEW_AUDITS); fi
+
+          echo "Running: ${CMD[*]}"
+          "${CMD[@]}"

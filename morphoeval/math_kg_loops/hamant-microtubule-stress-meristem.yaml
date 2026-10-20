@@ -1,0 +1,89 @@
+sim_id: hamant-microtubule-stress-meristem
+math_family: "Finite-Element Pressurized Shell Turgor Stress Tensor, Bozorg Stress-vs-Strain Cue Discrimination & Anisotropic Viscoplastic Lockhart Growth"
+model_spec:
+  model: "Bozorg, Krupinski & Jönsson (2014) PLoS Comput. Biol. 10(1):e1003410 + Sampathkumar et al. (2014) eLife 3:e01967 + Hamant et al. (2008) Science 322:1650-1655 pressurized SAM shell stress tensor, stress-vs-strain CMT feedback & katanin boundary morphogenesis"
+  turgor_pressure_P_MPa: 0.50
+  wall_thickness_h_um: 0.25
+  dome_radius_R_um: 40.0
+  wt_gamma_MT: 2.40
+  bot1_gamma_MT: 0.45
+  seed: 2008
+  inputs:
+    - datasets/microtubule_stress_meristem/microtubule_stress_meristem_reference.json
+    - datasets/microtubule_stress_meristem/arabidopsis_meristem_boundary_specimen.jpg
+    - datasets/microtubule_stress_meristem/scout_manifest.json
+    - datasets/microtubule_stress_meristem/paper_citations.bib
+equations:
+  - law_name: "Hamant et al. (2008) & Bozorg et al. (2014) Saddle-Boundary Stress Anisotropy Amplification & Gaussian Curvature Inversion Law"
+    formula: "K = κ_1 κ_2;  Δσ(P_s, κ_1, κ_2) = P_s (κ_1 - κ_2);  Δσ(P_s, κ_0, κ_0) = 0 (dome, K > 0) vs Δσ(P_s, κ_0, -κ_s) = P_s(κ_0 + κ_s) > P_s κ_0 > 0 (saddle crease, K < 0)"
+    lean_decl: "MathOfBiology.Loop_036.saddle_stress_anisotropy"
+    lean_theorem: "MathOfBiology.Loop_036.hamant_bozorg_saddle_boundary_stress_anisotropy_amplification"
+    lean_locus: "morphoeval/lean/loops/Loop_036_microtubule_stress_meristem.lean#L30-L65"
+    lean_code: |
+      def gaussian_curvature (kappa_1 kappa_2 : Int) : Int :=
+        kappa_1 * kappa_2
+      def saddle_stress_anisotropy (P_s kappa_1 kappa_2 : Int) : Int :=
+        P_s * (kappa_1 - kappa_2)
+      theorem hamant_bozorg_saddle_boundary_stress_anisotropy_amplification
+          (P_s kappa_0 kappa_s : Int)
+          (hP : P_s > 0) (hk0 : kappa_0 > 0) (hks : kappa_s > 0) :
+          gaussian_curvature kappa_0 kappa_0 > 0 ∧
+          saddle_stress_anisotropy P_s kappa_0 kappa_0 = 0 ∧
+          gaussian_curvature kappa_0 (-kappa_s) < 0 ∧
+          saddle_stress_anisotropy P_s kappa_0 (-kappa_s) = P_s * kappa_0 + P_s * kappa_s ∧
+          saddle_stress_anisotropy P_s kappa_0 (-kappa_s) > P_s * kappa_0
+    variables: "κ_1, κ_2: principal curvatures along and across organ-meristem boundary (μm^-1); K = κ_1 κ_2: Gaussian curvature (μm^-2); P_s: turgor shell stress scale; Δσ: principal tensile stress difference (MPa)"
+    role: "Proves that transitioning from the positive-Gaussian-curvature SAM dome (K > 0) to the negative-Gaussian-curvature organ boundary saddle (K < 0) switches tensile stress from isotropic (Δσ = 0) to strongly amplified along the boundary crease axis"
+    source_citation: "Hamant et al. (2008) Science 322:1650-1655 Fig. 2 & SOM; Bozorg et al. (2014) PLoS Comput. Biol. 10(1):e1003410 Figs. 3-4"
+    code_locus: "2008-hamant-microtubule-stress-meristem.py#L95-L215"
+
+  - law_name: "Bozorg et al. (2014) & Hamant et al. (2008) Cylindrical Stem 2:1 Hoop-to-Axial Laplace Stress Switch & Longitudinal Lockhart Elongation Law"
+    formula: "σ_θ = P R / h = 2 S_0 = 2 σ_z > σ_z;  ε̇_z - ε̇_θ = C_z σ_z - C_θ σ_θ = (C_z - 2 C_θ) S_0 > 0  for C_z > 2 C_θ"
+    lean_decl: "MathOfBiology.Loop_036.cylinder_hoop_stress"
+    lean_theorem: "MathOfBiology.Loop_036.bozorg_cylinder_to_saddle_stress_switch"
+    lean_locus: "morphoeval/lean/loops/Loop_036_microtubule_stress_meristem.lean#L81-L115"
+    lean_code: |
+      def cylinder_axial_stress (S_0 : Int) : Int := S_0
+      def cylinder_hoop_stress (S_0 : Int) : Int := 2 * S_0
+      def lockhart_elongation_rate (compliance sigma : Int) : Int := compliance * sigma
+      theorem bozorg_cylinder_to_saddle_stress_switch
+          (S_0 C_z C_theta : Int)
+          (hS : S_0 > 0) (hC : C_z > 2 * C_theta) :
+          cylinder_hoop_stress S_0 = 2 * cylinder_axial_stress S_0 ∧
+          cylinder_hoop_stress S_0 - cylinder_axial_stress S_0 = S_0 ∧
+          cylinder_hoop_stress S_0 > cylinder_axial_stress S_0 ∧
+          lockhart_elongation_rate C_z (cylinder_axial_stress S_0) -
+            lockhart_elongation_rate C_theta (cylinder_hoop_stress S_0) =
+            (C_z - 2 * C_theta) * S_0 ∧
+          lockhart_elongation_rate C_z (cylinder_axial_stress S_0) >
+            lockhart_elongation_rate C_theta (cylinder_hoop_stress S_0)
+    variables: "S_0 = P R / (2 h): axial Laplace stress (MPa); σ_θ = 2 S_0: circumferential hoop stress (MPa); C_z, C_θ: axial and circumferential viscoplastic compliances (MPa^-1 hr^-1)"
+    role: "Proves that the 2:1 circumferential-to-axial Laplace stress ratio on the cylindrical stem drives transverse cortical microtubule hoops and longitudinal stem elongation when transverse cellulose reinforcement reduces circumferential compliance below C_z / 2"
+    source_citation: "Bozorg et al. (2014) PLoS Comput. Biol. 10(1):e1003410 Fig. 2; Hamant et al. (2008) Science 322:1650-1655 Fig. 1"
+    code_locus: "2008-hamant-microtubule-stress-meristem.py#L95-L260"
+
+  - law_name: "Uyttewaal et al. (2012) & Hamant et al. (2008) Katanin (bot1/KTN1) & Oryzalin Mechanical Feedback Gain Reduction Law"
+    formula: "ΔE(γ_MT) = E_1(γ_MT) - E_2(γ_MT) = 2 dE Δσ γ_MT;  ΔE(0) = 0 (Oryzalin);  ΔE(γ_WT) - ΔE(γ_bot1) = 2 dE Δσ (γ_WT - γ_bot1) > 0"
+    lean_decl: "MathOfBiology.Loop_036.wall_stiffness_anisotropy"
+    lean_theorem: "MathOfBiology.Loop_036.uyttewaal_katanin_oryzalin_feedback_gain_reduction"
+    lean_locus: "morphoeval/lean/loops/Loop_036_microtubule_stress_meristem.lean#L132-L167"
+    lean_code: |
+      def wall_modulus_max (E_0 dE Delta_sigma gamma_MT : Int) : Int :=
+        E_0 + dE * Delta_sigma * gamma_MT
+      def wall_modulus_min (E_0 dE Delta_sigma gamma_MT : Int) : Int :=
+        E_0 - dE * Delta_sigma * gamma_MT
+      def wall_stiffness_anisotropy (E_0 dE Delta_sigma gamma_MT : Int) : Int :=
+        wall_modulus_max E_0 dE Delta_sigma gamma_MT - wall_modulus_min E_0 dE Delta_sigma gamma_MT
+      theorem uyttewaal_katanin_oryzalin_feedback_gain_reduction
+          (E_0 dE Delta_sigma gamma_WT gamma_bot1 : Int)
+          (hdE : dE > 0) (hDS : Delta_sigma > 0) (hG : gamma_WT > gamma_bot1) :
+          wall_stiffness_anisotropy E_0 dE Delta_sigma 0 = 0 ∧
+          wall_stiffness_anisotropy E_0 dE Delta_sigma gamma_WT -
+            wall_stiffness_anisotropy E_0 dE Delta_sigma gamma_bot1 =
+            2 * (dE * Delta_sigma * (gamma_WT - gamma_bot1)) ∧
+          wall_stiffness_anisotropy E_0 dE Delta_sigma gamma_WT >
+            wall_stiffness_anisotropy E_0 dE Delta_sigma gamma_bot1
+    variables: "γ_MT: katanin-dependent mechanical stress feedback gain; E_1, E_2: principal cell-wall elastic moduli along and perpendicular to maximal stress (MPa); Δσ: principal stress difference (MPa)"
+    role: "Proves that reducing mechanical stress feedback gain γ_MT via katanin (bot1/ktn1) loss-of-function or Oryzalin microtubule depolymerization (γ_MT = 0) reduces or abolishes cellulose stiffness anisotropy and organ-meristem boundary crease folding"
+    source_citation: "Uyttewaal et al. (2012) Cell 149:439-451 Figs. 2-5; Hamant et al. (2008) Science 322:1650-1655 Fig. 5"
+    code_locus: "2008-hamant-microtubule-stress-meristem.py#L265-L385"

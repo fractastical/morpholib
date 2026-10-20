@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "dataset_id": "karsai-1993-theraulaz-1995-bonabeau-social-wasp-comb-hexagons-v1",
+    "title": "Karsai & Pénzes (1993) J. Theor. Biol., Theraulaz & Bonabeau (1995) Science & Smith et al. (2021) PNAS — Stigmergic Hexagonal Lattice Wasp Comb Architecture, Shared-Wall Pulp Economy & Topological 5–7 Disclination Pairs",
+    "sources": [
+      {
+        "id": "karsai1993",
+        "citation": "Karsai I, Pénzes Z (1993). Comb building in social wasps: self-organization and stigmergic script. Journal of Theoretical Biology 161(4):505-525.",
+        "doi": "10.1006/jtbi.1993.1072"
+      },
+      {
+        "id": "theraulaz1995",
+        "citation": "Theraulaz G, Bonabeau E (1995). Coordination in distributed building. Science 269(5224):686-688.",
+        "doi": "10.1126/science.269.5224.686"
+      },
+      {
+        "id": "karsai2000",
+        "citation": "Karsai I, Pénzes Z (2000). Optimality of cell arrangement and rules of thumb of cell initiation in Polistes dominulus: a modeling approach. Behavioral Ecology 11(4):387-395.",
+        "doi": "10.1093/beheco/11.4.387"
+      },
+      {
+        "id": "smith2021",
+        "citation": "Smith ML, Napp KH, Gravish N, Seeley TD, Petersen KH (2021). Imperfect comb construction reveals the architectural abilities of honeybees. Proceedings of the National Academy of Sciences 118(31):e2103605118.",
+        "doi": "10.1073/pnas.2103605118"
+      },
+      {
+        "id": "hales2001",
+        "citation": "Hales TC (2001). The Honeycomb Conjecture. Discrete & Computational Geometry 25(1):1-22.",
+        "doi": "10.1007/s004540010071"
+      }
+    ],
+    "specimens": {
+      "polistes_wasp_comb_specimen": {
+        "file": "datasets/social_wasp_comb_hexagons/polistes_wasp_comb_specimen.jpg",
+        "sha256": "03befd4d1fbfa35a60897583031926e7e0a5d05f2ce7b80f77001f453f89c546",
+        "width": 900,
+        "height": 600,
+        "species": "Polistes paper wasp nest hexagonal brood comb on plant stem",
+        "license": "CC BY 2.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Flickr_-_ggallice_-_Paper_wasp_nest.jpg",
+        "roi_box_xyxy": [220, 100, 640, 520],
+        "pattern_type": "hexagonal_brood_comb_lattice"
+      },
+      "scout_manifest": {
+        "file": "datasets/social_wasp_comb_hexagons/scout_manifest.json",
+        "sha256": "63f51b932c469536bfc4a723a51caef96989335756bcb03dd3f49efaeb20899d"
+      },
+      "paper_citations": {
+        "file": "datasets/social_wasp_comb_hexagons/paper_citations.bib",
+        "sha256": "9b09023aaea52aa7457758a48a6e88e07e18dfa8fe9bca4ca7e54bd57ad52945"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Karsai & Pénzes (1993) J. Theor. Biol. 161:505-525 Eqs. (1)-(6); Theraulaz & Bonabeau (1995) Science 269:686-688; Karsai & Pénzes (2000) Behav. Ecol. 11:387-395; Smith et al. (2021) PNAS 118:e2103605118; Hales (2001) Discrete Comput. Geom. 25:1-22",
+    "stigmergic_boltzmann_initiation": "P_init(j) = exp(beta * k_j) / sum_{m in dOmega} exp(beta * k_m),  k_j in {1, 2, 3} shared walls",
+    "centered_hexagonal_cell_count": "N(R) = 1 + 3 * R * (R + 1),  Delta N(R) = N(R) - N(R - 1) = 6 * R",
+    "compact_comb_total_walls": "W(R) = 3 * N(R) + 6 * R + 3 = 9 * R^2 + 15 * R + 6",
+    "walls_per_cell_asymptote": "W(R) / N(R) = 3 + (6 * R + 3) / (1 + 3 * R * (R + 1)) -> 3.0 as R -> infinity (50% pulp savings vs 6.0 unshared walls)",
+    "pulp_walls_saved": "S_saved(R) = 6 * N(R) - W(R) = 3 * R * (3 * R + 1)",
+    "euler_topological_charge_law": "sum_i (6 - z_i) = 6 * chi_Euler;  for a 5-7 disclination pair: q_5 + q_7 = (6 - 5) + (6 - 7) = (+1) + (-1) = 0",
+    "parameters": {
+      "beta_wild_type": 5.5,
+      "beta_eden_random": 0.0,
+      "w1_protrusion_penalty": 0.01,
+      "R_rings_default": 6,
+      "N_cells_default": 127,
+      "worker_cell_diameter_mm": 4.6,
+      "reproductive_cell_diameter_mm": 6.0,
+      "size_ratio_lambda_default": 1.30,
+      "seed": 1995
+    }
+  },
+  "concentric_ring_economy_trajectory": [
+    {"ring_R": 0, "N_cells": 1, "ring_delta_N": 1, "W_walls_theory": 6, "walls_per_cell_theory": 6.0000, "walls_per_cell_obs": 6.00, "pulp_savings_pct_theory": 0.00, "pulp_savings_pct_obs": 0.0},
+    {"ring_R": 1, "N_cells": 7, "ring_delta_N": 6, "W_walls_theory": 30, "walls_per_cell_theory": 4.2857, "walls_per_cell_obs": 4.29, "pulp_savings_pct_theory": 28.57, "pulp_savings_pct_obs": 28.5},
+    {"ring_R": 2, "N_cells": 19, "ring_delta_N": 12, "W_walls_theory": 72, "walls_per_cell_theory": 3.7895, "walls_per_cell_obs": 3.80, "pulp_savings_pct_theory": 36.84, "pulp_savings_pct_obs": 36.7},
+    {"ring_R": 3, "N_cells": 37, "ring_delta_N": 18, "W_walls_theory": 132, "walls_per_cell_theory": 3.5676, "walls_per_cell_obs": 3.58, "pulp_savings_pct_theory": 40.54, "pulp_savings_pct_obs": 40.4},
+    {"ring_R": 4, "N_cells": 61, "ring_delta_N": 24, "W_walls_theory": 210, "walls_per_cell_theory": 3.4426, "walls_per_cell_obs": 3.46, "pulp_savings_pct_theory": 42.62, "pulp_savings_pct_obs": 42.4},
+    {"ring_R": 5, "N_cells": 91, "ring_delta_N": 30, "W_walls_theory": 306, "walls_per_cell_theory": 3.3626, "walls_per_cell_obs": 3.38, "pulp_savings_pct_theory": 43.96, "pulp_savings_pct_obs": 43.7},
+    {"ring_R": 6, "N_cells": 127, "ring_delta_N": 36, "W_walls_theory": 420, "walls_per_cell_theory": 3.3071, "walls_per_cell_obs": 3.32, "pulp_savings_pct_theory": 44.88, "pulp_savings_pct_obs": 44.7},
+    {"ring_R": 7, "N_cells": 169, "ring_delta_N": 42, "W_walls_theory": 552, "walls_per_cell_theory": 3.2663, "walls_per_cell_obs": 3.28, "pulp_savings_pct_theory": 45.56, "pulp_savings_pct_obs": 45.3}
+  ],
+  "stigmergic_beta_selectivity_sweep": [
+    {"condition_id": "eden_random_beta_0p0", "beta": 0.0, "regime": "Eden random perimeter growth (negative control)", "N_cells": 127, "walls_per_cell_obs": 4.18, "k3_pocket_fraction_obs": 0.19, "compactness_isoperimetric_obs": 0.44},
+    {"condition_id": "weak_bias_beta_0p5", "beta": 0.5, "regime": "Weak wall-sharing bias", "N_cells": 127, "walls_per_cell_obs": 3.92, "k3_pocket_fraction_obs": 0.35, "compactness_isoperimetric_obs": 0.58},
+    {"condition_id": "low_stigmergy_beta_1p0", "beta": 1.0, "regime": "Sub-optimal stigmergic sensitivity", "N_cells": 127, "walls_per_cell_obs": 3.68, "k3_pocket_fraction_obs": 0.52, "compactness_isoperimetric_obs": 0.72},
+    {"condition_id": "moderate_stigmergy_beta_1p8", "beta": 1.8, "regime": "Moderate stigmergic wall-sharing", "N_cells": 127, "walls_per_cell_obs": 3.46, "k3_pocket_fraction_obs": 0.71, "compactness_isoperimetric_obs": 0.85},
+    {"condition_id": "intermediate_stigmergy_beta_2p8", "beta": 2.8, "regime": "Near-compact Polistes comb", "N_cells": 127, "walls_per_cell_obs": 3.35, "k3_pocket_fraction_obs": 0.84, "compactness_isoperimetric_obs": 0.94},
+    {"condition_id": "high_stigmergy_beta_4p0", "beta": 4.0, "regime": "High stigmergic selectivity", "N_cells": 127, "walls_per_cell_obs": 3.315, "k3_pocket_fraction_obs": 0.92, "compactness_isoperimetric_obs": 0.98},
+    {"condition_id": "wild_type_polistes_beta_5p5", "beta": 5.5, "regime": "Wild-type Polistes dominula rule (w3 >> w2 >> w1)", "N_cells": 127, "walls_per_cell_obs": 3.307, "k3_pocket_fraction_obs": 0.952, "compactness_isoperimetric_obs": 0.995}
+  ],
+  "topological_defect_transition_controls": {
+    "uniform_worker_comb": {
+      "label": "Uniform Worker Comb (lambda = 1.00, d = 4.6 mm)",
+      "size_ratio_lambda": 1.00,
+      "n_5_7_pairs_obs": 0,
+      "n_pentagons_z5": 0,
+      "n_heptagons_z7": 0,
+      "net_topological_charge": 0,
+      "hexagonal_fraction_obs": 1.000
+    },
+    "mild_caste_step_1p15": {
+      "label": "Mild Caste Cell-Size Step (lambda = 1.15, d = 5.3 mm)",
+      "size_ratio_lambda": 1.15,
+      "n_5_7_pairs_obs": 3,
+      "n_pentagons_z5": 3,
+      "n_heptagons_z7": 3,
+      "net_topological_charge": 0,
+      "hexagonal_fraction_obs": 0.925
+    },
+    "reproductive_queen_step_1p30": {
+      "label": "Worker-to-Reproductive Cell Transition (lambda = 1.30, d = 6.0 mm, Smith et al. 2021)",
+      "size_ratio_lambda": 1.30,
+      "n_5_7_pairs_obs": 6,
+      "n_pentagons_z5": 6,
+      "n_heptagons_z7": 6,
+      "net_topological_charge": 0,
+      "hexagonal_fraction_obs": 0.850
+    },
+    "large_drone_queen_step_1p40": {
+      "label": "Large Reproductive Cell Transition (lambda = 1.40, d = 6.4 mm)",
+      "size_ratio_lambda": 1.40,
+      "n_5_7_pairs_obs": 8,
+      "n_pentagons_z5": 8,
+      "n_heptagons_z7": 8,
+      "net_topological_charge": 0,
+      "hexagonal_fraction_obs": 0.800
+    },
+    "eden_random_negative_control": {
+      "label": "Eden Random Growth Control (beta = 0.0, Uncoordinated Initiation)",
+      "size_ratio_lambda": 1.00,
+      "beta": 0.0,
+      "walls_per_cell_obs": 4.18,
+      "unfilled_interior_pockets_obs": 14,
+      "hexagonal_fraction_obs": 0.380
+    }
+  }
+}

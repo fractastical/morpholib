@@ -1,0 +1,172 @@
+# MorphoEval audit — Campàs et al. (2010) PNAS & Abzhanov et al. (2004, 2006) Darwin's Finch Beak Scaling & Shear, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2021-alberti-avian-beak-darwin-scaling.py` (226 lines)
+# prior to Step 12 remediation in `2026-10-19-avian-beak-darwin-scaling-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.6 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `generate_pure_scaled_beak_profile` (L39-53) models only 2D diagonal scaling (s_L, s_D)
+#      for the 6 Group A Geospiza species and omits the full 3-parameter Campàs-Brenner
+#      affine scaling-and-shear transformation M(s_L, s_D, gamma) = [[1, gamma], [0, 1]] @ [[s_L, 0], [0, s_D]]
+#      required to collapse all 14 Darwin's finch species across Group B (Platyspiza,
+#      Camarhynchus, Cactospiza) and Group C (Certhidea, Pinaroloxias), as well as the
+#      pure-scaling negative control showing why gamma = 0 fails on Groups B & C.
+#   2. `evaluate_geospiza_group_a` (L56-97) omits the coupled Bmp4/Calmodulin mesenchymal
+#      growth field and Abzhanov et al.'s (2004, 2006) retroviral perturbation experiments
+#      (RCAS::Bmp4 gain-of-function, RCAS::Noggin inhibition, RCAS::CaM elongation) and
+#      cantilever beam bending resistance I_beam = W*D^3 / (12*L).
+#   3. The vendored biological specimen `datasets/avian_beak_darwin_scaling/darwin_finches_specimen.jpg`
+#      (Gould's 1845 Darwin's finches plate) is not loaded, segmented, or displayed.
+#   4. Runtime SHA-256 verification of dataset assets and CLI physical parameter overrides
+#      (`--bmp4-scale`, `--cam-scale`, `--gamma-shear`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-avian-beak-darwin-scaling-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 070 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/70
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 33e07ad
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2021-alberti-avian-beak-darwin-scaling.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-avian-beak-darwin-scaling-loop`.
+
+references:
+  campas2010:
+    title: "Scaling and shear transformations capture beak shape diversity in Darwin's finches"
+    authors: "Campas O, Mallarino R, Herrel A, Abzhanov A, Brenner MP"
+    venue: "Proceedings of the National Academy of Sciences 107(8):3356-3360 (2010)"
+    doi: 10.1073/pnas.0911575107
+  abzhanov2004:
+    title: "Bmp4 and morphological variation of beaks in Darwin's finches"
+    authors: "Abzhanov A, Protas M, Grant BR, Grant PR, Tabin CJ"
+    venue: "Science 305(5689):1462-1465 (2004)"
+    doi: 10.1126/science.1098095
+  abzhanov2006:
+    title: "The calmodulin pathway and evolution of elongated beak morphology in Darwin's finches"
+    authors: "Abzhanov A, Kuo WP, Hartmann C, Grant BR, Grant PR, Tabin CJ"
+    venue: "Nature 442(7102):563-567 (2006)"
+    doi: 10.1038/nature04843
+  fritz2014:
+    title: "Shared developmental programme strongly constrains beak shape diversity in songbirds"
+    authors: "Fritz JA, Brancale J, Tokita M, Burns KJ, Hawkins MB, Abzhanov A, Brenner MP"
+    venue: "Journal of the Royal Society Interface 11(96):20140284 (2014)"
+    doi: 10.1098/rsif.2014.0284
+
+simulations:
+  - id: alberti-avian-beak-darwin-scaling
+    name: "Campas et al. (2010) PNAS affine scaling-and-shear transformation + Abzhanov et al. (2004, 2006) Bmp4/Calmodulin beak morphogenesis"
+    organism: "Darwin's finches (Geospiza magnirostris, Geospiza fortis, Geospiza scandens, Camarhynchus parvulus, Certhidea olivacea)"
+    script: 2021-alberti-avian-beak-darwin-scaling.py
+    output: docs/media/avian_beak_darwin_scaling_comparison.png
+    extra_outputs:
+      - docs/media/avian_beak_darwin_scaling_growth.gif
+    status: evaluated
+    source_refs:
+      - campas2010
+      - abzhanov2004
+      - abzhanov2006
+      - fritz2014
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2021-alberti-avian-beak-darwin-scaling.py`
+      (overall weighted score: 56.6/100). The v1 script implements pure diagonal scaling
+      (s_L, s_D) for the 6 Group A Geospiza species (RMS = 0.0040), but omits the full
+      3-parameter Campas-Brenner affine scaling-and-shear transformation M(s_L, s_D, gamma)
+      needed to collapse all 14 Darwin's finch species across Groups A, B, and C, omits
+      Abzhanov et al.'s (2004, 2006) RCAS::Bmp4, RCAS::Noggin, and RCAS::CaM perturbations
+      and pure-scaling negative control, and does not segment the vendored 1845 Gould
+      Darwin's finches specimen image.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Implements canonical power-law culmen profile y_0(x_0) and pure scaling (s_L, s_D)
+          for Group A Geospiza species (L34-53), backed by 3 Lean 4 theorems in
+          `Loop_070_avian_beak_darwin_scaling.lean`. However, it omits the shear matrix
+          [[1, gamma], [0, 1]] required for Groups B and C, lacks the 2D/3D Bmp4/Calmodulin
+          mesenchymal growth field and cantilever bending mechanics I_beam = W*D^3/(12*L),
+          and lacks the pure-scaling negative control on Certhidea and Camarhynchus.
+        evidence:
+          - {file: 2021-alberti-avian-beak-darwin-scaling.py, lines: [34, 53], note: "Canonical culmen curve and pure scaling (s_L, s_D) for Group A Geospiza", supports: true}
+          - {file: 2021-alberti-avian-beak-darwin-scaling.py, lines: [56, 97], note: "Omits shear gamma transformation across Groups B & C and Bmp4/Calmodulin mesenchymal field", supports: false}
+      specimen-match:
+        value: 36
+        rationale: >-
+          Although `datasets/avian_beak_darwin_scaling/darwin_finches_specimen.jpg` is
+          vendored on disk, the v1 script never loads, segments, or extracts culmen contours
+          from the 4 Gould (1845) finch heads, and evaluates only 6 of the 14 Darwin's finch
+          species.
+        evidence:
+          - {file: 2021-alberti-avian-beak-darwin-scaling.py, lines: [56, 97], note: "Evaluates only 6 Group A Geospiza species without loading darwin_finches_specimen.jpg", supports: false}
+          - {file: docs/media/avian_beak_darwin_scaling_comparison.png, lines: [0, 0], note: "4-panel v1 plot lacks Gould specimen contour extraction and 14-species shear collapse", supports: false}
+      parameter-expressivity:
+        value: 48
+        rationale: >-
+          Evaluates 6 Geospiza species in (s_L, s_D) space (L56-97), but omits the 8 species
+          in Groups B and C with non-zero shear gamma in [-0.28, +0.34], omits RCAS::Bmp4,
+          RCAS::Noggin, and RCAS::CaM perturbations, and exposes no CLI parameter overrides
+          (L208-221).
+        evidence:
+          - {file: 2021-alberti-avian-beak-darwin-scaling.py, lines: [208, 221], note: "CLI exposes only --self-test, --verify-only, and --skip-gif without physical overrides", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          `measure_morphoeval()` (L169-198) reports Group A pure scaling RMS and Geospiza
+          D/L correlation, but does not measure the 14-species affine scaling-and-shear
+          collapse RMS vs pure-scaling negative control RMS, Bmp4/CaM perturbation ratios,
+          cantilever bite-force scaling, or computer-vision culmen contour metrics from
+          the specimen plate.
+        evidence:
+          - {file: 2021-alberti-avian-beak-darwin-scaling.py, lines: [169, 198], note: "Only 3 Group A metrics returned in measure_morphoeval() without 14-species shear collapse or specimen CV metrics", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Reads `datasets/avian_beak_darwin_scaling/avian_beak_darwin_scaling_reference.json`
+          and cites Campas et al. (2010) `10.1073/pnas.0911575107` (L4-9), but does not verify
+          SHA-256 digests of the reference JSON, BibTeX, scout manifest, or specimen image
+          at runtime.
+        evidence:
+          - {file: 2021-alberti-avian-beak-darwin-scaling.py, lines: [30, 31], note: "Loads REF_JSON without runtime SHA-256 cryptographic verification", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions document the Group A pure scaling curve (L34-53), but lack explicit
+          mappings to Campas et al. (2010) Eqs. (1)-(3) & Figs. 1-4, Abzhanov et al.
+          (2004, 2006) Science/Nature Figs. 2-4, and the 3 Lean 4 theorems in
+          `Loop_070_avian_beak_darwin_scaling.lean`.
+        evidence:
+          - {file: 2021-alberti-avian-beak-darwin-scaling.py, lines: [34, 53], note: "Brief docstrings without explicit paper equation/figure or Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Includes `--self-test`, `--verify-only`, and `--skip-gif` flags (L200-221), but
+          `self_test()` performs only 3 basic assertions without checking SHA-256 dataset
+          integrity, 14-species shear collapse vs pure-scaling failure, Bmp4/CaM perturbation
+          ordering, or two-run bitwise determinism.
+        evidence:
+          - {file: 2021-alberti-avian-beak-darwin-scaling.py, lines: [200, 206], note: "Minimal 3-check self_test() without determinism, shear negative control, or specimen checks", supports: false}
+    remediation:
+      - "Implement the full 3-parameter Campas-Brenner affine scaling-and-shear group M(s_L, s_D, gamma) = [[1, gamma], [0, 1]] @ [[s_L, 0], [0, s_D]] across all 14 Darwin's finch species (Groups A, B, and C), demonstrating both the 6-species Group A pure-scaling collapse and the 14-species universal scaling+shear collapse (RMS < 0.015, r > 0.99) contrasted against the pure-scaling (gamma = 0) negative control on Certhidea and Camarhynchus."
+      - "Implement the 2D/3D Bmp4-Calmodulin mesenchymal growth field, cantilever beam bending mechanics I_beam = W*D^3/(12*L), and Abzhanov et al. (2004, 2006) retroviral perturbation suite (RCAS::Bmp4, RCAS::Noggin, RCAS::CaM)."
+      - "Implement computer-vision contour segmentation on `datasets/avian_beak_darwin_scaling/darwin_finches_specimen.jpg` (Gould's 1845 Darwin's finches lithograph) to extract upper culmen profiles, aspect ratios D/L, and affine collapse residuals across the 4 illustrated finch species."
+      - "Add runtime SHA-256 verification of all 4 files in `datasets/avian_beak_darwin_scaling/`, expose CLI parameter overrides (`--bmp4-scale`, `--cam-scale`, `--gamma-shear`, `--seed`), and expand `self_test()` and `measure_morphoeval()`."

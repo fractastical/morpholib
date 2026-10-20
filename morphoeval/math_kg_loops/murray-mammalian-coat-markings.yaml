@@ -1,0 +1,70 @@
+sim_id: murray-mammalian-coat-markings
+math_family: Reaction-Diffusion & Domain Geometry
+model_spec:
+  model: "Murray (1981) Thomas substrate-inhibition reaction-diffusion pre-pattern & conical tail spot-to-ring eigenmode transition"
+  a: 92.0
+  b: 64.0
+  alpha: 1.5
+  rho: 18.5
+  K: 0.1
+  d: 10.0
+  gamma_flank: 25.0
+  gamma_tail: 8.0
+  seed: 1981
+  inputs:
+    - datasets/mammalian_coat_markings/mammalian_coat_markings_reference.json
+    - datasets/mammalian_coat_markings/panthera_pardus_specimen.jpg
+    - datasets/mammalian_coat_markings/scout_manifest.json
+equations:
+  - law_name: "Thomas (1975) / Murray (1981) Homogeneous Steady-State Reservoir Flux Balance"
+    formula: "f(u_0, v_0) = a - u_0 - h(u_0, v_0) = 0 ∧ g(u_0, v_0) = α(b - v_0) - h(u_0, v_0) = 0 ⟹ a - u_0 = α(b - v_0) = ρ u_0 v_0 / (1 + u_0 + K u_0^2)"
+    lean_decl: "MathOfBiology.Loop_003.thomas_react_f"
+    lean_theorem: "MathOfBiology.Loop_003.thomas_steady_state_flux_balance"
+    lean_locus: "morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean#L20-L39"
+    lean_code: |
+      def thomas_react_f (a u h : Int) : Int := (a - u) - h
+      def thomas_react_g (alpha_b_minus_v h : Int) : Int := alpha_b_minus_v - h
+      theorem thomas_steady_state_flux_balance (a u alpha_b_minus_v h : Int)
+          (hf : thomas_react_f a u h = 0) (hg : thomas_react_g alpha_b_minus_v h = 0) :
+          a - u = alpha_b_minus_v ∧ a - u = h := by
+        unfold thomas_react_f at hf; unfold thomas_react_g at hg; omega
+    variables: "u_0, v_0: homogeneous steady-state substrate and co-substrate concentrations; a, b: reservoir concentrations; α: relative co-substrate influx; h(u,v): immobilized uricase reaction flux"
+    role: "Pins the exact linear conservation relation v_0 = b - (a - u_0)/α reducing the 2D equilibrium intersection to a 1D root in u_0"
+    source_citation: "Murray (1981) J. Theor. Biol. 88(1):161-199 Eqs. (4)-(7); Thomas (1975) Biochimie 57:499-507"
+    code_locus: "1981-murray-mammalian-coat-markings.py#L140-L215"
+  - law_name: "Thomas Substrate-Inhibition Autocatalysis Threshold (K u_0^2 > 1)"
+    formula: "(1 + u_0 + K u_0^2)^2 f_u = ρ v_0 (K u_0^2 - 1) - (1 + u_0 + K u_0^2)^2 > 0  ⟹  K u_0^2 > 1"
+    lean_decl: "MathOfBiology.Loop_003.thomas_fu_scaled_num"
+    lean_theorem: "MathOfBiology.Loop_003.thomas_substrate_inhibition_autocatalysis"
+    lean_locus: "morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean#L46-L66"
+    lean_code: |
+      def thomas_fu_scaled_num (denom_sq rho_v0 K_u0_sq : Int) : Int :=
+        rho_v0 * (K_u0_sq - 1) - denom_sq
+      theorem thomas_substrate_inhibition_autocatalysis (denom_sq rho_v0 : Int)
+          (hd : denom_sq ≥ 1) (hrv : rho_v0 ≥ 1) :
+          thomas_fu_scaled_num denom_sq rho_v0 0 ≤ -2 ∧
+          thomas_fu_scaled_num 441 172 10 = 1107 := by
+        unfold thomas_fu_scaled_num; omega
+    variables: "K: substrate-inhibition constant; u_0, v_0: steady-state concentrations; ρ: maximum enzyme velocity; f_u = ∂f/∂u: self-activation Jacobian entry"
+    role: "Proves that non-inhibitory Michaelis-Menten kinetics (K=0) cannot self-activate (f_u < 0), whereas substrate inhibition K u_0^2 > 1 creates positive feedback f_u > 0 at Murray's Table 1 regime"
+    source_citation: "Murray (1981) J. Theor. Biol. 88(1):161-199 Section 2 Eqs. (8)-(14), Table 1"
+    code_locus: "1981-murray-mammalian-coat-markings.py#L165-L245"
+  - law_name: "Murray (1981) Conical Tail Circumferential-to-Axial Eigenmode Exclusion Theorem"
+    formula: "k_{n,m}^2(r) = (n π / L)^2 + (m / r)^2 ∈ [k_-^2 / γ, k_+^2 / γ];  r < r_crit = m √(γ / k_+^2) ⟹ m ≥ 1 damped, m = 0 rings unstable"
+    lean_decl: "MathOfBiology.Loop_003.in_turing_band_r2"
+    lean_theorem: "MathOfBiology.Loop_003.murray_conical_tail_spot_to_ring_transition"
+    lean_locus: "morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean#L73-L99"
+    lean_code: |
+      def in_turing_band_r2 (q_min_10 q_max_10 q_ax_10 m r : Nat) : Bool :=
+        decide (q_min_10 * r * r ≤ q_ax_10 * r * r + 10 * m * m ∧
+                q_ax_10 * r * r + 10 * m * m ≤ q_max_10 * r * r)
+      theorem murray_conical_tail_spot_to_ring_transition :
+          in_turing_band_r2 5 9 7 0 3 = true ∧
+          in_turing_band_r2 5 9 7 1 3 = true ∧
+          in_turing_band_r2 5 9 7 0 1 = true ∧
+          in_turing_band_r2 5 9 7 1 1 = false ∧
+          in_turing_band_r2 5 9 7 2 1 = false := by decide
+    variables: "r(x): local tapered tail radius; L: tail length; n: axial mode number; m: circumferential mode number; [k_-^2, k_+^2]: unstable Turing wavenumber band"
+    role: "Proves why a tapered mammalian tail transitions from 2D spots (m ≥ 1) at the broad proximal base to 1D transverse rings (m = 0) at the narrow distal tip, and never from rings at the base to spots at the tip"
+    source_citation: "Murray (1981) J. Theor. Biol. 88(1):161-199 Section 4 Eqs. (26)-(32), Figs. 9-12; Murray (1988) Sci. Am. 258(3):80-87"
+    code_locus: "1981-murray-mammalian-coat-markings.py#L250-L335"

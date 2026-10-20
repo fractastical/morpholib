@@ -1,0 +1,173 @@
+# MorphoEval audit — Young et al. (1992) Nature & Jaya et al. (2016) Nat. Commun. Emiliania huxleyi V/R Calcite Coccolith Rosette & Interlocking Coccosphere, 2026-10-19 (v1)
+#
+# Dual-agent Pass 1 assessment of `2022-coccolith-emiliania-calcite-rosette.py` (v1, 165 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-emiliania-calcite-rosette-loop`):
+#   - Primary assessor: Gemini 4 Argon — 54.8 / 100
+#   - Independent second assessor rubric check — 49.6 / 100
+#   - Pass 1 consensus score: 52.2 / 100
+#
+# Concrete Pass 1 weaknesses flagged for Step 12 remediation:
+#   1. Only a circular 2D stick-spoke sketch and a 1D linear scaling line are evaluated
+#      (L29-46): omits 3D V/R bimodal crystallographic c-axis orientation vectors
+#      (c_V = (0,0,1) orthogonal to radial c_R(theta_k), c_V . c_R = 0), omits elliptical
+#      baseplate geometry (b/a = 0.8478, eccentricity e = 0.5303), omits 3D proximal and
+#      distal shields separated by the central tube with chiral suture imbrication (psi = 18 deg)
+#      and CAP-polysaccharide modulated T-shaped hammer-head rhombohedral {10-14} facets across
+#      morphotypes A, B, C, and R, omits 3D spherical coccosphere Euler polyhedral interlocking
+#      packing (V - E + F = 2) and compressive fracture load mechanics (Jaya et al. 2016), and
+#      omits ocean acidification (Omega_calcite < 1) / CAP-polysaccharide ablation control.
+#   2. Zero biological specimen comparison (`specimen-match: 24`): the vendored CC BY-SA 4.0
+#      *Emiliania huxleyi* coccosphere & isolated coccolith SEM micrograph
+#      (`datasets/emiliania_calcite_rosette/emiliania_huxleyi_coccolith_specimen.jpg`) is not
+#      loaded, SHA-256-verified, or segmented in v1.
+#   3. No cross-taxa / morphotype validation across the 12 empirical coccolithophore taxa and
+#      *E. huxleyi* morphotypes in `datasets/emiliania_calcite_rosette/emiliania_calcite_rosette_reference.json`.
+#   4. Hardcodes fixed parameters without CLI overrides (`--n-seg`, `--w0`, `--l-spoke`,
+#      `--omega`, `--n-cocc`, `--seed`, `--skip-gif`).
+
+audit:
+  id: 2026-10-19-emiliania-calcite-rosette-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 baseline assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 1 rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/80
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2022-coccolith-emiliania-calcite-rosette.py`
+      prior to Step 12 remediation in `2026-10-19-emiliania-calcite-rosette-loop`.
+
+references:
+  young1992:
+    title: "Crystallographic control of biomineral morphology in coccoliths"
+    authors: "Young JR, Didymus JM, Bown PR, Prins B, Mann S"
+    venue: "Nature 356(6369):516-518 (1992)"
+    doi: 10.1038/356516a0
+  didymus1993:
+    title: "Construction of stage-specific models of coccolith biomineralization in Emiliania huxleyi"
+    authors: "Didymus JM, Young JR, Mann S"
+    venue: "Proceedings of the Royal Society of London B 252(1335):259-264 (1993)"
+    doi: 10.1098/rspb.1993.0073
+  jaya2016:
+    title: "Coccospheres confer mechanical protection: insights into the Emiliania huxleyi architectural design"
+    authors: "Jaya BN, Hoffmann R, Kirchlechner C, Dehm G, Scheu C, Langer G"
+    venue: "Nature Communications / Journal of Structural Biology 7:11904 (2016)"
+    doi: 10.1038/ncomms11904
+  walker2018:
+    title: "The requirement for calcification differs between ecologically important coccolithophore species"
+    authors: "Walker CE, Taylor AR, Langer G, Durak GM, Heath S, Probert I, Tyrrell T, Brownlee C, Wheeler GL"
+    venue: "Nature Communications / New Phytologist 9:1-12 (2018)"
+    doi: 10.1038/s41467-018-04168-9
+
+simulations:
+  - id: coccolith-emiliania-calcite-rosette
+    name: "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics"
+    organism: "Emiliania huxleyi (Morphotypes A, B, B/C, C, R, O) & Gephyrocapsa / Calcidiscus / Coccolithus (Haptophyta)"
+    script: 2022-coccolith-emiliania-calcite-rosette.py
+    output: docs/media/emiliania_calcite_rosette_comparison.png
+    extra_outputs:
+      - docs/media/emiliania_calcite_rosette_growth.gif
+    status: evaluated
+    source_refs:
+      - young1992
+      - didymus1993
+      - jaya2016
+      - walker2018
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2022-coccolith-emiliania-calcite-rosette.py`
+      (consensus score 52.2/100). The v1 script plots only a 2D circular radial stick-spoke
+      diagram and a 1D linear scaling curve, omitting 3D V/R bimodal crystallographic c-axis
+      nucleation vectors and orthogonality verification (c_V . c_R = 0), elliptical baseplate
+      eccentricity, 3D double-shield T-shaped hammer-head elements and chiral suture imbrication
+      across morphotypes A, B, C, and R, 3D interlocking spherical coccosphere Euler packing
+      (V - E + F = 2) and compressive load mechanics, ocean acidification / CAP-polysaccharide
+      ablation control, 12-taxon coccolithophore validation, and CV angular FFT spoke-count
+      and ellipse eccentricity segmentation on the vendored Emiliania huxleyi SEM specimen.
+    scores:
+      model-fidelity:
+        value: 53
+        rationale: >-
+          Plots 2D radial line segments and a 1D linear scaling formula (L29-46), but omits
+          3D V/R crystallographic c-axis orientation vectors (c_V . c_R = 0), elliptical
+          baseplate rim geometry, 3D proximal/distal shield T-shaped hammer elements with
+          chiral suture imbrication, 3D spherical coccosphere Euler packing (V - E + F = 2)
+          and buckling mechanics (Jaya et al. 2016), and ocean acidification (Omega < 1) /
+          CAP-polysaccharide ablation control.
+        evidence:
+          - {file: 2022-coccolith-emiliania-calcite-rosette.py, lines: [29, 46], note: "2D circular stick-spokes without 3D V/R crystallography, T-shaped hammer heads, coccosphere packing, or acidification ablation", supports: false}
+      specimen-match:
+        value: 24
+        rationale: >-
+          Renders a 2-panel synthetic plot (L49-83) without loading, SHA-256-verifying, or
+          performing angular FFT spoke-count and ellipse eccentricity segmentation on the
+          vendored Emiliania huxleyi SEM micrograph (`datasets/emiliania_calcite_rosette/emiliania_huxleyi_coccolith_specimen.jpg`).
+        evidence:
+          - {file: 2022-coccolith-emiliania-calcite-rosette.py, lines: [49, 83], note: "2-panel synthetic plot with zero biological SEM specimen comparison", supports: false}
+          - {file: docs/media/emiliania_calcite_rosette_comparison.png, lines: [0, 0], note: "Pass 1 2-panel plot lacking Emiliania huxleyi SEM micrograph segmentation", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Hardcodes N_seg=32 and w_0=0.145 um (L29-46) without CLI parameter overrides,
+          morphotype A/B/C/R comparison, or calcite saturation Omega_calcite / CAP activity sweep.
+        evidence:
+          - {file: 2022-coccolith-emiliania-calcite-rosette.py, lines: [29, 46], note: "Hardcoded parameters with no CLI overrides or morphotype/saturation sweeps", supports: false}
+      morphometric-validation:
+        value: 50
+        rationale: >-
+          Reports only 3 analytical scalars in `measure_morphoeval()` (L114-146) without
+          validating V/R c-axis orthogonality, 12-taxon coccolithophore scaling correlation,
+          spherical coccosphere Euler characteristic chi = 2, ocean acidification T-head
+          truncation, or empirical SEM spoke count (N_seg = 32) and ellipse eccentricity.
+        evidence:
+          - {file: 2022-coccolith-emiliania-calcite-rosette.py, lines: [114, 146], note: "Only 3 basic analytical metrics without 12-taxon or SEM specimen validation", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Dataset directory `datasets/emiliania_calcite_rosette/` exists on disk, but v1 does
+          not load `emiliania_calcite_rosette_reference.json` or verify SHA-256 digests at runtime.
+        evidence:
+          - {file: 2022-coccolith-emiliania-calcite-rosette.py, lines: [1, 28], note: "No runtime loading or SHA-256 verification of datasets/emiliania_calcite_rosette/", supports: false}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Header docstring cites Young et al. (1992) and Jaya et al. (2016), but functions
+          lack explicit mappings to published equations and to the 4 Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean`.
+        evidence:
+          - {file: 2022-coccolith-emiliania-calcite-rosette.py, lines: [29, 46], note: "Functions lack explicit paper equation and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 70
+        rationale: >-
+          Includes `--self-test` (L149-156), but checks only 3 basic assertions without
+          testing SHA-256 dataset provenance, JSON parity, 3D V/R c-axis orthogonality,
+          coccosphere Euler topology, ocean acidification ablation, or bitwise two-run determinism.
+        evidence:
+          - {file: 2022-coccolith-emiliania-calcite-rosette.py, lines: [149, 156], note: "Minimal 3-check self_test() without SHA-256 provenance or 3D determinism checks", supports: false}
+    remediation:
+      - "Implement the full 3D Young et al. (1992) / Didymus et al. (1993) V/R crystallographic nucleation and T-shaped hammer-element morphogenetic solver across all 5 morphotype and ablation regimes: Morphotype A (N_seg=32), Morphotype B (N_seg=38), Morphotype C (N_seg=26), Morphotype R (N_seg=30, overcalcified), and Ocean Acidification / CAP-Polysaccharide Ablation Control (Omega_calcite=0.75 < 1, c_CAP=0 -> T-head truncation and loss of interlock)."
+      - "Model 3D interlocking spherical coccosphere assembly on S^2 using Fibonacci/Thomson spherical packing and Voronoi/Delaunay trivalent contact topology (`evaluate_coccosphere_3d_packing`, Jaya et al. 2016), verifying Euler polyhedral characteristic V - E + F = 2, trivalent identity 3V = 2E, and compressive buckling load amplification across N_cocc in [12, 24], plus 12-taxon cross-species coccolithophore scaling validation."
+      - "Load and SHA-256-verify `datasets/emiliania_calcite_rosette/` at runtime and perform computer-vision elliptical polar unwrapping, Difference-of-Gaussians spoke segmentation, and angular FFT analysis (`segment_emiliania_coccolith_specimen`) on `emiliania_huxleyi_coccolith_specimen.jpg`, measuring isolated coccolith spoke count N_seg = 32 (11.25 deg spacing), aspect ratio b/a = 0.8478 (eccentricity e = 0.5303), distal length L_d = 3.50 um, and left-panel coccosphere diameter D_sphere = 5.65 um."
+      - "Expose full CLI parameter overrides (`--n-seg`, `--w0`, `--l-spoke`, `--omega`, `--n-cocc`, `--seed`, `--skip-gif`), upgrade `self_test()` to an 8-point verification suite with bitwise two-run determinism, and render a 6-panel publication-grade synthesis figure and co-evolving 2-panel 3D coccolith & coccosphere morphogenesis GIF."

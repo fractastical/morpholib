@@ -1,0 +1,75 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-kondo-pomacanthus-stripe-insertion> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-kondo-pomacanthus-stripe-insertion-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-kondo-pomacanthus-stripe-insertion-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Kondo & Asai (1995) Pomacanthus reaction-diffusion stripe insertion & Y-branch unzipping — MorphoEval overall 54.4/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 baseline assessment of `1995-kondo-pomacanthus-stripe-insertion.py` (54.7/100). The initial script derives the analytical equilibrium (A*, I*) = (3.0, 2.5), critical diffusivity ratio d_c = 10.2596, and intrinsic wavelength lambda_c = 3.4739 for the Kondo & Asai (1995) Fig. 1 piecewise-linear reaction-diffusion model, but approximates the growing-domain kymograph kinematically rather than integrating the full nonlinear piecewise-linear saturating Gierer-Meinhardt PDE dA/dt = F(A,I) - g_A A + D_A Lap(A), dI/dt = G(A,I) - g_I I + D_I Lap(I) across the 3 -> 6 -> 12 -> 24 stripe insertion cascade in P. semicirculatus, lacks 2D Y-junction branch unzipping simulation in P. imperator, and lacks automated computer-vision segmentation of the vendored Pomacanthus semicirculatus juvenile specimen (`pomacanthus_semicirculatus_specimen.jpg`). Overall 54.4/100 (faithfulness 52.3, reproducibility 59.2); rubric morphoeval 0.1.0; checkpoint commit 317bc3c; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 56, Morphological realism / specimen match 49, Parameter expressivity 52, Morphometric validation 53, Source and data traceability 64, Code-to-model traceability 58, Reproducibility package 56. Output judged: docs/media/pomacanthus_stripe_insertion_comparison.png: rendered output of 1995-kondo-pomacanthus-stripe-insertion.py at 317bc3c, image/png, 390103 B, 1200×504 px, artifact_sha256 35275dea0eb0c598d0005bb8a4f2a8cc1cf7c349227d84913808c96a736add03 (sha256 35275dea0eb0c598d0005bb8a4f2a8cc1cf7c349227d84913808c96a736add03), spec_fingerprint e4c6766f0513e073e4470f6a811662276c20929359a8102829c89d29daf6842b. Dual provenance: spec_fingerprint: e4c6766f0513e073e4470f6a811662276c20929359a8102829c89d29daf6842b; artifact_sha256: 35275dea0eb0c598d0005bb8a4f2a8cc1cf7c349227d84913808c96a736add03; input_dataset_sha256: {datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg=5564f850c1905fb6..., datasets/pomacanthus_stripe_insertion/pomacanthus_stripe_insertion_reference.json=4e059d555df1a3d7..., datasets/pomacanthus_stripe_insertion/scout_manifest.json=bf877731da64b97b...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add computer-vision segmentation of `datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg` to detect the curved body stripes along the anterior-posterior flank transect, quantify primary vs newly inserted secondary mid-trough stripe prominences and inter-stripe wavelength in mm, and enforce runtime SHA-256 verification.",
+            "remediation needed: Implement a 2D Kondo-Asai reaction-diffusion solver modeling Pomacanthus imperator Y-junction branch point horizontal unzipping when dorso-ventral flank spacing widens relative to boundary stripe spacing.",
+            "remediation needed: Replace the kinematic kymograph with a full IMEX / finite-difference solver for the Kondo & Asai (1995) piecewise-linear saturating Gierer-Meinhardt reaction-diffusion PDE dA/dt = min(F_max, max(0, c_1 A + c_2 I + c_3)) - g_A A + D_A Lap(A), dI/dt = min(G_max, max(0, c_4 A + c_5)) - g_I I + D_I Lap(I) across the 5-regime P. semicirculatus doubling cascade (s = 1, 2, 4, 8 -> 3, 6, 12, 24 stripes plus subcritical control D_I = 0.050 -> 0 stripes) and continuous growing-domain kymograph." ;
+        pk:hasScore "0.544"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1007/BF00289234>,
+            <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1387/ijdb.072502sk> .
+    <https://doi.org/10.1006/bulm.1999.0131> dct:date "1999"^^xsd:gYear ;
+        dct:title "Reaction and diffusion on growing domains: scenarios for robust pattern formation" .
+    <https://doi.org/10.1007/BF00289234> dct:date "1972"^^xsd:gYear ;
+        dct:title "A theory of biological pattern formation" .
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+    <https://doi.org/10.1387/ijdb.072502sk> dct:date "2009"^^xsd:gYear ;
+        dct:title "How animals get their skin patterns: fish pigment pattern as a live Turing wave" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Kondo & Asai (1995) Pomacanthus reaction-diffusion stripe insertion & Y-branch unzipping — MorphoEval overall 54.4/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:25:44Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-kondo-pomacanthus-stripe-insertion-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-kondo-pomacanthus-stripe-insertion> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,173 @@
+# MorphoEval audit — Moulton, Goriely & Chirat (2015) J. Theor. Biol. & Chirat et al. (2013) PNAS Mollusc Aperture Spine Buckling, 2026-10-19 (v1)
+#
+# Dual-agent Pass 1 assessment of `2015-moulton-mollusc-aperture-spine-buckling.py` (v1, 168 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-mollusc-aperture-spine-buckling-loop`):
+#   - Primary assessor: Gemini 4 Argon — 56.4 / 100
+#   - Independent second assessor rubric check — 49.0 / 100
+#   - Pass 1 consensus score: 52.7 / 100
+#
+# Concrete Pass 1 weaknesses flagged for Step 12 remediation:
+#   1. Only a single-stage 1D sinusoidal approximation along the *Murex pecten* siphonal canal
+#      is implemented (`solve_primary_spine_margin_v1`, L31-69): omits the Kirchhoff-Clebsch
+#      elastica + unilateral foundation BVP/energy solver, omits tubular self-contact closure
+#      (gamma >= gamma_fold) vs open-gutter flaring, omits the 2-stage and 3-stage hierarchical
+#      fractal frond serration cascade of *Chicoreus ramosus* (k_2^*/k_1^* ≈ 3.8), and omits
+#      the 3D episodic triradiate varix whorl accretion cycle (Delta_phi = 120 deg) and
+#      subcritical negative control (gamma < gamma_c -> smooth whorl).
+#   2. Zero biological specimen comparison (`specimen-match: 24`): the vendored
+#      `datasets/mollusc_aperture_spine_buckling/murex_pecten_aperture_specimen.jpg`
+#      (*Murex pecten* Venus comb murex shell) is not loaded, SHA-256-verified, or segmented in v1.
+#   3. No cross-taxa validation across the 10 empirical muricid species in
+#      `mollusc_aperture_spine_buckling_reference.json`.
+#   4. Spectral spine wavelength estimation uses integer FFT bin `k_bin` without parabolic
+#      sub-bin interpolation or hierarchical wavenumber ratio verification.
+
+audit:
+  id: 2026-10-19-mollusc-aperture-spine-buckling-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 baseline assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 1 rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/77
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2015-moulton-mollusc-aperture-spine-buckling.py`
+      prior to Step 12 remediation in `2026-10-19-mollusc-aperture-spine-buckling-loop`.
+
+references:
+  moulton2015:
+    title: "The role of mechanics in the growth and form of mollusc shells: hierarchical spine folding and secondary fractal serrations"
+    authors: "Moulton DE, Goriely A, Chirat R"
+    venue: "Journal of Theoretical Biology 364:420-430 (2015)"
+    doi: 10.1016/j.jtbi.2014.09.021
+  chirat2013:
+    title: "Mechanical basis of morphogenesis and convergent evolution of spiny seashells"
+    authors: "Chirat R, Moulton DE, Goriely A"
+    venue: "Proceedings of the National Academy of Sciences 110(15):6015-6020 (2013)"
+    doi: 10.1073/pnas.1220443110
+  moulton2012:
+    title: "Mechanical growth and morphogenesis of seashells"
+    authors: "Moulton DE, Goriely A, Chirat R"
+    venue: "Journal of Theoretical Biology 311:69-79 (2012)"
+    doi: 10.1016/j.jtbi.2012.07.009
+  rudraraju2019:
+    title: "A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth"
+    authors: "Rudraraju S, Moulton DE, Chirat R, Goriely A"
+    venue: "PLoS Computational Biology 15(7):e1007213 (2019)"
+    doi: 10.1371/journal.pcbi.1007213
+
+simulations:
+  - id: moulton-mollusc-aperture-spine-buckling
+    name: "Moulton, Goriely & Chirat (2015) & Chirat et al. (2013) hierarchical mollusc aperture spine folding and fractal frond serration"
+    organism: "Murex pecten (Venus comb murex) & Chicoreus ramosus (ramose murex / Muricidae)"
+    script: 2015-moulton-mollusc-aperture-spine-buckling.py
+    output: docs/media/mollusc_aperture_spine_buckling_comparison.png
+    extra_outputs:
+      - docs/media/mollusc_aperture_spine_buckling_growth.gif
+    status: evaluated
+    source_refs:
+      - moulton2015
+      - chirat2013
+      - moulton2012
+      - rudraraju2019
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2015-moulton-mollusc-aperture-spine-buckling.py`
+      (consensus score 52.7/100). The v1 script evaluates a 1D primary spine profile along
+      the *Murex pecten* siphonal canal (L=67.2 mm), but omits the Kirchhoff-Clebsch elastica
+      + unilateral foundation solver, omits tubular self-contact closure vs open-gutter flaring,
+      omits 2-stage and 3-stage secondary/tertiary fractal frond serrations (*Chicoreus ramosus*,
+      k_2/k_1 ≈ 3.8), omits episodic triradiate varix whorl accretion (120 deg phase locking),
+      omits 10-species cross-taxa validation, and lacks computer-vision comb segmentation of
+      the vendored *Murex pecten* specimen.
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Evaluates a 1D rectified cosine approximation of primary siphonal canal spines
+          (L31-69), but lacks a Kirchhoff-Clebsch elastica + unilateral foundation solver,
+          omits tubular base closure (gamma >= gamma_fold) vs open-gutter flaring, omits
+          2-stage and 3-stage secondary/tertiary fractal frond serrations (*Chicoreus ramosus*),
+          omits episodic triradiate varix whorl accretion, and lacks an explicit subcritical
+          negative control evaluation in `measure_morphoeval()`.
+        evidence:
+          - {file: 2015-moulton-mollusc-aperture-spine-buckling.py, lines: [31, 69], note: "Single-generation 1D cosine approximation without Kirchhoff elastica loop solver, multi-stage fronding, or episodic varix cycle", supports: false}
+      specimen-match:
+        value: 24
+        rationale: >-
+          Renders a 2-panel synthetic 1D profile and wavenumber curve without loading,
+          SHA-256-verifying, or segmenting the vendored *Murex pecten* Venus comb murex
+          specimen (`datasets/mollusc_aperture_spine_buckling/murex_pecten_aperture_specimen.jpg`).
+        evidence:
+          - {file: 2015-moulton-mollusc-aperture-spine-buckling.py, lines: [72, 118], note: "2-panel synthetic plot with zero biological specimen image segmentation", supports: false}
+          - {file: docs/media/mollusc_aperture_spine_buckling_comparison.png, lines: [0, 0], note: "Pass 1 2-panel synthetic plot lacking Murex pecten specimen comparison", supports: false}
+      parameter-expressivity:
+        value: 45
+        rationale: >-
+          Hardcodes a single parameter tuple (L=67.2, E=12.0, K_s=1.98, h1=0.445, gamma=1.68)
+          with no CLI parameter overrides, no multi-generational thickness cascade (h1 -> h2 -> h3),
+          and no comparison across morphospace regimes (smooth subcritical, *Murex pecten*
+          tubular comb, *Chicoreus ramosus* 3-generation fractal frond, and triradiate varix whorl).
+        evidence:
+          - {file: 2015-moulton-mollusc-aperture-spine-buckling.py, lines: [31, 41], note: "Single hardcoded parameter set without CLI flags or hierarchical frond sweep", supports: false}
+      morphometric-validation:
+        value: 50
+        rationale: >-
+          Uses integer FFT bin `k_bin` (L54-57) and reports only 2 basic metrics without
+          10-species muricid cross-taxa scaling collapse, secondary/tertiary frond wavenumber
+          ratio validation (k_2/k_1 ≈ 3.8), tubular closure neck gap curve, or specimen comb
+          periodicity CV.
+        evidence:
+          - {file: 2015-moulton-mollusc-aperture-spine-buckling.py, lines: [121, 143], note: "Only 2 baseline metrics without cross-taxa scaling collapse or specimen comb CV", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Reference dataset `datasets/mollusc_aperture_spine_buckling/mollusc_aperture_spine_buckling_reference.json`
+          and specimen image exist on disk, but v1 does not load or verify their SHA-256 digests
+          at runtime.
+        evidence:
+          - {file: 2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1, 30], note: "No runtime loading or SHA-256 verification of datasets/mollusc_aperture_spine_buckling/", supports: false}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Module docstring cites Moulton et al. (2015) and Chirat et al. (2013), but functions
+          lack explicit equation mappings to the 3 Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_077_mollusc_aperture_spine_buckling.lean`.
+        evidence:
+          - {file: 2015-moulton-mollusc-aperture-spine-buckling.py, lines: [31, 69], note: "Functions lack explicit paper equation and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Deterministic RNG (`seed=2015`), `--self-test`, and `--verify-only` flags are present
+          (L146-163), but `self_test()` checks only 2 basic inequalities without testing SHA-256
+          dataset provenance, JSON parity, subcritical unbuckled stability, or bitwise two-run
+          determinism.
+        evidence:
+          - {file: 2015-moulton-mollusc-aperture-spine-buckling.py, lines: [146, 151], note: "Minimal 2-check self_test() without SHA-256 provenance or bitwise determinism checks", supports: false}
+    remediation:
+      - "Implement a hierarchical 2-stage and 3-stage Kirchhoff-Clebsch elastica + unilateral foundation solver reproducing both *Murex pecten* slender tubular comb spines (16 primary spines along the siphonal canal, gamma >= gamma_fold sealing the hollow base) and *Chicoreus ramosus* multi-generational frondose secondary/tertiary serrations (k_2/k_1 ≈ 3.8, k_3/k_1 ≈ 8.43)."
+      - "Simulate the episodic varix growth cycle gamma(phi) alternating smooth inter-varix shell secretion (gamma <= gamma_c -> A_spine = 0) with three triradiate varix spine bursts per whorl (120 deg angular phase locking), alongside an explicit subcritical growth negative control (gamma = 0.96 < gamma_c)."
+      - "Load and SHA-256-verify `datasets/mollusc_aperture_spine_buckling/` at runtime, validate primary spine count and secondary/primary wavenumber ratio k_2/k_1 across 10 empirical muricid species (r > 0.99), and perform OpenCV/SciPy Difference-of-Gaussians comb-spine periodicity extraction on the vendored *Murex pecten* specimen (`murex_pecten_aperture_specimen.jpg`)."
+      - "Expose full CLI parameter overrides (`--E`, `--K-s`, `--gamma-varix`, `--h2-ratio`, `--seed`, `--skip-gif`, `--verify-only`), upgrade `self_test()` to an 8-point verification suite with bitwise two-run determinism, and render a 6-panel publication-grade synthesis figure and co-evolving 3D episodic varix & frond growth GIF."

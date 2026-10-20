@@ -1,0 +1,236 @@
+{
+  "metadata": {
+    "dataset_id": "diaz-cuadros-matsuda-2020-human-somite-organoid-clock-v1",
+    "slot": 28,
+    "slot_id": "slot-028-human-somite-organoid-clock",
+    "title": "Diaz-Cuadros et al. (2020, 2023) Nature & Matsuda et al. (2020) Science — Human Pluripotent Stem-Cell Segmentation Clock, HES7 Delay-Degradation Allometry & Mitochondrial NAD+/NADH Tempo Scaling",
+    "sources": [
+      {
+        "id": "diazcuadros2020",
+        "citation": "Diaz-Cuadros M, Wagner DE, Budjan C, Hubaud A, Tarazona OA, Donelly S, Michaut A, Al Tanoury Z, Yoshioka-Kobayashi K, Niino Y, Kageyama R, Miyawaki A, Touboul J, Pourquie O (2020). In vitro characterization of the human segmentation clock. Nature 580(7801):113-118.",
+        "doi": "10.1038/s41586-019-1885-9"
+      },
+      {
+        "id": "matsuda2020",
+        "citation": "Matsuda M, Hayashi H, Garcia-Ojalvo J, Yoshioka-Kobayashi K, Kageyama R, Yamanaka Y, Ikeya M, Toguchida J, Alev C, Ebisuya M (2020). Species-specific oscillation periods of human and mouse segmentation clocks are due to cell autonomous properties of HES7. Science 369(6510):1450-1455.",
+        "doi": "10.1126/science.aba7668"
+      },
+      {
+        "id": "diazcuadros2023",
+        "citation": "Diaz-Cuadros M, Miettinen TP, Skinner OS, Sheedy D, García-Cabrera C, Gapon S, Hubaud A, Yellen G, Manalis SR, Oldham WM, Pourquie O (2023). Metabolic regulation of species-specific developmental rates. Nature 613(7944):550-557.",
+        "doi": "10.1038/s41586-022-05574-4"
+      },
+      {
+        "id": "yamanaka2023",
+        "citation": "Yamanaka Y, Hamidi S, Yoshioka-Kobayashi K, Munira S, Sunadome K, Zhang Y, Kurokawa Y, Ericsson R, Mieda A, Thompson JL, Kerwin J, Lisgo S, Yamamoto T, Moris N, Martinez-Arias A, Tsujimura T, Alev C (2023). Reconstituting human somitogenesis in vitro. Nature 614(7948):509-520.",
+        "doi": "10.1038/s41586-022-05649-2"
+      }
+    ],
+    "specimens": {
+      "human_somite_organoid_specimen": {
+        "file": "datasets/human_somite_organoid_clock/human_somite_organoid_specimen.jpg",
+        "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
+        "species": "Vertebrate paraxial mesoderm / somite embryo dorsal SEM (transferred as structural reference for human pluripotent stem-cell somite organoid / axioloid metameric somite periodicity)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
+        "width_px": 736,
+        "height_px": 572,
+        "ap_roi_x_px": [130, 550],
+        "upper_somite_row_y_px": [208, 252],
+        "lower_somite_row_y_px": [312, 356],
+        "neural_tube_y_px": [260, 298],
+        "empirical_somite_metrics": {
+          "upper_row_somite_count": 8,
+          "lower_row_somite_count": 8,
+          "upper_row_mean_spacing_px": 47.43,
+          "lower_row_mean_spacing_px": 47.14,
+          "bilateral_mean_spacing_px": 47.14,
+          "upper_row_spacing_cv": 0.1965,
+          "lower_row_spacing_cv": 0.2010,
+          "bilateral_symmetry_ratio": 0.9969
+        }
+      },
+      "scout_manifest": {
+        "file": "datasets/human_somite_organoid_clock/scout_manifest.json",
+        "sha256": "a3af01b1b295695480c2b1f3e2f4bd9f49a62674684e15ad8c1c4b2ef4053d54"
+      }
+    }
+  },
+  "hes7_delayed_oscillator_governing_equations": {
+    "section": "Diaz-Cuadros et al. (2020) Nature 580:113-118; Matsuda et al. (2020) Science 369:1450-1455; Diaz-Cuadros et al. (2023) Nature 613:550-557",
+    "mrna_dde": "dm/dt = alpha_m / (1 + (p(t - tau_tx) / K)^n) - delta_m * m(t)",
+    "protein_dde": "dp/dt = alpha_p * m(t - tau_tl) - delta_p * p(t)",
+    "total_feedback_delay": "tau_total = tau_tx + tau_tl = tau_intron_splicing + tau_export_translation",
+    "half_life_degradation_relation": "delta_m = ln(2) / t_half_m,  delta_p = ln(2) / t_half_p",
+    "exact_time_rescaling_invariance_law": "Under t -> lambda * t, tau -> lambda * tau, delta_m -> delta_m / lambda, delta_p -> delta_p / lambda, alpha_m -> alpha_m / lambda, alpha_p -> alpha_p / lambda, the HES7 DDE is strictly invariant and oscillation period scales as T_osc(lambda) = lambda * T_osc(1) with lambda_human_mouse = 300 / 120 = 2.50",
+    "metabolic_nad_nadh_scaling_law": "k_met(R_NAD) = (R_NAD / R_NAD_ref)^gamma_met,  delta_m,p(R_NAD) = k_met * delta_m,p_0,  tau(R_NAD) = tau_0 / k_met  =>  T_osc(R_NAD) = T_osc_0 / k_met(R_NAD)",
+    "canonical_species_parameters": {
+      "mouse_wt": {
+        "species": "Mus musculus (in vitro PSM / iPSC-derived presomitic mesoderm)",
+        "T_osc_empirical_min": 122.0,
+        "T_osc_canonical_min": 120.0,
+        "t_half_p_min": 21.0,
+        "t_half_m_min": 18.0,
+        "delta_p_per_min": 0.033007,
+        "delta_m_per_min": 0.038508,
+        "tau_tx_splicing_min": 15.0,
+        "tau_tl_translation_min": 7.0,
+        "tau_total_min": 22.0,
+        "alpha_m_nM_per_min": 3.5,
+        "alpha_p_per_min": 1.15,
+        "K_repression_nM": 12.0,
+        "hill_n": 4.2,
+        "nad_nadh_ratio": 6.8,
+        "mass_specific_ocr_pmol_min_ug": 18.5
+      },
+      "human_wt": {
+        "species": "Homo sapiens (hPSC-derived PSM / HES7-Achilles reporter & Axioloid)",
+        "T_osc_empirical_min": 300.0,
+        "T_osc_canonical_min": 300.0,
+        "t_half_p_min": 40.0,
+        "t_half_m_min": 42.0,
+        "delta_p_per_min": 0.017329,
+        "delta_m_per_min": 0.016503,
+        "tau_tx_splicing_min": 37.0,
+        "tau_tl_translation_min": 14.0,
+        "tau_total_min": 51.0,
+        "alpha_m_nM_per_min": 1.4,
+        "alpha_p_per_min": 0.46,
+        "K_repression_nM": 12.0,
+        "hill_n": 4.2,
+        "nad_nadh_ratio": 3.2,
+        "mass_specific_ocr_pmol_min_ug": 7.8
+      }
+    }
+  },
+  "matsuda_diazcuadros_perturbation_series": {
+    "source": "Matsuda et al. (2020) Science 369:1450-1455 Figs. 1-4; Diaz-Cuadros et al. (2020) Nature 580:113-118 Figs. 2-4; Diaz-Cuadros et al. (2023) Nature 613:550-557 Figs. 1-4",
+    "regimes": [
+      {
+        "regime_id": "mouse_wt_mpsm",
+        "label": "Mouse WT PSM (mHes7 endogenous, 37 C)",
+        "host_cell": "Mus musculus",
+        "t_half_p_min": 21.0,
+        "t_half_m_min": 18.0,
+        "tau_total_min": 22.0,
+        "metabolic_rate_factor": 1.0,
+        "observed_period_min": 122.0,
+        "observed_period_sd_min": 8.0,
+        "oscillating_state": "sustained_limit_cycle"
+      },
+      {
+        "regime_id": "mouse_hHES7_swap",
+        "label": "Mouse PSM + human hHES7 locus knock-in swap (Matsuda 2020 Fig. 2)",
+        "host_cell": "Mus musculus",
+        "t_half_p_min": 22.5,
+        "t_half_m_min": 19.5,
+        "tau_total_min": 25.0,
+        "metabolic_rate_factor": 0.91,
+        "observed_period_min": 134.0,
+        "observed_period_sd_min": 10.0,
+        "oscillating_state": "sustained_limit_cycle"
+      },
+      {
+        "regime_id": "human_wt_hpsm",
+        "label": "Human WT iPSC-PSM (hHES7-Achilles endogenous, Diaz-Cuadros 2020)",
+        "host_cell": "Homo sapiens",
+        "t_half_p_min": 40.0,
+        "t_half_m_min": 42.0,
+        "tau_total_min": 51.0,
+        "metabolic_rate_factor": 0.41,
+        "observed_period_min": 300.0,
+        "observed_period_sd_min": 18.0,
+        "oscillating_state": "sustained_limit_cycle"
+      },
+      {
+        "regime_id": "human_lbnox_nad_rescue",
+        "label": "Human PSM + LbNOX expression (elevated cytosolic NAD+/NADH accelerates translation, Diaz-Cuadros 2023 Fig. 4)",
+        "host_cell": "Homo sapiens",
+        "t_half_p_min": 31.0,
+        "t_half_m_min": 32.0,
+        "tau_total_min": 39.0,
+        "metabolic_rate_factor": 0.54,
+        "observed_period_min": 228.0,
+        "observed_period_sd_min": 14.0,
+        "oscillating_state": "sustained_limit_cycle"
+      },
+      {
+        "regime_id": "human_azide_etc_inhibition",
+        "label": "Human PSM + Sodium Azide / Rotenone Complex I/IV ETC inhibition (Diaz-Cuadros 2023 Fig. 2)",
+        "host_cell": "Homo sapiens",
+        "t_half_p_min": 54.0,
+        "t_half_m_min": 56.0,
+        "tau_total_min": 68.0,
+        "metabolic_rate_factor": 0.31,
+        "observed_period_min": 402.0,
+        "observed_period_sd_min": 25.0,
+        "oscillating_state": "sustained_limit_cycle"
+      },
+      {
+        "regime_id": "intronless_hes7_ablation",
+        "label": "Intronless Hes7 Delta-intron1-3 ablation (tau_splicing = 0 -> subcritical delay collapse, Matsuda 2020 / Takashima 2011)",
+        "host_cell": "Mus musculus / Homo sapiens",
+        "t_half_p_min": 21.0,
+        "t_half_m_min": 18.0,
+        "tau_total_min": 3.5,
+        "metabolic_rate_factor": 1.0,
+        "observed_period_min": 0.0,
+        "observed_period_sd_min": 0.0,
+        "oscillating_state": "damped_steady_state_collapse"
+      }
+    ]
+  },
+  "vertebrate_segmentation_clock_allometry": {
+    "source": "Diaz-Cuadros et al. (2020) Nature 580:113-118; Matsuda et al. (2020) Science 369:1450-1455; Lázaro et al. (2023) Nature Ecology & Evolution 7:1107-1118",
+    "species_table": [
+      {
+        "species_id": "danio_rerio",
+        "common_name": "Zebrafish (Danio rerio)",
+        "T_osc_min": 30.0,
+        "tau_delay_min": 5.5,
+        "t_half_p_min": 5.2,
+        "somite_budding_period_min": 30.0
+      },
+      {
+        "species_id": "xenopus_laevis",
+        "common_name": "African clawed frog (Xenopus laevis)",
+        "T_osc_min": 45.0,
+        "tau_delay_min": 8.2,
+        "t_half_p_min": 8.0,
+        "somite_budding_period_min": 45.0
+      },
+      {
+        "species_id": "gallus_gallus",
+        "common_name": "Chick (Gallus gallus)",
+        "T_osc_min": 90.0,
+        "tau_delay_min": 16.5,
+        "t_half_p_min": 15.8,
+        "somite_budding_period_min": 90.0
+      },
+      {
+        "species_id": "mus_musculus",
+        "common_name": "Mouse (Mus musculus)",
+        "T_osc_min": 122.0,
+        "tau_delay_min": 22.0,
+        "t_half_p_min": 21.0,
+        "somite_budding_period_min": 120.0
+      },
+      {
+        "species_id": "oryctolagus_cuniculus",
+        "common_name": "Rabbit (Oryctolagus cuniculus)",
+        "T_osc_min": 155.0,
+        "tau_delay_min": 28.0,
+        "t_half_p_min": 26.5,
+        "somite_budding_period_min": 150.0
+      },
+      {
+        "species_id": "homo_sapiens",
+        "common_name": "Human (Homo sapiens)",
+        "T_osc_min": 300.0,
+        "tau_delay_min": 51.0,
+        "t_half_p_min": 40.0,
+        "somite_budding_period_min": 300.0
+      }
+    ]
+  }
+}

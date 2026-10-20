@@ -1,0 +1,76 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sekimura-papilio-wing-stripe-mimicry> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sekimura-papilio-wing-stripe-mimicry-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sekimura-papilio-wing-stripe-mimicry-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Sekimura et al. (2000) Proc. R. Soc. B, Madzvamuse et al. (2002) J. Math. Biol. & Thompson et al. (2014) Nature anisotropic Gierer–Meinhardt butterfly wing pattern formation and Batesian mimicry polymorphism in Papilio dardanus — MorphoEval overall 94.2/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 2 (v2) evaluation of `2016-sekimura-papilio-wing-stripe-mimicry.py` (overall weighted score: 94.3/100, up from 56.4/100 in v1). The remediated script solves the 2D anisotropic Gierer–Meinhardt reaction–diffusion PDE on a curved Papilio dardanus forewing mesh with vein-aligned diffusivity tensor D = diag(1, epsilon) and boundary margin source gradients alpha_bc; reproduces all 4 Sekimura et al. (2000) female Batesian mimetic morphs (hippocoonides f_blk = 0.4722 vs ref 0.48, trophonius f_blk = 0.5446 vs ref 0.56, cenea f_blk = 0.7001 vs ref 0.72, planemoides f_blk = 0.6274 vs ref 0.63); validates the 6-point threshold u_th melanic expansion sweep (Pearson r = 0.9832, p = 4.21e-4, RMSE = 0.0446) and 5-point vein anisotropy epsilon orientation sweep (Pearson r = 0.9672, p = 7.09e-3); verifies the equal-diffusion negative control (d = 1.0 < d_c = 8.2384); and segments the SHA-256-locked CC BY-SA 4.0 Papilio dardanus specimen (`papilio_dardanus_cenea_specimen.jpg`, wing area 167,800 px, dorsal melanic fraction 0.7034 vs ref 0.72). Overall 94.2/100 (faithfulness 94.1, reproducibility 94.3); rubric morphoeval 0.1.0; checkpoint commit e93f00e; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 95, Morphological realism / specimen match 93, Parameter expressivity 94, Morphometric validation 95, Source and data traceability 95, Code-to-model traceability 94, Reproducibility package 94. Output judged: docs/media/papilio_wing_stripe_mimicry_comparison.png: rendered output of 2016-sekimura-papilio-wing-stripe-mimicry.py at e93f00e, image/png, 885585 B, 2119×1325 px, artifact_sha256 12f5c8c6af8bb20a1ec062019c5297f4d37a5bf77e1ce04c69e5341301899cda (sha256 12f5c8c6af8bb20a1ec062019c5297f4d37a5bf77e1ce04c69e5341301899cda), spec_fingerprint 4665cc66775193c7139c46f7c95f9ab09ed994d1e45070ba26abef03de22b1f3. Dual provenance: spec_fingerprint: 4665cc66775193c7139c46f7c95f9ab09ed994d1e45070ba26abef03de22b1f3; artifact_sha256: 12f5c8c6af8bb20a1ec062019c5297f4d37a5bf77e1ce04c69e5341301899cda; input_dataset_sha256: {datasets/papilio_wing_stripe_mimicry/paper_citations.bib=d673f37a5fa300ac..., datasets/papilio_wing_stripe_mimicry/papilio_dardanus_cenea_specimen.jpg=7ba68b77406f8fbc..., datasets/papilio_wing_stripe_mimicry/papilio_wing_stripe_mimicry_reference.json=153621f2eb2935a0..., datasets/papilio_wing_stripe_mimicry/scout_manifest.json=f5962e37bffeb86e...}. Supersedes audit: 2026-10-19-papilio-wing-stripe-mimicry-audit." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Couple the 2D forewing Gierer-Meinhardt reaction-diffusion solver to an explicit wing-cell compartment finite-element mesh with individual vein-border Robin permeability jumps." ;
+        pk:hasScore "0.942"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 099 Pass 2 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/99> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00289234>,
+            <https://doi.org/10.1007/s002850100133>,
+            <https://doi.org/10.1038/nature12979>,
+            <https://doi.org/10.1098/rspb.2000.1081>,
+            <https://doi.org/10.5962/bhl.title.119515> .
+    <https://doi.org/10.1007/BF00289234> dct:date "1972"^^xsd:gYear ;
+        dct:title "A theory of biological pattern formation" .
+    <https://doi.org/10.1007/s002850100133> dct:date "2002"^^xsd:gYear ;
+        dct:title "A numerical approach to the study of spatial pattern formation in the ligaments of arcoid bivalves and on the wing of the butterfly Papilio dardanus" .
+    <https://doi.org/10.1038/nature12979> dct:date "2014"^^xsd:gYear ;
+        dct:title "Comparative genomics of the mimicry switch in Papilio dardanus" .
+    <https://doi.org/10.1098/rspb.2000.1081> dct:date "2000"^^xsd:gYear ;
+        dct:title "A model for colour pattern formation in the butterfly wing of Papilio dardanus" .
+    <https://doi.org/10.5962/bhl.title.119515> dct:date "1991"^^xsd:gYear ;
+        dct:title "The Development and Evolution of Butterfly Wing Patterns" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sekimura et al. (2000) Proc. R. Soc. B, Madzvamuse et al. (2002) J. Math. Biol. & Thompson et al. (2014) Nature anisotropic Gierer–Meinhardt butterfly wing pattern formation and Batesian mimicry polymorphism in Papilio dardanus — MorphoEval overall 94.2/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T02:20:45Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sekimura-papilio-wing-stripe-mimicry-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/99>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-sekimura-papilio-wing-stripe-mimicry> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

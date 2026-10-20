@@ -1,0 +1,64 @@
+sim_id: boehm-limb-bud-elongation-pushing
+math_family: Continuum Viscoelastic / Anisotropic Stress & Directional Cell Migration vs Proliferation-Gradient Hypothesis
+equations:
+  - law_name: Boehm et al. (2010) Refutation of the Isotropic Proliferation Gradient Hypothesis (Zero Deviatoric Strain Law)
+    formula: "nabla . v = s(x) = ln(2)/T_c(x) - s_d,  sigma_active = 0 => eps_PD = eps_AP = eps_DV = s/3,  eps_PD - eps_AP = 0"
+    lean_decl: MathOfBiology.Loop_017.deviatoric_pd_ap_rate_3x
+    lean_theorem: MathOfBiology.Loop_017.isotropic_proliferation_zero_deviatoric_strain
+    lean_locus: morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean#L21-L60
+    lean_code: |-
+      def strain_rate_pd_3x (s zeta chi_fgf G_fgf : Int) : Int :=
+        s + 2 * zeta + 3 * chi_fgf * G_fgf
+      def strain_rate_ap_3x (s zeta : Int) : Int :=
+        s - zeta
+      def deviatoric_pd_ap_rate_3x (s zeta chi_fgf G_fgf : Int) : Int :=
+        strain_rate_pd_3x s zeta chi_fgf G_fgf - strain_rate_ap_3x s zeta
+      theorem isotropic_proliferation_zero_deviatoric_strain (s G_fgf : Int) :
+          strain_rate_pd_3x s 0 0 G_fgf = s ∧
+          strain_rate_ap_3x s 0 = s ∧
+          strain_rate_dv_3x s 0 = s ∧
+          deviatoric_pd_ap_rate_3x s 0 0 G_fgf = 0 ∧
+          strain_rate_pd_3x s 0 0 G_fgf + strain_rate_ap_3x s 0 + strain_rate_dv_3x s 0 = 3 * s
+    variables: "s(x): volumetric proliferation source rate (h^-1); eps_PD, eps_AP, eps_DV: principal strain rates along Proximo-Distal, Antero-Posterior, and Dorso-Ventral axes"
+    role: "Proves that any purely isotropic proliferation source term s(x) partitions volumetric expansion equally across PD, AP, and DV axes with identically zero deviatoric PD elongation rate, explaining why Model I yields bulbous expansion (L_PD/W_AP approx 1.07)"
+    source_citation: "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Eqs. (3)-(9), Fig. 4; Morishita & Iwasa (2008) Bull. Math. Biol. 70:1957-1978"
+    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L128-L199"
+  - law_name: Gros et al. (2010) & Boehm et al. (2010) Wnt5a/JNK Oriented Cell Division Stress & AER-FGF8 Velocity Gradient Elongation Law
+    formula: "sigma_active = zeta * (n otimes n - (1/3) I);  3*(eps_PD - eps_AP) = 3*zeta + 3*chi_FGF*G_FGF > 0,  tr(sigma_active) = 0"
+    lean_decl: MathOfBiology.Loop_017.strain_rate_pd_3x
+    lean_theorem: MathOfBiology.Loop_017.wnt5a_fgf_anisotropic_stress_drives_pd_elongation
+    lean_locus: morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean#L62-L98
+    lean_code: |-
+      theorem wnt5a_fgf_anisotropic_stress_drives_pd_elongation
+          (s zeta chi_fgf G_fgf : Int)
+          (hZeta : zeta > 0) (hChi : chi_fgf > 0) (hGrad : G_fgf > 0) :
+          deviatoric_pd_ap_rate_3x s zeta chi_fgf G_fgf = 3 * zeta + 3 * (chi_fgf * G_fgf) ∧
+          deviatoric_pd_ap_rate_3x s zeta chi_fgf G_fgf > 0 ∧
+          strain_rate_pd_3x s zeta 0 G_fgf + strain_rate_ap_3x s zeta + strain_rate_dv_3x s zeta = 3 * s ∧
+          deviatoric_pd_ap_rate_3x s 0 chi_fgf G_fgf < deviatoric_pd_ap_rate_3x s zeta chi_fgf G_fgf
+    variables: "zeta: Wnt5a/JNK-polarized oriented cell division and convergent-extension active stress coefficient; chi_fgf: AER-FGF8/MAPK chemotactic sensitivity; G_fgf: distal FGF8 gradient"
+    role: "Proves that traceless active stress from Wnt5a-oriented cell division/intercalation and distal AER-FGF8 velocity bias strictly increase the PD-to-AP aspect ratio while conserving volumetric continuity, and that Wnt5a ablation reduces PD elongation"
+    source_citation: "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Figs. 7-8, Fig. S8; Gros et al. (2010) Current Biology 20(22):1993-2004 Figs. 1-6; Kicheva & Briscoe (2010) PLoS Biology 8(7):e1000421"
+    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L205-L461"
+  - law_name: Boehm et al. (2010) Dual-Label IddU/BrdU Cell-Cycle Invariance, Reynolds Insensitivity & Inverse-Optimization Bound
+    formula: "T_c(x) = T_i * (N_total / L_cells) in [11 h, 25 h];  s_opt_distal (0.54 h^-1) > 8 * s_emp_max (0.063 h^-1);  Delta L_PD(Re in [10^-6, 10^-1]) in [3.4%, 11.8%] < 42.2%"
+    lean_decl: MathOfBiology.Loop_017.net_growth_rate_x1000
+    lean_theorem: MathOfBiology.Loop_017.iddu_brdu_cell_cycle_invariance_and_inverse_opt_bound
+    lean_locus: morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean#L100-L152
+    lean_code: |-
+      theorem iddu_brdu_cell_cycle_invariance_and_inverse_opt_bound :
+          (tc_distal_aer_h < tc_proximal_core_h ∧
+           net_growth_rate_x1000 sp_distal_x1000 sd_compaction_x1000 >
+             net_growth_rate_x1000 sp_proximal_x1000 sd_compaction_x1000 ∧
+           net_growth_rate_x1000 sp_proximal_x1000 sd_compaction_x1000 > 0) ∧
+          (s_inverse_opt_distal_x1000 > 8 * sp_distal_x1000 ∧
+           s_inverse_opt_dv_x1000 < 0) ∧
+          (pd_elong_permille_wt_model_ii > pd_elong_permille_fgf_only ∧
+           pd_elong_permille_fgf_only > pd_elong_permille_wnt5a_null ∧
+           pd_elong_permille_wnt5a_null > pd_elong_permille_model_i_re_max ∧
+           pd_elong_permille_model_i_re_max > pd_elong_permille_model_i_re_min ∧
+           pd_elong_permille_model_i_re_max - pd_elong_permille_model_i_re_min < 90)
+    variables: "tc_distal_aer_h (11 h), tc_proximal_core_h (25 h): empirical IddU/BrdU cell cycle times; sd_compaction_x1000 (0.017 h^-1): cell density compaction rate; s_inverse_opt_distal_x1000 (0.54 h^-1): Hooke-Jeeves inverse-optimized distal growth rate"
+    role: "Establishes the quantitative gap (>8x) between empirical BrdU/IddU proliferation rates and the theoretical isotropic rates needed to match limb elongation, proves Reynolds-number insensitivity across 5 orders of magnitude, and orders all 5 experimental regimes"
+    source_citation: "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Eqs. (1)-(2), (8)-(9), Figs. 3, 6, 9, S3"
+    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L464-L571"

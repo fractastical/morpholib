@@ -1,0 +1,74 @@
+sim_id: jonsson-auxin-pin1-meristem
+math_family: "Up-the-Gradient Auxin-PIN1 Polarized Transport & Turing-Like Phyllotactic Spacing"
+model_spec:
+  model: "Jönsson et al. (2006) PNAS 103:1633-1638 & Smith et al. (2006) PNAS 103:1301-1306 up-the-gradient Boltzmann PIN1 membrane polarization, active vs passive intercellular auxin transport ODEs on a growing shoot apical meristem L1 lattice, transitions across spiral (137.5 deg), distichous (180 deg), decussate (90 deg), and tricussate (120 deg) phyllotactic modes, and NPA/pin1 block + exogenous IAA microdroplet rescue"
+  basal_production_rho0: 0.10
+  decay_rate_mu: 0.05
+  active_transport_T: 1.20
+  passive_diffusion_D: 0.15
+  pin1_feedback_exponent_c1: 1.85
+  seed: 2006
+  inputs:
+    - datasets/auxin_pin1_phyllotaxis/auxin_pin1_phyllotaxis_reference.json
+    - datasets/auxin_pin1_phyllotaxis/rosette_phyllotaxis_specimen.jpg
+    - datasets/auxin_pin1_phyllotaxis/scout_manifest.json
+    - datasets/auxin_pin1_phyllotaxis/paper_citations.bib
+equations:
+  - id: jonsson-auxin-pin1-meristem-1
+    law_name: "Jönsson et al. (2006) & Smith et al. (2006) Up-the-Gradient Boltzmann PIN1 Allocation Law"
+    formula: "P_ij = P_i exp(c_1 a_j) / ∑_{k∈N(i)} exp(c_1 a_k);  ∑_{j∈N(i)} P_ij = P_i;  a_j > a_k ⇒ P_ij > P_ik"
+    lean_decl: "MathOfBiology.Loop_032.pin1_alloc_scaled"
+    lean_theorem: "MathOfBiology.Loop_032.jonsson_2006_up_gradient_pin1_allocation"
+    lean_locus: "morphoeval/lean/loops/Loop_032_auxin_pin1_phyllotaxis.lean#L27-L44"
+    lean_code: |
+      def pin1_alloc_scaled (P_i w_j : Int) : Int := P_i * w_j
+      def pin1_partition_sum3 (w1 w2 w3 : Int) : Int := w1 + w2 + w3
+      theorem jonsson_2006_up_gradient_pin1_allocation (P_i w1 w2 w3 w_j w_k : Int)
+          (hP : P_i > 0) (hw : w_j > w_k) :
+          pin1_alloc_scaled P_i w1 + pin1_alloc_scaled P_i w2 + pin1_alloc_scaled P_i w3 =
+            P_i * pin1_partition_sum3 w1 w2 w3 ∧
+          pin1_alloc_scaled P_i w_j > pin1_alloc_scaled P_i w_k
+    variables: "P_i: total PIN1 pool in L1 cell i; P_ij: PIN1 allocated to anticlinal wall i→j; a_j: auxin concentration in neighbor cell j; c_1: up-the-gradient feedback exponent; w_j = exp(c_1 a_j): Boltzmann weight"
+    role: "Directs cellular PIN1 efflux carriers preferentially toward neighboring cells with higher auxin concentration while conserving each cell's total PIN1 pool"
+    source_citation: "Jönsson et al. (2006) PNAS 103(5):1633-1638 Eq. 4; Smith et al. (2006) PNAS 103(5):1301-1306 Eq. 2"
+    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L105-L215"
+
+  - id: jonsson-auxin-pin1-meristem-2
+    law_name: "Jönsson et al. (2006) Intercellular Active Polar + Diffusive Auxin Flux Conservation Law"
+    formula: "da_i/dt = ρ_0 - μ a_i + ∑_{j∈N(i)} J_{i←j},  J_{i←j} = T(P_ji a_j - P_ij a_i) + D(a_j - a_i),  J_{i←j} + J_{j←i} = 0"
+    lean_decl: "MathOfBiology.Loop_032.intercellular_auxin_flux"
+    lean_theorem: "MathOfBiology.Loop_032.jonsson_2006_intercellular_flux_conservation"
+    lean_locus: "morphoeval/lean/loops/Loop_032_auxin_pin1_phyllotaxis.lean#L59-L71"
+    lean_code: |
+      def intercellular_auxin_flux (T D P_ij P_ji a_i a_j : Int) : Int :=
+        T * (P_ji * a_j - P_ij * a_i) + D * (a_j - a_i)
+      theorem jonsson_2006_intercellular_flux_conservation (T D P_ij P_ji P0 a_i a_j a0 : Int) :
+          intercellular_auxin_flux T D P_ij P_ji a_i a_j +
+            intercellular_auxin_flux T D P_ji P_ij a_j a_i = 0 ∧
+          intercellular_auxin_flux T D P0 P0 a0 a0 = 0
+    variables: "a_i: auxin concentration in cell i; T: active PIN1 polar transport rate; D: passive apoplastic/plasmodesmatal diffusion rate; ρ_0: basal auxin synthesis rate; μ: auxin turnover rate"
+    role: "Guarantees exact pairwise intercellular auxin mass conservation across every shared cell wall and equilibrium stationarity at homogeneous state a_0 = ρ_0 / μ"
+    source_citation: "Jönsson et al. (2006) PNAS 103(5):1633-1638 Eqs. 1-3"
+    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L220-L390"
+
+  - id: jonsson-auxin-pin1-meristem-3
+    law_name: "Jönsson et al. (2006) Up-the-Gradient Turing-Like Instability & NPA Pin-Formed Collapse Law"
+    formula: "Γ_mode = T P_i (c_1 a_0 - 1) - z D > 0  ⇔  D_eff < 0;  T = 0 (NPA / pin1) ⇒ Γ_mode = -z D < 0"
+    lean_decl: "MathOfBiology.Loop_032.mode_instability_gain"
+    lean_theorem: "MathOfBiology.Loop_032.jonsson_2006_up_gradient_instability_and_npa_collapse"
+    lean_locus: "morphoeval/lean/loops/Loop_032_auxin_pin1_phyllotaxis.lean#L90-L109"
+    lean_code: |
+      def effective_diffusion_scaled (z_D T P_i c1_a0 : Int) : Int :=
+        z_D - T * P_i * (c1_a0 - 1)
+      def mode_instability_gain (z_D T P_i c1_a0 : Int) : Int :=
+        T * P_i * (c1_a0 - 1) - z_D
+      theorem jonsson_2006_up_gradient_instability_and_npa_collapse (z_D T P_i c1_a0 : Int)
+          (h_instab : T * P_i * (c1_a0 - 1) > z_D)
+          (h_diff : z_D > 0) :
+          effective_diffusion_scaled z_D T P_i c1_a0 < 0 ∧
+          mode_instability_gain z_D T P_i c1_a0 > 0 ∧
+          mode_instability_gain z_D 0 P_i c1_a0 < 0
+    variables: "c_1 a_0: dimensionless PIN1 polarization feedback product; z: cellular coordination number; D_eff: effective linearized diffusion coefficient; Γ_mode: spatial perturbation growth gain"
+    role: "Establishes the bifurcation threshold where up-the-gradient active transport overcomes passive diffusion to form periodic auxin convergence maxima separated by λ_c, and proves that blocking polar transport (T = 0 in NPA or pin1 mutant) abolishes instability to yield a pin-formed apex"
+    source_citation: "Jönsson et al. (2006) PNAS 103(5):1633-1638 pp. 1635-1636; Reinhardt et al. (2003) Nature 426:255-260"
+    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L395-L535"

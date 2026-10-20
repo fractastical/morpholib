@@ -1,0 +1,75 @@
+sim_id: kondo-pomacanthus-stripe-insertion
+math_family: Growing-Domain Reaction-Diffusion
+model_spec:
+  model: "Kondo & Asai (1995) piecewise-linear saturating Gierer-Meinhardt reaction-diffusion wave, Pomacanthus semicirculatus mid-trough stripe insertion & Pomacanthus imperator Y-branch unzipping"
+  c1: 0.08
+  c2: -0.08
+  c3: 0.05
+  c4: 0.10
+  c5: -0.15
+  g_A: 0.03
+  g_I: 0.06
+  D_A: 0.007
+  D_I: 0.10
+  F_max: 0.20
+  G_max: 0.50
+  seed: 1995
+  inputs:
+    - datasets/pomacanthus_stripe_insertion/pomacanthus_stripe_insertion_reference.json
+    - datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg
+    - datasets/pomacanthus_stripe_insertion/scout_manifest.json
+equations:
+  - law_name: "Kondo & Asai (1995) Piecewise-Linear Saturating Activator-Inhibitor Steady State & Uniform Stability"
+    formula: "F(A^*, I^*) = min(F_max, max(0, c_1 A^* + c_2 I^* + c_3)) = g_A A^*,  G(A^*, I^*) = min(G_max, max(0, c_4 A^* + c_5)) = g_I I^*;  tr J = f_A + g'_I < 0 ∧ det J = f_A g'_I - f_I g'_A > 0"
+    lean_decl: "MathOfBiology.Loop_004.kondo_det"
+    lean_theorem: "MathOfBiology.Loop_004.kondo_asai_1995_piecewise_gm_steady_state_and_uniform_stability"
+    lean_locus: "morphoeval/lean/loops/Loop_004_pomacanthus_stripe_insertion.lean#L19-L54"
+    lean_code: |
+      def clip_rate (S_max raw : Int) : Int := min S_max (max 0 raw)
+      def kondo_trace (f_A g_I_prime D_A D_I q : Int) : Int := (f_A + g_I_prime) - (D_A + D_I) * q
+      def kondo_det (f_A f_I g_A_prime g_I_prime D_A D_I q : Int) : Int :=
+        (D_A * D_I) * (q * q) - (D_I * f_A + D_A * g_I_prime) * q + (f_A * g_I_prime - f_I * g_A_prime)
+      theorem kondo_asai_1995_piecewise_gm_steady_state_and_uniform_stability (D_A D_I : Int) :
+          clip_rate 200 (80 * 3 + (-80) * 5 / 2 + 50) = 90 ∧
+          clip_rate 500 (100 * 3 - 150) = 150 ∧
+          kondo_trace 50 (-60) D_A D_I 0 = -10 ∧
+          kondo_det 50 (-80) 100 (-60) D_A D_I 0 = 5000 := by
+        unfold clip_rate kondo_trace kondo_det; refine ⟨by decide, by decide, by omega, by omega⟩
+    variables: "A, I: activator and inhibitor concentrations; c_1..c_5: linear synthesis coefficients; g_A, g_I: decay rates; F_max, G_max: upper saturation ceilings; (A^*, I^*) = (3.0, 2.5): interior homogeneous steady state"
+    role: "Proves that the interior equilibrium (A^*, I^*) = (3.0, 2.5) lies strictly inside the unsaturated linear window (0 < F^* = 0.09 < 0.20, 0 < G^* = 0.15 < 0.50) and is asymptotically stable to uniform perturbations (tr J = -0.01 < 0, det J = 0.005 > 0)"
+    source_citation: "Kondo & Asai (1995) Nature 376(6543):765-768 Fig. 1 legend; Gierer & Meinhardt (1972) Kybernetik 12(1):30-39"
+    code_locus: "1995-kondo-pomacanthus-stripe-insertion.py#L115-L188"
+  - law_name: "Kondo & Asai (1995) Turing Wave Instability Threshold (D_I / D_A > d_c)"
+    formula: "d = D_I / D_A > d_c = 5.2 + 1.6√10 ≈ 10.26 ⟹ det M(k_c^2) < 0 at k_c^2 = (D_I f_A + D_A g'_I) / (2 D_A D_I) = 229 / 70"
+    lean_decl: "MathOfBiology.Loop_004.kondo_det"
+    lean_theorem: "MathOfBiology.Loop_004.kondo_asai_1995_turing_wave_instability_and_subcritical_stability"
+    lean_locus: "morphoeval/lean/loops/Loop_004_pomacanthus_stripe_insertion.lean#L61-L78"
+    lean_code: |
+      theorem kondo_asai_1995_turing_wave_instability_and_subcritical_stability :
+          kondo_det 50 (-80) 100 (-60) 7 100 3 = -2440 ∧
+          kondo_det 50 (-80) 100 (-60) 7 50 3 = 1910 ∧
+          kondo_det 50 (-80) 100 (-60) 7 7 3 = 5651 := by
+        decide
+    variables: "D_A = 0.007, D_I = 0.10: activator and inhibitor diffusivities; d = D_I / D_A = 14.29: diffusivity ratio; d_c = 10.26: critical Turing ratio; k_c^2 = 3.2714: critical squared wavenumber; λ_c = 2π / k_c = 3.4739: intrinsic stripe wavelength"
+    role: "Proves that the canonical Kondo-Asai diffusivity ratio d = 100/7 ≈ 14.29 exceeds d_c ≈ 10.26 and drives det M(q) = -2440 < 0 at q = 3, whereas subcritical inhibitor diffusion (D_I = 0.050, d = 7.14 < d_c) keeps det M(q) > 0"
+    source_citation: "Kondo & Asai (1995) Nature 376(6543):765-768 Fig. 1"
+    code_locus: "1995-kondo-pomacanthus-stripe-insertion.py#L130-L205"
+  - law_name: "Kondo & Asai (1995) P. semicirculatus Mid-Trough Doubling Cascade vs P. imperator Y-Branch Unzipping"
+    formula: "L(t) = s L_0 (s ∈ {1,2,4,8}) ⟹ N_semicirculatus(s) = 3 s ∈ {3,6,12,24} (λ(s) = λ_c);  N_imperator(N_0, u) = N_0 + u"
+    lean_decl: "MathOfBiology.Loop_004.semicirculatus_stripes"
+    lean_theorem: "MathOfBiology.Loop_004.kondo_asai_1995_semicirculatus_insertion_vs_imperator_unzipping"
+    lean_locus: "morphoeval/lean/loops/Loop_004_pomacanthus_stripe_insertion.lean#L85-L114"
+    lean_code: |
+      def semicirculatus_stripes (N_0 s : Nat) : Nat := N_0 * s
+      def imperator_unzipped_stripes (N_0 unzipped_branches : Nat) : Nat := N_0 + unzipped_branches
+      theorem kondo_asai_1995_semicirculatus_insertion_vs_imperator_unzipping :
+          semicirculatus_stripes 3 1 = 3 ∧
+          semicirculatus_stripes 3 2 = 6 ∧
+          semicirculatus_stripes 3 4 = 12 ∧
+          semicirculatus_stripes 3 8 = 24 ∧
+          imperator_unzipped_stripes 3 1 = 4 := by
+        unfold semicirculatus_stripes imperator_unzipped_stripes; omega
+    variables: "s = L(t)/L_0: ontogenetic body-length doubling scale (2 → 4 → 8 → 16 cm); N_0 = 3: initial juvenile stripe count; u: number of horizontally unzipped 2D Y-junction branch points"
+    role: "Formalizes the species-specific wavelength-homeostasis laws in Pomacanthus: simultaneous 1D mid-trough secondary stripe insertion (3 → 6 → 12 → 24) in P. semicirculatus versus 2D horizontal Y-branch dislocation unzipping (+1 stripe per branch) in P. imperator"
+    source_citation: "Kondo & Asai (1995) Nature 376(6543):765-768 Figs. 1-4; Crampin, Gaffney & Maini (1999) Bull. Math. Biol. 61(6):1093-1120"
+    code_locus: "1995-kondo-pomacanthus-stripe-insertion.py#L210-L435"

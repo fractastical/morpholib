@@ -1,0 +1,195 @@
+# MorphoEval audit — Armon, Efrati, Kupferman & Sharon (2011) Science Chiral Seed Pod Opening, 2026-10-19 (v2)
+#
+# Pass 2 (v2) evaluation of `2007-liang-chiral-seed-pod-opening.py` (1260 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-chiral-seed-pod-opening-loop`):
+#   - Primary assessor: Gemini 4 Argon — 93.4 / 100 (up from 55.8 / 100 in v1; +37.6 overall)
+#
+# Key remediation improvements verified in Pass 2:
+#   1. Implemented variational L-BFGS-B non-Euclidean incompatible plate energy minimizer
+#      (`relax_incompatible_ribbon_equilibrium`, L253-389), computing mean curvature H*(w_tilde),
+#      deviatoric curvature D*(w_tilde), helix radius R(w_tilde), and pitch P(w_tilde) across
+#      w_tilde in [0.5, 10] spanning the supercritical pitchfork bifurcation w_tilde_c = 2.1609
+#      (r_H = 1.0000, r_R = 1.0000, r_P = 1.0000) and verifying Gauss incompatibility
+#      det(b_0) = -kappa_0^2 = -0.1764 cm^-2 < 0.
+#   2. Implemented cutting-angle chirality sweep (`evaluate_cutting_angle_chirality_sweep`,
+#      L552-617) across theta in [0 deg, 90 deg], verifying maximal chiral twist at the
+#      natural *Bauhinia* angle theta = 45 deg (r_tau = 1.0000), exact achiral circular ring
+#      negative controls at theta = 0 deg and 90 deg (tau = 0, pitch P = 0.000000 cm),
+#      and 4-system scaling across *Bauhinia variegata* wide/narrow strips, *Erythrina
+#      corallodendron*, and biomimetic latex bilayers (r_R = 1.0000, r_P = 0.9994).
+#   3. Implemented computer-vision segmentation (`segment_bauhinia_pod_specimen`, L687-770)
+#      of the SHA-256-locked biological specimen image
+#      `datasets/chiral_seed_pod_opening/bauhinia_chiral_seed_pod_specimen.jpg`
+#      (*Bauhinia variegata* Muséum de Toulouse MHNT.BOT.2011.3.22), isolating both
+#      dehisced helical valves and 8 helical twist lobe apices (CV = 0.2405).
+#   4. Enforced runtime SHA-256 verification across all 4 dataset files (`EXPECTED_SHA256`,
+#      L88-127), expanded `measure_morphoeval()` to 9 reference-anchored morphometric metrics
+#      (quick_gate = 100/100), and verified 8 assertions in `self_test()`.
+
+audit:
+  id: 2026-10-19-chiral-seed-pod-opening-audit-v2
+  supersedes: 2026-10-19-chiral-seed-pod-opening-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 065 Pass 2 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/65
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2007-liang-chiral-seed-pod-opening.py`
+      after completing Step 12 closed-loop remediation in
+      `2026-10-19-chiral-seed-pod-opening-loop`.
+
+references:
+  armon2011:
+    title: "Geometry and Mechanics in the Opening of Chiral Seed Pods"
+    authors: "Armon S, Efrati E, Kupferman R, Sharon E"
+    venue: "Science 333(6050):1726-1730 (2011)"
+    doi: 10.1126/science.1203874
+  efrati2009:
+    title: "Elastic Theory of Unconstrained Non-Euclidean Plates"
+    authors: "Efrati E, Sharon E, Kupferman R"
+    venue: "Journal of the Mechanics and Physics of Solids 57(4):762-775 (2009)"
+    doi: 10.1016/j.jmps.2008.12.004
+  armon2014:
+    title: "Shape Selection in Chiral Self-Shaping Latex Strips"
+    authors: "Armon S, Arbel H, Moshe M, Sharon E"
+    venue: "Soft Matter 10(16):2733-2740 (2014)"
+    doi: 10.1039/c3sm52313f
+  forterre2005:
+    title: "How the Venus Flytrap Snaps"
+    authors: "Forterre Y, Skotheim JM, Dumais J, Mahadevan L"
+    venue: "Nature 433(7024):421-425 (2005)"
+    doi: 10.1038/nature03185
+
+simulations:
+  - id: liang-chiral-seed-pod-opening
+    name: "Armon et al. (2011) Science / Efrati et al. (2009) JMPS Incompatible Shell Elasticity & Chiral Seed Pod Opening"
+    organism: "Bauhinia variegata (Orchid tree chiral seed pod valves) & Erythrina corallodendron"
+    script: 2007-liang-chiral-seed-pod-opening.py
+    output: docs/media/chiral_seed_pod_opening_comparison.png
+    extra_outputs:
+      - docs/media/chiral_seed_pod_opening_growth.gif
+    status: evaluated
+    source_refs:
+      - armon2011
+      - efrati2009
+      - armon2014
+      - forterre2005
+    summary: >-
+      Pass 2 (v2) evaluation of `2007-liang-chiral-seed-pod-opening.py`
+      (overall weighted score: 93.4/100, up from 55.8/100 in v1). The remediated script
+      minimizes the non-Euclidean incompatible plate energy functional E = E_stretch + E_bend
+      across dimensionless width w_tilde in [0.5, 10] via L-BFGS-B relaxation; reproduces
+      the supercritical pitchfork bifurcation at w_tilde_c = 2.1609 separating narrow
+      Pure-Twist Helicoids (H = 0, R = 0) from wide Cylindrical Helical Ribbons (r_H = 1.0000,
+      r_R = 1.0000, r_P = 1.0000); validates the cutting-angle chirality sweep theta in
+      [0 deg, 90 deg] including theta = 0 deg and 90 deg achiral circular ring controls
+      (P = 0.000000 cm) and 4-system scaling (r_P = 0.9994); and segments the SHA-256-locked
+      Bauhinia variegata specimen image (8 helical twist lobes, CV = 0.2405).
+    scores:
+      model-fidelity:
+        value: 95
+        rationale: >-
+          Implements orthogonal +-45 deg sclerenchyma bilayer hygroscopic shrinkage
+          Delta_eps_hygro -> kappa_0 (`compute_sclerenchyma_bilayer_kappa0`, L138-150),
+          rotated saddle target curvature tensor b_0(theta) with Gauss incompatibility
+          det(b_0) = -kappa_0^2 < 0 (`compute_target_curvature_tensor`, L152-186), exact
+          Föppl-von Kármán critical width w_tilde_c = (16*(1+nu)/sqrt(1-nu^2))^(1/4)
+          (`critical_fvk_width`, L188-194), and an L-BFGS-B non-Euclidean plate energy
+          minimizer (`relax_incompatible_ribbon_equilibrium`, L253-389) with negative
+          controls at kappa_0 = 0 and theta = 0 deg, 90 deg, backed by 3 machine-checked
+          Lean 4 theorems in `morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean`.
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [138, 250], note: "Sclerenchyma bilayer intrinsic curvature kappa_0, rotated b_0(theta) tensor, and pitchfork equations", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [253, 469], note: "L-BFGS-B non-Euclidean incompatible plate energy minimizer and 3D ribbon mesh reconstruction", supports: true}
+          - {file: morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean, lines: [14, 102], note: "3 machine-checked Lean 4 theorems for Gauss saddle incompatibility, narrow helicoid chirality, and wide cylindrical ribbon asymptote (0 sorrys)", supports: true}
+      specimen-match:
+        value: 91
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY-SA 3.0 *Bauhinia variegata* dehisced chiral
+          seed pod specimen `datasets/chiral_seed_pod_opening/bauhinia_chiral_seed_pod_specimen.jpg`
+          (Muséum de Toulouse MHNT.BOT.2011.3.22), segments the upper and lower twisted valves
+          and 8 helical lobe apices (mean half-pitch 169.83 px, CV = 0.2405) via inner-tan vs
+          outer-brown sclerenchyma reflectance (`segment_bauhinia_pod_specimen`, L687-770),
+          and matches radius and pitch across 4 benchmark systems (r_R = 1.0000, r_P = 0.9994).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [687, 770], note: "Contour and bilayer reflectance segmentation of Bauhinia variegata dehisced helical valves", supports: true}
+          - {file: docs/media/chiral_seed_pod_opening_comparison.png, lines: [0, 0], note: "6-panel synthesis figure comparing 3D helicoid/ribbon meshes, pitchfork diagram, R/P transition, cutting-angle sweep, specimen segmentation, and 4-system validation", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Sweeps 11 dimensionless widths w_tilde in [0.5, 10.0] across the pitchfork
+          bifurcation w_tilde_c = 2.1609 (L472-549), sweeps 7 cutting angles theta in
+          [0 deg, 90 deg] including achiral circular ring controls (L552-617), evaluates
+          4 legume and biomimetic latex bilayer systems (L620-681), and exposes `--kappa0`,
+          `--nu`, `--W`, `--h`, `--L`, and `--seed` CLI overrides (L1224-1256).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [472, 681], note: "11-point w_tilde pitchfork sweep, 7-point cutting-angle chirality sweep, and 4-system benchmark evaluation", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1224, 1256], note: "CLI parameter overrides wired into non-Euclidean energy minimization and figure rendering", supports: true}
+      morphometric-validation:
+        value: 94
+        rationale: >-
+          `measure_morphoeval()` (L1053-1154) computes 9 reference-anchored morphometric
+          measurements with uncertainty and statistical tests: critical width w_tilde_c = 2.1609
+          (ref 2.1609), saddle Gaussian target curvature det(b_0) = -0.1764 cm^-2 (ref -0.1764),
+          pitchfork mean curvature H*(w_tilde)/kappa_0 Pearson r = 1.0000 (RMSE = 0.0006),
+          helix radius R(w_tilde)*kappa_0 Pearson r = 1.0000 (RMSE = 0.0022), helical pitch
+          P(w_tilde)*kappa_0/(2*pi) Pearson r = 1.0000 (RMSE = 0.0027), cutting-angle torsion
+          tau(theta)/kappa_0 Pearson r = 1.0000, achiral ring pitch control P(theta=0 deg) =
+          0.000000 cm (ref 0.0), 4-system helical pitch Pearson r = 0.9994 (RMSE = 0.1771 cm),
+          and *Bauhinia variegata* specimen half-pitch CV = 0.2405.
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1053, 1154], note: "9 quantitative morphometric measurements with p-values, RMSE, CV, and negative controls", supports: true}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Vendors `datasets/chiral_seed_pod_opening/` with 4 primary DOIs in
+          `paper_citations.bib` (`10.1126/science.1203874`, `10.1016/j.jmps.2008.12.004`,
+          `10.1039/c3sm52313f`, `10.1038/nature03185`), `scout_manifest.json`,
+          `chiral_seed_pod_opening_reference.json`, and `bauhinia_chiral_seed_pod_specimen.jpg`,
+          all verified at runtime via SHA-256 (`verify_dataset_integrity`, L88-127).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [88, 127], note: "Runtime SHA-256 verification of all 4 dataset files", supports: true}
+          - {file: datasets/chiral_seed_pod_opening/chiral_seed_pod_opening_reference.json, lines: [1, 134], note: "SHA-256-locked reference dataset with pitchfork, cutting-angle, and 4-system tables", supports: true}
+      code-traceability:
+        value: 93
+        rationale: >-
+          Module and function docstrings map every equation to Armon et al. (2011) Science
+          Eqs. 1-4 & Figs. 1-4, Efrati et al. (2009) JMPS, Armon et al. (2014) Soft Matter,
+          and the 3 formal Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean` (L1-64, L138-285).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1, 64], note: "Explicit equation-to-paper and Lean 4 theorem traceability in module header", supports: true}
+      repro-package:
+        value: 94
+        rationale: >-
+          8-point `self_test()` suite (`L1157-1221`) verifying SHA-256 dataset integrity,
+          Gauss saddle incompatibility det(b_0) = -kappa_0^2 < 0 across cutting angles,
+          narrow helicoid (H=0, R=0) and achiral ring (theta=0 deg, 90 deg -> P=0) plus
+          flat (kappa_0=0) negative controls, pitchfork bifurcation correlation, cutting-angle
+          chirality sweep, 4-system scaling, specimen CV segmentation, and two-run bitwise
+          determinism (`np.allclose(..., atol=0.0)`).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1157, 1221], note: "Comprehensive 8-check self_test() including bitwise determinism and negative controls", supports: true}
+    remediation:
+      - "Couple the quasi-static non-Euclidean shell energy minimizer to transient elastodynamic fracture propagation along the pod suture line to model ballistic seed ejection velocities."

@@ -1,0 +1,74 @@
+sim_id: nakamasu-zebrafish-three-cell-stripes
+math_family: Cell-Cell Contact Reaction-Diffusion
+model_spec:
+  model: "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network (short-range mutual repulsion vs long-range xanthophore->melanophore survival factor)"
+  c_u: 0.80
+  b_u: -1.50
+  d_u: 1.20
+  a_v: -1.50
+  c_v: 0.80
+  d_v: -0.60
+  a_w: -0.90
+  b_w: 1.20
+  c_w: 0.90
+  D_u: 0.02
+  D_v: 0.02
+  D_w: 0.50
+  seed: 2009
+  inputs:
+    - datasets/zebrafish_three_cell_stripes/zebrafish_three_cell_stripes_reference.json
+    - datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg
+    - datasets/zebrafish_three_cell_stripes/scout_manifest.json
+equations:
+  - law_name: "Nakamasu (2009) Short-Range Melanophore-Xanthophore Mutual Repulsion Saddle Instability"
+    formula: "det(J_{uv}) = c_u c_v - b_u a_v < 0  ∧  λ_{anti} = |b_u| - c_u > 0  when  |b_u|, |a_v| > c_u, c_v"
+    lean_decl: "MathOfBiology.Loop_007.short_range_det_uv"
+    lean_theorem: "MathOfBiology.Loop_007.nakamasu_short_range_mutual_repulsion_instability"
+    lean_locus: "morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean#L19-L47"
+    lean_code: |
+      def short_range_det_uv (cu cv ru rv : Int) : Int := cu * cv - ru * rv
+      def anti_phase_growth_rate (cu ru : Int) : Int := ru - cu
+      theorem nakamasu_short_range_mutual_repulsion_instability (cu cv : Int)
+          (hcu : cu ≥ 1) (hcv : cv ≥ 1) :
+          short_range_det_uv cu cv 0 0 ≥ 1 ∧
+          short_range_det_uv 8 8 15 15 = -161 ∧
+          anti_phase_growth_rate 8 15 = 7 := by
+        unfold short_range_det_uv anti_phase_growth_rate
+        refine ⟨?_, by decide, by decide⟩
+        have h1 : (1 : Int) * 1 ≤ cu * cv := Int.mul_le_mul hcu hcv (by decide) (by omega)
+        omega
+    variables: "u: melanophore density; v: xanthophore density; c_u, c_v: intrinsic clearance rates; b_u = -r_u < 0, a_v = -r_v < 0: short-range contact-mediated mutual repression rates"
+    role: "Proves that two mutually repressing pigment cell populations form an effective local positive-feedback switch (det J_uv = -1.61 < 0, lambda_anti = +0.70 > 0) without requiring direct single-cell autocatalysis"
+    source_citation: "Nakamasu et al. (2009) PNAS 106(21):8429-8434 Fig. 4D & SI Text Eqs. (1)-(6)"
+    code_locus: "2009-nakamasu-zebrafish-three-cell-stripes.py#L112-L195"
+  - law_name: "Long-Range Xanthophore->Melanophore Survival Factor Routh-Hurwitz Homogeneous Stabilization"
+    formula: "p_1 = -tr(J_0) = 2.50 > 0,  p_2 = 1.63 > 0,  p_3 = -det(J_0) = 2.961 > 0,  p_1 p_2 - p_3 = 1.114 > 0  ⟹  Re λ(J_0) < 0"
+    lean_decl: "MathOfBiology.Loop_007.routh_hurwitz_p3"
+    lean_theorem: "MathOfBiology.Loop_007.nakamasu_long_range_factor_routh_hurwitz_stabilization"
+    lean_locus: "morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean#L54-L78"
+    lean_code: |
+      theorem nakamasu_long_range_factor_routh_hurwitz_stabilization :
+          routh_hurwitz_p1 8 8 9 = 25 ∧
+          routh_hurwitz_p2 8 8 9 (-15) 12 (-15) (-6) (-9) 12 = 163 ∧
+          routh_hurwitz_p3 8 8 9 (-15) 12 (-15) (-6) (-9) 12 = 2961 ∧
+          (routh_hurwitz_p1 8 8 9) * (routh_hurwitz_p2 8 8 9 (-15) 12 (-15) (-6) (-9) 12)
+            - (routh_hurwitz_p3 8 8 9 (-15) 12 (-15) (-6) (-9) 12) = 1114 := by decide
+    variables: "w: long-range diffusible factor secreted by xanthophores (b_w = 1.20 > 0) promoting melanophore survival (d_u = 1.20 > 0); p_1, p_2, p_3: Routh-Hurwitz cubic coefficients of J_0"
+    role: "Proves that the long-range xanthophore-to-melanophore survival pathway v -> w -> u stabilizes the homogeneous 3-cell equilibrium at k = 0 despite the local (u, v) saddle instability"
+    source_citation: "Nakamasu et al. (2009) PNAS 106(21):8429-8434 Figs. 2, 4D & SI Text"
+    code_locus: "2009-nakamasu-zebrafish-three-cell-stripes.py#L125-L210"
+  - law_name: "Fast-Diffusing Long-Range Factor (D_w ≫ D_u, D_v) Bounded Turing Stripe Instability Theorem"
+    formula: "p_3(q) = -det(J_0 - q D) < 0  for  q = k^2 ∈ (4.4663, 28.8036)  at  D_w / D_u = 25,  whereas  p_3(q) > 0  for all  q ≥ 0  at  D_w = D_u = D_v"
+    lean_decl: "MathOfBiology.Loop_007.p3_dispersive"
+    lean_theorem: "MathOfBiology.Loop_007.nakamasu_diffusive_turing_band_and_ablation_collapse"
+    lean_locus: "morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean#L85-L120"
+    lean_code: |
+      theorem nakamasu_diffusive_turing_band_and_ablation_collapse :
+          p3_dispersive 0 2 2 50 = 2961000 ∧
+          p3_dispersive 12 2 2 50 = -3219960 ∧
+          p3_dispersive 35 2 2 50 = 5670000 ∧
+          p3_dispersive 12 2 2 2 = 3510024 := by decide
+    variables: "q = k^2: squared spatial wavenumber; D_u = D_v = 0.02: short-range pigment cell motility/projection scale; D_w = 0.50: long-range factor diffusivity"
+    role: "Proves that differential long-range signaling range D_w / D_u = 25 opens a finite stationary Turing band around k_c = 3.4106 (lambda_c = 1.8423), while equal diffusion quenches pattern formation"
+    source_citation: "Nakamasu et al. (2009) PNAS 106(21):8429-8434 Fig. 5 & SI Text"
+    code_locus: "2009-nakamasu-zebrafish-three-cell-stripes.py#L155-L235"

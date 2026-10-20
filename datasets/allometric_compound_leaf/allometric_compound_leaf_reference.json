@@ -1,0 +1,157 @@
+{
+  "dataset_id": "allometric_compound_leaf_v1",
+  "title": "Bilsborough et al. (2011) PNAS, Barkoulas et al. (2008) Nat. Genet., Vlad et al. (2014) Science & Kierzkowski et al. (2019) Cell — PIN1-Auxin-CUC2-RCO Feedback Loop & Leaf Margin Serration vs Compound Leaflet Dissection",
+  "organism": "Arabidopsis thaliana / Cardamine hirsuta (growing leaf margin epidermis, serration teeth, and compound leaflets)",
+  "primary_sources": [
+    {
+      "citation": "Bilsborough, Runions, Barkoulas, Jenkins, Hasson, Galinha, Laufs, Hay, Prusinkiewicz & Tsiantis (2011) PNAS 108(8):3424-3429",
+      "doi": "10.1073/pnas.1015162108",
+      "role": "1D/2D growing epidermal margin model coupling Loop 1 (CUC2-promoted PIN1 up-the-gradient polarization rho_{ij} propto (1 + gamma_CUC2 * C_i) * exp(beta * A_j) generating periodic auxin convergence maxima at tooth tips), Loop 2 (Auxin transcriptional repression of CUC2, C_i = C_max / (1 + (A_i / K_A)^n), restricting CUC2 to inter-tooth sinuses), and Loop 3 (differential normal margin outgrowth v_n(s) = v_0 * [A(s)^m / (K_g^m + A(s)^m)] * (1 - eta_sinus * C(s)) with intercalary tooth insertion as inter-peak arc-length exceeds critical wavelength lambda_c)"
+    },
+    {
+      "citation": "Barkoulas, Hay, Kougioumoutzi & Tsiantis (2008) Nature Genetics 40(9):1136-1141",
+      "doi": "10.1038/ng.189",
+      "role": "Demonstrates that PIN1-mediated auxin convergence peaks and KNOX/CUC transcription factors pattern compound leaflet initiation along the growing rachis margin of Cardamine hirsuta"
+    },
+    {
+      "citation": "Vlad et al. (2014) Science 343(6172):780-783",
+      "doi": "10.1126/science.1248384",
+      "role": "Identifies REDUCED COMPLEXITY (RCO), a homeobox gene expressed specifically at the base/sinus flanks of developing leaflets in Cardamine hirsuta (and lost in Arabidopsis thaliana), which locally represses sinus growth without altering PIN1/auxin convergence spacing, converting shallow serrations into deeply dissected compound leaflets"
+    },
+    {
+      "citation": "Kierzkowski, Runions, Vuolo, Strauss, Lymbouridou, Routier-Kierzkowska et al. (2019) Cell 177(6):1405-1418",
+      "doi": "10.1016/j.cell.2019.05.011",
+      "role": "Live cellular growth tracking and computational morphodynamic modeling showing how CUC2/RCO local growth repression at sinuses and KNOX/STM prolonged meristematic competence transform simple serrated Arabidopsis leaves into compound Cardamine hirsuta leaves"
+    }
+  ],
+  "bilsborough_margin_model_parameters": {
+    "initial_margin_cells_N0": 48,
+    "final_margin_cells_N_max": 120,
+    "auxin_production_sigma_A": 0.24,
+    "auxin_turnover_mu_A": 0.12,
+    "apoplastic_diffusion_D_A": 0.18,
+    "polar_transport_rate_T_pin": 0.85,
+    "up_gradient_sensitivity_beta": 1.65,
+    "cuc2_pin_promotion_gamma": 2.40,
+    "cuc2_max_expression_C_max": 1.00,
+    "auxin_cuc2_repression_K_A": 1.45,
+    "auxin_cuc2_hill_n": 3.0,
+    "cuc2_relaxation_rate_tau_C": 0.35,
+    "growth_half_saturation_K_g": 1.10,
+    "growth_hill_m": 2.0,
+    "base_outgrowth_velocity_v0": 1.00,
+    "arabidopsis_wt_sinus_repression_eta": 0.42,
+    "mir164a_sinus_repression_eta": 0.65,
+    "cardamine_rco_sinus_repression_eta": 0.88,
+    "critical_interpeak_wavelength_lambda_c": 14.0
+  },
+  "genotype_morphospace_benchmarks": [
+    {
+      "genotype_id": "cuc2_1_loss_of_function",
+      "species": "Arabidopsis thaliana (cuc2-1 / pin1 smooth margin mutant)",
+      "cuc2_activity_scale": 0.0,
+      "rco_sinus_repression_eta": 0.0,
+      "dissection_index_ID_ref": 0.012,
+      "tooth_or_leaflet_peaks_ref": 0,
+      "auxin_cuc2_pearson_r_ref": 0.0,
+      "morphology_class": "smooth_untoothed_margin"
+    },
+    {
+      "genotype_id": "cuc2_1D_ectopic_uniform",
+      "species": "Arabidopsis thaliana (constitutive unrepressed CUC2 control)",
+      "cuc2_activity_scale": 1.0,
+      "rco_sinus_repression_eta": 0.42,
+      "dissection_index_ID_ref": 0.025,
+      "tooth_or_leaflet_peaks_ref": 0,
+      "auxin_cuc2_pearson_r_ref": 0.0,
+      "morphology_class": "collapsed_smooth_margin_no_feedback"
+    },
+    {
+      "genotype_id": "arabidopsis_wt_col0",
+      "species": "Arabidopsis thaliana (Col-0 wild-type serrated leaf)",
+      "cuc2_activity_scale": 1.0,
+      "rco_sinus_repression_eta": 0.42,
+      "dissection_index_ID_ref": 0.228,
+      "tooth_or_leaflet_peaks_ref": 6,
+      "auxin_cuc2_pearson_r_ref": -0.942,
+      "morphology_class": "shallow_serrated_margin"
+    },
+    {
+      "genotype_id": "mir164a_4_deep_serration",
+      "species": "Arabidopsis thaliana (mir164a-4 / CUC2 derepression mutant)",
+      "cuc2_activity_scale": 1.35,
+      "rco_sinus_repression_eta": 0.65,
+      "dissection_index_ID_ref": 0.445,
+      "tooth_or_leaflet_peaks_ref": 7,
+      "auxin_cuc2_pearson_r_ref": -0.948,
+      "morphology_class": "deeply_lobed_serrated_margin"
+    },
+    {
+      "genotype_id": "cardamine_rco_mutant",
+      "species": "Cardamine hirsuta (rco loss-of-function simplified leaf)",
+      "cuc2_activity_scale": 1.15,
+      "rco_sinus_repression_eta": 0.48,
+      "dissection_index_ID_ref": 0.312,
+      "tooth_or_leaflet_peaks_ref": 7,
+      "auxin_cuc2_pearson_r_ref": -0.945,
+      "morphology_class": "lobed_simple_leaf_rco_loss"
+    },
+    {
+      "genotype_id": "cardamine_hirsuta_wt_compound",
+      "species": "Cardamine hirsuta (Ox wild-type pinnately compound leaf with CUC2 + RCO + STM)",
+      "cuc2_activity_scale": 1.25,
+      "rco_sinus_repression_eta": 0.88,
+      "dissection_index_ID_ref": 0.785,
+      "tooth_or_leaflet_peaks_ref": 7,
+      "auxin_cuc2_pearson_r_ref": -0.955,
+      "morphology_class": "dissected_pinnate_compound_leaflets"
+    }
+  ],
+  "intercalary_growth_stages_benchmarks": [
+    {
+      "stage_id": "P3_early_primordium",
+      "margin_arclength_L_um": 240.0,
+      "active_auxin_convergence_peaks_ref": 1,
+      "mean_dissection_index_ref": 0.045,
+      "description": "Apical terminal auxin convergence maximum only (single tip)"
+    },
+    {
+      "stage_id": "P4_first_lateral_pair",
+      "margin_arclength_L_um": 460.0,
+      "active_auxin_convergence_peaks_ref": 3,
+      "mean_dissection_index_ref": 0.210,
+      "description": "First symmetric pair of lateral auxin/PIN1 convergence peaks flanking CUC2 sinuses"
+    },
+    {
+      "stage_id": "P5_second_lateral_pair",
+      "margin_arclength_L_um": 720.0,
+      "active_auxin_convergence_peaks_ref": 5,
+      "mean_dissection_index_ref": 0.485,
+      "description": "Second basipetal/intercalary pair of teeth/leaflets inserted as inter-peak spacing exceeds lambda_c"
+    },
+    {
+      "stage_id": "P6_mature_dissected_leaf",
+      "margin_arclength_L_um": 1020.0,
+      "active_auxin_convergence_peaks_ref": 7,
+      "mean_dissection_index_ref": 0.785,
+      "description": "Three lateral pairs + terminal leaflet (7 peaks) with deep RCO-repressed rachis sinuses"
+    }
+  ],
+  "specimen_metadata": {
+    "filename": "cardamine_hirsuta_compound_leaf_specimen.jpg",
+    "source_title": "File:Cardamine hirsuta.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Cardamine_hirsuta.jpg",
+    "license": "Public domain",
+    "author": "Wikimedia Commons Botanical Archive",
+    "resolution_px": [617, 992],
+    "foliage_roi_box_y0_y1_x0_x1": [150, 820, 40, 580],
+    "sha256": "1c268fecb3660b310d99f688a13a679c347aabc4e2522eace472f8c985bf8510",
+    "empirical_foliage_area_fraction_ref": 0.3668,
+    "empirical_detected_leaflet_lobes_ref": 32,
+    "empirical_dissection_perimeter_ratio_ref": 4.0939,
+    "empirical_mean_tip_radius_px_ref": 329.20,
+    "empirical_mean_sinus_radius_px_ref": 157.95,
+    "empirical_dissection_index_ID_ref": 0.5202,
+    "description": "Flat-mounted studio botanical specimen of Cardamine hirsuta against a white background displaying developmental heteroblasty from simple basal leaves to pinnately compound cauline/rosette leaves with distinct lateral and terminal leaflets separated by deep rachis sinuses."
+  }
+}

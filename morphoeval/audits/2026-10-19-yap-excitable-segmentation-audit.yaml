@@ -1,0 +1,149 @@
+# MorphoEval audit — Hubaud, Regev, Mahadevan & Pourquié (2017) YAP-Gated Excitable Segmentation Clock, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2016-hubaud-yap-excitable-segmentation.py` (Slot 027) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-yap-excitable-segmentation-loop`.
+
+audit:
+  id: 2026-10-19-yap-excitable-segmentation-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2016-hubaud-yap-excitable-segmentation.py` in
+      `2026-10-19-yap-excitable-segmentation-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  hubaud2017:
+    title: "Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock"
+    authors: "Hubaud A, Regev I, Mahadevan L, Pourquie O"
+    venue: "Cell 171(3):668-682 (2017)"
+    doi: 10.1016/j.cell.2017.08.043
+  fitzhugh1961:
+    title: "Impulses and physiological states in theoretical models of nerve membrane"
+    authors: "FitzHugh R"
+    venue: "Biophysical Journal 1(6):445-466 (1961)"
+    doi: 10.1016/S0006-3495(61)86902-6
+  lauschke2013:
+    title: "Scaling of embryonic patterning based on phase-gradient encoding"
+    authors: "Lauschke VM, Tsiairis CD, Francois P, Aulehla A"
+    venue: "Nature 493(7430):101-105 (2013)"
+    doi: 10.1038/nature11804
+  dupont2011:
+    title: "Role of YAP/TAZ in mechanotransduction"
+    authors: "Dupont S, Morsut L, Aragona M, Enzo E, Giulitti S, Cordenonsi M, Zanconato F, Le Digabel J, Forcato M, Bicciato S, Elvassore N, Piccolo S"
+    venue: "Nature 474(7350):179-183 (2011)"
+    doi: 10.1038/nature10137
+
+simulations:
+  - id: hubaud-yap-excitable-segmentation
+    name: "Hubaud, Regev, Mahadevan & Pourquié (2017) excitable FitzHugh-Nagumo segmentation clock gated by YAP mechanotransduction"
+    organism: "Mus musculus (mouse E9.5-E10.5 presomitic mesoderm LuVeLu Lfng-Venus / Hes7 excitable oscillator)"
+    script: 2016-hubaud-yap-excitable-segmentation.py
+    output: docs/media/yap_excitable_segmentation_comparison.png
+    extra_outputs:
+      - docs/media/yap_excitable_segmentation_growth.gif
+    status: evaluated
+    source_refs:
+      - hubaud2017
+      - fitzhugh1961
+      - lauschke2013
+      - dupont2011
+    summary: >-
+      Pass 1 baseline assessment of `2016-hubaud-yap-excitable-segmentation.py` (60.6/100).
+      The initial baseline integrates the single-cell FitzHugh-Nagumo oscillator across
+      quiescent (Y_nuc = 0.85) and Latrunculin A-rescued (Y_nuc = 0.22) states, but requires
+      full phase-plane cubic nullcline and supercritical Hopf bifurcation continuation across
+      Y_nuc, evaluation of all 6 experimental perturbation regimes from Hubaud et al. (2017)
+      (including Dll1 coating, Y-27632 Rockout, intact high-density mPSM, and constitutively
+      active Yap5SA block), 2D reaction-diffusion excitable target-wave PDE simulation, and
+      automated bilateral somite segmentation on `mouse_psm_somites_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 64
+        rationale: >-
+          Integrates the single-cell FitzHugh-Nagumo fast-slow ODE with YAP-gated current
+          I_eff = I_basal + J_Dll1 - gamma_YAP * Y_nuc (L54-83), but Pass 1 lacks analytical
+          cubic nullcline root continuation, Jacobian eigenvalue/Hopf bifurcation tracking,
+          and 2D diffusive PDE wave propagation in mPSM.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [54, 83], note: "Single-cell FHN ODE integrator with YAP gating", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [86, 106], note: "Lacks 2D excitable target-wave PDE and full bifurcation sweep", supports: false}
+      specimen-match:
+        value: 54
+        rationale: >-
+          Vendors `datasets/yap_excitable_segmentation/mouse_psm_somites_specimen.jpg` with
+          SHA-256 verification, but Pass 1 only renders the raw grayscale micrograph without
+          bilateral paraxial somite DoG peak segmentation or periodic waveform correlation.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [109, 127], note: "Raw specimen panel without automated somite segmentation", supports: false}
+      parameter-expressivity:
+        value: 58
+        rationale: >-
+          Tests only two Y_nuc values (0.85 quiescent vs 0.22 Latrunculin A) in Pass 1;
+          requires evaluation across all 6 Hubaud et al. (2017) regimes (spread fibronectin,
+          Dll1 coating, Latrunculin A, Y-27632 Rockout, intact mPSM, and Yap5SA constitutive
+          block) plus suprathreshold single-pulse excitability verification.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [54, 83], note: "Two-point Y_nuc baseline without full 6-regime perturbation suite", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          Reports only the Hopf bifurcation coordinate |u_H| = 0.9675 in Pass 1; requires
+          5 reference-anchored morphometric measurements including critical nuclear YAP
+          threshold Y_crit, Latrunculin A oscillation period T_osc, 6-regime oscillating
+          fraction Pearson r, and bilateral specimen somite spacing.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [86, 106], note: "Single baseline measurement in measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `yap_excitable_segmentation_reference.json`,
+          `paper_citations.bib`, and `mouse_psm_somites_specimen.jpg` with SHA-256 digests.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [30, 51], note: "SHA-256 verification of vendored dataset artifacts", supports: true}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Maps baseline FHN equations to Hubaud et al. (2017) Cell and Lean 4 theorems in
+          `Loop_027_yap_excitable_segmentation.lean`, but needs full function-level equation
+          and theorem annotations in Pass 2.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1, 15], note: "Baseline module header", supports: true}
+      repro-package:
+        value: 64
+        rationale: >-
+          Provides `--self-test` and renders PNG/GIF outputs, requiring expanded self-tests
+          for cubic nullcline extrema, Hopf stability transition, Yap5SA arrest, 2D PDE
+          bitwise determinism, and specimen segmentation in Pass 2.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [148, 157], note: "Pass 1 self-test entrypoint", supports: true}
+    remediation:
+      - "Implement analytical cubic nullcline intersection continuation and Jacobian trace/Hopf bifurcation locus across nuclear YAP Y_nuc in [0, 1] and Notch coupling J_Dll1."
+      - "Simulate all 6 Hubaud et al. (2017) experimental regimes (isolated fibronectin, Dll1-coated, Latrunculin A, Y-27632 Rockout, intact mPSM, and Yap5SA constitutive block), suprathreshold single-pulse excitability, and 2D mPSM excitable target-wave PDE propagation."
+      - "Add automated bilateral paraxial somite DoG peak segmentation and periodic waveform correlation on `datasets/yap_excitable_segmentation/mouse_psm_somites_specimen.jpg`."

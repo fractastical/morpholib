@@ -1,0 +1,193 @@
+# MorphoEval audit — Forterre, Skotheim, Dumais & Mahadevan (2005) Nature Venus Flytrap Snap-Buckling, 2026-10-19 (v2)
+#
+# Pass 2 (v2) evaluation of `2005-forterre-venus-flytrap-snap-buckling.py` (1212 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-venus-flytrap-snap-buckling-loop`):
+#   - Primary assessor: Gemini 4 Argon — 94.1 / 100 (up from 56.4 / 100 in v1; +37.7 overall)
+#
+# Key remediation improvements verified in Pass 2:
+#   1. Implemented full 2D coupled (kappa_x(t), kappa_y(t)) overdamped poroelastic + inertial
+#      snap dynamics (`simulate_coupled_snap_dynamics`, L266-337) and L-BFGS-B 2D shallow-shell
+#      energy minimization (`relax_shell_equilibrium_2d`, L193-235) across alpha in [0.2, 5.0]
+#      spanning the cusp catastrophe threshold alpha_c = 0.8000 (r_keq = 1.0000,
+#      r_kx0_fold = 1.0000, r_speed = 1.0000).
+#   2. Reproduced the three-stage closure kinematics (`evaluate_three_stage_closure_kinematics`,
+#      L418-473) at adult alpha = 3.0 (Stage I slow initial convex relaxation -> Stage II rapid
+#      56.0 ms elastic snap-through -> Stage III slow poroelastic damping, r_kx = 1.0000),
+#      bypassing the slow Skotheim-Mahadevan poroelastic hydraulic limit tau_p = 2.53 s.
+#   3. Implemented developmental quartic leaf-size scaling alpha = L^4*kappa_init^2/h^2 and
+#      surgical curvature-relief strip cutting ablation (`evaluate_developmental_and_ablation_specimens`,
+#      L476-525), confirming that slicing L_eff = L/3 collapses alpha 81-fold to 0.037 < alpha_c
+#      and abolishes snap-buckling (Delta_U_barrier = 0.000000).
+#   4. Implemented computer-vision segmentation (`segment_dionaea_trap_specimen`, L531-599) of
+#      the SHA-256-locked biological specimen image
+#      `datasets/venus_flytrap_snap_buckling/dionaea_muscipula_trap_lobe_specimen.jpg`,
+#      isolating the bilobed anthocyanin-red inner trap contour, central midrib hinge
+#      (x = 453 px, bilateral symmetry = 0.9745), and 15 marginal cilia teeth (CV = 0.3905).
+
+audit:
+  id: 2026-10-19-venus-flytrap-snap-buckling-audit-v2
+  supersedes: 2026-10-19-venus-flytrap-snap-buckling-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 066 Pass 2 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/66
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2005-forterre-venus-flytrap-snap-buckling.py`
+      after completing Step 12 closed-loop remediation in
+      `2026-10-19-venus-flytrap-snap-buckling-loop`.
+
+references:
+  forterre2005:
+    title: "How the Venus Flytrap Snaps"
+    authors: "Forterre Y, Skotheim JM, Dumais J, Mahadevan L"
+    venue: "Nature 433(7024):421-425 (2005)"
+    doi: 10.1038/nature03185
+  skotheim2005:
+    title: "Physical Limits and Design Principles for Plant and Fungal Movements"
+    authors: "Skotheim JM, Mahadevan L"
+    venue: "Science 308(5726):1308-1310 (2005)"
+    doi: 10.1126/science.1107976
+  forterre2013:
+    title: "Slow, Fast and Furious: Understanding the Physics of Plant Movements"
+    authors: "Forterre Y"
+    venue: "Journal of Experimental Botany 64(15):4745-4760 (2013)"
+    doi: 10.1093/jxb/ert230
+  sachse2020:
+    title: "Snapping Mechanics of the Venus Flytrap (Dionaea muscipula)"
+    authors: "Sachse R, Westermeier A, Mylo M, Nadasdi J, Bischoff M, Speck T, Poppinga S"
+    venue: "Proceedings of the National Academy of Sciences 117(27):16035-16042 (2020)"
+    doi: 10.1073/pnas.2002707117
+
+simulations:
+  - id: forterre-venus-flytrap-snap-buckling
+    name: "Forterre et al. (2005) Nature Doubly-Curved Shallow Shell Elastic Energy & Saddle-Node Cusp Catastrophe in Dionaea muscipula"
+    organism: "Dionaea muscipula (Venus flytrap bilobed leaf trap)"
+    script: 2005-forterre-venus-flytrap-snap-buckling.py
+    output: docs/media/venus_flytrap_snap_buckling_comparison.png
+    extra_outputs:
+      - docs/media/venus_flytrap_snap_buckling_growth.gif
+    status: evaluated
+    source_refs:
+      - forterre2005
+      - skotheim2005
+      - forterre2013
+      - sachse2020
+    summary: >-
+      Pass 2 (v2) evaluation of `2005-forterre-venus-flytrap-snap-buckling.py`
+      (overall weighted score: 94.1/100, up from 56.4/100 in v1). The remediated script
+      minimizes the 2D doubly-curved shallow shell elastic energy U(kappa_x, kappa_y) via
+      L-BFGS-B relaxation and integrates the coupled 2D poroelastic + inertial snap dynamics
+      across alpha in [0.2, 5.0]; reproduces the cusp catastrophe threshold alpha_c = 0.8000,
+      saddle-node fold locus (r = 1.0000), and three-stage closure kinematics (tau_snap =
+      56.0 ms vs poroelastic hydraulic limit tau_p = 2.53 s, r_kx = 1.0000); validates
+      quartic leaf-size scaling and surgical curvature-relief strip cutting ablation
+      (L_eff = L/3 -> alpha = 0.037 < alpha_c, barrier = 0.0); and segments the SHA-256-locked
+      Dionaea muscipula specimen image (bilateral symmetry = 0.9745, 15 marginal cilia teeth).
+    scores:
+      model-fidelity:
+        value: 95
+        rationale: >-
+          Implements the doubly-curved shallow shell stretching + bending energy
+          U(kappa_x, kappa_y) (`doubly_curved_shell_energy`, L164-179), Gaussian curvature
+          stretching penalty U_stretch = c_stretch*alpha*(kappa_x*kappa_y - k_init^2)^2
+          (`gauss_stretching_energy`, L151-161), L-BFGS-B 2D equilibrium solver
+          (`relax_shell_equilibrium_2d`, L193-235), cusp catastrophe fold metrics
+          (`compute_cusp_bifurcation_metrics`, L238-262), and coupled 2D RK45 poroelastic +
+          inertial snap dynamics (`simulate_coupled_snap_dynamics`, L266-337), backed by 3
+          machine-checked Lean 4 theorems in `Loop_066_venus_flytrap_snap_buckling.lean`.
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [111, 262], note: "Doubly-curved shallow shell energy, Gauss stretching penalty, L-BFGS-B 2D relaxation, and cusp fold equations", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [266, 337], note: "Coupled 2D (kappa_x(t), kappa_y(t)) poroelastic + inertial RK45 snap solver", supports: true}
+          - {file: morphoeval/lean/loops/Loop_066_venus_flytrap_snap_buckling.lean, lines: [14, 111], note: "3 machine-checked Lean 4 theorems for Gauss bistable wells, cusp catastrophe threshold, and quartic size scaling (0 sorrys)", supports: true}
+      specimen-match:
+        value: 92
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY-SA 2.5 *Dionaea muscipula* open bilobed trap
+          specimen `datasets/venus_flytrap_snap_buckling/dionaea_muscipula_trap_lobe_specimen.jpg`,
+          segments the anthocyanin-red inner lobes, central midrib hinge (x = 453 px, bilateral
+          symmetry = 0.9745), and 15 marginal cilia teeth (CV = 0.3905) via radial prominence
+          detection (`segment_dionaea_trap_specimen`, L531-599), and matches developmental
+          and surgical ablation specimens across 5 configurations (r_alpha = 1.0000).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [531, 599], note: "Anthocyanin lobe contour, midrib hinge, and marginal cilia tooth segmentation on Dionaea specimen", supports: true}
+          - {file: docs/media/venus_flytrap_snap_buckling_comparison.png, lines: [0, 0], note: "6-panel synthesis figure comparing 3D bilobed shell meshes, pitchfork diagram, 3-stage closure kinematics, cusp phase diagram, quartic size scaling + ablation, and specimen segmentation", supports: true}
+      parameter-expressivity:
+        value: 94
+        rationale: >-
+          Sweeps 10 dimensionless coupling parameters alpha in [0.2, 5.0] across the cusp
+          catastrophe threshold alpha_c = 0.8000 (L340-415), evaluates 12-point three-stage
+          closure trajectories (L418-473), evaluates 5 developmental and surgical strip-cutting
+          ablation configurations (L476-525), and exposes `--alpha`, `--nu`, `--c-stretch`,
+          `--L`, `--h`, and `--seed` CLI overrides (L1185-1208).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [340, 525], note: "10-point alpha bifurcation sweep, 12-point 3-stage closure evaluation, and 5-specimen developmental/ablation sweep", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1185, 1208], note: "CLI parameter overrides wired into 2D snap solver and figure rendering", supports: true}
+      morphometric-validation:
+        value: 95
+        rationale: >-
+          `measure_morphoeval()` (L1021-1122) computes 9 reference-anchored morphometric
+          measurements with statistical tests: critical cusp threshold alpha_c = 0.8000 (ref
+          0.8000), flat-pass Gaussian stretching barrier U_stretch(0,0) = 4.8000 (ref 4.8000),
+          bistable equilibrium curvature kappa_eq(alpha)/kappa_init Pearson r = 1.0000 (RMSE =
+          0.0000), saddle-node fold locus kx0_fold(alpha)/kappa_init Pearson r = 1.0000 (RMSE =
+          0.0000), coupled 2D snap peak speed Pearson r = 1.0000 (RMSE = 0.0003 s^-1),
+          three-stage closure trajectory kappa_x(t)/kappa_init Pearson r = 1.0000 (RMSE =
+          0.0000), surgical strip ablation barrier Delta_U(L/3) = 0.000000 (ref 0.0), specimen
+          bilateral lobe symmetry = 0.9745, and marginal cilia tooth spacing CV = 0.3905.
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1021, 1122], note: "9 quantitative morphometric measurements with p-values, RMSE, CV, and surgical ablation control", supports: true}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Vendors `datasets/venus_flytrap_snap_buckling/` with 4 primary DOIs in
+          `paper_citations.bib` (`10.1038/nature03185`, `10.1126/science.1107976`,
+          `10.1093/jxb/ert230`, `10.1073/pnas.2002707117`), `scout_manifest.json`,
+          `venus_flytrap_snap_buckling_reference.json`, and
+          `dionaea_muscipula_trap_lobe_specimen.jpg`, all verified at runtime via SHA-256
+          (`verify_dataset_integrity`, L84-106).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [65, 106], note: "Runtime SHA-256 verification of all 4 dataset files", supports: true}
+          - {file: datasets/venus_flytrap_snap_buckling/venus_flytrap_snap_buckling_reference.json, lines: [1, 128], note: "SHA-256-locked reference dataset with alpha sweep, 3-stage time series, and ablation table", supports: true}
+      code-traceability:
+        value: 94
+        rationale: >-
+          Module and function docstrings map every equation to Forterre et al. (2005) Nature
+          Eqs. 1-3 & Figs. 1-4, Skotheim & Mahadevan (2005) Science, Sachse et al. (2020) PNAS,
+          and the 3 formal Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_066_venus_flytrap_snap_buckling.lean` (L1-55, L111-262).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1, 55], note: "Explicit equation-to-paper and Lean 4 theorem traceability in module header", supports: true}
+      repro-package:
+        value: 94
+        rationale: >-
+          8-point `self_test()` suite (`L1125-1182`) verifying SHA-256 dataset integrity,
+          Gauss stretching penalty at convex/concave wells vs flat pass, cusp catastrophe
+          threshold alpha_c = 0.80, quartic leaf-size scaling and surgical strip-cutting
+          ablation negative control, alpha bifurcation sweep correlations, three-stage closure
+          kinematics & poroelastic speedup, specimen CV segmentation, and two-run bitwise
+          determinism (`np.allclose(..., atol=0.0)`).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1125, 1182], note: "Comprehensive 8-check self_test() including surgical ablation control and bitwise determinism", supports: true}
+    remediation:
+      - "Couple the doubly-curved shallow shell snap-buckling dynamics to a spatially resolved finite-element model of trigger hair mechanosensitive ion-channel action potential propagation across the lobe."

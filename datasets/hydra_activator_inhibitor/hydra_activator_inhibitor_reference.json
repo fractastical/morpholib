@@ -1,0 +1,128 @@
+{
+  "metadata": {
+    "dataset_id": "gierer-meinhardt-1972-hydra-activator-inhibitor-v1",
+    "title": "Gierer & Meinhardt (1972) Kybernetik 12:30-39 Hydra vulgaris Short-Range Activator / Long-Range Inhibitor Morphogenesis Reference Dataset",
+    "sources": [
+      {
+        "id": "gierer1972",
+        "citation": "Gierer A, Meinhardt H (1972). A theory of biological pattern formation. Kybernetik 12(1):30-39.",
+        "doi": "10.1007/BF00289234"
+      },
+      {
+        "id": "meinhardt1974",
+        "citation": "Meinhardt H, Gierer A (1974). Applications of a theory of biological pattern formation based on lateral inhibition. Journal of Cell Science 15(2):321-346.",
+        "doi": "10.1242/jcs.15.2.321"
+      },
+      {
+        "id": "meinhardt1993",
+        "citation": "Meinhardt H (1993). A model for pattern formation of hypostome, tentacles, and foot in hydra: how to form structures close to each other, how to form them at a distance. Developmental Biology 157(2):321-333.",
+        "doi": "10.1006/dbio.1993.1138"
+      },
+      {
+        "id": "meinhardt2012",
+        "citation": "Meinhardt H (2012). Modeling pattern formation in hydra: a route to understanding essential steps in development. International Journal of Developmental Biology 56(6-8):447-462.",
+        "doi": "10.1387/ijdb.113483hm"
+      }
+    ],
+    "specimens": {
+      "hydra_vulgaris_specimen": {
+        "file": "datasets/hydra_activator_inhibitor/hydra_vulgaris_specimen.jpg",
+        "sha256": "007d127bcfa8501d3b9737ffaf7a512efec37db8a0c83a5334568b513da214f9",
+        "width": 640,
+        "height": 614,
+        "species": "Hydra vulgaris (Freshwater cnidarian polyp, dark-field whole-mount showing basal foot, body column, apical hypostome, and 6 radial tentacles)",
+        "license": "CC BY-SA 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Hydravulgaris.jpg",
+        "observed_tentacle_count": 6,
+        "pattern_type": "polar_hypostome_gradient_and_periodic_tentacle_ring"
+      },
+      "scout_manifest": {
+        "file": "datasets/hydra_activator_inhibitor/scout_manifest.json",
+        "sha256": "b57d0d923283daaf442c82adfb0b709dc507e23ec0d05ae8ea4e9926782e6478"
+      },
+      "paper_citations": {
+        "file": "datasets/hydra_activator_inhibitor/paper_citations.bib",
+        "sha256": "49b5c0a5531a00fe76fed6d969e9e0af0c9c4ec23499de11893523405f080da6"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Gierer & Meinhardt (1972) Kybernetik 12:30-39, Eqs. (15a)-(15b)",
+    "activator_pde": "da/dt = rho_0 * rho(x) + c * rho(x) * a^2 / h - mu_a * a + D_a * d^2a/dx^2",
+    "inhibitor_pde": "dh/dt = c_prime * rho(x) * a^2 - mu_h * h + D_h * d^2h/dx^2",
+    "boundary_conditions": "Zero-flux Neumann boundary conditions: da/dx = 0, dh/dx = 0 at x = 0 (apical head) and x = L (basal foot)",
+    "homogeneous_steady_state": {
+      "rho_0_zero_exact": {
+        "a_star_formula": "(c / c_prime) * (mu_h / mu_a)",
+        "h_star_formula": "(c / c_prime) * rho * (mu_h / mu_a)^2",
+        "jacobian_J0": [
+          ["mu_a", "-(c_prime / c) * (mu_a^2 / mu_h) / rho"],
+          ["2 * c_prime * rho * (c / c_prime) * (mu_h / mu_a)", "-mu_h"]
+        ],
+        "trace_J0_formula": "mu_a - mu_h",
+        "det_J0_formula": "mu_a * mu_h"
+      }
+    },
+    "linear_stability_invariants": {
+      "homogeneous_stability_condition": "mu_h > mu_a (inhibitor turns over faster than activator so tr(J_0) = mu_a - mu_h < 0 and det(J_0) = mu_a * mu_h > 0)",
+      "critical_diffusivity_ratio_formula": "d_c = (D_h / D_a)_c = (sqrt(2) + 1)^2 = 3 + 2*sqrt(2) = 5.8284271247461903",
+      "critical_wavenumber_squared_formula": "q_c = k_c^2 = (sqrt(2) - 1) * (mu_a / D_a)",
+      "lateral_inhibition_range_condition": "l_a = sqrt(D_a / mu_a) << l_h = sqrt(D_h / mu_h) (short-range autocatalytic activation coupled with long-range lateral inhibition)"
+    }
+  },
+  "canonical_parameters": {
+    "c": 0.05,
+    "c_prime": 0.05,
+    "mu_a": 0.02,
+    "mu_h": 0.03,
+    "rho_0": 0.001,
+    "rho_base": 1.0,
+    "D_a": 0.015,
+    "D_h": 0.45,
+    "diffusivity_ratio_d": 30.0,
+    "critical_diffusivity_ratio_dc": 5.8284271247461903,
+    "activator_range_la": 0.8660254037844386,
+    "inhibitor_range_lh": 3.872983346207417,
+    "range_ratio_lh_over_la": 4.47213595499958,
+    "homogeneous_a_star_rho0_zero": 1.5,
+    "homogeneous_h_star_rho0_zero": 2.25,
+    "critical_k_rad": 0.7429188535595698,
+    "critical_wavelength_cells": 8.457432528540942
+  },
+  "hydra_regimes_and_experiments": {
+    "intact_polar_column": {
+      "description": "Gierer & Meinhardt (1972) Fig. 2: Shallow source-density gradient rho(x) = 1.0 * (1 - 0.15 * x/L) triggers a single tall apical hypostome activator peak at x = 0.",
+      "N_cells": 60,
+      "source_gradient_slope": -0.15,
+      "expected_peak_count": 1,
+      "expected_apical_peak_index": 0
+    },
+    "bisection_regeneration": {
+      "description": "Gierer & Meinhardt (1972) Fig. 3: Surgical removal of the apical head half (cutting at x = 0.5*L); removal of long-range inhibitor allows the new apical cut end of the basal fragment to regenerate a full hypostome activator peak.",
+      "N_cells_fragment": 30,
+      "cut_fraction": 0.5,
+      "expected_regenerated_peak_count": 1,
+      "expected_regenerated_peak_index": 0,
+      "peak_recovery_ratio_min": 0.90
+    },
+    "tentacle_ring_periodic": {
+      "description": "Meinhardt (1993) Dev. Biol. 157:321-333: Periodic activator-inhibitor instability around the circular sub-hypostomal ring (circumference C = 50 cells, periodic boundary conditions) forms 6 evenly spaced tentacle primordia matching the adult Hydra vulgaris specimen.",
+      "ring_cells": 50,
+      "expected_tentacle_peaks": 6,
+      "mean_inter_tentacle_spacing_cells": 8.3333,
+      "reference_specimen_tentacles": 6
+    },
+    "allometric_domain_scaling": {
+      "description": "Peak insertion with domain length L in {20, 35, 50, 65, 80, 95} cells under uniform source density rho(x) = 1.0: number of activator peaks scales linearly with domain length L / lambda_c.",
+      "domain_lengths_cells": [20, 35, 50, 65, 80, 95],
+      "expected_peak_counts": [2, 4, 6, 8, 9, 11]
+    },
+    "equal_diffusion_negative_control": {
+      "description": "Equal-diffusion ablation control (D_a = D_h = 0.015, d = 1.0 < d_c = 5.8284): random perturbations decay exponentially to the spatially uniform equilibrium with zero pattern peaks.",
+      "D_a": 0.015,
+      "D_h": 0.015,
+      "diffusivity_ratio_d": 1.0,
+      "expected_peak_count": 0
+    }
+  }
+}

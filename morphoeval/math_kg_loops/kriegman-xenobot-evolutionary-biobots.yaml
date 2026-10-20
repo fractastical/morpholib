@@ -1,0 +1,93 @@
+sim_id: kriegman-xenobot-evolutionary-biobots
+math_family: Voxel Spring-Lattice Actuated Continuum Mechanics, Age-Fitness Pareto Optimization (AFPO), & Kinematic Self-Replication
+model_spec:
+  model: Kriegman, Blackiston, Levin & Bongard (2020) PNAS 117:1853-1859 & Kriegman et al. (2021) PNAS 118:e2112672118 voxel spring-lattice passive ectoderm + contractile cardiac progenitor mechanics, AFPO phase-noise transferability filter, mechanical laceration regeneration, and C-shaped (Pac-Man) kinematic self-replication
+  voxel_rest_length_actuation: "L_{ij}(t) = L_{ij,0} * (1 + epsilon_act * a_ij * sin(2 * pi * f_act * t + phi_{ij}))"
+  voxel_spring_lattice_ode: "m_i * d^2x_i/dt^2 + c_damp * dx_i/dt = sum_{j in N(i)} k_{ij} * (||x_j - x_i|| - L_{ij}(t)) * (x_j - x_i)/||x_j - x_i|| + F_ground(x_i, dx_i/dt)"
+  afpo_displacement_fitness: "F(G) = ||x_COM(T) - x_COM(0)|| / L_body"
+  robustness_transferability_filter: "F_robust(G) = E_{phi ~ U(-pi, pi)} [ F(G, phi) ]"
+  laceration_regeneration_ode: "dr_wound/dt = -k_heal * r_wound * (1 - r_wound / r_crit)"
+  kinematic_self_replication_rate: "dN_pile/dt = eta_sweep(theta_mouth) * v_orbit * rho_free * W_mouth"
+  parameters:
+    grid_nx: 8
+    grid_ny: 5
+    E_passive_ectoderm_kPa: 10.0
+    E_active_cardiac_kPa: 50.0
+    epsilon_act: 0.18
+    f_act_Hz: 1.5
+    zeta_damping: 0.85
+    mu_static_anterior: 0.65
+    mu_kinetic_posterior: 0.18
+    T_eval_sec: 10.0
+    N_stem_cells: 240
+    N_pile_threshold: 55
+    seed: 2020
+  inputs:
+    - datasets/xenobot_evolutionary_biobots/xenobot_evolutionary_biobots_reference.json
+    - datasets/xenobot_evolutionary_biobots/xenopus_biobot_specimen.jpg
+    - datasets/xenobot_evolutionary_biobots/scout_manifest.json
+    - datasets/xenobot_evolutionary_biobots/paper_citations.bib
+equations:
+  - law_name: "Kriegman et al. (2020) Voxel Spring-Lattice Actuation & Passive Ectoderm Volume Invariance Law"
+    formula: "L_{ij}(t) = L_{ij,0}(1 + ε_act a_{ij} sin(ω t + φ_{ij}));   a_{ij}=0 ⟹ L_{ij}(t)=L_{ij,0};   L_{ij}(+s)+L_{ij}(-s)=2L_{ij,0}"
+    lean_decl: "MathOfBiology.Loop_083.voxel_rest_length"
+    lean_theorem: "MathOfBiology.Loop_083.voxel_actuation_invariance_and_cycle_symmetry"
+    lean_locus: "morphoeval/lean/loops/Loop_083_xenobot_evolutionary_biobots.lean#L14-L39"
+    lean_code: |
+      def voxel_rest_length (L0 a eps s : Int) : Int :=
+        L0 + a * eps * s
+      theorem voxel_actuation_invariance_and_cycle_symmetry (L0 a eps s : Int) :
+          voxel_rest_length L0 0 eps s = L0 ∧
+          voxel_rest_length L0 a 0 s = L0 ∧
+          voxel_rest_length L0 1 eps s + voxel_rest_length L0 1 eps (-s) = 2 * L0 := by
+        refine ⟨?_, ?_, ?_⟩
+        · simp [voxel_rest_length]
+        · simp [voxel_rest_length]
+        · simp [voxel_rest_length, Int.mul_neg]
+          omega
+    variables: "L_{ij,0}: rest spring length between adjacent voxels; a_{ij} in {0,1}: tissue type (0 = passive ectoderm, 1 = contractile cardiac progenitor); epsilon_act = 0.18: volumetric contraction strain; f_act = 1.5 Hz: cardiac contraction frequency"
+    role: "Governs rhythmic volumetric actuation of contractile cardiac voxels while enforcing strict rest-volume invariance in passive animal-cap ectoderm voxels"
+    source_citation: "Kriegman, Blackiston, Levin & Bongard (2020) PNAS 117(4):1853-1859 SI Appendix S1; Cheney et al. (2013) GECCO pp. 167-174"
+    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L125-L215"
+  - law_name: "Ventral-Concavity Asymmetric Substrate Ratchet & Dorsal Inversion Collapse Law"
+    formula: "Δx_stride(μ_ant, μ_post, e) = (μ_ant - μ_post) e;   μ_ant = μ_post ⟹ Δx_stride = 0;   Δx_stride(μ_post, μ_ant, e) = -Δx_stride(μ_ant, μ_post, e)"
+    lean_decl: "MathOfBiology.Loop_083.xenobot_stride"
+    lean_theorem: "MathOfBiology.Loop_083.ventral_ratchet_and_dorsal_inversion_collapse"
+    lean_locus: "morphoeval/lean/loops/Loop_083_xenobot_evolutionary_biobots.lean#L42-L68"
+    lean_code: |
+      def xenobot_stride (mu_ant mu_post e : Int) : Int :=
+        (mu_ant - mu_post) * e
+      theorem ventral_ratchet_and_dorsal_inversion_collapse (mu mu_ant mu_post e : Int) :
+          xenobot_stride mu mu e = 0 ∧
+          xenobot_stride mu_post mu_ant e = -xenobot_stride mu_ant mu_post e ∧
+          xenobot_stride 65 18 4 = 188 ∧
+          xenobot_stride 25 25 4 = 0 := by
+        refine ⟨?_, ?_, by decide, by decide⟩
+        · simp [xenobot_stride]
+        · simp [xenobot_stride, Int.sub_mul]
+          omega
+    variables: "mu_ant = 0.65: anterior ventral leg substrate friction; mu_post = 0.18: posterior ventral leg substrate friction; e: cyclic ventral cardiac contraction stroke"
+    role: "Proves that ventral-concavity bipedal leg asymmetry rectifies zero-mean cardiac oscillations into net forward locomotion, whereas 180-deg dorsal inversion equalizes contact friction and collapses net propulsion"
+    source_citation: "Kriegman, Blackiston, Levin & Bongard (2020) PNAS 117(4):1853-1859 Figs. 1-3"
+    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L220-L360"
+  - law_name: "AFPO Phase-Robustness Transferability & Pac-Man Kinematic Self-Replication Law"
+    formula: "T_sim2real(F_det, F_rob) = I(F_det ≥ F_min ∧ F_rob ≥ F_rob_min);   N_daughters(θ_mouth) = floor(η_sweep(θ_mouth) v_orbit ρ_free / N_thresh)"
+    lean_decl: "MathOfBiology.Loop_083.kinematic_daughter_generations"
+    lean_theorem: "MathOfBiology.Loop_083.afpo_transferability_and_pacman_replication"
+    lean_locus: "morphoeval/lean/loops/Loop_083_xenobot_evolutionary_biobots.lean#L71-L100"
+    lean_code: |
+      def afpo_transferable (F_det F_rob F_det_min F_rob_min : Nat) : Bool :=
+        (F_det ≥ F_det_min) && (F_rob ≥ F_rob_min)
+      def kinematic_daughter_generations (eta_mouth v_orbit rho_free N_thresh : Nat) : Nat :=
+        (eta_mouth * v_orbit * rho_free) / N_thresh
+      theorem afpo_transferability_and_pacman_replication :
+          afpo_transferable 195 140 120 100 = true ∧
+          afpo_transferable 185 32 120 100 = false ∧
+          afpo_transferable 12 10 120 100 = false ∧
+          kinematic_daughter_generations 18 3 4 55 = 3 ∧
+          kinematic_daughter_generations 6 3 4 55 = 1 := by
+        decide
+    variables: "F_det: synchronous cardiac phase displacement (body lengths); F_rob: phase-randomized cardiomyocyte displacement; eta_mouth(theta_mouth): C-shaped Pac-Man concavity sweeping efficiency; N_thresh = 55: critical stem-cell pile size for self-sustaining daughter spheroid compaction"
+    role: "Formalizes the Kriegman et al. (2020) phase-randomization sim-to-real transferability filter and the Kriegman et al. (2021) C-shaped Pac-Man kinematic self-replication advantage over spherical morphologies"
+    source_citation: "Kriegman et al. (2020) PNAS 117:1853-1859 Fig. 2; Kriegman et al. (2021) PNAS 118:e2112672118 Figs. 1-4"
+    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L365-L520"

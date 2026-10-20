@@ -1,0 +1,155 @@
+# MorphoEval audit — Riedel-Kruse et al. (2007) Science / Morelli et al. (2009) HFSP J. Delta-Notch Phase Synchrony, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2006-riedel-delta-notch-phase-synchrony.py` (Slot 023) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-delta-notch-phase-synchrony-loop`.
+
+audit:
+  id: 2026-10-19-delta-notch-phase-synchrony-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2006-riedel-delta-notch-phase-synchrony.py` in
+      `2026-10-19-delta-notch-phase-synchrony-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  riedelkruse2007:
+    title: "Synchrony dynamics during initiation, failure, and rescue of the segmentation clock"
+    authors: "Riedel-Kruse IH, Muller C, Oates AC"
+    venue: "Science 317(5846):1911-1915 (2007)"
+    doi: 10.1126/science.1142538
+  morelli2009:
+    title: "Delayed coupling theory of vertebrate segmentation"
+    authors: "Morelli LG, Ares S, Herrgen L, Schroter C, Julicher F, Oates AC"
+    venue: "HFSP Journal 3(1):55-66 (2009)"
+    doi: 10.2976/1.3027088
+  herrgen2010:
+    title: "Intercellular coupling regulates the period of the segmentation clock"
+    authors: "Herrgen L, Ares S, Morelli LG, Schroter C, Julicher F, Oates AC"
+    venue: "Current Biology 20(14):1244-1253 (2010)"
+    doi: 10.1016/j.cub.2010.06.034
+  horikawa2006:
+    title: "Noise-resistant and synchronized oscillation of the segmentation clock"
+    authors: "Horikawa K, Ishimatsu K, Yoshimoto E, Kondo S, Takeda H"
+    venue: "Nature 441(7094):719-723 (2006)"
+    doi: 10.1038/nature04861
+
+simulations:
+  - id: riedel-delta-notch-phase-synchrony
+    name: "Riedel-Kruse et al. (2007) & Morelli et al. (2009) zebrafish Delta-Notch delayed Kuramoto phase synchrony, ALD failure, and PRP washout rescue"
+    organism: "Danio rerio (zebrafish presomitic mesoderm & paraxial somites)"
+    script: 2006-riedel-delta-notch-phase-synchrony.py
+    output: docs/media/delta_notch_phase_synchrony_comparison.png
+    extra_outputs:
+      - docs/media/delta_notch_phase_synchrony_growth.gif
+    status: evaluated
+    source_refs:
+      - riedelkruse2007
+      - morelli2009
+      - herrgen2010
+      - horikawa2006
+    summary: >-
+      Pass 1 baseline assessment of `2006-riedel-delta-notch-phase-synchrony.py` (59.3/100).
+      The initial baseline captures the delayed Kuramoto phase-oscillator equation
+      dtheta_i/dt = omega_0 + (kappa/z)*sum_j sin(theta_j(t - tau_c) - theta_i(t)) + xi_i(t)
+      and collective frequency equation Omega = omega_0 - kappa*sin(Omega*tau_c), but requires
+      explicit verification of Morelli et al.'s (2009) linear stability stiffness criterion
+      kappa_eff = kappa*cos(Omega*tau_c) > 0 across attractive in-phase and repulsive anti-phase
+      delay windows, full DAPT pulse-chase simulation of gastrula initiation, Anterior Limit of
+      Defects (ALD ~ 5.5 somites), and Posterior Rescue Point (PRP ~ 14.5 somites after washout at
+      s_out = 9), and bilateral dorsal somite segmentation against the vendored vertebrate embryo
+      SEM specimen (`zebrafish_psm_synchrony_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: >-
+          Implements the delayed Kuramoto collective frequency equation Omega = omega_0 - kappa*sin(Omega*tau_c)
+          (L115-190), but Pass 1 lacks full 2D delayed lattice + mean-field integration across gastrula
+          initiation, DAPT Notch blockade failure (ALD), and DAPT washout rescue (PRP), as well as
+          explicit testing of the repulsive anti-phase delay regime (kappa_eff < 0 at tau_c = 11 min).
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [115, 190], note: "Transcendental collective frequency and linear stability solver", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [195, 325], note: "2D delayed Kuramoto PSM lattice and DAPT pulse-chase simulator", supports: false}
+      specimen-match:
+        value: 54
+        rationale: >-
+          Vendors `datasets/delta_notch_phase_synchrony/zebrafish_psm_synchrony_specimen.jpg` (CC BY 4.0
+          dorsal SEM of vertebrate neural tube and bilateral somites), but Pass 1 lacks automated
+          bilateral DoG peak/cleft extraction and phase-aligned waveform correlation against the
+          synchronized Delta-Notch clock wave.
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [375, 445], note: "Specimen segmentation routine on zebrafish_psm_synchrony_specimen.jpg", supports: false}
+          - {file: docs/media/delta_notch_phase_synchrony_comparison.png, lines: [0, 0], note: "Comparison figure with dorsal SEM somite overlay", supports: true}
+      parameter-expressivity:
+        value: 59
+        rationale: >-
+          Covers canonical zebrafish PSM parameters (T_0 = 25 min, kappa = 0.070 min^-1, tau_c = 20.5 min),
+          but needs all 5 DAPT perturbation regimes (WT DMSO control, s_in = 0, s_in = 4, s_in = 9, and
+          s_in = 0 / s_out = 9 pulse-washout rescue) plus the 2D (tau_c, kappa) linear stability tongue
+          morphospace and collective period branch scan T_sync(tau_c).
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [330, 370], note: "5-regime Riedel-Kruse (2007) DAPT ALD/PRP evaluator", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          Measures collective synchronization period T_sync = 22.18 min, but Pass 1 requires full
+          5-regime ALD Pearson correlation r and RMSE, effective stiffness kappa_eff comparison between
+          in-phase and anti-phase delay windows, DAPT pulse-chase ALD/PRP lag validation, and bilateral
+          specimen spacing CV.
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [450, 535], note: "MorphoEval measurement hook measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `delta_notch_phase_synchrony_reference.json`,
+          `paper_citations.bib`, and `zebrafish_psm_synchrony_specimen.jpg` with SHA-256 digests,
+          linking Riedel-Kruse et al. (2007) Science, Morelli et al. (2009) HFSP J., Herrgen et al.
+          (2010) Current Biology, and Horikawa et al. (2006) Nature.
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [75, 110], note: "SHA-256 cryptographic verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Links functions to Riedel-Kruse et al. (2007) Eq. 1 & Figs. 1-4, Morelli et al. (2009)
+          Eqs. 1-5, and Lean 4 theorems in `morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean`.
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [1, 60], note: "Module docstring mapping equations to Riedel-Kruse (2007), Morelli (2009), and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Includes `--self-test` and deterministic seed=2007, requiring full verification of
+          collective frequency shift, repulsive anti-phase instability (kappa_eff < 0), bitwise
+          two-run lattice determinism, and DAPT pulse-washout rescue window invariance PRP - ALD = s_out - s_in
+          in Pass 2.
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [740, 805], note: "Self-test suite with bitwise determinism and delay/DAPT assertions", supports: true}
+    remediation:
+      - "Solve the transcendental collective frequency equation Omega = omega_0 - kappa*sin(Omega*tau_c) and verify Morelli et al.'s (2009) linear stability stiffness criterion kappa_eff = kappa*cos(Omega*tau_c) across both attractive in-phase (tau_c = 20.5 min) and repulsive anti-phase (tau_c = 11.0 min) delay windows."
+      - "Simulate the 2D delayed Kuramoto PSM lattice across gastrula initiation (R_0 = 0.18 -> 0.96), continuous DAPT Notch blockade (ALD = s_in + 5.5 somites), and DAPT pulse-washout rescue (PRP = s_out + 5.5 somites)."
+      - "Add bilateral dorsal somite row DoG peak & inter-somitic cleft segmentation on `datasets/delta_notch_phase_synchrony/zebrafish_psm_synchrony_specimen.jpg` with phase-aligned Pearson r correlation."

@@ -1,0 +1,166 @@
+{
+  "metadata": {
+    "dataset_id": "conte-martin-he-drosophila-ventral-furrow-v1",
+    "title": "Conte, Munoz, Baum & Miodownik (2012) PLoS ONE, Martin, Kaschube & Wieschaus (2009) Nature & He, Doubrovinski, Polyakov & Wieschaus (2014) Nature Drosophila Ventral Furrow Invagination Biomechanics & Ratcheted Actomyosin Pulse Reference Dataset",
+    "organism": "Drosophila melanogaster (gastrulating cellular blastoderm embryo, stage 5-6 ventral furrow)",
+    "sources": [
+      {
+        "id": "conte2012",
+        "citation": "Conte V, Munoz JJ, Baum B, Miodownik M (2012). Biomechanical analysis of ventral furrow formation in Drosophila melanogaster. PLoS ONE 7(11):e49973.",
+        "doi": "10.1371/journal.pone.0049973"
+      },
+      {
+        "id": "martin2009",
+        "citation": "Martin AC, Kaschube M, Wieschaus EF (2009). Pulsed contractions of an actin-myosin network drive apical constriction. Nature 457(7228):495-499.",
+        "doi": "10.1038/nature07522"
+      },
+      {
+        "id": "he2014",
+        "citation": "He B, Doubrovinski K, Polyakov O, Wieschaus E (2014). Apical constriction drives tissue-scale hydrodynamic flow to mediate cell elongation. Nature 508(7496):392-396.",
+        "doi": "10.1038/nature13070"
+      },
+      {
+        "id": "polyakov2014",
+        "citation": "Polyakov O, He B, Swan M, Shaevitz JW, Kaschube M, Wieschaus E (2014). Passive mechanical forces control cell-shape change during Drosophila ventral furrow formation. Biophysical Journal 107(4):998-1010.",
+        "doi": "10.1016/j.bpj.2014.07.013"
+      }
+    ],
+    "specimens": {
+      "drosophila_ventral_furrow_specimen": {
+        "file": "datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_specimen.jpg",
+        "sha256": "f426366f7ede436da44782b28ebac9bd013cace1f8fe44b6ed382b77ad86c419",
+        "species": "Drosophila melanogaster gastrulating embryo (Blue DAPI nuclei, Green Neurotactin cell membranes, Red Myosin II heavy chain apical enrichment)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Ventral_furrow_formation_in_drosophila_embryo.png",
+        "panel_b_stages": {
+          "stage1_blastoderm_yx": [490, 860, 15, 368],
+          "stage2_flattening_yx": [494, 858, 402, 756],
+          "stage3_invagination_yx": [505, 844, 790, 1142],
+          "stage4_internalized_tube_yx": [511, 839, 1176, 1531]
+        },
+        "pattern_type": "four_stage_transverse_ventral_furrow_apical_constriction_invagination"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Conte et al. (2012) PLoS ONE 7(11):e49973 Eqs. 1-8, Figs. 2-6; Martin et al. (2009) Nature 457:495-499 Figs. 1-4; He et al. (2014) Nature 508:392-396 Figs. 1-4",
+    "ratcheted_myosin_pulse_ode": {
+      "formula": "dL_{ap,i}/dt = -alpha_pulse * M_i(t) + beta_relax * (1 - r_twist) * (L_0 - L_{ap,i})",
+      "pulse_train": "M_i(t) = M_0 * sin^2(pi * t / T_pulse) for mesoderm cells i in Omega_meso",
+      "L_0_um": 8.2,
+      "L_min_um": 1.9,
+      "T_pulse_s": 82.0,
+      "alpha_pulse_um_per_s": 0.022,
+      "beta_relax_per_s": 0.045,
+      "r_twist_wildtype": 1.0,
+      "r_twist_mutant_recoil": 0.0,
+      "description": "Martin et al. (2009) Twist-stabilized ratcheted Myosin-II pulses drive step-wise net apical width reduction (r_twist = 1 => Delta L_net < 0 per pulse), whereas loss of Twist/Snail ratchet stabilization (r_twist = 0) produces transient pulse constriction followed by inter-pulse relaxation recoil toward L_0."
+    },
+    "incompressible_wedge_and_conte_biomechanical_synergy": {
+      "area_conservation": "A_i = 0.5 * (w_{ap,i} + w_{ba,i}) * h_i = A_0",
+      "invagination_depth_law": "D_furrow = D_ap * phi_ap + D_ba * phi_ap * phi_ba + D_lat * phi_ap * phi_ba * phi_lat + D_ecto * phi_ecto",
+      "A_0_um2": 262.4,
+      "h_0_um": 32.0,
+      "R_vitelline_um": 83.2,
+      "N_cells": 64,
+      "N_meso": 16,
+      "description": "Conte et al. (2012) 2D incompressible viscous-vertex cross-sectional mechanics: cytoplasmic incompressibility A_i = A_0 forces apicobasal lengthening (h > h_0) or basal expansion (w_ba > w_0) when w_ap < w_0; full invagination depth D_furrow = 41.0 um requires the synergy of mesodermal apical constriction (gamma_ap), basal relaxation (gamma_ba), and apicobasal lateral shortening (gamma_lat) assisted by ectodermal pushing."
+    }
+  },
+  "conte_martin_he_experimental_regimes": {
+    "section": "Conte, Munoz, Baum & Miodownik (2012) PLoS ONE 7(11):e49973 Figs. 3-6; Martin, Kaschube & Wieschaus (2009) Nature 457:495-499 Figs. 2-4; He et al. (2014) Nature 508:392-396",
+    "duration_minutes": 12.0,
+    "regimes": [
+      {
+        "regime_id": "wildtype_synergistic_invagination",
+        "label": "Wild-Type Full Synergy (Apical Constriction + Basal Relaxation + Lateral Shortening + Ectodermal Pushing, r_twist=1.0)",
+        "r_twist": 1.0,
+        "apical_constriction_gain": 1.0,
+        "basal_relaxation_gain": 1.0,
+        "lateral_shortening_gain": 1.0,
+        "ectoderm_push_gain": 1.0,
+        "empirical_final_apical_width_um": 1.95,
+        "empirical_final_basal_width_um": 17.15,
+        "empirical_final_cell_height_um": 27.5,
+        "empirical_invagination_depth_um": 41.0
+      },
+      {
+        "regime_id": "apical_plus_basal_relaxation",
+        "label": "Apical Constriction + Basal Relaxation Only (No Active Lateral Shortening, Conte 2012 Fig. 4)",
+        "r_twist": 1.0,
+        "apical_constriction_gain": 1.0,
+        "basal_relaxation_gain": 1.0,
+        "lateral_shortening_gain": 0.0,
+        "ectoderm_push_gain": 0.5,
+        "empirical_final_apical_width_um": 2.15,
+        "empirical_final_basal_width_um": 12.60,
+        "empirical_final_cell_height_um": 35.6,
+        "empirical_invagination_depth_um": 29.5
+      },
+      {
+        "regime_id": "apical_constriction_only",
+        "label": "Apical Constriction Alone (Stiff Basal Cortex & No Lateral Shortening, Conte 2012 Fig. 3)",
+        "r_twist": 1.0,
+        "apical_constriction_gain": 1.0,
+        "basal_relaxation_gain": 0.0,
+        "lateral_shortening_gain": 0.0,
+        "ectoderm_push_gain": 0.0,
+        "empirical_final_apical_width_um": 2.45,
+        "empirical_final_basal_width_um": 8.45,
+        "empirical_final_cell_height_um": 48.1,
+        "empirical_invagination_depth_um": 16.5
+      },
+      {
+        "regime_id": "concertina_uncoordinated_mutant",
+        "label": "concertina (cta / Fog-Galpha12/13) Mutant (Partial Uncoordinated Apical Constriction)",
+        "r_twist": 0.60,
+        "apical_constriction_gain": 0.65,
+        "basal_relaxation_gain": 0.50,
+        "lateral_shortening_gain": 0.30,
+        "ectoderm_push_gain": 0.30,
+        "empirical_final_apical_width_um": 4.55,
+        "empirical_final_basal_width_um": 10.10,
+        "empirical_final_cell_height_um": 35.8,
+        "empirical_invagination_depth_um": 14.0
+      },
+      {
+        "regime_id": "unratcheted_twist_recoil_mutant",
+        "label": "Unratcheted Recoil Mutant (r_twist=0.0, Pulsed Contractions with Inter-Pulse Relaxation Recoil, Martin 2009 Fig. 3)",
+        "r_twist": 0.0,
+        "apical_constriction_gain": 0.85,
+        "basal_relaxation_gain": 0.20,
+        "lateral_shortening_gain": 0.0,
+        "ectoderm_push_gain": 0.0,
+        "empirical_final_apical_width_um": 7.10,
+        "empirical_final_basal_width_um": 8.50,
+        "empirical_final_cell_height_um": 33.6,
+        "empirical_invagination_depth_um": 3.8
+      },
+      {
+        "regime_id": "snail_twist_double_null_control",
+        "label": "twist; snail Double Null Negative Control (Zero Active Myosin-II Pulses, alpha_pulse=0)",
+        "r_twist": 0.0,
+        "apical_constriction_gain": 0.0,
+        "basal_relaxation_gain": 0.0,
+        "lateral_shortening_gain": 0.0,
+        "ectoderm_push_gain": 0.0,
+        "empirical_final_apical_width_um": 8.20,
+        "empirical_final_basal_width_um": 8.20,
+        "empirical_final_cell_height_um": 32.0,
+        "empirical_invagination_depth_um": 0.0
+      }
+    ]
+  },
+  "specimen_reference_morphometrics": {
+    "stage1_dv_ml_aspect": 1.0482,
+    "stage2_dv_ml_aspect": 1.0282,
+    "stage3_dv_ml_aspect": 0.9631,
+    "stage4_dv_ml_aspect": 0.9239,
+    "dv_compression_px": 42.0,
+    "ml_width_mean_px": 353.5,
+    "ml_width_cv": 0.0036,
+    "mesoderm_area_internalization_fraction": 0.1458,
+    "apical_myosin_red_enrichment_ratio": 1.642,
+    "apical_front_advance_px": 21.0
+  }
+}

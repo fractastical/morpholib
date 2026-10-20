@@ -1,0 +1,164 @@
+# MorphoEval audit — Douady & Couder (1992, 1996) Magnetic-Drop Phyllotaxis, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `1992-douady-magnetic-drop-phyllotaxis.py` (v1, 316 lines) prior to
+# Step 12 remediation in `2026-10-19-magnetic-drop-phyllotaxis-loop`:
+#   - Primary assessor: Gemini 4 Argon (Cursor agent) — 55.6 / 100
+#   - Independent second assessor: Claude Sonnet 5.5 High — 48.2 / 100
+#   - Dual-agent consensus score: 51.9 / 100
+
+audit:
+  id: 2026-10-19-magnetic-drop-phyllotaxis-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second-assessor rubric)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `1992-douady-magnetic-drop-phyllotaxis.py` prior to
+      Step 12 remediation in `2026-10-19-magnetic-drop-phyllotaxis-loop`.
+
+references:
+  douady1992:
+    title: "Phyllotaxis as a physical self-organized growth process"
+    authors: "Douady S, Couder Y"
+    venue: "Physical Review Letters 68(13):2098-2101 (1992)"
+    doi: 10.1103/PhysRevLett.68.2098
+  douady1996a:
+    title: "Phyllotaxis as a dynamical self organizing process Part I: The spiral modes resulting from time-periodic iterations"
+    authors: "Douady S, Couder Y"
+    venue: "Journal of Theoretical Biology 178(3):255-274 (1996)"
+    doi: 10.1006/jtbi.1996.0024
+  douady1996b:
+    title: "Phyllotaxis as a dynamical self organizing process Part II: The spontaneous formation of a periodicity and the transitions between whorl and spiral modes"
+    authors: "Douady S, Couder Y"
+    venue: "Journal of Theoretical Biology 178(3):275-294 (1996)"
+    doi: 10.1006/jtbi.1996.0025
+  levitov1991:
+    title: "Energetic approach to phyllotaxis"
+    authors: "Levitov LS"
+    venue: "Europhysics Letters 14(6):533-539 (1991)"
+    doi: 10.1209/0295-5075/14/6/006
+
+simulations:
+  - id: douady-magnetic-drop-phyllotaxis
+    name: "Douady & Couder (1992, 1996) ferrofluid magnetic-drop iterative repulsive phyllotaxis"
+    organism: "Conifer seed cone (Pinus sp.) & Helianthus annuus phyllotactic primordia"
+    script: 1992-douady-magnetic-drop-phyllotaxis.py
+    output: docs/media/magnetic_drop_phyllotaxis_comparison.png
+    extra_outputs:
+      - docs/media/magnetic_drop_phyllotaxis_growth.gif
+    status: evaluated
+    source_refs:
+      - douady1992
+      - douady1996a
+      - douady1996b
+      - levitov1991
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `1992-douady-magnetic-drop-phyllotaxis.py` (51.9/100).
+      The v1 script implements iterative dipole repulsion minimization E(phi) = sum_k d_k^{-3}
+      under exponential radial advection r_k = exp(k*G) and simulates an adiabatic Fibonacci
+      ramp down to G=0.025 plus 4 fixed-G dishes. However, v1 omits Douady & Couder's (1992)
+      linear dish advection r_k = R_0(1 + k*G), omits the analytical pitchfork bifurcation
+      threshold G_{c,1} and exact regular-spiral zero-force equilibrium branches F(G, Delta_phi)=0,
+      omits the disconnected Lucas saddle-node branch (1,3)->(3,4)->(4,7) (Delta_phi -> 99.50 deg),
+      lacks negative/ablation controls (single-drop memory N_mem=1 or random placement), and
+      does not segment or analyze the vendored conifer cone specimen image
+      `datasets/magnetic_drop_phyllotaxis/conifer_cone_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Implements the iterative dipole repulsion potential E(phi) = sum_k d_k(phi, phi_{n-k})^{-3}
+          on the meristem rim (L38-88) and adiabatic Fibonacci ramp (L142-171). However, v1 only
+          implements exponential advection r_k = exp(k*G) without Douady & Couder's (1992) physical
+          silicone-oil dish linear advection r_k = 1 + k*G, does not solve the analytical
+          opposition-to-spiral pitchfork bifurcation condition, does not compute the exact
+          regular-spiral zero-force curves F(G, Delta_phi) = 0, and omits the disconnected
+          Lucas branch (1,3)->(3,4)->(4,7).
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [38, 88], note: "Exponential-only dipole energy minimization without linear advection or exact equilibrium branch solver", supports: false}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [142, 171], note: "Adiabatic ramp tracks only main Fibonacci branch without Lucas saddle-node branch", supports: false}
+      specimen-match:
+        value: 22
+        rationale: >-
+          Although `datasets/magnetic_drop_phyllotaxis/conifer_cone_specimen.jpg` is vendored in
+          the dataset directory, the v1 script never loads, displays, or segments the conifer cone
+          photograph (`docs/media/magnetic_drop_phyllotaxis_comparison.png` shows only 6 synthetic
+          plots).
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [174, 246], note: "6-panel figure renders only synthetic simulations with zero biological specimen image or segmentation", supports: false}
+          - {file: docs/media/magnetic_drop_phyllotaxis_comparison.png, lines: [0, 0], note: "Baseline 2x3 synthetic figure lacking conifer cone specimen comparison", supports: false}
+      parameter-expressivity:
+        value: 46
+        rationale: >-
+          Simulates 4 fixed-G values (0.92, 0.30, 0.14, 0.06) and an adiabatic ramp, but lacks
+          a universality sweep across dipole interaction exponents gamma in {1, 3, 5}, lacks
+          the Lucas branch initial-condition basin, lacks negative/ablation controls (such as
+          N_mem=1 memory truncation or zero-repulsion random placement), and exposes no CLI
+          parameters for G, gamma, or advection mode (L302-313).
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [177, 182], note: "Only 4 fixed-G Fibonacci points without Lucas basin, gamma sweep, or ablation controls", supports: false}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [302, 313], note: "CLI supports only --self-test and --skip-gif", supports: false}
+      morphometric-validation:
+        value: 44
+        rationale: >-
+          `measure_morphoeval()` (L275-291) returns only 2 scalar divergence angles (at G=0.06
+          and G=0.92) without Delaunay contact parastichy pair extraction (m, n), without
+          comparison to `magnetic_drop_phyllotaxis_reference.json` benchmark curves, without
+          goodness-of-fit statistics (Pearson r, RMSE, KS test), and without empirical conifer
+          cone parastichy measurements.
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [275, 291], note: "Only 2 scalar measurements in measure_morphoeval() with no Delaunay parastichy counts or statistical tests", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          `datasets/magnetic_drop_phyllotaxis/` contains `magnetic_drop_phyllotaxis_reference.json`,
+          `conifer_cone_specimen.jpg`, and `paper_citations.bib`, but the v1 script does not load
+          or verify the SHA-256 digests of the reference JSON or specimen image at runtime.
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [29, 36], note: "Defines REF_JSON path but never loads or verifies SHA-256 hashes at runtime", supports: false}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Module docstring cites Douady & Couder (1992), but individual functions lack equation
+          and figure mappings to Douady & Couder (1992) Eqs. 1-3 & Figs. 1-4, Douady & Couder
+          (1996) Part I Sec. 2-3, and `Loop_031_magnetic_drop_phyllotaxis.lean`.
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [38, 140], note: "Functions lack explicit paper equation/figure citations and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Deterministic execution and `--self-test` flag are present (L294-300), but `run_self_test()`
+          checks only 2 loose assertions without verifying pitchfork roots, Lucas branch convergence,
+          SHA-256 dataset locks, or bitwise repeatability.
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [294, 300], note: "Minimal 2-assertion self-test without SHA-256 lock or bifurcation verification", supports: false}
+    remediation:
+      - "Implement both linear dish advection r_k = R_0(1 + k*G) (Douady & Couder 1992 PRL Eq. 1) and exponential meristem advection r_k = R_0*exp(k*G), solve the exact analytical 2-drop and full-chain pitchfork bifurcation thresholds G_{c,1}, and verify the integer curvature discriminant C(4,7)=+27687 vs C(3,5)=-6144 proven in `Loop_031_magnetic_drop_phyllotaxis.lean`."
+      - "Compute the exact regular-spiral zero-force equilibrium branches F(G, Delta_phi) = 0 and Hessian stability S(G, Delta_phi) > 0 across the (G, Delta_phi) bifurcation diagram, and simulate both the main Fibonacci cascade (1,1)->(1,2)->(2,3)->(3,5)->(5,8)->(8,13) (Delta_phi -> 137.5078 deg) and the disconnected Lucas saddle-node branch (1,3)->(3,4)->(4,7)->(7,11) (Delta_phi -> 99.5016 deg)."
+      - "Add a dipole-exponent universality sweep across gamma in {1.0, 3.0, 5.0}, a single-drop memory ablation control (N_mem = 1, which eliminates the destabilizing k=2 repulsion and locks the system at Delta_phi = 180 deg for all G), and a zero-repulsion random placement control."
+      - "Load and SHA-256-verify `datasets/magnetic_drop_phyllotaxis/conifer_cone_specimen.jpg` and `magnetic_drop_phyllotaxis_reference.json`, segment the conifer cone scale umbos via DoG filtering, extract opposing Fibonacci (5, 8) parastichy wavevectors via log-polar (ln r, theta) 2D FFT, and expand `measure_morphoeval()` with Delaunay parastichy counts, Pearson r, RMSE, and KS goodness-of-fit statistics."

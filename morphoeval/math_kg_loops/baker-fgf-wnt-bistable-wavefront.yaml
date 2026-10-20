@@ -1,0 +1,108 @@
+sim_id: baker-fgf-wnt-bistable-wavefront
+math_family: Bistable Morphogen Wavefront Arrest (RA-FGF8/Wnt Mutual Antagonism & Saddle-Node Hysteresis)
+model_spec:
+  model: "Goldbeter, Gonze & Pourquie (2007) Dev. Cell / Baker, Schnell & Maini (2006) J. Theor. Biol. mutual cross-inhibition + CYP26A1 RA-degradation reaction-diffusion PDE system between anterior Retinoic Acid (R) and posterior FGF8/Wnt (F), saddle-node hysteresis S-curve [M_1, M_2], sharp determination front Delta_x_front << lambda_M, and VAD / exogenous RA / SU5402 somite perturbations"
+  governing_equations:
+    ra_pde: "dR/dt = D_R * d^2R/dx^2 + v_sc(x) - k_d1 * C(F) * R - k_d2 * R,  C(F) = V_c * F^m / (K_a^m + F^m)"
+    fgf_wnt_pde: "dF/dt = D_F * d^2F/dx^2 + k_s * M(x) * K_I^n / (K_I^n + R^n) - k_dF * F,  M(x) = M_0 * exp(-x / lambda_M)"
+    inverse_hysteresis_scurve: "M(F) = (k_dF * F / k_s) * (1 + (v_sc / (K_I * (k_d2 + k_d1 * C(F))))^n)"
+    bistable_somite_law: "S_n = v_g * T_c - Delta_x_front_n;  Delta_x_front << lambda_M"
+  canonical_parameters:
+    v_sc_nM_per_min: 0.25
+    k_d1_per_min: 1.0
+    k_d2_per_min: 0.1
+    k_s_per_min: 1.0
+    k_dF_per_min: 1.0
+    K_a_nM: 0.2
+    K_I_nM: 0.2
+    hill_n: 2
+    hill_m: 2
+    M1_nM: 1.0254
+    M2_nM: 3.3038
+    x_front_um: 571.61
+    S0_um: 150.0
+  inputs:
+    - datasets/fgf_wnt_bistable_wavefront/fgf_wnt_bistable_wavefront_reference.json
+    - datasets/fgf_wnt_bistable_wavefront/chick_ra_fgf_somites_specimen.jpg
+    - datasets/fgf_wnt_bistable_wavefront/scout_manifest.json
+equations:
+  - id: baker-fgf-wnt-bistable-wavefront-1
+    law_name: "Goldbeter, Gonze & Pourquie (2007) CYP26A1-Mediated RA Degradation Reaction-Diffusion Law"
+    title: "Goldbeter, Gonze & Pourquie (2007) CYP26A1-Mediated RA Degradation Reaction-Diffusion Law"
+    formula: "dR/dt = D_R * d^2R/dx^2 + v_sc(x) - k_d1 * C(F) * R - k_d2 * R,  R*(F) = v_sc / (k_d2 + k_d1 * C(F))"
+    latex: "\\frac{\\partial R}{\\partial t} = D_R \\frac{\\partial^2 R}{\\partial x^2} + v_{\\text{sc}}(x) - k_{d1} C(F) R - k_{d2} R, \\quad C(F) = \\frac{V_c F^m}{K_a^m + F^m}"
+    ascii: "dR/dt = D_R * d^2R/dx^2 + v_sc(x) - k_d1 * C(F) * R - k_d2 * R"
+    lean_decl: "MathOfBiology.Loop_025.ra_cyp26_kinetic_residual"
+    lean_theorem: "MathOfBiology.Loop_025.goldbeter_2007_ra_cyp26_steady_balance"
+    lean_file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L25-L53"
+    lean_code: |-
+      def ra_cyp26_kinetic_residual (v_sc k_d1 C_F k_d2 R : Int) : Int :=
+        v_sc - (k_d1 * C_F + k_d2) * R
+      theorem goldbeter_2007_ra_cyp26_steady_balance (k_d1 C_F delta_C k_d2 R : Int) :
+          ra_cyp26_kinetic_residual ((k_d1 * C_F + k_d2) * R) k_d1 C_F k_d2 R = 0 ∧
+          ra_cyp26_kinetic_residual ((k_d1 * C_F + k_d2) * R) k_d1 (C_F + delta_C) k_d2 R =
+            -(k_d1 * delta_C * R)
+    lean_declaration: |-
+      theorem goldbeter_2007_ra_cyp26_steady_balance (k_d1 C_F delta_C k_d2 R : Int) :
+          ra_cyp26_kinetic_residual ((k_d1 * C_F + k_d2) * R) k_d1 C_F k_d2 R = 0 ∧
+          ra_cyp26_kinetic_residual ((k_d1 * C_F + k_d2) * R) k_d1 (C_F + delta_C) k_d2 R =
+            -(k_d1 * delta_C * R)
+    variables: "R(x,t): anterior Retinoic Acid concentration (nM); F(x,t): posterior FGF8/Wnt signaling (nM); C(F): CYP26A1 Hill activation; v_sc: RALDH2 RA synthesis rate (nM/min); k_d1, k_d2: CYP26A1 and basal RA degradation rates (min^-1)"
+    role: "Couples posterior FGF8/Wnt signaling to CYP26A1-mediated enzymatic clearance of anterior Retinoic Acid in the presomitic mesoderm"
+    source_citation: "Goldbeter, Gonze & Pourquie (2007) Dev. Cell / Dev. Dyn. 236(6):1495-1508 Eqs. 1-4"
+    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L115-L215"
+  - id: baker-fgf-wnt-bistable-wavefront-2
+    law_name: "Goldbeter, Gonze & Pourquie (2007) Saddle-Node Bistable Hysteresis S-Curve Law"
+    title: "Goldbeter, Gonze & Pourquie (2007) Saddle-Node Bistable Hysteresis S-Curve Law"
+    formula: "M(F) = (k_dF * F / k_s) * (1 + (R*(F) / K_I)^n),  Delta_M = M_2 - M_1 > 0"
+    latex: "M(F) = \\frac{k_{dF} F}{k_s}\\left[1 + \\left(\\frac{R^*(F)}{K_I}\\right)^n\\right], \\quad \\Delta M_{\\text{bistable}} = M_2 - M_1 > 0"
+    ascii: "M(F) = (k_dF * F / k_s) * (1 + (R*(F) / K_I)^n), Delta_M = M_2 - M_1 > 0"
+    lean_decl: "MathOfBiology.Loop_025.hysteresis_window_width"
+    lean_theorem: "MathOfBiology.Loop_025.goldbeter_2007_hysteresis_window_width"
+    lean_file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L55-L78"
+    lean_code: |-
+      def hysteresis_window_width (M_1 M_2 : Nat) : Nat :=
+        M_2 - M_1
+      theorem goldbeter_2007_hysteresis_window_width (M_1 delta_M : Nat) (h : 0 < delta_M) :
+          hysteresis_window_width M_1 (M_1 + delta_M) = delta_M ∧
+          0 < hysteresis_window_width M_1 (M_1 + delta_M) ∧
+          hysteresis_window_width M_1 M_1 = 0
+    lean_declaration: |-
+      theorem goldbeter_2007_hysteresis_window_width (M_1 delta_M : Nat) (h : 0 < delta_M) :
+          hysteresis_window_width M_1 (M_1 + delta_M) = delta_M ∧
+          0 < hysteresis_window_width M_1 (M_1 + delta_M) ∧
+          hysteresis_window_width M_1 M_1 = 0
+    variables: "M(F): inverse steady-state fgf8 mRNA concentration as a function of FGF8 protein F; M_1, M_2: lower and upper saddle-node bifurcation thresholds (nM); K_I: Hill inhibition constant for RA repression of fgf8 translation"
+    role: "Establishes the bistable hysteresis loop [M_1, M_2] that converts a shallow exponential fgf8 mRNA gradient into an ultra-sharp all-or-none determination front switch (Delta_x_front << lambda_M)"
+    source_citation: "Goldbeter, Gonze & Pourquie (2007) Dev. Cell / Dev. Dyn. 236(6):1495-1508 Figs. 2-4"
+    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L220-L315"
+  - id: baker-fgf-wnt-bistable-wavefront-3
+    law_name: "Baker, Schnell & Maini (2006) / Goldbeter et al. (2007) Opposing RA-FGF Wavefront Shift & Somite Scaling Law"
+    title: "Baker, Schnell & Maini (2006) / Goldbeter et al. (2007) Opposing RA-FGF Wavefront Shift & Somite Scaling Law"
+    formula: "S_n = v_g * T_c - Delta_x_front_n;  S_vad + S_ra = 2 * v_g * T_c"
+    latex: "S_n = v_g T_c - \\Delta x_{\\text{front},n}, \\quad S_{\\text{VAD}}(+\\delta x) + S_{\\text{RA}}(-\\delta x) = 2 v_g T_c"
+    ascii: "S_n = v_g * T_c - Delta_x_front_n; S_vad + S_ra = 2 * v_g * T_c"
+    lean_decl: "MathOfBiology.Loop_025.bistable_somite_length"
+    lean_theorem: "MathOfBiology.Loop_025.baker_2006_ra_fgf_opposing_somite_shift"
+    lean_file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L80-L103"
+    lean_code: |-
+      def bistable_somite_length (v_g T_c delta_x : Int) : Int :=
+        v_g * T_c - delta_x
+      theorem baker_2006_ra_fgf_opposing_somite_shift (v_g T_c delta_x : Int) :
+          bistable_somite_length v_g T_c delta_x +
+            bistable_somite_length v_g T_c (-delta_x) = 2 * (v_g * T_c) ∧
+          bistable_somite_length v_g T_c (-delta_x) -
+            bistable_somite_length v_g T_c delta_x = 2 * delta_x
+    lean_declaration: |-
+      theorem baker_2006_ra_fgf_opposing_somite_shift (v_g T_c delta_x : Int) :
+          bistable_somite_length v_g T_c delta_x +
+            bistable_somite_length v_g T_c (-delta_x) = 2 * (v_g * T_c) ∧
+          bistable_somite_length v_g T_c (-delta_x) -
+            bistable_somite_length v_g T_c delta_x = 2 * delta_x
+    variables: "S_n: anteroposterior somite length (um); v_g: posterior tailbud elongation velocity (um/min); T_c: segmentation clock period (min); delta_x: determination front shift induced by VAD / exogenous RA / SU5402 / FGF8 bead (um)"
+    role: "Predicts compressed somites when the bistable front shifts anteriorly under Vitamin A Deficiency (VAD) or ectopic FGF8 beads, and enlarged somites when the front shifts posteriorly under exogenous RA or SU5402"
+    source_citation: "Baker, Schnell & Maini (2006) J. Theor. Biol. 239:413-429 & Goldbeter et al. (2007) Dev. Dyn. 236:1495-1508 Figs. 5-7"
+    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L320-L435"

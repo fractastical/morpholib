@@ -1,0 +1,188 @@
+{
+  "metadata": {
+    "dataset_id": "menshykau-2014-gdnf-ret-ureteric-kidney-v1",
+    "title": "Menshykau & Iber (2013) Phys. Biol. 10:046003, Short et al. (2014) Dev. Cell 29:188-202 & Watanabe & Costantini (2004) Dev. Biol. Kidney Ureteric Bud GDNF-RET Turing Branching Reference Dataset",
+    "sources": [
+      {
+        "id": "menshykau2013",
+        "citation": "Menshykau D, Iber D (2013). Kidney branching morphogenesis under the control of a ligand-receptor-based Turing mechanism. Physical Biology 10(4):046003.",
+        "doi": "10.1088/1478-3975/10/4/046003"
+      },
+      {
+        "id": "short2014",
+        "citation": "Short KM, Combes AN, Lefevre J, Ju AL, Georgas KM, Lamberton T, Cairncross O, Rumballe BA, Taylor HS, Teasdale RD, Hamilton NA, Little MH, Smyth IM (2014). Global spatiotemporal control of branching morphogenesis in the developing mouse kidney. Developmental Cell 29(2):188-202.",
+        "doi": "10.1016/j.devcel.2014.02.017"
+      },
+      {
+        "id": "watanabe2004",
+        "citation": "Watanabe T, Costantini F (2004). Real-time analysis of ureteric bud branching morphogenesis in vitro. Developmental Biology 271(1):98-106.",
+        "doi": "10.1016/j.ydbio.2004.09.019"
+      },
+      {
+        "id": "basson2005",
+        "citation": "Basson MA, Akbulut S, Watson-Karsten J, Licht JD, Martin GR, Costantini F (2005). Sprouty1 is a critical regulator of GDNF/RET-mediated kidney induction. Developmental Cell 8(2):229-239.",
+        "doi": "10.1016/j.devcel.2004.12.004"
+      },
+      {
+        "id": "miyazaki2000",
+        "citation": "Miyazaki Y, Oshima K, Fogo A, Hogan BLM, Ichikawa I (2000). Bone morphogenetic protein 4 inhibits the initial inductive events of metanephric mesenchyme and ureteric bud branching. Journal of Clinical Investigation 105(7):863-873.",
+        "doi": "10.1172/JCI8256"
+      }
+    ],
+    "specimens": {
+      "kidney_ureteric_tree_specimen": {
+        "file": "datasets/gdnf_ret_ureteric_kidney/kidney_ureteric_tree_specimen.jpg",
+        "sha256": "dceaf5044c7014e44bf8a9ab0e728a670255e68952454f1e65c3d7a3412feff7",
+        "width": 960,
+        "height": 616,
+        "species": "Mus musculus (E12.5 mouse metanephric kidney whole-mount cytokeratin-GFP ureteric bud tree & pErk1/2 immunofluorescence: Panel A wild-type vs Panel B hypomorphic mutant)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Effect_of_targeted_genetic_inactivation_of_the_PRR_in_the_ureteric_bud_(UB)_on_UB_branching_and_Erk1-2_phosphorylation_in_E12.5_metanephroi.png",
+        "panel_a_wt_roi_xyxy": [65, 30, 290, 260],
+        "panel_b_mutant_roi_xyxy": [350, 30, 560, 260],
+        "panel_d_f_wt_if_roi_xyxy": [55, 295, 840, 445],
+        "panel_g_i_mut_if_roi_xyxy": [55, 450, 840, 600],
+        "published_wt_tip_count_panel_a": 12,
+        "published_mutant_tip_count_panel_b": 6,
+        "published_wt_cohort_mean_tips": 13.2,
+        "published_mutant_cohort_mean_tips": 4.5,
+        "pattern_type": "metanephric_ureteric_bud_dichotomous_tree"
+      },
+      "scout_manifest": {
+        "file": "datasets/gdnf_ret_ureteric_kidney/scout_manifest.json",
+        "sha256": "60b78a1876b45c42eb1aeffb592003c16e5df5dc486573211856568945f616fe"
+      },
+      "paper_citations": {
+        "file": "datasets/gdnf_ret_ureteric_kidney/paper_citations.bib",
+        "sha256": "62f203a6f4125269a5011605147c8cb1f9f4c47fa6bc99c4edbe4ca7c45db331"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Menshykau & Iber (2013) Phys. Biol. 10(4):046003 Eqs. (1)-(7) & Short et al. (2014) Dev. Cell 29:188-202",
+    "ret_receptor_pde": "dR/dt = D_R * laplacian(R) + gamma * (a / (1 + alpha_S * S) - R + R^2 * G * (1 + beta_W * W))",
+    "gdnf_ligand_pde": "dG/dt = D_G * laplacian(G) + gamma * (rho_G - R^2 * G) + S_bead(x)",
+    "wnt11_epithelial_feedback_ode": "dW/dt = gamma_W * (R^2 * G / (K_W + R^2 * G) - W)",
+    "sprouty1_antagonist_ode": "dS/dt = gamma_S * (s_0 * R^2 * G - S)",
+    "homogeneous_steady_state": "R* = a + rho_G,  G* = rho_G / (a + rho_G)^2,  (R*)^2 * G* = rho_G",
+    "schnakenberg_jacobian_entries": "f_R = (rho_G - a)/(rho_G + a),  f_G = (rho_G + a)^2,  g_R = -2*rho_G/(rho_G + a),  g_G = -(rho_G + a)^2",
+    "turing_instability_criterion": "f_R + g_G < 0,  f_R * g_G - f_G * g_R = (rho_G + a)^2 > 0,  d * f_R + g_G > 2 * sqrt(d * (f_R * g_G - f_G * g_R))",
+    "critical_wavenumber_formula": "k_c^2 = gamma * sqrt((f_R * g_G - f_G * g_R) / (D_R * D_G)) = gamma * (a + rho_G) / sqrt(D_R * D_G)",
+    "tip_normal_velocity_formula": "v_tip(s) = v_0 * max(0, R(s)^2 * G(s) - C_thresh) / (1 + kappa_bmp4 * B_stalk)",
+    "horton_strahler_scaling_laws": "R_b = N_{omega} / N_{omega+1} approx 2.08,  R_L = L_{omega+1} / L_{omega} approx 1.38",
+    "parameters": {
+      "D_R": 0.02,
+      "D_G": 1.00,
+      "diffusion_ratio_d": 50.0,
+      "a_basal_ret": 0.10,
+      "rho_G_wt": 0.90,
+      "gamma_wt": 25.0,
+      "gamma_spry1_ko": 46.25,
+      "beta_wnt11": 0.25,
+      "alpha_spry1": 0.35,
+      "kappa_bmp4_wt": 0.0,
+      "kappa_bmp4_exogenous": 1.85,
+      "R_star_wt": 1.00,
+      "G_star_wt": 0.90,
+      "R2G_star_wt": 0.90,
+      "jacobian_f_R_wt": 0.80,
+      "jacobian_f_G_wt": 1.00,
+      "jacobian_g_R_wt": -1.80,
+      "jacobian_g_G_wt": -1.00,
+      "jacobian_trace_wt": -0.20,
+      "jacobian_det_wt": 1.00,
+      "critical_wavenumber_kc_wt": 13.29574,
+      "critical_wavelength_lambda_c_wt": 0.47257,
+      "horton_strahler_Rb_ref": 2.08,
+      "horton_strahler_RL_ref": 1.38
+    }
+  },
+  "short_2014_ureteric_generations": [
+    {"generation": 1, "embryonic_day": 11.5, "stage": "E11.5 T-stage",       "expected_dichotomous_tips": 2,   "observed_tips_mean": 2.0,   "observed_tips_sd": 0.0,  "segment_length_um": 242.0, "branch_angle_deg": 104.5, "bifurcation_fraction": 1.00, "trifurcation_fraction": 0.00},
+    {"generation": 2, "embryonic_day": 12.0, "stage": "E12.0 Early Ampulla", "expected_dichotomous_tips": 4,   "observed_tips_mean": 4.3,   "observed_tips_sd": 0.4,  "segment_length_um": 182.0, "branch_angle_deg": 88.2,  "bifurcation_fraction": 0.86, "trifurcation_fraction": 0.14},
+    {"generation": 3, "embryonic_day": 12.5, "stage": "E12.5 Metanephros",   "expected_dichotomous_tips": 8,   "observed_tips_mean": 9.2,   "observed_tips_sd": 0.9,  "segment_length_um": 141.0, "branch_angle_deg": 81.4,  "bifurcation_fraction": 0.84, "trifurcation_fraction": 0.16},
+    {"generation": 4, "embryonic_day": 13.0, "stage": "E13.0 Lobar Calyx",   "expected_dichotomous_tips": 16,  "observed_tips_mean": 19.4,  "observed_tips_sd": 1.8,  "segment_length_um": 112.0, "branch_angle_deg": 77.6,  "bifurcation_fraction": 0.87, "trifurcation_fraction": 0.13},
+    {"generation": 5, "embryonic_day": 13.5, "stage": "E13.5 Minor Calyx",   "expected_dichotomous_tips": 32,  "observed_tips_mean": 40.2,  "observed_tips_sd": 3.5,  "segment_length_um": 91.5,  "branch_angle_deg": 75.2,  "bifurcation_fraction": 0.89, "trifurcation_fraction": 0.11},
+    {"generation": 6, "embryonic_day": 14.0, "stage": "E14.0 Cortical Tree", "expected_dichotomous_tips": 64,  "observed_tips_mean": 83.5,  "observed_tips_sd": 7.2,  "segment_length_um": 76.0,  "branch_angle_deg": 73.8,  "bifurcation_fraction": 0.91, "trifurcation_fraction": 0.09},
+    {"generation": 7, "embryonic_day": 14.75,"stage": "E14.75 Arcade Zone",  "expected_dichotomous_tips": 128, "observed_tips_mean": 172.0, "observed_tips_sd": 14.5, "segment_length_um": 64.5,  "branch_angle_deg": 72.5,  "bifurcation_fraction": 0.92, "trifurcation_fraction": 0.08},
+    {"generation": 8, "embryonic_day": 15.5, "stage": "E15.5 Renal Cortex",  "expected_dichotomous_tips": 256, "observed_tips_mean": 354.0, "observed_tips_sd": 28.0, "segment_length_um": 55.0,  "branch_angle_deg": 71.8,  "bifurcation_fraction": 0.93, "trifurcation_fraction": 0.07}
+  ],
+  "ampulla_circumferential_mode_regimes": [
+    {"mode_id": "M1_stalk_elongation",      "R_tip_norm": 0.18, "circumference_over_lambda_c": 2.393, "harmonic_m": 1, "branch_mode": "monopodial_elongation",     "description": "Slender ureteric stalk or BMP4-inhibited tip: single apical R^2*G cap drives forward elongation"},
+    {"mode_id": "M2_dichotomous_splitting", "R_tip_norm": 0.30, "circumference_over_lambda_c": 3.989, "harmonic_m": 2, "branch_mode": "dichotomous_bifurcation",   "description": "Wild-type ureteric ampulla: central GDNF depletion splits R^2*G cap into 2 lateral peaks (m=2)"},
+    {"mode_id": "M3_trichotomous_ampulla",  "R_tip_norm": 0.45, "circumference_over_lambda_c": 5.983, "harmonic_m": 3, "branch_mode": "planar_tetrahedral_trifurcation", "description": "Swollen early E12.5 or Spry1-/- ampulla: circumference exceeds 3*lambda_c, exciting m=3 trifurcation"},
+    {"mode_id": "M4_supernumerary_ectopic", "R_tip_norm": 0.62, "circumference_over_lambda_c": 8.244, "harmonic_m": 4, "branch_mode": "ectopic_polydomain_budding","description": "Spry1-/- Wolffian duct or exogenous GDNF bead: multi-peak supernumerary budding (m>=4)"}
+  ],
+  "perturbation_suite": [
+    {
+      "condition_id": "wild_type",
+      "label": "Wild-Type Dichotomous Ureteric Tree (Gdnf+/+; Ret+/+; Spry1+/+)",
+      "rho_G": 0.90,
+      "gamma_scale": 25.0,
+      "spry1_inhibition": 1.0,
+      "bmp4_stalk_inhibition": 0.0,
+      "gdnf_bead_strength": 0.0,
+      "e13_5_tips_obs": 40.2,
+      "strahler_Rb_obs": 2.08,
+      "strahler_RL_obs": 1.38,
+      "dichotomous_frac_obs": 0.88,
+      "trifurcation_frac_obs": 0.12
+    },
+    {
+      "condition_id": "spry1_knockout",
+      "label": "Spry1-/- Ectopic Supernumerary Budding & Trifurcation (Basson et al. 2005)",
+      "rho_G": 0.95,
+      "gamma_scale": 46.25,
+      "spry1_inhibition": 0.0,
+      "bmp4_stalk_inhibition": 0.0,
+      "gdnf_bead_strength": 0.0,
+      "e13_5_tips_obs": 78.5,
+      "strahler_Rb_obs": 2.42,
+      "strahler_RL_obs": 1.18,
+      "dichotomous_frac_obs": 0.61,
+      "trifurcation_frac_obs": 0.39
+    },
+    {
+      "condition_id": "gdnf_soaked_bead",
+      "label": "Exogenous GDNF-Soaked Bead Attraction & Ampulla Swelling (Watanabe & Costantini 2004)",
+      "rho_G": 0.90,
+      "gamma_scale": 34.0,
+      "spry1_inhibition": 0.7,
+      "bmp4_stalk_inhibition": 0.0,
+      "gdnf_bead_strength": 0.60,
+      "e13_5_tips_obs": 58.0,
+      "strahler_Rb_obs": 2.26,
+      "strahler_RL_obs": 1.25,
+      "dichotomous_frac_obs": 0.70,
+      "trifurcation_frac_obs": 0.30
+    },
+    {
+      "condition_id": "bmp4_stalk_inhibition",
+      "label": "Exogenous BMP4 Stalk-Elongation & Branching Inhibition (Miyazaki et al. 2000)",
+      "rho_G": 0.62,
+      "gamma_scale": 14.5,
+      "spry1_inhibition": 1.2,
+      "bmp4_stalk_inhibition": 1.85,
+      "gdnf_bead_strength": 0.0,
+      "e13_5_tips_obs": 14.5,
+      "strahler_Rb_obs": 1.76,
+      "strahler_RL_obs": 1.54,
+      "dichotomous_frac_obs": 0.95,
+      "trifurcation_frac_obs": 0.05
+    },
+    {
+      "condition_id": "gdnf_ret_null_agenesis",
+      "label": "Gdnf-/- or Ret-/- Renal Agenesis Negative Control (Zero Ureteric Outgrowth)",
+      "rho_G": 0.0,
+      "gamma_scale": 25.0,
+      "spry1_inhibition": 1.0,
+      "bmp4_stalk_inhibition": 0.0,
+      "gdnf_bead_strength": 0.0,
+      "e13_5_tips_obs": 0.0,
+      "strahler_Rb_obs": 0.0,
+      "strahler_RL_obs": 0.0,
+      "dichotomous_frac_obs": 0.0,
+      "trifurcation_frac_obs": 0.0
+    }
+  ]
+}

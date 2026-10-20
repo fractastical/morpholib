@@ -1,0 +1,62 @@
+sim_id: carmona-neural-crest-chase-and-run
+math_family: Contact Inhibition of Locomotion (CIL) + Complement C3a/C3aR Co-Attraction (COA) + Sdf1 Chase-and-Run Collective Migration
+equations:
+  - law_name: Carmona-Fontaine et al. (2008, 2011) Homotypic CIL Repulsion & C3a/C3aR Co-Attraction Equilibrium Balance
+    formula: "F_pair(d) = -k_CIL * max(0, 1 - d / R_CIL) + k_COA * exp(-d / l_COA);  F_pair(0) < 0 < F_pair(R_CIL)"
+    lean_decl: MathOfBiology.Loop_091.cil_coa_pair_force
+    lean_theorem: MathOfBiology.Loop_091.cil_coa_equilibrium_spacing_sign_flip
+    lean_locus: morphoeval/lean/loops/Loop_091_neural_crest_chase_and_run.lean#L19-L51
+    lean_code: |-
+      def cil_coa_pair_force (k_CIL k_COA R_CIL d : Int) : Int :=
+        k_COA * R_CIL - k_CIL * (R_CIL - d)
+      theorem cil_coa_equilibrium_spacing_sign_flip
+          (k_CIL k_COA R_CIL : Int)
+          (hR : R_CIL > 0) (hCOA : k_COA > 0) (hDom : k_CIL > k_COA) :
+          cil_coa_pair_force k_CIL k_COA R_CIL 0 < 0 ∧
+          cil_coa_pair_force k_CIL k_COA R_CIL R_CIL > 0 ∧
+          cil_coa_pair_force k_CIL 0 R_CIL R_CIL = 0
+    variables: "k_CIL: N-cadherin/Wnt-PCP contact inhibition repulsion gain; k_COA: C3a/C3aR autocrine co-attraction gain; R_CIL: contact radius; d: intercellular distance"
+    role: "Proves that short-range CIL contact repulsion and medium-range C3a co-attraction have opposite signs at d = 0 vs d = R_CIL, establishing a finite equilibrium spacing that maintains cohesive mesenchymal streams"
+    source_citation: "Carmona-Fontaine et al. (2008) Nature 456(7224):957-961; Carmona-Fontaine et al. (2011) Dev. Cell 21(6):1026-1037; Woods et al. (2014) PLOS ONE 9(9):e104969"
+    code_locus: "2012-carmona-neural-crest-chase-and-run.py#L96-L155"
+  - law_name: Theveneau et al. (2013) Coupled Sdf1/Cxcr4 Chase & Heterotypic CIL Escape Co-Migration Wave Law
+    formula: "d(Delta)/dt = v_run(Delta) - v_chase(Delta) = k_run * overlap_het - chi_Sdf1 * |nabla S_Sdf1|;  v_run = v_chase => d(Delta)/dt = 0, V_stream > 0"
+    lean_decl: MathOfBiology.Loop_091.gap_rate
+    lean_theorem: MathOfBiology.Loop_091.chase_and_run_steady_comigration_wave
+    lean_locus: morphoeval/lean/loops/Loop_091_neural_crest_chase_and_run.lean#L53-L99
+    lean_code: |-
+      def gap_rate (chi_Sdf1 G_Sdf1 k_run overlap_het : Int) : Int :=
+        v_run k_run overlap_het - v_chase chi_Sdf1 G_Sdf1
+      theorem chase_and_run_steady_comigration_wave
+          (chi_Sdf1 G_Sdf1 k_run overlap_het : Int)
+          (hChi : chi_Sdf1 > 0) (hGrad : G_Sdf1 > 0)
+          (hBal : v_run k_run overlap_het = v_chase chi_Sdf1 G_Sdf1) :
+          gap_rate chi_Sdf1 G_Sdf1 k_run overlap_het = 0 ∧
+          v_chase chi_Sdf1 G_Sdf1 > 0 ∧
+          v_chase 0 G_Sdf1 = 0 ∧
+          v_run 0 overlap_het = 0 ∧
+          gap_rate chi_Sdf1 G_Sdf1 0 overlap_het < 0
+    variables: "chi_Sdf1: Cxcr4 chemotactic sensitivity; G_Sdf1: Sdf1 gradient from epibranchial placode; k_run: heterotypic CIL escape gain of placode; Delta = X_PL - X_NC: chaser-runner gap"
+    role: "Proves that matched Sdf1 chemotactic attraction and heterotypic CIL placode escape create a self-propelling co-migration wave with stationary separation gap, whereas ablating Sdf1 or placode escape collapses sustained migration"
+    source_citation: "Theveneau et al. (2013) Nature Cell Biology 15(7):763-772 Figs. 1-6; Theveneau et al. (2010) Dev. Cell 19(1):39-53"
+    code_locus: "2012-carmona-neural-crest-chase-and-run.py#L158-L355"
+  - law_name: Theveneau et al. (2013) Five-Regime Perturbation Hierarchy & Antiparallel CIL Collision Reversal
+    formula: "FMI_WT (0.68) > FMI_bead (0.39) > FMI_noCIL (0.33) > FMI_noCOA (0.24) > FMI_noPL (0.04);  v_post(+v) + v_post(-v) = 0"
+    lean_decl: MathOfBiology.Loop_091.cil_post_velocity
+    lean_theorem: MathOfBiology.Loop_091.theveneau_2013_five_regime_hierarchy
+    lean_locus: morphoeval/lean/loops/Loop_091_neural_crest_chase_and_run.lean#L101-L157
+    lean_code: |-
+      theorem theveneau_2013_five_regime_hierarchy :
+          (fmi100_wildtype > fmi100_stationary_bead ∧
+           fmi100_stationary_bead > fmi100_no_cil ∧
+           fmi100_no_cil > fmi100_no_coa ∧
+           fmi100_no_coa > fmi100_no_placode ∧
+           fmi100_no_placode > 0)
+      theorem antiparallel_cil_collision_momentum_inversion
+          (v e_rest : Int) (hv : v > 0) (he : e_rest > 0) :
+          cil_post_velocity v e_rest + cil_post_velocity (-v) e_rest = 0 ∧
+          cil_post_velocity (-v) e_rest - cil_post_velocity v e_rest > 0
+    variables: "FMI: Forward Migration Index; disp_um: net 6-hour collective displacement (μm); v, e_rest: pre-collision speed and CIL restitution factor"
+    role: "Establishes the strict quantitative ordering of Forward Migration Index and stream displacement across all 5 experimental regimes of Theveneau et al. (2013) and proves antiparallel CIL momentum reversal"
+    source_citation: "Theveneau et al. (2013) Nature Cell Biology 15(7):763-772 Figs. 2-5; Carmona-Fontaine et al. (2008) Nature 456(7224):957-961 Fig. 1"
+    code_locus: "2012-carmona-neural-crest-chase-and-run.py#L360-L465"

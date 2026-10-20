@@ -1,0 +1,49 @@
+sim_id: steinberg-differential-adhesion-sorting
+math_family: Differential Adhesion Cellular Potts Sorting (Steinberg DAH & Glazier-Graner-Hogeweg Hamiltonian)
+equations:
+  - law_name: Steinberg (1963) Differential Adhesion Interfacial Tension & Equal-Adhesion Null Identity
+    formula: "γ_{AB} = J_{AB} - (J_{AA} + J_{BB})/2,  γ_{τM} = J_{τM} - J_{ττ}/2;  J_{AA} = J_{BB} = J_{AB} ⇒ γ_{AB} = 0"
+    lean_decl: MathOfBiology.Loop_041.two_gamma_AB
+    lean_theorem: MathOfBiology.Loop_041.steinberg_equal_adhesion_zero_tension
+    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L18-L45
+    lean_code: |-
+      def two_gamma_AB (J_AA J_BB J_AB : Int) : Int :=
+        2 * J_AB - (J_AA + J_BB)
+      theorem steinberg_equal_adhesion_zero_tension (J J_M : Int) :
+          two_gamma_AB J J J = 0 ∧ two_spreading_diff J J J_M J_M = 0
+    variables: "J_{AA}, J_{BB}, J_{AB}: homotypic and heterotypic Potts bond energies; J_{AM}, J_{BM}: cell-medium bond energies; γ_{AB}: heterotypic interfacial tension"
+    role: "Defines effective tissue interfacial tensions from microscopic Potts bond energies and proves that equal adhesion eliminates the sorting driving force"
+    source_citation: "Steinberg (1963) Science 141(3579):401-408; Graner & Glazier (1992) Phys. Rev. Lett. 69(13):2013-2016 Eqs. (2)-(3)"
+    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L97-L143"
+  - law_name: Graner & Glazier (1992) Four Thermodynamic Phase Inequalities (Checkerboard, Complete Engulfment, Partial Engulfment, Dissociation)
+    formula: "Checkerboard: γ_{AB} < 0;  Complete engulfment: 0 < γ_{AB} < γ_{BM} - γ_{AM};  Partial engulfment: γ_{AB} > γ_{BM} - γ_{AM} > 0;  Dissociation: γ_{AM} < 0"
+    lean_decl: MathOfBiology.Loop_041.two_spreading_diff
+    lean_theorem: MathOfBiology.Loop_041.graner_glazier_1992_complete_engulfment_inequalities
+    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L47-L71
+    lean_code: |-
+      theorem graner_glazier_1992_complete_engulfment_inequalities :
+          two_gamma_AB 14 2 11 = 6 ∧
+          two_spreading_diff 14 2 16 16 = 12 ∧
+          (0 < two_gamma_AB 14 2 11 ∧ two_gamma_AB 14 2 11 < two_spreading_diff 14 2 16 16) ∧
+          two_gamma_AB 14 14 4 < 0 ∧
+          two_gamma_AB 14 2 16 > two_spreading_diff 14 2 16 16 ∧
+          two_gamma_M 14 2 < 0
+    variables: "γ_{AB}: heterotypic interfacial tension; γ_{AM}, γ_{BM}: tissue-medium surface tensions for outer shell A and inner core B"
+    role: "Partitions adhesion parameter space into checkerboard mixing, concentric complete engulfment sorting, partial engulfment lens doublets, and cell dissociation"
+    source_citation: "Graner & Glazier (1992) Phys. Rev. Lett. 69(13):2013-2016 p. 2014; Glazier & Graner (1993) Phys. Rev. E 47(3):2128-2154 Table I"
+    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L244-L482"
+  - law_name: Foty & Steinberg (1996) Chick Embryo Surface Tension Transitive Envelopment Hierarchy & Potts Hamiltonian
+    formula: "H = ∑ J(τ(σ), τ(σ'))(1 - δ_{σ,σ'}) + λ ∑_{σ>0}(a_σ - A_0)^2;  σ_limb (20.1) > σ_pigment (12.6) > σ_heart (8.5) > σ_liver (4.6) > σ_retina (1.6) dyn/cm"
+    lean_decl: MathOfBiology.Loop_041.potts_area_energy
+    lean_theorem: MathOfBiology.Loop_041.foty_1996_transitive_envelopment_hierarchy
+    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L73-L115
+    lean_code: |-
+      theorem foty_1996_transitive_envelopment_hierarchy (sA sB sC : Int)
+          (hAB : sB > sA) (hBC : sC > sB) :
+          (sC > sA) ∧ ((sC - sA) = (sC - sB) + (sB - sA))
+      theorem potts_area_energy_equilibrium_zero (lam A0 : Int) :
+          potts_area_energy lam A0 A0 = 0
+    variables: "H: Cellular Potts Hamiltonian; σ_{i,j}: cell spin ID; a_σ: cell area; A_0: target area; σ_tissue: equilibrium tissue surface tension (dyn/cm)"
+    role: "Governs stochastic Metropolis Monte Carlo cell sorting and proves transitive mutual envelopment across all 5 embryonic Gallus gallus tissues"
+    source_citation: "Foty, Pfleger, Forgacs & Steinberg (1996) Development 122(5):1611-1620 Table 1 & Fig. 4"
+    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L589-L627"

@@ -1,0 +1,73 @@
+sim_id: haupaix-avian-plumage-somite-stripes
+math_family: Somite-Prepatterned Stripe Spacing
+model_spec:
+  model: "Haupaix et al. (2018) Science & Inaba et al. (2019) Science somite-derived dermal Agouti (Asip) prepattern coupled with Connexin40/melanocyte reaction-diffusion PDE governing longitudinal avian plumage stripe orientation and width"
+  D_u: 0.12
+  D_v: 2.40
+  d_ratio: 20.0
+  alpha_u: 0.55
+  alpha_v: 0.70
+  gamma_u: 0.32
+  gamma_v: 0.45
+  beta_A: 0.22
+  theta_A: 0.50
+  seed: 2018
+  inputs:
+    - datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json
+    - datasets/avian_plumage_somite_stripes/galliform_chick_stripes_specimen.jpg
+    - datasets/avian_plumage_somite_stripes/scout_manifest.json
+equations:
+  - law_name: "Somite-Specified Dorsoventral Stripe Period Partition & Exogenous Agouti Bead Reciprocity"
+    formula: "w_{\\text{yellow}} + w_{\\text{black}} = \\Lambda_{\\text{somite}}; \\quad w_{\\text{black}}(\\Lambda, w_y + \\Delta_{\\text{bead}}) = w_{\\text{black}}(\\Lambda, w_y) - \\Delta_{\\text{bead}}"
+    lean_decl: "MathOfBiology.Loop_010.black_stripe_width"
+    lean_theorem: "MathOfBiology.Loop_010.somite_stripe_period_conservation_and_agouti_bead_expansion"
+    lean_locus: "morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean#L19-L46"
+    lean_code: |
+      def black_stripe_width (Lambda w_y : Int) : Int := Lambda - w_y
+      theorem somite_stripe_period_conservation_and_agouti_bead_expansion
+          (Lambda w_y delta_bead : Int)
+          (hw : 0 ≤ w_y) (hbead : delta_bead > 0) (hcap : w_y + delta_bead ≤ Lambda) :
+          w_y + black_stripe_width Lambda w_y = Lambda ∧
+          (w_y + delta_bead) + black_stripe_width Lambda (w_y + delta_bead) = Lambda ∧
+          w_y + delta_bead > 0 ∧
+          black_stripe_width Lambda (w_y + delta_bead) ≥ 0 ∧
+          black_stripe_width Lambda (w_y + delta_bead) < black_stripe_width Lambda w_y ∧
+          black_stripe_width Lambda (w_y + delta_bead) = black_stripe_width Lambda w_y - delta_bead := by
+        unfold black_stripe_width; omega
+    variables: "Lambda: somite-specified dorsoventral stripe period (μm); w_y: Agouti-positive yellow pheomelanin stripe width; delta_bead: exogenous Agouti protein bead expansion"
+    role: "Proves conservation of the somite-specified dorsoventral stripe period and exact reciprocal narrowing of adjacent black eumelanin bands upon exogenous Agouti bead implantation"
+    source_citation: "Haupaix et al. (2018) Science 361(6408):eaar4777 Figs. 1 & 4"
+    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L115-L260"
+  - law_name: "Heterospecific Somite-to-Dermis Chimera Donor Autonomy Law"
+    formula: "W_{\\text{chimera}} = \\alpha_{\\text{donor}} w_{\\text{donor}} + (1 - \\alpha_{\\text{donor}}) w_{\\text{host}}; \\quad w_{\\text{donor}} > w_{\\text{host}} \\implies W_{\\text{chimera}} > w_{\\text{host}}"
+    lean_decl: "MathOfBiology.Loop_010.chimera_agouti_width_scaled"
+    lean_theorem: "MathOfBiology.Loop_010.interspecific_somite_graft_donor_autonomy"
+    lean_locus: "morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean#L53-L76"
+    lean_code: |
+      def chimera_agouti_width_scaled (alpha_pct w_donor w_host : Int) : Int :=
+        alpha_pct * w_donor + (100 - alpha_pct) * w_host
+      theorem interspecific_somite_graft_donor_autonomy
+          (w_donor w_host : Int) (h_diff : w_donor > w_host) :
+          chimera_agouti_width_scaled 100 w_donor w_host = 100 * w_donor ∧
+          chimera_agouti_width_scaled 94 w_donor w_host > 100 * w_host ∧
+          chimera_agouti_width_scaled 94 w_host w_donor < 100 * w_donor := by
+        unfold chimera_agouti_width_scaled; omega
+    variables: "alpha_pct: percentage donor somite autonomy in chimeric dermis (≈94% in galliform chimeras); w_donor, w_host: donor and host species Agouti stripe widths"
+    role: "Proves that heterospecific somite grafting between quail, pheasant, and guineafowl autonomously shifts host dermal Agouti stripe width toward the somite donor species"
+    source_citation: "Haupaix et al. (2018) Science 361(6408):eaar4777 Fig. 3"
+    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L265-L345"
+  - law_name: "Agouti-MC1R Threshold Fate Switch & Connexin40 Melanocyte Reaction-Diffusion Instability"
+    formula: "F_{\\text{pigment}}(A) = \\mathbb{I}(A \\ge \\theta_A); \\quad \\partial_t u = D_u \\nabla^2 u + f(u,v) + \\beta_A S_{\\text{somite}}(y), \\; \\partial_t v = D_v \\nabla^2 v + g(u,v)"
+    lean_decl: "MathOfBiology.Loop_010.mc1r_pigment_fate"
+    lean_theorem: "MathOfBiology.Loop_010.agouti_mc1r_switch_and_cx40_turing_instability"
+    lean_locus: "morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean#L83-L116"
+    lean_code: |
+      def mc1r_pigment_fate (A theta_A : Nat) : Nat := if A ≥ theta_A then 1 else 0
+      theorem agouti_mc1r_switch_and_cx40_turing_instability :
+          mc1r_pigment_fate 75 50 = 1 ∧ mc1r_pigment_fate 0 50 = 0 ∧
+          turing_trace 5 (-7) < 0 ∧ turing_det 5 (-7) (-8) 6 > 0 ∧
+          turing_cross_term 5 (-7) 1 < 0 ∧ turing_cross_term 5 (-7) 20 > 0 := by decide
+    variables: "A: dermal Agouti concentration; theta_A: MC1R antagonism threshold; u, v: melanocyte gap-junction activator and long-range inhibitor; d_ratio = D_v/D_u"
+    role: "Proves that Agouti threshold antagonism switches melanocytes from black eumelanin (0) to yellow pheomelanin (1) while differential diffusivity (d=20 vs d=1) amplifies periodic stripes aligned to the somite prepattern"
+    source_citation: "Haupaix et al. (2018) Science 361:eaar4777 Fig. 4; Inaba et al. (2019) Science 363:eaaw1969 Figs. 2-4"
+    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L140-L255"

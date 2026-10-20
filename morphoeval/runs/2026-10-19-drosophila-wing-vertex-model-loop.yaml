@@ -1,0 +1,577 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-drosophila-wing-vertex-model-loop
+  target_simulation: farhadifar-drosophila-wing-vertex-model
+  paper: Farhadifar, Röper, Aigouy, Eaton & Jülicher (2007) Current Biology — The
+    influence of cell mechanics, cell-cell interactions, and proliferation on epithelial
+    packing
+  created_at: '2026-10-20T00:11:11.064Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: 0cb0132
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 8.225
+  wall_time_min: 0.14
+  tier_a_wall_s: 4.404
+  tier_b_wall_s: 3.821
+  cpu_user_s: 5.72
+  cpu_sys_s: 0.58
+  input_tokens: 704
+  output_tokens: 2931
+  subagent_tokens: 0
+  total_llm_tokens: 3635
+  artifact_tokens: 54397
+  tier_a_llm_tokens: 352
+  tier_b_llm_tokens: 3283
+  effective_tokens_per_s: 441.9
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:12:07.723Z'
+  ended_at: '2026-10-20T00:12:08.988Z'
+  duration_s: 1.188
+  cpu_user_s: 0.56
+  cpu_sys_s: 0.02
+  max_rss_mb: 33.6
+  runs_count: 1
+  tokens:
+    input_tokens: 31
+    output_tokens: 68
+    subagent_tokens: 0
+    total_llm_tokens: 99
+    artifact_tokens: 820
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/drosophila_wing_vertex_model/scout_manifest.json
+    bytes: 2659
+    sha256: 635b5f88f0c23abd8c0db62ef0a4021268f1a51579f1f2257874e5a7199cc0ff
+    tokens: 820
+  commands:
+  - command: ./venv/bin/python3 morphoeval/scout_literature.py --slot 43 --out datasets/drosophila_wing_vertex_model/scout_manifest.json
+    exit_code: 0
+    wall_s: 1.188
+    cpu_user_s: 0.56
+    cpu_sys_s: 0.02
+    stdout_tokens: 68
+  notes: Executed OpenAlex + Wikimedia Commons literature & specimen scout for Slot
+    043 (Farhadifar et al. 2007 Current Biology Drosophila wing disc epithelial vertex
+    model)
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:17:00.188Z'
+  ended_at: '2026-10-20T00:17:00.246Z'
+  duration_s: 0.017
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.2
+  runs_count: 1
+  tokens:
+    input_tokens: 48
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 49
+    artifact_tokens: 3400
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/drosophila_wing_vertex_model/drosophila_wing_vertex_model_reference.json
+    bytes: 6750
+    sha256: 6d2044b39928772290091a7719455ff5d7de1d0e816d1e798c114e583e75128e
+    tokens: 2016
+    parent_artifact_ids:
+    - 635b5f88f0c23abd8c0db62ef0a4021268f1a51579f1f2257874e5a7199cc0ff
+  - file: datasets/drosophila_wing_vertex_model/paper_citations.bib
+    bytes: 1829
+    sha256: ca071ba13e0d27f7c66a762e4fdcaac783ebde5aaadbf5575f982bf23ef6fce1
+    tokens: 559
+    parent_artifact_ids:
+    - 635b5f88f0c23abd8c0db62ef0a4021268f1a51579f1f2257874e5a7199cc0ff
+  - file: datasets/drosophila_wing_vertex_model/README.md
+    bytes: 2651
+    sha256: e405364432a215f2a88e31681971ed3db62f7ff58b22420ed07189917f19f1e4
+    tokens: 825
+    parent_artifact_ids:
+    - 635b5f88f0c23abd8c0db62ef0a4021268f1a51579f1f2257874e5a7199cc0ff
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('datasets/drosophila_wing_vertex_model/drosophila_wing_vertex_model_reference.json'));
+      assert len(d['metadata']['sources'])==5
+    exit_code: 0
+    wall_s: 0.017
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Extracted Farhadifar et al. (2007) Current Biology apical vertex energy functional
+    E({r_i}), normalized parameters (Lambda_bar, Gamma_bar), Case I/II/III phase boundaries,
+    Lewis's law, and larval vs pupal P(n) distributions
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:17:00.322Z'
+  ended_at: '2026-10-20T00:17:00.386Z'
+  duration_s: 0.02
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 13.9
+  runs_count: 1
+  tokens:
+    input_tokens: 92
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 93
+    artifact_tokens: 2080
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/drosophila_wing_vertex_model/drosophila_wing_epithelium_specimen.jpg
+    bytes: 124893
+    sha256: df24205361561b79fc3770d3c4627733b82ebff90957794958d16102ba5745ff
+    tokens: 64
+    parent_artifact_ids:
+    - 635b5f88f0c23abd8c0db62ef0a4021268f1a51579f1f2257874e5a7199cc0ff
+  - file: datasets/drosophila_wing_vertex_model/drosophila_wing_vertex_model_reference.json
+    bytes: 6750
+    sha256: 6d2044b39928772290091a7719455ff5d7de1d0e816d1e798c114e583e75128e
+    tokens: 2016
+    parent_artifact_ids:
+    - 635b5f88f0c23abd8c0db62ef0a4021268f1a51579f1f2257874e5a7199cc0ff
+  commands:
+  - command: ./venv/bin/python3 -c import hashlib, json; d=json.load(open('datasets/drosophila_wing_vertex_model/drosophila_wing_vertex_model_reference.json'));
+      h=hashlib.sha256(open('datasets/drosophila_wing_vertex_model/drosophila_wing_epithelium_specimen.jpg','rb').read()).hexdigest();
+      assert h==d['metadata']['specimens']['drosophila_wing_epithelium_specimen']['sha256'],
+      h
+    exit_code: 0
+    wall_s: 0.02
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Vendored apical junction-stained polygonal epithelial monolayer micrograph
+    from Wikimedia Commons (CC BY-SA 4.0) and locked SHA-256 digest
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:17:00.461Z'
+  ended_at: '2026-10-20T00:17:02.200Z'
+  duration_s: 1.694
+  cpu_user_s: 0.16
+  cpu_sys_s: 0.2
+  max_rss_mb: 394.8
+  runs_count: 1
+  tokens:
+    input_tokens: 16
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 17
+    artifact_tokens: 1519
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean
+    bytes: 6350
+    sha256: cd588230e9ec2372aa77913cb15da5ea67bbcc7fee2cef67f45bdd8eb8ccbba9
+    tokens: 64
+    parent_artifact_ids:
+    - 6d2044b39928772290091a7719455ff5d7de1d0e816d1e798c114e583e75128e
+  - file: morphoeval/math_kg_loops/farhadifar-drosophila-wing-vertex-model.yaml
+    bytes: 5056
+    sha256: 3b8397bf53f02bceef569338a5f028a47637ac11b0fda0b5e4c0f36ce0ef9f70
+    tokens: 1455
+    parent_artifact_ids:
+    - 6d2044b39928772290091a7719455ff5d7de1d0e816d1e798c114e583e75128e
+  commands:
+  - command: lean morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean
+    exit_code: 0
+    wall_s: 1.694
+    cpu_user_s: 0.16
+    cpu_sys_s: 0.2
+    stdout_tokens: 1
+  notes: Verified 4 machine-checked Lean 4 theorems (0 sorrys) in Loop_043_drosophila_wing_vertex_model.lean
+    and registered math_kg_loops spec
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:17:46.881Z'
+  ended_at: '2026-10-20T00:17:47.463Z'
+  duration_s: 0.537
+  cpu_user_s: 0.48
+  cpu_sys_s: 0.04
+  max_rss_mb: 87.1
+  runs_count: 1
+  tokens:
+    input_tokens: 25
+    output_tokens: 27
+    subagent_tokens: 0
+    total_llm_tokens: 52
+    artifact_tokens: 3364
+    method: explicit+BPE
+  artifacts:
+  - file: 2007-farhadifar-drosophila-wing-vertex-model.py
+    bytes: 11636
+    sha256: 4ff1f13a1bc9e334d2b6e4e949bebaeb91064bfcaaf42e4f3caa93aaf51ffec6
+    tokens: 3364
+    parent_artifact_ids:
+    - 6d2044b39928772290091a7719455ff5d7de1d0e816d1e798c114e583e75128e
+    - cd588230e9ec2372aa77913cb15da5ea67bbcc7fee2cef67f45bdd8eb8ccbba9
+  commands:
+  - command: ./venv/bin/python3 2007-farhadifar-drosophila-wing-vertex-model.py --self-test
+    exit_code: 0
+    wall_s: 0.537
+    cpu_user_s: 0.48
+    cpu_sys_s: 0.04
+    stdout_tokens: 27
+  notes: Implemented Pass 1 (v1) Drosophila wing disc vertex packing baseline script
+    with --self-test and measure_morphoeval()
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:17:47.540Z'
+  ended_at: '2026-10-20T00:17:48.534Z'
+  duration_s: 0.948
+  cpu_user_s: 0.88
+  cpu_sys_s: 0.05
+  max_rss_mb: 132.4
+  runs_count: 1
+  tokens:
+    input_tokens: 21
+    output_tokens: 21
+    subagent_tokens: 0
+    total_llm_tokens: 42
+    artifact_tokens: 128
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/drosophila_wing_vertex_model_comparison.png
+    bytes: 209107
+    sha256: ab67d29234ea2884f06a6984e932e052eff44b97176f71f3163ebf00fbc36b62
+    tokens: 64
+    parent_artifact_ids:
+    - 4ff1f13a1bc9e334d2b6e4e949bebaeb91064bfcaaf42e4f3caa93aaf51ffec6
+  - file: docs/media/drosophila_wing_vertex_model_growth.gif
+    bytes: 278036
+    sha256: 58d71cb82a9ac46a42c6a9be275b52d4ff2b6c7d55f723b4fc91142743fc0d0c
+    tokens: 64
+    parent_artifact_ids:
+    - 4ff1f13a1bc9e334d2b6e4e949bebaeb91064bfcaaf42e4f3caa93aaf51ffec6
+  commands:
+  - command: ./venv/bin/python3 2007-farhadifar-drosophila-wing-vertex-model.py
+    exit_code: 0
+    wall_s: 0.948
+    cpu_user_s: 0.88
+    cpu_sys_s: 0.05
+    stdout_tokens: 21
+  notes: Rendered Pass 1 static comparison figure and growth animation GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:18:05.868Z'
+  ended_at: '2026-10-20T00:18:06.019Z'
+  duration_s: 0.102
+  cpu_user_s: 0.08
+  cpu_sys_s: 0.01
+  max_rss_mb: 38.5
+  runs_count: 1
+  tokens:
+    input_tokens: 38
+    output_tokens: 26
+    subagent_tokens: 0
+    total_llm_tokens: 64
+    artifact_tokens: 2781
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-drosophila-wing-vertex-model-audit.yaml
+    bytes: 11236
+    sha256: 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    tokens: 2781
+    parent_artifact_ids:
+    - 4ff1f13a1bc9e334d2b6e4e949bebaeb91064bfcaaf42e4f3caa93aaf51ffec6
+    - ab67d29234ea2884f06a6984e932e052eff44b97176f71f3163ebf00fbc36b62
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-drosophila-wing-vertex-model-audit.yaml
+      --check
+    exit_code: 0
+    wall_s: 0.102
+    cpu_user_s: 0.08
+    cpu_sys_s: 0.01
+    stdout_tokens: 26
+  notes: Completed Pass 1 (v1) 7-dimension MorphoEval audit (57.7/100) with line-pinned
+    evidence and remediation plan
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:18:06.099Z'
+  ended_at: '2026-10-20T00:18:06.884Z'
+  duration_s: 0.734
+  cpu_user_s: 0.61
+  cpu_sys_s: 0.04
+  max_rss_mb: 96.4
+  runs_count: 1
+  tokens:
+    input_tokens: 35
+    output_tokens: 157
+    subagent_tokens: 0
+    total_llm_tokens: 192
+    artifact_tokens: 619
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-drosophila-wing-vertex-model-audit.measurements.yaml
+    bytes: 2125
+    sha256: 4d58af3540ec1e4f5c14e065bdfd0d3ffe65b1497effe7aaa9d357315e88f3a8
+    tokens: 619
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 4ff1f13a1bc9e334d2b6e4e949bebaeb91064bfcaaf42e4f3caa93aaf51ffec6
+  commands:
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-drosophila-wing-vertex-model-audit.yaml
+    exit_code: 0
+    wall_s: 0.734
+    cpu_user_s: 0.61
+    cpu_sys_s: 0.04
+    stdout_tokens: 157
+  notes: Fingerprinted Pass 1 outputs and computed sidecar morphometrics
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:18:06.969Z'
+  ended_at: '2026-10-20T00:18:07.273Z'
+  duration_s: 0.25
+  cpu_user_s: 0.22
+  cpu_sys_s: 0.01
+  max_rss_mb: 44.5
+  runs_count: 1
+  tokens:
+    input_tokens: 38
+    output_tokens: 151
+    subagent_tokens: 0
+    total_llm_tokens: 189
+    artifact_tokens: 14190
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit/REPORT.md
+    bytes: 8906
+    sha256: e13f913b4d6cb838a868ff86b0d759350a9c3956b81e6c994611d947aae29d26
+    tokens: 2304
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 4d58af3540ec1e4f5c14e065bdfd0d3ffe65b1497effe7aaa9d357315e88f3a8
+  - file: morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit/morphoeval_2026-10-19-drosophila-wing-vertex-model-audit.ttl
+    bytes: 41234
+    sha256: be7cd5dbe70c126597aa24d6c2aaa3ce02489508f5b03af6d7f66fb98512d8a3
+    tokens: 11886
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 4d58af3540ec1e4f5c14e065bdfd0d3ffe65b1497effe7aaa9d357315e88f3a8
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-drosophila-wing-vertex-model-audit.yaml
+      --conform
+    exit_code: 0
+    wall_s: 0.25
+    cpu_user_s: 0.22
+    cpu_sys_s: 0.01
+    stdout_tokens: 151
+  notes: Built ProbKnow-conformant TriG nanopublications and REPORT.md for Pass 1
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:18:07.362Z'
+  ended_at: '2026-10-20T00:18:08.284Z'
+  duration_s: 0.866
+  cpu_user_s: 0.89
+  cpu_sys_s: 0.08
+  max_rss_mb: 157.2
+  runs_count: 1
+  tokens:
+    input_tokens: 109
+    output_tokens: 1138
+    subagent_tokens: 0
+    total_llm_tokens: 1247
+    artifact_tokens: 682
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit/published.json
+    bytes: 2006
+    sha256: 60f423b88b812a381a00f1ea48a5ece5841e13f3cd8331cda7653ff3765b46f9
+    tokens: 682
+    parent_artifact_ids:
+    - e13f913b4d6cb838a868ff86b0d759350a9c3956b81e6c994611d947aae29d26
+  commands:
+  - command: bash -c ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-loop
+      || true; ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit
+      && NANOPUB_SIGN_DIR=/tmp node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit/signed/*.trig
+    exit_code: 0
+    wall_s: 0.866
+    cpu_user_s: 0.89
+    cpu_sys_s: 0.08
+    stdout_tokens: 1138
+  notes: Signed Pass 1 nanopublications and verified RSA trusty signatures with check_signed.mjs
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:18:08.369Z'
+  ended_at: '2026-10-20T00:18:08.445Z'
+  duration_s: 0.02
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.7
+  runs_count: 1
+  tokens:
+    input_tokens: 56
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 57
+    artifact_tokens: 2986
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit/REPORT.md
+    bytes: 8906
+    sha256: e13f913b4d6cb838a868ff86b0d759350a9c3956b81e6c994611d947aae29d26
+    tokens: 2304
+    parent_artifact_ids:
+    - 60f423b88b812a381a00f1ea48a5ece5841e13f3cd8331cda7653ff3765b46f9
+  - file: morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit/published.json
+    bytes: 2006
+    sha256: 60f423b88b812a381a00f1ea48a5ece5841e13f3cd8331cda7653ff3765b46f9
+    tokens: 682
+    parent_artifact_ids:
+    - 60f423b88b812a381a00f1ea48a5ece5841e13f3cd8331cda7653ff3765b46f9
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit/published.json'));
+      assert len(d)==10, len(d)
+    exit_code: 0
+    wall_s: 0.02
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Verified Pass 1 public record, 10 signed trusty URIs, and REPORT.md synthesis
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:28:45.186Z'
+  ended_at: '2026-10-20T00:28:47.094Z'
+  duration_s: 1.849
+  cpu_user_s: 1.81
+  cpu_sys_s: 0.13
+  max_rss_mb: 181.8
+  runs_count: 1
+  tokens:
+    input_tokens: 195
+    output_tokens: 1339
+    subagent_tokens: 0
+    total_llm_tokens: 1534
+    artifact_tokens: 21828
+    method: explicit+BPE
+  artifacts:
+  - file: 2007-farhadifar-drosophila-wing-vertex-model.py
+    bytes: 48355
+    sha256: 369f3ecbba66ae25cb67022ef15bd281ca6c6295f43db11b159395db1367526a
+    tokens: 13307
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 369f3ecbba66ae25cb67022ef15bd281ca6c6295f43db11b159395db1367526a
+  - file: docs/media/drosophila_wing_vertex_model_comparison.png
+    bytes: 977473
+    sha256: d1c94b16e8a8dabd2fa188b59f66091e4dd352b73f3ec1401c0579b6e896bbf1
+    tokens: 64
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 369f3ecbba66ae25cb67022ef15bd281ca6c6295f43db11b159395db1367526a
+  - file: docs/media/drosophila_wing_vertex_model_growth.gif
+    bytes: 1019693
+    sha256: 7fdc67877b9d9e271431b3b0db8835d6a4647c3a975eb4722bf6e2020ad1d03f
+    tokens: 64
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 369f3ecbba66ae25cb67022ef15bd281ca6c6295f43db11b159395db1367526a
+  - file: morphoeval/audits/2026-10-19-drosophila-wing-vertex-model-audit-v2.yaml
+    bytes: 13268
+    sha256: 6ca93741119d5b712d5a943ef13038b8178fc44ca47b7c75b902a92bc624756e
+    tokens: 3462
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 369f3ecbba66ae25cb67022ef15bd281ca6c6295f43db11b159395db1367526a
+  - file: morphoeval/audits/2026-10-19-drosophila-wing-vertex-model-audit-v2.measurements.yaml
+    bytes: 5156
+    sha256: 7ad3eb69d28be8d4c9f8f5ba3bf6b6d62ac74caf6ecacab087cab13ce52e6c0c
+    tokens: 1441
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 369f3ecbba66ae25cb67022ef15bd281ca6c6295f43db11b159395db1367526a
+  - file: morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit-v2/REPORT.md
+    bytes: 10036
+    sha256: 541c12149fe207150c2490ff9e0cb92bf0a753c3aa1700d185173246588da9f4
+    tokens: 2817
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 369f3ecbba66ae25cb67022ef15bd281ca6c6295f43db11b159395db1367526a
+  - file: morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit-v2/published.json
+    bytes: 2006
+    sha256: 4e0802d1e79ed768a684ee007317e536157be9349511c01700096f28597804c4
+    tokens: 673
+    parent_artifact_ids:
+    - 7798ab59a9d5c4cafb8c06cbc7c4cc28fafda7cf070aacc9364422001e8b04d0
+    - 369f3ecbba66ae25cb67022ef15bd281ca6c6295f43db11b159395db1367526a
+  commands:
+  - command: "bash -c \n  ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-drosophila-wing-vertex-model-audit-v2.yaml\
+      \ &&\n  ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-drosophila-wing-vertex-model-audit-v2.yaml\
+      \ --supersede-from morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit\
+      \ --no-resolve-heads --conform &&\n  ./venv/bin/python3 morphoeval/sign_morphoeval.py\
+      \ morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit-v2 &&\n  NANOPUB_SIGN_DIR=/tmp\
+      \ node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-drosophila-wing-vertex-model-audit-v2/signed/*.trig\n"
+    exit_code: 0
+    wall_s: 1.849
+    cpu_user_s: 1.81
+    cpu_sys_s: 0.13
+    stdout_tokens: 1339
+  notes: 'Completed Step 12 -> Pass 2 remediation loop: 4 vertex regimes, (Lambda_bar,
+    Gamma_bar) phase diagram, 7-point Lambda_bar sweep, laser ablation recoil, specimen
+    Voronoi-watershed segmentation (r=0.9913), and superseding signed nanopubs (90.9/100,
+    +33.2 pts)'

@@ -1,0 +1,88 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RA0NTMHFk2LkM1nh02t4QrCgL8gfuMGlFLG-YqgYzGJg4/> .
+@prefix this: <https://w3id.org/np/RA0NTMHFk2LkM1nh02t4QrCgL8gfuMGlFLG-YqgYzGJg4> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-riedel-delta-notch-phase-synchrony> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-riedel-delta-notch-phase-synchrony-parameter-expressivity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-riedel-delta-notch-phase-synchrony-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Riedel-Kruse et al. (2007) & Morelli et al. (2009) zebrafish Delta-Notch delayed Kuramoto phase synchrony, ALD failure, and PRP washout rescue — Parameter expressivity: 59/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Covers canonical zebrafish PSM parameters (T_0 = 25 min, kappa = 0.070 min^-1, tau_c = 20.5 min), but needs all 5 DAPT perturbation regimes (WT DMSO control, s_in = 0, s_in = 4, s_in = 9, and s_in = 0 / s_out = 9 pulse-washout rescue) plus the 2D (tau_c, kappa) linear stability tongue morphospace and collective period branch scan T_sync(tau_c)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2006-riedel-delta-notch-phase-synchrony.py L330–L370: 5-regime Riedel-Kruse (2007) DAPT ALD/PRP evaluator <https://github.com/fractastical/morpholib/blob/317bc3c/2006-riedel-delta-notch-phase-synchrony.py#L330-L370>" ;
+        pk:hasScore "0.59"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/j.cub.2010.06.034> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Intercellular coupling regulates the period of the segmentation clock" .
+
+    <https://doi.org/10.1038/nature04861> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Noise-resistant and synchronized oscillation of the segmentation clock" .
+
+    <https://doi.org/10.1126/science.1142538> dcterms:date "2007"^^xsd:gYear ;
+        dcterms:title "Synchrony dynamics during initiation, failure, and rescue of the segmentation clock" .
+
+    <https://doi.org/10.2976/1.3027088> dcterms:date "2009"^^xsd:gYear ;
+        dcterms:title "Delayed coupling theory of vertebrate segmentation" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1038/nature04861>,
+            <https://doi.org/10.1126/science.1142538>,
+            <https://doi.org/10.2976/1.3027088> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "TvWBzojxQ9k9oltv/UMxLQ9tkiejJqZMqdRSmQa1A4mrZxywazmn/GowXQUh+9TQP7PbIls3IVLfe1nnBDdP6TshYn4NIqsk6UOdlH3aPqDMpqNOK53zvJEmIVHQrnWVSbsBH3JpfgbXHp2XwSXL37bN/S/dIXt4pDsnqqayJYT6r9n2xXLyxAmaZpNt/u23Yjh7YLDT/k0gfvqDCZcEtB1qHdkQZrF/Qp2jY//vMRQGTLiwMBJxuTe8V3+pyyU9NvlVM0D/XuBjRBX3Aj7CVJHVz5l2L8U5G+xN/LrgFCctS1KnR3txu+Uv2c9hKLbSc0fxbpkXNc2HyfyEm2SKAQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Riedel-Kruse et al. (2007) & Morelli et al. (2009) zebrafish Delta-Notch delayed Kuramoto phase synchrony, ALD failure, and PRP washout rescue — Parameter expressivity 59/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T00:53:29Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-riedel-delta-notch-phase-synchrony-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

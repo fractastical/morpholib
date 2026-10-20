@@ -1,0 +1,154 @@
+# MorphoEval audit — Kondo & Asai (1995) Pomacanthus Stripe Insertion & Y-Branch Unzipping, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `1995-kondo-pomacanthus-stripe-insertion.py` (Slot 004)
+# prior to Pass 2 closed-loop remediation in `2026-10-19-pomacanthus-stripe-insertion-loop`.
+
+audit:
+  id: 2026-10-19-pomacanthus-stripe-insertion-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1995-kondo-pomacanthus-stripe-insertion.py` in
+      `2026-10-19-pomacanthus-stripe-insertion-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    venue: "Nature 376(6543):765-768 (1995)"
+    doi: 10.1038/376765a0
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    doi: 10.1007/BF00289234
+  crampin1999:
+    title: "Reaction and diffusion on growing domains: scenarios for robust pattern formation"
+    authors: "Crampin EJ, Gaffney EA, Maini PK"
+    venue: "Bulletin of Mathematical Biology 61(6):1093-1120 (1999)"
+    doi: 10.1006/bulm.1999.0131
+  kondo2009:
+    title: "How animals get their skin patterns: fish pigment pattern as a live Turing wave"
+    authors: "Kondo S, Iwashita M, Yamaguchi M"
+    venue: "International Journal of Developmental Biology 53(5-6):851-856 (2009)"
+    doi: 10.1387/ijdb.072502sk
+
+simulations:
+  - id: kondo-pomacanthus-stripe-insertion
+    name: "Kondo & Asai (1995) Pomacanthus reaction-diffusion stripe insertion & Y-branch unzipping"
+    organism: "Pomacanthus semicirculatus & Pomacanthus imperator (marine angelfish)"
+    script: 1995-kondo-pomacanthus-stripe-insertion.py
+    output: docs/media/pomacanthus_stripe_insertion_comparison.png
+    extra_outputs:
+      - docs/media/pomacanthus_stripe_insertion_growth.gif
+    status: evaluated
+    source_refs:
+      - kondo1995
+      - gierer1972
+      - crampin1999
+      - kondo2009
+    summary: >-
+      Pass 1 baseline assessment of `1995-kondo-pomacanthus-stripe-insertion.py` (54.7/100).
+      The initial script derives the analytical equilibrium (A*, I*) = (3.0, 2.5), critical
+      diffusivity ratio d_c = 10.2596, and intrinsic wavelength lambda_c = 3.4739 for the
+      Kondo & Asai (1995) Fig. 1 piecewise-linear reaction-diffusion model, but approximates
+      the growing-domain kymograph kinematically rather than integrating the full nonlinear
+      piecewise-linear saturating Gierer-Meinhardt PDE dA/dt = F(A,I) - g_A A + D_A Lap(A),
+      dI/dt = G(A,I) - g_I I + D_I Lap(I) across the 3 -> 6 -> 12 -> 24 stripe insertion
+      cascade in P. semicirculatus, lacks 2D Y-junction branch unzipping simulation in
+      P. imperator, and lacks automated computer-vision segmentation of the vendored
+      Pomacanthus semicirculatus juvenile specimen (`pomacanthus_semicirculatus_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Computes the exact interior steady state (A*, I*) = (3.0, 2.5), critical diffusivity
+          ratio d_c = 10.2596, and intrinsic wavelength lambda_c = 3.4739 (L32-69), but Pass 1
+          uses a kinematic cosine step approximation (`kinematic_stripe_kymograph`, L72-80)
+          rather than solving the nonlinear piecewise-linear saturating Gierer-Meinhardt PDE
+          on an expanding 1D domain and simulating 2D Y-branch horizontal unzipping.
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [32, 69], note: "Analytical Kondo-Asai steady state (A*, I*) = (3.0, 2.5) and Turing wavelength lambda_c = 3.4739", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [72, 80], note: "Kinematic kymograph approximation requiring replacement with full piecewise-linear saturating PDE solver", supports: false}
+      specimen-match:
+        value: 49
+        rationale: >-
+          Displays `datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg`
+          (CC BY-SA 4.0 juvenile Semicircle angelfish), but Pass 1 lacks automated
+          computer-vision segmentation of primary white vs newly inserted secondary mid-trough
+          stripes and inter-stripe spacing regularity on the flank ROI.
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [108, 118], note: "Raw specimen display without CV stripe segmentation", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates the canonical Fig. 1 parameter set (D_A = 0.007, D_I = 0.10), but lacks a
+          5-regime ontogenetic body-length doubling & subcritical-diffusion control sweep
+          (s = 1, 2, 4, 8 -> N = 3, 6, 12, 24 stripes plus D_I = 0.050 -> N = 0 stripes) and
+          2D P. imperator Y-branch unzipping comparison.
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [72, 80], note: "Single kinematic pass without 5-regime PDE sweep or 2D Y-branch simulation", supports: false}
+      morphometric-validation:
+        value: 53
+        rationale: >-
+          Reports 2 analytical quantities in `measure_morphoeval()` (`d_c` and `lambda_c`), but
+          lacks simulated PDE stripe wavelength accuracy, 5-regime stripe-insertion cascade RMSE,
+          2D Y-branch unzipping velocity/displacement metrics, and empirical specimen inter-stripe
+          wavelength and alternating amplitude ratio.
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [83, 105], note: "Minimal 2-metric measure_morphoeval() hook", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Vendors `scout_manifest.json`, `pomacanthus_stripe_insertion_reference.json`,
+          `paper_citations.bib`, and `pomacanthus_semicirculatus_specimen.jpg`, but runtime
+          SHA-256 dataset verification (`verify_dataset_integrity`) is not yet enforced in the script.
+        evidence:
+          - {file: datasets/pomacanthus_stripe_insertion/pomacanthus_stripe_insertion_reference.json, lines: [1, 150], note: "Reference JSON with Kondo & Asai (1995) Fig. 1 parameters, 5-regime cascade, and specimen metadata", supports: true}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Maps linear stability parameters to Kondo & Asai (1995) Fig. 1, but needs explicit
+          section/equation docstrings linking every solver routine to the 3 Lean 4 theorems in
+          `Loop_004_pomacanthus_stripe_insertion.lean`.
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [1, 12], note: "Baseline module docstring", supports: true}
+      repro-package:
+        value: 56
+        rationale: >-
+          Provides `--self-test`, but only checks `(A*, I*) = (3.0, 2.5)` and lacks SHA-256
+          dataset verification, bitwise PDE solver determinism, subcritical negative control
+          assertion, 2D Y-branch unzipping verification, and specimen CV segmentation checks.
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [128, 133], note: "Minimal Pass 1 self-test", supports: false}
+    remediation:
+      - "Replace the kinematic kymograph with a full IMEX / finite-difference solver for the Kondo & Asai (1995) piecewise-linear saturating Gierer-Meinhardt reaction-diffusion PDE dA/dt = min(F_max, max(0, c_1 A + c_2 I + c_3)) - g_A A + D_A Lap(A), dI/dt = min(G_max, max(0, c_4 A + c_5)) - g_I I + D_I Lap(I) across the 5-regime P. semicirculatus doubling cascade (s = 1, 2, 4, 8 -> 3, 6, 12, 24 stripes plus subcritical control D_I = 0.050 -> 0 stripes) and continuous growing-domain kymograph."
+      - "Implement a 2D Kondo-Asai reaction-diffusion solver modeling Pomacanthus imperator Y-junction branch point horizontal unzipping when dorso-ventral flank spacing widens relative to boundary stripe spacing."
+      - "Add computer-vision segmentation of `datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg` to detect the curved body stripes along the anterior-posterior flank transect, quantify primary vs newly inserted secondary mid-trough stripe prominences and inter-stripe wavelength in mm, and enforce runtime SHA-256 verification."

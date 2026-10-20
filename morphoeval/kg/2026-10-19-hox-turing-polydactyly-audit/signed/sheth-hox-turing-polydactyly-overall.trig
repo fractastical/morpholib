@@ -1,0 +1,92 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RA71XhmfqoHadf49o2lCSlBGHT3sYkt1fs-2q5pAAqNjE/> .
+@prefix this: <https://w3id.org/np/RA71XhmfqoHadf49o2lCSlBGHT3sYkt1fs-2q5pAAqNjE> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sheth-hox-turing-polydactyly> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sheth-hox-turing-polydactyly-overall> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sheth-hox-turing-polydactyly-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Sheth et al. (2012) Science distal Hoxa13/Hoxd11-13 + Gli3 dose modulation of Turing digit wavelength on a fan-shaped embryonic autopod — MorphoEval overall 46.0/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Pass 1 (v1) baseline evaluation of `2012-sheth-hox-turing-polydactyly.py` (overall weighted score: 48.0 / 100). The v1 baseline script computes the analytical critical wavenumber k_c(H) for WT (5.0 digits) and triple-null Hoxa13-/-;Hoxd11-13-/-;Gli3-/- (14.0 digits), but synthesizes spatial digit patterns via a closed-form cosine heuristic (`synthesize_fan_digits`) rather than numerically integrating the nonlinear cubic-saturated 2-component Turing reaction-diffusion PDE on a fan-shaped polar autopod domain with zero-flux Neumann boundaries; omits the intermediate genotypes of Sheth et al.'s 6-step allelic series (Gli3-/-, Hoxd11-13+/-;Gli3-/-, Hoxd11-13-/-;Gli3-/-, Hoxa13+/-;Hoxd11-13-/-;Gli3-/-) and negative controls (equal diffusion Du=Dv and sub-Turing proximal zeugopod ablation); does not load or segment the vendored vertebrate autopod radiograph specimen; and returns only 2 scalar measurements without PDE peak counts or specimen morphometrics. Overall 46.0/100 (faithfulness 39.1, reproducibility 62.1); rubric morphoeval 0.1.0; checkpoint commit 8871db0; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 50, Morphological realism / specimen match 28, Parameter expressivity 44, Morphometric validation 40, Source and data traceability 60, Code-to-model traceability 56, Reproducibility package 68. Output judged: docs/media/hox_turing_polydactyly_comparison.png: rendered output of 2012-sheth-hox-turing-polydactyly.py at 8871db0, image/png, 57567 B, 1300×546 px, artifact_sha256 ccd851d68225e7944e1b4a8235f9bc2dbb71d45918f5b5fd14f78f670df611af (sha256 ccd851d68225e7944e1b4a8235f9bc2dbb71d45918f5b5fd14f78f670df611af), spec_fingerprint abe9a76dd59fb62acd39e960662df4cc18109f96295cff9d50eee77bc05fa42d. Dual provenance: spec_fingerprint: abe9a76dd59fb62acd39e960662df4cc18109f96295cff9d50eee77bc05fa42d; artifact_sha256: ccd851d68225e7944e1b4a8235f9bc2dbb71d45918f5b5fd14f78f670df611af; input_dataset_sha256: {datasets/hox_turing_polydactyly/hox_turing_polydactyly_reference.json=864482554d2a8657..., datasets/hox_turing_polydactyly/scout_manifest.json=c0608869f6d213a4..., datasets/hox_turing_polydactyly/vertebrate_autopod_digits_specimen.jpg=995e43a2a0cf7815...}." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Expose full CLI parameters (--hox-dose, --Du, --Dv, --fv, --gv, --steps, --seed), expand `measure_morphoeval()` to 8 reference-backed morphometric measurements, and upgrade `docs/media/hox_turing_polydactyly_comparison.png` (8-panel synthesis figure) and `docs/media/hox_turing_polydactyly_growth.gif` (6-genotype allelic progression GIF).",
+            "remediation needed: Load and SHA-256-verify `datasets/hox_turing_polydactyly/hox_turing_polydactyly_reference.json`, `vertebrate_autopod_digits_specimen.jpg`, `scout_manifest.json`, and `paper_citations.bib` at runtime; segment the 6 digit rays and inter-digit spacing directly from the hexadactylous autopod radiograph; and compare biological digit ray spacing CV against the nonlinear Turing PDE.",
+            "remediation needed: Replace the static cosine wave heuristic with a genuine nonlinear 2-component cubic-saturated Turing reaction-diffusion PDE solver (du/dt = f_u(H)*u + f_v*v - u^3 + D_u*Lap(u), dv/dt = g_u(H)*u + g_v*v + D_v*Lap(v)) with zero-flux Neumann boundary conditions on both the 1D distal autopod arc and the 2D polar fan-shaped limb bud sector (curvilinear Laplace-Beltrami operator (1/r) d/dr(r du/dr) + (1/r^2) d^2u/dtheta^2 showing 2 proximal zeugopod elements expanding into N(H) distal autopod digit rays).",
+            "remediation needed: Simulate the complete 6-genotype allelic series of Sheth et al. (2012) Figs. 1-2 (WT 5 digits -> Gli3-/- 7 digits -> Hoxd11-13+/-;Gli3-/- 8 digits -> Hoxd11-13-/-;Gli3-/- 9 digits -> Hoxa13+/-;Hoxd11-13-/-;Gli3-/- 11 digits -> Hoxa13-/-;Hoxd11-13-/-;Gli3-/- 14 digits) at constant autopod arc width L = 2500 um, plus dual negative controls (equal diffusion Du = Dv = 0.5 and sub-Turing ablation fu = 1.5 < 2.0)." ;
+        pk:hasScore "0.46"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 015 autonomous loop assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "BcH6+UQF2AiF2ckqn0Pk5S/WTaX4UF4dz4Anxn6HjRCKwFAfON1V2VvvKQ7IW0HTa7CBzJe40NuWRndf1zaRZRGZDGaTVuNglGKls4mXfZ8fne3PhNYEmeSKI6EGrzsw5V9SEB/7bAmpwqH1DJTrn49hcP+7l50O7iSl9c3GvqcoA5V8bivsb97568DrFFB9eVslNpcozoA+dtaSR7e09iUA787wP7OZuBEk/U5SkYue3rHecTq/jhkBVCcUQUZRlMYgZsF6WKVhiU1Auts6taIOZzpIHE62FSjTdRtBLm6Jg5PIXmUyIgNNF2WVJYR/Y4o0tQsoHkiJzJ/D6B5mCw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Sheth et al. (2012) Science distal Hoxa13/Hoxd11-13 + Gli3 dose modulation of Turing digit wavelength on a fan-shaped embryonic autopod — MorphoEval overall 46.0/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T00:09:23Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sheth-hox-turing-polydactyly-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-sheth-hox-turing-polydactyly> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/j.jtbi.2005.10.016> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development" .
+
+    <https://doi.org/10.1126/science.1226804> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism" .
+
+    <https://doi.org/10.1126/science.1252960> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients" .
+
+    <https://doi.org/10.1126/science.462174> dcterms:date "1979"^^xsd:gYear ;
+        dcterms:title "Dynamics of skeletal pattern formation in developing chick limb" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2005.10.016>,
+            <https://doi.org/10.1126/science.1226804>,
+            <https://doi.org/10.1126/science.1252960>,
+            <https://doi.org/10.1126/science.462174> .
+}
+

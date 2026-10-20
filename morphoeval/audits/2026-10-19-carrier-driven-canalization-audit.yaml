@@ -1,0 +1,143 @@
+# MorphoEval Pass 1 (v1) Audit — Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. & Scarpella et al. (2006) Genes Dev.
+# PIN1 Carrier-Driven Canalization & Hexagonal Leaf Venation Loops (Slot 035)
+
+audit:
+  id: 2026-10-19-carrier-driven-canalization-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 035 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/35
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2005-feugier-carrier-driven-canalization.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  feugier2005:
+    title: "Self-organization of vascular systems in plant leaves: Inter-dependent dynamics of auxin flux and carrier proteins"
+    authors: "Feugier FG, Mochizuki A, Iwasa Y"
+    venue: "Journal of Theoretical Biology 236(3):313-325 (2005)"
+    doi: 10.1016/j.jtbi.2005.03.017
+  scarpella2006:
+    title: "Control of leaf vascular patterning by polar auxin transport"
+    authors: "Scarpella E, Marcos D, Friml J, Berleth T"
+    venue: "Genes & Development 20(8):1015-1027 (2006)"
+    doi: 10.1101/gad.1402406
+  rollandlagan2005:
+    title: "Reviewing models of auxin canalization in the context of leaf vein pattern formation in Arabidopsis"
+    authors: "Rolland-Lagan AG, Prusinkiewicz P"
+    venue: "The Plant Journal 44(5):854-865 (2005)"
+    doi: 10.1111/j.1365-313X.2005.02581.x
+  stoma2008:
+    title: "Flux-based transport enhancement as a plausible unifying mechanism for auxin transport in meristem development"
+    authors: "Stoma S, Lucas M, Chopard J, Schaedel M, Traas J, Godin C"
+    venue: "PLoS Computational Biology 4(10):e1000207 (2008)"
+    doi: 10.1371/journal.pcbi.1000207
+
+simulations:
+  - id: feugier-carrier-driven-canalization
+    name: "Feugier, Mochizuki & Iwasa (2005) & Scarpella et al. (2006) PIN1 efflux carrier allocation, intracellular pool conservation, and open dendritic trees vs closed reticulate venation loops"
+    organism: "Arabidopsis thaliana (dicot leaf lamina and procambial venation network)"
+    script: 2005-feugier-carrier-driven-canalization.py
+    output: docs/media/carrier_driven_canalization_comparison.png
+    extra_outputs:
+      - docs/media/carrier_driven_canalization_growth.gif
+    status: evaluated
+    source_refs:
+      - feugier2005
+      - scarpella2006
+      - rollandlagan2005
+      - stoma2008
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2005-feugier-carrier-driven-canalization.py`
+      (weighted score: 54.6/100). The Pass 1 script integrates only a single-cell two-face
+      PIN1 carrier competition ODE at p=1.0 and p=2.0 without a 2D hexagonal leaf lamina
+      lattice, without comparing Feugier Model A conserved open dendritic trees (Betti-1 = 0)
+      against Model B saturating Hill exocytosis + Scarpella (2006) epidermal convergence
+      closed reticulate loops (Betti-1 > 0) and bipolar bridge cells, without a `gnom`/`pin1`
+      exocytosis ablation negative control, and without empirical CV segmentation of the
+      vendored cleared leaf tip venation skeleton specimen.
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Integrates a single-cell two-face PIN1 carrier competition ODE for p=1 and p=2
+          (L23-49), but omits the 2D hexagonal leaf lamina lattice (6 faces per cell),
+          explicit verification of intracellular pool conservation across all 6 faces,
+          saturating Hill carrier allocation Phi(J) = J^n/(K^n+J^n), Scarpella et al. (2006)
+          epidermal PIN1 convergence points and bipolar bridge cells, and Betti-1 loop
+          topological transition.
+        evidence:
+          - {file: 2005-feugier-carrier-driven-canalization.py, lines: [23, 49], note: "Single-cell 2-face ODE without 2D hexagonal lamina lattice or saturating Hill loop closure", supports: true}
+      specimen-match:
+        value: 46
+        rationale: >-
+          Vendors `datasets/carrier_driven_canalization/leaf_tip_venation_loops_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, or extract vein density, closed
+          areole loop count (Betti-1), or areole compactness from the specimen image.
+        evidence:
+          - {file: 2005-feugier-carrier-driven-canalization.py, lines: [61, 95], note: "Renders 2-panel time-series plot without loading or segmenting specimen image", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates only p=1.0 and p=2.0 in a single-cell toy system without sweeping the
+          6 allocation regimes (p in [0.8, 2.0], saturating Hill K, epidermal convergence),
+          or exposing CLI overrides.
+        evidence:
+          - {file: 2005-feugier-carrier-driven-canalization.py, lines: [52, 58], note: "Only two parameter points evaluated without regime sweep or CLI flags", supports: false}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          Exposes only 2 scalar measurements in `measure_morphoeval()` without statistical
+          p-values, 6-face pool conservation error, pairwise flux antisymmetry error,
+          Betti-1 loop counts, bipolar bridge cell fractions, or specimen areole morphometrics.
+        evidence:
+          - {file: 2005-feugier-carrier-driven-canalization.py, lines: [52, 58], note: "Only 2 scalar measurements without reference comparisons or p-values", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `carrier_driven_canalization_reference.json`
+          with verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at
+          runtime.
+        evidence:
+          - {file: datasets/carrier_driven_canalization/carrier_driven_canalization_reference.json, lines: [1, 165], note: "Reference JSON present on disk but not verified in Pass 1 script", supports: true}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Module docstring cites Feugier et al. (2005), but lacks explicit equation-to-code
+          and Lean 4 theorem mappings (`Loop_035_carrier_driven_canalization.lean`).
+        evidence:
+          - {file: 2005-feugier-carrier-driven-canalization.py, lines: [1, 9], note: "Minimal docstring without Lean 4 theorem mapping", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Includes a minimal `--self-test` check, but lacks SHA-256 dataset integrity
+          verification, `gnom`/`pin1` exocytosis ablation negative control, and multi-law
+          invariant assertions.
+        evidence:
+          - {file: 2005-feugier-carrier-driven-canalization.py, lines: [98, 111], note: "Minimal 1-assertion self-test without dataset SHA-256 or ablation checks", supports: false}
+    remediation:
+      - "Implement a 2D hexagonal leaf lamina lattice solver (6 faces per cell) integrating Feugier, Mochizuki & Iwasa (2005) intracellular auxin S_i and directional PIN1 carrier P_ij ODEs with conserved total cellular pool P_total = P_{i,cyt} + sum_{j=1}^6 P_{ij} and pairwise antisymmetric flux J_{i->j} + J_{j->i} = 0."
+      - "Compare Feugier Model A conserved power-law allocation Phi(J) = max(0,J)^p (winner-take-all single-face polarization, open dendritic venation trees with Betti-1 = 0) against Model B saturating Hill allocation Phi(J) = J^n/(K^n + J^n) and Scarpella et al. (2006) epidermal PIN1 convergence points (stabilizing bipolar PIN1 bridge cells and closed reticulate venation loops with Betti-1 > 0)."
+      - "Add a `gnom`/`pin1` exocytosis ablation negative control (k_1 = 0) demonstrating complete loss of membrane PIN1 polarization and vascular strand formation."
+      - "Segment the SHA-256-verified cleared dicot leaf tip venation skeleton specimen (`leaf_tip_venation_loops_specimen.jpg`) to extract vein density, closed polygonal areole loop count (Betti-1 = 205), mean areole area, and mean areole compactness, and expose a comprehensive 8-check `--self-test` suite."

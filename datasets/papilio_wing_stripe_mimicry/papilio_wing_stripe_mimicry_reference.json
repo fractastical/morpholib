@@ -1,0 +1,147 @@
+{
+  "metadata": {
+    "dataset_id": "sekimura-2000-madzvamuse-2002-papilio-wing-stripe-mimicry-v1",
+    "title": "Sekimura et al. (2000) Proc. R. Soc. B, Madzvamuse et al. (2002) J. Math. Biol. & Timmermans/Thompson et al. (2014) Nature — Anisotropic Wing-Geometry Gierer–Meinhardt Reaction–Diffusion & Batesian Mimicry Polymorphism in Papilio dardanus",
+    "sources": [
+      {
+        "id": "sekimura2000",
+        "citation": "Sekimura T, Madzvamuse A, Wathen AJ, Maini PK (2000). A model for colour pattern formation in the butterfly wing of Papilio dardanus. Proceedings of the Royal Society B: Biological Sciences 267(1446):851-859.",
+        "doi": "10.1098/rspb.2000.1081"
+      },
+      {
+        "id": "madzvamuse2002",
+        "citation": "Madzvamuse A, Thomas RDK, Sekimura T, Maini PK (2002). A numerical approach to the study of spatial pattern formation in the ligaments of arcoid bivalves and on the wing of the butterfly Papilio dardanus. Journal of Mathematical Biology 44(5):489-509.",
+        "doi": "10.1007/s002850100133"
+      },
+      {
+        "id": "thompson2014",
+        "citation": "Timmermans MJTN, Baxter SW, Clark R, ..., Thompson MJ, Jiggins CD, Vogler AP (2014). Comparative genomics of the mimicry switch in Papilio dardanus. Nature 507(7490):96-99.",
+        "doi": "10.1038/nature12979"
+      },
+      {
+        "id": "gierer1972",
+        "citation": "Gierer A, Meinhardt H (1972). A theory of biological pattern formation. Kybernetik 12(1):30-39.",
+        "doi": "10.1007/BF00289234"
+      },
+      {
+        "id": "nijhout1991",
+        "citation": "Nijhout HF (1991). The Development and Evolution of Butterfly Wing Patterns. Smithsonian Institution Press, Washington, DC.",
+        "doi": "10.5962/bhl.title.119515"
+      }
+    ],
+    "specimens": {
+      "papilio_dardanus_cenea_specimen": {
+        "file": "datasets/papilio_wing_stripe_mimicry/papilio_dardanus_cenea_specimen.jpg",
+        "sha256": "7ba68b77406f8fbc6308a3c7a9dae7e156d521988bb4b8d05571ce3c5fa51c4d",
+        "width": 960,
+        "height": 640,
+        "species": "Papilio dardanus cenea (African mocker swallowtail female mimetic morph on floral cluster, Maputo, Mozambique)",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Mocker_swallowtail_(Papilio_dardanus_cenea)_female_form_cenea_Maputo.jpg",
+        "wing_roi_xyxy": [65, 55, 505, 585],
+        "forewing_roi_xyxy": [75, 65, 495, 340],
+        "pattern_type": "batesian_mimetic_wing_colour_pattern"
+      },
+      "scout_manifest": {
+        "file": "datasets/papilio_wing_stripe_mimicry/scout_manifest.json",
+        "sha256": "f5962e37bffeb86e13646d8425ccf43ccc3ee7b4e0c1c1078b355cd4d8904211"
+      },
+      "paper_citations": {
+        "file": "datasets/papilio_wing_stripe_mimicry/paper_citations.bib",
+        "sha256": "d673f37a5fa300ac51f267f3eb8c0b91ec4ad36a1e8772be2ef65bde17011873"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Sekimura et al. (2000) Proc. R. Soc. B 267:851-859 Eqs. (2.1)-(2.4), Table 1 & Figs. 3-6; Madzvamuse et al. (2002) J. Math. Biol. 44:489-509 Eqs. (2.1)-(2.8)",
+    "activator_pde": "du/dt = gamma * (a - b * u + u^2 / (v * (1 + kappa * u^2))) + div(D_u * grad(u))",
+    "inhibitor_pde": "dv/dt = gamma * (u^2 - v) + div(D_v * grad(v))",
+    "anisotropic_diffusivity_tensor": "D_u = diag(D_u_par, D_u_perp) = D_u_par * diag(1, epsilon),  D_v = d * D_u,  epsilon = D_perp / D_par",
+    "homogeneous_steady_state_unsat": "u_0 = (a + 1) / b,  v_0 = u_0^2 = ((a + 1) / b)^2  (for kappa = 0)",
+    "jacobian_unsat": "f_u = b * (1 - a) / (a + 1),  f_v = -(b / (a + 1))^2,  g_u = 2 * (a + 1) / b,  g_v = -1;  tr(J_0) = f_u - 1 < 0,  det(J_0) = b > 0",
+    "turing_instability_criterion": "d * f_u + g_v > 2 * sqrt(d * det(J_0)) = 2 * sqrt(d * b),  d > d_c",
+    "melanin_threshold_rule": "Melanic black scales form where u(x, y) > u_th; light/coloured mimetic patches form where u(x, y) <= u_th",
+    "canonical_parameters": {
+      "a": 0.1,
+      "b": 1.0,
+      "kappa": 0.0,
+      "d": 40.0,
+      "gamma": 600.0,
+      "u0": 1.1,
+      "v0": 1.21,
+      "fu": 0.8181818182,
+      "fv": -0.826446281,
+      "gu": 2.2,
+      "gv": -1.0,
+      "trace_J0": -0.1818181818,
+      "det_J0": 1.0,
+      "d_critical": 8.238425,
+      "seed": 2000
+    }
+  },
+  "mimetic_morph_table": [
+    {
+      "morph_id": "hippocoonides",
+      "morph_label": "f. hippocoonides (Amauris niavius mimic)",
+      "engrailed_allele": "H^h",
+      "threshold_u_th": 1.12,
+      "boundary_gradient_alpha_bc": 0.35,
+      "anisotropy_epsilon": 0.45,
+      "melanic_fraction_ref": 0.48,
+      "light_patch_count_ref": 2,
+      "dominant_orientation_deg_ref": 32.0,
+      "pattern_description": "Broad continuous proximal-to-median diagonal white patch with black apical margin and submarginal spots"
+    },
+    {
+      "morph_id": "trophonius",
+      "morph_label": "f. trophonius (Danaus chrysippus mimic)",
+      "engrailed_allele": "H^T",
+      "threshold_u_th": 1.04,
+      "boundary_gradient_alpha_bc": 0.55,
+      "anisotropy_epsilon": 0.50,
+      "melanic_fraction_ref": 0.56,
+      "light_patch_count_ref": 2,
+      "dominant_orientation_deg_ref": 28.0,
+      "pattern_description": "Broad warm brick-red/orange median patch with black costal/apical band and isolated white subapical bar"
+    },
+    {
+      "morph_id": "cenea",
+      "morph_label": "f. cenea (Amauris echeria / albimaculata mimic)",
+      "engrailed_allele": "H^c",
+      "threshold_u_th": 0.94,
+      "boundary_gradient_alpha_bc": 0.85,
+      "anisotropy_epsilon": 0.75,
+      "melanic_fraction_ref": 0.72,
+      "light_patch_count_ref": 5,
+      "dominant_orientation_deg_ref": 42.0,
+      "pattern_description": "Predominantly melanic black wing ground broken into discrete buff/cream discal and submarginal spots"
+    },
+    {
+      "morph_id": "planemoides",
+      "morph_label": "f. planemoides (Bematistes poggei mimic)",
+      "engrailed_allele": "H^pl",
+      "threshold_u_th": 1.02,
+      "boundary_gradient_alpha_bc": 0.65,
+      "anisotropy_epsilon": 1.65,
+      "melanic_fraction_ref": 0.63,
+      "light_patch_count_ref": 2,
+      "dominant_orientation_deg_ref": 78.0,
+      "pattern_description": "Transverse orange/white median band crossing the forewing perpendicular to longitudinal wing veins"
+    }
+  ],
+  "threshold_melanic_expansion_sweep": [
+    {"u_th": 0.85, "melanic_fraction_ref": 0.84, "regime": "Hyper-melanic dark wing"},
+    {"u_th": 0.94, "melanic_fraction_ref": 0.72, "regime": "f. cenea spotted morph"},
+    {"u_th": 1.02, "melanic_fraction_ref": 0.61, "regime": "f. planemoides / intermediate band"},
+    {"u_th": 1.06, "melanic_fraction_ref": 0.55, "regime": "f. trophonius median patch"},
+    {"u_th": 1.12, "melanic_fraction_ref": 0.48, "regime": "f. hippocoonides broad patch"},
+    {"u_th": 1.22, "melanic_fraction_ref": 0.34, "regime": "Hypo-melanic male-like pale wing"}
+  ],
+  "anisotropy_orientation_sweep": [
+    {"epsilon": 0.25, "stripe_angle_deg_ref": 14.0, "mode_regime": "Proximodistal vein-parallel stripes"},
+    {"epsilon": 0.45, "stripe_angle_deg_ref": 32.0, "mode_regime": "f. hippocoonides oblique diagonal band"},
+    {"epsilon": 0.75, "stripe_angle_deg_ref": 44.0, "mode_regime": "f. cenea fragmented spots"},
+    {"epsilon": 1.15, "stripe_angle_deg_ref": 62.0, "mode_regime": "Oblique-transverse transition"},
+    {"epsilon": 1.65, "stripe_angle_deg_ref": 78.0, "mode_regime": "f. planemoides anteroposterior transverse band"}
+  ]
+}

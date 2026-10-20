@@ -1,0 +1,65 @@
+sim_id: chirat-mollusc-shell-marginal-buckling
+math_family: "Fourth-Order Nonlinear Winkler-Beam Elastic Mantle Buckling & Accretionary Shell Kinematics"
+model_spec:
+  model: "Chirat, Moulton & Goriely (2013) PNAS nonlinear Winkler-beam mantle-margin buckling + Erlich et al. (2016) J. R. Soc. Interface antimarginal vs orthomarginal rib morphospace"
+  governing_ode: "E * I * d^4w/ds^4 + P * d^2w/ds^2 + k * w + kappa_3 * w^3 = 0"
+  critical_load_formula: "P_c = 2 * sqrt(E * I * k)"
+  wavelength_formula: "lambda_c = 2 * pi * (E * I / k)^(1/4)"
+  EI_mN_mm2: 1.085
+  k_mN_per_mm2: 0.285
+  kappa_3_mN_per_mm4: 1.250
+  P_over_Pc_wildtype: 1.450
+  seed: 2013
+  inputs:
+    - datasets/mollusc_shell_marginal_buckling/mollusc_shell_marginal_buckling_reference.json
+    - datasets/mollusc_shell_marginal_buckling/ribbed_bivalve_shell_specimen.jpg
+    - datasets/mollusc_shell_marginal_buckling/scout_manifest.json
+equations:
+  - law_name: "Chirat, Moulton & Goriely (2013) Fourth-Order Winkler-Beam Mantle Buckling & Critical Load Law"
+    formula: "E I ∂_s^4 w + P ∂_s^2 w + k w + κ_3 w^3 = 0,   P_c = 2√(E I k),   λ_c = 2π (E I / k)^{1/4}"
+    lean_decl: "MathOfBiology.Loop_072.winkler_modal_stiffness"
+    lean_theorem: "MathOfBiology.Loop_072.chirat_critical_buckling_dispersion_onset"
+    lean_locus: "morphoeval/lean/loops/Loop_072_mollusc_shell_marginal_buckling.lean#L21-L51"
+    lean_code: |
+      def chirat_critical_load (b c : Int) : Int := 2 * b * c
+      def winkler_modal_stiffness (b c P Q : Int) : Int :=
+        (b * b) * (Q * Q) - P * Q + (c * c)
+      theorem chirat_critical_buckling_dispersion_onset :
+          winkler_modal_stiffness 1 2 (chirat_critical_load 1 2) 2 = 0 ∧
+          winkler_modal_stiffness 1 2 0 2 = 8 := by decide
+    variables: "w(s): transverse mantle-margin deflection; E I: mantle flexural rigidity; k: calcified shell foundation stiffness; P: compressive growth thrust; q_c = (k/(E I))^{1/4}: critical wavenumber"
+    role: "Establishes the exact mechanical instability threshold P_c = 2√(E I k) and selects the intrinsic antimarginal rib wavelength λ_c = 2π(E I / k)^{1/4} along the generative shell margin"
+    source_citation: "Chirat, Moulton & Goriely (2013) PNAS 110(15):6015-6020 Eqs. (1)-(4) & SI Sec. S1"
+    code_locus: "2013-chirat-mollusc-shell-marginal-buckling.py#L120-L240"
+  - law_name: "Nonlinear Cubic Foundation Supercritical Pitchfork Rib-Amplitude Law"
+    formula: "(P - P_c) q_c^2 A - (3/4) κ_3 A^3 = 0 ⟹ A_eq(P) = √(4 q_c^2 (P - P_c) / (3 κ_3))"
+    lean_decl: "MathOfBiology.Loop_072.pitchfork_rib_residual"
+    lean_theorem: "MathOfBiology.Loop_072.chirat_supercritical_pitchfork_bifurcation"
+    lean_locus: "morphoeval/lean/loops/Loop_072_mollusc_shell_marginal_buckling.lean#L67-L84"
+    lean_code: |
+      def pitchfork_rib_residual (dP_q2 kappa_eff A : Int) : Int :=
+        A * (dP_q2 - kappa_eff * A * A)
+      theorem chirat_supercritical_pitchfork_bifurcation (dP_q2 kappa_eff : Int) :
+          pitchfork_rib_residual dP_q2 kappa_eff 0 = 0 ∧
+          pitchfork_rib_residual 12 3 2 = 0 ∧
+          pitchfork_rib_residual 12 3 (-2) = 0 := by simp [pitchfork_rib_residual]
+    variables: "A_eq: saturated post-buckling rib amplitude; κ_3: nonlinear cubic foundation stiffening; P - P_c: supercritical compressive thrust excess"
+    role: "Governs the continuous saturation of antimarginal rib and spine amplitude above P_c while guaranteeing a flat unbuckled shell valve (A = 0) for P ≤ P_c"
+    source_citation: "Chirat, Moulton & Goriely (2013) PNAS 110(15):6015-6020 SI Sec. S2; Erlich et al. (2016) J. R. Soc. Interface 13:20160592 Sec. 2.2"
+    code_locus: "2013-chirat-mollusc-shell-marginal-buckling.py#L165-L315"
+  - law_name: "Erlich et al. (2016) Isometric Constant-Rib vs Intercalating Antimarginal Scaling Law"
+    formula: "N_ribs(R) = (Φ_0 R) / λ_c(R) = (Φ_0 R / (2π)) (k / (E I))^{1/4}"
+    lean_decl: "MathOfBiology.Loop_072.isometric_rib_count_invariant"
+    lean_theorem: "MathOfBiology.Loop_072.erlich_antimarginal_rib_scaling_laws"
+    lean_locus: "morphoeval/lean/loops/Loop_072_mollusc_shell_marginal_buckling.lean#L90-L112"
+    lean_code: |
+      def isometric_rib_count_invariant (m L0 lam0 : Nat) : Nat := (m * L0) * lam0
+      def intercalating_rib_capacity (m n0 : Nat) : Nat := m * n0
+      theorem erlich_antimarginal_rib_scaling_laws (m L0 lam0 n0 : Nat) :
+          isometric_rib_count_invariant m L0 lam0 = L0 * (m * lam0) ∧
+          intercalating_rib_capacity 2 14 = 28 := by
+        simp [isometric_rib_count_invariant, intercalating_rib_capacity, Nat.mul_left_comm, Nat.mul_comm]
+    variables: "R: shell marginal radius from umbo; Φ_0: valve fan angle; L(R) = Φ_0 R: generative margin arc length; N_ribs: total number of radial costae"
+    role: "Distinguishes constant-rib-number isometric bivalve shells (e.g. Pecten jacobaeus with N_ribs = 14) from secondary rib-intercalating multicostate shells (e.g. Chlamys, Spirifer)"
+    source_citation: "Erlich, Moulton, Goriely & Chirat (2016) J. R. Soc. Interface 13(123):20160592 Sec. 3 & Fig. 4"
+    code_locus: "2013-chirat-mollusc-shell-marginal-buckling.py#L320-L460"

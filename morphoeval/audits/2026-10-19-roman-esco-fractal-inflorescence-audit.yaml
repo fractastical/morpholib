@@ -1,0 +1,140 @@
+# MorphoEval Pass 1 (v1) Audit — Azpeitia et al. (2021) Science & Prusinkiewicz et al. (2007) Science
+# Coupled Floral Identity Gene-Regulatory Network & Accelerating Plastochron Fractal Romanesco Inflorescences (Slot 040)
+
+audit:
+  id: 2026-10-19-roman-esco-fractal-inflorescence-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 040 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/40
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2021-pringle-roman-esco-fractal-inflorescence.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  azpeitia2021:
+    title: "Cauliflower fractal forms arise from perturbations of floral gene networks"
+    authors: "Azpeitia E, Tichtinsky G, Le Masson M, Serrano-Mislata A, Lucas J, Gregis V, Gimenez C, Prunet N, Farcot E, Kater MM, Bradley D, Madueno F, Godin C, Parcy F"
+    venue: "Science 373(6551):192-197 (2021)"
+    doi: 10.1126/science.abg5935
+  prusinkiewicz2007:
+    title: "Evolution and development of inflorescence architectures"
+    authors: "Prusinkiewicz P, Erasmus Y, Lane B, Harder LD, Coen E"
+    venue: "Science 316(5830):1452-1456 (2007)"
+    doi: 10.1126/science.1140429
+  smyth1990:
+    title: "Early flower development in Arabidopsis"
+    authors: "Smyth DR, Bowman JL, Meyerowitz EM"
+    venue: "The Plant Cell 2(8):755-767 (1990)"
+    doi: 10.1105/tpc.2.8.755
+  kempin1995:
+    title: "Molecular basis of the cauliflower phenotype in Arabidopsis"
+    authors: "Kempin SA, Savidge B, Yanofsky MF"
+    venue: "Science 267(5197):522-525 (1995)"
+    doi: 10.1126/science.7824951
+
+simulations:
+  - id: pringle-roman-esco-fractal-inflorescence
+    name: "Azpeitia et al. (2021) & Prusinkiewicz et al. (2007) TFL1-LFY-AP1/CAL-SOC1 floral GRN perturbation and accelerating plastochron Romanesco fractal inflorescence morphogenesis"
+    organism: "Brassica oleracea var. botrytis (Romanesco & Cauliflower curds) and Arabidopsis thaliana (ap1 cal mutant)"
+    script: 2021-pringle-roman-esco-fractal-inflorescence.py
+    output: docs/media/roman_esco_fractal_inflorescence_comparison.png
+    extra_outputs:
+      - docs/media/roman_esco_fractal_inflorescence_growth.gif
+    status: evaluated
+    source_refs:
+      - azpeitia2021
+      - prusinkiewicz2007
+      - smyth1990
+      - kempin1995
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2021-pringle-roman-esco-fractal-inflorescence.py`
+      (weighted score: 53.5/100). The Pass 1 baseline computes only a 1D quadratic polynomial
+      for primordium count and a 2D single-order Vogel spiral without solving the coupled
+      TFL1-LFY-AP1/CAL-SOC1 floral gene-regulatory network ODEs, 3D multi-order recursive
+      meristem trees across wild-type raceme, Arabidopsis ap1 cal, Brassica Cauliflower (beta=0),
+      and Brassica Romanesco (beta>0) genotypes, 3D box-counting fractal dimension D_f,
+      Fibonacci parastichy transitions (8,13) -> (13,21), lfy mutant negative controls, or
+      computer-vision segmentation of the vendored Romanesco Brassica oleracea specimen.
+    scores:
+      model-fidelity:
+        value: 53
+        rationale: >-
+          Evaluates only a 1D quadratic curve for N(T) and a flat 2D single-order golden-angle
+          spiral (L24-39), omitting the coupled TFL1-LFY-AP1/CAL-SOC1 nonlinear Hill ODE
+          system, 3D recursive multi-order meristem tree generation, and 3D box-counting
+          fractal dimension analysis.
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [24, 39], note: "1D polynomial curve without coupled floral GRN ODEs or 3D recursive meristem solver", supports: true}
+      specimen-match:
+        value: 45
+        rationale: >-
+          Vendors `datasets/roman_esco_fractal_inflorescence/romanesco_brassica_oleracea_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, or measure hierarchical floret cones,
+          Fibonacci parastichy spirals, or self-similar scaling on the specimen photograph.
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [59, 86], note: "Renders 2-panel idealized plot without loading or analyzing the Romanesco specimen photograph", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Hardcodes a single beta = 0.085 comparison without sweeping plastochron acceleration
+          beta across [0.0, 0.11], comparing the 4 canonical genotypes (WT raceme, Arabidopsis
+          ap1 cal, Brassica Cauliflower, Brassica Romanesco) plus lfy loss-of-function control,
+          or exposing CLI parameter flags.
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [24, 39], note: "Single hardcoded parameter point without genotype or beta sweep", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          Reports only 2 analytical numbers in `measure_morphoeval()` without GRN steady-state
+          validation, 3D fractal dimension D_f, Fibonacci parastichy contact numbers, Pearson
+          correlations/p-values across the plastochron sweep, or specimen CV metrics.
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [42, 56], note: "Only 2 analytical values without uncertainty, p-values, or empirical specimen comparison", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `roman_esco_fractal_inflorescence_reference.json`
+          with verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at runtime.
+        evidence:
+          - {file: datasets/roman_esco_fractal_inflorescence/roman_esco_fractal_inflorescence_reference.json, lines: [1, 165], note: "Reference JSON present on disk but not verified in Pass 1 script", supports: true}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Brief header cites Azpeitia et al. (2021) and Prusinkiewicz et al. (2007), but lacks
+          explicit equation-to-code-line and Lean 4 theorem mappings.
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [1, 7], note: "Minimal docstring without Lean 4 theorem mapping", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Generates PNG and GIF deterministically, but has only a 2-assertion `--self-test`
+          without SHA-256 dataset verification, GRN perturbation checks, or specimen CV checks.
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [103, 108], note: "Minimal 2-assertion self-test", supports: false}
+    remediation:
+      - "Implement the coupled TFL1-LFY-AP1/CAL-SOC1 nonlinear Hill ODE gene-regulatory network solver (Azpeitia et al. 2021 Science; Prusinkiewicz et al. 2007 Science) across wild-type raceme (g_AP1=1), ap1 cal / curd mutants (g_AP1=0), and lfy loss-of-function negative control."
+      - "Implement the 3D multi-order recursive phyllotactic meristem tree solver across 4 hierarchical orders (n=4) and sweep plastochron acceleration beta in [0.0, 0.11], computing conical aspect ratio H/R, 3D box-counting fractal dimension D_f, and Voronoi/Delaunay Fibonacci contact parastichy pairs (8,13) -> (13,21)."
+      - "Implement automated computer-vision segmentation of the SHA-256-locked Romanesco Brassica oleracea specimen photograph (`romanesco_brassica_oleracea_specimen.jpg`) to extract the whole-curd conical aspect ratio, multi-scale secondary/tertiary floret cones, empirical self-similar scale ratio lambda, and 2D/3D fractal box-counting dimension."
+      - "Add runtime SHA-256 dataset verification, 9 reference-anchored morphometric measurements with statistical p-values and negative controls, and an 8-point deterministic `--self-test` suite."

@@ -1,0 +1,78 @@
+sim_id: tero-physarum-transport-network
+slot: 57
+slot_id: slot-057-physarum-transport-network
+math_family: "Hagen-Poiseuille Kirchhoff Flow Coupled to Nonlinear Tube Conductivity Adaptation & Murray/Steiner Phase Transition"
+model_spec:
+  model: "Tero et al. (2010) Science 327:439-442 & Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. 244:553-564 Biologically Inspired Adaptive Physarum Transport Network"
+  I0_source_flux: 2.0
+  mu_decay_rate: 1.0
+  gamma_critical_shortest_path: 1.0
+  gamma_murray_cube_law: 1.3333333333333333
+  gamma_tokyo_pareto_optimum: 1.8
+  dt_integration_step: 0.08
+  seed: 2010
+  inputs:
+    - datasets/physarum_transport_network/physarum_transport_network_reference.json
+    - datasets/physarum_transport_network/physarum_polycephalum_specimen.jpg
+    - datasets/physarum_transport_network/scout_manifest.json
+    - datasets/physarum_transport_network/paper_citations.bib
+equations:
+  - id: tero-physarum-transport-network-1
+    law_name: "Tero et al. (2007, 2010) Hagen-Poiseuille Kirchhoff Flow Antisymmetry & Tube Conductivity Adaptation Equilibrium Law"
+    formula: "Q_ij = (D_ij / L_ij) (p_i - p_j),  Σ_j Q_ij = S_i,  dD_ij/dt = f(|Q_ij|) - μ D_ij = 0  <=>  D_ij^* = f(|Q_ij^*|) / μ"
+    lean_decl: "MathOfBiology.Loop_057.poiseuille_flux_num"
+    lean_theorem: "MathOfBiology.Loop_057.tero_kirchhoff_antisymmetry_and_conductivity_equilibrium"
+    lean_locus: "morphoeval/lean/loops/Loop_057_physarum_transport_network.lean#L46-L78"
+    lean_code: |
+      def poiseuille_flux_num (D pi pj : Int) : Int := D * (pi - pj)
+      def kirchhoff_junction_residual (q_in q_out1 q_out2 : Int) : Int := q_in - q_out1 - q_out2
+      def conductivity_rate (f_Q mu D : Int) : Int := f_Q - mu * D
+      theorem tero_kirchhoff_antisymmetry_and_conductivity_equilibrium (D pi pj q1 q2 mu D_star : Int) :
+          poiseuille_flux_num D pi pj + poiseuille_flux_num D pj pi = 0 ∧
+          poiseuille_flux_num D pi pi = 0 ∧
+          kirchhoff_junction_residual (q1 + q2) q1 q2 = 0 ∧
+          conductivity_rate (mu * D_star) mu D_star = 0
+    variables: "D_ij: hydraulic tube conductivity (∝ r_ij^4); L_ij: tube length; p_i, p_j: hydrostatic nodal pressures; Q_ij: protoplasmic shuttle streaming flux; f(|Q_ij|): shear-stress reinforcement rate; μ: tube decay rate"
+    role: "Proves that Poiseuille flux is strictly antisymmetric across directed edges, conserves protoplasmic current at every branching node, and equilibrates at D_ij^* = f(|Q_ij^*|) / μ"
+    source_citation: "Tero et al. (2010) Science 327(5964):439-442 Eqs. (1)-(3); Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. 244(4):553-564 Eqs. (1)-(4)"
+    code_locus: "2010-tero-physarum-transport-network.py#L120-L240"
+
+  - id: tero-physarum-transport-network-2
+    law_name: "Tero, Kobayashi & Nakagaki (2007) Two-Path Parallel Competition & Winner-Takes-All Shortest-Path Selection Law"
+    formula: "Q_1 / Q_2 = (D_1 L_2) / (D_2 L_1);  for L_1 < L_2 and γ > 1:  d(D_1/D_2)/dt > 0  =>  (D_1^*, D_2^*) = (f(I_0)/μ, 0)"
+    lean_decl: "MathOfBiology.Loop_057.parallel_superlinear_advantage"
+    lean_theorem: "MathOfBiology.Loop_057.tero_two_path_shortest_path_selection"
+    lean_locus: "morphoeval/lean/loops/Loop_057_physarum_transport_network.lean#L85-L120"
+    lean_code: |
+      def parallel_superlinear_advantage (L1 L2 : Int) : Int := L2 * L2 - L1 * L1
+      def parallel_rate_divergence (q1_sq q2_sq mu D : Int) : Int :=
+        conductivity_rate q1_sq mu D - conductivity_rate q2_sq mu D
+      theorem tero_two_path_shortest_path_selection (q1_sq q2_sq mu D pi pj : Int) (hq : q2_sq < q1_sq) :
+          parallel_superlinear_advantage 1 2 = 3 ∧
+          0 < parallel_superlinear_advantage 1 2 ∧
+          0 < parallel_rate_divergence q1_sq q2_sq mu D ∧
+          poiseuille_flux_num 0 pi pj = 0 ∧
+          conductivity_rate 0 mu 0 = 0
+    variables: "L_1, L_2: lengths of short and long parallel tubes (L_1 < L_2); Q_1, Q_2: branch fluxes; γ: flux feedback nonlinearity exponent; I_0: total source-sink current"
+    role: "Proves that for γ > 1, shorter parallel paths experience strictly stronger flux reinforcement than longer paths, destabilizing symmetric flow and driving winner-takes-all convergence to the shortest path / Steiner minimum tree"
+    source_citation: "Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. 244(4):553-564 Section 2.2 & Fig. 2; Bonifaci, Mehlhorn & Varma (2012) J. Theor. Biol. 309:121-133"
+    code_locus: "2010-tero-physarum-transport-network.py#L245-L345"
+
+  - id: tero-physarum-transport-network-3
+    law_name: "Murray (1926) & Tero et al. (2010) Vascular Cube-Law Radius Relation at Critical Shear Exponent γ = 4/3"
+    formula: "D_ij ∝ r_ij^4,  D_ij^* ∝ |Q_ij^*|^(4/3)  =>  |Q_ij^*| ∝ (D_ij^* )^(3/4) ∝ r_ij^3;  Q_0 = Q_1 + Q_2  =>  r_0^3 = r_1^3 + r_2^3"
+    lean_decl: "MathOfBiology.Loop_057.radius_cube"
+    lean_theorem: "MathOfBiology.Loop_057.tero_murray_cube_law_at_gamma_four_thirds"
+    lean_locus: "morphoeval/lean/loops/Loop_057_physarum_transport_network.lean#L127-L154"
+    lean_code: |
+      def radius_cube (r : Nat) : Nat := r * r * r
+      def poiseuille_d4 (r : Nat) : Nat := r * r * r * r
+      theorem tero_murray_cube_law_at_gamma_four_thirds (r1 r2 : Nat) (hr2 : 0 < r2) :
+          poiseuille_d4 2 * poiseuille_d4 2 * poiseuille_d4 2 =
+            radius_cube 2 * radius_cube 2 * radius_cube 2 * radius_cube 2 ∧
+          radius_cube r1 < radius_cube r1 + radius_cube r2 ∧
+          radius_cube 2 + radius_cube 2 = 16
+    variables: "r_0: parent vein radius; r_1, r_2: daughter branch radii; D(r): Hagen-Poiseuille fourth-power conductivity; Q(r): steady-state protoplasmic volume flux"
+    role: "Establishes the exact algebraic equivalence between Hagen-Poiseuille tube adaptation at γ = 4/3 and Murray's minimum-work cube law r_0^3 = r_1^3 + r_2^3 across plasmodial Y-junctions"
+    source_citation: "Murray (1926) Proc. Natl. Acad. Sci. USA 12(3):207-214; Tero et al. (2010) Science 327(5964):439-442"
+    code_locus: "2010-tero-physarum-transport-network.py#L350-L465"

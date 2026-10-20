@@ -1,0 +1,151 @@
+{
+  "dataset_id": "carrier_driven_canalization_v1",
+  "title": "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. & Scarpella et al. (2006) Genes Dev. — PIN1 Efflux Carrier Allocation, Intracellular Pool Conservation, and Open Dendritic Trees vs Closed Reticulate Venation Loops on Hexagonal Leaf Lamina Lattices",
+  "organism": "Arabidopsis thaliana (dicot leaf lamina and procambial venation network)",
+  "primary_sources": [
+    {
+      "citation": "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(3):313-325",
+      "doi": "10.1016/j.jtbi.2005.03.017",
+      "role": "Coupled ODEs for intracellular auxin S_i and directional PIN1 efflux carriers P_ij on a 2D hexagonal leaf lamina lattice: dS_i/dt = sigma - mu*S_i - sum_j J_{i->j}, J_{i->j} = P_ij*S_i - P_ji*S_j + D*(S_i - S_j), and dP_ij/dt = k_1*Phi(J_{i->j})*P_{i,cyt} - k_2*P_ij with conserved total cellular carrier pool P_total = P_{i,cyt} + sum_{j=1}^6 P_ij. Demonstrates that conserved linear/power-law allocation Phi(J) = max(0,J)^p (p > 1) drives winner-take-all single-face polarization and strictly open hierarchical dendritic trees (Betti-1 = 0), whereas nonlinear saturating allocation Phi(J) = J^n / (K^n + J^n) allows multi-face co-polarization and closed reticulate venation loops (Betti-1 > 0)"
+    },
+    {
+      "citation": "Scarpella, Marcos, Friml & Berleth (2006) Genes & Development 20(8):1015-1027",
+      "doi": "10.1101/gad.1402406",
+      "role": "Live imaging of ProPIN1:PIN1-GFP in developing Arabidopsis thaliana leaves showing that epidermal PIN1 convergence points initiate secondary veins and that transient bipolar (double-headed) PIN1 cells bridge nascent secondary strands to preexisting primary/secondary veins to close areole loops"
+    },
+    {
+      "citation": "Rolland-Lagan & Prusinkiewicz (2005) Plant J. 44(5):854-865",
+      "doi": "10.1111/j.1365-313X.2005.02581.x",
+      "role": "Theoretical and computational analysis of open vs closed venation loop formation in Arabidopsis leaves under carrier-driven canalization, moving auxin sources, and bipolar cell bridging"
+    },
+    {
+      "citation": "Stoma, Lucas, Chopard, Schaedel, Traas & Godin (2008) PLoS Comput. Biol. 4(10):e1000207",
+      "doi": "10.1371/journal.pcbi.1000207",
+      "role": "Flux-based PIN1 carrier allocation and conservation of intracellular + membrane PIN pools during canalized auxin transport"
+    }
+  ],
+  "feugier_hexagonal_model_parameters": {
+    "hex_rows": 14,
+    "hex_cols": 14,
+    "faces_per_cell": 6,
+    "auxin_production_sigma": 0.12,
+    "auxin_degradation_mu": 0.01,
+    "passive_diffusion_D": 0.05,
+    "carrier_exocytosis_k1": 1.0,
+    "carrier_endocytosis_k2": 0.25,
+    "total_cellular_carrier_P_total": 6.0,
+    "power_law_exponent_p": 2.0,
+    "hill_cooperativity_n": 2.0,
+    "hill_half_saturation_K": 0.35,
+    "vein_carrier_threshold_P_vein": 1.15
+  },
+  "carrier_allocation_regime_sweep": [
+    {
+      "regime_id": "sublinear_allocation_p08",
+      "model_type": "conserved_power_law",
+      "exponent_p": 0.8,
+      "dominant_face_carrier_share_ref": 0.500,
+      "secondary_face_carrier_share_ref": 0.500,
+      "bipolar_cell_fraction_ref": 0.000,
+      "betti_1_loop_count_ref": 0,
+      "topology_class": "diffuse_unpolarized_sheet"
+    },
+    {
+      "regime_id": "linear_marginal_p10",
+      "model_type": "conserved_power_law",
+      "exponent_p": 1.0,
+      "dominant_face_carrier_share_ref": 0.545,
+      "secondary_face_carrier_share_ref": 0.455,
+      "bipolar_cell_fraction_ref": 0.000,
+      "betti_1_loop_count_ref": 0,
+      "topology_class": "weakly_graded_sheet"
+    },
+    {
+      "regime_id": "feugier_model_a_conserved_p15",
+      "model_type": "conserved_power_law",
+      "exponent_p": 1.5,
+      "dominant_face_carrier_share_ref": 0.962,
+      "secondary_face_carrier_share_ref": 0.038,
+      "bipolar_cell_fraction_ref": 0.000,
+      "betti_1_loop_count_ref": 0,
+      "topology_class": "open_dendritic_tree"
+    },
+    {
+      "regime_id": "feugier_model_a_conserved_p20",
+      "model_type": "conserved_power_law",
+      "exponent_p": 2.0,
+      "dominant_face_carrier_share_ref": 0.996,
+      "secondary_face_carrier_share_ref": 0.004,
+      "bipolar_cell_fraction_ref": 0.000,
+      "betti_1_loop_count_ref": 0,
+      "topology_class": "open_dendritic_tree"
+    },
+    {
+      "regime_id": "feugier_model_b_saturating_hill",
+      "model_type": "saturating_hill_allocation",
+      "exponent_p": 2.0,
+      "hill_K": 0.35,
+      "dominant_face_carrier_share_ref": 0.518,
+      "secondary_face_carrier_share_ref": 0.482,
+      "bipolar_cell_fraction_ref": 0.142,
+      "betti_1_loop_count_ref": 12,
+      "topology_class": "closed_reticulate_venation_loops"
+    },
+    {
+      "regime_id": "scarpella_convergence_bipolar_loops",
+      "model_type": "saturating_hill_with_epidermal_convergence",
+      "exponent_p": 2.0,
+      "hill_K": 0.30,
+      "dominant_face_carrier_share_ref": 0.508,
+      "secondary_face_carrier_share_ref": 0.492,
+      "bipolar_cell_fraction_ref": 0.184,
+      "betti_1_loop_count_ref": 16,
+      "topology_class": "hierarchical_reticulate_areole_loops"
+    }
+  ],
+  "hexagonal_venation_benchmarks": {
+    "model_a_open_tree": {
+      "description": "Feugier et al. (2005) Model A: conserved intracellular PIN1 pool with non-saturating quadratic flux allocation Phi(J) = J^2",
+      "pool_conservation_max_error_ref": 0.0,
+      "flux_antisymmetry_max_error_ref": 0.0,
+      "dominant_face_share_ref": 0.996,
+      "betti_1_loops_ref": 0,
+      "free_vein_endings_ref": 9,
+      "bipolar_bridge_cells_ref": 0,
+      "vein_cell_fraction_ref": 0.245
+    },
+    "model_b_saturating_reticulate": {
+      "description": "Feugier et al. (2005) Model B & Scarpella et al. (2006): saturating Hill exocytosis Phi(J) = J^2/(K^2+J^2) + marginal epidermal PIN1 convergence points",
+      "pool_conservation_max_error_ref": 0.0,
+      "flux_antisymmetry_max_error_ref": 0.0,
+      "dominant_face_share_ref": 0.518,
+      "betti_1_loops_ref": 16,
+      "free_vein_endings_ref": 2,
+      "bipolar_bridge_cells_ref": 14,
+      "vein_cell_fraction_ref": 0.347,
+      "mean_areole_compactness_ref": 0.768
+    },
+    "pin1_exocytosis_ablation_control": {
+      "description": "Negative control: k_1 = 0 (gnom / brefeldin-A PIN1 exocytosis block or pin1 null mutant)",
+      "dominant_face_share_ref": 0.1667,
+      "betti_1_loops_ref": 0,
+      "vein_cell_fraction_ref": 0.000,
+      "max_membrane_carrier_P_ij_ref": 0.000
+    }
+  },
+  "specimen_metadata": {
+    "filename": "leaf_tip_venation_loops_specimen.jpg",
+    "source_title": "File:Leaf tip skeleton, detail from file by Stefanie Leuker.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Leaf_tip_skeleton,_detail_from_file_by_Stefanie_Leuker.jpg",
+    "license": "CC BY-SA 4.0",
+    "author": "Stefanie Leuker (Wikimedia Commons)",
+    "resolution_px": [539, 351],
+    "lamina_roi_box_y0_y1_x0_x1": [15, 235, 20, 500],
+    "sha256": "e54c8add6cf7c9166f34e9efee7aefae8ef2ff94d1657a25b100636290b42653",
+    "empirical_vein_density_ref": 0.3585,
+    "empirical_closed_areole_loops_ref": 205,
+    "empirical_mean_areole_area_px_ref": 99.06,
+    "empirical_mean_areole_compactness_ref": 0.7749,
+    "description": "Cleared dicot leaf tip venation skeleton showing the primary midrib, secondary vein loops, marginal vein, and reticulate tertiary/quaternary closed polygonal areole loops."
+  }
+}

@@ -1,0 +1,471 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-airway-mucosal-creasing-loop
+  target_simulation: 2018-nelson-airway-mucosal-creasing.py
+  paper: Wiggs et al. (1997) J. Appl. Physiol. 83:1814-1821; Li et al. (2011) J. Mech.
+    Phys. Solids 59:758-774; Eskandari et al. (2015) J. Theor. Biol. 403:209-218
+  created_at: '2026-10-20T02:12:05.767Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: 33e07ad
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 16.756
+  wall_time_min: 0.28
+  tier_a_wall_s: 7.185
+  tier_b_wall_s: 9.571
+  cpu_user_s: 10.69
+  cpu_sys_s: 1.17
+  input_tokens: 391
+  output_tokens: 17229
+  subagent_tokens: 0
+  total_llm_tokens: 17620
+  artifact_tokens: 38850
+  tier_a_llm_tokens: 4189
+  tier_b_llm_tokens: 13431
+  effective_tokens_per_s: 1051.6
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:12:17.783Z'
+  ended_at: '2026-10-20T02:12:20.085Z'
+  duration_s: 2.247
+  cpu_user_s: 1.3
+  cpu_sys_s: 0.03
+  max_rss_mb: 33.9
+  runs_count: 1
+  tokens:
+    input_tokens: 30
+    output_tokens: 59
+    subagent_tokens: 0
+    total_llm_tokens: 89
+    artifact_tokens: 769
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/airway_mucosal_creasing/scout_manifest.json
+    bytes: 2636
+    sha256: c73a19386245eae396fb94a36f12145a17d91ef8f5159404455df83cb653514c
+    tokens: 769
+  commands:
+  - command: ./venv/bin/python3 morphoeval/scout_literature.py --slot 68 --out datasets/airway_mucosal_creasing/scout_manifest.json
+    exit_code: 0
+    wall_s: 2.247
+    cpu_user_s: 1.3
+    cpu_sys_s: 0.03
+    stdout_tokens: 59
+  notes: null
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:15:01.213Z'
+  ended_at: '2026-10-20T02:15:01.326Z'
+  duration_s: 0.113
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 893
+    subagent_tokens: 0
+    total_llm_tokens: 893
+    artifact_tokens: 1690
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: datasets/airway_mucosal_creasing/paper_citations.bib
+    bytes: 1736
+    sha256: dc5cda198aa48e190ea9e64ec89f6b948f359dcf38d4334840be2da41268f6d4
+    tokens: 495
+  - file: datasets/airway_mucosal_creasing/README.md
+    bytes: 4341
+    sha256: 3538a369d2271441a7e10cd5536759b4f11467045631a09f0059d36d394cf15e
+    tokens: 1195
+  commands: []
+  notes: null
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:15:01.489Z'
+  ended_at: '2026-10-20T02:15:01.591Z'
+  duration_s: 0.101
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 2952
+    subagent_tokens: 0
+    total_llm_tokens: 2952
+    artifact_tokens: 2952
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/airway_mucosal_creasing/airway_mucosal_creasing_reference.json
+    bytes: 9549
+    sha256: de50bdef15ba022d60536ee76b5a44f87ec59c6ac25af16009d51e0c6b2d3e45
+    tokens: 2888
+  - file: datasets/airway_mucosal_creasing/bronchiole_mucosal_rosette_specimen.jpg
+    bytes: 542409
+    sha256: ecdf9c611a8c6f1c319c28eb31bf0f17126cef2372c28e1edfe60bc59bc10b99
+    tokens: 64
+  commands: []
+  notes: null
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:15:51.246Z'
+  ended_at: '2026-10-20T02:16:16.904Z'
+  duration_s: 3.743
+  cpu_user_s: 0.39
+  cpu_sys_s: 0.56
+  max_rss_mb: 393.3
+  runs_count: 2
+  tokens:
+    input_tokens: 30
+    output_tokens: 160
+    subagent_tokens: 0
+    total_llm_tokens: 190
+    artifact_tokens: 1491
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean
+    bytes: 5820
+    sha256: 76cb538a9c1e83e9719e30a4758976424b59f5130ade67da9e0972649eb20fd6
+    tokens: 64
+  - file: morphoeval/math_kg_loops/nelson-airway-mucosal-creasing.yaml
+    bytes: 5365
+    sha256: 4c679f05efe24308dc4cc0ba01e36f8a9daa98cb1a5ef712412641c98cde7672
+    tokens: 1427
+  commands:
+  - command: lean morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean
+    exit_code: 1
+    wall_s: 2.444
+    cpu_user_s: 0.24
+    cpu_sys_s: 0.37
+    stdout_tokens: 159
+  - command: lean morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean
+    exit_code: 0
+    wall_s: 1.299
+    cpu_user_s: 0.15
+    cpu_sys_s: 0.19
+    stdout_tokens: 1
+  notes: null
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:17:33.731Z'
+  ended_at: '2026-10-20T02:17:34.006Z'
+  duration_s: 0.218
+  cpu_user_s: 0.19
+  cpu_sys_s: 0.02
+  max_rss_mb: 60.8
+  runs_count: 1
+  tokens:
+    input_tokens: 23
+    output_tokens: 22
+    subagent_tokens: 0
+    total_llm_tokens: 45
+    artifact_tokens: 3192
+    method: explicit+BPE
+  artifacts:
+  - file: 2018-nelson-airway-mucosal-creasing.py
+    bytes: 11482
+    sha256: 1bf57d545654c4ddc795f85de45eae4f84457cf9af8b4224331184a2766e0802
+    tokens: 3192
+  commands:
+  - command: ./venv/bin/python3 2018-nelson-airway-mucosal-creasing.py --self-test
+    exit_code: 0
+    wall_s: 0.218
+    cpu_user_s: 0.19
+    cpu_sys_s: 0.02
+    stdout_tokens: 22
+  notes: null
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T02:17:34.084Z'
+  ended_at: '2026-10-20T02:17:34.911Z'
+  duration_s: 0.763
+  cpu_user_s: 0.62
+  cpu_sys_s: 0.07
+  max_rss_mb: 114.0
+  runs_count: 1
+  tokens:
+    input_tokens: 19
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 20
+    artifact_tokens: 128
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/airway_mucosal_creasing_comparison.png
+    bytes: 208536
+    sha256: 285fff9751c8f0c97332526a96eeb64dc398c77de16a5c3f1529e721754756bf
+    tokens: 64
+  - file: docs/media/airway_mucosal_creasing_growth.gif
+    bytes: 96659
+    sha256: d0311a3124db3a8308a2cfb37cbb2aba3079b7931b42c5d0eea484052d7579e2
+    tokens: 64
+  commands:
+  - command: ./venv/bin/python3 2018-nelson-airway-mucosal-creasing.py
+    exit_code: 0
+    wall_s: 0.763
+    cpu_user_s: 0.62
+    cpu_sys_s: 0.07
+    stdout_tokens: 1
+  notes: null
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:17:46.828Z'
+  ended_at: '2026-10-20T02:22:06.610Z'
+  duration_s: 0.188
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 2
+  tokens:
+    input_tokens: 0
+    output_tokens: 6008
+    subagent_tokens: 0
+    total_llm_tokens: 6008
+    artifact_tokens: 6008
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit.yaml
+    bytes: 10529
+    sha256: bcba859c999b8b94b10983be030e412a11e191b793af596a7aa21baf74da9d3d
+    tokens: 2657
+  - file: morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit-v2.yaml
+    bytes: 12485
+    sha256: 0ca39d63b16dca7d551dfbda1bd3bff668ea861f191b32a8cd14ea77c64e3d19
+    tokens: 3351
+  commands: []
+  notes: null
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:17:47.001Z'
+  ended_at: '2026-10-20T02:22:08.426Z'
+  duration_s: 2.036
+  cpu_user_s: 1.77
+  cpu_sys_s: 0.11
+  max_rss_mb: 193.9
+  runs_count: 2
+  tokens:
+    input_tokens: 69
+    output_tokens: 474
+    subagent_tokens: 0
+    total_llm_tokens: 543
+    artifact_tokens: 2699
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit.measurements.yaml
+    bytes: 2700
+    sha256: d46e203c67bd040138b475b05357fffd9ca8de3ee38e2164c9dcd98d2ac8aa1a
+    tokens: 875
+  - file: morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit-v2.measurements.yaml
+    bytes: 6203
+    sha256: 8870482f571f230c25ff5444d0b105191c737425c83ee84a551f6f8ce5a94cd1
+    tokens: 1824
+  commands:
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit.yaml
+    exit_code: 0
+    wall_s: 0.36
+    cpu_user_s: 0.31
+    cpu_sys_s: 0.03
+    stdout_tokens: 133
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit-v2.yaml
+    exit_code: 0
+    wall_s: 1.676
+    cpu_user_s: 1.46
+    cpu_sys_s: 0.08
+    stdout_tokens: 341
+  notes: null
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:17:47.495Z'
+  ended_at: '2026-10-20T02:22:09.010Z'
+  duration_s: 0.842
+  cpu_user_s: 0.72
+  cpu_sys_s: 0.04
+  max_rss_mb: 44.8
+  runs_count: 2
+  tokens:
+    input_tokens: 109
+    output_tokens: 299
+    subagent_tokens: 0
+    total_llm_tokens: 408
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit.yaml
+      --no-resolve-heads --conform
+    exit_code: 0
+    wall_s: 0.403
+    cpu_user_s: 0.35
+    cpu_sys_s: 0.02
+    stdout_tokens: 145
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit-v2.yaml
+      --supersede-from morphoeval/kg/2026-10-19-airway-mucosal-creasing-audit --no-resolve-heads
+      --conform
+    exit_code: 0
+    wall_s: 0.439
+    cpu_user_s: 0.37
+    cpu_sys_s: 0.02
+    stdout_tokens: 154
+  notes: null
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:17:48.033Z'
+  ended_at: '2026-10-20T02:22:09.692Z'
+  duration_s: 1.091
+  cpu_user_s: 0.96
+  cpu_sys_s: 0.06
+  max_rss_mb: 55.8
+  runs_count: 2
+  tokens:
+    input_tokens: 65
+    output_tokens: 994
+    subagent_tokens: 0
+    total_llm_tokens: 1059
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands:
+  - command: ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-airway-mucosal-creasing-audit
+    exit_code: 0
+    wall_s: 0.551
+    cpu_user_s: 0.49
+    cpu_sys_s: 0.03
+    stdout_tokens: 489
+  - command: ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-airway-mucosal-creasing-audit-v2
+    exit_code: 0
+    wall_s: 0.54
+    cpu_user_s: 0.47
+    cpu_sys_s: 0.03
+    stdout_tokens: 505
+  notes: null
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:17:48.862Z'
+  ended_at: '2026-10-20T02:22:10.010Z'
+  duration_s: 0.184
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 2
+  tokens:
+    input_tokens: 0
+    output_tokens: 5249
+    subagent_tokens: 0
+    total_llm_tokens: 5249
+    artifact_tokens: 5249
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-airway-mucosal-creasing-audit/REPORT.md
+    bytes: 8080
+    sha256: c755fa46d1247903532f2d54ff1df5acd4a18172208939cc309d4791791e9aaf
+    tokens: 2171
+  - file: morphoeval/kg/2026-10-19-airway-mucosal-creasing-audit-v2/REPORT.md
+    bytes: 10861
+    sha256: b4d9ba6ff3ff64fe01cf5b6d2320d14a43190bbe3c31631a134e14e22ec2a7b8
+    tokens: 3078
+  commands: []
+  notes: null
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: null
+  status: completed
+  started_at: '2026-10-20T02:20:58.555Z'
+  ended_at: '2026-10-20T02:21:03.849Z'
+  duration_s: 5.23
+  cpu_user_s: 4.74
+  cpu_sys_s: 0.28
+  max_rss_mb: 317.8
+  runs_count: 1
+  tokens:
+    input_tokens: 46
+    output_tokens: 118
+    subagent_tokens: 0
+    total_llm_tokens: 164
+    artifact_tokens: 14672
+    method: explicit+BPE
+  artifacts:
+  - file: 2018-nelson-airway-mucosal-creasing.py
+    bytes: 54487
+    sha256: ddbc7d4b4f992f93dd08e48ad665042d52d4a4670dfcefdbd3f518b7b0119230
+    tokens: 14544
+  - file: docs/media/airway_mucosal_creasing_comparison.png
+    bytes: 929101
+    sha256: a9e197162282ea60d53488163dec38011ccf6f089b42215cdd1a4457e149cd2e
+    tokens: 64
+  - file: docs/media/airway_mucosal_creasing_growth.gif
+    bytes: 177188
+    sha256: 5a50a0483913bcdf7a2e36c00e972d154f1908778f97ad5a9e2bb44d4323eee2
+    tokens: 64
+  commands:
+  - command: bash -c ./venv/bin/python3 2018-nelson-airway-mucosal-creasing.py --self-test
+      && ./venv/bin/python3 2018-nelson-airway-mucosal-creasing.py
+    exit_code: 0
+    wall_s: 5.23
+    cpu_user_s: 4.74
+    cpu_sys_s: 0.28
+    stdout_tokens: 118
+  notes: null

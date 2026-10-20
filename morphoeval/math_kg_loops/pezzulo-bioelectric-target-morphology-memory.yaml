@@ -1,0 +1,89 @@
+sim_id: pezzulo-bioelectric-target-morphology-memory
+math_family: Variational Free Energy Minimization & Active Inference Anatomical Homeostasis Toward Bioelectric Setpoints
+model_spec:
+  model: Pezzulo & Levin (2015) J. R. Soc. Interface 12:20150772 & Friston, Levin, Sengupta & Pezzulo (2015) J. R. Soc. Interface 12:20141383 Variational Free Energy minimization and homeostatic anatomical error-correction toward stored bioelectric target morphology setpoints
+  variational_free_energy: "F(mu, x) = (1/2) * Pi_s * ||s(x) - g(mu)||^2 + (1/2) * Pi_p * ||mu - mu_target||^2"
+  active_morphogenetic_remodeling_ode: "dx/dt = -kappa_a * dF/dx = -kappa_a * Pi_s * J_s(x)^T * (s(x) - g(mu))"
+  bioelectric_belief_updating_ode: "dmu/dt = -kappa_mu * dF/dmu = kappa_mu * Pi_s * J_g(mu)^T * (s(x) - g(mu)) - kappa_mu * Pi_p * (mu - mu_target)"
+  lyapunov_free_energy_decay: "dF/dt = -(1/kappa_mu) * ||dmu/dt||^2 - (1/kappa_a) * ||dx/dt||^2 <= 0"
+  parameters:
+    L_target_wt: 1.0
+    L_stylopod_wt: 0.38
+    L_zeugopod_wt: 0.34
+    L_autopod_wt: 0.28
+    L_proximal_cut: 0.20
+    L_distal_cut: 0.70
+    L_target_rewritten: 1.45
+    Pi_s_wt: 2.0
+    Pi_p_wt: 4.0
+    kappa_a: 0.45
+    kappa_mu: 0.85
+    seed: 2015
+  inputs:
+    - datasets/bioelectric_target_morphology_memory/bioelectric_target_morphology_memory_reference.json
+    - datasets/bioelectric_target_morphology_memory/salamander_limb_regeneration_specimen.jpg
+    - datasets/bioelectric_target_morphology_memory/scout_manifest.json
+    - datasets/bioelectric_target_morphology_memory/paper_citations.bib
+equations:
+  - law_name: "Pezzulo & Levin (2015) & Friston et al. (2015) Variational Free Energy Target Setpoint & Symmetry Law"
+    formula: "F(μ, x) = (1/2) Π_s (s(x) - g(μ))^2 + (1/2) Π_p (μ - μ_target)^2 ≥ 0;   F(μ_target, μ_target) = 0"
+    lean_decl: "MathOfBiology.Loop_084.vfe_2x"
+    lean_theorem: "MathOfBiology.Loop_084.vfe_zero_at_target_and_symmetry"
+    lean_locus: "morphoeval/lean/loops/Loop_084_bioelectric_target_morphology_memory.lean#L14-L44"
+    lean_code: |
+      def sq_int (z : Int) : Int :=
+        z * z
+      def vfe_2x (Pi_s Pi_p x mu mu_target : Int) : Int :=
+        Pi_s * sq_int (x - mu) + Pi_p * sq_int (mu - mu_target)
+      theorem vfe_zero_at_target_and_symmetry (Pi_s Pi_p d mu_target : Int) :
+          vfe_2x Pi_s Pi_p mu_target mu_target mu_target = 0 ∧
+          vfe_2x 2 4 20 100 100 = 12800 ∧
+          vfe_2x 2 4 100 100 100 = 0 ∧
+          sq_int (-d) = sq_int d := by
+        refine ⟨?_, by decide, by decide, ?_⟩
+        · simp [vfe_2x, sq_int]
+        · simp [sq_int, Int.neg_mul_neg]
+    variables: "x(t): anatomical state (proximodistal limb segment lengths or organ coordinates); μ(t): internal bioelectric positional state; μ_target: stored bioelectric target morphology setpoint; Π_s: sensory precision; Π_p: prior setpoint precision"
+    role: "Defines the Variational Free Energy functional governing anatomical homeostasis and proves that the target morphology setpoint μ_target is the unique zero-free-energy equilibrium"
+    source_citation: "Pezzulo & Levin (2015) J. R. Soc. Interface 12:20150772 Figs. 2-4; Friston, Levin, Sengupta & Pezzulo (2015) J. R. Soc. Interface 12:20141383 Eqs. (2.1)-(2.6)"
+    code_locus: "2015-pezzulo-bioelectric-target-morphology-memory.py#L120-L210"
+  - law_name: "Homeostatic Anatomical Error-Correction Velocity, Exact Stop at L* & Denervation Arrest Law"
+    formula: "dx/dt = -κ_a ∂_x F = -κ_a Π_s (x - μ);   x = μ ⟹ dx/dt = 0;   Π_s = 0 ⟹ dx/dt = 0"
+    lean_decl: "MathOfBiology.Loop_084.morpho_action_vel"
+    lean_theorem: "MathOfBiology.Loop_084.morpho_action_stop_and_denervation_arrest"
+    lean_locus: "morphoeval/lean/loops/Loop_084_bioelectric_target_morphology_memory.lean#L47-L76"
+    lean_code: |
+      def morpho_action_vel (kappa_a Pi_s x mu : Int) : Int :=
+        -kappa_a * Pi_s * (x - mu)
+      theorem morpho_action_stop_and_denervation_arrest (kappa_a Pi_s x mu : Int) :
+          morpho_action_vel kappa_a Pi_s mu mu = 0 ∧
+          morpho_action_vel kappa_a 0 x mu = 0 ∧
+          morpho_action_vel 9 1 20 100 = 720 ∧
+          morpho_action_vel 9 1 70 100 = 270 ∧
+          morpho_action_vel 9 1 100 100 = 0 := by
+        refine ⟨?_, ?_, by decide, by decide, by decide⟩
+        · simp [morpho_action_vel]
+        · simp [morpho_action_vel]
+    variables: "κ_a: active morphogenetic remodeling rate; Π_s: bioelectric sensory precision; x = L(t): current limb length; μ = L*: target limb length"
+    role: "Proves proportional blastema growth rate scaling with amputation deficit (proximal faster than distal), exact growth cessation at L(t) = L*, and complete regeneration arrest under denervation / sensory-precision ablation (Π_s = 0)"
+    source_citation: "Pezzulo & Levin (2015) J. R. Soc. Interface 12:20150772 Section 3 & Fig. 2; Friston et al. (2015) Eq. (2.6)"
+    code_locus: "2015-pezzulo-bioelectric-target-morphology-memory.py#L145-L265"
+  - law_name: "Equifinal Limb Regeneration, Ectopic Tail-to-Limb Remodeling & Bioelectric Setpoint Rewriting Law"
+    formula: "lim_{t→∞} (L(t), ψ(t)) = (L_target, ψ_target) [Π_s > 0]  vs  (L_0, ψ_0) [Π_s = 0]"
+    lean_decl: "MathOfBiology.Loop_084.asymptotic_regenerated_state"
+    lean_theorem: "MathOfBiology.Loop_084.canonical_bioelectric_target_regimes"
+    lean_locus: "morphoeval/lean/loops/Loop_084_bioelectric_target_morphology_memory.lean#L79-L107"
+    lean_code: |
+      def asymptotic_regenerated_state (Pi_s L_0 psi_0 L_target psi_target : Int) : Int × Int :=
+        if Pi_s > 0 then (L_target, psi_target) else (L_0, psi_0)
+      theorem canonical_bioelectric_target_regimes :
+          asymptotic_regenerated_state 2 20 100 100 100 = (100, 100) ∧
+          asymptotic_regenerated_state 2 70 100 100 100 = (100, 100) ∧
+          asymptotic_regenerated_state 2 35 (-100) 100 100 = (100, 100) ∧
+          asymptotic_regenerated_state 2 20 145 145 145 = (145, 145) ∧
+          asymptotic_regenerated_state 0 20 20 100 100 = (20, 20) := by
+        decide
+    variables: "L_0: amputation stump length (0.20 proximal shoulder vs 0.70 distal wrist); ψ_0: initial grafted organ identity (-1.0 tail vs +1.0 limb); L_target' = 1.45: rewritten bioelectric target setpoint"
+    role: "Establishes exact equifinality of proximal and distal limb regeneration to L* = 1.00, tail-to-limb blastema remodeling, rewritten bioelectric memory convergence to L*' = 1.45, and denervation arrest at L_0 = 0.20"
+    source_citation: "Pezzulo & Levin (2015) J. R. Soc. Interface 12:20150772 Figs. 1-4; Farinella-Ferruzza (1956); Durant et al. (2017) Biophys. J. 112:2231-2243"
+    code_locus: "2015-pezzulo-bioelectric-target-morphology-memory.py#L270-L440"

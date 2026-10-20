@@ -1,0 +1,109 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-tailbud-neuromesodermal-jamming> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Mongera et al. (2018) & Kim et al. (2021) zebrafish tailbud active fluid-to-solid jamming transition & yield-stress axis elongation — Morphometric validation: 53/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Computes 3 basic summary values (`mpz_yield_stress_Pa`, `apsm_yield_stress_Pa`, `critical_packing_phi_c`, L155-177), but does not validate simulated `phi_ECS(x)`, `sigma_y(x)`, `sigma_A(x)`, `k_T1(x)`, elongation velocity `v_elong`, or bilateral asymmetry against Mongera et al. (2018) reference tables, nor does it extract nuclear packing or interstitial void fractions from the zebrafish tailbud specimen." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2022-tailbud-neuromesodermal-jamming.py L155–L177: Only 3 basic metrics without Mongera et al. (2018) AP profile correlation, perturbation validation, or specimen segmentation <https://github.com/fractastical/morpholib/blob/0cb0132/2022-tailbud-neuromesodermal-jamming.py#L155-L177>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-apsm-yield-stress-pa>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-critical-packing-phi-c>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-mpz-yield-stress-pa> ;
+        pk:hasScore "0.53"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-apsm-yield-stress-pa> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "apsm_yield_stress_Pa = 115.5672 Pa" ;
+        schema:measurementTechnique "Anterior PSM solid yield stress plateau" ;
+        schema:name "apsm_yield_stress_Pa" ;
+        schema:unitText "Pa" ;
+        schema:value "115.5672" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-apsm-yield-stress-pa-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-apsm-yield-stress-pa-reference> a schema:PropertyValue ;
+        schema:value "118.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-critical-packing-phi-c> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "critical_packing_phi_c = 0.86 dimensionless" ;
+        schema:measurementTechnique "Rigidity-percolation critical cell packing fraction" ;
+        schema:name "critical_packing_phi_c" ;
+        schema:unitText "dimensionless" ;
+        schema:value "0.86" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-critical-packing-phi-c-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-critical-packing-phi-c-reference> a schema:PropertyValue ;
+        schema:value "0.86" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-mpz-yield-stress-pa> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "mpz_yield_stress_Pa = 2.7729 Pa" ;
+        schema:measurementTechnique "Posterior MPZ yield stress near rigidity threshold" ;
+        schema:name "mpz_yield_stress_Pa" ;
+        schema:unitText "Pa" ;
+        schema:value "2.7729" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-mpz-yield-stress-pa-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tailbud-neuromesodermal-jamming-measurement-mpz-yield-stress-pa-reference> a schema:PropertyValue ;
+        schema:value "11.2" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cub.2013.05.052>,
+            <https://doi.org/10.1038/nmeth.4101>,
+            <https://doi.org/10.1038/s41567-021-01215-1>,
+            <https://doi.org/10.1038/s41586-018-0479-2>,
+            <https://doi.org/10.1242/dev.090381> .
+    <https://doi.org/10.1016/j.cub.2013.05.052> dct:date "2013"^^xsd:gYear ;
+        dct:title "Cell-fibronectin interactions propel vertebrate trunk elongation via tissue mechanics" .
+    <https://doi.org/10.1038/nmeth.4101> dct:date "2017"^^xsd:gYear ;
+        dct:title "In vivo quantification of spatially varying mechanical properties in developing tissues" .
+    <https://doi.org/10.1038/s41567-021-01215-1> dct:date "2021"^^xsd:gYear ;
+        dct:title "Embryonic tissues as active foams" .
+    <https://doi.org/10.1038/s41586-018-0479-2> dct:date "2018"^^xsd:gYear ;
+        dct:title "A fluid-to-solid jamming transition underlies vertebrate body axis elongation" .
+    <https://doi.org/10.1242/dev.090381> dct:date "2013"^^xsd:gYear ;
+        dct:title "Regulated tissue fluidity steers zebrafish body elongation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Mongera et al. (2018) & Kim et al. (2021) zebrafish tailbud active fluid-to-solid jamming transition & yield-stress axis elongation — Morphometric validation 53/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T02:06:34Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,159 @@
+{
+  "dataset_id": "microtubule_stress_meristem_v1",
+  "title": "Bozorg, Krupinski & Jönsson (2014) PLoS Comput. Biol., Sampathkumar et al. (2014) eLife, Hamant et al. (2008) Science & Uyttewaal et al. (2012) Cell — Shoot Apical Meristem Shell Stress Anisotropy, Stress-vs-Strain Cytoskeletal Cue Discrimination, and Katanin-Mediated Organ Boundary Morphogenesis",
+  "organism": "Arabidopsis thaliana (shoot apical meristem L1 epidermal shell, organ-meristem saddle boundary, cylindrical stem, and epidermal cells)",
+  "primary_sources": [
+    {
+      "citation": "Bozorg, Krupinski & Jönsson (2014) PLoS Computational Biology 10(1):e1003410",
+      "doi": "10.1371/journal.pcbi.1003410",
+      "role": "Finite-element pressurized shell and anisotropic viscoplastic growth model comparing maximal principal tensile stress (sigma_1) vs maximal principal strain (epsilon_1) as directional cues for cortical microtubule (CMT) and cellulose microfibril alignment across the SAM central dome (K > 0), organ-meristem saddle boundary (K = kappa_1 * kappa_2 < 0), cylindrical stem (sigma_theta / sigma_z = 2), laser cell ablation rings, and lateral compression perturbations"
+    },
+    {
+      "citation": "Sampathkumar et al. (2014) eLife 3:e01967",
+      "doi": "10.7554/eLife.01967",
+      "role": "Subcellular and supracellular finite-element stress modeling, atomic force microscopy, and laser ablation proving that cortical microtubules align parallel to maximal principal tensile stress across curved cell walls and tissue boundaries"
+    },
+    {
+      "citation": "Hamant, Heisler, Jönsson, Krupinski, Uyttewaal, Boudaoud, Meyerowitz & Traas (2008) Science 322(5908):1650-1655",
+      "doi": "10.1126/science.1165594",
+      "role": "Pressurized thin-shell principal stress model of the Arabidopsis shoot apical meristem demonstrating isotropic CMT organization on the spherical central dome, highly anisotropic circumferential alignment along the negative-Gaussian-curvature organ boundary crease, transverse CMT hoops on the cylindrical stem, circumferential reorientation around single-cell ablations, and boundary flattening under oryzalin microtubule depolymerization"
+    },
+    {
+      "citation": "Uyttewaal et al. (2012) Cell 149(2):439-451",
+      "doi": "10.1016/j.cell.2012.02.048",
+      "role": "Demonstrates that Katanin (BOTERO1 / KTN1) microtubule-severing activity controls the mechanical feedback gain gamma_MT coupling stress anisotropy to CMT ordering, and that bot1/ktn1 loss-of-function reduces CMT anisotropy and blunts organ-meristem boundary crease folding"
+    }
+  ],
+  "shell_mechanics_parameters": {
+    "turgor_pressure_P_MPa": 0.50,
+    "epidermal_wall_thickness_h_um": 0.25,
+    "meristem_dome_radius_R_um": 40.0,
+    "base_wall_modulus_E0_MPa": 120.0,
+    "max_cellulose_anisotropy_delta_E_MPa": 96.0,
+    "poissons_ratio_nu": 0.30,
+    "lockhart_extensibility_phi_inv_MPa_hr": 0.045,
+    "lockhart_yield_threshold_Y_MPa": 8.0,
+    "wt_katanin_feedback_gain_gamma_MT": 2.40,
+    "bot1_ktn1_mutant_feedback_gain_gamma_MT": 0.45,
+    "oryzalin_depolymerized_feedback_gain_gamma_MT": 0.00,
+    "cmt_rotational_diffusion_D_theta": 0.32
+  },
+  "meristem_zone_benchmarks": [
+    {
+      "zone_id": "central_dome_isotropic",
+      "label": "Central Zone Spherical Dome (CZ, K > 0)",
+      "kappa_1_inv_um": 0.025,
+      "kappa_2_inv_um": 0.025,
+      "gaussian_curvature_sign": 1,
+      "sigma_1_MPa_ref": 40.0,
+      "sigma_2_MPa_ref": 40.0,
+      "stress_ratio_sigma1_sigma2_ref": 1.000,
+      "stress_anisotropy_index_ref": 0.000,
+      "wt_cmt_nematic_order_S_ref": 0.082,
+      "preferred_cmt_axis": "isotropic_hyperbolic_stochastic"
+    },
+    {
+      "zone_id": "peripheral_flank_transition",
+      "label": "Peripheral Zone Flank (PZ, mild anisotropy)",
+      "kappa_1_inv_um": 0.020,
+      "kappa_2_inv_um": 0.030,
+      "gaussian_curvature_sign": 1,
+      "sigma_1_MPa_ref": 46.67,
+      "sigma_2_MPa_ref": 33.33,
+      "stress_ratio_sigma1_sigma2_ref": 1.400,
+      "stress_anisotropy_index_ref": 0.333,
+      "wt_cmt_nematic_order_S_ref": 0.395,
+      "preferred_cmt_axis": "circumferential_orthoradial"
+    },
+    {
+      "zone_id": "organ_boundary_saddle",
+      "label": "Organ-Meristem Saddle Boundary Crease (K = kappa_1 * kappa_2 < 0)",
+      "kappa_1_inv_um": 0.025,
+      "kappa_2_inv_um": -0.020,
+      "gaussian_curvature_sign": -1,
+      "sigma_1_MPa_ref": 76.0,
+      "sigma_2_MPa_ref": 12.0,
+      "stress_ratio_sigma1_sigma2_ref": 6.333,
+      "stress_anisotropy_index_ref": 1.455,
+      "wt_cmt_nematic_order_S_ref": 0.812,
+      "preferred_cmt_axis": "along_saddle_crease_trough"
+    },
+    {
+      "zone_id": "cylindrical_stem_transverse",
+      "label": "Cylindrical Stem Epidermis (kappa_z = 0, kappa_theta = 1/R)",
+      "kappa_1_inv_um": 0.000,
+      "kappa_2_inv_um": 0.025,
+      "gaussian_curvature_sign": 0,
+      "sigma_1_MPa_ref": 80.0,
+      "sigma_2_MPa_ref": 40.0,
+      "stress_ratio_sigma1_sigma2_ref": 2.000,
+      "stress_anisotropy_index_ref": 0.667,
+      "wt_cmt_nematic_order_S_ref": 0.568,
+      "preferred_cmt_axis": "transverse_circumferential_hoop"
+    }
+  ],
+  "perturbation_and_genotype_benchmarks": [
+    {
+      "condition_id": "wt_col0_stress_feedback",
+      "label": "Wild-Type Col-0 (Principal Stress Cue sigma_1 + Katanin WT)",
+      "cue_type": "principal_stress",
+      "gamma_MT": 2.40,
+      "boundary_cmt_order_S_ref": 0.812,
+      "boundary_crease_depth_um_ref": 14.80,
+      "ablation_circumferential_alignment_cos2_ref": 0.918,
+      "empirical_alignment_correlation_r_ref": 0.991
+    },
+    {
+      "condition_id": "bozorg_strain_feedback_hypothesis",
+      "label": "Bozorg et al. (2014) Strain-Cue Hypothesis Control (Principal Strain epsilon_1)",
+      "cue_type": "principal_strain",
+      "gamma_MT": 2.40,
+      "boundary_cmt_order_S_ref": 0.245,
+      "boundary_crease_depth_um_ref": 4.90,
+      "ablation_circumferential_alignment_cos2_ref": 0.312,
+      "empirical_alignment_correlation_r_ref": -0.415
+    },
+    {
+      "condition_id": "bot1_ktn1_katanin_mutant",
+      "label": "Katanin Mutant (bot1-7 / ktn1 delayed MT severing)",
+      "cue_type": "principal_stress",
+      "gamma_MT": 0.45,
+      "boundary_cmt_order_S_ref": 0.284,
+      "boundary_crease_depth_um_ref": 5.65,
+      "ablation_circumferential_alignment_cos2_ref": 0.485,
+      "empirical_alignment_correlation_r_ref": 0.610
+    },
+    {
+      "condition_id": "oryzalin_mt_depolymerization",
+      "label": "Oryzalin Microtubule Depolymerization (gamma_MT = 0 ballooning meristem)",
+      "cue_type": "none_isotropic",
+      "gamma_MT": 0.00,
+      "boundary_cmt_order_S_ref": 0.000,
+      "boundary_crease_depth_um_ref": 1.85,
+      "ablation_circumferential_alignment_cos2_ref": 0.020,
+      "empirical_alignment_correlation_r_ref": 0.000
+    },
+    {
+      "condition_id": "lateral_compression_clamp",
+      "label": "Lateral Compression Microvice Perturbation (Hamant 2008 Fig. 4 / Bozorg 2014 Fig. 6)",
+      "cue_type": "principal_stress",
+      "gamma_MT": 2.40,
+      "boundary_cmt_order_S_ref": 0.865,
+      "boundary_crease_depth_um_ref": 16.40,
+      "ablation_circumferential_alignment_cos2_ref": 0.934,
+      "empirical_alignment_correlation_r_ref": 0.988
+    }
+  ],
+  "specimen_provenance": {
+    "file": "datasets/microtubule_stress_meristem/arabidopsis_meristem_boundary_specimen.jpg",
+    "wikimedia_title": "File:Arabidopsis round SAM.jpg",
+    "source_url": "https://upload.wikimedia.org/wikipedia/commons/2/20/Arabidopsis_round_SAM.jpg",
+    "license": "CC BY-SA 4.0",
+    "sha256": "3a8b54b71f7c780cf7f68a2ff383f346b511ff2aaea015aebff4d1150328c164",
+    "width_px": 1200,
+    "height_px": 800,
+    "roi_dome_y_x": [140, 340, 420, 760],
+    "roi_saddle_y_x": [210, 410, 250, 430],
+    "roi_stem_y_x": [440, 720, 400, 780]
+  }
+}

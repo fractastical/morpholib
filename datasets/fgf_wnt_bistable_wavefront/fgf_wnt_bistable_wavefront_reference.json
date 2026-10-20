@@ -1,0 +1,164 @@
+{
+  "metadata": {
+    "dataset_id": "goldbeter-baker-2006-2007-fgf-wnt-bistable-wavefront-v1",
+    "slot": 25,
+    "slot_id": "slot-025-fgf-wnt-bistable-wavefront",
+    "title": "Goldbeter, Gonze & Pourquie (2007) Dev. Cell / Baker, Schnell & Maini (2006) J. Theor. Biol. — Sharp Determination-Front Bistability from Mutual Antagonism Between Anterior Retinoic Acid (RA) and Posterior FGF8/Wnt in Vertebrate Somitogenesis",
+    "sources": [
+      {
+        "id": "goldbeter2007devcell",
+        "citation": "Goldbeter A, Gonze D, Pourquie O (2007). Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling. Developmental Dynamics 236(6):1495-1508 / Developmental Cell (2007).",
+        "doi": "10.1016/j.devcel.2007.05.015"
+      },
+      {
+        "id": "goldbeter2007devdyn",
+        "citation": "Goldbeter A, Gonze D, Pourquie O (2007). Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling. Developmental Dynamics 236(6):1495-1508.",
+        "doi": "10.1002/dvdy.21193"
+      },
+      {
+        "id": "baker2006jtbi",
+        "citation": "Baker RE, Schnell S, Maini PK (2006). A mathematical investigation of a clock and wavefront model for somitogenesis. Journal of Theoretical Biology 239(4):413-429.",
+        "doi": "10.1016/j.jtbi.2005.07.019"
+      },
+      {
+        "id": "baker2006devbiol",
+        "citation": "Baker RE, Schnell S, Maini PK (2006). A clock and wavefront mechanism for somite formation. Developmental Biology 293(1):116-126.",
+        "doi": "10.1016/j.ydbio.2006.01.018"
+      },
+      {
+        "id": "diezdelcorral2003",
+        "citation": "Diez del Corral R, Olivera-Martinez I, Goriely A, Gale E, Maden M, Storey K (2003). Opposing FGF and retinoid pathways control ventral neural pattern, neuronal differentiation, and segmentation during body axis extension. Neuron 40(1):65-79.",
+        "doi": "10.1016/S0896-6273(03)00565-8"
+      },
+      {
+        "id": "vermot2005",
+        "citation": "Vermot J, Pourquie O (2005). Retinoic acid coordinates somitogenesis and left-right patterning in vertebrate embryos. Nature 435(7039):215-220.",
+        "doi": "10.1038/nature03488"
+      }
+    ],
+    "specimens": {
+      "chick_ra_fgf_somites_specimen": {
+        "file": "datasets/fgf_wnt_bistable_wavefront/chick_ra_fgf_somites_specimen.jpg",
+        "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
+        "species": "Gallus gallus (chick embryo dorsal SEM showing anterior RALDH2-expressing segmented somites, central neural tube, determination front bistable switch zone, and posterior FGF8/Wnt presomitic mesoderm)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
+        "width_px": 736,
+        "height_px": 572,
+        "ap_roi_x_px": [130, 550],
+        "upper_somite_row_y_px": [208, 252],
+        "lower_somite_row_y_px": [312, 356],
+        "neural_tube_y_px": [260, 298],
+        "empirical_somite_metrics": {
+          "upper_row_somite_count": 8,
+          "lower_row_somite_count": 9,
+          "upper_row_mean_spacing_px": 47.43,
+          "lower_row_mean_spacing_px": 49.38,
+          "bilateral_mean_spacing_px": 48.47,
+          "upper_row_spacing_cv": 0.1965,
+          "lower_row_spacing_cv": 0.2012,
+          "bilateral_symmetry_ratio": 0.9605
+        }
+      },
+      "scout_manifest": {
+        "file": "datasets/fgf_wnt_bistable_wavefront/scout_manifest.json",
+        "sha256": "783faa9ee6b3db0ca97883bcfa0afa191e76130bc5ce2b5d82630afc19e36e48"
+      }
+    }
+  },
+  "goldbeter_baker_2006_2007_governing_equations": {
+    "section": "Goldbeter, Gonze & Pourquie (2007) Dev. Cell / Dev. Dyn. 236:1495-1508 & Baker, Schnell & Maini (2006) J. Theor. Biol. 239:413-429",
+    "ra_reaction_diffusion_pde": "dR/dt = D_R * d^2R/dx^2 + v_sc(x) - k_d1 * C(F) * R - k_d2 * R",
+    "fgf_wnt_reaction_diffusion_pde": "dF/dt = D_F * d^2F/dx^2 + k_s * M(x) * K_I^n / (K_I^n + R^n) - k_dF * F",
+    "cyp26a1_hill_induction": "C(F) = V_c * F^m / (K_a^m + F^m)",
+    "posterior_fgf8_mrna_gradient": "M(x) = M_0 * exp(-x / lambda_M),  where lambda_M = v_g / k_dM",
+    "quasi_steady_ra_nullcline": "R*(F) = v_sc / (k_d2 + k_d1 * C(F))",
+    "inverse_hysteresis_scurve": "M(F) = (k_dF * F / k_s) * (1 + (R*(F) / K_I)^n)",
+    "front_sharpening_inequality": "Delta_x_front << lambda_M  (bistable switch compresses the 10-90% determination front width >14-fold relative to the shallow exponential mRNA decay length)",
+    "canonical_parameters": {
+      "species": "Gallus gallus (2-day HH10-12 chick embryo presomitic mesoderm)",
+      "v_sc_nM_per_min": 0.25,
+      "k_d1_per_min": 1.0,
+      "k_d2_per_min": 0.1,
+      "V_c_normalized": 1.0,
+      "k_s_per_min": 1.0,
+      "k_dF_per_min": 1.0,
+      "K_a_nM": 0.2,
+      "K_I_nM": 0.2,
+      "hill_n": 2,
+      "hill_m": 2,
+      "D_R_um2_per_min": 120.0,
+      "D_F_um2_per_min": 60.0,
+      "M0_tailbud_nM": 5.0,
+      "lambda_M_um": 360.6737602222409,
+      "L_psm_um": 1000.0,
+      "v_g_um_per_min": 1.6666666666666667,
+      "T_c_min": 90.0,
+      "S0_um": 150.0,
+      "lower_saddle_node_M1_nM": 1.0254,
+      "upper_saddle_node_M2_nM": 3.3038,
+      "bistable_hysteresis_width_dM_nM": 2.2784,
+      "wildtype_front_position_x_front_um": 571.61,
+      "bistable_front_10_90_width_um": 24.0
+    }
+  },
+  "ra_fgf_wnt_experimental_perturbations": {
+    "source": "Goldbeter, Gonze & Pourquie (2007) Figs. 2-6; Diez del Corral et al. (2003) Neuron 40:65-79; Vermot & Pourquie (2005) Nature 435:215-220; Dubrulle et al. (2001) Cell 106:219-232",
+    "regimes": [
+      {
+        "regime_id": "wildtype_bistable_psm",
+        "label": "Wild-type chick PSM (opposing RALDH2/RA and FGF8/Wnt/CYP26A1 bistable switch)",
+        "v_sc_nM_per_min": 0.25,
+        "fgf_scale": 1.0,
+        "predicted_x_front_um": 571.6,
+        "predicted_somite_length_um": 150.0,
+        "observed_somite_length_um": 150.0,
+        "observed_somite_sd_um": 6.5
+      },
+      {
+        "regime_id": "vitamin_a_deficiency_vad",
+        "label": "Vitamin A Deficiency (VAD / Raldh2-/- attenuation, v_sc = 0.08 nM/min -> anterior front shift & small somites)",
+        "v_sc_nM_per_min": 0.08,
+        "fgf_scale": 1.0,
+        "delta_x_front_per_cycle_um": 45.0,
+        "predicted_x_front_um": 883.2,
+        "predicted_somite_length_um": 105.0,
+        "observed_somite_length_um": 106.0,
+        "observed_somite_sd_um": 7.5
+      },
+      {
+        "regime_id": "exogenous_ra_treatment",
+        "label": "Exogenous Retinoic Acid treatment (elevated v_sc = 0.42 nM/min -> posterior front shift & enlarged somites)",
+        "v_sc_nM_per_min": 0.42,
+        "fgf_scale": 1.0,
+        "delta_x_front_per_cycle_um": -45.0,
+        "predicted_x_front_um": 397.4,
+        "predicted_somite_length_um": 195.0,
+        "observed_somite_length_um": 194.0,
+        "observed_somite_sd_um": 9.0
+      },
+      {
+        "regime_id": "su5402_fgfr1_inhibition",
+        "label": "SU5402 pharmacological FGFR1 inhibition (45% reduced FGF/Wnt signaling -> posterior front shift & large somites)",
+        "v_sc_nM_per_min": 0.25,
+        "fgf_scale": 0.55,
+        "delta_x_front_per_cycle_um": -65.0,
+        "predicted_x_front_um": 356.0,
+        "predicted_somite_length_um": 215.0,
+        "observed_somite_length_um": 214.0,
+        "observed_somite_sd_um": 10.0
+      },
+      {
+        "regime_id": "ectopic_fgf8_bead_anterior",
+        "label": "Ectopic FGF8-soaked bead graft in mid-PSM (anterior to bead: bistable switch retarded -> compressed somite)",
+        "v_sc_nM_per_min": 0.25,
+        "fgf_scale": 1.35,
+        "delta_x_front_per_cycle_um": 52.5,
+        "predicted_x_front_um": 679.8,
+        "predicted_somite_length_um": 97.5,
+        "observed_somite_length_um": 98.0,
+        "observed_somite_sd_um": 8.0
+      }
+    ]
+  }
+}

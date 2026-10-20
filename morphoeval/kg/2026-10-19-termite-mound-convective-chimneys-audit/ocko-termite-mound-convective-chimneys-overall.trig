@@ -1,0 +1,79 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-ocko-termite-mound-convective-chimneys> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-ocko-termite-mound-convective-chimneys-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-ocko-termite-mound-convective-chimneys-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "King, Ocko & Mahadevan (2015) PNAS, Ocko et al. (2017) PNAS & Ocko, Heyde & Mahadevan (2019) PNAS solar-powered diurnal thermosiphon ventilation and convective pheromone morphogenesis of cathedral termite mounds — MorphoEval overall 53.9/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 (v1) baseline evaluation of `2015-ocko-termite-mound-convective-chimneys.py` (overall weighted score: 56.8/100). The v1 script implements algebraic formulas for diurnal thermosiphon flow reversal (`u_flute = K_buoy * dT`, `u_chimney = -(A_f/A_c) * u_flute`), convective Péclet aspect ratio scaling (`H/R = 1 + eta_Pe * Pe`), and Taylor–Aris CO₂ dispersion (`D_eff = D_0 + alpha_TA * u_flute^2`), but lacks a coupled 24-hour diurnal thermal-buoyancy PDE solver with nest CO₂ mass-balance clearance, lacks the Ocko et al. (2019) PNAS moving-boundary pheromone advection-diffusion-deposition solver across `Pe` and solar latitude tilt `phi_lat`, omits the *Macrotermes michaelseni* vs *Odontotermes obesus* and shaded/isothermal dome controls, and never loads or segments the vendored cathedral termite mound specimen (`macrotermes_cathedral_mound_specimen.jpg`). Overall 53.9/100 (faithfulness 47.7, reproducibility 68.4); rubric morphoeval 0.1.0; checkpoint commit e93f00e; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 58, Morphological realism / specimen match 35, Parameter expressivity 51, Morphometric validation 53, Source and data traceability 74, Code-to-model traceability 68, Reproducibility package 64. Output judged: docs/media/termite_mound_convective_chimneys_comparison.png: rendered output of 2015-ocko-termite-mound-convective-chimneys.py at e93f00e, image/png, 212741 B, 1680×1190 px, artifact_sha256 a6502606cb4e064bfdfd1ac544059bc39751b3430401c14128e2f98632b3b5ce (sha256 a6502606cb4e064bfdfd1ac544059bc39751b3430401c14128e2f98632b3b5ce), spec_fingerprint d09fb37c4086797405dbf184a42b7af11e3ae9291d9bd6946a94bdc2be0204df. Dual provenance: spec_fingerprint: d09fb37c4086797405dbf184a42b7af11e3ae9291d9bd6946a94bdc2be0204df; artifact_sha256: a6502606cb4e064bfdfd1ac544059bc39751b3430401c14128e2f98632b3b5ce; input_dataset_sha256: {datasets/termite_mound_convective_chimneys/macrotermes_cathedral_mound_specimen.jpg=71ab909aae615390..., datasets/termite_mound_convective_chimneys/paper_citations.bib=21248770fa6f59e6..., datasets/termite_mound_convective_chimneys/scout_manifest.json=cdefb06d8e025efd..., datasets/termite_mound_convective_chimneys/termite_mound_convective_chimneys_reference.json=36184ab6989fedbf...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Implement a coupled 24-hour diurnal solar-thermal buoyancy thermosiphon & nest CO2 clearance solver resolving daytime East/North/West flute updrafts, central chimney downdrafts, nighttime flow reversal, and Taylor-Aris oscillatory CO2 ventilation.",
+            "remediation needed: Implement the Ocko, Heyde & Mahadevan (2019) PNAS moving-boundary mound morphogenesis solver coupling upward convective pheromone advection-diffusion (Pe = u_0 H_0 / D_c) to threshold soil deposition across the 7-point Peclet sweep Pe in [0.0, 4.2] and the 6-point geographic latitude equatorward spire tilt sweep |phi_lat| in [0.0, 24.0] deg S.",
+            "remediation needed: Implement the species & ablation controls comparing Macrotermes michaelseni (Namibia cathedral spire, Pe = 3.2), Odontotermes obesus (India fluted mound, Pe = 2.3), and the shaded/isothermal no-buoyancy dome negative control (Delta T = 0 K, Pe = 0.0 -> H/W = 0.50).",
+            "remediation needed: Segment the vendored CC BY-SA 4.0 cathedral termite mound photograph (`macrotermes_cathedral_mound_specimen.jpg`) to extract mound silhouette aspect ratio H/W, spire taper half-angle, equatorward tilt angle, and vertical surface flute ridge count, and enforce runtime SHA-256 verification." ;
+        pk:hasScore "0.539"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 097 Pass 1 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/97> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/s00114-002-0401-4>,
+            <https://doi.org/10.1016/j.csbj.2020.08.012>,
+            <https://doi.org/10.1073/pnas.1423242112>,
+            <https://doi.org/10.1073/pnas.1713534114>,
+            <https://doi.org/10.1073/pnas.1818759116> .
+    <https://doi.org/10.1007/s00114-002-0401-4> dct:date "2003"^^xsd:gYear ;
+        dct:title "Thermoregulation and ventilation of termite mounds" .
+    <https://doi.org/10.1016/j.csbj.2020.08.012> dct:date "2020"^^xsd:gYear ;
+        dct:title "Revisiting stigmergy in light of multi-functional, biogenic, termite structures as communication channel" .
+    <https://doi.org/10.1073/pnas.1423242112> dct:date "2015"^^xsd:gYear ;
+        dct:title "Termite mounds harness diurnal temperature oscillations for ventilation" .
+    <https://doi.org/10.1073/pnas.1713534114> dct:date "2017"^^xsd:gYear ;
+        dct:title "Solar-powered ventilation of African termite mounds" .
+    <https://doi.org/10.1073/pnas.1818759116> dct:date "2019"^^xsd:gYear ;
+        dct:title "Morphogenesis of termite mounds" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "King, Ocko & Mahadevan (2015) PNAS, Ocko et al. (2017) PNAS & Ocko, Heyde & Mahadevan (2019) PNAS solar-powered diurnal thermosiphon ventilation and convective pheromone morphogenesis of cathedral termite mounds — MorphoEval overall 53.9/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T02:08:15Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-ocko-termite-mound-convective-chimneys-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/97>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-ocko-termite-mound-convective-chimneys> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,126 @@
+{
+  "metadata": {
+    "dataset_id": "douady-couder-magnetic-drop-phyllotaxis-v1",
+    "title": "Douady & Couder (1992, 1996) Ferrofluid Magnetic-Drop Iterative Repulsive Phyllotaxis, Imperfect Pitchfork Bifurcation Cascade & Conifer Cone (5,8) Parastichy Reference Dataset",
+    "slot": 31,
+    "slot_id": "slot-031-magnetic-drop-phyllotaxis",
+    "simulation_id": "douady-magnetic-drop-phyllotaxis",
+    "sources": [
+      {
+        "id": "douady1992",
+        "citation": "Douady S, Couder Y (1992). Phyllotaxis as a physical self-organized growth process. Physical Review Letters 68(13):2098-2101.",
+        "doi": "10.1103/PhysRevLett.68.2098"
+      },
+      {
+        "id": "douady1996a",
+        "citation": "Douady S, Couder Y (1996). Phyllotaxis as a dynamical self organizing process Part I: The spiral modes resulting from time-periodic iterations. Journal of Theoretical Biology 178(3):255-274.",
+        "doi": "10.1006/jtbi.1996.0024"
+      },
+      {
+        "id": "douady1996b",
+        "citation": "Douady S, Couder Y (1996). Phyllotaxis as a dynamical self organizing process Part II: The spontaneous formation of a periodicity and theoni transitions between whorl and spiral modes. Journal of Theoretical Biology 178(3):275-294.",
+        "doi": "10.1006/jtbi.1996.0025"
+      },
+      {
+        "id": "levitov1991",
+        "citation": "Levitov LS (1991). Energetic approach to phyllotaxis. Europhysics Letters 14(6):533-539.",
+        "doi": "10.1209/0295-5075/14/6/006"
+      }
+    ],
+    "specimens": {
+      "conifer_cone_specimen": {
+        "file": "datasets/magnetic_drop_phyllotaxis/conifer_cone_specimen.jpg",
+        "sha256": "7bcb68e856d4db535e622eb9674c6d7f6699047aa008ef429cbeefbfa0bd1fcb",
+        "species": "Pinus sp. (Woody conifer seed cone, apical polar view showing (5, 8) Fibonacci parastichy spirals)",
+        "author": "Bubba73 (Wikimedia Commons)",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Top_of_a_pine_cone.jpg",
+        "dimensions_px": [637, 640],
+        "apex_center_xy": [316, 307],
+        "annulus_radii_px": [55.0, 240.0],
+        "observed_parastichy_pair": [5, 8],
+        "secondary_parastichy_mode": 3,
+        "detected_scale_umbos_count": 123
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Douady & Couder (1992) Phys. Rev. Lett. 68:2098 Eqs. (1)-(3) & Fig. 3; Douady & Couder (1996) J. Theor. Biol. 178:255 Sec. 2-3",
+    "plastochron_ratio_G": "G = V * T / R_0",
+    "linear_advection_law": "r_k(t_n) = R_0 + V * k * T = R_0 * (1 + k * G)",
+    "exponential_advection_law": "r_k(t_n) = R_0 * exp(V * k * T / R_0) = R_0 * exp(k * G)",
+    "euclidean_chord_distance_sq": "d_k^2(phi, phi_{n-k}) = R_0^2 + r_k^2 - 2 * R_0 * r_k * cos(phi - phi_{n-k})",
+    "dipole_repulsive_energy": "E(phi) = sum_{k=1}^{N_mem} [1 + (r_k/R_0)^2 - 2*(r_k/R_0)*cos(phi - phi_{n-k})]^(-gamma / 2)  with gamma = 3",
+    "iterative_minimization_rule": "phi_n = argmin_{phi in [0, 2*pi)} E(phi)",
+    "regular_spiral_equilibrium_force": "F(G, Delta_phi) = -gamma * sum_{k=1}^{M} r_k * sin(k * Delta_phi) * (1 + r_k^2 - 2*r_k*cos(k * Delta_phi))^(-1 - gamma/2) = 0",
+    "distichous_pitchfork_curvature": "d^2 E_2 / d phi^2 |_{phi=0} = 3 * r_1 / (r_1 + 1)^5 - 3 * r_2 / (r_2 - 1)^5 = 0"
+  },
+  "analytical_benchmarks": {
+    "golden_ratio_tau": 1.618033988749895,
+    "golden_angle_fibonacci_deg": 137.50776405003785,
+    "golden_angle_fibonacci_rad": 2.399963229728653,
+    "lucas_noble_angle_deg": 99.50155280998114,
+    "f4_noble_angle_deg": 77.9552495764245,
+    "dipole_exponent_gamma": 3.0,
+    "pitchfork_bifurcation_1_1_to_1_2": {
+      "description": "Exact supercritical pitchfork bifurcation from alternating opposition (1,1) (Delta_phi = 180 deg) to chiral spiral (1,2) (Delta_phi < 180 deg)",
+      "two_drop_exponential_G_c1": 0.77348399,
+      "full_chain_exponential_G_c1": 0.77253817,
+      "two_drop_linear_G_c1": 2.51456033,
+      "full_chain_linear_G_c1": 2.51419182,
+      "integer_curvature_witness_G2_linear": {
+        "G": 2,
+        "r1": 3,
+        "r2": 5,
+        "curvature_numerator": -6144,
+        "stability": "unstable_maximum_spirals_emerge"
+      },
+      "integer_curvature_witness_G3_linear": {
+        "G": 3,
+        "r1": 4,
+        "r2": 7,
+        "curvature_numerator": 27687,
+        "stability": "stable_minimum_distichous_opposition"
+      }
+    }
+  },
+  "bifurcation_branches_exponential_gamma3": {
+    "fibonacci_main_branch": [
+      {"G": 0.90, "divergence_deg": 180.0000, "parastichy_pair": [1, 1], "regime": "distichous_opposition"},
+      {"G": 0.70, "divergence_deg": 148.7494, "parastichy_pair": [1, 2], "regime": "first_chiral_spiral_1_2"},
+      {"G": 0.50, "divergence_deg": 137.5994, "parastichy_pair": [1, 2], "regime": "spiral_1_2_to_2_3_transition"},
+      {"G": 0.35, "divergence_deg": 137.9987, "parastichy_pair": [2, 3], "regime": "fibonacci_2_3"},
+      {"G": 0.25, "divergence_deg": 140.1534, "parastichy_pair": [2, 3], "regime": "fibonacci_2_3_shoulder"},
+      {"G": 0.15, "divergence_deg": 138.5389, "parastichy_pair": [3, 5], "regime": "fibonacci_3_5"},
+      {"G": 0.10, "divergence_deg": 136.8262, "parastichy_pair": [3, 5], "regime": "fibonacci_3_5_to_5_8"},
+      {"G": 0.06, "divergence_deg": 137.3194, "parastichy_pair": [5, 8], "regime": "fibonacci_5_8_pine_cone"},
+      {"G": 0.04, "divergence_deg": 137.8554, "parastichy_pair": [5, 8], "regime": "fibonacci_5_8_to_8_13"},
+      {"G": 0.025, "divergence_deg": 137.4530, "parastichy_pair": [8, 13], "regime": "fibonacci_8_13_capitulum"}
+    ],
+    "lucas_secondary_branch": [
+      {"G": 0.25, "divergence_deg": 101.6780, "parastichy_pair": [1, 3], "regime": "lucas_1_3_saddle_node_onset"},
+      {"G": 0.15, "divergence_deg": 101.6013, "parastichy_pair": [3, 4], "regime": "lucas_3_4"},
+      {"G": 0.10, "divergence_deg": 101.4261, "parastichy_pair": [3, 4], "regime": "lucas_3_4_to_4_7"},
+      {"G": 0.06, "divergence_deg": 99.3592,  "parastichy_pair": [4, 7], "regime": "lucas_4_7"},
+      {"G": 0.04, "divergence_deg": 99.2065,  "parastichy_pair": [7, 11], "regime": "lucas_7_11"},
+      {"G": 0.025, "divergence_deg": 99.7999, "parastichy_pair": [7, 11], "regime": "lucas_asymptote_99_5"}
+    ]
+  },
+  "ferrofluid_experiment_parameters": {
+    "section": "Douady & Couder (1992) Phys. Rev. Lett. 68:2098 Fig. 1-2",
+    "central_cone_radius_R0_mm": 10.0,
+    "dish_outer_radius_Rmax_mm": 80.0,
+    "ferrofluid_drop_diameter_mm": 2.0,
+    "magnetic_field_B_mT": 18.0,
+    "drop_period_T_range_s": [0.5, 8.0],
+    "advection_velocity_V_range_mm_per_s": [0.2, 6.0],
+    "experimental_regimes": [
+      {"label": "Distichous (1,1)", "G_exp": 0.90, "observed_parastichies": [1, 1], "mean_divergence_deg": 180.0},
+      {"label": "Spiral (2,3)", "G_exp": 0.30, "observed_parastichies": [2, 3], "mean_divergence_deg": 139.2},
+      {"label": "Spiral (3,5)", "G_exp": 0.14, "observed_parastichies": [3, 5], "mean_divergence_deg": 138.1},
+      {"label": "Pine-Cone Spiral (5,8)", "G_exp": 0.06, "observed_parastichies": [5, 8], "mean_divergence_deg": 137.4},
+      {"label": "Dense Spiral (8,13)", "G_exp": 0.03, "observed_parastichies": [8, 13], "mean_divergence_deg": 137.5},
+      {"label": "Lucas Metastable (4,7)", "G_exp": 0.06, "observed_parastichies": [4, 7], "mean_divergence_deg": 99.4}
+    ]
+  }
+}

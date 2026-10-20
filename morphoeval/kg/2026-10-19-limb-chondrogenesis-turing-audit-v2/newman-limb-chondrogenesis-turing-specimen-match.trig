@@ -1,0 +1,83 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-newman-limb-chondrogenesis-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-newman-limb-chondrogenesis-turing-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-newman-limb-chondrogenesis-turing-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Newman & Frisch (1979) Science 3D Helmholtz/Turing standing-wave eigenmodes and proximodistal 1 -> 2 -> 3 skeletal chondrogenesis in developing Gallus gallus wing bud — Morphological realism / specimen match: 91/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Loads and SHA-256-verifies the Gallus gallus forelimb osteological specimen (`datasets/limb_chondrogenesis_turing/chick_wing_skeleton_specimen.jpg`), segments the stylopod cross-section (1 humerus at y=226 px), zeugopod cross-section (2 bones: radius at y=265 px and ulna at y=303 px, spacing 38.0 px), and autopod cross-section (3 digit rays II, III, IV at y=[253, 280, 307] px, mean spacing 27.0 px, CV=0.0000) (L449-499), overlays the 3 anatomical ROIs and detected bone centroids in Panel E and cross-sectional intensity profiles in Panel F, and compares the segmented zeugopod-to-autopod spacing ratio (1.4074) and compartment counts ([1, 2, 3]) against the Turing PDE." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-newman-limb-chondrogenesis-turing-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-newman-limb-chondrogenesis-turing-specimen-match-2> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-newman-limb-chondrogenesis-turing-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "1979-newman-limb-chondrogenesis-turing.py L449–L499" ;
+        dct:description "Cross-sectional osteological peak detection across stylopod (1), zeugopod (2), and autopod (3) on chick_wing_skeleton_specimen.jpg" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/1979-newman-limb-chondrogenesis-turing.py#L449-L499> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-newman-limb-chondrogenesis-turing-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/limb_chondrogenesis_turing_comparison.png (generated output)" ;
+        dct:description "8-panel synthesis figure comparing theoretical dispersion, 2D wing bud PDE, 4-stage eigenmodes, AER truncation, and segmented Gallus gallus wing skeleton — docs/media/limb_chondrogenesis_turing_comparison.png: rendered output of 1979-newman-limb-chondrogenesis-turing.py at 8871db0, image/png, 451089 B, 2275×1336 px, artifact_sha256 005a30e61b4619f89f80e1233f31386bcdf25b515816416f60ff332b1f5d0a39 (sha256 005a30e61b4619f89f80e1233f31386bcdf25b515816416f60ff332b1f5d0a39), spec_fingerprint 381dc7883b80c95da9d476a5865f816bf3bb5de908cfdb8ef8c6bbef3a244a82" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 012 autonomous loop assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jez.1401080304>,
+            <https://doi.org/10.1038/244492a0>,
+            <https://doi.org/10.1098/rspb.2004.2772>,
+            <https://doi.org/10.1126/science.462174>,
+            <https://doi.org/10.1186/s13227-017-0084-8> .
+    <https://doi.org/10.1002/jez.1401080304> dct:date "1948"^^xsd:gYear ;
+        dct:title "The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm" .
+    <https://doi.org/10.1038/244492a0> dct:date "1973"^^xsd:gYear ;
+        dct:title "Positional information in chick limb morphogenesis" .
+    <https://doi.org/10.1098/rspb.2004.2772> dct:date "1549"^^xsd:gYear ;
+        dct:title "Dynamical mechanisms for skeletal pattern formation in the vertebrate limb" .
+    <https://doi.org/10.1126/science.462174> dct:date "1979"^^xsd:gYear ;
+        dct:title "Dynamics of skeletal pattern formation in developing chick limb" .
+    <https://doi.org/10.1186/s13227-017-0084-8> dct:date "2017"^^xsd:gYear ;
+        dct:title "The evolutionary origin of digit patterning" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Newman & Frisch (1979) Science 3D Helmholtz/Turing standing-wave eigenmodes and proximodistal 1 -> 2 -> 3 skeletal chondrogenesis in developing Gallus gallus wing bud — Morphological realism / specimen match 91/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:42:20Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-newman-limb-chondrogenesis-turing-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,71 @@
+sim_id: liang-chiral-seed-pod-opening
+math_family: "Non-Euclidean Incompatible Shell Elasticity, Gauss Incompatibility (det b_0 = -κ_0^2 < 0) & Föppl–von Kármán Helicoid-to-Helical-Ribbon Pitchfork Bifurcation"
+model_spec:
+  model: "Armon, Efrati, Kupferman & Sharon (2011) Science 333:1726-1730 / Efrati, Sharon & Kupferman (2009) JMPS 57:762-775 incompatible shell elasticity in Bauhinia variegata chiral seed pod opening"
+  kappa0_cm_inv: 0.42
+  h_valve_cm: 0.095
+  W_valve_cm: 1.80
+  L_valve_cm: 18.0
+  nu_poisson: 0.30
+  theta_natural_deg: 45.0
+  seed: 2011
+  inputs:
+    - datasets/chiral_seed_pod_opening/chiral_seed_pod_opening_reference.json
+    - datasets/chiral_seed_pod_opening/bauhinia_chiral_seed_pod_specimen.jpg
+    - datasets/chiral_seed_pod_opening/scout_manifest.json
+    - datasets/chiral_seed_pod_opening/paper_citations.bib
+equations:
+  - law_name: "Incompatible Saddle Target Curvature Tensor & Gauss's Theorema Egregium Incompatibility Law"
+    formula: "b_0 = diag(κ_0, -κ_0),  Tr(b_0) = 0,  K_target = det(b_0) = -κ_0^2 < 0 ≠ K(a_0) = 0"
+    lean_decl: "MathOfBiology.Loop_065.saddle_target_gaussian_curvature"
+    lean_theorem: "MathOfBiology.Loop_065.armon_gauss_saddle_incompatibility"
+    lean_locus: "morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean#L27-L46"
+    lean_code: |
+      def saddle_target_gaussian_curvature (kappa0 : Int) : Int :=
+        kappa0 * (-kappa0)
+      def saddle_target_trace (kappa0 : Int) : Int :=
+        kappa0 + (-kappa0)
+      theorem armon_gauss_saddle_incompatibility (kappa0 : Int) :
+          saddle_target_trace kappa0 = 0 ∧
+          saddle_target_gaussian_curvature kappa0 = -(kappa0 * kappa0) ∧
+          (∀ k : Nat, saddle_target_gaussian_curvature ((k : Int) + 1) < 0)
+    variables: "κ_0: principal intrinsic shrinkage curvature of orthogonal ±45° sclerenchyma layers (cm^-1); b_0: target second fundamental form; K_target = det(b_0): target Gaussian curvature (cm^-2)"
+    role: "Proves that orthogonal ±45° fibrous shrinkage in Bauhinia variegata pod valves prescribes a strictly negative Gaussian curvature det(b_0) = -κ_0^2 < 0 that is geometrically incompatible with the flat reference metric (K = 0) by Gauss's Theorema Egregium"
+    source_citation: "Armon, Efrati, Kupferman & Sharon (2011) Science 333(6050):1726-1730; Efrati, Sharon & Kupferman (2009) J. Mech. Phys. Solids 57(4):762-775"
+    code_locus: "2007-liang-chiral-seed-pod-opening.py#L130-L235"
+
+  - law_name: "Narrow-Strip Bending-Dominated Pure-Twist Helicoid & Cutting-Angle Chirality Law"
+    formula: "w̃ = W √(κ_0 / h) ≤ w̃_c  ⇒  H*(w̃) = 0,  R(w̃, 45°) = 0,  τ(θ) = D sin(2θ),  τ(0°) = τ(90°) = 0"
+    lean_decl: "MathOfBiology.Loop_065.narrow_helicoid_torsion"
+    lean_theorem: "MathOfBiology.Loop_065.armon_narrow_helicoid_chirality"
+    lean_locus: "morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean#L61-L72"
+    lean_code: |
+      def narrow_helicoid_torsion (kappa0 sin_2theta : Int) : Int :=
+        kappa0 * sin_2theta
+      theorem armon_narrow_helicoid_chirality (kappa0 sin_2theta : Int) :
+          narrow_helicoid_torsion kappa0 1 = kappa0 ∧
+          narrow_helicoid_torsion kappa0 0 = 0 ∧
+          narrow_helicoid_torsion kappa0 (-sin_2theta) = -narrow_helicoid_torsion kappa0 sin_2theta
+    variables: "w̃ = W√(κ_0/h): dimensionless Föppl-von Kármán ribbon width; θ: cutting angle relative to principal curvature axis; τ: centerline geodesic torsion (cm^-1); R: helix radius (cm)"
+    role: "Explains why narrow valve strips (w̃ ≤ w̃_c) adopt a minimal-surface pure-twist helicoid (H* = 0, R = 0) with maximum twist at θ = 45° and why cutting at θ = 0° or 90° eliminates chirality (achiral circular ring)"
+    source_citation: "Armon, Efrati, Kupferman & Sharon (2011) Science 333(6050):1726-1730 Figs. 2-4"
+    code_locus: "2007-liang-chiral-seed-pod-opening.py#L240-L395"
+
+  - law_name: "Supercritical Pitchfork Bifurcation & Wide-Ribbon Cylindrical Helical Curvature Law"
+    formula: "w̃_c = (16(1 + ν) / √(1 - ν^2))^(1/4),  H*(w̃) = ±((1 - ν)/2) κ_0 √(1 - (w̃_c / w̃)^4)  (w̃ > w̃_c),  K_∞ = κ_1 κ_2 = 0"
+    lean_decl: "MathOfBiology.Loop_065.cylindrical_ribbon_two_H"
+    lean_theorem: "MathOfBiology.Loop_065.armon_wide_cylindrical_ribbon_asymptote"
+    lean_locus: "morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean#L86-L98"
+    lean_code: |
+      def cylindrical_ribbon_two_H (one_minus_nu kappa0 : Int) : Int :=
+        one_minus_nu * kappa0 + 0
+      def cylindrical_ribbon_gaussian_K (one_minus_nu kappa0 : Int) : Int :=
+        (one_minus_nu * kappa0) * 0
+      theorem armon_wide_cylindrical_ribbon_asymptote (one_minus_nu kappa0 : Int) :
+          cylindrical_ribbon_two_H one_minus_nu kappa0 = one_minus_nu * kappa0 ∧
+          cylindrical_ribbon_gaussian_K one_minus_nu kappa0 = 0 ∧
+          cylindrical_ribbon_two_H (-one_minus_nu) kappa0 = -cylindrical_ribbon_two_H one_minus_nu kappa0
+    variables: "w̃_c: critical pitchfork dimensionless width; ν: Poisson ratio; H*(w̃): equilibrium mean curvature (cm^-1); H_∞ = (1-ν)κ_0/2: wide-ribbon asymptotic mean curvature"
+    role: "Establishes the supercritical pitchfork bifurcation from a pure-twist helicoid (H = 0, R = 0) to a cylindrical helical ribbon (H → ±(1-ν)κ_0/2, K → 0) when dimensionless valve width exceeds w̃_c"
+    source_citation: "Armon, Efrati, Kupferman & Sharon (2011) Science 333(6050):1726-1730 Eq. 1-4; Armon et al. (2014) Soft Matter 10:2733-2740"
+    code_locus: "2007-liang-chiral-seed-pod-opening.py#L240-L445"

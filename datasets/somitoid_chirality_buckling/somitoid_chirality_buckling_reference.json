@@ -1,0 +1,165 @@
+{
+  "metadata": {
+    "dataset_id": "yamanaka-miao-adhyapok-somitoid-rosette-met-v1",
+    "slot": 29,
+    "slot_id": "slot-029-somitoid-chirality-buckling",
+    "title": "Yamanaka et al. (2023), Miao et al. (2023) & Adhyapok et al. (2021) Epithelial Somite Rosette Vertex Mechanics, Mesenchymal-to-Epithelial Transition (MET) & Somitecoel Lumen Formation Dataset",
+    "sources": [
+      {
+        "id": "yamanaka2023",
+        "citation": "Yamanaka Y, Hamidi S, Yoshioka-Kobayashi K, et al., Alev C (2023). Reconstituting human somitogenesis in vitro. Nature 614(7948):509-520.",
+        "doi": "10.1038/s41586-022-05649-2"
+      },
+      {
+        "id": "miao2023",
+        "citation": "Miao Y, Djeffal Y, De Simone A, et al., Pourquie O (2023). Reconstruction and deconstruction of human somitogenesis in vitro. Nature 614(7948):500-508.",
+        "doi": "10.1038/s41586-022-05655-4"
+      },
+      {
+        "id": "adhyapok2021",
+        "citation": "Adhyapok P, Piatkowska AM, Norman MJ, Clendenon SG, Stern CD, Glazier JA, Belmonte JM (2021). A mechanical model of early somite segmentation. Developmental Cell 56(9):1312-1324.",
+        "doi": "10.1016/j.devcel.2021.03.026"
+      },
+      {
+        "id": "sanaki2022",
+        "citation": "Sanaki-Matsumiya M, Matsuda M, Gritti N, Nakaki F, Sharpe J, Trivedi V, Ebisuya M (2022). Periodic formation of epithelial somites from human pluripotent stem cells. Nature Communications 13(1):2325.",
+        "doi": "10.1038/s41467-022-29967-1"
+      }
+    ],
+    "specimens": {
+      "somitoid_rosette_specimen": {
+        "file": "datasets/somitoid_chirality_buckling/somitoid_rosette_specimen.jpg",
+        "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
+        "species": "Vertebrate dorsal embryo scanning electron micrograph showing bilateral epithelialized somite rosettes flanking the neural tube",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
+        "width_px": 736,
+        "height_px": 572,
+        "ap_roi_x_px": [130, 550],
+        "upper_somite_row_y_px": [208, 252],
+        "lower_somite_row_y_px": [312, 356],
+        "rosette_metrics": {
+          "upper_row_somite_count": 8,
+          "lower_row_somite_count": 8,
+          "bilateral_mean_spacing_px": 47.1429,
+          "bilateral_spacing_cv": 0.2010,
+          "mean_rosette_aspect_ratio": 1.184,
+          "cortex_to_lumen_contrast_ratio": 1.412
+        }
+      },
+      "scout_manifest": {
+        "file": "datasets/somitoid_chirality_buckling/scout_manifest.json",
+        "sha256": "8326704c93aa8a75c90977f41fe3e00040bc848a2cceabe362af10fed750b806"
+      }
+    }
+  },
+  "somite_rosette_vertex_governing_equations": {
+    "section": "Adhyapok et al. (2021) Dev. Cell 56:1312-1324; Yamanaka et al. (2023) Nature 614:509-520; Miao et al. (2023) Nature 614:500-508",
+    "vertex_interfacial_energy_functional": "E = sum_{i=1}^N [ (K_A / 2) * (A_i - A_0)^2 + gamma_ap * L_{ap,i} + gamma_lat * L_{lat,i} + gamma_bas * L_{bas,i} ]",
+    "radial_wedge_rosette_energy": "E(R_in, N) = 2 * pi * gamma_ap * R_in + 2 * pi * gamma_bas * R_out + N * gamma_lat * (R_out - R_in),  with R_out = sqrt(R_in^2 + N * A_0 / pi)",
+    "wedge_angle_law": "theta_wedge = 2 * pi / N,  L_ap = (2 * pi / N) * R_in < L_bas = (2 * pi / N) * R_out",
+    "apical_basal_curvature_balance": "dE/dR_in = 2 * pi * gamma_ap - N * gamma_lat + (2 * pi * gamma_bas + N * gamma_lat) * (R_in / R_out) = 0",
+    "analytical_equilibrium_lumen_radius": "R_in / R_out = (N * gamma_lat - 2 * pi * gamma_ap) / (N * gamma_lat + 2 * pi * gamma_bas)  for 2 * pi * gamma_ap < N * gamma_lat",
+    "critical_lumen_closure_tension": "gamma_{ap,crit} = (N / (2 * pi)) * gamma_lat",
+    "eph_ephrin_cleft_sorting_energy": "Delta_E_cleft = 2 * L_cleft * (gamma_het - (gamma_ant + gamma_post) / 2) > 0  when gamma_het > (gamma_ant + gamma_post) / 2",
+    "state_variables": {
+      "R_in": "Central somitecoel lumen radius (um), bounded by F-actin/ZO-1/pMLC2-enriched apical domain",
+      "R_out": "Outer somite rosette basal radius (um), bounded by Fibronectin/Laminin/Matrigel basal lamina",
+      "gamma_ap": "Apical actomyosin cortical line tension (pN/um), elevated by RhoA/ROCK/pMLC2 during MET",
+      "gamma_bas": "Basal cell-ECM interfacial tension (pN/um), lowered by Matrigel/fibronectin integrin engagement",
+      "gamma_lat": "Lateral N-cadherin (CDH2) homophilic cell-cell interfacial tension (pN/um)",
+      "gamma_het": "Heterotypic EphA4/ephrinB2 inter-somitic boundary line tension driving somite cleft separation"
+    },
+    "canonical_parameters": {
+      "N_wedge_cells": 16,
+      "cell_area_A0_um2": 115.0,
+      "K_A_area_modulus": 0.08,
+      "gamma_lat_cdh2": 1.0,
+      "gamma_bas_matrigel": 0.45,
+      "gamma_ap_wt_met": 1.65,
+      "gamma_ap_rock_y27632": 0.45,
+      "gamma_het_epha4_ephrinb2": 2.35,
+      "gamma_hom_psm": 1.0
+    }
+  },
+  "somitoid_experimental_regimes": [
+    {
+      "regime_id": "wt_plus_matrigel_somitoid",
+      "label": "WT Axioloid/Somitoid (+10% Matrigel, active ROCK/pMLC2 + EphA4/ephrinB2)",
+      "matrigel_pct": 10.0,
+      "gamma_ap": 1.65,
+      "gamma_bas": 0.45,
+      "gamma_lat": 1.0,
+      "gamma_het": 2.35,
+      "empirical_ap_basal_ratio": 0.305,
+      "empirical_rosette_polarity_score": 0.91,
+      "empirical_cleft_separation_score": 0.94,
+      "rosette_formed": true
+    },
+    {
+      "regime_id": "high_myosin_hyperconstricted",
+      "label": "Calpeptin / RhoA-activated hyper-apical constriction (gamma_ap = 2.15)",
+      "matrigel_pct": 10.0,
+      "gamma_ap": 2.15,
+      "gamma_bas": 0.45,
+      "gamma_lat": 1.0,
+      "gamma_het": 2.40,
+      "empirical_ap_basal_ratio": 0.165,
+      "empirical_rosette_polarity_score": 0.95,
+      "empirical_cleft_separation_score": 0.96,
+      "rosette_formed": true
+    },
+    {
+      "regime_id": "low_matrigel_hypomorphic",
+      "label": "Low Matrigel (2.5% ECM, partially elevated gamma_bas = 0.95)",
+      "matrigel_pct": 2.5,
+      "gamma_ap": 1.35,
+      "gamma_bas": 0.95,
+      "gamma_lat": 1.0,
+      "gamma_het": 1.85,
+      "empirical_ap_basal_ratio": 0.370,
+      "empirical_rosette_polarity_score": 0.68,
+      "empirical_cleft_separation_score": 0.72,
+      "rosette_formed": true
+    },
+    {
+      "regime_id": "epha4_ephrinb2_kd_fused",
+      "label": "EphA4 / ephrinB2 boundary knockdown (gamma_het = 1.05, impaired clefting)",
+      "matrigel_pct": 10.0,
+      "gamma_ap": 1.55,
+      "gamma_bas": 0.50,
+      "gamma_lat": 1.0,
+      "gamma_het": 1.05,
+      "empirical_ap_basal_ratio": 0.335,
+      "empirical_rosette_polarity_score": 0.84,
+      "empirical_cleft_separation_score": 0.12,
+      "rosette_formed": true
+    },
+    {
+      "regime_id": "rock_inhibited_y27632",
+      "label": "Y-27632 ROCK / Blebbistatin Myosin II inhibition (gamma_ap -> gamma_bas = 0.45)",
+      "matrigel_pct": 10.0,
+      "gamma_ap": 0.45,
+      "gamma_bas": 0.45,
+      "gamma_lat": 1.0,
+      "gamma_het": 1.15,
+      "empirical_ap_basal_ratio": 0.700,
+      "empirical_rosette_polarity_score": 0.18,
+      "empirical_cleft_separation_score": 0.21,
+      "rosette_formed": false
+    },
+    {
+      "regime_id": "minus_matrigel_unpolarized",
+      "label": "Minus-Matrigel suspension control (0% ECM, unpolarized gamma_ap = gamma_bas = 0.72)",
+      "matrigel_pct": 0.0,
+      "gamma_ap": 0.72,
+      "gamma_bas": 0.72,
+      "gamma_lat": 1.0,
+      "gamma_het": 1.25,
+      "empirical_ap_basal_ratio": 0.565,
+      "empirical_rosette_polarity_score": 0.14,
+      "empirical_cleft_separation_score": 0.25,
+      "rosette_formed": false
+    }
+  ]
+}

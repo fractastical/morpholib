@@ -1,0 +1,109 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-richman-cortical-gyrification-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability — Morphometric validation: 56/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "`measure_morphoeval()` (L156-188) reports 3 analytical human fetal metrics, but does not compute true contour arc-length perimeter P_pial / P_hull from a relaxed elastic cortical shell, does not evaluate 11-species mammalian wavelength or GI correlations, and extracts zero computer-vision metrics from the coronal brain slice specimen." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "1975-richman-cortical-gyrification-buckling.py L156–L188: Only 3 analytical fetal metrics returned without relaxed contour perimeter or specimen CV metrics <https://github.com/fractastical/morpholib/blob/8871db0/1975-richman-cortical-gyrification-buckling.py#L156-L188>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-fetal-gw26-gw38-sulcal-wavelength-correlation>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-predicted-gyrification-index-gi-pred>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-predicted-sulcal-wavelength-lambda-pred> ;
+        pk:hasScore "0.56"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-fetal-gw26-gw38-sulcal-wavelength-correlation> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Human fetal GW26-GW38 sulcal wavelength correlation = 1.0 Pearson r" ;
+        schema:measurementTechnique "Linear correlation across GW26-GW38 fetal stages" ;
+        schema:name "Human fetal GW26-GW38 sulcal wavelength correlation" ;
+        schema:unitText "Pearson r" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-fetal-gw26-gw38-sulcal-wavelength-correlation-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-fetal-gw26-gw38-sulcal-wavelength-correlation-reference> a schema:PropertyValue ;
+        dct:source "Tallinen et al. (2016) Nature Physics 12:588-593" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-predicted-gyrification-index-gi-pred> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Human GW38 predicted gyrification index GI_pred = 2.5591 P_pial / P_hull" ;
+        schema:measurementTechnique "Parametric coronal folding power law at GW38 (g=2.15)" ;
+        schema:name "Human GW38 predicted gyrification index GI_pred" ;
+        schema:unitText "P_pial / P_hull" ;
+        schema:value "2.5591" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-predicted-gyrification-index-gi-pred-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-predicted-gyrification-index-gi-pred-reference> a schema:PropertyValue ;
+        dct:source "Tallinen et al. (2016) Nature Physics 12:588-593 Fig. 3-4" ;
+        schema:value "2.56" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-predicted-sulcal-wavelength-lambda-pred> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Human GW38 predicted sulcal wavelength lambda_pred = 11.3269 mm" ;
+        schema:measurementTechnique "Analytical Richman-Tallinen scaling lambda = 2*pi*h*(mu_c/(3*mu_s))^(1/3) at h=2.60 mm" ;
+        schema:name "Human GW38 predicted sulcal wavelength lambda_pred" ;
+        schema:unitText "mm" ;
+        schema:value "11.3269" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-predicted-sulcal-wavelength-lambda-pred-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-predicted-sulcal-wavelength-lambda-pred-reference> a schema:PropertyValue ;
+        dct:source "Richman et al. (1975) Science 189:18-21 & Tallinen et al. (2016) Nature Physics 12:588-593" ;
+        schema:value "11.34" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 061 Pass 1 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/61> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nphys3632>,
+            <https://doi.org/10.1073/pnas.1406015111>,
+            <https://doi.org/10.1126/science.1145181>,
+            <https://doi.org/10.1126/science.aaa9101> .
+    <https://doi.org/10.1038/nphys3632> dct:date "2016"^^xsd:gYear ;
+        dct:title "On the growth and form of cortical convolutions" .
+    <https://doi.org/10.1073/pnas.1406015111> dct:date "2014"^^xsd:gYear ;
+        dct:title "Gyrification from constrained cortical expansion: Synthesis of physical and numerical models" .
+    <https://doi.org/10.1126/science.1145181> dct:date "1975"^^xsd:gYear ;
+        dct:title "Mechanical model of brain convolutional development" .
+    <https://doi.org/10.1126/science.aaa9101> dct:date "2015"^^xsd:gYear ;
+        dct:title "Cortical folding scales universally with surface area and thickness, not number of neurons" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability — Morphometric validation 56/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:21:39Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/61> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

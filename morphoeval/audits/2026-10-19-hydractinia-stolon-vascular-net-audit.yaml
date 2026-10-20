@@ -1,0 +1,144 @@
+# MorphoEval Pass 1 (v1) Audit — Buss, Anderson & Perry (2015) Biol. Bull. 228:146-158, Dudgeon et al. (1999) Am. Nat. 153:292-309 & Blackstone (1999) Syst. Biol. 48:75-85
+# Colonial Hydroid Gastrovascular Pulsating Stolon Network & Runner-to-Sheet Morphospace (Slot 100)
+
+audit:
+  id: 2026-10-19-hydractinia-stolon-vascular-net-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 100 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/100
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2020-badin-hydractinia-stolon-vascular-net.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  buss2015:
+    title: "Gastrovascular Flow and Stolonal Network Morphogenesis in Hydractinia"
+    authors: "Buss LW, Anderson CP, Perry EK"
+    venue: "The Biological Bulletin 228(2):146-158 (2015)"
+    doi: 10.1086/BBLv228n2p146
+  dudgeon1999:
+    title: "A Model of Gastrovascular Fluid Transport in the Stoloniferan Hydroid Podocoryna carnea"
+    authors: "Dudgeon S, Wagner GP, Vaisnys JR, Buss LW"
+    venue: "The American Naturalist 153(3):292-309 (1999)"
+    doi: 10.1086/303167
+  blackstone1999:
+    title: "Redox Control in Development and Evolution: Evidence from Colonial Hydroids"
+    authors: "Blackstone NW"
+    venue: "Systematic Biology 48(1):75-85 (1999)"
+    doi: 10.1080/106351599260454
+  buss2001:
+    title: "Growth by Intussusception in Hydractiniid Hydroids"
+    authors: "Buss LW"
+    venue: "Evolution & Development 3(5):311-322 (2001)"
+    doi: 10.1046/j.1525-142x.2001.01039.x
+
+simulations:
+  - id: badin-hydractinia-stolon-vascular-net
+    name: "Buss, Anderson & Perry (2015) Biol. Bull., Dudgeon et al. (1999) Am. Nat. & Blackstone (1999) Syst. Biol. colonial hydroid pulsatile gastrovascular stolon network, anastomosis loop closure, and runner-to-sheet morphospace"
+    organism: "Hydractinia symbiolongicarpus / Podocoryna carnea (Colonial marine hydroids)"
+    script: 2020-badin-hydractinia-stolon-vascular-net.py
+    output: docs/media/hydractinia_stolon_vascular_net_comparison.png
+    extra_outputs:
+      - docs/media/hydractinia_stolon_vascular_net_growth.gif
+    status: evaluated
+    source_refs:
+      - buss2015
+      - dudgeon1999
+      - blackstone1999
+      - buss2001
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2020-badin-hydractinia-stolon-vascular-net.py`
+      (weighted score: 53.0/100). The Pass 1 baseline integrates only a single-stolon
+      lumen radius ODE at two pump gain values without solving the multi-node Kirchhoff
+      gastrovascular pressure network driven by active polyp contraction oscillators
+      V_p(t) = V_0 + Delta_V sin(omega_p t + phi_p), omits spatial stolon tip outgrowth,
+      tip-to-stolon anastomosis loop closure (b_1 = E - V + 1), and low-shear stolon
+      regression across the Blackstone (1999) / Buss (2015) runner-to-sheet continuum
+      (Podocoryna runner, 2,4-DNP uncoupled shift, Hydractinia web, Hydractinia dense
+      sheet, and polyp-excision / MgCl2 paralysis control), and does not segment the
+      vendored Hydractinia symbiolongicarpus colony micrograph.
+    scores:
+      model-fidelity:
+        value: 54
+        rationale: >-
+          Integrates a single-edge lumen radius ODE under prescribed sinusoidal pressure
+          (L25-63), but omits the multi-node Kirchhoff Laplacian pressure solver driven
+          by pulsatile polyp contraction oscillators, spatial stolon tip outgrowth,
+          tip-to-stolon anastomosis loop closure (b_1 = E - V + 1), and low-shear
+          regression.
+        evidence:
+          - {file: 2020-badin-hydractinia-stolon-vascular-net.py, lines: [25, 63], note: "Single-stolon ODE without multi-node Kirchhoff solver or anastomosis topology", supports: true}
+      specimen-match:
+        value: 44
+        rationale: >-
+          Vendors `datasets/hydractinia_stolon_vascular_net/hydractinia_symbiolongicarpus_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, or extract colony tissue coverage,
+          gastrovascular polyp pump cavities, planar meshedness alpha, or Euler loop
+          count b_1.
+        evidence:
+          - {file: 2020-badin-hydractinia-stolon-vascular-net.py, lines: [90, 134], note: "Renders 2-panel time-series plot without specimen CV segmentation", supports: false}
+      parameter-expressivity:
+        value: 49
+        rationale: >-
+          Evaluates only two scalar pump gains (0.55 and 1.65) in a single-tube ODE
+          without sweeping the runner-to-sheet morphospace continuum, 2,4-DNP redox
+          perturbation, or MgCl2 polyp paralysis regression control.
+        evidence:
+          - {file: 2020-badin-hydractinia-stolon-vascular-net.py, lines: [66, 87], note: "Only two scalar pump gains evaluated without morphospace sweep", supports: false}
+      morphometric-validation:
+        value: 51
+        rationale: >-
+          Exposes only 2 scalar measurements in `measure_morphoeval()` without planar
+          meshedness alpha = (E - V + 1)/(2V - 5), cyclomatic loop count b_1, stolon
+          mat area coverage, Pearson correlation p-values, or specimen CV morphometrics.
+        evidence:
+          - {file: 2020-badin-hydractinia-stolon-vascular-net.py, lines: [66, 87], note: "Only 2 scalar metrics without graph topology or statistical tests", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `hydractinia_stolon_vascular_net_reference.json`
+          with verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at
+          runtime.
+        evidence:
+          - {file: datasets/hydractinia_stolon_vascular_net/hydractinia_stolon_vascular_net_reference.json, lines: [1, 175], note: "Reference JSON present on disk but not verified at runtime in Pass 1", supports: true}
+      code-traceability:
+        value: 55
+        rationale: >-
+          Module docstring cites Buss et al. (2015) and Dudgeon et al. (1999), but lacks
+          explicit equation-to-code and Lean 4 theorem mappings.
+        evidence:
+          - {file: 2020-badin-hydractinia-stolon-vascular-net.py, lines: [1, 9], note: "Minimal docstring without Lean 4 theorem loci", supports: false}
+      repro-package:
+        value: 53
+        rationale: >-
+          Includes a minimal 1-assertion `--self-test` flag, but lacks SHA-256 dataset
+          integrity checks, Kirchhoff conservation checks, and polyp-excision negative
+          ablation controls.
+        evidence:
+          - {file: 2020-badin-hydractinia-stolon-vascular-net.py, lines: [137, 141], note: "Minimal self-test without SHA-256 or graph invariant checks", supports: false}
+    remediation:
+      - "Implement the coupled pulsatile polyp oscillator + multi-node Hagen-Poiseuille Kirchhoff gastrovascular pressure solver sum_j G_ij*(p_i(t) - p_j(t)) = -dV_p/dt with quartic lumen conductance G_ij = pi*r_ij^4/(8*mu*L_ij) and wall shear stress tau_w = 4*mu*|Q_ij|/(pi*r_ij^3)."
+      - "Simulate spatial stolon tip outgrowth, tip-to-stolon anastomosis loop closure (b_1 = E - V + 1), and low-shear stolon regression across the 5 canonical Blackstone (1999) / Buss (2015) morphospace regimes (Podocoryna runner, 2,4-DNP redox uncoupling shift, Hydractinia intermediate web, Hydractinia dense stolonal sheet, and polyp-excision / MgCl2 contraction arrest control) plus an 8-point pump-amplitude sweep."
+      - "Segment the vendored Yale Peabody Museum Hydractinia symbiolongicarpus colony micrograph (`hydractinia_symbiolongicarpus_specimen.jpg`, YPM IZ 080458) to extract coenosarc mat area coverage, endodermal gastrovascular polyp pump centers, planar meshedness alpha, and Euler cyclomatic loops b_1, backed by runtime SHA-256 verification and an 8-suite `--self-test`."

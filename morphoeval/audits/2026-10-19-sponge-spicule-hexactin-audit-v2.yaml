@@ -1,0 +1,209 @@
+# MorphoEval audit — Uriz et al. (2003) Microsc. Res. Tech. & Aizenberg et al. (2005) Science Sponge Spicule Silicatein Symmetry & Laminated Lattice, 2026-10-19 (v2)
+#
+# Dual-agent Pass 2 assessment of `2012-bavestrello-sponge-spicule-hexactin.py` (v2, 650+ lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-sponge-spicule-hexactin-loop`):
+#   - Primary assessor: Gemini 4 Argon — 93.6 / 100
+#   - Independent second assessor rubric evaluation — 89.6 / 100
+#   - Dual-agent consensus score: 91.6 / 100 (up from 52.6 / 100 in Pass 1 v1; +39.0 improvement)
+#
+# Key remediation improvements verified in Pass 2:
+#   1. 3D silicatein-catalyzed diffusion-reaction biosilica accretion solver
+#      (`simulate_spicule_biosilica_accretion_3d`, L224-343) implemented across all 5
+#      Porifera spicule symmetry & ablation regimes: (1) silicatein-inhibited / Si-starved
+#      ablation negative control (`k_cat = 0` -> 0 accreted rays), (2) Demospongiae
+#      monaxon/oxea (`D_inf_h`, 2 opposing rays, 180 deg), (3) Calcarea planar triactine
+#      (`D_3h`, 3 coplanar rays, 120 deg), (4) Demospongiae tetrahedral tetractin/calthrop
+#      (`T_d`, 4 rays, `arccos(-1/3) = 109.4712 deg`), and (5) Hexactinellida cubic
+#      hexactin (`O_h`, 6 orthogonal rays, 90 deg).
+#   2. Concentric silica cylinder radial thinning law `h_n = h_1*(r_1/r_n)` (`alpha = -1.0000`)
+#      and crack-deflection fracture toughness amplification `G_lam / G_mono = 1 + eta * N`
+#      (`simulate_concentric_lamellar_spicule`, L370-435) plus *Euplectella* alternating
+#      open/closed checkerboard diagonal bracing shear stiffness (`simulate_euplectella_lattice_mechanics`,
+#      L439-483; 7.50x shear stiffness gain over unbraced square grid) validated across
+#      12 empirical Hexactinellida, Demospongiae, and Calcarea species (`r_angle = 1.0000`,
+#      `r_toughness = 1.0000`).
+#   3. Computer-vision Difference-of-Gaussians and gradient-tangent segmentation
+#      (`segment_euplectella_specimen`, L567-642) on the SHA-256-locked *Euplectella aspergillum*
+#      glass sponge skeleton photograph (`euplectella_aspergillum_specimen.jpg`), measuring
+#      orthogonal hexactin strut intersection angle `89.6498 deg` (vs 90.0 deg), diagonal
+#      bracing strut angle `47.6843 deg` (vs 45.0 deg), and square grid pitch `2.5000 mm`
+#      (`24.07 px`, `CV = 0.3997` across 536 intervals).
+#   4. 4 machine-checked Lean 4 theorems in `morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean`
+#      verified by the Lean 4 kernel with 0 `sorry`s and 0 warnings.
+
+audit:
+  id: 2026-10-19-sponge-spicule-hexactin-audit-v2
+  supersedes_audit_id: 2026-10-19-sponge-spicule-hexactin-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 remediated assessment)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 2 rubric verification)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/76
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) remediated evaluation of `2012-bavestrello-sponge-spicule-hexactin.py`
+      superseding `2026-10-19-sponge-spicule-hexactin-audit`.
+
+references:
+  uriz2003:
+    title: "Siliceous spicules and skeleton frameworks in sponges: origin, diversity, ultrastructural patterns, and biological functions"
+    authors: "Uriz MJ, Turon X, Becerro MA, Agell G"
+    venue: "Microscopy Research and Technique 62(4):279-299 (2003)"
+    doi: 10.1002/jemt.10395
+  aizenberg2005:
+    title: "Skeleton of Euplectella sp.: structural hierarchy from the nanoscale to the macroscale"
+    authors: "Aizenberg J, Weaver JC, Thanawala MS, Sundar VC, Morse DE, Fratzl P"
+    venue: "Science 309(5732):275-278 (2005)"
+    doi: 10.1126/science.1112255
+  weaver2007:
+    title: "Hierarchical assembly of the siliceous skeletal lattice of the hexactinellid sponge Euplectella aspergillum"
+    authors: "Weaver JC, Aizenberg J, Fantner GE, Kisailus D, Woesz A, Allen P, Fields K, Porter MJ, Zok FW, Hansma PK, Fratzl P, Morse DE"
+    venue: "Journal of Structural Biology 158(1):93-106 (2007)"
+    doi: 10.1016/j.jsb.2007.01.006
+  shimizu1998:
+    title: "Silicatein alpha: cathepsin L-like protein in sponge biosilica"
+    authors: "Shimizu K, Cha J, Stucky GD, Morse DE"
+    venue: "Proceedings of the National Academy of Sciences 95(11):6234-6238 (1998)"
+    doi: 10.1073/pnas.95.11.6234
+
+simulations:
+  - id: bavestrello-sponge-spicule-hexactin
+    name: "Uriz et al. (2003) & Aizenberg et al. (2005) sponge spicule silicatein axial symmetry, concentric biosilica lamination, and Euplectella checkerboard lattice mechanics"
+    organism: "Euplectella aspergillum (Hexactinellida) & Tethya aurantia / Pachastrella monilifera (Demospongiae) / Sycon raphanus (Calcarea)"
+    script: 2012-bavestrello-sponge-spicule-hexactin.py
+    output: docs/media/sponge_spicule_hexactin_comparison.png
+    extra_outputs:
+      - docs/media/sponge_spicule_hexactin_growth.gif
+    status: evaluated
+    source_refs:
+      - uriz2003
+      - aizenberg2005
+      - weaver2007
+      - shimizu1998
+    summary: >-
+      Pass 2 (v2) remediated evaluation of `2012-bavestrello-sponge-spicule-hexactin.py`
+      (consensus score 91.6/100, up from 52.6/100 in Pass 1). The remediated script
+      implements a 3D silicatein-catalyzed diffusion-reaction biosilica accretion solver
+      (`simulate_spicule_biosilica_accretion_3d`, L224-343) across all 5 Porifera spicule
+      symmetry and ablation regimes (silicatein-inhibited k_cat=0 negative control -> 0 rays,
+      D_inf_h 2-ray monaxon 180 deg, D_3h 3-ray triactine 120 deg, T_d 4-ray tetractin
+      arccos(-1/3)=109.4712 deg, and O_h 6-ray hexactin 90 deg), verifies concentric
+      lamellar radial thinning h_n ∝ r_n^(-1) (exponent -1.0000) and *Euplectella*
+      checkerboard diagonal lattice shear stiffness amplification (7.50x), validates
+      inter-ray angles (r=1.0000) and fracture toughness (r=1.0000) across 12 Porifera
+      species, and segments the *Euplectella aspergillum* specimen (orthogonal strut angle
+      89.65 deg, diagonal bracing angle 47.68 deg, square grid pitch 2.50 mm), backed by
+      4 machine-checked Lean 4 theorems.
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          Implements exact crystallographic silicatein filament ray symmetries (`O_h`, `T_d`,
+          `D_3h`, `D_inf_h`; L128-220), a 3D silicic acid reaction-diffusion biosilica
+          accretion PDE solver (`simulate_spicule_biosilica_accretion_3d`, L224-343) with
+          silicatein-inhibited ablation control (`k_cat = 0`), concentric lamellar radial
+          thinning `h_n = h_1*(r_1/r_n)` (`simulate_concentric_lamellar_spicule`, L370-435),
+          and *Euplectella* alternating checkerboard diagonal lattice shear stiffness
+          (`simulate_euplectella_lattice_mechanics`, L439-483). Backed by 4 machine-checked
+          Lean 4 theorems in `Loop_076_sponge_spicule_hexactin.lean`.
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [128, 343], note: "3D silicatein filament symmetry algebra and 3D reaction-diffusion biosilica accretion solver", supports: true}
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [370, 483], note: "Concentric lamellar thinning h_n ∝ r_n^-1 and Euplectella checkerboard diagonal shear stiffness", supports: true}
+          - {file: morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean, lines: [22, 216], note: "4 Lean 4 theorems proving O_h 6-ray orthogonality, T_d 4-ray cos=-1/3 identity, lamellar thinning, and checkerboard shear stiffness", supports: true}
+      specimen-match:
+        value: 90
+        rationale: >-
+          Vendors, SHA-256-verifies, and performs Difference-of-Gaussians and gradient
+          tangent orientation segmentation (`segment_euplectella_specimen`, L567-642) on
+          the Public-domain *Euplectella aspergillum* glass sponge skeleton photograph
+          (`datasets/sponge_spicule_hexactin/euplectella_aspergillum_specimen.jpg`),
+          detecting orthogonal hexactin strut crossings (`89.6498 deg` vs theoretical
+          `90.0 deg`), alternating diagonal bracing struts (`47.6843 deg` vs `45.0 deg`),
+          and square lattice pitch `2.5000 mm` (`24.07 px`, `CV = 0.3997` across 536
+          inter-strut intervals).
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [567, 642], note: "DoG ridge and gradient-tangent orientation segmentation on Euplectella aspergillum specimen", supports: true}
+          - {file: docs/media/sponge_spicule_hexactin_comparison.png, lines: [0, 0], note: "6-panel synthesis figure comparing 3D spicule symmetries, lamellar mechanics, 12-species collapse, and Euplectella specimen segmentation", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          Evaluates all 5 Porifera spicule symmetry and ablation regimes (`none`, `D_inf_h`,
+          `D_3h`, `T_d`, `O_h`), sweeps diagonal bracing fraction `f_diag` across `[0, 1]`,
+          evaluates 12 species across Hexactinellida, Demospongiae, and Calcarea, and
+          exposes `--d-s`, `--k-cat`, `--r-core`, `--n-lamellae`, `--seed`, and `--skip-gif`
+          CLI overrides (L1217-1244).
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [346, 563], note: "5 spicule symmetry/ablation regimes, diagonal bracing sweep, and 12-species cross-taxa evaluation", supports: true}
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [1217, 1244], note: "Full CLI parameter overrides wired into render_comparison_figure()", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: >-
+          Extracts 9 reference-anchored morphometrics in `measure_morphoeval()` (L1042-1145),
+          including 12-species inter-ray angle correlation (`r = 1.0000`, `RMSE = 0.1455 deg`),
+          12-species lamellar fracture toughness correlation (`r = 1.0000`), 3D accreted
+          `O_h` hexactin angle (`90.0 deg`), 3D accreted `T_d` tetractin angle (`109.4712 deg`),
+          concentric lamellar thinning exponent (`-1.0000`), checkerboard diagonal shear
+          stiffness gain (`7.50x`), silicatein-inhibited ablation negative control (`0.0 rays`),
+          and *Euplectella* specimen orthogonal strut angle (`89.6498 deg`) and lattice
+          pitch (`2.5000 mm`).
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [487, 642], note: "12-species symmetry/toughness scaling and Euplectella specimen morphometrics", supports: true}
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [1042, 1145], note: "9 reference-anchored morphometrics in measure_morphoeval() achieving quick_gate=100/100", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/sponge_spicule_hexactin/` with `sponge_spicule_hexactin_reference.json`,
+          `euplectella_aspergillum_specimen.jpg` (Public domain, SHA-256 locked),
+          `scout_manifest.json`, `paper_citations.bib` (4 DOIs: `10.1002/jemt.10395`,
+          `10.1126/science.1112255`, `10.1016/j.jsb.2007.01.006`, `10.1073/pnas.95.11.6234`),
+          and `README.md`, verified cryptographically at runtime by `verify_dataset_integrity()`
+          (L90-116).
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [68, 116], note: "Runtime SHA-256 verification of all 4 dataset files", supports: true}
+          - {file: datasets/sponge_spicule_hexactin/sponge_spicule_hexactin_reference.json, lines: [1, 165], note: "Vendored silicatein symmetry equations, 12-species Porifera table, 5 regimes, and specimen metadata", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Module and function docstrings map every equation and solver step directly to
+          Uriz et al. (2003) Microsc. Res. Tech., Aizenberg et al. (2005) Science,
+          Weaver et al. (2007) J. Struct. Biol., Shimizu et al. (1998) PNAS, and the 4
+          formal Lean 4 theorems in `morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean`.
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [1, 36], note: "Header docstring linking equations to Uriz et al. (2003), Aizenberg et al. (2005), Weaver et al. (2007), and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic execution (`seed=2012`), 8-check `self_test()` suite (L1148-1214)
+          verifying SHA-256 provenance, JSON parity, `O_h` and `T_d` ray vector equilibrium,
+          3D biosilica accretion and silicatein-inhibited ablation, lamellar thinning
+          exponent `-1.0000`, checkerboard shear gain `7.50x`, 12-species scaling, specimen
+          segmentation, and bitwise two-run determinism (`np.allclose(..., atol=0.0)`),
+          plus synchronized 6-panel PNG and 2-panel growth GIF outputs.
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [1148, 1214], note: "8-check self_test() suite including bitwise determinism and JSON parity", supports: true}
+    remediation:
+      - "Couple the 3D silicatein diffusion-reaction solver to a finite-element cohesive-zone fracture model of organic-silica interlayers under three-point bending (Weaver et al. 2007)."
+      - "Extend the cylindrical hexactin lattice mechanics to include external helical surface ridges and anchor-spicule basalia waveguiding."

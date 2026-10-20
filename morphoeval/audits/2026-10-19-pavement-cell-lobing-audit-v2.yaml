@@ -1,0 +1,197 @@
+# MorphoEval Pass 2 (v2) Audit — Sapala et al. (2018) eLife & Fu et al. (2005) Cell
+# ROP2-ROP6 Interdigitated Puzzle-Shaped Pavement Cells & LEC Turgor Stress Scaling, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2017-runions-pavement-cell-lobing.py` (Slot 039)
+# superseding `2026-10-19-pavement-cell-lobing-audit` in `2026-10-19-pavement-cell-lobing-loop`:
+#   - Primary assessor: Gemini 4 Argon — 93.1 / 100 (up from 53.6 / 100 in v1; +39.5 overall)
+
+audit:
+  id: 2026-10-19-pavement-cell-lobing-audit-v2
+  supersedes: 2026-10-19-pavement-cell-lobing-audit
+  supersedes_audit_id: 2026-10-19-pavement-cell-lobing-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 039 Pass 2 Assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/39
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2017-runions-pavement-cell-lobing.py` after
+      completing Step 12 closed-loop remediation in `2026-10-19-pavement-cell-lobing-loop`.
+
+references:
+  sapala2018:
+    title: "Why plants make puzzle cells, and how their shape emerges"
+    authors: "Sapala A, Runions A, Routier-Kierzkowska AL, Das Gupta M, Hong L, Hofhuis H, Verger S, Mosca G, Li CB, Hay A, Hamant O, Roeder AHK, Tsiantis M, Prusinkiewicz P, Smith RS"
+    venue: "eLife 7:e32794 (2018)"
+    doi: 10.7554/eLife.32794
+  fu2005:
+    title: "Arabidopsis Interdigitating Cell Growth Requires Two Antagonistic Pathways with Opposing Action on Cell Morphogenesis"
+    authors: "Fu Y, Gu Y, Zheng ZL, Wasteneys G, Yang Z"
+    venue: "Cell 120(5):687-700 (2005)"
+    doi: 10.1016/j.cell.2004.12.026
+  bidhendi2019:
+    title: "Mechanical stress initiates and sustains the morphogenesis of wavy leaf epidermal cells"
+    authors: "Bidhendi AJ, Altartouri B, Gosselin FP, Geitmann A"
+    venue: "Nature Plants 5(9):981-992 (2019)"
+    doi: 10.1038/s41477-019-0500-2
+  lin2013:
+    title: "Rho GTPase Signaling Activates Microtubule Severing to Promote Lobe Outgrowth in Arabidopsis Pavement Cells"
+    authors: "Lin D, Cao L, Zhou Z, Zhu L, Ehrhardt D, Yang Z, Fu Y"
+    venue: "Current Biology 23(4):290-297 (2013)"
+    doi: 10.1016/j.cub.2013.01.022
+  sampathkumar2014:
+    title: "Subcellular and supracellular mechanical stress prescribes cytoskeleton behavior in Arabidopsis cotyledon pavement cells"
+    authors: "Sampathkumar A, Krupinski P, Wightman R, Milani P, Berquand A, Boudaoud A, Hamant O, Jonsson H, Meyerowitz EM"
+    venue: "eLife 3:e01967 (2014)"
+    doi: 10.7554/eLife.01967
+
+simulations:
+  - id: runions-pavement-cell-lobing
+    name: "Sapala et al. (2018) & Fu et al. (2005) ROP2-ROP6 interdigitated puzzle-shaped pavement cell lobing and Largest Empty Circle (LEC) turgor stress scaling"
+    organism: "Arabidopsis thaliana (cotyledon & leaf epidermal pavement cells)"
+    script: 2017-runions-pavement-cell-lobing.py
+    output: docs/media/pavement_cell_lobing_comparison.png
+    extra_outputs:
+      - docs/media/pavement_cell_lobing_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Sapala et al. (2018) eLife 7:e32794 outer periclinal cell wall tensile stress scaling with Largest Empty Circle radius (sigma_max ~ P * R_LEC / h), demonstrating that interdigitated puzzle lobing pins R_LEC near ~11.4 um as cell area expands to 4500 um^2 whereas isotropic polygonal/mutant cells grow as sqrt(A/pi)"
+        - "Fu et al. (2005) Cell 120:687-700 & Lin et al. (2013) Curr Biol 23:290-297 antagonistic cortical ROP2-RIC4 (actin lobe outgrowth) and ROP6-RIC1-KTN1 (katanin-mediated microtubule neck bundling) polarization in antiphase across shared anticlinal cell walls, and lobeyness collapse in rop2 rop4 RNAi and ktn1/ric1 mutants"
+      reconstructed_in_script:
+        - "Exact 2D Euclidean Distance Transform Largest Empty Circle (R_LEC) and ConvexHull solidity/lobeyness solver across cell area growth A in [250, 4500] um^2 for wild-type Col-0 puzzle cells, unlobed isotropic cells, ktn1/ric1 and rop2 rop4 mutants, and parallel-file monocot epidermis"
+        - "196-node periodic anticlinal boundary coupled ROP2-RIC4 / ROP6-RIC1-KTN1 reaction-diffusion PDE integrator reproducing intracortical mutual exclusion (r = -0.9899), trans-wall lobe-neck complementarity (r = 0.9998), 24.5 um lobe wavelength, and exact intercellular area conservation"
+        - "Automated DoG + zero-compactness watershed segmentation of 10 interlocking puzzle-shaped pavement cells from the SHA-256-locked Arabidopsis thaliana leaf epidermis SEM micrograph (`arabidopsis_pavement_cell_specimen.jpg`, mean S = 0.720, min S = 0.626, mean L = 1.506)"
+      transfer_boundary:
+        - "2D anticlinal boundary PDE and spring-remodeled polygonal contours with Euclidean Distance Transform R_LEC mapped to 2D epidermal SEM projections"
+      does_not_claim:
+        - "Full 3D finite-element shell modeling of dome deflection z(x,y) coupled to discrete microtubule filament polymerization stochastics"
+    source_refs:
+      - sapala2018
+      - fu2005
+      - bidhendi2019
+      - lin2013
+      - sampathkumar2014
+    summary: >-
+      Pass 2 (v2) evaluation of `2017-runions-pavement-cell-lobing.py` (overall
+      weighted score: 93.1/100, up from 53.6/100 in v1). The remediated script computes
+      exact Euclidean Distance Transform Largest Empty Circle radii R_LEC(A) and outer
+      periclinal wall stresses across cell area A in [250, 4500] um^2 (WT R_LEC plateau
+      11.576 um vs ref 11.4 um; scaling r = 0.9859, p = 2.97e-4, RMSE = 0.314 um; 3.27x
+      stress reduction vs unlobed isotropic cells); integrates a 196-node coupled
+      ROP2-RIC4 / ROP6-RIC1-KTN1 cortical reaction-diffusion PDE system across shared
+      anticlinal walls (intracortical r = -0.9899, trans-wall complementarity r = 0.9998,
+      wavelength 24.50 um vs ref 24.5 um); validates ktn1/ric1 and rop2 rop4 mutant
+      lobeyness collapse (ktn1 L = 1.1107 vs ref 1.11, WT S = 0.6735 vs ref 0.68); and
+      segments 10 interlocking puzzle cells on the SHA-256-locked Arabidopsis leaf
+      epidermis SEM micrograph (`arabidopsis_pavement_cell_specimen.jpg`, mean S = 0.720).
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Implements exact 2D Euclidean Distance Transform Largest Empty Circle (`compute_exact_lec_from_polygon`,
+          L137-186), ConvexHull solidity & lobeyness (`compute_lobeyness_and_solidity`, L114-134),
+          Sapala et al. (2018) spring-remodeled puzzle cell area scaling across WT, isotropic,
+          ktn1/ric1, rop2 rop4 RNAi, and monocot file regimes (`simulate_puzzle_cell_area_scaling`,
+          L257-357), and a 196-node coupled ROP2–ROP6 anticlinal boundary reaction-diffusion
+          PDE solver (`simulate_rop2_rop6_cortical_rd`, L363-478), backed by 3 machine-checked
+          Lean 4 theorems in `morphoeval/lean/loops/Loop_039_pavement_cell_lobing.lean`.
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [137, 357], note: "Exact EDT Largest Empty Circle solver and 5-regime cell area scaling across A in [250, 4500] um^2", supports: true}
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [363, 478], note: "196-node coupled ROP2-RIC4 and ROP6-RIC1-KTN1 cortical reaction-diffusion PDE solver across shared anticlinal walls", supports: true}
+          - {file: morphoeval/lean/loops/Loop_039_pavement_cell_lobing.lean, lines: [15, 117], note: "3 machine-checked Lean 4 theorems for LEC stress suppression, ROP2-ROP6 trans-wall conservation, and mutant lobeyness collapse (0 sorrys)", supports: true}
+      specimen-match:
+        value: 91
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY-SA 3.0 Arabidopsis thaliana leaf
+          epidermis SEM micrograph (`arabidopsis_pavement_cell_specimen.jpg`, 1280x960),
+          applies DoG anticlinal wall groove enhancement and zero-compactness watershed
+          segmentation (`segment_arabidopsis_pavement_specimen`, L484-575) to extract
+          10 interlocking puzzle-shaped pavement cells, and measures their empirical
+          solidity (mean S = 0.720 ± 0.041, min S = 0.626), lobeyness (mean L = 1.506),
+          and inscribed R_LEC circles.
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [484, 575], note: "DoG + zero-compactness watershed segmentation and EDT R_LEC extraction on 10 Arabidopsis puzzle cells", supports: true}
+          - {file: docs/media/pavement_cell_lobing_comparison.png, lines: [0, 0], note: "6-panel synthesis figure overlaying segmented puzzle cell contours and inscribed LEC circles on the SEM specimen", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Sweeps 6 developmental cell area stages A in [250, 4500] um^2 across 5 morphological
+          / genetic regimes (WT Col-0, unlobed isotropic, ktn1/ric1 mutant, rop2 rop4 RNAi,
+          and monocot parallel-file epidermis, L257-357), supports ROP2-ROP6 cross-inhibition
+          ablation in the PDE solver (L404-410), and exposes `--turgor-P`, `--wall-h`,
+          `--neck-R0`, `--gamma-cross`, `--alpha-wall`, and `--seed` CLI flags (L846-885).
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [257, 357], note: "6-stage area scaling across 5 genotypes and cell geometries", supports: true}
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [846, 885], note: "CLI parameter overrides wired into mechanical scaling and cortical RD solvers", supports: true}
+      morphometric-validation:
+        value: 94
+        rationale: >-
+          `measure_morphoeval()` (L724-802) reports 9 reference-anchored morphometric
+          measurements with uncertainty, p-values, and negative controls: mature WT
+          R_LEC = 11.576 um (ref 11.4 um), R_LEC(A) trajectory Pearson r = 0.9859
+          (p = 2.97e-4, RMSE = 0.314 um), isotropic-to-puzzle stress ratio 3.270 (ref 3.32),
+          ROP2-ROP6 intracortical anticorrelation r = -0.9899 (ref -0.92, p = 1.64e-166),
+          trans-wall complementarity r = 0.9998 (ref 0.94), lobe wavelength 24.50 um
+          (ref 24.5 um), mature WT solidity S = 0.6735 (ref 0.68), ktn1 mutant lobeyness
+          collapse L = 1.1107 (ref 1.11), and segmented SEM specimen solidity S = 0.7200
+          (ref 0.68).
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [724, 802], note: "9 reference-anchored morphometric measurements with Pearson p-values, RMSE, and mutant controls", supports: true}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Vendors `datasets/pavement_cell_lobing/` with 5 primary BibTeX entries and
+          verified DOIs (`10.7554/eLife.32794`, `10.1016/j.cell.2004.12.026`,
+          `10.1038/s41477-019-0500-2`, `10.1016/j.cub.2013.01.022`, `10.7554/eLife.01967`),
+          `scout_manifest.json`, `pavement_cell_lobing_reference.json`, and
+          `arabidopsis_pavement_cell_specimen.jpg`, all verified at runtime via SHA-256
+          checksums (`verify_dataset_integrity`, L79-93).
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [79, 93], note: "Runtime SHA-256 verification of all 4 dataset files", supports: true}
+          - {file: datasets/pavement_cell_lobing/pavement_cell_lobing_reference.json, lines: [1, 165], note: "SHA-256-locked reference dataset with Sapala et al. (2018) and Fu et al. (2005) benchmarks", supports: true}
+      code-traceability:
+        value: 93
+        rationale: >-
+          Module and function docstrings map every governing equation to Sapala et al.
+          (2018) eLife Figs. 1-5 & Box 1, Fu et al. (2005) Cell Figs. 1-7, Lin et al.
+          (2013) Curr. Biol., Bidhendi et al. (2019) Nat. Plants, and the 3 formal Lean 4
+          theorems in `morphoeval/lean/loops/Loop_039_pavement_cell_lobing.lean` (L1-51).
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [1, 51], note: "Explicit equation-to-paper and Lean 4 theorem traceability in module docstring", supports: true}
+      repro-package:
+        value: 93
+        rationale: >-
+          8-point `run_self_test()` suite (`L805-843`) verifying SHA-256 dataset integrity,
+          Sapala et al. (2018) LEC plateau & 3.27x stress suppression, ROP2-ROP6 cortical
+          PDE anticorrelation & exact intercellular area conservation, ktn1 & rop2 rop4
+          mutant lobeyness collapse, monocot narrow file R_LEC bound, SEM specimen
+          segmentation, 9-metric `measure_morphoeval()` contract, and bitwise determinism.
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [805, 843], note: "8-check deterministic self-test suite passing in ~1s", supports: true}
+    remediation:
+      - "Couple the 2D spring-remodeling pavement cell polygon network to a 3D pressurized periclinal shell finite-element solver to resolve out-of-plane anticlinal wall buckling variations with depth."

@@ -1,0 +1,171 @@
+# MorphoEval audit — Brodland (2002) J. Biomech. Eng. / Krieg et al. (2008) Nature Cell Biology DITH Germ-Layer Sorting, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `2002-brodland-differential-interfacial-tension-sorting.py` (v1, 237 lines) prior to
+# Step 12 remediation in `2026-10-19-differential-interfacial-tension-sorting-loop`.
+
+audit:
+  id: 2026-10-19-differential-interfacial-tension-sorting-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b9976f8
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2002-brodland-differential-interfacial-tension-sorting.py` prior to
+      Pass 2 remediation in `2026-10-19-differential-interfacial-tension-sorting-loop`.
+
+references:
+  brodland2002:
+    title: "The Differential Interfacial Tension Hypothesis (DITH): A comprehensive theory for the self-rearrangement of embryonic cells and tissues"
+    authors: "Brodland GW"
+    venue: "Journal of Biomechanical Engineering 124(2):188-197 (2002)"
+    doi: 10.1115/1.1449491
+  krieg2008:
+    title: "Tensile forces govern germ-layer organization in zebrafish"
+    authors: "Krieg M, Arboleda-Estudillo Y, Puech P-H, Käfer J, Graner F, Müller DJ, Heisenberg C-P"
+    venue: "Nature Cell Biology 10(4):429-436 (2008)"
+    doi: 10.1038/ncb1705
+  maitre2012:
+    title: "Adhesion functions in cell sorting by mechanically coupling the cortices of adhering cells"
+    authors: "Maître J-L, Berthoumieux H, Krens SFG, Salbreux G, Jülicher F, Paluch E, Heisenberg C-P"
+    venue: "Science 338(6104):253-256 (2012)"
+    doi: 10.1126/science.1225399
+  kafer2007:
+    title: "Cell adhesion and cortex contractility determine cell patterning in the Drosophila retina"
+    authors: "Käfer J, Hayashi T, Marée AFM, Carthew RW, Graner F"
+    venue: "Proceedings of the National Academy of Sciences 104(47):18549-18554 (2007)"
+    doi: 10.1073/pnas.0704252104
+  canty2017:
+    title: "Sorting at embryonic boundaries requires high heterotypic interfacial tension"
+    authors: "Canty L, Zarour E, Kashkooli L, François P, Fagotto F"
+    venue: "Nature Communications 8:157 (2017)"
+    doi: 10.1038/s41467-017-00146-x
+
+simulations:
+  - id: brodland-differential-interfacial-tension-sorting
+    name: "Brodland (2002) / Krieg et al. (2008) / Maître et al. (2012) Differential Interfacial Tension Hypothesis (DITH) and zebrafish germ-layer cortical tension sorting"
+    organism: "Danio rerio (zebrafish shield-stage gastrula germ-layer progenitors: ectoderm, mesoderm, endoderm)"
+    script: 2002-brodland-differential-interfacial-tension-sorting.py
+    output: docs/media/differential_interfacial_tension_sorting_comparison.png
+    extra_outputs:
+      - docs/media/differential_interfacial_tension_sorting_growth.gif
+    status: evaluated
+    source_refs:
+      - brodland2002
+      - krieg2008
+      - maitre2012
+      - kafer2007
+      - canty2017
+    summary: >-
+      Pass 1 (v1) evaluation of `2002-brodland-differential-interfacial-tension-sorting.py` (57.3/100).
+      The v1 baseline implements the Brodland (2002) DITH interfacial tension relation
+      `gamma_{alpha,beta} = beta_alpha + beta_beta - omega_{alpha,beta}` (`compute_dith_tensions`,
+      L25-63) and simulates 2D cell sorting for wild-type zebrafish ectoderm/mesoderm engulfment
+      (`beta_E=50, beta_M=95`) vs Blebbistatin Myosin-II inhibition (`beta_E=beta_M=25`), but
+      omits Krieg et al.'s (2008) 3-germ-layer concentric hierarchy (ectoderm/mesoderm/endoderm)
+      and `caMLCK` ectodermal cortical stiffening sorting reversal (`beta_{E+caMLCK}=145 > beta_M=95`),
+      omits Maître et al.'s (2012) Young-Dupré cell-doublet contact angle `cos(theta) = 1 - gamma_cc/(2*gamma_cm)`
+      and normalized contact radius `r_c/R = sin(theta)` mechanics, omits microscopic Metropolis
+      membrane boundary fluctuations with volume/perimeter elasticity, does not load or segment
+      the vendored zebrafish blastoderm cross-transplantation fluorescence specimen
+      (`germ_layer_doublet_specimen.jpg`), and exposes no CLI parameter flags beyond `--self-test`.
+    scores:
+      model-fidelity:
+        value: 66
+        rationale: >-
+          Implements Brodland's (2002) Eq. (1) DITH interfacial tension formula
+          (`compute_dith_tensions`, L25-63) and simulates wild-type ectoderm/mesoderm
+          engulfment vs Blebbistatin Myosin-II inhibition (`simulate_dith_sorting_v1`, L66-163).
+          However, v1 omits Krieg et al.'s (2008) `caMLCK` cortical stiffening sorting reversal
+          (`beta_E=145 > beta_M=95`), high-HIT partial doublet lens formation, 3-germ-layer
+          (ectoderm/mesoderm/endoderm) concentric sorting, Maître et al.'s (2012) Young-Dupré
+          cell-doublet contact angle law, and microscopic single-spin boundary fluctuations.
+        evidence:
+          - {file: 2002-brodland-differential-interfacial-tension-sorting.py, lines: [25, 63], note: "Brodland (2002) Eq. 1 DITH interfacial tension relation gamma_EM = beta_E + beta_M - omega_EM", supports: true}
+          - {file: 2002-brodland-differential-interfacial-tension-sorting.py, lines: [66, 163], note: "v1 simulates only 2 regimes without caMLCK sorting reversal, 3-germ-layer sorting, or Young-Dupré cell-doublet contact mechanics", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/differential_interfacial_tension_sorting/germ_layer_doublet_specimen.jpg`
+          is vendored on disk, the v1 script never loads, verifies, or segments the zebrafish
+          blastoderm cross-transplantation GFP/RFP fluorescence panels (`render_outputs_v1`, L166-198).
+        evidence:
+          - {file: 2002-brodland-differential-interfacial-tension-sorting.py, lines: [166, 198], note: "render_outputs_v1 renders 3 synthetic panels without loading or segmenting germ_layer_doublet_specimen.jpg", supports: false}
+          - {file: docs/media/differential_interfacial_tension_sorting_comparison.png, lines: [0, 0], note: "3-panel synthetic figure lacking zebrafish blastoderm GFP/RFP segmentation", supports: false}
+      parameter-expressivity:
+        value: 46
+        rationale: >-
+          Evaluates only 2 hardcoded parameter points (`beta_E=50, beta_M=95` vs `beta_E=beta_M=25`)
+          without a continuous sweep across ectodermal cortical tension `beta_E` spanning the
+          sorting inversion threshold `beta_E = beta_M = 95 pN/um`, without a Young-Dupré
+          doublet contact angle curve across `gamma_cc/(2*gamma_cm)`, and without CLI parameter
+          flags (`main`, L229-238).
+        evidence:
+          - {file: 2002-brodland-differential-interfacial-tension-sorting.py, lines: [169, 170], note: "Only 2 hardcoded parameter points evaluated in render_outputs_v1", supports: false}
+          - {file: 2002-brodland-differential-interfacial-tension-sorting.py, lines: [229, 238], note: "CLI parser only accepts --self-test", supports: false}
+      morphometric-validation:
+        value: 53
+        rationale: >-
+          Computes 3 basic metrics in `measure_morphoeval()` (`dith_wildtype_gamma_EM`,
+          `wildtype_radial_core_shell_separation`, and `blebbistatin_control_radial_separation`,
+          L201-225), but does not quantify `caMLCK` sorting reversal, 3-germ-layer radial
+          stratification (`r_E > r_M > r_N`), Young-Dupré doublet contact radius `r_c/R = sin(theta)`,
+          or empirical GFP/RFP specimen profile concordance.
+        evidence:
+          - {file: 2002-brodland-differential-interfacial-tension-sorting.py, lines: [201, 225], note: "Only 3 basic measurements without caMLCK reversal, Young-Dupré contact angle, or specimen correlation", supports: false}
+      source-traceability:
+        value: 65
+        rationale: >-
+          Module docstring cites Brodland (2002) and Krieg et al. (2008) DOIs (L4-6) and
+          `datasets/differential_interfacial_tension_sorting/` exists on disk, but the v1 script
+          does not cite Maître et al. (2012) or load `differential_interfacial_tension_sorting_reference.json`
+          with runtime SHA-256 verification.
+        evidence:
+          - {file: 2002-brodland-differential-interfacial-tension-sorting.py, lines: [4, 7], note: "Cites 2 DOIs in docstring but omits runtime loading and SHA-256 verification of reference dataset", supports: false}
+      code-traceability:
+        value: 69
+        rationale: >-
+          Functions correspond to DITH tension decomposition and lattice sorting, and
+          `morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean` proves
+          3 theorems, but v1 docstrings lack equation-by-equation mappings to Brodland (2002)
+          Eqs. 1-6, Krieg et al. (2008) Figs. 1-4, and Maître et al. (2012) Eq. 1.
+        evidence:
+          - {file: 2002-brodland-differential-interfacial-tension-sorting.py, lines: [25, 163], note: "Baseline functions lack equation-number mappings to Brodland (2002), Krieg et al. (2008), and Maître et al. (2012)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean, lines: [1, 89], note: "3 machine-checked Lean 4 theorems for DITH Blebbistatin null identity, Krieg 2008 hierarchy & caMLCK reversal, and Maître 2012 Young-Dupré bounds", supports: true}
+      repro-package:
+        value: 68
+        rationale: >-
+          Uses deterministic `np.random.default_rng(2008)` and provides `--self-test` and
+          `measure_morphoeval()` (L201-233), but `self_test()` checks only 2 basic assertions
+          without SHA-256 dataset verification, `caMLCK` reversal checks, Young-Dupré contact
+          angle checks, or two-run bitwise determinism checks.
+        evidence:
+          - {file: 2002-brodland-differential-interfacial-tension-sorting.py, lines: [228, 234], note: "Minimal 2-check self_test() without SHA-256 verification or determinism check", supports: false}
+    remediation:
+      - "Implement all 4 canonical DITH / Krieg et al. (2008) regimes (`wildtype_germ_layer_engulfment` beta_E=50 < beta_M=95, `camlc_ectoderm_cortex_reversal` beta_{E+caMLCK}=145 > beta_M=95, `blebbistatin_myosin_inhibition` beta_E=beta_M=25, and `high_hit_partial_doublet_lens` gamma_EM=70 > 45) plus 3-germ-layer (ectoderm/mesoderm/endoderm: beta_E=50 < beta_M=95 < beta_N=130 pN/um) concentric sorting and microscopic deformable boundary fluctuations."
+      - "Implement Maître et al. (2012) Science Eq. (1) Young-Dupré cell-doublet contact angle `cos(theta) = 1 - gamma_cc/(2*gamma_cm)` and normalized contact radius `r_c/R_cell = sin(theta)` across `gamma_cc/(2*gamma_cm) in [0.15, 1.0]`, plus a 7-point continuous sweep across ectodermal cortical tension `beta_E in {25, 50, 72, 95, 115, 130, 145} pN/um` crossing the sorting inversion point `beta_E = beta_M = 95 pN/um`."
+      - "Load and SHA-256-verify `datasets/differential_interfacial_tension_sorting/differential_interfacial_tension_sorting_reference.json` and `germ_layer_doublet_specimen.jpg`, segment both the Row B layered GFP/RFP zebrafish blastoderm transplant and the Row C protruding mushroom doublet, compare empirical vs. simulated profiles and doublet contact geometry, and expose full CLI parameter flags."

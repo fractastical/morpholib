@@ -1,0 +1,167 @@
+# MorphoEval audit — Carmona-Fontaine et al. (2008, 2011) & Theveneau et al. (2013) Neural Crest Chase-and-Run, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `2012-carmona-neural-crest-chase-and-run.py` (v1, 274 lines) prior to
+# Step 12 remediation in `2026-10-19-neural-crest-chase-and-run-loop`.
+
+audit:
+  id: 2026-10-19-neural-crest-chase-and-run-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2012-carmona-neural-crest-chase-and-run.py` prior to
+      Pass 2 remediation in `2026-10-19-neural-crest-chase-and-run-loop`.
+
+references:
+  theveneau2013:
+    title: "Chase-and-run between adjacent cell populations promotes directional collective migration"
+    authors: "Theveneau E, Steventon B, Scarpa E, Garcia S, Trepat X, Streit A, Mayor R"
+    venue: "Nature Cell Biology 15(7):763-772 (2013)"
+    doi: 10.1038/ncb2772
+  carmona2008:
+    title: "Contact inhibition of locomotion in vivo controls neural crest directional migration"
+    authors: "Carmona-Fontaine C, Matthews HK, Kuriyama S, Moreno M, Dunn GA, Parsons M, Stern CD, Mayor R"
+    venue: "Nature 456(7224):957-961 (2008)"
+    doi: 10.1038/nature07441
+  carmona2011:
+    title: "Complement fragment C3a controls mutual cell attraction during collective cell migration"
+    authors: "Carmona-Fontaine C, Theveneau E, Tzekou A, Tada M, Woods M, Page KM, Parsons M, Lambris JD, Mayor R"
+    venue: "Developmental Cell 21(6):1026-1037 (2011)"
+    doi: 10.1016/j.devcel.2011.10.012
+  theveneau2010:
+    title: "Collective chemotaxis requires contact-dependent cell polarity"
+    authors: "Theveneau E, Marchant L, Kuriyama S, Gull M, Moepps B, Parsons M, Mayor R"
+    venue: "Developmental Cell 19(1):39-53 (2010)"
+    doi: 10.1016/j.devcel.2010.06.012
+  woods2014:
+    title: "Directional collective cell migration emerges as a property of cell interactions"
+    authors: "Woods ML, Carmona-Fontaine C, Barnes CP, Couzin ID, Mayor R, Page KM"
+    venue: "PLOS ONE 9(9):e104969 (2014)"
+    doi: 10.1371/journal.pone.0104969
+
+simulations:
+  - id: carmona-neural-crest-chase-and-run
+    name: "Carmona-Fontaine et al. (2008, 2011) & Theveneau et al. (2013) neural crest CIL, C3a co-attraction & Sdf1 chase-and-run migration"
+    organism: "Xenopus laevis & Mus musculus vertebrate cranial neural crest streams and epibranchial placodes"
+    script: 2012-carmona-neural-crest-chase-and-run.py
+    output: docs/media/neural_crest_chase_and_run_comparison.png
+    extra_outputs:
+      - docs/media/neural_crest_chase_and_run_growth.gif
+    status: evaluated
+    source_refs:
+      - theveneau2013
+      - carmona2008
+      - carmona2011
+      - theveneau2010
+      - woods2014
+    summary: >-
+      Pass 1 (v1) evaluation of `2012-carmona-neural-crest-chase-and-run.py` (57.6/100).
+      The v1 baseline simulates a single 2D neural crest chaser cluster and epibranchial
+      placode runner cluster under Contact Inhibition of Locomotion (CIL), C3a/C3aR
+      co-attraction (COA), and Sdf1 chemotaxis alongside a placode-ablated negative control,
+      but omits the remaining three experimental perturbation regimes of Theveneau et al. (2013)
+      (C3aR-MO COA ablation, N-cadherin/DshDep+ CIL blockade, and stationary Sdf1 bead control),
+      does not simulate the three-stream pharyngeal pouch architecture (r4, r6, r7 streams targeting
+      e1, e2, e3 placodes), does not load or segment the vendored embryonic neural crest specimen
+      (`neural_crest_specimen.jpg`), and exposes no CLI parameter flags beyond `--self-test`.
+    scores:
+      model-fidelity:
+        value: 68
+        rationale: >-
+          Implements pairwise homotypic CIL repulsion and C3a/C3aR exponential co-attraction
+          (`compute_cil_coa_pair_force`, L29-39) and 2D agent-based NC-placode chase-and-run
+          dynamics (`simulate_chase_and_run_v1`, L42-158) with a placode-ablated negative control.
+          However, v1 simulates only 2 of the 5 experimental regimes of Theveneau et al. (2013),
+          omitting C3aR-MO COA ablation (`k_COA = 0`), N-cadherin/DshDep+ CIL blockade (`k_CIL = 0`),
+          and the stationary Sdf1 bead control, and models only a single harmonic channel rather
+          than the 3 cranial neural crest streams (`r4`, `r6`, `r7`) separated by pharyngeal pouches.
+        evidence:
+          - {file: 2012-carmona-neural-crest-chase-and-run.py, lines: [29, 39], note: "Homotypic CIL repulsion and C3a/C3aR co-attraction pairwise force law", supports: true}
+          - {file: 2012-carmona-neural-crest-chase-and-run.py, lines: [42, 158], note: "Simulates only WT chase-and-run and no-placode control in a single channel, omitting C3aR-MO, DshDep+ CIL blockade, stationary bead control, and 3-stream pharyngeal arch geometry", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/neural_crest_chase_and_run/neural_crest_specimen.jpg` is vendored on
+          disk, the v1 script never loads, verifies, or segments the embryonic cranial neural crest
+          and epibranchial placode reconstruction (`render_outputs_v1`, L161-212), rendering only
+          a 3-panel synthetic scatter plot.
+        evidence:
+          - {file: 2012-carmona-neural-crest-chase-and-run.py, lines: [161, 212], note: "render_outputs_v1 renders 3 synthetic panels without loading or segmenting neural_crest_specimen.jpg", supports: false}
+          - {file: docs/media/neural_crest_chase_and_run_comparison.png, lines: [0, 0], note: "3-panel synthetic figure lacking biological specimen segmentation or dorsoventral stream comparison", supports: false}
+      parameter-expressivity:
+        value: 47
+        rationale: >-
+          Evaluates only 2 hardcoded parameter points (WT vs `chi_Sdf1=0` control) without a
+          continuous parameter sweep across `k_COA` or `chi_Sdf1`, without evaluating the 5
+          perturbation regimes of Theveneau et al. (2013), and without CLI flags for `k_CIL`,
+          `k_COA`, `chi_Sdf1`, `k_run`, `steps`, or `seed` (L261-269).
+        evidence:
+          - {file: 2012-carmona-neural-crest-chase-and-run.py, lines: [163, 164], note: "Only 2 hardcoded parameter sets evaluated in render_outputs_v1", supports: false}
+          - {file: 2012-carmona-neural-crest-chase-and-run.py, lines: [261, 269], note: "CLI parser only accepts --self-test", supports: false}
+      morphometric-validation:
+        value: 53
+        rationale: >-
+          Computes 4 synthetic measurements in `measure_morphoeval()` (L215-250), but does not
+          quantify cluster cohesion index `C_COA`, does not compare simulated vs empirical
+          Forward Migration Index (`FMI`) and 6-hour displacement across the 5 regimes of
+          Theveneau et al. (2013), and does not measure dorsoventral NC-to-placode separation or
+          anteroposterior stream periodicity on `neural_crest_specimen.jpg`.
+        evidence:
+          - {file: 2012-carmona-neural-crest-chase-and-run.py, lines: [215, 250], note: "4 synthetic measurements without specimen segmentation or 5-regime empirical correlation", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Module docstring cites Carmona-Fontaine et al. (2008, 2011) and Theveneau et al. (2013)
+          DOIs (L5-7) and `datasets/neural_crest_chase_and_run/` exists on disk, but the v1 script
+          does not load `neural_crest_chase_and_run_reference.json` or verify SHA-256 digests at runtime.
+        evidence:
+          - {file: 2012-carmona-neural-crest-chase-and-run.py, lines: [5, 10], note: "Cites 3 DOIs in docstring but omits runtime loading and SHA-256 verification of reference dataset", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions correspond to homotypic CIL/COA and heterotypic chase-and-run forces, and
+          `morphoeval/lean/loops/Loop_091_neural_crest_chase_and_run.lean` proves 4 theorems,
+          but v1 docstrings lack detailed mappings to Theveneau et al. (2013) Figs. 1-6,
+          Carmona-Fontaine et al. (2011) Figs. 2-5, and Woods et al. (2014) Eqs. 1-6.
+        evidence:
+          - {file: 2012-carmona-neural-crest-chase-and-run.py, lines: [29, 158], note: "Baseline functions lack equation-by-equation citations to Woods et al. (2014) and Theveneau et al. (2013)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_091_neural_crest_chase_and_run.lean, lines: [1, 160], note: "4 machine-checked Lean 4 theorems for CIL/COA balance, chase-and-run co-migration, and 5-regime hierarchy", supports: true}
+      repro-package:
+        value: 68
+        rationale: >-
+          Uses deterministic `np.random.default_rng(2013)` and provides `--self-test` and
+          `measure_morphoeval()` (L215-258), but `self_test()` checks only 4 basic assertions
+          without SHA-256 dataset verification, 5-regime hierarchy parity, or two-run bitwise
+          determinism checks.
+        evidence:
+          - {file: 2012-carmona-neural-crest-chase-and-run.py, lines: [253, 258], note: "Minimal 4-check self_test() without SHA-256 verification or determinism check", supports: false}
+    remediation:
+      - "Simulate all 5 experimental regimes of Theveneau et al. (2013) & Carmona-Fontaine et al. (2011) (`wildtype_chase_and_run`, `placode_ablated_no_sdf1`, `c3ar_morpholino_no_coa`, `ncad_dshdep_no_cil`, and `stationary_sdf1_bead`), plus a 3-stream pharyngeal arch simulation (`r4`, `r6`, `r7` neural crest streams chasing `e1`, `e2`, `e3` epibranchial placodes between pharyngeal pouches `p1`, `p2`) and a continuous 2D `(k_COA, chi_Sdf1)` parameter sweep."
+      - "Load and SHA-256-verify `datasets/neural_crest_chase_and_run/neural_crest_chase_and_run_reference.json` and `neural_crest_specimen.jpg`, segment the 3 blue neural crest streams (`r4`, `r6`, `r7`), 3 orange epibranchial placodes (`e1`, `e2`, `e3`), and green pharyngeal pouches in Control Panel A vs BMPR-inhibited Panel C, and quantify dorsoventral chaser-runner separation, stream spacing CV, and dorsoventral density profile correlation."
+      - "Validate the 5-regime Forward Migration Index (`FMI`) and 6-hour collective displacement hierarchy against Theveneau et al. (2013) empirical measurements (Pearson r, RMSE), expand `measure_morphoeval()` to 8 reference-anchored metrics, and expose full CLI flags."

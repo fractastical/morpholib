@@ -1,0 +1,84 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-tero-physarum-transport-network> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-tero-physarum-transport-network-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-tero-physarum-transport-network-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Tero et al. (2010) Science & Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. adaptive Physarum tube conductivity network, shortest-path phase transition, Murray's cube law, and Tokyo rail Pareto trade-off — Parameter expressivity: 92/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Sweeps 8 gamma values across [0.8, 2.4] on the 36-source Kanto network (L302-392), 19 gamma values across [0.4, 2.2] plus gamma=0.0 ablation on the two-path circuit (L444-462), 7 daughter flux split fractions in [0.20, 0.80] at gamma = 4/3 (L469-509), and exposes `--gamma`, `--i0`, `--mu`, and `--seed` CLI flags (L945-961)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-tero-physarum-transport-network-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-tero-physarum-transport-network-parameter-expressivity-2> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tero-physarum-transport-network-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2010-tero-physarum-transport-network.py L302–L509" ;
+        dct:description "Multi-source gamma sweep in [0.8, 2.4], two-path sweep in [0.4, 2.2], and 7-split Murray bifurcation sweep" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2010-tero-physarum-transport-network.py#L302-L509> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tero-physarum-transport-network-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2010-tero-physarum-transport-network.py L945–L961" ;
+        dct:description "CLI parameter overrides for gamma, i0, mu, and seed" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2010-tero-physarum-transport-network.py#L945-L961> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 057 Pass 2 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/57> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2006.07.015>,
+            <https://doi.org/10.1016/j.jtbi.2012.06.017>,
+            <https://doi.org/10.1038/35035159>,
+            <https://doi.org/10.1073/pnas.12.3.207>,
+            <https://doi.org/10.1126/science.1177894> .
+    <https://doi.org/10.1016/j.jtbi.2006.07.015> dct:date "2007"^^xsd:gYear ;
+        dct:title "A mathematical model for adaptive transport network in path finding by true slime mold" .
+    <https://doi.org/10.1016/j.jtbi.2012.06.017> dct:date "2012"^^xsd:gYear ;
+        dct:title "Physarum Can Compute Shortest Paths" .
+    <https://doi.org/10.1038/35035159> dct:date "2000"^^xsd:gYear ;
+        dct:title "Maze-solving by an amoeboid organism" .
+    <https://doi.org/10.1073/pnas.12.3.207> dct:date "1926"^^xsd:gYear ;
+        dct:title "The Physiological Principle of Minimum Work: I. The Vascular System and the Cost of Blood Volume" .
+    <https://doi.org/10.1126/science.1177894> dct:date "2010"^^xsd:gYear ;
+        dct:title "Rules for Biologically Inspired Adaptive Network Design" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Tero et al. (2010) Science & Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. adaptive Physarum tube conductivity network, shortest-path phase transition, Murray's cube law, and Tokyo rail Pareto trade-off — Parameter expressivity 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T02:04:41Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-tero-physarum-transport-network-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/57> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

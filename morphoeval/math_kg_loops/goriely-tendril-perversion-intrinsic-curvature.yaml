@@ -1,0 +1,66 @@
+sim_id: goriely-tendril-perversion-intrinsic-curvature
+math_family: "Kirchhoff Elastic Rod Hamiltonian Mechanics, Zero-Link Topological Conservation (ΔLk = 0), Pitchfork Bifurcation & G-Fiber Overwinding"
+model_spec:
+  model: "Goriely & Tabor (1998) PRL / McMillen & Goriely (2002) J. Nonlinear Sci. / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion & G-fiber overwinding"
+  B_bending_mN_mm2: 1.25
+  Gamma_soft_young: 0.25
+  Gamma_isotropic: 0.75
+  Gamma_old_lignified: 1.45
+  kappa0_mm_inv: 0.65
+  L_rod_mm: 64.0
+  rod_nodes_N: 161
+  seed: 1998
+  inputs:
+    - datasets/tendril_perversion_intrinsic_curvature/tendril_perversion_intrinsic_curvature_reference.json
+    - datasets/tendril_perversion_intrinsic_curvature/tendril_perversion_helix_specimen.jpg
+    - datasets/tendril_perversion_intrinsic_curvature/scout_manifest.json
+    - datasets/tendril_perversion_intrinsic_curvature/paper_citations.bib
+equations:
+  - law_name: "Zero-Link Topological Conservation & Opposite-Handed Chiral Helix Cancellation Law"
+    formula: "ΔLk = Tw + Wr = 0  ⇒  N_+(+τ_h) + N_-(-τ_h) = 0,  τ(-s) = -τ(s),  τ(0) = 0 at the perversion kink"
+    lean_decl: "MathOfBiology.Loop_064.net_chiral_link"
+    lean_theorem: "MathOfBiology.Loop_064.goriely_zero_link_chiral_cancellation"
+    lean_locus: "morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean#L27-L36"
+    lean_code: |
+      def net_chiral_link (tau_plus tau_minus L_half : Int) : Int :=
+        tau_plus * L_half + tau_minus * L_half
+      theorem goriely_zero_link_chiral_cancellation (tau_h L_half : Int) :
+          net_chiral_link tau_h (-tau_h) L_half = 0 ∧
+          net_chiral_link (-tau_h) tau_h L_half = 0
+    variables: "τ_h: equilibrium helical Frenet torsion (mm^-1); L_half = L/2: half-tendril arc length (mm); ΔLk: net Călugăreanu-White-Fuller linking number change"
+    role: "Explains why a tethered climbing plant tendril that cannot rotate its ends must coil into two mirror-symmetric helices of opposite chirality (+τ and -τ) joined by a central perversion inversion kink"
+    source_citation: "Goriely & Tabor (1998) Phys. Rev. Lett. 80:1564-1567; McMillen & Goriely (2002) J. Nonlinear Sci. 12:241-281"
+    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L130-L280"
+
+  - law_name: "Goriely & Tabor (1998) Critical Tension Pitchfork Bifurcation & Heteroclinic Perversion Soliton Law"
+    formula: "T_c = B κ_0^2 / (1 + Γ),  cos θ_helix = 1 - ((1 + Γ)/Γ)(1 - √(T / T_c))  (T ≤ T_c),  θ(s) = θ_helix tanh(s / ξ),  ξ = √(B / (T_c - T))"
+    lean_decl: "MathOfBiology.Loop_064.pitchfork_bifurcation_residual"
+    lean_theorem: "MathOfBiology.Loop_064.goriely_pitchfork_critical_tension"
+    lean_locus: "morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean#L54-L62"
+    lean_code: |
+      def pitchfork_bifurcation_residual (T gamma_plus_1 B kappa0 : Int) : Int :=
+        T * gamma_plus_1 - B * (kappa0 * kappa0)
+      theorem goriely_pitchfork_critical_tension (B kappa0 gamma_plus_1 : Int) :
+          pitchfork_bifurcation_residual (B * (kappa0 * kappa0)) 1 B kappa0 = 0 ∧
+          pitchfork_bifurcation_residual 0 gamma_plus_1 B 0 = 0
+    variables: "T_c: critical buckling tension (mN); B = E I: rod bending stiffness (mN·mm^2); Γ = C/B: twist-to-bend stiffness ratio; κ_0: G-fiber intrinsic curvature (mm^-1); ξ: perversion kink localization length (mm)"
+    role: "Determines the exact critical tension T_c below which an intrinsically curved rod bifurcates into left- and right-handed helices and governs the spatial width ξ of the central tendril perversion"
+    source_citation: "Goriely & Tabor (1998) Phys. Rev. Lett. 80:1564-1567 Eq. 11; McMillen & Goriely (2002) J. Nonlinear Sci. 12:241-281 Sec. 3-4"
+    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L120-L320"
+
+  - law_name: "Gerbode et al. (2012) Soft vs Mature Lignified Tendril Over-Winding Susceptibility Law"
+    formula: "S_overwind = B - C = B(1 - Γ);  Γ = C/B < 1 (young soft G-fiber ribbon) ⇒ dN/dz > 0 (initial axial stretching overwinds coil);  Γ > 1 (old lignified tendril) ⇒ dN/dz < 0 (monotonic unwinding)"
+    lean_decl: "MathOfBiology.Loop_064.gerbode_overwinding_susceptibility"
+    lean_theorem: "MathOfBiology.Loop_064.gerbode_soft_vs_lignified_overwinding"
+    lean_locus: "morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean#L77-L90"
+    lean_code: |
+      def gerbode_overwinding_susceptibility (B C : Int) : Int :=
+        B - C
+      theorem gerbode_soft_vs_lignified_overwinding (B dC : Int) :
+          gerbode_overwinding_susceptibility B B = 0 ∧
+          (∀ k : Nat, gerbode_overwinding_susceptibility (B + Int.ofNat (k + 1)) B = Int.ofNat (k + 1)) ∧
+          gerbode_overwinding_susceptibility B (B + dC) = -dC
+    variables: "B: bending stiffness (mN·mm^2); C: twisting stiffness (mN·mm^2); Γ = C/B: twist-to-bend stiffness ratio; ΔN(z/L): change in coil turns under axial extension"
+    role: "Explains the counterintuitive mechanical overwinding of soft young cucumber tendrils upon axial stretching versus monotonic unwinding in mature lignified tendrils"
+    source_citation: "Gerbode, Puzey, McCormick & Mahadevan (2012) Science 337(6098):1087-1091 Figs. 3-4"
+    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L325-L440"

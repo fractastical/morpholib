@@ -1,0 +1,184 @@
+# MorphoEval audit — Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) Human Segmentation Clock, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2019-diaza-human-somite-organoid-clock.py` (Slot 028)
+# superseding `2026-10-19-human-somite-organoid-clock-audit` in `2026-10-19-human-somite-organoid-clock-loop`.
+
+audit:
+  id: 2026-10-19-human-somite-organoid-clock-audit-v2
+  supersedes_audit_id: 2026-10-19-human-somite-organoid-clock-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2019-diaza-human-somite-organoid-clock.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-human-somite-organoid-clock-loop`).
+
+references:
+  diazcuadros2020:
+    title: "In vitro characterization of the human segmentation clock"
+    authors: "Diaz-Cuadros M, Wagner DE, Budjan C, Hubaud A, Tarazona OA, Donelly S, Michaut A, Al Tanoury Z, Yoshioka-Kobayashi K, Niino Y, Kageyama R, Miyawaki A, Touboul J, Pourquie O"
+    venue: "Nature 580(7801):113-118 (2020)"
+    doi: 10.1038/s41586-019-1885-9
+  matsuda2020:
+    title: "Species-specific oscillation periods of human and mouse segmentation clocks are due to cell autonomous properties of HES7"
+    authors: "Matsuda M, Hayashi H, Garcia-Ojalvo J, Yoshioka-Kobayashi K, Kageyama R, Yamanaka Y, Ikeya M, Toguchida J, Alev C, Ebisuya M"
+    venue: "Science 369(6510):1450-1455 (2020)"
+    doi: 10.1126/science.aba7668
+  diazcuadros2023:
+    title: "Metabolic regulation of species-specific developmental rates"
+    authors: "Diaz-Cuadros M, Miettinen TP, Skinner OS, Sheedy D, Garcia-Cabrera C, Gapon S, Hubaud A, Yellen G, Manalis SR, Oldham WM, Pourquie O"
+    venue: "Nature 613(7944):550-557 (2023)"
+    doi: 10.1038/s41586-022-05574-4
+  yamanaka2023:
+    title: "Reconstituting human somitogenesis in vitro"
+    authors: "Yamanaka Y, Hamidi S, Yoshioka-Kobayashi K, Munira S, Sunadome K, Zhang Y, Kurokawa Y, Ericsson R, Mieda A, Thompson JL, Kerwin J, Lisgo S, Yamamoto T, Moris N, Martinez-Arias A, Tsujimura T, Alev C"
+    venue: "Nature 614(7948):509-520 (2023)"
+    doi: 10.1038/s41586-022-05649-2
+
+simulations:
+  - id: diaza-human-somite-organoid-clock
+    name: "Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) human pluripotent stem-cell segmentation clock and metabolic tempo scaling model"
+    organism: "Homo sapiens vs Mus musculus (hPSC-derived presomitic mesoderm / axioloid somite organoid)"
+    script: 2019-diaza-human-somite-organoid-clock.py
+    output: docs/media/human_somite_organoid_clock_comparison.png
+    extra_outputs:
+      - docs/media/human_somite_organoid_clock_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Diaz-Cuadros et al. (2020) Nature 580:113-118 discovery of ~5.0 h (300 min) HES7-Achilles oscillations in human pluripotent stem-cell-derived presomitic mesoderm vs ~2.0 h (122 min) in mouse PSM"
+        - "Matsuda et al. (2020) Science 369:1450-1455 demonstration that species-specific HES7 intron splicing delay (tau_tx) and protein/mRNA half-lives (t_1/2), rather than the hHES7 genomic locus sequence alone, govern the 2.5x human clock slowdown"
+        - "Diaz-Cuadros et al. (2023) Nature 613:550-557 demonstration that mitochondrial electron transport chain activity and cytosolic NAD+/NADH ratio modulate global translation rate and segmentation clock period (LbNOX acceleration vs sodium azide/rotenone slowdown)"
+      reconstructed_in_script:
+        - "Delayed autoinhibitory HES7 transcriptional-translational feedback loop (TTFL) RK2 DDE solver reproducing mouse WT (122.00 min), human WT (300.01 min, ratio = 2.4591), and exact tempo rescaling collapse (std = 2.32e-13 nM, linear r = 1.0000)"
+        - "6-regime genetic & metabolic perturbation series (mouse WT, mouse + hHES7 swap, human WT, human + LbNOX NAD+ rescue, human + sodium azide ETC inhibition, and intronless Hes7 subcritical collapse; Pearson r = 0.9999, RMSE = 2.18 min)"
+        - "6-species vertebrate segmentation clock allometry (r = 0.9970), human axioloid traveling-wave kymograph, and bilateral dorsal somite row DoG segmentation on human_somite_organoid_specimen.jpg (47.14 px mean spacing, CV = 0.2010)"
+      transfer_boundary:
+        - "Single-cell and 1D/2D axioloid HES7 DDE kinetics compared with dorsal vertebrate paraxial somite SEM metameric periodicity"
+      does_not_claim:
+        - "Full 3D actomyosin apical constriction mechanics during epithelial somite rosette clefting"
+    source_refs:
+      - diazcuadros2020
+      - matsuda2020
+      - diazcuadros2023
+      - yamanaka2023
+    summary: >-
+      Pass 2 post-remediation evaluation of `2019-diaza-human-somite-organoid-clock.py` (91.7/100,
+      up from 60.3/100 in Pass 1; +31.4 overall). The remediated script solves the delayed
+      autoinhibitory HES7 mRNA/protein DDE with parabolic peak refinement, reproducing the
+      2.4591x tempo slowdown from mouse WT (122.00 min) to human WT iPSC-PSM (300.01 min = 5.0 h),
+      verifying exact tempo rescaling collapse across lambda in [1.0, 3.0] (max std = 2.32e-13 nM,
+      linear r = 1.0000), evaluating all 6 Matsuda (2020) & Diaz-Cuadros (2020, 2023) genetic
+      and mitochondrial NAD+/NADH regimes (Pearson r = 0.9999, RMSE = 2.18 min, including
+      intronless Hes7 subcritical Hopf collapse to T = 0 min), modeling 6-species vertebrate
+      clock allometry across a 10-fold period range (30 min to 300 min, r = 0.9970), rendering
+      a human axioloid traveling-wave kymograph, and segmenting bilateral paraxial somite rows
+      on `human_somite_organoid_specimen.jpg` (47.14 px mean spacing, CV = 0.2010), backed by
+      3 machine-checked Lean 4 theorems in `Loop_028_human_somite_organoid_clock.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Faithfully implements the delayed autoinhibitory HES7 TTFL DDE system with separate
+          intron splicing delay tau_tx and export/translation delay tau_tl, half-life degradation
+          rates delta_{m,p} = ln(2)/t_{1/2}, exact tempo rescaling invariance (collapse std = 2.32e-13 nM),
+          intronless Hes7 subcritical Hopf collapse, and mitochondrial NAD+/NADH turnover scaling
+          (L118-378), verified by 3 machine-checked Lean 4 theorems (0 sorrys) in
+          `morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean`.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [118, 285], note: "RK2 midpoint HES7 DDE solver and exact tempo rescaling collapse verifier", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [288, 378], note: "6-regime genetic & metabolic NAD+/NADH perturbation series evaluator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean, lines: [25, 119], note: "3 machine-checked Lean 4 theorems (0 sorrys) on tempo rescaling invariance, intron deletion subcritical collapse, and metabolic NAD+/NADH period scaling", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 dorsal vertebrate embryo somite/PSM SEM
+          (`datasets/human_somite_organoid_clock/human_somite_organoid_specimen.jpg`) and segments
+          both bilateral paraxial somite rows (`segment_somite_organoid_specimen`, L495-565),
+          extracting 8 upper and 8 lower somites, bilateral mean spacing 47.14 px (CV = 0.2010),
+          symmetry ratio 0.9969, and phase-aligned periodic waveform correlation (Panels E-F).
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [495, 565], note: "Bilateral dorsal somite DoG peak & inter-somitic cleft segmentation on human_somite_organoid_specimen.jpg", supports: true}
+          - {file: docs/media/human_somite_organoid_clock_comparison.png, lines: [0, 0], note: "6-panel synthesis figure including mouse vs human vs intronless HES7 traces, 6-regime perturbation bar chart, 6-species allometry, human axioloid kymograph, SEM segmentation, and waveform fit", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Evaluates all 6 experimental regimes from Matsuda et al. (2020) and Diaz-Cuadros et al.
+          (2020, 2023) (Mouse WT, Mouse + hHES7 swap, Human WT, Human + LbNOX NAD+ rescue,
+          Human + Azide/Rotenone ETC inhibition, and Intronless Hes7 ablation collapse),
+          plus 6 vertebrate species across a 10x clock period span (30 min to 300 min) and
+          6 tempo rescaling factors lambda in [1.0, 3.0].
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [288, 445], note: "6-regime perturbation series and 6-species vertebrate clock allometry", supports: true}
+      morphometric-validation:
+        value: 93
+        rationale: >-
+          Extracts 5 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L570-635): human/mouse period ratio 2.4591 vs 2.459 empirical,
+          human WT clock period 300.01 min vs 300.0 +/- 18.0 min, 6-regime perturbation Pearson
+          r = 0.9999 (RMSE = 2.18 min), 6-species vertebrate allometry Pearson r = 0.9970
+          (allometric linearity r = 0.9974), and bilateral SEM specimen somite spacing
+          47.14 +/- 9.48 px (CV = 0.2010).
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [570, 635], note: "5 quantitative MorphoEval measurements with analytical and empirical references, CV, Pearson r, and RMSE", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/human_somite_organoid_clock/` with `scout_manifest.json`,
+          `human_somite_organoid_clock_reference.json`, `human_somite_organoid_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.1038/s41586-019-1885-9`,
+          `10.1126/science.aba7668`, `10.1038/s41586-022-05574-4`, `10.1038/s41586-022-05649-2`),
+          and `README.md`, with runtime SHA-256 verification (`verify_dataset_integrity`, L88-115).
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [88, 115], note: "Runtime SHA-256 verification of datasets/human_somite_organoid_clock/ artifacts", supports: true}
+          - {file: datasets/human_somite_organoid_clock/human_somite_organoid_clock_reference.json, lines: [1, 210], note: "Vendored HES7 DDE equations, 6-regime perturbation series, and 6-species allometry table", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Every computational section and docstring maps directly to numbered figures in
+          Diaz-Cuadros et al. (2020, 2023) Nature and Matsuda et al. (2020) Science and the
+          3 Lean 4 theorems in `Loop_028_human_somite_organoid_clock.lean` and
+          `morphoeval/math_kg_loops/diaza-human-somite-organoid-clock.yaml`.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1, 58], note: "Module docstring linking equations to Diaz-Cuadros (2020, 2023), Matsuda (2020), and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/diaza-human-somite-organoid-clock.yaml, lines: [1, 95], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic RNG (`seed=2019`), standalone `--self-test` suite verifying SHA-256
+          dataset integrity, exact tempo rescaling collapse (<1e-11 nM), bitwise two-run
+          kymograph determinism (`atol=0.0`), intronless Hes7 ablation collapse (0 min period),
+          metabolic NAD+/NADH ordering, and specimen segmentation (`run_self_test`, L850-905),
+          plus rendered PNG and GIF outputs in `docs/media/`.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [850, 905], note: "Deterministic --self-test suite verifying SHA-256 digests, tempo collapse, bitwise determinism, and morphometrics", supports: true}
+          - {file: docs/media/human_somite_organoid_clock_growth.gif, lines: [0, 0], note: "24-frame animated GIF comparing mouse vs human HES7 oscillations and axioloid wavefront propagation", supports: true}
+    remediation:
+      - "Couple the single-cell delayed HES7 TTFL oscillator to intercellular DLL1-Notch delay coupling across a 2D hexagonal presomitic mesoderm lattice to model phase-synchronization recovery after DAPT washout."
+      - "Incorporate explicit Matrigel-embedded mechanical boundary forces during human axioloid epithelial somite rosette formation (Yamanaka et al. 2023)."

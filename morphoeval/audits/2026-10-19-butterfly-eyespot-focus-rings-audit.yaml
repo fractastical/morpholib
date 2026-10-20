@@ -1,0 +1,176 @@
+# MorphoEval audit — Nijhout (1990) Proc. R. Soc. B & Brakefield et al. (1996) Nature Butterfly Wing-Vein Focus Determination & Concentric Eyespot Rings, 2026-10-19 (v1)
+#
+# Dual-agent Pass 1 assessment of `2001-nijhout-butterfly-eyespot-focus-rings.py` (v1, 149 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-butterfly-eyespot-focus-rings-loop`):
+#   - Primary assessor: Gemini 4 Argon — 54.0 / 100
+#   - Independent second assessor rubric check — 49.0 / 100
+#   - Pass 1 consensus score: 51.5 / 100
+#
+# Concrete Pass 1 weaknesses flagged for Step 12 remediation:
+#   1. Evaluates only a 1D analytical exponential curve c(r) = c0 * exp(-r/lambda) and a static
+#      2D circular disc sketch (L23-50): omits Stage-1 2D Meinhardt activator-inhibitor
+#      reaction-diffusion inside a longitudinal wing-vein-bounded cell compartment [0, L_x] x [-W_y/2, W_y/2]
+#      that destabilizes the midline ridge into a discrete focal organizer at (x_f, 0) (Nijhout 1990),
+#      omits Stage-2 2D finite-difference PDE relaxation of dc/dt = D nabla^2 c - k c + S_0 delta(x - x_focus),
+#      and omits twin-focus hourglass fusion (Beldade et al. 2002) and pupal cautery timing series.
+#   2. Zero biological specimen comparison (`specimen-match: 24`): the vendored CC BY-SA 4.0
+#      *Bicyclus anynana* ventral wing eyespot photograph (`datasets/butterfly_eyespot_focus_rings/bicyclus_anynana_eyespot_specimen.jpg`)
+#      is not loaded, SHA-256-verified, or radially segmented in v1.
+#   3. Omits multi-regime comparison across Wet-Season Wild-Type (c0=1.0), Dry-Season Ecdysone
+#      Polyphenism (c0=0.42), *Goldeneye* Spalt-threshold mutant (theta_black=0.44), Twin-Focus
+#      Hourglass Fusion (d_12=1.50 mm < 2*R_gold), and Early Pupal Focal Microcautery Ablation (c0=0.05).
+#   4. Hardcodes fixed parameters without CLI overrides (`--c0`, `--lambda-mm`, `--theta-black`,
+#      `--theta-gold`, `--d12`, `--seed`).
+
+audit:
+  id: 2026-10-19-butterfly-eyespot-focus-rings-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 baseline assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 1 rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/98
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2001-nijhout-butterfly-eyespot-focus-rings.py`
+      prior to Step 12 remediation in `2026-10-19-butterfly-eyespot-focus-rings-loop`.
+
+references:
+  nijhout1990:
+    title: "A comprehensive model for colour pattern formation in butterflies"
+    authors: "Nijhout HF"
+    venue: "Proceedings of the Royal Society of London B 239(1294):81-113 (1990)"
+    doi: 10.1098/rspb.1990.0048
+  french1994:
+    title: "Eyespot development on butterfly wings: the epidermal response to damage"
+    authors: "French V, Brakefield PM"
+    venue: "Developmental Biology 168(1):112-123 (1995)"
+    doi: 10.1006/dbio.1995.1065
+  brakefield1996:
+    title: "Development, plasticity and evolution of butterfly eyespot patterns"
+    authors: "Brakefield PM, Gates J, Keys D, Kesbeke F, Wijngaarden PJ, Monteiro A, French V, Carroll SB"
+    venue: "Nature 384(6606):236-242 (1996)"
+    doi: 10.1038/384236a0
+  brunetti2001:
+    title: "The generation and diversification of butterfly eyespot color patterns"
+    authors: "Brunetti CR, Selegue JE, Monteiro A, French V, Brakefield PM, Carroll SB"
+    venue: "Current Biology 11(18):1451-1461 (2001)"
+    doi: 10.1016/S0960-9822(01)00429-8
+  beldade2002:
+    title: "Developmental constraints versus flexibility in morphological evolution"
+    authors: "Beldade P, Koops K, Brakefield PM"
+    venue: "Nature 416(6883):844-847 (2002)"
+    doi: 10.1038/416844a
+
+simulations:
+  - id: nijhout-butterfly-eyespot-focus-rings
+    name: "Nijhout (1990) & Brakefield et al. (1996) butterfly wing-vein focus determination and concentric French-flag eyespot ring morphogenesis"
+    organism: "Bicyclus anynana & Junonia coenia (Nymphalidae: Satyrinae / Nymphalinae)"
+    script: 2001-nijhout-butterfly-eyespot-focus-rings.py
+    output: docs/media/butterfly_eyespot_focus_rings_comparison.png
+    extra_outputs:
+      - docs/media/butterfly_eyespot_focus_rings_growth.gif
+    status: evaluated
+    source_refs:
+      - nijhout1990
+      - french1994
+      - brakefield1996
+      - brunetti2001
+      - beldade2002
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2001-nijhout-butterfly-eyespot-focus-rings.py`
+      (consensus score 51.5/100). The v1 script plots only a 1D analytical exponential decay
+      curve and a 2D circular disc sketch for a single parameter set, omitting Stage-1 2D
+      Meinhardt wing-compartment vein-boundary reaction-diffusion focus determination
+      (Nijhout 1990), Stage-2 2D focal diffusion-decay PDE relaxation, seasonal ecdysone
+      polyphenism (wet vs dry season), *Goldeneye* Spalt-threshold shift, twin-focus hourglass
+      fusion, pupal focal microcautery timing series, runtime SHA-256 dataset verification,
+      and CV radial luminance/chroma ring segmentation on the vendored *Bicyclus anynana*
+      ventral wing eyespot specimen photograph.
+    scores:
+      model-fidelity:
+        value: 52
+        rationale: >-
+          Evaluates only the 1D analytical exponential formula c(r) = c0 * exp(-r/lambda)
+          and a static 2D circle mask (L23-50), omitting Stage-1 2D Meinhardt activator-inhibitor
+          reaction-diffusion from bounding wing veins to isolate the midline focus (Nijhout 1990),
+          Stage-2 2D PDE relaxation, twin-focus superposition hourglass bridges, and pupal
+          cautery timing series.
+        evidence:
+          - {file: 2001-nijhout-butterfly-eyespot-focus-rings.py, lines: [23, 50], note: "1D analytical exponential formula without Stage-1 2D vein-to-midline focus reaction-diffusion or 2D focal PDE solver", supports: false}
+      specimen-match:
+        value: 24
+        rationale: >-
+          Renders a 2-panel synthetic plot (L53-86) without loading, SHA-256-verifying, or
+          performing radial luminance and golden-chroma concentric ring segmentation on the
+          vendored *Bicyclus anynana* specimen photograph (`datasets/butterfly_eyespot_focus_rings/bicyclus_anynana_eyespot_specimen.jpg`).
+        evidence:
+          - {file: 2001-nijhout-butterfly-eyespot-focus-rings.py, lines: [53, 86], note: "2-panel synthetic plot with zero biological specimen comparison", supports: false}
+          - {file: docs/media/butterfly_eyespot_focus_rings_comparison.png, lines: [0, 0], note: "Pass 1 2-panel plot lacking Bicyclus anynana ventral wing eyespot segmentation", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Hardcodes c0=1.0 and lambda_mm=0.48 (L23-50) without CLI parameter overrides,
+          wet/dry seasonal ecdysone polyphenism sweep, *Goldeneye* threshold shift, twin-focus
+          inter-focal distance sweep, or pupal cautery timing series.
+        evidence:
+          - {file: 2001-nijhout-butterfly-eyespot-focus-rings.py, lines: [23, 50], note: "Single hardcoded parameter set without CLI overrides or experimental regime sweeps", supports: false}
+      morphometric-validation:
+        value: 50
+        rationale: >-
+          Reports only 3 analytical ring radii in `measure_morphoeval()` (L118-130) without
+          validating Stage-1 midline focus convergence, wet/dry seasonal gold annulus invariance,
+          *Goldeneye* gold-ring expansion, twin-focus bridge concentration, pupal cautery timing
+          curve, or empirical *Bicyclus anynana* Cu1 specimen ring radii and proportions.
+        evidence:
+          - {file: 2001-nijhout-butterfly-eyespot-focus-rings.py, lines: [118, 130], note: "Only 3 basic analytical radii without specimen or multi-regime morphometrics", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Dataset directory `datasets/butterfly_eyespot_focus_rings/` exists on disk, but v1
+          does not load `butterfly_eyespot_focus_rings_reference.json` or verify SHA-256 digests at runtime.
+        evidence:
+          - {file: 2001-nijhout-butterfly-eyespot-focus-rings.py, lines: [1, 22], note: "No runtime loading or SHA-256 verification of datasets/butterfly_eyespot_focus_rings/", supports: false}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Header docstring mentions Nijhout (1990) and Brakefield et al. (1996), but functions
+          lack explicit mappings to published equations and to the 4 Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_098_butterfly_eyespot_focus_rings.lean`.
+        evidence:
+          - {file: 2001-nijhout-butterfly-eyespot-focus-rings.py, lines: [23, 50], note: "Functions lack explicit paper equation and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Includes `--self-test` (L133-140), but checks only 2 basic assertions without
+          testing SHA-256 dataset provenance, JSON parity, Stage-1 2D midline focus localization,
+          seasonal gold annulus invariance, twin-focus hourglass fusion, specimen ring segmentation,
+          or bitwise two-run determinism.
+        evidence:
+          - {file: 2001-nijhout-butterfly-eyespot-focus-rings.py, lines: [133, 140], note: "Minimal 2-check self_test() without SHA-256 provenance or 2D PDE determinism checks", supports: false}
+    remediation:
+      - "Implement the coupled two-stage 2D morphogenesis pipeline: Stage-1 2D Meinhardt activator-inhibitor reaction-diffusion inside a longitudinal wing-vein-bounded cell compartment [0, L_x] x [-W_y/2, W_y/2] that destabilizes the midline ridge into a discrete focal organizer at (x_f, 0) (Nijhout 1990), coupled to Stage-2 2D focal morphogen diffusion-decay and Spalt/Engrailed/Distal-less concentric ring induction across all 5 experimental regimes (Wet-Season Wild-Type, Dry-Season Polyphenism, Goldeneye Spalt-shift mutant, Twin-Focus Hourglass Fusion, and Early Pupal Focal Microcautery Ablation) plus the 6-point pupal cautery timing series."
+      - "Load and SHA-256-verify `datasets/butterfly_eyespot_focus_rings/` at runtime and perform computer-vision Difference-of-Gaussians focus detection and radial luminance + golden-chroma concentric ring segmentation (`segment_bicyclus_eyespot_specimen`) on `bicyclus_anynana_eyespot_specimen.jpg`, measuring primary Cu1 focus coordinates (596, 231), pupil radius R_pupil = 3.663 px, black core radius R_black = 15.442 px, outer gold radius R_gold = 20.402 px, and black-to-gold ratio 0.7569."
+      - "Expose full CLI parameter overrides (`--c0`, `--lambda-mm`, `--theta-black`, `--theta-gold`, `--d12`, `--seed`, `--skip-gif`), upgrade `self_test()` to an 8-point verification suite with bitwise two-run determinism, and render a 6-panel publication-grade synthesis figure and co-evolving 2-panel Stage-1 focus + Stage-2 concentric ring morphogenesis GIF."

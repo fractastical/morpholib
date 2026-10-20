@@ -24,6 +24,16 @@ Morphogenesis is how a living thing gets its shape, and regeneration is how it g
 
 *Every animated form in the repository, 1917–2026 (the Thompson Scarus → Pomacanthus fit is a still and is represented by its score), each animation playing once per loop; the last tile is the MorphoEval overall score. Made by [`docs/media/make_montage.py`](./docs/media/make_montage.py) from the per-script animations below.*
 
+### The 100-Loop Autonomous Morphospace Atlas (Slots `#001`–`#100`)
+
+Across **100 autonomous 12-step closed remediation loops** (`slot-001` through `slot-100`) spanning **10 morphogenetic cohorts** (Reaction-Diffusion, Limb/Skeletal, Segmentation Clock, Phyllotaxis/Plant, Vertex/Active Nematics, Branching/Vascular, Mechanical Folding/Buckling, Biomineralization/Shells, Bioelectric/Neural, and Collective/Eusocial Morphogenesis), the repository now contains **116 quantitative morphogenesis models**, **111 dataset directories** (`datasets/`), **101 machine-checked Lean 4 proof modules** (**333 formal equations**, `0 sorry`), **954 quantitative morphometric measurements**, **52,398 RDF triples** in [`morphoeval/kg/math_of_biology.ttl`](./morphoeval/kg/math_of_biology.ttl), and **2,000+ cryptographically signed ProbKnow nanopublications** — improving the mean MorphoEval score across the 100 campaign loops from **`54.88 / 100` (Pass 1)** to **`92.35 / 100` (Pass 2, `+37.47` pts)**. See the full 100-slot table in **[`morphoeval/runs/CLOUD_CAMPAIGN_LEADERBOARD.md`](./morphoeval/runs/CLOUD_CAMPAIGN_LEADERBOARD.md)**.
+
+![100-Loop Autonomous Morphospace Atlas (10x10 Mosaic of Slots #001–#100)](./docs/media/morphospace_100_loops_atlas.png)
+
+![100-Loop Quantitative Performance & Formal Verification Dashboard](./docs/media/morphospace_100_loops_dashboard.png)
+
+![100-Loop Animated Morphospace Tour (Slots #001–#100 across 10 Cohorts)](./docs/media/morphospace_100_loops_tour.gif)
+
 ---
 
 ## Part 1 — How It Works: The 12-Step MorphoEval + Lean 4 Loop

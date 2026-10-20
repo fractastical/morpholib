@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "dataset_id": "carmona-theveneau-mayor-neural-crest-chase-and-run-v1",
+    "title": "Carmona-Fontaine et al. (2008, 2011) & Theveneau et al. (2010, 2013) Cranial Neural Crest Contact Inhibition of Locomotion (CIL), C3a/C3aR Co-Attraction (COA), and Sdf1/Placode Chase-and-Run Collective Migration Reference Dataset",
+    "organism": "Xenopus laevis & Mus musculus (vertebrate cranial neural crest streams and epibranchial placodes)",
+    "sources": [
+      {
+        "id": "theveneau2013",
+        "citation": "Theveneau E, Steventon B, Scarpa E, Garcia S, Trepat X, Streit A, Mayor R (2013). Chase-and-run between adjacent cell populations promotes directional collective migration. Nature Cell Biology 15(7):763-772.",
+        "doi": "10.1038/ncb2772"
+      },
+      {
+        "id": "carmona2008",
+        "citation": "Carmona-Fontaine C, Matthews HK, Kuriyama S, Moreno M, Dunn GA, Parsons M, Stern CD, Mayor R (2008). Contact inhibition of locomotion in vivo controls neural crest directional migration. Nature 456(7224):957-961.",
+        "doi": "10.1038/nature07441"
+      },
+      {
+        "id": "carmona2011",
+        "citation": "Carmona-Fontaine C, Theveneau E, Tzekou A, Tada M, Woods M, Page KM, Parsons M, Lambris JD, Mayor R (2011). Complement fragment C3a controls mutual cell attraction during collective cell migration. Developmental Cell 21(6):1026-1037.",
+        "doi": "10.1016/j.devcel.2011.10.012"
+      },
+      {
+        "id": "theveneau2010",
+        "citation": "Theveneau E, Marchant L, Kuriyama S, Gull M, Moepps B, Parsons M, Mayor R (2010). Collective chemotaxis requires contact-dependent cell polarity. Developmental Cell 19(1):39-53.",
+        "doi": "10.1016/j.devcel.2010.06.012"
+      },
+      {
+        "id": "woods2014",
+        "citation": "Woods ML, Carmona-Fontaine C, Barnes CP, Couzin ID, Mayor R, Page KM (2014). Directional collective cell migration emerges as a property of cell interactions. PLOS ONE 9(9):e104969.",
+        "doi": "10.1371/journal.pone.0104969"
+      }
+    ],
+    "specimens": {
+      "neural_crest_specimen": {
+        "file": "datasets/neural_crest_chase_and_run/neural_crest_specimen.jpg",
+        "sha256": "291091fcf1198a71a62aa3d3ba3599e91cbc8fca709684c6d99c600d03b39c33",
+        "species": "Vertebrate embryonic cranial neural crest streams (r4, r6, r7, blue) migrating dorsoventrally toward epibranchial placodes (e1, e2, e3, orange) between pharyngeal pouches (p1, p2, p3, green)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Assessment_of_potential_FGF_and-or_BMP_dependencies_of_neural_crest_streams_emerging_segmentally_from_the_rhombomeres_4,_6,_and_7._9%E2%80%9314_somite_mouse_embryos,_cultured_for_24_h.jpg",
+        "panel_a_control_yx": [25, 635, 40, 900],
+        "panel_b_fgfr_inhib_yx": [670, 1280, 40, 900],
+        "panel_c_bmpr_inhib_yx": [1310, 1920, 40, 900],
+        "pattern_type": "three_stream_neural_crest_epibranchial_placode_chase_and_run"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Carmona-Fontaine et al. (2008) Nature; Carmona-Fontaine et al. (2011) Dev. Cell; Theveneau et al. (2013) Nat. Cell Biol.; Woods et al. (2014) PLOS ONE",
+    "homotypic_cil_coa_pair_force": {
+      "formula": "F_pair(d) = -k_CIL * max(0, 1 - d / R_CIL) + k_COA * exp(-d / l_COA)",
+      "R_CIL_um": 28.0,
+      "l_COA_um": 75.0,
+      "R_COA_cutoff_um": 140.0,
+      "k_CIL": 4.2,
+      "k_COA": 1.6,
+      "description": "Short-range N-cadherin/PCP Contact Inhibition of Locomotion (CIL) repulsion for d < R_CIL balanced by medium-range autocrine complement C3a/C3aR co-attraction (COA)."
+    },
+    "heterotypic_chase_and_run_dynamics": {
+      "chase_chemotaxis_sdf1": "F_chase^{NC}(x_i) = chi_Sdf1 * nabla S_{Sdf1}(x_i),  S_{Sdf1}(x) = sum_{m in PL} S_0 * exp(-||x - x_m^{PL}|| / l_Sdf1)",
+      "run_heterotypic_cil": "F_run^{PL}(x_m) = +k_run^{PL} * sum_{i in NC, d_{im} < R_het} (1 - d_{im} / R_het) * (x_m^{PL} - x_i^{NC}) / d_{im}",
+      "coupled_1d_gap_ode": "d(Delta)/dt = d(X_PL - X_NC)/dt = v_run(Delta) - v_chase(Delta);  steady co-migrating wave at Delta = Delta^* where v_chase(Delta^*) = v_run(Delta^*) = V_stream > 0",
+      "chi_Sdf1": 2.4,
+      "l_Sdf1_um": 95.0,
+      "R_het_um": 38.0,
+      "k_run_PL": 3.8
+    },
+    "pharyngeal_pouch_corridor_confinement": {
+      "formula": "U_pouch(x, y) = sum_{p=1}^2 A_pouch * exp(-((x - x_p)^2 / (2 * sigma_x^2) + (y - y_p)^2 / (2 * sigma_y^2)))",
+      "description": "Semaphorin-3F / Eph-ephrin repulsive pharyngeal pouch barriers (p1, p2) segregating cranial neural crest into three parallel dorsoventral streams (r4 mandibular/hyoid, r6, r7) targeting epibranchial placodes (e1, e2, e3)."
+    }
+  },
+  "theveneau_2013_experimental_regimes": {
+    "section": "Theveneau et al. (2013) Nature Cell Biology 15(7):763-772 Figs. 1-6; Carmona-Fontaine et al. (2011) Dev. Cell 21(6):1026-1037 Figs. 2-5",
+    "duration_hours": 6.0,
+    "regimes": [
+      {
+        "regime_id": "wildtype_chase_and_run",
+        "label": "Wild-Type Chase-and-Run (NC + Placode, intact CIL + C3a COA + Sdf1)",
+        "k_CIL": 4.2,
+        "k_COA": 1.6,
+        "chi_Sdf1": 2.4,
+        "k_run_PL": 3.8,
+        "placode_mobile": true,
+        "empirical_nc_fmi": 0.68,
+        "empirical_nc_persistence": 0.78,
+        "empirical_nc_displacement_um": 185.0,
+        "empirical_pl_displacement_um": 155.0,
+        "empirical_cohesion_index": 0.76
+      },
+      {
+        "regime_id": "placode_ablated_no_sdf1",
+        "label": "Placode Removal / Sdf1 Morpholino (chi_Sdf1 = 0, unguided CIL+COA cluster)",
+        "k_CIL": 4.2,
+        "k_COA": 1.6,
+        "chi_Sdf1": 0.0,
+        "k_run_PL": 0.0,
+        "placode_mobile": false,
+        "empirical_nc_fmi": 0.04,
+        "empirical_nc_persistence": 0.31,
+        "empirical_nc_displacement_um": 24.0,
+        "empirical_pl_displacement_um": 0.0,
+        "empirical_cohesion_index": 0.74
+      },
+      {
+        "regime_id": "c3ar_morpholino_no_coa",
+        "label": "C3aR Morpholino / Co-Attraction Ablation (k_COA = 0, dispersive single cells)",
+        "k_CIL": 4.2,
+        "k_COA": 0.0,
+        "chi_Sdf1": 2.4,
+        "k_run_PL": 3.8,
+        "placode_mobile": true,
+        "empirical_nc_fmi": 0.24,
+        "empirical_nc_persistence": 0.42,
+        "empirical_nc_displacement_um": 78.0,
+        "empirical_pl_displacement_um": 48.0,
+        "empirical_cohesion_index": 0.26
+      },
+      {
+        "regime_id": "ncad_dshdep_no_cil",
+        "label": "N-cadherin / DshDep+ Blockade (k_CIL = 0, k_run = 0, chase without run)",
+        "k_CIL": 0.0,
+        "k_COA": 1.6,
+        "chi_Sdf1": 2.4,
+        "k_run_PL": 0.0,
+        "placode_mobile": true,
+        "empirical_nc_fmi": 0.33,
+        "empirical_nc_persistence": 0.48,
+        "empirical_nc_displacement_um": 88.0,
+        "empirical_pl_displacement_um": 12.0,
+        "empirical_cohesion_index": 0.84
+      },
+      {
+        "regime_id": "stationary_sdf1_bead",
+        "label": "Stationary Sdf1 Bead Control (Fixed Sdf1 source, k_run = 0 -> target arrest)",
+        "k_CIL": 4.2,
+        "k_COA": 1.6,
+        "chi_Sdf1": 2.4,
+        "k_run_PL": 0.0,
+        "placode_mobile": false,
+        "empirical_nc_fmi": 0.39,
+        "empirical_nc_persistence": 0.54,
+        "empirical_nc_displacement_um": 95.0,
+        "empirical_pl_displacement_um": 0.0,
+        "empirical_cohesion_index": 0.78
+      }
+    ]
+  },
+  "specimen_reference_morphometrics": {
+    "panel_a_nc_dv_norm": 0.2731,
+    "panel_a_pl_dv_norm": 0.6794,
+    "panel_a_dv_separation_norm": 0.4063,
+    "panel_a_placode_spacing_px": 225.48,
+    "panel_a_placode_spacing_cv": 0.0296,
+    "panel_a_ventral_nc_fraction": 0.2768,
+    "panel_c_ventral_nc_fraction": 0.2015
+  }
+}

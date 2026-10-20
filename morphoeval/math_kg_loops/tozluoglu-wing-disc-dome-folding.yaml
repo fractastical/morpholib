@@ -1,0 +1,88 @@
+sim_id: tozluoglu-wing-disc-dome-folding
+math_family: Multiplicative Finite-Strain Morphoelasticity F = F_e F_g Coupled to Apical-Basal Differential ECM Stiffness & Localized Hinge Fold Remodeling
+model_spec:
+  model: "Tozluoglu et al. (2019) Dev. Cell 51:299-312 & Sui et al. (2018) Nat. Commun. 9:4620 2D sagittal apico-basal bilayer morphoelastic wing imaginal disc dome & H/N, H/H, H/P fold model"
+  t_start_h_AEL: 64.0
+  t_end_h_AEL: 96.0
+  L0_sagittal_um: 165.0
+  Lf_sagittal_um: 340.0
+  mu_cell_kPa: 0.4
+  mu_BM_wt_kPa: 5.0
+  s_HN_norm: 0.26
+  s_HH_norm: 0.39
+  s_HP_norm: 0.52
+  seed: 2020
+  inputs:
+    - datasets/wing_disc_dome_folding/wing_disc_dome_folding_reference.json
+    - datasets/wing_disc_dome_folding/drosophila_wing_disc_specimen.jpg
+    - datasets/wing_disc_dome_folding/scout_manifest.json
+equations:
+  - law_name: Apical-vs-Basal Differential Planar Growth & Basal ECM Stiffness Pouch Dome Curvature Law
+    formula: "kappa_dome = 6 * mu_cell * mu_BM * h_BM * (g_apical - g_BM) * Delta_t / (h_cell * (mu_cell * h_cell + 4 * mu_BM * h_BM)) > 0 for g_apical > g_BM and mu_BM > 0"
+    lean_decl: MathOfBiology.Loop_049.dome_curvature_num
+    lean_theorem: MathOfBiology.Loop_049.pouch_dome_curvature_from_differential_growth_and_bm
+    lean_locus: morphoeval/lean/loops/Loop_049_wing_disc_dome_folding.lean#L18-L55
+    lean_code: |-
+      def dome_curvature_num (g_apical g_BM mu_BM : Int) : Int :=
+        (g_apical - g_BM) * mu_BM
+      theorem pouch_dome_curvature_from_differential_growth_and_bm
+          (g_bm dg extra mu_BM : Int)
+          (hdg : dg > 0)
+          (hextra : extra > 0)
+          (hmu : mu_BM > 0) :
+          dome_curvature_num g_bm g_bm mu_BM = 0 ∧
+          dome_curvature_num (g_bm + dg) g_bm mu_BM > 0 ∧
+          dome_curvature_num (g_bm + dg) g_bm mu_BM <
+            dome_curvature_num (g_bm + dg + extra) g_bm mu_BM
+    variables: "g_apical: tangential planar growth rate of wing pouch epithelium (h^-1); g_BM: basal basement membrane growth rate (~0 h^-1); mu_BM: Collagen IV / Viking basement membrane shear modulus (5.0 kPa); kappa_dome: convex pouch dome curvature (um^-1)"
+    role: "Proves that tangential proliferation of the cellular layer tethered to a stiff non-growing basal basement membrane (mu_BM > 0) generates strictly positive convex pouch dome curvature that increases monotonically with pouch proliferation rate"
+    source_citation: "Tozluoglu et al. (2019) Dev. Cell 51(3):299-312.e4 Figs. 1, 4 & STAR Methods"
+    code_locus: "2020-tozluoglu-wing-disc-dome-folding.py#L130-L215"
+  - law_name: Stereotyped H/N, H/H, and H/P Fold Pinning at Local Growth Troughs Law
+    formula: "s_fold^* in {s_HN^*, s_HH^*, s_HP^*} <=> g'(s^*) = 0 & g''(s^*) > 0 => kappa_fold(s^*) < 0;  g(s) = g_0 => g''(s) = 0 (unpinned phase-random buckling)"
+    lean_decl: MathOfBiology.Loop_049.pinned_fold_curvature_num
+    lean_theorem: MathOfBiology.Loop_049.stereotyped_three_fold_pinning_vs_uniform_buckling
+    lean_locus: morphoeval/lean/loops/Loop_049_wing_disc_dome_folding.lean#L58-L102
+    lean_code: |-
+      def growth_second_diff (g_left g_trough g_right : Int) : Int :=
+        g_left + g_right - 2 * g_trough
+      def pinned_fold_curvature_num (g_left g_trough g_right mu_BM : Int) : Int :=
+        -(mu_BM * growth_second_diff g_left g_trough g_right)
+      theorem stereotyped_three_fold_pinning_vs_uniform_buckling
+          (g0 g_trough d_left d_right mu_BM : Int)
+          (hdl : d_left > 0)
+          (hdr : d_right > 0)
+          (hmu : mu_BM > 0) :
+          growth_second_diff g0 g0 g0 = 0 ∧
+          pinned_fold_curvature_num g0 g0 g0 mu_BM = 0 ∧
+          growth_second_diff (g_trough + d_left) g_trough (g_trough + d_right) > 0 ∧
+          pinned_fold_curvature_num
+            (g_trough + d_left)
+            g_trough
+            (g_trough + d_right)
+            mu_BM < 0
+    variables: "g_left, g_trough, g_right: planar growth rates across a hinge fold boundary and flanking ridges; mu_BM: basal basement membrane stiffness; s_HN^*=0.26, s_HH^*=0.39, s_HP^*=0.52: normalized H/N, H/H, and H/P fold loci"
+    role: "Proves that local minima (troughs, g''(s^*) > 0) in the differential planar growth profile focus negative apical cleft curvature at the exact H/N, H/H, and H/P boundaries, whereas uniform growth has zero second difference everywhere and buckles at unpinned random phases"
+    source_citation: "Tozluoglu et al. (2019) Dev. Cell 51(3):299-312.e4 Figs. 2-3"
+    code_locus: "2020-tozluoglu-wing-disc-dome-folding.py#L218-L355"
+  - law_name: Collagenase / vkg-RNAi Basal ECM Ablation Collapse & Synergistic Hinge Fold Deepening Hierarchy
+    formula: "mu_BM = 0 => kappa_dome = 0 & d_fold = 0;  d_JAK_STAT (25.2 um) > d_WT (19.4 um) > d_dysf_omb (10.8 um) > d_uniform (7.1 um) > d_Collagenase (0.0 um)"
+    lean_decl: MathOfBiology.Loop_049.hh_fold_depth10
+    lean_theorem: MathOfBiology.Loop_049.collagenase_ecm_ablation_collapse_and_remodeling_hierarchy
+    lean_locus: morphoeval/lean/loops/Loop_049_wing_disc_dome_folding.lean#L105-L157
+    lean_code: |-
+      def hh_fold_depth10 (mu_bm_active diff_growth_active local_remodel_active jak_stat_boost : Int) : Int :=
+        mu_bm_active * (71 + 37 * diff_growth_active + 86 * diff_growth_active * local_remodel_active +
+          58 * diff_growth_active * local_remodel_active * jak_stat_boost)
+      theorem collagenase_ecm_ablation_collapse_and_remodeling_hierarchy (g_ap g_bm g_l g_t g_r : Int) :
+          dome_curvature_num g_ap g_bm 0 = 0 ∧
+          pinned_fold_curvature_num g_l g_t g_r 0 = 0 ∧
+          depth10_collagenase_ecm_ablation = 0 ∧
+          depth10_jak_stat_overgrowth > depth10_wild_type ∧
+          depth10_wild_type > depth10_dysf_omb_mutant ∧
+          depth10_dysf_omb_mutant > depth10_uniform_growth ∧
+          depth10_uniform_growth > depth10_collagenase_ecm_ablation
+    variables: "mu_bm_active: indicator of intact Collagen IV basal ECM; diff_growth_active: indicator of heterogeneous planar growth; local_remodel_active: indicator of local basal ECM softening & lateral tension redistribution (dysfusion/omb/MMP2); jak_stat_boost: JAK/STAT (Upd) hinge hyper-proliferation indicator"
+    role: "Proves that Collagenase / vkg-RNAi ablation of the basal basement membrane (mu_BM = 0) collapses both the pouch dome and all three hinge folds, and establishes the strict fold-depth hierarchy across JAK/STAT overgrowth, wild type, dysf/omb mutants, uniform growth, and ECM ablation"
+    source_citation: "Tozluoglu et al. (2019) Dev. Cell 51(3):299-312.e4 Figs. 4-6; Sui et al. (2018) Nat. Commun. 9:4620 Figs. 3-6"
+    code_locus: "2020-tozluoglu-wing-disc-dome-folding.py#L360-L545"

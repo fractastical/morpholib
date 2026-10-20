@@ -1,0 +1,145 @@
+{
+  "metadata": {
+    "dataset_id": "lauschke-aulehla-2013-ex-vivo-scaling-mpsm-v1",
+    "slot": 26,
+    "slot_id": "slot-026-ex-vivo-scaling-mPSM",
+    "title": "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature — Scale-Invariant Phase-Gradient Encoding in Ex Vivo Monolayer Presomitic Mesoderm (mPSM)",
+    "sources": [
+      {
+        "id": "lauschke2013",
+        "citation": "Lauschke VM, Tsiairis CD, Francois P, Aulehla A (2013). Scaling of embryonic patterning based on phase-gradient encoding. Nature 493(7430):101-105.",
+        "doi": "10.1038/nature11804"
+      },
+      {
+        "id": "aulehla2008",
+        "citation": "Aulehla A, Wiegraebe W, Baubet V, Wahl MB, Deng C, Taketo M, Lewandoski M, Pourquie O (2008). A beta-catenin gradient links the clock and wavefront systems in mouse embryo segmentation. Nature Cell Biology 10(2):186-193.",
+        "doi": "10.1038/ncb1679"
+      },
+      {
+        "id": "tsiairis2016",
+        "citation": "Tsiairis CD, Aulehla A (2016). Self-organization of embryonic genetic oscillators into spatiotemporal wave patterns. Cell 164(4):656-667.",
+        "doi": "10.1016/j.cell.2016.01.028"
+      },
+      {
+        "id": "beaupeux2016",
+        "citation": "Beaupeux M, Francois P (2016). Positional information from oscillatory phase shifts: insights from in silico evolution. Physical Biology 13(3):036009.",
+        "doi": "10.1088/1478-3975/13/3/036009"
+      }
+    ],
+    "specimens": {
+      "mouse_mpsm_somites_specimen": {
+        "file": "datasets/ex_vivo_scaling_mPSM/mouse_mpsm_somites_specimen.jpg",
+        "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
+        "species": "Vertebrate paraxial mesoderm / somite embryo dorsal SEM (transferred as structural reference for mouse presomitic mesoderm and segmented somite periodicity)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
+        "width_px": 736,
+        "height_px": 572,
+        "ap_roi_x_px": [130, 550],
+        "upper_somite_row_y_px": [208, 252],
+        "lower_somite_row_y_px": [312, 356],
+        "neural_tube_y_px": [260, 298],
+        "empirical_somite_metrics": {
+          "upper_row_somite_count": 8,
+          "lower_row_somite_count": 9,
+          "upper_row_mean_spacing_px": 47.43,
+          "lower_row_mean_spacing_px": 49.38,
+          "bilateral_mean_spacing_px": 47.14,
+          "upper_row_spacing_cv": 0.1965,
+          "lower_row_spacing_cv": 0.2012,
+          "bilateral_symmetry_ratio": 0.9605
+        }
+      },
+      "scout_manifest": {
+        "file": "datasets/ex_vivo_scaling_mPSM/scout_manifest.json",
+        "sha256": "ed97fcae27d8072b2f22765258f3afa717f6fae7f63ac2ec67b5ec78ebceaaf9"
+      }
+    }
+  },
+  "lauschke_2013_governing_equations": {
+    "section": "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493:101-105 Figs. 1-4",
+    "universal_phase_profile": "phi(r, t) = omega_0 * t - Phi_0 * (r / R(t))^p,  0 <= r <= R(t),  Delta_phi_total = phi(0, t) - phi(R(t), t) = Phi_0 = 2*pi",
+    "local_phase_gradient_scaling": "|dphi/dr| = Phi_0 / R(t)  =>  local wavelength lambda(t) = (2*pi / Phi_0) * R(t)",
+    "wave_velocity_scaling_law": "v_wave(t) = lambda(t) / T_osc = (2*pi / Phi_0) * (R(t) / T_osc)",
+    "proportional_segment_scaling_law": "S_n = alpha * R(t_n),  where alpha = 2*pi * delta_u / Phi_0 = 0.11",
+    "geometric_residual_radius_law": "R(t_{n+1}) = R(t_n) - S_n = (1 - alpha) * R(t_n) = R_0 * (1 - alpha)^n",
+    "geometric_segment_sequence_law": "S_n = alpha * R_0 * (1 - alpha)^(n - 1),  sum_{k=1}^N S_k = R_0 - R_N",
+    "canonical_mouse_mpsm_parameters": {
+      "species": "Mus musculus (E10.5 tailbud LuVeLu Lfng-Venus monolayer presomitic mesoderm explant)",
+      "central_clock_period_T_osc_min": 140.0,
+      "central_angular_frequency_omega0_rad_per_min": 0.04487989505128276,
+      "total_phase_span_Phi0_rad": 6.283185307179586,
+      "proportional_scaling_slope_alpha": 0.11,
+      "phase_profile_exponent_p": 1.35,
+      "reference_explant_radii_R0_um": [150.0, 250.0, 350.0, 450.0],
+      "canonical_default_radius_R0_um": 300.0,
+      "n_oscillation_cycles": 8,
+      "dapt_notch_inhibition_coupling_factor": 0.0
+    }
+  },
+  "lauschke_2013_explant_scaling_series": {
+    "source": "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493:101-105 Figs. 2-4 (S_n vs residual mPSM radius R(t_n) across explant sizes)",
+    "explants": [
+      {
+        "explant_id": "mpsm_small_R150",
+        "label": "Small mPSM micro-explant (R_0 = 150 um)",
+        "R0_um": 150.0,
+        "alpha": 0.11,
+        "T_osc_min": 140.0,
+        "predicted_S1_um": 16.5,
+        "observed_S1_um": 16.8,
+        "observed_S1_sd_um": 1.9,
+        "predicted_v_wave_1_um_per_min": 1.0714,
+        "observed_v_wave_1_um_per_min": 1.09,
+        "predicted_R4_um": 94.11,
+        "predicted_S5_um": 10.35,
+        "observed_S5_um": 10.5
+      },
+      {
+        "explant_id": "mpsm_medium_R250",
+        "label": "Medium mPSM explant (R_0 = 250 um)",
+        "R0_um": 250.0,
+        "alpha": 0.11,
+        "T_osc_min": 140.0,
+        "predicted_S1_um": 27.5,
+        "observed_S1_um": 27.2,
+        "observed_S1_sd_um": 2.4,
+        "predicted_v_wave_1_um_per_min": 1.7857,
+        "observed_v_wave_1_um_per_min": 1.76,
+        "predicted_R4_um": 156.86,
+        "predicted_S5_um": 17.25,
+        "observed_S5_um": 17.4
+      },
+      {
+        "explant_id": "mpsm_standard_R350",
+        "label": "Standard mPSM explant (R_0 = 350 um)",
+        "R0_um": 350.0,
+        "alpha": 0.11,
+        "T_osc_min": 140.0,
+        "predicted_S1_um": 38.5,
+        "observed_S1_um": 38.9,
+        "observed_S1_sd_um": 3.1,
+        "predicted_v_wave_1_um_per_min": 2.5,
+        "observed_v_wave_1_um_per_min": 2.53,
+        "predicted_R4_um": 219.6,
+        "predicted_S5_um": 24.16,
+        "observed_S5_um": 23.9
+      },
+      {
+        "explant_id": "mpsm_large_R450",
+        "label": "Large mPSM explant (R_0 = 450 um)",
+        "R0_um": 450.0,
+        "alpha": 0.11,
+        "T_osc_min": 140.0,
+        "predicted_S1_um": 49.5,
+        "observed_S1_um": 49.1,
+        "observed_S1_sd_um": 3.8,
+        "predicted_v_wave_1_um_per_min": 3.2143,
+        "observed_v_wave_1_um_per_min": 3.19,
+        "predicted_R4_um": 282.34,
+        "predicted_S5_um": 31.06,
+        "observed_S5_um": 31.3
+      }
+    ]
+  }
+}

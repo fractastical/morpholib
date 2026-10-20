@@ -1,0 +1,193 @@
+{
+  "metadata": {
+    "dataset_id": "boehm-2010-limb-bud-elongation-pushing-v1",
+    "title": "Boehm et al. (2010) PLoS Biology 8:e1000420, Kicheva & Briscoe (2010) PLoS Biology 8:e1000421 & Gros et al. (2010) Current Biology 20:1993-2004 — Vertebrate Limb Bud Oriented Cell Division, Wnt5a/FGF8 Chemotactic Velocity Field, and Refutation of the Isotropic Proliferation Gradient Reference Dataset",
+    "organism": "Mus musculus & Gallus gallus embryonic hindlimb and forelimb buds (E9.5-E11.5 / HH19-HH24)",
+    "sources": [
+      {
+        "id": "boehm2010",
+        "citation": "Boehm B, Westerberg H, Lesnicar-Pucko G, Raja S, Reginelli M, Miguez A, Briscoe J, Sharpe J (2010). The role of spatially controlled cell proliferation in limb bud morphogenesis. PLoS Biology 8(7):e1000420.",
+        "doi": "10.1371/journal.pbio.1000420"
+      },
+      {
+        "id": "kicheva2010",
+        "citation": "Kicheva A, Briscoe J (2010). Limbs made to measure. PLoS Biology 8(7):e1000421.",
+        "doi": "10.1371/journal.pbio.1000421"
+      },
+      {
+        "id": "gros2010",
+        "citation": "Gros J, Hu JKH, Vinegoni C, Feruglio PF, Weissleder R, Tabin CJ (2010). WNT5A/JNK and FGF/MAPK pathways regulate the cellular events shaping the vertebrate limb bud. Current Biology 20(22):1993-2004.",
+        "doi": "10.1016/j.cub.2010.09.063"
+      },
+      {
+        "id": "wyngaarden2010",
+        "citation": "Wyngaarden LA, Vogeli KM, Ciruna BG, Rossant J, Economou AD, Hopyan S (2010). Oriented cell division in the primitive streak contributes to vertebrate axis extension and limb bud initiation. Development 137(17):2853-2860.",
+        "doi": "10.1242/dev.046987"
+      },
+      {
+        "id": "morishita2008",
+        "citation": "Morishita Y, Iwasa Y (2008). Growth based morphogenesis of vertebrate limb bud. Bulletin of Mathematical Biology 70(7):1957-1978.",
+        "doi": "10.1007/s11538-008-9334-y"
+      },
+      {
+        "id": "dillon1999",
+        "citation": "Dillon R, Othmer HG (1999). A mathematical model for outgrowth and spatial patterning of the vertebrate limb bud. Journal of Theoretical Biology 197(3):295-330.",
+        "doi": "10.1006/jtbi.1998.0876"
+      }
+    ],
+    "specimens": {
+      "mouse_limb_bud_specimen": {
+        "file": "datasets/limb_bud_elongation_pushing/mouse_limb_bud_specimen.jpg",
+        "sha256": "50fa6fde96e75c636ddee764951cbca3cff015903f3e0b7cc45a0146e2809f2e",
+        "width": 1024,
+        "height": 1087,
+        "species": "Mus musculus embryonic right hindlimb bud OPT 3D iso-surfaces and brightfield progression from E11.0 (St0, L_PD = 1020 um) to E11.25 (St1, L_PD = 1450 um, +43% PD outgrowth in 6 h)",
+        "license": "CC BY 4.0",
+        "source_url": "https://journals.plos.org/plosbiology/article/figure/image?size=large&id=10.1371/journal.pbio.1000420.g002",
+        "panel_d_st0_yx": [24, 248, 774, 1000],
+        "panel_e_st1_yx": [276, 496, 774, 1000],
+        "panel_f_dorsal_yx": [533, 828, 28, 368],
+        "panel_f_posterior_yx": [828, 1063, 28, 368],
+        "panel_g_mesh_yx": [525, 1060, 560, 1000],
+        "pattern_type": "proximodistal_anisotropic_limb_bud_elongation"
+      },
+      "scout_manifest": {
+        "file": "datasets/limb_bud_elongation_pushing/scout_manifest.json",
+        "sha256": "8e7dc46a51c711bedf370d63c132f004f188810ef1fae6cdaa555d970f2083b3"
+      },
+      "paper_citations": {
+        "file": "datasets/limb_bud_elongation_pushing/paper_citations.bib",
+        "sha256": "a3191cedf6d442125515ef89b54c11bb72ebdbb395c10b4f06befaeb90174a94"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Eqs. (1)-(11); Gros et al. (2010) Current Biology 20:1993-2004",
+    "iddu_brdu_cell_cycle_time": {
+      "formula": "T_c(x) = T_i * (N_total(x) / L_cells(x)),  T_i = 2.5 h (150 min inter-injection interval)",
+      "proliferation_source_rate": "s_p(x) = ln(2) / T_c(x)",
+      "net_volumetric_source_rate": "s(x) = s_p(x) - s_d = ln(2) / T_c(x) - s_d,  s_d = 0.017 h^{-1} (E11.0-E11.25 density compaction)",
+      "empirical_Tc_fast_distal_h": 11.0,
+      "empirical_Tc_slow_proximal_h": 25.0,
+      "empirical_s_max_per_h": 0.068,
+      "empirical_s_min_per_h": 0.028,
+      "inverse_opt_required_s_max_per_h": 0.52,
+      "inverse_opt_required_Tc_min_h": 1.33,
+      "inverse_opt_negative_shrinkage_volume_fraction": 0.225
+    },
+    "viscous_continuum_growth_mechanics": {
+      "momentum_balance_stokes": "-nabla p + (1 / Re) * nabla^2 v + nabla . sigma_active + f_chem(x) = 0",
+      "continuity_proliferation_source": "nabla . v = s(x) = ln(2) / T_c(x) - s_d",
+      "artificial_compressibility_poisson": "nabla^2 p = (1 / (beta * Delta_tau)) * (nabla . v - s(x))",
+      "active_anisotropic_stress_tensor": "sigma_active = zeta_OCD * (n otimes n - (1/3) * I) + chi_FGF8 * nabla c_FGF8 otimes e_PD",
+      "description": "Under pure isotropic proliferation (zeta_OCD = 0, chi_FGF8 = 0), potential flow v = nabla phi with nabla^2 phi = s(x) expands tissue nearly equally along PD, AP, and DV axes (bulbous expansion, delta L_PD / L_PD0 = 3%-12% across Re in [10^-6, 10^-1] vs empirical +43%, aspect ratio L_PD/W_AP approx 1.07). Adding Wnt5a/JNK-polarized oriented cell division/intercalation deviatoric stress and AER-FGF8/MAPK distal velocity gradient drives directional PD outgrowth (+43% over 6 h, and L_PD/W_AP > 2.1 from E9.5 to E11.5)."
+    }
+  },
+  "boehm_2010_opt_geometry_and_reynolds_sweep": {
+    "section": "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Fig. 2, Fig. 4, Fig. S3, Fig. S8",
+    "empirical_6h_transition_E11_0_to_E11_25": {
+      "dt_hours": 6.0,
+      "L_PD_St0_um": 1020.0,
+      "L_PD_St1_um": 1450.0,
+      "W_AP_St0_um": 960.0,
+      "W_AP_St1_um": 1075.0,
+      "H_DV_St0_um": 580.0,
+      "H_DV_St1_um": 586.0,
+      "volume_St0_mm3": 0.551,
+      "volume_St1_mm3": 0.914,
+      "pd_extension_rate_um_per_h": 71.67,
+      "pd_elongation_pct": 42.16,
+      "ap_expansion_pct": 11.98,
+      "dv_expansion_pct": 1.03,
+      "golgi_distal_bias_fraction": 0.71,
+      "golgi_sample_size_n": 565,
+      "telophase_ocd_sample_size_n": 187
+    },
+    "reynolds_number_sensitivity_sweep": [
+      {"log10_Re": -6, "Re": 1e-6, "isotropic_pd_elongation_pct": 3.4, "empirical_target_pct": 42.2},
+      {"log10_Re": -5, "Re": 1e-5, "isotropic_pd_elongation_pct": 4.8, "empirical_target_pct": 42.2},
+      {"log10_Re": -4, "Re": 1e-4, "isotropic_pd_elongation_pct": 6.5, "empirical_target_pct": 42.2},
+      {"log10_Re": -3, "Re": 1e-3, "isotropic_pd_elongation_pct": 8.2, "empirical_target_pct": 42.2},
+      {"log10_Re": -2, "Re": 1e-2, "isotropic_pd_elongation_pct": 10.1, "empirical_target_pct": 42.2},
+      {"log10_Re": -1, "Re": 1e-1, "isotropic_pd_elongation_pct": 11.8, "empirical_target_pct": 42.2}
+    ],
+    "proximodistal_brdu_iddu_profile": [
+      {"x_pd_norm": 0.05, "region": "Proximal Core (Stylopod Base)", "Tc_hours": 24.8, "sp_per_h": 0.0279, "s_net_per_h": 0.0109, "s_inverse_opt_per_h": -0.085},
+      {"x_pd_norm": 0.20, "region": "Proximal-Central Mesenchyme", "Tc_hours": 22.4, "sp_per_h": 0.0309, "s_net_per_h": 0.0139, "s_inverse_opt_per_h": -0.062},
+      {"x_pd_norm": 0.35, "region": "Central Mesenchyme", "Tc_hours": 19.2, "sp_per_h": 0.0361, "s_net_per_h": 0.0191, "s_inverse_opt_per_h": 0.025},
+      {"x_pd_norm": 0.50, "region": "Intermediate Transition Zone", "Tc_hours": 16.5, "sp_per_h": 0.0420, "s_net_per_h": 0.0250, "s_inverse_opt_per_h": 0.110},
+      {"x_pd_norm": 0.65, "region": "Sub-Distal Progress Zone", "Tc_hours": 14.1, "sp_per_h": 0.0492, "s_net_per_h": 0.0322, "s_inverse_opt_per_h": 0.235},
+      {"x_pd_norm": 0.80, "region": "Distal Sub-AER Mesenchyme", "Tc_hours": 12.2, "sp_per_h": 0.0568, "s_net_per_h": 0.0398, "s_inverse_opt_per_h": 0.390},
+      {"x_pd_norm": 0.95, "region": "Distal Tip Under AER Ridge", "Tc_hours": 11.0, "sp_per_h": 0.0630, "s_net_per_h": 0.0460, "s_inverse_opt_per_h": 0.540}
+    ]
+  },
+  "morphogenetic_perturbation_regimes": {
+    "section": "Boehm et al. (2010) PLoS Biology 8:e1000420 Figs. 4-9 & Fig. S8; Gros et al. (2010) Current Biology 20:1993-2004 Figs. 1-6 (E9.5-E11.5 developmental progression and 6h E11.0-E11.25 FEM benchmark)",
+    "regimes": [
+      {
+        "regime_id": "model_ii_wt_directional_pushing",
+        "label": "Model II: Wild-Type Oriented Cell Division/Intercalation + Wnt5a/FGF8 Chemotactic Velocity Field",
+        "zeta_ocd": 1.0,
+        "chi_fgf_wnt5a": 1.0,
+        "proliferation_gradient_on": true,
+        "empirical_6h_pd_elongation_pct": 42.2,
+        "empirical_6h_dv_expansion_pct": 1.0,
+        "empirical_E11_5_aspect_ratio_PD_AP": 2.18,
+        "empirical_shape_mismatch_error": 0.08
+      },
+      {
+        "regime_id": "model_i_isotropic_proliferation_gradient",
+        "label": "Model I: Classical Isotropic Proliferation Gradient Only (zeta_ocd = 0, chi = 0, empirical BrdU/IddU s(x))",
+        "zeta_ocd": 0.0,
+        "chi_fgf_wnt5a": 0.0,
+        "proliferation_gradient_on": true,
+        "empirical_6h_pd_elongation_pct": 10.1,
+        "empirical_6h_dv_expansion_pct": 14.5,
+        "empirical_E11_5_aspect_ratio_PD_AP": 1.07,
+        "empirical_shape_mismatch_error": 0.72
+      },
+      {
+        "regime_id": "uniform_proliferation_control",
+        "label": "Flat Uniform Proliferation Control (Constant T_c = 16.5 h, zeta_ocd = 0, chi = 0)",
+        "zeta_ocd": 0.0,
+        "chi_fgf_wnt5a": 0.0,
+        "proliferation_gradient_on": false,
+        "empirical_6h_pd_elongation_pct": 9.4,
+        "empirical_6h_dv_expansion_pct": 14.8,
+        "empirical_E11_5_aspect_ratio_PD_AP": 1.05,
+        "empirical_shape_mismatch_error": 0.74
+      },
+      {
+        "regime_id": "wnt5a_null_pcp_mutant",
+        "label": "Wnt5a-/- / JNK Inhibition Mutant (Loss of PCP Oriented Division & Polarized Intercalation, Partial FGF Motility)",
+        "zeta_ocd": 0.12,
+        "chi_fgf_wnt5a": 0.25,
+        "proliferation_gradient_on": true,
+        "empirical_6h_pd_elongation_pct": 18.5,
+        "empirical_6h_dv_expansion_pct": 11.2,
+        "empirical_E11_5_aspect_ratio_PD_AP": 1.32,
+        "empirical_shape_mismatch_error": 0.49
+      },
+      {
+        "regime_id": "fgf_mapk_motility_only_no_ocd",
+        "label": "AER-FGF8/MAPK Velocity Gradient Only (Intact Distal Motility, Ablated Transverse Convergence zeta_ocd = 0)",
+        "zeta_ocd": 0.0,
+        "chi_fgf_wnt5a": 1.0,
+        "proliferation_gradient_on": true,
+        "empirical_6h_pd_elongation_pct": 29.8,
+        "empirical_6h_dv_expansion_pct": 8.4,
+        "empirical_E11_5_aspect_ratio_PD_AP": 1.74,
+        "empirical_shape_mismatch_error": 0.24
+      }
+    ]
+  },
+  "specimen_reference_morphometrics": {
+    "panel_d_st0_aspect_ratio": 1.0049,
+    "panel_e_st1_aspect_ratio": 1.1789,
+    "panel_f_dorsal_pd_elongation_ratio": 1.3402,
+    "panel_f_posterior_pd_elongation_ratio": 1.3587,
+    "panel_f_posterior_st0_aspect_ratio": 1.0888,
+    "panel_f_posterior_st1_aspect_ratio": 1.3021,
+    "panel_g_green_surface_to_red_volume_ratio": 0.5042
+  }
+}

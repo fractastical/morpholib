@@ -1,0 +1,88 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAtTda4-ST6yVRqYt3Szqr1haWoSnO-wBjxlKP-HseDXM/> .
+@prefix this: <https://w3id.org/np/RAtTda4-ST6yVRqYt3Szqr1haWoSnO-wBjxlKP-HseDXM> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-haupaix-avian-plumage-somite-stripes> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Haupaix et al. (2018) & Inaba et al. (2019) somite-prepatterned Agouti signaling and melanocyte gap-junction reaction-diffusion in galliform plumage stripes — Model fidelity to source: 48/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Evaluates a static 1D sum of Gaussians (`simulate_somite_agouti_1d`, L24-39) without integrating the 2D reaction-diffusion PDE coupling somite-derived dermal *Agouti* (*Asip*) prepatterning with Connexin40-mediated melanocyte lateral inhibition (Haupaix et al. 2018 Figs. 1-4; Inaba et al. 2019 Figs. 2-4), and omits heterospecific somite grafting and exogenous *Agouti* bead dynamics." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2018-haupaix-avian-plumage-somite-stripes.py L24–L39: Static 1D Gaussian profile without 2D somite-Agouti + melanocyte reaction-diffusion PDE <https://github.com/fractastical/morpholib/blob/8871db0/2018-haupaix-avian-plumage-somite-stripes.py#L24-L39>" ;
+        pk:hasScore "0.48"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 010 autonomous loop assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1126/science.1230374>,
+            <https://doi.org/10.1126/science.aar4777>,
+            <https://doi.org/10.1126/science.aaw1969>,
+            <https://doi.org/10.1371/journal.pbio.3000448> .
+
+    <https://doi.org/10.1126/science.1230374> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Topology of feather melanocyte progenitor niche allows complex pigment patterns to emerge" .
+
+    <https://doi.org/10.1126/science.aar4777> dcterms:date "2018"^^xsd:gYear ;
+        dcterms:title "The periodicelly striped plumage of galliform chicks is prepatterned by somitic Agouti signaling" .
+
+    <https://doi.org/10.1126/science.aaw1969> dcterms:date "2019"^^xsd:gYear ;
+        dcterms:title "Instructive role of melanocytes during body pigment pattern formation" .
+
+    <https://doi.org/10.1371/journal.pbio.3000448> dcterms:date "2019"^^xsd:gYear ;
+        dcterms:title "Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "c0UI5buLsEGw/VjXZxnEX2p+OcaxfCcJMWhZ/oo21GTjjZr8HnZPvjMf06fyBGfV4feL6YsMDiy8hdC7kpt5i1w+leTCtOAmrrEJ0GlOWe7iF52DSeUA7NYtDdwemeoMTSAwbdtFX4haOXi5sGiuTHp8HtqTVsuOwo+7EMXhS9HnCbQlLoO3nFfcCO0VmdLtnYTdX2YSBOhK95Kd98wKEjWBTvSh2fA8xOmQF8q8ZZyWx86VSLCFgo83wTI6stC1HFE8h2Bv12mzViO2bV7YT6+7+V0NgqP49qze/6IL+wr93M3XhkZ5D1s7opJriImEB/sy8AZwe0zxzvWxJ/EeZg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Haupaix et al. (2018) & Inaba et al. (2019) somite-prepatterned Agouti signaling and melanocyte gap-junction reaction-diffusion in galliform plumage stripes — Model fidelity to source 48/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T00:33:03Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

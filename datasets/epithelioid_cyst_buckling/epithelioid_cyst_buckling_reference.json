@@ -1,0 +1,209 @@
+{
+  "metadata": {
+    "dataset_id": "trushko-2020-hannezo-2014-epithelioid-cyst-buckling-v1",
+    "title": "Trushko et al. (2020) Dev. Cell, Hannezo et al. (2014) PNAS & Zoelly (1915) — Buckling of an Epithelium Growing Under Spherical Alginate Confinement",
+    "sources": [
+      {
+        "id": "trushko2020",
+        "citation": "Trushko A, Di Meglio I, Merzouki A, Blanch-Mercader C, Abuhattum S, Guck J, Alessandri K, Chopard B, Kruse K, Roux A (2020). Buckling of an epithelium growing under spherical confinement. Developmental Cell 54(5):655-668.e6.",
+        "doi": "10.1016/j.devcel.2020.07.019"
+      },
+      {
+        "id": "hannezo2014",
+        "citation": "Hannezo E, Prost J, Joanny J-F (2014). Theory of epithelial sheet morphology in three dimensions. Proceedings of the National Academy of Sciences 111(1):27-32.",
+        "doi": "10.1073/pnas.1312076111"
+      },
+      {
+        "id": "alessandri2013",
+        "citation": "Alessandri K, Sarangi BR, Gurchenkov VV, Sinha B, Kiessling TR, Fetler L, Rico F, Scheuring S, Lamaze C, Simon A, Geraldo S, Vignjevic D, Domejean H, Rolland L, Funfak A, Bibette J, Bremond N, Nassoy P (2013). Cellular capsules as a tool for multicellular spheroid production and for investigating the mechanics of tumor progression in vitro. Proceedings of the National Academy of Sciences 110(37):14843-14848.",
+        "doi": "10.1073/pnas.1309482110"
+      },
+      {
+        "id": "zoelly1915",
+        "citation": "Zoelly R (1915). Uber ein Knickungsproblem an der Kugelschale. ETH Zurich Doctoral Thesis.",
+        "doi": "10.3929/ethz-a-000096658"
+      }
+    ],
+    "specimens": {
+      "epithelioid_cyst_specimen": {
+        "file": "datasets/epithelioid_cyst_buckling/epithelioid_cyst_specimen.jpg",
+        "sha256": "ec5b534f7a3a8182c9ba8258bca92f312cc884dcdcb06bff5bc31810c98197a7",
+        "width": 1145,
+        "height": 1419,
+        "species": "Mammalian confluent cystic/follicular epithelial monolayers (H&E transverse histology micrograph showing spheroidal epithelial cyst lumens with thin cuboidal monolayer walls h/R0 ~ 0.105 and localized inward boundary infoldings)",
+        "license": "CC BY-SA 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Thyroid_follicle.jpg",
+        "roi_box_xyxy": [80, 120, 1065, 1300],
+        "pattern_type": "confluent_epithelioid_cyst_monolayers"
+      },
+      "scout_manifest": {
+        "file": "datasets/epithelioid_cyst_buckling/scout_manifest.json",
+        "sha256": "3d03ec2877bdf349839387b1bbe940668a1d2ddeb0495568aac98d19366cd67e"
+      },
+      "paper_citations": {
+        "file": "datasets/epithelioid_cyst_buckling/paper_citations.bib",
+        "sha256": "b14ab196e08a46d4f384b56c1243f3fa3014110f7eb5bcbdf0e84118a0d3e7fe"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Trushko et al. (2020) Dev. Cell 54:655-668 STAR Methods & Figs. 2-6; Hannezo et al. (2014) PNAS 111:27-32 Eqs. (1)-(8); Zoelly (1915) ETH Zurich spherical shell buckling law",
+    "zoelly_critical_pressure_formula": "P_c = (2 * E_epi / sqrt(3 * (1 - nu_epi^2))) * (h / R_0)^2",
+    "fvk_dimensionless_bending_modulus_formula": "tilde_kappa = kappa_bend / (Y_2D * R_0^2) = (1 / (12 * (1 - nu_epi^2))) * (h / R_0)^2",
+    "alginate_confining_pressure_formula": "P_alg(g) = K_alg * (g - 1), where K_alg = (2 * E_alg * H_alg) / ((1 - nu_alg) * R_0)",
+    "critical_growth_stretch_formula": "g_c = 1 + P_c / (K_alg * (1 + alpha_myo * Gamma_myo))",
+    "post_buckling_fold_depth_formula": "delta_over_R0(g) = c_delta * sqrt(max(0, g - g_c)) * (1 + beta_myo * Gamma_myo)",
+    "parameters": {
+      "R_0_default_um": 100.0,
+      "h_default_um": 10.5,
+      "E_epi_default_kPa": 18.5,
+      "nu_epi": 0.45,
+      "E_alg_default_kPa": 5.0,
+      "H_alg_default_um": 25.0,
+      "nu_alg": 0.48,
+      "tau_d_hours": 18.0,
+      "c_delta_invagination": 0.88,
+      "alpha_myo_contractility": 0.24,
+      "beta_myo_depth": 0.22,
+      "n_ring_vertices": 180
+    }
+  },
+  "experimental_capsule_regimes": [
+    {
+      "regime_id": "unconfined_soft_control",
+      "label": "Unconfined / Ultra-Soft Alginate Control (E_alg = 0.4 kPa, P < P_c, Unbuckled Sphere)",
+      "cell_line": "MDCK II (Canis lupus familiaris)",
+      "R_0_um": 100.0,
+      "h_um": 10.5,
+      "E_epi_kPa": 18.5,
+      "E_alg_kPa": 0.40,
+      "H_alg_um": 18.0,
+      "Gamma_myo": 1.0,
+      "growth_stretch_g": 1.38,
+      "time_post_confluence_h": 8.5,
+      "P_c_kPa_ref": 0.264,
+      "P_conf_kPa_obs": 0.105,
+      "delta_over_R0_obs": 0.0,
+      "fold_mode_n_obs": 0,
+      "lumen_circularity_obs": 0.998
+    },
+    {
+      "regime_id": "standard_single_fold_cyst",
+      "label": "Standard Stiff Alginate Capsule (E_alg = 5.0 kPa, R_0 = 100 um, n = 1 Deep Inward Fold)",
+      "cell_line": "MDCK II (Canis lupus familiaris)",
+      "R_0_um": 100.0,
+      "h_um": 10.5,
+      "E_epi_kPa": 18.5,
+      "E_alg_kPa": 5.0,
+      "H_alg_um": 25.0,
+      "Gamma_myo": 1.0,
+      "growth_stretch_g": 1.52,
+      "time_post_confluence_h": 11.0,
+      "P_c_kPa_ref": 0.264,
+      "P_conf_kPa_obs": 0.485,
+      "delta_over_R0_obs": 0.642,
+      "fold_mode_n_obs": 1,
+      "lumen_circularity_obs": 0.724
+    },
+    {
+      "regime_id": "large_thin_two_fold_cyst",
+      "label": "Large Thin-Walled Capsule (E_alg = 7.5 kPa, R_0 = 140 um, h/R_0 = 0.070, n = 2 Bilateral Folds)",
+      "cell_line": "MDCK II / Caco-2",
+      "R_0_um": 140.0,
+      "h_um": 9.8,
+      "E_epi_kPa": 18.5,
+      "E_alg_kPa": 7.5,
+      "H_alg_um": 28.0,
+      "Gamma_myo": 1.0,
+      "growth_stretch_g": 1.56,
+      "time_post_confluence_h": 11.5,
+      "P_c_kPa_ref": 0.117,
+      "P_conf_kPa_obs": 0.610,
+      "delta_over_R0_obs": 0.568,
+      "fold_mode_n_obs": 2,
+      "lumen_circularity_obs": 0.615
+    },
+    {
+      "regime_id": "blebbistatin_myosin_inhibited",
+      "label": "Blebbistatin Myosin-II Inhibited Capsule (25 uM Blebbistatin, Reduced Contractility & Delayed Shallow Fold)",
+      "cell_line": "MDCK II + 25 uM (-)-Blebbistatin",
+      "R_0_um": 100.0,
+      "h_um": 9.2,
+      "E_epi_kPa": 10.8,
+      "E_alg_kPa": 5.0,
+      "H_alg_um": 25.0,
+      "Gamma_myo": 0.15,
+      "growth_stretch_g": 1.52,
+      "time_post_confluence_h": 11.0,
+      "P_c_kPa_ref": 0.118,
+      "P_conf_kPa_obs": 0.245,
+      "delta_over_R0_obs": 0.385,
+      "fold_mode_n_obs": 1,
+      "lumen_circularity_obs": 0.856
+    }
+  ],
+  "post_confluence_growth_trajectory": [
+    {
+      "time_post_confluence_h": 0.0,
+      "growth_stretch_g": 1.00,
+      "standard_P_kPa": 0.00,
+      "standard_delta_over_R0": 0.000,
+      "blebb_delta_over_R0": 0.000,
+      "unconfined_delta_over_R0": 0.000
+    },
+    {
+      "time_post_confluence_h": 2.0,
+      "growth_stretch_g": 1.08,
+      "standard_P_kPa": 0.165,
+      "standard_delta_over_R0": 0.000,
+      "blebb_delta_over_R0": 0.000,
+      "unconfined_delta_over_R0": 0.000
+    },
+    {
+      "time_post_confluence_h": 3.5,
+      "growth_stretch_g": 1.145,
+      "standard_P_kPa": 0.268,
+      "standard_delta_over_R0": 0.142,
+      "blebb_delta_over_R0": 0.065,
+      "unconfined_delta_over_R0": 0.000
+    },
+    {
+      "time_post_confluence_h": 6.0,
+      "growth_stretch_g": 1.260,
+      "standard_P_kPa": 0.335,
+      "standard_delta_over_R0": 0.376,
+      "blebb_delta_over_R0": 0.218,
+      "unconfined_delta_over_R0": 0.000
+    },
+    {
+      "time_post_confluence_h": 8.5,
+      "growth_stretch_g": 1.387,
+      "standard_P_kPa": 0.412,
+      "standard_delta_over_R0": 0.518,
+      "blebb_delta_over_R0": 0.312,
+      "unconfined_delta_over_R0": 0.000
+    },
+    {
+      "time_post_confluence_h": 11.0,
+      "growth_stretch_g": 1.527,
+      "standard_P_kPa": 0.485,
+      "standard_delta_over_R0": 0.642,
+      "blebb_delta_over_R0": 0.385,
+      "unconfined_delta_over_R0": 0.000
+    }
+  ],
+  "zoelly_pressure_scaling_dataset": [
+    {"capsule_id": "MDCK_R150_h8.5",  "cell_type": "MDCK II", "R_0_um": 150.0, "h_um": 8.5,  "E_epi_kPa": 18.5, "E_alg_kPa": 4.0, "h_over_R0": 0.0567, "P_c_obs_kPa": 0.078, "fold_mode_n": 2},
+    {"capsule_id": "MDCK_R140_h9.8",  "cell_type": "MDCK II", "R_0_um": 140.0, "h_um": 9.8,  "E_epi_kPa": 18.5, "E_alg_kPa": 5.0, "h_over_R0": 0.0700, "P_c_obs_kPa": 0.118, "fold_mode_n": 2},
+    {"capsule_id": "MDCK_R130_h10.1", "cell_type": "MDCK II", "R_0_um": 130.0, "h_um": 10.1, "E_epi_kPa": 18.5, "E_alg_kPa": 5.0, "h_over_R0": 0.0777, "P_c_obs_kPa": 0.146, "fold_mode_n": 2},
+    {"capsule_id": "MDCK_R120_h10.2", "cell_type": "MDCK II", "R_0_um": 120.0, "h_um": 10.2, "E_epi_kPa": 18.5, "E_alg_kPa": 5.0, "h_over_R0": 0.0850, "P_c_obs_kPa": 0.172, "fold_mode_n": 1},
+    {"capsule_id": "MDCK_R110_h10.4", "cell_type": "MDCK II", "R_0_um": 110.0, "h_um": 10.4, "E_epi_kPa": 18.5, "E_alg_kPa": 5.0, "h_over_R0": 0.0945, "P_c_obs_kPa": 0.216, "fold_mode_n": 1},
+    {"capsule_id": "MDCK_R100_h10.5", "cell_type": "MDCK II", "R_0_um": 100.0, "h_um": 10.5, "E_epi_kPa": 18.5, "E_alg_kPa": 5.0, "h_over_R0": 0.1050, "P_c_obs_kPa": 0.266, "fold_mode_n": 1},
+    {"capsule_id": "MDCK_R90_h10.6",  "cell_type": "MDCK II", "R_0_um": 90.0,  "h_um": 10.6, "E_epi_kPa": 18.5, "E_alg_kPa": 6.0, "h_over_R0": 0.1178, "P_c_obs_kPa": 0.330, "fold_mode_n": 1},
+    {"capsule_id": "MDCK_R82_h10.8",  "cell_type": "MDCK II", "R_0_um": 82.0,  "h_um": 10.8, "E_epi_kPa": 18.5, "E_alg_kPa": 6.5, "h_over_R0": 0.1317, "P_c_obs_kPa": 0.418, "fold_mode_n": 1},
+    {"capsule_id": "Caco2_R95_h13.5", "cell_type": "Caco-2",  "R_0_um": 95.0,  "h_um": 13.5, "E_epi_kPa": 19.2, "E_alg_kPa": 7.5, "h_over_R0": 0.1421, "P_c_obs_kPa": 0.502, "fold_mode_n": 1},
+    {"capsule_id": "MDCK_R70_h10.8",  "cell_type": "MDCK II", "R_0_um": 70.0,  "h_um": 10.8, "E_epi_kPa": 18.5, "E_alg_kPa": 8.0, "h_over_R0": 0.1543, "P_c_obs_kPa": 0.568, "fold_mode_n": 1},
+    {"capsule_id": "Caco2_R80_h13.6", "cell_type": "Caco-2",  "R_0_um": 80.0,  "h_um": 13.6, "E_epi_kPa": 19.2, "E_alg_kPa": 9.0, "h_over_R0": 0.1700, "P_c_obs_kPa": 0.715, "fold_mode_n": 1},
+    {"capsule_id": "MDCK_R58_h11.0",  "cell_type": "MDCK II", "R_0_um": 58.0,  "h_um": 11.0, "E_epi_kPa": 18.5, "E_alg_kPa": 10.0,"h_over_R0": 0.1897, "P_c_obs_kPa": 0.865, "fold_mode_n": 1}
+  ]
+}

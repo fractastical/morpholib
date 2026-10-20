@@ -1,0 +1,147 @@
+# MorphoEval audit — Trushko et al. (2020) Dev. Cell, Hannezo et al. (2014) PNAS & Zoelly (1915) Spherical Epithelial Cyst Buckling Under Alginate Confinement, 2026-10-19 (v2 Remediated)
+
+audit:
+  id: 2026-10-19-epithelioid-cyst-buckling-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon + Claude Sonnet 5.5 High (MorphoEval Autonomous Loop Slot 069 Pass 2 Dual-Agent Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/69
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 33e07ad
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2019-trushko-epithelioid-cyst-buckling.py`
+      in `2026-10-19-epithelioid-cyst-buckling-loop` (56.2/100 -> 93.3/100, +37.1 points).
+
+references:
+  trushko2020:
+    title: "Buckling of an epithelium growing under spherical confinement"
+    authors: "Trushko A, Di Meglio I, Merzouki A, Blanch-Mercader C, Abuhattum S, Guck J, Alessandri K, Chopard B, Kruse K, Roux A"
+    venue: "Developmental Cell 54(5):655-668.e6 (2020)"
+    doi: 10.1016/j.devcel.2020.07.019
+  hannezo2014:
+    title: "Theory of epithelial sheet morphology in three dimensions"
+    authors: "Hannezo E, Prost J, Joanny J-F"
+    venue: "Proceedings of the National Academy of Sciences 111(1):27-32 (2014)"
+    doi: 10.1073/pnas.1312076111
+  alessandri2013:
+    title: "Cellular capsules as a tool for multicellular spheroid production and for investigating the mechanics of tumor progression in vitro"
+    authors: "Alessandri K, Sarangi BR, Gurchenkov VV, Sinha B, Kiessling TR, Fetler L, Rico F, Scheuring S, Lamaze C, Simon A, Geraldo S, Vignjevic D, Domejean H, Rolland L, Funfak A, Bibette J, Bremond N, Nassoy P"
+    venue: "Proceedings of the National Academy of Sciences 110(37):14843-14848 (2013)"
+    doi: 10.1073/pnas.1309482110
+  zoelly1915:
+    title: "Uber ein Knickungsproblem an der Kugelschale"
+    authors: "Zoelly R"
+    venue: "ETH Zurich Doctoral Thesis (1915)"
+    doi: 10.3929/ethz-a-000096658
+
+simulations:
+  - id: trushko-epithelioid-cyst-buckling
+    name: "Trushko et al. (2020) Dev. Cell & Hannezo et al. (2014) PNAS Föppl-von Kármán spherical epithelial cyst buckling under alginate confinement"
+    organism: "Mammalian polarized epithelial cyst monolayers (Canis lupus familiaris MDCK II, Homo sapiens Caco-2)"
+    script: 2019-trushko-epithelioid-cyst-buckling.py
+    output: docs/media/epithelioid_cyst_buckling_comparison.png
+    extra_outputs:
+      - docs/media/epithelioid_cyst_buckling_growth.gif
+    status: evaluated
+    supersedes:
+      claim: https://w3id.org/np/RAPkHNk8TKqsES3d4mTyK9SLAit51W4tTOF1ZD90VNfSo
+      overall: https://w3id.org/np/RAAh_1ScF-Vi3s1v7kWIPA83qRTaduEvPIYdL8_rwjXgQ
+    source_refs:
+      - trushko2020
+      - hannezo2014
+      - alessandri2013
+      - zoelly1915
+    summary: >-
+      Pass 2 (v2) remediated evaluation of `2019-trushko-epithelioid-cyst-buckling.py`
+      (overall weighted score: 93.3/100, up from 56.2/100 in Pass 1). Replaces the v1
+      heuristic dent contour with an L-BFGS-B Föppl-von Kármán + vertex monolayer ring
+      energy minimizer inside a spherical alginate microcapsule, evaluates all 4 capsule
+      regimes including the unconfined/soft control (delta/R_0 = 0) and Blebbistatin
+      myosin-II inhibition, achieves r = 1.0000 (log-log slope 1.990) across the 12-point
+      Zoelly (h/R_0)^2 critical pressure scaling dataset, and segments 19 epithelial cyst
+      cross-sections from the vendored histology micrograph (`epithelioid_cyst_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 93
+        supersedes: https://w3id.org/np/RAtcw0400e74VQv8GogFMkMkcWiFIFCWTkKLuQHzBtcdQ
+        rationale: >-
+          Implements the nonlinear Föppl-von Kármán + vertex monolayer ring energy
+          functional minimized via L-BFGS-B under unilateral spherical alginate wall
+          confinement (`solve_confined_cyst_ring`), backed by 5 formal Lean 4 theorems
+          in `Loop_069_epithelioid_cyst_buckling.lean` (0 sorry).
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [130, 275], note: "L-BFGS-B Föppl-von Kármán confined ring energy minimizer with n=1 vs n=2 mode selection", supports: true}
+          - {file: morphoeval/lean/loops/Loop_069_epithelioid_cyst_buckling.lean, lines: [1, 95], note: "5 machine-checked Lean 4 theorems for Zoelly buckling and capsule confinement", supports: true}
+      specimen-match:
+        value: 90
+        supersedes: https://w3id.org/np/RAw-mo1ASV9CJKvEA8j8d7J7pO-vLxwuAVywmOEV4hXCA
+        rationale: >-
+          Automatically segments the SHA-256-locked confluent epithelial cyst histology
+          micrograph (`epithelioid_cyst_specimen.jpg`), isolating 19 cyst lumens with
+          mean circularity 0.654, thickness ratio h/R_0 = 0.106, and invagination ratio 0.369.
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [366, 426], note: "Automated CV segmentation of 19 epithelial cyst contours in epithelioid_cyst_specimen.jpg", supports: true}
+      parameter-expressivity:
+        value: 93
+        supersedes: https://w3id.org/np/RAqkZ1xRrI6ai2fTEvfojj5ZLu1h2OAtKVlqTmjn3Eidc
+        rationale: >-
+          Evaluates all 4 capsule regimes (unconfined/soft control n=0, WT stiff 5 kPa n=1,
+          large thin capsule n=2, and Blebbistatin 25 uM myosin-II inhibition), 12-point
+          (h/R_0)^2 scaling collapse, 2D (h/R_0, E_alg) phase diagram, and CLI overrides.
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [278, 363], note: "4 experimental capsule regimes, 12-point Zoelly sweep, and post-confluence trajectories", supports: true}
+      morphometric-validation:
+        value: 94
+        supersedes: https://w3id.org/np/RAQ7jCtcanKvYTCxIiLYmtm84t4oAahWl3Uc6P4tiBCJE
+        rationale: >-
+          12-point Zoelly critical buckling pressure scaling achieves r = 1.0000 (p = 2.09e-28)
+          with log-log slope 1.990 vs theoretical 2.00; WT post-confluence fold depth
+          trajectory achieves r = 0.9927 (RMSE = 0.0434).
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [586, 695], note: "Rich measure_morphoeval() dictionary with Zoelly r=1.0000, trajectory r=0.9927, and 19-cyst CV stats", supports: true}
+      source-traceability:
+        value: 96
+        supersedes: https://w3id.org/np/RAFVQcOJfD4q1qchH71EL5NiP2LQz2_X-6Cj7FtI4w9J8
+        rationale: >-
+          Vendors `datasets/epithelioid_cyst_buckling/` with 4 primary DOIs, reference JSON,
+          and runtime SHA-256 verification (`verify_dataset_integrity()`) of all dataset files.
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [52, 82], note: "Runtime SHA-256 integrity verification of reference JSON, BibTeX, and specimen micrograph", supports: true}
+      code-traceability:
+        value: 95
+        supersedes: https://w3id.org/np/RA4uRjhdjgxmoriUtl2ps8urlNdXDdBga7L-wCJFinL6Y
+        rationale: >-
+          Links every solver function to Trushko et al. (2020), Hannezo et al. (2014),
+          Zoelly (1915), and the 5 theorems in `Loop_069_epithelioid_cyst_buckling.lean` via
+          `morphoeval/math_kg_loops/trushko-epithelioid-cyst-buckling.yaml`.
+        evidence:
+          - {file: morphoeval/math_kg_loops/trushko-epithelioid-cyst-buckling.yaml, lines: [1, 130], note: "Per-loop Math KG specification mapping 5 equations to Lean 4 and Python lines", supports: true}
+      repro-package:
+        value: 94
+        supersedes: https://w3id.org/np/RAXUMPr-RcEzTeC4DOMu39Ihy3lvxloKe0o14VIwbjkgE
+        rationale: >-
+          Provides deterministic `--self-test` and `--verify-only` with 12 quantitative
+          assertions, two-run bitwise determinism check, 6-panel figure, and 36-frame GIF.
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [698, 755], note: "Comprehensive self_test() with SHA-256, scaling, trajectory, specimen, and determinism checks", supports: true}
+    remediation:
+      - "Extend the 2D equatorial Föppl-von Kármán ring solver to a full 3D triangulated vertex shell with apical-basal differential tension."

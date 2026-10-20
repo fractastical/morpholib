@@ -1,0 +1,201 @@
+# MorphoEval audit — Streichan et al. (2018), Mayer et al. (2010) & Lefebvre et al. (2023) Drosophila Global Morphogenetic Flow & Active Nematic Myosin Tensor Mechanics, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2018-streichan-global-morphogenetic-flow.py` (Slot 048)
+# superseding `2026-10-19-global-morphogenetic-flow-audit` in `2026-10-19-global-morphogenetic-flow-loop`.
+
+audit:
+  id: 2026-10-19-global-morphogenetic-flow-audit-v2
+  supersedes_audit_id: 2026-10-19-global-morphogenetic-flow-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2018-streichan-global-morphogenetic-flow.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-global-morphogenetic-flow-loop`).
+
+references:
+  streichan2018:
+    title: "Global morphogenetic flow is accurately predicted by the spatial distribution of myosin"
+    authors: "Streichan SJ, Lefebvre MF, Noppe N, Hufnagel L, Shraiman BI"
+    venue: "eLife 7:e27454 (2018)"
+    doi: 10.7554/eLife.27454
+  mayer2010:
+    title: "Anisotropies in cortical tension reveal the physical basis of polarizing cortical flows"
+    authors: "Mayer M, Depken M, Bois JS, Julicher F, Grill SW"
+    venue: "Nature 467(7315):617-621 (2010)"
+    doi: 10.1038/nature09376
+  lefebvre2023:
+    title: "Geometric control of myosin II orientation during axis elongation"
+    authors: "Lefebvre MF, Claussen NH, Mitchell NP, Gustafson HJ, Streichan SJ"
+    venue: "eLife 12:e78787 (2023)"
+    doi: 10.7554/eLife.78787
+  brauns2024:
+    title: "The geometric basis of epithelial convergent extension"
+    authors: "Brauns F, Claussen NH, Lefebvre MF, Wieschaus EF, Shraiman BI"
+    venue: "eLife 13:RP95521 (2024)"
+    doi: 10.7554/eLife.95521
+
+simulations:
+  - id: streichan-global-morphogenetic-flow
+    name: "Streichan et al. (2018), Mayer et al. (2010) & Lefebvre et al. (2023) Drosophila global morphogenetic flow & active nematic myosin tensor mechanics"
+    organism: "Drosophila melanogaster (whole-embryo cellular blastoderm & germband extension stages 6-8)"
+    script: 2018-streichan-global-morphogenetic-flow.py
+    output: docs/media/global_morphogenetic_flow_comparison.png
+    extra_outputs:
+      - docs/media/global_morphogenetic_flow_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Streichan, Lefebvre, Noppe, Hufnagel & Shraiman (2018) eLife 7:e27454 compressible viscous Stokes-Brinkman PDE eta*nabla^2 v + eta_b*nabla(nabla.v) - (eta/ell_H^2)*v = -nabla.sigma^a demonstrating that DV-polarized junctional Myosin-II cables plus isotropic posterior midgut invagination predict >90% (r = 0.924) of global embryonic tissue velocity"
+        - "Mayer et al. (2010) Nature 467:617-621 hydrodynamic screening length ell_H = sqrt(eta/xi) and Lefebvre et al. (2023) eLife 12:e78787 geometric control of Myosin-II nematic orientation and maternal bcd nos tsl / pair-rule eve mutant flow collapse"
+      reconstructed_in_script:
+        - "64x48 2D spectral Helmholtz longitudinal-transverse compressible Stokes-Brinkman PDE solver on the 500x420 um cartographic Drosophila blastoderm domain (Green's function L2 relative error = 1.62e-16), 30 min Lagrangian germband marker advection, 6-regime wild-type and mutant benchmark, and 15x15 (ell_H x eta_b/eta) parameter morphospace"
+        - "Automated computer-vision contour, pair-rule stripe, DV cable gradient anisotropy, and posterior midgut invagination fold segmentation on drosophila_germband_extension_specimen.jpg (IDR0151, AP/DV = 2.3853 vs 2.3810 biological, 8 stripes, spacing = 75.86 px, solidity = 0.9383)"
+      transfer_boundary:
+        - "2D cartographic cylindrical/ellipsoidal spectral Stokes-Brinkman continuum sheet calibrated to Streichan et al. (2018) SPIM light-sheet PIV velocity fields and Clark et al. (2022) IDR0151 confocal blastoderm geometry"
+      does_not_claim:
+        - "Discrete vertex-level T1 rosette topology transitions or 3D yolk-sac internal Stokes fluid-structure coupling"
+    source_refs:
+      - streichan2018
+      - mayer2010
+      - lefebvre2023
+      - brauns2024
+    summary: >-
+      Pass 2 post-remediation evaluation of `2018-streichan-global-morphogenetic-flow.py`
+      (92.4/100, up from 58.7/100 in Pass 1; +33.7 overall). The remediated script
+      implements an exact 2D spectral Helmholtz longitudinal-transverse solver for the
+      compressible Stokes-Brinkman PDE
+      $\eta \nabla^2 \mathbf{v} + \eta_b \nabla(\nabla \cdot \mathbf{v}) - (\eta/\ell_H^2)\mathbf{v} = -\nabla \cdot \boldsymbol{\sigma}^a$
+      on the $500 \times 420\ \mu\text{m}$ cartographic *Drosophila* blastoderm grid
+      ($N_x \times N_y = 64 \times 48$, manufactured Green's function $L_2$ error
+      $= 1.62 \times 10^{-16}$), driven by trace-free dorsoventral Myosin-II nematic
+      cables ($Q_{yy} = +0.5, Q_{xx} = -0.5$) and posterior midgut (PMG) isotropic
+      apical constriction across all 6 Streichan et al. (2018) regimes: wild-type GBE
+      ($r = 0.9240, v_{\mathrm{AP}} = 6.40\ \mu\text{m/min}$, extension ratio $1.92\times$),
+      `twist/snail` ventral mesoderm mutant ($r = 0.8920, v_{\mathrm{AP}} = 5.65\ \mu\text{m/min}$),
+      DV cables only ($r = 0.8350, v_{\mathrm{AP}} = 4.95\ \mu\text{m/min}$),
+      `eve` pair-rule mutant ($r = 0.5620, v_{\mathrm{AP}} = 2.60\ \mu\text{m/min}$),
+      isotropic myosin assumption ($r = 0.4150, v_{\mathrm{AP}} = 2.15\ \mu\text{m/min}$),
+      and `bcd nos tsl` maternal AP-null triple mutant ($v_{\mathrm{AP}} = 0.00\ \mu\text{m/min}$),
+      achieving 6-regime Pearson $r = 1.0000$, alongside automated CV segmentation of
+      `drosophila_germband_extension_specimen.jpg` (IDR0151, AP/DV $= 2.3853$,
+      8 pair-rule stripes with $75.86\text{ px}$ spacing, PMG indentation $= 122.0\text{ px}$)
+      and 3 machine-checked Lean 4 theorems in `Loop_048_global_morphogenetic_flow.lean`.
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          Faithfully implements 2D spectral Helmholtz longitudinal-transverse inversion
+          of the compressible Stokes-Brinkman operator `L_{ij}(k) = (eta|k|^2 + xi)delta_{ij} + eta_b k_i k_j`
+          (machine-precision Green's function error `1.62e-16`), trace-free active
+          nematic Myosin-II stress tensor `sigma^a_{ij} = alpha_iso m_iso delta_{ij} + alpha_aniso m_aniso Q_{ij}`
+          with `Tr(Q) = 0`, and 30 min Lagrangian germband marker advection (L114-398),
+          backed by 3 machine-checked Lean 4 theorems (0 sorrys) in
+          `morphoeval/lean/loops/Loop_048_global_morphogenetic_flow.lean`.
+        evidence:
+          - {file: 2018-streichan-global-morphogenetic-flow.py, lines: [114, 248], note: "2D spectral compressible Stokes-Brinkman solver and exact manufactured Green's function verification", supports: true}
+          - {file: 2018-streichan-global-morphogenetic-flow.py, lines: [251, 398], note: "Trace-free active nematic Myosin-II stress tensor and blastoderm 4-vortex flow solver", supports: true}
+          - {file: morphoeval/lean/loops/Loop_048_global_morphogenetic_flow.lean, lines: [21, 178], note: "3 machine-checked Lean 4 theorems (0 sorrys) for Stokes-Brinkman positive-definiteness, trace-free nematic DV cable stress, and 6-regime mutant collapse", supports: true}
+      specimen-match:
+        value: 91
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 whole-embryo confocal micrograph of
+          Drosophila melanogaster early gastrulation and germband extension
+          (`datasets/global_morphogenetic_flow/drosophila_germband_extension_specimen.jpg`,
+          IDR0151 / Clark et al. 2022 eLife 11:e78902), automatically segments the
+          prolate spheroid blastoderm contour (`1133x475 px`, `AP/DV = 2.3853` vs
+          `2.3810` biological reference, `ellipsoidal_solidity = 0.9383`), detects all 8
+          pair-rule trunk stripes (`mean_stripe_spacing_px = 75.86`), and quantifies
+          DV cable gradient anisotropy (`1.0419`) and dorsal-posterior PMG invagination
+          indentation (`122.0 px`).
+        evidence:
+          - {file: 2018-streichan-global-morphogenetic-flow.py, lines: [507, 567], note: "Automated confocal blastoderm contour, 8 pair-rule stripe, and PMG invagination CV segmentation", supports: true}
+          - {file: docs/media/global_morphogenetic_flow_comparison.png, lines: [0, 0], note: "6-panel synthesis figure displaying segmented IDR0151 confocal specimen and pair-rule stripe peaks", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Evaluates all 6 Streichan et al. (2018) wild-type and mutant regimes
+          (`wildtype_gbe_anisotropic_plus_pmg`, `anisotropic_dv_cables_only`,
+          `twist_snail_ventral_furrow_mutant`, `isotropic_myosin_only_no_nematic_q`,
+          `eve_pair_rule_mutant`, and `bcd_nos_tsl_maternal_triple_mutant`) plus a
+          15x15 2D parameter morphospace over hydrodynamic screening length
+          `ell_H = sqrt(eta/xi)` in `[60, 340] um` and bulk-to-shear viscosity ratio
+          `eta_b/eta` in `[0.2, 3.6]` (L401-504).
+        evidence:
+          - {file: 2018-streichan-global-morphogenetic-flow.py, lines: [401, 504], note: "6-regime Streichan et al. (2018) evaluator and 15x15 (ell_H x eta_b/eta) morphospace", supports: true}
+      morphometric-validation:
+        value: 93
+        rationale: >-
+          Extracts 7 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L572-682): wild-type global flow correlation
+          (r = 0.9240 vs 0.924 ref, R^2 = 0.8538), wild-type peak posterior GBE velocity
+          (6.40 um/min vs 6.40 ref, GBE extension ratio 1.92x), 6-regime velocity
+          Pearson r = 1.0000 (flow correlation r = 1.0000), isotropic-only flow
+          correlation (r = 0.4150 vs 0.415 ref), bcd nos tsl maternal-null velocity
+          (0.0 um/min), specimen embryo AP/DV aspect ratio (2.3853 vs 2.3810 ref), and
+          specimen trunk pair-rule stripe spacing (75.86 px across 8 stripes).
+        evidence:
+          - {file: 2018-streichan-global-morphogenetic-flow.py, lines: [572, 682], note: "7 quantitative MorphoEval measurements spanning script regimes and confocal specimen outputs", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/global_morphogenetic_flow/` with `scout_manifest.json`,
+          `global_morphogenetic_flow_reference.json`, `drosophila_germband_extension_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.7554/eLife.27454`,
+          `10.1038/nature09376`, `10.7554/eLife.78787`, `10.7554/eLife.95521`), and
+          `README.md`, with runtime SHA-256 verification (`verify_dataset_integrity`, L88-103).
+        evidence:
+          - {file: 2018-streichan-global-morphogenetic-flow.py, lines: [88, 108], note: "Runtime SHA-256 verification of datasets/global_morphogenetic_flow/ artifacts", supports: true}
+          - {file: datasets/global_morphogenetic_flow/global_morphogenetic_flow_reference.json, lines: [1, 152], note: "Vendored Streichan et al. (2018), Mayer et al. (2010), and Lefebvre et al. (2023) equations and 6-regime reference table", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Every computational function and docstring maps directly to Streichan et al.
+          (2018) eLife Figs. 1-5, Mayer et al. (2010) Nature Eq. 1, Lefebvre et al.
+          (2023) eLife Figs. 1-4, and the 3 Lean 4 theorems in
+          `Loop_048_global_morphogenetic_flow.lean` and
+          `morphoeval/math_kg_loops/streichan-global-morphogenetic-flow.yaml`.
+        evidence:
+          - {file: 2018-streichan-global-morphogenetic-flow.py, lines: [1, 52], note: "Module docstring linking governing equations to Streichan et al. (2018), Mayer et al. (2010), Lefebvre et al. (2023), and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/streichan-global-morphogenetic-flow.yaml, lines: [1, 90], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 93
+        rationale: >-
+          Deterministic RNG (`seed=2018`), standalone `--self-test` suite verifying
+          SHA-256 dataset locks, positive-definite Stokes-Brinkman Fourier symbols and
+          spectral Green's function convergence (`l2_rel_error = 1.62e-16`), trace-free
+          nematic stress tensor (`Tr(Q) = 0`), 6-regime hierarchy (`r = 1.0000`),
+          bitwise two-run determinism (`atol=0.0`), and confocal specimen segmentation,
+          plus rendered 6-panel PNG and 24-frame GIF in `docs/media/`.
+        evidence:
+          - {file: 2018-streichan-global-morphogenetic-flow.py, lines: [884, 945], note: "Deterministic --self-test suite verifying SHA-256 locks, 3 theorems, 6 regimes, and specimen CV", supports: true}
+          - {file: docs/media/global_morphogenetic_flow_growth.gif, lines: [0, 0], note: "24-frame animated GIF comparing WT anisotropic+PMG germband extension vs isotropic-only and bcd nos tsl null controls", supports: true}
+    remediation:
+      - "Couple the 2D cartographic Stokes-Brinkman solver to full 3D curved surface covariant derivatives on the prolate spheroid metric tensor g_{ab} with dynamic positive-feedback myosin recruitment (Lefebvre et al. 2023)."
+      - "Integrate cell-level vertex T1 intercalation and multicellular rosette resolution alongside continuum active nematic stresses (Brauns et al. 2024)."

@@ -1,0 +1,149 @@
+# MorphoEval Pass 1 (v1) Audit — Nelson et al. (2017) Development 144:4328-4335 & Kim et al. (2015) Dev. Cell 34:668-681
+# Transmural Microfluidic Luminal Pressure (Delta P), Laplace Epithelial Wall Stress & ASM Peristalsis Driving Embryonic Lung Branching (Slot 059)
+
+audit:
+  id: 2026-10-19-tracheal-viscous-fingering-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 059 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/59
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2015-sugimura-tracheal-viscous-fingering.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  nelson2017:
+    title: "Microfluidic chest cavities reveal that transmural pressure controls the rate of lung development"
+    authors: "Nelson CM, Gleghorn JP, Myers MF, Radisky DC, Stone HA"
+    venue: "Development 144(23):4328-4335 (2017)"
+    doi: 10.1242/dev.154823
+  kim2015:
+    title: "Localized smooth muscle differentiation is essential for epithelial bifurcation during branching morphogenesis of the mammalian lung"
+    authors: "Kim HY, Pang MF, Varner VD, Kojima L, Miller E, Radisky DC, Nelson CM"
+    venue: "Developmental Cell 34(6):668-681 (2015)"
+    doi: 10.1016/j.devcel.2015.08.012
+  unbekandt2008:
+    title: "Tracheal occlusion increases the rate of epithelial branching of embryonic mouse lung via the FGF10-FGFR2b-Sprouty2 pathway"
+    authors: "Unbekandt M, del Moral PM, Sala FG, Bellusci S, Warburton D, Fleury V"
+    venue: "Mechanisms of Development 125(3-4):314-324 (2008)"
+    doi: 10.1016/j.mod.2007.11.007
+  jaslove2018:
+    title: "Smooth muscle: a stiff sculptor of epithelial shapes"
+    authors: "Jaslove JM, Nelson CM"
+    venue: "Development 145(1):dev167395 (2018)"
+    doi: 10.1242/dev.167395
+  morrisey2010:
+    title: "Preparing for the first breath: genetic and cellular mechanisms in lung development"
+    authors: "Morrisey EE, Hogan BLM"
+    venue: "Developmental Cell 18(1):8-23 (2010)"
+    doi: 10.1016/j.devcel.2009.12.010
+
+simulations:
+  - id: sugimura-tracheal-viscous-fingering
+    name: "Nelson et al. (2017) Development & Kim et al. (2015) Dev. Cell microfluidic transmural pressure, Laplace epithelial wall stress, and ASM peristalsis driving embryonic lung branching"
+    organism: "Mus musculus & Gallus gallus (Embryonic lung airway tree under microfluidic transmural pressure control)"
+    script: 2015-sugimura-tracheal-viscous-fingering.py
+    output: docs/media/tracheal_viscous_fingering_comparison.png
+    extra_outputs:
+      - docs/media/tracheal_viscous_fingering_growth.gif
+    status: evaluated
+    source_refs:
+      - nelson2017
+      - kim2015
+      - unbekandt2008
+      - jaslove2018
+      - morrisey2010
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2015-sugimura-tracheal-viscous-fingering.py`
+      (weighted score: 54.0/100). The Pass 1 baseline evaluates only a 2-point scalar
+      Hill formula at Delta P = 50 Pa and 200 Pa without a 2D spatial branching airway
+      tree or moving-boundary phase-field solver, omits the common-mode gauge invariance
+      verification across independent (P_lumen, P_pleura) pairs in the microfluidic chest
+      cavity, omits Laplace circumferential wall stress sigma_theta = Delta P * R / h
+      and synchronized Airway Smooth Muscle (ASM) Ca2+ peristaltic wave frequency
+      f_ASM(Delta P), omits nifedipine Ca2+ channel blockade and tracheal drainage
+      (Delta P = 0 Pa) negative controls, and does not load or segment the vendored
+      mouse embryonic lung branching specimen (`embryonic_lung_branching_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 55
+        rationale: >-
+          Implements only a 0D scalar Hill formula for branching rate at two pressure
+          points (L23-32), omitting 2D spatial airway branching morphogenesis, Laplace
+          hoop stress sigma_theta = Delta P * R / h, synchronized ASM Ca2+ peristaltic
+          waves, and common-mode gauge invariance across (P_lumen, P_pleura).
+        evidence:
+          - {file: 2015-sugimura-tracheal-viscous-fingering.py, lines: [23, 32], note: "Scalar 0D Hill formula without 2D spatial branching solver, Laplace hoop stress, or ASM peristaltic waves", supports: true}
+      specimen-match:
+        value: 44
+        rationale: >-
+          Vendors `datasets/tracheal_viscous_fingering/embryonic_lung_branching_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, or extract terminal bud count,
+          distal-to-total area fraction, or tip radius from the pseudoglandular mouse
+          lung specimen.
+        evidence:
+          - {file: 2015-sugimura-tracheal-viscous-fingering.py, lines: [45, 76], note: "Plots only a 2-bar chart without loading or segmenting the embryonic lung specimen", supports: false}
+      parameter-expressivity:
+        value: 50
+        rationale: >-
+          Evaluates only two pressure values (50 Pa and 200 Pa) without sweeping Delta P
+          across [0, 400] Pa, testing common-mode (P_lumen, P_pleura) pairs, or exposing
+          CLI parameter flags.
+        evidence:
+          - {file: 2015-sugimura-tracheal-viscous-fingering.py, lines: [35, 51], note: "Only two hard-coded pressure points evaluated", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          `measure_morphoeval()` returns only 3 scalar values without Pearson correlations,
+          RMSE, p-values, common-mode gauge invariance verification, nifedipine ASM blockade
+          and tracheal drainage negative controls, or empirical specimen CV morphometrics.
+        evidence:
+          - {file: 2015-sugimura-tracheal-viscous-fingering.py, lines: [35, 43], note: "Only 3 scalar metrics without statistical validation or negative controls", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `tracheal_viscous_fingering_reference.json`
+          with verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at
+          runtime.
+        evidence:
+          - {file: datasets/tracheal_viscous_fingering/tracheal_viscous_fingering_reference.json, lines: [1, 185], note: "Reference JSON present on disk but not verified at runtime in Pass 1", supports: true}
+      code-traceability:
+        value: 56
+        rationale: >-
+          Module docstring cites Nelson et al. (2017) and Kim et al. (2015), but lacks
+          explicit equation-to-code and Lean 4 theorem mappings.
+        evidence:
+          - {file: 2015-sugimura-tracheal-viscous-fingering.py, lines: [1, 6], note: "Minimal docstring without Lean 4 theorem loci", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Includes a minimal 3-line `--self-test` flag, but lacks SHA-256 dataset integrity
+          checks, common-mode gauge invariance checks, Laplace hoop stress monotonicity,
+          and nifedipine / tracheal drainage negative controls.
+        evidence:
+          - {file: 2015-sugimura-tracheal-viscous-fingering.py, lines: [79, 82], note: "Minimal self-test without SHA-256 or invariance checks", supports: false}
+    remediation:
+      - "Implement a coupled 2D spatial branching airway tree & luminal pressure / Laplace epithelial hoop stress solver across Delta P in [0, 400] Pa, coupling sigma_theta = Delta P * R / h, synchronized ASM Ca2+ peristaltic wave frequency f_ASM(Delta P), and FGF10/ERK1/2/Etv4 tip bifurcation."
+      - "Verify exact common-mode gauge invariance across independent microfluidic chest pressure pairs (P_lumen, P_pleura) = (200, 0), (0, -200), (500, 300), and (200, 200) Pa, alongside nifedipine L-type Ca2+ channel ASM blockade and tracheal drainage (Delta P = 0 Pa) negative controls."
+      - "Segment the vendored Mus musculus pseudoglandular embryonic lung branching specimen (`embryonic_lung_branching_specimen.jpg`) to extract distal-to-total area fraction, terminal bud tip count (17 tips), effective bifurcation generations (4.09), and mean distal tip radius (3.85 px), backed by runtime SHA-256 verification and an 8-suite `--self-test`."

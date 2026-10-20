@@ -1,0 +1,205 @@
+# MorphoEval Pass 2 (v2) Audit — Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol. 4(3):e1000052, Hellström et al. (2007) Nature 445:776-780 & Jakobsson et al. (2010) Nat. Cell Biol. 12:943-953
+# VEGF–VEGFR2–Dll4–Notch1 Lateral Inhibition Tip/Stalk Cell Salt-and-Pepper Selection & Angiogenic Sprouting, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2021-ibrahim-vascular-angiogenesis-notch.py` (Slot 060)
+# superseding `2026-10-19-vascular-angiogenesis-notch-audit` in `2026-10-19-vascular-angiogenesis-notch-loop`:
+#   - Primary assessor: Gemini 4 Argon — 93.8 / 100 (up from 53.0 / 100 in v1; +40.8 overall)
+
+audit:
+  id: 2026-10-19-vascular-angiogenesis-notch-audit-v2
+  supersedes: 2026-10-19-vascular-angiogenesis-notch-audit
+  supersedes_audit_id: 2026-10-19-vascular-angiogenesis-notch-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 060 Pass 2 Assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/60
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2021-ibrahim-vascular-angiogenesis-notch.py` after
+      completing Step 12 closed-loop remediation in `2026-10-19-vascular-angiogenesis-notch-loop`.
+
+references:
+  bentley2008:
+    title: "Agent-based simulation of notch-mediated tip cell selection in angiogenic sprout initialisation"
+    authors: "Bentley K, Gerhardt H, Bates PA"
+    venue: "PLoS Computational Biology 4(3):e1000052 (2008)"
+    doi: 10.1371/journal.pcbi.1000052
+  hellstrom2007:
+    title: "Dll4 signalling through Notch1 regulates formation of tip cells during angiogenesis"
+    authors: "Hellström M, Phng LK, Hofmann JJ, et al., Gerhardt H, Betsholtz C"
+    venue: "Nature 445(7129):776-780 (2007)"
+    doi: 10.1038/nature05571
+  jakobsson2010:
+    title: "Endothelial cells dynamically compete for the tip cell position during angiogenic sprouting"
+    authors: "Jakobsson L, Franco CA, Bentley K, et al., Gerhardt H"
+    venue: "Nature Cell Biology 12(10):943-953 (2010)"
+    doi: 10.1038/ncb2103
+  chappell2009:
+    title: "Local guidance of emerging vessel sprouts requires soluble Flt-1"
+    authors: "Chappell JC, Taylor SM, Ferrara N, Bautch VL"
+    venue: "Developmental Cell 17(3):377-386 (2009)"
+    doi: 10.1016/j.devcel.2009.06.004
+  collier1996:
+    title: "Pattern formation by lateral inhibition with feedback: a mathematical model of delta-notch intercellular signalling"
+    authors: "Collier JR, Monk NAM, Maini PK, Lewis JH"
+    venue: "Journal of Theoretical Biology 183(4):429-446 (1996)"
+    doi: 10.1006/jtbi.1996.0233
+
+simulations:
+  - id: ibrahim-vascular-angiogenesis-notch
+    name: "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol., Hellström et al. (2007) Nature & Jakobsson et al. (2010) Nat. Cell Biol. VEGF-VEGFR2-Dll4-Notch1 tip/stalk salt-and-pepper lateral inhibition and angiogenic sprouting"
+    organism: "Homo sapiens / Mus musculus (Retinal & embryonic sprouting vascular endothelium)"
+    script: 2021-ibrahim-vascular-angiogenesis-notch.py
+    output: docs/media/vascular_angiogenesis_notch_comparison.png
+    extra_outputs:
+      - docs/media/vascular_angiogenesis_notch_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol. 4:e1000052 & Collier et al. (1996) J. Theor. Biol. 183:429-446 coupled endothelial VEGFR2-Dll4-Notch1 lateral-inhibition ODE network destabilizing via the Brillouin-zone k = pi antisymmetric mode into period-2 Tip-Stalk-Tip-Stalk salt-and-pepper alternation under physiological VEGF and synchronous oscillations under high uniform VEGF"
+        - "Hellström et al. (2007) Nature 445:776-780 pharmacological gamma-secretase Notch blockade (DAPT, k_t -> 0 => N_i = 0 => V_i = V_max) producing 100% all-tip hypersprouting syncytial sheets and Dll4+/- haploinsufficiency producing ~75% tip hyperbranching"
+        - "Jakobsson et al. (2010) Nat. Cell Biol. 12:943-953 chimeric WT : Vegfr2+/- mosaic tip competition (~87.5% WT tip occupancy) and Chappell et al. (2009) Dev. Cell 17:377-386 soluble VEGFR1 (sFlt1) decoy sequestration rescuing salt-and-pepper patterning under VEGF overload"
+      reconstructed_in_script:
+        - "Coupled M = 16 endothelial cell VEGFR2-Dll4-Notch1 + 2D filopodial angiogenic sprout elongation solver (`simulate_vessel_notch_sprouting`) and Brillouin k = pi linear stability & sFlt1 decoy verifier (`verify_brillouin_instability_and_flt1_rescue`)"
+        - "5 canonical angiogenic regimes + sFlt1 rescue control (`evaluate_angiogenic_regimes`): Physiological salt-and-pepper (tip fraction = 0.5000, I_pi = 0.9472), High uniform VEGF oscillations (temporal CV = 0.3808, rescued by sFlt1 to CV = 0.0134 and I_pi = 0.9480), DAPT Notch blockade (tip fraction = 1.0000, 0 stalk cells, I_pi = 0.0000), Dll4+/- haploinsufficiency (tip fraction = 0.7500), and WT : Vegfr2+/- mosaic competition (WT tip share = 0.8571)"
+        - "8-point Notch trans-activation gain sweep across k_t in [0.00, 1.25] reproducing the Hellström et al. (2007) / Bentley et al. (2008) tip-cell fraction continuum (Pearson r = 0.99781, RMSE = 0.0136, p = 2.61e-8) and Brillouin k = pi alternation index (Pearson r = 0.99809, RMSE = 0.0227, p = 1.66e-8)"
+        - "Computer-vision medial-axis skeleton segmentation of `huvec_angiogenic_sprouting_plexus_specimen.jpg` (CC BY 4.0, Homo sapiens HUVEC angiogenic vascular network) extracting vascular plexus area density = 0.1967, N_junc = 69 branch junctions, N_tip = 58 sprouting tips, tip-to-junction ratio = 0.8406, and inter-tip NND CV = 0.7003 (31.11 +- 21.79 px)"
+      transfer_boundary:
+        - "1D periodic M=16 endothelial vessel wall coupled to 2D filopodial sprout outgrowth and medial-axis topological skeletonization of calcein-stained HUVEC vascular networks"
+      does_not_claim:
+        - "3D Navier-Stokes blood hemodynamics, pericyte PDGFRB recruitment, or shear-induced arteriovenous remodeling after lumen perfusion"
+    source_refs:
+      - bentley2008
+      - hellstrom2007
+      - jakobsson2010
+      - chappell2009
+      - collier1996
+    summary: >-
+      Pass 2 (v2) evaluation of `2021-ibrahim-vascular-angiogenesis-notch.py` (overall
+      weighted score: 93.8/100, up from 53.0/100 in v1). The remediated script solves
+      the coupled M = 16 multicellular Bentley-Gerhardt-Bates VEGFR2-Dll4-Notch1 ODE
+      network and 2D filopodial angiogenic sprout elongation across all 5 canonical
+      regimes — Physiological VEGF salt-and-pepper (tip fraction = 0.5000, Brillouin
+      I_pi = 0.9472), High uniform VEGF oscillations (temporal CV = 0.3808, rescued by
+      soluble Flt1 decoy to I_pi = 0.9480), DAPT Notch blockade all-tip hypersprouting
+      (tip fraction = 1.0000, 0 stalk cells), Dll4+/- haploinsufficiency (tip fraction =
+      0.7500), and WT : Vegfr2+/- mosaic competition (WT tip occupancy = 0.8571);
+      reproduces the 8-point Notch gain sweep (Pearson r = 0.99781, RMSE = 0.0136,
+      p = 2.61e-8); and segments the SHA-256-locked Homo sapiens HUVEC angiogenic
+      sprouting vascular network micrograph (plexus density = 0.1967, 69 branch
+      junctions, 58 sprouting tips, tip/junction ratio = 0.8406, inter-tip NND CV = 0.7003).
+    scores:
+      model-fidelity:
+        value: 95
+        rationale: >-
+          Implements the Brillouin k = pi linear stability & sFlt1 decoy verifier
+          (`verify_brillouin_instability_and_flt1_rescue`, L136-181), coupled M = 16
+          multicellular VEGFR2-Dll4-Notch1 + 2D filopodial sprout outgrowth solver
+          (`simulate_vessel_notch_sprouting`, L202-395), 5-regime + sFlt1 rescue
+          evaluator (`evaluate_angiogenic_regimes`, L398-429), and 8-point Notch trans-gain
+          sweep (`evaluate_notch_gain_sweep`, L436-499), backed by 3 machine-checked
+          Lean 4 theorems in `morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean`.
+        evidence:
+          - {file: 2021-ibrahim-vascular-angiogenesis-notch.py, lines: [136, 429], note: "Multicellular VEGFR2-Dll4-Notch1 solver, 2D filopodial sprouting, sFlt1 decoy rescue, and 5 canonical angiogenic regimes", supports: true}
+          - {file: 2021-ibrahim-vascular-angiogenesis-notch.py, lines: [436, 499], note: "8-point Notch trans-activation gain sweep across k_t in [0.00, 1.25]", supports: true}
+          - {file: morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean, lines: [43, 139], note: "3 machine-checked Lean 4 theorems for Brillouin k=pi symmetry breaking, DAPT all-tip collapse, and sFlt1 decoy rescue (0 sorrys)", supports: true}
+      specimen-match:
+        value: 93
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 Homo sapiens HUVEC angiogenic
+          sprouting vascular network fluorescence micrograph
+          (`huvec_angiogenic_sprouting_plexus_specimen.jpg`, 1224x904 px), segments
+          the calcein-stained vascular plexus area density (0.1967), extracts the
+          medial-axis skeleton to quantify N_junc = 69 branch junctions (degree >= 3)
+          and N_tip = 58 blind-ending filopodial sprouting tips (degree == 1,
+          tip-to-junction ratio = 0.8406), and computes inter-tip NND CV = 0.7003
+          (`segment_angiogenic_plexus_specimen`, L506-581).
+        evidence:
+          - {file: 2021-ibrahim-vascular-angiogenesis-notch.py, lines: [506, 581], note: "Calcein fluorescence plexus segmentation, medial-axis skeletonization, 69 branch junctions, and 58 sprouting tips", supports: true}
+          - {file: docs/media/vascular_angiogenesis_notch_comparison.png, lines: [0, 0], note: "6-panel comparison figure pairing WT salt-and-pepper, DAPT/Dll4+/- hypersprouting, Notch gain sweep, high-VEGF oscillations + sFlt1 rescue, 5-regime benchmarks, and HUVEC CV segmentation", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Evaluates all 5 canonical angiogenic regimes plus sFlt1 decoy rescue
+          (Physiological WT, High uniform VEGF oscillations, DAPT k_t=0 blockade,
+          Dll4+/- haploinsufficiency, WT:Vegfr2+/- mosaic chimera, and High VEGF +
+          sFlt1 rescue), sweeps 8 Notch trans-activation gains k_t in [0.00, 1.25],
+          and exposes `--vegf`, `--kt`, `--dll4-dosage`, `--flt1-decoy`, and `--seed`
+          CLI overrides (L950-976).
+        evidence:
+          - {file: 2021-ibrahim-vascular-angiogenesis-notch.py, lines: [398, 499], note: "5 angiogenic regimes + sFlt1 rescue control + 8-point k_t sweep", supports: true}
+          - {file: 2021-ibrahim-vascular-angiogenesis-notch.py, lines: [950, 976], note: "CLI parameter overrides for vegf, kt, dll4-dosage, flt1-decoy, and seed", supports: true}
+      morphometric-validation:
+        value: 94
+        rationale: >-
+          `measure_morphoeval()` (L798-899) computes 9 reference-anchored morphometric
+          measurements with uncertainty, Pearson p-values, RMSE, and negative controls:
+          Physiological tip-cell fraction = 0.5000 (ref 0.5000), Brillouin k=pi
+          alternation index = 0.9472 (ref 0.9450, sFlt1 rescue delta +0.8858), DAPT
+          Notch blockade tip fraction = 1.0000 (ref 1.0000, 0 stalk cells), Dll4+/-
+          haploinsufficiency tip fraction = 0.7500 (ref 0.7500), High-VEGF synchronous
+          oscillation CV = 0.3808 (ref 0.4150, sFlt1 rescue CV = 0.0134), WT:Vegfr2+/-
+          chimera WT tip occupancy = 0.8571 (ref 0.8750), 8-point Notch gain sweep
+          Pearson r = 0.99781 (RMSE = 0.0136, p = 2.61e-8), HUVEC specimen plexus
+          density = 0.1967 (ref 0.1967), and HUVEC specimen tip-to-junction ratio =
+          0.8406 (58 tips / 69 junctions, inter-tip NND = 31.11 +- 21.79 px, CV = 0.7003).
+        evidence:
+          - {file: 2021-ibrahim-vascular-angiogenesis-notch.py, lines: [798, 899], note: "9 reference-anchored morphometrics with Pearson r, p-values, RMSE, NND SD/CV, and DAPT/sFlt1 ablation controls", supports: true}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Vendors `datasets/vascular_angiogenesis_notch/` with 5 BibTeX entries and
+          verified DOIs (`10.1371/journal.pcbi.1000052`, `10.1038/nature05571`,
+          `10.1038/ncb2103`, `10.1016/j.devcel.2009.06.004`, `10.1006/jtbi.1996.0233`),
+          `scout_manifest.json`, `vascular_angiogenesis_notch_reference.json`, and
+          `huvec_angiogenic_sprouting_plexus_specimen.jpg`, all verified at runtime
+          via SHA-256 checksums (`verify_dataset_integrity`, L99-129).
+        evidence:
+          - {file: 2021-ibrahim-vascular-angiogenesis-notch.py, lines: [99, 129], note: "Runtime SHA-256 checksum verification of reference JSON and HUVEC specimen JPEG", supports: true}
+          - {file: datasets/vascular_angiogenesis_notch/vascular_angiogenesis_notch_reference.json, lines: [1, 145], note: "SHA-256-locked reference dataset with Bentley et al. (2008), Hellström et al. (2007), and Jakobsson et al. (2010) benchmarks", supports: true}
+      code-traceability:
+        value: 93
+        rationale: >-
+          Module and function docstrings map every governing equation to Bentley,
+          Gerhardt & Bates (2008) PLoS Comput. Biol., Hellström et al. (2007) Nature,
+          Jakobsson et al. (2010) Nat. Cell Biol., Chappell et al. (2009) Dev. Cell,
+          and the 3 formal Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean` (L1-60, L136-499).
+        evidence:
+          - {file: 2021-ibrahim-vascular-angiogenesis-notch.py, lines: [1, 60], note: "Explicit equation-to-paper and Lean 4 theorem traceability in module docstring", supports: true}
+      repro-package:
+        value: 93
+        rationale: >-
+          8-suite `self_test()` (`L905-947`) verifying SHA-256 dataset integrity,
+          Brillouin k=pi instability & sFlt1 decoy rescue, physiological salt-and-pepper
+          alternation, DAPT all-tip hypersprouting collapse, Dll4+/- haploinsufficiency
+          & high-VEGF oscillations, Vegfr2+/- mosaic competition & 8-point k_t sweep,
+          HUVEC specimen CV segmentation, and bitwise determinism.
+        evidence:
+          - {file: 2021-ibrahim-vascular-angiogenesis-notch.py, lines: [905, 947], note: "8-suite deterministic self-test passing in < 1.0s", supports: true}
+    remediation:
+      - "Couple the multicellular tip/stalk selection network to lumenized blood flow and wall shear stress to model post-anastomosis vascular pruning and arteriovenous specification."

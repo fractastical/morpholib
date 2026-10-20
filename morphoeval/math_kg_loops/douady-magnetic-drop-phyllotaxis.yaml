@@ -1,0 +1,63 @@
+sim_id: douady-magnetic-drop-phyllotaxis
+slot: 31
+slot_id: slot-031-magnetic-drop-phyllotaxis
+math_family: Iterative Repulsive Energy Phyllotaxis
+model_spec:
+  model: "Douady & Couder (1992) Phys. Rev. Lett. 68:2098 & (1996) J. Theor. Biol. 178:255 iterative magnetic-dipole repulsion phyllotaxis E(phi) = sum_k d_k(phi, phi_{n-k})^(-3) with plastochron ratio G = V*T/R_0"
+  dipole_exponent_gamma: 3.0
+  golden_angle_deg: 137.50776405003785
+  lucas_angle_deg: 99.50155280998114
+  pitchfork_G_c1_exponential_2drop: 0.77348399
+  pitchfork_G_c1_exponential_full: 0.77253817
+  pitchfork_G_c1_linear_2drop: 2.51456033
+  seed: 1992
+  inputs:
+    - datasets/magnetic_drop_phyllotaxis/magnetic_drop_phyllotaxis_reference.json
+    - datasets/magnetic_drop_phyllotaxis/conifer_cone_specimen.jpg
+    - datasets/magnetic_drop_phyllotaxis/paper_citations.bib
+equations:
+  - law_name: "Douady & Couder (1992) Radial Advection & Rim Dipole Repulsion Energy E(phi)"
+    formula: "r_k = R_0(1 + k G) or R_0 exp(k G);  d_k^2(phi) = R_0^2 + r_k^2 - 2 R_0 r_k cos(phi - phi_{n-k});  E(phi) = sum_{k>=1} d_k(phi)^{-3}"
+    lean_decl: "MathOfBiology.Loop_031.chord_distance_sq"
+    lean_theorem: "MathOfBiology.Loop_031.douady_couder_opposition_maximizes_chord_distance"
+    lean_locus: "morphoeval/lean/loops/Loop_031_magnetic_drop_phyllotaxis.lean#L22-L44"
+    lean_code: |-
+      def linear_advected_radius (k G : Int) : Int := 1 + k * G
+      def chord_distance_sq (r_k c : Int) : Int := 1 + r_k * r_k - 2 * r_k * c
+      theorem douady_couder_opposition_maximizes_chord_distance (G : Int) :
+          chord_distance_sq (linear_advected_radius 1 G) (-1) -
+            chord_distance_sq (linear_advected_radius 1 G) 1 = 4 * (1 + G)
+    variables: "R_0: meristem rim radius; G = V*T/R_0: dimensionless plastochron ratio; r_k: radial coordinate of k-th older drop; phi: candidate azimuth on rim"
+    role: "Governs iterative placement of new ferrofluid drops / botanical primordia at the global minimum of dipole repulsion on the meristem rim"
+    source_citation: "Douady & Couder (1992) Phys. Rev. Lett. 68(13):2098-2101 Eqs. (1)-(3)"
+    code_locus: "1992-douady-magnetic-drop-phyllotaxis.py#L140-L245"
+  - law_name: "Douady & Couder (1992) Opposition-to-Spiral (1,1) -> (1,2) Supercritical Pitchfork Bifurcation"
+    formula: "d^2 E_2 / d phi^2 |_{phi=0} = 3 r_1 / (r_1 + 1)^5 - 3 r_2 / (r_2 - 1)^5 = 0  <=>  C(r_1, r_2) = 3 r_1 (r_2 - 1)^5 - 3 r_2 (r_1 + 1)^5 = 0"
+    lean_decl: "MathOfBiology.Loop_031.pitchfork_curvature_discriminant"
+    lean_theorem: "MathOfBiology.Loop_031.douady_couder_pitchfork_bifurcation_sign_change"
+    lean_locus: "morphoeval/lean/loops/Loop_031_magnetic_drop_phyllotaxis.lean#L59-L79"
+    lean_code: |-
+      def pitchfork_curvature_discriminant (r1 r2 : Int) : Int :=
+        3 * r1 * (r2 - 1) ^ 5 - 3 * r2 * (r1 + 1) ^ 5
+      theorem douady_couder_pitchfork_bifurcation_sign_change :
+          pitchfork_curvature_discriminant (linear_advected_radius 1 3) (linear_advected_radius 2 3) = 27687 ∧
+          pitchfork_curvature_discriminant (linear_advected_radius 1 2) (linear_advected_radius 2 2) = -6144 := by decide
+    variables: "r_1, r_2: dimensionless radii of the 1st (phi=pi) and 2nd (phi=0) older drops; C(r_1, r_2): cross-multiplied Hessian curvature numerator at phi=0"
+    role: "Determines the exact critical plastochron ratio G_{c,1} below which alternating distichous opposition (Delta_phi = 180 deg) bifurcates into chiral spiral modes"
+    source_citation: "Douady & Couder (1992) Phys. Rev. Lett. 68:2098 Fig. 3; (1996) J. Theor. Biol. 178:255 Sec. 3.1"
+    code_locus: "1992-douady-magnetic-drop-phyllotaxis.py#L248-L325"
+  - law_name: "Imperfect Pitchfork Fibonacci (1,1)->(1,2)->(2,3)->(3,5)->(5,8)->(8,13) vs Lucas (1,3)->(3,4)->(4,7) Parastichy Cascade"
+    formula: "S_{k+2} = S_{k+1} + S_k;  D(p, q) = p^2 + p q - q^2  =>  D(q, p + q) = -D(p, q);  |D_Fib| = 1, |D_Lucas| = 5"
+    lean_decl: "MathOfBiology.Loop_031.parastichy_seq"
+    lean_theorem: "MathOfBiology.Loop_031.douady_couder_fibonacci_vs_lucas_parastichy_cascades"
+    lean_locus: "morphoeval/lean/loops/Loop_031_magnetic_drop_phyllotaxis.lean#L90-L127"
+    lean_code: |-
+      def parastichy_seq (a b : Nat) : Nat → Nat
+        | 0 => a | 1 => b | n + 2 => parastichy_seq a b (n + 1) + parastichy_seq a b n
+      def cassini_det (p q : Int) : Int := p * p + p * q - q * q
+      theorem douady_couder_fibonacci_vs_lucas_parastichy_cascades (p q : Int) :
+          cassini_det q (p + q) + cassini_det p q = 0 ∧ cassini_det 5 8 = 1 ∧ cassini_det 4 7 = -5
+    variables: "(p, q): opposing contact parastichy numbers; D(p, q): Cassini-Bezout unimodular lattice determinant"
+    role: "Proves why adiabatic decrease of G locks into the unimodular Fibonacci cascade (|D|=1, alpha -> 137.508 deg) while disconnected saddle-node branches lock into Lucas (|D|=5, alpha -> 99.502 deg)"
+    source_citation: "Douady & Couder (1992) Phys. Rev. Lett. 68:2098 Figs. 3-4; (1996) J. Theor. Biol. 178:255 Figs. 5-8"
+    code_locus: "1992-douady-magnetic-drop-phyllotaxis.py#L328-L450"

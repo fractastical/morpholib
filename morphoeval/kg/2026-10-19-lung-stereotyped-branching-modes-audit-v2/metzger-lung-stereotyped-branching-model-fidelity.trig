@@ -1,0 +1,86 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-metzger-lung-stereotyped-branching> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O) and FGF10-SHH-Ptch1 Turing mode selection — Model fidelity to source: 94/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Implements Metzger et al.'s (2008) 3D orthonormal Bishop/Frenet frame branching grammar for Domain Branching (D), Planar Bifurcation (P, Delta_phi = 0 deg), and Orthogonal Bifurcation (O, Delta_phi = 90 deg), proving the 4m + 1 = 17 active-tip composition law and global 3D clearance optimum at Delta_phi* = 90 deg (+61.9% over Planar and +12.5% over randomized dihedral control, L102-328), alongside Menshykau et al.'s (2012, 2014) FGF10-SHH-Ptch1 receptor-ligand reaction-diffusion dispersion relation and semi-implicit spectral PDE mode switch (L334-465). Backed by 3 machine-checked Lean 4 theorems (0 `sorry`s) in `Loop_053_lung_stereotyped_branching_modes.lean`." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-3> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L102–L328" ;
+        dct:description "3D compound D->P->P and D->O->O lobar grammar and 181-point dihedral sweep proving Delta_phi* = 90.0 deg" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2008-metzger-lung-stereotyped-branching.py#L102-L328> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L334–L465" ;
+        dct:description "Menshykau et al. (2012, 2014) FGF10-SHH-Ptch1 Turing dispersion relation and spectral PDE mode switch" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2008-metzger-lung-stereotyped-branching.py#L334-L465> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean L36–L106" ;
+        dct:description "3 machine-checked Lean 4 theorems for tip multiplicity, dihedral periodicity, and receptor-ligand steady state" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L36-L106> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Loop 053 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1242/dev.081679>,
+            <https://doi.org/10.1371/journal.pcbi.1003421>,
+            <https://doi.org/10.1371/journal.pone.0041643> .
+    <https://doi.org/10.1038/nature07005> dct:date "2008"^^xsd:gYear ;
+        dct:title "The branching programme of mouse lung development" .
+    <https://doi.org/10.1242/dev.081679> dct:date "2012"^^xsd:gYear ;
+        dct:title "Branch mode selection during early lung development" .
+    <https://doi.org/10.1371/journal.pcbi.1003421> dct:date "2014"^^xsd:gYear ;
+        dct:title "An interplay of geometry and signaling enables directional lung branching morphogenesis" .
+    <https://doi.org/10.1371/journal.pone.0041643> dct:date "2012"^^xsd:gYear ;
+        dct:title "A role for canonical Wnt signaling in epithelial branching during embryonic mouse lung development" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O) and FGF10-SHH-Ptch1 Turing mode selection — Model fidelity to source 94/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:29:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

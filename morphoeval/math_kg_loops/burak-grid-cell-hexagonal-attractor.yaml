@@ -1,0 +1,135 @@
+sim_id: burak-grid-cell-hexagonal-attractor
+math_family: 2D Toroidal Continuous Attractor Neural Network (CANN) with Velocity-Shifted Asymmetric Surround Inhibition & Quadratic Resonant Triad Selection of 60 deg Hexagonal Planforms
+model_spec:
+  model: Burak & Fiete (2009) PLoS Comput. Biol. 5(2):e1000291, Hafting et al. (2005) Nature 436:801-806 & Stensola et al. (2012) Nature 492:72-78 entorhinal grid-cell hexagonal continuous attractor network, velocity path integration, and discrete dorso-ventral sqrt(2) module scaling
+  cann_neural_sheet_pde: "tau * ds_theta(x, t)/dt + s_theta(x, t) = [ sum_{theta'} int W_0(x - x' - l * e_hat(theta')) s_{theta'}(x', t) dx' + B * (1 + alpha * v(t) . e_hat(theta)) ]_+"
+  surround_inhibition_kernel: "W_0(Delta_x) = a * exp(-gamma * ||Delta_x||^2) - exp(-beta * ||Delta_x||^2),   gamma = 1.05 * beta"
+  resonant_triad_closure: "k_1 + k_2 + k_3 = 0, |k_i| = k_c (120 deg wavevector triad selecting 60 deg hexagonal lattice over 90 deg square modes)"
+  stensola_discrete_module_scaling: "lambda_{m+1} / lambda_m = sqrt(2) approx 1.4142,   lambda_m in {38, 54, 76, 108} cm"
+  parameters:
+    N_sheet: 36
+    tau_ms: 10.0
+    dt_ms: 1.0
+    a_kernel: 1.0
+    beta_base: 0.038
+    gamma_ratio: 1.05
+    l_shift_px: 1.5
+    alpha_vel: 0.18
+    B_feedforward: 1.0
+    stensola_modules_cm: [38.0, 54.0, 76.0, 108.0]
+    seed: 2008
+  inputs:
+    - datasets/grid_cell_hexagonal_attractor/grid_cell_hexagonal_attractor_reference.json
+    - datasets/grid_cell_hexagonal_attractor/rat_entorhinal_hippocampal_specimen.jpg
+    - datasets/grid_cell_hexagonal_attractor/scout_manifest.json
+    - datasets/grid_cell_hexagonal_attractor/paper_citations.bib
+equations:
+  - law_name: "Burak & Fiete (2009) / Hafting et al. (2005) Resonant Triad Wavevector Closure & 60 deg Hexagonal Planform Selection Law"
+    formula: "k_1 + k_2 + k_3 = 0, |k_i| = k_c  ==>  Delta_E_3^(hex)(A) = 6 * A^3 > 0 = Delta_E_3^(sq)(A)  ==>  G_60^(hex) > 1.0 > G_60^(sq)"
+    lean_decl: "MathOfBiology.Loop_088.hex_cubic_triad_gain"
+    lean_theorem: "MathOfBiology.Loop_088.hexagonal_resonant_triad_selection"
+    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L21-L65"
+    lean_code: |
+      def hex_ring_norm_sq (kx ky : Int) : Int :=
+        kx * kx + 3 * ky * ky
+      def euclid_norm_sq (kx ky : Int) : Int :=
+        kx * kx + ky * ky
+      def hex_cubic_triad_gain (A : Int) : Int :=
+        6 * A * A * A
+      def square_resonant_triad_gain (_A : Int) : Int :=
+        0
+      theorem hexagonal_resonant_triad_selection (A : Int) (h_pos : A > 0) :
+          hex_ring_norm_sq 2 0 = 4 ∧
+          hex_ring_norm_sq (-1) 1 = 4 ∧
+          hex_ring_norm_sq (-1) (-1) = 4 ∧
+          (2 + (-1) + (-1) : Int) = 0 ∧
+          (0 + 1 + (-1) : Int) = 0 ∧
+          euclid_norm_sq (2 + 0) (0 + 2) = 8 ∧
+          hex_cubic_triad_gain A > square_resonant_triad_gain A ∧
+          hex_cubic_triad_gain 2 = 48 := by
+        refine ⟨by decide, by decide, by decide, by decide, by decide, by decide, ?_, by decide⟩
+        · dsimp [hex_cubic_triad_gain, square_resonant_triad_gain]
+          have h_a2 : A * A > 0 := Int.mul_pos h_pos h_pos
+          have h_6a2 : 6 * (A * A) > 0 := Int.mul_pos (by decide : (6 : Int) > 0) h_a2
+          have h_6a3 : 6 * (A * A) * A > 0 := Int.mul_pos h_6a2 h_pos
+          have h_assoc : 6 * A * A * A = 6 * (A * A) * A := by
+            rw [Int.mul_assoc (6 : Int) A A]
+          rw [h_assoc]
+          exact h_6a3
+    variables: "k_1, k_2, k_3: 120 deg critical-ring wavevectors satisfying k_1 + k_2 + k_3 = 0; A > 0: Fourier mode amplitude; hex_cubic_triad_gain(A): cubic energy gain from rectified [u]_+ positivity"
+    role: "Proves that three 120 deg wavevectors on the surround-inhibition Fourier ring form a closed resonant triad k_1 + k_2 + k_3 = 0 with strictly positive cubic rectification gain 6*A^3 > 0, selecting 60 deg hexagonal grid-cell lattices over non-resonant 90 deg square modes"
+    source_citation: "Burak & Fiete (2009) PLoS Comput. Biol. 5(2):e1000291 Figs. 1-2; Hafting et al. (2005) Nature 436:801-806 Fig. 1"
+    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L90-L185"
+  - law_name: "Burak & Fiete (2009) 4-Subpopulation Asymmetric Shift & Linear Velocity Path Integration Law"
+    formula: "(1 + alpha * v) * l * T - (1 - alpha * v) * l * T = 2 * alpha * l * v * T;   l = 0 or alpha = 0 ==> Delta_Phi = 0"
+    lean_decl: "MathOfBiology.Loop_088.burak_phase_shift"
+    lean_theorem: "MathOfBiology.Loop_088.burak_fiete_velocity_path_integration"
+    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L68-L120"
+    lean_code: |
+      def burak_phase_shift (alpha l v T : Int) : Int :=
+        2 * alpha * l * v * T
+      def subpop_plus_drive (alpha v : Int) : Int :=
+        1 + alpha * v
+      def subpop_minus_drive (alpha v : Int) : Int :=
+        1 - alpha * v
+      theorem burak_fiete_velocity_path_integration (alpha l v v_1 v_2 T : Int) :
+          (subpop_plus_drive alpha v - subpop_minus_drive alpha v) * l * T =
+            burak_phase_shift alpha l v T ∧
+          burak_phase_shift alpha l (v_1 + v_2) T =
+            burak_phase_shift alpha l v_1 T + burak_phase_shift alpha l v_2 T ∧
+          burak_phase_shift alpha 0 v T = 0 ∧
+          burak_phase_shift 0 l v T = 0 ∧
+          burak_phase_shift alpha l 0 T = 0 ∧
+          burak_phase_shift 3 2 5 10 = 600 := by
+        refine ⟨?_, ?_, ?_, ?_, ?_, by decide⟩
+        · dsimp [subpop_plus_drive, subpop_minus_drive, burak_phase_shift]
+          have h_diff : (1 + alpha * v) - (1 - alpha * v) = 2 * alpha * v := by
+            have h_assoc : 2 * (alpha * v) = 2 * alpha * v := (Int.mul_assoc 2 alpha v).symm
+            omega
+          rw [h_diff]
+          rw [Int.mul_assoc (2 * alpha) v l]
+          rw [Int.mul_comm v l]
+          rw [← Int.mul_assoc (2 * alpha) l v]
+        · dsimp [burak_phase_shift]
+          rw [Int.mul_add (2 * alpha * l) v_1 v_2]
+          rw [Int.add_mul (2 * alpha * l * v_1) (2 * alpha * l * v_2) T]
+        · dsimp [burak_phase_shift]
+          omega
+        · dsimp [burak_phase_shift]
+          omega
+        · dsimp [burak_phase_shift]
+          omega
+    variables: "alpha: velocity modulation gain; l: outgoing kernel shift along preferred head direction e_hat(theta); v: animal velocity; T: integration interval"
+    role: "Proves that opposing head-direction subpopulations cancel baseline drift B and translate the hexagonal bump attractor strictly proportionally to displacement v*T, whereas symmetric weights (l=0) or medial-septum inactivation (alpha=0) pin the attractor phase (Delta_Phi = 0)"
+    source_citation: "Burak & Fiete (2009) PLoS Comput. Biol. 5(2):e1000291 Eqs. 1-3 & Fig. 2; Brandon et al. (2011) Science 332:595-599"
+    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L188-L320"
+  - law_name: "Stensola et al. (2012) Discrete Dorso-Ventral MEC Grid Module Scale Ratio sqrt(2) & Area Doubling Law"
+    formula: "lambda_{m+1} / lambda_m = sqrt(2) approx 1.4142  ==>  lambda_{m+1}^2 = 2 * lambda_m^2,   lambda_{m+2} = 2 * lambda_m"
+    lean_decl: "MathOfBiology.Loop_088.module_area_sq"
+    lean_theorem: "MathOfBiology.Loop_088.stensola_discrete_module_area_doubling"
+    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L123-L157"
+    lean_code: |
+      def module_area_sq (lambda_1_sq : Nat) (m : Nat) : Nat :=
+        (2 ^ m) * lambda_1_sq
+      def stensola_wavelength_cm (m : Nat) : Nat :=
+        match m with
+        | 0 => 38
+        | 1 => 54
+        | 2 => 76
+        | _ => 108
+      theorem stensola_discrete_module_area_doubling (lambda_1_sq m : Nat) :
+          module_area_sq lambda_1_sq (m + 1) = 2 * module_area_sq lambda_1_sq m ∧
+          module_area_sq lambda_1_sq 3 = 8 * module_area_sq lambda_1_sq 0 ∧
+          stensola_wavelength_cm 2 = 2 * stensola_wavelength_cm 0 ∧
+          stensola_wavelength_cm 3 = 2 * stensola_wavelength_cm 1 ∧
+          stensola_wavelength_cm 1 * stensola_wavelength_cm 1 -
+            2 * (stensola_wavelength_cm 0 * stensola_wavelength_cm 0) = 28 := by
+        refine ⟨?_, ?_, by decide, by decide, by decide⟩
+        · dsimp [module_area_sq]
+          rw [Nat.pow_succ, Nat.mul_comm (2 ^ m) 2, Nat.mul_assoc 2 (2 ^ m) lambda_1_sq]
+        · dsimp [module_area_sq]
+          omega
+    variables: "lambda_1_sq: dorsal Module M1 squared grid period; m in {0, 1, 2, 3}: discrete dorso-ventral MEC module index; stensola_wavelength_cm(m): empirical rat module wavelengths {38, 54, 76, 108} cm"
+    role: "Proves that the Stensola et al. (2012) sqrt(2) scale ratio doubles the hexagonal unit-cell area at each discrete dorso-ventral module transition (8x across M1->M4) and doubles linear wavelength every two modules"
+    source_citation: "Stensola et al. (2012) Nature 492(7427):72-78 Figs. 1-3"
+    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L322-L415"

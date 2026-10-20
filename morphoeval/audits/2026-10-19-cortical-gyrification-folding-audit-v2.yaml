@@ -1,0 +1,207 @@
+# MorphoEval audit — Richman et al. (1975) Science & Tallinen et al. (2014, 2016) Cortical Gyrification Folding, 2026-10-19 (v2)
+#
+# Pass 2 (v2) evaluation of `1975-richman-cortical-gyrification-buckling.py` (826 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-cortical-gyrification-folding-loop`):
+#   - Primary assessor: Gemini 4 Argon — 93.1 / 100 (up from 56.2 / 100 in v1; +36.9 overall)
+#
+# Key remediation improvements verified in Pass 2:
+#   1. Implemented a 2D coronal neo-Hookean multiplicative-growth (F = F_e G) cortical
+#      shell + soft subcortical white-matter core L-BFGS-B energy minimizer
+#      (`relax_neohookean_cortical_shell`, L164-327), computing emergent pial perimeter
+#      P_pial, convex hull perimeter P_hull, Gyrification Index GI_sim = 2.5597 (ref 2.56),
+#      sulcal wavelength lambda_sim = 11.20 mm (ref 11.34 mm), and sulcal count across
+#      human fetal gestational stages GW22-GW38.
+#   2. Implemented the full 11-species mammalian comparative scaling collapse
+#      (`evaluate_mammalian_cross_species`, L377-446) spanning Rodentia, Carnivora,
+#      Artiodactyla, Cetacea, and Primates (Richman et al. 1975; Tallinen et al. 2014 Fig. 4;
+#      Mota & Herculano-Houzel 2015 Science), achieving Pearson r = 1.0000 (p = 1.6e-29,
+#      RMSE = 0.008 mm) for sulcal wavelength, Pearson r = 0.9985 (p = 1.1e-11) for GI,
+#      and log-log thickness scaling exponent alpha = 0.9993 ± 0.0005 (theoretical 1.0).
+#   3. Implemented zero-growth ablation (g = 1.00 -> GI = 1.0000, 0 sulci), LIS1/DCX
+#      lissencephaly (h = 6.50 mm, g = 1.14 < g_c -> GI = 1.0000, 0 sulci), normogyria
+#      (h = 2.60 mm -> 28 sulci, GI = 2.56), and Richman et al. (1975) thin-cortex
+#      polymicrogyria (h = 0.85 mm -> 85 sulci, GI = 3.00, 3.0357x sulcus frequency ratio)
+#      controls (`evaluate_pathological_and_ablation_regimes`, L449-484).
+#   4. Implemented computer-vision segmentation (`segment_cerebral_cortex_specimen`,
+#      L490-585) of the SHA-256-locked coronal human cerebral cortex specimen image
+#      `datasets/cortical_gyrification_folding/cerebral_cortex_gyri_specimen.jpg`,
+#      isolating the cortical gray-matter ribbon, white-matter core, convex hull perimeter
+#      P_hull, and 52 sulcal troughs (GI_specimen = 2.8115, CV = 0.3243), with runtime
+#      SHA-256 verification across all 4 dataset files (`EXPECTED_SHA256`, L80-93).
+
+audit:
+  id: 2026-10-19-cortical-gyrification-folding-audit-v2
+  supersedes: 2026-10-19-cortical-gyrification-folding-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 061 Pass 2 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/61
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `1975-richman-cortical-gyrification-buckling.py` after
+      completing Step 12 closed-loop remediation in `2026-10-19-cortical-gyrification-folding-loop`.
+
+references:
+  richman1975:
+    title: "Mechanical model of brain convolutional development"
+    authors: "Richman DP, Stewart RM, Hutchinson JW, Caviness VS Jr"
+    venue: "Science 189(4196):18-21 (1975)"
+    doi: 10.1126/science.1145181
+  tallinen2014:
+    title: "Gyrification from constrained cortical expansion: Synthesis of physical and numerical models"
+    authors: "Tallinen T, Chung JY, Biggins JS, Mahadevan L"
+    venue: "Proceedings of the National Academy of Sciences 111(35):12667-12672 (2014)"
+    doi: 10.1073/pnas.1406015111
+  tallinen2016:
+    title: "On the growth and form of cortical convolutions"
+    authors: "Tallinen T, Chung JY, Rousseau F, Girard N, Lefevre J, Mahadevan L"
+    venue: "Nature Physics 12(6):588-593 (2016)"
+    doi: 10.1038/nphys3632
+  mota2015:
+    title: "Cortical folding scales universally with surface area and thickness, not number of neurons"
+    authors: "Mota B, Herculano-Houzel S"
+    venue: "Science 349(6243):74-77 (2015)"
+    doi: 10.1126/science.aaa9101
+  zilles1988:
+    title: "The human pattern of gyrification in the cerebral cortex"
+    authors: "Zilles K, Armstrong E, Schleicher A, Kretschmann HJ"
+    venue: "Anatomy and Embryology 179(2):173-179 (1988)"
+    doi: 10.1007/BF00304699
+
+simulations:
+  - id: richman-cortical-gyrification-buckling
+    name: "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability"
+    organism: "Mammalian cerebral cortex & subcortical white matter (Homo sapiens, Pan troglodytes, Macaca mulatta, Tursiops truncatus, Felis catus, Mus musculus)"
+    script: 1975-richman-cortical-gyrification-buckling.py
+    output: docs/media/cortical_gyrification_folding_comparison.png
+    extra_outputs:
+      - docs/media/cortical_gyrification_folding_growth.gif
+    status: evaluated
+    source_refs:
+      - richman1975
+      - tallinen2014
+      - tallinen2016
+      - mota2015
+      - zilles1988
+    summary: >-
+      Pass 2 (v2) evaluation of `1975-richman-cortical-gyrification-buckling.py` (overall
+      weighted score: 93.1/100, up from 56.2/100 in v1). The remediated script relaxes a
+      2D coronal neo-Hookean multiplicative-growth (F = F_e G) cortical shell bonded to a
+      soft subcortical white-matter core via L-BFGS-B energy minimization; reproduces the
+      11-species mammalian sulcal wavelength and Gyrification Index collapse across
+      Rodentia, Carnivora, Artiodactyla, Cetacea, and Primates (r = 1.0000 for wavelength,
+      r = 0.9985 for GI, log-log exponent alpha = 0.9993 ± 0.0005); validates Richman et
+      al.'s (1975) polymicrogyria (h = 0.85 mm -> 85 sulci), lissencephaly (h = 6.50 mm,
+      g < g_c -> 0 sulci, GI = 1.0000), and zero-growth (g = 1.00) controls; and segments
+      the SHA-256-locked coronal human cerebral cortex specimen image (`cerebral_cortex_gyri_specimen.jpg`,
+      52 sulcal troughs, GI = 2.8115, CV = 0.3243).
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Implements Tallinen et al.'s (2014) multiplicative growth excess Delta_g = max(0, g - g_c),
+          Richman et al.'s (1975) cube-root sulcal wavelength scaling
+          lambda = 2*pi*h*(mu_c/(3*mu_s))^(1/3), Zilles et al.'s (1988) Gyrification Index
+          GI = P_pial / P_hull (L130-158), and an L-BFGS-B energy minimizer of a growing
+          2D coronal neo-Hookean cortical shell + subcortical white-matter foundation
+          (`relax_neohookean_cortical_shell`, L164-327) with zero-growth (g=1.00),
+          lissencephaly (h=6.50 mm, g=1.14), and polymicrogyria (h=0.85 mm) controls
+          (L449-484), backed by 3 machine-checked Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean`.
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [130, 158], note: "Exact multiplicative growth excess, cube-root sulcal wavelength scaling, and Gyrification Index laws", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [164, 327], note: "2D coronal neo-Hookean cortical shell + white-matter core L-BFGS-B energy minimizer and g <= g_c lissencephalic threshold", supports: true}
+          - {file: morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean, lines: [11, 86], note: "3 machine-checked Lean 4 theorems for critical growth threshold, cube-law wavelength stationarity, and GI sulcal perimeter excess (0 sorrys)", supports: true}
+      specimen-match:
+        value: 91
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 2.5 coronal human cerebral cortex specimen
+          `datasets/cortical_gyrification_folding/cerebral_cortex_gyri_specimen.jpg`,
+          segments the cortical gray-matter ribbon, subcortical white-matter core, outer
+          convex hull perimeter P_hull, and 52 sulcal cleft troughs
+          (`segment_cerebral_cortex_specimen`, L490-585; GI_specimen = 2.8115, CV = 0.3243),
+          and matches all 11 mammalian species (r = 1.0000 for wavelength, r = 0.9985 for GI)
+          plus 5 human fetal stages (GW22-GW38).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [490, 585], note: "Coronal brain slice segmentation isolating gray/white matter, convex hull P_hull, and 52 sulcal troughs", supports: true}
+          - {file: docs/media/cortical_gyrification_folding_comparison.png, lines: [0, 0], note: "6-panel synthesis figure comparing L-BFGS-B coronal shell, 11-species collapse, pathology controls, and specimen segmentation", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Spans 5 human fetal stages (GW22-GW38, g in [1.12, 2.15], L333-374), 11 mammalian
+          species spanning Rodentia, Carnivora, Artiodactyla, Cetacea, and Primates
+          (h in [0.88, 2.60] mm, R_brain in [4.2, 62.0] mm, g in [1.06, 2.65], L377-446),
+          4 pathological/ablation conditions (zero-growth, lissencephaly, normogyria,
+          polymicrogyria, L449-484), and exposes `--growth-g`, `--h-cortex`, `--mu-ratio`,
+          `--R-brain`, and `--seed` CLI overrides (L796-822).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [377, 484], note: "11-species mammalian morphospace evaluation and 4-condition lissencephaly/polymicrogyria/ablation sweep", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [796, 822], note: "CLI physical parameter overrides wired into fetal evaluation and figure rendering", supports: true}
+      morphometric-validation:
+        value: 94
+        rationale: >-
+          `measure_morphoeval()` (L666-749) computes 9 reference-anchored morphometric
+          measurements with statistical tests and uncertainty: 11-species sulcal wavelength
+          Pearson r = 1.0000 (p = 1.6e-29, RMSE = 0.008 mm), 11-species GI Pearson r = 0.9985
+          (p = 1.1e-11, RMSE = 0.044), log-log wavelength-thickness exponent alpha = 0.9993 ±
+          0.0005 (ref 1.0), Human GW38 relaxed shell wavelength 11.1997 mm (ref 11.34 mm)
+          and GI 2.5597 (ref 2.56), zero-growth ablation GI 1.0000 (ref 1.0), polymicrogyria
+          vs normogyria sulcus ratio 3.0357 (ref 3.0357), coronal specimen GI 2.8115
+          (ref 2.56, CV = 0.3243), and 11-species lambda/h = 4.3642 (ref 4.3565).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [666, 749], note: "9 quantitative morphometric measurements with p-values, RMSE, SE, CV, and pathology/ablation deltas", supports: true}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Vendors `datasets/cortical_gyrification_folding/` with 5 primary DOIs in
+          `paper_citations.bib` (`10.1126/science.1145181`, `10.1073/pnas.1406015111`,
+          `10.1038/nphys3632`, `10.1126/science.aaa9101`, `10.1007/BF00304699`),
+          `scout_manifest.json`, `cortical_gyrification_folding_reference.json`, and
+          `cerebral_cortex_gyri_specimen.jpg`, all verified via runtime SHA-256 checks
+          (`verify_dataset_integrity`, L80-124).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [80, 124], note: "Runtime SHA-256 verification of all 4 dataset files in datasets/cortical_gyrification_folding/", supports: true}
+          - {file: datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json, lines: [1, 250], note: "SHA-256-locked reference dataset with GW22-GW38 fetal series, 11-species mammalian table, and pathology controls", supports: true}
+      code-traceability:
+        value: 93
+        rationale: >-
+          Module and function docstrings map every equation to Richman et al. (1975) Eq. 1
+          & Table 1, Tallinen et al. (2014) Eq. 1-3 & Fig. 1-4, Tallinen et al. (2016)
+          Fig. 2-4, Mota & Herculano-Houzel (2015), Zilles et al. (1988), and the 3 formal
+          Lean 4 theorems in `morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean`
+          (L1-53, L130-163).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1, 53], note: "Explicit equation-to-paper and Lean 4 theorem traceability in module header", supports: true}
+      repro-package:
+        value: 93
+        rationale: >-
+          8-point `self_test()` suite (`L752-793`) verifying SHA-256 dataset integrity,
+          JSON-to-code parity, zero-growth and lissencephaly unfolded invariants (GI = 1.0,
+          0 sulci), human fetal GW22-GW38 monotonicity & L-BFGS-B elastic energy drop,
+          11-species mammalian scaling collapse, polymicrogyria/normogyria/lissencephaly
+          ordering, coronal brain specimen segmentation, and two-run bitwise determinism
+          (`np.allclose(..., atol=0.0)`).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [752, 793], note: "Comprehensive 8-check self_test() including bitwise determinism and pathology/ablation invariants", supports: true}
+    remediation:
+      - "Extend the 2D coronal neo-Hookean shell solver to a full 3D tetrahedral fetal brain mesh generated from gestational MRI templates (Tallinen et al. 2016 Nature Physics) to resolve 3D Y-shaped sulcal junctions and regional cortical thickness gradients."

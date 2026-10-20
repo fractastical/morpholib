@@ -1,0 +1,73 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-glimm-avian-feather-bud-hexagonal> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-glimm-avian-feather-bud-hexagonal-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-glimm-avian-feather-bud-hexagonal-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Glimm et al. (2014) & Ho et al. (2019) avian feather bud hexagonal array, EDA traveling competence wave & FGF20/BMP4 perturbations — MorphoEval overall 92.6/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 2 (v2) evaluation of `2018-glimm-avian-feather-bud-hexagonal.py` (92.5/100, up +36.5 from 56.0/100 in Pass 1). The remediated script implements the coupled 2D Keller-Segel dermal fibroblast chemotaxis + FGF20/BMP4 lateral-inhibition PDE with a bilateral Ectodysplasin (EDA) traveling competence wave s_w(x,t), exact linear dispersion analysis (chi_c = 0.0540) and equilateral half-phase row offset geometry (Delta_x / lambda_y = sqrt(3)/2 = 0.8660), a 6-point wave-speed sweep contrasting wild-type row-by-row propagation (v_w = 0.22, Voronoi P_6 = 0.8696, |psi_6| = 0.9682, NN CV = 0.0485) against simultaneous global competence flooding (Fc-chEDA1, v_w -> inf, P_6 = 0.4500, Delta_P6 = +0.4196) and Ecto-D2 wave retardation (v_w = 0.11, tract width 0.6085x WT), *scaleless* (FGF20-/-, chi = 0) and Latrunculin mechanical blockade (chi = 0.01) negative controls (0 buds), and automated Voronoi/Delaunay segmentation of the 24 feather primordia in Panel B (P_6 = 0.7500, P_567 = 1.0000, NN CV = 0.1974) plus Panel A +24h/+48h tract expansion (2.1111x) on the vendored Ho et al. (2019) PLOS Biology specimen. Overall 92.6/100 (faithfulness 92.4, reproducibility 93.1); rubric morphoeval 0.1.0; checkpoint commit 3cb5ea9; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 94, Morphological realism / specimen match 92, Parameter expressivity 91, Morphometric validation 92, Source and data traceability 94, Code-to-model traceability 92, Reproducibility package 93. Output judged: docs/media/avian_feather_bud_hexagonal_comparison.png: rendered output of 2018-glimm-avian-feather-bud-hexagonal.py at 3cb5ea9, image/png, 1027726 B, 2565×1483 px, artifact_sha256 4057a048e5bbc063a7d0432ce731757cb9bcf4df49cf9fccb3dbd00ed089e03f (sha256 4057a048e5bbc063a7d0432ce731757cb9bcf4df49cf9fccb3dbd00ed089e03f), spec_fingerprint 97f8b6d41437bf22798c0eb2f411aef0516b204ccaeaa4edce5a129ec128b370. Dual provenance: spec_fingerprint: 97f8b6d41437bf22798c0eb2f411aef0516b204ccaeaa4edce5a129ec128b370; artifact_sha256: 4057a048e5bbc063a7d0432ce731757cb9bcf4df49cf9fccb3dbd00ed089e03f; input_dataset_sha256: {datasets/avian_feather_bud_hexagonal/avian_feather_bud_hexagonal_reference.json=06d930a05c4f2cee..., datasets/avian_feather_bud_hexagonal/chick_feather_bud_hexagonal_specimen.jpg=ce18b1c0e01ecb20..., datasets/avian_feather_bud_hexagonal/paper_citations.bib=9d17147a43097e6e..., datasets/avian_feather_bud_hexagonal/scout_manifest.json=1ff38c1e609c69ea...}. Supersedes audit: 2026-10-19-avian-feather-bud-hexagonal-audit." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Couple the 2D planar dorsal feather tract PDE to curved 3D embryonic trunk-and-limb surface geometry to model tract boundary dislocations between the spinal, scapular, and femoral feather tracts." ;
+        pk:hasScore "0.926"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + MorphoEval Dual-Rubric Assessor" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.ydbio.2014.08.030>,
+            <https://doi.org/10.1371/journal.pbio.3000132>,
+            <https://doi.org/10.1371/journal.pbio.3000448>,
+            <https://doi.org/10.1371/journal.pone.0001942> .
+    <https://doi.org/10.1016/j.ydbio.2014.08.030> dct:date "2014"^^xsd:gYear ;
+        dct:title "Modeling happens in rows: Traveling waves in dermal condensation of avian feather primordia" .
+    <https://doi.org/10.1371/journal.pbio.3000132> dct:date "2019"^^xsd:gYear ;
+        dct:title "Feather arrays are patterned by interacting signaling and mechanical waves" .
+    <https://doi.org/10.1371/journal.pbio.3000448> dct:date "2019"^^xsd:gYear ;
+        dct:title "Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning" .
+    <https://doi.org/10.1371/journal.pone.0001942> dct:date "2008"^^xsd:gYear ;
+        dct:title "BMP2 and BMP7 Play Antagonistic Roles in Feather Primordium Formation: A Mechanistic Model" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Glimm et al. (2014) & Ho et al. (2019) avian feather bud hexagonal array, EDA traveling competence wave & FGF20/BMP4 perturbations — MorphoEval overall 92.6/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T02:33:51Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-glimm-avian-feather-bud-hexagonal-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-glimm-avian-feather-bud-hexagonal> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

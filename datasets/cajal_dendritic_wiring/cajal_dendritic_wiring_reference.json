@@ -1,0 +1,105 @@
+{
+  "dataset_id": "cajal_dendritic_wiring_v1",
+  "title": "Cuntz, Forstner, Borst & Häusser (2010) PLoS Comput. Biol. 6(8):e1000877, Cuntz et al. (2007) PNAS 104:13319-13324 & Rall (1959) Exp. Neurol. 1:491-527 — Ramón y Cajal Minimum-Wiring-Length & Conduction-Delay Greedy Steiner Dendritic Trees, Rall's 3/2 Power Law, and Wen-Chklovskii Volume Scaling",
+  "organism": "Drosophila melanogaster (Class I, III, IV dendritic arborization sensory neurons), Homo sapiens & Mus musculus (cerebellar Purkinje cells and cortical pyramidal cells)",
+  "primary_sources": [
+    {
+      "citation": "Cuntz, Forstner, Borst & Häusser (2010) PLoS Comput. Biol. 6(8):e1000877",
+      "doi": "10.1371/journal.pcbi.1000877",
+      "role": "Greedy Minimum Spanning Tree dendritic growth rule minimizing C(u,v) = d(u,v) + bf * path(u,root) across dimensionless balancing factor bf in [0, 1], deriving 2D W propto sqrt(N*A) and 3D W propto N^(2/3)*V^(1/3) scaling laws and reproducing Purkinje, pyramidal, and Drosophila da sensory arbors"
+    },
+    {
+      "citation": "Cuntz, Borst & Segev (2007) PNAS 104(33):13319-13324",
+      "doi": "10.1073/pnas.0704731104",
+      "role": "Formalization of Ramón y Cajal's (1899) two laws of conservation of cytoplasmic material (total wiring length W) and conduction time (total soma-to-synapse path length P) in fly tangential cell dendrites"
+    },
+    {
+      "citation": "Cuntz, Forstner, Haag & Borst (2008) PLoS Comput. Biol. 4(12):e1000251",
+      "doi": "10.1371/journal.pcbi.1000251",
+      "role": "Quantitative morphometric classification of Drosophila Class I-IV dendritic arborization (da) sensory neurons across balancing factors bf in [0.15, 0.70]"
+    },
+    {
+      "citation": "Rall (1959) Exp. Neurol. 1(5):491-527",
+      "doi": "10.1016/0014-4886(59)90046-9",
+      "role": "Electrotonic cable impedance-matching diameter power law d_parent^(3/2) = sum_k d_daughter_k^(3/2) reducing a branching dendritic tree to an equivalent cylinder"
+    },
+    {
+      "citation": "Wen & Chklovskii (2008) J. Neurophysiol. 99(5):2320-2328",
+      "doi": "10.1152/jn.00280.2007",
+      "role": "Analytical cost-benefit derivation of 2D planar (W propto N^(1/2) A^(1/2)) and 3D volumetric (W propto N^(2/3) V^(1/3)) dendritic wiring scaling laws"
+    },
+    {
+      "citation": "Ramón y Cajal (1899) Textura del Sistema Nervioso del Hombre y de los Vertebrados",
+      "doi": "10.5962/bhl.title.48637",
+      "role": "Foundational anatomical laws of conservation of cytoplasmic material, conduction time, and space in vertebrate Purkinje and cortical dendritic arbors"
+    }
+  ],
+  "cuntz_mst_parameters": {
+    "n_carrier_points_default": 160,
+    "arbor_radius_um": 180.0,
+    "balancing_factors_sweep": [0.0, 0.1, 0.2, 0.35, 0.5, 0.7, 0.85, 1.0],
+    "rall_exponent": 1.5,
+    "terminal_diameter_um": 0.5,
+    "seed": 2010
+  },
+  "balancing_factor_pareto_benchmarks": {
+    "bf_values": [0.0, 0.1, 0.2, 0.35, 0.5, 0.7, 0.85, 1.0],
+    "normalized_wiring_W_over_W0_ref": [1.0, 1.012, 1.022, 1.095, 1.22, 1.38, 1.62, 11.50],
+    "normalized_path_P_over_P1_ref": [1.68, 1.43, 1.39, 1.21, 1.11, 1.05, 1.023, 1.0],
+    "mean_bifurcation_angle_deg_ref": [92.5, 86.0, 79.5, 70.0, 61.0, 49.0, 39.5, 22.0]
+  },
+  "neuronal_cell_type_regimes": {
+    "purkinje_and_drosophila_class_iv": {
+      "label": "Cerebellar Purkinje cell / Drosophila Class IV ddaC space-filling sensory neuron",
+      "bf": 0.2,
+      "dimension": 2,
+      "W_over_W0_ref": 1.022,
+      "P_over_P1_ref": 1.39,
+      "fractal_dimension_ref": 1.76
+    },
+    "cortical_pyramidal_and_class_iii": {
+      "label": "Cortical pyramidal basal arbor / Drosophila Class III da neuron",
+      "bf": 0.4,
+      "dimension": 3,
+      "W_over_W0_ref": 1.14,
+      "P_over_P1_ref": 1.09,
+      "fractal_dimension_ref": 1.58
+    },
+    "motoneuron_and_drosophila_class_i": {
+      "label": "Spinal motoneuron / Drosophila Class I ddaD/E proprioceptive neuron",
+      "bf": 0.7,
+      "dimension": 2,
+      "W_over_W0_ref": 1.56,
+      "P_over_P1_ref": 1.028,
+      "fractal_dimension_ref": 1.34
+    }
+  },
+  "scaling_law_benchmarks": {
+    "n_points_series": [25, 50, 100, 150, 225, 320],
+    "exponent_2d_theoretical": 0.5,
+    "exponent_3d_theoretical": 0.6667,
+    "exponent_star_bf1_theoretical": 1.0
+  },
+  "rall_power_law_benchmarks": {
+    "exponent_theoretical": 1.5,
+    "symmetric_parent_to_daughter_ratio": 1.587401,
+    "rall_impedance_ratio_theoretical": 1.0
+  },
+  "specimen_metadata": {
+    "filename": "cajal_purkinje_dendritic_arbor_specimen.jpg",
+    "source_title": "File:Cajal - a purkinje neuron from the human cerebellum.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Cajal_-_a_purkinje_neuron_from_the_human_cerebellum.jpg",
+    "license": "Public domain (Santiago Ramón y Cajal, 1899, Museo Cajal 328 Madrid)",
+    "author": "Santiago Ramón y Cajal (1852-1934)",
+    "resolution_px": [720, 1024],
+    "sha256": "6255a396655b56c44c7be2d07b5b2d4fc3da21b9ec8b169602dad21a25542a37",
+    "soma_yx_px": [713, 331],
+    "arbor_area_fraction_ref": 0.2377,
+    "sholl_peak_intersections_ref": 73,
+    "sholl_peak_radius_px_ref": 420.0,
+    "sholl_peak_normalized_radius_ref": 0.6176,
+    "skeleton_branch_points_ref": 62,
+    "box_counting_fractal_dimension_ref": 1.7817,
+    "description": "Santiago Ramón y Cajal's (1899) Golgi-stained drawing of a human cerebellar Purkinje neuron (Museo Cajal 328, Madrid), illustrating planar space-filling dendritic arborization (bf ~ 0.20, fractal dimension D_f = 1.7817) and Rall 3/2 diameter tapering from primary trunks to terminal branchlets."
+  }
+}

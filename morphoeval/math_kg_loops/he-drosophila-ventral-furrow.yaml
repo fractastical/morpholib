@@ -1,0 +1,78 @@
+sim_id: he-drosophila-ventral-furrow
+math_family: 2D Incompressible Active Viscous-Vertex Epithelial Cross-Sectional Mechanics & Ratcheted Actomyosin Pulse Dynamics
+model_spec:
+  model: "Conte, Munoz, Baum & Miodownik (2012) PLoS ONE / Martin, Kaschube & Wieschaus (2009) Nature / He, Doubrovinski, Polyakov & Wieschaus (2014) Nature 2D incompressible viscous-shell ventral furrow invagination & ratcheted actomyosin pulse model"
+  N_cells: 64
+  N_meso: 16
+  L_0_um: 8.2
+  L_min_um: 1.9
+  T_pulse_s: 82.0
+  A_0_um2: 262.4
+  R_vitelline_um: 83.2
+  seed: 2012
+  inputs:
+    - datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_reference.json
+    - datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_specimen.jpg
+    - datasets/drosophila_ventral_furrow/scout_manifest.json
+equations:
+  - law_name: Incompressible Trapezoidal Wedge Cell Lengthening & Basal Expansion Law
+    formula: "A_i = 0.5 * (w_{ap,i} + w_{ba,i}) * h_i = A_0;  w_{ap,i} < w_0 & w_{ba,i} = w_0 => h_i > h_0;  w_{ap,i} < w_0 & h_i <= h_0 => w_{ba,i} > w_0"
+    lean_decl: MathOfBiology.Loop_046.twice_wedge_cell_area
+    lean_theorem: MathOfBiology.Loop_046.incompressible_wedge_cell_lengthening_and_basal_expansion
+    lean_locus: morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean#L17-L62
+    lean_code: |-
+      def twice_wedge_cell_area (w_ap w_ba h : Int) : Int :=
+        (w_ap + w_ba) * h
+      theorem incompressible_wedge_cell_lengthening_and_basal_expansion
+          (w_0 h_0 w_ap w_ba h_len h_short : Int)
+          (hw0 : w_0 > 0) (_hh0 : h_0 > 0) (hConstr : w_ap < w_0)
+          (hPosLen : h_len > 0) (hShort : h_short ≤ h_0) (hPosShort : h_short > 0)
+          (hAreaLen : twice_wedge_cell_area w_ap w_0 h_len = twice_wedge_cell_area w_0 w_0 h_0)
+          (hAreaExp : twice_wedge_cell_area w_ap w_ba h_short = twice_wedge_cell_area w_0 w_0 h_0) :
+          h_len > h_0 ∧ w_ba > w_0
+    variables: "w_{ap,i}, w_{ba,i}: apical and basal widths of cell i; h_i: apicobasal cell height; A_0: conserved 2D cytoplasmic cell area (262.4 um^2)"
+    role: "Proves that cytoplasmic incompressibility forces apicobasal cell lengthening when the basal cortex is stiff (early gastrulation phase) and forces basal wedge expansion when combined with basal relaxation and lateral shortening (invagination phase)"
+    source_citation: "Conte, Munoz, Baum & Miodownik (2012) PLoS ONE 7(11):e49973 Eq. 2, Figs. 3-4; He et al. (2014) Nature 508:392-396"
+    code_locus: "2012-he-drosophila-ventral-furrow.py#L120-L185"
+  - law_name: Martin, Kaschube & Wieschaus (2009) Twist-Stabilized Ratcheted Myosin-II Pulse Law
+    formula: "dL_{ap}/dt = -alpha_pulse * M(t) + beta_relax * (1 - r_twist) * (L_0 - L_{ap});  r_twist = 1 => Delta L_net < 0 vs r_twist = 0 recoil"
+    lean_decl: MathOfBiology.Loop_046.net_pulse_apical_change
+    lean_theorem: MathOfBiology.Loop_046.twist_ratcheted_pulse_stepwise_constriction_vs_recoil
+    lean_locus: morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean#L64-L98
+    lean_code: |-
+      def net_pulse_apical_change (alpha_pulse M_pulse beta_relax r_twist L_0 L_ap : Int) : Int :=
+        -(alpha_pulse * M_pulse) + (1 - r_twist) * (beta_relax * (L_0 - L_ap))
+      theorem twist_ratcheted_pulse_stepwise_constriction_vs_recoil
+          (alpha_pulse M_pulse beta_relax L_0 L_ap : Int)
+          (hAlpha : alpha_pulse > 0) (hM : M_pulse > 0) (hBeta : beta_relax > 0)
+          (hConstr : L_ap < L_0) (hRecoilBal : beta_relax * (L_0 - L_ap) = alpha_pulse * M_pulse) :
+          net_pulse_apical_change alpha_pulse M_pulse beta_relax 1 L_0 L_ap < 0 ∧
+          net_pulse_apical_change alpha_pulse M_pulse beta_relax 1 L_0 L_ap <
+            net_pulse_apical_change alpha_pulse M_pulse beta_relax 0 L_0 L_ap ∧
+          net_pulse_apical_change alpha_pulse M_pulse beta_relax 0 L_0 L_ap = 0
+    variables: "L_{ap}: apical cell width; L_0: initial relaxed apical width; M(t): periodic Myosin-II coalescence pulse; alpha_pulse: contractile pulse rate; beta_relax: elastic recoil rate; r_twist: Twist/Snail ratchet stabilization factor in [0, 1]"
+    role: "Proves that Twist-stabilized ratcheting (r_twist = 1) produces strictly negative step-wise net apical constriction per pulse, whereas unratcheted mutants (r_twist = 0) recoil toward L_0 between pulses"
+    source_citation: "Martin, Kaschube & Wieschaus (2009) Nature 457(7228):495-499 Figs. 2-4"
+    code_locus: "2012-he-drosophila-ventral-furrow.py#L188-L250"
+  - law_name: Conte, Munoz, Baum & Miodownik (2012) Synergistic Ventral Furrow Invagination Hierarchy
+    formula: "D_WT_synergy (41.0 um) > D_ap_plus_ba (29.5 um) > D_ap_only (16.5 um) > D_cta (14.0 um) > D_unratcheted (3.8 um) > D_null (0.0 um)"
+    lean_decl: MathOfBiology.Loop_046.conte_furrow_depth10
+    lean_theorem: MathOfBiology.Loop_046.conte_2012_synergistic_ventral_furrow_invagination
+    lean_locus: morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean#L100-L136
+    lean_code: |-
+      def conte_furrow_depth10 (phi_ap phi_ba phi_lat phi_ecto : Int) : Int :=
+        165 * phi_ap + 130 * phi_ap * phi_ba + 85 * phi_ap * phi_ba * phi_lat + 30 * phi_ecto
+      theorem conte_2012_synergistic_ventral_furrow_invagination :
+          depth10_wt_synergy = 410 ∧
+          depth10_ap_plus_ba = 295 ∧
+          depth10_ap_only = 165 ∧
+          depth10_null_control = 0 ∧
+          depth10_wt_synergy > depth10_ap_plus_ba ∧
+          depth10_ap_plus_ba > depth10_ap_only ∧
+          depth10_ap_only > depth10_cta ∧
+          depth10_cta > depth10_unratcheted_recoil ∧
+          depth10_unratcheted_recoil > depth10_null_control
+    variables: "phi_ap, phi_ba, phi_lat, phi_ecto: binary/continuous activation indicators for mesodermal apical constriction, basal relaxation, lateral shortening, and ectodermal pushing; D_furrow: ventral furrow invagination depth (um)"
+    role: "Proves that apical constriction alone yields only a shallow groove (16.5 um), while synergistic combination with basal relaxation (29.5 um) and lateral shortening + ectodermal pushing (41.0 um) is required for full ventral furrow invagination"
+    source_citation: "Conte, Munoz, Baum & Miodownik (2012) PLoS ONE 7(11):e49973 Figs. 3-6"
+    code_locus: "2012-he-drosophila-ventral-furrow.py#L255-L490"

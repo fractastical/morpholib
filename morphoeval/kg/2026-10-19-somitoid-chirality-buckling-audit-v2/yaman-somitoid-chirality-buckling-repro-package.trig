@@ -1,0 +1,80 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-yaman-somitoid-chirality-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Yamanaka et al. (2023), Miao et al. (2023) & Adhyapok et al. (2021) epithelial somite rosette vertex mechanics and mesenchymal-to-epithelial transition (MET) model — Reproducibility package: 91/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Deterministic RNG (`seed=2021`), standalone `--self-test` suite verifying SHA-256 dataset integrity, bitwise two-run vertex relaxation determinism (`atol=0.0`), analytical-to-vertex ratio agreement (<0.015), Y-27632 & Minus-Matrigel negative controls, Eph/ephrin cleft knockdown collapse, and specimen segmentation (`run_self_test`, L800-845), plus rendered PNG and GIF outputs in `docs/media/`." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-yaman-somitoid-chirality-buckling-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-yaman-somitoid-chirality-buckling-repro-package-2> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-yaman-somitoid-chirality-buckling-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2021-yaman-somitoid-chirality-buckling.py L800–L845" ;
+        dct:description "Deterministic --self-test suite verifying SHA-256 digests, bitwise vertex determinism, negative controls, and morphometrics" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/2021-yaman-somitoid-chirality-buckling.py#L800-L845> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-yaman-somitoid-chirality-buckling-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/somitoid_chirality_buckling_growth.gif (generated output)" ;
+        dct:description "20-frame animated GIF comparing WT MET apical constriction and lumen narrowing against Y-27632 ROCK-inhibited control — docs/media/somitoid_chirality_buckling_growth.gif: rendered output of 2021-yaman-somitoid-chirality-buckling.py at 317bc3c, image/gif, 448063 B, 817×408 px, 20 frames, artifact_sha256 f37a7baf161b1fdd66dc83cbab655037c5ff89c103db1a7becabbef07dc7a8cd (sha256 f37a7baf161b1fdd66dc83cbab655037c5ff89c103db1a7becabbef07dc7a8cd), spec_fingerprint 834555c3491ff9a0813c6b8298d939c224a2f6c75546f46b11089139cd1ede3c" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2021.03.026>,
+            <https://doi.org/10.1038/s41467-022-29967-1>,
+            <https://doi.org/10.1038/s41586-022-05649-2>,
+            <https://doi.org/10.1038/s41586-022-05655-4> .
+    <https://doi.org/10.1016/j.devcel.2021.03.026> dct:date "2021"^^xsd:gYear ;
+        dct:title "A mechanical model of early somite segmentation" .
+    <https://doi.org/10.1038/s41467-022-29967-1> dct:date "2022"^^xsd:gYear ;
+        dct:title "Periodic formation of epithelial somites from human pluripotent stem cells" .
+    <https://doi.org/10.1038/s41586-022-05649-2> dct:date "2023"^^xsd:gYear ;
+        dct:title "Reconstituting human somitogenesis in vitro" .
+    <https://doi.org/10.1038/s41586-022-05655-4> dct:date "2023"^^xsd:gYear ;
+        dct:title "Reconstruction and deconstruction of human somitogenesis in vitro" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Yamanaka et al. (2023), Miao et al. (2023) & Adhyapok et al. (2021) epithelial somite rosette vertex mechanics and mesenchymal-to-epithelial transition (MET) model — Reproducibility package 91/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:55:23Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

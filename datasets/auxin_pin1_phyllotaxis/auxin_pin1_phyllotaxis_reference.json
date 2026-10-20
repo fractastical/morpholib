@@ -1,0 +1,137 @@
+{
+  "dataset_id": "auxin_pin1_phyllotaxis_reference",
+  "schema_version": "1.0.0",
+  "slot": 32,
+  "sim_id": "jonsson-auxin-pin1-meristem",
+  "script": "2006-jonsson-auxin-pin1-meristem.py",
+  "title": "Jönsson et al. (2006) PNAS & Smith et al. (2006) PNAS Up-the-Gradient Auxin-PIN1 Polarized Transport & Phyllotaxis Reference Dataset",
+  "primary_sources": [
+    {
+      "citation": "Jönsson H, Heisler MG, Shapiro BE, Meyerowitz EM, Mjolsness E (2006) An auxin-driven polarized transport model for phyllotaxis. PNAS 103(5):1633-1638",
+      "doi": "10.1073/pnas.0509839103",
+      "key_equations": [
+        "da_i/dt = rho_0 - mu * a_i + T * sum_{j in N(i)} (P_ji * a_j - P_ij * a_i) + D * sum_{j in N(i)} (a_j - a_i)",
+        "P_ij = P_i * exp(c_1 * a_j) / sum_{k in N(i)} exp(c_1 * a_k)",
+        "Linear instability eigenvalue on 1D/2D cellular ring: sigma(k) = -mu + 2 * (T * P_0 * (c_1 * a_0 - 1) - D) * (1 - cos(k * l_0)) - kappa_4 * (1 - cos(k * l_0))^2"
+      ]
+    },
+    {
+      "citation": "Smith RS, Guyomarc'h S, Mandel T, Reinhardt D, Kuhlemeier C, Prusinkiewicz P (2006) A plausible model of phyllotaxis. PNAS 103(5):1301-1306",
+      "doi": "10.1073/pnas.0510457103",
+      "key_equations": [
+        "PIN1_i->j = PIN1_i * b^(a_j) / sum_{k in N(i)} b^(a_k)   where c_1 = ln(b)",
+        "Primordium initiation threshold a_i >= a_thresh in peripheral zone (r in [R_CZ, R_PZ]), followed by radial tissue advection v_r(r) = gamma_adv * r and vascular sink depletion mu_prim * a_i"
+      ]
+    },
+    {
+      "citation": "Reinhardt D et al. (2003) Regulation of phyllotaxis by polar auxin transport. Nature 426:255-260",
+      "doi": "10.1038/nature02081",
+      "key_findings": [
+        "NPA (1-N-naphthylphthalamic acid) or pin1-1 mutation blocks polar auxin transport (T -> 0), producing a bare pin-formed shoot apex with zero primordia",
+        "Localized microapplication of exogenous IAA (indole-3-acetic acid) lanolin paste onto an NPA-treated or pin1 apex induces a single lateral organ primordium at the site of application"
+      ]
+    }
+  ],
+  "model_parameters": {
+    "basal_production_rho0_au_per_h": 0.10,
+    "decay_rate_mu_per_h": 0.05,
+    "homogeneous_steady_state_a0_au": 2.0,
+    "passive_diffusion_D_per_h": 0.15,
+    "active_transport_T_per_h": 1.20,
+    "pin1_feedback_exponent_c1_per_au": 1.85,
+    "total_membrane_pin1_Pi": 1.0,
+    "coordination_number_z": 6,
+    "cell_diameter_l0_um": 7.0,
+    "central_zone_radius_R_CZ_um": 21.0,
+    "peripheral_ring_radius_R_PZ_um": 35.0,
+    "primordium_initiation_threshold_a_thresh_au": 3.4,
+    "critical_feedback_product_c1_a0_crit": 1.75,
+    "operating_feedback_product_c1_a0": 3.70,
+    "characteristic_spacing_wavelength_cells": 5.2,
+    "characteristic_spacing_um": 36.4
+  },
+  "phyllotactic_mode_regimes": [
+    {
+      "mode_id": "spiral_fibonacci_137_5",
+      "label": "Spiral Fibonacci (137.5°)",
+      "meristem_ring_to_spacing_ratio_Gamma": 1.45,
+      "ring_radius_R_PZ_um": 35.0,
+      "theoretical_divergence_angle_deg": 137.5078,
+      "empirical_divergence_angle_mean_deg": 137.5,
+      "empirical_divergence_angle_sd_deg": 4.2,
+      "parastichy_pair": [5, 8],
+      "primordia_per_node": 1,
+      "source": "Smith et al. (2006) PNAS Fig. 3 & Jönsson et al. (2006) PNAS Fig. 4"
+    },
+    {
+      "mode_id": "distichous_alternate_180",
+      "label": "Distichous Alternate (180.0°)",
+      "meristem_ring_to_spacing_ratio_Gamma": 0.85,
+      "ring_radius_R_PZ_um": 20.5,
+      "theoretical_divergence_angle_deg": 180.0,
+      "empirical_divergence_angle_mean_deg": 179.4,
+      "empirical_divergence_angle_sd_deg": 3.8,
+      "parastichy_pair": [1, 1],
+      "primordia_per_node": 1,
+      "source": "Smith et al. (2006) PNAS Fig. 4A (reduced central zone / smaller meristem ring)"
+    },
+    {
+      "mode_id": "decussate_opposite_90",
+      "label": "Decussate Opposite Pairs (90.0°)",
+      "meristem_ring_to_spacing_ratio_Gamma": 1.92,
+      "ring_radius_R_PZ_um": 46.5,
+      "theoretical_divergence_angle_deg": 90.0,
+      "empirical_divergence_angle_mean_deg": 90.2,
+      "empirical_divergence_angle_sd_deg": 3.5,
+      "parastichy_pair": [2, 2],
+      "primordia_per_node": 2,
+      "source": "Smith et al. (2006) PNAS Fig. 4B & Jönsson et al. (2006) PNAS Fig. 3"
+    },
+    {
+      "mode_id": "tricussate_whorled_120",
+      "label": "Tricussate Whorled Triplets (60°/120°)",
+      "meristem_ring_to_spacing_ratio_Gamma": 2.75,
+      "ring_radius_R_PZ_um": 66.5,
+      "theoretical_divergence_angle_deg": 120.0,
+      "empirical_divergence_angle_mean_deg": 119.8,
+      "empirical_divergence_angle_sd_deg": 4.0,
+      "parastichy_pair": [3, 3],
+      "primordia_per_node": 3,
+      "source": "Smith et al. (2006) PNAS Fig. 4C (enlarged meristem ring / 3 simultaneous peaks)"
+    }
+  ],
+  "perturbation_experiments": {
+    "wild_type_control": {
+      "description": "Intact up-the-gradient PIN1 polar transport (T = 1.20 h^-1, c_1 = 1.85)",
+      "peak_to_mean_auxin_contrast": 2.68,
+      "primordia_count_in_ring": 5,
+      "pin1_convergence_polarity_index": 0.84,
+      "divergence_angle_deg": 137.51
+    },
+    "npa_pin1_polar_transport_block": {
+      "description": "10 uM NPA treatment or pin1-1 loss-of-function mutant (T = 0.0 h^-1, passive diffusion only)",
+      "peak_to_mean_auxin_contrast": 1.00,
+      "primordia_count_in_ring": 0,
+      "pin1_convergence_polarity_index": 0.02,
+      "phenotype": "Pin-formed bare inflorescence apex lacking lateral organ primordia (Reinhardt et al. 2003 Nature Fig. 1)"
+    },
+    "exogenous_iaa_microdroplet_rescue": {
+      "description": "NPA/pin1-1 apex + localized 1 mM IAA lanolin microdroplet at phi_paste = 60.0 deg on peripheral ring",
+      "applied_paste_angle_deg": 60.0,
+      "induced_primordium_angle_deg": 60.0,
+      "angular_localization_error_deg": 0.5,
+      "peak_to_mean_auxin_contrast": 2.85,
+      "primordia_count_in_ring": 1,
+      "phenotype": "Single localized radial organ primordium rescued at exact microapplication site (Reinhardt et al. 2003 Nature Fig. 2; Smith et al. 2006 Fig. 5)"
+    }
+  },
+  "specimen_metadata": {
+    "filename": "rosette_phyllotaxis_specimen.jpg",
+    "wikimedia_title": "File:Aeonium tabuliforme 0.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Aeonium_tabuliforme_0.jpg",
+    "species": "Aeonium tabuliforme (Crassulaceae flat spiral rosette)",
+    "license": "CC BY-SA 3.0",
+    "expected_divergence_angle_deg": 137.5078,
+    "dominant_parastichy_numbers": [8, 13]
+  }
+}

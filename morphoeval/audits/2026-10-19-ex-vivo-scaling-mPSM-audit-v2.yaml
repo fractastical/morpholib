@@ -1,0 +1,187 @@
+# MorphoEval audit — Lauschke, Tsiairis, François & Aulehla (2013) Ex Vivo mPSM Phase-Gradient Scaling, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2014-lauschke-ex-vivo-scaling-mPSM.py` (Slot 026)
+# superseding `2026-10-19-ex-vivo-scaling-mPSM-audit` in `2026-10-19-ex-vivo-scaling-mPSM-loop`.
+
+audit:
+  id: 2026-10-19-ex-vivo-scaling-mPSM-audit-v2
+  supersedes_audit_id: 2026-10-19-ex-vivo-scaling-mPSM-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2014-lauschke-ex-vivo-scaling-mPSM.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-ex-vivo-scaling-mPSM-loop`).
+
+references:
+  lauschke2013:
+    title: "Scaling of embryonic patterning based on phase-gradient encoding"
+    authors: "Lauschke VM, Tsiairis CD, Francois P, Aulehla A"
+    venue: "Nature 493(7430):101-105 (2013)"
+    doi: 10.1038/nature11804
+  aulehla2008:
+    title: "A beta-catenin gradient links the clock and wavefront systems in mouse embryo segmentation"
+    authors: "Aulehla A, Wiegraebe W, Baubet V, Wahl MB, Deng C, Taketo M, Lewandoski M, Pourquie O"
+    venue: "Nature Cell Biology 10(2):186-193 (2008)"
+    doi: 10.1038/ncb1679
+  tsiairis2016:
+    title: "Self-organization of embryonic genetic oscillators into spatiotemporal wave patterns"
+    authors: "Tsiairis CD, Aulehla A"
+    venue: "Cell 164(4):656-667 (2016)"
+    doi: 10.1016/j.cell.2016.01.028
+  beaupeux2016:
+    title: "Positional information from oscillatory phase shifts: insights from in silico evolution"
+    authors: "Beaupeux M, Francois P"
+    venue: "Physical Biology 13(3):036009 (2016)"
+    doi: 10.1088/1478-3975/13/3/036009
+
+simulations:
+  - id: lauschke-ex-vivo-scaling-mPSM
+    name: "Lauschke, Tsiairis, François & Aulehla (2013) scale-invariant phase-gradient encoding in ex vivo monolayer presomitic mesoderm (mPSM)"
+    organism: "Mus musculus (mouse E10.5 tailbud LuVeLu Lfng-Venus monolayer presomitic mesoderm)"
+    script: 2014-lauschke-ex-vivo-scaling-mPSM.py
+    output: docs/media/ex_vivo_scaling_mPSM_comparison.png
+    extra_outputs:
+      - docs/media/ex_vivo_scaling_mPSM_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493:101-105 scale-invariant phase-gradient encoding in ex vivo E10.5 mouse tailbud LuVeLu (Lfng-Venus) monolayer presomitic mesoderm (mPSM) with invariant 2*pi phase span across shrinking radius R(t)"
+        - "Linear proportional segment scaling S_n = alpha * R(t_n) (alpha = 0.11) and radial wave velocity scaling v_wave(t) ~ R(t) / T_osc across a 4-fold explant size range"
+      reconstructed_in_script:
+        - "Universal normalized phase-gradient collapse phi(r/R(t)) across R_0 in {150, 250, 350, 450} um (collapse std 9.93e-16 rad) vs non-scaling constant-gradient divergence (2.565 rad spread)"
+        - "2D circular mPSM LuVeLu target-wave kymograph and geometric radius progression R_n = R_0(1-alpha)^n with constant-velocity non-scaling and DAPT Notch-inhibition (0 segments) controls"
+        - "Bilateral dorsal somite row DoG peak and inter-somitic cleft segmentation on mouse_mpsm_somites_specimen.jpg (47.14 px mean spacing, CV = 0.2010)"
+      transfer_boundary:
+        - "Quasi-2D radial mouse mPSM explant phase-gradient scaling compared with dorsal vertebrate paraxial somite SEM periodicity"
+      does_not_claim:
+        - "Subcellular Lfng/Hes7 transcriptional-translational delay ODEs or 3D fibronectin traction mechanics"
+    source_refs:
+      - lauschke2013
+      - aulehla2008
+      - tsiairis2016
+      - beaupeux2016
+    summary: >-
+      Pass 2 post-remediation evaluation of `2014-lauschke-ex-vivo-scaling-mPSM.py` (91.4/100,
+      up from 60.1/100 in Pass 1; +31.3 overall). The remediated script verifies universal
+      normalized phase-gradient collapse phi(r/R(t)) across 4 explant sizes R_0 in {150, 250, 350, 450} um
+      with invariant total phase span Phi_0 = 2*pi = 6.2832 rad (collapse max std = 9.93e-16 rad vs
+      2.565 rad spread for a non-scaling constant-gradient control), simulates the 2D circular
+      monolayer mPSM LuVeLu (Lfng-Venus) target-wave kymograph and geometric radius contraction
+      R_n = R_0(1-alpha)^n (fitted scaling slope alpha = 0.1100, r = 1.0000; 4-explant empirical
+      segment width Pearson r = 0.9997, RMSE = 0.289 um; wave velocity r = 0.9998), includes
+      constant-velocity non-scaling and DAPT Notch-inhibition (0 segments) ablation controls, and
+      segments the vendored vertebrate somite/PSM SEM specimen (`mouse_mpsm_somites_specimen.jpg`,
+      mean spacing 47.14 px, CV = 0.2010), backed by 3 machine-checked Lean 4 theorems in
+      `Loop_026_ex_vivo_scaling_mPSM.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Faithfully implements Lauschke et al.'s (2013) scale-invariant phase-gradient encoding
+          phi(r,t) = omega_0*t - Phi_0*(r/R(t))^p, proportional segment scaling S_n = alpha*R(t_n)
+          (alpha = 0.11), geometric radius contraction R_{n+1} = (1-alpha)*R_n, and radial wave
+          velocity scaling v_wave(t) = (2*pi/Phi_0)*(R(t)/T_osc) (L105-405), achieving exact
+          universal phase collapse (9.93e-16 rad std) and exact telescoping radius conservation,
+          verified by 3 machine-checked Lean 4 theorems (0 sorrys) in
+          `morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean`.
+        evidence:
+          - {file: 2014-lauschke-ex-vivo-scaling-mPSM.py, lines: [105, 175], note: "Universal normalized phase-gradient profile and 4-explant collapse verifier", supports: true}
+          - {file: 2014-lauschke-ex-vivo-scaling-mPSM.py, lines: [178, 325], note: "Proportional segment scaling, geometric radius contraction, and 2D circular mPSM target-wave kymograph", supports: true}
+          - {file: morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean, lines: [22, 86], note: "3 machine-checked Lean 4 theorems (0 sorrys) for proportional segment scaling, geometric radius conservation, and wave velocity scaling", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 dorsal vertebrate embryo somite/PSM SEM
+          (`datasets/ex_vivo_scaling_mPSM/mouse_mpsm_somites_specimen.jpg`) and segments both
+          bilateral paraxial somite rows (`segment_mouse_mpsm_somites_specimen`, L410-480),
+          extracting 8 upper and 8 lower somites, bilateral mean spacing 47.14 px (CV = 0.2010),
+          symmetry ratio 0.9969, and phase-aligned periodic waveform correlation (Panels E-F).
+        evidence:
+          - {file: 2014-lauschke-ex-vivo-scaling-mPSM.py, lines: [410, 480], note: "Bilateral dorsal somite DoG peak & inter-somitic cleft segmentation on mouse_mpsm_somites_specimen.jpg", supports: true}
+          - {file: docs/media/ex_vivo_scaling_mPSM_comparison.png, lines: [0, 0], note: "6-panel synthesis figure including universal phase collapse, 2D target-wave kymograph + disc inset, 4-explant scaling regression, geometric decay, SEM segmentation, and waveform fit", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          Evaluates all 4 explant sizes R_0 in {150, 250, 350, 450} um from Lauschke et al. (2013)
+          across 8 oscillation cycles (32 segment budding events), compares scale-invariant
+          phase-gradient encoding against both a constant-velocity non-scaling wavefront model
+          and a DAPT Notch-inhibition ablation control (0 segments, Panels A, C, D), and exposes
+          CLI flags (`--R0`, `--alpha`, `--T-osc`, `--seed`).
+        evidence:
+          - {file: 2014-lauschke-ex-vivo-scaling-mPSM.py, lines: [330, 405], note: "4-explant scaling series evaluator across R_0 in {150, 250, 350, 450} um", supports: true}
+          - {file: 2014-lauschke-ex-vivo-scaling-mPSM.py, lines: [178, 245], note: "Comparison across scaling phase-gradient, constant-velocity non-scaling, and DAPT Notch-inhibition modes", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: >-
+          Extracts 5 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L485-550): proportional scaling slope alpha = 0.1100 vs
+          empirical 0.11 (r = 1.0000 across 32 segments), universal phase span Delta_phi = 6.2832 rad
+          vs 2*pi (collapse std = 9.93e-16 rad), standard R_0 = 350 um first segment width
+          S_1 = 38.50 um vs observed 38.9 +/- 3.1 um (cycle-5 S_5 = 24.16 um vs 23.9 um),
+          4-explant empirical segment Pearson r = 0.9997 (p = 7.42e-11, RMSE = 0.289 um,
+          wave speed r = 0.9998), and bilateral SEM specimen somite spacing 47.14 +/- 9.48 px
+          (CV = 0.2010).
+        evidence:
+          - {file: 2014-lauschke-ex-vivo-scaling-mPSM.py, lines: [485, 550], note: "5 quantitative MorphoEval measurements with analytical and empirical references, CV, Pearson r, and RMSE", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/ex_vivo_scaling_mPSM/` with `scout_manifest.json`,
+          `ex_vivo_scaling_mPSM_reference.json`, `mouse_mpsm_somites_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.1038/nature11804`, `10.1038/ncb1679`,
+          `10.1016/j.cell.2016.01.028`, `10.1088/1478-3975/13/3/036009`), and `README.md`,
+          with runtime SHA-256 verification (`verify_dataset_integrity`, L65-102).
+        evidence:
+          - {file: 2014-lauschke-ex-vivo-scaling-mPSM.py, lines: [65, 102], note: "Runtime SHA-256 verification of datasets/ex_vivo_scaling_mPSM/ artifacts", supports: true}
+          - {file: datasets/ex_vivo_scaling_mPSM/ex_vivo_scaling_mPSM_reference.json, lines: [1, 140], note: "Vendored Lauschke et al. (2013) equations, 4-explant scaling series, and specimen metadata", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Every computational section and docstring maps directly to numbered figures in
+          Lauschke et al. (2013) Nature Figs. 1-4 and the 3 Lean 4 theorems in
+          `Loop_026_ex_vivo_scaling_mPSM.lean` and
+          `morphoeval/math_kg_loops/lauschke-ex-vivo-scaling-mPSM.yaml`.
+        evidence:
+          - {file: 2014-lauschke-ex-vivo-scaling-mPSM.py, lines: [1, 55], note: "Module docstring linking equations to Lauschke et al. (2013) and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/lauschke-ex-vivo-scaling-mPSM.yaml, lines: [1, 88], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic RNG (`seed=2014`), standalone `--self-test` suite verifying SHA-256
+          dataset integrity, exact normalized phase collapse (<1e-12 rad), bitwise two-run
+          kymograph determinism (`atol=0.0`), telescoping radius conservation, DAPT
+          Notch-inhibition ablation control (0 segments), and specimen segmentation
+          (`run_self_test`, L805-855), plus rendered PNG and GIF outputs in `docs/media/`.
+        evidence:
+          - {file: 2014-lauschke-ex-vivo-scaling-mPSM.py, lines: [805, 855], note: "Deterministic --self-test suite verifying SHA-256 digests, phase collapse, bitwise determinism, and morphometrics", supports: true}
+          - {file: docs/media/ex_vivo_scaling_mPSM_growth.gif, lines: [0, 0], note: "24-frame animated GIF showing 2D concentric LuVeLu target waves and live linear segment scaling", supports: true}
+    remediation:
+      - "Couple the radial mPSM Notch phase-gradient model to an explicit dynamic wavelength-adaptation feedback driven by a shrinking FGF/Wnt gradient (Lauschke et al. 2013 Fig. 4; Beaupeux & Francois 2016)."
+      - "Extend the 2D continuum disc to a discrete disordered cell-reaggregation lattice (Tsiairis & Aulehla 2016) to simulate de novo emergence of multiple mPSM target-wave pacemakers."

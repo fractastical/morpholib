@@ -1,0 +1,249 @@
+{
+  "metadata": {
+    "dataset_id": "mongera-kim-campas-2018-2021-neuromesodermal-jamming-v1",
+    "slot": 30,
+    "slot_id": "slot-030-neuromesodermal-jamming",
+    "title": "Mongera et al. (2018) Nature & Kim et al. (2021) Nature Physics — Active Fluid-to-Solid Jamming Transition, Extracellular Space Compaction, Ferrofluid Yield-Stress Gradient & Unidirectional Vertebrate Body Axis Elongation in Zebrafish",
+    "organism": "Danio rerio (zebrafish 10-somite stage posterior tailbud: Mesodermal Progenitor Zone MPZ, Posterior Presomitic Mesoderm P-PSM, and Anterior Presomitic Mesoderm A-PSM)",
+    "sources": [
+      {
+        "id": "mongera2018",
+        "citation": "Mongera A, Rowghanian P, Gustafson HJ, Shelton E, Kealhofer DA, Carn EK, Serwane F, Lucio AA, Giammona J, Campas O (2018). A fluid-to-solid jamming transition underlies vertebrate body axis elongation. Nature 561(7723):401-405.",
+        "doi": "10.1038/s41586-018-0479-2"
+      },
+      {
+        "id": "kim2021",
+        "citation": "Kim S, Pochitaloff M, Stooke-Vaughan GA, Campas O (2021). Embryonic tissues as active foams. Nature Physics 17(7):859-866.",
+        "doi": "10.1038/s41567-021-01215-1"
+      },
+      {
+        "id": "lawton2013",
+        "citation": "Lawton AK, Nandi A, Stulberg MJ, Dray N, Sneddon MW, Emonet T, Blawzdziewicz J, Holley SA (2013). Regulated tissue fluidity steers zebrafish body elongation. Development 140(3):573-582.",
+        "doi": "10.1242/dev.090381"
+      },
+      {
+        "id": "serwane2017",
+        "citation": "Serwane F, Mongera A, Rowghanian P, Kealhofer DA, Lucio AA, Hockenbery ZM, Campas O (2017). In vivo quantification of spatially varying mechanical properties in developing tissues. Nature Methods 14(2):181-186.",
+        "doi": "10.1038/nmeth.4101"
+      },
+      {
+        "id": "dray2013",
+        "citation": "Dray N, Lawton A, Nandi A, Julicher F, Emonet T, Holley SA (2013). Cell-fibronectin interactions propel vertebrate trunk elongation via tissue mechanics. Current Biology 23(14):1335-1341.",
+        "doi": "10.1016/j.cub.2013.05.052"
+      }
+    ],
+    "specimens": {
+      "zebrafish_tailbud_psm_specimen": {
+        "file": "datasets/neuromesodermal_jamming/zebrafish_tailbud_psm_specimen.jpg",
+        "sha256": "e987d8b6218b96461c1213f9a11d20fb5d6585c6074608bf060c16edf725d500",
+        "species": "Danio rerio (zebrafish embryo posterior tailbud lightsheet nuclear fluorescence micrograph showing the rounded posterior Mesodermal Progenitor Zone MPZ on the left, bilateral Presomitic Mesoderm PSM bands, and central rod-like notochord; Open Microscopy Image Data Resource study idr0051 / Dray & Lawton et al. 2013)",
+        "license": "CC BY 4.0",
+        "source_url": "https://idr.openmicroscopy.org/webclient/render_thumbnail/size/512/4007817/",
+        "wikimedia_mirror": "https://commons.wikimedia.org/wiki/File:Image_Data_Resource_-_idr0051_-_4007817.jpg",
+        "width_px": 512,
+        "height_px": 512,
+        "mpz_x_range_px": [85, 185],
+        "ppsm_x_range_px": [185, 330],
+        "apsm_x_range_px": [330, 475],
+        "pattern_type": "zebrafish_tailbud_mpz_psm_jamming_gradient"
+      },
+      "scout_manifest": {
+        "file": "datasets/neuromesodermal_jamming/scout_manifest.json",
+        "sha256": "5770ebf01ff6d270833f332b1aaa6b74d65624310c14e308356239ab3963d813"
+      },
+      "paper_citations": {
+        "file": "datasets/neuromesodermal_jamming/paper_citations.bib",
+        "sha256": "d68afd1715fd7fcf85a531f8b6a792c73b5067343b14e40635265341de5b7ce1"
+      }
+    }
+  },
+  "mongera_2018_kim_2021_governing_equations": {
+    "section": "Mongera et al. (2018) Nature 561:401-405 Figs. 1-4 & Methods; Kim et al. (2021) Nature Physics 17:859-866 Eqs. 1-6",
+    "cell_packing_identity": "phi_pack(x) = 1 - phi_ECS(x)",
+    "rigidity_percolation_yield_stress_law": "sigma_y(x) = sigma_0 * max(0, phi_pack(x) - phi_c)^beta = sigma_0 * max(0, phi_ECS_crit - phi_ECS(x))^beta",
+    "isostatic_coordination_relation": "z(x) = z_c + z_slope * (phi_pack(x) - phi_c),  with z_c = 4.0 (2D) / 6.0 (3D)",
+    "kramers_t1_rearrangement_rate_law": "k_T1(x) = k_0 * exp( -c_B * (sigma_y(x) / max(sigma_A(x), eps_A))^gamma_k )",
+    "bingham_viscoplastic_constitutive_law": "dot_gamma(x) = max(0, sigma_eff(x) - sigma_y(x)) / eta_p",
+    "unidirectional_posterior_elongation_flux_law": "v_posterior = J_mpz * (sigma_y_APSM / (sigma_y_APSM + sigma_y_MPZ + sigma_ref)),  where solid A-PSM (sigma_y_APSM >> sigma_y_MPZ) acts as a mechanical backstop rectifying MPZ mass addition posteriorly",
+    "bilateral_symmetry_rectification_law": "asymmetry_LR = asym_0 + c_asym * exp( -sigma_y_APSM / sigma_A_MPZ )",
+    "canonical_parameters": {
+      "species": "Danio rerio (10-somite stage embryo at 28.5 C)",
+      "axis_domain_length_L_um": 300.0,
+      "critical_packing_fraction_phi_c": 0.860,
+      "critical_ecs_fraction_phi_ecs_crit": 0.140,
+      "critical_coordination_2d_z_c": 4.0,
+      "yield_stress_scale_sigma_0_Pa": 1520.0,
+      "yield_exponent_beta": 1.05,
+      "t1_attempt_rate_k0_per_min": 0.092,
+      "kramers_barrier_coeff_c_B": 0.62,
+      "kramers_exponent_gamma_k": 1.15,
+      "plastic_viscosity_eta_p_Pa_min": 38.0
+    }
+  },
+  "ap_axis_spatial_profile_mongera_2018": {
+    "section": "Mongera et al. (2018) Nature 561:401-405 Figs. 1c-f, 2c-f, 3b-f (Posterior-to-Anterior Profile from Tailbud Tip x=0 um to A-PSM x=300 um)",
+    "points": [
+      {
+        "x_um": 15.0,
+        "x_norm": 0.05,
+        "region": "MPZ",
+        "phi_ecs_ref": 0.145,
+        "phi_pack_ref": 0.855,
+        "coordination_z_ref": 3.85,
+        "sigma_y_Pa_ref": 8.5,
+        "sigma_A_Pa_ref": 50.0,
+        "t1_rate_per_min_ref": 0.082,
+        "cell_speed_um_per_min_ref": 1.48,
+        "mechanical_state": "fluid_unjammed"
+      },
+      {
+        "x_um": 50.0,
+        "x_norm": 0.167,
+        "region": "MPZ",
+        "phi_ecs_ref": 0.136,
+        "phi_pack_ref": 0.864,
+        "coordination_z_ref": 4.08,
+        "sigma_y_Pa_ref": 14.0,
+        "sigma_A_Pa_ref": 45.0,
+        "t1_rate_per_min_ref": 0.074,
+        "cell_speed_um_per_min_ref": 1.38,
+        "mechanical_state": "fluid_unjammed"
+      },
+      {
+        "x_um": 90.0,
+        "x_norm": 0.30,
+        "region": "MPZ_to_PPSM_Transition",
+        "phi_ecs_ref": 0.112,
+        "phi_pack_ref": 0.888,
+        "coordination_z_ref": 4.52,
+        "sigma_y_Pa_ref": 36.0,
+        "sigma_A_Pa_ref": 34.0,
+        "t1_rate_per_min_ref": 0.046,
+        "cell_speed_um_per_min_ref": 1.05,
+        "mechanical_state": "jamming_transition_point"
+      },
+      {
+        "x_um": 135.0,
+        "x_norm": 0.45,
+        "region": "P-PSM",
+        "phi_ecs_ref": 0.086,
+        "phi_pack_ref": 0.914,
+        "coordination_z_ref": 5.02,
+        "sigma_y_Pa_ref": 64.0,
+        "sigma_A_Pa_ref": 25.0,
+        "t1_rate_per_min_ref": 0.024,
+        "cell_speed_um_per_min_ref": 0.68,
+        "mechanical_state": "solid_jammed"
+      },
+      {
+        "x_um": 180.0,
+        "x_norm": 0.60,
+        "region": "P-PSM",
+        "phi_ecs_ref": 0.068,
+        "phi_pack_ref": 0.932,
+        "coordination_z_ref": 5.38,
+        "sigma_y_Pa_ref": 89.0,
+        "sigma_A_Pa_ref": 19.0,
+        "t1_rate_per_min_ref": 0.013,
+        "cell_speed_um_per_min_ref": 0.44,
+        "mechanical_state": "solid_jammed"
+      },
+      {
+        "x_um": 230.0,
+        "x_norm": 0.767,
+        "region": "A-PSM",
+        "phi_ecs_ref": 0.056,
+        "phi_pack_ref": 0.944,
+        "coordination_z_ref": 5.64,
+        "sigma_y_Pa_ref": 108.0,
+        "sigma_A_Pa_ref": 15.0,
+        "t1_rate_per_min_ref": 0.009,
+        "cell_speed_um_per_min_ref": 0.31,
+        "mechanical_state": "solid_jammed"
+      },
+      {
+        "x_um": 280.0,
+        "x_norm": 0.933,
+        "region": "A-PSM",
+        "phi_ecs_ref": 0.049,
+        "phi_pack_ref": 0.951,
+        "coordination_z_ref": 5.80,
+        "sigma_y_Pa_ref": 120.0,
+        "sigma_A_Pa_ref": 13.0,
+        "t1_rate_per_min_ref": 0.007,
+        "cell_speed_um_per_min_ref": 0.25,
+        "mechanical_state": "solid_jammed"
+      }
+    ]
+  },
+  "experimental_perturbation_regimes": {
+    "section": "Mongera et al. (2018) Nature 561:401-405 Fig. 4 & Extended Data Figs. 5-8; Lawton et al. (2013) Development 140:573-582",
+    "regimes": [
+      {
+        "regime_id": "wt_control_zebrafish",
+        "label": "Wild-type Danio rerio (graded ECS compaction 14.5% -> 4.9%, solid A-PSM backstop)",
+        "phi_ecs_mpz": 0.145,
+        "phi_ecs_apsm": 0.049,
+        "sigma_A_mpz_Pa": 50.0,
+        "sigma_A_apsm_Pa": 13.0,
+        "adhesion_scale_cdh2": 1.0,
+        "empirical_sigma_y_mpz_Pa": 11.2,
+        "empirical_sigma_y_apsm_Pa": 118.0,
+        "empirical_elongation_speed_um_per_min": 1.52,
+        "empirical_lr_asymmetry_pct": 1.4
+      },
+      {
+        "regime_id": "cdh2_knockdown_unjammed",
+        "label": "cdh2 (N-cadherin) morphant / parachute mutant (expanded ECS 21% -> 14.8%, collapsed PSM yield stress & bilateral asymmetry)",
+        "phi_ecs_mpz": 0.215,
+        "phi_ecs_apsm": 0.148,
+        "sigma_A_mpz_Pa": 42.0,
+        "sigma_A_apsm_Pa": 16.0,
+        "adhesion_scale_cdh2": 0.35,
+        "empirical_sigma_y_mpz_Pa": 0.0,
+        "empirical_sigma_y_apsm_Pa": 14.5,
+        "empirical_elongation_speed_um_per_min": 0.78,
+        "empirical_lr_asymmetry_pct": 9.6
+      },
+      {
+        "regime_id": "blebbistatin_myosin_inhibited",
+        "label": "Blebbistatin Myosin-II inhibition (suppressed active fluctuations sigma_A, arrested MPZ T1 fluidity)",
+        "phi_ecs_mpz": 0.132,
+        "phi_ecs_apsm": 0.052,
+        "sigma_A_mpz_Pa": 12.0,
+        "sigma_A_apsm_Pa": 6.0,
+        "adhesion_scale_cdh2": 1.0,
+        "empirical_sigma_y_mpz_Pa": 15.0,
+        "empirical_sigma_y_apsm_Pa": 112.0,
+        "empirical_elongation_speed_um_per_min": 0.62,
+        "empirical_lr_asymmetry_pct": 2.3
+      },
+      {
+        "regime_id": "su5402_fgf_inhibited",
+        "label": "SU5402 FGFR inhibition (reduced posterior MPZ motility & premature posterior compaction)",
+        "phi_ecs_mpz": 0.096,
+        "phi_ecs_apsm": 0.048,
+        "sigma_A_mpz_Pa": 21.0,
+        "sigma_A_apsm_Pa": 11.0,
+        "adhesion_scale_cdh2": 1.0,
+        "empirical_sigma_y_mpz_Pa": 52.0,
+        "empirical_sigma_y_apsm_Pa": 121.0,
+        "empirical_elongation_speed_um_per_min": 0.85,
+        "empirical_lr_asymmetry_pct": 2.8
+      },
+      {
+        "regime_id": "ablation_uniform_fluid_no_backstop",
+        "label": "Zero-Backstop Ablation Control (uniformly unjammed phi_ECS = 0.165 > phi_ECS_crit everywhere, sigma_y = 0)",
+        "phi_ecs_mpz": 0.165,
+        "phi_ecs_apsm": 0.165,
+        "sigma_A_mpz_Pa": 50.0,
+        "sigma_A_apsm_Pa": 35.0,
+        "adhesion_scale_cdh2": 0.0,
+        "empirical_sigma_y_mpz_Pa": 0.0,
+        "empirical_sigma_y_apsm_Pa": 0.0,
+        "empirical_elongation_speed_um_per_min": 0.41,
+        "empirical_lr_asymmetry_pct": 12.4
+      }
+    ]
+  }
+}

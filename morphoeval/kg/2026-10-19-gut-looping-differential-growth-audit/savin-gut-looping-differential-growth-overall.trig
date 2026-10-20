@@ -1,0 +1,73 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-savin-gut-looping-differential-growth> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Savin et al. (2011) Kirchhoff elastic rod + stretched neo-Hookean dorsal mesentery gut looping morphogenesis — MorphoEval overall 54.5/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 (v1) baseline evaluation of `2011-savin-gut-looping-differential-growth.py` (overall weighted score: 56.4/100). The v1 script implements Savin et al.'s (2011) annular tube inertia I_t = (pi/4)*(R_t^4 - R_i^4), characteristic length scale ell_* = (E_t*I_t / (E_m*h_m))^(1/3), and Chick E8-E16 wavelength/radius scaling, but uses a synthetic sinusoidal 3D curve rather than minimizing a discrete Kirchhoff elastic rod + neo-Hookean mesentery energy functional, omits the 4-species comparative collapse (zebra finch, quail, chick, mouse) and BMP2/Noggin/surgical-ablation controls, and does not segment the vendored biological mesentery/intestine specimen image. Overall 54.5/100 (faithfulness 47.9, reproducibility 70.0); rubric morphoeval 0.1.0; checkpoint commit 8871db0; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 58, Morphological realism / specimen match 35, Parameter expressivity 48, Morphometric validation 56, Source and data traceability 74, Code-to-model traceability 68, Reproducibility package 68. Output judged: docs/media/gut_looping_differential_growth_comparison.png: rendered output of 2011-savin-gut-looping-differential-growth.py at 8871db0, image/png, 242127 B, 1413×1054 px, artifact_sha256 a509fa903edf6a286172076d79d801863c3bac04a90bdbc10f3298cd0a884e04 (sha256 a509fa903edf6a286172076d79d801863c3bac04a90bdbc10f3298cd0a884e04), spec_fingerprint 643f6989deff1f1d47f576fe1e43c257f747c5e39321e10638b972d0ac0dc491. Dual provenance: spec_fingerprint: 643f6989deff1f1d47f576fe1e43c257f747c5e39321e10638b972d0ac0dc491; artifact_sha256: a509fa903edf6a286172076d79d801863c3bac04a90bdbc10f3298cd0a884e04; input_dataset_sha256: {datasets/gut_looping_differential_growth/gut_looping_differential_growth_reference.json=f73121bb4140187f..., datasets/gut_looping_differential_growth/intestine_mesentery_specimen.jpg=e12fee9ac1fb5f3d..., datasets/gut_looping_differential_growth/paper_citations.bib=21703c48df51dd52..., datasets/gut_looping_differential_growth/scout_manifest.json=0723b42b4d825087...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add runtime SHA-256 verification of all 4 files in `datasets/gut_looping_differential_growth/`, expose full CLI parameters (`--epsilon`, `--E-ratio`, `--R-t`, `--h-m`, `--seed`), and expand `self_test()` and `measure_morphoeval()` to cover all physical, cross-species, ablation, and specimen metrics.",
+            "remediation needed: Evaluate the full 14-point cross-species scaling collapse across Zebra finch (Taeniopygia guttata), Quail (Coturnix japonica), Chick (Gallus gallus), and Mouse (Mus musculus) (Savin et al. 2011 Fig. 4e-f) alongside Nerurkar et al. (2017) PNAS BMP2 gain-of-function, Noggin loss-of-function, and surgical mesentery ablation (epsilon = 0) negative controls.",
+            "remediation needed: Implement computer-vision segmentation of `datasets/gut_looping_differential_growth/intestine_mesentery_specimen.jpg` to segment the yellow-orange dorsal mesentery fan and pinkish-red intestinal loop ridges, quantifying empirical inter-loop spacing, CV, and loop count.",
+            "remediation needed: Replace the synthetic sinusoidal curve with a genuine 3D discrete Kirchhoff elastic rod + stretched neo-Hookean dorsal mesentery energy minimizer (L-BFGS-B relaxation of axial stretching + bending + mesenteric radial sheet traction + steric repulsion) and extract emergent loop wavelength, curvature kappa(s), and tortuosity directly from the relaxed 3D centerline." ;
+        pk:hasScore "0.545"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 062 Pass 1 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/62> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature10277>,
+            <https://doi.org/10.1073/pnas.0803578105>,
+            <https://doi.org/10.1073/pnas.1618677114> .
+    <https://doi.org/10.1038/nature10277> dct:date "2011"^^xsd:gYear ;
+        dct:title "On the growth and form of the gut" .
+    <https://doi.org/10.1073/pnas.0803578105> dct:date "2008"^^xsd:gYear ;
+        dct:title "The direction of gut looping is established by changes in the extracellular matrix and in cell orientation" .
+    <https://doi.org/10.1073/pnas.1618677114> dct:date "2017"^^xsd:gYear ;
+        dct:title "BMP signaling controls buckling forces to modulate looping morphogenesis of the gut" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Savin et al. (2011) Kirchhoff elastic rod + stretched neo-Hookean dorsal mesentery gut looping morphogenesis — MorphoEval overall 54.5/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T23:54:08Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/62>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-savin-gut-looping-differential-growth> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

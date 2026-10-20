@@ -1,0 +1,286 @@
+{
+  "metadata": {
+    "dataset_id": "moulton-2015-mollusc-aperture-spine-buckling-v1",
+    "title": "Moulton, Goriely & Chirat (2015) J. Theor. Biol. 364:420-430 & Chirat, Moulton & Goriely (2013) PNAS 110:6015-6020 Mollusc Aperture Spine Buckling, Tubular Loop Closure & Hierarchical Frond Serration Reference Dataset",
+    "sources": [
+      {
+        "id": "moulton2015",
+        "citation": "Moulton DE, Goriely A, Chirat R (2015). The role of mechanics in the growth and form of mollusc shells: hierarchical spine folding and secondary fractal serrations. Journal of Theoretical Biology 364:420-430.",
+        "doi": "10.1016/j.jtbi.2014.09.021"
+      },
+      {
+        "id": "chirat2013",
+        "citation": "Chirat R, Moulton DE, Goriely A (2013). Mechanical basis of morphogenesis and convergent evolution of spiny seashells. Proceedings of the National Academy of Sciences 110(15):6015-6020.",
+        "doi": "10.1073/pnas.1220443110"
+      },
+      {
+        "id": "moulton2012",
+        "citation": "Moulton DE, Goriely A, Chirat R (2012). Mechanical growth and morphogenesis of seashells. Journal of Theoretical Biology 311:69-79.",
+        "doi": "10.1016/j.jtbi.2012.07.009"
+      },
+      {
+        "id": "rudraraju2019",
+        "citation": "Rudraraju S, Moulton DE, Chirat R, Goriely A (2019). A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth. PLoS Computational Biology 15(7):e1007213.",
+        "doi": "10.1371/journal.pcbi.1007213"
+      }
+    ],
+    "specimens": {
+      "murex_pecten_aperture_specimen": {
+        "file": "datasets/mollusc_aperture_spine_buckling/murex_pecten_aperture_specimen.jpg",
+        "sha256": "2f87d4ec30ebec6adb82f91aec67eb300e3469f57920cbccf9c9bb0d22b703a8",
+        "width": 343,
+        "height": 800,
+        "species": "Murex pecten (Venus comb murex, family Muricidae) shell with triradiate varices and 16 periodic hollow tubular comb spines along the siphonal canal",
+        "license": "CC BY 2.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Murex_pecten_(Venus_comb_murex_snail)_2_(24962834576).jpg",
+        "canal_y_range_px": [75, 775],
+        "comb_x_range_px": [175, 335],
+        "reference_primary_spine_count": 16,
+        "reference_mean_spacing_px": 42.13,
+        "reference_spacing_cv": 0.2092,
+        "pattern_type": "episodic_triradiate_varix_and_periodic_siphonal_comb_spines"
+      },
+      "scout_manifest": {
+        "file": "datasets/mollusc_aperture_spine_buckling/scout_manifest.json",
+        "sha256": "53cb565add07b28d8bf5def908b0310dd963b04ea7848e069910570ad2093b27"
+      },
+      "paper_citations": {
+        "file": "datasets/mollusc_aperture_spine_buckling/paper_citations.bib",
+        "sha256": "fc39398ba54f69e1f44b8d1ad45e4f623e679ff6bf7cfb3bd25b3d4dcebcc47f"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Moulton, Goriely & Chirat (2015) J. Theor. Biol. 364:420-430 Sec. 2-4; Chirat, Moulton & Goriely (2013) PNAS 110:6015-6020",
+    "kirchhoff_elastica_unilateral_ode": "E * I(S) * d^2theta/dS^2 + F_x * sin(theta) - F_y * cos(theta) - K_u(y) = 0,  dx/dS = gamma * cos(theta),  dy/dS = gamma * sin(theta)",
+    "hierarchical_wavenumber_law": "k_i^* = (3 * K_s / (E * h_i^3))^(1/4)",
+    "secondary_frond_cascade_ratio": "k_2^* / k_1^* = (h_1 / h_2)^(3/4) * (K_s2 / K_s1)^(1/4)",
+    "tubular_folding_closure_criterion": "Delta_x_neck(gamma) = w_base * (1 - (gamma - gamma_c) / (gamma_fold - gamma_c)) <= 0  <=>  gamma >= gamma_fold",
+    "episodic_varix_growth_law": "gamma(phi) = gamma_base + Delta_gamma_varix * exp(-sin^2(3 * phi / 2) / (2 * sigma_phi^2));  A_spine(gamma) = A_0 * sqrt(max(0, gamma - gamma_c))",
+    "default_parameters": {
+      "E_modulus_MPa": 12.0,
+      "K_s_foundation_MPa_per_mm": 0.48,
+      "h1_primary_mm": 0.42,
+      "h2_secondary_mm": 0.0708,
+      "h3_tertiary_mm": 0.0245,
+      "k2_over_k1_chicoreus": 3.80,
+      "k3_over_k2_chicoreus": 2.22,
+      "gamma_c_critical": 1.08,
+      "gamma_fold_tubular": 1.42,
+      "gamma_murex_varix": 1.68,
+      "gamma_chicoreus_tip": 1.54,
+      "gamma_subcritical_control": 0.96,
+      "murex_canal_length_mm": 67.2,
+      "murex_primary_spines_ref": 16,
+      "varix_per_whorl": 3,
+      "varix_phase_deg": 120.0
+    }
+  },
+  "hierarchical_frond_generations": [
+    {
+      "generation": 1,
+      "name": "Primary Varix Spine / Frond Stem",
+      "h_mm": 0.4200,
+      "K_s_MPa_per_mm": 0.48,
+      "k_star_mm_inv": 1.5792,
+      "wavelength_mm": 3.9787,
+      "k_ratio_to_primary": 1.0000,
+      "closure_state_murex": "tubular_sealed_base",
+      "closure_state_chicoreus": "open_gutter_flared_crest"
+    },
+    {
+      "generation": 2,
+      "name": "Secondary Lateral Frond Serrations (Chicoreus ramosus)",
+      "h_mm": 0.0708,
+      "K_s_MPa_per_mm": 0.48,
+      "k_star_mm_inv": 6.0010,
+      "wavelength_mm": 1.0470,
+      "k_ratio_to_primary": 3.8000,
+      "closure_state_murex": "short_intercalated_spinule",
+      "closure_state_chicoreus": "bifurcated_frond_lobes"
+    },
+    {
+      "generation": 3,
+      "name": "Tertiary Distal Micro-Crenulations (Chicoreus ramosus)",
+      "h_mm": 0.0245,
+      "K_s_MPa_per_mm": 0.48,
+      "k_star_mm_inv": 13.3095,
+      "wavelength_mm": 0.4721,
+      "k_ratio_to_primary": 8.4280,
+      "closure_state_murex": "absent",
+      "closure_state_chicoreus": "fractal_distal_denticles"
+    }
+  ],
+  "muricid_cross_taxa_table": [
+    {
+      "species": "Murex pecten",
+      "common_name": "Venus comb murex",
+      "clade": "Muricinae",
+      "spine_architecture": "tubular_comb",
+      "L_margin_mm": 67.2,
+      "h1_mm": 0.445,
+      "h2_mm": 0.165,
+      "gamma_varix": 1.68,
+      "k1_pred_mm_inv": 1.497,
+      "lambda1_pred_mm": 4.197,
+      "lambda1_obs_mm": 4.20,
+      "n_primary_spines_pred": 16.01,
+      "n_primary_spines_obs": 16.0,
+      "k2_over_k1_pred": 2.104,
+      "k2_over_k1_obs": 2.10
+    },
+    {
+      "species": "Murex tribulus",
+      "common_name": "Caltrop murex",
+      "clade": "Muricinae",
+      "spine_architecture": "tubular_comb",
+      "L_margin_mm": 54.0,
+      "h1_mm": 0.502,
+      "h2_mm": 0.215,
+      "gamma_varix": 1.58,
+      "k1_pred_mm_inv": 1.368,
+      "lambda1_pred_mm": 4.593,
+      "lambda1_obs_mm": 4.58,
+      "n_primary_spines_pred": 11.76,
+      "n_primary_spines_obs": 12.0,
+      "k2_over_k1_pred": 1.889,
+      "k2_over_k1_obs": 1.90
+    },
+    {
+      "species": "Murex tenuirostrum",
+      "common_name": "Slender-beaked murex",
+      "clade": "Muricinae",
+      "spine_architecture": "tubular_comb",
+      "L_margin_mm": 61.5,
+      "h1_mm": 0.455,
+      "h2_mm": 0.172,
+      "gamma_varix": 1.64,
+      "k1_pred_mm_inv": 1.472,
+      "lambda1_pred_mm": 4.268,
+      "lambda1_obs_mm": 4.28,
+      "n_primary_spines_pred": 14.41,
+      "n_primary_spines_obs": 14.5,
+      "k2_over_k1_pred": 2.074,
+      "k2_over_k1_obs": 2.08
+    },
+    {
+      "species": "Chicoreus ramosus",
+      "common_name": "Ramose murex",
+      "clade": "Muricinae (Chicoreus)",
+      "spine_architecture": "fractal_frondose",
+      "L_margin_mm": 98.0,
+      "h1_mm": 0.920,
+      "h2_mm": 0.155,
+      "gamma_varix": 1.54,
+      "k1_pred_mm_inv": 0.870,
+      "lambda1_pred_mm": 7.222,
+      "lambda1_obs_mm": 7.25,
+      "n_primary_spines_pred": 13.57,
+      "n_primary_spines_obs": 13.5,
+      "k2_over_k1_pred": 3.802,
+      "k2_over_k1_obs": 3.80
+    },
+    {
+      "species": "Chicoreus palmarosae",
+      "common_name": "Rose-branch murex",
+      "clade": "Muricinae (Chicoreus)",
+      "spine_architecture": "fractal_frondose",
+      "L_margin_mm": 68.0,
+      "h1_mm": 0.780,
+      "h2_mm": 0.124,
+      "gamma_varix": 1.56,
+      "k1_pred_mm_inv": 0.985,
+      "lambda1_pred_mm": 6.379,
+      "lambda1_obs_mm": 6.35,
+      "n_primary_spines_pred": 10.66,
+      "n_primary_spines_obs": 10.5,
+      "k2_over_k1_pred": 3.972,
+      "k2_over_k1_obs": 3.98
+    },
+    {
+      "species": "Chicoreus brunneus",
+      "common_name": "Adusta murex",
+      "clade": "Muricinae (Chicoreus)",
+      "spine_architecture": "fractal_frondose",
+      "L_margin_mm": 52.0,
+      "h1_mm": 0.710,
+      "h2_mm": 0.128,
+      "gamma_varix": 1.50,
+      "k1_pred_mm_inv": 1.057,
+      "lambda1_pred_mm": 5.944,
+      "lambda1_obs_mm": 5.95,
+      "n_primary_spines_pred": 8.75,
+      "n_primary_spines_obs": 9.0,
+      "k2_over_k1_pred": 3.614,
+      "k2_over_k1_obs": 3.60
+    },
+    {
+      "species": "Hexaplex radix",
+      "common_name": "Root murex",
+      "clade": "Muricinae (Hexaplex)",
+      "spine_architecture": "foliated_frondose",
+      "L_margin_mm": 84.0,
+      "h1_mm": 0.850,
+      "h2_mm": 0.175,
+      "gamma_varix": 1.49,
+      "k1_pred_mm_inv": 0.923,
+      "lambda1_pred_mm": 6.807,
+      "lambda1_obs_mm": 6.80,
+      "n_primary_spines_pred": 12.34,
+      "n_primary_spines_obs": 12.5,
+      "k2_over_k1_pred": 3.272,
+      "k2_over_k1_obs": 3.28
+    },
+    {
+      "species": "Bolinus brandaris",
+      "common_name": "Purple dye murex",
+      "clade": "Muricinae (Bolinus)",
+      "spine_architecture": "tubular_canal_spines",
+      "L_margin_mm": 46.0,
+      "h1_mm": 0.680,
+      "h2_mm": 0.340,
+      "gamma_varix": 1.46,
+      "k1_pred_mm_inv": 1.092,
+      "lambda1_pred_mm": 5.754,
+      "lambda1_obs_mm": 5.75,
+      "n_primary_spines_pred": 7.99,
+      "n_primary_spines_obs": 8.0,
+      "k2_over_k1_pred": 1.682,
+      "k2_over_k1_obs": 1.68
+    },
+    {
+      "species": "Homalocantha zamboi",
+      "common_name": "Zambo's murex",
+      "clade": "Muricinae (Homalocantha)",
+      "spine_architecture": "palmate_T_frond",
+      "L_margin_mm": 42.0,
+      "h1_mm": 0.640,
+      "h2_mm": 0.112,
+      "gamma_varix": 1.59,
+      "k1_pred_mm_inv": 1.143,
+      "lambda1_pred_mm": 5.497,
+      "lambda1_obs_mm": 5.50,
+      "n_primary_spines_pred": 7.64,
+      "n_primary_spines_obs": 7.5,
+      "k2_over_k1_pred": 3.693,
+      "k2_over_k1_obs": 3.70
+    },
+    {
+      "species": "Pterynotus alatus",
+      "common_name": "Winged murex",
+      "clade": "Muricinae (Pterynotus)",
+      "spine_architecture": "winged_blade_varix",
+      "L_margin_mm": 58.0,
+      "h1_mm": 0.810,
+      "h2_mm": 0.270,
+      "gamma_varix": 1.38,
+      "k1_pred_mm_inv": 0.958,
+      "lambda1_pred_mm": 6.559,
+      "lambda1_obs_mm": 6.55,
+      "n_primary_spines_pred": 8.84,
+      "n_primary_spines_obs": 9.0,
+      "k2_over_k1_pred": 2.280,
+      "k2_over_k1_obs": 2.28
+    }
+  ]
+}

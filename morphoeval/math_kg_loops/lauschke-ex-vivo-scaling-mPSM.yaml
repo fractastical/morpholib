@@ -1,0 +1,93 @@
+sim_id: lauschke-ex-vivo-scaling-mPSM
+math_family: Scale-Invariant Kinematic Phase-Gradient Encoding (Ex Vivo Monolayer PSM)
+model_spec:
+  model: "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493:101-105 scale-invariant phase-gradient encoding in ex vivo mouse monolayer presomitic mesoderm (mPSM): invariant total phase span Delta_phi = Phi_0 = 2*pi across shrinking radius R(t), linear segment scaling S_n = alpha * R(t_n) (alpha = 0.11), geometric radius contraction R_{n+1} = (1 - alpha) * R_n, and radial wave velocity scaling v_wave(t) = (2*pi / Phi_0) * R(t) / T_osc"
+  governing_equations:
+    universal_phase_profile: "phi(r, t) = omega_0 * t - Phi_0 * (r / R(t))^p,  Delta_phi_total = phi(0, t) - phi(R(t), t) = Phi_0 = 2*pi"
+    proportional_segment_scaling: "S_n = alpha * R(t_n),  alpha = 0.11"
+    geometric_radius_progression: "R(t_{n+1}) = R(t_n) - S_n = (1 - alpha) * R(t_n) = R_0 * (1 - alpha)^n"
+    wave_velocity_scaling: "v_wave(t) = lambda(t) / T_osc = (2*pi / Phi_0) * (R(t) / T_osc)"
+  canonical_parameters:
+    T_osc_min: 140.0
+    omega_0_rad_per_min: 0.04487989505128276
+    Phi_0_rad: 6.283185307179586
+    alpha: 0.11
+    p_exponent: 1.35
+    R0_series_um: [150.0, 250.0, 350.0, 450.0]
+  inputs:
+    - datasets/ex_vivo_scaling_mPSM/ex_vivo_scaling_mPSM_reference.json
+    - datasets/ex_vivo_scaling_mPSM/mouse_mpsm_somites_specimen.jpg
+    - datasets/ex_vivo_scaling_mPSM/scout_manifest.json
+equations:
+  - id: lauschke-ex-vivo-scaling-mPSM-1
+    law_name: "Lauschke et al. (2013) Proportional Segment Scaling Law under Invariant Phase Span"
+    title: "Lauschke et al. (2013) Proportional Segment Scaling Law under Invariant Phase Span"
+    formula: "S_n = alpha * R(t_n),  where Delta_phi_total = phi(0, t) - phi(R(t), t) = Phi_0 = 2*pi"
+    latex: "S_n = \\alpha R(t_n), \\quad \\Delta\\phi_{\\text{total}} = \\phi(0,t) - \\phi(R(t),t) = \\Phi_0 = 2\\pi"
+    ascii: "S_n = alpha * R(t_n), where Delta_phi_total = Phi_0 = 2*pi"
+    lean_decl: "MathOfBiology.Loop_026.scaled_segment_width"
+    lean_theorem: "MathOfBiology.Loop_026.lauschke_2013_proportional_segment_scaling"
+    lean_file: morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean
+    lean_locus: "morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean#L22-L44"
+    lean_code: |-
+      def scaled_segment_width (alpha R : Nat) : Nat :=
+        alpha * R
+      theorem lauschke_2013_proportional_segment_scaling (alpha k R R1 R2 : Nat) :
+          scaled_segment_width alpha (k * R) = k * scaled_segment_width alpha R ∧
+          scaled_segment_width alpha (R1 + R2) =
+            scaled_segment_width alpha R1 + scaled_segment_width alpha R2
+    lean_declaration: |-
+      theorem lauschke_2013_proportional_segment_scaling (alpha k R R1 R2 : Nat) :
+          scaled_segment_width alpha (k * R) = k * scaled_segment_width alpha R ∧
+          scaled_segment_width alpha (R1 + R2) =
+            scaled_segment_width alpha R1 + scaled_segment_width alpha R2
+    variables: "S_n: newly specified concentric segment width at cycle n (um); R(t_n): residual unsegmented mPSM radius (um); alpha: dimensionless proportional scaling slope (0.11)"
+    role: "Establishes linear scale-invariance of embryonic segment size with residual tissue radius via a constant 2*pi total phase span across the active mPSM"
+    source_citation: "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493(7430):101-105 Figs. 2-4"
+    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L105-L175"
+  - id: lauschke-ex-vivo-scaling-mPSM-2
+    law_name: "Lauschke et al. (2013) Geometric Residual mPSM Radius Progression & Conservation Law"
+    title: "Lauschke et al. (2013) Geometric Residual mPSM Radius Progression & Conservation Law"
+    formula: "R(t_{n+1}) = R(t_n) - S_n = (1 - alpha) * R(t_n) = R_0 * (1 - alpha)^n"
+    latex: "R_{n+1} = R_n - S_n = (1 - \\alpha) R_n = R_0 (1 - \\alpha)^n, \\quad S_n = \\alpha R_0 (1 - \\alpha)^{n-1}"
+    ascii: "R_{n+1} = R_n - S_n = (1 - alpha) * R_n = R_0 * (1 - alpha)^n"
+    lean_decl: "MathOfBiology.Loop_026.residual_mpsm_radius_step"
+    lean_theorem: "MathOfBiology.Loop_026.lauschke_2013_geometric_residual_radius_conservation"
+    lean_file: morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean
+    lean_locus: "morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean#L46-L67"
+    lean_code: |-
+      def residual_mpsm_radius_step (M alpha R_n : Int) : Int :=
+        (M - alpha) * R_n
+      def budded_segment_step (alpha R_n : Int) : Int :=
+        alpha * R_n
+      theorem lauschke_2013_geometric_residual_radius_conservation (M alpha R_n : Int) :
+          residual_mpsm_radius_step M alpha R_n + budded_segment_step alpha R_n = M * R_n
+    lean_declaration: |-
+      theorem lauschke_2013_geometric_residual_radius_conservation (M alpha R_n : Int) :
+          residual_mpsm_radius_step M alpha R_n + budded_segment_step alpha R_n = M * R_n
+    variables: "R_n: residual mPSM radius at cycle n (um); R_0: initial mPSM explant radius (um); S_n: n-th concentric segment width (um)"
+    role: "Governs the inward periphery-to-center geometric contraction of the active mPSM domain and exact radial conservation across successive segmentation cycles"
+    source_citation: "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493(7430):101-105 Figs. 1-3"
+    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L178-L245"
+  - id: lauschke-ex-vivo-scaling-mPSM-3
+    law_name: "Lauschke et al. (2013) Radial Notch Phase-Wave Velocity Scaling Law"
+    title: "Lauschke et al. (2013) Radial Notch Phase-Wave Velocity Scaling Law"
+    formula: "v_wave(t) = lambda(t) / T_osc = (2*pi / Phi_0) * (R(t) / T_osc)"
+    latex: "v_{\\text{wave}}(t) = \\frac{\\lambda(t)}{T_{\\text{osc}}} = \\frac{2\\pi}{\\Phi_0} \\frac{R(t)}{T_{\\text{osc}}}"
+    ascii: "v_wave(t) = lambda(t) / T_osc = (2*pi / Phi_0) * (R(t) / T_osc)"
+    lean_decl: "MathOfBiology.Loop_026.phase_wave_kinematic_residual"
+    lean_theorem: "MathOfBiology.Loop_026.lauschke_2013_phase_wave_velocity_scaling"
+    lean_file: morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean
+    lean_locus: "morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean#L69-L90"
+    lean_code: |-
+      def phase_wave_kinematic_residual (v_wave T_osc lambda_ratio R : Int) : Int :=
+        v_wave * T_osc - lambda_ratio * R
+      theorem lauschke_2013_phase_wave_velocity_scaling (lambda_ratio T_osc c : Int) :
+          phase_wave_kinematic_residual (lambda_ratio * c) T_osc lambda_ratio (T_osc * c) = 0
+    lean_declaration: |-
+      theorem lauschke_2013_phase_wave_velocity_scaling (lambda_ratio T_osc c : Int) :
+          phase_wave_kinematic_residual (lambda_ratio * c) T_osc lambda_ratio (T_osc * c) = 0
+    variables: "v_wave(t): radial LuVeLu Notch phase-wave propagation speed (um/min); lambda(t): effective radial phase wavelength (um); T_osc: central pacemaker clock period (140 min)"
+    role: "Explains why LuVeLu Notch oscillation waves propagate faster in larger mPSM explants and decelerate as R(t) shrinks while maintaining a 2*pi phase span"
+    source_citation: "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493(7430):101-105 Fig. 4"
+    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L248-L325"

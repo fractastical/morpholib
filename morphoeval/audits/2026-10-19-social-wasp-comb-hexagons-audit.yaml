@@ -1,0 +1,181 @@
+# MorphoEval audit — Karsai & Pénzes (1993) J. Theor. Biol., Theraulaz & Bonabeau (1995) Science & Smith et al. (2021) PNAS Social Wasp Stigmergic Hexagonal Comb Architecture, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `1998-bonabeau-social-wasp-comb-hexagons.py` (226 lines)
+# prior to Step 12 remediation in `2026-10-19-social-wasp-comb-hexagons-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.2 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `generate_deterministic_hex_rings` (L56-68) places axial coordinates (q, r) in
+#      hardcoded concentric rings rather than simulating the stochastic Boltzmann stigmergic
+#      cell-initiation process P_init(j) = exp(beta * k_j) / sum_m exp(beta * k_m) over
+#      candidate perimeter pockets with k in {1, 2, 3} shared walls.
+#   2. `evaluate_ring_economy_table` (L71-86) evaluates only the analytic 8-ring centered
+#      hexagonal table R in [0, 7] and omits the 7-point stigmergic selectivity sweep
+#      beta in [0.0, 5.5], the beta = 0.0 Eden random perimeter growth negative control,
+#      and the Smith et al. (2021) worker-to-reproductive cell size transition (lambda in
+#      [1.00, 1.40]) inducing paired pentagon-heptagon (5-7) topological disclinations.
+#   3. The vendored CC BY 2.0 Polistes paper wasp comb photograph
+#      `datasets/social_wasp_comb_hexagons/polistes_wasp_comb_specimen.jpg` is never loaded,
+#      segmented, or analyzed via Voronoi/Delaunay neighbor-count topology in
+#      `social_wasp_comb_hexagons_comparison.png`.
+#   4. Runtime SHA-256 verification of dataset assets and CLI parameter overrides
+#      (`--beta`, `--n-cells`, `--size-ratio-lambda`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-social-wasp-comb-hexagons-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 096 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/96
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e93f00e
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `1998-bonabeau-social-wasp-comb-hexagons.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-social-wasp-comb-hexagons-loop`.
+
+references:
+  karsai1993:
+    title: "Comb building in social wasps: self-organization and stigmergic script"
+    authors: "Karsai I, Pénzes Z"
+    venue: "Journal of Theoretical Biology 161(4):505-525 (1993)"
+    doi: 10.1006/jtbi.1993.1072
+  theraulaz1995:
+    title: "Coordination in distributed building"
+    authors: "Theraulaz G, Bonabeau E"
+    venue: "Science 269(5224):686-688 (1995)"
+    doi: 10.1126/science.269.5224.686
+  karsai2000:
+    title: "Optimality of cell arrangement and rules of thumb of cell initiation in Polistes dominulus: a modeling approach"
+    authors: "Karsai I, Pénzes Z"
+    venue: "Behavioral Ecology 11(4):387-395 (2000)"
+    doi: 10.1093/beheco/11.4.387
+  smith2021:
+    title: "Imperfect comb construction reveals the architectural abilities of honeybees"
+    authors: "Smith ML, Napp KH, Gravish N, Seeley TD, Petersen KH"
+    venue: "Proceedings of the National Academy of Sciences 118(31):e2103605118 (2021)"
+    doi: 10.1073/pnas.2103605118
+  hales2001:
+    title: "The Honeycomb Conjecture"
+    authors: "Hales TC"
+    venue: "Discrete & Computational Geometry 25(1):1-22 (2001)"
+    doi: 10.1007/s004540010071
+
+simulations:
+  - id: bonabeau-social-wasp-comb-hexagons
+    name: "Karsai & Pénzes (1993) J. Theor. Biol., Theraulaz & Bonabeau (1995) Science & Smith et al. (2021) PNAS stigmergic hexagonal wasp comb architecture, shared-wall pulp economy & 5-7 topological disclination pairs"
+    organism: "Polistes dominula / Vespula vulgaris (Social paper wasps)"
+    script: 1998-bonabeau-social-wasp-comb-hexagons.py
+    output: docs/media/social_wasp_comb_hexagons_comparison.png
+    extra_outputs:
+      - docs/media/social_wasp_comb_hexagons_growth.gif
+    status: evaluated
+    source_refs:
+      - karsai1993
+      - theraulaz1995
+      - karsai2000
+      - smith2021
+      - hales2001
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `1998-bonabeau-social-wasp-comb-hexagons.py`
+      (overall weighted score: 56.2/100). The v1 script implements the analytic centered
+      hexagonal ring progression N(R) = 1 + 3R(R+1), total wall count W(R) = 3N(R) + 6R + 3,
+      and wall-to-cell ratio W(R)/N(R) -> 3.0 across R in [0, 7], but generates cells via
+      deterministic ringenumeration rather than simulating the stochastic Boltzmann
+      stigmergic initiation rule P_init(k) ~ exp(beta*k) over k in {1, 2, 3} shared-wall
+      perimeter pockets, omits the 7-point beta selectivity sweep and beta = 0 Eden random
+      growth negative control, omits the Smith et al. (2021) worker-to-queen cell size
+      transition inducing paired 5-7 topological defects, and never loads or segments the
+      vendored Polistes wasp comb specimen (`polistes_wasp_comb_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 57
+        rationale: >-
+          Computes centered hexagonal cell counts N(R) = 1 + 3R(R+1), total shared walls
+          W(R) = 3N(R) + 6R + 3, and pulp savings S_saved(R) = 6N(R) - W(R) (L34-53),
+          backed by 3 Lean 4 theorems in `Loop_096_social_wasp_comb_hexagons.lean`.
+          However, `generate_deterministic_hex_rings` (L56-68) enumerates concentric rings
+          deterministically without simulating the stochastic Boltzmann wall-sharing rule
+          P(k) ~ exp(beta*k), and lacks topological 5-7 disclination pairs at caste size
+          transitions.
+        evidence:
+          - {file: 1998-bonabeau-social-wasp-comb-hexagons.py, lines: [34, 53], note: "Exact centered hexagonal cell count N(R), total walls W(R), and pulp savings S_saved(R)", supports: true}
+          - {file: 1998-bonabeau-social-wasp-comb-hexagons.py, lines: [56, 68], note: "Deterministic ring enumeration instead of stochastic Boltzmann P(k) ~ exp(beta*k) pocket selection and 5-7 defect relaxation", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/social_wasp_comb_hexagons/polistes_wasp_comb_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or extracts brood cell
+          cavities, Delaunay/Voronoi neighbor coordination numbers z_i, or hexatic order
+          from the biological specimen image.
+        evidence:
+          - {file: 1998-bonabeau-social-wasp-comb-hexagons.py, lines: [71, 86], note: "Evaluates only the 8-ring analytic table without loading or segmenting polistes_wasp_comb_specimen.jpg", supports: false}
+          - {file: docs/media/social_wasp_comb_hexagons_comparison.png, lines: [0, 0], note: "4-panel v1 plot lacks Polistes comb specimen Voronoi segmentation, beta selectivity sweep, and 5-7 topological defects", supports: false}
+      parameter-expressivity:
+        value: 50
+        rationale: >-
+          Evaluates 8 concentric ring indices R in [0, 7] (L71-86), but omits the 7-point
+          stigmergic selectivity sweep beta in [0.0, 5.5], omits the beta = 0 Eden random
+          comb negative control, omits the worker-to-reproductive cell size ratio lambda in
+          [1.00, 1.40] control, and exposes no CLI parameter overrides.
+        evidence:
+          - {file: 1998-bonabeau-social-wasp-comb-hexagons.py, lines: [71, 86], note: "Single 8-ring table without beta selectivity sweep, Eden random control, caste transition lambda, or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          `measure_morphoeval()` (L175-210) reports only 4 analytic ring ratios without
+          Pearson r, p-value, RMSE, stigmergic selectivity beta correlation, Eden random vs
+          wild-type wall-per-cell delta, 5-7 disclination dipole net Euler charge, or
+          specimen brood cell coordination number <z>.
+        evidence:
+          - {file: 1998-bonabeau-social-wasp-comb-hexagons.py, lines: [175, 210], note: "Only 4 analytic ring metrics without statistical tests, negative controls, or specimen segmentation", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Vendors `datasets/social_wasp_comb_hexagons/` with 5 primary DOIs in
+          `paper_citations.bib` (`10.1006/jtbi.1993.1072`, `10.1126/science.269.5224.686`,
+          `10.1093/beheco/11.4.387`, `10.1073/pnas.2103605118`, `10.1007/s004540010071`),
+          `scout_manifest.json`, and `social_wasp_comb_hexagons_reference.json`, but lacks
+          runtime SHA-256 verification in `1998-bonabeau-social-wasp-comb-hexagons.py`.
+        evidence:
+          - {file: datasets/social_wasp_comb_hexagons/social_wasp_comb_hexagons_reference.json, lines: [1, 165], note: "Reference JSON with concentric ring economy trajectory, beta selectivity sweep, and topological defect controls", supports: true}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Links module docstrings to Karsai & Pénzes (1993), Theraulaz & Bonabeau (1995),
+          and the 3 Lean 4 theorems in `Loop_096_social_wasp_comb_hexagons.lean` (L1-11),
+          but lacks trace links for stochastic Boltzmann pocket selection, Smith et al.
+          (2021) 5-7 disclination pairs, and Eden random growth controls.
+        evidence:
+          - {file: 1998-bonabeau-social-wasp-comb-hexagons.py, lines: [1, 11], note: "Baseline docstring linking Karsai & Penzes (1993), Theraulaz & Bonabeau (1995), and Loop_096 Lean theorems", supports: true}
+      repro-package:
+        value: 64
+        rationale: >-
+          Provides `--self-test` (`L213-218`) checking centered hexagonal numbers, but
+          lacks SHA-256 asset verification, two-run bitwise determinism checks on the
+          stochastic stigmergic builder, and topological defect assertions.
+        evidence:
+          - {file: 1998-bonabeau-social-wasp-comb-hexagons.py, lines: [213, 218], note: "Minimal 3-assertion self_test() without SHA-256 or stochastic determinism checks", supports: false}
+    remediation:
+      - "Replace deterministic ring enumeration with a stochastic Karsai-Penzes & Theraulaz-Bonabeau 2D/3D hexagonal lattice builder implementing Boltzmann stigmergic pocket selection P_init(j) = exp(beta * k_j) / sum_m exp(beta * k_m) over k in {1, 2, 3} shared-wall perimeter pockets."
+      - "Implement both the 8-ring concentric comb economy trajectory R in [0, 7] (verifying W(R)/N(R) -> 3.0 and 50% pulp savings) and the 7-point stigmergic selectivity sweep beta in [0.0, 5.5] including the beta = 0.0 Eden random branched comb negative control."
+      - "Implement the Smith et al. (2021) PNAS worker-to-reproductive cell size transition (lambda in [1.00, 1.40]) with spring-Voronoi lattice relaxation inducing paired pentagon-heptagon (5-7) topological disclinations with zero net Euler charge."
+      - "Segment the vendored CC BY 2.0 Polistes paper wasp comb photograph (`polistes_wasp_comb_specimen.jpg`) via Difference-of-Gaussians cavity detection and Delaunay/Voronoi topology to extract brood cell count and interior coordination number <z>, and enforce runtime SHA-256 verification."

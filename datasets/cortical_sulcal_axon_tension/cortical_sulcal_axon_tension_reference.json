@@ -1,0 +1,308 @@
+{
+  "schema_version": "morphoeval-reference-dataset-1.0",
+  "dataset_id": "cortical_sulcal_axon_tension_reference",
+  "slot": 90,
+  "sim_id": "karbowski-cortical-sulcal-axon-tension",
+  "title": "Van Essen (1997) Nature, Hilgetag & Barbas (2006) PLoS Comput. Biol. & Mota & Herculano-Houzel (2015) Science — Cortico-Cortical Axonal Tension, Laminar Thickness Dichotomy & Universal Cortical Folding Scaling",
+  "primary_papers": [
+    {
+      "citation": "Van Essen DC (1997). A tension-based theory of morphogenesis and compact wiring in the central nervous system. Nature 385(6614):313-318.",
+      "doi": "10.1038/385313a0"
+    },
+    {
+      "citation": "Hilgetag CC, Barbas H (2006). Role of Mechanical Factors in the Morphology of the Primate Cerebral Cortex. PLoS Computational Biology 2(3):e22.",
+      "doi": "10.1371/journal.pcbi.0020022"
+    },
+    {
+      "citation": "Mota B, Herculano-Houzel S (2015). Cortical folding scales universally with surface area and thickness, not number of neurons. Science 349(6243):74-77.",
+      "doi": "10.1126/science.aaa9101"
+    },
+    {
+      "citation": "Toro R, Burnod Y (2005). A Morphogenetic Model for the Development of Cortical Convolutions. Cerebral Cortex 15(12):1900-1913.",
+      "doi": "10.1093/cercor/bhi068"
+    },
+    {
+      "citation": "Karbowski J (2001). Optimal wiring principle and plateaus in the degree of separation between cortical areas. Physical Review Letters 86(16):3674-3677.",
+      "doi": "10.1103/PhysRevLett.86.3674"
+    }
+  ],
+  "governing_equations": {
+    "van_essen_axonal_tension_energy": "E_total = sum_{i<j} 0.5 * k_a * C_{ij} * max(0, ||x_i - x_j|| - L_{0,ij})^2 + 0.5 * B_c * sum_i kappa_i^2 * ds_i + E_pressure",
+    "towed_axon_viscoelastic_growth": "dL_{0,ij}/dt = gamma_a * max(0, T_{ij} - tau_0), where T_{ij} = k_a * C_{ij} * (||x_i - x_j|| - L_{0,ij})_+",
+    "chord_vs_arc_wiring_economy": "V_wire = sum_{i<j} C_{ij} * d_{ij}; outward gyral folding across strongly connected areas (C_strong > C_weak) replaces arc length d_arc with 3D chord d_chord = 2*r_g*sin(d_arc/(2*r_g)) < d_arc",
+    "hilgetag_barbas_laminar_volume_conservation": "V_col = A_surf * h = const => h_gyrus = h_0 / lambda_{t,gyrus} > h_wall = h_0 > h_fundus = h_0 / lambda_{t,fundus}",
+    "mota_herculano_houzel_universal_scaling": "A_T * sqrt(h) = k * A_E^(5/4)  <=>  log10(A_T * sqrt(h)) = 1.25 * log10(A_E) + log10(k), with GI = A_T / A_E = k * h^(-1/2) * A_E^(1/4) >= 1.0",
+    "parameters": {
+      "axon_stiffness_k_a": 1.35,
+      "bending_modulus_B_c": 2.40,
+      "towed_growth_rate_gamma_a": 0.085,
+      "tension_threshold_tau_0": 0.12,
+      "gyral_tangential_compression_lambda_g": 0.78,
+      "sulcal_tangential_stretch_lambda_f": 1.26,
+      "mhh_universal_exponent_alpha": 1.25,
+      "mhh_offset_log10_k": -0.495,
+      "baseline_cortical_thickness_h0_mm": 2.45
+    }
+  },
+  "hilgetag_barbas_2006_laminar_profiles": [
+    {
+      "zone": "gyral_crown",
+      "label": "Gyral Crown (Outward Fold)",
+      "tangential_strain_lambda_t": 0.78,
+      "total_thickness_mm": 3.14,
+      "deep_layers_V_VI_mm": 1.48,
+      "superficial_layers_I_IV_mm": 1.66,
+      "relative_thickness_h_over_h0": 1.2816,
+      "axon_pull_orientation": "radial_inward_across_gyral_core"
+    },
+    {
+      "zone": "sulcal_wall",
+      "label": "Sulcal Wall (Intermediate Bank)",
+      "tangential_strain_lambda_t": 1.00,
+      "total_thickness_mm": 2.45,
+      "deep_layers_V_VI_mm": 0.98,
+      "superficial_layers_I_IV_mm": 1.47,
+      "relative_thickness_h_over_h0": 1.0000,
+      "axon_pull_orientation": "oblique_u_fiber_shear"
+    },
+    {
+      "zone": "sulcal_fundus",
+      "label": "Sulcal Fundus (Inward Trough)",
+      "tangential_strain_lambda_t": 1.26,
+      "total_thickness_mm": 1.94,
+      "deep_layers_V_VI_mm": 0.62,
+      "superficial_layers_I_IV_mm": 1.32,
+      "relative_thickness_h_over_h0": 0.7918,
+      "axon_pull_orientation": "tangential_subcortical_u_fiber"
+    }
+  ],
+  "van_essen_1997_connectivity_folding_pairs": [
+    {
+      "pair_id": "V1_V2_border_gyrus",
+      "region_pair": "Macaque V1-V2 Opercular Gyral Fold",
+      "connection_density_C_ij": 0.92,
+      "geodesic_arc_distance_mm": 14.8,
+      "folded_3d_chord_distance_mm": 6.4,
+      "wiring_length_reduction_ratio": 0.4324,
+      "fold_morphology": "outward_gyral_crown_bridged_by_dense_axons"
+    },
+    {
+      "pair_id": "MT_MST_superior_temporal",
+      "region_pair": "Macaque MT-MST Superior Temporal Gyral Bank",
+      "connection_density_C_ij": 0.84,
+      "geodesic_arc_distance_mm": 12.5,
+      "folded_3d_chord_distance_mm": 5.8,
+      "wiring_length_reduction_ratio": 0.4640,
+      "fold_morphology": "compact_trans_gyral_bundle"
+    },
+    {
+      "pair_id": "LPFC_BA46_BA9_crown",
+      "region_pair": "Prefrontal BA46-BA9 Principal Gyral Crown",
+      "connection_density_C_ij": 0.78,
+      "geodesic_arc_distance_mm": 16.2,
+      "folded_3d_chord_distance_mm": 7.9,
+      "wiring_length_reduction_ratio": 0.4877,
+      "fold_morphology": "outward_gyral_crown"
+    },
+    {
+      "pair_id": "weak_inter_areal_sulcal_fundus",
+      "region_pair": "Weakly Connected Sulcal Fundus Boundary",
+      "connection_density_C_ij": 0.11,
+      "geodesic_arc_distance_mm": 11.4,
+      "folded_3d_chord_distance_mm": 10.6,
+      "wiring_length_reduction_ratio": 0.9298,
+      "fold_morphology": "inward_sulcal_fundus_trough"
+    }
+  ],
+  "mota_herculano_houzel_2015_mammalian_scaling": [
+    {
+      "species": "Mus musculus",
+      "common_name": "House mouse",
+      "clade": "Rodentia",
+      "h_mm": 0.89,
+      "A_E_mm2": 82.0,
+      "A_T_mm2": 84.5,
+      "GI_3D": 1.030,
+      "log10_A_E": 1.9138,
+      "log10_A_T_sqrt_h": 1.9019
+    },
+    {
+      "species": "Rattus norvegicus",
+      "common_name": "Brown rat",
+      "clade": "Rodentia",
+      "h_mm": 1.12,
+      "A_E_mm2": 205.0,
+      "A_T_mm2": 215.2,
+      "GI_3D": 1.050,
+      "log10_A_E": 2.3118,
+      "log10_A_T_sqrt_h": 2.3574
+    },
+    {
+      "species": "Cavia porcellus",
+      "common_name": "Guinea pig",
+      "clade": "Rodentia",
+      "h_mm": 1.38,
+      "A_E_mm2": 495.0,
+      "A_T_mm2": 644.0,
+      "GI_3D": 1.301,
+      "log10_A_E": 2.6946,
+      "log10_A_T_sqrt_h": 2.8788
+    },
+    {
+      "species": "Oryctolagus cuniculus",
+      "common_name": "European rabbit",
+      "clade": "Lagomorpha",
+      "h_mm": 1.50,
+      "A_E_mm2": 840.0,
+      "A_T_mm2": 1185.0,
+      "GI_3D": 1.411,
+      "log10_A_E": 2.9243,
+      "log10_A_T_sqrt_h": 3.1618
+    },
+    {
+      "species": "Callithrix jacchus",
+      "common_name": "Common marmoset",
+      "clade": "Primates",
+      "h_mm": 1.42,
+      "A_E_mm2": 920.0,
+      "A_T_mm2": 1352.0,
+      "GI_3D": 1.470,
+      "log10_A_E": 2.9638,
+      "log10_A_T_sqrt_h": 3.2071
+    },
+    {
+      "species": "Felis catus",
+      "common_name": "Domestic cat",
+      "clade": "Carnivora",
+      "h_mm": 1.62,
+      "A_E_mm2": 2150.0,
+      "A_T_mm2": 3698.0,
+      "GI_3D": 1.720,
+      "log10_A_E": 3.3324,
+      "log10_A_T_sqrt_h": 3.6728
+    },
+    {
+      "species": "Cebus apella",
+      "common_name": "Tufted capuchin",
+      "clade": "Primates",
+      "h_mm": 1.92,
+      "A_E_mm2": 4650.0,
+      "A_T_mm2": 8788.0,
+      "GI_3D": 1.890,
+      "log10_A_E": 3.6675,
+      "log10_A_T_sqrt_h": 4.0856
+    },
+    {
+      "species": "Macaca mulatta",
+      "common_name": "Rhesus macaque",
+      "clade": "Primates",
+      "h_mm": 2.08,
+      "A_E_mm2": 6400.0,
+      "A_T_mm2": 12672.0,
+      "GI_3D": 1.980,
+      "log10_A_E": 3.8062,
+      "log10_A_T_sqrt_h": 4.2619
+    },
+    {
+      "species": "Sus scrofa",
+      "common_name": "Domestic pig",
+      "clade": "Artiodactyla",
+      "h_mm": 2.15,
+      "A_E_mm2": 7900.0,
+      "A_T_mm2": 16274.0,
+      "GI_3D": 2.060,
+      "log10_A_E": 3.8976,
+      "log10_A_T_sqrt_h": 4.3778
+    },
+    {
+      "species": "Pan troglodytes",
+      "common_name": "Chimpanzee",
+      "clade": "Primates",
+      "h_mm": 2.42,
+      "A_E_mm2": 16800.0,
+      "A_T_mm2": 39144.0,
+      "GI_3D": 2.330,
+      "log10_A_E": 4.2253,
+      "log10_A_T_sqrt_h": 4.7846
+    },
+    {
+      "species": "Homo sapiens",
+      "common_name": "Human",
+      "clade": "Primates",
+      "h_mm": 2.63,
+      "A_E_mm2": 39800.0,
+      "A_T_mm2": 109450.0,
+      "GI_3D": 2.750,
+      "log10_A_E": 4.5999,
+      "log10_A_T_sqrt_h": 5.2492
+    },
+    {
+      "species": "Tursiops truncatus",
+      "common_name": "Bottlenose dolphin",
+      "clade": "Cetacea",
+      "h_mm": 1.76,
+      "A_E_mm2": 48500.0,
+      "A_T_mm2": 185270.0,
+      "GI_3D": 3.820,
+      "log10_A_E": 4.6857,
+      "log10_A_T_sqrt_h": 5.3906
+    }
+  ],
+  "ablation_and_perturbation_regimes": [
+    {
+      "condition_id": "wildtype_axonal_tension",
+      "label": "Wild-Type Viscoelastic Axonal Tension (k_a = 1.35)",
+      "k_a": 1.35,
+      "growth_g": 1.85,
+      "GI_coronal_obs": 2.48,
+      "wiring_economy_ratio_obs": 0.528,
+      "h_gyrus_over_h_fundus_obs": 1.618,
+      "gyral_axon_alignment_corr_obs": 0.912
+    },
+    {
+      "condition_id": "axonal_tension_ablation_callosotomy",
+      "label": "Axonal Tension Ablation / Deafferentation (k_a = 0.0)",
+      "k_a": 0.0,
+      "growth_g": 1.85,
+      "GI_coronal_obs": 1.34,
+      "wiring_economy_ratio_obs": 0.965,
+      "h_gyrus_over_h_fundus_obs": 1.042,
+      "gyral_axon_alignment_corr_obs": 0.050
+    },
+    {
+      "condition_id": "hyper_connected_enlarged_tracts",
+      "label": "Hyper-Connected Tracts / Early Subplate Hyper-Tension (k_a = 2.40)",
+      "k_a": 2.40,
+      "growth_g": 1.85,
+      "GI_coronal_obs": 2.86,
+      "wiring_economy_ratio_obs": 0.442,
+      "h_gyrus_over_h_fundus_obs": 1.795,
+      "gyral_axon_alignment_corr_obs": 0.958
+    },
+    {
+      "condition_id": "lissencephalic_no_tension_no_growth",
+      "label": "Lissencephalic Unfolded Control (k_a = 0.0, g = 1.00)",
+      "k_a": 0.0,
+      "growth_g": 1.00,
+      "GI_coronal_obs": 1.00,
+      "wiring_economy_ratio_obs": 1.000,
+      "h_gyrus_over_h_fundus_obs": 1.000,
+      "gyral_axon_alignment_corr_obs": 0.000
+    }
+  ],
+  "metadata": {
+    "specimens": {
+      "coronal_cortex_axon_tracts_specimen": {
+        "filename": "coronal_cortex_axon_tracts_specimen.jpg",
+        "source_title": "File:Human brain frontal (coronal) section.JPG",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Human_brain_frontal_(coronal)_section.JPG",
+        "license": "CC BY 2.5",
+        "organism": "Homo sapiens",
+        "organ": "Coronal cerebral hemisphere section showing outward gyral crowns, inward sulcal fundi, cortical ribbon thickness gradient, and white-matter axonal tracts",
+        "width_px": 702,
+        "height_px": 487,
+        "roi_box_xyxy": [95, 25, 645, 435]
+      }
+    }
+  }
+}

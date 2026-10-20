@@ -1,0 +1,149 @@
+# MorphoEval audit — Cooke & Zeeman (1976) Clock-and-Wavefront Somite Segmentation, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `1976-cooke-clock-and-wavefront.py` (Slot 021) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-clock-and-wavefront-loop`.
+
+audit:
+  id: 2026-10-19-clock-and-wavefront-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1976-cooke-clock-and-wavefront.py` in
+      `2026-10-19-clock-and-wavefront-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  cooke1976:
+    title: "A clock and wavefront model for control of the number of repeated structures during animal morphogenesis"
+    authors: "Cooke J, Zeeman EC"
+    venue: "Journal of Theoretical Biology 58(2):455-476 (1976)"
+    doi: 10.1016/S0022-5193(76)80131-2
+  cooke1975:
+    title: "Control of somite number during morphogenesis of a vertebrate, Xenopus laevis"
+    authors: "Cooke J"
+    venue: "Nature 254(5497):196-199 (1975)"
+    doi: 10.1038/254196a0
+  palmeirim1997:
+    title: "Avian hairy gene expression identifies a molecular clock linked to vertebrate segmentation and somitogenesis"
+    authors: "Palmeirim I, Henrique D, Ish-Horowicz D, Pourquie O"
+    venue: "Cell 91(5):639-648 (1997)"
+    doi: 10.1016/S0092-8674(00)80451-1
+  goldbeter2007:
+    title: "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling"
+    authors: "Goldbeter A, Gonze D, Pourquie O"
+    venue: "Developmental Dynamics 236(6):1495-1508 (2007)"
+    doi: 10.1002/dvdy.21193
+
+simulations:
+  - id: cooke-clock-and-wavefront
+    name: "Cooke & Zeeman (1976) clock-and-wavefront somite segmentation"
+    organism: "Xenopus laevis & Gallus gallus vertebrate paraxial mesoderm somites"
+    script: 1976-cooke-clock-and-wavefront.py
+    output: docs/media/clock_and_wavefront_comparison.png
+    extra_outputs:
+      - docs/media/clock_and_wavefront_growth.gif
+    status: evaluated
+    source_refs:
+      - cooke1976
+      - cooke1975
+      - palmeirim1997
+      - goldbeter2007
+    summary: >-
+      Pass 1 baseline assessment of `1976-cooke-clock-and-wavefront.py` (58.4/100). The
+      initial kinematics capture S = v * T_c and basic 1D wavefront progression, but
+      require scale-invariant wavefront width sigma_w proportional to L_mm to guarantee
+      exact N_mini = N_norm = 40 somite invariance across surgically reduced miniature
+      embryos, full bilateral DoG somite dome segmentation against the vendored SEM
+      specimen (`somite_embryo_specimen.jpg`), and explicit clock-arrested (A_c = 0)
+      plus unscaled-wavefront (v = v_0) negative controls.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: >-
+          Implements Cooke & Zeeman's (1976) kinematic wavelength law S = v * T_c and
+          Thom-Zeeman cusp catastrophe ODE dchi/dt = -(chi^3 - a(x,t)*chi - b_osc(x,t))/tau_chi
+          (L145-235), but fixed spatial phase gradient k_phi and unscaled wavefront width
+          sigma_w introduce a 1-somite boundary discrepancy (N=39 vs 40) between normal
+          and miniature embryos.
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [88, 108], note: "Analytical somite wavelength S = v * T_c and count N = L / (v * T_c)", supports: true}
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [145, 235], note: "Cusp catastrophe clock-wavefront solver requiring proportional sigma_w scaling", supports: false}
+      specimen-match:
+        value: 52
+        rationale: >-
+          Vendors `datasets/clock_and_wavefront/somite_embryo_specimen.jpg` (CC BY 4.0
+          dorsal SEM of vertebrate neural tube and bilateral somites), but Pass 1 lacks
+          automated bilateral DoG peak/cleft extraction and phase-aligned waveform
+          correlation against the simulated cusp somite profile.
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [248, 315], note: "Specimen segmentation routine on somite_embryo_specimen.jpg", supports: false}
+          - {file: docs/media/clock_and_wavefront_comparison.png, lines: [0, 0], note: "Comparison figure with dorsal SEM somite overlay", supports: true}
+      parameter-expressivity:
+        value: 58
+        rationale: >-
+          Covers normal (L=4.0 mm) and miniature (L=2.4 mm) embryos, but needs a full
+          5-regime Cooke (1975) parameter sweep across (L, v, T_c) plus an explicit
+          clock-arrested (A_clock=0) and unscaled-wavefront (v=v_0) ablation comparison.
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [115, 142], note: "Size regulation regime evaluator", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Measures simulated somite spacing S_sim, but Pass 1 requires full 5-regime
+          Pearson correlation r and RMSE against Cooke (1975) Table 1 plus bilateral
+          specimen spacing CV and symmetry ratio.
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [322, 395], note: "MorphoEval measurement hook measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `clock_and_wavefront_reference.json`,
+          `paper_citations.bib`, and `somite_embryo_specimen.jpg` with SHA-256 digests,
+          linking Cooke & Zeeman (1976) and Cooke (1975).
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [58, 84], note: "SHA-256 cryptographic verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Links functions to Cooke & Zeeman (1976) Sections 2-4 and Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean`.
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [1, 45], note: "Module docstring mapping equations to Cooke & Zeeman (1976) and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Includes `--self-test` and deterministic seed=1976, but Pass 1 self-test caught
+          the 1-somite scale-invariance boundary discrepancy prior to proportional
+          wavefront-width calibration.
+        evidence:
+          - {file: 1976-cooke-clock-and-wavefront.py, lines: [570, 620], note: "Self-test suite with bitwise determinism and size-invariance assertions", supports: true}
+    remediation:
+      - "Scale wavefront transition width sigma_w proportionally to axial length L (sigma_w = 0.0045 * L) with synchronous intracellular clock phase so N_norm = N_mini = 40 holds identically with <0.2% wavelength error."
+      - "Add bilateral dorsal somite row DoG peak & inter-somitic cleft segmentation on `datasets/clock_and_wavefront/somite_embryo_specimen.jpg` with phase-aligned Pearson r correlation against the cusp catastrophe spatial wave."
+      - "Include both a clock-arrested negative control (A_clock = 0 -> 0 somites) and an unscaled-wavefront failure control (v = v_0 across reduced L) alongside the 5 Cooke (1975) experimental regimes."

@@ -1,0 +1,153 @@
+# MorphoEval audit — Kriegman et al. (2020, 2021) Xenobot Evolutionary Biomechanics & Kinematic Self-Replication, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2020-kriegman-xenobot-evolutionary-biobots.py` (Slot 083) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-xenobot-evolutionary-biobots-loop`.
+
+audit:
+  id: 2026-10-19-xenobot-evolutionary-biobots-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2020-kriegman-xenobot-evolutionary-biobots.py` in
+      `2026-10-19-xenobot-evolutionary-biobots-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  kriegman2020:
+    title: "A scalable pipeline for designing reconfigurable organisms"
+    authors: "Kriegman S, Blackiston D, Levin M, Bongard J"
+    venue: "Proceedings of the National Academy of Sciences 117(4):1853-1859 (2020)"
+    doi: 10.1073/pnas.1910837117
+  kriegman2021:
+    title: "Kinematic self-replication in reconfigurable organisms"
+    authors: "Kriegman S, Blackiston D, Levin M, Bongard J"
+    venue: "Proceedings of the National Academy of Sciences 118(49):e2112672118 (2021)"
+    doi: 10.1073/pnas.2112672118
+  blackiston2021:
+    title: "A cellular platform for the development of synthetic living machines"
+    authors: "Blackiston D, Lederer E, Kriegman S, Garnier S, Bongard J, Levin M"
+    venue: "Science Robotics 6(52):eabf1571 (2021)"
+    doi: 10.1126/scirobotics.abf1571
+  cheney2013:
+    title: "Unshackling evolution: evolving soft robots with multiple materials and a powerful generative encoding"
+    authors: "Cheney N, MacCurdy R, Clune J, Lipson H"
+    venue: "Proceedings of GECCO 2013, pp. 167-174 (2013)"
+    doi: 10.1145/2463372.2463404
+
+simulations:
+  - id: kriegman-xenobot-evolutionary-biobots
+    name: "Kriegman et al. (2020, 2021) Xenobot evolutionary biomechanics & kinematic self-replication"
+    organism: "Xenopus laevis (African clawed frog blastula ectoderm & cardiac progenitor biobots)"
+    script: 2020-kriegman-xenobot-evolutionary-biobots.py
+    output: docs/media/xenobot_evolutionary_biobots_comparison.png
+    extra_outputs:
+      - docs/media/xenobot_evolutionary_biobots_growth.gif
+    status: evaluated
+    source_refs:
+      - kriegman2020
+      - kriegman2021
+      - blackiston2021
+      - cheney2013
+    summary: >-
+      Pass 1 baseline assessment of `2020-kriegman-xenobot-evolutionary-biobots.py` (59.5/100).
+      The initial voxel spring-lattice simulator captures passive ectoderm rest-volume
+      invariance and basic ventral cardiac bipedal propulsion, but requires explicit
+      cardiomyocyte phase-randomization transferability filtering (contiguous ventral
+      cardiac sheet vs scattered checkerboard design), 180-deg dorsal inversion negative
+      control and 50% mechanical laceration wound-closure kinetics, C-shaped ("Pac-Man")
+      kinematic self-replication stem-cell sweeping, and automated convex-hull concavity
+      and red-fluorescent cardiac tissue segmentation on `xenopus_biobot_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 63
+        rationale: >-
+          Implements voxel rest-length actuation L(t) = L0*(1 + eps_0*a*sin(2*pi*f*t + phi))
+          and 2D sagittal bipedal locomotion (L125-245), but the baseline pass lacks the
+          explicit phase-randomization transferability filter separating contiguous ventral
+          cardiac layers from scattered checkerboard designs and the mechanical laceration
+          healing ODE.
+        evidence:
+          - {file: 2020-kriegman-xenobot-evolutionary-biobots.py, lines: [125, 228], note: "Voxel rest-length wave and 8x5 tissue design matrices", supports: true}
+          - {file: 2020-kriegman-xenobot-evolutionary-biobots.py, lines: [232, 370], note: "Spring-lattice locomotion solver requiring phase-noise filter and laceration healing", supports: false}
+      specimen-match:
+        value: 54
+        rationale: >-
+          Vendors `datasets/xenobot_evolutionary_biobots/xenopus_biobot_specimen.jpg`
+          (CC BY 4.0 micrograph of an evolved Xenopus laevis Xenobot), but Pass 1 lacks
+          automated 2D convex-hull solidity/concavity measurement and chromatic R-G/R-B
+          segmentation of the red-fluorescent contractile cardiac progenitor core.
+        evidence:
+          - {file: 2020-kriegman-xenobot-evolutionary-biobots.py, lines: [500, 575], note: "Xenobot specimen segmentation routine on xenopus_biobot_specimen.jpg", supports: false}
+          - {file: docs/media/xenobot_evolutionary_biobots_comparison.png, lines: [0, 0], note: "Comparison figure with Xenobot fluorescence micrograph", supports: true}
+      parameter-expressivity:
+        value: 58
+        rationale: >-
+          Evaluates basic forward locomotion, but requires all 5 experimental regimes
+          (evolved ventral biped, phase-randomized biped, scattered checkerboard noise,
+          inverted dorsal-up control, and mechanical laceration regeneration) plus the
+          2D (epsilon_0, Delta_mu) morphospace and mouth-angle self-replication sweep.
+        evidence:
+          - {file: 2020-kriegman-xenobot-evolutionary-biobots.py, lines: [375, 495], note: "Multi-regime evaluator, AFPO frontier, and kinematic replication sweep", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          Measures net COM displacement, but Pass 1 requires quantitative comparison of
+          phase-randomized retention ratio, laceration velocity recovery, Pac-Man vs
+          spherical stem-cell compaction ratio, and specimen concavity and cardiac
+          tissue fractions.
+        evidence:
+          - {file: 2020-kriegman-xenobot-evolutionary-biobots.py, lines: [810, 915], note: "MorphoEval measurement hook measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `xenobot_evolutionary_biobots_reference.json`,
+          `paper_citations.bib`, and `xenopus_biobot_specimen.jpg` with SHA-256 digests
+          linking Kriegman et al. (2020), Kriegman et al. (2021), Blackiston et al. (2021),
+          and Cheney et al. (2013).
+        evidence:
+          - {file: 2020-kriegman-xenobot-evolutionary-biobots.py, lines: [80, 115], note: "SHA-256 cryptographic verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 61
+        rationale: >-
+          Links functions to Kriegman et al. (2020) Figs. 1-5, Kriegman et al. (2021)
+          Figs. 1-3, and Lean 4 theorems in `Loop_083_xenobot_evolutionary_biobots.lean`.
+        evidence:
+          - {file: 2020-kriegman-xenobot-evolutionary-biobots.py, lines: [1, 60], note: "Module docstring mapping equations to Kriegman et al. (2020, 2021) and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Includes `--self-test` and deterministic seed=2020, requiring completion of the
+          8-check verification suite covering all 5 locomotion/healing regimes, Pac-Man
+          kinematic self-replication, and specimen CV segmentation.
+        evidence:
+          - {file: 2020-kriegman-xenobot-evolutionary-biobots.py, lines: [920, 1005], note: "Self-test suite with bitwise determinism and regime assertions", supports: true}
+    remediation:
+      - "Implement explicit cardiomyocyte phase-randomization transferability filtering (contiguous ventral cardiac sheet retaining >70% speed vs checkerboard collapse), 180-deg dorsal inversion control, and 50% mechanical laceration wound-closure recovery."
+      - "Add Kriegman et al. (2021) C-shaped ('Pac-Man', theta_mouth = 65 deg) kinematic self-replication stem-cell sweeping and multi-generational daughter spheroid compaction vs spherical control."
+      - "Add automated convex-hull solidity/concavity and chromatic red-fluorescent cardiac tissue segmentation on `datasets/xenobot_evolutionary_biobots/xenopus_biobot_specimen.jpg`."

@@ -1,0 +1,126 @@
+sim_id: yaman-somitoid-chirality-buckling
+math_family: Apico-Basal Differential Interfacial Tension Vertex Mechanics Driving Wedge-Cell Somite Rosette & Somitecoel Lumen Formation
+model_spec:
+  model: "Yamanaka et al. (2023) Nature 614:509-520, Miao et al. (2023) Nature 614:500-508 & Adhyapok et al. (2021) Dev. Cell 56:1312-1324 epithelial somite rosette vertex mechanics and mesenchymal-to-epithelial transition (MET) model: apico-basal differential interfacial tension E = sum_i [ (K_A/2)(A_i - A_0)^2 + gamma_ap L_{ap,i} + gamma_lat L_{lat,i} + gamma_bas L_{bas,i} ] coupled with EphA4/ephrinB2 heterotypic boundary repulsion driving wedge-cell somite rosette polarization, central somitecoel lumen equilibrium, and inter-somitic cleft separation"
+  governing_equations:
+    vertex_rosette_energy: "E(R_in, N) = 2 * pi * gamma_ap * R_in + 2 * pi * gamma_bas * R_out + N * gamma_lat * (R_out - R_in),  R_out = sqrt(R_in^2 + N * A_0 / pi)"
+    equilibrium_lumen_ratio: "R_in^* / R_out^* = L_ap^* / L_bas^* = (N * gamma_lat - 2 * pi * gamma_ap) / (N * gamma_lat + 2 * pi * gamma_bas)"
+    eph_ephrin_cleft_barrier: "Delta_E_cleft = 2 * L_cleft * (gamma_het - (gamma_ant + gamma_post) / 2) > 0"
+    rock_matrigel_collapse: "gamma_ap -> gamma_bas  =>  Delta_gamma_{ap-bas} = 0  (loss of wedge polarization under Y-27632 or Minus-Matrigel)"
+  canonical_parameters:
+    N_wedge_cells: 16
+    cell_area_A0_um2: 115.0
+    K_A_area_modulus: 0.08
+    gamma_ap_wt: 1.65
+    gamma_bas_matrigel: 0.45
+    gamma_lat_cdh2: 1.0
+    gamma_het_epha4_ephrinb2: 2.35
+  inputs:
+    - datasets/somitoid_chirality_buckling/somitoid_chirality_buckling_reference.json
+    - datasets/somitoid_chirality_buckling/somitoid_rosette_specimen.jpg
+    - datasets/somitoid_chirality_buckling/scout_manifest.json
+equations:
+  - id: yaman-somitoid-chirality-buckling-1
+    law_name: "Yamanaka et al. (2023) & Adhyapok et al. (2021) Apical Constriction Wedge-Cell Tapering & Somitecoel Lumen Equilibrium Law"
+    title: "Yamanaka et al. (2023) & Adhyapok et al. (2021) Apical Constriction Wedge-Cell Tapering & Somitecoel Lumen Equilibrium Law"
+    formula: "R_in^* / R_out^* = L_ap^* / L_bas^* = (N * gamma_lat - 2 * pi * gamma_ap) / (N * gamma_lat + 2 * pi * gamma_bas) < 1"
+    latex: "\\frac{R_{\\text{in}}^*}{R_{\\text{out}}^*} = \\frac{L_{\\text{ap}}^*}{L_{\\text{bas}}^*} = \\frac{N \\gamma_{\\text{lat}} - 2\\pi \\gamma_{\\text{ap}}}{N \\gamma_{\\text{lat}} + 2\\pi \\gamma_{\\text{bas}}} < 1"
+    ascii: "R_in / R_out = (N * gamma_lat - 2 * pi * gamma_ap) / (N * gamma_lat + 2 * pi * gamma_bas)"
+    lean_decl: "MathOfBiology.Loop_029.wedge_arc_length"
+    lean_theorem: "MathOfBiology.Loop_029.yamanaka_adhyapok_wedge_rosette_tapering"
+    lean_file: morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean
+    lean_locus: "morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean#L24-L60"
+    lean_code: |-
+      def wedge_arc_length (theta_scaled R : Int) : Int :=
+        theta_scaled * R
+      def rosette_lumen_numerator (N_lat two_pi_gamma_ap : Int) : Int :=
+        N_lat - two_pi_gamma_ap
+      def rosette_basal_denominator (N_lat two_pi_gamma_bas : Int) : Int :=
+        N_lat + two_pi_gamma_bas
+      theorem yamanaka_adhyapok_wedge_rosette_tapering
+          (theta_scaled R_in R_out N_lat two_pi_gamma_ap two_pi_gamma_bas : Int)
+          (h_theta : 0 < theta_scaled)
+          (h_rad : R_in < R_out)
+          (h_bas : 0 < two_pi_gamma_bas)
+          (h_ap : two_pi_gamma_bas < two_pi_gamma_ap) :
+          wedge_arc_length theta_scaled R_in < wedge_arc_length theta_scaled R_out ∧
+          rosette_lumen_numerator N_lat two_pi_gamma_ap <
+            rosette_basal_denominator N_lat two_pi_gamma_bas
+    lean_declaration: |-
+      theorem yamanaka_adhyapok_wedge_rosette_tapering
+          (theta_scaled R_in R_out N_lat two_pi_gamma_ap two_pi_gamma_bas : Int)
+          (h_theta : 0 < theta_scaled)
+          (h_rad : R_in < R_out)
+          (h_bas : 0 < two_pi_gamma_bas)
+          (h_ap : two_pi_gamma_bas < two_pi_gamma_ap) :
+          wedge_arc_length theta_scaled R_in < wedge_arc_length theta_scaled R_out ∧
+          rosette_lumen_numerator N_lat two_pi_gamma_ap <
+            rosette_basal_denominator N_lat two_pi_gamma_bas
+    variables: "R_in: inner somitecoel lumen radius (um); R_out: outer somite rosette radius (um); N: number of radial wedge cells; gamma_ap: apical actomyosin tension; gamma_bas: basal ECM-engaged tension; gamma_lat: lateral N-cadherin tension"
+    role: "Proves that apical actomyosin constriction (gamma_ap > gamma_bas > 0) enforces wedge-cell tapering (L_ap < L_bas) and stabilizes a finite central somitecoel lumen"
+    source_citation: "Yamanaka et al. (2023) Nature 614:509-520 Figs. 1-3; Adhyapok et al. (2021) Dev. Cell 56:1312-1324 Figs. 2-4"
+    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L120-L255"
+  - id: yaman-somitoid-chirality-buckling-2
+    law_name: "Adhyapok et al. (2021) EphA4/ephrinB2 Inter-Somite Cleft Boundary Sorting Energy Barrier Law"
+    title: "Adhyapok et al. (2021) EphA4/ephrinB2 Inter-Somite Cleft Boundary Sorting Energy Barrier Law"
+    formula: "Delta_E_cleft = L_cleft * (2 * gamma_het - (gamma_ant + gamma_post)) > 0  when 2 * gamma_het > gamma_ant + gamma_post"
+    latex: "\\Delta E_{\\text{cleft}} = L_{\\text{cleft}} (2\\gamma_{\\text{het}} - (\\gamma_{\\text{ant}} + \\gamma_{\\text{post}})) > 0"
+    ascii: "Delta_E_cleft = L_cleft * (2 * gamma_het - (gamma_ant + gamma_post)) > 0"
+    lean_decl: "MathOfBiology.Loop_029.eph_cleft_sorting_energy"
+    lean_theorem: "MathOfBiology.Loop_029.adhyapok_2021_eph_ephrin_cleft_sorting_barrier"
+    lean_file: morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean
+    lean_locus: "morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean#L62-L90"
+    lean_code: |-
+      def eph_cleft_sorting_energy (L_cleft gamma_het gamma_ant gamma_post : Int) : Int :=
+        L_cleft * (2 * gamma_het - (gamma_ant + gamma_post))
+      theorem adhyapok_2021_eph_ephrin_cleft_sorting_barrier
+          (L_cleft gamma_het gamma_het_kd gamma_ant gamma_post : Int)
+          (h_len : 0 < L_cleft)
+          (h_rep : gamma_ant + gamma_post < 2 * gamma_het)
+          (h_kd : 2 * gamma_het_kd = gamma_ant + gamma_post) :
+          0 < eph_cleft_sorting_energy L_cleft gamma_het gamma_ant gamma_post ∧
+          eph_cleft_sorting_energy L_cleft gamma_het_kd gamma_ant gamma_post = 0
+    lean_declaration: |-
+      theorem adhyapok_2021_eph_ephrin_cleft_sorting_barrier
+          (L_cleft gamma_het gamma_het_kd gamma_ant gamma_post : Int)
+          (h_len : 0 < L_cleft)
+          (h_rep : gamma_ant + gamma_post < 2 * gamma_het)
+          (h_kd : 2 * gamma_het_kd = gamma_ant + gamma_post) :
+          0 < eph_cleft_sorting_energy L_cleft gamma_het gamma_ant gamma_post ∧
+          eph_cleft_sorting_energy L_cleft gamma_het_kd gamma_ant gamma_post = 0
+    variables: "L_cleft: inter-somitic boundary contact length (um); gamma_het: heterotypic EphA4-ephrinB2 interfacial tension; gamma_ant, gamma_post: homotypic intra-somite cell-cell tensions"
+    role: "Establishes that heterotypic EphA4/ephrinB2 repulsion (2*gamma_het > gamma_ant + gamma_post) creates a positive energy barrier that drives physical somite cleft separation"
+    source_citation: "Adhyapok et al. (2021) Dev. Cell 56:1312-1324 Figs. 1-3; Yamanaka et al. (2023) Nature 614:509-520 Fig. 2"
+    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L258-L355"
+  - id: yaman-somitoid-chirality-buckling-3
+    law_name: "Yamanaka et al. (2023) & Miao et al. (2023) Y-27632 ROCK Inhibition & Minus-Matrigel Curvature Collapse Law"
+    title: "Yamanaka et al. (2023) & Miao et al. (2023) Y-27632 ROCK Inhibition & Minus-Matrigel Curvature Collapse Law"
+    formula: "gamma_ap = gamma_bas  =>  Delta_gamma_{ap-bas} = gamma_ap - gamma_bas = 0"
+    latex: "\\gamma_{\\text{ap}} = \\gamma_{\\text{bas}} \\implies \\Delta \\gamma_{\\text{ap-bas}} = \\gamma_{\\text{ap}} - \\gamma_{\\text{bas}} = 0"
+    ascii: "gamma_ap = gamma_bas => Delta_gamma_ap_bas = 0"
+    lean_decl: "MathOfBiology.Loop_029.apico_basal_tension_diff"
+    lean_theorem: "MathOfBiology.Loop_029.yamanaka_2023_rock_inhibition_curvature_collapse"
+    lean_file: morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean
+    lean_locus: "morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean#L92-L119"
+    lean_code: |-
+      def apico_basal_tension_diff (gamma_ap gamma_bas : Int) : Int :=
+        gamma_ap - gamma_bas
+      theorem yamanaka_2023_rock_inhibition_curvature_collapse
+          (N_lat gamma_ap_wt gamma_bas : Int)
+          (h_wt : gamma_bas < gamma_ap_wt) :
+          apico_basal_tension_diff gamma_bas gamma_bas = 0 ∧
+          0 < apico_basal_tension_diff gamma_ap_wt gamma_bas ∧
+          rosette_lumen_numerator N_lat gamma_ap_wt <
+            rosette_lumen_numerator N_lat gamma_bas
+    lean_declaration: |-
+      theorem yamanaka_2023_rock_inhibition_curvature_collapse
+          (N_lat gamma_ap_wt gamma_bas : Int)
+          (h_wt : gamma_bas < gamma_ap_wt) :
+          apico_basal_tension_diff gamma_bas gamma_bas = 0 ∧
+          0 < apico_basal_tension_diff gamma_ap_wt gamma_bas ∧
+          rosette_lumen_numerator N_lat gamma_ap_wt <
+            rosette_lumen_numerator N_lat gamma_bas
+    variables: "gamma_ap_wt: wild-type apical actomyosin tension under RhoA/ROCK activation; gamma_bas: basal ECM tension; N_lat: lateral N-cadherin adhesion term N*gamma_lat"
+    role: "Proves that ROCK inhibition (Y-27632) or absence of Matrigel ECM abolishes the apico-basal tension differential and dilates the somitecoel lumen relative to wild-type MET rosettes"
+    source_citation: "Yamanaka et al. (2023) Nature 614:509-520 Fig. 3; Miao et al. (2023) Nature 614:500-508 Fig. 4"
+    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L358-L455"

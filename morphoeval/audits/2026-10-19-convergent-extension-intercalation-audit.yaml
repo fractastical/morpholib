@@ -1,0 +1,150 @@
+# MorphoEval audit — Zajac, Jones & Glazier (2000, 2003) & Bertet, Sulak & Lecuit (2004) Convergent Extension Intercalation, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2003-zajac-convergent-extension-intercalation.py` (Slot 093) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-convergent-extension-intercalation-loop`.
+
+audit:
+  id: 2026-10-19-convergent-extension-intercalation-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2003-zajac-convergent-extension-intercalation.py` in
+      `2026-10-19-convergent-extension-intercalation-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  zajac2003:
+    title: "Simulating convergent extension by way of anisotropic differential adhesion"
+    authors: "Zajac M, Jones GL, Glazier JA"
+    venue: "Journal of Theoretical Biology 222(2):247-259 (2003)"
+    doi: 10.1016/S0022-5193(03)00033-X
+  zajac2000:
+    title: "Model of convergent extension in animal morphogenesis"
+    authors: "Zajac M, Jones GL, Glazier JA"
+    venue: "Physical Review Letters 85(9):2022-2025 (2000)"
+    doi: 10.1103/PhysRevLett.85.2022
+  bertet2004:
+    title: "Myosin-dependent junction remodelling controls planar cell intercalation and axis elongation"
+    authors: "Bertet C, Sulak L, Lecuit T"
+    venue: "Nature 429(6992):667-671 (2004)"
+    doi: 10.1038/nature02590
+  wallingford2000:
+    title: "Dishevelled controls cell polarity during Xenopus gastrulation"
+    authors: "Wallingford JB, Rowning BA, Vogeli KM, Rothbacher U, Fraser SE, Harland RM"
+    venue: "Nature 405(6782):81-85 (2000)"
+    doi: 10.1038/35011077
+
+simulations:
+  - id: zajac-convergent-extension-intercalation
+    name: "Zajac, Jones & Glazier (2000, 2003) / Bertet, Sulak & Lecuit (2004) anisotropic differential adhesion and polarized T1 junctional intercalation in convergent extension"
+    organism: "Xenopus laevis (chordamesoderm Keller explant) & Drosophila melanogaster (germband extension epithelium)"
+    script: 2003-zajac-convergent-extension-intercalation.py
+    output: docs/media/convergent_extension_intercalation_comparison.png
+    extra_outputs:
+      - docs/media/convergent_extension_intercalation_growth.gif
+    status: evaluated
+    source_refs:
+      - zajac2003
+      - zajac2000
+      - bertet2004
+      - wallingford2000
+    summary: >-
+      Pass 1 baseline assessment of `2003-zajac-convergent-extension-intercalation.py` (61.2/100).
+      The initial script implements the 64-cell Zajac et al. (2003) anisotropic adhesion energy
+      J(theta) = J_0 - Delta_J cos(2*theta), Bertet et al. (2004) planar-polarized vertical junction
+      tension Lambda(theta) = Lambda_0 - Delta_Lambda cos(2*theta), and incompressible 2D pure-shear
+      scaling R_CE(t) = R_0 exp(2*dot_epsilon*t), but requires explicit midpoint RK2 ODE convergence
+      verification against the analytical pure-shear solution, angular rose-histogram cross-correlation
+      against the confocal Xenopus specimen (`convergent_extension_axis_specimen.jpg`), finer 15x15
+      2D morphospace resolution, and full `claim_boundary` provenance metadata.
+    scores:
+      model-fidelity:
+        value: 64
+        rationale: >-
+          Implements Zajac et al.'s (2003) anisotropic adhesion law J(theta) = J_0 - Delta_J cos(2*theta),
+          Bertet et al.'s (2004) T1 quartet junction remodelling, and pure-shear area conservation
+          L_AP * L_ML = A_0 (L120-260), but Pass 1 lacks an explicit numerical RK2 ODE convergence check
+          against the exact analytical pure-shear aspect ratio R_CE(t) = R_0 exp(2*dot_epsilon*t) and
+          explicit Fourier harmonic verification of the angular adhesion profile.
+        evidence:
+          - {file: 2003-zajac-convergent-extension-intercalation.py, lines: [120, 165], note: "Anisotropic adhesion energy, polarized junction tension, and T1 energy drop", supports: true}
+          - {file: 2003-zajac-convergent-extension-intercalation.py, lines: [275, 405], note: "64-cell T1 intercalation solver needing RK2 pure-shear ODE convergence verification", supports: false}
+      specimen-match:
+        value: 57
+        rationale: >-
+          Vendors `datasets/convergent_extension_intercalation/convergent_extension_axis_specimen.jpg`
+          (CC BY 4.0 confocal micrographs and polarity rose plots of Xenopus animal cap vs chordamesoderm
+          explant cells) and extracts cell aspect ratios (L/W = 4.945 vs 0.962) and nematic order S_2
+          (0.613 vs 0.094), but Pass 1 lacks angular rose-histogram correlation between the theoretical
+          von Mises / cos(2*theta) polarity distribution and the empirical rose diagram.
+        evidence:
+          - {file: 2003-zajac-convergent-extension-intercalation.py, lines: [468, 542], note: "Confocal Xenopus cell segmentation and rose nematic order extraction requiring angular histogram correlation", supports: false}
+          - {file: docs/media/convergent_extension_intercalation_comparison.png, lines: [0, 0], note: "Panel F confocal Xenopus explant comparison", supports: true}
+      parameter-expressivity:
+        value: 61
+        rationale: >-
+          Simulates the 5 genetic and mechanical regimes (Wild-Type Polarized, Moderate Anisotropy,
+          Xdd1/PCP Scrambled, Myosin II zip/sqh Inhibited, and Isotropic Null Control) and a 9x9
+          morphospace grid, but needs finer 15x15 2D morphospace resolution.
+        evidence:
+          - {file: 2003-zajac-convergent-extension-intercalation.py, lines: [410, 465], note: "5-regime evaluator and 9x9 2D morphospace sweep", supports: false}
+      morphometric-validation:
+        value: 59
+        rationale: >-
+          Exports 6 measurements via `measure_morphoeval()`, but Pass 1 needs >= 7 measurements
+          including the angular rose-diagram cross-correlation r and RK2 pure-shear ODE L2 error.
+        evidence:
+          - {file: 2003-zajac-convergent-extension-intercalation.py, lines: [548, 645], note: "6-metric dynamic MorphoEval measurement suite", supports: false}
+      source-traceability:
+        value: 65
+        rationale: >-
+          Vendors `scout_manifest.json`, `convergent_extension_intercalation_reference.json`,
+          `paper_citations.bib`, and `convergent_extension_axis_specimen.jpg` with SHA-256 digests,
+          linking Zajac et al. (2000, 2003), Bertet et al. (2004), and Wallingford et al. (2000).
+        evidence:
+          - {file: 2003-zajac-convergent-extension-intercalation.py, lines: [75, 115], note: "SHA-256 cryptographic verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Links functions to Zajac et al. (2003) Eqs. 1-8, Bertet et al. (2004) Figs. 1-4,
+          and Lean 4 theorems in `morphoeval/lean/loops/Loop_093_convergent_extension_intercalation.lean`.
+        evidence:
+          - {file: 2003-zajac-convergent-extension-intercalation.py, lines: [1, 55], note: "Module docstring mapping equations to Zajac et al. (2003), Bertet et al. (2004), and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 60
+        rationale: >-
+          Includes `--self-test` and deterministic seed=2003, requiring full RK2 ODE convergence
+          verification and angular rose-histogram specimen correlation in Pass 2.
+        evidence:
+          - {file: 2003-zajac-convergent-extension-intercalation.py, lines: [840, 895], note: "Self-test suite with bitwise determinism, area conservation, and negative controls", supports: true}
+          - {file: morphoeval/lean/loops/Loop_093_convergent_extension_intercalation.lean, lines: [17, 160], note: "3 machine-checked Lean 4 theorems (0 sorrys)", supports: true}
+    remediation:
+      - "Add explicit midpoint RK2 ODE integration and analytical convergence verification against R_CE(t) = R_0 exp(2*dot_epsilon_T1*t) (L2 relative error < 1e-6)."
+      - "Compute angular rose-histogram profile correlation between the Zajac-Bertet cos(2*theta) / von Mises planar polarity distribution and the empirical Xenopus chordamesoderm rose diagram (Panel b' in `convergent_extension_axis_specimen.jpg`, r > 0.96)."
+      - "Upgrade the 2D parameter morphospace grid to 15x15, expand `measure_morphoeval()` to 7 reference-pinned metrics, and add full `claim_boundary` provenance metadata."

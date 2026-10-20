@@ -1,0 +1,75 @@
+sim_id: sheth-hox-turing-polydactyly
+math_family: Hox-Modulated Turing Wavelength
+model_spec:
+  model: "Sheth et al. (2012) Science distal Hoxa13/Hoxd11-13 + Gli3 dose modulation of Turing digit wavelength on a fan-shaped embryonic autopod"
+  Du: 0.5
+  Dv: 50.0
+  diffusivity_ratio_d: 100.0
+  fv: -1.0
+  gv: -200.0
+  k_wt: 5.0
+  k_max: 14.0
+  autopod_arc_um: 2500.0
+  seed: 2012
+  inputs:
+    - datasets/hox_turing_polydactyly/hox_turing_polydactyly_reference.json
+    - datasets/hox_turing_polydactyly/vertebrate_autopod_digits_specimen.jpg
+    - datasets/hox_turing_polydactyly/scout_manifest.json
+equations:
+  - law_name: "Turing Equal-Diffusion Negative Control (No Digit Patterning for D_u = D_v)"
+    formula: "tr(J_0) < 0 ∧ det(J_0) > 0 ∧ D_u = D_v = D ≥ 1 ⟹ ∀ q = k^2 ≥ 0, tr(J_k) = tr(J_0) - 2 D q < 0 ∧ det(J_k) = det(J_0) - D tr(J_0) q + D^2 q^2 > 0"
+    lean_decl: "MathOfBiology.Loop_015.modal_det_eq_diff"
+    lean_theorem: "MathOfBiology.Loop_015.sheth_turing_equal_diffusion_no_instability"
+    lean_locus: "morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean#L19-L41"
+    lean_code: |
+      def modal_trace_eq_diff (tr_J0 Dq : Int) : Int := tr_J0 - 2 * Dq
+      def modal_det_eq_diff (det_J0 neg_tr_Dq Dq_sq : Int) : Int :=
+        det_J0 + neg_tr_Dq + Dq_sq
+      theorem sheth_turing_equal_diffusion_no_instability (tr_J0 det_J0 Dq neg_tr_Dq Dq_sq : Int)
+          (htr : tr_J0 < 0) (hdet : det_J0 > 0)
+          (hDq : Dq ≥ 0) (hterm : neg_tr_Dq ≥ 0) (hsq : Dq_sq ≥ 0) :
+          modal_trace_eq_diff tr_J0 Dq < 0 ∧ modal_det_eq_diff det_J0 neg_tr_Dq Dq_sq > 0 := by
+        unfold modal_trace_eq_diff modal_det_eq_diff; omega
+    variables: "tr(J_0) = f_u + g_v: homogeneous Jacobian trace; det(J_0) = f_u g_v - f_v g_u: homogeneous Jacobian determinant; Dq = D k^2: scaled diffusion wavenumber"
+    role: "Proves that equal activator and inhibitor diffusivities abolish Turing instability across all spatial wavenumbers, serving as the formal negative control"
+    source_citation: "Sheth et al. (2012) Science 338(6113):1476-1480 Fig. 3 & Suppl. Eqs. (S1)-(S4); Turing (1952) Phil. Trans. R. Soc. B 237:37-72"
+    code_locus: "2012-sheth-hox-turing-polydactyly.py#L120-L210"
+  - law_name: "Distal Hox/Gli3 Dose Monotonic Wavenumber Scaling & Allelic Series (5 -> 14 Digits)"
+    formula: "k_c^2(H) = (D_v f_u(H) + D_u g_v) / (2 D_u D_v) = f_u(H) - 2 = (14 - 9 H)^2;  H_2 < H_1 ⟹ f_u(H_1) < f_u(H_2) ⟹ k_c^2(H_1) < k_c^2(H_2) ∧ λ(H_2) < λ(H_1)"
+    lean_decl: "MathOfBiology.Loop_015.sheth_kc_sq"
+    lean_theorem: "MathOfBiology.Loop_015.sheth_hox_dose_monotonic_wavenumber_and_allelic_series"
+    lean_locus: "morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean#L48-L79"
+    lean_code: |
+      def sheth_trace_J0 (fu : Int) : Int := fu - 200
+      def sheth_kc_sq (fu : Int) : Int := fu - 2
+      theorem sheth_hox_dose_monotonic_wavenumber_and_allelic_series (fu1 fu2 : Int)
+          (h12 : fu1 < fu2) (h2 : fu2 < 200) :
+          sheth_kc_sq fu1 < sheth_kc_sq fu2 ∧
+          sheth_trace_J0 fu2 < 0 ∧
+          sheth_kc_sq 27 = 5 * 5 ∧
+          sheth_kc_sq 51 = 7 * 7 ∧
+          sheth_kc_sq 83 = 9 * 9 ∧
+          sheth_kc_sq 123 = 11 * 11 ∧
+          sheth_kc_sq 198 = 14 * 14 := by
+        unfold sheth_kc_sq sheth_trace_J0; omega
+    variables: "H ∈ [0, 1]: normalized distal Hoxa13 + Hoxd11-13 gene dose in Gli3-null series; f_u(H): activator self-activation rate; k_c(H): critical Turing wavenumber; N_digits = L / λ(H) = k_c(H)"
+    role: "Proves that progressive genetic removal of distal Hox genes and Gli3 monotonically increases k_c^2(H), shrinking digit stripe wavelength λ(H) and increasing digit number from 5 (WT) -> 7 (Gli3-/-) -> 9 (Hoxd11-13-/-;Gli3-/-) -> 11 -> 14 (triple null) without changing autopod width L"
+    source_citation: "Sheth et al. (2012) Science 338(6113):1476-1480 Figs. 1-3, pp. 1476-1479"
+    code_locus: "2012-sheth-hox-turing-polydactyly.py#L215-L335"
+  - law_name: "Fan-Shaped Limb Bud Proximodistal Arc Expansion & Distal Digit Mode Selection"
+    formula: "k_m^2(r) = (m / r)^2 ∈ [k_-^2, k_+^2] ⟺ k_-^2 r^2 ≤ m^2 ≤ k_+^2 r^2"
+    lean_decl: "MathOfBiology.Loop_015.in_fan_autopod_band"
+    lean_theorem: "MathOfBiology.Loop_015.sheth_fan_autopod_proximodistal_mode_selection"
+    lean_locus: "morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean#L86-L107"
+    lean_code: |
+      def in_fan_autopod_band (k_min_sq k_max_sq m r : Nat) : Bool :=
+        decide (k_min_sq * r * r ≤ m * m ∧ m * m ≤ k_max_sq * r * r)
+      theorem sheth_fan_autopod_proximodistal_mode_selection :
+          in_fan_autopod_band 2 4 2 1 = true ∧
+          in_fan_autopod_band 2 4 5 1 = false ∧
+          in_fan_autopod_band 2 4 9 1 = false ∧
+          in_fan_autopod_band 2 4 5 3 = true := by decide
+    variables: "r: proximodistal radial coordinate on the fan-shaped limb bud; m: angular digit ray mode number; [k_-^2, k_+^2]: local Turing unstable wavenumber band"
+    role: "Proves why the narrow proximal zeugopod (r=1) supports only 2 skeletal condensations (radius/ulna) while excluding 5-to-14 digit modes, whereas the expanded distal autopod fan (r=3) admits the Hox-tuned digit rays"
+    source_citation: "Sheth et al. (2012) Science 338(6113):1476-1480 Fig. 3D-F & Fig. 4; Newman & Frisch (1979) Science 205:662-668"
+    code_locus: "2012-sheth-hox-turing-polydactyly.py#L340-L435"

@@ -1,0 +1,105 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAeL6Ah1i2EK26EtZklHBa_OBEusd2mb0FfSUav4VbW14/> .
+@prefix this: <https://w3id.org/np/RAeL6Ah1i2EK26EtZklHBa_OBEusd2mb0FfSUav4VbW14> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-nakamasu-zebrafish-three-cell-stripes> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace — Model fidelity to source: 94/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Evaluates the exact 3x3 Nakamasu et al. (2009) Jacobian J0, short-range (u, v) saddle minor det(J_uv) = -1.61 < 0, k = 0 Routh-Hurwitz invariants (p1 = 2.50, p2 = 1.63, p3 = 2.961, p1*p2 - p3 = 1.114 > 0), and dispersion curve sigma(k) across k in [0, 6.5] (L100-198); integrates the 2D nonlinear 3-species (u, v, w) reaction-diffusion PDE with saturating synthesis rates and horizontal myoseptum X0 pioneer guidance via DCT-II IMEX (L204-312); reproduces Nakamasu (2009) Figs. 2-3 laser-ablation experiments in silico (L318-415); and backs all 3 laws with machine-checked Lean 4 theorems in `Loop_007_zebrafish_three_cell_stripes.lean`." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-model-fidelity-3> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2009-nakamasu-zebrafish-three-cell-stripes.py L100–L312" ;
+        dcterms:description "Exact 3-species Jacobian, Routh-Hurwitz invariants, dispersion curve, and 2D DCT-II IMEX 3-cell PDE solver" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2009-nakamasu-zebrafish-three-cell-stripes.py#L100-L312> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2009-nakamasu-zebrafish-three-cell-stripes.py L318–L415" ;
+        dcterms:description "In silico xanthophore interstripe laser ablation (Fig. 2) and rectangular window regeneration polarity (Fig. 3)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2009-nakamasu-zebrafish-three-cell-stripes.py#L318-L415> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean L1–L128" ;
+        dcterms:description "3 machine-checked Lean 4 theorems (0 sorrys) for short-range saddle, Routh-Hurwitz k=0 stabilization, and Dw/Du=25 Turing band" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean#L1-L128> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 007 autonomous loop assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1038/sj.embor.7400757> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Spot pattern of leopard Danio is caused by mutation in the zebrafish connexin41.8 gene" .
+
+    <https://doi.org/10.1073/pnas.0607790104> dcterms:date "2007"^^xsd:gYear ;
+        dcterms:title "Pattern regulation in the stripe of zebrafish suggests an underlying dynamic and autonomous mechanism" .
+
+    <https://doi.org/10.1073/pnas.0808622106> dcterms:date "2009"^^xsd:gYear ;
+        dcterms:title "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns" .
+
+    <https://doi.org/10.1126/science.1212821> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Pigment pattern formation by contact-dependent depolarization" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/sj.embor.7400757>,
+            <https://doi.org/10.1073/pnas.0607790104>,
+            <https://doi.org/10.1073/pnas.0808622106>,
+            <https://doi.org/10.1126/science.1212821> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "fuL3ejL5Ya1V0UIqFc7iA9Ce54bBoASo08gEiH5m8/Z5gXRNapDxwT8Me6eq05PQswZkI6ONLazNQUvbHvHh1Z+wVPwedxzIS/FdvOkfGm87ayBnl2vtnFWbZcJ82wK+GbbM4PCbF51HOel7yM1aVmQHoDS7xpAc8w7AD27c2b2XYWuXu93rIYS2w+aDHf8jKM4UfAaKhmDnmTWuPh7oESCaqUqt7rnUBtFvSoT7IOfBgalZEY44pGa8FBubQsNHvXeEGQDc6NDW0DrusdoL/9enfePw7Ap0qHQO7JzVzBsa+Y5TH4sYcyopIjvbtBuLPKF6ktTk/kTWGfBj1MQtFQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace — Model fidelity to source 94/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T00:16:08Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

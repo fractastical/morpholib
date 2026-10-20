@@ -1,0 +1,139 @@
+# MorphoEval Pass 1 (v1) Audit — Hamant et al. (2008) Science & Heisler et al. (2010) PLoS Biol
+# Pressurized Shell Principal Stress & Auxin-PIN1-Microtubule Coupling in Arabidopsis SAM (Slot 033)
+
+audit:
+  id: 2026-10-19-auxin-pin1-meristem-mechanics-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 033 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/33
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2008-hamant-meristem-microtubule-stress.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  hamant2008:
+    title: "Developmental Patterning by Mechanical Signals in Arabidopsis"
+    authors: "Hamant O, Heisler MG, Jonsson H, Krupinski P, Uyttewaal M, Bokov P, Corson F, Sahlin P, Boudaoud A, Meyerowitz EM, Couder Y, Traas J"
+    venue: "Science 322(5908):1650-1655 (2008)"
+    doi: 10.1126/science.1165594
+  heisler2010:
+    title: "Alignment between PIN1 Polarity and Microtubule Orientation in the Shoot Apical Meristem Reveals a Tight Coupling between Morphogenesis and Auxin Transport"
+    authors: "Heisler MG, Hamant O, Krupinski P, Uyttewaal M, Ohno C, Jonsson H, Traas J, Meyerowitz EM"
+    venue: "PLoS Biology 8(10):e1000516 (2010)"
+    doi: 10.1371/journal.pbio.1000516
+  jonsson2006:
+    title: "An auxin-driven polarized transport model for phyllotaxis"
+    authors: "Jonsson H, Heisler MG, Shapiro BE, Meyerowitz EM, Mjolsness E"
+    venue: "Proceedings of the National Academy of Sciences 103(5):1633-1638 (2006)"
+    doi: 10.1073/pnas.0509839103
+  mirabet2012:
+    title: "Noise and Robustness in Phyllotaxis"
+    authors: "Mirabet V, Besnard F, Vernoux T, Boudaoud A"
+    venue: "PLoS Computational Biology 8(2):e1002389 (2012)"
+    doi: 10.1371/journal.pcbi.1002389
+
+simulations:
+  - id: mirabet-auxin-pin1-meristem-mechanics
+    name: "Hamant et al. (2008) & Heisler et al. (2010) pressurized SAM shell stress tensor, cortical microtubule alignment, and PIN1-auxin phyllotactic mechanics"
+    organism: "Arabidopsis thaliana (shoot apical meristem L1 epidermis & floral primordia)"
+    script: 2008-hamant-meristem-microtubule-stress.py
+    output: docs/media/auxin_pin1_meristem_mechanics_comparison.png
+    extra_outputs:
+      - docs/media/auxin_pin1_meristem_mechanics_growth.gif
+    status: evaluated
+    source_refs:
+      - hamant2008
+      - heisler2010
+      - jonsson2006
+      - mirabet2012
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2008-hamant-meristem-microtubule-stress.py`
+      (weighted score: 54.1/100). The Pass 1 script evaluates only analytical sphere vs
+      cylinder Laplace-Young ratios without cellular L1 meristem topology, saddle-crease
+      primordium boundary stress tensors, dynamical CMT + PIN1 co-alignment ODEs,
+      Kirsch laser ablation or lateral compression perturbations, or specimen image
+      segmentation.
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Computes basic analytical spherical dome (PR/2t) and cylindrical flank (PR/t)
+          Laplace-Young stresses (L23-41), but omits negative-Gaussian-curvature saddle
+          crease stress at primordium boundaries, dynamical cortical microtubule (CMT)
+          and PIN1 polarity co-alignment ODEs on a cellular L1 dome, anisotropic Lockhart
+          cell-wall yielding, and Kirsch laser-ablation stress redistribution.
+        evidence:
+          - {file: 2008-hamant-meristem-microtubule-stress.py, lines: [23, 41], note: "Analytical sphere and cylinder thin-shell stresses only", supports: true}
+      specimen-match:
+        value: 46
+        rationale: >-
+          Vendors `datasets/auxin_pin1_meristem_mechanics/arabidopsis_sam_meristem_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, or compare the histological SAM dome
+          and saddle boundary crease against the simulated shell geometry.
+        evidence:
+          - {file: 2008-hamant-meristem-microtubule-stress.py, lines: [63, 96], note: "Renders 2-panel analytical plot without specimen comparison", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates a single static (P, R, t) parameter set without sweeping the 4 SAM
+          curvature zones, laser ablation, lateral compression, oryzalin microtubule
+          depolymerization, or CLI parameter overrides.
+        evidence:
+          - {file: 2008-hamant-meristem-microtubule-stress.py, lines: [23, 41], note: "Single hardcoded parameter point", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          Exposes only 2 trivial analytical ratios in `measure_morphoeval()` without ODE
+          simulation error metrics, statistical p-values, ablation reorientation fractions,
+          phyllotactic divergence angles, or specimen segmentation morphometrics.
+        evidence:
+          - {file: 2008-hamant-meristem-microtubule-stress.py, lines: [44, 60], note: "Only 2 analytical measurements without uncertainty or p-values", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `auxin_pin1_meristem_mechanics_reference.json`
+          with verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at
+          runtime.
+        evidence:
+          - {file: datasets/auxin_pin1_meristem_mechanics/auxin_pin1_meristem_mechanics_reference.json, lines: [1, 130], note: "Reference JSON present on disk but not verified in Pass 1 script", supports: true}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Header cites Hamant et al. (2008) and Heisler et al. (2010), but lacks explicit
+          equation-to-code-line and Lean 4 theorem mappings.
+        evidence:
+          - {file: 2008-hamant-meristem-microtubule-stress.py, lines: [1, 20], note: "Brief module docstring without Lean 4 theorem mapping", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Runs deterministically to generate PNG and GIF outputs, but lacks a `--self-test`
+          suite, SHA-256 integrity checks, and negative perturbation controls.
+        evidence:
+          - {file: 2008-hamant-meristem-microtubule-stress.py, lines: [63, 100], note: "No --self-test flag or automated invariant checks in Pass 1", supports: false}
+    remediation:
+      - "Implement full doubly-curved pressurized shell principal stress solver across all 4 SAM zones (spherical dome, peripheral flank, cylindrical stem, and negative-Gaussian-curvature primordium saddle crease) plus anisotropic Lockhart cell-wall yielding."
+      - "Implement coupled cellular L1 dome ODE solver for cortical microtubule (CMT) director alignment along maximal principal tensile stress e_1 and up-the-gradient + stress-aligned PIN1 auxin transport generating golden-angle (137.5 deg) phyllotactic primordia."
+      - "Implement Kirsch circular laser-ablation wound stress redistribution, lateral micro-vise compression, and oryzalin CMT-depolymerization negative control."
+      - "Segment the vendored Arabidopsis SAM histological specimen (`arabidopsis_sam_meristem_specimen.jpg`) to extract the apical dome curvature profile, saddle boundary crease, and cellular centroids, with full SHA-256 verification and `--self-test` suite."

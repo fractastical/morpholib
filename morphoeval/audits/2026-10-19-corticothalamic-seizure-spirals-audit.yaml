@@ -1,0 +1,151 @@
+# MorphoEval audit — Huang et al. (2004, 2010) & Pinto & Ermentrout (2001) Neocortical Spiral Waves & Phase Singularity Dynamics, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2013-ermentrout-corticothalamic-seizure-spirals.py` (Slot 089) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-corticothalamic-seizure-spirals-loop`.
+
+audit:
+  id: 2026-10-19-corticothalamic-seizure-spirals-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2013-ermentrout-corticothalamic-seizure-spirals.py` in
+      `2026-10-19-corticothalamic-seizure-spirals-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  huang2010:
+    title: "Spiral Waves in Neocortex"
+    authors: "Huang X, Xu W, Liang J, Takagaki K, Gao X, Wu JY"
+    venue: "Journal of Neuroscience 30(30):10158-10164 (2010)"
+    doi: 10.1523/JNEUROSCI.2547-10.2010
+  huang2004:
+    title: "Spiral Waves in Disinhibited Mammalian Neocortex"
+    authors: "Huang X, Troy WC, Yang Q, Ma H, Laing CR, Schiff SJ, Wu JY"
+    venue: "Journal of Neuroscience 24(44):9897-9902 (2004)"
+    doi: 10.1523/JNEUROSCI.2705-04.2010
+  pinto2001:
+    title: "Spatially Structured Activity in Synaptically Coupled Neuronal Networks: I. Traveling Fronts and Pulses"
+    authors: "Pinto DJ, Ermentrout GB"
+    venue: "SIAM Journal on Applied Mathematics 62(1):206-225 (2001)"
+    doi: 10.1137/S0036139900346453
+  townsend2015:
+    title: "Emergence of Complex Wave Patterns in Primate Cerebral Cortex"
+    authors: "Townsend RG, Solomon SS, Chen SC, Pietersen ANJ, Martin PR, Solomon SG, Gong P"
+    venue: "Journal of Neuroscience 35(11):4657-4662 (2015)"
+    doi: 10.1523/JNEUROSCI.4663-14.2015
+
+simulations:
+  - id: ermentrout-corticothalamic-seizure-spirals
+    name: "Huang et al. (2004, 2010) & Pinto & Ermentrout (2001) neocortical spiral wave dynamics & phase singularity topology"
+    organism: "Rattus norvegicus / Homo sapiens tangential neocortical sheet (Layers III-V)"
+    script: 2013-ermentrout-corticothalamic-seizure-spirals.py
+    output: docs/media/corticothalamic_seizure_spirals_comparison.png
+    extra_outputs:
+      - docs/media/corticothalamic_seizure_spirals_growth.gif
+    status: evaluated
+    source_refs:
+      - huang2010
+      - huang2004
+      - pinto2001
+      - townsend2015
+    summary: >-
+      Pass 1 baseline assessment of `2013-ermentrout-corticothalamic-seizure-spirals.py` (56.9/100).
+      The baseline script evaluates a static kinematic Archimedes spiral wave without solving the
+      2D excitatory-adaptation Wilson-Cowan / Pinto-Ermentrout neural field PDE
+      tau_u du/dt = -u + D_u nabla^2 u + F(w_ee K_e * u - g_a a + I_ext), tau_a da/dt = -a + u,
+      omits automatic 2x2 plaquette topological phase winding number oint nabla phi . dl singularity
+      detection, omits counter-rotating figure-eight spiral pair (W = +1, -1) dipole conservation
+      and CNQX/AMPA glutamatergic blockade quiescent controls, and displays the tangential rat
+      neocortical cytochrome oxidase specimen without automated CV column segmentation.
+    scores:
+      model-fidelity:
+        value: 56
+        rationale: >-
+          Evaluates only a kinematic Archimedes phase spiral (L43-64), omitting time-stepping of
+          the 2D Wilson-Cowan / Pinto-Ermentrout excitatory-adaptation neural field PDE with
+          2D FFT Gaussian axonal footprint convolution K_e * u and complex state-space / Hilbert
+          phase extraction Z(x,t) = (u - u_bar) + i(a - a_bar).
+        evidence:
+          - {file: 2013-ermentrout-corticothalamic-seizure-spirals.py, lines: [43, 64], note: "Kinematic spiral formula without 2D Wilson-Cowan / Pinto-Ermentrout neural field PDE", supports: false}
+      specimen-match:
+        value: 50
+        rationale: >-
+          Vendors `datasets/corticothalamic_seizure_spirals/rat_neocortical_tangential_sheet_specimen.jpg`
+          (tangential cytochrome oxidase histology section of Rattus norvegicus somatosensory
+          neocortex Layer IV barrel sheet), but Pass 1 only displays the raw image without
+          automated CV segmentation of cortical columns/barrels or radial intensity profile fitting.
+        evidence:
+          - {file: 2013-ermentrout-corticothalamic-seizure-spirals.py, lines: [67, 81], note: "Raw specimen display without CV segmentation of tangential cortical barrel columns", supports: false}
+          - {file: docs/media/corticothalamic_seizure_spirals_comparison.png, lines: [0, 0], note: "4-panel Pass 1 baseline comparison figure", supports: true}
+      parameter-expressivity:
+        value: 55
+        rationale: >-
+          Evaluates only a single counterclockwise kinematic spiral, omitting CW mirror chirality
+          (W = -1), broken planar wave figure-eight counter-rotating spiral dipole (W_+ = +1,
+          W_- = -1, sum W_i = 0), Pinto-Ermentrout expanded axonal footprint (sigma_e = 0.63 mm),
+          planar wave control (W = 0), CNQX/AMPA blockade quiescent control (w_ee = 0.8), and
+          a 2D (w_ee, g_a) Hopf spiral morphospace.
+        evidence:
+          - {file: 2013-ermentrout-corticothalamic-seizure-spirals.py, lines: [43, 64], note: "Single kinematic spiral without 6-regime neural field suite or CNQX/AMPA blockade control", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Reports only 2 baseline metrics in `measure_morphoeval()`, lacking plaquette topological
+          winding number verification, radial core amplitude deficit fit r against A_inf tanh(r/r_core),
+          wave speed dispersion c = lambda * f_rot, CNQX blockade amplitude suppression, and
+          specimen CV morphometrics.
+        evidence:
+          - {file: 2013-ermentrout-corticothalamic-seizure-spirals.py, lines: [98, 121], note: "Baseline 2-metric measure_morphoeval() hook without plaquette winding or specimen CV metrics", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `corticothalamic_seizure_spirals_reference.json`,
+          `paper_citations.bib`, and `rat_neocortical_tangential_sheet_specimen.jpg` with SHA-256
+          verification linking Huang et al. (2004, 2010), Pinto & Ermentrout (2001), and Townsend et al. (2015).
+        evidence:
+          - {file: 2013-ermentrout-corticothalamic-seizure-spirals.py, lines: [32, 41], note: "SHA-256 verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Links baseline functions to Huang et al. (2010) and Pinto & Ermentrout (2001), requiring
+          full alignment with all 3 Lean 4 theorems in `Loop_089_corticothalamic_seizure_spirals.lean`.
+        evidence:
+          - {file: 2013-ermentrout-corticothalamic-seizure-spirals.py, lines: [1, 7], note: "Baseline docstring citing Huang et al. (2004, 2010) and Pinto & Ermentrout (2001)", supports: true}
+      repro-package:
+        value: 60
+        rationale: >-
+          Provides `--self-test` and deterministic execution, requiring expansion to an 8-check
+          verification suite covering all 6 regimes, Lean 4 invariants, plaquette winding detection,
+          specimen CV segmentation, and bitwise two-run determinism.
+        evidence:
+          - {file: 2013-ermentrout-corticothalamic-seizure-spirals.py, lines: [124, 130], note: "Baseline self-test checks", supports: true}
+    remediation:
+      - "Implement the 2D Wilson-Cowan / Pinto-Ermentrout excitatory-adaptation neural field PDE solver with 2D FFT Gaussian axonal footprint K_e * u, complex state-space phase map phi(x,y,t), and automatic 2x2 plaquette topological winding number oint nabla phi . dl singularity tracker."
+      - "Simulate all 6 canonical regimes (CCW W=+1 spiral, CW W=-1 mirror spiral, figure-eight counter-rotating dipole W=+1/-1 with net charge 0, expanded axonal footprint fast spiral, planar wave W=0, and CNQX/AMPA glutamatergic blockade quiescent control), plus a 10x10 (w_ee, g_a) Hopf spiral morphospace."
+      - "Add automated CV segmentation of the tangential Rattus norvegicus neocortical cytochrome oxidase specimen (barrel column centroids, inter-column spacing, and radial optical density profile), and render a 9-panel dark-mode synthesis figure and 24-frame animated GIF."

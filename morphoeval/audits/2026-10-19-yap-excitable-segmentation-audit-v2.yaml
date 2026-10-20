@@ -1,0 +1,189 @@
+# MorphoEval audit — Hubaud, Regev, Mahadevan & Pourquié (2017) YAP-Gated Excitable Segmentation Clock, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2016-hubaud-yap-excitable-segmentation.py` (Slot 027)
+# superseding `2026-10-19-yap-excitable-segmentation-audit` in `2026-10-19-yap-excitable-segmentation-loop`.
+
+audit:
+  id: 2026-10-19-yap-excitable-segmentation-audit-v2
+  supersedes_audit_id: 2026-10-19-yap-excitable-segmentation-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2016-hubaud-yap-excitable-segmentation.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-yap-excitable-segmentation-loop`).
+
+references:
+  hubaud2017:
+    title: "Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock"
+    authors: "Hubaud A, Regev I, Mahadevan L, Pourquie O"
+    venue: "Cell 171(3):668-682 (2017)"
+    doi: 10.1016/j.cell.2017.08.043
+  fitzhugh1961:
+    title: "Impulses and physiological states in theoretical models of nerve membrane"
+    authors: "FitzHugh R"
+    venue: "Biophysical Journal 1(6):445-466 (1961)"
+    doi: 10.1016/S0006-3495(61)86902-6
+  lauschke2013:
+    title: "Scaling of embryonic patterning based on phase-gradient encoding"
+    authors: "Lauschke VM, Tsiairis CD, Francois P, Aulehla A"
+    venue: "Nature 493(7430):101-105 (2013)"
+    doi: 10.1038/nature11804
+  dupont2011:
+    title: "Role of YAP/TAZ in mechanotransduction"
+    authors: "Dupont S, Morsut L, Aragona M, Enzo E, Giulitti S, Cordenonsi M, Zanconato F, Le Digabel J, Forcato M, Bicciato S, Elvassore N, Piccolo S"
+    venue: "Nature 474(7350):179-183 (2011)"
+    doi: 10.1038/nature10137
+
+simulations:
+  - id: hubaud-yap-excitable-segmentation
+    name: "Hubaud, Regev, Mahadevan & Pourquié (2017) excitable FitzHugh-Nagumo segmentation clock gated by YAP mechanotransduction"
+    organism: "Mus musculus (mouse E9.5-E10.5 presomitic mesoderm LuVeLu Lfng-Venus / Hes7 excitable oscillator)"
+    script: 2016-hubaud-yap-excitable-segmentation.py
+    output: docs/media/yap_excitable_segmentation_comparison.png
+    extra_outputs:
+      - docs/media/yap_excitable_segmentation_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171:668-682 FitzHugh-Nagumo excitable oscillator model of primary mouse presomitic mesoderm (PSM) cells gated by nuclear YAP mechanotransduction"
+        - "Quiescent excitable state in isolated spread fibronectin PSM cells (high nuclear YAP) rescued into ~140 min autonomous LuVeLu oscillations by Latrunculin A, Y-27632 (Rockout), or Yap1 inhibition, and blocked by constitutively active Yap5SA"
+      reconstructed_in_script:
+        - "Analytical cubic nullcline continuation, Jacobian spectrum, and supercritical Hopf bifurcation diagram across Y_nuc in [0, 1] (|u_H| = 0.9675, Y_crit = 0.6109)"
+        - "RK4 single-cell & ensemble simulations across all 6 Hubaud et al. (2017) perturbation regimes (Pearson r = 0.9976, RMSE = 0.0469) plus subthreshold vs suprathreshold single-pulse excitability"
+        - "2D reaction-diffusion mPSM target-wave PDE solver with Yap5SA constitutive block control and bilateral somite DoG peak segmentation on mouse_psm_somites_specimen.jpg (47.14 px mean spacing, CV = 0.2010)"
+      transfer_boundary:
+        - "Fast-slow 2-variable FitzHugh-Nagumo phenomenological reduction of the Notch/FGF/Wnt/YAP mouse PSM segmentation clock compared with dorsal vertebrate paraxial somite SEM periodicity"
+      does_not_claim:
+        - "Explicit molecular transcriptional-translational delay equations for Hes7/Lfng/Axin2 or 3D focal-adhesion traction force microscopy"
+    source_refs:
+      - hubaud2017
+      - fitzhugh1961
+      - lauschke2013
+      - dupont2011
+    summary: >-
+      Pass 2 post-remediation evaluation of `2016-hubaud-yap-excitable-segmentation.py` (91.7/100,
+      up from 60.6/100 in Pass 1; +31.1 overall). The remediated script implements the full
+      FitzHugh-Nagumo fast-slow excitable segmentation-clock model gated by nuclear YAP
+      mechanotransduction (`I_eff = I_basal + J_Dll1 - gamma_YAP * Y_nuc`), solves exact cubic
+      nullcline intersections and supercritical Hopf bifurcation thresholds (`|u_H| = 0.9675`,
+      `Y_nuc_crit = 0.6109`, cubic knee barrier `4/3 = 1.3333`), reproduces all 6 experimental
+      perturbation regimes from Hubaud et al. (2017) (isolated fibronectin quiescent, Dll1-coated,
+      Latrunculin A F-actin inhibition rescue at `T_osc = 141.50 min`, Y-27632 Rockout rescue,
+      intact high-density mPSM, and constitutively active `Yap5SA` arrest; oscillating fraction
+      Pearson `r = 0.9976`, `RMSE = 0.0469`), demonstrates suprathreshold single-pulse excitability,
+      solves the 2D reaction-diffusion mPSM target-wave PDE (`wave_contrast = 0.931` vs `0.0144`
+      under `Yap5SA` block), and segments the vendored vertebrate somite/PSM SEM specimen
+      (`mouse_psm_somites_specimen.jpg`, bilateral spacing `47.14 px`, `CV = 0.2010`), backed by
+      3 machine-checked Lean 4 theorems in `Loop_027_yap_excitable_segmentation.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Faithfully implements Hubaud et al.'s (2017) FitzHugh-Nagumo cubic fast-slow ODE/PDE
+          `tau_u du/dt = u - u^3/3 - v + I_eff(Y_nuc, J_Dll1) + D_u nabla^2 u`,
+          `tau_v dv/dt = u + a - b v` with exact cubic root continuation, Jacobian trace/determinant
+          Hopf stability analysis (`|u_H| = sqrt(1 - epsilon*b) = 0.9675`), suprathreshold single-spike
+          excitability, and 2D diffusive target-wave propagation (L120-520), verified by 3
+          machine-checked Lean 4 theorems (0 sorrys) in
+          `morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean`.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [120, 235], note: "FHN cubic nullcline, equilibrium solver, and supercritical Hopf threshold continuation", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [240, 520], note: "RK4 single-cell excitability/limit-cycle integrator, 6-regime perturbation suite, and 2D mPSM reaction-diffusion PDE", supports: true}
+          - {file: morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean, lines: [22, 98], note: "3 machine-checked Lean 4 theorems (0 sorrys) for cubic nullcline extrema, Hopf vs quiescent stability, and Latrunculin A YAP-inhibition rescue", supports: true}
+      specimen-match:
+        value: 89
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 dorsal vertebrate embryo somite/PSM SEM
+          (`datasets/yap_excitable_segmentation/mouse_psm_somites_specimen.jpg`) and segments both
+          bilateral paraxial somite rows (`segment_mouse_psm_somites_specimen`, L525-595),
+          extracting 8 upper and 8 lower somites, bilateral mean spacing 47.14 px (CV = 0.2010),
+          symmetry ratio 0.9969, and phase-aligned FHN wave correlation (Panel F).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [525, 595], note: "Bilateral dorsal somite DoG peak & inter-somitic cleft segmentation on mouse_psm_somites_specimen.jpg", supports: true}
+          - {file: docs/media/yap_excitable_segmentation_comparison.png, lines: [0, 0], note: "6-panel synthesis figure including FHN phase plane, Hopf bifurcation diagram, excitable pulse vs autonomous clock, 6-regime benchmark, 2D mPSM wave kymograph, and SEM segmentation", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Evaluates a 40-point nuclear YAP bifurcation continuation across `Y_nuc in [0, 1]`,
+          all 6 experimental regimes from Hubaud et al. (2017) Figs. 1-6 (spread fibronectin,
+          Dll1-coated, Latrunculin A, Y-27632 Rockout, intact high-density mPSM, and `Yap5SA`
+          constitutive block), subthreshold vs suprathreshold single-pulse excitability on
+          quiescent cells, and 2D intact vs `Yap5SA` PDE wave propagation, plus CLI flags
+          (`--Y-nuc`, `--J-Dll1`, `--seed`).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [330, 430], note: "40-point Y_nuc Hopf bifurcation sweep and 6-regime Hubaud et al. (2017) perturbation suite", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [435, 520], note: "2D mPSM reaction-diffusion wave comparison between intact low-YAP and Yap5SA constitutive block", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: >-
+          Extracts 5 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L600-665): FHN supercritical Hopf threshold `|u_H| = 0.9675`
+          (cubic knee barrier `4/3 = 1.3333`), critical nuclear YAP threshold `Y_nuc_crit = 0.6109`,
+          Latrunculin A-rescued autonomous oscillation period `T_osc = 141.50 min` vs empirical
+          `142.0 min`, 6-regime oscillating cell fraction Pearson `r = 0.9976` (`p = 8.43e-06`,
+          `RMSE = 0.0469`), and bilateral SEM specimen somite spacing `47.14 +/- 9.48 px`
+          (`CV = 0.2010`).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [600, 665], note: "5 quantitative MorphoEval measurements with analytical and empirical references, CV, Pearson r, and RMSE", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/yap_excitable_segmentation/` with `scout_manifest.json`,
+          `yap_excitable_segmentation_reference.json`, `mouse_psm_somites_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.1016/j.cell.2017.08.043`,
+          `10.1016/S0006-3495(61)86902-6`, `10.1038/nature11804`, `10.1038/nature10137`),
+          and `README.md`, with runtime SHA-256 verification (`verify_dataset_integrity`, L85-115).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [85, 115], note: "Runtime SHA-256 verification of datasets/yap_excitable_segmentation/ artifacts", supports: true}
+          - {file: datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json, lines: [1, 145], note: "Vendored Hubaud et al. (2017) FHN equations, 6 perturbation regimes, and specimen metadata", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Every computational section and docstring maps directly to numbered figures in
+          Hubaud et al. (2017) Cell Figs. 1-7 and the 3 Lean 4 theorems in
+          `Loop_027_yap_excitable_segmentation.lean` and
+          `morphoeval/math_kg_loops/hubaud-yap-excitable-segmentation.yaml`.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1, 60], note: "Module docstring linking equations to Hubaud et al. (2017) and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/hubaud-yap-excitable-segmentation.yaml, lines: [1, 102], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic RNG (`seed=2016`), standalone `--self-test` suite verifying SHA-256
+          dataset integrity, cubic nullcline knees (`Delta_f = 4/3`), Hopf threshold (`|u_H| = 0.9675`),
+          Latrunculin A period (`141.50 min`), `Yap5SA` arrest, single-pulse excitability,
+          bitwise 2D PDE determinism (`atol=0.0`), and specimen segmentation (`run_self_test`,
+          L885-950), plus rendered PNG and GIF outputs in `docs/media/`.
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [885, 950], note: "Deterministic --self-test suite verifying SHA-256 digests, FHN bifurcation, bitwise 2D PDE determinism, and morphometrics", supports: true}
+          - {file: docs/media/yap_excitable_segmentation_growth.gif, lines: [0, 0], note: "16-frame animated GIF showing 2D excitable mPSM traveling waves and FHN phase-plane relaxation cycle", supports: true}
+    remediation:
+      - "Couple the 2-variable FitzHugh-Nagumo excitable core to an explicit spatial FGF/Wnt gradient decay along the anteroposterior axis to model wavefront arrest of excitable waves into discrete somite clefts."
+      - "Incorporate explicit substrate-stiffness traction mechanics E_sub -> F-actin -> LATS1/2 -> Y_nuc phosphorylation kinetics (Dupont et al. 2011) alongside intercellular Dll1-Notch phase coupling."

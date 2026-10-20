@@ -1,0 +1,129 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "burak-grid-cell-hexagonal-attractor",
+  "slot": 88,
+  "title": "Burak & Fiete (2009), Hafting et al. (2005) & Stensola et al. (2012) Continuous Attractor Entorhinal Grid-Cell Hexagonal Lattice, Velocity Path Integration & Discrete Dorso-Ventral Scale Ratio sqrt(2)",
+  "primary_papers": [
+    {
+      "citation": "Burak Y, Fiete IR (2009) Accurate Path Integration in Continuous Attractor Network Models of Grid Cells. PLoS Comput. Biol. 5(2):e1000291",
+      "doi": "10.1371/journal.pcbi.1000291"
+    },
+    {
+      "citation": "Hafting T, Fyhn M, Molden S, Moser MB, Moser EI (2005) Microstructure of a spatial map in the entorhinal cortex. Nature 436(7052):801-806",
+      "doi": "10.1038/nature03721"
+    },
+    {
+      "citation": "Stensola H, Stensola T, Solstad T, Froland K, Moser MB, Moser EI (2012) The entorhinal grid map is discretized. Nature 492(7427):72-78",
+      "doi": "10.1038/nature11649"
+    },
+    {
+      "citation": "Brandon MP, Bogaard AR, Libby CP, Connerney MA, Gupta K, Hasselmo ME (2011) Reduction of Theta Rhythm Dissociates Grid Cell Spatial Periodicity from Directional Tuning. Science 332(6029):595-599",
+      "doi": "10.1126/science.1201652"
+    }
+  ],
+  "governing_equations": {
+    "burak_fiete_cann_pde": "tau * ds_theta(x, t)/dt + s_theta(x, t) = [ sum_{theta'} int W_0(x - x' - l * e_hat(theta')) s_{theta'}(x', t) dx' + B * (1 + alpha * v(t) . e_hat(theta)) ]_+",
+    "surround_inhibition_kernel": "W_0(Delta_x) = a * exp(-gamma * ||Delta_x||^2) - exp(-beta * ||Delta_x||^2),   gamma = 1.05 * beta",
+    "fourier_ring_dispersion": "W_hat_0(k) = (pi * a / gamma) * exp(-k^2 / (4 * gamma)) - (pi / beta) * exp(-k^2 / (4 * beta)),   k_c = sqrt(4 * beta * gamma / (gamma - beta) * ln(gamma / (a * beta)))",
+    "resonant_triad_selection": "k_1 + k_2 + k_3 = 0 with |k_i| = k_c at 120 deg (60 deg hexagonal lattice) maximizes quadratic rectification energy int [u(x)]_+^3 dx over 90 deg square planforms",
+    "linear_velocity_path_integration": "d(Phi_bump)/dt = c_v * alpha * l * v(t)  ==>  Delta_Phi_bump(T) = c_v * alpha * l * (x_animal(T) - x_animal(0))",
+    "stensola_discrete_module_scaling": "lambda_{m+1} / lambda_m = sqrt(2) approx 1.4142  ==>  lambda_{m+1}^2 / lambda_m^2 = 2 (discrete area doubling across M1..M4 dorso-ventral MEC modules)"
+  },
+  "canonical_parameters": {
+    "N_sheet": 36,
+    "tau_ms": 10.0,
+    "dt_ms": 1.0,
+    "a_kernel": 1.0,
+    "beta_base": 0.038,
+    "gamma_ratio": 1.05,
+    "l_shift_px": 1.5,
+    "alpha_vel": 0.18,
+    "B_feedforward": 1.0,
+    "stensola_modules_cm": [38.0, 54.0, 76.0, 108.0],
+    "stensola_scale_ratio_ref": 1.4142135623730951,
+    "hexagonal_gridness_ref": 1.18,
+    "square_gridness_ref": -0.35,
+    "seed": 2008
+  },
+  "experimental_regimes": [
+    {
+      "id": "m1_dorsal_hexagonal_cann",
+      "description": "Dorsal MEC Layer II Module M1 (lambda_1 = 38 cm, beta = 0.064): 4-subpopulation (N, S, E, W) Burak-Fiete continuous attractor network spontaneously forms a 60 deg hexagonal bump lattice and integrates 2D foraging velocity with high hexagonal gridness score G_60 > 1.0",
+      "module_index": 1,
+      "lambda_cm": 38.0,
+      "l_shift_px": 1.5,
+      "alpha_vel": 0.18,
+      "planform_mode": "hexagonal_cann",
+      "expected_gridness_60": 1.18,
+      "expected_path_r": 0.992
+    },
+    {
+      "id": "m2_intermediate_dorsal_module",
+      "description": "Intermediate-dorsal MEC Module M2 (lambda_2 = 54 cm approx 38 * sqrt(2)): scale-expanded surround-inhibition kernel beta_2 = beta_1 / 2 doubles unit-cell area (lambda_2^2 / lambda_1^2 approx 2.02)",
+      "module_index": 2,
+      "lambda_cm": 54.0,
+      "l_shift_px": 1.5,
+      "alpha_vel": 0.18,
+      "planform_mode": "hexagonal_cann",
+      "expected_gridness_60": 1.15,
+      "expected_scale_ratio": 1.4211
+    },
+    {
+      "id": "m3_intermediate_ventral_module",
+      "description": "Intermediate-ventral MEC Module M3 (lambda_3 = 76 cm = 2 * lambda_1): third discrete Stensola et al. (2012) module with scale ratio lambda_3 / lambda_2 = 1.4074",
+      "module_index": 3,
+      "lambda_cm": 76.0,
+      "l_shift_px": 1.5,
+      "alpha_vel": 0.18,
+      "planform_mode": "hexagonal_cann",
+      "expected_gridness_60": 1.14,
+      "expected_scale_ratio": 1.4074
+    },
+    {
+      "id": "m4_ventral_large_scale_module",
+      "description": "Ventral MEC Module M4 (lambda_4 = 108 cm = 2 * lambda_2): fourth discrete Stensola et al. (2012) module with scale ratio lambda_4 / lambda_3 = 1.4211 and cumulative ratio lambda_4 / lambda_1 = 2.8421 approx 2*sqrt(2)",
+      "module_index": 4,
+      "lambda_cm": 108.0,
+      "l_shift_px": 1.5,
+      "alpha_vel": 0.18,
+      "planform_mode": "hexagonal_cann",
+      "expected_gridness_60": 1.12,
+      "expected_scale_ratio": 1.4211
+    },
+    {
+      "id": "square_90deg_nonresonant_control",
+      "description": "Orthogonal 90 deg 2-mode square lattice control (k_x, k_y without 120 deg resonant triad closure k_1+k_2+k_3=0): yields negative 60 deg gridness score G_60 < 0 and positive 90 deg rotational symmetry, demonstrating quadratic triad selection of 60 deg hexagonal planforms",
+      "module_index": 1,
+      "lambda_cm": 38.0,
+      "l_shift_px": 1.5,
+      "alpha_vel": 0.18,
+      "planform_mode": "square_control",
+      "expected_gridness_60": -0.35,
+      "expected_path_r": 0.985
+    },
+    {
+      "id": "medial_septum_inactivation_pinned_null",
+      "description": "Brandon et al. (2011) / Burak & Fiete (2009) medial-septum muscimol inactivation / symmetric weight ablation control (l = 0, alpha = 0): neural sheet still self-organizes a static hexagonal bump attractor on the cortical sheet, but bump phase is pinned (Delta_Phi = 0) and single-neuron spatial arena rate map loses hexagonal periodicity",
+      "module_index": 1,
+      "lambda_cm": 38.0,
+      "l_shift_px": 0.0,
+      "alpha_vel": 0.0,
+      "planform_mode": "pinned_ablation",
+      "expected_gridness_60": -0.05,
+      "expected_path_r": 0.0
+    }
+  ],
+  "specimen_provenance": {
+    "file": "datasets/grid_cell_hexagonal_attractor/rat_entorhinal_hippocampal_specimen.jpg",
+    "species": "Rattus norvegicus (adult rat hippocampal-entorhinal formation)",
+    "source": "Wikimedia Commons File:Rat hippocampus stained with antibody to NeuN (green), myelin basic protein (red) and DNA (blue).jpg (confocal immunofluorescence micrograph by GerryShaw)",
+    "license": "CC BY-SA 3.0",
+    "dimensions_px": [1800, 1200],
+    "sha256": "63b3a392f8d0b25f6ddac088b95d8c7152c39374ead9a87089cafc48d2785666"
+  },
+  "sha256_digests": {
+    "datasets/grid_cell_hexagonal_attractor/scout_manifest.json": "77ac05875318888d1fe936a2f765548930637a526aa76f126602fb68f3270d0b",
+    "datasets/grid_cell_hexagonal_attractor/paper_citations.bib": "e1074e8d98b9dc0070e4415cc7600e00a06bde8222ba97d67d1d4e6ed9aa75b8",
+    "datasets/grid_cell_hexagonal_attractor/rat_entorhinal_hippocampal_specimen.jpg": "63b3a392f8d0b25f6ddac088b95d8c7152c39374ead9a87089cafc48d2785666"
+  }
+}

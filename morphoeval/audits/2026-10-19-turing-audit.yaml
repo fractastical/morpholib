@@ -1,0 +1,211 @@
+# MorphoEval audit — Turing (1952) / Pearson (1993) / Kondo & Asai (1995) Reaction-Diffusion Morphogenesis, 2026-10-19 (v1)
+#
+# Dual-agent Pass 1 assessment of `1952-turing-morpho.py` (v1, 595 lines) prior to
+# the 12-step closed remediation loop (`2026-10-19-turing-morpho-loop`):
+#   - Primary assessor: Gemini 4 Argon (Cursor agent) — 54.0 / 100
+#   - Independent second assessor: Claude Sonnet 5.5 High (subagent 644535e1-add1-4d86-bd2b-a2b4d6caea92) — 25.1 / 100
+#   - Dual-agent consensus score: 39.6 / 100
+#
+# Key findings from the independent second assessor (Claude Sonnet 5.5 High) that anchor
+# the v1 scores and drive the Step 12 remediation pass:
+#   1. Turing (1952) linear reaction-diffusion instability is not implemented at all:
+#      no 2-morphogen linearized system (Turing Sec. 8-9), no dispersion relation
+#      sigma(k^2), no critical wavenumber k_c or analytical wavelength lambda_c = 2*pi/k_c,
+#      and no ring-of-20-cells model. Moreover, Pearson's (1993) saddle-node boundary
+#      4*(F+k)^2 = F and Hopf boundary are never evaluated, and 3 of the 4 hardcoded
+#      regimes (mitosis_spots, soliton_spots, stripes_worms) lie outside the saddle-node
+#      boundary where no nontrivial homogeneous steady state exists.
+#   2. The equal-diffusion negative control (Du=Dv=0.10 at F=0.055, k=0.062, L147-155)
+#      is conceptually flawed as a test of Turing's theorem: the trivial state (U,V)=(1,0)
+#      has eigenvalues -F and -(F+k) which are linearly stable for ALL (Du, Dv), and
+#      halving Du from 0.20 to 0.10 changes absolute diffusivity while testing finite-
+#      amplitude front extinction rather than linear Turing instability around an
+#      existing homogeneous steady state across the critical diffusivity ratio d_c.
+#   3. Only 4 patterned points are hardcoded (L100-157) without Pearson's (1993) 12
+#      pattern classes (alpha through mu), without Pearson's physical domain scaling
+#      (L=2.5, N=256, Du=2e-5, Dv=1e-5, single 20x20 perturbation), and without CLI
+#      parameters (--F, --k, --Du, --Dv, --N, --steps, --dt, --seed, --pearson-class).
+#   4. Zero biological specimen validation (`specimen-match: 14`): no reference,
+#      specimen photograph, or segmentation for Kondo & Asai (1995) Nature 376:765-768
+#      (Pomacanthus marine angelfish skin stripes and Y-branch insertion dislocations)
+#      or spotted pufferfish/boxfish hexagonal arrays, and integer-bin k* (11 vs 12)
+#      cannot resolve sub-bin wavelength differences.
+#   5. `datasets/turing/` does not exist (zero vendored tables or SHA-256 verification),
+#      `turing_patterns_black_neon.gif` is out of sync with `docs/media/turing_gray_scott.gif`,
+#      and `morphoeval/lean/MathOfBiology.lean` Section 5 has only a single 3-line
+#      trivial equilibrium check.
+
+audit:
+  id: 2026-10-19-turing-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent subagent 644535e1-add1-4d86-bd2b-a2b4d6caea92)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) dual-agent evaluation of `1952-turing-morpho.py` prior to Pass 2
+      remediation in `2026-10-19-turing-morpho-loop`.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  pearson1993:
+    title: "Complex patterns in a simple system"
+    authors: "Pearson JE"
+    venue: "Science 261(5118):189-192 (1993)"
+    doi: 10.1126/science.261.5118.189
+  lee1994:
+    title: "Experimental observation of self-replicating spots in a reaction-diffusion system"
+    authors: "Lee KJ, McCormick WD, Pearson JE, Swinney HL"
+    venue: "Nature 369(6477):215-218 (1994)"
+    doi: 10.1038/369215a0
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    venue: "Nature 376(6543):765-768 (1995)"
+    doi: 10.1038/376765a0
+
+simulations:
+  - id: turing-gray-scott
+    name: "Turing (1952), Pearson (1993) & Kondo-Asai (1995) reaction-diffusion morphogenesis"
+    organism: "Marine angelfish (Pomacanthus semicirculatus / P. imperator) skin stripes & chemical reaction-diffusion patterns"
+    script: 1952-turing-morpho.py
+    output: turing_pearson_morphospace.png
+    extra_outputs:
+      - docs/media/turing_gray_scott.gif
+      - turing_pearson_metrics.csv
+    status: evaluated
+    source_refs:
+      - turing1952
+      - pearson1993
+      - lee1994
+      - kondo1995
+    summary: >-
+      Pass 1 (v1) dual-agent evaluation of `1952-turing-morpho.py` (Gemini 4 Argon +
+      Claude Sonnet 5.5 High consensus: 39.6/100). The v1 script integrates the 2D
+      Gray-Scott PDE across 4 hardcoded (F, k) regimes plus an equal-diffusion control
+      and computes 2D FFT radial power spectra, but completely omits Turing's (1952)
+      linear reaction-diffusion instability equations, dispersion relation sigma(k^2),
+      and ring-of-20-cells model; omits Pearson's (1993) saddle-node (4(F+k)^2 = F) and
+      Hopf bifurcation curves; uses a conceptually flawed trivial-state extinction
+      control for Du=Dv; has zero biological specimen images or segmentation (no
+      Kondo & Asai 1995 Pomacanthus stripe spacing or Y-junction analysis); and lacks a
+      vendored `datasets/turing/` reference package with SHA-256 verification.
+    scores:
+      model-fidelity:
+        value: 54
+        rationale: >-
+          Integrates the 2D periodic Gray-Scott PDE dU/dt = Du*Lap(U) - U*V^2 + F*(1-U),
+          dV/dt = Dv*Lap(V) + U*V^2 - (F+k)*V (L162-221) with Du/Dv = 2.0. However, as
+          identified by the independent second assessor (Claude Sonnet 5.5 High): (1)
+          Turing (1952) is not implemented at all—there is no linearized 2-morphogen
+          reaction-diffusion system, no dispersion relation sigma(k^2), no critical
+          wavenumber k_c, and no ring-of-20-cells model; (2) Pearson's (1993) saddle-node
+          bifurcation curve 4*(F+k)^2 = F and Hopf boundary are not computed, and 3 of the
+          4 patterned regimes lie past the saddle-node boundary where no nontrivial
+          homogeneous steady state exists; and (3) the equal-diffusion control (Du=Dv=0.10,
+          L147-155) halves Du and tests finite-amplitude front extinction toward the
+          always-stable trivial state (1,0) rather than linear Turing instability around
+          a homogeneous steady state.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [100, 156], note: "PEARSON_REGIMES with 4 patterned points + flawed Du=Dv=0.10 trivial-state extinction control", supports: false}
+          - {file: 1952-turing-morpho.py, lines: [162, 221], note: "5-point periodic Gray-Scott forward Euler solver without Turing (1952) linear dispersion or Pearson bifurcation boundaries", supports: false}
+      specimen-match:
+        value: 14
+        rationale: >-
+          No biological specimen photograph, segmentation, or comparison to Kondo & Asai
+          (1995) Pomacanthus angelfish skin stripes or boxfish/pufferfish hexagonal spot
+          arrays is present anywhere in the v1 script. Furthermore, in
+          `turing_pearson_morphospace.png`, the first two spot panels (mitosis_spots at
+          F=0.028 and soliton_spots at F=0.030) are visually near-indistinguishable at
+          t=4000 because both are initialized with 10 nucleation patches rather than
+          Pearson's single central 20x20 perturbation.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [173, 200], note: "multi-patch synthetic initialization with zero biological specimen images or segmentation", supports: false}
+          - {file: turing_pearson_morphospace.png, lines: [0, 0], note: "2x5 synthetic plot with no biological specimen panel and near-identical spot panels in cols 0 and 1", supports: false}
+      parameter-expressivity:
+        value: 38
+        rationale: >-
+          Only 4 patterned (F, k) points plus 1 control are hardcoded in `PEARSON_REGIMES`
+          (L100-156), omitting Pearson's (1993) 12 pattern classes (alpha through mu) and
+          (F, k) phase diagram. No CLI arguments exist for F, k, Du, Dv, N, steps, dt, or
+          seed (L561-580), and no continuous parameter sweep of diffusivity ratio d = Du/Dv
+          or feed/kill rates is performed.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [100, 156], note: "hardcoded 5-element tuple without Pearson's 12 pattern classes", supports: false}
+          - {file: 1952-turing-morpho.py, lines: [561, 580], note: "CLI exposes only --no-show, --skip-gif, --self-test, --output-png, --output-csv", supports: false}
+      morphometric-validation:
+        value: 30
+        rationale: >-
+          Computes 2D Hann-windowed FFT radial PSD, azimuthal m=2/m=6 harmonics, and
+          connected-component Euler characteristic (L227-313), but all metrics are
+           purely self-referential without comparison to analytical Turing wavelength
+          lambda_c = 2*pi/k_c, Pearson's (1993) phase boundaries, or Kondo & Asai (1995)
+          empirical stripe wavelengths. Moreover, integer-binned k* gives k* = 11, 12, 12, 11
+          cycles across all four patterned regimes, failing to resolve sub-bin wavelength
+          shifts.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [270, 286], note: "integer-binned k_star_idx = argmax(radial_psd) yields identical 11-12 bin values across regimes", supports: false}
+          - {file: turing_pearson_metrics.csv, lines: [1, 6], note: "self-referential FFT metrics with no analytical lambda_c or biological benchmark comparison", supports: false}
+      source-traceability:
+        value: 45
+        rationale: >-
+          Module docstring lists DOIs for Turing (1952), Pearson (1993), and Lee et al.
+          (1994) (L7-15), but `datasets/turing/` does not exist, no formal JSON/CSV
+          reference dataset or specimen photographs are vendored or SHA-256-locked, and
+          Kondo & Asai (1995) (`10.1038/376765a0`) is absent.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [7, 15], note: "3 DOIs in docstring but no vendored datasets/turing/ or SHA-256 verification", supports: false}
+      code-traceability:
+        value: 45
+        rationale: >-
+          Section headers and docstrings describe the Gray-Scott PDE and FFT ring metrics
+          (L160-313), but functions lack explicit equation, section, and figure mappings
+          to Turing (1952) Sections 8-9, Pearson (1993) Eq. 1 & Fig. 1-2, and Kondo & Asai
+          (1995) Fig. 1-3.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [162, 221], note: "solver functions lack explicit paper section/equation citations", supports: false}
+      repro-package:
+        value: 61
+        rationale: >-
+          Uses deterministic `np.random.default_rng(1952)` and includes `--self-test`,
+          `--no-show`, and `--skip-gif` flags (L511-591). However, `--self-test` uses
+          overly loose thresholds (`ring_sharpness > 5.0` when observed values are 718-967),
+          does not verify two-run hash determinism, and `render_legacy_neon_gif` writes
+          `turing_patterns_black_neon.gif` (N=200, 5000 steps) out of sync with
+          `docs/media/turing_gray_scott.gif`.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [319, 364], note: "render_legacy_neon_gif writes turing_patterns_black_neon.gif rather than updating docs/media/turing_gray_scott.gif", supports: false}
+          - {file: 1952-turing-morpho.py, lines: [528, 557], note: "loose self_test thresholds (sharpness > 5.0) and no determinism check", supports: false}
+    remediation:
+      - "Implement Turing (1952) Section 8-9 two-morphogen linear reaction-diffusion dispersion relation sigma(k^2), critical wavenumber k_c, analytical wavelength lambda_c = 2*pi/k_c, and Turing's N=20 ring-of-cells morphogenesis model."
+      - "Implement Pearson (1993) exact Saddle-Node (4*(F+k)^2 = F) and Hopf bifurcation curves, map all 12 Pearson pattern classes (alpha through mu) on the (F, k) phase diagram, and replace the flawed trivial-state extinction control with a true diffusivity-ratio sweep (d = Du/Dv across the analytical Turing threshold d_c around a nontrivial steady state)."
+      - "Vendor `datasets/turing/` with SHA-256-locked reference data (Turing 1952 ring parameters, Pearson 1993 12-regime table, Kondo & Asai 1995 Pomacanthus stripe spacing table) plus real CC-licensed biological specimen photographs (Pomacanthus semicirculatus skin stripes & Tetraodon/Ostracion hexagonal spots), and segment the biological stripes, inter-stripe wavelength, and Y-branch dislocations directly in `1952-turing-morpho.py`."
+      - "Upgrade spectral morphometrics to sub-bin parabolic/centroid wavenumber estimation, compare measured wavelengths against analytical lambda_c and empirical Pomacanthus stripe spacing, expose full CLI parameters, sync `docs/media/turing_gray_scott.gif`, and formalize Turing dispersion & Pearson saddle-node theorems in `morphoeval/lean/MathOfBiology.lean` Section 5."

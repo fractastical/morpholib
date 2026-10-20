@@ -1,0 +1,464 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-cellular-potts-cell-sorting-loop
+  target_simulation: graner-cellular-potts-cell-sorting
+  paper: Graner & Glazier (1992) Phys. Rev. Lett. / Glazier & Graner (1993) Phys.
+    Rev. E — Simulation of biological cell sorting using a two-dimensional extended
+    large-Q Potts model
+  created_at: '2026-10-20T00:34:58.295Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: e93f00e
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 8.715
+  wall_time_min: 0.15
+  tier_a_wall_s: 3.679
+  tier_b_wall_s: 5.036
+  cpu_user_s: 6.58
+  cpu_sys_s: 0.45
+  input_tokens: 668
+  output_tokens: 2802
+  subagent_tokens: 0
+  total_llm_tokens: 3470
+  artifact_tokens: 25173
+  tier_a_llm_tokens: 383
+  tier_b_llm_tokens: 3087
+  effective_tokens_per_s: 398.2
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:35:09.852Z'
+  ended_at: '2026-10-20T00:35:11.944Z'
+  duration_s: 2.049
+  cpu_user_s: 0.66
+  cpu_sys_s: 0.02
+  max_rss_mb: 33.3
+  runs_count: 1
+  tokens:
+    input_tokens: 31
+    output_tokens: 62
+    subagent_tokens: 0
+    total_llm_tokens: 93
+    artifact_tokens: 697
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/cellular_potts_cell_sorting/scout_manifest.json
+    bytes: 2488
+    sha256: fceae3228a27e8619be183ccc7a4f5beea6f6ec202f69487d12ff236d79f268f
+    tokens: 697
+  commands:
+  - command: ./venv/bin/python3 morphoeval/scout_literature.py --slot 42 --out datasets/cellular_potts_cell_sorting/scout_manifest.json
+    exit_code: 0
+    wall_s: 2.049
+    cpu_user_s: 0.66
+    cpu_sys_s: 0.02
+    stdout_tokens: 62
+  notes: Executed OpenAlex + Wikimedia Commons literature & specimen scout for Slot
+    042 (Graner & Glazier 1992 PRL / Glazier & Graner 1993 PRE Cellular Potts cell
+    sorting)
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:37:33.434Z'
+  ended_at: '2026-10-20T00:37:33.500Z'
+  duration_s: 0.021
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.4
+  runs_count: 1
+  tokens:
+    input_tokens: 48
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 49
+    artifact_tokens: 941
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/cellular_potts_cell_sorting/README.md
+    bytes: 2999
+    sha256: 6c28797c37996a52c2b395e8866a4232e835896a2086b4fadba8c1d6f6b6b989
+    tokens: 941
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('datasets/cellular_potts_cell_sorting/cellular_potts_cell_sorting_reference.json'));
+      assert len(d['metadata']['sources'])==5
+    exit_code: 0
+    wall_s: 0.021
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Extracted Graner & Glazier (1992) PRL and Glazier & Graner (1993) PRE Cellular
+    Potts Hamiltonian, surface tension laws, 4 canonical phase regimes, logarithmic
+    boundary decay, and temperature pinning/melting controls
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:37:33.593Z'
+  ended_at: '2026-10-20T00:37:33.664Z'
+  duration_s: 0.025
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 14.2
+  runs_count: 1
+  tokens:
+    input_tokens: 92
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 93
+    artifact_tokens: 2088
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/cellular_potts_cell_sorting/cellular_potts_cell_sorting_reference.json
+    bytes: 7464
+    sha256: 028b28a5de4f0976dda882e6dccaa2c2f21b55f255a8df9088a3ca1b4ffbb04f
+    tokens: 2088
+  commands:
+  - command: ./venv/bin/python3 -c import hashlib, json; d=json.load(open('datasets/cellular_potts_cell_sorting/cellular_potts_cell_sorting_reference.json'));
+      h=hashlib.sha256(open('datasets/cellular_potts_cell_sorting/embryonic_cell_aggregate_specimen.jpg','rb').read()).hexdigest();
+      assert h==d['metadata']['specimens']['embryonic_cell_aggregate_specimen']['sha256'],
+      h
+    exit_code: 0
+    wall_s: 0.025
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Vendored multicellular embryonic cell aggregate confocal fluorescence specimen
+    from Wikimedia Commons (CC BY 3.0) and locked SHA-256 digest
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:38:27.418Z'
+  ended_at: '2026-10-20T00:38:27.936Z'
+  duration_s: 0.47
+  cpu_user_s: 0.15
+  cpu_sys_s: 0.12
+  max_rss_mb: 391.9
+  runs_count: 1
+  tokens:
+    input_tokens: 16
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 17
+    artifact_tokens: 1157
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/math_kg_loops/graner-cellular-potts-cell-sorting.yaml
+    bytes: 4189
+    sha256: 82ba0014afb4df968cf62fa5a91a11ab4f44359fa32b357142bd80a6313f877b
+    tokens: 1157
+  commands:
+  - command: lean morphoeval/lean/loops/Loop_042_cellular_potts_cell_sorting.lean
+    exit_code: 0
+    wall_s: 0.47
+    cpu_user_s: 0.15
+    cpu_sys_s: 0.12
+    stdout_tokens: 1
+  notes: Verified 3 machine-checked Lean 4 theorems (0 sorrys) in Loop_042_cellular_potts_cell_sorting.lean
+    and registered math_kg_loops spec
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:39:21.544Z'
+  ended_at: '2026-10-20T00:39:21.931Z'
+  duration_s: 0.341
+  cpu_user_s: 0.31
+  cpu_sys_s: 0.02
+  max_rss_mb: 64.2
+  runs_count: 1
+  tokens:
+    input_tokens: 25
+    output_tokens: 17
+    subagent_tokens: 0
+    total_llm_tokens: 42
+    artifact_tokens: 3267
+    method: explicit+BPE
+  artifacts:
+  - file: 1992-graner-cellular-potts-cell-sorting.py
+    bytes: 11175
+    sha256: 81c58bec72e9b39bd99865f317c0c24387bfbced3239c26f9fc6e75ab6318e2c
+    tokens: 3267
+  commands:
+  - command: ./venv/bin/python3 1992-graner-cellular-potts-cell-sorting.py --self-test
+    exit_code: 0
+    wall_s: 0.341
+    cpu_user_s: 0.31
+    cpu_sys_s: 0.02
+    stdout_tokens: 17
+  notes: Implemented Pass 1 (v1) Cellular Potts sorting baseline script with --self-test
+    and measure_morphoeval()
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:39:22.004Z'
+  ended_at: '2026-10-20T00:39:22.859Z'
+  duration_s: 0.773
+  cpu_user_s: 0.7
+  cpu_sys_s: 0.03
+  max_rss_mb: 95.6
+  runs_count: 1
+  tokens:
+    input_tokens: 21
+    output_tokens: 68
+    subagent_tokens: 0
+    total_llm_tokens: 89
+    artifact_tokens: 64
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/cellular_potts_cell_sorting_growth.gif
+    bytes: 16232
+    sha256: dd76417d7ceab5e885210104051c4832531621e055461fd2c98981a66a0fae92
+    tokens: 64
+  commands:
+  - command: ./venv/bin/python3 1992-graner-cellular-potts-cell-sorting.py
+    exit_code: 0
+    wall_s: 0.773
+    cpu_user_s: 0.7
+    cpu_sys_s: 0.03
+    stdout_tokens: 68
+  notes: Rendered Pass 1 static comparison figure and growth animation GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:40:20.655Z'
+  ended_at: '2026-10-20T00:40:20.810Z'
+  duration_s: 0.105
+  cpu_user_s: 0.08
+  cpu_sys_s: 0.01
+  max_rss_mb: 38.8
+  runs_count: 1
+  tokens:
+    input_tokens: 38
+    output_tokens: 26
+    subagent_tokens: 0
+    total_llm_tokens: 64
+    artifact_tokens: 2740
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit.yaml
+    bytes: 11007
+    sha256: be298322cd8fca7dd9624e48b307430fd2248b54245026de6e03eca83cd3721d
+    tokens: 2740
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit.yaml
+      --check
+    exit_code: 0
+    wall_s: 0.105
+    cpu_user_s: 0.08
+    cpu_sys_s: 0.01
+    stdout_tokens: 26
+  notes: Completed Pass 1 (v1) 7-dimension MorphoEval audit (56.8/100) with line-pinned
+    evidence and remediation plan
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:40:20.888Z'
+  ended_at: '2026-10-20T00:40:21.619Z'
+  duration_s: 0.682
+  cpu_user_s: 0.63
+  cpu_sys_s: 0.03
+  max_rss_mb: 91.1
+  runs_count: 1
+  tokens:
+    input_tokens: 35
+    output_tokens: 165
+    subagent_tokens: 0
+    total_llm_tokens: 200
+    artifact_tokens: 627
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit.measurements.yaml
+    bytes: 1990
+    sha256: 23d467b050bc8e2d40db564a22773e0773ff52445adb5c490d54e56c18ef8da5
+    tokens: 627
+  commands:
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit.yaml
+    exit_code: 0
+    wall_s: 0.682
+    cpu_user_s: 0.63
+    cpu_sys_s: 0.03
+    stdout_tokens: 165
+  notes: Fingerprinted Pass 1 outputs and computed sidecar morphometrics
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:40:21.697Z'
+  ended_at: '2026-10-20T00:40:22.013Z'
+  duration_s: 0.266
+  cpu_user_s: 0.24
+  cpu_sys_s: 0.01
+  max_rss_mb: 44.3
+  runs_count: 1
+  tokens:
+    input_tokens: 38
+    output_tokens: 151
+    subagent_tokens: 0
+    total_llm_tokens: 189
+    artifact_tokens: 11546
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit/morphoeval_2026-10-19-cellular-potts-cell-sorting-audit.ttl
+    bytes: 39489
+    sha256: 642a9fb7206a14d3a3341b502c45cffe9418348b9555d185c31b5607fafea7fb
+    tokens: 11546
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit.yaml
+      --conform
+    exit_code: 0
+    wall_s: 0.266
+    cpu_user_s: 0.24
+    cpu_sys_s: 0.01
+    stdout_tokens: 151
+  notes: Built ProbKnow-conformant TriG nanopublications and REPORT.md for Pass 1
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:40:22.093Z'
+  ended_at: '2026-10-20T00:40:22.845Z'
+  duration_s: 0.701
+  cpu_user_s: 0.77
+  cpu_sys_s: 0.05
+  max_rss_mb: 146.1
+  runs_count: 1
+  tokens:
+    input_tokens: 73
+    output_tokens: 951
+    subagent_tokens: 0
+    total_llm_tokens: 1024
+    artifact_tokens: 686
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit/published.json
+    bytes: 1961
+    sha256: 2957ca7d950ded859c15167690335d3fae223c511ffea97bf1dcc18411b18d60
+    tokens: 686
+  commands:
+  - command: bash -c ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit
+      && NANOPUB_SIGN_DIR=/tmp node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit/signed/*.trig
+    exit_code: 0
+    wall_s: 0.701
+    cpu_user_s: 0.77
+    cpu_sys_s: 0.05
+    stdout_tokens: 951
+  notes: Signed Pass 1 nanopublications and verified RSA trusty signatures with check_signed.mjs
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:40:22.927Z'
+  ended_at: '2026-10-20T00:40:23.000Z'
+  duration_s: 0.02
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.4
+  runs_count: 1
+  tokens:
+    input_tokens: 56
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 57
+    artifact_tokens: 686
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit/published.json
+    bytes: 1961
+    sha256: 2957ca7d950ded859c15167690335d3fae223c511ffea97bf1dcc18411b18d60
+    tokens: 686
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit/published.json'));
+      assert len(d)==10, len(d)
+    exit_code: 0
+    wall_s: 0.02
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Verified Pass 1 public record, 10 signed trusty URIs, and REPORT.md synthesis
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:45:42.283Z'
+  ended_at: '2026-10-20T00:45:45.600Z'
+  duration_s: 3.262
+  cpu_user_s: 3.01
+  cpu_sys_s: 0.16
+  max_rss_mb: 150.5
+  runs_count: 1
+  tokens:
+    input_tokens: 195
+    output_tokens: 1358
+    subagent_tokens: 0
+    total_llm_tokens: 1553
+    artifact_tokens: 674
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit-v2/published.json
+    bytes: 1961
+    sha256: 26e030eb21ebf6b20b85b51ebddfe51f784e9637f769cb3e08d2765711f0abd9
+    tokens: 674
+  commands:
+  - command: "bash -c \n  ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit-v2.yaml\
+      \ &&\n  ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit-v2.yaml\
+      \ --supersede-from morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit\
+      \ --no-resolve-heads --conform &&\n  ./venv/bin/python3 morphoeval/sign_morphoeval.py\
+      \ morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit-v2 &&\n  NANOPUB_SIGN_DIR=/tmp\
+      \ node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit-v2/signed/*.trig\n"
+    exit_code: 0
+    wall_s: 3.262
+    cpu_user_s: 3.01
+    cpu_sys_s: 0.16
+    stdout_tokens: 1358
+  notes: 'Completed Step 12 -> Pass 2 remediation loop: 4 canonical CPM phase regimes
+    + T=0 pinning & equal-adhesion controls, 7-point gamma_LD sweep, 6-point T sweep,
+    confocal embryonic cell aggregate segmentation (r=0.9612), and superseding signed
+    nanopubs (91.1/100, +34.3 pts)'

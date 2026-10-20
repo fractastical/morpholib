@@ -1,0 +1,97 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-jonsson-auxin-pin1-meristem> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Jönsson et al. (2006) & Smith et al. (2006) up-the-gradient PIN1 polarization and polar auxin transport model for shoot apical meristem phyllotaxis — Morphometric validation: 52/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Exposes only 2 static parameter ratios in `measure_morphoeval()` (L53-72) without divergence angle statistics, parastichy counts, PIN1 flux conservation checks, NPA/IAA perturbation metrics, or specimen segmentation validation." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2006-jonsson-auxin-pin1-meristem.py L53–L72: Only 2 baseline analytical parameters without error bars or p-values <https://github.com/fractastical/morpholib/blob/0cb0132/2006-jonsson-auxin-pin1-meristem.py#L53-L72>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-measurement-homogeneous-auxin-steady-state>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-measurement-pin1-feedback-product-c1-a0> ;
+        pk:hasScore "0.52"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-measurement-homogeneous-auxin-steady-state> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "homogeneous_auxin_steady_state = 2.0 a.u." ;
+        schema:measurementTechnique "Analytical ratio rho_0 / mu" ;
+        schema:name "homogeneous_auxin_steady_state" ;
+        schema:unitText "a.u." ;
+        schema:value "2.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-measurement-homogeneous-auxin-steady-state-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-measurement-homogeneous-auxin-steady-state-reference> a schema:PropertyValue ;
+        dct:source "Jönsson et al. (2006) PNAS Eqs. 1-4 (a_0 = rho_0 / mu = 0.10 / 0.05 = 2.0)" ;
+        schema:value "2.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-measurement-pin1-feedback-product-c1-a0> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "pin1_feedback_product_c1_a0 = 3.7 dimensionless" ;
+        schema:measurementTechnique "1D ring baseline feedback parameter product" ;
+        schema:name "pin1_feedback_product_c1_a0" ;
+        schema:unitText "dimensionless" ;
+        schema:value "3.7" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-measurement-pin1-feedback-product-c1-a0-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-measurement-pin1-feedback-product-c1-a0-reference> a schema:PropertyValue ;
+        dct:source "Jönsson et al. (2006) PNAS up-the-gradient instability regime c_1 * a_0 > 1 + z*D/(T*P_i)" ;
+        schema:value "3.7" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 032 Pass 1 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/32> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cub.2005.09.052>,
+            <https://doi.org/10.1038/nature02081>,
+            <https://doi.org/10.1073/pnas.0509839103>,
+            <https://doi.org/10.1073/pnas.0510457103> .
+    <https://doi.org/10.1016/j.cub.2005.09.052> dct:date "2005"^^xsd:gYear ;
+        dct:title "Patterns of auxin transport and gene expression during primordium development revealed by live imaging of the Arabidopsis inflorescence meristem" .
+    <https://doi.org/10.1038/nature02081> dct:date "2003"^^xsd:gYear ;
+        dct:title "Regulation of phyllotaxis by polar auxin transport" .
+    <https://doi.org/10.1073/pnas.0509839103> dct:date "2006"^^xsd:gYear ;
+        dct:title "An auxin-driven polarized transport model for phyllotaxis" .
+    <https://doi.org/10.1073/pnas.0510457103> dct:date "2006"^^xsd:gYear ;
+        dct:title "A plausible model of phyllotaxis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Jönsson et al. (2006) & Smith et al. (2006) up-the-gradient PIN1 polarization and polar auxin transport model for shoot apical meristem phyllotaxis — Morphometric validation 52/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:35:24Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/32> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

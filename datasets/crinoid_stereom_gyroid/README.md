@@ -1,0 +1,10 @@
+# Biogenic Single-Crystal Calcite TPMS Echinoderm Stereom Reference Dataset (`slot-079`)
+
+Reference dataset and empirical Scanning Electron Microscope (SEM) specimen assets for **Yang et al. (2022)** *Science* 375(6581):647–652 (`10.1126/science.abm8666`), **Donnay & Pawson (1969)** *Science* 166(3909):1147–1150 (`10.1126/science.166.3909.1147`), **Schoen (1970)** *NASA Technical Note* D-5541, and **Gibson & Ashby (1997)** *Cellular Solids: Structure and Properties* (`10.1017/CBO9781139878326`).
+
+## Files & Cryptographic Provenance
+
+- `crinoid_stereom_gyroid_reference.json` — Nodal trigonometric level-set equations for Schwarz Diamond ($D$, $Z=4$ tetrahedral nodes at $109.4712^\circ$), Schoen Gyroid ($G$, $Z=3$ trigonal nodes at $120^\circ$), and Schwarz Primitive ($P$, $Z=6$ orthogonal nodes at $90^\circ$) triply periodic minimal surfaces (TPMS), minimal surface zero mean curvature ($H \equiv 0$, $K = -\kappa_1^2 \le 0$), odd inversion symmetry $\phi(0) = 1/2$, Gibson–Ashby stretching ($\phi^1$) vs bending ($\phi^2$) stiffness scaling, 5 stereom regimes, and a 12-species cross-taxa Echinodermata stereom table.
+- `crinoid_stereom_ossicle_specimen.jpg` — Real CC BY 4.0 Scanning Electron Microscope (SEM) plate of crinoid calyx and centrodorsal ossicles (*Nesometra integra*, Crinoidea: Antedonidae) including high-magnification stereom micrographs of labyrinthic (Panel I), periodic TPMS gyroid/diamond (Panel J), and hexagonal $[111]$-projected TPMS stereom lattices (Panel K) (`File:Nesometra integra (10.12782-specdiv.29.255) Figure 3.png`, Wikimedia Commons, CC BY 4.0, SHA-256: `5fbf6e4db0ee1d44915532627dbe0e7fdff620be058e8f5ac168211de82c2e70`).
+- `scout_manifest.json` — OpenAlex and Wikimedia Commons literature/specimen scout dossier (`0524b76e141ef1feed5e9aa5159b6751bcbef0669528e3e01669c711ccb3cbe0`).
+- `paper_citations.bib` — BibTeX citations for Yang et al. (2022), Donnay & Pawson (1969), Schoen (1970), and Gibson & Ashby (1997) (`8fc95d40f0e7af5a0f34c3538619963fa4b8fb1306c434e82e716e12327b1d3f`).

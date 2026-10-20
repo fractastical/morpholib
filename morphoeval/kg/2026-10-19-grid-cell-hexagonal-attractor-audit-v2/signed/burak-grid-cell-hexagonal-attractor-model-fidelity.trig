@@ -1,0 +1,105 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAXZrDJjO7tRcx_5T6Q1Lou5G4bL5cO9BzDxejYLP7zjg/> .
+@prefix this: <https://w3id.org/np/RAXZrDJjO7tRcx_5T6Q1Lou5G4bL5cO9BzDxejYLP7zjg> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature03721>,
+            <https://doi.org/10.1038/nature11649>,
+            <https://doi.org/10.1126/science.1201652>,
+            <https://doi.org/10.1371/journal.pcbi.1000291> .
+
+    <https://doi.org/10.1038/nature03721> dcterms:date "2005"^^xsd:gYear ;
+        dcterms:title "Microstructure of a spatial map in the entorhinal cortex" .
+
+    <https://doi.org/10.1038/nature11649> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "The entorhinal grid map is discretized" .
+
+    <https://doi.org/10.1126/science.1201652> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "Reduction of Theta Rhythm Dissociates Grid Cell Spatial Periodicity from Directional Tuning" .
+
+    <https://doi.org/10.1371/journal.pcbi.1000291> dcterms:date "2009"^^xsd:gYear ;
+        dcterms:title "Accurate Path Integration in Continuous Attractor Network Models of Grid Cells" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-burak-grid-cell-hexagonal-attractor> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-burak-grid-cell-hexagonal-attractor-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-burak-grid-cell-hexagonal-attractor-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Burak & Fiete (2009), Hafting et al. (2005) & Stensola et al. (2012) entorhinal grid-cell hexagonal continuous attractor & discrete sqrt(2) module scaling — Model fidelity to source: 94/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Faithfully implements the 2D FFT Burak & Fiete (2009) 4-subpopulation (E, N, W, S) continuous attractor network with outgoing surround-inhibition kernel shifts W_0(Delta_x - l*e_hat(theta)), resonant 120 deg triad mode selection, and velocity path integration along a 2D foraging trajectory (L78-355), backed by 3 standalone Lean 4 theorems (0 sorrys) in `morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean`." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-burak-grid-cell-hexagonal-attractor-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-burak-grid-cell-hexagonal-attractor-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-burak-grid-cell-hexagonal-attractor-model-fidelity-3> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-burak-grid-cell-hexagonal-attractor-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2008-burak-grid-cell-hexagonal-attractor.py L78–L175" ;
+        dcterms:description "Lean 4 triad closure, velocity phase integration, Stensola sqrt(2) invariants, and 2D FFT shifted Mexican-hat kernels" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/2008-burak-grid-cell-hexagonal-attractor.py#L78-L175> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-burak-grid-cell-hexagonal-attractor-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2008-burak-grid-cell-hexagonal-attractor.py L235–L355" ;
+        dcterms:description "4-subpopulation (E, N, W, S) 2D FFT Burak-Fiete CANN solver and foraging path integration" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/2008-burak-grid-cell-hexagonal-attractor.py#L235-L355> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-burak-grid-cell-hexagonal-attractor-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean L21–L157" ;
+        dcterms:description "3 machine-checked Lean 4 theorems (0 sorrys) for resonant triad closure, linear velocity path integration, and Stensola sqrt(2) area doubling" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L21-L157> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "VxgiXkGt5TxIOSHMfdue7sP39pAYaqHq4vSTuTdfzQB4Pe9HE+UtSTXuV4DBVerIEFydRdLIkghZnMkEClyv2wqykTfgi/tdRi21H+/Iqql1OwwWdTCOAD8xwqmZeMPMGIrvPXyGJ7zEnbIEOXYGiCognUWjVZ0ozvs0TmDGJTljAohZ6iAm5I8XKY9vGLcQZK/upjfvSRKas3vKB3Rh1IVRLFm6Tf+BUdQS4Rtg4Uh5DRag0hnBjrFfUh6CfQSIrAMlHB6tDUSOeXZYwRFAMs33VNRXY7M+E7fMJMMj76nQlO/ySo2b88ioT193JMLEe470IfRRmFFgbp3rDzf4tg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Burak & Fiete (2009), Hafting et al. (2005) & Stensola et al. (2012) entorhinal grid-cell hexagonal continuous attractor & discrete sqrt(2) module scaling — Model fidelity to source 94/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T01:46:34Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-burak-grid-cell-hexagonal-attractor-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

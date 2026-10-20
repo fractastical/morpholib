@@ -1,0 +1,151 @@
+# MorphoEval audit — Beane et al. (2011) Planarian H,K-ATPase Bioelectric Polarity Switch, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2011-beane-planarian-hk-atpase-anterior.py` (Slot 081) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-planarian-hk-atpase-anterior-loop`.
+
+audit:
+  id: 2026-10-19-planarian-hk-atpase-anterior-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2011-beane-planarian-hk-atpase-anterior.py` in
+      `2026-10-19-planarian-hk-atpase-anterior-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  beane2011:
+    title: "A bioelectric mechanism for H,K-ATPase-mediated control of anterior-posterior polarity in planarian regeneration"
+    authors: "Beane WS, Morokuma J, Adams DS, Levin M"
+    venue: "Chemistry & Biology 18(1):77-89 (2011)"
+    doi: 10.1016/j.chembiol.2010.11.012
+  oviedo2010:
+    title: "Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration"
+    authors: "Oviedo NJ, Morokuma J, Walentek P, Kema IP, Gu MB, Ahn JM, Hwang JS, Gojobori T, Levin M"
+    venue: "Developmental Biology 339(1):188-199 (2010)"
+    doi: 10.1016/j.ydbio.2009.12.012
+  pietak2017:
+    title: "Bioelectric gene and reaction networks: computational modeling of genetic, biochemical, and bioelectrical dynamics in pattern regulation"
+    authors: "Pietak A, Levin M"
+    venue: "Journal of the Royal Society Interface 14(134):20170425 (2017)"
+    doi: 10.1098/rsif.2017.0425
+  durant2017:
+    title: "Long-term, stochastic editing of regenerative anatomy via targeting endogenous bioelectric gradients"
+    authors: "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M"
+    venue: "Biophysical Journal 112(10):2231-2243 (2017)"
+    doi: 10.1016/j.bpj.2017.04.011
+
+simulations:
+  - id: beane-planarian-hk-atpase-anterior
+    name: "Beane et al. (2011) planarian H,K-ATPase bioelectric V_mem anterior polarity switch"
+    organism: "Schmidtea mediterranea freshwater planarian flatworm"
+    script: 2011-beane-planarian-hk-atpase-anterior.py
+    output: docs/media/planarian_hk_atpase_anterior_comparison.png
+    extra_outputs:
+      - docs/media/planarian_hk_atpase_anterior_growth.gif
+    status: evaluated
+    source_refs:
+      - beane2011
+      - oviedo2010
+      - pietak2017
+      - durant2017
+    summary: >-
+      Pass 1 baseline assessment of `2011-beane-planarian-hk-atpase-anterior.py` (59.2/100).
+      The initial bioelectric ODE captures bistable V_mem attractors (-65 mV and -20 mV)
+      and basic wild-type 1H1T vs SCH-28080 0H2T switching, but requires nonlinear
+      Bell-form voltage-gated innexin gap-junction coupling G_GJ(dV/dx) so the anterior
+      depolarized blastema self-isolates from the hyperpolarized trunk, automated
+      bilateral photoreceptor ocelli segmentation on `schmidtea_mediterranea_specimen.jpg`,
+      and an explicit nifedipine L-type Ca_v channel blockade negative control alongside
+      8-octanol gap-junction blockade.
+    scores:
+      model-fidelity:
+        value: 63
+        rationale: >-
+          Implements the cubic bistable membrane current I_ion(V) = g*(V - V_hyper)*(V - V_thresh)*(V - V_depol)
+          and voltage-gated Ca2+ activation gate Ca_ss(V) (L118-245), but constant linear
+          gap-junction diffusion in the baseline pass requires replacement with nonlinear
+          voltage-gated innexin conductance G_GJ(DeltaV) = (1 - eta_oct)*G_0 / (1 + (DeltaV/V_0)^2)
+          to prevent trunk hyperpolarization from draining the anterior blastema.
+        evidence:
+          - {file: 2011-beane-planarian-hk-atpase-anterior.py, lines: [118, 195], note: "Bistable ionic current and stability slope invariants", supports: true}
+          - {file: 2011-beane-planarian-hk-atpase-anterior.py, lines: [200, 290], note: "Coupled bioelectric V_mem and head/tail morphogen PDE solver", supports: false}
+      specimen-match:
+        value: 53
+        rationale: >-
+          Vendors `datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg`
+          (CC BY 2.5 dorsal whole-mount of Schmidtea mediterranea), but Pass 1 lacks
+          automated Gaussian local-contrast ocelli (eyespot) detection and 2D body-plan
+          silhouette reconstruction across 1H1T, 2H0T, and 0H2T regenerates.
+        evidence:
+          - {file: 2011-beane-planarian-hk-atpase-anterior.py, lines: [445, 535], note: "Specimen segmentation routine on schmidtea_mediterranea_specimen.jpg", supports: false}
+          - {file: docs/media/planarian_hk_atpase_anterior_comparison.png, lines: [0, 0], note: "Comparison figure with dorsal planarian specimen overlay", supports: true}
+      parameter-expressivity:
+        value: 58
+        rationale: >-
+          Evaluates wild-type (1H1T), SCH-28080 (0H2T), and ivermectin (2H0T), but needs
+          both the 8-octanol gap-junction blockade (2H0T) and the nifedipine L-type Ca_v
+          channel blockade negative control (depolarized V_mem with 0 heads) plus a 2D
+          (I_HK, I_IVM) phase diagram.
+        evidence:
+          - {file: 2011-beane-planarian-hk-atpase-anterior.py, lines: [380, 442], note: "Multi-regime bioelectric evaluator and parameter sweep", supports: false}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          Measures anteroposterior V_mem delta, but Pass 1 requires bilateral ocelli
+          relative AP localization (x/L = 0.0528), specimen-to-model dorsoventral width
+          profile Pearson r and RMSE, and 5-regime head-count RMSE.
+        evidence:
+          - {file: 2011-beane-planarian-hk-atpase-anterior.py, lines: [715, 815], note: "MorphoEval measurement hook measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `planarian_hk_atpase_anterior_reference.json`,
+          `paper_citations.bib`, and `schmidtea_mediterranea_specimen.jpg` with SHA-256
+          digests linking Beane et al. (2011), Oviedo et al. (2010), and Pietak & Levin (2017).
+        evidence:
+          - {file: 2011-beane-planarian-hk-atpase-anterior.py, lines: [80, 112], note: "SHA-256 cryptographic verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 61
+        rationale: >-
+          Links functions to Beane et al. (2011) Figs. 1-6, Pietak & Levin (2017), and
+          Lean 4 theorems in `morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean`.
+        evidence:
+          - {file: 2011-beane-planarian-hk-atpase-anterior.py, lines: [1, 56], note: "Module docstring mapping equations to Beane et al. (2011) and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Includes `--self-test` and deterministic seed=2011, requiring completion of the
+          8-check verification suite covering all 5 experimental regimes and bilateral
+          ocelli segmentation.
+        evidence:
+          - {file: 2011-beane-planarian-hk-atpase-anterior.py, lines: [820, 895], note: "Self-test suite with bitwise determinism and phenotype assertions", supports: true}
+    remediation:
+      - "Couple the bistable membrane potential PDE to nonlinear Bell-form voltage-gated gap-junction conductance G_GJ(DeltaV) = (1 - eta_oct)*G_0 / (1 + (DeltaV/V_0)^2) so anterior depolarization self-isolates from the hyperpolarized trunk."
+      - "Add automated Gaussian local-contrast ocelli (eyespot) detection and 60-bin dorsoventral width segmentation on `datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg`, plus 2D body-plan contour synthesis for 1H1T, 2H0T, and 0H2T regenerates."
+      - "Include both 8-octanol gap-junction blockade (2H0T) and nifedipine L-type Ca_v channel blockade negative control (depolarized V_mem -> 0H2T) alongside a 2D (I_HK, I_IVM) phase diagram."

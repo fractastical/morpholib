@@ -1,0 +1,181 @@
+{
+  "metadata": {
+    "dataset_id": "hentschel-2004-tgfb-fibronectin-limb-v1",
+    "title": "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B / Kiskowski et al. (2004) Dev. Biol. — Multiscale TGF-beta, FGF, and Fibronectin Haptotaxis Chick Limb Chondrogenesis Reference Dataset",
+    "sources": [
+      {
+        "id": "hentschel2004",
+        "citation": "Hentschel HGE, Glimm T, Glazier JA, Newman SA (2004). Dynamical mechanisms for skeletal pattern formation in the vertebrate limb. Proceedings of the Royal Society B: Biological Sciences 271(1549):1713-1722.",
+        "doi": "10.1098/rspb.2004.2772"
+      },
+      {
+        "id": "kiskowski2004",
+        "citation": "Kiskowski MA, Alber MS, Glimm T, Hentschel HGE, Glazier JA, Newman SA (2004). A multiscale model for autonomous mesenchymal condensations. Developmental Biology 271(2):372-387.",
+        "doi": "10.1016/j.ydbio.2004.03.038"
+      },
+      {
+        "id": "miura2000",
+        "citation": "Miura T, Shiota K (2000). TGF-beta2 acts as an activator molecule in reaction-diffusion model and is involved in cell sorting phenomenon in bar-like pattern formation of chick limb chondrogenesis in vitro. Developmental Dynamics 217(3):241-249.",
+        "doi": "10.1002/(SICI)1097-0177(200003)217:3<241::AID-DVDY2>3.0.CO;2-K"
+      },
+      {
+        "id": "chaturvedi2005",
+        "citation": "Chaturvedi R, Huang C, Kazmierczak B, Schneider T, Izaguirre JA, Glimm T, Hentschel HGE, Glazier JA, Newman SA, Alber MS (2005). On multi-scale modeling of morphogenesis. Journal of the Royal Society Interface 2(3):237-253.",
+        "doi": "10.1098/rsif.2005.0033"
+      },
+      {
+        "id": "christley2007",
+        "citation": "Christley S, Alber MS, Newman SA (2007). Patterning of developmental condensations by turing-type and haptotactic mechanisms in discrete and continuum models. BMC Systems Biology 1:16.",
+        "doi": "10.1186/1752-0509-1-16"
+      }
+    ],
+    "specimens": {
+      "gallus_limb_chondrogenesis": {
+        "file": "datasets/tgfb_fibronectin_limb/chick_limb_chondrogenesis_specimen.jpg",
+        "sha256": "771e26f9fe8c813de108d87086e896597b450c09e8e9a706bb0f1edddeb26e41",
+        "species": "Gallus gallus domesticus forelimb skeletal specimen (stylopod humerus 1 element -> zeugopod radius+ulna 2 elements -> autopod carpometacarpus/digits II-IV 3 elements)",
+        "author": "Conty / Wikimedia Commons",
+        "license": "CC BY 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Gallus_wingbones_01.JPG",
+        "image_shape_hw": [480, 960],
+        "zones": {
+          "stylopod_humerus": {
+            "x_band_px": [260, 340],
+            "y_band_px": [150, 380],
+            "expected_elements": 1,
+            "expected_y_px": [226]
+          },
+          "zeugopod_radius_ulna": {
+            "x_band_px": [480, 555],
+            "y_band_px": [245, 345],
+            "expected_elements": 2,
+            "expected_y_px": [265, 303],
+            "expected_spacing_px": 38.0
+          },
+          "autopod_digits": {
+            "x_band_px": [640, 685],
+            "y_band_px": [235, 335],
+            "expected_elements": 3,
+            "expected_y_px": [253, 280, 307],
+            "expected_mean_spacing_px": 27.0,
+            "expected_spacing_cv": 0.0
+          }
+        },
+        "expected_zeugopod_to_autopod_spacing_ratio": 1.4074
+      }
+    },
+    "scout_manifest": {
+      "file": "datasets/tgfb_fibronectin_limb/scout_manifest.json",
+      "sha256": "c810bd77e66557c8372e0f5ba74dcb630eb93aecdb7315cc242e4347b6c0d15f"
+    }
+  },
+  "hentschel_2004_multiscale_pde_system": {
+    "section": "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B 271:1713-1722 Eqs. (2.1)-(3.14) & Kiskowski et al. (2004) Dev. Biol. 271:372-387",
+    "equations": {
+      "tgfb_activator_pde": "dc_a/dt = f_a(c_FGF) * c_a + f_i * c_i - c_a^3 + D_a * Lap(c_a)",
+      "fgf_dependent_inhibitor_pde": "dc_i/dt = g_a(c_FGF) * c_a + g_i * c_i + D_i * Lap(c_i)",
+      "fibronectin_ecm_ode": "dF/dt = k_F * max(0, c_a) * R_2(c_a, R) - gamma_F * F",
+      "mesenchymal_haptotaxis_pde": "dR/dt = D_R * Lap(R) - chi_F * div(R * grad(F)) + r_R * R * (1 - R)",
+      "fgf_ receptor_differentiation": "R_2(c_a, R) = R * max(0, c_a)^2 / (K_a^2 + max(0, c_a)^2)"
+    },
+    "canonical_parameters": {
+      "Da": 0.5,
+      "Di": 50.0,
+      "fi": -1.0,
+      "gi": -200.0,
+      "k_F": 1.8,
+      "gamma_F": 0.65,
+      "D_R": 0.12,
+      "chi_F": 0.85,
+      "r_R": 0.45,
+      "K_a": 0.60,
+      "L_AP_um": 1150.0
+    }
+  },
+  "proximodistal_fgf_zonation_regimes": [
+    {
+      "zone_id": "stylopod_humerus",
+      "hh_stage": "HH20-21 (3.5d Stylopod)",
+      "compartment": "Stylopod (Humerus)",
+      "fgf_aer_level": 0.25,
+      "fa": 3.0,
+      "L_PD_active_um": 500.0,
+      "L_AP_um": 1150.0,
+      "selected_mode_m": 1,
+      "predicted_elements": 1,
+      "anatomical_elements": ["Humerus"],
+      "empirical_source": "Hentschel et al. (2004) Proc. R. Soc. B 271:1713-1722 Fig. 2 & Section 3 (low proximal FGF / large active zone -> m=1 single humerus condensation)"
+    },
+    {
+      "zone_id": "zeugopod_radius_ulna",
+      "hh_stage": "HH24 (4.5d Zeugopod)",
+      "compartment": "Zeugopod (Radius + Ulna)",
+      "fgf_aer_level": 0.55,
+      "fa": 6.0,
+      "L_PD_active_um": 250.0,
+      "L_AP_um": 1150.0,
+      "selected_mode_m": 2,
+      "predicted_elements": 2,
+      "anatomical_elements": ["Radius", "Ulna"],
+      "empirical_source": "Hentschel et al. (2004) Proc. R. Soc. B 271:1713-1722 Fig. 3 & Section 3 (intermediate FGF / narrower active zone -> m=2 radius + ulna condensations)"
+    },
+    {
+      "zone_id": "autopod_wing_digits",
+      "hh_stage": "HH27-28 (5.5d Chick Wing Autopod)",
+      "compartment": "Autopod (Wing Digits II, III, IV)",
+      "fgf_aer_level": 0.85,
+      "fa": 11.0,
+      "L_PD_active_um": 140.0,
+      "L_AP_um": 1150.0,
+      "selected_mode_m": 3,
+      "predicted_elements": 3,
+      "anatomical_elements": ["Digit II", "Digit III", "Digit IV"],
+      "empirical_source": "Hentschel et al. (2004) Proc. R. Soc. B 271:1713-1722 Fig. 4 & Section 3 (distal AER-FGF / thin active zone -> m=3 chick wing digit condensations)"
+    },
+    {
+      "zone_id": "autopod_leg_or_exogenous_tgfb",
+      "hh_stage": "HH28 (5.5d Hindlimb / Exogenous TGF-beta)",
+      "compartment": "Autopod (4 Pedal Digits / Polydactylous Mode)",
+      "fgf_aer_level": 1.00,
+      "fa": 18.0,
+      "L_PD_active_um": 115.0,
+      "L_AP_um": 1250.0,
+      "selected_mode_m": 4,
+      "predicted_elements": 4,
+      "anatomical_elements": ["Digit I", "Digit II", "Digit III", "Digit IV"],
+      "empirical_source": "Hentschel et al. (2004) Proc. R. Soc. B 271:1713-1722 Section 4 & Miura & Shiota (2000) Dev. Dyn. 217:241-249 (high TGF-beta / hindlimb autopod -> m=4 condensations)"
+    }
+  ],
+  "micromass_haptotaxis_perturbations": [
+    {
+      "perturbation_id": "wt_nodular_micromass",
+      "description": "Standard high-density chick limb bud micromass culture (Kiskowski et al. 2004; Miura & Shiota 2000)",
+      "chi_F": 0.85,
+      "tgfb_saturation_cubic": 1.0,
+      "tgfb_quadratic_asymmetry": 0.38,
+      "expected_morphology": "nodular_spots",
+      "expected_condensation_fraction_range": [0.18, 0.36],
+      "empirical_source": "Kiskowski et al. (2004) Dev. Biol. 271:372-387 Figs. 4-6 (~25-30% nodular cartilage area fraction in chick micromass)"
+    },
+    {
+      "perturbation_id": "exogenous_tgfb2_stripe_fusion",
+      "description": "Exogenous TGF-beta2 treatment in micromass culture inducing bar-like/labyrinthine stripe fusion (Miura & Shiota 2000)",
+      "chi_F": 0.85,
+      "tgfb_saturation_cubic": 1.0,
+      "tgfb_quadratic_asymmetry": 0.0,
+      "expected_morphology": "labyrinthine_stripes",
+      "expected_condensation_fraction_range": [0.42, 0.58],
+      "empirical_source": "Miura & Shiota (2000) Dev. Dyn. 217:241-249 Figs. 1-3 (exogenous TGF-beta2 shifts nodular islands to bar-like trabecular stripes)"
+    },
+    {
+      "perturbation_id": "anti_fibronectin_no_haptotaxis",
+      "description": "Anti-fibronectin antibody / RGD peptide blocking mesenchymal haptotaxis (chi_F = 0)",
+      "chi_F": 0.0,
+      "tgfb_saturation_cubic": 1.0,
+      "tgfb_quadratic_asymmetry": 0.38,
+      "expected_morphology": "uniform_uncondensed_mesenchyme",
+      "expected_condensation_fraction_range": [0.0, 0.01],
+      "empirical_source": "Kiskowski et al. (2004) Dev. Biol. 271:372-387 & Hentschel et al. (2004) Proc. R. Soc. B 271:1713-1722 (blocking fibronectin accumulation or cell-fibronectin haptotaxis abolishes mesenchymal cell condensation)"
+    }
+  ]
+}

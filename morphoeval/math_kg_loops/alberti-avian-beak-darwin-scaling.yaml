@@ -1,0 +1,67 @@
+sim_id: alberti-avian-beak-darwin-scaling
+math_family: "Campas-Brenner Affine Scaling-and-Shear Group & Orthogonal Bmp4-Calmodulin Beak Morphospace"
+model_spec:
+  model: "Campas et al. (2010) PNAS 107(8):3356-3360 affine scaling-and-shear transformation + Abzhanov et al. (2004, 2006) Science/Nature Bmp4-Calmodulin beak morphogenesis"
+  n_power: 1.85
+  a_0: 0.52
+  c_2: 0.14
+  alpha_B: 0.78
+  alpha_C: 0.68
+  seed: 2010
+  inputs:
+    - datasets/avian_beak_darwin_scaling/avian_beak_darwin_scaling_reference.json
+    - datasets/avian_beak_darwin_scaling/darwin_finches_specimen.jpg
+    - datasets/avian_beak_darwin_scaling/scout_manifest.json
+    - datasets/avian_beak_darwin_scaling/paper_citations.bib
+equations:
+  - law_name: "Campas-Brenner Affine Scaling-and-Shear Group Determinant & Power-Law Invariance"
+    formula: "M(s_L, s_D, γ) = [[1, γ], [0, 1]] [[s_L, 0], [0, s_D]] = [[s_L, γ s_D], [0, s_D]],  det M = s_L s_D > 0;  γ = 0 ⇒ s_L^2 y = s_D a x^2"
+    lean_decl: "MathOfBiology.Loop_070.affine_shear_scaling_det"
+    lean_theorem: "MathOfBiology.Loop_070.campas_affine_shear_scaling_invariance"
+    lean_locus: "morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean#L24-L41"
+    lean_code: |
+      def affine_shear_scaling_det (s_L s_D gamma : Int) : Int :=
+        s_L * s_D - (gamma * s_D) * 0
+      theorem campas_affine_shear_scaling_invariance (s_L s_D gamma a x0 : Int) :
+          affine_shear_scaling_det s_L s_D gamma = s_L * s_D ∧
+          pure_scaling_parabola_residual s_L s_D a x0 = 0 ∧
+          ∀ dL : Nat, affine_shear_scaling_det (Int.ofNat (dL + 1)) 1 gamma = Int.ofNat (dL + 1)
+    variables: "s_L: beak length scaling factor; s_D: beak depth scaling factor; γ: dorsoventral shear parameter; (x_0, y_0): canonical beak culmen coordinates"
+    role: "Establishes invertibility of the 3-parameter affine group collapsing all 6 Geospiza species under pure scaling (γ = 0) and all 14 Darwin's finch species under scaling + shear (s_L, s_D, γ)"
+    source_citation: "Campas et al. (2010) PNAS 107(8):3356-3360 Eqs. (1)-(3) & Figs. 1-3"
+    code_locus: "2021-alberti-avian-beak-darwin-scaling.py#L120-L235"
+
+  - law_name: "Abzhanov et al. (2004, 2006) Orthogonal Bmp4-Calmodulin Morphogenetic Coordinate Decoupling"
+    formula: "s_D(b) = d_0 + α_B b,  s_L(c) = l_0 + α_C c  ⇒  ∂(D/L)/∂b > 0,  ∂(D/L)/∂c < 0"
+    lean_decl: "MathOfBiology.Loop_070.bmp4_depth_scale"
+    lean_theorem: "MathOfBiology.Loop_070.abzhanov_bmp4_calmodulin_orthogonal_decoupling"
+    lean_locus: "morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean#L54-L66"
+    lean_code: |
+      def bmp4_depth_scale (d0 alpha_B b : Int) : Int :=
+        d0 + alpha_B * b
+      def cam_length_scale (l0 alpha_C c : Int) : Int :=
+        l0 + alpha_C * c
+      theorem abzhanov_bmp4_calmodulin_orthogonal_decoupling (d0 l0 b c : Int) (db dc : Nat) :
+          bmp4_depth_scale d0 1 (b + Int.ofNat (db + 1)) - bmp4_depth_scale d0 1 b = Int.ofNat (db + 1) ∧
+          cam_length_scale l0 1 (c + Int.ofNat (dc + 1)) - cam_length_scale l0 1 c = Int.ofNat (dc + 1)
+    variables: "b: mesenchymal Bmp4 expression index; c: distal Calmodulin (CaM) expression index; α_B, α_C: morphogenetic coupling sensitivities"
+    role: "Decouples evolutionary variation along the crushing depth/width axis (Bmp4 -> Geospiza magnirostris) from variation along the probing elongation axis (Calmodulin -> Geospiza scandens / Certhidea olivacea)"
+    source_citation: "Abzhanov et al. (2004) Science 305:1462-1465 Figs. 2-4; Abzhanov et al. (2006) Nature 442:563-567 Figs. 2-4"
+    code_locus: "2021-alberti-avian-beak-darwin-scaling.py#L238-L320"
+
+  - law_name: "Cantilever Beak Bending Resistance & Bite-Force Quartic Bmp4 Scaling Law"
+    formula: "I_beam = W D^3 / (12 L);  B_crush(2W, 2D) = 16 W D^3 = 16 B_crush(W, D)"
+    lean_decl: "MathOfBiology.Loop_070.beak_bending_numerator"
+    lean_theorem: "MathOfBiology.Loop_070.campas_beak_bending_quartic_bmp4_gain"
+    lean_locus: "morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean#L77-L87"
+    lean_code: |
+      def beak_bending_numerator (W D : Int) : Int :=
+        W * (D * D * D)
+      theorem campas_beak_bending_quartic_bmp4_gain (W D : Int) :
+          beak_bending_numerator (2 * W) (2 * D) = 16 * beak_bending_numerator W D ∧
+          beak_bending_numerator 2 2 = 16 * beak_bending_numerator 1 1 ∧
+          beak_bending_numerator 2 3 = 54
+    variables: "W: beak width (mm); D: beak depth (mm); L: beak length (mm); I_beam: cantilever bending stiffness index (mm^3)"
+    role: "Explains the 22-fold mechanical bite-force advantage of high-Bmp4 deep/wide crushing beaks (Geospiza magnirostris) over high-CaM elongated probing beaks"
+    source_citation: "Campas et al. (2010) PNAS 107:3356-3360; Fritz et al. (2014) J. R. Soc. Interface 11:20140284"
+    code_locus: "2021-alberti-avian-beak-darwin-scaling.py#L238-L355"

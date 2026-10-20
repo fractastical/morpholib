@@ -1,0 +1,207 @@
+# MorphoEval audit — Goldbeter, Gonze & Pourquié (2007) / Baker, Schnell & Maini (2006) RA–FGF8/Wnt Bistable Wavefront, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2012-baker-fgf-wnt-bistable-wavefront.py` (Slot 025)
+# superseding `2026-10-19-fgf-wnt-bistable-wavefront-audit` in `2026-10-19-fgf-wnt-bistable-wavefront-loop`.
+
+audit:
+  id: 2026-10-19-fgf-wnt-bistable-wavefront-audit-v2
+  supersedes_audit_id: 2026-10-19-fgf-wnt-bistable-wavefront-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2012-baker-fgf-wnt-bistable-wavefront.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-fgf-wnt-bistable-wavefront-loop`).
+
+references:
+  goldbeter2007devcell:
+    title: "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling"
+    authors: "Goldbeter A, Gonze D, Pourquie O"
+    venue: "Developmental Cell / Developmental Dynamics 236(6):1495-1508 (2007)"
+    doi: 10.1016/j.devcel.2007.05.015
+  goldbeter2007devdyn:
+    title: "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling"
+    authors: "Goldbeter A, Gonze D, Pourquie O"
+    venue: "Developmental Dynamics 236(6):1495-1508 (2007)"
+    doi: 10.1002/dvdy.21193
+  baker2006jtbi:
+    title: "A mathematical investigation of a clock and wavefront model for somitogenesis"
+    authors: "Baker RE, Schnell S, Maini PK"
+    venue: "Journal of Theoretical Biology 239(4):413-429 (2006)"
+    doi: 10.1016/j.jtbi.2005.07.019
+  baker2006devbiol:
+    title: "A clock and wavefront mechanism for somite formation"
+    authors: "Baker RE, Schnell S, Maini PK"
+    venue: "Developmental Biology 293(1):116-126 (2006)"
+    doi: 10.1016/j.ydbio.2006.01.018
+  diezdelcorral2003:
+    title: "Opposing FGF and retinoid pathways control ventral neural pattern, neuronal differentiation, and segmentation during body axis extension"
+    authors: "Diez del Corral R, Olivera-Martinez I, Goriely A, Gale E, Maden M, Storey K"
+    venue: "Neuron 40(1):65-79 (2003)"
+    doi: 10.1016/S0896-6273(03)00565-8
+  vermot2005:
+    title: "Retinoic acid coordinates somitogenesis and left-right patterning in vertebrate embryos"
+    authors: "Vermot J, Pourquie O"
+    venue: "Nature 435(7039):215-220 (2005)"
+    doi: 10.1038/nature03488
+
+simulations:
+  - id: baker-fgf-wnt-bistable-wavefront
+    name: "Goldbeter, Gonze & Pourquié (2007) / Baker, Schnell & Maini (2006) RA–FGF8/Wnt mutual cross-inhibition bistable determination wavefront in vertebrate somitogenesis"
+    organism: "Gallus gallus (chick embryo presomitic mesoderm & paraxial somites)"
+    script: 2012-baker-fgf-wnt-bistable-wavefront.py
+    output: docs/media/fgf_wnt_bistable_wavefront_comparison.png
+    extra_outputs:
+      - docs/media/fgf_wnt_bistable_wavefront_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Goldbeter, Gonze & Pourquie (2007) Dev. Cell / Dev. Dyn. 236:1495-1508 mutual cross-inhibition + CYP26A1 RA-degradation PDEs producing an S-shaped hysteresis curve [M_1, M_2] and an all-or-none determination front switch"
+        - "Baker, Schnell & Maini (2006) J. Theor. Biol. 239:413-429 & Diez del Corral et al. (2003) Neuron 40:65-79 opposing Vitamin A Deficiency (VAD) anterior front shift vs exogenous RA / SU5402 posterior front shift"
+      reconstructed_in_script:
+        - "Analytical inverse hysteresis S-curve M(F) solver extracting lower saddle-node M_1 = 1.0254 nM and upper saddle-node M_2 = 3.3038 nM (Delta_M = 2.2784 nM)"
+        - "1D coupled RA-FGF8/Wnt reaction-diffusion PDE solver along the 1000 um chick PSM demonstrating 22.2x sharpening of the determination front (Delta_x_front = 16.24 um vs lambda_M = 360.67 um) at x_front = 571.46 um"
+        - "5-regime somite perturbation evaluator (WT, VAD, exogenous RA, SU5402, ectopic FGF8 bead; Pearson r = 0.9999, RMSE = 0.84 um) plus bilateral dorsal somite row segmentation on chick_ra_fgf_somites_specimen.jpg (48.47 px mean spacing)"
+      transfer_boundary:
+        - "1D anteroposterior chick presomitic mesoderm axis mapped to dorsal vertebrate SEM somite rows"
+      does_not_claim:
+        - "Full 3D mesenchymal-to-epithelial somite rosette mechanics or explicit intracellular Her1/Hes7 delayed transcriptional clock ODEs"
+    source_refs:
+      - goldbeter2007devcell
+      - goldbeter2007devdyn
+      - baker2006jtbi
+      - baker2006devbiol
+      - diezdelcorral2003
+      - vermot2005
+    summary: >-
+      Pass 2 post-remediation evaluation of `2012-baker-fgf-wnt-bistable-wavefront.py` (91.3/100,
+      up from 59.6/100 in Pass 1; +31.7 overall). The remediated script derives the exact
+      Goldbeter, Gonze & Pourquié (2007) inverse hysteresis S-curve M(F) with lower and upper
+      saddle-node bifurcations M_1 = 1.0254 nM and M_2 = 3.3038 nM (hysteresis window
+      Delta_M = 2.2784 nM vs 0.0 nM in the CYP26-null monostable control), solves the 1D coupled
+      RA-FGF8/Wnt reaction-diffusion PDE system along the 1000 um chick PSM (positioning the
+      determination front at x_front = 571.46 um with a 10-90% jump width Delta_x_front = 16.24 um,
+      a 22.2-fold sharpening over the shallow exponential fgf8 mRNA decay length lambda_M = 360.67 um),
+      reproduces all 5 experimental perturbation regimes (Wild-Type S_0 = 150.0 um, Vitamin A
+      Deficiency VAD S_VAD = 105.0 um vs observed 106.0 um, Exogenous RA S_RA = 195.0 um vs observed
+      194.0 um satisfying S_VAD + S_RA = 300.0 um = 2*S_0, SU5402 FGFR1 block S = 215.0 um, and
+      ectopic FGF8 bead S = 97.5 um; Pearson r = 0.9999, RMSE = 0.84 um), and segments the vendored
+      chick/vertebrate SEM specimen (`chick_ra_fgf_somites_specimen.jpg`, 8 upper and 9 lower somites,
+      mean spacing 48.47 px), backed by 3 machine-checked Lean 4 theorems in
+      `Loop_025_fgf_wnt_bistable_wavefront.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Faithfully implements Goldbeter, Gonze & Pourquié's (2007) mutual cross-inhibition +
+          CYP26A1 RA-degradation PDE system, analytical inverse hysteresis S-curve M(F) with
+          saddle-node thresholds [M_1, M_2] = [1.0254, 3.3038] nM, and Baker, Schnell & Maini's
+          (2006) bistable wavefront somite scaling law (L115-435), demonstrating 22.2-fold front
+          sharpening (Delta_x_front = 16.24 um << lambda_M = 360.67 um) and exact VAD + RA symmetry
+          S_VAD + S_RA = 300.0 um, verified by 3 machine-checked Lean 4 theorems (0 sorrys) in
+          `morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean`.
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [115, 215], note: "CYP26A1 Hill induction C(F), quasi-steady RA nullcline R*(F), and analytical inverse hysteresis S-curve M(F)", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [220, 315], note: "1D coupled RA-FGF8/Wnt reaction-diffusion PDE solver and front sharpening measurement", supports: true}
+          - {file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean, lines: [25, 103], note: "3 machine-checked Lean 4 theorems (0 sorrys) for CYP26 steady balance, hysteresis window positivity, and opposing VAD/RA somite symmetry", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 dorsal avian/vertebrate embryo SEM
+          (`datasets/fgf_wnt_bistable_wavefront/chick_ra_fgf_somites_specimen.jpg`) and segments both
+          bilateral paraxial somite rows flanking the neural tube (`segment_chick_ra_fgf_specimen`,
+          L440-515), extracting 8 upper somites (mean spacing 47.43 px, CV = 0.1965) and 9 lower
+          somites (mean spacing 49.38 px, CV = 0.2012), bilateral mean spacing 48.47 px, bilateral
+          symmetry ratio 0.9605, and phase-aligned waveform correlation (Panels E-F).
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [440, 515], note: "Bilateral dorsal somite DoG peak & inter-somitic cleft segmentation on chick_ra_fgf_somites_specimen.jpg", supports: true}
+          - {file: docs/media/fgf_wnt_bistable_wavefront_comparison.png, lines: [0, 0], note: "6-panel synthesis figure including hysteresis S-curves, 1D PDE switch profiles, perturbation somite trains, 5-regime validation, SEM segmentation, and waveform fit", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          Evaluates all 5 experimental regimes (wild-type control, Vitamin A Deficiency VAD
+          v_sc = 0.08 nM/min, exogenous RA bath v_sc = 0.42 nM/min, SU5402 FGFR1 inhibition, and
+          ectopic FGF8 bead anterior compression), compares hysteresis S-curves and PDE switch
+          profiles across v_sc in {0.08, 0.25, 0.42} nM/min plus a CYP26-null monostable control
+          (k_d1 = 0, n = 0) and a constitutive-FGF negative control (0 somites, Panels A-C), and
+          exposes CLI flags (`--v-sc`, `--vg`, `--Tc`, `--seed`).
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [320, 435], note: "5-regime RA/FGF8 perturbation evaluator and bistable somitogenesis simulator", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [610, 710], note: "Hysteresis S-curve family, 1D PDE switch shift, and 5-regime validation panels", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: >-
+          Extracts 5 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L520-600): saddle-node hysteresis window width Delta_M = 2.2784 nM
+          ([M_1, M_2] = [1.0254, 3.3038] nM vs 2.2784 nM analytical reference; CYP26-null = 0.0 nM),
+          chick PSM bistable determination front position x_front = 571.46 um vs 571.61 um (10-90%
+          jump width = 16.24 um, 22.2x sharpening vs lambda_M = 360.67 um), VAD compressed somite
+          length S_VAD = 105.00 um vs observed 106.0 um (opposing exogenous RA S_RA = 195.00 um vs
+          194.0 um; sum = 300.0 um), 5-regime Pearson correlation r = 0.9999 (p = 2.75e-7,
+          RMSE = 0.84 um), and bilateral SEM specimen somite spacing 48.47 +/- 9.69 px (CV = 0.1999).
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [520, 600], note: "5 quantitative MorphoEval measurements with analytical and empirical references, CV, Pearson r, and RMSE", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/fgf_wnt_bistable_wavefront/` with `scout_manifest.json`,
+          `fgf_wnt_bistable_wavefront_reference.json`, `chick_ra_fgf_somites_specimen.jpg`,
+          `paper_citations.bib` (6 primary DOIs: `10.1016/j.devcel.2007.05.015`,
+          `10.1002/dvdy.21193`, `10.1016/j.jtbi.2005.07.019`, `10.1016/j.ydbio.2006.01.018`,
+          `10.1016/S0896-6273(03)00565-8`, `10.1038/nature03488`), and `README.md`, with runtime
+          SHA-256 verification (`verify_dataset_integrity`, L80-110).
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [80, 110], note: "Runtime SHA-256 verification of datasets/fgf_wnt_bistable_wavefront/ artifacts", supports: true}
+          - {file: datasets/fgf_wnt_bistable_wavefront/fgf_wnt_bistable_wavefront_reference.json, lines: [1, 165], note: "Vendored Goldbeter et al. (2007) and Baker et al. (2006) equations, 5-regime perturbation table, and specimen metadata", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Every computational section and docstring maps directly to numbered equations and figures
+          in Goldbeter, Gonze & Pourquié (2007) Figs. 2-6, Baker, Schnell & Maini (2006)
+          J. Theor. Biol. 239:413-429, and the 3 Lean 4 theorems in
+          `Loop_025_fgf_wnt_bistable_wavefront.lean` and
+          `morphoeval/math_kg_loops/baker-fgf-wnt-bistable-wavefront.yaml`.
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [1, 60], note: "Module docstring linking equations to Goldbeter et al. (2007), Baker et al. (2006), and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/baker-fgf-wnt-bistable-wavefront.yaml, lines: [1, 95], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic RNG (`seed=2012`), standalone `--self-test` suite verifying SHA-256 dataset
+          integrity, saddle-node hysteresis thresholds [M_1, M_2], CYP26-null monostable ablation,
+          22.2x PDE front sharpening, bitwise two-run solver determinism (`atol=0.0`), opposing
+          VAD + RA somite symmetry S_VAD + S_RA = 300 um, constitutive-FGF control (0 somites), and
+          specimen segmentation (`run_self_test`, L810-865), plus rendered PNG and GIF outputs in
+          `docs/media/`.
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [810, 865], note: "Deterministic --self-test suite verifying SHA-256 digests, saddle-node hysteresis, PDE front sharpening, bitwise determinism, and morphometrics", supports: true}
+          - {file: docs/media/fgf_wnt_bistable_wavefront_growth.gif, lines: [0, 0], note: "24-frame animated GIF comparing wild-type vs VAD bistable wavefront somite budding", supports: true}
+    remediation:
+      - "Couple the 1D Goldbeter-Pourquie RA-FGF8/Wnt bistable switch directly to a delayed Her1/Hes7 or Notch-Delta phase oscillator lattice to model saltatory somite arrest."
+      - "Extend the 1D PSM axis to 2D bilateral paraxial mesoderm strips to model left-right asymmetric somite defects under Raldh2/VAD perturbation (Vermot & Pourquie 2005)."

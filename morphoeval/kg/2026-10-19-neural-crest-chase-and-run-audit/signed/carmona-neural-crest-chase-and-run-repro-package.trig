@@ -1,0 +1,92 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAANtE0KX5DSl1LJVMpJf1Zx4VzSkZIoOQs83j6LjJXzc/> .
+@prefix this: <https://w3id.org/np/RAANtE0KX5DSl1LJVMpJf1Zx4VzSkZIoOQs83j6LjJXzc> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-carmona-neural-crest-chase-and-run> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-carmona-neural-crest-chase-and-run-repro-package> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-carmona-neural-crest-chase-and-run-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Carmona-Fontaine et al. (2008, 2011) & Theveneau et al. (2013) neural crest CIL, C3a co-attraction & Sdf1 chase-and-run migration — Reproducibility package: 68/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Uses deterministic `np.random.default_rng(2013)` and provides `--self-test` and `measure_morphoeval()` (L215-258), but `self_test()` checks only 4 basic assertions without SHA-256 dataset verification, 5-regime hierarchy parity, or two-run bitwise determinism checks." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "2012-carmona-neural-crest-chase-and-run.py L253–L258: Minimal 4-check self_test() without SHA-256 verification or determinism check <https://github.com/fractastical/morpholib/blob/317bc3c/2012-carmona-neural-crest-chase-and-run.py#L253-L258>" ;
+        pk:hasScore "0.68"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2010.06.012>,
+            <https://doi.org/10.1016/j.devcel.2011.10.012>,
+            <https://doi.org/10.1038/nature07441>,
+            <https://doi.org/10.1038/ncb2772>,
+            <https://doi.org/10.1371/journal.pone.0104969> .
+
+    <https://doi.org/10.1016/j.devcel.2010.06.012> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Collective chemotaxis requires contact-dependent cell polarity" .
+
+    <https://doi.org/10.1016/j.devcel.2011.10.012> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "Complement fragment C3a controls mutual cell attraction during collective cell migration" .
+
+    <https://doi.org/10.1038/nature07441> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "Contact inhibition of locomotion in vivo controls neural crest directional migration" .
+
+    <https://doi.org/10.1038/ncb2772> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Chase-and-run between adjacent cell populations promotes directional collective migration" .
+
+    <https://doi.org/10.1371/journal.pone.0104969> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Directional collective cell migration emerges as a property of cell interactions" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "MOmf5o0Af4W2lzjVa2P3Tml1epuQCImE8nXGKOIW79qhlYB5we+ccNcXtQ4e/6WkIR0AKooQIH6h5jWjFiBWB75xtUQj5wCMz4/AFqapNJjEwubm2HSwxI6wefj9w/S5nnTxENPOxtk3Zt/4bLqTC0Xgt4JsIF/CnCVOY9A+s3wH/ORRFDT/KLo1uVdRDjRWDs3N6qhzVLUsAI5QiOsxXfXxC4wAQJDfh5T1oUt7P5qsaKR92crPoWw9KbfdxmR+pkoUVpH+jHrABm0w/K72ddP/7rtgbIAlK2ng9OP1mN1tu4uFPlmOPRQMRTBhnmweh/CvvN6NAWIYm+BJXqRr5g==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Carmona-Fontaine et al. (2008, 2011) & Theveneau et al. (2013) neural crest CIL, C3a co-attraction & Sdf1 chase-and-run migration — Reproducibility package 68/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T00:06:10Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-carmona-neural-crest-chase-and-run-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

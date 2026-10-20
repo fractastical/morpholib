@@ -1,0 +1,179 @@
+{
+  "metadata": {
+    "dataset_id": "schnakenberg-1979-limit-cycle-turing-v1",
+    "title": "Schnakenberg (1979) Tri-Molecular Limit-Cycle Reaction-Diffusion, Turing-Hopf Codimension-2 Bifurcation & Dictyostelium discoideum Morphogenesis Reference Dataset",
+    "slot": 2,
+    "slot_id": "slot-002-limit-cycle-turing",
+    "sim_id": "schnakenberg-limit-cycle-turing",
+    "sources": [
+      {
+        "id": "schnakenberg1979",
+        "citation": "Schnakenberg J (1979). Simple chemical reaction systems with limit cycle behaviour. Journal of Theoretical Biology 81(3):389-400.",
+        "doi": "10.1016/0022-5193(79)90042-0"
+      },
+      {
+        "id": "turing1952",
+        "citation": "Turing AM (1952). The chemical basis of morphogenesis. Philosophical Transactions of the Royal Society of London B 237(641):37-72.",
+        "doi": "10.1098/rstb.1952.0012"
+      },
+      {
+        "id": "goldbeter1975",
+        "citation": "Goldbeter A (1975). Mechanism for oscillatory synthesis of cyclic AMP in Dictyostelium discoideum. Nature 253(5492):540-542.",
+        "doi": "10.1038/253540a0"
+      },
+      {
+        "id": "grace2015",
+        "citation": "Grace M, Hütt MT (2015). Regulation of spatiotemporal patterns by biological variability: general principles and applications to Dictyostelium discoideum. PLoS Computational Biology 11(11):e1004367.",
+        "doi": "10.1371/journal.pcbi.1004367"
+      }
+    ],
+    "artifacts_sha256": {
+      "datasets/limit_cycle_turing/scout_manifest.json": "e71deffb9f317a88709c97e4e7c93507dbf59b6fbcc9b8702527f0bf56202e7f",
+      "datasets/limit_cycle_turing/dictyostelium_specimen.jpg": "e2d2b739211bda975bc175167debf554af4991ce21bc8b1106d1053e6bc95a0b"
+    },
+    "specimen": {
+      "file": "datasets/limit_cycle_turing/dictyostelium_specimen.jpg",
+      "sha256": "e2d2b739211bda975bc175167debf554af4991ce21bc8b1106d1053e6bc95a0b",
+      "species": "Dictyostelium discoideum (cellular slime mold fruiting body sorocarps & aggregation mounds on agar)",
+      "source_title": "File:Dictyostelium Fruiting Bodies.JPG",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Dictyostelium_Fruiting_Bodies.JPG",
+      "license": "Public domain",
+      "image_size_wh": [698, 1024],
+      "interior_roi_yxyx": [30, 30, 994, 668],
+      "agar_fft_roi_yxyx": [200, 90, 712, 602],
+      "reference_metrics": {
+        "n_primary_sori": 2,
+        "sorus_1_area_px": 881,
+        "sorus_2_area_px": 824,
+        "mean_sorus_area_px": 852.5,
+        "mean_sorus_equiv_diameter_px": 32.9457,
+        "inter_sorus_spacing_px": 465.42,
+        "sorus_spacing_to_diameter_ratio": 14.1269,
+        "n_interior_aggregates": 5,
+        "aggregate_nnd_mean_px": 207.15,
+        "aggregate_nnd_std_px": 133.99,
+        "agar_substrate_fft_k_cycles": 7.0,
+        "agar_substrate_wavelength_px": 73.1429
+      }
+    }
+  },
+  "schnakenberg_1979_governing_equations": {
+    "section": "Schnakenberg (1979) J. Theor. Biol. 81:389-400, Eqs. (15)-(24)",
+    "reaction_network": "X <-> A (rates k_1, k_{-1}), B -> Y (rate k_2), 2X + Y -> 3X (cubic autocatalysis, rate k_3)",
+    "dimensionless_pde": {
+      "u_eq": "du/dt = gamma * (a - u + u^2 * v) + Lap(u)",
+      "v_eq": "dv/dt = gamma * (b - u^2 * v) + d * Lap(v)",
+      "boundary_conditions": "Periodic on [0, L]^2 (L = 6.0, N = 96)"
+    },
+    "homogeneous_steady_state": {
+      "u_star_formula": "u_* = a + b",
+      "v_star_formula": "v_* = b / (a + b)^2",
+      "autocatalytic_flux_invariant": "u_*^2 * v_* = b"
+    },
+    "jacobian_at_equilibrium": {
+      "f_u": "(b - a) / (a + b)",
+      "f_v": "(a + b)^2",
+      "g_u": "-2 * b / (a + b)",
+      "g_v": "-(a + b)^2",
+      "trace_J0": "(b - a - (a + b)^3) / (a + b)",
+      "det_J0": "(a + b)^2"
+    },
+    "bifurcation_boundaries": {
+      "hopf_curve": "b - a = (a + b)^3   (tr(J_0) = 0, det(J_0) = (a + b)^2 > 0)",
+      "limit_cycle_condition": "b - a > (a + b)^3   (unstable focus/node inside Poincare-Bendixson trapping region)",
+      "turing_necessary_conditions": [
+        "tr(J_0) < 0  <=>  b - a < (a + b)^3",
+        "det(J_0) = (a + b)^2 > 0",
+        "d * f_u + g_v > 0  <=>  d * (b - a) > (a + b)^3",
+        "(d * f_u + g_v)^2 - 4 * d * det(J_0) > 0  <=>  d > d_c(a, b)"
+      ],
+      "critical_diffusivity_ratio_formula": "d_c(a, b) = ( ((a + b)^2 + (a + b) * sqrt(2 * b * (a + b))) / (b - a) )^2",
+      "critical_wavenumber_det_min": "k_det_min^2 = gamma * (d * (b - a) / (a + b) - (a + b)^2) / (2 * d)"
+    }
+  },
+  "canonical_regimes": [
+    {
+      "regime_id": "turing_spots_standard",
+      "label": "Supercritical Turing Hexagonal Spots",
+      "a": 0.10,
+      "b": 0.90,
+      "gamma": 180.0,
+      "d": 18.0,
+      "u_star": 1.0,
+      "v_star": 0.9,
+      "trace_J0": -0.2,
+      "det_J0": 1.0,
+      "d_c": 8.567627457812106,
+      "k_det_min": 8.18535277187245,
+      "lambda_det_min": 0.767613,
+      "k_sigma_max": 6.6750,
+      "lambda_sigma_max": 0.941301,
+      "sigma_max": 42.520240,
+      "expected_behavior": "Stationary hexagonal spot array of high-u / depleted-v aggregation centers"
+    },
+    {
+      "regime_id": "turing_labyrinth_high_d",
+      "label": "High-Diffusivity Turing Stripes & Spots",
+      "a": 0.08,
+      "b": 0.92,
+      "gamma": 180.0,
+      "d": 25.0,
+      "u_star": 1.0,
+      "v_star": 0.92,
+      "trace_J0": -0.16,
+      "det_J0": 1.0,
+      "d_c": 7.989677983596993,
+      "expected_behavior": "High-amplitude stationary Turing peaks and short labyrinthine ridges"
+    },
+    {
+      "regime_id": "turing_hopf_codim2",
+      "label": "Turing-Hopf Codimension-2 Coexistence",
+      "a": 0.05,
+      "b": 0.75,
+      "gamma": 180.0,
+      "d": 18.0,
+      "u_star": 0.80,
+      "v_star": 1.171875,
+      "trace_J0": 0.235,
+      "det_J0": 0.64,
+      "d_c": 4.212264561144156,
+      "expected_behavior": "Both Hopf (tr(J_0) > 0) and Turing (d > d_c) modes unstable; spatiotemporal breathing/oscillating spots"
+    },
+    {
+      "regime_id": "hopf_limit_cycle",
+      "label": "Schnakenberg Limit-Cycle Relaxation Oscillator",
+      "a": 0.05,
+      "b": 0.50,
+      "gamma": 180.0,
+      "d": 1.0,
+      "u_star": 0.55,
+      "v_star": 1.6528925619834711,
+      "trace_J0": 0.5156818181818181,
+      "det_J0": 0.3025,
+      "ode_limit_cycle_period_dimless": 19.625,
+      "ode_u_amplitude_range": 6.825,
+      "expected_behavior": "Globally attracting autonomous limit cycle (b - a = 0.45 > (a+b)^3 = 0.1664) modeling glycolytic/cAMP pulsatile oscillations"
+    },
+    {
+      "regime_id": "equal_diffusion_control",
+      "label": "Equal-Diffusion Negative Control (d = 1)",
+      "a": 0.10,
+      "b": 0.90,
+      "gamma": 180.0,
+      "d": 1.0,
+      "u_star": 1.0,
+      "v_star": 0.9,
+      "trace_J0": -0.2,
+      "det_J0": 1.0,
+      "d_c": 8.567627457812106,
+      "expected_behavior": "All Fourier modes decay exponentially (Re sigma(k^2) <= -18.0 < 0); spatial perturbations vanish to homogeneous (u_*, v_*)"
+    }
+  ],
+  "diffusivity_ratio_sweep_reference": {
+    "a": 0.10,
+    "b": 0.90,
+    "gamma": 180.0,
+    "d_c_analytical": 8.567627457812106,
+    "d_values": [1.0, 4.0, 7.0, 8.567627457812106, 12.0, 18.0, 25.0]
+  }
+}

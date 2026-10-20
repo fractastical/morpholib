@@ -1,0 +1,148 @@
+# MorphoEval audit — Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) Mechanochemical Chondrogenesis, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `1983-oster-mechanochemical-chondrogenesis.py` (Slot 013) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-mechanochemical-chondrogenesis-loop`.
+
+audit:
+  id: 2026-10-19-mechanochemical-chondrogenesis-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1983-oster-mechanochemical-chondrogenesis.py` in
+      `2026-10-19-mechanochemical-chondrogenesis-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  oster1983:
+    title: "Mechanical aspects of mesenchymal morphogenesis"
+    authors: "Oster GF, Murray JD, Harris AK"
+    venue: "Journal of Embryology and Experimental Morphology 78(1):83-125 (1983)"
+    doi: 10.1242/dev.78.1.83
+  oster1985:
+    title: "A model for chondrogenic condensations in the developing limb: the role of extracellular matrix and cell tractions"
+    authors: "Oster GF, Murray JD, Maini PK"
+    venue: "Journal of Embryology and Experimental Morphology 89(1):93-112 (1985)"
+    doi: 10.1242/dev.89.1.93
+  murray1984:
+    title: "Generation of biological pattern and form"
+    authors: "Murray JD, Oster GF"
+    venue: "IMA Journal of Mathematics Applied in Medicine and Biology 1(1):51-75 (1984)"
+    doi: 10.1093/imammb/1.1.51
+  shubin1986:
+    title: "A morphogenetic approach to the origin and basic organization of the tetrapod limb"
+    authors: "Shubin NH, Alberch P"
+    venue: "Evolutionary Biology 20:319-387 (1986)"
+    doi: 10.1007/978-1-4615-6983-1_6
+
+simulations:
+  - id: oster-mechanochemical-chondrogenesis
+    name: "Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) mechanochemical limb chondrogenesis"
+    organism: "Ambystoma mexicanum & Oedipina ecuatoriana urodele salamander limb cartilage"
+    script: 1983-oster-mechanochemical-chondrogenesis.py
+    output: docs/media/mechanochemical_chondrogenesis_comparison.png
+    extra_outputs:
+      - docs/media/mechanochemical_chondrogenesis_growth.gif
+    status: evaluated
+    source_refs:
+      - oster1983
+      - oster1985
+      - murray1984
+      - shubin1986
+    summary: >-
+      Pass 1 baseline assessment of `1983-oster-mechanochemical-chondrogenesis.py` (57.8/100).
+      The initial implementation formulates the Oster, Murray & Harris (1983) and Oster, Murray &
+      Maini (1985) coupled cell-density and viscoelastic ECM equations, but requires exact
+      consistency between the analytical marginal stability curve tau_eff(k^2) and the PDE
+      diffusive-mitotic damping parameters so that subcritical traction (tau = 0.85 < tau_c)
+      is strictly stable across all wavenumbers, alongside full morphological cross-section
+      segmentation of both the 4-digit forelimb and 5-digit hindlimb urodele specimen
+      (`salamander_limb_cartilage_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 60
+        rationale: >-
+          Implements the Oster-Murray-Maini (1985) coupled cell density n(x,t) and viscoelastic
+          ECM displacement u(x,t) PDE system with biharmonic cell diffusion and contact-inhibited
+          traction tau*n^2/(1+lam*n^2), but the initial low-diffusion parameter set (D_1=0.08,
+          D_2=0.0025) leaves tau=0.85 weakly unstable unless calibrated to the exact marginal
+          stability curve tau_c = 1.2776.
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [108, 178], note: "Linearized mechanochemical dispersion relation and critical traction threshold tau_c", supports: false}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [185, 272], note: "Coupled 1D spectral-pseudospectral cell-ECM PDE solver", supports: true}
+      specimen-match:
+        value: 54
+        rationale: >-
+          Vendors `datasets/mechanochemical_chondrogenesis/salamander_limb_cartilage_specimen.jpg`
+          (CC BY 4.0 urodele salamander forelimb and hindlimb skeletal reconstruction), but Pass 1
+          requires morphological opening to suppress thin text annotations and extract clean
+          [1, 2, 4] forelimb and [1, 2, 5] hindlimb branching hierarchies.
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [345, 425], note: "Specimen cross-sectional segmentation on salamander_limb_cartilage_specimen.jpg", supports: false}
+      parameter-expressivity:
+        value: 58
+        rationale: >-
+          Evaluates transverse limb width modes, but needs a complete 5-zone proximo-distal
+          sweep (subcritical m=0, stylopod m=1, zeugopod m=2, forelimb autopod m=4, and hindlimb
+          autopod m=5) plus a 2D (W/lambda_c, tau) phase diagram.
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [275, 340], note: "2D limb paddle branching and ECM displacement field", supports: true}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Includes `measure_morphoeval()`, but Pass 1 needs full 5-regime mode count RMSE,
+          forelimb and hindlimb autopod inter-digital spacing CV, and cross-sectional waveform
+          Pearson correlation r.
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [430, 505], note: "MorphoEval measurement hook measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `mechanochemical_chondrogenesis_reference.json`,
+          `paper_citations.bib`, and `salamander_limb_cartilage_specimen.jpg` with SHA-256
+          cryptographic verification.
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [72, 102], note: "SHA-256 verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Maps equations to Oster, Murray & Harris (1983), Oster, Murray & Maini (1985), and
+          3 Lean 4 theorems in `Loop_013_mechanochemical_chondrogenesis.lean`.
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [1, 52], note: "Module docstring linking equations and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 60
+        rationale: >-
+          Provides `--self-test` and deterministic seed=1983; Pass 1 self-test caught the
+          subcritical dispersion threshold calibration needed before Pass 2.
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [690, 745], note: "Deterministic self-test suite", supports: true}
+    remediation:
+      - "Calibrate the canonical mechanochemical parameters (D_1=0.28, D_2=0.015, E_eff=1.0, s=0.85, r=0.32) to the exact marginal stability curve tau_eff(k^2) so tau_c = 1.2776 and subcritical tau=0.85 < tau_c is strictly stable (sigma(k) < 0 for all k > 0, 0 condensations)."
+      - "Apply morphological binary opening/closing on `salamander_limb_cartilage_specimen.jpg` to reject thin pointer lines and segment both the [1, 2, 4] forelimb (humerus -> ulna+radius -> digits I-IV) and [1, 2, 5] hindlimb (femur -> tibia+fibula -> digits I-V) branching hierarchies."
+      - "Verify all 5 proximo-distal regimes (m = 0, 1, 2, 4, 5) in the coupled 1D cell-ECM PDE solver and render the 6-panel synthesis figure and 24-frame growth animation."

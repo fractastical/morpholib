@@ -1,0 +1,171 @@
+# MorphoEval audit — Boehm et al. (2010) & Gros et al. (2010) Vertebrate Limb Bud Elongation Pushing, 2026-10-19 (v1)
+#
+# Pass 1 assessment of `2015-boehm-limb-bud-elongation-pushing.py` (v1, 189 lines) prior to
+# Step 12 remediation in `2026-10-19-limb-bud-elongation-pushing-loop`.
+
+audit:
+  id: 2026-10-19-limb-bud-elongation-pushing-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2015-boehm-limb-bud-elongation-pushing.py` prior to
+      Pass 2 remediation in `2026-10-19-limb-bud-elongation-pushing-loop`.
+
+references:
+  boehm2010:
+    title: "The role of spatially controlled cell proliferation in limb bud morphogenesis"
+    authors: "Boehm B, Westerberg H, Lesnicar-Pucko G, Raja S, Reginelli M, Miguez A, Briscoe J, Sharpe J"
+    venue: "PLoS Biology 8(7):e1000420 (2010)"
+    doi: 10.1371/journal.pbio.1000420
+  kicheva2010:
+    title: "Limbs made to measure"
+    authors: "Kicheva A, Briscoe J"
+    venue: "PLoS Biology 8(7):e1000421 (2010)"
+    doi: 10.1371/journal.pbio.1000421
+  gros2010:
+    title: "WNT5A/JNK and FGF/MAPK pathways regulate the cellular events shaping the vertebrate limb bud"
+    authors: "Gros J, Hu JKH, Vinegoni C, Feruglio PF, Weissleder R, Tabin CJ"
+    venue: "Current Biology 20(22):1993-2004 (2010)"
+    doi: 10.1016/j.cub.2010.09.063
+  wyngaarden2010:
+    title: "Oriented cell division in the primitive streak contributes to vertebrate axis extension and limb bud initiation"
+    authors: "Wyngaarden LA, Vogeli KM, Ciruna BG, Rossant J, Economou AD, Hopyan S"
+    venue: "Development 137(17):2853-2860 (2010)"
+    doi: 10.1242/dev.046987
+  morishita2008:
+    title: "Growth based morphogenesis of vertebrate limb bud"
+    authors: "Morishita Y, Iwasa Y"
+    venue: "Bulletin of Mathematical Biology 70(7):1957-1978 (2008)"
+    doi: 10.1007/s11538-008-9334-y
+  dillon1999:
+    title: "A mathematical model for outgrowth and spatial patterning of the vertebrate limb bud"
+    authors: "Dillon R, Othmer HG"
+    venue: "Journal of Theoretical Biology 197(3):295-330 (1999)"
+    doi: 10.1006/jtbi.1998.0876
+
+simulations:
+  - id: boehm-limb-bud-elongation-pushing
+    name: "Boehm et al. (2010) & Gros et al. (2010) vertebrate limb bud oriented cell division & Wnt5a/FGF8 pushing vs proliferation-gradient hypothesis"
+    organism: "Mus musculus & Gallus gallus embryonic hindlimb and forelimb buds"
+    script: 2015-boehm-limb-bud-elongation-pushing.py
+    output: docs/media/limb_bud_elongation_pushing_comparison.png
+    extra_outputs:
+      - docs/media/limb_bud_elongation_pushing_growth.gif
+    status: evaluated
+    source_refs:
+      - boehm2010
+      - kicheva2010
+      - gros2010
+      - wyngaarden2010
+      - morishita2008
+      - dillon1999
+    summary: >-
+      Pass 1 (v1) evaluation of `2015-boehm-limb-bud-elongation-pushing.py` (57.3/100).
+      The v1 baseline simulates a 1D/2D boundary contour comparing Model I (isotropic
+      proliferation gradient) against Model II (directional Wnt5a/FGF8 pushing), but omits
+      a full 2D/3D continuum artificial-compressibility pressure-Poisson & Stokes velocity solver
+      (`-nabla p + (1/Re)*nabla^2 v + nabla . sigma_active = 0`, `nabla . v = s(x)`), omits the
+      5-order-of-magnitude Reynolds number sensitivity sweep (`Re in [10^-6, 10^-1]`), omits the
+      Wnt5a-/- bulbous mutant and Hooke-Jeeves inverse-optimization analysis, does not load or
+      segment `mouse_limb_bud_specimen.jpg`, and exposes no CLI flags beyond `--self-test`.
+    scores:
+      model-fidelity:
+        value: 66
+        rationale: >-
+          Implements the IddU/BrdU cell-cycle source profile (`compute_brdu_iddu_source_rate`, L29-40)
+          and a kinematic 2D boundary contour integration (`simulate_limb_bud_v1`, L43-85) comparing
+          isotropic proliferation (`zeta_ocd=0, chi_fgf=0`) against directional pushing (`zeta_ocd=1, chi_fgf=1`).
+          However, v1 omits the 2D/3D continuum artificial-compressibility Poisson pressure solver
+          (Boehm et al. 2010 Eqs. 3-5, 10-11), omits the 5-regime perturbation suite (including the
+          Wnt5a-/- PCP mutant, uniform-Tc control, and FGF-only motility regime), and omits the
+          Hooke-Jeeves inverse-optimization demonstration showing why isotropic growth requires unphysical
+          distal rates (`s > 0.50 h^-1`) and negative DV shrinkage.
+        evidence:
+          - {file: 2015-boehm-limb-bud-elongation-pushing.py, lines: [29, 40], note: "IddU/BrdU cell-cycle source profile s(x) = ln(2)/T_c(x) - s_d", supports: true}
+          - {file: 2015-boehm-limb-bud-elongation-pushing.py, lines: [43, 85], note: "Kinematic 2D boundary update omitting full continuum Stokes/pressure-Poisson solver, Reynolds sweep, and Wnt5a-/- mutant regime", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/limb_bud_elongation_pushing/mouse_limb_bud_specimen.jpg` is vendored on
+          disk, the v1 script never loads, verifies, or segments the E11.0 (`St0`) and E11.25 (`St1`)
+          OPT 3D iso-surfaces or dorsal/posterior overlays (`render_outputs_v1`, L88-160), rendering
+          only a 3-panel synthetic contour plot.
+        evidence:
+          - {file: 2015-boehm-limb-bud-elongation-pushing.py, lines: [88, 160], note: "render_outputs_v1 renders 3 synthetic panels without loading or segmenting mouse_limb_bud_specimen.jpg", supports: false}
+          - {file: docs/media/limb_bud_elongation_pushing_comparison.png, lines: [0, 0], note: "3-panel synthetic figure lacking biological specimen segmentation", supports: false}
+      parameter-expressivity:
+        value: 46
+        rationale: >-
+          Evaluates only 2 hardcoded parameter points (Model I vs Model II) without a Reynolds
+          number sweep across `Re in [10^-6, 10^-1]`, without a 2D parameter sweep across
+          `(zeta_ocd, chi_fgf_wnt5a)`, and without CLI flags for `--zeta-ocd`, `--chi-fgf`,
+          `--reynolds`, `--hours`, `--seed`, or `--output` (L179-189).
+        evidence:
+          - {file: 2015-boehm-limb-bud-elongation-pushing.py, lines: [90, 92], note: "Only 2 hardcoded parameter points evaluated in render_outputs_v1", supports: false}
+          - {file: 2015-boehm-limb-bud-elongation-pushing.py, lines: [179, 189], note: "CLI parser only accepts --self-test", supports: false}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Computes 4 synthetic measurements in `measure_morphoeval()` (L163-171), but does not
+          validate the 5-regime PD elongation and E11.5 aspect-ratio hierarchy against empirical
+          benchmarks (Pearson r, RMSE), does not verify Reynolds-number insensitivity, and does not
+          extract empirical `St0` vs `St1` contours or aspect ratios from `mouse_limb_bud_specimen.jpg`.
+        evidence:
+          - {file: 2015-boehm-limb-bud-elongation-pushing.py, lines: [163, 171], note: "4 synthetic metrics without specimen segmentation or 5-regime empirical correlation", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Module docstring cites Boehm et al. (2010), Kicheva & Briscoe (2010), and Gros et al. (2010)
+          DOIs (L11-13) and `datasets/limb_bud_elongation_pushing/` exists on disk, but the v1 script
+          does not load `limb_bud_elongation_pushing_reference.json` or verify SHA-256 digests at runtime.
+        evidence:
+          - {file: 2015-boehm-limb-bud-elongation-pushing.py, lines: [11, 14], note: "Cites 3 DOIs in docstring but omits runtime loading and SHA-256 verification of reference dataset", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions correspond to IddU/BrdU proliferation source rates and limb bud contour evolution,
+          and `morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean` proves 3 theorems,
+          but v1 docstrings lack equation-by-equation mappings to Boehm et al. (2010) Eqs. 1-11 and
+          Gros et al. (2010) Figs. 1-6.
+        evidence:
+          - {file: 2015-boehm-limb-bud-elongation-pushing.py, lines: [29, 85], note: "Baseline functions lack detailed equation-by-equation citations to Boehm et al. (2010) Eqs. 1-11", supports: false}
+          - {file: morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean, lines: [1, 145], note: "3 machine-checked Lean 4 theorems for isotropic zero deviatoric strain, Wnt5a/FGF anisotropic stress, and IddU/BrdU bounds", supports: true}
+      repro-package:
+        value: 68
+        rationale: >-
+          Deterministic execution with `--self-test` and `measure_morphoeval()` (L163-177),
+          but `self_test()` checks only 4 basic assertions without SHA-256 dataset verification,
+          5-regime hierarchy parity, or two-run bitwise determinism checks.
+        evidence:
+          - {file: 2015-boehm-limb-bud-elongation-pushing.py, lines: [173, 177], note: "Minimal 4-check self_test() without SHA-256 verification or determinism check", supports: false}
+    remediation:
+      - "Implement a 2D/3D continuum viscoelastic/Stokes limb bud growth solver with artificial-compressibility pressure-Poisson coupling (`nabla^2 p = (nabla . v - s(x))/(beta * dtau)`), comparing Model I (isotropic proliferation gradient), Model II (Wnt5a/JNK oriented cell division/intercalation active stress + AER-FGF8/MAPK chemotactic velocity field), Wnt5a-/- bulbous mutant, uniform-Tc control, and FGF-only motility across E11.0-E11.25 (6h) and E9.5-E11.5 (`L_PD/W_AP > 2.1`), plus the 5-decade Reynolds number sweep (`Re in [10^-6, 10^-1]`) and Hooke-Jeeves inverse-optimization demonstration."
+      - "Load and SHA-256-verify `datasets/limb_bud_elongation_pushing/limb_bud_elongation_pushing_reference.json` and `mouse_limb_bud_specimen.jpg`, segment the E11.0 (`St0`) and E11.25 (`St1`) OPT 3D iso-surfaces (Panels D, E), Dorsal/Posterior `St0`-in-`St1` overlays (Panel F), and 3D tetrahedral mesh (Panel G), and quantify empirical PD elongation and aspect-ratio changes."
+      - "Validate the 5-regime PD elongation and E11.5 aspect-ratio hierarchy against Boehm et al. (2010) and Gros et al. (2010) empirical benchmarks (Pearson r, RMSE), expand `measure_morphoeval()` to 8 reference-anchored metrics, and expose full CLI flags."

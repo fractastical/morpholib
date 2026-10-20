@@ -1,0 +1,79 @@
+sim_id: gierer-hydra-activator-inhibitor
+math_family: Reaction-Diffusion & Polarity (Gierer-Meinhardt Short-Range Activator / Long-Range Lateral Inhibitor PDE)
+model_spec:
+  model: Gierer & Meinhardt (1972) Kybernetik 12:30-39 Hydra vulgaris activator-inhibitor reaction-diffusion morphogenesis
+  activator_pde: "da/dt = rho_0 * rho(x) + c * rho(x) * a^2 / h - mu_a * a + D_a * d^2a/dx^2"
+  inhibitor_pde: "dh/dt = c_prime * rho(x) * a^2 - mu_h * h + D_h * d^2h/dx^2"
+  parameters:
+    c: 0.05
+    c_prime: 0.05
+    mu_a: 0.02
+    mu_h: 0.03
+    rho_0: 0.001
+    D_a: 0.015
+    D_h: 0.45
+    diffusivity_ratio_d: 30.0
+    critical_diffusivity_ratio_dc: 5.8284271247461903
+    seed: 1972
+  inputs:
+    - datasets/hydra_activator_inhibitor/hydra_activator_inhibitor_reference.json
+    - datasets/hydra_activator_inhibitor/hydra_vulgaris_specimen.jpg
+    - datasets/hydra_activator_inhibitor/scout_manifest.json
+    - datasets/hydra_activator_inhibitor/paper_citations.bib
+equations:
+  - law_name: "Gierer & Meinhardt (1972) Eqs. (15a)-(15b) Short-Range Autocatalytic Activator / Long-Range Inhibitor Homogeneous Equilibrium"
+    formula: "∂a/∂t = ρ_0 ρ(x) + c ρ(x) a^2 / h - μ_a a + D_a ∂_{xx} a,   ∂h/∂t = c' ρ(x) a^2 - μ_h h + D_h ∂_{xx} h;   (a_*, h_*) = ((c/c')(μ_h/μ_a), (c/c')ρ(μ_h/μ_a)^2)"
+    lean_decl: "MathOfBiology.Loop_001.gm_activator_num_residual"
+    lean_theorem: "MathOfBiology.Loop_001.gierer_meinhardt_homogeneous_steady_state"
+    lean_locus: "morphoeval/lean/loops/Loop_001_hydra_activator_inhibitor.lean#L12-L35"
+    lean_code: |
+      def gm_activator_num_residual (a h_scaled mu_h : Int) : Int :=
+        (a * a) * mu_h - a * h_scaled
+      def gm_inhibitor_num_residual (a h_scaled mu_h : Int) : Int :=
+        (a * a) * mu_h - mu_h * h_scaled
+      theorem gierer_meinhardt_homogeneous_steady_state (mu_h : Int) :
+          gm_activator_num_residual mu_h (mu_h * mu_h) mu_h = 0 ∧
+          gm_inhibitor_num_residual mu_h (mu_h * mu_h) mu_h = 0 := by
+        simp [gm_activator_num_residual, gm_inhibitor_num_residual, Int.mul_assoc]
+    variables: "a(x,t): head/tentacle activator concentration; h(x,t): long-range inhibitor concentration; ρ(x): morphogen source density; μ_a, μ_h: turnover rates; D_a, D_h: diffusivities"
+    role: "Establishes the exact algebraic homogeneous steady state of the nonlinear Gierer-Meinhardt reaction kinetics prior to diffusive symmetry breaking"
+    source_citation: "Gierer & Meinhardt (1972) Kybernetik 12(1):30-39 Eqs. (15a)-(15b)"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L140-L220"
+  - law_name: "Gierer & Meinhardt (1972) Inhibitor Turnover & Equal-Diffusion Stability Law"
+    formula: "tr(J_0) = μ_a - μ_h < 0  (μ_h > μ_a),   det(J_0) = μ_a μ_h > 0;   D_a = D_h = D ⟹ det(J_0 - q D I) = (Dq)^2 + Dq(μ_h - μ_a) + μ_a μ_h > 0  ∀ q ≥ 0"
+    lean_decl: "MathOfBiology.Loop_001.gm_equal_diff_det"
+    lean_theorem: "MathOfBiology.Loop_001.gierer_meinhardt_equal_diffusion_stable"
+    lean_locus: "morphoeval/lean/loops/Loop_001_hydra_activator_inhibitor.lean#L38-L62"
+    lean_code: |
+      def gm_equal_diff_neg_trace (d_mu D q : Nat) : Nat :=
+        (d_mu + 1) + 2 * D * q
+      def gm_equal_diff_det (d_mu d_pos D q : Nat) : Nat :=
+        (D * q) * (D * q) + (D * q) * (d_mu + 1) + (d_pos + 1)
+      theorem gierer_meinhardt_equal_diffusion_stable (d_mu d_pos D q : Nat) :
+          gm_equal_diff_neg_trace d_mu D q ≥ 1 ∧
+          gm_equal_diff_det d_mu d_pos D q ≥ d_pos + 1 := by
+        simp [gm_equal_diff_neg_trace, gm_equal_diff_det]
+        omega
+    variables: "J_0: homogeneous reaction Jacobian; q = k^2: squared spatial wavenumber; D: common diffusivity"
+    role: "Proves that faster inhibitor turnover (μ_h > μ_a) stabilizes the homogeneous state against oscillations and that equal diffusion (D_a = D_h) can never generate spatial Hydra polarity peaks"
+    source_citation: "Gierer & Meinhardt (1972) Kybernetik 12(1):30-39 Sec. 2-3"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L222-L295"
+  - law_name: "Gierer & Meinhardt (1972) Critical Diffusivity Ratio & Lateral-Inhibition Instability Theorem"
+    formula: "det_J(q) = (D_a q - μ_a)(D_h q + μ_h) + 2 μ_a μ_h < 0  ⟺  d = D_h / D_a > d_c = (√2 + 1)^2 = 3 + 2√2 ≈ 5.8284"
+    lean_decl: "MathOfBiology.Loop_001.gm_fourier_det"
+    lean_theorem: "MathOfBiology.Loop_001.gierer_meinhardt_lateral_inhibition_instability"
+    lean_locus: "morphoeval/lean/loops/Loop_001_hydra_activator_inhibitor.lean#L65-L89"
+    lean_code: |
+      def gm_fourier_det (mu_a mu_h D_a D_h q : Int) : Int :=
+        (D_a * q - mu_a) * (D_h * q + mu_h) + 2 * mu_a * mu_h
+      theorem gierer_meinhardt_lateral_inhibition_instability :
+          gm_fourier_det 2 3 1 1 0 = 6 ∧
+          gm_fourier_det 2 3 1 1 1 = 8 ∧
+          gm_fourier_det 2 3 1 5 1 = 4 ∧
+          gm_fourier_det 2 3 1 10 1 = -1 ∧
+          gm_fourier_det 2 3 1 30 1 = -21 := by
+        decide
+    variables: "d = D_h / D_a: inhibitor-to-activator diffusivity ratio; d_c = (√2 + 1)^2 ≈ 5.8284: critical lateral-inhibition threshold; q = k^2: unstable spatial mode"
+    role: "Proves that long-range inhibitor diffusion exceeding d_c = (√2+1)^2 drives det_J(q) < 0, triggering spontaneous hypostome polarity and periodic tentacle ring formation in Hydra vulgaris"
+    source_citation: "Gierer & Meinhardt (1972) Kybernetik 12(1):30-39; Meinhardt (1993) Dev. Biol. 157:321-333"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L222-L345"

@@ -1,0 +1,78 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bi-vertex-glass-jamming> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Bi et al. (2015) & Park et al. (2015) zero-temperature shape-index unjamming & asthmatic bronchial epithelial rigidity transition — MorphoEval overall 54.2/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 (v1) evaluation of `2015-bi-vertex-glass-jamming.py` (57.3/100). The v1 baseline implements the Bi et al. (2015) Nature Physics Eq. (2) dimensionless vertex energy `e = 0.5 * sum [(a_i - 1)^2 + r * (p_i - p_0)^2]` and simulates two points (`p_0 = 3.70` solid vs `p_0 = 3.95` fluid), but omits explicit T1 energy barrier `Delta e_T1(p_0)` and shear modulus `G(p_0)` scaling across `p_0^* = 3.813`, omits the Park et al. (2015) Nature Materials non-asthmatic vs. asthmatic human bronchial epithelium ALI maturation timecourse and bronchospasm compression perturbation, does not load or segment the vendored human monolayer micrograph (`human_epithelial_monolayer_specimen.jpg`), and exposes no CLI parameter flags beyond `--self-test`. Overall 54.2/100 (faithfulness 49.1, reproducibility 66.3); rubric morphoeval 0.1.0; checkpoint commit 0cb0132; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 67, Morphological realism / specimen match 34, Parameter expressivity 45, Morphometric validation 53, Source and data traceability 63, Code-to-model traceability 68, Reproducibility package 68. Output judged: docs/media/vertex_glass_jamming_comparison.png: rendered output of 2015-bi-vertex-glass-jamming.py at 0cb0132, image/png, 157153 B, 1560×520 px, artifact_sha256 1b0d09c98454983bc345738c02733c122e65b9963a3d007878775ca67be4b6f5 (sha256 1b0d09c98454983bc345738c02733c122e65b9963a3d007878775ca67be4b6f5), spec_fingerprint 52abc2dcaa2857a7c9b54a7d8ac8d7ebb1e0481dc0dc957ca72fa6bc9190d466. Dual provenance: spec_fingerprint: 52abc2dcaa2857a7c9b54a7d8ac8d7ebb1e0481dc0dc957ca72fa6bc9190d466; artifact_sha256: 1b0d09c98454983bc345738c02733c122e65b9963a3d007878775ca67be4b6f5." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Implement explicit T1 topological rearrangement energy barrier Delta e_T1(p_0) and static shear modulus G(p_0) scaling across an 8-point p_0 phase sweep spanning solid jammed (p_0 < 3.813) and fluid unjammed (p_0 >= 3.813) regimes, plus a perimeter-elasticity ablation control (r = 0).",
+            "remediation needed: Load and SHA-256-verify `datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json` and `human_epithelial_monolayer_specimen.jpg`, segment the dark junctional boundaries and blue nuclear seeds via watershed/Voronoi tessellation to extract empirical cell shape indices q = P/sqrt(A) and polygon classes P(n), and validate against the k-Gamma distribution.",
+            "remediation needed: Model the Park et al. (2015) Nature Materials human bronchial epithelial cell (HBEC) air-liquid interface maturation timecourse (Days 3-18) for non-asthmatic control vs. asthmatic donors and 30 cm H2O mechanical bronchospasm compression, plus Atia et al. (2018) universal k-Gamma shape-index scaling." ;
+        pk:hasScore "0.542"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nmat4357>,
+            <https://doi.org/10.1038/nphys3471>,
+            <https://doi.org/10.1038/s41567-018-0089-9>,
+            <https://doi.org/10.1103/PhysRevX.6.021011>,
+            <https://doi.org/10.1140/epje/i2010-10677-0> .
+    <https://doi.org/10.1038/nmat4357> dct:date "2015"^^xsd:gYear ;
+        dct:title "Unjamming and cell shape in the asthmatic airway epithelium" .
+    <https://doi.org/10.1038/nphys3471> dct:date "2015"^^xsd:gYear ;
+        dct:title "A density-independent rigidity transition in biological tissues" .
+    <https://doi.org/10.1038/s41567-018-0089-9> dct:date "2018"^^xsd:gYear ;
+        dct:title "Geometric constraints during epithelial jamming" .
+    <https://doi.org/10.1103/PhysRevX.6.021011> dct:date "2016"^^xsd:gYear ;
+        dct:title "Motility-driven glass and jamming transitions in biological tissues" .
+    <https://doi.org/10.1140/epje/i2010-10677-0> dct:date "2010"^^xsd:gYear ;
+        dct:title "Mechanics and remodelling of cell packings in epithelia" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bi et al. (2015) & Park et al. (2015) zero-temperature shape-index unjamming & asthmatic bronchial epithelial rigidity transition — MorphoEval overall 54.2/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:09:58Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-bi-vertex-glass-jamming> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

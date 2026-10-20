@@ -1,0 +1,196 @@
+# MorphoEval audit — Pietak & Levin (2017) / (2016) Bioelectric-Morphogen Coupling, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2017-pietak-bioelectric-morphogen-coupling.py` (Slot 082)
+# superseding `2026-10-19-bioelectric-morphogen-coupling-audit` in `2026-10-19-bioelectric-morphogen-coupling-loop`.
+
+audit:
+  id: 2026-10-19-bioelectric-morphogen-coupling-audit-v2
+  supersedes_audit_id: 2026-10-19-bioelectric-morphogen-coupling-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2017-pietak-bioelectric-morphogen-coupling.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-bioelectric-morphogen-coupling-loop`).
+
+references:
+  pietak2017:
+    title: "Bioelectric gene and reaction networks: computational modelling of genetic, biochemical and bioelectrical dynamics in pattern regulation"
+    authors: "Pietak A, Levin M"
+    venue: "Journal of the Royal Society Interface 14(134):20170425 (2017)"
+    doi: 10.1098/rsif.2017.0425
+  pietak2016:
+    title: "Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine"
+    authors: "Pietak A, Levin M"
+    venue: "Frontiers in Bioengineering and Biotechnology 4:55 (2016)"
+    doi: 10.3389/fbioe.2016.00055
+  durant2017:
+    title: "Long-Term, Stochastic Editing of Regenerative Anatomy via Targeting Endogenous Bioelectric Gradients"
+    authors: "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M"
+    venue: "Biophysical Journal 112(10):2231-2243 (2017)"
+    doi: 10.1016/j.bpj.2017.04.011
+  oviedo2010:
+    title: "Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration"
+    authors: "Oviedo NJ, Morokuma J, Walentek P, Kema IP, Gu MB, Ahn JM, Hwang JS, Gojobori T, Levin M"
+    venue: "Developmental Biology 339(1):188-199 (2010)"
+    doi: 10.1016/j.ydbio.2009.12.012
+
+simulations:
+  - id: pietak-bioelectric-morphogen-coupling
+    name: "Pietak & Levin (2017) electrodiffusive Nernst-Planck gap-junction morphogen transport & cryptic two-headed memory"
+    organism: "Dugesia japonica / Schmidtea mediterranea freshwater planarian flatworm"
+    script: 2017-pietak-bioelectric-morphogen-coupling.py
+    output: docs/media/bioelectric_morphogen_coupling_comparison.png
+    extra_outputs:
+      - docs/media/bioelectric_morphogen_coupling_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Pietak & Levin (2017) J. R. Soc. Interface 14:20170425 & Pietak & Levin (2016) Front. Bioeng. Biotechnol. 4:55 electrodiffusive Nernst-Planck transport of cationic serotonin (5-HT, z=+1) through voltage-gated gap junctions G_gj(DeltaV)"
+        - "Boltzmann zero-flux equilibrium concentration ratio c_post/c_ant = exp(-(z*F/(R*T))*(V_post - V_ant)) = 4.70 under wild-type planarian AP polarization (-20 mV anterior vs -60 mV posterior)"
+        - "Cyclic-AMP / PKA / beta-catenin / ERK mutual feedback loop and permanent cryptic two-headed (2H0T) planarian memory persistence after transient 8-octanol gap-junction blockade and washout (Durant et al. 2017)"
+      reconstructed_in_script:
+        - "1D Scharfetter-Gummel conservative Nernst-Planck electrodiffusive 5-HT + voltage-gated gap-junction + cAMP/PKA/beta-catenin/ERK PDE across 6 experimental regimes and 9-point Boltzmann voltage sweep"
+        - "Automated dorsal body-contour and bilateral photoreceptor ocelli segmentation on planarian_ap_polarity_specimen.jpg (N=2 eyespots at x/L=0.0528, length=1478 px) and 2D body-plan silhouette synthesis"
+      transfer_boundary:
+        - "1D anteroposterior electrodiffusive 5-HT, beta-catenin, and ERK profiles mapped onto 2D dorsal planarian body-plan silhouettes and eyespot coordinates"
+      does_not_claim:
+        - "Full 3D finite-volume Voronoi cell lattice geometry of BETSE or explicit sub-millisecond action potential spiking"
+    source_refs:
+      - pietak2017
+      - pietak2016
+      - durant2017
+      - oviedo2010
+    summary: >-
+      Pass 2 post-remediation evaluation of `2017-pietak-bioelectric-morphogen-coupling.py`
+      (91.7/100, up from 58.6/100 in Pass 1; +33.1 overall). The remediated script
+      implements conservative Scharfetter-Gummel Nernst-Planck electrodiffusive transport
+      of cationic serotonin (5-HT, z=+1) through symmetric Bell-form voltage-gated gap
+      junctions coupled to the cAMP/PKA -> beta-catenin / ERK feedback loop, matching the
+      exact analytical Boltzmann equilibrium ratio c_post/c_ant = exp(40/25.85) = 4.6992
+      (PDE = 4.6984, 9-point sweep r = 1.0000) and reproducing all 6 canonical regeneration
+      phenotypes with zero head-count error (RMSE = 0.0000): Wild-Type `1H1T`, 8-Octanol
+      pulse `2H0T`, Cryptic Washout Memory `2H0T` (persisting after eta_oct -> 0),
+      SCH-28080/Forskolin `0H2T` headless, Uncharged Morphogen Control `z=0` (`2H0T`), and
+      Targeted Posterior K+ Hyperpolarization Rescue `1H1T`, alongside automated bilateral
+      ocelli segmentation on `planarian_ap_polarity_specimen.jpg` (N = 2 eyespots at
+      x/L = 0.0528), backed by 3 machine-checked Lean 4 theorems in
+      `Loop_082_bioelectric_morphogen_coupling.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Faithfully implements the Pietak & Levin (2017) Eqs. (3)-(5) & Pietak & Levin
+          (2016) Nernst-Planck electrodiffusive gap-junction flux J_s = -D_s*G_gj(DeltaV)*
+          (dc/dx + (z*F/(R*T))*c*dV/dx) using a conservative Scharfetter-Gummel Bernoulli
+          discretization that converges to the exact Boltzmann equilibrium ratio
+          c_post/c_ant = exp(-z*(V_post - V_ant)/V_T) = 4.6992 (PDE = 4.6984), coupled to
+          the cAMP/PKA -> beta-catenin / ERK bistable loop (L115-395), verified by 3
+          machine-checked Lean 4 theorems (0 sorrys) in
+          `morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean`.
+        evidence:
+          - {file: 2017-pietak-bioelectric-morphogen-coupling.py, lines: [115, 225], note: "Bell-form voltage-gated GJ conductance, exact Boltzmann ratio, and Scharfetter-Gummel Nernst-Planck flux divergence", supports: true}
+          - {file: 2017-pietak-bioelectric-morphogen-coupling.py, lines: [228, 395], note: "Coupled 1D Nernst-Planck 5-HT + cAMP/PKA/beta-catenin/ERK feedback PDE solver across 6 regimes", supports: true}
+          - {file: morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean, lines: [14, 108], note: "3 machine-checked Lean 4 theorems (0 sorrys) for Nernst-Planck flux, Boltzmann work, and cryptic 2H0T memory", supports: true}
+      specimen-match:
+        value: 89
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 2.5 dorsal whole-mount micrograph of
+          Schmidtea mediterranea (`datasets/bioelectric_morphogen_coupling/planarian_ap_polarity_specimen.jpg`),
+          automatically segments the body contour (length 1478 px, aspect ratio 3.72) and
+          bilateral photoreceptor ocelli (`segment_planarian_specimen`, L445-512: N = 2
+          eyespots at x/L = 0.0492 and 0.0563, mean x/L = 0.0528 matching the simulated
+          anterior ERK head domain), and reconstructs 2D body-plan silhouettes with eyespots
+          for 1H1T, cryptic 2H0T, and 0H2T regenerates (Panels B3, C1, C2).
+        evidence:
+          - {file: 2017-pietak-bioelectric-morphogen-coupling.py, lines: [445, 550], note: "Automated planarian body-contour and bilateral ocelli segmentation + 2D morphology synthesis", supports: true}
+          - {file: docs/media/bioelectric_morphogen_coupling_comparison.png, lines: [0, 0], note: "9-panel synthesis figure including specimen ocelli segmentation, width comparison, and 1H1T/2H0T/0H2T silhouettes", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Simulates all 6 experimental regimes from Pietak & Levin (2017) and Durant et al.
+          (2017) (`wild_type_1H1T`, `octanol_pulse_2H0T`, `cryptic_memory_washout_2H0T`,
+          `sch28080_hyperpolarized_0H2T`, `uncharged_morphogen_control_z0` negative control,
+          and `bioelectric_reset_rescue_1H1T`), executes a 9-point Boltzmann AP voltage
+          sweep across DeltaV_AP in [-30, +50] mV alongside z=+1, 0, -1 analytical curves
+          (Panel A1), and maps the 2D (DeltaV_AP, 1 - eta_oct) electrodiffusive morphospace
+          (Panel B2).
+        evidence:
+          - {file: 2017-pietak-bioelectric-morphogen-coupling.py, lines: [400, 442], note: "6-regime evaluator, 9-point Boltzmann voltage sweep, and 2D (DeltaV_AP, GJ openness) morphospace", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: >-
+          Extracts 6 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L705-805): wild-type posterior-to-anterior 5-HT Boltzmann
+          concentration ratio (4.6984 vs 4.6992 exact reference, 9-point sweep r = 1.0000),
+          cryptic two-headed memory persistence after octanol washout (2 heads vs 2
+          reference), posterior beta-catenin suppression delta between WT and 8-octanol
+          (0.8407 vs 0.72 reference), segmented specimen bilateral ocelli relative AP
+          position (0.0528 vs 0.065 reference, std = 0.0036), specimen vs simulated 1H1T
+          width profile correlation (Pearson r and RMSE across 60 AP bins), and 6-regime
+          regenerated head count RMSE = 0.0000 (exact 6/6 phenotype match).
+        evidence:
+          - {file: 2017-pietak-bioelectric-morphogen-coupling.py, lines: [705, 805], note: "6 quantitative MorphoEval measurements with empirical references, std, Pearson r, and RMSE", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/bioelectric_morphogen_coupling/` with `scout_manifest.json`,
+          `bioelectric_morphogen_coupling_reference.json`, `planarian_ap_polarity_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.1098/rsif.2017.0425`,
+          `10.3389/fbioe.2016.00055`, `10.1016/j.bpj.2017.04.011`, `10.1016/j.ydbio.2009.12.012`),
+          and `README.md`, with runtime SHA-256 verification (`verify_dataset_sha256`, L85-105).
+        evidence:
+          - {file: 2017-pietak-bioelectric-morphogen-coupling.py, lines: [85, 105], note: "Runtime SHA-256 verification of datasets/bioelectric_morphogen_coupling/ artifacts", supports: true}
+          - {file: datasets/bioelectric_morphogen_coupling/bioelectric_morphogen_coupling_reference.json, lines: [1, 145], note: "Vendored Pietak & Levin (2017) equations, 6 experimental regimes, and specimen metadata", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Every computational function and docstring maps directly to Pietak & Levin (2017)
+          Eqs. (3)-(5) and Figs. 2-6, Pietak & Levin (2016), Durant et al. (2017), and the
+          3 Lean 4 theorems in `Loop_082_bioelectric_morphogen_coupling.lean` and
+          `morphoeval/math_kg_loops/pietak-bioelectric-morphogen-coupling.yaml`.
+        evidence:
+          - {file: 2017-pietak-bioelectric-morphogen-coupling.py, lines: [1, 58], note: "Module docstring linking equations to Pietak & Levin (2017)/(2016) and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/pietak-bioelectric-morphogen-coupling.yaml, lines: [1, 95], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic RNG (`seed=2017`), standalone 8-check `--self-test` suite verifying
+          SHA-256 dataset locks, Boltzmann Nernst-Planck equilibrium identities, all 6
+          Pietak & Levin (2017) regeneration regimes (`1H1T` WT, `2H0T` octanol, `2H0T`
+          cryptic washout memory, `0H2T` SCH-28080/forskolin, `2H0T` z=0 control, `1H1T`
+          bioelectric K+ rescue), specimen bilateral ocelli segmentation, and bitwise
+          two-run determinism (`atol=0.0`), plus rendered 9-panel PNG and 24-frame GIF in
+          `docs/media/`.
+        evidence:
+          - {file: 2017-pietak-bioelectric-morphogen-coupling.py, lines: [810, 885], note: "8-check deterministic --self-test suite verifying SHA-256 locks, Boltzmann ratio, 6 regimes, ocelli segmentation, and bitwise determinism", supports: true}
+          - {file: docs/media/bioelectric_morphogen_coupling_growth.gif, lines: [0, 0], note: "24-frame animated GIF comparing WT (1H1T), Cryptic Washout (2H0T), z=0 Control, and SCH-28080 (0H2T)", supports: true}
+    remediation:
+      - "Extend the 1D Scharfetter-Gummel Nernst-Planck solver to an irregular 2D Voronoi cell network matching the full BETSE tissue geometry."
+      - "Couple intracellular Ca2+ and IP3 electrodiffusion alongside 5-HT to model heteromorphosis and stochastic 1H1T/2H0T bistable branching probabilities."

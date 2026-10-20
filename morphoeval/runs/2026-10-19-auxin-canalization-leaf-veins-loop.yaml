@@ -1,0 +1,366 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-auxin-canalization-leaf-veins-loop
+  target_simulation: mitchison-canalization-auxin-flux
+  paper: Mitchison (1980, 1981) Proc. R. Soc. B / Feugier, Mochizuki & Iwasa (2005)
+    J. Theor. Biol. — A model for vein formation in higher plants by positive feedback
+    between auxin flux and polar transport conductivity
+  created_at: '2026-10-20T00:48:53.233Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: e93f00e
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 2.107
+  wall_time_min: 0.04
+  tier_a_wall_s: 0.479
+  tier_b_wall_s: 1.628
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  input_tokens: 26250
+  output_tokens: 10020
+  subagent_tokens: 1800
+  total_llm_tokens: 38070
+  artifact_tokens: 9206
+  tier_a_llm_tokens: 18730
+  tier_b_llm_tokens: 19340
+  effective_tokens_per_s: 18068.3
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:52:09.193Z'
+  ended_at: '2026-10-20T00:52:09.273Z'
+  duration_s: 0.08
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1950
+    output_tokens: 680
+    subagent_tokens: 0
+    total_llm_tokens: 2630
+    artifact_tokens: 1095
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/auxin_canalization_leaf_veins/scout_manifest.json
+    bytes: 3868
+    sha256: 94a1d6a85fe649c58f12e3cee21ed750d08a2af5440a96f4b46e67be6fee6214
+    tokens: 1095
+  commands: []
+  notes: Scouted Slot 34 Mitchison (1980, 1981) Proc. R. Soc. B / Phil. Trans. R.
+    Soc. B & Feugier et al. (2005) J. Theor. Biol. auxin canalization & leaf venation
+    networks
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: paper-extractor
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:52:09.344Z'
+  ended_at: '2026-10-20T00:52:09.425Z'
+  duration_s: 0.081
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3200
+    output_tokens: 1180
+    subagent_tokens: 0
+    total_llm_tokens: 4380
+    artifact_tokens: 1628
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/auxin_canalization_leaf_veins/auxin_canalization_leaf_veins_reference.json
+    bytes: 6093
+    sha256: 55e0f743ada8391863ef5138fd80a4b888e6d6dd3a420a370cbde6a0aae590ce
+    tokens: 1628
+  commands: []
+  notes: Extracted Mitchison (1980, 1981) quadratic vs linear flux-driven diffusivity
+    ODEs, vein concentration drainage S_vein < S_parenchyma, Sachs wound bypass, and
+    Feugier et al. (2005) carrier-allocated open vs closed venation loops
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: dataset-curator
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:52:09.498Z'
+  ended_at: '2026-10-20T00:52:09.578Z'
+  duration_s: 0.081
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2150
+    output_tokens: 860
+    subagent_tokens: 0
+    total_llm_tokens: 3010
+    artifact_tokens: 748
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/auxin_canalization_leaf_veins/README.md
+    bytes: 2488
+    sha256: 1f271dcad5815b6cc0afc6fb751a53de265a7d3e4ef86e294a86a3d4ece34690
+    tokens: 748
+  commands: []
+  notes: Vendored CC BY-SA 3.0 cleared dicot leaf venation skeleton specimen (File:Vein
+    skeleton of a leaf (de-ghosted).jpg, SHA-256 locked) and reference JSON
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: lean-formalizer
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:54:00.170Z'
+  ended_at: '2026-10-20T00:54:00.248Z'
+  duration_s: 0.079
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2850
+    output_tokens: 1080
+    subagent_tokens: 0
+    total_llm_tokens: 3930
+    artifact_tokens: 1739
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/math_kg_loops/mitchison-canalization-auxin-flux.yaml
+    bytes: 6603
+    sha256: 0ffca462edbf619da0d3c99a6ea8abe4214faa7b8a4c494efeb25a5fcd891437
+    tokens: 1739
+  commands: []
+  notes: Proved 3 Lean 4 theorems (0 sorrys) for linear vs quadratic canalization
+    symmetry breaking, vein concentration drainage S_vein < S_par, and polar PIN1
+    carrier flux conservation
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:55:45.901Z'
+  ended_at: '2026-10-20T00:55:45.980Z'
+  duration_s: 0.079
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2350
+    output_tokens: 920
+    subagent_tokens: 0
+    total_llm_tokens: 3270
+    artifact_tokens: 1251
+    method: explicit+BPE
+  artifacts:
+  - file: 1997-mitchison-canalization-auxin-flux.py
+    bytes: 4082
+    sha256: 35fd62a6f81a6ed33cd479a72130d24ae7917b6a7fcb7ea5761cec1624f70389
+    tokens: 1251
+  commands: []
+  notes: Pass 1 baseline 2-channel Mitchison canalization ODE script
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: renderer-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:55:46.051Z'
+  ended_at: '2026-10-20T00:55:46.130Z'
+  duration_s: 0.079
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1100
+    output_tokens: 410
+    subagent_tokens: 0
+    total_llm_tokens: 1510
+    artifact_tokens: 64
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/auxin_canalization_leaf_veins_growth.gif
+    bytes: 28391
+    sha256: 9b09e478a73899d7780ea4487f667bce95ae0d1f1db4f230b6d0673a9c842069
+    tokens: 64
+  commands: []
+  notes: Rendered Pass 1 baseline PNG and GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: primary-assessor
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:55:46.203Z'
+  ended_at: '2026-10-20T00:55:46.284Z'
+  duration_s: 0.082
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3150
+    output_tokens: 1120
+    subagent_tokens: 1800
+    total_llm_tokens: 6070
+    artifact_tokens: 1919
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-auxin-canalization-leaf-veins-audit.yaml
+    bytes: 7769
+    sha256: f2c04f3abbe30aae05a2f51224bfd2632cab44824e8655f6154309531c209e72
+    tokens: 1919
+  commands: []
+  notes: Pass 1 audit scored 54.5/100; identified 4 remediation defects
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: morphometrics-engine
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:55:46.357Z'
+  ended_at: '2026-10-20T00:55:46.806Z'
+  duration_s: 0.449
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1400
+    output_tokens: 480
+    subagent_tokens: 0
+    total_llm_tokens: 1880
+    artifact_tokens: 698
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-auxin-canalization-leaf-veins-audit.measurements.yaml
+    bytes: 2052
+    sha256: f9b365658e336b7f53b2e5209ff1691d0440026e174f2e5836fff032078a4884
+    tokens: 698
+  commands: []
+  notes: Fingerprinted Pass 1 outputs and measurements
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: kg-builder
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:55:46.882Z'
+  ended_at: '2026-10-20T00:55:47.191Z'
+  duration_s: 0.309
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 1480
+    output_tokens: 510
+    subagent_tokens: 0
+    total_llm_tokens: 1990
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands: []
+  notes: Built Pass 1 RDF knowledge graph
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: nanopub-signer
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:55:47.264Z'
+  ended_at: '2026-10-20T00:55:47.476Z'
+  duration_s: 0.212
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 920
+    output_tokens: 330
+    subagent_tokens: 0
+    total_llm_tokens: 1250
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands: []
+  notes: Signed 10 Pass 1 Trusty URI nanopublications
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: nanopub-publisher
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:55:47.554Z'
+  ended_at: '2026-10-20T00:55:48.050Z'
+  duration_s: 0.496
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 850
+    output_tokens: 300
+    subagent_tokens: 0
+    total_llm_tokens: 1150
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands: []
+  notes: Verified Pass 1 signed nanopub bundle via dry-run
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: remediator-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:02:55.948Z'
+  ended_at: '2026-10-20T01:02:56.028Z'
+  duration_s: 0.08
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 4850
+    output_tokens: 2150
+    subagent_tokens: 0
+    total_llm_tokens: 7000
+    artifact_tokens: 64
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/auxin_canalization_leaf_veins_growth.gif
+    bytes: 92609
+    sha256: 53a61552e12d1b80fd90f8e646d04f86fdc1a9379ff96dad83c95cc83d13c8ef
+    tokens: 64
+  commands: []
+  notes: 'Remediated all 4 Pass 1 defects: 5-exponent p in [0.5, 2.5] bifurcation
+    + 2D lamina S_vein < S_par drainage, Sachs stem wound bypass + NPA control, Feugier
+    open-tree vs closed-areole topology, and cleared dicot leaf venation specimen
+    segmentation'

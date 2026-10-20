@@ -1,0 +1,147 @@
+# MorphoEval Pass 1 (v1) Audit — Honda (1971) J. Theor. Biol. 31:331-338 & Honda & Fisher (1978) Science 199:888-890
+# Geometric 3D Dichotomous Tree Branching Angles, Leonardo da Vinci Pipe Model & Canopy Light Interception (Slot 051)
+
+audit:
+  id: 2026-10-19-dichotomous-tree-branching-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 051 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/51
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1976-honda-dichotomous-tree-branching.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  honda1971:
+    title: "Description of the form of trees by the parameters of the tree-like body: Effects of the branching angle and the branch length on the shape of the tree-like body"
+    authors: "Honda H"
+    venue: "Journal of Theoretical Biology 31(2):331-338 (1971)"
+    doi: 10.1016/0022-5193(71)90031-2
+  honda1978:
+    title: "Tree branch angle: maximizing effective leaf area"
+    authors: "Honda H, Fisher JB"
+    venue: "Science 199(4331):888-890 (1978)"
+    doi: 10.1126/science.199.4331.888
+  fisher1979:
+    title: "Branch geometry and effective leaf area: a study of Terminalia-branching pattern. 1. Theoretical trees"
+    authors: "Fisher JB, Honda H"
+    venue: "American Journal of Botany 66(6):633-644 (1979)"
+    doi: 10.1002/j.1537-2197.1979.tb06267.x
+  shinozaki1964:
+    title: "A quantitative analysis of plant form—the pipe model theory: I. Basic analyses"
+    authors: "Shinozaki K, Yoda K, Hozumi K, Kira T"
+    venue: "Japanese Journal of Ecology 14(3):97-105 (1964)"
+    doi: 10.18960/seitai.14.3_97
+  eloy2011:
+    title: "Leonardo's rule, self-similarity, and wind-induced stresses in trees"
+    authors: "Eloy C"
+    venue: "Physical Review Letters 107(25):258101 (2011)"
+    doi: 10.1103/PhysRevLett.107.258101
+
+simulations:
+  - id: honda-dichotomous-tree-branching
+    name: "Honda (1971) J. Theor. Biol. & Honda & Fisher (1978) Science 3D recursive dichotomous tree branching, effective leaf area optimization, and Leonardo da Vinci pipe-model cross-sectional area conservation"
+    organism: "Cornus controversa (Pagoda dogwood / wedding cake tree) & Terminalia catappa (Tropical almond pagoda tree)"
+    script: 1976-honda-dichotomous-tree-branching.py
+    output: docs/media/dichotomous_tree_branching_comparison.png
+    extra_outputs:
+      - docs/media/dichotomous_tree_branching_growth.gif
+    status: evaluated
+    source_refs:
+      - honda1971
+      - honda1978
+      - fisher1979
+      - shinozaki1964
+      - eloy2011
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `1976-honda-dichotomous-tree-branching.py`
+      (weighted score: 53.6/100). The Pass 1 baseline implements only a 2D planar
+      branching sketch at two angle pairs without Honda's (1971) full 3D local rotation-matrix
+      recursion in the (v, v x z_hat) frame, omits the Honda & Fisher (1978) 2D (theta_1, theta_2)
+      effective leaf area A_eff / A_total optimization landscape across 5-branch whorls,
+      omits Leonardo da Vinci / Shinozaki pipe-model cross-sectional area conservation
+      (d_0^2 = d_1^2 + d_2^2), omits the 4-archetype 3D crown morphospace and collinear
+      theta_1 = theta_2 = 0 self-shaded ablation control, and does not segment or analyze
+      the vendored Cornus controversa tiered crown specimen (`cornus_controversa_tiered_crown_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 55
+        rationale: >-
+          Implements only a 2D planar branching recursion at two angle pairs (L24-48),
+          omitting Honda's (1971) 3D rotation-matrix recursion with phyllotactic roll
+          alpha = 137.5 deg, Honda & Fisher's (1978) 5-whorl effective leaf area disk-union
+          functional A_eff / A_total, and Leonardo da Vinci / Shinozaki pipe-model diameter tapering.
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [24, 48], note: "2D planar recursion only without 3D rotation matrix, effective leaf area integral, or Leonardo pipe-model tapering", supports: true}
+      specimen-match:
+        value: 42
+        rationale: >-
+          Vendors `datasets/dichotomous_tree_branching/cornus_controversa_tiered_crown_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, or extract pagoda crown tiers,
+          woody branch skeletons, bifurcation angles (theta_1, theta_2), or Leonardo area
+          ratios from the Cornus controversa specimen.
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [64, 102], note: "Renders only 2 synthetic 2D trees without loading or segmenting the Cornus controversa specimen", supports: false}
+      parameter-expressivity:
+        value: 50
+        rationale: >-
+          Evaluates only two fixed (theta_1, theta_2) pairs without sweeping the 2D
+          (theta_1, theta_2) effective leaf area surface, comparing the 4 Honda (1971)
+          3D crown archetypes, or exposing CLI parameter overrides.
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [51, 61], note: "Only two hard-coded angle pairs evaluated", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          Returns only tip count and horizontal span without A_eff / A_total Pearson
+          correlation, p-values, RMSE, Leonardo pipe-model conservation residuals,
+          collinear zero-angle ablation control, or empirical specimen morphometrics.
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [51, 61], note: "Minimal scalar output without statistical validation or ablation control", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `dichotomous_tree_branching_reference.json`
+          with verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at runtime.
+        evidence:
+          - {file: datasets/dichotomous_tree_branching/dichotomous_tree_branching_reference.json, lines: [1, 165], note: "Reference JSON present on disk but not verified at runtime in Pass 1", supports: true}
+      code-traceability:
+        value: 55
+        rationale: >-
+          Module docstring cites Honda (1971) and Honda & Fisher (1978), but lacks
+          explicit equation-to-code and Lean 4 theorem mappings.
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [1, 6], note: "Minimal docstring without Lean 4 theorem loci", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Includes a minimal `--self-test` flag, but lacks SHA-256 dataset integrity
+          checks, 3D rotation orthonormal invariants, Leonardo pipe-model conservation checks,
+          and collinear self-shading ablation controls.
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [105, 110], note: "Minimal self-test without SHA-256 or pipe-model invariant checks", supports: false}
+    remediation:
+      - "Implement Honda's (1971) full 3D local rotation-matrix tree builder in the (v, v x z_hat) frame across 4 botanical crown archetypes (excurrent conifer, pagoda tiered Cornus/Terminalia, decurrent deliquescent hardwood, and weeping pendulous Salix) alongside Leonardo da Vinci / Shinozaki pipe-model diameter tapering (d_parent^2 = d_1^2 + d_2^2)."
+      - "Implement the Honda & Fisher (1978) Science 2D (theta_1, theta_2) effective leaf area optimization landscape A_eff(theta_1, theta_2) / A_total across 5-branch horizontal pagoda whorls, demonstrating the global optimum at Cornus controversa (26 deg, 56 deg) and Terminalia catappa (30 deg, 60 deg) versus the collinear theta_1 = theta_2 = 0 self-shaded ablation control."
+      - "Segment and skeletonize the vendored Pagoda Dogwood (Cornus controversa 'Variegata') specimen (`cornus_controversa_tiered_crown_specimen.jpg`) to extract the 7 horizontal pagoda foliage tiers, woody branch skeleton, empirical bifurcation angles (theta_1, theta_2), and Leonardo area ratio (d_1^2 + d_2^2)/d_0^2, backed by runtime SHA-256 integrity checks and an 8-suite `--self-test`."

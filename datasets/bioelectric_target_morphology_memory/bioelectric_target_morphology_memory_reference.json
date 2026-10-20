@@ -1,0 +1,123 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "pezzulo-bioelectric-target-morphology-memory",
+  "slot": 84,
+  "title": "Pezzulo & Levin (2015) & Friston, Levin, Sengupta & Pezzulo (2015) Active Inference, Variational Free Energy Minimization, and Homeostatic Anatomical Error-Correction Toward Bioelectric Target Morphology",
+  "primary_papers": [
+    {
+      "citation": "Pezzulo G, Levin M (2015) Re-membering the body: applications of computational neuroscience to the top-down control of regeneration of limbs and other complex organs. J. R. Soc. Interface 12(110):20150772",
+      "doi": "10.1098/rsif.2015.0772"
+    },
+    {
+      "citation": "Friston K, Levin M, Sengupta B, Pezzulo G (2015) Knowing one's place: a free-energy approach to pattern regulation. J. R. Soc. Interface 12(105):20141383",
+      "doi": "10.1098/rsif.2014.1383"
+    },
+    {
+      "citation": "Pezzulo G, Levin M (2016) Top-down models in biology: explanation and control of complex living systems above the molecular level. J. R. Soc. Interface 13(124):20160555",
+      "doi": "10.1098/rsif.2016.0555"
+    },
+    {
+      "citation": "Vandenberg LN, Adams DS, Levin M (2012) Normalized shape and location of perturbed craniofacial structures in the Xenopus tadpole reveal an innate ability to achieve correct morphology. Dev. Dyn. 241(5):863-878",
+      "doi": "10.1002/dvdy.23770"
+    }
+  ],
+  "governing_equations": {
+    "variational_free_energy": "F(mu, x) = (1/2) * Pi_s * ||s(x) - g(mu)||^2 + (1/2) * Pi_p * ||mu - mu_target||^2",
+    "sensory_prediction_error": "varepsilon_s(x, mu) = Pi_s * (s(x) - g(mu))",
+    "prior_prediction_error": "varepsilon_p(mu, mu_target) = Pi_p * (mu - mu_target)",
+    "active_morphogenetic_remodeling_ode": "dx/dt = -kappa_a * dF/dx = -kappa_a * Pi_s * J_s(x)^T * (s(x) - g(mu))",
+    "bioelectric_belief_updating_ode": "dmu/dt = -kappa_mu * dF/dmu = kappa_mu * Pi_s * J_g(mu)^T * (s(x) - g(mu)) - kappa_mu * Pi_p * (mu - mu_target)",
+    "lyapunov_dissipation_law": "dF/dt = -(1/kappa_mu) * ||dmu/dt||^2 - (1/kappa_a) * ||dx/dt||^2 <= 0",
+    "proximodistal_segment_targets": "L^* = L_stylopod^* + L_zeugopod^* + L_autopod^* = 0.38 + 0.34 + 0.28 = 1.00"
+  },
+  "canonical_parameters": {
+    "L_target_wt": 1.0,
+    "L_stylopod_wt": 0.38,
+    "L_zeugopod_wt": 0.34,
+    "L_autopod_wt": 0.28,
+    "L_proximal_cut": 0.20,
+    "L_distal_cut": 0.70,
+    "L_target_rewritten": 1.45,
+    "Pi_s_wt": 2.0,
+    "Pi_p_wt": 4.0,
+    "kappa_a": 0.45,
+    "kappa_mu": 0.85,
+    "V_mem_proximal_mV": -62.0,
+    "V_mem_distal_mV": -22.0,
+    "t_max_days": 28.0,
+    "dt_days": 0.05,
+    "seed": 2015
+  },
+  "experimental_regimes": [
+    {
+      "id": "proximal_limb_amputation_shoulder",
+      "description": "Proximal salamander forelimb amputation through the stylopod/humerus (L_0 = 0.20 L^*): large initial sensory prediction error triggers high initial blastema growth velocity that decelerates exponentially and stops strictly at L(T) = L^* = 1.00 (stylopod + zeugopod + autopod restored, F -> 0)",
+      "L_0": 0.20,
+      "mu_target": 1.00,
+      "Pi_s": 2.0,
+      "Pi_p": 4.0,
+      "expected_final_length": 1.00,
+      "expected_organ_identity": 1.00,
+      "expected_free_energy": 0.0
+    },
+    {
+      "id": "distal_limb_amputation_wrist",
+      "description": "Distal salamander forelimb amputation through the wrist/autopod (L_0 = 0.70 L^*): smaller initial prediction error drives slower blastema outgrowth that converges to the exact same target length L(T) = L^* = 1.00 (level-invariant anatomical equifinality, |L_prox(T) - L_dist(T)| < 1e-4)",
+      "L_0": 0.70,
+      "mu_target": 1.00,
+      "Pi_s": 2.0,
+      "Pi_p": 4.0,
+      "expected_final_length": 1.00,
+      "expected_organ_identity": 1.00,
+      "expected_free_energy": 0.0
+    },
+    {
+      "id": "tail_to_limb_translocation_remodeling",
+      "description": "Farinella-Ferruzza (1956) / Pezzulo & Levin (2015) ectopic tail-blastema graft onto the flank/shoulder limb field (initial organ identity psi_0 = -1.0 tail, L_0 = 0.35): global body-plan bioelectric prior mu_target = (L^*=1.0, psi^*=+1.0) remodels the grafted tail tissue into a normal limb (psi -> +1.0, L -> 1.00)",
+      "L_0": 0.35,
+      "psi_0": -1.00,
+      "mu_target": 1.00,
+      "psi_target": 1.00,
+      "Pi_s": 2.0,
+      "Pi_p": 4.0,
+      "expected_final_length": 1.00,
+      "expected_organ_identity": 1.00,
+      "expected_free_energy": 0.0
+    },
+    {
+      "id": "rewritten_bioelectric_setpoint_memory",
+      "description": "Rewritten bioelectric target morphology memory (Pezzulo & Levin 2015 Fig. 4; Durant et al. 2017): transient bioelectric circuit editing shifts the stored target setpoint from mu_target = 1.00 to mu_target' = 1.45 (or 2-headed / ectopic hyper-elongated morph), so post-amputation regeneration converges to L^*' = 1.45 without genomic change",
+      "L_0": 0.20,
+      "mu_target": 1.45,
+      "Pi_s": 2.0,
+      "Pi_p": 4.0,
+      "expected_final_length": 1.45,
+      "expected_organ_identity": 1.45,
+      "expected_free_energy": 0.0
+    },
+    {
+      "id": "denervated_sensory_precision_zero_arrest",
+      "description": "Singer (1952) / Pezzulo & Levin (2015) denervation / sensory-precision blockade negative control (Pi_s = 0): abolishing bioelectric sensory precision eliminates active morphogenetic error-correction (dx/dt = -kappa_a * Pi_s * (x - mu) = 0), arresting the limb stump at L(t) = L_0 = 0.20",
+      "L_0": 0.20,
+      "mu_target": 1.00,
+      "Pi_s": 0.0,
+      "Pi_p": 4.0,
+      "expected_final_length": 0.20,
+      "expected_organ_identity": 0.20,
+      "expected_free_energy": 0.0
+    }
+  ],
+  "specimen_provenance": {
+    "file": "datasets/bioelectric_target_morphology_memory/salamander_limb_regeneration_specimen.jpg",
+    "species": "Ambystoma mexicanum",
+    "source": "Wikimedia Commons File:Ambystoma mexicanum 1.jpg",
+    "license": "CC BY-SA 3.0",
+    "dimensions_px": [1200, 1079],
+    "sha256": "fe57ed2c5909e7af46ae0f3d35fb7e2eac68ab1d07e1351c4cd6966bebb6500f"
+  },
+  "sha256_digests": {
+    "datasets/bioelectric_target_morphology_memory/scout_manifest.json": "7d75a04159b0641d96cf0abb85cc5b14e30221edf1f4477204d399b65e53d7e0",
+    "datasets/bioelectric_target_morphology_memory/paper_citations.bib": "4235fafcb607658185b08942ac4388f24d20972023fa1f3506e22fd9640d34d7",
+    "datasets/bioelectric_target_morphology_memory/salamander_limb_regeneration_specimen.jpg": "fe57ed2c5909e7af46ae0f3d35fb7e2eac68ab1d07e1351c4cd6966bebb6500f"
+  }
+}

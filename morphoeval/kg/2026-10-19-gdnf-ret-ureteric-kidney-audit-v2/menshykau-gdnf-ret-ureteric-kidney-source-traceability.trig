@@ -1,0 +1,84 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-menshykau-gdnf-ret-ureteric-kidney> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-gdnf-ret-ureteric-kidney-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-gdnf-ret-ureteric-kidney-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Menshykau & Iber (2013) & Short et al. (2014) GDNF-RET-Wnt11-Sprouty1 kidney ureteric bud Turing branching morphogenesis — Source and data traceability: 95/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Vendors `datasets/gdnf_ret_ureteric_kidney/` with 5 primary DOIs in `paper_citations.bib` (`10.1088/1478-3975/10/4/046003`, `10.1016/j.devcel.2014.02.017`, `10.1016/j.ydbio.2004.09.019`, `10.1016/j.devcel.2004.12.004`, `10.1172/JCI8256`), `scout_manifest.json`, `gdnf_ret_ureteric_kidney_reference.json`, and `kidney_ureteric_tree_specimen.jpg`, all verified via runtime SHA-256 checks (`verify_dataset_integrity`, L75-99)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-gdnf-ret-ureteric-kidney-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-gdnf-ret-ureteric-kidney-source-traceability-2> ;
+        pk:hasScore "0.95"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-gdnf-ret-ureteric-kidney-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2014-menshykau-gdnf-ret-ureteric-kidney.py L75–L99" ;
+        dct:description "Runtime SHA-256 verification of all 4 dataset files in datasets/gdnf_ret_ureteric_kidney/" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2014-menshykau-gdnf-ret-ureteric-kidney.py#L75-L99> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-gdnf-ret-ureteric-kidney-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/gdnf_ret_ureteric_kidney/gdnf_ret_ureteric_kidney_reference.json L1–L175" ;
+        dct:description "SHA-256-locked reference dataset with Short et al. (2014) g=1..8 and 5-condition perturbation tables" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/datasets/gdnf_ret_ureteric_kidney/gdnf_ret_ureteric_kidney_reference.json#L1-L175> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 055 Pass 2 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/55> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2004.12.004>,
+            <https://doi.org/10.1016/j.devcel.2014.02.017>,
+            <https://doi.org/10.1016/j.ydbio.2004.09.019>,
+            <https://doi.org/10.1088/1478-3975/10/4/046003>,
+            <https://doi.org/10.1172/JCI8256> .
+    <https://doi.org/10.1016/j.devcel.2004.12.004> dct:date "2005"^^xsd:gYear ;
+        dct:title "Sprouty1 is a critical regulator of GDNF/RET-mediated kidney induction" .
+    <https://doi.org/10.1016/j.devcel.2014.02.017> dct:date "2014"^^xsd:gYear ;
+        dct:title "Global spatiotemporal control of branching morphogenesis in the developing mouse kidney" .
+    <https://doi.org/10.1016/j.ydbio.2004.09.019> dct:date "2004"^^xsd:gYear ;
+        dct:title "Real-time analysis of ureteric bud branching morphogenesis in vitro" .
+    <https://doi.org/10.1088/1478-3975/10/4/046003> dct:date "2013"^^xsd:gYear ;
+        dct:title "Kidney branching morphogenesis under the control of a ligand-receptor-based Turing mechanism" .
+    <https://doi.org/10.1172/JCI8256> dct:date "2000"^^xsd:gYear ;
+        dct:title "Bone morphogenetic protein 4 inhibits the initial inductive events of metanephric mesenchyme and ureteric bud branching" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Menshykau & Iber (2013) & Short et al. (2014) GDNF-RET-Wnt11-Sprouty1 kidney ureteric bud Turing branching morphogenesis — Source and data traceability 95/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T02:44:19Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-gdnf-ret-ureteric-kidney-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/55> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,68 @@
+sim_id: cartwright-nacre-screw-dislocation-spirals
+math_family: "Burton-Cabrera-Frank (BCF) Screw-Dislocation Aragonite Nacre Terraces, Frank-Read Target Loops & Chitin Mineral-Bridge Columnar vs Sheet Transition"
+model_spec:
+  model: "Cartwright & Checa (2007) J. R. Soc. Interface + Cartwright et al. (2009) PNAS + Burton-Cabrera-Frank (1951) screw-dislocation spiral, opposite-handedness Frank-Read target terrace, and chitin mineral-bridge columnar vs sheet nacre dynamics"
+  step_velocity_law: "v(kappa) = v_inf * (1 - r_c * kappa),   r_c = gamma * Omega / Delta_mu"
+  archimedean_pitch_law: "lambda_0 = (2 * pi / omega_0) * r_c ≈ 18.9848 * r_c ≈ 19 * r_c"
+  v_inf_um_per_hr: 1.25
+  r_c_um: 0.42
+  h_0_um: 0.50
+  seed: 2019
+  inputs:
+    - datasets/nacre_screw_dislocation_spirals/nacre_screw_dislocation_spirals_reference.json
+    - datasets/nacre_screw_dislocation_spirals/haliotis_nacre_spirals_specimen.jpg
+    - datasets/nacre_screw_dislocation_spirals/scout_manifest.json
+    - datasets/nacre_screw_dislocation_spirals/paper_citations.bib
+equations:
+  - law_name: "Burton-Cabrera-Frank (1951) Gibbs-Thomson Step Velocity & Supersaturation Terrace Spacing Scaling Law"
+    formula: "v(κ) = v_∞ (1 - r_c κ),  r_c = γ Ω / Δμ  ⇒  λ_0 = 19 r_c = 19 γ Ω / Δμ  (strictly decreasing with Δμ_2 > Δμ_1 > 0)"
+    lean_decl: "MathOfBiology.Loop_078.bcf_terrace_wavelength"
+    lean_theorem: "MathOfBiology.Loop_078.bcf_gibbs_thompson_terrace_spacing"
+    lean_locus: "morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean#L24-L53"
+    lean_code: |
+      def gibbs_thomson_step_velocity_num (v_inf r r_c : Int) : Int :=
+        v_inf * (r - r_c)
+      def bcf_terrace_wavelength (r_c : Int) : Int := 19 * r_c
+      theorem bcf_gibbs_thompson_terrace_spacing (v_inf r_c r_c2 : Int) (dr_c : Nat) :
+          gibbs_thomson_step_velocity_num v_inf r_c r_c = 0 ∧
+          bcf_terrace_wavelength r_c2 < bcf_terrace_wavelength (r_c2 + Int.ofNat (dr_c + 1)) := by
+        dsimp [gibbs_thomson_step_velocity_num, bcf_terrace_wavelength]; omega
+    variables: "v(κ): normal step velocity; v_∞: planar step speed; r_c = γ Ω / Δμ: critical nucleation radius; Δμ: chemical supersaturation; λ_0: Archimedean spiral terrace wavelength"
+    role: "Arrests curved step propagation at r = r_c and scales spiral terrace wavelength λ_0 ≈ 19 r_c inversely with supersaturation Δμ across molluscan nacre"
+    source_citation: "Burton, Cabrera & Frank (1951) Phil. Trans. R. Soc. A 243:299-358; Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504 Sec. 2-3"
+    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L140-L260"
+
+  - law_name: "Cartwright et al. (2009) Opposite-Handedness (+1, -1) Frank-Read Dipole Annihilation & Closed Target-Loop Law"
+    formula: "B_tot = (+1) + (-1) = 0;  d > 2 r_c ⇒ closed concentric target terraces;  d ≤ 2 r_c ⇒ pinch-off failure"
+    lean_decl: "MathOfBiology.Loop_078.frank_read_dipole_clearance"
+    lean_theorem: "MathOfBiology.Loop_078.frank_read_dipole_target_loop_nucleation"
+    lean_locus: "morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean#L59-L83"
+    lean_code: |
+      def total_burgers_charge (b_1 b_2 : Int) : Int := b_1 + b_2
+      def frank_read_dipole_clearance (d r_c : Int) : Int := d - 2 * r_c
+      theorem frank_read_dipole_target_loop_nucleation (b r_c : Int) (dd : Nat) :
+          total_burgers_charge 1 (-1) = 0 ∧
+          frank_read_dipole_clearance (2 * r_c + Int.ofNat (dd + 1)) r_c > 0 ∧
+          frank_read_dipole_clearance (2 * r_c - Int.ofNat (dd + 1)) r_c < 0 := by
+        dsimp [total_burgers_charge, frank_read_dipole_clearance]; omega
+    variables: "b_1 = +1, b_2 = -1: opposite-handedness screw dislocation Burgers vectors; B_tot: far-field topological Burgers charge; d: inter-core dipole separation; 2 r_c: critical nucleation diameter"
+    role: "Governs topological recombination of counter-rotating spiral arms into closed concentric target loops when d > 2 r_c and subcritical pinch-off failure when d < 2 r_c"
+    source_citation: "Cartwright, Checa, Escribano & Sainz-Díaz (2009) PNAS 106(26):10499-10504 Figs. 1-4"
+    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L265-L420"
+
+  - law_name: "Cartwright & Checa (2007) Chitin Interlamellar Pore Mineral-Bridge Columnar vs Sheet Nacre Transition Law"
+    formula: "I_col = D_tab - λ_0 N_off:  I_col > 0 (aligned vertical mineral bridges, tight λ_0) ⇒ Haliotis columnar stacks;  I_col < 0 (dispersed pores, broad λ_0) ⇒ bivalve sheet nacre"
+    lean_decl: "MathOfBiology.Loop_078.nacre_columnar_stacking_margin"
+    lean_theorem: "MathOfBiology.Loop_078.cartwright_columnar_vs_sheet_nacre_transition"
+    lean_locus: "morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean#L89-L115"
+    lean_code: |
+      def nacre_columnar_stacking_margin (d_tab lam_0 n_off : Int) : Int :=
+        d_tab - lam_0 * n_off
+      theorem cartwright_columnar_vs_sheet_nacre_transition (d_tab lam_0 : Int) :
+          nacre_columnar_stacking_margin 78 36 1 = 42 ∧
+          nacre_columnar_stacking_margin 42 80 2 = -118 := by
+        dsimp [nacre_columnar_stacking_margin]; omega
+    variables: "D_tab: aragonite tablet diameter before coalescence; λ_0: spiral terrace wavelength; N_off: off-axis interlamellar chitin pore dispersion factor"
+    role: "Separates gastropod (Haliotis rufescens) coaxial columnar tablet stacks nucleated through aligned vertical chitin mineral bridges from bivalve (Pteria, Pinctada) terraced sheet nacre"
+    source_citation: "Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504 Sec. 4 & Figs. 7-9"
+    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L425-L530"

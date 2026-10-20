@@ -1,0 +1,202 @@
+# MorphoEval audit — Schnakenberg (1979) Tri-Molecular Limit-Cycle & Turing Reaction-Diffusion, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `1979-schnakenberg-limit-cycle-turing.py` (v2, 344 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-limit-cycle-turing-loop`):
+#   - Primary assessor: Gemini 4 Argon (Cursor agent) — 92.6 / 100
+#   - Independent second assessor: Claude Sonnet 5.5 High (consensus rubric verification) — 87.8 / 100
+#   - Pass 2 consensus score: 90.2 / 100 (up from 44.5 / 100 in v1; +45.7 overall)
+#
+# Key remediation improvements verified in Pass 2:
+#   1. Exact Schnakenberg (1979) Eqs. (15)-(24) homogeneous equilibrium (u_*, v_*) = (a+b, b/(a+b)^2),
+#      Hopf bifurcation curve b - a = (a+b)^3 (max |tr(J_0)| = 0.0 to IEEE-754 precision),
+#      Turing instability threshold d_c(a,b) = 8.567627 at (0.10, 0.90), and spatial dispersion
+#      relation sigma(k^2) implemented and backed by 3 machine-checked Lean 4 theorems in
+#      `morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean` (0 sorrys).
+#   2. Autonomous Poincare-Bendixson limit-cycle ODE integration via RK4 at (a=0.05, b=0.50)
+#      reproducing relaxation pulses with dimensionless period T_LC = 19.625 and amplitude
+#      Delta_u = 6.825 vs spiral convergence below the Hopf locus.
+#   3. 2D pseudo-spectral/RK2 reaction-diffusion solver across all 5 canonical regimes
+#      (Turing spots, high-d labyrinth/spots, Turing-Hopf codimension-2, Hopf limit cycle,
+#      and equal-diffusion negative control d=1 with contrast ratio >10,000x), plus a
+#      7-point diffusivity-ratio sweep across d in {1, 4, 7, d_c, 12, 18, 25}.
+#   4. Runtime SHA-256 verification and computer-vision segmentation of the Public Domain
+#      `Dictyostelium discoideum` fruiting body specimen (`dictyostelium_specimen.jpg`,
+#      n=2 mature sori, mean diameter 32.95 px, inter-sorus spacing 465.42 px, ratio 14.13,
+#      n=5 DoG interior aggregation mounds, and 73.14 px agar FFT wavelength).
+
+audit:
+  id: 2026-10-19-limit-cycle-turing-audit-v2
+  supersedes_audit_id: 2026-10-19-limit-cycle-turing-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric assessment)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `1979-schnakenberg-limit-cycle-turing.py` after
+      completing the 12-step closed remediation loop (`2026-10-19-limit-cycle-turing-loop`).
+
+references:
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81(3):389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  goldbeter1975:
+    title: "Mechanism for oscillatory synthesis of cyclic AMP in Dictyostelium discoideum"
+    authors: "Goldbeter A"
+    venue: "Nature 253(5492):540-542 (1975)"
+    doi: 10.1038/253540a0
+  grace2015:
+    title: "Regulation of spatiotemporal patterns by biological variability: general principles and applications to Dictyostelium discoideum"
+    authors: "Grace M, Hütt MT"
+    venue: "PLoS Computational Biology 11(11):e1004367 (2015)"
+    doi: 10.1371/journal.pcbi.1004367
+
+simulations:
+  - id: schnakenberg-limit-cycle-turing
+    name: "Schnakenberg (1979) tri-molecular limit-cycle & Turing reaction-diffusion morphogenesis"
+    organism: "Dictyostelium discoideum (cellular slime mold cAMP oscillations & fruiting body aggregation)"
+    script: 1979-schnakenberg-limit-cycle-turing.py
+    output: docs/media/limit_cycle_turing_comparison.png
+    extra_outputs:
+      - docs/media/limit_cycle_turing_growth.gif
+    status: evaluated
+    source_refs:
+      - schnakenberg1979
+      - turing1952
+      - goldbeter1975
+      - grace2015
+    summary: >-
+      Pass 2 (v2) evaluation of `1979-schnakenberg-limit-cycle-turing.py` (overall
+      score 90.2/100, up from 44.5/100 in Pass 1). The remediated script implements
+      Schnakenberg's (1979) exact equilibrium (u_*, v_*) = (a+b, b/(a+b)^2), Hopf
+      bifurcation curve b - a = (a+b)^3 (max |tr(J_0)| = 0.0), critical Turing
+      diffusivity ratio d_c(a,b) = 8.567627, and spatial dispersion relation sigma(k^2)
+      (k_c = 6.6750 rad/unit, lambda_c = 0.9413 units); integrates the autonomous
+      Poincare-Bendixson relaxation limit cycle (period T_LC = 19.625, amplitude 6.825);
+      simulates 5 canonical regimes plus a 7-point diffusivity-ratio sweep across d_c
+      (matching analytical lambda_c within 0.42%, k* = 6.7031 vs k_c = 6.6750); and
+      segments the SHA-256-locked Dictyostelium discoideum sorocarp specimen
+      (d_sorus = 32.95 px, inter-sorus spacing 465.42 px, ratio 14.13, 5 DoG mounds,
+      and 73.14 px agar FFT wavelength), backed by 3 machine-checked Lean 4 theorems.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Faithfully implements Schnakenberg's (1979) Eqs. (15)-(24) cubic autocatalytic
+          reaction-diffusion PDE, equilibrium (u_*, v_*) = (a+b, b/(a+b)^2), exact Hopf
+          bifurcation curve b - a = (a+b)^3 (max |tr(J_0)| < 1e-15), Turing critical
+          diffusivity ratio d_c(a,b), and spatial dispersion relation sigma(k^2)
+          (L139-276), alongside RK4 integration of the Poincare-Bendixson limit-cycle
+          oscillator (L283-346) and isotropic 2D Fourier-RK2 PDE integration (L353-392).
+          Formalized by 3 kernel-verified Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean`.
+        evidence:
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [139, 276], note: "Schnakenberg equilibrium, Jacobian, Hopf curve, critical diffusivity ratio d_c, and spatial dispersion sigma(k^2)", supports: true}
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [283, 392], note: "RK4 autonomous limit-cycle ODE solver and 2D pseudo-spectral/RK2 reaction-diffusion PDE solver", supports: true}
+          - {file: morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean, lines: [24, 81], note: "3 machine-checked Lean 4 theorems for Schnakenberg equilibrium, Hopf trace, and Turing instability (0 sorrys)", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          Vendors, SHA-256-locks, and segments the Public Domain macro photograph of
+          `Dictyostelium discoideum` fruiting body sorocarps (`dictyostelium_specimen.jpg`,
+          L476-561), extracting the two mature spore heads (areas 881 px and 824 px,
+          mean diameter 32.95 px, CV=3.34%, inter-sorus distance 465.42 px, spacing
+          ratio 14.13), 5 interior Difference-of-Gaussians aggregation mounds (NND
+          207.15 +- 133.99 px), and the 73.14 px agar substrate FFT wavelength, rendered
+          in Panel C4 of the 15-panel synthesis figure.
+        evidence:
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [476, 561], note: "Luminance sorus segmentation, interior DoG aggregate detection, and 512x512 agar 2D FFT wavelength analysis", supports: true}
+          - {file: docs/media/limit_cycle_turing_comparison.png, lines: [0, 0], note: "15-panel dark-mode synthesis figure comparing 5 PDE regimes, 5 radial spectra, phase diagram, limit cycle, d-sweep, and Dictyostelium segmentation", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Simulates all 5 canonical regimes (`CANONICAL_REGIMES`, L58-113: standard
+          Turing spots, high-d labyrinth/spots, Turing-Hopf codimension-2 coexistence,
+          Hopf limit-cycle wave regime, and equal-diffusion negative control d=1), maps
+          the exact Hopf and Turing curves on the (a, b) phase diagram, executes a
+          7-point diffusivity-ratio sweep across d in {1, 4, 7, d_c, 12, 18, 25}
+          (`run_diffusivity_ratio_sweep`, L439-469), and wires `--a`, `--b`, `--gamma`,
+          `--d`, `--N`, `--steps`, `--dt`, and `--seed` CLI overrides (L986-1015).
+        evidence:
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [439, 469], note: "7-point diffusivity-ratio sweep spanning subcritical (d < d_c) and supercritical (d > d_c) Turing regimes", supports: true}
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [986, 1015], note: "Full CLI parameter overrides wired into render_outputs()", supports: true}
+      morphometric-validation:
+        value: 89
+        rationale: >-
+          `measure_morphoeval()` (L568-681) returns 9 reference-anchored quantitative
+          morphometrics: critical diffusivity ratio d_c = 8.567627 (0% error), 2D
+          Turing wavelength lambda* = 0.9374 vs analytical lambda_c = 0.9413 (0.42%
+          error, k* = 6.7031 vs k_c = 6.6750), autonomous limit-cycle oscillation period
+          T_LC = 19.625 (std = 0.0, amplitude = 6.825), differential vs equal-diffusion
+          contrast ratio (>10,000x), Hopf trace residual (0.0), and 3 Dictyostelium
+          specimen segmentation metrics.
+        evidence:
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [395, 436], note: "Sub-bin radial 2D FFT spectral centroid wavenumber k* and wavelength lambda* estimation", supports: true}
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [568, 681], note: "9 reference-validated morphometrics in measure_morphoeval()", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/limit_cycle_turing/` with `scout_manifest.json`,
+          `limit_cycle_turing_reference.json`, `dictyostelium_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.1016/0022-5193(79)90042-0`,
+          `10.1098/rstb.1952.0012`, `10.1038/253540a0`, `10.1371/journal.pcbi.1004367`),
+          and `README.md`, with runtime SHA-256 verification (`verify_dataset_integrity`,
+          L120-132) and reference parity assertions in `self_test()`.
+        evidence:
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [120, 132], note: "Runtime SHA-256 verification of scout_manifest.json and dictyostelium_specimen.jpg", supports: true}
+          - {file: datasets/limit_cycle_turing/limit_cycle_turing_reference.json, lines: [1, 175], note: "Vendored Schnakenberg (1979) equations, 5 canonical regimes, d-sweep, and Dictyostelium reference metrics", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Every computational section and function docstring explicitly links to
+          Schnakenberg (1979) Eqs. (15)-(24), Turing (1952) dispersion equations,
+          Goldbeter (1975) / Grace & Hütt (2015) Dictyostelium oscillations, and the
+          3 Lean 4 theorems in `morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean`.
+        evidence:
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [1, 30], note: "Module header mapping primary DOIs and Lean 4 theorem names", supports: true}
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [139, 276], note: "Function docstrings citing Schnakenberg (1979) Eqs. (15)-(24) and Lean 4 declarations", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic RNG (`seed=1979`), headless `Agg` backend, CLI flags (`--self-test`,
+          `--skip-gif`, `--no-show`, parameter overrides), and an 8-point `self_test()`
+          suite (L930-983) verifying SHA-256 dataset hashes, equilibrium/flux identities,
+          Hopf trace vanishing, dispersion parity, limit-cycle period, <2% 2D Turing
+          wavelength error, equal-diffusion control decay, two-run bitwise determinism,
+          and specimen segmentation parity.
+        evidence:
+          - {file: 1979-schnakenberg-limit-cycle-turing.py, lines: [930, 983], note: "8-check self_test() suite including bitwise determinism and <2% wavelength error gate", supports: true}
+    remediation:
+      - "Extend the 2D Schnakenberg solver to curved hemispherical mound geometries to model 3D Dictyostelium culmination stalk elongation."
+      - "Incorporate explicit extracellular phosphodiesterase degradation kinetics to compare minimal 2-species Schnakenberg limit cycles against the 3-variable Martiel-Goldbeter cAMP relay model."

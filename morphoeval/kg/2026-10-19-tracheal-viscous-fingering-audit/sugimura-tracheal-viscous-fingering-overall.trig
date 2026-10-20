@@ -1,0 +1,78 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sugimura-tracheal-viscous-fingering> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sugimura-tracheal-viscous-fingering-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sugimura-tracheal-viscous-fingering-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Nelson et al. (2017) Development & Kim et al. (2015) Dev. Cell microfluidic transmural pressure, Laplace epithelial wall stress, and ASM peristalsis driving embryonic lung branching — MorphoEval overall 52.6/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 (v1) baseline evaluation of `2015-sugimura-tracheal-viscous-fingering.py` (weighted score: 54.0/100). The Pass 1 baseline evaluates only a 2-point scalar Hill formula at Delta P = 50 Pa and 200 Pa without a 2D spatial branching airway tree or moving-boundary phase-field solver, omits the common-mode gauge invariance verification across independent (P_lumen, P_pleura) pairs in the microfluidic chest cavity, omits Laplace circumferential wall stress sigma_theta = Delta P * R / h and synchronized Airway Smooth Muscle (ASM) Ca2+ peristaltic wave frequency f_ASM(Delta P), omits nifedipine Ca2+ channel blockade and tracheal drainage (Delta P = 0 Pa) negative controls, and does not load or segment the vendored mouse embryonic lung branching specimen (`embryonic_lung_branching_specimen.jpg`). Overall 52.6/100 (faithfulness 49.7, reproducibility 59.2); rubric morphoeval 0.1.0; checkpoint commit 8871db0; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 55, Morphological realism / specimen match 44, Parameter expressivity 50, Morphometric validation 52, Source and data traceability 68, Code-to-model traceability 56, Reproducibility package 54. Output judged: docs/media/tracheal_viscous_fingering_comparison.png: rendered output of 2015-sugimura-tracheal-viscous-fingering.py at 8871db0, image/png, 20665 B, 720×480 px, artifact_sha256 c3caf793f5996b270d1667111ff0738b35c3df7b5e149eae303592fc699a996f (sha256 c3caf793f5996b270d1667111ff0738b35c3df7b5e149eae303592fc699a996f), spec_fingerprint 3ff5590a2e90cba39f3787578e96d03eba17c0eb535c7b4f860a74e9898f90de. Dual provenance: spec_fingerprint: 3ff5590a2e90cba39f3787578e96d03eba17c0eb535c7b4f860a74e9898f90de; artifact_sha256: c3caf793f5996b270d1667111ff0738b35c3df7b5e149eae303592fc699a996f; input_dataset_sha256: {datasets/tracheal_viscous_fingering/embryonic_lung_branching_specimen.jpg=8086ebb8b44cbdff..., datasets/tracheal_viscous_fingering/paper_citations.bib=147c24db66fc3582..., datasets/tracheal_viscous_fingering/scout_manifest.json=5ca9d0b7e3b9f2d2..., datasets/tracheal_viscous_fingering/tracheal_viscous_fingering_reference.json=da4d1143ccb80d60...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Implement a coupled 2D spatial branching airway tree & luminal pressure / Laplace epithelial hoop stress solver across Delta P in [0, 400] Pa, coupling sigma_theta = Delta P * R / h, synchronized ASM Ca2+ peristaltic wave frequency f_ASM(Delta P), and FGF10/ERK1/2/Etv4 tip bifurcation.",
+            "remediation needed: Segment the vendored Mus musculus pseudoglandular embryonic lung branching specimen (`embryonic_lung_branching_specimen.jpg`) to extract distal-to-total area fraction, terminal bud tip count (17 tips), effective bifurcation generations (4.09), and mean distal tip radius (3.85 px), backed by runtime SHA-256 verification and an 8-suite `--self-test`.",
+            "remediation needed: Verify exact common-mode gauge invariance across independent microfluidic chest pressure pairs (P_lumen, P_pleura) = (200, 0), (0, -200), (500, 300), and (200, 200) Pa, alongside nifedipine L-type Ca2+ channel ASM blockade and tracheal drainage (Delta P = 0 Pa) negative controls." ;
+        pk:hasScore "0.526"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 059 Pass 1 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/59> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2009.12.010>,
+            <https://doi.org/10.1016/j.devcel.2015.08.012>,
+            <https://doi.org/10.1016/j.mod.2007.11.007>,
+            <https://doi.org/10.1242/dev.154823>,
+            <https://doi.org/10.1242/dev.167395> .
+    <https://doi.org/10.1016/j.devcel.2009.12.010> dct:date "2010"^^xsd:gYear ;
+        dct:title "Preparing for the first breath: genetic and cellular mechanisms in lung development" .
+    <https://doi.org/10.1016/j.devcel.2015.08.012> dct:date "2015"^^xsd:gYear ;
+        dct:title "Localized smooth muscle differentiation is essential for epithelial bifurcation during branching morphogenesis of the mammalian lung" .
+    <https://doi.org/10.1016/j.mod.2007.11.007> dct:date "2008"^^xsd:gYear ;
+        dct:title "Tracheal occlusion increases the rate of epithelial branching of embryonic mouse lung via the FGF10-FGFR2b-Sprouty2 pathway" .
+    <https://doi.org/10.1242/dev.154823> dct:date "2017"^^xsd:gYear ;
+        dct:title "Microfluidic chest cavities reveal that transmural pressure controls the rate of lung development" .
+    <https://doi.org/10.1242/dev.167395> dct:date "2018"^^xsd:gYear ;
+        dct:title "Smooth muscle: a stiff sculptor of epithelial shapes" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Nelson et al. (2017) Development & Kim et al. (2015) Dev. Cell microfluidic transmural pressure, Laplace epithelial wall stress, and ASM peristalsis driving embryonic lung branching — MorphoEval overall 52.6/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T02:24:41Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sugimura-tracheal-viscous-fingering-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/59>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-sugimura-tracheal-viscous-fingering> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

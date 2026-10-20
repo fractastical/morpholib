@@ -1,0 +1,78 @@
+sim_id: badin-hydractinia-stolon-vascular-net
+slot: 100
+slot_id: slot-100-hydractinia-stolon-vascular-net
+math_family: "Pulsatile Peristaltic Kirchhoff Gastrovascular Flow Coupled to Shear-Stress-Gated Stolon Tip Outgrowth, Anastomosis Loop Closure, and Regression Across the Runner-to-Sheet Colony Morphospace"
+model_spec:
+  model: "Buss, Anderson & Perry (2015) Biol. Bull. 228:146-158, Dudgeon et al. (1999) Am. Nat. 153:292-309 & Blackstone (1999) Syst. Biol. 48:75-85 Colonial Hydroid Gastrovascular Stolon Network"
+  lumen_viscosity_mu_mPas: 1.2
+  nominal_lumen_radius_r0_um: 18.0
+  polyp_oscillation_freq_hz: 0.045
+  shear_regression_threshold_tau_reg_pa: 0.14
+  flow_branching_threshold_q_branch_nl_s: 0.42
+  seed: 2020
+  inputs:
+    - datasets/hydractinia_stolon_vascular_net/hydractinia_stolon_vascular_net_reference.json
+    - datasets/hydractinia_stolon_vascular_net/hydractinia_symbiolongicarpus_specimen.jpg
+    - datasets/hydractinia_stolon_vascular_net/scout_manifest.json
+    - datasets/hydractinia_stolon_vascular_net/paper_citations.bib
+equations:
+  - id: badin-hydractinia-stolon-vascular-net-1
+    law_name: "Buss, Anderson & Perry (2015) & Dudgeon et al. (1999) Hagen-Poiseuille Quartic Hydraulic Conductance vs Wall Shear Stress Scaling & Kirchhoff Law"
+    formula: "Q_ij(t) = (π r_ij^4 / (8 μ L_ij)) (p_i(t) - p_j(t)),  τ_w = 4 μ |Q_ij| / (π r_ij^3) = r_ij |p_i - p_j| / (2 L_ij),  Σ_j Q_ij(t) = -dV_p/dt"
+    lean_decl: "MathOfBiology.Loop_100.stolon_poiseuille_flux"
+    lean_theorem: "MathOfBiology.Loop_100.buss_dudgeon_poiseuille_quartic_conductance_and_shear_identity"
+    lean_locus: "morphoeval/lean/loops/Loop_100_hydractinia_stolon_vascular_net.lean#L48-L88"
+    lean_code: |
+      def hagen_poiseuille_r4 (r : Int) : Int := r * r * r * r
+      def lumen_radius_r3 (r : Int) : Int := r * r * r
+      def stolon_poiseuille_flux (r pi pj : Int) : Int := hagen_poiseuille_r4 r * (pi - pj)
+      def stolon_wall_shear_num (r pi pj : Int) : Int := r * (pi - pj)
+      def kirchhoff_stolon_residual (q_in q_out1 q_out2 : Int) : Int := q_in - q_out1 - q_out2
+      theorem buss_dudgeon_poiseuille_quartic_conductance_and_shear_identity (r pi pj q1 q2 : Int) :
+          stolon_poiseuille_flux r pi pj = lumen_radius_r3 r * stolon_wall_shear_num r pi pj ∧
+          hagen_poiseuille_r4 2 = 16 * hagen_poiseuille_r4 1 ∧
+          stolon_poiseuille_flux r pi pj + stolon_poiseuille_flux r pj pi = 0 ∧
+          kirchhoff_stolon_residual (q1 + q2) q1 q2 = 0
+    variables: "r_ij: stolon lumen radius; L_ij: stolon segment length; μ: gastrovascular fluid viscosity; p_i, p_j: nodal lumen hydrostatic pressures; Q_ij: volumetric lumen flow; τ_w: endodermal wall shear stress"
+    role: "Proves the exact quartic-conductance vs cubic-radius wall shear stress identity Q_ij = r^3 τ_w_num, 16-fold conductance amplification upon radius doubling, edge flux antisymmetry, and Kirchhoff nodal volume conservation"
+    source_citation: "Buss, Anderson & Perry (2015) Biol. Bull. 228(2):146-158; Dudgeon, Wagner, Vaisnys & Buss (1999) Am. Nat. 153(3):292-309 Eqs. (1)-(6)"
+    code_locus: "2020-badin-hydractinia-stolon-vascular-net.py#L120-L245"
+
+  - id: badin-hydractinia-stolon-vascular-net-2
+    law_name: "Blackstone (1999) & Buss (2001) Planar Stolon Graph Euler Cyclomatic Loop Number & Runner-to-Sheet Anastomosis Increment Law"
+    formula: "b_1 = E - V + 1,  b_1(V, V - 1) = 0 (runner tree),  b_1(V, V - 1 + k) = k > 0 (anastomosed sheet),  α = (E - V + 1) / (2V - 5)"
+    lean_decl: "MathOfBiology.Loop_100.stolon_cyclomatic_loops"
+    lean_theorem: "MathOfBiology.Loop_100.blackstone_buss_runner_to_sheet_anastomosis_loop_law"
+    lean_locus: "morphoeval/lean/loops/Loop_100_hydractinia_stolon_vascular_net.lean#L95-L127"
+    lean_code: |
+      def stolon_cyclomatic_loops (V E : Int) : Int := E - V + 1
+      def runner_to_sheet_loop_gain (V k_runner k_sheet : Int) : Int :=
+        stolon_cyclomatic_loops V (V - 1 + k_sheet) - stolon_cyclomatic_loops V (V - 1 + k_runner)
+      theorem blackstone_buss_runner_to_sheet_anastomosis_loop_law (V k k_runner k_sheet : Int)
+          (h_anast : k_runner < k_sheet) :
+          stolon_cyclomatic_loops V (V - 1) = 0 ∧
+          stolon_cyclomatic_loops V (V - 1 + k) = k ∧
+          0 < runner_to_sheet_loop_gain V k_runner k_sheet
+    variables: "V: number of stolon vertices/polyp junctions; E: number of stolon edges; k: number of tip-to-stolon anastomosis fusion events; b_1: Euler cyclomatic loop count; α: planar meshedness"
+    role: "Proves that un-anastomosed Podocoryna runner trees have b_1 = 0 closed loops while each tip-to-stolon anastomosis event increments b_1 by +1, driving the heterochronic transition to Hydractinia stolonal sheets"
+    source_citation: "Blackstone (1999) Syst. Biol. 48(1):75-85; Buss (2001) Evol. Dev. 3(5):311-322; Buss, Anderson & Perry (2015) Biol. Bull. 228(2):146-158"
+    code_locus: "2020-badin-hydractinia-stolon-vascular-net.py#L250-L390"
+
+  - id: badin-hydractinia-stolon-vascular-net-3
+    law_name: "Buss, Anderson & Perry (2015) Polyp Contraction Arrest / Excision Shear-Starvation Stolon Regression Law"
+    formula: "ΔV_p = 0  =>  p_i = p_j  =>  Q_ij = 0  =>  τ_w = 0 < τ_reg  =>  dr_ij/dt = -k_d r_ij < 0"
+    lean_decl: "MathOfBiology.Loop_100.stolon_lumen_radius_rate"
+    lean_theorem: "MathOfBiology.Loop_100.buss_polyp_arrest_shear_starvation_stolon_regression"
+    lean_locus: "morphoeval/lean/loops/Loop_100_hydractinia_stolon_vascular_net.lean#L134-L166"
+    lean_code: |
+      def stolon_lumen_radius_rate (shear_growth k_d r : Int) : Int := shear_growth - k_d * r
+      theorem buss_polyp_arrest_shear_starvation_stolon_regression (r pi tau_reg k_d : Int)
+          (htau : 0 < tau_reg) (hkd : 0 < k_d) (hr : 0 < r) :
+          stolon_poiseuille_flux r pi pi = 0 ∧
+          stolon_wall_shear_num r pi pi = 0 ∧
+          stolon_wall_shear_num r pi pi < tau_reg ∧
+          stolon_lumen_radius_rate 0 k_d r < 0
+    variables: "ΔV_p: polyp contraction stroke volume; τ_reg: critical wall shear stress threshold for stolon maintenance; k_d: lumen regression rate; r: stolon lumen radius"
+    role: "Proves that arresting muscular polyp contractions (via polyp excision or MgCl2 paralysis) eliminates gastrovascular flow and wall shear stress below τ_reg, forcing strictly negative dr/dt and lumen regression"
+    source_citation: "Buss, Anderson & Perry (2015) Biol. Bull. 228(2):146-158; Dudgeon et al. (1999) Am. Nat. 153(3):292-309"
+    code_locus: "2020-badin-hydractinia-stolon-vascular-net.py#L395-L490"

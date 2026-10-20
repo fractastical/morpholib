@@ -1,0 +1,160 @@
+# MorphoEval audit — Wolpert (1969) French Flag Positional Information & Chick Limb Morphogen Gradient, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `1969-wolpert-french-flag-morphogen.py` (v1, 114 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-french-flag-morphogen-loop`).
+
+audit:
+  id: 2026-10-19-french-flag-morphogen-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/11
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b9976f8
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1969-wolpert-french-flag-morphogen.py` prior to
+      Pass 2 remediation in `2026-10-19-french-flag-morphogen-loop`.
+
+references:
+  wolpert1969:
+    title: "Positional information and the spatial pattern of cellular differentiation"
+    authors: "Wolpert L"
+    venue: "Journal of Theoretical Biology 25(1):1-47 (1969)"
+    doi: 10.1016/S0022-5193(69)80016-0
+  crick1970:
+    title: "Diffusion in embryogenesis"
+    authors: "Crick F"
+    venue: "Nature 225(5231):420-422 (1970)"
+    doi: 10.1038/225420a0
+  tickle1975:
+    title: "Positional signalling and specification of digits in chick limb morphogenesis"
+    authors: "Tickle C, Summerbell D, Wolpert L"
+    venue: "Nature 254(5497):199-202 (1975)"
+    doi: 10.1038/254199a0
+  riddle1993:
+    title: "Sonic hedgehog mediates the polarizing activity of the ZPA"
+    authors: "Riddle RD, Johnson RL, Laufer E, Tabin C"
+    venue: "Cell 75(7):1401-1416 (1993)"
+    doi: 10.1016/0092-8674(93)90626-2
+  benzvi2010:
+    title: "Scaling of morphogen gradients by an expansion-repression integral feedback control"
+    authors: "Ben-Zvi D, Barkai N"
+    venue: "PNAS 107(15):6924-6929 (2010)"
+    doi: 10.1073/pnas.0912734107
+
+simulations:
+  - id: wolpert-french-flag-morphogen
+    name: "Wolpert (1969) French Flag positional information, Tickle-Wolpert (1975) chick limb ZPA digit duplication & Ben-Zvi-Barkai (2010) scaling"
+    organism: "Chick embryo (Gallus gallus domesticus) limb bud & embryonic blastoderm"
+    script: 1969-wolpert-french-flag-morphogen.py
+    output: docs/media/french_flag_morphogen_comparison.png
+    extra_outputs:
+      - docs/media/french_flag_morphogen_growth.gif
+    status: evaluated
+    source_refs:
+      - wolpert1969
+      - crick1970
+      - tickle1975
+      - riddle1993
+      - benzvi2010
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `1969-wolpert-french-flag-morphogen.py` (41.2/100).
+      The baseline script evaluates only a closed-form exponential decay `c0*exp(-x/lam)`
+      with uncalibrated linear thresholds (`T1=2/3, T2=1/3`), omitting Wolpert's (1969)
+      linear source-sink model, the time-dependent SDD PDE solver, Tickle et al.'s (1975)
+      anterior ZPA graft mirror-image digit duplication (`4-3-2-2-3-4`), Ben-Zvi & Barkai's
+      (2010) expansion-repression scaling feedback across growing domains, ZPA ablation
+      negative controls, and computer-vision segmentation of the vendored `Gallus gallus`
+      embryo specimen image.
+    scores:
+      model-fidelity:
+        value: 46
+        rationale: >-
+          Evaluates only the closed-form steady-state formula `c0 * exp(-x / lam)` (L25-27)
+          with linear thresholds `T1=2/3, T2=1/3` (L30-35) that produce a compressed
+          Blue zone (`0.0853` instead of `0.3333`). Omits Wolpert's (1969) linear
+          source-sink diffusion model, omits time-dependent PDE integration of
+          `dc/dt = D d^2c/dx^2 - k c`, omits Tickle et al. (1975) ZPA graft superposition,
+          and omits Ben-Zvi & Barkai (2010) expansion-repression scaling feedback.
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [25, 36], note: "Closed-form SDD formula with uncalibrated linear thresholds and no PDE solver or ZPA duplication", supports: false}
+      specimen-match:
+        value: 18
+        rationale: >-
+          Although `datasets/french_flag_morphogen/french_flag_specimen.jpg` is present on
+          disk, the Pass 1 baseline script neither loads nor segments the biological
+          `Gallus gallus` embryo image and performs zero comparison to chick wing bud ZPA
+          digit patterns (`4-3-2` vs `4-3-2-2-3-4`).
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [39, 77], note: "Renders only a 2-panel synthetic plot without loading or segmenting french_flag_specimen.jpg", supports: false}
+      parameter-expressivity:
+        value: 34
+        rationale: >-
+          Hardcodes a single parameter set (`L=300, c0=1.0, lam=63.2456`) with no CLI
+          parameter overrides, no diffusivity/degradation regime sweep, no ZPA graft
+          strength variation, and no ZPA ablation negative control.
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [101, 109], note: "CLI exposes only --self-test with zero model parameter flags", supports: false}
+      morphometric-validation:
+        value: 32
+        rationale: >-
+          `measure_morphoeval()` reports only a single uncalibrated Blue-zone fraction
+          (`0.0853` vs reference `0.3333`, L79-93) without positional precision error
+          `sigma_x`, scaling invariance CV across HH18-HH28 stages, ZPA digit sequence
+          verification, or specimen radial fit `r` / RMSE.
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [79, 93], note: "Single morphometric metric with large uncalibrated discrepancy (0.0853 vs 0.3333)", supports: false}
+      source-traceability:
+        value: 48
+        rationale: >-
+          Module docstring cites only Wolpert (1969) (`doi:10.1016/S0022-5193(69)80016-0`,
+          L4-9) and does not load or SHA-256-verify
+          `datasets/french_flag_morphogen/french_flag_morphogen_reference.json` or
+          `datasets/french_flag_morphogen/french_flag_specimen.jpg` at runtime.
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [4, 9], note: "Single DOI in docstring; reference JSON and specimen SHA-256 are not verified at runtime", supports: false}
+      code-traceability:
+        value: 50
+        rationale: >-
+          Contains basic docstrings for `compute_sdd_profile` and `classify_french_flag`
+          (L25-36), but lacks section/equation mappings to Wolpert (1969) Sec. 2-4,
+          Crick (1970), Tickle et al. (1975), Riddle et al. (1993), Ben-Zvi & Barkai
+          (2010), and the Lean 4 theorems in `Loop_011_french_flag_morphogen.lean`.
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [25, 36], note: "Minimal helper docstrings without paper equation or Lean theorem links", supports: false}
+      repro-package:
+        value: 62
+        rationale: >-
+          Includes `--self-test` and deterministic plotting (L95-110), but `self_test()`
+          checks only `c[0] == 1.0 and c[-1] < c[0]` without verifying PDE convergence,
+          SHA-256 dataset integrity, ZPA mirror symmetry, or bitwise reproducibility.
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [95, 100], note: "Trivial 2-line self_test() assertion", supports: false}
+    remediation:
+      - "Implement all three positional information mechanisms: (1) Wolpert (1969) linear source-sink diffusion c_lin(x) = c0*(1 - x/L), (2) time-dependent & analytical finite-domain Synthesis-Diffusion-Degradation (SDD) PDE dc/dt = D d^2c/dx^2 - k*c, and (3) Ben-Zvi & Barkai (2010) Expansion-Repression (ER) dynamic feedback scaling across growing domains L in [180, 660] um (HH18-HH28)."
+      - "Implement Tickle, Summerbell & Wolpert (1975) and Riddle et al. (1993) chick wing bud ZPA / Sonic hedgehog (Shh) morphogen experiments across 4 regimes: wild-type posterior ZPA (4-3-2), anterior ZPA graft mirror-image duplication (4-3-2-2-3-4), attenuated anterior ZPA graft (4-3-2-3), and ZPA ablation / cyclopamine negative control (0 digits)."
+      - "Load and SHA-256-verify `datasets/french_flag_morphogen/french_flag_morphogen_reference.json` and `datasets/french_flag_morphogen/french_flag_specimen.jpg` at runtime, segment the 72h HH18-20 Gallus gallus embryo organizer and radial area vasculosa optical density profile c(r), and fit the exponential SDD decay model (r, RMSE, and 3-zone concentric French-Flag territories)."
+      - "Upgrade `measure_morphoeval()`, `--self-test`, and CLI parameter flags (`--D`, `--k`, `--L`, `--c0`, `--anterior-graft`, `--noise-sigma`, `--seed`), and render a 6-panel synthesis figure and animated ontogenetic growth + ZPA duplication GIF."

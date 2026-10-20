@@ -1,0 +1,167 @@
+# MorphoEval audit — Savin et al. (2011) Nature Vertebrate Gut Looping via Differential Growth, 2026-10-19 (v1)
+#
+# Pass 1 (v1) evaluation of `2011-savin-gut-looping-differential-growth.py` (267 lines)
+# prior to Step 12 remediation in `2026-10-19-gut-looping-differential-growth-loop`:
+#   - Primary assessor: Gemini 4 Argon — 56.4 / 100
+#
+# Key findings driving Step 12 (Pass 2) remediation:
+#   1. `generate_parametric_gut_curve` (L46-65) uses a synthetic sinusoidal ansatz rather
+#      than minimizing the discrete Kirchhoff elastic rod + stretched neo-Hookean dorsal
+#      mesentery sheet energy functional E({r_i}) = E_axial + E_bend + E_mesentery + E_steric.
+#   2. `evaluate_chick_stages` (L68-92) evaluates only the 5 Chick (Gallus gallus, E8-E16)
+#      stages and omits Savin et al.'s (2011) Fig. 4 cross-species collapse across Zebra
+#      finch (Taeniopygia guttata), Quail (Coturnix japonica), Chick (Gallus gallus), and
+#      Mouse (Mus musculus), as well as Nerurkar et al.'s (2017) PNAS BMP2/Noggin signaling
+#      perturbations and the surgical mesentery ablation (epsilon = 0) negative control.
+#   3. The vendored biological specimen `datasets/gut_looping_differential_growth/intestine_mesentery_specimen.jpg`
+#      is not loaded, segmented, or displayed in `gut_looping_differential_growth_comparison.png`.
+#   4. Runtime SHA-256 verification of dataset assets and CLI parameter overrides
+#      (`--epsilon`, `--E-ratio`, `--R-t`, `--h-m`, `--seed`) are missing.
+
+audit:
+  id: 2026-10-19-gut-looping-differential-growth-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 062 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/62
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) evaluation of `2011-savin-gut-looping-differential-growth.py` prior to
+      Step 12 closed-loop remediation in `2026-10-19-gut-looping-differential-growth-loop`.
+
+references:
+  savin2011:
+    title: "On the growth and form of the gut"
+    authors: "Savin T, Kurpios NA, Shyer AE, Florescu P, Liang H, Mahadevan L, Tabin CJ"
+    venue: "Nature 476(7358):57-62 (2011)"
+    doi: 10.1038/nature10277
+  nerurkar2017:
+    title: "BMP signaling controls buckling forces to modulate looping morphogenesis of the gut"
+    authors: "Nerurkar NL, Mahadevan L, Tabin CJ"
+    venue: "Proceedings of the National Academy of Sciences 114(9):2277-2282 (2017)"
+    doi: 10.1073/pnas.1618677114
+  kurpios2008:
+    title: "The direction of gut looping is established by changes in the extracellular matrix and in cell orientation"
+    authors: "Kurpios NA, Ibanes M, Davis NM, Lui W, Katz T, Martin JF, Izpisua Belmonte JC, Tabin CJ"
+    venue: "Proceedings of the National Academy of Sciences 105(25):8499-8506 (2008)"
+    doi: 10.1073/pnas.0803578105
+
+simulations:
+  - id: savin-gut-looping-differential-growth
+    name: "Savin et al. (2011) Kirchhoff elastic rod + stretched neo-Hookean dorsal mesentery gut looping morphogenesis"
+    organism: "Vertebrate midgut & dorsal mesentery (Gallus gallus, Coturnix japonica, Taeniopygia guttata, Mus musculus)"
+    script: 2011-savin-gut-looping-differential-growth.py
+    output: docs/media/gut_looping_differential_growth_comparison.png
+    extra_outputs:
+      - docs/media/gut_looping_differential_growth_growth.gif
+    status: evaluated
+    source_refs:
+      - savin2011
+      - nerurkar2017
+      - kurpios2008
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2011-savin-gut-looping-differential-growth.py`
+      (overall weighted score: 56.4/100). The v1 script implements Savin et al.'s (2011)
+      annular tube inertia I_t = (pi/4)*(R_t^4 - R_i^4), characteristic length scale
+      ell_* = (E_t*I_t / (E_m*h_m))^(1/3), and Chick E8-E16 wavelength/radius scaling,
+      but uses a synthetic sinusoidal 3D curve rather than minimizing a discrete Kirchhoff
+      elastic rod + neo-Hookean mesentery energy functional, omits the 4-species comparative
+      collapse (zebra finch, quail, chick, mouse) and BMP2/Noggin/surgical-ablation controls,
+      and does not segment the vendored biological mesentery/intestine specimen image.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Computes the exact annular second moment of area I_t = (pi/4)*(R_t^4 - R_i^4)
+          and cube-root scaling length ell_* = (E_t*I_t / (E_m*h_m))^(1/3) (L35-43),
+          backed by 3 Lean 4 theorems in `Loop_062_gut_looping_differential_growth.lean`.
+          However, `generate_parametric_gut_curve` (L46-65) prescribes a hardcoded 3D
+          sinusoid rather than minimizing the coupled Kirchhoff rod bending + axial
+          stretching + neo-Hookean mesenteric traction energy functional, and no negative
+          ablation control (surgical mesentery dissection / epsilon = 0) is simulated.
+        evidence:
+          - {file: 2011-savin-gut-looping-differential-growth.py, lines: [35, 43], note: "Exact annular moment of inertia I_t and Savin et al. (2011) cube-root characteristic length ell_*", supports: true}
+          - {file: 2011-savin-gut-looping-differential-growth.py, lines: [46, 65], note: "Parametric sinusoidal curve instead of discrete Kirchhoff rod + neo-Hookean mesentery energy minimization", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Although `datasets/gut_looping_differential_growth/intestine_mesentery_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or plots the biological
+          specimen image, and compares only against Chick E8-E16 tabular values without
+          cross-species data from Zebra finch, Quail, and Mouse.
+        evidence:
+          - {file: 2011-savin-gut-looping-differential-growth.py, lines: [68, 92], note: "Evaluates only Chick E8-E16 tabular points without loading or segmenting intestine_mesentery_specimen.jpg", supports: false}
+          - {file: docs/media/gut_looping_differential_growth_comparison.png, lines: [0, 0], note: "4-panel v1 plot lacks biological specimen segmentation and 4-species collapse panels", supports: false}
+      parameter-expressivity:
+        value: 48
+        rationale: >-
+          Evaluates 5 embryonic stages of Chick (E8-E16) across differential strain
+          epsilon in [1.26, 3.72] (L68-92), but lacks the 14-point 4-species morphospace
+          sweep (Zebra finch, Quail, Chick, Mouse), omits Nerurkar et al. (2017) BMP2
+          and Noggin perturbations plus surgical mesentery ablation (epsilon = 0), and
+          exposes no CLI parameters for epsilon, E_t/E_m, R_t, h_m, or seed (L250-256).
+        evidence:
+          - {file: 2011-savin-gut-looping-differential-growth.py, lines: [250, 256], note: "CLI exposes only --self-test and --skip-gif without physical parameter overrides", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          `measure_morphoeval()` (L205-238) reports Chick E12 predicted vs observed
+          wavelength and radius plus Chick E8-E16 Pearson r and RMSE, but does not
+          measure physical rod curvature kappa(s) or zero-crossing loop wavelength from
+          a relaxed 3D Kirchhoff rod, does not evaluate cross-species collapse statistics
+          across all 14 vertebrate data points, and extracts zero computer-vision metrics
+          from the specimen image.
+        evidence:
+          - {file: 2011-savin-gut-looping-differential-growth.py, lines: [205, 238], note: "Only 3 analytical Chick metrics returned in measure_morphoeval() without 3D rod curvature or specimen CV metrics", supports: false}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Reads `datasets/gut_looping_differential_growth/gut_looping_differential_growth_reference.json`
+          and cites Savin et al. (2011) `10.1038/nature10277` (L4-13), but does not verify
+          SHA-256 digests of the reference JSON, BibTeX, scout manifest, or specimen image
+          at runtime.
+        evidence:
+          - {file: 2011-savin-gut-looping-differential-growth.py, lines: [24, 28], note: "Loads REF_JSON without runtime SHA-256 cryptographic verification", supports: false}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions document the inertia and cube-root scaling formulas (L35-44), but
+          lack explicit mappings to Savin et al. (2011) Figs. 1-4, Supplementary Sec. S2-S4,
+          Nerurkar et al. (2017) PNAS Fig. 2-4, and the 3 Lean 4 theorems in
+          `Loop_062_gut_looping_differential_growth.lean`.
+        evidence:
+          - {file: 2011-savin-gut-looping-differential-growth.py, lines: [35, 65], note: "Brief docstrings without explicit paper figure/section or Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Includes `--self-test` and `--skip-gif` flags and deterministic execution
+          (L241-265), but `self_test()` performs only 3 basic assertions without checking
+          SHA-256 dataset integrity, zero-strain ablation uncoiling, cross-species
+          scaling collapse, or two-run bitwise determinism.
+        evidence:
+          - {file: 2011-savin-gut-looping-differential-growth.py, lines: [241, 248], note: "Minimal 3-check self_test() without determinism or ablation verification", supports: false}
+    remediation:
+      - "Replace the synthetic sinusoidal curve with a genuine 3D discrete Kirchhoff elastic rod + stretched neo-Hookean dorsal mesentery energy minimizer (L-BFGS-B relaxation of axial stretching + bending + mesenteric radial sheet traction + steric repulsion) and extract emergent loop wavelength, curvature kappa(s), and tortuosity directly from the relaxed 3D centerline."
+      - "Evaluate the full 14-point cross-species scaling collapse across Zebra finch (Taeniopygia guttata), Quail (Coturnix japonica), Chick (Gallus gallus), and Mouse (Mus musculus) (Savin et al. 2011 Fig. 4e-f) alongside Nerurkar et al. (2017) PNAS BMP2 gain-of-function, Noggin loss-of-function, and surgical mesentery ablation (epsilon = 0) negative controls."
+      - "Implement computer-vision segmentation of `datasets/gut_looping_differential_growth/intestine_mesentery_specimen.jpg` to segment the yellow-orange dorsal mesentery fan and pinkish-red intestinal loop ridges, quantifying empirical inter-loop spacing, CV, and loop count."
+      - "Add runtime SHA-256 verification of all 4 files in `datasets/gut_looping_differential_growth/`, expose full CLI parameters (`--epsilon`, `--E-ratio`, `--R-t`, `--h-m`, `--seed`), and expand `self_test()` and `measure_morphoeval()` to cover all physical, cross-species, ablation, and specimen metrics."

@@ -1,0 +1,148 @@
+{
+  "metadata": {
+    "dataset_id": "nakamasu-2009-zebrafish-three-cell-stripes-v1",
+    "title": "Nakamasu et al. (2009) Zebrafish Three-Variable Pigment-Cell Reaction-Diffusion, Laser-Ablation Regeneration & leopard (cx41.8) Spot-to-Stripe Morphospace Reference Dataset",
+    "sources": [
+      {
+        "id": "nakamasu2009",
+        "citation": "Nakamasu A, Takahashi G, Kanbe A, Kondo S (2009). Interactions between zebrafish pigment cells responsible for the generation of Turing patterns. PNAS 106(21):8429-8434.",
+        "doi": "10.1073/pnas.0808622106"
+      },
+      {
+        "id": "yamaguchi2007",
+        "citation": "Yamaguchi M, Yoshimoto E, Kondo S (2007). Pattern regulation in the stripe of zebrafish suggests an underlying dynamic and autonomous mechanism. PNAS 104(12):4790-4793.",
+        "doi": "10.1073/pnas.0607790104"
+      },
+      {
+        "id": "watanabe2006",
+        "citation": "Watanabe M, Iwashita M, Ishii M, Kurachi Y, Kawakami A, Kondo S, Okada N (2006). Spot pattern of leopard Danio is caused by mutation in the zebrafish connexin41.8 gene. EMBO Reports 7(9):893-897.",
+        "doi": "10.1038/sj.embor.7400757"
+      },
+      {
+        "id": "inaba2012",
+        "citation": "Inaba M, Yamanaka H, Kondo S (2012). Pigment pattern formation by contact-dependent depolarization. Science 335(6069):677.",
+        "doi": "10.1126/science.1212821"
+      }
+    ],
+    "specimens": {
+      "danio_rerio_adult_flank": {
+        "file": "datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg",
+        "sha256": "850b2d4a94c7cbcb3c16e606ddb70d198f082ccb2f046ee44dbaa5ef5941678a",
+        "species": "Danio rerio (Adult wild-type zebrafish right lateral profile showing 4-5 dark melanophore stripes alternating with yellow/iridescent xanthophore-iridophore interstripes across trunk and caudal fin)",
+        "author": "Marrabbio2 / Wikimedia Commons",
+        "license": "CC BY-SA 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Danio_rerio_lab_right.JPG",
+        "flank_roi_xyxy": [220, 125, 460, 265],
+        "caudal_roi_xyxy": [55, 130, 185, 255],
+        "pattern_type": "horizontal_melanophore_xanthophore_iridophore_stripes"
+      }
+    },
+    "scout_manifest": {
+      "file": "datasets/zebrafish_three_cell_stripes/scout_manifest.json",
+      "sha256": "d19df92d7c80de8a6e00fc0876165a1de8c4639b15b364de2d6600d02f895706"
+    },
+    "bibtex": {
+      "file": "datasets/zebrafish_three_cell_stripes/paper_citations.bib",
+      "sha256": "33a934e879adbd20447c2c30f3f934fc1dd5924a3b8002ef353e1a0c9cbb883f"
+    }
+  },
+  "nakamasu_2009_three_cell_rd_system": {
+    "section": "Nakamasu et al. (2009) PNAS 106:8429-8434 Fig. 4D, Fig. 5 & SI Text Eqs. (1)-(6)",
+    "governing_pde": {
+      "u_eq": "du/dt = clip(a_u*u + b_u*v + d_u*w + e_u, 0, U_max) - c_u*u + D_u * Lap(u)",
+      "v_eq": "dv/dt = clip(a_v*u + b_v*v + d_v*w + e_v, 0, V_max) - c_v*v + D_v * Lap(v)",
+      "w_eq": "dw/dt = clip(a_w*u + b_w*v + d_w*w + e_w, 0, W_max) - c_w*w + D_w * Lap(w)",
+      "state_variables": {
+        "u": "Melanophore (black stripe pigment cell) density",
+        "v": "Xanthophore (yellow interstripe pigment cell) density",
+        "w": "Long-range diffusible survival/signaling factor mediating xanthophore-to-melanophore cross-stripe support"
+      },
+      "boundary_condition": "Zero-flux Neumann boundary conditions on dorsoventral and anteroposterior domain boundaries, with optional horizontal myoseptum / pioneer iridophore X0 interstripe cue along y = L_y / 2"
+    },
+    "canonical_linear_jacobian_parameters": {
+      "c_u": 0.80,
+      "b_u": -1.50,
+      "d_u": 1.20,
+      "a_v": -1.50,
+      "c_v": 0.80,
+      "d_v": -0.60,
+      "a_w": -0.90,
+      "b_w": 1.20,
+      "c_w": 0.90,
+      "D_u": 0.02,
+      "D_v": 0.02,
+      "D_w": 0.50,
+      "diffusivity_ratio_Dw_over_Du": 25.0,
+      "short_range_minor_det_uv": -1.61,
+      "anti_phase_short_range_rate": 0.70,
+      "routh_hurwitz_p1": 2.50,
+      "routh_hurwitz_p2": 1.63,
+      "routh_hurwitz_p3": 2.961,
+      "routh_hurwitz_p1p2_minus_p3": 1.114,
+      "k0_max_real_eigenvalue": -0.07820369,
+      "k_min": 2.1134,
+      "k_crit": 3.4106,
+      "k_max": 5.3669,
+      "k2_min": 4.4663,
+      "k2_crit": 11.6320,
+      "k2_max": 28.8036,
+      "sigma_max": 0.19247,
+      "lambda_crit": 1.8423
+    }
+  },
+  "laser_ablation_and_leopard_morphospace": {
+    "section": "Nakamasu et al. (2009) Figs. 2, 3, 5 & Watanabe et al. (2006) EMBO Rep. 7:893-897",
+    "laser_ablation_experiments": [
+      {
+        "experiment_id": "xanthophore_interstripe_ablation",
+        "figure_ref": "Nakamasu et al. (2009) Fig. 2",
+        "perturbation": "Selective laser ablation of xanthophore interstripes X0 and X1V flanking melanophore stripe 1V",
+        "biological_outcome": "Melanophore survival drops sharply (>50% loss within 7-14 days), proving long-range xanthophore -> melanophore survival requirement (b_w > 0, d_u > 0)"
+      },
+      {
+        "experiment_id": "melanophore_stripe_ablation_polarity",
+        "figure_ref": "Nakamasu et al. (2009) Fig. 3",
+        "perturbation": "Wide-area rectangular ablation across dorsal/ventral stripes vs isolated central patch",
+        "biological_outcome": "Intact anterior/posterior boundary stripes guide horizontal stripe regeneration, whereas unguided central regions form labyrinthine/spot Turing patterns"
+      }
+    ],
+    "leopard_cx418_morphospace_regimes": [
+      {
+        "regime_id": "leopard_t1_melanophore_spots",
+        "allele": "leo^t1 / leo^tq270 (severe cx41.8 loss-of-function)",
+        "basal_bias_delta": -0.32,
+        "myoseptum_cue": 0.0,
+        "predicted_pattern": "isolated_melanophore_spots_on_xanthophore_field"
+      },
+      {
+        "regime_id": "leopard_mild_vermiform_labyrinth",
+        "allele": "leo^tw28 (hypomorphic cx41.8 allele, unguided)",
+        "basal_bias_delta": 0.0,
+        "myoseptum_cue": 0.0,
+        "predicted_pattern": "isotropic_labyrinthine_turing_stripes"
+      },
+      {
+        "regime_id": "wildtype_guided_horizontal_stripes",
+        "allele": "Danio rerio wild-type (WT + horizontal myoseptum X0 pioneer cue)",
+        "basal_bias_delta": 0.0,
+        "myoseptum_cue": 0.22,
+        "predicted_pattern": "five_parallel_horizontal_melanophore_stripes"
+      },
+      {
+        "regime_id": "inverse_xanthophore_spots",
+        "allele": "high melanophore bias / hypermorphic shift",
+        "basal_bias_delta": 0.32,
+        "myoseptum_cue": 0.0,
+        "predicted_pattern": "light_xanthophore_spots_on_dark_melanophore_field"
+      }
+    ]
+  },
+  "empirical_zebrafish_benchmarks": {
+    "danio_rerio_flank": {
+      "dark_stripe_count_target": 4,
+      "inter_stripe_wavelength_px_target": 23.67,
+      "inter_stripe_spacing_cv_max": 0.18,
+      "horizontal_anisotropy_ratio_min": 1.50
+    }
+  }
+}

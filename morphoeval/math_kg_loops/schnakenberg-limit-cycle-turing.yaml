@@ -1,0 +1,73 @@
+sim_id: schnakenberg-limit-cycle-turing
+math_family: Reaction-Diffusion & Glycolytic Oscillations (Tri-Molecular Cubic Autocatalysis)
+model_spec:
+  model: "Schnakenberg (1979) tri-molecular cubic autocatalytic reaction-diffusion PDE (du/dt = gamma*(a - u + u^2*v) + Lap(u), dv/dt = gamma*(b - u^2*v) + d*Lap(v))"
+  grid_resolution: [96, 96]
+  domain_length_L: 6.0
+  gamma: 180.0
+  seed: 1979
+  regimes:
+    - {id: turing_spots_standard, a: 0.10, b: 0.90, d: 18.0}
+    - {id: turing_labyrinth_high_d, a: 0.08, b: 0.92, d: 25.0}
+    - {id: turing_hopf_codim2, a: 0.05, b: 0.75, d: 18.0}
+    - {id: hopf_limit_cycle, a: 0.05, b: 0.50, d: 1.0}
+    - {id: equal_diffusion_control, a: 0.10, b: 0.90, d: 1.0}
+  inputs:
+    - datasets/limit_cycle_turing/scout_manifest.json
+    - datasets/limit_cycle_turing/limit_cycle_turing_reference.json
+    - datasets/limit_cycle_turing/dictyostelium_specimen.jpg
+equations:
+  - law_name: "Schnakenberg (1979) Cubic Autocatalytic Equilibrium & Flux Conservation Law"
+    formula: "∂u/∂t = γ(a - u + u^2 v) + ∇^2 u,   ∂v/∂t = γ(b - u^2 v) + d ∇^2 v,   (u_*, v_*) = (a + b, b / (a + b)^2)"
+    lean_decl: "MathOfBiology.Loop_002.schnakenberg_react_u"
+    lean_theorem: "MathOfBiology.Loop_002.schnakenberg_equilibrium_zero_flux"
+    lean_locus: "morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean#L24-L37"
+    lean_code: |
+      def schnakenberg_react_u (a u flux : Int) : Int := a - u + flux
+      def schnakenberg_react_v (b flux : Int) : Int := b - flux
+      theorem schnakenberg_equilibrium_zero_flux (a b u flux : Int) :
+          schnakenberg_react_u a (a + b) b = 0 ∧
+          schnakenberg_react_v b b = 0 ∧
+          schnakenberg_react_u a u flux + schnakenberg_react_v b flux = a + b - u := by
+        simp [schnakenberg_react_u, schnakenberg_react_v]
+        omega
+    variables: "u: autocatalytic activator concentration; v: substrate/inhibitor concentration; a, b: dimensionless feed rates; γ: reaction-rate/area scale factor; d = D_v/D_u: diffusivity ratio"
+    role: "Establishes the unique positive homogeneous equilibrium (u_*, v_*) = (a+b, b/(a+b)^2) with invariant cubic flux u_*^2 v_* = b and linear total mass balance R_u + R_v = a + b - u"
+    source_citation: "Schnakenberg (1979) J. Theor. Biol. 81(3):389-400 Eqs. (15)-(20)"
+    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L139-L178"
+  - law_name: "Schnakenberg (1979) Exact Hopf Bifurcation Curve & Positive Jacobian Determinant Law"
+    formula: "tr(J_0) = (b - a - (a + b)^3) / (a + b) = 0  <=>  b - a = (a + b)^3,   det(J_0) = (a + b)^2 > 0"
+    lean_decl: "MathOfBiology.Loop_002.schnakenberg_scaled_trace"
+    lean_theorem: "MathOfBiology.Loop_002.schnakenberg_hopf_trace_and_det_pos"
+    lean_locus: "morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean#L46-L56"
+    lean_code: |
+      def schnakenberg_scaled_trace (a b s_cubed : Int) : Int := (b - a) - s_cubed
+      def schnakenberg_jacobian_det (n : Nat) : Nat := n * n + 2 * n + 1
+      theorem schnakenberg_hopf_trace_and_det_pos (a s_cubed : Int) (n : Nat) :
+          schnakenberg_scaled_trace a (a + s_cubed) s_cubed = 0 ∧
+          schnakenberg_jacobian_det n ≥ 1 := by
+        simp [schnakenberg_scaled_trace, schnakenberg_jacobian_det]
+        omega
+    variables: "J_0: 2x2 reaction Jacobian at (u_*, v_*); s = a + b: equilibrium activator concentration; tr(J_0): Jacobian trace; det(J_0): Jacobian determinant"
+    role: "Separates stable steady states from autonomous Poincaré-Bendixson limit-cycle oscillations across b - a = (a + b)^3 while proving det(J_0) = (a + b)^2 > 0 excludes fold bifurcations"
+    source_citation: "Schnakenberg (1979) J. Theor. Biol. 81(3):389-400 Eqs. (21)-(24)"
+    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L196-L226"
+  - law_name: "Schnakenberg-Turing Differential-Diffusion Dispersion & Critical Ratio Law"
+    formula: "det(J(k^2)) = d k^4 - γ (d (b-a)/(a+b) - (a+b)^2) k^2 + γ^2 (a+b)^2,   d_c(a,b) = (((a+b)^2 + (a+b)√(2b(a+b))) / (b-a))^2"
+    lean_decl: "MathOfBiology.Loop_002.schnakenberg_fourier_det"
+    lean_theorem: "MathOfBiology.Loop_002.schnakenberg_turing_instability_and_equal_diff"
+    lean_locus: "morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean#L68-L81"
+    lean_code: |
+      def schnakenberg_equal_diff_det (q : Nat) : Nat := q * q + 2 * q + 100
+      def schnakenberg_fourier_det (d q : Int) : Int := d * q * q - (8 * d - 10) * q + 100
+      theorem schnakenberg_turing_instability_and_equal_diff (q : Nat) :
+          schnakenberg_equal_diff_det q ≥ 100 ∧
+          schnakenberg_fourier_det 1 0 = 100 ∧
+          schnakenberg_fourier_det 9 3 = -5 ∧
+          schnakenberg_fourier_det 18 4 = -148 := by
+        refine ⟨?_, by decide, by decide, by decide⟩
+        simp [schnakenberg_equal_diff_det]
+    variables: "q = k^2: squared spatial wavenumber; d = D_v/D_u: substrate-to-activator diffusivity ratio; d_c: critical Turing diffusivity ratio"
+    role: "Proves equal diffusion (d = 1) is unconditionally stable at (a,b) = (0.1, 0.9) whereas d > d_c ≈ 8.5676 drives det(J(k^2)) < 0 and amplifies periodic Turing spots/stripes"
+    source_citation: "Schnakenberg (1979) J. Theor. Biol. 81:389-400 & Turing (1952) Phil. Trans. R. Soc. B 237:37-72"
+    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L229-L276"

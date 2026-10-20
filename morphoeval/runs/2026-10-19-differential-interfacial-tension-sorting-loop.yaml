@@ -1,0 +1,468 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-differential-interfacial-tension-sorting-loop
+  target_simulation: brodland-differential-interfacial-tension-sorting
+  paper: Brodland (2002) J. Biomech. Eng. / Krieg et al. (2008) Nature Cell Biology
+    — The Differential Interfacial Tension Hypothesis (DITH) and actomyosin cortical
+    tension vs cadherin adhesion in zebrafish germ-layer progenitor sorting
+  created_at: '2026-10-20T00:49:56.362Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: e93f00e
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 6.248
+  wall_time_min: 0.1
+  tier_a_wall_s: 1.768
+  tier_b_wall_s: 4.48
+  cpu_user_s: 5.47
+  cpu_sys_s: 0.44
+  input_tokens: 722
+  output_tokens: 2768
+  subagent_tokens: 0
+  total_llm_tokens: 3490
+  artifact_tokens: 25507
+  tier_a_llm_tokens: 347
+  tier_b_llm_tokens: 3143
+  effective_tokens_per_s: 558.6
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: human+scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:50:36.556Z'
+  ended_at: '2026-10-20T00:50:36.614Z'
+  duration_s: 0.016
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.4
+  runs_count: 1
+  tokens:
+    input_tokens: 48
+    output_tokens: 30
+    subagent_tokens: 0
+    total_llm_tokens: 78
+    artifact_tokens: 1263
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/differential_interfacial_tension_sorting/scout_manifest.json
+    bytes: 4671
+    sha256: 2608817bd8e33246be98149f501ec44d7781c5fe7e36846772bc4c949f0a913f
+    tokens: 1263
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('datasets/differential_interfacial_tension_sorting/scout_manifest.json'));
+      print(d['slot_id'], d['territory']['proposed_script'])
+    exit_code: 0
+    wall_s: 0.016
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 30
+  notes: Scouted Brodland (2002) J. Biomech. Eng. (10.1115/1.1449491), Krieg et al.
+    (2008) Nature Cell Biology (10.1038/ncb1705), and Maitre et al. (2012) Science
+    (10.1126/science.1225399) for Slot 044 (brodland-differential-interfacial-tension-sorting)
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:53:22.224Z'
+  ended_at: '2026-10-20T00:53:22.285Z'
+  duration_s: 0.017
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.4
+  runs_count: 1
+  tokens:
+    input_tokens: 52
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 53
+    artifact_tokens: 916
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/differential_interfacial_tension_sorting/README.md
+    bytes: 3143
+    sha256: 938210187ac78cb7745338f8b571cc8c15ef28bad8272ecb26c5c917878d809c
+    tokens: 916
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('datasets/differential_interfacial_tension_sorting/differential_interfacial_tension_sorting_reference.json'));
+      assert len(d['metadata']['sources'])==5
+    exit_code: 0
+    wall_s: 0.017
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Extracted Brodland (2002) J. Biomech. Eng. DITH interfacial tension law,
+    Krieg et al. (2008) Nat. Cell Biol. zebrafish germ-layer AFM cortical tension
+    hierarchy & caMLCK/Blebbistatin perturbations, and Maitre et al. (2012) Science
+    Young-Dupre doublet contact angle mechanics
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:53:22.358Z'
+  ended_at: '2026-10-20T00:53:22.422Z'
+  duration_s: 0.019
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 14.0
+  runs_count: 1
+  tokens:
+    input_tokens: 96
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 97
+    artifact_tokens: 2095
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/differential_interfacial_tension_sorting/differential_interfacial_tension_sorting_reference.json
+    bytes: 7575
+    sha256: 8784a79f17449d0bdbbcdb28794a548287cb6f1d10eded7eb9cf403ed944b5dc
+    tokens: 2095
+  commands:
+  - command: ./venv/bin/python3 -c import hashlib, json; d=json.load(open('datasets/differential_interfacial_tension_sorting/differential_interfacial_tension_sorting_reference.json'));
+      h=hashlib.sha256(open('datasets/differential_interfacial_tension_sorting/germ_layer_doublet_specimen.jpg','rb').read()).hexdigest();
+      assert h==d['metadata']['specimens']['germ_layer_doublet_specimen']['sha256'],
+      h
+    exit_code: 0
+    wall_s: 0.019
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Vendored zebrafish blastoderm/gastrula cross-transplantation GFP/RFP sorting
+    and doublet specimen (CC BY 4.0) and locked SHA-256 digest
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:53:42.254Z'
+  ended_at: '2026-10-20T00:53:42.743Z'
+  duration_s: 0.444
+  cpu_user_s: 0.11
+  cpu_sys_s: 0.1
+  max_rss_mb: 390.7
+  runs_count: 1
+  tokens:
+    input_tokens: 19
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 20
+    artifact_tokens: 1108
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/math_kg_loops/brodland-differential-interfacial-tension-sorting.yaml
+    bytes: 4405
+    sha256: 312a02c3a5a57f25c188f5292e73021be4aca2cb1ee2f572a7d8657d3ace6a0f
+    tokens: 1108
+  commands:
+  - command: lean morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean
+    exit_code: 0
+    wall_s: 0.444
+    cpu_user_s: 0.11
+    cpu_sys_s: 0.1
+    stdout_tokens: 1
+  notes: Verified 3 machine-checked Lean 4 theorems (0 sorrys) in Loop_044_differential_interfacial_tension_sorting.lean
+    and registered math_kg_loops spec
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:54:56.739Z'
+  ended_at: '2026-10-20T00:54:57.344Z'
+  duration_s: 0.554
+  cpu_user_s: 0.47
+  cpu_sys_s: 0.04
+  max_rss_mb: 65.7
+  runs_count: 1
+  tokens:
+    input_tokens: 27
+    output_tokens: 23
+    subagent_tokens: 0
+    total_llm_tokens: 50
+    artifact_tokens: 2898
+    method: explicit+BPE
+  artifacts:
+  - file: 2002-brodland-differential-interfacial-tension-sorting.py
+    bytes: 10086
+    sha256: 3c3d691d67ed9e7a4bfd595562e48bbf64b22d34372bb0bdc35db25d5fcd6d98
+    tokens: 2898
+  commands:
+  - command: ./venv/bin/python3 2002-brodland-differential-interfacial-tension-sorting.py
+      --self-test
+    exit_code: 0
+    wall_s: 0.554
+    cpu_user_s: 0.47
+    cpu_sys_s: 0.04
+    stdout_tokens: 23
+  notes: Implemented Pass 1 (v1) Brodland (2002) / Krieg et al. (2008) DITH cell sorting
+    baseline script with --self-test and measure_morphoeval()
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T00:54:57.419Z'
+  ended_at: '2026-10-20T00:54:58.186Z'
+  duration_s: 0.718
+  cpu_user_s: 0.67
+  cpu_sys_s: 0.03
+  max_rss_mb: 102.7
+  runs_count: 1
+  tokens:
+    input_tokens: 23
+    output_tokens: 26
+    subagent_tokens: 0
+    total_llm_tokens: 49
+    artifact_tokens: 64
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/differential_interfacial_tension_sorting_growth.gif
+    bytes: 19988
+    sha256: 91c6e5fb46d976b5ee6966ec4ce8735e5e1394415a0f492c07f24947a429d843
+    tokens: 64
+  commands:
+  - command: ./venv/bin/python3 2002-brodland-differential-interfacial-tension-sorting.py
+    exit_code: 0
+    wall_s: 0.718
+    cpu_user_s: 0.67
+    cpu_sys_s: 0.03
+    stdout_tokens: 26
+  notes: Rendered Pass 1 static comparison figure and growth animation GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:55:09.522Z'
+  ended_at: '2026-10-20T00:55:09.673Z'
+  duration_s: 0.102
+  cpu_user_s: 0.08
+  cpu_sys_s: 0.01
+  max_rss_mb: 38.4
+  runs_count: 1
+  tokens:
+    input_tokens: 40
+    output_tokens: 28
+    subagent_tokens: 0
+    total_llm_tokens: 68
+    artifact_tokens: 3040
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-differential-interfacial-tension-sorting-audit.yaml
+    bytes: 12024
+    sha256: 76d03136f8d0ebd9d452e0e986fab8c6b5382fc6efafeb59a40ee9c908c917b9
+    tokens: 3040
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-differential-interfacial-tension-sorting-audit.yaml
+      --check
+    exit_code: 0
+    wall_s: 0.102
+    cpu_user_s: 0.08
+    cpu_sys_s: 0.01
+    stdout_tokens: 28
+  notes: Completed Pass 1 (v1) 7-dimension MorphoEval audit (57.3/100) with line-pinned
+    evidence and remediation plan
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:55:09.748Z'
+  ended_at: '2026-10-20T00:55:10.562Z'
+  duration_s: 0.762
+  cpu_user_s: 0.6
+  cpu_sys_s: 0.06
+  max_rss_mb: 92.6
+  runs_count: 1
+  tokens:
+    input_tokens: 37
+    output_tokens: 144
+    subagent_tokens: 0
+    total_llm_tokens: 181
+    artifact_tokens: 573
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-differential-interfacial-tension-sorting-audit.measurements.yaml
+    bytes: 1908
+    sha256: 01230251c2b16f73f4f8efb34ffc5aeb9ad7ec6a3d5a04f977036c827d6df51d
+    tokens: 573
+  commands:
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-differential-interfacial-tension-sorting-audit.yaml
+    exit_code: 0
+    wall_s: 0.762
+    cpu_user_s: 0.6
+    cpu_sys_s: 0.06
+    stdout_tokens: 144
+  notes: Fingerprinted Pass 1 outputs and computed sidecar morphometrics
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:55:10.642Z'
+  ended_at: '2026-10-20T00:55:10.977Z'
+  duration_s: 0.284
+  cpu_user_s: 0.26
+  cpu_sys_s: 0.01
+  max_rss_mb: 44.5
+  runs_count: 1
+  tokens:
+    input_tokens: 40
+    output_tokens: 157
+    subagent_tokens: 0
+    total_llm_tokens: 197
+    artifact_tokens: 11490
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit/morphoeval_2026-10-19-differential-interfacial-tension-sorting-audit.ttl
+    bytes: 40295
+    sha256: 959a92bedf1adaa1d293006615aed1c77852be45015358962e18bf14b3162047
+    tokens: 11490
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-differential-interfacial-tension-sorting-audit.yaml
+      --conform
+    exit_code: 0
+    wall_s: 0.284
+    cpu_user_s: 0.26
+    cpu_sys_s: 0.01
+    stdout_tokens: 157
+  notes: Built ProbKnow-conformant TriG nanopublications and REPORT.md for Pass 1
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:55:11.054Z'
+  ended_at: '2026-10-20T00:55:11.785Z'
+  duration_s: 0.678
+  cpu_user_s: 0.71
+  cpu_sys_s: 0.05
+  max_rss_mb: 138.5
+  runs_count: 1
+  tokens:
+    input_tokens: 77
+    output_tokens: 959
+    subagent_tokens: 0
+    total_llm_tokens: 1036
+    artifact_tokens: 687
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit/published.json
+    bytes: 2096
+    sha256: 036dd07717bbc1e2ac3b1f3d4f08a75c4a4041700145bc3a90bde455310c0d0d
+    tokens: 687
+  commands:
+  - command: bash -c ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit
+      && NANOPUB_SIGN_DIR=/tmp node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit/signed/*.trig
+    exit_code: 0
+    wall_s: 0.678
+    cpu_user_s: 0.71
+    cpu_sys_s: 0.05
+    stdout_tokens: 959
+  notes: Signed Pass 1 nanopublications and verified RSA trusty signatures with check_signed.mjs
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-20T00:55:11.861Z'
+  ended_at: '2026-10-20T00:55:11.932Z'
+  duration_s: 0.017
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.3
+  runs_count: 1
+  tokens:
+    input_tokens: 58
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 59
+    artifact_tokens: 687
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit/published.json
+    bytes: 2096
+    sha256: 036dd07717bbc1e2ac3b1f3d4f08a75c4a4041700145bc3a90bde455310c0d0d
+    tokens: 687
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit/published.json'));
+      assert len(d)==10, len(d)
+    exit_code: 0
+    wall_s: 0.017
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Verified Pass 1 public record, 10 signed trusty URIs, and REPORT.md synthesis
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: null
+  status: completed
+  started_at: '2026-10-20T01:01:47.104Z'
+  ended_at: '2026-10-20T01:01:49.799Z'
+  duration_s: 2.637
+  cpu_user_s: 2.53
+  cpu_sys_s: 0.14
+  max_rss_mb: 171.8
+  runs_count: 1
+  tokens:
+    input_tokens: 205
+    output_tokens: 1397
+    subagent_tokens: 0
+    total_llm_tokens: 1602
+    artifact_tokens: 686
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit-v2/published.json
+    bytes: 2096
+    sha256: 2d29f99d593fe88e0d7890829a242c933a4a99cf6e4875a8b97a809b48df1989
+    tokens: 686
+  commands:
+  - command: "bash -c \n  ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-differential-interfacial-tension-sorting-audit-v2.yaml\
+      \ &&\n  ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-differential-interfacial-tension-sorting-audit-v2.yaml\
+      \ --supersede-from morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit\
+      \ --no-resolve-heads --conform &&\n  ./venv/bin/python3 morphoeval/sign_morphoeval.py\
+      \ morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit-v2\
+      \ &&\n  NANOPUB_SIGN_DIR=/tmp node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-differential-interfacial-tension-sorting-audit-v2/signed/*.trig\n"
+    exit_code: 0
+    wall_s: 2.637
+    cpu_user_s: 2.53
+    cpu_sys_s: 0.14
+    stdout_tokens: 1397
+  notes: 'Completed Step 12 -> Pass 2 remediation loop: 4 canonical DITH / Krieg et
+    al. (2008) perturbation regimes + 3-germ-layer concentric stratification, 7-point
+    beta_E cortical tension sweep, Maitre et al. (2012) Young-Dupre doublet law, zebrafish
+    blastoderm GFP/RFP segmentation (r=0.9301), and superseding signed nanopubs (91.3/100,
+    +34.0 pts)'

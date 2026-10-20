@@ -241,35 +241,43 @@ theorem turing_equal_diffusion_no_instability (t_neg d_pos D q : Nat) :
 
 /-- Law 3 (`turing-gray-scott-3`):
     Turing (1952) Section 8-9 Differential-Diffusion Instability Theorem:
-    For a 2-morphogen activator-inhibitor Jacobian `J = [[a, b], [c, d]]`, the Fourier-mode
-    determinant at wavenumber squared `q` is
-    `det_J(q) = D_u * D_v * q^2 - (d * D_u + a * D_v) * q + (a * d - b * c)`.
-    For the stable reaction system `(a = 2, b = -3, c = 3, d = -3)` (`tr = -1 < 0`, `det = 3 > 0`),
-    equal diffusion `(D_u = 1, D_v = 1)` keeps `det_J(1) = 5 > 0`, whereas fast inhibitor
-    diffusion `(D_u = 1, D_v = 7)` drives `det_J(1) = -1 < 0` (Turing bifurcation). -/
-def turing_fourier_det (a b c d Du Dv q : Int) : Int :=
-  Du * Dv * q * q - (d * Du + a * Dv) * q + (a * d - b * c)
+    For the 2-morphogen activator-inhibitor Jacobian `J = [[a, b], [c, d]]` used in
+    `1952-turing-morpho.py` (integer-scaled by 4: `a = 4, b = -6, c = 5, d = -6`,
+    where `tr(J_0) = -2 < 0` and `det(J_0) = 6 > 0`), the Fourier-mode determinant
+    at wavenumber squared `q` is
+    `det_J(q) = D_X * D_Y * q^2 - (d * D_X + a * D_Y) * q + (a * d - b * c)`.
+    Equal diffusion `(D_X = 1, D_Y = 1)` at `q = 1` keeps `det_J(1) = 9 > 0`, integer
+    diffusivity ratio `D_X = 1, D_Y = 4 > d_c ≈ 3.9271` hits the neutral boundary `det_J(1) = 0`
+    at wavenumber `q = k^2 = 1`, and `D_X = 1, D_Y = 5` drives `det_J(1) = -3 < 0`. -/
+def turing_fourier_det (a b c d DX DY q : Int) : Int :=
+  DX * DY * q * q - (d * DX + a * DY) * q + (a * d - b * c)
 
 theorem turing_differential_diffusion_instability :
-    turing_fourier_det 2 (-3) 3 (-3) 1 1 0 = 3 ∧
-    turing_fourier_det 2 (-3) 3 (-3) 1 1 1 = 5 ∧
-    turing_fourier_det 2 (-3) 3 (-3) 1 6 1 = 0 ∧
-    turing_fourier_det 2 (-3) 3 (-3) 1 7 1 = -1 := by
+    turing_fourier_det 4 (-6) 5 (-6) 1 1 0 = 6 ∧
+    turing_fourier_det 4 (-6) 5 (-6) 1 1 1 = 9 ∧
+    turing_fourier_det 4 (-6) 5 (-6) 1 4 1 = 0 ∧
+    turing_fourier_det 4 (-6) 5 (-6) 1 5 1 = -3 := by
   decide
 
 /-- Law 4 (`turing-gray-scott-4`):
-    Pearson (1993) Saddle-Node Bifurcation Law:
-    The nontrivial Gray-Scott homogeneous steady states `(U_±, V_±)` satisfy the quadratic
-    `F * V^2 - (F + k) * V + (F + k)^2 = 0` (in scaled units), whose discriminant factor
-    `Delta_SN(F, s) = F - 4 * s^2` (where `s = F + k`) vanishes identically on Pearson's
-    saddle-node parabola `F = 4 * (F + k)^2`. -/
+    Pearson (1993) Saddle-Node Bifurcation & Hopf Trace Law:
+    1. The nontrivial Gray-Scott homogeneous steady states `(U_-, V_+)` satisfy
+       `U_- * V_+ = s` (where `s = F + k`) and the quadratic `s * V^2 - F * V + F * s = 0`,
+       whose reduced discriminant factor `Delta_SN(F, s) = F - 4 * s^2` vanishes identically
+       on Pearson's saddle-node parabola `F = 4 * (F + k)^2`.
+    2. Along the steady-state manifold `U * V = F + k`, the homogeneous Jacobian trace
+       `tr_J0 = (-F - V^2) + (2 * (U * V) - (F + k))` simplifies algebraically to `k - V^2`
+       and vanishes identically on the Hopf locus `V^2 = k`. -/
 def pearson_sn_discriminant (F s : Int) : Int :=
   F - 4 * s * s
 
-theorem pearson_saddle_node_discriminant (s : Int) :
+def pearson_steady_trace (F k uv v_sq : Int) : Int :=
+  (-F - v_sq) + (2 * uv - (F + k))
+
+theorem pearson_saddle_node_discriminant (F k s : Int) :
     pearson_sn_discriminant (4 * s * s) s = 0 ∧
-    pearson_sn_discriminant (4 * s * s - 1) s = -1 := by
-  simp [pearson_sn_discriminant]
+    pearson_steady_trace F k (F + k) k = 0 := by
+  simp [pearson_sn_discriminant, pearson_steady_trace]
   omega
 
 

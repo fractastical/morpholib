@@ -1,0 +1,151 @@
+# MorphoEval audit — Miller, Keller & Stryker (1989), Swindale (1980) & Hubel, Wiesel & LeVay (1977) Ocular Dominance Stripes & Critical-Period Plasticity, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `1989-miller-ocular-dominance-stripes.py` (Slot 087) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-ocular-dominance-stripes-loop`.
+
+audit:
+  id: 2026-10-19-ocular-dominance-stripes-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5.5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `1989-miller-ocular-dominance-stripes.py` in
+      `2026-10-19-ocular-dominance-stripes-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  miller1989:
+    title: "Ocular dominance column development: analysis and simulation"
+    authors: "Miller KD, Keller JB, Stryker MP"
+    venue: "Science 245(4918):605-615 (1989)"
+    doi: 10.1126/science.2762813
+  hubel1977:
+    title: "Plasticity of ocular dominance columns in monkey striate cortex"
+    authors: "Hubel DH, Wiesel TN, LeVay S"
+    venue: "Philosophical Transactions of the Royal Society of London B 278(961):377-409 (1977)"
+    doi: 10.1098/rstb.1977.0050
+  swindale1980:
+    title: "A model for the formation of ocular dominance stripes"
+    authors: "Swindale NV"
+    venue: "Proceedings of the Royal Society of London B 208(1171):243-264 (1980)"
+    doi: 10.1098/rspb.1980.0051
+  stryker1986:
+    title: "Binocular impulse blockade prevents the formation of ocular dominance columns in cat visual cortex"
+    authors: "Stryker MP, Harris WA"
+    venue: "Journal of Neuroscience 6(8):2117-2133 (1986)"
+    doi: 10.1523/JNEUROSCI.06-08-02117.1986
+
+simulations:
+  - id: miller-ocular-dominance-stripes
+    name: "Miller, Keller & Stryker (1989) & Hubel, Wiesel & LeVay (1977) ocular dominance column development & plasticity"
+    organism: "Macaca mulatta / Felis catus primary visual cortex (V1 Layer IVC)"
+    script: 1989-miller-ocular-dominance-stripes.py
+    output: docs/media/ocular_dominance_stripes_comparison.png
+    extra_outputs:
+      - docs/media/ocular_dominance_stripes_growth.gif
+    status: evaluated
+    source_refs:
+      - miller1989
+      - hubel1977
+      - swindale1980
+      - stryker1986
+    summary: >-
+      Pass 1 baseline assessment of `1989-miller-ocular-dominance-stripes.py` (57.7/100).
+      The baseline script evaluates the 1D Mexican-hat Fourier dispersion relation and a single
+      64x64 normal binocular stripe evolution, but omits explicit left/right synaptic density
+      evolving fields S^L, S^R with Miller-Keller-Stryker arbor function A(r) and subtractive
+      homeostatic normalization conserving S_Sigma = S^L + S^R, omits Hubel-Wiesel monocular
+      deprivation shrinkage into isolated islands, Strabismus interocular decorrelation column
+      broadening, Stryker-Harris TTX bilateral impulse blockade, and intracortical inhibition
+      range sigma_I wavelength scaling, and displays the tangential ODC and macaque V1 Layer IVC
+      specimens without automated CV segmentation.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Evaluates only a simplified scalar field with uncoupled Mexican-hat filter on a 64x64
+          grid (L45-83), omitting explicit arbor kernel A(r) convolution, coupled S^L / S^R
+          subtractive normalization conservation checks, and spectral ETD/semi-implicit integration.
+        evidence:
+          - {file: 1989-miller-ocular-dominance-stripes.py, lines: [45, 83], note: "Simplified scalar normal-only integration without arbor kernel A(r) or S_Sigma conservation", supports: false}
+      specimen-match:
+        value: 50
+        rationale: >-
+          Vendors `odc_tangential_pattern_specimen.png` (CC BY-SA 3.0) and
+          `macaque_striate_cortex_specimen.jpg` (CC0 BrainMaps.org Macaca mulatta V1 section),
+          but Pass 1 displays only raw images without automated CV segmentation of stripe
+          wavelength, skeleton branchpoints, or V1 Layer IVC laminar profile.
+        evidence:
+          - {file: 1989-miller-ocular-dominance-stripes.py, lines: [88, 108], note: "Raw specimen display without CV segmentation of stripe wavelength, branchpoints, or Layer IVC band", supports: false}
+          - {file: docs/media/ocular_dominance_stripes_comparison.png, lines: [0, 0], note: "4-panel Pass 1 baseline comparison figure", supports: true}
+      parameter-expressivity:
+        value: 54
+        rationale: >-
+          Simulates only 1 regime (Normal Binocular rearing), omitting Hubel-Wiesel Monocular
+          Deprivation (MD), Strabismus decorrelated broadened stripes, Stryker-Harris TTX
+          bilateral impulse blockade (C_Delta = 0), Reverse Suture critical-period rescue, and
+          the intracortical inhibition range sigma_I wavelength sweep.
+        evidence:
+          - {file: 1989-miller-ocular-dominance-stripes.py, lines: [65, 76], note: "Single normal binocular regime without MD, strabismus, TTX, or sigma_I sweep", supports: false}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          Reports only 2 baseline metrics in `measure_morphoeval()`, lacking empirical 2D FFT
+          wavelength validation, monocular deprivation deprived-eye shrinkage fraction (f_L ~ 0.24),
+          TTX blockade segregation suppression, inhibition range wavelength scaling r, and
+          specimen CV stripe/branchpoint/laminar morphometrics.
+        evidence:
+          - {file: 1989-miller-ocular-dominance-stripes.py, lines: [124, 149], note: "Baseline 2-metric measure_morphoeval() hook", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `ocular_dominance_stripes_reference.json`,
+          `paper_citations.bib`, `odc_tangential_pattern_specimen.png`, and
+          `macaque_striate_cortex_specimen.jpg` with SHA-256 verification.
+        evidence:
+          - {file: 1989-miller-ocular-dominance-stripes.py, lines: [33, 43], note: "SHA-256 verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Links baseline functions to Miller, Keller & Stryker (1989) and Swindale (1980),
+          requiring full alignment with all 3 Lean 4 theorems in
+          `Loop_087_ocular_dominance_stripes.lean`.
+        evidence:
+          - {file: 1989-miller-ocular-dominance-stripes.py, lines: [1, 6], note: "Baseline docstring citing Miller, Keller & Stryker (1989) and Swindale (1980)", supports: true}
+      repro-package:
+        value: 61
+        rationale: >-
+          Provides `--self-test` and deterministic execution, requiring expansion to an 8-check
+          verification suite covering Lean 4 invariants, all 5 experimental regimes, sigma_I
+          wavelength scaling, specimen CV segmentation, and bitwise two-run determinism.
+        evidence:
+          - {file: 1989-miller-ocular-dominance-stripes.py, lines: [152, 160], note: "Baseline self-test checks", supports: true}
+    remediation:
+      - "Implement the full 2D spectral Miller-Keller-Stryker / Swindale integro-differential solver with explicit geniculocortical arbor function A(r), Mexican-hat intracortical interaction I(r), and coupled S^L, S^R subtractive homeostatic normalization conserving S_Sigma = S^L + S^R."
+      - "Simulate all 5 canonical experimental regimes (Normal Binocular 50/50 zebra stripes, Hubel-Wiesel Monocular Deprivation shrunken islands, Strabismus broadened sharp columns, Stryker-Harris TTX bilateral silencing unsegregated control, and Reverse Suture critical-period rescue) plus a 6-point intracortical inhibition range sigma_I wavelength sweep."
+      - "Add automated CV segmentation of stripe wavelength, area fraction, and skeleton branchpoints on `odc_tangential_pattern_specimen.png` and V1 Layer IVC laminar optical density profiling on `macaque_striate_cortex_specimen.jpg`, and render a 9-panel dark-mode comparison figure and 24-frame animated GIF."

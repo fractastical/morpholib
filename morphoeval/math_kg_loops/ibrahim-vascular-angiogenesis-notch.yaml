@@ -1,0 +1,79 @@
+sim_id: ibrahim-vascular-angiogenesis-notch
+slot: 60
+slot_id: slot-060-vascular-angiogenesis-notch
+math_family: "Bentley–Gerhardt–Bates Coupled Endothelial ODE Network Driving Period-2 Salt-and-Pepper Tip-Cell vs Stalk-Cell Alternation & DAPT Hypersprouting Transition"
+model_spec:
+  model: "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol. 4(3):e1000052, Hellström et al. (2007) Nature 445:776-780 & Jakobsson et al. (2010) Nat. Cell Biol. 12:943-953 VEGF–VEGFR2–Dll4–Notch1 Angiogenic Tip/Stalk Selection"
+  n_vessel_cells_M: 16
+  vegfr2_max_Vmax: 1.0
+  notch_repression_threshold_Mtot: 0.38
+  notch_hill_exponent_p: 3
+  dll4_induction_hill_exponent_q: 2
+  notch_trans_activation_gain_k_t: 1.0
+  seed: 2021
+  inputs:
+    - datasets/vascular_angiogenesis_notch/vascular_angiogenesis_notch_reference.json
+    - datasets/vascular_angiogenesis_notch/huvec_angiogenic_sprouting_plexus_specimen.jpg
+    - datasets/vascular_angiogenesis_notch/scout_manifest.json
+    - datasets/vascular_angiogenesis_notch/paper_citations.bib
+equations:
+  - id: ibrahim-vascular-angiogenesis-notch-1
+    law_name: "Bentley, Gerhardt & Bates (2008) & Collier et al. (1996) Two-Cell Trans-Notch Mutual Inhibition Symmetry Breaking (Brillouin k = π Mode)"
+    formula: "dD_i/dt = g(V_i^*) - γ_D D_i,  dN_i/dt = h(D_⟨j⟩) - γ_N N_i,  Δ_antisym = g_D g_N - γ_D γ_N > 0 (k = π unstable),  Δ_sym = -g_D g_N - γ_D γ_N < 0 (k = 0 damped)"
+    lean_decl: "MathOfBiology.Loop_060.trans_notch_antisym_margin"
+    lean_theorem: "MathOfBiology.Loop_060.bentley_trans_notch_symmetry_breaking_instability"
+    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L43-L76"
+    lean_code: |
+      def antisymmetric_tip_stalk_mode (D1 D2 : Int) : Int := D1 - D2
+      def trans_notch_antisym_margin (g_D g_N gamma_D gamma_N : Int) : Int := g_D * g_N - gamma_D * gamma_N
+      def trans_notch_sym_margin (g_D g_N gamma_D gamma_N : Int) : Int := -(g_D * g_N) - gamma_D * gamma_N
+      theorem bentley_trans_notch_symmetry_breaking_instability
+          (g_D g_N gamma_D gamma_N D1 D2 : Int)
+          (h_gain : gamma_D * gamma_N < g_D * g_N)
+          (h_decay_pos : 0 < gamma_D * gamma_N) :
+          0 < trans_notch_antisym_margin g_D g_N gamma_D gamma_N ∧
+          trans_notch_sym_margin g_D g_N gamma_D gamma_N < 0 ∧
+          antisymmetric_tip_stalk_mode D1 D2 + antisymmetric_tip_stalk_mode D2 D1 = 0
+    variables: "D_i: endothelial Dll4 ligand level; N_i: active Notch1 intracellular domain level; g_D, g_N: linearized trans-inhibition feedback gains; γ_D, γ_N: degradation rates"
+    role: "Proves that when cross-cellular Dll4-Notch1 gain g_D g_N exceeds intrinsic decay γ_D γ_N, the alternating Brillouin-zone k = π mode grows exponentially while the uniform k = 0 mode is damped, generating salt-and-pepper Tip-Stalk alternation"
+    source_citation: "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol. 4(3):e1000052; Collier et al. (1996) J. Theor. Biol. 183(4):429-446"
+    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L135-L255"
+
+  - id: ibrahim-vascular-angiogenesis-notch-2
+    law_name: "Hellström et al. (2007) DAPT / Dll4-Null Notch Blockade All-Tip Hypersprouting Collapse Law"
+    formula: "V_i = V_max M_tot^p / (M_tot^p + N_i^p),  N_i = 0  =>  V_i = V_max ∀ i  =>  V_1 - V_2 = 0  =>  M_stalk = M - M_tip = 0 (100% tip hypersprouting)"
+    lean_decl: "MathOfBiology.Loop_060.vegfr2_notch_hill_residual"
+    lean_theorem: "MathOfBiology.Loop_060.hellstrom_dapt_notch_blockade_all_tip_hypersprouting"
+    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L83-L110"
+    lean_code: |
+      def vegfr2_notch_hill_residual (V_i V_max M_p N_p : Int) : Int := V_i * (M_p + N_p) - V_max * M_p
+      def vessel_stalk_cell_count (M M_tip : Int) : Int := M - M_tip
+      theorem hellstrom_dapt_notch_blockade_all_tip_hypersprouting
+          (V_max M_p M : Int) :
+          vegfr2_notch_hill_residual V_max V_max M_p 0 = 0 ∧
+          antisymmetric_tip_stalk_mode V_max V_max = 0 ∧
+          vessel_stalk_cell_count M M = 0
+    variables: "V_i: VEGFR2 receptor expression; V_max: unrepressed maximal VEGFR2 transcription; M_tot: Notch1 half-repression threshold; N_i: active Notch1 signaling; M: vessel endothelial cell count"
+    role: "Proves that pharmacological γ-secretase Notch blockade (DAPT, k_t = 0 => N_i = 0) or Dll4 loss abolishes VEGFR2 repression across all endothelial cells, eliminating tip-stalk contrast and collapsing stalk cells to zero (100% all-tip hypersprouting)"
+    source_citation: "Hellström et al. (2007) Nature 445(7129):776-780; Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol. 4(3):e1000052"
+    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L260-L390"
+
+  - id: ibrahim-vascular-angiogenesis-notch-3
+    law_name: "Chappell et al. (2009) & Jakobsson et al. (2010) VEGFR1 (sFlt1) Decoy-Receptor Sequestration Window Shift Law"
+    formula: "VEGF_eff = VEGF_raw - α_F F_flt1 < V_osc  when  VEGF_raw - V_osc < α_F F_flt1"
+    lean_decl: "MathOfBiology.Loop_060.flt1_sequestered_vegf"
+    lean_theorem: "MathOfBiology.Loop_060.chappell_flt1_decoy_sequestration_window_rescue"
+    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L117-L143"
+    lean_code: |
+      def flt1_sequestered_vegf (VEGF_raw alpha_F F_flt1 : Int) : Int := VEGF_raw - alpha_F * F_flt1
+      def salt_and_pepper_window_margin (V_osc VEGF_eff : Int) : Int := V_osc - VEGF_eff
+      theorem chappell_flt1_decoy_sequestration_window_rescue
+          (VEGF_raw V_osc alpha_F F_flt1 : Int)
+          (h_overload : V_osc ≤ VEGF_raw)
+          (h_decoy : VEGF_raw - V_osc < alpha_F * F_flt1) :
+          flt1_sequestered_vegf VEGF_raw alpha_F F_flt1 < VEGF_raw ∧
+          0 < salt_and_pepper_window_margin V_osc (flt1_sequestered_vegf VEGF_raw alpha_F F_flt1)
+    variables: "VEGF_raw: extracellular unsequestered VEGF-A concentration; VEGF_eff: bioavailable pericellular VEGF-A; F_flt1: soluble VEGFR1 (sFlt1) decoy concentration; α_F: decoy binding affinity; V_osc: synchronous oscillation threshold"
+    role: "Proves that pericellular soluble VEGFR1 (sFlt1) decoy sequestration lowers effective VEGF below the synchronous-oscillation ceiling V_osc, rescuing stable salt-and-pepper Tip-Stalk selection under high VEGF overload"
+    source_citation: "Chappell et al. (2009) Dev. Cell 17(3):377-386; Jakobsson et al. (2010) Nat. Cell Biol. 12(10):943-953"
+    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L395-L505"

@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "dataset_id": "glimm-2014-ho-2019-avian-feather-bud-hexagonal-v1",
+    "title": "Glimm, Bhat & Newman (2014) Dev. Biol. 395:139-149 & Ho et al. (2019) PLoS Biol. 17:e3000132 Avian Feather Bud Hexagonal Array & Traveling Competence Wave Reference Dataset",
+    "sources": [
+      {
+        "id": "glimm2014",
+        "citation": "Glimm T, Bhat R, Newman SA (2014). Modeling happens in rows: Traveling waves in dermal condensation of avian feather primordia. Developmental Biology 395(1):139-149.",
+        "doi": "10.1016/j.ydbio.2014.08.030"
+      },
+      {
+        "id": "ho2019",
+        "citation": "Ho WKW, Freem L, Zhao D, Painter KJ, Woolley TE, Gaffney EA, et al. (2019). Feather arrays are patterned by interacting signaling and mechanical waves. PLOS Biology 17(2):e3000132.",
+        "doi": "10.1371/journal.pbio.3000132"
+      },
+      {
+        "id": "michon2008",
+        "citation": "Michon F, Forest L, Collomb E, Demongeot J, Dhouailly D (2008). BMP2 and BMP7 Play Antagonistic Roles in Feather Primordium Formation: A Mechanistic Model. PLOS ONE 3(4):e1942.",
+        "doi": "10.1371/journal.pone.0001942"
+      },
+      {
+        "id": "bailleul2019",
+        "citation": "Bailleul R, Curantz C, Desmarquet-Trin Dinh C, Hidalgo M, Touboul J, Manceau M (2019). Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning. PLOS Biology 17(10):e3000448.",
+        "doi": "10.1371/journal.pbio.3000448"
+      }
+    ],
+    "specimens": {
+      "chick_feather_bud_hexagonal_specimen": {
+        "file": "datasets/avian_feather_bud_hexagonal/chick_feather_bud_hexagonal_specimen.jpg",
+        "sha256": "ce18b1c0e01ecb20e137a700129b328815ba10f236e8620d20ef66bbc8e7a03c",
+        "width": 1200,
+        "height": 903,
+        "species": "Gallus gallus (Embryonic chick E6.5+24h to E6.5+48h dorsal skin feather tract whole-mount CTNNB1/EDAR/EDA in situ hybridization and high-magnification 60-deg hexagonal feather bud lattice)",
+        "author": "William K. W. Ho, Kevin J. Painter, Thomas E. Woolley, Denis J. Headon et al. (PLOS Biology 17(2):e3000132, 2019, Fig. 3)",
+        "license": "CC BY 4.0",
+        "source_url": "https://doi.org/10.1371/journal.pbio.3000132.g003",
+        "panel_b_hexagonal_roi_xyxy": [494, 24, 770, 218],
+        "panel_a_24h_roi_xyxy": [32, 242, 126, 338],
+        "panel_a_48h_roi_xyxy": [136, 242, 232, 338],
+        "observed_bud_count_panel_b": 24,
+        "observed_interior_voronoi_p6": 0.75,
+        "pattern_type": "row_by_row_traveling_wave_hexagonal_feather_primordia_lattice"
+      },
+      "scout_manifest": {
+        "file": "datasets/avian_feather_bud_hexagonal/scout_manifest.json",
+        "sha256": "1ff38c1e609c69ea4826a33e48d962da2821dc4d04051d6919c440326a4da2ec"
+      },
+      "paper_citations": {
+        "file": "datasets/avian_feather_bud_hexagonal/paper_citations.bib",
+        "sha256": "9d17147a43097e6e05ec0ecb2d2c9d68ff9e6606aad26861feb4be0736eb9bb7"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Glimm, Bhat & Newman (2014) Dev. Biol. 395:139-149 & Ho et al. (2019) PLoS Biol. 17:e3000132 (Coupled Keller-Segel Dermal Chemotaxis + FGF20/BMP4 Lateral Inhibition + Mediolateral EDA Traveling Competence Wave)",
+    "dermal_cell_density_pde": "dn/dt = D_n * Lap(n) - chi * div(n * grad(c)) + r_n * n * (1 - n / K_n)",
+    "fgf20_chemoattractant_pde": "dc/dt = D_c * Lap(c) + s_w(x, t) * alpha_c * n^2 / ((1 + beta_b * b) * (1 + kappa_c * n^2)) - mu_c * c",
+    "bmp4_inhibitor_pde": "db/dt = D_b * Lap(b) + s_w(x, t) * alpha_b * n^2 - mu_b * b",
+    "eda_competence_wavefront": "s_w(x, t) = 0.5 * (1 + tanh((v_w * t + x_0 - |x|) / xi_w))",
+    "boundary_conditions": "Periodic along anteroposterior axis y in [0, L_y], zero-flux Neumann along mediolateral axis x in [-L_x/2, L_x/2]",
+    "linear_stability_and_geometry_invariants": {
+      "keller_segel_chemotactic_threshold": "chi * n_0 * f_c > D_n * mu_c (supercritical FGF20 chemotaxis required for dermal condensation; chi = 0 in scaleless FGF20-/- or Latrunculin mechanical blockade yields uniform stability)",
+      "equilateral_row_offset_identity": "(Delta_x)^2 + (lambda_y / 2)^2 = lambda_y^2  <=>  4 * (Delta_x)^2 = 3 * lambda_y^2  <=>  Delta_x = (sqrt(3)/2) * lambda_y = 0.8660254 * lambda_y",
+      "traveling_wave_hexagonal_locking": "Sequential row-by-row competence propagation at moderate wave speed v_w templates each new row r+1 into the BMP4 inhibitory saddles at half-period offset Delta_y = lambda_y / 2 of row r, achieving crystalline hexagonal packing P_6 >= 0.85 vs defective polycrystalline Voronoi packing P_6 <= 0.55 under simultaneous global competence (v_w -> inf)."
+    }
+  },
+  "canonical_parameters": {
+    "D_n": 0.025,
+    "D_c": 0.04,
+    "D_b": 0.45,
+    "chi_wt": 0.24,
+    "chi_critical": 0.05,
+    "n_0": 1.0,
+    "K_n": 2.0,
+    "r_n": 0.08,
+    "alpha_c": 0.25,
+    "alpha_b": 0.30,
+    "beta_b": 1.20,
+    "kappa_c": 0.25,
+    "mu_c": 0.20,
+    "mu_b": 0.25,
+    "lambda_y_um": 280.0,
+    "row_spacing_dx_um": 242.4871130596428,
+    "hexagonal_row_ratio_sqrt3_over_2": 0.8660254037844386,
+    "wave_speed_wt_um_per_h": 25.0,
+    "xi_w": 1.5,
+    "seed": 2018
+  },
+  "experimental_phenotypes": {
+    "wild_type_traveling_wave": {
+      "description": "Ho et al. (2019) Figs. 1B, 3A-B, 4C-D & Glimm et al. (2014) Figs. 3-5: Bilateral EDA/mechanical competence wave advancing mediolaterally at optimal wave speed v_w = 0.22 grid/step templates sequential staggered rows at Delta_y = lambda_y / 2 and Delta_x = (sqrt(3)/2)*lambda_y, yielding a near-defect-free hexagonal feather bud array (P_6 >= 0.85, |psi_6| >= 0.82).",
+      "wave_speed_vw": 0.22,
+      "chi": 0.24,
+      "expected_p6_min": 0.85,
+      "expected_psi6_min": 0.80
+    },
+    "simultaneous_global_competence_fc_eda1": {
+      "description": "Ho et al. (2019) Figs. 1C (FGF-medium), 3D-E (Fc-chEDA1 global EDA flooding) & Glimm et al. (2014) Fig. 6: Instantaneous global competence (v_w -> inf) nucleates feather buds simultaneously across the entire dorsal skin without row-by-row phase pinning, producing a polycrystalline array rich in 5-7 topological defects (P_6 approx 0.45-0.55).",
+      "wave_speed_vw": 1000.0,
+      "chi": 0.24,
+      "expected_p6_range": [0.35, 0.58]
+    },
+    "ecto_d2_bmp_narrowed_wave": {
+      "description": "Ho et al. (2019) Figs. 3D-I (Ecto-D2 EDA decoy receptor / LDN): Retarded competence wave speed (v_w = 0.11, 0.5x WT) restricts feather bud initiation to a narrowed medial tract (~0.55-0.65x WT tract width) while preserving local hexagonal row ordering within the patterned core.",
+      "wave_speed_vw": 0.11,
+      "chi": 0.24,
+      "expected_tract_width_ratio_range": [0.50, 0.72]
+    },
+    "scaleless_fgf20_null_mutant": {
+      "description": "Ho et al. (2019) Fig. 1 & Hughes et al. (2018) (scaleless sc/sc mutant lacking functional FGF20): Loss of chemotactic FGF20 signaling (chi = 0.0 < chi_c) abolishes dermal mesenchymal condensation across the dorsal tract (0 feather buds).",
+      "wave_speed_vw": 0.22,
+      "chi": 0.0,
+      "expected_bud_count": 0
+    },
+    "latrunculin_mechanical_blockade": {
+      "description": "Ho et al. (2019) Fig. 1C, F, G (Latrunculin A / Blebbistatin actomyosin cell-motility blockade): Suppressing mesenchymal traction and motility (chi = 0.01 < chi_c, elevated damping) prevents cell clustering and abolishes discrete FGF20/BMP4 spots (0 feather buds).",
+      "wave_speed_vw": 0.22,
+      "chi": 0.01,
+      "expected_bud_count": 0
+    }
+  }
+}

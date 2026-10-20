@@ -193,9 +193,27 @@ CANONICAL_MODEL_SPECS: dict[str, dict] = {
 }
 
 
-def compute_input_dataset_sha256(sim_id: str) -> dict[str, str]:
+def _load_dynamic_loop_spec(sim_id: str) -> dict:
+    p = HERE / "math_kg_loops" / f"{sim_id}.yaml"
+    if p.exists():
+        try:
+            return yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+        except Exception:
+            return {}
+    return {}
+
+
+def compute_input_dataset_sha256(sim_id: str, sim_doc: dict | None = None) -> dict[str, str]:
     """Compute SHA-256 digests for all declared upstream input datasets/fixtures of `sim_id`."""
-    spec = CANONICAL_MODEL_SPECS.get(sim_id, {})
+    spec = dict(CANONICAL_MODEL_SPECS.get(sim_id, {}))
+    if not spec:
+        dyn = _load_dynamic_loop_spec(sim_id)
+        spec = dict(dyn.get("model_spec") or (sim_doc or {}).get("model_spec") or {})
+        if not spec.get("inputs") and (sim_doc or {}).get("source_refs"):
+            spec["inputs"] = [
+                r["id"] for r in (sim_doc or {}).get("source_refs", [])
+                if isinstance(r, dict) and isinstance(r.get("id"), str) and (ROOT / r["id"]).is_file()
+            ]
     digests: dict[str, str] = {}
     for rel in spec.get("inputs", []):
         p = ROOT / rel
@@ -204,13 +222,16 @@ def compute_input_dataset_sha256(sim_id: str) -> dict[str, str]:
     return digests
 
 
-def compute_spec_fingerprint(sim_id: str, script: str | None = None) -> str:
+def compute_spec_fingerprint(sim_id: str, script: str | None = None, sim_doc: dict | None = None) -> str:
     """Compute the canonical SHA-256 `spec_fingerprint` of the simulation's mathematical
     model specification and input dataset digests (independent of Matplotlib/Pillow bytes)."""
-    spec = dict(CANONICAL_MODEL_SPECS.get(sim_id, {"sim_id": sim_id}))
+    spec = dict(CANONICAL_MODEL_SPECS.get(sim_id, {}))
+    if not spec:
+        dyn = _load_dynamic_loop_spec(sim_id)
+        spec = dict(dyn.get("model_spec") or (sim_doc or {}).get("model_spec") or {"sim_id": sim_id})
     if script:
         spec["script"] = script
-    spec["input_dataset_sha256"] = compute_input_dataset_sha256(sim_id)
+    spec["input_dataset_sha256"] = compute_input_dataset_sha256(sim_id, sim_doc=sim_doc)
     canonical_bytes = json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
     return hashlib.sha256(canonical_bytes).hexdigest()
 
@@ -854,28 +875,54 @@ def measure_turing(gif: Path, N: int = 200, script: Path | None = None) -> list:
             spots = by_id["mitosis_spots"]
             ctrl = by_id["equal_diffusion_control"]
             out.extend([
-                M("Pearson coral labyrinth (F=0.055, k=0.062) spectral ring wavenumber k*",
+                M("Pearson coral labyrinth (F=0.054, k=0.0616) spectral ring wavenumber k*",
                   float(coral["k_star_cycles"]), "cycles / domain",
-                  "peak of 2D radial PSD P(k) on N=160x160 grid after 4000 steps",
+                  "sub-bin parabolic peak of 2D radial PSD P(k) on N=160x160 grid",
                   reference=">0 (Turing band-pass ring)",
-                  source="Pearson 1993 Science 261:189 Pattern η/γ",
-                  note=f"λ* = {coral['wavelength_grid_cells']:.2f} grid cells, ring sharpness = {coral['ring_sharpness']:.1f}",
+                  source="Pearson 1993 Science 261:189 Pattern κ (inside Saddle-Node)",
+                  note=f"λ* = {coral['wavelength_grid_cells']:.2f} grid cells (analytical λ_c = {coral.get('lambda_c_analytical', float('nan')):.2f}), ring sharpness = {coral['ring_sharpness']:.1f}",
                   derived_from="script"),
                 M("Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth",
                   int(spots["n_components"]), "count",
                   "connected high-activator components in self-replicating spot regime",
                   reference=int(coral["n_components"]),
-                  source="Pearson 1993 Science 261:189 Pattern λ/θ vs Pattern η/γ",
-                  note="spots remain disconnected (>100 components) whereas coral labyrinth percolates",
+                  source="Pearson 1993 Science 261:189 Pattern λ vs Pattern κ",
+                  note="spots remain disconnected whereas coral labyrinth percolates",
                   derived_from="script"),
-                M("equal-diffusion negative control (Du=Dv=0.10) spectral wavenumber k*",
+                M("steady-state equal-diffusion negative control (Du=Dv=0.20) spectral wavenumber k*",
                   float(ctrl["k_star_cycles"]), "cycles / domain",
-                  "dominant wavenumber when differential diffusivity is removed (Du = Dv = 0.10 at F=0.055, k=0.062)",
+                  "dominant wavenumber when differential diffusivity is removed around nontrivial steady state (U_*, V_*)",
                   reference=0.0,
                   source="Turing 1952 Phil. Trans. R. Soc. B 237:37 (diffusion-driven instability requires Du != Dv)",
                   note=f"spatial σ_V = {ctrl['std_v']:.2e}, ring sharpness = {ctrl['ring_sharpness']:.1f}",
                   derived_from="script"),
             ])
+            if "turing_1952" in res and "bio_specimens" in res:
+                t52 = res["turing_1952"]
+                bio = res["bio_specimens"]
+                out.extend([
+                    M("Turing (1952) Sec. 8-9 analytical critical wavelength λ_c = 2π/k_c",
+                      round(float(t52["lambda_c"]), 3), "cells",
+                      "2*pi / sqrt((d*D_X + a*D_Y) / (2*D_X*D_Y)) on 2-morphogen activator-inhibitor system",
+                      reference=5.62,
+                      source="Turing 1952 Phil. Trans. R. Soc. B 237:37 Sec. 8-9",
+                      note=f"d = {t52['diffusivity_ratio_d']:.2f} > d_c = {t52['critical_diffusivity_ratio_dc']:.3f}, N=20 ring dominant mode s* = {t52['measured_ring_mode']}",
+                      derived_from="script"),
+                    M("Pomacanthus imperator segmented skin stripe wavelength",
+                      round(float(bio["poma_mean_spacing_px"]), 2), "px",
+                      "mean dorsoventral inter-stripe peak spacing on SHA-256-locked specimen ROI",
+                      reference="8–16 px (CV < 0.35)",
+                      source="Kondo & Asai 1995 Nature 376:765-768",
+                      note=f"CV = {bio['poma_spacing_cv']:.3f}, topological Y-branch junctions = {bio['poma_y_junctions']}, ontogenetic r = {bio['kondo_corr_r']:.4f}",
+                      derived_from="script"),
+                    M("Ostracion meleagris segmented Turing spots (DoG + Delaunay)",
+                      int(bio["ost_n_spots"]), "spots",
+                      "Difference-of-Gaussians segmented spots on SHA-256-locked boxfish specimen ROI",
+                      reference=">=15 hexagonal spots",
+                      source="Turing 1952 / Pearson 1993 spot lattice",
+                      note=f"mean Delaunay nearest-neighbor spacing = {bio['ost_spot_spacing_px']:.2f} px (CV = {bio['ost_spot_spacing_cv']:.3f})",
+                      derived_from="script"),
+                ])
     return out
 
 
@@ -1576,6 +1623,24 @@ def main():
                 out["measurements"][sid] = measure_petroff_stromatolite(ROOT / sim["script"])
             elif sid == "kahng-coral-geometry":
                 out["measurements"][sid] = measure_kahng_coral_geometry(ROOT / sim["script"])
+            else:
+                # Dynamic per-loop measurement discovery (no edits to measure_outputs.py needed)
+                dyn_meas: list = []
+                if script_rel and (ROOT / script_rel).exists():
+                    import importlib.util
+                    spec_mod = importlib.util.spec_from_file_location(f"loop_{sid.replace('-', '_')}", ROOT / script_rel)
+                    if spec_mod and spec_mod.loader:
+                        mod = importlib.util.module_from_spec(spec_mod)
+                        spec_mod.loader.exec_module(mod)
+                        if hasattr(mod, "measure_morphoeval") and callable(mod.measure_morphoeval):
+                            dyn_meas.extend(mod.measure_morphoeval())
+                if not dyn_meas:
+                    dyn_doc = _load_dynamic_loop_spec(sid)
+                    if dyn_doc.get("measurements"):
+                        dyn_meas.extend(dyn_doc["measurements"])
+                    elif sim.get("measurements"):
+                        dyn_meas.extend(sim["measurements"])
+                out["measurements"][sid] = dyn_meas
         except Exception as ex:  # a failed measurement is reported, never silently skipped
             out["measurements"][sid] = [{"name": "measurement failed", "value": None, "unit": None,
                                          "method": f"{type(ex).__name__}: {ex}"}]
@@ -1591,9 +1656,9 @@ def main():
         elif out["outputs"].get(sid):
             primary_art = out["outputs"][sid][0]["artifact_sha256"]
         out["provenance"][sid] = {
-            "spec_fingerprint": compute_spec_fingerprint(sid, script_rel),
+            "spec_fingerprint": compute_spec_fingerprint(sid, script_rel, sim_doc=sim),
             "artifact_sha256": primary_art,
-            "input_dataset_sha256": compute_input_dataset_sha256(sid),
+            "input_dataset_sha256": compute_input_dataset_sha256(sid, sim_doc=sim),
         }
         if sim.get("claim_boundary"):
             out["provenance"][sid]["claim_boundary"] = sim["claim_boundary"]

@@ -1,0 +1,81 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-oster-mechanochemical-chondrogenesis> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-oster-mechanochemical-chondrogenesis-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-oster-mechanochemical-chondrogenesis-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) mechanochemical limb chondrogenesis — Parameter expressivity: 90/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Evaluates 5 proximo-distal mechanochemical regimes across domain width W/lambda_c and traction tau (subcritical tau=0.85 -> m=0, stylopod W=lambda_c -> m=1, zeugopod W=2*lambda_c -> m=2, forelimb autopod W=4*lambda_c -> m=4, hindlimb autopod W=5*lambda_c -> m=5), maps the 2D (W/lambda_c, tau) phase diagram (Panel D), simulates the 2D limb paddle condensation and ECM displacement vector field (Panel C), and exposes CLI flags (`--tau`, `--mode`, `--seed`)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-oster-mechanochemical-chondrogenesis-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-oster-mechanochemical-chondrogenesis-parameter-expressivity-2> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-oster-mechanochemical-chondrogenesis-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "1983-oster-mechanochemical-chondrogenesis.py L280–L345" ;
+        dct:description "2D proximo-distal limb paddle condensation and viscoelastic ECM displacement field solver" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/1983-oster-mechanochemical-chondrogenesis.py#L280-L345> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-oster-mechanochemical-chondrogenesis-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "1983-oster-mechanochemical-chondrogenesis.py L580–L645" ;
+        dct:description "5-regime transverse PDE sweep and 2D (W/lambda_c, tau) phase diagram" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/1983-oster-mechanochemical-chondrogenesis.py#L580-L645> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/978-1-4615-6983-1_6>,
+            <https://doi.org/10.1093/imammb/1.1.51>,
+            <https://doi.org/10.1242/dev.78.1.83>,
+            <https://doi.org/10.1242/dev.89.1.93> .
+    <https://doi.org/10.1007/978-1-4615-6983-1_6> dct:date "1986"^^xsd:gYear ;
+        dct:title "A morphogenetic approach to the origin and basic organization of the tetrapod limb" .
+    <https://doi.org/10.1093/imammb/1.1.51> dct:date "1984"^^xsd:gYear ;
+        dct:title "Generation of biological pattern and form" .
+    <https://doi.org/10.1242/dev.78.1.83> dct:date "1983"^^xsd:gYear ;
+        dct:title "Mechanical aspects of mesenchymal morphogenesis" .
+    <https://doi.org/10.1242/dev.89.1.93> dct:date "1985"^^xsd:gYear ;
+        dct:title "A model for chondrogenic condensations in the developing limb: the role of extracellular matrix and cell tractions" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) mechanochemical limb chondrogenesis — Parameter expressivity 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:40:53Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-oster-mechanochemical-chondrogenesis-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

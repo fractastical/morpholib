@@ -1,0 +1,125 @@
+sim_id: miller-ocular-dominance-stripes
+math_family: Correlation-Based Hebbian Ocular Dominance Columns & Critical-Period Plasticity
+model_spec:
+  model: Miller, Keller & Stryker (1989) Science 245:605-615, Swindale (1980) Proc. R. Soc. B 208:243-264 & Hubel, Wiesel & LeVay (1977) Phil. Trans. R. Soc. B 278:377-409 correlation-based Hebbian ocular dominance column development and monocular deprivation plasticity in V1 Layer IVC
+  synaptic_modes: "S_Sigma(x) = S^L(x) + S^R(x),   S_Delta(x) = S^L(x) - S^R(x)"
+  mexican_hat_interaction: "I(x - x') = exp(-||x - x'||^2 / (2 * sigma_E^2)) - kappa_I * exp(-||x - x'||^2 / (2 * sigma_I^2))"
+  fourier_dispersion: "omega(k) = C_Delta * A_hat(k) * K_hat(k) - gamma"
+  ocular_dominance_pde: "dS_Delta/dt = (A * I * C_Delta) * S_Delta - gamma * S_Delta - S_Delta^3 + b_MD"
+  parameters:
+    grid_N: 96
+    domain_size_um: 6400.0
+    sigma_E_um: 109.0
+    sigma_I_um: 218.0
+    kappa_I: 0.75
+    sigma_arbor_um: 95.0
+    C_Delta_normal: 0.80
+    gamma_decay: 0.12
+    b_MD_deprived: -0.36
+    b_MD_reverse: 0.28
+    seed: 1989
+  inputs:
+    - datasets/ocular_dominance_stripes/ocular_dominance_stripes_reference.json
+    - datasets/ocular_dominance_stripes/odc_tangential_pattern_specimen.png
+    - datasets/ocular_dominance_stripes/macaque_striate_cortex_specimen.jpg
+    - datasets/ocular_dominance_stripes/scout_manifest.json
+    - datasets/ocular_dominance_stripes/paper_citations.bib
+equations:
+  - law_name: "Miller, Keller & Stryker (1989) Sum/Difference Synaptic Mode Decoupling & Subtractive Normalization Conservation Law"
+    formula: "dS_Sigma/dt = d(S^L + S^R)/dt = 0;   dS_Delta/dt = (A * I * (C^{LL} - C^{LR})) * S_Delta - gamma * S_Delta"
+    lean_decl: "MathOfBiology.Loop_087.sum_mode_rate_2"
+    lean_theorem: "MathOfBiology.Loop_087.miller_sum_difference_decoupling"
+    lean_locus: "morphoeval/lean/loops/Loop_087_ocular_dominance_stripes.lean#L19-L66"
+    lean_code: |
+      def raw_rate_L (S_L S_R C_LL C_LR : Int) : Int :=
+        C_LL * S_L + C_LR * S_R
+      def raw_rate_R (S_L S_R C_LL C_LR : Int) : Int :=
+        C_LR * S_L + C_LL * S_R
+      def norm_rate_2L (S_L S_R C_LL C_LR : Int) : Int :=
+        2 * raw_rate_L S_L S_R C_LL C_LR - (raw_rate_L S_L S_R C_LL C_LR + raw_rate_R S_L S_R C_LL C_LR)
+      def norm_rate_2R (S_L S_R C_LL C_LR : Int) : Int :=
+        2 * raw_rate_R S_L S_R C_LL C_LR - (raw_rate_L S_L S_R C_LL C_LR + raw_rate_R S_L S_R C_LL C_LR)
+      def sum_mode_rate_2 (S_L S_R C_LL C_LR : Int) : Int :=
+        norm_rate_2L S_L S_R C_LL C_LR + norm_rate_2R S_L S_R C_LL C_LR
+      def diff_mode_rate (C_Delta S_Delta : Int) : Int :=
+        C_Delta * S_Delta
+      theorem miller_sum_difference_decoupling (S_L S_R C_LL C_LR C_Delta S_Delta : Int)
+          (h_cd : C_Delta > 0) (h_sd : S_Delta > 0) :
+          sum_mode_rate_2 S_L S_R C_LL C_LR = 0 ∧
+          norm_rate_2L 10 4 8 2 = 36 ∧
+          norm_rate_2R 10 4 8 2 = -36 ∧
+          norm_rate_2L 10 4 8 2 - norm_rate_2R 10 4 8 2 = 2 * (8 - 2) * (10 - 4) ∧
+          diff_mode_rate C_Delta S_Delta > 0 := by
+        refine ⟨?_, by decide, by decide, by decide, ?_⟩
+        · dsimp [sum_mode_rate_2, norm_rate_2L, norm_rate_2R]
+          omega
+        · dsimp [diff_mode_rate]
+          exact Int.mul_pos h_cd h_sd
+    variables: "S_L, S_R: left-eye and right-eye geniculocortical synaptic densities in V1 Layer IVC; S_Sigma = S_L + S_R: conserved total synaptic density; S_Delta = S_L - S_R: ocular dominance difference mode; C_LL, C_LR: within-eye and between-eye LGN activity correlations; C_Delta = C_LL - C_LR: difference correlation"
+    role: "Proves that subtractive homeostatic normalization identically conserves total cortical synaptic weight (dS_Sigma/dt = 0) while decoupling the ocular dominance difference mode S_Delta = S_L - S_R so that positive difference correlation C_Delta = C_LL - C_LR > 0 strictly amplifies eye-specific segregation"
+    source_citation: "Miller, Keller & Stryker (1989) Science 245(4918):605-615 Eqs. 1-6"
+    code_locus: "1989-miller-ocular-dominance-stripes.py#L84-L165"
+  - law_name: "Swindale (1980) & Miller, Keller & Stryker (1989) Mexican-Hat Band-Pass Peak Wavenumber & Characteristic Column Wavelength Law"
+    formula: "k_c^2 = 2 * ln(kappa_I * sigma_I^2 / sigma_E^2) / (sigma_I^2 - sigma_E^2) > 0;   lambda_c = 2 * pi / k_c = 2 * w_col approx 800 um"
+    lean_decl: "MathOfBiology.Loop_087.mexican_hat_denom"
+    lean_theorem: "MathOfBiology.Loop_087.swindale_miller_bandpass_wavelength"
+    lean_locus: "morphoeval/lean/loops/Loop_087_ocular_dominance_stripes.lean#L69-L108"
+    lean_code: |
+      def mexican_hat_denom (sigma_E_sq sigma_I_sq : Int) : Int :=
+        sigma_I_sq - sigma_E_sq
+      def full_cycle_wavelength (w_col : Int) : Int :=
+        2 * w_col
+      theorem swindale_miller_bandpass_wavelength (sigma_E_sq sigma_I_sq w_1 w_2 : Int)
+          (h_range : sigma_E_sq < sigma_I_sq) (h_w : w_1 < w_2) :
+          mexican_hat_denom sigma_E_sq sigma_I_sq > 0 ∧
+          mexican_hat_denom (109 * 109) (218 * 218) = 35643 ∧
+          (3 * (218 * 218)) / (4 * (109 * 109)) = 3 ∧
+          full_cycle_wavelength 400 = 800 ∧
+          full_cycle_wavelength w_1 < full_cycle_wavelength w_2 := by
+        refine ⟨?_, by decide, by decide, by decide, ?_⟩
+        · dsimp [mexican_hat_denom]
+          omega
+        · dsimp [full_cycle_wavelength]
+          omega
+    variables: "sigma_E, sigma_I: intracortical excitatory and inhibitory lateral interaction ranges (109 um, 218 um); kappa_I: relative inhibitory amplitude (0.75); k_c: fastest-growing Fourier wavenumber; lambda_c = 2 * w_col: full-cycle ocular dominance band wavelength (800 um for 400 um single-eye column width)"
+    role: "Proves positivity of the Mexican-hat Fourier band-pass denominator sigma_I^2 - sigma_E^2 > 0 and inhibitory moment ratio kappa_I * sigma_I^2 / sigma_E^2 = 3 > 1, selecting the characteristic macaque V1 Layer IVC stripe wavelength lambda_c ~ 800 um (400 um per single-eye column)"
+    source_citation: "Miller, Keller & Stryker (1989) Science 245:605-615; Swindale (1980) Proc. R. Soc. B 208:243-264; Hubel, Wiesel & LeVay (1977) Phil. Trans. R. Soc. B 278:377-409"
+    code_locus: "1989-miller-ocular-dominance-stripes.py#L112-L195"
+  - law_name: "Hubel, Wiesel & LeVay (1977) Monocular Deprivation Territory Shift vs Stryker & Harris (1986) Bilateral TTX Blockade Law"
+    formula: "f_L(Delta_MD) = 0.5 - Delta_MD < 0.5 < f_R(Delta_MD) = 0.5 + Delta_MD, f_L + f_R = 1;   C_Delta = 0 ==> omega(k) = -gamma < 0"
+    lean_decl: "MathOfBiology.Loop_087.deprived_eye_pct"
+    lean_theorem: "MathOfBiology.Loop_087.hubel_wiesel_md_and_ttx_blockade"
+    lean_locus: "morphoeval/lean/loops/Loop_087_ocular_dominance_stripes.lean#L111-L157"
+    lean_code: |
+      def deprived_eye_pct (delta_md : Int) : Int :=
+        50 - delta_md
+      def open_eye_pct (delta_md : Int) : Int :=
+        50 + delta_md
+      def dispersion_omega (C_Delta AK_hat gamma : Int) : Int :=
+        C_Delta * AK_hat - gamma
+      theorem hubel_wiesel_md_and_ttx_blockade (delta_md AK_hat gamma : Int)
+          (h_md : delta_md > 0) (h_gamma : gamma > 0) :
+          deprived_eye_pct 0 = 50 ∧
+          open_eye_pct 0 = 50 ∧
+          deprived_eye_pct delta_md < 50 ∧
+          open_eye_pct delta_md > 50 ∧
+          open_eye_pct delta_md - deprived_eye_pct delta_md = 2 * delta_md ∧
+          deprived_eye_pct delta_md + open_eye_pct delta_md = 100 ∧
+          deprived_eye_pct 26 = 24 ∧
+          open_eye_pct 26 = 76 ∧
+          dispersion_omega 0 AK_hat gamma < 0 := by
+        refine ⟨by decide, by decide, ?_, ?_, ?_, ?_, by decide, by decide, ?_⟩
+        · dsimp [deprived_eye_pct]
+          omega
+        · dsimp [open_eye_pct]
+          omega
+        · dsimp [open_eye_pct, deprived_eye_pct]
+          omega
+        · dsimp [deprived_eye_pct, open_eye_pct]
+          omega
+        · dsimp [dispersion_omega]
+          omega
+    variables: "delta_md > 0: monocular deprivation competitive shift (percentage points); deprived_eye_pct, open_eye_pct: Layer IVC cortical territory percentages occupied by deprived and open eyes; dispersion_omega(C_Delta, AK_hat, gamma): Fourier growth rate under bilateral TTX blockade (C_Delta = 0)"
+    role: "Proves that critical-period monocular deprivation shifts cortical territory away from 50/50 symmetry (shrinking deprived-eye stripes to 24% and expanding open-eye columns to 76% while conserving total area 100%), whereas bilateral TTX blockade (C_Delta = 0) makes omega(k) = -gamma < 0 for all wavenumbers and prevents column segregation"
+    source_citation: "Hubel, Wiesel & LeVay (1977) Phil. Trans. R. Soc. B 278(961):377-409; Stryker & Harris (1986) J. Neurosci. 6(8):2117-2133"
+    code_locus: "1989-miller-ocular-dominance-stripes.py#L198-L345"

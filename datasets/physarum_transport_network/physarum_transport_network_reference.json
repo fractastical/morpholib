@@ -1,0 +1,186 @@
+{
+  "dataset_id": "physarum_transport_network_v1",
+  "title": "Tero et al. (2010) Science & Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. — Adaptive Tube Conductivity Network, Shortest-Path Phase Transition, Murray's Cube Law & Tokyo Rail Pareto Optimality in Physarum polycephalum",
+  "organism": "Physarum polycephalum (acellular plasmodial slime mold)",
+  "primary_sources": [
+    {
+      "citation": "Tero et al. (2010) Science 327(5964):439-442",
+      "doi": "10.1126/science.1177894",
+      "role": "Rules for biologically inspired adaptive network design: multi-source Kirchhoff Poiseuille flow coupled to sigmoidal shear-stress tube adaptation dD_ij/dt = |Q_ij|^gamma / (1 + |Q_ij|^gamma) - D_ij reproducing the Tokyo rail network and biological Physarum plasmodial veins across the gamma phase transition"
+    },
+    {
+      "citation": "Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. 244(4):553-564",
+      "doi": "10.1016/j.jtbi.2006.07.015",
+      "role": "Foundational Physarum solver proving two-path parallel competition winner-takes-all shortest-path selection for gamma > 1, coexistence of parallel loops for gamma < 1, and critical neutral line at gamma_c = 1"
+    },
+    {
+      "citation": "Nakagaki, Yamada & Toth (2000) Nature 407:470",
+      "doi": "10.1038/35035159",
+      "role": "Experimental demonstration that Physarum polycephalum prunes dead-end and longer parallel branches to connect food sources along minimum-length paths"
+    },
+    {
+      "citation": "Murray (1926) Proc. Natl. Acad. Sci. USA 12(3):207-214",
+      "doi": "10.1073/pnas.12.3.207",
+      "role": "Minimum-work vascular cube law r_0^3 = r_1^3 + r_2^3 arising in Hagen-Poiseuille tubes (D_ij propto r_ij^4) at equilibrium Q_ij propto D_ij^(3/4) <=> gamma = 4/3"
+    },
+    {
+      "citation": "Bonifaci, Mehlhorn & Varma (2012) J. Theor. Biol. 309:121-133",
+      "doi": "10.1016/j.jtbi.2012.06.017",
+      "role": "Lyapunov convergence proof that the Physarum dynamics dD_ij/dt = |Q_ij| - D_ij globally converges to the shortest source-sink path on general graphs"
+    }
+  ],
+  "governing_parameters": {
+    "source_flux_I0": 2.0,
+    "decay_rate_mu": 1.0,
+    "critical_exponent_gamma_c": 1.0,
+    "murray_exponent_gamma_m": 1.3333333333333333,
+    "optimal_tokyo_gamma": 1.8,
+    "dt_step": 0.08,
+    "initial_conductivity_D0": 0.5,
+    "two_path_L1": 1.0,
+    "two_path_L2": 2.0,
+    "default_seed": 2010
+  },
+  "two_path_competition_benchmarks": [
+    {
+      "regime_id": "sublinear_coexistence_gamma_06",
+      "gamma": 0.6,
+      "L1": 1.0,
+      "L2": 2.0,
+      "short_path_flux_share_Q1_over_I0_ref": 0.7401,
+      "short_to_long_conductivity_ratio_D1_over_D2_ref": 1.4241,
+      "state": "parallel_loop_coexistence"
+    },
+    {
+      "regime_id": "critical_shortest_path_gamma_10",
+      "gamma": 1.0,
+      "L1": 1.0,
+      "L2": 2.0,
+      "short_path_flux_share_Q1_over_I0_ref": 1.0000,
+      "short_to_long_conductivity_ratio_D1_over_D2_ref": 1000.0,
+      "state": "critical_shortest_path_selection"
+    },
+    {
+      "regime_id": "murray_cube_law_gamma_133",
+      "gamma": 1.3333,
+      "L1": 1.0,
+      "L2": 2.0,
+      "short_path_flux_share_Q1_over_I0_ref": 1.0000,
+      "short_to_long_conductivity_ratio_D1_over_D2_ref": 2500.0,
+      "state": "winner_takes_all_steiner"
+    },
+    {
+      "regime_id": "superlinear_pareto_gamma_18",
+      "gamma": 1.8,
+      "L1": 1.0,
+      "L2": 2.0,
+      "short_path_flux_share_Q1_over_I0_ref": 1.0000,
+      "short_to_long_conductivity_ratio_D1_over_D2_ref": 5000.0,
+      "state": "winner_takes_all_steiner"
+    }
+  ],
+  "gamma_phase_transition_sweep_tero2010_fig3": [
+    {
+      "gamma": 0.8,
+      "TL_MST_ref": 3.42,
+      "MD_MST_ref": 0.84,
+      "FT_ref": 0.96,
+      "betti_1_loops_ref": 28,
+      "regime": "dense_redundant_mesh"
+    },
+    {
+      "gamma": 1.0,
+      "TL_MST_ref": 2.68,
+      "MD_MST_ref": 0.85,
+      "FT_ref": 0.92,
+      "betti_1_loops_ref": 19,
+      "regime": "reticulate_transport_mesh"
+    },
+    {
+      "gamma": 1.2,
+      "TL_MST_ref": 2.18,
+      "MD_MST_ref": 0.86,
+      "FT_ref": 0.88,
+      "betti_1_loops_ref": 13,
+      "regime": "intermediate_fault_tolerant_mesh"
+    },
+    {
+      "gamma": 1.4,
+      "TL_MST_ref": 1.92,
+      "MD_MST_ref": 0.87,
+      "FT_ref": 0.85,
+      "betti_1_loops_ref": 10,
+      "regime": "murray_vascular_pareto_regime"
+    },
+    {
+      "gamma": 1.6,
+      "TL_MST_ref": 1.80,
+      "MD_MST_ref": 0.86,
+      "FT_ref": 0.83,
+      "betti_1_loops_ref": 8,
+      "regime": "physarum_biological_optimum"
+    },
+    {
+      "gamma": 1.8,
+      "TL_MST_ref": 1.75,
+      "MD_MST_ref": 0.85,
+      "FT_ref": 0.84,
+      "betti_1_loops_ref": 7,
+      "regime": "tokyo_rail_pareto_optimum"
+    },
+    {
+      "gamma": 2.1,
+      "TL_MST_ref": 1.38,
+      "MD_MST_ref": 0.93,
+      "FT_ref": 0.48,
+      "betti_1_loops_ref": 3,
+      "regime": "sparse_steiner_tree_transition"
+    },
+    {
+      "gamma": 2.4,
+      "TL_MST_ref": 1.12,
+      "MD_MST_ref": 0.98,
+      "FT_ref": 0.16,
+      "betti_1_loops_ref": 1,
+      "regime": "minimal_spanning_tree_limit"
+    }
+  ],
+  "tokyo_rail_and_physarum_empirical_benchmarks": {
+    "n_food_sources_kanto": 36,
+    "tokyo_rail_network": {
+      "TL_MST": 1.75,
+      "MD_MST": 0.85,
+      "FT": 0.86,
+      "cost_benefit_TL_at_FT80": 1.75
+    },
+    "real_physarum_plasmodium": {
+      "TL_MST_mean": 1.78,
+      "TL_MST_sd": 0.14,
+      "MD_MST_mean": 0.85,
+      "MD_MST_sd": 0.04,
+      "FT_mean": 0.83,
+      "FT_sd": 0.06
+    },
+    "minimum_spanning_tree_baseline": {
+      "TL_MST": 1.00,
+      "MD_MST": 1.00,
+      "FT": 0.00
+    }
+  },
+  "specimen_metadata": {
+    "filename": "physarum_polycephalum_specimen.jpg",
+    "source_title": "File:Physarum polycephalum plasmodium.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Physarum_polycephalum_plasmodium.jpg",
+    "license": "CC BY 2.5",
+    "author": "Frank Fox (www.mikro-foto.de) via Wikimedia Commons",
+    "resolution_px": [1024, 768],
+    "bytes": 563357,
+    "sha256": "86a37f7c73c8527b41b24519e8f141a8e9df8e4ed5600fc60d5263160dfc67e5",
+    "empirical_vein_area_fraction_ref": 0.1647,
+    "empirical_enclosed_loops_betti1_ref": 33,
+    "empirical_murray_cubic_ratio_mean_ref": 0.8926,
+    "empirical_murray_cubic_ratio_sd_ref": 0.2774,
+    "empirical_primary_trunk_fraction_ref": 0.5196,
+    "description": "Bright yellow acellular plasmodial transport network of Physarum polycephalum showing primary arterial trunk veins, degree-3 Y-junction bifurcations obeying Murray's cubic radius scaling, and closed fault-tolerant anastomosing loops."
+  }
+}

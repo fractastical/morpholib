@@ -1,0 +1,120 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-carmona-neural-crest-chase-and-run> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-carmona-neural-crest-chase-and-run-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-carmona-neural-crest-chase-and-run-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Carmona-Fontaine et al. (2008, 2011) & Theveneau et al. (2013) neural crest CIL, C3a co-attraction & Sdf1 chase-and-run migration — Morphometric validation: 53/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Computes 4 synthetic measurements in `measure_morphoeval()` (L215-250), but does not quantify cluster cohesion index `C_COA`, does not compare simulated vs empirical Forward Migration Index (`FMI`) and 6-hour displacement across the 5 regimes of Theveneau et al. (2013), and does not measure dorsoventral NC-to-placode separation or anteroposterior stream periodicity on `neural_crest_specimen.jpg`." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2012-carmona-neural-crest-chase-and-run.py L215–L250: 4 synthetic measurements without specimen segmentation or 5-regime empirical correlation <https://github.com/fractastical/morpholib/blob/317bc3c/2012-carmona-neural-crest-chase-and-run.py#L215-L250>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-cil-coa-attraction-at-contact-radius>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-cil-coa-contact-repulsion-at-zero-distance>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-no-placode-control-forward-migration-index>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-wildtype-chase-and-run-forward-migration-index> ;
+        pk:hasScore "0.53"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-cil-coa-attraction-at-contact-radius> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "cil_coa_attraction_at_contact_radius = 1.1015 force_units" ;
+        schema:measurementTechnique "Net homotypic pair force F_pair(R_CIL) = k_COA * exp(-R_CIL / l_COA) at d = R_CIL = 28 um" ;
+        schema:name "cil_coa_attraction_at_contact_radius" ;
+        schema:unitText "force_units" ;
+        schema:value "1.1015" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-cil-coa-attraction-at-contact-radius-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-cil-coa-attraction-at-contact-radius-reference> a schema:PropertyValue ;
+        schema:value "1.1019" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-cil-coa-contact-repulsion-at-zero-distance> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "cil_coa_contact_repulsion_at_zero_distance = -2.6 force_units" ;
+        schema:measurementTechnique "Net homotypic pair force F_pair(0) = -k_CIL + k_COA for k_CIL=4.2, k_COA=1.6 (Carmona-Fontaine et al. 2011)" ;
+        schema:name "cil_coa_contact_repulsion_at_zero_distance" ;
+        schema:unitText "force_units" ;
+        schema:value "-2.6" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-cil-coa-contact-repulsion-at-zero-distance-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-cil-coa-contact-repulsion-at-zero-distance-reference> a schema:PropertyValue ;
+        schema:value "-2.6" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-no-placode-control-forward-migration-index> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "no_placode_control_forward_migration_index = 0.0107 FMI" ;
+        schema:measurementTechnique "Null Forward Migration Index |FMI| in placode-ablated negative control (chi_Sdf1 = 0)" ;
+        schema:name "no_placode_control_forward_migration_index" ;
+        schema:unitText "FMI" ;
+        schema:value "0.0107" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-no-placode-control-forward-migration-index-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-no-placode-control-forward-migration-index-reference> a schema:PropertyValue ;
+        schema:value "0.04" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-wildtype-chase-and-run-forward-migration-index> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "wildtype_chase_and_run_forward_migration_index = 0.9449 FMI" ;
+        schema:measurementTechnique "Forward Migration Index (FMI = mean dx / path_length) in wild-type chase-and-run simulation (Theveneau et al. 2013 Fig. 2)" ;
+        schema:name "wildtype_chase_and_run_forward_migration_index" ;
+        schema:unitText "FMI" ;
+        schema:value "0.9449" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-wildtype-chase-and-run-forward-migration-index-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-measurement-wildtype-chase-and-run-forward-migration-index-reference> a schema:PropertyValue ;
+        schema:value "0.68" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2010.06.012>,
+            <https://doi.org/10.1016/j.devcel.2011.10.012>,
+            <https://doi.org/10.1038/nature07441>,
+            <https://doi.org/10.1038/ncb2772>,
+            <https://doi.org/10.1371/journal.pone.0104969> .
+    <https://doi.org/10.1016/j.devcel.2010.06.012> dct:date "2010"^^xsd:gYear ;
+        dct:title "Collective chemotaxis requires contact-dependent cell polarity" .
+    <https://doi.org/10.1016/j.devcel.2011.10.012> dct:date "2011"^^xsd:gYear ;
+        dct:title "Complement fragment C3a controls mutual cell attraction during collective cell migration" .
+    <https://doi.org/10.1038/nature07441> dct:date "2008"^^xsd:gYear ;
+        dct:title "Contact inhibition of locomotion in vivo controls neural crest directional migration" .
+    <https://doi.org/10.1038/ncb2772> dct:date "2013"^^xsd:gYear ;
+        dct:title "Chase-and-run between adjacent cell populations promotes directional collective migration" .
+    <https://doi.org/10.1371/journal.pone.0104969> dct:date "2014"^^xsd:gYear ;
+        dct:title "Directional collective cell migration emerges as a property of cell interactions" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Carmona-Fontaine et al. (2008, 2011) & Theveneau et al. (2013) neural crest CIL, C3a co-attraction & Sdf1 chase-and-run migration — Morphometric validation 53/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:06:10Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-carmona-neural-crest-chase-and-run-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

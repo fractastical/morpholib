@@ -1,0 +1,81 @@
+sim_id: sick-wnt-dkk-hair-follicle
+math_family: Activator-Inhibitor Follicular Spacing (Sick et al. 2006 Saturating WNT/DKK Reaction-Diffusion PDE)
+model_spec:
+  model: Sick et al. (2006) Science 314(5804):1447-1450 WNT/DKK reaction-diffusion hair follicle spacing & inter-follicular wave insertion
+  wnt_activator_pde: "dw/dt = rho_w + c_w * w^2 / (h * (1 + kappa * w^2)) - mu_w * w + D_w * Lap(w)"
+  dkk_inhibitor_pde: "dh/dt = rho_h + c_h * w^2 - mu_h * h + D_h * Lap(h)"
+  parameters:
+    c_w: 0.05
+    c_h: 0.05
+    mu_w: 0.02
+    mu_h: 0.03
+    rho_w_wt: 0.001
+    rho_h_wt: 0.0
+    kappa_wt: 0.04
+    D_w: 0.01
+    D_h: 0.40
+    diffusivity_ratio_d: 40.0
+    critical_diffusivity_ratio_dc: 5.8284271247461903
+    seed: 2006
+  inputs:
+    - datasets/wnt_dkk_hair_follicle/wnt_dkk_hair_follicle_reference.json
+    - datasets/wnt_dkk_hair_follicle/hair_follicle_placode_specimen.jpg
+    - datasets/wnt_dkk_hair_follicle/scout_manifest.json
+    - datasets/wnt_dkk_hair_follicle/paper_citations.bib
+equations:
+  - law_name: "Sick et al. (2006) Unsaturated WNT/DKK Homogeneous Steady-State Equilibrium"
+    formula: "∂w/∂t = ρ_w + c_w w^2 / [h(1 + κ w^2)] - μ_w w + D_w ∇^2 w,   ∂h/∂t = ρ_h + c_h w^2 - μ_h h + D_h ∇^2 h;   (w_*, h_*) = ((c_w/c_h)(μ_h/μ_w), (c_w/c_h)(μ_h/μ_w)^2)"
+    lean_decl: "MathOfBiology.Loop_006.wnt_activator_num_residual"
+    lean_theorem: "MathOfBiology.Loop_006.wnt_dkk_homogeneous_steady_state"
+    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L12-L33"
+    lean_code: |
+      def wnt_activator_num_residual (w h_scaled mu_h : Int) : Int :=
+        (w * w) * mu_h - w * h_scaled
+      def dkk_inhibitor_num_residual (w h_scaled mu_h : Int) : Int :=
+        (w * w) * mu_h - mu_h * h_scaled
+      theorem wnt_dkk_homogeneous_steady_state (mu_h : Int) :
+          wnt_activator_num_residual mu_h (mu_h * mu_h) mu_h = 0 ∧
+          dkk_inhibitor_num_residual mu_h (mu_h * mu_h) mu_h = 0 := by
+        simp [wnt_activator_num_residual, dkk_inhibitor_num_residual, Int.mul_assoc]
+    variables: "w(x,t): epidermal WNT activator concentration; h(x,t): extracellular DKK1/DKK2 inhibitor concentration; κ: autocatalytic saturation; μ_w, μ_h: turnover rates"
+    role: "Establishes the exact algebraic homogeneous epidermal steady state of the WNT/DKK reaction kinetics prior to Turing-Meinhardt symmetry breaking"
+    source_citation: "Sick et al. (2006) Science 314(5804):1447-1450; Gierer & Meinhardt (1972) Kybernetik 12:30-39"
+    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L120-L210"
+  - law_name: "Sick et al. (2006) Equal-Diffusion Epidermal Stability & Dkk1 Blockade Theorem"
+    formula: "tr(J_0) = μ_w - μ_h < 0  (μ_h > μ_w),   det(J_0) = μ_w μ_h > 0;   D_w = D_h = D ⟹ det(J_0 - q D I) = (Dq)^2 + Dq(μ_h - μ_w) + μ_w μ_h > 0  ∀ q ≥ 0"
+    lean_decl: "MathOfBiology.Loop_006.wnt_dkk_equal_diff_det"
+    lean_theorem: "MathOfBiology.Loop_006.wnt_dkk_equal_diffusion_stable"
+    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L36-L58"
+    lean_code: |
+      def wnt_dkk_equal_diff_neg_trace (d_mu D q : Nat) : Nat :=
+        (d_mu + 1) + 2 * D * q
+      def wnt_dkk_equal_diff_det (d_mu d_pos D q : Nat) : Nat :=
+        (D * q) * (D * q) + (D * q) * (d_mu + 1) + (d_pos + 1)
+      theorem wnt_dkk_equal_diffusion_stable (d_mu d_pos D q : Nat) :
+          wnt_dkk_equal_diff_neg_trace d_mu D q ≥ 1 ∧
+          wnt_dkk_equal_diff_det d_mu d_pos D q ≥ d_pos + 1 := by
+        simp [wnt_dkk_equal_diff_neg_trace, wnt_dkk_equal_diff_det]
+        omega
+    variables: "J_0: homogeneous WNT/DKK reaction Jacobian; q = k^2: squared spatial wavenumber; D: equal diffusivity"
+    role: "Proves that faster DKK turnover (μ_h > μ_w) stabilizes the epidermis against uniform oscillations and that equal diffusion (D_w = D_h) or excess Dkk1 expression prevents hair follicle placode initiation"
+    source_citation: "Sick et al. (2006) Science 314:1447-1450; Andl et al. (2002) Dev. Cell 2(5):643-653"
+    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L212-L310"
+  - law_name: "Sick et al. (2006) Rapidly Diffusing DKK Instability & Secondary Wave Insertion Theorem"
+    formula: "det_J(q) = (D_w q - μ_w)(D_h q + μ_h) + 2 μ_w μ_h < 0  ⟺  d = D_h / D_w > d_c = (√2 + 1)^2 ≈ 5.8284"
+    lean_decl: "MathOfBiology.Loop_006.wnt_dkk_fourier_det"
+    lean_theorem: "MathOfBiology.Loop_006.wnt_dkk_follicle_spacing_instability"
+    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L61-L82"
+    lean_code: |
+      def wnt_dkk_fourier_det (mu_w mu_h D_w D_h q : Int) : Int :=
+        (D_w * q - mu_w) * (D_h * q + mu_h) + 2 * mu_w * mu_h
+      theorem wnt_dkk_follicle_spacing_instability :
+          wnt_dkk_fourier_det 2 3 1 1 0 = 6 ∧
+          wnt_dkk_fourier_det 2 3 1 1 1 = 8 ∧
+          wnt_dkk_fourier_det 2 3 1 5 1 = 4 ∧
+          wnt_dkk_fourier_det 2 3 1 10 1 = -1 ∧
+          wnt_dkk_fourier_det 2 3 1 40 1 = -31 := by
+        decide
+    variables: "d = D_h / D_w: DKK-to-WNT diffusivity ratio (d = 40); d_c = (√2 + 1)^2 ≈ 5.8284: critical Turing threshold; q = k^2: unstable spatial mode"
+    role: "Proves that rapidly diffusing extracellular DKK1/DKK2 (d = 40 > d_c) drives det_J(q) < 0, generating regular primary hair follicle placodes and inter-follicular secondary wave insertion upon domain expansion"
+    source_citation: "Sick et al. (2006) Science 314(5804):1447-1450 Figs. 1-4"
+    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L312-L460"

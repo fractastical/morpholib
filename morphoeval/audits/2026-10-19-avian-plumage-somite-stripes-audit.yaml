@@ -1,0 +1,157 @@
+# MorphoEval audit — Haupaix et al. (2018) & Inaba et al. (2019) Somite-Prepatterned Avian Plumage Stripes, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2018-haupaix-avian-plumage-somite-stripes.py` (v1, 114 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-avian-plumage-somite-stripes-loop`).
+
+audit:
+  id: 2026-10-19-avian-plumage-somite-stripes-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Slot 010 autonomous loop assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2018-haupaix-avian-plumage-somite-stripes.py`
+      prior to Step 12 remediation in `2026-10-19-avian-plumage-somite-stripes-loop`.
+
+references:
+  haupaix2018:
+    title: "The periodicelly striped plumage of galliform chicks is prepatterned by somitic Agouti signaling"
+    authors: "Haupaix N, Curantz C, Bailleul R, Beck S, Robic A, Manceau M"
+    venue: "Science 361(6408):eaar4777 (2018)"
+    doi: 10.1126/science.aar4777
+  inaba2019:
+    title: "Instructive role of melanocytes during body pigment pattern formation"
+    authors: "Inaba M, Jiang TX, Liang YC, Tsai SP, Lai YC, Widelitz RB, Chuong CM"
+    venue: "Science 363(6426):eaaw1969 (2019)"
+    doi: 10.1126/science.aaw1969
+  bailleul2019:
+    title: "Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning"
+    authors: "Bailleul R, Curantz C, Desmarquet-Trin Dinh C, Hidalgo M, Touboul J, Manceau M"
+    venue: "PLOS Biology 17(10):e3000448 (2019)"
+    doi: 10.1371/journal.pbio.3000448
+  lin2013:
+    title: "Topology of feather melanocyte progenitor niche allows complex pigment patterns to emerge"
+    authors: "Lin SJ, Foley J, Jiang TX, Yeh CY, Wu P, Foley A, Yen CM, Widelitz R, Chuong CM"
+    venue: "Science 340(6139):1442-1445 (2013)"
+    doi: 10.1126/science.1230374
+
+simulations:
+  - id: haupaix-avian-plumage-somite-stripes
+    name: "Haupaix et al. (2018) & Inaba et al. (2019) somite-prepatterned Agouti signaling and melanocyte gap-junction reaction-diffusion in galliform plumage stripes"
+    organism: "Galliform chicks — Japanese quail (Coturnix japonica), common pheasant (Phasianus colchicus), guineafowl (Numida meleagris), partridge (Alectoris rufa), and turkey (Meleagris gallopavo)"
+    script: 2018-haupaix-avian-plumage-somite-stripes.py
+    output: docs/media/avian_plumage_somite_stripes_comparison.png
+    extra_outputs:
+      - docs/media/avian_plumage_somite_stripes_growth.gif
+    status: evaluated
+    source_refs:
+      - haupaix2018
+      - inaba2019
+      - bailleul2019
+      - lin2013
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2018-haupaix-avian-plumage-somite-stripes.py`
+      (overall weighted score: 48.0 / 100). The v1 script implements only a static
+      1D Gaussian threshold profile for Japanese quail *Agouti* stripes, omitting the
+      coupled 2D somitic *Agouti* prepattern + Connexin40/melanocyte activator-inhibitor
+      reaction-diffusion PDE (Haupaix et al. 2018; Inaba et al. 2019), omitting the
+      5-species comparative galliform stripe width panel, omitting heterospecific
+      somite-to-dermis chimera grafting simulations and exogenous *Agouti* bead
+      implantations, failing to load or segment the vendored *Coturnix japonica*
+      dorsal plumage specimen photograph, and returning only 2 scalar metrics.
+    scores:
+      model-fidelity:
+        value: 48
+        rationale: >-
+          Evaluates a static 1D sum of Gaussians (`simulate_somite_agouti_1d`, L24-39)
+          without integrating the 2D reaction-diffusion PDE coupling somite-derived
+          dermal *Agouti* (*Asip*) prepatterning with Connexin40-mediated melanocyte
+          lateral inhibition (Haupaix et al. 2018 Figs. 1-4; Inaba et al. 2019 Figs. 2-4),
+          and omits heterospecific somite grafting and exogenous *Agouti* bead dynamics.
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [24, 39], note: "Static 1D Gaussian profile without 2D somite-Agouti + melanocyte reaction-diffusion PDE", supports: false}
+      specimen-match:
+        value: 28
+        rationale: >-
+          Although `datasets/avian_plumage_somite_stripes/galliform_chick_stripes_specimen.jpg`
+          is vendored on disk, the v1 script never loads, segments, or displays the
+          biological *Coturnix japonica* dorsal plumage specimen (`docs/media/avian_plumage_somite_stripes_comparison.png`
+          is a 2-panel synthetic 1D plot) and performs no empirical stripe spacing or
+          pheomelanin/eumelanin bimodality comparison.
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [42, 70], note: "2-panel synthetic figure without Coturnix japonica specimen segmentation", supports: false}
+          - {file: docs/media/avian_plumage_somite_stripes_comparison.png, lines: [0, 0], note: "Synthetic 2-panel plot lacking biological specimen comparison", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Evaluates only a single fixed parameter state for Japanese quail without
+          sweeping the 5 comparative galliform species (quail, pheasant, guineafowl,
+          partridge, turkey), without heterospecific somite-to-dermis chimera grafts,
+          without exogenous *Agouti* bead dose perturbations or negative controls
+          (Agouti ablation beta_A=0 and equal diffusion d=1.0), and without CLI flags
+          beyond `--self-test` (L102-110).
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [24, 39], note: "Single species parameter set; no 5-species panel, chimera grafts, or Agouti bead sweep", supports: false}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [102, 110], note: "CLI exposes only --self-test", supports: false}
+      morphometric-validation:
+        value: 42
+        rationale: >-
+          `measure_morphoeval()` (L73-93) returns only 2 scalar numbers from the 1D
+          profile without measuring 5-species stripe width correlation, somite-graft
+          chimera donor autonomy shifts, exogenous *Agouti* bead reciprocal black-stripe
+          narrowing, negative-control suppression, or segmented *Coturnix japonica*
+          dorsal stripe count, period, and pheomelanin fraction.
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [73, 93], note: "Only 2 scalar metrics returned; no comparative species, chimera, bead, or specimen morphometrics", supports: false}
+      source-traceability:
+        value: 62
+        rationale: >-
+          Module docstring cites Haupaix et al. (2018) DOI `10.1126/science.aar4777`,
+          but the v1 script does not load `avian_plumage_somite_stripes_reference.json`
+          or verify SHA-256 digests of `datasets/avian_plumage_somite_stripes/` at runtime.
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [1, 8], note: "Single DOI in header; no runtime SHA-256 verification of datasets/avian_plumage_somite_stripes/", supports: false}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Functions have brief one-line docstrings (L24-70) that lack explicit mappings
+          to Haupaix et al. (2018) Figs. 1-4, Inaba et al. (2019) Connexin40/melanocyte
+          reaction-diffusion equations, and the 3 machine-checked Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean`.
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [24, 70], note: "Docstrings omit explicit figure/equation mappings and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Includes `--self-test` (L96-100), but `self_test()` checks only 2 coarse
+          1D bounds without verifying dataset SHA-256 locks, Lean theorem invariants,
+          2D PDE stripe orientation locking, interspecific chimera grafts, negative
+          controls, specimen segmentation, or bitwise two-run determinism.
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [96, 100], note: "Minimal 2-assertion self_test() without SHA-256, 2D PDE, chimera, or specimen checks", supports: false}
+    remediation:
+      - "Implement the coupled 2D somitic *Agouti* (*Asip*) prepattern + Connexin40/melanocyte activator-inhibitor reaction-diffusion PDE (Haupaix et al. 2018 Science Figs. 1-4; Inaba et al. 2019 Science Figs. 2-4), demonstrating how somite-derived dermal Agouti stripes orient and set the width of yellow pheomelanin (u >= theta_A) and black eumelanin (u < theta_A) bands across all 5 galliform species (quail, pheasant, guineafowl, partridge, turkey)."
+      - "Implement heterospecific somite-to-dermis chimera grafting simulations (quail <-> pheasant and guineafowl -> quail, verifying Lean Theorem 2 donor autonomy) and the 5-regime exogenous *Agouti* protein bead / RNAi dose sweep (verifying Lean Theorem 1 period conservation and reciprocal black-stripe narrowing), plus formal negative controls (somite prepattern ablation beta_A = 0 breaking longitudinal orientation and equal-diffusion d = 1.0 abolishing self-organized sharpening)."
+      - "Load and SHA-256-verify `datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json`, `galliform_chick_stripes_specimen.jpg`, `scout_manifest.json`, and `paper_citations.bib` at runtime; segment dorsal longitudinal yellow/buff pheomelanin and dark brown/black eumelanin stripes from `galliform_chick_stripes_specimen.jpg`; and compare empirical stripe count, period, yellow fraction, and Ashman bimodality D against PDE predictions."
+      - "Expose full CLI parameters (--species, --bead-dose, --beta-agouti, --d-ratio, --steps, --seed), expand `measure_morphoeval()` to 8 reference-backed morphometric measurements, and upgrade `docs/media/avian_plumage_somite_stripes_comparison.png` (8 panels) and `docs/media/avian_plumage_somite_stripes_growth.gif` (6 frames)."

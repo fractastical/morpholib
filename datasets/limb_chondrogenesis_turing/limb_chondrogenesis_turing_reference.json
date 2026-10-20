@@ -1,0 +1,180 @@
+{
+  "metadata": {
+    "dataset_id": "newman-1979-limb-chondrogenesis-turing-v1",
+    "title": "Newman & Frisch (1979) Science — Dynamics of Skeletal Pattern Formation in Developing Chick Limb Reference Dataset",
+    "sources": [
+      {
+        "id": "newman1979",
+        "citation": "Newman SA, Frisch HL (1979). Dynamics of skeletal pattern formation in developing chick limb. Science 205(4407):662-668.",
+        "doi": "10.1126/science.462174",
+        "pmid_alias_doi": "10.1126/science.493990"
+      },
+      {
+        "id": "saunders1948",
+        "citation": "Saunders JW (1948). The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm. Journal of Experimental Zoology 108(3):363-403.",
+        "doi": "10.1002/jez.1401080304"
+      },
+      {
+        "id": "summerbell1973",
+        "citation": "Summerbell D, Lewis JH, Wolpert L (1973). Positional information in chick limb morphogenesis. Nature 244(5417):492-496.",
+        "doi": "10.1038/244492a0"
+      },
+      {
+        "id": "hentschel2004",
+        "citation": "Hentschel HGE, Glimm T, Glazier JA, Newman SA (2004). Dynamical mechanisms for skeletal pattern formation in the vertebrate limb. Proceedings of the Royal Society B 271(1549):1713-1722.",
+        "doi": "10.1098/rspb.2004.2772"
+      },
+      {
+        "id": "stewart2017",
+        "citation": "Stewart TA, Bhat R, Newman SA (2017). The evolutionary origin of digit patterning. EvoDevo 8(1):21.",
+        "doi": "10.1186/s13227-017-0084-8"
+      }
+    ],
+    "specimens": {
+      "gallus_wing_skeleton": {
+        "file": "datasets/limb_chondrogenesis_turing/chick_wing_skeleton_specimen.jpg",
+        "sha256": "771e26f9fe8c813de108d87086e896597b450c09e8e9a706bb0f1edddeb26e41",
+        "species": "Gallus gallus domesticus forelimb osteological specimen (stylopod humerus 1 element -> zeugopod radius+ulna 2 elements -> autopod carpometacarpus/digits II-IV 3 elements)",
+        "author": "Conty / Wikimedia Commons",
+        "license": "CC BY 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Gallus_wingbones_01.JPG",
+        "image_shape_hw": [480, 960],
+        "zones": {
+          "stylopod_humerus": {
+            "x_band_px": [260, 340],
+            "y_band_px": [150, 380],
+            "expected_elements": 1,
+            "expected_y_px": [226]
+          },
+          "zeugopod_radius_ulna": {
+            "x_band_px": [480, 555],
+            "y_band_px": [245, 345],
+            "expected_elements": 2,
+            "expected_y_px": [265, 303],
+            "expected_spacing_px": 38.0
+          },
+          "autopod_digits": {
+            "x_band_px": [640, 685],
+            "y_band_px": [235, 335],
+            "expected_elements": 3,
+            "expected_y_px": [253, 280, 307],
+            "expected_mean_spacing_px": 27.0,
+            "expected_spacing_cv": 0.0
+          }
+        },
+        "expected_zeugopod_to_autopod_spacing_ratio": 1.4074
+      }
+    },
+    "scout_manifest": {
+      "file": "datasets/limb_chondrogenesis_turing/scout_manifest.json",
+      "sha256": "7f3605aa11f5e07752820298d27a4a8fc3a8d0508e2863a03046f6b858115262"
+    }
+  },
+  "newman_frisch_1979_eigenmode_theory": {
+    "section": "Newman & Frisch (1979) Science 205(4407):662-668 Eqs. (1)-(7) & Table 1",
+    "helmholtz_eigenmode": "Phi_{m,n}(x,y,z) = cos(m * pi * x / L_AP) * cos(n * pi * y / L_DV) * sin(pi * z / L_PD(t))",
+    "dispersion_relation": "k_{m,n}^2(L_PD) = (m * pi / L_AP)^2 + (n * pi / L_DV)^2 + (pi / L_PD(t))^2 = R / D_eff(t) = k_c^2",
+    "governing_pde": {
+      "u_eq": "du/dt = f_u(L_PD, D_eff) * u + f_v * v - u^3 + D_u * Lap(u)",
+      "v_eq": "dv/dt = g_u(L_PD, D_eff) * u + g_v * v + D_v * Lap(v)",
+      "boundary_conditions": "Zero-flux Neumann d_x u = 0 at x in {0, L_AP} (anterior/posterior ectoderm), d_y u = 0 at y in {0, L_DV} (dorsal/ventral ectoderm), pinned basal chondrogenic front u(z=0)=0 and apical AER boundary at z=L_PD(t)"
+    },
+    "canonical_geometry_mm": {
+      "L_AP_mm": 1.15,
+      "L_DV_mm": 0.50,
+      "n_DV_mode": 1,
+      "Du": 0.5,
+      "Dv": 50.0,
+      "fv": -1.0,
+      "gv": -200.0
+    }
+  },
+  "developmental_stages_gallus_wing": [
+    {
+      "stage_id": "HH20_stylopod",
+      "hh_stage": "HH20-21 (3.5 days)",
+      "compartment": "Stylopod (Humerus)",
+      "L_PD_um": 500.0,
+      "L_AP_um": 1150.0,
+      "L_DV_um": 500.0,
+      "D_eff_relative": 1.0,
+      "hyaluronidase_activity": 0.15,
+      "selected_mode_m": 1,
+      "fu": 3.0,
+      "predicted_elements": 1,
+      "anatomical_elements": ["Humerus"],
+      "empirical_source": "Newman & Frisch (1979) Science 205:662-668 Table 1 & Fig. 2A (HH20-21, L_PD approx 0.5 mm -> m=1 stylopod humerus)"
+    },
+    {
+      "stage_id": "HH24_zeugopod",
+      "hh_stage": "HH24 (4.5 days)",
+      "compartment": "Zeugopod (Radius + Ulna)",
+      "L_PD_um": 250.0,
+      "L_AP_um": 1150.0,
+      "L_DV_um": 500.0,
+      "D_eff_relative": 0.45,
+      "hyaluronidase_activity": 0.55,
+      "selected_mode_m": 2,
+      "fu": 6.0,
+      "predicted_elements": 2,
+      "anatomical_elements": ["Radius", "Ulna"],
+      "empirical_source": "Newman & Frisch (1979) Science 205:662-668 Table 1 & Fig. 2B (HH24, L_PD approx 0.25 mm -> m=2 zeugopod radius+ulna)"
+    },
+    {
+      "stage_id": "HH27_autopod_wing",
+      "hh_stage": "HH27-28 (5.5 days, Wing)",
+      "compartment": "Autopod (Wing Digits II, III, IV)",
+      "L_PD_um": 140.0,
+      "L_AP_um": 1150.0,
+      "L_DV_um": 500.0,
+      "D_eff_relative": 0.22,
+      "hyaluronidase_activity": 0.90,
+      "selected_mode_m": 3,
+      "fu": 11.0,
+      "predicted_elements": 3,
+      "anatomical_elements": ["Digit II", "Digit III", "Digit IV"],
+      "empirical_source": "Newman & Frisch (1979) Science 205:662-668 Table 1 & Fig. 2C (HH27-28 wing, L_PD approx 0.14 mm -> m=3 autopod digits II, III, IV)"
+    },
+    {
+      "stage_id": "HH28_autopod_leg",
+      "hh_stage": "HH28 (5.5 days, Hindlimb)",
+      "compartment": "Autopod (Hindlimb Pedal Digits I, II, III, IV)",
+      "L_PD_um": 115.0,
+      "L_AP_um": 1250.0,
+      "L_DV_um": 500.0,
+      "D_eff_relative": 0.16,
+      "hyaluronidase_activity": 1.00,
+      "selected_mode_m": 4,
+      "fu": 18.0,
+      "predicted_elements": 4,
+      "anatomical_elements": ["Digit I", "Digit II", "Digit III", "Digit IV"],
+      "empirical_source": "Newman & Frisch (1979) Science 205:662-668 Table 1 (HH28 chick leg bud -> m=4 pedal digits I-IV)"
+    }
+  ],
+  "aer_excision_truncation_series": [
+    {
+      "perturbation_id": "AER_excised_HH20",
+      "excision_stage": "HH19-20 (Early AER removal)",
+      "active_compartments": ["Stylopod"],
+      "compartment_element_counts": [1, 0, 0],
+      "total_skeletal_elements": 1,
+      "empirical_source": "Saunders (1948) J. Exp. Zool. 108:363-403; Summerbell et al. (1973) Nature 244:492-496 (HH19-20 AER removal -> humerus only)"
+    },
+    {
+      "perturbation_id": "AER_excised_HH24",
+      "excision_stage": "HH23-24 (Intermediate AER removal)",
+      "active_compartments": ["Stylopod", "Zeugopod"],
+      "compartment_element_counts": [1, 2, 0],
+      "total_skeletal_elements": 3,
+      "empirical_source": "Saunders (1948) J. Exp. Zool. 108:363-403; Summerbell et al. (1973) Nature 244:492-496 (HH23-24 AER removal -> humerus + radius/ulna, no digits)"
+    },
+    {
+      "perturbation_id": "AER_intact_WT",
+      "excision_stage": "Intact AER (Wild-Type Control)",
+      "active_compartments": ["Stylopod", "Zeugopod", "Autopod"],
+      "compartment_element_counts": [1, 2, 3],
+      "total_skeletal_elements": 6,
+      "empirical_source": "Newman & Frisch (1979) Science 205:662-668 (Intact AER -> full 1 -> 2 -> 3 chick wing skeleton)"
+    }
+  ]
+}

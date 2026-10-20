@@ -1,0 +1,168 @@
+{
+  "metadata": {
+    "dataset_id": "graner-glazier-cellular-potts-cell-sorting-v1",
+    "title": "Graner & Glazier (1992) PRL / Glazier & Graner (1993) PRE Extended Large-Q Cellular Potts Model (CPM / GGH) Cell Sorting Reference Dataset",
+    "organism": "Hydra attenuata (endoderm/ectoderm reaggregates) & Gallus gallus embryonic cell spheroids",
+    "sources": [
+      {
+        "id": "graner1992",
+        "citation": "Graner F, Glazier JA (1992). Simulation of biological cell sorting using a two-dimensional extended Potts model. Physical Review Letters 69(13):2013-2016.",
+        "doi": "10.1103/PhysRevLett.69.2013"
+      },
+      {
+        "id": "glazier1993",
+        "citation": "Glazier JA, Graner F (1993). Simulation of the differential adhesion driven rearrangement of biological cells. Physical Review E 47(3):2128-2154.",
+        "doi": "10.1103/PhysRevE.47.2128"
+      },
+      {
+        "id": "steinberg1963",
+        "citation": "Steinberg MS (1963). Reconstruction of tissues by dissociated cells. Science 141(3579):401-408.",
+        "doi": "10.1126/science.141.3579.401"
+      },
+      {
+        "id": "gierer1972",
+        "citation": "Gierer A, Berking S, Bode H, David CN, Flick K, Hansmann G, Schaller H, Trenkner E (1972). Regeneration of Hydra from reaggregated cells. Nature New Biology 239(91):98-101.",
+        "doi": "10.1038/newbio239098a0"
+      },
+      {
+        "id": "foty1996",
+        "citation": "Foty RA, Pfleger CM, Forgacs G, Steinberg MS (1996). Surface tensions of embryonic tissues predict their mutual envelopment behavior. Development 122(5):1611-1620.",
+        "doi": "10.1242/dev.122.5.1611"
+      }
+    ],
+    "specimens": {
+      "embryonic_cell_aggregate_specimen": {
+        "file": "datasets/cellular_potts_cell_sorting/embryonic_cell_aggregate_specimen.jpg",
+        "sha256": "9b31f7b855d90faa4c561311702d1dfe81c552ece7d3cc8215a0ff82ddd6412c",
+        "species": "Multicellular embryonic cell aggregate / embryoid body spheroid (confocal fluorescence microscopy showing cohesive inner GFP-labeled dark-type cell bolus enveloped within polygonal RFP-outlined light-type outer tissue matrix)",
+        "license": "CC BY 3.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Constru%E2%80%A1%C3%86o_de_Uma_Imagem_com_Microscopia_Confocal_-_Embryoid_Bodies_(C%E2%80%9Alulas_Estaminais).jpg",
+        "merged_panel_yx": [310, 570, 162, 424],
+        "green_panel_yx": [6, 266, 6, 266],
+        "red_panel_yx": [6, 266, 310, 570],
+        "pattern_type": "cellular_potts_polygonal_core_shell_sorting"
+      }
+    }
+  },
+  "cellular_potts_hamiltonian": {
+    "section": "Graner & Glazier (1992) PRL 69:2013-2016 Eqs. (1)-(3); Glazier & Graner (1993) PRE 47:2128-2154 Eqs. (1)-(6)",
+    "hamiltonian_formula": "H = sum_{<i,j>} J(tau(sigma_i), tau(sigma_j)) * (1 - delta_{sigma_i, sigma_j}) + lambda * sum_{sigma > 0} (v_sigma - V_t(tau(sigma)))^2",
+    "surface_tension_relations": {
+      "gamma_LD": "J_LD - (J_LL + J_DD) / 2",
+      "gamma_LM": "J_LM - J_LL / 2  (with J_MM = 0)",
+      "gamma_DM": "J_DM - J_DD / 2  (with J_MM = 0)",
+      "spreading_tension_diff": "gamma_DM - gamma_LM = (J_DM - J_DD/2) - (J_LM - J_LL/2)"
+    },
+    "canonical_graner_glazier_1992_parameters": {
+      "description": "Type L = light (ectoderm / outer enveloping tissue, lower cohesion), Type D = dark (endoderm / inner core tissue, higher cohesion), M = medium",
+      "J_LL": 14.0,
+      "J_DD": 2.0,
+      "J_LD": 11.0,
+      "J_LM": 16.0,
+      "J_DM": 16.0,
+      "J_MM": 0.0,
+      "gamma_LD": 3.0,
+      "gamma_LM": 9.0,
+      "gamma_DM": 15.0,
+      "gamma_DM_minus_gamma_LM": 6.0,
+      "target_volume_Vt": 16,
+      "lambda_volume": 1.2,
+      "temperature_T": 10.0,
+      "regime": "complete_sorting_engulfment"
+    },
+    "four_canonical_phase_regimes": [
+      {
+        "regime_id": "complete_sorting_engulfment",
+        "label": "Complete Sorting / Engulfment (Dark Endoderm Core Inside Light Ectoderm Shell)",
+        "condition": "0 < gamma_LD < gamma_DM - gamma_LM",
+        "J_LL": 14.0,
+        "J_DD": 2.0,
+        "J_LD": 11.0,
+        "J_LM": 16.0,
+        "J_DM": 16.0,
+        "gamma_LD": 3.0,
+        "gamma_LM": 9.0,
+        "gamma_DM": 15.0,
+        "expected_radial_separation_sign": 1,
+        "expected_heterotypic_fraction_range": [0.08, 0.22]
+      },
+      {
+        "regime_id": "partial_sorting_lens",
+        "label": "Partial Sorting / Lens Formation (Asymmetric Acorn Doublet)",
+        "condition": "gamma_LD > |gamma_LM - gamma_DM| > 0",
+        "J_LL": 14.0,
+        "J_DD": 2.0,
+        "J_LD": 16.0,
+        "J_LM": 16.0,
+        "J_DM": 16.0,
+        "gamma_LD": 8.0,
+        "gamma_LM": 9.0,
+        "gamma_DM": 15.0,
+        "expected_radial_separation_sign": 1,
+        "expected_heterotypic_fraction_range": [0.04, 0.16]
+      },
+      {
+        "regime_id": "checkerboard_mixing",
+        "label": "Checkerboard Cell Mixing (Heterotypic Intercalation)",
+        "condition": "gamma_LD < 0  (2 * J_LD < J_LL + J_DD)",
+        "J_LL": 14.0,
+        "J_DD": 14.0,
+        "J_LD": 4.0,
+        "J_LM": 16.0,
+        "J_DM": 16.0,
+        "gamma_LD": -10.0,
+        "gamma_LM": 9.0,
+        "gamma_DM": 9.0,
+        "expected_radial_separation_sign": 0,
+        "expected_heterotypic_fraction_range": [0.55, 0.85]
+      },
+      {
+        "regime_id": "cell_dissociation",
+        "label": "Cell Dissociation into Medium (Wetting by Medium)",
+        "condition": "gamma_LM < 0 or gamma_DM < 0",
+        "J_LL": 14.0,
+        "J_DD": 2.0,
+        "J_LD": 11.0,
+        "J_LM": 2.0,
+        "J_DM": 16.0,
+        "gamma_LD": 3.0,
+        "gamma_LM": -5.0,
+        "gamma_DM": 15.0,
+        "expected_radial_separation_sign": 1,
+        "expected_heterotypic_fraction_range": [0.10, 0.50]
+      }
+    ],
+    "temperature_controls_glazier_graner_1993": {
+      "section": "Glazier & Graner (1993) Phys. Rev. E 47:2128-2154 Section III.B (Fluctuation Temperature & Lattice Pinning)",
+      "regimes": [
+        {
+          "id": "zero_temperature_pinning_arrest",
+          "T": 0.0,
+          "description": "At T = 0, positive-energy boundary fluctuations are forbidden (P = 0 for Delta_H > 0), pinning cell walls on the discrete lattice and arresting macroscopic sorting."
+        },
+        {
+          "id": "optimal_thermal_sorting",
+          "T": 10.0,
+          "description": "At T = 10, thermal membrane fluctuations overcome single-spin lattice pinning barriers while preserving gamma_LD > 0, driving logarithmic boundary decay L_het(t) ~ A - B ln(t)."
+        },
+        {
+          "id": "high_temperature_thermal_melting",
+          "T": 80.0,
+          "description": "At high T >> J, entropic spin fluctuations overwhelm differential adhesion, suppressing radial core-shell sorting."
+        }
+      ]
+    },
+    "graner_glazier_1992_fig3_logarithmic_boundary_decay": {
+      "section": "Graner & Glazier (1992) PRL Fig. 3; Glazier & Graner (1993) PRE Figs. 8-10",
+      "law": "L_het(t) / L_total(t) = A - B * ln(t + 1)  with B > 0 in the sorting regime (T = 10, gamma_LD > 0)",
+      "empirical_mcs_checkpoints": [
+        {"mcs": 0, "het_boundary_fraction": 0.48},
+        {"mcs": 10, "het_boundary_fraction": 0.31},
+        {"mcs": 30, "het_boundary_fraction": 0.24},
+        {"mcs": 60, "het_boundary_fraction": 0.20},
+        {"mcs": 100, "het_boundary_fraction": 0.17},
+        {"mcs": 150, "het_boundary_fraction": 0.15}
+      ]
+    }
+  }
+}

@@ -1,0 +1,100 @@
+sim_id: lewis-her1-her7-delayed-oscillator
+math_family: Time-Delayed Transcriptional Oscillator & DeltaC-Notch Phase Coupling (Somitogenesis)
+model_spec:
+  model: "Lewis (2003) Current Biology her1/her7 autoinhibitory delay differential equations dp(t)/dt = a*m(t - T_p) - b*p(t), dm(t)/dt = k / (1 + (p(t - T_m)/p_0)^n) - c*m(t), Hopf critical delay threshold T_tot = T_m + T_p > T_crit, oscillation period law T_osc ~ 2*(T_m + T_p + tau_m + tau_p) ~ 30 min, and intercellular DeltaC-Notch delayed coupling synchronization vs bea/des/aei mutant desynchronization"
+  governing_equations:
+    protein_dde: "dp(t)/dt = a * m(t - T_p) - b * p(t)"
+    mrna_dde: "dm(t)/dt = k / (1 + (p(t - T_m) / p_0)^n) - c * m(t)"
+    hopf_delay_period_law: "T_tot = T_m + T_p > T_crit (~4.62 min);  T_osc = 2 * (T_m + T_p + ln(2)/b + ln(2)/c) ~ 30.0 min"
+    notch_phase_coupling: "dtheta_i/dt = omega_i + (kappa_N / N_nb) * sum_j sin(theta_j(t - T_N) - theta_i(t)) + xi_i(t)"
+  canonical_parameters:
+    a_per_min: 4.5
+    b_per_min: 0.23
+    k_per_min: 33.0
+    c_per_min: 0.23
+    p_0_molecules: 40.0
+    n_hill: 2.0
+    T_m_min: 7.18
+    T_p_min: 1.8
+    T_tot_min: 8.98
+    T_crit_min: 4.62
+    T_osc_min: 30.0
+  inputs:
+    - datasets/her1_her7_delayed_oscillator/her1_her7_delayed_oscillator_reference.json
+    - datasets/her1_her7_delayed_oscillator/zebrafish_somites_specimen.jpg
+    - datasets/her1_her7_delayed_oscillator/scout_manifest.json
+equations:
+  - id: lewis-her1-her7-delayed-oscillator-1
+    law_name: "Lewis (2003) Her1/Her7 Autoinhibitory Delay-Loop Invariance & Protein Translation Balance"
+    title: "Lewis (2003) Her1/Her7 Autoinhibitory Delay-Loop Invariance & Protein Translation Balance"
+    formula: "dp(t)/dt = a * m(t - T_p) - b * p(t),  dm(t)/dt = k / (1 + (p(t - T_m) / p_0)^n) - c * m(t),  T_tot = T_m + T_p"
+    latex: "\\frac{dp(t)}{dt} = a m(t - T_p) - b p(t), \\quad \\frac{dm(t)}{dt} = \\frac{k}{1 + (p(t - T_m)/p_0)^n} - c m(t), \\quad T_{\\text{tot}} = T_m + T_p"
+    ascii: "dp(t)/dt = a * m(t - T_p) - b * p(t); dm(t)/dt = k / (1 + (p(t - T_m)/p_0)^n) - c * m(t); T_tot = T_m + T_p"
+    lean_decl: "MathOfBiology.Loop_022.lewis_protein_dde_residual"
+    lean_theorem: "MathOfBiology.Loop_022.lewis_2003_protein_steady_state_and_delay_invariance"
+    lean_file: morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean
+    lean_locus: "morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean#L27-L56"
+    lean_code: |-
+      def lewis_protein_dde_residual (a m_delayed b p : Int) : Int :=
+        a * m_delayed - b * p
+      def lewis_total_loop_delay (T_m T_p : Int) : Int :=
+        T_m + T_p
+      theorem lewis_2003_protein_steady_state_and_delay_invariance (a b q T_m T_p delta : Int) :
+          lewis_protein_dde_residual a (b * q) b (a * q) = 0 ∧
+          lewis_total_loop_delay (T_m + delta) (T_p - delta) = lewis_total_loop_delay T_m T_p
+    lean_declaration: |-
+      theorem lewis_2003_protein_steady_state_and_delay_invariance (a b q T_m T_p delta : Int) :
+          lewis_protein_dde_residual a (b * q) b (a * q) = 0 ∧
+          lewis_total_loop_delay (T_m + delta) (T_p - delta) = lewis_total_loop_delay T_m T_p
+    variables: "m(t): her1/her7 mRNA molecules per cell; p(t): Her1/Her7 repressor protein molecules per cell; T_m: transcriptional delay (min); T_p: translational delay (min)"
+    role: "Establishes the intracellular delayed negative feedback loop of the zebrafish segmentation clock and proves that stability and period depend only on the sum T_tot = T_m + T_p"
+    source_citation: "Lewis (2003) Current Biology 13(16):1398-1408 Eqs. 1-2 & Appendix"
+    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L120-L215"
+  - id: lewis-her1-her7-delayed-oscillator-2
+    law_name: "Lewis (2003) Delay-Driven Oscillation Period & Hopf Bifurcation Law"
+    title: "Lewis (2003) Delay-Driven Oscillation Period & Hopf Bifurcation Law"
+    formula: "T_osc = 2 * (T_m + T_p + tau_m + tau_p)  for  T_m + T_p > T_crit"
+    latex: "T_{\\text{osc}} \\approx 2\\left(T_m + T_p + \\tau_m + \\tau_p\\right) \\approx 30\\text{ min} \\quad (T_m + T_p > T_{\\text{crit}})"
+    ascii: "T_osc = 2 * (T_m + T_p + tau_m + tau_p) for T_m + T_p > T_crit"
+    lean_decl: "MathOfBiology.Loop_022.lewis_oscillation_period"
+    lean_theorem: "MathOfBiology.Loop_022.lewis_2003_oscillation_period_delay_sensitivity"
+    lean_file: morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean
+    lean_locus: "morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean#L58-L76"
+    lean_code: |-
+      def lewis_oscillation_period (T_m T_p tau_m tau_p : Nat) : Nat :=
+        2 * (T_m + T_p + tau_m + tau_p)
+      theorem lewis_2003_oscillation_period_delay_sensitivity (T_m T_p tau_m tau_p delta_Tm : Nat) :
+          lewis_oscillation_period (T_m + delta_Tm) T_p tau_m tau_p =
+            lewis_oscillation_period T_m T_p tau_m tau_p + 2 * delta_Tm
+    lean_declaration: |-
+      theorem lewis_2003_oscillation_period_delay_sensitivity (T_m T_p tau_m tau_p delta_Tm : Nat) :
+          lewis_oscillation_period (T_m + delta_Tm) T_p tau_m tau_p =
+            lewis_oscillation_period T_m T_p tau_m tau_p + 2 * delta_Tm
+    variables: "T_osc: segmentation clock oscillation period (min); T_crit: Hopf bifurcation critical delay threshold (~4.62 min); tau_m, tau_p: mRNA and protein half-life relaxation times (min)"
+    role: "Predicts the ~30 min zebrafish somite clock period from transcriptional/translational delays plus macromolecular half-lives and explains period shifts under intron deletion or Notch delay changes"
+    source_citation: "Lewis (2003) Current Biology 13(16):1398-1408 Box 1 & Figs. 2-3; Giudicelli et al. (2007) PLoS Biology 5:e150"
+    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L218-L305"
+  - id: lewis-her1-her7-delayed-oscillator-3
+    law_name: "Lewis (2003) DeltaC-Notch Intercellular Synchronization vs bea/des/aei Mutant Desynchronization Law"
+    title: "Lewis (2003) DeltaC-Notch Intercellular Synchronization vs bea/des/aei Mutant Desynchronization Law"
+    formula: "Delta_phi_next = (1 - kappa) * Delta_phi + delta_omega;  R_sync = |1/N * sum_j exp(i * theta_j)|"
+    latex: "\\Delta\\phi_{n+1} = (1 - \\kappa)\\Delta\\phi_n + \\delta\\omega, \\quad R_{\\text{sync}} = \\left|\\frac{1}{N}\\sum_{j=1}^{N} e^{i\\theta_j}\\right|"
+    ascii: "Delta_phi_next = (1 - kappa) * Delta_phi + delta_omega; R_sync = |1/N * sum_j exp(i * theta_j)|"
+    lean_decl: "MathOfBiology.Loop_022.notch_phase_difference_step"
+    lean_theorem: "MathOfBiology.Loop_022.lewis_2003_notch_coupling_synchronization_contraction"
+    lean_file: morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean
+    lean_locus: "morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean#L78-L98"
+    lean_code: |-
+      def notch_phase_difference_step (kappa Delta_phi delta_omega : Int) : Int :=
+        (1 - kappa) * Delta_phi + delta_omega
+      theorem lewis_2003_notch_coupling_synchronization_contraction (Delta_phi delta_omega : Int) :
+          notch_phase_difference_step 1 Delta_phi 0 = 0 ∧
+          notch_phase_difference_step 0 Delta_phi delta_omega = Delta_phi + delta_omega
+    lean_declaration: |-
+      theorem lewis_2003_notch_coupling_synchronization_contraction (Delta_phi delta_omega : Int) :
+          notch_phase_difference_step 1 Delta_phi 0 = 0 ∧
+          notch_phase_difference_step 0 Delta_phi delta_omega = Delta_phi + delta_omega
+    variables: "kappa: intercellular DeltaC-Notch phase-coupling strength; Delta_phi: phase difference between adjacent PSM cells; R_sync: Kuramoto tissue synchronization order parameter"
+    role: "Explains how intercellular DeltaC-Notch signaling maintains phase synchrony (R_sync > 0.95) against molecular copy-number noise in wild-type PSM, whereas Notch mutants (bea, des, aei; kappa=0) form 5-7 normal anterior somites before desynchronizing into salt-and-pepper defects"
+    source_citation: "Lewis (2003) Current Biology 13(16):1398-1408 Figs. 5-6; Herrgen et al. (2010) Current Biology 20:1244-1253"
+    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L308-L410"

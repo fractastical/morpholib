@@ -1,0 +1,76 @@
+sim_id: odell-apical-constriction-invagination
+math_family: Viscoelastic Stretch-Activated Apical Purse-String Constriction & Incompressible Wedge Invagination Mechanics
+model_spec:
+  model: "Odell, Oster, Alberch & Burnside (1981) Dev. Biol. / Martin, Kaschube & Wieschaus (2009) Nature viscoelastic stretch-activated apical purse-string constriction and pulsed ratchet ventral furrow invagination"
+  N_cells: 64
+  N_meso: 16
+  L_1_um: 8.2
+  L_2_um: 1.6
+  L_thresh_um: 8.55
+  tau_0_s: 45.0
+  A_0_um2: 262.4
+  seed: 1981
+  inputs:
+    - datasets/apical_constriction_invagination/apical_constriction_invagination_reference.json
+    - datasets/apical_constriction_invagination/drosophila_ventral_furrow_specimen.jpg
+    - datasets/apical_constriction_invagination/scout_manifest.json
+equations:
+  - law_name: Odell, Oster, Alberch & Burnside (1981) Stretch-Activated Bistable Apical Purse-String Rest-Length Contraction Law
+    formula: "tau_0 * dL_{0,i}/dt = -(L_{0,i} - L_target(L_{ap,i})),  L_target(L_{ap,i}) = L_1 (L_{ap,i} <= L_thresh) vs L_2 < L_1 (L_{ap,i} > L_thresh);  T_{ap,i} = k_ap * (L_{ap,i} - L_{0,i}) + mu_ap * dL_{ap,i}/dt"
+    lean_decl: MathOfBiology.Loop_092.apical_rest_length_rate
+    lean_theorem: MathOfBiology.Loop_092.odell_1981_bistable_apical_rest_length_contraction
+    lean_locus: morphoeval/lean/loops/Loop_092_apical_constriction_invagination.lean#L17-L66
+    lean_code: |-
+      def apical_target_rest_length (L_ap L_thresh L_1 L_2 : Int) : Int :=
+        if L_ap > L_thresh then L_2 else L_1
+      def apical_rest_length_rate (L_0 L_ap L_thresh L_1 L_2 : Int) : Int :=
+        apical_target_rest_length L_ap L_thresh L_1 L_2 - L_0
+      theorem odell_1981_bistable_apical_rest_length_contraction
+          (L_ap_sub L_ap_sup L_thresh L_1 L_2 k_ap : Int)
+          (hSub : L_ap_sub ≤ L_thresh) (hSup : L_ap_sup > L_thresh)
+          (hBistable : L_2 < L_1) (hStiff : k_ap > 0) (hStretch : L_ap_sup > L_2) :
+          apical_rest_length_rate L_1 L_ap_sub L_thresh L_1 L_2 = 0 ∧
+          apical_rest_length_rate L_1 L_ap_sup L_thresh L_1 L_2 < 0 ∧
+          apical_elastic_tension k_ap L_ap_sup L_2 > 0
+    variables: "L_{ap,i}: apical surface width of cell i; L_{0,i}: dynamic apical purse-string rest length; L_1, L_2: relaxed and contracted rest lengths; L_thresh: stretch-activation threshold; tau_0: contractile relaxation time; k_ap: apical actomyosin stiffness"
+    role: "Proves that sub-threshold cells remain at relaxed rest length L_1 whereas super-threshold stretch triggers active rest-length contraction toward L_2 < L_1 and positive contractile tension T_{ap} > 0, propagating a contraction wave across the ventral epithelium"
+    source_citation: "Odell, Oster, Alberch & Burnside (1981) Dev. Biol. 85(2):446-462 Eqs. 1-4, Fig. 4"
+    code_locus: "1981-odell-apical-constriction-invagination.py#L120-L205"
+  - law_name: Incompressible Cytoplasmic Cell Area Conservation & Wedge Spontaneous Curvature Law
+    formula: "A_i = 0.5 * (L_{ap,i} + L_{bas,i}) * h_i = A_0,  kappa_i = 2 * (L_{bas,i} - L_{ap,i}) / (h_i * (L_{bas,i} + L_{ap,i})) = (L_{bas,i} - L_{ap,i}) / A_0"
+    lean_decl: MathOfBiology.Loop_092.wedge_curvature_num
+    lean_theorem: MathOfBiology.Loop_092.incompressible_wedge_spontaneous_curvature
+    lean_locus: morphoeval/lean/loops/Loop_092_apical_constriction_invagination.lean#L68-L103
+    lean_code: |-
+      def wedge_curvature_num (L_ap L_bas : Int) : Int :=
+        2 * (L_bas - L_ap)
+      theorem incompressible_wedge_spontaneous_curvature
+          (L_ap_1 L_ap_2 L_bas : Int)
+          (hConstr1 : L_ap_1 < L_bas) (hProg : L_ap_2 < L_ap_1) :
+          wedge_curvature_num L_bas L_bas = 0 ∧
+          wedge_curvature_num L_ap_1 L_bas > 0 ∧
+          wedge_curvature_num L_ap_2 L_bas > wedge_curvature_num L_ap_1 L_bas
+    variables: "A_i, A_0: cross-sectional cytoplasmic area of trapezoidal cell i; L_{ap,i}, L_{bas,i}: apical and basal widths; h_i: apicobasal cell height; kappa_i: local tissue wedge spontaneous curvature"
+    role: "Proves that symmetric columnar cells (L_{ap} = L_{bas}) have zero curvature while apical constriction (L_{ap} < L_{bas}) at conserved cell area A_0 strictly increases positive inward (invaginating) wedge curvature"
+    source_citation: "Odell et al. (1981) Dev. Biol. 85(2):446-462 Fig. 3; Polyakov et al. (2014) Biophys. J. 107(4):998-1010"
+    code_locus: "1981-odell-apical-constriction-invagination.py#L208-L270"
+  - law_name: Martin, Kaschube & Wieschaus (2009) Pulsed Ratchet & Five-Regime Ventral Furrow Perturbation Hierarchy
+    formula: "D_WT (38.0 um) > D_noStretch (21.0 um) > D_cta (15.5 um) > D_snail (4.5 um) > D_twi_sna (0.0 um);  L_{ap,WT} (2.1 um) < L_{ap,noStretch} (3.9 um) < L_{ap,cta} (4.6 um) < L_{ap,snail} (6.9 um) < L_{ap,twi_sna} (8.2 um)"
+    lean_decl: MathOfBiology.Loop_092.depth10_wildtype
+    lean_theorem: MathOfBiology.Loop_092.martin_2009_ventral_furrow_perturbation_hierarchy
+    lean_locus: morphoeval/lean/loops/Loop_092_apical_constriction_invagination.lean#L105-L140
+    lean_code: |-
+      theorem martin_2009_ventral_furrow_perturbation_hierarchy :
+          (depth10_wildtype > depth10_no_stretch ∧
+           depth10_no_stretch > depth10_cta_mutant ∧
+           depth10_cta_mutant > depth10_snail_mutant ∧
+           depth10_snail_mutant > depth10_twist_snail_null ∧
+           depth10_twist_snail_null = 0) ∧
+          (lap10_wildtype < lap10_no_stretch ∧
+           lap10_no_stretch < lap10_cta_mutant ∧
+           lap10_cta_mutant < lap10_snail_mutant ∧
+           lap10_snail_mutant < lap10_twist_snail_null)
+    variables: "D_inv: ventral furrow invagination depth (um); L_ap: final ventral apical cell width (um)"
+    role: "Establishes the strict quantitative ordering of ventral furrow invagination depth and apical constriction across wild-type Twist+Snail ratchet, stretch-propagation blockade, concertina mutant, snail unratcheted mutant, and twist;snail double-mutant control"
+    source_citation: "Martin, Kaschube & Wieschaus (2009) Nature 457(7228):495-499 Figs. 1-4; Odell et al. (1981) Dev. Biol. 85(2):446-462 Figs. 6-9"
+    code_locus: "1981-odell-apical-constriction-invagination.py#L273-L450"

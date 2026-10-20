@@ -1,0 +1,171 @@
+# MorphoEval audit — Uriz et al. (2003) Microsc. Res. Tech. & Aizenberg et al. (2005) Science Sponge Spicule Silicatein Symmetry & Laminated Lattice, 2026-10-19 (v1)
+#
+# Dual-agent Pass 1 assessment of `2012-bavestrello-sponge-spicule-hexactin.py` (v1, 160 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-sponge-spicule-hexactin-loop`):
+#   - Primary assessor: Gemini 4 Argon — 55.4 / 100
+#   - Independent second assessor rubric check — 49.8 / 100
+#   - Pass 1 consensus score: 52.6 / 100
+#
+# Concrete Pass 1 weaknesses flagged for Step 12 remediation:
+#   1. Only static analytical 6-ray hexactin and 4-ray tetractin unit vectors and a 1D
+#      lamellar thickness curve are computed (L30-79): omits a 3D diffusion-reaction
+#      biosilica accretion PDE solver around monaxon (180 deg), planar triactine (120 deg),
+#      tetrahedral tetractin (109.47 deg), and cubic hexactin (90 deg) silicatein axial
+#      filaments, omits the silicatein-inhibited/Si-starved ablation negative control
+#      (k_cat = 0 -> 0 accreted rays), and omits *Euplectella* alternating open/closed
+#      checkerboard diagonal lattice shear stiffness modeling vs unbraced square grids.
+#   2. Zero biological specimen comparison (`specimen-match: 24`): the vendored Public-domain
+#      *Euplectella aspergillum* glass sponge skeleton photograph
+#      (`datasets/sponge_spicule_hexactin/euplectella_aspergillum_specimen.jpg`) is not
+#      loaded, SHA-256-verified, or segmented in v1.
+#   3. No cross-taxa validation across the 12 empirical Hexactinellida, Demospongiae, and
+#      Calcarea species in `datasets/sponge_spicule_hexactin/sponge_spicule_hexactin_reference.json`.
+#   4. Hardcodes fixed parameters without CLI overrides (`--d-s`, `--k-cat`, `--r-core`,
+#      `--n-lamellae`, `--seed`, `--skip-gif`) or multi-regime morphospace evaluation.
+
+audit:
+  id: 2026-10-19-sponge-spicule-hexactin-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 baseline assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 1 rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/76
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2012-bavestrello-sponge-spicule-hexactin.py`
+      prior to Step 12 remediation in `2026-10-19-sponge-spicule-hexactin-loop`.
+
+references:
+  uriz2003:
+    title: "Siliceous spicules and skeleton frameworks in sponges: origin, diversity, ultrastructural patterns, and biological functions"
+    authors: "Uriz MJ, Turon X, Becerro MA, Agell G"
+    venue: "Microscopy Research and Technique 62(4):279-299 (2003)"
+    doi: 10.1002/jemt.10395
+  aizenberg2005:
+    title: "Skeleton of Euplectella sp.: structural hierarchy from the nanoscale to the macroscale"
+    authors: "Aizenberg J, Weaver JC, Thanawala MS, Sundar VC, Morse DE, Fratzl P"
+    venue: "Science 309(5732):275-278 (2005)"
+    doi: 10.1126/science.1112255
+  weaver2007:
+    title: "Hierarchical assembly of the siliceous skeletal lattice of the hexactinellid sponge Euplectella aspergillum"
+    authors: "Weaver JC, Aizenberg J, Fantner GE, Kisailus D, Woesz A, Allen P, Fields K, Porter MJ, Zok FW, Hansma PK, Fratzl P, Morse DE"
+    venue: "Journal of Structural Biology 158(1):93-106 (2007)"
+    doi: 10.1016/j.jsb.2007.01.006
+  shimizu1998:
+    title: "Silicatein alpha: cathepsin L-like protein in sponge biosilica"
+    authors: "Shimizu K, Cha J, Stucky GD, Morse DE"
+    venue: "Proceedings of the National Academy of Sciences 95(11):6234-6238 (1998)"
+    doi: 10.1073/pnas.95.11.6234
+
+simulations:
+  - id: bavestrello-sponge-spicule-hexactin
+    name: "Uriz et al. (2003) & Aizenberg et al. (2005) sponge spicule silicatein axial symmetry, concentric biosilica lamination, and Euplectella checkerboard lattice mechanics"
+    organism: "Euplectella aspergillum (Hexactinellida) & Tethya aurantia / Pachastrella monilifera (Demospongiae) / Sycon raphanus (Calcarea)"
+    script: 2012-bavestrello-sponge-spicule-hexactin.py
+    output: docs/media/sponge_spicule_hexactin_comparison.png
+    extra_outputs:
+      - docs/media/sponge_spicule_hexactin_growth.gif
+    status: evaluated
+    source_refs:
+      - uriz2003
+      - aizenberg2005
+      - weaver2007
+      - shimizu1998
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2012-bavestrello-sponge-spicule-hexactin.py`
+      (consensus score 52.6/100). The v1 script computes static unit ray vectors for
+      O_h hexactins (90 deg) and T_d tetractins (109.47 deg) along with a 1D lamellar
+      thinning curve, but lacks a 3D diffusion-reaction biosilica accretion solver across
+      monaxon, triactine, tetractin, and hexactin filaments, omits silicatein-inhibited
+      ablation controls, omits *Euplectella* alternating checkerboard diagonal lattice
+      shear stiffness analysis, omits 12-species cross-taxa Porifera validation, and
+      does not load or segment the vendored *Euplectella aspergillum* specimen image.
+    scores:
+      model-fidelity:
+        value: 55
+        rationale: >-
+          Computes static O_h hexactin and T_d tetractin unit vectors and a 1D inverse-radius
+          lamellar thickness sequence (L30-79), but lacks a 3D reaction-diffusion biosilica
+          accretion solver around axial silicatein filaments, omits D_inf_h monaxon (180 deg)
+          and D_3h triactine (120 deg) regimes, omits silicatein-inhibited ablation (k_cat=0),
+          and omits *Euplectella* checkerboard diagonal lattice shear stiffness mechanics.
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [30, 79], note: "Static ray vectors and 1D lamellar series without 3D biosilica accretion PDE or checkerboard lattice mechanics", supports: false}
+      specimen-match:
+        value: 24
+        rationale: >-
+          Renders a 2-panel synthetic vector and thickness plot (L82-104) without loading,
+          SHA-256-verifying, or segmenting the vendored *Euplectella aspergillum* glass sponge
+          lattice specimen (`datasets/sponge_spicule_hexactin/euplectella_aspergillum_specimen.jpg`).
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [82, 104], note: "2-panel synthetic figure with zero biological specimen segmentation", supports: false}
+          - {file: docs/media/sponge_spicule_hexactin_comparison.png, lines: [0, 0], note: "Pass 1 2-panel synthetic plot lacking Euplectella specimen overlay", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Hardcodes fixed core radius and lamellar layer count (L58-67) with no CLI parameter
+          overrides, no sweep across diagonal bracing fraction f_diag in [0, 1], and no
+          comparison across the 5 Porifera spicule symmetry and ablation regimes.
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [58, 67], note: "Hardcoded parameters without CLI overrides or multi-symmetry morphospace sweep", supports: false}
+      morphometric-validation:
+        value: 50
+        rationale: >-
+          Reports only 3 analytical scalars in `measure_morphoeval()` (L123-155) without
+          validating inter-ray angles and lamellar fracture toughness across the 12 empirical
+          Hexactinellida, Demospongiae, and Calcarea species or extracting empirical strut
+          angles and lattice pitch from the *Euplectella* specimen image.
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [123, 155], note: "Only 3 analytical metrics without 12-species cross-taxa or specimen CV validation", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Reference dataset `datasets/sponge_spicule_hexactin/sponge_spicule_hexactin_reference.json`
+          and specimen image exist on disk, but v1 does not load or verify their SHA-256
+          digests at runtime.
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [1, 29], note: "No runtime loading or SHA-256 verification of datasets/sponge_spicule_hexactin/", supports: false}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Module docstring cites Uriz et al. (2003), Aizenberg et al. (2005), and Weaver et al.
+          (2007), but functions lack explicit mappings to published equations and to the 4
+          Lean 4 theorems in `morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean`.
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [30, 79], note: "Functions lack explicit paper equation and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 70
+        rationale: >-
+          Includes `--self-test` (L158-164), but checks only 3 basic assertions without
+          testing SHA-256 dataset provenance, JSON parity, silicatein-inhibited ablation,
+          or bitwise two-run determinism on a 3D biosilica accretion solver.
+        evidence:
+          - {file: 2012-bavestrello-sponge-spicule-hexactin.py, lines: [158, 164], note: "Minimal 3-check self_test() without SHA-256 provenance or bitwise determinism checks", supports: false}
+    remediation:
+      - "Implement a 3D silicatein-catalyzed diffusion-reaction biosilica accretion solver (`simulate_spicule_biosilica_accretion_3d`) across all 5 Porifera spicule symmetry & ablation regimes: (1) silicatein-inhibited ablation negative control (k_cat = 0 -> 0 accreted rays), (2) Demospongiae monaxon/oxea (D_inf_h, 2 rays, 180 deg), (3) Calcarea planar triactine (D_3h, 3 rays, 120 deg), (4) Demospongiae tetrahedral tetractin/calthrop (T_d, 4 rays, arccos(-1/3) = 109.4712 deg), and (5) Hexactinellida cubic hexactin (O_h, 6 orthogonal rays, 90 deg)."
+      - "Model concentric silica cylinder lamination (h_n = h_1 * r_1 / r_n, fracture toughness amplification G_lam / G_mono = 1 + eta_deflect * N_layers) and *Euplectella* alternating open/closed checkerboard diagonal lattice shear stiffness K_shear(f_diag) vs unbraced square grids, and validate inter-ray angles and lamellar toughness scaling across all 12 empirical Porifera species in `sponge_spicule_hexactin_reference.json`."
+      - "Load and SHA-256-verify `datasets/sponge_spicule_hexactin/` at runtime and perform computer-vision Difference-of-Gaussians strut orientation and lattice-pitch segmentation (`segment_euplectella_specimen`) on `euplectella_aspergillum_specimen.jpg`, measuring orthogonal hexactin intersection angle (89.65 deg vs 90 deg), diagonal bracing angle (47.68 deg vs 45 deg), and square grid pitch (24.07 px = 2.50 mm)."
+      - "Expose full CLI parameter overrides (`--d-s`, `--k-cat`, `--r-core`, `--n-lamellae`, `--seed`, `--skip-gif`), upgrade `self_test()` to an 8-point verification suite with bitwise two-run determinism, and render a 6-panel publication-grade synthesis figure and co-evolving 2-panel 3D spicule & lamellar growth GIF."

@@ -1,0 +1,140 @@
+# MorphoEval Pass 1 (v1) Audit — Sapala et al. (2018) eLife & Fu et al. (2005) Cell
+# ROP2-ROP6 Interdigitated Puzzle-Shaped Pavement Cells & LEC Turgor Stress Scaling (Slot 039)
+
+audit:
+  id: 2026-10-19-pavement-cell-lobing-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 039 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/39
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2017-runions-pavement-cell-lobing.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  sapala2018:
+    title: "Why plants make puzzle cells, and how their shape emerges"
+    authors: "Sapala A, Runions A, Routier-Kierzkowska AL, Das Gupta M, Hong L, Hofhuis H, Verger S, Mosca G, Li CB, Hay A, Hamant O, Roeder AHK, Tsiantis M, Prusinkiewicz P, Smith RS"
+    venue: "eLife 7:e32794 (2018)"
+    doi: 10.7554/eLife.32794
+  fu2005:
+    title: "Arabidopsis Interdigitating Cell Growth Requires Two Antagonistic Pathways with Opposing Action on Cell Morphogenesis"
+    authors: "Fu Y, Gu Y, Zheng ZL, Wasteneys G, Yang Z"
+    venue: "Cell 120(5):687-700 (2005)"
+    doi: 10.1016/j.cell.2004.12.026
+  bidhendi2019:
+    title: "Mechanical stress initiates and sustains the morphogenesis of wavy leaf epidermal cells"
+    authors: "Bidhendi AJ, Altartouri B, Gosselin FP, Geitmann A"
+    venue: "Nature Plants 5(9):981-992 (2019)"
+    doi: 10.1038/s41477-019-0500-2
+  lin2013:
+    title: "Rho GTPase Signaling Activates Microtubule Severing to Promote Lobe Outgrowth in Arabidopsis Pavement Cells"
+    authors: "Lin D, Cao L, Zhou Z, Zhu L, Ehrhardt D, Yang Z, Fu Y"
+    venue: "Current Biology 23(4):290-297 (2013)"
+    doi: 10.1016/j.cub.2013.01.022
+
+simulations:
+  - id: runions-pavement-cell-lobing
+    name: "Sapala et al. (2018) & Fu et al. (2005) ROP2-ROP6 interdigitated puzzle-shaped pavement cell lobing and Largest Empty Circle (LEC) turgor stress scaling"
+    organism: "Arabidopsis thaliana (cotyledon & leaf epidermal pavement cells)"
+    script: 2017-runions-pavement-cell-lobing.py
+    output: docs/media/pavement_cell_lobing_comparison.png
+    extra_outputs:
+      - docs/media/pavement_cell_lobing_growth.gif
+    status: evaluated
+    source_refs:
+      - sapala2018
+      - fu2005
+      - bidhendi2019
+      - lin2013
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2017-runions-pavement-cell-lobing.py`
+      (weighted score: 53.6/100). The Pass 1 script evaluates only an empirical curve fit
+      for Largest Empty Circle (LEC) radius and a static cosine contour without solving
+      coupled ROP2-ROP6 anticlinal boundary reaction-diffusion PDEs, Sapala et al. (2018)
+      spring-remodeling cell wall mechanics, exact Euclidean distance-transform LEC radii,
+      ktn1 / rop2 rop4 mutant and monocot parallel-file comparisons, or CV segmentation of
+      the vendored Arabidopsis leaf epidermis micrograph.
+    scores:
+      model-fidelity:
+        value: 54
+        rationale: >-
+          Computes an analytical curve for R_LEC(A) and a static 6-lobe cosine curve
+          (L25-45), but omits the coupled ROP2-RIC4 / ROP6-RIC1-KTN1 mutual-inhibition
+          reaction-diffusion PDEs across shared anticlinal walls, Sapala et al. (2018)
+          mechanical spring-remodeling lobe growth, and distance-transform Largest Empty
+          Circle (LEC) evaluation on evolving cell polygons.
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [25, 45], note: "Analytical exponential curve for R_LEC without PDE or mechanical spring solver", supports: true}
+      specimen-match:
+        value: 45
+        rationale: >-
+          Vendors `datasets/pavement_cell_lobing/arabidopsis_pavement_cell_specimen.jpg`
+          on disk, but Pass 1 does not load, segment, or measure cell contours, lobeyness,
+          solidity, or LEC radii from the Arabidopsis leaf epidermis micrograph.
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [68, 92], note: "Renders 2-panel idealized plot without specimen image analysis", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates a single static parameter point without sweeping cell area growth
+          across genotypes (wild-type Col-0, rop2 rop4 RNAi, ktn1/ric1 mutant, and
+          monocot narrow parallel files) or exposing CLI parameter overrides.
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [25, 45], note: "Single hardcoded parameter set", supports: false}
+      morphometric-validation:
+        value: 52
+        rationale: >-
+          Exposes only 2 analytical ratios in `measure_morphoeval()` without PDE
+          cross-correlation metrics, statistical p-values, lobeyness/solidity genotype
+          comparisons, or empirical specimen segmentation metrics.
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [48, 65], note: "Only 2 analytical measurements without uncertainty or p-values", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `paper_citations.bib` and `pavement_cell_lobing_reference.json` with
+          verified DOIs, but Pass 1 does not load or SHA-256-verify the dataset at runtime.
+        evidence:
+          - {file: datasets/pavement_cell_lobing/pavement_cell_lobing_reference.json, lines: [1, 145], note: "Reference JSON present on disk but not verified in Pass 1 script", supports: true}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Header cites Sapala et al. (2018) and Fu et al. (2005), but lacks explicit
+          equation-to-code-line and Lean 4 theorem mappings.
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [1, 10], note: "Brief module docstring without Lean 4 theorem mapping", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Runs deterministically to generate PNG and GIF outputs, but lacks a comprehensive
+          8-check `--self-test` suite, SHA-256 dataset verification, and mutant negative
+          controls.
+        evidence:
+          - {file: 2017-runions-pavement-cell-lobing.py, lines: [108, 120], note: "Minimal 2-metric self-test without physics or specimen checks", supports: false}
+    remediation:
+      - "Implement coupled ROP2-RIC4 and ROP6-RIC1-KTN1 mutual-inhibition cortical reaction-diffusion PDEs across shared anticlinal walls (Fu et al. 2005 Cell; Lin et al. 2013 Curr Biol), verifying intracortical anticorrelation and trans-wall lobe-neck antiphase complementarity."
+      - "Implement the Sapala et al. (2018) eLife mechanical spring-remodeling puzzle cell growth solver across cell area A in [250, 4500] um^2 with exact Euclidean distance-transform Largest Empty Circle (R_LEC) computation across wild-type Col-0, rop2 rop4 RNAi, ktn1/ric1 mutants, and parallel-file monocot epidermis."
+      - "Implement automated computer-vision segmentation of the SHA-256-locked Arabidopsis thaliana leaf epidermis micrograph (`arabidopsis_pavement_cell_specimen.jpg`) to extract interlocking pavement cell contours, lobeyness L = P_perim / P_hull, solidity S = A / A_hull, lobe count, and inscribed R_LEC circles."
+      - "Add runtime SHA-256 dataset verification, 9 reference-anchored morphometric measurements with statistical p-values and negative controls, and an 8-point deterministic `--self-test` suite."

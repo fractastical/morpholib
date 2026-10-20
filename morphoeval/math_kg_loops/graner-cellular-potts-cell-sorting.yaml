@@ -1,0 +1,50 @@
+sim_id: graner-cellular-potts-cell-sorting
+math_family: Glazier-Graner-Hogeweg Extended Large-Q Cellular Potts Model (CPM)
+equations:
+  - law_name: Graner & Glazier (1992) Cellular Potts Surface Tension Relations & Equal-Adhesion Null Identity
+    formula: "γ_{LD} = J_{LD} - (J_{LL} + J_{DD})/2,  γ_{αM} = J_{αM} - J_{αα}/2;  J_{LL} = J_{DD} = J_{LD} ⇒ γ_{LD} = 0"
+    lean_decl: MathOfBiology.Loop_042.two_gamma_LD
+    lean_theorem: MathOfBiology.Loop_042.cpm_equal_adhesion_null_tension
+    lean_locus: morphoeval/lean/loops/Loop_042_cellular_potts_cell_sorting.lean#L17-L42
+    lean_code: |-
+      def two_gamma_LD (J_LL J_DD J_LD : Int) : Int :=
+        2 * J_LD - (J_LL + J_DD)
+      theorem cpm_equal_adhesion_null_tension (J J_M : Int) :
+          two_gamma_LD J J J = 0 ∧ two_spreading_diff J J J_M J_M = 0
+    variables: "J_{LL}, J_{DD}, J_{LD}: homotypic and heterotypic Potts bond energies; J_{LM}, J_{DM}: cell-medium bond energies; γ_{LD}: heterotypic surface tension"
+    role: "Maps microscopic lattice bond energies J(τ, τ') to macroscopic tissue interfacial tensions and proves that equal adhesion zeroes the sorting force"
+    source_citation: "Graner & Glazier (1992) Phys. Rev. Lett. 69(13):2013-2016 Eqs. (2)-(3); Glazier & Graner (1993) Phys. Rev. E 47(3):2128-2154 Eqs. (3)-(5)"
+    code_locus: "1992-graner-cellular-potts-cell-sorting.py#L97-L144"
+  - law_name: Graner & Glazier (1992) / Glazier & Graner (1993) Four Canonical Phase Regimes (Complete Engulfment, Partial Lens, Checkerboard, Dissociation)
+    formula: "Complete engulfment: 0 < γ_{LD} < γ_{DM} - γ_{LM};  Partial lens: γ_{LD} > |γ_{LM} - γ_{DM}| > 0;  Checkerboard: γ_{LD} < 0;  Dissociation: γ_{αM} < 0"
+    lean_decl: MathOfBiology.Loop_042.two_spreading_diff
+    lean_theorem: MathOfBiology.Loop_042.graner_glazier_four_phase_regimes
+    lean_locus: morphoeval/lean/loops/Loop_042_cellular_potts_cell_sorting.lean#L44-L68
+    lean_code: |-
+      theorem graner_glazier_four_phase_regimes :
+          two_gamma_LD 14 2 11 = 6 ∧
+          two_spreading_diff 14 2 16 16 = 12 ∧
+          (0 < two_gamma_LD 14 2 11 ∧ two_gamma_LD 14 2 11 < two_spreading_diff 14 2 16 16) ∧
+          two_gamma_LD 14 2 16 > two_spreading_diff 14 2 16 16 ∧
+          two_gamma_LD 14 14 4 < 0 ∧
+          two_gamma_M 14 2 < 0
+    variables: "γ_{LD}: light-dark interfacial tension; γ_{LM}, γ_{DM}: light-medium and dark-medium surface tensions"
+    role: "Classifies Cellular Potts cell aggregates into concentric engulfment sorting, partial lens doublets, checkerboard mixing, and cell dissociation"
+    source_citation: "Graner & Glazier (1992) Phys. Rev. Lett. 69(13):2013-2016 p. 2014; Glazier & Graner (1993) Phys. Rev. E 47(3):2128-2154 Table I"
+    code_locus: "1992-graner-cellular-potts-cell-sorting.py#L244-L485"
+  - law_name: Cellular Potts Hamiltonian Quadratic Volume Elasticity & Single-Spin Copy Restoring Barrier
+    formula: "H = ∑_{⟨i,j⟩} J(τ(σ_i), τ(σ_j))(1 - δ_{σ_i,σ_j}) + λ ∑_{σ>0} (v_σ - V_t)^2;  ΔE_{vol}^±(V_t) = +λ"
+    lean_decl: MathOfBiology.Loop_042.cpm_volume_energy
+    lean_theorem: MathOfBiology.Loop_042.cpm_volume_elasticity_restoring_identity
+    lean_locus: morphoeval/lean/loops/Loop_042_cellular_potts_cell_sorting.lean#L70-L99
+    lean_code: |-
+      def cpm_volume_energy (lam v Vt : Int) : Int :=
+        lam * (v - Vt) * (v - Vt)
+      theorem cpm_volume_elasticity_restoring_identity (lam Vt : Int) :
+          cpm_volume_energy lam Vt Vt = 0 ∧
+          cpm_delta_vol_gain lam Vt Vt = lam ∧
+          cpm_delta_vol_loss lam Vt Vt = lam
+    variables: "H: Cellular Potts Hamiltonian; σ_i: cell spin ID at site i; v_σ: cell volume (area in 2D); V_t: target volume; λ: volume elasticity Lagrange multiplier"
+    role: "Maintains finite deformable cell volumes under Metropolis boundary copy updates and establishes the single-pixel lattice pinning barrier ±λ at v = V_t"
+    source_citation: "Graner & Glazier (1992) Phys. Rev. Lett. 69(13):2013-2016 Eq. (1); Glazier & Graner (1993) Phys. Rev. E 47(3):2128-2154 Eq. (1) & Section III.B"
+    code_locus: "1992-graner-cellular-potts-cell-sorting.py#L400-L535"

@@ -1,0 +1,108 @@
+sim_id: oster-mechanochemical-chondrogenesis
+math_family: Mechanochemical Cell-Traction & Viscoelastic ECM Chondrogenesis PDE (Oster-Murray-Harris 1983 / Oster-Murray-Maini 1985)
+model_spec:
+  model: "Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) coupled mesenchymal cell-density and viscoelastic ECM traction PDE system driving tetrapod limb focal condensation, Y-bifurcation, and digital branching (1 -> 2 -> 4/5)"
+  governing_equations:
+    cell_conservation_pde: "dn/dt = D_1 * laplacian(n) - D_2 * biharmonic(n) - div(n * du/dt) + r * n * (N_0 - n)"
+    ecm_force_balance_pde: "div(mu_1 * d_eps/dt + mu_2 * div(du/dt) * I + E' * (eps + nu' * theta * I) + (tau * n^2 / (1 + lambda * n^2)) * I) = s * rho * u"
+    critical_traction_threshold: "tau_eff > tau_c = E_eff + D_1 * s / (r * N_0) + 2 * sqrt(D_2 * s * E_eff)"
+    limb_branching_hierarchy: "m(W, lambda_c) = W / lambda_c  =>  stylopod (1) -> zeugopod (2) -> autopod (4 forelimb / 5 hindlimb)"
+  canonical_parameters:
+    D_1: 0.08
+    D_2: 0.0025
+    E_eff: 1.0
+    mu_visc: 0.25
+    s_tether: 0.5
+    r_mitotic: 0.2
+    N_0: 1.0
+    lambda_sat: 0.5
+    tau_subcritical: 0.85
+    tau_stylopod: 1.48
+    tau_zeugopod: 1.72
+    tau_autopod: 2.05
+  inputs:
+    - datasets/mechanochemical_chondrogenesis/mechanochemical_chondrogenesis_reference.json
+    - datasets/mechanochemical_chondrogenesis/salamander_limb_cartilage_specimen.jpg
+    - datasets/mechanochemical_chondrogenesis/scout_manifest.json
+equations:
+  - id: oster-mechanochemical-chondrogenesis-1
+    law_name: "Oster, Murray & Harris (1983) Mechanochemical Cell-Traction Instability Criterion"
+    title: "Oster, Murray & Harris (1983) Mechanochemical Cell-Traction Instability Criterion"
+    formula: "K_eff = E_eff + D1_s - tau_eff;  tau_eff > E_eff + D1_s => K_eff < 0 (spontaneous cell-ECM condensation)"
+    latex: "K_{\\text{eff}} = E_{\\text{eff}} + D_{1,s} - \\tau_{\\text{eff}} < 0 \\iff \\tau_{\\text{eff}} > \\tau_c"
+    ascii: "K_eff = E_eff + D1_s - tau_eff < 0 <=> tau_eff > tau_c"
+    lean_decl: "MathOfBiology.Loop_013.mechanochemical_effective_stiffness"
+    lean_theorem: "MathOfBiology.Loop_013.oster_murray_1983_traction_instability_criterion"
+    lean_file: morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean#L27-L44"
+    lean_code: |-
+      def mechanochemical_effective_stiffness (E_eff D1_s tau_eff : Int) : Int :=
+        E_eff + D1_s - tau_eff
+      theorem oster_murray_1983_traction_instability_criterion
+          (E_eff D1_s tau_sub tau_super : Int)
+          (h_sub : tau_sub < E_eff + D1_s)
+          (h_super : E_eff + D1_s < tau_super) :
+          mechanochemical_effective_stiffness E_eff D1_s tau_sub > 0 ∧
+          mechanochemical_effective_stiffness E_eff D1_s tau_super < 0
+    lean_declaration: |-
+      theorem oster_murray_1983_traction_instability_criterion
+          (E_eff D1_s tau_sub tau_super : Int)
+          (h_sub : tau_sub < E_eff + D1_s)
+          (h_super : E_eff + D1_s < tau_super) :
+          mechanochemical_effective_stiffness E_eff D1_s tau_sub > 0 ∧
+          mechanochemical_effective_stiffness E_eff D1_s tau_super < 0
+    variables: "E_eff: ECM elastic restoring modulus; D1_s: diffusive-tethering stabilization coefficient; tau_eff: active mesenchymal cell traction parameter"
+    role: "Establishes the critical cell traction bifurcation threshold tau_c above which active cell pulling overcomes ECM elasticity and diffusion to nucleate chondrogenic condensations"
+    source_citation: "Oster, Murray & Harris (1983) J. Embryol. Exp. Morph. 78:83-125 Section 3; Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 Section 2"
+    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L118-L168"
+  - id: oster-mechanochemical-chondrogenesis-2
+    law_name: "Oster, Murray & Maini (1985) Contact-Inhibited Cell Traction Saturation Law"
+    title: "Oster, Murray & Maini (1985) Contact-Inhibited Cell Traction Saturation Law"
+    formula: "sigma_cell(n) = (tau * n^2) / (1 + lambda * n^2) <= tau / lambda"
+    latex: "\\sigma_{\\text{cell}}(n) = \\frac{\\tau n^2}{1 + \\lambda n^2} \\le \\frac{\\tau}{\\lambda}"
+    ascii: "sigma_cell(n) = (tau * n^2) / (1 + lambda * n^2) <= tau / lambda"
+    lean_decl: "MathOfBiology.Loop_013.contact_inhibited_traction_num"
+    lean_theorem: "MathOfBiology.Loop_013.oster_murray_1985_contact_inhibited_traction_bound"
+    lean_file: morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean#L50-L68"
+    lean_code: |-
+      def contact_inhibited_traction_num (tau n : Nat) : Nat := tau * (n * n)
+      def contact_inhibited_traction_den (lam n : Nat) : Nat := 1 + lam * (n * n)
+      theorem oster_murray_1985_contact_inhibited_traction_bound (tau lam n : Nat) :
+          lam * contact_inhibited_traction_num tau n ≤
+            tau * contact_inhibited_traction_den lam n
+    lean_declaration: |-
+      theorem oster_murray_1985_contact_inhibited_traction_bound (tau lam n : Nat) :
+          lam * contact_inhibited_traction_num tau n ≤
+            tau * contact_inhibited_traction_den lam n
+    variables: "tau: cell traction coefficient; lam: contact-inhibition saturation constant; n: mesenchymal cell density"
+    role: "Proves that contact-inhibited cell traction saturates at high cell density, preventing delta-shock blowup and stabilizing smooth cartilage condensations"
+    source_citation: "Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 Eq. (4)"
+    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L171-L212"
+  - id: oster-mechanochemical-chondrogenesis-3
+    law_name: "Oster, Murray & Maini (1985) Proximo-Distal Limb Branching Mode Law"
+    title: "Oster, Murray & Maini (1985) Proximo-Distal Limb Branching Mode Law"
+    formula: "m(W, lambda_c) = W / lambda_c  =>  (1, 2, 4, 5) for stylopod, zeugopod, and urodele forelimb/hindlimb autopod"
+    latex: "m(W, \\lambda_c) = \\frac{W}{\\lambda_c} \\in \\{1, 2, 4, 5\\}"
+    ascii: "m(W, lambda_c) = W / lambda_c -> (1, 2, 4, 5)"
+    lean_decl: "MathOfBiology.Loop_013.limb_condensation_mode"
+    lean_theorem: "MathOfBiology.Loop_013.oster_maini_1985_limb_branching_progression"
+    lean_file: morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean#L76-L95"
+    lean_code: |-
+      def limb_condensation_mode (W lambda_c : Nat) : Nat := W / lambda_c
+      theorem oster_maini_1985_limb_branching_progression (lambda_c : Nat) (h : 0 < lambda_c) :
+          limb_condensation_mode (1 * lambda_c) lambda_c = 1 ∧
+          limb_condensation_mode (2 * lambda_c) lambda_c = 2 ∧
+          limb_condensation_mode (4 * lambda_c) lambda_c = 4 ∧
+          limb_condensation_mode (5 * lambda_c) lambda_c = 5
+    lean_declaration: |-
+      theorem oster_maini_1985_limb_branching_progression (lambda_c : Nat) (h : 0 < lambda_c) :
+          limb_condensation_mode (1 * lambda_c) lambda_c = 1 ∧
+          limb_condensation_mode (2 * lambda_c) lambda_c = 2 ∧
+          limb_condensation_mode (4 * lambda_c) lambda_c = 4 ∧
+          limb_condensation_mode (5 * lambda_c) lambda_c = 5
+    variables: "W: transverse limb bud paddle width; lambda_c: characteristic mechanochemical instability wavelength 2*pi/k_c"
+    role: "Governs the proximo-distal transition from 1 focal condensation (stylopod: humerus/femur) to 2 bifurcated elements (zeugopod: radius+ulna / tibia+fibula) to 4-5 digital rays (autopod)"
+    source_citation: "Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 Figs. 4-9; Shubin & Alberch (1986) Evol. Biol. 20:319-387"
+    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L215-L345"

@@ -1,0 +1,138 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "willshaw-retinotectal-chemoaffinity",
+  "slot": 86,
+  "title": "Prestige & Willshaw (1975), Willshaw & von der Malsburg (1976) & Brown et al. (2000) Retinotectal Chemoaffinity & Synaptic Competition: Counter-Gradient EphA/Ephrin-A Topographic Inversion, Group II Compression/Expansion & Isl2-EphA3 Knock-In Map Duplication",
+  "primary_papers": [
+    {
+      "citation": "Prestige MC, Willshaw DJ (1975) On a role for competition in the formation of patterned neural connexions. Proc. R. Soc. Lond. B 190(1098):77-98",
+      "doi": "10.1098/rspb.1975.0087"
+    },
+    {
+      "citation": "Brown A, Yates PA, Burrola P, Ortuno D, Vaidya A, Jessell TM, Pfaff SL, O'Leary DDM, Lemke G (2000) Topographic mapping from the retina to the midbrain is controlled by relative but not absolute levels of EphA receptor signaling. Cell 102(1):77-88",
+      "doi": "10.1016/S0092-8674(00)00012-X"
+    },
+    {
+      "citation": "Willshaw DJ, von der Malsburg C (1976) How patterned neural connections can be set up by self-organization. Proc. R. Soc. Lond. B 194(1117):431-445",
+      "doi": "10.1098/rspb.1976.0087"
+    },
+    {
+      "citation": "Koulakov AA, Tsigankov DN (2004) A stochastic model for retinocollicular map development. BMC Neuroscience 5:30",
+      "doi": "10.1186/1471-2202-5-30"
+    }
+  ],
+  "governing_equations": {
+    "retinal_epha_gradient": "R_A(x_i) = R_0 * exp(alpha * x_i) + Delta_R_EphA3 * I(i in Isl2+)",
+    "tectal_ephrina_gradient": "L_A(y_j) = L_0 * exp(beta * y_j)",
+    "chemoaffinity_matching_energy": "E_chem(x_i, y_j) = 0.5 * kappa_chem * (R_A(x_i) * L_A(y_j) - gamma_0)^2",
+    "reciprocal_equilibrium_locus": "R_A(x) * L_A(y^*(x)) = gamma_0 = R_0 * L_0 * exp(alpha)  ==>  y_WT^*(x) = 1 - x",
+    "isl2_epha3_anterior_shift": "y_KI^*(x) = 1 - (1 / alpha) * ln(exp(alpha * x) + Delta_R_EphA3 / R_0) < 1 - x",
+    "group_ii_synaptic_weight_ode": "dW_ij/dt = W_ij * [ -E_chem(x_i, y_j) + kappa_coop * (K_ret * W * K_tec)_ij - mu_ret * (sum_k W_ik - 1) - mu_tec * (sum_m W_mj - N_ret / N_tec_active) ]",
+    "half_tectum_compression_law": "y_comp^*(x) = 0.5 * (1 - x) for x in [0, 1] onto rostral half-tectum y in [0, 0.5] (slope = -0.50)",
+    "half_retina_expansion_law": "y_exp^*(x) = 1 - 2 * x for nasal half-retina x in [0, 0.5] onto full tectum y in [0, 1] (slope = -2.00)"
+  },
+  "canonical_parameters": {
+    "N_ret": 40,
+    "N_tec": 40,
+    "R_0": 1.0,
+    "L_0": 1.0,
+    "alpha": 1.3862943611198906,
+    "beta": 1.3862943611198906,
+    "gamma_0": 4.0,
+    "delta_R_ki_het": 0.90,
+    "delta_R_ki_hom": 1.80,
+    "kappa_chem": 1.40,
+    "kappa_coop": 0.35,
+    "sigma_ret": 0.045,
+    "sigma_tec": 0.045,
+    "mu_comp_group_ii": 1.0,
+    "steps": 160,
+    "dt": 0.08,
+    "seed": 1976
+  },
+  "experimental_regimes": [
+    {
+      "id": "wild_type_inverted_map",
+      "description": "Wild-type retinotectal projection (Delta_R_EphA3 = 0, intact retina x in [0,1], intact tectum y in [0,1]): nasal RGCs (low EphA) project to posterior/caudal tectum (high ephrin-A) and temporal RGCs (high EphA) project to anterior/rostral tectum (low ephrin-A), forming a single continuous inverted map y*(x) = 1 - x",
+      "delta_R_epha3": 0.0,
+      "tectum_fraction": 1.0,
+      "retina_fraction": 1.0,
+      "beta_scale": 1.0,
+      "competition_mode": "group_ii",
+      "expected_slope": -1.0,
+      "expected_r": -0.999,
+      "expected_map_branches": 1
+    },
+    {
+      "id": "isl2_epha3_heterozygous_ki_plus",
+      "description": "Brown et al. (2000) Isl2-EphA3/+ heterozygous knock-in (Delta_R_EphA3 = 0.90 on 50% Isl2+ RGCs): Isl2+ RGCs shift rostrally while Isl2- WT RGCs shift caudally via Group II synaptic competition, producing a partially bifurcated map that converges near the rostral pole",
+      "delta_R_epha3": 0.90,
+      "tectum_fraction": 1.0,
+      "retina_fraction": 1.0,
+      "beta_scale": 1.0,
+      "competition_mode": "group_ii",
+      "expected_split_separation": 0.28,
+      "expected_map_branches": 2
+    },
+    {
+      "id": "isl2_epha3_homozygous_ki_ki",
+      "description": "Brown et al. (2000) Isl2-EphA3/EphA3 homozygous knock-in (Delta_R_EphA3 = 1.80 on 50% Isl2+ RGCs): relative EphA signaling and Group II competition bifurcate the projection into two complete, non-overlapping topographic maps (Isl2+ in rostral half y in [0, 0.5], Isl2- WT displaced into caudal half y in [0.5, 1.0])",
+      "delta_R_epha3": 1.80,
+      "tectum_fraction": 1.0,
+      "retina_fraction": 1.0,
+      "beta_scale": 1.0,
+      "competition_mode": "group_ii",
+      "expected_split_separation": 0.46,
+      "expected_map_branches": 2
+    },
+    {
+      "id": "half_tectum_compression_group_ii",
+      "description": "Prestige & Willshaw (1975) caudal half-tectum ablation (y in [0, 0.5] remaining): Group II relative competition compresses the entire retinal axis x in [0, 1] linearly onto the rostral half-tectum y*(x) = 0.5*(1 - x) with slope -0.50",
+      "delta_R_epha3": 0.0,
+      "tectum_fraction": 0.5,
+      "retina_fraction": 1.0,
+      "beta_scale": 1.0,
+      "competition_mode": "group_ii",
+      "expected_slope": -0.50,
+      "expected_r": -0.998,
+      "expected_map_branches": 1
+    },
+    {
+      "id": "half_retina_expansion_group_ii",
+      "description": "Prestige & Willshaw (1975) temporal half-retina ablation (nasal half-retina x in [0, 0.5] remaining): Group II competition for vacant rostral tectal sites expands the nasal half-retina across the entire tectum y*(x) = 1 - 2*x with slope -2.00",
+      "delta_R_epha3": 0.0,
+      "tectum_fraction": 1.0,
+      "retina_fraction": 0.5,
+      "beta_scale": 1.0,
+      "competition_mode": "group_ii",
+      "expected_slope": -2.00,
+      "expected_r": -0.998,
+      "expected_map_branches": 1
+    },
+    {
+      "id": "ephrin_a2_a5_dko_scrambled_null",
+      "description": "Ephrin-A2/A5 double knockout ablation control (beta = 0, flat tectal ligand L_A(y) = L_0): loss of graded ephrin-A positional cues abolishes retinotectal topographic polarity (|r| < 0.15)",
+      "delta_R_epha3": 0.0,
+      "tectum_fraction": 1.0,
+      "retina_fraction": 1.0,
+      "beta_scale": 0.0,
+      "competition_mode": "unconstrained_scrambled",
+      "expected_slope": 0.0,
+      "expected_r": 0.0,
+      "expected_map_branches": 0
+    }
+  ],
+  "specimen_provenance": {
+    "file": "datasets/retinotectal_chemoaffinity/zebrafish_retinotectal_specimen.jpg",
+    "species": "Danio rerio (72 hpf zebrafish larval retina)",
+    "source": "Wikimedia Commons File:Concentricity.jpg (confocal micrograph by Jaydeep Sidhaye)",
+    "license": "CC BY-SA 4.0",
+    "dimensions_px": [1024, 1024],
+    "sha256": "e16ecb3325a48823c83838109780a83b54fb3cb20b89b6d0b2bb378c6495b755"
+  },
+  "sha256_digests": {
+    "datasets/retinotectal_chemoaffinity/scout_manifest.json": "5ccb8a42580e507024b1ce82344260c035b8ba795974b5c8e1ae3f9913e81935",
+    "datasets/retinotectal_chemoaffinity/paper_citations.bib": "aad29a956cd55dc1658f3221ad64ffe187feefc73da44bb813f48bb340e0909e",
+    "datasets/retinotectal_chemoaffinity/zebrafish_retinotectal_specimen.jpg": "e16ecb3325a48823c83838109780a83b54fb3cb20b89b6d0b2bb378c6495b755"
+  }
+}

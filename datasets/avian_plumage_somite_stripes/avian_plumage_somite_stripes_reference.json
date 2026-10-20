@@ -1,0 +1,211 @@
+{
+  "metadata": {
+    "dataset_id": "haupaix-2018-avian-plumage-somite-stripes-v1",
+    "title": "Haupaix et al. (2018) Science & Inaba et al. (2019) Science — Somite-Prepatterned Agouti Signaling and Melanocyte Reaction-Diffusion in Avian Plumage Stripes",
+    "sources": [
+      {
+        "id": "haupaix2018",
+        "citation": "Haupaix N, Curantz C, Bailleul R, Beck S, Robic A, Manceau M (2018). The periodicelly striped plumage of galliform chicks is prepatterned by somitic Agouti signaling. Science 361(6408):eaar4777.",
+        "doi": "10.1126/science.aar4777"
+      },
+      {
+        "id": "inaba2019",
+        "citation": "Inaba M, Jiang TX, Liang YC, Tsai SP, Lai YC, Widelitz RB, Chuong CM (2019). Instructive role of melanocytes during body pigment pattern formation. Science 363(6426):eaaw1969.",
+        "doi": "10.1126/science.aaw1969"
+      },
+      {
+        "id": "bailleul2019",
+        "citation": "Bailleul R, Curantz C, Desmarquet-Trin Dinh C, Hidalgo M, Touboul J, Manceau M (2019). Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning. PLOS Biology 17(10):e3000448.",
+        "doi": "10.1371/journal.pbio.3000448"
+      },
+      {
+        "id": "lin2013",
+        "citation": "Lin SJ, Foley J, Jiang TX, Yeh CY, Wu P, Foley A, Yen CM, Widelitz R, Chuong CM (2013). Topology of feather melanocyte progenitor niche allows complex pigment patterns to emerge. Science 340(6139):1442-1445.",
+        "doi": "10.1126/science.1230374"
+      }
+    ],
+    "specimens": {
+      "coturnix_japonica_dorsal": {
+        "file": "datasets/avian_plumage_somite_stripes/galliform_chick_stripes_specimen.jpg",
+        "sha256": "78337aba30f626146f0f306c46fee403610f012f1aa456646a397df0ea001169",
+        "species": "Coturnix japonica (Japanese quail exhibiting periodic longitudinal dorsal buff-yellow pheomelanin and dark brown-black eumelanin plumage stripes)",
+        "author": "Wayne Cheng (Wikimedia Commons)",
+        "license": "CC BY-SA 2.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Coturnix_japonica,_Yehliu,_Taiwan_1.jpg",
+        "dorsal_roi_xyxy": [240, 110, 440, 240],
+        "head_roi_xyxy": [105, 65, 225, 155],
+        "pattern_type": "longitudinal_dorsoventral_periodic_pheomelanin_eumelanin_stripes"
+      }
+    },
+    "scout_manifest": {
+      "file": "datasets/avian_plumage_somite_stripes/scout_manifest.json",
+      "sha256": "acb7ac44b807e24bb7a38d4ca85195937830454b65e5c330b52976bab87975a2"
+    },
+    "paper_citations": {
+      "file": "datasets/avian_plumage_somite_stripes/paper_citations.bib",
+      "sha256": "b8438bc65956b613fccb2abb17740db41c6e7fe90e91165c0e7699855bc79462"
+    }
+  },
+  "somite_agouti_reaction_diffusion_model": {
+    "section": "Haupaix et al. (2018) Science Figs. 1-4 & Inaba et al. (2019) Science Figs. 2-4",
+    "governing_pde": {
+      "u_eq": "du/dt = D_u * laplacian(u) + alpha_u * u^2 / (v * (1 + kappa * u^2)) - gamma_u * u + beta_A * S_somite(y)",
+      "v_eq": "dv/dt = D_v * laplacian(v) + alpha_v * u^2 - gamma_v * v",
+      "somite_prepattern": "S_somite(y) = sum_k A_somite * exp(-(y - y_k)^2 / (2 * sigma_somite^2)) + A_bead * exp(-((x - x_b)^2 + (y - y_b)^2) / (2 * sigma_bead^2))",
+      "pigment_switch_law": "Yellow pheomelanin synthesized where Agouti/activator u(x,y) >= theta_A (MC1R antagonism); Black eumelanin synthesized where u(x,y) < theta_A",
+      "stripe_width_partition": "w_yellow + w_black = Lambda_somite (somite-specified dorsoventral stripe period)"
+    },
+    "canonical_parameters": {
+      "D_u": 0.12,
+      "D_v": 2.40,
+      "diffusivity_ratio_d": 20.0,
+      "alpha_u": 0.55,
+      "alpha_v": 0.70,
+      "gamma_u": 0.32,
+      "gamma_v": 0.45,
+      "kappa": 0.25,
+      "beta_A": 0.22,
+      "theta_A": 0.50,
+      "quail_stripe_period_mm": 0.95,
+      "quail_yellow_width_mm": 0.42,
+      "quail_black_width_mm": 0.53,
+      "quail_yellow_fraction": 0.4421
+    }
+  },
+  "galliform_species_panel": [
+    {
+      "species_id": "coturnix_japonica",
+      "common_name": "Japanese quail",
+      "somite_agouti_amplitude_A0": 1.00,
+      "somite_sigma_mm": 0.16,
+      "stripe_period_mm": 0.95,
+      "yellow_stripe_width_mm_ref": 0.42,
+      "black_stripe_width_mm_ref": 0.53,
+      "yellow_fraction_ref": 0.4421,
+      "dorsal_yellow_stripe_count": 4
+    },
+    {
+      "species_id": "phasianus_colchicus",
+      "common_name": "Common pheasant",
+      "somite_agouti_amplitude_A0": 1.38,
+      "somite_sigma_mm": 0.22,
+      "stripe_period_mm": 1.15,
+      "yellow_stripe_width_mm_ref": 0.62,
+      "black_stripe_width_mm_ref": 0.53,
+      "yellow_fraction_ref": 0.5391,
+      "dorsal_yellow_stripe_count": 4
+    },
+    {
+      "species_id": "numida_meleagris",
+      "common_name": "Helmeted guineafowl",
+      "somite_agouti_amplitude_A0": 0.76,
+      "somite_sigma_mm": 0.13,
+      "stripe_period_mm": 1.02,
+      "yellow_stripe_width_mm_ref": 0.34,
+      "black_stripe_width_mm_ref": 0.68,
+      "yellow_fraction_ref": 0.3333,
+      "dorsal_yellow_stripe_count": 4
+    },
+    {
+      "species_id": "alectoris_rufa",
+      "common_name": "Red-legged partridge",
+      "somite_agouti_amplitude_A0": 1.08,
+      "somite_sigma_mm": 0.18,
+      "stripe_period_mm": 1.05,
+      "yellow_stripe_width_mm_ref": 0.48,
+      "black_stripe_width_mm_ref": 0.57,
+      "yellow_fraction_ref": 0.4571,
+      "dorsal_yellow_stripe_count": 4
+    },
+    {
+      "species_id": "meleagris_gallopavo",
+      "common_name": "Wild turkey",
+      "somite_agouti_amplitude_A0": 1.42,
+      "somite_sigma_mm": 0.25,
+      "stripe_period_mm": 1.35,
+      "yellow_stripe_width_mm_ref": 0.72,
+      "black_stripe_width_mm_ref": 0.63,
+      "yellow_fraction_ref": 0.5333,
+      "dorsal_yellow_stripe_count": 4
+    }
+  ],
+  "interspecific_somite_grafting_experiments": {
+    "section": "Haupaix et al. (2018) Science Fig. 3 (Heterospecific Somite-to-Dermis Chimeras)",
+    "donor_autonomy_alpha": 0.94,
+    "chimeras": [
+      {
+        "graft_id": "quail_somite_into_pheasant_host",
+        "donor_species": "coturnix_japonica",
+        "host_species": "phasianus_colchicus",
+        "donor_width_mm": 0.42,
+        "host_width_mm": 0.62,
+        "graft_region_yellow_width_mm_ref": 0.432,
+        "shift_from_host_mm_ref": -0.188
+      },
+      {
+        "graft_id": "pheasant_somite_into_quail_host",
+        "donor_species": "phasianus_colchicus",
+        "host_species": "coturnix_japonica",
+        "donor_width_mm": 0.62,
+        "host_width_mm": 0.42,
+        "graft_region_yellow_width_mm_ref": 0.608,
+        "shift_from_host_mm_ref": 0.188
+      },
+      {
+        "graft_id": "guineafowl_somite_into_quail_host",
+        "donor_species": "numida_meleagris",
+        "host_species": "coturnix_japonica",
+        "donor_width_mm": 0.34,
+        "host_width_mm": 0.42,
+        "graft_region_yellow_width_mm_ref": 0.345,
+        "shift_from_host_mm_ref": -0.075
+      }
+    ]
+  },
+  "agouti_bead_perturbation_regimes": [
+    {
+      "regime_id": "agouti_rnai_knockdown",
+      "bead_dose": -0.65,
+      "yellow_width_mm_ref": 0.14,
+      "black_width_mm_ref": 0.81,
+      "description": "Dominant-negative / RNAi suppression of dermal Agouti shrinks yellow pheomelanin stripes and expands black eumelanin domains"
+    },
+    {
+      "regime_id": "control_bsa_bead",
+      "bead_dose": 0.0,
+      "yellow_width_mm_ref": 0.42,
+      "black_width_mm_ref": 0.53,
+      "description": "Control BSA bead implantation preserves wild-type Japanese quail yellow (0.42 mm) and black (0.53 mm) stripe widths"
+    },
+    {
+      "regime_id": "low_agouti_bead",
+      "bead_dose": 0.80,
+      "yellow_width_mm_ref": 0.58,
+      "black_width_mm_ref": 0.37,
+      "description": "Moderate exogenous Agouti protein bead locally widens yellow pheomelanin stripe and narrows adjacent black eumelanin band"
+    },
+    {
+      "regime_id": "moderate_agouti_bead",
+      "bead_dose": 1.60,
+      "yellow_width_mm_ref": 0.71,
+      "black_width_mm_ref": 0.24,
+      "description": "High Agouti protein bead produces strong local yellow band expansion (+0.29 mm) with complementary black band narrowing (-0.29 mm)"
+    },
+    {
+      "regime_id": "saturating_agouti_bead",
+      "bead_dose": 2.50,
+      "yellow_width_mm_ref": 0.84,
+      "black_width_mm_ref": 0.11,
+      "description": "Saturating exogenous Agouti bead nearly bridges adjacent yellow stripes across the inter-stripe black domain"
+    }
+  ],
+  "empirical_specimen_benchmarks": {
+    "coturnix_japonica_dorsal": {
+      "expected_yellow_stripe_count": 4,
+      "expected_stripe_spacing_px_range": [28.0, 42.0],
+      "yellow_stripe_fraction_target": 0.442,
+      "yellow_stripe_fraction_tolerance": [0.34, 0.54],
+      "bimodality_ashman_D_min": 2.2
+    }
+  }
+}

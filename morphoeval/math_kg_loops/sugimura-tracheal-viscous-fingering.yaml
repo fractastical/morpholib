@@ -1,0 +1,83 @@
+sim_id: sugimura-tracheal-viscous-fingering
+math_family: "Coupled Laplace–Young Transmural Epithelial Wall Stress, Mechanosensitive FGF10/ERK1/2/Etv4 Tip Bifurcation Rate & Synchronized Airway Smooth Muscle (ASM) Peristaltic Calcium Waves"
+model_spec:
+  model: "Nelson, Gleghorn, Myers, Radisky & Stone (2017) Development 144(23):4328-4335, Kim et al. (2015) Dev. Cell 34(6):668-681 & Unbekandt et al. (2008) Mech. Dev. 125:314-324 microfluidic chest transmural pressure and ASM peristaltic branching morphogenesis"
+  delta_P_crit_Pa: 50.0
+  K_P_Pa: 140.0
+  hill_exponent_n: 2.0
+  Gamma_0_per_day: 1.45
+  R_bud_um: 60.0
+  h_wall_um: 12.0
+  f_ASM_0_per_min: 0.08
+  f_ASM_max_per_min: 0.62
+  K_ASM_Pa: 150.0
+  seed: 2015
+  inputs:
+    - datasets/tracheal_viscous_fingering/tracheal_viscous_fingering_reference.json
+    - datasets/tracheal_viscous_fingering/embryonic_lung_branching_specimen.jpg
+    - datasets/tracheal_viscous_fingering/scout_manifest.json
+    - datasets/tracheal_viscous_fingering/paper_citations.bib
+equations:
+  - law_name: "Nelson et al. (2017) Microfluidic Chest Transmural Pressure Gauge Invariance Law"
+    formula: "ΔP(P_lumen, P_pleura) = P_lumen - P_pleura  ⇒  ΔP(P_lumen + c, P_pleura + c) = ΔP(P_lumen, P_pleura)"
+    lean_decl: "MathOfBiology.Loop_059.transmural_pressure"
+    lean_theorem: "MathOfBiology.Loop_059.nelson_2017_transmural_pressure_gauge_invariance"
+    lean_locus: "morphoeval/lean/loops/Loop_059_tracheal_viscous_fingering.lean#L28-L44"
+    lean_code: |
+      def transmural_pressure (P_lum P_pl : Int) : Int :=
+        P_lum - P_pl
+      theorem nelson_2017_transmural_pressure_gauge_invariance
+          (P_lum P_pl c P : Int) :
+          transmural_pressure (P_lum + c) (P_pl + c) =
+            transmural_pressure P_lum P_pl ∧
+          transmural_pressure P 0 = transmural_pressure 0 (-P) ∧
+          transmural_pressure P P = 0
+    variables: "P_lumen: luminal airway fluid pressure (Pa); P_pleura: microfluidic chest pleural cavity pressure (Pa); c: common-mode hydrostatic pressure shift (Pa); ΔP: transmural pressure difference (Pa)"
+    role: "Establishes that embryonic lung branching rate and ASM peristaltic wave frequency depend strictly on the transmural difference P_lumen - P_pleura and are invariant under common-mode hydrostatic shifts"
+    source_citation: "Nelson, Gleghorn, Myers, Radisky & Stone (2017) Development 144(23):4328-4335 Figs. 1-2"
+    code_locus: "2015-sugimura-tracheal-viscous-fingering.py#L120-L195"
+
+  - law_name: "Laplace–Young Circumferential Epithelial Wall Stress Monotonicity Law"
+    formula: "σ_θ(ΔP, R, h) = (ΔP · R) / h  ⇒  (R > 0 ∧ h > 0 ∧ ΔP_2 > ΔP_1) ⟹ σ_θ(ΔP_2) > σ_θ(ΔP_1)"
+    lean_decl: "MathOfBiology.Loop_059.laplace_hoop_stress_scaled"
+    lean_theorem: "MathOfBiology.Loop_059.laplace_epithelial_hoop_stress_monotonicity"
+    lean_locus: "morphoeval/lean/loops/Loop_059_tracheal_viscous_fingering.lean#L56-L78"
+    lean_code: |
+      def laplace_hoop_stress_scaled (dP R : Int) : Int :=
+        dP * R
+      theorem laplace_epithelial_hoop_stress_monotonicity
+          (P_lum P_pl c dP1 dP2 R : Int)
+          (hR : 0 < R)
+          (hdP : dP1 < dP2) :
+          laplace_hoop_stress_scaled (transmural_pressure (P_lum + c) (P_pl + c)) R =
+            laplace_hoop_stress_scaled (transmural_pressure P_lum P_pl) R ∧
+          laplace_hoop_stress_scaled dP2 R - laplace_hoop_stress_scaled dP1 R =
+            (dP2 - dP1) * R ∧
+          laplace_hoop_stress_scaled dP1 R < laplace_hoop_stress_scaled dP2 R
+    variables: "σ_θ: circumferential Laplace hoop tension across distal epithelial wall (Pa); R: distal epithelial bud luminal radius (μm); h: epithelial wall thickness (μm)"
+    role: "Connects positive transmural pressure ΔP to circumferential tensile stress in the distal airway epithelium that activates FGF10/ERK1/2/Etv4 tip proliferation"
+    source_citation: "Nelson et al. (2017) Development 144:4328-4335; Jaslove & Nelson (2018) Development 145:dev167395"
+    code_locus: "2015-sugimura-tracheal-viscous-fingering.py#L140-L215"
+
+  - law_name: "Tracheal Drainage & Nifedipine ASM Blockade Hypoplasia Arrest Law"
+    formula: "Γ_branch(ΔP, α_ASM) = Γ_0 α_ASM (ΔP - ΔP_c)_+^n / (K_P^n + (ΔP - ΔP_c)_+^n)  ⇒  (ΔP ≤ ΔP_c ∨ α_ASM = 0) ⟹ Γ_branch = 0"
+    lean_decl: "MathOfBiology.Loop_059.branching_rate_numerator"
+    lean_theorem: "MathOfBiology.Loop_059.tracheal_drainage_and_nifedipine_hypoplasia_arrest"
+    lean_locus: "morphoeval/lean/loops/Loop_059_tracheal_viscous_fingering.lean#L93-L119"
+    lean_code: |
+      def excess_pressure_pos (dP dP_c : Int) : Int :=
+        if dP <= dP_c then 0 else dP - dP_c
+      def branching_rate_numerator (alpha_asm dP dP_c : Int) : Int :=
+        alpha_asm * (excess_pressure_pos dP dP_c * excess_pressure_pos dP dP_c)
+      theorem tracheal_drainage_and_nifedipine_hypoplasia_arrest
+          (alpha_asm dP_sub dP_sup dP_c : Int)
+          (h_alpha : 0 < alpha_asm)
+          (h_sub : dP_sub <= dP_c)
+          (h_sup : dP_c < dP_sup) :
+          branching_rate_numerator alpha_asm dP_sub dP_c = 0 ∧
+          branching_rate_numerator 0 dP_sup dP_c = 0 ∧
+          0 < branching_rate_numerator alpha_asm dP_sup dP_c
+    variables: "Γ_branch: terminal bud bifurcation rate (day^-1); ΔP_c: critical transmural distension threshold (50 Pa); K_P: half-saturation pressure (140 Pa); α_ASM: airway smooth muscle L-type Ca2+ peristaltic activity factor"
+    role: "Explains why either tracheal intubation drainage (ΔP ≤ ΔP_c) or nifedipine Ca2+ channel blockade (α_ASM → 0) arrests embryonic lung branching into hypoplasia"
+    source_citation: "Nelson et al. (2017) Development 144:4328-4335 Figs. 3-4; Kim et al. (2015) Dev. Cell 34:668-681; Unbekandt et al. (2008) Mech. Dev. 125:314-324"
+    code_locus: "2015-sugimura-tracheal-viscous-fingering.py#L150-L320"

@@ -1,0 +1,213 @@
+{
+  "metadata": {
+    "dataset_id": "beroz-2018-hartmann-2019-yan-vibrio-biofilm-nematic-fountain-v1",
+    "title": "Beroz et al. (2018) Nature Physics & Hartmann et al. (2019) Nature Physics — 3D Rod-Cell Nematic Verticalization & Fountain Flow in Growing Vibrio cholerae Biofilms",
+    "sources": [
+      {
+        "id": "beroz2018",
+        "citation": "Beroz F, Yan J, Meir Y, Sabass B, Stone HA, Bassler BL, Wingreen NS (2018). Verticalization of bacterial biofilms. Nature Physics 14(9):954-960.",
+        "doi": "10.1038/s41567-018-0170-4"
+      },
+      {
+        "id": "hartmann2019",
+        "citation": "Hartmann R, Singh PK, Pearce P, Mok R, Song B, Diaz-Pascual F, Dunkel J, Drescher K (2019). Emergence of three-dimensional order and structure in growing biofilms. Nature Physics 15(3):251-256.",
+        "doi": "10.1038/s41567-018-0356-9"
+      },
+      {
+        "id": "yan2016",
+        "citation": "Yan J, Sharo AG, Stone HA, Wingreen NS, Bassler BL (2016). Vibrio cholerae biofilm growth program and architecture revealed by single-cell live imaging. PNAS 113(36):E5337-E5343.",
+        "doi": "10.1073/pnas.1611494113"
+      },
+      {
+        "id": "drescher2016",
+        "citation": "Drescher K, Dunkel J, Nadell CD, van Teeffelen S, Grin I, Wingreen NS, Stone HA, Bassler BL (2016). Architectural transitions in Vibrio cholerae biofilms at single-cell resolution. PNAS 113(14):E2066-E2072.",
+        "doi": "10.1073/pnas.1601702113"
+      }
+    ],
+    "specimens": {
+      "vibrio_cholerae_biofilm_specimen": {
+        "file": "datasets/vibrio_biofilm_nematic_fountain/vibrio_cholerae_biofilm_specimen.jpg",
+        "sha256": "d21370a429873aaec676d284e4f75c717b1b43acadf4a31dbd184c799515c9aa",
+        "width": 1580,
+        "height": 1064,
+        "species": "Vibrio cholerae rod-shaped bacteria on flat substrate (CDC Public Health Image Library micrograph)",
+        "license": "Public domain",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Vibrio_cholerae_01.jpg",
+        "roi_box_xyxy": [220, 160, 1360, 920],
+        "pattern_type": "surface_adhered_rod_cells_monolayer"
+      },
+      "scout_manifest": {
+        "file": "datasets/vibrio_biofilm_nematic_fountain/scout_manifest.json",
+        "sha256": "17aa91569cbce80c9097f1efee67c9f0670d8affa395993cc64c2b8a41df98cb"
+      },
+      "paper_citations": {
+        "file": "datasets/vibrio_biofilm_nematic_fountain/paper_citations.bib",
+        "sha256": "25b7c5d98c7e6bdc3bba82409a5c2665dba5a9bf31d02bb62da83573ea6440c3"
+      }
+    }
+  },
+  "governing_equations": {
+    "section": "Beroz et al. (2018) Nature Physics 14:954-960 Eqs. (1)-(5) & SI Text; Hartmann et al. (2019) Nature Physics 15:251-256; Yan et al. (2016) PNAS 113:E5337-E5343",
+    "radial_expansion_velocity": "v_r(r) = 0.5 * g * r",
+    "parabolic_radial_compression_stress": "sigma_rr(r) = (zeta * g / (4 * h)) * (R^2 - r^2) = kappa * (R^2 - r^2)",
+    "hertzian_peeling_buckling_stress": "sigma_c(L) = sigma_c0 * (L_0 / L)",
+    "critical_verticalization_radius": "R_c(L) = sqrt(sigma_c(L) / kappa) = R_c0 * sqrt(L_0 / L)",
+    "verticalization_front_radius": "r_vert(R, L) = sqrt(max(0, R^2 - R_c(L)^2))",
+    "vertical_nematic_order_parameter": "S_z(theta) = 0.5 * (3 * cos^2(theta) - 1)",
+    "nematic_landau_de_gennes_free_energy": "F[theta, H] = int [0.5 * K_nem * (d theta / dr)^2 - 0.5 * (sigma_rr(r) - sigma_c(L)) * cos^2(theta) + 0.25 * beta_s * cos^4(theta)] 2*pi*r dr",
+    "parameters": {
+      "L_0_wild_type_um": 2.1,
+      "d_cell_um": 0.8,
+      "h_monolayer_um": 0.8,
+      "g_growth_rate_per_h": 1.15,
+      "zeta_wild_type_Pa_h_per_um": 1.6,
+      "kappa_wild_type_Pa_per_um2": 0.575,
+      "sigma_c0_wild_type_Pa": 55.2,
+      "R_c0_wild_type_um": 9.798,
+      "R_mature_colony_um": 22.0,
+      "K_nem_stiffness_Pa_um2": 6.5,
+      "grid_size_N": 96
+    }
+  },
+  "cell_length_perturbation_sweep": [
+    {
+      "condition_id": "a22_high_1p4um",
+      "perturbation": "A22 (2.0 ug/mL MreB inhibitor)",
+      "L_cell_um": 1.4,
+      "aspect_ratio_L_over_d": 1.75,
+      "sigma_c_theory_Pa": 82.8,
+      "R_c_theory_um": 12.0,
+      "R_c_obs_um": 12.1,
+      "r_vert_at_R22_obs_um": 18.4,
+      "H_dome_at_R22_obs_um": 14.2
+    },
+    {
+      "condition_id": "a22_low_1p7um",
+      "perturbation": "A22 (0.8 ug/mL MreB inhibitor)",
+      "L_cell_um": 1.7,
+      "aspect_ratio_L_over_d": 2.125,
+      "sigma_c_theory_Pa": 68.19,
+      "R_c_theory_um": 10.89,
+      "R_c_obs_um": 10.85,
+      "r_vert_at_R22_obs_um": 19.1,
+      "H_dome_at_R22_obs_um": 16.3
+    },
+    {
+      "condition_id": "wild_type_2p1um",
+      "perturbation": "Wild-Type (untreated V. cholerae)",
+      "L_cell_um": 2.1,
+      "aspect_ratio_L_over_d": 2.625,
+      "sigma_c_theory_Pa": 55.2,
+      "R_c_theory_um": 9.8,
+      "R_c_obs_um": 9.8,
+      "r_vert_at_R22_obs_um": 19.7,
+      "H_dome_at_R22_obs_um": 18.5
+    },
+    {
+      "condition_id": "cephalexin_low_2p6um",
+      "perturbation": "Cephalexin (1.0 ug/mL FtsI inhibitor)",
+      "L_cell_um": 2.6,
+      "aspect_ratio_L_over_d": 3.25,
+      "sigma_c_theory_Pa": 44.58,
+      "R_c_theory_um": 8.81,
+      "R_c_obs_um": 8.85,
+      "r_vert_at_R22_obs_um": 20.15,
+      "H_dome_at_R22_obs_um": 19.9
+    },
+    {
+      "condition_id": "cephalexin_med_3p2um",
+      "perturbation": "Cephalexin (2.5 ug/mL FtsI inhibitor)",
+      "L_cell_um": 3.2,
+      "aspect_ratio_L_over_d": 4.0,
+      "sigma_c_theory_Pa": 36.23,
+      "R_c_theory_um": 7.94,
+      "R_c_obs_um": 7.9,
+      "r_vert_at_R22_obs_um": 20.52,
+      "H_dome_at_R22_obs_um": 21.2
+    },
+    {
+      "condition_id": "cephalexin_high_3p8um",
+      "perturbation": "Cephalexin (4.0 ug/mL FtsI inhibitor)",
+      "L_cell_um": 3.8,
+      "aspect_ratio_L_over_d": 4.75,
+      "sigma_c_theory_Pa": 30.51,
+      "R_c_theory_um": 7.29,
+      "R_c_obs_um": 7.3,
+      "r_vert_at_R22_obs_um": 20.76,
+      "H_dome_at_R22_obs_um": 22.4
+    },
+    {
+      "condition_id": "cephalexin_max_4p5um",
+      "perturbation": "Cephalexin (6.0 ug/mL FtsI inhibitor)",
+      "L_cell_um": 4.5,
+      "aspect_ratio_L_over_d": 5.625,
+      "sigma_c_theory_Pa": 25.76,
+      "R_c_theory_um": 6.69,
+      "R_c_obs_um": 6.65,
+      "r_vert_at_R22_obs_um": 20.96,
+      "H_dome_at_R22_obs_um": 23.6
+    }
+  ],
+  "radial_expansion_front_trajectory": [
+    {"time_h": 2.5, "R_colony_um": 6.0, "r_vert_obs_um": 0.0, "r_vert_theory_um": 0.0, "S_z_core_obs": -0.50, "H_dome_obs_um": 0.8},
+    {"time_h": 3.2, "R_colony_um": 9.0, "r_vert_obs_um": 0.0, "r_vert_theory_um": 0.0, "S_z_core_obs": -0.49, "H_dome_obs_um": 0.8},
+    {"time_h": 3.6, "R_colony_um": 10.5, "r_vert_obs_um": 3.8, "r_vert_theory_um": 3.77, "S_z_core_obs": 0.32, "H_dome_obs_um": 3.1},
+    {"time_h": 4.1, "R_colony_um": 13.0, "r_vert_obs_um": 8.5, "r_vert_theory_um": 8.54, "S_z_core_obs": 0.68, "H_dome_obs_um": 7.4},
+    {"time_h": 4.6, "R_colony_um": 16.0, "r_vert_obs_um": 12.6, "r_vert_theory_um": 12.65, "S_z_core_obs": 0.80, "H_dome_obs_um": 11.8},
+    {"time_h": 5.1, "R_colony_um": 19.0, "r_vert_obs_um": 16.3, "r_vert_theory_um": 16.28, "S_z_core_obs": 0.84, "H_dome_obs_um": 15.2},
+    {"time_h": 5.6, "R_colony_um": 22.0, "r_vert_obs_um": 19.7, "r_vert_theory_um": 19.70, "S_z_core_obs": 0.86, "H_dome_obs_um": 18.5},
+    {"time_h": 6.1, "R_colony_um": 25.0, "r_vert_obs_um": 23.0, "r_vert_theory_um": 23.00, "S_z_core_obs": 0.88, "H_dome_obs_um": 21.9}
+  ],
+  "genetic_and_pharmacological_controls": {
+    "wild_type_rugose": {
+      "label": "Wild-Type V. cholerae (VPS+ RbmA+ Bap1/RbmC+, L = 2.1 um)",
+      "L_cell_um": 2.1,
+      "zeta_Pa_h_per_um": 1.6,
+      "R_colony_um": 22.0,
+      "expected_regime": "verticalized_core_and_fountain_dome",
+      "r_vert_obs_um": 19.7,
+      "S_z_core_obs": 0.86,
+      "H_dome_obs_um": 18.5
+    },
+    "delta_rbmA_adhesion_loss": {
+      "label": "Delta rbmA Cell-Cell Cohesion Mutant (Reduced Friction -> Unverticalized Monolayer)",
+      "L_cell_um": 2.1,
+      "zeta_Pa_h_per_um": 0.12,
+      "R_colony_um": 22.0,
+      "expected_regime": "flat_horizontal_monolayer",
+      "r_vert_obs_um": 0.0,
+      "S_z_core_obs": -0.5,
+      "H_dome_obs_um": 0.8
+    },
+    "delta_bap1_rbmC_substrate_loss": {
+      "label": "Delta bap1 Delta rbmC Substrate Adhesion Mutant (Peeling / Sliding Monolayer)",
+      "L_cell_um": 2.1,
+      "zeta_Pa_h_per_um": 0.05,
+      "R_colony_um": 22.0,
+      "expected_regime": "flat_horizontal_monolayer",
+      "r_vert_obs_um": 0.0,
+      "S_z_core_obs": -0.5,
+      "H_dome_obs_um": 0.8
+    },
+    "a22_short_rods_1p4um": {
+      "label": "A22 MreB-Inhibited Short Rods (L = 1.4 um -> Delayed Verticalization)",
+      "L_cell_um": 1.4,
+      "zeta_Pa_h_per_um": 1.6,
+      "R_colony_um": 22.0,
+      "expected_regime": "delayed_verticalization",
+      "r_vert_obs_um": 18.4,
+      "S_z_core_obs": 0.81,
+      "H_dome_obs_um": 14.2
+    },
+    "cephalexin_long_rods_3p8um": {
+      "label": "Cephalexin Division-Inhibited Long Rods (L = 3.8 um -> Precocious Verticalization)",
+      "L_cell_um": 3.8,
+      "zeta_Pa_h_per_um": 1.6,
+      "R_colony_um": 22.0,
+      "expected_regime": "precocious_verticalization",
+      "r_vert_obs_um": 20.76,
+      "S_z_core_obs": 0.89,
+      "H_dome_obs_um": 22.4
+    }
+  }
+}

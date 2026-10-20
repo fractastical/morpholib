@@ -1,0 +1,153 @@
+# MorphoEval audit — Metzger et al. (2008) / Menshykau et al. (2012, 2014) Lung Stereotyped Branching Modes (D, P, O), 2026-10-19 (v1)
+#
+# Pass 1 baseline assessment of `2008-metzger-lung-stereotyped-branching.py` (v1, 189 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-lung-stereotyped-branching-modes-loop`).
+
+audit:
+  id: 2026-10-19-lung-stereotyped-branching-modes-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Loop 053 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1 baseline) evaluation of `2008-metzger-lung-stereotyped-branching.py`
+      prior to Step 12 remediation in `2026-10-19-lung-stereotyped-branching-modes-loop`.
+
+references:
+  metzger2008:
+    title: "The branching programme of mouse lung development"
+    authors: "Metzger RJ, Klein OD, Martin GR, Krasnow MA"
+    venue: "Nature 453(7196):745-750 (2008)"
+    doi: 10.1038/nature07005
+  menshykau2012:
+    title: "Branch mode selection during early lung development"
+    authors: "Menshykau D, Kraemer C, Iber D"
+    venue: "Development 139(24):4506-4514 (2012)"
+    doi: 10.1242/dev.081679
+  menshykau2014:
+    title: "An interplay of geometry and signaling enables directional lung branching morphogenesis"
+    authors: "Menshykau D, Blanc P, Unal E, Sapoval M, Iber D"
+    venue: "PLoS Computational Biology 10(2):e1003421 (2014)"
+    doi: 10.1371/journal.pcbi.1003421
+  blanc2012:
+    title: "A role for canonical Wnt signaling in epithelial branching during embryonic mouse lung development"
+    authors: "Blanc P, Coste K, Pouchin P, Azais JM, Blanchon L, Gallot D, Sapin V"
+    venue: "PLoS ONE 7(7):e41643 (2012)"
+    doi: 10.1371/journal.pone.0041643
+
+simulations:
+  - id: metzger-lung-stereotyped-branching
+    name: "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O) and FGF10-SHH-Ptch1 Turing mode selection"
+    organism: "Mus musculus (embryonic E11-E15 mouse bronchial tree)"
+    script: 2008-metzger-lung-stereotyped-branching.py
+    output: docs/media/lung_stereotyped_branching_modes_comparison.png
+    extra_outputs:
+      - docs/media/lung_stereotyped_branching_modes_growth.gif
+    status: evaluated
+    source_refs:
+      - metzger2008
+      - menshykau2012
+      - menshykau2014
+      - blanc2012
+    summary: >-
+      Pass 1 (v1 baseline) evaluation of `2008-metzger-lung-stereotyped-branching.py`
+      (50.3/100). The v1 script sketches isolated geometric stick trees for Domain
+      Branching (D), Planar Bifurcation (P, Delta_phi = 0 deg), and Orthogonal
+      Bifurcation (O, Delta_phi = 90 deg), but omits compound lobar lineage grammars
+      (e.g. Left Lobe D -> P -> O and D -> O -> O subroutines across E11-E15), omits
+      the Menshykau et al. (2012, 2014) mesenchymal FGF10 + epithelial SHH/Ptch1
+      receptor-ligand reaction-diffusion PDE and dispersion relation that biochemically
+      select between lateral domain budding and apical tip splitting, neither loads nor
+      verifies `datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json`,
+      and performs zero image segmentation on `bronchial_tree_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Implements basic 3D Frenet-frame rotations for isolated P (Delta_phi=0 deg)
+          and O (Delta_phi=90 deg) bifurcations and a 4-bud D trunk (L31-99), but does
+          not compose subroutines into Metzger et al.'s (2008) master lobar lineage
+          trees (D -> P/O) and completely omits the Menshykau et al. (2012, 2014)
+          FGF10-SHH-Ptch1 receptor-ligand reaction-diffusion PDE system and growth-speed
+          mode-selection switch.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [31, 99], note: "Isolated D, P, O stick-tree generator without compound D->P/O grammar or FGF10-SHH-Ptch1 Turing PDE", supports: false}
+      specimen-match:
+        value: 20
+        rationale: >-
+          Although `datasets/lung_stereotyped_branching_modes/bronchial_tree_specimen.jpg`
+          is vendored in the dataset directory, the v1 script never loads, segments, or
+          extracts airway trunk/lateral/terminal alveolar branching features from the
+          bronchial specimen image.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [113, 148], note: "3-panel 2D projection plot with zero biological specimen image or segmentation", supports: false}
+      parameter-expressivity:
+        value: 44
+        rationale: >-
+          Hardcodes a single bifurcation angle (37.5 deg), domain angle (68.0 deg), and
+          3 generations (L24-27) without sweeping dihedral rotation Delta_phi in [0, 90]
+          deg or bud elongation speed / FGF10 production rate a_F, and exposes only
+          `--self-test` and `--skip-gif` on the CLI (L181-189).
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [24, 27], note: "Hardcoded scalar angles without parameter sweeps or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 48
+        rationale: >-
+          `measure_morphoeval()` reports only 3 trivial geometric scalars (tip count = 4,
+          planar flatness = 0, dihedral angle = 90 deg, L151-171) without comparing
+          against the 8 empirical E11-E15 mouse lung lineage benchmarks or E11-E15 tip
+          timecourse in `lung_stereotyped_branching_modes_reference.json`, and without
+          random-dihedral or non-Turing ablation controls.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [151, 171], note: "3 scalar checks lacking empirical lineage RMSE/r, Turing wavelength validation, or ablation controls", supports: false}
+      source-traceability:
+        value: 58
+        rationale: >-
+          Cites Metzger et al. (2008) in the header docstring (L6-8), but omits
+          Menshykau et al. (2012, 2014) and Blanc et al. (2012), and does not load or
+          SHA-256-verify `lung_stereotyped_branching_modes_reference.json` or
+          `bronchial_tree_specimen.jpg` at runtime.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [1, 10], note: "Minimal docstring without runtime JSON loading or SHA-256 verification", supports: false}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Functions have one-line docstrings (L31-110), but do not map code sections to
+          Metzger et al. (2008) Figs. 1-4, Menshykau et al. (2014) Eqs. 1-5, or the 3
+          Lean 4 theorems in `Loop_053_lung_stereotyped_branching_modes.lean`.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [31, 110], note: "Lacks equation-level and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Provides `--self-test` and `--skip-gif` flags (L174-189), but `self_test()`
+          checks only 3 basic assertions without dataset parity, PDE Turing dispersion
+          verification, specimen segmentation, or two-run bitwise determinism.
+        evidence:
+          - {file: 2008-metzger-lung-stereotyped-branching.py, lines: [174, 180], note: "3-assertion baseline self_test()", supports: true}
+    remediation:
+      - "Implement Metzger et al.'s (2008) full compound 3D lobar branching grammar combining Domain Branching (D_m along parent bronchus with 90 deg circumferential domain shifts) followed by Planar (P, Delta_phi = 0 deg at lobar margins) and Orthogonal (O, Delta_phi = 90 deg in lobar interior) subroutines, plus a randomized-dihedral negative-control ablation showing 3D self-collision / packing loss."
+      - "Implement the Menshykau et al. (2012, 2014) mesenchymal FGF10 (F) + epithelial SHH/Ptch1 receptor-ligand (R) Schnakenberg-type reaction-diffusion PDE system and dispersion relation lambda(k^2), demonstrating the biochemical mode switch between apical tip bifurcation (P/O at low elongation speed) and lateral domain budding (D at high elongation speed)."
+      - "Load and SHA-256-verify `datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json` and `bronchial_tree_specimen.jpg` at runtime, segment the mammalian bronchial tree specimen (extracting the smooth-muscle airway trunk, lateral domain branches, and terminal alveolar sac clusters, plus skeleton branch junction angles and inter-branch spacing), and validate against empirical E11-E15 mouse lung lineage benchmarks."
+      - "Expand `--self-test`, CLI parameter flags (`--mode-seq`, `--dihedral-deg`, `--bif-angle-deg`, `--domain-angle-deg`, `--a-f`, `--d-ratio`, `--generations`, `--seed`), and `measure_morphoeval()` to report >= 8 quantitative metrics with reference values, dispersion stats, and ablation deltas."

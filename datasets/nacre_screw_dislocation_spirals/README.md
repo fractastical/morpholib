@@ -1,0 +1,10 @@
+# Nacre Screw-Dislocation Spirals, Frank–Read Target Loops & Columnar vs Sheet Transition Dataset (`slot-078`)
+
+Reference dataset and empirical specimen assets for **Cartwright & Checa (2007)** *J. R. Soc. Interface* (`10.1098/rsif.2006.0188`), **Cartwright et al. (2009)** *PNAS* (`10.1073/pnas.0900867106`), and **Burton, Cabrera & Frank (1951)** *Phil. Trans. R. Soc. A* (`10.1098/rsta.1951.0006`) screw-dislocation spiral growth, opposite-handedness Frank–Read target terrace nucleation, Voronoi tablet coalescence, and chitin interlamellar mineral-bridge columnar (*Haliotis rufescens*) vs sheet (*Pteria hirundo*, *Pinctada margaritifera*) nacre morphogenesis.
+
+## Files & Provenance
+
+- `nacre_screw_dislocation_spirals_reference.json` — Governing Burton–Cabrera–Frank (BCF) Gibbs–Thomson step velocity ($v(\kappa) = v_\infty(1 - r_c \kappa)$, $r_c = \gamma \Omega / \Delta\mu$), Archimedean spiral terrace wavelength ($\lambda_0 \approx 18.9848\,r_c \approx 19\,r_c$), Frank–Read dipole nucleation threshold ($d > 2 r_c$), chitin interlamellar mineral-bridge columnar vs sheet transition parameters, supersaturation sweep, and 12-species cross-taxa scaling table.
+- `haliotis_nacre_spirals_specimen.jpg` — Scanning electron micrograph (SEM) of fractured molluscan mother-of-pearl showing stacked polygonal aragonite tablets ($h_0 \approx 0.50\,\mu\text{m}$), Voronoi-like tablet boundaries ($Z \approx 6$), and screw-dislocation spiral terrace columns (`File:Bruchfläche eines Perlmuttstücks.JPG`, Wikimedia Commons, Public domain, SHA-256: `e4c6590464523f2170a8fa277e51c2f2b6b0916f29d35f1dfc65f3d4ccc317b9`).
+- `scout_manifest.json` — OpenAlex and Wikimedia Commons literature/specimen scout dossier (`22cd8415a0587395ce24bd509d44566b9ea1220b65d252696026ba8c27c30eca`).
+- `paper_citations.bib` — BibTeX citations for Cartwright & Checa (2007), Cartwright et al. (2009), Burton, Cabrera & Frank (1951), and Cartwright et al. (2012) (`3df311760cfbb29985fb6093131f63db46cb338741dd963864c25ed3a4794446`).

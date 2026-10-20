@@ -1,0 +1,85 @@
+sim_id: streichan-global-morphogenetic-flow
+math_family: Compressible Viscous Stokes-Brinkman Sheet Flow Driven by Anisotropic Myosin-II Active Nematic Stress Tensor Divergence
+model_spec:
+  model: "Streichan, Lefebvre, Noppe, Hufnagel & Shraiman (2018) eLife / Mayer et al. (2010) Nature / Lefebvre et al. (2023) eLife 2D compressible viscous Stokes-Brinkman global morphogenetic flow & active nematic myosin tensor model"
+  grid_nx: 64
+  grid_ny: 48
+  L_AP_um: 500.0
+  L_DV_um: 420.0
+  ell_H_um: 180.0
+  eta_b_over_eta: 1.5
+  alpha_iso: 1.0
+  alpha_aniso: 1.85
+  seed: 2018
+  inputs:
+    - datasets/global_morphogenetic_flow/global_morphogenetic_flow_reference.json
+    - datasets/global_morphogenetic_flow/drosophila_germband_extension_specimen.jpg
+    - datasets/global_morphogenetic_flow/scout_manifest.json
+equations:
+  - law_name: Positive-Definite Compressible Stokes-Brinkman Fourier Operator Invertibility
+    formula: "eta * nabla^2 v + eta_b * nabla(nabla . v) - xi * v = -nabla . sigma^a;  lambda_L(k) = (eta + eta_b)|k|^2 + xi >= lambda_T(k) = eta|k|^2 + xi >= xi > 0"
+    lean_decl: MathOfBiology.Loop_048.stokes_brinkman_transverse_symbol
+    lean_theorem: MathOfBiology.Loop_048.stokes_brinkman_fourier_operator_pos_def
+    lean_locus: morphoeval/lean/loops/Loop_048_global_morphogenetic_flow.lean#L21-L65
+    lean_code: |-
+      def stokes_brinkman_transverse_symbol (eta xi kx ky : Int) : Int :=
+        eta * (kx * kx + ky * ky) + xi
+      def stokes_brinkman_longitudinal_symbol (eta eta_b xi kx ky : Int) : Int :=
+        (eta + eta_b) * (kx * kx + ky * ky) + xi
+      theorem stokes_brinkman_fourier_operator_pos_def
+          (eta eta_b xi kx ky : Int)
+          (hEta : eta > 0) (hEtaB : eta_b ≥ 0) (hXi : xi > 0) :
+          stokes_brinkman_transverse_symbol eta xi kx ky ≥ xi ∧
+          stokes_brinkman_transverse_symbol eta xi kx ky > 0 ∧
+          stokes_brinkman_longitudinal_symbol eta eta_b xi kx ky ≥
+            stokes_brinkman_transverse_symbol eta xi kx ky ∧
+          stokes_brinkman_longitudinal_symbol eta eta_b xi kx ky > 0
+    variables: "v(x, y): 2D cartographic blastoderm velocity field; eta, eta_b: 2D shear and bulk tissue viscosities; xi = eta / ell_H^2: vitelline membrane friction coefficient; k = (kx, ky): spatial Fourier wavevector"
+    role: "Proves that vitelline friction xi > 0 and shear viscosity eta > 0 render both transverse shear and longitudinal compressible Stokes-Brinkman symbols strictly positive-definite across all wavenumbers including k = 0, guaranteeing a unique global Green's function velocity solution"
+    source_citation: "Streichan et al. (2018) eLife 7:e27454 Eq. 1, Fig. 2; Mayer et al. (2010) Nature 467:617-621 Eq. 1"
+    code_locus: "2018-streichan-global-morphogenetic-flow.py#L115-L210"
+  - law_name: Trace-Free Active Nematic Myosin Tensor & Quadrupolar Convergent-Extension Law
+    formula: "sigma^a_{ij} = alpha_iso * m * delta_{ij} + alpha_aniso * m * Q_{ij}, Tr(Q) = Q_{xx} + Q_{yy} = 0;  Q_{yy} > 0 => sigma^a_{yy} > sigma^a_{xx} & f_x = alpha_aniso * Q_{yy} * d_x m > 0"
+    lean_decl: MathOfBiology.Loop_048.active_ap_extension_force
+    lean_theorem: MathOfBiology.Loop_048.nematic_dv_cable_trace_free_and_ap_extension
+    lean_locus: morphoeval/lean/loops/Loop_048_global_morphogenetic_flow.lean#L67-L120
+    lean_code: |-
+      def active_stress_xx (alpha_iso alpha_aniso m Q_xx : Int) : Int :=
+        alpha_iso * m + alpha_aniso * m * Q_xx
+      def active_stress_yy (alpha_iso alpha_aniso m Q_yy : Int) : Int :=
+        alpha_iso * m + alpha_aniso * m * Q_yy
+      def active_ap_extension_force (alpha_aniso Q_yy dm_dx : Int) : Int :=
+        alpha_aniso * Q_yy * dm_dx
+      theorem nematic_dv_cable_trace_free_and_ap_extension
+          (alpha_iso alpha_aniso m Q_xx Q_yy dm_dx : Int)
+          (hTraceFree : Q_xx + Q_yy = 0) (hAlpha : alpha_aniso > 0)
+          (hM : m > 0) (hQyy : Q_yy > 0) (hGrad : dm_dx > 0) :
+          Q_xx = -Q_yy ∧
+          active_stress_yy alpha_iso alpha_aniso m Q_yy >
+            active_stress_xx alpha_iso alpha_aniso m Q_xx ∧
+          active_ap_extension_force alpha_aniso Q_yy dm_dx > 0 ∧
+          active_stress_yy alpha_iso alpha_aniso m 0 =
+            active_stress_xx alpha_iso alpha_aniso m 0 ∧
+          active_ap_extension_force alpha_aniso 0 dm_dx = 0
+    variables: "m(x): cortical Myosin-II concentration; Q_{ij} = n_i n_j - 0.5 delta_{ij}: 2D trace-free nematic orientation tensor; alpha_iso, alpha_aniso: isotropic and anisotropic active stress couplings; f_x = -d_x sigma^a_{xx}: active AP extension force density"
+    role: "Proves that trace-free DV myosin cable polarization (Q_{yy} > 0, Q_{xx} = -Q_{yy} < 0) creates simultaneous DV contraction and AP extension forces, whereas maternal/pair-rule anisotropy collapse (Q_{yy} = 0) abolishes quadrupolar convergent-extension shear flow"
+    source_citation: "Streichan et al. (2018) eLife 7:e27454 Eq. 2, Figs. 2-4; Lefebvre et al. (2023) eLife 12:e78787 Figs. 1-4"
+    code_locus: "2018-streichan-global-morphogenetic-flow.py#L215-L310"
+  - law_name: Streichan et al. (2018) Global Flow Prediction & Mutant Hierarchy
+    formula: "r_WT (0.924) > r_twi_sna (0.892) > r_aniso_only (0.835) > r_eve (0.562) > r_iso_only (0.415) > r_bcd_nos_tsl (0.000)"
+    lean_decl: MathOfBiology.Loop_048.streichan_flow_v100
+    lean_theorem: MathOfBiology.Loop_048.streichan_2018_global_flow_and_mutant_collapse
+    lean_locus: morphoeval/lean/loops/Loop_048_global_morphogenetic_flow.lean#L122-L168
+    lean_code: |-
+      def streichan_flow_v100 (phi_aniso phi_pmg phi_ectoderm : Int) : Int :=
+        495 * phi_aniso + 145 * phi_pmg - 75 * (1 - phi_ectoderm) * phi_aniso
+      theorem streichan_2018_global_flow_and_mutant_collapse :
+          v100_wt_gbe = 640 ∧ v100_twi_sna = 565 ∧ v100_aniso_only = 495 ∧
+          v100_bcd_nos_tsl = 0 ∧ r1000_wt_gbe > 900 ∧
+          v100_wt_gbe > v100_twi_sna ∧ v100_twi_sna > v100_aniso_only ∧
+          v100_aniso_only > v100_eve_mutant ∧ v100_eve_mutant > v100_iso_only ∧
+          v100_iso_only > v100_bcd_nos_tsl
+    variables: "phi_aniso, phi_pmg, phi_ectoderm: activation indicators for DV anisotropic myosin cables, posterior midgut isotropic apical constriction, and ventral mesoderm; r: global spatial velocity correlation; v_AP: peak posterior GBE flow velocity (um/min)"
+    role: "Proves that coupling DV anisotropic myosin cables with posterior midgut invagination predicts >90% of global embryonic flow and strictly orders wild-type, twist/snail, anisotropic-only, eve, isotropic-only, and bcd nos tsl maternal-null velocity fields"
+    source_citation: "Streichan et al. (2018) eLife 7:e27454 Figs. 2-4"
+    code_locus: "2018-streichan-global-morphogenetic-flow.py#L315-L510"

@@ -1,0 +1,80 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-gorzelak-crinoid-stereom-gyroid> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-gorzelak-crinoid-stereom-gyroid-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-gorzelak-crinoid-stereom-gyroid-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Yang et al. (2022) & Donnay & Pawson (1969) biogenic single-crystal calcite TPMS echinoderm stereom (Diamond D, Gyroid G, Primitive P) & Gibson-Ashby cellular mechanics — Morphological realism / specimen match: 90/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Vendors, SHA-256-verifies, and performs Difference-of-Gaussians trabecular and pore segmentation (`segment_crinoid_stereom_specimen`, L605-680) on the CC BY 4.0 crinoid ossicle SEM micrograph plate (`datasets/crinoid_stereom_gyroid/crinoid_stereom_ossicle_specimen.jpg`, *Nesometra integra*), measuring Panel K `[111]` stereom solid calcite fraction `0.5187` (vs theoretical `0.5000`), nearest-neighbor pore distance `14.2466 px` across 139 pores, and trabecular lattice period `a_0 = 14.8000 um` (`19.67 px`, `CV = 0.3360` across 325 intervals)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-specimen-match-2> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "2020-gorzelak-crinoid-stereom-gyroid.py L605–L680" ;
+        dct:description "DoG trabecular and pore centroid segmentation across Panels I, J, K of crinoid stereom SEM plate" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/HEAD/2020-gorzelak-crinoid-stereom-gyroid.py#L605-L680> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/crinoid_stereom_gyroid_comparison.png (generated output)" ;
+        dct:description "6-panel synthesis figure comparing 3D TPMS level sets, saddle curvature, threshold sweep, [111] projection, 12-species Gibson-Ashby collapse, and crinoid SEM segmentation — docs/media/crinoid_stereom_gyroid_comparison.png: rendered output of 2020-gorzelak-crinoid-stereom-gyroid.py at HEAD, image/png, 776113 B, 2084×1469 px, artifact_sha256 fa3a3bc5ea25717ac454178df9ad65455f74bccd7674102eb3fea9f9b83ffe0e (sha256 fa3a3bc5ea25717ac454178df9ad65455f74bccd7674102eb3fea9f9b83ffe0e), spec_fingerprint 7546780a29581d038c82edc49698f8e73b11c59c0a49d82e3dfc8f721733c9d2" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Pass 2 remediated assessment)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/79> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1017/CBO9781139878326>,
+            <https://doi.org/10.1063/1.1665587>,
+            <https://doi.org/10.1126/science.166.3909.1147>,
+            <https://doi.org/10.1126/science.abm8666> .
+    <https://doi.org/10.1017/CBO9781139878326> dct:date "1997"^^xsd:gYear ;
+        dct:title "Cellular Solids: Structure and Properties (2nd ed.)" .
+    <https://doi.org/10.1063/1.1665587> dct:date "1970"^^xsd:gYear ;
+        dct:title "Infinite periodic minimal surfaces without self-intersections" .
+    <https://doi.org/10.1126/science.166.3909.1147> dct:date "1969"^^xsd:gYear ;
+        dct:title "X-ray diffraction studies of echinoderm plates" .
+    <https://doi.org/10.1126/science.abm8666> dct:date "2022"^^xsd:gYear ;
+        dct:title "A damage-tolerant, dual-scale, single-crystalline microlattice in the knobby starfish, Protoreaster nodosus" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Yang et al. (2022) & Donnay & Pawson (1969) biogenic single-crystal calcite TPMS echinoderm stereom (Diamond D, Gyroid G, Primitive P) & Gibson-Ashby cellular mechanics — Morphological realism / specimen match 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:47:41Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-gorzelak-crinoid-stereom-gyroid-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/79> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

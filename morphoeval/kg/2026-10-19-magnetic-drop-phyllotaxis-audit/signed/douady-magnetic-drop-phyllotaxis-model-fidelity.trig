@@ -1,0 +1,89 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAo9GrBjgL-oY1SMQacR-Mz5rQG2ZztlmqbnPSKDIK0WQ/> .
+@prefix this: <https://w3id.org/np/RAo9GrBjgL-oY1SMQacR-Mz5rQG2ZztlmqbnPSKDIK0WQ> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/jtbi.1996.0024>,
+            <https://doi.org/10.1006/jtbi.1996.0025>,
+            <https://doi.org/10.1103/PhysRevLett.68.2098>,
+            <https://doi.org/10.1209/0295-5075/14/6/006> .
+
+    <https://doi.org/10.1006/jtbi.1996.0024> dcterms:date "1996"^^xsd:gYear ;
+        dcterms:title "Phyllotaxis as a dynamical self organizing process Part I: The spiral modes resulting from time-periodic iterations" .
+
+    <https://doi.org/10.1006/jtbi.1996.0025> dcterms:date "1996"^^xsd:gYear ;
+        dcterms:title "Phyllotaxis as a dynamical self organizing process Part II: The spontaneous formation of a periodicity and the transitions between whorl and spiral modes" .
+
+    <https://doi.org/10.1103/PhysRevLett.68.2098> dcterms:date "1992"^^xsd:gYear ;
+        dcterms:title "Phyllotaxis as a physical self-organized growth process" .
+
+    <https://doi.org/10.1209/0295-5075/14/6/006> dcterms:date "1991"^^xsd:gYear ;
+        dcterms:title "Energetic approach to phyllotaxis" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-douady-magnetic-drop-phyllotaxis> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-douady-magnetic-drop-phyllotaxis-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-douady-magnetic-drop-phyllotaxis-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Douady & Couder (1992, 1996) ferrofluid magnetic-drop iterative repulsive phyllotaxis — Model fidelity to source: 58/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Implements the iterative dipole repulsion potential E(phi) = sum_k d_k(phi, phi_{n-k})^{-3} on the meristem rim (L38-88) and adiabatic Fibonacci ramp (L142-171). However, v1 only implements exponential advection r_k = exp(k*G) without Douady & Couder's (1992) physical silicone-oil dish linear advection r_k = 1 + k*G, does not solve the analytical opposition-to-spiral pitchfork bifurcation condition, does not compute the exact regular-spiral zero-force curves F(G, Delta_phi) = 0, and omits the disconnected Lucas branch (1,3)->(3,4)->(4,7)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "1992-douady-magnetic-drop-phyllotaxis.py L142–L171: Adiabatic ramp tracks only main Fibonacci branch without Lucas saddle-node branch <https://github.com/fractastical/morpholib/blob/317bc3c/1992-douady-magnetic-drop-phyllotaxis.py#L142-L171>",
+            "1992-douady-magnetic-drop-phyllotaxis.py L38–L88: Exponential-only dipole energy minimization without linear advection or exact equilibrium branch solver <https://github.com/fractastical/morpholib/blob/317bc3c/1992-douady-magnetic-drop-phyllotaxis.py#L38-L88>" ;
+        pk:hasScore "0.58"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (second assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "VBtESf8OIAQJWTZWlMm7A2qlvmk0uLQ2zaSvIiE70dvDWHOn+fYV2fqG/JSks56G0OlOUz4LMYd7OHPycDksIyHSnGCLu+wlrvTJKTXswL+3ArKpJUoyfxgocB1Vp9RHX5NKW5LeHIk762IS2MXYes1UBPwWDRxzKL3ZsfabSMFbb/lV83ZdQ+SRktjmO77EQDM5ml/mJHNq6dYo35oIazJ5zSiBPpq45rlG+PvV67KaPZ7PTGmUZ9hAfL6v/SUp8QnHYOiXQVqZcjOtNlQqQA/aXja3QmXUwM6d1xI25MsAsL7FnYm9ra3cxNMZptqhvlS21q+ZaLVNspd+VGYaQQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    this: rdfs:label "Douady & Couder (1992, 1996) ferrofluid magnetic-drop iterative repulsive phyllotaxis — Model fidelity to source 58/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-19T23:57:59Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-douady-magnetic-drop-phyllotaxis-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+

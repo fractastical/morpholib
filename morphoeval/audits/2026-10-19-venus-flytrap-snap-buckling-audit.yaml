@@ -1,0 +1,145 @@
+# MorphoEval audit — Forterre, Skotheim, Dumais & Mahadevan (2005) Nature Venus Flytrap Snap-Buckling, 2026-10-19 (v1)
+#
+# Pass 1 (v1) baseline evaluation of `2005-forterre-venus-flytrap-snap-buckling.py`
+# before Step 12 closed-loop remediation:
+#   - Primary assessor: Gemini 4 Argon — 56.4 / 100
+
+audit:
+  id: 2026-10-19-venus-flytrap-snap-buckling-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 066 Pass 1 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/66
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2005-forterre-venus-flytrap-snap-buckling.py`
+      prior to Step 12 remediation.
+
+references:
+  forterre2005:
+    title: "How the Venus Flytrap Snaps"
+    authors: "Forterre Y, Skotheim JM, Dumais J, Mahadevan L"
+    venue: "Nature 433(7024):421-425 (2005)"
+    doi: 10.1038/nature03185
+  skotheim2005:
+    title: "Physical Limits and Design Principles for Plant and Fungal Movements"
+    authors: "Skotheim JM, Mahadevan L"
+    venue: "Science 308(5726):1308-1310 (2005)"
+    doi: 10.1126/science.1107976
+  forterre2013:
+    title: "Slow, Fast and Furious: Understanding the Physics of Plant Movements"
+    authors: "Forterre Y"
+    venue: "Journal of Experimental Botany 64(15):4745-4760 (2013)"
+    doi: 10.1093/jxb/ert230
+  sachse2020:
+    title: "Snapping Mechanics of the Venus Flytrap (Dionaea muscipula)"
+    authors: "Sachse R, Westermeier A, Mylo M, Nadasdi J, Bischoff M, Speck T, Poppinga S"
+    venue: "Proceedings of the National Academy of Sciences 117(27):16035-16042 (2020)"
+    doi: 10.1073/pnas.2002707117
+
+simulations:
+  - id: forterre-venus-flytrap-snap-buckling
+    name: "Forterre et al. (2005) Nature Doubly-Curved Shallow Shell Elastic Energy & Saddle-Node Cusp Catastrophe in Dionaea muscipula"
+    organism: "Dionaea muscipula (Venus flytrap bilobed leaf trap)"
+    script: 2005-forterre-venus-flytrap-snap-buckling.py
+    output: docs/media/venus_flytrap_snap_buckling_comparison.png
+    extra_outputs:
+      - docs/media/venus_flytrap_snap_buckling_growth.gif
+    status: evaluated
+    source_refs:
+      - forterre2005
+      - skotheim2005
+      - forterre2013
+      - sachse2020
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2005-forterre-venus-flytrap-snap-buckling.py`
+      (overall weighted score: 56.4/100). The baseline evaluates the closed-form zero-bias
+      pitchfork equilibrium and 1D symmetric energy curve, but lacks full 2D coupled
+      (kappa_x(t), kappa_y(t)) overdamped poroelastic + inertial snap dynamics across
+      alpha in [0.2, 5.0], omits the three-stage closure kinematics (slow initial phase ->
+      rapid 100 ms snap-buckling -> slow poroelastic damping), omits the cusp catastrophe
+      phase diagram in (alpha, kappa_x0) and surgical curvature-relief strip cutting
+      ablation, and does not segment the vendored Dionaea muscipula specimen image.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Evaluates critical coupling alpha_c and zero-bias analytical equilibrium
+          (`critical_coupling_alpha`, `analytical_equilibrium_curvature`, L29-38), but does
+          not integrate the coupled 2D (kappa_x(t), kappa_y(t)) poroelastic + inertial
+          equations of motion or minimize the 2D shallow-shell energy U(kappa_x, kappa_y).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [29, 49], note: "Static 1D equilibrium without coupled 2D ODE snap dynamics", supports: true}
+      specimen-match:
+        value: 46
+        rationale: >-
+          Does not load or segment the vendored Dionaea muscipula trap lobe photograph
+          `datasets/venus_flytrap_snap_buckling/dionaea_muscipula_trap_lobe_specimen.jpg`
+          and renders only a 2-panel baseline plot.
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [52, 85], note: "2-panel static plot without Dionaea specimen segmentation", supports: false}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          Evaluates static analytical curves without sweeping coupled 2D snap dynamics
+          across alpha in [0.2, 5.0], surgical curvature-relief strip ablation, or CLI
+          parameter overrides.
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [52, 85], note: "Fixed static parameters without dynamical sweep or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          `measure_morphoeval()` (L109-133) returns only 2 static baseline checks without
+          saddle-node fold thresholds, three-stage closure trajectory correlations, surgical
+          ablation checks, or specimen segmentation metrics.
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [109, 133], note: "Only 2 baseline analytical measurements returned", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Vendors `datasets/venus_flytrap_snap_buckling/` with 4 DOIs in `paper_citations.bib`,
+          `scout_manifest.json`, reference JSON, and Dionaea muscipula specimen JPEG, but
+          the baseline script does not enforce runtime SHA-256 verification.
+        evidence:
+          - {file: datasets/venus_flytrap_snap_buckling/paper_citations.bib, lines: [1, 43], note: "4 primary DOIs vendored", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Cites Forterre et al. (2005) Nature in module docstring, but lacks function-level
+          equation mappings to the 3 Lean 4 theorems in
+          `Loop_066_venus_flytrap_snap_buckling.lean`.
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1, 10], note: "Brief baseline header without Lean 4 theorem mappings", supports: true}
+      repro-package:
+        value: 62
+        rationale: >-
+          Provides `--self-test` (`L136-141`), but checks only two static values without
+          SHA-256 dataset verification, surgical ablation negative controls, or bitwise
+          determinism checks.
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [136, 141], note: "Minimal 2-assertion baseline self_test()", supports: true}
+    remediation:
+      - "Implement full coupled 2D (kappa_x(t), kappa_y(t)) overdamped poroelastic + inertial snap dynamics and L-BFGS-B energy minimization of U(kappa_x, kappa_y) across alpha in [0.2, 5.0], reproducing the three-stage closure kinematics (slow initial convex phase -> rapid 100 ms elastic snap-buckling -> slow poroelastic damping)."
+      - "Implement the cusp catastrophe phase diagram in (alpha, kappa_x0) with analytical and numerical saddle-node fold boundaries kappa_x0_fold(alpha), developmental leaf-size scaling alpha = L^4*kappa_init^2/h^2 across juvenile/subadult/mature traps, and surgical midrib/curvature-relief strip cutting ablation (L_eff = L/3 -> alpha < alpha_c) eliminating snap."
+      - "Implement computer-vision segmentation of `datasets/venus_flytrap_snap_buckling/dionaea_muscipula_trap_lobe_specimen.jpg`, isolating the bilobed anthocyanin-red inner trap contour, central midrib hinge, bilateral lobe symmetry, and marginal cilia teeth."
+      - "Enforce runtime SHA-256 verification of all 4 dataset files, expand `measure_morphoeval()` to 9 quantitative reference-anchored metrics, and upgrade the figure to a 6-panel synthesis layout."

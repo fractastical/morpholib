@@ -1,0 +1,164 @@
+# MorphoEval audit — Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B Dynamical Mechanisms for Skeletal Pattern Formation in the Vertebrate Limb, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2004-hentschel-tgfb-fibronectin-limb.py` (v1, 115 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-tgfb-fibronectin-limb-loop`).
+
+audit:
+  id: 2026-10-19-tgfb-fibronectin-limb-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Slot 014 autonomous loop assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2004-hentschel-tgfb-fibronectin-limb.py`
+      prior to Step 12 remediation in `2026-10-19-tgfb-fibronectin-limb-loop`.
+
+references:
+  hentschel2004:
+    title: "Dynamical mechanisms for skeletal pattern formation in the vertebrate limb"
+    authors: "Hentschel HGE, Glimm T, Glazier JA, Newman SA"
+    venue: "Proceedings of the Royal Society B 271(1549):1713-1722 (2004)"
+    doi: 10.1098/rspb.2004.2772
+  kiskowski2004:
+    title: "A multiscale model for autonomous mesenchymal condensations"
+    authors: "Kiskowski MA, Alber MS, Glimm T, Hentschel HGE, Glazier JA, Newman SA"
+    venue: "Developmental Biology 271(2):372-387 (2004)"
+    doi: 10.1016/j.ydbio.2004.03.038
+  miura2006:
+    title: "Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development"
+    authors: "Miura T, Shiota K, Morriss-Kay G, Maini PK"
+    venue: "Journal of Theoretical Biology 240(4):562-573 (2006)"
+    doi: 10.1016/j.jtbi.2005.10.016
+  chaturvedi2005:
+    title: "On multi-scale modeling of morphogenesis"
+    authors: "Chaturvedi R, Huang C, Kazmierczak B, Schneider T, Izaguirre JA, Glimm T, Hentschel HGE, Glazier JA, Newman SA, Alber MS"
+    venue: "Journal of the Royal Society Interface 2(3):237-253 (2005)"
+    doi: 10.1098/rsif.2005.0033
+  christley2007:
+    title: "Patterning of developmental condensations by turing-type and haptotactic mechanisms in discrete and continuum models"
+    authors: "Christley S, Alber MS, Newman SA"
+    venue: "BMC Systems Biology 1:16 (2007)"
+    doi: 10.1186/1752-0509-1-16
+
+simulations:
+  - id: hentschel-tgfb-fibronectin-limb
+    name: "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B / Kiskowski et al. (2004) Dev. Biol. multiscale TGF-beta / FGF-inhibitor reaction-diffusion and fibronectin haptotaxis PDE in developing Gallus gallus limb bud"
+    organism: "Gallus gallus domesticus embryonic wing bud & high-density mesenchymal micromass (HH20 stylopod humerus -> HH24 zeugopod radius+ulna -> HH27 autopod digits II-IV)"
+    script: 2004-hentschel-tgfb-fibronectin-limb.py
+    output: docs/media/tgfb_fibronectin_limb_comparison.png
+    extra_outputs:
+      - docs/media/tgfb_fibronectin_limb_growth.gif
+    status: evaluated
+    source_refs:
+      - hentschel2004
+      - kiskowski2004
+      - miura2006
+      - chaturvedi2005
+      - christley2007
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2004-hentschel-tgfb-fibronectin-limb.py`
+      (overall weighted score: 48.2 / 100). The v1 baseline script evaluates the
+      analytical TGF-beta / inhibitor wavenumber formula `m = sqrt(fa - 2)` for
+      stylopod (`m=1`) and wing autopod (`m=3`), but approximates fibronectin and
+      mesenchymal cell density via static algebraic scaling of a cosine wave rather
+      than numerically integrating the coupled 4-field `(c_a, c_i, F, R)` reaction-diffusion-haptotaxis
+      PDE (`dR/dt = D_R*Lap(R) - chi_F*div(R*grad(F)) + r_R*R*(1-R)`); omits the
+      2D composite proximodistal wing bud solver, the 2D micromass nodular-spot vs
+      TGF-beta2-stripe morphospace (Miura & Shiota 2000; Kiskowski et al. 2004), and
+      anti-fibronectin (`chi_F=0`) / equal-diffusion (`Da=Di`) negative controls;
+      does not load or segment the vendored Gallus gallus limb specimen; and returns
+      only 2 analytical scalar endpoints in `measure_morphoeval()`.
+    scores:
+      model-fidelity:
+        value: 49
+        rationale: >-
+          Evaluates the analytical TGF-beta / inhibitor wavenumber `compute_hentschel_dispersion`,
+          but replaces the coupled 4-field `(c_a, c_i, F, R)` reaction-diffusion-haptotaxis
+          PDE and 2D proximodistal wing bud solver with a static trigonometric
+          profile without integrating `dF/dt = k_F*c_a^+*R_2 - gamma_F*F` or
+          `dR/dt = D_R*Lap(R) - chi_F*div(R*grad(F)) + r_R*R*(1-R)`.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [25, 35], note: "Analytical wavenumber formula without 4-field haptotactic PDE integration", supports: false}
+      specimen-match:
+        value: 28
+        rationale: >-
+          Although `datasets/tgfb_fibronectin_limb/chick_limb_chondrogenesis_specimen.jpg`
+          is vendored on disk, the v1 baseline script never loads, segments, or plots
+          the Gallus gallus forelimb specimen and performs no quantitative comparison
+          of stylopod (1 humerus), zeugopod (2 radius+ulna), and autopod (3 digits)
+          bone profiles against the haptotactic PDE.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [40, 68], note: "3-panel synthetic figure lacking Gallus gallus specimen segmentation", supports: false}
+      parameter-expressivity:
+        value: 45
+        rationale: >-
+          Evaluates only 3 static mode numbers without simulating the full 4-stage
+          AER-FGF zonation series (`m = 1 -> 2 -> 3 -> 4`), omits the 2D micromass
+          nodular-spot vs exogenous TGF-beta2 stripe morphospace (Miura & Shiota 2000;
+          Kiskowski et al. 2004), omits anti-fibronectin (`chi_F = 0`) and equal-diffusion
+          (`Da = Di`) negative controls, and exposes only `--self-test` on the CLI.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [40, 68], note: "Missing 4-stage PDE sweep, 2D micromass morphospace, and chi_F=0 / Da=Di negative controls", supports: false}
+      morphometric-validation:
+        value: 42
+        rationale: >-
+          `measure_morphoeval()` returns only 2 analytical scalar endpoints without
+          measuring 4-field haptotactic cell density peak counts, F-R colocalization
+          correlation, micromass spot/stripe area fractions, negative-control quenching,
+          or segmented Gallus gallus wing bone counts and spacing ratios.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [70, 92], note: "Only 2 analytical scalar endpoints in measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 60
+        rationale: >-
+          Header cites Hentschel et al. (2004) DOI `10.1098/rspb.2004.2772`, and
+          `datasets/tgfb_fibronectin_limb/` is present on disk, but the v1 script
+          does not load `tgfb_fibronectin_limb_reference.json` or verify SHA-256
+          digests at runtime.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1, 10], note: "No runtime SHA-256 verification of datasets/tgfb_fibronectin_limb/", supports: false}
+      code-traceability:
+        value: 58
+        rationale: >-
+          Basic docstrings are present, but functions lack explicit equation mappings
+          to Hentschel et al. (2004) Eqs. (2.1)-(3.14), Kiskowski et al. (2004)
+          haptotaxis kinetics, and the 3 Lean 4 theorems in
+          `Loop_014_tgfb_fibronectin_limb.lean`.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [25, 38], note: "Docstrings omit explicit equation numbers and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 68
+        rationale: >-
+          Includes `--self-test`, but `self_test()` checks only 2 scalar equalities
+          without verifying dataset SHA-256 locks, 4-field PDE cell condensation
+          counts across all 4 FGF zones (`[1, 2, 3, 4]`), 2D wing bud `[1, 2, 3]`
+          compartments, 2D micromass spot/stripe area fractions, negative-control
+          quenching, specimen bone segmentation, or bitwise two-run determinism.
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [94, 100], note: "Minimal 2-assertion self_test() without SHA-256, PDE, micromass, specimen, or determinism checks", supports: false}
+    remediation:
+      - "Replace the static cosine profile with a genuine 4-field coupled reaction-diffusion-haptotaxis PDE solver integrating TGF-beta (c_a), FGF-dependent inhibitor (c_i), ECM fibronectin (F), and haptotactic mesenchymal cell density (R) via DCT-II IMEX + conservative haptotactic flux discretization in 1D and 2D."
+      - "Simulate all 4 proximodistal AER-FGF zonation regimes from Hentschel et al. (2004) (HH20 stylopod fa=3 -> 1 humerus; HH24 zeugopod fa=6 -> 2 radius+ulna; HH27 wing autopod fa=11 -> 3 digits II-IV; HH28 leg/high-TGFb fa=18 -> 4 pedal digits), the 2D micromass nodular-spot vs exogenous TGF-beta2 stripe morphospace (Kiskowski et al. 2004; Miura & Shiota 2000), and dual negative controls (equal diffusion Da=Di=0.5 and anti-fibronectin no-haptotaxis chi_F=0)."
+      - "Load and SHA-256-verify all 4 files in `datasets/tgfb_fibronectin_limb/` at runtime; segment the humerus (1 bone), radius+ulna (2 bones), and digits II-IV (3 elements) from `chick_limb_chondrogenesis_specimen.jpg`; and compare specimen bone counts and spacing ratios against the 4-field PDE."
+      - "Expose full CLI parameters (--fa, --L-AP-um, --Da, --Di, --chi-F, --k-F, --steps, --seed), expand `measure_morphoeval()` to 8 reference-backed morphometric measurements, and render the 8-panel comparison PNG and 4-frame growth GIF."

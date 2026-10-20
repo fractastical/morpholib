@@ -1,0 +1,152 @@
+# MorphoEval audit — Conte et al. (2012), Martin et al. (2009) & He et al. (2014) Drosophila Ventral Furrow Invagination Biomechanics, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2012-he-drosophila-ventral-furrow.py` (Slot 046) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-drosophila-ventral-furrow-loop`.
+
+audit:
+  id: 2026-10-19-drosophila-ventral-furrow-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2012-he-drosophila-ventral-furrow.py` in
+      `2026-10-19-drosophila-ventral-furrow-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  conte2012:
+    title: "Biomechanical analysis of ventral furrow formation in Drosophila melanogaster"
+    authors: "Conte V, Munoz JJ, Baum B, Miodownik M"
+    venue: "PLoS ONE 7(11):e49973 (2012)"
+    doi: 10.1371/journal.pone.0049973
+  martin2009:
+    title: "Pulsed contractions of an actin-myosin network drive apical constriction"
+    authors: "Martin AC, Kaschube M, Wieschaus EF"
+    venue: "Nature 457(7228):495-499 (2009)"
+    doi: 10.1038/nature07522
+  he2014:
+    title: "Apical constriction drives tissue-scale hydrodynamic flow to mediate cell elongation"
+    authors: "He B, Doubrovinski K, Polyakov O, Wieschaus E"
+    venue: "Nature 508(7496):392-396 (2014)"
+    doi: 10.1038/nature13070
+  polyakov2014:
+    title: "Passive mechanical forces control cell-shape change during Drosophila ventral furrow formation"
+    authors: "Polyakov O, He B, Swan M, Shaevitz JW, Kaschube M, Wieschaus E"
+    venue: "Biophysical Journal 107(4):998-1010 (2014)"
+    doi: 10.1016/j.bpj.2014.07.013
+
+simulations:
+  - id: he-drosophila-ventral-furrow
+    name: "Conte et al. (2012), Martin et al. (2009) & He et al. (2014) Drosophila ventral furrow invagination biomechanics"
+    organism: "Drosophila melanogaster (gastrulating cellular blastoderm embryo)"
+    script: 2012-he-drosophila-ventral-furrow.py
+    output: docs/media/drosophila_ventral_furrow_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_ventral_furrow_growth.gif
+    status: evaluated
+    source_refs:
+      - conte2012
+      - martin2009
+      - he2014
+      - polyakov2014
+    summary: >-
+      Pass 1 baseline assessment of `2012-he-drosophila-ventral-furrow.py` (59.0/100).
+      The initial script verifies incompressible trapezoidal cell area conservation
+      and compares basic wild-type vs apical-only invagination, but requires explicit
+      integration of the Martin et al. (2009) ratcheted Myosin-II pulse ODE
+      `dL_ap/dt = -alpha_pulse*M(t) + beta_relax*(1 - r_twist)*(L_0 - L_ap)`, all 6
+      Conte et al. (2012) biomechanical/mutant regimes (wild-type full synergy,
+      apical+basal relaxation, apical-only, concertina mutant, unratcheted recoil,
+      and twist;snail double-null control), 2D polygonal blastoderm cross-section
+      ring reconstruction, and automated 4-stage confocal segmentation on
+      `drosophila_ventral_furrow_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: >-
+          Implements incompressible trapezoidal cell geometry `A_i = 0.5*(w_ap + w_ba)*h_i = A_0`
+          (L74-84), but the baseline pass uses simplified linear interpolation rather
+          than explicit RK2 integration of the Martin et al. (2009) ratcheted Myosin-II
+          pulse ODE and lacks the 2D polygonal cross-sectional blastoderm ring solver.
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [74, 84], note: "Incompressible trapezoidal wedge cell geometry helper", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [87, 160], note: "Baseline simulator requiring explicit pulse ODE and 2D polygonal ring mechanics", supports: false}
+      specimen-match:
+        value: 52
+        rationale: >-
+          Vendors `datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_specimen.jpg`
+          (CC BY 4.0 confocal cross-sections of Drosophila ventral furrow invagination),
+          but Pass 1 does not yet segment the 4 transverse stages or quantify apical
+          Myosin-II red channel enrichment and dorsoventral compression.
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [35, 65], note: "SHA-256 verification of drosophila_ventral_furrow_specimen.jpg without CV segmentation", supports: false}
+      parameter-expressivity:
+        value: 57
+        rationale: >-
+          Evaluates 3 regimes in Pass 1, but requires all 6 Conte et al. (2012) and
+          Martin et al. (2009) regimes plus a 2D biomechanical morphospace sweep over
+          Twist ratchet stabilization `r_twist` and basal/lateral synergy gain.
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [87, 160], note: "3-regime baseline lacking apical+basal, concertina, null control, and 2D morphospace", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          Provides 3 baseline measurements in `measure_morphoeval()`, requiring expansion
+          to 7 quantitative morphometric benchmarks including 6-regime depth and cell-height
+          correlations and 4-stage confocal specimen morphometrics.
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [163, 198], note: "Baseline measure_morphoeval() with 3 script metrics", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `drosophila_ventral_furrow_reference.json`,
+          `paper_citations.bib`, and `drosophila_ventral_furrow_specimen.jpg` with
+          SHA-256 verification linking Conte et al. (2012), Martin et al. (2009),
+          He et al. (2014), and Polyakov et al. (2014).
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [42, 70], note: "SHA-256 verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Links module docstring to `Loop_046_drosophila_ventral_furrow.lean`, requiring
+          complete function-level mappings to Conte et al. (2012) Figs. 2-6 and Martin
+          et al. (2009) Figs. 2-4.
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1, 30], note: "Module docstring mapping governing laws to Lean 4 theorems", supports: true}
+      repro-package:
+        value: 61
+        rationale: >-
+          Provides `--self-test` and deterministic seed=2012, requiring expansion to
+          verify all 6 Conte/Martin regimes, bitwise determinism, and specimen CV
+          segmentation.
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [248, 258], note: "Baseline --self-test suite", supports: true}
+    remediation:
+      - "Implement explicit RK2 integration of the Martin et al. (2009) ratcheted Myosin-II pulse ODE `dL_ap/dt = -alpha_pulse*M(t) + beta_relax*(1 - r_twist)*(L_0 - L_ap)` and reconstruct the 64-cell 2D incompressible blastoderm ring."
+      - "Evaluate all 6 Conte et al. (2012) & Martin et al. (2009) biomechanical/mutant regimes (`wildtype_synergistic_invagination`, `apical_plus_basal_relaxation`, `apical_constriction_only`, `concertina_uncoordinated_mutant`, `unratcheted_twist_recoil_mutant`, `snail_twist_double_null_control`) and a 15x15 2D parameter morphospace."
+      - "Add automated 4-stage confocal cross-section segmentation and apical Myosin-II red enrichment analysis on `datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_specimen.jpg`."

@@ -1,0 +1,92 @@
+sim_id: nijhout-butterfly-eyespot-focus-rings
+slot: 98
+slot_id: slot-098-butterfly-eyespot-focus-rings
+math_family: Source-Threshold Concentric Eyespot Rings
+model_spec:
+  model: "Nijhout (1990) 2D Wing-Compartment Lateral-Vein Focus Reaction-Diffusion + Brakefield et al. (1996) & Brunetti et al. (2001) Concentric French-Flag Eyespot Ring Thresholds (Spalt/Engrailed/Distal-less)"
+  c0_wet_season: 1.0
+  c0_dry_season: 0.42
+  D_mm2_hr: 0.0192
+  k_hr_inv: 0.08333333333333333
+  lambda_mm: 0.48
+  thresholds_pupil_black_gold: [0.666, 0.1799, 0.1036]
+  seed: 2001
+  inputs:
+    - datasets/butterfly_eyespot_focus_rings/butterfly_eyespot_focus_rings_reference.json
+    - datasets/butterfly_eyespot_focus_rings/bicyclus_anynana_eyespot_specimen.jpg
+    - datasets/butterfly_eyespot_focus_rings/scout_manifest.json
+equations:
+  - id: nijhout-butterfly-eyespot-focus-rings-1
+    law_name: "Nijhout (1990) & Brakefield et al. (1996) Focal Morphogen Radial Decay & Concentric Threshold Ordering"
+    formula: "∂c/∂t = D ∇²c - k c + S₀ δ(x - x_focus) ⇒ c(r) = c₀ exp(-r/λ), λ = √(D/k);  θ_pupil > θ_black > θ_gold ⇒ 0 < R_pupil < R_black < R_gold, R_i = λ ln(c₀/θ_i)"
+    lean_decl: "MathOfBiology.Loop_098.eyespot_ring_radius"
+    lean_theorem: "MathOfBiology.Loop_098.nijhout_concentric_threshold_ordering"
+    lean_locus: "morphoeval/lean/loops/Loop_098_butterfly_eyespot_focus_rings.lean#L24-L57"
+    lean_code: |
+      def eyespot_ring_radius (lam L0 Li : Nat) : Nat := lam * (L0 - Li)
+      theorem nijhout_concentric_threshold_ordering
+          (lam L0 L_pupil L_black L_gold : Nat)
+          (h_lam : 0 < lam) (h_gb : L_gold < L_black) (h_bp : L_black < L_pupil) (h_p0 : L_pupil < L0) :
+          0 < eyespot_ring_radius lam L0 L_pupil ∧
+          eyespot_ring_radius lam L0 L_pupil < eyespot_ring_radius lam L0 L_black ∧
+          eyespot_ring_radius lam L0 L_black < eyespot_ring_radius lam L0 L_gold
+    variables: "c₀: focal morphogen source concentration at eyespot organizer; λ = √(D/k): radial morphogen decay length; θ_pupil > θ_black > θ_gold: nested transcriptional thresholds for white UV pupil, black Spalt/Dll disc, and outer gold Engrailed ring"
+    role: "Proves that a single radially decaying focal morphogen gradient interpreted by nested transcriptional thresholds generates strictly ordered concentric eyespot pigment rings"
+    source_citation: "Nijhout (1990) Proc. R. Soc. B 239:81-113 (doi:10.1098/rspb.1990.0048); Brakefield et al. (1996) Nature 384:236-242 (doi:10.1038/384236a0)"
+    code_locus: "2001-nijhout-butterfly-eyespot-focus-rings.py#L190-L260"
+  - id: nijhout-butterfly-eyespot-focus-rings-2
+    law_name: "Brakefield et al. (1996) & Brunetti et al. (2001) Seasonal Polyphenism Annulus Width Invariance & Goldeneye Threshold Shift"
+    formula: "ΔR = R_gold(c₀) - R_black(c₀) = λ ln(θ_black / θ_gold) (invariant under c₀ scaling);  θ_black,Goldeneye > θ_black,WT ⇒ ΔR_Goldeneye > ΔR_WT"
+    lean_decl: "MathOfBiology.Loop_098.gold_annulus_width"
+    lean_theorem: "MathOfBiology.Loop_098.brakefield_polyphenism_annulus_invariance"
+    lean_locus: "morphoeval/lean/loops/Loop_098_butterfly_eyespot_focus_rings.lean#L64-L99"
+    lean_code: |
+      def gold_annulus_width (lam L0 L_black L_gold : Nat) : Nat :=
+        eyespot_ring_radius lam L0 L_gold - eyespot_ring_radius lam L0 L_black
+      theorem brakefield_polyphenism_annulus_invariance
+          (lam L0_dry L0_wet L_black L_black_ge L_gold : Nat)
+          (h_lam : 0 < lam) (h_gb : L_gold ≤ L_black) (h_ge : L_black < L_black_ge)
+          (h_dry : L_black_ge ≤ L0_dry) (h_wet : L0_dry ≤ L0_wet) :
+          gold_annulus_width lam L0_wet L_black L_gold = lam * (L_black - L_gold) ∧
+          gold_annulus_width lam L0_dry L_black L_gold = gold_annulus_width lam L0_wet L_black L_gold ∧
+          gold_annulus_width lam L0_wet L_black L_gold < gold_annulus_width lam L0_wet L_black_ge L_gold
+    variables: "ΔR: outer Engrailed golden-yellow ring width; L₀_wet, L₀_dry: wet- and dry-season log focal source strengths; L_black_ge: elevated Spalt response threshold in Goldeneye mutant"
+    role: "Proves that modulating focal source strength c₀ under seasonal ecdysone polyphenism scales overall eyespot radius while preserving the outer gold annulus width ΔR, whereas shifting the Spalt threshold in Goldeneye expands the gold ring"
+    source_citation: "Brakefield et al. (1996) Nature 384:236-242 (doi:10.1038/384236a0); Brunetti et al. (2001) Curr. Biol. 11:1451-1461 (doi:10.1016/S0960-9822(01)00429-8)"
+    code_locus: "2001-nijhout-butterfly-eyespot-focus-rings.py#L263-L340"
+  - id: nijhout-butterfly-eyespot-focus-rings-3
+    law_name: "Nijhout (1980, 1990) & French & Brakefield (1995) Early Pupal Focal Microcautery Ablation Collapse"
+    formula: "c₀ ≤ θ_gold < θ_black < θ_pupil ⇒ R_pupil = R_black = R_gold = 0 ∧ zone(c) = 0 ∀ r ≥ 0"
+    lean_decl: "MathOfBiology.Loop_098.eyespot_ring_zone"
+    lean_theorem: "MathOfBiology.Loop_098.nijhout_focal_cautery_ablation_collapse"
+    lean_locus: "morphoeval/lean/loops/Loop_098_butterfly_eyespot_focus_rings.lean#L106-L132"
+    lean_code: |
+      theorem nijhout_focal_cautery_ablation_collapse
+          (lam L0 L_pupil L_black L_gold c theta_pupil theta_black theta_gold : Nat)
+          (h_cautery : L0 ≤ L_gold) (h_gb : L_gold ≤ L_black) (h_bp : L_black ≤ L_pupil)
+          (h_c : c < theta_gold) (h_tgb : theta_gold ≤ theta_black) (h_tbp : theta_black ≤ theta_pupil) :
+          eyespot_ring_radius lam L0 L_pupil = 0 ∧
+          eyespot_ring_radius lam L0 L_black = 0 ∧
+          eyespot_ring_radius lam L0 L_gold = 0 ∧
+          eyespot_ring_zone c theta_pupil theta_black theta_gold = 0
+    variables: "c₀: residual focal source after early pupal microcautery; R_pupil, R_black, R_gold: concentric pigment ring radii"
+    role: "Establishes the negative-control ablation theorem that cauterizing the organizer focus before morphogen secretion eliminates all concentric eyespot rings"
+    source_citation: "Nijhout (1990) Proc. R. Soc. B 239:81-113 (doi:10.1098/rspb.1990.0048); French & Brakefield (1995) Dev. Biol. 168:112-123 (doi:10.1006/dbio.1995.1065)"
+    code_locus: "2001-nijhout-butterfly-eyespot-focus-rings.py#L343-L395"
+  - id: nijhout-butterfly-eyespot-focus-rings-4
+    law_name: "Beldade et al. (2002) Twin-Focus Morphogen Superposition & Hourglass Bridge Fusion"
+    formula: "c_twin(x) = φ(|x - x₁|) + φ(|x - x₂|);  d₁₂ = |x₂ - x₁| < 2 R_gold ⇒ w_bridge = 2 R_gold - d₁₂ > 0 ∧ c_twin(d₁₂ - x) = c_twin(x)"
+    lean_decl: "MathOfBiology.Loop_098.twin_focus_superposition"
+    lean_theorem: "MathOfBiology.Loop_098.beldade_twin_focus_hourglass_fusion"
+    lean_locus: "morphoeval/lean/loops/Loop_098_butterfly_eyespot_focus_rings.lean#L139-L169"
+    lean_code: |
+      def twin_focus_superposition (phi : Nat → Nat) (d12 x : Nat) : Nat := phi x + phi (d12 - x)
+      def twin_focus_bridge_overlap (R_gold d12 : Nat) : Nat := 2 * R_gold - d12
+      theorem beldade_twin_focus_hourglass_fusion
+          (phi : Nat → Nat) (R_gold d12 x : Nat) (h_fuse : d12 < 2 * R_gold) (hx : x ≤ d12) :
+          0 < twin_focus_bridge_overlap R_gold d12 ∧
+          twin_focus_superposition phi d12 (d12 - x) = twin_focus_superposition phi d12 x
+    variables: "φ(r): radial morphogen kernel; d₁₂: inter-focal separation distance; w_bridge: hourglass gold-ring fusion overlap"
+    role: "Proves bilateral morphogen symmetry and outer-ring hourglass fusion whenever two adjacent eyespot foci are closer than twice the gold-ring radius"
+    source_citation: "Beldade, Koops & Brakefield (2002) Nature 416:844-847 (doi:10.1038/416844a); Nijhout (1990) Proc. R. Soc. B 239:81-113"
+    code_locus: "2001-nijhout-butterfly-eyespot-focus-rings.py#L398-L455"

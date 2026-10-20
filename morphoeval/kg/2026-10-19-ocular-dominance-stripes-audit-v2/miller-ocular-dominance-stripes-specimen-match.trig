@@ -1,0 +1,80 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-miller-ocular-dominance-stripes> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-miller-ocular-dominance-stripes-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-miller-ocular-dominance-stripes-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Miller, Keller & Stryker (1989) & Hubel, Wiesel & LeVay (1977) ocular dominance column development & plasticity — Morphological realism / specimen match: 92/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Vendors and SHA-256-verifies both the tangential V1 ocular dominance pattern (`odc_tangential_pattern_specimen.png`, CC BY-SA 3.0) and the *Macaca mulatta* V1 striate cortex Nissl section (`macaque_striate_cortex_specimen.jpg`, CC0 BrainMaps.org), automatically segmenting left/right stripe territories (`f_L = 0.5000`), 2D Hanning FFT spectral peak (`16` cycles, `22.75 px/cycle = 800.0 um`), `N = 71` Y-shaped labyrinthine branchpoints, and the V1 Layer IVC granular optical density peak (`s* = 0.35`, `segment_odc_and_v1_specimens`, L253-325)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-miller-ocular-dominance-stripes-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-miller-ocular-dominance-stripes-specimen-match-2> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-miller-ocular-dominance-stripes-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "1989-miller-ocular-dominance-stripes.py L253–L325" ;
+        dct:description "Dual-specimen CV pipeline segmenting ODC stripe territories, 2D FFT wavelength, 71 branchpoints, and V1 Layer 4C laminar profile" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/1989-miller-ocular-dominance-stripes.py#L253-L325> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-miller-ocular-dominance-stripes-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/ocular_dominance_stripes_comparison.png (generated output)" ;
+        dct:description "9-panel dark-mode comparison figure with tangential ODC branchpoint overlay and macaque V1 Layer IVC laminar profile — docs/media/ocular_dominance_stripes_comparison.png: rendered output of 1989-miller-ocular-dominance-stripes.py at 317bc3c, image/png, 1765310 B, 2227×1863 px, artifact_sha256 d9836de9bccac0673460f380c616ad3321ffc7b4d515cc99a0a2314c303799eb (sha256 d9836de9bccac0673460f380c616ad3321ffc7b4d515cc99a0a2314c303799eb), spec_fingerprint 819128bbec5b994d73c8b186f4a86b2d2df6149663f61bdaf866cb36447d290f" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1098/rspb.1980.0051>,
+            <https://doi.org/10.1098/rstb.1977.0050>,
+            <https://doi.org/10.1126/science.2762813>,
+            <https://doi.org/10.1523/JNEUROSCI.06-08-02117.1986> .
+    <https://doi.org/10.1098/rspb.1980.0051> dct:date "1980"^^xsd:gYear ;
+        dct:title "A model for the formation of ocular dominance stripes" .
+    <https://doi.org/10.1098/rstb.1977.0050> dct:date "1977"^^xsd:gYear ;
+        dct:title "Plasticity of ocular dominance columns in monkey striate cortex" .
+    <https://doi.org/10.1126/science.2762813> dct:date "1989"^^xsd:gYear ;
+        dct:title "Ocular dominance column development: analysis and simulation" .
+    <https://doi.org/10.1523/JNEUROSCI.06-08-02117.1986> dct:date "1986"^^xsd:gYear ;
+        dct:title "Binocular impulse blockade prevents the formation of ocular dominance columns in cat visual cortex" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Miller, Keller & Stryker (1989) & Hubel, Wiesel & LeVay (1977) ocular dominance column development & plasticity — Morphological realism / specimen match 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:44:56Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-miller-ocular-dominance-stripes-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

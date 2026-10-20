@@ -1,0 +1,156 @@
+# MorphoEval Pass 1 (v1) Audit — Milne-Edwards & Haime (1848) / Chindapol et al. (2013) Coral Calice Septa Insertion, 2026-10-19
+#
+# Dual-agent Pass 1 baseline assessment of `2013-thomas-coral-calice-septa-insertion.py` (v1, 165 lines):
+#   - Primary assessor: Gemini 4 Argon — 54.0 / 100
+#   - Independent second assessor rubric evaluation — 50.8 / 100
+#   - Dual-agent consensus score: 52.4 / 100
+
+audit:
+  id: 2026-10-19-coral-calice-septa-insertion-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 baseline assessment)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 1 rubric verification)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/74
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2013-thomas-coral-calice-septa-insertion.py`
+      prior to Step 12 closed-loop remediation.
+
+references:
+  milneedwards1848:
+    title: "Recherches sur les polypiers. Premier mémoire: Observations sur la structure et le développement des polypiers en général"
+    authors: "Milne-Edwards H, Haime J"
+    venue: "Annales des Sciences Naturelles, Zoologie (Série 3) 9:37-89 (1848)"
+    doi: 10.5962/bhl.title.11574
+  kaandorp2001:
+    title: "The Algorithmic Beauty of Seaweeds, Sponges and Corals"
+    authors: "Kaandorp JA, Kübler JE"
+    venue: "Springer-Verlag, Berlin (2001)"
+    doi: 10.1007/978-3-662-04339-4
+  chindapol2013:
+    title: "Modelling Growth and Form of the Scleractinian Coral Pocillopora verrucosa and the Influence of Hydrodynamics"
+    authors: "Chindapol N, Kaandorp JA, Cronemberger C, Mass T, Genin A"
+    venue: "PLoS Computational Biology 9(1):e1002849 (2013)"
+    doi: 10.1371/journal.pcbi.1002849
+  kunth1869:
+    title: "Beiträge zur Kenntniss fossiler Korallen. 2. Das Wachsthumsgesetz der Zoantharia rugosa und über Calceola sandalina"
+    authors: "Kunth A"
+    venue: "Zeitschrift der Deutschen Geologischen Gesellschaft 21:647-688 (1869)"
+    doi: 10.1127/zdgg/21/1869/647
+  cairns2012:
+    title: "An illustrated key to the genera and subgenera of the Recent azooxanthellate Scleractinia (Cnidaria, Anthozoa), with an attached glossary"
+    authors: "Cairns SD, Kitahara MV"
+    venue: "ZooKeys 227:1-47 (2012)"
+    doi: 10.3897/zookeys.227.3612
+
+simulations:
+  - id: thomas-coral-calice-septa-insertion
+    name: "Milne-Edwards & Haime (1848) / Chindapol et al. (2013) Scleractinian coral calice septal insertion & advection-diffusion morphogenesis"
+    organism: "Caryophyllia (Caryophyllia) quadragenaria & Pocillopora verrucosa (Scleractinia stony corals)"
+    script: 2013-thomas-coral-calice-septa-insertion.py
+    output: docs/media/coral_calice_septa_insertion_comparison.png
+    extra_outputs:
+      - docs/media/coral_calice_septa_insertion_growth.gif
+    status: evaluated
+    source_refs:
+      - milneedwards1848
+      - kaandorp2001
+      - chindapol2013
+      - kunth1869
+      - cairns2012
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2013-thomas-coral-calice-septa-insertion.py`
+      (consensus score 52.4/100). Implements the basic Milne-Edwards & Haime (1848)
+      hexameral septal doubling sequence N_hex(k) = 6 * 2^(k-1) and decreasing cycle
+      reach alpha_k in 2D, but omits Kunth's Law (1869) Paleozoic Rugosa serial 4-fossula
+      insertion (N_rugosa(m) = 6 + 4m) as an evolutionary comparison/negative control,
+      omits Chindapol et al. (2013) Péclet-number advection-diffusion boundary-layer
+      symmetry breaking (Pe sweep from 0 to 36), lacks automated CV segmentation of the
+      vendored Caryophyllia quadragenaria calice specimen, and lacks runtime SHA-256
+      dataset verification.
+    scores:
+      model-fidelity:
+        value: 55
+        rationale: >-
+          Implements the geometric Milne-Edwards hexameral septal insertion sequence
+          N_hex(k) = 6 * 2^(k-1) and decreasing cycle radial reach alpha_k, but omits
+          Kunth's Law (1869) Paleozoic Rugosa serial 4-fossula insertion (N_rugosa(m) = 6 + 4m)
+          and omits Chindapol et al. (2013) Péclet advection-diffusion boundary-layer
+          flow symmetry breaking.
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [35, 89], note: "Basic 2D Milne-Edwards hexameral calice generator without Rugosa or Péclet advection-diffusion coupling", supports: true}
+      specimen-match:
+        value: 46
+        rationale: >-
+          Displays the vendored Caryophyllia quadragenaria specimen image in Panel D
+          without performing automated polar ridge segmentation of the 40 radiating septa
+          or measuring major vs minor cycle radial reach ratios.
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [108, 111], note: "Raw imshow of specimen without CV segmentation", supports: false}
+      parameter-expressivity:
+        value: 48
+        rationale: >-
+          Evaluates 4 radii for Scleractinian cyclic insertion, but lacks a Péclet number
+          advection-diffusion sweep (Pe in {0, 1, 4, 16, 36}), a 7-species cross-taxa
+          corallite scaling analysis, or CLI parameter overrides.
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [96, 110], note: "Fixed 4-radius loop without Pe sweep or CLI overrides", supports: false}
+      morphometric-validation:
+        value: 49
+        rationale: >-
+          Exposes only 2 basic scalar metrics in `measure_morphoeval()` without testing
+          Péclet upstream/downstream dipolar flux asymmetry, Rugosa vs Scleractinia
+          divergence, cross-taxa septa correlation, or specimen segmentation parity.
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [134, 156], note: "Only 2 baseline metrics in measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 62
+        rationale: >-
+          Vendors `datasets/coral_calice_septa_insertion/` with 5 BibTeX references and
+          the CC BY 3.0 Caryophyllia quadragenaria micrograph, but does not verify SHA-256
+          digests at runtime.
+        evidence:
+          - {file: datasets/coral_calice_septa_insertion/coral_calice_septa_insertion_reference.json, lines: [1, 130], note: "Reference JSON present but not SHA-256 checked in script", supports: true}
+      code-traceability:
+        value: 56
+        rationale: >-
+          Basic docstrings cite Milne-Edwards & Haime (1848) but do not map functions
+          to the 4 machine-checked Lean 4 theorems in `Loop_074_coral_calice_septa_insertion.lean`.
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [1, 14], note: "Brief header docstring without Lean 4 theorem mapping", supports: false}
+      repro-package:
+        value: 54
+        rationale: >-
+          Provides `--self-test` and `--skip-gif`, but `self_test()` checks only 4 basic
+          assertions and lacks bitwise determinism and SHA-256 integrity checks.
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [159, 166], note: "Minimal 4-line self_test()", supports: false}
+    remediation:
+      - "Implement Kunth's Law (1869) Paleozoic Rugosa serial 4-fossula septal insertion (N_rugosa(m) = 6 + 4m with cardinal/counter/alar pinnate bilateral symmetry) alongside Milne-Edwards hexameral cyclic doubling (N_hex(k) = 6 * 2^(k-1)) to demonstrate the evolutionary symmetry divergence proved in Lean 4 Theorem 2."
+      - "Implement Chindapol et al. (2013) PLoS Comput. Biol. Péclet advection-diffusion boundary-layer solver across Pe in {0, 1, 4, 16, 36}, including the Pe = 0 hydrostatic pure-diffusion radial symmetry control and upstream-enhanced calcification flux."
+      - "Implement automated polar-coordinate ridge segmentation (`segment_caryophyllia_specimen`) on `scleractinian_coral_septa_specimen.jpg` to detect the 40 radiating septa (9.0 deg spacing) and quantify major (S1+S2) vs minor (S3+S4) radial reach ratios."
+      - "Add runtime SHA-256 verification of all 4 dataset files, 7-species cross-taxa Scleractinian corallite scaling, 9 reference-anchored morphometrics in `measure_morphoeval()`, and an 8-check `self_test()` suite."

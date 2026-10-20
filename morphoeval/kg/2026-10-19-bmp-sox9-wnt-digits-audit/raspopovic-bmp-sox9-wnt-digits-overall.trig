@@ -1,0 +1,73 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-raspopovic-bmp-sox9-wnt-digits> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-raspopovic-bmp-sox9-wnt-digits-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-raspopovic-bmp-sox9-wnt-digits-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Raspopovic et al. (2014) 3-node Bmp-Sox9-Wnt Turing digit patterning network modulated by distal FGF — MorphoEval overall 54.8/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 (v1) baseline evaluation of `2014-raspopovic-bmp-sox9-wnt-digits.py` (overall weighted score: 56.8/100). The v1 script constructs the 3-node Bmp-Sox9-Wnt Jacobian J_3 and reduced 2-diffuser Jacobian J_eff, evaluates the dispersion relation sigma(q), and simulates a 1D distal autopod arc producing 5 out-of-phase Sox9 peaks (r_SB < -0.95), but lacks a 2D fan-shaped embryonic autopod PDE with distal AER-FGF wavelength modulation, omits the LDN-193189/CHIR99021/IWP-2/polydactyly/zero-diffusion perturbation controls, and does not segment the vendored E12.5 Sox9 / E13.5 Col2a1 WISH limb bud specimen image. Overall 54.8/100 (faithfulness 48.2, reproducibility 70.0); rubric morphoeval 0.1.0; checkpoint commit 45d4150; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 59, Morphological realism / specimen match 35, Parameter expressivity 48, Morphometric validation 56, Source and data traceability 74, Code-to-model traceability 68, Reproducibility package 68. Output judged: docs/media/bmp_sox9_wnt_digits_comparison.png: rendered output of 2014-raspopovic-bmp-sox9-wnt-digits.py at 45d4150, image/png, 312137 B, 1750×1190 px, artifact_sha256 5560c0f4ed8499697b94d87b329d7c9c3f50506b836f8c83d88b8ce5d9bdd0e5 (sha256 5560c0f4ed8499697b94d87b329d7c9c3f50506b836f8c83d88b8ce5d9bdd0e5), spec_fingerprint 32ffd4da7438d98577c009d5ac5a4c2bdcbd27793695743733dcb58e60f808b5. Dual provenance: spec_fingerprint: 32ffd4da7438d98577c009d5ac5a4c2bdcbd27793695743733dcb58e60f808b5; artifact_sha256: 5560c0f4ed8499697b94d87b329d7c9c3f50506b836f8c83d88b8ce5d9bdd0e5; input_dataset_sha256: {datasets/bmp_sox9_wnt_digits/bmp_sox9_wnt_digits_reference.json=c0444b665610be2e..., datasets/bmp_sox9_wnt_digits/paper_citations.bib=88ff32a60b567060..., datasets/bmp_sox9_wnt_digits/scout_manifest.json=f990b473b6a93cfa..., datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg=533f621904d6f2ce...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add runtime SHA-256 verification of all 4 files in `datasets/bmp_sox9_wnt_digits/`, expose full CLI parameter overrides (`--k-bs`, `--k-sb`, `--k-sw`, `--D-ratio`, `--fgf-scale`, `--seed`), and expand `measure_morphoeval()` to 9 metrics and `self_test()` to 8 comprehensive checks.",
+            "remediation needed: Implement a 2D fan-shaped embryonic autopod reaction-diffusion PDE solver for Bmp-Sox9-Wnt modulated by a distal AER-FGF + Hoxd gradient alongside the 1D distal-arc solver and zero-diffusion (D_B = D_W = 0) negative control.",
+            "remediation needed: Implement computer-vision segmentation of `datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg` across Panel O (E12.5 wild-type Sox9 WISH, 5 digit rays), Panel K (E13.5 wild-type Col2a1 WISH, 5 digit rays), and Panel L (E13.5 Tbx2-/- polydactylous Col2a1 WISH, 6 digit rays) to quantify empirical digit ray count, inter-digit angular wavelength spacing, and CV.",
+            "remediation needed: Simulate the full 7-point distal FGF/Hox wavelength-scaling series (N_digits from 3.5 to 7.0) and all 6 pharmacological/genetic perturbation conditions (Wild-Type 5 digits, LDN-193189 BMP inhibition, CHIR99021 Wnt activation, IWP-2 Wnt inhibition, Tbx2/Hox polydactyly 6 digits, and D=0 ablation control)." ;
+        pk:hasScore "0.548"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 016 Pass 1 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/16> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1126/science.1226804>,
+            <https://doi.org/10.1126/science.1252960>,
+            <https://doi.org/10.7554/eLife.14022> .
+    <https://doi.org/10.1126/science.1226804> dct:date "2012"^^xsd:gYear ;
+        dct:title "Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism" .
+    <https://doi.org/10.1126/science.1252960> dct:date "2014"^^xsd:gYear ;
+        dct:title "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients" .
+    <https://doi.org/10.7554/eLife.14022> dct:date "2016"^^xsd:gYear ;
+        dct:title "High-throughput mathematical analysis identifies Turing networks for patterning with equally diffusing signals" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Raspopovic et al. (2014) 3-node Bmp-Sox9-Wnt Turing digit patterning network modulated by distal FGF — MorphoEval overall 54.8/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:14:24Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-raspopovic-bmp-sox9-wnt-digits-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/16>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-raspopovic-bmp-sox9-wnt-digits> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

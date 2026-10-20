@@ -1,0 +1,89 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-carmona-neural-crest-chase-and-run> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-carmona-neural-crest-chase-and-run-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-carmona-neural-crest-chase-and-run-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Carmona-Fontaine et al. (2008, 2011) & Theveneau et al. (2013) neural crest CIL, C3a co-attraction & Sdf1 chase-and-run migration — Parameter expressivity: 90/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Simulates all 5 experimental regimes of Theveneau et al. (2013) (`evaluate_all_five_regimes`, L666-720), executes a 5x5 2D parameter sweep over `(k_COA, chi_Sdf1)` (`run_2d_parameter_sweep`, L518-548), models the 3-stream pharyngeal pouch architecture, and exposes CLI flags for `--k-cil`, `--k-coa`, `--chi-sdf1`, `--k-run`, `--steps`, `--seed`, `--output`, `--gif`, and `--self-test` (`main`, L1068-1101)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-parameter-expressivity-3> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2012-carmona-neural-crest-chase-and-run.py L518–L548" ;
+        dct:description "5x5 2D parameter sweep across C3a co-attraction gain k_COA and Sdf1 chemotaxis chi_Sdf1" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/2012-carmona-neural-crest-chase-and-run.py#L518-L548> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2012-carmona-neural-crest-chase-and-run.py L666–L720" ;
+        dct:description "5-regime experimental perturbation sweep matching Theveneau et al. (2013)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/2012-carmona-neural-crest-chase-and-run.py#L666-L720> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-carmona-neural-crest-chase-and-run-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2012-carmona-neural-crest-chase-and-run.py L1068–L1101" ;
+        dct:description "CLI parser exposing --k-cil, --k-coa, --chi-sdf1, --k-run, --steps, --seed, and --self-test" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/317bc3c/2012-carmona-neural-crest-chase-and-run.py#L1068-L1101> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2010.06.012>,
+            <https://doi.org/10.1016/j.devcel.2011.10.012>,
+            <https://doi.org/10.1038/nature07441>,
+            <https://doi.org/10.1038/ncb2772>,
+            <https://doi.org/10.1371/journal.pone.0104969> .
+    <https://doi.org/10.1016/j.devcel.2010.06.012> dct:date "2010"^^xsd:gYear ;
+        dct:title "Collective chemotaxis requires contact-dependent cell polarity" .
+    <https://doi.org/10.1016/j.devcel.2011.10.012> dct:date "2011"^^xsd:gYear ;
+        dct:title "Complement fragment C3a controls mutual cell attraction during collective cell migration" .
+    <https://doi.org/10.1038/nature07441> dct:date "2008"^^xsd:gYear ;
+        dct:title "Contact inhibition of locomotion in vivo controls neural crest directional migration" .
+    <https://doi.org/10.1038/ncb2772> dct:date "2013"^^xsd:gYear ;
+        dct:title "Chase-and-run between adjacent cell populations promotes directional collective migration" .
+    <https://doi.org/10.1371/journal.pone.0104969> dct:date "2014"^^xsd:gYear ;
+        dct:title "Directional collective cell migration emerges as a property of cell interactions" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Carmona-Fontaine et al. (2008, 2011) & Theveneau et al. (2013) neural crest CIL, C3a co-attraction & Sdf1 chase-and-run migration — Parameter expressivity 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:17:34Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-carmona-neural-crest-chase-and-run-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,86 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-goriely-tendril-perversion-intrinsic-curvature> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion & G-fiber overwinding — Model fidelity to source: 94/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Implements Timoshenko G-fiber bilayer differential contraction strain Delta_eps_g -> kappa_0 (`compute_g_fiber_intrinsic_curvature`, L123-141), exact Goriely & Tabor (1998) critical pitchfork tension T_c = B*kappa_0^2/(1+Gamma) (`critical_pitchfork_tension`, L144-150), a 161-node L-BFGS-B Kirchhoff rod perversion solver (`relax_kirchhoff_perversion_rod`, L203-336) enforcing zero net link Delta_Lk = 0 across left (-tau) and right (+tau) helices, and negative controls at kappa_0 = 0 and T >= T_c, backed by 3 machine-checked Lean 4 theorems in `morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean`." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-3> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L123–L198" ;
+        dct:description "G-fiber bilayer intrinsic curvature kappa_0, critical tension Tc, and equilibrium helix equations" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/1998-goriely-tendril-perversion-intrinsic-curvature.py#L123-L198> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L203–L336" ;
+        dct:description "L-BFGS-B Kirchhoff elastic rod perversion solver and negative controls (kappa_0=0, T>=Tc)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/1998-goriely-tendril-perversion-intrinsic-curvature.py#L203-L336> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean L14–L92" ;
+        dct:description "3 machine-checked Lean 4 theorems for zero-link chiral cancellation, pitchfork critical tension, and overwinding susceptibility (0 sorrys)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean#L14-L92> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 064 Pass 2 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/64> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/s00332-002-0493-1>,
+            <https://doi.org/10.1103/PhysRevLett.80.1564>,
+            <https://doi.org/10.1111/j.1095-8339.1865.tb00011.x>,
+            <https://doi.org/10.1126/science.1223304> .
+    <https://doi.org/10.1007/s00332-002-0493-1> dct:date "2002"^^xsd:gYear ;
+        dct:title "Tendril Perversion in Intrinsically Curved Rods" .
+    <https://doi.org/10.1103/PhysRevLett.80.1564> dct:date "1998"^^xsd:gYear ;
+        dct:title "Spontaneous Helix Hand-Reversal and Tendril Perversion" .
+    <https://doi.org/10.1111/j.1095-8339.1865.tb00011.x> dct:date "1865"^^xsd:gYear ;
+        dct:title "On the Movements and Habits of Climbing Plants" .
+    <https://doi.org/10.1126/science.1223304> dct:date "2012"^^xsd:gYear ;
+        dct:title "How the Cucumber Tendril Coils and Overwinds" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion & G-fiber overwinding — Model fidelity to source 94/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:11:24Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/64> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

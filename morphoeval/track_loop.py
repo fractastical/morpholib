@@ -306,11 +306,20 @@ def load_run(run_id: str, runs_dir: Path = RUNS_DIR) -> dict[str, Any]:
     return yaml.safe_load(p.read_text(encoding="utf-8"))
 
 
+def is_isolated_run(doc: dict[str, Any] | None = None) -> bool:
+    if os.environ.get("MORPHOEVAL_ISOLATED", "").strip() in ("1", "true", "yes"):
+        return True
+    if doc and isinstance(doc.get("run"), dict) and doc["run"].get("isolated"):
+        return True
+    return False
+
+
 def save_run(doc: dict[str, Any], runs_dir: Path = RUNS_DIR) -> Path:
     p = run_path(doc["run"]["id"], runs_dir)
     recompute_totals(doc)
     p.write_text(yaml.safe_dump(doc, sort_keys=False, allow_unicode=True), encoding="utf-8")
-    sync_sqlite(doc, runs_dir)
+    if not is_isolated_run(doc):
+        sync_sqlite(doc, runs_dir)
     write_trig_provenance(doc, runs_dir / f"{doc['run']['id']}.trig")
     return p
 
@@ -320,8 +329,10 @@ def sqlite_path(runs_dir: Path = RUNS_DIR) -> Path:
     return runs_dir / "telemetry.sqlite"
 
 
-def events_jsonl_path(runs_dir: Path = RUNS_DIR) -> Path:
+def events_jsonl_path(runs_dir: Path = RUNS_DIR, run_id: str | None = None, isolated: bool = False) -> Path:
     runs_dir.mkdir(parents=True, exist_ok=True)
+    if isolated and run_id:
+        return runs_dir / f"{run_id}.events.jsonl"
     return runs_dir / "telemetry_events.jsonl"
 
 
@@ -547,9 +558,21 @@ def append_event(
         "artifact_tokens": int(artifact_tokens),
         "payload": payload or {},
     }
-    jpath = events_jsonl_path(runs_dir)
+    isolated = is_isolated_run()
+    rp = runs_dir / f"{run_id}.yaml"
+    if not isolated and rp.exists():
+        try:
+            doc_chk = yaml.safe_load(rp.read_text(encoding="utf-8"))
+            isolated = is_isolated_run(doc_chk)
+        except Exception:
+            pass
+
+    jpath = events_jsonl_path(runs_dir, run_id=run_id, isolated=isolated)
     with jpath.open("a", encoding="utf-8") as f:
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    if isolated:
+        return
 
     db_file = sqlite_path(runs_dir)
     with sqlite3.connect(db_file) as conn:
@@ -788,6 +811,7 @@ def cmd_init(args: argparse.Namespace, runs_dir: Path = RUNS_DIR) -> Path:
             "primary_assessor": args.primary_assessor,
             "second_assessor": args.second_assessor,
             "repository_commit_start": _git_head(),
+            "isolated": bool(getattr(args, "isolated", False) or is_isolated_run()),
             "notes": args.notes,
         },
         "totals": {},
@@ -1315,13 +1339,19 @@ def render_single_cycle_loop(
 
     FIG_W, FIG_H = 14.0, 9.0
     DPI = 130
-    is_venation = str(run.get("target_simulation", "")) == "runions-leaf-venation"
+    target_sim = str(run.get("target_simulation", ""))
+    is_venation = target_sim == "runions-leaf-venation"
+    is_turing = target_sim == "turing-gray-scott"
 
     # Load real cycle visual assets for Box 6 (specimen photo, growth GIF frames, comparison panels)
     if is_venation:
         specimen_img_path = ROOT / "datasets" / "venation" / "reticulate_vein_skeleton_specimen.jpg"
         growth_gif_path = ROOT / "docs" / "media" / "runions_leaf_venation_growth.gif"
         comp_png_path = ROOT / "runions_leaf_venation_comparison.png"
+    elif is_turing:
+        specimen_img_path = ROOT / "datasets" / "turing" / "pomacanthus_imperator_stripes_specimen.jpg"
+        growth_gif_path = ROOT / "docs" / "media" / "turing_gray_scott.gif"
+        comp_png_path = ROOT / "turing_pearson_morphospace.png"
     else:
         specimen_img_path = ROOT / "datasets" / "phyllotaxis" / "helianthus_annuus_capitulum_specimen.jpg"
         growth_gif_path = ROOT / "docs" / "media" / "vogel_phyllotaxis_growth.gif"
@@ -1342,6 +1372,10 @@ def render_single_cycle_loop(
             # Top-right panel (Panel C: segmented reticulate + Ginkgo inset) & bottom-left panel (Panel D: Price 2013 Strahler curve)
             seg_crop_pil = comp_pil.crop((int(cw * 0.665), int(ch * 0.065), int(cw * 0.985), int(ch * 0.495)))
             survey_crop_pil = comp_pil.crop((int(cw * 0.015), int(ch * 0.505), int(cw * 0.345), int(ch * 0.955)))
+        elif is_turing:
+            # Bottom-middle panel (C3: Pomacanthus stripes + Y-junctions) & bottom-left/middle (C2: Pearson 12-class phase diagram)
+            seg_crop_pil = comp_pil.crop((int(cw * 0.405), int(ch * 0.665), int(cw * 0.600), int(ch * 0.975)))
+            survey_crop_pil = comp_pil.crop((int(cw * 0.205), int(ch * 0.665), int(cw * 0.405), int(ch * 0.975)))
         else:
             # Top-left panel (row 1, col 1 of 2x3 grid): specimen with 621 green DoG floret rings
             seg_crop_pil = comp_pil.crop((int(cw * 0.035), int(ch * 0.085), int(cw * 0.345), int(ch * 0.515)))
@@ -1362,6 +1396,21 @@ def render_single_cycle_loop(
             10: {"p1_s": 0.67, "p1_tok": 756, "p2_s": 0.55, "p2_tok": 513},
             11: {"p1_s": 0.02, "p1_tok": 185, "p2_s": 0.05, "p2_tok": 110},
             12: {"p1_s": None, "p1_tok": None, "p2_s": 159.15, "p2_tok": 2189},
+        }
+    elif is_turing:
+        PASS_BREAKDOWN = {
+            1: {"p1_s": 0.07, "p1_tok": 37639, "p2_s": None, "p2_tok": None},
+            2: {"p1_s": 0.08, "p1_tok": 12212, "p2_s": None, "p2_tok": None},
+            3: {"p1_s": 0.08, "p1_tok": 12212, "p2_s": 0.09, "p2_tok": 16036},
+            4: {"p1_s": 4.28, "p1_tok": 312, "p2_s": 2.04, "p2_tok": 312},
+            5: {"p1_s": 0.08, "p1_tok": 12212, "p2_s": 6.41, "p2_tok": 12727},
+            6: {"p1_s": 4.19, "p1_tok": 68, "p2_s": 7.08, "p2_tok": 186},
+            7: {"p1_s": 762.43, "p1_tok": 87166, "p2_s": 418.00, "p2_tok": 50814},
+            8: {"p1_s": 4.77, "p1_tok": 556, "p2_s": 6.25, "p2_tok": 772},
+            9: {"p1_s": 0.26, "p1_tok": 642, "p2_s": 0.16, "p2_tok": 794},
+            10: {"p1_s": 0.68, "p1_tok": 413, "p2_s": 0.61, "p2_tok": 586},
+            11: {"p1_s": 0.08, "p1_tok": 6113, "p2_s": 0.09, "p2_tok": 3061},
+            12: {"p1_s": None, "p1_tok": None, "p2_s": 312.00, "p2_tok": 28400},
         }
     else:
         PASS_BREAKDOWN = {
@@ -1427,6 +1476,11 @@ def render_single_cycle_loop(
                     "Pass 1 (Steps 1→11, v1): 479.8s (8.00m) · 37.6k tok → 40.9/100   |   "
                     "Pass 2 Loop (Steps 12→5→11, v2): +968.8s (16.15m) · +18.4k tok → 91.3/100 (+50.4)"
                 )
+            elif is_turing:
+                sub_hdr = (
+                    "Pass 1 (Steps 1→11, v1): 777.0s (12.95m) · 169.5k tok → 38.0/100   |   "
+                    "Pass 2 Loop (Steps 12→3→11, v2): +752.7s (12.55m) · +113.7k tok → 85.5/100 (+47.5)"
+                )
             else:
                 sub_hdr = (
                     "Pass 1 (Steps 1→11, v1): 520.5s (8.67m) · 130.0k tok → 64.3/100   |   "
@@ -1460,8 +1514,8 @@ def render_single_cycle_loop(
             ha="right",
             va="center",
         )
-        p1_sc_lbl = "40.9" if is_venation else "64.3"
-        p2_sc_lbl = "91.3" if is_venation else "85.9"
+        p1_sc_lbl = "40.9" if is_venation else ("38.0" if is_turing else "64.3")
+        p2_sc_lbl = "91.3" if is_venation else ("85.5" if is_turing else "85.9")
         score_str = (
             f"Score: {p1_sc_lbl} (P1) → {p2_sc_lbl} (P2)"
             if (is_summary or (pass_num == 2 and active_step is not None and active_step >= 7 and active_step != 12))
@@ -1631,7 +1685,7 @@ def render_single_cycle_loop(
                 ax.text(
                     x + 0.8,
                     y + 4.1,
-                    "2005-runions-leaf-venation.py" if is_venation else "1979-vogel-phyllotaxis.py",
+                    "2005-runions-leaf-venation.py" if is_venation else ("1952-turing-morpho.py" if is_turing else "1979-vogel-phyllotaxis.py"),
                     color=TEXT_SEC,
                     fontsize=7.3,
                     va="center",
@@ -1643,7 +1697,11 @@ def render_single_cycle_loop(
                     (
                         ("P2 adds tagged RNG + dual areoles" if is_done_p2 else "P1 initial implementation")
                         if is_venation
-                        else ("P2 adds DoG + bounded Voronoi" if is_done_p2 else "P1 initial implementation")
+                        else (
+                            ("P2 adds Turing ring + Pomacanthus" if is_done_p2 else "P1 initial implementation")
+                            if is_turing
+                            else ("P2 adds DoG + bounded Voronoi" if is_done_p2 else "P1 initial implementation")
+                        )
                     ),
                     color=ACCENT_GREEN if is_done_p2 else TEXT_TER,
                     fontsize=7.0,
@@ -1707,7 +1765,11 @@ def render_single_cycle_loop(
             (
                 "6  Output & compare — Runions (2005) Leaf Venation, Murray's Law & Katifori Loop Results"
                 if is_venation
-                else "6  Output & compare — Vogel (1979) Golden-Angle Phyllotaxis Cycle Results"
+                else (
+                    "6  Output & compare — Turing (1952), Pearson (1993) & Kondo–Asai (1995) Morphogenesis Results"
+                    if is_turing
+                    else "6  Output & compare — Vogel (1979) Golden-Angle Phyllotaxis Cycle Results"
+                )
             ),
             color=TEXT_PRI if s6_p1_done else TEXT_TER,
             fontsize=10.0,
@@ -1733,7 +1795,11 @@ def render_single_cycle_loop(
             (
                 "P1 (v1): 1.9s (181 tok)  |  P2 (v2 re-render): +1.8s (+203 tok)"
                 if is_venation
-                else "P1 (v1): 3.7s (134 tok)  |  P2 (v2 re-render): +5.8s (+180 tok)"
+                else (
+                    "P1 (v1): 4.2s (68 tok)  |  P2 (v2 re-render): +7.1s (+186 tok)"
+                    if is_turing
+                    else "P1 (v1): 3.7s (134 tok)  |  P2 (v2 re-render): +5.8s (+180 tok)"
+                )
             )
             if s6_p1_done
             else "Pending Step 6: simulation & figures not yet generated",
@@ -1825,7 +1891,11 @@ def render_single_cycle_loop(
                 (
                     ("A. P2: 168 Specimen Areoles (i_u=0.613) + Ginkgo" if s6_p2_done else "A. P1: Display-Only Specimen (0 areoles segmented)")
                     if is_venation
-                    else ("A. P2: 621 DoG Florets Segmented (circ=0.793)" if s6_p2_done else "A. P1: Display-Only Specimen (0 florets segmented)")
+                    else (
+                        ("A. P2: Pomacanthus Stripes (λ=9.55px) + 22 Y-Junc" if s6_p2_done else "A. P1: Zero Biological Specimen Validation (14/100)")
+                        if is_turing
+                        else ("A. P2: 621 DoG Florets Segmented (circ=0.793)" if s6_p2_done else "A. P1: Display-Only Specimen (0 florets segmented)")
+                    )
                 ),
                 color=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
                 fontsize=7.1,
@@ -1849,7 +1919,11 @@ def render_single_cycle_loop(
                 (
                     "B. Animated Space-Colonization Venation (V=1,099, L=409 Loops, 358 Areoles)"
                     if is_venation
-                    else "B. Animated Vogel Growth & Delaunay Cascade (8,13)→(13,21)→(21,34)→(34,55)"
+                    else (
+                        "B. Animated Gray–Scott Labyrinth & Sub-Bin Spectral Ring (k*=11.50, λ*=13.92 px)"
+                        if is_turing
+                        else "B. Animated Vogel Growth & Delaunay Cascade (8,13)→(13,21)→(21,34)→(34,55)"
+                    )
                 ),
                 color=TEXT_PRI,
                 fontsize=7.3,
@@ -1871,7 +1945,11 @@ def render_single_cycle_loop(
                 (
                     ("C. P2: Measured Strahler Tree r=0.968 (Price 2013)" if s6_p2_done else "C. P1: Circular JSON Sampling (no grown tree)")
                     if is_venation
-                    else ("C. P2: Swinton Match r=0.995 (Fib−1 > Fib+1)" if s6_p2_done else "C. P1: 0% Fib−1 / Fib+1 Grain Defects")
+                    else (
+                        ("C. P2: Exact Saddle-Node & Hopf + 12 Classes (α–μ)" if s6_p2_done else "C. P1: Missing Bifurcation Curves & Turing Ring")
+                        if is_turing
+                        else ("C. P2: Swinton Match r=0.995 (Fib−1 > Fib+1)" if s6_p2_done else "C. P1: 0% Fib−1 / Fib+1 Grain Defects")
+                    )
                 ),
                 color=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
                 fontsize=7.1,
@@ -2153,13 +2231,53 @@ def render_single_cycle_loop(
         )
         ax.text(90.5, 56.1, "CLOSED LOOP", color=ACCENT_GREEN if loop_active else TEXT_TER, fontsize=8.1, fontweight="bold", ha="center", va="center", zorder=5)
         ax.text(90.5, 53.3, "1st Pass (1→11):", color=TEXT_SEC if loop_active else TEXT_TER, fontsize=6.9, ha="center", va="center", zorder=5)
-        ax.text(90.5, 50.8, "8.0m (479.8s) · 40.9" if is_venation else "8.7m (520.5s) · 64.3", color=ACCENT_BLUE if loop_active else TEXT_TER, fontsize=7.2, fontweight="bold", ha="center", va="center", zorder=5)
+        ax.text(
+            90.5,
+            50.8,
+            "8.0m (479.8s) · 40.9" if is_venation else ("13.0m (777.0s) · 38.0" if is_turing else "8.7m (520.5s) · 64.3"),
+            color=ACCENT_BLUE if loop_active else TEXT_TER,
+            fontsize=7.2,
+            fontweight="bold",
+            ha="center",
+            va="center",
+            zorder=5,
+        )
         ax.text(90.5, 47.6, "2nd Pass (12→5→11):", color=TEXT_SEC if loop_active else TEXT_TER, fontsize=6.9, ha="center", va="center", zorder=5)
-        ax.text(90.5, 45.1, "+16.1m (+968.8s) · 91.3" if is_venation else "+8.2m (+493.8s) · 85.9", color=ACCENT_GREEN if loop_active else TEXT_TER, fontsize=7.2, fontweight="bold", ha="center", va="center", zorder=5)
+        ax.text(
+            90.5,
+            45.1,
+            "+16.1m (+968.8s) · 91.3" if is_venation else ("+12.5m (+752.7s) · 85.5" if is_turing else "+8.2m (+493.8s) · 85.9"),
+            color=ACCENT_GREEN if loop_active else TEXT_TER,
+            fontsize=7.2,
+            fontweight="bold",
+            ha="center",
+            va="center",
+            zorder=5,
+        )
         ax.plot([84.4, 96.6], [42.6, 42.6], color=STROKE, lw=0.9, zorder=5)
         ax.text(90.5, 40.3, "Total (P1 + P2):", color=TEXT_PRI if loop_active else TEXT_TER, fontsize=7.2, fontweight="bold", ha="center", va="center", zorder=5)
-        ax.text(90.5, 37.7, "24.1m (1,448.6s)" if is_venation else "16.9m (1,014.3s)", color=TEXT_PRI if loop_active else TEXT_TER, fontsize=7.8, fontweight="bold", ha="center", va="center", zorder=5)
-        ax.text(90.5, 35.2, "56.0k tok · +50.4 pts" if is_venation else "167.0k tok · +21.6 pts", color=ACCENT_GREEN if loop_active else TEXT_TER, fontsize=6.9, fontweight="bold", ha="center", va="center", zorder=5)
+        ax.text(
+            90.5,
+            37.7,
+            "24.1m (1,448.6s)" if is_venation else ("25.5m (1,529.7s)" if is_turing else "16.9m (1,014.3s)"),
+            color=TEXT_PRI if loop_active else TEXT_TER,
+            fontsize=7.8,
+            fontweight="bold",
+            ha="center",
+            va="center",
+            zorder=5,
+        )
+        ax.text(
+            90.5,
+            35.2,
+            "56.0k tok · +50.4 pts" if is_venation else ("283.2k tok · +47.5 pts" if is_turing else "167.0k tok · +21.6 pts"),
+            color=ACCENT_GREEN if loop_active else TEXT_TER,
+            fontsize=6.9,
+            fontweight="bold",
+            ha="center",
+            va="center",
+            zorder=5,
+        )
 
         # Bottom Live Step Ticker Bar
         foot_msg = banner_text or (
@@ -2169,8 +2287,13 @@ def render_single_cycle_loop(
             )
             if is_venation
             else (
-                "Two-Pass Summary: Pass 1 (Steps 1→11) took 520.5s (130.0k tok) and scored 64.3/100; "
-                "Step 12 looped back to Step 5 for Pass 2 (Steps 12→5→11, +493.8s, +37.1k tok), raising the score to 85.9/100 (+21.6)."
+                "Two-Pass Summary: Pass 1 (Steps 1→11) took 777.0s (169.5k tok) and scored 38.0/100; "
+                "Step 12 looped back for Pass 2 (Steps 12→3→11, +752.7s, +113.7k tok), raising the score to 85.5/100 (+47.5)."
+                if is_turing
+                else (
+                    "Two-Pass Summary: Pass 1 (Steps 1→11) took 520.5s (130.0k tok) and scored 64.3/100; "
+                    "Step 12 looped back to Step 5 for Pass 2 (Steps 12→5→11, +493.8s, +37.1k tok), raising the score to 85.9/100 (+21.6)."
+                )
             )
         )
         ax.text(
@@ -2225,6 +2348,30 @@ def render_single_cycle_loop(
                 9: "PASS 2 LOOP · Step 9 [Claims v2 · +220ms · +140 tok]: Emitted 10 v2 nanopubs linked to v1 via npx:supersedes.",
                 10: "PASS 2 LOOP · Step 10 [Sign v2 · +550ms · +513 tok]: Signed & verified all 10 v2 trusty URIs (20/20 total verified).",
                 11: "PASS 2 LOOP · Step 11 [Public record v2 · +50ms · +110 tok]: Pass 2 complete (+968.8s, +18.4k tok) → Total 1,448.6s (24.14m), Score 91.3/100!",
+            }
+        elif is_turing:
+            p1_banners = {
+                1: "PASS 1 · Step 1 [Scout · 74ms · 37.6k tok]: Selected 1952-turing-morpho.py (Turing 1952, Pearson 1993 & Kondo-Asai 1995).",
+                2: "PASS 1 · Step 2 [Paper · 78ms · 12.2k tok]: Inspected v1 citations vs missing Turing Sec. 8–9 dispersion & Pomacanthus stripes.",
+                3: "PASS 1 · Step 3 [Formal source · 77ms · 12.2k tok]: Verified v1 lacked datasets/turing/ & biological specimen images.",
+                4: "PASS 1 · Step 4 [Pin the rules · 4.3s · 312 tok]: Checked v1 MathOfBiology.lean Section 5 (only 1 trivial theorem).",
+                5: "PASS 1 · Step 5 [Script v1 · 78ms · 12.2k tok]: Inspected baseline 595-line 1952-turing-morpho.py (before Step 6 runs simulation).",
+                6: "PASS 1 · Step 6 [Output v1 · 4.2s · 68 tok]: First simulation run! Generated v1 2x5 Gray–Scott plot & metrics CSV.",
+                7: "PASS 1 · Step 7 [Dual-agent audit v1 · 762.4s · 87.2k tok]: Scored v1 at 38.0/100; Claude Sonnet 5.5 High found 5 concrete defects.",
+                8: "PASS 1 · Step 8 [Measure v1 · 4.8s · 556 tok]: Fingerprinted v1 outputs & recorded initial morphometrics sidecar.",
+                9: "PASS 1 · Step 9 [Write as claims v1 · 261ms · 642 tok]: Built 10 initial v1 ProbKnow TriG nanopublications.",
+                10: "PASS 1 · Step 10 [Sign & publish v1 · 679ms · 413 tok]: Cryptographically signed & verified all 10 v1 nanopubs.",
+                11: "PASS 1 · Step 11 [Public record v1 · 83ms · 6.1k tok]: Pass 1 finished at 777.0s (12.95m, 169.5k tok) with v1 score 38.0/100.",
+            }
+            p2_banners = {
+                12: "PASS 2 LOOP · Step 12 [Remediate Triage · +312.0s · +28.4k tok]: Triaged 5 v1 audit defects & launched feedback loop!",
+                5: "PASS 2 LOOP · Step 5 [Script v2 Re-Work · +6.4s · +12.7k tok]: Added Turing N=20 ring, exact Hopf curve, 12 classes & Pomacanthus stripes.",
+                6: "PASS 2 LOOP · Step 6 [Output v2 Re-Render · +7.1s · +186 tok]: Rendered 15-panel v2 synthesis figure, CSV & synchronized 45-frame GIF.",
+                7: "PASS 2 LOOP · Step 7 [Re-Audit v2 · +418.0s · +50.8k tok]: Re-scored remediated v2 — consensus score jumped from 38.0 → 85.5 (+47.5 pts)!",
+                8: "PASS 2 LOOP · Step 8 [Re-Measure v2 · +6.3s · +772 tok]: Verified 10 morphometrics (λ_c=5.62, Pomacanthus 9.55px, 121 boxfish spots).",
+                9: "PASS 2 LOOP · Step 9 [Claims v2 · +160ms · +794 tok]: Emitted 10 v2 nanopubs linked to v1 via npx:supersedes.",
+                10: "PASS 2 LOOP · Step 10 [Sign v2 · +610ms · +586 tok]: Signed & verified all 10 v2 trusty URIs (20/20 total verified).",
+                11: "PASS 2 LOOP · Step 11 [Public record v2 · +90ms · +3.1k tok]: Pass 2 complete (+752.7s, +113.7k tok) → Score 85.5/100 (+47.5 pts)!",
             }
         else:
             p1_banners = {
@@ -2432,7 +2579,7 @@ def plot_telemetry(doc: dict[str, Any], out_png: Path) -> None:
 def backfill_events_if_empty(doc: dict[str, Any], runs_dir: Path = RUNS_DIR) -> None:
     """If telemetry_events.jsonl has no events for this run_id yet, backfill from completed steps."""
     run_id = doc["run"]["id"]
-    jpath = events_jsonl_path(runs_dir)
+    jpath = events_jsonl_path(runs_dir, run_id=run_id, isolated=is_isolated_run(doc))
     if jpath.exists():
         for line in jpath.read_text(encoding="utf-8").splitlines():
             if f'"{run_id}"' in line:
@@ -2667,6 +2814,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_init.add_argument("--builder-model", default="gemini-4-argon")
     p_init.add_argument("--primary-assessor", default="gemini-4-argon")
     p_init.add_argument("--second-assessor", default="claude-sonnet-5-5-high")
+    p_init.add_argument("--isolated", action="store_true", help="Write only per-run files (<run_id>.*) without modifying shared telemetry.sqlite or telemetry_events.jsonl")
     p_init.add_argument("--notes", default="")
 
     p_start = sub.add_parser("start", help="Mark a loop step as started")

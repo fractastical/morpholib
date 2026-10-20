@@ -1,0 +1,193 @@
+# MorphoEval audit — Newman & Frisch (1979) Science Dynamics of Skeletal Pattern Formation in Developing Chick Limb, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `1979-newman-limb-chondrogenesis-turing.py` (v2, 680 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-limb-chondrogenesis-turing-loop`).
+
+audit:
+  id: 2026-10-19-limb-chondrogenesis-turing-audit-v2
+  supersedes_audit_id: 2026-10-19-limb-chondrogenesis-turing-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Slot 012 autonomous loop assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `1979-newman-limb-chondrogenesis-turing.py`
+      after completing Step 12 in `2026-10-19-limb-chondrogenesis-turing-loop`.
+
+references:
+  newman1979:
+    title: "Dynamics of skeletal pattern formation in developing chick limb"
+    authors: "Newman SA, Frisch HL"
+    venue: "Science 205(4407):662-668 (1979)"
+    doi: 10.1126/science.462174
+  saunders1948:
+    title: "The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm"
+    authors: "Saunders JW"
+    venue: "Journal of Experimental Zoology 108(3):363-403 (1948)"
+    doi: 10.1002/jez.1401080304
+  summerbell1973:
+    title: "Positional information in chick limb morphogenesis"
+    authors: "Summerbell D, Lewis JH, Wolpert L"
+    venue: "Nature 244(5417):492-496 (1973)"
+    doi: 10.1038/244492a0
+  hentschel2004:
+    title: "Dynamical mechanisms for skeletal pattern formation in the vertebrate limb"
+    authors: "Hentschel HGE, Glimm T, Glazier JA, Newman SA"
+    venue: "Proceedings of the Royal Society B 271(1549):1713-1722 (2004)"
+    doi: 10.1098/rspb.2004.2772
+  stewart2017:
+    title: "The evolutionary origin of digit patterning"
+    authors: "Stewart TA, Bhat R, Newman SA"
+    venue: "EvoDevo 8(1):21 (2017)"
+    doi: 10.1186/s13227-017-0084-8
+
+simulations:
+  - id: newman-limb-chondrogenesis-turing
+    name: "Newman & Frisch (1979) Science 3D Helmholtz/Turing standing-wave eigenmodes and proximodistal 1 -> 2 -> 3 skeletal chondrogenesis in developing Gallus gallus wing bud"
+    organism: "Gallus gallus domesticus embryonic wing bud (HH20 stylopod humerus -> HH24 zeugopod radius+ulna -> HH27 autopod digits II-IV)"
+    script: 1979-newman-limb-chondrogenesis-turing.py
+    output: docs/media/limb_chondrogenesis_turing_comparison.png
+    extra_outputs:
+      - docs/media/limb_chondrogenesis_turing_growth.gif
+    status: evaluated
+    source_refs:
+      - newman1979
+      - saunders1948
+      - summerbell1973
+      - hentschel2004
+      - stewart2017
+    summary: >-
+      Pass 2 (v2) post-remediation evaluation of `1979-newman-limb-chondrogenesis-turing.py`
+      (overall weighted score: 92.3 / 100, up +44.9 points from 47.4 / 100 in Pass 1).
+      The remediated script numerically integrates the nonlinear cubic-saturated
+      2-component Newman & Frisch (1979) fibronectin/TGF-beta Turing reaction-diffusion
+      PDE with zero-flux Neumann ectodermal boundaries inside the shrinking apical
+      progress zone L_PD(t) as well as across the 2D composite proximodistal chick
+      wing bud (stylopod 1 humerus -> elbow silence gate -> zeugopod 2 radius+ulna ->
+      wrist carpus gate -> autopod 3 digits II-IV); reproduces all 4 developmental
+      regimes of Newman & Frisch (1979) Table 1 (HH20 stylopod m=1 -> HH24 zeugopod
+      m=2 -> HH27 wing autopod m=3 -> HH28 hindlimb autopod m=4); simulates the
+      Saunders (1948) & Summerbell et al. (1973) surgical AER excision truncation
+      hierarchy ([1,0,0] -> [1,2,0] -> [1,2,3] elements, cumulative 1 -> 3 -> 6);
+      verifies dual negative controls (equal diffusion Du=Dv=0.5 and hyaluronate-excess
+      sub-Turing fu=1.5); segments the stylopod (1 bone), zeugopod (2 bones), and
+      autopod (3 digits) on a SHA-256-locked Gallus gallus wing skeleton specimen;
+      and backs its 3 governing laws with machine-checked Lean 4 theorems in
+      `morphoeval/lean/loops/Loop_012_limb_chondrogenesis_turing.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Evaluates the exact Newman & Frisch (1979) Science Eqs. (1)-(7) & Table 1
+          Helmholtz/Turing dispersion relation Re(sigma(k)) and progress-zone depth
+          mode selection m(L_PD) (L92-194); numerically integrates the nonlinear
+          cubic-saturated 2-component reaction-diffusion PDE via a DCT-II IMEX solver
+          on both the 1D anteroposterior progress-zone cross-section (L200-275) and
+          the 2D proximodistal chick wing bud domain with embryonic maturation weighting
+          and joint gates (L278-368, reproducing [1, 2, 3] condensations); and backs
+          all 3 mathematical laws with machine-checked Lean 4 proofs in
+          `Loop_012_limb_chondrogenesis_turing.lean`.
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [92, 275], note: "Exact Newman & Frisch (1979) standing-wave dispersion relation and nonlinear DCT-II IMEX reaction-diffusion PDE solver", supports: true}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [278, 368], note: "2D proximodistal chick wing bud PDE solver reproducing sequential 1 -> 2 -> 3 chondrogenic compartments and AER excision truncation", supports: true}
+          - {file: morphoeval/lean/loops/Loop_012_limb_chondrogenesis_turing.lean, lines: [1, 110], note: "3 machine-checked Lean 4 theorems (0 sorrys) for equal-diffusion quenching, L_PD mode transition series, and AER excision truncation", supports: true}
+      specimen-match:
+        value: 91
+        rationale: >-
+          Loads and SHA-256-verifies the Gallus gallus forelimb osteological specimen
+          (`datasets/limb_chondrogenesis_turing/chick_wing_skeleton_specimen.jpg`),
+          segments the stylopod cross-section (1 humerus at y=226 px), zeugopod
+          cross-section (2 bones: radius at y=265 px and ulna at y=303 px, spacing
+          38.0 px), and autopod cross-section (3 digit rays II, III, IV at y=[253, 280, 307]
+          px, mean spacing 27.0 px, CV=0.0000) (L449-499), overlays the 3 anatomical
+          ROIs and detected bone centroids in Panel E and cross-sectional intensity
+          profiles in Panel F, and compares the segmented zeugopod-to-autopod spacing
+          ratio (1.4074) and compartment counts ([1, 2, 3]) against the Turing PDE.
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [449, 499], note: "Cross-sectional osteological peak detection across stylopod (1), zeugopod (2), and autopod (3) on chick_wing_skeleton_specimen.jpg", supports: true}
+          - {file: docs/media/limb_chondrogenesis_turing_comparison.png, lines: [0, 0], note: "8-panel synthesis figure comparing theoretical dispersion, 2D wing bud PDE, 4-stage eigenmodes, AER truncation, and segmented Gallus gallus wing skeleton", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Simulates all 4 developmental stages of Newman & Frisch (1979) Table 1
+          (`run_developmental_stage_sweep`, L374-403) across L_PD in {500, 250, 140, 115} um
+          reproducing [1, 2, 3, 4] skeletal elements; simulates the 3-step Saunders
+          (1948) / Summerbell et al. (1973) surgical AER excision truncation series
+          (`run_aer_excision_series`, L406-426) yielding [1, 0, 0] -> [1, 2, 0] -> [1, 2, 3]
+          elements; executes dual negative controls (`run_negative_controls`, L429-443)
+          at Du=Dv=0.5 (equal diffusion) and fu=1.5 < 2.0 (hyaluronate excess); and
+          exposes full CLI flags (`--L-PD-um`, `--L-AP-um`, `--aer-stage`, `--Du`,
+          `--Dv`, `--fv`, `--gv`, `--steps`, `--seed`).
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [374, 443], note: "4-stage L_PD sweep ([1, 2, 3, 4] elements), 3-step AER surgical truncation series ([1, 3, 6] cumulative elements), and dual negative controls", supports: true}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [656, 676], note: "CLI flags for L_PD, L_AP, AER excision stage, diffusivities, kinetic couplings, PDE steps, and seed", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: >-
+          `measure_morphoeval()` (L567-627) extracts 8 reference-backed quantitative
+          morphometrics covering HH20 stylopod PDE condensation count (1.0 vs 1.0 ref),
+          HH24 zeugopod PDE condensation count (2.0 vs 2.0 ref), HH27 chick wing autopod
+          PDE condensation count (3.0 vs 3.0 ref), HH28 chick hindlimb autopod PDE
+          condensation count (4.0 vs 4.0 ref), intact-AER 2D wing bud cumulative
+          skeletal elements (6.0 vs 6.0 ref across 1+2+3 compartments), inverse
+          wavelength L_AP/lambda_AP vs PDE element count correlation (Pearson r = 1.0,
+          p < 1e-16), negative-control amplitude quenching (std_u = 2.6e-5 at Du=Dv
+          and 2.5e-5 at fu=1.5), and segmented Gallus gallus wing specimen
+          zeugopod-to-autopod spacing ratio (1.4074 vs 1.4074 ref).
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [567, 627], note: "8 reference-backed morphometric measurements across 4-stage PDE series, 2D AER truncation, negative controls, and Gallus wing bone segmentation", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/limb_chondrogenesis_turing/` with `limb_chondrogenesis_turing_reference.json`,
+          `chick_wing_skeleton_specimen.jpg`, `scout_manifest.json`, `paper_citations.bib`
+          (5 primary DOIs: `10.1126/science.462174`, `10.1002/jez.1401080304`,
+          `10.1038/244492a0`, `10.1098/rspb.2004.2772`, `10.1186/s13227-017-0084-8`),
+          and `README.md`, with runtime SHA-256 verification (`EXPECTED_SHA256`, L56-85).
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [56, 85], note: "Runtime SHA-256 verification of all 4 files in datasets/limb_chondrogenesis_turing/", supports: true}
+          - {file: datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json, lines: [1, 148], note: "Formal JSON reference package for Newman & Frisch (1979) Science Table 1 stages, AER truncation series, and specimen metadata", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Module and function docstrings map every solver and diagnostic directly to
+          Newman & Frisch (1979) *Science* Eqs. (1)-(7) & Table 1, Saunders (1948) and
+          Summerbell et al. (1973) AER excision truncation experiments, and the 3
+          Lean 4 theorems in `morphoeval/lean/loops/Loop_012_limb_chondrogenesis_turing.lean`.
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1, 44], note: "Module docstring mapping equations to Newman & Frisch (1979), Saunders (1948), Summerbell et al. (1973), and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/newman-limb-chondrogenesis-turing.yaml, lines: [1, 75], note: "Isolated Math KG law specification linking Python code loci and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic RNG (`seed=1979`), 8-check `--self-test` suite (L632-654)
+          verifying SHA-256 locks, dispersion monotonicity, exact 4-stage PDE element
+          counts [1, 2, 3, 4], 2D proximodistal wing bud AER truncation series ([1, 0, 0] ->
+          [1, 2, 0] -> [1, 2, 3]), dual negative controls, Gallus gallus wing bone
+          segmentation ([1, 2, 3] bones), and bitwise two-run determinism, plus
+          self-contained 8-panel PNG and 4-frame GIF.
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [632, 654], note: "8-check self_test() suite including bitwise two-run determinism", supports: true}
+    remediation:
+      - "Couple the 2D proximodistal chick wing bud Turing solver to a 3D moving-boundary finite-element mesh driven by spatially graded FGF8 mitogenic proliferation beneath the AER."

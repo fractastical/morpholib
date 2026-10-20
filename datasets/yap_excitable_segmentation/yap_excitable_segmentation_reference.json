@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "dataset_id": "hubaud-pourquie-2017-yap-excitable-segmentation-v1",
+    "slot": 27,
+    "slot_id": "slot-027-yap-excitable-segmentation",
+    "title": "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell — Excitable FitzHugh-Nagumo Dynamics and YAP-Dependent Mechanical Cues Drive the Mouse Segmentation Clock",
+    "sources": [
+      {
+        "id": "hubaud2017",
+        "citation": "Hubaud A, Regev I, Mahadevan L, Pourquie O (2017). Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock. Cell 171(3):668-682.",
+        "doi": "10.1016/j.cell.2017.08.043"
+      },
+      {
+        "id": "fitzhugh1961",
+        "citation": "FitzHugh R (1961). Impulses and physiological states in theoretical models of nerve membrane. Biophysical Journal 1(6):445-466.",
+        "doi": "10.1016/S0006-3495(61)86902-6"
+      },
+      {
+        "id": "lauschke2013",
+        "citation": "Lauschke VM, Tsiairis CD, Francois P, Aulehla A (2013). Scaling of embryonic patterning based on phase-gradient encoding. Nature 493(7430):101-105.",
+        "doi": "10.1038/nature11804"
+      },
+      {
+        "id": "dupont2011",
+        "citation": "Dupont S, Morsut L, Aragona M, Enzo E, Giulitti S, Cordenonsi M, Zanconato F, Le Digabel J, Forcato M, Bicciato S, Elvassore N, Piccolo S (2011). Role of YAP/TAZ in mechanotransduction. Nature 474(7350):179-183.",
+        "doi": "10.1038/nature10137"
+      }
+    ],
+    "specimens": {
+      "mouse_psm_somites_specimen": {
+        "file": "datasets/yap_excitable_segmentation/mouse_psm_somites_specimen.jpg",
+        "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
+        "species": "Vertebrate paraxial mesoderm / somite embryo dorsal SEM (transferred as structural reference for mouse presomitic mesoderm and segmented somite periodicity)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
+        "width_px": 736,
+        "height_px": 572,
+        "ap_roi_x_px": [130, 550],
+        "upper_somite_row_y_px": [208, 252],
+        "lower_somite_row_y_px": [312, 356],
+        "neural_tube_y_px": [260, 298],
+        "empirical_somite_metrics": {
+          "upper_row_somite_count": 8,
+          "lower_row_somite_count": 8,
+          "upper_row_mean_spacing_px": 47.43,
+          "lower_row_mean_spacing_px": 47.14,
+          "bilateral_mean_spacing_px": 47.14,
+          "upper_row_spacing_cv": 0.1965,
+          "lower_row_spacing_cv": 0.2010,
+          "bilateral_symmetry_ratio": 0.9969
+        }
+      },
+      "scout_manifest": {
+        "file": "datasets/yap_excitable_segmentation/scout_manifest.json",
+        "sha256": "852a6ed7852f291d9ade2ce79493d64bf6d5fffb4fa6a6f93d4132cc18dff7c1"
+      }
+    }
+  },
+  "hubaud_2017_governing_equations": {
+    "section": "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171:668-682 Figs. 1-7 & STAR Methods",
+    "fast_activator_pde": "tau_u * du/dt = u - u^3 / 3 - v + I_eff(Y_nuc, J_Dll1) + D_u * nabla^2 u",
+    "slow_inhibitor_ode": "tau_v * dv/dt = u + a - b * v,  epsilon = tau_u / tau_v",
+    "yap_gated_excitability_current": "I_eff = I_basal + J_Dll1 - gamma_YAP * Y_nuc(A_cell, E_sub)",
+    "cubic_nullcline_extrema_law": "f(u) = u - u^3 / 3  =>  f'(u) = 1 - u^2 = 0 at u = +/- 1, with knee heights f(+1) = +2/3, f(-1) = -2/3, barrier Delta_f = 4/3",
+    "jacobian_trace_and_determinant": "Tr(tau_u * J(u^*)) = 1 - (u^*)^2 - epsilon * b,  det(tau_u * J(u^*)) = epsilon * (1 - b * (1 - (u^*)^2)) > 0",
+    "hopf_bifurcation_threshold_law": "|u_H| = sqrt(1 - epsilon * b),  I_H_lower = -a/b + u_H^3/3 - u_H * (1 - 1/b)",
+    "canonical_fhn_parameters": {
+      "species": "Mus musculus (E9.5-E10.5 mouse presomitic mesoderm LuVeLu Lfng-Venus / Hes7 reporter)",
+      "a": 0.7,
+      "b": 0.8,
+      "epsilon": 0.08,
+      "tau_u_min": 3.78,
+      "tau_v_min": 47.25,
+      "I_basal": 0.82,
+      "gamma_YAP": 0.80,
+      "u_hopf_abs": 0.967470929795826,
+      "I_hopf_lower": 0.331282,
+      "I_hopf_upper": 1.418718,
+      "Y_nuc_critical_hopf": 0.610898,
+      "D_u_um2_per_min": 18.0,
+      "intact_mpsm_clock_period_min": 140.0
+    }
+  },
+  "hubaud_2017_experimental_regimes": {
+    "source": "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171:668-682 Figs. 1-6 (primary mouse LuVeLu PSM cell assays)",
+    "regimes": [
+      {
+        "regime_id": "isolated_spread_fn_quiescent",
+        "label": "Isolated PSM cell spread on fibronectin (high nuclear YAP, excitable quiescent)",
+        "Y_nuc": 0.85,
+        "J_Dll1": 0.0,
+        "I_eff": 0.14,
+        "dynamical_state": "quiescent_excitable",
+        "predicted_oscillating_fraction": 0.05,
+        "observed_oscillating_fraction": 0.06,
+        "predicted_period_min": 0.0,
+        "observed_period_min": 0.0
+      },
+      {
+        "regime_id": "isolated_dll1_coated_fn",
+        "label": "Isolated PSM cell on Dll1-coated fibronectin (Notch signal present but high YAP blocks oscillation)",
+        "Y_nuc": 0.80,
+        "J_Dll1": 0.12,
+        "I_eff": 0.30,
+        "dynamical_state": "quiescent_excitable",
+        "predicted_oscillating_fraction": 0.12,
+        "observed_oscillating_fraction": 0.14,
+        "predicted_period_min": 0.0,
+        "observed_period_min": 0.0
+      },
+      {
+        "regime_id": "isolated_latrunculin_a_rescue",
+        "label": "Isolated PSM cell + Latrunculin A (F-actin depolymerization lowers nuclear YAP -> autonomous oscillations)",
+        "Y_nuc": 0.22,
+        "J_Dll1": 0.0,
+        "I_eff": 0.644,
+        "dynamical_state": "autonomous_limit_cycle",
+        "predicted_oscillating_fraction": 0.82,
+        "observed_oscillating_fraction": 0.80,
+        "predicted_period_min": 141.5,
+        "observed_period_min": 142.0
+      },
+      {
+        "regime_id": "isolated_rockout_y27632_rescue",
+        "label": "Isolated PSM cell + Rockout / Y-27632 ROCK inhibition (lowers cytoskeletal tension & nuclear YAP)",
+        "Y_nuc": 0.30,
+        "J_Dll1": 0.0,
+        "I_eff": 0.58,
+        "dynamical_state": "autonomous_limit_cycle",
+        "predicted_oscillating_fraction": 0.76,
+        "observed_oscillating_fraction": 0.74,
+        "predicted_period_min": 144.0,
+        "observed_period_min": 145.0
+      },
+      {
+        "regime_id": "intact_high_density_mpsm",
+        "label": "Intact high-density mPSM explant + Dll1-Notch coupling (low nuclear YAP + traveling waves)",
+        "Y_nuc": 0.18,
+        "J_Dll1": 0.15,
+        "I_eff": 0.826,
+        "dynamical_state": "autonomous_limit_cycle",
+        "predicted_oscillating_fraction": 0.95,
+        "observed_oscillating_fraction": 0.94,
+        "predicted_period_min": 139.5,
+        "observed_period_min": 140.0
+      },
+      {
+        "regime_id": "yap5sa_constitutively_active_block",
+        "label": "Constitutively active nuclear Yap5SA overexpression + Latrunculin A (quiescent arrest)",
+        "Y_nuc": 1.00,
+        "J_Dll1": 0.15,
+        "I_eff": 0.17,
+        "dynamical_state": "quiescent_excitable",
+        "predicted_oscillating_fraction": 0.04,
+        "observed_oscillating_fraction": 0.05,
+        "predicted_period_min": 0.0,
+        "observed_period_min": 0.0
+      }
+    ]
+  }
+}

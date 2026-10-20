@@ -1,0 +1,181 @@
+# MorphoEval audit — Sheth et al. (2012) Science Distal Hox/Gli3 Dose Modulation of Turing Digit Wavelength & Polydactyly, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `2012-sheth-hox-turing-polydactyly.py` (v2, 665 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-hox-turing-polydactyly-loop`).
+
+audit:
+  id: 2026-10-19-hox-turing-polydactyly-audit-v2
+  supersedes_audit_id: 2026-10-19-hox-turing-polydactyly-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Slot 015 autonomous loop assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8871db0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `2012-sheth-hox-turing-polydactyly.py`
+      after completing Step 12 in `2026-10-19-hox-turing-polydactyly-loop`.
+
+references:
+  sheth2012:
+    title: "Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism"
+    authors: "Sheth R, Marcon L, Bastida MF, Junco M, Quintana L, Dahn R, Kmita M, Sharpe J, Ros MA"
+    venue: "Science 338(6113):1476-1480 (2012)"
+    doi: 10.1126/science.1226804
+  raspopovic2014:
+    title: "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients"
+    authors: "Raspopovic J, Marcon L, Russo L, Sharpe J"
+    venue: "Science 345(6196):566-570 (2014)"
+    doi: 10.1126/science.1252960
+  newman1979:
+    title: "Dynamics of skeletal pattern formation in developing chick limb"
+    authors: "Newman SA, Frisch HL"
+    venue: "Science 205(4407):662-668 (1979)"
+    doi: 10.1126/science.462174
+  miura2006:
+    title: "Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development"
+    authors: "Miura T, Shiota K, Morriss-Kay G, Maini PK"
+    venue: "Journal of Theoretical Biology 240(4):562-573 (2006)"
+    doi: 10.1016/j.jtbi.2005.10.016
+
+simulations:
+  - id: sheth-hox-turing-polydactyly
+    name: "Sheth et al. (2012) Science distal Hoxa13/Hoxd11-13 + Gli3 dose modulation of Turing digit wavelength on a fan-shaped embryonic autopod"
+    organism: "Vertebrate embryonic autopod (Mus musculus distal Hox/Gli3 allelic series & postaxial hexadactylous autopod radiograph)"
+    script: 2012-sheth-hox-turing-polydactyly.py
+    output: docs/media/hox_turing_polydactyly_comparison.png
+    extra_outputs:
+      - docs/media/hox_turing_polydactyly_growth.gif
+    status: evaluated
+    source_refs:
+      - sheth2012
+      - raspopovic2014
+      - newman1979
+      - miura2006
+    summary: >-
+      Pass 2 (v2) post-remediation evaluation of `2012-sheth-hox-turing-polydactyly.py`
+      (overall weighted score: 92.1 / 100, up +44.1 points from 48.0 / 100 in Pass 1).
+      The remediated script numerically integrates the nonlinear cubic-saturated
+      2-component Sheth et al. (2012) Turing reaction-diffusion PDE with zero-flux
+      Neumann boundaries on both the 1D distal autopod arc and the 2D curvilinear
+      polar fan-shaped limb bud sector (demonstrating 2 proximal zeugopod elements
+      branching into N(H) distal digit rays across the mesopodium wrist gate);
+      reproduces the complete 6-genotype allelic series (WT 5 digits -> Gli3-/- 7 ->
+      Hoxd11-13+/-;Gli3-/- 8 -> Hoxd11-13-/-;Gli3-/- 9 -> Hoxa13+/-;Hoxd11-13-/-;Gli3-/-
+      11 -> Hoxa13-/-;Hoxd11-13-/-;Gli3-/- 14 thin closely-spaced digits) at constant
+      autopod width L = 2500 um; verifies dual negative controls (equal diffusion
+      Du = Dv = 0.5 and sub-Turing ablation fu = 1.5); segments all 6 digit rays on a
+      SHA-256-locked postaxial hexadactylous autopod radiograph; and backs its core
+      mathematical laws with 3 machine-checked Lean 4 theorems in
+      `morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Evaluates the exact Sheth et al. (2012) Science Fig. 3 & Suppl. Eqs. (S1)-(S6)
+          dispersion curve Re(sigma(k)) and Hox-modulated critical wavenumber
+          k_c^2(H) = (Dv*fu(H) + Du*gv)/(2*Du*Dv) = (14 - 9*H)^2 (L90-165); numerically
+          integrates the nonlinear cubic-saturated 2-component reaction-diffusion PDE
+          via a DCT-II IMEX solver on both the 1D distal autopod arc (L171-251) and
+          the 2D polar fan-shaped limb bud sector with proximodistal Fgf/Wnt-Hox
+          modulation (L254-345, reproducing 2 proximal zeugopod rays -> 5 WT or 14
+          triple-null distal digits); and backs all 3 governing laws with machine-checked
+          Lean 4 proofs in `Loop_015_hox_turing_polydactyly.lean`.
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [90, 251], note: "Exact Sheth et al. (2012) Turing dispersion relation and nonlinear DCT-II IMEX reaction-diffusion PDE solver", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [254, 345], note: "2D curvilinear polar fan-shaped limb bud PDE demonstrating 2 proximal zeugopod rays expanding into N(H) distal autopod digits", supports: true}
+          - {file: morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean, lines: [1, 108], note: "3 machine-checked Lean 4 theorems (0 sorrys) for equal-diffusion quenching, Hox dose wavenumber monotonicity, and fan autopod mode selection", supports: true}
+      specimen-match:
+        value: 90
+        rationale: >-
+          Loads and SHA-256-verifies the postaxial hexadactylous vertebrate autopod
+          AP radiograph (`datasets/hox_turing_polydactyly/vertebrate_autopod_digits_specimen.jpg`),
+          segments all 6 skeletal digit rays at x = [49, 184, 265, 343, 420, 509] px
+          across the phalangeal ROI y in [280, 400] and traces their longitudinal
+          phalangeal-metacarpal axes (L398-448), overlays the segmented skeletal axes
+          in Panel E and peak detections in Panel F, and compares normalized inter-digit
+          wavelength regularity (central Digits 2-6 CV = 0.0580) against the nonlinear
+          Turing PDE in Panel H.
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [398, 448], note: "Skeletal digit ray peak detection, longitudinal axis tracing, and inter-digit wavelength CV on vertebrate_autopod_digits_specimen.jpg", supports: true}
+          - {file: docs/media/hox_turing_polydactyly_comparison.png, lines: [0, 0], note: "8-panel synthesis figure comparing theoretical dispersion, 2D fan limb PDEs, 6-genotype allelic series, and segmented hexadactylous autopod radiograph", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Simulates the complete 6-genotype allelic series of Sheth et al. (2012)
+          Figs. 1-2 (`run_allelic_series_sweep`, L351-376) reproducing [5, 7, 8, 9, 11, 14]
+          digits at constant autopod width L = 2500 um as wavelength shrinks 2.80x from
+          500.0 um to 178.6 um; executes dual negative controls (`run_negative_controls`,
+          L379-394) at Du = Dv = 0.5 (equal diffusion) and fu = 1.5 < 2.0 (sub-Turing
+          ablation); and exposes full CLI flags (`--hox-dose`, `--Du`, `--Dv`, `--fv`,
+          `--gv`, `--steps`, `--seed`).
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [351, 394], note: "Full 6-genotype allelic series PDE sweep ([5, 7, 8, 9, 11, 14] digits) and dual negative controls", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [643, 661], note: "CLI flags for Hox dose, diffusivities, kinetic couplings, PDE steps, and seed", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: >-
+          `measure_morphoeval()` (L554-614) extracts 8 reference-backed quantitative
+          morphometrics covering WT pentadactyl digit count (5.0 vs 5.0 ref), Gli3-/-
+          digit count (7.0 vs 6.8 ref), Hoxd11-13-/-;Gli3-/- digit count (9.0 vs 9.2
+          ref), Hoxa13-/-;Hoxd11-13-/-;Gli3-/- triple-null digit count (14.0 vs 13.6
+          ref), WT-to-triple-null wavelength compression ratio (2.80x vs 2.80x ref),
+          inverse wavelength L/lambda(H) vs PDE digit count correlation (Pearson r = 1.0,
+          p < 1e-16), negative-control amplitude quenching (std_u = 3.6e-5 at Du=Dv
+          and 2.5e-5 at fu=1.5), and segmented hexadactylous radiograph inter-digit
+          spacing CV (0.0580 vs 0.0580 ref).
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [554, 614], note: "8 reference-backed morphometric measurements across PDE allelic series, negative controls, and radiograph segmentation", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors `datasets/hox_turing_polydactyly/` with `hox_turing_polydactyly_reference.json`,
+          `vertebrate_autopod_digits_specimen.jpg`, `scout_manifest.json`, `paper_citations.bib`
+          (4 primary DOIs: `10.1126/science.1226804`, `10.1126/science.1252960`,
+          `10.1126/science.462174`, `10.1016/j.jtbi.2005.10.016`), and `README.md`,
+          with runtime SHA-256 verification (`EXPECTED_SHA256`, L56-85).
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [56, 85], note: "Runtime SHA-256 verification of all 4 files in datasets/hox_turing_polydactyly/", supports: true}
+          - {file: datasets/hox_turing_polydactyly/hox_turing_polydactyly_reference.json, lines: [1, 134], note: "Formal JSON reference package for Sheth et al. (2012) Science allelic series and specimen metadata", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Module and function docstrings map every solver and diagnostic directly to
+          Sheth et al. (2012) *Science* Figs. 1-4 & Supplementary Eqs. (S1)-(S6),
+          Raspopovic et al. (2014) *Science* Bmp-Sox9-Wnt Turing kinetics, Newman &
+          Frisch (1979) limb skeletal eigenmodes, and the 3 Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean`.
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [1, 38], note: "Module docstring mapping equations to Sheth et al. (2012), Raspopovic et al. (2014), and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/sheth-hox-turing-polydactyly.yaml, lines: [1, 70], note: "Isolated Math KG law specification linking Python code loci and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic RNG (`seed=2012`), 8-check `--self-test` suite (L619-641)
+          verifying SHA-256 locks, dispersion monotonicity, exact 6-genotype PDE digit
+          counts [5, 7, 8, 9, 11, 14], 2D fan limb zeugopod-to-autopod branching (2 -> 5
+          and 2 -> 14), dual negative controls, radiograph 6-ray segmentation, and
+          bitwise two-run determinism, plus self-contained 8-panel PNG and 6-frame GIF.
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [619, 641], note: "8-check self_test() suite including bitwise two-run determinism", supports: true}
+    remediation:
+      - "Couple the 2D polar fan-shaped limb bud Turing solver to a deforming tissue-mechanics mesh driven by localized AER-FGF8 mitogenic outgrowth."

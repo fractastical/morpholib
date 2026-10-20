@@ -1,0 +1,146 @@
+# MorphoEval audit — Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) Human Segmentation Clock, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2019-diaza-human-somite-organoid-clock.py` (Slot 028) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-human-somite-organoid-clock-loop`.
+
+audit:
+  id: 2026-10-19-human-somite-organoid-clock-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2019-diaza-human-somite-organoid-clock.py` in
+      `2026-10-19-human-somite-organoid-clock-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  diazcuadros2020:
+    title: "In vitro characterization of the human segmentation clock"
+    authors: "Diaz-Cuadros M, Wagner DE, Budjan C, Hubaud A, Tarazona OA, Donelly S, Michaut A, Al Tanoury Z, Yoshioka-Kobayashi K, Niino Y, Kageyama R, Miyawaki A, Touboul J, Pourquie O"
+    venue: "Nature 580(7801):113-118 (2020)"
+    doi: 10.1038/s41586-019-1885-9
+  matsuda2020:
+    title: "Species-specific oscillation periods of human and mouse segmentation clocks are due to cell autonomous properties of HES7"
+    authors: "Matsuda M, Hayashi H, Garcia-Ojalvo J, Yoshioka-Kobayashi K, Kageyama R, Yamanaka Y, Ikeya M, Toguchida J, Alev C, Ebisuya M"
+    venue: "Science 369(6510):1450-1455 (2020)"
+    doi: 10.1126/science.aba7668
+  diazcuadros2023:
+    title: "Metabolic regulation of species-specific developmental rates"
+    authors: "Diaz-Cuadros M, Miettinen TP, Skinner OS, Sheedy D, Garcia-Cabrera C, Gapon S, Hubaud A, Yellen G, Manalis SR, Oldham WM, Pourquie O"
+    venue: "Nature 613(7944):550-557 (2023)"
+    doi: 10.1038/s41586-022-05574-4
+  yamanaka2023:
+    title: "Reconstituting human somitogenesis in vitro"
+    authors: "Yamanaka Y, Hamidi S, Yoshioka-Kobayashi K, Munira S, Sunadome K, Zhang Y, Kurokawa Y, Ericsson R, Mieda A, Thompson JL, Kerwin J, Lisgo S, Yamamoto T, Moris N, Martinez-Arias A, Tsujimura T, Alev C"
+    venue: "Nature 614(7948):509-520 (2023)"
+    doi: 10.1038/s41586-022-05649-2
+
+simulations:
+  - id: diaza-human-somite-organoid-clock
+    name: "Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) human pluripotent stem-cell segmentation clock and metabolic tempo scaling model"
+    organism: "Homo sapiens vs Mus musculus (hPSC-derived presomitic mesoderm / axioloid somite organoid)"
+    script: 2019-diaza-human-somite-organoid-clock.py
+    output: docs/media/human_somite_organoid_clock_comparison.png
+    extra_outputs:
+      - docs/media/human_somite_organoid_clock_growth.gif
+    status: evaluated
+    source_refs:
+      - diazcuadros2020
+      - matsuda2020
+      - diazcuadros2023
+      - yamanaka2023
+    summary: >-
+      Pass 1 baseline assessment of `2019-diaza-human-somite-organoid-clock.py` (60.3/100).
+      The initial baseline implements a two-variable delayed HES7 transcriptional-translational
+      feedback oscillator comparing mouse WT and human WT periods, but requires RK4 sub-stepped
+      DDE integration across all 6 Matsuda (2020) and Diaz-Cuadros (2023) experimental regimes
+      (hHES7 knock-in swap, intronless Hes7 ablation collapse, LbNOX NAD+ acceleration, and
+      sodium azide/rotenone ETC inhibition), 6-species vertebrate segmentation clock allometry,
+      1D/2D human axioloid traveling-wave kymograph synthesis, and bilateral paraxial somite
+      DoG segmentation on `human_somite_organoid_specimen.jpg`.
+    scores:
+      model-fidelity:
+        value: 63
+        rationale: >-
+          Implements the delayed autoinhibitory HES7 mRNA/protein DDE for mouse and human WT
+          (L55-106), but Pass 1 lacks exact time-rescaling collapse verification, intronless
+          Hes7 subcritical Hopf ablation, and mitochondrial NAD+/NADH metabolic scaling.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [55, 106], note: "Baseline Euler DDE solver for HES7 mRNA and protein oscillations", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [109, 128], note: "Single period-ratio measurement lacking perturbation series and kymograph", supports: false}
+      specimen-match:
+        value: 54
+        rationale: >-
+          Vendors `datasets/human_somite_organoid_clock/human_somite_organoid_specimen.jpg`
+          (CC BY 4.0 dorsal somite/PSM SEM), but Pass 1 only displays the raw grayscale image
+          without automated bilateral DoG peak segmentation or periodic waveform fitting.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [130, 152], note: "2-panel baseline plot without bilateral somite row peak segmentation", supports: false}
+          - {file: docs/media/human_somite_organoid_clock_comparison.png, lines: [0, 0], note: "Baseline comparison figure", supports: true}
+      parameter-expressivity:
+        value: 60
+        rationale: >-
+          Simulates mouse WT and human WT parameters, but requires evaluation across the full
+          6-regime perturbation table (mouse hHES7 swap, human LbNOX, human azide ETC inhibition,
+          intronless Hes7 ablation) and 6-species vertebrate clock allometry.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [55, 106], note: "Mouse vs human baseline DDE parameters", supports: false}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          Computes the human/mouse period ratio, but Pass 1 requires 5 quantitative measurements
+          including mouse WT period, human WT period, 6-regime empirical correlation r, 6-species
+          allometric delay-period regression r, and bilateral specimen somite spacing CV.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [109, 128], note: "Baseline measure_morphoeval() returning 1 metric", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `human_somite_organoid_clock_reference.json`,
+          `paper_citations.bib`, and `human_somite_organoid_specimen.jpg` with SHA-256 verification.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [33, 52], note: "SHA-256 verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Links the HES7 DDE to Diaz-Cuadros et al. (2020, 2023) and Matsuda et al. (2020) and
+          Lean 4 proofs in `morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean`.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1, 18], note: "Module docstring citing Diaz-Cuadros (2020, 2023) and Matsuda (2020)", supports: true}
+      repro-package:
+        value: 64
+        rationale: >-
+          Provides `--self-test` and baseline PNG/GIF rendering, requiring full verification of
+          time-rescaling collapse, intronless Hes7 ablation, metabolic perturbations, and
+          specimen segmentation in Pass 2.
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [173, 193], note: "Pass 1 self-test and CLI entrypoint", supports: true}
+    remediation:
+      - "Upgrade the HES7 DDE solver to evaluate all 6 Matsuda (2020) & Diaz-Cuadros (2020, 2023) regimes (Mouse WT, Mouse hHES7 swap, Human WT, Human LbNOX NAD+ rescue, Human Azide/Rotenone ETC inhibition, and Intronless Hes7 subcritical collapse) plus exact time-rescaling invariance."
+      - "Add 6-species vertebrate segmentation clock allometry (zebrafish, Xenopus, chick, mouse, rabbit, human) and a spatiotemporal human axioloid HES7-Achilles traveling-wave kymograph."
+      - "Implement bilateral dorsal somite row DoG peak segmentation and phase-aligned waveform correlation on `datasets/human_somite_organoid_clock/human_somite_organoid_specimen.jpg`."

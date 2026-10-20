@@ -1,0 +1,74 @@
+sim_id: mirabet-auxin-pin1-meristem-mechanics
+math_family: "Pressurized Thin-Shell Principal Stress Tensor, Nematic Microtubule Feedback & Up-the-Gradient PIN1 Auxin Transport"
+model_spec:
+  model: "Hamant et al. (2008) Science 322:1650-1655 & Heisler et al. (2010) PLoS Biol. 8:e1000516 pressurized SAM shell principal stress tensor, cortical microtubule (CMT) + PIN1 co-alignment along maximal tensile stress e_1, anisotropic Lockhart cell wall yielding, and laser ablation / lateral compression perturbations"
+  turgor_pressure_P_MPa: 0.50
+  wall_thickness_t_um: 0.25
+  dome_radius_R_um: 50.0
+  up_gradient_gain_b_a: 3.4
+  mechanical_stress_gain_b_sigma: 2.2
+  seed: 2008
+  inputs:
+    - datasets/auxin_pin1_meristem_mechanics/auxin_pin1_meristem_mechanics_reference.json
+    - datasets/auxin_pin1_meristem_mechanics/arabidopsis_sam_meristem_specimen.jpg
+    - datasets/auxin_pin1_meristem_mechanics/scout_manifest.json
+    - datasets/auxin_pin1_meristem_mechanics/paper_citations.bib
+equations:
+  - id: mirabet-auxin-pin1-meristem-mechanics-1
+    law_name: "Hamant et al. (2008) Pressurized Shell Principal Stress & 2:1 Cylinder Anisotropy Law"
+    formula: "σ_θθ^dome = σ_mm^dome = PR/(2t) (A_σ = 0);  σ_θθ^cyl = PR/t = 2 σ_zz^cyl (A_σ = 1/3);  κ_m σ_m + κ_θ σ_θ = P/t"
+    lean_decl: "MathOfBiology.Loop_033.cylinder_hoop_stress_2t"
+    lean_theorem: "MathOfBiology.Loop_033.hamant_2008_pressurized_shell_anisotropy"
+    lean_locus: "morphoeval/lean/loops/Loop_033_auxin_pin1_meristem_mechanics.lean#L27-L48"
+    lean_code: |
+      def sphere_hoop_stress_2t (P R : Int) : Int := P * R
+      def sphere_meridional_stress_2t (P R : Int) : Int := P * R
+      def cylinder_hoop_stress_2t (P R : Int) : Int := 2 * (P * R)
+      def cylinder_axial_stress_2t (P R : Int) : Int := P * R
+      theorem hamant_2008_pressurized_shell_anisotropy (P R : Int) :
+          sphere_hoop_stress_2t P R - sphere_meridional_stress_2t P R = 0 ∧
+          cylinder_hoop_stress_2t P R = 2 * cylinder_axial_stress_2t P R ∧
+          3 * (cylinder_hoop_stress_2t P R - cylinder_axial_stress_2t P R) =
+            cylinder_hoop_stress_2t P R + cylinder_axial_stress_2t P R
+    variables: "P: turgor pressure (MPa); R: shell curvature radius (um); t: L1 outer epidermal wall thickness (um); σ_θθ, σ_mm: circumferential and meridional principal tensile stresses (MPa); A_σ = (σ_1 - σ_2)/(σ_1 + σ_2): stress anisotropy"
+    role: "Predicts isotropic tensile stress on the spherical SAM dome (driving hyper-dynamic isotropic microtubules), 2:1 circumferential hoop stress on cylindrical flanks, and amplified 5:1 crease stress at negative-Gaussian-curvature primordium boundaries"
+    source_citation: "Hamant et al. (2008) Science 322(5908):1650-1655 Figs. 1-2 & SOM Text S1"
+    code_locus: "2008-hamant-meristem-microtubule-stress.py#L115-L215"
+
+  - id: mirabet-auxin-pin1-meristem-mechanics-2
+    law_name: "Kirsch / Hamant et al. (2008) Laser Ablation Wound Rim Hoop-Stress Doubling Law"
+    formula: "σ_rr(r) = σ_∞(1 - a_0^2/r^2),  σ_θθ(r) = σ_∞(1 + a_0^2/r^2)  ⇒  σ_rr(a_0) = 0,  σ_θθ(a_0) = 2 σ_∞,  σ_rr + σ_θθ = 2 σ_∞"
+    lean_decl: "MathOfBiology.Loop_033.kirsch_hoop_scaled"
+    lean_theorem: "MathOfBiology.Loop_033.hamant_2008_ablation_rim_hoop_doubling"
+    lean_locus: "morphoeval/lean/loops/Loop_033_auxin_pin1_meristem_mechanics.lean#L61-L78"
+    lean_code: |
+      def kirsch_radial_scaled (sig_inf r_sq a0_sq : Int) : Int :=
+        sig_inf * (r_sq - a0_sq)
+      def kirsch_hoop_scaled (sig_inf r_sq a0_sq : Int) : Int :=
+        sig_inf * (r_sq + a0_sq)
+      theorem hamant_2008_ablation_rim_hoop_doubling (sig_inf r_sq a0_sq : Int) :
+          kirsch_radial_scaled sig_inf a0_sq a0_sq = 0 ∧
+          kirsch_hoop_scaled sig_inf a0_sq a0_sq = 2 * (sig_inf * a0_sq) ∧
+          kirsch_radial_scaled sig_inf r_sq a0_sq + kirsch_hoop_scaled sig_inf r_sq a0_sq =
+            2 * (sig_inf * r_sq)
+    variables: "σ_∞: far-field isotropic dome membrane tension (MPa); a_0: laser ablation wound radius (um); r: radial distance from wound center (um)"
+    role: "Explains why single-cell or patch laser ablation in the L1 epidermis zeroes radial tension and doubles circumferential tension at the wound rim, reorienting both CMTs and PIN1 circumferentially around the ablation site"
+    source_citation: "Hamant et al. (2008) Science 322:1650-1655 Fig. 3; Heisler et al. (2010) PLoS Biol. 8:e1000516 Fig. 4"
+    code_locus: "2008-hamant-meristem-microtubule-stress.py#L220-L310"
+
+  - id: mirabet-auxin-pin1-meristem-mechanics-3
+    law_name: "Heisler et al. (2010) & Jonsson et al. (2006) Stress- & Auxin-Coupled PIN1 Active Transport Conservation Law"
+    formula: "P_ij = P_tot exp(b_a a_j + b_σ |n_ij · e_1,i|^2) / Z_i;  J_{i←j} = T_PIN (P_ji a_j - P_ij a_i),  J_{i←j} + J_{j←i} = 0"
+    lean_decl: "MathOfBiology.Loop_033.pin1_active_flux"
+    lean_theorem: "MathOfBiology.Loop_033.heisler_2010_pin1_flux_conservation"
+    lean_locus: "morphoeval/lean/loops/Loop_033_auxin_pin1_meristem_mechanics.lean#L91-L101"
+    lean_code: |
+      def pin1_active_flux (T_pin P_ij P_ji a_i a_j : Int) : Int :=
+        T_pin * (P_ji * a_j - P_ij * a_i)
+      theorem heisler_2010_pin1_flux_conservation (T_pin P_ij P_ji P_sym a_i a_j a : Int) :
+          pin1_active_flux T_pin P_ij P_ji a_i a_j + pin1_active_flux T_pin P_ji P_ij a_j a_i = 0 ∧
+          pin1_active_flux T_pin P_sym P_sym a a = 0
+    variables: "a_i: auxin concentration in L1 cell i; P_ij: PIN1 efflux carrier allocated to membrane i→j; e_1,i: maximal principal tensile stress eigenvector; T_PIN: active polar transport coefficient"
+    role: "Couples PIN1 membrane allocation to both neighbor auxin concentration and cell-wall tensile stress orientation, generating golden-angle (137.5 deg) phyllotactic auxin maxima and synchronous PIN1/CMT reorientation"
+    source_citation: "Heisler et al. (2010) PLoS Biol. 8(10):e1000516 Figs. 1-4; Jonsson et al. (2006) PNAS 103:1633-1638 Eqs. 1-4"
+    code_locus: "2008-hamant-meristem-microtubule-stress.py#L315-L440"

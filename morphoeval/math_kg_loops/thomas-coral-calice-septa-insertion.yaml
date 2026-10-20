@@ -1,0 +1,69 @@
+sim_id: thomas-coral-calice-septa-insertion
+math_family: "Milne-Edwards Hexameral Septal Doubling Law (6 * 2^(k-1)), Kunth's Rugosa Fossula Law (6 + 4m) & Chindapol Péclet Advection-Diffusion Calice Symmetry Breaking"
+model_spec:
+  model: "Milne-Edwards & Haime (1848) hexameral septal insertion cycles + Kunth (1869) Rugosa serial fossula law + Chindapol et al. (2013) PLoS Comput. Biol. Péclet advection-diffusion corallite morphogenesis"
+  governing_pde: "u . grad(c) = D * laplacian(c),   v_n(theta, r) = k_calc * |grad(c) . n| * S_septa(theta, r, R(t))"
+  cycle_doubling_law: "N_hex(k) = 6 * 2^(k-1) in {6, 12, 24, 48, 96, 192} when 2*pi*R(t) >= N_hex(k) * lambda_s"
+  rugosa_serial_law: "N_rugosa(m) = 6 + 4*m in {6, 10, 14, 18, 22}"
+  lambda_s_mm: 0.5236
+  alpha_cycles: [0.78, 0.62, 0.46, 0.31, 0.19]
+  beta_Pe: 0.18
+  gamma_Pe: 0.12
+  seed: 2013
+  inputs:
+    - datasets/coral_calice_septa_insertion/coral_calice_septa_insertion_reference.json
+    - datasets/coral_calice_septa_insertion/scleractinian_coral_septa_specimen.jpg
+    - datasets/coral_calice_septa_insertion/scout_manifest.json
+equations:
+  - law_name: "Milne-Edwards & Haime (1848) Hexameral Septal Insertion Doubling Law"
+    formula: "n_1 = 6,  n_k = 6 * 2^{k-2} (k >= 2),  N_hex(k) = sum_{j=1}^k n_j = 6 * 2^{k-1} ∈ {6, 12, 24, 48, 96, 192} at 2π R_k = N_hex(k) λ_s"
+    lean_decl: "MathOfBiology.Loop_074.milne_edwards_cumulative_septa"
+    lean_theorem: "MathOfBiology.Loop_074.milne_edwards_hexameral_septal_doubling"
+    lean_locus: "morphoeval/lean/loops/Loop_074_coral_calice_septa_insertion.lean#L21-L58"
+    lean_code: |
+      def milne_edwards_cumulative_septa : Nat → Nat
+        | 0 => 0
+        | k + 1 => 6 * (2 ^ k)
+      theorem milne_edwards_hexameral_septal_doubling :
+          milne_edwards_cumulative_septa 1 = 6 ∧
+          milne_edwards_cumulative_septa 2 = 12 ∧
+          milne_edwards_cumulative_septa 3 = 24 ∧
+          milne_edwards_cumulative_septa 4 = 48 ∧
+          milne_edwards_cumulative_septa 5 = 96 := by decide
+    variables: "k ∈ {1..6}: Milne-Edwards insertion cycle order (S1..S6); n_k: newly inserted septa at interseptal midpoints; N_hex(k): cumulative radiating septa; R_k: threshold calice radius; λ_s: inter-septal morphogen wavelength"
+    role: "Governs simultaneous midpoint bifurcation of interseptal chambers in Scleractinian stony corals as the expanding calice perimeter crosses multiples of λ_s"
+    source_citation: "Milne-Edwards & Haime (1848) Ann. Sci. Nat. Zool. (Sér. 3) 9:37-89; Cairns & Kitahara (2012) ZooKeys 227:1-47"
+    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L95-L215"
+  - law_name: "Kunth's Law (1869) Paleozoic Rugosa Serial 4-Fossula Insertion & Cycle Radial Reach Hierarchy"
+    formula: "N_rugosa(m) = 6 + 4 m ∈ {6, 10, 14, 18, 22},   L_k / R = α_k with α_1 > α_2 > α_3 > α_4 > α_5"
+    lean_decl: "MathOfBiology.Loop_074.kunth_rugosa_septa"
+    lean_theorem: "MathOfBiology.Loop_074.kunth_rugosa_vs_scleractinia_and_reach_hierarchy"
+    lean_locus: "morphoeval/lean/loops/Loop_074_coral_calice_septa_insertion.lean#L64-L105"
+    lean_code: |
+      def kunth_rugosa_septa (m : Nat) : Nat := 6 + 4 * m
+      theorem kunth_rugosa_vs_scleractinia_and_reach_hierarchy :
+          kunth_rugosa_septa 0 = milne_edwards_cumulative_septa 1 ∧
+          kunth_rugosa_septa 3 = 18 ∧
+          milne_edwards_cumulative_septa 4 > kunth_rugosa_septa 3 ∧
+          septal_cycle_reach_permille 1 > septal_cycle_reach_permille 2 := by decide
+    variables: "m: Rugosa serial insertion stage across 4 fossulae (2 cardinal, 2 alar); L_k: radial length of cycle-k septa from theca toward central columella; α_k = L_k / R: normalized radial reach"
+    role: "Contrasts Paleozoic Rugosa serial 4-fossula bilateral insertion against Mesozoic-Recent Scleractinia cyclic hexameral doubling and establishes the decreasing radial reach hierarchy S1 > S2 > S3 > S4 > S5"
+    source_citation: "Kunth (1869) Z. Dtsch. Geol. Ges. 21:647-688; Milne-Edwards & Haime (1848) Ann. Sci. Nat. Zool. 9:37-89"
+    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L140-L265"
+  - law_name: "Chindapol et al. (2013) Péclet-Modulated Advection-Diffusion Calice Symmetry Breaking Law"
+    formula: "u · ∇c = D ∇^2 c,  Pe = U L / D,  j_n(θ; Pe) = j_0 (1 + β_Pe √Pe cos θ + γ_Pe (Pe/(1+Pe)) cos 2θ),  Δj = j_up - j_down = 2 j_0 β_Pe √Pe"
+    lean_decl: "MathOfBiology.Loop_074.peclet_flux_dipole_diff"
+    lean_theorem: "MathOfBiology.Loop_074.peclet_advection_upstream_symmetry_breaking"
+    lean_locus: "morphoeval/lean/loops/Loop_074_coral_calice_septa_insertion.lean#L110-L152"
+    lean_code: |
+      def peclet_flux_dipole_diff (j0 beta s : Int) : Int :=
+        peclet_upstream_flux j0 beta s - peclet_downstream_flux j0 beta s
+      theorem peclet_zero_radial_symmetry (j0 beta : Int) :
+          peclet_flux_dipole_diff j0 beta 0 = 0 := by simp [peclet_flux_dipole_diff, peclet_upstream_flux, peclet_downstream_flux]
+      theorem peclet_advection_upstream_symmetry_breaking :
+          peclet_flux_dipole_diff 10 18 0 = 0 ∧
+          peclet_flux_dipole_diff 10 18 4 = 1440 := by decide
+    variables: "c(x,y): dissolved inorganic carbon / nutrient concentration; Pe = U L / D: Péclet number; s = √Pe: laminar boundary-layer thinning factor; j_n(θ; Pe): normal calcification flux around corallite rim"
+    role: "Demonstrates exact radial symmetry at Pe = 0 (hydrostatic diffusion limit) and monotonic upstream-enhanced skeletal accretion and calice polarization as Pe increases"
+    source_citation: "Chindapol et al. (2013) PLoS Comput. Biol. 9(1):e1002849; Kaandorp & Kübler (2001) Ch. 4-6"
+    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L270-L390"

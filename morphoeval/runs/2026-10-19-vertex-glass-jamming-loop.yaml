@@ -1,0 +1,470 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-vertex-glass-jamming-loop
+  target_simulation: bi-vertex-glass-jamming
+  paper: Bi, Lopez, Schwarz & Manning (2015) Nature Physics 11:1074-1079; Park et
+    al. (2015) Nature Materials 14:1040-1048
+  created_at: '2026-10-20T01:03:31.741Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: e93f00e
+  isolated: true
+  notes: ''
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 10.429
+  wall_time_min: 0.17
+  tier_a_wall_s: 5.427
+  tier_b_wall_s: 5.002
+  cpu_user_s: 7.38
+  cpu_sys_s: 0.74
+  input_tokens: 650
+  output_tokens: 3081
+  subagent_tokens: 0
+  total_llm_tokens: 3731
+  artifact_tokens: 24422
+  tier_a_llm_tokens: 835
+  tier_b_llm_tokens: 2896
+  effective_tokens_per_s: 357.8
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:03:44.016Z'
+  ended_at: '2026-10-20T01:03:45.466Z'
+  duration_s: 1.395
+  cpu_user_s: 0.81
+  cpu_sys_s: 0.01
+  max_rss_mb: 33.2
+  runs_count: 1
+  tokens:
+    input_tokens: 29
+    output_tokens: 57
+    subagent_tokens: 0
+    total_llm_tokens: 86
+    artifact_tokens: 672
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/vertex_glass_jamming/scout_manifest.json
+    bytes: 2398
+    sha256: b223a066e62c1ff472bb75025693ece141e37bc358eca6591b8525112b858ad5
+    tokens: 672
+  commands:
+  - command: ./venv/bin/python3 morphoeval/scout_literature.py --slot 45 --out datasets/vertex_glass_jamming/scout_manifest.json
+    exit_code: 0
+    wall_s: 1.395
+    cpu_user_s: 0.81
+    cpu_sys_s: 0.01
+    stdout_tokens: 57
+  notes: Executed OpenAlex + Wikimedia Commons literature & specimen scout for Slot
+    045 (Bi et al. 2015 Nature Physics & Park et al. 2015 Nature Materials zero-temperature
+    shape-index unjamming)
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:06:33.856Z'
+  ended_at: '2026-10-20T01:06:33.918Z'
+  duration_s: 0.018
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.4
+  runs_count: 1
+  tokens:
+    input_tokens: 44
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 45
+    artifact_tokens: 868
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/vertex_glass_jamming/README.md
+    bytes: 2872
+    sha256: cafc749700196a091a43df2b5d09ba492237a972955bd137a4d24f77cc0bbc05
+    tokens: 868
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json'));
+      assert len(d['metadata']['sources'])==5
+    exit_code: 0
+    wall_s: 0.018
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Extracted Bi et al. (2015) Nature Physics dimensionless vertex energy e,
+    critical target shape index p0*=3.813, Park et al. (2015) Nature Materials HBEC
+    unjamming data, and Atia et al. (2018) k-Gamma distribution
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:06:33.992Z'
+  ended_at: '2026-10-20T01:06:34.058Z'
+  duration_s: 0.02
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 14.4
+  runs_count: 1
+  tokens:
+    input_tokens: 86
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 87
+    artifact_tokens: 1965
+    method: explicit+BPE
+  artifacts:
+  - file: datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json
+    bytes: 6399
+    sha256: f8fdea1b35b0896e751bfb5d2bfd9cffc2d07ce61852128441a1353504b9caa3
+    tokens: 1965
+  commands:
+  - command: ./venv/bin/python3 -c import hashlib, json; d=json.load(open('datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json'));
+      h=hashlib.sha256(open('datasets/vertex_glass_jamming/human_epithelial_monolayer_specimen.jpg','rb').read()).hexdigest();
+      assert h==d['metadata']['specimens']['human_epithelial_monolayer_specimen']['sha256'],
+      h
+    exit_code: 0
+    wall_s: 0.02
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Vendored human in situ polygonal monolayer micrograph from Wikimedia Commons
+    (CC BY-SA 4.0) and locked SHA-256 digest
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:07:43.396Z'
+  ended_at: '2026-10-20T01:08:21.603Z'
+  duration_s: 2.391
+  cpu_user_s: 0.37
+  cpu_sys_s: 0.34
+  max_rss_mb: 398.0
+  runs_count: 2
+  tokens:
+    input_tokens: 30
+    output_tokens: 436
+    subagent_tokens: 0
+    total_llm_tokens: 466
+    artifact_tokens: 1436
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/math_kg_loops/bi-vertex-glass-jamming.yaml
+    bytes: 5047
+    sha256: bb281ddc44057691954ea0e7fe9a59204bcd5c1deb2a176eaa9a039dacb5585f
+    tokens: 1436
+  commands:
+  - command: lean morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean
+    exit_code: 1
+    wall_s: 0.511
+    cpu_user_s: 0.15
+    cpu_sys_s: 0.09
+    stdout_tokens: 435
+  - command: lean morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean
+    exit_code: 0
+    wall_s: 1.88
+    cpu_user_s: 0.22
+    cpu_sys_s: 0.25
+    stdout_tokens: 1
+  notes: Verified 4 machine-checked Lean 4 theorems (0 sorrys) in Loop_045_vertex_glass_jamming.lean
+    and registered math_kg_loops spec; Verified 4 machine-checked Lean 4 theorems
+    (0 sorrys) in Loop_045_vertex_glass_jamming.lean and registered math_kg_loops
+    spec
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:09:06.397Z'
+  ended_at: '2026-10-20T01:09:07.086Z'
+  duration_s: 0.604
+  cpu_user_s: 0.5
+  cpu_sys_s: 0.05
+  max_rss_mb: 87.5
+  runs_count: 1
+  tokens:
+    input_tokens: 23
+    output_tokens: 26
+    subagent_tokens: 0
+    total_llm_tokens: 49
+    artifact_tokens: 2849
+    method: explicit+BPE
+  artifacts:
+  - file: 2015-bi-vertex-glass-jamming.py
+    bytes: 9185
+    sha256: 6ac582e08f23ddd138a316395ecf96b28504b5f11c5f23ad28a3be6b796fa44c
+    tokens: 2849
+  commands:
+  - command: ./venv/bin/python3 2015-bi-vertex-glass-jamming.py --self-test
+    exit_code: 0
+    wall_s: 0.604
+    cpu_user_s: 0.5
+    cpu_sys_s: 0.05
+    stdout_tokens: 26
+  notes: Implemented Pass 1 (v1) Bi et al. (2015) vertex unjamming baseline script
+    with --self-test and measure_morphoeval()
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:09:07.174Z'
+  ended_at: '2026-10-20T01:09:08.228Z'
+  duration_s: 0.999
+  cpu_user_s: 0.91
+  cpu_sys_s: 0.06
+  max_rss_mb: 129.8
+  runs_count: 1
+  tokens:
+    input_tokens: 19
+    output_tokens: 83
+    subagent_tokens: 0
+    total_llm_tokens: 102
+    artifact_tokens: 64
+    method: explicit+BPE
+  artifacts:
+  - file: docs/media/vertex_glass_jamming_growth.gif
+    bytes: 212488
+    sha256: ed894bec1aa33269d7beac6f14a4de289b21884ad78ecc817ce6320bc8d22afd
+    tokens: 64
+  commands:
+  - command: ./venv/bin/python3 2015-bi-vertex-glass-jamming.py
+    exit_code: 0
+    wall_s: 0.999
+    cpu_user_s: 0.91
+    cpu_sys_s: 0.06
+    stdout_tokens: 83
+  notes: Rendered Pass 1 static comparison figure and growth animation GIF
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:09:57.705Z'
+  ended_at: '2026-10-20T01:09:57.873Z'
+  duration_s: 0.117
+  cpu_user_s: 0.08
+  cpu_sys_s: 0.01
+  max_rss_mb: 38.2
+  runs_count: 1
+  tokens:
+    input_tokens: 36
+    output_tokens: 24
+    subagent_tokens: 0
+    total_llm_tokens: 60
+    artifact_tokens: 2897
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-vertex-glass-jamming-audit.yaml
+    bytes: 10965
+    sha256: 28bb010b2253018f69aebfdf6c6db675b7626502d072a958cba0174d63f6c54f
+    tokens: 2897
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-vertex-glass-jamming-audit.yaml
+      --check
+    exit_code: 0
+    wall_s: 0.117
+    cpu_user_s: 0.08
+    cpu_sys_s: 0.01
+    stdout_tokens: 24
+  notes: Completed Pass 1 (v1) 7-dimension MorphoEval audit (57.3/100) with line-pinned
+    evidence and remediation plan
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:09:57.947Z'
+  ended_at: '2026-10-20T01:09:58.482Z'
+  duration_s: 0.482
+  cpu_user_s: 0.43
+  cpu_sys_s: 0.03
+  max_rss_mb: 93.1
+  runs_count: 1
+  tokens:
+    input_tokens: 33
+    output_tokens: 127
+    subagent_tokens: 0
+    total_llm_tokens: 160
+    artifact_tokens: 547
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-vertex-glass-jamming-audit.measurements.yaml
+    bytes: 1683
+    sha256: b2f41dd798e93c9d9611c8eb3bd112e9be1ee259984bfb544be954a9b9903388
+    tokens: 547
+  commands:
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-vertex-glass-jamming-audit.yaml
+    exit_code: 0
+    wall_s: 0.482
+    cpu_user_s: 0.43
+    cpu_sys_s: 0.03
+    stdout_tokens: 127
+  notes: Fingerprinted Pass 1 outputs and computed sidecar morphometrics
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:09:58.557Z'
+  ended_at: '2026-10-20T01:09:58.911Z'
+  duration_s: 0.301
+  cpu_user_s: 0.26
+  cpu_sys_s: 0.01
+  max_rss_mb: 43.9
+  runs_count: 1
+  tokens:
+    input_tokens: 42
+    output_tokens: 145
+    subagent_tokens: 0
+    total_llm_tokens: 187
+    artifact_tokens: 11165
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-vertex-glass-jamming-audit/morphoeval_2026-10-19-vertex-glass-jamming-audit.ttl
+    bytes: 37274
+    sha256: 6bcc7d77da477acff2ef338a68f421dcb423941c42498123b77841238bfc06d2
+    tokens: 11165
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-vertex-glass-jamming-audit.yaml
+      --no-resolve-heads --conform
+    exit_code: 0
+    wall_s: 0.301
+    cpu_user_s: 0.26
+    cpu_sys_s: 0.01
+    stdout_tokens: 145
+  notes: Built ProbKnow-conformant TriG nanopublications and REPORT.md for Pass 1
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:09:58.987Z'
+  ended_at: '2026-10-20T01:09:59.739Z'
+  duration_s: 0.698
+  cpu_user_s: 0.7
+  cpu_sys_s: 0.05
+  max_rss_mb: 141.0
+  runs_count: 1
+  tokens:
+    input_tokens: 69
+    output_tokens: 865
+    subagent_tokens: 0
+    total_llm_tokens: 934
+    artifact_tokens: 646
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-vertex-glass-jamming-audit/published.json
+    bytes: 1862
+    sha256: b848119c1c9c325457c3d5ec8fba9f5b0b5923515affd6555ac1324c0c96c41c
+    tokens: 646
+  commands:
+  - command: bash -c ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-vertex-glass-jamming-audit
+      && NANOPUB_SIGN_DIR=/tmp node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-vertex-glass-jamming-audit/signed/*.trig
+    exit_code: 0
+    wall_s: 0.698
+    cpu_user_s: 0.7
+    cpu_sys_s: 0.05
+    stdout_tokens: 865
+  notes: Signed Pass 1 nanopublications and verified RSA trusty signatures with check_signed.mjs
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:09:59.817Z'
+  ended_at: '2026-10-20T01:09:59.889Z'
+  duration_s: 0.017
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.2
+  runs_count: 1
+  tokens:
+    input_tokens: 54
+    output_tokens: 1
+    subagent_tokens: 0
+    total_llm_tokens: 55
+    artifact_tokens: 646
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-vertex-glass-jamming-audit/published.json
+    bytes: 1862
+    sha256: b848119c1c9c325457c3d5ec8fba9f5b0b5923515affd6555ac1324c0c96c41c
+    tokens: 646
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('morphoeval/kg/2026-10-19-vertex-glass-jamming-audit/published.json'));
+      assert len(d)==10, len(d)
+    exit_code: 0
+    wall_s: 0.017
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 1
+  notes: Verified Pass 1 public record, 10 signed trusty URIs, and REPORT.md synthesis
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-20T01:16:06.337Z'
+  ended_at: '2026-10-20T01:16:09.788Z'
+  duration_s: 3.387
+  cpu_user_s: 3.29
+  cpu_sys_s: 0.18
+  max_rss_mb: 185.8
+  runs_count: 1
+  tokens:
+    input_tokens: 185
+    output_tokens: 1315
+    subagent_tokens: 0
+    total_llm_tokens: 1500
+    artifact_tokens: 667
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-vertex-glass-jamming-audit-v2/published.json
+    bytes: 1862
+    sha256: 85e074eb47de4eb6f96bba46f3d924c55efcc1dce1471fcb312b2dcdb05e6c77
+    tokens: 667
+  commands:
+  - command: "bash -c \n  ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-vertex-glass-jamming-audit-v2.yaml\
+      \ &&\n  ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-vertex-glass-jamming-audit-v2.yaml\
+      \ --supersede-from morphoeval/kg/2026-10-19-vertex-glass-jamming-audit --no-resolve-heads\
+      \ --conform &&\n  ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-vertex-glass-jamming-audit-v2\
+      \ &&\n  NANOPUB_SIGN_DIR=/tmp node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-vertex-glass-jamming-audit-v2/signed/*.trig\n"
+    exit_code: 0
+    wall_s: 3.387
+    cpu_user_s: 3.29
+    cpu_sys_s: 0.18
+    stdout_tokens: 1315
+  notes: 'Completed Step 12 -> Pass 2 remediation loop: 4 vertex regimes, 8-point
+    p0 phase sweep, T1 barrier & shear modulus scaling, Park et al. (2015) bronchial
+    asthma maturation, specimen CV segmentation (N=101 cells, k-Gamma r=0.9334), and
+    superseding signed nanopubs (90.9/100, +33.6 pts)'

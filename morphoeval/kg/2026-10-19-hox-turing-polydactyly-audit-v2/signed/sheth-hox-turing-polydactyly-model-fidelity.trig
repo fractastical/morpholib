@@ -1,0 +1,105 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAGZuHyYRwlIzxk7Or9ZyaB88CrxJspIa6Qim82NJigBc/> .
+@prefix this: <https://w3id.org/np/RAGZuHyYRwlIzxk7Or9ZyaB88CrxJspIa6Qim82NJigBc> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sheth-hox-turing-polydactyly> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sheth-hox-turing-polydactyly-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sheth-hox-turing-polydactyly-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Sheth et al. (2012) Science distal Hoxa13/Hoxd11-13 + Gli3 dose modulation of Turing digit wavelength on a fan-shaped embryonic autopod — Model fidelity to source: 94/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Evaluates the exact Sheth et al. (2012) Science Fig. 3 & Suppl. Eqs. (S1)-(S6) dispersion curve Re(sigma(k)) and Hox-modulated critical wavenumber k_c^2(H) = (Dv*fu(H) + Du*gv)/(2*Du*Dv) = (14 - 9*H)^2 (L90-165); numerically integrates the nonlinear cubic-saturated 2-component reaction-diffusion PDE via a DCT-II IMEX solver on both the 1D distal autopod arc (L171-251) and the 2D polar fan-shaped limb bud sector with proximodistal Fgf/Wnt-Hox modulation (L254-345, reproducing 2 proximal zeugopod rays -> 5 WT or 14 triple-null distal digits); and backs all 3 governing laws with machine-checked Lean 4 proofs in `Loop_015_hox_turing_polydactyly.lean`." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-model-fidelity-3> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2012-sheth-hox-turing-polydactyly.py L90–L251" ;
+        dcterms:description "Exact Sheth et al. (2012) Turing dispersion relation and nonlinear DCT-II IMEX reaction-diffusion PDE solver" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2012-sheth-hox-turing-polydactyly.py#L90-L251> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2012-sheth-hox-turing-polydactyly.py L254–L345" ;
+        dcterms:description "2D curvilinear polar fan-shaped limb bud PDE demonstrating 2 proximal zeugopod rays expanding into N(H) distal autopod digits" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/2012-sheth-hox-turing-polydactyly.py#L254-L345> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sheth-hox-turing-polydactyly-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean L1–L108" ;
+        dcterms:description "3 machine-checked Lean 4 theorems (0 sorrys) for equal-diffusion quenching, Hox dose wavenumber monotonicity, and fan autopod mode selection" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8871db0/morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean#L1-L108> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 015 autonomous loop assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2005.10.016>,
+            <https://doi.org/10.1126/science.1226804>,
+            <https://doi.org/10.1126/science.1252960>,
+            <https://doi.org/10.1126/science.462174> .
+
+    <https://doi.org/10.1016/j.jtbi.2005.10.016> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development" .
+
+    <https://doi.org/10.1126/science.1226804> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism" .
+
+    <https://doi.org/10.1126/science.1252960> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients" .
+
+    <https://doi.org/10.1126/science.462174> dcterms:date "1979"^^xsd:gYear ;
+        dcterms:title "Dynamics of skeletal pattern formation in developing chick limb" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "wG8EA+62FT4meYGkQcZCcsxwAlKfzZnoTHAN6OFoyBLQIOvwnSDeiSGfuwywZXvVFjLwr79Oad/MpizonpFStXERWN9eIIue5GKj5/lDVukjy8uQVISnNRAePXO2i3yVE2kwsopOaFQKdERJuzxpzTuYhXqsNICd0zmq4WhvsPVa+aGPS8nNNstT+CubEEfJsNC/gReikO3FbaRQywcplwJsCJfA1kGm1ks882G3AafdnxSwP+5rVXK4n5DfUIRzGG+1ojiJUGquOV+lolF3L7DcUap5QYCSyXO4COgL5DMYCq9kYqDDB3FVpy0wvOu7qNtrZc8hDh3cx88K/0w1tA==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Sheth et al. (2012) Science distal Hoxa13/Hoxd11-13 + Gli3 dose modulation of Turing digit wavelength on a fan-shaped embryonic autopod — Model fidelity to source 94/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T00:18:02Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sheth-hox-turing-polydactyly-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

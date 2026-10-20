@@ -1,0 +1,79 @@
+sim_id: ocko-termite-mound-convective-chimneys
+math_family: "Coupled Diurnal Buoyancy Thermosiphon Flow Q_flute = -Q_chimney ∝ g β_T (T_flute - T_chimney) + Advection–Diffusion of Cement Pheromone / CO₂ (∂_t c + u · ∇c = D ∇²c - γ c) & Threshold Soil Deposition Sculpting Cathedral Spires, Surface Flutes, and Central Chimney"
+model_spec:
+  model: "King, Ocko & Mahadevan (2015) PNAS 112:11589-11593, Ocko et al. (2017) PNAS 114:10620-10624, and Ocko, Heyde & Mahadevan (2019) PNAS 116:3379-3384 solar-powered diurnal thermosiphon ventilation and convective pheromone morphogenesis of cathedral termite mounds"
+  K_buoy_cm_s_per_K: 0.42
+  area_ratio_Aflutes_over_Achimney: 1.25
+  delta_T_day_K: 6.8
+  delta_T_night_K: -4.6
+  peclet_wild_type_macrotermes: 3.2
+  peclet_odontotermes: 2.3
+  peclet_isothermal_dome: 0.0
+  namibia_latitude_deg_S: 19.2
+  seed: 2017
+  inputs:
+    - datasets/termite_mound_convective_chimneys/termite_mound_convective_chimneys_reference.json
+    - datasets/termite_mound_convective_chimneys/macrotermes_cathedral_mound_specimen.jpg
+    - datasets/termite_mound_convective_chimneys/scout_manifest.json
+    - datasets/termite_mound_convective_chimneys/paper_citations.bib
+equations:
+  - law_name: "Diurnal Buoyancy Thermosiphon Flow Reversal & Mass Continuity Law"
+    formula: "Q_flute(ΔT) = K_buoy ΔT,  Q_chimney(ΔT) = -Q_flute(ΔT)  ⇒  Q_flute + Q_chimney = 0,  Q_flute(-ΔT) = -Q_flute(ΔT)"
+    lean_decl: "MathOfBiology.Loop_097.thermosiphon_flute_flux"
+    lean_theorem: "MathOfBiology.Loop_097.diurnal_thermosiphon_reversal_and_continuity"
+    lean_locus: "morphoeval/lean/loops/Loop_097_termite_mound_convective_chimneys.lean#L27-L56"
+    lean_code: |
+      def thermosiphon_flute_flux (K_buoy dT : Int) : Int :=
+        K_buoy * dT
+      def thermosiphon_chimney_flux (K_buoy dT : Int) : Int :=
+        -(K_buoy * dT)
+      theorem diurnal_thermosiphon_reversal_and_continuity (K_buoy dT : Int)
+          (hK : K_buoy > 0) (hdT : dT > 0) :
+          thermosiphon_flute_flux K_buoy 0 = 0 ∧
+          thermosiphon_flute_flux K_buoy dT + thermosiphon_chimney_flux K_buoy dT = 0 ∧
+          thermosiphon_flute_flux K_buoy (-dT) = -thermosiphon_flute_flux K_buoy dT ∧
+          thermosiphon_flute_flux K_buoy dT > 0 ∧
+          thermosiphon_chimney_flux K_buoy dT < 0
+    variables: "K_buoy: Boussinesq Darcy–Brinkman buoyancy conductance; dT = T_flute - T_chimney: radial temperature difference between exterior flutes and central chimney; Q_flute, Q_chimney: volumetric airflow fluxes"
+    role: "Proves mass conservation A_c u_c + A_f u_f = 0 across the flute–chimney thermosiphon loop, daytime flute updraft / chimney downdraft (dT > 0), nocturnal flow reversal (dT -> -dT), and isothermal stagnation (dT = 0)"
+    source_citation: "King, Ocko & Mahadevan (2015) PNAS 112:11589-11593; Ocko et al. (2017) PNAS 114:10620-10624 Figs. 2-4"
+    code_locus: "2015-ocko-termite-mound-convective-chimneys.py#L91-L263"
+
+  - law_name: "Convective Péclet Apical Pheromone Amplification & Spire Aspect Ratio Law"
+    formula: "H / R = 1 + η_Pe Pe  (Pe = u_0 H_0 / D_c)  ⇒  H(Pe = 0) = R,  Pe_1 < Pe_2 ⇒ H(Pe_1) < H(Pe_2)"
+    lean_decl: "MathOfBiology.Loop_097.mound_height_milli"
+    lean_theorem: "MathOfBiology.Loop_097.convective_peclet_spire_elongation"
+    lean_locus: "morphoeval/lean/loops/Loop_097_termite_mound_convective_chimneys.lean#L68-L93"
+    lean_code: |
+      def mound_height_milli (R eta Pe : Nat) : Nat :=
+        R * (1000 + eta * Pe)
+      def hemispherical_dome_height_milli (R : Nat) : Nat :=
+        R * 1000
+      theorem convective_peclet_spire_elongation (R eta Pe1 Pe2 : Nat)
+          (hR : R > 0) (heta : eta > 0) (hPe : Pe1 < Pe2) :
+          mound_height_milli R eta 0 = hemispherical_dome_height_milli R ∧
+          mound_height_milli R eta Pe2 > hemispherical_dome_height_milli R ∧
+          mound_height_milli R eta Pe1 < mound_height_milli R eta Pe2
+    variables: "R: mound basal radius; Pe = u_0 H_0 / D_c: convective Péclet number of pheromone advection; eta: apical elongation coefficient; H: equilibrium mound height"
+    role: "Proves that isothermal pure-diffusion growth (Pe = 0) yields a hemispherical dome (H/R = 1) whereas upward convective pheromone advection (Pe > 0) strictly elongates mound height and aspect ratio H/R into a cathedral spire"
+    source_citation: "Ocko, Heyde & Mahadevan (2019) PNAS 116:3379-3384 Eqs. (1)-(8), Figs. 2-4"
+    code_locus: "2015-ocko-termite-mound-convective-chimneys.py#L270-L451"
+
+  - law_name: "Taylor–Aris Oscillatory CO₂ Ventilation Dispersion Enhancement Law"
+    formula: "D_eff(u_amp) = D_0 + α_TA u_amp²  ⇒  D_eff(0) = D_0,  D_eff(-u_amp) = D_eff(u_amp),  D_eff(u_amp) > D_0 (∀ u_amp > 0)"
+    lean_decl: "MathOfBiology.Loop_097.effective_co2_dispersion"
+    lean_theorem: "MathOfBiology.Loop_097.taylor_aris_oscillatory_ventilation_enhancement"
+    lean_locus: "morphoeval/lean/loops/Loop_097_termite_mound_convective_chimneys.lean#L101-L125"
+    lean_code: |
+      def effective_co2_dispersion (D0 alpha_TA u_amp : Int) : Int :=
+        D0 + alpha_TA * (u_amp * u_amp)
+      theorem taylor_aris_oscillatory_ventilation_enhancement (D0 alpha_TA u_amp : Int)
+          (hD0 : D0 > 0) (ha : alpha_TA > 0) (hu : u_amp > 0) :
+          effective_co2_dispersion D0 alpha_TA 0 = D0 ∧
+          effective_co2_dispersion D0 alpha_TA (-u_amp) = effective_co2_dispersion D0 alpha_TA u_amp ∧
+          effective_co2_dispersion D0 alpha_TA u_amp > D0 ∧
+          effective_co2_dispersion D0 alpha_TA u_amp > 0
+    variables: "D_0: stagnant molecular CO₂ diffusivity; alpha_TA: Taylor–Aris / pendelluft shear dispersion coefficient; u_amp: diurnal thermosiphon velocity amplitude"
+    role: "Proves that oscillatory diurnal thermosiphon flow rectifies CO₂ clearance via quadratic Taylor–Aris dispersion invariant under flow direction reversal and strictly exceeding stagnant molecular diffusion"
+    source_citation: "King, Ocko & Mahadevan (2015) PNAS 112:11589-11593; Ocko et al. (2017) PNAS 114:10620-10624"
+    code_locus: "2015-ocko-termite-mound-convective-chimneys.py#L108-L210"

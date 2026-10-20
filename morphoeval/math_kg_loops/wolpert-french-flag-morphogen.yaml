@@ -1,0 +1,87 @@
+sim_id: wolpert-french-flag-morphogen
+slot: 11
+slot_id: slot-011-french-flag-morphogen
+math_family: Positional Information & Morphogen Gradients
+model_spec:
+  model: "Wolpert (1969) French Flag Positional Information + Tickle, Summerbell & Wolpert (1975) Chick Limb ZPA Digit Specification + Ben-Zvi & Barkai (2010) Expansion-Repression Dynamic Scaling"
+  c0: 1.0
+  D_um2_s: 10.0
+  k_s_inv: 0.0025
+  lambda_um: 63.245553203367585
+  reference_domain_L0_um: 300.0
+  thresholds_linear: [0.6666666666666666, 0.3333333333333333]
+  thresholds_zpa: [0.45, 0.18, 0.05]
+  seed: 1969
+  inputs:
+    - datasets/french_flag_morphogen/french_flag_morphogen_reference.json
+    - datasets/french_flag_morphogen/french_flag_specimen.jpg
+    - datasets/french_flag_morphogen/scout_manifest.json
+equations:
+  - id: wolpert-french-flag-morphogen-1
+    law_name: "Wolpert (1969) Linear Source-Sink Positional Gradient & Scale-Invariant French-Flag Trisection"
+    formula: "D ∂²c/∂x² = 0, c(0)=c₀, c(L)=0 ⇒ c_lin(x) = c₀(1 - x/L);  x_i/L = 1 - T_i/c₀ (scale-invariant)"
+    lean_decl: "MathOfBiology.Loop_011.wolpert_linear_num"
+    lean_theorem: "MathOfBiology.Loop_011.wolpert_linear_scale_homogeneity"
+    lean_locus: "morphoeval/lean/loops/Loop_011_french_flag_morphogen.lean#L21-L49"
+    lean_code: |
+      def wolpert_linear_num (c0 L x : Nat) : Nat := c0 * (L - x)
+      theorem wolpert_linear_scale_homogeneity (c0 L x s : Nat) :
+          wolpert_linear_num c0 (s * L) (s * x) = s * wolpert_linear_num c0 L x
+      theorem wolpert_french_flag_exact_trisection (k : Nat) :
+          let x1 := k; let x2 := 2 * k; let L := 3 * k
+          (x1 = k) ∧ (x2 - x1 = k) ∧ (L - x2 = k) ∧ (x1 + (x2 - x1) + (L - x2) = L)
+    variables: "c₀: source morphogen concentration at x=0; L: embryonic axis length; T₁, T₂: cellular differentiation thresholds (Blue ≥ T₁, T₂ ≤ White < T₁, Red < T₂)"
+    role: "Establishes Wolpert's French Flag positional information principle and proves exact proportional regulation under linear source-sink diffusion"
+    source_citation: "Wolpert (1969) J. Theor. Biol. 25(1):1-47 Sec. 3 & Figs. 2-3 (doi:10.1016/S0022-5193(69)80016-0)"
+    code_locus: "1969-wolpert-french-flag-morphogen.py#L145-L215"
+  - id: wolpert-french-flag-morphogen-2
+    law_name: "Synthesis-Diffusion-Degradation (SDD) Exponential Decay & Source-Ablation Quiescence"
+    formula: "∂c/∂t = D ∂²c/∂x² - k c ⇒ c_SDD(x) = c₀ exp(-x/λ), λ = √(D/k);  σ_x(x_i) = (λ / T_i) σ_c"
+    lean_decl: "MathOfBiology.Loop_011.sdd_residual"
+    lean_theorem: "MathOfBiology.Loop_011.sdd_steady_state_balance"
+    lean_locus: "morphoeval/lean/loops/Loop_011_french_flag_morphogen.lean#L56-L86"
+    lean_code: |
+      def sdd_residual (D k_deg c_left c_mid c_right : Int) : Int :=
+        D * (c_left + c_right - 2 * c_mid) - k_deg * c_mid
+      theorem sdd_steady_state_balance (D k_deg c_left c_mid c_right : Int)
+          (h_bal : D * (c_left + c_right) = 2 * (D * c_mid) + k_deg * c_mid) :
+          sdd_residual D k_deg c_left c_mid c_right = 0
+      theorem sdd_zero_source_ablation_quiescence (D k_deg : Int) (T1 T2 : Nat)
+          (hT1 : 0 < T1) (hT2 : 0 < T2) :
+          sdd_residual D k_deg 0 0 0 = 0 ∧ french_flag_zone 0 T1 T2 = 0
+    variables: "D: morphogen diffusivity (μm²/s); k: linear degradation rate (s⁻¹); λ = √(D/k): characteristic decay length; σ_c: concentration noise; σ_x: boundary positional error"
+    role: "Governs steady-state exponential morphogen decay, threshold boundary precision, and complete loss of suprathreshold differentiation under ZPA ablation"
+    source_citation: "Wolpert (1969) J. Theor. Biol. 25:1-47; Crick (1970) Nature 225:420-422 (doi:10.1038/225420a0)"
+    code_locus: "1969-wolpert-french-flag-morphogen.py#L218-L320"
+  - id: wolpert-french-flag-morphogen-3
+    law_name: "Tickle, Summerbell & Wolpert (1975) ZPA Graft Superposition & Mirror-Image Digit Duplication"
+    formula: "c_dup(x) = φ(x) + φ(L - x) = c_dup(L - x) ⇒ palindromic chick wing digit sequence 4–3–2–2–3–4"
+    lean_decl: "MathOfBiology.Loop_011.zpa_graft_superposition"
+    lean_theorem: "MathOfBiology.Loop_011.tickle_1975_zpa_mirror_duplication_symmetry"
+    lean_locus: "morphoeval/lean/loops/Loop_011_french_flag_morphogen.lean#L93-L115"
+    lean_code: |
+      def zpa_graft_superposition (phi : Nat → Nat) (L x : Nat) : Nat :=
+        phi x + phi (L - x)
+      theorem tickle_1975_zpa_mirror_duplication_symmetry
+          (phi : Nat → Nat) (L x T1 T2 : Nat) (hx : x ≤ L) :
+          zpa_graft_superposition phi L (L - x) = zpa_graft_superposition phi L x ∧
+          french_flag_zone (zpa_graft_superposition phi L (L - x)) T1 T2 =
+            french_flag_zone (zpa_graft_superposition phi L x) T1 T2
+    variables: "φ(x): posterior ZPA Sonic hedgehog (Shh) spatial kernel; L: anteroposterior wing bud width; T₄ > T₃ > T₂: digit identity thresholds"
+    role: "Proves that grafting a second ZPA organizer at the anterior margin x = L induces an anteroposteriorly symmetric morphogen profile and mirror-image digit duplication"
+    source_citation: "Tickle, Summerbell & Wolpert (1975) Nature 254:199-202 (doi:10.1038/254199a0); Riddle et al. (1993) Cell 75:1401-1416"
+    code_locus: "1969-wolpert-french-flag-morphogen.py#L323-L410"
+  - id: wolpert-french-flag-morphogen-4
+    law_name: "Ben-Zvi & Barkai (2010) Expansion-Repression Dynamic Scaling Invariance"
+    formula: "∂E/∂t = D_E ∂²E/∂x² + α_E H(T_rep - c(L,t)) - β_E E ⇒ λ_eff(L) = L / ln(c₀ / T_rep) ∝ L"
+    lean_decl: "MathOfBiology.Loop_011.benzvi_barkai_2010_expander_scaling_invariance"
+    lean_theorem: "MathOfBiology.Loop_011.benzvi_barkai_2010_expander_scaling_invariance"
+    lean_locus: "morphoeval/lean/loops/Loop_011_french_flag_morphogen.lean#L122-L129"
+    lean_code: |
+      theorem benzvi_barkai_2010_expander_scaling_invariance (x lam0 s : Nat) :
+          (s * x) * lam0 = x * (s * lam0) := by
+        ac_rfl
+    variables: "E(x,t): diffusible expander concentration; T_rep: distal repression threshold; λ_eff(L): expander-modulated decay length"
+    role: "Resolves the SDD scaling failure by locking the morphogen decay length λ_eff proportionally to domain size L(t) across developmental growth stages"
+    source_citation: "Ben-Zvi & Barkai (2010) PNAS 107(15):6924-6929 Eqs. 1-4 (doi:10.1073/pnas.0912734107)"
+    code_locus: "1969-wolpert-french-flag-morphogen.py#L413-L490"

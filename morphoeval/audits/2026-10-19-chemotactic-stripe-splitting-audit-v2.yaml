@@ -1,0 +1,189 @@
+# MorphoEval audit — Painter, Maini & Othmer (1999) Chemotactic Stripe Splitting, 2026-10-19 (v2)
+#
+# Pass 2 post-remediation evaluation of `1999-painter-chemotactic-stripe-splitting.py` (Slot 005)
+# superseding `2026-10-19-chemotactic-stripe-splitting-audit` in `2026-10-19-chemotactic-stripe-splitting-loop`.
+
+audit:
+  id: 2026-10-19-chemotactic-stripe-splitting-audit-v2
+  supersedes_audit_id: 2026-10-19-chemotactic-stripe-splitting-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) post-remediation evaluation of `1999-painter-chemotactic-stripe-splitting.py`
+      after completing the 12-step closed remediation loop (`2026-10-19-chemotactic-stripe-splitting-loop`).
+
+references:
+  painter1999:
+    title: "Stripe and spotilihood in chemotactic pattern formation"
+    authors: "Painter KJ, Maini PK, Othmer HG"
+    venue: "Proceedings of the National Academy of Sciences USA 96(10):5549-5554 (1999)"
+    doi: 10.1073/pnas.96.10.5549
+  keller1970:
+    title: "Initiation of slime mold aggregation viewed as an instability"
+    authors: "Keller EF, Segel LA"
+    venue: "Journal of Theoretical Biology 26(3):399-415 (1970)"
+    doi: 10.1016/0022-5193(70)90092-5
+  myerscough1992:
+    title: "Analysis of propagating pattern in a chemotaxis system"
+    authors: "Myerscough MR, Murray JD"
+    venue: "Bulletin of Mathematical Biology 54(1):77-94 (1992)"
+    doi: 10.1007/BF02458621
+  painter2011:
+    title: "Spatio-temporal chaos in a chemotaxis model"
+    authors: "Painter KJ, Hillen T"
+    venue: "Physica D: Nonlinear Phenomena 240(4-5):363-375 (2011)"
+    doi: 10.1016/j.physd.2010.09.011
+
+simulations:
+  - id: painter-chemotactic-stripe-splitting
+    name: "Painter, Maini & Othmer (1999) chemotactic stripe splitting & stripe-spot selection"
+    organism: "Myxococcus xanthus & Dictyostelium discoideum chemotactic cell populations"
+    script: 1999-painter-chemotactic-stripe-splitting.py
+    output: docs/media/chemotactic_stripe_splitting_comparison.png
+    extra_outputs:
+      - docs/media/chemotactic_stripe_splitting_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Keller-Segel chemotactic-reaction-diffusion equations, equal-diffusivity instability threshold chi > chi_c at D_n = D_c, domain-growth stripe-splitting cascade, and 2D stripe vs spot selection"
+        - "Keller & Segel (1970) J. Theor. Biol. 26:399-415 chemotactic flux cross-diffusion -div(n chi(c) grad(c))"
+      reconstructed_in_script:
+        - "1D and 2D IMEX pseudospectral Keller-Segel-Painter PDE solvers across stationary domain scales s in {1, 2, 4, 8}, subcritical chemotaxis control chi = 3.0 < chi_c = 4.5, exponentially growing domain kymograph (1 -> 2 -> 4 stripes), and 2D cubic labyrinthine stripes vs quadratic spot droplets"
+        - "Computer-vision segmentation of Myxococcus xanthus specimen (`chemotactic_pattern_specimen.jpg`, CC BY-SA 4.0) extracting 4 fruiting-body spot aggregates and 362 chemotactic rippling stripe spacings (74.10 um mean wavelength calibrated via 500 um = 125 px scale bar)"
+      transfer_boundary:
+        - "1D growing domain and 2D planar chemotactic PDE mapped to Myxococcus xanthus rippling stripe ridges and fruiting-body spot aggregates"
+      does_not_claim:
+        - "Individual-cell C-signal contact-reversal mechanics or 3D viscoelastic fruiting-body stalk elevation"
+    source_refs:
+      - painter1999
+      - keller1970
+      - myerscough1992
+      - painter2011
+    summary: >-
+      Pass 2 post-remediation evaluation of `1999-painter-chemotactic-stripe-splitting.py`
+      (91.4/100, up from 54.4/100 in Pass 1; +37.0 overall). The remediated script integrates
+      the nonlinear 1D and 2D Keller-Segel-Painter chemotactic-reaction-diffusion PDE system
+      dn/dt = D_n Lap(n) - div(n chi(c) grad(c)) + r n (1 - n/n_0), dc/dt = D_c Lap(c) +
+      alpha n / (1 + beta n) - gamma c at equal diffusivity D_n = D_c = 1.0, verifying the
+      analytical chemotactic threshold chi_c = 4.5 (chi_eff_c = 9.0) and critical wavelength
+      lambda_c = pi * sqrt(2) = 4.4429 with 0.000% simulated wavelength error across the
+      5-regime domain-growth cascade (N = 1, 2, 4, 8 stripes for s = 1, 2, 4, 8 and N = 0 for
+      subcritical control chi = 3.0 < chi_c, RMSE = 0.0000), continuous growing-domain stripe
+      splitting (1 -> 2 -> 4 stripes), 2D cubic labyrinthine stripe vs quadratic spot selection,
+      and automated CV segmentation of the CC BY-SA 4.0 Myxococcus xanthus specimen
+      (`chemotactic_pattern_specimen.jpg`, 4 fruiting bodies, rippling stripe wavelength
+      74.10 um = 18.52 px, CV = 0.3459), backed by 3 machine-checked Lean 4 theorems in
+      `Loop_005_chemotactic_stripe_splitting.lean`.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Faithfully implements the Painter, Maini & Othmer (1999) Keller-Segel chemotactic-RD
+          PDE system with equal-diffusivity instability analysis (`analytical_chemotactic_stability`,
+          L102-158), 1D IMEX pseudospectral PDE solver (`solve_1d_ksp_pde`, L180-264), growing-domain
+          kymograph (`simulate_growing_domain_kymograph`, L267-328), and 2D stripe-vs-spot selection
+          solver (`simulate_2d_stripe_vs_spot`, L359-420), backed by 3 machine-checked Lean 4
+          theorems (0 sorrys) in `morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean`.
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [102, 176], note: "Analytical equal-diffusivity chemotactic threshold chi_c = 4.5 and dispersion relation Re(lambda(k^2))", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [180, 328], note: "1D IMEX pseudospectral Keller-Segel-Painter PDE solver and growing-domain stripe-splitting kymograph", supports: true}
+          - {file: morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean, lines: [18, 98], note: "3 machine-checked Lean 4 theorems (0 sorrys) for uniform/pure-RD stability, equal-diffusivity instability, and stripe-splitting mode cascade", supports: true}
+      specimen-match:
+        value: 89
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY-SA 4.0 Myxococcus xanthus specimen
+          (`datasets/chemotactic_stripe_splitting/chemotactic_pattern_specimen.jpg`) and
+          segments both the 4 yellow fruiting-body spot aggregates (mean diameter 131.68 um)
+          and the right-hand chemotactic rippling stripe ridges (`segment_chemotactic_specimen`,
+          L425-505), calibrating the 500 um = 125 px scale bar (4.0 um/px) to measure a mean
+          rippling wavelength of 74.10 um (18.5249 +/- 6.4079 px across n=362 inter-ridge
+          spacings, CV = 0.3459) and phase-aligned Keller-Segel waveform correlation (Panels E-F).
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [425, 505], note: "Automated CV segmentation of 500 um scale bar, 4 fruiting-body spot aggregates, and 362 rippling stripe spacings", supports: true}
+          - {file: docs/media/chemotactic_stripe_splitting_comparison.png, lines: [0, 0], note: "6-panel synthesis figure including dispersion relation, growing-domain kymograph, 5-regime cascade, 2D stripes vs spots, specimen segmentation, and waveform fit", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Evaluates 5 domain-growth and chemotactic control regimes (subcritical control
+          chi = 3.0 < chi_c = 4.5 plus domain scales s = 1, 2, 4, 8 yielding N = 0, 1, 2, 4, 8
+          peaks), sweeps dispersion curves across chi in {0.0, 3.0, 4.5, 6.0} (Panel A),
+          simulates continuous exponential domain expansion s(t) in [1, 4] (Panel B), and
+          contrasts 2D cubic labyrinthine stripes against quadratic spot droplets (Panel D).
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [331, 355], note: "5-regime domain-growth and subcritical-chemotaxis evaluator", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [359, 420], note: "2D cubic labyrinthine stripe vs quadratic spot selection solver", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: >-
+          Extracts 5 reference-anchored quantitative morphometric measurements via
+          `measure_morphoeval()` (L510-578): equal-diffusivity critical chemotactic threshold
+          chi_c = 4.5, simulated 1D PDE stripe wavelength 4.4429 vs analytical 4.4429 (0.00%
+          error, CV = 0.0078), supercritical vs subcritical stripe peak delta (4 vs 0 peaks;
+          5-regime RMSE = 0.0000, Pearson r = 1.0000), 2D spot-to-stripe component ratio, and
+          calibrated Myxococcus xanthus rippling stripe wavelength 74.10 um (18.52 +/- 6.41 px,
+          CV = 0.3459).
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [510, 578], note: "5 quantitative MorphoEval measurements with analytical and empirical references, CV, Pearson r, and RMSE", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/chemotactic_stripe_splitting/` with `scout_manifest.json`,
+          `chemotactic_stripe_splitting_reference.json`, `chemotactic_pattern_specimen.jpg`,
+          `paper_citations.bib` (4 primary DOIs: `10.1073/pnas.96.10.5549`,
+          `10.1016/0022-5193(70)90092-5`, `10.1007/BF02458621`, `10.1016/j.physd.2010.09.011`),
+          and `README.md`, with runtime SHA-256 verification (`verify_dataset_integrity`, L74-96).
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [74, 96], note: "Runtime SHA-256 verification of datasets/chemotactic_stripe_splitting/ artifacts", supports: true}
+          - {file: datasets/chemotactic_stripe_splitting/chemotactic_stripe_splitting_reference.json, lines: [1, 145], note: "Vendored Painter, Maini & Othmer (1999) equations, 5-regime cascade table, and specimen metadata", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Every computational section and docstring maps directly to numbered equations and
+          figures in Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Eqs. (1)-(6) and
+          Figs. 1-4, Keller & Segel (1970), and the 3 Lean 4 theorems in
+          `Loop_005_chemotactic_stripe_splitting.lean` and
+          `morphoeval/math_kg_loops/painter-chemotactic-stripe-splitting.yaml`.
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [1, 52], note: "Module docstring linking equations to Painter, Maini & Othmer (1999) and Lean 4 theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/painter-chemotactic-stripe-splitting.yaml, lines: [1, 76], note: "Math KG loop specification linking equations, Lean 4 declarations, and code loci", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic RNG (`seed=1999`), standalone `--self-test` suite verifying SHA-256
+          dataset integrity, equal-diffusivity threshold chi_c = 4.5, bitwise two-run PDE
+          solver determinism (`atol=0.0`), exact 5-regime peak count agreement (0, 1, 2, 4, 8),
+          2D stripe vs spot topological separation, and specimen CV segmentation (`run_self_test`,
+          L762-808), plus rendered PNG and GIF outputs in `docs/media/`.
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [762, 808], note: "Deterministic --self-test suite verifying SHA-256 digests, bitwise determinism, and morphometrics", supports: true}
+          - {file: docs/media/chemotactic_stripe_splitting_growth.gif, lines: [0, 0], note: "24-frame animated GIF of chemotactic stripe splitting on an expanding domain", supports: true}
+    remediation:
+      - "Extend the 2D chemotactic PDE to a growing curved surface to model vertebrate skin and fish pigment stripe bifurcations alongside bacterial rippling."
+      - "Couple cell density n(x,t) to an explicit extracellular slime-trail orientation tensor for Myxococcus xanthus social gliding motility."

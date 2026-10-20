@@ -1,0 +1,149 @@
+# MorphoEval audit — Dubrulle & Pourquié (2001, 2004) FGF8 mRNA Decay Wavefront Somitogenesis, 2026-10-19 (v1)
+#
+# Pass 1 baseline evaluation of `2003-dubrulle-fgf8-wavefront-somitogenesis.py` (Slot 024) prior to
+# Pass 2 closed-loop remediation in `2026-10-19-fgf8-wavefront-somitogenesis-loop`.
+
+audit:
+  id: 2026-10-19-fgf8-wavefront-somitogenesis-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 317bc3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2003-dubrulle-fgf8-wavefront-somitogenesis.py` in
+      `2026-10-19-fgf8-wavefront-somitogenesis-loop` prior to Pass 2 closed-loop remediation.
+
+references:
+  dubrulle2001:
+    title: "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation"
+    authors: "Dubrulle J, McGrew MJ, Pourquie O"
+    venue: "Cell 106(2):219-232 (2001)"
+    doi: 10.1016/S0092-8674(01)00437-8
+  dubrulle2004:
+    title: "fgf8 mRNA decay establishes a gradient that couples axial elongation to patterning in the vertebrate embryo"
+    authors: "Dubrulle J, Pourquie O"
+    venue: "Nature 427(6973):419-422 (2004)"
+    doi: 10.1038/nature02332
+  baker2006:
+    title: "A clock and wavefront mechanism for somite formation"
+    authors: "Baker RE, Schnell S, Maini PK"
+    venue: "Developmental Biology 293(1):116-126 (2006)"
+    doi: 10.1016/j.ydbio.2006.01.018
+  goldbeter2007:
+    title: "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling"
+    authors: "Goldbeter A, Gonze D, Pourquie O"
+    venue: "Developmental Dynamics 236(6):1495-1508 (2007)"
+    doi: 10.1002/dvdy.21193
+
+simulations:
+  - id: dubrulle-fgf8-wavefront-somitogenesis
+    name: "Dubrulle & Pourquié (2001, 2004) FGF8 mRNA decay wavefront and determination front positioning in vertebrate somitogenesis"
+    organism: "Gallus gallus (chick embryo presomitic mesoderm & paraxial somites)"
+    script: 2003-dubrulle-fgf8-wavefront-somitogenesis.py
+    output: docs/media/fgf8_wavefront_somitogenesis_comparison.png
+    extra_outputs:
+      - docs/media/fgf8_wavefront_somitogenesis_growth.gif
+    status: evaluated
+    source_refs:
+      - dubrulle2001
+      - dubrulle2004
+      - baker2006
+      - goldbeter2007
+    summary: >-
+      Pass 1 baseline assessment of `2003-dubrulle-fgf8-wavefront-somitogenesis.py` (59.3/100).
+      The initial baseline captures the steady exponential fgf8 mRNA profile m(x) = m_0 exp(-k_d x / v_g)
+      and wild-type somite length S_0 = v_g * T_c = 150 um, but requires full upwind characteristic
+      PDE integration verification against the analytical steady state, explicit modeling of the
+      compensatory anterior-small + posterior-large somite pair around an ectopic FGF8 bead alongside
+      SU5402 FGFR1 inhibition and a k_d = 0 no-decay negative control, and bilateral dorsal somite
+      segmentation against the vendored avian/vertebrate SEM specimen (`chick_somite_psm_specimen.jpg`).
+    scores:
+      model-fidelity:
+        value: 63
+        rationale: >-
+          Implements Dubrulle & Pourquié's (2004) exponential fgf8 mRNA decay profile
+          m(x) = m_0 exp(-k_d x / v_g) and determination front threshold x* = (v_g/k_d) ln(m_0/m_crit)
+          (L110-185), but Pass 1 lacks the full characteristic-upwind PDE solver convergence check
+          and the two-cycle ectopic FGF8 bead catch-up conservation law S_ant + S_post = 2*S_0.
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [110, 175], note: "Analytical fgf8 mRNA profile and upwind advection-decay PDE solver", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [255, 345], note: "Lab-frame somitogenesis simulator requiring bead catch-up and k_d=0 ablation control", supports: false}
+      specimen-match:
+        value: 53
+        rationale: >-
+          Vendors `datasets/fgf8_wavefront_somitogenesis/chick_somite_psm_specimen.jpg` (CC BY 4.0
+          dorsal SEM of vertebrate neural tube and bilateral somites), but Pass 1 lacks automated
+          bilateral DoG peak/cleft extraction and phase-aligned waveform correlation against the
+          simulated FGF8 wavefront-gated somite train.
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [350, 425], note: "Specimen segmentation routine on chick_somite_psm_specimen.jpg", supports: false}
+          - {file: docs/media/fgf8_wavefront_somitogenesis_comparison.png, lines: [0, 0], note: "Comparison figure with dorsal SEM somite overlay", supports: true}
+      parameter-expressivity:
+        value: 59
+        rationale: >-
+          Covers wild-type chick PSM parameters (v_g = 1.667 um/min, T_c = 90 min, t_1/2 = 150 min),
+          but needs all 5 Dubrulle et al. (2001, 2004) perturbation regimes (WT, FGF8 bead anterior,
+          FGF8 bead posterior catch-up, SU5402 FGFR1 inhibition, and pCAGGS-FGF8 electroporation)
+          plus a continuous 2D parameter morphospace x*(v_g, t_1/2).
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [205, 250], note: "5-regime Dubrulle et al. (2001, 2004) perturbation evaluator", supports: false}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          Measures determination front position x* = 696.47 um, but Pass 1 requires full 5-regime
+          Pearson correlation r and RMSE against Dubrulle et al. (2001) empirical somite lengths
+          plus bilateral specimen spacing CV and symmetry ratio.
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [430, 505], note: "MorphoEval measurement hook measure_morphoeval()", supports: false}
+      source-traceability:
+        value: 66
+        rationale: >-
+          Vendors `scout_manifest.json`, `fgf8_wavefront_somitogenesis_reference.json`,
+          `paper_citations.bib`, and `chick_somite_psm_specimen.jpg` with SHA-256 digests,
+          linking Dubrulle et al. (2001) Cell and Dubrulle & Pourquié (2004) Nature.
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [75, 105], note: "SHA-256 cryptographic verification of vendored dataset files", supports: true}
+      code-traceability:
+        value: 61
+        rationale: >-
+          Links functions to Dubrulle et al. (2001) Figs. 1-4, Dubrulle & Pourquié (2004) Figs. 1-3,
+          and Lean 4 theorems in `morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean`.
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [1, 55], note: "Module docstring mapping equations to Dubrulle & Pourquie (2001, 2004) and Lean 4 theorems", supports: true}
+      repro-package:
+        value: 63
+        rationale: >-
+          Includes `--self-test` and deterministic seed=2003, requiring full verification of the
+          ectopic FGF8 bead pair conservation law S_ant + S_post = 2*S_0 and no-decay N_null = 0
+          ablation control in Pass 2.
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [715, 765], note: "Self-test suite with bitwise determinism and perturbation conservation assertions", supports: true}
+    remediation:
+      - "Verify characteristic-upwind advection-decay PDE convergence against m_0 exp(-k_d x / v_g) (L2 relative error < 0.001) and enforce the two-cycle ectopic FGF8 bead somite conservation identity S_ant + S_post = 2*S_0 = 300 um."
+      - "Add bilateral dorsal somite row DoG peak & inter-somitic cleft segmentation on `datasets/fgf8_wavefront_somitogenesis/chick_somite_psm_specimen.jpg` with phase-aligned Pearson r correlation."
+      - "Include all 5 Dubrulle et al. (2001, 2004) experimental regimes (wild-type, FGF8 bead anterior compression, FGF8 bead posterior catch-up, SU5402 FGFR1 inhibition, and pCAGGS-FGF8 electroporation) plus a k_d = 0 no-decay negative control."

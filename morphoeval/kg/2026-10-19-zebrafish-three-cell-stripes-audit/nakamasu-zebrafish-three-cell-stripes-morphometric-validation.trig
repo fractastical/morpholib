@@ -1,0 +1,97 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-nakamasu-zebrafish-three-cell-stripes> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace — Morphometric validation: 44/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "`measure_morphoeval()` (L114-135) returns only 2 analytical scalar values (k_c and lambda_c) without measuring Routh-Hurwitz invariants, 2D PDE melanophore-xanthophore anti-phase correlation, xanthophore laser-ablation melanophore survival loss, negative-control quenching, or biological Danio rerio inter-stripe spacing CV and horizontal orientation anisotropy." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2009-nakamasu-zebrafish-three-cell-stripes.py L114–L135: Only 2 analytical measurements returned; no PDE, laser-ablation, or specimen morphometrics <https://github.com/fractastical/morpholib/blob/8871db0/2009-nakamasu-zebrafish-three-cell-stripes.py#L114-L135>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-measurement-nakamasu-3-cell-critical-wavenumber-k-c>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-measurement-nakamasu-characteristic-stripe-wavelength-lambda-c> ;
+        pk:hasScore "0.44"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-measurement-nakamasu-3-cell-critical-wavenumber-k-c> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Nakamasu 3-cell critical wavenumber k_c = 3.4153 dimensionless" ;
+        schema:measurementTechnique "argmax_k Re(eigvals(J0 - k^2 * diag(Du, Dv, Dw)))" ;
+        schema:name "Nakamasu 3-cell critical wavenumber k_c" ;
+        schema:unitText "dimensionless" ;
+        schema:value "3.4153" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-measurement-nakamasu-3-cell-critical-wavenumber-k-c-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-measurement-nakamasu-3-cell-critical-wavenumber-k-c-reference> a schema:PropertyValue ;
+        dct:source "Nakamasu et al. (2009) PNAS 106(21):8429-8434 SI Text" ;
+        schema:value "3.4106" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-measurement-nakamasu-characteristic-stripe-wavelength-lambda-c> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Nakamasu characteristic stripe wavelength lambda_c = 1.8397 dimensionless length" ;
+        schema:measurementTechnique "2 * pi / k_c" ;
+        schema:name "Nakamasu characteristic stripe wavelength lambda_c" ;
+        schema:unitText "dimensionless length" ;
+        schema:value "1.8397" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-measurement-nakamasu-characteristic-stripe-wavelength-lambda-c-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-measurement-nakamasu-characteristic-stripe-wavelength-lambda-c-reference> a schema:PropertyValue ;
+        dct:source "Nakamasu et al. (2009) PNAS 106(21):8429-8434 Fig. 5" ;
+        schema:value "1.8423" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 007 autonomous loop assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/sj.embor.7400757>,
+            <https://doi.org/10.1073/pnas.0607790104>,
+            <https://doi.org/10.1073/pnas.0808622106>,
+            <https://doi.org/10.1126/science.1212821> .
+    <https://doi.org/10.1038/sj.embor.7400757> dct:date "2006"^^xsd:gYear ;
+        dct:title "Spot pattern of leopard Danio is caused by mutation in the zebrafish connexin41.8 gene" .
+    <https://doi.org/10.1073/pnas.0607790104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Pattern regulation in the stripe of zebrafish suggests an underlying dynamic and autonomous mechanism" .
+    <https://doi.org/10.1073/pnas.0808622106> dct:date "2009"^^xsd:gYear ;
+        dct:title "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns" .
+    <https://doi.org/10.1126/science.1212821> dct:date "2012"^^xsd:gYear ;
+        dct:title "Pigment pattern formation by contact-dependent depolarization" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace — Morphometric validation 44/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T00:10:46Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

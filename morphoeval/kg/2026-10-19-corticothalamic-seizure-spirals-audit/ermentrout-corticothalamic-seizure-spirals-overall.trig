@@ -1,0 +1,75 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-ermentrout-corticothalamic-seizure-spirals> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-ermentrout-corticothalamic-seizure-spirals-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-ermentrout-corticothalamic-seizure-spirals-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Huang et al. (2004, 2010) & Pinto & Ermentrout (2001) neocortical spiral wave dynamics & phase singularity topology — MorphoEval overall 55.9/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Pass 1 baseline assessment of `2013-ermentrout-corticothalamic-seizure-spirals.py` (56.9/100). The baseline script evaluates a static kinematic Archimedes spiral wave without solving the 2D excitatory-adaptation Wilson-Cowan / Pinto-Ermentrout neural field PDE tau_u du/dt = -u + D_u nabla^2 u + F(w_ee K_e * u - g_a a + I_ext), tau_a da/dt = -a + u, omits automatic 2x2 plaquette topological phase winding number oint nabla phi . dl singularity detection, omits counter-rotating figure-eight spiral pair (W = +1, -1) dipole conservation and CNQX/AMPA glutamatergic blockade quiescent controls, and displays the tangential rat neocortical cytochrome oxidase specimen without automated CV column segmentation. Overall 55.9/100 (faithfulness 53.3, reproducibility 62.0); rubric morphoeval 0.1.0; checkpoint commit 317bc3c; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 56, Morphological realism / specimen match 50, Parameter expressivity 55, Morphometric validation 54, Source and data traceability 66, Code-to-model traceability 60, Reproducibility package 60. Output judged: docs/media/corticothalamic_seizure_spirals_comparison.png: rendered output of 2013-ermentrout-corticothalamic-seizure-spirals.py at 317bc3c, image/png, 417433 B, 1260×983 px, artifact_sha256 168c38a1491d8d8b8390557426a55422a51df364d866344764fec9d005fd7c92 (sha256 168c38a1491d8d8b8390557426a55422a51df364d866344764fec9d005fd7c92), spec_fingerprint 8e19f210a705689fed055999b0cf4bc7b4186b66538d2729cc57db348f32af80. Dual provenance: spec_fingerprint: 8e19f210a705689fed055999b0cf4bc7b4186b66538d2729cc57db348f32af80; artifact_sha256: 168c38a1491d8d8b8390557426a55422a51df364d866344764fec9d005fd7c92; input_dataset_sha256: {datasets/corticothalamic_seizure_spirals/corticothalamic_seizure_spirals_reference.json=3570a9b466035f9e..., datasets/corticothalamic_seizure_spirals/paper_citations.bib=2ea747169ffdca2a..., datasets/corticothalamic_seizure_spirals/rat_neocortical_tangential_sheet_specimen.jpg=c4fdfb27cd39c842..., datasets/corticothalamic_seizure_spirals/scout_manifest.json=e31d28291faa189a...}." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add automated CV segmentation of the tangential Rattus norvegicus neocortical cytochrome oxidase specimen (barrel column centroids, inter-column spacing, and radial optical density profile), and render a 9-panel dark-mode synthesis figure and 24-frame animated GIF.",
+            "remediation needed: Implement the 2D Wilson-Cowan / Pinto-Ermentrout excitatory-adaptation neural field PDE solver with 2D FFT Gaussian axonal footprint K_e * u, complex state-space phase map phi(x,y,t), and automatic 2x2 plaquette topological winding number oint nabla phi . dl singularity tracker.",
+            "remediation needed: Simulate all 6 canonical regimes (CCW W=+1 spiral, CW W=-1 mirror spiral, figure-eight counter-rotating dipole W=+1/-1 with net charge 0, expanded axonal footprint fast spiral, planar wave W=0, and CNQX/AMPA glutamatergic blockade quiescent control), plus a 10x10 (w_ee, g_a) Hopf spiral morphospace." ;
+        pk:hasScore "0.559"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1137/S0036139900346453>,
+            <https://doi.org/10.1523/JNEUROSCI.2547-10.2010>,
+            <https://doi.org/10.1523/JNEUROSCI.2705-04.2010>,
+            <https://doi.org/10.1523/JNEUROSCI.4663-14.2015> .
+    <https://doi.org/10.1137/S0036139900346453> dct:date "2001"^^xsd:gYear ;
+        dct:title "Spatially Structured Activity in Synaptically Coupled Neuronal Networks: I. Traveling Fronts and Pulses" .
+    <https://doi.org/10.1523/JNEUROSCI.2547-10.2010> dct:date "2010"^^xsd:gYear ;
+        dct:title "Spiral Waves in Neocortex" .
+    <https://doi.org/10.1523/JNEUROSCI.2705-04.2010> dct:date "2004"^^xsd:gYear ;
+        dct:title "Spiral Waves in Disinhibited Mammalian Neocortex" .
+    <https://doi.org/10.1523/JNEUROSCI.4663-14.2015> dct:date "2015"^^xsd:gYear ;
+        dct:title "Emergence of Complex Wave Patterns in Primate Cerebral Cortex" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Huang et al. (2004, 2010) & Pinto & Ermentrout (2001) neocortical spiral wave dynamics & phase singularity topology — MorphoEval overall 55.9/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T01:55:14Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-ermentrout-corticothalamic-seizure-spirals-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-ermentrout-corticothalamic-seizure-spirals> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

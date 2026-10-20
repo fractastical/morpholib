@@ -1,0 +1,149 @@
+{
+  "metadata": {
+    "dataset_id": "hannezo-branching-random-walk-annihilation-v1",
+    "title": "Hannezo et al. (2017) Cell & Scheele et al. (2017) Nature Unifying Theory of Branching Morphogenesis via Branching and Annihilating Random Walks (BARW) Reference Dataset",
+    "sources": [
+      {
+        "id": "hannezo2017",
+        "citation": "Hannezo E, Scheele CLGJ, Moad M, Drogo N, Heer R, Sampogna RV, van Rheenen J, Simons BD (2017). A Unifying Theory of Branching Morphogenesis. Cell 171(1):242-255.e27.",
+        "doi": "10.1016/j.cell.2017.08.026"
+      },
+      {
+        "id": "scheele2017",
+        "citation": "Scheele CLGJ, Hannezo E, Muraro MJ, Zomer A, Langedijk NSM, van Oudenaarden A, Simons BD, van Rheenen J (2017). Identity and dynamics of mammary stem cells during branching morphogenesis. Nature 542(7641):313-317.",
+        "doi": "10.1038/nature21060"
+      },
+      {
+        "id": "bordeu2023",
+        "citation": "Bordeu I, Chatzeli L, Simons BD (2023). Inflationary theory of branching morphogenesis in the mouse salivary gland. Nature Communications 14:3422.",
+        "doi": "10.1038/s41467-023-39124-x"
+      },
+      {
+        "id": "chatzeli2017",
+        "citation": "Chatzeli L, Simons BD, Tapon N (2017). Tracing the dynamics of pancreatic progenitors during branching morphogenesis. Development 144(12):2175-2186.",
+        "doi": "10.1242/dev.147645"
+      },
+      {
+        "id": "silberstein1987",
+        "citation": "Silberstein GB, Daniel CW (1987). Reversible inhibition of mammary gland growth by transforming growth factor-beta. Science 237(4812):291-293.",
+        "doi": "10.1126/science.3474783"
+      },
+      {
+        "id": "cardy1998",
+        "citation": "Cardy JL, Tauber UC (1998). Field theory of branching and annihilating random walks. Journal of Statistical Physics 90(1-2):1-56.",
+        "doi": "10.1023/A:1023233431588"
+      }
+    ],
+    "specimens": {
+      "mouse_branched_ductal_network_specimen": {
+        "file": "datasets/branching_random_walk_annihilation/mouse_branched_ductal_network_specimen.jpg",
+        "sha256": "d8946f47dcc4d313d06963cbbb37786bc792fe27523a0c851adf64692a047d60",
+        "species": "Mus musculus (embryonic mouse branched epithelial ductal network whole-mount fluorescence micrograph showing cyan/green active distal tips A at the invading periphery and blue/magenta differentiated ductal trails I)",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Mouse_embryonic_salivary_gland_growing_in_vitro.jpg",
+        "image_width_px": 548,
+        "image_height_px": 549,
+        "published_active_tip_count": 34,
+        "published_branch_node_count": 33,
+        "published_topological_q_branch": 0.492537,
+        "published_tip_radial_localization_r_over_R": 0.783,
+        "pattern_type": "branching_and_annihilating_random_walk_ductal_tree"
+      }
+    }
+  },
+  "hannezo_2017_barw_governing_model": {
+    "section": "Hannezo et al. (2017) Cell 171:242-255 STAR Methods Eqs. (1)-(12) & Scheele et al. (2017) Nature 542:313-317",
+    "parameters": {
+      "v0_tip_speed": 1.0,
+      "kb_branching_rate_wt": 0.12,
+      "Ra_annihilation_radius_wt": 3.5,
+      "ka_mean_field_annihilation_wt": 0.42,
+      "D_tip_diffusivity": 0.35,
+      "sigma_theta_angular_noise_rad": 0.18,
+      "bifurcation_half_angle_deg": 38.0,
+      "characteristic_branch_length_lb_wt": 8.333333,
+      "homeostatic_duct_density_i_inf_wt": 0.285714,
+      "fisher_kpp_wave_speed_c_min_wt": 0.409878,
+      "critical_galton_watson_q_branch": 0.50,
+      "critical_galton_watson_q_term": 0.50,
+      "critical_subtree_size_exponent_tau": 1.50,
+      "seed": 2017
+    },
+    "governing_equations": {
+      "stochastic_barw_rules": "A ->(k_b) 2A (tip bifurcation);  A ->(v_0) A + I (ductal trail deposition);  A + I ->(R_a) I (tip-duct steric/TGF-beta annihilation)",
+      "mean_field_active_tip_pde": "da/dt = D * laplacian(a) - v0 * div(u_p * a) + kb * a - ka * a * (a + i)",
+      "mean_field_inactive_duct_ode": "di/dt = v0 * a",
+      "homeostatic_steady_state": "a_inf = 0 (behind invading wave),   i_inf = c_0 * kb / ka  propto  kb / (v0 * Ra)",
+      "topological_tree_balance": "N_term = N_branch + 1  =>  q_branch = N_branch / (N_branch + N_term) = N_branch / (2 * N_branch + 1) -> 1/2",
+      "critical_galton_watson_subtree_pmf": "P(S = 2n + 1) = (1 / (2n + 1)) * C(2n + 1, n) * (1 - q)^(n + 1) * q^n  ~  (4 * pi)^(-1/2) * S^(-3/2)  at q = 1/2"
+    }
+  },
+  "organ_universality_benchmarks": [
+    {
+      "organ_id": "mammary_gland_pubertal",
+      "organ_name": "Mouse Pubertal Mammary Gland (TEB network, 3-8 wk)",
+      "citation": "Hannezo et al. (2017) Cell Fig. 1-3 & Scheele et al. (2017) Nature Fig. 2",
+      "dimensionless_R_a_over_l_b": 0.12,
+      "kb_sim": 0.10,
+      "Ra_sim": 4.2,
+      "sigma_theta_rad": 0.22,
+      "directional_bias_chi": 0.18,
+      "observed_q_branch": 0.494,
+      "observed_q_term": 0.506,
+      "observed_subtree_exponent_tau": 1.51,
+      "observed_duct_cv_gap": 0.34,
+      "mean_branch_length_um": 220.0,
+      "annihilation_radius_um": 26.5
+    },
+    {
+      "organ_id": "kidney_metanephric_late",
+      "organ_name": "Mouse Embryonic Metanephric Kidney (E15.5-E18.5 ureteric tree)",
+      "citation": "Hannezo et al. (2017) Cell Fig. 5",
+      "dimensionless_R_a_over_l_b": 0.24,
+      "kb_sim": 0.14,
+      "Ra_sim": 3.2,
+      "sigma_theta_rad": 0.16,
+      "directional_bias_chi": 0.12,
+      "observed_q_branch": 0.496,
+      "observed_q_term": 0.504,
+      "observed_subtree_exponent_tau": 1.49,
+      "observed_duct_cv_gap": 0.28,
+      "mean_branch_length_um": 95.0,
+      "annihilation_radius_um": 22.8
+    },
+    {
+      "organ_id": "pancreas_embryonic_ductal",
+      "organ_name": "Mouse Embryonic Pancreas (E14.5-E18.5 exocrine ductal network)",
+      "citation": "Hannezo et al. (2017) Cell Fig. 6 & Chatzeli et al. (2017) Development",
+      "dimensionless_R_a_over_l_b": 0.32,
+      "kb_sim": 0.16,
+      "Ra_sim": 2.6,
+      "sigma_theta_rad": 0.25,
+      "directional_bias_chi": 0.08,
+      "observed_q_branch": 0.491,
+      "observed_q_term": 0.509,
+      "observed_subtree_exponent_tau": 1.52,
+      "observed_duct_cv_gap": 0.25,
+      "mean_branch_length_um": 68.0,
+      "annihilation_radius_um": 21.8
+    }
+  ],
+  "generation_branch_probability_profile": [
+    {"generation": 1, "mammary_q_branch_obs": 0.78, "kidney_q_branch_obs": 0.84, "pancreas_q_branch_obs": 0.75, "barw_pred_q_branch": 0.79},
+    {"generation": 2, "mammary_q_branch_obs": 0.68, "kidney_q_branch_obs": 0.72, "pancreas_q_branch_obs": 0.66, "barw_pred_q_branch": 0.69},
+    {"generation": 3, "mammary_q_branch_obs": 0.58, "kidney_q_branch_obs": 0.61, "pancreas_q_branch_obs": 0.57, "barw_pred_q_branch": 0.59},
+    {"generation": 4, "mammary_q_branch_obs": 0.53, "kidney_q_branch_obs": 0.55, "pancreas_q_branch_obs": 0.52, "barw_pred_q_branch": 0.53},
+    {"generation": 5, "mammary_q_branch_obs": 0.50, "kidney_q_branch_obs": 0.51, "pancreas_q_branch_obs": 0.50, "barw_pred_q_branch": 0.50},
+    {"generation": 6, "mammary_q_branch_obs": 0.49, "kidney_q_branch_obs": 0.50, "pancreas_q_branch_obs": 0.49, "barw_pred_q_branch": 0.49},
+    {"generation": 7, "mammary_q_branch_obs": 0.48, "kidney_q_branch_obs": 0.49, "pancreas_q_branch_obs": 0.48, "barw_pred_q_branch": 0.48},
+    {"generation": 8, "mammary_q_branch_obs": 0.47, "kidney_q_branch_obs": 0.48, "pancreas_q_branch_obs": 0.47, "barw_pred_q_branch": 0.47},
+    {"generation": 10, "mammary_q_branch_obs": 0.46, "kidney_q_branch_obs": 0.47, "pancreas_q_branch_obs": 0.46, "barw_pred_q_branch": 0.46},
+    {"generation": 12, "mammary_q_branch_obs": 0.45, "kidney_q_branch_obs": 0.46, "pancreas_q_branch_obs": 0.45, "barw_pred_q_branch": 0.45}
+  ],
+  "perturbation_and_ablation_benchmarks": [
+    {"condition_id": "WT_self_terminating_BARW", "description": "Wild-type TGF-beta / steric tip-duct annihilation (Ra = 3.5, kb = 0.12)", "Ra": 3.5, "kb": 0.12, "expected_self_terminating": true, "expected_q_branch_asymptotic": 0.50, "relative_duct_density_ratio": 1.00},
+    {"condition_id": "Reduced_Ra_hyperbranching", "description": "Attenuated TGF-beta / reduced annihilation radius (Ra = 1.75, 2x hyper-dense ductal filling)", "Ra": 1.75, "kb": 0.12, "expected_self_terminating": true, "expected_q_branch_asymptotic": 0.50, "relative_duct_density_ratio": 2.00},
+    {"condition_id": "Exogenous_TGFbeta_hypoplasia", "description": "Elevated TGF-beta / enlarged annihilation radius (Ra = 7.0, sparse hypoplastic ductal network)", "Ra": 7.0, "kb": 0.12, "expected_self_terminating": true, "expected_q_branch_asymptotic": 0.50, "relative_duct_density_ratio": 0.50},
+    {"condition_id": "Ablation_Ra_zero_explosion", "description": "Non-annihilating pure Galton-Watson branching ablation (Ra = 0, ka = 0): unarrested exponential tip explosion and duct crossovers", "Ra": 0.0, "kb": 0.12, "expected_self_terminating": false, "expected_q_branch_asymptotic": 1.00, "relative_duct_density_ratio": null}
+  ]
+}

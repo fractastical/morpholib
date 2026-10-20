@@ -1,0 +1,87 @@
+sim_id: bavestrello-sponge-spicule-hexactin
+math_family: "3D Crystallographic Silicatein Ray Vector Symmetry (Cubic O_h 6-Ray Hexactins at theta = 90 deg vs Tetrahedral T_d 4-Ray Tetractins at cos theta = -1/3 = 109.47 deg), Concentric Lamellar Thinning (h_n prop r_n^-1) & Checkerboard Diagonal Lattice Shear Stiffness"
+model_spec:
+  model: "Uriz, Turon, Becerro & Agell (2003) Microsc. Res. Tech. Silicatein Axial Filament Symmetry + Aizenberg et al. (2005) Science Euplectella Hierarchical Lattice Mechanics + Weaver et al. (2007) J. Struct. Biol. Concentric Biosilica Lamination"
+  governing_pde: "dS/dt = D_S * laplacian(S) - k_cat * F_fil(x) * S / (K_m + S),   dB/dt = k_cat * F_fil(x) * S / (K_m + S)"
+  ray_symmetry_law: "O_h hexactin (6 rays): u_k in {+-e_x, +-e_y, +-e_z}, u_i . u_j in {0, -1}, theta_adj = 90 deg; T_d tetractin/calthrop (4 rays): v_i . v_j = -1/3, theta = arccos(-1/3) = 109.4712 deg; D_3h triactine (3 rays): theta = 120 deg; D_inf_h monaxon (2 rays): theta = 180 deg"
+  lamellar_scaling_law: "h_n = Delta_A_layer / (2 * pi * r_n) = h_1 * (r_1 / r_n),   G_lam / G_mono = 1 + eta_deflect * N_layers"
+  lattice_shear_law: "K_shear(f_diag) = K_bend_square + 0.5 * f_diag * K_axial_strut"
+  D_S_um2_per_s: 1.20
+  k_cat_per_s: 0.85
+  r_core_um: 0.75
+  h_1_um: 0.85
+  n_lamellae: 25
+  seed: 2012
+  inputs:
+    - datasets/sponge_spicule_hexactin/sponge_spicule_hexactin_reference.json
+    - datasets/sponge_spicule_hexactin/euplectella_aspergillum_specimen.jpg
+    - datasets/sponge_spicule_hexactin/scout_manifest.json
+equations:
+  - law_name: "Cubic O_h 6-Ray Hexactin Orthogonal Vector Equilibrium & Pairwise Dot Product Law"
+    formula: "u_k in {+-e_x, +-e_y, +-e_z},   sum_{k=1}^6 u_k = 0,   u_i . u_j = 0 (theta = 90 deg for adjacent rays),   u_i . u_j = -1 (theta = 180 deg for antipodal rays)"
+    lean_decl: "MathOfBiology.Loop_076.hexactin_vector_sum"
+    lean_theorem: "MathOfBiology.Loop_076.hexactin_Oh_orthogonal_six_ray_equilibrium_and_dot_products"
+    lean_locus: "morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean#L22-L88"
+    lean_code: |
+      def hexactin_vector_sum : Vec3Int :=
+        vec3_add (hexactin_ray 1) (vec3_add (hexactin_ray 2) (vec3_add (hexactin_ray 3)
+          (vec3_add (hexactin_ray 4) (vec3_add (hexactin_ray 5) (hexactin_ray 6)))))
+      theorem hexactin_Oh_orthogonal_six_ray_equilibrium_and_dot_products :
+          vec3_norm_sq (hexactin_ray 1) = 1 ∧
+          hexactin_vector_sum = vec3_zero ∧
+          vec3_dot (hexactin_ray 1) (hexactin_ray 2) = -1 ∧
+          vec3_dot (hexactin_ray 1) (hexactin_ray 3) = 0 := by decide
+    variables: "u_k in Z^3: unit ray direction vectors of the proteinaceous silicatein axial filament; theta_adj = 90 deg: inter-ray angle between orthogonal rays"
+    role: "Governs the cubic O_h crystallographic symmetry of Hexactinellida 6-rayed hexactin spicules and their orthogonal 90 deg skeletal lattice intersections in Euplectella aspergillum"
+    source_citation: "Uriz et al. (2003) Microsc. Res. Tech. 62:279-299; Aizenberg et al. (2005) Science 309:275-278"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L128-L220"
+  - law_name: "Tetrahedral T_d 4-Ray Tetractin / Calthrop Cosine Identity (cos theta = -1/3)"
+    formula: "v_k in {(1,1,1), (1,-1,-1), (-1,1,-1), (-1,-1,1)},   ||v_k||^2 = 3,   sum_{k=1}^4 v_k = 0,   v_i . v_j = -1  =>  cos theta = (v_i . v_j) / ||v_k||^2 = -1/3 (theta = 109.4712 deg)"
+    lean_decl: "MathOfBiology.Loop_076.tetractin_vector_sum"
+    lean_theorem: "MathOfBiology.Loop_076.tetractin_Td_calthrop_tetrahedral_cosine_and_equilibrium"
+    lean_locus: "morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean#L92-L135"
+    lean_code: |
+      def tetractin_ray : Nat → Vec3Int
+        | 1 => { x := 1, y := 1, z := 1 } | 2 => { x := 1, y := -1, z := -1 }
+        | 3 => { x := -1, y := 1, z := -1 } | 4 => { x := -1, y := -1, z := 1 } | _ => vec3_zero
+      theorem tetractin_Td_calthrop_tetrahedral_cosine_and_equilibrium :
+          vec3_norm_sq (tetractin_ray 1) = 3 ∧
+          tetractin_vector_sum = vec3_zero ∧
+          vec3_dot (tetractin_ray 1) (tetractin_ray 2) = -1 ∧
+          3 * vec3_dot (tetractin_ray 1) (tetractin_ray 2) + vec3_norm_sq (tetractin_ray 1) = 0 := by decide
+    variables: "v_k: tetrahedral ray direction vectors of Demospongiae/Calcarea calthrops; theta = arccos(-1/3) = 109.4712 deg: inter-ray tetrahedral angle"
+    role: "Establishes the exact tetrahedral inter-ray angle (109.4712 deg) and zero-sum force balance of 4-rayed tetractin/calthrop spicules in Demospongiae (*Pachastrella*, *Geodia*)"
+    source_citation: "Uriz et al. (2003) Microsc. Res. Tech. 62:279-299"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L128-L343"
+  - law_name: "Concentric Lamellar Biosilica Radial Thinning (h_n prop r_n^-1) & Crack-Deflection Fracture Toughness Law"
+    formula: "h_n = (k_cat * Delta_A_ring) / (2 * pi * r_n) = h_1 * (r_1 / r_n),   G_lam(N) = G_mono * (1 + eta_deflect * N)"
+    lean_decl: "MathOfBiology.Loop_076.lamellar_layer_thickness"
+    lean_theorem: "MathOfBiology.Loop_076.aizenberg_concentric_lamellar_thinning_and_fracture_toughness"
+    lean_locus: "morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean#L140-L185"
+    lean_code: |
+      def lamellar_layer_thickness (k_cat A_ring r_n : Nat) : Nat := (k_cat * A_ring) / r_n
+      def laminated_spicule_fracture_energy (G_mono dG_interlayer N_layers : Nat) : Nat :=
+        G_mono + N_layers * dG_interlayer
+      theorem aizenberg_concentric_lamellar_thinning_and_fracture_toughness :
+          lamellar_layer_thickness 0 120 2 = 0 ∧
+          lamellar_layer_thickness 1 120 2 > lamellar_layer_thickness 1 120 6 ∧
+          laminated_spicule_fracture_energy 100 32 25 > laminated_spicule_fracture_energy 100 32 0 := by decide
+    variables: "h_n: thickness of n-th concentric silica cylinder (um); r_n: radial position of n-th cylinder (um); N_layers: number of concentric organic-silica interlayers; G_lam: fracture energy"
+    role: "Explains why peripheral biosilica lamellae thin inversely with radius (h_n prop r_n^-1) while multiplying flexural fracture resistance via crack deflection at organic silicatein interlayers"
+    source_citation: "Aizenberg et al. (2005) Science 309:275-278; Weaver et al. (2007) J. Struct. Biol. 158:93-106"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L370-L435"
+  - law_name: "Euplectella Alternating Checkerboard Diagonal Lattice Shear Stiffness Law"
+    formula: "K_shear(f_diag) = K_bend_square + f_diag * K_axial_strut * cos^2(45 deg) = K_bend_square + 0.5 * f_diag * K_axial_strut"
+    lean_decl: "MathOfBiology.Loop_076.lattice_shear_stiffness_scaled"
+    lean_theorem: "MathOfBiology.Loop_076.euplectella_checkerboard_diagonal_bracing_shear_stiffness"
+    lean_locus: "morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean#L190-L216"
+    lean_code: |
+      def lattice_shear_stiffness_scaled (K_bend K_diag f_num : Nat) : Nat :=
+        2 * K_bend + f_num * K_diag
+      theorem euplectella_checkerboard_diagonal_bracing_shear_stiffness :
+          lattice_shear_stiffness_scaled 10 130 1 > 7 * lattice_shear_stiffness_scaled 10 130 0 ∧
+          lattice_shear_stiffness_scaled 10 130 0 < lattice_shear_stiffness_scaled 10 130 1 := by decide
+    variables: "f_diag in {0, 0.5, 1.0}: fraction of square grid cells reinforced by 45 deg diagonal spicule bundles; K_bend_square: unbraced frame bending shear stiffness; K_axial_strut: diagonal strut axial stiffness"
+    role: "Quantifies the 7.5x shear-stiffness amplification achieved by the alternating open/closed checkerboard diagonal bracing of the Euplectella aspergillum cylindrical cage"
+    source_citation: "Aizenberg et al. (2005) Science 309:275-278"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L439-L483"

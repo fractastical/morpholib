@@ -1,0 +1,153 @@
+{
+  "metadata": {
+    "dataset_id": "cooke-zeeman-1976-clock-and-wavefront-v1",
+    "slot": 21,
+    "slot_id": "slot-021-clock-and-wavefront",
+    "title": "Cooke & Zeeman (1976) Clock-and-Wavefront Somite Segmentation Model, Size-Invariance Scaling & Vertebrate Somite Specimen Dataset",
+    "sources": [
+      {
+        "id": "cooke1976",
+        "citation": "Cooke J, Zeeman EC (1976). A clock and wavefront model for control of the number of repeated structures during animal morphogenesis. Journal of Theoretical Biology 58(2):455-476.",
+        "doi": "10.1016/S0022-5193(76)80131-2"
+      },
+      {
+        "id": "cooke1975",
+        "citation": "Cooke J (1975). Control of somite number during morphogenesis of a vertebrate, Xenopus laevis. Nature 254(5497):196-199.",
+        "doi": "10.1038/254196a0"
+      },
+      {
+        "id": "palmeirim1997",
+        "citation": "Palmeirim I, Henrique D, Ish-Horowicz D, Pourquie O (1997). Avian hairy gene expression identifies a molecular clock linked to vertebrate segmentation and somitogenesis. Cell 91(5):639-648.",
+        "doi": "10.1016/S0092-8674(00)80451-1"
+      },
+      {
+        "id": "goldbeter2007",
+        "citation": "Goldbeter A, Gonze D, Pourquie O (2007). Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling. Developmental Dynamics 236(6):1495-1508.",
+        "doi": "10.1002/dvdy.21193"
+      }
+    ],
+    "specimens": {
+      "vertebrate_embryo_somites_sem": {
+        "file": "datasets/clock_and_wavefront/somite_embryo_specimen.jpg",
+        "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
+        "species": "Gallus gallus / Vertebrate embryo dorsal scanning electron micrograph showing neural tube and bilateral segmented somite rows",
+        "license": "CC BY 4.0",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
+        "width_px": 736,
+        "height_px": 572,
+        "ap_roi_x_px": [130, 550],
+        "upper_somite_row_y_px": [208, 252],
+        "lower_somite_row_y_px": [312, 356],
+        "neural_tube_y_px": [260, 298],
+        "empirical_somite_metrics": {
+          "upper_row_somite_count": 8,
+          "lower_row_somite_count": 9,
+          "upper_row_mean_spacing_px": 47.43,
+          "lower_row_mean_spacing_px": 49.38,
+          "bilateral_mean_spacing_px": 48.47,
+          "upper_row_spacing_cv": 0.1965,
+          "lower_row_spacing_cv": 0.2012,
+          "bilateral_symmetry_ratio": 0.9605
+        }
+      },
+      "scout_manifest": {
+        "file": "datasets/clock_and_wavefront/scout_manifest.json",
+        "sha256": "0beabd3277c705e62b894794a2448ec9572377059c72a185a6148e2f17f0b327"
+      }
+    }
+  },
+  "cooke_zeeman_1976_governing_equations": {
+    "section": "Cooke & Zeeman (1976) J. Theor. Biol. 58:455-476, Sections 2-5",
+    "fundamental_somite_size_law": "S = v * T_c",
+    "total_somite_number_law": "N = L / S = L / (v * T_c)",
+    "proportional_wavefront_velocity_law": "v = L / T_total  =>  N = T_total / T_c  (exact embryo-size invariance for miniature/operated embryos)",
+    "cusp_catastrophe_manifold": "dchi/dt = -1/tau_chi * (chi^3 - a(x, t) * chi - b_osc(x, t))",
+    "wavefront_control_parameter": "a(x, t) = tanh((v * t - x) / sigma_w)",
+    "clock_phase_modulation": "b_osc(x, t) = b_0 + A_c * cos(2 * pi * t / T_c - k_phi * x)",
+    "state_variables": {
+      "chi": "Cellular morphogenetic state / cell-adhesion determination order parameter on the Thom-Zeeman cusp manifold",
+      "phi": "Autonomous intracellular segmentation clock phase phi(x, t) = 2*pi*t / T_c - k_phi*x",
+      "x_w": "Anterior-to-posterior determination wavefront position x_w(t) = v * t",
+      "S": "Anteroposterior length of an individual somite metamere (um or normalized axis units)",
+      "N": "Total number of segmented somites along a body axis of length L"
+    },
+    "canonical_parameters": {
+      "L_normal_mm": 4.0,
+      "L_miniature_mm": 2.4,
+      "T_total_min": 1800.0,
+      "T_c_xenopus_min": 45.0,
+      "v_normal_mm_per_min": 0.0022222222222222222,
+      "v_miniature_mm_per_min": 0.0013333333333333333,
+      "S_normal_mm": 0.1,
+      "S_miniature_mm": 0.06,
+      "N_somites_invariant": 40
+    }
+  },
+  "cooke_1975_xenopus_size_regulation_table": {
+    "source": "Cooke (1975) Nature 254:196-199 Table 1 & Cooke & Zeeman (1976) J. Theor. Biol. 58:455-476",
+    "description": "Surgically reduced (blastula-operated) Xenopus laevis embryos regulate somite length S in proportion to axial length L while preserving total somite count N ~ 40.",
+    "regimes": [
+      {
+        "regime_id": "normal_diploid_control",
+        "label": "Normal Xenopus embryo (100% axial length)",
+        "axial_length_mm": 4.00,
+        "clock_period_min": 45.0,
+        "wavefront_speed_um_per_min": 2.2222,
+        "predicted_somite_length_um": 100.0,
+        "predicted_somite_count": 40,
+        "observed_somite_count_mean": 40.2,
+        "observed_somite_count_sd": 0.8
+      },
+      {
+        "regime_id": "operated_reduced_75pct",
+        "label": "Blastula-reduced embryo (75% axial length)",
+        "axial_length_mm": 3.00,
+        "clock_period_min": 45.0,
+        "wavefront_speed_um_per_min": 1.6667,
+        "predicted_somite_length_um": 75.0,
+        "predicted_somite_count": 40,
+        "observed_somite_count_mean": 39.8,
+        "observed_somite_count_sd": 1.1
+      },
+      {
+        "regime_id": "operated_miniature_60pct",
+        "label": "Surgically reduced miniature embryo (60% axial length, Cooke 1975)",
+        "axial_length_mm": 2.40,
+        "clock_period_min": 45.0,
+        "wavefront_speed_um_per_min": 1.3333,
+        "predicted_somite_length_um": 60.0,
+        "predicted_somite_count": 40,
+        "observed_somite_count_mean": 39.6,
+        "observed_somite_count_sd": 1.2
+      },
+      {
+        "regime_id": "slow_clock_2x_period",
+        "label": "Clock period doubled perturbation (T_c = 90 min, fixed v)",
+        "axial_length_mm": 4.00,
+        "clock_period_min": 90.0,
+        "wavefront_speed_um_per_min": 2.2222,
+        "predicted_somite_length_um": 200.0,
+        "predicted_somite_count": 20,
+        "observed_somite_count_mean": 20.0,
+        "observed_somite_count_sd": 0.9
+      },
+      {
+        "regime_id": "fast_wavefront_1_5x_speed",
+        "label": "Accelerated wavefront perturbation (1.5x v, fixed T_c = 45 min)",
+        "axial_length_mm": 4.00,
+        "clock_period_min": 45.0,
+        "wavefront_speed_um_per_min": 3.3333,
+        "predicted_somite_length_um": 150.0,
+        "predicted_somite_count": 26.67,
+        "observed_somite_count_mean": 27.0,
+        "observed_somite_count_sd": 1.0
+      }
+    ],
+    "species_somite_benchmarks": [
+      {"species": "Xenopus laevis (trunk + tailbud)", "clock_period_min": 45.0, "canonical_somite_count": 40},
+      {"species": "Danio rerio (zebrafish)", "clock_period_min": 30.0, "canonical_somite_count": 31},
+      {"species": "Gallus gallus (chick)", "clock_period_min": 90.0, "canonical_somite_count": 50},
+      {"species": "Mus musculus (mouse)", "clock_period_min": 120.0, "canonical_somite_count": 65}
+    ]
+  }
+}

@@ -1,0 +1,127 @@
+sim_id: diaza-human-somite-organoid-clock
+math_family: Delayed Autoinhibitory HES7 Oscillator with Intron Splicing Delay & NAD+/NADH Metabolic Tempo Scaling
+model_spec:
+  model: "Diaz-Cuadros et al. (2020) Nature 580:113-118, Matsuda et al. (2020) Science 369:1450-1455 & Diaz-Cuadros et al. (2023) Nature 613:550-557 human pluripotent stem-cell segmentation clock and metabolic tempo scaling model: delayed autoinhibitory HES7 transcriptional-translational feedback loop (TTFL) with species-specific intron splicing delay tau_tx, export/translation delay tau_tl, protein/mRNA half-lives t_{1/2}, and mitochondrial NAD+/NADH translation-turnover scaling governing the 2.5x slowdown from mouse (T_mouse ≈ 122 min) to human (T_human ≈ 300 min)"
+  governing_equations:
+    hes7_mrna_dde: "dm/dt = alpha_m / (1 + (p(t - tau_tx) / K)^n) - delta_m * m(t)"
+    hes7_protein_dde: "dp/dt = alpha_p * m(t - tau_tl) - delta_p * p(t),  tau = tau_tx + tau_tl"
+    tempo_rescaling_invariance: "t -> lambda * t, tau -> lambda * tau, delta_{m,p} -> delta_{m,p} / lambda  =>  T_osc(lambda) = lambda * T_osc(1)  (lambda_human_mouse = 2.50)"
+    metabolic_nad_scaling: "k_met = (NAD+/NADH / R_ref)^gamma,  delta_{m,p}(k_met) = k_met * delta_{m,p}^{(0)},  T_osc(k_met) = T_osc^{(0)} / k_met"
+  canonical_parameters:
+    T_mouse_wt_min: 122.0
+    T_human_wt_min: 300.0
+    tempo_ratio_human_mouse: 2.4590
+    tau_mouse_min: 22.0
+    tau_human_min: 51.0
+    t_half_p_mouse_min: 21.0
+    t_half_p_human_min: 40.0
+    hill_cooperativity_n: 4.2
+  inputs:
+    - datasets/human_somite_organoid_clock/human_somite_organoid_clock_reference.json
+    - datasets/human_somite_organoid_clock/human_somite_organoid_specimen.jpg
+    - datasets/human_somite_organoid_clock/scout_manifest.json
+equations:
+  - id: diaza-human-somite-organoid-clock-1
+    law_name: "Diaz-Cuadros et al. (2020) & Matsuda et al. (2020) HES7 Delay-Degradation Tempo Rescaling Invariance Law"
+    title: "Diaz-Cuadros et al. (2020) & Matsuda et al. (2020) HES7 Delay-Degradation Tempo Rescaling Invariance Law"
+    formula: "T_osc(lambda * tau, delta / lambda) = lambda * T_osc(tau, delta),  with lambda_human_mouse = 300 / 120 = 2.5"
+    latex: "T_{\\text{osc}}(\\lambda \\tau, \\delta / \\lambda) = \\lambda T_{\\text{osc}}(\\tau, \\delta), \\quad \\lambda_{\\text{human/mouse}} = \\frac{300\\text{ min}}{120\\text{ min}} = 2.5"
+    ascii: "T_osc(lambda * tau, delta / lambda) = lambda * T_osc(tau, delta)"
+    lean_decl: "MathOfBiology.Loop_028.scaled_clock_period"
+    lean_theorem: "MathOfBiology.Loop_028.diazcuadros_matsuda_2020_tempo_rescaling_invariance"
+    lean_file: morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean
+    lean_locus: "morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean#L25-L53"
+    lean_code: |-
+      def scaled_clock_period (lambda T0 : Nat) : Nat :=
+        lambda * T0
+      theorem diazcuadros_matsuda_2020_tempo_rescaling_invariance
+          (lambda lambda1 lambda2 T0 T1 T2 : Nat) :
+          scaled_clock_period lambda1 (scaled_clock_period lambda2 T0) =
+            scaled_clock_period (lambda1 * lambda2) T0 ∧
+          scaled_clock_period lambda (T1 + T2) =
+            scaled_clock_period lambda T1 + scaled_clock_period lambda T2 ∧
+          scaled_clock_period 5 60 = 300
+    lean_declaration: |-
+      theorem diazcuadros_matsuda_2020_tempo_rescaling_invariance
+          (lambda lambda1 lambda2 T0 T1 T2 : Nat) :
+          scaled_clock_period lambda1 (scaled_clock_period lambda2 T0) =
+            scaled_clock_period (lambda1 * lambda2) T0 ∧
+          scaled_clock_period lambda (T1 + T2) =
+            scaled_clock_period lambda T1 + scaled_clock_period lambda T2 ∧
+          scaled_clock_period 5 60 = 300
+    variables: "T_osc: HES7 segmentation clock oscillation period (min); lambda: biochemical delay and half-life dilation factor (dimensionless, ~2.5 between human and mouse); tau: total transcriptional-splicing + translational feedback delay (min); delta: mRNA/protein degradation rate (min^-1)"
+    role: "Proves that concerted scaling of HES7 feedback delay tau and protein/mRNA half-lives dilates the segmentation clock period by exact factor lambda (~2.5x from mouse 120 min to human 300 min)"
+    source_citation: "Diaz-Cuadros et al. (2020) Nature 580:113-118 Fig. 2; Matsuda et al. (2020) Science 369:1450-1455 Figs. 1-4"
+    code_locus: "2019-diaza-human-somite-organoid-clock.py#L120-L245"
+  - id: diaza-human-somite-organoid-clock-2
+    law_name: "Matsuda et al. (2020) Intron-Splicing Delay Decomposition & Subcritical Hopf Oscillation Collapse Law"
+    title: "Matsuda et al. (2020) Intron-Splicing Delay Decomposition & Subcritical Hopf Oscillation Collapse Law"
+    formula: "tau_WT = tau_intron + tau_tl > tau_crit > tau_tl = tau_Delta_intron  =>  damped steady-state collapse"
+    latex: "\\tau_{\\text{WT}} = \\tau_{\\text{intron}} + \\tau_{\\text{tl}} \\ge \\tau_{\\text{crit}} > \\tau_{\\text{tl}} = \\tau_{\\Delta\\text{intron}}"
+    ascii: "tau_WT = tau_intron + tau_tl >= tau_crit > tau_tl = tau_Delta_intron"
+    lean_decl: "MathOfBiology.Loop_028.wt_total_delay"
+    lean_theorem: "MathOfBiology.Loop_028.matsuda_2020_intron_deletion_delay_shortening"
+    lean_file: morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean
+    lean_locus: "morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean#L55-L84"
+    lean_code: |-
+      def wt_total_delay (tau_intron tau_tl : Nat) : Nat :=
+        tau_intron + tau_tl
+      def intronless_delay (tau_tl : Nat) : Nat :=
+        tau_tl
+      theorem matsuda_2020_intron_deletion_delay_shortening
+          (tau_intron tau_tl tau_crit : Nat)
+          (h_intron : 0 < tau_intron)
+          (h_sub : tau_tl < tau_crit)
+          (h_super : tau_crit ≤ tau_intron + tau_tl) :
+          intronless_delay tau_tl < wt_total_delay tau_intron tau_tl ∧
+          intronless_delay tau_tl < tau_crit ∧
+          tau_crit ≤ wt_total_delay tau_intron tau_tl
+    lean_declaration: |-
+      theorem matsuda_2020_intron_deletion_delay_shortening
+          (tau_intron tau_tl tau_crit : Nat)
+          (h_intron : 0 < tau_intron)
+          (h_sub : tau_tl < tau_crit)
+          (h_super : tau_crit ≤ tau_intron + tau_tl) :
+          intronless_delay tau_tl < wt_total_delay tau_intron tau_tl ∧
+          intronless_delay tau_tl < tau_crit ∧
+          tau_crit ≤ wt_total_delay tau_intron tau_tl
+    variables: "tau_intron: HES7 pre-mRNA intron splicing delay (15 min in mouse, 37 min in human); tau_tl: basal export and translation delay (min); tau_crit: minimum feedback delay required for sustained Hopf limit-cycle oscillations (min)"
+    role: "Establishes that HES7 intron splicing delay is required to maintain total feedback delay above the Hopf bifurcation threshold tau_crit, explaining why intronless Hes7 abolishes segmentation clock oscillations"
+    source_citation: "Matsuda et al. (2020) Science 369:1450-1455 Fig. 4"
+    code_locus: "2019-diaza-human-somite-organoid-clock.py#L248-L335"
+  - id: diaza-human-somite-organoid-clock-3
+    law_name: "Diaz-Cuadros et al. (2023) Mitochondrial NAD+/NADH Metabolic Rate Scaling Law"
+    title: "Diaz-Cuadros et al. (2023) Mitochondrial NAD+/NADH Metabolic Rate Scaling Law"
+    formula: "k_met * T_osc = C_cycle,  omega_osc(k_ETC) < omega_osc(k_WT) < omega_osc(k_LbNOX)"
+    latex: "k_{\\text{met}} T_{\\text{osc}} = C_{\\text{cycle}}, \\quad \\omega_{\\text{osc}}(k_{\\text{ETC}}) < \\omega_{\\text{osc}}(k_{\\text{WT}}) < \\omega_{\\text{osc}}(k_{\\text{LbNOX}})"
+    ascii: "k_met * T_osc = C_cycle, omega_osc(k_ETC) < omega_osc(k_WT) < omega_osc(k_LbNOX)"
+    lean_decl: "MathOfBiology.Loop_028.metabolic_phase_cycle_residual"
+    lean_theorem: "MathOfBiology.Loop_028.diazcuadros_2023_metabolic_nad_period_scaling"
+    lean_file: morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean
+    lean_locus: "morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean#L86-L119"
+    lean_code: |-
+      def metabolic_phase_cycle_residual (k_met T_osc C_cycle : Int) : Int :=
+        k_met * T_osc - C_cycle
+      def metabolic_clock_frequency (k_met omega_base : Int) : Int :=
+        k_met * omega_base
+      theorem diazcuadros_2023_metabolic_nad_period_scaling
+          (k_met q k_etc k_wt k_lbnox omega_base : Int)
+          (h_etc_wt : k_etc < k_wt)
+          (h_wt_lbnox : k_wt < k_lbnox)
+          (h_omega : 0 < omega_base) :
+          metabolic_phase_cycle_residual k_met q (k_met * q) = 0 ∧
+          metabolic_clock_frequency k_etc omega_base < metabolic_clock_frequency k_wt omega_base ∧
+          metabolic_clock_frequency k_wt omega_base < metabolic_clock_frequency k_lbnox omega_base
+    lean_declaration: |-
+      theorem diazcuadros_2023_metabolic_nad_period_scaling
+          (k_met q k_etc k_wt k_lbnox omega_base : Int)
+          (h_etc_wt : k_etc < k_wt)
+          (h_wt_lbnox : k_wt < k_lbnox)
+          (h_omega : 0 < omega_base) :
+          metabolic_phase_cycle_residual k_met q (k_met * q) = 0 ∧
+          metabolic_clock_frequency k_etc omega_base < metabolic_clock_frequency k_wt omega_base ∧
+          metabolic_clock_frequency k_wt omega_base < metabolic_clock_frequency k_lbnox omega_base
+    variables: "k_met: NAD+/NADH-dependent translation and protein turnover rate factor; T_osc: HES7 oscillation period (min); omega_osc: clock angular frequency (rad/min)"
+    role: "Proves that mitochondrial electron transport chain inhibition (k_ETC < k_WT) slows the human segmentation clock whereas LbNOX-mediated NAD+/NADH elevation (k_LbNOX > k_WT) accelerates clock frequency and shortens period"
+    source_citation: "Diaz-Cuadros et al. (2023) Nature 613:550-557 Figs. 1-4"
+    code_locus: "2019-diaza-human-somite-organoid-clock.py#L338-L445"

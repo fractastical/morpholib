@@ -1,0 +1,170 @@
+# MorphoEval audit — Chirat, Moulton & Goriely (2013) PNAS & Erlich et al. (2016) Mollusc Shell Marginal Buckling, 2026-10-19 (v1)
+#
+# Dual-agent Pass 1 assessment of `2013-chirat-mollusc-shell-marginal-buckling.py` (v1, 173 lines)
+# prior to Step 12 closed-loop remediation (`2026-10-19-mollusc-shell-marginal-buckling-loop`):
+#   - Primary assessor: Gemini 4 Argon — 56.8 / 100
+#   - Independent second assessor rubric check — 49.4 / 100
+#   - Pass 1 consensus score: 53.1 / 100
+#
+# Concrete Pass 1 weaknesses flagged for Step 12 remediation:
+#   1. Only a 1D periodic Winkler-beam solver at a single adult radius (L=122.87 mm) is
+#      implemented (L28-78): omits 3D accretionary shell surface growth across ontogeny
+#      (isometric constant-rib-count *Pecten* vs secondary rib-intercalating *Chlamys*/*Spirifer*),
+#      omits the analytical supercritical pitchfork amplitude law A_eq(P) = sqrt(4*q_c^2*(P-P_c)/(3*kappa_3)),
+#      and omits the subcritical negative control (P < P_c -> w = 0) and episodic orthomarginal
+#      varix flaring.
+#   2. Zero biological specimen comparison (`specimen-match: 24`): the vendored
+#      `datasets/mollusc_shell_marginal_buckling/ribbed_bivalve_shell_specimen.jpg`
+#      (*Pecten jacobaeus* valve) is not loaded, SHA-256-verified, or segmented in v1.
+#   3. No cross-taxa validation across the 12 empirical bivalve, gastropod, ammonite, and
+#      brachiopod species in `mollusc_shell_marginal_buckling_reference.json`.
+#   4. Spectral rib wavelength estimation uses integer FFT bin `k_bin` without 3-point
+#      parabolic sub-bin interpolation or supercritical pitchfork bifurcation sweep across P/P_c.
+
+audit:
+  id: 2026-10-19-mollusc-shell-marginal-buckling-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 baseline assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 1 rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/72
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 1 (v1) baseline evaluation of `2013-chirat-mollusc-shell-marginal-buckling.py`
+      prior to Step 12 remediation in `2026-10-19-mollusc-shell-marginal-buckling-loop`.
+
+references:
+  chirat2013:
+    title: "Mechanical basis of morphogenesis and convergent evolution of spiny seashells"
+    authors: "Chirat R, Moulton DE, Goriely A"
+    venue: "Proceedings of the National Academy of Sciences 110(15):6015-6020 (2013)"
+    doi: 10.1073/pnas.1220443110
+  erlich2016:
+    title: "The physical basis of mollusk shell chiral coiling and antimarginal rib ornamentation"
+    authors: "Erlich A, Moulton DE, Goriely A, Chirat R"
+    venue: "Journal of the Royal Society Interface 13(123):20160592 (2016)"
+    doi: 10.1098/rsif.2016.0592
+  moulton2012:
+    title: "Mechanical growth and morphogenesis of seashells"
+    authors: "Moulton DE, Goriely A, Chirat R"
+    venue: "Journal of Theoretical Biology 311:69-79 (2012)"
+    doi: 10.1016/j.jtbi.2012.07.009
+  rudraraju2019:
+    title: "A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth"
+    authors: "Rudraraju S, Moulton DE, Chirat R, Goriely A"
+    venue: "PLoS Computational Biology 15(7):e1007213 (2019)"
+    doi: 10.1371/journal.pcbi.1007213
+
+simulations:
+  - id: chirat-mollusc-shell-marginal-buckling
+    name: "Chirat, Moulton & Goriely (2013) & Erlich et al. (2016) mollusc shell marginal buckling and antimarginal rib morphogenesis"
+    organism: "Pecten jacobaeus (Mediterranean scallop / Bivalvia, Ammonitida & Brachiopoda)"
+    script: 2013-chirat-mollusc-shell-marginal-buckling.py
+    output: docs/media/mollusc_shell_marginal_buckling_comparison.png
+    extra_outputs:
+      - docs/media/mollusc_shell_marginal_buckling_growth.gif
+    status: evaluated
+    source_refs:
+      - chirat2013
+      - erlich2016
+      - moulton2012
+      - rudraraju2019
+    summary: >-
+      Pass 1 (v1) baseline evaluation of `2013-chirat-mollusc-shell-marginal-buckling.py`
+      (consensus score 53.1/100). The v1 script integrates the 1D fourth-order Winkler-beam
+      mantle-margin PDE at a single adult scallop margin (L=122.87 mm, P/P_c=1.45), but omits
+      3D accretionary shell surface morphogenesis, isometric vs intercalating ontogenetic rib
+      scaling, supercritical pitchfork bifurcation sweeps across P/P_c, subcritical negative
+      controls (P < P_c), 12-species cross-taxa scaling collapse, and computer-vision polar
+      segmentation of the vendored *Pecten jacobaeus* specimen.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: >-
+          Solves a 1D periodic Fourier relaxation of E*I*w_ssss + P*w_ss + k*w + kappa_3*w^3 = 0
+          at a single fixed arc length (L28-78), but lacks L-BFGS-B energy minimization of the
+          exact Winkler-beam functional, omits the analytical supercritical pitchfork law
+          A_eq(P) = sqrt(4*q_c^2*(P-P_c)/(3*kappa_3)), omits 3D accretionary shell surface
+          deposition across isometric vs intercalating growth regimes, and lacks a subcritical
+          negative control (P/P_c = 0.65 < 1).
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [28, 78], note: "Single-stage 1D Fourier relaxation without L-BFGS-B energy minimization, 3D accretionary shell surface, or subcritical negative control", supports: false}
+      specimen-match:
+        value: 24
+        rationale: >-
+          Renders a 2-panel synthetic 1D profile and dispersion curve without loading,
+          SHA-256-verifying, or segmenting the vendored *Pecten jacobaeus* ribbed bivalve
+          specimen (`datasets/mollusc_shell_marginal_buckling/ribbed_bivalve_shell_specimen.jpg`).
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [81, 120], note: "2-panel synthetic plot with zero biological specimen image segmentation", supports: false}
+          - {file: docs/media/mollusc_shell_marginal_buckling_comparison.png, lines: [0, 0], note: "Pass 1 2-panel synthetic plot lacking Pecten jacobaeus specimen comparison", supports: false}
+      parameter-expressivity:
+        value: 45
+        rationale: >-
+          Hardcodes a single parameter tuple (EI=1.085, k=0.285, P/P_c=1.45, L=122.87) with
+          no CLI parameter overrides, no supercritical pitchfork sweep across P/P_c, and no
+          comparison across the 4 morphospace regimes (smooth subcritical, isometric *Pecten*,
+          intercalating multicostate *Chlamys*, and episodic spiny varix *Murex*).
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [28, 38], note: "Single hardcoded parameter set without CLI flags or morphospace regime sweep", supports: false}
+      morphometric-validation:
+        value: 50
+        rationale: >-
+          Uses integer FFT bin `k_bin` (L63-66) without parabolic sub-bin interpolation and
+          omits the 12-species cross-taxa scaling collapse (Bivalvia, Gastropoda, Ammonitida,
+          Brachiopoda), pitchfork amplitude validation, and specimen radial rib angular CV.
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [63, 66], note: "Integer FFT bin wavelength without cross-taxa scaling collapse or specimen CV", supports: false}
+      source-traceability:
+        value: 64
+        rationale: >-
+          Reference dataset `datasets/mollusc_shell_marginal_buckling/mollusc_shell_marginal_buckling_reference.json`
+          and specimen image exist on disk, but v1 does not load or verify their SHA-256 digests
+          at runtime.
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [1, 27], note: "No runtime loading or SHA-256 verification of datasets/mollusc_shell_marginal_buckling/", supports: false}
+      code-traceability:
+        value: 62
+        rationale: >-
+          Module docstring cites Chirat et al. (2013), but functions lack explicit equation
+          mappings to Erlich et al. (2016) and the 4 Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_072_mollusc_shell_marginal_buckling.lean`.
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [28, 78], note: "Functions lack explicit paper equation and Lean 4 theorem cross-references", supports: false}
+      repro-package:
+        value: 69
+        rationale: >-
+          Deterministic RNG (`seed=2013`) and `--self-test` flag are present (L148-162),
+          but `self_test()` checks only 3 basic inequalities without testing SHA-256 dataset
+          provenance, JSON parity, subcritical unbuckled stability, or bitwise two-run
+          determinism.
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [148, 155], note: "Minimal 3-check self_test() without SHA-256 provenance or bitwise determinism checks", supports: false}
+    remediation:
+      - "Implement exact L-BFGS-B energy minimization of the fourth-order nonlinear Winkler-beam mantle energy functional U[w] = integral [0.5*EI*w_ss^2 - 0.5*P*w_s^2 + 0.5*k*w^2 + 0.25*kappa_3*w^4] ds alongside the analytical supercritical pitchfork amplitude law A_eq(P) = sqrt(4*q_c^2*(P-P_c)/(3*kappa_3)) and a subcritical negative control (P/P_c = 0.65 < 1 -> 0 ribs, RMS amplitude = 0)."
+      - "Simulate 3D accretionary shell valve morphogenesis across ontogeny (R = 12 -> 55 mm) for all 4 Chirat-Erlich morphospace regimes: (1) subcritical smooth valve, (2) isometric constant-rib-count *Pecten jacobaeus* (N_ribs = 14), (3) constant-wavelength secondary rib-intercalating multicostate shell (*Chlamys* / *Spirifer*, N_ribs: 6 -> 27.5), and (4) episodic orthomarginal + antimarginal cancellate/spiny varix flaring."
+      - "Load and SHA-256-verify `datasets/mollusc_shell_marginal_buckling/` at runtime, validate the universal quarter-power rib wavelength scaling law lambda_c = 2*pi*(E*I/k)^(1/4) and rib-number law across 12 empirical bivalve, gastropod, ammonite, and brachiopod species, and perform polar ray-averaged computer-vision segmentation of the 14 primary radial costae and linear wavelength expansion lambda(R) = R*dtheta on the *Pecten jacobaeus* specimen (`ribbed_bivalve_shell_specimen.jpg`)."
+      - "Expose full CLI parameter overrides (`--EI`, `--k`, `--P-ratio`, `--R-adult`, `--seed`, `--skip-gif`), upgrade `self_test()` to an 8-point verification suite with bitwise two-run determinism, and render a 6-panel publication-grade synthesis figure and co-evolving 3D accretionary growth GIF."

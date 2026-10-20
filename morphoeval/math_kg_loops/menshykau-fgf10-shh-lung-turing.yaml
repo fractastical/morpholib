@@ -1,0 +1,85 @@
+sim_id: menshykau-fgf10-shh-lung-turing
+slot: 54
+slot_id: slot-054-kidney-ureteric-bud-gdnf-ret
+math_family: "Schnakenberg GDNF-RET-Wnt11 Receptor-Ligand Turing Instability & Self-Avoiding Ureteric Tree Branching"
+model_spec:
+  model: "Menshykau & Iber (2013) Phys. Biol. 10:046003, Zubkov et al. (2015) Bull. Math. Biol. 77:565-595 & Watanabe & Costantini (2004) Dev. Biol. 271:98-106 GDNF-RET-Wnt11 receptor-ligand Turing instability, tip-radius mode selection, and self-avoiding ureteric tree arborization"
+  D_R: 0.02
+  D_G: 1.0
+  diffusion_ratio_D_G_over_D_R: 50.0
+  a_basal_ret: 0.10
+  b_mesenchymal_gdnf: 0.90
+  gamma_scale_wt: 25.0
+  gamma_scale_spry1_ko: 46.25
+  gamma_scale_hypoplasia: 11.25
+  seed: 2013
+  inputs:
+    - datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_bud_gdnf_ret_reference.json
+    - datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_tree_specimen.jpg
+    - datasets/kidney_ureteric_bud_gdnf_ret/scout_manifest.json
+    - datasets/kidney_ureteric_bud_gdnf_ret/paper_citations.bib
+equations:
+  - id: menshykau-fgf10-shh-lung-turing-1
+    law_name: "Menshykau & Iber (2013) GDNF-RET Receptor-Ligand Flux Cancellation & Homogeneous Steady-State Law"
+    formula: "∂_t R = D_R ∇^2 R + γ(a - R + R^2 G),  ∂_t G = D_G ∇^2 G + γ(b - R^2 G);  f + g = a + b - R;  (R^*, G^*) = (a + b, b / (a + b)^2)"
+    lean_decl: "MathOfBiology.Loop_054.ret_reaction"
+    lean_theorem: "MathOfBiology.Loop_054.menshykau_gdnf_ret_flux_cancellation_and_steady_state"
+    lean_locus: "morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean#L36-L59"
+    lean_code: |
+      def ret_reaction (a R r2G : Int) : Int := a - R + r2G
+      def gdnf_reaction (b r2G : Int) : Int := b - r2G
+      theorem menshykau_gdnf_ret_flux_cancellation_and_steady_state (a b R r2G : Int) :
+          ret_reaction a R r2G + gdnf_reaction b r2G = a + b - R ∧
+          ret_reaction a (a + b) b = 0 ∧
+          gdnf_reaction b b = 0 := by
+        simp [ret_reaction, gdnf_reaction]; omega
+    variables: "R(x,t): epithelial RET receptor concentration on the ureteric bud; G(x,t): mesenchymal GDNF ligand concentration; a: basal RET expression rate; b: mesenchymal GDNF production rate; R^2 G: cooperative receptor-ligand signaling & endocytosis complex"
+    role: "Establishes exact cancellation of the cubic cooperative R^2 G signaling term in total receptor-ligand mass balance and pins the unique homogeneous steady state (R*, G*) = (a + b, b/(a+b)^2)"
+    source_citation: "Menshykau & Iber (2013) Phys. Biol. 10(4):046003 Eqs. (1)-(4)"
+    code_locus: "2012-menshykau-fgf10-shh-lung-turing.py#L105-L210"
+
+  - id: menshykau-fgf10-shh-lung-turing-2
+    law_name: "Menshykau & Iber (2013) Steady-State Reaction Jacobian Positivity & Turing Wavelength Law"
+    formula: "f_R = (b - a)/(a + b) > 0,  g_G = -(a + b)^2 < 0,  det(J_0) = (a + b)^2 > 0,  k_c^2 = γ(a + b)/√(D_R D_G),  λ_c = 2π/k_c"
+    lean_decl: "MathOfBiology.Loop_054.jac_det_scaled"
+    lean_theorem: "MathOfBiology.Loop_054.menshykau_gdnf_ret_jacobian_stability_and_turing_prerequisite"
+    lean_locus: "morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean#L66-L100"
+    lean_code: |
+      def jac_f_R_scaled (a b : Int) : Int := b - a
+      def jac_f_G_scaled (a b : Int) : Int := (a + b) * (a + b) * (a + b)
+      def jac_g_R_scaled (b : Int) : Int := -2 * b
+      def jac_g_G_scaled (a b : Int) : Int := -((a + b) * (a + b) * (a + b))
+      def jac_det_scaled (a b : Int) : Int :=
+        jac_f_R_scaled a b * jac_g_G_scaled a b - jac_f_G_scaled a b * jac_g_R_scaled b
+      theorem menshykau_gdnf_ret_jacobian_stability_and_turing_prerequisite :
+          jac_f_R_scaled 1 9 = 8 ∧
+          jac_f_R_scaled 1 9 + jac_g_G_scaled 1 9 = -992 ∧
+          jac_det_scaled 1 9 = 10000 := by
+        decide
+    variables: "f_R, f_G, g_R, g_G: partial derivatives of reaction terms at (R*, G*); D_R, D_G: receptor and ligand diffusion coefficients (D_G/D_R = 50); γ: domain/reaction scaling parameter; λ_c: intrinsic Turing wavelength"
+    role: "Proves stability of the homogeneous state to k = 0 perturbations (Tr(J_0) < 0, det(J_0) > 0) alongside positive receptor auto-activation (f_R > 0 for b > a) driving diffusion-driven instability when D_G >> D_R"
+    source_citation: "Menshykau & Iber (2013) Phys. Biol. 10(4):046003 Eqs. (5)-(7); Menshykau et al. (2012) Development 139:4506-4514"
+    code_locus: "2012-menshykau-fgf10-shh-lung-turing.py#L215-L340"
+
+  - id: menshykau-fgf10-shh-lung-turing-3
+    law_name: "Zubkov et al. (2015) & Watanabe & Costantini (2004) Tip-Splitting Mode Selection & Ureteric Tree Generation Scaling Law"
+    formula: "m(ρ_tip) = 1 (ρ_tip < 1.5), 2 (1.5 ≤ ρ_tip < 2.5, dichotomous), 3 (ρ_tip ≥ 2.5, trichotomous);  N_tips(g) = 2^g (WT dichotomous) vs N_hypo < N_WT < N_Spry1KO"
+    lean_decl: "MathOfBiology.Loop_054.tip_splitting_peaks"
+    lean_theorem: "MathOfBiology.Loop_054.ureteric_tip_splitting_modes_and_generation_scaling"
+    lean_locus: "morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean#L107-L148"
+    lean_code: |
+      def tip_splitting_peaks (rho_10 : Nat) : Nat :=
+        if rho_10 < 15 then 1 else if rho_10 < 25 then 2 else 3
+      def dichotomous_step (n : Nat) : Nat := 2 * n
+      def trichotomous_step (n : Nat) : Nat := 3 * n
+      def dichotomous_gen4 (n : Nat) : Nat :=
+        dichotomous_step (dichotomous_step (dichotomous_step (dichotomous_step n)))
+      theorem ureteric_tip_splitting_modes_and_generation_scaling (n : Nat) :
+          tip_splitting_peaks 12 = 1 ∧ tip_splitting_peaks 20 = 2 ∧ tip_splitting_peaks 30 = 3 ∧
+          dichotomous_gen4 n = 16 * n ∧
+          dichotomous_step (dichotomous_step 1) < dichotomous_gen4 1 ∧
+          dichotomous_step (dichotomous_step (dichotomous_step (trichotomous_step 1))) = 24
+    variables: "ρ_tip = π R_tip / λ_c: dimensionless ureteric ampulla arc-to-wavelength ratio; g: branching generation; N_tips(g): distal ureteric bud tip count"
+    role: "Determines transitions between single-tip elongation, canonical dichotomous bifurcation (88% of WT events), and Spry1-/- trichotomous hyper-branching, as well as tip-count collapse under Gdnf+/- or PRR^(UB-/-) hypoplasia"
+    source_citation: "Zubkov et al. (2015) Bull. Math. Biol. 77:565-595; Watanabe & Costantini (2004) Dev. Biol. 271:98-106; Basson et al. (2005) Dev. Cell 8:229-239"
+    code_locus: "2012-menshykau-fgf10-shh-lung-turing.py#L345-L520"

@@ -66,6 +66,8 @@ ROOT = HERE.parent
 AUDITS_DIR = HERE / "audits"
 KG_DIR = HERE / "kg"
 LEAN_PATH = HERE / "lean" / "MathOfBiology.lean"
+LOOPS_LEAN_DIR = HERE / "lean" / "loops"
+LOOPS_MATH_DIR = HERE / "math_kg_loops"
 RUBRIC_PATH = HERE / "rubric.yaml"
 SQLITE_PATH = HERE / "runs" / "telemetry.sqlite"
 MATH_TTL_PATH = KG_DIR / "math_of_biology.ttl"
@@ -125,7 +127,7 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
         ],
     },
     "turing-gray-scott": {
-        "math_family": "Reaction-Diffusion Partial Differential Equations (PDE)",
+        "math_family": "Reaction-Diffusion Partial Differential Equations (PDE) & Linear Bifurcation Theory",
         "equations": [
             {
                 "law_name": "Gray-Scott Autocatalytic Reaction-Diffusion System",
@@ -143,7 +145,66 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
                 "variables": "u(x,y,t): substrate concentration; v(x,y,t): autocatalyst concentration; D_u, D_v: diffusivities; F: feed rate; k: kill rate",
                 "role": "Generates symmetry-breaking Turing spots (mitosis), labyrinthine stripes, and coral/soliton regimes across (F, k) morphospace",
                 "source_citation": "Turing (1952) Phil. Trans. R. Soc. B 237:37; Pearson (1993) Science 261:189",
-                "code_locus": "1952-turing-morpho.py#L45-L140",
+                "code_locus": "1952-turing-morpho.py#L430-L512",
+            },
+            {
+                "law_name": "Turing (1952) Equal-Diffusion Stability Theorem",
+                "formula": "D_X = D_Y = D, tr(J_0) < 0, det(J_0) > 0 ⟹ tr(J_k) = tr(J_0) - 2 D k^2 < 0 ∧ det(J_k) = D^2 k^4 - D tr(J_0) k^2 + det(J_0) > 0  (∀ k^2 ≥ 0)",
+                "lean_decl": "MathOfBiology.turing_equal_diff_det",
+                "lean_theorem": "MathOfBiology.turing_equal_diffusion_no_instability",
+                "lean_locus": "morphoeval/lean/MathOfBiology.lean#L223-L240",
+                "lean_code": (
+                    "def turing_equal_diff_trace_neg (t_neg D q : Nat) : Nat := (t_neg + 1) + 2 * D * q\n"
+                    "def turing_equal_diff_det (t_neg d_pos D q : Nat) : Nat :=\n"
+                    "  D * D * q * q + D * (t_neg + 1) * q + (d_pos + 1)\n"
+                    "theorem turing_equal_diffusion_no_instability (t_neg d_pos D q : Nat) :\n"
+                    "    turing_equal_diff_trace_neg t_neg D q ≥ 1 ∧\n"
+                    "    turing_equal_diff_det t_neg d_pos D q ≥ d_pos + 1 := by\n"
+                    "  simp [turing_equal_diff_trace_neg, turing_equal_diff_det]; omega"
+                ),
+                "variables": "J_0: homogeneous reaction Jacobian; D_X, D_Y: morphogen diffusivities; q = k^2: squared Fourier wavenumber",
+                "role": "Proves that equal morphogen diffusivities (D_u = D_v) cannot destabilize a stable homogeneous steady state at any spatial wavenumber",
+                "source_citation": "Turing (1952) Phil. Trans. R. Soc. B 237(641):37-72 Sections 8-9",
+                "code_locus": "1952-turing-morpho.py#L163-L244",
+            },
+            {
+                "law_name": "Turing (1952) Differential-Diffusion Instability & Critical Ratio Law",
+                "formula": "det(J_k) = D_X D_Y k^4 - (d D_X + a D_Y) k^2 + (a d - b c) < 0  for  d = D_Y / D_X > d_c = 3.927051",
+                "lean_decl": "MathOfBiology.turing_fourier_det",
+                "lean_theorem": "MathOfBiology.turing_differential_diffusion_instability",
+                "lean_locus": "morphoeval/lean/MathOfBiology.lean#L242-L261",
+                "lean_code": (
+                    "def turing_fourier_det (a b c d DX DY q : Int) : Int :=\n"
+                    "  DX * DY * q * q - (d * DX + a * DY) * q + (a * d - b * c)\n"
+                    "theorem turing_differential_diffusion_instability :\n"
+                    "    turing_fourier_det 4 (-6) 5 (-6) 1 1 0 = 6 ∧\n"
+                    "    turing_fourier_det 4 (-6) 5 (-6) 1 1 1 = 9 ∧\n"
+                    "    turing_fourier_det 4 (-6) 5 (-6) 1 4 1 = 0 ∧\n"
+                    "    turing_fourier_det 4 (-6) 5 (-6) 1 5 1 = -3 := by decide"
+                ),
+                "variables": "a=1.0, b=-1.5, c=1.25, d=-1.5 (4x-scaled to 4, -6, 5, -6): activator-inhibitor Jacobian; d_c = 3.9271: critical diffusivity ratio; s*=4: dominant mode on N=20 ring",
+                "role": "Governs spontaneous symmetry breaking and wavelength selection (λ_c = 2π/k_c = 5.62 cells) in Turing's ring of 20 cells and Pomacanthus skin stripes",
+                "source_citation": "Turing (1952) Phil. Trans. R. Soc. B 237(641):37-72 Sections 8-10; Kondo & Asai (1995) Nature 376:765-768",
+                "code_locus": "1952-turing-morpho.py#L163-L244",
+            },
+            {
+                "law_name": "Pearson (1993) Saddle-Node & Hopf Steady-State Bifurcation Laws",
+                "formula": "Δ_SN(F, k) = F - 4(F + k)^2 = 0,   tr(J_0)|_{U_* V_* = F+k} = k - V_+^2 = 0  ⟺  F_Hopf(k) = ½(√k - 2k - √(k(1 - 4√k)))",
+                "lean_decl": "MathOfBiology.pearson_sn_discriminant",
+                "lean_theorem": "MathOfBiology.pearson_saddle_node_discriminant",
+                "lean_locus": "morphoeval/lean/MathOfBiology.lean#L263-L283",
+                "lean_code": (
+                    "def pearson_sn_discriminant (F s : Int) : Int := F - 4 * s * s\n"
+                    "def pearson_steady_trace (F k uv v_sq : Int) : Int := (-F - v_sq) + (2 * uv - (F + k))\n"
+                    "theorem pearson_saddle_node_discriminant (F k s : Int) :\n"
+                    "    pearson_sn_discriminant (4 * s * s) s = 0 ∧\n"
+                    "    pearson_steady_trace F k (F + k) k = 0 := by\n"
+                    "  simp [pearson_sn_discriminant, pearson_steady_trace]; omega"
+                ),
+                "variables": "F: feed rate; k: kill rate; s = F + k; (U_-, V_+): high-activator homogeneous steady state",
+                "role": "Defines the exact Saddle-Node existence boundary and Hopf oscillation curve partitioning Pearson's 12 pattern classes (α–μ) in (k, F) morphospace",
+                "source_citation": "Pearson (1993) Science 261(5118):189-192; Lee et al. (1994) Nature 369:215-218",
+                "code_locus": "1952-turing-morpho.py#L327-L426",
             },
         ],
     },
@@ -619,18 +680,40 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
 }
 
 
+def load_dynamic_math_laws_registry() -> dict[str, dict[str, Any]]:
+    """Merge the base `MATH_LAWS_REGISTRY` with any isolated per-loop YAML specs in `morphoeval/math_kg_loops/*.yaml`."""
+    merged = dict(MATH_LAWS_REGISTRY)
+    if LOOPS_MATH_DIR.exists():
+        for yf in sorted(LOOPS_MATH_DIR.glob("*.yaml")):
+            try:
+                doc = yaml.safe_load(yf.read_text(encoding="utf-8")) or {}
+                sid = doc.get("sim_id") or yf.stem
+                merged[sid] = {
+                    "math_family": doc.get("math_family", "Mathematical Morphogenesis Model"),
+                    "equations": doc.get("equations", []),
+                }
+            except Exception:
+                continue
+    return merged
+
+
 def verify_lean_module() -> dict[str, Any]:
-    """Check `morphoeval/lean/MathOfBiology.lean` with the Lean 4 kernel if `lean` is available."""
+    """Check `morphoeval/lean/MathOfBiology.lean` and all `morphoeval/lean/loops/*.lean` modules with the Lean 4 kernel."""
     if not LEAN_PATH.exists():
         return {"verified": False, "version": "missing", "elapsed_ms": 0.0, "error": "MathOfBiology.lean not found"}
 
-    lean_text = LEAN_PATH.read_text()
-    # Strip block comments `/- ... -/` and line comments `-- ...` before checking for `sorry`
-    no_blocks = re.sub(r"/-.*?-/", "", lean_text, flags=re.DOTALL)
-    code_lines = [ln.split("--")[0] for ln in no_blocks.splitlines()]
-    has_sorry = any(re.search(r"\bsorry\b", ln) for ln in code_lines)
-    if has_sorry:
-        return {"verified": False, "version": "contains-sorry", "elapsed_ms": 0.0, "error": "Found `sorry` in Lean module"}
+    lean_files = [LEAN_PATH]
+    if LOOPS_LEAN_DIR.exists():
+        lean_files.extend(sorted(LOOPS_LEAN_DIR.glob("*.lean")))
+
+    for lf in lean_files:
+        lean_text = lf.read_text(encoding="utf-8")
+        # Strip block comments `/- ... -/` and line comments `-- ...` before checking for `sorry`
+        no_blocks = re.sub(r"/-.*?-/", "", lean_text, flags=re.DOTALL)
+        code_lines = [ln.split("--")[0] for ln in no_blocks.splitlines()]
+        has_sorry = any(re.search(r"\bsorry\b", ln) for ln in code_lines)
+        if has_sorry:
+            return {"verified": False, "version": "contains-sorry", "elapsed_ms": 0.0, "error": f"Found `sorry` in {lf.name}"}
 
     lean_bin = shutil.which("lean") or str(Path.home() / ".elan" / "bin" / "lean")
     if not Path(lean_bin).exists():
@@ -642,11 +725,13 @@ def verify_lean_module() -> dict[str, Any]:
             return {"verified": False, "version": "toolchain-pending", "elapsed_ms": 0.0, "error": ver_proc.stderr.strip()}
         version_str = ver_proc.stdout.strip().splitlines()[0]
         t0 = time.perf_counter()
-        chk_proc = subprocess.run([lean_bin, str(LEAN_PATH)], capture_output=True, text=True, timeout=30)
+        for lf in lean_files:
+            chk_proc = subprocess.run([lean_bin, str(lf)], capture_output=True, text=True, timeout=30)
+            if chk_proc.returncode != 0:
+                elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 1)
+                return {"verified": False, "version": version_str, "elapsed_ms": elapsed_ms, "error": f"{lf.name}: {(chk_proc.stdout + chk_proc.stderr).strip()}"}
         elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 1)
-        if chk_proc.returncode == 0:
-            return {"verified": True, "version": version_str, "elapsed_ms": elapsed_ms, "error": ""}
-        return {"verified": False, "version": version_str, "elapsed_ms": elapsed_ms, "error": (chk_proc.stdout + chk_proc.stderr).strip()}
+        return {"verified": True, "version": version_str, "elapsed_ms": elapsed_ms, "error": "", "files_checked": len(lean_files)}
     except Exception as exc:
         return {"verified": False, "version": "error", "elapsed_ms": 0.0, "error": str(exc)}
 
@@ -782,7 +867,7 @@ def add_math_triples_for_simulation(
     for pu in paper_uris:
         g.add((claim_uri, PK.derivedFromPaper, pu))
 
-    reg = MATH_LAWS_REGISTRY.get(sim_id, {})
+    reg = load_dynamic_math_laws_registry().get(sim_id, {})
     math_family = reg.get("math_family", "Mathematical Morphogenesis Model")
     g.add((claim_uri, PK.hypothesisType, Literal(math_family)))
 
@@ -931,7 +1016,7 @@ def build_math_knowledge_graph() -> dict[str, Any]:
         repo = info["repo"]
         commit = info["commit"]
         overall = info["overall"]
-        reg = MATH_LAWS_REGISTRY.get(sid, {})
+        reg = load_dynamic_math_laws_registry().get(sid, {})
         math_family = reg.get("math_family", "Mathematical Morphogenesis Model")
 
         neq, nmeas = add_math_triples_for_simulation(

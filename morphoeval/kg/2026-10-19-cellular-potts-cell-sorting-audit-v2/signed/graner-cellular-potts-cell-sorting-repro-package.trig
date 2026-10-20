@@ -1,0 +1,97 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RA4u_5xKkMandtBc0MPVSSWgMMk6aYq5u2yrFGgUK2-Fk/> .
+@prefix this: <https://w3id.org/np/RA4u_5xKkMandtBc0MPVSSWgMMk6aYq5u2yrFGgUK2-Fk> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-graner-cellular-potts-cell-sorting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-repro-package> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting — Reproducibility package: 92/100" ;
+        dcterms:date "2026-10-19"^^xsd:date ;
+        dcterms:description "Deterministic RNG (`seed=1992`), fast execution (~10s full render, <2s `--self-test`), 8-check `self_test()` suite (L863-923) verifying SHA-256 integrity, exact Lean 4 tension parity across all 5 regimes, sorting vs. equal-adhesion and checkerboard controls, T=0 lattice pinning arrest, logarithmic boundary decay fit, specimen segmentation correlation, and two-run bitwise determinism (`np.array_equal`)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-repro-package-1> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "1992-graner-cellular-potts-cell-sorting.py L863–L923" ;
+        dcterms:description "8-check self_test() suite including SHA-256 check, T=0 pinning arrest, and two-run bitwise determinism" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/b9976f8/1992-graner-cellular-potts-cell-sorting.py#L863-L923> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/newbio239098a0>,
+            <https://doi.org/10.1103/PhysRevE.47.2128>,
+            <https://doi.org/10.1103/PhysRevLett.69.2013>,
+            <https://doi.org/10.1126/science.141.3579.401>,
+            <https://doi.org/10.1242/dev.122.5.1611> .
+
+    <https://doi.org/10.1038/newbio239098a0> dcterms:date "1972"^^xsd:gYear ;
+        dcterms:title "Regeneration of Hydra from reaggregated cells" .
+
+    <https://doi.org/10.1103/PhysRevE.47.2128> dcterms:date "1993"^^xsd:gYear ;
+        dcterms:title "Simulation of the differential adhesion driven rearrangement of biological cells" .
+
+    <https://doi.org/10.1103/PhysRevLett.69.2013> dcterms:date "1992"^^xsd:gYear ;
+        dcterms:title "Simulation of biological cell sorting using a two-dimensional extended Potts model" .
+
+    <https://doi.org/10.1126/science.141.3579.401> dcterms:date "1963"^^xsd:gYear ;
+        dcterms:title "Reconstruction of tissues by dissociated cells" .
+
+    <https://doi.org/10.1242/dev.122.5.1611> dcterms:date "1996"^^xsd:gYear ;
+        dcterms:title "Surface tensions of embryonic tissues predict their mutual envelopment behavior" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "FwFyL1LJu1s9poX+r734cWfiNE1+fEh7oqU4RNaGis3ygcGYAu548qtqaXBd59NFGe+1Z/473QgZpsl1rFcPp8gTiTFcs3HLY7RsidPubMYFdCUWHhTQT+3miqpItWiCg5v87uH8FZ+HpxkIxQkLUmKma7Q0k/MOZeI4WBt5nFDYa91KpVVW62ipJX142TbO/dwlmiz+3MbdgM8CXBAOocj3AC1MONWbFy4asMyh4+Y00I+5TxqfvoDJgoCKcmj0MrqAGCGcharq1d6tqJblT5HzSf0iSSDcy7wHvmGSYC31ptE5bZFnQl1wLO4OYeH77kSbS63+a70dbwh5md6PqQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting — Reproducibility package 92/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T00:45:44Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

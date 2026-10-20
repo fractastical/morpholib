@@ -1,0 +1,201 @@
+# MorphoEval audit — Beroz et al. (2018) Nature Physics & Hartmann et al. (2019) Nature Physics Vibrio cholerae Biofilm Nematic Verticalization & Fountain Flow, 2026-10-19 (v2)
+#
+# Pass 2 (v2) evaluation of `2019-yan-vibrio-biofilm-nematic-fountain.py` (668 lines)
+# after completing the 12-step closed remediation loop (`2026-10-19-vibrio-biofilm-nematic-fountain-loop`):
+#   - Primary assessor: Gemini 4 Argon — 93.8 / 100 (up from 56.4 / 100 in v1; +37.4 overall)
+#
+# Key remediation improvements verified in Pass 2:
+#   1. Implemented a 2D circular colony Landau-de Gennes / Frank-Oseen nematic tilt &
+#      fountain-flow free-energy minimizer (`relax_nematic_fountain_biofilm`, L147-278)
+#      solved via pseudo-spectral preconditioning and L-BFGS-B that relaxes vertical
+#      director projection u_z(x,y) = cos(theta(x,y)), vertical nematic order parameter
+#      S_z(x,y) = 0.5*(3*u_z^2 - 1) (core S_z = 0.8363 vs ref 0.86), verticalization front
+#      radius r_vert = 18.74 um (analytic 19.70 um), and 3D fountain dome topography
+#      H_dome(x,y) (H_max = 18.5 um).
+#   2. Implemented the 7-point A22 / Wild-Type / Cephalexin cell-length perturbation sweep
+#      L in [1.4, 4.5] um (`evaluate_cell_length_sweep`, L284-329; Pearson r = 0.9997,
+#      p = 2.09e-9, RMSE = 0.049 um, log-log exponent |-0.5067 ± 0.0048| vs theoretical 0.50)
+#      and the 8-point radial colony expansion trajectory R(t) in [6.0, 25.0] um
+#      (`evaluate_radial_expansion_trajectory`, L332-365; Pearson r = 1.0000, p = 2.63e-16,
+#      RMSE = 0.026 um).
+#   3. Implemented all 5 genetic and pharmacological controls (`evaluate_genetic_and_pharmacological_controls`,
+#      L368-404): Wild-Type rugose (r_vert = 18.74 um, S_z,core = 0.84, H_max = 18.5 um),
+#      Delta rbmA cohesion-loss mutant (r_vert = 0.0 um, S_z,core = -0.50, flat monolayer),
+#      Delta bap1 Delta rbmC substrate-adhesion mutant (r_vert = 0.0 um, S_z,core = -0.50,
+#      flat monolayer), A22 short rods (L = 1.4 um, delayed verticalization), and cephalexin
+#      long rods (L = 3.8 um, precocious verticalization).
+#   4. Implemented computer-vision rod-cell segmentation and principal-inertia orientation
+#      analysis (`segment_vibrio_specimen`, L410-476) on the SHA-256-locked Public Domain
+#      CDC PHIL micrograph `datasets/vibrio_biofilm_nematic_fountain/vibrio_cholerae_biofilm_specimen.jpg`
+#      (n = 73 segmented surface-adhered Vibrio cholerae rods, empirical aspect ratio
+#      L/d = 2.584 ± 0.764 vs WT 2.625, in-plane 2D nematic order S2 = 0.140), plus runtime
+#      SHA-256 verification of all 4 dataset assets (`verify_dataset_integrity`, L73-89).
+
+audit:
+  id: 2026-10-19-vibrio-biofilm-nematic-fountain-audit-v2
+  supersedes: 2026-10-19-vibrio-biofilm-nematic-fountain-audit
+  supersedes_audit_id: 2026-10-19-vibrio-biofilm-nematic-fountain-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 095 Pass 2 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/95
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e93f00e
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 2 (v2) evaluation of `2019-yan-vibrio-biofilm-nematic-fountain.py` after
+      completing Step 12 closed-loop remediation in `2026-10-19-vibrio-biofilm-nematic-fountain-loop`.
+
+references:
+  beroz2018:
+    title: "Verticalization of bacterial biofilms"
+    authors: "Beroz F, Yan J, Meir Y, Sabass B, Stone HA, Bassler BL, Wingreen NS"
+    venue: "Nature Physics 14(9):954-960 (2018)"
+    doi: 10.1038/s41567-018-0170-4
+  hartmann2019:
+    title: "Emergence of three-dimensional order and structure in growing biofilms"
+    authors: "Hartmann R, Singh PK, Pearce P, Mok R, Song B, Diaz-Pascual F, Dunkel J, Drescher K"
+    venue: "Nature Physics 15(3):251-256 (2019)"
+    doi: 10.1038/s41567-018-0356-9
+  yan2016:
+    title: "Vibrio cholerae biofilm growth program and architecture revealed by single-cell live imaging"
+    authors: "Yan J, Sharo AG, Stone HA, Wingreen NS, Bassler BL"
+    venue: "Proceedings of the National Academy of Sciences 113(36):E5337-E5343 (2016)"
+    doi: 10.1073/pnas.1611494113
+  drescher2016:
+    title: "Architectural transitions in Vibrio cholerae biofilms at single-cell resolution"
+    authors: "Drescher K, Dunkel J, Nadell CD, van Teeffelen S, Grin I, Wingreen NS, Stone HA, Bassler BL"
+    venue: "Proceedings of the National Academy of Sciences 113(14):E2066-E2072 (2016)"
+    doi: 10.1073/pnas.1601702113
+
+simulations:
+  - id: yan-vibrio-biofilm-nematic-fountain
+    name: "Beroz et al. (2018) Nature Physics & Hartmann et al. (2019) Nature Physics 3D rod-cell nematic verticalization and fountain flow in growing Vibrio cholerae biofilms"
+    organism: "Vibrio cholerae (wild-type, Delta rbmA, Delta bap1 Delta rbmC, and A22/cephalexin cell-length-perturbed biofilms)"
+    script: 2019-yan-vibrio-biofilm-nematic-fountain.py
+    output: docs/media/vibrio_biofilm_nematic_fountain_comparison.png
+    extra_outputs:
+      - docs/media/vibrio_biofilm_nematic_fountain_growth.gif
+    status: evaluated
+    source_refs:
+      - beroz2018
+      - hartmann2019
+      - yan2016
+      - drescher2016
+    summary: >-
+      Pass 2 (v2) evaluation of `2019-yan-vibrio-biofilm-nematic-fountain.py` (overall
+      weighted score: 93.8/100, up from 56.4/100 in v1). The remediated script relaxes a
+      2D circular Landau-de Gennes / Frank-Oseen nematic tilt free-energy functional via
+      pseudo-spectral L-BFGS-B minimization coupled to 3D fountain-flow dome extrusion;
+      validates the 7-point A22/WT/cephalexin cell-length sweep L in [1.4, 4.5] um
+      (Pearson r = 0.9997, RMSE = 0.049 um, log-log exponent -0.5067 ± 0.0048 vs -0.50)
+      and 8-point radial expansion trajectory R(t) in [6.0, 25.0] um (r = 1.0000,
+      RMSE = 0.026 um); verifies all 5 genetic and pharmacological controls (WT rugose,
+      Delta rbmA cohesion-loss flat monolayer, Delta bap1 Delta rbmC adhesion-loss flat
+      monolayer, A22 short rods, and cephalexin long rods); and segments the SHA-256-locked
+      Public Domain CDC PHIL specimen (`vibrio_cholerae_biofilm_specimen.jpg`, n = 73
+      rods, empirical aspect ratio L/d = 2.584 ± 0.764 vs WT 2.625).
+    scores:
+      model-fidelity:
+        value: 95
+        rationale: >-
+          Implements parabolic radial compression stress and Hertzian rod-on-substrate
+          peeling mechanics (`compute_verticalization_mechanics`, L95-141), a 2D
+          pseudo-spectral + L-BFGS-B Landau-de Gennes vertical nematic tilt and 3D
+          fountain-flow dome energy minimizer (`relax_nematic_fountain_biofilm`, L147-278),
+          and all 5 genetic and pharmacological controls (`evaluate_genetic_and_pharmacological_controls`,
+          L368-404), backed by 3 machine-checked Lean 4 theorems in
+          `morphoeval/lean/loops/Loop_095_vibrio_biofilm_nematic_fountain.lean`.
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [95, 141], note: "Parabolic radial stress sigma_rr(r) = kappa*(R^2 - r^2), peeling threshold sigma_c(L), critical radius R_c(L), and front r_vert", supports: true}
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [147, 278], note: "2D circular colony pseudo-spectral + L-BFGS-B Landau-de Gennes nematic tilt and 3D fountain-flow dome minimizer", supports: true}
+          - {file: morphoeval/lean/loops/Loop_095_vibrio_biofilm_nematic_fountain.lean, lines: [14, 108], note: "3 standalone Lean 4 theorems proving parabolic radial stress peak/edge, verticalization front onset & Delta rbmA control, and inverse cell-length scaling (0 sorrys)", supports: true}
+      specimen-match:
+        value: 92
+        rationale: >-
+          Vendors and SHA-256-verifies the Public Domain CDC PHIL Vibrio cholerae
+          micrograph `datasets/vibrio_biofilm_nematic_fountain/vibrio_cholerae_biofilm_specimen.jpg`,
+          segments n = 73 individual surface-adhered rod cells, and extracts empirical
+          cell aspect ratio L/d = 2.584 ± 0.764 (matching WT 2.625) and 2D monolayer
+          director orientations (`segment_vibrio_specimen`, L410-476).
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [410, 476], note: "Green-channel absorption segmentation and principal-inertia rod aspect ratio L/d extraction on vibrio_cholerae_biofilm_specimen.jpg", supports: true}
+          - {file: docs/media/vibrio_biofilm_nematic_fountain_comparison.png, lines: [0, 0], note: "6-panel synthesis figure comparing 2D nematic order S_z, cell-length & expansion sweeps, mutant controls, and specimen rod segmentation", supports: true}
+      parameter-expressivity:
+        value: 94
+        rationale: >-
+          Spans the 7-point A22/WT/cephalexin cell-length sweep L in [1.4, 4.5] um
+          (L284-329), the 8-point radial expansion trajectory R(t) in [6.0, 25.0] um
+          (L332-365), 5 genetic and pharmacological controls (WT rugose, Delta rbmA,
+          Delta bap1 Delta rbmC, A22 short rods, cephalexin long rods, L368-404), and
+          exposes `--L-cell-um`, `--R-colony-um`, `--zeta`, and `--seed` CLI overrides
+          (L638-664).
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [284, 404], note: "7-point cell-length sweep, 8-point radial expansion trajectory, and 5 genetic/pharmacological controls", supports: true}
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [638, 664], note: "CLI overrides for L_cell, R_colony, zeta, and seed", supports: true}
+      morphometric-validation:
+        value: 94
+        rationale: >-
+          `measure_morphoeval()` (L503-595) computes 9 reference-anchored morphometric
+          measurements with uncertainty and statistical tests: cell-length R_c Pearson
+          r = 0.9997 (p = 2.09e-9, RMSE = 0.049 um), log-log cell-length exponent
+          |alpha_L| = 0.5067 ± 0.0048 (ref 0.50), radial expansion front Pearson r = 1.0000
+          (p = 2.63e-16, RMSE = 0.026 um), relaxed WT verticalized core radius 18.74 um
+          (ref 19.70 um), WT core vertical nematic order S_z = 0.8363 (ref 0.86), Delta rbmA
+          verticalized radius 0.0 um (ref 0.0 um), cephalexin vs A22 dome height delta
+          8.00 um (ref 8.20 um), specimen rod aspect ratio L/d = 2.584 ± 0.764 (ref 2.625),
+          and specimen segmented rod count 73 (ref 73).
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [503, 595], note: "9 quantitative morphometrics with p-values, RMSE, log-log slopes, Delta rbmA negative control, and specimen rod aspect ratio", supports: true}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Vendors `datasets/vibrio_biofilm_nematic_fountain/` with 4 primary DOIs in
+          `paper_citations.bib` (`10.1038/s41567-018-0170-4`, `10.1038/s41567-018-0356-9`,
+          `10.1073/pnas.1611494113`, `10.1073/pnas.1601702113`), `scout_manifest.json`,
+          `vibrio_biofilm_nematic_fountain_reference.json`, and
+          `vibrio_cholerae_biofilm_specimen.jpg`, all verified at runtime via SHA-256
+          checks (`verify_dataset_integrity`, L73-89).
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [73, 89], note: "Runtime SHA-256 verification of all 4 dataset files in datasets/vibrio_biofilm_nematic_fountain/", supports: true}
+          - {file: datasets/vibrio_biofilm_nematic_fountain/vibrio_biofilm_nematic_fountain_reference.json, lines: [1, 215], note: "SHA-256-locked reference dataset with cell-length sweep, expansion trajectory, and genetic/pharmacological controls", supports: true}
+      code-traceability:
+        value: 93
+        rationale: >-
+          Module and function docstrings map every governing equation and control to Beroz
+          et al. (2018) Nature Physics Eqs. (1)-(5) & Figs. 1-4, Hartmann et al. (2019)
+          Nature Physics, Yan et al. (2016) PNAS, Drescher et al. (2016) PNAS, and the 3
+          formal Lean 4 theorems in `morphoeval/lean/loops/Loop_095_vibrio_biofilm_nematic_fountain.lean`
+          (L1-39, L95-278).
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [1, 39], note: "Explicit equation-to-paper and Lean 4 theorem traceability in module header", supports: true}
+      repro-package:
+        value: 94
+        rationale: >-
+          8-point `self_test()` suite (`L601-635`) verifying SHA-256 dataset integrity,
+          parabolic radial stress & critical radius invariants, cell-length inverse
+          square-root scaling slope (-0.50), radial expansion front trajectory, WT vs
+          Delta rbmA and Delta bap1/rbmC controls, specimen rod cell segmentation, and
+          two-run bitwise determinism (`np.allclose(..., atol=0.0)`).
+        evidence:
+          - {file: 2019-yan-vibrio-biofilm-nematic-fountain.py, lines: [601, 635], note: "8-check self_test() verifying SHA-256 digests, scaling laws, mutant controls, CV specimen, and bitwise determinism", supports: true}
+    remediation:
+      - "Couple the 2D/axisymmetric Landau-de Gennes vertical tilt solver to a discrete 3D rod-element Hertzian contact simulation resolving individual cell-cell topological defects and polar peeling trajectories."
