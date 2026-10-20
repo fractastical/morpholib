@@ -217,6 +217,24 @@ theorem rule30_top_row_defect_mirror_cancellation (b_per : Bool) :
     bne b_per b_per = false := by
   cases b_per <;> rfl
 
+/-- Law 2q (`wolfram-conus-textile-rule30-2q`, Theorem 42 — Universal Parity-Flip Exit-Bit
+    Automaton & Dual Golden-Mean (No-00) Exit Law on Odd 1-Runs):
+    1. Across `1^2 0^b` (even 1-run `a = 2`), entry `a_{0, 1} = 1` forces `a_{1, 1} = rule30 1 1 r2 = 0`
+       and `a_{2, 1} = rule30 1 0 a_{1, 2} = 1 || a_{1, 2}`: in particular, when `a_{1, 2} = 0`,
+       `a_{2, 1} = rule30 1 0 0 = 1`, which forces `a_{2+b, 1} = 1` (`(E_1, E_2) = (1, 0)` is impossible
+       across even 1-runs).
+    2. Across `1^1 0^b` (odd 1-run `a = 1`), entry `a_{0, 1} = 0` forces `a_{1, 1} = rule30 1 0 r2`
+       and `a_{1, 2} = rule30 0 r2 r3 = r2 || r3`, so `a_{1, 1} || a_{1, 2} = (1 ^^ r2) || r2 || r3 = true`,
+       forcing the first zero-step exit `a_{2, 1} = rule30 0 a_{1, 1} a_{1, 2} = true`
+       (`(E_1, E_2) = (0, 0)` is 100% impossible across odd 1-runs!). -/
+theorem rule30_odd1_entry0_forces_exit1 (r2 r3 : Bool) :
+    rule30 false (rule30 true false r2) (rule30 false r2 r3) = true := by
+  cases r2 <;> cases r3 <;> rfl
+
+theorem rule30_even2_entry1_step2_exit1 (r2 r3 : Bool) :
+    rule30 false (rule30 true (rule30 true true r2) (rule30 true r2 r3)) true = true := by
+  cases r2 <;> cases r3 <;> rfl
+
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/
 structure MeinhardtKlinglerParams where
