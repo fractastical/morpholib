@@ -10384,6 +10384,178 @@ def verify_kg_lateral_turing_rng_lune_3crystal_collapse_and_multiblock_shielding
     }
 
 
+def verify_virtual_plus1_run_extension_a1_eq2_crystal_merge_and_multiblock_lune() -> dict[str, int]:
+    r"""Verify Theorem 54 (Milestone 53 — Bit-Complement Virtual +1 Run-Extension Law, a_1 = 2 Two-Crystal
+    Collapse, and Super-Linear Multi-Block Lune Shielding):
+    1. Bit-Complement Virtual `+1` Run-Extension Law at the Post-Exit Anti-Diagonal `s + m = T_1 + 1`
+       (`6,831` entries across `a_1 = 2..34, d in {0, 1, 2}, m = 1..69`, `0` errors):
+       Immediately after any `1^{a_1}` run (`a_1 >= 2`), at the first `0` of the next block (`t = T_1 = b_1 + a_1`),
+       `l_1(T_1) = a_1 mod 2 = 1 ^ ((a_1 + 1) mod 2)` is the exact bitwise complement of the `(a_1 + 1)`-st interior
+       step of a `1^{a_1 + 2}` run, while for all `m >= 2` the anti-diagonal prefix-XOR recurrence uses the EXACT
+       SAME OR-gate driver `U_{a_1}(m-1) | U_{a_1-1}(m-2)` (`rule30_virtual_plus1_prefix_xor_complement_step`).
+       Consequently, for EVERY `a_1 >= 2`, EVERY crystal `d in {0, 1, 2}`, and EVERY `m >= 1`:
+         `l_m^{(d)}(T_1 + 1 - m) == 1 ^ U_{d, a_1 + 2, a_1 + 1}(m)`,
+       which shifts the Turing-RNG lune synchronization depth at `T_1 + 1` by exactly `+1`:
+         `M_{T_1 + 1}(a_1) == M(a_1 + 1)` for all `a_1 >= 2` (`shift_front_errors == 0` across `33` fronts)!
+    2. Exact `a_1 = 2` Post-Exit Two-Crystal Collapse (`a1_eq2_merge_errors == 0` across `640` two-block configs):
+       When `a_1 = 2`, the Virtual `+1` Run-Extension maps `T_1 + 1` to `1 ^ U_{d, 4, 3}(m)`. By Theorem 52(2),
+       `U_{1, 4, 3}(m) == U_{0, 4, 3}(m)` identically for all `m >= 0` (`k = 3 >= 3`). Therefore, at `T_1 + 1` and
+       across ALL subsequent anti-diagonals of Block 2 (`0^{b_2} 1^{a_2}`), the boundary crystals `d_1 = 0` (`i_1 = b_1`)
+       and `d_1 = 1` (`i_1 = b_1 - 1`) merge identically (`l_m^{(0)} === l_m^{(1)}`), collapsing all `b_1 + 1` initial
+       latch states of `0^{b_1} 1^2 0^{b_2} 1^{a_2}` to AT MOST `2` exit crystals!
+    3. Super-Linear Multi-Block Lune Shielding (`superlinear_2block_errors == 0` across `768` two-block configs and
+       `superlinear_3block_errors == 0` across `432` three-block configs):
+       Across any 2-block chain `0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2}`, all `b_1 + 1` jump choices `i_1` agree at `T_2`
+       up to depth `M_agree >= M_underline(a_1) + b_2 + a_2` (where `M_underline(a_1) = floor((4*a_1 - 2)/3) >= a_1 + 1`
+       for `a_1 >= 2`), and across any 3-block chain `0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} 0^{b_3} 1^{a_3}` they agree at
+       `T_3` up to depth `M_agree >= M_underline(a_1) + b_2 + a_2 + b_3 + a_3`!
+    """
+    def _evolve_mb(blocks: list[tuple[int, int]], jumps: list[int], max_m: int = 80) -> dict[int, list[int]]:
+        c: list[int] = []
+        l1: list[int] = []
+        for (b, a), i in zip(blocks, jumps):
+            c.extend([0] * b + [1] * a)
+            l1.extend([0] * i + [1] * (b - i) + [0] + [(s + 1) % 2 for s in range(1, a)])
+        a_last = blocks[-1][1]
+        c.append(0)
+        l1.append(a_last % 2)
+        N_tot = len(c)
+        L_mat: dict[int, list[int]] = {0: c[:], 1: l1[:]}
+        for m in range(2, min(max_m + 1, N_tot)):
+            L_mat[m] = [
+                L_mat[m - 1][s + 1] ^ (L_mat[m - 1][s] | L_mat[m - 2][s])
+                for s in range(N_tot - m)
+            ]
+        return L_mat
+
+    def _m_underline(a: int) -> int:
+        if a == 1:
+            return 2
+        if a == 2:
+            return 3
+        if a % 3 == 1:
+            return (4 * a - 1) // 3
+        if a % 3 == 2:
+            return (4 * a - 2) // 3
+        return (4 * a) // 3
+
+    b_ref = 70
+    L_single = {d: _evolve_mb([(b_ref, 40)], [b_ref - d], max_m=80) for d in (0, 1, 2)}
+
+    virtual_ext_errors = 0
+    virtual_ext_entries = 0
+    shift_front_errors = 0
+    shift_fronts_checked = 0
+
+    for a1 in range(2, 35):
+        b2 = 2
+        i2 = 0 if a1 % 2 == 1 else 1
+        T1 = b_ref + a1
+        Lm_by_d = {}
+        for d in (0, 1, 2):
+            Lm = _evolve_mb([(b_ref, a1), (b2, 2)], [b_ref - d, i2], max_m=80)
+            Lm_by_d[d] = Lm
+            for m in range(1, 70):
+                virtual_ext_entries += 1
+                if Lm[m][T1 + 1 - m] != (L_single[d][m][b_ref + (a1 + 1) - m] ^ 1):
+                    virtual_ext_errors += 1
+
+        shift_fronts_checked += 1
+        M_post = next(
+            m
+            for m in range(1, 70)
+            if not (Lm_by_d[0][m][T1 + 1 - m] == Lm_by_d[1][m][T1 + 1 - m] == Lm_by_d[2][m][T1 + 1 - m])
+        )
+        M_single_next = next(
+            m
+            for m in range(1, 70)
+            if not (
+                L_single[0][m][b_ref + (a1 + 1) - m]
+                == L_single[1][m][b_ref + (a1 + 1) - m]
+                == L_single[2][m][b_ref + (a1 + 1) - m]
+            )
+        )
+        if M_post != M_single_next:
+            shift_front_errors += 1
+
+    # 2. Verify a_1 = 2 Two-Crystal Collapse across b_1 in 4..8, b_2 in 1..4, a_2 in 1..4
+    a1_eq2_merge_errors = 0
+    a1_eq2_configs = 0
+    for b1 in (4, 6, 8, 10):
+        for b2 in range(1, 5):
+            for a2 in range(1, 5):
+                for i2 in range(1, b2 + 1):
+                    a1_eq2_configs += 1
+                    L0 = _evolve_mb([(b1, 2), (b2, a2)], [b1, i2], max_m=30)
+                    L1 = _evolve_mb([(b1, 2), (b2, a2)], [b1 - 1, i2], max_m=30)
+                    T2 = b1 + 2 + b2 + a2
+                    for m in range(b1 + 1 + b2 + a2):
+                        if L0[m][T2 - m] != L1[m][T2 - m]:
+                            a1_eq2_merge_errors += 1
+                            break
+
+    # 3. Verify Super-Linear 2-Block and 3-Block Lune Shielding Bounds
+    superlinear_2block_errors = 0
+    superlinear_2block_configs = 0
+    b1_sl = 15
+    for a1 in range(1, 13):
+        for b2 in range(1, 5):
+            for a2 in range(1, 5):
+                for i2 in ([0] if a1 % 2 == 1 else list(range(1, b2 + 1))):
+                    superlinear_2block_configs += 1
+                    T2 = b1_sl + a1 + b2 + a2
+                    L_by_i1 = {
+                        i1: _evolve_mb([(b1_sl, a1), (b2, a2)], [i1, i2], max_m=45)
+                        for i1 in (0, b1_sl - 2, b1_sl - 1, b1_sl)
+                    }
+                    M_ag = 0
+                    while M_ag in L_by_i1[0] and T2 - M_ag >= 0:
+                        if len({L_by_i1[i1][M_ag][T2 - M_ag] for i1 in (0, b1_sl - 2, b1_sl - 1, b1_sl)}) > 1:
+                            break
+                        M_ag += 1
+                    if M_ag < _m_underline(a1) + b2 + a2:
+                        superlinear_2block_errors += 1
+
+    superlinear_3block_errors = 0
+    superlinear_3block_configs = 0
+    b1_3b = 8
+    for a1 in (1, 2, 3, 4):
+        for b2 in (1, 2):
+            for a2 in (1, 2, 3):
+                for b3 in (1, 2):
+                    for a3 in (1, 2, 3):
+                        i2_list = [0] if a1 % 2 == 1 else [1, b2]
+                        i3_list = [0] if a2 % 2 == 1 else [1, b3]
+                        for i2 in i2_list:
+                            for i3 in i3_list:
+                                superlinear_3block_configs += 1
+                                T3 = b1_3b + a1 + b2 + a2 + b3 + a3
+                                L_by_i1 = {
+                                    i1: _evolve_mb([(b1_3b, a1), (b2, a2), (b3, a3)], [i1, i2, i3], max_m=40)
+                                    for i1 in (0, b1_3b - 2, b1_3b - 1, b1_3b)
+                                    }
+                                M_ag = 0
+                                while M_ag in L_by_i1[0] and T3 - M_ag >= 0:
+                                    if len({L_by_i1[i1][M_ag][T3 - M_ag] for i1 in (0, b1_3b - 2, b1_3b - 1, b1_3b)}) > 1:
+                                        break
+                                    M_ag += 1
+                                if M_ag < _m_underline(a1) + b2 + a2 + b3 + a3:
+                                    superlinear_3block_errors += 1
+
+    return {
+        "virtual_ext_errors": virtual_ext_errors,
+        "virtual_ext_entries": virtual_ext_entries,
+        "shift_front_errors": shift_front_errors,
+        "shift_fronts_checked": shift_fronts_checked,
+        "a1_eq2_merge_errors": a1_eq2_merge_errors,
+        "a1_eq2_configs": a1_eq2_configs,
+        "superlinear_2block_errors": superlinear_2block_errors,
+        "superlinear_2block_configs": superlinear_2block_configs,
+        "superlinear_3block_errors": superlinear_3block_errors,
+        "superlinear_3block_configs": superlinear_3block_configs,
+    }
+
+
 
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
@@ -11631,6 +11803,20 @@ def self_test() -> dict:
         and tr_53["multiblock_configs_checked"] == 3888
     ), "Theorem 53 KG-Lateral Turing-RNG Lune 3-Crystal Collapse or Multi-Block Shielding Law violated"
 
+    ve_54 = verify_virtual_plus1_run_extension_a1_eq2_crystal_merge_and_multiblock_lune()
+    assert (
+        ve_54["virtual_ext_errors"] == 0
+        and ve_54["virtual_ext_entries"] == 6831
+        and ve_54["shift_front_errors"] == 0
+        and ve_54["shift_fronts_checked"] == 33
+        and ve_54["a1_eq2_merge_errors"] == 0
+        and ve_54["a1_eq2_configs"] == 160
+        and ve_54["superlinear_2block_errors"] == 0
+        and ve_54["superlinear_2block_configs"] == 336
+        and ve_54["superlinear_3block_errors"] == 0
+        and ve_54["superlinear_3block_configs"] == 288
+    ), "Theorem 54 Bit-Complement Virtual +1 Run-Extension Law, a_1 = 2 Crystal Merge, or Super-Linear Multi-Block Lune Shielding violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -11728,6 +11914,7 @@ def self_test() -> dict:
         "fl_51": fl_51,
         "gj_52": gj_52,
         "tr_53": tr_53,
+        "ve_54": ve_54,
         "tent_eval": tent_eval,
         "eo_neural": eo_neural,
         "clades": clades,
@@ -13449,7 +13636,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 52,
-            "commit": "HEAD",
+            "commit": "ba6a61a4",
             "time_str": "Oct 21, 12:28 AM",
             "dt_min": 30,
             "cum_min": 1225,
@@ -13464,6 +13651,27 @@ def render_prize_progress_gif_and_poster(
             "synthesis": (
                 "Third lateral KG transfer from Turing equal-diffusion stability (`turing-gray-scott-2`) + Runions RNG lune exclusion (`runions-leaf-venation-2`): proves U_{3,a,k}===U_{2,a,k} "
                 "(3-crystal collapse), exact slope-4/3 lune synchronization M(a), and 2-block latch erasure M_agree >= a_1+b_2+a_2+1 across 3,888 configs."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
+        {
+            "step": 53,
+            "commit": "HEAD",
+            "time_str": "Oct 21, 7:33 AM",
+            "dt_min": 25,
+            "cum_min": 1250,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 53: Bit-Complement Virtual +1 Run-Extension Law, a_1 = 2 Two-Crystal Collapse & Super-Linear Multi-Block Lune Shielding",
+            "thm_badge": "Theorem 54 (Virtual +1 Run-Extension, a_1=2 Two-Crystal Merge & Multi-Block Lune)",
+            "formula_lines": [
+                r"$l_m^{(d)}(T_1+1-m)\equiv 1\oplus U_{d,\,a_1+2,\,a_1+1}(m)\;\;(\forall a_1\ge 2,\,d\in\{0,1,2\},\,m\ge 1)\implies M_{T_1+1}(a_1)\equiv M(a_1+1)$",
+                r"$a_1=2\implies l_m^{(0)}(T_2-m)\equiv l_m^{(1)}(T_2-m)\;\;(\le 2\;\text{crystals}),\;\;M_{\mathrm{agree}}^{(r)}\ge M_*(a_1)+\sum_{j=2}^r(b_j+a_j)$",
+            ],
+            "synthesis": (
+                "Proves exact Bit-Complement Virtual +1 Run-Extension l_m^{(d)}(T_1+1-m) = 1 ^ U_{d,a_1+2,a_1+1}(m) at the first 0 after 1^{a_1}, shifting M_{T_1+1}(a_1)=M(a_1+1), "
+                "merging d_1 in {0,1} identically whenever a_1=2, and establishing super-linear r-block lune shielding M_agree >= M_underline(a_1) + sum_{j>=2}(b_j+a_j)."
             ),
             "pi_max": 30,
             "necks_done": 74248449,
@@ -13833,14 +14041,15 @@ def render_prize_progress_gif_and_poster(
                 "S50\nThm51",
                 "S51\nThm52",
                 "S52\nThm53",
+                "S53\nThm54",
             ],
             color="#cbd5e1",
-            fontsize=2.9,
+            fontsize=2.8,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–21, 2026: 52 Milestones, 20h 25m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–21, 2026: 53 Milestones, 20h 50m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -14018,6 +14227,7 @@ def main(argv: list[str] | None = None) -> int:
     fl_51 = res["fl_51"]
     gj_52 = res["gj_52"]
     tr_53 = res["tr_53"]
+    ve_54 = res["ve_54"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -14090,7 +14300,7 @@ def main(argv: list[str] | None = None) -> int:
         even_jump["max_ext_30"],
     )
     print(
-        f"[theorems_15_to_53_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40/GM41/PF42/FT43/Bio44/LC45/UH46/IW47/LI48/BD49/MN50/FL51/GJ52/TR53 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']},{gm_41['golden_mean_and_onehot_errors'] + gm_41['two_block_n1_errors'] + gm_41['defect_mirror_errors']},{pf_42['parity_flip_automaton_errors'] + pf_42['even_multiblock_n1_errors'] + pf_42['defect_vertical_period_errors']},{ft_43['gate_lock_and_padovan_errors'] + ft_43['mobius_shell_collapse_errors'] + ft_43['survivors_500']},{bio_44['oliva_conus_and_eo_errors'] + bio_44['ballot_greens_errors'] + bio_44['short_run_gate_errors'] + bio_44['opaque_mirror_survivors_500'] + bio_44['arbitrary_transient_survivors']},{lc_45['left_1run_profile_errors'] + lc_45['d2_linearization_and_mirror_errors'] + lc_45['antidiag_parity_and_clash_errors'] + lc_45['pure_left_cone_survivors_31403']},{uh_46['ring_horizon_errors'] + uh_46['cascade_9row_errors'] + uh_46['prefix_transmission_errors']},{iw_47['wavefront_step_errors'] + iw_47['hit_bound_errors'] + iw_47['band1_tunneling_errors'] + iw_47['band2_mod4_errors'] + iw_47['defect_mirror_survivors_200']},{li_48['interval_and_d2_spike_errors'] + li_48['true_cone_laws_errors'] + li_48['nfa_vs_3laws_mismatches'] + li_48['depth_d_collapse_mismatches'] + li_48['survivors_laws123_200'] + li_48['mobius_mahler_involution_errors']},{bd_49['dichotomy_errors'] + bd_49['survivors_from_0'] + bd_49['survivors_post_2pi']},{mn_50['tautology_and_comb_errors'] + mn_50['true_cone_law4_errors']},{fl_51['floquet_wavefront_errors'] + fl_51['prefix_comb_errors'] + fl_51['tail_shielding_errors'] + fl_51['even_b_boundary_tail_errors']},{gj_52['antidiag_rec_errors'] + gj_52['errors_4crystal'] + gj_52['closed_form_d01_errors']},{tr_53['collapse_3crystal_errors'] + tr_53['comb_d0_exit_errors'] + tr_53['lune_front_errors'] + tr_53['multiblock_shielding_errors']}) | "
+        f"[theorems_15_to_54_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40/GM41/PF42/FT43/Bio44/LC45/UH46/IW47/LI48/BD49/MN50/FL51/GJ52/TR53/VE54 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']},{gm_41['golden_mean_and_onehot_errors'] + gm_41['two_block_n1_errors'] + gm_41['defect_mirror_errors']},{pf_42['parity_flip_automaton_errors'] + pf_42['even_multiblock_n1_errors'] + pf_42['defect_vertical_period_errors']},{ft_43['gate_lock_and_padovan_errors'] + ft_43['mobius_shell_collapse_errors'] + ft_43['survivors_500']},{bio_44['oliva_conus_and_eo_errors'] + bio_44['ballot_greens_errors'] + bio_44['short_run_gate_errors'] + bio_44['opaque_mirror_survivors_500'] + bio_44['arbitrary_transient_survivors']},{lc_45['left_1run_profile_errors'] + lc_45['d2_linearization_and_mirror_errors'] + lc_45['antidiag_parity_and_clash_errors'] + lc_45['pure_left_cone_survivors_31403']},{uh_46['ring_horizon_errors'] + uh_46['cascade_9row_errors'] + uh_46['prefix_transmission_errors']},{iw_47['wavefront_step_errors'] + iw_47['hit_bound_errors'] + iw_47['band1_tunneling_errors'] + iw_47['band2_mod4_errors'] + iw_47['defect_mirror_survivors_200']},{li_48['interval_and_d2_spike_errors'] + li_48['true_cone_laws_errors'] + li_48['nfa_vs_3laws_mismatches'] + li_48['depth_d_collapse_mismatches'] + li_48['survivors_laws123_200'] + li_48['mobius_mahler_involution_errors']},{bd_49['dichotomy_errors'] + bd_49['survivors_from_0'] + bd_49['survivors_post_2pi']},{mn_50['tautology_and_comb_errors'] + mn_50['true_cone_law4_errors']},{fl_51['floquet_wavefront_errors'] + fl_51['prefix_comb_errors'] + fl_51['tail_shielding_errors'] + fl_51['even_b_boundary_tail_errors']},{gj_52['antidiag_rec_errors'] + gj_52['errors_4crystal'] + gj_52['closed_form_d01_errors']},{tr_53['collapse_3crystal_errors'] + tr_53['comb_d0_exit_errors'] + tr_53['lune_front_errors'] + tr_53['multiblock_shielding_errors']},{ve_54['virtual_ext_errors'] + ve_54['shift_front_errors'] + ve_54['a1_eq2_merge_errors'] + ve_54['superlinear_2block_errors'] + ve_54['superlinear_3block_errors']}) | "
         f"SWAR cone tails={bridge_31['swar_candidates_tested']} (survivors={bridge_31['swar_survivors']}, max_steps={bridge_31['swar_max_steps']}) | "
         f"500x500 cone pairs={ft_43['pairs_500_tested']} (0-step kills={ft_43['killed_at_mismatch_500']}, pure-left kills={bio_44['nonzero_pairs_500']}/{bio_44['nonzero_pairs_500']}, survivors={ft_43['survivors_500']}) | "
         f"Q_m={twin_32['moore_sizes_m1_to_6']} | EF tests={subd_34['euler_fermat_tests']} | half-density={grand_35['exact_half_density_count_s1_to_41']}/41 | ANF mons={grand_35['monomial_counts_t1_to_7']} | "

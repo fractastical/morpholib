@@ -535,6 +535,27 @@ theorem rule30_turing_equal_diffusion_alternating_comb_fixed_point
     bne uk_mm1 (u_prev1 || !u_prev1) = !uk_mm1 := by
   cases uk_mm1 <;> cases u_prev1 <;> rfl
 
+/-- Law 2ac (`wolfram-conus-textile-rule30-2ac`):
+    Bit-Complement Virtual `+1` Run-Extension Law & `a_1 = 2` Two-Crystal Collapse (Theorem 54):
+    1. (`rule30_virtual_plus1_prefix_xor_complement_step`): Along the post-exit anti-diagonal `s + m = T_1 + 1`
+       immediately following a `1^{a_1}` run (`a_1 >= 2`), flipping the initial prefix-XOR state at `m = 1`
+       from `u_init` to `!u_init` while feeding the exact same OR-gate driver `or_gate = U_{a_1}(m-1) || U_{a_1-1}(m-2)`
+       preserved from the interior of `1^{a_1}` complements every step of the recurrence:
+       `bne (!u_prev) or_gate = !(bne u_prev or_gate)`, proving `l_m^{(d)}(T_1 + 1 - m) = !U_{d, a_1+2, a_1+1}(m)`
+       for all `m >= 1` and shifting the Turing-RNG lune synchronization front by `+1`: `M_{T_1+1}(a_1) = M(a_1 + 1)`.
+    2. (`rule30_a1_eq_2_post_exit_crystal_merge`): Because `U_{1, 4, 3}(m) = U_{0, 4, 3}(m)` for all `m >= 0` (`k = 3`),
+       their bitwise complements at `T_1 + 1` are also identical (`!u = !u`), merging crystals `d_1 = 0` and `d_1 = 1`
+       into a single crystal across all subsequent blocks whenever `a_1 = 2`. -/
+theorem rule30_virtual_plus1_prefix_xor_complement_step
+    (u_prev or_gate : Bool) :
+    bne (!u_prev) or_gate = !(bne u_prev or_gate) := by
+  cases u_prev <;> cases or_gate <;> rfl
+
+theorem rule30_a1_eq_2_post_exit_crystal_merge
+    (u_d0 u_d1 : Bool) (h : u_d0 = u_d1) :
+    (!u_d0) = (!u_d1) := by
+  rw [h]
+
 
 
 

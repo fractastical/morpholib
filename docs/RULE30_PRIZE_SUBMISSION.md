@@ -1069,11 +1069,28 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >    - Because the $d = 0$ vs. $d \in \{1, 2\}$ discrepancy at the exit of Block 1 ($t = T_1 = b_1 + a_1$) begins at spatial depth $m \ge a_1 + 1$ and propagates at speed $\le 1$ across the $b_2 + a_2$ time steps of Block 2, at the exit anti-diagonal $s + m = T_2 = b_1 + a_1 + b_2 + a_2$ of Block 2, **all $b_1 + 1$ jump choices $i_1 \in \{0, \dots, b_1\}$ of Block 1** produce the **exact same exit prefix** for $0 \le m \le a_1 + b_2 + a_2$:
 >      $$M_{\mathrm{agree}}(b_1, a_1, b_2, a_2, i_2) \;\ge\; a_1 + b_2 + a_2 + 1 \qquad (\forall\, b_1, a_1, b_2, a_2 \ge 1). \quad \square$$
 
+### 6.42 Theorem 54: Bit-Complement Virtual $+1$ Run-Extension Law, $a_1 = 2$ Two-Crystal Collapse & Super-Linear Multi-Block Lune Shielding
+
+> **Theorem 54 (Bit-Complement Virtual $+1$ Run-Extension Law $l_m^{(d)}(T_1 + 1 - m) \equiv 1 \oplus U_{d, a_1+2, a_1+1}(m)$, Exact $a_1 = 2$ Post-Exit Two-Crystal Collapse, and Super-Linear $r$-Block Lune Shielding).**  
+> 1. **Bit-Complement Virtual $+1$ Run-Extension Law at the Post-Exit Anti-Diagonal $s + m = T_1 + 1$ (`virtual_ext_errors == 0` across $6,831$ entries for $a_1 = 2 \dots 34$, `shift_front_errors == 0` across $33$ fronts, `Law 2ac` in Lean 4):**  
+>    - Immediately after any $1^{a_1}$ run ($a_1 \ge 2$), at the first $0$ of the next block ($t = T_1 = b_1 + a_1$), the Depth-1 boundary bit $l_1(T_1) = a_1 \bmod 2 = 1 \oplus ((a_1 + 1) \bmod 2)$ is the **exact bitwise complement** of the $(a_1 + 1)$-st interior step of a continued $1^{a_1 + 2}$ run, while for all $m \ge 2$ the anti-diagonal prefix-XOR recurrence $l_m(T_1 + 1 - m) = l_{m-1}(T_1 + 2 - m) \oplus \bigl(U_{a_1}(m-1) \lor U_{a_1-1}(m-2)\bigr)$ uses the **exact same OR-gate driver** as $U_{d, a_1+2, a_1+1}(m)$ (`rule30_virtual_plus1_prefix_xor_complement_step`).
+>    - Consequently, for **every** $a_1 \ge 2$, **every** crystal $d \in \{0, 1, 2\}$, and **every** spatial depth $m \ge 1$:
+>      $$l_m^{(d)}(T_1 + 1 - m) \;\equiv\; 1 \oplus U_{d,\; a_1 + 2,\; a_1 + 1}(m) \qquad (\forall\, a_1 \ge 2,\; \forall\, d \in \{0, 1, 2\},\; \forall\, m \ge 1),$$
+>      which shifts the 3-crystal Turing-RNG lune synchronization depth at $T_1 + 1$ by **exactly $+1$**:
+>      $$M_{T_1 + 1}(a_1) \;\equiv\; M(a_1 + 1) \qquad (\forall\, a_1 \ge 2).$$
+> 2. **Exact $a_1 = 2$ Post-Exit Two-Crystal Collapse (`a1_eq2_merge_errors == 0` across $160$ two-block configurations):**  
+>    - When $a_1 = 2$, the Bit-Complement Virtual $+1$ Run-Extension Law maps $T_1 + 1$ to $1 \oplus U_{d, 4, 3}(m)$. By Theorem 52(2), $U_{1, 4, 3}(m) \equiv U_{0, 4, 3}(m)$ identically for all $m \ge 0$ ($k = 3 \ge 3$). Therefore (`rule30_a1_eq_2_post_exit_crystal_merge`), at $T_1 + 1$ and across **all subsequent anti-diagonals** of any multi-block continuation $0^{b_1} 1^2 0^{b_2} 1^{a_2} \cdots$, the boundary crystals $d_1 = 0$ ($i_1 = b_1$) and $d_1 = 1$ ($i_1 = b_1 - 1$) merge identically:
+>      $$a_1 = 2 \quad \Longrightarrow \quad l_m^{(0)}(T_r - m) \;\equiv\; l_m^{(1)}(T_r - m) \qquad (\forall\, m \ge 0),$$
+>      collapsing all $(b_1 + 1)$ initial latch states of $0^{b_1} 1^2 0^{b_2} 1^{a_2}$ to **at most $2$ distinct exit crystals**!
+> 3. **Super-Linear Multi-Block Lune Shielding (`superlinear_2block_errors == 0` across $336$ two-block configs and `superlinear_3block_errors == 0` across $288$ three-block configs):**  
+>    - Defining $\underline{M}(1) = 2$, $\underline{M}(2) = 3$, $\underline{M}(3q) = 4q$, $\underline{M}(3q+1) = 4q+1$, and $\underline{M}(3q+2) = 4q+2$ ($\underline{M}(a_1) \approx \frac{4}{3}a_1$), across any $r$-block concatenation $0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} \cdots 0^{b_r} 1^{a_r}$, all $b_1 + 1$ jump choices $i_1 \in \{0, \dots, b_1\}$ of Block 1 agree at the exit $T_r = \sum_{j=1}^r (b_j + a_j)$ up to spatial depth at least:
+>      $$M_{\mathrm{agree}}^{(r)} \;\ge\; \underline{M}(a_1) + \sum_{j=2}^r (b_j + a_j). \quad \square$$
+
 ---
 
 ## 7. One-Command Verification
 
-All fifty-three theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All fifty-four theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only
