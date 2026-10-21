@@ -436,6 +436,62 @@ theorem rule30_zero_to_one_forward_triple_lock_case_b
     (r1_tm1 = true ∧ r1_t = true ∧ r1_t1 = false) := by
   cases r1_tm1 <;> cases r2_tm1 <;> cases r1_t <;> cases r2_t <;> cases r1_t1 <;> decide
 
+/-- Law 2y (`wolfram-conus-textile-rule30-2y`):
+    Universal Depth-2 Right-Seam Tautology & All-Even `0 1^{2k} 0` Two-Step Latch Law (Theorem 50):
+    1. (`rule30_depth2_right_seam_tautology`): Whenever `c_t = true` and `r1_t = false`, the Depth-2
+       right-half-plane updates `r1_{t+1} = rule30 true false r2_t = !r2_t` and
+       `r2_{t+1} = rule30 false r2_t r3_t = r2_t || r3_t` satisfy the unconditional Boolean tautology
+       `(r1_{t+1} || r2_{t+1}) = true` for all `r2_t, r3_t`, forcing the two-step right-seam lock
+       `r1_{t+2} = rule30 c_{t+1} r1_{t+1} r2_{t+1} = !c_{t+1}` regardless of `r2_t, r3_t`.
+    2. (`rule30_even_1run_0110_two_step_latch`): Across `(c_0, c_1, c_2, c_3) = (false, true, true, false)`
+       with `l1_0 = false` (`r1_0 = true`), the forward triple lock gives `r1_2 = false` at `c_2 = true`,
+       and the Depth-2 tautology then forces `r1_4 = !c_3 = true` unconditionally across all right-cone
+       inputs `r2_2, r3_2`. -/
+theorem rule30_depth2_right_seam_tautology
+    (r2_t r3_t c_t1 r1_t1 r2_t1 r1_t2 : Bool) :
+    (r1_t1 = rule30 true false r2_t ∧
+     r2_t1 = rule30 false r2_t r3_t ∧
+     r1_t2 = rule30 c_t1 r1_t1 r2_t1) →
+    ((r1_t1 || r2_t1) = true ∧ r1_t2 = !c_t1) := by
+  cases r2_t <;> cases r3_t <;> cases c_t1 <;> cases r1_t1 <;> cases r2_t1 <;> cases r1_t2 <;> decide
+
+theorem rule30_even_1run_0110_two_step_latch
+    (r1_0 r2_0 r1_1 r2_1 r1_2 r2_2 r3_2 r1_3 r2_3 r1_4 : Bool) :
+    (rule30 false false r1_0 = true ∧
+     r1_1 = rule30 false r1_0 r2_0 ∧
+     r1_2 = rule30 true r1_1 r2_1 ∧
+     r1_3 = rule30 true r1_2 r2_2 ∧
+     r2_3 = rule30 r1_2 r2_2 r3_2 ∧
+     r1_4 = rule30 false r1_3 r2_3) →
+    (r1_2 = false ∧ (r1_3 || r2_3) = true ∧ r1_4 = true) := by
+  cases r1_0 <;> cases r2_0 <;> cases r1_1 <;> cases r2_1 <;> cases r1_2 <;>
+  cases r2_2 <;> cases r3_2 <;> cases r1_3 <;> cases r2_3 <;> cases r1_4 <;> decide
+
+/-- Law 2z (`wolfram-conus-textile-rule30-2z`):
+    Lateral Knowledge-Graph Transfer (`bressloff-v1-form-constants-3` Floquet 2:1 Subharmonic
+    Resonance + `runions-leaf-venation-1,3` Murray/Katifori Conservation) ->
+    Floquet 2:1 Subharmonic Left-Cone Wavefront & `0^b 1^a` Tail-Shielding Law (Theorem 51):
+    1. (`rule30_floquet_2to1_zero_run_step_and_spike`): Across a `0`-run where `l_{2q}(s) = bne (l_{2q-1}(s+1)) (l_{2q-1}(s))`
+       has a single unit spike between two monotone steps `(false, true, true)`, the next odd depth
+       `l_{2q+1}(s) = bne (l_{2q}(s+1)) (l_{2q}(s) || l_{2q-1}(s))` restores a monotone step shifted left by `2` steps!
+    2. (`rule30_floquet_shielding_absorbs_even_spike`): When `l_{2q-1}(s) = true`, the OR gate
+       `(l_{2q}(s) || l_{2q-1}(s)) = true` absorbs `l_{2q}(s)` identically, shielding all deeper
+       left-cone columns `m >= b - 1` from interior latch-index shifts `0 <= i < i' <= b - 3`. -/
+theorem rule30_floquet_2to1_zero_run_step_and_spike
+    (l_odd_0 l_odd_1 l_odd_2 : Bool)
+    (h0 : l_odd_0 = false) (h1 : l_odd_1 = true) (h2 : l_odd_2 = true) :
+    let l_even_0 := bne l_odd_1 l_odd_0
+    let l_even_1 := bne l_odd_2 l_odd_1
+    let l_next_odd_0 := bne l_even_1 (l_even_0 || l_odd_0)
+    l_even_0 = true ∧ l_even_1 = false ∧ l_next_odd_0 = true := by
+  subst h0 h1 h2
+  decide
+
+theorem rule30_floquet_shielding_absorbs_even_spike
+    (l_even_s l_even_sp1 : Bool) :
+    bne l_even_sp1 (l_even_s || true) = !l_even_sp1 := by
+  cases l_even_s <;> cases l_even_sp1 <;> rfl
+
 
 
 

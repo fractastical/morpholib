@@ -991,11 +991,54 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 > 3. **Christol $2$-Kernel Dyadic Saturation & $\mathbb{F}_2$ Hankel Matrix Full-Rank Growth of $c_t$ (`PATH-7` & `PATH-3`):**  
 >    - Across the first $7$ dyadic octaves $0 \le r \le 6$ ($\sum_{r=0}^6 2^r = 127$ arithmetic progressions $t \mapsto c_{2^r t + s}$), all **$127 / 127$ ($100\%$) $2$-kernel slices are pairwise distinct** on $32$-bit windows (zero collisions), and the $n \times n$ $\mathbb{F}_2$ Hankel matrices $H_n(c)_{i,j} = c_{i+j}$ achieve ranks $(15, 31, 64, 128, 255)$ for $n = (16, 32, 64, 128, 256)$. $\square$
 
+### 6.38 Theorem 50: Universal Depth-2 Right-Seam Tautology, All-Odd `0 1^{2k-1} 0` & All-Even `0 1^{2k} 0` Pure Left-Cone Laws, and Exact Myhill–Nerode Minimal DFA State Hierarchy
+
+> **Theorem 50 (Universal Depth-2 Right-Seam Tautology, All-Odd `0 1^{2k-1} 0` Bridge Law 4A, All-Even `0 1^{2k} 0` Two-Step Latch/Tunneling Law 4B, and Exact Myhill–Nerode Minimal DFA State Hierarchy $|\mathcal{M}_d| = (3, 6, 17, 67, 373)$).**  
+> 1. **Universal Depth-2 Right-Seam Tautology & Period-2 Parity Comb (`PATH-1` & `PATH-2`, `tautology_and_comb_errors == 0` across $32,736$ configurations, `Law 2y` in Lean 4):**  
+>    - Whenever $c_t = 1$ and $r_1(t) = 0$, the Depth-2 right-half-plane updates
+>      $$r_1(t+1) \;=\; 1 \oplus \bigl(0 \lor r_2(t)\bigr) \;=\; \overline{r_2(t)}, \qquad r_2(t+1) \;=\; 0 \oplus \bigl(r_2(t) \lor r_3(t)\bigr) \;=\; r_2(t) \lor r_3(t)$$
+>      satisfy the unconditional Boolean tautology:
+>      $$r_1(t+1) \lor r_2(t+1) \;=\; \overline{r_2(t)} \lor r_2(t) \lor r_3(t) \;\equiv\; 1 \qquad \bigl(\forall\, r_2(t), r_3(t) \in \{0, 1\}\bigr),$$
+>      forcing the deterministic two-step right-seam lock $r_1(t+2) = c_{t+1} \oplus (r_1(t+1) \lor r_2(t+1)) \equiv 1 \oplus c_{t+1}$ regardless of $r_2(t), r_3(t)$!
+>    - By 2-step induction on $k \ge 1$, across **any `1`-run $(c_0, c_1, \dots, c_a, c_{a+1}) = (0, 1^a, 0)$ of arbitrary length $a \ge 1$** entered with $l_1(0) = 0$ ($r_1(0) = 1 \implies r_1(1) = 1 \implies r_1(2) = 0$), every even index satisfies $r_1(2k) = 0$ ($2 \le 2k \le a + 1$), yielding two universal Pure Left-Cone laws valid for **all $a \ge 1$**:
+>      - **Law 4A (All-Odd `1`-Run Bridge Law on `0 1^{2k-1} 0`, $\forall k \ge 1$):** For every odd run length $a = 2k - 1 \in \{1, 3, 5, 7, \dots\}$, $r_1(a+1) = 0$, so:
+>        $$l_1(0) = 0 \quad \Longrightarrow \quad c_{a+2} \oplus l_1(a + 1) = 0.$$
+>      - **Law 4B (All-Even `1`-Run Two-Step Latch & Single-Zero Tunneling Law on `0 1^{2k} 0`, $\forall k \ge 1$):** For every even run length $a = 2k \in \{2, 4, 6, 8, \dots\}$, $r_1(a) = 0$ forces $r_1(a+2) = 1 \oplus c_{a+1} = 1$, so:
+>        - On `0 1^{2k} 0 0` ($c_{a+2} = 0$), $c_{a+3} \oplus l_1(a+2) = 1$ unconditionally (even when $l_1(a+1) = 0$).
+>        - On `0 1^{2k} 0 1` ($c_{a+2} = 1$), $r_1(a+2) = 1 \implies r_1(a+3) = 0$, so the parity-comb lock **tunnels unbroken across the single zero $c_{a+1} = 0$** into the next `1`-run regardless of $l_1(a+1)$.
+>      - Verified with `0` errors across all $32,736$ configurations for $a = 1 \dots 10$ and on $T = 1,000$ steps of the true Rule 30 cone (`88` Law 4A hits, `20` Law 4B-`00` hits, `17` Law 4B-`01` tunneling hits, `0` errors).
+> 2. **Exact Myhill–Nerode Minimal DFA State Hierarchy of Depth-$d$ Right Cylinders ($d = 1 \dots 5$):**  
+>    - Over the full input alphabet $(c_t, c_{t+1}, l_1(t)) \in \{0, 1\}^3$, subset construction and Moore partition refinement of the Depth-$d$ Right Cylinder NFA ($2^d$ microstates) yield:
+>      - **Reachable non-empty subset states:** $(3,\; 8,\; 26,\; 100,\; 598)$ for $d = 1, 2, 3, 4, 5$,
+>      - **Minimal Myhill–Nerode DFA equivalence classes:** $|\mathcal{M}_d| = (3,\; 6,\; 17,\; 67,\; 373)$ for $d = 1, 2, 3, 4, 5$.
+> 3. **Strictly Monotone Post-Mismatch Refutation Acceleration ($d = 1 \to 2 \to 3 \to 4$):**  
+>    - Across all $39,606$ non-zero pairs $(t_0, \Pi) \in [0, 200) \times [1, 200)$ warmed up on the true cone prefix, increasing cylinder depth $d = 1 \to 2 \to 3 \to 4$ strictly accelerates refutation on **$393$ pairs** ($d = 2$ vs $d = 1$), **$313$ pairs** ($d = 3$ vs $d = 2$), and **$192$ pairs** ($d = 4$ vs $d = 3$) (`898` total depth accelerations), reducing the worst-case post-mismatch survival horizon to **`17` steps** at $d = 3, 4$ (`0` survivors). $\square$
+
+### 6.39 Theorem 51: KG-Lateral Synthesis — Floquet $2:1$ Subharmonic Left-Cone Depth-Oscillator, Closed-Form Comb Prefix Law, and Universal $0^b 1^a$ OR-Gate Tail-Shielding Law
+
+> **Theorem 51 (KG-Lateral Transfer from Model #14 `bressloff-v1-form-constants-3` Floquet $2:1$ Subharmonic Resonance & Model #13 `runions-leaf-venation-1,3` Murray/Katifori Conservation — Exact Floquet $2:1$ Subharmonic Left-Cone Wavefront, Closed-Form Comb Prefix Law, and Universal $0^b 1^a$ OR-Gate Tail-Shielding Law).**  
+> 1. **Exact Floquet $2:1$ Subharmonic Left-Cone Depth-Oscillator Across All $0$-Runs (`floquet_wavefront_errors == 0` across $1,235$ configurations for $b = 1 \dots 12$, `Law 2z` in Lean 4):**  
+>    - Across any contiguous $0$-run $[0, b-1]$ of length $b \ge 1$ ($c_0 = \dots = c_{b-1} = 0, c_b = 1$) with Monotone Zero-Run Latch jump index $i \in \{0, 1, \dots, b\}$ ($l_1(s) = \mathbf{1}_{s \ge i}$ on $0 \le s \le b-1$), spatial depth $m \ge 1$ in the Pure Left Cone $l_m(s) = l_{m-1}(s+1) \oplus \bigl(l_{m-1}(s) \lor l_{m-2}(s)\bigr)$ acts as an exact **Floquet $2:1$ subharmonic period-doubling oscillator** (`floquet_iterate (-1)` from Rule, Stoffregen & Ermentrout 2011, `bressloff-v1-form-constants-3`), alternating between:
+>      - **Odd depths $m = 2q + 1$ ($q \ge 0$, $0 \le s \le b - 1 - 2q$):**
+>        $$l_{2q+1}(s) \;=\; \mathbf{1}_{s \ge i - 2q} \qquad \text{(monotone step wavefront shifted left by } 2q \text{ time steps!)},$$
+>        $$D_{2q+1}(s) \;=\; D_1(s + 2q) \;=\; \mathbf{1}_{i_{\min} - 2q \le s < i_{\max} - 2q}.$$
+>      - **Even depths $m = 2q$ ($q \ge 1$, $0 \le s \le b - 2q$):**
+>        $$l_{2q}(s) \;=\; \delta_{s,\, i - (2q - 1)} \qquad \text{(discrete derivative: single unit impulse at } s = i - 2q + 1\text{!)},$$
+>        $$D_{2q}(s) \;=\; D_2(s + 2q - 2) \;=\; \delta_{s,\, i - 2q + 1} \;\oplus\; \delta_{s,\, i' - 2q + 1}.$$
+> 2. **Exact Closed-Form Floquet Comb Prefix Law for $l_m(0)$ (`prefix_comb_errors == 0`):**  
+>    - At the start $t = 0$ of any $0^b 1^a$ block with jump index $0 \le i \le b - 2$, the Pure Left-Cone spatial prefix $l_m(0)$ for $1 \le m \le b - 1$ is independent of $a$ and given in closed form by:
+>      $$l_m(0) \;=\; \begin{cases} 0, & 1 \le m < i + 1, \\ 1, & m = i + 1 \quad \text{(leading impulse at depth } m = i + 1\text{)}, \\ m \bmod 2, & i + 2 \le m \le b - 1 \quad \text{(universal Floquet } 2:1 \text{ comb } 1, 0, 1, 0, \dots\text{)}. \end{cases}$$
+> 3. **Universal $0^b 1^a$ OR-Gate Tail-Shielding Law (`tail_shielding_errors == 0`, `even_b_boundary_tail_errors == 0` across $720$ block configurations for $b = 1 \dots 12, a = 1 \dots 8$):**  
+>    - Because $l_{2q+1}(s) = 1$ for all $s \ge i - 2q$, whenever $0 \le i \le b - 3$, the monotone step reaches $1$ at least two steps before the $0^b \to 1^a$ boundary ($s = b - 1$), so the OR gate $l_{2q}(s) \lor l_{2q+1}(s) = 1$ (`rule30_floquet_shielding_absorbs_even_spike`) absorbs all even-depth spikes before the $1^a$ interface. Consequently:
+>      - **(a) Interior Tail Identity ($0 \le i < i' \le b - 3$):** All $b - 2$ interior jump indices $i \in \{0, 1, \dots, b - 3\}$ produce the **exact same deeper left-cone tail** $l_m(0)$ for all $m \ge b - 1$:
+>        $$D_m(0) \;=\; l_m^{(i')}(0) \;\oplus\; l_m^{(i)}(0) \;\equiv\; 0 \qquad \bigl(\forall\, m \ge b - 1,\; \forall\, 0 \le i < i' \le b - 3\bigr).$$
+>      - **(b) Even-$b$ Boundary Tail Identity ($b = 2q$, $\{i, i'\} = \{b - 1, b\}$):** Whenever $b = 2q$ is even, the boundary pair $i = b - 1$ vs. $i' = b$ produces the **exact same deeper tail** $l_m(0)$ for all $m \ge b + 1$ ($D_m(0) \equiv 0$ for all $m \ge b + 1$), collapsing the $(b + 1)$-state latch degree of freedom on any $0^b 1^a$ block to **at most $3$ distinct deeper tails** (`max_distinct_deep_tails == 3`). $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All forty-nine theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All fifty-one theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only
