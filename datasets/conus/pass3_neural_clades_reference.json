@@ -1,0 +1,87 @@
+{
+  "schema_version": "conus-pass3-neural-clades-reference-v1",
+  "description": "Pass 3 expansion of wolfram-conus-textile-rule30: Ermentrout, Campbell & Oster (1986) / Boettiger, Ermentrout & Oster (2009) neurosecretory mantle-edge threshold automaton, Waddington & Cowe (1969) / Meinhardt (1995) multi-clade molluscan Wolfram Class II-IV benchmark (Oliva porphyria, Conus textile, Cymbiola innexa), and 2D chiral tent-wall & quadratic ANF carry observables that resolve the 1D chord-length indiscriminability gap.",
+  "primary_papers": [
+    {
+      "id": "waddington1969",
+      "citation": "Waddington, C. H. & Cowe, R. J. (1969) Computer simulation of a molluscan pigmentation pattern. J. Theor. Biol. 25(2):219-225.",
+      "doi": "10.1016/S0022-5193(69)80060-3"
+    },
+    {
+      "id": "wolfram1984",
+      "citation": "Wolfram, S. (1984) Cellular automata as models of complexity. Nature 311(5985):419-424.",
+      "doi": "10.1038/311419a0"
+    },
+    {
+      "id": "ermentrout1986",
+      "citation": "Ermentrout, G. B., Campbell, J. & Oster, G. F. (1986) A model for shell patterns based on neural activity. The Veliger 28(4):369-388.",
+      "url": "https://www.biodiversitylibrary.org/page/42466727"
+    },
+    {
+      "id": "meinhardt1987",
+      "citation": "Meinhardt, H. & Klingler, M. (1987) A model for pattern formation on the shells of molluscs. J. Theor. Biol. 126(1):63-89.",
+      "doi": "10.1016/S0022-5193(87)80101-7"
+    },
+    {
+      "id": "boettiger2009",
+      "citation": "Boettiger, A., Ermentrout, B. & Oster, G. (2009) The neural origins of shell structure and pattern in aquatic mollusks. Proc. Natl. Acad. Sci. USA 106(16):6837-6842.",
+      "doi": "10.1073/pnas.0810311106"
+    }
+  ],
+  "ermentrout_oster_neural_mantle_spec": {
+    "governing_equation": "S_{t+1,i} = H( sum_{j} W_E(i-j) A_{t,j} - sum_{j} W_I(i-j) I_{t,j} - R_{t,i} - theta ),  R_{t+1,i} = g_R S_{t+1,i} + lambda_R R_{t,i}",
+    "discrete_boolean_limit_weights": {
+      "w_left": 2,
+      "w_center": 1,
+      "w_right": 1,
+      "w_inhibit_both": 2,
+      "theta_fire": 1,
+      "theta_quench": 3
+    },
+    "isomorphism_note": "When left synaptic drive w_left = 2 and right/center excitation saturates at 1 via local lateral inhibition of (c & r), the net excitation E(l,c,r) = 2*l + (c | r) fires in the window [1, 2] and quenches at E = 3 (refractory overflow l=1, (c|r)=1), reproducing Rule 30 a_{t+1,i} = l XOR (c OR r) across all 8 binary 3-cell neighborhoods with 0 bit errors."
+  },
+  "molluscan_clade_benchmarks": {
+    "class_II_oliva_porphyria": {
+      "species": "Oliva porphyria (Linnaeus, 1758) & Naria ziczac",
+      "wolfram_class": "Class II (Symmetric Nested Tents + Hormone Reset)",
+      "eca_rule": 90,
+      "boolean_law": "a_{t+1,i} = a_{t,i-1} XOR a_{t,i+1} (with periodic global hormone synchronization pulses)",
+      "expected_tent_slope_chirality_max": 0.05,
+      "expected_anf_quadratic_carry_density": 0.0
+    },
+    "class_III_conus_textile": {
+      "species": "Conus textile Linnaeus, 1758",
+      "wolfram_class": "Class III (Chiral Chaotic Tent Annihilation)",
+      "eca_rule": 30,
+      "boolean_law": "a_{t+1,i} = a_{t,i-1} XOR (a_{t,i} OR a_{t,i+1})",
+      "expected_tent_slope_chirality_min": 0.2,
+      "expected_anf_quadratic_carry_density": 0.25
+    },
+    "class_IV_cymbiola_innexa": {
+      "species": "Cymbiola innexa / Conus marmoreus",
+      "wolfram_class": "Class IV (Soliton Glider Collisions & Phase-Shift Crossings)",
+      "eca_rule": 54,
+      "eca_rule_secondary": 110,
+      "boolean_law": "Rule 54: a_{t+1,i} = (a_{t,i-1} OR a_{t,i+1}) XOR (a_{t,i} AND (a_{t,i-1} OR a_{t,i+1}))_glider; Rule 110: (c OR r) XOR (l AND c AND r)",
+      "expected_glider_survival_after_collision": true
+    }
+  },
+  "discriminating_2d_observables_reference": {
+    "note": "Resolves the 1D horizontal white-chord KS indiscriminability gap (where Rule 30 KS=0.2623 and Rule 90 KS=0.2627 are indistinguishable because both have 1D geometric marginals P(W=w)=2^{-w}, CV=0.7071).",
+    "metrics": [
+      {
+        "id": "anf_quadratic_carry_density",
+        "formula": "rho_carry = P(a_{t+1,i} != a_{t,i-1} XOR a_{t,i+1})",
+        "rule90_exact": 0.0,
+        "rule30_theoretical": 0.5,
+        "rule110_theoretical": 0.375
+      },
+      {
+        "id": "tent_wall_chirality_index",
+        "formula": "A_LR = |v_R - |v_L|| / (v_R + |v_L|) from Boolean Jacobian damage cone",
+        "rule90_exact": 0.0,
+        "rule30_measured": 0.5868
+      }
+    ]
+  }
+}
