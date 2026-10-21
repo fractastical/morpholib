@@ -979,11 +979,23 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >      $$\Gamma(x) \;\equiv\; \frac{1}{1 + x}\,F\!\left(\frac{x}{1 + x}\right) \pmod{x^{2^m}}, \qquad F(x) \;\equiv\; \frac{1}{1 + x}\,\Gamma\!\left(\frac{x}{1 + x}\right) \pmod{x^{2^m}},$$
 >      verified with `0` errors up to $2^m = 256$ on both parities $p \in \{0, 1\}$ of the Rule 30 center column $c_{2k+p}$. $\square$
 
+### 6.37 Theorem 49: Exact $0^b \to 1$ Boundary Dichotomy, Doubled-Phase Pure Left-Cone Elimination of All $8,178$ Non-Zero Periodic Words on $\Pi \le 12$, and Christol $2$-Kernel Saturation
+
+> **Theorem 49 (Exact $0^b \to 1$ Boundary Dichotomy, Doubled-Phase Pure Left-Cone Elimination of All $8,178$ Non-Zero Words on $\Pi = 1 \dots 12$, and Christol $2$-Kernel Dyadic Saturation).**  
+> 1. **Exact $0^b \to 1$ Boundary Dichotomy (`PATH-1`, `dichotomy_errors == 0` across $2,040$ configurations):**  
+>    - Across any contiguous $0$-run $[t - b,\, t - 1]$ of length $b \ge 1$ ($c_{t-b} = \dots = c_{t-1} = 0$) followed by $c_t = 1$, the single Pure Left-Cone bit $l_1(t - 1) \in \{0, 1\}$ partitions the boundary into two mutually exclusive deterministic regimes (`Law 2x` in Lean 4):
+>      - **Case A ($l_1(t - 1) = 1 \iff r_1(t - 1) = 0$ — Retroactive Whole-Run Zero Collapse):** Because $r_1$ is monotone non-decreasing ($0^i 1^{b-i}$) across $[t - b,\, t - 1]$, $r_1(t - 1) = 0$ forces $r_1(s) = 0$ for *every* $s \in [t - b,\, t - 1]$, which retroactively forces $l_1(s) = c_{s+1} \oplus r_1(s) = 0$ across the entire preceding interior $[t - b,\, t - 2]$ ($l_1(t-b \dots t-1) = 0^{b-1} 1$).
+>      - **Case B ($l_1(t - 1) = 0 \iff r_1(t - 1) = 1$ — Forward 2-Step Right-Seam Triple Lock):** Having $r_1(t - 1) = 1$ at $(c_{t-1}, c_t) = (0, 1)$ triggers two consecutive Opaque OR-gate transitions at $x = 1$: $r_1(t) = 0 \oplus (1 \lor r_2(t-1)) = 1$ and $r_1(t+1) = 1 \oplus (1 \lor r_2(t)) = 0$, deterministically locking the triple $(r_1(t-1), r_1(t), r_1(t+1)) = (1, 1, 0)$ regardless of $r_2(t-1), r_2(t) \in \{0, 1\}$.
+> 2. **Doubled-Phase Pure Left-Cone Elimination of All $8,178$ Non-Zero Periodic Words on $\Pi = 1 \dots 12$ (`PATH-2`, `survivors_from_0 == 0`, `survivors_post_2pi == 0`):**  
+>    - Whereas $8$ non-zero periodic words across $\Pi \le 10$ survived Laws 1–3 on the single-phase window $[2\Pi, 4\Pi)$ in Theorem 48, the inward defect wavefront $D_1(t) = l_1(t+\Pi) \oplus l_1(t)$ flips the phase of $l_1(t)$ across successive $\Pi$-windows. Evaluating the Pure Left-Cone functional $l_1(t) = B_t(1)$ under Laws 1–3 from $t = 0$ and across the doubled post-transient window $[2\Pi,\, 6\Pi + 14)$ **eliminates $100\%$ of all $8,178$ non-zero periodic words across $\Pi = 1 \dots 12$** (`0` survivors, with worst-case refutation at `max_kill_from_0 = 20` steps from $t = 0$ and `max_kill_post_2pi = 19` steps after $2\Pi$).
+> 3. **Christol $2$-Kernel Dyadic Saturation & $\mathbb{F}_2$ Hankel Matrix Full-Rank Growth of $c_t$ (`PATH-7` & `PATH-3`):**  
+>    - Across the first $7$ dyadic octaves $0 \le r \le 6$ ($\sum_{r=0}^6 2^r = 127$ arithmetic progressions $t \mapsto c_{2^r t + s}$), all **$127 / 127$ ($100\%$) $2$-kernel slices are pairwise distinct** on $32$-bit windows (zero collisions), and the $n \times n$ $\mathbb{F}_2$ Hankel matrices $H_n(c)_{i,j} = c_{i+j}$ achieve ranks $(15, 31, 64, 128, 255)$ for $n = (16, 32, 64, 128, 256)$. $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All forty-eight theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All forty-nine theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

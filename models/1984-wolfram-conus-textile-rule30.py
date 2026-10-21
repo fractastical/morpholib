@@ -9569,6 +9569,162 @@ def verify_zero_run_latch_interval_d2_spike_depth_d_cylinder_and_mobius_mahler_l
     }
 
 
+def verify_zero_run_boundary_dichotomy_seeded_left_cone_and_christol_2kernel() -> dict[str, int]:
+    r"""Verify Theorem 49 (Milestone 48 toward the Full Problem 1 & Problem 3 Grand Prizes):
+    1. Exact Zero-to-One Boundary Dichotomy (PATH-1 — Retroactive Whole-Run Zero Collapse vs. Forward 2-Step
+       Right-Seam Triple Lock):
+       Across any contiguous 0-run [t - b, t - 1] of length b >= 1 (c_{t-b} = ... = c_{t-1} = 0) followed by
+       c_t = 1, the single Pure Left-Cone bit l_1(t - 1) in {0, 1} partitions the boundary into two mutually
+       exclusive deterministic regimes (dichotomy_errors == 0 across all 2,040 configurations for b = 1..8):
+         (a) Case A (l_1(t - 1) == 1 <=> r_1(t - 1) == 0 — Retroactive Whole-Run Zero Collapse):
+             By the Monotone Zero-Run Latch (r_1 non-decreasing on [t - b, t - 1]), r_1(t - 1) = 0 forces
+             r_1(s) = 0 for EVERY s in [t - b, t - 1], which retroactively forces l_1(s) = c_{s+1} ^ r_1(s) = 0
+             across the entire preceding interior s in [t - b, t - 2] (so l_1[t-b .. t-1] = 0^{b-1} 1).
+         (b) Case B (l_1(t - 1) == 0 <=> r_1(t - 1) == 1 — Forward 2-Step Right-Seam Triple Lock):
+             Having r_1(t - 1) = 1 at (c_{t-1}, c_t) = (0, 1) triggers two consecutive Opaque OR-gate steps
+             at x = 1: r_1(t) = 0 ^ (1 | r_2(t-1)) = 1 and r_1(t+1) = 1 ^ (1 | r_2(t)) = 0, deterministically
+             locking the triple (r_1(t-1), r_1(t), r_1(t+1)) = (1, 1, 0) regardless of r_2(t-1), r_2(t) in {0, 1}.
+    2. Doubled-Phase Pure Left-Cone Elimination of All 8,178 Non-Zero Periodic Words on Pi = 1..12 (PATH-2):
+       In Theorem 48, 8 non-zero periodic words across Pi <= 10 survived Laws 1-3 on the single-phase window
+       [2*Pi, 4*Pi). Because the inward defect wavefront D_1(t) = l_1(t+Pi) ^ l_1(t) flips the phase of l_1(t)
+       across successive Pi-windows, testing the Pure Left-Cone functional l_1(t) = B_t(1) under Laws 1-3 from
+       t = 0 AND across the doubled post-transient window [2*Pi, 6*Pi + 14) eliminates 100% of all 8,178
+       non-zero periodic words across Pi = 1..12 (survivors_from_0 == 0, max_kill_from_0 == 20;
+       survivors_post_2pi == 0, max_kill_post_2pi == 19).
+    3. Christol 2-Kernel Dyadic Saturation & GF(2) Hankel Matrix Full-Rank Growth of c_t (PATH-7 & PATH-3):
+       By Christol's Theorem (1979), c_t is 2-automatic iff its 2-kernel K_2(c) = {t -> c_{2^r t + s}} is finite,
+       and F(x) = sum c_t x^t in F_2(x) is rational iff its GF(2) Hankel matrices H_n(c)_{i,j} = c_{i+j} have
+       bounded rank. Across the first 7 dyadic octaves 0 <= r <= 6 (sum_{r=0}^6 2^r = 127 arithmetic progressions),
+       all 127 / 127 (100%) 2-kernel slices on 32-bit windows are pairwise distinct (zero collisions), and
+       rank_{F_2}(H_n(c)) = (15, 31, 64, 128, 255) for n = (16, 32, 64, 128, 256).
+    """
+    # 1. Verify Exact 0^b -> 1 Boundary Dichotomy across all 2,040 configurations for b = 1..8
+    dichotomy_errors = 0
+    dichotomy_configs = 0
+    for b in range(1, 9):
+        c_loc = [0] * b + [1, 0]
+        for r1_0 in (0, 1):
+            for r2_mask in range(1 << (b + 1)):
+                r1_seq = [r1_0]
+                for s in range(b + 1):
+                    r2_s = (r2_mask >> s) & 1
+                    r1_seq.append(c_loc[s] ^ (r1_seq[-1] | r2_s))
+                l1_seq = [c_loc[s + 1] ^ r1_seq[s] for s in range(b)]
+                dichotomy_configs += 1
+                if l1_seq[b - 1] == 1:
+                    if r1_seq[:b] != [0] * b or l1_seq[: b - 1] != [0] * (b - 1):
+                        dichotomy_errors += 1
+                else:
+                    if (r1_seq[b - 1], r1_seq[b], r1_seq[b + 1]) != (1, 1, 0):
+                        dichotomy_errors += 1
+
+    # 2. Verify Doubled-Phase Pure Left-Cone Laws 1-3 Elimination across all 8,178 non-zero words on Pi = 1..12
+    nonzero_words_pi12 = 0
+    survivors_from_0 = 0
+    survivors_post_2pi = 0
+    max_kill_from_0 = 0
+    max_kill_post_2pi = 0
+
+    for Pi in range(1, 13):
+        T_w = 6 * Pi + 16
+        for mask in range(1, 1 << Pi):
+            nonzero_words_pi12 += 1
+            c_w = [(mask >> (t % Pi)) & 1 for t in range(T_w)]
+            L_int = c_w[0]
+            l1_w = [0] * T_w
+            for t in range(T_w - 1):
+                L_int = c_w[t + 1] | (((L_int >> 1) ^ (L_int | (L_int << 1))) & ~1)
+                l1_w[t + 1] = (L_int >> 1) & 1
+
+            kill_0 = -1
+            kill_2pi = -1
+            for t in range(T_w - 2):
+                v1 = c_w[t] == 1 and (c_w[t + 1] ^ l1_w[t]) != 1
+                v2 = t >= 1 and c_w[t - 1] == 0 and c_w[t] == 0 and l1_w[t - 1] == 1 and (c_w[t + 1] ^ l1_w[t]) != 1
+                v3 = (
+                    t >= 2
+                    and c_w[t - 2] == 0
+                    and c_w[t - 1] == 1
+                    and c_w[t] == 0
+                    and l1_w[t - 2] == 0
+                    and (c_w[t + 1] ^ l1_w[t]) != 0
+                )
+                if v1 or v2 or v3:
+                    if kill_0 == -1:
+                        kill_0 = t
+                    if t >= 2 * Pi and kill_2pi == -1:
+                        kill_2pi = t - 2 * Pi
+                        break
+            if kill_0 == -1:
+                survivors_from_0 += 1
+            elif kill_0 > max_kill_from_0:
+                max_kill_from_0 = kill_0
+
+            if kill_2pi == -1:
+                survivors_post_2pi += 1
+            elif kill_2pi > max_kill_post_2pi:
+                max_kill_post_2pi = kill_2pi
+
+    # 3. Verify Christol 2-Kernel Dyadic Saturation (127/127 distinct slices) & GF(2) Hankel Matrix Rank Growth
+    T_long = 2050
+    W_long = 2 * T_long + 3
+    row_long = np.zeros(W_long, dtype=np.uint8)
+    mid_long = T_long + 1
+    row_long[mid_long] = 1
+    c_long = np.zeros(T_long, dtype=np.uint8)
+    for t in range(T_long):
+        c_long[t] = row_long[mid_long]
+        nxt_long = np.zeros(W_long, dtype=np.uint8)
+        nxt_long[1:-1] = row_long[:-2] ^ (row_long[1:-1] | row_long[2:])
+        row_long = nxt_long
+
+    def _gf2_rank(mat: np.ndarray) -> int:
+        M = mat.copy().astype(np.uint8)
+        rows, cols = M.shape
+        r = 0
+        for c_idx in range(cols):
+            if r >= rows:
+                break
+            piv = np.where(M[r:, c_idx] == 1)[0]
+            if len(piv) == 0:
+                continue
+            piv_row = int(piv[0]) + r
+            if piv_row != r:
+                M[[r, piv_row]] = M[[piv_row, r]]
+            for rr in range(rows):
+                if rr != r and M[rr, c_idx] == 1:
+                    M[rr] ^= M[r]
+            r += 1
+        return r
+
+    hankel_ranks = []
+    for n_h in (16, 32, 64, 128, 256):
+        H_mat = np.zeros((n_h, n_h), dtype=np.uint8)
+        for i_h in range(n_h):
+            H_mat[i_h] = c_long[i_h : i_h + n_h]
+        hankel_ranks.append(_gf2_rank(H_mat))
+
+    kernel_slices = set()
+    L_win = 32
+    for r_oct in range(7):
+        step_oct = 1 << r_oct
+        for s_oct in range(step_oct):
+            idx_oct = s_oct + step_oct * np.arange(L_win)
+            kernel_slices.add(tuple(int(x) for x in c_long[idx_oct]))
+
+    return {
+        "dichotomy_errors": dichotomy_errors,
+        "dichotomy_configs": dichotomy_configs,
+        "nonzero_words_pi12": nonzero_words_pi12,
+        "survivors_from_0": survivors_from_0,
+        "survivors_post_2pi": survivors_post_2pi,
+        "max_kill_from_0": max_kill_from_0,
+        "max_kill_post_2pi": max_kill_post_2pi,
+        "distinct_2kernel_slices_r6": len(kernel_slices),
+        "hankel_ranks_16_to_256": hankel_ranks,
+    }
+
+
 
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
@@ -10750,6 +10906,19 @@ def self_test() -> dict:
         and li_48["mobius_mahler_involution_errors"] == 0
     ), "Theorem 48 Zero-Run Latch-Interval, D_2 Endpoint-Spike Law, 3-Law Pure Left-Cone Equivalence, or F_2[[x]] Mobius-Mahler Involution violated"
 
+    bd_49 = verify_zero_run_boundary_dichotomy_seeded_left_cone_and_christol_2kernel()
+    assert (
+        bd_49["dichotomy_errors"] == 0
+        and bd_49["dichotomy_configs"] == 2040
+        and bd_49["nonzero_words_pi12"] == 8178
+        and bd_49["survivors_from_0"] == 0
+        and bd_49["survivors_post_2pi"] == 0
+        and bd_49["max_kill_from_0"] <= 20
+        and bd_49["max_kill_post_2pi"] <= 19
+        and bd_49["distinct_2kernel_slices_r6"] == 127
+        and bd_49["hankel_ranks_16_to_256"] == [15, 31, 64, 128, 255]
+    ), "Theorem 49 Zero-Run Boundary Dichotomy, Doubled-Phase Pure Left-Cone Elimination, or Christol 2-Kernel Saturation violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -10842,6 +11011,7 @@ def self_test() -> dict:
         "uh_46": uh_46,
         "iw_47": iw_47,
         "li_48": li_48,
+        "bd_49": bd_49,
         "tent_eval": tent_eval,
         "eo_neural": eo_neural,
         "clades": clades,
@@ -12477,6 +12647,27 @@ def render_prize_progress_gif_and_poster(
             "pi_max": 30,
             "necks_done": 74248449,
         },
+        {
+            "step": 48,
+            "commit": "0bdaabcb",
+            "time_str": "Oct 20, 10:45 PM",
+            "dt_min": 25,
+            "cum_min": 1125,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 48: 0^b->1 Boundary Dichotomy, Doubled-Phase Pure Left-Cone Elimination (8,178/8,178) & Christol 2-Kernel Saturation",
+            "thm_badge": "Theorem 49 (0^b->1 Boundary Dichotomy, Doubled-Phase Elimination & Christol 2-Kernel)",
+            "formula_lines": [
+                r"$l_1(t-1)=1\Rightarrow r_1|_{0^b}\equiv 0^b\;(l_1=0^{b-1}1),\;\;l_1(t-1)=0\Rightarrow(r_1(t-1),r_1(t),r_1(t+1))=(1,1,0),\;\;\mathrm{Surv}_{\Pi\le 12}=0/8,178$",
+                r"$|\mathcal{K}_2^{\le 6}(c)|=127/127,\;\;\mathrm{rank}_{\mathbb{F}_2}(H_n(c))=(15,31,64,128,255)\;\;(n=16,32,64,128,256)$",
+            ],
+            "synthesis": (
+                "Proves the 0^b->1 Boundary Dichotomy (retroactive whole-run zero collapse vs forward (1,1,0) right-seam lock), "
+                "eliminates 100% of all 8,178 non-zero words on Pi<=12 via doubled-phase Laws 1-3 (<=19 steps), and establishes 127/127 Christol 2-kernel saturation."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
     ]
 
     pi_vals = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
@@ -12837,14 +13028,15 @@ def render_prize_progress_gif_and_poster(
                 "S45\nThm46",
                 "S46\nThm47",
                 "S47\nThm48",
+                "S48\nThm49",
             ],
             color="#cbd5e1",
-            fontsize=3.1,
+            fontsize=3.0,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 47 Milestones, 18h 20m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 48 Milestones, 18h 45m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -13017,6 +13209,7 @@ def main(argv: list[str] | None = None) -> int:
     uh_46 = res["uh_46"]
     iw_47 = res["iw_47"]
     li_48 = res["li_48"]
+    bd_49 = res["bd_49"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "

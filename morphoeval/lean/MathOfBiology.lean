@@ -409,6 +409,33 @@ theorem rule30_pure_left_cone_010_bridge_law3
     (r1_tm1 = true ∧ r1_t = true ∧ r1_t1 = false ∧ bne c_t2 l1_t1 = false) := by
   cases r1_tm1 <;> cases r2_tm1 <;> cases r1_t <;> cases r2_t <;> cases l1_t1 <;> cases r1_t1 <;> cases c_t2 <;> decide
 
+/-- Law 2x (`wolfram-conus-textile-rule30-2x`):
+    Zero-to-One Boundary Dichotomy (Retroactive Whole-Run Zero Collapse vs. Forward 2-Step
+    Right-Seam Triple Lock `(1, 1, 0)`) at any `0 -> 1` center transition (Theorem 49):
+    1. (`rule30_zero_to_one_retroactive_zero_collapse_case_a`): Across a `0 -> 0 -> 1` transition
+       `(c_{t-2}, c_{t-1}, c_t) = (false, false, true)`, if `l1_{t-1} = true`, then
+       `r1_{t-1} = false`, which retroactively forces `r1_{t-2} = false` and `l1_{t-2} = false`
+       across the preceding `0`-run step regardless of `r2_{t-2}`.
+    2. (`rule30_zero_to_one_forward_triple_lock_case_b`): Across any `0 -> 1` transition
+       `(c_{t-1}, c_t) = (false, true)`, if `l1_{t-1} = false`, then the three consecutive
+       right-seam bits `(r1_{t-1}, r1_t, r1_{t+1})` are deterministically locked to
+       `(true, true, false)` regardless of `r2_{t-1}, r2_t` and regardless of `c_{t+1}`. -/
+theorem rule30_zero_to_one_retroactive_zero_collapse_case_a
+    (l1_tm2 r1_tm2 r2_tm2 r1_tm1 : Bool) :
+    (rule30 l1_tm2 false r1_tm2 = false ∧
+     r1_tm1 = rule30 false r1_tm2 r2_tm2 ∧
+     rule30 true false r1_tm1 = true) →
+    (r1_tm1 = false ∧ r1_tm2 = false ∧ l1_tm2 = false) := by
+  cases l1_tm2 <;> cases r1_tm2 <;> cases r2_tm2 <;> cases r1_tm1 <;> decide
+
+theorem rule30_zero_to_one_forward_triple_lock_case_b
+    (r1_tm1 r2_tm1 r1_t r2_t r1_t1 : Bool) :
+    (rule30 false false r1_tm1 = true ∧
+     r1_t = rule30 false r1_tm1 r2_tm1 ∧
+     r1_t1 = rule30 true r1_t r2_t) →
+    (r1_tm1 = true ∧ r1_t = true ∧ r1_t1 = false) := by
+  cases r1_tm1 <;> cases r2_tm1 <;> cases r1_t <;> cases r2_t <;> cases r1_t1 <;> decide
+
 
 
 
