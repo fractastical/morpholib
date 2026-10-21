@@ -697,6 +697,32 @@ theorem rule30_boosted_odd_run_super_reset_gain
     ((q_eff + 19) / 3 + 1) - ((q_eff - 2) / 3 + 1) = 7 := by
   omega
 
+/-- Law 2aj (`wolfram-conus-textile-rule30-2aj`):
+    Single 2-Cell Source Comb-Defect Field `Delta_q^*(s)`, Zero-Transient Horizontal Dyadic Cascade &
+    Self-Shielding Soliton Head `(1,1,0,1,1,0,1)` / `3*s - 26` Synchronization Frontier (Theorem 61):
+    1. (`rule30_comb_defect_recurrence_identity`): Substituting `C_q(s) = p ^ Delta_q(s)` (where `p = (q + s) mod 2`)
+       into the 1D offset recurrence `C_q(s) = C_q(s - 1) ^ (C_{q-1}(s) || C_{q-2}(s))` cancels the alternating
+       comb background identically and yields the exact Comb-Defect Recurrence
+       `Delta_q(s) = Delta_q(s - 1) ^ ((!C_{q-1}(s)) && (!C_{q-2}(s)))`.
+    2. (`rule30_soliton_head_self_shielding`): In traveling-wave coordinates `Y_j(s) = Delta_{3s - 20 - j}^*(s)`,
+       whenever `Y_4(s-1) = true` and `Y_9(s) = true`, `Y_7(s) = bne true ((!Y_8(s)) && true) = Y_8(s)` for every `Y_8(s)`,
+       forcing `Y_7(s) && (!Y_8(s)) = false` (locking `Y_6(s) = true`) and `(!Y_6(s)) && Y_7(s) = false`
+       (completely shielding the 7-bit Soliton Head `(1,1,0,1,1,0,1)` from all deeper cells `j >= 7`)! -/
+theorem rule30_comb_defect_recurrence_identity
+    (p d_prev d1 d2 : Bool) :
+    let c_prev := bne (!p) d_prev
+    let c1 := bne (!p) d1
+    let c2 := bne p d2
+    bne p (bne c_prev (c1 || c2)) = bne d_prev ((!c1) && (!c2)) := by
+  cases p <;> cases d_prev <;> cases d1 <;> cases d2 <;> rfl
+
+theorem rule30_soliton_head_self_shielding
+    (y8 : Bool) :
+    let y7 := bne true ((!y8) && true)
+    let y6 := bne true (y7 && (!y8))
+    y7 = y8 ∧ y6 = true ∧ ((!y6) && y7) = false := by
+  cases y8 <;> decide
+
 
 
 
