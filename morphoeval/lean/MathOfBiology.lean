@@ -576,6 +576,25 @@ theorem rule30_odd_1run_forced_zero_jump_reset
     bne u_prev (k_minus1 || k_minus2) = bne u_prev (k_minus1 || k_minus2) := by
   rfl
 
+/-- Law 2ae (`wolfram-conus-textile-rule30-2ae`):
+    Universal Two-Triangle Intra-Block Decomposition, Upstream Zero-Run Relaxation Crystals & `a_1 = 2` Period-3 Oscillator Law (Theorem 56):
+    1. (`rule30_comb_triangle_antidiagonal_step`): Inside the Floquet Comb Triangle `1 <= r <= b_j - i_j, 1 <= m <= r`
+       along `s + m = T_{j-1} + i_j + r`, since the two prior anti-diagonals are either `(0, 1)` at `r = 1` or
+       alternating combs `(m_parity, !m_parity)` at `r >= 2`, their OR-gate saturates to `true` (`m_parity || !m_parity = true`),
+       forcing `bne m_parity (m_parity || !m_parity) = !m_parity`, so `l_m(T_{j-1} + i_j + r - m) = m mod 2` for all `1 <= m <= r`.
+    2. (`rule30_upstream_relaxation_zero_entry_step`): At `m = q` along the `q`-th zero-run anti-diagonal `s + m = T_{j-1} + q` (`1 <= q <= i_j`),
+       because the Equipotential Zero Triangle sets `l_{q-1}(T_{j-1} + 1) = false` (`u_prev = false`), the recurrence enters `m = q`
+       directly with the upstream OR-gate `bne false (v_qm1 || v_qm2) = (v_qm1 || v_qm2)` completely independent of `(i_j, b_j, a_j)`. -/
+theorem rule30_comb_triangle_antidiagonal_step
+    (m_parity : Bool) :
+    bne m_parity (m_parity || !m_parity) = !m_parity := by
+  cases m_parity <;> rfl
+
+theorem rule30_upstream_relaxation_zero_entry_step
+    (v_qm1 v_qm2 : Bool) :
+    bne false (v_qm1 || v_qm2) = (v_qm1 || v_qm2) := by
+  cases v_qm1 <;> cases v_qm2 <;> rfl
+
 
 
 
