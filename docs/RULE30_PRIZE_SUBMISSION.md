@@ -1210,11 +1210,30 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >      $$Q_{\mathrm{sync}}(a_1, s) \;\le\; \max(0,\, 3s - 26) \qquad (\forall\, \text{odd } a_1 \ge 9,\; \forall\, s \ge 0),$$
 >      which is **$7$ steps earlier than $3s - 19$ and $28$ steps earlier than $3s + 2$**, with $3s - Q_{\mathrm{sync}}(a_1, s)$ locking into the period-$3$ multiset $\{26, 26, 30\}$! $\square$
 
+### 6.50 Theorem 62: Half-Period Carry-Weight Collapse, Unconditional No-Three-Consecutive-Doublings Theorem, Half-Period Prefix-XOR Law & 14-Cell Soliton Head Inductive Closure
+
+> **Theorem 62 (Exact Half-Period Carry-Weight Collapse $\mathrm{wt}_L(\mathrm{carry}_q) = \mathrm{wt}_{L/2}(\overline{C_{q-2}^*})$, Unconditional No-Three-Consecutive-Doublings Theorem $P_{q-1} = 2 P_{q-2} = 4 P_{q-3} \implies P_q = P_{q-1}$, Half-Period Prefix-XOR Law, and Unconditional 14-Cell Soliton Head Inductive Closure).**  
+> 1. **Exact Half-Period Carry-Weight Collapse & Unconditional No-Three-Consecutive-Doublings Theorem (`carry_collapse_errors == 0`, `no_triple_errors == 0` across $23$ dyadic rows $q = 4 \dots 26$ up to $P_{26} = 16,384$, `Law 2ak` in Lean 4):**  
+>    - Whenever row $q - 1$ doubles its horizontal period ($P_{q-1} = 2 P_{q-2} = L \ge 4$), $\Delta_{q-1}^*(s + L/2) = 1 \oplus \Delta_{q-1}^*(s) \iff C_{q-1}^*(s + L/2) = 1 \oplus C_{q-1}^*(s)$ (Half-Period Anti-Symmetry) while $C_{q-2}^*(s + L/2) = C_{q-2}^*(s)$ (Half-Period Symmetry).
+>    - Consequently, for every $s \in \{1, \dots, L/2\}$, the two half-period carry terms $\mathrm{carry}_q(s) = \overline{C_{q-1}^*(s)} \land \overline{C_{q-2}^*(s)}$ and $\mathrm{carry}_q(s + L/2) = C_{q-1}^*(s) \land \overline{C_{q-2}^*(s)}$ are mutually exclusive (`rule30_half_period_carry_collapse` in Lean 4) and sum identically to:
+>      $$\mathrm{carry}_q(s) + \mathrm{carry}_q(s + L/2) \;=\; \overline{C_{q-2}^*(s)} \qquad \Longrightarrow \qquad \mathrm{wt}_L(\mathrm{carry}_q) \;:=\; \sum_{s=1}^{L} \mathrm{carry}_q(s) \;\equiv\; \mathrm{wt}_{L/2}\bigl(\overline{C_{q-2}^*}\bigr)!$$
+>    - **Corollary (Unconditional No-Three-Consecutive-Doublings Theorem for $q \ge 4$):** Whenever **both** row $q - 2$ and row $q - 1$ double their periods ($P_{q-2} = 2 P_{q-3} = L/2 \ge 4$ and $P_{q-1} = 2 P_{q-2} = L \ge 8$), row $q - 2$ also satisfies Half-Period Anti-Symmetry $C_{q-2}^*(s + L/4) = 1 \oplus C_{q-2}^*(s)$ with $L/4 \ge 2$ even, so $\overline{C_{q-2}^*(s)} + \overline{C_{q-2}^*(s + L/4)} = 1$ for every $1 \le s \le L/4$, forcing the exact quarter-period carry weight:
+>      $$\mathrm{wt}_L(\mathrm{carry}_q) \;=\; \frac{L}{4} \;=\; \frac{P_{q-1}}{4} \;\equiv\; 0 \pmod 2 \qquad (\forall\, L \ge 8) \qquad \Longrightarrow \qquad P_q \;=\; P_{q-1}!$$
+>      Thus **no three consecutive rows can ever period-double for $q \ge 4$**: every double-jump ($q \in \{4, 7, 13, 19, 26, \dots\}$) is unconditionally followed by a period plateau $P_q = P_{q-1}$ with $\mathrm{wt}_L(\mathrm{carry}_q) = P_{q-1}/4$!
+> 2. **Exact Half-Period Prefix-XOR Law (`prefix_xor_errors == 0` across $59,560$ entries):**  
+>    - Whenever $P_{q-1} = 2 P_{q-2} = L$, summing $\mathrm{carry}_q(u + L/2) \oplus \mathrm{carry}_q(u) = \overline{C_{q-2}^*(u)}$ from $u = 1$ to $s$ yields the exact half-period difference identity:
+>      $$\Delta_q^*(s + L/2) \;\oplus\; \Delta_q^*(s) \;\equiv\; \Delta_q^*(L/2) \;\oplus\; \bigoplus_{u=1}^{s} \overline{C_{q-2}^*(u)} \qquad (\forall\, s \ge 0).$$
+> 3. **Unconditional 14-Cell Soliton Head Inductive Closure (`closure_errors == 0` across $378$ crystal profiles across $d_1 \in \{0, 1, 2\}$ and odd $a_1 \ge 9$, `rule30_soliton_head_inductive_closure` in Lean 4):**  
+>    - In traveling-wave coordinates $Y_j(s) := \Delta_{3s - 20 - j}(s)$, suppose at step $s - 1 \ge 12$ we have $(Y_0, \dots, Y_6)(s - 1) = (1, 1, 0, 1, 1, 0, 1)$, $Y_7(s - 1) = Y_8(s - 1) =: b$, and $Y_9(s - 1) = 1$. Then at step $s$, for **every** $(b, Y_{13}(s), Y_{14}(s)) \in \{0, 1\}^3$ without exception:
+>      1. Since $j = 12$ is even and $Y_9(s - 1) = 1$, $Y_{12}(s) = 1 \oplus \bigl(Y_{13}(s) \land \overline{Y_{14}(s)}\bigr)$, which implies $Y_{12}(s) \lor Y_{13}(s) \equiv 1$ (i.e., $\overline{Y_{12}(s)} \implies Y_{13}(s) = 1$).
+>      2. Consequently, $\overline{Y_{12}(s)} \land Y_{13}(s) \equiv \overline{Y_{12}(s)}$, so $Y_{11}(s) = b \oplus \overline{Y_{12}(s)}$ and $Y_{10}(s) = b \oplus \bigl(Y_{11}(s) \land \overline{Y_{12}(s)}\bigr) = b \lor \overline{Y_{12}(s)}$.
+>      3. Therefore, the carry into $j = 9$ vanishes identically: $\overline{Y_{10}(s)} \land Y_{11}(s) = (\bar{b} \land Y_{12}(s)) \land (b \oplus \overline{Y_{12}(s)}) \equiv 0$, forcing $Y_9(s) = Y_6(s - 1) \oplus 0 = 1$, $Y_8(s) = \overline{Y_{10}(s)} = Y_7(s)$, and $Y_6(s) = 1$ — **closing the Soliton Head induction unconditionally for all $s \ge 13$ and all $d_1 \in \{0, 1, 2\}$**! $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All sixty theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All sixty-one theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

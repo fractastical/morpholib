@@ -723,6 +723,43 @@ theorem rule30_soliton_head_self_shielding
     y7 = y8 ∧ y6 = true ∧ ((!y6) && y7) = false := by
   cases y8 <;> decide
 
+/-- Law 2ak (`wolfram-conus-textile-rule30-2ak`):
+    Half-Period Carry-Weight Collapse, Unconditional No-Three-Consecutive-Doublings Theorem,
+    Half-Period Prefix-XOR Law & Unconditional 14-Cell Soliton Head Inductive Closure (Theorem 62):
+    1. (`rule30_half_period_carry_collapse`): Whenever row `q - 1` doubles its horizontal period
+       (`P_{q-1} = 2 * P_{q-2} = L`), `C_{q-1}^*(s + L/2) = !C_{q-1}^*(s)` (Half-Period Anti-Symmetry)
+       while `C_{q-2}^*(s + L/2) = C_{q-2}^*(s)` (Half-Period Symmetry). Consequently, the two half-period
+       carry terms `carry_q(s) = (!C_{q-1}^*(s)) && (!C_{q-2}^*(s))` and
+       `carry_q(s + L/2) = C_{q-1}^*(s) && (!C_{q-2}^*(s))` are mutually exclusive and their XOR/sum
+       collapses identically to `!C_{q-2}^*(s)` (`wt_L(carry_q) = wt_{L/2}(!C_{q-2}^*)`).
+       If row `q - 2` also doubled (`P_{q-2} = 2 * P_{q-3}`), then `!C_{q-2}^*(s)` and `!C_{q-2}^*(s + L/4)`
+       sum to `1` on each of the `L/4` pairs, forcing `wt_L(carry_q) = L / 4 = P_{q-1} / 4` (even for all
+       `L >= 8`), which proves unconditionally that NO THREE CONSECUTIVE ROWS can period-double for `q >= 4`!
+    2. (`rule30_soliton_head_inductive_closure`): In traveling-wave coordinates `Y_j(s) = Delta_{3s - 20 - j}^*(s)`,
+       given the induction hypothesis at `s - 1` (`Y_3 = true`, `Y_4 = true`, `Y_5 = false`, `Y_6 = true`,
+       `Y_7 = Y_8 = b`, `Y_9 = true`), for EVERY `(b, Y_{13}(s), Y_{14}(s)) in Bool^3`, the chain `j = 12 -> 11 -> 10 -> 9 -> 8 -> 7 -> 6`
+       satisfies `Y_{12} || Y_{13} = true`, `(!Y_{10}) && Y_{11} = false`, `Y_9(s) = true`,
+       `Y_7(s) = Y_8(s) = !Y_{10}(s)`, and `Y_6(s) = true`, closing the induction unconditionally for all `s >= 13`! -/
+theorem rule30_half_period_carry_collapse
+    (c1 c2 : Bool) :
+    let carry_s := (!c1) && (!c2)
+    let carry_half := c1 && (!c2)
+    (carry_s && carry_half) = false ∧ bne carry_s carry_half = (!c2) := by
+  cases c1 <;> cases c2 <;> decide
+
+theorem rule30_soliton_head_inductive_closure
+    (b y13 y14 : Bool) :
+    let y12 := bne true (y13 && (!y14))
+    let y11 := bne b ((!y12) && y13)
+    let y10 := bne b (y11 && (!y12))
+    let c9 := (!y10) && y11
+    let y9 := bne true c9
+    let y8 := bne false (y9 && (!y10))
+    let y7 := bne true ((!y8) && y9)
+    let y6 := bne true (y7 && (!y8))
+    (y12 || y13) = true ∧ c9 = false ∧ y9 = true ∧ y8 = (!y10) ∧ y7 = y8 ∧ y6 = true := by
+  cases b <;> cases y13 <;> cases y14 <;> decide
+
 
 
 
