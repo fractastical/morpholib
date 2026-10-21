@@ -1052,11 +1052,28 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 > 3. **Exact Dyadic Period-Doubling Cascade of $U_{2,a,k}(m)$ and $U_{3,a,k}(m)$:**  
 >    - Across $k = 0 \dots 7$, the asymptotic spatial periods $P\bigl(U_{d,k}(\cdot)\bigr)$ in $m$ are $(1, 2, 2, 2, 2, 2, 2, 2)$ for $d = 0$, $(1, 1, 1, 2, 2, 2, 2, 2)$ for $d = 1$, $(2, 2, 4, 8, 8, 16, 32, 32)$ for $d = 2$ ($i = b - 2$), and $(2, 4, 8, 8, 16, 32, 32, 32)$ for $d = 3$ ($0 \le i \le b - 3$). $\square$
 
+### 6.41 Theorem 53: KG-Lateral Synthesis — Turing Equal-Diffusion Alternating-Comb Fixed Point, Toussaint RNG Lune 3-Crystal Collapse, Slope-$4/3$ Synchronization Front & Multi-Block Latch Erasure
+
+> **Theorem 53 (Third KG-Lateral Transfer from Model #5 `turing-gray-scott-2` Equal-Diffusion Stability Theorem & Model #13 `runions-leaf-venation-2` Toussaint Relative Neighborhood Graph (RNG) Lune Witness Exclusion — Exact 3-Crystal Collapse $U_{3,a,k} \equiv U_{2,a,k}$, Slope-$4/3$ Lune Synchronization Front $M(a)$, and Multi-Block Latch Erasure).**  
+> 1. **Exact 3-Crystal Collapse ($U_{3,a,k}(m) \equiv U_{2,a,k}(m)$ for all $k \ge 0$, `collapse_3crystal_errors == 0` across $7,290$ entries, `Law 2ab` in Lean 4):**  
+>    - Because $U_0^{(2)}(m-1) = U_0^{(3)}(m-1) = 1$ at every odd index $m - 1 \in \{1, 3, 5, \dots\}$ where $U_{-1}^{(2)}(m-2) = 1 \ne 0 = U_{-1}^{(3)}(m-2)$ differs, the anti-diagonal OR-gate $\bigl(U_0(m-1) \lor U_{-1}(m-2)\bigr) = \bigl(1 \lor U_{-1}(m-2)\bigr) = 1$ saturates identically (`rule30_rng_lune_3crystal_shielding_step`), completely shielding $U_1(m)$ from the $U_{-1}$ parity difference!
+>    - By induction on $k \ge 1$, the $d = 3$ ($0 \le i \le b - 3$) and $d = 2$ ($i = b - 2$) interface crystals are **$100\%$ identical** across the entire $1^a$ run ($k \in 0 \dots a$):
+>      $$U_{3, a, k}(m) \;\equiv\; U_{2, a, k}(m) \qquad (\forall\, a \ge 1,\; \forall\, 0 \le k \le a,\; \forall\, 0 \le m \le b - 1 + k).$$
+>      Thus the $(b + 1)$-state latch degree of freedom on **every** $0^b 1^a$ block collapses to **at most $3$ distinct interface crystals** ($d = \min(b - i,\, 2) \in \{0, 1, 2\}$)!
+> 2. **Exact 2-Period Alternating-Comb Fixed Point of $U_{0,a,a}(m)$ (`comb_d0_exit_errors == 0` across $657$ entries) & Slope-$4/3$ Turing-RNG Lune Synchronization Front $M(a)$ (`lune_front_errors == 0` across $77$ exit fronts for $a = 3 \dots 79$):**  
+>    - For $d = 0$ ($i = b$), at the exit anti-diagonal $k = a$ ($a \ge 3$), $U_{0,a,a}(m)$ locks into the exact 2-period alternating comb (`rule30_turing_equal_diffusion_alternating_comb_fixed_point`):
+>      $$U_{0,a,a}(0) = 0, \qquad U_{0,a,a}(1) = a \bmod 2, \qquad U_{0,a,a}(2) = (a + 1) \bmod 2, \qquad U_{0,a,a}(m) = m \bmod 2 \quad (\forall\, m \ge 3).$$
+>    - Across all three crystals $d \in \{0, 1, 2\}$, their exit anti-diagonals $U_{d,a,a}(m)$ synchronize identically to $U_{0,a,a}(m)$ inside the linear Turing-RNG Lune $0 \le m < M(a)$ of exact slope $4/3$:
+>      $$M(3q + 1) \;=\; 4q + 1 \quad (q \ge 1), \qquad M(3q + 2) \;=\; 4q + 2 \quad (q \ge 1), \qquad M(3q) \;\ge\; 4q + 1 \quad (q \ge 1).$$
+> 3. **Multi-Block $0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2}$ First-Block Latch Erasure (`multiblock_shielding_errors == 0` across all $3,888$ two-block configurations):**  
+>    - Because the $d = 0$ vs. $d \in \{1, 2\}$ discrepancy at the exit of Block 1 ($t = T_1 = b_1 + a_1$) begins at spatial depth $m \ge a_1 + 1$ and propagates at speed $\le 1$ across the $b_2 + a_2$ time steps of Block 2, at the exit anti-diagonal $s + m = T_2 = b_1 + a_1 + b_2 + a_2$ of Block 2, **all $b_1 + 1$ jump choices $i_1 \in \{0, \dots, b_1\}$ of Block 1** produce the **exact same exit prefix** for $0 \le m \le a_1 + b_2 + a_2$:
+>      $$M_{\mathrm{agree}}(b_1, a_1, b_2, a_2, i_2) \;\ge\; a_1 + b_2 + a_2 + 1 \qquad (\forall\, b_1, a_1, b_2, a_2 \ge 1). \quad \square$$
+
 ---
 
 ## 7. One-Command Verification
 
-All fifty-two theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All fifty-three theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

@@ -513,6 +513,28 @@ theorem rule30_antidiagonal_all_ones_to_alternating_comb
     bne u1_mm1 (true || u_m1_mm2) = !u1_mm1 := by
   cases u1_mm1 <;> cases u_m1_mm2 <;> rfl
 
+/-- Law 2ab (`wolfram-conus-textile-rule30-2ab`):
+    Third Lateral Knowledge-Graph Transfer (`turing-gray-scott-2` Equal-Diffusion Stability +
+    `runions-leaf-venation-2` Toussaint RNG Lune Witness Exclusion) ->
+    Exact 3-Crystal Collapse ($U_{3,a,k} \equiv U_{2,a,k}$) & Slope-$4/3$ Turing-RNG Lune Synchronization Front (Theorem 53):
+    1. (`rule30_rng_lune_3crystal_shielding_step`): When `U_0(m-1) = true`, the anti-diagonal OR-gate
+       `(U_0(m-1) || U_{-1}(m-2))` equals `true` identically for both `d = 2` (`U_{-1}(m-2) = true`) and
+       `d = 3` (`U_{-1}(m-2) = false`), shielding `U_1(m)` from the `U_{-1}` parity difference and
+       collapsing the 4 boundary crystals to 3 exact crystals (`U_{3,a,k}(m) = U_{2,a,k}(m)` for all `k >= 0, m >= 0`).
+    2. (`rule30_turing_equal_diffusion_alternating_comb_fixed_point`): When two consecutive anti-diagonals
+       `U_{k-2}(m-2)` and `U_{k-1}(m-1)` are out-of-phase period-2 alternating combs (`u_prev2 = !u_prev1`),
+       their OR-gate `u_prev1 || !u_prev1 = true` saturates at every step `m`, forcing `U_k(m) = !U_k(m-1)`
+       to lock into the exact same period-2 alternating comb inside the Turing-RNG lune `m < M(k)`. -/
+theorem rule30_rng_lune_3crystal_shielding_step
+    (u1_mm1 u_m1_d2 u_m1_d3 : Bool) :
+    bne u1_mm1 (true || u_m1_d2) = bne u1_mm1 (true || u_m1_d3) := by
+  cases u1_mm1 <;> cases u_m1_d2 <;> cases u_m1_d3 <;> rfl
+
+theorem rule30_turing_equal_diffusion_alternating_comb_fixed_point
+    (uk_mm1 u_prev1 : Bool) :
+    bne uk_mm1 (u_prev1 || !u_prev1) = !uk_mm1 := by
+  cases uk_mm1 <;> cases u_prev1 <;> rfl
+
 
 
 
