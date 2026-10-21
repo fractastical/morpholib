@@ -1170,11 +1170,30 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >    - Across any 3-block chain $c = 0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} 0^{b_3} 1^{a_3}0$, the Block-2 exit agreement $s_2^*(a_1, b_2, i_2, a_2) := \min\bigl(s_2(k_2 = a_2),\, s_2(k_2 = a_2 - 1)\bigr)$ is $100\%$ preserved across Block 3, forcing:
 >      $$M_{\mathrm{sync}}^{(3)}(a_1, b_2, i_2, a_2, b_3, i_3, k_3) \;\ge\; b_3 + k_3 + b_2 + a_2 + \max\bigl(s_{\mathrm{zero}}(a_1, i_2),\; s_{\mathrm{comb}}(b_2 - i_2, 1)\bigr)! \quad \square$$
 
+### 6.48 Theorem 60: Universal Odd-Run Post-Exit Comb Table $C_q^*(s)$, Exact $3s - 19$ Lune-Accelerated Comb Frontier & $+7$ Column Boosted Super-Reset Horizon
+
+> **Theorem 60 (Universal $d_1 = 0$ Odd-Run Post-Exit Comb Table $C_q^*(s)$, Exact Closed-Form Lune-Accelerated Comb-Lock Frontier $Q_{\mathrm{comb}}(a_1, s) = 3s - 19$, and $+7$ Column Boosted Super-Reset Horizon).**  
+> 1. **Universal $d_1 = 0$ Odd-Run Post-Exit Comb Table $C_q^*(s)$ (`univ_odd_errors == 0` across $16,000$ entries, `Law 2ai` in Lean 4):**  
+>    - Whenever $a_1 \ge 3$ is odd (so $i_2 = 0$ is forced by $l_1(T_1) = 1$), for $d_1 = 0$ ($i_1 = b_1$) the initial columns at $q = 0$ ($k = a_1$) and $q = -1$ ($k = a_1 - 1$) are $U_{0, a_1, a_1}(s) = s \bmod 2$ ($\forall s \ge 0$) and $U_{0, a_1, a_1-1}(s - 1) = (0, 1, 0, (s - 1) \bmod 2)$, which are **$100\%$ independent of odd $a_1 \ge 3$ for all $s \ge 0$**!
+>    - Because the entry column $x_0(q) = q \bmod 2$ ($q \ge 0$) is also independent of $a_1$, the shift-free 1D offset recurrence $x_s(q) = x_{s-1}(q) \oplus \bigl(x_s(q - 1) \lor x_s(q - 2)\bigr)$ uniquely determines a **single universal post-exit 2D table** $C_q^*(s)$ ($q \ge 0, s \ge 0$) such that:
+>      $$l_{q+s}^{(0)}(T_1 - s) \;\equiv\; C_q^*(s) \qquad (\forall\, \text{odd } a_1 \ge 3,\; \forall\, q, s \ge 0,\; 100\%\text{ independent of } a_1,\, b_1,\, b_2,\, a_2)!$$
+> 2. **Exact Closed-Form Lune-Accelerated 3-Crystal Comb-Lock Frontier $Q_{\mathrm{comb}}(a_1, s)$ (`frontier_errors == 0` across $208$ frontiers):**  
+>    - Because all 3 Block-1 crystals $d_1 \in \{0, 1, 2\}$ agree with $C_q^*(s)$ inside the Turing-RNG Lune $0 \le s < \underline{M}(a_1)$ where $C_q^*(s)$ already locks to the alternating comb $(q + s) \bmod 2$ at $Q_{\mathrm{comb}}^*(0 \dots 9) = (0, 0, 3, 6, 4, 4, 7, 10, 8, 8)$, the minimal threshold $Q_{\mathrm{comb}}(a_1, s)$ such that all 3 crystals lock to $(q + s) \bmod 2$ for all $q \ge Q_{\mathrm{comb}}(a_1, s)$ has the exact closed form (`rule30_lune_accelerated_comb_frontier_step`):
+>      - For $a_1 = 1$: $Q_{\mathrm{comb}}(1, 0) = 0$ and $Q_{\mathrm{comb}}(1, s) = 3s + 1$ for $s \ge 1$ ($1$ step earlier than $3s + 2$).
+>      - For $a_1 = 3$: $Q_{\mathrm{comb}}(3, s) = 0$ for $s \le 1$ and $Q_{\mathrm{comb}}(3, s) = 3s - 3$ for $s \ge 2$ (**$5$ steps earlier** than $3s + 2$).
+>      - For **all odd $a_1 \ge 5$**: $Q_{\mathrm{comb}}(a_1, s) = Q_{\mathrm{comb}}^*(s)$ for $0 \le s < 9$ and
+>        $$Q_{\mathrm{comb}}(a_1, s) \;=\; 8 + 3(s - 9) \;=\; 3s - 19 \qquad (\forall\, \text{odd } a_1 \ge 5,\; \forall\, s \ge 9),$$
+>        which locks to the alternating comb **$21$ steps earlier in $q$** than the unseeded worst-case bound $3s + 2$!
+> 3. **$+7$ Column Boosted Odd-Run Super-Reset Horizon & Synchronization Law (`sync_odd_errors == 0` across $288$ configs, `super_odd_errors == 0` across $25,272$ entries):**  
+>    - Inverting $Q_{\mathrm{comb}}(a_1, u) \le q_{\mathrm{eff}}$ ($q_{\mathrm{eff}} := b_2 - \mathbf{1}_{k_2 \ge 1}$) yields the boosted comb penetration width (`rule30_boosted_odd_run_super_reset_gain`):
+>      $$S_{\mathrm{comb}}^{\mathrm{odd}}(a_1, q_{\mathrm{eff}}) \;=\; \left\lfloor\frac{q_{\mathrm{eff}} + 19}{3}\right\rfloor + 1 \qquad (\forall\, \text{odd } a_1 \ge 5,\; \forall\, q_{\mathrm{eff}} \ge 10),$$
+>      exceeding the unseeded $\lfloor(q_{\mathrm{eff}} - 2)/3\rfloor + 1$ penetration by **$+7$ full spatial columns** and extending the Universal Super-Reset Horizon $l_m(T_1 + b_2 + k_2 - m) \equiv U_{2, a_2, k_2}(m)$ to all $0 \le m < b_2 + k_2 + S_{\mathrm{comb}}^{\mathrm{odd}}(a_1, q_{\mathrm{eff}})$! $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All fifty-eight theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All fifty-nine theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

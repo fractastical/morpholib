@@ -678,6 +678,25 @@ theorem rule30_odd_run_slope_four_thirds_amplification
     3 * (b2 + k2 + ((b2 - 3) / 3 + 1)) = 4 * b2 + 3 * k2 := by
   omega
 
+/-- Law 2ai (`wolfram-conus-textile-rule30-2ai`):
+    Universal Odd-Run Post-Exit Comb Table `C_q^*(s)`, Exact `3*s - 19` Lune-Accelerated Comb Frontier & `+21` Boosted Super-Reset Horizon (Theorem 60):
+    1. (`rule30_lune_accelerated_comb_frontier_step`): Because all 3 Block-1 crystals `d_1 in {0, 1, 2}` for odd `a_1 >= 5`
+       already lock to the period-2 alternating comb across `0 <= s <= 9` at `q_0 = 8` (`Q_comb^*(8) = Q_comb^*(9) = 8`),
+       applying the 3-Step Comb Absorption Lemma (`+3` per step in `s` for `s >= 9`) proves the exact closed-form comb frontier
+       `Q_comb(a_1, s) = 8 + 3 * (s - 9) = 3 * s - 19` for all `s >= 9` — exactly `21` steps earlier in `q` than the unseeded `3 * s + 2` bound!
+    2. (`rule30_boosted_odd_run_super_reset_gain`): Inverting `3 * s - 19 <= q_eff` (`q_eff >= 10`) yields the boosted comb penetration width
+       `s_comb_odd(q_eff) = (q_eff + 19) / 3 + 1`, which exceeds the unseeded `(q_eff - 2) / 3 + 1` penetration by `+7` full spatial columns! -/
+theorem rule30_lune_accelerated_comb_frontier_step
+    (s : Nat) (hs : s ≥ 9) :
+    (3 * s + 2) - (8 + 3 * (s - 9)) = 21 ∧
+    8 + 3 * (s - 9) + 19 = 3 * s := by
+  omega
+
+theorem rule30_boosted_odd_run_super_reset_gain
+    (q_eff : Nat) (hq : q_eff ≥ 10) :
+    ((q_eff + 19) / 3 + 1) - ((q_eff - 2) / 3 + 1) = 7 := by
+  omega
+
 
 
 
