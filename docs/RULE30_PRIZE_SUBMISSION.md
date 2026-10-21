@@ -5,7 +5,7 @@
 **Audit of Unconditional Proofs vs. Open Single-Seed Gaps:** [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](./RULE30_PRIZE_STATUS_AND_GAPS.md)  
 **Date:** October 20, 2026
 
-![Animated 46-Milestone Progress Dashboard: Theorems 1–47 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 47-Milestone Progress Dashboard: Theorems 1–48 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -960,11 +960,30 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 > 3. **Direct Period-$\Pi$ Defect Opaque-Mirror Clash ($c_t \land D_1(t) = 1$) Across All $39,606$ Non-Zero Pairs in $[0, 200) \times [1, 200)$ (`defect_mirror_survivors_200 == 0`):**  
 >    - In any valid Rule 30 trajectory with $\Pi$-periodic center column for $t \ge t_0$, Opaque Mirror forces $l_1(t) = 1 \oplus c_{t+1} = l_1(t + \Pi)$ whenever $c_t = 1$, so $c_t \land D_1(t) = 0$ is mandatory for all $t \ge t_0$. Across all $39,606$ non-zero periodic pairs $(t_0, \Pi) \in [0, 200) \times [1, 200)$, **$100\%$ ($39,606 / 39,606$)** produce a direct Period-$\Pi$ Defect Opaque-Mirror clash $c_t \land D_1(t) = 1$ in at most $35$ post-mismatch steps (`0` survivors). $\square$
 
+### 6.36 Theorem 48: Zero-Run Latch-Interval & $D_2$ Endpoint-Spike Law, Exact 3-Law Pure Left-Cone Equivalence of the Depth-1 Right Cylinder, Depth-$d$ Collapse, and Exact $\mathbb{F}_2[[x]]$ Sierpiński–Mahler Möbius Rationality Involution
+
+> **Theorem 48 (Zero-Run Latch-Interval & $D_2$ Endpoint-Spike Law, Exact 3-Law Pure Left-Cone Equivalence of the Depth-1 Right Cylinder with Depth-$d$ Collapse, and Exact $\mathbb{F}_2[[x]]$ Sierpiński–Mahler Möbius Rationality Involution).**  
+> 1. **Zero-Run Latch-Interval & $D_2$ Endpoint-Spike Law (`PATH-1`, `interval_and_d2_spike_errors == 0`):**  
+>    - Whenever $c_t = 0$, the center seam equation $c_{t+1} = l_1(t) \oplus (c_t \lor r_1(t))$ collapses identically to $r_1(t) = c_{t+1} \oplus l_1(t)$, so the right neighbor $r_1(t)$ is $100\%$ determined by the Pure Left Cone on every $0$-bit of $c_t$ (`0` errors across $600$ steps of the Rule 30 cone).
+>    - On any $0$-run $[t_{\mathrm{start}},\, t_{\mathrm{start}} + b - 1]$ of length $b \ge 1$ where $c_t = 0$, the Monotone Latch ($c_t = 0 \land r_1(t) = 1 \implies r_1(t+1) = 0 \oplus (1 \lor r_2(t)) = 1$) forces $r_1(t)$ and $r_1(t + \Pi)$ to be monotone step functions $0^i 1^{b-i}$ and $0^{i'} 1^{b-i'}$ ($0 \le i, i' \le b$).
+>    - Because $c_{t+1+\Pi} = c_{t+1}$, the Period-$\Pi$ Defect $D_1(t) := l_1(t + \Pi) \oplus l_1(t) \equiv r_1(t + \Pi) \oplus r_1(t)$ across the entire $0$-run $[t_{\mathrm{start}},\, t_{\mathrm{start}} + b - 1]$ is the exact contiguous interval indicator $\mathbf{1}_{[t_{\mathrm{start}} + \min(i, i'),\, t_{\mathrm{start}} + \max(i, i'))}(t)$ (forbidding `1 0 ... 1` inside every $0$-run), and the linearized depth-2 defect $D_2(t) = D_1(t+1) \oplus D_1(t)$ has Hamming weight $\mathrm{wt}_{\mathrm{run}}(D_2) \in \{0, 2\}$ (**at most two endpoint spikes per $0$-run!**) and zero net XOR parity $\bigoplus_{t = t_{\mathrm{start}}-1}^{t_{\mathrm{start}}+b-1} D_2(t) = 0$ (`0` errors across all $818$ configurations for $b = 1 \dots 12$).
+> 2. **Exact 3-Law Pure Left-Cone Equivalence & Depth-$d$ Right-Cylinder Collapse (`PATH-2`, `nfa_vs_3laws_mismatches == 0`, `depth_d_collapse_mismatches == 0`):**  
+>    - Because $r_1(t) = 1$ makes the OR gate at $x = 1$ opaque to $r_2(t)$ ($r_1(t+1) = 1 \oplus c_t$ deterministically) and $r_1(t+1) = 0$ resets the next step to unconstrained $\{0, 1\}$, a trajectory $(c_t, l_1(t))$ is compatible with the Depth-$1$ Right Cylinder NFA **if and only if** it satisfies three local Pure Left-Cone laws with **zero right-half-plane state**:
+>      - **Law 1 (Opaque Mirror on `1`):** $c_t = 1 \implies c_{t+1} \oplus l_1(t) = 1$,
+>      - **Law 2 (Zero-Run Latch on `00`):** $c_t = 0 \land c_{t+1} = 0 \land l_1(t) = 1 \implies c_{t+2} \oplus l_1(t+1) = 1$,
+>      - **Law 3 (Single-One Bridge on `010`):** $(c_{t-1}, c_t, c_{t+1}) = (0, 1, 0) \land l_1(t-1) = 0 \implies c_{t+2} \oplus l_1(t+1) = 0$.
+>    - Exhaustively verified across all $2,046$ periodic words of periods $\Pi = 1 \dots 10$ (and $8,190$ words of $\Pi = 1 \dots 12$): `0` mismatches between the Depth-$1$ NFA and Laws 1–3, and the Depth-$d$ Right Cylinders for $d = 1, 2, 3, 4$ yield the exact same $18$ survivors for $\Pi = 1 \dots 10$ ($10$ all-zero words $0^\Pi$ eliminated by Theorem 9 + $8$ cyclic shifts of `10`, `100`, `1101110`, `0` Depth-$d$ collapse mismatches).
+>    - Across all $39,606$ non-zero periodic pairs $(t_0, \Pi) \in [0, 200) \times [1, 200)$, adding Laws 2 & 3 to Law 1 strictly accelerates refutation on **$9,895$ pairs** (and **$7,551$ pairs** in Period-$\Pi$ Defect mode), reducing the worst-case post-mismatch horizon from $30$ steps to **$20$ steps** (and from $35$ to **$26$ steps** in Defect mode).
+> 3. **Exact $\mathbb{F}_2[[x]]$ Sierpiński–Mahler Möbius Rationality Involution (`PATH-3`, `mobius_mahler_involution_errors == 0`):**  
+>    - Over $\mathbb{F}_2[[x]] / (x^{2^m})$, for any sequence $f(k)$ and its Mahler transform $\gamma(u) = \bigoplus_{k \subseteq u} f(k)$, their generating series $F(x) = \sum_{k \ge 0} f(k) x^k$ and $\Gamma(y) = \sum_{u \ge 0} \gamma(u) y^u$ are linked by the exact self-inverse Möbius transformation:
+>      $$\Gamma(x) \;\equiv\; \frac{1}{1 + x}\,F\!\left(\frac{x}{1 + x}\right) \pmod{x^{2^m}}, \qquad F(x) \;\equiv\; \frac{1}{1 + x}\,\Gamma\!\left(\frac{x}{1 + x}\right) \pmod{x^{2^m}},$$
+>      verified with `0` errors up to $2^m = 256$ on both parities $p \in \{0, 1\}$ of the Rule 30 center column $c_{2k+p}$. $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All forty-seven theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All forty-eight theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

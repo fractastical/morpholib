@@ -367,6 +367,49 @@ theorem rule30_band1_and_band2_1run_defect_tunneling_step
       bne (bne lm_next_pi lm_next) (bne lm_pi lm) := by
   cases lm_next <;> cases lm_next_pi <;> cases lm <;> cases lm_pi <;> decide
 
+/-- Law 2w (`wolfram-conus-textile-rule30-2w`):
+    Zero-Run Latch-Interval & D_2 Endpoint-Spike Law, and Exact 3-Law Pure Left-Cone
+    Equivalence of the Depth-1 Right Cylinder (Theorem 48):
+    1. (`rule30_zero_center_determines_r1_and_d1`): Whenever `c_t = false`, the center seam
+       `c_{t+1} = rule30 l1_t false r1_t` forces `r1_t = bne c_t1 l1_t`, and for any two
+       trajectories sharing the same `c_{t+1}` (`c_t1_pi = c_t1`), the right-neighbor defect
+       equals the left-neighbor defect (`bne r1_t_pi r1_t = bne l1_t_pi l1_t`).
+    2. (`rule30_pure_left_cone_zero_run_latch_law2`): When `c_t = false` and `c_{t+1} = false`
+       and `l1_t = true`, `r1_t = bne false true = true`, so the right-neighbor update
+       `r1_{t+1} = rule30 false r1_t r2_t` saturates to `true` regardless of `r2_t`, forcing
+       the Pure Left-Cone Law 2 identity `bne c_t2 l1_t1 = true`.
+    3. (`rule30_pure_left_cone_010_bridge_law3`): Across `(c_{t-1}, c_t, c_{t+1}) = (false, true, false)`,
+       when `l1_{t-1} = false`, the seam at `t - 1` (`rule30 false false r1_{t-1} = true`) forces
+       `r1_{t-1} = true`, which latches `r1_t = rule30 false true r2_{t-1} = true`, which in turn
+       quenches `r1_{t+1} = rule30 true true r2_t = false` regardless of `r2_{t-1}, r2_t`, forcing
+       the Pure Left-Cone Law 3 identity `bne c_t2 l1_t1 = false`. -/
+theorem rule30_zero_center_determines_r1_and_d1
+    (l1_t l1_t_pi r1_t r1_t_pi c_t1 : Bool)
+    (h1 : rule30 l1_t false r1_t = c_t1)
+    (h2 : rule30 l1_t_pi false r1_t_pi = c_t1) :
+    r1_t = bne c_t1 l1_t ∧
+    r1_t_pi = bne c_t1 l1_t_pi ∧
+    bne r1_t_pi r1_t = bne l1_t_pi l1_t := by
+  cases l1_t <;> cases l1_t_pi <;> cases r1_t <;> cases r1_t_pi <;> cases c_t1 <;> simp_all [rule30]
+
+theorem rule30_pure_left_cone_zero_run_latch_law2
+    (r1_t r2_t l1_t1 r1_t1 c_t2 : Bool) :
+    (rule30 true false r1_t = false ∧
+     r1_t1 = rule30 false r1_t r2_t ∧
+     rule30 l1_t1 false r1_t1 = c_t2) →
+    (r1_t = true ∧ r1_t1 = true ∧ bne c_t2 l1_t1 = true) := by
+  cases r1_t <;> cases r2_t <;> cases l1_t1 <;> cases r1_t1 <;> cases c_t2 <;> decide
+
+theorem rule30_pure_left_cone_010_bridge_law3
+    (r1_tm1 r2_tm1 r1_t r2_t l1_t1 r1_t1 c_t2 : Bool) :
+    (rule30 false false r1_tm1 = true ∧
+     r1_t = rule30 false r1_tm1 r2_tm1 ∧
+     r1_t1 = rule30 true r1_t r2_t ∧
+     rule30 l1_t1 false r1_t1 = c_t2) →
+    (r1_tm1 = true ∧ r1_t = true ∧ r1_t1 = false ∧ bne c_t2 l1_t1 = false) := by
+  cases r1_tm1 <;> cases r2_tm1 <;> cases r1_t <;> cases r2_t <;> cases l1_t1 <;> cases r1_t1 <;> cases c_t2 <;> decide
+
+
 
 
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):

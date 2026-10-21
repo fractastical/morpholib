@@ -9331,7 +9331,7 @@ def verify_zero_run_latch_interval_d2_spike_depth_d_cylinder_and_mobius_mahler_l
     survivors_d1_pi10 = 0
 
     for Pi in range(1, 11):
-        T_w = 4 * Pi + 10
+        T_w = 4 * Pi + 12
         for mask in range(1 << Pi):
             words_checked_pi10 += 1
             c_w = [(mask >> (t % Pi)) & 1 for t in range(T_w)]
@@ -9343,7 +9343,7 @@ def verify_zero_run_latch_interval_d2_spike_depth_d_cylinder_and_mobius_mahler_l
                     L_w[t + 1][j] = L_w[t][j + 1] ^ (L_w[t][j] | L_w[t][j - 1])
             l1_w = [L_w[t][1] for t in range(T_w)]
             t0_w = 2 * Pi
-            t_end_w = t0_w + 2 * Pi - 2
+            t_end_w = t0_w + 2 * Pi
 
             # Check 3 Pure Left-Cone Laws on [t0_w, t_end_w)
             laws3_ok = True
@@ -9351,12 +9351,12 @@ def verify_zero_run_latch_interval_d2_spike_depth_d_cylinder_and_mobius_mahler_l
                 if c_w[t] == 1 and (c_w[t + 1] ^ l1_w[t]) != 1:
                     laws3_ok = False
                     break
-                if t + 2 <= t_end_w and c_w[t] == 0 and c_w[t + 1] == 0 and l1_w[t] == 1:
-                    if (c_w[t + 2] ^ l1_w[t + 1]) != 1:
+                if t >= t0_w + 1 and c_w[t - 1] == 0 and c_w[t] == 0 and l1_w[t - 1] == 1:
+                    if (c_w[t + 1] ^ l1_w[t]) != 1:
                         laws3_ok = False
                         break
-                if t > t0_w and t + 2 <= t_end_w and c_w[t - 1] == 0 and c_w[t] == 1 and c_w[t + 1] == 0 and l1_w[t - 1] == 0:
-                    if (c_w[t + 2] ^ l1_w[t + 1]) != 0:
+                if t >= t0_w + 2 and c_w[t - 2] == 0 and c_w[t - 1] == 1 and c_w[t] == 0 and l1_w[t - 2] == 0:
+                    if (c_w[t + 1] ^ l1_w[t]) != 0:
                         laws3_ok = False
                         break
 
@@ -12467,8 +12467,8 @@ def render_prize_progress_gif_and_poster(
             "title": "Step 47: Zero-Run Latch-Interval & D_2 Spike Law, 3-Law Pure Left-Cone Equivalence & F_2[[x]] Mobius-Mahler Involution",
             "thm_badge": "Theorem 48 (Zero-Run D_2 Spike Law, 3-Law Equivalence & Mobius Involution)",
             "formula_lines": [
-                r"$c_t=0\Rightarrow r_1(t)=c_{t+1}\oplus l_1(t),\;\;\mathrm{wt}_{\mathrm{run}}(D_2)\in\{0,2\},\;\;\bigoplus_{t\in\mathrm{run}}D_2(t)=0,\;\;\mathrm{Depth\text{-}1\ NFA}\iff\mathrm{Laws\ 1\text{--}3\ (0\ mismatches)}$",
-                r"$\Gamma(x)\equiv(1+x)^{-1}F\!\bigl(x/(1+x)\bigr)\iff F(x)\equiv(1+x)^{-1}\Gamma\!\bigl(x/(1+x)\bigr)\pmod{x^{2^m}},\;\;\mathrm{Laws\ 1\text{--}3\ max\ steps}=20\;(-10\;\mathrm{steps})$",
+                r"$c_t=0\Rightarrow r_1(t)=c_{t+1}\oplus l_1(t),\;\;\mathrm{wt}_{\mathrm{run}}(D_2)\in\{0,2\},\;\;\bigoplus_{t\in\mathrm{run}}D_2(t)=0,\;\;\mathrm{Depth\text{-}1\ NFA}\Longleftrightarrow\mathrm{Laws\ 1\text{-}3}$",
+                r"$\Gamma(x)\equiv(1+x)^{-1}F(x/(1+x))\Longleftrightarrow F(x)\equiv(1+x)^{-1}\Gamma(x/(1+x))\;(\mathrm{mod}\;x^{2^m}),\;\;\mathrm{Laws\ 1\text{-}3\ max\ steps}=20$",
             ],
             "synthesis": (
                 "Proves the Zero-Run Latch-Interval & D_2 Endpoint-Spike Law (wt_run(D_2) in {0,2}), exact 3-Law Pure Left-Cone equivalence of the Depth-1 Right Cylinder "
@@ -12836,6 +12836,7 @@ def render_prize_progress_gif_and_poster(
                 "S44\nThm45",
                 "S45\nThm46",
                 "S46\nThm47",
+                "S47\nThm48",
             ],
             color="#cbd5e1",
             fontsize=3.1,
@@ -12843,7 +12844,7 @@ def render_prize_progress_gif_and_poster(
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 46 Milestones, 17h 55m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 47 Milestones, 18h 20m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -12894,9 +12895,9 @@ def render_prize_progress_gif_and_poster(
                 "VERIFIED (Thms 17, 19: a,b<=60; all-t_0 for a>=8)",
             ),
             (
-                "5. Pure Left-Cone Wavefront & 500x500 Mirror",
+                "5. Pure Left-Cone Wavefront, 3-Law & 500x500 Mirror",
                 idx >= 37,
-                "VERIFIED (Thms 44-47: 248,984 pairs; Gen. Pi OPEN)",
+                "VERIFIED (Thms 44-48: 248,984 pairs; Gen. Pi OPEN)",
             ),
             (
                 "6. Boundary-Onset Necklaces (Pi=2..30, t_0<Pi)",
