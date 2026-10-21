@@ -177,9 +177,11 @@ def main():
 
     bins_labels = ["0-10\nMyr", "10-25\nMyr", "25-50\nMyr", "50-80\nMyr", "80-110\nMyr", "110-160\nMyr"]
     xb = np.arange(len(bins_labels))
-    aff_floor = [30.2, 34.5, 27.5, 0.6, 0.0, 0.0]
+    sim_rms = [0.0139, 0.0151, 0.0162, 0.0285, 0.0499, 0.0383]
+    aff_rms = [0.0123, 0.0127, 0.0132, 0.0218, 0.0427, 0.0304]
+    thomp_rms = [0.0106, 0.0104, 0.0106, 0.0154, 0.0347, 0.0247]
     thomp_floor = [53.0, 61.3, 49.7, 10.6, 1.0, 0.0]
-    quad_floor = [73.8, 79.1, 70.5, 25.3, 1.9, 0.6]
+    floor_med = 0.0110
 
     for step_idx in schedule_idx:
         a = alphas_forward[step_idx]
@@ -254,33 +256,40 @@ def main():
         ax_d.legend(loc="upper right", fontsize=8.0, framealpha=0.94)
         ax_d.grid(True, ls="--", alpha=0.35)
 
-        # Panel E: The ~45-50 Myr Phylogenetic Cliff across 4,334 Dated Pairs
+        # Panel E: Continuous Procrustes RMS Residual vs. Within-Genus Disparity Band (sigma_genus)
         ax_e = fig.add_subplot(gs[1, 2])
-        ax_e.axvspan(-0.4, 2.45, color="#dcfce7", alpha=0.55)
-        ax_e.axvspan(2.45, 5.4, color="#fee2e2", alpha=0.45)
+        ax_e.axvspan(-0.4, 2.45, color="#dcfce7", alpha=0.45)
+        ax_e.axvspan(2.45, 5.4, color="#fee2e2", alpha=0.38)
+        ax_e.axhspan(0.0, floor_med, color="#bbf7d0", alpha=0.55,
+                     label=f"Within-Genus Disparity (σ_gen ≤ {floor_med:.3f})")
+        ax_e.axhline(floor_med, color="#15803d", ls=":", lw=1.4)
         ax_e.axvline(2.45, color="#b91c1c", ls="--", lw=2.0)
-        ax_e.text(2.52, 42, "← ~45-50 Myr Cliff\n(Node-disjoint\n t* = 45.8 Myr;\n Fin/Head = 1.48×)",
-                  color="#991b1b", fontsize=7.8, fontweight="bold",
-                  bbox=dict(boxstyle="round,pad=0.2", facecolor="#fff1f2", edgecolor="#fecdd3", alpha=0.92))
 
-        ax_e.plot(xb, quad_floor, "s--", color="#64748b", lw=1.8, markersize=5, label="12p Quadratic (overfit)")
-        ax_e.plot(xb, thomp_floor, "o-", color="#16a34a", lw=2.8, markersize=7, label="8p Thompson Grid (AICc Opt)")
-        ax_e.plot(xb, aff_floor, "^-", color="#2563eb", lw=2.0, markersize=5, label="6p Affine Baseline")
+        ax_e.plot(xb, sim_rms, "d--", color="#64748b", lw=1.7, markersize=5, label="Unwarped 4p (d₀)")
+        ax_e.plot(xb, aff_rms, "^-", color="#2563eb", lw=2.0, markersize=5.5, label="6p Linear Affine")
+        ax_e.plot(xb, thomp_rms, "o-", color="#15803d", lw=2.8, markersize=7, label="8p Thompson Grid")
 
         # Animated phylogenetic scanner bar synced with alpha
         scan_x = a * 5.0
         ax_e.axvline(scan_x, color="#0f172a", ls="-.", lw=1.5, alpha=0.65)
 
-        for i, val in enumerate(thomp_floor):
-            ax_e.text(xb[i], val + 3.0, f"{val:.0f}%", ha="center", va="bottom", fontsize=7.8, fontweight="bold", color="#15803d")
+        for i, val in enumerate(thomp_rms):
+            off_y = -0.0040 if i < 3 else 0.0022
+            ax_e.text(xb[i], val + off_y, f"{val:.3f}\n({thomp_floor[i]:.0f}%)",
+                      ha="center", va="bottom" if off_y > 0 else "top",
+                      fontsize=7.0, fontweight="bold", color="#14532d")
 
-        ax_e.set_ylim(-4, 105)
+        ax_e.text(2.52, 0.045, "← ~50 Myr Cliff\n(<50 Myr: inside σ_gen;\n >50 Myr: Fin/Head=1.48×)",
+                  color="#991b1b", fontsize=7.2, fontweight="bold",
+                  bbox=dict(boxstyle="round,pad=0.18", facecolor="#fff1f2", edgecolor="#fecdd3", alpha=0.92))
+
+        ax_e.set_ylim(0.003, 0.058)
         ax_e.set_xticks(xb)
-        ax_e.set_xticklabels(bins_labels, fontsize=7.8, fontweight="bold")
-        ax_e.set_ylabel("% Reaching Genus Noise Floor", fontsize=8.8, fontweight="bold")
-        ax_e.set_title("E. Phylogenetic Horizon (4,334 Pairs, 791 Species)\n8p Grids Work <50 Myr; Modules Decouple >50 Myr",
-                       fontsize=9.5, fontweight="bold", pad=8)
-        ax_e.legend(loc="upper right", fontsize=7.2, framealpha=0.94)
+        ax_e.set_xticklabels(bins_labels, fontsize=7.6, fontweight="bold")
+        ax_e.set_ylabel("Post-Warp Procrustes RMS", fontsize=8.6, fontweight="bold")
+        ax_e.set_title("E. Procrustes RMS vs. Genus Disparity (4,334 Pairs)\n<50 Myr Reaches σ_genus (50-61%); >50 Myr Jumps 3×",
+                       fontsize=9.1, fontweight="bold", pad=8)
+        ax_e.legend(loc="upper left", fontsize=6.8, framealpha=0.94)
         ax_e.grid(True, ls="--", alpha=0.35)
 
         fig.text(

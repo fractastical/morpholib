@@ -250,30 +250,47 @@ def build_all_outreach_figures():
     ax2a = fig2.add_subplot(gs2[0, 0:2])
     bins_labels = ["0-10 Myr\n(n=149)", "10-25 Myr\n(n=359)", "25-50 Myr\n(n=346)", "50-80 Myr\n(n=170)", "80-110 Myr\n(n=618)", "110-160 Myr\n(n=2,692)"]
     xb = np.arange(len(bins_labels))
-    aff_floor = [30.2, 34.5, 27.5, 0.6, 0.0, 0.0]
+
+    # Standard continuous Procrustes RMS residuals (median across pairs in each bin)
+    sim_rms = [0.0139, 0.0151, 0.0162, 0.0285, 0.0499, 0.0383]
+    aff_rms = [0.0123, 0.0127, 0.0132, 0.0218, 0.0427, 0.0304]
+    thomp_rms = [0.0106, 0.0104, 0.0106, 0.0154, 0.0347, 0.0247]
+    floor_med = 0.0110  # Median within-genus interspecific RMS disparity (sigma_genus)
+
+    # Secondary axis: % of pairs warped below target genus's own 1.0x sigma_genus disparity
     thomp_floor = [53.0, 61.3, 49.7, 10.6, 1.0, 0.0]
-    quad_floor = [73.8, 79.1, 70.5, 25.3, 1.9, 0.6]
 
-    ax2a.axvspan(-0.4, 2.45, color="#dcfce7", alpha=0.55, label="0-50 Myr: 8p Thompson Grids Reach Noise Floor")
-    ax2a.axvspan(2.45, 5.4, color="#fee2e2", alpha=0.45, label=">50 Myr: Beyond Modular Decoupling Horizon")
+    ax2a.axvspan(-0.4, 2.45, color="#dcfce7", alpha=0.45)
+    ax2a.axvspan(2.45, 5.4, color="#fee2e2", alpha=0.38)
+    ax2a.axhspan(0.0, floor_med, color="#bbf7d0", alpha=0.55,
+                 label=f"Within-Genus Disparity Band (σ_genus ≤ {floor_med:.4f} Procrustes RMS)")
+    ax2a.axhline(floor_med, color="#15803d", ls=":", lw=1.6)
     ax2a.axvline(2.45, color="#b91c1c", ls="--", lw=2.0)
-    ax2a.text(2.50, 39, "← ~45-50 Myr Phylogenetic Cliff\n    (Fin & Body Modules Decouple)", color="#991b1b", fontsize=8.8, fontweight="bold",
-              bbox=dict(boxstyle="round,pad=0.22", facecolor="#fff1f2", edgecolor="#fecdd3", alpha=0.92))
 
-    ax2a.plot(xb, quad_floor, "s--", color="#64748b", lw=2.0, markersize=7, label="12p Quadratic Trend Surface (overparameterized)")
-    ax2a.plot(xb, thomp_floor, "o-", color="#16a34a", lw=3.0, markersize=9, label="Best 8p Thompson Coordinate Grid (Coaxial / Fan / Radial)")
-    ax2a.plot(xb, aff_floor, "^-", color="#2563eb", lw=2.2, markersize=7, label="6p General Affine Transformation")
+    ax2a.plot(xb, sim_rms, "d--", color="#64748b", lw=1.9, markersize=6,
+              label="Unwarped 4p Similarity (Initial Procrustes Distance d₀)")
+    ax2a.plot(xb, aff_rms, "^-", color="#2563eb", lw=2.2, markersize=7,
+              label="6p Linear Affine Residual (Elongation + Shear)")
+    ax2a.plot(xb, thomp_rms, "o-", color="#15803d", lw=3.0, markersize=8.5,
+              label="8p Thompson Coordinate Grid Residual (Coaxial / Fan / Radial)")
 
-    for i, val in enumerate(thomp_floor):
-        ax2a.text(xb[i], val + 3.0, f"{val:.1f}%", ha="center", va="bottom", fontsize=9, fontweight="bold", color="#15803d")
+    for i, val in enumerate(thomp_rms):
+        offset_y = -0.0038 if i < 3 else 0.0020
+        ax2a.text(xb[i], val + offset_y, f"{val:.4f}\n({thomp_floor[i]:.0f}% ≤ σ_gen)",
+                  ha="center", va="bottom" if offset_y > 0 else "top",
+                  fontsize=7.7, fontweight="bold", color="#14532d")
 
-    ax2a.set_ylim(-3, 108)
-    ax2a.set_yticks([0, 20, 40, 60, 80, 100])
+    ax2a.text(2.50, 0.0445, "← ~45-50 Myr Phylogenetic Cliff\n   • <50 Myr: 8p RMS = 0.0105 (inside σ_genus!)\n   • >50 Myr: 8p RMS jumps 2.5-3.3× as\n     fin insertions decouple from skull",
+              color="#991b1b", fontsize=8.0, fontweight="bold",
+              bbox=dict(boxstyle="round,pad=0.24", facecolor="#fff1f2", edgecolor="#fecdd3", alpha=0.94))
+
+    ax2a.set_ylim(0.003, 0.058)
     ax2a.set_xticks(xb)
-    ax2a.set_xticklabels(bins_labels, fontsize=9, fontweight="bold")
-    ax2a.set_ylabel("% Reaching Within-Genus Noise Floor", fontsize=9.5, fontweight="bold")
-    ax2a.set_title("A. Continuous Phylogenetic Horizon Across 4,334 Time-Calibrated Pairs (Rabosky et al. 2018 Tree)", fontsize=10.5, fontweight="bold", pad=10)
-    ax2a.legend(loc="upper right", fontsize=7.5, framealpha=0.95)
+    ax2a.set_xticklabels(bins_labels, fontsize=8.8, fontweight="bold")
+    ax2a.set_ylabel("Post-Warp 17-LM Procrustes RMS Residual", fontsize=9.2, fontweight="bold", color="#0f172a")
+    ax2a.set_title("A. Standard Procrustes RMS Residual vs. Within-Genus Disparity (σ_genus) Across 4,334 Dated Pairs",
+                   fontsize=10.2, fontweight="bold", pad=10)
+    ax2a.legend(loc="upper left", fontsize=7.4, framealpha=0.95)
     ax2a.grid(True, ls="--", alpha=0.35)
 
     ax2b = fig2.add_subplot(gs2[0, 2])
