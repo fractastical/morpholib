@@ -10989,6 +10989,138 @@ def verify_relaxation_offset_recurrence_3times2m_cascade_and_plateau_jumping() -
     }
 
 
+def verify_three_regime_interior_slope3_comb_penetration_and_super_reset_horizon() -> dict:
+    r"""Verify Theorem 58 (Milestone 57 — Full 0^{b_j} Three-Regime Interior Law, r=1 All-Ones Complement
+    Relaxation Law, Universal Slope-3 Comb Penetration Law & Super-Reset Horizon Extension):
+      1. Full 0^{b_j} Three-Regime Interior Law & r = 1 All-Ones Bit-Complement Relaxation Law:
+         Across the ENTIRE 0^{b_2} block (for all q in 1 .. b_2 and ALL 1 <= m <= q, including
+         across the Equipotential Zero Triangle m in [q - i_2 + 1, q]):
+             l_m(T_1 + q - m) = { 0,        if 1 <= q <= i_2 (r <= 0),
+                                { 1,        if q == i_2 + 1  (r == 1),
+                                { m mod 2,  if q >= i_2 + 2  (r >= 2).
+         Consequently, along the r = 1 boundary anti-diagonal q = i_2 + 1, for ALL deeper cells m >= i_2 + 1,
+             l_m(T_1 + i_2 + 1 - m) == 1 ^ V^{(i_2 + 1)}_{d_1, a_1}(m).
+      2. Universal Slope-3 Upstream Comb Penetration Law (3-Step Comb Absorption Lemma):
+         The shift-free 1D offset recurrence x_s(q) = x_{s-1}(q) ^ (x_s(q-1) | x_s(q-2)) holds
+         across ALL q in 2 .. b_2 and s >= 1 (both inside q <= i_2 and across q > i_2), and because
+         x_0(q) = q mod 2 for all q >= i_2 + 2, 3-step comb absorption forces x_s(q) to lock to the
+         period-2 alternating comb (q + s) mod 2 within at most 3 steps per column s:
+             q >= i_2 + 3*s + 2   ==>   l_{q+s}(T_1 - s) == (q + s) mod 2   (forall s >= 0, a_1, d_1, i_2).
+      3. Universal Block-j Super-Reset Horizon Extension:
+         Because the interior comb extends across all 1 <= m <= b_2 (not merely m <= b_2 - i_2) and
+         penetrates into upstream Block 1 for 0 <= s <= max(0, (b_2 - i_2 - 2) // 3), the Block-2
+         interface anti-diagonals t + m = T_1 + b_2 + k (k in 0 .. a_2) satisfy the extended
+         Upstream-Independent Super-Reset Law:
+             l_m(T_1 + b_2 + k - m) == U_{\min(b_2 - i_2, 2), a_2, k}(m)
+         for ALL 0 <= m <= b_2 + k + max(0, (b_2 - i_2 - 2) // 3), upgrading Theorem 55(1)'s horizon
+         from b_2 - i_2 + k to b_2 + k + floor((b_2 - i_2 - 2)/3)!
+    """
+    def _evolve_mb(
+        blocks: list[tuple[int, int]], jumps: list[int], max_m: int = 260
+    ) -> dict[int, list[int]]:
+        c: list[int] = []
+        l1: list[int] = []
+        for (b, a), i in zip(blocks, jumps):
+            c.extend([0] * b + [1] * a)
+            l1.extend([0] * i + [1] * (b - i) + [0] + [(s + 1) % 2 for s in range(1, a)])
+        a_last = blocks[-1][1]
+        c.append(0)
+        l1.append(a_last % 2)
+        N_tot = len(c)
+        L_mat: dict[int, list[int]] = {0: c[:], 1: l1[:]}
+        for m in range(2, min(max_m + 1, N_tot)):
+            L_mat[m] = [
+                L_mat[m - 1][s + 1] ^ (L_mat[m - 1][s] | L_mat[m - 2][s])
+                for s in range(N_tot - m)
+            ]
+        return L_mat
+
+    # 1. Verify Full 0^{b_2} Three-Regime Interior Law & r = 1 Complement Relaxation Law
+    b1 = 70
+    three_regime_errors = 0
+    three_regime_entries = 0
+    r1_comp_errors = 0
+    r1_comp_entries = 0
+    for a1 in (2, 4, 6, 8):
+        T1 = b1 + a1
+        for d1 in (0, 1, 2):
+            L_pure = _evolve_mb([(b1, a1), (85, 2)], [b1 - d1, 80], max_m=180)
+            for i2 in (0, 1, 2, 5, 10):
+                b2 = 25
+                Lm = _evolve_mb([(b1, a1), (b2, 4)], [b1 - d1, i2], max_m=180)
+                for q in range(1, b2 + 1):
+                    for m in range(1, q + 1):
+                        three_regime_entries += 1
+                        expected = 0 if q <= i2 else (1 if q == i2 + 1 else (m % 2))
+                        if Lm[m][T1 + q - m] != expected:
+                            three_regime_errors += 1
+                q_r1 = i2 + 1
+                for m in range(q_r1, q_r1 + 35):
+                    r1_comp_entries += 1
+                    if Lm[m][T1 + q_r1 - m] != (1 ^ L_pure[m][T1 + q_r1 - m]):
+                        r1_comp_errors += 1
+
+    # 2. Verify Universal Slope-3 Upstream Comb Penetration Law (q >= i_2 + 3*s + 2 => l_{q+s}(T_1 - s) == (q + s) % 2)
+    b1_s3 = 80
+    b2_s3 = 75
+    slope3_errors = 0
+    slope3_entries = 0
+    for a1 in (2, 4, 6, 8):
+        T1 = b1_s3 + a1
+        for d1 in (0, 1, 2):
+            L_by_i2 = {
+                i2: _evolve_mb([(b1_s3, a1), (b2_s3, 4)], [b1_s3 - d1, i2], max_m=250)
+                for i2 in (0, 1, 2, 3, 5, 8, 12)
+            }
+            for s in range(0, 17):
+                r_min = 3 * s + 2
+                for i2, Lm in L_by_i2.items():
+                    for q in range(i2 + r_min, 68):
+                        slope3_entries += 1
+                        if Lm[q + s][T1 - s] != ((q + s) % 2):
+                            slope3_errors += 1
+
+    # 3. Verify Universal Block-j Super-Reset Horizon Extension (0 <= m <= b_2 + k + max(0, (b_2 - i_2 - 2) // 3))
+    b_ref = 120
+    U_ref: dict[tuple[int, int, int], list[int]] = {}
+    for a2 in (1, 2, 3, 4, 6):
+        for d2 in (0, 1, 2):
+            L_s = _evolve_mb([(b_ref, a2)], [b_ref - d2], max_m=180)
+            for k in range(a2 + 1):
+                U_ref[(d2, a2, k)] = [L_s[m][b_ref + k - m] for m in range(100)]
+
+    b1_sr = 50
+    super_reset_errors = 0
+    super_reset_entries = 0
+    for a1 in (1, 2, 3, 4, 6):
+        T1 = b1_sr + a1
+        for d1 in (0, 1, 2):
+            for b2 in (6, 10, 15, 20):
+                for a2 in (1, 2, 3, 4, 6):
+                    i2_list = [0] if (a1 % 2 == 1) else list(range(0, b2 + 1))
+                    for i2 in i2_list:
+                        d2 = min(b2 - i2, 2)
+                        r2 = b2 - i2
+                        Lm = _evolve_mb([(b1_sr, a1), (b2, a2)], [b1_sr - d1, i2], max_m=160)
+                        for k in range(a2 + 1):
+                            bound_m = b2 + k + max(0, (r2 - 2) // 3)
+                            for m in range(0, bound_m + 1):
+                                super_reset_entries += 1
+                                if Lm[m][T1 + b2 + k - m] != U_ref[(d2, a2, k)][m]:
+                                    super_reset_errors += 1
+
+    return {
+        "three_regime_errors": three_regime_errors,
+        "three_regime_entries": three_regime_entries,
+        "r1_comp_errors": r1_comp_errors,
+        "r1_comp_entries": r1_comp_entries,
+        "slope3_errors": slope3_errors,
+        "slope3_entries": slope3_entries,
+        "super_reset_errors": super_reset_errors,
+        "super_reset_entries": super_reset_entries,
+    }
+
+
 
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
@@ -12285,6 +12417,18 @@ def self_test() -> dict:
         and pj_57["plateau_jump_entries"] == 144
     ), "Theorem 57 1D Offset Recurrence, 3*2^m Period-Doubling Cascade, or Quantized Plateau-Jumping Crystal Coalescence Law violated"
 
+    sr_58 = verify_three_regime_interior_slope3_comb_penetration_and_super_reset_horizon()
+    assert (
+        sr_58["three_regime_errors"] == 0
+        and sr_58["three_regime_entries"] == 19500
+        and sr_58["r1_comp_errors"] == 0
+        and sr_58["r1_comp_entries"] == 2100
+        and sr_58["slope3_errors"] == 0
+        and sr_58["slope3_entries"] == 53652
+        and sr_58["super_reset_errors"] == 0
+        and sr_58["super_reset_entries"] == 210342
+    ), "Theorem 58 Three-Regime Interior Law, Slope-3 Comb Penetration Law, or Super-Reset Horizon Extension violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -12386,6 +12530,7 @@ def self_test() -> dict:
         "lr_55": lr_55,
         "tt_56": tt_56,
         "pj_57": pj_57,
+        "sr_58": sr_58,
         "tent_eval": tent_eval,
         "eo_neural": eo_neural,
         "clades": clades,
@@ -14191,7 +14336,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 56,
-            "commit": "HEAD",
+            "commit": "28dae636",
             "time_str": "Oct 21, 9:12 AM",
             "dt_min": 25,
             "cum_min": 1325,
@@ -14206,6 +14351,27 @@ def render_prize_progress_gif_and_poster(
             "synthesis": (
                 "Proves the exact 1D offset recurrence x_s(q)=x_{s-1}(q)^(x_s(q-1)|x_s(q-2)), universal d_1=0 table W_q^*(s) for all even a_1>=4, "
                 "3*2^m period-doubling cascade of W_q(s), and quantized plateau-jumping crystal coalescence across s<10 (a_1 in {4,6}) and s<18 (a_1 in {8,12})."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
+        {
+            "step": 57,
+            "commit": "HEAD",
+            "time_str": "Oct 21, 9:26 AM",
+            "dt_min": 25,
+            "cum_min": 1350,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 57: Full 0^{b_j} Three-Regime Interior Law, Slope-3 Comb Penetration & Super-Reset Horizon Extension",
+            "thm_badge": "Theorem 58 (Three-Regime Interior, Slope-3 Comb Penetration & Super-Reset Horizon)",
+            "formula_lines": [
+                r"$l_m(T_1+q-m)\in\{0,\,1,\,m\bmod 2\}\;\;(1\le m\le q\le b_2),\;\;l_m(T_1+i_2+1-m)=1\oplus V^{(i_2+1)}_{d_1,a_1}(m)\;\;(m\ge i_2+1)$",
+                r"$q\ge i_2+3s+2\implies l_{q+s}(T_1-s)=(q+s)\bmod 2,\;\;l_m(T_1+b_2+k-m)\equiv U_{d_2,a_2,k}(m)\;\;(m\le b_2+k+\lfloor(b_2-i_2-2)/3\rfloor_+)$",
+            ],
+            "synthesis": (
+                "Proves the 3-regime interior law across all 1<=m<=q<=b_2, bit-complement relaxation 1^V^{(i_2+1)}(m) at r=1, "
+                "universal slope-3 comb penetration q>=i_2+3s+2 into Block 1, and super-reset horizon m<=b_2+k+floor((b_2-i_2-2)/3)_+ (210,342 entries)."
             ),
             "pi_max": 30,
             "necks_done": 74248449,
@@ -14266,7 +14432,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             98.5,
             7.2,
-            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 56",
+            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 57",
             color=ms["phase_color"],
             fontsize=11.0,
             fontweight="bold",
@@ -14281,7 +14447,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             85.25,
             2.9,
-            f"57-Theorem Suite: {int(round(prog_pct * 100))}% Verified (Prizes #1-#3 Open)",
+            f"58-Theorem Suite: {int(round(prog_pct * 100))}% Verified (Prizes #1-#3 Open)",
             color="#0b0f19" if prog_pct > 0.45 else "#f8fafc",
             fontsize=8.0,
             fontweight="bold",
@@ -14579,14 +14745,15 @@ def render_prize_progress_gif_and_poster(
                 "S54\nThm55",
                 "S55\nThm56",
                 "S56\nThm57",
+                "S57\nThm58",
             ],
             color="#cbd5e1",
-            fontsize=2.60,
+            fontsize=2.55,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–21, 2026: 56 Milestones, 22h 05m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–21, 2026: 57 Milestones, 22h 30m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -14768,6 +14935,7 @@ def main(argv: list[str] | None = None) -> int:
     lr_55 = res["lr_55"]
     tt_56 = res["tt_56"]
     pj_57 = res["pj_57"]
+    sr_58 = res["sr_58"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -14840,7 +15008,7 @@ def main(argv: list[str] | None = None) -> int:
         even_jump["max_ext_30"],
     )
     print(
-        f"[theorems_15_to_57_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40/GM41/PF42/FT43/Bio44/LC45/UH46/IW47/LI48/BD49/MN50/FL51/GJ52/TR53/VE54/LR55/TT56/PJ57 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']},{gm_41['golden_mean_and_onehot_errors'] + gm_41['two_block_n1_errors'] + gm_41['defect_mirror_errors']},{pf_42['parity_flip_automaton_errors'] + pf_42['even_multiblock_n1_errors'] + pf_42['defect_vertical_period_errors']},{ft_43['gate_lock_and_padovan_errors'] + ft_43['mobius_shell_collapse_errors'] + ft_43['survivors_500']},{bio_44['oliva_conus_and_eo_errors'] + bio_44['ballot_greens_errors'] + bio_44['short_run_gate_errors'] + bio_44['opaque_mirror_survivors_500'] + bio_44['arbitrary_transient_survivors']},{lc_45['left_1run_profile_errors'] + lc_45['d2_linearization_and_mirror_errors'] + lc_45['antidiag_parity_and_clash_errors'] + lc_45['pure_left_cone_survivors_31403']},{uh_46['ring_horizon_errors'] + uh_46['cascade_9row_errors'] + uh_46['prefix_transmission_errors']},{iw_47['wavefront_step_errors'] + iw_47['hit_bound_errors'] + iw_47['band1_tunneling_errors'] + iw_47['band2_mod4_errors'] + iw_47['defect_mirror_survivors_200']},{li_48['interval_and_d2_spike_errors'] + li_48['true_cone_laws_errors'] + li_48['nfa_vs_3laws_mismatches'] + li_48['depth_d_collapse_mismatches'] + li_48['survivors_laws123_200'] + li_48['mobius_mahler_involution_errors']},{bd_49['dichotomy_errors'] + bd_49['survivors_from_0'] + bd_49['survivors_post_2pi']},{mn_50['tautology_and_comb_errors'] + mn_50['true_cone_law4_errors']},{fl_51['floquet_wavefront_errors'] + fl_51['prefix_comb_errors'] + fl_51['tail_shielding_errors'] + fl_51['even_b_boundary_tail_errors']},{gj_52['antidiag_rec_errors'] + gj_52['errors_4crystal'] + gj_52['closed_form_d01_errors']},{tr_53['collapse_3crystal_errors'] + tr_53['comb_d0_exit_errors'] + tr_53['lune_front_errors'] + tr_53['multiblock_shielding_errors']},{ve_54['virtual_ext_errors'] + ve_54['shift_front_errors'] + ve_54['a1_eq2_merge_errors'] + ve_54['superlinear_2block_errors'] + ve_54['superlinear_3block_errors']},{lr_55['local_reset_errors'] + lr_55['boundary_tail_errors'] + lr_55['odd_chain_3crystal_errors']},{tt_56['two_tri_errors'] + tt_56['relax_crystal_errors'] + tt_56['relax_sync_errors'] + tt_56['a1_eq2_period3_errors']},{pj_57['rec_qs_errors'] + pj_57['d0_univ_errors'] + pj_57['cascade_3_2m_errors'] + pj_57['shift3_a2_errors'] + pj_57['plateau_jump_errors']}) | "
+        f"[theorems_15_to_58_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40/GM41/PF42/FT43/Bio44/LC45/UH46/IW47/LI48/BD49/MN50/FL51/GJ52/TR53/VE54/LR55/TT56/PJ57/SR58 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']},{gm_41['golden_mean_and_onehot_errors'] + gm_41['two_block_n1_errors'] + gm_41['defect_mirror_errors']},{pf_42['parity_flip_automaton_errors'] + pf_42['even_multiblock_n1_errors'] + pf_42['defect_vertical_period_errors']},{ft_43['gate_lock_and_padovan_errors'] + ft_43['mobius_shell_collapse_errors'] + ft_43['survivors_500']},{bio_44['oliva_conus_and_eo_errors'] + bio_44['ballot_greens_errors'] + bio_44['short_run_gate_errors'] + bio_44['opaque_mirror_survivors_500'] + bio_44['arbitrary_transient_survivors']},{lc_45['left_1run_profile_errors'] + lc_45['d2_linearization_and_mirror_errors'] + lc_45['antidiag_parity_and_clash_errors'] + lc_45['pure_left_cone_survivors_31403']},{uh_46['ring_horizon_errors'] + uh_46['cascade_9row_errors'] + uh_46['prefix_transmission_errors']},{iw_47['wavefront_step_errors'] + iw_47['hit_bound_errors'] + iw_47['band1_tunneling_errors'] + iw_47['band2_mod4_errors'] + iw_47['defect_mirror_survivors_200']},{li_48['interval_and_d2_spike_errors'] + li_48['true_cone_laws_errors'] + li_48['nfa_vs_3laws_mismatches'] + li_48['depth_d_collapse_mismatches'] + li_48['survivors_laws123_200'] + li_48['mobius_mahler_involution_errors']},{bd_49['dichotomy_errors'] + bd_49['survivors_from_0'] + bd_49['survivors_post_2pi']},{mn_50['tautology_and_comb_errors'] + mn_50['true_cone_law4_errors']},{fl_51['floquet_wavefront_errors'] + fl_51['prefix_comb_errors'] + fl_51['tail_shielding_errors'] + fl_51['even_b_boundary_tail_errors']},{gj_52['antidiag_rec_errors'] + gj_52['errors_4crystal'] + gj_52['closed_form_d01_errors']},{tr_53['collapse_3crystal_errors'] + tr_53['comb_d0_exit_errors'] + tr_53['lune_front_errors'] + tr_53['multiblock_shielding_errors']},{ve_54['virtual_ext_errors'] + ve_54['shift_front_errors'] + ve_54['a1_eq2_merge_errors'] + ve_54['superlinear_2block_errors'] + ve_54['superlinear_3block_errors']},{lr_55['local_reset_errors'] + lr_55['boundary_tail_errors'] + lr_55['odd_chain_3crystal_errors']},{tt_56['two_tri_errors'] + tt_56['relax_crystal_errors'] + tt_56['relax_sync_errors'] + tt_56['a1_eq2_period3_errors']},{pj_57['rec_qs_errors'] + pj_57['d0_univ_errors'] + pj_57['cascade_3_2m_errors'] + pj_57['shift3_a2_errors'] + pj_57['plateau_jump_errors']},{sr_58['three_regime_errors'] + sr_58['r1_comp_errors'] + sr_58['slope3_errors'] + sr_58['super_reset_errors']}) | "
         f"SWAR cone tails={bridge_31['swar_candidates_tested']} (survivors={bridge_31['swar_survivors']}, max_steps={bridge_31['swar_max_steps']}) | "
         f"500x500 cone pairs={ft_43['pairs_500_tested']} (0-step kills={ft_43['killed_at_mismatch_500']}, pure-left kills={bio_44['nonzero_pairs_500']}/{bio_44['nonzero_pairs_500']}, survivors={ft_43['survivors_500']}) | "
         f"Q_m={twin_32['moore_sizes_m1_to_6']} | EF tests={subd_34['euler_fermat_tests']} | half-density={grand_35['exact_half_density_count_s1_to_41']}/41 | ANF mons={grand_35['monomial_counts_t1_to_7']} | "

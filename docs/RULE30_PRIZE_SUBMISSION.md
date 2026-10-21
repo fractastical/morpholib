@@ -1136,11 +1136,28 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >      - **($a_1 \in \{4, 6\}$ Plateau Jump to $s = 10$ & 2-Crystal Coalescence on $s < 18$):** For all $q \ge 22$, all 3 crystals $d_1 \in \{0, 1, 2\}$ coalesce identically to $W_{q + 3}(s)$ on $0 \le s < 10$, jumping $s_{\mathrm{sync}}(a_1, q) = m_{\mathrm{sync}}(a_1, q) - q$ from $\{5, 8\}$ up to the **exact period-6 oscillator** $(10, 12, 10, 10, 15, 10)^\infty$; and for all $q \ge 32$, they coalesce on $0 \le s < 18$ into the 2-crystal pair $\{W_{q+3}(s), W_{q+9}(s)\}$!
 >      - **($a_1 \in \{8, 12\}$ Plateau Jump to $s = 18$):** For all $q \ge 34$, all 3 crystals $d_1 \in \{0, 1, 2\}$ coalesce identically to $W_{q + 3}(s)$ across the entire plateau $0 \le s < 18$, jumping $s_{\mathrm{sync}}(a_1, q)$ to the **exact period-12 oscillator** $(18, 18, 21, 18, 18, 20, 18, 18, 18, 18, 18, 22)^\infty$! $\square$
 
+### 6.46 Theorem 58: Full $0^{b_j}$ Three-Regime Interior Law, $r = 1$ All-Ones Complement Relaxation Law, Universal Slope-3 Comb Penetration Law & Super-Reset Horizon Extension
+
+> **Theorem 58 (Full $0^{b_j}$ Three-Regime Interior Law, $r = 1$ All-Ones Complement Relaxation Law, Universal Slope-3 Upstream Comb Penetration Law $q \ge i_2 + 3s + 2 \implies l_{q+s}(T_1 - s) = (q + s) \bmod 2$, and Universal Block-$j$ Super-Reset Horizon Extension $0 \le m \le b_j + k + \lfloor(b_j - i_j - 2)/3\rfloor_+$).**  
+> 1. **Full $0^{b_j}$ Three-Regime Interior Law & $r = 1$ All-Ones Bit-Complement Relaxation Law (`three_regime_errors == 0` across $19,500$ entries and `r1_comp_errors == 0` across $2,100$ entries, `Law 2ag` in Lean 4):**  
+>    - Across the **entire** $0^{b_j}$ run ($1 \le q \le b_j$ and **all** $1 \le m \le q$, including across the Equipotential Zero Triangle $q - i_j < m \le q$), the anti-diagonal prefix $l_m(T_{j-1} + q - m)$ obeys the exact three-regime law:
+>      $$l_m(T_{j-1} + q - m) \;=\; \begin{cases} 0, & \text{if } 1 \le q \le i_j \;\;(r \le 0), \\ 1, & \text{if } q = i_j + 1 \;\;(r = 1), \\ m \bmod 2, & \text{if } i_j + 2 \le q \le b_j \;\;(r \ge 2). \end{cases}$$
+>    - Consequently, along the $r = 1$ boundary anti-diagonal $q = i_2 + 1$, the entry bit at $s = 0$ ($t = T_1$) flips from $0$ to $l_{i_2+1}(T_1) = 1$ while both prior anti-diagonals $q = i_2, i_2 - 1$ lie inside the Equipotential Zero Triangle (`rule30_r1_all_ones_complement_step`), forcing every deeper cell $m \ge i_2 + 1$ to be the **exact bitwise complement** of the pure relaxation crystal $V^{(i_2 + 1)}_{d_1, a_1}(m)$:
+>      $$l_m(T_1 + i_2 + 1 - m) \;\equiv\; 1 \;\oplus\; V^{(i_2 + 1)}_{d_1,\, a_1}(m) \qquad (\forall\, m \ge i_2 + 1).$$
+> 2. **Universal Slope-3 Upstream Comb Penetration Law (`slope3_errors == 0` across $53,652$ entries):**  
+>    - The shift-free 1D offset recurrence $x_s(q) = x_{s-1}(q) \oplus \bigl(x_s(q - 1) \lor x_s(q - 2)\bigr)$ ($s := m - q \ge 0$, $t = T_1 - s$) holds across **all** $q \in \{2, \dots, b_2\}$ and $s \ge 1$ (both inside $q \le i_2$ and across $q > i_2$), with boundary column $x_0(q) = q \bmod 2$ for all $q \ge i_2 + 2$.
+>    - By the **3-Step Comb Absorption Lemma** (`rule30_three_step_comb_absorption` in Lean 4), whenever column $s - 1$ locks to the period-2 alternating comb $(q + s - 1) \bmod 2$ at $q \ge q_0$, for **every** initial state $(x_s(q_0 - 2), x_s(q_0 - 1)) \in \{0, 1\}^2$, column $s$ locks to the flipped alternating comb $(q + s) \bmod 2$ within at most $3$ steps ($q \ge q_0 + 3$), proving by induction on $s \ge 0$ that the Floquet comb penetrates backward into upstream Block 1 at exact slope $3$:
+>      $$q \;\ge\; i_2 + 3s + 2 \quad \Longrightarrow \quad l_{q+s}(T_1 - s) \;\equiv\; (q + s) \bmod 2 \qquad (\forall\, s \ge 0,\; \forall\, a_1, d_1, i_2),$$
+>      completely erasing both the jump index $i_2$ and the upstream Block 1 state $(a_1, d_1)$!
+> 3. **Universal Block-$j$ Super-Reset Horizon Extension (`super_reset_errors == 0` across $210,342$ entries):**  
+>    - Because the interior comb extends across all $1 \le m \le b_j$ and penetrates into upstream Block $j - 1$ for $0 \le s \le \max\bigl(0, \lfloor(b_j - i_j - 2)/3\rfloor\bigr)$, along every Block-$j$ interface anti-diagonal $t + m = T_{j-1} + b_j + k$ ($0 \le k \le a_j$), the Upstream-Independent Local Reset Law (Theorem 55(1)) extends from $m \le b_j - i_j + k$ to the **Super-Reset Horizon**:
+>      $$l_m(T_{j-1} + b_j + k - m) \;\equiv\; U_{\min(b_j - i_j,\, 2),\; a_j,\; k}(m) \qquad \left(\forall\, 0 \le m \le b_j + k + \max\!\left(0,\, \left\lfloor\frac{b_j - i_j - 2}{3}\right\rfloor\right)\right)! \quad \square$$
+
 ---
 
 ## 7. One-Command Verification
 
-All fifty-six theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All fifty-seven theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

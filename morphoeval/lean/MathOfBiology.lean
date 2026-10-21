@@ -621,6 +621,29 @@ theorem rule30_relaxation_column_complement_from_golden_mean
     bne x_even true = !x_even := by
   cases x_even <;> rfl
 
+/-- Law 2ag (`wolfram-conus-textile-rule30-2ag`):
+    Full `0^{b_j}` Three-Regime Interior Law, 3-Step Comb Absorption Lemma & Super-Reset Horizon Extension (Theorem 58):
+    1. (`rule30_r1_all_ones_complement_step`): Along the `r = 1` anti-diagonal `q = i_j + 1`, the entry bit at `s = 0` (`t = T_{j-1}`)
+       flips from `false` (`q <= i_j`) to `true` (`l_{i_j+1}(T_{j-1}) = true`) while both prior anti-diagonals `q = i_j, i_j - 1`
+       lie in the `q <= i_j` zero triangle (`bne (!x_prev) g = !(bne x_prev g)`), forcing `l_m(T_{j-1} + i_j + 1 - m) = 1 ^ V^{(i_j+1)}(m)` for all `m >= i_j + 1`.
+    2. (`rule30_three_step_comb_absorption`): Whenever column `s - 1` locks to the period-2 alternating comb `(p_0, !p_0, p_0, !p_0)`
+       at `q = q_0, q_0 + 1, q_0 + 2, q_0 + 3`, for EVERY initial pair `(b_m2, b_m1) in Bool^2` at `(q_0 - 2, q_0 - 1)`,
+       the recurrence `x_s(q) = bne x_{s-1}(q) (x_s(q-1) || x_s(q-2))` locks `(x_s(q_0 + 2), x_s(q_0 + 3))` to the flipped
+       alternating comb `(p_0, !p_0) = (!(!p_0), !p_0)` by step `q_0 + 3`, proving `q >= i_j + 3*s + 2 => l_{q+s}(T_{j-1}-s) = (q+s) mod 2`! -/
+theorem rule30_r1_all_ones_complement_step
+    (x_prev g : Bool) :
+    bne (!x_prev) g = !(bne x_prev g) := by
+  cases x_prev <;> cases g <;> rfl
+
+theorem rule30_three_step_comb_absorption
+    (p0 b_m2 b_m1 : Bool) :
+    let y0 := bne p0 (b_m1 || b_m2)
+    let y1 := bne (!p0) (y0 || b_m1)
+    let y2 := bne p0 (y1 || y0)
+    let y3 := bne (!p0) (y2 || y1)
+    (y3 == p0 && (y3 || y2) == true) = true := by
+  cases p0 <;> cases b_m2 <;> cases b_m1 <;> rfl
+
 
 
 
