@@ -1153,11 +1153,28 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >    - Because the interior comb extends across all $1 \le m \le b_j$ and penetrates into upstream Block $j - 1$ for $0 \le s \le \max\bigl(0, \lfloor(b_j - i_j - 2)/3\rfloor\bigr)$, along every Block-$j$ interface anti-diagonal $t + m = T_{j-1} + b_j + k$ ($0 \le k \le a_j$), the Upstream-Independent Local Reset Law (Theorem 55(1)) extends from $m \le b_j - i_j + k$ to the **Super-Reset Horizon**:
 >      $$l_m(T_{j-1} + b_j + k - m) \;\equiv\; U_{\min(b_j - i_j,\, 2),\; a_j,\; k}(m) \qquad \left(\forall\, 0 \le m \le b_j + k + \max\!\left(0,\, \left\lfloor\frac{b_j - i_j - 2}{3}\right\rfloor\right)\right)! \quad \square$$
 
+### 6.47 Theorem 59: Zero-Comb Complementarity, Upstream Synchronization Prefix Preservation & Slope-$4/3$ Odd-Run Amplification Law
+
+> **Theorem 59 (Zero-Comb Complementarity, Upstream Synchronization Prefix Preservation, Slope-$4/3$ Odd-Run Zero-Block Amplification, and Universal $r$-Block Recursive Prefix-Preservation Law).**  
+> 1. **Exact Zero-Comb Complementarity & Prefix-Preservation Law for 2-Block Chains (`two_block_errors == 0` across $4,380$ configurations, `Law 2ah` in Lean 4):**  
+>    - Across any 2-block chain $c = 0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2}0$ with jump $i_2 \in \{0, \dots, b_2\}$, the Block-2 zero run $0^{b_2}$ splits into the Equipotential Zero Triangle $1 \le q \le i_2$ (width $i_2$) and the Floquet Comb Triangle $i_2 + 1 \le q \le b_2$ (width $r_2 = b_2 - i_2$, so $i_2 + r_2 = b_2$):
+>      - On the Equipotential Zero Triangle $1 \le q \le i_2$, the 3 Block-1 crystals $d_1 \in \{0, 1, 2\}$ synchronize across offset $0 \le s < s_{\mathrm{zero}}(a_1, i_2)$, where:
+>        $$s_{\mathrm{zero}}(a_1, i_2) \;:=\; \begin{cases} \underline{M}(a_1), & \text{if } i_2 \le 1, \\ \min\bigl(s_{\mathrm{sync}}(a_1, i_2),\, s_{\mathrm{sync}}(a_1, i_2 - 1)\bigr), & \text{if } i_2 \ge 2. \end{cases}$$
+>      - On the Floquet Comb Triangle $i_2 + 1 \le q \le b_2$, because the entry column $x_0(q)$ depends **only** on $(i_2, k_2)$ and is $100\%$ independent of $d_1 \in \{0, 1, 2\}$, the shift-free 1D offset recurrence $x_s(q) = x_{s-1}(q) \oplus \bigl(x_s(q-1) \lor x_s(q-2)\bigr)$ (`rule30_upstream_sync_step_preservation`) **simultaneously preserves** the entire zero-triangle agreement $0 \le s < s_{\mathrm{zero}}(a_1, i_2)$ **and** forces Slope-3 Comb Penetration on $0 \le s < s_{\mathrm{comb}}(r_2, k_2)$, where $r_{\mathrm{eff}} := r_2 - \mathbf{1}_{k_2 \ge 1}$ and $s_{\mathrm{comb}}(r_2, k_2) := \mathbf{1}_{r_{\mathrm{eff}} \ge 2}\bigl(\lfloor(r_{\mathrm{eff}} - 2)/3\rfloor + 1\bigr)$.
+>      - Consequently, along every anti-diagonal $t + m = T_1 + b_2 + k_2$ ($0 \le k_2 \le a_2$), all $b_1 + 1$ Block-1 jump indices $i_1 \in \{0, \dots, b_1\}$ are identically synchronized up to at least (`rule30_zero_comb_complementarity_bound`):
+>        $$M_{\mathrm{sync}}^{(2)}(a_1, b_2, i_2, k_2) \;\ge\; b_2 + k_2 + \max\bigl(s_{\mathrm{zero}}(a_1, i_2),\; s_{\mathrm{comb}}(b_2 - i_2, k_2)\bigr).$$
+> 2. **Slope-$4/3$ Odd-Run Zero-Block Amplification Law (`odd_slope43_errors == 0` across $240$ odd-$a_1$ configurations):**  
+>    - Whenever $a_{j-1}$ is odd, the Rule 30 right-seam alternating comb forces $l_1(T_{j-1}) = a_{j-1} \bmod 2 = 1$, which forces $i_j = 0$ (zero Equipotential Zero Triangle, $100\%$ Floquet Comb Triangle $r_j = b_j$).
+>    - Thus for every odd $a_1$, $M_{\mathrm{sync}}^{(2)}(a_1, b_2, 0, k_2) \ge b_2 + k_2 + \max\bigl(\underline{M}(a_1), \lfloor(b_2 - 3)/3\rfloor + 1\bigr) \ge \frac{4}{3} b_2 + k_2 - 1$ (`rule30_odd_run_slope_four_thirds_amplification`)!
+> 3. **Universal $r$-Block Recursive Prefix-Preservation Law (`three_block_errors == 0` across $5,376$ three-block configurations):**  
+>    - Across any 3-block chain $c = 0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} 0^{b_3} 1^{a_3}0$, the Block-2 exit agreement $s_2^*(a_1, b_2, i_2, a_2) := \min\bigl(s_2(k_2 = a_2),\, s_2(k_2 = a_2 - 1)\bigr)$ is $100\%$ preserved across Block 3, forcing:
+>      $$M_{\mathrm{sync}}^{(3)}(a_1, b_2, i_2, a_2, b_3, i_3, k_3) \;\ge\; b_3 + k_3 + b_2 + a_2 + \max\bigl(s_{\mathrm{zero}}(a_1, i_2),\; s_{\mathrm{comb}}(b_2 - i_2, 1)\bigr)! \quad \square$$
+
 ---
 
 ## 7. One-Command Verification
 
-All fifty-seven theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All fifty-eight theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

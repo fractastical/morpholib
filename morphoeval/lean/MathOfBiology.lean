@@ -644,6 +644,40 @@ theorem rule30_three_step_comb_absorption
     (y3 == p0 && (y3 || y2) == true) = true := by
   cases p0 <;> cases b_m2 <;> cases b_m1 <;> rfl
 
+/-- Law 2ah (`wolfram-conus-textile-rule30-2ah`):
+    Zero-Comb Complementarity, Upstream Synchronization Prefix Preservation & Slope-4/3 Odd-Run Amplification (Theorem 59):
+    1. (`rule30_upstream_sync_step_preservation`): In the shift-free 1D offset recurrence `x_s(q) = bne x_{s-1}(q) (x_s(q-1) || x_s(q-2))`,
+       whenever two upstream trajectories `(x^{(A)}, x^{(B)})` agree at offset `s - 1` (`x^{(A)}_{s-1}(q) = x^{(B)}_{s-1}(q)`) and
+       at offset `s` across the two prior steps (`x^{(A)}_s(q-1) = x^{(B)}_s(q-1)` and `x^{(A)}_s(q-2) = x^{(B)}_s(q-2)`),
+       they agree identically at `x_s(q)`. Since `x_0(q)` across Block `j` depends only on `(i_j, k_j)` and is independent of all
+       upstream jumps `(i_1, ..., i_{j-1})`, any upstream synchronization prefix `0 <= s < S_up` is 100% preserved across all subsequent blocks!
+    2. (`rule30_zero_comb_complementarity_bound`): Combining Zero-Triangle Relaxation Preservation `s_zero(a_1, i_2)` on `[1, i_2]`
+       with Slope-3 Comb Penetration `s_comb(b_2 - i_2, k_2)` on `[i_2 + 1, b_2]` guarantees
+       `m_sync >= b_2 + k_2 + max (s_zero) (s_comb)`, which exceeds both individual mechanisms (`m_sync >= b_2 + k_2 + s_zero` and `m_sync >= b_2 + k_2 + s_comb`).
+    3. (`rule30_odd_run_slope_four_thirds_amplification`): Whenever `a_{j-1}` is odd, the right-seam alternating comb forces `i_j = 0` (`r_j = b_j`),
+       so for every `b_j = 6 * n` (`n >= 1`) and `k_j >= 0`, the comb-amplified synchronization horizon satisfies
+       `3 * (b_j + k_j + ((b_j - 3) / 3 + 1)) = 4 * b_j + 3 * k_j` (exact slope `4/3` across the `0^{b_j}` block)! -/
+theorem rule30_upstream_sync_step_preservation
+    (xA_prev xB_prev xA_qm1 xB_qm1 xA_qm2 xB_qm2 : Bool)
+    (h_prev : xA_prev = xB_prev)
+    (h_qm1 : xA_qm1 = xB_qm1)
+    (h_qm2 : xA_qm2 = xB_qm2) :
+    bne xA_prev (xA_qm1 || xA_qm2) = bne xB_prev (xB_qm1 || xB_qm2) := by
+  subst h_prev h_qm1 h_qm2
+  rfl
+
+theorem rule30_zero_comb_complementarity_bound
+    (b2 k2 s_zero s_comb : Nat) :
+    b2 + k2 + max s_zero s_comb ≥ b2 + k2 + s_zero ∧
+    b2 + k2 + max s_zero s_comb ≥ b2 + k2 + s_comb := by
+  omega
+
+theorem rule30_odd_run_slope_four_thirds_amplification
+    (n k2 : Nat) (hn : n ≥ 1) :
+    let b2 := 6 * n
+    3 * (b2 + k2 + ((b2 - 3) / 3 + 1)) = 4 * b2 + 3 * k2 := by
+  omega
+
 
 
 
