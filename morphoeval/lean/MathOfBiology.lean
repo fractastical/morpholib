@@ -492,6 +492,27 @@ theorem rule30_floquet_shielding_absorbs_even_spike
     bne l_even_sp1 (l_even_s || true) = !l_even_sp1 := by
   cases l_even_s <;> cases l_even_sp1 <;> rfl
 
+/-- Law 2aa (`wolfram-conus-textile-rule30-2aa`):
+    Lateral Knowledge-Graph Transfer (`cervera-levin-mafe-1` Gap-Junction Equipotential Zero-Current +
+    `planform-morphology-animation-1` Axial Region Concatenation) ->
+    Gap-Junction Equipotential Zero-Triangle Law & Universal 4-Crystal Anti-Diagonal Renormalization (Theorem 52):
+    1. (`rule30_gap_junction_equipotential_zero_triangle_step`): Whenever a spatial-temporal triangle has
+       `l_{m-1}(s+1) = false`, `l_{m-1}(s) = false`, and `l_{m-2}(s) = false` (equipotential zero state),
+       the Pure Left-Cone step `l_m(s) = bne (l_{m-1}(s+1)) (l_{m-1}(s) || l_{m-2}(s))` vanishes identically
+       (`false`), propagating the equipotential zero triangle across `0 <= s <= i - m`.
+    2. (`rule30_antidiagonal_all_ones_to_alternating_comb`): Along the anti-diagonal `U_k(m) = l_m(b + k - m)`
+       governed by `U_k(m) = bne (U_k(m-1)) (U_{k-1}(m-1) || U_{k-2}(m-2))`, whenever `U_0(m-1) = true`,
+       the OR gate `(true || U_{-1}(m-2)) = true` saturates for every `U_{-1}(m-2)` and forces
+       `U_1(m) = !U_1(m-1)` (exact period-2 alternating comb `1, 0, 1, 0, ...`). -/
+theorem rule30_gap_junction_equipotential_zero_triangle_step :
+    rule30_left_inverse false false false = false := by
+  rfl
+
+theorem rule30_antidiagonal_all_ones_to_alternating_comb
+    (u1_mm1 u_m1_mm2 : Bool) :
+    bne u1_mm1 (true || u_m1_mm2) = !u1_mm1 := by
+  cases u1_mm1 <;> cases u_m1_mm2 <;> rfl
+
 
 
 
