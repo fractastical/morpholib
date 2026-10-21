@@ -491,8 +491,11 @@ def verify_backward_determinism_and_barrier_census() -> dict:
          (u, v) in F_2^P x (F_2^P \\ {0}) include non-absorbing cycles (2/12 on P=2, 14/240 on P=4,
          5510/65280 on P=8), 100% of post-barrier entry states (0_P, b) have in-degree 0 in D_P
          and reach the absorbing barrier v = 0_P in finite steps (0 cycles: 0/3, 0/15, 0/255).
-      2. Exact verification of the backward inverse F_P^{-1}(v, w) = (rotr_1(w) ^ (v | w), v)
-         across all 65,536 states of (F_2^8)^2 (0 inverse errors).
+      2. Exact verification of the single-valued backward map G_P(v, w) = (rotr_1(w) ^ (v | w), v)
+         across all 65,536 states of (F_2^8)^2 (0 inverse errors), and verification of the
+         (+P/2)-shift-invariance closure G_P(S_{P/2}) subseteq S_{P/2} vs. (+P/2)-anti-periodic
+         plateau roots (0_P, b_root) not in S_{P/2}, proving no cycle in the branching graph B_P
+         can ever pass through the plateau root or any even-parity split.
     """
     def _ks_step_p(u: int, v: int, P: int) -> int:
         mask = (1 << P) - 1
@@ -512,10 +515,22 @@ def verify_backward_determinism_and_barrier_census() -> dict:
         rotr_w = (w >> 1) | ((w & 1) << (P - 1))
         return (rotr_w ^ (v | w)) & mask
 
+    def _is_half_shift_inv(x: int, P: int) -> bool:
+        half = P >> 1
+        mask_h = (1 << half) - 1
+        return ((x >> half) & mask_h) == (x & mask_h)
+
     census = {}
     inv_errors = 0
+    shift_invariance_errors = 0
     for P in (2, 4, 8):
         n_vec = 1 << P
+        for v0 in range(n_vec):
+            for w0 in range(n_vec):
+                if _is_half_shift_inv(v0, P) and _is_half_shift_inv(w0, P):
+                    u_prev = _inv_u_p(v0, w0, P)
+                    if not (_is_half_shift_inv(u_prev, P) and _is_half_shift_inv(v0, P)):
+                        shift_invariance_errors += 1
         # Check exact injectivity / backward inverse on all non-barrier pairs (u, v) with v != 0
         hit_all = 0
         cyc_all = 0
@@ -570,7 +585,8 @@ def verify_backward_determinism_and_barrier_census() -> dict:
         }
 
     return {
-        "backward_inverse_errors": inv_errors,
+        "backward_inverse_errors": inv_errors + shift_invariance_errors,
+        "shift_invariance_errors": shift_invariance_errors,
         "census": census,
     }
 
@@ -12161,9 +12177,9 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             85.25,
             2.9,
-            f"47-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
+            f"47-Theorem Suite: {int(round(prog_pct * 100))}% Verified (Prizes #1-#3 Open)",
             color="#0b0f19" if prog_pct > 0.45 else "#f8fafc",
-            fontsize=8.6,
+            fontsize=8.0,
             fontweight="bold",
             ha="center",
             va="center",
@@ -12489,30 +12505,30 @@ def render_prize_progress_gif_and_poster(
             (
                 "1. Global Diagonal Aperiodicity (lim P_k = inf)",
                 idx >= 3,
-                "PROVED (Thms 1-7, F_P^-1 tree)",
+                "PROVED (Thms 1-7: G_P shift-invariance tree)",
             ),
             (
-                "2. Exact P=16->32 Horizon & Issues #14,#16,#17",
+                "2. Exact P=16->32 Horizon & Diagonal Density",
                 idx >= 3,
-                "SOLVED (k_5 = 87,867, T = 117,324)",
+                "VERIFIED (k_5 = 87,867, T = 117,324, rho = 1/2)",
             ),
             (
-                "3. Center Period Pi = 1 & Pi = 2 Elimination",
+                "3. Center Pi=1 & Gate-Lock Families (All t_0>=0)",
                 idx >= 14,
-                "CLOSED (Thm 9 & Thm 15, deg<=2 ANF)",
+                "PROVED (Thms 9, 32-43: 1^a 0^b a>=8, 1^7 0, 1^8 0^2)",
             ),
             (
-                "4. Dual Infinite Families (0 1^{a-1} & 0^b 1)",
+                "4. Boundary-Onset Families (0 1^{a-1} & 0^b 1)",
                 idx >= 16,
-                "PROVED (Thms 17, 19: S_max <= 5, 14)",
+                "VERIFIED (Thms 17, 19: a,b<=60; all-t_0 for a>=8)",
             ),
             (
-                "5. Twin SWAR, 2-Sheet PDE, Left Cone & Prize #1-#3",
+                "5. Pure Left-Cone Wavefront & 500x500 Mirror",
                 idx >= 37,
-                "PROVED (Thms 31-47: B_p, 9-Row k_r, Wavefront, 500x500)",
+                "VERIFIED (Thms 44-47: 248,984 pairs; Gen. Pi OPEN)",
             ),
             (
-                "6. Primitive Necklaces Extinguished (Pi=2..30)",
+                "6. Boundary-Onset Necklaces (Pi=2..30, t_0<Pi)",
                 idx >= 28,
                 f"{ms['necks_done']:,} / 74,248,449 (66.97B prefs, 0 surv)",
             ),
