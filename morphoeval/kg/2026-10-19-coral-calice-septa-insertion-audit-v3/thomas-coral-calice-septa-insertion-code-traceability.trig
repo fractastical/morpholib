@@ -1,0 +1,106 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-thomas-coral-calice-septa-insertion> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-thomas-coral-calice-septa-insertion-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-thomas-coral-calice-septa-insertion-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Milne-Edwards & Haime (1848), Kunth (1869) & Chindapol et al. (2013) Scleractinian coral calice septal insertion, reduced 3D corallum & Keulegan-Carpenter surge morphogenesis — Code-to-model traceability: 91/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The header docstring (L1-L97) now lists the Pass 3 sources and maps each Pass 3 function to its law; `surge_renewal_efficiency` states in its docstring that the exponential form is a modelling choice; the Pass 3 measurements name their reference source and flag the model-internal one; the math-KG YAML registers Laws 4 and 5 with one `file#La-Lb` range per `code_locus` and refreshed Pass 2 loci. Deductions: the Law 3 rim-modulation constants (0.035, 0.025, 0.42, 0.35, 0.06) in `simulate_scleractinian_calice_2d` carry no citation (-4); the reference JSON cites Chindapol 'Eqs. (1)-(8)' for a flux law that is not Chindapol's (-3); the dissepiment phase/tilt choices in the 3D builder are commented but not sourced (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "2013-thomas-coral-calice-septa-insertion.py L246–L365: simulate_scleractinian_calice_2d: hard-coded rim modulation constants (e.g. 0.035 at L274) without citation <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-thomas-coral-calice-septa-insertion.py#L246-L365>",
+            "datasets/coral_calice_septa_insertion/coral_calice_septa_insertion_reference.json L64–L64: Governing-equation section cites Chindapol 'Eqs. (1)-(8)' for a phenomenological flux ansatz <https://github.com/fractastical/morpholib/blob/e651a8b8/datasets/coral_calice_septa_insertion/coral_calice_septa_insertion_reference.json#L64-L64>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-thomas-coral-calice-septa-insertion-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thomas-coral-calice-septa-insertion-code-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thomas-coral-calice-septa-insertion-code-traceability-3> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thomas-coral-calice-septa-insertion-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2013-thomas-coral-calice-septa-insertion.py L1–L97" ;
+        dct:description "v3 header docstring: five Pass 2 sources plus Pass 3 additions and function map" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-thomas-coral-calice-septa-insertion.py#L1-L97> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thomas-coral-calice-septa-insertion-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "2013-thomas-coral-calice-septa-insertion.py L504–L512" ;
+        dct:description "surge_renewal_efficiency docstring declares eta(KC) = 1 - exp(-KC/2pi) a kinematic modelling choice" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-thomas-coral-calice-septa-insertion.py#L504-L512> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thomas-coral-calice-septa-insertion-code-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/thomas-coral-calice-septa-insertion.yaml L74–L111" ;
+        dct:description "Law 4 (3D corallum fronts) and Law 5 (surge dipole cancellation) registered with single-range code_locus and code_locus_secondary" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/morphoeval/math_kg_loops/thomas-coral-calice-septa-insertion.yaml#L74-L111> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 Phase B primary assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/74> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/978-3-662-04339-4>,
+            <https://doi.org/10.1109/TSMC.1979.4310076>,
+            <https://doi.org/10.1127/zdgg/21/1869/647>,
+            <https://doi.org/10.1371/journal.pcbi.1002849>,
+            <https://doi.org/10.3897/zookeys.227.3612>,
+            <https://doi.org/10.4319/lo.2005.50.1.0246>,
+            <https://doi.org/10.4319/lo.2006.51.2.1134>,
+            <https://doi.org/10.5962/bhl.title.11574>,
+            <https://doi.org/10.6028/jres.060.043>,
+            <https://www.biodiversitylibrary.org/bibliography/5663> .
+    <https://doi.org/10.1007/978-3-662-04339-4> dct:date "2001"^^xsd:gYear ;
+        dct:title "The Algorithmic Beauty of Seaweeds, Sponges and Corals" .
+    <https://doi.org/10.1109/TSMC.1979.4310076> dct:date "1979"^^xsd:gYear ;
+        dct:title "A threshold selection method from gray-level histograms" .
+    <https://doi.org/10.1127/zdgg/21/1869/647> dct:date "1869"^^xsd:gYear ;
+        dct:title "Beiträge zur Kenntniss fossiler Korallen. 2. Das Wachsthumsgesetz der Zoantharia rugosa und über Calceola sandalina" .
+    <https://doi.org/10.1371/journal.pcbi.1002849> dct:date "2013"^^xsd:gYear ;
+        dct:title "Modelling Growth and Form of the Scleractinian Coral Pocillopora verrucosa and the Influence of Hydrodynamics" .
+    <https://doi.org/10.3897/zookeys.227.3612> dct:date "2012"^^xsd:gYear ;
+        dct:title "An illustrated key to the genera and subgenera of the Recent azooxanthellate Scleractinia (Cnidaria, Anthozoa), with an attached glossary" .
+    <https://doi.org/10.4319/lo.2005.50.1.0246> dct:date "2005"^^xsd:gYear ;
+        dct:title "Effects of surface roughness and oscillatory flow on the dissolution of plaster forms: Evidence for nutrient mass transfer to coral reef communities" .
+    <https://doi.org/10.4319/lo.2006.51.2.1134> dct:date "2006"^^xsd:gYear ;
+        dct:title "The effects of waves and morphology on mass transfer within branched reef corals" .
+    <https://doi.org/10.5962/bhl.title.11574> dct:date "1848"^^xsd:gYear ;
+        dct:title "Recherches sur les polypiers. Premier mémoire: Observations sur la structure et le développement des polypiers en général" .
+    <https://doi.org/10.6028/jres.060.043> dct:date "1958"^^xsd:gYear ;
+        dct:title "Forces on cylinders and plates in an oscillating fluid" .
+    <https://www.biodiversitylibrary.org/bibliography/5663> dct:date "1956"^^xsd:gYear ;
+        dct:title "Scleractinia" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Milne-Edwards & Haime (1848), Kunth (1869) & Chindapol et al. (2013) Scleractinian coral calice septal insertion, reduced 3D corallum & Keulegan-Carpenter surge morphogenesis — Code-to-model traceability 91/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:59:38Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-thomas-coral-calice-septa-insertion-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/74> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

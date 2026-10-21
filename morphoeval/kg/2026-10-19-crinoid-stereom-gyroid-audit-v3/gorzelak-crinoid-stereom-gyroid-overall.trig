@@ -1,0 +1,101 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-gorzelak-crinoid-stereom-gyroid> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-gorzelak-crinoid-stereom-gyroid-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-gorzelak-crinoid-stereom-gyroid-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Yang et al. (2022) & Donnay & Pawson (1969) biogenic single-crystal calcite TPMS echinoderm stereom (Diamond D, Gyroid G, Primitive P), Gibson-Ashby cellular mechanics, nanoindentation twin-band arrest FEM & syncytial ACC templating — MorphoEval overall 88.2/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) re-score of `2020-gorzelak-crinoid-stereom-gyroid.py` after both v2 remediation items were closed with reduced-but-real models: a plane-strain Q4 crystal-plasticity FEM of e-twin band arrest under flat-punch nanoindentation on the [111]-projected Diamond skeletal section vs a monolith at equal depth (`solve_nanoindentation_twin_plasticity`, L692-868; `evaluate_nanoindentation_twin_arrest_fem`, L908-974: twinned-area ratio 0.123 vs null 0.50, max lamella 2.78 um <= projected bond 6.04 um vs 16.8 um in the monolith, k_lat/k_mono = 0.193) plus an Eshelby-Frank-Nabarro pile-up scaling (L871-905), and a stochastic syncytial ACC-vesicle templating model with secondary-nucleation single-crystallinity (`simulate_syncytial_acc_templating`, L1155-1269; ablations L1272-1314: IoU 0.753 vs 0.418, 2 vs 239 vs 4913 domains). Two new Lean 4 theorems (6 total, 0 sorrys), 7 new measurements (16 total), 3 new self-test checks (11 total) and a SHA-256-pinned reference JSON with per-row provenance flags were added. The overall score nevertheless falls from 91.7 to 88.2 (rubric-weighted) because the re-audit found that several Pass 2 validations credited by the v2 score are artefacts or circular: the [111] projection integrates over a partial period (L558) and the edge dislocation is a hard-coded winding ansatz (L592); the 12-species table is synthetic with e_rel_obs = e_rel_pred +/- 0.002 (JSON L86-98) so r = 0.9997 is circular; the specimen reference values and DEFAULT_A0_UM are the script's own outputs written back; the Schoen DOI is wrong and all seven new DOIs are unverified offline; and `--a0` / `--c-thresh` are partially dead. These, together with the reduced-model residuals of the new FEM and templating code, are the Pass 4 remediation list. Overall 88.2/100 (faithfulness 87.4, reproducibility 90.0); rubric morphoeval 0.1.0; checkpoint commit 9987db7d; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 91, Morphological realism / specimen match 85, Parameter expressivity 88, Morphometric validation 86, Source and data traceability 88, Code-to-model traceability 91, Reproducibility package 91. Output judged: docs/media/crinoid_stereom_gyroid_comparison.png: rendered output of models/2020-gorzelak-crinoid-stereom-gyroid.py at 9987db7d, image/png, 1042390 B, 2187×2133 px, artifact_sha256 108bc444ec648e58338e88b86748dfcde5d8cb560cbb23f515e41a09883e349e (sha256 108bc444ec648e58338e88b86748dfcde5d8cb560cbb23f515e41a09883e349e), spec_fingerprint ac9f4ac4b8e557301e259e7d30ec4d97d4e8114ecfa867c705d25665fdc0a463. Dual provenance: spec_fingerprint: ac9f4ac4b8e557301e259e7d30ec4d97d4e8114ecfa867c705d25665fdc0a463; artifact_sha256: 108bc444ec648e58338e88b86748dfcde5d8cb560cbb23f515e41a09883e349e; input_dataset_sha256: {datasets/crinoid_stereom_gyroid/crinoid_stereom_gyroid_reference.json=c1c3848ef15d0bfc..., datasets/crinoid_stereom_gyroid/crinoid_stereom_ossicle_specimen.jpg=5fbf6e4db0ee1d44..., datasets/crinoid_stereom_gyroid/nanoindentation_spiculogenesis_reference.json=f611bfb48faef772..., datasets/crinoid_stereom_gyroid/scout_manifest.json=0524b76e141ef1fe...}. Supersedes audit: 2026-10-19-crinoid-stereom-gyroid-audit-v2. Claim boundary: reported_in_source: Yang et al. (2022): the ossicles of Protoreaster nodosus are single-crystal calcite shaped as a diamond-type TPMS lattice with [111] along the c-axis; under nanoindentation, twin bands and dislocations are arrested at the strut-pore free surfaces, confining damage to indent-adjacent struts (3D crystal-plasticity FEM in the paper) | Donnay & Pawson (1969): every echinoderm skeletal element diffracts as a single calcite crystal | Beniash et al. (1997), Politi et al. (2008), Vidavsky et al. (2014), Wilt (2002): sea urchin larval spicules are deposited as ACC delivered in ~1 um vesicles into a syncytial membrane cavity and transform to calcite by secondary nucleation propagating from a single seed granule | Eshelby, Frank & Nabarro (1951): a pile-up of n = pi(1-nu) L tau/(mu b) dislocations against an obstacle over a glide length L concentrates a head stress n tau; reconstructed_in_script: 3D nodal TPMS level sets and implicit-surface curvature for Diamond D, Gyroid G, Primitive P, a Cahn-Hilliard spinodal control and a pinch-off ablation (Pass 2); level-set threshold sweep; Gibson-Ashby stretching vs bending scaling; DoG segmentation of the vendored crinoid ossicle SEM plate (Pass 2) | Pass 3: a reduced 2D plane-strain Q4 crystal-plasticity FEM of flat-punch nanoindentation on the [111]-projected Diamond skeletal honeycomb section vs a monolith at equal depth with two e-twin variants, lamella run lengths by ray marching, pore-adjacent arrest fraction, r90 damage radius and P/P_elastic; an Eshelby-Frank-Nabarro pile-up scaling in strut / ossicle / monolith glide lengths; a stochastic 2D syncytial-templating model of ACC vesicle delivery with secondary vs primary nucleation and templating / nucleation ablations; transfer_boundary: The FEM is a 2D plane-strain honeycomb section (bending-dominated; the 3D Diamond TPMS is stretching-dominated), with a single twin family (no r/f slip, both twin senses allowed via |tau|), isotropic elasticity for trigonal calcite, a flat punch rather than a Berkovich tip, no fracture coupling, and tau_twin = 500 MPa as a scale parameter (depth-normalised outputs are tau-invariant, absolute depths are not) | The templating model's kinetics (k_1, k_2, p_out, vesicle flux, front reach) are modelling choices not fitted to the Politi 2008 / Beniash 1997 ACC-fraction time courses; the template is the adult stereom honeycomb, not a larval triradiate spicule; no membrane mechanics or Mg/protein ACC stabilisation | The specimen plate is an adult Nesometra integra calyx ossicle; the slot organism is Metacrinus rotundus and the seed paper's organism is the starfish Protoreaster nodosus. The specimen reference values in the JSON (phi = 0.5187, a_0 = 14.80 um) are the script's own Pass 2 outputs, not independent literature values; does_not_claim: Reproduction of Yang et al. (2022) load-depth curves or twin-band micrographs; a physically faithful [111] projection (the Pass 2 projection integrates over a partial period and is flagged below); literature-digitised validation of the 12-species table (synthetic, flagged below); online-verified DOIs for the seven Pass 3 references." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2020-gorzelak-crinoid-stereom-gyroid.py:1155-1314 and :130-138 — templating kinetics (k_1 = 1e-7, k_2 = 0.6, p_out = 0.03, 60 vesicles/step, front reach 2 px) are model choices not fitted to the Politi 2008 / Beniash 1997 ACC-fraction time courses, the template is the adult stereom honeycomb rather than a larval triradiate spicule, and the largest-domain fraction (L1915-1923) is only 0.766 vs reference 1.0 because one chance primary event at k_1 = 1e-7 seeds a 23% second domain that the `domains <= 2` self-test tolerates (L2130). Digitise an ACC-fraction vs spicule-age series, fit k_2 and the front reach to it, vendor a larval spicule specimen as the template, tighten the single-crystal check to largest-domain fraction > 0.99 (or model Donnay-Pawson single-crystallinity via domain coalescence), and replace the asymptotic ACC reference 0.0 (L1925-1934) with the literature time point.",
+            "remediation needed: 2020-gorzelak-crinoid-stereom-gyroid.py:1319-1331, :1357, :1384-1398 and :1842-1849 — `--a0` only drives the Pass 3 section/templating while Panel A/F extents use DEFAULT_A0_UM; `--c-thresh` only changes the drawn contour level, not the regimes or measurements; `measure_morphoeval()` ignores all CLI overrides. Route the overrides through the regime table and the measurements or document the flags as render-only.",
+            "remediation needed: 2020-gorzelak-crinoid-stereom-gyroid.py:2121-2131 and :1978-2007 — the FEM determinism check uses a reduced 60-element mesh rather than the default 120; `domains_templated_max = 2`, `domains_primary_ablation_min = 50` and the 0.15 IoU margin are loose; chi = -4 (L446-453) is a lookup and Z = 0 (L441) is assigned rather than computed from the field. Run the determinism check on the default mesh, tighten the templating thresholds to the seed-2020 values with a stated tolerance, and compute chi from the voxel field (Euler number of the solid mask) so the measurement is not an identity.",
+            "remediation needed: 2020-gorzelak-crinoid-stereom-gyroid.py:549-603 — `evaluate_crystallographic_projections_and_dislocations` integrates along [111] over w in [0, 2 pi) (L558) instead of the full period 2 pi sqrt(3); over the full period the projected Diamond solid density is uniform, so Panel D's 'hexagonal contrast sigma = 0.206' is a partial-period artefact, and the 'edge dislocation' (L582-592) is a phase-winding ansatz with burgers_winding = 1.0 hard-coded. Replace with a true projected-density or projected-skeleton image over the full [111] period (or a finite-thickness slab stated as such), compute the Burgers circuit numerically, and either add the result to `measure_morphoeval()` or relabel Panel D as illustrative.",
+            "remediation needed: 2020-gorzelak-crinoid-stereom-gyroid.py:609-974 — the nanoindentation model is a 2D plane-strain honeycomb section (bending-dominated; the 3D Diamond TPMS is not), one twin family with |tau| for both senses (L798-802), no r/f slip, no fracture, isotropic elasticity, flat punch, bottom rollers 44 um below the surface. Pass 4: a 3D voxel FEM on the actual F_D >= 0 solid with calcite anisotropic elasticity, polar e-twinning plus r/f slip and a cohesive crack criterion, compared with Yang et al. (2022) Fig. 3/4 load-depth curves and twin-band micrographs; make the elastic stiffness reference the 3D stretching prediction rather than the bending honeycomb (L1895-1903).",
+            "remediation needed: datasets/crinoid_stereom_gyroid/crinoid_stereom_gyroid_reference.json:19 and pass3_citations.bib — Schoen (1970) DOI 10.1063/1.1665587 is a J. Math. Phys. DOI, not NASA TN D-5541 (NTRS 19700020472, no DOI); all seven Pass 3 DOIs are recalled offline (`doi_verified_offline: false`). Verify every DOI online in Pass 4 and replace the Schoen entry with the NTRS accession.",
+            "remediation needed: datasets/crinoid_stereom_gyroid/crinoid_stereom_gyroid_reference.json:43-49 with 2020-gorzelak-crinoid-stereom-gyroid.py:140 and :2018-2027, :2078-2079 — reference_solid_fraction_panel_k, reference_lattice_period_um, reference_period_cv and DEFAULT_A0_UM = 14.80 are the script's own Pass 2 outputs written back, and the a_0 reference 'Yang et al. 2022: 13.8-15.2 um' is the synthetic table's range. Replace with independent literature values (Yang et al. 2022 lattice constant for P. nodosus; crinoid stereom pore / trabecula sizes from the SpecDiv description of N. integra), state the 0.752 um/px calibration provenance, and make the self-test compare against those rather than against stored script outputs.",
+            "remediation needed: datasets/crinoid_stereom_gyroid/crinoid_stereom_gyroid_reference.json:86-98 with 2020-gorzelak-crinoid-stereom-gyroid.py:1938-1947 and :2074 — the 12-species table has e_rel_obs = e_rel_pred +/- 0.002 for every row and no per-row figure/table/DOI provenance, so r = 0.9997 and the self-test `r > 0.998` are circular, and TPMS-type assignments (e.g. Cidaris rugosa 'Primitive P') are unsupported. Either digitise real stereom modulus / solid-fraction data (Yang et al. 2022 SI, Weber et al. 1969, Smith 1980) with per-row provenance or drop the table and the measurement." ;
+        pk:hasScore "0.882"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Pass 3 remediated assessment, executed by Claude Fable 5.1 Phase B subagent)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/79> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0040-1951(96)00273-9>,
+            <https://doi.org/10.1017/CBO9781139878326>,
+            <https://doi.org/10.1063/1.1665587>,
+            <https://doi.org/10.1073/pnas.0806604105>,
+            <https://doi.org/10.1073/pnas.1312833110>,
+            <https://doi.org/10.1080/14786445108561060>,
+            <https://doi.org/10.1098/rspb.1997.0066>,
+            <https://doi.org/10.1126/science.166.3909.1147>,
+            <https://doi.org/10.1126/science.abm8666>,
+            <https://doi.org/10.1130/0016-7606(1954)65%5B883:EDOCC%5D2.0.CO;2>,
+            <https://doi.org/10.2108/zsj.19.253> .
+    <https://doi.org/10.1016/S0040-1951(96)00273-9> dct:date "1997"^^xsd:gYear ;
+        dct:title "Strength characteristics of the r, f, and c slip systems in calcite" .
+    <https://doi.org/10.1017/CBO9781139878326> dct:date "1997"^^xsd:gYear ;
+        dct:title "Cellular Solids: Structure and Properties (2nd ed.)" .
+    <https://doi.org/10.1063/1.1665587> dct:date "1970"^^xsd:gYear ;
+        dct:title "Infinite periodic minimal surfaces without self-intersections" .
+    <https://doi.org/10.1073/pnas.0806604105> dct:date "2008"^^xsd:gYear ;
+        dct:title "Transformation mechanism of amorphous calcium carbonate into calcite in the sea urchin larval spicule" .
+    <https://doi.org/10.1073/pnas.1312833110> dct:date "2014"^^xsd:gYear ;
+        dct:title "Initial stages of calcium uptake and mineral deposition in sea urchin embryos" .
+    <https://doi.org/10.1080/14786445108561060> dct:date "1951"^^xsd:gYear ;
+        dct:title "The equilibrium of linear arrays of dislocations" .
+    <https://doi.org/10.1098/rspb.1997.0066> dct:date "1997"^^xsd:gYear ;
+        dct:title "Amorphous calcium carbonate transforms into calcite during sea urchin larval spicule growth" .
+    <https://doi.org/10.1126/science.166.3909.1147> dct:date "1969"^^xsd:gYear ;
+        dct:title "X-ray diffraction studies of echinoderm plates" .
+    <https://doi.org/10.1126/science.abm8666> dct:date "2022"^^xsd:gYear ;
+        dct:title "A damage-tolerant, dual-scale, single-crystalline microlattice in the knobby starfish, Protoreaster nodosus" .
+    <https://doi.org/10.1130/0016-7606(1954)65%5B883:EDOCC%5D2.0.CO;2> dct:date "1954"^^xsd:gYear ;
+        dct:title "Experimental deformation of calcite crystals" .
+    <https://doi.org/10.2108/zsj.19.253> dct:date "2002"^^xsd:gYear ;
+        dct:title "Biomineralization of the spicules of sea urchin embryos" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Yang et al. (2022) & Donnay & Pawson (1969) biogenic single-crystal calcite TPMS echinoderm stereom (Diamond D, Gyroid G, Primitive P), Gibson-Ashby cellular mechanics, nanoindentation twin-band arrest FEM & syncytial ACC templating — MorphoEval overall 88.2/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-21T00:02:14Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-gorzelak-crinoid-stereom-gyroid-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/79>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-gorzelak-crinoid-stereom-gyroid> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

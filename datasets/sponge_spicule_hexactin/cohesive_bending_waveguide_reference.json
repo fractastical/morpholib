@@ -1,0 +1,75 @@
+{
+  "dataset_id": "sponge-spicule-hexactin-pass3-cohesive-bending-ridges-waveguide-v1",
+  "pass": 3,
+  "title": "Pass 3 reference constants for the laminated-spicule cohesive-zone three-point bending FE model, Euplectella external helical surface ridges, and basalia optical waveguiding",
+  "note": "Every constant carries a `provenance` tag. `model` = modelling choice with no measured source; `recalled` = value recalled offline from the cited paper and NOT verified against the paper text during Pass 3 (doi_verified_offline false); `exact` = mathematical constant. Constants tagged `model`/`recalled` must be treated as unsourced by the audit until verified.",
+  "sources": [
+    {"id": "weaver2007", "citation": "Weaver JC, Aizenberg J, Fantner GE, Kisailus D, Woesz A, Allen P, Fields K, Porter MJ, Zok FW, Hansma PK, Fratzl P, Morse DE (2007). Hierarchical assembly of the siliceous skeletal lattice of the hexactinellid sponge Euplectella aspergillum. J. Struct. Biol. 158(1):93-106.", "doi": "10.1016/j.jsb.2007.01.006", "doi_verified_offline": true, "used_for": "concentric lamellae with organic interlayers; crack deflection at interlayers under bending"},
+    {"id": "aizenberg2005", "citation": "Aizenberg J, Weaver JC, Thanawala MS, Sundar VC, Morse DE, Fratzl P (2005). Skeleton of Euplectella sp.: structural hierarchy from the nanoscale to the macroscale. Science 309(5732):275-278.", "doi": "10.1126/science.1112255", "doi_verified_offline": true, "used_for": "external helical/oblique surface ridges on the cylindrical cage; laminated spicule layer thickness decreasing from ~1.5 um (centre) to ~0.2 um (periphery); fibre-optical basalia"},
+    {"id": "sundar2003", "citation": "Sundar VC, Yablon AD, Grazul JL, Ilan M, Aizenberg J (2003). Fibre-optical features of a glass sponge. Nature 424:899-900.", "doi": "10.1038/424899a", "doi_verified_offline": false, "used_for": "Euplectella basalia (anchor spicules) act as single-/multi-mode optical fibres with a high-index core and lower-index cladding"},
+    {"id": "aizenberg2004", "citation": "Aizenberg J, Sundar VC, Yablon AD, Weaver JC, Chen G (2004). Biological glass fibers: correlation between optical and structural properties. Proc. Natl. Acad. Sci. USA 101(10):3358-3363.", "doi": "10.1073/pnas.0307843101", "doi_verified_offline": false, "used_for": "refractive-index profile of the basalia (core / cladding / outer lamellae)"},
+    {"id": "woesz2006", "citation": "Woesz A, Weaver JC, Kazanci M, Dauphin Y, Aizenberg J, Morse DE, Fratzl P (2006). Micromechanical properties of biological silica in skeletons of deep-sea sponges. J. Mater. Res. 21(8):2068-2078.", "doi": "10.1557/jmr.2006.0251", "doi_verified_offline": false, "used_for": "Young's modulus of Euplectella biosilica (~36-40 GPa, nanoindentation)"},
+    {"id": "hehutchinson1989", "citation": "He M-Y, Hutchinson JW (1989). Crack deflection at an interface between dissimilar elastic materials. Int. J. Solids Struct. 25(9):1053-1067.", "doi": "10.1016/0020-7683(89)90021-8", "doi_verified_offline": false, "used_for": "crack deflection criterion G_i / G_s < ~0.25 for zero elastic mismatch"},
+    {"id": "hillerborg1976", "citation": "Hillerborg A, Modeer M, Petersson P-E (1976). Analysis of crack formation and crack growth in concrete by means of fracture mechanics and finite elements. Cem. Concr. Res. 6(6):773-781.", "doi": "10.1016/0008-8846(76)90007-7", "doi_verified_offline": false, "used_for": "cohesive-zone characteristic length l_cz = E G / T_max^2"},
+    {"id": "gloge1971", "citation": "Gloge D (1971). Weakly guiding fibers. Appl. Opt. 10(10):2252-2258.", "doi": "10.1364/AO.10.002252", "doi_verified_offline": false, "used_for": "LP-mode cutoffs at Bessel zeros; mode count M ~ V^2/2"}
+  ],
+  "cohesive_bending_fe": {
+    "governing_equations": {
+      "beam_fe": "Euler-Bernoulli Hermite 2-node elements, k_e = EI/l^3 [[12,6l,-12,6l],[6l,4l^2,-6l,2l^2],[-12,-6l,12,-6l],[6l,2l^2,-6l,4l^2]]; simply supported, midspan displacement control; analytic check k = 48 EI / L^3",
+      "strength_criterion": "sigma_n = M R_n / I_n >= sigma_f with M = P L / 4, I_n = pi R_n^4 / 4 (midspan intact section)",
+      "cohesive_law": "bilinear T(delta): T_max at delta_0 = 0.1 delta_c, zero at delta_c; G_i = 0.5 T_max delta_c",
+      "process_zone_length": "l_cz = E G_i / T_max^2 (Hillerborg)",
+      "deflection_criterion": "deflect along interlayer iff G_i / G_s < 0.25 (He & Hutchinson, zero mismatch); else penetrate -> catastrophic",
+      "griffith_delamination": "0.5 delta^2 (k_before - k_after(a)) = G_s A_n + G_i 2 pi r_n a, solved for interface half-length a by bisection on the FE stiffness",
+      "work_of_fracture": "W = integral P d(delta) over the piecewise-linear trace; toughness ratio = W_laminate / W_monolith (same outer radius)"
+    },
+    "constants": {
+      "E_silica_MPa": {"value": 36000.0, "provenance": "recalled", "source": "woesz2006", "note": "36-40 GPa nanoindentation modulus of Euplectella biosilica"},
+      "sigma_f_MPa": {"value": 900.0, "provenance": "model", "note": "lamella tensile fracture strength; no spicule-specific measured value adopted"},
+      "G_s_silica_J_m2": {"value": 8.0, "provenance": "model", "note": "order-of-magnitude fracture energy of vitreous silica"},
+      "T_max_interlayer_MPa": {"value": 40.0, "provenance": "model"},
+      "delta_c_interlayer_um": {"value": 0.060, "provenance": "model"},
+      "G_i_interlayer_J_m2": {"value": 1.2, "provenance": "model", "derived": "0.5 * T_max * delta_c"},
+      "l_cz_um": {"value": 27.0, "provenance": "exact", "derived": "E G_i / T_max^2"},
+      "He_Hutchinson_ratio": {"value": 0.25, "provenance": "recalled", "source": "hehutchinson1989"},
+      "span_to_diameter": {"value": 20.0, "provenance": "model"},
+      "n_beam_elements": {"value": 48, "provenance": "model"},
+      "silica_mass_to_layer_calibration": {"value": 2.945, "provenance": "model", "note": "CALIBRATED so the wild-type O_h accreted cross-section mass (8.4881 mM um^2 at the 0.55 R probe plane) maps to N = 25 Euplectella lamellae; self-referential by construction"}
+    },
+    "empirical_comparisons": {
+      "lamella_thickness_centre_um": {"value": 1.5, "provenance": "recalled", "source": "aizenberg2005", "note": "layer thickness near the centre of a Euplectella spicule"},
+      "lamella_thickness_periphery_um": {"value": 0.2, "provenance": "recalled", "source": "aizenberg2005"},
+      "peripheral_to_central_thickness_ratio": {"value": 0.1333, "provenance": "recalled", "derived": "0.2 / 1.5", "note": "model prediction from h_n = h_1 r_1 / r_n with r_1 = 0.75 um and N = 25 is h_25 / h_1 = 0.1311"},
+      "euplectella_toughness_ratio_obs": {"value": 8.95, "provenance": "pass1_table", "note": "carried from cross_taxa_spicule_symmetry_and_lamellae; provenance of this Pass 1 number is itself unverified"},
+      "euplectella_spicule_radius_um": {"value": 22.5, "provenance": "pass1_table", "note": "the lamellar model's outer radius with r_core = 0.75 um, h_1 = 0.85 um, N = 25 is only 5.83 um (geometry mismatch carried to Pass 4)"}
+    }
+  },
+  "helical_ridges": {
+    "governing_equations": {
+      "torsion": "K_tors(psi) = K_shear_checkerboard + N_r k_r sin^2(2 psi); k_r = ridge_area_ratio * K_axial_strut (ridge at 45 deg)",
+      "ridge_mass": "M_ridges / M_wall = N_r ridge_area_ratio / cos psi (helix length per unit cage length)",
+      "parallel_axis_gain": "I_eff / I_wall = 1 + ridge_area_ratio * sum_k sin^2(2 pi k / N_r) = 1 + N_r ridge_area_ratio / 2 for N_r >= 3"
+    },
+    "constants": {
+      "n_ridges": {"value": 8, "provenance": "model", "note": "Aizenberg et al. 2005 describe a set of oblique/helical external ridges; count not measured here"},
+      "ridge_pitch_deg": {"value": 45.0, "provenance": "model"},
+      "ridge_area_ratio": {"value": 0.25, "provenance": "model"}
+    }
+  },
+  "basalia_waveguide": {
+    "governing_equations": {
+      "numerical_aperture": "NA = sqrt(n_core^2 - n_clad^2); sin theta_acc,ext = NA / n_sea; cos theta_acc,int = n_clad / n_core",
+      "ray_invariant": "n(r) cos theta(r) conserved across cylindrical lamellar interfaces (meridional rays)",
+      "v_number": "V = 2 pi a NA / lambda; single mode iff V < 2.4048 (first zero of J_0)",
+      "lp_mode_count": "LP01 + LP0m at zeros of J_1 + LP_lm (l>=1) at zeros of J_{l-1}; degenerate count 2 (l=0) or 4 (l>=1); Gloge M ~ V^2/2"
+    },
+    "constants": {
+      "n_core": {"value": 1.460, "provenance": "recalled", "source": "sundar2003", "note": "high-index core of the basalia"},
+      "n_clad": {"value": 1.440, "provenance": "recalled", "source": "sundar2003"},
+      "n_seawater": {"value": 1.340, "provenance": "recalled"},
+      "wavelength_um": {"value": 0.55, "provenance": "model"},
+      "optical_core_n_lamellae": {"value": 2, "provenance": "model", "note": "core radius a = outer radius of lamella 2 of the Law 3 geometry (2.317 um)"},
+      "LP01_cutoff_V": {"value": 2.404825557695773, "provenance": "exact"}
+    }
+  }
+}

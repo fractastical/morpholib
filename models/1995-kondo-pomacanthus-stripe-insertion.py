@@ -87,7 +87,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "pomacanthus_stripe_insertion"
 REFERENCE_JSON = DATASET_DIR / "pomacanthus_stripe_insertion_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "pomacanthus_semicirculatus_specimen.jpg"

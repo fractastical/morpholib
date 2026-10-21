@@ -120,7 +120,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "yap_excitable_segmentation"
 REFERENCE_JSON = DATASET_DIR / "yap_excitable_segmentation_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "mouse_psm_somites_specimen.jpg"

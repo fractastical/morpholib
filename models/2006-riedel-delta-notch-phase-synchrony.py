@@ -135,7 +135,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "delta_notch_phase_synchrony"
 REFERENCE_JSON = DATASET_DIR / "delta_notch_phase_synchrony_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "zebrafish_psm_synchrony_specimen.jpg"

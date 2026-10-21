@@ -65,7 +65,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "butterfly_eyespot_focus_rings"
 REF_JSON_PATH = DATASET_DIR / "butterfly_eyespot_focus_rings_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "bicyclus_anynana_eyespot_specimen.jpg"

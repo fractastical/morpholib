@@ -117,7 +117,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "mechanochemical_chondrogenesis"
 REFERENCE_JSON = DATASET_DIR / "mechanochemical_chondrogenesis_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "salamander_limb_cartilage_specimen.jpg"

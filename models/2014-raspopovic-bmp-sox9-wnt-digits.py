@@ -119,7 +119,7 @@ from scipy import ndimage as ndi
 from scipy import signal, sparse, stats
 from scipy.sparse.linalg import splu
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "bmp_sox9_wnt_digits"
 REF_JSON = DATASET_DIR / "bmp_sox9_wnt_digits_reference.json"
 FEM_REF_JSON = DATASET_DIR / "limb_bud_outgrowth_fem_reference.json"

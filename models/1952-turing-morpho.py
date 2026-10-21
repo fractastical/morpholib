@@ -82,7 +82,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy.spatial import Delaunay
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = REPO_ROOT / "datasets" / "turing"
 REFERENCE_JSON = DATASET_DIR / "turing_reference.json"
 POMACANTHUS_IMG = DATASET_DIR / "pomacanthus_imperator_stripes_specimen.jpg"

@@ -87,7 +87,7 @@ try:
 except ImportError:  # pragma: no cover
     skmeasure = skeletonize = None
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent
 DATA_DIR = HERE / "datasets" / "odonata"
 CACHE_DIR = HERE / ".wing_cache" / "odonata"
 

@@ -64,7 +64,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "convergent_extension_intercalation"
 REFERENCE_JSON = DATASET_DIR / "convergent_extension_intercalation_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "convergent_extension_axis_specimen.jpg"

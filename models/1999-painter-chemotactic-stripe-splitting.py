@@ -102,7 +102,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "chemotactic_stripe_splitting"
 REFERENCE_JSON = DATASET_DIR / "chemotactic_stripe_splitting_reference.json"
 POMACANTHUS_JSON = DATASET_DIR / "pomacanthus_stripe_doubling_reference.json"

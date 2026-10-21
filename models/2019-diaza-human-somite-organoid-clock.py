@@ -122,7 +122,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "human_somite_organoid_clock"
 REFERENCE_JSON = DATASET_DIR / "human_somite_organoid_clock_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "human_somite_organoid_specimen.jpg"

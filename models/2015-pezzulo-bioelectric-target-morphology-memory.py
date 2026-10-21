@@ -81,8 +81,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
+from scipy import signal
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "bioelectric_target_morphology_memory"
 REF_JSON_PATH = DATASET_DIR / "bioelectric_target_morphology_memory_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "salamander_limb_regeneration_specimen.jpg"
@@ -473,6 +474,611 @@ def evaluate_all_regimes_and_morphospace(seed: int = 2015) -> dict[str, Any]:
         "final_L_grid": final_L_grid,
         "init_vel_grid": init_vel_grid,
     }
+
+
+# --------------------------------------------------------------------------- #
+# 2b. (Pass 3) Gap-Junctional Spatial Averaging of V_mem Prediction Errors
+#     Across a 2D Blastema Cell Lattice
+# --------------------------------------------------------------------------- #
+# Pass 2 remediation item 2. Pietak & Levin (2017) J. R. Soc. Interface 14:20170425
+# represent bioelectric networks as gap-junction (GJ) coupled cell networks in which
+# each cell's transmembrane state relaxes toward its electrically coupled neighbours.
+# Here the quantity shared across the blastema syncytium is the active-inference
+# *prediction error* field itself,
+#
+#     eps[i, a] = Pi_s * (s_ia(x) - g(mu_a)),
+#
+# on a 2D lattice of blastema cells indexed by proximodistal layer i and
+# anteroposterior column a. Innexin/connexin GJs implement the discrete graph
+# Laplacian heat equation
+#
+#     d eps / d tau = D_gj * Lap_h(eps),   zero-flux (Neumann) at the blastema margin,
+#
+# integrated as `gj_sweeps` explicit Jacobi sweeps with diffusion number
+# alpha = D_gj * d tau / h^2 (alpha <= 1/4 for 2D stability) scaled by the normalized
+# GJ conductance g_gj in [0, 1] (g_gj = 0 reproduces heptanol / octanol GJ blockade).
+#
+# Two exact consequences, machine-checked as Lean 4 Law 4
+# (`gap_junction_mean_conservation_and_contraction`):
+#   (i)  zero-flux averaging conserves the lattice mean <eps> exactly, so the *global*
+#        morphogenetic action dL/dt = -kappa_a <eps> and hence the equifinal target
+#        length L* are unchanged by gap-junctional coupling;
+#   (ii) the pairwise spread between coupled cells contracts by (1 - 2*alpha*g_gj) per
+#        sweep, so GJ coupling suppresses per-cell V_mem sensing noise (smooth blastema
+#        margin + smooth bioelectric prepattern) whereas GJ blockade leaves the raw
+#        noise in place (ragged margin + noisy prepattern).
+# For an uncorrelated (white) sensing-noise field the 2D heat kernel gives
+# Var(eps_bar) ~ sigma^2 * h^2 / (8 * pi * D_gj * tau), i.e. SD ~ n_sweeps^(-1/2).
+# --------------------------------------------------------------------------- #
+
+GJ_LATTICE_PD = 12          # proximodistal blastema cell layers
+GJ_LATTICE_AP = 32          # anteroposterior blastema cell columns
+GJ_ALPHA = 0.20             # Jacobi diffusion number alpha = D_gj*dtau/h^2 (<= 1/4)
+GJ_SWEEPS = 6               # GJ relaxation sweeps per morphogenetic time step
+SIGMA_SENSE = 0.06          # per-cell V_mem sensing noise SD (units of L*)
+
+
+def gap_junction_smooth(
+    field: np.ndarray,
+    alpha: float = GJ_ALPHA,
+    n_sweeps: int = GJ_SWEEPS,
+    g_gj: float = 1.0,
+) -> np.ndarray:
+    """Average a 2D blastema-lattice field by `n_sweeps` explicit Jacobi sweeps of the
+    gap-junctional graph-Laplacian heat equation d(eps)/d tau = D_gj * Lap_h(eps) with
+    zero-flux (Neumann) boundaries. `g_gj` in [0, 1] is the normalized gap-junctional
+    conductance (0 = heptanol/octanol blockade, 1 = wild-type innexin coupling).
+    Zero-flux edge padding makes the lattice mean an exact invariant of every sweep.
+    """
+    out = np.array(field, dtype=float)
+    a_eff = float(alpha) * float(g_gj)
+    if a_eff <= 0.0 or int(n_sweeps) <= 0:
+        return out
+    for _ in range(int(n_sweeps)):
+        pad = np.pad(out, 1, mode="edge")
+        lap = (
+            pad[2:, 1:-1] + pad[:-2, 1:-1] + pad[1:-1, 2:] + pad[1:-1, :-2] - 4.0 * out
+        )
+        out = out + a_eff * lap
+    return out
+
+
+def gap_junction_noise_scaling(
+    n_cells: int = 64,
+    sweep_values: tuple[int, ...] = (4, 8, 16, 32, 64),
+    alpha: float = GJ_ALPHA,
+    sigma: float = 1.0,
+    seed: int = 2015,
+) -> dict[str, Any]:
+    """Measure the SD of a white-noise prediction-error field after `k` gap-junctional
+    Jacobi sweeps and fit the log-log exponent against the 2D heat-kernel prediction
+    SD proportional to k^(-1/2) (Var = sigma^2 h^2 / (8 pi D_gj tau)).
+    """
+    rng = np.random.default_rng(seed)
+    noise = sigma * rng.standard_normal((n_cells, n_cells))
+    noise = noise - float(np.mean(noise))
+    sds: list[float] = []
+    for k in sweep_values:
+        sm = gap_junction_smooth(noise, alpha=alpha, n_sweeps=int(k), g_gj=1.0)
+        sds.append(float(np.std(sm)))
+    logs_k = np.log(np.array(sweep_values, dtype=float))
+    logs_sd = np.log(np.array(sds, dtype=float))
+    slope, intercept = np.polyfit(logs_k, logs_sd, 1)
+    pred = slope * logs_k + intercept
+    ss_res = float(np.sum((logs_sd - pred) ** 2))
+    ss_tot = float(np.sum((logs_sd - np.mean(logs_sd)) ** 2))
+    return {
+        "sweep_values": np.array(sweep_values, dtype=float),
+        "sd_values": np.array(sds, dtype=float),
+        "sd_raw": float(np.std(noise)),
+        "slope": float(slope),
+        "intercept": float(intercept),
+        "r_squared": float(1.0 - ss_res / max(1e-15, ss_tot)),
+        "theoretical_slope": -0.5,
+    }
+
+
+def simulate_gap_junction_blastema_regeneration(
+    regime_id: str,
+    L_0: float = 0.20,
+    L_target: float = 1.00,
+    Pi_s: float = 2.0,
+    Pi_p: float = 4.0,
+    kappa_a: float = 0.45,
+    kappa_mu: float = 0.85,
+    g_gj: float = 1.0,
+    sigma_sense: float = SIGMA_SENSE,
+    n_pd: int = GJ_LATTICE_PD,
+    n_ap: int = GJ_LATTICE_AP,
+    gj_sweeps: int = GJ_SWEEPS,
+    t_max: float = 28.0,
+    dt: float = 0.05,
+    seed: int = 2015,
+    n_snapshots: int = 24,
+) -> dict[str, Any]:
+    """Spatially resolved active-inference regeneration on a 2D gap-junction-coupled
+    blastema cell lattice (`n_pd` x `n_ap` cells).
+
+    Each anteroposterior column `a` carries its own regenerate length L_a(t) and
+    bioelectric belief mu_a(t); each lattice cell senses the local anatomy with
+    independent V_mem noise of SD `sigma_sense`. The raw prediction-error field is
+    averaged across the lattice by `gap_junction_smooth` before it drives both
+    perception (dmu/dt) and morphogenetic action (dL/dt):
+
+        eps[i, a] = Pi_s * (L_a + xi[i, a] - mu_a),   xi ~ N(0, sigma_sense^2)
+        eps_bar   = GJ_g(eps)                          (Jacobi sweeps, zero-flux)
+        dL_a/dt   = -kappa_a * mean_i eps_bar[i, a]
+        dmu_a/dt  =  kappa_mu * mean_i eps_bar[i, a] - kappa_mu * Pi_p * (mu_a - mu*)
+
+    Because the zero-flux average conserves <eps> exactly, the lattice-mean trajectory
+    <L_a>(t) is the Pezzulo & Levin (2015) 1D trajectory up to the (zero-mean) noise;
+    only the transverse SD of the distal margin depends on g_gj.
+    """
+    rng = np.random.default_rng(seed)
+    n_steps = int(round(t_max / dt))
+    snap_steps = set(np.linspace(0, n_steps, n_snapshots, dtype=int).tolist())
+
+    L_col = np.full(n_ap, float(L_0), dtype=float)
+    mu_col = np.full(n_ap, float(L_target), dtype=float)
+
+    hist_t: list[float] = []
+    hist_mean_L: list[float] = []
+    hist_sd_L: list[float] = []
+    hist_sd_eps_raw: list[float] = []
+    hist_sd_eps_bar: list[float] = []
+    mean_residuals: list[float] = []
+    eps_raw_final = np.zeros((n_pd, n_ap), dtype=float)
+    eps_bar_final = np.zeros((n_pd, n_ap), dtype=float)
+
+    for step in range(n_steps + 1):
+        t = step * dt
+        xi = sigma_sense * rng.standard_normal((n_pd, n_ap))
+        eps_raw = float(Pi_s) * ((L_col[None, :] + xi) - mu_col[None, :])
+        eps_bar = gap_junction_smooth(eps_raw, alpha=GJ_ALPHA, n_sweeps=gj_sweeps, g_gj=g_gj)
+        mean_residuals.append(abs(float(np.mean(eps_bar)) - float(np.mean(eps_raw))))
+
+        if step in snap_steps:
+            hist_t.append(t)
+            hist_mean_L.append(float(np.mean(L_col)))
+            hist_sd_L.append(float(np.std(L_col)))
+            hist_sd_eps_raw.append(float(np.std(eps_raw)))
+            hist_sd_eps_bar.append(float(np.std(eps_bar)))
+
+        if step == n_steps:
+            eps_raw_final = eps_raw
+            eps_bar_final = eps_bar
+            break
+
+        e_col = np.mean(eps_bar, axis=0)
+        dL = -float(kappa_a) * e_col
+        dmu = float(kappa_mu) * e_col - float(kappa_mu) * float(Pi_p) * (mu_col - float(L_target))
+        L_col = L_col + dt * dL
+        mu_col = mu_col + dt * dmu
+
+    eps_col_bias = np.mean(eps_bar_final, axis=0)
+    return {
+        "regime_id": regime_id,
+        "g_gj": float(g_gj),
+        "L_col": L_col,
+        "mu_col": mu_col,
+        "mean_L": float(np.mean(L_col)),
+        "sd_L": float(np.std(L_col)),
+        "cv_L": float(np.std(L_col) / max(1e-12, abs(np.mean(L_col)))),
+        "eps_raw_final": eps_raw_final,
+        "eps_bar_final": eps_bar_final,
+        "eps_col_bias": eps_col_bias,
+        "sd_eps_raw_final": float(np.std(eps_raw_final)),
+        "sd_eps_bar_final": float(np.std(eps_bar_final)),
+        "max_mean_residual": float(np.max(mean_residuals)),
+        "history_t": np.array(hist_t, dtype=float),
+        "history_mean_L": np.array(hist_mean_L, dtype=float),
+        "history_sd_L": np.array(hist_sd_L, dtype=float),
+        "history_sd_eps_raw": np.array(hist_sd_eps_raw, dtype=float),
+        "history_sd_eps_bar": np.array(hist_sd_eps_bar, dtype=float),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 2c. (Pass 3) 2D Sox9 / BMP / Wnt Digit-Condensation Reaction-Diffusion PDE
+#     in the Autopod Paddle, Driven by the Active-Inference Controller
+# --------------------------------------------------------------------------- #
+# Pass 2 remediation item 1. The 3-segment proximodistal active-inference controller
+# of Section 2 fixes the autopod segment length x_auto(T); that segment is the
+# regenerating handplate (paddle) in which the Raspopovic et al. (2014) Science
+# 345:566-570 BMP-Sox9-Wnt (BSW) Turing network lays down digit condensations:
+#
+#     dS/dt = -mu_S*S + c(x,y)*(k_sb*B - k_sw*W + b_S(x)) - S^3
+#     dB/dt = -k_bs*S - mu_B*B + D_B * (d2/dx2 + gamma * d2/dy2) B
+#     dW/dt = -k_ws*S - mu_W*W + D_W * (d2/dx2 + gamma * d2/dy2) W
+#
+# with S = Sox9 (non-diffusing pre-cartilage transcription factor, D_S = 0), B = BMP,
+# W = Wnt, zero-flux boundaries, and gamma > 1 an anisotropy factor representing the
+# distal AER-FGF-aligned signalling anisotropy that converts the Turing spots into
+# proximodistally elongated digit rays (Raspopovic et al. 2014 Fig. 4).
+#
+# The two couplings to the bioelectric controller are:
+#   (1) DOMAIN: the paddle half-width W_paddle = AUTOPOD_WIDTH_GAIN * x_auto(T), and the
+#       per-column paddle depth (the distal margin) is the per-column regenerate length
+#       L_a(T) returned by the 2D gap-junction lattice of Section 2b. A wider autopod
+#       (rewritten bioelectric setpoint) therefore accommodates more Turing half-waves,
+#       the Turing width-to-digit-number scaling of Sheth et al. (2012) Science
+#       338:1476-1480; a denervated (Pi_s = 0) stump never grows an autopod at all.
+#   (2) PREPATTERN: the gap-junction-averaged V_mem prediction-error column bias
+#       eps_bar(a) biases the local chondrogenic Sox9 drive,
+#       b_S(x) = SOX9_VMEM_GAIN * eps_bar(a(x)), i.e. the Pietak & Levin (2017)
+#       V_mem -> gene-expression coupling. With GJ coupling intact this bias field is
+#       smooth and the digit rays are evenly spaced; under GJ blockade it is noisy and
+#       the rays become irregular.
+#
+# CALIBRATION (declared, not fitted to data): AUTOPOD_WIDTH_GAIN is set once so that
+# the wild-type regenerate (x_auto = 0.28 L*) yields the 4 digits of the Ambystoma
+# mexicanum forelimb autopod (Nye et al. 2003 Dev. Dyn. 226:280-294). Every other
+# regime (rewritten setpoint, denervated, GJ blockade, width sweep) is then a
+# prediction of the calibrated model.
+# --------------------------------------------------------------------------- #
+
+BSW_PARAMS: dict[str, float] = {
+    "mu_S": 1.0,
+    "mu_B": 1.2,
+    "mu_W": 1.5,
+    "k_sb": 2.5,
+    "k_sw": 2.2,
+    "k_bs": 1.8,
+    "k_ws": 2.0,
+    "D_B": 2.5,
+    "D_W": 0.25,
+}
+# Anisotropy gamma must satisfy gamma * (pi / H_paddle)^2 > q_c^2 so that no
+# transverse (proximodistal) Turing mode is unstable and the condensations are pure
+# anteroposterior digit rays: gamma = 12, H = 4 gives 12*(pi/4)^2 = 7.4 > q_c^2 = 2.46.
+BSW_ANISOTROPY = 12.0       # proximodistal / anteroposterior diffusion anisotropy gamma
+AUTOPOD_WIDTH_GAIN = 57.0   # paddle width per unit x_auto (calibrated: 0.28 -> 4 digits)
+AUTOPOD_DEPTH = 4.0         # wild-type proximodistal paddle depth (BSW length units)
+SOX9_VMEM_GAIN = 3.0        # V_mem prediction-error -> chondrogenic Sox9 drive coupling
+
+
+def bsw_dispersion(
+    params: dict[str, float] | None = None,
+    q_max: float = 3.8,
+    n_q: int = 381,
+) -> dict[str, Any]:
+    """Linear Turing dispersion relation Re(sigma(q)) of the 3-node BMP-Sox9-Wnt
+    Jacobian with D_S = 0 (Raspopovic et al. 2014 Fig. 2E), returning the fastest
+    growing wavenumber q_c and the intrinsic digit wavelength lambda_c = 2*pi/q_c.
+    """
+    p = dict(BSW_PARAMS if params is None else params)
+    J3 = np.array(
+        [
+            [-p["mu_S"], p["k_sb"], -p["k_sw"]],
+            [-p["k_bs"], -p["mu_B"], 0.0],
+            [-p["k_ws"], 0.0, -p["mu_W"]],
+        ],
+        dtype=float,
+    )
+    q_grid = np.linspace(0.0, q_max, n_q)
+    sigma = np.empty_like(q_grid)
+    for i, q in enumerate(q_grid):
+        M = J3 - (q * q) * np.diag([0.0, p["D_B"], p["D_W"]])
+        sigma[i] = float(np.max(np.linalg.eigvals(M).real))
+    i_c = int(np.argmax(sigma))
+    q_c = float(q_grid[i_c])
+    lam_c = (2.0 * math.pi / q_c) if q_c > 1e-9 else float("inf")
+    return {
+        "q_grid": q_grid,
+        "sigma": sigma,
+        "q_c": q_c,
+        "lambda_c": lam_c,
+        "sigma_max": float(sigma[i_c]),
+        "sigma_homogeneous": float(sigma[0]),
+    }
+
+
+def count_digit_condensations(
+    row: np.ndarray,
+    dx: float = 0.25,
+    prominence_frac: float = 0.20,
+    min_separation: float = 1.0,
+    amplitude_floor: float = 0.05,
+) -> tuple[int, list[float]]:
+    """Count Sox9-positive pre-cartilage digit condensations along one anteroposterior
+    row of the autopod paddle: local maxima of S above the row mean with prominence
+    >= `prominence_frac` of the peak-to-peak Sox9 range and separated by at least
+    `min_separation` length units (0.25 * lambda_c, so the detector does not itself
+    prescribe the Turing wavelength). Returns the count and the AP centres.
+    """
+    arr = np.asarray(row, dtype=float)
+    ptp = float(np.ptp(arr)) if arr.size > 2 else 0.0
+    if ptp < amplitude_floor:
+        return 0, []
+    # Zero-flux (Neumann) boundaries place Sox9 maxima ON the anterior/posterior paddle
+    # margins (digits I and V sit at the handplate edges), so mirror one ghost sample at
+    # each end before peak detection; otherwise edge condensations are never counted.
+    ext = np.concatenate(([arr[1]], arr, [arr[-2]]))
+    peaks, _ = signal.find_peaks(
+        ext,
+        prominence=prominence_frac * ptp,
+        distance=max(2, int(round(min_separation / dx))),
+    )
+    mean_val = float(np.mean(arr))
+    centres = [
+        float(p - 1) * dx
+        for p in peaks
+        if 1 <= p <= arr.size and ext[p] > mean_val
+    ]
+    return len(centres), centres
+
+
+def simulate_autopod_bsw_pde(
+    paddle_width: float,
+    margin_profile: np.ndarray | None = None,
+    sox9_bias: np.ndarray | None = None,
+    paddle_depth: float = AUTOPOD_DEPTH,
+    dx: float = 0.25,
+    dy: float = 0.80,
+    dt: float = 0.0025,
+    n_steps: int = 16000,
+    params: dict[str, float] | None = None,
+    anisotropy: float = BSW_ANISOTROPY,
+    seed: int = 2015,
+    noise_amp: float = 0.01,
+    n_frames: int = 0,
+) -> dict[str, Any]:
+    """Integrate the 2D BMP-Sox9-Wnt digit-condensation PDE on an autopod paddle of
+    anteroposterior width `paddle_width` and proximodistal depth `paddle_depth`,
+    with zero-flux boundaries, a chondrogenic-competence mask given by the (possibly
+    ragged) distal margin `margin_profile`, and a V_mem-derived Sox9 bias `sox9_bias`.
+    """
+    p = dict(BSW_PARAMS if params is None else params)
+    nx = max(4, int(round(paddle_width / dx)))
+    ny = max(3, int(round(paddle_depth / dy)))
+    if paddle_width <= 1e-6:
+        return {
+            "S": np.zeros((ny, 1)),
+            "B": np.zeros((ny, 1)),
+            "W": np.zeros((ny, 1)),
+            "competence": np.zeros((ny, 1)),
+            "distal_row": np.zeros(1),
+            "paddle_width": 0.0,
+            "paddle_depth": float(paddle_depth),
+            "n_digits": 0,
+            "digit_centres_x": [],
+            "digit_spacings": [],
+            "mean_spacing": float("nan"),
+            "spacing_cv": float("nan"),
+            "corr_SB": 0.0,
+            "corr_SW": 0.0,
+            "sox9_amplitude": 0.0,
+            "frames": [],
+        }
+
+    x = (np.arange(nx) + 0.5) * dx
+    y = (np.arange(ny) + 0.5) * dy
+
+    # Chondrogenic competence mask c(x, y): blastemal paddle below the distal margin
+    if margin_profile is None:
+        margin = np.full(nx, float(paddle_depth), dtype=float)
+    else:
+        src = np.asarray(margin_profile, dtype=float)
+        margin = np.interp(
+            np.linspace(0.0, 1.0, nx), np.linspace(0.0, 1.0, src.size), src
+        )
+        margin = np.clip(margin, 0.25 * paddle_depth, paddle_depth)
+    competence = (y[:, None] <= margin[None, :]).astype(float)
+
+    if sox9_bias is None:
+        bias = np.zeros(nx, dtype=float)
+    else:
+        src_b = np.asarray(sox9_bias, dtype=float)
+        bias = np.interp(
+            np.linspace(0.0, 1.0, nx), np.linspace(0.0, 1.0, src_b.size), src_b
+        )
+    bias_field = competence * bias[None, :]
+
+    rng = np.random.default_rng(seed)
+    S = noise_amp * rng.standard_normal((ny, nx)) * competence
+    B = 0.4 * noise_amp * rng.standard_normal((ny, nx)) * competence
+    Wn = 0.4 * noise_amp * rng.standard_normal((ny, nx)) * competence
+
+    frames: list[np.ndarray] = []
+    frame_steps: set[int] = set()
+    if n_frames > 0:
+        frame_steps = set(np.linspace(0, n_steps - 1, n_frames, dtype=int).tolist())
+
+    inv_dx2 = 1.0 / (dx * dx)
+    inv_dy2 = 1.0 / (dy * dy)
+
+    def aniso_lap(f: np.ndarray) -> np.ndarray:
+        pad = np.pad(f, 1, mode="edge")
+        d2x = (pad[1:-1, 2:] - 2.0 * f + pad[1:-1, :-2]) * inv_dx2
+        d2y = (pad[2:, 1:-1] - 2.0 * f + pad[:-2, 1:-1]) * inv_dy2
+        return d2x + anisotropy * d2y
+
+    for step in range(n_steps):
+        dS = -p["mu_S"] * S + competence * (p["k_sb"] * B - p["k_sw"] * Wn) + bias_field - S**3
+        dB = -p["k_bs"] * S - p["mu_B"] * B + p["D_B"] * aniso_lap(B)
+        dW = -p["k_ws"] * S - p["mu_W"] * Wn + p["D_W"] * aniso_lap(Wn)
+        S = (S + dt * dS) * competence
+        B = B + dt * dB
+        Wn = Wn + dt * dW
+        if step in frame_steps:
+            frames.append(S.copy())
+
+    # Digit condensations are read off the distal third of the competent paddle
+    distal_rows = []
+    for j in range(nx):
+        depth_j = margin[j]
+        band = (y >= 0.55 * depth_j) & (y <= depth_j)
+        if not np.any(band):
+            band = y <= depth_j
+        distal_rows.append(float(np.mean(S[band, j])) if np.any(band) else 0.0)
+    distal_row = np.array(distal_rows, dtype=float)
+
+    n_digits, centres_x = count_digit_condensations(distal_row, dx=dx)
+    spacings = [centres_x[i + 1] - centres_x[i] for i in range(len(centres_x) - 1)]
+    mean_sp = float(np.mean(spacings)) if spacings else float("nan")
+    cv_sp = float(np.std(spacings) / mean_sp) if spacings and mean_sp > 1e-9 else float("nan")
+
+    comp_mask = competence > 0.5
+    if int(np.sum(comp_mask)) > 4 and float(np.std(S[comp_mask])) > 1e-9:
+        corr_sb = float(np.corrcoef(S[comp_mask], B[comp_mask])[0, 1])
+        corr_sw = float(np.corrcoef(S[comp_mask], Wn[comp_mask])[0, 1])
+    else:
+        corr_sb, corr_sw = 0.0, 0.0
+
+    return {
+        "S": S,
+        "B": B,
+        "W": Wn,
+        "competence": competence,
+        "x": x,
+        "y": y,
+        "margin": margin,
+        "bias": bias,
+        "distal_row": distal_row,
+        "paddle_width": float(nx * dx),
+        "paddle_depth": float(paddle_depth),
+        "n_digits": int(n_digits),
+        "digit_centres_x": centres_x,
+        "digit_spacings": spacings,
+        "mean_spacing": mean_sp,
+        "spacing_cv": cv_sp,
+        "corr_SB": corr_sb,
+        "corr_SW": corr_sw,
+        "sox9_amplitude": float(np.max(np.abs(S))),
+        "frames": frames,
+    }
+
+
+_PASS3_CACHE: dict[str, Any] = {}
+
+
+def evaluate_pass3_gap_junction_and_digit_suite(seed: int = 2015) -> dict[str, Any]:
+    """Run the full Pass 3 remediation suite (cached):
+    - 2D gap-junction blastema lattice with GJ coupling intact (g_gj = 1) vs blocked
+      (g_gj = 0, heptanol/octanol) for the proximal-cut and rewritten-setpoint regimes,
+    - the k^(-1/2) gap-junctional noise-averaging scaling law,
+    - the BSW digit-condensation PDE in the autopod paddle of every regime,
+    - an autopod-width -> digit-number Turing scaling sweep (Sheth et al. 2012),
+    - a D_B = D_W = 0 diffusion ablation (Turing necessity control).
+    """
+    key = f"pass3-{seed}"
+    if key in _PASS3_CACHE:
+        return _PASS3_CACHE[key]
+
+    disp = bsw_dispersion()
+    lam_c = float(disp["lambda_c"])
+
+    # --- 2b. Gap-junction lattice: coupled vs blocked -------------------------
+    gj_intact = simulate_gap_junction_blastema_regeneration(
+        "proximal_cut_gap_junctions_intact", L_0=0.20, L_target=1.00, g_gj=1.0, seed=seed
+    )
+    gj_blocked = simulate_gap_junction_blastema_regeneration(
+        "proximal_cut_gap_junction_blockade", L_0=0.20, L_target=1.00, g_gj=0.0, seed=seed
+    )
+    gj_rewritten = simulate_gap_junction_blastema_regeneration(
+        "rewritten_setpoint_gap_junctions_intact", L_0=0.20, L_target=1.45, g_gj=1.0, seed=seed
+    )
+    gj_scaling = gap_junction_noise_scaling(seed=seed)
+
+    # --- 2c. Autopod paddles driven by the active-inference controller --------
+    suite = evaluate_all_regimes_and_morphospace(seed=seed)
+    regimes = suite["regimes"]
+
+    def paddle_for(regime_key: str, gj_lat: dict[str, Any] | None, pde_seed: int) -> dict[str, Any]:
+        r = regimes[regime_key]
+        x_auto = float(r["final_segments"][2])
+        width = AUTOPOD_WIDTH_GAIN * x_auto
+        # Digit number is set by the anteroposterior paddle width (Sheth et al. 2012);
+        # the proximodistal paddle depth saturates at the wild-type handplate depth.
+        depth = AUTOPOD_DEPTH * float(np.clip(x_auto / 0.28, 0.0, 1.0))
+        if gj_lat is None:
+            margin, bias = None, None
+        else:
+            col = np.asarray(gj_lat["L_col"], dtype=float)
+            margin = depth * np.clip(col / max(1e-9, float(np.mean(col))), 0.5, 1.4)
+            bias = SOX9_VMEM_GAIN * np.asarray(gj_lat["eps_col_bias"], dtype=float)
+        res = simulate_autopod_bsw_pde(
+            paddle_width=width,
+            margin_profile=margin,
+            sox9_bias=bias,
+            paddle_depth=depth,
+            seed=pde_seed,
+        )
+        res["regime_id"] = regime_key
+        res["x_auto"] = x_auto
+        res["expected_digits_turing"] = width / lam_c
+        return res
+
+    paddles = {
+        "proximal_limb_amputation_shoulder": paddle_for(
+            "proximal_limb_amputation_shoulder", gj_intact, seed
+        ),
+        "distal_limb_amputation_wrist": paddle_for(
+            "distal_limb_amputation_wrist", gj_intact, seed + 1
+        ),
+        "tail_to_limb_translocation_remodeling": paddle_for(
+            "tail_to_limb_translocation_remodeling", gj_intact, seed + 2
+        ),
+        "rewritten_bioelectric_setpoint_memory": paddle_for(
+            "rewritten_bioelectric_setpoint_memory", gj_rewritten, seed + 3
+        ),
+        "denervated_sensory_precision_zero_arrest": paddle_for(
+            "denervated_sensory_precision_zero_arrest", None, seed + 4
+        ),
+        "gap_junction_blockade_heptanol": paddle_for(
+            "proximal_limb_amputation_shoulder", gj_blocked, seed
+        ),
+    }
+    paddles["gap_junction_blockade_heptanol"]["regime_id"] = "gap_junction_blockade_heptanol"
+
+    # --- Turing necessity ablation (D_B = D_W = 0) ---------------------------
+    wt_width = AUTOPOD_WIDTH_GAIN * 0.28
+    ablation_nodiff = simulate_autopod_bsw_pde(
+        paddle_width=wt_width,
+        params={**BSW_PARAMS, "D_B": 0.0, "D_W": 0.0},
+        seed=seed,
+    )
+
+    # --- Autopod width -> digit number Turing scaling (Sheth et al. 2012) -----
+    width_factors = np.linspace(0.45, 1.85, 8)
+    width_sweep: list[dict[str, float]] = []
+    for i_w, fac in enumerate(width_factors):
+        w = AUTOPOD_WIDTH_GAIN * 0.28 * float(fac)
+        r_w = simulate_autopod_bsw_pde(
+            paddle_width=w,
+            paddle_depth=AUTOPOD_DEPTH,
+            seed=seed + 11 + i_w,
+        )
+        width_sweep.append(
+            {
+                "width": float(r_w["paddle_width"]),
+                "x_auto": 0.28 * float(fac),
+                "n_digits": float(r_w["n_digits"]),
+                "mean_spacing": float(r_w["mean_spacing"]) if r_w["digit_spacings"] else float("nan"),
+            }
+        )
+    sweep_w = np.array([r["width"] for r in width_sweep], dtype=float)
+    sweep_n = np.array([r["n_digits"] for r in width_sweep], dtype=float)
+    slope_n_w, icpt_n_w = np.polyfit(sweep_w, sweep_n, 1)
+    pearson_n_w = float(np.corrcoef(sweep_w, sweep_n)[0, 1])
+
+    out = {
+        "dispersion": disp,
+        "lambda_c": lam_c,
+        "gj_intact": gj_intact,
+        "gj_blocked": gj_blocked,
+        "gj_rewritten": gj_rewritten,
+        "gj_scaling": gj_scaling,
+        "paddles": paddles,
+        "ablation_nodiff": ablation_nodiff,
+        "width_sweep": width_sweep,
+        "width_sweep_slope": float(slope_n_w),
+        "width_sweep_intercept": float(icpt_n_w),
+        "width_sweep_pearson_r": pearson_n_w,
+        "turing_slope_prediction": 1.0 / lam_c,
+    }
+    _PASS3_CACHE[key] = out
+    return out
 
 
 # --------------------------------------------------------------------------- #

@@ -67,7 +67,7 @@ from PIL import Image
 from scipy import ndimage, optimize, stats
 from scipy.spatial import Voronoi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "drosophila_wing_vertex_model"
 REFERENCE_JSON = DATASET_DIR / "drosophila_wing_vertex_model_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "drosophila_wing_epithelium_specimen.jpg"

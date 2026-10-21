@@ -50,7 +50,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage, optimize, signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "bacillus_biofilm_wrinkling"
 REF_JSON_PATH = DATASET_DIR / "bacillus_biofilm_wrinkling_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "bacillus_biofilm_specimen.jpg"

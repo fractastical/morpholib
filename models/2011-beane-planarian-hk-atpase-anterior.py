@@ -36,6 +36,26 @@ Mathematical & Biological Specification
    - `MathOfBiology.Loop_081.beane_bistable_vmem_equilibria`
    - `MathOfBiology.Loop_081.gj_voltage_gate_symmetry_and_isolation`
    - `MathOfBiology.Loop_081.beane_four_regeneration_phenotypes`
+   - `MathOfBiology.Loop_081.mesh_gj_flux_conservation` (Pass 3, 2D finite-volume mesh)
+   - `MathOfBiology.Loop_081.slit_midline_exclusion_and_collapse` (Pass 3, eye-field / slit RNAi)
+   - `MathOfBiology.Loop_081.vmem_neoblast_rate_nonneg_monotone` (Pass 3, V_mem-coupled neoblasts)
+
+3b. **Pass 3 Remediation — 2D Body Mesh, Slit/Netrin Guidance & Stochastic Neoblasts:**
+   - The same bistable $V_{\mathrm{mem}}$ + voltage-gated gap-junction + $\mathrm{Ca}_{\mathrm{v}}$-gated
+     $H/T$ system is integrated on a 2D cell-centred finite-volume mesh built from the segmented
+     specimen silhouette (`build_planarian_body_mesh`, `simulate_planarian_bioelectric_2d`);
+     edge conductances are rescaled ($G_{\mathrm{edge}} = G_0 r^2$, $V_{0,\mathrm{edge}} = V_0 / r$) so the
+     continuum coefficients match the 1D solver. Honest reduction: structured finite-volume grid,
+     not an unstructured FEM mesh, and no dorsoventral layering.
+   - Photoreceptor placement is the arg-max of the eye field $E = H\,(1 - S_{\mathrm{slit}}(y))(1 - d^2)$
+     and visual axons follow a reduced growth-cone model with the net mediolateral cue
+     $c(y) = k_{\mathrm{netrin}}\,\partial_y N - k_{\mathrm{slit}}\,\partial_y S$ and a Robo-Slit
+     pre/post-crossing switch (Cebria & Newmark 2005; Cebria et al. 2007; Kidd et al. 1999).
+   - Neoblasts are agents on the AP axis dividing as an inhomogeneous Poisson process whose rate
+     is modulated by the local $\mathrm{Ca}_{\mathrm{ss}}(V_{\mathrm{mem}}(x,t))$ and whose progeny adopt
+     head identity through the $\mathrm{Ca}_{\mathrm{v}}$ gate of the blastema they enter
+     (`simulate_neoblast_kinetics`); the biphasic mitotic timing is calibrated to Wenemoser &
+     Reddien (2010) and is an input, not a prediction.
 
 4. **Five Canonical Experimental Regeneration Regimes (Beane et al. 2011; Oviedo et al. 2010):**
    - **Wild-Type (`1H1T`):** Active anterior H,K-ATPase depolarizes the anterior blastema
@@ -73,7 +93,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "planarian_hk_atpase_anterior"
 REF_JSON_PATH = DATASET_DIR / "planarian_hk_atpase_anterior_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "schmidtea_mediterranea_specimen.jpg"
@@ -238,6 +258,38 @@ def nonlinear_gj_flux_divergence(
     return div, g_edge
 
 
+REGIME_NAMES: tuple[str, ...] = (
+    "wild_type_1H1T",
+    "hk_atpase_inhibited_0H2T",
+    "ivermectin_depolarized_2H0T",
+    "octanol_gj_blockade_2H0T",
+    "nifedipine_cav_block_0H2T",
+)
+
+
+def regime_parameters(regime: str) -> dict[str, float]:
+    """
+    Pharmacological / RNAi regime parameters shared by the 1D AP solver and the Pass 3
+    2D body-mesh solver (Beane et al. 2011 Figs. 1-6; Oviedo et al. 2010):
+      I_HK_amp  : anterior H,K-ATPase pump current (+18 WT; -16 SCH-28080 / Smed-H,K-ATPase RNAi)
+      I_IVM_amp : ivermectin GluCl depolarizing current at both wounds (+22)
+      eta_oct   : 8-octanol innexin gap-junction blockade fraction (0.92)
+      eta_nif   : nifedipine L-type Ca_v channel blockade fraction (0.95)
+      post_wound_init_depol : transient amputation-induced posterior wound depolarization (mV)
+    """
+    table: dict[str, dict[str, float]] = {
+        "wild_type_1H1T": dict(I_HK_amp=18.0, I_IVM_amp=0.0, eta_oct=0.0, eta_nif=0.0, post_wound_init_depol=18.0),
+        "hk_atpase_inhibited_0H2T": dict(I_HK_amp=-16.0, I_IVM_amp=0.0, eta_oct=0.0, eta_nif=0.0, post_wound_init_depol=18.0),
+        "ivermectin_depolarized_2H0T": dict(I_HK_amp=18.0, I_IVM_amp=22.0, eta_oct=0.0, eta_nif=0.0, post_wound_init_depol=18.0),
+        # uncoupled posterior wound retains injury depolarization (Oviedo et al. 2010)
+        "octanol_gj_blockade_2H0T": dict(I_HK_amp=18.0, I_IVM_amp=0.0, eta_oct=0.92, eta_nif=0.0, post_wound_init_depol=38.0),
+        "nifedipine_cav_block_0H2T": dict(I_HK_amp=18.0, I_IVM_amp=0.0, eta_oct=0.0, eta_nif=0.95, post_wound_init_depol=18.0),
+    }
+    if regime not in table:
+        raise ValueError(f"Unknown experimental regime: {regime}")
+    return dict(table[regime])
+
+
 def simulate_planarian_bioelectric_pde(
     regime: str = "wild_type_1H1T",
     N: int = 60,
@@ -289,40 +341,12 @@ def simulate_planarian_bioelectric_pde(
     wound_competence_W = 0.25 + 0.75 * both_wounds
 
     # Default regime parameters from Beane et al. (2011) & Oviedo et al. (2010)
-    I_HK_amp = 18.0
-    I_IVM_amp = 0.0
-    eta_oct = 0.0
-    eta_nif = 0.0
-    post_wound_init_depol = 18.0  # transient amputation-induced wound depolarization at posterior cut
-
-    if regime == "wild_type_1H1T":
-        I_HK_amp = 18.0
-        I_IVM_amp = 0.0
-        eta_oct = 0.0
-        eta_nif = 0.0
-    elif regime == "hk_atpase_inhibited_0H2T":
-        I_HK_amp = -16.0
-        I_IVM_amp = 0.0
-        eta_oct = 0.0
-        eta_nif = 0.0
-    elif regime == "ivermectin_depolarized_2H0T":
-        I_HK_amp = 18.0
-        I_IVM_amp = 22.0
-        eta_oct = 0.0
-        eta_nif = 0.0
-    elif regime == "octanol_gj_blockade_2H0T":
-        I_HK_amp = 18.0
-        I_IVM_amp = 0.0
-        eta_oct = 0.92
-        eta_nif = 0.0
-        post_wound_init_depol = 38.0  # uncoupled posterior wound retains injury depolarization
-    elif regime == "nifedipine_cav_block_0H2T":
-        I_HK_amp = 18.0
-        I_IVM_amp = 0.0
-        eta_oct = 0.0
-        eta_nif = 0.95
-    else:
-        raise ValueError(f"Unknown experimental regime: {regime}")
+    rp = regime_parameters(regime)
+    I_HK_amp = rp["I_HK_amp"]
+    I_IVM_amp = rp["I_IVM_amp"]
+    eta_oct = rp["eta_oct"]
+    eta_nif = rp["eta_nif"]
+    post_wound_init_depol = rp["post_wound_init_depol"]
 
     if I_HK_override is not None:
         I_HK_amp = float(I_HK_override)
@@ -621,16 +645,842 @@ def synthesize_2d_planarian_morphology(
 
 
 # --------------------------------------------------------------------------- #
+# 3b. Pass 3 — 2D Finite-Volume Body-Mesh Bioelectric PDE on the Segmented Specimen
+#     Silhouette & Slit/Netrin Mediolateral Photoreceptor Axon Guidance
+# --------------------------------------------------------------------------- #
+def build_planarian_body_mesh(spec: dict[str, Any], nx: int = 90) -> dict[str, Any]:
+    """
+    Build a 2D cell-centred finite-volume mesh of the planarian body from the segmented
+    specimen silhouette (`segment_planarian_specimen`). The binary worm mask is
+    resampled onto a uniform square grid with `nx` cells along the anteroposterior (AP)
+    axis (cell size h = L / (nx - 1)); the mediolateral (ML) coordinate of every cell is
+    d(x, y) = (y - y_mid(x)) / w_half(x) in [-1, 1] (0 = dorsal midline, +/-1 = lateral margin).
+
+    Honest reduction: this is a structured finite-volume mesh (not an unstructured FEM
+    mesh) and it carries no dorsoventral layering; the residual is stated in the audit.
+    """
+    mask = spec["worm_mask"]
+    x_min, x_max, y_min, y_max = spec["x_min"], spec["x_max"], spec["y_min"], spec["y_max"]
+    sub = mask[y_min : y_max + 1, x_min : x_max + 1].astype(float)
+    L_px = float(x_max - x_min)
+    h_px = L_px / float(nx - 1)
+    ny = int(round((y_max - y_min) / h_px)) + 1
+    zoomed = ndi.zoom(sub, (ny / sub.shape[0], nx / sub.shape[1]), order=1)
+    cell_mask = ndi.binary_fill_holes(zoomed > 0.5)
+    lab, n_comp = ndi.label(cell_mask)
+    if n_comp > 1:
+        sizes = ndi.sum(cell_mask, lab, range(1, n_comp + 1))
+        cell_mask = lab == (1 + int(np.argmax(sizes)))
+
+    s = np.linspace(0.0, 1.0, nx)
+    h_rel = h_px / L_px
+    mid_row = np.full(nx, np.nan)
+    half_w = np.full(nx, np.nan)
+    d_grid = np.full((ny, nx), np.nan)
+    y_grid = np.full((ny, nx), np.nan)
+    rows = np.arange(ny, dtype=float)
+    for j in range(nx):
+        col = np.where(cell_mask[:, j])[0]
+        if col.size == 0:
+            continue
+        mid_row[j] = 0.5 * (col.min() + col.max())
+        half_w[j] = max(0.5, 0.5 * (col.max() - col.min()))
+        d_grid[:, j] = (rows - mid_row[j]) / half_w[j]
+        y_grid[:, j] = (rows - mid_row[j]) * h_rel
+    d_grid = np.where(cell_mask, d_grid, np.nan)
+    y_grid = np.where(cell_mask, y_grid, np.nan)
+    # Fill empty columns (none expected for a connected silhouette) by nearest neighbour
+    if np.any(np.isnan(mid_row)):
+        good = ~np.isnan(mid_row)
+        mid_row = np.interp(np.arange(nx), np.arange(nx)[good], mid_row[good])
+        half_w = np.interp(np.arange(nx), np.arange(nx)[good], half_w[good])
+
+    return {
+        "mask": cell_mask,
+        "nx": nx,
+        "ny": ny,
+        "s": s,
+        "h_rel": h_rel,
+        "h_px": h_px,
+        "mid_row": mid_row,
+        "half_w": half_w,
+        "half_w_rel": half_w * h_rel,  # local half-width in units of body length L
+        "d_grid": d_grid,
+        "y_grid": y_grid,  # absolute mediolateral offset from the midline in units of L
+        "n_cells": int(cell_mask.sum()),
+        "origin_px": (x_min, y_min),
+    }
+
+
+def masked_gj_flux_divergence_2d(
+    V: np.ndarray,
+    mask: np.ndarray,
+    G_edge: float,
+    V0_edge: float,
+    eta_oct: float = 0.0,
+) -> np.ndarray:
+    """
+    Finite-volume divergence of the voltage-gated gap-junction flux on the body mesh:
+        div_i = sum_{j in N(i)} G_ij(V_j - V_i),   G_ij = (1 - eta_oct) G_edge / (1 + ((V_j - V_i)/V0_edge)^2),
+    summed only over edges whose both cells lie inside the mask (zero-flux Neumann
+    boundary on the body margin). Every edge flux enters the two cells with opposite
+    sign, so the total gap-junctional current over the mesh is exactly zero
+    (Lean 4 `MathOfBiology.Loop_081.mesh_gj_flux_conservation`).
+    """
+    div = np.zeros_like(V)
+    # AP (x) edges
+    both_x = mask[:, 1:] & mask[:, :-1]
+    dv_x = np.where(both_x, V[:, 1:] - V[:, :-1], 0.0)
+    f_x = (1.0 - eta_oct) * G_edge / (1.0 + (dv_x / V0_edge) ** 2) * dv_x * both_x
+    div[:, :-1] += f_x
+    div[:, 1:] -= f_x
+    # ML (y) edges
+    both_y = mask[1:, :] & mask[:-1, :]
+    dv_y = np.where(both_y, V[1:, :] - V[:-1, :], 0.0)
+    f_y = (1.0 - eta_oct) * G_edge / (1.0 + (dv_y / V0_edge) ** 2) * dv_y * both_y
+    div[:-1, :] += f_y
+    div[1:, :] -= f_y
+    return div
+
+
+def masked_laplacian_2d(u: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """Masked 5-point Laplacian with zero-flux Neumann boundary on the body margin."""
+    out = np.zeros_like(u)
+    both_x = mask[:, 1:] & mask[:, :-1]
+    f_x = np.where(both_x, u[:, 1:] - u[:, :-1], 0.0)
+    out[:, :-1] += f_x
+    out[:, 1:] -= f_x
+    both_y = mask[1:, :] & mask[:-1, :]
+    f_y = np.where(both_y, u[1:, :] - u[:-1, :], 0.0)
+    out[:-1, :] += f_y
+    out[1:, :] -= f_y
+    return out
+
+
+def simulate_planarian_bioelectric_2d(
+    mesh: dict[str, Any],
+    regime: str = "wild_type_1H1T",
+    N_ref: int = 60,
+    steps: int = 2400,
+    dt: float = 0.02,
+    g_bistable: float = 0.002,
+    V_hyper: float = -65.0,
+    V_thresh: float = -42.5,
+    V_depol: float = -20.0,
+    G_0: float = 1.8,
+    V_0: float = 12.0,
+    k_V: float = 3.5,
+    tau_H: float = 4.0,
+    tau_T: float = 4.0,
+    c_H: float = 0.85,
+    c_T: float = 0.85,
+    D_H: float = 0.15,
+    D_T: float = 0.15,
+    seed: int = 2011,
+) -> dict[str, Any]:
+    """
+    Integrate the same Beane et al. (2011) / Pietak-Levin (2017) bistable V_mem +
+    voltage-gated gap-junction + Ca_v-gated H/T morphogen system on the 2D body mesh
+    of the segmented Schmidtea mediterranea silhouette (Pass 3 remediation item 1).
+
+    Discretisation consistency with the 1D solver: with r = (nx - 1)/(N_ref - 1) mesh cells
+    per 1D cell, edge conductance G_edge = G_0 r^2 and edge half-inactivation voltage
+    V0_edge = V_0 / r so that the continuum coefficient G_GJ(dV/dx) and the ionic/pump
+    current densities are identical to the 1D model; only the geometry (tapered head,
+    rounded tail, lateral margins) differs.
+    """
+    rp = regime_parameters(regime)
+    rng = np.random.default_rng(seed)
+    mask = mesh["mask"]
+    ny, nx = mask.shape
+    s = mesh["s"]
+    r = float(nx - 1) / float(N_ref - 1)
+    G_edge = G_0 * r * r
+    V0_edge = V_0 / r
+    D_H_edge = D_H * r * r
+    D_T_edge = D_T * r * r
+    assert dt * (4.0 * G_edge + 4.0 * max(D_H_edge, D_T_edge)) < 1.0, "explicit 2D step unstable"
+
+    ant_env = np.exp(-((s / 0.14) ** 2))[None, :] * np.ones((ny, 1))
+    post_env = np.exp(-(((1.0 - s) / 0.14) ** 2))[None, :] * np.ones((ny, 1))
+    both = ant_env + post_env
+    W = 0.25 + 0.75 * both
+
+    V = np.full((ny, nx), V_hyper) + 26.0 * ant_env + rp["post_wound_init_depol"] * post_env
+    V += rng.normal(0.0, 0.15, size=(ny, nx))
+    V = np.where(mask, V, V_hyper)
+    H = np.where(mask, 0.05, 0.0)
+    T = np.where(mask, 0.15, 0.0)
+    I_HK = rp["I_HK_amp"] * ant_env + (rp["eta_oct"] * 16.5) * post_env
+    I_IVM = rp["I_IVM_amp"] * both
+    eta_nif = rp["eta_nif"]
+
+    for _ in range(steps):
+        div = masked_gj_flux_divergence_2d(V, mask, G_edge, V0_edge, rp["eta_oct"])
+        i_ion = bistable_ionic_current(V, g_bistable, V_hyper, V_thresh, V_depol)
+        V = np.clip(V + dt * (-i_ion + I_HK + I_IVM + div), -85.0, 5.0)
+        V = np.where(mask, V, V_hyper)
+        ca = (1.0 - eta_nif) / (1.0 + np.exp(-(V - V_thresh) / k_V))
+        dH = (ca * (1.0 - c_T * T) - H) / tau_H + D_H_edge * masked_laplacian_2d(H, mask)
+        dT = ((1.0 - ca) * W * (1.0 - c_H * H) - T) / tau_T + D_T_edge * masked_laplacian_2d(T, mask)
+        H = np.where(mask, np.clip(H + dt * dH, 0.0, 1.0), 0.0)
+        T = np.where(mask, np.clip(T + dt * dT, 0.0, 1.0), 0.0)
+
+    ca = (1.0 - eta_nif) / (1.0 + np.exp(-(V - V_thresh) / k_V))
+    ant_cells = mask & (s[None, :] <= 7.0 / (N_ref - 1))
+    post_cells = mask & (s[None, :] >= 1.0 - 7.0 / (N_ref - 1))
+    antV_cells = mask & (s[None, :] <= 5.0 / (N_ref - 1))
+    postV_cells = mask & (s[None, :] >= 1.0 - 5.0 / (N_ref - 1))
+    ant_H = float(H[ant_cells].mean())
+    post_H = float(H[post_cells].mean())
+    ant_V = float(V[antV_cells].mean())
+    post_V = float(V[postV_cells].mean())
+    ant_is_head = int(ant_H >= 0.50)
+    post_is_head = int(post_H >= 0.50)
+    n_heads = ant_is_head + post_is_head
+    # Mediolateral V_mem heterogeneity inside the anterior blastema (0 in the 1D model by construction)
+    ml_std_ant = float(V[antV_cells].std())
+    return {
+        "regime": regime,
+        "V": np.where(mask, V, np.nan),
+        "H": np.where(mask, H, np.nan),
+        "T": np.where(mask, T, np.nan),
+        "ca": np.where(mask, ca, np.nan),
+        "ant_V_mV": ant_V,
+        "post_V_mV": post_V,
+        "delta_V_AP_mV": ant_V - post_V,
+        "ant_H": ant_H,
+        "post_H": post_H,
+        "n_heads": n_heads,
+        "n_tails": 2 - n_heads,
+        "phenotype_code": f"{n_heads}H{2 - n_heads}T",
+        "ml_std_ant_V_mV": ml_std_ant,
+        "G_edge": G_edge,
+        "V0_edge": V0_edge,
+        "net_gj_current": float(masked_gj_flux_divergence_2d(V, mask, G_edge, V0_edge, rp["eta_oct"])[mask].sum()),
+    }
+
+
+SIGMA_SLIT_L = 0.02    # Smed-slit midline stripe half-width, units of body length L (a priori, not fitted)
+SIGMA_NETRIN_L = 0.05  # Smed-netrin midline / ventral-cord attractant half-width, units of L (a priori)
+
+
+def slit_netrin_fields(
+    y: np.ndarray | float,
+    sigma_slit: float = SIGMA_SLIT_L,
+    sigma_netrin: float = SIGMA_NETRIN_L,
+    eta_slit: float = 0.0,
+    eta_netrin: float = 0.0,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Mediolateral guidance cue profiles as functions of the absolute ML offset y from the
+    dorsal midline (units of body length L):
+      S(y) = (1 - eta_slit)   * exp(-(y / sigma_slit)^2)    Smed-slit midline repellent stripe
+                                                            (Cebria, Guo, Jopek & Newmark 2007 Dev. Biol. 307:394-406)
+      N(y) = (1 - eta_netrin) * exp(-(y / sigma_netrin)^2)  Smed-netrin midline/ventral-cord attractant
+                                                            (Cebria & Newmark 2005 Development 132:3691-3703)
+    sigma_slit = 0.02 L and sigma_netrin = 0.05 L are a-priori stripe widths (not fitted to
+    the specimen); `sweep_slit_stripe_width` reports the specimen-matched sigma_slit*.
+    """
+    S = (1.0 - eta_slit) * np.exp(-((y / sigma_slit) ** 2))
+    N = (1.0 - eta_netrin) * np.exp(-((y / sigma_netrin) ** 2))
+    return S, N
+
+
+def place_photoreceptors_2d(
+    sim2d: dict[str, Any],
+    mesh: dict[str, Any],
+    sigma_slit: float = SIGMA_SLIT_L,
+    eta_slit: float = 0.0,
+) -> dict[str, Any]:
+    """
+    Eye-field placement on the 2D body mesh. The photoreceptor progenitor field is
+        E(x, y) = H(x, y) * (1 - S(y)) * (1 - d^2),      d = y / w_half(x),
+    i.e. the Ca_v-gated head commitment H (2D PDE), excluded from the midline by the
+    Smed-slit stripe of absolute half-width sigma_slit and from the lateral margin by the
+    body-wall taper. Because the anterior tip is narrower than the slit stripe, the AP
+    position of the eyes emerges from the competition between the posteriorly decaying
+    H(x) and the anteriorly narrowing silhouette. Each committed blastema (mean H >= 0.5)
+    receives a left (y > 0) and a right (y < 0) photoreceptor at the arg-max of E on its
+    half of the body. With slit silenced (eta_slit = 1) both maxima collapse onto the
+    midline (y -> 0): the cyclopic / fused-photoreceptor phenotype of Smed-slit RNAi
+    (Cebria et al. 2007) — Lean 4 `MathOfBiology.Loop_081.slit_midline_exclusion_and_collapse`.
+    """
+    mask = mesh["mask"]
+    yy = np.nan_to_num(mesh["y_grid"], nan=1.0)
+    dd = np.nan_to_num(mesh["d_grid"], nan=1.0)
+    H = np.nan_to_num(sim2d["H"], nan=0.0)
+    S, _ = slit_netrin_fields(yy, sigma_slit=sigma_slit, eta_slit=eta_slit)
+    E = H * (1.0 - S) * np.clip(1.0 - dd**2, 0.0, None) * mask
+    s = mesh["s"]
+    eyes: list[dict[str, float]] = []
+    halves = []
+    if sim2d["ant_H"] >= 0.5:
+        halves.append(("anterior", s[None, :] < 0.5))
+    if sim2d["post_H"] >= 0.5:
+        halves.append(("posterior", s[None, :] >= 0.5))
+    for label, half in halves:
+        for side, sel in (("left", yy >= 0.0), ("right", yy <= 0.0)):
+            cand = E * half * sel
+            if cand.max() <= 0.0:
+                continue
+            iy, ix = np.unravel_index(int(np.argmax(cand)), cand.shape)
+            eyes.append({"blastema": label, "side": side, "s": float(s[ix]), "y": float(yy[iy, ix]),
+                         "d": float(dd[iy, ix]), "row": float(iy), "col": float(ix), "E": float(cand[iy, ix])})
+    seps = []
+    for label in ("anterior", "posterior"):
+        pr = [e for e in eyes if e["blastema"] == label]
+        if len(pr) == 2:
+            seps.append(abs(pr[0]["y"] - pr[1]["y"]))
+    return {
+        "eyes": eyes,
+        "n_eyes": len(eyes),
+        "E": np.where(mask, E, np.nan),
+        "inter_ocelli_sep_L": float(seps[0]) if seps else float("nan"),
+        "eye_seps_L": seps,
+    }
+
+
+def simulate_visual_axon_guidance(
+    eyes: list[dict[str, float]],
+    mesh: dict[str, Any],
+    sigma_slit: float = SIGMA_SLIT_L,
+    sigma_netrin: float = SIGMA_NETRIN_L,
+    eta_slit: float = 0.0,
+    eta_netrin: float = 0.0,
+    k_slit: float = 1.0,
+    k_netrin: float = 1.0,
+    axon_length: float = 0.12,
+    n_steps: int = 240,
+    heading_relax: float = 0.03,
+    heading_gain: float = 0.05,
+    noise_sd: float = 0.004,
+    seed: int = 2011,
+) -> dict[str, Any]:
+    """
+    Reduced growth-cone model of the planarian visual axons in body-fitted (s, y)
+    coordinates (Pass 3 remediation item 1, mediolateral guidance). Each photoreceptor
+    sends an ipsilateral and a contralateral (commissural) axon that grow posteriorly
+    toward the cephalic ganglia (optic chiasm); the growth-cone heading h = dy/ds relaxes
+    toward the net mediolateral cue
+        c(y) = k_netrin dN/dy - k_slit dS/dy,
+    with heading persistence (`heading_relax` per step) so commissural axons overshoot and
+    cross the midline. Following the canonical Robo-Slit switch (Kidd, Bland & Goodman 1999
+    Cell 96:785-794), commissural growth cones are slit-insensitive before crossing and
+    slit-sensitive after crossing; ipsilateral axons are slit-sensitive throughout. The two
+    axon classes converge on the paired longitudinal tracts at |y*| where netrin attraction
+    balances slit repulsion. Phenotypes: eta_slit = 1 -> midline collapse (Cebria et al. 2007
+    Smed-slit RNAi); eta_netrin = 1 -> commissural axons never reach/cross the midline
+    (Cebria & Newmark 2005 Smed-netrin / netR RNAi).
+    """
+    rng = np.random.default_rng(seed)
+    ds = axon_length / n_steps
+    s_mesh = mesh["s"]
+    hw_rel = mesh["half_w_rel"]
+
+    def cue(yv: float, slit_on: bool) -> float:
+        S = (1.0 - eta_slit) * math.exp(-((yv / sigma_slit) ** 2))
+        N = (1.0 - eta_netrin) * math.exp(-((yv / sigma_netrin) ** 2))
+        dS = -2.0 * yv / sigma_slit**2 * S
+        dN = -2.0 * yv / sigma_netrin**2 * N
+        return k_netrin * dN - (k_slit * dS if slit_on else 0.0)
+
+    axons = []
+    for eye in eyes:
+        for kind in ("ipsilateral", "contralateral"):
+            s_v, y_v = eye["s"], eye["y"]
+            step_sign = -1.0 if eye["blastema"] == "posterior" else 1.0
+            h = 0.0
+            crossed = False
+            traj = [(s_v, y_v)]
+            sign0 = math.copysign(1.0, y_v) if y_v != 0.0 else 1.0
+            for _ in range(n_steps):
+                slit_on = kind == "ipsilateral" or crossed
+                c = cue(y_v, slit_on)
+                h += heading_relax * (heading_gain * c - h) + rng.normal(0.0, noise_sd)
+                s_v = float(np.clip(s_v + step_sign * ds, 0.0, 1.0))
+                w_loc = float(np.interp(s_v, s_mesh, hw_rel))
+                y_v = float(np.clip(y_v + h * ds, -0.98 * w_loc, 0.98 * w_loc))
+                if kind == "contralateral" and not crossed and abs(y_v) > 1e-9 and math.copysign(1.0, y_v) != sign0:
+                    crossed = True
+                traj.append((s_v, y_v))
+            traj_arr = np.array(traj)
+            axons.append({
+                "eye_side": eye["side"],
+                "blastema": eye["blastema"],
+                "kind": kind,
+                "traj": traj_arr,
+                "crossed": bool(crossed),
+                "final_y": float(y_v),
+                "min_abs_y": float(np.min(np.abs(traj_arr[:, 1]))),
+            })
+    contra = [a for a in axons if a["kind"] == "contralateral"]
+    ipsi = [a for a in axons if a["kind"] == "ipsilateral"]
+    # Analytical tract position |y*| where k_netrin |dN/dy| = k_slit |dS/dy| (slit + netrin both present)
+    y_star = float("nan")
+    if eta_slit < 1.0 and eta_netrin < 1.0 and sigma_slit < sigma_netrin:
+        ratio = (k_netrin * (1.0 - eta_netrin) / sigma_netrin**2) / (k_slit * (1.0 - eta_slit) / sigma_slit**2)
+        y_star = math.sqrt(-math.log(ratio) / (1.0 / sigma_slit**2 - 1.0 / sigma_netrin**2))
+    return {
+        "axons": axons,
+        "crossing_fraction": float(np.mean([a["crossed"] for a in contra])) if contra else float("nan"),
+        "ipsi_final_abs_y": float(np.mean([abs(a["final_y"]) for a in ipsi])) if ipsi else float("nan"),
+        "contra_final_abs_y": float(np.mean([abs(a["final_y"]) for a in contra])) if contra else float("nan"),
+        "ipsi_min_abs_y": float(np.mean([a["min_abs_y"] for a in ipsi])) if ipsi else float("nan"),
+        "tract_y_star_L": y_star,
+        "eta_slit": eta_slit,
+        "eta_netrin": eta_netrin,
+    }
+
+
+def specimen_ocelli_geometry(spec: dict[str, Any]) -> dict[str, float]:
+    """
+    Observed photoreceptor geometry of the vendored specimen in the mesh coordinates:
+    AP position s_eye, absolute ML half-separation |y_eye| (units of L) and relative
+    position d_eye = |y_eye| / w_half(s_eye).
+    """
+    s_oc = spec["mean_ocelli_rel_s"]
+    L = spec["length_px"]
+    local_w = float(np.interp(s_oc, spec["s_bins"], spec["widths_px"]))
+    dy = abs(spec["ocelli_xy"][0][1] - spec["ocelli_xy"][1][1])
+    return {
+        "s_eye": float(s_oc),
+        "local_width_px": local_w,
+        "inter_ocelli_dy_px": dy,
+        "inter_ocelli_sep_L": dy / L,
+        "abs_y_eye_L": 0.5 * dy / L,
+        "abs_d_eye": dy / max(1.0, local_w),
+    }
+
+
+def eye_field_lateral_optimum(w_half: float, sigma_slit: float = SIGMA_SLIT_L, eta_slit: float = 0.0) -> float:
+    """Continuous arg-max over y in [0, w_half] of the lateral eye-field factor (1 - S(y)) (1 - (y/w_half)^2)."""
+    y = np.linspace(0.0, w_half, 2001)
+    S, _ = slit_netrin_fields(y, sigma_slit=sigma_slit, eta_slit=eta_slit)
+    return float(y[np.argmax((1.0 - S) * (1.0 - (y / w_half) ** 2))])
+
+
+def sweep_slit_stripe_width(spec_geom: dict[str, float], mesh: dict[str, Any]) -> dict[str, Any]:
+    """
+    Parameter sweep of the slit midline-stripe half-width sigma_slit in [0.005, 0.06] L at the
+    specimen's local half-width: predicted photoreceptor ML offset |y_eye|(sigma_slit) and the
+    specimen-matched value sigma_slit* at which |y_eye| equals the segmented ocelli offset.
+    """
+    w_half = float(np.interp(spec_geom["s_eye"], mesh["s"], mesh["half_w_rel"]))
+    sigmas = np.linspace(0.005, 0.06, 23)
+    y_eye = np.array([eye_field_lateral_optimum(w_half, sg) for sg in sigmas])
+    order = np.argsort(y_eye)
+    sigma_star = float(np.interp(spec_geom["abs_y_eye_L"], y_eye[order], sigmas[order]))
+    return {"sigmas": sigmas, "y_eye": y_eye, "w_half": w_half, "sigma_star": sigma_star,
+            "y_eye_specimen": spec_geom["abs_y_eye_L"], "y_eye_default": eye_field_lateral_optimum(w_half)}
+
+
+def evaluate_2d_mesh_and_guidance(spec: dict[str, Any], seed: int = 2011, nx: int = 120) -> dict[str, Any]:
+    """Run the 2D body-mesh PDE for WT / SCH-28080 / ivermectin and the slit/netrin guidance phenotypes."""
+    mesh = build_planarian_body_mesh(spec, nx=nx)
+    sims = {r: simulate_planarian_bioelectric_2d(mesh, regime=r, seed=seed)
+            for r in ("wild_type_1H1T", "hk_atpase_inhibited_0H2T", "ivermectin_depolarized_2H0T")}
+    wt = sims["wild_type_1H1T"]
+    eyes_wt = place_photoreceptors_2d(wt, mesh)
+    eyes_slit = place_photoreceptors_2d(wt, mesh, eta_slit=1.0)
+    eyes_ivm = place_photoreceptors_2d(sims["ivermectin_depolarized_2H0T"], mesh)
+    eyes_sch = place_photoreceptors_2d(sims["hk_atpase_inhibited_0H2T"], mesh)
+    guidance = {
+        "wild_type": simulate_visual_axon_guidance(eyes_wt["eyes"], mesh, seed=seed),
+        "slit_rnai": simulate_visual_axon_guidance(eyes_slit["eyes"], mesh, eta_slit=1.0, seed=seed),
+        "netrin_rnai": simulate_visual_axon_guidance(eyes_wt["eyes"], mesh, eta_netrin=1.0, seed=seed),
+        "ivermectin_2H0T": simulate_visual_axon_guidance(eyes_ivm["eyes"], mesh, seed=seed),
+    }
+    obs = specimen_ocelli_geometry(spec)
+    ant_eyes = [e for e in eyes_wt["eyes"] if e["blastema"] == "anterior"]
+    y_eye_model = float(np.mean([abs(e["y"]) for e in ant_eyes])) if ant_eyes else float("nan")
+    s_eye_model = float(np.mean([e["s"] for e in ant_eyes])) if ant_eyes else float("nan")
+    return {
+        "mesh": mesh,
+        "sims": sims,
+        "eyes": {"wild_type": eyes_wt, "slit_rnai": eyes_slit, "ivermectin": eyes_ivm, "sch28080": eyes_sch},
+        "guidance": guidance,
+        "specimen_ocelli": obs,
+        "abs_y_eye_model_L": y_eye_model,
+        "s_eye_model": s_eye_model,
+        "abs_y_eye_specimen_L": obs["abs_y_eye_L"],
+        "s_eye_specimen": obs["s_eye"],
+        "slit_sweep": sweep_slit_stripe_width(obs, mesh),
+        "head_counts_2d": {r: sims[r]["n_heads"] for r in sims},
+        "n_eyes_2d": {k: v["n_eyes"] for k, v in
+                      (("wild_type", eyes_wt), ("slit_rnai", eyes_slit), ("ivermectin", eyes_ivm), ("sch28080", eyes_sch))},
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 3c. Pass 3 — Stochastic Neoblast Division & Migration Kinetics Coupled to V_mem
+# --------------------------------------------------------------------------- #
+def simulate_neoblast_kinetics(
+    sim1d: dict[str, Any],
+    eta_nif: float = 0.0,
+    n_neoblasts: int = 1500,
+    t_end_h: float = 72.0,
+    dt_h: float = 0.5,
+    lambda_0: float = 0.02,
+    A_body: float = 2.0,
+    tau_body_h: float = 6.0,
+    A_local: float = 5.0,
+    tau_rise_h: float = 36.0,
+    tau_decay_h: float = 100.0,
+    n_pulse: int = 3,
+    beta_V: float = 0.3,
+    D_mig: float = 4.0e-4,
+    v_mig: float = 0.02,
+    hours_per_sim_unit: float = 0.75,
+    V_thresh: float = -42.5,
+    k_V: float = 3.5,
+    seed: int = 2011,
+) -> dict[str, Any]:
+    """
+    Agent-based stochastic neoblast model on the 1D AP axis coupled to the bioelectric
+    V_mem(x, t) history of the PDE solver (Pass 3 remediation item 2).
+
+    Each neoblast i at s_i divides as an inhomogeneous Poisson process with rate
+        lambda_i(t) = lambda_0 [1 + A_body a(t) + A_local w(s_i) m(t)] [1 + beta_V (Ca_ss(V(s_i,t)) - 1/2)],
+    where a(t) = (t/tau_body)^n exp(n (1 - t/tau_body)) is the body-wide wound-response
+    pulse peaking at tau_body = 6 h and m(t) = (1 - exp(-t/tau_rise)) exp(-t/tau_decay) is
+    the slower missing-tissue signal peaking at tau_rise ln(1 + tau_decay/tau_rise) = 47.8 h
+    at the wounds (both peak times are fitted to the biphasic mitotic response of
+    Wenemoser & Reddien 2010 Dev. Biol. 344:979-991 and are therefore inputs, not predictions;
+    the predictions are the spatial localisation of each peak, the blastema progeny counts,
+    their head/tail fate split and the across-seed variability),
+    w(s) the wound proximity envelope, and the bracketed V_mem factor the depolarisation-
+    dependent modulation of proliferation (beta_V = 0 ablates it). Divisions are
+    asymmetric: the neoblast persists and one post-mitotic progeny is born which migrates
+    into the nearest blastema and adopts head identity with probability
+    (1 - eta_nif) Ca_ss(V(s_birth, t)) (L-type Ca_v gate of Beane et al. 2011), else
+    posterior/tail identity. Neoblasts perform a biased random walk up the wound
+    gradient (Guedelhoefer & Sanchez Alvarado 2012 Development 139:3510-3520) but do
+    not enter the blastema (Wenemoser & Reddien 2010).
+    """
+    rng = np.random.default_rng(seed)
+    s_axis = sim1d["s"]
+    hist_t = sim1d["history_t"] * hours_per_sim_unit
+    hist_V = sim1d["history_V"]
+    n_steps = int(round(t_end_h / dt_h))
+    s_n = rng.uniform(0.06, 0.94, size=n_neoblasts)
+
+    def wound_env(sv: np.ndarray) -> np.ndarray:
+        return np.exp(-((sv / 0.14) ** 2)) + np.exp(-(((1.0 - sv) / 0.14) ** 2))
+
+    def wound_grad(sv: np.ndarray) -> np.ndarray:
+        return (-2.0 * sv / 0.14**2) * np.exp(-((sv / 0.14) ** 2)) + (2.0 * (1.0 - sv) / 0.14**2) * np.exp(-(((1.0 - sv) / 0.14) ** 2))
+
+    t_grid = np.arange(1, n_steps + 1) * dt_h
+    mitotic_index = np.zeros(n_steps)
+    div_count = np.zeros(n_steps, dtype=int)
+    div_near_wound = np.zeros(n_steps, dtype=int)
+    blastema_ant = 0
+    blastema_post = 0
+    head_ant = 0
+    head_post = 0
+    progeny_birth_s: list[float] = []
+    progeny_head: list[int] = []
+    hist_positions = []
+    hist_blastema = []
+
+    for k in range(n_steps):
+        t = t_grid[k]
+        # V_mem(s, t) from the PDE history (hours), interpolated at neoblast positions
+        ti = int(np.clip(np.searchsorted(hist_t, t), 0, len(hist_t) - 1))
+        V_t = np.interp(s_n, s_axis, hist_V[ti])
+        ca = (1.0 - eta_nif) / (1.0 + np.exp(-(V_t - V_thresh) / k_V))
+        a_t = (t / tau_body_h) ** n_pulse * math.exp(n_pulse * (1.0 - t / tau_body_h))
+        m_t = (1.0 - math.exp(-t / tau_rise_h)) * math.exp(-t / tau_decay_h)
+        lam = lambda_0 * (1.0 + A_body * a_t + A_local * wound_env(s_n) * m_t) * (1.0 + beta_V * (ca - 0.5))
+        divide = rng.uniform(size=n_neoblasts) < (1.0 - np.exp(-lam * dt_h))
+        nd = int(divide.sum())
+        div_count[k] = nd
+        mitotic_index[k] = nd / float(n_neoblasts) / dt_h
+        near = (s_n < 0.25) | (s_n > 0.75)
+        div_near_wound[k] = int((divide & near).sum())
+        if nd:
+            born_s = s_n[divide]
+            to_ant = born_s < 0.5
+            # Progeny fate is specified by the Ca_v gate of the blastema it enters
+            # (anterior blastema V_mem at s = 0.04, posterior at s = 0.96; Beane et al. 2011)
+            V_bl = np.interp(np.where(to_ant, 0.04, 0.96), s_axis, hist_V[ti])
+            ca_bl = (1.0 - eta_nif) / (1.0 + np.exp(-(V_bl - V_thresh) / k_V))
+            fate = rng.uniform(size=nd) < ca_bl
+            blastema_ant += int(to_ant.sum())
+            blastema_post += int((~to_ant).sum())
+            head_ant += int((fate & to_ant).sum())
+            head_post += int((fate & ~to_ant).sum())
+            progeny_birth_s.extend(born_s.tolist())
+            progeny_head.extend(fate.astype(int).tolist())
+        # Biased random walk toward wounds, excluded from the blastema zones
+        s_n = s_n + v_mig * dt_h * wound_grad(s_n) * 0.14 + math.sqrt(2.0 * D_mig * dt_h) * rng.normal(size=n_neoblasts)
+        s_n = np.clip(s_n, 0.05, 0.95)
+        if k % 8 == 0 or k == n_steps - 1:
+            hist_positions.append(s_n.copy())
+            hist_blastema.append((t, blastema_ant, blastema_post))
+
+    # Peak detection on a smoothed mitotic index (3.5 h boxcar)
+    kern = np.ones(7) / 7.0
+    mi_s = np.convolve(mitotic_index, kern, mode="same")
+    early = t_grid <= 20.0
+    late = t_grid > 20.0
+    t_peak_1 = float(t_grid[early][np.argmax(mi_s[early])])
+    t_peak_2 = float(t_grid[late][np.argmax(mi_s[late])])
+    i1 = int(np.argmin(np.abs(t_grid - t_peak_1)))
+    i2 = int(np.argmin(np.abs(t_grid - t_peak_2)))
+    win = 4
+
+    def frac_near(i: int) -> float:
+        lo, hi = max(0, i - win), min(n_steps, i + win + 1)
+        tot = div_count[lo:hi].sum()
+        return float(div_near_wound[lo:hi].sum() / tot) if tot else float("nan")
+
+    return {
+        "t_h": t_grid,
+        "mitotic_index_per_h": mitotic_index,
+        "mitotic_index_smooth": mi_s,
+        "t_peak_bodywide_h": t_peak_1,
+        "t_peak_local_h": t_peak_2,
+        "frac_near_wound_peak1": frac_near(i1),
+        "frac_near_wound_peak2": frac_near(i2),
+        "blastema_ant_cells": blastema_ant,
+        "blastema_post_cells": blastema_post,
+        "head_frac_ant": head_ant / blastema_ant if blastema_ant else float("nan"),
+        "head_frac_post": head_post / blastema_post if blastema_post else float("nan"),
+        "progeny_birth_s": np.array(progeny_birth_s),
+        "progeny_head": np.array(progeny_head),
+        "hist_positions": hist_positions,
+        "hist_blastema": hist_blastema,
+        "final_positions": s_n,
+    }
+
+
+def evaluate_neoblast_regimes(
+    regimes: dict[str, dict[str, Any]],
+    seeds: tuple[int, ...] = (2011, 2012, 2013, 2014),
+    beta_V: float = 0.3,
+) -> dict[str, Any]:
+    """Replicate stochastic neoblast simulations across seeds for 4 bioelectric regimes (+ beta_V ablation)."""
+    out: dict[str, Any] = {}
+    for rname in ("wild_type_1H1T", "hk_atpase_inhibited_0H2T", "ivermectin_depolarized_2H0T", "nifedipine_cav_block_0H2T"):
+        eta_nif = regime_parameters(rname)["eta_nif"]
+        reps = [simulate_neoblast_kinetics(regimes[rname], eta_nif=eta_nif, seed=sd, beta_V=beta_V) for sd in seeds]
+        def agg(key: str) -> tuple[float, float]:
+            vals = np.array([r[key] for r in reps], dtype=float)
+            return float(np.nanmean(vals)), float(np.nanstd(vals))
+        # Ensemble-mean mitotic index across seeds -> pooled peak times
+        mi_mean = np.mean([r["mitotic_index_per_h"] for r in reps], axis=0)
+        mi_pool = np.convolve(mi_mean, np.ones(7) / 7.0, mode="same")
+        t_h = reps[0]["t_h"]
+        early, late = t_h <= 20.0, t_h > 20.0
+        out[rname] = {
+            "replicates": reps,
+            "t_h": t_h,
+            "mi_mean": mi_mean,
+            "mi_std": np.std([r["mitotic_index_per_h"] for r in reps], axis=0),
+            "mi_pool_smooth": mi_pool,
+            "t_peak_bodywide_pooled_h": float(t_h[early][np.argmax(mi_pool[early])]),
+            "t_peak_local_pooled_h": float(t_h[late][np.argmax(mi_pool[late])]),
+            "head_frac_ant": agg("head_frac_ant"),
+            "head_frac_post": agg("head_frac_post"),
+            "blastema_ant_cells": agg("blastema_ant_cells"),
+            "blastema_post_cells": agg("blastema_post_cells"),
+            "t_peak_bodywide_h": agg("t_peak_bodywide_h"),
+            "t_peak_local_h": agg("t_peak_local_h"),
+            "frac_near_wound_peak1": agg("frac_near_wound_peak1"),
+            "frac_near_wound_peak2": agg("frac_near_wound_peak2"),
+        }
+    # beta_V ablation on WT: proliferation decoupled from V_mem (fate coupling retained)
+    abl = [simulate_neoblast_kinetics(regimes["wild_type_1H1T"], eta_nif=0.0, seed=sd, beta_V=0.0) for sd in seeds]
+    out["wt_betaV_ablation"] = {
+        "replicates": abl,
+        "blastema_ant_cells": (float(np.mean([r["blastema_ant_cells"] for r in abl])), float(np.std([r["blastema_ant_cells"] for r in abl]))),
+        "blastema_post_cells": (float(np.mean([r["blastema_post_cells"] for r in abl])), float(np.std([r["blastema_post_cells"] for r in abl]))),
+        "head_frac_ant": (float(np.mean([r["head_frac_ant"] for r in abl])), float(np.std([r["head_frac_ant"] for r in abl]))),
+    }
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# 3d. Pass 3 — 6-Panel 2D Mesh / Axon Guidance / Neoblast Figure
+# --------------------------------------------------------------------------- #
+OUT_PNG_PASS3 = ROOT / "docs" / "media" / "planarian_hk_atpase_anterior_2d_mesh_neoblast.png"
+
+
+def _style_axis(ax: Any) -> None:
+    ax.set_facecolor("#131b29")
+    ax.tick_params(colors="#cbd5e1", labelsize=8.5)
+    for sp_ in ax.spines.values():
+        sp_.set_color("#334155")
+
+
+def render_pass3_figure(spec: dict[str, Any], two_d: dict[str, Any], neo: dict[str, Any], out_path: Path = OUT_PNG_PASS3) -> None:
+    """Render the Pass 3 remediation figure (2D body-mesh V_mem, eye-field & visual axons, neoblast kinetics)."""
+    mesh = two_d["mesh"]
+    mask = mesh["mask"]
+    s_m = mesh["s"]
+    ny = mesh["ny"]
+    extent = [0.0, 1.0, (0 - 0.5) * mesh["h_rel"], (ny - 0.5) * mesh["h_rel"]]
+    wt2 = two_d["sims"]["wild_type_1H1T"]
+    ivm2 = two_d["sims"]["ivermectin_depolarized_2H0T"]
+    sch2 = two_d["sims"]["hk_atpase_inhibited_0H2T"]
+    obs = two_d["specimen_ocelli"]
+
+    fig, axes = plt.subplots(3, 2, figsize=(15.6, 13.2), dpi=130)
+    fig.patch.set_facecolor("#0b0f17")
+    for ax in axes.flat:
+        _style_axis(ax)
+
+    def mid_y(sv: np.ndarray) -> np.ndarray:
+        return np.interp(sv, s_m, mesh["mid_row"]) * mesh["h_rel"]
+
+    # Panel A: 2D V_mem on the specimen silhouette mesh (WT top, SCH-28080 middle, ivermectin bottom)
+    ax = axes[0, 0]
+    stack = np.vstack([wt2["V"], sch2["V"], ivm2["V"]])
+    ext3 = [0.0, 1.0, 0.0, 3.0 * ny * mesh["h_rel"]]
+    im = ax.imshow(stack, origin="lower", cmap="RdYlBu_r", vmin=-70.0, vmax=-10.0, extent=ext3, aspect="auto", interpolation="nearest")
+    for k, (lab, sim_) in enumerate((("Ivermectin 2H0T", ivm2), ("SCH-28080 0H2T", sch2), ("Wild-Type 1H1T", wt2))):
+        ax.text(0.50, (k + 0.88) * ny * mesh["h_rel"], f"{lab}: $V_A$={sim_['ant_V_mV']:.1f} mV, $V_P$={sim_['post_V_mV']:.1f} mV, {sim_['phenotype_code']}",
+                color="#f8fafc", fontsize=8.2, ha="center", fontweight="bold", bbox=dict(facecolor="#0f172a", alpha=0.75, edgecolor="#334155"))
+    ax.set_title(f"A. 2D Finite-Volume Body-Mesh $V_{{\\mathrm{{mem}}}}$ ({mesh['nx']}x{mesh['ny']} grid, {mesh['n_cells']} cells)", color="#f8fafc", fontsize=10.2, fontweight="bold")
+    ax.set_xlabel("Normalized AP position $x/L$", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Mediolateral ($y/L$, stacked regimes)", color="#cbd5e1", fontsize=9)
+    cb = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
+    cb.ax.tick_params(colors="#cbd5e1", labelsize=7.5)
+    cb.set_label("$V_{\\mathrm{mem}}$ (mV)", color="#cbd5e1", fontsize=8)
+
+    # Panel B: eye-field E(x,y), model photoreceptors, specimen ocelli, and WT visual axons
+    ax = axes[0, 1]
+    E = two_d["eyes"]["wild_type"]["E"]
+    im2 = ax.imshow(E, origin="lower", cmap="magma", extent=extent, aspect="equal", interpolation="nearest")
+    ax.contour(np.nan_to_num(wt2["H"], nan=0.0), levels=[0.5], colors=["#38bdf8"], linewidths=1.2, extent=extent, origin="lower")
+    for e in two_d["eyes"]["wild_type"]["eyes"]:
+        ax.scatter([e["s"]], [e["y"] + mid_y(np.array([e["s"]]))[0]], s=90, color="#22c55e", edgecolor="#f8fafc", zorder=8)
+    # Specimen ocelli mapped into mesh coordinates
+    for (px, py) in spec["ocelli_xy"]:
+        sx = (px - spec["x_min"]) / spec["length_px"]
+        sy = (py - spec["y_min"]) / spec["length_px"]
+        ax.scatter([sx], [sy], s=80, marker="x", color="#f43f5e", linewidths=2.2, zorder=9)
+    for a in two_d["guidance"]["wild_type"]["axons"]:
+        tr = a["traj"]
+        ax.plot(tr[:, 0], tr[:, 1] + mid_y(tr[:, 0]), color="#fde68a" if a["kind"] == "ipsilateral" else "#f97316", lw=1.4, alpha=0.95)
+    ax.set_xlim(-0.01, 0.32)
+    ax.set_ylim(extent[2], extent[3])
+    ax.set_title("B. Eye-Field $E=H(1-S_{slit})(1-d^2)$, Eyes & Visual Axons (WT)", color="#f8fafc", fontsize=10.2, fontweight="bold")
+    ax.set_xlabel("$x/L$ (anterior 0.32 of body)", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("$y/L$", color="#cbd5e1", fontsize=9)
+    ax.scatter([], [], s=60, color="#22c55e", edgecolor="#f8fafc", label=f"Model eyes ($x/L$={two_d['s_eye_model']:.3f}, $|y|/L$={two_d['abs_y_eye_model_L']:.4f})")
+    ax.scatter([], [], s=60, marker="x", color="#f43f5e", label=f"Specimen ocelli ($x/L$={obs['s_eye']:.3f}, $|y|/L$={obs['abs_y_eye_L']:.4f})")
+    ax.plot([], [], color="#fde68a", label="Ipsilateral axons")
+    ax.plot([], [], color="#f97316", label=f"Contralateral axons (crossing {two_d['guidance']['wild_type']['crossing_fraction']:.0%})")
+    ax.plot([], [], color="#38bdf8", label="$H = 0.5$ head boundary (2D)")
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.0, loc="upper right")
+    cb2 = fig.colorbar(im2, ax=ax, fraction=0.03, pad=0.02)
+    cb2.ax.tick_params(colors="#cbd5e1", labelsize=7.5)
+
+    # Panel C: slit / netrin RNAi guidance phenotypes in (s, y) coordinates
+    ax = axes[1, 0]
+    offs = {"wild_type": 0.16, "netrin_rnai": 0.0, "slit_rnai": -0.16}
+    cols = {"wild_type": "#22c55e", "netrin_rnai": "#38bdf8", "slit_rnai": "#f43f5e"}
+    labels = {"wild_type": "Wild-type", "netrin_rnai": "Smed-netrin RNAi", "slit_rnai": "Smed-slit RNAi"}
+    hw_curve = np.interp(np.linspace(0.0, 0.32, 200), s_m, mesh["half_w_rel"])
+    for key, yo in offs.items():
+        g = two_d["guidance"][key]
+        ax.fill_between(np.linspace(0.0, 0.32, 200), yo - hw_curve, yo + hw_curve, color="#1e293b", alpha=0.8)
+        ax.axhline(yo, color="#64748b", lw=0.9, ls="--")
+        for a in g["axons"]:
+            tr = a["traj"]
+            ax.plot(tr[:, 0], yo + tr[:, 1], color=cols[key], lw=1.3, ls="-" if a["kind"] == "ipsilateral" else ":")
+        eyes_k = two_d["eyes"]["slit_rnai" if key == "slit_rnai" else "wild_type"]["eyes"]
+        for e in eyes_k:
+            ax.scatter([e["s"]], [yo + e["y"]], s=55, color=cols[key], edgecolor="#f8fafc", zorder=8)
+        ax.text(0.31, yo + 0.055, f"{labels[key]}: crossing {g['crossing_fraction']:.0%}, ipsi $|y|$={g['ipsi_final_abs_y']:.4f} L",
+                color="#f8fafc", fontsize=7.8, ha="right", bbox=dict(facecolor="#0f172a", alpha=0.75, edgecolor="#334155"))
+    ax.set_xlim(0.0, 0.32)
+    ax.set_ylim(-0.27, 0.27)
+    ax.set_title("C. Slit/Netrin Mediolateral Visual-Axon Guidance Phenotypes", color="#f8fafc", fontsize=10.2, fontweight="bold")
+    ax.set_xlabel("$x/L$", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("$y/L$ (offset per condition; solid = ipsilateral, dotted = contralateral)", color="#cbd5e1", fontsize=8.3)
+
+    # Panel D: eye position comparison + slit stripe-width sweep
+    ax = axes[1, 1]
+    sw = two_d["slit_sweep"]
+    ax.plot(sw["sigmas"], sw["y_eye"], "o-", color="#f59e0b", lw=2.0, markersize=4, label="Predicted $|y_{eye}|/L$ vs slit stripe $\\sigma_{slit}$")
+    ax.axhline(sw["y_eye_specimen"], color="#f43f5e", lw=1.8, ls="--", label=f"Specimen ocelli $|y|/L$ = {sw['y_eye_specimen']:.4f}")
+    ax.axvline(SIGMA_SLIT_L, color="#22c55e", lw=1.6, ls=":", label=f"A-priori $\\sigma_{{slit}}$ = {SIGMA_SLIT_L:.3f} L -> $|y|/L$ = {sw['y_eye_default']:.4f}")
+    ax.axvline(sw["sigma_star"], color="#38bdf8", lw=1.6, ls="-.", label=f"Specimen-matched $\\sigma_{{slit}}^*$ = {sw['sigma_star']:.4f} L")
+    ax.set_title("D. Photoreceptor ML Position vs Slit Stripe Width (Specimen Match)", color="#f8fafc", fontsize=10.2, fontweight="bold")
+    ax.set_xlabel("Slit midline stripe half-width $\\sigma_{slit}$ (units of $L$)", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Photoreceptor offset $|y_{eye}|/L$", color="#cbd5e1", fontsize=9)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.4, loc="lower right")
+
+    # Panel E: stochastic neoblast mitotic index (mean +/- std over seeds) per regime
+    ax = axes[2, 0]
+    reg_cols = {"wild_type_1H1T": "#22c55e", "hk_atpase_inhibited_0H2T": "#38bdf8", "ivermectin_depolarized_2H0T": "#f43f5e", "nifedipine_cav_block_0H2T": "#f59e0b"}
+    reg_lab = {"wild_type_1H1T": "WT", "hk_atpase_inhibited_0H2T": "SCH-28080", "ivermectin_depolarized_2H0T": "Ivermectin", "nifedipine_cav_block_0H2T": "Nifedipine"}
+    for rname, col in reg_cols.items():
+        d_ = neo[rname]
+        ax.plot(d_["t_h"], d_["mi_pool_smooth"] * 100.0, color=col, lw=2.0, label=f"{reg_lab[rname]} (peaks {d_['t_peak_bodywide_pooled_h']:.1f} h, {d_['t_peak_local_pooled_h']:.1f} h)")
+        ax.fill_between(d_["t_h"], (d_["mi_mean"] - d_["mi_std"]) * 100.0, (d_["mi_mean"] + d_["mi_std"]) * 100.0, color=col, alpha=0.12)
+    ax.axvline(6.0, color="#cbd5e1", lw=1.2, ls=":", label="Wenemoser & Reddien 2010 peaks (6 h, 48 h)")
+    ax.axvline(48.0, color="#cbd5e1", lw=1.2, ls=":")
+    ax.set_title("E. Stochastic Neoblast Mitotic Index (N=1500, 4 seeds, mean $\\pm$ SD)", color="#f8fafc", fontsize=10.2, fontweight="bold")
+    ax.set_xlabel("Time post-amputation (h)", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Divisions per neoblast per hour (%)", color="#cbd5e1", fontsize=9)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.2, loc="upper right")
+
+    # Panel F: blastema progeny counts & head-fated fraction per regime (+ beta_V ablation)
+    ax = axes[2, 1]
+    names = ["wild_type_1H1T", "hk_atpase_inhibited_0H2T", "ivermectin_depolarized_2H0T", "nifedipine_cav_block_0H2T"]
+    xpos = np.arange(len(names))
+    ant_c = [neo[n]["blastema_ant_cells"][0] for n in names]
+    ant_e = [neo[n]["blastema_ant_cells"][1] for n in names]
+    post_c = [neo[n]["blastema_post_cells"][0] for n in names]
+    post_e = [neo[n]["blastema_post_cells"][1] for n in names]
+    ax.bar(xpos - 0.2, ant_c, 0.38, yerr=ant_e, color="#38bdf8", alpha=0.85, capsize=3, label="Anterior blastema progeny")
+    ax.bar(xpos + 0.2, post_c, 0.38, yerr=post_e, color="#a855f7", alpha=0.85, capsize=3, label="Posterior blastema progeny")
+    ax.set_xticks(xpos)
+    ax.set_xticklabels([reg_lab[n] for n in names], color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("Post-mitotic progeny cells at 72 h", color="#cbd5e1", fontsize=9)
+    ax2 = ax.twinx()
+    _style_axis(ax2)
+    ax2.set_facecolor("none")
+    hf_a = [neo[n]["head_frac_ant"][0] for n in names]
+    hf_p = [neo[n]["head_frac_post"][0] for n in names]
+    ax2.plot(xpos - 0.2, hf_a, "o", color="#22c55e", markersize=9, markeredgecolor="#f8fafc", label="Head-fated fraction (anterior)")
+    ax2.plot(xpos + 0.2, hf_p, "s", color="#f43f5e", markersize=8, markeredgecolor="#f8fafc", label="Head-fated fraction (posterior)")
+    ax2.set_ylim(-0.05, 1.12)
+    ax2.set_ylabel("$\\mathrm{Ca}_{\\mathrm{v}}$-gated head-fated progeny fraction", color="#cbd5e1", fontsize=9)
+    abl = neo["wt_betaV_ablation"]
+    ax.text(0.02, 0.97, f"WT $\\beta_V$=0 ablation: ant {abl['blastema_ant_cells'][0]:.0f}$\\pm${abl['blastema_ant_cells'][1]:.0f}, post {abl['blastema_post_cells'][0]:.0f}$\\pm${abl['blastema_post_cells'][1]:.0f} cells; head frac {abl['head_frac_ant'][0]:.3f}",
+            transform=ax.transAxes, color="#f8fafc", fontsize=7.6, va="top", bbox=dict(facecolor="#0f172a", alpha=0.8, edgecolor="#334155"))
+    ax.set_title("F. V$_{\\mathrm{mem}}$-Coupled Blastema Outgrowth & Progeny Fate", color="#f8fafc", fontsize=10.2, fontweight="bold")
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.2, loc="center right")
+
+    fig.suptitle("Pass 3 — 2D Body-Mesh Bioelectrics, Slit/Netrin Photoreceptor Guidance & Stochastic Neoblast Kinetics (Schmidtea mediterranea)",
+                 color="#f8fafc", fontsize=12.2, fontweight="bold", y=0.993)
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.975])
+    fig.savefig(out_path, dpi=130)
+    plt.close(fig)
+
+
+# --------------------------------------------------------------------------- #
 # 4. 9-Panel Publication Figure & Animated Regeneration GIF
 # --------------------------------------------------------------------------- #
 def render_outputs(seed: int = 2011, skip_gif: bool = False) -> dict[str, Any]:
-    """Render the 9-panel comparison figure and 36-frame animated bioelectric regeneration GIF."""
+    """Render the 9-panel comparison figure, the Pass 3 6-panel 2D-mesh/neoblast figure, and the animated GIF."""
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
     verify_dataset_sha256()
 
     inv = compute_bioelectric_invariants()
     suite = evaluate_all_regimes_and_morphospace(seed=seed)
     spec = segment_planarian_specimen(SPECIMEN_PATH)
+    two_d = evaluate_2d_mesh_and_guidance(spec, seed=seed)
+    neo = evaluate_neoblast_regimes(suite["regimes"])
+    render_pass3_figure(spec, two_d, neo)
 
     wt = suite["regimes"]["wild_type_1H1T"]
     sch = suite["regimes"]["hk_atpase_inhibited_0H2T"]
@@ -802,6 +1652,13 @@ def render_outputs(seed: int = 2011, skip_gif: bool = False) -> dict[str, Any]:
         ls=":",
         label=f"Specimen ocelli ($x/L = {spec['mean_ocelli_rel_s']:.3f}$)",
     )
+    ax.axvline(
+        two_d["s_eye_model"],
+        color="#a855f7",
+        lw=1.8,
+        ls="--",
+        label=f"2D-mesh eye-field eyes ($x/L = {two_d['s_eye_model']:.3f}$, Pass 3)",
+    )
     ax.set_title("C2. Specimen Width & Ocelli vs Simulated 1H1T Head Domain", color="#f8fafc", fontsize=10.2, fontweight="bold")
     ax.set_xlabel("Normalized AP coordinate $x/L$", color="#cbd5e1", fontsize=9)
     ax.set_ylabel("Normalized width / morphogen $H$", color="#cbd5e1", fontsize=9)
@@ -888,6 +1745,8 @@ def render_outputs(seed: int = 2011, skip_gif: bool = False) -> dict[str, Any]:
         "invariants": inv,
         "suite": suite,
         "specimen": spec,
+        "two_d": two_d,
+        "neoblasts": neo,
     }
 
 
@@ -922,7 +1781,84 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     ]
     regime_rmse = float(np.sqrt(np.mean((np.array(expected_heads, dtype=float) - np.array(observed_heads, dtype=float)) ** 2)))
 
-    return [
+    # Pass 3: 2D body mesh, slit/netrin guidance, stochastic neoblasts
+    two_d = evaluate_2d_mesh_and_guidance(spec, seed=2011)
+    neo = evaluate_neoblast_regimes(suite["regimes"])
+    wt2 = two_d["sims"]["wild_type_1H1T"]
+    heads_2d = [two_d["head_counts_2d"][r] for r in ("wild_type_1H1T", "hk_atpase_inhibited_0H2T", "ivermectin_depolarized_2H0T")]
+    rmse_2d = float(np.sqrt(np.mean((np.array(heads_2d, dtype=float) - np.array([1, 0, 2], dtype=float)) ** 2)))
+    g_wt = two_d["guidance"]["wild_type"]
+    g_slit = two_d["guidance"]["slit_rnai"]
+    g_net = two_d["guidance"]["netrin_rnai"]
+    obs = two_d["specimen_ocelli"]
+    sw = two_d["slit_sweep"]
+    neo_wt = neo["wild_type_1H1T"]
+    neo_sch = neo["hk_atpase_inhibited_0H2T"]
+    neo_ivm = neo["ivermectin_depolarized_2H0T"]
+    neo_nif = neo["nifedipine_cav_block_0H2T"]
+    pass3 = [
+        {
+            "name": "2D body-mesh wild-type anterior blastema V_mem on the segmented specimen silhouette",
+            "value": round(wt2["ant_V_mV"], 4),
+            "unit": "mV",
+            "method": f"Finite-volume bistable V_mem + voltage-gated GJ PDE on the {two_d['mesh']['nx']}x{two_d['mesh']['ny']} specimen-silhouette mesh ({two_d['mesh']['n_cells']} cells), mean V over anterior cells (x/L <= 5/59)",
+            "reference_value": -20.0,
+            "reference_source": "Beane et al. (2011) Chem. Biol. 18(1):77-89 Fig. 2 depolarized anterior blastema attractor V_depol = -20 mV (1D solver gives V_A = %.2f mV)" % wt["ant_V_mV"],
+            "note": f"2D vs 1D anterior V_mem difference = {wt2['ant_V_mV'] - wt['ant_V_mV']:+.3f} mV; mediolateral SD inside the anterior blastema = {wt2['ml_std_ant_V_mV']:.3f} mV; net gap-junctional current over the mesh = {wt2['net_gj_current']:.2e} (flux conservation); 2D phenotypes = {two_d['head_counts_2d']}",
+            "derived_from": "script",
+        },
+        {
+            "name": "2D body-mesh 3-regime regenerated head count RMSE (WT / SCH-28080 / ivermectin)",
+            "value": round(rmse_2d, 4),
+            "unit": "heads RMSE",
+            "method": "RMSE between 2D finite-volume body-mesh head counts (anterior/posterior blastema mean H >= 0.50) and the empirical Beane et al. (2011) counts across WT (1H), SCH-28080 (0H) and ivermectin (2H)",
+            "reference_value": 0.0,
+            "reference_source": "Beane et al. (2011) Chem. Biol. 18(1):77-89 Figs. 1-4 (1H1T / 0H2T / 2H0T phenotypes); 1D reference RMSE = %.4f" % regime_rmse,
+            "note": f"2D predicted heads = {heads_2d} vs reference = [1, 0, 2] (RMSE = {rmse_2d:.4f}); 2D and 1D solvers agree on all three phenotypes = {heads_2d == [wt['n_heads'], sch['n_heads'], ivm['n_heads']]}",
+            "derived_from": "script",
+        },
+        {
+            "name": "2D eye-field photoreceptor mediolateral offset |y_eye|/L (a-priori slit stripe) vs segmented specimen ocelli",
+            "value": round(two_d["abs_y_eye_model_L"], 4),
+            "unit": "|y_eye| / L",
+            "method": f"Arg-max of the eye-field E = H (1 - S_slit(y)) (1 - d^2) on the 2D body mesh with the a-priori Smed-slit stripe sigma_slit = {SIGMA_SLIT_L} L (not fitted); mean |y| of the two anterior photoreceptors",
+            "reference_value": round(obs["abs_y_eye_L"], 4),
+            "reference_source": "Vendored Schmidtea mediterranea dorsal specimen (datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg) bilateral ocelli half-separation; Cebria, Guo, Jopek & Newmark (2007) Dev. Biol. 307:394-406 (Smed-slit midline stripe)",
+            "note": f"model |y_eye|/L = {two_d['abs_y_eye_model_L']:.4f} at x/L = {two_d['s_eye_model']:.4f} vs specimen {obs['abs_y_eye_L']:.4f} at x/L = {obs['s_eye']:.4f}; specimen-matched sigma_slit* = {sw['sigma_star']:.4f} L (sweep over [0.005, 0.06] L); eyes placed: WT = {two_d['n_eyes_2d']['wild_type']}, SCH-28080 = {two_d['n_eyes_2d']['sch28080']}, ivermectin = {two_d['n_eyes_2d']['ivermectin']}",
+            "derived_from": "output",
+        },
+        {
+            "name": "Slit/netrin visual-axon guidance: WT contralateral midline-crossing fraction and ipsilateral tract offset",
+            "value": round(g_wt["crossing_fraction"], 4),
+            "unit": "fraction of commissural axons crossing the midline",
+            "method": "Reduced growth-cone model in body-fitted (s, y) coordinates with c(y) = k_netrin dN/dy - k_slit dS/dy and the Robo-Slit pre/post-crossing switch; compared against Smed-slit RNAi (eta_slit = 1) and Smed-netrin RNAi (eta_netrin = 1)",
+            "reference_value": 1.0,
+            "reference_source": "Cebria & Newmark (2005) Development 132:3691-3703 (netrin RNAi: visual axons fail to reach/cross the midline); Cebria et al. (2007) Dev. Biol. 307:394-406 (slit RNAi: axons collapse onto the midline); Kidd, Bland & Goodman (1999) Cell 96:785-794",
+            "note": f"WT crossing = {g_wt['crossing_fraction']:.2f}, ipsi |y| = {g_wt['ipsi_final_abs_y']:.4f} L (analytic tract y* = {g_wt['tract_y_star_L']:.4f} L); slit RNAi ipsi |y| = {g_slit['ipsi_final_abs_y']:.4f} L (midline collapse), crossing = {g_slit['crossing_fraction']:.2f}; netrin RNAi crossing = {g_net['crossing_fraction']:.2f}, ipsi |y| = {g_net['ipsi_final_abs_y']:.4f} L",
+            "derived_from": "script",
+        },
+        {
+            "name": "Stochastic V_mem-coupled neoblast kinetics: WT anterior blastema head-fated progeny fraction",
+            "value": round(neo_wt["head_frac_ant"][0], 4),
+            "unit": "fraction of anterior progeny with head identity",
+            "method": "Agent-based inhomogeneous-Poisson neoblast division with V_mem-dependent rate and Ca_v-gated progeny fate on the 1D V_mem(x,t) history; mean over 4 seeds, 1500 neoblasts, 72 h",
+            "reference_value": 1.0,
+            "reference_source": "Beane et al. (2011) Chem. Biol. 18(1):77-89 Figs. 1-2 (100% anterior head regeneration in WT; 0% under SCH-28080 / H,K-ATPase RNAi; nifedipine blocks head fate without blocking depolarization)",
+            "note": f"WT head_frac_ant = {neo_wt['head_frac_ant'][0]:.3f} +/- {neo_wt['head_frac_ant'][1]:.3f}; SCH-28080 = {neo_sch['head_frac_ant'][0]:.3f}; ivermectin head_frac_post = {neo_ivm['head_frac_post'][0]:.3f}; nifedipine = {neo_nif['head_frac_ant'][0]:.3f}; anterior progeny WT = {neo_wt['blastema_ant_cells'][0]:.0f} +/- {neo_wt['blastema_ant_cells'][1]:.0f} vs SCH-28080 = {neo_sch['blastema_ant_cells'][0]:.0f} (blastema still forms); beta_V = 0 ablation ant progeny = {neo['wt_betaV_ablation']['blastema_ant_cells'][0]:.0f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Stochastic neoblast biphasic mitotic response: pooled body-wide and wound-local peak times (WT)",
+            "value": round(neo_wt["t_peak_local_pooled_h"], 2),
+            "unit": "h post-amputation",
+            "method": "Second (wound-localised) peak of the 3.5-h-smoothed ensemble-mean mitotic index; the first (body-wide) peak and both peak times are fitted inputs (tau_body = 6 h, tau_rise/tau_decay), the predicted quantities are the near-wound fraction of divisions at each peak",
+            "reference_value": 48.0,
+            "reference_source": "Wenemoser & Reddien (2010) Dev. Biol. 344:979-991 (biphasic mitotic peaks at ~6 h body-wide and ~48 h wound-localised)",
+            "note": f"WT pooled peaks = {neo_wt['t_peak_bodywide_pooled_h']:.1f} h and {neo_wt['t_peak_local_pooled_h']:.1f} h; near-wound fraction of divisions at peak 1 = {neo_wt['frac_near_wound_peak1'][0]:.3f} vs peak 2 = {neo_wt['frac_near_wound_peak2'][0]:.3f} (spatial localisation is the prediction, peak timing is calibrated)",
+            "derived_from": "script",
+        },
+    ]
+    base = [
         {
             "name": "Wild-type planarian anteroposterior V_mem polarization delta (V_ant - V_post)",
             "value": round(wt["delta_V_AP_mV"], 4),
@@ -984,15 +1920,18 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "derived_from": "script",
         },
     ]
+    return base + pass3
 
 
 # --------------------------------------------------------------------------- #
 # 6. Comprehensive Deterministic Self-Test Suite (`--self-test`)
 # --------------------------------------------------------------------------- #
 def self_test() -> int:
-    """Run 8 deterministic verification checks covering SHA-256 locks, bistable V_mem
+    """Run 12 deterministic verification checks covering SHA-256 locks, bistable V_mem
     equilibria, voltage-gated GJ symmetry, all 5 Beane et al. (2011) regeneration
-    phenotypes, specimen CV segmentation, and bitwise solver reproducibility."""
+    phenotypes, specimen CV segmentation, bitwise solver reproducibility, and (Pass 3)
+    the 2D body-mesh solver, slit/netrin axon-guidance phenotypes, eye-field vs specimen
+    ocelli, and the stochastic V_mem-coupled neoblast kinetics."""
     # 1. Verify SHA-256 digests of all 4 vendored dataset files
     digests = verify_dataset_sha256()
     ref = load_reference()
@@ -1056,19 +1995,83 @@ def self_test() -> int:
     assert np.allclose(r1["V"], r2["V"], atol=0.0, rtol=0.0), "Bitwise V_mem determinism check failed"
     assert np.allclose(r1["H"], r2["H"], atol=0.0, rtol=0.0), "Bitwise H morphogen determinism check failed"
 
+    # 9. (Pass 3) 2D finite-volume body mesh on the specimen silhouette: flux conservation,
+    #    1D/2D phenotype agreement, and bounded mediolateral V_mem heterogeneity
+    two_d = evaluate_2d_mesh_and_guidance(spec, seed=2011)
+    mesh = two_d["mesh"]
+    assert mesh["n_cells"] > 1000 and mesh["ny"] >= 10, f"2D body mesh too coarse: {mesh['nx']}x{mesh['ny']}, {mesh['n_cells']} cells"
+    for rname, s2 in two_d["sims"].items():
+        s1 = suite["regimes"][rname]
+        assert abs(s2["net_gj_current"]) < 1e-9, f"2D gap-junction flux not conserved in {rname}: {s2['net_gj_current']:.3e}"
+        assert s2["phenotype_code"] == s1["phenotype_code"], (
+            f"2D mesh phenotype {s2['phenotype_code']} != 1D phenotype {s1['phenotype_code']} in {rname}"
+        )
+        assert abs(s2["ant_V_mV"] - s1["ant_V_mV"]) < 2.0, f"2D vs 1D anterior V_mem differ by > 2 mV in {rname}"
+        assert s2["ml_std_ant_V_mV"] < 2.0, f"Unphysical mediolateral V_mem spread in {rname}: {s2['ml_std_ant_V_mV']:.3f} mV"
+    assert two_d["head_counts_2d"] == {"wild_type_1H1T": 1, "hk_atpase_inhibited_0H2T": 0, "ivermectin_depolarized_2H0T": 2}
+
+    # 10. (Pass 3) Slit/netrin mediolateral guidance phenotypes (Cebria & Newmark 2005; Cebria et al. 2007)
+    g_wt = two_d["guidance"]["wild_type"]
+    g_slit = two_d["guidance"]["slit_rnai"]
+    g_net = two_d["guidance"]["netrin_rnai"]
+    assert g_wt["crossing_fraction"] == 1.0, f"WT commissural axons must cross the midline, got {g_wt['crossing_fraction']}"
+    assert abs(g_wt["ipsi_final_abs_y"] - g_wt["tract_y_star_L"]) < 0.25 * g_wt["tract_y_star_L"], (
+        f"WT ipsilateral tract |y| = {g_wt['ipsi_final_abs_y']:.4f} L deviates from analytic y* = {g_wt['tract_y_star_L']:.4f} L"
+    )
+    assert g_slit["ipsi_final_abs_y"] < 0.005, f"Slit RNAi must collapse axons onto the midline, got |y| = {g_slit['ipsi_final_abs_y']:.4f} L"
+    assert all(abs(e["y"]) < 0.5 * mesh["h_rel"] + 1e-12 for e in two_d["eyes"]["slit_rnai"]["eyes"]), "Slit RNAi eye-field maxima must collapse onto the midline row"
+    assert g_net["crossing_fraction"] == 0.0, f"Netrin RNAi commissural axons must fail to cross, got {g_net['crossing_fraction']}"
+    assert two_d["n_eyes_2d"] == {"wild_type": 2, "slit_rnai": 2, "ivermectin": 4, "sch28080": 0}, f"Unexpected 2D eye counts {two_d['n_eyes_2d']}"
+
+    # 11. (Pass 3) Eye-field photoreceptor position vs the segmented specimen ocelli
+    obs = two_d["specimen_ocelli"]
+    sw = two_d["slit_sweep"]
+    assert two_d["s_eye_model"] < 0.12, f"Model eyes must lie in the anterior head, got x/L = {two_d['s_eye_model']:.4f}"
+    assert 0.5 * obs["abs_y_eye_L"] <= two_d["abs_y_eye_model_L"] <= 2.0 * obs["abs_y_eye_L"], (
+        f"Model |y_eye|/L = {two_d['abs_y_eye_model_L']:.4f} outside 2x band of specimen {obs['abs_y_eye_L']:.4f}"
+    )
+    assert float(sw["sigmas"][0]) <= sw["sigma_star"] <= float(sw["sigmas"][-1]), "Specimen-matched slit stripe width outside sweep range"
+    assert np.all(np.diff(sw["y_eye"]) >= -1e-9), "Photoreceptor offset must increase monotonically with slit stripe width"
+
+    # 12. (Pass 3) Stochastic V_mem-coupled neoblast kinetics: Ca_v-gated progeny fate per regime,
+    #     wound-localised second mitotic peak, and seed-level reproducibility
+    neo = evaluate_neoblast_regimes(suite["regimes"])
+    assert neo["wild_type_1H1T"]["head_frac_ant"][0] > 0.9 and neo["wild_type_1H1T"]["head_frac_post"][0] < 0.1
+    assert neo["hk_atpase_inhibited_0H2T"]["head_frac_ant"][0] < 0.1, "SCH-28080 anterior progeny must not adopt head identity"
+    assert neo["hk_atpase_inhibited_0H2T"]["blastema_ant_cells"][0] > 0.5 * neo["wild_type_1H1T"]["blastema_ant_cells"][0], (
+        "H,K-ATPase inhibition must mis-specify, not abolish, the anterior blastema (Beane et al. 2011)"
+    )
+    assert neo["ivermectin_depolarized_2H0T"]["head_frac_post"][0] > 0.9, "Ivermectin posterior progeny must adopt head identity"
+    assert neo["nifedipine_cav_block_0H2T"]["head_frac_ant"][0] < 0.1, "Nifedipine must block Ca_v-gated head fate"
+    for rname in ("wild_type_1H1T", "hk_atpase_inhibited_0H2T", "ivermectin_depolarized_2H0T", "nifedipine_cav_block_0H2T"):
+        d_ = neo[rname]
+        assert d_["frac_near_wound_peak2"][0] > d_["frac_near_wound_peak1"][0] + 0.2, (
+            f"Second mitotic peak must be wound-localised relative to the body-wide first peak in {rname}"
+        )
+        assert d_["t_peak_bodywide_pooled_h"] <= 12.0 < 30.0 <= d_["t_peak_local_pooled_h"], f"Biphasic mitotic peaks missing in {rname}"
+    n1 = simulate_neoblast_kinetics(wt, seed=2011, t_end_h=24.0)
+    n2 = simulate_neoblast_kinetics(wt, seed=2011, t_end_h=24.0)
+    assert np.array_equal(n1["final_positions"], n2["final_positions"]) and n1["blastema_ant_cells"] == n2["blastema_ant_cells"], (
+        "Stochastic neoblast model must be bitwise reproducible for a fixed seed"
+    )
+
     print(
-        "[2011-beane-planarian-hk-atpase-anterior] SELF-TEST PASSED (8/8 checks: SHA-256 dataset locks, "
+        "[2011-beane-planarian-hk-atpase-anterior] SELF-TEST PASSED (12/12 checks: SHA-256 dataset locks, "
         f"WT={wt['phenotype_code']} [delta_V={wt['delta_V_AP_mV']:.1f} mV], "
         f"SCH-28080={sch['phenotype_code']}, Ivermectin={ivm['phenotype_code']}, "
         f"8-Octanol={octa['phenotype_code']}, Nifedipine-ctl={nif['phenotype_code']}, "
-        f"specimen ocelli={spec['n_ocelli_detected']} at x/L={spec['mean_ocelli_rel_s']:.4f})."
+        f"specimen ocelli={spec['n_ocelli_detected']} at x/L={spec['mean_ocelli_rel_s']:.4f}; "
+        f"2D mesh {mesh['nx']}x{mesh['ny']} ({mesh['n_cells']} cells) phenotypes={two_d['head_counts_2d']}, "
+        f"WT eyes |y|/L={two_d['abs_y_eye_model_L']:.4f} vs specimen {obs['abs_y_eye_L']:.4f}, "
+        f"slit-RNAi |y|={g_slit['ipsi_final_abs_y']:.4f} L, netrin-RNAi crossing={g_net['crossing_fraction']:.0%}; "
+        f"neoblast WT head_frac_ant={neo['wild_type_1H1T']['head_frac_ant'][0]:.3f}, SCH-28080={neo['hk_atpase_inhibited_0H2T']['head_frac_ant'][0]:.3f})."
     )
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check deterministic verification suite and exit")
+    ap.add_argument("--self-test", action="store_true", help="Run 12-check deterministic verification suite and exit")
     ap.add_argument("--skip-gif", action="store_true", help="Skip rendering animated GIF")
     ap.add_argument("--seed", type=int, default=2011, help="Deterministic RNG seed")
     args = ap.parse_args()
@@ -1082,7 +2085,8 @@ def main() -> int:
     ivm = res["suite"]["regimes"]["ivermectin_depolarized_2H0T"]
     spec = res["specimen"]
     print(
-        f"[2011-beane-planarian-hk-atpase-anterior] Rendered 9-panel comparison -> {OUT_PNG.relative_to(ROOT)} "
+        f"[2011-beane-planarian-hk-atpase-anterior] Rendered 9-panel comparison -> {OUT_PNG.relative_to(ROOT)}, "
+        f"Pass 3 6-panel 2D-mesh/guidance/neoblast figure -> {OUT_PNG_PASS3.relative_to(ROOT)} "
         f"and animation -> {OUT_GIF.relative_to(ROOT)} "
         f"(WT={wt['phenotype_code']}, SCH-28080={sch['phenotype_code']}, Ivermectin={ivm['phenotype_code']}, "
         f"specimen ocelli={spec['n_ocelli_detected']} at x/L={spec['mean_ocelli_rel_s']:.4f})."

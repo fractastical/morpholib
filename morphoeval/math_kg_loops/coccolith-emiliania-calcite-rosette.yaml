@@ -20,7 +20,7 @@ equations:
     formula: "N_total = 2 * N_seg (N_V = N_R = N_seg, N_total mod 2 = 0)  and  c_V . c_R(theta_k) = (0,0,1) . (cos theta_k, sin theta_k, 0) = 0"
     lean_decl: "MathOfBiology.Loop_080.vr_total_nuclei"
     lean_theorem: "MathOfBiology.Loop_080.vr_crystal_ring_parity_and_orthogonal_c_axes"
-    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L27-L87"
+    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L31-L90"
     lean_code: |
       def vr_total_nuclei (n_seg : Nat) : Nat := 2 * n_seg
       def v_unit_c_axis (cz : Int) : Vec3Int := { x := 0, y := 0, z := cz }
@@ -31,12 +31,12 @@ equations:
     variables: "N_seg: radial coccolith shield segment count; N_total = 2*N_seg: alternating V and R calcite crystal nuclei on the proto-coccolith ring; c_V, c_R: calcite [0001] crystallographic c-axis vectors"
     role: "Establishes that the proto-coccolith ring nucleates exactly 2*N_seg alternating V-unit (vertical c-axis) and R-unit (radial c-axis) calcite crystals whose c-axes are strictly orthogonal (90 deg) around the entire baseplate periphery"
     source_citation: "Young et al. (1992) Nature 356:516-518; Didymus et al. (1993) Proc. R. Soc. B 252:259-264"
-    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L130-L245"
+    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L157-L227"
   - law_name: "Linear Proto-Coccolith Ring Circumference & Distal Shield Length Scaling Law"
     formula: "C_ring(N_seg) = N_seg * w_0  =>  R_tube = (N_seg * w_0)/(2*pi)  and  L_d(N_seg) = (N_seg * w_0)/pi + 2*L_spoke"
     lean_decl: "MathOfBiology.Loop_080.distal_shield_scaled_nm"
     lean_theorem: "MathOfBiology.Loop_080.proto_coccolith_circumference_and_distal_shield_linear_scaling"
-    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L93-L133"
+    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L93-L129"
     lean_code: |
       def proto_ring_circumference_nm (n_seg w_nm : Nat) : Nat := n_seg * w_nm
       def distal_shield_scaled_nm (n_seg w_nm two_pi_l_spoke_nm : Nat) : Nat :=
@@ -48,12 +48,12 @@ equations:
     variables: "N_seg: radial segment number; w_0 = 0.145 um: conserved R/V crystal pair nucleation pitch; R_tube: central tube radius; L_d: distal shield major axis length"
     role: "Proves that conserved crystal nucleation spacing w_0 on the organic baseplate rim forces proto-coccolith ring circumference and distal shield diameter L_d to scale linearly with segment count N_seg across morphotypes C, R, A, B/C, and B"
     source_citation: "Young et al. (1992) Nature 356:516-518; Didymus et al. (1993) Proc. R. Soc. B 252:259-264"
-    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L248-L355"
+    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L374-L426"
   - law_name: "Spherical Euler Polyhedral Packing & Trivalent Interlocking Coccosphere Law"
     formula: "V - E + F = 2 on S^2 with 3*V = 2*E  =>  V = 2*(N_cocc - 2), E = 3*(N_cocc - 2) for F = N_cocc in [12, 24]"
     lean_decl: "MathOfBiology.Loop_080.coccosphere_euler_characteristic"
     lean_theorem: "MathOfBiology.Loop_080.coccosphere_euler_polyhedral_packing_and_trivalent_interlock"
-    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L139-L185"
+    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L132-L176"
     lean_code: |
       def coccosphere_vertices (f_cocc : Int) : Int := 2 * (f_cocc - 2)
       def coccosphere_edges (f_cocc : Int) : Int := 3 * (f_cocc - 2)
@@ -66,12 +66,12 @@ equations:
     variables: "F = N_cocc: number of interlocking coccolith shields tiling the coccosphere; V: triple-coccolith junction vertices; E: pairwise overlapping suture edges; chi = 2: spherical Euler characteristic"
     role: "Governs the 3D topological closure and load-sharing overlap edge count E = 3*(N_cocc - 2) of interlocking spherical coccospheres under compressive loading"
     source_citation: "Jaya et al. (2016) Nat. Commun. 7:11904; Walker et al. (2018) Nat. Commun. 9:1-12"
-    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L358-L455"
+    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L429-L498"
   - law_name: "CAP-Polysaccharide T-Shaped Hammer-Head Expansion vs Ocean Acidification Truncation Law"
     formula: "w_head(Omega_calcite, c_CAP) = w_spoke * (1 + alpha_T * c_CAP * max(Omega_calcite - 1, 0))  =>  w_head = w_spoke when Omega_calcite <= 1 or c_CAP = 0"
     lean_decl: "MathOfBiology.Loop_080.hammer_head_width_scaled"
     lean_theorem: "MathOfBiology.Loop_080.cap_polysaccharide_hammer_expansion_and_acidification_truncation"
-    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L191-L231"
+    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L179-L215"
     lean_code: |
       def calcite_supersat_excess (omega_scaled : Nat) : Nat :=
         if omega_scaled > 100 then omega_scaled - 100 else 0
@@ -84,4 +84,41 @@ equations:
     variables: "w_spoke: radial spoke shaft width; w_head: outer T-shaped hammer-head tangential width; Omega_calcite: seawater/vesicle calcite saturation state; c_CAP: coccolith-associated polysaccharide activity"
     role: "Explains why ocean acidification (Omega_calcite < 1) or loss of acidic CAP polysaccharides truncates distal T-shaped hammer heads and destroys inter-spoke rim interlocking"
     source_citation: "Didymus et al. (1993) Proc. R. Soc. B 252:259-264; Jaya et al. (2016) Nat. Commun. 7:11904; Walker et al. (2018) Nat. Commun. 9:1-12"
-    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L458-L535"
+    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L501-L516"
+    code_locus_secondary: "2022-coccolith-emiliania-calcite-rosette.py#L230-L344"
+  - law_name: "Suture Interlock Shear Capacity vs Plate Bending Capacity Sliding/Fracture Selection Law (Pass 3 Voronoi nanoindentation contact model)"
+    formula: "S_slide_ij = mu * p_turgor * R * l_ij / 2 + sigma_lock * l_ij * d_ov, d_ov = w_shaft * (t_head_ratio - 1)/2;  F_bend = sigma_f * h^2 / alpha_p;  Pi = sum_j S_slide_ij / F_bend  =>  Pi < 1: sutures slide before the apex plate fractures (Pi = 0.29 for Morphotype A defaults); d_ov = 0 (truncated T-heads): capacity 0, coccolith shed"
+    lean_decl: "MathOfBiology.Loop_080.suture_shear_capacity"
+    lean_theorem: "MathOfBiology.Loop_080.suture_capacity_ratio_selects_sliding_vs_fracture"
+    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L218-L267"
+    lean_code: |
+      def suture_shear_capacity (sigma_lock l_edge d_ov : Nat) : Nat := sigma_lock * l_edge * d_ov
+      def overlap_depth_nm (w_shaft_nm phi_pct : Nat) : Nat := w_shaft_nm * phi_pct / 200
+      def sliding_first (lock_capacity bend_capacity : Nat) : Bool := lock_capacity < bend_capacity
+      theorem suture_capacity_ratio_selects_sliding_vs_fracture :
+          (∀ sigma l : Nat, suture_shear_capacity sigma l 0 = 0) ∧
+          (∀ sigma l d1 d2 : Nat, d1 ≤ d2 → suture_shear_capacity sigma l d1 ≤ suture_shear_capacity sigma l d2) ∧
+          overlap_depth_nm 90 72 = 32 ∧ sliding_first 1544 5400 = true ∧ sliding_first 6000 5400 = false
+    variables: "sigma_lock: organic-cement interlock shear strength (model assumption, swept 5-400 MPa); l_ij: Voronoi suture length; d_ov: T-hammer overlap depth; mu, p_turgor: Coulomb friction on the turgor hoop force; sigma_f, h, alpha_p: calcite fracture strength, shield thickness, plate bending coefficient; Pi: capacity ratio"
+    role: "Selects the first failure event of the flat-punch-indented Voronoi coccosphere: truncated T-heads (ocean acidification / CAP ablation) have zero interlock capacity and are shed; interlocked sutures slide first when Pi < 1, after which the apex plate fractures at F_bend and the crack is arrested because neighbours receive only a fraction of the load (sigma_neigh/sigma_f = 0.28)"
+    source_citation: "Jaya et al. (2016) Nat. Commun. 7:11904 (coccolith sliding and crack arrest at coccolith boundaries); Reissner (1946) J. Math. Phys. 25:80-85 (spherical shell point-load stiffness)"
+    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L578-L806"
+    code_locus_secondary: "2022-coccolith-emiliania-calcite-rosette.py#L529-L575"
+  - law_name: "Golgi Coccolith-Vesicle Rim Tension Anisotropy Baseplate Aspect Law (Pass 3)"
+    formula: "tau(psi) kappa(psi) = p with tau(psi) = tau_0 (1 + (lambda - 1) sin^2 psi)  =>  h(psi) = (tau_0/p)[(1 + lambda)/2 + ((lambda - 1)/6) cos 2 psi]  =>  b/a = (2 + lambda)/(1 + 2 lambda), lambda = (2 - b/a)/(2 b/a - 1); b/a = 0.8478 (e = 0.5303) at lambda* = 1.656"
+    lean_decl: "MathOfBiology.Loop_080.baseplate_aspect_num"
+    lean_theorem: "MathOfBiology.Loop_080.vesicle_rim_tension_anisotropy_sets_baseplate_aspect"
+    lean_locus: "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L270-L314"
+    lean_code: |
+      def baseplate_aspect_num (lam_milli : Nat) : Nat := 2000 + lam_milli
+      def baseplate_aspect_den (lam_milli : Nat) : Nat := 1000 + 2 * lam_milli
+      theorem vesicle_rim_tension_anisotropy_sets_baseplate_aspect :
+          baseplate_aspect_num 1000 = baseplate_aspect_den 1000 ∧
+          (∀ lam : Nat, 1000 < lam → baseplate_aspect_num lam < baseplate_aspect_den lam) ∧
+          (∀ l1 l2 : Nat, l1 < l2 → baseplate_aspect_num l2 * baseplate_aspect_den l1 < baseplate_aspect_num l1 * baseplate_aspect_den l2) ∧
+          847 * baseplate_aspect_den 1656 < 1000 * baseplate_aspect_num 1656 ∧
+          1000 * baseplate_aspect_num 1656 < 848 * baseplate_aspect_den 1656
+    variables: "psi: outward-normal angle of the vesicle rim; tau_0: rim line tension at the major-axis ends; lambda = tau_minor-end / tau_major-end: cytoskeletal tension anisotropy; p: luminal pressure (Lagrange multiplier of the conserved vesicle area); h(psi): support function; a, b: baseplate semi-axes"
+    role: "Explains the elliptical organic baseplate (and hence the elliptical V/R proto-coccolith ring and distal shield, b/a = 0.8478) as the Wulff-type equilibrium of a pressurised vesicle rim whose cytoskeletal tension is anisotropic; isotropic tension gives a circle, b/a decreases strictly with lambda and never falls below 1/2. lambda* is inferred from the SEM aspect ratio (calibration), verified by area-conserving contour relaxation to 0.2 %"
+    source_citation: "Young et al. (1992) Nature 356:516-518; Didymus et al. (1993) Proc. R. Soc. B 252:259-264 (baseplate laid down inside the Golgi-derived coccolith vesicle before calcite nucleation)"
+    code_locus: "2022-coccolith-emiliania-calcite-rosette.py#L860-L989"

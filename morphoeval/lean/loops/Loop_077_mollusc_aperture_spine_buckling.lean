@@ -123,4 +123,68 @@ theorem moulton_episodic_varix_rest_period (A0_sq gamma_c dgamma : Nat) :
   · simp [episodic_varix_amplitude_sq]
   · simp [episodic_varix_amplitude_sq]
 
+-- ============================================================================
+-- Law 4 (Pass 3): Oblique Spiral-Cord / Varix Intersection Registration
+-- ============================================================================
+
+/-- Number of spiral-cord / varix intersections along a margin of length `L` when
+    cords of spacing `lam_c` (measured normal to the cords) cross the margin at
+    obliquity `psi` with `cos psi = cos_num / cos_den`: the spacing of the intersections
+    along the varix is `d = lam_c / cos psi = lam_c * cos_den / cos_num`, so the count is
+    `L / d = L * cos_num / (lam_c * cos_den)` (natural-number division). -/
+def cord_varix_intersections (L lam_c cos_num cos_den : Nat) : Nat :=
+  L * cos_num / (lam_c * cos_den)
+
+/-- Free (untemplated) spine count `N_1 = L / lambda_1` of the Moulton–Chirat law. -/
+def free_spine_count (L lam1 : Nat) : Nat :=
+  L / lam1
+
+/-- Theorem 4 (`cord_varix_intersection_registration`):
+    (1) Whenever the oblique cord spacing projected onto the varix equals the free
+        buckling wavelength (`lam_c * cos_den = lam1 * cos_num`, i.e. `lam_c = lam1 cos psi`)
+        the number of cord/varix intersections equals the free spine count, giving a 1:1
+        cord-templated spine row (the centre of the locking tongue).
+    (2) Concrete 3-4-5 instance: `lam_c = 4`, `cos psi = 4/5`, `L = 80` gives intersection
+        spacing `5` along the varix, `16` intersections, and `16` free spines with `lam1 = 5`.
+    (3) Rotating the same cords to `cos psi = 3/5` (steeper obliquity) changes the
+        intersection count to `12 ≠ 16`: registration is lost without re-locking. -/
+theorem cord_varix_intersection_registration
+    (L lam1 lam_c cos_num cos_den : Nat) (h : lam_c * cos_den = lam1 * cos_num)
+    (hc : 0 < cos_num) :
+    cord_varix_intersections L lam_c cos_num cos_den = free_spine_count L lam1 ∧
+    cord_varix_intersections 80 4 4 5 = 16 ∧
+    free_spine_count 80 5 = 16 ∧
+    cord_varix_intersections 80 4 3 5 = 12 := by
+  refine ⟨?_, by decide, by decide, by decide⟩
+  unfold cord_varix_intersections free_spine_count
+  rw [h]
+  exact Nat.mul_div_mul_right L lam1 hc
+
+-- ============================================================================
+-- Law 5 (Pass 3): Ontogenetic Spine-Count Conservation Exponent
+-- ============================================================================
+
+/-- Four-times the log–log exponent of the primary spine count across instars,
+    `4 * (1 - 3 beta / 4) = 4 - 3 beta`, written for a rational allometric exponent
+    `beta = beta_num / beta_den` as the integer `4 * beta_den - 3 * beta_num`
+    (so the true exponent is this value divided by `4 * beta_den`). Here
+    `h_1 ∝ L^beta` and `N_1 = L / lambda_1(h_1) ∝ L^(1 - 3 beta / 4)`. -/
+def spine_count_exponent_num (beta_num beta_den : Int) : Int :=
+  4 * beta_den - 3 * beta_num
+
+/-- Theorem 5 (`ontogenetic_spine_count_conservation`):
+    (1) The spine count is conserved across instars (zero exponent) iff `3 beta = 4 beta_den`,
+        i.e. `beta = 4/3` (mantle thickness must grow faster than isometrically).
+    (2) Isometric growth `beta = 1` gives a positive exponent (`4 - 3 = 1`, i.e. `N_1 ∝ L^(1/4)`,
+        spines are added across instars); `beta = 3/2` gives a negative exponent
+        (`4*2 - 3*3 = -1`, spines are lost). -/
+theorem ontogenetic_spine_count_conservation (beta_num beta_den : Int) :
+    (spine_count_exponent_num beta_num beta_den = 0 ↔ 3 * beta_num = 4 * beta_den) ∧
+    spine_count_exponent_num 4 3 = 0 ∧
+    spine_count_exponent_num 1 1 = 1 ∧
+    spine_count_exponent_num 3 2 = -1 := by
+  refine ⟨?_, by decide, by decide, by decide⟩
+  unfold spine_count_exponent_num
+  omega
+
 end MathOfBiology.Loop_077

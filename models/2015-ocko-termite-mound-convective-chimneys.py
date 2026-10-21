@@ -47,7 +47,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage, signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "termite_mound_convective_chimneys"
 REF_JSON = DATASET_DIR / "termite_mound_convective_chimneys_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "macrotermes_cathedral_mound_specimen.jpg"

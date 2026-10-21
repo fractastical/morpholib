@@ -62,7 +62,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import stats
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent
 DATASET_DIR = HERE / "datasets" / "gdnf_ret_ureteric_kidney"
 REF_JSON = DATASET_DIR / "gdnf_ret_ureteric_kidney_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "kidney_ureteric_tree_specimen.jpg"

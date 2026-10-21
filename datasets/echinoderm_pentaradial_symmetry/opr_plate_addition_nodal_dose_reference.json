@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "dataset_id": "meinhardt-2005-echinoderm-pentaradial-symmetry-pass3-opr-nodal-v1",
+    "title": "Pass 3 reference tables for slot-075: Mooi & David (1998/2008) Ocular Plate Rule domed-test plate-addition solver and Duboc et al. (2005) / Luo & Su (2012) continuous Nodal/BMP2-4 dose-response gradients",
+    "pass": 3,
+    "created": "2026-10-19",
+    "license": "CC BY 4.0",
+    "consumed_by": "2005-meinhardt-echinoderm-pentaradial-symmetry.py (simulate_opr_test_plate_addition, simulate_nodal_bmp_dose_response)",
+    "provenance_note": "All numerical parameters below are reduced-model settings chosen by the slot-075 agent and are labelled 'assumption' unless a 'source' key names a primary-literature statement. DOIs added in Pass 3 were transcribed offline and NOT re-verified online (campaign rule: no WebFetch/WebSearch); see 'pass3_sources'.",
+    "pass3_sources": [
+      {
+        "id": "mooidavid2008",
+        "citation": "Mooi R, David B (2008). Radial symmetry, the anterior/posterior axis, and echinoderm Hox genes. Annual Review of Ecology, Evolution, and Systematics 39:43-62.",
+        "doi": "10.1146/annurev.ecolsys.39.110707.173521",
+        "doi_verified_offline_only": true,
+        "used_for": "Ocular Plate Rule (OPR): new ambulacral plates are added only at the ocular (terminal) plate and displaced away from it; each ambulacrum is a biserial pair of columns; 5 ambulacra x 2 + 5 interambulacra x 2 = 20 meridional columns in regular euechinoids"
+      },
+      {
+        "id": "zachos2009",
+        "citation": "Zachos LG (2009). A new computational growth model for sea urchin skeletons. Journal of Theoretical Biology 259(3):646-657.",
+        "doi": "10.1016/j.jtbi.2009.04.007",
+        "doi_verified_offline_only": true,
+        "used_for": "Computational precedent for plate addition at the apical (ocular/genital) end of each column when the gap next to the apical system exceeds a nucleation threshold, with accretionary growth of existing plates on a growing domed test"
+      },
+      {
+        "id": "raup1968",
+        "citation": "Raup DM (1968). Theoretical morphology of echinoid growth. Journal of Paleontology 42(S5, Memoir 2):50-63.",
+        "doi": null,
+        "doi_verified_offline_only": true,
+        "used_for": "Plate accretion + plate addition as the two growth modes of the echinoid corona; older (larger) plates lie toward the ambitus/peristome, youngest toward the apex"
+      },
+      {
+        "id": "luosu2012",
+        "citation": "Luo Y-J, Su Y-H (2012). Opposing Nodal and BMP signals regulate left-right asymmetry in the sea urchin larva. PLoS Biology 10(10):e1001402.",
+        "doi": "10.1371/journal.pbio.1001402",
+        "doi_verified_offline_only": true,
+        "used_for": "BMP2/4 signaling (pSmad1/5/8) is required on the left for adult-rudiment (hydrocoel) formation while right-sided Nodal represses it; opposing gradients across the larval midline"
+      }
+    ]
+  },
+  "opr_plate_addition_model": {
+    "description": "Reduced Ocular Plate Rule solver on a domed (spherical-cap) test. Each of the 20 meridional columns holds an ordered list of plates (oldest at the peristome, youngest at the ocular/genital boundary). Test radius R(t) grows along a saturating (von Bertalanffy-shaped) dimensionless curve; existing plates grow logistically toward a zone-specific maximum height; when the apical gap L(t) - sum(h_i) >= h_nuc a new plate is nucleated at the ocular end (OPR). Ambulacral column azimuths are taken from the m=5 hydrocoel-ring PDE lobe angles, which is how the ring PDE is coupled to the 3D test.",
+    "geometry": {
+      "R_metamorphosis_dimensionless": 1.0,
+      "growth_factor_final": 40.0,
+      "growth_factor_note": "assumption: S. purpuratus juvenile test ~0.5 mm at metamorphosis vs adult tests of several cm, i.e. a linear growth factor of order 10^2; 40 keeps default plate counts in the tens per column and the render under budget",
+      "ocular_colatitude_deg": 22.0,
+      "peristome_colatitude_deg": 150.0,
+      "colatitude_note": "assumption: apical system occupies the polar cap above 22 deg; the oral peristome membrane occupies the cap below 150 deg colatitude"
+    },
+    "plate_kinetics": {
+      "h_nuc_ambulacral": 1.0,
+      "h_max_over_h_nuc_ambulacral": 2.0,
+      "h_nuc_interambulacral_over_ambulacral": 1.6,
+      "h_max_over_h_nuc_interambulacral": 3.75,
+      "logistic_accretion_gain": 1.0,
+      "loven_primordial_enlargement_factor": 1.5,
+      "note": "assumption: heights are in units of R_meta (meridional column length at metamorphosis = 2.234 R_meta, i.e. ~2 ambulacral / ~1 interambulacral primordial plates per column). Interambulacral plates nucleate larger and reach a larger terminal size than ambulacral primary plates, giving roughly three ambulacral primary elements per interambulacral plate height (trigeminate compounding in camarodont/toxopneustid echinoids such as Tripneustes gratilla). The Lovén enlargement factor (applied to both the nucleation and terminal size of the enlarged primary peristomial plate Ib, IIb, IIIa, IVa, Va) seeds the half-plate offset between columns a and b that produces the alternating biserial (zigzag) suture."
+    },
+    "structural_reference_values": [
+      {"name": "meridional_column_count", "value": 20, "unit": "columns", "source": "Lovén (1874); Mooi & David (1998, 2008): 5 biserial ambulacra (10 columns) + 5 biserial interambulacra (10 columns) in regular euechinoids"},
+      {"name": "columns_per_ambulacrum", "value": 2, "unit": "columns", "source": "Lovén (1874) half-ambulacra a and b"},
+      {"name": "newest_plate_adjacent_to_ocular_fraction", "value": 1.0, "unit": "fraction of columns", "source": "Ocular Plate Rule (Mooi & David 1998, 2008)"},
+      {"name": "plate_count_vs_test_size_spearman_r", "value": 1.0, "unit": "Spearman rho", "source": "OPR: plate addition continues throughout growth (Mooi & David 1998; Zachos 2009)"},
+      {"name": "ambulacral_over_interambulacral_primary_plate_ratio", "value": 3.0, "unit": "ratio", "source": "approximate: trigeminate compound ambulacral plates (3 primary elements per compound plate) in Toxopneustidae / camarodonts; treated as an order-of-magnitude target, not a measured S. purpuratus count"},
+      {"name": "biserial_alternation_phase_offset", "value": 0.5, "unit": "fraction of local plate height", "source": "Lovén (1874): plates of columns a and b alternate (zigzag median suture); 0.5 = perfect alternation"}
+    ]
+  },
+  "nodal_bmp_dose_response_model": {
+    "description": "Steady-state 1D reaction-diffusion gradients across the normalised larval left-right axis x in [-1, 1] (x = 0 stomodeum / oral midline; x = -0.55 left coelomic pouch (hydrocoel + left somatocoel), x = +0.55 right coelomic pouch (right somatocoel)). Nodal: -lambda_N^2 N'' + N = dose_R * S(x - x_src) + dose_L * S(x + x_src), no-flux boundaries. BMP2/4: -lambda_B^2 B'' + B = b_stom * S_stom(x) + beta_ind * Hill(N; K_ind, n). Pouch hydrocoel competence P = Hill_act(B(x_p); K_B, n) * [1 - Hill(N(x_p); K_N, n)]. Expected hydrocoel rings = P_L + P_R, expected primary podia = 5 * (P_L + P_R). At dose extremes this reduces to the discrete Law 3 of Duboc et al. (2005).",
+    "parameters": {
+      "n_x": 241,
+      "nodal_source_center_x": 0.62,
+      "nodal_source_half_width": 0.08,
+      "nodal_decay_length": 0.22,
+      "nodal_repression_K": 0.05,
+      "bmp_stomodeal_amplitude": 0.6,
+      "bmp_stomodeal_half_width": 0.12,
+      "bmp_nodal_induction_beta": 0.5,
+      "bmp_nodal_induction_K": 0.05,
+      "bmp_decay_length": 0.45,
+      "bmp_activation_K": 0.015,
+      "hill_coefficient": 4,
+      "pouch_x": 0.55,
+      "note": "assumption: all lengths normalised to the larval half-width; decay lengths, Hill constants and source amplitudes are reduced-model choices tuned only so that the three canonical Duboc (2005) conditions are reproduced (WT 1x5, Nodal MO 2x5, bilateral Nodal GOF 0). Right-sided ectodermal Nodal source and oral (stomodeal) BMP2/4 source follow Duboc et al. (2005); the BMP requirement on the left for rudiment formation follows Luo & Su (2012)."
+    },
+    "canonical_dose_conditions": [
+      {"condition_id": "wild_type", "dose_left": 0.0, "dose_right": 1.0, "reference_rings": 1, "reference_primary_podia": 5, "source": "Duboc et al. (2005) Dev. Cell 9:147-158 Fig. 1"},
+      {"condition_id": "nodal_morpholino", "dose_left": 0.0, "dose_right": 0.0, "reference_rings": 2, "reference_primary_podia": 10, "source": "Duboc et al. (2005) Dev. Cell 9:147-158 Fig. 4"},
+      {"condition_id": "nodal_overexpress", "dose_left": 1.0, "dose_right": 1.0, "reference_rings": 0, "reference_primary_podia": 0, "source": "Duboc et al. (2005) Dev. Cell 9:147-158 Fig. 5"}
+    ],
+    "dose_sweep": {"dose_min": 0.0, "dose_max": 2.0, "n_dose": 41},
+    "structural_reference_values": [
+      {"name": "right_pouch_competence_vs_right_nodal_dose_spearman_r", "value": -1.0, "unit": "Spearman rho", "source": "Duboc et al. (2005): Nodal represses right hydrocoel; monotone repression"},
+      {"name": "max_abs_deviation_of_continuous_podia_from_discrete_law_at_canonical_doses", "value": 0.0, "unit": "podia", "source": "Lean theorem duboc_nodal_left_right_rudiment_multiplicity (discrete limit)"}
+    ]
+  }
+}

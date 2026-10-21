@@ -1,0 +1,273 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sumper-diatom-frustule-phase-sep> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation (Pass 3: centrifugal precipitation front + 3-stage single-domain quench) — Morphometric validation: 86/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`measure_morphoeval()` now returns 14 reference-anchored measurements (7 new) and the new metrics are well-defined: the gradient-tensor anisotropy A in the outer-40% annulus, the front Peclet number, exact mass drift over 6800 steps, per-tier counts/pitches/diameters converted to nm, and inter-tier pitch ratio a_2/a_3 = 5.108 vs Sumper 5.067 and d_3 = 46.5 vs 42 nm are genuine literature comparisons (+). Deductions, and the reason this dimension falls: three of the seven new measurements use model-internal references — the margin anisotropy uses the model's own 3-seed isotropic null, the radial-minus-concentric contrast uses the analytic null 0, and the SEM row-coherence C_6 uses the isotropic simulation as the reference for a specimen value (roles inverted) — none is an empirical literature value (-4); the Pass 2 method/note strings still hard-code '24.01 px, CV=0.133 ... 34.80 px ... n=139' and 'relative error=2.1%' instead of computing them, and the Pass 2 |psi_6| reference 0.75 has no literature provenance (-3); the two-stage 'nested cribrum sub-pores per foramen' = 2.04 vs ref 7.0 is a large miss that no note discusses (-2); the isotropic null is estimated from 3 seeds with a standard deviation (0.11) comparable to its mean and the self-test tolerance |A| < 0.35 is loose (-1). Net 88 -> 86." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "models/2002-sumper-diatom-frustule-phase-sep.py L1321–L1339: Margin anisotropy and contrast measurements reference the model's own null (-0.110) and the analytic 0, not an empirical value <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L1321-L1339>",
+            "models/2002-sumper-diatom-frustule-phase-sep.py L1394–L1412: Pass 2 d_1/a_1 method string hard-codes 24.01 px / 34.80 px / n=139 and 'relative error=2.1%' (L1397, L1401); |psi_6| reference 0.75 (L1409) has no literature provenance <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L1394-L1412>",
+            "models/2002-sumper-diatom-frustule-phase-sep.py L1424–L1432: Two-stage nested cribrum per foramen = 2.04 vs reference 7.0; miss not discussed <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L1424-L1432>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-quench-simulated-inter-tier-pitch-ratio-a-2-a-3-cribrum-cribrella>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-quench-simulated-tertiary-cribrella-pore-diameter-d-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-single-domain-quench-tertiary-cribrella-pores-per-cribrum-pore>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-cahn-hilliard-conserved-mean-order-parameter-phi-drift>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-cahn-hilliard-interfacial-thickness-sweep-wavelength-correlation-r-lambda-lambda-c>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-front-quench-radial-minus-concentric-morphology-contrast-a-v-0-10-a-v-0-40>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-front-quench-total-order-parameter-conservation-with-frozen-silica-mass-re-projection>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-precipitation-front-quench-margin-radial-anisotropy-a-at-slow-front-speed-v-0-10-px-t>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-foramen-diameter-to-pitch-ratio-d-1-a-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-foramen-row-long-range-coherence-c-6-vs-isotropic-cahn-hilliard-stage-1-quench>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-primary-foramen-6-fold-hexatic-order-psi-6>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-outside-spinodal-negative-control-phi0-0-65-pore-count-vs-spinodal-droplet-regime>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-sumper-2002-3-tier-pore-diameter-log-linear-scaling-correlation-foramen-cribrum-cribrella>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-two-stage-hierarchical-quench-nested-cribrum-sub-pores-per-foramen>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-morphometric-validation-2> ;
+        pk:hasScore "0.86"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-quench-simulated-inter-tier-pitch-ratio-a-2-a-3-cribrum-cribrella> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3-stage 512x512 quench: simulated inter-tier pitch ratio a_2 / a_3 (cribrum / cribrella) = 5.1079 ratio" ;
+        dct:description "a_1/a_2 sim = 4.111 (ref 4.868); sim pitches px = [150.3, 36.6, 7.2] vs targets [148.0, 30.4, 6.0]" ;
+        schema:measurementTechnique "mean nearest-neighbour centroid pitch of tier-2 pores divided by that of tier-3 pores in the same 512^2 domain" ;
+        schema:name "3-stage 512x512 quench: simulated inter-tier pitch ratio a_2 / a_3 (cribrum / cribrella)" ;
+        schema:unitText "ratio" ;
+        schema:value "5.1079" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-quench-simulated-inter-tier-pitch-ratio-a-2-a-3-cribrum-cribrella-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-quench-simulated-inter-tier-pitch-ratio-a-2-a-3-cribrum-cribrella-reference> a schema:PropertyValue ;
+        dct:source "Sumper (2002) / Losic et al. (2006): a_2 = 380 nm, a_3 = 75 nm -> 5.067" ;
+        schema:value "5.0667" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-quench-simulated-tertiary-cribrella-pore-diameter-d-3> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3-stage 512x512 quench: simulated tertiary cribrella pore diameter d_3 = 46.5 nm" ;
+        dct:description "d_2 sim = 242 nm (ref 220); resolution floor 3.4 px at this scale" ;
+        schema:measurementTechnique "mean equivalent diameter of tier-3 connected pores (>= 6 px) x 12.5 nm/px" ;
+        schema:name "3-stage 512x512 quench: simulated tertiary cribrella pore diameter d_3" ;
+        schema:unitText "nm" ;
+        schema:value "46.5" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-quench-simulated-tertiary-cribrella-pore-diameter-d-3-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-quench-simulated-tertiary-cribrella-pore-diameter-d-3-reference> a schema:PropertyValue ;
+        dct:source "Sumper (2002) Science 295:2430 / Losic et al. (2006) Table 1: d_3 = 42 nm" ;
+        schema:value "42.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-single-domain-quench-tertiary-cribrella-pores-per-cribrum-pore> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3-stage 512x512 single-domain quench: tertiary cribrella pores per cribrum pore = 5.0 cribrella / cribrum pore" ;
+        dct:description "counts foramina/cribrum/cribrella = [12, 48, 225], cribrum per foramen = 4.80 (ref 12)" ;
+        schema:measurementTechnique "connected tier-3 pores (eps_3 = 0.603) inside each frozen-wall-confined tier-2 cribrum pore chamber on one 512^2 grid at 12.5 nm/px" ;
+        schema:name "3-stage 512x512 single-domain quench: tertiary cribrella pores per cribrum pore" ;
+        schema:unitText "cribrella / cribrum pore" ;
+        schema:value "5.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-single-domain-quench-tertiary-cribrella-pores-per-cribrum-pore-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-3-stage-512x512-single-domain-quench-tertiary-cribrella-pores-per-cribrum-pore-reference> a schema:PropertyValue ;
+        dct:source "Sumper (2002) Science 295:2430 Fig. 3-4 centered-hexagonal H(1) = 7 cribrella per cribrum pore (reference JSON tier 3 subpores_per_parent)" ;
+        schema:value "7.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-cahn-hilliard-conserved-mean-order-parameter-phi-drift> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Cahn-Hilliard conserved mean order parameter <phi> drift = 0.0 order parameter drift" ;
+        dct:description "mean(phi)=-0.30000000 vs exact phi0=-0.30000000" ;
+        schema:measurementTechnique "absolute mass conservation drift |<phi(x,t)> - phi0| after 650 semi-implicit spectral steps" ;
+        schema:name "Cahn-Hilliard conserved mean order parameter <phi> drift" ;
+        schema:unitText "order parameter drift" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-cahn-hilliard-conserved-mean-order-parameter-phi-drift-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-cahn-hilliard-conserved-mean-order-parameter-phi-drift-reference> a schema:PropertyValue ;
+        dct:source "Lean 4 Theorem MathOfBiology.Loop_071.cahn_hilliard_mass_conservation_zero_mode (sigma(0) = 0)" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-cahn-hilliard-interfacial-thickness-sweep-wavelength-correlation-r-lambda-lambda-c> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Cahn-Hilliard interfacial thickness sweep wavelength correlation r(lambda*, lambda_c) = 0.9865 Pearson r" ;
+        dct:description "p=1.87e-03, RMSE=0.95 px across 5 epsilon regimes" ;
+        schema:measurementTechnique "5-point interfacial parameter sweep across epsilon in {0.75, 1.00, 1.25, 1.50, 1.75} comparing sub-bin FFT wavelength lambda* against analytical spinodal lambda_c = 2*pi/k_c" ;
+        schema:name "Cahn-Hilliard interfacial thickness sweep wavelength correlation r(lambda*, lambda_c)" ;
+        schema:unitText "Pearson r" ;
+        schema:value "0.9865" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-cahn-hilliard-interfacial-thickness-sweep-wavelength-correlation-r-lambda-lambda-c-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-cahn-hilliard-interfacial-thickness-sweep-wavelength-correlation-r-lambda-lambda-c-reference> a schema:PropertyValue ;
+        dct:source "Lenoci & Camp (2008) Langmuir 24:217 Section 2 linear spinodal wavelength scaling lambda_c proportional to epsilon" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-front-quench-radial-minus-concentric-morphology-contrast-a-v-0-10-a-v-0-40> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Centrifugal front quench: radial-minus-concentric morphology contrast A(v=0.10) - A(v=0.40) = 1.5895 anisotropy index difference" ;
+        dct:description "A(0.10) = +0.647, A(0.40) = -0.942" ;
+        schema:measurementTechnique "same model at two front speeds; positive values mean slow fronts give radial costae and fast fronts give front-parallel (concentric) lamellae" ;
+        schema:name "Centrifugal front quench: radial-minus-concentric morphology contrast A(v=0.10) - A(v=0.40)" ;
+        schema:unitText "anisotropy index difference" ;
+        schema:value "1.5895" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-front-quench-radial-minus-concentric-morphology-contrast-a-v-0-10-a-v-0-40-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-front-quench-radial-minus-concentric-morphology-contrast-a-v-0-10-a-v-0-40-reference> a schema:PropertyValue ;
+        dct:source "isotropic null (no front) has no speed dependence: contrast = 0; sign predicted by Furukawa (1992)" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-front-quench-total-order-parameter-conservation-with-frozen-silica-mass-re-projection> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Centrifugal front quench total order-parameter conservation with frozen-silica mass re-projection = 0.0 |<phi(T)> - <phi(0)>|" ;
+        dct:description "6800 steps, final front radius 76.0 px" ;
+        schema:measurementTechnique "mean absolute drift of the domain-averaged order parameter after the frozen-region projection step at every time step" ;
+        schema:name "Centrifugal front quench total order-parameter conservation with frozen-silica mass re-projection" ;
+        schema:unitText "|<phi(T)> - <phi(0)>|" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-front-quench-total-order-parameter-conservation-with-frozen-silica-mass-re-projection-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-front-quench-total-order-parameter-conservation-with-frozen-silica-mass-re-projection-reference> a schema:PropertyValue ;
+        dct:source "Lean 4 Theorem MathOfBiology.Loop_071.cahn_hilliard_mass_conservation_zero_mode & frozen_front_monotone_irreversible" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-precipitation-front-quench-margin-radial-anisotropy-a-at-slow-front-speed-v-0-10-px-t> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Centrifugal precipitation-front quench: margin radial anisotropy A at slow front speed (v = 0.10 px/t) = 0.6473 anisotropy index (+1 radial lamellae, 0 isotropic, -1 concentric)" ;
+        dct:description "Pe = v/(lambda_c sigma_max) = 0.045; core A = +0.617; fast front (v = 0.40) margin A = -0.942 (concentric); null A = -0.110 +/- 0.112 (3 seeds); the vendored SEM has no valve-margin view, so no direct specimen value exists for A (Pass 4 item)" ;
+        schema:measurementTechnique "gradient-tensor anisotropy <|d_theta phi|^2 - |d_r phi|^2>/<|grad phi|^2> in the outer 40% annulus of a 160^2 disc swept by a(r,t)=tanh((R0+v t - r)/w) with lagging frozen silica front (lag = 1.0 lambda_c), phi0 = 0" ;
+        schema:name "Centrifugal precipitation-front quench: margin radial anisotropy A at slow front speed (v = 0.10 px/t)" ;
+        schema:unitText "anisotropy index (+1 radial lamellae, 0 isotropic, -1 concentric)" ;
+        schema:value "0.6473" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-precipitation-front-quench-margin-radial-anisotropy-a-at-slow-front-speed-v-0-10-px-t-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-centrifugal-precipitation-front-quench-margin-radial-anisotropy-a-at-slow-front-speed-v-0-10-px-t-reference> a schema:PropertyValue ;
+        dct:source "isotropic bulk-quench null (same disc, a = +1 everywhere, no front, no freezing; mean of 3 seeds); Furukawa (1992) Physica A 180:128 directional-quench morphology transition predicts front-perpendicular lamellae at slow front speed" ;
+        schema:value "-0.1097" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-foramen-diameter-to-pitch-ratio-d-1-a-1> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Coscinodiscus wailesii SEM foramen diameter-to-pitch ratio (d_1 / a_1) = 0.6897 ratio" ;
+        dct:description "n=139 pores, diameter CV=0.133, pitch CV=0.075, relative error=2.1%" ;
+        schema:measurementTechnique "segmented foramen pore equivalent diameter (24.01 px, CV=0.133) / nearest-neighbor pitch (34.80 px, CV=0.075) across n=139 pores on SHA-256-locked SEM ROI" ;
+        schema:name "Coscinodiscus wailesii SEM foramen diameter-to-pitch ratio (d_1 / a_1)" ;
+        schema:unitText "ratio" ;
+        schema:value "0.6897" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-foramen-diameter-to-pitch-ratio-d-1-a-1-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-foramen-diameter-to-pitch-ratio-d-1-a-1-reference> a schema:PropertyValue ;
+        dct:source "Sumper (2002) Science 295:2430 & Losic et al. (2006) Table 1 (d_1=1250 nm / a_1=1850 nm = 0.6757)" ;
+        schema:value "0.6757" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-foramen-row-long-range-coherence-c-6-vs-isotropic-cahn-hilliard-stage-1-quench> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Coscinodiscus wailesii SEM foramen-row long-range coherence C_6 vs isotropic Cahn-Hilliard Stage-1 quench = 0.618 C_6 = |<exp(6 i theta_bond)>| over all NN bonds" ;
+        dct:description "SEM C_6 = 0.618; isotropic sim C_6 = 0.209" ;
+        schema:measurementTechnique "lab-frame bond-orientation coherence of the n=139 segmented SEM foramina (straight fasciculate rows) vs the same statistic on the isotropic Stage-1 simulation droplets" ;
+        schema:name "Coscinodiscus wailesii SEM foramen-row long-range coherence C_6 vs isotropic Cahn-Hilliard Stage-1 quench" ;
+        schema:unitText "C_6 = |<exp(6 i theta_bond)>| over all NN bonds" ;
+        schema:value "0.618" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-foramen-row-long-range-coherence-c-6-vs-isotropic-cahn-hilliard-stage-1-quench-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-foramen-row-long-range-coherence-c-6-vs-isotropic-cahn-hilliard-stage-1-quench-reference> a schema:PropertyValue ;
+        dct:source "isotropic bulk Cahn-Hilliard quench (this script, Stage 1): the long-range row order of the valve is NOT produced by an isotropic quench and motivates the directional (centrifugal) front" ;
+        schema:value "0.2088" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-primary-foramen-6-fold-hexatic-order-psi-6> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Coscinodiscus wailesii SEM primary foramen 6-fold hexatic order |psi_6| = 0.7638 |psi_6|" ;
+        dct:description "SEM |psi_6|=0.7638 vs simulated Cahn-Hilliard |psi_6|=0.5862" ;
+        schema:measurementTechnique "mean 6-nearest-neighbor bond-orientational order |(1/N_j) sum exp(6i theta)| on n=139 segmented SEM foramen pores vs simulated Cahn-Hilliard droplet array" ;
+        schema:name "Coscinodiscus wailesii SEM primary foramen 6-fold hexatic order |psi_6|" ;
+        schema:unitText "|psi_6|" ;
+        schema:value "0.7638" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-primary-foramen-6-fold-hexatic-order-psi-6-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-coscinodiscus-wailesii-sem-primary-foramen-6-fold-hexatic-order-psi-6-reference> a schema:PropertyValue ;
+        dct:source "Sumper (2002) Science 295:2430 Figs. 1-2 close-packed hexagonal LCPA droplet lattice" ;
+        schema:value "0.75" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-outside-spinodal-negative-control-phi0-0-65-pore-count-vs-spinodal-droplet-regime> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Outside-spinodal negative control (phi0 = -0.65) pore count vs spinodal droplet regime = 0 pores" ;
+        dct:description "negative control std_phi=1.93e-03 (0 pores) vs spinodal droplet std_phi=0.625 (53 pores)" ;
+        schema:measurementTechnique "connected pore count when mean composition |phi0|=0.65 exceeds spinodal threshold 1/sqrt(3)=0.5774 (alpha = 1 - 3*phi0^2 = -0.2675 < 0) vs phi0=-0.30 control" ;
+        schema:name "Outside-spinodal negative control (phi0 = -0.65) pore count vs spinodal droplet regime" ;
+        schema:unitText "pores" ;
+        schema:value "0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-outside-spinodal-negative-control-phi0-0-65-pore-count-vs-spinodal-droplet-regime-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-outside-spinodal-negative-control-phi0-0-65-pore-count-vs-spinodal-droplet-regime-reference> a schema:PropertyValue ;
+        dct:source "Cahn & Hilliard (1958) J. Chem. Phys. 28:258 & Lean 4 Theorem cahn_hilliard_spinodal_band_selection" ;
+        schema:value "0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-sumper-2002-3-tier-pore-diameter-log-linear-scaling-correlation-foramen-cribrum-cribrella> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Sumper (2002) 3-tier pore diameter log-linear scaling correlation (Foramen -> Cribrum -> Cribrella) = 0.9999 |r|" ;
+        dct:description "effective inter-tier scale ratio rho=0.1833 (ref 0.1800), p=8.81e-03" ;
+        schema:measurementTechnique "log10(d_m) linear regression across Generation 1 (1250 nm), Generation 2 (220 nm), and Generation 3 (42 nm)" ;
+        schema:name "Sumper (2002) 3-tier pore diameter log-linear scaling correlation (Foramen -> Cribrum -> Cribrella)" ;
+        schema:unitText "|r|" ;
+        schema:value "0.9999" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-sumper-2002-3-tier-pore-diameter-log-linear-scaling-correlation-foramen-cribrum-cribrella-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-sumper-2002-3-tier-pore-diameter-log-linear-scaling-correlation-foramen-cribrum-cribrella-reference> a schema:PropertyValue ;
+        dct:source "Sumper (2002) Science 295:2430 self-similar LCPA droplet subdivision d_m = d_1 * rho^(m-1)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-two-stage-hierarchical-quench-nested-cribrum-sub-pores-per-foramen> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Two-stage hierarchical quench nested cribrum sub-pores per foramen = 2.04 sub-pores / foramen" ;
+        dct:description "total foramina=53, total nested cribrum pores=102, SEM cribrum ROI pores=74" ;
+        schema:measurementTechnique "connected secondary cribrum pores (eps_2=0.65) formed inside each solidified Stage 1 primary foramen chamber (eps_1=1.50)" ;
+        schema:name "Two-stage hierarchical quench nested cribrum sub-pores per foramen" ;
+        schema:unitText "sub-pores / foramen" ;
+        schema:value "2.04" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-two-stage-hierarchical-quench-nested-cribrum-sub-pores-per-foramen-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-measurement-two-stage-hierarchical-quench-nested-cribrum-sub-pores-per-foramen-reference> a schema:PropertyValue ;
+        dct:source "Sumper (2002) Science 295:2430 centered-hexagonal 1-ring H(1)=7 to 2-ring H(2)=19 cribrum sub-pores per areola" ;
+        schema:value "7.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "models/2002-sumper-diatom-frustule-phase-sep.py L346–L360" ;
+        dct:description "radial_anisotropy_index: A = <|d_theta phi|^2 - |d_r phi|^2> / <|grad phi|^2> in the margin annulus" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L346-L360> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "models/2002-sumper-diatom-frustule-phase-sep.py L1319–L1389" ;
+        dct:description "7 Pass 3 measurements: A (ref = own isotropic null, L1326), contrast (ref 0.0, L1336), conservation, cribrella/cribrum vs 7, d_3 vs 42 nm, a_2/a_3 vs 5.067, SEM C_6 (ref = isotropic sim, L1386)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L1319-L1389> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 Phase B primary assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0378-4371(92)90111-2>,
+            <https://doi.org/10.1021/la7022784>,
+            <https://doi.org/10.1063/1.1744102>,
+            <https://doi.org/10.1111/j.0022-3646.1983.00387.x>,
+            <https://doi.org/10.1126/science.1070026>,
+            <https://doi.org/10.1166/jnn.2006.174> .
+    <https://doi.org/10.1016/0378-4371(92)90111-2> dct:date "1992"^^xsd:gYear ;
+        dct:title "Phase separation by directional quenching and morphological transition" .
+    <https://doi.org/10.1021/la7022784> dct:date "2008"^^xsd:gYear ;
+        dct:title "Self-assembly of hierarchical nanostructures in diatom biosilica" .
+    <https://doi.org/10.1063/1.1744102> dct:date "1958"^^xsd:gYear ;
+        dct:title "Free energy of a nonuniform system. I. Interfacial free energy" .
+    <https://doi.org/10.1111/j.0022-3646.1983.00387.x> dct:date "1983"^^xsd:gYear ;
+        dct:title "Wall morphogenesis in Coscinodiscus wailesii Gran and Angst. I. Valve morphology and development of its architecture" .
+    <https://doi.org/10.1126/science.1070026> dct:date "2002"^^xsd:gYear ;
+        dct:title "A phase separation model for the nanopatterning of diatom biosilica" .
+    <https://doi.org/10.1166/jnn.2006.174> dct:date "2006"^^xsd:gYear ;
+        dct:title "Pore architecture of diatom frustules: potential nanostructured membranes for molecular and particle separations" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation (Pass 3: centrifugal precipitation front + 3-stage single-domain quench) — Morphometric validation 86/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-21T00:00:04Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

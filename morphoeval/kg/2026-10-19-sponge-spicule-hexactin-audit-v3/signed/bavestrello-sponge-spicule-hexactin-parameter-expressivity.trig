@@ -1,0 +1,135 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAJYmrXuX1iGaOi2SIJ209ASWzmHc8CcEFLq7DMp5v1K4/> .
+@prefix this: <https://w3id.org/np/RAJYmrXuX1iGaOi2SIJ209ASWzmHc8CcEFLq7DMp5v1K4> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bavestrello-sponge-spicule-hexactin> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Uriz et al. (2003) & Aizenberg et al. (2005) sponge spicule silicatein axial symmetry, concentric biosilica lamination, Euplectella checkerboard lattice mechanics, cohesive-zone laminate bending, helical cage ridges and basalia waveguiding — Parameter expressivity: 92/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Pass 2 sweeps (5 symmetry / ablation regimes, f_diag in [0, 1], 12 species) are retained. Pass 3 adds a k_cat ablation sweep {0, 0.25, 0.5, 0.75, 1} propagated through the 3D solver to N and W_lam / W_mono (L968-999), a G_i sweep 0.05-8 J/m^2 crossing the He-Hutchinson cut-off at 2 J/m^2 (L1002-1034), a continuous psi scan for torsional and specific stiffness and N_r scan for the ovalization gain (L1041-1104), a wavelength scan of guided-mode count (L1112-1203), a monolithic / fused-interlayer ablation, and CLI flags `--skip-pass3`, `--g-i`, `--n-ridges` (L2161-2163; `--g-i 0.2` -> 1.832x, `--n-ridges 12` -> 11.4x torsion). Deductions: `--seed` is a documented no-op (L2160) (-2); `--d-s` / `--k-cat` overrides change only the main-figure regimes, not the coupled k_cat sweep which uses its own internal `k_cat_scale` (-3); no sweep of the Law-3 geometry (r_core, h_1) through the bending or optics models although both inherit it (-3)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity-4> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "models/2012-bavestrello-sponge-spicule-hexactin.py L968–L1034" ;
+        dcterms:description "evaluate_coupled_accretion_to_fracture (k_cat sweep) and evaluate_interlayer_toughness_sweep (G_i 0.05-8 J/m^2 with He-Hutchinson cut-off)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2012-bavestrello-sponge-spicule-hexactin.py#L968-L1034> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "models/2012-bavestrello-sponge-spicule-hexactin.py L1041–L1104" ;
+        dcterms:description "psi scan and N_r scan for the ridge cage; defaults N_r = 8, A_r = 0.25" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2012-bavestrello-sponge-spicule-hexactin.py#L1041-L1104> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "models/2012-bavestrello-sponge-spicule-hexactin.py L2152–L2163" ;
+        dcterms:description "CLI: --self-test, --skip-gif, --d-s, --k-cat, --r-core, --n-lamellae, --seed (no-op), --skip-pass3, --g-i, --n-ridges" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2012-bavestrello-sponge-spicule-hexactin.py#L2152-L2163> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity-4> a pk:EvidenceItem ;
+        rdfs:label "models/2012-bavestrello-sponge-spicule-hexactin.py L371–L390" ;
+        dcterms:description "evaluate_all_morphospace_regimes: 5 regimes from the reference JSON (Pass 2)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2012-bavestrello-sponge-spicule-hexactin.py#L371-L390> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Pass 3 remediated assessment; Phase B scoring pass executed by a Claude Fable 5.1 subagent from the Phase A handoff and diff)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "aFGvMMhL9uVlQf75kF0xQqN8UWMd4Z9GIbihIEQspTvs0yUVpZBMo15OIrgDuBBg92Fjpvf2/VWe2vj0RaYe5nV6MrowgNAdZ/LUTUJcj/RfTkUOXc0zlFT5v0zZdKUXiJ5lHn7YsPtPNJ1s4t/p5Zl/Y8e6aWSRwX/TAcSCEIPKIvqi1GZnsRgyDtE6zPPhUspbSKkRjtHYj+dOMeJPLnzdzmfk5iRYZIEqsK5YOU5ps2i6oAs/yOfw923RPZe6mAG855ZygbNnXttpZ/8Tb73qDCGNlsXZskJG8gZJ3+uM8Nx4RhR3/tcTKYTDRwp3X9x0jd6BMN5YGR7PLLdAkQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    this: rdfs:label "Uriz et al. (2003) & Aizenberg et al. (2005) sponge spicule silicatein axial symmetry, concentric biosilica lamination, Euplectella checkerboard lattice mechanics, cohesive-zone laminate bending, helical cage ridges and basalia waveguiding — Parameter expressivity 92/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T23:59:08Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bavestrello-sponge-spicule-hexactin-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/76> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/76> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jemt.10395>,
+            <https://doi.org/10.1016/0008-8846(76)90007-7>,
+            <https://doi.org/10.1016/0020-7683(89)90021-8>,
+            <https://doi.org/10.1016/j.jsb.2007.01.006>,
+            <https://doi.org/10.1038/424899a>,
+            <https://doi.org/10.1073/pnas.0307843101>,
+            <https://doi.org/10.1073/pnas.95.11.6234>,
+            <https://doi.org/10.1126/science.1112255>,
+            <https://doi.org/10.1364/AO.10.002252>,
+            <https://doi.org/10.1557/jmr.2006.0251> .
+
+    <https://doi.org/10.1002/jemt.10395> dcterms:date "2003"^^xsd:gYear ;
+        dcterms:title "Siliceous spicules and skeleton frameworks in sponges: origin, diversity, ultrastructural patterns, and biological functions" .
+
+    <https://doi.org/10.1016/0008-8846(76)90007-7> dcterms:date "1976"^^xsd:gYear ;
+        dcterms:title "Analysis of crack formation and crack growth in concrete by means of fracture mechanics and finite elements" .
+
+    <https://doi.org/10.1016/0020-7683(89)90021-8> dcterms:date "1989"^^xsd:gYear ;
+        dcterms:title "Crack deflection at an interface between dissimilar elastic materials" .
+
+    <https://doi.org/10.1016/j.jsb.2007.01.006> dcterms:date "2007"^^xsd:gYear ;
+        dcterms:title "Hierarchical assembly of the siliceous skeletal lattice of the hexactinellid sponge Euplectella aspergillum" .
+
+    <https://doi.org/10.1038/424899a> dcterms:date "2003"^^xsd:gYear ;
+        dcterms:title "Fibre-optical features of a glass sponge" .
+
+    <https://doi.org/10.1073/pnas.0307843101> dcterms:date "2004"^^xsd:gYear ;
+        dcterms:title "Biological glass fibers: correlation between optical and structural properties" .
+
+    <https://doi.org/10.1073/pnas.95.11.6234> dcterms:date "1998"^^xsd:gYear ;
+        dcterms:title "Silicatein alpha: cathepsin L-like protein in sponge biosilica" .
+
+    <https://doi.org/10.1126/science.1112255> dcterms:date "2005"^^xsd:gYear ;
+        dcterms:title "Skeleton of Euplectella sp.: structural hierarchy from the nanoscale to the macroscale" .
+
+    <https://doi.org/10.1364/AO.10.002252> dcterms:date "1971"^^xsd:gYear ;
+        dcterms:title "Weakly guiding fibers" .
+
+    <https://doi.org/10.1557/jmr.2006.0251> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Micromechanical properties of biological silica in skeletons of deep-sea sponges" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+

@@ -74,7 +74,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage, spatial, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "hydractinia_stolon_vascular_net"
 REF_JSON = DATASET_DIR / "hydractinia_stolon_vascular_net_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "hydractinia_symbiolongicarpus_specimen.jpg"

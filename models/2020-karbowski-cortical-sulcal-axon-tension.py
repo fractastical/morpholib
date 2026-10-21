@@ -72,7 +72,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, spatial, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "cortical_sulcal_axon_tension"
 REF_JSON = DATASET_DIR / "cortical_sulcal_axon_tension_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "coronal_cortex_axon_tracts_specimen.jpg"

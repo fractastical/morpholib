@@ -9,7 +9,9 @@
 
 <https://w3id.org/probknow/resource/assessment/2026-10-19-diatom-frustule-phase-sep-audit-v2-sumper-diatom-frustule-phase-sep-model-fidelity> dct:references <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-1>,
         <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-2>,
-        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-3> .
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-3>,
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-4>,
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-5> .
 
 <https://w3id.org/probknow/resource/assessment/2026-10-19-diatom-frustule-phase-sep-audit-v2-sumper-diatom-frustule-phase-sep-morphometric-validation> pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-19-diatom-frustule-phase-sep-audit-v2-sumper-diatom-frustule-phase-sep-1>,
         <https://w3id.org/probknow/resource/evidence/2026-10-19-diatom-frustule-phase-sep-audit-v2-sumper-diatom-frustule-phase-sep-2>,
@@ -24,7 +26,9 @@
         "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation faithfully reproduces Coscinodiscus wailesii (Centric marine diatom frustule valve pores: foramen, cribrum, cribrella) morphology" ;
     dct:conformsTo <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-1>,
         <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-2>,
-        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-3> ;
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-3>,
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-4>,
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-5> ;
     dct:description "The simulation script(s) 2002-sumper-diatom-frustule-phase-sep.py implement the cited source model as published and produce forms that match real Coscinodiscus wailesii (Centric marine diatom frustule valve pores: foramen, cribrum, cribrella) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 89.3/100, audit 2026-10-19-diatom-frustule-phase-sep-audit-v2) and the assessments." ;
     dct:subject <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py> ;
     schema:about "Coscinodiscus wailesii (Centric marine diatom frustule valve pores: foramen, cribrum, cribrella)" ;
@@ -464,19 +468,13 @@
     pk:pValue 8.81e-03 ;
     pk:statisticalTest "effective inter-tier scale ratio rho=0.1833 (ref 0.1800), p=8.81e-03" .
 
-<https://w3id.org/probknow/resource/concept/math-of-biology> a skos:Concept,
-        pk:Concept ;
-    rdfs:label "Validated Mathematics of Biological Form" ;
-    skos:narrower <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-1>,
-        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-2>,
-        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-3> .
-
 <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-1> a skos:Concept,
         pk:Concept ;
     rdfs:label "Cahn-Hilliard (1958) / Lenoci & Camp (2008) Double-Well Chemical Potential & Binodal Phase Equilibria" ;
     dct:description "Defines the bistable double-well free energy driving spontaneous demixing of LCPA microdroplets from precipitating biosilica within the diatom SDV | Variables: φ(x,y,t) ∈ [-1, 1]: order parameter (+1 silica wall, -1 LCPA droplet pore); ε: interfacial thickness parameter" ;
     dct:source "Lenoci & Camp (2008) Langmuir 24(1):217-223 Eqs. (1)-(3); Cahn & Hilliard (1958) J. Chem. Phys. 28:258" ;
     rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L140-L245>,
+        <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L178-L243>,
         <https://github.com/fractastical/morpholib/blob/HEAD/morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean#L21-L39> ;
     skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
     skos:definition """def cahn_hilliard_bulk_mu (phi : Int) : Int := phi * phi * phi - phi
@@ -501,7 +499,8 @@ theorem cahn_hilliard_binodal_equilibria :
     rdfs:label "Fourth-Order Cahn-Hilliard Spinodal Dispersion & Wavelength Selection Law" ;
     dct:description "Selects the characteristic pore spacing λ_c = 2π/k_c inside the spinodal (|φ_0| < 1/√3) while guaranteeing exact mass conservation (σ(0)=0) and stability outside the spinodal | Variables: M: mobility; φ_0: mean composition; α = 1 - 3 φ_0^2: spinodal instability drive; q = k^2: squared wavenumber; k_c: fastest-growing wavenumber" ;
     dct:source "Lenoci & Camp (2008) Langmuir 24(1):217-223 Section 2; Sumper (2002) Science 295:2430" ;
-    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L140-L310>,
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L124-L171>,
+        <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L140-L310>,
         <https://github.com/fractastical/morpholib/blob/HEAD/morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean#L48-L69> ;
     skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
     skos:definition """def cahn_hilliard_dispersion (M alpha eps_sq q : Int) : Int :=
@@ -529,7 +528,8 @@ theorem cahn_hilliard_spinodal_band_selection :
     rdfs:label "Sumper (2002) Hierarchical LCPA Droplet Subdivision & Centered Hexagonal Packing Law" ;
     dct:description "Explains the self-similar hierarchical nesting of 7 to 19 secondary cribrum pores inside each primary hexagonal areola and tertiary cribrella sieve pores in Coscinodiscus | Variables: m ∈ {1, 2, 3}: hierarchical tier (foramen, cribrum, cribrella); ρ ≈ 0.18: inter-tier scale ratio; R: hexagonal ring number" ;
     dct:source "Sumper (2002) Science 295(5564):2430-2433 Figs. 1-4; Losic et al. (2006) J. Nanosci. Nanotechnol. 6:982" ;
-    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L315-L420>,
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L244-L331>,
+        <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L315-L420>,
         <https://github.com/fractastical/morpholib/blob/HEAD/morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean#L78-L96> ;
     skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
     skos:definition """def centered_hexagonal_droplets (R : Nat) : Nat := 1 + 3 * R * (R + 1)
@@ -549,6 +549,74 @@ theorem sumper_2002_hierarchical_hex_packing (s0 ratio : Nat) :
     pk:leanDeclaration "MathOfBiology.Loop_071.centered_hexagonal_droplets" ;
     pk:leanTheorem "MathOfBiology.Loop_071.sumper_2002_hierarchical_hex_packing" ;
     pk:leanVerified true .
+
+<https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-4> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Furukawa (1992) Directional (Centrifugal) Quench: Stability Ahead of the Advancing Front" ;
+    dct:description "Couples the Cahn-Hilliard equation to the radially advancing silica-precipitation front: the mixture is linearly stable until the front passes, after which demixing proceeds; slow fronts (Pe = v/(λ_c σ_max) ≲ 0.1) select radial, bifurcating costae lamellae, fast fronts concentric lamellae | Variables: R0: initial quench radius; v: centrifugal front speed (px/time); w: front width; a(r,t) ∈ [-1, 1]: local quench drive; q = k^2" ;
+    dct:source "Furukawa H (1992) Physica A 180:128-155; Schmid & Volcani (1983) J. Phycol. 19:387 (centrifugal valve silicification); Sumper (2002) Science 295:2430" ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L405-L538>,
+        <https://github.com/fractastical/morpholib/blob/HEAD/morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean#L105-L118> ;
+    skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """theorem directional_quench_stable_ahead_of_front
+    (M eps_sq q : Int) (hM : 0 < M) (hq : 0 < q) (he : 0 ≤ eps_sq) :
+    cahn_hilliard_dispersion M (-1) eps_sq q < 0 := by
+  unfold cahn_hilliard_dispersion
+  have hMq : 0 < M * q := Int.mul_pos hM hq
+  have heq : 0 ≤ eps_sq * q := Int.mul_nonneg he (Int.le_of_lt hq)
+  have hneg : -1 - eps_sq * q < 0 := by omega
+  have := Int.mul_lt_mul_of_pos_left hneg hMq
+  simpa using this
+"""^^pk:lean4 ;
+    skos:notation "a(r,t) = tanh((R0 + v t - r)/w);  ahead of the front a = -1:  σ(k) = M k^2 (-1 - ε^2 k^2) < 0  ∀ k ≠ 0;  behind it a = +1 (spinodal)" ;
+    prov:wasDerivedFrom <https://doi.org/10.1021/la7022784>,
+        <https://doi.org/10.1063/1.1744102>,
+        <https://doi.org/10.1126/science.1070026>,
+        <https://doi.org/10.1166/jnn.2006.174> ;
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Fourth-Order Cahn-Hilliard Spinodal Phase Separation PDE & Hierarchical Hexagonal Packing" ;
+    pk:leanDeclaration "MathOfBiology.Loop_071.cahn_hilliard_dispersion" ;
+    pk:leanTheorem "MathOfBiology.Loop_071.directional_quench_stable_ahead_of_front" ;
+    pk:leanVerified true .
+
+<https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-5> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Lagging Silica-Precipitation Front: Frozen Region Inside the Quenched Disc & Irreversible Solidification" ;
+    dct:description "Guarantees the model never freezes un-quenched mixture and that silica precipitation is irreversible; the same frozen-wall mechanism confines tiers 2-3 of the explicit 3-stage 512x512 single-domain quench to the unsolidified chambers of the previous tier | Variables: lag = 1.0 λ_c: distance between quench and precipitation fronts; frozen pixels: zero mobility, value held, leaked mass re-projected onto mobile pixels (exact total conservation)" ;
+    dct:source "Sumper (2002) Science 295:2430 (sequential LCPA droplet subdivision with intervening silica precipitation); Lenoci & Camp (2008) Langmuir 24:217 Sec. 3.3" ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/HEAD/2002-sumper-diatom-frustule-phase-sep.py#L600-L724>,
+        <https://github.com/fractastical/morpholib/blob/HEAD/morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean#L120-L144> ;
+    skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def quench_front_radius (R0 v t : Nat) : Nat := R0 + v * t
+def solidification_radius (R0 v lag t : Nat) : Nat := quench_front_radius R0 v t - lag
+theorem frozen_front_monotone_irreversible (R0 v lag t1 t2 : Nat)
+    (hlag : 0 < lag) (hsolid : 0 < solidification_radius R0 v lag t1) (ht : t1 ≤ t2) :
+    solidification_radius R0 v lag t1 < quench_front_radius R0 v t1 ∧
+    quench_front_radius R0 v t1 ≤ quench_front_radius R0 v t2 ∧
+    solidification_radius R0 v lag t1 ≤ solidification_radius R0 v lag t2 := by
+  unfold solidification_radius quench_front_radius at *
+  have hv : v * t1 ≤ v * t2 := Nat.mul_le_mul_left v ht
+  omega
+"""^^pk:lean4 ;
+    skos:notation "R(t) = R0 + v t,  R_s(t) = R(t) - lag;  0 < lag ∧ 0 < R_s(t1) ⟹ R_s(t1) < R(t1);  t1 ≤ t2 ⟹ R(t1) ≤ R(t2) ∧ R_s(t1) ≤ R_s(t2)" ;
+    prov:wasDerivedFrom <https://doi.org/10.1021/la7022784>,
+        <https://doi.org/10.1063/1.1744102>,
+        <https://doi.org/10.1126/science.1070026>,
+        <https://doi.org/10.1166/jnn.2006.174> ;
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Fourth-Order Cahn-Hilliard Spinodal Phase Separation PDE & Hierarchical Hexagonal Packing" ;
+    pk:leanDeclaration "MathOfBiology.Loop_071.solidification_radius" ;
+    pk:leanTheorem "MathOfBiology.Loop_071.frozen_front_monotone_irreversible" ;
+    pk:leanVerified true .
+
+<https://w3id.org/probknow/resource/concept/math-of-biology> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Validated Mathematics of Biological Form" ;
+    skos:narrower <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-1>,
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-2>,
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-3>,
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-4>,
+        <https://w3id.org/probknow/resource/math-law/sumper-diatom-frustule-phase-sep-5> .
 
 <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> a skos:Concept,
         pk:Concept ;

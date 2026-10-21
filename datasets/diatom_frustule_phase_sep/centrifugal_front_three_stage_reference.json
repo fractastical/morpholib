@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "dataset_id": "sumper-diatom-frustule-phase-sep-pass3-v1",
+    "title": "Pass 3 reference table: centrifugal (directional) quench front and explicit 3-stage single-domain hierarchy for Coscinodiscus wailesii biosilica",
+    "created": "2026-10-19",
+    "consumed_by": "2002-sumper-diatom-frustule-phase-sep.py (Pass 3: simulate_radial_quench_costae, run_front_velocity_sweep, simulate_three_stage_hierarchy)",
+    "provenance_note": "Literature values below were transcribed offline from the cited papers / from the Pass 1-2 reference JSON; the two new DOIs (furukawa1992, schmid1983) were NOT re-verified online during Pass 3 (network tools disabled). Model-regime values marked model_prediction are outputs of this script's own model and are NOT empirical.",
+    "sources": [
+      {
+        "id": "furukawa1992",
+        "citation": "Furukawa H (1992). Phase separation by directional quenching and morphological transition. Physica A 180(1-2):128-155.",
+        "doi": "10.1016/0378-4371(92)90111-2",
+        "doi_verified_online": false
+      },
+      {
+        "id": "schmid1983",
+        "citation": "Schmid A-MM, Volcani BE (1983). Wall morphogenesis in Coscinodiscus wailesii Gran and Angst. I. Valve morphology and development of its architecture. Journal of Phycology 19(4):387-402.",
+        "doi": "10.1111/j.0022-3646.1983.00387.x",
+        "doi_verified_online": false
+      },
+      {
+        "id": "sumper2002",
+        "citation": "Sumper M (2002). A phase separation model for the nanopatterning of diatom biosilica. Science 295(5564):2430-2433.",
+        "doi": "10.1126/science.1070026"
+      }
+    ]
+  },
+  "centrifugal_directional_quench_model": {
+    "governing_pde": "d(phi)/dt = M * laplacian(phi^3 - a(r,t) * phi - epsilon^2 * laplacian(phi))",
+    "quench_field": "a(r,t) = tanh((R(t) - r) / w),  R(t) = R0 + v_front * t",
+    "solidification_front": "R_s(t) = R(t) - lag;  pixels with r < R_s(t) are frozen (zero mobility); leaked mass is re-projected uniformly onto mobile pixels",
+    "biological_mapping": "Coscinodiscus valve silicification proceeds centrifugally from the central annulus/pattern centre towards the margin (Schmid & Volcani 1983); the lagging solidification represents silica condensation around the LCPA phase (Sumper 2002)",
+    "dimensionless_front_speed": "Pe = v_front / (lambda_c * sigma_max),  lambda_c = 2 pi sqrt(2) eps / sqrt(1 - 3 phi0^2),  sigma_max = M (1 - 3 phi0^2)^2 / (4 eps^2)",
+    "canonical_parameters": {
+      "N": 160,
+      "phi0_rib_layer": 0.0,
+      "epsilon": 1.0,
+      "M": 1.0,
+      "dt": 0.1,
+      "R0_px": 8.0,
+      "front_width_w_px": 2.0,
+      "solidify_lag_in_lambda_c": 1.0,
+      "noise_amp": 0.005,
+      "v_front_default": 0.10,
+      "lambda_c_px": 8.885765876316732,
+      "sigma_max": 0.25,
+      "peclet_default": 0.045015815807855
+    },
+    "front_velocity_ablation": {
+      "velocities_px_per_time": [0.05, 0.10, 0.20, 0.40, 0.80],
+      "expected_morphology": ["radial lamellae (costae)", "radial lamellae (costae)", "mixed", "concentric lamellae", "concentric -> isotropic"],
+      "regime_source": "Furukawa (1992) directional-quench morphological transition (front-perpendicular lamellae at slow front speed, front-parallel at faster speed, isotropic spinodal pattern as v -> infinity); the exact crossover speed here is a model_prediction of this script, not a literature value",
+      "isotropic_null": "same disc, a = +1 everywhere from t = 0, no front, no freezing, mean of 3 seeds"
+    },
+    "anisotropy_metric": {
+      "definition": "A = < |d_theta phi|^2 - |d_r phi|^2 > / < |d_theta phi|^2 + |d_r phi|^2 > in the margin annulus 0.6 R_max <= r < R_max",
+      "ideal_radial_lamellae": 1.0,
+      "isotropic": 0.0,
+      "ideal_concentric_lamellae": -1.0
+    },
+    "specimen_gap": "The vendored SEM (coscinodiscus_diatom_specimen.jpg) shows the valve face at three magnifications but NOT the valve margin; no direct empirical value of A exists in this dataset (Pass 4: vendor a Coscinodiscus wailesii valve-margin / costae SEM)."
+  },
+  "three_stage_single_domain_model": {
+    "grid": 512,
+    "nm_per_px": 12.5,
+    "tiers": [
+      {"generation": 1, "tier_id": "areola_foramen", "target_pitch_nm": 1850.0, "target_pitch_px": 148.0, "target_diameter_nm": 1250.0, "phi0": -0.30, "dt": 50.0, "steps": 290, "confinement": "none"},
+      {"generation": 2, "tier_id": "cribrum", "target_pitch_nm": 380.0, "target_pitch_px": 30.4, "target_diameter_nm": 220.0, "phi0": -0.26, "dt": 2.6, "steps": 160, "confinement": "tier-1 silica walls frozen; chambers = tier-1 pores eroded 3 px"},
+      {"generation": 3, "tier_id": "cribrella", "target_pitch_nm": 75.0, "target_pitch_px": 6.0, "target_diameter_nm": 42.0, "phi0": -0.26, "dt": 0.10, "steps": 100, "confinement": "tier-2 silica frozen; chambers = tier-2 pores eroded 1 px"}
+    ],
+    "epsilon_rule": "eps_k = a_k_px * sqrt(1 - 3 phi0_k^2) / (2 pi sqrt 2)  (fastest-growing spinodal wavelength set equal to the Sumper tier pitch)",
+    "scale_invariance": "x -> L x, eps -> L eps, t -> L^2 t leaves the Cahn-Hilliard equation invariant; dt_tiers scale accordingly",
+    "reference_comparisons": {
+      "cribrella_per_cribrum_pore": {"reference": 7, "source": "Sumper (2002) centered-hexagonal H(1) = 7; reference JSON tier 3 subpores_per_parent"},
+      "cribrum_per_foramen": {"reference": 12, "source": "reference JSON tier 2 subpores_per_parent (Sumper 2002 Figs. 1-3, 7-19 range)"},
+      "pitch_ratio_a1_a2": {"reference": 4.868, "source": "1850 / 380 nm"},
+      "pitch_ratio_a2_a3": {"reference": 5.067, "source": "380 / 75 nm"},
+      "d2_nm": {"reference": 220.0}, "d3_nm": {"reference": 42.0}
+    },
+    "resolution_limit_note": "d_3 = 42 nm is 3.4 px at 12.5 nm/px — at the grid floor (components >= 6 px are counted); the 512^2 domain holds ~12 foramina. A 1024^2 (or larger) grid is needed to resolve cribrella with >= 8 px diameters."
+  }
+}

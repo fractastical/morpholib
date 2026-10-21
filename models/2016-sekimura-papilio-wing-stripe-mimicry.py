@@ -62,7 +62,7 @@ from scipy import ndimage as ndi
 from scipy.fft import dctn, idctn
 from scipy.stats import pearsonr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "papilio_wing_stripe_mimicry"
 REF_JSON_PATH = DATASET_DIR / "papilio_wing_stripe_mimicry_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "papilio_dardanus_cenea_specimen.jpg"

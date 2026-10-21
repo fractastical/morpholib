@@ -84,7 +84,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "tracheal_viscous_fingering"
 REF_JSON_PATH = DATASET_DIR / "tracheal_viscous_fingering_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "embryonic_lung_branching_specimen.jpg"

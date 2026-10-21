@@ -14,7 +14,11 @@
   3. Spherical Euler Polyhedral Packing (V - E + F = 2, V = 2*(F-2), E = 3*(F-2))
      for Interlocking Coccosphere Shells (N_cocc ∈ {12..24}), and
   4. CAP-Polysaccharide T-Shaped Hammer-Head Expansion vs Ocean Acidification
-     (Ω_calcite < 1) Truncation Law (`coccolith-emiliania-calcite-rosette`).
+     (Ω_calcite < 1) Truncation Law (`coccolith-emiliania-calcite-rosette`),
+  5. (Pass 3) Suture Interlock Shear Capacity vs Plate Bending Capacity selecting
+     coccolith sliding vs fracture in the Voronoi nanoindentation contact model, and
+  6. (Pass 3) Golgi coccolith-vesicle rim tension anisotropy λ setting the organic
+     baseplate aspect ratio b/a = (2 + λ)/(1 + 2λ) (e = 0.5303 at λ* = 1.656).
 
   Zero external dependencies, zero `sorry`s.
   Verify with:
@@ -209,5 +213,103 @@ theorem cap_polysaccharide_hammer_expansion_and_acidification_truncation :
     hammer_head_width_scaled 100 28 420 > hammer_head_width_scaled 100 28 350 ∧
     hammer_head_width_scaled 100 28 500 > hammer_head_width_scaled 100 28 420 := by
   decide
+
+-- ============================================================================
+-- Law 5 (Pass 3): Suture Interlock Shear Capacity vs Plate Bending Capacity
+--        Selects Coccolith Sliding vs Fracture (Jaya et al. 2016 contact model)
+-- ============================================================================
+
+/-- Shear capacity of one imbricated suture (scaled integers):
+    `S_slide = sigma_lock * l_edge * d_ov` (organic-cement interlock strength times
+    suture length times T-hammer overlap depth). -/
+def suture_shear_capacity (sigma_lock l_edge d_ov : Nat) : Nat :=
+  sigma_lock * l_edge * d_ov
+
+/-- T-hammer overlap depth `d_ov = w_shaft * (t_head_ratio - 1) / 2` with the overhang
+    `(t_head_ratio - 1)` given in percent (`phi_pct`), in nm for `w_shaft` in nm. -/
+def overlap_depth_nm (w_shaft_nm phi_pct : Nat) : Nat :=
+  w_shaft_nm * phi_pct / 200
+
+/-- Event selector of the reduced contact model: the suture network slides before the
+    apex plate fractures iff the summed interlock capacity is below the plate bending
+    capacity `sigma_f h^2 / alpha_p` (dimensionless ratio `Pi < 1`). -/
+def sliding_first (lock_capacity bend_capacity : Nat) : Bool :=
+  lock_capacity < bend_capacity
+
+/-- Theorem 5 (`suture_capacity_ratio_selects_sliding_vs_fracture`):
+    (a) Truncated T-heads (`d_ov = 0`, ocean acidification / CAP ablation) have zero
+        interlock shear capacity for every `sigma_lock` and suture length, so the
+        coccolith is shed by sliding at any positive bending capacity;
+    (b) interlock capacity is monotone non-decreasing in the overlap depth `d_ov`;
+    (c) for *E. huxleyi* Morphotype A (`w_shaft = 90 nm`, overhang `72 %`) the overlap
+        depth is `32 nm` while truncated T-heads give `0 nm`;
+    (d) with the script's default constants the apex sutures' summed capacity
+        (`15.44 uN`, scaled `1544`) is below the plate bending capacity (`54.0 uN`,
+        scaled `5400`), so sliding precedes fracture (`Pi = 0.29 < 1`), whereas a
+        capacity of `60.0 uN` would make the apex plate fracture first. -/
+theorem suture_capacity_ratio_selects_sliding_vs_fracture :
+    (∀ sigma l : Nat, suture_shear_capacity sigma l 0 = 0) ∧
+    (∀ sigma l d1 d2 : Nat, d1 ≤ d2 →
+        suture_shear_capacity sigma l d1 ≤ suture_shear_capacity sigma l d2) ∧
+    (∀ bend : Nat, 0 < bend → sliding_first 0 bend = true) ∧
+    overlap_depth_nm 90 0 = 0 ∧
+    overlap_depth_nm 90 72 = 32 ∧
+    overlap_depth_nm 90 100 = 45 ∧
+    sliding_first 1544 5400 = true ∧
+    sliding_first 6000 5400 = false := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro sigma l
+    simp [suture_shear_capacity]
+  · intro sigma l d1 d2 h
+    exact Nat.mul_le_mul_left (sigma * l) h
+  · intro bend h
+    simp [sliding_first, h]
+  · decide
+
+-- ============================================================================
+-- Law 6 (Pass 3): Golgi Coccolith-Vesicle Rim Tension Anisotropy Sets the
+--        Organic Baseplate Aspect Ratio b/a = (2 + λ)/(1 + 2λ)
+-- ============================================================================
+
+/-- Numerator of the equilibrium baseplate aspect ratio `b/a = (2 + λ)/(1 + 2λ)`
+    (2D Laplace balance `τ(ψ) κ(ψ) = p` with `τ(ψ) = τ₀ (1 + (λ - 1) sin² ψ)`,
+    support function `h + h'' = τ/p`), with `λ` scaled by `1000` (`lam_milli`). -/
+def baseplate_aspect_num (lam_milli : Nat) : Nat :=
+  2000 + lam_milli
+
+/-- Denominator of `b/a = (2 + λ)/(1 + 2λ)` with `λ` scaled by `1000`. -/
+def baseplate_aspect_den (lam_milli : Nat) : Nat :=
+  1000 + 2 * lam_milli
+
+/-- Theorem 6 (`vesicle_rim_tension_anisotropy_sets_baseplate_aspect`):
+    (a) Isotropic rim tension (`λ = 1`) gives a circular baseplate (`b/a = 1`);
+    (b) any tension anisotropy `λ > 1` (higher tension where the outward normal is
+        along the minor axis) gives `b < a`, i.e. an elliptical baseplate with `e > 0`;
+    (c) `b/a` is strictly decreasing in `λ` (cross-multiplied form);
+    (d) `b/a > 1/2` for every `λ` (the Wulff oval never degenerates);
+    (e) for the inferred *E. huxleyi* value `λ* = 1.656` the aspect ratio lies in
+        `(0.847, 0.848)`, matching the SEM baseplate fit `b/a = 0.8478`
+        (`e = 0.5303`). -/
+theorem vesicle_rim_tension_anisotropy_sets_baseplate_aspect :
+    baseplate_aspect_num 1000 = baseplate_aspect_den 1000 ∧
+    (∀ lam : Nat, 1000 < lam → baseplate_aspect_num lam < baseplate_aspect_den lam) ∧
+    (∀ l1 l2 : Nat, l1 < l2 →
+        baseplate_aspect_num l2 * baseplate_aspect_den l1 <
+          baseplate_aspect_num l1 * baseplate_aspect_den l2) ∧
+    (∀ lam : Nat, baseplate_aspect_den lam < 2 * baseplate_aspect_num lam) ∧
+    847 * baseplate_aspect_den 1656 < 1000 * baseplate_aspect_num 1656 ∧
+    1000 * baseplate_aspect_num 1656 < 848 * baseplate_aspect_den 1656 := by
+  refine ⟨by decide, ?_, ?_, ?_, by decide, by decide⟩
+  · intro lam h
+    simp only [baseplate_aspect_num, baseplate_aspect_den]
+    omega
+  · intro l1 l2 h
+    simp only [baseplate_aspect_num, baseplate_aspect_den, Nat.mul_add, Nat.add_mul]
+    have hc : l2 * (2 * l1) = l1 * (2 * l2) := by
+      rw [Nat.mul_left_comm l2 2 l1, Nat.mul_left_comm l1 2 l2, Nat.mul_comm l2 l1]
+    omega
+  · intro lam
+    simp only [baseplate_aspect_num, baseplate_aspect_den]
+    omega
 
 end MathOfBiology.Loop_080

@@ -1,12 +1,29 @@
 #!/usr/bin/env python3
 """
-2022-coccolith-emiliania-calcite-rosette.py — Pass 2 (v2) Remediated
+2022-coccolith-emiliania-calcite-rosette.py — Pass 3 (v3) Remediated
 ====================================================================
 Biogenic Calcite V/R Bimodal Crystallographic Nucleation Ring (Young et al. 1992),
 Stage-Specific T-Shaped Hammer-Element Anisotropic {10-14} Growth across Morphotypes
 A, B, C, and R (Didymus et al. 1993), 3D Interlocking Spherical Coccosphere Euler
 Packing & Compressive Mechanics (Jaya et al. 2016), and Ocean Acidification /
 CAP-Polysaccharide Ablation Control (Walker et al. 2018) in *Emiliania huxleyi*.
+
+Pass 3 additions (closing the two Pass 2 remediation items)
+-----------------------------------------------------------
+- Section 4b: reduced lumped-plate finite-element flat-punch nanoindentation of the
+  spherical-Voronoi-tiled coccosphere (`build_coccosphere_voronoi_tiling`,
+  `evaluate_coccosphere_nanoindentation_contact`, `evaluate_contact_regime_map`):
+  suture lap-joint shear springs with Coulomb + organic-interlock slide thresholds,
+  plate bending fracture threshold, cascade-resolved event sequence (slide -> arrested
+  fracture -> punch-through) for interlocked vs truncated T-heads, and a
+  sigma_lock x overlap regime map. NOT a continuum 3D FEM (residual carried to Pass 4);
+  every constant is provenance-tagged in `coccosphere_contact_vesicle_tension_reference.json`.
+- Section 4c: Golgi coccolith-vesicle rim under luminal pressure and anisotropic
+  cytoskeletal line tension `tau(psi) = tau_0 (1 + (lambda - 1) sin^2 psi)`; the exact
+  support-function solution gives `b/a = (2 + lambda)/(1 + 2 lambda)`, verified by an
+  area-conserving semi-implicit contour relaxation (`relax_vesicle_rim_contour`), and
+  the SEM baseplate aspect `b/a = 0.8478` (`e = 0.5303`) is reproduced at the INFERRED
+  anisotropy `lambda* = 1.656` (a calibration, not an independent prediction).
 
 Primary Literature & Mathematical Foundations
 ---------------------------------------------
@@ -24,14 +41,20 @@ Primary Literature & Mathematical Foundations
    calcification differs between ecologically important coccolithophore species.
    Nat. Commun. / New Phytol. 9:1-12. DOI: 10.1038/s41467-018-04168-9
 
+5. Reissner, E. (1946). Stresses and small displacements of shallow spherical shells.
+   J. Math. Phys. 25:80-85 (point-load stiffness k = 4 E h^2 / (R sqrt(3(1-nu^2)))).
+   DOI: 10.1002/sapm194625180 (not re-verified offline in Pass 3)
+
 Machine-Checked Lean 4 Formalization
 ------------------------------------
-Backed by 4 machine-checked theorems in
+Backed by 6 machine-checked theorems in
 `morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean` (0 `sorry`s):
   - `MathOfBiology.Loop_080.vr_crystal_ring_parity_and_orthogonal_c_axes`
   - `MathOfBiology.Loop_080.proto_coccolith_circumference_and_distal_shield_linear_scaling`
   - `MathOfBiology.Loop_080.coccosphere_euler_polyhedral_packing_and_trivalent_interlock`
   - `MathOfBiology.Loop_080.cap_polysaccharide_hammer_expansion_and_acidification_truncation`
+  - `MathOfBiology.Loop_080.suture_capacity_ratio_selects_sliding_vs_fracture` (Pass 3)
+  - `MathOfBiology.Loop_080.vesicle_rim_tension_anisotropy_sets_baseplate_aspect` (Pass 3)
 """
 
 from __future__ import annotations
@@ -45,8 +68,11 @@ from typing import Any
 
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.colors
+import matplotlib.patches
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import numpy as np
 from PIL import Image
 from scipy import ndimage, signal, spatial, stats
@@ -54,15 +80,17 @@ from scipy import ndimage, signal, spatial, stats
 # =============================================================================
 # 1. Paths, Cryptographic Dataset Provenance & Default Model Constants
 # =============================================================================
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "emiliania_calcite_rosette"
 REF_JSON = DATASET_DIR / "emiliania_calcite_rosette_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "emiliania_huxleyi_coccolith_specimen.jpg"
 SCOUT_JSON = DATASET_DIR / "scout_manifest.json"
 CITATIONS_BIB = DATASET_DIR / "paper_citations.bib"
+PASS3_JSON = DATASET_DIR / "coccosphere_contact_vesicle_tension_reference.json"
 
 OUT_PNG = ROOT / "docs" / "media" / "emiliania_calcite_rosette_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "emiliania_calcite_rosette_growth.gif"
+OUT_CONTACT_GIF = ROOT / "docs" / "media" / "emiliania_calcite_rosette_contact_indentation.gif"
 
 EXPECTED_SHA256: dict[Path, str] = {
     SPECIMEN_JPG: "94d4b431c4912727a89fa0bea09c87c8add8c286e7f3c259558b85341950b65d",
@@ -488,6 +516,479 @@ def evaluate_acidification_and_cap_sweep() -> dict[str, Any]:
 
 
 # =============================================================================
+# 4b. Pass 3 / Law 5: Coccosphere Voronoi Suture-Network Nanoindentation Contact
+#     Model — Coccolith Sliding vs Fracture Arrest (reduced lumped-plate FE)
+# =============================================================================
+def load_pass3_reference() -> dict[str, Any]:
+    """Load the Pass 3 contact-mechanics / vesicle-tension parameter table
+    (`coccosphere_contact_vesicle_tension_reference.json`). Every constant in it
+    carries a `provenance` tag (`measured`, `classical_formula`, `model_assumption`)."""
+    return json.loads(PASS3_JSON.read_text(encoding="utf-8"))
+
+
+def build_coccosphere_voronoi_tiling(
+    n_cocc: int = DEFAULT_N_COCC,
+    r_sphere_um: float = DEFAULT_R_SPHERE_UM,
+) -> dict[str, Any]:
+    """Spherical Voronoi tiling of the coccosphere (scipy `SphericalVoronoi`) on the
+    same golden-angle Fibonacci generators used by `evaluate_coccosphere_3d_euler_packing`.
+    Returns per-tile areas `A_i` (um^2), the suture edge list with great-circle
+    edge lengths `l_ij` (um), and the apex tile index (max z) that receives the
+    flat-punch nanoindentation load. Consistency checks against the Euler/trivalent
+    identities (`E = 3(F-2)`, `sum A_i = 4 pi R^2`) are returned for the self-test."""
+    idx = np.arange(n_cocc, dtype=np.float64)
+    phi_gold = math.pi * (3.0 - math.sqrt(5.0))
+    z_coord = 1.0 - (2.0 * idx + 1.0) / n_cocc
+    rad_xy = np.sqrt(np.clip(1.0 - z_coord * z_coord, 0.0, 1.0))
+    theta = idx * phi_gold
+    pts_unit = np.column_stack([rad_xy * np.cos(theta), rad_xy * np.sin(theta), z_coord])
+
+    sv = spatial.SphericalVoronoi(pts_unit, radius=1.0, center=np.zeros(3))
+    sv.sort_vertices_of_regions()
+    areas_um2 = sv.calculate_areas() * r_sphere_um * r_sphere_um
+
+    # Suture edges: two regions sharing exactly two Voronoi vertices
+    region_sets = [set(int(v) for v in reg) for reg in sv.regions]
+    edges: list[tuple[int, int]] = []
+    edge_len_um: list[float] = []
+    for i in range(n_cocc):
+        for j in range(i + 1, n_cocc):
+            shared = region_sets[i] & region_sets[j]
+            if len(shared) == 2:
+                va, vb = (sv.vertices[v] for v in sorted(shared))
+                arc = math.acos(float(np.clip(np.dot(va, vb), -1.0, 1.0)))
+                edges.append((i, j))
+                edge_len_um.append(arc * r_sphere_um)
+    apex = int(np.argmax(pts_unit[:, 2]))
+    return {
+        "n_cocc": int(n_cocc),
+        "pts_unit": pts_unit,
+        "voronoi_vertices": sv.vertices,
+        "regions": sv.regions,
+        "areas_um2": np.asarray(areas_um2, dtype=np.float64),
+        "edges": edges,
+        "edge_len_um": np.asarray(edge_len_um, dtype=np.float64),
+        "apex_index": apex,
+        "n_edges": len(edges),
+        "euler_edges_expected": 3 * (n_cocc - 2),
+        "area_closure_rel_err": float(abs(np.sum(areas_um2) - 4.0 * math.pi * r_sphere_um ** 2) / (4.0 * math.pi * r_sphere_um ** 2)),
+    }
+
+
+def evaluate_coccosphere_nanoindentation_contact(
+    n_cocc: int = DEFAULT_N_COCC,
+    r_sphere_um: float = DEFAULT_R_SPHERE_UM,
+    h_shield_um: float = DEFAULT_H_SHIELD_UM,
+    e_calcite_gpa: float = DEFAULT_E_CALCITE_GPA,
+    t_head_ratio: float = 1.72,
+    w_shaft_um: float = 0.62 * DEFAULT_W0_UM,
+    l_spoke_um: float = DEFAULT_L_SPOKE_UM,
+    params: dict[str, Any] | None = None,
+    sigma_lock_mpa: float | None = None,
+    f_max_un: float = 400.0,
+    n_load_steps: int = 160,
+    tiling: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Reduced finite-element (lumped rigid-plate) flat-punch nanoindentation of the
+    Voronoi-tiled coccosphere (Pass 3 remediation of Jaya et al. 2016 item).
+
+    Honest scope statement: this is NOT a continuum 3D FEM. Each coccolith tile is a
+    rigid plate with one radial DOF `u_i` (inward, m). The network stiffness is
+      K = diag(k_cell,i + k_mem,i) + L(k_ij)
+    where
+      - `k_cell,i = E_cell * A_i / R` is the soft protoplast foundation,
+      - `k_mem,i = phi_lock * k_Reissner * A_i / A_tot` distributes the classical
+        Reissner (1946) point-load stiffness of a thin spherical shell
+        `k_Reissner = 4 E h^2 / (R sqrt(3 (1 - nu^2)))` over the tiles, scaled by suture
+        integrity `phi_lock = min(t_head_ratio - 1, 1)` (membrane action needs shear
+        transfer through the sutures),
+      - `k_ij = E h l_ij (phi_ov + phi_res) / L_spoke` is a lap-joint shear stiffness
+        of the imbricated T-hammer overlap (`phi_ov = t_head_ratio - 1`, overhang of
+        the hammer head beyond the shaft; `phi_res` = residual abutment contact),
+      - L is the graph Laplacian over the suture edges.
+    Event rules (quasi-static load ramp, cascade-resolved at each load level):
+      - SLIDE of suture (i,j) when |S_ij| = k_ij |u_i - u_j| exceeds
+        `mu * N_ij + sigma_lock * l_ij * d_ov` (Coulomb friction on the turgor hoop
+        force `N_ij = p_turgor R l_ij / 2` plus organic-cement interlock shear strength
+        over the overlap depth `d_ov = w_shaft (t_head_ratio - 1) / 2`); a slid suture
+        keeps 5 % residual stiffness.
+      - FRACTURE of plate i when its bending stress `alpha_p * P_i / h^2` exceeds the
+        calcite fracture strength `sigma_f`, with `P_i` the load entering the plate
+        (`F` for the apex, incoming positive suture shear otherwise); a fractured
+        plate keeps 10 % stiffness and is removed from further fracture checks.
+      - ARREST: a fracture is arrested if, after cascade resolution at the same load,
+        no neighbour fractured (the suture network slid / shared the load first).
+      - EXPOSURE (end of run): apex sinks by `u_crit = h_shield` (coccolith pushed
+        into the protoplast) or >= 3 plates fractured (shell breach).
+    """
+    p = dict(load_pass3_reference()["contact_model"]["parameters"]) if params is None else dict(params)
+    if sigma_lock_mpa is not None:
+        p["sigma_lock_mpa"] = float(sigma_lock_mpa)
+    til = tiling if tiling is not None else build_coccosphere_voronoi_tiling(n_cocc=n_cocc, r_sphere_um=r_sphere_um)
+    n = til["n_cocc"]
+    apex = til["apex_index"]
+    edges = til["edges"]
+    ell = til["edge_len_um"] * 1e-6
+    areas = til["areas_um2"] * 1e-12
+    a_tot = float(np.sum(areas))
+
+    e_pa = float(e_calcite_gpa) * 1e9
+    h_m = float(h_shield_um) * 1e-6
+    r_m = float(r_sphere_um) * 1e-6
+    l_sp = float(l_spoke_um) * 1e-6
+    w_sh = float(w_shaft_um) * 1e-6
+    nu = float(p["poisson_nu"])
+    phi_ov = max(float(t_head_ratio) - 1.0, 0.0)
+    phi_lock = min(phi_ov, 1.0)
+    d_ov = 0.5 * w_sh * phi_ov
+
+    k_reissner = 4.0 * e_pa * h_m * h_m / (r_m * math.sqrt(3.0 * (1.0 - nu * nu)))
+    k_cell = float(p["e_cell_kpa"]) * 1e3 * areas / r_m
+    k_mem = phi_lock * k_reissner * areas / a_tot
+    k_found = k_cell + k_mem
+    k_edge = e_pa * h_m * ell * (phi_ov + float(p["phi_residual_abutment"])) / l_sp
+
+    n_hoop = float(p["p_turgor_mpa"]) * 1e6 * r_m * ell / 2.0
+    s_slide = float(p["mu_friction"]) * n_hoop + float(p["sigma_lock_mpa"]) * 1e6 * ell * d_ov
+    sigma_f = float(p["sigma_f_gpa"]) * 1e9
+    alpha_p = float(p["alpha_plate_bending"])
+    u_crit = h_m
+    f_bend_cap = sigma_f * h_m * h_m / alpha_p
+
+    slid = np.zeros(len(edges), dtype=bool)
+    fractured = np.zeros(n, dtype=bool)
+    res_slide = float(p["residual_slide_stiffness_fraction"])
+    res_frac = float(p["fractured_plate_stiffness_fraction"])
+
+    def effective_k(e_idx: int) -> float:
+        i, j = edges[e_idx]
+        k = k_edge[e_idx] * (res_slide if slid[e_idx] else 1.0)
+        if fractured[i] or fractured[j]:
+            k *= res_frac
+        return float(k)
+
+    def assemble() -> np.ndarray:
+        kmat = np.zeros((n, n), dtype=np.float64)
+        for e_idx, (i, j) in enumerate(edges):
+            k = effective_k(e_idx)
+            kmat[i, i] += k
+            kmat[j, j] += k
+            kmat[i, j] -= k
+            kmat[j, i] -= k
+        kf = k_found * np.where(fractured, res_frac, 1.0)
+        kmat[np.diag_indices(n)] += kf
+        return kmat
+
+    f_grid = np.geomspace(1e-5, f_max_un, n_load_steps) * 1e-6  # N (10 pN .. 400 uN)
+    events: list[dict[str, Any]] = []
+    u_apex_hist: list[float] = []
+    f_hist: list[float] = []
+    n_slid_hist: list[int] = []
+    n_frac_hist: list[int] = []
+    state_hist: list[tuple[np.ndarray, np.ndarray, np.ndarray]] = []
+    first_event: str | None = None
+    first_event_force_un = float("nan")
+    first_fracture_force_un = float("nan")
+    arrested: bool | None = None
+    arrest_neighbour_stress_ratio = float("nan")
+    exposure_force_un = float("nan")
+    exposure_mode = "intact_at_f_max"
+    u = np.zeros(n)
+
+    for f_val in f_grid:
+        fvec = np.zeros(n)
+        fvec[apex] = f_val
+        new_fracture_this_step: list[int] = []
+        for _cascade in range(60):
+            u = np.linalg.solve(assemble(), fvec)
+            changed = False
+            # Suture shear & sliding
+            shear = np.array([effective_k(e) * (u[i] - u[j]) for e, (i, j) in enumerate(edges)])
+            for e_idx, (i, j) in enumerate(edges):
+                if not slid[e_idx] and abs(shear[e_idx]) > s_slide[e_idx]:
+                    slid[e_idx] = True
+                    changed = True
+                    events.append({"force_un": f_val * 1e6, "type": "slide", "edge": (i, j)})
+                    if first_event is None:
+                        first_event, first_event_force_un = "slide", f_val * 1e6
+            # Plate bending load & fracture
+            p_in = np.zeros(n)
+            p_in[apex] += f_val
+            for e_idx, (i, j) in enumerate(edges):
+                s = shear[e_idx]
+                if s > 0:
+                    p_in[j] += s
+                else:
+                    p_in[i] += -s
+            sigma = alpha_p * p_in / (h_m * h_m)
+            for i in range(n):
+                if not fractured[i] and sigma[i] > sigma_f:
+                    fractured[i] = True
+                    changed = True
+                    new_fracture_this_step.append(i)
+                    events.append({"force_un": f_val * 1e6, "type": "fracture", "plate": i})
+                    if first_event is None:
+                        first_event, first_event_force_un = "fracture", f_val * 1e6
+                    if math.isnan(first_fracture_force_un):
+                        first_fracture_force_un = f_val * 1e6
+            if not changed:
+                break
+        if new_fracture_this_step and arrested is None:
+            # Arrest test: did the cascade at this load level stop at a single plate?
+            arrested = len(new_fracture_this_step) == 1
+            neigh = [j if i == new_fracture_this_step[0] else i for (i, j) in edges if new_fracture_this_step[0] in (i, j)]
+            arrest_neighbour_stress_ratio = float(np.max(sigma[neigh]) / sigma_f) if neigh else float("nan")
+        f_hist.append(f_val * 1e6)
+        u_apex_hist.append(u[apex] * 1e6)
+        n_slid_hist.append(int(np.sum(slid)))
+        n_frac_hist.append(int(np.sum(fractured)))
+        state_hist.append((u.copy() * 1e6, slid.copy(), fractured.copy()))
+        if u[apex] >= u_crit or int(np.sum(fractured)) >= 3:
+            exposure_force_un = f_val * 1e6
+            if int(np.sum(fractured)) >= 3:
+                exposure_mode = "crack_propagation_breach"
+            elif int(np.sum(fractured)) >= 1:
+                exposure_mode = "fracture_then_punch_through"
+            else:
+                exposure_mode = "sliding_punch_through"
+            break
+
+    if phi_ov == 0.0 and exposure_mode == "sliding_punch_through":
+        regime = "truncated_shedding"          # no T-hammer overlap: coccolith pushed into the protoplast
+    elif exposure_mode == "crack_propagation_breach":
+        regime = "fracture_propagating"
+    elif first_event == "fracture" and arrested:
+        regime = "fracture_arrested"
+    elif first_event == "slide" and arrested:
+        regime = "sliding_then_arrested_fracture"
+    elif first_event == "slide":
+        regime = "interlock_sliding"
+    elif first_event == "fracture":
+        regime = "fracture_propagating"
+    else:
+        regime = "elastic"
+    apex_neigh_edges = [e for e, (i, j) in enumerate(edges) if apex in (i, j)]
+    return {
+        "n_cocc": n,
+        "apex_index": apex,
+        "t_head_ratio": float(t_head_ratio),
+        "phi_overlap": phi_ov,
+        "d_overlap_nm": d_ov * 1e9,
+        "k_reissner_n_per_m": k_reissner,
+        "k_edge_mean_n_per_m": float(np.mean(k_edge)),
+        "k_cell_mean_n_per_m": float(np.mean(k_cell)),
+        "apex_valence": len(apex_neigh_edges),
+        "interlock_shear_capacity_un": float(np.sum(s_slide[apex_neigh_edges])) * 1e6,
+        "plate_bending_capacity_un": f_bend_cap * 1e6,
+        "capacity_ratio_lock_over_bend": float(np.sum(s_slide[apex_neigh_edges]) / f_bend_cap),
+        "first_event": first_event or "none",
+        "first_event_force_un": first_event_force_un,
+        "first_fracture_force_un": first_fracture_force_un,
+        "fracture_arrested": arrested,
+        "arrest_neighbour_stress_ratio": arrest_neighbour_stress_ratio,
+        "exposure_force_un": exposure_force_un,
+        "exposure_mode": exposure_mode,
+        "regime": regime,
+        "n_events": len(events),
+        "n_slid": int(np.sum(slid)),
+        "n_fractured": int(np.sum(fractured)),
+        "events": events,
+        "f_hist_un": np.asarray(f_hist),
+        "u_apex_hist_um": np.asarray(u_apex_hist),
+        "n_slid_hist": np.asarray(n_slid_hist),
+        "n_frac_hist": np.asarray(n_frac_hist),
+        "state_hist": state_hist,
+        "u_final_um": u * 1e6,
+        "slid_mask": slid.copy(),
+        "fractured_mask": fractured.copy(),
+        "tiling": til,
+        "params": p,
+    }
+
+
+def evaluate_contact_regime_map(
+    t_head_grid: np.ndarray | None = None,
+    sigma_lock_grid_mpa: np.ndarray | None = None,
+) -> dict[str, Any]:
+    """Sweep hammer-head overlap `t_head_ratio` (CAP / Omega_calcite controlled) and
+    organic interlock shear strength `sigma_lock` to map the sliding vs fracture-arrest
+    vs crack-propagation regimes and the cell-exposure force `F_expose`."""
+    t_grid = np.linspace(1.0, 2.0, 11) if t_head_grid is None else np.asarray(t_head_grid, dtype=np.float64)
+    s_grid = np.array([5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 400.0]) if sigma_lock_grid_mpa is None else np.asarray(sigma_lock_grid_mpa, dtype=np.float64)
+    til = build_coccosphere_voronoi_tiling()
+    regime_codes = {
+        "elastic": 0,
+        "truncated_shedding": 1,
+        "interlock_sliding": 2,
+        "sliding_then_arrested_fracture": 3,
+        "fracture_arrested": 4,
+        "fracture_propagating": 5,
+    }
+    code_map = np.zeros((len(s_grid), len(t_grid)), dtype=np.int64)
+    f_expose = np.full((len(s_grid), len(t_grid)), np.nan)
+    for si, s_val in enumerate(s_grid):
+        for ti, t_val in enumerate(t_grid):
+            res = evaluate_coccosphere_nanoindentation_contact(
+                t_head_ratio=float(t_val), sigma_lock_mpa=float(s_val), tiling=til, n_load_steps=90
+            )
+            code_map[si, ti] = regime_codes[res["regime"]]
+            f_expose[si, ti] = res["exposure_force_un"]
+    # Overlap sweep at default sigma_lock
+    default_sigma = float(load_pass3_reference()["contact_model"]["parameters"]["sigma_lock_mpa"])
+    f_expose_default = []
+    regime_default = []
+    for t_val in t_grid:
+        res = evaluate_coccosphere_nanoindentation_contact(t_head_ratio=float(t_val), sigma_lock_mpa=default_sigma, tiling=til, n_load_steps=90)
+        f_expose_default.append(res["exposure_force_un"])
+        regime_default.append(res["regime"])
+    return {
+        "t_head_grid": t_grid,
+        "sigma_lock_grid_mpa": s_grid,
+        "regime_codes": regime_codes,
+        "code_map": code_map,
+        "f_expose_map_un": f_expose,
+        "f_expose_default_un": np.asarray(f_expose_default),
+        "regime_default": regime_default,
+        "default_sigma_lock_mpa": default_sigma,
+    }
+
+
+# =============================================================================
+# 4c. Pass 3 / Law 6: Golgi Coccolith-Vesicle Cytoskeletal Rim Tension Sets the
+#     Organic Baseplate Eccentricity (2D Laplace / Wulff support-function law)
+# =============================================================================
+def baseplate_aspect_from_tension_anisotropy(lam: float) -> float:
+    """Closed-form equilibrium aspect ratio of a 2D vesicle rim under pressure `p`
+    and orientation-dependent cytoskeletal line tension
+      `tau(psi) = tau_0 (1 + (lambda - 1) sin^2 psi)`   (psi = outward-normal angle),
+    with normal force balance `tau(psi) kappa(psi) = p` (tangential traction supplied
+    by anchored cytoskeleton). The support function obeys `h + h'' = tau/p`, giving
+      `h(psi) = (tau_0/p) [ (1 + lambda)/2 + ((lambda - 1)/6) cos 2 psi ]`,
+    hence half-widths `a = h(0) = (tau_0/p)(1 + 2 lambda)/3`, `b = h(pi/2) = (tau_0/p)(2 + lambda)/3`
+    and
+      `b/a = (2 + lambda) / (1 + 2 lambda)`   (Lean 4 theorem
+      `vesicle_rim_tension_anisotropy_sets_baseplate_aspect`).
+    `lambda = 1` (isotropic tension) returns the circle `b/a = 1`."""
+    return (2.0 + lam) / (1.0 + 2.0 * lam)
+
+
+def tension_anisotropy_from_aspect(b_over_a: float) -> float:
+    """Inverse of `baseplate_aspect_from_tension_anisotropy`: `lambda = (2 - q)/(2 q - 1)`."""
+    return (2.0 - b_over_a) / (2.0 * b_over_a - 1.0)
+
+
+def relax_vesicle_rim_contour(
+    lam: float,
+    n_nodes: int = 160,
+    n_steps: int = 600,
+    dt: float = 1.0e-2,
+) -> dict[str, Any]:
+    """Overdamped relaxation `dX/dt = p n + tau(psi) X_ss` of a closed rim contour
+    (initially a unit circle) under anisotropic line tension
+    `tau(psi) = 1 + (lambda - 1) sin^2 psi`, where the luminal pressure `p` is the
+    Lagrange multiplier that conserves the enclosed vesicle area `A_0 = pi`
+    (incompressible lumen; a constant-tension pressurised ring has no stable size
+    otherwise). `X_ss = kappa n` is the arclength Laplacian, treated semi-implicitly
+    for unconditional stability; the area constraint is imposed by a normal push
+    `dt * p * n` with `p = (A_0 - A)/(dt * perimeter)` after each step.
+    Nodes are re-sampled uniformly in arclength each step. Returns the emergent half-widths
+    `a = max|x|`, `b = max|y|`, the simulated `b/a`, its deviation from the closed-form
+    Wulff law, and the RMS radial residual to the best-fit ellipse (how elliptical the
+    equilibrium oval is, i.e. how well an SEM elliptical rim fit describes it)."""
+    th = np.linspace(0.0, 2.0 * math.pi, n_nodes, endpoint=False)
+    pts = np.column_stack([np.cos(th), np.sin(th)])
+    eye = np.eye(n_nodes)
+    for _ in range(n_steps):
+        nxt = np.roll(pts, -1, axis=0)
+        prv = np.roll(pts, 1, axis=0)
+        t_f = nxt - pts
+        t_b = pts - prv
+        l_f = np.linalg.norm(t_f, axis=1)
+        l_b = np.linalg.norm(t_b, axis=1)
+        tang = t_f / l_f[:, None] + t_b / l_b[:, None]
+        tang /= np.linalg.norm(tang, axis=1)[:, None]
+        normal = np.column_stack([tang[:, 1], -tang[:, 0]])  # outward for CCW contour
+        tau = 1.0 + (lam - 1.0) * normal[:, 1] ** 2
+        # Arclength Laplacian matrix (cyclic tridiagonal)
+        inv_mean = 2.0 / (l_f + l_b)
+        lap = np.zeros((n_nodes, n_nodes))
+        ii = np.arange(n_nodes)
+        lap[ii, (ii + 1) % n_nodes] += inv_mean / l_f
+        lap[ii, (ii - 1) % n_nodes] += inv_mean / l_b
+        lap[ii, ii] -= inv_mean * (1.0 / l_f + 1.0 / l_b)
+        pts = np.linalg.solve(eye - dt * tau[:, None] * lap, pts)
+        # Area constraint: luminal pressure p (Lagrange multiplier) pushes along the
+        # outward normal so that the enclosed area returns to A_0 = pi (dA = p * dt * perimeter)
+        x_c, y_c = pts[:, 0], pts[:, 1]
+        area = 0.5 * abs(np.dot(x_c, np.roll(y_c, -1)) - np.dot(y_c, np.roll(x_c, -1)))
+        perim = float(np.sum(np.linalg.norm(np.roll(pts, -1, axis=0) - pts, axis=1)))
+        p_lag = (math.pi - area) / (dt * perim)
+        pts = pts + dt * p_lag * normal
+        pts -= pts.mean(axis=0)
+        # Uniform arclength re-sampling (removes tangential drift)
+        seg = np.linalg.norm(np.roll(pts, -1, axis=0) - pts, axis=1)
+        s_cum = np.concatenate([[0.0], np.cumsum(seg)])
+        s_new = np.linspace(0.0, s_cum[-1], n_nodes, endpoint=False)
+        closed = np.vstack([pts, pts[:1]])
+        pts = np.column_stack([np.interp(s_new, s_cum, closed[:, 0]), np.interp(s_new, s_cum, closed[:, 1])])
+        pts -= pts.mean(axis=0)
+    a_sim = float(np.max(np.abs(pts[:, 0])))
+    b_sim = float(np.max(np.abs(pts[:, 1])))
+    q_sim = b_sim / a_sim
+    q_theory = baseplate_aspect_from_tension_anisotropy(lam)
+    ang = np.arctan2(pts[:, 1], pts[:, 0])
+    r_pts = np.hypot(pts[:, 0], pts[:, 1])
+    r_ell = (a_sim * b_sim) / np.sqrt((b_sim * np.cos(ang)) ** 2 + (a_sim * np.sin(ang)) ** 2)
+    ellipse_rms_residual = float(np.sqrt(np.mean(((r_pts - r_ell) / a_sim) ** 2)))
+    return {
+        "lambda": float(lam),
+        "contour": pts,
+        "a_sim": a_sim,
+        "b_sim": b_sim,
+        "b_over_a_sim": float(q_sim),
+        "b_over_a_theory": float(q_theory),
+        "aspect_abs_err": float(abs(q_sim - q_theory)),
+        "eccentricity_sim": float(math.sqrt(max(0.0, 1.0 - q_sim * q_sim))),
+        "ellipse_rms_residual": ellipse_rms_residual,
+    }
+
+
+def evaluate_vesicle_rim_tension_eccentricity(reference_b_over_a: float = DEFAULT_ASPECT_B_OVER_A) -> dict[str, Any]:
+    """Pass 3 remediation of the 'Golgi vesicle cytoskeletal ring tension sets e = 0.5303'
+    item. Infers the rim tension anisotropy `lambda*` that reproduces the SEM baseplate
+    aspect `b/a = 0.8478` through the closed-form law, verifies it by direct contour
+    relaxation, sweeps `lambda in [1, 2.5]`, contrasts the exact Wulff law with the
+    naive end-point-curvature ellipse estimate `lambda_ell = (a/b)^3`, and applies the
+    inverse law to the 12-taxon `b_over_a` column (inferred, NOT independently measured)."""
+    ref = load_reference_data()
+    p3 = load_pass3_reference()["vesicle_tension_model"]
+    lam_star = tension_anisotropy_from_aspect(reference_b_over_a)
+    lam_ellipse_endpoint = (1.0 / reference_b_over_a) ** 3
+    sim_star = relax_vesicle_rim_contour(lam_star)
+    lam_grid = np.asarray(p3["lambda_sweep"], dtype=np.float64)
+    sims = [relax_vesicle_rim_contour(float(l)) for l in lam_grid]
+    q_sim = np.array([s["b_over_a_sim"] for s in sims])
+    q_theory = baseplate_aspect_from_tension_anisotropy(lam_grid)
+    taxa = ref["cross_taxa_coccolithophore_table"]
+    lam_taxa = np.array([tension_anisotropy_from_aspect(float(r["b_over_a"])) for r in taxa])
+    return {
+        "reference_b_over_a": float(reference_b_over_a),
+        "reference_eccentricity": float(math.sqrt(1.0 - reference_b_over_a ** 2)),
+        "lambda_star": float(lam_star),
+        "lambda_ellipse_endpoint_estimate": float(lam_ellipse_endpoint),
+        "lambda_estimate_rel_gap": float(abs(lam_ellipse_endpoint - lam_star) / lam_star),
+        "sim_star": sim_star,
+        "lambda_grid": lam_grid,
+        "b_over_a_sim_grid": q_sim,
+        "b_over_a_theory_grid": q_theory,
+        "sweep_max_abs_err": float(np.max(np.abs(q_sim - q_theory))),
+        "lambda_taxa": lam_taxa,
+        "taxa_names": [r["taxon"] for r in taxa],
+        "taxa_b_over_a": np.array([float(r["b_over_a"]) for r in taxa]),
+    }
+
+
+# =============================================================================
 # 5. Computer-Vision Segmentation of Vendored *Emiliania huxleyi* SEM Micrograph
 # =============================================================================
 def segment_emiliania_coccolith_specimen() -> dict[str, Any]:
@@ -620,14 +1121,20 @@ def render_comparison_figure(
     coccosphere = evaluate_coccosphere_3d_euler_packing(n_cocc=n_cocc)
     acid = evaluate_acidification_and_cap_sweep()
     spec = segment_emiliania_coccolith_specimen()
+    # Pass 3: Voronoi suture-network nanoindentation (interlocked vs truncated) & vesicle rim tension
+    tiling = build_coccosphere_voronoi_tiling(n_cocc=n_cocc)
+    contact_lock = evaluate_coccosphere_nanoindentation_contact(t_head_ratio=rosette_a["t_head_ratio"], tiling=tiling)
+    contact_trunc = evaluate_coccosphere_nanoindentation_contact(t_head_ratio=1.0, tiling=tiling)
+    regime_map = evaluate_contact_regime_map()
+    vesicle = evaluate_vesicle_rim_tension_eccentricity(reference_b_over_a=spec["aspect_b_over_a"])
 
-    fig = plt.figure(figsize=(16.5, 10.2), dpi=150)
+    fig = plt.figure(figsize=(16.5, 15.3), dpi=150)
     fig.patch.set_facecolor("#0b1120")
-    gs = GridSpec(2, 3, figure=fig, hspace=0.30, wspace=0.25)
+    gs = GridSpec(3, 3, figure=fig, hspace=0.32, wspace=0.25)
 
     def style_ax(ax: Any, title: str) -> None:
         ax.set_facecolor("#111827")
-        ax.set_title(title, color="#f8fafc", fontsize=10.0, fontweight="bold", pad=8)
+        ax.set_title(title, color="#f8fafc", fontsize=8.8, fontweight="bold", pad=8)
         ax.tick_params(colors="#cbd5e1", labelsize=8)
         for sp in ax.spines.values():
             sp.set_color("#334155")
@@ -638,7 +1145,7 @@ def render_comparison_figure(
     ax_a = fig.add_subplot(gs[0, 0])
     style_ax(
         ax_a,
-        f"A. V/R Nucleation Ring & T-Hammer Rosette (N_seg={rosette_a['n_seg']}, c_V⊥c_R={rosette_a['c_axis_angle_deg']:.0f}°)",
+        f"A. V/R Ring & T-Hammer Rosette (N_seg={rosette_a['n_seg']}, c_V⊥c_R={rosette_a['c_axis_angle_deg']:.0f}°)",
     )
     for idx_p, poly in enumerate(rosette_a["spoke_polygons_3d"]):
         col = "#38bdf8" if idx_p % 2 == 0 else "#0284c7"
@@ -672,7 +1179,7 @@ def render_comparison_figure(
     # Panel B: Morphotype A, B, C, R vs Ocean Acidification T-Head Ablation
     # -------------------------------------------------------------------------
     ax_b = fig.add_subplot(gs[0, 1])
-    style_ax(ax_b, "B. E. huxleyi Morphotypes A/B/C/R vs Acidification T-Head Ablation")
+    style_ax(ax_b, "B. Morphotypes A/B/C/R vs Acidification T-Head Ablation")
     reg_order = [
         ("morphotype_C_small_subpolar", "Morph C (N=26)", "#a78bfa"),
         ("morphotype_R_overcalcified", "Morph R (N=30, fused)", "#34d399"),
@@ -702,7 +1209,7 @@ def render_comparison_figure(
     ax_c = fig.add_subplot(gs[0, 2])
     style_ax(
         ax_c,
-        f"C. 12-Taxon Proto-Coccolith Scaling L_d(N_seg) (r={taxa['pearson_r_all_taxa']:.4f}, RMSE={taxa['rmse_um']:.3f} um)",
+        f"C. 12-Taxon Scaling L_d(N_seg) (r={taxa['pearson_r_all_taxa']:.4f}, RMSE={taxa['rmse_um']:.3f} um)",
     )
     is_r_dom = np.array([m == "R_dominant" for m in taxa["vr_modes"]])
     ax_c.scatter(
@@ -739,7 +1246,7 @@ def render_comparison_figure(
     ax_d.set_title(
         f"D. 3D Interlocking Coccosphere (F={coccosphere['n_cocc_F']}, V={coccosphere['v_vertices']}, E={coccosphere['e_edges']}, χ={coccosphere['euler_chi']})",
         color="#f8fafc",
-        fontsize=9.6,
+        fontsize=8.8,
         fontweight="bold",
     )
     centers = coccosphere["centers_3d_um"]
@@ -777,7 +1284,7 @@ def render_comparison_figure(
     ax_e = fig.add_subplot(gs[1, 1])
     style_ax(
         ax_e,
-        f"E. Coccosphere Interlocking Load ({coccosphere['interlock_amplification']:.2f}x) & Ω_calcite Saturation",
+        f"E. Interlocking Load ({coccosphere['interlock_amplification']:.2f}x prescribed) & Ω_calcite T-Head Curve",
     )
     ax_e.plot(
         acid["omega_grid"],
@@ -845,12 +1352,121 @@ def render_comparison_figure(
     )
     ax_f.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="white", fontsize=6.8, loc="upper left")
 
+    # -------------------------------------------------------------------------
+    # Panel G (Pass 3): Voronoi suture-network nanoindentation — sliding vs fracture arrest
+    # -------------------------------------------------------------------------
+    ax_g = fig.add_subplot(gs[2, 0])
+    style_ax(
+        ax_g,
+        f"G. Suture-Network Nanoindentation (F={tiling['n_cocc']}, E={tiling['n_edges']}): Lock vs Trunc.",
+    )
+    for res, col, lbl in (
+        (contact_lock, "#38bdf8", f"Interlocked T-hammers (ratio {contact_lock['t_head_ratio']:.2f})"),
+        (contact_trunc, "#f43f5e", "Truncated T-heads (ratio 1.00, Ω<1)"),
+    ):
+        ax_g.plot(res["f_hist_un"], res["u_apex_hist_um"], "-", color=col, lw=2.0, label=lbl)
+        for ev_type, mk, ms in (("slide", "v", 7), ("fracture", "X", 9)):
+            evs = [e["force_un"] for e in res["events"] if e["type"] == ev_type]
+            if evs:
+                f_e = evs[0]
+                u_e = float(np.interp(f_e, res["f_hist_un"], res["u_apex_hist_um"]))
+                ax_g.plot([f_e], [u_e], marker=mk, color="#fde047" if ev_type == "slide" else "#fb923c", markersize=ms, ls="none", zorder=6,
+                          label=f"first {ev_type} ({f_e:.1f} uN)" if res is contact_lock else None)
+    ax_g.axhline(DEFAULT_H_SHIELD_UM, color="#94a3b8", ls=":", lw=1.2, label="u_crit = h_shield (cell exposed)")
+    ax_g.set_xscale("log")
+    ax_g.set_yscale("log")
+    ax_g.set_xlabel("Flat-punch load F on apex coccolith (uN)", color="#cbd5e1", fontsize=8.5)
+    ax_g.set_ylabel("Apex radial displacement u_apex (um)", color="#cbd5e1", fontsize=8.5)
+    ax_g.text(
+        0.98, 0.03,
+        f"Interlocked ({contact_lock['regime'].replace('_', ' ')}): slide @ {contact_lock['first_event_force_un']:.1f} uN\n"
+        f"  -> apex fracture @ {contact_lock['first_fracture_force_un']:.1f} uN, arrested (σ_neigh/σ_f = {contact_lock['arrest_neighbour_stress_ratio']:.2f})\n"
+        f"  -> exposure @ {contact_lock['exposure_force_un']:.1f} uN\n"
+        f"Truncated ({contact_trunc['regime'].replace('_', ' ')}): shed @ {contact_trunc['exposure_force_un']:.1e} uN\n"
+        f"Protection ratio F_expose = {contact_lock['exposure_force_un'] / max(contact_trunc['exposure_force_un'], 1e-12):.1e}x; "
+        f"Π = lock/bend capacity = {contact_lock['capacity_ratio_lock_over_bend']:.2f}",
+        transform=ax_g.transAxes, color="#e2e8f0", fontsize=6.2, va="bottom", ha="right",
+    )
+    ax_g.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="white", fontsize=6.2, loc="upper left")
+    ax_g.grid(alpha=0.2, color="#475569", which="both")
+
+    # -------------------------------------------------------------------------
+    # Panel H (Pass 3): Regime map sigma_lock x t_head_ratio & overlap sweep of F_expose
+    # -------------------------------------------------------------------------
+    ax_h = fig.add_subplot(gs[2, 1])
+    style_ax(ax_h, "H. Sliding vs Fracture-Arrest Regime Map (σ_lock × overlap)")
+    regime_colors = ["#1e293b", "#f43f5e", "#fbbf24", "#34d399", "#38bdf8", "#a855f7"]
+    cmap_reg = matplotlib.colors.ListedColormap(regime_colors)
+    t_g = regime_map["t_head_grid"]
+    s_g = regime_map["sigma_lock_grid_mpa"]
+    ax_h.imshow(
+        regime_map["code_map"], cmap=cmap_reg, vmin=-0.5, vmax=5.5, aspect="auto", origin="lower",
+        extent=[t_g[0] - 0.05, t_g[-1] + 0.05, -0.5, len(s_g) - 0.5],
+    )
+    for si in range(len(s_g)):
+        for ti in range(len(t_g)):
+            fe = regime_map["f_expose_map_un"][si, ti]
+            ax_h.text(t_g[ti], si, f"{fe:.0f}" if fe >= 1 else f"{fe:.2f}", color="black", fontsize=5.4, ha="center", va="center")
+    ax_h.set_yticks(range(len(s_g)))
+    ax_h.set_yticklabels([f"{s:g}" for s in s_g])
+    ax_h.set_xlabel("T-hammer head ratio w_head/w_shaft (overlap φ_ov = ratio − 1)", color="#cbd5e1", fontsize=8.5)
+    ax_h.set_ylabel("Interlock shear strength σ_lock (MPa)", color="#cbd5e1", fontsize=8.5)
+    ax_h.axvline(rosette_a["t_head_ratio"], color="white", ls="--", lw=1.0)
+    ax_h.axhline(list(s_g).index(regime_map["default_sigma_lock_mpa"]), color="white", ls="--", lw=1.0)
+    handles = [
+        matplotlib.patches.Patch(color=regime_colors[v], label=k.replace("_", " "))
+        for k, v in regime_map["regime_codes"].items() if v in set(regime_map["code_map"].ravel().tolist())
+    ]
+    ax_h.legend(handles=handles, facecolor="#0f172a", edgecolor="#334155", labelcolor="white", fontsize=6.4, loc="upper left", title="cell text = F_expose (uN)", title_fontsize=6.4)
+    ax_h.get_legend().get_title().set_color("white")
+
+    # -------------------------------------------------------------------------
+    # Panel I (Pass 3): Vesicle rim tension anisotropy sets baseplate eccentricity
+    # -------------------------------------------------------------------------
+    ax_i = fig.add_subplot(gs[2, 2])
+    sim_star = vesicle["sim_star"]
+    style_ax(
+        ax_i,
+        f"I. Vesicle Rim Tension λ*={vesicle['lambda_star']:.3f} → b/a={sim_star['b_over_a_sim']:.4f} (SEM {vesicle['reference_b_over_a']:.4f})",
+    )
+    cont = sim_star["contour"]
+    a_sem_um = spec["a_right_px"] * float(load_reference_data()["metadata"]["specimens"]["emiliania_huxleyi_coccolith_specimen"]["calibration_right_um_per_px"])
+    scale_um = a_sem_um / sim_star["a_sim"]
+    ax_i.plot(np.append(cont[:, 0], cont[0, 0]) * scale_um, np.append(cont[:, 1], cont[0, 1]) * scale_um, color="#34d399", lw=2.2, label="Relaxed vesicle rim (Laplace, anisotropic τ)")
+    ang_i = np.linspace(0.0, 2.0 * math.pi, 300)
+    ax_i.plot(a_sem_um * np.cos(ang_i), a_sem_um * spec["aspect_b_over_a"] * np.sin(ang_i), "--", color="#38bdf8", lw=1.6, label=f"SEM rim ellipse fit (b/a={spec['aspect_b_over_a']:.4f})")
+    ax_i.plot(np.cos(ang_i) * scale_um * 1.0, np.sin(ang_i) * scale_um * 1.0, ":", color="#94a3b8", lw=1.0, label="Isotropic tension λ=1 (circle, same area)")
+    ax_i.set_aspect("equal")
+    ax_i.set_xlim(-2.7, 2.7)
+    ax_i.set_ylim(-2.7, 2.7)
+    ax_i.set_xlabel("x (um)", color="#cbd5e1", fontsize=8.5)
+    ax_i.set_ylabel("y (um)", color="#cbd5e1", fontsize=8.5)
+    ax_i.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="white", fontsize=6.0, loc="lower left")
+    ax_i.text(
+        0.02, 0.98,
+        f"b/a = (2+λ)/(1+2λ), e = {sim_star['eccentricity_sim']:.4f} (SEM {vesicle['reference_eccentricity']:.4f})\n"
+        f"λ_ellipse-endpoint = (a/b)³ = {vesicle['lambda_ellipse_endpoint_estimate']:.3f} ({100 * vesicle['lambda_estimate_rel_gap']:.1f}% off)\n"
+        f"ellipse RMS residual = {100 * sim_star['ellipse_rms_residual']:.2f}% of a; sweep max |sim−law| = {vesicle['sweep_max_abs_err']:.4f}",
+        transform=ax_i.transAxes, color="#e2e8f0", fontsize=6.2, va="top",
+    )
+    ax_ins = ax_i.inset_axes([0.63, 0.06, 0.35, 0.30])
+    ax_ins.set_facecolor("#0f172a")
+    lam_fine = np.linspace(1.0, 2.5, 100)
+    ax_ins.plot(lam_fine, baseplate_aspect_from_tension_anisotropy(lam_fine), color="#fde047", lw=1.4, label="law")
+    ax_ins.plot(vesicle["lambda_grid"], vesicle["b_over_a_sim_grid"], "o", color="#34d399", markersize=3.5, label="relaxed sim")
+    ax_ins.plot(vesicle["lambda_taxa"], vesicle["taxa_b_over_a"], "s", color="#f59e0b", markersize=3.0, label="12 taxa (inferred λ)")
+    ax_ins.axhline(vesicle["reference_b_over_a"], color="#38bdf8", ls="--", lw=0.8)
+    ax_ins.set_xlabel("λ = τ_minor/τ_major", color="#cbd5e1", fontsize=6.0)
+    ax_ins.set_ylabel("b/a", color="#cbd5e1", fontsize=6.0)
+    ax_ins.tick_params(colors="#cbd5e1", labelsize=5.5)
+    ax_ins.legend(facecolor="#0f172a", labelcolor="white", fontsize=5.0, loc="upper right")
+
     fig.suptitle(
-        "Emiliania huxleyi V/R Calcite Coccolith Rosette & Interlocking Coccosphere Morphogenesis — Young et al. (1992) & Jaya et al. (2016) (Pass 2)",
+        "Emiliania huxleyi V/R Calcite Coccolith Rosette, Interlocking Coccosphere Contact Mechanics & Vesicle Rim Tension — Young et al. (1992) & Jaya et al. (2016) (Pass 3)",
         color="#f8fafc",
-        fontsize=12.2,
+        fontsize=12.0,
         fontweight="bold",
-        y=0.98,
+        y=0.985,
     )
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -923,18 +1539,166 @@ def render_growth_gif(out_path: Path = OUT_GIF) -> Path:
     return out_path
 
 
+def render_contact_indentation_gif(out_path: Path = OUT_CONTACT_GIF, n_frames: int = 12) -> Path:
+    """Pass 3 GIF: flat-punch load ramp on the Voronoi-tiled interlocked coccosphere.
+    Left: 3D Voronoi coccolith tiles coloured by inward displacement, slid sutures in
+    red, fractured plate in orange. Right: F-u_apex trace with slide/fracture events."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    tiling = build_coccosphere_voronoi_tiling()
+    res = evaluate_coccosphere_nanoindentation_contact(t_head_ratio=1.72, tiling=tiling)
+    n_hist = len(res["state_hist"])
+    frame_idx = np.unique(np.clip(np.geomspace(1, n_hist, n_frames).astype(int) - 1, 0, n_hist - 1))
+    verts = tiling["voronoi_vertices"] * DEFAULT_R_SPHERE_UM
+    frames: list[Image.Image] = []
+    u_max = max(float(np.max(res["state_hist"][-1][0])), 1e-6)
+
+    for fi in frame_idx:
+        u_um, slid, frac = res["state_hist"][fi]
+        fig = plt.figure(figsize=(10.2, 4.8), dpi=110)
+        fig.patch.set_facecolor("#0b1120")
+        ax1 = fig.add_subplot(1, 2, 1, projection="3d")
+        ax2 = fig.add_subplot(1, 2, 2)
+        ax1.set_facecolor("#111827")
+        polys = []
+        cols = []
+        for k_t, reg in enumerate(tiling["regions"]):
+            poly = verts[reg]
+            polys.append(poly)
+            if frac[k_t]:
+                cols.append("#fb923c")
+            else:
+                shade = float(np.clip(u_um[k_t] / u_max, 0.0, 1.0))
+                cols.append(matplotlib.colors.to_hex((0.1 + 0.8 * shade, 0.45 + 0.3 * (1 - shade), 0.9 - 0.5 * shade)))
+        ax1.add_collection3d(Poly3DCollection(polys, facecolors=cols, edgecolors="#e2e8f0", linewidths=0.5, alpha=0.9))
+        for e_idx, (i, j) in enumerate(tiling["edges"]):
+            if slid[e_idx]:
+                shared = sorted(set(tiling["regions"][i]) & set(tiling["regions"][j]))
+                seg = verts[shared]
+                ax1.plot(seg[:, 0], seg[:, 1], seg[:, 2], color="#f43f5e", lw=2.2)
+        lim = DEFAULT_R_SPHERE_UM * 1.1
+        ax1.set_xlim(-lim, lim)
+        ax1.set_ylim(-lim, lim)
+        ax1.set_zlim(-lim, lim)
+        ax1.view_init(elev=38, azim=35)
+        ax1.tick_params(colors="#94a3b8", labelsize=6)
+        ax1.set_title(
+            f"F = {res['f_hist_un'][fi]:.2f} uN · slid sutures {int(np.sum(slid))}/{len(slid)} · fractured {int(np.sum(frac))}",
+            color="white", fontsize=9.0, fontweight="bold",
+        )
+        ax2.set_facecolor("#111827")
+        ax2.plot(res["f_hist_un"], res["u_apex_hist_um"], color="#38bdf8", lw=1.8)
+        ax2.plot(res["f_hist_un"][: fi + 1], res["u_apex_hist_um"][: fi + 1], color="#fde047", lw=2.4)
+        ax2.scatter([res["f_hist_un"][fi]], [res["u_apex_hist_um"][fi]], color="#fde047", s=60, zorder=5)
+        ax2.axhline(DEFAULT_H_SHIELD_UM, color="#94a3b8", ls=":", lw=1.1)
+        ax2.set_xscale("log")
+        ax2.set_yscale("log")
+        ax2.set_xlabel("Apex load F (uN)", color="#cbd5e1", fontsize=8.5)
+        ax2.set_ylabel("u_apex (um)", color="#cbd5e1", fontsize=8.5)
+        ax2.tick_params(colors="#cbd5e1", labelsize=8)
+        ax2.set_title(f"Regime: {res['regime'].replace('_', ' ')}", color="#34d399", fontsize=9.0, fontweight="bold")
+        ax2.grid(alpha=0.2, color="#475569", which="both")
+        fig.tight_layout()
+        fig.canvas.draw()
+        w_px, h_px = fig.canvas.get_width_height()
+        buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape((h_px, w_px, 4))
+        frames.append(Image.fromarray(buf[:, :, :3]))
+        plt.close(fig)
+    frames[0].save(out_path, save_all=True, append_images=frames[1:], duration=420, loop=0)
+    return out_path
+
+
 # =============================================================================
-# 7. MorphoEval Quantitative Measurement Suite & 8-Check Self-Test
+# 7. MorphoEval Quantitative Measurement Suite & 12-Check Self-Test
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored quantitative morphometrics for `morphoeval/measure_outputs.py`."""
+    """Compute 16 reference-anchored quantitative morphometrics for `morphoeval/measure_outputs.py`
+    (9 from Pass 2 + 7 Pass 3 contact-mechanics / vesicle-tension measurements)."""
     regimes = evaluate_all_morphospace_regimes()
     taxa = evaluate_cross_taxa_scaling()
     cocc = evaluate_coccosphere_3d_euler_packing()
     spec = segment_emiliania_coccolith_specimen()
+    tiling = build_coccosphere_voronoi_tiling()
+    c_lock = evaluate_coccosphere_nanoindentation_contact(t_head_ratio=regimes["morphotype_A_canonical"]["t_head_ratio"], tiling=tiling)
+    c_trunc = evaluate_coccosphere_nanoindentation_contact(t_head_ratio=1.0, tiling=tiling)
+    ves = evaluate_vesicle_rim_tension_eccentricity(reference_b_over_a=spec["aspect_b_over_a"])
 
     morph_a = regimes["morphotype_A_canonical"]
     acid_ab = regimes["ocean_acidification_cap_ablation"]
+    protection_ratio = c_lock["exposure_force_un"] / max(c_trunc["exposure_force_un"], 1e-12)
+    sem_pixel_pct = 100.0 / spec["a_right_px"]
+
+    pass3_measurements: list[dict[str, Any]] = [
+        {
+            "name": "Spherical Voronoi coccosphere suture-edge count E (F = 16 tiles) vs Euler trivalent 3(F-2)",
+            "value": float(tiling["n_edges"]),
+            "unit": "suture edges",
+            "method": f"Shared-vertex adjacency of scipy SphericalVoronoi regions on the Fibonacci coccosphere; tile areas close to 4 pi R^2 with relative error {tiling['area_closure_rel_err']:.1e}",
+            "reference_value": float(tiling["euler_edges_expected"]),
+            "reference_source": "Jaya et al. (2016) Nat. Commun. 7:11904 & Lean 4 theorem coccosphere_euler_polyhedral_packing_and_trivalent_interlock",
+            "note": f"apex tile valence = {c_lock['apex_valence']}, mean suture length = {np.mean(tiling['edge_len_um']):.3f} um (CV = {np.std(tiling['edge_len_um']) / np.mean(tiling['edge_len_um']):.3f})",
+            "derived_from": "script",
+        },
+        {
+            "name": "Interlocked coccosphere nanoindentation: neighbour bending-stress ratio sigma_neigh/sigma_f at first apex fracture (arrest criterion < 1)",
+            "value": round(float(c_lock["arrest_neighbour_stress_ratio"]), 4),
+            "unit": "stress ratio",
+            "method": f"Reduced lumped-plate FE on the Voronoi suture network (t_head_ratio = {c_lock['t_head_ratio']:.2f}, sigma_lock = {c_lock['params']['sigma_lock_mpa']:g} MPa): cascade-resolved maximum neighbour plate stress after the apex plate fractures at {c_lock['first_fracture_force_un']:.1f} uN",
+            "reference_value": 1.0,
+            "reference_source": "Jaya et al. (2016) Nat. Commun. 7:11904 (cracks arrested at coccolith boundaries; coccoliths slide relative to each other) — qualitative target: arrested, i.e. ratio < 1",
+            "note": f"regime = {c_lock['regime']}, fracture_arrested = {c_lock['fracture_arrested']}, first suture slide at {c_lock['first_event_force_un']:.1f} uN precedes fracture (sliding-first control vs fracture-first alternative)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Interlock shear capacity over apex plate bending capacity Pi (sliding-first if < 1)",
+            "value": round(float(c_lock["capacity_ratio_lock_over_bend"]), 4),
+            "unit": "dimensionless",
+            "method": f"Pi = sum over apex sutures of (mu N_hoop + sigma_lock l_ij d_ov) / (sigma_f h^2 / alpha_p) = {c_lock['interlock_shear_capacity_un']:.2f} uN / {c_lock['plate_bending_capacity_un']:.2f} uN",
+            "reference_value": 1.0,
+            "reference_source": "Lean 4 theorem suture_capacity_ratio_selects_sliding_vs_fracture (threshold); constants are model assumptions tagged in coccosphere_contact_vesicle_tension_reference.json",
+            "note": f"d_overlap = {c_lock['d_overlap_nm']:.1f} nm, k_Reissner = {c_lock['k_reissner_n_per_m']:.0f} N/m, mean suture stiffness = {c_lock['k_edge_mean_n_per_m']:.0f} N/m",
+            "derived_from": "script",
+        },
+        {
+            "name": "Cell-exposure load protection ratio F_expose(interlocked) / F_expose(truncated T-heads) — negative control",
+            "value": round(float(protection_ratio), 1),
+            "unit": "force ratio",
+            "method": f"Interlocked (t_head_ratio {c_lock['t_head_ratio']:.2f}) exposure at {c_lock['exposure_force_un']:.2f} uN ({c_lock['exposure_mode']}) vs truncated (ratio 1.00, Omega < 1) shedding at {c_trunc['exposure_force_un']:.2e} uN ({c_trunc['regime']})",
+            "reference_value": 2.36,
+            "reference_source": "Pass 2 prescribed interlock buckling amplification constant (evaluate_coccosphere_3d_euler_packing; provenance unverified) — NOT reproduced: the contact model measures coccolith shedding/punch-through, not shell buckling",
+            "note": "Truncated case has no T-hammer overlap so the apex coccolith is pushed into the kPa-scale protoplast at sub-nN load; ratio is dominated by the assumed E_cell and is reported as an order-of-magnitude baseline, not a calibrated value",
+            "derived_from": "script",
+        },
+        {
+            "name": "Relaxed vesicle-rim contour aspect ratio b/a at inferred tension anisotropy lambda* vs SEM baseplate fit",
+            "value": round(float(ves["sim_star"]["b_over_a_sim"]), 4),
+            "unit": "minor/major axis ratio",
+            "method": f"Semi-implicit area-conserving Laplace relaxation of a 160-node rim under tau(psi) = 1 + (lambda* - 1) sin^2 psi with lambda* = {ves['lambda_star']:.4f} inferred from b/a via lambda = (2 - q)/(2q - 1)",
+            "reference_value": round(float(ves["reference_b_over_a"]), 4),
+            "reference_source": "SEM specimen elliptical rim fit (emiliania_huxleyi_coccolith_specimen.jpg) & Lean 4 theorem vesicle_rim_tension_anisotropy_sets_baseplate_aspect",
+            "note": f"lambda* is a calibration (inferred, not independently measured); eccentricity e_sim = {ves['sim_star']['eccentricity_sim']:.4f} vs {ves['reference_eccentricity']:.4f}; closed-form law b/a = (2+lambda)/(1+2 lambda)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Vesicle rim tension anisotropy lambda* (exact Wulff law) vs naive ellipse end-point curvature estimate (a/b)^3 — alternative model",
+            "value": round(float(ves["lambda_star"]), 4),
+            "unit": "tau_minor-end / tau_major-end",
+            "method": "lambda* = (2 - q)/(2q - 1) from the support-function solution h + h'' = tau/p; alternative estimate assumes an exact ellipse and matches Laplace only at the two axis ends",
+            "reference_value": round(float(ves["lambda_ellipse_endpoint_estimate"]), 4),
+            "reference_source": "Ellipse end-point curvature ratio kappa(0)/kappa(pi/2) = (a/b)^3 (alternative model baseline)",
+            "note": f"relative gap = {100 * ves['lambda_estimate_rel_gap']:.2f}%; 12-taxon inferred lambda range = {ves['lambda_taxa'].min():.3f}-{ves['lambda_taxa'].max():.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Relaxed vesicle-rim deviation from best-fit ellipse (RMS radial residual, % of a) vs SEM one-pixel fit precision",
+            "value": round(100.0 * float(ves["sim_star"]["ellipse_rms_residual"]), 4),
+            "unit": "% of semi-major axis",
+            "method": f"RMS of (r(theta) - r_ellipse(theta))/a over the relaxed contour; sweep lambda in [1, 2.5] max |b/a_sim - law| = {ves['sweep_max_abs_err']:.4f}",
+            "reference_value": round(float(sem_pixel_pct), 4),
+            "reference_source": "One pixel of the 92 px SEM semi-major axis (right panel, 0.019022 um/px): the elliptical rim fit cannot distinguish the Wulff oval from an ellipse below this residual",
+            "note": "residual below one SEM pixel => elliptical rim fit in segment_emiliania_coccolith_specimen() is consistent with the anisotropic-tension equilibrium shape",
+            "derived_from": "script",
+        },
+    ]
 
     return [
         {
@@ -1027,11 +1791,11 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"left 10,000x panel intact coccosphere diameter = {spec['d_sphere_measured_um']:.2f} um",
             "derived_from": "output",
         },
-    ]
+    ] + pass3_measurements
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
+    """Run the 12-point verification suite (8 Pass 2 checks + 4 Pass 3 checks)."""
     # 1. Cryptographic SHA-256 verification of all 4 dataset files
     digests = verify_dataset_integrity()
     assert len(digests) == 4, "Expected 4 SHA-256-verified dataset files"
@@ -1088,21 +1852,70 @@ def self_test() -> bool:
     for p1, p2 in zip(run1["spoke_polygons_3d"], run2["spoke_polygons_3d"]):
         assert np.allclose(p1, p2, atol=0.0)
 
+    # 9. Pass 3: Spherical Voronoi suture tiling consistent with the Euler/trivalent identities
+    for nc in (12, 16, 20):
+        til = build_coccosphere_voronoi_tiling(n_cocc=nc)
+        assert til["n_edges"] == 3 * (nc - 2), f"Voronoi suture count {til['n_edges']} != 3(F-2) for F={nc}"
+        assert til["area_closure_rel_err"] < 1e-9
+        assert np.all(til["edge_len_um"] > 0.0)
+    tiling = build_coccosphere_voronoi_tiling()
+
+    # 10. Pass 3: nanoindentation contact model — truncated T-heads shed, interlocked arrest fracture
+    c_lock = evaluate_coccosphere_nanoindentation_contact(t_head_ratio=m_a["t_head_ratio"], tiling=tiling)
+    c_trunc = evaluate_coccosphere_nanoindentation_contact(t_head_ratio=1.0, tiling=tiling)
+    assert c_trunc["regime"] == "truncated_shedding" and c_trunc["n_fractured"] == 0
+    assert c_lock["first_event"] == "slide", c_lock["first_event"]
+    assert c_lock["fracture_arrested"] is True and c_lock["arrest_neighbour_stress_ratio"] < 1.0
+    assert c_lock["n_fractured"] == 1
+    assert c_trunc["exposure_force_un"] < c_lock["first_event_force_un"] < c_lock["first_fracture_force_un"] <= c_lock["exposure_force_un"]
+    assert math.isclose(c_lock["first_fracture_force_un"], c_lock["plate_bending_capacity_un"], rel_tol=0.10)
+    assert (c_lock["capacity_ratio_lock_over_bend"] < 1.0) == (c_lock["first_event"] == "slide")
+    rmap = evaluate_contact_regime_map(t_head_grid=np.array([1.0, 1.3, 1.72, 2.0]), sigma_lock_grid_mpa=np.array([5.0, 50.0, 400.0]))
+    f_def = rmap["f_expose_default_un"]
+    assert np.all(np.diff(f_def) >= -1e-9), "F_expose must be non-decreasing with T-hammer overlap"
+    assert rmap["regime_default"][0] == "truncated_shedding"
+    # Determinism (no RNG in the contact solver)
+    c_lock2 = evaluate_coccosphere_nanoindentation_contact(t_head_ratio=m_a["t_head_ratio"], tiling=tiling)
+    assert np.array_equal(c_lock["u_apex_hist_um"], c_lock2["u_apex_hist_um"])
+
+    # 11. Pass 3: vesicle rim tension law — closed form, inverse, isotropic circle, relaxation agreement
+    for q in (0.75, 0.8478, 0.95):
+        assert math.isclose(baseplate_aspect_from_tension_anisotropy(tension_anisotropy_from_aspect(q)), q, abs_tol=1e-12)
+    assert math.isclose(baseplate_aspect_from_tension_anisotropy(1.0), 1.0, abs_tol=1e-15)
+    ves = evaluate_vesicle_rim_tension_eccentricity(reference_b_over_a=spec["aspect_b_over_a"])
+    assert math.isclose(ves["lambda_star"], 1.6564, abs_tol=5e-4), ves["lambda_star"]
+    assert math.isclose(ves["sim_star"]["b_over_a_sim"], spec["aspect_b_over_a"], abs_tol=0.005)
+    assert ves["sweep_max_abs_err"] < 0.01
+    assert math.isclose(ves["b_over_a_sim_grid"][0], 1.0, abs_tol=1e-6)  # lambda = 1 -> circle
+    assert ves["sim_star"]["ellipse_rms_residual"] < 1.0 / spec["a_right_px"]  # sub-pixel vs SEM fit
+    assert ves["lambda_estimate_rel_gap"] < 0.02
+
+    # 12. Pass 3 JSON parity
+    p3 = load_pass3_reference()
+    assert math.isclose(float(p3["vesicle_tension_model"]["lambda_star_expected"]), ves["lambda_star"], abs_tol=5e-4)
+    assert math.isclose(float(p3["vesicle_tension_model"]["reference_b_over_a"]), DEFAULT_ASPECT_B_OVER_A, rel_tol=1e-9)
+    assert set(p3["contact_model"]["parameters"]) == set(p3["contact_model"]["provenance"])
+    assert float(p3["contact_model"]["parameters"]["sigma_lock_mpa"]) == c_lock["params"]["sigma_lock_mpa"]
+
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 16
+    assert all(m.get("reference_value") is not None for m in meas)
     print(
-        f"[self_test] 2022-coccolith-emiliania-calcite-rosette.py (v2) PASSED all 8 checks "
+        f"[self_test] 2022-coccolith-emiliania-calcite-rosette.py (v3) PASSED all 12 checks "
         f"(12-taxa r={taxa['pearson_r_all_taxa']:.4f}, c_V⊥c_R={vr['c_axis_angle_deg']:.1f} deg, "
-        f"L_d(32)={m_a['l_d_um']:.3f} um, Euler chi={cocc['euler_chi']}, "
-        f"SEM N_seg={spec['n_seg_detected']}, b/a={spec['aspect_b_over_a']:.4f})."
+        f"L_d(32)={m_a['l_d_um']:.3f} um, Euler chi={cocc['euler_chi']}, Voronoi E={tiling['n_edges']}, "
+        f"SEM N_seg={spec['n_seg_detected']}, b/a={spec['aspect_b_over_a']:.4f}; "
+        f"contact: {c_lock['regime']} @ slide {c_lock['first_event_force_un']:.1f} uN / fracture {c_lock['first_fracture_force_un']:.1f} uN "
+        f"(sigma_neigh/sigma_f={c_lock['arrest_neighbour_stress_ratio']:.2f}) vs {c_trunc['regime']}; "
+        f"vesicle lambda*={ves['lambda_star']:.4f} -> b/a_sim={ves['sim_star']['b_over_a_sim']:.4f})."
     )
     return True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite")
-    ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
+    ap.add_argument("--self-test", action="store_true", help="Run 12-check verification suite")
+    ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering (growth + contact indentation)")
     ap.add_argument("--n-seg", type=int, default=None, help="Override radial segment count N_seg")
     ap.add_argument("--w0", type=float, default=None, help="Override crystal pair pitch w_0 (um)")
     ap.add_argument("--l-spoke", type=float, default=None, help="Override radial spoke length L_spoke (um)")
@@ -1132,6 +1945,8 @@ def main() -> int:
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF)
         print(f"[render] Wrote {gif}")
+        gif2 = render_contact_indentation_gif(OUT_CONTACT_GIF)
+        print(f"[render] Wrote {gif2}")
     return 0
 
 

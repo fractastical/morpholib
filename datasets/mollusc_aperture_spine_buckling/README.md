@@ -33,3 +33,17 @@ This dataset vendors the mathematical, biomechanical, and empirical morphometric
   - **Source:** Wikimedia Commons [`File:Murex pecten (Venus comb murex snail) 2 (24962834576).jpg`](https://commons.wikimedia.org/wiki/File:Murex_pecten_(Venus_comb_murex_snail)_2_(24962834576).jpg) (James St. John)
   - **License:** CC BY 2.0
   - **Dimensions:** `343 x 800` px
+
+## Pass 3 (v3) additions — reduced Koiter cord coupling & thickness gradients
+
+Pass 3 closes the two Pass 2 remediation items with **reduced-order, honestly labelled** models (see `pass3_koiter_cord_thickness_reference.json`, SHA-256-pinned by the script):
+
+4. **Oblique spiral-cord × varix-spine coupling on a reduced Koiter-type shell surface** (`solve_koiter_shell_cord_spine_coupling`, Lean `cord_varix_intersection_registration`). The mantle-margin surface $w(s,t)$ is relaxed under the linearised Koiter / Föppl–von Kármán energy on a Winkler foundation,
+   $$U[w]=\iint\Big[\tfrac12 D(\nabla^2 w)^2-\tfrac12 P(t)(\partial_s w)^2+\tfrac12 K_0 w^2+\tfrac14\kappa_3 w^4-f_{\rm cord}\,w\Big]\,ds\,dt,$$
+   with a varix growth window $P(t)$ and oblique spiral cords as ridge forcing $f_{\rm cord}=\varepsilon_c K_0 A_{\rm onset}\cos(k_c(s\cos\psi+t\sin\psi))$. Starting from noise, the spine count, registration to cord/varix intersections and spine-ridge tilt are *emergent*. Cord/varix intersections are spaced $d=\lambda_c/\cos\psi$ along the varix; when $\lambda_c=\lambda_1\cos\psi$ their number equals the free spine count $L/\lambda_1$ (1:1 templating). Cord forcing opens an Arnold-type locking tongue $N_{\rm spines}=n_{\rm cords}$ whose width grows with $\varepsilon_c$; oblique cords are followed by tilted spines until the cord phase drift across the varix window de-registers them.
+   *Residual (Pass 4):* a true 3D finite-strain Koiter shell FEM with a volumetric growth tensor (Rudraraju et al. 2019) is not implemented.
+
+5. **Mantle-edge thickness gradient $h(s)$ and ontogenetic allometry** (`infer_specimen_thickness_gradient`, `solve_graded_thickness_comb`, `evaluate_ontogenetic_instar_series`, Lean `ontogenetic_spine_count_conservation`). No micro-CT cross-sections were obtainable offline. The *relative* thickness profile along the siphonal canal is **inferred** from the specimen's inter-spine spacing profile via the inverse WKB law $h/\bar h=(\lambda/\bar\lambda)^{4/3}$, then propagated through a graded-rigidity comb solver ($D(s)=(h/\bar h)^3$; emergent spacing tracks $\lambda\propto h^{3/4}$). Across instars, $h_1\propto L^\beta$ gives $N_1\propto L^{1-3\beta/4}$, so spines per varix are conserved iff $\beta=4/3$.
+   *Residual (Pass 4):* measured micro-CT $h(s)$ of *Chicoreus ramosus* mantle edges across instars.
+
+New files: `pass3_koiter_cord_thickness_reference.json`, `pass3_citations.bib`. Media: `docs/media/mollusc_aperture_spine_buckling_koiter_cord_ontogeny.png`, `docs/media/mollusc_aperture_spine_buckling_cord_locking.gif`.

@@ -1,0 +1,401 @@
+# MorphoEval audit — Uriz et al. (2003) Microsc. Res. Tech. & Aizenberg et al. (2005) Science Sponge Spicule Silicatein Symmetry, Laminated Lattice, Cohesive Bending & Basalia Waveguide, 2026-10-19 (v3)
+#
+# Pass 3 (remediation round) re-score of `2012-bavestrello-sponge-spicule-hexactin.py` (now 2215 lines, "Pass 3 (v3)")
+# after the Phase A remediation in the instrumented loop `morphoeval/runs/2026-10-19-sponge-spicule-hexactin-loop-pass3`,
+# superseding `2026-10-19-sponge-spicule-hexactin-audit-v2` (91.6 / 100). Same assessor/second-assessor identities as
+# Pass 2 (telemetry run `primary_assessor: gemini-4-argon`, `second_assessor: claude-sonnet-5-5-high`); the Phase B
+# scoring pass was executed by a Claude Fable 5.1 subagent working from the Phase A handoff note, `git diff` of the
+# script / Lean file / math-KG YAML, a fresh `--self-test` run (12/12 PASS, ~5 s) and `lean` verification (exit 0,
+# 0 `sorry`s), with every `lines:` pin re-checked against the files at commit a69596cc.
+#
+# What Pass 3 changed (both v2 remediation items closed, as honest reduced models):
+#   1. Law 5 — 1D Hermite-beam finite-element three-point bending of the N = 25 concentric laminate with a bilinear
+#      cohesive-zone organic interlayer (He & Hutchinson deflect-vs-penetrate, Hillerborg l_cz = 27 um, Griffith
+#      interface delamination solved by bisection on the FE stiffness), coupled to the 3D silicatein solver through the
+#      accreted biosilica cross-section (k_cat sweep -> N in {0, 6, 13, 19, 25}). W_lam / W_mono = 1.714 (25 load drops)
+#      vs 1.000 for the fused-interlayer ablation. NOT a 3D cohesive FEM — stated in the section banner and docstrings.
+#   2. Law 6 — external helical surface ridges on the cylindrical cage (K_tors(psi) = K_wall + N_r k_r sin^2(2 psi),
+#      psi_opt = 45 deg, parallel-axis ovalization gain 1 + N_r A_r / 2 = 2.00 for N_r = 8). Law 7 — basalia step-index
+#      waveguide from the Law-3 lamellar radii (NA = 0.2408, V = 6.38 at 550 nm, 6 LP groups / 20 modes vs Gloge 20.3,
+#      single-mode cutoff 1.458 um; meridional ray trace 9.45 deg vs analytic 9.49 deg).
+#   3. Two new Lean 4 theorems (`cohesive_laminate_progressive_fracture_work_exceeds_monolith`,
+#      `euplectella_helical_ridge_shear_projection_and_parallel_axis_gain`), 6 theorems total, 0 `sorry`s; Laws 5-7
+#      registered in `morphoeval/math_kg_loops/bavestrello-sponge-spicule-hexactin.yaml` (Law 7 has no Lean theorem).
+#   4. New dataset files `cohesive_bending_waveguide_reference.json` (every constant provenance-tagged) and
+#      `pass3_citations.bib`; README Pass 3 section; new `sponge_spicule_hexactin_pass3_mechanics.png` and
+#      `sponge_spicule_hexactin_bending_fracture.gif`; `measure_morphoeval()` 9 -> 18 entries; self-test 8 -> 12 checks;
+#      new CLI flags `--skip-pass3`, `--g-i`, `--n-ridges`.
+#
+# Why the overall score goes DOWN (91.6 -> 88.6) although both remediation items were closed: the Pass 3 mechanics
+# exposed that the Pass 2 validation layer was largely self-referential. The 12-species `theta_obs_deg` and
+# `toughness_ratio_obs` columns are Pass 1 recalled numbers that sit on the model laws to r = 1.0000; the Pass 2
+# toughness law G_lam / G_mono = 1 + eta N (eta = 0.32) is fitted to that same table and is contradicted ~5x by the
+# new cohesive FE mechanics (1.71x vs 8.95x / 9.0x); the specimen reference angles in the JSON equal the script's own
+# outputs; and several new Pass 3 measurements are numerical-parity or identity checks (FE vs 48EI/L^3, exact sum vs
+# closed form, ray trace vs Snell) or calibrated by construction (k_cat -> N = 25). Six new DOIs and all optical /
+# fracture constants are recalled offline and unverified. These are now listed as Pass 4 remediation items.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the files at
+# commit a69596cc (working tree with the Pass 3 Phase A edits applied).
+#
+# Metadata note: the Pass 3 dispatch prompt names the seed paper as Uriz, Turon & Becerro (2003) Prog. Mol. Subcell.
+# Biol. (10.1007/978-3-642-55486-5_7); the script, dataset, Lean file and both prior audits cite Uriz, Turon, Becerro &
+# Agell (2003) Microsc. Res. Tech. 62:279-299 (10.1002/jemt.10395). The telemetry run `init` used the prompt string;
+# this audit keeps the Microsc. Res. Tech. paper, which is the one the code actually implements. Neither DOI was
+# verified online during Pass 3.
+
+audit:
+  id: 2026-10-19-sponge-spicule-hexactin-audit-v3
+  supersedes_audit_id: 2026-10-19-sponge-spicule-hexactin-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 3 remediated assessment; Phase B scoring pass executed by a Claude Fable 5.1 subagent from the Phase A handoff and diff)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 3 rubric verification; defect list from the Phase A handoff section (b) verified line by line)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/76
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a69596cc
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 3 (v3) remediated evaluation of `2012-bavestrello-sponge-spicule-hexactin.py`
+      (2215 lines; 12 self-test checks; 18 measure_morphoeval() entries) superseding
+      `2026-10-19-sponge-spicule-hexactin-audit-v2`. Line numbers refer to the working tree
+      at a69596cc with the Pass 3 Phase A edits applied (uncommitted at audit time).
+
+references:
+  uriz2003:
+    title: "Siliceous spicules and skeleton frameworks in sponges: origin, diversity, ultrastructural patterns, and biological functions"
+    authors: "Uriz MJ, Turon X, Becerro MA, Agell G"
+    venue: "Microscopy Research and Technique 62(4):279-299 (2003)"
+    doi: 10.1002/jemt.10395
+  aizenberg2005:
+    title: "Skeleton of Euplectella sp.: structural hierarchy from the nanoscale to the macroscale"
+    authors: "Aizenberg J, Weaver JC, Thanawala MS, Sundar VC, Morse DE, Fratzl P"
+    venue: "Science 309(5732):275-278 (2005)"
+    doi: 10.1126/science.1112255
+  weaver2007:
+    title: "Hierarchical assembly of the siliceous skeletal lattice of the hexactinellid sponge Euplectella aspergillum"
+    authors: "Weaver JC, Aizenberg J, Fantner GE, Kisailus D, Woesz A, Allen P, Fields K, Porter MJ, Zok FW, Hansma PK, Fratzl P, Morse DE"
+    venue: "Journal of Structural Biology 158(1):93-106 (2007)"
+    doi: 10.1016/j.jsb.2007.01.006
+  shimizu1998:
+    title: "Silicatein alpha: cathepsin L-like protein in sponge biosilica"
+    authors: "Shimizu K, Cha J, Stucky GD, Morse DE"
+    venue: "Proceedings of the National Academy of Sciences 95(11):6234-6238 (1998)"
+    doi: 10.1073/pnas.95.11.6234
+  sundar2003:
+    title: "Fibre-optical features of a glass sponge"
+    authors: "Sundar VC, Yablon AD, Grazul JL, Ilan M, Aizenberg J"
+    venue: "Nature 424:899-900 (2003) — DOI recalled offline, not verified during Pass 3"
+    doi: 10.1038/424899a
+  aizenberg2004:
+    title: "Biological glass fibers: correlation between optical and structural properties"
+    authors: "Aizenberg J, Sundar VC, Yablon AD, Weaver JC, Chen G"
+    venue: "Proceedings of the National Academy of Sciences 101(10):3358-3363 (2004) — DOI recalled offline, not verified during Pass 3"
+    doi: 10.1073/pnas.0307843101
+  woesz2006:
+    title: "Micromechanical properties of biological silica in skeletons of deep-sea sponges"
+    authors: "Woesz A, Weaver JC, Kazanci M, Dauphin Y, Aizenberg J, Morse DE, Fratzl P"
+    venue: "Journal of Materials Research 21(8):2068-2078 (2006) — DOI recalled offline, not verified during Pass 3"
+    doi: 10.1557/jmr.2006.0251
+  hehutchinson1989:
+    title: "Crack deflection at an interface between dissimilar elastic materials"
+    authors: "He M-Y, Hutchinson JW"
+    venue: "International Journal of Solids and Structures 25(9):1053-1067 (1989) — DOI recalled offline, not verified during Pass 3"
+    doi: 10.1016/0020-7683(89)90021-8
+  hillerborg1976:
+    title: "Analysis of crack formation and crack growth in concrete by means of fracture mechanics and finite elements"
+    authors: "Hillerborg A, Modéer M, Petersson P-E"
+    venue: "Cement and Concrete Research 6(6):773-781 (1976) — DOI recalled offline, not verified during Pass 3"
+    doi: 10.1016/0008-8846(76)90007-7
+  gloge1971:
+    title: "Weakly guiding fibers"
+    authors: "Gloge D"
+    venue: "Applied Optics 10(10):2252-2258 (1971) — DOI recalled offline, not verified during Pass 3"
+    doi: 10.1364/AO.10.002252
+
+simulations:
+  - id: bavestrello-sponge-spicule-hexactin
+    name: "Uriz et al. (2003) & Aizenberg et al. (2005) sponge spicule silicatein axial symmetry, concentric biosilica lamination, Euplectella checkerboard lattice mechanics, cohesive-zone laminate bending, helical cage ridges and basalia waveguiding"
+    organism: "Euplectella aspergillum (Hexactinellida) & Tethya aurantia / Pachastrella monilifera (Demospongiae) / Sycon raphanus (Calcarea)"
+    script: models/2012-bavestrello-sponge-spicule-hexactin.py
+    output: docs/media/sponge_spicule_hexactin_comparison.png
+    extra_outputs:
+      - docs/media/sponge_spicule_hexactin_growth.gif
+      - docs/media/sponge_spicule_hexactin_pass3_mechanics.png
+      - docs/media/sponge_spicule_hexactin_bending_fracture.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-sponge-spicule-hexactin-audit-v2
+    source_refs:
+      - uriz2003
+      - aizenberg2005
+      - weaver2007
+      - shimizu1998
+      - sundar2003
+      - aizenberg2004
+      - woesz2006
+      - hehutchinson1989
+      - hillerborg1976
+      - gloge1971
+    claim_boundary:
+      reported_in_source:
+        - "Uriz et al. (2003): silicatein axial filaments with crystallographic symmetry template the ray geometry of siliceous spicules (monaxon, triactine, tetractin, hexactin)"
+        - "Aizenberg et al. (2005): Euplectella spicules are concentric silica lamellae (thickness ~1.5 um at the centre to ~0.2 um at the periphery) separated by organic interlayers; the cylindrical cage carries alternating diagonal bracing and external helical/oblique ridges; basalia act as optical fibres"
+        - "Weaver et al. (2007): laminated spicules fail gracefully under three-point bending through crack deflection at the organic interlayers, unlike monolithic silica rods"
+        - "Sundar et al. (2003) / Aizenberg et al. (2004): basalia have a high-index core and lower-index lamellar cladding and guide light (values recalled offline)"
+      reconstructed_in_script:
+        - "O_h / T_d / D_3h / D_inf_h silicatein ray vectors, a 3D silicic-acid reaction-diffusion accretion solver with k_cat ablation, the h_n = h_1 r_1 / r_n lamellar law, checkerboard diagonal shear stiffness, a 12-species symmetry/toughness table, DoG + gradient-tangent segmentation of the vendored Euplectella photograph; Pass 3: a 48-element Hermite-beam FE three-point-bend of the laminate with a bilinear cohesive interlayer, He-Hutchinson deflection criterion and Griffith delamination, coupled to the 3D solver through the accreted cross-section; helical-ridge torsion / ovalization gain; step-index basalia waveguide with meridional ray tracing and LP-mode counting"
+      transfer_boundary:
+        - "The FE bending model is 1D (single midspan crack, outermost-in strength criterion, no friction, bridging or shear-lag) on the Law-3 geometry (outer radius 5.83 um, span 233 um), not Weaver et al.'s 3D cohesive-zone specimen geometry (r = 22.5 um in the species table); it predicts W_lam / W_mono = 1.71, not the 8.95 of the table nor the 9.0 of the Pass 2 eta-law"
+        - "Ridge count, pitch and area ratio, the cohesive constants (sigma_f, G_s, T_max, delta_c), span/diameter, and the optical-core lamella count are modelling choices tagged `provenance: model`; E = 36 GPa, the He-Hutchinson 0.25 ratio, n_core / n_clad and the Aizenberg lamella thicknesses are `recalled` and unverified"
+        - "The 12-species theta_obs_deg / toughness_ratio_obs columns are Pass 1 recalled numbers, not digitised measurements; their r = 1.0000 agreement with the model laws is not independent validation"
+      does_not_claim:
+        - "A 3D cohesive-zone finite-element reproduction of Weaver et al. (2007) load-displacement curves, measured ridge geometry from the specimen, measured numerical aperture or mode images of real basalia, or independent verification of any Pass 3 DOI or recalled constant"
+    summary: >-
+      Pass 3 (v3) remediated evaluation of `2012-bavestrello-sponge-spicule-hexactin.py` (weighted
+      score 88.6/100, down from 91.6/100 in Pass 2 although both Pass 2 remediation items were
+      closed). The script now couples the 3D silicatein diffusion-reaction solver to a 1D
+      finite-element cohesive-zone three-point-bending model of the N = 25 laminate
+      (`simulate_three_point_bending_cohesive_laminate`, L799-949; `evaluate_coupled_accretion_to_fracture`,
+      L968-999): W_lam / W_mono = 1.714 with 25 graceful load drops vs 1.000 for the fused-interlayer
+      ablation, Hillerborg l_cz = 27 um, FE parity with 48 EI / L^3 to 1e-9. It extends the cage mechanics
+      with external helical ridges (`simulate_helical_ridge_cage_mechanics`, L1041-1104: psi_opt = 45 deg,
+      torsion gain 7.93x, ovalization gain 2.00x) and models basalia step-index waveguiding
+      (`simulate_basalia_optical_waveguide`, L1112-1203: NA 0.2408, V 6.38, 20 modes vs Gloge 20.3,
+      single-mode cutoff 1.458 um), backed by 6 Lean 4 theorems (2 new) with 0 `sorry`s, 12 self-test
+      checks and 18 measurements. The score falls because the new mechanics expose that the Pass 2
+      validation layer was self-referential: the 12-species table and the 1 + eta N toughness law sit on
+      the model to r = 1.0000 by construction, the cohesive FE model disagrees with that law by ~5x, the
+      k_cat -> N = 25 mapping is calibrated, four of the nine new measurements are parity/identity checks,
+      and all Pass 3 physical constants and six DOIs are recalled offline and unverified.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Pass 2 content stands (exact O_h / T_d / D_3h / D_inf_h ray algebra L153-245, 3D reaction-diffusion
+          accretion L249-370, lamellar thinning L395-459, checkerboard shear L464-508). Pass 3 adds a
+          correctly assembled Hermite-beam FE (L750-791; parity with 48 EI / L^3 to 1e-9), a bilinear cohesive
+          law whose integral equals G_i (L719-747), the He-Hutchinson deflection test and a Griffith
+          delamination balance solved on the FE stiffness (L799-949), a sin^2(2 psi) netting projection with
+          parallel-axis ovalization gain (L1041-1104) and a step-index waveguide with exact ray invariant and
+          Bessel-zero LP cutoffs (L1112-1203), all with Lean-checked identities. Deductions: the remediation
+          item asked for a 3D cohesive-zone FEM; what was built is a 1D single-crack beam model (-3); the Pass 2
+          toughness law 1 + eta N (eta = 0.32, L104) is phenomenological, fitted to the recalled table, and is
+          contradicted ~5x by the new mechanics (1.71 vs 9.0) — the script keeps both without reconciling them
+          (-4); the bending geometry inherits the Law-3 outer radius 5.83 um instead of the species-table 22.5
+          um (-2); Law 4 (cos^2 45 deg = 0.5 per strut, L489) and Law 6 (sin^2(2 psi) normalised to 1 at 45 deg)
+          state the diagonal projection with different conventions and the 7.5x checkerboard gain rests on the
+          arbitrary K_axial / K_bend = 26 (L106) (-2); the k_cat -> N coupling is a calibrated mass-to-layer
+          constant rather than a mechanistic lamella-count law (-2).
+        evidence:
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [153, 370], note: "Pass 2 silicatein ray symmetry algebra and 3D reaction-diffusion biosilica accretion solver (unchanged; filament_length_um = 0.82 domain, sigma_fil_um = 1.15 hard-coded at L277-L278)", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [719, 791], note: "Bilinear cohesive traction, G_i = 0.5 T_max delta_c, Hillerborg l_cz, 4x4 Hermite element and 48-element simply-supported FE midspan stiffness", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [799, 949], note: "Progressive failure: outermost-in strength criterion, He-Hutchinson deflect/penetrate, Griffith half-length by bisection on FE stiffness, piecewise-linear P-delta and W = int P d delta; 1D single-crack model, not 3D cohesive FEM (stated in docstring)", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [950, 999], note: "layers_from_accreted_cross_section + evaluate_coupled_accretion_to_fracture: B(x,y,z) integrated at 0.55 R mapped to N via the calibrated SILICA_MASS_TO_LAYER_CALIBRATION (L700); k_cat sweep -> N in {0, 6, 13, 19, 25}", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1041, 1104], note: "Helical ridge cage: K_tors(psi) = K_wall + N_r k_r sin^2(2 psi), specific stiffness with 1/cos psi helix length, parallel-axis I_eff / I_wall = 1 + N_r A_r / 2 (N_r >= 3)", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1112, 1203], note: "Basalia step-index waveguide from Law-3 lamellar radii: meridional ray trace with n cos theta invariant, NA, V-number, LP-mode count from Bessel zeros, single-mode cutoff wavelength", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [395, 459], note: "Law-3 laminate: r_core 0.75 um, h_1 0.85 um, N = 25 -> outer radius 5.83 um vs 22.5 um in the species table; eta-law 1 + 0.32 N gives 9.0 while the FE model gives 1.71 (unreconciled)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean, lines: [223, 321], note: "Pass 3 Lean: interlayer_deflects / hillerborg_length / laminate_fracture_work and theorem cohesive_laminate_progressive_fracture_work_exceeds_monolith (L255-L270); ridge_shear_projection sums and theorem euplectella_helical_ridge_shear_projection_and_parallel_axis_gain (L309-L320); lean exit 0, 0 sorrys", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          The Pass 2 DoG / gradient-tangent segmentation of the SHA-256-locked *Euplectella aspergillum*
+          photograph (L592-667; orthogonal 89.65 deg, diagonal 47.68 deg, pitch 2.50 mm) is retained and the
+          main 6-panel figure (v3 title) still shows the specimen overlay in panel E and now plots the FE
+          cohesive-zone prediction as a star against the eta-law and the 12-species points in panel D
+          (L1408-1422). The new Pass 3 figure (6 panels: P-delta traces, G_i sweep, k_cat -> N coupling, ridge
+          torsion vs psi, ovalization gain, waveguide mode map) and the 10-frame bending-fracture GIF render
+          the new mechanics. Deductions: nothing new is measured from the specimen — ridge count, pitch and
+          area are `provenance: model` and the photograph is not used to count ridges or estimate the helix
+          angle (-4); the laminate geometry the bending / optics models use (outer radius 5.83 um) is
+          one-quarter of the 22.5 um the species table gives for Euplectella (-3); the specimen reference
+          angles 89.6498 / 47.6843 stored in the JSON are the script's own outputs, so the "match" is a
+          regression check (-3); the main PNG panel titles A/B/C overlap horizontally at fontsize ~9.5 and the
+          Pass 3 panel F plots modes vs 4 lambda on the radius axis (-2).
+        evidence:
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [592, 667], note: "segment_euplectella_specimen: DoG ridge + gradient-tangent orientation segmentation on euplectella_aspergillum_specimen.jpg (Pass 2, unchanged)", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1408, 1422], note: "Main figure panel D: FE cohesive-zone W_lam / W_mono star at N = 25 plotted against the eta-law and 12-species table", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1623, 1824], note: "render_pass3_mechanics_figure (panels A-F) and render_bending_fracture_gif (10 frames)", supports: true}
+          - {file: docs/media/sponge_spicule_hexactin_comparison.png, lines: [0, 0], note: "6-panel v3 synthesis figure; specimen overlay panel E retained; FE star in panel D; panel titles A/B/C overlap at fontsize ~9.5", supports: true}
+          - {file: docs/media/sponge_spicule_hexactin_pass3_mechanics.png, lines: [0, 0], note: "Pass 3 mechanics figure: cohesive bending P-delta, G_i sweep, k_cat coupling, ridge torsion, ovalization gain, waveguide modes (panel F radius axis carries 4 lambda)", supports: true}
+          - {file: docs/media/sponge_spicule_hexactin_growth.gif, lines: [0, 0], note: "7-frame Pass 2 growth GIF (3D accretion + lamellar apposition) regenerated unchanged by the v3 default invocation", supports: true}
+          - {file: datasets/sponge_spicule_hexactin/sponge_spicule_hexactin_reference.json, lines: [39, 40], note: "reference_orthogonal_angle_deg 89.6498 / reference_diagonal_angle_deg 47.6843 equal the script's own segmentation outputs (regression, not independent measurement)", supports: false}
+          - {file: datasets/sponge_spicule_hexactin/cohesive_bending_waveguide_reference.json, lines: [54, 56], note: "n_ridges 8, ridge_pitch_deg 45, ridge_area_ratio 0.25 all provenance: model — not measured from the specimen", supports: false}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Pass 2 sweeps (5 symmetry / ablation regimes, f_diag in [0, 1], 12 species) are retained. Pass 3 adds
+          a k_cat ablation sweep {0, 0.25, 0.5, 0.75, 1} propagated through the 3D solver to N and W_lam / W_mono
+          (L968-999), a G_i sweep 0.05-8 J/m^2 crossing the He-Hutchinson cut-off at 2 J/m^2 (L1002-1034), a
+          continuous psi scan for torsional and specific stiffness and N_r scan for the ovalization gain
+          (L1041-1104), a wavelength scan of guided-mode count (L1112-1203), a monolithic / fused-interlayer
+          ablation, and CLI flags `--skip-pass3`, `--g-i`, `--n-ridges` (L2161-2163; `--g-i 0.2` -> 1.832x,
+          `--n-ridges 12` -> 11.4x torsion). Deductions: `--seed` is a documented no-op (L2160) (-2); `--d-s` /
+          `--k-cat` overrides change only the main-figure regimes, not the coupled k_cat sweep which uses its
+          own internal `k_cat_scale` (-3); no sweep of the Law-3 geometry (r_core, h_1) through the bending or
+          optics models although both inherit it (-3).
+        evidence:
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [968, 1034], note: "evaluate_coupled_accretion_to_fracture (k_cat sweep) and evaluate_interlayer_toughness_sweep (G_i 0.05-8 J/m^2 with He-Hutchinson cut-off)", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1041, 1104], note: "psi scan and N_r scan for the ridge cage; defaults N_r = 8, A_r = 0.25", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [2152, 2163], note: "CLI: --self-test, --skip-gif, --d-s, --k-cat, --r-core, --n-lamellae, --seed (no-op), --skip-pass3, --g-i, --n-ridges", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [371, 390], note: "evaluate_all_morphospace_regimes: 5 regimes from the reference JSON (Pass 2)", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          `measure_morphoeval()` (L1828-2037) now returns 18 reference-anchored entries and the self-test checks
+          all 12 items. Credited as genuine comparisons: W_lam / W_mono = 1.714 vs the table's 8.95 (an honest
+          failed comparison, L1956-1965), h_25 / h_1 = 0.1311 vs Aizenberg's 0.2 / 1.5 = 0.1333 (L1986-1995),
+          mode count 20 vs Gloge V^2 / 2 = 20.3 (L2026-2035), fused-interlayer ablation = monolith (L1966-1975).
+          Deductions: the two headline Pass 2 correlations (r_angle = r_toughness = 1.0000, L1855-1874) are
+          against Pass 1 recalled table values that were written onto the model laws, so they validate nothing
+          (-6); the k_cat -> N = 25 measurement has reference 25 by calibration (L1976-1985) (-2); the
+          ovalization-gain entry compares an exact sum with its own closed form (L2006-2015), the ray-trace
+          entry compares with Snell's law (L2016-2025) and the FE entry with 48 EI / L^3 (L1946-1955) — numerical
+          parity, not empirical validation (-3); the FE model under-predicts the only empirical toughness
+          anchor by 5.2x and the Pass 2 eta-law by 5.3x, and the discrepancy is reported but not resolved (-3);
+          the 0.1333 reference is a recalled number, unverified (-1); no comparison with measured basalia NA
+          or mode images from Sundar 2003 / Aizenberg 2004 (-1).
+        evidence:
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1944, 2035], note: "9 new Pass 3 measurements: FE parity, W_lam / W_mono vs 8.95, fused ablation, k_cat -> N, h_25 / h_1, psi_opt, ovalization gain, ray-trace acceptance, LP mode count", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1956, 1965], note: "W_lam / W_mono = 1.7137 vs reference 8.95 (table value of unverified provenance): honest under-prediction by 5.2x", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1855, 1874], note: "12-species r_angle and r_toughness = 1.0000 against Pass 1 recalled theta_obs_deg / toughness_ratio_obs that sit on the model laws (self-referential)", supports: false}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1976, 1985], note: "k_cat -> N wild type = 25 with reference 25: calibrated by construction (flagged in the entry text)", supports: false}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [2006, 2025], note: "Ovalization gain exact-sum vs closed-form identity and ray-trace vs arccos(n_clad / n_core): numerical parity checks, not specimen comparisons", supports: false}
+          - {file: datasets/sponge_spicule_hexactin/sponge_spicule_hexactin_reference.json, lines: [76, 88], note: "cross_taxa table: theta_obs_deg within 0.2 deg of theta_pred_deg and toughness_ratio_obs = 1 + 0.32 N within 0.03 for every species; no per-row source", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Pass 2 provenance stands: 4 dataset files SHA-256 pinned and verified fail-closed at runtime
+          (L110-147; specimen b562...9cf3, scout fb6e...e39f, paper_citations.bib 8118...44cd). Pass 3 adds
+          `cohesive_bending_waveguide_reference.json` in which every constant carries a `provenance` tag
+          (`model` / `recalled` / `exact`) with the self-referential calibration and the geometry mismatch
+          called out explicitly (L27-44, L54-56, L67-72), `pass3_citations.bib` with six new references, and a
+          README Pass 3 section that states which values are unverified. Deductions: all six new DOIs carry
+          `doi_verified_offline: false` (L9-14) and could not be checked during Pass 3 (-4); the Pass 3 JSON and
+          bib are not added to the SHA-256 registry (L90-96 pins only the four Pass 2 files) (-2); sigma_f,
+          G_s, T_max, delta_c, span / diameter, ridge geometry, n_seawater, wavelength and the optical-core
+          lamella count are `model` / `recalled` with no measured source (-3); the 12-species table still has
+          no per-row citation (-2); the prompt's Prog. Mol. Subcell. Biol. seed paper is not cited anywhere in
+          the script or dataset (-1).
+        evidence:
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [81, 147], note: "Dataset paths, EXPECTED_SHA256 registry (4 Pass 2 files only), compute_sha256, verify_dataset_integrity, load_reference_data", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [692, 714], note: "Pass 3 constants with inline provenance comments; load_pass3_reference reads the non-pinned cohesive_bending_waveguide_reference.json", supports: true}
+          - {file: datasets/sponge_spicule_hexactin/cohesive_bending_waveguide_reference.json, lines: [1, 75], note: "Every constant provenance-tagged; six citations with doi_verified_offline: false (L9-L14); calibration flagged self-referential (L37); geometry mismatch flagged (L44)", supports: true}
+          - {file: datasets/sponge_spicule_hexactin/cohesive_bending_waveguide_reference.json, lines: [27, 44], note: "sigma_f 900 MPa, G_s 8 J/m^2, T_max 40 MPa, delta_c 60 nm, span/diameter 20 are provenance: model; E 36 GPa and He-Hutchinson 0.25 recalled, unverified", supports: false}
+          - {file: datasets/sponge_spicule_hexactin/pass3_citations.bib, lines: [1, 60], note: "Sundar 2003, Aizenberg 2004, Woesz 2006, He & Hutchinson 1989, Hillerborg 1976, Gloge 1971 — DOIs recalled offline", supports: true}
+          - {file: datasets/sponge_spicule_hexactin/README.md, lines: [12, 16], note: "Pass 3 section: new non-pinned files, unverified recalled values, self-referential calibration and the 5.83 vs 22.5 um geometry mismatch stated", supports: true}
+      code-traceability:
+        value: 89
+        rationale: >-
+          The v3 header docstring (L1-59) lists the Pass 3 laws with their sources and the Pass 3 section
+          banner (L668-689) states plainly that the bending model is a reduced 1D beam, not a 3D cohesive FEM.
+          Every Pass 3 function docstring names its equation and source (cohesive law, Hillerborg, Hermite
+          element, He-Hutchinson, Griffith, netting projection, parallel-axis, ray invariant, Gloge), and Laws
+          5-7 are registered in the math-KG YAML with single-range `code_locus` pins and Lean theorem names.
+          Deductions: stale docstrings — `measure_morphoeval()` still says "9 reference-anchored" (L1829)
+          though it returns 18, `self_test()` says "8-point verification suite for Pass 2" (L2039) though it
+          runs 12 checks, and the section-9 banner says "8-Check Self-Test" (L1826) (-4); Law 4 and Law 6 state
+          the diagonal projection with different normalisations without a cross-reference (L489 vs L1041-1104)
+          (-3); Law 7 has `lean_theorem: null` in the math-KG YAML (-2); the He-Hutchinson zero-mismatch
+          criterion is applied to a silica / organic interface whose elastic mismatch is large, without a
+          comment on the Dundurs parameters (-2).
+        evidence:
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1, 59], note: "v3 header docstring: Pass 2 laws plus Pass 3 Laws 5-7 with sources and the reduced-model disclaimer", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [668, 714], note: "Pass 3 section banner (reduced 1D FE, not 3D cohesive FEM) and provenance-commented constants", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [1826, 1829], note: "Section banner '8-Check Self-Test' and measure_morphoeval docstring '9 reference-anchored' are stale (18 entries, 12 checks)", supports: false}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [2038, 2039], note: "self_test docstring 'comprehensive 8-point verification suite for Pass 2' is stale (12 checks, v3)", supports: false}
+          - {file: morphoeval/math_kg_loops/bavestrello-sponge-spicule-hexactin.yaml, lines: [117, 146], note: "Laws 5-7 registered with single-range code_locus (secondary range in code_locus_secondary) and Lean theorem names; Law 7 lean_theorem: null", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic (no RNG; bitwise two-run check L2091-2094), `--self-test` passes all 12 checks in ~5 s
+          (8 Pass 2 + 4 Pass 3 at L2096-2143: FE parity, cohesive-law integral, graceful vs catastrophic with
+          identical first-crack load, fused = monolith, k_cat -> N monotone, psi_opt = 45 deg, parallel-axis
+          identity, ray trace vs TIR, Gloge bracket, single mode at 2 um, PASS3_JSON present, 18 measurements),
+          default render ~5.5 s producing the main PNG, growth GIF, Pass 3 mechanics PNG and bending-fracture
+          GIF, and `--skip-pass3` / `--skip-gif` shorten the run. Deductions: `--seed` is accepted but does
+          nothing (L2160) (-2); the two PNGs are excluded by the repository `.gitignore` (*.png) so the rendered
+          figures are not tracked artefacts (pre-existing convention) (-2); no requirements lock or recorded
+          SHA-256 of the rendered outputs in the script itself (-3); the self-test asserts the specimen angle
+          against the JSON copy of its own output (L2087) (-2).
+        evidence:
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [2038, 2150], note: "12-check self_test(): SHA-256 provenance, JSON parity, ray algebra, accretion regimes, lamellar / lattice, 12-species, specimen, determinism, plus 4 Pass 3 checks (L2096-L2143)", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [2096, 2143], note: "Pass 3 checks: FE parity 1e-9, cohesive integral, 25 drops vs 1, identical p_peak, fused = monolith, k_cat -> N monotone, psi_opt, ovalization identity, ray trace, Gloge bracket, single-mode at 2 um, len(meas) == 18", supports: true}
+          - {file: models/2012-bavestrello-sponge-spicule-hexactin.py, lines: [2160, 2160], note: "--seed is a documented no-op", supports: false}
+          - {file: docs/media/sponge_spicule_hexactin_bending_fracture.gif, lines: [0, 0], note: "10-frame bending-fracture GIF regenerated by the default invocation", supports: true}
+    remediation:
+      - >-
+        2012-bavestrello-sponge-spicule-hexactin.py:512-588 with datasets/sponge_spicule_hexactin/sponge_spicule_hexactin_reference.json:76-88 —
+        the 12-species theta_obs_deg and toughness_ratio_obs columns are Pass 1 recalled numbers lying on the model
+        laws (r = 1.0000 for both; toughness within 0.03 of 1 + 0.32 N for every row) and carry no per-row source.
+        Replace them with digitised values from Uriz et al. (2003) / Aizenberg et al. (2005) / Weaver et al. (2007)
+        with page or figure pinpoints, or relabel the two correlations (L1855-1874) as model self-consistency and
+        remove them from the validation count.
+      - >-
+        2012-bavestrello-sponge-spicule-hexactin.py:104 and 395-459 vs 799-949 — the Pass 2 toughness law
+        G_lam / G_mono = 1 + eta N (eta = 0.32, giving 9.0 at N = 25) and the Pass 3 cohesive FE model (1.71 at
+        N = 25, L1956-1965) disagree by 5.3x and both are kept. Either derive eta from the cohesive constants
+        (so the eta-law becomes a closed-form fit of the FE sweep over N) or drop the eta-law from Panel D and
+        the Lean theorem and report only the mechanistic ratio with its unsourced-constant caveat.
+      - >-
+        2012-bavestrello-sponge-spicule-hexactin.py:395-459 and 697 — the laminate used for bending and optics
+        has outer radius 5.83 um (r_core 0.75, h_1 0.85, N = 25) while the species table gives 22.5 um for
+        Euplectella; the span is therefore 233 um rather than a Weaver (2007) test geometry. Re-fit h_1 (or add
+        a radius-matched preset) so N = 25 reaches 22.5 um, and run the FE bending at the table radius.
+      - >-
+        2012-bavestrello-sponge-spicule-hexactin.py:700 and 950-965 — SILICA_MASS_TO_LAYER_CALIBRATION is fixed
+        so the wild type maps to N = 25 and the measurement at L1976-1985 has reference = value. Replace with a
+        mechanistic layer-count rule (e.g. one lamella per silicatein deposition cycle / per unit accreted mass
+        with a sourced areal density) or mark the entry as expressivity rather than validation.
+      - >-
+        2012-bavestrello-sponge-spicule-hexactin.py:692-710 with datasets/sponge_spicule_hexactin/cohesive_bending_waveguide_reference.json:27-44, 54-56, 67-72 —
+        sigma_f 900 MPa, G_s 8 J/m^2, T_max 40 MPa, delta_c 60 nm, L/D 20, N_r 8, A_r 0.25, psi 45 deg, n_core 1.46,
+        n_clad 1.44 and the optical-core lamella count are model / recalled constants; E = 36 GPa and the 0.25
+        He-Hutchinson ratio are recalled. Source each from Woesz 2006 / Weaver 2007 / Sundar 2003 / Aizenberg 2004
+        with page pinpoints and verify the six pass3_citations.bib DOIs (all doi_verified_offline: false).
+      - >-
+        2012-bavestrello-sponge-spicule-hexactin.py:1826, 1829 and 2039 — stale docstrings ("8-Check Self-Test",
+        "9 reference-anchored", "8-point verification suite for Pass 2") against 12 checks and 18 measurements;
+        and L489 vs L1041-1104 — Law 4 uses cos^2 45 deg = 0.5 per diagonal strut while Law 6 uses sin^2(2 psi)
+        normalised to 1 at 45 deg. Update the docstrings and state one projection convention (or the mapping
+        between them) in both docstrings.
+      - >-
+        2012-bavestrello-sponge-spicule-hexactin.py:1946-1955, 2006-2025 — FE vs 48 EI / L^3, exact-sum vs
+        closed-form ovalization gain and ray trace vs Snell are numerical-parity checks reported as
+        measurements. Move them into self_test() only, or tag them `derived_from: parity` so measure_outputs.py
+        does not count them toward validation; add a measured basalia NA / mode-image comparison from Sundar
+        2003 or Aizenberg 2004 once those values are verified.
+      - >-
+        2012-bavestrello-sponge-spicule-hexactin.py:90-96 and 714-717 — the Pass 3 JSON and pass3_citations.bib
+        are loaded without SHA-256 pinning while the four Pass 2 files are verified fail-closed. Add both to
+        EXPECTED_SHA256 and assert len(digests) == 6 in self_test (L2042).
+      - >-
+        2012-bavestrello-sponge-spicule-hexactin.py:702-704 and 1041-1104 — ridge count, pitch and area ratio are
+        not measured; the vendored Euplectella photograph shows the external ridges. Add a ridge segmentation
+        (Hough / orientation histogram on the cage surface) to segment_euplectella_specimen() and feed the
+        measured N_r and psi into simulate_helical_ridge_cage_mechanics().
+      - >-
+        morphoeval/math_kg_loops/bavestrello-sponge-spicule-hexactin.yaml:140 and
+        morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean — Law 7 (waveguide) has no Lean theorem.
+        State a provable integer version (e.g. NA^2 = n_core^2 - n_clad^2 in scaled units, V monotone in a / lambda,
+        single-mode iff V < 2.405 with rational bounds) and register it.

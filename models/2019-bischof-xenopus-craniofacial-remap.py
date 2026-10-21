@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2019-bischof-xenopus-craniofacial-remap.py — Pass 2 Remediated Implementation
+2019-bischof-xenopus-craniofacial-remap.py — Pass 3 Remediated Implementation
 Vandenberg, Adams & Levin (2012) Dev. Dyn. 241:863-878 & Pinet et al. (2019) Development 146:dev175893
 Picasso Tadpole Craniofacial Attractor Remodeling & Procrustes Target-Morphology Error Minimization
 (Slot 085: `bischof-xenopus-craniofacial-remap`).
@@ -18,6 +18,18 @@ Mathematical Formalism & Lean 4 Alignment (`morphoeval/lean/loops/Loop_085_xenop
   4. Bilateral Symmetry Restoration (`bilateral_symmetry_restoration_regimes`):
        A_sym(X) = (1/2) * ( |x_L_eye + x_R_eye| + |y_L_eye - y_R_eye| + |x_L_naris + x_R_naris| + |y_L_naris - y_R_naris| )
        converges strictly to 0 under closed-loop attractor remodeling across all perturbation regimes.
+  5. Pass 3 — Reduced 3D viscoelastic cartilage coupling (`maxwell_cartilage_relaxation_and_mmp_arrest`,
+     `elastic_pinning_residual`): 7 nodes in R^3 (5 landmarks + 2 palatoquadrate–Meckel's jaw joints) joined by
+     5 Maxwell rods (Meckel's x2, ceratohyal, palatoquadrate x2) with MMP-gated stress relaxation
+       ds_k/dt = kappa_k (dL_k/dt)/L0_k - s_k m(Z_k)/tau_0,   dx_i/dt = eta_i(Z) [F_attractor_i + F_cartilage_i],
+     so that total energy V_3D + U_cart is non-increasing; with MMP arrest (m -> 0) the rods become elastic and
+     pin the landmarks away from X^* (residual defect), with MMP active the stress relaxes and X -> X^*.
+  6. Pass 3 — Spatially resolved MMP-2 / MMP-9 zymography fields on the dorsal head plane
+       dM_m/dt = D_m Lap(M_m) - k_m M_m + S_m(x, y, t),  Z = a_GM (M_2 + M_9),  eta_i = eta_max Z_i/(Z_half + Z_i),
+     with constitutive MMP-2 and defect/stress-induced MMP-9 sources along the optic nerves (eye -> chiasm) and at
+     the jaw muscle insertions (jaw joints, symphysis); GM6001 reduces the ACTIVE fraction a_GM, not expression.
+     Both Pass 3 mechanisms are honest reduced models (no FEM, no measured moduli or zymography intensities);
+     all constants live in `datasets/xenopus_craniofacial_remap/cartilage_mmp_zymography_reference.json`.
 """
 
 from __future__ import annotations
@@ -36,12 +48,14 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "xenopus_craniofacial_remap"
 REFERENCE_JSON = DATASET_DIR / "xenopus_craniofacial_remap_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "xenopus_craniofacial_specimen.jpg"
 OUT_PNG = ROOT / "docs" / "media" / "xenopus_craniofacial_remap_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "xenopus_craniofacial_remap_growth.gif"
+OUT_PNG_P3 = ROOT / "docs" / "media" / "xenopus_craniofacial_remap_cartilage_mmp.png"
+OUT_GIF_P3 = ROOT / "docs" / "media" / "xenopus_craniofacial_remap_zymography.gif"
 
 LANDMARK_LABELS = [
     "Left Eye",
@@ -310,6 +324,382 @@ def evaluate_all_regimes_and_morphospace(seed: int = 2019) -> dict[str, Any]:
         "alpha_grid": alpha_grid,
         "eta_grid": eta_grid,
         "err_grid": err_grid,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 2b. Pass 3: Reduced 3D Viscoelastic Cartilage (Meckel's / Ceratohyal / Palatoquadrate)
+#     + Spatially Resolved MMP-2 / MMP-9 Zymography Field Coupled to the Attractor
+#
+#   State: 7 nodes in R^3 (5 Procrustes landmarks + 2 jaw articulations) and 5 Maxwell
+#   rod stresses s_k.  Node i moves overdamped with a LOCAL mobility set by the active
+#   gelatinase level Z sampled from two reaction-diffusion fields (MMP-2 constitutive,
+#   MMP-9 inducible) sourced along the optic nerves and at the jaw muscle insertions:
+#       dx_i/dt   = eta_i(Z) * [ F_attractor_i + F_cartilage_i ],  eta_i = eta_max Z_i/(Z_half+Z_i)
+#       ds_k/dt   = kappa_k (dL_k/dt)/L0_k - s_k * m(Z_k)/tau_0        (Maxwell rod, MMP-gated relaxation)
+#       dM_m/dt   = D_m Lap M_m - k_m M_m + S_m(x,y,t),  Z = a_GM (M_2 + M_9)
+#   Honest scope: this is NOT a 3D FEM of chondrocranial cartilage; it is the simplest
+#   Maxwell-rod reduction that lets cartilage stiffness and MMP-dependent stress relaxation
+#   feed back on the 2D Procrustes landmark attractor (see cartilage_mmp_zymography_reference.json).
+# --------------------------------------------------------------------------- #
+PASS3_REFERENCE_JSON = DATASET_DIR / "cartilage_mmp_zymography_reference.json"
+
+
+def load_pass3_reference() -> dict[str, Any]:
+    """Load the Pass 3 cartilage + MMP zymography reduced-model reference table."""
+    return json.loads(PASS3_REFERENCE_JSON.read_text(encoding="utf-8"))
+
+
+class MMPZymographyField:
+    """Two explicit-Euler reaction-diffusion gelatinase fields (MMP-2, MMP-9) on the dorsal head plane."""
+
+    def __init__(self, cfg: dict[str, Any], gm_active_fraction: float) -> None:
+        g = cfg["grid"]
+        self.nx, self.ny = int(g["nx"]), int(g["ny"])
+        self.x0, self.x1 = float(g["x_range"][0]), float(g["x_range"][1])
+        self.y0, self.y1 = float(g["y_range"][0]), float(g["y_range"][1])
+        self.xs = np.linspace(self.x0, self.x1, self.nx)
+        self.ys = np.linspace(self.y0, self.y1, self.ny)
+        self.hx = float(self.xs[1] - self.xs[0])
+        self.hy = float(self.ys[1] - self.ys[0])
+        self.GX, self.GY = np.meshgrid(self.xs, self.ys, indexing="xy")  # shape (ny, nx)
+        self.D = np.array([float(cfg["D_mmp2"]), float(cfg["D_mmp9"])])
+        self.k = np.array([float(cfg["k_mmp2"]), float(cfg["k_mmp9"])])
+        self.sigma = float(cfg["source_sigma"])
+        self.S2_basal = float(cfg["S2_basal"])
+        self.S9_gain = float(cfg["S9_inducible_gain"])
+        self.Z_half = float(cfg["Z_half"])
+        self.eta_max = float(cfg["eta_max"])
+        self.a_gm = float(gm_active_fraction)
+        self.chiasm = np.array(cfg["optic_chiasm_xy"], dtype=float)
+        self.n_nerve = int(cfg["n_optic_nerve_samples"])
+        self.M = np.zeros((2, self.ny, self.nx), dtype=float)  # [MMP-2, MMP-9]
+
+    def _footprint(self, xy: np.ndarray) -> np.ndarray:
+        d2 = (self.GX - xy[0]) ** 2 + (self.GY - xy[1]) ** 2
+        return np.exp(-0.5 * d2 / (self.sigma**2))
+
+    def source_terms(self, X: np.ndarray, X_star_xy: np.ndarray, s_rods: np.ndarray, rods: list[tuple[int, int]]) -> np.ndarray:
+        """Assemble S_2 (constitutive) and S_9 (inducible) production fields from the current geometry."""
+        S = np.zeros_like(self.M)
+        # (a) Optic nerves: eye landmark -> optic chiasm (midline). MMP-9 induced by eye Procrustes defect.
+        for eye in (0, 1):
+            defect = float(np.linalg.norm(X[eye, :2] - X_star_xy[eye]))
+            for t in np.linspace(0.0, 1.0, self.n_nerve):
+                p = (1.0 - t) * X[eye, :2] + t * self.chiasm
+                fp = self._footprint(p)
+                S[0] += self.S2_basal * fp / self.n_nerve
+                S[1] += self.S9_gain * defect * fp / self.n_nerve
+        # (b) Jaw muscle insertions: the two jaw joints and the symphysis. MMP-9 induced by rod stress.
+        for node in (4, 5, 6):
+            stress_drive = float(sum(abs(s_rods[k]) for k, (a, b) in enumerate(rods) if node in (a, b)))
+            fp = self._footprint(X[node, :2])
+            S[0] += self.S2_basal * fp
+            S[1] += self.S9_gain * stress_drive * fp
+        return S
+
+    def step(self, S: np.ndarray, dt: float) -> None:
+        """Explicit Euler step with zero-flux (Neumann) boundaries."""
+        for m in range(2):
+            Mm = self.M[m]
+            P = np.pad(Mm, 1, mode="edge")
+            lap = (P[1:-1, 2:] - 2.0 * Mm + P[1:-1, :-2]) / (self.hx**2) + (P[2:, 1:-1] - 2.0 * Mm + P[:-2, 1:-1]) / (self.hy**2)
+            self.M[m] = Mm + dt * (self.D[m] * lap - self.k[m] * Mm + S[m])
+
+    def active_zymography(self) -> np.ndarray:
+        """Zymography-visible (catalytically active) gelatinase Z = a_GM (M_2 + M_9)."""
+        return self.a_gm * (self.M[0] + self.M[1])
+
+    def sample(self, field: np.ndarray, xy: np.ndarray) -> float:
+        """Bilinear sample of a (ny, nx) field at xy (clamped to the domain)."""
+        fx = (float(xy[0]) - self.x0) / self.hx
+        fy = (float(xy[1]) - self.y0) / self.hy
+        fx = min(max(fx, 0.0), self.nx - 1.000001)
+        fy = min(max(fy, 0.0), self.ny - 1.000001)
+        i0, j0 = int(fx), int(fy)
+        tx, ty = fx - i0, fy - j0
+        return float(
+            (1 - tx) * (1 - ty) * field[j0, i0]
+            + tx * (1 - ty) * field[j0, i0 + 1]
+            + (1 - tx) * ty * field[j0 + 1, i0]
+            + tx * ty * field[j0 + 1, i0 + 1]
+        )
+
+    def mobility(self, Z_local: float) -> float:
+        """Michaelis-Menten saturating mobility eta(Z) = eta_max Z/(Z_half + Z) in [0, eta_max)."""
+        return self.eta_max * Z_local / (self.Z_half + Z_local)
+
+
+def build_pass3_geometry(p3: dict[str, Any]) -> dict[str, Any]:
+    """Assemble 7-node 3D NF 45 / NF 65 geometry, rod topology, stiffness and rest lengths."""
+    ref = load_reference()
+    params = ref["canonical_parameters"]
+    wt_xy = np.array(params["wt_nf45_landmarks"], dtype=float)
+    star_xy = np.array(params["target_nf65_landmarks"], dtype=float)
+    z45 = np.array(p3["nf45_z"], dtype=float)
+    z65 = np.array(p3["nf65_z"], dtype=float)
+    X45 = np.zeros((7, 3))
+    X65 = np.zeros((7, 3))
+    X45[:5, :2] = wt_xy
+    X65[:5, :2] = star_xy
+    X45[5:, :2] = np.array(p3["joint_xy_nf45"], dtype=float)
+    X65[5:, :2] = np.array(p3["joint_xy_nf65"], dtype=float)
+    X45[:, 2] = z45
+    X65[:, 2] = z65
+    K = np.array(
+        [params["K_eye"], params["K_eye"], params["K_naris"], params["K_naris"], params["K_jaw"], p3["K_joint"], p3["K_joint"]],
+        dtype=float,
+    )
+    rods = [tuple(int(n) for n in r["nodes"]) for r in p3["cartilage_rods"]]
+    kappa = np.array([float(r["kappa"]) for r in p3["cartilage_rods"]], dtype=float)
+    L0 = np.array([np.linalg.norm(X45[a] - X45[b]) for a, b in rods], dtype=float)
+    C = build_coupling_matrix(5, float(params["C_coupled"]))
+    return {"X45": X45, "X65": X65, "K": K, "rods": rods, "kappa": kappa, "L0": L0, "C": C}
+
+
+def cartilage_rod_forces(X: np.ndarray, s: np.ndarray, rods: list[tuple[int, int]]) -> np.ndarray:
+    """Maxwell rod forces: a stretched rod (s_k > 0) pulls its two nodes together."""
+    F = np.zeros_like(X)
+    for k, (a, b) in enumerate(rods):
+        r = X[b] - X[a]
+        L = float(np.linalg.norm(r))
+        if L < 1e-12:
+            continue
+        u = r / L
+        F[a] += s[k] * u
+        F[b] -= s[k] * u
+    return F
+
+
+def cartilage_elastic_energy(s: np.ndarray, kappa: np.ndarray, L0: np.ndarray) -> float:
+    """Stored elastic energy of the Maxwell springs U = sum_k L0_k s_k^2 / (2 kappa_k) (kappa_k > 0 rods only)."""
+    mask = kappa > 0
+    return float(np.sum(L0[mask] * s[mask] ** 2 / (2.0 * kappa[mask])))
+
+
+def attractor_energy_3d(X: np.ndarray, X_star: np.ndarray, K: np.ndarray, C: np.ndarray) -> float:
+    """3D Procrustes Lyapunov energy: homing on all 7 nodes + relational coupling on the 5 landmarks."""
+    diff = X - X_star
+    v_home = 0.5 * float(np.sum(K * np.sum(diff * diff, axis=1)))
+    d5 = diff[:5]
+    rel = d5[:, None, :] - d5[None, :, :]
+    v_rel = 0.25 * float(np.sum(C * np.sum(rel * rel, axis=2)))
+    return v_home + v_rel
+
+
+def pass3_rhs(
+    X: np.ndarray,
+    s: np.ndarray,
+    geo: dict[str, Any],
+    eta_nodes: np.ndarray,
+    relax_rates: np.ndarray,
+    kappa_scale: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Right-hand side for (X, s): overdamped MMP-gated nodes + Maxwell rod stress evolution."""
+    X_star, K, C, rods, kappa, L0 = geo["X65"], geo["K"], geo["C"], geo["rods"], geo["kappa"], geo["L0"]
+    diff = X - X_star
+    F = -K[:, None] * diff
+    d5 = diff[:5]
+    rel = d5[:, None, :] - d5[None, :, :]
+    F[:5] += -np.sum(C[:, :, None] * rel, axis=1)
+    F += cartilage_rod_forces(X, s, rods)
+    V = eta_nodes[:, None] * F
+    ds = np.zeros_like(s)
+    for k, (a, b) in enumerate(rods):
+        r = X[b] - X[a]
+        L = float(np.linalg.norm(r))
+        if L < 1e-12:
+            continue
+        u = r / L
+        dLdt = float(np.dot(u, V[b] - V[a]))
+        ds[k] = kappa_scale * kappa[k] * dLdt / L0[k] - s[k] * relax_rates[k]
+    return V, ds
+
+
+def simulate_cartilage_mmp_remap(
+    regime_id: str = "picasso_scrambled_craniofacial_closed_loop",
+    steps: int = 400,
+    dt: float = 0.05,
+    kappa_scale: float | None = None,
+    gm_active_fraction: float | None = None,
+    uniform_mmp: bool = False,
+    record_fields: bool = False,
+) -> dict[str, Any]:
+    """Integrate the Pass 3 coupled system (7 nodes in R^3, 5 Maxwell cartilage rods, 2 MMP fields)
+    across NF stages 45 -> 65 with operator splitting: explicit-Euler field step, then RK4 on (X, s)
+    with the mobility and relaxation rates frozen over the step."""
+    ref = load_reference()
+    p3 = load_pass3_reference()
+    geo = build_pass3_geometry(p3)
+    regimes = {r["id"]: r for r in ref["experimental_regimes"]}
+    reg = regimes[regime_id]
+    if reg["control_law"] != "closed_loop_attractor":
+        raise ValueError("Pass 3 cartilage/MMP model is defined for closed-loop regimes only")
+    eta_reg = float(reg["eta_mmp"])
+    a_gm = float(gm_active_fraction) if gm_active_fraction is not None else (float(p3["mmp_zymography_field"]["gm6001_active_fraction"]) if eta_reg < 0.5 else 1.0)
+    ks = float(p3["cartilage_rheology"]["kappa_scale_default"]) if kappa_scale is None else float(kappa_scale)
+    tau0 = float(p3["cartilage_rheology"]["tau_0_stages"])
+
+    X = geo["X45"].copy()
+    X[:5, :2] += np.array(reg["perturbation_deltas"], dtype=float)
+    s = np.zeros(len(geo["rods"]))
+    # Perturbation pre-strains the cartilage rods (they are no longer at rest length L0).
+    L_init = np.array([np.linalg.norm(X[a] - X[b]) for a, b in geo["rods"]])
+    s[:] = ks * geo["kappa"] * (L_init - geo["L0"]) / geo["L0"]
+    X_star_xy = geo["X65"][:5, :2]
+
+    field = MMPZymographyField(p3["mmp_zymography_field"], a_gm)
+    for _ in range(int(p3["mmp_zymography_field"]["warmup_steps"])):
+        field.step(field.source_terms(X, X_star_xy, s, geo["rods"]), dt)
+
+    def gates(Xc: np.ndarray, sc: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        Z = field.active_zymography()
+        if uniform_mmp:
+            eta_nodes = np.full(7, eta_reg)  # Pass 2 behaviour: spatially uniform regime mobility
+            rates = np.full(len(geo["rods"]), (eta_nodes[0] / (field.Z_half + eta_nodes[0])) / tau0)
+            return eta_nodes, rates, Z
+        Z_nodes = np.array([field.sample(Z, Xc[i, :2]) for i in range(7)])
+        eta_nodes = np.array([field.mobility(z) for z in Z_nodes])
+        Z_mid = np.array([field.sample(Z, 0.5 * (Xc[a, :2] + Xc[b, :2])) for a, b in geo["rods"]])
+        rates = (Z_mid / (field.Z_half + Z_mid)) / tau0
+        return eta_nodes, rates, Z
+
+    nf = np.linspace(45.0, 65.0, steps + 1)
+    traj = np.zeros((steps + 1, 7, 3))
+    s_hist = np.zeros((steps + 1, len(geo["rods"])))
+    err_hist = np.zeros(steps + 1)
+    energy_hist = np.zeros(steps + 1)
+    eta_hist = np.zeros((steps + 1, 7))
+    m9_frac_hist = np.zeros(steps + 1)  # grid-mean inducible MMP-9 share of total gelatinase
+    Z_snapshots: list[np.ndarray] = []
+    M9_snapshots: list[np.ndarray] = []
+    snap_idx = set(np.linspace(0, steps, 16, dtype=int).tolist())
+
+    def record(i: int, Xc: np.ndarray, sc: np.ndarray, eta_nodes: np.ndarray, Z: np.ndarray) -> None:
+        traj[i] = Xc
+        s_hist[i] = sc
+        err_hist[i] = procrustes_rms_distance(Xc[:5, :2], X_star_xy)
+        energy_hist[i] = attractor_energy_3d(Xc, geo["X65"], geo["K"], geo["C"]) + cartilage_elastic_energy(sc, ks * geo["kappa"], geo["L0"])
+        eta_hist[i] = eta_nodes
+        m9_frac_hist[i] = float(np.sum(field.M[1]) / max(1e-12, np.sum(field.M[0] + field.M[1])))
+        if record_fields and i in snap_idx:
+            Z_snapshots.append(Z.copy())
+            M9_snapshots.append(field.M[1].copy())
+
+    eta_nodes, rates, Z = gates(X, s)
+    record(0, X, s, eta_nodes, Z)
+    for i in range(1, steps + 1):
+        field.step(field.source_terms(X, X_star_xy, s, geo["rods"]), dt)
+        eta_nodes, rates, Z = gates(X, s)
+        k1x, k1s = pass3_rhs(X, s, geo, eta_nodes, rates, ks)
+        k2x, k2s = pass3_rhs(X + 0.5 * dt * k1x, s + 0.5 * dt * k1s, geo, eta_nodes, rates, ks)
+        k3x, k3s = pass3_rhs(X + 0.5 * dt * k2x, s + 0.5 * dt * k2s, geo, eta_nodes, rates, ks)
+        k4x, k4s = pass3_rhs(X + dt * k3x, s + dt * k3s, geo, eta_nodes, rates, ks)
+        X = X + dt * (k1x + 2 * k2x + 2 * k3x + k4x) / 6.0
+        s = s + dt * (k1s + 2 * k2s + 2 * k3s + k4s) / 6.0
+        record(i, X, s, eta_nodes, Z)
+
+    half = 0.5 * err_hist[0]
+    above = np.where(err_hist > half)[0]
+    t_half = float(nf[above[-1] + 1] - 45.0) if (err_hist[0] > 1e-9 and len(above) and above[-1] + 1 <= steps) else float("nan")
+
+    Zf = field.active_zymography()
+    out = {
+        "regime_id": regime_id,
+        "kappa_scale": ks,
+        "gm_active_fraction": a_gm,
+        "uniform_mmp": uniform_mmp,
+        "nf_stages": nf,
+        "traj": traj,
+        "s_hist": s_hist,
+        "err_hist": err_hist,
+        "energy_hist": energy_hist,
+        "eta_hist": eta_hist,
+        "m9_frac_hist": m9_frac_hist,
+        "peak_m9_fraction": float(np.max(m9_frac_hist)),
+        "final_m9_fraction": float(m9_frac_hist[-1]),
+        "initial_error": float(err_hist[0]),
+        "final_error": float(err_hist[-1]),
+        "t_half_stages": t_half,
+        "final_rod_stress": s_hist[-1].copy(),
+        "final_Z": Zf,
+        "final_M2": field.M[0].copy(),
+        "final_M9": field.M[1].copy(),
+        "field": field,
+        "geo": geo,
+        "Z_snapshots": Z_snapshots,
+        "M9_snapshots": M9_snapshots,
+        "snap_stages": nf[sorted(snap_idx)],
+    }
+    return out
+
+
+def zymography_enrichment(res: dict[str, Any]) -> dict[str, float]:
+    """Ratio of active gelatinase along the optic-nerve path / at jaw insertions vs the field median."""
+    field: MMPZymographyField = res["field"]
+    Z = res["final_Z"]
+    X = res["traj"][-1]
+    background = float(np.median(Z))
+    nerve_vals = []
+    for eye in (0, 1):
+        for t in np.linspace(0.1, 0.9, 7):
+            nerve_vals.append(field.sample(Z, (1 - t) * X[eye, :2] + t * field.chiasm))
+    jaw_vals = [field.sample(Z, X[n, :2]) for n in (4, 5, 6)]
+    return {
+        "background": background,
+        "optic_nerve_ratio": float(np.mean(nerve_vals) / max(background, 1e-12)),
+        "jaw_insertion_ratio": float(np.mean(jaw_vals) / max(background, 1e-12)),
+        "mmp9_fraction_at_jaw": float(np.mean([field.sample(res["final_M9"], X[n, :2]) for n in (4, 5, 6)]) / max(1e-12, np.mean([field.sample(res["final_M9"] + res["final_M2"], X[n, :2]) for n in (4, 5, 6)]))),
+    }
+
+
+def evaluate_pass3_suite(steps: int = 400, dt: float = 0.05) -> dict[str, Any]:
+    """Run the Pass 3 regimes, the two ablations, and the (kappa_scale x a_GM) morphospace sweep."""
+    p3 = load_pass3_reference()
+    regimes: dict[str, dict[str, Any]] = {}
+    for rid in p3["pass3_regimes"]:
+        regimes[rid] = simulate_cartilage_mmp_remap(rid, steps=steps, dt=dt, record_fields=(rid == "picasso_scrambled_craniofacial_closed_loop"))
+    abl_cart_off = simulate_cartilage_mmp_remap("picasso_scrambled_craniofacial_closed_loop", steps=steps, dt=dt, kappa_scale=0.0)
+    abl_uniform = simulate_cartilage_mmp_remap("picasso_scrambled_craniofacial_closed_loop", steps=steps, dt=dt, uniform_mmp=True)
+    gm_uniform = simulate_cartilage_mmp_remap("mmp_inhibitor_gm6001_blockade_ablation", steps=steps, dt=dt, uniform_mmp=True)
+
+    sw = p3["sweep"]
+    kgrid = np.array(sw["kappa_scale_grid"], dtype=float)
+    agrid = np.array(sw["gm_active_grid"], dtype=float)
+    err_grid = np.zeros((len(agrid), len(kgrid)))
+    stress_grid = np.zeros_like(err_grid)
+    for i_a, a in enumerate(agrid):
+        for j_k, kk in enumerate(kgrid):
+            r = simulate_cartilage_mmp_remap(
+                "picasso_scrambled_craniofacial_closed_loop", steps=int(sw["steps"]), dt=float(sw["dt"]), kappa_scale=float(kk), gm_active_fraction=float(a)
+            )
+            err_grid[i_a, j_k] = r["final_error"]
+            stress_grid[i_a, j_k] = float(np.max(np.abs(r["final_rod_stress"])))
+
+    # Critical active fraction at which the Picasso defect is half-corrected for the default stiffness
+    j_def = int(np.argmin(np.abs(kgrid - 1.0)))
+    col = err_grid[:, j_def]
+    e0 = regimes["picasso_scrambled_craniofacial_closed_loop"]["initial_error"]
+    a_crit = float("nan")
+    for i in range(1, len(agrid)):
+        if col[i - 1] > 0.5 * e0 >= col[i]:
+            f = (col[i - 1] - 0.5 * e0) / max(1e-12, col[i - 1] - col[i])
+            a_crit = float(agrid[i - 1] + f * (agrid[i] - agrid[i - 1]))
+            break
+
+    return {
+        "regimes": regimes,
+        "ablation_cartilage_off": abl_cart_off,
+        "ablation_uniform_mmp": abl_uniform,
+        "gm6001_uniform_mmp": gm_uniform,
+        "kappa_grid": kgrid,
+        "gm_grid": agrid,
+        "err_grid": err_grid,
+        "stress_grid": stress_grid,
+        "a_crit_half_correction": a_crit,
+        "zymo_wt": zymography_enrichment(regimes["wild_type_unperturbed_remodeling"]),
+        "zymo_pic": zymography_enrichment(regimes["picasso_scrambled_craniofacial_closed_loop"]),
+        "zymo_gm": zymography_enrichment(regimes["mmp_inhibitor_gm6001_blockade_ablation"]),
     }
 
 
@@ -711,11 +1101,264 @@ def render_outputs(seed: int = 2019, skip_gif: bool = False) -> dict[str, Any]:
             loop=0,
         )
 
+    suite3 = evaluate_pass3_suite()
+    render_pass3_outputs(suite3, spec, pic, skip_gif=skip_gif)
+
     return {
         "invariants": inv,
         "suite": suite,
+        "suite3": suite3,
         "specimen": spec,
     }
+
+
+def eye_span_ratio_sim(X_xy: np.ndarray) -> float:
+    """Dimensionless froglet eye-span ratio = inter-eye distance / (snout(jaw) -> mean eye AP distance).
+    Scale-free, so it can be compared with the photographed specimen without a Procrustes scale."""
+    inter_eye = float(np.linalg.norm(X_xy[0] - X_xy[1]))
+    snout_to_eye = float(X_xy[4, 1] - 0.5 * (X_xy[0, 1] + X_xy[1, 1]))
+    return inter_eye / max(1e-9, snout_to_eye)
+
+
+def eye_span_ratio_specimen(spec: dict[str, Any]) -> float:
+    """Same scale-free ratio measured on `xenopus_craniofacial_specimen.jpg` from the segmented eyes and snout."""
+    return float(spec["inter_eye_norm"] / max(1e-9, spec["mean_eye_s"]))
+
+
+def _draw_rods(ax: Any, X: np.ndarray, s: np.ndarray, rods: list[tuple[int, int]], lw: float = 2.4) -> None:
+    for k, (a, b) in enumerate(rods):
+        col = "#f97316" if s[k] > 0 else "#38bdf8"
+        ax.plot([X[a, 0], X[b, 0]], [X[a, 1], X[b, 1]], color=col, lw=lw, alpha=0.9, solid_capstyle="round")
+
+
+def render_pass3_outputs(suite3: dict[str, Any], spec: dict[str, Any], legacy_pic: dict[str, Any], skip_gif: bool = False) -> None:
+    """Render the Pass 3 9-panel cartilage + MMP zymography figure and the 16-frame zymography GIF."""
+    reg = suite3["regimes"]
+    wt = reg["wild_type_unperturbed_remodeling"]
+    pic = reg["picasso_scrambled_craniofacial_closed_loop"]
+    caud = reg["caudal_lateral_eye_rotation_closed_loop"]
+    jaw = reg["lateral_jaw_mouth_translocation_closed_loop"]
+    gm = reg["mmp_inhibitor_gm6001_blockade_ablation"]
+    geo = pic["geo"]
+    field: MMPZymographyField = pic["field"]
+    rods = geo["rods"]
+    rod_labels = ["Meckel's L", "Meckel's R", "Ceratohyal", "Palatoquadrate L", "Palatoquadrate R"]
+    node_cols = LANDMARK_COLORS + ["#e2e8f0", "#e2e8f0"]
+    extent = [field.x0, field.x1, field.y0, field.y1]
+
+    fig, axes = plt.subplots(3, 3, figsize=(16.5, 13.8), dpi=135)
+    fig.patch.set_facecolor("#0b0f17")
+    for ax in axes.flat:
+        ax.set_facecolor("#131b29")
+        ax.tick_params(colors="#cbd5e1", labelsize=8)
+        for sp in ax.spines.values():
+            sp.set_color("#334155")
+    leg_kw = dict(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.0)
+
+    # A1: Dorsal projection of the 3D chondrocranial rod model at NF 45 (Picasso) and NF 65
+    ax = axes[0, 0]
+    X0, s0 = pic["traj"][0], pic["s_hist"][0]
+    XT, sT = pic["traj"][-1], pic["s_hist"][-1]
+    _draw_rods(ax, X0, s0, rods, lw=1.6)
+    _draw_rods(ax, XT, sT, rods, lw=3.0)
+    for i in range(7):
+        ax.scatter(X0[i, 0], X0[i, 1], color=node_cols[i], edgecolor="#0f172a", s=45, marker="o", zorder=6)
+        ax.scatter(XT[i, 0], XT[i, 1], color=node_cols[i], edgecolor="#f8fafc", s=110, marker="*" if i < 5 else "D", zorder=7)
+        ax.plot(pic["traj"][:, i, 0], pic["traj"][:, i, 1], color=node_cols[i], lw=1.0, alpha=0.7)
+    ax.plot([], [], color="#f97316", lw=2.4, label="Rod in tension ($s_k>0$)")
+    ax.plot([], [], color="#38bdf8", lw=2.4, label="Rod in compression ($s_k<0$)")
+    ax.scatter([], [], color="#e2e8f0", marker="D", s=60, label="Jaw joints (palatoquadrate–Meckel's)")
+    ax.set_xlim(-0.95, 0.95)
+    ax.set_ylim(-0.35, 0.95)
+    ax.set_title("A1. 3D Cartilage Rods (dorsal view): Picasso NF45 $\\circ$ $\\to$ NF65 $\\star$", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Mediolateral $x$", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Anteroposterior $y$", color="#cbd5e1", fontsize=9)
+    ax.legend(loc="lower right", **leg_kw)
+
+    # A2: Lateral (y, z) projection — the dorsoventral dimension the 2D model lacked
+    ax = axes[0, 1]
+    for k, (a, b) in enumerate(rods):
+        ax.plot([X0[a, 1], X0[b, 1]], [X0[a, 2], X0[b, 2]], color="#64748b", lw=1.4, ls="--")
+        ax.plot([XT[a, 1], XT[b, 1]], [XT[a, 2], XT[b, 2]], color="#f97316" if sT[k] > 0 else "#38bdf8", lw=2.6)
+    for i in range(7):
+        ax.scatter(X0[i, 1], X0[i, 2], color=node_cols[i], edgecolor="#0f172a", s=45, zorder=6)
+        ax.scatter(XT[i, 1], XT[i, 2], color=node_cols[i], edgecolor="#f8fafc", s=100, marker="*" if i < 5 else "D", zorder=7)
+        ax.plot(pic["traj"][:, i, 1], pic["traj"][:, i, 2], color=node_cols[i], lw=1.0, alpha=0.7)
+    ax.axhline(0.0, color="#334155", lw=1.0, ls=":")
+    ax.set_title("A2. Lateral ($y$,$z$) projection: dorsal eyes/nares vs ventral jaw cartilages", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Anteroposterior $y$", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Dorsoventral $z$", color="#cbd5e1", fontsize=9)
+
+    # A3: Procrustes error: Pass 3 regimes + ablations vs Pass 2 legacy Picasso curve
+    ax = axes[0, 2]
+    ax.plot(legacy_pic["nf_stages"], legacy_pic["err_hist"], color="#94a3b8", lw=1.6, ls=":", label=f"Pass 2 legacy 2D Picasso (final={legacy_pic['final_error']:.4f})")
+    ax.plot(wt["nf_stages"], wt["err_hist"], color="#22c55e", lw=2.0, label=f"WT 3D+MMP (final={wt['final_error']:.4f})")
+    ax.plot(pic["nf_stages"], pic["err_hist"], color="#38bdf8", lw=2.4, label=f"Picasso 3D+MMP (final={pic['final_error']:.4f}, $t_{{1/2}}$={pic['t_half_stages']:.2f} st.)")
+    ax.plot(caud["nf_stages"], caud["err_hist"], color="#a855f7", lw=1.8, ls="-.", label=f"Caudal eye (final={caud['final_error']:.4f})")
+    ax.plot(jaw["nf_stages"], jaw["err_hist"], color="#eab308", lw=1.8, ls=":", label=f"Jaw shift (final={jaw['final_error']:.4f})")
+    ax.plot(gm["nf_stages"], gm["err_hist"], color="#f59e0b", lw=2.2, ls="--", label=f"GM6001 $a_{{GM}}$=0.04 (final={gm['final_error']:.4f})")
+    ax.plot(suite3["ablation_cartilage_off"]["nf_stages"], suite3["ablation_cartilage_off"]["err_hist"], color="#f43f5e", lw=1.6, ls="--", label=f"Ablation: no cartilage (final={suite3['ablation_cartilage_off']['final_error']:.4f})")
+    ax.plot(suite3["ablation_uniform_mmp"]["nf_stages"], suite3["ablation_uniform_mmp"]["err_hist"], color="#fb7185", lw=1.4, ls="-.", label=f"Ablation: uniform MMP (final={suite3['ablation_uniform_mmp']['final_error']:.4f})")
+    ax.set_title("A3. Procrustes $D_P$: 3D cartilage + MMP field vs Pass 2 & ablations", color="#f8fafc", fontsize=9.4, fontweight="bold")
+    ax.set_xlabel("Nieuwkoop–Faber Stage", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Procrustes RMS $D_P$ (xy projection)", color="#cbd5e1", fontsize=9)
+    ax.legend(loc="upper right", **leg_kw)
+
+    # B1: Inducible MMP-9 zymography field at peak induction (Picasso), with optic nerves and insertions
+    ax = axes[1, 0]
+    i_peak = int(np.argmax(pic["m9_frac_hist"]))
+    snaps = pic["M9_snapshots"]
+    stages = pic["snap_stages"]
+    j_snap = int(np.argmin(np.abs(stages - pic["nf_stages"][i_peak])))
+    M9 = snaps[j_snap]
+    im9 = ax.imshow(M9, origin="lower", extent=extent, cmap="inferno", aspect="auto")
+    Xs = pic["traj"][int(np.linspace(0, len(pic["nf_stages"]) - 1, 16, dtype=int)[j_snap])]
+    for eye in (0, 1):
+        ax.plot([Xs[eye, 0], field.chiasm[0]], [Xs[eye, 1], field.chiasm[1]], color="#38bdf8", lw=1.4, ls="--")
+    _draw_rods(ax, Xs, pic["s_hist"][int(np.linspace(0, len(pic["nf_stages"]) - 1, 16, dtype=int)[j_snap])], rods, lw=1.6)
+    for i in range(7):
+        ax.scatter(Xs[i, 0], Xs[i, 1], color=node_cols[i], edgecolor="#0f172a", s=50, zorder=6)
+    ax.plot([], [], color="#38bdf8", ls="--", label="Optic nerve source lines")
+    ax.set_title(f"B1. Inducible MMP-9 $M_9(x,y)$, NF {stages[j_snap]:.1f} Picasso (peak MMP-9 share {pic['peak_m9_fraction']:.3f})", color="#f8fafc", fontsize=8.8, fontweight="bold")
+    ax.set_xlabel("Mediolateral $x$", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Anteroposterior $y$", color="#cbd5e1", fontsize=9)
+    ax.legend(loc="lower right", **leg_kw)
+    cb = fig.colorbar(im9, ax=ax, fraction=0.046, pad=0.04)
+    cb.ax.tick_params(colors="#cbd5e1", labelsize=7.5)
+    cb.set_label("$M_9$ (a.u.)", color="#cbd5e1", fontsize=8)
+
+    # B2: Active gelatinase zymography Z at NF 65, WT vs GM6001 (same colour scale)
+    ax = axes[1, 1]
+    Zwt = wt["final_Z"]
+    Zgm = gm["final_Z"]
+    Zcat = np.concatenate([Zwt, Zgm], axis=1)
+    ext2 = [field.x0, field.x1 + (field.x1 - field.x0), field.y0, field.y1]
+    imz = ax.imshow(Zcat, origin="lower", extent=ext2, cmap="viridis", aspect="auto")
+    ax.axvline(field.x1, color="#f8fafc", lw=1.2)
+    for i in range(7):
+        ax.scatter(wt["traj"][-1][i, 0], wt["traj"][-1][i, 1], color=node_cols[i], edgecolor="#0f172a", s=36, zorder=6)
+        ax.scatter(gm["traj"][-1][i, 0] + (field.x1 - field.x0), gm["traj"][-1][i, 1], color=node_cols[i], edgecolor="#0f172a", s=36, zorder=6)
+    zw, zg = suite3["zymo_wt"], suite3["zymo_gm"]
+    ax.text(field.x0 + 0.05, field.y1 - 0.1, f"WT: nerve/bg={zw['optic_nerve_ratio']:.1f}, jaw/bg={zw['jaw_insertion_ratio']:.1f}", color="#f8fafc", fontsize=7.6)
+    ax.text(field.x1 + 0.05, field.y1 - 0.1, f"GM6001 ($a_{{GM}}$=0.04): $Z_{{max}}$={Zgm.max():.3f} vs WT {Zwt.max():.3f}", color="#f8fafc", fontsize=7.6)
+    ax.set_title("B2. Active gelatinase zymography $Z=a_{GM}(M_2+M_9)$ at NF 65: WT | GM6001", color="#f8fafc", fontsize=9.3, fontweight="bold")
+    ax.set_xlabel("Mediolateral $x$ (left: WT, right: GM6001)", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Anteroposterior $y$", color="#cbd5e1", fontsize=9)
+    cb = fig.colorbar(imz, ax=ax, fraction=0.046, pad=0.04)
+    cb.ax.tick_params(colors="#cbd5e1", labelsize=7.5)
+    cb.set_label("$Z$ (a.u.)", color="#cbd5e1", fontsize=8)
+
+    # B3: Maxwell rod stress relaxation s_k(t): WT vs GM6001
+    ax = axes[1, 2]
+    rod_cols = ["#f97316", "#fb923c", "#22c55e", "#38bdf8", "#60a5fa"]
+    for k in range(len(rods)):
+        ax.plot(pic["nf_stages"], pic["s_hist"][:, k], color=rod_cols[k], lw=1.9, label=f"{rod_labels[k]} (WT)")
+        ax.plot(gm["nf_stages"], gm["s_hist"][:, k], color=rod_cols[k], lw=1.5, ls="--", alpha=0.9)
+    ax.plot([], [], color="#cbd5e1", ls="--", label="GM6001 (dashed): relaxation arrested")
+    ax.axhline(0.0, color="#334155", lw=1.0, ls=":")
+    ax.set_title(f"B3. Maxwell cartilage stress $s_k(t)$ (|s| at NF65: GM6001/WT = {np.max(np.abs(gm['final_rod_stress'])) / max(1e-9, np.max(np.abs(pic['final_rod_stress']))):.1f}x)", color="#f8fafc", fontsize=9.2, fontweight="bold")
+    ax.set_xlabel("Nieuwkoop–Faber Stage", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Dimensionless rod stress $s_k$", color="#cbd5e1", fontsize=9)
+    ax.legend(loc="upper right", **leg_kw)
+
+    # C1: Total energy (attractor + elastic) monotone decay and MMP-9 transient
+    ax = axes[2, 0]
+    ax.semilogy(pic["nf_stages"], np.maximum(pic["energy_hist"], 1e-9), color="#38bdf8", lw=2.2, label="Picasso: $V_{3D}+U_{cart}$")
+    ax.semilogy(wt["nf_stages"], np.maximum(wt["energy_hist"], 1e-9), color="#22c55e", lw=2.0, label="WT: $V_{3D}+U_{cart}$")
+    ax.semilogy(gm["nf_stages"], np.maximum(gm["energy_hist"], 1e-9), color="#f59e0b", lw=2.0, ls="--", label="GM6001: $V_{3D}+U_{cart}$")
+    ax.set_ylabel("Total energy (log)", color="#cbd5e1", fontsize=9)
+    ax2 = ax.twinx()
+    ax2.plot(pic["nf_stages"], pic["m9_frac_hist"], color="#f43f5e", lw=1.6, ls=":", label="Picasso MMP-9 share of gelatinase")
+    ax2.plot(wt["nf_stages"], wt["m9_frac_hist"], color="#fda4af", lw=1.3, ls=":", label="WT MMP-9 share")
+    ax2.tick_params(colors="#cbd5e1", labelsize=8)
+    ax2.set_ylabel("MMP-9 / (MMP-2 + MMP-9)", color="#f43f5e", fontsize=9)
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc="center right", **leg_kw)
+    ax.set_title(f"C1. Energy dissipation (max $\\Delta E$={np.max(np.diff(pic['energy_hist'])):.1e}) & MMP-9 induction transient", color="#f8fafc", fontsize=9.2, fontweight="bold")
+    ax.set_xlabel("Nieuwkoop–Faber Stage", color="#cbd5e1", fontsize=9)
+
+    # C2: (kappa_scale x a_GM) morphospace
+    ax = axes[2, 1]
+    kg, ag = suite3["kappa_grid"], suite3["gm_grid"]
+    imm = ax.pcolormesh(kg, ag, suite3["err_grid"], cmap="magma", shading="nearest")
+    ax.set_yscale("log")
+    ax.scatter([1.0], [1.0], color="#22c55e", edgecolor="#f8fafc", s=95, marker="*", zorder=7, label="WT ($\\kappa$=1, $a_{GM}$=1)")
+    ax.scatter([1.0], [0.04], color="#f43f5e", edgecolor="#f8fafc", s=80, marker="s", zorder=7, label="GM6001 ($a_{GM}$=0.04)")
+    if not math.isnan(suite3["a_crit_half_correction"]):
+        ax.axhline(suite3["a_crit_half_correction"], color="#38bdf8", lw=1.3, ls="--", label=f"Half-correction $a_{{GM}}^*$={suite3['a_crit_half_correction']:.3f} ($\\kappa$=1)")
+    ax.set_title("C2. Morphospace: final $D_P(65)$ vs cartilage stiffness $\\kappa$ × active MMP $a_{GM}$", color="#f8fafc", fontsize=9.3, fontweight="bold")
+    ax.set_xlabel("Cartilage stiffness scale $\\kappa$", color="#cbd5e1", fontsize=9)
+    ax.set_ylabel("Active gelatinase fraction $a_{GM}$ (log)", color="#cbd5e1", fontsize=9)
+    ax.legend(loc="upper right", **leg_kw)
+    cb = fig.colorbar(imm, ax=ax, fraction=0.046, pad=0.04)
+    cb.ax.tick_params(colors="#cbd5e1", labelsize=7.5)
+    cb.set_label("Final $D_P(65)$", color="#cbd5e1", fontsize=8)
+
+    # C3: Specimen comparison — scale-free eye-span ratio, sim froglet target vs photographed specimen
+    ax = axes[2, 2]
+    ax.imshow(spec["image_rgb"])
+    ax.contour(spec["frog_mask"], levels=[0.5], colors=["#22c55e"], linewidths=1.0)
+    ax.plot([spec["left_eye_xy"][0], spec["right_eye_xy"][0]], [spec["left_eye_xy"][1], spec["right_eye_xy"][1]], color="#f43f5e", lw=2.2)
+    mid_eye = 0.5 * (spec["left_eye_xy"] + spec["right_eye_xy"])
+    ax.plot([spec["snout_xy"][0], mid_eye[0]], [spec["snout_xy"][1], mid_eye[1]], color="#eab308", lw=2.2)
+    ax.scatter([spec["left_eye_xy"][0], spec["right_eye_xy"][0]], [spec["left_eye_xy"][1], spec["right_eye_xy"][1]], color="#f43f5e", edgecolor="#f8fafc", s=70, zorder=8)
+    ax.scatter([spec["snout_xy"][0]], [spec["snout_xy"][1]], color="#eab308", edgecolor="#0f172a", s=80, marker="^", zorder=8)
+    r_spec = eye_span_ratio_specimen(spec)
+    r_sim_T = eye_span_ratio_sim(pic["traj"][-1][:5, :2])
+    r_sim_0 = eye_span_ratio_sim(pic["traj"][0][:5, :2])
+    r_sim_gm = eye_span_ratio_sim(gm["traj"][-1][:5, :2])
+    ax.text(
+        0.02, 0.03,
+        f"Eye-span / snout–eye ratio\nSpecimen (photo): {r_spec:.3f}\nSim Picasso NF65 (3D+MMP): {r_sim_T:.3f}\nSim Picasso NF45 (scrambled): {r_sim_0:.3f}\nSim GM6001 NF65: {r_sim_gm:.3f}",
+        transform=ax.transAxes, color="#f8fafc", fontsize=8.0, va="bottom",
+        bbox=dict(facecolor="#0f172a", edgecolor="#334155", alpha=0.85),
+    )
+    ax.set_title("C3. Specimen vs simulated froglet: eye-span ratio (CC BY 4.0)", color="#f8fafc", fontsize=9.3, fontweight="bold")
+    ax.axis("off")
+
+    fig.suptitle(
+        "Pass 3 — 3D viscoelastic chondrocranial rods (Meckel's / ceratohyal / palatoquadrate) + MMP-2/MMP-9 zymography field coupled to the Procrustes attractor",
+        color="#f8fafc", fontsize=11.6, fontweight="bold", y=0.992,
+    )
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.978])
+    fig.savefig(OUT_PNG_P3, dpi=135)
+    plt.close(fig)
+
+    if skip_gif:
+        return
+    frames: list[Image.Image] = []
+    idxs = np.linspace(0, len(pic["nf_stages"]) - 1, 16, dtype=int)
+    for j, idx in enumerate(idxs):
+        f_fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.4, 4.1), dpi=90)
+        f_fig.patch.set_facecolor("#0b0f17")
+        for a_sub in (ax1, ax2):
+            a_sub.set_facecolor("#131b29")
+            a_sub.tick_params(colors="#cbd5e1", labelsize=8)
+            for sp in a_sub.spines.values():
+                sp.set_color("#334155")
+        Xc, sc = pic["traj"][idx], pic["s_hist"][idx]
+        ax1.imshow(pic["Z_snapshots"][j], origin="lower", extent=extent, cmap="viridis", aspect="auto", vmin=0.0, vmax=max(1e-9, max(z.max() for z in pic["Z_snapshots"])))
+        for eye in (0, 1):
+            ax1.plot([Xc[eye, 0], field.chiasm[0]], [Xc[eye, 1], field.chiasm[1]], color="#38bdf8", lw=1.2, ls="--")
+        _draw_rods(ax1, Xc, sc, rods, lw=1.8)
+        for i in range(7):
+            ax1.scatter(Xc[i, 0], Xc[i, 1], color=node_cols[i], edgecolor="#0f172a", s=45, zorder=6)
+            ax1.scatter(geo["X65"][i, 0], geo["X65"][i, 1], color=node_cols[i], marker="*", s=60, alpha=0.4)
+        ax1.set_title(f"Active gelatinase $Z$ + cartilage rods (NF {pic['nf_stages'][idx]:.1f}, $D_P$={pic['err_hist'][idx]:.3f})", color="#f8fafc", fontsize=8.6)
+        ax1.set_xlabel("Mediolateral $x$", color="#cbd5e1", fontsize=8)
+        ax1.set_ylabel("Anteroposterior $y$", color="#cbd5e1", fontsize=8)
+        ax2.imshow(pic["M9_snapshots"][j], origin="lower", extent=extent, cmap="inferno", aspect="auto", vmin=0.0, vmax=max(1e-9, max(z.max() for z in pic["M9_snapshots"])))
+        for i in range(7):
+            ax2.scatter(Xc[i, 0], Xc[i, 1], color=node_cols[i], edgecolor="#0f172a", s=45, zorder=6)
+        ax2.set_title(f"Inducible MMP-9 $M_9$ (MMP-9 share={pic['m9_frac_hist'][idx]:.3f})", color="#f8fafc", fontsize=8.6)
+        ax2.set_xlabel("Mediolateral $x$", color="#cbd5e1", fontsize=8)
+        f_fig.tight_layout()
+        f_fig.canvas.draw()
+        rgba = np.asarray(f_fig.canvas.buffer_rgba())
+        frames.append(Image.fromarray(rgba[:, :, :3]))
+        plt.close(f_fig)
+    frames[0].save(OUT_GIF_P3, save_all=True, append_images=frames[1:], duration=140, loop=0)
 
 
 # --------------------------------------------------------------------------- #
@@ -805,11 +1448,111 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"head width Pearson r = {spec['head_width_r']:.4f}, RMSE = {spec['head_width_rmse']:.4f}; detected N={spec['n_eyes_detected']} bilateral eyes at s/L={spec['mean_eye_s']:.4f} (AP asymmetry |Delta s| = {spec['eye_ap_asymmetry']:.4f}, inter-eye span = {spec['inter_eye_norm']:.4f})",
             "derived_from": "output",
         },
+    ] + measure_pass3(spec)
+
+
+def measure_pass3(spec: dict[str, Any]) -> list[dict[str, Any]]:
+    """Pass 3 measurements: 3D viscoelastic cartilage coupling + spatially resolved MMP-2/MMP-9 zymography."""
+    p3 = load_pass3_reference()
+    rv = p3["reference_values"]
+    s3 = evaluate_pass3_suite()
+    reg = s3["regimes"]
+    wt3 = reg["wild_type_unperturbed_remodeling"]
+    pic3 = reg["picasso_scrambled_craniofacial_closed_loop"]
+    gm3 = reg["mmp_inhibitor_gm6001_blockade_ablation"]
+    cart_off = s3["ablation_cartilage_off"]
+    uni = s3["ablation_uniform_mmp"]
+    gm_uni = s3["gm6001_uniform_mmp"]
+    closed3 = [reg[r]["final_error"] for r in p3["pass3_regimes"] if r != "mmp_inhibitor_gm6001_blockade_ablation"]
+    stress_ratio = float(np.max(np.abs(gm3["final_rod_stress"])) / max(1e-9, np.max(np.abs(pic3["final_rod_stress"]))))
+    r_spec = eye_span_ratio_specimen(spec)
+    r_sim = eye_span_ratio_sim(pic3["traj"][-1][:5, :2])
+    return [
+        {
+            "name": "Pass 3 Picasso closed-loop Procrustes RMS error at NF 65 with 3D viscoelastic cartilage rods and MMP-gated mobility",
+            "value": round(pic3["final_error"], 4),
+            "unit": "Procrustes RMS distance (xy projection)",
+            "method": "RK4 on 7 nodes in R^3 + 5 Maxwell rods (Meckel's x2, ceratohyal, palatoquadrate x2) with node mobility eta_i = eta_max Z_i/(Z_half+Z_i) from the MMP-2/MMP-9 reaction-diffusion field; operator-split explicit-Euler field step (simulate_cartilage_mmp_remap)",
+            "reference_value": float(rv["closed_loop_final_procrustes_error"]["value"]),
+            "reference_source": rv["closed_loop_final_procrustes_error"]["source"],
+            "note": f"Picasso {pic3['initial_error']:.4f} -> {pic3['final_error']:.4f}; 4 closed-loop regimes RMSE = {float(np.sqrt(np.mean(np.square(closed3)))):.4f}; ablations: no cartilage {cart_off['final_error']:.4f}, uniform MMP {uni['final_error']:.4f}; total energy V_3D + U_cart monotone (max dE = {float(np.max(np.diff(pic3['energy_hist']))):.1e})",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 Picasso half-correction time t_1/2 (NF stages) with cartilage + MMP field",
+            "value": round(pic3["t_half_stages"], 3),
+            "unit": "NF stages after 45",
+            "method": "First stage at which D_P falls below half its NF 45 value (linear-in-stage clock, 20 stages = NF 45->65)",
+            "reference_value": float(rv["correction_window_stages"]["value"]),
+            "reference_source": rv["correction_window_stages"]["source"],
+            "note": f"t_1/2 = {pic3['t_half_stages']:.2f} stages (no-cartilage ablation {cart_off['t_half_stages']:.2f}, uniform-MMP ablation {uni['t_half_stages']:.2f}); the reference 20 stages is only the upper bound implied by complete correction at NF 65 - Vandenberg et al. (2012) report no half-time",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 GM6001 residual Procrustes RMS defect at NF 65 (active gelatinase fraction a_GM = 0.04) vs uninhibited",
+            "value": round(gm3["final_error"] - pic3["final_error"], 4),
+            "unit": "Procrustes RMS defect delta",
+            "method": "GM6001 modelled as 96% reduction of catalytically ACTIVE gelatinase Z (zymography-visible) with unchanged MMP expression; mobility and Maxwell relaxation both gated by Z",
+            "reference_value": round(gm_uni["final_error"] - uni["final_error"], 4),
+            "reference_source": "Model-vs-model: Pass 2 spatially uniform eta_MMP = 0.04 blockade (same regimes, cartilage present). " + rv["gm6001_blocks_correction"]["source"] + " - qualitative only, no digitised defect magnitude",
+            "note": f"GM6001 3D+MMP final D_P = {gm3['final_error']:.4f} ({gm3['final_error'] / max(1e-9, pic3['initial_error']):.1%} of the initial defect retained) vs uniform-eta Pass 2 behaviour {gm_uni['final_error']:.4f}; the saturating Michaelis-Menten mobility makes the field model LESS sensitive to a_GM than the linear Pass 2 model",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 Maxwell cartilage stress arrest ratio |s|_GM6001 / |s|_WT at NF 65 (max over Meckel's, ceratohyal, palatoquadrate rods)",
+            "value": round(stress_ratio, 3),
+            "unit": "ratio",
+            "method": "Residual dimensionless rod stress after MMP-gated Maxwell relaxation ds/dt = kappa dL/dt / L0 - s m(Z)/tau_0 (tau_0 = 4 stages)",
+            "reference_value": 1.0,
+            "reference_source": "Null: MMP-independent cartilage rheology (ratio = 1). Pinet et al. (2019) Development 146:dev175893 implicate MMP-dependent tissue remodelling but report no cartilage stress; the arrest ratio is a model prediction",
+            "note": f"WT max |s(65)| = {float(np.max(np.abs(pic3['final_rod_stress']))):.4f}, GM6001 = {float(np.max(np.abs(gm3['final_rod_stress']))):.4f}; initial perturbation pre-strain max |s(45)| = {float(np.max(np.abs(pic3['s_hist'][0]))):.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 zymography enrichment of active gelatinase along the optic-nerve path relative to field median (Picasso, NF 65)",
+            "value": round(s3["zymo_pic"]["optic_nerve_ratio"], 3),
+            "unit": "ratio",
+            "method": "Mean bilinear sample of Z = a_GM (M_2 + M_9) at 7 points on each eye->optic-chiasm line / median Z over the 36x36 dorsal head grid",
+            "reference_value": float(rv["zymography_enrichment_null"]["value"]),
+            "reference_source": rv["zymography_enrichment_null"]["source"],
+            "note": f"optic nerve/background = {s3['zymo_pic']['optic_nerve_ratio']:.2f} (WT {s3['zymo_wt']['optic_nerve_ratio']:.2f}); jaw-insertion/background = {s3['zymo_pic']['jaw_insertion_ratio']:.2f} (WT {s3['zymo_wt']['jaw_insertion_ratio']:.2f}); the enrichment is prescribed by where the sources are placed - only the magnitude and the MMP-9 share are emergent",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 peak inducible MMP-9 share of total gelatinase during Picasso correction (grid mean M_9 / (M_2 + M_9))",
+            "value": round(pic3["peak_m9_fraction"], 4),
+            "unit": "fraction",
+            "method": "MMP-9 production proportional to local eye Procrustes defect (optic nerve) and rod stress (jaw insertions); MMP-2 constitutive; peak over NF 45->65",
+            "reference_value": round(wt3["peak_m9_fraction"], 4),
+            "reference_source": "Model baseline: unperturbed wild-type remodelling (same sources). Prediction: scrambled Picasso tadpoles show a transient MMP-9 surge that decays to the WT share as the defect is corrected",
+            "note": f"Picasso peak {pic3['peak_m9_fraction']:.4f} -> final {pic3['final_m9_fraction']:.4f}; WT peak {wt3['peak_m9_fraction']:.4f} -> final {wt3['final_m9_fraction']:.4f}; GM6001 final share {gm3['final_m9_fraction']:.4f} (defect persists so MMP-9 expression stays induced while its activity is blocked)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 critical active gelatinase fraction a_GM* for half-correction of the Picasso defect at default cartilage stiffness (kappa = 1)",
+            "value": round(s3["a_crit_half_correction"], 4) if not math.isnan(s3["a_crit_half_correction"]) else None,
+            "unit": "active fraction",
+            "method": "Linear interpolation on the 9-point a_GM axis of the (kappa_scale x a_GM) morphospace at kappa_scale = 1 where final D_P(65) crosses 0.5 D_P(45)",
+            "reference_value": float(p3["mmp_zymography_field"]["gm6001_active_fraction"]),
+            "reference_source": "Pinet et al. (2019): GM6001 blocks correction, so a_GM* must exceed the GM6001 active fraction (0.04) for the model to be consistent; the 0.04 value itself is a Pass 2 modelling constant, not a measured residual activity",
+            "note": f"a_GM* = {s3['a_crit_half_correction']:.4f}; final D_P over the {len(s3['kappa_grid'])}x{len(s3['gm_grid'])} grid spans {float(np.min(s3['err_grid'])):.4f}..{float(np.max(s3['err_grid'])):.4f}; stiffness effect at a_GM = 1: D_P(kappa=0) = {float(s3['err_grid'][-1, 0]):.4f} vs D_P(kappa=6) = {float(s3['err_grid'][-1, -1]):.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Scale-free eye-span / snout-to-eye ratio of the simulated NF 65 froglet target vs the photographed Xenopus laevis specimen",
+            "value": round(r_sim, 4),
+            "unit": "ratio",
+            "method": "Simulation: ||x_Leye - x_Reye|| / (y_jaw - mean eye y) at NF 65; specimen: segmented inter-eye distance / mean eye distance from snout apex (both scale-free)",
+            "reference_value": round(r_spec, 4),
+            "reference_source": "Vendored dorsal Xenopus laevis specimen (Wikimedia Commons CC BY 4.0, ZooKeys 1022:51422 Fig. 4), measured by segment_xenopus_specimen - adult animal, not an NF 65 froglet",
+            "note": f"sim {r_sim:.3f} vs specimen {r_spec:.3f} (ratio {r_sim / max(1e-9, r_spec):.2f}x): the Pass 2 target landmark table X^* places the eyes far wider / more caudal than the specimen - X^* is schematic and uncalibrated (open defect)",
+            "derived_from": "output",
+        },
     ]
 
 
 # --------------------------------------------------------------------------- #
-# 6. Comprehensive 8-Check Deterministic Self-Test Suite (`--self-test`)
+# 6. Comprehensive 10-Check Deterministic Self-Test Suite (`--self-test`)
 # --------------------------------------------------------------------------- #
 def self_test() -> int:
     """Run 8 deterministic verification checks covering SHA-256 dataset locks,
@@ -869,8 +1612,44 @@ def self_test() -> int:
     assert np.allclose(s1["traj"], s2["traj"], atol=0.0, rtol=0.0)
     assert np.allclose(s1["lyap_hist"], s2["lyap_hist"], atol=0.0, rtol=0.0)
 
+    # 9. Pass 3: Maxwell cartilage rods start pre-strained by the perturbation, relax under WT MMP activity,
+    #    the total energy V_3D + U_cart is monotone non-increasing, and the xy Procrustes error still converges
+    p3 = load_pass3_reference()
+    assert PASS3_REFERENCE_JSON.exists() and p3["slot"] == 85
+    wt3 = simulate_cartilage_mmp_remap("wild_type_unperturbed_remodeling")
+    pic3 = simulate_cartilage_mmp_remap("picasso_scrambled_craniofacial_closed_loop")
+    assert np.max(np.abs(pic3["s_hist"][0])) > 0.05, "perturbation must pre-strain the cartilage rods"
+    assert np.max(np.abs(wt3["s_hist"][0])) < 1e-12, "unperturbed WT geometry must be at rod rest length"
+    for r3 in (wt3, pic3):
+        assert np.all(np.diff(r3["energy_hist"]) <= 1e-9), "total energy V_3D + U_cart must not increase"
+        assert r3["final_error"] < 0.02, f"3D+MMP closed loop failed to converge: {r3['final_error']}"
+        assert np.max(np.abs(r3["final_rod_stress"])) < 0.1 * max(0.05, np.max(np.abs(pic3["s_hist"][0])))
+    assert np.all(pic3["eta_hist"] >= 0.0) and np.all(pic3["eta_hist"] < pic3["field"].eta_max)
+
+    # 10. Pass 3: GM6001 (a_GM = 0.04) arrests both landmark correction and Maxwell stress relaxation;
+    #     zymography field is enriched along the optic nerves and jaw insertions; MMP-9 surge is transient
+    gm3 = simulate_cartilage_mmp_remap("mmp_inhibitor_gm6001_blockade_ablation")
+    assert gm3["final_error"] > 10.0 * pic3["final_error"] and gm3["final_error"] > 0.08
+    assert np.max(np.abs(gm3["final_rod_stress"])) > 2.0 * np.max(np.abs(pic3["final_rod_stress"]))
+    assert gm3["final_Z"].max() < 0.1 * pic3["final_Z"].max()
+    zy = zymography_enrichment(pic3)
+    assert zy["optic_nerve_ratio"] > 2.0 and zy["jaw_insertion_ratio"] > 2.0
+    assert pic3["peak_m9_fraction"] > wt3["peak_m9_fraction"] and pic3["final_m9_fraction"] < 0.5 * pic3["peak_m9_fraction"]
+    co = simulate_cartilage_mmp_remap("picasso_scrambled_craniofacial_closed_loop", kappa_scale=0.0)
+    assert np.all(np.abs(co["s_hist"]) < 1e-12) and co["final_error"] < 0.02
+    pic3b = simulate_cartilage_mmp_remap("picasso_scrambled_craniofacial_closed_loop")
+    assert np.allclose(pic3["traj"], pic3b["traj"], atol=0.0, rtol=0.0)
+    r_spec = eye_span_ratio_specimen(spec)
+    assert 0.3 < r_spec < 3.0
+
     print(
-        "[2019-bischof-xenopus-craniofacial-remap] SELF-TEST PASSED (8/8 checks: SHA-256 locks, "
+        f"[2019-bischof-xenopus-craniofacial-remap] Pass 3: Picasso 3D+MMP D_P={pic3['final_error']:.4f} (t1/2={pic3['t_half_stages']:.2f} st), "
+        f"GM6001 D_P={gm3['final_error']:.4f}, stress arrest {np.max(np.abs(gm3['final_rod_stress'])) / max(1e-9, np.max(np.abs(pic3['final_rod_stress']))):.1f}x, "
+        f"nerve zymo {zy['optic_nerve_ratio']:.1f}x, MMP-9 peak share {pic3['peak_m9_fraction']:.3f}, "
+        f"eye-span sim/spec={eye_span_ratio_sim(pic3['traj'][-1][:5, :2]):.3f}/{r_spec:.3f}"
+    )
+    print(
+        "[2019-bischof-xenopus-craniofacial-remap] SELF-TEST PASSED (10/10 checks: SHA-256 locks, "
         f"Picasso D_P={pic['final_error']:.4f} [asym {pic['initial_asymmetry']:.3f}->{pic['final_asymmetry']:.4f}], "
         f"Open-Loop Null D_P={open_l['final_error']:.4f}, GM6001 MMP- D_P={mmp['final_error']:.4f}, "
         f"vel-dist r={suite['vel_dist_r']:.4f}, specimen eyes={spec['n_eyes_detected']} [|Delta s|={spec['eye_ap_asymmetry']:.4f}, width r={spec['head_width_r']:.4f}])."
@@ -880,24 +1659,28 @@ def self_test() -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check deterministic verification suite and exit")
-    ap.add_argument("--skip-gif", action="store_true", help="Skip rendering animated GIF")
-    ap.add_argument("--seed", type=int, default=2019, help="Deterministic RNG seed")
+    ap.add_argument("--self-test", action="store_true", help="Run 10-check deterministic verification suite and exit")
+    ap.add_argument("--skip-gif", action="store_true", help="Skip rendering the two animated GIFs")
     args = ap.parse_args()
 
     if args.self_test:
         return self_test()
 
-    res = render_outputs(seed=args.seed, skip_gif=args.skip_gif)
+    res = render_outputs(skip_gif=args.skip_gif)
     pic = res["suite"]["regimes"]["picasso_scrambled_craniofacial_closed_loop"]
     open_l = res["suite"]["regimes"]["open_loop_fixed_displacement_null"]
     mmp = res["suite"]["regimes"]["mmp_inhibitor_gm6001_blockade_ablation"]
     spec = res["specimen"]
+    pic3 = res["suite3"]["regimes"]["picasso_scrambled_craniofacial_closed_loop"]
+    gm3 = res["suite3"]["regimes"]["mmp_inhibitor_gm6001_blockade_ablation"]
     print(
         f"[2019-bischof-xenopus-craniofacial-remap] Rendered 9-panel comparison -> {OUT_PNG.relative_to(ROOT)} "
         f"and 24-frame animation -> {OUT_GIF.relative_to(ROOT)} "
         f"(Picasso D_P={pic['final_error']:.4f}, Open-Loop={open_l['final_error']:.4f}, "
-        f"GM6001={mmp['final_error']:.4f}, Specimen width r={spec['head_width_r']:.4f})."
+        f"GM6001={mmp['final_error']:.4f}, Specimen width r={spec['head_width_r']:.4f}); "
+        f"Pass 3 cartilage+MMP figure -> {OUT_PNG_P3.relative_to(ROOT)} and zymography GIF -> {OUT_GIF_P3.relative_to(ROOT)} "
+        f"(Picasso 3D+MMP D_P={pic3['final_error']:.4f}, GM6001 3D+MMP D_P={gm3['final_error']:.4f}, "
+        f"eye-span sim/specimen={eye_span_ratio_sim(pic3['traj'][-1][:5, :2]):.3f}/{eye_span_ratio_specimen(spec):.3f})."
     )
     return 0
 

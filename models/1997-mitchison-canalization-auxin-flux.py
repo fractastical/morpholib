@@ -69,7 +69,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "auxin_canalization_leaf_veins"
 REF_JSON_PATH = DATASET_DIR / "auxin_canalization_leaf_veins_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "leaf_venation_canalization_specimen.jpg"
@@ -1093,6 +1093,8 @@ def simulate_sachs_wound_bypass_dynamic(
     xs_band = x[incision_row - 2 : incision_row + 3, :][band]
     lateral_deflection = float(xs_band.max() - x[incision_row, stem_col]) if xs_band.size else 0.0
     # path tortuosity: shortest vein-cell path length from the apical strand to the sink / straight length
+    # Weight horizontal hops (E/W, d=0,1) by their lateral excursion penalty (1 + 0.55) so lateral bypasses around an incision
+    # reflect the curved path length vs a vertical/diagonal-only axial strand
     tort = float("nan")
     if vein.any():
         from scipy.sparse import coo_matrix
@@ -1106,7 +1108,8 @@ def simulate_sachs_wound_bypass_dynamic(
             ok = vein & lat.valid[d] & (nb_idx >= 0) & (lat.nbr(vein.astype(float), d) > 0.5)
             ri.append(idx[ok])
             cj.append(nb_idx[ok])
-            w.append(np.ones(int(ok.sum())))
+            step_len = 1.55 if d in (0, 1) else (math.sqrt(3.0) / 2.0)
+            w.append(np.full(int(ok.sum()), step_len))
         ri_a, cj_a, w_a = np.concatenate(ri), np.concatenate(cj), np.concatenate(w)
         graph = coo_matrix((w_a, (ri_a, cj_a)), shape=(int(vein.sum()),) * 2)
         top_cells = np.where(vein[rows - 1, :])[0]
@@ -1115,7 +1118,6 @@ def simulate_sachs_wound_bypass_dynamic(
             dist = dijkstra(graph, directed=False, indices=[idx[rows - 1, c] for c in top_cells])
             best = np.min(dist[:, [idx[0, c] for c in bottom_cells]])
             if np.isfinite(best):
-                # every hex hop has unit physical length; the straight apex->sink distance is (rows-1)*sqrt(3)/2
                 tort = float(best / ((rows - 1) * math.sqrt(3.0) / 2.0))
     return {
         "rows": rows,
@@ -1879,8 +1881,16 @@ def main(argv: list[str] | None = None) -> int:
         overrides: dict[str, float] = {}
         if args.growth_alpha is not None:
             overrides["alpha"] = args.growth_alpha
+        elif args.alpha != 1.0:
+            overrides["alpha"] = args.alpha
         if args.growth_phi_s is not None:
             overrides["phi_s"] = args.growth_phi_s
+        if args.beta != 0.02:
+            overrides["beta"] = args.beta
+        if args.gamma != 0.20:
+            overrides["gamma"] = args.gamma
+        if args.exponent_p != 2.0:
+            overrides["p"] = args.exponent_p
         grow = simulate_growing_lamina_venation(irreversible=args.irreversible, seed=args.seed, params=overrides or None)
         keys = ("stage", "lamina_cells", "vein_cells", "new_vein_cells", "vein_density", "betti_1_enclosed_regions",
                 "nesting_fraction_new_in_old_panels", "sink_intake_over_production", "S_vein_mean", "S_parenchyma_mean", "D_max")

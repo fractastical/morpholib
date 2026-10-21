@@ -64,7 +64,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 SCRIPT_VERSION = "1.0.0"
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
 PLANFORM_DATASET_DIR = REPO_ROOT / "datasets" / "planform"
 DEFAULT_OUT = PLANFORM_DATASET_DIR / "planform_bioelectric_series_v1.json"
 DEFAULT_DAMAGED_DIR = PLANFORM_DATASET_DIR / "damaged"

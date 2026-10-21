@@ -24,5 +24,99 @@
   "slot_index": 76,
   "slug": "sponge-spicule-hexactin",
   "target_script": "2012-bavestrello-sponge-spicule-hexactin.py",
-  "delta": 39.0
+  "delta": 39.0,
+  "pass3_run_id": "2026-10-19-sponge-spicule-hexactin-loop-pass3",
+  "pass3_phase_a_status": "remediation_complete",
+  "pass3_supersedes": "2026-10-19-sponge-spicule-hexactin-audit-v2",
+  "audit_v3": "morphoeval/audits/2026-10-19-sponge-spicule-hexactin-audit-v3.yaml",
+  "pass3_remediation_items_closed": [
+    "Cohesive-zone FE three-point bending of the laminate coupled to the 3D silicatein solver (reduced: Hermite beam FE + bilinear cohesive interlayer + He-Hutchinson deflection + Griffith delamination; not a 3D cohesive FEM)",
+    "External helical surface ridges (sin^2(2 psi) torsion, parallel-axis ovalization gain) and basalia step-index waveguiding (ray tracing + LP mode count)"
+  ],
+  "pass3_new_media": [
+    "docs/media/sponge_spicule_hexactin_pass3_mechanics.png",
+    "docs/media/sponge_spicule_hexactin_bending_fracture.gif"
+  ],
+  "pass3_new_dataset_files": [
+    "datasets/sponge_spicule_hexactin/cohesive_bending_waveguide_reference.json",
+    "datasets/sponge_spicule_hexactin/pass3_citations.bib"
+  ],
+  "lean_theorems_verified_v3": 6,
+  "lean_sorrys_v3": 0,
+  "self_test_checks_v3": 12,
+  "measurements_v3": 18,
+  "pass3_phase_a_completed_at": "2026-10-20T20:30:00Z",
+  "pass3_audit_id": "2026-10-19-sponge-spicule-hexactin-audit-v3",
+  "pass3_score": 88.6,
+  "pass3_dims": {
+    "model-fidelity": 90,
+    "specimen-match": 88,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 84,
+    "source-traceability": 88,
+    "code-traceability": 89,
+    "repro-package": 91
+  },
+  "pass3_dims_v2": {
+    "model-fidelity": 93,
+    "specimen-match": 90,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 92,
+    "source-traceability": 94,
+    "code-traceability": 91,
+    "repro-package": 90
+  },
+  "pass3_score_delta": -3.0,
+  "pass3_completed_at": "2026-10-20T23:59:26Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-sponge-spicule-hexactin-audit-v3",
+  "overall_trusty_uri_v3": "https://w3id.org/np/RA4dHhrMKqlm0PuxuXu4Pk8AGgnjvykKrkeZJYaRC0g_4",
+  "pass3_remediation_closed": [
+    "Couple the 3D silicatein diffusion-reaction solver to a finite-element cohesive-zone fracture model of organic-silica interlayers under three-point bending (Weaver et al. 2007) — closed as a reduced 1D Hermite-beam FE + bilinear cohesive interlayer + He-Hutchinson deflection + Griffith delamination (simulate_three_point_bending_cohesive_laminate L799-949; coupling via layers_from_accreted_cross_section / evaluate_coupled_accretion_to_fracture L950-999); W_lam/W_mono = 1.714, 25 load drops",
+    "Extend the cylindrical hexactin lattice mechanics to include external helical surface ridges and anchor-spicule basalia waveguiding — closed (simulate_helical_ridge_cage_mechanics L1041-1104: psi_opt 45 deg, torsion gain 7.93x, I gain 2.00x; simulate_basalia_optical_waveguide L1112-1203: NA 0.2408, V 6.38, 20 modes, lambda_c 1.458 um)"
+  ],
+  "pass3_remediation_open": [
+    "L512-588 + reference.json L76-88: 12-species theta_obs/toughness_obs are recalled values on the model laws (r = 1.0000); digitise from sources or relabel as self-consistency",
+    "L104 + L395-459 vs L799-949: eta-law 1 + 0.32 N (9.0x) and cohesive FE (1.71x) disagree 5.3x; derive eta from cohesive constants or drop the eta-law",
+    "L395-459 + L697: laminate outer radius 5.83 um vs table 22.5 um; radius-matched preset and FE bending at the table radius",
+    "L700 + L950-965: SILICA_MASS_TO_LAYER_CALIBRATION is self-referential (WT -> 25 by construction); replace with mechanistic layer-count rule or mark as expressivity",
+    "L692-710 + cohesive_bending_waveguide_reference.json L27-44/54-56/67-72: sigma_f, G_s, T_max, delta_c, L/D, N_r, A_r, psi, n_core/n_clad unsourced; E and He-Hutchinson 0.25 recalled; verify the 6 pass3_citations.bib DOIs",
+    "L1826/L1829/L2039 stale docstrings (8-check / 9 measurements / Pass 2); L489 vs L1041-1104 diagonal projection convention mismatch",
+    "L1946-1955, L2006-2025: FE parity, ovalization identity and ray-trace-vs-Snell are parity checks reported as measurements; tag or move to self_test; add measured basalia NA comparison",
+    "L90-96 + L714-717: Pass 3 JSON and pass3_citations.bib not SHA-256 pinned (self_test asserts 4 files at L2042)",
+    "L702-704 + L1041-1104: ridge count/pitch/area not measured from the specimen photograph; add ridge segmentation",
+    "math_kg_loops YAML L140: Law 7 (waveguide) has lean_theorem: null; add an integer-scaled provable statement"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_076.cohesive_laminate_progressive_fracture_work_exceeds_monolith",
+    "MathOfBiology.Loop_076.euplectella_helical_ridge_shear_projection_and_parallel_axis_gain"
+  ],
+  "pass3_lean_verification": "lean exit 0, 6 theorems, 0 sorrys",
+  "pass3_self_test": "PASSED all 12 checks (~5 s)",
+  "pass3_phase_b_status": "completed",
+  "pass3_artifacts": [
+    "models/2012-bavestrello-sponge-spicule-hexactin.py",
+    "morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean",
+    "morphoeval/math_kg_loops/bavestrello-sponge-spicule-hexactin.yaml",
+    "datasets/sponge_spicule_hexactin/cohesive_bending_waveguide_reference.json",
+    "datasets/sponge_spicule_hexactin/pass3_citations.bib",
+    "datasets/sponge_spicule_hexactin/README.md",
+    "docs/media/sponge_spicule_hexactin_comparison.png",
+    "docs/media/sponge_spicule_hexactin_growth.gif",
+    "docs/media/sponge_spicule_hexactin_pass3_mechanics.png",
+    "docs/media/sponge_spicule_hexactin_bending_fracture.gif",
+    "docs/media/sponge_spicule_hexactin_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-sponge-spicule-hexactin-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-sponge-spicule-hexactin-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-sponge-spicule-hexactin-audit-v3/",
+    "morphoeval/runs/2026-10-19-sponge-spicule-hexactin-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-sponge-spicule-hexactin-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-sponge-spicule-hexactin-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-sponge-spicule-hexactin-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-sponge-spicule-hexactin-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-sponge-spicule-hexactin-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-076.json"
+  ]
 }

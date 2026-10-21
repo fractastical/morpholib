@@ -101,7 +101,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "her1_her7_delayed_oscillator"
 REFERENCE_JSON = DATASET_DIR / "her1_her7_delayed_oscillator_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "zebrafish_somites_specimen.jpg"

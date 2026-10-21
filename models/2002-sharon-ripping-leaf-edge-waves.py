@@ -85,7 +85,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "ripping_leaf_edge_waves"
 REF_JSON = DATASET_DIR / "ripping_leaf_edge_waves_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "lactuca_sativa_edge_waves_specimen.jpg"

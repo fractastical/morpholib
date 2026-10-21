@@ -83,7 +83,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "auxin_pin1_phyllotaxis"
 REF_JSON_PATH = DATASET_DIR / "auxin_pin1_phyllotaxis_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "rosette_phyllotaxis_specimen.jpg"

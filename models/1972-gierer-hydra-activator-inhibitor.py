@@ -134,7 +134,7 @@ from scipy.linalg import solve_banded
 from scipy.signal import find_peaks
 from scipy.stats import spearmanr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "hydra_activator_inhibitor"
 REF_JSON_PATH = DATASET_DIR / "hydra_activator_inhibitor_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "hydra_vulgaris_specimen.jpg"

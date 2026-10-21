@@ -93,7 +93,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "tendril_perversion_intrinsic_curvature"
 REF_JSON = DATASET_DIR / "tendril_perversion_intrinsic_curvature_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "tendril_perversion_helix_specimen.jpg"

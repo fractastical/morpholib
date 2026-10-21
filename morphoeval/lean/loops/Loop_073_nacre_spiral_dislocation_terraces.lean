@@ -107,4 +107,77 @@ theorem cartwright_frank_read_topological_burgers_algebra (b : Int) :
   dsimp [net_burgers_charge, frank_read_nucleation_excess]
   omega
 
+-- ============================================================================
+-- Law 4 (Pass 3): Aragonite {110} Cyclic Twinning & Anisotropic Terrace Pitch
+-- ============================================================================
+
+/-- Angular misfit (in tenths of a degree) of a cyclic (trilling) twin whose three
+    orthorhombic domains are each rotated by the twin angle `tau` (tenths of a degree):
+    because each domain has 2-fold in-plane symmetry the three a-axes close after 180°,
+    so the misfit is `3 * tau - 1800`. Aragonite: `tau = 638` (63.8°, = 2 atan(a/b) with
+    a = 4.9611 Å, b = 7.9672 Å; De Villiers 1971) gives 114 (11.4°); an ideal hexagonal
+    trilling (`tau = 600`) closes exactly. -/
+def cyclic_twin_misfit_tenths (tau : Int) : Int :=
+  3 * tau - 1800
+
+/-- Theorem 5 (`aragonite_cyclic_twin_angular_misfit`):
+    (1) the ideal 60° trilling has zero misfit;
+    (2) the aragonite 63.8° {110} trilling has an 11.4° misfit;
+    (3) the misfit is affine in the twin angle with slope 3 (each 0.1° of extra twin
+        angle adds 0.3° of misfit). -/
+theorem aragonite_cyclic_twin_angular_misfit (tau d : Int) :
+    cyclic_twin_misfit_tenths 600 = 0 ∧
+    cyclic_twin_misfit_tenths 638 = 114 ∧
+    cyclic_twin_misfit_tenths (tau + d) - cyclic_twin_misfit_tenths tau = 3 * d := by
+  dsimp [cyclic_twin_misfit_tenths]
+  omega
+
+/-- Direction-dependent (kinematic Wulff) terrace pitch numerator
+    `λ(θ) · ω = 2π v(θ)`, represented as `pitch_num v_theta = 2 * v_theta`
+    (scaled integers, 2π ↦ 2): the pitch of the rotating BCF spiral is linear in the
+    local step speed `v(θ) = v_∞ A(θ)`. -/
+def anisotropic_pitch_num (v_theta : Nat) : Nat :=
+  2 * v_theta
+
+/-- Theorem 6 (`anisotropic_terrace_pitch_linear_in_step_speed`):
+    the pitch ratio between the fast [100] and slow [010] step directions equals the
+    step-speed ratio: `pitch_num (a * v) = a * pitch_num v`, so with
+    `v_100 / v_010 = a√3 / b` the terrace is elongated along [100] by exactly that factor
+    for a single untwinned domain; and the pitch is additive over co-rotating arms. -/
+theorem anisotropic_terrace_pitch_linear_in_step_speed (a v v₁ v₂ : Nat) :
+    anisotropic_pitch_num (a * v) = a * anisotropic_pitch_num v ∧
+    anisotropic_pitch_num (v₁ + v₂) = anisotropic_pitch_num v₁ + anisotropic_pitch_num v₂ := by
+  dsimp [anisotropic_pitch_num]
+  constructor
+  · rw [Nat.mul_left_comm]
+  · rw [Nat.mul_add]
+
+-- ============================================================================
+-- Law 5 (Pass 3): Chitin Inter-Lamellar Membrane Perforation Phase Field
+-- ============================================================================
+
+/-- Scaled double-well membrane energy `W₂(q) = q² (2 − q)²` with `q = 2 φ`
+    (so `q = 0` intact membrane, `q = 2` perforated membrane, `q = 1` the barrier). -/
+def membrane_double_well (q : Int) : Int :=
+  q ^ 2 * (2 - q) ^ 2
+
+/-- Derivative of the scaled double well: `W₂'(q) = 4 q (2 − q)(1 − q)`. -/
+def membrane_double_well_deriv (q : Int) : Int :=
+  4 * q * (2 - q) * (1 - q)
+
+/-- Theorem 7 (`chitin_membrane_perforation_bistability`):
+    the intact (`q = 0`) and perforated (`q = 2`) membrane states are both energy minima
+    with zero energy and zero derivative, separated by a barrier of unit height at `q = 1`
+    where the derivative also vanishes; hence, without a drive `β (S − S₀) > 0`, an intact
+    chitin membrane stays intact and a perforation stays open (bistability), which is what
+    lets the mineral-bridge position of one sheet be inherited by the next. -/
+theorem chitin_membrane_perforation_bistability :
+    membrane_double_well 0 = 0 ∧
+    membrane_double_well 2 = 0 ∧
+    membrane_double_well 1 = 1 ∧
+    membrane_double_well_deriv 0 = 0 ∧
+    membrane_double_well_deriv 2 = 0 ∧
+    membrane_double_well_deriv 1 = 0 := by
+  decide
+
 end MathOfBiology.Loop_073

@@ -251,4 +251,131 @@ theorem gibson_ashby_stretching_vs_bending_cellular_modulus_scaling :
     gibson_ashby_stretching_scaled 38 25 = 4 * gibson_ashby_bending_scaled 38 25 := by
   decide
 
+-- ============================================================================
+-- Law 5 (Pass 3): Twin-Lamella Arrest at Strut Free Surfaces & Eshelby–Frank–
+--        Nabarro Dislocation Pile-Up Bounded by the Glide Length
+--        (n = κ L τ, σ_head = n τ = κ L τ², κ = π(1-ν)/(μ b); γ ≤ s_twin)
+-- ============================================================================
+
+/-- A twin lamella nucleated under the indenter runs along its twin direction until
+    it meets a free surface: its length is the minimum of the unobstructed (monolith)
+    run `free_run` and the solid chord `strut_chord` available in the lattice. -/
+def twin_lamella_length (free_run strut_chord : Nat) : Nat :=
+  min free_run strut_chord
+
+/-- Eshelby–Frank–Nabarro (1951) single-ended pile-up count `n = κ L τ`
+    (scaled integers: `κ` = π(1-ν)/(μ b) in dislocations per unit length-stress). -/
+def pileup_count (kappa glide_length tau : Nat) : Nat :=
+  kappa * glide_length * tau
+
+/-- Pile-up head stress `σ_head = n τ = κ L τ²`. -/
+def pileup_head_stress (kappa glide_length tau : Nat) : Nat :=
+  pileup_count kappa glide_length tau * tau
+
+/-- Accumulated twin shear is clamped by the crystallographic twin shear `s_twin`
+    (calcite e-twin: s = 0.694, scaled here to integers). -/
+def clamped_twin_shear (gamma s_twin : Nat) : Nat :=
+  min gamma s_twin
+
+/-- Theorem 5 (`twin_lamella_arrest_and_dislocation_pileup_bounded_by_strut_length`):
+    (a) For every unobstructed run length, the lattice lamella never exceeds the strut
+        chord (`twin_lamella_length f L ≤ L`) and never exceeds the monolith run
+        (`twin_lamella_length f L ≤ f`);
+    (b) Pile-up count and head stress are monotone in the glide length `L`, so a strut
+        of length `L₁ ≤ L₂` arrests no more dislocations and carries no larger head
+        stress than a longer monolithic glide path;
+    (c) Accumulated twin shear never exceeds the twin shear limit; and
+    (d) Concrete scaled instance: Diamond strut `L = 6` (um, a₀√3/4 ≈ 6.41) vs
+        monolith `L = 1000` at `τ = 10` with `κ = 1`: `60` vs `10000` dislocations
+        and head stresses `600` vs `100000` (ratio `L_strut / L_mono`). -/
+theorem twin_lamella_arrest_and_dislocation_pileup_bounded_by_strut_length :
+    (∀ f L : Nat, twin_lamella_length f L ≤ L) ∧
+    (∀ f L : Nat, twin_lamella_length f L ≤ f) ∧
+    (∀ κ τ L₁ L₂ : Nat, L₁ ≤ L₂ → pileup_count κ L₁ τ ≤ pileup_count κ L₂ τ) ∧
+    (∀ κ τ L₁ L₂ : Nat, L₁ ≤ L₂ → pileup_head_stress κ L₁ τ ≤ pileup_head_stress κ L₂ τ) ∧
+    (∀ γ s : Nat, clamped_twin_shear γ s ≤ s) ∧
+    pileup_count 1 6 10 = 60 ∧
+    pileup_count 1 1000 10 = 10000 ∧
+    pileup_head_stress 1 6 10 = 600 ∧
+    pileup_head_stress 1 1000 10 = 100000 ∧
+    pileup_count 1 6 10 < pileup_count 1 1000 10 ∧
+    twin_lamella_length 17 6 = 6 ∧
+    twin_lamella_length 3 6 = 3 := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · intro f L; exact Nat.min_le_right f L
+  · intro f L; exact Nat.min_le_left f L
+  · intro κ τ L₁ L₂ h
+    unfold pileup_count
+    exact Nat.mul_le_mul_right τ (Nat.mul_le_mul_left κ h)
+  · intro κ τ L₁ L₂ h
+    unfold pileup_head_stress pileup_count
+    exact Nat.mul_le_mul_right τ (Nat.mul_le_mul_right τ (Nat.mul_le_mul_left κ h))
+  · intro γ s; exact Nat.min_le_right γ s
+  all_goals decide
+
+-- ============================================================================
+-- Law 6 (Pass 3): Syncytial Membrane Templating of ACC Vesicles, Secondary-
+--        Nucleation Single-Crystallinity & Monotone ACC Depletion
+-- ============================================================================
+
+/-- Number of crystallographic domains in a spicule whose ACC → calcite conversion
+    proceeds from one seed granule: one inherited domain plus one new domain per
+    primary (de novo) nucleation event; secondary nucleation never opens a domain. -/
+def crystal_domain_count (n_primary : Nat) : Nat :=
+  1 + n_primary
+
+/-- Vesicle exocytosis acceptance weight: `p_in` inside the syncytial membrane
+    template cavity, `p_out` (leakage) outside. -/
+def vesicle_accept_weight (inside : Bool) (p_in p_out : Nat) : Nat :=
+  if inside then p_in else p_out
+
+/-- One secondary-nucleation step converts a quarter of the remaining ACC
+    (scaled integer kinetics `a ↦ a - ⌊a/4⌋`). -/
+def acc_step (a : Nat) : Nat :=
+  a - a / 4
+
+/-- ACC remaining after `t` conversion steps from an initial amount `a`. -/
+def acc_after : Nat → Nat → Nat
+  | 0, a => a
+  | t + 1, a => acc_after t (acc_step a)
+
+/-- Theorem 6 (`syncytial_secondary_nucleation_single_domain_and_acc_depletion`):
+    (a) With no primary nucleation the spicule is a single crystal
+        (`crystal_domain_count 0 = 1`), the domain count is always ≥ 1 and is
+        monotone in the number of primary events (polycrystalline ablation);
+    (b) Templated delivery never accepts more vesicles outside than inside the
+        membrane cavity when `p_out ≤ p_in`;
+    (c) Each secondary-nucleation step never increases the ACC amount
+        (`acc_step a ≤ a`); and
+    (d) Concrete kinetics from `1000` units: `750, 563, 423, 318, 239, 180` after
+        1–6 steps (strictly decreasing) and `0` ACC is a fixed point. -/
+theorem syncytial_secondary_nucleation_single_domain_and_acc_depletion :
+    crystal_domain_count 0 = 1 ∧
+    (∀ n : Nat, 1 ≤ crystal_domain_count n) ∧
+    (∀ a b : Nat, a ≤ b → crystal_domain_count a ≤ crystal_domain_count b) ∧
+    (∀ p_in p_out : Nat, p_out ≤ p_in →
+      vesicle_accept_weight false p_in p_out ≤ vesicle_accept_weight true p_in p_out) ∧
+    (∀ a : Nat, acc_step a ≤ a) ∧
+    acc_after 1 1000 = 750 ∧
+    acc_after 2 1000 = 563 ∧
+    acc_after 3 1000 = 423 ∧
+    acc_after 4 1000 = 318 ∧
+    acc_after 5 1000 = 239 ∧
+    acc_after 6 1000 = 180 ∧
+    acc_after 6 1000 < acc_after 5 1000 ∧
+    acc_after 5 1000 < acc_after 4 1000 ∧
+    acc_after 4 1000 < acc_after 3 1000 ∧
+    acc_after 3 1000 < acc_after 2 1000 ∧
+    acc_after 2 1000 < acc_after 1 1000 ∧
+    acc_after 1 1000 < acc_after 0 1000 ∧
+    acc_step 0 = 0 ∧
+    crystal_domain_count 238 = 239 := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · decide
+  · intro n; unfold crystal_domain_count; exact Nat.le_add_right 1 n
+  · intro a b h; unfold crystal_domain_count; exact Nat.add_le_add_left h 1
+  · intro p_in p_out h; simpa [vesicle_accept_weight] using h
+  · intro a; exact Nat.sub_le a (a / 4)
+  all_goals decide
+
 end MathOfBiology.Loop_079

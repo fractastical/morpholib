@@ -119,7 +119,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "fgf_wnt_bistable_wavefront"
 REFERENCE_JSON = DATASET_DIR / "fgf_wnt_bistable_wavefront_reference.json"
 CLOCK_LR_REFERENCE_JSON = DATASET_DIR / "fgf_wnt_clock_lr_reference.json"

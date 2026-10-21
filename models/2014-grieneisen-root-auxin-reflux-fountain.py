@@ -93,7 +93,7 @@ from scipy.sparse import coo_matrix, csr_matrix
 from scipy.sparse.linalg import spsolve
 from scipy.spatial import cKDTree
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "root_auxin_reflux_fountain"
 REF_JSON_PATH = DATASET_DIR / "root_auxin_reflux_fountain_reference.json"
 GROWTH_REF_PATH = DATASET_DIR / "root_growth_gravitropism_reference.json"

@@ -111,7 +111,7 @@ from scipy.optimize import brentq, minimize_scalar
 from scipy.spatial import Delaunay, Voronoi
 from scipy.stats import ks_2samp, pearsonr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "magnetic_drop_phyllotaxis"
 REF_JSON = DATASET_DIR / "magnetic_drop_phyllotaxis_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "conifer_cone_specimen.jpg"

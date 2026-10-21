@@ -23,5 +23,99 @@
   "slot_index": 77,
   "slug": "mollusc-aperture-spine-buckling",
   "target_script": "2015-moulton-mollusc-aperture-spine-buckling.py",
-  "delta": 38.7
+  "delta": 38.7,
+  "pass3_run_id": "2026-10-19-mollusc-aperture-spine-buckling-loop-pass3",
+  "audit_v3": "morphoeval/audits/2026-10-19-mollusc-aperture-spine-buckling-audit-v3.yaml",
+  "pass3_phase_a_status": "remediation_complete",
+  "pass3_remediation": [
+    "Reduced linearised Koiter/FvK shell surface w(s,t) with varix window and oblique spiral-cord ridge forcing (solve_koiter_shell_cord_spine_coupling, sweep_cord_locking, sweep_cord_obliquity); residual: full 3D finite-strain FE shell",
+    "Inverse-WKB thickness gradient h(s) from the specimen spacing profile + graded-rigidity comb + allometric instar series (infer_specimen_thickness_gradient, solve_graded_thickness_comb, evaluate_ontogenetic_instar_series); residual: measured micro-CT h(s)"
+  ],
+  "lean_theorems_verified_v3": 5,
+  "lean_sorrys_v3": 0,
+  "self_test_checks_v3": 13,
+  "measurements_v3": 17,
+  "pass3_media": [
+    "docs/media/mollusc_aperture_spine_buckling_comparison.png",
+    "docs/media/mollusc_aperture_spine_buckling_growth.gif",
+    "docs/media/mollusc_aperture_spine_buckling_koiter_cord_ontogeny.png",
+    "docs/media/mollusc_aperture_spine_buckling_cord_locking.gif"
+  ],
+  "pass3_dataset_files": [
+    "datasets/mollusc_aperture_spine_buckling/pass3_koiter_cord_thickness_reference.json",
+    "datasets/mollusc_aperture_spine_buckling/pass3_citations.bib"
+  ],
+  "pass3_handoff_note": "/tmp/pass3/handoff/slot-077.md",
+  "pass3_audit_id": "2026-10-19-mollusc-aperture-spine-buckling-audit-v3",
+  "pass3_score": 87.5,
+  "pass3_dims": {
+    "model-fidelity": 88,
+    "specimen-match": 86,
+    "parameter-expressivity": 88,
+    "morphometric-validation": 84,
+    "source-traceability": 88,
+    "code-traceability": 90,
+    "repro-package": 92
+  },
+  "pass3_dims_v2": {
+    "model-fidelity": 93,
+    "specimen-match": 90,
+    "parameter-expressivity": 89,
+    "morphometric-validation": 92,
+    "source-traceability": 94,
+    "code-traceability": 91,
+    "repro-package": 91
+  },
+  "pass3_score_delta_vs_pass2": -3.9,
+  "pass3_completed_at": "2026-10-21T00:06:00Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-mollusc-aperture-spine-buckling-audit-v3",
+  "overall_trusty_uri_v3": "https://w3id.org/np/RAyImG9-6TPVV4Jjc7-t0uFPbaR4HRoe1MLZRVatym9sA",
+  "pass3_remediation_closed": [
+    "Pass 2 item 1 (3D Koiter shell coupling for oblique cord x varix spines) — closed in REDUCED form: linearised Koiter/FvK surface w(s,t) with varix window + oblique cord ridge forcing (solve_koiter_shell_cord_spine_coupling L670-900; sweep_cord_locking L902-938; sweep_cord_obliquity L941-990); residual: true finite-strain FE shell + elastica coupling",
+    "Pass 2 item 2 (micro-CT mantle thickness gradients h(s) across Chicoreus instars) — closed in REDUCED/INFERRED form: inverse-WKB h(u) from the Murex pecten specimen spacing profile + graded-rigidity comb + allometric instar series (infer_specimen_thickness_gradient L1008-1044; solve_graded_thickness_comb L1047-1148; evaluate_ontogenetic_instar_series L1151-1190); residual: measured Chicoreus micro-CT h(s)"
+  ],
+  "pass3_remediation_open": [
+    "L230-263: 1-D comb spine count prescribed by round(L/lambda_1) mode + seeded init; make emergent (noise init on K0) and relabel measurement L1812-1820; fix nondimensional EI_eff/P_load/kappa_3 vs _mm labels (L255-260)",
+    "L335-386 & L43-44: elastica is a parametric omega loop (L364-375), not an integrated Kirchhoff-Clebsch ODE; integrate with unilateral self-contact and couple to the Koiter height scale (L747)",
+    "L411-417 & L457-462: frond cosines and prescribed 120 deg varix bursts make k2/k1 = 3.80 (L1806, h2 chosen at L182/L391) and 120.0 deg (L1836) circular; derive emergent serrations and varix spacing",
+    "L1826, L1866, L1773, L1236: self-referential reference values (neck-gap -3.1059, CV 0.2092, beta* 4/3, rigid psi* 22.78); replace with external anchors or mark derived_from: model",
+    "L497-556 + reference.json L114-150: cross-taxa *_obs columns and per-species h1/h2 unsourced and equal to predictions (r = 1.0000); source or relabel as model-generated",
+    "L163/L213/L677: two foundation stiffnesses (K_s 0.48 vs K_s_eff 1.98); --K-s reaches only the frond (L1263); thread --K-s/--E through all solvers; fix stale '8-check' help text (L1981)",
+    "L1008-1044 & L585: inverse-WKB h(s) from a Murex photo (R^2 0.29, 0.35 floor L1031, first spacing likely spurious); vendor measured Chicoreus ramosus h(s) across >= 2 instars with empirical beta",
+    "L670-900: Koiter model linearised on a flat torus, D = 1 nondimensional, converged fallback at maxiter (L817), hmod metric uninformative; add curvature/finite strain or FE shell, report D in N mm, test domain-size independence",
+    "L1874-1976: self-test ~65-75 s; add reduced-resolution fast path for sweeps under --self-test"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_077.cord_varix_intersection_registration",
+    "MathOfBiology.Loop_077.ontogenetic_spine_count_conservation"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_self_test": "PASSED all 13 checks (74 s)",
+  "pass3_artifacts": [
+    "models/2015-moulton-mollusc-aperture-spine-buckling.py",
+    "morphoeval/lean/loops/Loop_077_mollusc_aperture_spine_buckling.lean",
+    "morphoeval/math_kg_loops/moulton-mollusc-aperture-spine-buckling.yaml",
+    "datasets/mollusc_aperture_spine_buckling/README.md",
+    "datasets/mollusc_aperture_spine_buckling/pass3_koiter_cord_thickness_reference.json",
+    "datasets/mollusc_aperture_spine_buckling/pass3_citations.bib",
+    "docs/media/mollusc_aperture_spine_buckling_comparison.png",
+    "docs/media/mollusc_aperture_spine_buckling_growth.gif",
+    "docs/media/mollusc_aperture_spine_buckling_koiter_cord_ontogeny.png",
+    "docs/media/mollusc_aperture_spine_buckling_cord_locking.gif",
+    "docs/media/mollusc_aperture_spine_buckling_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-mollusc-aperture-spine-buckling-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-mollusc-aperture-spine-buckling-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-mollusc-aperture-spine-buckling-audit-v3/",
+    "morphoeval/runs/2026-10-19-mollusc-aperture-spine-buckling-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-mollusc-aperture-spine-buckling-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-mollusc-aperture-spine-buckling-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-mollusc-aperture-spine-buckling-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-mollusc-aperture-spine-buckling-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-mollusc-aperture-spine-buckling-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-077.json"
+  ],
+  "pass3_phase_b_status": "audit_signed_unpublished"
 }

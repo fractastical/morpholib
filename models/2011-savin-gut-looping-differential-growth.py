@@ -82,7 +82,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "gut_looping_differential_growth"
 REF_JSON = DATASET_DIR / "gut_looping_differential_growth_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "intestine_mesentery_specimen.jpg"

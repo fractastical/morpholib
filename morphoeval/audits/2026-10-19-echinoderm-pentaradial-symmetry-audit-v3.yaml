@@ -1,0 +1,383 @@
+# MorphoEval Pass 3 (v3) Audit — Morris (2012), Mooi & David (1998/2008), Lovén (1874), Duboc et al. (2005),
+# Luo & Su (2012), Raup (1968), Zachos (2009) & Meinhardt (2008) Echinoderm Pentaradial Symmetry, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2005-meinhardt-echinoderm-pentaradial-symmetry.py` (1890 lines after Phase A; was 1080 in v2)
+# after the remediation of both open v2 items in the instrumented loop
+# `morphoeval/runs/2026-10-19-echinoderm-pentaradial-symmetry-loop-pass3`, superseding
+# `2026-10-19-echinoderm-pentaradial-symmetry-audit-v2` (91.8 consensus).
+#   - Primary assessor: Claude Fable 5.1 (Phase B subagent, scoring from the Phase A handoff note, the git diff
+#     against the Pass 2 checkpoint and the CURRENT file at commit a69596cc)
+#   - Second assessor: Gemini 4 Argon (Phase A builder; its handoff note lists 15 self-reported defects, all of
+#     which were re-verified line by line and are scored below rather than hidden)
+#
+# What Pass 3 changed (both v2 remediation items):
+#   1. Ocular Plate Rule domed-test plate-addition solver (`simulate_opr_test_plate_addition`, L542-694): the five
+#      lobe azimuths of the m = 5 hydrocoel-ring solution are mapped to Lovén rays I..V (`_map_lobes_to_loven_rays`,
+#      L529-539) and seed 20 biserial meridional columns (5 ambulacra x (a, b) + 5 interambulacra x (a, b)) on a
+#      spherical-cap test (ocular colatitude 22 deg, peristome 150 deg). The test radius grows along a saturating
+#      curve to R/R_meta = 40; existing plates accrete logistically toward a zone-specific terminal height and a new
+#      plate is nucleated at the OCULAR end whenever the apical gap reaches h_nuc. Lovén's enlarged primary
+#      peristomial plate (Ib, IIb, IIIa, IVa, Va; `LOVEN_B_ENLARGED`, L520) seeds the half-plate a/b offset that
+#      yields the zigzag suture (alternation phase 0.49; ablation of the enlargement -> 0.00). The plated dome is
+#      projected in aboral view (`project_opr_test_aboral_view`, L739-756) and measured with the SAME polar
+#      C_5/C_10 pipeline (`polar_c5_harmonics`, L759-800) as the Tripneustes gratilla specimen (sim C_5 = 0.9964 vs
+#      specimen 0.9255). New figure (`docs/media/echinoderm_pentaradial_symmetry_opr_test_3d.png`), 10-frame GIF
+#      (`..._opr_test_growth.gif`) and main-figure Panels G and I.
+#   2. Continuous Nodal / BMP2-4 dose-response (`simulate_nodal_bmp_dose_response`, L826-870;
+#      `evaluate_nodal_dose_response_sweep`, L873-911): steady-state 1D screened-Poisson Nodal gradient from the
+#      right ectodermal source, BMP2/4 from the stomodeum plus Nodal-induced production, pouch competence
+#      P = Hill_act(BMP) * (1 - Hill_rep(Nodal)), E[podia] = 5 (P_L + P_R); 41-point right-dose sweep (EC50 = 0.175 x
+#      WT, Spearman rho = -1.00) and a 25 x 25 (dose_L, dose_R) map reduce to Law 3 (5 / 10 / 0 podia, max |dev|
+#      0.055 podia). New figure (`..._nodal_dose_response.png`) and main-figure Panel H.
+#   3. Two new machine-checked Lean 4 theorems (`opr_biserial_plate_addition_law`,
+#      `nodal_dose_response_hill_reduces_to_discrete_law`; file now 5 theorems, 0 `sorry`s), the SHA-256-pinned
+#      reference table `opr_plate_addition_nodal_dose_reference.json`, `pass3_citations.bib`, README addendum,
+#      7 new reference-anchored measurements (16 total) and 3 new self-test checks (11 total).
+#
+# Scores below: overall 89.2 (down from 91.8). The two remediation items are closed in reduced, explicitly
+# labelled form, but this round also exposed a defect that neither earlier pass flagged: the "Gierer-Meinhardt
+# ring PDE" of Section 2 is a templated solver (hard-coded dispersion parabola, target-mode seeding, prescribed
+# Lovén delays, algebraic inhibitor) whose headline results (m* = 5, r = 1.0000 staircase, Lovén order r = 1.0000)
+# hold by construction. Model-fidelity and morphometric-validation therefore go DOWN even though the new modules
+# are credited. Remaining findings are listed under `remediation` for Pass 4.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated
+# probabilities). Line numbers refer to the files in the working tree at commit a69596cc (uncommitted Pass 3
+# edits included) and were verified with grep against the current file.
+
+audit:
+  id: 2026-10-19-echinoderm-pentaradial-symmetry-audit-v3
+  supersedes_audit_id: 2026-10-19-echinoderm-pentaradial-symmetry-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Pass 3 primary assessor, Phase B)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 3 builder / Phase A self-report, re-verified line by line)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/75
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a69596cc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2005-meinhardt-echinoderm-pentaradial-symmetry.py` superseding
+      `2026-10-19-echinoderm-pentaradial-symmetry-audit-v2`. a69596cc is the HEAD at audit time; the Pass 3
+      script, Lean, math-KG, dataset and dispatch edits are in the working tree (many parallel loops share this
+      tree, so no commit was made by this loop). `--self-test` passes 11/11 checks in ~1.7 s; `lean` verifies the
+      5-theorem module with exit 0 and 0 `sorry`s.
+
+references:
+  morris2012:
+    title: "Homology and the evolution of echinoderm pentaradiality"
+    authors: "Morris VB"
+    venue: "Evolution & Development 14(4):313-326 (2012)"
+    doi: 10.1111/j.1525-142X.2012.00552.x
+  mooidavid1998:
+    title: "Evolution Within a Bizarre Phylum: Homologies of the First Echinoderms"
+    authors: "Mooi R, David B"
+    venue: "American Zoologist 38(6):965-974 (1998)"
+    doi: 10.1093/icb/38.6.965
+  loven1874:
+    title: "Études sur les Échinoïdées"
+    authors: "Lovén S"
+    venue: "Kongliga Svenska Vetenskaps-Akademiens Handlingar 11(7):1-91 (1874)"
+    doi: 10.5962/bhl.title.46385
+  duboc2005:
+    title: "Left-right asymmetry in the sea urchin embryo is regulated by Nodal signaling on the right side"
+    authors: "Duboc V, Röttinger E, Lapraz F, Besnardeau L, Lepage T"
+    venue: "Developmental Cell 9(1):147-158 (2005)"
+    doi: 10.1016/j.devcel.2005.05.008
+  meinhardt2008:
+    title: "Models of biological pattern formation: from elementary steps to the organization of embryonic axes"
+    authors: "Meinhardt H"
+    venue: "Current Topics in Developmental Biology 81:1-63 (2008)"
+    doi: 10.1016/S0070-2153(07)81001-5
+  mooidavid2008:
+    title: "Radial symmetry, the anterior/posterior axis, and echinoderm Hox genes"
+    authors: "Mooi R, David B"
+    venue: "Annual Review of Ecology, Evolution, and Systematics 39:43-62 (2008)"
+    doi: 10.1146/annurev.ecolsys.39.110707.173521
+  zachos2009:
+    title: "A new computational growth model for sea urchin skeletons"
+    authors: "Zachos LG"
+    venue: "Journal of Theoretical Biology 259(3):646-657 (2009)"
+    doi: 10.1016/j.jtbi.2009.04.007
+  raup1968:
+    title: "Theoretical morphology of echinoid growth"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 42(S5, Memoir 2):50-63 (1968)"
+    url: https://www.jstor.org/stable/1302410
+  luosu2012:
+    title: "Opposing Nodal and BMP signals regulate left-right asymmetry in the sea urchin larva"
+    authors: "Luo Y-J, Su Y-H"
+    venue: "PLoS Biology 10(10):e1001402 (2012)"
+    doi: 10.1371/journal.pbio.1001402
+
+simulations:
+  - id: meinhardt-echinoderm-pentaradial-symmetry
+    name: "Morris (2012), Mooi & David (1998/2008), Lovén (1874), Duboc et al. (2005), Luo & Su (2012) & Meinhardt (2008) echinoderm bilateral-to-pentaradial hydrocoel ring symmetry breaking with Ocular Plate Rule test growth"
+    organism: "Strongylocentrotus purpuratus & Tripneustes gratilla (Echinoidea crown-group echinoderms)"
+    script: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py
+    output: docs/media/echinoderm_pentaradial_symmetry_comparison.png
+    extra_outputs:
+      - docs/media/echinoderm_pentaradial_symmetry_growth.gif
+      - docs/media/echinoderm_pentaradial_symmetry_opr_test_3d.png
+      - docs/media/echinoderm_pentaradial_symmetry_opr_test_growth.gif
+      - docs/media/echinoderm_pentaradial_symmetry_nodal_dose_response.png
+      - datasets/echinoderm_pentaradial_symmetry/opr_plate_addition_nodal_dose_reference.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-echinoderm-pentaradial-symmetry-audit-v2
+    source_refs:
+      - morris2012
+      - mooidavid1998
+      - loven1874
+      - duboc2005
+      - meinhardt2008
+      - mooidavid2008
+      - zachos2009
+      - raup1968
+      - luosu2012
+    claim_boundary:
+      reported_in_source:
+        - "Morris (2012): the pentaradial adult body plan arises from the left hydrocoel crescent closing into a ring, with the five primary podia initiated in the sequence II, IV, I, III, V (Carpenter C, A, D, B, E)"
+        - "Lovén (1874): in each ambulacrum one of the two primary peristomial plates is enlarged, in the asymmetric pattern Ib, IIb, IIIa, IVa, Va, and ambulacral/interambulacral plates form alternating biserial columns"
+        - "Mooi & David (1998, 2008): the Ocular Plate Rule — every new coronal plate is added at the ocular (apical) end of its column, so plate age increases toward the peristome and plate count increases with test size"
+        - "Duboc et al. (2005): right-sided Nodal signalling represses the right hydrocoel; Nodal morpholino gives bilateral twin rudiments (2 x 5 podia) and bilateral Nodal overexpression gives none"
+        - "Luo & Su (2012): BMP2/4 signalling on the left is required for rudiment formation and opposes Nodal"
+        - "Raup (1968), Zachos (2009): echinoid test growth can be modelled as plate addition plus plate growth on a domed surface"
+        - "Meinhardt (2008): activator-inhibitor dynamics on a closed domain select a wavenumber set by domain circumference / critical wavelength"
+      reconstructed_in_script:
+        - "A circular-ring mode-selection solver with a prescribed dispersion curve, crescent-to-ring closure gates at the Lovén ray angles, an m in {3..7} circumference staircase and an equal-diffusion negative control; a 2D rudiment field with a binary Nodal switch; a reduced Ocular Plate Rule plate-addition solver on a spherical-cap test seeded from the ring lobes, with logistic plate accretion, ocular-end nucleation, Lovén-enlarged primordials and an aboral projection measured with the specimen's polar Fourier pipeline; a 1D steady-state screened-Poisson Nodal/BMP2-4 gradient model with Hill competence, a dose sweep and a 2D dose map; automated specimen segmentation of a Tripneustes gratilla test; 16 reference-anchored measurements; 5 Lean 4 theorems"
+      transfer_boundary:
+        - "The Section 2 ring solver is NOT an integrated Gierer-Meinhardt PDE: the growth rate sigma(m) = 0.0480 (1 - 5.2 det^2) is hard-coded (L218, L283), the target mode is seeded in the initial condition (L289), the inhibitor is algebraic h = 1 + 0.65 (a - 1) (L318) and the Lovén initiation order is prescribed through delay_frac gates (L264-270). m* = 5, the staircase r = 1.0000 and the Lovén order r = 1.0000 therefore hold by construction; the DEFAULT_DA/DH/RHO constants (L120-123) do not enter the dynamics"
+        - "The OPR solver is 1D meridional plate heights in rectangular azimuth bands on a sphere: no plate-plate mechanics, Voronoi packing, FEM or ambitus flattening; growth factor 40, colatitudes 22/150 deg and h_nuc/h_max are labelled assumptions in the reference JSON; the Amb/IA plate ratio target 3.0 is approximate and the emergent value 2.06 misses it"
+        - "The Nodal/BMP2-4 gradient parameters were tuned only so that WT / MO / GOF give 5 / 10 / 0 podia; EC50 = 0.175 x WT is a model prediction with no empirical anchor; no Lefty/Pitx2 and no explicit Nodal-BMP antagonism term"
+        - "The specimen is Tripneustes gratilla while the header organism is S. purpuratus; specimen references (C_5 = 0.9255, ray angles) are the script's own segmentation outputs, not independent measurements"
+      does_not_claim:
+        - "Quantitative reproduction of Duboc (2005) penetrance percentages or in-situ intensity profiles, mechanical plate packing, measured plate counts for any named species, or an integrated activator-inhibitor PDE in Section 2"
+    summary: >-
+      Pass 3 (v3) evaluation of `2005-meinhardt-echinoderm-pentaradial-symmetry.py` (overall 89.2/100, down from
+      91.8 in Pass 2). Both v2 remediation items are closed in reduced, explicitly labelled form: a Mooi & David
+      (1998/2008) Ocular Plate Rule plate-addition solver on a domed test seeded from the m = 5 ring lobes (20
+      biserial columns, 640 + 310 plates at R/R_meta = 40, newest plate at the ocular in every column, Lovén-seeded
+      zigzag alternation phase 0.49 that collapses to 0.00 when the enlargement is ablated, aboral C_5 = 0.9964 vs
+      specimen 0.9255 through the same pipeline), and a continuous Nodal/BMP2-4 screened-Poisson dose-response
+      model that reduces to the discrete 5 / 10 / 0 law at the canonical doses (max |dev| 0.055 podia, EC50 0.175 x
+      WT). Two new Lean 4 theorems (5 total, 0 `sorry`s), a SHA-256-pinned reference table, 7 new measurements
+      (16 total) and 3 new self-test checks (11 total) are credited. The score falls because this round exposed
+      that the Section 2 "Gierer-Meinhardt ring PDE" is a templated solver whose headline numbers (m* = 5,
+      staircase and Lovén-order r = 1.0000) hold by construction, and because most of the new OPR measurements
+      are structural (true by construction of ocular-end nucleation) or self-referential (specimen C_5 as its own
+      reference) rather than empirical.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          Credited: the OPR solver implements the mechanism Mooi & David describe — plates nucleate only at the
+          ocular end (L627-631), existing plates grow logistically (L622-625), columns are biserial a/b with the
+          Lovén-enlarged primordial seeding the zigzag (L520, L598-612), and the ring-PDE lobes genuinely set the
+          ambulacral azimuths (L529-539, L580) so the two modules are coupled rather than juxtaposed; the
+          enlargement ablation (phase 0.49 -> 0.00) is a real mechanistic test. The Nodal/BMP2-4 module is a proper
+          steady-state reaction-diffusion reduction (screened Poisson with no-flux ends, L806-818; Hill competence,
+          L821-823, L826-870) that reproduces Duboc's three phenotypes continuously and encodes Luo & Su's
+          left-side BMP requirement. Deductions: the Section 2 ring solver is not a Gierer-Meinhardt integration —
+          sigma(m) is a hard-coded parabola (L218, L283), the initial condition seeds the target mode (L289), the
+          inhibitor is algebraic (L318) and the Lovén order is prescribed by delay_frac gates (L264-270, L305), so
+          m* = 5 and both r = 1.0000 results are by construction and DEFAULT_DA/DH/RHO (L120-123) are unused in
+          the dynamics (-9); the OPR test has no plate-plate mechanics, Voronoi packing or ambitus (-3); the Nodal
+          model omits the Nodal-BMP antagonism of Luo & Su and Lefty/Pitx2, with Hill n = 4 arbitrary (-2); the 2D
+          Panel D rudiment field (L468-512) still uses the binary Nodal switch and is not wired to the continuous
+          model (-2); credit for two further Lean theorems (+2 net relative to the v2 basis).
+        evidence:
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [542, 694], note: "simulate_opr_test_plate_addition: 20 biserial columns, logistic accretion, ocular-end nucleation (L627-631), Lovén-enlarged primordials, alternation phase and Amb/IA ratio", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [529, 539], note: "_map_lobes_to_loven_rays: ring-PDE lobe azimuths assigned to Lovén rays — the actual PDE -> test coupling (self-test asserts ambulacral azimuths == PDE lobes)", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [806, 911], note: "Screened-Poisson Nodal/BMP2-4 gradients, Hill competence, 41-point dose sweep, 25x25 dose map, canonical WT/MO/GOF vs Law 3", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [212, 218], note: "compute_ring_dispersion: sigma(m) = 0.0480 (1 - 5.2 det^2) hard-coded; not derived from D_a, D_h, rho_a, rho_h", supports: false}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [279, 292], note: "simulate_hydrocoel_ring_pde: same hard-coded sigma_vec (L283) and the initial condition seeded with 0.025 cos(m* theta) at the TARGET mode (L289)", supports: false}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [316, 318], note: "Inhibitor is the algebraic relation h = 1 + 0.65 (a - 1), not an integrated PDE", supports: false}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [262, 270], note: "Lovén initiation order prescribed through delay_frac gates at the Lovén angles, so the (II, IV, I, III, V) sequence r = 1.0000 is by construction", supports: false}
+          - {file: morphoeval/lean/loops/Loop_075_echinoderm_pentaradial_symmetry.lean, lines: [195, 296], note: "Laws 4 and 5: opr_biserial_plate_addition_law (20 columns, newest at position 0, position strictly decreasing in birth index, alternating split) and nodal_dose_response_hill_reduces_to_discrete_law (integer Hill competence monotone, rounded rings = active_hydrocoel_rings, 5x = total_primary_podia); 0 sorrys", supports: true}
+      specimen-match:
+        value: 89
+        rationale: >-
+          Credited: the Tripneustes gratilla test segmentation (L916-962) is unchanged and now shares a single
+          polar chromaticity + azimuthal FFT pipeline (`polar_c5_harmonics`, L759-800) with the synthetic OPR test
+          projection (L739-756), so the specimen and the model are measured identically; the specimen's ambulacral
+          duty cycle (0.575) calibrates the synthetic ambulacral width; the 9-panel comparison figure places the
+          specimen (Panel E), its spectrum (Panel F) and the plated dome / harmonics inset (Panels G, I) side by
+          side; the OPR figure insets both images. Deductions: a synthetic exactly five-fold test has C_5 ~ 1
+          regardless of plate kinetics, so the 0.9964 vs 0.9255 comparison discriminates nothing about the
+          accretion model (-4); detected synthetic ray angles [7, 80, 138, 210, 281] are noisy because the synthetic
+          profile has flat tops (-2); the species mismatch (header organism S. purpuratus, specimen and
+          "trigeminate" argument T. gratilla) persists (-3); no plate-level comparison (plate counts per column,
+          plate outlines) is made against the specimen, which is the morphology the new solver actually produces
+          (-3).
+        evidence:
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [916, 962], note: "segment_echinoid_test_specimen: periproct detection and shared polar_c5_harmonics pipeline; rays [45,118,190,260,331], C_5 = 0.9255, duty cycle 0.575", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [739, 800], note: "project_opr_test_aboral_view + polar_c5_harmonics: identical pipeline applied to the orthographic aboral projection of the plated dome", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1630, 1636], note: "Aboral C_5 measurement uses the specimen's own C_5 as reference and the specimen-calibrated duty cycle; near-trivial for an exactly 5-fold synthetic test", supports: false}
+          - {file: docs/media/echinoderm_pentaradial_symmetry_comparison.png, lines: [0, 0], note: "9-panel synthesis: Panel E specimen overlay, Panel F spectrum, Panel G 3D plated dome, Panel I plate-count law with harmonics inset", supports: true}
+          - {file: docs/media/echinoderm_pentaradial_symmetry_opr_test_3d.png, lines: [0, 0], note: "4-panel OPR figure: 3D dome, unrolled Ia/Ib/IA columns with Lovén plate, plate count vs R, aboral harmonics vs specimen with both images inset", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Credited: in addition to the v2 49-point circumference sweep and m in {3..7} staircase, Pass 3 adds a
+          41-point right-Nodal dose sweep, a 25 x 25 (dose_L, dose_R) map (L873-911), the Lovén enlargement
+          ablation (self-test), a growth-factor parameter for the OPR test and `--growth-factor` / `--nodal-dose`
+          CLI flags (L1853-1854). Deductions: `measure_morphoeval()` (L1562-1740) ignores every CLI parameter, and
+          `--growth-factor` reaches only the standalone OPR figure/GIF (L1872), not Panels G/I or the measurements
+          (-4); `--nodal-dose` merely overwrites the "WT" profile in the standalone figure (L1876-1879), which is
+          semantically misleading (-2); the enlargement factor, h_nuc/h_max, colatitudes and Hill constants are
+          JSON-only with no CLI or sweep, and the OPR solver is exercised only at m = 5 (`ROMAN_RAYS` fixed, L519)
+          although the ring solver runs m = 4 (-3); `--R-ring-um`/`--lambda-c-um` still reach only
+          `render_comparison_figure` (-1).
+        evidence:
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [873, 911], note: "evaluate_nodal_dose_response_sweep: 41-point dose sweep, EC50, Spearman rho, 25x25 (dose_L, dose_R) map, canonical conditions", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1848, 1854], note: "CLI: --self-test, --skip-gif, --R-ring-um, --lambda-c-um, --seed, --growth-factor, --nodal-dose", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1868, 1880], note: "--growth-factor and --nodal-dose reach only the standalone Pass 3 figures; --nodal-dose overwrites sweep['wt_profile']", supports: false}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1562, 1564], note: "measure_morphoeval() takes no arguments and ignores all CLI parameters", supports: false}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Credited: 16 reference-anchored measurements (9 from v2 + 7 new, L1576-1646), each with reference_value,
+          unit, method and source; the Nodal dose-response deviation from Law 3 (0.055 podia) and the enlargement
+          ablation are genuine model-vs-target tests; the alternation phase (0.49 vs 0.5) and Amb/IA ratio (2.06 vs
+          ~3.0) are reported honestly including the miss. Deductions: `newest_at_ocular_fraction` = 1.0, the
+          non-decreasing plate counts and Spearman rho = 0.9995 hold by construction of ocular-end nucleation
+          (L627-631) — the method text says so (L1591) but they are counted as validations (-4); the alternation
+          phase 0.49 follows from the chosen enlargement factor 1.5 (JSON), so its magnitude is semi-circular (-2);
+          the aboral C_5 reference is the specimen's own value through the same pipeline and the specimen C_5
+          reference 0.9255 (L1735) is the script's own output (-3); the Nodal max |dev| is partly circular because
+          K_N, K_B, lambda_N, lambda_B were tuned to the three targets, and EC50 has no empirical reference (-2);
+          the Amb/IA reference 3.0 is unsourced (-1).
+        evidence:
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1576, 1646], note: "7 Pass 3 measurements: column count, newest-at-ocular fraction, plate-count vs R Spearman, Amb/IA ratio, alternation phase, aboral C_5, Nodal max |dev| from Law 3", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1586, 1592], note: "newest-at-ocular measurement whose method text concedes it 'holds by construction of ocular-end nucleation'", supports: false}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1733, 1740], note: "Specimen C_5 reference_value 0.9255 is the script's own segmentation output (self-referential)", supports: false}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1637, 1648], note: "Nodal dose-response deviation measurement with reference 0.0 from Duboc (2005) phenotypes and the Lean theorem", supports: true}
+          - {file: datasets/echinoderm_pentaradial_symmetry/opr_plate_addition_nodal_dose_reference.json, lines: [60, 70], note: "structural_reference_values: Amb/IA ratio 3.0 justified only as 'trigeminate compounding', not a measured count", supports: false}
+      source-traceability:
+        value: 92
+        rationale: >-
+          Credited: the new reference table `opr_plate_addition_nodal_dose_reference.json` is SHA-256-pinned
+          (L142-144) and verified fail-closed at every run with the other four assets (L159-187); every numeric
+          parameter in it is labelled `assumption` unless a `source` is given (JSON L9); the dataset README gained a
+          file-table row, a Pass 3 addendum and references 6-9; four new primary sources (Mooi & David 2008, Zachos
+          2009, Raup 1968, Luo & Su 2012) are cited in the header, README and `pass3_citations.bib`. Deductions: the
+          four new DOIs were transcribed offline and not verified (-2); `pass3_citations.bib` is not SHA-pinned
+          because the original `paper_citations.bib` is pinned and could not be extended without breaking the pin
+          (-2); the Amb/IA reference 3.0 and the growth factor 40 / colatitudes are assumptions rather than
+          literature values (-2); Raup 1968 has no DOI (-0, URL given).
+        evidence:
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [127, 146], note: "EXPECTED_SHA256 registry now pins 5 files including opr_plate_addition_nodal_dose_reference.json (f93ea0ba...)", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [159, 187], note: "verify_dataset_integrity / load_reference_data / load_pass3_reference: fail-closed SHA-256 verification at runtime", supports: true}
+          - {file: datasets/echinoderm_pentaradial_symmetry/opr_plate_addition_nodal_dose_reference.json, lines: [1, 98], note: "Pass 3 reference table with provenance_note labelling every parameter assumption vs source, OPR kinetics, Nodal parameters, structural reference values and pass3_sources", supports: true}
+          - {file: datasets/echinoderm_pentaradial_symmetry/README.md, lines: [28, 44], note: "File-table rows for the Pass 3 JSON and bib, Pass 3 addendum, references 6-9 marked 'DOIs not re-verified online'", supports: true}
+          - {file: datasets/echinoderm_pentaradial_symmetry/pass3_citations.bib, lines: [1, 47], note: "BibTeX for Mooi & David 2008, Zachos 2009, Raup 1968, Luo & Su 2012; not SHA-pinned", supports: false}
+      code-traceability:
+        value: 90
+        rationale: >-
+          Credited: the header docstring gained a Pass 3 block (L66-88) mapping Law 4 and Law 5 to their functions,
+          sources and Lean theorems; every new function docstring names its source and Lean link (L565, L842);
+          the math-KG YAML registers equations 4-5 with single-range code loci and re-pointed loci for equations
+          1-3; the measurement `method` strings explain each number. Deductions: the header title still reads
+          "Pass 2 (v2) Remediated Implementation" (L3) (-1); the Section 2 docstrings and the README continue to
+          describe the ring solver as a Gierer-Meinhardt PDE, which the code does not implement (L241-256) (-5);
+          `render_comparison_figure`'s docstring still says "6-panel Pass 2" although it renders 9 panels (L972)
+          (-1); the OPR GIF frame construction approximates history by rescaling final heights (L718-727) without
+          saying so in the figure (-1).
+        evidence:
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [66, 88], note: "Pass 3 header block: Law 4 (OPR) and Law 5 (Nodal/BMP dose-response) mapped to sections, sources and Lean theorems", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1, 4], note: "Header title still 'Pass 2 (v2) Remediated Implementation'", supports: false}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [241, 256], note: "simulate_hydrocoel_ring_pde docstring presents a Gierer-Meinhardt crescent-to-ring PDE; the body is a templated mode solver", supports: false}
+          - {file: morphoeval/math_kg_loops/meinhardt-echinoderm-pentaradial-symmetry.yaml, lines: [113, 135], note: "Equations 4 and 5 registered with single-range code_locus #L542-L694 and #L806-L911 and the Lean theorem names", supports: true}
+      repro-package:
+        value: 93
+        rationale: >-
+          Credited: deterministic (`seed=2005`), `--self-test` passes 11/11 checks in ~1.7 s (L1743-1842) covering
+          SHA-256 provenance of 5 files, JSON-to-code parity, OPR structure (20/10 columns, lobes == azimuths,
+          newest-at-ocular, rho > 0.99, alternation in [0.35, 0.5], Amb/IA > 1.5, enlargement ablation < 0.05, m = 4
+          control, projection 5 rays and |dC_5| < 0.10), Nodal (5/10/0, max dev < 0.10, rho < -0.99, EC50 in (0,1),
+          monotone gradient) and two-run OPR determinism; the default render (~7 s) regenerates the 9-panel PNG, the
+          growth GIF, and three new Pass 3 media; the handoff documents the full command set. Deductions: the OPR GIF
+          frames reconstruct earlier states by rescaling final heights rather than from stored per-step heights,
+          so the animation is not a replay of the solver (L718-727) (-3); `docs/media/*.png` are gitignored so the
+          PNG artifacts are not tracked and `echinoderm_pentaradial_symmetry_growth.gif` is byte-identical to Pass 2
+          (its render path is unchanged, L1313-1370) (-2); no requirements lock is vendored for this slot (-2).
+        evidence:
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1743, 1842], note: "11-check self_test() including Pass 3 JSON pin, OPR structural checks, enlargement ablation, m=4 control, Nodal dose checks and OPR two-run determinism", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [1844, 1887], note: "main(): deterministic default render writing comparison PNG, growth GIF, OPR 3D PNG, OPR GIF and Nodal dose-response PNG", supports: true}
+          - {file: models/2005-meinhardt-echinoderm-pentaradial-symmetry.py, lines: [716, 728], note: "opr_test_color_grid(growth_step=...) rescales FINAL heights to the earlier column length instead of storing per-step heights", supports: false}
+          - {file: docs/media/echinoderm_pentaradial_symmetry_opr_test_growth.gif, lines: [0, 0], note: "10-frame OPR accretion GIF regenerated by the default run", supports: true}
+    remediation:
+      - >-
+        2005-meinhardt-echinoderm-pentaradial-symmetry.py:198-240 and 279-292, 316-318 — replace the templated
+        ring solver with an actual Gierer-Meinhardt integration: derive sigma(m) from D_a, D_h, rho_a, rho_h
+        (DEFAULT_DA/DH/RHO at L120-123 are currently unused), integrate the inhibitor h as a PDE instead of
+        h = 1 + 0.65 (a - 1), seed only noise (remove the 0.025 cos(m* theta) term at L289) so m* = 5 is selected,
+        not imposed, and implement the equal-diffusion control as D_h = D_a rather than a prescribed negative
+        sigma (L212-214, L279-280).
+      - >-
+        2005-meinhardt-echinoderm-pentaradial-symmetry.py:262-270 and 305 — the Lovén initiation order (II, IV,
+        I, III, V) is prescribed by delay_frac gates, so the r = 1.0000 measurement is by construction. Derive the
+        order from the crescent-closure geometry (activation reaching each ray as the crescent tips close) or
+        re-label the measurement as a consistency check rather than a validation.
+      - >-
+        2005-meinhardt-echinoderm-pentaradial-symmetry.py:598-602 and 648-668 — both interambulacral primordials
+        are equal (`primordial_enlarged: False`), so IA a/b sutures stay aligned and alternation is measured only
+        on ambulacra; real interambulacra also alternate. Seed an IA half-plate offset (or derive it from the
+        adjacent ambulacral offset) and report an IA alternation phase.
+      - >-
+        2005-meinhardt-echinoderm-pentaradial-symmetry.py:1586-1612 and 1630-1636 — score the OPR structural
+        measurements (newest-at-ocular 1.0, Spearman 0.9995, aboral C_5 vs the specimen's own C_5) as structural
+        checks, and add at least one empirical anchor: a measured ambulacral/interambulacral plate count per
+        column for T. gratilla or S. purpuratus from the literature (replacing the unsourced 3.0 in
+        datasets/echinoderm_pentaradial_symmetry/opr_plate_addition_nodal_dose_reference.json:60-70) and a plate
+        height vs colatitude profile.
+      - >-
+        2005-meinhardt-echinoderm-pentaradial-symmetry.py:826-870 — add the Nodal -> BMP antagonism of Luo & Su
+        (2012) and anchor at least one gradient parameter to data (Duboc 2005 morpholino penetrance percentages
+        or in-situ intensity profiles) so the 0.055-podia deviation and EC50 = 0.175 are not fitted to their own
+        targets; wire the continuous model into the 2D rudiment field at L468-512, which still uses the binary
+        switch.
+      - >-
+        2005-meinhardt-echinoderm-pentaradial-symmetry.py:1562-1564, 1853-1854 and 1868-1880 — make
+        measure_morphoeval() accept the CLI parameters, route --growth-factor into Panels G/I and the
+        measurements, and replace the --nodal-dose "overwrite WT profile" behaviour with an additional labelled
+        profile; expose the Lovén enlargement factor and Hill constants as sweepable parameters.
+      - >-
+        2005-meinhardt-echinoderm-pentaradial-symmetry.py:716-728 — store per-step plate heights in the OPR
+        history so the growth GIF replays the solver instead of rescaling final heights; also render the ambitus
+        (oblate test) rather than a sphere.
+      - >-
+        2005-meinhardt-echinoderm-pentaradial-symmetry.py:1-4, 241-256, 972 and datasets/echinoderm_pentaradial_symmetry/README.md —
+        update the header title (still "Pass 2"), the render_comparison_figure docstring (still "6-panel"), and
+        every description of Section 2 as a "Gierer-Meinhardt PDE" to match what the code does; resolve the
+        S. purpuratus vs Tripneustes gratilla organism mismatch in the header and audit `organism` field.
+      - >-
+        datasets/echinoderm_pentaradial_symmetry/pass3_citations.bib:1-47 — SHA-256-pin the Pass 3 bib (or merge
+        into a new pinned bib) and verify the four Pass 3 DOIs (Mooi & David 2008, Zachos 2009, Luo & Su 2012;
+        Raup 1968 JSTOR URL) once network access is permitted.
+      - >-
+        morphoeval/lean/loops/Loop_075_echinoderm_pentaradial_symmetry.lean:195-296 — theorems 4-5 are
+        arithmetic/structural (position n-1-b, alternating split, integer Hill at K = 10); add a statement about
+        the solver dynamics (e.g. monotone plate count in R under the nucleation rule, or EC50 ordering under
+        Hill monotonicity) that is linked to a measured output.

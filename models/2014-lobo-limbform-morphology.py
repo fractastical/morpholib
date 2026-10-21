@@ -86,7 +86,7 @@ from matplotlib.path import Path as MplPath  # noqa: E402
 from PIL import Image  # noqa: E402
 from scipy.ndimage import gaussian_filter  # noqa: E402
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent
 CACHE_DIR = HERE / ".limbform_cache"
 DB_URL = "https://lobolab.umbc.edu/limbform/downloads/limbformDB_2.1.0.ldb"
 DB_SHA256 = "9c26bf3930bcc225f900f414cbd3a2ad3ac2f4d99e694d389b4fc36de15099f0"   # retrieved 2026-10-14

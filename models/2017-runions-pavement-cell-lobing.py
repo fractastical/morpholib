@@ -122,7 +122,7 @@ from scipy.spatial import ConvexHull
 from skimage.measure import find_contours, regionprops
 from skimage.segmentation import watershed
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "pavement_cell_lobing"
 REF_JSON_PATH = DATASET_DIR / "pavement_cell_lobing_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "arabidopsis_pavement_cell_specimen.jpg"

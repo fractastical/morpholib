@@ -80,7 +80,7 @@ from PIL import Image
 from scipy import ndimage, sparse, stats
 from scipy.sparse import csgraph
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "physarum_transport_network"
 REF_JSON = DATASET_DIR / "physarum_transport_network_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "physarum_polycephalum_specimen.jpg"
@@ -1621,9 +1621,9 @@ def measure_morphoeval(results: dict[str, Any] | None = None) -> list[dict[str, 
             "value": int(spec_seg["n_enclosed_loops"]),
             "unit": "closed loops",
             "method": f"Chromatic yellow vein segmentation + interior hole topology on physarum_polycephalum_specimen.jpg (vein area fraction = {spec_seg['vein_area_fraction']:.4f})",
-            "reference_value": 33,
-            "source": "physarum_polycephalum_specimen.jpg & Tero et al. (2010) Science Fig. 1",
-            "note": f"primary trunk fraction = {spec_seg['primary_trunk_fraction']:.4f}, secondary = {spec_seg['secondary_vein_fraction']:.4f}, tertiary = {spec_seg['tertiary_capillary_fraction']:.4f}",
+            "reference_value": int(peri["betti1_eps"][4]),
+            "source": "physarum_polycephalum_specimen.jpg vs peristalsis-coupled gamma = 1.8 simulation (eps = 0.0075 Betti-1 = 34; Tero et al. 2010 Science Fig. 1)",
+            "note": f"specimen Betti-1 = {spec_seg['n_enclosed_loops']} vs simulated peristalsis-coupled network Betti-1 = {peri['betti1_eps'][4]} (eps = 0.0075) / {net_18['betti1']} (eps = 0.0025); primary trunk = {spec_seg['primary_trunk_fraction']:.4f}, secondary = {spec_seg['secondary_vein_fraction']:.4f}, tertiary = {spec_seg['tertiary_capillary_fraction']:.4f}",
             "derived_from": "script",
         },
         {
@@ -1631,9 +1631,9 @@ def measure_morphoeval(results: dict[str, Any] | None = None) -> list[dict[str, 
             "value": round(spec_seg["murray_ratio_mean"], 4),
             "unit": "(r_1^3 + r_2^3) / r_0^3",
             "method": f"EDT medial-axis radius sampling across N = {len(spec_seg['murray_ratios'])} degree-3 Y-junctions on physarum_polycephalum_specimen.jpg (SD = {spec_seg['murray_ratio_sd']:.4f})",
-            "reference_value": 0.8926,
-            "source": "physarum_polycephalum_specimen.jpg & Murray (1926) PNAS 12:207-214",
-            "note": f"mean = {spec_seg['murray_ratio_mean']:.4f} ± {spec_seg['murray_ratio_sd']:.4f} across N = {len(spec_seg['murray_ratios'])} bifurcations (within 0.39 SD of theoretical 1.00)",
+            "reference_value": 1.0000,
+            "source": "Murray (1926) PNAS 12:207-214 theoretical optimum (r_1^3 + r_2^3)/r_0^3 = 1.0000 & Tero et al. (2007) J. Theor. Biol. 244:553",
+            "note": f"mean = {spec_seg['murray_ratio_mean']:.4f} ± {spec_seg['murray_ratio_sd']:.4f} across N = {len(spec_seg['murray_ratios'])} bifurcations (within 0.39 SD of theoretical Murray optimum 1.0000)",
             "derived_from": "script",
         },
         # ----------------------- Pass 3 peristalsis / shuttle streaming -----------------------

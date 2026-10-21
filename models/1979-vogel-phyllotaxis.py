@@ -76,7 +76,7 @@ from scipy import ndimage as ndi
 from scipy.spatial import Delaunay, Voronoi
 from scipy.stats import binomtest, pearsonr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "phyllotaxis"
 REFERENCE_JSON = DATASET_DIR / "phyllotaxis_reference.json"
 SPECIMEN_PHOTO = DATASET_DIR / "helianthus_annuus_capitulum_specimen.jpg"

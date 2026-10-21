@@ -1,0 +1,94 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-coccolith-emiliania-calcite-rosette> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics — Reproducibility package: 90/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`--self-test` passes 12 checks in 2.7 s (8 Pass 2 + Voronoi/Euler consistency for F = 12/16/20, contact regime ordering / arrest / F_expose monotonicity / determinism, vesicle law round-trip / lambda = 1 circle / sim-vs-law / sub-pixel ellipticity / lambda* parity, Pass 3 JSON parity); default render is 5.7 s and deterministic (seed 2022); `lean` exits 0 on the 6-theorem file; the dataset README and the math-KG YAML are updated. Deductions: the new Pass 3 JSON is not SHA-pinned so a silent edit of its constants would not fail the integrity check (-4); the comparison PNG is gitignored, so the primary artifact is not committed and byte-identity across machines is not pinned (-3); the growth GIF is unchanged while the Pass 3 content lives only in a second GIF (-2); no requirements lock pins the numpy / scipy versions used here (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-repro-package-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-repro-package-4> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "models/2022-coccolith-emiliania-calcite-rosette.py L1797–L1912" ;
+        dct:description "self_test(): 12 checks including Voronoi/Euler consistency, contact regime ordering, arrest, F_expose monotone, determinism, vesicle law round-trip and Pass 3 JSON parity" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L1797-L1912> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "models/2022-coccolith-emiliania-calcite-rosette.py L1542–L1608" ;
+        dct:description "render_contact_indentation_gif: 11-frame deterministic contact GIF" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L1542-L1608> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "models/2022-coccolith-emiliania-calcite-rosette.py L1915–L1954" ;
+        dct:description "main(): CLI wiring, --skip-gif, deterministic seed default 2022" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L1915-L1954> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-repro-package-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/coccolith-emiliania-calcite-rosette.yaml L105–L124" ;
+        dct:description "Equations 5-6 registered with single-range code_locus pins to the Pass 3 functions" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/morphoeval/math_kg_loops/coccolith-emiliania-calcite-rosette.yaml#L105-L124> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 primary assessor, Phase B)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/80> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/sapm194625180>,
+            <https://doi.org/10.1038/356516a0>,
+            <https://doi.org/10.1038/ncomms11904>,
+            <https://doi.org/10.1038/s41467-018-04168-9>,
+            <https://doi.org/10.1098/rspb.1993.0073> .
+    <https://doi.org/10.1002/sapm194625180> dct:date "1946"^^xsd:gYear ;
+        dct:title "Stresses and small displacements of shallow spherical shells. I" .
+    <https://doi.org/10.1038/356516a0> dct:date "1992"^^xsd:gYear ;
+        dct:title "Crystallographic control of biomineral morphology in coccoliths" .
+    <https://doi.org/10.1038/ncomms11904> dct:date "2016"^^xsd:gYear ;
+        dct:title "Coccospheres confer mechanical protection: insights into the Emiliania huxleyi architectural design" .
+    <https://doi.org/10.1038/s41467-018-04168-9> dct:date "2018"^^xsd:gYear ;
+        dct:title "The requirement for calcification differs between ecologically important coccolithophore species" .
+    <https://doi.org/10.1098/rspb.1993.0073> dct:date "1993"^^xsd:gYear ;
+        dct:title "Construction of stage-specific models of coccolith biomineralization in Emiliania huxleyi" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics — Reproducibility package 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T23:59:40Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/80> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

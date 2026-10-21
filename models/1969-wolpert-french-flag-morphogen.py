@@ -83,7 +83,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy.optimize import curve_fit
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "french_flag_morphogen"
 REF_JSON_PATH = DATASET_DIR / "french_flag_morphogen_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "french_flag_specimen.jpg"

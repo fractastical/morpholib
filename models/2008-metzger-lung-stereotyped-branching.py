@@ -82,7 +82,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "lung_stereotyped_branching_modes"
 REF_JSON_PATH = DATASET_DIR / "lung_stereotyped_branching_modes_reference.json"
 SPECIMEN_IMG_PATH = DATASET_DIR / "bronchial_tree_specimen.jpg"

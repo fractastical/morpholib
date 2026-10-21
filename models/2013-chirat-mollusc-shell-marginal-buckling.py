@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2013-chirat-mollusc-shell-marginal-buckling.py — Pass 2 (v2) Remediated Implementation
+2013-chirat-mollusc-shell-marginal-buckling.py — Pass 3 (v3) Remediated Implementation
 ======================================================================================
 Faithful mathematical, biomechanical, and morphometric reproduction of:
 
@@ -54,6 +54,26 @@ Mathematical & Biomechanical Architecture (Linked to Lean 4 `MathOfBiology.Loop_
     invariant across ontogeny (e.g. Pecten jacobaeus with N_ribs = 14); under constant
     mantle thickness (ell_* = const), N_ribs grows linearly with R, triggering secondary
     rib intercalation (e.g. Chlamys, Spirifer).
+
+Pass 3 remediation (closing the Pass 2 audit items; see Sec. 4b-4c):
+  - Law 4 (`MathOfBiology.Loop_072.chirat_repair_callus_raises_critical_load`,
+           `MathOfBiology.Loop_072.erlich_repair_in_register_rib_count`):
+    Predator-induced marginal damage (a chipped sector of the margin, Vermeij 1987) and
+    localized mantle repair are modelled as a heterogeneous Winkler foundation
+      E I w_ssss + P w_ss + k(s) w + kappa_3 w^3 = 0,
+      k(s) = k [1 + (rho - 1) chi_sector(s) exp(-(r - r_d)/l_heal)],
+    with template memory between accretionary stations (the mantle re-secretes on the
+    previous margin). The callus raises the local critical load P_c,loc = sqrt(rho) P_c,
+    transiently suppresses ribbing in the scar, and the ribs re-form in register for
+    small chips (chip < ~1.5-2 lambda_c) while wider chips / stiffer calluses nucleate a
+    rib-intercalation defect (phase diagram, `evaluate_repair_outcome_phase_diagram`).
+  - Law 5 (`MathOfBiology.Loop_072.chirat_spine_self_contact_closure_monotone`):
+    Hollow tubular Murex spines are reduced to a planar inextensible Euler-elastica
+    cross-section of a growing mantle fold with a self-contact penalty; the tube closes
+    when the inter-flank neck gap reaches the wall thickness t (eps_close ~ 4.8-5.0 for
+    W = 6 mm, t = 0.35 mm). This is an honest reduced stand-in for the full 3D
+    finite-strain morphoelastic shell FEM of Rudraraju et al. (2019), which remains a
+    Pass 4 residual.
 """
 
 from __future__ import annotations
@@ -73,7 +93,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "mollusc_shell_marginal_buckling"
 REF_JSON = DATASET_DIR / "mollusc_shell_marginal_buckling_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "ribbed_bivalve_shell_specimen.jpg"
@@ -82,6 +102,9 @@ BIB_FILE = DATASET_DIR / "paper_citations.bib"
 
 OUT_PNG = ROOT / "docs" / "media" / "mollusc_shell_marginal_buckling_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "mollusc_shell_marginal_buckling_growth.gif"
+OUT_PASS3_PNG = ROOT / "docs" / "media" / "mollusc_shell_marginal_buckling_spine_closure_repair_3d.png"
+OUT_REPAIR_GIF = ROOT / "docs" / "media" / "mollusc_shell_marginal_buckling_damage_repair.gif"
+PASS3_REF_JSON = DATASET_DIR / "pass3_spine_closure_damage_repair_reference.json"
 
 # Cryptographic SHA-256 Registry for `datasets/mollusc_shell_marginal_buckling/`
 EXPECTED_SHA256: dict[str, str] = {
@@ -96,6 +119,10 @@ EXPECTED_SHA256: dict[str, str] = {
     ),
     "datasets/mollusc_shell_marginal_buckling/paper_citations.bib": (
         "338d8f47e2461e1044936bb9938fafe2a9bd706acc7e7422b5a2b02d7c83ff0a"
+    ),
+    # Pass 3: reduced hollow-spine closure + predator damage / repair reference table
+    "datasets/mollusc_shell_marginal_buckling/pass3_spine_closure_damage_repair_reference.json": (
+        "dcc719fadd231691f58eb8377468096b39b1a3c363e91871e64e7750cbd8ef95"
     ),
 }
 
@@ -199,15 +226,29 @@ def relax_winkler_mantle_margin(
     kappa_3: float = 1.250,
     P_over_Pc: float = 1.45,
     seed: int = 2013,
+    k_profile: np.ndarray | None = None,
+    w_init: np.ndarray | None = None,
+    maxiter: int = 600,
 ) -> dict[str, Any]:
     """Minimize the exact fourth-order nonlinear Winkler-beam mantle energy functional
     on a periodic/hinged generative margin s in [0, L) via spectral L-BFGS-B optimization:
 
-      U[w] = int_0^L [0.5 * EI * (w_ss)^2 - 0.5 * P * (w_s)^2 + 0.5 * k * w^2 + 0.25 * kappa_3 * w^4] ds
+      U[w] = int_0^L [0.5 * EI * (w_ss)^2 - 0.5 * P * (w_s)^2 + 0.5 * k(s) * w^2 + 0.25 * kappa_3 * w^4] ds
 
     When P_over_Pc <= 1.0 (subcritical compressive growth thrust negative control),
     the linear operator Lambda(q; P) = EI*q^4 - P*q^2 + k is strictly positive for all q,
     and L-BFGS-B relaxes any initial perturbation directly to the flat unbuckled state w(s) = 0.
+
+    Pass 3 extensions (predator damage / mantle repair, Sec. 4c):
+      - `k_profile`: optional per-node foundation stiffness k(s) (length N). A locally
+        stiffened repair callus k(s) = k * (1 + (rho - 1) * chi_damage(s)) raises the local
+        critical load to P_c,loc = 2*sqrt(EI*k(s)) (Lean theorem
+        `MathOfBiology.Loop_072.chirat_repair_callus_raises_critical_load`). The linear
+        operator is then no longer diagonal in Fourier space, so the spectral part
+        (EI*w_ssss + P*w_ss) is applied via FFT and the k(s)*w term in real space.
+      - `w_init`: optional initial deflection (template memory of the previously calcified
+        margin on which the mantle re-secretes). When None the Pass 2 seeding is used, so
+        the default Pass 2 code path is bitwise unchanged.
     """
     crit = compute_critical_load_and_wavelength(EI, k)
     P_c = crit["P_c"]
@@ -226,7 +267,11 @@ def relax_winkler_mantle_margin(
     n_target = max(1, int(round(L / lam_c)))
     rng = np.random.default_rng(seed)
 
-    if P_over_Pc <= 1.0:
+    if w_init is not None:
+        w0 = np.array(w_init, dtype=float).copy()
+        if w0.shape != (N,):
+            raise ValueError(f"w_init must have shape ({N},), got {w0.shape}")
+    elif P_over_Pc <= 1.0:
         # Subcritical negative control: start with small multi-mode roughness and relax to w = 0
         w0 = 0.08 * np.cos(n_target * 2.0 * math.pi * s / L) + 0.02 * rng.standard_normal(N)
     else:
@@ -236,10 +281,21 @@ def relax_winkler_mantle_margin(
             + 0.03 * A_theory * rng.standard_normal(N)
         )
 
+    k_s: np.ndarray | None = None
+    if k_profile is not None:
+        k_s = np.asarray(k_profile, dtype=float)
+        if k_s.shape != (N,):
+            raise ValueError(f"k_profile must have shape ({N},), got {k_s.shape}")
+        spectral_stiffness = EI * (q**4) - P * (q**2)
+
     def energy_and_grad(w_vec: np.ndarray) -> tuple[float, np.ndarray]:
         w_hat = np.fft.fft(w_vec)
-        # Spectral linear derivative operator: L_op[w] = EI*w_ssss + P*w_ss + k*w
-        lin_Lw = np.real(np.fft.ifft(lin_stiffness * w_hat))
+        if k_s is None:
+            # Spectral linear derivative operator: L_op[w] = EI*w_ssss + P*w_ss + k*w
+            lin_Lw = np.real(np.fft.ifft(lin_stiffness * w_hat))
+        else:
+            # Heterogeneous foundation: L_op[w] = EI*w_ssss + P*w_ss + k(s)*w (self-adjoint)
+            lin_Lw = np.real(np.fft.ifft(spectral_stiffness * w_hat)) + k_s * w_vec
         e_lin = 0.5 * float(np.sum(w_vec * lin_Lw)) * ds
         e_nl = 0.25 * kappa_3 * float(np.sum(w_vec**4)) * ds
         grad = (lin_Lw + kappa_3 * (w_vec**3)) * ds
@@ -251,7 +307,7 @@ def relax_winkler_mantle_margin(
         w0,
         method="L-BFGS-B",
         jac=True,
-        options={"maxiter": 600, "ftol": 1e-16, "gtol": 1e-13},
+        options={"maxiter": maxiter, "ftol": 1e-16, "gtol": 1e-13},
     )
     w_eq = opt.x
     e_final = float(opt.fun)
@@ -297,6 +353,8 @@ def relax_winkler_mantle_margin(
         "energy_final": e_final,
         "q_grid": q,
         "lin_stiffness": lin_stiffness,
+        "k_profile": k_s,
+        "n_iterations": int(opt.nit),
     }
 
 
@@ -432,6 +490,581 @@ def evaluate_all_morphospace_regimes() -> dict[str, dict[str, Any]]:
             "sim3d": sim3d,
         }
     return out
+
+
+# =============================================================================
+# 4b. Pass 3 — Reduced-Order Hollow Spine Self-Contact Closure
+#     (2D morphoelastic inextensible elastica cross-section of a Murex spine)
+# =============================================================================
+# HONEST SCOPE NOTE: the Pass 2 audit asked for a full 3D finite-strain morphoelastic
+# shell finite-element mesh (Rudraraju et al. 2019 PLoS Comput. Biol.). That is out of
+# reach for a ~3-minute single-file NumPy/SciPy script. The closest honest reduced model
+# is implemented here: the cross-section of a growing marginal spine is a planar,
+# inextensible Euler elastica of flexural rigidity EI whose arc length L = W*(1+eps)
+# exceeds the clamped base width W by the mantle growth excess eps (Chirat et al. 2013
+# Fig. 4 / Moulton et al. 2012 Sec. 4: the spine lips are the two flanks of a single
+# mantle fold that grows outwards). Self-contact between the two flanks is enforced by
+# a quadratic penalty acting whenever two non-adjacent material points come closer than
+# the shell wall thickness t, which is exactly the "closure of the hollow tube" event
+# the audit asked to resolve. The residual (true 3D FE shell + volumetric growth
+# tensor) is carried as a Pass 4 remediation item.
+def relax_spine_cross_section_elastica(
+    excess_ratio: float,
+    W: float = 6.0,
+    thickness: float = 0.35,
+    M: int = 96,
+    EI: float = 1.085,
+    mu_end: float = 400.0,
+    mu_clamp: float = 400.0,
+    mu_contact: float = 400.0,
+    theta_init: np.ndarray | None = None,
+    maxiter: int = 1500,
+) -> dict[str, Any]:
+    """Minimize the bending energy of a planar inextensible elastica of total arc length
+    L = W * (1 + excess_ratio) discretised into M equal segments with tangent angles
+    theta_i (Kirchhoff rod / Euler elastica, Moulton et al. 2012 Eq. 2.3 restricted to
+    the plane):
+
+      U[theta] = 0.5 * EI * sum_i ((theta_{i+1} - theta_i) / ds)^2 * ds        (bending)
+               + 0.5 * mu_clamp * (theta_0^2 + theta_{M-1}^2)                 (clamped flanks at the calcified margin)
+               + 0.5 * mu_end * (|x_M - W|^2 + y_M^2)                          (base width W fixed by the margin)
+               + 0.25 * mu_contact * sum_{|i-j| > M/5} (t - d_ij)_+^2          (self-contact of the two flanks)
+
+    Returns the relaxed shape, the spine height H = max y, the minimum inter-flank
+    gap (neck), and the self-contact closure flag (gap <= 1.05 * t).
+
+    Small-strain validation: for eps << 1 the clamped first mode w = (A/2)(1 - cos(2 pi s / W))
+    has excess arc length Delta L = pi^2 A^2 / (4 W), i.e. A_lin = (2 / pi) * sqrt(W * Delta L).
+    """
+    if excess_ratio <= 0.0:
+        raise ValueError("excess_ratio must be > 0 (spine needs growth excess to fold)")
+    L = W * (1.0 + excess_ratio)
+    ds = L / float(M)
+    s_mid = (np.arange(M) + 0.5) / float(M)
+
+    if theta_init is None:
+        a0 = min(2.6, 2.2 * math.sqrt(excess_ratio))
+        theta0 = a0 * np.sin(2.0 * math.pi * s_mid)
+    else:
+        theta0 = np.array(theta_init, dtype=float).copy()
+        if theta0.shape != (M,):
+            raise ValueError(f"theta_init must have shape ({M},), got {theta0.shape}")
+
+    idx = np.arange(M + 1)
+    sep_mask = (np.abs(idx[:, None] - idx[None, :]) > max(3, M // 5)).astype(float)
+
+    def energy_and_grad(th: np.ndarray) -> tuple[float, np.ndarray]:
+        c = np.cos(th)
+        sn = np.sin(th)
+        x = np.concatenate([[0.0], np.cumsum(c) * ds])
+        y = np.concatenate([[0.0], np.cumsum(sn) * ds])
+
+        # Bending energy of the discrete elastica
+        dth = np.diff(th)
+        e_b = 0.5 * EI * float(np.sum(dth**2)) / ds
+        g_b = np.zeros(M)
+        g_b[:-1] -= EI * dth / ds
+        g_b[1:] += EI * dth / ds
+
+        # Clamped tangents at both flank roots
+        e_c = 0.5 * mu_clamp * (th[0] ** 2 + th[-1] ** 2)
+        g_c = np.zeros(M)
+        g_c[0] += mu_clamp * th[0]
+        g_c[-1] += mu_clamp * th[-1]
+
+        # Position forces F = dU/d(x_i, y_i): end constraint + self-contact penalty
+        Fx = np.zeros(M + 1)
+        Fy = np.zeros(M + 1)
+        ex = x[-1] - W
+        ey = y[-1]
+        e_e = 0.5 * mu_end * (ex**2 + ey**2)
+        Fx[-1] += mu_end * ex
+        Fy[-1] += mu_end * ey
+
+        dx = x[:, None] - x[None, :]
+        dy = y[:, None] - y[None, :]
+        d = np.sqrt(dx**2 + dy**2 + 1e-18)
+        pen = np.clip(thickness - d, 0.0, None) * sep_mask
+        e_k = 0.25 * mu_contact * float(np.sum(pen**2))
+        if e_k > 0.0:
+            Fx += -mu_contact * np.sum(pen * dx / d, axis=1)
+            Fy += -mu_contact * np.sum(pen * dy / d, axis=1)
+
+        # Chain rule: node i (i >= 1) depends on theta_k for k <= i - 1
+        SFx = np.cumsum(Fx[::-1])[::-1][1:]
+        SFy = np.cumsum(Fy[::-1])[::-1][1:]
+        g_pos = ds * (-sn * SFx + c * SFy)
+
+        return e_b + e_c + e_e + e_k, g_b + g_c + g_pos
+
+    opt = optimize.minimize(
+        energy_and_grad,
+        theta0,
+        method="L-BFGS-B",
+        jac=True,
+        options={"maxiter": maxiter, "ftol": 1e-15, "gtol": 1e-10},
+    )
+    th = opt.x
+    x = np.concatenate([[0.0], np.cumsum(np.cos(th)) * ds])
+    y = np.concatenate([[0.0], np.cumsum(np.sin(th)) * ds])
+
+    dx = x[:, None] - x[None, :]
+    dy = y[:, None] - y[None, :]
+    d = np.sqrt(dx**2 + dy**2)
+    d_far = np.where(sep_mask > 0.0, d, np.inf)
+    neck_gap = float(np.min(d_far))
+    i_neck, j_neck = np.unravel_index(int(np.argmin(d_far)), d_far.shape)
+    height = float(np.max(y))
+    closed = bool(neck_gap <= 1.05 * thickness)
+
+    # Lumen (hollow spine cross-sectional area) enclosed above the neck via shoelace formula
+    lo, hi = sorted((int(i_neck), int(j_neck)))
+    xl, yl = x[lo : hi + 1], y[lo : hi + 1]
+    lumen_area = float(0.5 * abs(np.dot(xl, np.roll(yl, -1)) - np.dot(yl, np.roll(xl, -1))))
+
+    delta_L = L - W
+    A_lin = (2.0 / math.pi) * math.sqrt(W * delta_L)
+    return {
+        "excess_ratio": float(excess_ratio),
+        "L_mm": float(L),
+        "W_mm": float(W),
+        "thickness_mm": float(thickness),
+        "theta": th,
+        "x_mm": x,
+        "y_mm": y,
+        "height_mm": height,
+        "neck_gap_mm": neck_gap,
+        "neck_nodes": (int(i_neck), int(j_neck)),
+        "closed": closed,
+        "lumen_area_mm2": lumen_area,
+        "A_linear_mm": float(A_lin),
+        "end_error_mm": float(math.hypot(x[-1] - W, y[-1])),
+        "energy": float(opt.fun),
+        "n_iterations": int(opt.nit),
+    }
+
+
+def evaluate_spine_closure_sweep(
+    W: float = 6.0,
+    thickness: float = 0.35,
+    M: int = 96,
+    EI: float = 1.085,
+    excess_grid: list[float] | None = None,
+) -> dict[str, Any]:
+    """Continuation sweep in mantle growth excess eps = (L - W) / W for the reduced
+    hollow-spine cross-section (Sec. 4b): each relaxation is warm-started from the
+    previous converged elastica (accretionary memory of the spine lips).
+
+    Reports (i) the small-strain amplitude-law check A_num vs A_lin = (2/pi) sqrt(W dL)
+    on the four smallest eps values, (ii) the first eps at which the two flanks reach
+    self-contact (eps_close, linear interpolation of the neck-gap curve through t),
+    (iii) the spine height / base-width aspect ratio at closure and (iv) the neck gap
+    resolved by the contact penalty at the largest eps (should equal t)."""
+    eps_grid = excess_grid or [
+        0.005, 0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35,
+        0.50, 0.70, 0.90, 1.10, 1.40, 1.70, 2.00, 2.40, 2.80, 3.20,
+        3.60, 4.00, 4.40, 4.60, 4.80, 5.00, 5.50, 6.00,
+    ]
+    states: list[dict[str, Any]] = []
+    theta_prev: np.ndarray | None = None
+    for eps in eps_grid:
+        st = relax_spine_cross_section_elastica(
+            eps, W=W, thickness=thickness, M=M, EI=EI, theta_init=theta_prev
+        )
+        theta_prev = st["theta"]
+        states.append(st)
+
+    eps_arr = np.array([s["excess_ratio"] for s in states])
+    gap_arr = np.array([s["neck_gap_mm"] for s in states])
+    h_arr = np.array([s["height_mm"] for s in states])
+
+    # (i) small-strain clamped-mode amplitude law
+    n_lin = 4
+    a_num = np.array([s["height_mm"] for s in states[:n_lin]])
+    a_lin = np.array([s["A_linear_mm"] for s in states[:n_lin]])
+    r_lin = float(stats.pearsonr(a_num, a_lin)[0]) if n_lin >= 3 else float("nan")
+    rel_err_lin = float(np.mean(np.abs(a_num - a_lin) / a_lin))
+
+    # (ii) closure threshold by linear interpolation of gap(eps) through thickness
+    closed_idx = [i for i, s in enumerate(states) if s["closed"]]
+    if closed_idx:
+        i_c = closed_idx[0]
+        if i_c == 0:
+            eps_close = float(eps_arr[0])
+        else:
+            g0, g1 = gap_arr[i_c - 1], gap_arr[i_c]
+            e0, e1 = eps_arr[i_c - 1], eps_arr[i_c]
+            frac = (g0 - thickness) / max(g0 - g1, 1e-12)
+            eps_close = float(e0 + frac * (e1 - e0))
+        aspect_close = float(states[i_c]["height_mm"] / W)
+        lumen_close = float(states[i_c]["lumen_area_mm2"])
+    else:
+        eps_close = float("nan")
+        aspect_close = float("nan")
+        lumen_close = float("nan")
+
+    # The neck first widens (arch regime) then narrows monotonically once the flanks curl
+    # inward (loop regime) until self-contact: check monotone decrease past the widest neck
+    i_wide = int(np.argmax(gap_arr))
+    gap_monotone = bool(np.all(np.diff(gap_arr[i_wide:]) <= 1e-6))
+    eps_neck_max = float(eps_arr[i_wide])
+
+    return {
+        "states": states,
+        "eps": eps_arr,
+        "neck_gap_mm": gap_arr,
+        "height_mm": h_arr,
+        "pearson_r_small_strain": r_lin,
+        "rel_err_small_strain": rel_err_lin,
+        "eps_close": eps_close,
+        "aspect_ratio_at_closure": aspect_close,
+        "lumen_area_at_closure_mm2": lumen_close,
+        "final_gap_over_thickness": float(gap_arr[-1] / thickness),
+        "gap_monotone": gap_monotone,
+        "eps_neck_max": eps_neck_max,
+        "any_closed": bool(closed_idx),
+        "W_mm": W,
+        "thickness_mm": thickness,
+        "M": M,
+    }
+
+
+def build_hollow_spine_tube_surface(sweep: dict[str, Any]) -> dict[str, np.ndarray]:
+    """Stack the continuation cross-sections of `evaluate_spine_closure_sweep` along the
+    accretionary spine axis (growth increment index) to give a 3D hollow-spine surface
+    (X = lateral, Y = growth axis, Z = outward deflection) — a reduced 3D visualisation
+    of the tubular Murex spine closing by self-contact."""
+    states = sweep["states"]
+    X = np.vstack([s["x_mm"] for s in states])
+    Z = np.vstack([s["y_mm"] for s in states])
+    growth_axis = np.cumsum(np.concatenate([[0.0], np.diff(sweep["eps"]) * sweep["W_mm"]]))
+    Y = np.repeat(growth_axis[:, None], X.shape[1], axis=1)
+    return {"X": X, "Y": Y, "Z": Z, "growth_axis_mm": growth_axis}
+
+
+# =============================================================================
+# 4c. Pass 3 — Predator-Induced Marginal Damage & Localized Mantle Repair
+# =============================================================================
+def simulate_damage_repair_trajectory(
+    n_stations: int = 14,
+    R_min: float = 28.0,
+    R_max: float = 55.0,
+    damage_station: int = 4,
+    damage_center_deg: float = 14.0,
+    damage_half_angle_deg: float = 5.0,
+    repair_k_ratio: float = 1.15,
+    heal_length_mm: float = 7.0,
+    with_damage: bool = True,
+    EI_adult: float = 1.085,
+    k: float = 0.285,
+    kappa_3: float = 1.250,
+    P_over_Pc: float = 1.45,
+    fan_angle_rad: float = 2.234021442552742,
+    N: int = 256,
+    seed: int = 2013,
+) -> dict[str, Any]:
+    """Accretionary growth trajectory of the isometric *Pecten* margin (ell_*(r) ~ r so
+    N_ribs = 14 at every station) with an optional predator-induced marginal damage event
+    at station `damage_station` (shell radius r_d):
+
+      1. Template memory: at each station the mantle re-secretes on the previous calcified
+         margin, so the relaxation is warm-started from the previous equilibrium rescaled by
+         A_eq(r) / A_eq(r_prev). Without damage this reproduces the Pass 2 isometric valve.
+      2. Damage: a sector |theta - theta_d| < half-angle of the margin is chipped away
+         (durophagous predation, Vermeij 1987); the mantle re-secretes a flat margin there
+         (w_init = 0 in the sector), erasing the rib template locally.
+      3. Repair callus: the re-secreted repair shell is a locally stiffer foundation
+         k(s) = k * (1 + (rho - 1) * chi_sector(s) * exp(-(r - r_d) / l_heal)), which raises
+         the local critical load P_c,loc = sqrt(rho) * P_c (Lean theorem
+         `chirat_repair_callus_raises_critical_load`) and transiently suppresses ribbing in
+         the scar; the stiffening decays with healing length l_heal as normal shell resumes.
+
+    A matched control trajectory (`with_damage=False`) gives the scar index
+    Delta(r) = ||w_dmg - w_ctrl|| / ||w_ctrl|| and the registry (phase) error of the
+    regrown ribs relative to the undamaged template."""
+    crit_adult = compute_critical_load_and_wavelength(EI_adult, k)
+    ell_adult = crit_adult["ell_star_mm"]
+    r_vals = np.linspace(R_min, R_max, n_stations)
+    theta = -0.5 * fan_angle_rad + fan_angle_rad * np.arange(N) / float(N)
+    theta_d = math.radians(damage_center_deg)
+    half = math.radians(damage_half_angle_deg)
+    sector = np.abs(theta - theta_d) < half
+    rng = np.random.default_rng(seed + 991)
+
+    profiles: list[np.ndarray] = []
+    k_profiles: list[np.ndarray] = []
+    rows: list[dict[str, Any]] = []
+    w_prev: np.ndarray | None = None
+    A_prev = 1.0
+
+    for i, r in enumerate(r_vals):
+        ell_r = ell_adult * (r / R_max)
+        EI_r = k * ell_r**4
+        L_r = fan_angle_rad * r
+        A_th = compute_pitchfork_equilibrium_amplitude(EI_r, k, kappa_3, P_over_Pc)
+        lam_r = 2.0 * math.pi * ell_r
+
+        w_init = None if w_prev is None else w_prev * (A_th / max(A_prev, 1e-12))
+        k_prof = None
+        damaged_now = False
+        if with_damage and i >= damage_station:
+            dr = r - r_vals[damage_station]
+            heal = math.exp(-dr / heal_length_mm)
+            k_prof = k * (1.0 + (repair_k_ratio - 1.0) * heal * sector.astype(float))
+            if i == damage_station:
+                damaged_now = True
+                if w_init is None:
+                    w_init = np.zeros(N)
+                w_init = w_init.copy()
+                w_init[sector] = 1e-3 * A_th * rng.standard_normal(int(sector.sum()))
+
+        rel = relax_winkler_mantle_margin(
+            L=L_r,
+            N=N,
+            EI=EI_r,
+            k=k,
+            kappa_3=kappa_3,
+            P_over_Pc=P_over_Pc,
+            seed=seed + i,
+            k_profile=k_prof,
+            w_init=w_init,
+            maxiter=500,
+        )
+        w = rel["w_mm"]
+        # Rib crests on the periodic margin (wrap-aware peak count)
+        w_wrap = np.concatenate([w[-8:], w, w[:8]])
+        pk, _ = signal.find_peaks(w_wrap, prominence=0.25 * max(A_th, 1e-9))
+        pk = pk[(pk >= 8) & (pk < 8 + N)] - 8
+        n_ribs = int(len(pk))
+        n_ribs_sector = int(np.sum(sector[pk])) if n_ribs > 0 else 0
+
+        rms_sector = float(np.sqrt(np.mean(w[sector] ** 2)))
+        rms_outside = float(np.sqrt(np.mean(w[~sector] ** 2)))
+        rows.append(
+            {
+                "station": i,
+                "r_mm": float(r),
+                "L_mm": float(L_r),
+                "lambda_c_mm": float(lam_r),
+                "A_theory_mm": float(A_th),
+                "n_ribs": n_ribs,
+                "n_ribs_in_sector": n_ribs_sector,
+                "rms_sector_mm": rms_sector,
+                "rms_outside_mm": rms_outside,
+                "sector_amp_ratio": rms_sector / max(rms_outside, 1e-12),
+                "damaged_now": damaged_now,
+                "repair_k_ratio_local": float(np.max(k_prof) / k) if k_prof is not None else 1.0,
+                "n_iterations": rel["n_iterations"],
+            }
+        )
+        profiles.append(w)
+        k_profiles.append(k_prof if k_prof is not None else np.full(N, k))
+        w_prev = w
+        A_prev = A_th
+
+    return {
+        "r_vals": r_vals,
+        "theta_rad": theta,
+        "sector_mask": sector,
+        "profiles_mm": np.vstack(profiles),
+        "k_profiles": np.vstack(k_profiles),
+        "rows": rows,
+        "with_damage": with_damage,
+        "damage_station": damage_station,
+        "damage_radius_mm": float(r_vals[damage_station]),
+        "damage_center_deg": damage_center_deg,
+        "damage_half_angle_deg": damage_half_angle_deg,
+        "repair_k_ratio": repair_k_ratio,
+        "heal_length_mm": heal_length_mm,
+        "fan_angle_rad": fan_angle_rad,
+        "R_max": R_max,
+    }
+
+
+DAMAGE_DEFAULTS: dict[str, float] = {
+    "damage_half_angle_deg": 5.0,
+    "damage_center_deg": 14.0,
+    "repair_k_ratio": 1.15,
+    "heal_length_mm": 7.0,
+}
+
+
+def evaluate_damage_repair(
+    seed: int = 2013, control: dict[str, Any] | None = None, **kwargs: Any
+) -> dict[str, Any]:
+    """Run damaged vs matched-control accretionary trajectories (Sec. 4c) and extract
+    the scar-healing morphometrics:
+      - scar index Delta(r) = ||w_dmg(r) - w_ctrl(r)|| / ||w_ctrl(r)|| (expected to decay),
+      - fitted exponential healing length of Delta(r) after the damage station,
+      - rib count immediately after damage vs at the adult margin (expected 14 recovered),
+      - registry (phase) error of the regrown ribs vs the undamaged template at the adult
+        margin, in units of the local wavelength (expected ~0: re-formation in register),
+      - local critical-load ratio sqrt(rho) in the fresh callus (analytical identity).
+    `control` lets a shared undamaged trajectory be reused across parameter sweeps (the
+    control does not depend on the damage parameters)."""
+    params = {**DAMAGE_DEFAULTS, **kwargs}
+    dmg = simulate_damage_repair_trajectory(with_damage=True, seed=seed, **params)
+    if control is None:
+        ctrl_kwargs = {
+            key: val
+            for key, val in params.items()
+            if key not in ("damage_half_angle_deg", "damage_center_deg", "repair_k_ratio", "heal_length_mm")
+        }
+        control = simulate_damage_repair_trajectory(with_damage=False, seed=seed, **ctrl_kwargs)
+    ctrl = control
+    Wd = dmg["profiles_mm"]
+    Wc = ctrl["profiles_mm"]
+    r_vals = dmg["r_vals"]
+    i_d = dmg["damage_station"]
+
+    denom = np.sqrt(np.mean(Wc**2, axis=1))
+    scar_index = np.sqrt(np.mean((Wd - Wc) ** 2, axis=1)) / np.maximum(denom, 1e-12)
+
+    # Exponential healing-length fit on post-damage stations with Delta > 1e-3
+    post = np.arange(i_d, len(r_vals))
+    valid = post[scar_index[post] > 1e-3]
+    if len(valid) >= 3:
+        slope, intercept = np.polyfit(r_vals[valid] - r_vals[i_d], np.log(scar_index[valid]), 1)
+        heal_fit = float(-1.0 / slope) if slope < 0 else float("inf")
+    else:
+        heal_fit = float("nan")
+
+    # Registry error at the adult margin: circular cross-correlation lag between damaged
+    # and control profiles restricted to +/- half a rib wavelength (larger lags alias
+    # onto neighbouring ribs), expressed in units of the local rib wavelength
+    N = Wd.shape[1]
+    wd = Wd[-1] - Wd[-1].mean()
+    wc = Wc[-1] - Wc[-1].mean()
+    xc = np.real(np.fft.ifft(np.fft.fft(wd) * np.conj(np.fft.fft(wc))))
+    n_ctrl = max(ctrl["rows"][-1]["n_ribs"], 1)
+    half_lam_nodes = max(1, int(round(0.5 * N / n_ctrl)))
+    lags = np.arange(-half_lam_nodes, half_lam_nodes + 1)
+    lag = int(lags[np.argmax(xc[lags % N])])
+    L_adult = dmg["rows"][-1]["L_mm"]
+    lam_adult = dmg["rows"][-1]["lambda_c_mm"]
+    registry_error_lambda = abs(lag) * (L_adult / N) / lam_adult
+    r_final = float(stats.pearsonr(wd, wc)[0])
+
+    rows_d = dmg["rows"]
+    rows_c = ctrl["rows"]
+    r_d = dmg["damage_radius_mm"]
+    lam_d = rows_d[i_d]["lambda_c_mm"]
+    chip_arc_mm = 2.0 * math.radians(dmg["damage_half_angle_deg"]) * r_d
+    return {
+        "damaged": dmg,
+        "control": ctrl,
+        "scar_index": scar_index,
+        "heal_length_fit_mm": heal_fit,
+        "heal_length_imposed_mm": dmg["heal_length_mm"],
+        "chip_arc_mm": float(chip_arc_mm),
+        "chip_arc_over_lambda": float(chip_arc_mm / lam_d),
+        "n_ribs_pre_damage": rows_d[i_d - 1]["n_ribs"],
+        "n_ribs_at_damage": rows_d[i_d]["n_ribs"],
+        "n_ribs_in_sector_at_damage": rows_d[i_d]["n_ribs_in_sector"],
+        "n_ribs_in_sector_pre_damage": rows_d[i_d - 1]["n_ribs_in_sector"],
+        "n_ribs_adult_damaged": rows_d[-1]["n_ribs"],
+        "n_ribs_adult_control": rows_c[-1]["n_ribs"],
+        "control_rib_counts": [r["n_ribs"] for r in rows_c],
+        "sector_amp_ratio_at_damage": rows_d[i_d]["sector_amp_ratio"],
+        "sector_amp_ratio_adult": rows_d[-1]["sector_amp_ratio"],
+        "scar_index_at_damage": float(scar_index[i_d]),
+        "scar_index_peak": float(np.max(scar_index)),
+        "scar_index_adult": float(scar_index[-1]),
+        "registry_error_lambda": float(registry_error_lambda),
+        "registry_lag_nodes": lag,
+        "adult_profile_correlation": r_final,
+        "in_register": bool(rows_d[-1]["n_ribs"] == rows_c[-1]["n_ribs"] and r_final > 0.95),
+        "local_Pc_ratio_callus": float(math.sqrt(dmg["repair_k_ratio"])),
+        "local_Pc_ratio_theory": float(math.sqrt(dmg["repair_k_ratio"])),
+    }
+
+
+def evaluate_repair_outcome_phase_diagram(
+    half_angles_deg: list[float] | None = None,
+    k_ratios: list[float] | None = None,
+    seed: int = 2013,
+) -> dict[str, Any]:
+    """Parameter sweep of the repair outcome over chip half-angle (predator bite size) and
+    repair-callus stiffness ratio rho = k_repair / k. Outcome per cell = adult rib count
+    minus the control count (0 -> ribs re-form in register with the pre-damage template,
+    +1/+2 -> repair-induced rib intercalation defect). Also returns the smallest chip arc
+    (in units of the local wavelength lambda_c(r_d)) that produces a defect for a
+    non-stiffened callus (rho = 1), to be compared with the half-integer rounding
+    heuristic chip/lambda ~ 1.5 (a template gap wider than 1.5 wavelengths can host one
+    more crest than it lost)."""
+    halves = half_angles_deg or [3.0, 5.0, 7.0, 9.0, 12.0]
+    rhos = k_ratios or [1.0, 1.15, 1.3, 1.6]
+    control = simulate_damage_repair_trajectory(with_damage=False, seed=seed)
+    outcome = np.zeros((len(rhos), len(halves)))
+    chip_over_lambda = np.zeros(len(halves))
+    cells: list[dict[str, Any]] = []
+    for i, rho in enumerate(rhos):
+        for j, ha in enumerate(halves):
+            res = evaluate_damage_repair(
+                seed=seed,
+                control=control,
+                damage_half_angle_deg=ha,
+                repair_k_ratio=rho,
+            )
+            outcome[i, j] = res["n_ribs_adult_damaged"] - res["n_ribs_adult_control"]
+            chip_over_lambda[j] = res["chip_arc_over_lambda"]
+            cells.append(
+                {
+                    "repair_k_ratio": rho,
+                    "damage_half_angle_deg": ha,
+                    "chip_arc_over_lambda": res["chip_arc_over_lambda"],
+                    "extra_ribs": int(outcome[i, j]),
+                    "in_register": res["in_register"],
+                    "adult_profile_correlation": res["adult_profile_correlation"],
+                }
+            )
+    row0 = outcome[0]
+    defect_j = np.where(row0 != 0)[0]
+    crit_chip = float(chip_over_lambda[defect_j[0]]) if len(defect_j) else float("nan")
+    frac_in_register = float(np.mean(outcome == 0))
+    return {
+        "half_angles_deg": halves,
+        "k_ratios": rhos,
+        "chip_arc_over_lambda": chip_over_lambda,
+        "outcome_extra_ribs": outcome,
+        "cells": cells,
+        "critical_chip_over_lambda_rho1": crit_chip,
+        "fraction_in_register": frac_in_register,
+        "control": control,
+    }
+
+
+def build_damaged_valve_surface(
+    traj: dict[str, Any], n_r: int = 90, R_min: float = 8.0
+) -> dict[str, np.ndarray]:
+    """Embed the station profiles of `simulate_damage_repair_trajectory` into the Pass 2
+    3D accretionary valve geometry (dome + rib field) for rendering. Below the first
+    station the isometric Pecten rib field is used; the chipped sector at the damage
+    radius is rendered as a shallow notch (lost shell margin)."""
+    r_st = traj["r_vals"]
+    theta = traj["theta_rad"]
+    R_max = traj["R_max"]
+    n_theta = len(theta)
+    r_vals = np.linspace(R_min, R_max, n_r)
+    TH, RR = np.meshgrid(theta, r_vals)
+
+    rib_field = np.zeros_like(RR)
+    P = traj["profiles_mm"]
+    for j in range(n_theta):
+        inner = P[0, j] * (r_vals / r_st[0])
+        rib_field[:, j] = np.where(
+            r_vals < r_st[0], inner, np.interp(r_vals, r_st, P[:, j])
+        )
+    if traj["with_damage"]:
+        r_d = traj["damage_radius_mm"]
+        chip = (np.abs(RR - r_d) < 1.2) & traj["sector_mask"][None, :]
+        rib_field = np.where(chip, rib_field - 0.9, rib_field)
+
+    dome_z = 0.14 * R_max * np.sin(math.pi * (RR - R_min) / (R_max - R_min)) * np.cos(0.9 * TH)
+    X = RR * np.sin(TH)
+    Y = RR * np.cos(TH)
+    Z = dome_z + rib_field
+    return {"X": X, "Y": Y, "Z": Z, "rib_field": rib_field, "r_vals": r_vals, "theta": theta}
 
 
 # =============================================================================
@@ -636,12 +1269,24 @@ def render_comparison_figure(
     overrides: dict[str, float] | None = None,
     seed: int = 2013,
 ) -> Path:
-    """Render Pass 2 6-panel synthesis figure (`docs/media/mollusc_shell_marginal_buckling_comparison.png`)."""
+    """Render the Pass 3 9-panel synthesis figure (`docs/media/mollusc_shell_marginal_buckling_comparison.png`):
+    panels A-F are the Pass 2 set; G (hollow-spine self-contact closure), H (predator
+    damage / mantle repair kymograph) and I (repair-outcome phase diagram) are new in Pass 3."""
     ovr = overrides or {}
     EI_val = float(ovr.get("EI", 1.085))
     k_val = float(ovr.get("k", 0.285))
     p_ratio = float(ovr.get("P_ratio", 1.45))
     r_adult = float(ovr.get("R_adult", 55.0))
+    spine_W = float(ovr.get("spine_W", 6.0))
+    spine_t = float(ovr.get("spine_t", 0.35))
+    chip_half = float(ovr.get("chip_half_angle", DAMAGE_DEFAULTS["damage_half_angle_deg"]))
+    repair_rho = float(ovr.get("repair_k_ratio", DAMAGE_DEFAULTS["repair_k_ratio"]))
+
+    spine = evaluate_spine_closure_sweep(W=spine_W, thickness=spine_t, EI=EI_val)
+    repair = evaluate_damage_repair(
+        seed=seed, damage_half_angle_deg=chip_half, repair_k_ratio=repair_rho
+    )
+    phase = evaluate_repair_outcome_phase_diagram(seed=seed)
 
     beam_wt = relax_winkler_mantle_margin(
         L=2.234021442552742 * r_adult,
@@ -663,8 +1308,8 @@ def render_comparison_figure(
     specimen = segment_pecten_specimen()
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig = plt.figure(figsize=(16.8, 10.6), dpi=150, facecolor="#0b0f17")
-    gs = fig.add_gridspec(2, 3, hspace=0.33, wspace=0.26)
+    fig = plt.figure(figsize=(16.8, 15.9), dpi=150, facecolor="#0b0f17")
+    gs = fig.add_gridspec(3, 3, hspace=0.36, wspace=0.26)
 
     # -------------------------------------------------------------------------
     # Panel A: 3D Accretionary Ribbed Scallop Surface (Chirat-Erlich Isometric Pecten)
@@ -847,9 +1492,9 @@ def render_comparison_figure(
     ax_d.set_xlabel("Valve Fan Angle θ (deg)", color="white", fontsize=9)
     ax_d.set_ylabel("Offset Marginal Profile w(R_max, θ) (mm)", color="white", fontsize=9)
     ax_d.set_title(
-        "D. 4 Shell Ornamentation Regimes (Smooth / Isometric / Intercalating / Varix)",
+        "D. 4 Ornamentation Regimes (Smooth / Isometric / Intercalating / Varix)",
         color="white",
-        fontsize=10.0,
+        fontsize=9.0,
         fontweight="bold",
     )
     ax_d.tick_params(colors="#9ca3af", labelsize=8)
@@ -896,9 +1541,9 @@ def render_comparison_figure(
             alpha=0.75,
         )
     ax_e.set_title(
-        f"E. Pecten jacobaeus Polar Rib Segmentation (n={specimen['n_ribs_detected']} Costae, Δθ={specimen['mean_dtheta_deg']:.2f}°, CV={specimen['cv_angular_spacing']:.3f})",
+        f"E. Pecten jacobaeus Polar Rib Segmentation (n={specimen['n_ribs_detected']}, Δθ={specimen['mean_dtheta_deg']:.2f}°, CV={specimen['cv_angular_spacing']:.3f})",
         color="white",
-        fontsize=9.8,
+        fontsize=9.0,
         fontweight="bold",
     )
     ax_e.set_xlabel("Specimen X (px, CC BY-SA 4.0)", color="white", fontsize=8.5)
@@ -967,7 +1612,7 @@ def render_comparison_figure(
     ax_f.set_title(
         "F. Isometric Constant-Rib vs Secondary Intercalation Trajectory",
         color="white",
-        fontsize=10.0,
+        fontsize=9.0,
         fontweight="bold",
     )
     ax_f.tick_params(colors="#9ca3af", labelsize=8)
@@ -980,12 +1625,159 @@ def render_comparison_figure(
         labelcolor="white",
     )
 
+    # -------------------------------------------------------------------------
+    # Panel G (Pass 3): Reduced hollow-spine cross-section elastica & self-contact closure
+    # -------------------------------------------------------------------------
+    ax_g = fig.add_subplot(gs[2, 0], facecolor="#111827")
+    cmap_g = plt.get_cmap("plasma")
+    n_states = len(spine["states"])
+    for i_s, st in enumerate(spine["states"]):
+        if i_s % 2 == 1 and not st["closed"]:
+            continue
+        col = cmap_g(0.15 + 0.8 * i_s / max(n_states - 1, 1))
+        ax_g.plot(
+            st["x_mm"],
+            st["y_mm"],
+            color=col,
+            lw=2.2 if st["closed"] else 1.2,
+            alpha=0.95 if st["closed"] else 0.75,
+        )
+    st_c = next((s for s in spine["states"] if s["closed"]), spine["states"][-1])
+    i_n, j_n = st_c["neck_nodes"]
+    ax_g.plot(
+        [st_c["x_mm"][i_n], st_c["x_mm"][j_n]],
+        [st_c["y_mm"][i_n], st_c["y_mm"][j_n]],
+        "o-",
+        color="#34d399",
+        ms=5,
+        lw=2.0,
+        label=f"Self-contact neck (gap = t = {spine['thickness_mm']:.2f} mm)",
+    )
+    ax_g.axhline(0.0, color="#9ca3af", lw=1.0, ls=":")
+    ax_g.set_aspect("equal", adjustable="datalim")
+    ax_g.set_xlabel("Cross-section x (mm) — clamped flank roots at 0 and W", color="white", fontsize=8.5)
+    ax_g.set_ylabel("Outward fold y (mm)", color="white", fontsize=8.5)
+    ax_g.set_title(
+        f"G. Hollow-Spine Elastica Closure (ε_close={spine['eps_close']:.2f}, H/W={spine['aspect_ratio_at_closure']:.2f})",
+        color="white",
+        fontsize=9.0,
+        fontweight="bold",
+    )
+    ax_g.tick_params(colors="#9ca3af", labelsize=7.5)
+    ax_g.grid(True, alpha=0.2, color="#374151")
+    ins_g = ax_g.inset_axes([0.58, 0.08, 0.40, 0.36], facecolor="#0b0f17")
+    ins_g.plot(spine["eps"], spine["neck_gap_mm"], "o-", color="#f43f5e", ms=3, lw=1.3)
+    ins_g.axhline(spine["thickness_mm"], color="#34d399", ls="--", lw=1.0)
+    ins_g.axvline(spine["eps_close"], color="#facc15", ls=":", lw=1.0)
+    ins_g.set_xlabel("growth excess ε", color="#9ca3af", fontsize=6.5)
+    ins_g.set_ylabel("neck gap (mm)", color="#9ca3af", fontsize=6.5)
+    ins_g.tick_params(colors="#9ca3af", labelsize=6)
+    ins_g.set_title(
+        f"small-strain law r={spine['pearson_r_small_strain']:.4f}",
+        color="white",
+        fontsize=6.5,
+    )
+    ax_g.legend(loc="upper left", fontsize=7.0, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    # -------------------------------------------------------------------------
+    # Panel H (Pass 3): Predator damage & mantle repair kymograph (stations x theta)
+    # -------------------------------------------------------------------------
+    ax_h = fig.add_subplot(gs[2, 1], facecolor="#111827")
+    dmg = repair["damaged"]
+    th_deg = np.rad2deg(dmg["theta_rad"])
+    im_h = ax_h.imshow(
+        dmg["profiles_mm"],
+        aspect="auto",
+        origin="lower",
+        cmap="RdYlBu_r",
+        extent=[th_deg[0], th_deg[-1], dmg["r_vals"][0], dmg["r_vals"][-1]],
+    )
+    sec_lo = dmg["damage_center_deg"] - dmg["damage_half_angle_deg"]
+    sec_hi = dmg["damage_center_deg"] + dmg["damage_half_angle_deg"]
+    ax_h.axvline(sec_lo, color="white", ls="--", lw=1.0)
+    ax_h.axvline(sec_hi, color="white", ls="--", lw=1.0)
+    ax_h.axhline(dmg["damage_radius_mm"], color="#facc15", ls=":", lw=1.4)
+    ax_h.text(
+        sec_hi + 2.0,
+        dmg["damage_radius_mm"] + 0.6,
+        f"chip @ r_d={dmg['damage_radius_mm']:.1f} mm, ρ={dmg['repair_k_ratio']:.2f}",
+        color="#facc15",
+        fontsize=7.0,
+    )
+    ax_h.set_xlabel("Valve fan angle θ (deg)", color="white", fontsize=8.5)
+    ax_h.set_ylabel("Accretionary margin radius r (mm)", color="white", fontsize=8.5)
+    ax_h.set_title(
+        f"H. Chip/Repair Kymograph (adult N={repair['n_ribs_adult_damaged']} vs ctrl {repair['n_ribs_adult_control']}, reg. err {repair['registry_error_lambda']:.2f}λ)",
+        color="white",
+        fontsize=9.0,
+        fontweight="bold",
+    )
+    ax_h.tick_params(colors="#9ca3af", labelsize=7.5)
+    cb_h = fig.colorbar(im_h, ax=ax_h, fraction=0.04, pad=0.02)
+    cb_h.set_label("w(r, θ) (mm)", color="white", fontsize=7.5)
+    cb_h.ax.tick_params(colors="#9ca3af", labelsize=6.5)
+
+    # -------------------------------------------------------------------------
+    # Panel I (Pass 3): Repair-outcome phase diagram & scar-index healing curve
+    # -------------------------------------------------------------------------
+    sub_i = gs[2, 2].subgridspec(2, 1, height_ratios=[1.25, 1.0], hspace=0.55)
+    ax_i = fig.add_subplot(sub_i[0, 0], facecolor="#111827")
+    ax_i2 = fig.add_subplot(sub_i[1, 0], facecolor="#111827")
+    out = phase["outcome_extra_ribs"]
+    im_i = ax_i.imshow(out, cmap="viridis", origin="lower", aspect="auto", vmin=0, vmax=max(2, out.max()))
+    for ii in range(out.shape[0]):
+        for jj in range(out.shape[1]):
+            ax_i.text(
+                jj,
+                ii,
+                "in reg." if out[ii, jj] == 0 else f"+{int(out[ii, jj])} rib",
+                ha="center",
+                va="center",
+                color="white" if out[ii, jj] < 1 else "black",
+                fontsize=7.0,
+            )
+    ax_i.set_xticks(range(out.shape[1]))
+    ax_i.set_xticklabels([f"{c:.2f}λ" for c in phase["chip_arc_over_lambda"]], fontsize=7.5)
+    ax_i.set_yticks(range(out.shape[0]))
+    ax_i.set_yticklabels([f"ρ={r:.2f}" for r in phase["k_ratios"]], fontsize=7.5)
+    ax_i.set_xlabel("Predator chip arc / λ_c(r_d)", color="white", fontsize=8.5)
+    ax_i.set_ylabel("Repair callus stiffness ratio ρ = k_repair / k", color="white", fontsize=8.5)
+    ax_i.set_title(
+        f"I. Repair Outcome Phase Diagram (crit. chip {phase['critical_chip_over_lambda_rho1']:.2f}λ @ ρ=1)",
+        color="white",
+        fontsize=9.0,
+        fontweight="bold",
+    )
+    ax_i.tick_params(colors="#9ca3af")
+    ax_i2.plot(dmg["r_vals"], repair["scar_index"], "o-", color="#f43f5e", ms=3.5, lw=1.5, label="damaged vs control")
+    ax_i2.plot(
+        dmg["r_vals"],
+        [row["sector_amp_ratio"] for row in dmg["rows"]],
+        "s--",
+        color="#38bdf8",
+        ms=3,
+        lw=1.2,
+        label="sector / outside rib amplitude",
+    )
+    ax_i2.axvline(dmg["damage_radius_mm"], color="#facc15", ls=":", lw=1.2, label="predator chip")
+    ax_i2.set_xlabel("Accretionary margin radius r (mm)", color="white", fontsize=8)
+    ax_i2.set_ylabel("Scar index Δ(r)", color="white", fontsize=8)
+    ax_i2.set_title(
+        f"Scar healing: fit l_heal={repair['heal_length_fit_mm']:.1f} mm (imposed {repair['heal_length_imposed_mm']:.0f} mm), adult Δ={repair['scar_index_adult']:.3f}",
+        color="white",
+        fontsize=7.6,
+    )
+    ax_i2.tick_params(colors="#9ca3af", labelsize=7)
+    ax_i2.grid(True, alpha=0.22, color="#374151")
+    ax_i2.legend(loc="center right", fontsize=6.5, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
     fig.suptitle(
-        "Chirat, Moulton & Goriely (2013) PNAS & Erlich et al. (2016) — Mollusc Shell Marginal Buckling & Rib Morphospace (v2)",
+        "Chirat, Moulton & Goriely (2013) PNAS & Erlich et al. (2016) — Mollusc Shell Marginal Buckling, Rib Morphospace, "
+        "Hollow-Spine Closure & Damage Repair (v3)",
         color="white",
         fontsize=13,
         fontweight="bold",
-        y=0.975,
+        y=0.985,
     )
     fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -1094,8 +1886,152 @@ def render_growth_gif(out_path: Path = OUT_GIF) -> Path:
     return out_path
 
 
+def _fig_to_frame(fig: Any) -> Image.Image:
+    fig.canvas.draw()
+    w_px, h_px = fig.canvas.get_width_height()
+    buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape((h_px, w_px, 4))
+    return Image.fromarray(buf[:, :, :3])
+
+
+def render_pass3_3d_figure(out_path: Path = OUT_PASS3_PNG, seed: int = 2013) -> Path:
+    """Pass 3 two-panel 3D figure: (left) reduced hollow Murex spine tube built by stacking
+    the self-contact elastica cross-sections along the growth axis; (right) 3D accretionary
+    Pecten valve carrying a predator chip and the healed repair scar."""
+    spine = evaluate_spine_closure_sweep()
+    tube = build_hollow_spine_tube_surface(spine)
+    repair = evaluate_damage_repair(seed=seed)
+    valve = build_damaged_valve_surface(repair["damaged"])
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig = plt.figure(figsize=(13.2, 5.6), dpi=140, facecolor="#0b0f17")
+    ax1 = fig.add_subplot(1, 2, 1, projection="3d", facecolor="#0b0f17")
+    closed_mask = np.array([s["closed"] for s in spine["states"]])
+    colors = np.where(closed_mask[:, None], 0.95, 0.35) * np.ones_like(tube["X"])
+    ax1.plot_surface(
+        tube["X"],
+        tube["Y"],
+        tube["Z"],
+        facecolors=plt.get_cmap("YlOrRd")(colors),
+        edgecolor="none",
+        alpha=0.9,
+        rstride=1,
+        cstride=2,
+    )
+    i_first = int(np.argmax(closed_mask)) if closed_mask.any() else len(closed_mask) - 1
+    ax1.plot(
+        tube["X"][i_first],
+        tube["Y"][i_first],
+        tube["Z"][i_first],
+        color="#38bdf8",
+        lw=2.2,
+    )
+    ax1.set_title(
+        f"Reduced hollow spine tube (self-contact closure ε={spine['eps_close']:.2f}, H/W={spine['aspect_ratio_at_closure']:.2f})",
+        color="white",
+        fontsize=8.8,
+        fontweight="bold",
+    )
+    ax1.set_xlabel("x (mm)", color="#9ca3af", fontsize=8)
+    ax1.set_ylabel("growth axis (mm)", color="#9ca3af", fontsize=8)
+    ax1.set_zlabel("y (mm)", color="#9ca3af", fontsize=8)
+    ax1.tick_params(colors="#9ca3af", labelsize=7)
+    ax1.view_init(elev=26, azim=-55)
+
+    ax2 = fig.add_subplot(1, 2, 2, projection="3d", facecolor="#0b0f17")
+    ax2.plot_surface(valve["X"], valve["Y"], valve["Z"], cmap="YlOrRd", edgecolor="none", alpha=0.92, rstride=2, cstride=3)
+    dmg = repair["damaged"]
+    sec = dmg["sector_mask"]
+    r_d = dmg["damage_radius_mm"]
+    th_sec = dmg["theta_rad"][sec]
+    i_row = int(np.argmin(np.abs(valve["r_vals"] - r_d)))
+    ax2.plot(
+        valve["X"][i_row, sec],
+        valve["Y"][i_row, sec],
+        valve["Z"][i_row, sec] + 1.6,
+        color="#38bdf8",
+        lw=4.5,
+        zorder=10,
+        label="predator chip (repaired)",
+    )
+    ax2.computed_zorder = False
+    ax2.legend(loc="upper left", fontsize=7.5, facecolor="#161b22", edgecolor="#30363d", labelcolor="white")
+    ax2.set_title(
+        f"Valve with predator chip at r_d={r_d:.1f} mm (adult N={repair['n_ribs_adult_damaged']}, scar Δ={repair['scar_index_adult']:.3f})",
+        color="white",
+        fontsize=8.8,
+        fontweight="bold",
+    )
+    ax2.set_xlabel("Lateral X (mm)", color="#9ca3af", fontsize=8)
+    ax2.set_ylabel("Radial Y (mm)", color="#9ca3af", fontsize=8)
+    ax2.set_zlabel("Z (mm)", color="#9ca3af", fontsize=8)
+    ax2.tick_params(colors="#9ca3af", labelsize=7)
+    ax2.view_init(elev=34, azim=-62)
+    fig.suptitle(
+        "Pass 3 — Reduced 3D views: hollow-spine self-contact closure & predator-damage repair (Chirat et al. 2013 Fig. 4 context)",
+        color="white",
+        fontsize=11,
+        fontweight="bold",
+    )
+    fig.savefig(out_path, dpi=140, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return out_path
+
+
+def render_damage_repair_gif(out_path: Path = OUT_REPAIR_GIF, seed: int = 2013) -> Path:
+    """Animated accretionary growth of the Pecten valve through a predator chip event and
+    its mantle repair: 3D valve (left) and the scar-index healing curve (right)."""
+    repair = evaluate_damage_repair(seed=seed)
+    dmg = repair["damaged"]
+    r_st = dmg["r_vals"]
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    frames: list[Image.Image] = []
+    for i_s in range(len(r_st)):
+        partial = dict(dmg)
+        partial["profiles_mm"] = dmg["profiles_mm"][: i_s + 1]
+        partial["r_vals"] = r_st[: i_s + 1]
+        partial["R_max"] = float(r_st[i_s])
+        partial["with_damage"] = i_s >= dmg["damage_station"]
+        valve = build_damaged_valve_surface(partial, n_r=48)
+        fig = plt.figure(figsize=(10.2, 4.6), dpi=100, facecolor="#0b0f17")
+        gsg = fig.add_gridspec(1, 2, width_ratios=[1.25, 1.0], wspace=0.28)
+        ax1 = fig.add_subplot(gsg[0, 0], projection="3d", facecolor="#0b0f17")
+        ax1.plot_surface(valve["X"], valve["Y"], valve["Z"], cmap="YlOrRd", edgecolor="none", alpha=0.9)
+        ax1.plot(valve["X"][-1], valve["Y"][-1], valve["Z"][-1], color="#38bdf8", lw=2.2)
+        ax1.set_xlim(-52, 52)
+        ax1.set_ylim(0, 58)
+        ax1.set_zlim(-2, 12)
+        ax1.view_init(elev=34, azim=-62)
+        status = "pre-damage" if i_s < dmg["damage_station"] else ("CHIP + repair" if i_s == dmg["damage_station"] else "healing")
+        ax1.set_title(
+            f"Accretionary growth | r={r_st[i_s]:.1f} mm | N={dmg['rows'][i_s]['n_ribs']} ribs | {status}",
+            color="white",
+            fontsize=9.6,
+            fontweight="bold",
+        )
+        ax1.tick_params(colors="#9ca3af", labelsize=7)
+        ax2 = fig.add_subplot(gsg[0, 1], facecolor="#111827")
+        ax2.plot(r_st, repair["scar_index"], "--", color="#4b5563", lw=1.2)
+        ax2.plot(r_st[: i_s + 1], repair["scar_index"][: i_s + 1], "o-", color="#f43f5e", lw=1.8, ms=4)
+        ax2.axvline(dmg["damage_radius_mm"], color="#facc15", ls=":", lw=1.3, label="predator chip")
+        ax2.set_xlabel("margin radius r (mm)", color="white", fontsize=8.5)
+        ax2.set_ylabel("scar index Δ(r) = ||w_dmg − w_ctrl|| / ||w_ctrl||", color="white", fontsize=8.0)
+        ax2.set_title(
+            f"Mantle repair healing (fit l_heal={repair['heal_length_fit_mm']:.1f} mm, registry err={repair['registry_error_lambda']:.2f}λ)",
+            color="white",
+            fontsize=8.8,
+        )
+        ax2.set_ylim(-0.02, max(0.4, float(repair["scar_index"].max()) * 1.15))
+        ax2.tick_params(colors="#9ca3af", labelsize=7.5)
+        ax2.grid(True, alpha=0.22, color="#374151")
+        ax2.legend(loc="upper right", fontsize=7.2, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+        frames.append(_fig_to_frame(fig))
+        plt.close(fig)
+    frames[0].save(out_path, save_all=True, append_images=frames[1:], duration=380, loop=0)
+    return out_path
+
+
 # =============================================================================
-# 8. MorphoEval Quantitative Measurement Suite & 8-Check Self-Test
+# 8. MorphoEval Quantitative Measurement Suite & 12-Check Self-Test
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
     """Compute comprehensive quantitative morphometrics for `morphoeval/measure_outputs.py`."""
@@ -1109,9 +2045,88 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     cross_taxa = evaluate_cross_taxa_scaling()
     pf_sweep = evaluate_pitchfork_bifurcation_sweep(seed=2013)
     specimen = segment_pecten_specimen()
+    spine = evaluate_spine_closure_sweep()
+    repair = evaluate_damage_repair(seed=2013)
+    phase = evaluate_repair_outcome_phase_diagram(seed=2013)
+    p3 = json.loads(PASS3_REF_JSON.read_text(encoding="utf-8"))
+    p3_spine_ref = p3["hollow_spine_cross_section_elastica"]["reference_values"]
+    p3_rep_ref = p3["predator_damage_mantle_repair"]["reference_values"]
 
     iso_reg = regimes["antimarginal_isometric_pecten"]
     int_reg = regimes["antimarginal_intercalating_multicostate"]
+
+    pass3_measurements: list[dict[str, Any]] = [
+        {
+            "name": "Hollow-spine elastica small-strain amplitude law correlation A_num vs (2/pi) sqrt(W dL)",
+            "value": round(spine["pearson_r_small_strain"], 4),
+            "unit": "Pearson r",
+            "method": f"Clamped planar inextensible elastica (M={spine['M']}, W={spine['W_mm']} mm) relaxed by L-BFGS-B at eps in [0.005, 0.03]; mean relative amplitude error = {spine['rel_err_small_strain']:.4f}",
+            "reference_value": float(p3_spine_ref["small_strain_pearson_r_target"]),
+            "reference_source": "Clamped Euler-elastica first mode (Moulton, Goriely & Chirat 2012 J. Theor. Biol. planar rod reduction): Delta L = pi^2 A^2 / (4 W)",
+            "note": f"mean |A_num - A_lin| / A_lin = {spine['rel_err_small_strain']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Hollow-spine self-contact closure growth excess eps_close (reduced 2D elastica of a Murex spine fold)",
+            "value": round(spine["eps_close"], 4),
+            "unit": "ratio (L - W) / W",
+            "method": f"Continuation sweep of the self-contact-penalised elastica; first eps at which the inter-flank neck gap reaches the wall thickness t={spine['thickness_mm']} mm (H/W at closure = {spine['aspect_ratio_at_closure']:.3f}, lumen = {spine['lumen_area_at_closure_mm2']:.2f} mm^2)",
+            "reference_value": float(p3_spine_ref["closure_excess_ratio_mesh_converged_M224"]),
+            "reference_source": "Mesh-convergence reference of the same reduced model at M=224 segments (datasets/mollusc_shell_marginal_buckling/pass3_spine_closure_damage_repair_reference.json); no independent published closure strain is vendored",
+            "note": f"neck widest at eps={spine['eps_neck_max']:.2f}, monotone narrowing afterwards = {spine['gap_monotone']}; reduced model, not Rudraraju 2019 3D FEM",
+            "derived_from": "script",
+        },
+        {
+            "name": "Hollow-spine neck gap / wall thickness after self-contact (contact penalty resolution)",
+            "value": round(spine["final_gap_over_thickness"], 4),
+            "unit": "ratio",
+            "method": "Minimum distance between non-adjacent flank nodes at the largest growth excess eps=6.0, divided by the wall thickness t",
+            "reference_value": float(p3_spine_ref["neck_gap_over_thickness_at_contact_target"]),
+            "reference_source": "Self-contact constraint d_ij >= t (closed hollow tube wall-to-wall contact)",
+            "note": f"closure first detected at eps={spine['eps_close']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Adult rib count after predator chip and mantle repair (default chip 5 deg half-angle, rho=1.15)",
+            "value": float(repair["n_ribs_adult_damaged"]),
+            "unit": "ribs",
+            "method": f"Wrap-aware crest count on the adult (R=55 mm) margin of the damaged accretionary trajectory; control trajectory = {repair['n_ribs_adult_control']} ribs; ribs in chipped sector at damage = {repair['n_ribs_in_sector_at_damage']} (pre-damage {repair['n_ribs_in_sector_pre_damage']})",
+            "reference_value": float(p3_rep_ref["adult_rib_count_in_register"]),
+            "reference_source": "Pecten jacobaeus N=14 primary costae (Chirat et al. 2013 PNAS; specimen segmentation) — repair re-forms ribs in register with the template",
+            "note": f"registry error = {repair['registry_error_lambda']:.3f} lambda, adult damaged-vs-control profile r = {repair['adult_profile_correlation']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Repair scar index at the adult margin Delta = ||w_dmg - w_ctrl|| / ||w_ctrl|| (healing completeness)",
+            "value": round(repair["scar_index_adult"], 4),
+            "unit": "ratio",
+            "method": f"RMS difference between damaged and matched-control margins at R=55 mm; peak scar index after chip = {repair['scar_index_peak']:.4f}; exponential healing-length fit = {repair['heal_length_fit_mm']:.2f} mm vs imposed callus decay {repair['heal_length_imposed_mm']:.1f} mm (consistency check)",
+            "reference_value": float(p3_rep_ref["scar_index_adult_target"]),
+            "reference_source": "Full healing of the mantle-repair perturbation under template memory (Chirat et al. 2013 mechanical-template argument; Vermeij 1987 repair scars)",
+            "note": f"sector amplitude ratio at damage = {repair['sector_amp_ratio_at_damage']:.3f} -> adult {repair['sector_amp_ratio_adult']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Local critical-load ratio in the fresh repair callus P_c,loc / P_c = sqrt(rho)",
+            "value": round(repair["local_Pc_ratio_callus"], 4),
+            "unit": "ratio",
+            "method": "sqrt(k_repair / k) for the default callus stiffening rho = 1.15 entering k(s) of the heterogeneous Winkler foundation",
+            "reference_value": float(p3_rep_ref["local_Pc_ratio_rho_1_15"]),
+            "reference_source": "P_c = 2 sqrt(E I k) (Chirat et al. 2013 Eq. 2); Lean theorem MathOfBiology.Loop_072.chirat_repair_callus_raises_critical_load",
+            "note": "analytical identity; checked against the Lean monotonicity theorem",
+            "derived_from": "script",
+        },
+        {
+            "name": "Critical predator chip arc (in lambda_c) for repair-induced rib intercalation at rho = 1",
+            "value": round(phase["critical_chip_over_lambda_rho1"], 4),
+            "unit": "chip arc / lambda_c(r_d)",
+            "method": f"Smallest chip arc on the grid {np.round(phase['chip_arc_over_lambda'], 2).tolist()} lambda producing an extra adult rib with a non-stiffened callus; fraction of the {len(phase['cells'])}-cell (chip x rho) phase diagram healing in register = {phase['fraction_in_register']:.2f}",
+            "reference_value": float(p3_rep_ref["critical_chip_over_lambda_rounding_heuristic"]),
+            "reference_source": "Half-integer rounding heuristic (a template gap > 1.5 lambda can host one more crest than it lost) — heuristic, not a published value",
+            "note": f"transition lies between the grid points {phase['chip_arc_over_lambda'][1]:.2f} and {phase['chip_arc_over_lambda'][3]:.2f} lambda; stiffer callus (rho >= 1.3) nucleates defects at smaller chips",
+            "derived_from": "script",
+        },
+    ]
 
     return [
         {
@@ -1204,14 +2219,14 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"mean angular spacing = {specimen['mean_dtheta_deg']:.2f}° across 128° fan",
             "derived_from": "output",
         },
-    ]
+    ] + pass3_measurements
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
-    # 1. Cryptographic SHA-256 verification of all 4 dataset assets
+    """Run the 12-point verification suite (8 Pass 2 checks + 4 Pass 3 checks)."""
+    # 1. Cryptographic SHA-256 verification of all 5 dataset assets
     digests = verify_dataset_integrity()
-    assert len(digests) == 4, "Expected 4 verified dataset files"
+    assert len(digests) == 5, "Expected 5 verified dataset files"
 
     # 2. JSON-to-code parity checks
     ref = load_reference_data()
@@ -1259,13 +2274,66 @@ def self_test() -> bool:
     r2 = relax_winkler_mantle_margin(P_over_Pc=1.45, seed=2013)
     assert np.allclose(r1["w_mm"], r2["w_mm"], atol=0.0)
 
+    # 9. (Pass 3) Reduced hollow-spine elastica: small-strain law, monotone neck closure,
+    #    self-contact resolved at the wall thickness, mesh-convergent closure threshold
+    spine = evaluate_spine_closure_sweep()
+    assert spine["pearson_r_small_strain"] > 0.999
+    assert spine["rel_err_small_strain"] < 0.10
+    assert spine["any_closed"] and spine["gap_monotone"]
+    assert abs(spine["final_gap_over_thickness"] - 1.0) < 0.05
+    assert 4.0 < spine["eps_close"] < 5.5
+    assert all(s["end_error_mm"] < 0.02 for s in spine["states"])
+    # Negative control: no self-contact in the arch regime (eps <= 1), gap > 2 t
+    assert all(s["neck_gap_mm"] > 2.0 * spine["thickness_mm"] for s in spine["states"] if s["excess_ratio"] <= 1.0)
+
+    # 10. (Pass 3) Heterogeneous-foundation Winkler solver reduces to the Pass 2 solver for a
+    #     uniform k_profile (same minimum: energies within 1e-5, shapes within 1% of A_eq —
+    #     the L-BFGS-B paths differ only by FFT round-off), and a converged equilibrium is a
+    #     fixed point of the template-memory warm start
+    N_chk = 256
+    r_uni = relax_winkler_mantle_margin(P_over_Pc=1.45, seed=2013, k_profile=np.full(N_chk, 0.285))
+    assert abs(r_uni["energy_final"] - r1["energy_final"]) < 1e-5
+    assert np.max(np.abs(r_uni["w_mm"] - r1["w_mm"])) < 0.01 * r1["A_eq_theory_mm"]
+    r_mem = relax_winkler_mantle_margin(P_over_Pc=1.45, seed=2013, w_init=r1["w_mm"])
+    assert abs(r_mem["energy_final"] - r1["energy_final"]) < 1e-5
+    assert np.max(np.abs(r_mem["w_mm"] - r1["w_mm"])) < 0.02 * r1["A_eq_theory_mm"]
+
+    # 11. (Pass 3) Predator chip + mantle repair: ribs suppressed in the chipped sector at the
+    #     damage station, then re-formed in register (14 ribs, zero registry lag, scar healed);
+    #     matched control stays at 14 ribs at every station
+    repair = evaluate_damage_repair(seed=2013)
+    assert repair["control_rib_counts"] == [14] * len(repair["control_rib_counts"])
+    assert repair["n_ribs_in_sector_at_damage"] < repair["n_ribs_in_sector_pre_damage"]
+    assert repair["sector_amp_ratio_at_damage"] < 0.9
+    assert repair["n_ribs_adult_damaged"] == 14
+    assert repair["registry_error_lambda"] < 0.1
+    assert repair["scar_index_adult"] < 0.25 * repair["scar_index_peak"]
+    assert repair["adult_profile_correlation"] > 0.99
+    assert math.isclose(repair["local_Pc_ratio_callus"], math.sqrt(1.15), rel_tol=1e-12)
+    # Determinism of the damage trajectory
+    d1 = simulate_damage_repair_trajectory(seed=2013)
+    d2 = simulate_damage_repair_trajectory(seed=2013)
+    assert np.array_equal(d1["profiles_mm"], d2["profiles_mm"])
+
+    # 12. (Pass 3) Repair-outcome phase diagram: wide chips and stiff calluses nucleate extra
+    #     ribs; outcome is monotone non-decreasing in chip size for every rho
+    phase = evaluate_repair_outcome_phase_diagram(seed=2013)
+    out = phase["outcome_extra_ribs"]
+    assert out[0, 0] == 0 and out[-1, -1] >= 1
+    assert np.all(np.diff(out, axis=1) >= 0)
+    assert 1.0 < phase["critical_chip_over_lambda_rho1"] < 2.5
+
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 16
+    assert all(("reference_value" in m_ and "unit" in m_) for m_ in meas)
     print(
-        f"[self_test] 2013-chirat-mollusc-shell-marginal-buckling.py (v2) PASSED all 8 checks "
+        f"[self_test] 2013-chirat-mollusc-shell-marginal-buckling.py (v3) PASSED all 12 checks "
         f"(12-species r_lambda={cross['pearson_r_wavelength']:.4f}, r_ribs={cross['pearson_r_rib_count']:.4f}, "
         f"alpha={cross['quarter_power_exponent']:.4f}, specimen costae={spec['n_ribs_detected']}, "
-        f"CV={spec['cv_angular_spacing']:.4f})."
+        f"CV={spec['cv_angular_spacing']:.4f}; spine eps_close={spine['eps_close']:.3f}, "
+        f"small-strain r={spine['pearson_r_small_strain']:.4f}; repair adult N={repair['n_ribs_adult_damaged']}, "
+        f"registry err={repair['registry_error_lambda']:.3f} lambda, scar={repair['scar_index_adult']:.4f}; "
+        f"critical chip={phase['critical_chip_over_lambda_rho1']:.2f} lambda)."
     )
     return True
 
@@ -1279,6 +2347,10 @@ def main() -> int:
     ap.add_argument("--P-ratio", type=float, default=None, help="Override normalized compressive thrust P / P_c")
     ap.add_argument("--R-adult", type=float, default=None, help="Override adult shell radius R (mm)")
     ap.add_argument("--seed", type=int, default=2013, help="Deterministic RNG seed (default: 2013)")
+    ap.add_argument("--spine-W", type=float, default=None, help="(Pass 3) Hollow-spine clamped base width W (mm, default 6.0)")
+    ap.add_argument("--spine-t", type=float, default=None, help="(Pass 3) Hollow-spine wall thickness t for self-contact (mm, default 0.35)")
+    ap.add_argument("--chip-half-angle", type=float, default=None, help="(Pass 3) Predator chip half-angle on the margin (deg, default 5.0)")
+    ap.add_argument("--repair-k-ratio", type=float, default=None, help="(Pass 3) Repair callus stiffness ratio rho = k_repair/k (default 1.15)")
     args = ap.parse_args()
 
     if args.self_test:
@@ -1292,14 +2364,22 @@ def main() -> int:
             "k": args.k,
             "P_ratio": args.P_ratio,
             "R_adult": args.R_adult,
+            "spine_W": args.spine_W,
+            "spine_t": args.spine_t,
+            "chip_half_angle": args.chip_half_angle,
+            "repair_k_ratio": args.repair_k_ratio,
         }.items()
         if v is not None
     }
     png = render_comparison_figure(OUT_PNG, overrides=overrides, seed=args.seed)
     print(f"[render] Wrote {png}")
+    png3 = render_pass3_3d_figure(OUT_PASS3_PNG, seed=args.seed)
+    print(f"[render] Wrote {png3}")
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF)
         print(f"[render] Wrote {gif}")
+        gif2 = render_damage_repair_gif(OUT_REPAIR_GIF, seed=args.seed)
+        print(f"[render] Wrote {gif2}")
     return 0
 
 

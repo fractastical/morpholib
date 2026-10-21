@@ -45,7 +45,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "epithelioid_cyst_buckling"
 REF_JSON = DATASET_DIR / "epithelioid_cyst_buckling_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "epithelioid_cyst_specimen.jpg"

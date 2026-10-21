@@ -88,7 +88,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "differential_adhesion_sorting"
 REFERENCE_JSON = DATASET_DIR / "differential_adhesion_sorting_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "cell_sorting_specimen.jpg"

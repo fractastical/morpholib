@@ -72,7 +72,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "bioelectric_morphogen_coupling"
 REF_JSON_PATH = DATASET_DIR / "bioelectric_morphogen_coupling_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "planarian_ap_polarity_specimen.jpg"
@@ -81,6 +81,10 @@ BIB_PATH = DATASET_DIR / "paper_citations.bib"
 
 OUT_PNG = ROOT / "docs" / "media" / "bioelectric_morphogen_coupling_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "bioelectric_morphogen_coupling_growth.gif"
+OUT_PNG_PASS3 = ROOT / "docs" / "media" / "bioelectric_morphogen_coupling_voronoi_ca_ip3.png"
+OUT_GIF_PASS3 = ROOT / "docs" / "media" / "bioelectric_morphogen_coupling_voronoi_electrodiffusion.gif"
+PASS3_REF_JSON_PATH = DATASET_DIR / "voronoi_ca_ip3_branching_reference.json"
+PASS3_BIB_PATH = DATASET_DIR / "pass3_citations.bib"
 
 EXPECTED_SHA256: dict[str, str] = {
     "datasets/bioelectric_morphogen_coupling/planarian_ap_polarity_specimen.jpg": (
@@ -117,6 +121,35 @@ def verify_dataset_sha256() -> dict[str, str]:
 def load_reference() -> dict[str, Any]:
     """Load and return the vendored Pietak & Levin (2017) / (2016) reference dataset JSON."""
     return json.loads(REF_JSON_PATH.read_text(encoding="utf-8"))
+
+
+EXPECTED_SHA256_PASS3: dict[str, str] = {
+    "datasets/bioelectric_morphogen_coupling/voronoi_ca_ip3_branching_reference.json": (
+        "cd127dd5069db571edc3b9d7e9264dde6ffb773828b87a5d4e0aaa64b9417570"
+    ),
+    "datasets/bioelectric_morphogen_coupling/pass3_citations.bib": (
+        "c287000c7b1c85aa6fd9180b30fd7e18ee8363089ca904f48c1b5de557c9200f"
+    ),
+}
+
+
+def verify_pass3_dataset_sha256() -> dict[str, str]:
+    """Verify SHA-256 digests of the Pass 3 reference JSON and bib (never touches the Pass 2 pins)."""
+    computed: dict[str, str] = {}
+    for rel, expected in EXPECTED_SHA256_PASS3.items():
+        p = ROOT / rel
+        if not p.exists():
+            raise FileNotFoundError(f"Missing Pass 3 dataset file: {rel}")
+        digest = hashlib.sha256(p.read_bytes()).hexdigest()
+        if digest != expected:
+            raise ValueError(f"SHA-256 mismatch for {rel}: expected {expected}, got {digest}")
+        computed[rel] = digest
+    return computed
+
+
+def load_pass3_reference() -> dict[str, Any]:
+    """Load the Pass 3 (2D Voronoi network / Ca2+-IP3 / stochastic branching) reference block."""
+    return json.loads(PASS3_REF_JSON_PATH.read_text(encoding="utf-8"))
 
 
 # --------------------------------------------------------------------------- #
@@ -535,16 +568,20 @@ def evaluate_all_regimes_and_boltzmann_sweep(seed: int = 2017) -> dict[str, Any]
         pde_ratios.append(sim["c_post_over_c_ant"])
         exact_ratios.append(boltzmann_concentration_ratio(V_ant=v_ant, V_post=v_post, z=1.0, V_T=25.85))
 
-    # 2D Morphospace grid across (DeltaV_AP in [0, 50] mV, GJ openness (1 - eta_oct) in [0.05, 1.0])
+    # 2D Morphospace grid across (DeltaV_AP in [0, 50] mV, GJ openness (1 - eta_oct) in [0.05, 1.0]).
+    # Pass 3: every grid point is a real 2D Voronoi-network 5-HT/IP3/Ca2+ run followed by the
+    # stochastic posterior toggle (p(2H0T)); the Pass 2 closure 1 + g (exp(dV/V_T) - 1) is gone.
     grid_dv = np.linspace(0.0, 50.0, 9)
     grid_gj_open = np.linspace(0.05, 1.0, 9)
     c_ratio_grid = np.zeros((len(grid_gj_open), len(grid_dv)), dtype=float)
-    head_grid = np.zeros_like(c_ratio_grid)
+    p2h_grid = np.zeros_like(c_ratio_grid)
+    net = build_voronoi_cell_network(seed=seed)
     for iy, g_open in enumerate(grid_gj_open):
         for ix, dv in enumerate(grid_dv):
-            eff_ratio = 1.0 + g_open * (math.exp(dv / 25.85) - 1.0)
-            c_ratio_grid[iy, ix] = eff_ratio
-            head_grid[iy, ix] = 1.0 if eff_ratio >= 2.35 else 2.0
+            sim = simulate_ca_ip3_network(net, regime="wild_type_1H1T", V_post=-20.0 - float(dv), eta_override=1.0 - float(g_open))
+            c_ratio_grid[iy, ix] = sim["c_post_over_c_ant"]
+            p2h_grid[iy, ix] = stochastic_head_tail_branching(sim["c_post"], sim["Ca_post"], float(g_open), seed=seed + 1000 + 9 * iy + ix)["p_2H0T"]
+    head_grid = 1.0 + p2h_grid  # expected head count = 1 + p(posterior head)
 
     return {
         "regimes": regimes,
@@ -554,7 +591,552 @@ def evaluate_all_regimes_and_boltzmann_sweep(seed: int = 2017) -> dict[str, Any]
         "grid_dv": grid_dv,
         "grid_gj_open": grid_gj_open,
         "c_ratio_grid": c_ratio_grid,
+        "p2h_grid": p2h_grid,
         "head_grid": head_grid,
+        "network": net,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 2b. (Pass 3) Irregular 2D Voronoi Cell-Network Scharfetter-Gummel Electrodiffusion
+# --------------------------------------------------------------------------- #
+# Reduced BETSE-style tissue geometry (Pietak & Levin 2016, Front. Bioeng. Biotechnol. 4:55,
+# "cell cluster" construction): seed points on a jittered hexagonal lattice are clipped to the
+# planarian body silhouette measured from the vendored specimen, a Voronoi tessellation gives
+# polygonal cells, and every shared Voronoi face (i,j) carries a gap-junction channel with
+# geometric weight w_ij = L_ij / d_ij (face length over centre distance).  Electrodiffusive
+# flux is the same Scharfetter-Gummel flux as the 1D solver, so the discrete zero-flux
+# equilibrium c_j / c_i = exp(-z (V_j - V_i) / V_T) holds on EVERY edge of the irregular
+# graph (and therefore globally, because V is a potential).  This is 2D (not BETSE's full
+# 3D/extracellular-space model) and V_mem is imposed per regime, not solved from ion fluxes.
+PASS3_VALENCES: dict[str, float] = {
+    # 5-HT is a monovalent cation at pH 7.4; Ca2+ is divalent; IP3's three phosphates carry
+    # roughly -5..-6 e at pH 7.4, we use an effective -3 (reduced, counter-ion-screened value;
+    # see handoff/audit note: this is a modelling assumption, not a measured value).
+    "serotonin_5HT": +1.0,
+    "calcium_Ca2": +2.0,
+    "inositol_IP3": -3.0,
+}
+
+
+def build_voronoi_cell_network(
+    half_width_profile: tuple[np.ndarray, np.ndarray] | None = None,
+    n_cells_target: int = 420,
+    jitter: float = 0.28,
+    seed: int = 2017,
+) -> dict[str, Any]:
+    """
+    Build an irregular 2D Voronoi cell network inside the planarian silhouette.
+
+    `half_width_profile = (s_bins, half_width(s))` in units of body length (L = 1). If None,
+    the SHA-256-pinned specimen (`segment_planarian_specimen`) is used, so the network
+    geometry is derived from the measured dorsal width W(x/L) and aspect ratio of
+    `planarian_ap_polarity_specimen.jpg`.
+
+    Returns cell centres (s, y), per-cell polygon vertices, cell areas, the edge list of
+    shared Voronoi faces (i, j), face lengths L_ij, centre distances d_ij and weights w_ij.
+    Ghost seeds outside the silhouette make every real cell a finite polygon.
+    """
+    from scipy.spatial import Voronoi
+
+    rng = np.random.default_rng(seed)
+    if half_width_profile is None:
+        spec = segment_planarian_specimen(SPECIMEN_PATH)
+        s_prof = spec["s_bins"]
+        hw_prof = 0.5 * spec["widths_norm"] * (spec["max_width_px"] / spec["length_px"])
+    else:
+        s_prof, hw_prof = half_width_profile
+    hw_prof = np.maximum(hw_prof, 1e-3)
+
+    def hw_at(s_val: np.ndarray) -> np.ndarray:
+        return np.interp(s_val, s_prof, hw_prof)
+
+    area_body = float(np.trapezoid(2.0 * hw_prof, s_prof))
+    a = math.sqrt(area_body / n_cells_target * 2.0 / math.sqrt(3.0))  # hex lattice spacing
+    dy = a * math.sqrt(3.0) / 2.0
+    pad = 3.0 * a
+    xs_l = np.arange(-pad, 1.0 + pad, a)
+    ys_l = np.arange(-float(np.max(hw_prof)) - pad, float(np.max(hw_prof)) + pad, dy)
+    pts = []
+    for row, yv in enumerate(ys_l):
+        off = 0.5 * a if row % 2 else 0.0
+        for xv in xs_l:
+            pts.append((xv + off, yv))
+    pts = np.array(pts, dtype=float)
+    pts += rng.uniform(-jitter * a, jitter * a, size=pts.shape)
+
+    inside = (pts[:, 0] > 0.0) & (pts[:, 0] < 1.0)
+    inside &= np.abs(pts[:, 1]) < (hw_at(np.clip(pts[:, 0], 0.0, 1.0)) - 0.15 * a)
+    real = pts[inside]
+    ghost = pts[~inside]
+    all_pts = np.vstack([real, ghost])
+    n_real = real.shape[0]
+
+    vor = Voronoi(all_pts)
+    polys: list[np.ndarray] = []
+    areas = np.zeros(n_real, dtype=float)
+    for i in range(n_real):
+        region = vor.regions[vor.point_region[i]]
+        if len(region) == 0 or -1 in region:
+            raise RuntimeError("Unbounded Voronoi cell inside silhouette: increase ghost padding")
+        poly = vor.vertices[region]
+        xq, yq = poly[:, 0], poly[:, 1]
+        areas[i] = 0.5 * abs(float(np.dot(xq, np.roll(yq, -1)) - np.dot(yq, np.roll(xq, -1))))
+        polys.append(poly)
+
+    edges_i, edges_j, face_len = [], [], []
+    for (p, q), rv in zip(vor.ridge_points, vor.ridge_vertices):
+        if p < n_real and q < n_real and -1 not in rv:
+            v0, v1 = vor.vertices[rv[0]], vor.vertices[rv[1]]
+            edges_i.append(int(p))
+            edges_j.append(int(q))
+            face_len.append(float(np.linalg.norm(v1 - v0)))
+    ei = np.array(edges_i, dtype=int)
+    ej = np.array(edges_j, dtype=int)
+    L_ij = np.array(face_len, dtype=float)
+    d_ij = np.linalg.norm(real[ei] - real[ej], axis=1)
+    w_ij = L_ij / np.maximum(d_ij, 1e-9)
+
+    degree = np.bincount(ei, minlength=n_real) + np.bincount(ej, minlength=n_real)
+    # interior cells: all neighbours are real cells (no ghost ridge touches them)
+    touches_ghost = np.zeros(n_real, dtype=bool)
+    for (p, q) in vor.ridge_points:
+        if p < n_real <= q:
+            touches_ghost[p] = True
+        elif q < n_real <= p:
+            touches_ghost[q] = True
+    interior = ~touches_ghost
+
+    return {
+        "points": real,
+        "s": real[:, 0],
+        "y": real[:, 1],
+        "polys": polys,
+        "areas": areas,
+        "edges_i": ei,
+        "edges_j": ej,
+        "face_len": L_ij,
+        "dist": d_ij,
+        "w_ij": w_ij,
+        "degree": degree,
+        "interior": interior,
+        "n_cells": int(n_real),
+        "n_edges": int(ei.size),
+        "lattice_spacing": a,
+        "half_width_fn": hw_at,
+        "area_body": area_body,
+        "s_profile": s_prof,
+        "hw_profile": hw_prof,
+    }
+
+
+def network_sg_flux_divergence(
+    c: np.ndarray,
+    V: np.ndarray,
+    net: dict[str, Any],
+    D: float,
+    z: float,
+    V_T: float = 25.85,
+    G_0: float = 1.8,
+    V_0: float = 14.0,
+    eta_oct: float = 0.0,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Scharfetter-Gummel Nernst-Planck flux on the irregular Voronoi graph.
+    For edge (i -> j): J_ij = -D G_gj(V_j - V_i) w_ij (c_j B(u_ij) - c_i B(-u_ij)),
+    u_ij = -z (V_j - V_i)/V_T.  Returns (dc/dt per cell = -(1/A_i) sum_j J_ij, J_ij).
+    Zero-flux boundary: cells have no edges to the outside.  Total mass sum_i A_i c_i is
+    conserved exactly (each J_ij enters i and j with opposite sign).
+    """
+    ei, ej, w = net["edges_i"], net["edges_j"], net["w_ij"]
+    dv = V[ej] - V[ei]
+    g = gap_junction_bell_conductance(dv, G_0=G_0, V_0=V_0, eta_oct=eta_oct)
+    u = -z * dv / V_T
+    J = -D * g * w * (c[ej] * bernoulli_fn(u) - c[ei] * bernoulli_fn(-u))
+    div = np.zeros_like(c)
+    np.add.at(div, ei, -J)
+    np.add.at(div, ej, +J)
+    return div * (net["lattice_spacing"] ** 2 / net["areas"]), J
+
+
+def network_sg_operator(
+    V: np.ndarray,
+    net: dict[str, Any],
+    D: float,
+    z: float,
+    V_T: float = 25.85,
+    G_0: float = 1.8,
+    V_0: float = 14.0,
+    eta_oct: float = 0.0,
+):
+    """
+    Sparse matrix form of `network_sg_flux_divergence` for a fixed V field: dc/dt = M c.
+    Diffusivity D is expressed in lattice units (cell-spacing^2 per unit time), so cell areas
+    are non-dimensionalised by a^2.  M is a generator matrix (columns sum to zero after
+    area weighting) -> total mass is conserved and the null vector is the Boltzmann state.
+    """
+    from scipy import sparse
+
+    ei, ej, w = net["edges_i"], net["edges_j"], net["w_ij"]
+    a2 = net["lattice_spacing"] ** 2
+    inv_A = a2 / net["areas"]
+    dv = V[ej] - V[ei]
+    g = gap_junction_bell_conductance(dv, G_0=G_0, V_0=V_0, eta_oct=eta_oct)
+    u = -z * dv / V_T
+    k_ji = D * g * w * bernoulli_fn(u)   # coefficient of c_j in -J_ij (gain of cell i from j)
+    k_ij = D * g * w * bernoulli_fn(-u)  # coefficient of c_i in -J_ij (loss of cell i to j)
+    rows = np.concatenate([ei, ei, ej, ej])
+    cols = np.concatenate([ej, ei, ei, ej])
+    vals = np.concatenate([k_ji * inv_A[ei], -k_ij * inv_A[ei], k_ij * inv_A[ej], -k_ji * inv_A[ej]])
+    n = net["n_cells"]
+    return sparse.csc_matrix((vals, (rows, cols)), shape=(n, n))
+
+
+def network_implicit_stepper(M, dt: float):
+    """LU-factorised backward-Euler stepper for the linear transport operator M."""
+    from scipy import sparse
+    from scipy.sparse.linalg import splu
+
+    n = M.shape[0]
+    return splu((sparse.identity(n, format="csc") - dt * M).tocsc())
+
+
+def network_voltage_profile(net: dict[str, Any], V_ant: float, V_post: float) -> np.ndarray:
+    """Imposed AP resting-potential field V(s) = V_ant + (V_post - V_ant) s on the network."""
+    return V_ant + (V_post - V_ant) * net["s"]
+
+
+def verify_network_boltzmann_equilibrium(
+    net: dict[str, Any],
+    V_ant: float = -20.0,
+    V_post: float = -60.0,
+    V_T: float = 25.85,
+    D: float = 1.0,
+    dt: float = 2.0,
+    max_steps: int = 4000,
+    tol: float = 1e-11,
+) -> dict[str, Any]:
+    """
+    Pure electrodiffusion (no reactions) of the three Pass 3 species on the 2D network until
+    steady state (backward Euler, LU-factorised SG operator); compare per-cell c_i against the
+    exact Boltzmann distribution c_i^exact = M exp(-z V_i/V_T) / sum_k A_k exp(-z V_k/V_T).
+    Reports max relative deviation, Pearson r over all cells, mass-conservation error,
+    per-edge log-ratio RMSE versus -z dV_ij / V_T, the explicit flux residual at steady state,
+    and the posterior/anterior group ratio versus exp(z dV_group / V_T).
+    """
+    V = network_voltage_profile(net, V_ant, V_post)
+    A = net["areas"]
+    out: dict[str, Any] = {"V": V, "dt": dt, "species": {}}
+    ant_mask = net["s"] < 0.10
+    post_mask = net["s"] > 0.90
+    for name, z in PASS3_VALENCES.items():
+        c = np.ones(net["n_cells"], dtype=float)
+        mass0 = float(np.sum(A * c))
+        M_op = network_sg_operator(V, net, D=D, z=z, V_T=V_T)
+        lu = network_implicit_stepper(M_op, dt)
+        n_it = 0
+        for n_it in range(1, max_steps + 1):
+            c_new = lu.solve(c)
+            if float(np.max(np.abs(c_new - c))) < tol:
+                c = c_new
+                break
+            c = c_new
+        div_res, J_res = network_sg_flux_divergence(c, V, net, D=D, z=z, V_T=V_T)
+        boltz = np.exp(-z * (V - V.mean()) / V_T)
+        c_exact = mass0 * boltz / float(np.sum(A * boltz))
+        rel_err = np.abs(c - c_exact) / c_exact
+        edge_ratio_log = np.log(np.maximum(c[net["edges_j"]], 1e-300)) - np.log(np.maximum(c[net["edges_i"]], 1e-300))
+        edge_exact_log = -z * (V[net["edges_j"]] - V[net["edges_i"]]) / V_T
+        ratio_group = float(np.mean(c[post_mask]) / np.mean(c[ant_mask]))
+        out["species"][name] = {
+            "z": z,
+            "c": c,
+            "c_exact": c_exact,
+            "iterations": n_it,
+            "max_rel_err": float(np.max(rel_err)),
+            "pearson_r": float(np.corrcoef(c, c_exact)[0, 1]),
+            "mass_rel_err": abs(float(np.sum(A * c)) - mass0) / mass0,
+            "edge_log_ratio_rmse": float(np.sqrt(np.mean((edge_ratio_log - edge_exact_log) ** 2))),
+            "max_abs_flux_residual": float(np.max(np.abs(J_res))),
+            "max_abs_div_residual": float(np.max(np.abs(div_res))),
+            "post_over_ant_group": ratio_group,
+            "post_over_ant_group_boltz": float(
+                math.exp(-z * (float(np.mean(V[post_mask])) - float(np.mean(V[ant_mask]))) / V_T)
+            ),
+        }
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# 2c. (Pass 3) Coupled 5-HT / IP3 / Ca2+ Electrodiffusion & Stochastic Head-Tail Branching
+# --------------------------------------------------------------------------- #
+# Reduced reaction network on the Voronoi graph (BETSE-style second-messenger module of
+# Pietak & Levin 2016 §"Ca2+ and IP3 dynamics", simplified):
+#   5-HT  c : electrodiffusion (z=+1) + uniform turnover k_h (1 - c)
+#   IP3   P : 5-HT2 (Gq/PLC) production k_P H2(c; K_c) + basal, degradation k_dP, electrodiffusion (z=-3)
+#   Ca2+  Ca: IP3R release v_rel H2(P;K_P) H2(Ca;K_a) (Ca_ER - Ca) (Li-Rinzel without slow
+#             inactivation), SERCA v_p H2(Ca;K_p), ER leak, voltage-gated Ca influx
+#             v_V sigma((V - V_half)/k_V) (depolarised anterior admits Ca2+; Beane et al. 2011),
+#             PMCA extrusion k_out Ca, electrodiffusion (z=+2, strongly buffered -> small D_Ca).
+# Head/tail commitment is a noisy toggle switch per blastema: 5-HT -> cAMP -> beta-catenin
+# (tail) versus Ca2+ -> ERK (head).  Stochasticity (cell-to-cell lognormal Ca2+ influx
+# variability + Langevin noise) yields a branching probability p(2H0T), the quantity that
+# Oviedo et al. (2010) / Durant et al. (2017) report as a fraction of double-headed worms.
+PASS3_CA_IP3_PARAMS: dict[str, float] = {
+    # Diffusivities in lattice units (cell-spacing^2 / time): 5-HT and IP3 are freely
+    # gap-junction permeant; cytosolic Ca2+ is heavily buffered (effective D ~ 30x smaller).
+    "D_5HT": 60.0, "D_IP3": 30.0, "D_Ca": 2.0,
+    "k_h": 0.004,
+    "k_P": 0.60, "k_P0": 0.05, "K_c_5HT2": 1.5, "k_dP": 0.30,
+    "v_rel": 0.5, "K_P": 0.30, "K_a": 0.25, "Ca_ER": 2.0,
+    "v_pump": 0.6, "K_pump": 0.35, "v_leak": 0.02,
+    "v_VGCC": 0.6, "V_half_mV": -35.0, "k_V_mV": 6.0, "k_out": 0.5,
+}
+# All PASS3_CA_IP3_PARAMS values are dimensionless modelling choices (order-of-magnitude
+# Li-Rinzel / BETSE-like), not fitted to any measured planarian Ca2+/IP3 data.
+
+
+def simulate_ca_ip3_network(
+    net: dict[str, Any],
+    regime: str = "wild_type_1H1T",
+    t_end: float = 60.0,
+    V_T: float = 25.85,
+    G_0: float = 1.8,
+    V_0: float = 14.0,
+    params: dict[str, float] | None = None,
+    V_ant: float = -20.0,
+    V_post: float = -60.0,
+    eta_override: float | None = None,
+    record_frames: int = 0,
+) -> dict[str, Any]:
+    """
+    Integrate 5-HT (z=+1), IP3 (z=-3) and Ca2+ (z=+2) reaction-electrodiffusion on the 2D
+    Voronoi network with the regime's imposed V_mem field and gap-junction state.
+    Regimes: wild_type_1H1T (V -20 -> -60, eta=0), octanol_pulse_2H0T (eta=0.92, V flat -20),
+    cryptic_memory_washout_2H0T (eta=0 but V flat -20: the bioelectric memory state),
+    sch28080_hyperpolarized_0H2T (V flat -60), uncharged_morphogen_control_z0 (z=0 for 5-HT).
+    `V_post` and `eta_override` allow sweeps of the posterior bioelectric state / GJ dose.
+    """
+    p = dict(PASS3_CA_IP3_PARAMS)
+    if params:
+        p.update(params)
+    eta = 0.0
+    z_5ht = PASS3_VALENCES["serotonin_5HT"]
+    if regime == "wild_type_1H1T" or regime == "bioelectric_reset_rescue_1H1T":
+        V = network_voltage_profile(net, V_ant, V_post)
+    elif regime == "octanol_pulse_2H0T":
+        V = network_voltage_profile(net, V_ant, V_ant)
+        eta = 0.92
+    elif regime == "cryptic_memory_washout_2H0T":
+        V = network_voltage_profile(net, V_ant, V_ant)
+    elif regime == "sch28080_hyperpolarized_0H2T":
+        V = network_voltage_profile(net, V_post, V_post)
+    elif regime == "uncharged_morphogen_control_z0":
+        V = network_voltage_profile(net, V_ant, V_post)
+        z_5ht = 0.0
+    else:
+        raise ValueError(f"Unknown regime for Ca/IP3 network: {regime}")
+    if eta_override is not None:
+        eta = float(eta_override)
+
+    dt = 0.05  # reaction-limited (transport is implicit / unconditionally stable)
+    n_steps = int(math.ceil(t_end / dt))
+    n = net["n_cells"]
+    c = np.ones(n)
+    P = np.full(n, p["k_P0"] / p["k_dP"])
+    Ca = np.full(n, 0.10)
+    vgcc = p["v_VGCC"] / (1.0 + np.exp(-(V - p["V_half_mV"]) / p["k_V_mV"]))
+
+    lu_c = network_implicit_stepper(network_sg_operator(V, net, D=p["D_5HT"], z=z_5ht, V_T=V_T, G_0=G_0, V_0=V_0, eta_oct=eta), dt)
+    lu_P = network_implicit_stepper(network_sg_operator(V, net, D=p["D_IP3"], z=PASS3_VALENCES["inositol_IP3"], V_T=V_T, G_0=G_0, V_0=V_0, eta_oct=eta), dt)
+    lu_Ca = network_implicit_stepper(network_sg_operator(V, net, D=p["D_Ca"], z=PASS3_VALENCES["calcium_Ca2"], V_T=V_T, G_0=G_0, V_0=V_0, eta_oct=eta), dt)
+
+    def h2(x: np.ndarray, K: float) -> np.ndarray:
+        return (x * x) / (K * K + x * x)
+
+    frames_c, frames_Ca, frames_P, frames_t = [], [], [], []
+    frame_steps = set(np.linspace(0, n_steps, record_frames, dtype=int).tolist()) if record_frames > 0 else set()
+    for step in range(n_steps + 1):
+        if step in frame_steps:
+            frames_c.append(c.copy())
+            frames_Ca.append(Ca.copy())
+            frames_P.append(P.copy())
+            frames_t.append(step * dt)
+        if step == n_steps:
+            break
+        # Lie splitting: explicit reactions, then implicit SG electrodiffusion
+        dc = p["k_h"] * (1.0 - c)
+        dP = p["k_P"] * h2(c, p["K_c_5HT2"]) + p["k_P0"] - p["k_dP"] * P
+        rel = p["v_rel"] * h2(P, p["K_P"]) * h2(Ca, p["K_a"]) * (p["Ca_ER"] - Ca)
+        dCa = rel + p["v_leak"] * (p["Ca_ER"] - Ca) - p["v_pump"] * h2(Ca, p["K_pump"]) + vgcc - p["k_out"] * Ca
+        c = lu_c.solve(np.maximum(c + dt * dc, 1e-9))
+        P = lu_P.solve(np.maximum(P + dt * dP, 0.0))
+        Ca = lu_Ca.solve(np.maximum(Ca + dt * dCa, 0.0))
+
+    ant = net["s"] < 0.10
+    post = net["s"] > 0.90
+    # AP-binned profiles (area-weighted) for plotting / 1D comparison
+    bins = np.linspace(0.0, 1.0, 21)
+    idx = np.clip(np.digitize(net["s"], bins) - 1, 0, 19)
+    A = net["areas"]
+    prof = {}
+    for nm, arr in (("c", c), ("P", P), ("Ca", Ca), ("V", V)):
+        num = np.bincount(idx, weights=A * arr, minlength=20)
+        den = np.bincount(idx, weights=A, minlength=20)
+        prof[nm] = num / np.maximum(den, 1e-12)
+    return {
+        "regime": regime,
+        "V": V,
+        "c": c,
+        "P": P,
+        "Ca": Ca,
+        "eta_oct": eta,
+        "dt": dt,
+        "n_steps": n_steps,
+        "bin_centres": 0.5 * (bins[:-1] + bins[1:]),
+        "profiles": prof,
+        "frames_c": frames_c,
+        "frames_Ca": frames_Ca,
+        "frames_P": frames_P,
+        "frames_t": frames_t,
+        "c_post_over_c_ant": float(np.mean(c[post]) / np.mean(c[ant])),
+        "P_post_over_P_ant": float(np.mean(P[post]) / np.mean(P[ant])),
+        "Ca_ant_over_Ca_post": float(np.mean(Ca[ant]) / np.mean(Ca[post])),
+        "c_post": float(np.mean(c[post])),
+        "c_ant": float(np.mean(c[ant])),
+        "Ca_post": float(np.mean(Ca[post])),
+        "Ca_ant": float(np.mean(Ca[ant])),
+        "P_post": float(np.mean(P[post])),
+    }
+
+
+PASS3_BRANCHING_PARAMS: dict[str, float] = {
+    "K_c": 1.32, "K_M": 0.45, "K_E": 0.55, "K_BE": 0.40, "tau": 2.0,
+    "b_basal": 0.20,      # basal cAMP/PKA -> beta-catenin drive independent of 5-HT (calibrated, see note)
+    "g_Ca": 0.60,         # Ca2+ -> ERK head drive gain
+    "e_basal": 0.30,      # ERK basal production
+    "sigma_Ca": 0.45,     # lognormal cell-to-cell Ca2+ influx variability
+    "sigma_L": 0.06,      # Langevin noise on B,E
+    "t_end": 30.0, "dt": 0.02,
+}
+
+
+def stochastic_head_tail_branching(
+    c_post: float,
+    Ca_post: float,
+    gj_open: float,
+    n_rep: int = 128,
+    seed: int = 2017,
+    params: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    """
+    Posterior-blastema toggle switch (beta-catenin B vs ERK E) driven by the network's
+    posterior 5-HT (tail drive via cAMP, scaled by gap-junction openness as in the 1D model)
+    and posterior Ca2+ (head drive), integrated as an Euler-Maruyama ensemble of `n_rep`
+    independent blastemas starting from the uncommitted wound state (B, E) = (0.5, 0.5).
+    Returns p(2H0T) = fraction with E >= 0.5 and B < 0.5 (posterior head = double head),
+    plus the decision-variable distribution.  NOTE: `b_basal` is calibrated so that the
+    8-octanol regime falls in the ~25 % double-head band reported by Oviedo et al. (2010) /
+    Durant et al. (2017); WT p(2H) ~ 0 and the shape of p(2H) vs gap-junction openness and
+    vs Ca2+ noise are then model predictions, not fits.
+    """
+    q = dict(PASS3_BRANCHING_PARAMS)
+    if params:
+        q.update(params)
+    rng = np.random.default_rng(seed)
+    # Tail drive depends on the posterior 5-HT level only; gap-junction state enters through
+    # the transported c_post (not as a separate multiplicative factor as in the 1D Pass 2
+    # solver), so the octanol and cryptic-washout states (both c_post = 1) share one drive.
+    del gj_open
+    c_drive = (c_post**4) / (q["K_c"] ** 4 + c_post**4)
+    M = c_drive + q["b_basal"]
+    S_B = 1.45 * (M * M) / (q["K_M"] ** 2 + M * M)
+    ca_var = np.exp(q["sigma_Ca"] * rng.standard_normal(n_rep) - 0.5 * q["sigma_Ca"] ** 2)
+    S_E = q["e_basal"] + q["g_Ca"] * Ca_post * ca_var
+    B = np.full(n_rep, 0.5)
+    E = np.full(n_rep, 0.5)
+    dt = q["dt"]
+    sq = math.sqrt(dt) * q["sigma_L"]
+    for _ in range(int(q["t_end"] / dt)):
+        dB = (S_B / (1.0 + (E / q["K_E"]) ** 2) - B) / q["tau"]
+        dE = (S_E / (1.0 + (B / q["K_BE"]) ** 3) - E) / q["tau"]
+        B = np.clip(B + dt * dB + sq * rng.standard_normal(n_rep), 0.0, 1.5)
+        E = np.clip(E + dt * dE + sq * rng.standard_normal(n_rep), 0.0, 1.5)
+    two_head = (E >= 0.5) & (B < 0.5)
+    p = float(np.mean(two_head))
+    se = math.sqrt(max(p * (1.0 - p), 1e-12) / n_rep)
+    return {
+        "p_2H0T": p,
+        "se": se,
+        "n_rep": n_rep,
+        "B_final": B,
+        "E_final": E,
+        "decision": E - B,
+        "S_B": float(S_B),
+        "S_E_mean": float(np.mean(S_E)),
+    }
+
+
+def evaluate_pass3_network_suite(seed: int = 2017, n_cells: int = 420) -> dict[str, Any]:
+    """Run the Pass 3 2D Voronoi network verification, Ca2+/IP3 regimes, and stochastic branching sweep."""
+    net = build_voronoi_cell_network(n_cells_target=n_cells, seed=seed)
+    boltz = verify_network_boltzmann_equilibrium(net)
+    regimes = ["wild_type_1H1T", "octanol_pulse_2H0T", "cryptic_memory_washout_2H0T", "sch28080_hyperpolarized_0H2T", "uncharged_morphogen_control_z0"]
+    ca_ip3 = {r: simulate_ca_ip3_network(net, regime=r) for r in regimes}
+    branching = {}
+    for i, r in enumerate(regimes):
+        sim = ca_ip3[r]
+        gj_open = 1.0 - sim["eta_oct"]
+        branching[r] = stochastic_head_tail_branching(sim["c_post"], sim["Ca_post"], gj_open, seed=seed + 11 * i)
+    # (i) p(2H0T) vs posterior V_mem (Durant et al. 2017 axis: the bioelectric state of the
+    #     posterior blastema sets the double-head fraction), GJ open, WT anterior -20 mV.
+    vpost_grid = np.linspace(-60.0, -20.0, 9)
+    p_vs_vpost, c_ratio_vs_vpost, ca_post_vs_vpost = [], [], []
+    for k, vp in enumerate(vpost_grid):
+        sim = simulate_ca_ip3_network(net, regime="wild_type_1H1T", V_post=float(vp))
+        res = stochastic_head_tail_branching(sim["c_post"], sim["Ca_post"], 1.0, seed=seed + 101 + k)
+        p_vs_vpost.append(res["p_2H0T"])
+        c_ratio_vs_vpost.append(sim["c_post_over_c_ant"])
+        ca_post_vs_vpost.append(sim["Ca_post"])
+    # (ii) 5-HT ratio vs gap-junction openness 1 - eta (8-octanol dose) with the WT V field,
+    #      at slow (default) and fast 5-HT turnover.  At equilibrium the Boltzmann ratio is
+    #      independent of G_gj; only the Damkohler-like competition k_h N^2 / (D G_gj) between
+    #      turnover and electrodiffusion lets a GJ block flatten the gradient.  This is an
+    #      honest ablation: GJ dose alone does NOT reproduce the octanol phenotype unless the
+    #      posterior V_mem also depolarises (which the regime definitions impose).
+    gj_grid = np.linspace(0.05, 1.0, 9)
+    c_ratio_vs_gj_slow, c_ratio_vs_gj_fast, p_vs_gj_fast = [], [], []
+    for k, g in enumerate(gj_grid):
+        sim_s = simulate_ca_ip3_network(net, regime="wild_type_1H1T", eta_override=1.0 - float(g))
+        sim_f = simulate_ca_ip3_network(net, regime="wild_type_1H1T", eta_override=1.0 - float(g), params={"k_h": 0.25})
+        c_ratio_vs_gj_slow.append(sim_s["c_post_over_c_ant"])
+        c_ratio_vs_gj_fast.append(sim_f["c_post_over_c_ant"])
+        p_vs_gj_fast.append(stochastic_head_tail_branching(sim_f["c_post"], sim_f["Ca_post"], float(g), seed=seed + 301 + k)["p_2H0T"])
+    # (iii) p(2H0T) vs Ca2+ influx variability sigma_Ca in the 8-octanol state (noise ablation).
+    sig_grid = np.linspace(0.0, 0.9, 7)
+    octa = ca_ip3["octanol_pulse_2H0T"]
+    p_vs_sigma = [
+        stochastic_head_tail_branching(octa["c_post"], octa["Ca_post"], 1.0 - octa["eta_oct"], n_rep=256, seed=seed + 201 + k, params={"sigma_Ca": float(sg)})["p_2H0T"]
+        for k, sg in enumerate(sig_grid)
+    ]
+    interior_deg = net["degree"][net["interior"]]
+    return {
+        "net": net,
+        "boltzmann": boltz,
+        "ca_ip3": ca_ip3,
+        "branching": branching,
+        "vpost_grid": vpost_grid,
+        "p_vs_vpost": np.array(p_vs_vpost),
+        "c_ratio_vs_vpost": np.array(c_ratio_vs_vpost),
+        "ca_post_vs_vpost": np.array(ca_post_vs_vpost),
+        "gj_grid": gj_grid,
+        "c_ratio_vs_gj_slow_turnover": np.array(c_ratio_vs_gj_slow),
+        "c_ratio_vs_gj_fast_turnover": np.array(c_ratio_vs_gj_fast),
+        "p_vs_gj_fast_turnover": np.array(p_vs_gj_fast),
+        "sigma_grid": sig_grid,
+        "p_vs_sigma": np.array(p_vs_sigma),
+        "mean_interior_degree": float(np.mean(interior_deg)) if interior_deg.size else float("nan"),
+        "n_interior": int(np.sum(net["interior"])),
     }
 
 
@@ -755,28 +1337,28 @@ def render_outputs(seed: int = 2017, skip_gif: bool = False) -> dict[str, Any]:
 
     # Panel B2: 2D Bioelectric-Gap-Junction Morphospace (DeltaV_AP vs GJ Openness 1 - eta_oct)
     ax = axes[1, 1]
-    im_ph = ax.imshow(
-        suite["c_ratio_grid"],
-        origin="lower",
-        aspect="auto",
-        cmap="viridis",
-        extent=[
-            float(suite["grid_dv"][0]),
-            float(suite["grid_dv"][-1]),
-            float(suite["grid_gj_open"][0]),
-            float(suite["grid_gj_open"][-1]),
-        ],
+    ext = [
+        float(suite["grid_dv"][0]),
+        float(suite["grid_dv"][-1]),
+        float(suite["grid_gj_open"][0]),
+        float(suite["grid_gj_open"][-1]),
+    ]
+    im_ph = ax.imshow(suite["p2h_grid"], origin="lower", aspect="auto", cmap="magma", vmin=0.0, vmax=0.5, extent=ext)
+    cs = ax.contour(
+        suite["grid_dv"], suite["grid_gj_open"], suite["c_ratio_grid"],
+        levels=[1.5, 2.0, 3.0, 4.0], colors=["#38bdf8"], linewidths=1.0, alpha=0.9,
     )
-    ax.scatter([40.0], [1.0], color="#22c55e", edgecolor="#f8fafc", s=85, marker="o", zorder=6, label="WT 1H1T ($c_P/c_A=4.70$)")
-    ax.scatter([40.0], [0.08], color="#f43f5e", edgecolor="#f8fafc", s=85, marker="s", zorder=6, label="8-Octanol Pulse (2H0T)")
-    ax.scatter([0.0], [1.0], color="#a855f7", edgecolor="#f8fafc", s=95, marker="*", zorder=6, label="Cryptic Washout Memory (2H0T)")
-    ax.set_title("B2. Electrodiffusive Morphospace $c_{\\mathrm{post}}/c_{\\mathrm{ant}}(\\Delta V_{\\mathrm{AP}}, G_{\\mathrm{gj}})$", color="#f8fafc", fontsize=10.0, fontweight="bold")
+    ax.clabel(cs, fmt="$c_P/c_A$=%.1f", fontsize=6.5, colors="#38bdf8")
+    ax.scatter([40.0], [1.0], color="#22c55e", edgecolor="#f8fafc", s=85, marker="o", zorder=6, label="WT 1H1T ($p_{2H}\\approx 0$)")
+    ax.scatter([0.0], [0.08], color="#f43f5e", edgecolor="#f8fafc", s=85, marker="s", zorder=6, label="8-Octanol: flat $V$, GJ 8 %")
+    ax.scatter([0.0], [1.0], color="#a855f7", edgecolor="#f8fafc", s=95, marker="*", zorder=6, label="Cryptic memory: flat $V$, GJ open")
+    ax.set_title("B2. 2D-Network Morphospace: $p(2H0T)$ & $c_P/c_A$ vs $(\\Delta V_{\\mathrm{AP}}, G_{\\mathrm{gj}})$", color="#f8fafc", fontsize=9.6, fontweight="bold")
     ax.set_xlabel("AP voltage difference $\\Delta V_{\\mathrm{AP}} = V_{\\mathrm{ant}} - V_{\\mathrm{post}}$ (mV)", color="#cbd5e1", fontsize=9)
     ax.set_ylabel("Gap-junction openness $1 - \\eta_{\\mathrm{oct}}$", color="#cbd5e1", fontsize=9)
-    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.2, loc="center left")
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.0, loc="upper right")
     cb2 = fig.colorbar(im_ph, ax=ax, fraction=0.046, pad=0.04)
     cb2.ax.tick_params(colors="#cbd5e1", labelsize=7.5)
-    cb2.set_label("$c_{\\mathrm{post}}/c_{\\mathrm{ant}}$", color="#cbd5e1", fontsize=8)
+    cb2.set_label("stochastic double-head probability $p(2H0T)$", color="#cbd5e1", fontsize=8)
 
     # Panel B3: Reconstructed 2D Planarian Body-Plan Silhouettes (1H1T WT vs Cryptic 2H0T vs 0H2T)
     ax = axes[1, 2]
@@ -861,7 +1443,7 @@ def render_outputs(seed: int = 2017, skip_gif: bool = False) -> dict[str, Any]:
     ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.2, loc="upper right")
 
     fig.suptitle(
-        "Pietak & Levin (2017) & (2016) Electrodiffusive Nernst-Planck Gap-Junction 5-HT Transport & Cryptic Two-Headed Memory",
+        "Pietak & Levin (2017) & (2016) Electrodiffusive Nernst-Planck Gap-Junction 5-HT Transport & Cryptic Two-Headed Memory (v3: B2 from 2D Voronoi network + stochastic branching)",
         color="#f8fafc",
         fontsize=12.6,
         fontweight="bold",
@@ -920,11 +1502,186 @@ def render_outputs(seed: int = 2017, skip_gif: bool = False) -> dict[str, Any]:
             loop=0,
         )
 
+    p3 = evaluate_pass3_network_suite(seed=seed)
+    render_pass3_network_figure(p3, wt, spec)
+    if not skip_gif:
+        render_pass3_network_gif(p3)
+
     return {
         "invariants": inv,
         "suite": suite,
         "specimen": spec,
+        "pass3": p3,
     }
+
+
+def _draw_network(ax, net: dict[str, Any], values: np.ndarray, cmap: str, vmin: float, vmax: float, title: str, label: str, fig=None, outline: bool = True):
+    from matplotlib.collections import PolyCollection
+
+    pc = PolyCollection(net["polys"], array=values, cmap=cmap, edgecolors="#0b0f17", linewidths=0.25)
+    pc.set_clim(vmin, vmax)
+    ax.add_collection(pc)
+    if outline:
+        sp, hp = net["s_profile"], net["hw_profile"]
+        ax.plot(sp, hp, color="#f8fafc", lw=1.0, ls="--")
+        ax.plot(sp, -hp, color="#f8fafc", lw=1.0, ls="--")
+    ax.set_xlim(-0.02, 1.02)
+    hw_max = float(np.max(net["hw_profile"]))
+    ax.set_ylim(-1.25 * hw_max, 1.25 * hw_max)
+    ax.set_aspect("equal")
+    ax.set_title(title, color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("AP coordinate $x/L$ (0 = anterior)", color="#cbd5e1", fontsize=8.5)
+    ax.set_yticks([])
+    if fig is not None:
+        cb = fig.colorbar(pc, ax=ax, fraction=0.025, pad=0.02)
+        cb.ax.tick_params(colors="#cbd5e1", labelsize=7)
+        cb.set_label(label, color="#cbd5e1", fontsize=7.2)
+
+
+def render_pass3_network_figure(p3: dict[str, Any], wt_1d: dict[str, Any], spec: dict[str, Any]) -> None:
+    """Pass 3 figure: 2D Voronoi SG network, Boltzmann verification, Ca2+/IP3 fields, stochastic branching."""
+    net = p3["net"]
+    bz = p3["boltzmann"]
+    wt = p3["ca_ip3"]["wild_type_1H1T"]
+    octa = p3["ca_ip3"]["octanol_pulse_2H0T"]
+    cryp = p3["ca_ip3"]["cryptic_memory_washout_2H0T"]
+    sch = p3["ca_ip3"]["sch28080_hyperpolarized_0H2T"]
+
+    fig, axes = plt.subplots(3, 3, figsize=(17.0, 12.0), dpi=130, gridspec_kw={"height_ratios": [0.55, 1.0, 1.0]})
+    fig.patch.set_facecolor("#0b0f17")
+    for ax in axes.flat:
+        ax.set_facecolor("#131b29")
+        ax.tick_params(colors="#cbd5e1", labelsize=8)
+        for sp_ in ax.spines.values():
+            sp_.set_color("#334155")
+
+    # A. Voronoi network inside specimen silhouette, coloured by imposed V_mem (WT)
+    _draw_network(
+        axes[0, 0], net, wt["V"], "coolwarm_r", -62.0, -18.0,
+        f"A. Voronoi network in specimen silhouette ($N$={net['n_cells']}, $E$={net['n_edges']}, $\\langle k\\rangle_{{int}}$={p3['mean_interior_degree']:.2f}, AR={spec['aspect_ratio']:.2f})",
+        "imposed $V_{\\mathrm{mem}}$ (mV)", fig=fig,
+    )
+
+    # B. 5-HT on the network (WT)
+    _draw_network(axes[0, 1], net, wt["c"], "magma", 0.3, 2.0, f"B. 5-HT on network (WT): post/ant = {wt['c_post_over_c_ant']:.2f} (1D endpoints {wt_1d['c_post_over_c_ant']:.2f})", "5-HT $c$ ($z$=+1)", fig=fig)
+
+    # C. Ca2+ on the network (WT)
+    _draw_network(axes[0, 2], net, wt["Ca"], "viridis", 0.0, 1.1, f"C. Ca$^{{2+}}$ on network (WT): ant/post = {wt['Ca_ant_over_Ca_post']:.2f} (VGCC beats $z$=+2 Boltzmann {bz['species']['calcium_Ca2']['post_over_ant_group_boltz']:.0f}x post)", "cytosolic Ca$^{2+}$ ($z$=+2)", fig=fig)
+
+    # D. Boltzmann verification on the irregular graph
+    ax = axes[1, 0]
+    cols = {"serotonin_5HT": "#22c55e", "calcium_Ca2": "#38bdf8", "inositol_IP3": "#f59e0b"}
+    for name, d in bz["species"].items():
+        ax.scatter(d["c_exact"], d["c"], s=9, color=cols[name], alpha=0.75, label=f"{name} ($z$={d['z']:+.0f}): max rel err {d['max_rel_err']:.1e}, r={d['pearson_r']:.6f}")
+    lo = min(float(np.min(d["c_exact"])) for d in bz["species"].values())
+    hi = max(float(np.max(d["c_exact"])) for d in bz["species"].values())
+    ax.plot([lo, hi], [lo, hi], color="#f8fafc", lw=1.0, ls="--")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_title("D. Pure electrodiffusion steady state vs exact Boltzmann $c_i \\propto e^{-zV_i/V_T}$ (all cells)", color="#f8fafc", fontsize=9.3, fontweight="bold")
+    ax.set_xlabel("exact Boltzmann $c_i^{\\mathrm{exact}}$", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("2D SG network steady state $c_i$", color="#cbd5e1", fontsize=8.5)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.8, loc="upper left")
+    mass_err = max(d["mass_rel_err"] for d in bz["species"].values())
+    ax.text(0.98, 0.04, f"mass conservation rel. err $\\leq$ {mass_err:.1e}\nedge log-ratio RMSE $\\leq$ {max(d['edge_log_ratio_rmse'] for d in bz['species'].values()):.1e}", transform=ax.transAxes, color="#f8fafc", fontsize=7.2, ha="right", bbox=dict(facecolor="#0f172a", alpha=0.8, edgecolor="#334155"))
+
+    # E. AP-binned profiles: 5-HT, IP3, Ca2+ for WT vs octanol, plus the 1D WT 5-HT profile
+    ax = axes[1, 1]
+    bc = wt["bin_centres"]
+    ax.plot(bc, wt["profiles"]["c"], color="#22c55e", lw=2.3, label="2D net WT 5-HT")
+    ax.plot(wt_1d["s"], wt_1d["c"], color="#22c55e", lw=1.3, ls=":", label="1D SG WT 5-HT (Pass 2)")
+    ax.plot(bc, wt["profiles"]["Ca"], color="#38bdf8", lw=2.1, label="2D net WT Ca$^{2+}$")
+    ax.plot(bc, wt["profiles"]["P"], color="#f59e0b", lw=2.1, label="2D net WT IP$_3$")
+    ax.plot(bc, octa["profiles"]["c"], color="#f43f5e", lw=1.8, ls="--", label="8-octanol 5-HT (flat)")
+    ax.plot(bc, octa["profiles"]["Ca"], color="#a855f7", lw=1.8, ls="--", label="8-octanol Ca$^{2+}$ (flat, high)")
+    ax.set_title("E. AP-binned network profiles: 5-HT / IP$_3$ / Ca$^{2+}$ (WT vs 8-octanol)", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("AP coordinate $x/L$", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("normalised concentration", color="#cbd5e1", fontsize=8.5)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.8, loc="upper left", ncol=2)
+
+    # F. p(2H0T) vs posterior V_mem (Durant axis) and vs sigma_Ca
+    ax = axes[1, 2]
+    ax.plot(p3["vpost_grid"], p3["p_vs_vpost"], color="#f43f5e", lw=2.3, marker="o", label="$p(2H0T)$ vs posterior $V_{\\mathrm{mem}}$ (GJ open)")
+    ax.axhspan(0.20, 0.35, color="#f59e0b", alpha=0.18, label="~25 % double-head band (Oviedo 2010 / Durant 2017, approx.)")
+    for r, col, mk in (("octanol_pulse_2H0T", "#f43f5e", "s"), ("cryptic_memory_washout_2H0T", "#a855f7", "*"), ("wild_type_1H1T", "#22c55e", "o"), ("sch28080_hyperpolarized_0H2T", "#38bdf8", "v")):
+        b = p3["branching"][r]
+        vp = {"octanol_pulse_2H0T": -20.0, "cryptic_memory_washout_2H0T": -20.0, "wild_type_1H1T": -60.0, "sch28080_hyperpolarized_0H2T": -60.0}[r]
+        ax.errorbar([vp], [b["p_2H0T"]], yerr=[b["se"]], color=col, marker=mk, ms=9, capsize=3, ls="none", label=f"{r}: p={b['p_2H0T']:.2f}±{b['se']:.2f}")
+    ax.set_ylim(-0.02, 0.6)
+    ax.set_title("F. Stochastic 1H1T/2H0T branching vs posterior bioelectric state", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("posterior $V_{\\mathrm{mem}}$ (mV); anterior fixed at $-20$", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("double-head probability $p(2H0T)$", color="#cbd5e1", fontsize=8.5)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.6, loc="upper left")
+
+    # G. 5-HT ratio vs GJ openness at slow/fast turnover (Damkohler ablation)
+    ax = axes[2, 0]
+    ax.plot(p3["gj_grid"], p3["c_ratio_vs_gj_slow_turnover"], color="#22c55e", lw=2.2, marker="o", label="$c_P/c_A$, slow turnover $k_h$=0.004 (equilibrium: $G_{gj}$-independent)")
+    ax.plot(p3["gj_grid"], p3["c_ratio_vs_gj_fast_turnover"], color="#f59e0b", lw=2.2, marker="s", label="$c_P/c_A$, fast turnover $k_h$=0.25 (kinetic competition)")
+    ax.axhline(bz["species"]["serotonin_5HT"]["post_over_ant_group_boltz"], color="#38bdf8", lw=1.2, ls="--", label="Boltzmann group ratio $e^{\\Delta V_{grp}/V_T}$")
+    ax2 = ax.twinx()
+    ax2.plot(p3["gj_grid"], p3["p_vs_gj_fast_turnover"], color="#f43f5e", lw=1.6, ls=":", marker="^", label="$p(2H0T)$ fast turnover")
+    ax2.set_ylim(-0.02, 0.6)
+    ax2.tick_params(colors="#cbd5e1", labelsize=8)
+    ax2.set_ylabel("$p(2H0T)$", color="#f43f5e", fontsize=8.5)
+    ax.set_title("G. GJ-dose ablation: 8-octanol alone does not flatten 5-HT at equilibrium", color="#f8fafc", fontsize=9.4, fontweight="bold")
+    ax.set_xlabel("gap-junction openness $1-\\eta_{\\mathrm{oct}}$ (WT $V$ field)", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("$c_{\\mathrm{post}}/c_{\\mathrm{ant}}$ (network groups)", color="#cbd5e1", fontsize=8.5)
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.6, loc="lower right")
+
+    # H. Noise ablation: p(2H0T) vs sigma_Ca in the octanol state
+    ax = axes[2, 1]
+    ax.plot(p3["sigma_grid"], p3["p_vs_sigma"], color="#a855f7", lw=2.3, marker="o", label="8-octanol state, $n$=256 blastemas / point")
+    ax.axhspan(0.20, 0.35, color="#f59e0b", alpha=0.18, label="~25 % band (approx.)")
+    ax.set_ylim(-0.02, 0.6)
+    ax.set_title("H. Ca$^{2+}$-influx variability sets the branching probability", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("lognormal Ca$^{2+}$ influx variability $\\sigma_{Ca}$", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("$p(2H0T)$", color="#cbd5e1", fontsize=8.5)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.0, loc="upper left")
+
+    # I. Decision-variable distributions (E - B) per regime
+    ax = axes[2, 2]
+    bins = np.linspace(-1.2, 1.2, 33)
+    for r, col in (("wild_type_1H1T", "#22c55e"), ("octanol_pulse_2H0T", "#f43f5e"), ("cryptic_memory_washout_2H0T", "#a855f7"), ("sch28080_hyperpolarized_0H2T", "#38bdf8")):
+        ax.hist(p3["branching"][r]["decision"], bins=bins, color=col, alpha=0.55, label=f"{r} (p={p3['branching'][r]['p_2H0T']:.2f})")
+    ax.axvline(0.0, color="#f8fafc", lw=1.0, ls="--")
+    ax.set_title("I. Posterior toggle decision $E - B$ across the stochastic ensemble", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("$E_{\\mathrm{post}} - B_{\\mathrm{post}}$ (>0: ectopic posterior head)", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("blastemas", color="#cbd5e1", fontsize=8.5)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.8, loc="upper left")
+    _ = (cryp, sch)
+
+    fig.suptitle(
+        "Pass 3 — Irregular 2D Voronoi Scharfetter-Gummel electrodiffusion (5-HT / IP$_3$ / Ca$^{2+}$) & stochastic 1H1T/2H0T branching (Pietak & Levin 2016/2017; Durant et al. 2017)",
+        color="#f8fafc", fontsize=11.6, fontweight="bold", y=0.995,
+    )
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.975])
+    fig.savefig(OUT_PNG_PASS3, dpi=130)
+    plt.close(fig)
+
+
+def render_pass3_network_gif(p3: dict[str, Any], n_frames: int = 20) -> None:
+    """Animated 5-HT and Ca2+ relaxation on the 2D Voronoi network (WT regime)."""
+    net = p3["net"]
+    sim = simulate_ca_ip3_network(net, regime="wild_type_1H1T", record_frames=n_frames)
+    frames_pil: list[Image.Image] = []
+    for k in range(len(sim["frames_t"])):
+        f_fig, (a1, a2) = plt.subplots(1, 2, figsize=(10.0, 3.2), dpi=90)
+        f_fig.patch.set_facecolor("#0b0f17")
+        for a_sub in (a1, a2):
+            a_sub.set_facecolor("#131b29")
+            a_sub.tick_params(colors="#cbd5e1", labelsize=7.5)
+            for sp_ in a_sub.spines.values():
+                sp_.set_color("#334155")
+        _draw_network(a1, net, sim["frames_c"][k], "magma", 0.3, 2.0, f"5-HT $c$ on Voronoi network, $t$={sim['frames_t'][k]:.1f}", "", fig=None)
+        _draw_network(a2, net, sim["frames_Ca"][k], "viridis", 0.0, 1.1, "cytosolic Ca$^{2+}$ (VGCC at depolarised anterior)", "", fig=None)
+        f_fig.tight_layout()
+        f_fig.canvas.draw()
+        rgba = np.asarray(f_fig.canvas.buffer_rgba())
+        frames_pil.append(Image.fromarray(rgba[:, :, :3]))
+        plt.close(f_fig)
+    frames_pil[0].save(OUT_GIF_PASS3, save_all=True, append_images=frames_pil[1:], duration=120, loop=0)
 
 
 # --------------------------------------------------------------------------- #
@@ -1024,6 +1781,78 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"predicted heads = {observed_heads} vs reference = {expected_heads} (exact 6/6 phenotype match, RMSE = {regime_rmse:.4f})",
             "derived_from": "script",
         },
+    ] + measure_pass3_network(seed=2017)
+
+
+def measure_pass3_network(seed: int = 2017) -> list[dict[str, Any]]:
+    """Pass 3 measurements: 2D Voronoi SG network verification, Ca2+/IP3 fields, stochastic branching."""
+    p3 = evaluate_pass3_network_suite(seed=seed)
+    ref3 = load_pass3_reference()
+    bz = p3["boltzmann"]["species"]
+    wt = p3["ca_ip3"]["wild_type_1H1T"]
+    octa = p3["ca_ip3"]["octanol_pulse_2H0T"]
+    cryp = p3["ca_ip3"]["cryptic_memory_washout_2H0T"]
+    wt_1d = simulate_pietak_bioelectric_morphogen_pde(regime="wild_type_1H1T", seed=seed, record_every=10**6)
+    max_rel = max(d["max_rel_err"] for d in bz.values())
+    max_mass = max(d["mass_rel_err"] for d in bz.values())
+    br = p3["branching"]
+    emp = ref3["empirical_targets"]
+    # p(2H0T) threshold V_post: first grid value with p > 0.05
+    vp = p3["vpost_grid"]
+    pv = p3["p_vs_vpost"]
+    above = np.where(pv > 0.05)[0]
+    v_thresh = float(vp[above[0]]) if above.size else float("nan")
+    return [
+        {
+            "name": "2D Voronoi-network Scharfetter-Gummel electrodiffusion max relative deviation from exact Boltzmann equilibrium (5-HT z=+1, Ca2+ z=+2, IP3 z=-3, all cells)",
+            "value": float(f"{max_rel:.3e}"),
+            "unit": "max |c_i - c_i^exact| / c_i^exact",
+            "method": f"Backward-Euler relaxation of the SG operator on an irregular {p3['net']['n_cells']}-cell / {p3['net']['n_edges']}-edge Voronoi graph clipped to the segmented specimen silhouette; compared per cell to M exp(-zV_i/V_T)/sum_k A_k exp(-zV_k/V_T)",
+            "reference_value": 0.0,
+            "reference_source": "Pietak & Levin (2016) Front. Bioeng. Biotechnol. 4:55 (BETSE Voronoi cell-cluster finite-volume electrodiffusion) & Pietak & Levin (2017) Eq. (5) Boltzmann equilibrium",
+            "note": f"per-species max rel err = {{{', '.join(f'{k}: {d['max_rel_err']:.2e}' for k, d in bz.items())}}}; Pearson r = 1.000000 for all; mass conservation rel err <= {max_mass:.1e}; edge log-ratio RMSE <= {max(d['edge_log_ratio_rmse'] for d in bz.values()):.1e}; mean interior Voronoi coordination = {p3['mean_interior_degree']:.3f} (Euler: 6)",
+            "derived_from": "script",
+        },
+        {
+            "name": "2D network vs 1D posterior-to-anterior 5-HT ratio consistency (reactive WT, group means s<0.1 / s>0.9)",
+            "value": round(wt["c_post_over_c_ant"], 4),
+            "unit": "c_post / c_ant",
+            "method": "Area-weighted mean 5-HT over posterior (s > 0.9) vs anterior (s < 0.1) Voronoi cells after reaction-electrodiffusion on the 2D network with turnover k_h = 0.004; reference = exp(dV_group / V_T) for the same cell groups",
+            "reference_value": round(bz["serotonin_5HT"]["post_over_ant_group_boltz"], 4),
+            "reference_source": "Pietak & Levin (2017) J. R. Soc. Interface 14:20170425 Eq. (5): Boltzmann ratio over the group-mean voltage difference (1D endpoint value exp(40/25.85) = 4.70 is the N-cell chain limit)",
+            "note": f"2D reactive ratio = {wt['c_post_over_c_ant']:.4f}; 2D pure-electrodiffusion group ratio = {bz['serotonin_5HT']['post_over_ant_group']:.4f}; 1D SG endpoint ratio = {wt_1d['c_post_over_c_ant']:.4f}; turnover k_h lowers the reactive ratio by {100 * (1 - wt['c_post_over_c_ant'] / bz['serotonin_5HT']['post_over_ant_group']):.2f} %",
+            "derived_from": "script",
+        },
+        {
+            "name": "Anterior-to-posterior cytosolic Ca2+ ratio in the wild-type 2D network (VGCC influx vs z=+2 electrophoresis)",
+            "value": round(wt["Ca_ant_over_Ca_post"], 4),
+            "unit": "Ca_ant / Ca_post",
+            "method": "Reactive Ca2+ (IP3R release, SERCA, leak, PMCA, voltage-gated influx sigma((V - V_half)/k_V)) with SG electrodiffusion z=+2 on the 2D network; pure Boltzmann for z=+2 would give Ca_ant/Ca_post = exp(-2 dV_group/V_T)",
+            "reference_value": 1.0,
+            "reference_source": "Beane et al. (2011) Chem. Biol. 18:77-89: depolarisation-driven Ca2+ influx is required for head specification (qualitative: Ca_ant/Ca_post > 1 at the depolarised anterior); DOI transcribed offline",
+            "note": f"Ca_ant/Ca_post = {wt['Ca_ant_over_Ca_post']:.3f} (anterior enriched) although pure z=+2 electrophoresis would enrich the posterior {bz['calcium_Ca2']['post_over_ant_group_boltz']:.1f}x; IP3 (z=-3) post/ant = {wt['P_post_over_P_ant']:.3f}; under 8-octanol/flat V both are uniform (Ca_post = {octa['Ca_post']:.3f} vs WT {wt['Ca_post']:.3f})",
+            "derived_from": "script",
+        },
+        {
+            "name": "Stochastic double-head branching probability p(2H0T) after 8-octanol gap-junction blockade (Ca2+/IP3-noise toggle ensemble)",
+            "value": round(br["octanol_pulse_2H0T"]["p_2H0T"], 4),
+            "unit": "fraction of blastemas with posterior head",
+            "method": f"Euler-Maruyama ensemble of n = {br['octanol_pulse_2H0T']['n_rep']} posterior beta-catenin/ERK toggle switches driven by the 2D network's posterior 5-HT and Ca2+ (lognormal Ca2+ influx variability sigma_Ca = {PASS3_BRANCHING_PARAMS['sigma_Ca']}); b_basal calibrated to this band, the WT/SCH values and the V_post and sigma_Ca dependences are predictions",
+            "reference_value": emp["double_head_fraction_octanol"]["value"],
+            "reference_source": emp["double_head_fraction_octanol"]["source"],
+            "note": f"p(2H0T): WT = {br['wild_type_1H1T']['p_2H0T']:.3f}, 8-octanol = {br['octanol_pulse_2H0T']['p_2H0T']:.3f} +/- {br['octanol_pulse_2H0T']['se']:.3f}, cryptic washout = {br['cryptic_memory_washout_2H0T']['p_2H0T']:.3f} +/- {br['cryptic_memory_washout_2H0T']['se']:.3f}, SCH-28080 = {br['sch28080_hyperpolarized_0H2T']['p_2H0T']:.3f}, z=0 control = {br['uncharged_morphogen_control_z0']['p_2H0T']:.3f} (1D Pass 2 solver prescribes 2H0T for z=0; the network predicts 1H1T); sigma_Ca = 0 gives p = {p3['p_vs_sigma'][0]:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Cryptic-state (flat -20 mV, gap junctions reopened) double-head probability p(2H0T) vs 8-octanol state",
+            "value": round(br["cryptic_memory_washout_2H0T"]["p_2H0T"], 4),
+            "unit": "fraction of blastemas with posterior head",
+            "method": "Same ensemble as above with the cryptic bioelectric state (V flat at -20 mV, eta_oct = 0): 5-HT and Ca2+ fields are identical to the octanol state because equilibrium electrodiffusion depends on V, not on G_gj",
+            "reference_value": emp["double_head_fraction_cryptic_recut"]["value"],
+            "reference_source": emp["double_head_fraction_cryptic_recut"]["source"],
+            "note": f"cryptic p = {br['cryptic_memory_washout_2H0T']['p_2H0T']:.3f} vs octanol p = {br['octanol_pulse_2H0T']['p_2H0T']:.3f} (difference is sampling noise, identical drives S_B = {br['cryptic_memory_washout_2H0T']['S_B']:.3f}; cryptic c_post/c_ant = {cryp['c_post_over_c_ant']:.3f}); posterior V_mem threshold for p > 0.05 = {v_thresh:.0f} mV (grid step 5 mV)",
+            "derived_from": "script",
+        },
     ]
 
 
@@ -1089,19 +1918,80 @@ def self_test() -> int:
     assert np.allclose(r1["c"], r2["c"], atol=0.0, rtol=0.0)
     assert np.allclose(r1["E"], r2["E"], atol=0.0, rtol=0.0)
 
+    # ---- Pass 3 checks -------------------------------------------------------------
+    # 9. Pass 3 SHA-256 pins and reference block
+    d3 = verify_pass3_dataset_sha256()
+    ref3 = load_pass3_reference()
+    assert len(d3) == 2 and ref3["pass"] == 3 and ref3["sim_id"] == "pietak-bioelectric-morphogen-coupling"
+
+    # 10. Irregular 2D Voronoi network: finite polygons, positive areas, every real-real face
+    #     has positive length, mean interior coordination = 6 (planar Euler), geometry from specimen
+    net = build_voronoi_cell_network(seed=2017)
+    assert 300 <= net["n_cells"] <= 600 and net["n_edges"] > net["n_cells"]
+    assert np.all(net["areas"] > 0.0) and np.all(net["face_len"] > 0.0) and np.all(net["w_ij"] > 0.0)
+    assert np.all(np.abs(net["y"]) < net["half_width_fn"](net["s"])), "all cells must lie inside the specimen silhouette"
+    deg_int = net["degree"][net["interior"]]
+    assert abs(float(np.mean(deg_int)) - 6.0) < 0.05, f"mean interior Voronoi coordination {np.mean(deg_int):.3f} != 6"
+
+    # 11. SG electrodiffusion on the irregular graph reaches the exact Boltzmann state for
+    #     z = +1, +2, -3 (max rel err < 1e-6), conserves mass, and equilibrium is independent of G_gj
+    bz = verify_network_boltzmann_equilibrium(net)
+    for name, d in bz["species"].items():
+        assert d["max_rel_err"] < 1e-6, f"{name}: Boltzmann deviation {d['max_rel_err']:.2e}"
+        assert d["mass_rel_err"] < 1e-9 and d["pearson_r"] > 1.0 - 1e-9
+        assert d["max_abs_flux_residual"] < 1e-6
+    sgn = np.sign([d["z"] for d in bz["species"].values()])
+    ratios = np.array([d["post_over_ant_group"] for d in bz["species"].values()])
+    assert np.all((ratios > 1.0) == (sgn > 0)), "cations enrich the hyperpolarised posterior, anions the anterior"
+    # the Boltzmann steady state does not depend on the conductance magnitude (G_0 ablation)
+    Vn = network_voltage_profile(net, -20.0, -60.0)
+    lu_a = network_implicit_stepper(network_sg_operator(Vn, net, D=1.0, z=1.0, G_0=1.8), 2.0)
+    lu_b = network_implicit_stepper(network_sg_operator(Vn, net, D=1.0, z=1.0, G_0=0.3), 2.0)
+    ca_, cb_ = np.ones(net["n_cells"]), np.ones(net["n_cells"])
+    for _ in range(1500):
+        ca_, cb_ = lu_a.solve(ca_), lu_b.solve(cb_)
+    assert float(np.max(np.abs(ca_ - cb_))) < 1e-6
+
+    # 12. Coupled 5-HT/IP3/Ca2+ network: WT 5-HT enriches posterior, IP3 (z<0) and Ca2+
+    #     (VGCC) enrich the anterior; the flat-V octanol and cryptic states are uniform & identical
+    p3 = evaluate_pass3_network_suite(seed=2017)
+    wt3 = p3["ca_ip3"]["wild_type_1H1T"]
+    oc3 = p3["ca_ip3"]["octanol_pulse_2H0T"]
+    cr3 = p3["ca_ip3"]["cryptic_memory_washout_2H0T"]
+    assert wt3["c_post_over_c_ant"] > 3.0 and wt3["P_post_over_P_ant"] < 0.5 and wt3["Ca_ant_over_Ca_post"] > 2.0
+    assert abs(oc3["c_post_over_c_ant"] - 1.0) < 1e-6 and abs(cr3["c_post_over_c_ant"] - 1.0) < 1e-6
+    assert abs(oc3["Ca_post"] - cr3["Ca_post"]) < 1e-9
+
+    # 13. Stochastic branching: WT and SCH-28080 ~0, octanol/cryptic inside the reference band,
+    #     p(2H0T) non-decreasing with posterior depolarisation, and deterministic (same seed)
+    br = p3["branching"]
+    band = ref3["empirical_targets"]["double_head_fraction_octanol"]["band"]
+    assert br["wild_type_1H1T"]["p_2H0T"] <= 0.02 and br["sch28080_hyperpolarized_0H2T"]["p_2H0T"] <= 0.05
+    for r_ in ("octanol_pulse_2H0T", "cryptic_memory_washout_2H0T"):
+        assert band[0] - 0.05 <= br[r_]["p_2H0T"] <= band[1] + 0.05, f"{r_} p(2H0T) = {br[r_]['p_2H0T']:.3f}"
+    pv = p3["p_vs_vpost"]
+    assert pv[0] <= 0.02 and pv[-1] >= 0.10 and np.all(np.diff(pv) >= -0.06)
+    b1 = stochastic_head_tail_branching(1.0, 0.95, 1.0, seed=5)
+    b2 = stochastic_head_tail_branching(1.0, 0.95, 1.0, seed=5)
+    assert b1["p_2H0T"] == b2["p_2H0T"] and np.array_equal(b1["decision"], b2["decision"])
+
     print(
-        "[2017-pietak-bioelectric-morphogen-coupling] SELF-TEST PASSED (8/8 checks: SHA-256 locks, "
+        "[2017-pietak-bioelectric-morphogen-coupling] SELF-TEST PASSED (13/13 checks: SHA-256 locks, "
         f"WT={wt['phenotype_code']} [c_post/c_ant={wt['c_post_over_c_ant']:.4f} vs Boltzmann {inv['ratio_wt_z1']:.4f}], "
         f"Octanol={octa['phenotype_code']}, Cryptic-Washout={cryp['phenotype_code']}, "
         f"SCH-28080={sch['phenotype_code']}, z=0-ctl={z0['phenotype_code']}, K+-Rescue={resc['phenotype_code']}, "
-        f"specimen ocelli={spec['n_ocelli_detected']} at x/L={spec['mean_ocelli_rel_s']:.4f})."
+        f"specimen ocelli={spec['n_ocelli_detected']} at x/L={spec['mean_ocelli_rel_s']:.4f}; "
+        f"Pass 3: 2D Voronoi net N={net['n_cells']} <k>={np.mean(deg_int):.2f}, Boltzmann max rel err="
+        f"{max(d['max_rel_err'] for d in bz['species'].values()):.1e}, WT net c_P/c_A={wt3['c_post_over_c_ant']:.3f}, "
+        f"Ca_A/Ca_P={wt3['Ca_ant_over_Ca_post']:.2f}, p(2H0T) octanol={br['octanol_pulse_2H0T']['p_2H0T']:.3f} "
+        f"cryptic={br['cryptic_memory_washout_2H0T']['p_2H0T']:.3f} WT={br['wild_type_1H1T']['p_2H0T']:.3f})."
     )
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check deterministic verification suite and exit")
+    ap.add_argument("--self-test", action="store_true", help="Run 13-check deterministic verification suite and exit")
     ap.add_argument("--skip-gif", action="store_true", help="Skip rendering animated GIF")
     ap.add_argument("--seed", type=int, default=2017, help="Deterministic RNG seed")
     args = ap.parse_args()

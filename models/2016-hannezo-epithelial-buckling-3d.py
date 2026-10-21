@@ -117,7 +117,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, signal, spatial, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "epithelial_buckling_3d"
 REF_JSON = DATASET_DIR / "epithelial_buckling_3d_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "epithelial_sheet_buckling_specimen.jpg"

@@ -108,7 +108,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, spatial, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "ex_vivo_scaling_mPSM"
 REFERENCE_JSON = DATASET_DIR / "ex_vivo_scaling_mPSM_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "mouse_mpsm_somites_specimen.jpg"

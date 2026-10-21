@@ -146,7 +146,7 @@ from matplotlib.colors import to_rgb as matplotlib_colors_to_rgb
 from matplotlib.patches import Patch
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
 BRESSLOFF_DATASET_DIR = REPO_ROOT / "datasets" / "bressloff"
 
 FIXTURE_CHECKSUMS: Dict[str, str] = {

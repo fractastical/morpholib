@@ -91,7 +91,7 @@ from scipy.optimize import brentq
 from scipy.signal import find_peaks
 from scipy.stats import pearsonr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "hox_turing_polydactyly"
 REF_JSON_PATH = DATASET_DIR / "hox_turing_polydactyly_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "vertebrate_autopod_digits_specimen.jpg"

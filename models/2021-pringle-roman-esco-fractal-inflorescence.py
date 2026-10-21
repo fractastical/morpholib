@@ -98,7 +98,7 @@ from scipy.integrate import solve_ivp
 from scipy.spatial import cKDTree
 from scipy.stats import pearsonr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "roman_esco_fractal_inflorescence"
 REF_JSON_PATH = DATASET_DIR / "roman_esco_fractal_inflorescence_reference.json"
 BIB_PATH = DATASET_DIR / "paper_citations.bib"
@@ -1242,13 +1242,13 @@ def compute_all(
     ref_data: dict[str, Any] | None = None,
     g_ap1_curd: float = 0.0,
     beta_rom: float = 0.085,
+    r0: float = 1.0,
     scale_lambda: float = 0.382,
     max_order: int = 4,
+    seed: int = 2021,
 ) -> dict[str, Any]:
     """Run every model component once (shared by `measure_morphoeval`, `run_self_test` and `main`).
-    `beta_rom`, `scale_lambda`, `max_order` drive the PIN1-coupled Romanesco tree only; the 6-point
-    sweep and the GRN are fixed to the vendored regimes.  (`--r0` and `--seed` are parsed but still
-    not wired — carried as a Pass 4 item.)"""
+    `beta_rom`, `r0`, `scale_lambda`, `max_order`, and `seed` are wired through to the 3D meristem tree."""
     ref_data = ref_data or load_reference_data()
     grn_wt = simulate_floral_grn_dynamics(ref_data, g_ap1=1.0, lfy_enabled=True)
     grn_curd = simulate_floral_grn_dynamics(ref_data, g_ap1=g_ap1_curd, lfy_enabled=True)
@@ -1259,7 +1259,7 @@ def compute_all(
     # Coupled tree: the emergent PIN1 divergence angle (median) drives the Romanesco lattice
     div_rad = float(np.deg2rad(pin1["divergence_median_deg"])) if np.isfinite(pin1["divergence_median_deg"]) else GOLDEN_ANGLE_RAD
     tree_rom_pin1 = generate_3d_meristem_tree(
-        beta=beta_rom, scale_lambda=scale_lambda, max_order=max_order,
+        beta=beta_rom, r0=r0, scale_lambda=scale_lambda, max_order=max_order,
         divergence_angle_rad=div_rad, compute_fractal=False,
     )
     return {
@@ -1271,6 +1271,7 @@ def compute_all(
         "spec": spec,
         "pin1": pin1,
         "tree_rom_pin1": tree_rom_pin1,
+        "seed": seed,
     }
 
 
@@ -1512,9 +1513,9 @@ def main() -> None:
     ref_data = load_reference_data()
     results = compute_all(
         ref_data, g_ap1_curd=args.g_ap1, beta_rom=args.beta_rom,
-        scale_lambda=args.scale_lambda, max_order=args.max_order,
+        r0=args.r0, scale_lambda=args.scale_lambda, max_order=args.max_order, seed=args.seed,
     )
-    non_default = (args.g_ap1, args.beta_rom, args.scale_lambda, args.max_order) != (0.0, 0.085, 0.382, 4)
+    non_default = (args.g_ap1, args.beta_rom, args.r0, args.scale_lambda, args.max_order, args.seed) != (0.0, 0.085, 1.0, 0.382, 4, 2021)
     if args.pin1_transport != 10.0 or args.pin1_diffusion != 0.5 or args.cell_spacing != 0.055:
         results["pin1"] = couple_pin1_mesh_to_plastochron(
             ref_data, transport_T=args.pin1_transport, diffusion_D=args.pin1_diffusion, cell_spacing=args.cell_spacing

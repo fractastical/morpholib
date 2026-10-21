@@ -90,7 +90,7 @@ from scipy import sparse as sp
 from scipy import stats
 from scipy.sparse.linalg import spsolve
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "drosophila_ventral_furrow"
 REFERENCE_JSON = DATASET_DIR / "drosophila_ventral_furrow_reference.json"
 AP_SHELL_STOKES_JSON = DATASET_DIR / "ap_shell_stokes_reference.json"

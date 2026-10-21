@@ -95,7 +95,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "palate_ruguga_turing"
 REF_JSON = DATASET_DIR / "palate_ruguga_turing_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "palate_rugae_specimen.jpg"

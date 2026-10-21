@@ -8,11 +8,16 @@ model_spec:
   r_c_um: 0.42
   h_0_um: 0.50
   seed: 2019
+  pass3_cholesteric_coupling: "n = (cos phi, sin phi, 0), phi = (pi / h_0)(z - u), u = h_0 Phi_2D / 2 pi, P = 2 h_0, q = -n.curl n = pi / h_0, v_z = m h_0 omega / 2 pi"
+  pass3_fracture_model: "TSC: 1/E = 4(1-Phi)/(G_p Phi^2 rho^2) + 1/(Phi E_m); sigma_y = Phi rho tau_p / 2; tau(s) = tau_p + H s; sigma_f = Phi sigma_tab,crit / 2; Gamma = tau_p L_ov^2 / h"
+  pass3_fracture_parameters: "Phi = 0.95, rho = 15.6, E_m = 100 GPa, G_p = 1.4 GPa, tau_p = 20 MPa, psi = 1.5 deg, t_m = 30 nm, Gamma_m = 1 J/m^2"
   inputs:
     - datasets/nacre_screw_dislocation_spirals/nacre_screw_dislocation_spirals_reference.json
     - datasets/nacre_screw_dislocation_spirals/haliotis_nacre_spirals_specimen.jpg
     - datasets/nacre_screw_dislocation_spirals/scout_manifest.json
     - datasets/nacre_screw_dislocation_spirals/paper_citations.bib
+    - datasets/nacre_screw_dislocation_spirals/cholesteric_fracture_reference.json
+    - datasets/nacre_screw_dislocation_spirals/pass3_citations.bib
 equations:
   - law_name: "Burton-Cabrera-Frank (1951) Gibbs-Thomson Step Velocity & Supersaturation Terrace Spacing Scaling Law"
     formula: "v(κ) = v_∞ (1 - r_c κ),  r_c = γ Ω / Δμ  ⇒  λ_0 = 19 r_c = 19 γ Ω / Δμ  (strictly decreasing with Δμ_2 > Δμ_1 > 0)"
@@ -30,7 +35,7 @@ equations:
     variables: "v(κ): normal step velocity; v_∞: planar step speed; r_c = γ Ω / Δμ: critical nucleation radius; Δμ: chemical supersaturation; λ_0: Archimedean spiral terrace wavelength"
     role: "Arrests curved step propagation at r = r_c and scales spiral terrace wavelength λ_0 ≈ 19 r_c inversely with supersaturation Δμ across molluscan nacre"
     source_citation: "Burton, Cabrera & Frank (1951) Phil. Trans. R. Soc. A 243:299-358; Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504 Sec. 2-3"
-    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L140-L260"
+    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L197-L268"
 
   - law_name: "Cartwright et al. (2009) Opposite-Handedness (+1, -1) Frank-Read Dipole Annihilation & Closed Target-Loop Law"
     formula: "B_tot = (+1) + (-1) = 0;  d > 2 r_c ⇒ closed concentric target terraces;  d ≤ 2 r_c ⇒ pinch-off failure"
@@ -48,7 +53,7 @@ equations:
     variables: "b_1 = +1, b_2 = -1: opposite-handedness screw dislocation Burgers vectors; B_tot: far-field topological Burgers charge; d: inter-core dipole separation; 2 r_c: critical nucleation diameter"
     role: "Governs topological recombination of counter-rotating spiral arms into closed concentric target loops when d > 2 r_c and subcritical pinch-off failure when d < 2 r_c"
     source_citation: "Cartwright, Checa, Escribano & Sainz-Díaz (2009) PNAS 106(26):10499-10504 Figs. 1-4"
-    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L265-L420"
+    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L273-L474"
 
   - law_name: "Cartwright & Checa (2007) Chitin Interlamellar Pore Mineral-Bridge Columnar vs Sheet Nacre Transition Law"
     formula: "I_col = D_tab - λ_0 N_off:  I_col > 0 (aligned vertical mineral bridges, tight λ_0) ⇒ Haliotis columnar stacks;  I_col < 0 (dispersed pores, broad λ_0) ⇒ bivalve sheet nacre"
@@ -65,4 +70,44 @@ equations:
     variables: "D_tab: aragonite tablet diameter before coalescence; λ_0: spiral terrace wavelength; N_off: off-axis interlamellar chitin pore dispersion factor"
     role: "Separates gastropod (Haliotis rufescens) coaxial columnar tablet stacks nucleated through aligned vertical chitin mineral bridges from bivalve (Pteria, Pinctada) terraced sheet nacre"
     source_citation: "Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504 Sec. 4 & Figs. 7-9"
-    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L425-L530"
+    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L655-L748"
+
+  - law_name: "Cartwright et al. (2009) Cholesteric Chitin-Fibroin Precursor Half-Pitch ⇄ BCF Screw-Dislocation Membrane Coupling Law (Pass 3)"
+    formula: "n = (cos φ, sin φ, 0),  φ = (π/h_0)(z − u),  u = h_0 Φ_2D / 2π,  P = 2 h_0,  q = −n·∇×n = π/h_0,  b_vec = ∮du = m h_0,  v_z = m h_0 ω / 2π"
+    lean_decl: "MathOfBiology.Loop_078.cholesteric_pitch"
+    lean_theorem: "MathOfBiology.Loop_078.cholesteric_half_pitch_screw_dislocation_coupling"
+    lean_locus: "morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean#L118-L156"
+    lean_code: |
+      def cholesteric_pitch (h_0 : Int) : Int := 2 * h_0
+      def helicoid_burgers_vector (m h_0 : Int) : Int := m * h_0
+      def vertical_growth_twice_pi_scaled (m h_0 : Int) : Int := m * h_0 * 985
+      theorem cholesteric_half_pitch_screw_dislocation_coupling (h_0 : Int) (dh : Nat) :
+          cholesteric_pitch 50 = 100 ∧
+          helicoid_burgers_vector 1 h_0 + helicoid_burgers_vector (-1) h_0 = 0 ∧
+          helicoid_burgers_vector 2 h_0 = cholesteric_pitch h_0 ∧
+          vertical_growth_twice_pi_scaled 1 h_0 < vertical_growth_twice_pi_scaled 1 (h_0 + Int.ofNat (dh + 1)) := by
+        dsimp [cholesteric_pitch, helicoid_burgers_vector, vertical_growth_twice_pi_scaled]; omega
+    variables: "n: cholesteric director; φ: twist angle; P: cholesteric pitch; h_0 = P/2: membrane period (SEM-anchored 0.50 µm); u: helicoidal layer displacement driven by the 2D BCF phase Φ_2D; q: twist rate; m: Burgers charge; v_z: vertical nacre growth rate"
+    role: "Couples the 2D BCF spiral/target step-flow phase field to a 3D cholesteric liquid-crystal membrane stack whose helicoidal defects carry the Burgers vector m h_0 and whose half-pitch sets the vertical growth rate"
+    source_citation: "Cartwright, Checa, Escribano & Sainz-Díaz (2009) PNAS 106(26):10499-10504; de Gennes & Prost (1993) The Physics of Liquid Crystals Ch. 6; Kleman & Lavrentovich (2003) Soft Matter Physics Ch. 8"
+    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L480-L650"
+
+  - law_name: "Brick-and-Mortar Tension-Shear-Chain Tablet-Sliding Fracture Toughness Law (Jackson 1988 · Gao 2003 · Ji & Gao 2004 · Barthelat 2007) (Pass 3)"
+    formula: "1/E = 4(1−Φ)/(G_p Φ² ρ²) + 1/(Φ E_m);  σ_y = Φ ρ τ_p / 2;  τ(s) = τ_p + H s, H = E_n tan²ψ / t_m;  σ_f = Φ σ_tab,crit / 2, σ_tab,crit = √(E_m Γ_m / (π h/2));  Γ = τ_p L_ov² / h;  ρ* = σ_tab,crit / τ_p;  h* = π Γ_m E_m / σ_th²"
+    lean_decl: "MathOfBiology.Loop_078.pullout_work_x50"
+    lean_theorem: "MathOfBiology.Loop_078.tsc_tablet_sliding_fracture_toughness"
+    lean_locus: "morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean#L159-L201"
+    lean_code: |
+      def tsc_yield_strength_x2000 (tau : Int) : Int := 95 * 156 * tau
+      def tablet_fracture_cap_x2000 : Int := 95 * 3568
+      def pullout_work_x50 (tau : Int) : Int := 1521 * tau
+      theorem tsc_tablet_sliding_fracture_toughness (tau : Int) (dt : Nat) :
+          tsc_yield_strength_x2000 20 < tablet_fracture_cap_x2000 ∧
+          (tsc_yield_strength_x2000 tau < tablet_fracture_cap_x2000 ↔ tau ≤ 22) ∧
+          pullout_work_x50 tau < pullout_work_x50 (tau + Int.ofNat (dt + 1)) ∧
+          17500 ≤ pullout_work_x50 20 ∧ pullout_work_x50 20 ≤ 62000 := by
+        dsimp [tsc_yield_strength_x2000, tablet_fracture_cap_x2000, pullout_work_x50]; omega
+    variables: "Φ: mineral volume fraction; ρ = L/h: tablet aspect ratio; τ_p: interlamellar interface shear strength; ψ: tablet waviness angle; t_m: mortar thickness; σ_tab,crit: Griffith tablet strength; L_ov = L/2: overlap; Γ: work of fracture; Γ_m: aragonite fracture energy; h*: flaw-tolerant thickness"
+    role: "Rate-independent single-slip-system plasticity of the brick-and-mortar RVE: elastic TSC branch, Schmid-law interlamellar sliding with waviness hardening, Griffith tablet fracture, and tablet pull-out toughening (×608 vs aragonite, inside the Jackson 1988 350-1240 J/m² range)"
+    source_citation: "Jackson, Vincent & Turner (1988) Proc. R. Soc. B 234:415-440; Currey (1977) Proc. R. Soc. B 196:443-463; Gao et al. (2003) PNAS 100:5597-5600; Ji & Gao (2004) JMPS 52:1963-1990; Barthelat et al. (2007) JMPS 55:306-337; Wang et al. (2001) J. Mater. Res. 16:2485-2493"
+    code_locus: "2019-cartwright-nacre-screw-dislocation-spirals.py#L981-L1223"

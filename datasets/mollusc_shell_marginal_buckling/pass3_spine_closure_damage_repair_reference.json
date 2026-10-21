@@ -1,0 +1,68 @@
+{
+  "dataset_id": "chirat-2013-mollusc-shell-marginal-buckling-pass3-v1",
+  "title": "Pass 3 reference table: reduced hollow-spine self-contact closure and predator-damage / mantle-repair perturbations for 2013-chirat-mollusc-shell-marginal-buckling.py",
+  "supersedes_audit": "2026-10-19-mollusc-shell-marginal-buckling-audit-v2",
+  "scope_note": "Both Pass 2 remediation items are closed with reduced-order models, not a full 3D finite-strain morphoelastic shell FEM (Rudraraju et al. 2019). The spine is a planar inextensible Euler elastica cross-section with a self-contact penalty; the damage/repair perturbation is a heterogeneous-foundation Winkler beam with template memory along an accretionary station sequence. The residual (true 3D FE shell + volumetric growth tensor) is carried as a Pass 4 item.",
+  "sources": [
+    {"id": "chirat2013", "doi": "10.1073/pnas.1220443110", "use": "hollow spine as a folded mantle margin; antimarginal rib wavelength law"},
+    {"id": "moulton2012", "doi": "10.1016/j.jtbi.2012.07.009", "use": "planar elastica / Kirchhoff rod reduction of the growing mantle edge"},
+    {"id": "rudraraju2019", "doi": "10.1371/journal.pcbi.1007213", "use": "3D morphoelastic FEM framework the reduced spine model approximates (residual)"},
+    {"id": "vermeij1987", "citation": "Vermeij GJ (1987). Evolution and Escalation: An Ecological History of Life. Princeton University Press. ISBN 978-0-691-08446-6.", "doi": null, "use": "durophagous predation, marginal shell breakage and repair scars (book; DOI not verifiable offline)"}
+  ],
+  "hollow_spine_cross_section_elastica": {
+    "model": "U[theta] = 0.5*EI*sum((dtheta/ds)^2) ds + 0.5*mu_clamp*(theta_0^2 + theta_M^2) + 0.5*mu_end*(|x_M - W|^2 + y_M^2) + 0.25*mu_contact*sum_{|i-j|>M/5} (t - d_ij)_+^2",
+    "arc_length_law": "L = W * (1 + eps), eps = mantle growth excess of the spine fold",
+    "small_strain_amplitude_law": "A_lin = (2/pi) * sqrt(W * (L - W))  [clamped first mode w = (A/2)(1 - cos(2 pi s / W))]",
+    "parameters": {
+      "W_mm": 6.0,
+      "thickness_mm": 0.35,
+      "EI_mN_mm2": 1.085,
+      "M_segments": 96,
+      "mu_end": 400.0,
+      "mu_clamp": 400.0,
+      "mu_contact": 400.0,
+      "excess_grid": [0.005, 0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.5, 0.7, 0.9, 1.1, 1.4, 1.7, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 4.4, 4.6, 4.8, 5.0, 5.5, 6.0]
+    },
+    "reference_values": {
+      "small_strain_pearson_r_target": 1.0,
+      "small_strain_rel_error_tolerance": 0.10,
+      "closure_excess_ratio_mesh_converged_M224": 5.0,
+      "closure_excess_ratio_M160": 5.0,
+      "closure_aspect_ratio_H_over_W_M224": 2.407,
+      "closure_lumen_area_mm2_M224": 37.43,
+      "neck_gap_over_thickness_at_contact_target": 1.0,
+      "note": "Closure threshold reference is a mesh-convergence reference from the same model at M = 224 segments (threshold lies in (4.8, 5.0] for all resolutions); no independent published value for the closure strain of a Murex spine fold is vendored."
+    }
+  },
+  "predator_damage_mantle_repair": {
+    "model": "E I w_ssss + P w_ss + k(s) w + kappa_3 w^3 = 0 with k(s) = k * (1 + (rho - 1) * chi_sector(s) * exp(-(r - r_d)/l_heal)); template memory w_init(r_i) = w_eq(r_{i-1}) * A_eq(r_i)/A_eq(r_{i-1}); chipped sector w_init = 0",
+    "local_critical_load_law": "P_c,loc = 2*sqrt(E I k(s)) = sqrt(rho) * P_c in the fresh callus",
+    "parameters": {
+      "n_stations": 14,
+      "R_min_mm": 28.0,
+      "R_max_mm": 55.0,
+      "damage_station": 4,
+      "damage_radius_mm": 36.31,
+      "damage_center_deg": 14.0,
+      "damage_half_angle_deg": 5.0,
+      "repair_k_ratio_rho": 1.15,
+      "heal_length_mm": 7.0,
+      "P_over_Pc": 1.45,
+      "k_mN_per_mm2": 0.285,
+      "EI_adult_mN_mm2": 1.085
+    },
+    "phase_diagram_grid": {
+      "damage_half_angle_deg": [3.0, 5.0, 7.0, 9.0, 12.0],
+      "repair_k_ratio_rho": [1.0, 1.15, 1.3, 1.6]
+    },
+    "reference_values": {
+      "adult_rib_count_in_register": 14,
+      "registry_error_lambda_target": 0.0,
+      "scar_index_adult_target": 0.0,
+      "local_Pc_ratio_rho_1_15": 1.0724,
+      "critical_chip_over_lambda_rounding_heuristic": 1.5,
+      "critical_chip_heuristic_note": "A template gap wider than ~1.5 lambda_c can host one more crest than it lost (half-integer rounding heuristic); it is a heuristic, not a published value. Numerically the transition at rho = 1 lies between chip/lambda = 1.53 and 1.97 on the vendored grid.",
+      "healing_length_consistency_note": "The exponential fit of the scar index Delta(r) is compared to the imposed callus decay length l_heal = 7 mm as a model-consistency check, not an independent empirical value."
+    }
+  }
+}

@@ -30,6 +30,18 @@ Mathematical Formalism & Lean 4 Alignment (`morphoeval/lean/loops/Loop_086_retin
        - Temporal half-retina ablation (x in [0, 0.5]): Group II expands the surviving nasal half-retina
          across the full tectum y_exp^*(x) = 1 - 2 * x (slope = -2.00).
        - Ephrin-A2/A5 double knockout (`beta = 0`): abolishes tectal gradient, collapsing map polarity (|r| < 0.15).
+  4. Pass 3 — 4D Retinotectal Tensor & Orthogonal EphB/Ephrin-B Attractive DV Mapping (`ephb_dorsoventral_attractive_orthogonal_map`):
+     W_{(i,k),(j,l)} over retina (x nasal->temporal, z dorsal->ventral) x tectum (y rostral->caudal, v lateral->medial),
+     separable energy E = E_A(x,y) + E_B(z,v) with REPULSIVE EphA/ephrin-A counter-gradients (y* = 1 - x) and
+     ATTRACTIVE EphB forward signalling up the medial ephrin-B1 gradient (v* = (s_EphB / s_ephrinB) z;
+     Hindges et al. 2002; Mann et al. 2002). EphB2/B3 hypomorph (s_EphB = 0.35) shifts ventral TZs laterally
+     (Group I limit v* = 0.35 z) while dorsal RGCs are unaffected; graded-ephrin-B loss collapses DV order
+     but leaves the AP map intact (axis independence).
+  5. Pass 3 — Spontaneous Cholinergic Retinal Waves -> Willshaw-von der Malsburg Cooperative Kernel
+     (`wave_cofiring_bounds_separation`): K_ret is the burst-correlation matrix of simulated stage-II wave
+     domains (disc radius r_wave; Meister et al. 1991, Feller et al. 1996), zero beyond 2 r_wave. beta2-nAChR-/-
+     (McLaughlin et al. 2003) = uncorrelated bursting -> K_ret -> 0 -> termination zones stay enlarged
+     (TZ area ratio KO/WT > 1) while gradient-set polarity is preserved.
 """
 
 from __future__ import annotations
@@ -47,7 +59,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "retinotectal_chemoaffinity"
 REFERENCE_JSON = DATASET_DIR / "retinotectal_chemoaffinity_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "zebrafish_retinotectal_specimen.jpg"
@@ -122,6 +134,12 @@ def compute_lean_chemoaffinity_invariants() -> dict[str, Any]:
         "gi_nasal_pileup": (gi_0, gi_50),
         "exp_span_int": exp_span,
     }
+
+
+def stable_regime_offset(regime_id: str) -> int:
+    """Process-independent seed offset for a regime id (Python's built-in `hash()` of a str is salted per
+    process via PYTHONHASHSEED, which made Pass-2 runs differ in the 4th decimal between invocations)."""
+    return int.from_bytes(hashlib.sha256(regime_id.encode("utf-8")).digest()[:4], "big") % 997
 
 
 def build_gaussian_kernel(coords: np.ndarray, sigma: float) -> np.ndarray:
@@ -219,7 +237,7 @@ def simulate_retinotectal_regime(
     K_ret_full = build_gaussian_kernel(x, float(p["sigma_ret"]))
     K_tec_full = build_gaussian_kernel(y, float(p["sigma_tec"]))
 
-    rng = np.random.default_rng(seed + abs(hash(regime_id)) % 997)
+    rng = np.random.default_rng(seed + stable_regime_offset(regime_id))
 
     if comp_mode == "unconstrained_scrambled" or float(reg["beta_scale"]) == 0.0:
         # Ephrin-A2/A5 double knockout (beta = 0): flat chemoaffinity landscape E_chem = const,
@@ -235,6 +253,19 @@ def simulate_retinotectal_regime(
         y_bar = W @ y
         slope, intercept = np.polyfit(x, y_bar, 1)
         r_val = float(np.corrcoef(x, y_bar)[0, 1])
+        # A single 40-RGC scrambled draw has |r| ~ 0.13 +/- 0.10 by chance; report the ensemble mean |r|
+        # over 32 independent scrambles as the actual "polarity abolished" statistic (Pass 3 fix: the
+        # Pass-2 single-draw check only passed thanks to a process-salted hash seed).
+        abs_r_draws = []
+        for _ in range(32):
+            c1 = rng.uniform(0.08, 0.92, size=n_ret)
+            c2 = rng.uniform(0.08, 0.92, size=n_ret)
+            Wd = 0.65 * np.exp(-0.5 * ((y[None, :] - c1[:, None]) / 0.09) ** 2) + 0.35 * np.exp(
+                -0.5 * ((y[None, :] - c2[:, None]) / 0.11) ** 2
+            )
+            Wd /= np.sum(Wd, axis=1, keepdims=True)
+            abs_r_draws.append(abs(float(np.corrcoef(x, Wd @ y)[0, 1])))
+        mean_abs_r = float(np.mean(abs_r_draws))
         return {
             "regime_id": regime_id,
             "x": x,
@@ -249,6 +280,7 @@ def simulate_retinotectal_regime(
             "slope": float(slope),
             "intercept": float(intercept),
             "r_val": r_val,
+            "mean_abs_r_scrambles": mean_abs_r,
             "split_sep": float(np.mean(np.abs(y_bar[0::2] - y_bar[1::2]))),
             "energy_hist": np.ones(steps + 1),
             "W_frames": [W] * 24 if record_history else [],
@@ -414,6 +446,279 @@ def evaluate_all_regimes_and_morphospace() -> dict[str, Any]:
         "delta_r_grid": delta_r_grid,
         "mu_grid": mu_grid,
         "sep_grid": sep_grid,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 3b. Pass 3: 4D Retinotectal Tensor W_{(i,k),(j,l)} with Orthogonal EphB/Ephrin-B
+#     Attractive Dorsoventral Mapping & Spontaneous Retinal-Wave Correlation Kernel
+# --------------------------------------------------------------------------- #
+PASS3_REFERENCE_JSON = DATASET_DIR / "pass3_dv_ephb_wave_reference.json"
+
+
+def load_pass3_reference() -> dict[str, Any]:
+    """Load `pass3_dv_ephb_wave_reference.json` (EphB/ephrin-B + retinal-wave parameters, regimes, refs)."""
+    return json.loads(PASS3_REFERENCE_JSON.read_text(encoding="utf-8"))
+
+
+def simulate_retinal_wave_correlations(
+    x: np.ndarray,
+    z: np.ndarray,
+    wave_radius: float,
+    n_events: int,
+    seed: int,
+    wave_mode: str = "cholinergic_wt",
+) -> dict[str, Any]:
+    """Stage-II cholinergic retinal waves (Meister et al. 1991; Feller et al. 1996) as bounded burst
+    domains, and the pairwise RGC burst-correlation matrix they induce.
+
+    Every wave event `e` is a disc of radius `wave_radius` (retina-normalised units) centred at a
+    uniformly random point of the 2D (x: nasal->temporal, z: dorsal->ventral) retina; all RGCs inside
+    the disc burst together (s_a(e) = 1). The Pearson correlation of the binary rasters across events
+    gives C_wave[a, b], which decays with retinal separation and is exactly zero beyond 2 * wave_radius
+    (Lean `wave_cofiring_bounds_separation`). `beta2_nachr_ko` (McLaughlin et al. 2003) replaces the
+    waves by independent single-cell bursting, so C_wave collapses to (noise around) the identity."""
+    rng = np.random.default_rng(seed)
+    XX, ZZ = np.meshgrid(x, z, indexing="ij")
+    cx = XX.ravel()
+    cz = ZZ.ravel()
+    n_cells = cx.size
+    if wave_mode == "beta2_nachr_ko":
+        # Uncorrelated bursting: each cell bursts independently with the WT per-event burst probability
+        p_burst = float(np.pi * wave_radius**2)
+        raster = (rng.uniform(size=(n_events, n_cells)) < p_burst).astype(float)
+    elif wave_mode == "cholinergic_wt":
+        centers = rng.uniform(0.0, 1.0, size=(n_events, 2))
+        d2 = (centers[:, 0:1] - cx[None, :]) ** 2 + (centers[:, 1:2] - cz[None, :]) ** 2
+        raster = (d2 <= wave_radius**2).astype(float)
+    else:
+        raise KeyError(f"Unknown wave_mode: {wave_mode}")
+
+    raster -= raster.mean(axis=0, keepdims=True)
+    std = np.sqrt(np.mean(raster**2, axis=0))
+    std = np.where(std < 1e-12, 1.0, std)
+    C = (raster.T @ raster) / float(n_events) / (std[:, None] * std[None, :])
+    np.fill_diagonal(C, 1.0)
+
+    # Correlation-vs-separation curve and 1/e correlation length
+    sep = np.hypot(cx[:, None] - cx[None, :], cz[:, None] - cz[None, :])
+    bins = np.linspace(0.0, 1.0, 21)
+    idx = np.clip(np.digitize(sep.ravel(), bins) - 1, 0, 19)
+    c_flat = C.ravel()
+    curve = np.array([float(np.mean(c_flat[idx == b])) if np.any(idx == b) else np.nan for b in range(20)])
+    bin_c = 0.5 * (bins[:-1] + bins[1:])
+    above = np.where(np.nan_to_num(curve, nan=0.0) > np.exp(-1.0))[0]
+    corr_length = float(bin_c[above[-1]]) if above.size else 0.0
+    beyond = sep > 2.0 * wave_radius + 1e-9
+    max_c_beyond_support = float(np.max(np.abs(C[beyond]))) if np.any(beyond) else 0.0
+
+    # Hebbian cooperative kernel: only CO-ACTIVE NEIGHBOURS (off-diagonal, above the finite-sample
+    # noise floor ~3/sqrt(n_events)) can drive the shared postsynaptic tectal site; a cell's own
+    # activity cannot refine its arbor. Not row-normalised, so uncorrelated bursting (beta2-/-) yields a
+    # near-zero kernel instead of being inflated into a flat one.
+    noise_floor = 3.0 / np.sqrt(float(n_events))
+    K_ret = np.maximum(C - noise_floor, 0.0)
+    np.fill_diagonal(K_ret, 0.0)
+    max_K_beyond_support = float(np.max(K_ret[beyond])) if np.any(beyond) else 0.0
+    return {
+        "C_wave": C,
+        "K_ret": K_ret,
+        "max_K_beyond_2r": max_K_beyond_support,
+        "mean_K_row_sum": float(np.mean(np.sum(K_ret, axis=1))),
+        "sep_bins": bin_c,
+        "corr_vs_sep": curve,
+        "corr_length": corr_length,
+        "max_corr_beyond_2r": max_c_beyond_support,
+        "burst_fraction": float(np.mean(raster.std(axis=0) > 0)),
+        "wave_mode": wave_mode,
+        "wave_radius": float(wave_radius),
+    }
+
+
+def simulate_retinotectal_4d_tensor(
+    regime_id: str = "wild_type_4d",
+    ephb_scale: float | None = None,
+    ephrinb_scale: float | None = None,
+    wave_mode: str | None = None,
+    wave_radius: float | None = None,
+    mu_comp: float | None = None,
+    kappa_coop_override: float | None = None,
+    record_history: bool = False,
+) -> dict[str, Any]:
+    """Integrate the 4D retinotectal synaptic tensor W_{(i,k),(j,l)}(t): retina (x nasal->temporal,
+    z dorsal->ventral) x tectum (y rostral->caudal, v lateral->medial).
+
+    Energy is separable, E = E_A(x, y) + E_B(z, v): the AP axis uses the Pass-2 repulsive EphA/ephrin-A
+    counter-gradient (minimum on y = 1 - x), the DV axis uses ATTRACTIVE EphB forward signalling up the
+    ephrin-B1 medial gradient (Hindges et al. 2002; Mann et al. 2002), minimum on s_EphB z = s_ephrinB v.
+    The retinal cooperative kernel K_ret of Willshaw & von der Malsburg (1976) is NOT a prescribed
+    Gaussian but the burst-correlation matrix of simulated cholinergic retinal waves
+    (`simulate_retinal_wave_correlations`). Nothing in the target map is templated: the final map is
+    whatever the energy + Hebbian cooperation + Sinkhorn Group II competition converge to."""
+    p3 = load_pass3_reference()
+    p = p3["canonical_parameters_4d"]
+    regimes = {r["id"]: r for r in p3["regimes_4d"]}
+    if regime_id not in regimes:
+        raise KeyError(f"Unknown 4D regime_id: {regime_id}")
+    reg = regimes[regime_id]
+    s_B = float(reg["ephb_scale"]) if ephb_scale is None else float(ephb_scale)
+    s_LB = float(reg["ephrinb_scale"]) if ephrinb_scale is None else float(ephrinb_scale)
+    w_mode = str(reg["wave_mode"]) if wave_mode is None else str(wave_mode)
+    r_w = float(p["wave_radius_wt"]) if wave_radius is None else float(wave_radius)
+    mu = float(reg.get("mu_comp", p["mu_comp"])) if mu_comp is None else float(mu_comp)
+
+    n_x, n_z, n_y, n_v = (int(p[k]) for k in ("N_x", "N_z", "N_y", "N_v"))
+    alpha_A = float(p["alpha_A"])
+    alpha_B = float(p["alpha_B"])
+    sigma_chem = float(p["sigma_chem"])
+    kappa_chem = float(p["kappa_chem"])
+    kappa_coop = float(p["kappa_coop"]) if kappa_coop_override is None else float(kappa_coop_override)
+    sigma_tec = float(p["sigma_tec"])
+    steps = int(p["steps"])
+    dt = float(p["dt"])
+
+    x = np.linspace(0.0, 1.0, n_x)
+    z = np.linspace(0.0, 1.0, n_z)
+    y = np.linspace(0.0, 1.0, n_y)
+    v = np.linspace(0.0, 1.0, n_v)
+
+    # Gradients (log-domain) and separable energies
+    R_A = np.exp(alpha_A * x)
+    L_A = np.exp(alpha_A * y)
+    R_B = np.exp(alpha_B * s_B * z)
+    L_B = np.exp(alpha_B * s_LB * v)
+    E_A = 0.5 * ((np.log(R_A)[:, None] + np.log(L_A)[None, :] - alpha_A) / (alpha_A * sigma_chem)) ** 2
+    E_B = 0.5 * ((np.log(R_B)[:, None] - np.log(L_B)[None, :]) / (alpha_B * sigma_chem)) ** 2
+    E4 = E_A[:, None, :, None] + E_B[None, :, None, :]
+
+    waves = simulate_retinal_wave_correlations(x, z, r_w, int(p["wave_n_events"]), int(p["wave_seed"]), w_mode)
+    K_ret = waves["K_ret"]
+    K_y = build_gaussian_kernel(y, sigma_tec)
+    K_v = build_gaussian_kernel(v, sigma_tec)
+
+    rng = np.random.default_rng(int(p["seed"]) + stable_regime_offset(regime_id))
+    n_ret = n_x * n_z
+    n_tec = n_y * n_v
+    all_ret = np.ones(n_ret, dtype=bool)
+    all_tec = np.ones(n_tec, dtype=bool)
+    W2 = 1.0 + rng.uniform(-0.08, 0.08, size=(n_ret, n_tec))
+    W2 = sinkhorn_group_ii_normalize(W2, all_ret, all_tec, mu_comp=mu, n_iter=8)
+    E2 = E4.reshape(n_ret, n_tec)
+
+    # Hebbian drive: postsynaptic activity at tectal site (j,l) during a wave = sum over co-active
+    # neighbours b of W_b,(j,l), smoothed by tectal dendritic overlap K_y (x) K_v. Expressed per unit of
+    # retinal co-activity so kappa_coop is comparable across wave regimes; a cell with no correlated
+    # neighbours (beta2-/-) receives zero Hebbian refinement.
+    K_row = np.sum(K_ret, axis=1, keepdims=True)
+    K_ret_n = K_ret / np.maximum(K_row, 1e-12) * np.minimum(K_row, 1.0)
+    frame_steps = set(np.linspace(0, steps, 16, dtype=int).tolist()) if record_history else set()
+    W_frames: list[np.ndarray] = [W2.copy()] if 0 in frame_steps else []
+    energy_hist = np.zeros(steps + 1)
+    energy_hist[0] = float(np.sum(W2 * E2))
+    for s in range(1, steps + 1):
+        anneal = 0.35 + 1.85 * (s / float(steps))
+        W4 = W2.reshape(n_ret, n_y, n_v)
+        coop = np.einsum("ab,bjl->ajl", K_ret_n, W4)
+        coop = np.einsum("ajl,jm->aml", coop, K_y)
+        coop = np.einsum("aml,ln->amn", coop, K_v).reshape(n_ret, n_tec)
+        growth = -anneal * kappa_chem * E2 + kappa_coop * coop
+        growth -= np.max(growth, axis=1, keepdims=True)
+        W2 = sinkhorn_group_ii_normalize(W2 * np.exp(dt * growth), all_ret, all_tec, mu_comp=mu, n_iter=10)
+        energy_hist[s] = float(np.sum(W2 * E2))
+        if record_history and s in frame_steps:
+            W_frames.append(W2.copy())
+
+    W4 = W2.reshape(n_x, n_z, n_y, n_v)
+    row = np.maximum(W4.sum(axis=(2, 3)), 1e-12)
+    y_bar = np.einsum("ikjl,j->ik", W4, y) / row
+    v_bar = np.einsum("ikjl,l->ik", W4, v) / row
+    y_var = np.einsum("ikjl,j->ik", W4, y**2) / row - y_bar**2
+    v_var = np.einsum("ikjl,l->ik", W4, v**2) / row - v_bar**2
+    sd_y = np.sqrt(np.maximum(y_var, 0.0))
+    sd_v = np.sqrt(np.maximum(v_var, 0.0))
+    tz_area = float(np.mean(np.pi * sd_y * sd_v))
+    tz_sigma = float(np.mean(np.sqrt(np.maximum(y_var + v_var, 0.0))))
+
+    XX, ZZ = np.meshgrid(x, z, indexing="ij")
+    ap_slope, ap_icpt = np.polyfit(XX.ravel(), y_bar.ravel(), 1)
+    dv_slope, dv_icpt = np.polyfit(ZZ.ravel(), v_bar.ravel(), 1)
+    r_ap = float(np.corrcoef(XX.ravel(), y_bar.ravel())[0, 1])
+    r_dv = float(np.corrcoef(ZZ.ravel(), v_bar.ravel())[0, 1])
+    cross_y_z = float(np.corrcoef(ZZ.ravel(), y_bar.ravel())[0, 1])
+    cross_v_x = float(np.corrcoef(XX.ravel(), v_bar.ravel())[0, 1])
+    ap_rmse = float(np.sqrt(np.mean((y_bar - (1.0 - XX)) ** 2)))
+    dv_rmse_wt_law = float(np.sqrt(np.mean((v_bar - ZZ) ** 2)))
+
+    return {
+        "regime_id": regime_id,
+        "x": x,
+        "z": z,
+        "y": y,
+        "v": v,
+        "ephb_scale": s_B,
+        "ephrinb_scale": s_LB,
+        "W4": W4,
+        "W_frames": W_frames,
+        "energy_hist": energy_hist,
+        "y_bar": y_bar,
+        "v_bar": v_bar,
+        "sd_y": sd_y,
+        "sd_v": sd_v,
+        "tz_area": tz_area,
+        "tz_sigma": tz_sigma,
+        "ap_slope": float(ap_slope),
+        "dv_slope": float(dv_slope),
+        "r_ap": r_ap,
+        "r_dv": r_dv,
+        "cross_y_z": cross_y_z,
+        "cross_v_x": cross_v_x,
+        "ap_rmse": ap_rmse,
+        "dv_rmse_wt_law": dv_rmse_wt_law,
+        "v_bar_dorsal_row": v_bar[:, 0].copy(),
+        "v_bar_ventral_row": v_bar[:, -1].copy(),
+        "waves": waves,
+    }
+
+
+def evaluate_4d_dv_wave_suite() -> dict[str, Any]:
+    """Run the 4 Pass-3 4D regimes plus the wave-domain-radius sweep (TZ width vs correlation length)."""
+    p3 = load_pass3_reference()
+    out: dict[str, dict[str, Any]] = {}
+    for reg in p3["regimes_4d"]:
+        out[reg["id"]] = simulate_retinotectal_4d_tensor(reg["id"], record_history=(reg["id"] == "wild_type_4d"))
+    sweep_r = [float(r) for r in p3["wave_radius_sweep"]]
+    sweep_tz = []
+    sweep_cl = []
+    sweep_ap = []
+    for r_w in sweep_r:
+        res = simulate_retinotectal_4d_tensor("wild_type_4d", wave_radius=r_w)
+        sweep_tz.append(res["tz_sigma"])
+        sweep_cl.append(res["waves"]["corr_length"])
+        sweep_ap.append(res["ap_slope"])
+    # EphB2/B3 hypomorph: how much of the lateral shift survives tectal (column) competition?
+    mu_sweep = [float(m) for m in p3["mu_comp_sweep_dko"]]
+    mu_dv_slope = []
+    mu_ventral_shift = []
+    wt = out["wild_type_4d"]
+    for mu_val in mu_sweep:
+        res = simulate_retinotectal_4d_tensor("ephb2_ephb3_dko_lateral_shift", mu_comp=mu_val)
+        mu_dv_slope.append(res["dv_slope"])
+        mu_ventral_shift.append(float(np.mean(wt["v_bar_ventral_row"] - res["v_bar_ventral_row"])))
+    ko = out["beta2_nachr_ko_uncorrelated"]
+    dko = out["ephb2_ephb3_dko_lateral_shift"]
+    return {
+        "regimes": out,
+        "sweep_radius": np.array(sweep_r),
+        "sweep_tz_sigma": np.array(sweep_tz),
+        "sweep_corr_length": np.array(sweep_cl),
+        "sweep_ap_slope": np.array(sweep_ap),
+        "mu_sweep": np.array(mu_sweep),
+        "mu_dv_slope": np.array(mu_dv_slope),
+        "mu_ventral_shift": np.array(mu_ventral_shift),
+        "tz_area_ratio_ko_wt": float(ko["tz_area"] / max(wt["tz_area"], 1e-12)),
+        "tz_sigma_ratio_ko_wt": float(ko["tz_sigma"] / max(wt["tz_sigma"], 1e-12)),
+        "ventral_lateral_shift": float(np.mean(wt["v_bar_ventral_row"] - dko["v_bar_ventral_row"])),
+        "dorsal_shift": float(np.mean(wt["v_bar_dorsal_row"] - dko["v_bar_dorsal_row"])),
     }
 
 
@@ -825,21 +1130,197 @@ def render_outputs(skip_gif: bool = False) -> dict[str, Any]:
             loop=0,
         )
 
+    suite4d = render_pass3_outputs(skip_gif=skip_gif)
+
     return {
         "invariants": inv,
         "suite": suite,
+        "suite4d": suite4d,
         "specimen": spec,
     }
+
+
+OUT_PNG_4D = ROOT / "docs" / "media" / "retinotectal_chemoaffinity_4d_dv_waves.png"
+OUT_GIF_4D = ROOT / "docs" / "media" / "retinotectal_chemoaffinity_4d_tz_refinement.gif"
+
+
+def _dark_axes(ax) -> None:
+    ax.set_facecolor("#131b29")
+    ax.tick_params(colors="#cbd5e1", labelsize=8.0)
+    for sp in ax.spines.values():
+        sp.set_color("#334155")
+
+
+def render_pass3_outputs(skip_gif: bool = False) -> dict[str, Any]:
+    """Render the Pass 3 6-panel figure (`retinotectal_chemoaffinity_4d_dv_waves.png`): 4D orthogonal
+    AP/DV maps, EphB2/B3 lateral shift vs tectal competition, wave-correlation kernel, beta2-/- TZ
+    enlargement, wave-radius sweep, and the regime summary against the literature references. Also writes
+    a 16-frame GIF of tectal termination-zone refinement for 4 sample RGCs (WT 4D run)."""
+    suite = evaluate_4d_dv_wave_suite()
+    p3 = load_pass3_reference()
+    reg = suite["regimes"]
+    wt = reg["wild_type_4d"]
+    dko = reg["ephb2_ephb3_dko_lateral_shift"]
+    bnull = reg["ephrin_b_null_flat_ml"]
+    ko = reg["beta2_nachr_ko_uncorrelated"]
+    XX, ZZ = np.meshgrid(wt["x"], wt["z"], indexing="ij")
+
+    fig, axes = plt.subplots(2, 3, figsize=(17.0, 10.0), dpi=135)
+    fig.patch.set_facecolor("#0b0f17")
+    for ax in axes.ravel():
+        _dark_axes(ax)
+
+    # P1: orthogonal 4D maps — AP centroid vs x (coloured by z) and DV centroid vs z (coloured by x)
+    ax = axes[0, 0]
+    sc1 = ax.scatter(XX.ravel(), wt["y_bar"].ravel(), c=ZZ.ravel(), cmap="cool", s=14, label="AP: $\\bar y(x)$ coloured by $z$")
+    ax.plot(wt["x"], 1.0 - wt["x"], "--", color="#f8fafc", lw=1.2, label=f"$y^*=1-x$ (slope {wt['ap_slope']:.3f})")
+    ax.scatter(ZZ.ravel(), wt["v_bar"].ravel(), c=XX.ravel(), cmap="autumn", s=14, marker="^", label="DV: $\\bar v(z)$ coloured by $x$")
+    ax.plot(wt["z"], wt["z"], ":", color="#22c55e", lw=1.4, label=f"$v^*=z$ attractive (slope {wt['dv_slope']:.3f})")
+    ax.set_title(f"P1. 4D tensor: orthogonal AP (repulsive) & DV (attractive) maps\n|cross-talk r| = {abs(wt['cross_y_z']):.3f}, {abs(wt['cross_v_x']):.3f}", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Retinal $x$ (N$\\to$T) or $z$ (D$\\to$V)", color="#cbd5e1", fontsize=8.6)
+    ax.set_ylabel("Tectal $\\bar y$ (R$\\to$C) or $\\bar v$ (L$\\to$M)", color="#cbd5e1", fontsize=8.6)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.8, loc="center left")
+    cb = fig.colorbar(sc1, ax=ax, fraction=0.046, pad=0.03)
+    cb.ax.tick_params(colors="#cbd5e1", labelsize=7)
+    cb.set_label("$z$ (dorsal$\\to$ventral)", color="#cbd5e1", fontsize=7.5)
+
+    # P2: EphB2/B3 hypomorph lateral shift of ventral RGCs vs tectal competition
+    ax = axes[0, 1]
+    ax.plot(wt["z"], wt["v_bar"].mean(axis=0), "o-", color="#22c55e", ms=4, lw=1.8, label="WT $\\bar v(z)$")
+    ax.plot(dko["z"], dko["v_bar"].mean(axis=0), "s-", color="#f59e0b", ms=4, lw=1.8, label=f"EphB2/B3$^{{-/-}}$ ($s_{{EphB}}$=0.35, $\\mu$=0.5): slope {dko['dv_slope']:.2f}")
+    ax.plot(wt["z"], 0.35 * wt["z"], "--", color="#fda4af", lw=1.3, label="Group I limit $v^*=0.35z$ (Lean)")
+    ax.plot(bnull["z"], bnull["v_bar"].mean(axis=0), "x:", color="#94a3b8", ms=5, lw=1.2, label=f"ephrin-B flat: $r_{{DV}}$={bnull['r_dv']:.2f}, AP slope {bnull['ap_slope']:.2f}")
+    ax_in = ax.inset_axes([0.58, 0.08, 0.38, 0.36])
+    _dark_axes(ax_in)
+    ax_in.plot(suite["mu_sweep"], suite["mu_ventral_shift"], "o-", color="#f59e0b", ms=3.5, lw=1.3)
+    ax_in.set_xlabel("$\\mu_{comp}$", color="#cbd5e1", fontsize=7)
+    ax_in.set_ylabel("ventral lateral shift", color="#cbd5e1", fontsize=6.5)
+    ax_in.tick_params(labelsize=6)
+    ax.set_title("P2. Hindges 2002 EphB2/B3 mutant: ventral TZs shift laterally,\ndorsal unaffected; shift eroded by Group II tectal competition", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Retinal $z$ (dorsal $\\to$ ventral)", color="#cbd5e1", fontsize=8.6)
+    ax.set_ylabel("Tectal $\\bar v$ (lateral $\\to$ medial)", color="#cbd5e1", fontsize=8.6)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.6, loc="upper left")
+
+    # P3: wave correlation vs separation + kernel image
+    ax = axes[0, 2]
+    wv = wt["waves"]
+    kv = ko["waves"]
+    ax.plot(wv["sep_bins"], wv["corr_vs_sep"], "o-", color="#38bdf8", ms=4, lw=1.8, label=f"WT waves $r_w$={wv['wave_radius']:.2f}: $C(d)$, $\\ell_{{1/e}}$={wv['corr_length']:.3f}")
+    ax.plot(kv["sep_bins"], kv["corr_vs_sep"], "s--", color="#f43f5e", ms=3.5, lw=1.4, label="$\\beta 2$-nAChR$^{-/-}$ (uncorrelated)")
+    ax.axvline(2.0 * wv["wave_radius"], color="#f8fafc", ls=":", lw=1.1, label="$2 r_w$ support bound (Lean)")
+    ax.axhline(3.0 / np.sqrt(float(p3["canonical_parameters_4d"]["wave_n_events"])), color="#64748b", lw=1.0, ls="--", label="noise floor $3/\\sqrt{n_{events}}$")
+    ax_in = ax.inset_axes([0.55, 0.42, 0.42, 0.5])
+    ax_in.imshow(wv["K_ret"], cmap="magma", origin="lower", aspect="auto")
+    ax_in.set_title("$K_{ret}$ from waves", color="#f8fafc", fontsize=7)
+    ax_in.set_xticks([])
+    ax_in.set_yticks([])
+    ax.set_title("P3. Cholinergic wave co-burst correlation $\\to$ cooperative kernel $K_{ret}$\n(Meister 1991 / Feller 1996 / Willshaw-von der Malsburg 1976)", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Retinal separation $d$ (retina units)", color="#cbd5e1", fontsize=8.6)
+    ax.set_ylabel("Pearson burst correlation $C(d)$", color="#cbd5e1", fontsize=8.6)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.6, loc="lower left")
+
+    # P4: TZ maps for a sample central RGC, WT vs beta2-KO
+    ax = axes[1, 0]
+    i0, k0 = len(wt["x"]) // 2, len(wt["z"]) // 2
+    tz_wt = wt["W4"][i0, k0]
+    tz_ko = ko["W4"][i0, k0]
+    comb = np.zeros((tz_wt.shape[1], tz_wt.shape[0], 3))
+    comb[:, :, 1] = (tz_wt / tz_wt.max()).T
+    comb[:, :, 0] = (tz_ko / tz_ko.max()).T
+    comb[:, :, 2] = 0.35 * (tz_ko / tz_ko.max()).T
+    ax.imshow(comb, origin="lower", extent=[0, 1, 0, 1], aspect="auto")
+    ax.scatter([wt["y_bar"][i0, k0]], [wt["v_bar"][i0, k0]], color="#22c55e", marker="+", s=120, lw=2, label=f"WT TZ ($\\sigma$={wt['tz_sigma']:.3f}, area={wt['tz_area']:.4f})")
+    ax.scatter([ko["y_bar"][i0, k0]], [ko["v_bar"][i0, k0]], color="#f43f5e", marker="x", s=100, lw=2, label=f"$\\beta 2^{{-/-}}$ TZ ($\\sigma$={ko['tz_sigma']:.3f}, area={ko['tz_area']:.4f})")
+    ax.set_title(f"P4. McLaughlin 2003 $\\beta 2$-nAChR$^{{-/-}}$: TZ enlarged, polarity kept\nTZ area ratio KO/WT = {suite['tz_area_ratio_ko_wt']:.2f} (ref $\\approx$2, several-fold)", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Tectal $y$ (rostral $\\to$ caudal)", color="#cbd5e1", fontsize=8.6)
+    ax.set_ylabel("Tectal $v$ (lateral $\\to$ medial)", color="#cbd5e1", fontsize=8.6)
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.8, loc="upper right")
+
+    # P5: wave radius sweep
+    ax = axes[1, 1]
+    ax.plot(suite["sweep_radius"], suite["sweep_tz_sigma"], "o-", color="#38bdf8", ms=5, lw=2.0, label="TZ width $\\sigma_{TZ}$ (WT waves)")
+    ax.axhline(ko["tz_sigma"], color="#f43f5e", ls="--", lw=1.4, label=f"$\\beta 2^{{-/-}}$ no correlations ({ko['tz_sigma']:.3f})")
+    ax.axvline(float(p3["canonical_parameters_4d"]["wave_radius_wt"]), color="#f8fafc", ls=":", lw=1.1, label="canonical $r_w$")
+    ax2 = ax.twinx()
+    ax2.plot(suite["sweep_radius"], suite["sweep_corr_length"], "s--", color="#a855f7", ms=4, lw=1.3, label="$K_{ret}$ corr. length $\\ell_{1/e}$")
+    ax2.tick_params(colors="#cbd5e1", labelsize=7.5)
+    ax2.set_ylabel("$\\ell_{1/e}$", color="#a855f7", fontsize=8.6)
+    ax.set_title("P5. Wave-domain radius sweep: optimal correlation scale for refinement\n(too small = no co-active neighbours, too large = far neighbours blur)", color="#f8fafc", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Wave domain radius $r_w$", color="#cbd5e1", fontsize=8.6)
+    ax.set_ylabel("$\\sigma_{TZ}$", color="#cbd5e1", fontsize=8.6)
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=6.8, loc="lower right")
+
+    # P6: regime summary vs references
+    ax = axes[1, 2]
+    names = ["WT 4D\nAP slope", "WT 4D\nDV slope", "EphB DKO\nDV slope ($\\mu$=0)", "ephrin-B flat\n$|r_{DV}|$", "$\\beta 2^{-/-}$\nTZ ratio"]
+    vals = [abs(wt["ap_slope"]), wt["dv_slope"], float(suite["mu_dv_slope"][0]), abs(bnull["r_dv"]), suite["tz_area_ratio_ko_wt"]]
+    refs = [1.0, 1.0, 0.35, 0.0, 2.0]
+    xp = np.arange(len(names))
+    ax.bar(xp - 0.18, vals, width=0.36, color="#38bdf8", label="simulated")
+    ax.bar(xp + 0.18, refs, width=0.36, color="#f59e0b", alpha=0.85, label="reference (Lean law / literature)")
+    ax.set_xticks(xp)
+    ax.set_xticklabels(names, color="#cbd5e1", fontsize=7.2)
+    ax.set_title("P6. Pass 3 summary vs Hindges 2002 / Mann 2002 / McLaughlin 2003\n(TZ-ratio reference approximate; see pass3 reference JSON)", color="#f8fafc", fontsize=9.0, fontweight="bold")
+    ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.2, loc="upper left")
+
+    fig.suptitle(
+        "Pass 3 — 4D Retinotectal Tensor: Orthogonal EphB/Ephrin-B Attractive DV Mapping & Retinal-Wave-Derived Cooperative Kernel",
+        color="#f8fafc",
+        fontsize=12.0,
+        fontweight="bold",
+        y=0.995,
+    )
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.975])
+    fig.savefig(OUT_PNG_4D, dpi=135)
+    plt.close(fig)
+
+    if not skip_gif and wt["W_frames"]:
+        n_x, n_z, n_y, n_v = wt["W4"].shape
+        samples = [(2, 2), (n_x - 3, 2), (2, n_z - 3), (n_x - 3, n_z - 3)]
+        colors = ["#38bdf8", "#f43f5e", "#22c55e", "#f59e0b"]
+        frames_pil: list[Image.Image] = []
+        for fi, W2f in enumerate(wt["W_frames"]):
+            W4f = W2f.reshape(n_x, n_z, n_y, n_v)
+            f_fig, ax = plt.subplots(1, 1, figsize=(5.2, 4.6), dpi=90)
+            f_fig.patch.set_facecolor("#0b0f17")
+            _dark_axes(ax)
+            rgb = np.zeros((n_v, n_y, 3))
+            for (i, k), col in zip(samples, colors):
+                tz = W4f[i, k] / max(W4f[i, k].max(), 1e-12)
+                c = np.array([int(col[1:3], 16), int(col[3:5], 16), int(col[5:7], 16)]) / 255.0
+                rgb += tz.T[:, :, None] * c[None, None, :]
+            ax.imshow(np.clip(rgb, 0, 1), origin="lower", extent=[0, 1, 0, 1], aspect="auto")
+            for (i, k), col in zip(samples, colors):
+                ax.scatter([1.0 - wt["x"][i]], [wt["z"][k]], color=col, marker="+", s=90, lw=1.8)
+            ax.set_title(f"4D WT TZ refinement, 4 RGCs (x,z) — frame {fi+1}/{len(wt['W_frames'])}\n+ = gradient law $(1-x,\\ z)$", color="#f8fafc", fontsize=8.6)
+            ax.set_xlabel("Tectal $y$ (R$\\to$C)", color="#cbd5e1", fontsize=8)
+            ax.set_ylabel("Tectal $v$ (L$\\to$M)", color="#cbd5e1", fontsize=8)
+            f_fig.tight_layout()
+            f_fig.canvas.draw()
+            rgba = np.asarray(f_fig.canvas.buffer_rgba())
+            frames_pil.append(Image.fromarray(rgba[:, :, :3]))
+            plt.close(f_fig)
+        frames_pil[0].save(OUT_GIF_4D, save_all=True, append_images=frames_pil[1:], duration=160, loop=0)
+
+    return suite
 
 
 # --------------------------------------------------------------------------- #
 # 6. MorphoEval Quantitative Measurements Hook (`measure_morphoeval()`)
 # --------------------------------------------------------------------------- #
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 6 quantitative reference-anchored morphometric measurements for `measure_outputs.py`."""
+    """Compute 11 quantitative reference-anchored morphometric measurements for `measure_outputs.py`
+    (6 Pass-2 measurements + 5 Pass-3 measurements on the 4D EphB/ephrin-B + retinal-wave tensor model)."""
     inv = compute_lean_chemoaffinity_invariants()
     suite = evaluate_all_regimes_and_morphospace()
     spec = segment_zebrafish_retina_specimen(SPECIMEN_PATH)
+    s4 = evaluate_4d_dv_wave_suite()
+    wt4 = s4["regimes"]["wild_type_4d"]
+    bnull = s4["regimes"]["ephrin_b_null_flat_ml"]
+    ko4 = s4["regimes"]["beta2_nachr_ko_uncorrelated"]
+    dko4 = s4["regimes"]["ephb2_ephb3_dko_lateral_shift"]
 
     reg = suite["regimes"]
     wt = reg["wild_type_inverted_map"]
@@ -903,7 +1384,7 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "method": "Linear regression slope of surviving nasal half-retina x in [0, 0.5] expanded across intact tectum y in [0, 1]",
             "reference_value": -2.0,
             "reference_source": "Prestige & Willshaw (1975) Proc. R. Soc. B 190:77-98 (2x retinotectal expansion of half-retina)",
-            "note": f"Group II half-retina expansion slope = {exp_r['slope']:.4f} (r = {exp_r['r_val']:.4f}, RMSE = {exp_rmse:.4f}) vs Ephrin-A2/A5 DKO scrambled control |r| = {abs(dko['r_val']):.4f}",
+            "note": f"Group II half-retina expansion slope = {exp_r['slope']:.4f} (r = {exp_r['r_val']:.4f}, RMSE = {exp_rmse:.4f}) vs Ephrin-A2/A5 DKO scrambled control single-draw |r| = {abs(dko['r_val']):.4f}, 32-scramble ensemble mean |r| = {dko['mean_abs_r_scrambles']:.4f}",
             "derived_from": "script",
         },
         {
@@ -916,15 +1397,66 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"Radial lamina Pearson r = {spec['lamina_r']:.4f} (RMSE = {spec['lamina_rmse']:.4f}, N = {spec['n_segmented_clusters']} segmented retinal cell clusters across nasal-temporal arc)",
             "derived_from": "script",
         },
+        {
+            "name": "4D tensor wild-type dorsoventral attractive EphB/ephrin-B map slope dv*/dz (orthogonal to AP axis)",
+            "value": round(wt4["dv_slope"], 4),
+            "unit": "mediolateral/dorsoventral slope",
+            "method": "Linear regression of W-weighted mediolateral centroid v_bar(x,z) on retinal z over all 16x16 RGCs of the 4D tensor W_(i,k),(j,l) (attractive co-gradient energy E_B, no templated target)",
+            "reference_value": 1.0,
+            "reference_source": "Hindges et al. (2002) Neuron 35:475-487 (EphB forward signalling attracts ventral axons medially); Mann et al. (2002) Neuron 35:461-473 (Lean 4 ephb_dorsoventral_attractive_orthogonal_map)",
+            "note": f"DV slope = {wt4['dv_slope']:.4f} (r = {wt4['r_dv']:.4f}, RMSE vs v = z: {wt4['dv_rmse_wt_law']:.4f}); simultaneous AP slope = {wt4['ap_slope']:.4f} (r = {wt4['r_ap']:.4f}); axis cross-talk |r(y_bar,z)| = {abs(wt4['cross_y_z']):.4f}, |r(v_bar,x)| = {abs(wt4['cross_v_x']):.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "4D tensor AP/DV axis cross-talk |r(y_bar, z)| + |r(v_bar, x)| (separability of EphA and EphB systems)",
+            "value": round(abs(wt4["cross_y_z"]) + abs(wt4["cross_v_x"]), 4),
+            "unit": "summed |Pearson r|",
+            "method": "Pearson correlations between the AP centroid and the orthogonal retinal DV coordinate and vice versa in the wild-type 4D run",
+            "reference_value": 0.0,
+            "reference_source": "Separable energy E = E_A(x,y) + E_B(z,v) (Lean 4 ephb_dorsoventral_attractive_orthogonal_map); ephrin-B flat control keeps AP slope",
+            "note": f"cross-talk = {abs(wt4['cross_y_z']) + abs(wt4['cross_v_x']):.4f}; graded-ephrin-B loss control: |r_DV| = {abs(bnull['r_dv']):.3f} while AP slope stays {bnull['ap_slope']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "EphB2/EphB3 hypomorph (s_EphB = 0.35) Group-I-limit dorsoventral slope dv*/dz = s_EphB (ventral lateral shift)",
+            "value": round(float(s4["mu_dv_slope"][0]), 4),
+            "unit": "mediolateral/dorsoventral slope",
+            "method": "DV regression slope of the 4D run with reduced EphB receptor gradient and mu_comp = 0 (no tectal column competition); Group II (mu_comp = 1) value and ventral-row lateral shift at mu_comp = 0.5 reported in note",
+            "reference_value": 0.35,
+            "reference_source": "Hindges et al. (2002) Neuron 35:475-487 Figs. 5-7 (ventral RGC ectopic TZs lateral to normal, dorsal RGCs unaffected); analytic match locus v* = s_EphB z (Lean 4 ephb_hypomorph_lateral_shift)",
+            "note": f"mu_comp sweep {np.round(s4['mu_sweep'], 2).tolist()} -> DV slope {np.round(s4['mu_dv_slope'], 3).tolist()}, ventral lateral shift {np.round(s4['mu_ventral_shift'], 3).tolist()}; canonical mu_comp = 0.5: ventral shift = {s4['ventral_lateral_shift']:.4f} (lateral, positive) vs dorsal shift = {s4['dorsal_shift']:.4f}; strict Group II competition rescales the shallow gradient back over the whole tectum (residual)",
+            "derived_from": "script",
+        },
+        {
+            "name": "beta2-nAChR knockout (uncorrelated bursting) termination-zone area ratio KO/WT under wave-derived K_ret",
+            "value": round(s4["tz_area_ratio_ko_wt"], 4),
+            "unit": "TZ area ratio",
+            "method": "Mean pi*sd_W[y]*sd_W[v] over all RGCs with K_ret from independent bursting (C_wave -> I) divided by the same with K_ret from cholinergic wave domains (r_wave = 0.12)",
+            "reference_value": 2.0,
+            "reference_source": "McLaughlin et al. (2003) Neuron 40:1147-1160 Fig. 3 (several-fold enlarged TZ in beta2-/- at P8; polarity preserved) — approximate reference, not re-derivable offline",
+            "note": f"TZ area ratio = {s4['tz_area_ratio_ko_wt']:.3f} (sigma_TZ ratio = {s4['tz_sigma_ratio_ko_wt']:.3f}; KO AP slope {ko4['ap_slope']:.3f}, r = {ko4['r_ap']:.3f} polarity preserved); wave-radius sweep sigma_TZ = {np.round(s4['sweep_tz_sigma'], 4).tolist()} at r_w = {s4['sweep_radius'].tolist()} (interior optimum)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Wave-derived cooperative kernel compact support: max K_ret beyond 2 r_wave (should vanish) and WT 1/e correlation length",
+            "value": round(wt4["waves"]["max_K_beyond_2r"], 6),
+            "unit": "kernel weight",
+            "method": "Maximum thresholded off-diagonal burst-correlation weight for RGC pairs separated by more than 2 r_wave in the WT wave raster (1500 events, seed 1991)",
+            "reference_value": 0.0,
+            "reference_source": "Meister et al. (1991) Science 252:939-943; Feller et al. (1996) Science 272:1182-1187 (finite wave domains); Lean 4 wave_cofiring_bounds_separation",
+            "note": f"max K beyond 2r = {wt4['waves']['max_K_beyond_2r']:.2e}; WT correlation length l_1/e = {wt4['waves']['corr_length']:.3f} (r_wave = {wt4['waves']['wave_radius']:.2f}); mean K_ret row sum WT = {wt4['waves']['mean_K_row_sum']:.3f} vs beta2-/- = {ko4['waves']['mean_K_row_sum']:.4f}; EphB DKO regime unaffected ({dko4['waves']['corr_length']:.3f})",
+            "derived_from": "script",
+        },
     ]
 
 
 # --------------------------------------------------------------------------- #
-# 7. Deterministic 8-Check Verification Suite (`--self-test`)
+# 7. Deterministic 11-Check Verification Suite (`--self-test`)
 # --------------------------------------------------------------------------- #
 def run_self_test() -> int:
-    """Run 8 deterministic verification checks covering SHA-256 locks, Lean 4 invariants,
-    all 6 experimental regimes, zebrafish retinal CV segmentation, and bitwise reproducibility."""
+    """Run 11 deterministic verification checks covering SHA-256 locks, Lean 4 invariants, all 6 Pass-2
+    experimental regimes, zebrafish retinal CV segmentation, bitwise reproducibility, and the Pass-3 4D
+    EphB/ephrin-B tensor + retinal-wave kernel regimes (checks 9-11)."""
     # Check 1: SHA-256 digest verification of vendored dataset files
     verified = verify_dataset_sha256()
     assert len(verified) == 3, f"Expected 3 verified dataset files, got {len(verified)}"
@@ -961,25 +1493,56 @@ def run_self_test() -> int:
 
     # Check 6: Ephrin-A2/A5 DKO scrambled control abolishes topographic polarity
     dko = reg["ephrin_a2_a5_dko_scrambled_null"]
-    assert abs(dko["r_val"]) < 0.30, f"Expected scrambled DKO |r| < 0.30, got {dko['r_val']}"
+    assert abs(dko["r_val"]) < 0.50, f"Expected scrambled DKO single-draw |r| < 0.50, got {dko['r_val']}"
+    assert dko["mean_abs_r_scrambles"] < 0.25, f"Expected scrambled DKO ensemble mean |r| < 0.25, got {dko['mean_abs_r_scrambles']}"
 
     # Check 7: Empirical CV segmentation of 72 hpf Danio rerio larval retina confocal micrograph
     spec = segment_zebrafish_retina_specimen(SPECIMEN_PATH)
     assert spec["lamina_r"] > 0.95, f"Expected radial lamina r > 0.95, got {spec['lamina_r']}"
     assert spec["n_segmented_clusters"] >= 40, f"Expected >= 40 clusters, got {spec['n_segmented_clusters']}"
 
-    # Check 8: Bitwise two-run determinism (atol = 0.0)
+    # Check 8: Bitwise two-run determinism (atol = 0.0) across all 11 measurements
     m1 = measure_morphoeval()
     m2 = measure_morphoeval()
-    assert len(m1) == 6
+    assert len(m1) == 11
     for a, b in zip(m1, m2):
         assert np.allclose(a["value"], b["value"], atol=0.0), f"Determinism failure on {a['name']}"
 
+    # Check 9 (Pass 3): 4D tensor — orthogonal repulsive AP and attractive DV maps emerge from the energy
+    s4 = evaluate_4d_dv_wave_suite()
+    wt4 = s4["regimes"]["wild_type_4d"]
+    assert abs(wt4["ap_slope"] - (-1.0)) < 0.06, f"4D AP slope mismatch: {wt4['ap_slope']}"
+    assert abs(wt4["dv_slope"] - 1.0) < 0.06, f"4D DV slope mismatch: {wt4['dv_slope']}"
+    assert wt4["r_ap"] < -0.99 and wt4["r_dv"] > 0.99
+    assert abs(wt4["cross_y_z"]) < 0.05 and abs(wt4["cross_v_x"]) < 0.05, "AP/DV cross-talk too large"
+    assert wt4["energy_hist"][-1] < wt4["energy_hist"][0]
+
+    # Check 10 (Pass 3): EphB/ephrin-B perturbations — DV collapses with flat ephrin-B while AP persists;
+    # EphB2/B3 hypomorph reaches the Group-I analytic locus v* = 0.35 z at mu_comp = 0, ventral shift lateral
+    bnull = s4["regimes"]["ephrin_b_null_flat_ml"]
+    assert abs(bnull["r_dv"]) < 0.6, f"Expected DV order loss with flat ephrin-B, got r_dv = {bnull['r_dv']}"
+    assert abs(bnull["ap_slope"] - (-1.0)) < 0.08, f"AP map should survive ephrin-B loss: {bnull['ap_slope']}"
+    assert abs(float(s4["mu_dv_slope"][0]) - 0.35) < 0.08, f"Group-I DV slope mismatch: {s4['mu_dv_slope'][0]}"
+    assert s4["ventral_lateral_shift"] > 0.0 and s4["ventral_lateral_shift"] > s4["dorsal_shift"]
+    assert np.all(np.diff(s4["mu_ventral_shift"]) <= 1e-6), "Lateral shift should not grow with competition"
+
+    # Check 11 (Pass 3): wave-derived K_ret has compact support <= 2 r_wave; beta2-/- kernel ~ 0;
+    # loss of correlated waves enlarges TZs but preserves polarity; wave-radius sweep has an interior optimum
+    ko4 = s4["regimes"]["beta2_nachr_ko_uncorrelated"]
+    assert wt4["waves"]["max_K_beyond_2r"] == 0.0, f"K_ret leaks beyond 2r: {wt4['waves']['max_K_beyond_2r']}"
+    assert ko4["waves"]["mean_K_row_sum"] < 0.05 * wt4["waves"]["mean_K_row_sum"]
+    assert s4["tz_area_ratio_ko_wt"] > 1.3, f"Expected enlarged beta2-/- TZ, ratio = {s4['tz_area_ratio_ko_wt']}"
+    assert ko4["r_ap"] < -0.99
+    i_min = int(np.argmin(s4["sweep_tz_sigma"]))
+    assert 0 < i_min < len(s4["sweep_tz_sigma"]) - 1, "Expected interior optimum of wave radius"
+
     print(
         "[1976-willshaw-retinotectal-chemoaffinity] Self-test PASSED "
-        f"(8/8 checks: WT slope={wt['slope']:.4f}, ki/ki split={hom['split_sep']:.4f}, "
+        f"(11/11 checks: WT slope={wt['slope']:.4f}, ki/ki split={hom['split_sep']:.4f}, "
         f"comp slope={comp['slope']:.4f}, exp slope={exp_r['slope']:.4f}, "
-        f"specimen lamina r={spec['lamina_r']:.4f}, clusters={spec['n_segmented_clusters']})."
+        f"specimen lamina r={spec['lamina_r']:.4f}, clusters={spec['n_segmented_clusters']}; "
+        f"4D AP={wt4['ap_slope']:.3f} DV={wt4['dv_slope']:.3f} cross={abs(wt4['cross_y_z']) + abs(wt4['cross_v_x']):.3f}, "
+        f"EphB-DKO GroupI DV={float(s4['mu_dv_slope'][0]):.3f}, beta2-KO TZ ratio={s4['tz_area_ratio_ko_wt']:.2f})."
     )
     return 0
 
@@ -988,7 +1551,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(
         description="Prestige & Willshaw (1975) & Brown et al. (2000) Retinotectal Chemoaffinity & Synaptic Competition"
     )
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check deterministic verification suite")
+    ap.add_argument("--self-test", action="store_true", help="Run 11-check deterministic verification suite (8 Pass-2 + 3 Pass-3 checks)")
     ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
     args = ap.parse_args()
     if args.self_test:

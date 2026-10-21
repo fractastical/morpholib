@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "schema_version": "morphoeval-reference-1.0",
+    "created": "2026-10-19",
+    "pass": 3,
+    "slot_id": "slot-073-nacre-spiral-dislocation-terraces",
+    "sim_id": "cartwright-nacre-spiral-dislocation-terraces",
+    "purpose": "Pass 3 remediation: (1) couple the 2D multi-dislocation eikonal terrace solver to a reduced 3D (stacked-sheet) Allen-Cahn phase-field model of chitin inter-lamellar membrane perforation and mineral-bridge alignment (Cartwright & Checa 2007 Sec. 4; Checa, Cartwright & Willinger 2011); (2) add orthorhombic aragonite [100]/[010] step-velocity anisotropy and {110} cyclic twinning to the spiral terrace polygonization (De Villiers 1971 lattice parameters).",
+    "offline_note": "All numbers below were entered from the authors' knowledge of the literature during an isolated (offline) Pass 3 run; DOIs could not be re-verified online. See pass3_citations.bib and the v3 audit references block. Values flagged 'model_parameter' are free parameters of the reduced model, not literature measurements."
+  },
+  "aragonite_crystallography": {
+    "source": "De Villiers JPR (1971) Crystal structures of aragonite, strontianite, and witherite. American Mineralogist 56:758-767 (orthorhombic Pmcn aragonite CaCO3)",
+    "space_group": "Pmcn (orthorhombic)",
+    "a_angstrom": 4.9611,
+    "b_angstrom": 7.9672,
+    "c_angstrom": 5.7407,
+    "nacre_tablet_c_axis": "c-axis normal to the lamellae (tablet plane = (001)); in-plane step directions [100] (a) and [010] (b)",
+    "pseudohexagonal_distortion_ratio": "a*sqrt(3)/b = 1.0785 (ideal hexagonal close packing in (001) would give exactly 1); this ratio is used as the default [100]/[010] step-velocity anisotropy v_100 / v_010",
+    "twin_law": "{110} cyclic (trilling) twinning; twin angle tau = 2*atan(a/b) = 63.82 deg; three twin domains at 0, 63.8, 127.6 deg produce the pseudo-hexagonal tablet habit with an angular misfit of 3*tau - 180 = 11.5 deg",
+    "twin_angle_deg": 63.82,
+    "cyclic_twin_misfit_deg": 11.46
+  },
+  "step_velocity_anisotropy_model": {
+    "formula": "v_n(theta, kappa) = v_inf * (1 - r_c * kappa) * A(theta);  A_single(theta) = 1 + e_2 cos 2(theta - theta_0) + e_6 cos 6(theta - theta_0);  A_twin(theta) = (1/3) * sum_{j=0..2} A_single(theta - j*tau)",
+    "anisotropic_pitch": "lambda(theta) = lambda_0 * A(theta)  (kinematic Wulff construction of the rotating BCF spiral; Burton, Cabrera & Frank 1951 Sec. 9; Cartwright et al. 2012)",
+    "e_2_definition": "e_2 = (v_100/v_010 - 1) / (v_100/v_010 + 1); default v_100/v_010 = a*sqrt(3)/b = 1.0785 -> e_2 = 0.0378",
+    "e_6_default": 0.15,
+    "e_6_note": "model_parameter: pseudo-hexagonal {110}-facet kinetic anisotropy amplitude; swept over [0, 0.30] in the Pass 3 ablation",
+    "analytic_twin_suppression_factors": {
+      "formula": "f_m = |sum_{j=0..2} exp(i*m*j*tau)| / 3",
+      "f_2_twofold": 0.0738,
+      "f_6_sixfold": 0.9474,
+      "interpretation": "cyclic {110} twinning (tau = 63.82 deg) suppresses the orthorhombic 2-fold elongation of the terrace contour to 7.4% while retaining 94.7% of the pseudo-hexagonal 6-fold polygonization; an ideal 60 deg trilling would give f_2 = 0, f_6 = 1"
+    }
+  },
+  "interlamellar_membrane_perforation_model": {
+    "source": "Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504 Sec. 4 (interlamellar membrane = beta-chitin core with silk-fibroin-like protein; tablets of successive lamellae connected through membrane pores by mineral bridges); Schaeffer et al. (1997) Chem. Mater. 9:1731-1740 (pores in demineralised interlamellar sheets); Checa, Cartwright & Willinger (2011) J. Struct. Biol. 176:330-339 (mineral bridges concentrated in the central area of gastropod tablets)",
+    "phase_field": "d phi/dt = M [ eps^2 Lap(phi) - W'(phi) + beta * (S(x,y) - S_0) * g'(phi) ],  W = phi^2 (1-phi)^2,  g = phi^2 (3 - 2 phi);  phi = 0 intact membrane, phi = 1 perforation",
+    "perforation_threshold": "phi = 0 loses stability (spinodal) where beta * (S - S_0) > 1/3, i.e. S > S_crit = S_0 + 1 / (3 beta); the hole state phi = 1 is favoured only where S > S_0, so holes stay bounded. Default beta = 1.0, S_0 = 0.35 -> S_crit = 0.683",
+    "source_term": "S_k(x,y) = F_k(x,y) * max( A_g exp(-|x - c_{k-1}|^2 / (2 sigma^2)), P_k(x,y) ),  with F_k the tablet-k footprint from the 2D eikonal terrace level, c_{k-1} the mineral-bridge centroid of the sheet below, sigma the bridge-localisation length and P_k a seeded random pore-nucleation field (Gaussian pores of amplitude 0.90 > S_crit = 0.683; overlapping pores combine by max)",
+    "parameters": {
+      "eps_um": 0.30,
+      "beta": 1.0,
+      "s_0": 0.35,
+      "mobility": 1.0,
+      "dt": 0.04,
+      "n_steps": 150,
+      "pore_density_per_um2": 0.12,
+      "pore_width_um": 0.80,
+      "pore_amplitude": 0.90,
+      "pore_rule": "n_pores = max(1, Poisson(density * footprint area)); a pore perforates on its own only if its drive exceeds S_crit plus the Allen-Cahn curvature penalty eps^2 / w_pore^2",
+      "gauss_amplitude_rule": "A_g = min(1, (0.10 D_tab / sigma)^2): fixed bridge-forming budget per tablet spread over the localisation area sigma^2",
+      "footprint_rule": "tablet k footprint = (eikonal terrace level >= k) AND |x - c_{k-1}| <= D_tab / 2 (lateral growth arrested at the tablet diameter by neighbouring tablets)",
+      "note": "model_parameter values; the grid (dx ~ 0.19 um) does not resolve individual 40-60 nm mineral bridges (Checa et al. 2011) - a perforation patch stands for a cluster of bridges"
+    },
+    "stacking_modes": {
+      "columnar_gastropod": {
+        "taxon": "Haliotis rufescens (Gastropoda, columnar/tower nacre)",
+        "r_c_um": 0.19,
+        "tablet_diam_um": 7.8,
+        "bridge_localization_over_tablet_diam": 0.10,
+        "reference_stacking_offset_over_tablet_diam": 0.0,
+        "reference_alignment_index": 1.0,
+        "reference_note": "Cartwright & Checa (2007) Sec. 4 and Checa et al. (2011): in columnar nacre successive tablets are stacked vertically through central mineral bridges (tablet centres coincide)"
+      },
+      "sheet_bivalve": {
+        "taxon": "Pteria hirundo (Bivalvia, sheet nacre)",
+        "r_c_um": 0.42,
+        "tablet_diam_um": 4.2,
+        "bridge_localization_over_tablet_diam": 1.00,
+        "reference_stacking_offset_over_tablet_diam": 0.50,
+        "reference_alignment_index": 0.0,
+        "reference_note": "Cartwright & Checa (2007) Sec. 4: in sheet nacre tablets of successive lamellae are staggered like bricks in a wall (nominal half-tablet offset); the random-pore limit of the model gives a mean offset of ~1/3 tablet diameter for a uniform disc"
+      }
+    }
+  }
+}

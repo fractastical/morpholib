@@ -114,4 +114,90 @@ theorem cartwright_columnar_vs_sheet_nacre_transition (d_tab lam_0 : Int) :
   dsimp [nacre_columnar_stacking_margin]
   omega
 
+-- ============================================================================
+-- Law 4 (Pass 3): Cholesteric Chitin-Fibroin Precursor ⇄ BCF Screw-Dislocation Coupling
+-- ============================================================================
+
+/-- Cholesteric pitch `P = 2 h_0` of the chitin-fibroin liquid-crystal precursor: because the
+    director satisfies `n = -n`, the structural (membrane) period is the half-pitch `P / 2`,
+    which Cartwright et al. (2009) identify with the inter-lamellar spacing `h_0`.
+    (Lengths in units of 0.01 µm, so the SEM-anchored `h_0 = 0.50 µm` is `50`.) -/
+def cholesteric_pitch (h_0 : Int) : Int :=
+  2 * h_0
+
+/-- Burgers vector `b_vec = m h_0` of a screw dislocation of the helicoidal membrane stack
+    (layer displacement `u = m h_0 θ / 2π`): quantised in half-pitch units. -/
+def helicoid_burgers_vector (m h_0 : Int) : Int :=
+  m * h_0
+
+/-- `2π v_z` (scaled ×1000) of the coupled vertical nacre growth rate `v_z = m h_0 ω / 2π`
+    at the default BCF angular frequency `ω = 0.985 rad/hr` (`985` scaled). -/
+def vertical_growth_twice_pi_scaled (m h_0 : Int) : Int :=
+  m * h_0 * 985
+
+/-- Theorem 4 (`cholesteric_half_pitch_screw_dislocation_coupling`):
+    (1) the SEM-anchored membrane spacing `h_0 = 0.50 µm` implies a precursor pitch
+        `P = 1.00 µm` (`cholesteric_pitch 50 = 100`) and, in general, `P = 2 h_0`;
+    (2) a `(+1, -1)` Frank-Read pair of helicoidal membrane dislocations has zero net
+        Burgers vector (closed target membranes), a single `+1` screw has `b_vec = h_0`
+        and a co-rotating `(+1, +1)` *Haliotis* pair has `b_vec = 2 h_0` (double-step risers);
+    (3) the coupled vertical growth rate is strictly increasing in the cholesteric pitch:
+        enlarging `h_0` by `dh > 0` raises `2π v_z` by `985 · dh` (slope `ω / 4π` per unit `P`). -/
+theorem cholesteric_half_pitch_screw_dislocation_coupling (h_0 : Int) (dh : Nat) :
+    cholesteric_pitch 50 = 100 ∧
+    cholesteric_pitch h_0 = h_0 + h_0 ∧
+    helicoid_burgers_vector 1 h_0 + helicoid_burgers_vector (-1) h_0 = 0 ∧
+    helicoid_burgers_vector 1 h_0 = h_0 ∧
+    helicoid_burgers_vector 2 h_0 = cholesteric_pitch h_0 ∧
+    vertical_growth_twice_pi_scaled 1 (h_0 + Int.ofNat (dh + 1))
+      - vertical_growth_twice_pi_scaled 1 h_0 = 985 * Int.ofNat (dh + 1) ∧
+    vertical_growth_twice_pi_scaled 1 h_0 < vertical_growth_twice_pi_scaled 1 (h_0 + Int.ofNat (dh + 1)) := by
+  dsimp [cholesteric_pitch, helicoid_burgers_vector, vertical_growth_twice_pi_scaled]
+  omega
+
+-- ============================================================================
+-- Law 5 (Pass 3): Brick-and-Mortar Tablet-Sliding Tension-Shear-Chain Fracture
+-- ============================================================================
+
+/-- `2000 σ_y` of the tension-shear-chain yield strength `σ_y = Φ ρ τ_p / 2` for nacre with
+    mineral fraction `Φ = 0.95` (`95` %) and aspect ratio `ρ = L / h = 7.8 / 0.5 = 15.6`
+    (`156` scaled ×10); `tau` in MPa. -/
+def tsc_yield_strength_x2000 (tau : Int) : Int :=
+  95 * 156 * tau
+
+/-- `2000 σ_f` of the Griffith tablet-fracture cap `σ_f = Φ σ_tab,crit / 2` with
+    `σ_tab,crit = sqrt(E_m Γ_m / (π h / 2)) = 356.8 MPa` (`3568` scaled ×10). -/
+def tablet_fracture_cap_x2000 : Int :=
+  95 * 3568
+
+/-- `50 Γ` of the tablet pull-out work of fracture `Γ = τ_p L_ov² / h` with overlap
+    `L_ov = 3.9 µm` (`39` scaled ×10) and `h = 0.5 µm`: `50 Γ = 39² τ = 1521 τ` (J/m² per MPa). -/
+def pullout_work_x50 (tau : Int) : Int :=
+  1521 * tau
+
+/-- Theorem 5 (`tsc_tablet_sliding_fracture_toughness`):
+    (1) at the default interface shear strength `τ_p = 20 MPa` the interlamellar slip system
+        yields (`σ_y = 148.2 MPa`) *before* the tablets fracture (`σ_f = 169.48 MPa`), so the
+        brick-and-mortar RVE is ductile (`tsc_yield_strength_x2000 20 < tablet_fracture_cap_x2000`);
+    (2) the ductile-to-brittle transition is sharp in `τ_p`: sliding precedes tablet fracture
+        iff `τ_p ≤ 22 MPa` (integer MPa; `τ* = σ_crit / ρ = 22.9 MPa`), and at `τ_p = 25 MPa`
+        the tablets break first;
+    (3) pull-out toughness is linear and strictly increasing in `τ_p`; at `τ_p = 20 MPa`
+        `Γ = 608.4 J/m²` (`50 Γ = 30420`), which exceeds the monolithic aragonite
+        `Γ_m = 1 J/m²` (`50`) — i.e. toughening by tablet sliding — and lies inside the
+        Jackson et al. (1988) range `350 ≤ Γ ≤ 1240 J/m²` (`17500 ≤ 50 Γ ≤ 62000`). -/
+theorem tsc_tablet_sliding_fracture_toughness (tau : Int) (dt : Nat) :
+    tsc_yield_strength_x2000 20 = 296400 ∧
+    tablet_fracture_cap_x2000 = 338960 ∧
+    tsc_yield_strength_x2000 20 < tablet_fracture_cap_x2000 ∧
+    tsc_yield_strength_x2000 25 > tablet_fracture_cap_x2000 ∧
+    (tsc_yield_strength_x2000 tau < tablet_fracture_cap_x2000 ↔ tau ≤ 22) ∧
+    pullout_work_x50 20 = 30420 ∧
+    pullout_work_x50 (tau + Int.ofNat (dt + 1)) - pullout_work_x50 tau = 1521 * Int.ofNat (dt + 1) ∧
+    pullout_work_x50 tau < pullout_work_x50 (tau + Int.ofNat (dt + 1)) ∧
+    50 < pullout_work_x50 20 ∧
+    17500 ≤ pullout_work_x50 20 ∧ pullout_work_x50 20 ≤ 62000 := by
+  dsimp [tsc_yield_strength_x2000, tablet_fracture_cap_x2000, pullout_work_x50]
+  omega
+
 end MathOfBiology.Loop_078

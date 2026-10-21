@@ -1,0 +1,402 @@
+# MorphoEval audit — Cartwright & Checa (2007) J. R. Soc. Interface, Cartwright et al. (2009) PNAS & BCF (1951)
+# Nacre Screw-Dislocation Spirals, 2026-10-20 (v3)
+#
+# Pass 3 re-score of `2019-cartwright-nacre-screw-dislocation-spirals.py` (2273 lines, was 1340 in v2) after the
+# remediation of both open v2 items in the instrumented loop `morphoeval/runs/2026-10-19-nacre-screw-dislocation-spirals-loop-pass3`,
+# superseding `2026-10-19-nacre-screw-dislocation-spirals-audit-v2` (91.8 dual-agent consensus).
+#   - Primary assessor: Claude Fable 5.1 (Phase B subagent of slot-078; scored from the Phase A handoff, the git diff
+#     and the CURRENT file at commit 9987db7d — every `lines:` pin below was re-verified with grep against that file).
+#   - Second assessor: none this pass (single-assessor remediation round; the v2 second-assessor protocol is retained
+#     in the block below for provenance only).
+#
+# What Pass 3 changed (both v2 remediation items, each closed as a *reduced, honest* model):
+#   1. 2D BCF phase field -> 3D cholesteric chitin-fibroin liquid-crystal membrane stack (Section 3b, L476-L650):
+#      continuous phase Phi_2D reconstructed exactly from the Pass 2 solver (`reconstruct_continuous_bcf_phase`),
+#      director n = (cos phi, sin phi, 0), phi = (pi/h_0)(z - u), layer displacement u = h_0 Phi_2D / 2 pi so every
+#      membrane is a helicoid around the screw core; twist rate q = -n.curl n (6.224 vs pi/h_0 = 6.283 rad/um), membrane
+#      period (0.5007 vs SEM h_0 0.5000 um), Burgers vector (1/0/2 h_0 for spiral/target/Haliotis pair) and v_z measured
+#      from the discrete volume; 9-point pitch sweep P -> v_z = P omega / 4 pi.  No Frank free-energy minimisation.
+#   2. Brick-and-mortar tablet-sliding fracture under tension (Section 6b, L977-L1223): Ji & Gao (2004) tension-shear
+#      chain modulus (89.5 GPa), Schmid single-slip yield sigma_y = Phi rho tau_p / 2 (148.2 MPa), Barthelat-type waviness
+#      hardening, Griffith tablet fracture cap (356.8 MPa at flaw h/2) -> sigma_f = 169.5 MPa, eps_p,f = 0.82 %,
+#      pull-out work Gamma = tau_p L_ov^2 / h = 608 J/m^2 (x608 over Gamma_m; Currey's ~3000x NOT reached), Gao (2003)
+#      h* = 28.3 nm, ductile-brittle rho* = 17.8; tau_p / rho sweeps, psi = 0 and monolithic ablations, 17-angle Schmid
+#      envelope.  Tablets are elastic-brittle: no intra-tablet crystal plasticity, no cohesive-zone / FEM RVE.
+#   3. 2 new Lean 4 theorems (`cholesteric_half_pitch_screw_dislocation_coupling`, `tsc_tablet_sliding_fracture_toughness`;
+#      5 total, 0 sorry, `lean` exit 0), registered as equations 4-5 in the math KG YAML; self-test 8 -> 11 checks,
+#      measure_morphoeval() 9 -> 16 measurements; new SHA-256-pinned `cholesteric_fracture_reference.json` +
+#      `pass3_citations.bib`; new 6-panel figure and 9-frame tablet-sliding GIF.
+#
+# Scores below: overall 87.9 (model-fidelity 89, specimen-match 86, parameter-expressivity 88, morphometric-validation 86,
+# source-traceability 88, code-traceability 90, repro-package 91), DOWN from 91.8.  The decrease is deliberate: the v2
+# assessors credited the terrace-pitch "measurement" (which is 85 % analytic, L451), the supersaturation / 12-species
+# r = 0.9999 collapses (whose `lambda_obs` were generated from the same BCF law), and SEM reference values that are the
+# script's own earlier outputs (L2015, L2025).  None of these was fixed in Pass 3 and they are now scored as defects.
+# The two new mechanisms are credited as reduced kinematic / rate-independent models with every constant transcribed
+# offline (no DOI verified this pass).  Remaining findings are listed under `remediation` for Pass 4.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale.  Line numbers refer to the files
+# in the working tree at commit 9987db7d after the Pass 3 Phase A edits (uncommitted; `git diff` is the delta).
+
+audit:
+  id: 2026-10-19-nacre-screw-dislocation-spirals-audit-v3
+  supersedes_audit_id: 2026-10-19-nacre-screw-dislocation-spirals-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Pass 3 remediation-round primary assessor, slot-078 Phase B)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 2 rubric verification; retained for provenance, did not re-score v3)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/78
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 9987db7d
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediated evaluation of `2019-cartwright-nacre-screw-dislocation-spirals.py`
+      (2273 lines; 11 self-test checks; 16 measurements) superseding
+      `2026-10-19-nacre-screw-dislocation-spirals-audit-v2`. 9987db7d is HEAD at audit time; the Pass 3
+      script, Lean, math-KG, dataset and dispatch edits are in the working tree (not yet committed) and the
+      regenerated `docs/media/nacre_screw_dislocation_spirals_comparison.png` is gitignored (`*.png`), so the
+      rendered figures must be regenerated from the script rather than read from git.
+
+references:
+  cartwright2007:
+    title: "The dynamics of nacre self-assembly"
+    authors: "Cartwright JHE, Checa AG"
+    venue: "Journal of the Royal Society Interface 4(14):491-504 (2007)"
+    doi: 10.1098/rsif.2006.0188
+  cartwright2009:
+    title: "Spiral and target patterns in bivalve nacre"
+    authors: "Cartwright JHE, Checa AG, Escribano B, Sainz-Díaz CI"
+    venue: "Proceedings of the National Academy of Sciences 106(26):10499-10504 (2009)"
+    doi: 10.1073/pnas.0900867106
+  burton1951:
+    title: "The growth of crystals and the equilibrium structure of their surfaces"
+    authors: "Burton WK, Cabrera N, Frank FC"
+    venue: "Philosophical Transactions of the Royal Society of London A 243(866):299-358 (1951)"
+    doi: 10.1098/rsta.1951.0006
+  cartwright2012:
+    title: "Crystal growth as an excitable medium"
+    authors: "Cartwright JHE, Checa AG, Escribano B, Sainz-Díaz CI"
+    venue: "Philosophical Transactions of the Royal Society A 370(1969):2866-2885 (2012)"
+    doi: 10.1098/rsta.2011.0600
+  degennes1993:
+    title: "The Physics of Liquid Crystals (2nd ed.)"
+    authors: "de Gennes PG, Prost J"
+    venue: "Oxford University Press, International Series of Monographs on Physics 83 (1993); ISBN 0-19-852024-7"
+    url: https://global.oup.com/academic/product/the-physics-of-liquid-crystals-9780198517856
+  kleman2003:
+    title: "Soft Matter Physics: An Introduction"
+    authors: "Kleman M, Lavrentovich OD"
+    venue: "Springer, New York (2003)"
+    doi: 10.1007/b97416
+  jackson1988:
+    title: "The mechanical design of nacre"
+    authors: "Jackson AP, Vincent JFV, Turner RM"
+    venue: "Proceedings of the Royal Society of London B 234(1277):415-440 (1988)"
+    doi: 10.1098/rspb.1988.0056
+  currey1977:
+    title: "Mechanical properties of mother of pearl in tension"
+    authors: "Currey JD"
+    venue: "Proceedings of the Royal Society of London B 196(1125):443-463 (1977)"
+    doi: 10.1098/rspb.1977.0050
+  gao2003:
+    title: "Materials become insensitive to flaws at nanoscale: lessons from nature"
+    authors: "Gao H, Ji B, Jäger IL, Arzt E, Fratzl P"
+    venue: "Proceedings of the National Academy of Sciences 100(10):5597-5600 (2003)"
+    doi: 10.1073/pnas.0631609100
+  ji2004:
+    title: "Mechanical properties of nanostructure of biological materials"
+    authors: "Ji B, Gao H"
+    venue: "Journal of the Mechanics and Physics of Solids 52(9):1963-1990 (2004)"
+    doi: 10.1016/j.jmps.2004.03.006
+  jager2000:
+    title: "Mineralized collagen fibrils: a mechanical model with a staggered arrangement of mineral particles"
+    authors: "Jäger I, Fratzl P"
+    venue: "Biophysical Journal 79(4):1737-1746 (2000)"
+    doi: 10.1016/S0006-3495(00)76426-5
+  barthelat2007:
+    title: "On the mechanics of mother-of-pearl: a key feature in the material hierarchical structure"
+    authors: "Barthelat F, Tang H, Zavattieri PD, Li C-M, Espinosa HD"
+    venue: "Journal of the Mechanics and Physics of Solids 55(2):306-337 (2007)"
+    doi: 10.1016/j.jmps.2006.07.007
+  wang2001:
+    title: "Deformation mechanisms in nacre"
+    authors: "Wang RZ, Suo Z, Evans AG, Yao N, Aksay IA"
+    venue: "Journal of Materials Research 16(9):2485-2493 (2001)"
+    doi: 10.1557/JMR.2001.0340
+
+simulations:
+  - id: cartwright-nacre-screw-dislocation-spirals
+    name: "Cartwright & Checa (2007), Cartwright et al. (2009) & BCF (1951) nacre screw-dislocation spirals, Frank-Read target loops, chitin pore mineral-bridge columnar vs sheet transition, 3D cholesteric chitin precursor coupling and brick-and-mortar tablet-sliding fracture"
+    organism: "Haliotis rufescens (Gastropoda columnar nacre) / Pteria hirundo & Pinctada margaritifera (Bivalvia sheet nacre)"
+    script: models/2019-cartwright-nacre-screw-dislocation-spirals.py
+    output: docs/media/nacre_screw_dislocation_spirals_comparison.png
+    extra_outputs:
+      - docs/media/nacre_screw_dislocation_spirals_growth.gif
+      - docs/media/nacre_screw_dislocation_spirals_cholesteric_fracture.png
+      - docs/media/nacre_screw_dislocation_spirals_tablet_sliding.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [cartwright2007, cartwright2009, burton1951, cartwright2012, degennes1993, kleman2003, jackson1988, currey1977, gao2003, ji2004, jager2000, barthelat2007, wang2001]
+    supersedes_audit_id: 2026-10-19-nacre-screw-dislocation-spirals-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Cartwright & Checa (2007): nacre tablets nucleate on a pre-formed stack of chitin-fibroin interlamellar membranes; screw dislocations in the membrane stack drive BCF spiral terrace growth with wavelength lambda_0 ~ 19 r_c and Gibbs-Thomson step velocity v = v_inf (1 - r_c / r); mineral bridges through membrane pores give columnar (gastropod) vs sheet (bivalve) stacking"
+        - "Cartwright et al. (2009): spiral and target patterns in bivalve nacre arise from screw-dislocation and Frank-Read-type (+1,-1) defect pairs in a cholesteric liquid-crystal chitin precursor whose half-pitch sets the interlamellar spacing"
+        - "Burton, Cabrera & Frank (1951): spiral step-flow around a screw dislocation; Archimedean spiral of pitch 2 pi / omega_0 r_c"
+        - "Jackson, Vincent & Turner (1988): nacre tensile modulus ~ 73 GPa (dry) / 64 GPa (wet), tensile strength ~ 170 / 140 MPa, work of fracture 350-1240 J/m^2; Currey (1977): mother-of-pearl ~ 3000x tougher than monolithic aragonite; Wang et al. (2001): ~ 1 % inelastic strain by interlamellar sliding; Gao et al. (2003): flaw-insensitive critical mineral size h* ~ 30 nm; Ji & Gao (2004): tension-shear-chain modulus 1/E = 4(1-Phi)/(G_p Phi^2 rho^2) + 1/(Phi E_m); Barthelat et al. (2007): tablet waviness produces progressive interface hardening (tau ~ 20-40 MPa)"
+      reconstructed_in_script:
+        - "2D phase-field / eikonal BCF step-flow solver for 5 regimes (sub-saturated arrest, subcritical dipole pinch-off, single screw spiral, (+1,-1) target, Haliotis (+1,+1) columnar), 3D mineral-bridge Voronoi coalescence, SEM DoG seam / Delaunay segmentation of the SHA-pinned specimen (Pass 2, unchanged)"
+        - "Pass 3: exact reconstruction of the continuous BCF phase from the solver output; a 3D cholesteric director field n = (cos phi, sin phi, 0), phi = (pi / h_0)(z - u), u = h_0 Phi_2D / 2 pi on an 81x81x120 grid; lamellar density S = cos 2 phi and aragonite occupancy M = [z < h_0 floor(Phi_2D / 2 pi)]; finite-difference twist rate, z-power-spectrum membrane period, loop-integral Burgers vector and core-column membrane count measured from the volume; 9-point pitch sweep P -> h_0 = P/2 -> v_z"
+        - "Pass 3: rate-independent single-slip-system brick-and-mortar RVE: TSC modulus, Schmid yield sigma_y = Phi rho tau_p / 2, waviness hardening H = E_n tan^2 psi / t_m, Griffith tablet fracture cap at flaw h/2, pull-out work Gamma = tau_p L_ov^2 / h, K_Ic, Gao h*, ductile-brittle rho* = sigma_crit / tau_p, three failure-mode branches, tau_p and rho sweeps, psi = 0 and Phi = 1 ablations, 17-angle Schmid envelope"
+      transfer_boundary:
+        - "The 3D cholesteric coupling is a kinematic liquid-crystal template imposed by the BCF phase (stated at L521-L529): twist rate, membrane period and Burgers vector recovered from the volume are consistency checks of the construction (0.94 % finite-difference error on q, 0.14 % on the period), not independent predictions of chitin self-assembly"
+        - "Every Pass 3 mechanical constant (tau_p = 20 MPa, psi = 1.5 deg, G_p = 1.4 GPa, Phi = 0.95, t_m = 30 nm, Gamma_m = 1 J/m^2, E_m = 100 GPa) and every empirical target (Jackson 73/64 GPa, 170/140 MPa, 350-1240 J/m^2; Currey 3000x; Wang 110 MPa / 1 %; Gao 30 nm) was transcribed offline from memory of the papers; none of the nine new DOIs was verified online this pass"
+        - "sigma_f = Phi sigma_crit / 2 = 169.5 MPa lands on Jackson's 170 MPa by construction of the Griffith flaw = h/2 choice, not by fit or by prediction; E = 89.5 GPa overshoots Jackson dry 73 GPa by 23 % and the toughening ratio x608 is 5x short of Currey's ~3000x — both reported, neither corrected"
+        - "The Pass 2 terrace-pitch 'measurement' blends 0.15 x raw + 0.85 x analytic (L451); the supersaturation and 12-species `lambda_obs` tables were generated from the same BCF law they are correlated against (r = 0.9999 is therefore not an empirical validation); the SEM Z and aspect-ratio reference values are the script's own Pass 2 outputs copied into the JSON"
+      does_not_claim:
+        - "Frank / Landau-de Gennes free-energy relaxation of the chitin director, pitch selection by chitin concentration or ionic strength, membrane-pore (mineral-bridge) transport, time evolution of the director beyond the BCF phase, intra-tablet aragonite crystal plasticity (dislocation glide, deformation twinning), cohesive-zone or FEM RVE mechanics, rate or hydration dependence, interface tensile (normal debonding) strength sigma_nc, or comparison with digitised figure points from any of the cited mechanical papers"
+    summary: >-
+      Pass 3 (v3) re-score of `2019-cartwright-nacre-screw-dislocation-spirals.py` (overall 87.9/100, down from the
+      v2 consensus 91.8). Both v2 remediation items are closed as reduced, honestly-labelled models: (1) the 2D BCF
+      spiral/target phase field is lifted into a 3D cholesteric chitin-fibroin membrane stack whose every membrane is
+      a helicoid around the screw core, with twist rate (6.224 vs pi/h_0 = 6.283 rad/um), membrane period (0.5007 vs
+      SEM h_0 = 0.5000 um), Burgers vector (1 / 0 / 2 h_0 for spiral / target / Haliotis pair) and v_z measured from
+      the discrete volume and a cholesteric-pitch -> v_z sweep (slope omega / 4 pi); (2) a rate-independent
+      single-slip brick-and-mortar RVE gives E = 89.5 GPa (Jackson dry 73), sigma_y = 148.2 MPa, sigma_f = 169.5 MPa
+      (Jackson 170), eps_p,f = 0.82 % (Wang ~1 %), Gamma = 608 J/m^2 (Jackson 350-1240; x608 vs Currey ~3000x),
+      h* = 28.3 nm (Gao ~30), rho* = 17.8 > nacre 15.6, with tau_p / rho sweeps and ablations. Two new Lean 4
+      theorems (5 total, 0 sorry), 11 self-test checks and 16 measurements. The score falls because this round
+      scores defects the v2 assessors credited: the 'measured' terrace pitch is 85 % analytic, the supersaturation and
+      12-species collapses are against synthetic `lambda_obs` generated from the same law, the SEM Z / aspect references
+      are the script's own earlier outputs, the Haliotis cholesteric test reuses the bivalve h_0, `--seed` and the
+      physical CLI overrides never reach `measure_morphoeval()`, and every Pass 3 constant and DOI is unverified
+      offline transcription.
+    scores:
+      model-fidelity:
+        value: 89
+        rationale: >-
+          The Pass 2 solvers are unchanged and still match Cartwright & Checa (2007) / BCF (1951) as formulated:
+          Gibbs-Thomson step velocity, multi-dislocation eikonal step flow, Frank-Read dipole clearance, mineral-bridge
+          columnar vs sheet stacking and Voronoi coalescence. Pass 3 adds a correct de Gennes cholesteric construction
+          (n = (cos phi, sin phi, 0), phi = (pi/h_0)(z - u), half-pitch = h_0, n = -n so S = cos 2 phi) in which the
+          BCF phase enters as the layer displacement u, so membranes are helicoids and the Burgers vector equals the
+          net screw charge (+5 vs a template-free v2), and a tension-shear-chain / Schmid-slip / waviness-hardening /
+          Griffith-cap fracture model that reproduces the Jackson, Wang and Gao orders of magnitude (+4). Deductions:
+          the cholesteric coupling is kinematic — no Frank free-energy, no pitch selection, no director dynamics — so
+          it is a template imposed by the BCF phase rather than the self-assembly Cartwright et al. (2009) describe,
+          and the function's own docstring says so (-5); the terrace pitch returned to the ledger is 0.15 raw +
+          0.85 analytic, so the solver's pitch is never actually tested against theory (-3); the Law 3 stacking margin
+          is a hard-coded literal (42 - 80*2, 78 - 36*1) rather than computed from the simulated fields (-3); tablets
+          are elastic-brittle with no intra-tablet crystal plasticity and sigma_f = Phi sigma_crit / 2 hits 170 MPa by
+          the flaw = h/2 convention (-3); `pitch_tower`, `tower_spacing`, `spacing` constants are unsourced (-1).
+        evidence:
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [480, 611], note: "reconstruct_continuous_bcf_phase (exact Phi_2D from floor/angle) and simulate_cholesteric_chitin_lamellar_3d: helicoidal director, S = cos 2 phi, aragonite occupancy, finite-difference twist rate, z-spectrum period, loop-integral Burgers vector", supports: true}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [521, 529], note: "Docstring states the coupling is a kinematic liquid-crystal template, NOT a Frank free-energy minimisation; q / period / Burgers are consistency checks of the construction", supports: false}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [995, 1110], note: "simulate_tablet_sliding_fracture: TSC elastic branch, Schmid yield sigma_y = Phi rho tau_p / 2, waviness hardening H = E_n tan^2 psi / t_m, Griffith cap, three failure-mode branches (L1037-L1046), Gamma collapse to Gamma_m on brittle fracture (L1073-L1077)", supports: true}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [435, 451], note: "_measure_radial_terrace_pitch returns 0.15 * raw_pitch + 0.85 * theo_pitch — the reported 'measured' pitch is 85 % the analytic value", supports: false}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [719, 735], note: "stacking_margin = 42 - 80 * 2 and 78 - 36 * 1 are literals, not computed from the simulated mineral-bridge / terrace fields", supports: false}
+          - {file: morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean, lines: [118, 201], note: "Theorems cholesteric_half_pitch_screw_dislocation_coupling (P = 2 h_0, (+1,-1) zero Burgers, (+1,+1) b = P, 2 pi v_z strictly increasing in h_0) and tsc_tablet_sliding_fracture_toughness (sigma_y < sigma_f ductile at 20 MPa, yield-before-fracture iff tau_p <= 22, Gamma monotone and inside Jackson range); 5 theorems, 0 sorry, lean exit 0", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          The SHA-256-pinned public-domain SEM mother-of-pearl specimen is still segmented by DoG seam detection and
+          Delaunay coordination (h_0 = 0.5000 um at 0.019867 um/px, 328 seams, CV 0.29; Z = 6.01; aspect 3.24) and
+          shown in panels E-F of the comparison figure; Pass 3 adds an x-z section through the screw core with white
+          membranes and yellow mineral fill, a director-twist panel and a brick-and-mortar RVE GIF whose geometry
+          (L_ov = 7.8 um, h = 0.5 um, Phi = 0.95) is taken from the SEM-anchored h_0 (+3 for the new visual
+          comparison surface). Deductions: the reference values the SEM Z and aspect ratio are compared against
+          (5.96 and 3.2436) are the script's own Pass 2 outputs copied into the measurement block — SEM Z has since
+          drifted to 6.01 under the current scipy and still 'passes' a 5.5-6.4 band — so two of the three specimen
+          metrics are self-referential (-6); the Pass 3 'membrane period vs SEM h_0' measurement uses the script's own
+          segmentation as its reference and is flagged as such but remains intra-script (-2); the fracture RVE is
+          compared with Jackson's numbers for Pinctada, not with any morphometric read from the Haliotis specimen
+          (tablet waviness, overlap length, mortar thickness are literature assumptions), so the mechanical panels are
+          not specimen-matched (-4); no Cartwright et al. (2009) spiral / target micrograph is vendored for the
+          morphospace panels, as in v2 (-2).
+        evidence:
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [881, 979], note: "segment_nacre_sem_specimen: DoG inter-lamellar seam detection across 25 column transects and Delaunay hexagonal coordination on the SHA-pinned specimen", supports: true}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [2008, 2029], note: "SEM Z reference_value 5.96 (L2015) and aspect reference_value 3.2436 (L2025) are the script's own earlier outputs, not independent literature values", supports: false}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [1609, 1851], note: "render_cholesteric_fracture_figure: panels A-C (x-z section through core, director twist vs theory, pitch -> v_z) and D-F (sigma-eps, tau_p / rho sweeps, Schmid envelope) rendered beside the Jackson / Wang targets", supports: true}
+          - {file: docs/media/nacre_screw_dislocation_spirals_comparison.png, lines: [0, 0], note: "6-panel figure (v3 suptitle): 3D spiral, 4 chiral defect regimes, supersaturation sweep, 12-species collapse, SEM specimen panel E and seam histogram F", supports: true}
+          - {file: docs/media/nacre_screw_dislocation_spirals_tablet_sliding.gif, lines: [0, 0], note: "9-frame brick-and-mortar RVE sliding (x25 exaggerated) with sigma-eps marker; geometry from SEM h_0 but tablet waviness / overlap are assumed, not measured on the specimen", supports: true}
+          - {file: docs/media/nacre_screw_dislocation_spirals_cholesteric_fracture.png, lines: [0, 0], note: "New 6-panel Pass 3 figure: x-z section through the screw core (white membranes, yellow mineral), director twist phi(z) vs theory at three columns, pitch -> v_z, sigma-eps with Jackson / Wang targets, tau_p and rho sweeps, Schmid envelope", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Pass 2 coverage is retained (5 morphospace / control regimes, 11-point supersaturation sweep, 12 species)
+          and Pass 3 adds genuinely new axes: a 9-point cholesteric pitch sweep that propagates P into h_0 and v_z,
+          a tau_p sweep 10-40 MPa that crosses the ductile-brittle transition at tau* = sigma_crit / rho = 22.9 MPa,
+          a rho sweep 4-30 that partitions failure modes at rho* = 17.8, psi = 0 (perfectly plastic pull-out) and
+          Phi = 1 (monolithic Griffith) ablations, a 17-angle Schmid envelope, and a `--tau-p` / `--skip-pass3` CLI
+          (+5). Deductions: `--seed` is parsed but never passed to any function, so it is a dead flag (-3); the
+          physical overrides `--v-inf / --r-c / --h-0 / --dipole-d / --tau-p` reach only `render_comparison_figure()`
+          or the Pass 3 figure's default RVE, never `measure_morphoeval()`, the sweeps or the self-test, so the
+          ledger and measurements cannot be re-run at a different parameter point from the CLI (-4); the Haliotis
+          regime's cholesteric volume is built at the bivalve h_0 = 0.50 for all three regimes although that regime
+          has its own r_c = 0.19 / Delta_mu = 1.105 (-2); hydration (dry vs wet Jackson) is displayed as two targets
+          but not an input (-2); the supersaturation and 12-species axes are consumed from synthetic tables (-1 here,
+          scored mainly under morphometric-validation).
+        evidence:
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [614, 650], note: "evaluate_cholesteric_pitch_coupling: 9-point pitch sweep P in [0.6, 1.4] um -> h_0 = P/2 -> v_z, 12-species implied pitches, SEM anchor", supports: true}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [1127, 1223], note: "evaluate_fracture_toughness_sweeps: default RVE, psi = 0 and monolithic ablations, tau_p 10-40 MPa and rho 4-30 sweeps, 17-angle Schmid envelope, Jackson range check", supports: true}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [2231, 2240], note: "CLI: --self-test / --verify-only / --skip-gif / --v-inf / --r-c / --h-0 / --dipole-d / --seed / --tau-p / --skip-pass3; --seed (L2238) is never consumed; help text still says '8-check' (L2231)", supports: false}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [2165, 2167], note: "Self-test builds the spiral, target and Haliotis cholesteric volumes all at h_0_um = 0.50; the Haliotis regime's own parameters are not used", supports: false}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          `measure_morphoeval()` now returns 16 reference-anchored measurements (9 Pass 2 + 7 Pass 3) and the
+          Pass 3 ones are honest where it matters: E = 89.5 vs Jackson 73 GPa (23 % high), Gamma = 608 J/m^2 inside
+          Jackson's 350-1240 but x608 against Currey's ~3000x, sigma_f = 169.5 vs 170, eps_p,f = 0.82 % vs Wang ~1 %,
+          h* = 28.3 vs Gao ~30 nm, twist rate 6.224 vs 6.283 rad/um, period 0.5007 vs 0.5000 um — misses are
+          reported, not hidden (+4). Deductions: the two headline Pass 2 correlations (supersaturation r = 1.0000,
+          12-species r = 0.9999) are against `lambda_obs` tables generated from the same BCF law (no digitised figure
+          points), so they validate nothing empirical and should not have been credited in v2 (-6); the Pteria
+          terrace wavelength 7.94 vs 7.97 um is 85 % analytic by construction of L451 (-3); two Pass 3 measurements
+          use model predictions as references — dv_z/dP vs omega / 4 pi is an algebraic identity (r = 1 trivially)
+          and rho* vs dataset D_tab / h_0 compares a derived threshold with an SEM aspect ratio (-3); the twist-rate
+          and period checks are discretisation checks of an analytic field whose 2 % tolerance is tuned to n_z = 120
+          (-2); the SEM Z / aspect references are self-referential (-2, remainder scored under specimen-match); the
+          quick gate's 100/100 therefore overstates the validation depth.
+        evidence:
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [1922, 2104], note: "measure_morphoeval: 16 measurements; Pass 3 block L2030-L2102 adds twist rate, membrane period, dv_z/dP, TSC modulus, tensile strength, pull-out work and rho* with explicit reference_source labels", supports: true}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [790, 879], note: "evaluate_supersaturation_and_cross_taxa_scaling consumes supersaturation_wavelength_scaling and cross_taxa_nacre_terrace_scaling tables whose lambda_obs values were generated from the BCF law (r = 0.9999 is circular)", supports: false}
+          - {file: datasets/nacre_screw_dislocation_spirals/nacre_screw_dislocation_spirals_reference.json, lines: [80, 95], note: "supersaturation rows: lambda_obs_um tracks lambda_pred_um to within 0.03 um at every level — synthetic, no digitised source figure cited", supports: false}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [2050, 2060], note: "dv_z/dP measurement with reference omega / 4 pi: an analytic identity of the construction, not an empirical anchor", supports: false}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [2061, 2102], note: "TSC modulus, sigma_f, Gamma and rho* measurements against Jackson / Currey / Wang / Gao targets; E overshoot and Currey shortfall reported as-is", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Pass 2 provenance is intact: 4 dataset files SHA-256-verified at runtime, `paper_citations.bib` with the 4
+          original DOIs, scout manifest and README. Pass 3 adds a second SHA-256-pinned reference table
+          (`cholesteric_fracture_reference.json`, 82 lines, with a provenance_note) and `pass3_citations.bib` (98
+          lines, 9 new entries), both verified fail-closed by `verify_pass3_dataset_integrity()`, and the dataset
+          README gains a Pass 3 section with an explicit 'transcribed offline / approx' caveat (+3 for the honesty
+          of the caveat). Deductions: every numeric target and all nine new DOIs were written from memory with no
+          network access and none is verified — a SHA pin on an unverified table pins the transcription, not the
+          source (-6); the Pass 2 supersaturation / 12-species tables still carry no figure or table citation for
+          their `lambda_obs` columns (-4); de Gennes & Prost has no DOI and the ISBN given is for the 1993 hardback,
+          which could not be checked (-1); the `pitch_tower` / `tower_spacing` / `spacing` literals in the Voronoi
+          solver and the 0.019867 um/px calibration are not traced to the reference JSON (-1).
+        evidence:
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [117, 191], note: "EXPECTED_SHA256_PASS3 (L117-L124) and EXPECTED_SHA256 (L127-L144) registries; verify_dataset_integrity / verify_pass3_dataset_integrity / load_pass3_reference_data fail closed on mismatch", supports: true}
+          - {file: datasets/nacre_screw_dislocation_spirals/cholesteric_fracture_reference.json, lines: [1, 82], note: "Pass 3 reference table with provenance_note 'transcribed offline ... must be re-verified' (L4) and empirical_targets flagged approx (L68-L79)", supports: false}
+          - {file: datasets/nacre_screw_dislocation_spirals/README.md, lines: [12, 19], note: "Pass 3 section listing the new files, SHA-256 values and the offline-transcription caveat; states tau_p, psi, G_p, Phi were not fitted to Jackson", supports: true}
+          - {file: datasets/nacre_screw_dislocation_spirals/pass3_citations.bib, lines: [1, 98], note: "9 new BibTeX entries (de Gennes, Kleman, Jackson, Currey, Gao, Ji, Jäger, Barthelat, Wang); DOIs unverified this pass", supports: true}
+      code-traceability:
+        value: 90
+        rationale: >-
+          The header docstring now carries a 'Pass 3 (v3) remediation additions' section mapping Law 4 and Law 5 to
+          the Lean theorems, to Cartwright et al. (2009), de Gennes, Ji & Gao / Jäger & Fratzl, Barthelat and
+          Jackson / Currey / Wang, and to the new figure, GIF and reference table; the two new solver functions have
+          long docstrings stating their equations and their reduced-model status, and the math-KG YAML registers them
+          as equations 4-5 with single-range code loci that match the current line numbers (+2). Deductions: the
+          0.019867 um/px calibration is duplicated as a literal in two places instead of read from the reference JSON
+          (-2); the pitch blend 0.15 / 0.85 at L451 is uncommented and uncited (-3); the Law 3 margins and
+          `pitch_tower = 3.6071`, `tower_spacing = 11.5`, `spacing = 7.8` have no source comment (-2); the
+          `--self-test` help string still says '8-check' for an 11-check suite and the panel-F inset axis range
+          [0.5, 1.85] is a hard-coded literal (-1).
+        evidence:
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [1, 80], note: "Header docstring: sources 1-4 with DOIs and the Pass 3 additions block (L56-L80) naming the two new Lean laws, the reduced-model status, new outputs and reference table", supports: true}
+          - {file: morphoeval/math_kg_loops/cartwright-nacre-screw-dislocation-spirals.yaml, lines: [93, 113], note: "Equations 4-5 registered with code_locus #L480-L650 and #L981-L1223 (single ranges, match current file); equations 1-3 re-pointed to L197-L268, L273-L474, L655-L748", supports: true}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [1471, 1497], note: "0.019867 um/px literal (L1471, duplicated at L2004) and hard-coded inset range [0.5, 1.85] (L1497) instead of values read from the reference JSON", supports: false}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [451, 451], note: "Uncommented 0.15 / 0.85 blend of raw and theoretical pitch", supports: false}
+      repro-package:
+        value: 91
+        rationale: >-
+          `--self-test` passes 11/11 in ~1.3 s and the default render completes in ~3.5 s with exit 0; the suite
+          verifies both SHA registries, exact phase reconstruction (cos Phi == Re Psi to 1e-9), twist / period /
+          Burgers consistency for three regimes, every fracture inequality and failure-mode partition, the Schmid
+          minimum, 16 measurements, and bitwise two-run determinism of both the 2D field and the new 3D volume
+          (`atol=0.0`); the lamellar volume and fracture RVE are closed-form so no RNG enters Pass 3 (+2).
+          Deductions: the twist-rate tolerance (2 %) is tuned to the n_z = 120 grid rather than derived, so a
+          resolution change silently breaks the suite (-2); `docs/media/*.png` is gitignored so the audited
+          comparison and cholesteric-fracture figures are not under version control and must be regenerated (the
+          growth GIF is byte-identical on re-render; the tablet GIF is new and untracked) (-3); the `--self-test`
+          help text is stale ('8-check') and `--seed` is dead (-2); no requirements lock is vendored for this
+          script, environment versions live only in this audit (-2); SEM Z drifted 5.96 -> 6.01 between scipy
+          versions, so the specimen numbers are environment-sensitive within the test band (-1).
+        evidence:
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [2106, 2227], note: "self_test: 11 checks; Pass 3 checks 9-11 at L2163-L2217 cover SHA pins, phase reconstruction, twist / period / Burgers, fracture inequalities, mode partitions, ablations, Schmid minimum, 3D determinism and 16 measurements", supports: true}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [2170, 2173], note: "twist_rate_rel_error < 0.02 and membrane period rel_tol 0.02 are tolerances tuned to the 81x81x120 default grid", supports: false}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [2214, 2217], note: "Bitwise determinism of the 3D lamellar density volume across two runs (np.allclose atol=0.0) and 16-measurement count check", supports: true}
+          - {file: models/2019-cartwright-nacre-screw-dislocation-spirals.py, lines: [2229, 2272], note: "main(): argparse CLI with --self-test / --verify-only and Pass 3 flags; render path writes 2 PNG + 2 GIF; PNGs are gitignored in this repository", supports: true}
+          - {file: docs/media/nacre_screw_dislocation_spirals_growth.gif, lines: [0, 0], note: "Pass 2 growth GIF re-rendered byte-identically by the v3 script (tracked in git, no diff after re-render)", supports: true}
+    remediation:
+    - >-
+      2019-cartwright-nacre-screw-dislocation-spirals.py:435-451 — `_measure_radial_terrace_pitch` returns
+      0.15 * raw_pitch + 0.85 * theo_pitch, so the Pteria 'measured' terrace wavelength (7.94 vs 7.97 um) and the
+      Lean-anchored lambda_0 ~ 19 r_c check are 85 % analytic. Return the raw regression pitch (and its uncertainty)
+      and let the measurement honestly report the solver's deviation from BCF theory.
+    - >-
+      2019-cartwright-nacre-screw-dislocation-spirals.py:2008-2029 — SEM `reference_value` 5.96 (Z) and 3.2436
+      (aspect) are the script's own Pass 2 outputs copied into the JSON; SEM Z now evaluates to 6.01. Replace with
+      independent literature values (e.g. Cartwright & Checa 2007 Z ~ 6 hexagonal packing cited to a figure, a
+      published Haliotis tablet aspect ratio) or label both `derived_from: output` with no reference.
+    - >-
+      datasets/nacre_screw_dislocation_spirals/nacre_screw_dislocation_spirals_reference.json:80-95 and the
+      cross_taxa_nacre_terrace_scaling table (consumed at 2019-cartwright-nacre-screw-dislocation-spirals.py:790-879)
+      — `lambda_obs_um` values were generated from the same BCF law they are correlated against (r = 0.9999 at every
+      level). Digitise terrace spacings from Cartwright et al. (2009) Figs. 1-3 / Cartwright & Checa (2007) or
+      drop the correlation measurements and keep only the analytic scaling check.
+    - >-
+      2019-cartwright-nacre-screw-dislocation-spirals.py:489-611 — the cholesteric coupling is a kinematic template
+      (docstring L521-L529): no Frank free-energy (K1/K2/K3) relaxation, no pitch selection by chitin concentration,
+      no membrane-pore transport. Pass 4: a 3D Frank / Landau-de Gennes relaxation of the chitin director with the
+      BCF front as a moving boundary, anchored to an independently measured cholesteric pitch of chitin suspensions
+      (e.g. Belamie et al. 2004 J. Phys. Chem. B), so that q and the period become predictions rather than
+      consistency checks.
+    - >-
+      2019-cartwright-nacre-screw-dislocation-spirals.py:995-1110 — tablets are elastic-brittle and sigma_f = Phi
+      sigma_crit / 2 = 169.5 MPa lands on Jackson's 170 MPa by the Griffith flaw = h/2 convention; E = 89.5 GPa
+      overshoots Jackson dry 73 GPa by 23 %; the toughening ratio x608 is 5x short of Currey's ~3000x. Add
+      intra-tablet aragonite crystal plasticity (dislocation glide / deformation twinning yield), a cohesive-zone
+      interface with normal strength sigma_nc so the Schmid envelope handles debonding near theta -> 90 deg, and
+      a hydration switch (dry / wet parameter sets), and report the flaw-size sensitivity of sigma_f.
+    - >-
+      datasets/nacre_screw_dislocation_spirals/cholesteric_fracture_reference.json:1-82 and pass3_citations.bib —
+      every empirical target (Jackson 73/64 GPa, 170/140 MPa, 350-1240 J/m^2; Currey 3000x; Wang 110 MPa / 1 %;
+      Gao 30 nm; Barthelat tau 20-40 MPa) and all nine new DOIs were transcribed offline from memory. Verify each
+      DOI and each number against the paper (page / table / figure pin) in a pass with network access and record
+      the verification date in the JSON.
+    - >-
+      2019-cartwright-nacre-screw-dislocation-spirals.py:2231-2240 and 1922 — `--seed` (L2238) is parsed but never
+      used; `--v-inf / --r-c / --h-0 / --dipole-d / --tau-p` never reach `measure_morphoeval()`, the sweeps or the
+      self-test; the `--self-test` help still says '8-check'. Thread the CLI overrides through a single parameter
+      dataclass consumed by every evaluator, or remove the dead flags.
+    - >-
+      2019-cartwright-nacre-screw-dislocation-spirals.py:719, 735 and 684-722 — Law 3 stacking margins
+      `42 - 80 * 2` and `78 - 36 * 1` are literals, and `pitch_tower = 3.6071`, `tower_spacing = 11.5`,
+      `spacing = 7.8` are unsourced. Compute I_col from the simulated mineral-bridge offsets and terrace pitch,
+      and move the three constants into the reference JSON with a citation.
+    - >-
+      2019-cartwright-nacre-screw-dislocation-spirals.py:2165-2173 — the Haliotis cholesteric volume is built at
+      the bivalve h_0 = 0.50 for all regimes, and the 2 % twist / period tolerances are tuned to n_z = 120. Use
+      each regime's own h_0 / r_c, derive the tolerance from the finite-difference truncation error (O(dz^2)), and
+      add a grid-refinement check.
+    - >-
+      2019-cartwright-nacre-screw-dislocation-spirals.py:1471, 1497, 2004 — 0.019867 um/px is duplicated as a
+      literal and the panel-F inset axis range [0.5, 1.85] is hard-coded; read the calibration from
+      `nacre_screw_dislocation_spirals_reference.json` and compute the axis range from the data. Also add a
+      requirements lock for this script and track or explicitly exclude the gitignored PNG outputs so the audited
+      figures are reproducible from the repository.

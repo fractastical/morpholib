@@ -100,7 +100,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "fgf8_wavefront_somitogenesis"
 REFERENCE_JSON = DATASET_DIR / "fgf8_wavefront_somitogenesis_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "chick_somite_psm_specimen.jpg"

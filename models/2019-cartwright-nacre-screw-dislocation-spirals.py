@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2019-cartwright-nacre-screw-dislocation-spirals.py — Pass 2 (v2) Remediated Implementation
+2019-cartwright-nacre-screw-dislocation-spirals.py — Pass 3 (v3) Remediated Implementation
 ==========================================================================================
 Faithful mathematical, biophysical, and morphometric reproduction of:
 
@@ -52,6 +52,29 @@ Mathematical & Biophysical Architecture (Linked to Lean 4 `MathOfBiology.Loop_07
     that coalesce laterally into a polygonal Voronoi tessellation (mean hexagonal
     coordination Z ≈ 6), whereas dispersed pores and broad terrace pitch (lambda_0 = 7.97 µm)
     produce bivalve staircase sheet nacre.
+
+Pass 3 (v3) remediation additions
+---------------------------------
+  - Law 4 (`MathOfBiology.Loop_078.cholesteric_half_pitch_screw_dislocation_coupling`),
+    Section 3b: the 2D BCF spiral / target phase field Phi_2D(x, y, t) is coupled to a 3D
+    cholesteric chitin-fibroin liquid-crystal membrane stack (Cartwright et al. 2009):
+      n = (cos phi, sin phi, 0),  phi = (pi / h_0)(z - u),  u = h_0 Phi_2D / 2 pi,  P = 2 h_0.
+    The twist rate q = -n . curl n = pi / h_0, the membrane period P / 2 and the helicoidal
+    Burgers vector oint du = m h_0 are *measured* from the discrete 3D volume and compared
+    with the SEM-segmented h_0; a cholesteric pitch sweep propagates P into v_z = m h_0 omega / 2 pi.
+    Reduced model: kinematic liquid-crystal template, no Frank free-energy minimisation.
+  - Law 5 (`MathOfBiology.Loop_078.tsc_tablet_sliding_fracture_toughness`), Section 6b:
+    brick-and-mortar aragonite tablet sliding under tension as rate-independent single-slip
+    plasticity (tension-shear chain of Jaeger & Fratzl 2000 / Ji & Gao 2004, Schmid-law
+    interlamellar slip, Barthelat 2007 waviness hardening, Griffith tablet fracture, tablet
+    pull-out toughness Gamma = tau_p L_ov^2 / h, Gao 2003 flaw tolerance h*), validated against
+    Jackson et al. (1988), Currey (1977) and Wang et al. (2001). Reduced model: elastic-brittle
+    tablets, no intra-tablet aragonite dislocation / twinning plasticity, no cohesive-zone FEM.
+  - New figure `docs/media/nacre_screw_dislocation_spirals_cholesteric_fracture.png`, GIF
+    `docs/media/nacre_screw_dislocation_spirals_tablet_sliding.gif`, SHA-256-pinned reference
+    table `datasets/nacre_screw_dislocation_spirals/cholesteric_fracture_reference.json`,
+    7 new `measure_morphoeval()` entries (16 total), 3 new self-test suites (11 total),
+    CLI flags `--tau-p` and `--skip-pass3`.
 """
 
 from __future__ import annotations
@@ -71,19 +94,34 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, spatial, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "nacre_screw_dislocation_spirals"
 REF_JSON = DATASET_DIR / "nacre_screw_dislocation_spirals_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "haliotis_nacre_spirals_specimen.jpg"
 SCOUT_JSON = DATASET_DIR / "scout_manifest.json"
 BIB_FILE = DATASET_DIR / "paper_citations.bib"
 
+PASS3_JSON = DATASET_DIR / "cholesteric_fracture_reference.json"
+PASS3_BIB = DATASET_DIR / "pass3_citations.bib"
+
 OUT_PNG = ROOT / "docs" / "media" / "nacre_screw_dislocation_spirals_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "nacre_screw_dislocation_spirals_growth.gif"
+OUT_PASS3_PNG = ROOT / "docs" / "media" / "nacre_screw_dislocation_spirals_cholesteric_fracture.png"
+OUT_PASS3_GIF = ROOT / "docs" / "media" / "nacre_screw_dislocation_spirals_tablet_sliding.gif"
 
 OMEGA_0_BCF = 0.330958
 PITCH_RATIO_BCF = (2.0 * math.pi) / OMEGA_0_BCF  # 18.9848418...
 GAMMA_OMEGA_DEFAULT = 0.21  # um * k_B T so r_c(Delta_mu=0.50) = 0.42 um
+
+# Pass 3 SHA-256 registry (cholesteric precursor + brick-and-mortar fracture reference table)
+EXPECTED_SHA256_PASS3: dict[str, str] = {
+    "datasets/nacre_screw_dislocation_spirals/cholesteric_fracture_reference.json": (
+        "774bf8de8ca2a178a4cf50fb3ae609b6c5a6f5a6c2b86ecfc4dda83eaa40f712"
+    ),
+    "datasets/nacre_screw_dislocation_spirals/pass3_citations.bib": (
+        "6b2d678187e0ceadea17422ec77b3568dac86b159882f3ae750fa8c31db94cb4"
+    ),
+}
 
 # Cryptographic SHA-256 Registry for `datasets/nacre_screw_dislocation_spirals/`
 EXPECTED_SHA256: dict[str, str] = {
@@ -131,6 +169,26 @@ def load_reference_data() -> dict[str, Any]:
     """Load and cryptographically verify `nacre_screw_dislocation_spirals_reference.json`."""
     verify_dataset_integrity()
     return json.loads(REF_JSON.read_text(encoding="utf-8"))
+
+
+def verify_pass3_dataset_integrity() -> dict[str, str]:
+    """Verify SHA-256 digests of the Pass 3 reference table and citation file."""
+    computed: dict[str, str] = {}
+    for rel, expected in EXPECTED_SHA256_PASS3.items():
+        p = ROOT / rel
+        if not p.exists():
+            raise FileNotFoundError(f"Missing required Pass 3 dataset asset: {p}")
+        digest = sha256_file(p)
+        if digest != expected:
+            raise ValueError(f"SHA-256 mismatch for {rel}: expected {expected}, got {digest}")
+        computed[rel] = digest
+    return computed
+
+
+def load_pass3_reference_data() -> dict[str, Any]:
+    """Load and SHA-256-verify `cholesteric_fracture_reference.json` (Pass 3)."""
+    verify_pass3_dataset_integrity()
+    return json.loads(PASS3_JSON.read_text(encoding="utf-8"))
 
 
 # =============================================================================
@@ -413,6 +471,182 @@ def compute_outer_contour_winding_number(
         np.arctan2(yc - y2, xc - x2)
     )
     return float((ang[-1] - ang[0]) / (2.0 * math.pi))
+
+
+# =============================================================================
+# 3b. (Pass 3) 3D Cholesteric Chitin-Fibroin Liquid-Crystal Lamellar Precursor
+#     coupled to the 2D BCF screw-dislocation / target step-flow phase field
+# =============================================================================
+def reconstruct_continuous_bcf_phase(sim2d: dict[str, Any]) -> np.ndarray:
+    """Recover the continuous 2D BCF phase Phi(x, y, t) (radians) from the terrace index
+    floor(Phi / 2 pi) and the wrapped order parameter Psi = exp(i Phi):
+      Phi = 2 pi floor(Phi / 2 pi) + (angle(Psi) mod 2 pi)."""
+    return 2.0 * math.pi * np.asarray(sim2d["terrace_idx"], dtype=float) + np.mod(
+        np.angle(np.asarray(sim2d["psi_field"])), 2.0 * math.pi
+    )
+
+
+def simulate_cholesteric_chitin_lamellar_3d(
+    sim2d: dict[str, Any],
+    h_0_um: float = 0.50,
+    n_xy: int = 81,
+    n_z: int = 120,
+    z_span_um: float = 4.5,
+) -> dict[str, Any]:
+    """Pass 3 remediation item 1 (reduced, honest coupling).
+
+    Cartwright et al. (2009) PNAS 106:10499-10504 propose that the interlamellar
+    beta-chitin / fibroin membranes of nacre self-assemble as a *cholesteric liquid
+    crystal* whose structural period (half-pitch P/2, because the director n = -n) is
+    the inter-lamellar spacing h_0, and that spiral and target patterns are screw
+    dislocations of this layered liquid-crystalline stack.  Following de Gennes & Prost
+    (1993) and Kleman & Lavrentovich (2003) we build the 3D director field
+
+        n(x, y, z) = (cos phi, sin phi, 0),   phi = (pi / h_0) (z - u(x, y, t)),
+
+    with the layer displacement u driven by the 2D BCF phase field of Section 3:
+
+        u(x, y, t) = h_0 * Phi_2D(x, y, t) / (2 pi).
+
+    Around a screw dislocation Phi_2D contains b * theta, so every membrane surface
+    z = u + k h_0 is a helicoid with Burgers vector b h_0 (quantised in half-pitch units),
+    the BCF step-flow travel -k_0 (r - r_c) - ... tilts the membranes radially exactly as
+    the terraces advance, and the aragonite occupies the interlamellar slabs below the
+    growing BCF terrace (M = 1 for z < h_0 floor(Phi_2D / 2 pi)).  From the *discrete 3D
+    field* we then measure (rather than assume) the cholesteric twist rate
+    q = -n . curl n, the membrane period (z-FFT of the lamellar density S = cos 2 phi),
+    and the Burgers vector (closed circuit of u), so the 3D self-assembly is checked for
+    consistency with the 2D step-flow kinematics.
+
+    This is a kinematic liquid-crystal template coupling, NOT a Frank free-energy
+    minimisation of the cholesteric: elastic constants, pitch selection by chitin
+    concentration, and membrane pore (mineral-bridge) transport are not solved.
+    """
+    coords_full = np.asarray(sim2d["coords_um"], dtype=float)
+    n_full = len(coords_full)
+    stride = max(1, n_full // n_xy)
+    sel = np.arange(0, n_full, stride)
+    coords = coords_full[sel]
+    XX = np.asarray(sim2d["XX_um"], dtype=float)[np.ix_(sel, sel)]
+    YY = np.asarray(sim2d["YY_um"], dtype=float)[np.ix_(sel, sel)]
+    phi_2d_full = reconstruct_continuous_bcf_phase(sim2d)
+    phi_2d = phi_2d_full[np.ix_(sel, sel)]
+    terrace_idx = np.asarray(sim2d["terrace_idx"], dtype=float)[np.ix_(sel, sel)]
+
+    u = h_0_um * phi_2d / (2.0 * math.pi)  # layer displacement (um)
+    mineral_top = h_0_um * terrace_idx  # BCF terrace height (um)
+
+    # z window: 2 h_0 below the lowest terrace to z_span above it (covers the whole
+    # BCF front plus the chitin membranes it is about to mineralise)
+    z_min = float(np.min(mineral_top)) - 2.0 * h_0_um
+    z = np.linspace(z_min, z_min + z_span_um, n_z)
+    dz = float(z[1] - z[0])
+
+    phi_dir = (math.pi / h_0_um) * (z[None, None, :] - u[:, :, None])
+    n_x = np.cos(phi_dir)
+    n_y = np.sin(phi_dir)
+    lamellar_density = np.cos(2.0 * phi_dir)
+    mineral_occupancy = (z[None, None, :] < mineral_top[:, :, None]).astype(float)
+
+    # Cholesteric twist rate q = -n . (curl n), measured by finite differences on the grid.
+    # For n = (cos phi, sin phi, 0): (curl n)_x = -d n_y / dz, (curl n)_y = d n_x / dz.
+    dny_dz = np.gradient(n_y, dz, axis=2)
+    dnx_dz = np.gradient(n_x, dz, axis=2)
+    twist_field = -(n_x * (-dny_dz) + n_y * dnx_dz)
+    interior = twist_field[:, :, 2:-2]
+    twist_rate_measured = float(np.mean(interior))
+    twist_rate_theory = math.pi / h_0_um
+
+    # Membrane period from the column-averaged z-power-spectrum of the lamellar density
+    # (power is averaged over every (x, y) column so the helicoidal offset u does not smear it).
+    s_cols = lamellar_density.reshape(-1, n_z)
+    s_cols = s_cols - s_cols.mean(axis=1, keepdims=True)
+    n_pad = 16 * n_z
+    power = np.mean(np.abs(np.fft.rfft(s_cols, n=n_pad, axis=1)) ** 2, axis=0)
+    freqs = np.fft.rfftfreq(n_pad, d=dz)
+    power[0] = 0.0
+    membrane_period_um = float(1.0 / max(freqs[int(np.argmax(power))], 1e-9))
+
+    # Burgers vector from a closed circuit of u at r = 0.6 L (nearest-grid sampling).
+    r_loop = 0.6 * float(coords[-1])
+    angs = np.linspace(0.0, 2.0 * math.pi, 1440, endpoint=True)
+    ix = np.clip(np.searchsorted(coords, r_loop * np.cos(angs)), 0, len(coords) - 1)
+    iy = np.clip(np.searchsorted(coords, r_loop * np.sin(angs)), 0, len(coords) - 1)
+    phi_loop = np.unwrap(phi_2d[iy, ix])
+    burgers_charge_3d = float((phi_loop[-1] - phi_loop[0]) / (2.0 * math.pi))
+    burgers_vector_um = burgers_charge_3d * h_0_um
+
+    # Membrane count along the central vertical column and total mineral volume fraction
+    mid = len(coords) // 2
+    n_membranes_center = int(len(signal.find_peaks(lamellar_density[mid, mid, :])[0]))
+    kin = compute_bcf_spiral_kinematics(
+        v_inf_um_hr=float(sim2d.get("v_inf_um_hr", 1.25) or 1.25),
+        r_c_um=float(sim2d.get("r_c_um", 0.42) or 0.42),
+        h_0_um=h_0_um,
+        m_arms=max(1, abs(int(sim2d.get("b_net", 1)) or 1)),
+    )
+
+    return {
+        "coords_um": coords,
+        "z_um": z,
+        "XX_um": XX,
+        "YY_um": YY,
+        "layer_displacement_um": u,
+        "mineral_top_um": mineral_top,
+        "director_nx": n_x,
+        "director_ny": n_y,
+        "lamellar_density": lamellar_density,
+        "mineral_occupancy": mineral_occupancy,
+        "h_0_um": h_0_um,
+        "cholesteric_pitch_um": 2.0 * h_0_um,
+        "twist_rate_theory_rad_um": twist_rate_theory,
+        "twist_rate_measured_rad_um": twist_rate_measured,
+        "twist_rate_rel_error": abs(twist_rate_measured - twist_rate_theory) / twist_rate_theory,
+        "membrane_period_measured_um": membrane_period_um,
+        "burgers_charge_3d": burgers_charge_3d,
+        "burgers_vector_um": burgers_vector_um,
+        "n_membranes_center_column": n_membranes_center,
+        "vertical_growth_rate_um_hr": kin["v_z_um_hr"],
+        "mineral_volume_fraction": float(np.mean(mineral_occupancy)),
+    }
+
+
+def evaluate_cholesteric_pitch_coupling() -> dict[str, Any]:
+    """Sweep the cholesteric pitch P (h_0 = P/2) of the chitin precursor and propagate it
+    through the coupled BCF kinematics (v_z = m h_0 omega / 2 pi) and the 3D twist rate
+    q = 2 pi / P; anchor against the SEM-segmented h_0 of the vendored specimen and the
+    12-species h_0 table (implied species pitches P = 2 h_0)."""
+    ref3 = load_pass3_reference_data()["cholesteric_chitin_lamellar_precursor"]
+    ref = load_reference_data()
+    pitches = np.asarray(ref3["cholesteric_pitch_sweep_um"], dtype=float)
+    rows: list[dict[str, float]] = []
+    for P in pitches:
+        h0 = 0.5 * float(P)
+        kin = compute_bcf_spiral_kinematics(v_inf_um_hr=1.25, r_c_um=0.42, h_0_um=h0)
+        rows.append(
+            {
+                "pitch_um": float(P),
+                "h_0_um": h0,
+                "twist_rate_rad_um": 2.0 * math.pi / float(P),
+                "v_z_um_hr": kin["v_z_um_hr"],
+                "lamellae_per_day": 24.0 * kin["omega_rad_hr"] / (2.0 * math.pi),
+            }
+        )
+    species_h0 = np.asarray([float(r["h_0_um"]) for r in ref["cross_taxa_nacre_terrace_scaling"]])
+    v_z = np.asarray([r["v_z_um_hr"] for r in rows])
+    slope_vz, intercept_vz, r_vz, _, _ = stats.linregress(pitches, v_z)
+    return {
+        "rows": rows,
+        "pitch_um": pitches,
+        "v_z_um_hr": v_z,
+        "v_z_vs_pitch_slope_um_hr_per_um": float(slope_vz),
+        "v_z_vs_pitch_intercept": float(intercept_vz),
+        "v_z_vs_pitch_r": float(r_vz),
+        "species_h_0_um": species_h0,
+        "species_implied_pitch_um": 2.0 * species_h0,
+        "sem_anchor_h_0_um": float(ref3["empirical_anchor"]["sem_specimen_h_0_um"]),
+        "sem_anchor_pitch_um": float(ref3["empirical_anchor"]["implied_cholesteric_pitch_um"]),
+    }
 
 
 # =============================================================================
@@ -741,6 +975,254 @@ def segment_nacre_sem_specimen(img_path: Path = SPECIMEN_JPG) -> dict[str, Any]:
 
 
 # =============================================================================
+# 6b. (Pass 3) Brick-and-Mortar Aragonite Tablet-Sliding Fracture Mechanics
+#     (tension-shear chain + Schmid-law interlamellar slip + Griffith tablet fracture)
+# =============================================================================
+def tsc_effective_modulus_GPa(phi: float, rho: float, E_m_GPa: float, G_p_GPa: float) -> float:
+    """Ji & Gao (2004) tension-shear-chain modulus:
+    1 / E = 4 (1 - Phi) / (G_p Phi^2 rho^2) + 1 / (Phi E_m)."""
+    inv = 4.0 * (1.0 - phi) / (G_p_GPa * phi**2 * rho**2) + 1.0 / (phi * E_m_GPa)
+    return 1.0 / inv
+
+
+def griffith_tablet_strength_MPa(E_m_GPa: float, Gamma_m_J_m2: float, h_um: float) -> float:
+    """Griffith critical tensile stress of an aragonite tablet containing a flaw of half the
+    tablet thickness: sigma_crit = sqrt(E_m Gamma_m / (pi h / 2))."""
+    a_m = 0.5 * h_um * 1e-6
+    return math.sqrt(E_m_GPa * 1e9 * Gamma_m_J_m2 / (math.pi * a_m)) / 1e6
+
+
+def simulate_tablet_sliding_fracture(
+    h_um: float = 0.50,
+    L_um: float = 7.8,
+    phi: float = 0.95,
+    E_m_GPa: float = 100.0,
+    G_p_GPa: float = 1.4,
+    nu_mortar: float = 0.4,
+    tau_p_MPa: float = 20.0,
+    waviness_deg: float = 1.5,
+    t_m_nm: float = 30.0,
+    Gamma_m_J_m2: float = 1.0,
+    n_steps: int = 600,
+) -> dict[str, Any]:
+    """Pass 3 remediation item 2 (reduced, honest version of 'crystal-plasticity fracture
+    toughness of brick-and-mortar tablet sliding under tension').
+
+    Rate-independent, single-slip-system plasticity of the brick-and-mortar RVE under
+    in-plane tension (Jaeger & Fratzl 2000; Ji & Gao 2004; Barthelat et al. 2007):
+      * elastic branch with the TSC modulus E (Ji & Gao 2004);
+      * slip system = interlamellar organic mortar plane; sliding starts when the shear
+        transferred over the overlap L_ov = L / 2 saturates at tau_p:
+            sigma_y = Phi rho tau_p / 2,   rho = L / h;
+      * waviness hardening (Coulomb-dilatant interlocking of wavy tablets, Barthelat 2007):
+            tau(s) = tau_p + H s,   H = E_n tan^2(psi) / t_m,   E_n = 2 G_p (1 + nu);
+      * inelastic strain from interface slip s:  eps_p = s / L_ov;
+      * tablet fracture (Griffith, flaw = h / 2) when the peak tablet stress
+            sigma_tab,max = 2 sigma / Phi  reaches  sigma_tab,crit;
+      * pull-out toughness (work per unit crack area at constant tau_p):
+            Gamma_po = tau_p L_ov^2 / h;
+      * Gao et al. (2003) flaw-tolerant thickness h* = pi Gamma_m E_m / sigma_th^2.
+    The tablets themselves are elastic-brittle; aragonite intra-tablet dislocation /
+    twinning plasticity and a cohesive-zone FEM are NOT modelled (carried as residual).
+    """
+    rho = L_um / h_um
+    L_ov_um = 0.5 * L_um
+    E_GPa = tsc_effective_modulus_GPa(phi, rho, E_m_GPa, G_p_GPa)
+    sigma_y_MPa = 0.5 * phi * rho * tau_p_MPa
+    E_n_GPa = 2.0 * G_p_GPa * (1.0 + nu_mortar)
+    H_MPa_per_nm = (E_n_GPa * 1e3) * math.tan(math.radians(waviness_deg)) ** 2 / t_m_nm
+    sigma_tab_crit_MPa = griffith_tablet_strength_MPa(E_m_GPa, Gamma_m_J_m2, h_um)
+    sigma_f_MPa = 0.5 * phi * sigma_tab_crit_MPa
+    rho_star = sigma_tab_crit_MPa / tau_p_MPa
+
+    if sigma_f_MPa <= sigma_y_MPa:
+        # Tablets fracture before interface slip saturates: brittle, no plastic branch.
+        failure_mode = "tablet_fracture_before_sliding"
+        s_f_nm = 0.0
+    elif H_MPa_per_nm <= 0.0:
+        # Perfectly plastic interface: slides until full pull-out s = L_ov
+        failure_mode = "tablet_pullout_perfectly_plastic"
+        s_f_nm = L_ov_um * 1e3
+    else:
+        s_f_nm = (sigma_f_MPa - sigma_y_MPa) * 2.0 / (phi * rho) / H_MPa_per_nm
+        failure_mode = "waviness_hardening_then_tablet_fracture"
+        if s_f_nm >= L_ov_um * 1e3:
+            s_f_nm = L_ov_um * 1e3
+            failure_mode = "tablet_pullout_before_fracture"
+
+    # Stress-strain curve
+    n_el = max(8, n_steps // 6)
+    sig_el = np.linspace(0.0, min(sigma_y_MPa, sigma_f_MPa), n_el)
+    eps_el = sig_el / (E_GPa * 1e3)
+    if s_f_nm > 0.0:
+        s_arr = np.linspace(0.0, s_f_nm, n_steps - n_el)
+        tau_arr = tau_p_MPa + H_MPa_per_nm * s_arr
+        sig_pl = 0.5 * phi * rho * tau_arr
+        eps_pl = sig_pl / (E_GPa * 1e3) + (s_arr * 1e-3) / L_ov_um
+        sigma = np.concatenate([sig_el, sig_pl[1:]])
+        eps = np.concatenate([eps_el, eps_pl[1:]])
+        eps_p = np.concatenate([np.zeros(n_el), (s_arr[1:] * 1e-3) / L_ov_um])
+    else:
+        sigma, eps, eps_p = sig_el, eps_el, np.zeros(n_el)
+    inelastic_strain_to_failure = float(eps_p[-1])
+    plastic_work_MJ_m3 = float(np.trapezoid(sigma, eps_p))  # MPa * strain = MJ/m^3
+    total_work_MJ_m3 = float(np.trapezoid(sigma, eps))
+
+    # Toughness: tablet pull-out work when sliding precedes tablet fracture (rho < rho*);
+    # otherwise the crack runs straight through the brittle tablets (Gamma = Gamma_m).
+    if failure_mode == "tablet_fracture_before_sliding":
+        Gamma_po_J_m2 = Gamma_m_J_m2
+    else:
+        Gamma_po_J_m2 = (tau_p_MPa * 1e6) * (L_ov_um * 1e-6) ** 2 / (h_um * 1e-6)
+    toughening_ratio = Gamma_po_J_m2 / Gamma_m_J_m2
+    K_Ic_MPa_sqrtm = math.sqrt(E_GPa * 1e9 * Gamma_po_J_m2) / 1e6
+    K_Ic_aragonite = math.sqrt(E_m_GPa * 1e9 * Gamma_m_J_m2) / 1e6
+    sigma_th_GPa = E_m_GPa / 30.0
+    h_star_nm = math.pi * Gamma_m_J_m2 * (E_m_GPa * 1e9) / (sigma_th_GPa * 1e9) ** 2 * 1e9
+
+    return {
+        "h_um": h_um,
+        "L_um": L_um,
+        "L_ov_um": L_ov_um,
+        "rho": rho,
+        "phi": phi,
+        "tau_p_MPa": tau_p_MPa,
+        "waviness_deg": waviness_deg,
+        "E_eff_GPa": E_GPa,
+        "sigma_y_MPa": sigma_y_MPa,
+        "hardening_H_MPa_per_nm": H_MPa_per_nm,
+        "sigma_tab_crit_MPa": sigma_tab_crit_MPa,
+        "sigma_f_MPa": float(sigma[-1]),
+        "rho_star_ductile_brittle": rho_star,
+        "slip_to_failure_nm": s_f_nm,
+        "inelastic_strain_to_failure": inelastic_strain_to_failure,
+        "plastic_work_MJ_m3": plastic_work_MJ_m3,
+        "total_work_MJ_m3": total_work_MJ_m3,
+        "Gamma_pullout_J_m2": Gamma_po_J_m2,
+        "toughening_ratio_vs_aragonite": toughening_ratio,
+        "K_Ic_MPa_sqrtm": K_Ic_MPa_sqrtm,
+        "K_Ic_aragonite_MPa_sqrtm": K_Ic_aragonite,
+        "flaw_tolerant_h_star_nm": h_star_nm,
+        "failure_mode": failure_mode,
+        "stress_MPa": sigma,
+        "strain": eps,
+        "plastic_strain": eps_p,
+    }
+
+
+def schmid_slip_strength_envelope(
+    load_angle_deg: np.ndarray,
+    tau_p_MPa: float,
+    sigma_y_tsc_MPa: float,
+) -> np.ndarray:
+    """Schmid-law yield envelope of the interlamellar slip system: resolved shear
+    tau_r = sigma sin(theta) cos(theta); sliding when tau_r >= tau_p, capped by the
+    in-plane TSC shear-lag strength at theta -> 0."""
+    th = np.radians(np.asarray(load_angle_deg, dtype=float))
+    m_schmid = np.sin(th) * np.cos(th)
+    direct = tau_p_MPa / np.maximum(m_schmid, 1e-9)
+    return np.minimum(direct, sigma_y_tsc_MPa)
+
+
+def evaluate_fracture_toughness_sweeps(h_um: float = 0.50) -> dict[str, Any]:
+    """Pass 3 fracture-mechanics evaluation: default brick-and-mortar RVE at the
+    SEM-segmented h_0, two ablations (no waviness hardening; monolithic aragonite), the
+    tau_p and aspect-ratio sweeps, the Schmid loading-angle envelope, and the comparison
+    against Jackson et al. (1988), Currey (1977), Wang et al. (2001) and Gao et al. (2003)."""
+    ref3 = load_pass3_reference_data()["brick_and_mortar_fracture"]
+    dp = ref3["default_parameters"]
+    targets = ref3["empirical_targets"]
+    sweeps = ref3["fracture_sweeps"]
+
+    base_kwargs = dict(
+        h_um=h_um,
+        L_um=float(dp["L_um"]),
+        phi=float(dp["mineral_volume_fraction_phi"]),
+        E_m_GPa=float(dp["E_m_GPa"]),
+        G_p_GPa=float(dp["G_p_GPa"]),
+        nu_mortar=float(dp["poisson_mortar"]),
+        tau_p_MPa=float(dp["tau_p_MPa"]),
+        waviness_deg=float(dp["waviness_deg"]),
+        t_m_nm=float(dp["mortar_thickness_nm"]),
+        Gamma_m_J_m2=float(dp["Gamma_m_J_per_m2"]),
+    )
+    nacre = simulate_tablet_sliding_fracture(**base_kwargs)
+    no_hardening = simulate_tablet_sliding_fracture(**{**base_kwargs, "waviness_deg": 0.0})
+    # Monolithic aragonite ablation: Phi -> 1 (no mortar) => brittle Griffith plate of thickness h
+    E_m = float(dp["E_m_GPa"])
+    Gm = float(dp["Gamma_m_J_per_m2"])
+    sig_mono = griffith_tablet_strength_MPa(E_m, Gm, h_um)
+    monolithic = {
+        "E_eff_GPa": E_m,
+        "sigma_f_MPa": sig_mono,
+        "Gamma_J_m2": Gm,
+        "inelastic_strain_to_failure": 0.0,
+        "stress_MPa": np.array([0.0, sig_mono]),
+        "strain": np.array([0.0, sig_mono / (E_m * 1e3)]),
+    }
+
+    tau_sweep = np.asarray(sweeps["tau_p_MPa"], dtype=float)
+    rho_sweep = np.asarray(sweeps["aspect_ratio_rho"], dtype=float)
+    sigma_f_tau = np.array(
+        [simulate_tablet_sliding_fracture(**{**base_kwargs, "tau_p_MPa": float(t)})["sigma_f_MPa"] for t in tau_sweep]
+    )
+    gamma_tau = np.array(
+        [simulate_tablet_sliding_fracture(**{**base_kwargs, "tau_p_MPa": float(t)})["Gamma_pullout_J_m2"] for t in tau_sweep]
+    )
+    strain_tau = np.array(
+        [
+            simulate_tablet_sliding_fracture(**{**base_kwargs, "tau_p_MPa": float(t)})["inelastic_strain_to_failure"]
+            for t in tau_sweep
+        ]
+    )
+    sigma_y_rho = np.array(
+        [
+            simulate_tablet_sliding_fracture(**{**base_kwargs, "L_um": float(r) * h_um})["sigma_y_MPa"]
+            for r in rho_sweep
+        ]
+    )
+    sigma_f_rho = np.array(
+        [
+            simulate_tablet_sliding_fracture(**{**base_kwargs, "L_um": float(r) * h_um})["sigma_f_MPa"]
+            for r in rho_sweep
+        ]
+    )
+    modes_rho = [
+        simulate_tablet_sliding_fracture(**{**base_kwargs, "L_um": float(r) * h_um})["failure_mode"] for r in rho_sweep
+    ]
+    angles = np.asarray(sweeps["loading_angle_deg"], dtype=float)
+    envelope = schmid_slip_strength_envelope(angles, nacre["tau_p_MPa"], nacre["sigma_y_MPa"])
+
+    jackson_mid_gamma = 0.5 * (
+        float(targets["jackson1988_work_of_fracture_dry_J_per_m2"])
+        + float(targets["jackson1988_work_of_fracture_wet_J_per_m2"])
+    )
+    return {
+        "nacre": nacre,
+        "no_hardening": no_hardening,
+        "monolithic": monolithic,
+        "tau_sweep_MPa": tau_sweep,
+        "sigma_f_vs_tau_MPa": sigma_f_tau,
+        "gamma_vs_tau_J_m2": gamma_tau,
+        "inelastic_strain_vs_tau": strain_tau,
+        "rho_sweep": rho_sweep,
+        "sigma_y_vs_rho_MPa": sigma_y_rho,
+        "sigma_f_vs_rho_MPa": sigma_f_rho,
+        "failure_mode_vs_rho": modes_rho,
+        "load_angle_deg": angles,
+        "schmid_envelope_MPa": envelope,
+        "schmid_min_angle_deg": float(angles[int(np.argmin(envelope))]),
+        "targets": targets,
+        "jackson_gamma_midpoint_J_m2": jackson_mid_gamma,
+        "within_jackson_gamma_range": bool(
+            float(targets["jackson1988_work_of_fracture_dry_J_per_m2"])
+            <= nacre["Gamma_pullout_J_m2"]
+            <= float(targets["jackson1988_work_of_fracture_wet_J_per_m2"])
+        ),
+    }
+
+
+# =============================================================================
 # 7. Publication-Grade 6-Panel Synthesis Figure & Co-Evolving 2-Panel Growth GIF
 # =============================================================================
 def render_comparison_figure(
@@ -1030,7 +1512,7 @@ def render_comparison_figure(
     ax_f.legend(loc="upper left", fontsize=7.0, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
 
     fig.suptitle(
-        "Cartwright & Checa (2007) J. R. Soc. Interface, Cartwright et al. (2009) PNAS & BCF (1951) — Nacre Screw-Dislocation Spirals (v2)",
+        "Cartwright & Checa (2007) J. R. Soc. Interface, Cartwright et al. (2009) PNAS & BCF (1951) — Nacre Screw-Dislocation Spirals (v3)",
         color="white",
         fontsize=12.4,
         fontweight="bold",
@@ -1124,15 +1606,330 @@ def render_growth_gif(out_path: Path = OUT_GIF) -> Path:
     return out_path
 
 
+def render_cholesteric_fracture_figure(
+    out_path: Path = OUT_PASS3_PNG,
+    overrides: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    """Render the Pass 3 6-panel figure
+    (`docs/media/nacre_screw_dislocation_spirals_cholesteric_fracture.png`):
+      A. x-z section of the 3D cholesteric lamellar density with helicoidal membranes and
+         BCF mineral occupancy around the +1 screw dislocation;
+      B. director twist phi(z) at three (x, y) columns and the measured twist rate / period;
+      C. cholesteric pitch sweep -> coupled vertical growth rate, 12-species implied pitches
+         and the SEM-anchored h_0;
+      D. tension-shear-chain stress-strain curve with ablations and Jackson / Wang targets;
+      E. Schmid-law slip-system yield envelope vs loading angle and the rho sweep
+         (ductile-brittle transition at rho*);
+      F. pull-out toughness vs interface shear strength against Jackson (1988) range,
+         Currey (1977) 3000x and Gao (2003) h*.
+    Returns the computed results so callers can reuse them."""
+    ovr = overrides or {}
+    v_inf = float(ovr.get("v_inf", 1.25))
+    r_c = float(ovr.get("r_c", 0.42))
+    h_0 = float(ovr.get("h_0", 0.50))
+    tau_p = ovr.get("tau_p", None)
+
+    sp = simulate_chiral_dislocation_terrace_2d(
+        regime_id="single_screw_spiral_sheet_nacre",
+        b_1=1,
+        b_2=0,
+        dipole_separation_um=0.0,
+        v_inf_um_hr=v_inf,
+        r_c_um=r_c,
+        h_0_um=h_0,
+        domain_radius_um=12.0,
+        n_grid=161,
+    )
+    chol = simulate_cholesteric_chitin_lamellar_3d(sp, h_0_um=h_0)
+    pitch = evaluate_cholesteric_pitch_coupling()
+    frac = evaluate_fracture_toughness_sweeps(h_um=h_0)
+    if tau_p is not None:
+        ref3 = load_pass3_reference_data()["brick_and_mortar_fracture"]["default_parameters"]
+        frac["nacre"] = simulate_tablet_sliding_fracture(
+            h_um=h_0,
+            L_um=float(ref3["L_um"]),
+            phi=float(ref3["mineral_volume_fraction_phi"]),
+            E_m_GPa=float(ref3["E_m_GPa"]),
+            G_p_GPa=float(ref3["G_p_GPa"]),
+            nu_mortar=float(ref3["poisson_mortar"]),
+            tau_p_MPa=float(tau_p),
+            waviness_deg=float(ref3["waviness_deg"]),
+            t_m_nm=float(ref3["mortar_thickness_nm"]),
+            Gamma_m_J_m2=float(ref3["Gamma_m_J_per_m2"]),
+        )
+    nac = frac["nacre"]
+    targets = frac["targets"]
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig = plt.figure(figsize=(17.2, 10.8), dpi=150, facecolor="#0b0f17")
+    gs = fig.add_gridspec(2, 3, hspace=0.36, wspace=0.28)
+    axes_style = dict(colors="#9ca3af", labelsize=8)
+
+    # Panel A: x-z section through the dislocation core (y = 0)
+    ax_a = fig.add_subplot(gs[0, 0], facecolor="#111827")
+    mid = len(chol["coords_um"]) // 2
+    xs = chol["coords_um"]
+    zs = chol["z_um"]
+    sec_s = chol["lamellar_density"][mid, :, :].T  # (z, x)
+    sec_m = chol["mineral_occupancy"][mid, :, :].T
+    ax_a.pcolormesh(xs, zs, sec_s, cmap="twilight", vmin=-1, vmax=1, shading="auto")
+    mineral_rgba = np.zeros(sec_m.shape + (4,))
+    mineral_rgba[..., 0] = 0.98
+    mineral_rgba[..., 1] = 0.80
+    mineral_rgba[..., 2] = 0.08
+    mineral_rgba[..., 3] = 0.55 * sec_m
+    ax_a.imshow(
+        mineral_rgba,
+        extent=(float(xs[0]), float(xs[-1]), float(zs[0]), float(zs[-1])),
+        origin="lower",
+        aspect="auto",
+        interpolation="nearest",
+        zorder=2,
+    )
+    ax_a.contour(xs, zs, sec_m, levels=[0.5], colors="#facc15", linewidths=1.8, zorder=3)
+    ax_a.contour(xs, zs, sec_s, levels=[0.97], colors="white", linewidths=0.6, alpha=0.85)
+    ax_a.axvline(0.0, color="#f43f5e", lw=1.0, ls=":")
+    ax_a.set_xlabel("x (µm) through screw-dislocation core (y = 0)", color="white", fontsize=8.5)
+    ax_a.set_ylabel("z (µm)", color="white", fontsize=8.5)
+    ax_a.set_title(
+        f"A. x-z Section: Cholesteric Chitin Membranes (white, P/2 = h_0 = {h_0:.2f} µm)\n"
+        f"+ BCF Aragonite Fill (yellow); helicoid b = {chol['burgers_charge_3d']:.2f} h_0 = {chol['burgers_vector_um']:.3f} µm",
+        color="white",
+        fontsize=8.4,
+        fontweight="bold",
+    )
+    ax_a.tick_params(**axes_style)
+
+    # Panel B: director twist phi(z) at three columns + twist / period measurement
+    ax_b = fig.add_subplot(gs[0, 1], facecolor="#111827")
+    cols = [(mid, mid + 10), (mid, mid + 30), (mid + 25, mid - 20)]
+    palette = ["#38bdf8", "#34d399", "#facc15"]
+    phi_ref0 = None
+    for (iy, ix), col in zip(cols, palette):
+        phi_col = np.unwrap(np.arctan2(chol["director_ny"][iy, ix, :], chol["director_nx"][iy, ix, :]))
+        if phi_ref0 is None:
+            phi_ref0 = float(phi_col[0])
+        ax_b.plot(
+            zs,
+            np.degrees(phi_col - phi_ref0),
+            color=col,
+            lw=1.6,
+            label=f"n(z) at (x,y)=({xs[ix]:.1f},{xs[iy]:.1f}) µm (offset −π u/h_0)",
+        )
+    ax_b.plot(zs, np.degrees(math.pi / h_0 * (zs - zs[0])), "--", color="white", lw=1.0, label="theory slope π / h_0")
+    for k in range(0, int((zs[-1] - zs[0]) / h_0) + 2):
+        ax_b.axhline(180.0 * k, color="#374151", lw=0.6)
+    ax_b.set_xlabel("z (µm)", color="white", fontsize=9)
+    ax_b.set_ylabel("director twist φ (deg)", color="white", fontsize=9)
+    ax_b.set_title(
+        f"B. Twist q = −n·∇×n: {chol['twist_rate_measured_rad_um']:.3f} measured vs π/h_0 = "
+        f"{chol['twist_rate_theory_rad_um']:.3f} rad/µm\nz-FFT membrane period = {chol['membrane_period_measured_um']:.4f} µm; "
+        f"{chol['n_membranes_center_column']} membranes / {zs[-1] - zs[0]:.1f} µm",
+        color="white",
+        fontsize=8.4,
+        fontweight="bold",
+    )
+    ax_b.tick_params(**axes_style)
+    ax_b.grid(True, alpha=0.2, color="#374151")
+    ax_b.legend(loc="upper left", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    # Panel C: pitch sweep -> v_z, species implied pitches, SEM anchor
+    ax_c = fig.add_subplot(gs[0, 2], facecolor="#111827")
+    ax_c.plot(pitch["pitch_um"], pitch["v_z_um_hr"], "-o", color="#38bdf8", lw=2.0, ms=5, label="coupled v_z = (P/2)·ω/2π (µm/hr)")
+    ax_c.axvline(pitch["sem_anchor_pitch_um"], color="#facc15", ls="--", lw=2.0, label=f"SEM specimen h_0 = {pitch['sem_anchor_h_0_um']:.2f} µm ⇒ P = {pitch['sem_anchor_pitch_um']:.2f} µm")
+    ax_c.scatter(
+        pitch["species_implied_pitch_um"],
+        np.full_like(pitch["species_implied_pitch_um"], float(np.min(pitch["v_z_um_hr"])) * 0.9),
+        marker="|",
+        s=220,
+        color="#f43f5e",
+        label="12-species implied P = 2 h_0",
+    )
+    ax_c.set_xlabel("cholesteric pitch P of chitin-fibroin precursor (µm)", color="white", fontsize=9)
+    ax_c.set_ylabel("vertical nacre growth rate v_z (µm/hr)", color="white", fontsize=9)
+    ax_c.set_title(
+        f"C. Cholesteric Pitch → Vertical Growth Coupling\nslope {pitch['v_z_vs_pitch_slope_um_hr_per_um']:.4f} (µm/hr)/µm = ω/4π, r = {pitch['v_z_vs_pitch_r']:.4f}",
+        color="white",
+        fontsize=8.4,
+        fontweight="bold",
+    )
+    ax_c.tick_params(**axes_style)
+    ax_c.grid(True, alpha=0.2, color="#374151")
+    ax_c.legend(loc="upper left", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    # Panel D: stress-strain
+    ax_d = fig.add_subplot(gs[1, 0], facecolor="#111827")
+    ax_d.plot(100 * nac["strain"], nac["stress_MPa"], color="#38bdf8", lw=2.4, label=f"nacre TSC + waviness hardening (ψ={nac['waviness_deg']:.1f}°, τ_p={nac['tau_p_MPa']:.0f} MPa)")
+    nh = frac["no_hardening"]
+    ax_d.plot(100 * nh["strain"], nh["stress_MPa"], color="#34d399", lw=1.4, ls="--", label="ablation: ψ = 0 (perfectly plastic sliding)")
+    mono = frac["monolithic"]
+    ax_d.plot(100 * mono["strain"], mono["stress_MPa"], color="#9ca3af", lw=1.4, ls=":", label=f"ablation: monolithic aragonite (Γ = {mono['Gamma_J_m2']:.0f} J/m²)")
+    ax_d.axhline(float(targets["jackson1988_tensile_strength_dry_MPa"]), color="#facc15", lw=1.2, ls="--", label="Jackson 1988 σ_T dry 170 / wet 140 MPa")
+    ax_d.axhline(float(targets["jackson1988_tensile_strength_wet_MPa"]), color="#facc15", lw=1.2, ls="--")
+    ax_d.axhline(float(targets["wang2001_tensile_strength_MPa"]), color="#f43f5e", lw=1.0, ls="-.", label="Wang 2001 σ_T ≈ 110 MPa, ε_p ≈ 1%")
+    ax_d.axvline(100 * (float(targets["wang2001_inelastic_strain_to_failure"]) + nac["sigma_f_MPa"] / (nac["E_eff_GPa"] * 1e3)), color="#f43f5e", lw=1.0, ls="-.")
+    ax_d.set_xlim(0, 100 * max(float(nac["strain"][-1]) * 1.25, 0.012))
+    ax_d.set_ylim(0, 1.15 * max(float(np.max(nac["stress_MPa"])), float(targets["jackson1988_tensile_strength_dry_MPa"])))
+    ax_d.set_xlabel("tensile strain (%)", color="white", fontsize=9)
+    ax_d.set_ylabel("tensile stress σ (MPa)", color="white", fontsize=9)
+    ax_d.set_title(
+        f"D. Brick-and-Mortar Tablet Sliding (TSC + waviness hardening)\nE = {nac['E_eff_GPa']:.1f} GPa, σ_y = {nac['sigma_y_MPa']:.0f}, σ_f = {nac['sigma_f_MPa']:.0f} MPa, "
+        f"ε_p,f = {100 * nac['inelastic_strain_to_failure']:.2f}%",
+        color="white",
+        fontsize=8.4,
+        fontweight="bold",
+    )
+    ax_d.tick_params(**axes_style)
+    ax_d.grid(True, alpha=0.2, color="#374151")
+    ax_d.legend(loc="lower right", fontsize=6.6, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    # Panel E: Schmid envelope + rho sweep
+    ax_e = fig.add_subplot(gs[1, 1], facecolor="#111827")
+    ax_e.plot(frac["load_angle_deg"], frac["schmid_envelope_MPa"], "-o", color="#38bdf8", lw=2.0, ms=4, label="Schmid slip envelope σ_y(θ) = min(Φρτ_p/2, τ_p / sinθcosθ)")
+    ax_e.set_xlabel("loading angle θ to tablet plane (deg)", color="white", fontsize=9)
+    ax_e.set_ylabel("yield stress σ_y (MPa)", color="white", fontsize=9)
+    ax_e.tick_params(**axes_style)
+    ax_e.grid(True, alpha=0.2, color="#374151")
+    ins_e = ax_e.inset_axes([0.33, 0.47, 0.64, 0.46], facecolor="#0b0f17")
+    ins_e.plot(frac["rho_sweep"], frac["sigma_y_vs_rho_MPa"], "-s", color="#34d399", ms=4, lw=1.4, label="σ_y = Φρτ_p/2")
+    ins_e.plot(frac["rho_sweep"], frac["sigma_f_vs_rho_MPa"], "-^", color="#facc15", ms=4, lw=1.4, label="σ_f (tablet Griffith cap)")
+    ins_e.axvline(nac["rho_star_ductile_brittle"], color="#f43f5e", ls="--", lw=1.2, label=f"ρ* = σ_crit/τ_p = {nac['rho_star_ductile_brittle']:.1f}")
+    ins_e.axvline(nac["rho"], color="white", ls=":", lw=1.0, label=f"nacre ρ = {nac['rho']:.1f}")
+    ins_e.set_xlabel("aspect ratio ρ = L/h", color="#9ca3af", fontsize=6.8)
+    ins_e.set_ylabel("MPa", color="#9ca3af", fontsize=6.8)
+    ins_e.tick_params(colors="#9ca3af", labelsize=6)
+    ins_e.legend(fontsize=5.6, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", loc="upper left")
+    ax_e.set_title(
+        f"E. Interlamellar Slip System (Schmid law)\nweakest at θ = {frac['schmid_min_angle_deg']:.0f}° (σ_y = {np.min(frac['schmid_envelope_MPa']):.0f} MPa); "
+        f"ductile→brittle at ρ* = {nac['rho_star_ductile_brittle']:.1f}",
+        color="white",
+        fontsize=8.4,
+        fontweight="bold",
+    )
+    ax_e.legend(loc="lower left", fontsize=6.6, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    # Panel F: toughness
+    ax_f = fig.add_subplot(gs[1, 2], facecolor="#111827")
+    ax_f.plot(frac["tau_sweep_MPa"], frac["gamma_vs_tau_J_m2"], "-o", color="#38bdf8", lw=2.0, ms=5, label="pull-out Γ = τ_p L_ov² / h (ρ < ρ*)")
+    ax_f.axhspan(
+        float(targets["jackson1988_work_of_fracture_dry_J_per_m2"]),
+        float(targets["jackson1988_work_of_fracture_wet_J_per_m2"]),
+        color="#facc15",
+        alpha=0.18,
+        label="Jackson 1988 work of fracture 350 (dry) – 1240 (wet) J/m²",
+    )
+    ax_f.axhline(float(targets["currey1977_toughening_ratio_vs_aragonite"]) * mono["Gamma_J_m2"], color="#f43f5e", ls="--", lw=1.2, label="Currey 1977: 3000 × Γ_aragonite")
+    ax_f.axhline(mono["Gamma_J_m2"], color="#9ca3af", ls=":", lw=1.2, label="monolithic aragonite Γ_m = 1 J/m²")
+    ax_f.scatter([nac["tau_p_MPa"]], [nac["Gamma_pullout_J_m2"]], s=110, color="#34d399", edgecolors="white", zorder=6, label=f"nacre default: Γ = {nac['Gamma_pullout_J_m2']:.0f} J/m², K_Ic = {nac['K_Ic_MPa_sqrtm']:.1f} MPa√m")
+    tau_star = nac["sigma_tab_crit_MPa"] / nac["rho"]
+    ax_f.axvline(tau_star, color="white", ls=":", lw=1.0, label=f"τ* = σ_crit/ρ = {tau_star:.1f} MPa (brittle beyond)")
+    ax_f.set_yscale("log")
+    ax_f.set_xlabel("interface shear strength τ_p (MPa)", color="white", fontsize=9)
+    ax_f.set_ylabel("work of fracture Γ (J/m²)", color="white", fontsize=9)
+    ax_f.set_title(
+        f"F. Pull-Out Work of Fracture: ×{nac['toughening_ratio_vs_aragonite']:.0f} vs aragonite\nGao 2003 flaw-tolerant h* = {nac['flaw_tolerant_h_star_nm']:.1f} nm "
+        f"(h_0 = {1e3 * h_0:.0f} nm ≫ h*)",
+        color="white",
+        fontsize=8.4,
+        fontweight="bold",
+    )
+    ax_f.tick_params(**axes_style)
+    ax_f.grid(True, alpha=0.2, color="#374151", which="both")
+    ax_f.legend(loc="lower right", fontsize=6.3, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    fig.suptitle(
+        "Pass 3 — Cholesteric Chitin-Fibroin Precursor ⇄ BCF Screw-Dislocation Coupling (Cartwright et al. 2009) & "
+        "Brick-and-Mortar Tablet-Sliding Fracture (Jackson 1988 · Gao 2003 · Barthelat 2007)",
+        color="white",
+        fontsize=11.4,
+        fontweight="bold",
+        y=0.985,
+    )
+    fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return {"cholesteric": chol, "pitch": pitch, "fracture": frac, "path": out_path}
+
+
+def render_tablet_sliding_gif(out_path: Path = OUT_PASS3_GIF, n_frames: int = 9) -> Path:
+    """Animate the brick-and-mortar RVE under increasing tensile strain: tablets (bricks)
+    slide along the interlamellar mortar as the stress climbs the TSC curve, with the
+    σ–ε state marked on the right."""
+    frac = evaluate_fracture_toughness_sweeps()
+    nac = frac["nacre"]
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    frames: list[Image.Image] = []
+    idxs = np.linspace(0, len(nac["strain"]) - 1, n_frames).astype(int)
+    L = nac["L_um"]
+    h = nac["h_um"]
+    gap = 0.08 * h
+    for frame_no, fi in enumerate(idxs):
+        is_last = frame_no == len(idxs) - 1
+        eps_tot = float(nac["strain"][fi])
+        eps_p = float(nac["plastic_strain"][fi])
+        slip = eps_p * nac["L_ov_um"]
+        exaggeration = 25.0  # visual exaggeration of the nm-scale slip
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10.4, 4.4), dpi=105, facecolor="#0b0f17", gridspec_kw={"width_ratios": [1.5, 1.0]})
+        ax1.set_facecolor("#111827")
+        for row in range(6):
+            offset = 0.5 * L if row % 2 else 0.0
+            shift = exaggeration * slip * (row - 2.5)
+            for col in range(-1, 4):
+                x_left = offset + col * L + shift
+                ax1.add_patch(
+                    plt.Rectangle(
+                        (x_left + 0.5 * gap, row * (h + gap)),
+                        L - gap,
+                        h,
+                        facecolor="#f43f5e" if (is_last and row == 3) else "#cbd5e1",
+                        edgecolor="#0b0f17",
+                        lw=0.8,
+                    )
+                )
+        ax1.set_xlim(0, 3 * L)
+        ax1.set_ylim(0, 6 * (h + gap))
+        ax1.set_aspect("equal")
+        ax1.set_xlabel("x (µm) — tension →", color="white", fontsize=8)
+        ax1.set_ylabel("z (µm)", color="white", fontsize=8)
+        ax1.set_title(
+            f"Tablet sliding s = {1e3 * slip:.1f} nm (×{exaggeration:.0f} exaggerated), ε = {100 * eps_tot:.2f}%",
+            color="white",
+            fontsize=9,
+            fontweight="bold",
+        )
+        ax1.tick_params(colors="#9ca3af", labelsize=7)
+        ax2.set_facecolor("#111827")
+        ax2.plot(100 * nac["strain"], nac["stress_MPa"], color="#38bdf8", lw=2.0)
+        ax2.scatter([100 * eps_tot], [float(nac["stress_MPa"][fi])], color="#facc15", s=60, edgecolors="white", zorder=5)
+        ax2.axhline(170.0, color="#facc15", ls="--", lw=1.0)
+        ax2.set_xlabel("strain (%)", color="white", fontsize=8)
+        ax2.set_ylabel("σ (MPa)", color="white", fontsize=8)
+        ax2.set_title(f"σ = {float(nac['stress_MPa'][fi]):.0f} MPa | E = {nac['E_eff_GPa']:.0f} GPa | Γ = {nac['Gamma_pullout_J_m2']:.0f} J/m²", color="white", fontsize=8.6, fontweight="bold")
+        ax2.tick_params(colors="#9ca3af", labelsize=7)
+        ax2.grid(True, alpha=0.2, color="#374151")
+        fig.tight_layout()
+        fig.canvas.draw()
+        w_px, h_px = fig.canvas.get_width_height()
+        buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape((h_px, w_px, 4))
+        frames.append(Image.fromarray(buf[:, :, :3]))
+        plt.close(fig)
+    frames[0].save(out_path, save_all=True, append_images=frames[1:], duration=350, loop=0)
+    return out_path
+
+
 # =============================================================================
 # 8. MorphoEval Quantitative Measurement Suite & 8-Check Self-Test
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored quantitative morphometrics for `morphoeval/measure_outputs.py`."""
+    """Compute 16 reference-anchored quantitative morphometrics for `morphoeval/measure_outputs.py`
+    (9 from Pass 2 + 7 Pass 3 cholesteric-coupling and fracture-mechanics measurements)."""
     regimes = evaluate_all_morphospace_regimes()
     scaling = evaluate_supersaturation_and_cross_taxa_scaling()
     specimen = segment_nacre_sem_specimen()
     vor_sim = simulate_nacre_architecture_and_voronoi("haliotis_columnar_towers")
+    chol = simulate_cholesteric_chitin_lamellar_3d(regimes["single_screw_spiral_sheet_nacre"]["sim2d"], h_0_um=0.50)
+    pitch = evaluate_cholesteric_pitch_coupling()
+    frac = evaluate_fracture_toughness_sweeps(h_um=0.50)
+    nac = frac["nacre"]
 
     sub_sat = regimes["subsaturated_zero_growth_control"]
     sub_dip = regimes["subcritical_dipole_annihilation"]
@@ -1230,11 +2027,84 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"inter-lamellar spacing CV = {specimen['cv_interlamellar_spacing']:.4f}",
             "derived_from": "output",
         },
+        # ----------------------------- Pass 3 additions -----------------------------
+        {
+            "name": "3D cholesteric chitin precursor twist rate q = -n.curl(n) recovered from the BCF-coupled director volume",
+            "value": round(chol["twist_rate_measured_rad_um"], 4),
+            "unit": "rad/um",
+            "method": f"Finite-difference n.curl(n) on the {chol['director_nx'].shape} director grid built from u = h_0 Phi_2D / 2 pi (single +1 screw regime); theory pi / h_0 with h_0 = {chol['h_0_um']:.2f} um (SEM-segmented h_0 = {specimen['mean_interlamellar_um']:.4f} um)",
+            "reference_value": round(math.pi / 0.50, 4),
+            "reference_source": "Cartwright et al. (2009) PNAS 106:10499-10504 (cholesteric half-pitch = interlamellar spacing) & de Gennes & Prost (1993) twist q = 2 pi / P",
+            "note": f"relative discretisation error {100 * chol['twist_rate_rel_error']:.2f}%; membrane period from z-FFT = {chol['membrane_period_measured_um']:.4f} um",
+            "derived_from": "script",
+        },
+        {
+            "name": "3D cholesteric membrane period P/2 recovered from the z-power-spectrum of the lamellar density vs SEM-segmented h_0",
+            "value": round(chol["membrane_period_measured_um"], 4),
+            "unit": "um",
+            "method": "Column-averaged z-power-spectrum peak of S = cos(2 phi) over the full 3D volume (zero-padded x16)",
+            "reference_value": round(specimen["mean_interlamellar_um"], 4),
+            "reference_source": "SEM specimen haliotis_nacre_spirals_specimen.jpg inter-lamellar spacing (this script, Pass 2 segmentation) & Cartwright & Checa (2007) h_0 ~ 0.50 um",
+            "note": f"{chol['n_membranes_center_column']} membranes along the central column; Burgers vector oint du = {chol['burgers_vector_um']:.4f} um = {chol['burgers_charge_3d']:.2f} h_0",
+            "derived_from": "script",
+        },
+        {
+            "name": "Coupled vertical nacre growth-rate sensitivity to cholesteric pitch d v_z / d P = omega / 4 pi",
+            "value": round(pitch["v_z_vs_pitch_slope_um_hr_per_um"], 4),
+            "unit": "(um/hr) per um of pitch",
+            "method": f"OLS slope of v_z = (P/2) omega / 2 pi across the 9-point pitch sweep P in [{pitch['pitch_um'][0]:.1f}, {pitch['pitch_um'][-1]:.1f}] um at Delta_mu = 0.50 k_B T (r = {pitch['v_z_vs_pitch_r']:.4f})",
+            "reference_value": round(compute_bcf_spiral_kinematics()["omega_rad_hr"] / (4.0 * math.pi), 4),
+            "reference_source": "Analytic BCF prediction omega / 4 pi (Cartwright & Checa 2007 Sec. 2; model prediction, not an empirical value)",
+            "note": "SEM anchor h_0 = 0.50 um implies P = 1.00 um; the 12-species h_0 column implies P in [{:.2f}, {:.2f}] um".format(
+                float(np.min(pitch["species_implied_pitch_um"])), float(np.max(pitch["species_implied_pitch_um"]))
+            ),
+            "derived_from": "script",
+        },
+        {
+            "name": "Brick-and-mortar tension-shear-chain effective tensile modulus E (Ji & Gao 2004) at SEM h_0",
+            "value": round(nac["E_eff_GPa"], 2),
+            "unit": "GPa",
+            "method": f"1/E = 4(1-Phi)/(G_p Phi^2 rho^2) + 1/(Phi E_m) with Phi = {nac['phi']:.2f}, rho = L/h = {nac['rho']:.1f}, E_m = 100 GPa, G_p = 1.4 GPa",
+            "reference_value": float(frac["targets"]["jackson1988_modulus_dry_GPa"]),
+            "reference_source": "Jackson, Vincent & Turner (1988) Proc. R. Soc. B 234:415-440 nacre tensile modulus ~73 GPa (dry) / ~64 GPa (wet)",
+            "note": "TSC upper-bound estimate; G_p and Phi are literature-range assumptions (see cholesteric_fracture_reference.json)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Brick-and-mortar tensile strength at Griffith tablet fracture after waviness-hardened interlamellar sliding",
+            "value": round(nac["sigma_f_MPa"], 2),
+            "unit": "MPa",
+            "method": f"sigma_f = Phi sigma_tab,crit / 2 with sigma_tab,crit = sqrt(E_m Gamma_m / (pi h/2)) = {nac['sigma_tab_crit_MPa']:.1f} MPa; yield sigma_y = Phi rho tau_p / 2 = {nac['sigma_y_MPa']:.1f} MPa (tau_p = {nac['tau_p_MPa']:.0f} MPa); failure mode {nac['failure_mode']}",
+            "reference_value": float(frac["targets"]["jackson1988_tensile_strength_dry_MPa"]),
+            "reference_source": "Jackson et al. (1988) Proc. R. Soc. B 234:415-440 ~170 MPa dry / ~140 MPa wet; Wang et al. (2001) J. Mater. Res. 16:2485 ~110 MPa",
+            "note": f"inelastic strain to failure {100 * nac['inelastic_strain_to_failure']:.2f}% (Wang 2001 ~1%); slip to failure {nac['slip_to_failure_nm']:.1f} nm",
+            "derived_from": "script",
+        },
+        {
+            "name": "Brick-and-mortar tablet pull-out work of fracture Gamma = tau_p L_ov^2 / h",
+            "value": round(nac["Gamma_pullout_J_m2"], 2),
+            "unit": "J/m^2",
+            "method": f"Constant-shear pull-out over overlap L_ov = {nac['L_ov_um']:.2f} um at tau_p = {nac['tau_p_MPa']:.0f} MPa, h = {nac['h_um']:.2f} um; toughening x{nac['toughening_ratio_vs_aragonite']:.0f} vs Gamma_m = 1 J/m^2, K_Ic = {nac['K_Ic_MPa_sqrtm']:.2f} MPa sqrt(m)",
+            "reference_value": float(frac["targets"]["jackson1988_work_of_fracture_dry_J_per_m2"]),
+            "reference_source": "Jackson et al. (1988) Proc. R. Soc. B 234:415-440 work of fracture 350 (dry) - 1240 (wet) J/m^2; Currey (1977) Proc. R. Soc. B 196:443 ~3000x aragonite",
+            "note": f"within Jackson dry-wet range: {frac['within_jackson_gamma_range']}; Currey 3000x NOT reached (x{nac['toughening_ratio_vs_aragonite']:.0f}); Gao (2003) flaw-tolerant h* = {nac['flaw_tolerant_h_star_nm']:.1f} nm (ref ~30 nm)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Interlamellar slip-system ductile-to-brittle critical aspect ratio rho* = sigma_tab,crit / tau_p",
+            "value": round(nac["rho_star_ductile_brittle"], 4),
+            "unit": "ratio (L/h)",
+            "method": f"Aspect ratio at which TSC yield Phi rho tau_p / 2 equals the Griffith tablet cap Phi sigma_crit / 2; nacre rho = {nac['rho']:.1f} lies on the ductile side; Schmid envelope minimum at theta = {frac['schmid_min_angle_deg']:.0f} deg ({float(np.min(frac['schmid_envelope_MPa'])):.1f} MPa)",
+            "reference_value": round(nac["rho"], 4),
+            "reference_source": "Gao et al. (2003) PNAS 100:5597 / Ji & Gao (2004): optimal biological aspect ratio sits just below the mineral-fracture limit (model prediction compared against the dataset D_tab / h_0)",
+            "note": "ablation: zero waviness (psi = 0) gives perfectly plastic sliding to full pull-out; monolithic aragonite (Phi = 1) fails brittlely at Gamma_m",
+            "derived_from": "script",
+        },
     ]
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
+    """Run the 11-point verification suite (8 Pass 2 checks + 3 Pass 3 checks)."""
     # 1. Cryptographic SHA-256 verification of all 4 dataset files
     digests = verify_dataset_integrity()
     assert len(digests) == 4, "Expected 4 SHA-256-verified dataset files"
@@ -1290,13 +2160,68 @@ def self_test() -> bool:
     run2 = simulate_chiral_dislocation_terrace_2d("opposite_chirality_frank_read_target", 1, -1, 2.40)
     assert np.allclose(run1["height_um"], run2["height_um"], atol=0.0)
 
+    # ------------------------------- Pass 3 checks -------------------------------
+    # 9. SHA-256 pin of the Pass 3 reference table + 3D cholesteric coupling consistency
+    assert len(verify_pass3_dataset_integrity()) == 2
+    chol_sp = simulate_cholesteric_chitin_lamellar_3d(sp["sim2d"], h_0_um=0.50)
+    chol_tg = simulate_cholesteric_chitin_lamellar_3d(tg["sim2d"], h_0_um=0.50)
+    chol_hal = simulate_cholesteric_chitin_lamellar_3d(hal["sim2d"], h_0_um=0.50)
+    # director twist recovered from the discrete volume within 2% of pi / h_0
+    assert chol_sp["twist_rate_rel_error"] < 0.02, chol_sp["twist_rate_rel_error"]
+    # membrane period = half-pitch = h_0 (within the FFT bin width)
+    assert math.isclose(chol_sp["membrane_period_measured_um"], 0.50, rel_tol=0.02)
+    assert math.isclose(chol_tg["membrane_period_measured_um"], 0.50, rel_tol=0.02)
+    # Burgers vector of the helicoidal membrane stack = b_net * h_0 (half-pitch quantisation)
+    assert math.isclose(chol_sp["burgers_charge_3d"], 1.0, abs_tol=1e-6)
+    assert math.isclose(chol_tg["burgers_charge_3d"], 0.0, abs_tol=1e-6)
+    assert math.isclose(chol_hal["burgers_charge_3d"], 2.0, abs_tol=1e-6)
+    assert math.isclose(chol_sp["burgers_vector_um"], 0.50, abs_tol=1e-6)
+    # membranes (S = 1) lie exactly on the BCF terrace risers: S(mineral_top) at a step is 1
+    phi_c = reconstruct_continuous_bcf_phase(sp["sim2d"])
+    assert np.allclose(np.cos(phi_c), np.real(sp["sim2d"]["psi_field"]), atol=1e-9)
+    # pitch coupling is exactly linear with slope omega / 4 pi
+    pitch = evaluate_cholesteric_pitch_coupling()
+    assert math.isclose(pitch["v_z_vs_pitch_slope_um_hr_per_um"], compute_bcf_spiral_kinematics()["omega_rad_hr"] / (4.0 * math.pi), rel_tol=1e-9)
+    assert math.isclose(pitch["v_z_vs_pitch_r"], 1.0, abs_tol=1e-9)
+
+    # 10. Brick-and-mortar fracture: yield < failure, Jackson range, ductile-brittle transition, ablations
+    frac = evaluate_fracture_toughness_sweeps(h_um=0.50)
+    nac = frac["nacre"]
+    assert math.isclose(nac["sigma_y_MPa"], 0.5 * nac["phi"] * nac["rho"] * nac["tau_p_MPa"], rel_tol=1e-12)
+    assert nac["sigma_y_MPa"] < nac["sigma_f_MPa"] <= 0.5 * nac["phi"] * nac["sigma_tab_crit_MPa"] + 1e-9
+    assert nac["failure_mode"] == "waviness_hardening_then_tablet_fracture"
+    assert 0.0 < nac["inelastic_strain_to_failure"] < 0.03
+    assert 50.0 < nac["E_eff_GPa"] < 100.0
+    assert frac["within_jackson_gamma_range"]
+    assert math.isclose(nac["Gamma_pullout_J_m2"], nac["tau_p_MPa"] * 1e6 * (nac["L_ov_um"] * 1e-6) ** 2 / (nac["h_um"] * 1e-6), rel_tol=1e-12)
+    assert 20.0 < nac["flaw_tolerant_h_star_nm"] < 40.0
+    assert nac["rho"] < nac["rho_star_ductile_brittle"]
+    modes = frac["failure_mode_vs_rho"]
+    rhos = frac["rho_sweep"]
+    assert all(m != "tablet_fracture_before_sliding" for m, r in zip(modes, rhos) if r < nac["rho_star_ductile_brittle"])
+    assert all(m == "tablet_fracture_before_sliding" for m, r in zip(modes, rhos) if r > nac["rho_star_ductile_brittle"])
+    assert np.all(np.diff(frac["gamma_vs_tau_J_m2"][frac["tau_sweep_MPa"] < nac["sigma_tab_crit_MPa"] / nac["rho"]]) > 0)
+    assert frac["no_hardening"]["failure_mode"] == "tablet_pullout_perfectly_plastic"
+    assert frac["no_hardening"]["inelastic_strain_to_failure"] > nac["inelastic_strain_to_failure"]
+    assert frac["monolithic"]["inelastic_strain_to_failure"] == 0.0
+    env = frac["schmid_envelope_MPa"]
+    assert math.isclose(frac["schmid_min_angle_deg"], 45.0, abs_tol=1e-9)
+    assert math.isclose(float(np.min(env)), 2.0 * nac["tau_p_MPa"], rel_tol=1e-9)
+    assert np.all(env <= nac["sigma_y_MPa"] + 1e-9)
+
+    # 11. Pass 3 determinism of the 3D cholesteric volume
+    chol_rep = simulate_cholesteric_chitin_lamellar_3d(sp["sim2d"], h_0_um=0.50)
+    assert np.allclose(chol_rep["lamellar_density"], chol_sp["lamellar_density"], atol=0.0)
+
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 16
     print(
-        f"[self_test] 2019-cartwright-nacre-screw-dislocation-spirals.py (v2) PASSED all 8 checks "
+        f"[self_test] 2019-cartwright-nacre-screw-dislocation-spirals.py (v3) PASSED all 11 checks "
         f"(supersaturation r={scaling['pearson_r_supersaturation']:.4f}, 12-species r_pitch={scaling['pearson_r_pitch']:.4f}, "
         f"slope={scaling['bcf_pitch_slope']:.2f}, SEM h_0={spec['mean_interlamellar_um']:.4f} um, "
-        f"SEM Z={spec['mean_hexagonal_coordination_z']:.2f})."
+        f"SEM Z={spec['mean_hexagonal_coordination_z']:.2f}; cholesteric q={chol_sp['twist_rate_measured_rad_um']:.3f} rad/um, "
+        f"P/2={chol_sp['membrane_period_measured_um']:.4f} um; nacre E={nac['E_eff_GPa']:.1f} GPa, "
+        f"sigma_f={nac['sigma_f_MPa']:.1f} MPa, Gamma={nac['Gamma_pullout_J_m2']:.0f} J/m^2)."
     )
     return True
 
@@ -1311,6 +2236,8 @@ def main() -> int:
     ap.add_argument("--h-0", type=float, default=None, help="Override inter-lamellar mortar spacing h_0 (um)")
     ap.add_argument("--dipole-d", type=float, default=None, help="Override Frank-Read dipole separation d (um)")
     ap.add_argument("--seed", type=int, default=2019, help="Deterministic seed (default: 2019)")
+    ap.add_argument("--tau-p", type=float, default=None, help="(Pass 3) Override interlamellar interface shear strength tau_p (MPa) in the fracture figure")
+    ap.add_argument("--skip-pass3", action="store_true", help="(Pass 3) Skip the cholesteric/fracture figure and tablet-sliding GIF")
     args = ap.parse_args()
 
     if args.self_test or args.verify_only:
@@ -1324,14 +2251,21 @@ def main() -> int:
             "r_c": args.r_c,
             "h_0": args.h_0,
             "dipole_d": args.dipole_d,
+            "tau_p": args.tau_p,
         }.items()
         if v is not None
     }
     png = render_comparison_figure(OUT_PNG, overrides=overrides)
     print(f"[render] Wrote {png}")
+    if not args.skip_pass3:
+        p3 = render_cholesteric_fracture_figure(OUT_PASS3_PNG, overrides=overrides)
+        print(f"[render] Wrote {p3['path']}")
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF)
         print(f"[render] Wrote {gif}")
+        if not args.skip_pass3:
+            gif3 = render_tablet_sliding_gif(OUT_PASS3_GIF)
+            print(f"[render] Wrote {gif3}")
     return 0
 
 

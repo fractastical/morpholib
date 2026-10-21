@@ -78,7 +78,7 @@ from PIL import Image
 from scipy import ndimage, special, stats
 from scipy.spatial import Delaunay, Voronoi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "vertex_glass_jamming"
 REFERENCE_JSON = DATASET_DIR / "vertex_glass_jamming_reference.json"
 SPV_REFERENCE_JSON = DATASET_DIR / "bi_2016_spv_motility_reference.json"

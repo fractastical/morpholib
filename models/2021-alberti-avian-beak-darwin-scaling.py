@@ -80,7 +80,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "avian_beak_darwin_scaling"
 REF_JSON = DATASET_DIR / "avian_beak_darwin_scaling_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "darwin_finches_specimen.jpg"

@@ -1,0 +1,97 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-cartwright-nacre-spiral-dislocation-terraces> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-cartwright-nacre-spiral-dislocation-terraces-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-cartwright-nacre-spiral-dislocation-terraces-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Cartwright & Checa (2007) & Cartwright et al. (2009) nacre screw-dislocation spirals, Frank-Read target terraces, defect pair annihilation, chitin-membrane perforation bridges and aragonite twin polygonization — Source and data traceability: 85/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Six dataset files are SHA-256 pinned and verified fail-closed at every run (`EXPECTED_SHA256` L126-146; `verify_dataset_integrity` L160-172), including the new `membrane_perforation_twinning_reference.json` and `pass3_citations.bib` (De Villiers 1971, Schäffer 1997 doi 10.1021/cm960429i, Checa 2011 doi 10.1016/j.jsb.2011.09.011); the four v2 DOIs are unchanged and the dataset README documents the Pass 3 additions and caveats (README L12-20). Deductions: the 12-species observation table (JSON L78-89) has no resolvable source for its lambda_obs/omega_obs values and is now labelled illustrative rather than replaced (-6); the SEM specimen has no scale bar and the calibration is self-referential (JSON L38-44) (-3); the three new DOIs/URL were entered offline and could not be verified in this loop (-2); the slot dispatch record and the Pass 3 prompt carry a foraminifera/Berger (1969) identity that does not match the script, dataset or Lean module, so the campaign-level provenance of this slot is inconsistent (-4)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "datasets/nacre_spiral_dislocation_terraces/nacre_spiral_dislocation_terraces_reference.json L78–L89: 12-species table: observation columns not traceable to any cited measured table <https://github.com/fractastical/morpholib/blob/e651a8b8/datasets/nacre_spiral_dislocation_terraces/nacre_spiral_dislocation_terraces_reference.json#L78-L89>",
+            "morphoeval/cloud/dispatches/slot-073.json L1–L30: slug 'foraminifera-chamber-spiral' vs nacre script/dataset/audits: campaign metadata mismatch <https://github.com/fractastical/morpholib/blob/e651a8b8/morphoeval/cloud/dispatches/slot-073.json#L1-L30>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-spiral-dislocation-terraces-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-spiral-dislocation-terraces-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-spiral-dislocation-terraces-source-traceability-3> ;
+        pk:hasScore "0.85"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-spiral-dislocation-terraces-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2007-cartwright-nacre-spiral-dislocation-terraces.py L126–L172" ;
+        dct:description "SHA-256 registry for 6 dataset files (2 new in Pass 3) and fail-closed runtime verification" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2007-cartwright-nacre-spiral-dislocation-terraces.py#L126-L172> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-spiral-dislocation-terraces-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/nacre_spiral_dislocation_terraces/pass3_citations.bib L1–L37" ;
+        dct:description "De Villiers 1971, Schäffer et al. 1997 and Checa et al. 2011 BibTeX entries (DOIs entered offline, unverified)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/datasets/nacre_spiral_dislocation_terraces/pass3_citations.bib#L1-L37> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-spiral-dislocation-terraces-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/nacre_spiral_dislocation_terraces/README.md L12–L20" ;
+        dct:description "Pass 3 additions and the known-caveats section stating that the 12-species table is illustrative and the SEM calibration anchored" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/datasets/nacre_spiral_dislocation_terraces/README.md#L12-L20> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 re-score from the remediated script, diff and Phase A handoff evidence)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/73> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <http://www.minsocam.org/ammin/AM56/AM56_758.pdf>,
+            <https://doi.org/10.1016/j.jsb.2011.09.011>,
+            <https://doi.org/10.1021/cm960429i>,
+            <https://doi.org/10.1073/pnas.0900867106>,
+            <https://doi.org/10.1098/rsif.2006.0188>,
+            <https://doi.org/10.1098/rsta.1951.0006>,
+            <https://doi.org/10.1098/rsta.2011.0600> .
+    <http://www.minsocam.org/ammin/AM56/AM56_758.pdf> dct:date "1971"^^xsd:gYear ;
+        dct:title "Crystal structures of aragonite, strontianite, and witherite" .
+    <https://doi.org/10.1016/j.jsb.2011.09.011> dct:date "2011"^^xsd:gYear ;
+        dct:title "Mineral bridges in nacre" .
+    <https://doi.org/10.1021/cm960429i> dct:date "1997"^^xsd:gYear ;
+        dct:title "Does abalone nacre form by heteroepitaxial nucleation or by growth through mineral bridges?" .
+    <https://doi.org/10.1073/pnas.0900867106> dct:date "2009"^^xsd:gYear ;
+        dct:title "Spiral and target patterns in bivalve nacre" .
+    <https://doi.org/10.1098/rsif.2006.0188> dct:date "2007"^^xsd:gYear ;
+        dct:title "The dynamics of nacre self-assembly" .
+    <https://doi.org/10.1098/rsta.1951.0006> dct:date "1951"^^xsd:gYear ;
+        dct:title "The growth of crystals and the equilibrium structure of their surfaces" .
+    <https://doi.org/10.1098/rsta.2011.0600> dct:date "1969"^^xsd:gYear ;
+        dct:title "Crystal growth as an excitable medium" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Cartwright & Checa (2007) & Cartwright et al. (2009) nacre screw-dislocation spirals, Frank-Read target terraces, defect pair annihilation, chitin-membrane perforation bridges and aragonite twin polygonization — Source and data traceability 85/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T20:05:10Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-cartwright-nacre-spiral-dislocation-terraces-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/73> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

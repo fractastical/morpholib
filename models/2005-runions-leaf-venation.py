@@ -67,7 +67,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent
 DATA_DIR = HERE / "datasets" / "venation"
 REF_JSON_PATH = DATA_DIR / "venation_reference.json"
 GINKGO_IMG_PATH = DATA_DIR / "ginkgo_open_venation_specimen.jpg"

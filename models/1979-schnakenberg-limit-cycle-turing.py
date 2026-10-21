@@ -79,7 +79,7 @@ from scipy.optimize import brentq
 from scipy.spatial import distance
 from scipy.special import lpmv
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "limit_cycle_turing"
 SCOUT_MANIFEST_PATH = DATASET_DIR / "scout_manifest.json"
 REF_JSON_PATH = DATASET_DIR / "limit_cycle_turing_reference.json"

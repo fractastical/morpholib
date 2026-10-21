@@ -1,5 +1,5 @@
 sim_id: thomas-coral-calice-septa-insertion
-math_family: "Milne-Edwards Hexameral Septal Doubling Law (6 * 2^(k-1)), Kunth's Rugosa Fossula Law (6 + 4m) & Chindapol Péclet Advection-Diffusion Calice Symmetry Breaking"
+math_family: "Milne-Edwards Hexameral Septal Doubling Law (6 * 2^(k-1)), Kunth's Rugosa Fossula Law (6 + 4m), Chindapol Péclet Advection-Diffusion Calice Symmetry Breaking, Conical Corallum Septal-Front Monotonicity & Keulegan-Carpenter Surge Dipole Cancellation"
 model_spec:
   model: "Milne-Edwards & Haime (1848) hexameral septal insertion cycles + Kunth (1869) Rugosa serial fossula law + Chindapol et al. (2013) PLoS Comput. Biol. Péclet advection-diffusion corallite morphogenesis"
   governing_pde: "u . grad(c) = D * laplacian(c),   v_n(theta, r) = k_calc * |grad(c) . n| * S_septa(theta, r, R(t))"
@@ -10,10 +10,14 @@ model_spec:
   beta_Pe: 0.18
   gamma_Pe: 0.12
   seed: 2013
+  pass3_apical_angle_deg: "measured from specimen side profile (36.66 deg, trochoid)"
+  pass3_kc_renewal_scale: 6.2832
+  pass3_kc50_analytic: 4.3552
   inputs:
     - datasets/coral_calice_septa_insertion/coral_calice_septa_insertion_reference.json
     - datasets/coral_calice_septa_insertion/scleractinian_coral_septa_specimen.jpg
     - datasets/coral_calice_septa_insertion/scout_manifest.json
+    - datasets/coral_calice_septa_insertion/corallum3d_surge_reference.json
 equations:
   - law_name: "Milne-Edwards & Haime (1848) Hexameral Septal Insertion Doubling Law"
     formula: "n_1 = 6,  n_k = 6 * 2^{k-2} (k >= 2),  N_hex(k) = sum_{j=1}^k n_j = 6 * 2^{k-1} ∈ {6, 12, 24, 48, 96, 192} at 2π R_k = N_hex(k) λ_s"
@@ -33,7 +37,7 @@ equations:
     variables: "k ∈ {1..6}: Milne-Edwards insertion cycle order (S1..S6); n_k: newly inserted septa at interseptal midpoints; N_hex(k): cumulative radiating septa; R_k: threshold calice radius; λ_s: inter-septal morphogen wavelength"
     role: "Governs simultaneous midpoint bifurcation of interseptal chambers in Scleractinian stony corals as the expanding calice perimeter crosses multiples of λ_s"
     source_citation: "Milne-Edwards & Haime (1848) Ann. Sci. Nat. Zool. (Sér. 3) 9:37-89; Cairns & Kitahara (2012) ZooKeys 227:1-47"
-    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L95-L215"
+    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L199-L365"
   - law_name: "Kunth's Law (1869) Paleozoic Rugosa Serial 4-Fossula Insertion & Cycle Radial Reach Hierarchy"
     formula: "N_rugosa(m) = 6 + 4 m ∈ {6, 10, 14, 18, 22},   L_k / R = α_k with α_1 > α_2 > α_3 > α_4 > α_5"
     lean_decl: "MathOfBiology.Loop_074.kunth_rugosa_septa"
@@ -49,7 +53,7 @@ equations:
     variables: "m: Rugosa serial insertion stage across 4 fossulae (2 cardinal, 2 alar); L_k: radial length of cycle-k septa from theca toward central columella; α_k = L_k / R: normalized radial reach"
     role: "Contrasts Paleozoic Rugosa serial 4-fossula bilateral insertion against Mesozoic-Recent Scleractinia cyclic hexameral doubling and establishes the decreasing radial reach hierarchy S1 > S2 > S3 > S4 > S5"
     source_citation: "Kunth (1869) Z. Dtsch. Geol. Ges. 21:647-688; Milne-Edwards & Haime (1848) Ann. Sci. Nat. Zool. 9:37-89"
-    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L140-L265"
+    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L219-L432"
   - law_name: "Chindapol et al. (2013) Péclet-Modulated Advection-Diffusion Calice Symmetry Breaking Law"
     formula: "u · ∇c = D ∇^2 c,  Pe = U L / D,  j_n(θ; Pe) = j_0 (1 + β_Pe √Pe cos θ + γ_Pe (Pe/(1+Pe)) cos 2θ),  Δj = j_up - j_down = 2 j_0 β_Pe √Pe"
     lean_decl: "MathOfBiology.Loop_074.peclet_flux_dipole_diff"
@@ -66,4 +70,42 @@ equations:
     variables: "c(x,y): dissolved inorganic carbon / nutrient concentration; Pe = U L / D: Péclet number; s = √Pe: laminar boundary-layer thinning factor; j_n(θ; Pe): normal calcification flux around corallite rim"
     role: "Demonstrates exact radial symmetry at Pe = 0 (hydrostatic diffusion limit) and monotonic upstream-enhanced skeletal accretion and calice polarization as Pe increases"
     source_citation: "Chindapol et al. (2013) PLoS Comput. Biol. 9(1):e1002849; Kaandorp & Kübler (2001) Ch. 4-6"
-    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L270-L390"
+    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L435-L501"
+  - law_name: "Pass 3 / Law 4 — Conical (Trochoid/Turbinate) Corallum Septal Insertion Fronts Are Monotone Along the Growth Axis"
+    formula: "R(z) = R_ped + z tan(φ/2) (Wells 1956 classes φ ∈ {20°, 40°, 70°, 120°}),  k(z) = k(R(z)),  N(z) = N_hex(k(R(z))) with z₁ ≤ z₂ ⇒ N(z₁) ≤ N(z₂);  front heights z_k = (R_k − R_ped)/tan(φ/2)"
+    lean_decl: "MathOfBiology.Loop_074.septa_at_radius"
+    lean_theorem: "MathOfBiology.Loop_074.turbinate_corallum_septal_cycles_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_074_coral_calice_septa_insertion.lean#L149-L219"
+    lean_code: |
+      def cone_radius (r_ped slope z : Nat) : Nat := r_ped + slope * z
+      def active_cycle (r : Nat) : Nat :=
+        if r ≥ 800 then 5 else if r ≥ 400 then 4 else if r ≥ 200 then 3 else if r ≥ 100 then 2 else 1
+      def septa_at_radius (r : Nat) : Nat := milne_edwards_cumulative_septa (active_cycle r)
+      theorem turbinate_corallum_septal_cycles_monotone :
+          (∀ (r_ped slope z₁ z₂ : Nat), z₁ ≤ z₂ →
+            septa_at_radius (cone_radius r_ped slope z₁) ≤ septa_at_radius (cone_radius r_ped slope z₂)) ∧
+          septa_at_radius (cone_radius 60 1 40) = 12 ∧ septa_at_radius (cone_radius 60 1 340) = 48 := ...
+    variables: "z: height along the corallum growth axis; R_ped: pedicel radius; φ: apical angle (Wells 1956 ceratoid 20°, trochoid 40°, turbinate 70°, patellate 120°); k(z): active Milne-Edwards cycle at height z; N(z): septa present at height z; endothecal dissepiments (spacing h_d) and synapticulae (ring radii r_s) fill the loculi between septa"
+    role: "Extrudes the 2D calice into a reduced 3D cylindrical-voxel corallum resolving septa, dissepiments and synapticulae; proves that the septal insertion fronts are stacked monotonically along z for any cone; apical angle measured from the specimen side profile (36.7° → trochoid)"
+    source_citation: "Milne-Edwards & Haime (1848); Wells (1956) Treatise Invert. Paleont. Part F pp. F328-F444; Cairns & Kitahara (2012) ZooKeys 227:1-47 glossary"
+    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L630-L930"
+    code_locus_secondary: "2013-thomas-coral-calice-septa-insertion.py#L1433-L1575"
+  - law_name: "Pass 3 / Law 5 — Keulegan-Carpenter Oscillatory Surge: Period-Averaged Dipole Cancellation vs Unidirectional Polarization"
+    formula: "KC = U_max T / L,  Pe(t) = Pe_max |sin ωt|,  η(KC) = 1 − exp(−KC/2π),  j(θ,t) = j₀[1 + η β √Pe(t) sgn(U) cos θ + η γ (Pe(t)/(1+Pe(t))) cos 2θ],  ⟨Δj⟩_T = 0 (Δj(s) + Δj(−s) = 0),  ⟨A₂⟩(KC) ∝ η(KC) with KC₅₀ = 2π ln 2"
+    lean_decl: "MathOfBiology.Loop_074.peclet_flux_dipole_diff"
+    lean_theorem: "MathOfBiology.Loop_074.oscillatory_surge_dipole_cancellation"
+    lean_locus: "morphoeval/lean/loops/Loop_074_coral_calice_septa_insertion.lean#L221-L248"
+    lean_code: |
+      theorem oscillatory_surge_dipole_cancellation (j0 beta s : Int) :
+          peclet_flux_dipole_diff j0 beta s + peclet_flux_dipole_diff j0 beta (-s) = 0 ∧
+          peclet_flux_dipole_diff j0 beta (-s) = - peclet_flux_dipole_diff j0 beta s := by
+        unfold peclet_flux_dipole_diff peclet_upstream_flux peclet_downstream_flux
+        constructor <;> simp [Int.mul_neg, Int.mul_add, Int.sub_eq_add_neg] <;> omega
+      theorem surge_mean_of_mirror_phases_zero (j0 beta s₁ s₂ : Int) :
+          peclet_flux_dipole_diff j0 beta s₁ + peclet_flux_dipole_diff j0 beta s₂ +
+            peclet_flux_dipole_diff j0 beta (-s₁) + peclet_flux_dipole_diff j0 beta (-s₂) = 0 := ...
+    variables: "U_max: wave orbital velocity amplitude; T: wave period; L: corallite/colony size; KC: Keulegan-Carpenter number; a = U_max T/(2π): surge excursion; η(KC): boundary-layer renewal efficiency; s = sgn(U)√Pe(t): signed boundary-layer factor; A₁, A₂: period-mean dipole and quadrupole flux asymmetries"
+    role: "Couples the Law 3 Péclet flux to bidirectional reef surge: the dipole (upstream polarization) cancels exactly over a period while the quadrupole (bilateral elongation along the surge axis) survives and saturates with KC; contrasts unidirectional current (A₁ = 0.647 at Pe = 16) against surge (⟨A₁⟩ = 0)"
+    source_citation: "Keulegan & Carpenter (1958) J. Res. NBS 60:423-440; Chindapol et al. (2013) PLoS Comput. Biol. 9(1):e1002849 (unidirectional vs bidirectional runs); Falter et al. (2005) & Reidenbach et al. (2006) Limnol. Oceanogr. (oscillatory mass transfer, residual)"
+    code_locus: "2013-thomas-coral-calice-septa-insertion.py#L504-L627"
+    code_locus_secondary: "2013-thomas-coral-calice-septa-insertion.py#L1578-L1713"

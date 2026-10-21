@@ -120,8 +120,9 @@ FOUNDATIONAL_DOIS: dict[str, tuple[str, str]] = {
 }
 
 FOUNDATIONAL_SPECIMENS: dict[str, str] = {
-    "thompson-scarus-pomacanthus": "datasets/species_gallery/I_Enaima_Vertebrata/Pomacanthus_imperator.jpg",
-    "raup-shell-coiling": "datasets/species_gallery/II_Anaima_Invertebrata/Murex_pecten.jpg",
+    "thompson-scarus-pomacanthus": "datasets/thompson/scarus_pomacanthus_600pt_specimen.jpg",
+    "turing-gray-scott": "datasets/turing/pomacanthus_imperator_flank_stripes_specimen.jpg",
+    "raup-shell-coiling": "datasets/raup/raup_coiled_shells_specimen.jpg",
     "wolfram-conus-textile-rule30": "datasets/conus/conus_textile_shell.jpg",
     "hoffmann-wing-venation": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
     "eshghi-odonata-wing-cells": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
@@ -447,12 +448,13 @@ def main() -> int:
         slot = e.get("slot")
         script = e.get("script", "")
 
-        # Fix missing specimen_rel on foundational models
+        # Ensure canonical specimen_rel on foundational models
         sp_rel = e.get("specimen_rel", "")
-        if (not sp_rel or not (ROOT / sp_rel).exists() or (ROOT / sp_rel).is_dir()):
-            if slug in FOUNDATIONAL_SPECIMENS and (ROOT / FOUNDATIONAL_SPECIMENS[slug]).exists():
-                sp_rel = FOUNDATIONAL_SPECIMENS[slug]
-            elif e["genus"] in genus_to_gallery:
+        if slug in FOUNDATIONAL_SPECIMENS and (ROOT / FOUNDATIONAL_SPECIMENS[slug]).exists():
+            sp_rel = FOUNDATIONAL_SPECIMENS[slug]
+            e["specimen_rel"] = sp_rel
+        elif not sp_rel or not (ROOT / sp_rel).exists() or (ROOT / sp_rel).is_dir():
+            if e["genus"] in genus_to_gallery:
                 sp_rel = genus_to_gallery[e["genus"]]
             e["specimen_rel"] = sp_rel
 

@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "dataset_id": "emiliania_calcite_rosette_coccosphere_contact_vesicle_tension_reference",
+    "pass": 3,
+    "created": "2026-10-19",
+    "purpose": "Parameters and literature anchors for the two Pass 3 extensions of 2022-coccolith-emiliania-calcite-rosette.py: (1) a reduced lumped-plate finite-element nanoindentation contact model on the spherical Voronoi coccosphere tiling (coccolith sliding vs fracture arrest, Jaya et al. 2016 remediation item) and (2) a 2D Laplace / Wulff support-function model of the Golgi coccolith-vesicle rim under anisotropic cytoskeletal line tension that sets the organic baseplate aspect ratio b/a = 0.8478 (e = 0.5303).",
+    "primary_sources": [
+      {
+        "key": "jaya2016",
+        "doi": "10.1038/ncomms11904",
+        "use": "In situ compression of E. huxleyi coccospheres and isolated coccoliths: interlocking coccoliths slide relative to each other and cracks are arrested at coccolith boundaries (qualitative targets: first failure event of an interlocked sphere is NOT a propagating crack; truncated/non-interlocked coccoliths are shed)."
+      },
+      {
+        "key": "reissner1946",
+        "doi": "10.1002/sapm194625180",
+        "doi_verified_offline": false,
+        "use": "Classical point-load stiffness of a thin spherical shell k = 4 E h^2 / (R sqrt(3 (1 - nu^2))) used as the membrane (shell) path of the plate network."
+      },
+      {
+        "key": "young1992",
+        "doi": "10.1038/356516a0",
+        "use": "Organic baseplate / proto-coccolith ring is nucleated inside the Golgi-derived coccolith vesicle; the rim shape (ellipse b/a = 0.8478 on the vendored SEM specimen) templates the V/R ring."
+      },
+      {
+        "key": "didymus1993",
+        "doi": "10.1098/rspb.1993.0073",
+        "use": "Stage-specific vesicle / baseplate model of E. huxleyi coccolithogenesis; baseplate laid down before calcite nucleation."
+      }
+    ],
+    "notes": [
+      "The contact model is a reduced-but-honest lumped finite element: each coccolith is a rigid plate with one radial degree of freedom, sutures are lap-joint shear springs with a slide threshold, plates have a bending-stress fracture threshold. It is NOT a continuum 3D FEM with Hertzian contact; that residual is carried as a Pass 4 item.",
+      "All constants tagged provenance = model_assumption are order-of-magnitude choices with NO coccolith-specific measurement behind them (no values are quoted from Jaya et al. 2016 because the paper could not be re-read offline during Pass 3). They are exposed as a sweep (sigma_lock x t_head_ratio regime map) rather than tuned to a target.",
+      "The vesicle rim tension anisotropy lambda* is INFERRED from the SEM aspect ratio through the closed-form law lambda = (2 - q)/(2q - 1), q = b/a; it is a calibration, not an independent prediction. No direct measurement of coccolith-vesicle rim tension anisotropy exists in the vendored sources.",
+      "The 2D rim model assumes the anchored cytoskeleton supplies whatever tangential traction is needed, so only the normal Laplace balance tau(psi) kappa(psi) = p is imposed; the equilibrium support function is then h = tau/p + homogeneous part, solved exactly for tau(psi) = tau_0 (1 + (lambda - 1) sin^2 psi)."
+    ]
+  },
+  "contact_model": {
+    "parameters": {
+      "poisson_nu": 0.30,
+      "e_cell_kpa": 1.0,
+      "p_turgor_mpa": 0.10,
+      "mu_friction": 0.30,
+      "sigma_lock_mpa": 50.0,
+      "sigma_f_gpa": 1.0,
+      "alpha_plate_bending": 0.60,
+      "phi_residual_abutment": 0.02,
+      "residual_slide_stiffness_fraction": 0.05,
+      "fractured_plate_stiffness_fraction": 0.10
+    },
+    "provenance": {
+      "poisson_nu": "classical_formula (calcite Poisson ratio ~0.3)",
+      "e_cell_kpa": "model_assumption (soft protoplast foundation, kPa-scale cortex)",
+      "p_turgor_mpa": "model_assumption (algal turgor order of magnitude; sets Coulomb hoop normal force)",
+      "mu_friction": "model_assumption (calcite-on-calcite dry friction coefficient order of magnitude)",
+      "sigma_lock_mpa": "model_assumption (organic cement / T-hammer interlock shear strength, order of magnitude of biomineral organic interlayers; swept 5-400 MPa)",
+      "sigma_f_gpa": "model_assumption (sub-micron biogenic calcite fracture strength order of magnitude)",
+      "alpha_plate_bending": "classical_formula (Roark simply-supported plate under concentrated load sigma_max ~ alpha F / h^2 with alpha of order 0.5-1)",
+      "phi_residual_abutment": "model_assumption (residual shear coupling of abutting, non-overlapping rims)",
+      "residual_slide_stiffness_fraction": "model_assumption",
+      "fractured_plate_stiffness_fraction": "model_assumption"
+    },
+    "derived_formulas": {
+      "k_reissner": "4 E h^2 / (R sqrt(3 (1 - nu^2)))",
+      "k_edge": "E h l_ij (phi_ov + phi_residual) / L_spoke, phi_ov = t_head_ratio - 1",
+      "slide_threshold": "mu p_turgor R l_ij / 2 + sigma_lock l_ij d_ov, d_ov = w_shaft (t_head_ratio - 1)/2",
+      "fracture_threshold": "alpha_plate P_i / h^2 > sigma_f",
+      "capacity_ratio": "Pi = sum_j slide_threshold_ij (apex sutures) / (sigma_f h^2 / alpha_plate): Pi < 1 -> sutures slide first, Pi > 1 -> apex plate fractures first"
+    },
+    "qualitative_targets_jaya2016": {
+      "interlocked_first_fracture_arrested": true,
+      "truncated_coccolith_shed_by_sliding": true,
+      "regime_order_with_increasing_overlap": ["truncated_sliding", "interlock_sliding", "fracture_arrested"]
+    }
+  },
+  "vesicle_tension_model": {
+    "tension_law": "tau(psi) = tau_0 (1 + (lambda - 1) sin^2 psi)",
+    "support_function": "h(psi) = (tau_0/p) [ (1 + lambda)/2 + ((lambda - 1)/6) cos 2 psi ]",
+    "aspect_law": "b/a = (2 + lambda)/(1 + 2 lambda)",
+    "inverse_law": "lambda = (2 - b/a)/(2 b/a - 1)",
+    "reference_b_over_a": 0.8478,
+    "reference_eccentricity": 0.5303,
+    "lambda_star_expected": 1.6564,
+    "lambda_ellipse_endpoint_estimate": 1.6411,
+    "lambda_sweep": [1.0, 1.25, 1.5, 1.6564, 1.75, 2.0, 2.5],
+    "relaxation": {
+      "n_nodes": 160,
+      "n_steps": 6000,
+      "dt": 0.00025,
+      "initial_shape": "unit circle (tau_0 / p = 1)"
+    }
+  }
+}

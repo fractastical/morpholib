@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "dataset_id": "crinoid_stereom_gyroid/nanoindentation_spiculogenesis_reference",
+    "title": "Pass 3 reference table — nanoindentation crystal-plasticity twin-band arrest in the [111] Schwarz-Diamond lattice section, Eshelby-Frank-Nabarro dislocation pile-up arrest, and syncytial membrane templating of ACC precursor vesicles during larval spiculogenesis",
+    "version": "1.0.0",
+    "created_at": "2026-10-19",
+    "pass": 3,
+    "consumer_script": "2020-gorzelak-crinoid-stereom-gyroid.py",
+    "doi_verified_offline": false,
+    "note": "Literature values below were recalled offline during the Pass 3 remediation (no network access). Every DOI and every numeric value is flagged with its provenance and should be verified online before being treated as a digitised figure/table value. Rows with provenance 'model' are modelling choices of the script, not literature values. The nanoindentation model is a reduced 2D plane-strain single-twin-family version of the 3D crystal-plasticity FEM reported by Yang et al. (2022); the spiculogenesis model is a reduced 2D stochastic vesicle-delivery / secondary-nucleation model.",
+    "primary_dois": [
+      "10.1126/science.abm8666",
+      "10.1126/science.166.3909.1147",
+      "10.1073/pnas.0806604105",
+      "10.1098/rspb.1997.0066",
+      "10.1073/pnas.1312833110",
+      "10.1080/14786445108561060",
+      "10.1016/S0040-1951(96)00273-9",
+      "10.1130/0016-7606(1954)65[883:EDOCC]2.0.CO;2",
+      "10.2108/zsj.19.253"
+    ]
+  },
+  "governing_equations": {
+    "plane_strain_fem": "K u = f_p(eps_p) - K_fp u_p ;  sigma = D (eps - eps_p) ;  bilinear Q4 plane-strain elements, flat-punch displacement control u_y = -delta on |x - x_c| <= w/2, rollers at the bottom",
+    "twin_schmid_resolved_shear": "tau_rss^(v) = sigma : m^(v),  m^(v) = sym(s^(v) (x) n^(v)),  n^(+/-) = (+/- sin theta, cos theta), s^(+/-) = (cos theta, -/+ sin theta), theta = 26.25 deg (e{01-18} pole to c-axis)",
+    "twin_criterion_and_exhaustion": "|tau_rss| <= tau_twin ;  d gamma = sign(tau) (|tau| - tau_twin)/G ;  |gamma| <= s_twin = 0.694",
+    "initial_strain_iteration": "u^(k+1) = K_ff^-1 ( B^T D eps_p^(k) dA - K_fp u_p ),  one LU factorisation of the elastic K per structure",
+    "lamella_run_length": "L_lam = max over variants of the contiguous twinned run length along +/- s^(v) through each twinned element (ray marching, half-element steps)",
+    "depth_normalisation": "delta_on = tau_twin / max_elements(tau_rss at unit depth) for the monolith; sweep delta = m * delta_on, m in {1, 2, 3, 4}; all depth-normalised outputs independent of tau_twin and E",
+    "eshelby_frank_nabarro_pileup": "n = pi (1 - nu) L tau / (mu b) ;  sigma_head = n tau = pi (1 - nu) L tau^2 / (mu b) ;  L_strut = a_0 sqrt(3)/4 (3D) and a_0/sqrt(6) ([111] projected bond)",
+    "honeycomb_111_projection": "diamond node positions projected along [111] form a honeycomb of projected bond length a_0/sqrt(6); one of the four tetrahedral bonds projects to a point",
+    "vesicle_delivery": "per step: N_v vesicles at uniform random (x, y); accepted with probability p_in if inside the syncytial template cavity else p_out (templated) or p_in phi + p_out (1 - phi) everywhere (untemplated, flux-matched); accepted vesicle adds ACC in a disc of diameter d_v",
+    "acc_to_calcite_kinetics": "secondary: dC = k_2 A on ACC pixels 4-adjacent to calcite (domain id inherited from the neighbour) ;  primary: with probability k_1 per ACC-rich pixel per step, A -> C opening a new domain ;  domain_count = 1 + (number of primary events)",
+    "template_fidelity": "IoU = |{A + C > 1/2} AND template| / |{A + C > 1/2} OR template|"
+  },
+  "model_parameters": [
+    {"name": "DEFAULT_NU_CALCITE", "value": 0.32, "unit": "dimensionless", "provenance": "model", "note": "isotropic Poisson ratio used for the plane-strain reduction of trigonal calcite"},
+    {"name": "DEFAULT_TAU_TWIN_MPA", "value": 500.0, "unit": "MPa", "provenance": "model", "note": "effective e-twin critical resolved shear stress at the nanoindentation scale; only sets the depth scale delta_on. Geological coarse calcite e-twin CRSS is ~10 MPa (Turner et al. 1954; De Bresser & Spiers 1997) — biogenic nanoscale values are much larger and not tabulated; the model reports depth-normalised, tau-independent outputs"},
+    {"name": "DEFAULT_TWIN_PLANE_ANGLE_DEG", "value": 26.25, "unit": "deg", "provenance": "literature", "source": "Turner, Griggs & Heard (1954); e{01-18} twin-plane pole lies 26.25 deg from the calcite c-axis", "source_doi": "10.1130/0016-7606(1954)65[883:EDOCC]2.0.CO;2"},
+    {"name": "DEFAULT_TWIN_SHEAR", "value": 0.694, "unit": "dimensionless", "provenance": "literature", "source": "calcite e-twin shear s = 0.694 (Turner et al. 1954; Barber & Wenk 1979)", "source_doi": "10.1130/0016-7606(1954)65[883:EDOCC]2.0.CO;2"},
+    {"name": "DEFAULT_BURGERS_NM", "value": 0.81, "unit": "nm", "provenance": "literature-approx", "source": "De Bresser & Spiers (1997) r{10-14}<-2021> glide Burgers vector (approximate magnitude recalled offline)", "source_doi": "10.1016/S0040-1951(96)00273-9"},
+    {"name": "DEFAULT_N_FE", "value": 120, "unit": "elements per side", "provenance": "model"},
+    {"name": "DEFAULT_N_CELLS_FE", "value": 3.0, "unit": "a_0", "provenance": "model", "note": "domain edge 3 a_0 = 44.4 um, element size 0.37 um, strut width ~3.0 um = ~8 elements"},
+    {"name": "DEFAULT_PUNCH_HALF_WIDTH_FRAC", "value": 0.25, "unit": "a_0", "provenance": "model", "note": "flat punch of width a_0/2 = 7.4 um, comparable to a Berkovich contact at ~1 um depth"},
+    {"name": "DEFAULT_FE_DEPTH_MULTIPLES", "value": [1.0, 2.0, 4.0, 6.0], "unit": "delta_on", "provenance": "model", "note": "headline comparison at index 2 (4x onset)"},
+    {"name": "DEFAULT_SPICULE_STEPS", "value": 96, "unit": "steps (0.5 h each)", "provenance": "model", "note": "48 h of spiculogenesis (gastrula to pluteus, Beniash et al. 1997)"},
+    {"name": "DEFAULT_VESICLE_DIAM_UM", "value": 1.0, "unit": "um", "provenance": "literature-approx", "source": "Vidavsky et al. (2014) ACC-containing vesicles ~0.5-1.5 um in primary mesenchyme cells", "source_doi": "10.1073/pnas.1312833110"},
+    {"name": "DEFAULT_VESICLES_PER_STEP", "value": 60, "unit": "count", "provenance": "model"},
+    {"name": "DEFAULT_P_ACCEPT_INSIDE", "value": 1.0, "unit": "probability", "provenance": "model"},
+    {"name": "DEFAULT_P_ACCEPT_OUTSIDE", "value": 0.03, "unit": "probability", "provenance": "model", "note": "membrane leakage outside the syncytial cavity"},
+    {"name": "DEFAULT_K_SECONDARY", "value": 0.6, "unit": "per step", "provenance": "model", "note": "secondary-nucleation ACC->calcite conversion per step at (and behind) a crystalline front (Politi et al. 2008 mechanism)"},
+    {"name": "DEFAULT_FRONT_REACH_PX", "value": 2, "unit": "pixels per step", "provenance": "model", "note": "front reach 2 px = 0.74 um per 0.5 h ~ 1.5 um/h propagation of the crystalline front"},
+    {"name": "DEFAULT_K_PRIMARY", "value": 1e-07, "unit": "per pixel per step", "provenance": "model", "note": "wild type: primary nucleation rare so the spicule stays a single crystal"},
+    {"name": "DEFAULT_K_PRIMARY_ABLATION", "value": 0.02, "unit": "per pixel per step", "provenance": "model", "note": "polycrystalline ablation"}
+  ],
+  "literature_reference_values": [
+    {"name": "diamond_strut_length_3d_over_a0", "value": 0.4330127, "unit": "a_0", "provenance": "theory-exact", "source": "nearest-neighbour distance of the diamond lattice a sqrt(3)/4"},
+    {"name": "diamond_111_projected_bond_over_a0", "value": 0.4082483, "unit": "a_0", "provenance": "theory-exact", "source": "projection of a (1,-1,-1)a/4 bond onto the (111) plane: a/sqrt(6)"},
+    {"name": "twin_band_confinement_qualitative", "value": "twin bands / dislocations arrested at strut-pore interfaces; damage confined to the struts adjacent to the indent", "provenance": "literature-qualitative", "source": "Yang et al. (2022) Science 375:647-652, nanoindentation and micropillar compression of Protoreaster nodosus ossicles", "source_doi": "10.1126/science.abm8666"},
+    {"name": "naive_solid_fraction_damage_null", "value": 0.5, "unit": "ratio", "provenance": "theory-null", "source": "if twinned area simply scaled with the solid fraction phi of the section, lattice/monolith twin-area ratio would equal phi = 0.50"},
+    {"name": "gibson_ashby_regular_honeycomb_in_plane_modulus", "value": "E*/E_s = 2.3 (t/l)^3", "provenance": "literature", "source": "Gibson & Ashby (1997) Cellular Solids, regular hexagonal honeycomb in-plane modulus (thin-wall limit)", "source_doi": "10.1017/CBO9781139878326"},
+    {"name": "calcite_e_twin_crss_geological_MPa", "value": 10.0, "range": [2.0, 12.0], "unit": "MPa", "provenance": "literature-approx", "source": "Turner et al. (1954); De Bresser & Spiers (1997)", "source_doi": "10.1016/S0040-1951(96)00273-9"},
+    {"name": "spicule_single_crystal_domain_count", "value": 1, "unit": "count", "provenance": "literature", "source": "Donnay & Pawson (1969) X-ray diffraction: each echinoderm ossicle/spicule diffracts as a single calcite crystal", "source_doi": "10.1126/science.166.3909.1147"},
+    {"name": "acc_to_calcite_mechanism", "value": "secondary nucleation propagating from the crystalline centre, not random primary nucleation", "provenance": "literature-qualitative", "source": "Politi et al. (2008) PNAS 105:17362-17366", "source_doi": "10.1073/pnas.0806604105"},
+    {"name": "acc_precursor_in_spicule", "value": "spicules deposited as ACC that transforms to calcite over ~days", "provenance": "literature-qualitative", "source": "Beniash et al. (1997) Proc R Soc B 264:461-465", "source_doi": "10.1098/rspb.1997.0066"},
+    {"name": "acc_vesicle_diameter_um", "value": 1.0, "range": [0.5, 1.5], "unit": "um", "provenance": "literature-approx", "source": "Vidavsky et al. (2014) PNAS 111:39-44", "source_doi": "10.1073/pnas.1312833110"},
+    {"name": "spicule_seed_granule", "value": "single rhombohedral calcite granule nucleated in the syncytial cavity at ~24 h", "provenance": "literature-qualitative", "source": "Wilt (2002) Zool Sci 19:253-261", "source_doi": "10.2108/zsj.19.253"}
+  ],
+  "self_test_expectations": {
+    "section_phi": 0.50,
+    "section_single_solid_component": true,
+    "max_lamella_lattice_le_bond_length": true,
+    "twin_area_ratio_lt_solid_fraction_null": true,
+    "max_gamma_le_twin_shear": true,
+    "domains_templated_max": 2,
+    "domains_primary_ablation_min": 50,
+    "iou_templated_gt_untemplated": true
+  }
+}

@@ -1,0 +1,89 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sumper-diatom-frustule-phase-sep> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation (Pass 3: centrifugal precipitation front + 3-stage single-domain quench) — Code-to-model traceability: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The header maps R1/R2 to the functions that implement them and to Furukawa (1992) and Schmid & Volcani (1983); `simulate_radial_quench_costae` and `simulate_three_stage_hierarchy` carry long docstrings that state the mechanism, the scale-invariance argument for the tier time steps, the neutral-wall decision and the off-critical result (concentric-only for phi0 = -0.30); the math-KG YAML registers equations 4-5 with single-range `code_locus` pins that match the current file, and the two new Lean theorems are named in the header (+1). Deductions: the docstrings state the mechanism but not that lag 1.0, noise 0.005, width 2.0, R0 8, v 0.10, steps (290, 160, 100) and erode (0, 3, 1) were hand-picked from exploratory runs — the handoff note says so, the code does not (-3); `pore_centroids` / `bond_orientation_coherence` outputs (`radial_frame_coherence_margin`, `lab_frame_coherence_margin`) are computed for the lamellar rib layer, where they are ~0 and meaningless, and used by no panel or measurement — dead output fields (-2); the `--self-test` help text still says '8-check' (-1). Net 91 -> 92." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "models/2002-sumper-diatom-frustule-phase-sep.py L405–L440: simulate_radial_quench_costae signature and docstring: mechanism stated; tuned values lag=1.0, noise=0.005, width=2.0, R0=8 not flagged as hand-picked <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L405-L440>",
+            "models/2002-sumper-diatom-frustule-phase-sep.py L534–L535: radial_frame_coherence_margin / lab_frame_coherence_margin returned but unused by any panel or measurement (dead for the lamellar rib layer) <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L534-L535>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-code-traceability-2> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "models/2002-sumper-diatom-frustule-phase-sep.py L1–L24" ;
+        dct:description "Header: R1/R2 mapped to simulate_radial_quench_costae / run_front_velocity_sweep / simulate_three_stage_hierarchy and to Furukawa 1992, Schmid & Volcani 1983" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L1-L24> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/sumper-diatom-frustule-phase-sep.yaml L40–L130" ;
+        dct:description "Equations 1-5 with single-range code_locus pins (eq4 #L405-L538, eq5 #L600-L724) and Lean theorem names" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/morphoeval/math_kg_loops/sumper-diatom-frustule-phase-sep.yaml#L40-L130> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 Phase B primary assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0378-4371(92)90111-2>,
+            <https://doi.org/10.1021/la7022784>,
+            <https://doi.org/10.1063/1.1744102>,
+            <https://doi.org/10.1111/j.0022-3646.1983.00387.x>,
+            <https://doi.org/10.1126/science.1070026>,
+            <https://doi.org/10.1166/jnn.2006.174> .
+    <https://doi.org/10.1016/0378-4371(92)90111-2> dct:date "1992"^^xsd:gYear ;
+        dct:title "Phase separation by directional quenching and morphological transition" .
+    <https://doi.org/10.1021/la7022784> dct:date "2008"^^xsd:gYear ;
+        dct:title "Self-assembly of hierarchical nanostructures in diatom biosilica" .
+    <https://doi.org/10.1063/1.1744102> dct:date "1958"^^xsd:gYear ;
+        dct:title "Free energy of a nonuniform system. I. Interfacial free energy" .
+    <https://doi.org/10.1111/j.0022-3646.1983.00387.x> dct:date "1983"^^xsd:gYear ;
+        dct:title "Wall morphogenesis in Coscinodiscus wailesii Gran and Angst. I. Valve morphology and development of its architecture" .
+    <https://doi.org/10.1126/science.1070026> dct:date "2002"^^xsd:gYear ;
+        dct:title "A phase separation model for the nanopatterning of diatom biosilica" .
+    <https://doi.org/10.1166/jnn.2006.174> dct:date "2006"^^xsd:gYear ;
+        dct:title "Pore architecture of diatom frustules: potential nanostructured membranes for molecular and particle separations" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation (Pass 3: centrifugal precipitation front + 3-stage single-domain quench) — Code-to-model traceability 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-21T00:00:04Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

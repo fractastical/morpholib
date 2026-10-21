@@ -118,7 +118,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "joint_interzone_clefting"
 REF_JSON = DATASET_DIR / "joint_interzone_clefting_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "tetrapod_digit_interzone_specimen.jpg"

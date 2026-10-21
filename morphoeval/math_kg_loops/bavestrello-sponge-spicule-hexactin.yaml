@@ -1,11 +1,22 @@
 sim_id: bavestrello-sponge-spicule-hexactin
-math_family: "3D Crystallographic Silicatein Ray Vector Symmetry (Cubic O_h 6-Ray Hexactins at theta = 90 deg vs Tetrahedral T_d 4-Ray Tetractins at cos theta = -1/3 = 109.47 deg), Concentric Lamellar Thinning (h_n prop r_n^-1) & Checkerboard Diagonal Lattice Shear Stiffness"
+math_family: "3D Crystallographic Silicatein Ray Vector Symmetry (Cubic O_h 6-Ray Hexactins at theta = 90 deg vs Tetrahedral T_d 4-Ray Tetractins at cos theta = -1/3 = 109.47 deg), Concentric Lamellar Thinning (h_n prop r_n^-1), Checkerboard Diagonal Lattice Shear Stiffness, Cohesive-Zone Laminate Bending FE (Pass 3), Helical Ridge Torsion/Ovalization (Pass 3) & Basalia Step-Index Waveguiding (Pass 3)"
 model_spec:
   model: "Uriz, Turon, Becerro & Agell (2003) Microsc. Res. Tech. Silicatein Axial Filament Symmetry + Aizenberg et al. (2005) Science Euplectella Hierarchical Lattice Mechanics + Weaver et al. (2007) J. Struct. Biol. Concentric Biosilica Lamination"
   governing_pde: "dS/dt = D_S * laplacian(S) - k_cat * F_fil(x) * S / (K_m + S),   dB/dt = k_cat * F_fil(x) * S / (K_m + S)"
   ray_symmetry_law: "O_h hexactin (6 rays): u_k in {+-e_x, +-e_y, +-e_z}, u_i . u_j in {0, -1}, theta_adj = 90 deg; T_d tetractin/calthrop (4 rays): v_i . v_j = -1/3, theta = arccos(-1/3) = 109.4712 deg; D_3h triactine (3 rays): theta = 120 deg; D_inf_h monaxon (2 rays): theta = 180 deg"
   lamellar_scaling_law: "h_n = Delta_A_layer / (2 * pi * r_n) = h_1 * (r_1 / r_n),   G_lam / G_mono = 1 + eta_deflect * N_layers"
   lattice_shear_law: "K_shear(f_diag) = K_bend_square + 0.5 * f_diag * K_axial_strut"
+  cohesive_bending_law: "Euler-Bernoulli Hermite FE; sigma_n = (P L / 4) R_n / I_n >= sigma_f; deflect iff G_i / G_s < 0.25; l_cz = E G_i / T_max^2; 0.5 delta^2 (k_before - k_after(a)) = G_s A_n + G_i 2 pi r_n a; W = int P d(delta)"
+  helical_ridge_law: "K_tors(psi) = K_wall + N_r k_r sin^2(2 psi); I_eff / I_wall = 1 + N_r A_r / 2 (N_r >= 3)"
+  waveguide_law: "NA = sqrt(n_core^2 - n_clad^2); V = 2 pi a NA / lambda; single mode iff V < 2.4048; LP cutoffs at Bessel zeros"
+  E_silica_MPa: 36000.0
+  sigma_f_MPa: 900.0
+  G_s_J_m2: 8.0
+  T_max_MPa: 40.0
+  delta_c_um: 0.060
+  n_ridges: 8
+  n_core: 1.460
+  n_clad: 1.440
   D_S_um2_per_s: 1.20
   k_cat_per_s: 0.85
   r_core_um: 0.75
@@ -16,6 +27,7 @@ model_spec:
     - datasets/sponge_spicule_hexactin/sponge_spicule_hexactin_reference.json
     - datasets/sponge_spicule_hexactin/euplectella_aspergillum_specimen.jpg
     - datasets/sponge_spicule_hexactin/scout_manifest.json
+    - datasets/sponge_spicule_hexactin/cohesive_bending_waveguide_reference.json
 equations:
   - law_name: "Cubic O_h 6-Ray Hexactin Orthogonal Vector Equilibrium & Pairwise Dot Product Law"
     formula: "u_k in {+-e_x, +-e_y, +-e_z},   sum_{k=1}^6 u_k = 0,   u_i . u_j = 0 (theta = 90 deg for adjacent rays),   u_i . u_j = -1 (theta = 180 deg for antipodal rays)"
@@ -34,7 +46,7 @@ equations:
     variables: "u_k in Z^3: unit ray direction vectors of the proteinaceous silicatein axial filament; theta_adj = 90 deg: inter-ray angle between orthogonal rays"
     role: "Governs the cubic O_h crystallographic symmetry of Hexactinellida 6-rayed hexactin spicules and their orthogonal 90 deg skeletal lattice intersections in Euplectella aspergillum"
     source_citation: "Uriz et al. (2003) Microsc. Res. Tech. 62:279-299; Aizenberg et al. (2005) Science 309:275-278"
-    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L128-L220"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L153-L245"
   - law_name: "Tetrahedral T_d 4-Ray Tetractin / Calthrop Cosine Identity (cos theta = -1/3)"
     formula: "v_k in {(1,1,1), (1,-1,-1), (-1,1,-1), (-1,-1,1)},   ||v_k||^2 = 3,   sum_{k=1}^4 v_k = 0,   v_i . v_j = -1  =>  cos theta = (v_i . v_j) / ||v_k||^2 = -1/3 (theta = 109.4712 deg)"
     lean_decl: "MathOfBiology.Loop_076.tetractin_vector_sum"
@@ -52,7 +64,7 @@ equations:
     variables: "v_k: tetrahedral ray direction vectors of Demospongiae/Calcarea calthrops; theta = arccos(-1/3) = 109.4712 deg: inter-ray tetrahedral angle"
     role: "Establishes the exact tetrahedral inter-ray angle (109.4712 deg) and zero-sum force balance of 4-rayed tetractin/calthrop spicules in Demospongiae (*Pachastrella*, *Geodia*)"
     source_citation: "Uriz et al. (2003) Microsc. Res. Tech. 62:279-299"
-    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L128-L343"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L153-L368"
   - law_name: "Concentric Lamellar Biosilica Radial Thinning (h_n prop r_n^-1) & Crack-Deflection Fracture Toughness Law"
     formula: "h_n = (k_cat * Delta_A_ring) / (2 * pi * r_n) = h_1 * (r_1 / r_n),   G_lam(N) = G_mono * (1 + eta_deflect * N)"
     lean_decl: "MathOfBiology.Loop_076.lamellar_layer_thickness"
@@ -69,7 +81,7 @@ equations:
     variables: "h_n: thickness of n-th concentric silica cylinder (um); r_n: radial position of n-th cylinder (um); N_layers: number of concentric organic-silica interlayers; G_lam: fracture energy"
     role: "Explains why peripheral biosilica lamellae thin inversely with radius (h_n prop r_n^-1) while multiplying flexural fracture resistance via crack deflection at organic silicatein interlayers"
     source_citation: "Aizenberg et al. (2005) Science 309:275-278; Weaver et al. (2007) J. Struct. Biol. 158:93-106"
-    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L370-L435"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L395-L460"
   - law_name: "Euplectella Alternating Checkerboard Diagonal Lattice Shear Stiffness Law"
     formula: "K_shear(f_diag) = K_bend_square + f_diag * K_axial_strut * cos^2(45 deg) = K_bend_square + 0.5 * f_diag * K_axial_strut"
     lean_decl: "MathOfBiology.Loop_076.lattice_shear_stiffness_scaled"
@@ -84,4 +96,51 @@ equations:
     variables: "f_diag in {0, 0.5, 1.0}: fraction of square grid cells reinforced by 45 deg diagonal spicule bundles; K_bend_square: unbraced frame bending shear stiffness; K_axial_strut: diagonal strut axial stiffness"
     role: "Quantifies the 7.5x shear-stiffness amplification achieved by the alternating open/closed checkerboard diagonal bracing of the Euplectella aspergillum cylindrical cage"
     source_citation: "Aizenberg et al. (2005) Science 309:275-278"
-    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L439-L483"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L464-L508"
+  - law_name: "Cohesive-Zone Laminate Progressive Fracture under Three-Point Bending (Pass 3, Law 5)"
+    formula: "deflect iff G_i / G_s < 1/4 (He & Hutchinson 1989);   l_cz = E G_i / T_max^2 (Hillerborg 1976);   sigma_n = (P L / 4) R_n / I_n >= sigma_f;   0.5 delta^2 (k_before - k_after(a_n)) = G_s A_n + G_i 2 pi r_n a_n;   W_lam = W_el + sum_n G_i 2 pi r_n a_n > W_mono = W_el"
+    lean_decl: "MathOfBiology.Loop_076.laminate_fracture_work"
+    lean_theorem: "MathOfBiology.Loop_076.cohesive_laminate_progressive_fracture_work_exceeds_monolith"
+    lean_locus: "morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean#L223-L270"
+    lean_code: |
+      def interlayer_deflects (G_i G_s : Nat) : Bool := 4 * G_i < G_s
+      def hillerborg_length (E G_i T_max : Nat) : Nat := E * G_i / (T_max * T_max)
+      def laminate_fracture_work (W_el dW_interface N : Nat) : Nat := W_el + N * dW_interface
+      theorem cohesive_laminate_progressive_fracture_work_exceeds_monolith :
+          interlayer_deflects 12 80 = true ∧ interlayer_deflects 80 80 = false ∧
+          hillerborg_length 36000 12 40 = 270 ∧
+          (∀ W_el dW N : Nat, 1 ≤ dW → 1 ≤ N → W_el < laminate_fracture_work W_el dW N) ∧
+          (∀ W_el dW N : Nat, laminate_fracture_work W_el dW N ≤ laminate_fracture_work W_el dW (N + 1))
+    variables: "G_i: organic interlayer fracture energy (J/m^2); G_s: silica fracture energy; T_max, delta_c: bilinear cohesive law; l_cz: Hillerborg process-zone length (um); a_n: Griffith interface half-length of layer n; W: external work of fracture (pJ)"
+    role: "Reduced finite-element / cohesive-zone model of Weaver et al. (2007) crack arrest at organic interlayers: the laminate fails progressively (25 load drops, W_lam/W_mono = 1.71 at default constants) while monolithic or fused-interlayer rods fail catastrophically at the first crack; coupled to the 3D silicatein solver through the accreted cross-section (k_cat -> N_lamellae)"
+    source_citation: "Weaver et al. (2007) J. Struct. Biol. 158:93-106; Aizenberg et al. (2005) Science 309:275-278; He & Hutchinson (1989) Int. J. Solids Struct. 25:1053-1067; Hillerborg et al. (1976) Cem. Concr. Res. 6:773-781"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L799-L947"
+    code_locus_secondary: "2012-bavestrello-sponge-spicule-hexactin.py#L950-L1034"
+  - law_name: "External Helical Surface Ridge Torsional Projection & Parallel-Axis Ovalization Gain (Pass 3, Law 6)"
+    formula: "K_tors(psi) = K_wall + N_r k_r sin^2(2 psi), argmax psi = 45 deg;   M_ridge / M_wall = N_r A_r / cos psi;   I_eff / I_wall = 1 + A_r sum_k sin^2(2 pi k / N_r) = 1 + N_r A_r / 2 for N_r >= 3"
+    lean_decl: "MathOfBiology.Loop_076.ridge_ovalization_gain_percent"
+    lean_theorem: "MathOfBiology.Loop_076.euplectella_helical_ridge_shear_projection_and_parallel_axis_gain"
+    lean_locus: "morphoeval/lean/loops/Loop_076_sponge_spicule_hexactin.lean#L273-L321"
+    lean_code: |
+      def ridge_shear_projection (t : Nat) : Nat := t * (100 - t)
+      def ridge_ovalization_gain_percent (N_r A_r : Nat) : Nat := 100 + N_r * A_r / 2
+      def cage_torsion_45_scaled (K_wall2 k_r2 N_r : Nat) : Nat := K_wall2 + N_r * k_r2
+      theorem euplectella_helical_ridge_shear_projection_and_parallel_axis_gain :
+          ridge_shear_projection 50 = 2500 ∧
+          ((List.range 101).all (fun t => decide (ridge_shear_projection t ≤ 2500))) = true ∧
+          two_sin_sq_8.sum = 2 * (8 / 2) ∧ ridge_ovalization_gain_percent 8 25 = 200 ∧
+          cage_torsion_45_scaled 15 13 8 = 119 := by decide
+    variables: "psi: ridge helix angle to the cage axis; N_r: number of equally spaced external ridges; A_r: ridge/wall cross-section ratio; k_r: single-ridge 45 deg torsional contribution; I_eff: cage second moment of area with ridges"
+    role: "Extends the Law-4 checkerboard lattice wall to the Euplectella cylindrical cage with external helical ridges: torsional stiffness is maximised at psi = 45 deg (gain 7.93x over the wall for N_r = 8) and the ridges raise the Euler-buckling / Brazier-ovalization second moment linearly in N_r"
+    source_citation: "Aizenberg et al. (2005) Science 309:275-278"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L1041-L1104"
+  - law_name: "Anchor-Spicule Basalia Step-Index Optical Waveguiding (Pass 3, Law 7)"
+    formula: "NA = sqrt(n_core^2 - n_clad^2);   n(r) cos theta(r) invariant (meridional rays);   cos theta_acc = n_clad / n_core;   V = 2 pi a NA / lambda;   single mode iff V < j_{0,1} = 2.4048;   LP_lm cutoffs at j_{l-1,m} < V;   M ~ V^2 / 2"
+    lean_decl: null
+    lean_theorem: null
+    lean_locus: null
+    lean_code: null
+    variables: "n_core, n_clad: refractive indices of the lamellar core / cladding (recalled from Sundar et al. 2003, unverified offline); a: optical core radius from lamella 2 of Law 3; V: normalised frequency; theta_acc: acceptance angle"
+    role: "Treats the laminated basalia as a step-index fibre whose geometry comes from the Law-3 lamellar model; ray-traced acceptance angle (9.45 deg) reproduces the Snell/TIR closed form and the Bessel-zero LP mode count (20 incl. degeneracy at 550 nm) brackets the Gloge V^2/2 estimate (20.3)"
+    source_citation: "Sundar et al. (2003) Nature 424:899-900; Aizenberg et al. (2004) PNAS 101:3358-3363; Gloge (1971) Appl. Opt. 10:2252-2258"
+    code_locus: "2012-bavestrello-sponge-spicule-hexactin.py#L1112-L1203"

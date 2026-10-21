@@ -1,0 +1,96 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sumper-diatom-frustule-phase-sep> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation (Pass 3: centrifugal precipitation front + 3-stage single-domain quench) — Reproducibility package: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Deterministic RNG (seed 2002), 11-check `self_test()` (3 new: front-quench exact conservation, frozen subset of quenched, slow A > 0.15 / fast A < 0 / |null| < 0.35 at 96^2; 3-stage 256^2 strict nesting, decreasing pitches, pores within chambers, drift < 5e-3, eps-inversion parity; frozen-mask solver holds wall values bitwise) passes in 30 s; the `a_field=None` solver path is bitwise identical to Pass 2 so the Pass 2 determinism check still holds; the default render regenerates the 12-panel PNG, the two-stage GIF (byte-identical) and the new costae GIF in ~50 s; `three_stage_cached()` avoids recomputing the 512^2 run (+2). Deductions: `docs/media/*.png` is gitignored so the regenerated comparison PNG is not tracked (the measurements file records its SHA instead) (-1); the 3-stage 512^2 run has no animation — the growth GIF still animates only the Pass 2 128^2 two-stage run (-1); the self-test's single-realisation null tolerance |A| < 0.35 is loose relative to the 3-seed null spread. Net 90 -> 92." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-repro-package-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-repro-package-4> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "models/2002-sumper-diatom-frustule-phase-sep.py L1470–L1567" ;
+        dct:description "self_test(): 11 checks; Check 9 L1524-L1537 (costae conservation/anisotropy; |null| < 0.35 at L1536), Check 10 L1539-L1547 (3-stage nesting), Check 11 L1548-L1556 (frozen-mask solver)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L1470-L1567> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "models/2002-sumper-diatom-frustule-phase-sep.py L718–L723" ;
+        dct:description "three_stage_cached(): one 512^2 run per process shared by render and measure" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L718-L723> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "models/2002-sumper-diatom-frustule-phase-sep.py L981–L1003" ;
+        dct:description "render_all_outputs(): costae disc, 5-speed sweep and cached 3-stage run feed the 3x4 PNG and both GIFs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a69596cc/models/2002-sumper-diatom-frustule-phase-sep.py#L981-L1003> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sumper-diatom-frustule-phase-sep-repro-package-4> a pk:EvidenceItem ;
+        rdfs:label "docs/media/diatom_frustule_phase_sep_radial_costae.gif (generated output)" ;
+        dct:description "New 35-frame animation of the precipitation front sweeping the valve disc — docs/media/diatom_frustule_phase_sep_radial_costae.gif: rendered output of models/2002-sumper-diatom-frustule-phase-sep.py at a69596cc, image/gif, 2379064 B, 420×440 px, 34 frames, artifact_sha256 3e6a2220b7fcf1ed0b5ff8ac6d8c9a465d5b02228abf6b99a35cf2731553609f (sha256 3e6a2220b7fcf1ed0b5ff8ac6d8c9a465d5b02228abf6b99a35cf2731553609f), spec_fingerprint a0656c1e84af378ca65d37247e04ce369aa44a7a1166c9de2688cf2ac0451d64" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 Phase B primary assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0378-4371(92)90111-2>,
+            <https://doi.org/10.1021/la7022784>,
+            <https://doi.org/10.1063/1.1744102>,
+            <https://doi.org/10.1111/j.0022-3646.1983.00387.x>,
+            <https://doi.org/10.1126/science.1070026>,
+            <https://doi.org/10.1166/jnn.2006.174> .
+    <https://doi.org/10.1016/0378-4371(92)90111-2> dct:date "1992"^^xsd:gYear ;
+        dct:title "Phase separation by directional quenching and morphological transition" .
+    <https://doi.org/10.1021/la7022784> dct:date "2008"^^xsd:gYear ;
+        dct:title "Self-assembly of hierarchical nanostructures in diatom biosilica" .
+    <https://doi.org/10.1063/1.1744102> dct:date "1958"^^xsd:gYear ;
+        dct:title "Free energy of a nonuniform system. I. Interfacial free energy" .
+    <https://doi.org/10.1111/j.0022-3646.1983.00387.x> dct:date "1983"^^xsd:gYear ;
+        dct:title "Wall morphogenesis in Coscinodiscus wailesii Gran and Angst. I. Valve morphology and development of its architecture" .
+    <https://doi.org/10.1126/science.1070026> dct:date "2002"^^xsd:gYear ;
+        dct:title "A phase separation model for the nanopatterning of diatom biosilica" .
+    <https://doi.org/10.1166/jnn.2006.174> dct:date "2006"^^xsd:gYear ;
+        dct:title "Pore architecture of diatom frustules: potential nanostructured membranes for molecular and particle separations" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation (Pass 3: centrifugal precipitation front + 3-stage single-domain quench) — Reproducibility package 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-21T00:00:04Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

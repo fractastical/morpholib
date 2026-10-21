@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "dataset_id": "coral_calice_septa_insertion/corallum3d_surge_reference",
+    "title": "Pass 3 reference table — reduced 3D conical corallum (septa, endothecal dissepiments, synapticulae), Wells (1956) solitary-corallum apical-angle classes, and Keulegan-Carpenter oscillatory reef-surge regimes for the Chindapol (2013) Péclet boundary-layer flux",
+    "version": "1.0.0",
+    "created_at": "2026-10-19",
+    "pass": 3,
+    "consumer_script": "2013-thomas-coral-calice-septa-insertion.py",
+    "doi_verified_offline": false,
+    "note": "Literature values below were recalled offline during the Pass 3 remediation (no network access). Every DOI and every numeric value carries a provenance tag and should be verified online before being treated as a digitised figure/table value. Rows with provenance 'model' are modelling choices of this script, not literature values. Rows with provenance 'specimen' are measured at runtime from the SHA-256-pinned specimen micrograph by the script.",
+    "primary_dois": [
+      "10.6028/jres.060.043",
+      "10.4319/lo.2005.50.1.0246",
+      "10.4319/lo.2006.51.2.1134",
+      "10.1371/journal.pcbi.1002849",
+      "10.3897/zookeys.227.3612"
+    ]
+  },
+  "governing_equations": {
+    "conical_corallum_profile": "R(z) = R_ped + z tan(phi/2), 0 <= z <= H = (R_top - R_ped)/tan(phi/2); R(z) non-decreasing so k(R(z)) and N_hex(k(z)) are non-decreasing along the growth axis (Lean turbinate_corallum_septal_cycles_monotone)",
+    "septal_insertion_fronts": "cycle-k septa present at all z with R(z) >= R_k = (3 lambda_s / pi) 2^(k-1); front heights z_k = (R_k - R_ped)/tan(phi/2)",
+    "septum_angular_width": "constant physical thickness t_s -> angular half-width t_s / (2 r R(z))",
+    "dissepiments": "vesicular endothecal plates at z_n = n h_d + (h_d/2)(loculus index mod 2) + tilt (r - 1) h_d, outer zone r >= f_d, thickness t_d (sub-voxel weighted)",
+    "synapticulae": "rods bridging adjacent septa on rings |r - r_s| R <= t_syn/2 at z_m = m h_syn",
+    "keulegan_carpenter": "KC = U_max T / L; excursion amplitude a = U_max T / (2 pi) = L KC / (2 pi)",
+    "surge_renewal_efficiency": "eta(KC) = 1 - exp(-KC / (2 pi)); KC_50 = 2 pi ln 2 = 4.3552",
+    "oscillatory_flux": "j(theta,t) = j_0 [1 + eta beta sqrt(Pe(t)) sgn(U) cos theta + eta gamma (Pe(t)/(1+Pe(t))) cos 2theta], Pe(t) = Pe_max |sin(omega t)|; period mean of the dipole term is exactly 0 (Lean oscillatory_surge_dipole_cancellation)",
+    "mean_sqrt_sin_factor": "(1/pi) int_0^pi sqrt(sin x) dx = 0.76276 (closed form B(3/4,1/2)/pi = Gamma(3/4) Gamma(1/2) / (pi Gamma(5/4)); checked numerically in the script)"
+  },
+  "default_parameters": {
+    "R_top_mm": {"value": 5.0, "provenance": "specimen", "note": "Caryophyllia quadragenaria calice diameter 10 mm (coral_calice_septa_insertion_reference.json)"},
+    "R_pedicel_mm": {"value": 0.60, "provenance": "model"},
+    "apical_angle_deg": {"value": "measured at runtime (segment_caryophyllia_corallum_profile)", "provenance": "specimen"},
+    "septum_thickness_mm": {"value": "measured at runtime from the 0.80R septal duty cycle (segment_caryophyllia_specimen)", "provenance": "specimen"},
+    "theca_thickness_mm": {"value": 0.16, "provenance": "model"},
+    "columella_fraction": {"value": 0.18, "provenance": "model", "note": "same as columella_radius_ratio in the Pass 1 reference JSON"},
+    "dissepiment_spacing_mm": {"value": 0.60, "provenance": "model"},
+    "dissepiment_inner_fraction": {"value": 0.55, "provenance": "model"},
+    "dissepiment_thickness_mm": {"value": 0.05, "provenance": "model"},
+    "dissepiment_tilt": {"value": 0.5, "provenance": "model"},
+    "synapticula_ring_radii": {"value": [0.45, 0.65, 0.85], "provenance": "model"},
+    "synapticula_spacing_mm": {"value": 0.60, "provenance": "model"},
+    "synapticula_thickness_mm": {"value": 0.10, "provenance": "model"},
+    "grid": {"value": {"n_z": 72, "n_r": 48, "n_theta": 360}, "provenance": "model"}
+  },
+  "wells_1956_solitary_corallum_shape_classes": [
+    {"class": "ceratoid", "apical_angle_deg": 20.0, "description": "slender horn-shaped corallum", "provenance": "recalled offline: Wells (1956) Treatise on Invertebrate Paleontology Part F, p. F333; glossary in Cairns & Kitahara (2012) ZooKeys 227"},
+    {"class": "trochoid", "apical_angle_deg": 40.0, "description": "horn-shaped corallum expanding at about 40 deg", "provenance": "recalled offline: Wells (1956); Cairns & Kitahara (2012) glossary"},
+    {"class": "turbinate", "apical_angle_deg": 70.0, "description": "top-shaped corallum expanding at about 70 deg", "provenance": "recalled offline: Wells (1956); Cairns & Kitahara (2012) glossary"},
+    {"class": "patellate", "apical_angle_deg": 120.0, "description": "low, saucer-shaped corallum expanding at about 120 deg", "provenance": "recalled offline: Wells (1956); Cairns & Kitahara (2012) glossary"}
+  ],
+  "specimen_side_profile": {
+    "file": "datasets/coral_calice_septa_insertion/scleractinian_coral_septa_specimen.jpg",
+    "sha256": "904035c93684336102acb95bced6a16c1dd720e46092b19c0331837698c6bffa",
+    "side_view_rows_px": [400, 660],
+    "method": "per-row foreground width (gray > 0.15) between the widest row (calice rim) and the narrowest row below it (pedicel waist); OLS slope of half-width vs height -> phi = 2 atan(slope)",
+    "expected_class": "trochoid",
+    "expected_apical_angle_deg": 40.0,
+    "note": "The dataset README (Pass 1) already describes the corallum as 'costate trochoid'; the side view has an unknown pixel scale (different magnification from the top panel) so only the angle and counts are used. Costae correspond 1:1 to septa in Caryophyllia, so ~N/2 = 20 costae are expected across the visible half; oblique viewing and the dark costal band reduce the detectable count.",
+    "provenance": "specimen"
+  },
+  "endothecal_architectures": [
+    {"architecture": "caryophylliid", "taxon_example": "Caryophyllia (Caryophylliidae)", "dissepiments": false, "synapticulae": false, "pali": true, "theca": "septotheca", "provenance": "recalled offline: Cairns & Kitahara (2012) ZooKeys 227 glossary / generic diagnoses"},
+    {"architecture": "dissepimented", "taxon_example": "Flabellidae/Faviidae-type vesicular endotheca", "dissepiments": true, "synapticulae": false, "pali": true, "theca": "septotheca", "provenance": "recalled offline: Wells (1956) Treatise Part F; Cairns & Kitahara (2012) glossary"},
+    {"architecture": "synapticulate", "taxon_example": "Fungiidae (synapticulotheca)", "dissepiments": false, "synapticulae": true, "pali": true, "theca": "septotheca (synapticulotheca in Fungiidae)", "provenance": "recalled offline: Wells (1956); Cairns & Kitahara (2012) glossary"}
+  ],
+  "reef_keulegan_carpenter_regimes": [
+    {"label": "unidirectional lagoon current, 1 cm corallite", "U_max_m_s": 0.05, "T_s": 1e9, "L_m": 0.01, "note": "T -> infinity: KC -> infinity, eta -> 1 (steady Law 3 limit)", "provenance": "model (kinematic definition)"},
+    {"label": "swell T=8 s, U=0.20 m/s, 1 cm corallite", "U_max_m_s": 0.20, "T_s": 8.0, "L_m": 0.01, "note": "typical forereef wave orbital velocity amplitude and period, recalled offline from Reidenbach et al. (2006) Limnol. Oceanogr. 51:1134 / Falter et al. (2005) 50:246", "provenance": "recalled offline"},
+    {"label": "swell T=8 s, U=0.20 m/s, 10 cm colony", "U_max_m_s": 0.20, "T_s": 8.0, "L_m": 0.10, "provenance": "recalled offline"},
+    {"label": "swell T=8 s, U=0.20 m/s, 1 m colony/bommie", "U_max_m_s": 0.20, "T_s": 8.0, "L_m": 1.0, "provenance": "recalled offline"},
+    {"label": "sheltered chop T=2 s, U=0.05 m/s, 10 cm colony", "U_max_m_s": 0.05, "T_s": 2.0, "L_m": 0.10, "provenance": "recalled offline"},
+    {"label": "sheltered chop T=2 s, U=0.05 m/s, 1 m colony", "U_max_m_s": 0.05, "T_s": 2.0, "L_m": 1.0, "provenance": "recalled offline"}
+  ],
+  "literature_anchors": [
+    {"id": "keulegan1958", "citation": "Keulegan GH, Carpenter LH (1958). Forces on cylinders and plates in an oscillating fluid. Journal of Research of the National Bureau of Standards 60(5):423-440.", "doi": "10.6028/jres.060.043", "used_for": "definition KC = U_max T / L", "provenance": "recalled offline"},
+    {"id": "falter2005", "citation": "Falter JL, Atkinson MJ, Coimbra CFM (2005). Effects of surface roughness and oscillatory flow on the dissolution of plaster forms: Evidence for nutrient mass transfer to coral reef communities. Limnology and Oceanography 50(1):246-254.", "doi": "10.4319/lo.2005.50.1.0246", "used_for": "oscillatory flow enhances reef mass transfer relative to unidirectional flow at matched velocity — NOT reproduced by the quasi-steady closure here (residual)", "provenance": "recalled offline"},
+    {"id": "reidenbach2006", "citation": "Reidenbach MA, Koseff JR, Monismith SG, Steinbuck JV, Genin A (2006). The effects of waves and morphology on mass transfer within branched reef corals. Limnology and Oceanography 51(2):1134-1141.", "doi": "10.4319/lo.2006.51.2.1134", "used_for": "wave-driven oscillatory flow mass transfer in corals; typical reef U, T", "provenance": "recalled offline"},
+    {"id": "wells1956", "citation": "Wells JW (1956). Scleractinia. In: Moore RC (ed.) Treatise on Invertebrate Paleontology, Part F, Coelenterata. Geological Society of America & University of Kansas Press, pp. F328-F444.", "doi": null, "used_for": "solitary corallum shape classes by apical angle; endothecal dissepiments and synapticulae terminology", "provenance": "recalled offline"},
+    {"id": "chindapol2013", "citation": "Chindapol N, Kaandorp JA, Cronemberger C, Mass T, Genin A (2013). PLoS Computational Biology 9(1):e1002849.", "doi": "10.1371/journal.pcbi.1002849", "used_for": "unidirectional vs bidirectional flow simulations: bidirectional flow preserves colony symmetry while unidirectional flow skews growth upstream", "provenance": "already vendored (paper_citations.bib)"}
+  ]
+}

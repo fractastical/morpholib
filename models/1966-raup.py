@@ -44,7 +44,7 @@ def main(argv=None):
     ap.add_argument("--export-mesh", default=None, help="export the 3x3 W x T morphospace slice as a SurfaceMesh3D JSON or OBJ file")
     args = ap.parse_args(argv)
 
-    data_file = Path(__file__).resolve().parent / "datasets" / "raup" / "variables.json"
+    data_file = Path(__file__).resolve().parent.parent / "datasets" / "raup" / "variables.json"
     if data_file.exists():
         cv = json.loads(data_file.read_text())["core_variables"]
         Wr, Tr, Dr = cv["W"]["typical_range"], cv["T"]["typical_range"], cv["D"]["typical_range"]

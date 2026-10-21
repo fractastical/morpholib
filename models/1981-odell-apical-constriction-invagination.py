@@ -66,7 +66,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "apical_constriction_invagination"
 REFERENCE_JSON = DATASET_DIR / "apical_constriction_invagination_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "drosophila_ventral_furrow_specimen.jpg"

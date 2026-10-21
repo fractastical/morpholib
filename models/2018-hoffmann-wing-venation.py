@@ -65,7 +65,7 @@ from skimage.segmentation import watershed
 ZIP_URL = ("https://raw.githubusercontent.com/hoffmannjordan/"
            "insect-wing-venation-patterns/master/PNAS_Paper_Code.zip")
 MEMBER = ("PNAS_Paper_Code/Segment_Wing_Image/Arigomphus_villosipes_LHW.png")
-CACHE = Path(__file__).resolve().parent / ".wing_cache"
+CACHE = Path(__file__).resolve().parent.parent / ".wing_cache"
 HEXAGON_CIRC = np.pi * np.sqrt(3.0) / 6.0           # ~0.9069, the CVT ceiling
 
 

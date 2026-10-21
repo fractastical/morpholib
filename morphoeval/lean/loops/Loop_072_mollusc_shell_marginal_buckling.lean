@@ -110,4 +110,60 @@ theorem erlich_antimarginal_rib_scaling_laws (m L0 lam0 n0 : Nat) :
   simp [isometric_rib_count_invariant, intercalating_rib_capacity,
         Nat.mul_left_comm, Nat.mul_comm]
 
+-- ============================================================================
+-- Law 4 (Pass 3): Localized Mantle-Repair Callus Raises the Local Critical Load
+-- ============================================================================
+
+/-- Theorem 5 (`chirat_repair_callus_raises_critical_load`):
+    With `P_c = 2 * b * c` (`B = E*I = b^2`, `k = c^2`), a repair callus that stiffens the
+    foundation locally (`c ≤ c'`, i.e. `k ≤ k_repair = ρ k`) can only raise the local
+    critical buckling load (`P_c,loc = 2 b c' ≥ 2 b c`), which is why ribbing is
+    transiently suppressed in the chipped sector of
+    `simulate_damage_repair_trajectory` while the callus heals. -/
+theorem chirat_repair_callus_raises_critical_load (b c c' : Int)
+    (hb : 0 ≤ b) (hc : c ≤ c') :
+    chirat_critical_load b c ≤ chirat_critical_load b c' := by
+  unfold chirat_critical_load
+  have h2b : 0 ≤ 2 * b := by omega
+  exact Int.mul_le_mul_of_nonneg_left hc h2b
+
+/-- Rib count bookkeeping across a predator chip: `n` template ribs, `r` removed by the
+    chip, `g` regrown by the mantle in the repaired sector. -/
+def repaired_rib_count (n r g : Nat) : Nat :=
+  n - r + g
+
+/-- Theorem 6 (`erlich_repair_in_register_rib_count`):
+    When the mantle regrows exactly the ribs the chip removed (`g = r ≤ n`) the adult rib
+    count equals the pre-damage count (repair "in register", N = 14 for *Pecten*); one
+    extra regrown crest (`g = r + 1`) gives the rib-intercalation defect `n + 1`. -/
+theorem erlich_repair_in_register_rib_count (n r : Nat) (h : r ≤ n) :
+    repaired_rib_count n r r = n ∧
+    repaired_rib_count n r (r + 1) = n + 1 ∧
+    repaired_rib_count 14 1 1 = 14 ∧
+    repaired_rib_count 14 2 3 = 15 := by
+  refine ⟨?_, ?_, rfl, rfl⟩
+  · simp [repaired_rib_count, Nat.sub_add_cancel h]
+  · simp [repaired_rib_count, ← Nat.add_assoc, Nat.sub_add_cancel h]
+
+-- ============================================================================
+-- Law 5 (Pass 3): Hollow-Spine Self-Contact Closure Criterion
+-- ============================================================================
+
+/-- Self-contact closure predicate of the reduced hollow-spine cross-section: the two
+    mantle flanks are in contact (tube closed) once the neck gap is at most the shell
+    wall thickness `t` (`relax_spine_cross_section_elastica`). -/
+def spine_closed (gap t : Nat) : Prop :=
+  gap ≤ t
+
+/-- Theorem 7 (`chirat_spine_self_contact_closure_monotone`):
+    Closure is monotone in the neck gap — once the flanks are in contact, any further
+    narrowing (`gap' ≤ gap`, as growth excess ε increases past ε_close) keeps the tube
+    closed; a gap of two wall thicknesses is open and a gap equal to `t` is closed. -/
+theorem chirat_spine_self_contact_closure_monotone (gap gap' t : Nat) :
+    (spine_closed gap t → gap' ≤ gap → spine_closed gap' t) ∧
+    spine_closed 2 2 ∧
+    ¬ spine_closed 4 2 := by
+  refine ⟨fun hc h => Nat.le_trans h hc, Nat.le_refl 2, ?_⟩
+  simp [spine_closed]
+
 end MathOfBiology.Loop_072

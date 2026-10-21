@@ -54,7 +54,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage, optimize, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "vibrio_biofilm_nematic_fountain"
 REF_JSON_PATH = DATASET_DIR / "vibrio_biofilm_nematic_fountain_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "vibrio_cholerae_biofilm_specimen.jpg"

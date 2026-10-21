@@ -93,7 +93,7 @@ from scipy import ndimage as ndi
 from scipy.fft import dctn, idctn
 from scipy.stats import pearsonr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "zebrafish_three_cell_stripes"
 REF_JSON_PATH = DATASET_DIR / "zebrafish_three_cell_stripes_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "danio_rerio_specimen.jpg"

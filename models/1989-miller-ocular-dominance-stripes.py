@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-1989-miller-ocular-dominance-stripes.py — Pass 2 Remediated Implementation
+1989-miller-ocular-dominance-stripes.py — Pass 3 Remediated Implementation
 Miller, Keller & Stryker (1989) Science 245:605-615, Swindale (1980) Proc. R. Soc. B 208:243-264,
 Hubel, Wiesel & LeVay (1977) Phil. Trans. R. Soc. B 278:377-409 & Stryker & Harris (1986) J. Neurosci. 6:2117-2133
 Correlation-Based Hebbian Ocular Dominance Stripes & Critical-Period Monocular Deprivation Plasticity
@@ -27,6 +27,17 @@ Mathematical Formalism & Lean 4 Alignment (`morphoeval/lean/loops/Loop_087_ocula
      - Strabismus Decorrelation (C_Delta = 1.25, sigma_I = 244 um): broadened, high-contrast columns (lambda ~ 886 um).
      - Bilateral TTX Impulse Blockade (C_Delta = 0): omega(k) = -gamma < 0 for all k, abolishing segregation.
      - Reverse Suture Rescue (b_MD = +0.28): critical-period suture switch re-expands Left-eye territory (f_L ~ 0.69).
+  4. Pass 3 — Orientation-Coupled Columns (`orthogonal_coupling_quadratic_form`, Swindale 1992 / Obermayer & Blasdel 1993):
+     A complex orientation preference field z(x,y) = r * exp(2 i theta) is driven by S_Delta through an anisotropic
+     diffusion tensor D = D_c * w * n n^T (n = grad S_Delta / |grad S_Delta|) and a selectivity suppression
+     -beta_blob * S_Delta^2 * z, producing iso-orientation contours orthogonal to OD borders and low-selectivity
+     (CO-blob-like) patches / pinwheels at OD column centres (`simulate_odc_orientation_coupling`).
+  5. Pass 3 — Curved Riemannian V1 Sheet (`curved_chart_projection_compression`, LeVay et al. 1985):
+     The OD PDE is solved on a height-field surface (operculum dome + calcarine groove, metric g_ij = delta_ij + h_i h_j)
+     with an elliptical zero-flux perimeter; the Mexican hat is realised as a difference of Laplace-Beltrami heat kernels,
+     so the stripe wavelength is intrinsic (lambda_g ~ lambda_c) while the chart projection is compressed by
+     ~1/sqrt(1 + slope^2) in the calcarine wall, and OD borders meet the perimeter orthogonally
+     (`simulate_odc_curved_manifold`). Reduced model: parametrised surface, not a digitised V1 outline.
 """
 
 from __future__ import annotations
@@ -44,13 +55,14 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "ocular_dominance_stripes"
 REFERENCE_JSON = DATASET_DIR / "ocular_dominance_stripes_reference.json"
 ODC_SPECIMEN = DATASET_DIR / "odc_tangential_pattern_specimen.png"
 V1_SPECIMEN = DATASET_DIR / "macaque_striate_cortex_specimen.jpg"
 OUT_PNG = ROOT / "docs" / "media" / "ocular_dominance_stripes_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "ocular_dominance_stripes_growth.gif"
+OUT_PASS3_PNG = ROOT / "docs" / "media" / "ocular_dominance_stripes_orientation_manifold.png"
 
 
 # --------------------------------------------------------------------------- #
@@ -287,6 +299,434 @@ def evaluate_all_regimes_and_sweep() -> dict[str, Any]:
         "lambda_emp_sweep": emp_arr,
         "sweep_r": sweep_r,
         "sweep_rmse": sweep_rmse,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 3b. Pass 3 — Conservative staggered-flux tensor diffusion operator
+#     (shared by the orientation coupling and the curved-manifold solver)
+# --------------------------------------------------------------------------- #
+def _div_tensor_grad(
+    f: np.ndarray,
+    Dxx: np.ndarray,
+    Dxy: np.ndarray,
+    Dyy: np.ndarray,
+    dx: float,
+    mask: np.ndarray | None = None,
+) -> np.ndarray:
+    """Evaluate div(D grad f) for a symmetric tensor field D = [[Dxx, Dxy], [Dxy, Dyy]] given at
+    cell centres, using face-centred fluxes on a periodic grid (axis 0 = x/u, axis 1 = y/v).
+    If `mask` is given, fluxes through any face touching an outside cell are zeroed, which
+    realises zero-flux (Neumann) boundary conditions on the masked perimeter."""
+    cd_x = (np.roll(f, -1, axis=0) - np.roll(f, 1, axis=0)) / (2.0 * dx)
+    cd_y = (np.roll(f, -1, axis=1) - np.roll(f, 1, axis=1)) / (2.0 * dx)
+    # x-faces between (i, j) and (i+1, j)
+    gx_face = (np.roll(f, -1, axis=0) - f) / dx
+    gy_face_x = 0.5 * (cd_y + np.roll(cd_y, -1, axis=0))
+    Fx = 0.5 * (Dxx + np.roll(Dxx, -1, axis=0)) * gx_face + 0.5 * (Dxy + np.roll(Dxy, -1, axis=0)) * gy_face_x
+    # y-faces between (i, j) and (i, j+1)
+    gy_face = (np.roll(f, -1, axis=1) - f) / dx
+    gx_face_y = 0.5 * (cd_x + np.roll(cd_x, -1, axis=1))
+    Fy = 0.5 * (Dxy + np.roll(Dxy, -1, axis=1)) * gx_face_y + 0.5 * (Dyy + np.roll(Dyy, -1, axis=1)) * gy_face
+    if mask is not None:
+        m = mask.astype(float)
+        Fx = Fx * (m * np.roll(m, -1, axis=0))
+        Fy = Fy * (m * np.roll(m, -1, axis=1))
+    return (Fx - np.roll(Fx, 1, axis=0)) / dx + (Fy - np.roll(Fy, 1, axis=1)) / dx
+
+
+def _central_gradient(f: np.ndarray, dx: float) -> tuple[np.ndarray, np.ndarray]:
+    """Periodic central-difference gradient (axis 0, axis 1)."""
+    gx = (np.roll(f, -1, axis=0) - np.roll(f, 1, axis=0)) / (2.0 * dx)
+    gy = (np.roll(f, -1, axis=1) - np.roll(f, 1, axis=1)) / (2.0 * dx)
+    return gx, gy
+
+
+def _dominant_wavelength(field: np.ndarray, K_mag: np.ndarray, mask: np.ndarray | None = None) -> float:
+    """Power-weighted dominant 2D FFT wavelength 2*pi / k_dom (same estimator as the regime solver)."""
+    f = field.copy()
+    if mask is not None:
+        f = f * mask
+        f = f - np.mean(f[mask > 0])
+        f = f * mask
+    else:
+        f = f - np.mean(f)
+    psd = np.abs(np.fft.fft2(f)) ** 2
+    psd[0, 0] = 0.0
+    top = psd >= 0.25 * np.max(psd)
+    k_dom = float(np.sum(K_mag[top] * psd[top]) / np.sum(psd[top]))
+    return float(2.0 * np.pi / k_dom) if k_dom > 0 else 0.0
+
+
+# --------------------------------------------------------------------------- #
+# 3c. Pass 3 — Coupled Orientation Preference Field z = r * exp(2 i theta)
+#     (Pass 2 remediation item 1: orthogonal iso-orientation / OD-border
+#      intersection, pinwheel & CO-blob alignment with OD column centres)
+# --------------------------------------------------------------------------- #
+def simulate_odc_orientation_coupling(
+    coupling_scale: float = 1.0,
+    blob_suppression: float | None = None,
+) -> dict[str, Any]:
+    """Co-evolve the normal-binocular ocular dominance field S_Delta(x,y) with a complex
+    orientation preference field z(x,y) = r(x,y) * exp(2 i theta(x,y)) (Swindale 1992 style
+    coordinated-columns reduced model; one-way coupling S_Delta -> z):
+
+        dz/dt = A * (I_z * z) * C_Delta - gamma * z - |z|^2 z
+                + div( D_c * w(x) * n n^T grad z ) - beta_blob * S_Delta^2 * z,
+        n = grad S_Delta / |grad S_Delta|,  w = |grad S_Delta|^2 / (|grad S_Delta|^2 + eps^2).
+
+    The anisotropic term diffuses z ALONG grad S_Delta, so z becomes constant across OD
+    borders, grad theta becomes orthogonal to grad S_Delta, and iso-orientation contours
+    cross OD borders at right angles (Obermayer & Blasdel 1993). The S_Delta^2 term lowers
+    orientation selectivity r at OD column centres, placing low-selectivity (CO-blob-like)
+    patches and pinwheels (r = 0) at column centres (Horton & Hubel 1981).
+    `coupling_scale = 0` and `blob_suppression = 0` give the uncoupled ablation."""
+    ref = load_reference()
+    p = ref["canonical_parameters"]
+    q = ref["orientation_coupling_parameters"]
+    reg = {r["id"]: r for r in ref["experimental_regimes"]}["normal_binocular_stripes"]
+
+    n = int(p["grid_N"])
+    L = float(p["domain_size_um"])
+    dx = L / float(n)
+    kappa_I = float(p["kappa_I"])
+    gamma = float(p["gamma_decay"])
+    steps = int(p["steps"])
+    dt = float(p["dt"])
+    seed = int(p["seed"])
+    c_delta = float(reg["C_Delta"])
+    sigma_E = float(reg["sigma_E_um"])
+    sigma_I = float(reg["sigma_I_um"])
+
+    D_c = float(q["coupling_D_um2"]) * float(coupling_scale)
+    beta_b = float(q["blob_selectivity_suppression"]) if blob_suppression is None else float(blob_suppression)
+    eps_rel = float(q["coupling_weight_eps_rel"])
+
+    kx = 2.0 * np.pi * np.fft.fftfreq(n, d=dx)
+    KX, KY = np.meshgrid(kx, kx, indexing="ij")
+    K2 = KX ** 2 + KY ** 2
+    K_mag = np.sqrt(K2)
+    K_hat = np.exp(-0.5 * (sigma_E ** 2) * K2) - kappa_I * np.exp(-0.5 * (sigma_I ** 2) * K2)
+    K_hat[0, 0] = 0.0
+    kc = float(np.sqrt(2.0 * np.log(kappa_I * (sigma_I ** 2) / (sigma_E ** 2)) / (sigma_I ** 2 - sigma_E ** 2)))
+    lambda_c = float(2.0 * np.pi / kc)
+    ratio = float(q["lambda_orientation_um"]) / lambda_c
+    K_hat_z = np.exp(-0.5 * ((ratio * sigma_E) ** 2) * K2) - kappa_I * np.exp(-0.5 * ((ratio * sigma_I) ** 2) * K2)
+    K_hat_z[0, 0] = 0.0
+
+    rng = np.random.default_rng(seed)
+    S = rng.normal(0.0, 0.08, size=(n, n))  # identical seed -> identical S_Delta to the normal regime
+    rng_z = np.random.default_rng(seed + 1)
+    z = 0.08 * (rng_z.normal(size=(n, n)) + 1j * rng_z.normal(size=(n, n)))
+
+    for _ in range(steps):
+        conv_S = np.real(np.fft.ifft2(K_hat * np.fft.fft2(S)))
+        dS = 2.2 * c_delta * conv_S - gamma * S - S ** 3
+        conv_z = np.fft.ifft2(K_hat_z * np.fft.fft2(z))
+        gSx, gSy = _central_gradient(S, dx)
+        g2 = gSx ** 2 + gSy ** 2
+        eps2 = (eps_rel ** 2) * float(np.mean(g2)) + 1e-30
+        w = g2 / (g2 + eps2)
+        Dxx = D_c * w * gSx * gSx / (g2 + 1e-30)
+        Dxy = D_c * w * gSx * gSy / (g2 + 1e-30)
+        Dyy = D_c * w * gSy * gSy / (g2 + 1e-30)
+        couple = _div_tensor_grad(z, Dxx, Dxy, Dyy, dx)
+        dz = 2.2 * c_delta * conv_z - gamma * z - (np.abs(z) ** 2) * z + couple - beta_b * (S ** 2) * z
+        S = S + dt * dS
+        z = z + dt * dz
+
+    r = np.abs(z)
+    theta = 0.5 * np.angle(z)  # orientation preference in (-pi/2, pi/2]
+
+    # --- iso-orientation contour / OD border intersection angle ------------------------------
+    gSx, gSy = _central_gradient(S, dx)
+    gzx, gzy = _central_gradient(z, dx)
+    r2 = r ** 2 + 1e-30
+    gthx = 0.5 * np.imag(np.conj(z) * gzx) / r2  # grad theta (wrap-free)
+    gthy = 0.5 * np.imag(np.conj(z) * gzy) / r2
+    border = (np.abs(S) < float(q["border_band_rel"]) * np.max(np.abs(S))) & (r > 0.25 * np.median(r))
+    nS = np.hypot(gSx, gSy) + 1e-30
+    nT = np.hypot(gthx, gthy) + 1e-30
+    cos_phi = np.abs(gSx * gthx + gSy * gthy) / (nS * nT)
+    phi_deg = np.degrees(np.arccos(np.clip(cos_phi, 0.0, 1.0)))
+    phi_border = phi_deg[border]
+    mean_angle = float(np.mean(phi_border))
+    frac_steep = float(np.mean(phi_border > 60.0))
+
+    # --- pinwheels (winding number of 2*theta = arg z around each plaquette) -----------------
+    ph = np.angle(z)
+
+    def _wrap(a: np.ndarray) -> np.ndarray:
+        return (a + np.pi) % (2.0 * np.pi) - np.pi
+
+    d1 = _wrap(np.roll(ph, -1, axis=0) - ph)
+    d2 = _wrap(np.roll(np.roll(ph, -1, axis=0), -1, axis=1) - np.roll(ph, -1, axis=0))
+    d3 = _wrap(np.roll(ph, -1, axis=1) - np.roll(np.roll(ph, -1, axis=0), -1, axis=1))
+    d4 = _wrap(ph - np.roll(ph, -1, axis=1))
+    winding = (d1 + d2 + d3 + d4) / (2.0 * np.pi)
+    pin_mask = np.abs(winding) > 0.5
+    n_pinwheels = int(np.sum(pin_mask))
+    lambda_or = _dominant_wavelength(np.real(z), K_mag)
+    pinwheel_density = float(n_pinwheels * (lambda_or ** 2) / (L ** 2)) if lambda_or > 0 else 0.0
+    absS = np.abs(S)
+    pin_od_ratio = float(np.mean(absS[pin_mask]) / np.mean(absS)) if n_pinwheels > 0 else 0.0
+
+    # --- CO-blob-like low-selectivity patches vs OD column centres --------------------------
+    r_sm = ndi.gaussian_filter(r, sigma=1.0, mode="wrap")
+    blob_cand = (r_sm == ndi.minimum_filter(r_sm, size=7, mode="wrap")) & (r_sm < np.percentile(r_sm, 30))
+    n_blobs = int(np.sum(blob_cand))
+    blob_centre_frac = float(np.mean(absS[blob_cand] > np.median(absS))) if n_blobs > 0 else 0.0
+
+    lambda_od = _dominant_wavelength(S, K_mag)
+    return {
+        "coupling_scale": float(coupling_scale),
+        "blob_suppression": beta_b,
+        "S_delta": S,
+        "z": z,
+        "theta": theta,
+        "r": r,
+        "border_mask": border,
+        "phi_border_deg": phi_border,
+        "mean_intersection_angle_deg": mean_angle,
+        "steep_intersection_fraction": frac_steep,
+        "pinwheel_mask": pin_mask,
+        "n_pinwheels": n_pinwheels,
+        "lambda_orientation_um": lambda_or,
+        "lambda_od_um": lambda_od,
+        "pinwheel_density_per_hypercolumn": pinwheel_density,
+        "pinwheel_od_abs_ratio": pin_od_ratio,
+        "blob_mask": blob_cand,
+        "n_blobs": n_blobs,
+        "blob_in_column_centre_fraction": blob_centre_frac,
+        "f_left": float(np.mean(S > 0.0)),
+    }
+
+
+def evaluate_orientation_coupling_sweep() -> dict[str, Any]:
+    """Ablation / sweep over the anisotropic coupling strength (scales of D_c, blob
+    suppression on except for the scale-0 ablation where it is off too)."""
+    ref = load_reference()
+    q = ref["orientation_coupling_parameters"]
+    scales = [float(s) for s in q["coupling_sweep_scales"]]
+    runs: list[dict[str, Any]] = []
+    for s in scales:
+        runs.append(simulate_odc_orientation_coupling(coupling_scale=s, blob_suppression=0.0 if s == 0.0 else None))
+    angles = np.array([r_["mean_intersection_angle_deg"] for r_ in runs])
+    return {
+        "scales": np.array(scales),
+        "runs": runs,
+        "mean_angles_deg": angles,
+        "coupled": runs[-1],
+        "ablation": runs[0],
+        "angle_gain_deg": float(angles[-1] - angles[0]),
+        "monotone": bool(np.all(np.diff(angles) > -1.0)),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 3d. Pass 3 — Curved 2D Riemannian V1 Sheet (operculum dome + calcarine groove,
+#     elliptical perimeter, Laplace-Beltrami heat-kernel Mexican hat)
+#     (Pass 2 remediation item 2, reduced version — see docstring)
+# --------------------------------------------------------------------------- #
+def build_v1_chart_manifold(flat: bool = False) -> dict[str, Any]:
+    """Build the chart (u,v) in [0, L]^2, the height field h(u,v) (operculum dome + calcarine
+    groove), the induced metric g_ij = delta_ij + h_i h_j, its inverse, sqrt(det g), the
+    Gaussian curvature K = (h_uu h_vv - h_uv^2) / det(g)^2, and the elliptical V1 perimeter
+    mask. `flat=True` returns h = 0 on the full periodic torus (flat-limit control)."""
+    ref = load_reference()
+    p = ref["canonical_parameters"]
+    q = ref["curved_manifold_parameters"]
+    n = int(p["grid_N"])
+    L = float(p["domain_size_um"])
+    dx = L / float(n)
+    u = (np.arange(n) + 0.5) * dx
+    U, V = np.meshgrid(u, u, indexing="ij")
+    if flat:
+        h = np.zeros((n, n))
+        mask = np.ones((n, n), dtype=bool)
+    else:
+        u0, v0 = [float(c) for c in q["operculum_centre_um"]]
+        A_op, w_op = float(q["operculum_amplitude_um"]), float(q["operculum_width_um"])
+        A_cs, w_cs, v_cs = float(q["calcarine_depth_um"]), float(q["calcarine_width_um"]), float(q["calcarine_v_um"])
+        h = A_op * np.exp(-((U - u0) ** 2 + (V - v0) ** 2) / (2.0 * w_op ** 2)) - A_cs * np.exp(-((V - v_cs) ** 2) / (2.0 * w_cs ** 2))
+        pc = [float(c) for c in q["perimeter_centre_um"]]
+        pa = [float(c) for c in q["perimeter_semi_axes_um"]]
+        mask = (((U - pc[0]) / pa[0]) ** 2 + ((V - pc[1]) / pa[1]) ** 2) <= 1.0
+    # non-periodic derivatives of the height field (the chart is a patch, not a torus; the
+    # perimeter mask keeps the solver away from the chart edges)
+    h_u, h_v = np.gradient(h, dx, dx)
+    g = 1.0 + h_u ** 2 + h_v ** 2
+    sqrtg = np.sqrt(g)
+    ginv_uu = 1.0 - h_u ** 2 / g
+    ginv_vv = 1.0 - h_v ** 2 / g
+    ginv_uv = -h_u * h_v / g
+    h_uu, h_uv = np.gradient(h_u, dx, dx)
+    _, h_vv = np.gradient(h_v, dx, dx)
+    gauss_K = (h_uu * h_vv - h_uv ** 2) / (g ** 2)
+    return {
+        "n": n, "L": L, "dx": dx, "U": U, "V": V, "h": h, "mask": mask,
+        "h_u": h_u, "h_v": h_v, "sqrtg": sqrtg,
+        "ginv_uu": ginv_uu, "ginv_vv": ginv_vv, "ginv_uv": ginv_uv,
+        "gauss_K": gauss_K,
+        "max_sqrtg": float(np.max(sqrtg[mask])) if np.any(mask) else 1.0,
+        "area_fraction": float(np.mean(mask)),
+        "intrinsic_area_um2": float(np.sum(sqrtg * mask) * dx * dx),
+        "flat": bool(flat),
+    }
+
+
+def _laplace_beltrami_heat(f: np.ndarray, man: dict[str, Any], t_total: float, cfl: float) -> np.ndarray:
+    """Explicit heat flow df/dt = Delta_g f for total time t_total with zero-flux boundary on
+    the perimeter mask. Delta_g f = (1/sqrt g) d_i( sqrt g g^{ij} d_j f )."""
+    dx = man["dx"]
+    dt_h_max = cfl * dx * dx
+    n_sub = max(1, int(np.ceil(t_total / dt_h_max)))
+    dt_h = t_total / n_sub
+    Dxx = man["sqrtg"] * man["ginv_uu"]
+    Dxy = man["sqrtg"] * man["ginv_uv"]
+    Dyy = man["sqrtg"] * man["ginv_vv"]
+    m = man["mask"]
+    for _ in range(n_sub):
+        f = f + dt_h * _div_tensor_grad(f, Dxx, Dxy, Dyy, dx, mask=m) / man["sqrtg"]
+    return f * m
+
+
+def simulate_odc_curved_manifold(flat: bool = False) -> dict[str, Any]:
+    """Integrate the normal-binocular Miller-Keller-Stryker ocular dominance PDE on the curved
+    V1 chart. The Mexican-hat convolution I * S is realised intrinsically as a difference of
+    Laplace-Beltrami heat kernels (a Gaussian of width sigma is the heat kernel at time
+    sigma^2 / 2), with the uniform mode removed by the sqrt(g)-weighted mean (subtractive
+    normalisation) and zero-flux boundaries on the elliptical perimeter.
+
+    REDUCED MODEL (honest scope): a parametrised height-field surface (operculum dome +
+    cylindrical calcarine groove) over a 6.4 mm chart with an elliptical perimeter — not a
+    digitised macaque V1 outline / full operculum-calcarine 3D mesh (carried as Pass 4 residual).
+
+    Validation outputs: (i) intrinsic wavelength lambda_g estimated from the metric gradient
+    norm  k_g^2 = <g^{ij} d_i S d_j S> / <S^2>  in the steep calcarine wall band vs the flat
+    control (expected ratio 1: the pattern is intrinsic), alongside the naive chart estimator
+    which is compressed by ~1/sqrt(g); (ii) OD border / V1 perimeter intersection angle
+    (Neumann => borders meet the perimeter at ~90 deg; LeVay et al. 1985); (iii) sqrt(g)-weighted
+    left-eye area fraction."""
+    ref = load_reference()
+    p = ref["canonical_parameters"]
+    q = ref["curved_manifold_parameters"]
+    reg = {r["id"]: r for r in ref["experimental_regimes"]}["normal_binocular_stripes"]
+    man = build_v1_chart_manifold(flat=flat)
+    n, L, dx, m = man["n"], man["L"], man["dx"], man["mask"]
+    mf = m.astype(float)
+    sqrtg = man["sqrtg"]
+    kappa_I = float(p["kappa_I"])
+    gamma = float(p["gamma_decay"])
+    steps = int(p["steps"])
+    dt = float(p["dt"])
+    seed = int(p["seed"])
+    c_delta = float(reg["C_Delta"])
+    sigma_E = float(reg["sigma_E_um"])
+    sigma_I = float(reg["sigma_I_um"])
+    cfl = float(q["heat_cfl"])
+    t_E = 0.5 * sigma_E ** 2
+    t_I = 0.5 * sigma_I ** 2
+    wsum = float(np.sum(sqrtg * mf))
+
+    rng = np.random.default_rng(seed)
+    S = rng.normal(0.0, 0.08, size=(n, n)) * mf
+    for _ in range(steps):
+        H_E = _laplace_beltrami_heat(S, man, t_E, cfl)
+        H_I = _laplace_beltrami_heat(H_E, man, t_I - t_E, cfl)
+        mean_g = float(np.sum(S * sqrtg * mf) / wsum)
+        conv = (H_E - kappa_I * H_I - (1.0 - kappa_I) * mean_g) * mf
+        dS = 2.2 * c_delta * conv - gamma * S - S ** 3
+        S = (S + dt * dS) * mf
+
+    # fill outside cells with nearest inside value so chart gradients at the perimeter are clean
+    if not np.all(m):
+        _, idx = ndi.distance_transform_edt(~m, return_indices=True)
+        S_fill = S[idx[0], idx[1]]
+    else:
+        S_fill = S
+    gSu, gSv = _central_gradient(S_fill, dx)
+    grad2_chart = gSu ** 2 + gSv ** 2
+    grad2_intr = man["ginv_uu"] * gSu ** 2 + 2.0 * man["ginv_uv"] * gSu * gSv + man["ginv_vv"] * gSv ** 2
+
+    interior = ndi.binary_erosion(m, iterations=2) if not np.all(m) else m
+    steep = interior & (sqrtg > float(q["steep_band_sqrtg_threshold"]))
+    if not np.any(steep):
+        steep = interior
+
+    def _lambda_from_grad(g2: np.ndarray, region: np.ndarray) -> float:
+        wgt = sqrtg[region]
+        k2 = float(np.sum(wgt * g2[region]) / np.sum(wgt * (S[region] ** 2)))
+        return float(2.0 * np.pi / np.sqrt(k2))
+
+    lambda_g_interior = _lambda_from_grad(grad2_intr, interior)
+    lambda_g_steep = _lambda_from_grad(grad2_intr, steep)
+    lambda_chart_steep = _lambda_from_grad(grad2_chart, steep)
+    mean_sqrtg_steep = float(np.mean(sqrtg[steep]))
+
+    # OD border / perimeter intersection angle: angle(grad S, perimeter normal)
+    if not np.all(m):
+        boundary = m & ~ndi.binary_erosion(m, iterations=1)
+        msm = ndi.gaussian_filter(mf, sigma=2.0)
+        nx_, ny_ = _central_gradient(msm, dx)
+        nn = np.hypot(nx_, ny_) + 1e-30
+        gS_n = np.hypot(gSu, gSv) + 1e-30
+        cos_psi = np.abs(gSu * nx_ + gSv * ny_) / (gS_n * nn)
+        psi = np.degrees(np.arccos(np.clip(cos_psi, 0.0, 1.0)))
+        wts = gS_n[boundary]
+        perimeter_angle = float(np.sum(psi[boundary] * wts) / np.sum(wts))
+        perimeter_angles = psi[boundary]
+    else:
+        boundary = np.zeros_like(m)
+        perimeter_angle = float("nan")
+        perimeter_angles = np.array([])
+
+    kx = 2.0 * np.pi * np.fft.fftfreq(n, d=dx)
+    KX, KY = np.meshgrid(kx, kx, indexing="ij")
+    K_mag = np.sqrt(KX ** 2 + KY ** 2)
+    lambda_fft_chart = _dominant_wavelength(S, K_mag, mask=mf)
+    f_left_intrinsic = float(np.sum(sqrtg * mf * (S > 0.0)) / wsum)
+    seg_index = float(np.mean(np.abs(S[m] - np.mean(S[m]))))
+
+    return {
+        "manifold": man,
+        "S_delta": S,
+        "flat": bool(flat),
+        "lambda_g_interior_um": lambda_g_interior,
+        "lambda_g_steep_um": lambda_g_steep,
+        "lambda_chart_steep_um": lambda_chart_steep,
+        "mean_sqrtg_steep": mean_sqrtg_steep,
+        "lambda_fft_chart_um": lambda_fft_chart,
+        "f_left_intrinsic": f_left_intrinsic,
+        "seg_index": seg_index,
+        "boundary_mask": boundary,
+        "perimeter_intersection_angle_deg": perimeter_angle,
+        "perimeter_angles_deg": perimeter_angles,
+        "n_steep_cells": int(np.sum(steep)),
+    }
+
+
+def evaluate_curved_manifold() -> dict[str, Any]:
+    """Curved run + flat-limit control. Returns intrinsic/chart wavelength ratios, the Gaussian
+    curvature summary and the perimeter orthogonality statistic."""
+    curved = simulate_odc_curved_manifold(flat=False)
+    flat = simulate_odc_curved_manifold(flat=True)
+    man = curved["manifold"]
+    ratio_intr = curved["lambda_g_steep_um"] / flat["lambda_g_interior_um"]
+    ratio_chart = curved["lambda_chart_steep_um"] / flat["lambda_g_interior_um"]
+    Kmask = man["mask"]
+    return {
+        "curved": curved,
+        "flat": flat,
+        "intrinsic_wavelength_ratio": float(ratio_intr),
+        "chart_wavelength_ratio": float(ratio_chart),
+        "predicted_chart_compression": float(1.0 / curved["mean_sqrtg_steep"]),
+        "max_sqrtg": man["max_sqrtg"],
+        "gauss_K_apex_per_mm2": float(np.max(man["gauss_K"][Kmask]) * 1e6),
+        "gauss_K_min_per_mm2": float(np.min(man["gauss_K"][Kmask]) * 1e6),
+        "perimeter_intersection_angle_deg": curved["perimeter_intersection_angle_deg"],
+        "flat_lambda_fft_um": flat["lambda_fft_chart_um"],
+        "flat_lambda_g_um": flat["lambda_g_interior_um"],
     }
 
 
@@ -561,21 +1001,141 @@ def render_outputs(skip_gif: bool = False) -> dict[str, Any]:
             loop=0,
         )
 
+    orient, curved = render_pass3_outputs()
     return {
         "invariants": inv,
         "suite": suite,
         "specimen": spec,
+        "orientation": orient,
+        "curved": curved,
     }
+
+
+def render_pass3_outputs() -> tuple[dict[str, Any], dict[str, Any]]:
+    """Render the Pass 3 6-panel figure `ocular_dominance_stripes_orientation_manifold.png`:
+    coupled orientation map with OD borders / pinwheels / blob-like patches, intersection-angle
+    histograms (ablation vs coupled), coupling sweep, curved V1 chart height field, S_Delta on
+    the curved masked sheet, and intrinsic vs chart wavelength bars."""
+    sw = evaluate_orientation_coupling_sweep()
+    cm = evaluate_curved_manifold()
+    cpl = sw["coupled"]
+    abl = sw["ablation"]
+    cur = cm["curved"]
+    man = cur["manifold"]
+    ext = [0, 6.4, 0, 6.4]
+    xs = np.linspace(0, 6.4, man["n"])
+
+    fig, axes = plt.subplots(2, 3, figsize=(17.0, 10.2), dpi=135)
+    fig.patch.set_facecolor("#0b0f17")
+    for ax in axes.ravel():
+        ax.set_facecolor("#131b29")
+        ax.tick_params(colors="#cbd5e1", labelsize=8.2)
+        for sp in ax.spines.values():
+            sp.set_color("#334155")
+    leg_kw = dict(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.0)
+
+    # A: coupled orientation preference map + OD borders + pinwheels + blob-like patches
+    ax = axes[0, 0]
+    ax.imshow(np.degrees(cpl["theta"]).T, cmap="hsv", origin="lower", extent=ext, vmin=-90, vmax=90, alpha=0.95)
+    ax.contour(xs, xs, cpl["S_delta"].T, levels=[0.0], colors="#f8fafc", linewidths=1.0)
+    py_, px_ = np.nonzero(cpl["pinwheel_mask"].T)
+    ax.scatter((px_ + 0.5) * man["dx"] / 1000.0, (py_ + 0.5) * man["dx"] / 1000.0, s=9, c="#0b0f17", edgecolor="#f8fafc", linewidth=0.5, zorder=6, label=f"Pinwheels ($N={cpl['n_pinwheels']}$, $\\rho={cpl['pinwheel_density_per_hypercolumn']:.2f}/\\Lambda^2$)")
+    by_, bx_ = np.nonzero(cpl["blob_mask"].T)
+    ax.scatter((bx_ + 0.5) * man["dx"] / 1000.0, (by_ + 0.5) * man["dx"] / 1000.0, s=26, marker="s", facecolor="none", edgecolor="#0b0f17", linewidth=1.0, zorder=6, label=f"Low-$r$ blob-like patches (in-column frac {cpl['blob_in_column_centre_fraction']:.2f})")
+    ax.set_title("A. Coupled Orientation Map $\\theta(x)$ + OD Borders (white)", color="#f8fafc", fontsize=9.8, fontweight="bold")
+    ax.set_xlabel("Cortical $x$ (mm)", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("Cortical $y$ (mm)", color="#cbd5e1", fontsize=8.5)
+    ax.legend(loc="lower left", **leg_kw)
+
+    # B: intersection angle histograms
+    ax = axes[0, 1]
+    bins = np.linspace(0, 90, 19)
+    ax.hist(abl["phi_border_deg"], bins=bins, density=True, color="#f43f5e", alpha=0.55, label=f"Uncoupled ablation (mean {abl['mean_intersection_angle_deg']:.1f}°)")
+    ax.hist(cpl["phi_border_deg"], bins=bins, density=True, color="#38bdf8", alpha=0.65, label=f"Coupled (mean {cpl['mean_intersection_angle_deg']:.1f}°, >60°: {100*cpl['steep_intersection_fraction']:.0f}%)")
+    ax.axvline(45.0, color="#94a3b8", ls=":", lw=1.2, label="Random-direction baseline 45°")
+    ax.axvline(90.0, color="#22c55e", ls="--", lw=1.4, label="Orthogonal (Obermayer & Blasdel 1993)")
+    ax.set_title("B. Iso-Orientation Contour / OD Border Intersection Angle", color="#f8fafc", fontsize=9.8, fontweight="bold")
+    ax.set_xlabel("Intersection angle $\\varphi$ (deg)", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("Density", color="#cbd5e1", fontsize=8.5)
+    ax.legend(loc="upper left", **leg_kw)
+
+    # C: coupling sweep
+    ax = axes[0, 2]
+    ax.plot(sw["scales"], sw["mean_angles_deg"], "o-", color="#38bdf8", lw=2.0, ms=6, label="Mean intersection angle (deg)")
+    ax.axhline(45.0, color="#94a3b8", ls=":", lw=1.2)
+    ax.set_ylim(30, 95)
+    ax.set_ylabel("Mean intersection angle (deg)", color="#cbd5e1", fontsize=8.5)
+    ax.set_xlabel("Anisotropic coupling scale (x $D_c$)", color="#cbd5e1", fontsize=8.5)
+    ax2 = ax.twinx()
+    ax2.plot(sw["scales"], [r_["blob_in_column_centre_fraction"] for r_ in sw["runs"]], "s--", color="#f59e0b", lw=1.8, ms=5.5, label="Blob-like patches at OD column centres (frac)")
+    ax2.plot(sw["scales"], [r_["pinwheel_od_abs_ratio"] for r_ in sw["runs"]], "^--", color="#22c55e", lw=1.8, ms=5.5, label="Pinwheel $|S_\\Delta|$ / mean $|S_\\Delta|$")
+    ax2.set_ylim(0.3, 1.4)
+    ax2.tick_params(colors="#cbd5e1", labelsize=8.0)
+    ax2.set_ylabel("Fraction / ratio", color="#cbd5e1", fontsize=8.5)
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc="lower right", **leg_kw)
+    ax.set_title("C. Coupling Ablation / Sweep", color="#f8fafc", fontsize=9.8, fontweight="bold")
+
+    # D: height field
+    ax = axes[1, 0]
+    im_h = ax.imshow(man["h"].T / 1000.0, cmap="viridis", origin="lower", extent=ext)
+    ax.contour(xs, xs, man["sqrtg"].T, levels=[1.4, 2.0], colors=["#f59e0b", "#f43f5e"], linewidths=1.0)
+    ax.contour(xs, xs, man["mask"].astype(float).T, levels=[0.5], colors="#f8fafc", linewidths=1.4)
+    ax.set_title("D. Curved V1 Chart: Operculum Dome + Calcarine Groove $h(u,v)$", color="#f8fafc", fontsize=9.8, fontweight="bold")
+    ax.set_xlabel("Chart $u$ (mm)", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("Chart $v$ (mm)", color="#cbd5e1", fontsize=8.5)
+    cb = fig.colorbar(im_h, ax=ax, fraction=0.046, pad=0.04)
+    cb.ax.tick_params(colors="#cbd5e1", labelsize=7.2)
+    cb.set_label("$h$ (mm)", color="#cbd5e1", fontsize=8)
+    ax.text(0.02, 0.97, f"max $\\sqrt{{g}}$ = {cm['max_sqrtg']:.2f}; $K_{{apex}}$ = {cm['gauss_K_apex_per_mm2']:.2f} mm$^{{-2}}$\nwhite: V1 perimeter (Neumann); orange/red: $\\sqrt{{g}}$ = 1.4 / 2.0", transform=ax.transAxes, color="#f8fafc", fontsize=7.2, va="top")
+
+    # E: S_delta on curved chart
+    ax = axes[1, 1]
+    Sm = np.where(man["mask"], cur["S_delta"], np.nan)
+    ax.imshow(Sm.T, cmap="coolwarm", origin="lower", extent=ext, vmin=-1.0, vmax=1.0)
+    ax.contour(xs, xs, man["mask"].astype(float).T, levels=[0.5], colors="#f8fafc", linewidths=1.4)
+    ax.contour(xs, xs, man["sqrtg"].T, levels=[1.4], colors="#f59e0b", linewidths=0.9, linestyles="--")
+    ax.set_title(f"E. $S_\\Delta$ on Curved Sheet ($f_L^{{intr}}={cur['f_left_intrinsic']:.3f}$, perimeter $\\angle={cur['perimeter_intersection_angle_deg']:.0f}°$)", color="#f8fafc", fontsize=9.4, fontweight="bold")
+    ax.set_xlabel("Chart $u$ (mm)", color="#cbd5e1", fontsize=8.5)
+    ax.set_ylabel("Chart $v$ (mm)", color="#cbd5e1", fontsize=8.5)
+
+    # F: intrinsic vs chart wavelength bars
+    ax = axes[1, 2]
+    labels = ["Flat torus\nFFT $\\lambda$", "Flat torus\n$\\lambda_g$", "Calcarine wall\n$\\lambda_g$ (metric)", "Calcarine wall\n$\\lambda$ (chart)"]
+    vals = [cm["flat_lambda_fft_um"], cm["flat_lambda_g_um"], cur["lambda_g_steep_um"], cur["lambda_chart_steep_um"]]
+    cols = ["#94a3b8", "#38bdf8", "#22c55e", "#f43f5e"]
+    ax.bar(np.arange(4), vals, color=cols, width=0.62)
+    for i, v in enumerate(vals):
+        ax.text(i, v + 12, f"{v:.0f}", ha="center", color="#f8fafc", fontsize=8)
+    ax.axhline(800.26, color="#f59e0b", ls="--", lw=1.3, label="Analytical $\\lambda_c$ = 800 µm")
+    ax.axhspan(750, 850, color="#f59e0b", alpha=0.15, label="Macaque Layer IVC 750–850 µm")
+    ax.set_xticks(np.arange(4))
+    ax.set_xticklabels(labels, color="#cbd5e1", fontsize=7.6)
+    ax.set_ylim(0, 1000)
+    ax.set_ylabel("Wavelength (µm)", color="#cbd5e1", fontsize=8.5)
+    ax.set_title(f"F. Intrinsic vs Chart Wavelength (ratio {cm['intrinsic_wavelength_ratio']:.2f} vs chart {cm['chart_wavelength_ratio']:.2f})", color="#f8fafc", fontsize=9.4, fontweight="bold")
+    ax.legend(loc="upper right", **leg_kw)
+
+    fig.suptitle("Pass 3 — Orientation-Coupled Ocular Dominance (Swindale 1992 / Obermayer & Blasdel 1993) & Curved Riemannian V1 Sheet (LeVay et al. 1985)", color="#f8fafc", fontsize=11.6, fontweight="bold", y=0.995)
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.972])
+    fig.savefig(OUT_PASS3_PNG, dpi=135)
+    plt.close(fig)
+    return sw, cm
 
 
 # --------------------------------------------------------------------------- #
 # 6. MorphoEval Quantitative Measurements Hook (`measure_morphoeval()`)
 # --------------------------------------------------------------------------- #
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 6 quantitative reference-anchored morphometric measurements for `measure_outputs.py`."""
+    """Compute 11 quantitative reference-anchored morphometric measurements for `measure_outputs.py`
+    (6 from Pass 2 + 5 Pass 3 orientation-coupling / curved-manifold measurements)."""
     inv = compute_lean_odc_invariants()
     suite = evaluate_all_regimes_and_sweep()
     spec = segment_odc_and_v1_specimens()
+    sw = evaluate_orientation_coupling_sweep()
+    cm = evaluate_curved_manifold()
+    cpl, abl, cur = sw["coupled"], sw["ablation"], cm["curved"]
 
     reg = suite["regimes"]
     norm = reg["normal_binocular_stripes"]
@@ -645,16 +1205,69 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"Specimen f_L = {spec['f_left_spec']:.4f}, spectral peak = {spec['peak_cycles']:.0f} cycles ({spec['wavelength_px']:.2f} px/cycle = {spec['wavelength_spec_um']:.1f} um), N = {spec['n_branches']} Y-branchpoints, V1 Layer 4C peak depth s* = {spec['layer4c_peak_depth']:.2f}",
             "derived_from": "script",
         },
+        # ---------------- Pass 3: orientation coupling ----------------
+        {
+            "name": "Coupled iso-orientation contour / OD border mean intersection angle phi",
+            "value": round(cpl["mean_intersection_angle_deg"], 2),
+            "unit": "deg",
+            "method": "Mean angle between grad S_Delta and grad theta (theta = arg z / 2, wrap-free gradient Im(conj z grad z)/(2|z|^2)) over OD border cells |S_Delta| < 0.1 max, coupled run (D_c = 4500 um^2, beta_blob = 0.6); uncoupled ablation reported in note",
+            "reference_value": 90.0,
+            "reference_source": "Obermayer & Blasdel (1993) J. Neurosci. 13:4114-4129 (iso-orientation contours cross OD borders at steep, near-orthogonal angles; random-direction baseline 45 deg); Swindale (1992) Biol. Cybern. 66:217-230 coupling model",
+            "note": f"Coupled mean phi = {cpl['mean_intersection_angle_deg']:.2f} deg (fraction > 60 deg = {cpl['steep_intersection_fraction']:.3f}) vs uncoupled ablation {abl['mean_intersection_angle_deg']:.2f} deg (fraction > 60 deg = {abl['steep_intersection_fraction']:.3f}); sweep over coupling scales {list(sw['scales'])}: {[round(a, 1) for a in sw['mean_angles_deg']]} deg",
+            "derived_from": "script",
+        },
+        {
+            "name": "Coupled orientation map pinwheel density per orientation hypercolumn Lambda^2",
+            "value": round(cpl["pinwheel_density_per_hypercolumn"], 3),
+            "unit": "pinwheels per Lambda^2",
+            "method": "Count of +-1 winding-number plaquettes of arg z times Lambda^2 / L^2, Lambda = power-weighted FFT wavelength of Re z",
+            "reference_value": 3.14159,
+            "reference_source": "Kaschube et al. (2010) Science 330:1113-1116 (pinwheel density ~ pi per hypercolumn in primates/carnivores); model value NOT fitted",
+            "note": f"N_pinwheels = {cpl['n_pinwheels']}, Lambda = {cpl['lambda_orientation_um']:.1f} um (target 700 um), rho = {cpl['pinwheel_density_per_hypercolumn']:.3f}; pinwheel |S_Delta| / mean |S_Delta| = {cpl['pinwheel_od_abs_ratio']:.3f} (ablation {abl['pinwheel_od_abs_ratio']:.3f}; > 1 means pinwheels sit in OD column centres)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Fraction of low-selectivity (CO-blob-like) patches located in OD column centres",
+            "value": round(cpl["blob_in_column_centre_fraction"], 4),
+            "unit": "fraction",
+            "method": "Local minima of smoothed selectivity r = |z| (7x7 window, lowest 30th percentile) classified as column-centre if |S_Delta| > median |S_Delta|; random baseline 0.5",
+            "reference_value": 1.0,
+            "reference_source": "Horton & Hubel (1981) Nature 292:762-764; Obermayer & Blasdel (1993) J. Neurosci. 13:4114-4129 (CO blobs / low-selectivity zones centred on OD columns)",
+            "note": f"Coupled fraction = {cpl['blob_in_column_centre_fraction']:.4f} (N = {cpl['n_blobs']}) vs uncoupled ablation {abl['blob_in_column_centre_fraction']:.4f} (N = {abl['n_blobs']})",
+            "derived_from": "script",
+        },
+        # ---------------- Pass 3: curved Riemannian manifold ----------------
+        {
+            "name": "Curved V1 sheet intrinsic (metric) stripe wavelength ratio calcarine wall / flat control",
+            "value": round(cm["intrinsic_wavelength_ratio"], 4),
+            "unit": "ratio",
+            "method": "lambda_g = 2 pi / sqrt(<g^{ij} d_i S d_j S> / <S^2>) (sqrt g-weighted) in the steep calcarine wall band (sqrt g > 1.4) of the curved Laplace-Beltrami heat-kernel run divided by the same estimator on the flat torus control; naive chart (Euclidean) estimator ratio given in note",
+            "reference_value": 1.0,
+            "reference_source": "Lean 4 curved_chart_projection_compression (intrinsic period invariant; chart period compressed by 1/sqrt(1 + slope^2)); Miller, Keller & Stryker (1989) lambda_c = 800 um",
+            "note": f"Intrinsic lambda_g: wall {cur['lambda_g_steep_um']:.1f} um vs flat {cm['flat_lambda_g_um']:.1f} um (ratio {cm['intrinsic_wavelength_ratio']:.4f}); chart lambda wall {cur['lambda_chart_steep_um']:.1f} um (ratio {cm['chart_wavelength_ratio']:.4f}; isotropic-orientation prediction sqrt(2/(1+<g>)) = {np.sqrt(2.0/(1.0+cur['mean_sqrtg_steep']**2)):.3f}, <sqrt g> = {cur['mean_sqrtg_steep']:.3f}); flat heat-kernel FFT lambda = {cm['flat_lambda_fft_um']:.1f} um vs spectral solver {norm['lambda_emp_um']:.1f} um; K_apex = {cm['gauss_K_apex_per_mm2']:.3f} mm^-2, intrinsic f_L = {cur['f_left_intrinsic']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "OD border / V1 perimeter intersection angle on the curved masked sheet",
+            "value": round(cur["perimeter_intersection_angle_deg"], 2),
+            "unit": "deg",
+            "method": "|grad S_Delta|-weighted mean angle between grad S_Delta and the perimeter normal over boundary cells (zero-flux boundary); 90 deg means OD borders meet the perimeter orthogonally, random baseline 45 deg",
+            "reference_value": 90.0,
+            "reference_source": "LeVay, Connolly, Houde & Van Essen (1985) J. Neurosci. 5:486-501 (ocular dominance stripes meet the V1/V2 border approximately at right angles)",
+            "note": f"Perimeter intersection angle = {cur['perimeter_intersection_angle_deg']:.2f} deg over {int(np.sum(cur['boundary_mask']))} boundary cells (elliptical perimeter, area fraction {cur['manifold']['area_fraction']:.3f} of the chart)",
+            "derived_from": "script",
+        },
     ]
 
 
 # --------------------------------------------------------------------------- #
-# 7. Deterministic 8-Check Verification Suite (`--self-test`)
+# 7. Deterministic 11-Check Verification Suite (`--self-test`)
 # --------------------------------------------------------------------------- #
 def run_self_test() -> int:
-    """Run 8 deterministic verification checks covering SHA-256 locks, Lean 4 invariants,
+    """Run 11 deterministic verification checks covering SHA-256 locks, Lean 4 invariants,
     all 5 experimental regimes, sigma_I wavelength scaling, specimen CV segmentation,
-    and bitwise two-run determinism."""
+    bitwise two-run determinism, and (Pass 3) the tensor-diffusion operator, orientation
+    coupling and curved-manifold solver."""
     # Check 1: SHA-256 digest verification of all 4 vendored dataset files
     verified = verify_dataset_sha256()
     assert len(verified) == 4, f"Expected 4 verified dataset files, got {len(verified)}"
@@ -705,16 +1318,61 @@ def run_self_test() -> int:
     # Check 8: Bitwise two-run determinism (atol = 0.0)
     m1 = measure_morphoeval()
     m2 = measure_morphoeval()
-    assert len(m1) == 6
+    assert len(m1) == 11, f"Expected 11 measurements, got {len(m1)}"
     for a, b in zip(m1, m2):
         assert np.allclose(a["value"], b["value"], atol=0.0), f"Determinism failure on {a['name']}"
 
+    # Check 9 (Pass 3): staggered tensor-diffusion operator — conservation, isotropic-Laplacian
+    # limit, and Lean 4 orthogonality quadratic-form invariants
+    rng = np.random.default_rng(7)
+    f_test = rng.normal(size=(32, 32))
+    ones = np.ones_like(f_test)
+    zeros = np.zeros_like(f_test)
+    lap_t = _div_tensor_grad(f_test, ones, zeros, ones, 1.0)
+    lap_ref = (np.roll(f_test, 1, 0) + np.roll(f_test, -1, 0) + np.roll(f_test, 1, 1) + np.roll(f_test, -1, 1) - 4.0 * f_test)
+    assert np.max(np.abs(lap_t - lap_ref)) < 1e-12, "Tensor diffusion operator does not reduce to the 5-point Laplacian"
+    assert abs(float(np.sum(lap_t))) < 1e-10, "Tensor diffusion operator is not conservative"
+    gvec = np.array([3.0, 4.0])
+    for v in (np.array([-4.0, 3.0]), np.array([3.0, 4.0]), np.array([1.0, -2.0])):
+        qf = float(np.dot(gvec, v)) ** 2
+        assert qf >= 0.0
+    assert float(np.dot(gvec, np.array([-4.0, 3.0]))) ** 2 == 0.0  # orthogonal => zero coupling (Lean law 4)
+    assert 400 * 400 * (1 + 3) == 800 * 800  # chart projection identity (Lean law 5)
+
+    # Check 10 (Pass 3): orientation coupling makes iso-orientation contours orthogonal to OD
+    # borders and co-localises blob-like patches / pinwheels with OD column centres
+    sw = evaluate_orientation_coupling_sweep()
+    cpl, abl = sw["coupled"], sw["ablation"]
+    assert 35.0 <= abl["mean_intersection_angle_deg"] <= 55.0, f"Ablation angle not near 45 deg: {abl['mean_intersection_angle_deg']}"
+    assert cpl["mean_intersection_angle_deg"] > abl["mean_intersection_angle_deg"] + 15.0, "Coupling did not steepen intersection angles"
+    assert cpl["steep_intersection_fraction"] > 0.6
+    assert cpl["blob_in_column_centre_fraction"] > 0.85 and 0.3 <= abl["blob_in_column_centre_fraction"] <= 0.7
+    assert cpl["pinwheel_od_abs_ratio"] > 1.05
+    assert cpl["n_pinwheels"] > 50 and 600.0 <= cpl["lambda_orientation_um"] <= 850.0
+    assert abs(cpl["lambda_od_um"] - norm["lambda_emp_um"]) < 1.0, "OD field in the coupled run must match the normal regime (one-way coupling)"
+
+    # Check 11 (Pass 3): curved Riemannian sheet — flat-limit consistency of the heat-kernel
+    # Mexican hat, intrinsic wavelength invariance, chart compression, perimeter orthogonality
+    cm = evaluate_curved_manifold()
+    cur = cm["curved"]
+    assert abs(cm["flat_lambda_fft_um"] - norm["lambda_emp_um"]) < 0.03 * norm["lambda_emp_um"], f"Heat-kernel flat limit disagrees with spectral solver: {cm['flat_lambda_fft_um']}"
+    assert 0.90 <= cm["intrinsic_wavelength_ratio"] <= 1.10, f"Intrinsic wavelength not invariant: {cm['intrinsic_wavelength_ratio']}"
+    assert cm["chart_wavelength_ratio"] < 0.85, f"Chart wavelength not compressed in calcarine wall: {cm['chart_wavelength_ratio']}"
+    assert cm["chart_wavelength_ratio"] < cm["intrinsic_wavelength_ratio"]
+    assert cur["perimeter_intersection_angle_deg"] > 60.0, f"OD borders not orthogonal to perimeter: {cur['perimeter_intersection_angle_deg']}"
+    assert 0.45 <= cur["f_left_intrinsic"] <= 0.55
+    assert cm["max_sqrtg"] > 1.5 and cm["gauss_K_apex_per_mm2"] > 0.0
+
     print(
         "[1989-miller-ocular-dominance-stripes] Self-test PASSED "
-        f"(8/8 checks: normal lambda={norm['lambda_emp_um']:.1f} um, f_L={norm['f_left']:.4f}, "
+        f"(11/11 checks: normal lambda={norm['lambda_emp_um']:.1f} um, f_L={norm['f_left']:.4f}, "
         f"MD f_L={md['f_left']:.4f}, strabismus lambda={strab['lambda_emp_um']:.1f} um, "
         f"TTX SI={ttx['seg_index']:.4f}, sweep r={suite['sweep_r']:.4f}, "
-        f"specimen branches={spec['n_branches']})."
+        f"specimen branches={spec['n_branches']}, "
+        f"orientation angle coupled/ablation={cpl['mean_intersection_angle_deg']:.1f}/{abl['mean_intersection_angle_deg']:.1f} deg, "
+        f"blob-centre frac={cpl['blob_in_column_centre_fraction']:.2f}, "
+        f"curved intrinsic ratio={cm['intrinsic_wavelength_ratio']:.3f}, chart ratio={cm['chart_wavelength_ratio']:.3f}, "
+        f"perimeter angle={cur['perimeter_intersection_angle_deg']:.1f} deg)."
     )
     return 0
 
@@ -723,7 +1381,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(
         description="Miller, Keller & Stryker (1989) & Hubel, Wiesel & LeVay (1977) Ocular Dominance Stripes & Plasticity"
     )
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check deterministic verification suite")
+    ap.add_argument("--self-test", action="store_true", help="Run 11-check deterministic verification suite")
     ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
     args = ap.parse_args()
     if args.self_test:

@@ -1,0 +1,97 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-meinhardt-echinoderm-pentaradial-symmetry> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-meinhardt-echinoderm-pentaradial-symmetry-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-meinhardt-echinoderm-pentaradial-symmetry-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Morris (2012), Mooi & David (1998/2008), Lovén (1874), Duboc et al. (2005), Luo & Su (2012) & Meinhardt (2008) echinoderm bilateral-to-pentaradial hydrocoel ring symmetry breaking with Ocular Plate Rule test growth — MorphoEval overall 89.2/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) evaluation of `2005-meinhardt-echinoderm-pentaradial-symmetry.py` (overall 89.2/100, down from 91.8 in Pass 2). Both v2 remediation items are closed in reduced, explicitly labelled form: a Mooi & David (1998/2008) Ocular Plate Rule plate-addition solver on a domed test seeded from the m = 5 ring lobes (20 biserial columns, 640 + 310 plates at R/R_meta = 40, newest plate at the ocular in every column, Lovén-seeded zigzag alternation phase 0.49 that collapses to 0.00 when the enlargement is ablated, aboral C_5 = 0.9964 vs specimen 0.9255 through the same pipeline), and a continuous Nodal/BMP2-4 screened-Poisson dose-response model that reduces to the discrete 5 / 10 / 0 law at the canonical doses (max |dev| 0.055 podia, EC50 0.175 x WT). Two new Lean 4 theorems (5 total, 0 `sorry`s), a SHA-256-pinned reference table, 7 new measurements (16 total) and 3 new self-test checks (11 total) are credited. The score falls because this round exposed that the Section 2 \"Gierer-Meinhardt ring PDE\" is a templated solver whose headline numbers (m* = 5, staircase and Lovén-order r = 1.0000) hold by construction, and because most of the new OPR measurements are structural (true by construction of ocular-end nucleation) or self-referential (specimen C_5 as its own reference) rather than empirical. Overall 89.2/100 (faithfulness 88.1, reproducibility 91.9); rubric morphoeval 0.1.0; checkpoint commit a69596cc; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 86, Morphological realism / specimen match 89, Parameter expressivity 90, Morphometric validation 88, Source and data traceability 92, Code-to-model traceability 90, Reproducibility package 93. Output judged: docs/media/echinoderm_pentaradial_symmetry_comparison.png: rendered output of models/2005-meinhardt-echinoderm-pentaradial-symmetry.py at a69596cc, image/png, 1409808 B, 2408×2264 px, artifact_sha256 df03cccaab05e99639f38fa2c234607621bb59d89aae097f3d56431244b5d9c6 (sha256 df03cccaab05e99639f38fa2c234607621bb59d89aae097f3d56431244b5d9c6), spec_fingerprint cd13db70aa61071108eb599c5b5e2da1617f948ac60e0ad765eabfe5fa619518. Dual provenance: spec_fingerprint: cd13db70aa61071108eb599c5b5e2da1617f948ac60e0ad765eabfe5fa619518; artifact_sha256: df03cccaab05e99639f38fa2c234607621bb59d89aae097f3d56431244b5d9c6; input_dataset_sha256: {datasets/echinoderm_pentaradial_symmetry/echinoderm_pentaradial_symmetry_reference.json=c516e298727883cf..., datasets/echinoderm_pentaradial_symmetry/echinoderm_pentaradial_test_specimen.jpg=953b2f7e38029627..., datasets/echinoderm_pentaradial_symmetry/opr_plate_addition_nodal_dose_reference.json=f93ea0ba8cc2fe82..., datasets/echinoderm_pentaradial_symmetry/scout_manifest.json=0b333ebe2a2ed524...}. Supersedes audit: 2026-10-19-echinoderm-pentaradial-symmetry-audit-v2. Claim boundary: reported_in_source: Morris (2012): the pentaradial adult body plan arises from the left hydrocoel crescent closing into a ring, with the five primary podia initiated in the sequence II, IV, I, III, V (Carpenter C, A, D, B, E) | Lovén (1874): in each ambulacrum one of the two primary peristomial plates is enlarged, in the asymmetric pattern Ib, IIb, IIIa, IVa, Va, and ambulacral/interambulacral plates form alternating biserial columns | Mooi & David (1998, 2008): the Ocular Plate Rule — every new coronal plate is added at the ocular (apical) end of its column, so plate age increases toward the peristome and plate count increases with test size | Duboc et al. (2005): right-sided Nodal signalling represses the right hydrocoel; Nodal morpholino gives bilateral twin rudiments (2 x 5 podia) and bilateral Nodal overexpression gives none | Luo & Su (2012): BMP2/4 signalling on the left is required for rudiment formation and opposes Nodal | Raup (1968), Zachos (2009): echinoid test growth can be modelled as plate addition plus plate growth on a domed surface | Meinhardt (2008): activator-inhibitor dynamics on a closed domain select a wavenumber set by domain circumference / critical wavelength; reconstructed_in_script: A circular-ring mode-selection solver with a prescribed dispersion curve, crescent-to-ring closure gates at the Lovén ray angles, an m in {3..7} circumference staircase and an equal-diffusion negative control; a 2D rudiment field with a binary Nodal switch; a reduced Ocular Plate Rule plate-addition solver on a spherical-cap test seeded from the ring lobes, with logistic plate accretion, ocular-end nucleation, Lovén-enlarged primordials and an aboral projection measured with the specimen's polar Fourier pipeline; a 1D steady-state screened-Poisson Nodal/BMP2-4 gradient model with Hill competence, a dose sweep and a 2D dose map; automated specimen segmentation of a Tripneustes gratilla test; 16 reference-anchored measurements; 5 Lean 4 theorems; transfer_boundary: The Section 2 ring solver is NOT an integrated Gierer-Meinhardt PDE: the growth rate sigma(m) = 0.0480 (1 - 5.2 det^2) is hard-coded (L218, L283), the target mode is seeded in the initial condition (L289), the inhibitor is algebraic h = 1 + 0.65 (a - 1) (L318) and the Lovén initiation order is prescribed through delay_frac gates (L264-270). m* = 5, the staircase r = 1.0000 and the Lovén order r = 1.0000 therefore hold by construction; the DEFAULT_DA/DH/RHO constants (L120-123) do not enter the dynamics | The OPR solver is 1D meridional plate heights in rectangular azimuth bands on a sphere: no plate-plate mechanics, Voronoi packing, FEM or ambitus flattening; growth factor 40, colatitudes 22/150 deg and h_nuc/h_max are labelled assumptions in the reference JSON; the Amb/IA plate ratio target 3.0 is approximate and the emergent value 2.06 misses it | The Nodal/BMP2-4 gradient parameters were tuned only so that WT / MO / GOF give 5 / 10 / 0 podia; EC50 = 0.175 x WT is a model prediction with no empirical anchor; no Lefty/Pitx2 and no explicit Nodal-BMP antagonism term | The specimen is Tripneustes gratilla while the header organism is S. purpuratus; specimen references (C_5 = 0.9255, ray angles) are the script's own segmentation outputs, not independent measurements; does_not_claim: Quantitative reproduction of Duboc (2005) penetrance percentages or in-situ intensity profiles, mechanical plate packing, measured plate counts for any named species, or an integrated activator-inhibitor PDE in Section 2." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2005-meinhardt-echinoderm-pentaradial-symmetry.py:1-4, 241-256, 972 and datasets/echinoderm_pentaradial_symmetry/README.md — update the header title (still \"Pass 2\"), the render_comparison_figure docstring (still \"6-panel\"), and every description of Section 2 as a \"Gierer-Meinhardt PDE\" to match what the code does; resolve the S. purpuratus vs Tripneustes gratilla organism mismatch in the header and audit `organism` field.",
+            "remediation needed: 2005-meinhardt-echinoderm-pentaradial-symmetry.py:1562-1564, 1853-1854 and 1868-1880 — make measure_morphoeval() accept the CLI parameters, route --growth-factor into Panels G/I and the measurements, and replace the --nodal-dose \"overwrite WT profile\" behaviour with an additional labelled profile; expose the Lovén enlargement factor and Hill constants as sweepable parameters.",
+            "remediation needed: 2005-meinhardt-echinoderm-pentaradial-symmetry.py:1586-1612 and 1630-1636 — score the OPR structural measurements (newest-at-ocular 1.0, Spearman 0.9995, aboral C_5 vs the specimen's own C_5) as structural checks, and add at least one empirical anchor: a measured ambulacral/interambulacral plate count per column for T. gratilla or S. purpuratus from the literature (replacing the unsourced 3.0 in datasets/echinoderm_pentaradial_symmetry/opr_plate_addition_nodal_dose_reference.json:60-70) and a plate height vs colatitude profile.",
+            "remediation needed: 2005-meinhardt-echinoderm-pentaradial-symmetry.py:198-240 and 279-292, 316-318 — replace the templated ring solver with an actual Gierer-Meinhardt integration: derive sigma(m) from D_a, D_h, rho_a, rho_h (DEFAULT_DA/DH/RHO at L120-123 are currently unused), integrate the inhibitor h as a PDE instead of h = 1 + 0.65 (a - 1), seed only noise (remove the 0.025 cos(m* theta) term at L289) so m* = 5 is selected, not imposed, and implement the equal-diffusion control as D_h = D_a rather than a prescribed negative sigma (L212-214, L279-280).",
+            "remediation needed: 2005-meinhardt-echinoderm-pentaradial-symmetry.py:262-270 and 305 — the Lovén initiation order (II, IV, I, III, V) is prescribed by delay_frac gates, so the r = 1.0000 measurement is by construction. Derive the order from the crescent-closure geometry (activation reaching each ray as the crescent tips close) or re-label the measurement as a consistency check rather than a validation.",
+            "remediation needed: 2005-meinhardt-echinoderm-pentaradial-symmetry.py:598-602 and 648-668 — both interambulacral primordials are equal (`primordial_enlarged: False`), so IA a/b sutures stay aligned and alternation is measured only on ambulacra; real interambulacra also alternate. Seed an IA half-plate offset (or derive it from the adjacent ambulacral offset) and report an IA alternation phase.",
+            "remediation needed: 2005-meinhardt-echinoderm-pentaradial-symmetry.py:716-728 — store per-step plate heights in the OPR history so the growth GIF replays the solver instead of rescaling final heights; also render the ambitus (oblate test) rather than a sphere.",
+            "remediation needed: 2005-meinhardt-echinoderm-pentaradial-symmetry.py:826-870 — add the Nodal -> BMP antagonism of Luo & Su (2012) and anchor at least one gradient parameter to data (Duboc 2005 morpholino penetrance percentages or in-situ intensity profiles) so the 0.055-podia deviation and EC50 = 0.175 are not fitted to their own targets; wire the continuous model into the 2D rudiment field at L468-512, which still uses the binary switch.",
+            "remediation needed: datasets/echinoderm_pentaradial_symmetry/pass3_citations.bib:1-47 — SHA-256-pin the Pass 3 bib (or merge into a new pinned bib) and verify the four Pass 3 DOIs (Mooi & David 2008, Zachos 2009, Luo & Su 2012; Raup 1968 JSTOR URL) once network access is permitted.",
+            "remediation needed: morphoeval/lean/loops/Loop_075_echinoderm_pentaradial_symmetry.lean:195-296 — theorems 4-5 are arithmetic/structural (position n-1-b, alternating split, integer Hill at K = 10); add a statement about the solver dynamics (e.g. monotone plate count in R under the nucleation rule, or EC50 ordering under Hill monotonicity) that is linked to a measured output." ;
+        pk:hasScore "0.892"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 primary assessor, Phase B)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/75> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0070-2153(07)81001-5>,
+            <https://doi.org/10.1016/j.devcel.2005.05.008>,
+            <https://doi.org/10.1016/j.jtbi.2009.04.007>,
+            <https://doi.org/10.1093/icb/38.6.965>,
+            <https://doi.org/10.1111/j.1525-142X.2012.00552.x>,
+            <https://doi.org/10.1146/annurev.ecolsys.39.110707.173521>,
+            <https://doi.org/10.1371/journal.pbio.1001402>,
+            <https://doi.org/10.5962/bhl.title.46385>,
+            <https://www.jstor.org/stable/1302410> .
+    <https://doi.org/10.1016/S0070-2153(07)81001-5> dct:date "2008"^^xsd:gYear ;
+        dct:title "Models of biological pattern formation: from elementary steps to the organization of embryonic axes" .
+    <https://doi.org/10.1016/j.devcel.2005.05.008> dct:date "2005"^^xsd:gYear ;
+        dct:title "Left-right asymmetry in the sea urchin embryo is regulated by Nodal signaling on the right side" .
+    <https://doi.org/10.1016/j.jtbi.2009.04.007> dct:date "2009"^^xsd:gYear ;
+        dct:title "A new computational growth model for sea urchin skeletons" .
+    <https://doi.org/10.1093/icb/38.6.965> dct:date "1998"^^xsd:gYear ;
+        dct:title "Evolution Within a Bizarre Phylum: Homologies of the First Echinoderms" .
+    <https://doi.org/10.1111/j.1525-142X.2012.00552.x> dct:date "2012"^^xsd:gYear ;
+        dct:title "Homology and the evolution of echinoderm pentaradiality" .
+    <https://doi.org/10.1146/annurev.ecolsys.39.110707.173521> dct:date "2008"^^xsd:gYear ;
+        dct:title "Radial symmetry, the anterior/posterior axis, and echinoderm Hox genes" .
+    <https://doi.org/10.1371/journal.pbio.1001402> dct:date "2012"^^xsd:gYear ;
+        dct:title "Opposing Nodal and BMP signals regulate left-right asymmetry in the sea urchin larva" .
+    <https://doi.org/10.5962/bhl.title.46385> dct:date "1874"^^xsd:gYear ;
+        dct:title "Études sur les Échinoïdées" .
+    <https://www.jstor.org/stable/1302410> dct:date "1968"^^xsd:gYear ;
+        dct:title "Theoretical morphology of echinoid growth" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Morris (2012), Mooi & David (1998/2008), Lovén (1874), Duboc et al. (2005), Luo & Su (2012) & Meinhardt (2008) echinoderm bilateral-to-pentaradial hydrocoel ring symmetry breaking with Ocular Plate Rule test growth — MorphoEval overall 89.2/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T23:58:42Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-meinhardt-echinoderm-pentaradial-symmetry-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/75>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-meinhardt-echinoderm-pentaradial-symmetry> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

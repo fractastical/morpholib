@@ -63,3 +63,54 @@ equations:
     role: "Explains how opposite-chirality screw-dislocation dipoles (+b, -b) act as biological Frank-Read sources emitting closed concentric target terraces in bivalve sheet nacre when d > 2 r_c while pinching off below 2 r_c"
     source_citation: "Cartwright, Checa, Escribano & Sainz-Díaz (2009) PNAS 106(26):10499-10504 Figs. 1-4; Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504"
     code_locus: "2007-cartwright-nacre-spiral-dislocation-terraces.py#L245-L450"
+  # ---------------------------------------------------------------- Pass 3 (v3) additions
+  - law_name: "Aragonite {110} Cyclic Twinning & [100]/[010] Step-Velocity Anisotropy of the BCF Spiral Core (Pass 3)"
+    formula: "A_single(θ) = 1 + e_2 cos 2(θ−θ_0) + e_6 cos 6(θ−θ_0),  e_2 = (v_100/v_010 − 1)/(v_100/v_010 + 1),  v_100/v_010 = a√3/b = 1.0785;  A_twin(θ) = (1/3) Σ_{j=0..2} A_single(θ − jτ),  τ = 2 atan(a/b) = 63.82°,  misfit 3τ − 180° = 11.46°;  f_m = |Σ_j e^{i m j τ}|/3  (f_2 = 0.074, f_6 = 0.947)"
+    lean_decl: "MathOfBiology.Loop_073.cyclic_twin_misfit_tenths"
+    lean_theorem: "MathOfBiology.Loop_073.aragonite_cyclic_twin_angular_misfit"
+    lean_locus: "morphoeval/lean/loops/Loop_073_nacre_spiral_dislocation_terraces.lean#L113-L133"
+    lean_code: |
+      def cyclic_twin_misfit_tenths (tau : Int) : Int := 3 * tau - 1800
+      theorem aragonite_cyclic_twin_angular_misfit (tau d : Int) :
+          cyclic_twin_misfit_tenths 600 = 0 ∧
+          cyclic_twin_misfit_tenths 638 = 114 ∧
+          cyclic_twin_misfit_tenths (tau + d) - cyclic_twin_misfit_tenths tau = 3 * d := by
+        dsimp [cyclic_twin_misfit_tenths]; omega
+    variables: "a = 4.9611 Å, b = 7.9672 Å: orthorhombic Pmcn aragonite lattice (De Villiers 1971); τ: {110} twin angle; e_2, e_6: 2-fold (orthorhombic) and 6-fold (pseudo-hexagonal facet) kinetic anisotropy amplitudes; f_m: twin-averaging suppression factor of the m-th harmonic"
+    role: "Polygonizes the spiral core: cyclic twinning suppresses the orthorhombic 2-fold elongation of the terrace contour to 7.4 % while retaining 94.7 % of the pseudo-hexagonal 6-fold polygonization of aragonite nacre tablets"
+    source_citation: "De Villiers JPR (1971) Am. Mineral. 56:758-767; Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504 (pseudo-hexagonal aragonite tablets); Burton, Cabrera & Frank (1951) Sec. 9 (anisotropic spiral)"
+    code_locus: "2007-cartwright-nacre-spiral-dislocation-terraces.py#L524-L643"
+    code_locus_secondary: "2007-cartwright-nacre-spiral-dislocation-terraces.py#L255-L262"
+  - law_name: "Kinematic Wulff Anisotropic Terrace Pitch λ(θ) = λ_0 A(θ) (Pass 3)"
+    formula: "λ(θ) ω = 2π v(θ) = 2π v_∞ A(θ);  λ_100 / λ_010 = v_100 / v_010;  eikonal travel T(r)/A(θ) with T(r) = k_0 (r − r_c) + (ω r_c / v_∞) ln(r / r_c)"
+    lean_decl: "MathOfBiology.Loop_073.anisotropic_pitch_num"
+    lean_theorem: "MathOfBiology.Loop_073.anisotropic_terrace_pitch_linear_in_step_speed"
+    lean_locus: "morphoeval/lean/loops/Loop_073_nacre_spiral_dislocation_terraces.lean#L135-L153"
+    lean_code: |
+      def anisotropic_pitch_num (v_theta : Nat) : Nat := 2 * v_theta
+      theorem anisotropic_terrace_pitch_linear_in_step_speed (a v v₁ v₂ : Nat) :
+          anisotropic_pitch_num (a * v) = a * anisotropic_pitch_num v ∧
+          anisotropic_pitch_num (v₁ + v₂) = anisotropic_pitch_num v₁ + anisotropic_pitch_num v₂ := by
+        dsimp [anisotropic_pitch_num]; constructor
+        · rw [Nat.mul_left_comm]
+        · rw [Nat.mul_add]
+    variables: "λ(θ): direction-dependent inter-terrace pitch; A(θ) = v(θ)/v_∞: step-speed anisotropy factor; T(r): Cabrera-Levine radial travel"
+    role: "Converts direction-dependent step speed into a direction-dependent spiral pitch, so the terrace contour r_n(θ) = T⁻¹(A(θ)·2πn) is a polygon whose Fourier harmonics measure the crystallographic anisotropy"
+    source_citation: "Burton, Cabrera & Frank (1951) Phil. Trans. R. Soc. A 243:299-358; Cartwright et al. (2012) Phil. Trans. R. Soc. A 370:2866-2885"
+    code_locus: "2007-cartwright-nacre-spiral-dislocation-terraces.py#L561-L602"
+  - law_name: "Driven Allen-Cahn Chitin Inter-Lamellar Membrane Perforation & Mineral-Bridge Stacking (Pass 3)"
+    formula: "∂φ/∂t = M [ε² ∇²φ − W'(φ) + β (S_k − S_0) g'(φ)],  W = φ²(1−φ)²,  g = φ²(3−2φ);  spinodal S_crit = S_0 + 1/(3β) = 0.683;  S_k = F_k · max(A_g e^{−|x−c_{k−1}|²/2σ²}, P_k),  F_k = [level(x,y) ≥ k] ∧ |x − c_{k−1}| ≤ D_tab/2,  A_g = min(1, (0.1 D_tab/σ)²);  stacking offset |c_k − c_{k−1}| / D_tab"
+    lean_decl: "MathOfBiology.Loop_073.membrane_double_well"
+    lean_theorem: "MathOfBiology.Loop_073.chitin_membrane_perforation_bistability"
+    lean_locus: "morphoeval/lean/loops/Loop_073_nacre_spiral_dislocation_terraces.lean#L155-L181"
+    lean_code: |
+      def membrane_double_well (q : Int) : Int := q ^ 2 * (2 - q) ^ 2
+      def membrane_double_well_deriv (q : Int) : Int := 4 * q * (2 - q) * (1 - q)
+      theorem chitin_membrane_perforation_bistability :
+          membrane_double_well 0 = 0 ∧ membrane_double_well 2 = 0 ∧ membrane_double_well 1 = 1 ∧
+          membrane_double_well_deriv 0 = 0 ∧ membrane_double_well_deriv 2 = 0 ∧
+          membrane_double_well_deriv 1 = 0 := by decide
+    variables: "φ_k ∈ [0,1]: perforation phase field of chitin membrane k (0 intact, 1 perforated); S_k: drive from mineral-bridge localisation (σ) and random pores (P_k) gated by the eikonal terrace footprint F_k; c_k: mineral-bridge site of sheet k; D_tab: tablet diameter"
+    role: "Couples the 2D eikonal terrace solver to a stacked-sheet 3D membrane model: bistability lets a bridge site be inherited sheet-to-sheet, so columnar gastropod nacre (σ ≈ 0.1 D_tab → offset 0) and brick-wall bivalve sheet nacre (σ ≳ 0.12 D_tab → pore-random offset ≈ 0.2-0.3 D_tab) emerge from one parameter"
+    source_citation: "Cartwright & Checa (2007) J. R. Soc. Interface 4:491-504 Sec. 4; Schäffer et al. (1997) Chem. Mater. 9:1731-1740; Checa, Cartwright & Willinger (2011) J. Struct. Biol. 176:330-339"
+    code_locus: "2007-cartwright-nacre-spiral-dislocation-terraces.py#L645-L885"

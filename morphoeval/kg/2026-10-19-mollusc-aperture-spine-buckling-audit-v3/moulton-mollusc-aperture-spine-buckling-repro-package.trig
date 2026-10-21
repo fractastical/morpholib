@@ -1,0 +1,100 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-moulton-mollusc-aperture-spine-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Moulton, Goriely & Chirat (2015) & Chirat et al. (2013) hierarchical mollusc aperture spine folding and fractal frond serration — Reproducibility package: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credit: deterministic RNG (seed 2015); `self_test()` (L1874-1976) runs 13 checks — 8 Pass 2 (SHA-256 of 5 files, JSON parity, frond cascade, tubular closure, varix spacing + subcritical control, cross-taxa, specimen segmentation, bitwise two-run determinism) plus 5 Pass 3 (pass3 JSON parity, Koiter free vs locked with bitwise determinism at L1941-1942, locking-tongue monotonicity + oblique de-registration + tilt, graded WKB r > 0.9 and uniform CV < 0.02, beta* = 4/3 at L1961); a fresh run in this audit PASSED 13/13 in 74 s; default render produces the 3x3 PNG, the growth GIF (byte-identical to Pass 2), the standalone Pass 3 PNG and the cord-locking GIF; `--skip-pass3-media` and `--skip-gif` shorten runs. Deductions: self-test wall time is ~65-75 s because the sweeps run at full resolution (-3); the README and the `--self-test` help string are not fully synchronised with the 13-check suite (L1981) (-2); PNGs are gitignored (`*.png`) so the rendered figures are not versioned and the audit relies on local regeneration (-2); no requirements lock file is vendored for this script (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-5> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "models/2015-moulton-mollusc-aperture-spine-buckling.py L1874–L1976" ;
+        dct:description "13-check self_test(): 5-file SHA-256, JSON parity, Pass 2 solvers, Pass 3 Koiter/locking/graded/beta checks, bitwise determinism (L1923-1924, L1941-1942)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2015-moulton-mollusc-aperture-spine-buckling.py#L1874-L1976> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "models/2015-moulton-mollusc-aperture-spine-buckling.py L1979–L2029" ;
+        dct:description "main(): CLI flags, compute_pass3_bundle with sweeps, Pass 3 PNG + GIF rendering, --skip-pass3-media" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2015-moulton-mollusc-aperture-spine-buckling.py#L1979-L2029> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/mollusc_aperture_spine_buckling/pass3_koiter_cord_thickness_reference.json L1–L68" ;
+        dct:description "Pass 3 reference JSON (SHA-256 63fdbb23...) pinned by the script and parity-checked in self_test" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/datasets/mollusc_aperture_spine_buckling/pass3_koiter_cord_thickness_reference.json#L1-L68> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-4> a pk:EvidenceItem ;
+        rdfs:label "docs/media/mollusc_aperture_spine_buckling_cord_locking.gif (generated output)" ;
+        dct:description "Cord-locking GIF (eps_cord sweep) rendered by render_cord_locking_gif (L1652-1676) — docs/media/mollusc_aperture_spine_buckling_cord_locking.gif: rendered output of models/2015-moulton-mollusc-aperture-spine-buckling.py at 9987db7d, image/gif, 273962 B, 924×396 px, 8 frames, artifact_sha256 4f9dfbe0e0124f46f6449e4efb5adc38abc32a7570ba69c02bfdf4dc146b94fc (sha256 4f9dfbe0e0124f46f6449e4efb5adc38abc32a7570ba69c02bfdf4dc146b94fc), spec_fingerprint 7e0a58a2882e57518d985e4253c9b131677e4c5f4943a638d01e321b11b48932" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package-5> a pk:EvidenceItem ;
+        rdfs:label "docs/media/mollusc_aperture_spine_buckling_growth.gif (generated output)" ;
+        dct:description "Growth GIF re-rendered byte-identically to Pass 2 (deterministic; git shows it unmodified) — docs/media/mollusc_aperture_spine_buckling_growth.gif: rendered output of models/2015-moulton-mollusc-aperture-spine-buckling.py at 9987db7d, image/gif, 178812 B, 1056×462 px, 10 frames, artifact_sha256 c3ae8a12c5e68c1ce1ba607b215c1f3fd29f79c1e48f169f1a02dd36956063c5 (sha256 c3ae8a12c5e68c1ce1ba607b215c1f3fd29f79c1e48f169f1a02dd36956063c5), spec_fingerprint 7e0a58a2882e57518d985e4253c9b131677e4c5f4943a638d01e321b11b48932" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 remediated assessment, Phase B audit agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/77> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2012.07.009>,
+            <https://doi.org/10.1016/j.jtbi.2014.09.021>,
+            <https://doi.org/10.1073/pnas.1220443110>,
+            <https://doi.org/10.1209/0295-5075/83/10005>,
+            <https://doi.org/10.1371/journal.pcbi.1007213>,
+            <https://dwc.knaw.nl/toegangen/digital-library-knaw/?pagetype=publist&search_author=PE00002224> .
+    <https://doi.org/10.1016/j.jtbi.2012.07.009> dct:date "2012"^^xsd:gYear ;
+        dct:title "Mechanical growth and morphogenesis of seashells" .
+    <https://doi.org/10.1016/j.jtbi.2014.09.021> dct:date "2015"^^xsd:gYear ;
+        dct:title "The role of mechanics in the growth and form of mollusc shells: hierarchical spine folding and secondary fractal serrations" .
+    <https://doi.org/10.1073/pnas.1220443110> dct:date "2013"^^xsd:gYear ;
+        dct:title "Mechanical basis of morphogenesis and convergent evolution of spiny seashells" .
+    <https://doi.org/10.1209/0295-5075/83/10005> dct:date "2008"^^xsd:gYear ;
+        dct:title "Wave-number locking in spatially forced pattern-forming systems" .
+    <https://doi.org/10.1371/journal.pcbi.1007213> dct:date "2019"^^xsd:gYear ;
+        dct:title "A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth" .
+    <https://dwc.knaw.nl/toegangen/digital-library-knaw/?pagetype=publist&search_author=PE00002224> dct:date "1966"^^xsd:gYear ;
+        dct:title "On the nonlinear theory of thin elastic shells" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Moulton, Goriely & Chirat (2015) & Chirat et al. (2013) hierarchical mollusc aperture spine folding and fractal frond serration — Reproducibility package 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-21T00:04:40Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-moulton-mollusc-aperture-spine-buckling-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/77> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

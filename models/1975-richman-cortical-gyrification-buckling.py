@@ -91,7 +91,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, spatial, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "cortical_gyrification_folding"
 REF_JSON = DATASET_DIR / "cortical_gyrification_folding_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "cerebral_cortex_gyri_specimen.jpg"

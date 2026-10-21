@@ -105,7 +105,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import optimize, spatial, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "epithelial_buckling_crypt_villus"
 REF_JSON = DATASET_DIR / "epithelial_buckling_crypt_villus_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "intestinal_villi_crypts_specimen.jpg"

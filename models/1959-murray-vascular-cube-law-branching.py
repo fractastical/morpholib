@@ -66,7 +66,7 @@ from scipy import ndimage as ndi
 from scipy import stats
 from scipy.spatial import cKDTree
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "vascular_cube_law_branching"
 REF_JSON_PATH = DATASET_DIR / "vascular_cube_law_branching_reference.json"
 SPECIMEN_IMG_PATH = DATASET_DIR / "retinal_vasculature_specimen.jpg"

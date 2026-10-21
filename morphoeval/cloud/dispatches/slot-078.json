@@ -8,5 +8,101 @@
   "status": "completed",
   "pass1_score": 48.9,
   "pass2_score": 91.8,
-  "delta": 42.9
+  "delta": 42.9,
+  "pass3_status": "completed",
+  "pass3_run_id": "2026-10-19-nacre-screw-dislocation-spirals-loop-pass3",
+  "pass3_audit_id": "2026-10-19-nacre-screw-dislocation-spirals-audit-v3",
+  "pass3_supersedes_audit_id": "2026-10-19-nacre-screw-dislocation-spirals-audit-v2",
+  "pass3_remediation_items_closed": [
+    "Coupled the 2D BCF spiral/target step-flow phase field to a 3D cholesteric chitin-fibroin liquid-crystal membrane stack (simulate_cholesteric_chitin_lamellar_3d, evaluate_cholesteric_pitch_coupling; reduced kinematic template, no Frank free-energy minimisation)",
+    "Added brick-and-mortar aragonite tablet-sliding fracture mechanics under tension (simulate_tablet_sliding_fracture, evaluate_fracture_toughness_sweeps, schmid_slip_strength_envelope; reduced TSC + Schmid-slip + waviness hardening + Griffith tablet fracture, no cohesive-zone FEM / intra-tablet crystal plasticity)"
+  ],
+  "pass3_new_lean_theorems": [
+    "MathOfBiology.Loop_078.cholesteric_half_pitch_screw_dislocation_coupling",
+    "MathOfBiology.Loop_078.tsc_tablet_sliding_fracture_toughness"
+  ],
+  "pass3_new_outputs": [
+    "docs/media/nacre_screw_dislocation_spirals_cholesteric_fracture.png",
+    "docs/media/nacre_screw_dislocation_spirals_tablet_sliding.gif",
+    "datasets/nacre_screw_dislocation_spirals/cholesteric_fracture_reference.json",
+    "datasets/nacre_screw_dislocation_spirals/pass3_citations.bib"
+  ],
+  "pass3_handoff_note": "/tmp/pass3/handoff/slot-078.md",
+  "pass3_score": 87.9,
+  "pass3_delta_vs_pass2": -3.9,
+  "pass3_dims": {
+    "model-fidelity": 89,
+    "specimen-match": 86,
+    "parameter-expressivity": 88,
+    "morphometric-validation": 86,
+    "source-traceability": 88,
+    "code-traceability": 90,
+    "repro-package": 91
+  },
+  "pass2_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 90,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 93,
+    "source-traceability": 94,
+    "code-traceability": 92,
+    "repro-package": 91
+  },
+  "pass3_completed_at": "2026-10-21T00:01:30Z",
+  "pass3_checkpoint_commit": "9987db7d",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_self_test": "PASS 11/11 checks",
+  "pass3_lean_verification": "lean morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean exit 0 (5 theorems, 0 sorry)",
+  "pass3_measurements": 16,
+  "pass3_quick_gate": 100,
+  "pass3_remediation_closed": [
+    "Pass 2 item 1 (2D BCF -> 3D cholesteric chitin-fibroin precursor coupling, Cartwright et al. 2009): closed as a reduced kinematic liquid-crystal template in reconstruct_continuous_bcf_phase (L480-L486), simulate_cholesteric_chitin_lamellar_3d (L489-L611) and evaluate_cholesteric_pitch_coupling (L614-L650); twist rate 6.224 vs pi/h_0 6.283 rad/um, membrane period 0.5007 vs SEM h_0 0.5000 um, Burgers vector 1/0/2 h_0, v_z = P omega / 4 pi",
+    "Pass 2 item 2 (crystal-plasticity fracture toughness of brick-and-mortar tablet sliding under tension): closed as a reduced rate-independent single-slip TSC/Schmid/waviness/Griffith RVE in tsc_effective_modulus_GPa (L981-L985), griffith_tablet_strength_MPa (L988-L992), simulate_tablet_sliding_fracture (L995-L1110), schmid_slip_strength_envelope (L1113-L1124) and evaluate_fracture_toughness_sweeps (L1127-L1223); E 89.5 GPa, sigma_f 169.5 MPa, Gamma 608 J/m^2, h* 28.3 nm, rho* 17.8"
+  ],
+  "pass3_remediation_open": [
+    "L435-L451 _measure_radial_terrace_pitch returns 0.15*raw + 0.85*theory: report the raw regression pitch",
+    "L2008-L2029 SEM Z (5.96) and aspect (3.2436) reference values are the script's own Pass 2 outputs (SEM Z now 6.01): replace with independent literature values",
+    "nacre_screw_dislocation_spirals_reference.json L80-L95 + cross-taxa table (consumed L790-L879): lambda_obs generated from the BCF law, r = 0.9999 is circular; digitise Cartwright et al. (2009) figures or drop the correlations",
+    "L489-L611 cholesteric coupling is a kinematic template: add Frank / Landau-de Gennes director relaxation with BCF front as moving boundary, anchored to measured chitin cholesteric pitch (e.g. Belamie et al. 2004)",
+    "L995-L1110 tablets elastic-brittle, sigma_f = Phi sigma_crit/2 hits 170 MPa by the flaw = h/2 convention, E overshoots Jackson by 23 %, toughening x608 vs Currey ~3000x: add intra-tablet crystal plasticity, cohesive-zone interface with sigma_nc, dry/wet parameter sets",
+    "cholesteric_fracture_reference.json L1-L82 + pass3_citations.bib: all empirical targets and 9 DOIs transcribed offline, unverified; verify with page/table pins",
+    "L2231-L2240 / L1922: --seed is dead, --v-inf/--r-c/--h-0/--dipole-d/--tau-p never reach measure_morphoeval() or the sweeps; --self-test help says '8-check'",
+    "L719, L735, L684-L722: hard-coded Law 3 stacking margins and unsourced pitch_tower / tower_spacing / spacing constants",
+    "L2165-L2173: Haliotis cholesteric volume built at bivalve h_0 = 0.50; 2 % twist/period tolerances tuned to n_z = 120 grid",
+    "L1471, L1497, L2004: duplicated 0.019867 um/px literal and hard-coded inset range; PNG outputs gitignored; no requirements lock"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_078.cholesteric_half_pitch_screw_dislocation_coupling",
+    "MathOfBiology.Loop_078.tsc_tablet_sliding_fracture_toughness"
+  ],
+  "pass3_artifacts": {
+    "created": [
+      "morphoeval/audits/2026-10-19-nacre-screw-dislocation-spirals-audit-v3.yaml",
+      "morphoeval/audits/2026-10-19-nacre-screw-dislocation-spirals-audit-v3.measurements.yaml",
+      "morphoeval/kg/2026-10-19-nacre-screw-dislocation-spirals-audit-v3/ (REPORT.md, 10 .trig, .ttl, signed/ 10 .trig, published.json)",
+      "morphoeval/runs/2026-10-19-nacre-screw-dislocation-spirals-loop-pass3.yaml",
+      "morphoeval/runs/2026-10-19-nacre-screw-dislocation-spirals-loop-pass3.csv",
+      "morphoeval/runs/2026-10-19-nacre-screw-dislocation-spirals-loop-pass3.md",
+      "morphoeval/runs/2026-10-19-nacre-screw-dislocation-spirals-loop-pass3.trig",
+      "morphoeval/runs/2026-10-19-nacre-screw-dislocation-spirals-loop-pass3.events.jsonl",
+      "morphoeval/runs/2026-10-19-nacre-screw-dislocation-spirals-loop-pass3.ledger.jsonl",
+      "docs/media/nacre_screw_dislocation_spirals_telemetry_pass3.png",
+      "docs/media/nacre_screw_dislocation_spirals_cholesteric_fracture.png",
+      "docs/media/nacre_screw_dislocation_spirals_tablet_sliding.gif",
+      "datasets/nacre_screw_dislocation_spirals/cholesteric_fracture_reference.json",
+      "datasets/nacre_screw_dislocation_spirals/pass3_citations.bib"
+    ],
+    "modified": [
+      "models/2019-cartwright-nacre-screw-dislocation-spirals.py",
+      "morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean",
+      "morphoeval/math_kg_loops/cartwright-nacre-screw-dislocation-spirals.yaml",
+      "datasets/nacre_screw_dislocation_spirals/README.md",
+      "docs/media/nacre_screw_dislocation_spirals_comparison.png",
+      "docs/media/nacre_screw_dislocation_spirals_growth.gif (re-rendered byte-identical)",
+      "morphoeval/kg/2026-10-19-nacre-screw-dislocation-spirals-audit-v2/morphoeval_2026-10-19-nacre-screw-dislocation-spirals-audit-v2.ttl (supersededBy triples written by build_morphoeval_kg.py --supersede-from)",
+      "morphoeval/cloud/dispatches/slot-078.json"
+    ]
+  }
 }

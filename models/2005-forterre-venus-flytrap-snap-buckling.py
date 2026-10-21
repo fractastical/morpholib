@@ -108,7 +108,7 @@ import numpy as np
 from PIL import Image
 from scipy import integrate, ndimage as ndi, optimize, signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "venus_flytrap_snap_buckling"
 REF_JSON = DATASET_DIR / "venus_flytrap_snap_buckling_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "dionaea_muscipula_trap_lobe_specimen.jpg"

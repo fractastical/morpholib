@@ -85,7 +85,7 @@ import numpy as np  # noqa: E402
 from matplotlib.collections import EllipseCollection, LineCollection, PolyCollection  # noqa: E402
 from PIL import Image  # noqa: E402
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent
 CACHE = HERE / ".celegans_cache"
 MANIFEST = HERE / "datasets" / "celegans" / "pinned_inputs.sha256"
 

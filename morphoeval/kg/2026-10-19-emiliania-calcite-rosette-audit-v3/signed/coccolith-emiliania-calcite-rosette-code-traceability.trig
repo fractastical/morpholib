@@ -1,0 +1,111 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAOY1BjAhmhFmjyTj4n8sTBTd-_gaau4qLLohZrV08Dgk/> .
+@prefix this: <https://w3id.org/np/RAOY1BjAhmhFmjyTj4n8sTBTd-_gaau4qLLohZrV08Dgk> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-coccolith-emiliania-calcite-rosette> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-code-traceability> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics — Code-to-model traceability: 85/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "The module header lists the Pass 3 sections and their limits, the contact-model docstring maps every stiffness and threshold to its formula (k_cell, k_mem via Reissner 1946, k_ij lap joint, N_ij hoop force, alpha_p P/h^2 fracture), the vesicle functions cite the support-function derivation, the Panel E title now says \"prescribed\", and the new Lean theorems are named in the measurement sources. Deductions: the vendored JSON governing equation for the T-head uses tanh while the code is linear in max(Omega - 1, 0) — a formula mismatch between the stated source and the implementation (-5); the shaft-width factor 0.62 w_0, the morphotype-R factors 1.28 / 1.45, the 0.28 angular-pitch factor, the acidification spoke factor 0.55 + 0.35 Omega and the interlock threshold 1.35 are uncited (-5); the 0.042 / 0.012 / 2.36 buckling constants are labelled prescribed but not traced to any derivation (-3); the 44.61 deg constant is documented but dead (-2)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "datasets/emiliania_calcite_rosette/emiliania_calcite_rosette_reference.json L75–L75: t_head_hammer_width governing equation uses tanh(max(Omega-1, 0)) whereas the code uses a linear slope <https://github.com/fractastical/morpholib/blob/9987db7d/datasets/emiliania_calcite_rosette/emiliania_calcite_rosette_reference.json#L75-L75>",
+            "models/2022-coccolith-emiliania-calcite-rosette.py L264–L298: Uncited constants: 0.225 slope (L264), 0.55 + 0.35 Omega (L267), 0.62 and 1.28 (L272), interlock threshold 1.35 (L278), 0.28 and 1.45 (L298) <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L264-L298>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-code-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-code-traceability-3> ;
+        pk:hasScore "0.85"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "models/2022-coccolith-emiliania-calcite-rosette.py L1–L58" ;
+        dcterms:description "v3 header: Pass 3 sections 4b/4c described with their limits; five primary sources with DOIs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L1-L58> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "models/2022-coccolith-emiliania-calcite-rosette.py L596–L620" ;
+        dcterms:description "Contact-model docstring maps k_cell, k_mem (Reissner 1946), k_ij lap joint, N_ij hoop force, slide and fracture thresholds to formulas" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L596-L620> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-code-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "models/2022-coccolith-emiliania-calcite-rosette.py L1287–L1287" ;
+        dcterms:description "Panel E title states the 2.36x amplification is prescribed" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L1287-L1287> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 primary assessor, Phase B)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "l3lc0kAU0gLWr5DyHE8cbxS9+jDay01YBdT0k267U5Q7HZXZxCUJ9p+dIvUkKqTct3WqjzOW7tXDUH8JFMQ2IxnH23YRa3s0jcr7l/3HnJWkocWDHbJZb4iTBjOYvs5WuvLywhPlsNmaIB76JN5d092SmOfkmVAogBSk6M1H2eVPFgcB1ebla08q6gUsD8wh1qjmbTL4aeDsxpbe0QuT7GZWXNdfjnpb/Y5YIqxWxmm7GeKUF7uA6jNp5VuRNZa+YcK1U12Cvz4Mwnb+EK1LdUSs+5jYb4F88xmgInvusycjr4+XZKIe1O1/hOHrKKL+FPQFJhZePXUt7p4CSoJPFw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics — Code-to-model traceability 85/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T23:59:40Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/80> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1002/sapm194625180> dcterms:date "1946"^^xsd:gYear ;
+        dcterms:title "Stresses and small displacements of shallow spherical shells. I" .
+
+    <https://doi.org/10.1038/356516a0> dcterms:date "1992"^^xsd:gYear ;
+        dcterms:title "Crystallographic control of biomineral morphology in coccoliths" .
+
+    <https://doi.org/10.1038/ncomms11904> dcterms:date "2016"^^xsd:gYear ;
+        dcterms:title "Coccospheres confer mechanical protection: insights into the Emiliania huxleyi architectural design" .
+
+    <https://doi.org/10.1038/s41467-018-04168-9> dcterms:date "2018"^^xsd:gYear ;
+        dcterms:title "The requirement for calcification differs between ecologically important coccolithophore species" .
+
+    <https://doi.org/10.1098/rspb.1993.0073> dcterms:date "1993"^^xsd:gYear ;
+        dcterms:title "Construction of stage-specific models of coccolith biomineralization in Emiliania huxleyi" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/80> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/sapm194625180>,
+            <https://doi.org/10.1038/356516a0>,
+            <https://doi.org/10.1038/ncomms11904>,
+            <https://doi.org/10.1038/s41467-018-04168-9>,
+            <https://doi.org/10.1098/rspb.1993.0073> .
+}
+

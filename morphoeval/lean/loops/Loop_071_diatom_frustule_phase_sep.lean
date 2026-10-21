@@ -97,4 +97,48 @@ theorem sumper_2002_hierarchical_hex_packing (s0 ratio : Nat) :
     centered_hexagonal_droplets 3 = 37 := by
   simp [sumper_tier_scale, centered_hexagonal_droplets]
 
+-- ============================================================================
+-- Law 4 (Pass 3): Centrifugal Directional Quench — Furukawa (1992) front form
+--   a(r,t) = +1 behind the advancing front, -1 ahead of it.
+-- ============================================================================
+
+/-- Ahead of the quench front the bulk term is the single well `φ^3 + φ` (`a = -1`),
+    so the linearised growth rate `σ(q) = M q (-1 - eps_sq q)` is strictly negative for
+    every non-zero mode: the LCPA/silicic-acid mixture stays homogeneous until the
+    centrifugal front reaches it. -/
+theorem directional_quench_stable_ahead_of_front
+    (M eps_sq q : Int) (hM : 0 < M) (hq : 0 < q) (he : 0 ≤ eps_sq) :
+    cahn_hilliard_dispersion M (-1) eps_sq q < 0 := by
+  unfold cahn_hilliard_dispersion
+  have hMq : 0 < M * q := Int.mul_pos hM hq
+  have heq : 0 ≤ eps_sq * q := Int.mul_nonneg he (Int.le_of_lt hq)
+  have hneg : -1 - eps_sq * q < 0 := by omega
+  have := Int.mul_lt_mul_of_pos_left hneg hMq
+  simpa using this
+
+/-- Radius of the advancing quench front `R(t) = R0 + v t` (all quantities in grid
+    units; `v ≥ 0` is the centrifugal front speed). -/
+def quench_front_radius (R0 v t : Nat) : Nat :=
+  R0 + v * t
+
+/-- Radius of the lagging silica precipitation (solidification) front
+    `R_s(t) = R(t) - lag` (truncated at 0). -/
+def solidification_radius (R0 v lag t : Nat) : Nat :=
+  quench_front_radius R0 v t - lag
+
+/-- Theorem 5 (`frozen_front_monotone_irreversible`):
+    (i) the solidified annulus always lies strictly inside the quenched disc whenever
+    the lag is positive and something has solidified (`R_s(t) < R(t)`), so the model
+    never freezes un-quenched mixture; (ii) both fronts are monotone in time, so a
+    pixel that has solidified at time `t1` is still solidified at any later `t2`:
+    silica precipitation in the model is irreversible (zero mobility is never restored). -/
+theorem frozen_front_monotone_irreversible (R0 v lag t1 t2 : Nat)
+    (hlag : 0 < lag) (hsolid : 0 < solidification_radius R0 v lag t1) (ht : t1 ≤ t2) :
+    solidification_radius R0 v lag t1 < quench_front_radius R0 v t1 ∧
+    quench_front_radius R0 v t1 ≤ quench_front_radius R0 v t2 ∧
+    solidification_radius R0 v lag t1 ≤ solidification_radius R0 v lag t2 := by
+  unfold solidification_radius quench_front_radius at *
+  have hv : v * t1 ≤ v * t2 := Nat.mul_le_mul_left v ht
+  omega
+
 end MathOfBiology.Loop_071

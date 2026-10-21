@@ -1,0 +1,297 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-chirat-mollusc-shell-marginal-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-chirat-mollusc-shell-marginal-buckling-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-chirat-mollusc-shell-marginal-buckling-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Chirat, Moulton & Goriely (2013) & Erlich et al. (2016) mollusc shell marginal buckling, hollow-spine closure and predator damage / mantle repair — Morphometric validation: 83/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`measure_morphoeval()` (L2036-2222) now returns 16 measurements with reference values: the 9 Pass 2 metrics are unchanged (lambda_sim 8.7728 vs 8.7766 mm, pitchfork r 0.9992, specimen 14 costae, CV 0.2196) and 7 are new (small-strain r = 1.0, eps_close 4.8068, gap/t 0.9997, adult N 14, scar index 0.030, local P_c ratio sqrt(rho) 1.0724, critical chip 1.97 lambda). Deductions, which drive this dimension down from 92: the three headline Pass 3 references are not independent data — eps_close is compared with mesh convergence of the same model at M = 224 (L2069-2079), the critical chip with a rounding heuristic (L2119-2129), and the heal-length fit 8.3 mm with the imposed 7 mm (consistency check, L2089-2110) (-5); the 12-species quarter-power \"collapse\" regresses lambda_obs against 2 pi (EI/k)^(1/4) where the JSON EI, k were themselves set from lambda_obs, so r = 1.0000 and alpha = 0.2500 are tautological (L1073-1139) (-3); the rib-count ratio 27.5/14 compares the hard-coded `2 n_base - 0.5` with its own reference (L435) (-1); the rib count in the damage trajectory depends on a `find_peaks` prominence threshold of 0.25 A_eq (L836), so the sector count 1 -> 0 at damage is threshold-dependent (-1); the registry/defect metrics inherit the periodic-margin artefact (adult correlation ~ 0 in defect cells) (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2013-chirat-mollusc-shell-marginal-buckling.py L1073–L1139: 12-species regression of lambda_obs on 2 pi (EI/k)^(1/4) with EI, k read from the JSON that was fitted to lambda_obs — tautological r = 1.0000 <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L1073-L1139>",
+            "2013-chirat-mollusc-shell-marginal-buckling.py L2069–L2079: eps_close reference is the same model's mesh-convergence value at M = 224, stated as such — not an empirical closure strain <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L2069-L2079>",
+            "2013-chirat-mollusc-shell-marginal-buckling.py L2119–L2129: Critical chip reference is a half-integer rounding heuristic (1.5 lambda), stated as such; numeric value 1.97 lambda <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L2119-L2129>",
+            "2013-chirat-mollusc-shell-marginal-buckling.py L829–L840: Rib crest count via find_peaks with prominence 0.25 A_eq (L836) — threshold-dependent <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L829-L840>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-12-species-antimarginal-rib-wavelength-scaling-correlation-chirat-et-al-2013-erlich-et-al-2016>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-12-species-rib-count-scaling-correlation-n-ribs-phi-0-r-lambda-c>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-adult-rib-count-after-predator-chip-and-mantle-repair-default-chip-5-deg-half-angle-rho-1-15>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-biological-specimen-polar-angular-rib-spacing-cv-ribbed-bivalve-shell-specimen-jpg>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-biological-specimen-segmented-primary-radial-costae-count-ribbed-bivalve-shell-specimen-jpg>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-critical-predator-chip-arc-in-lambda-c-for-repair-induced-rib-intercalation-at-rho-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-elastica-small-strain-amplitude-law-correlation-a-num-vs-2-pi-sqrt-w-dl>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-neck-gap-wall-thickness-after-self-contact-contact-penalty-resolution>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-self-contact-closure-growth-excess-eps-close-reduced-2d-elastica-of-a-murex-spine-fold>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-intercalating-multicostate-vs-isometric-constant-rib-adult-count-ratio>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-l-bfgs-b-relaxed-winkler-beam-adult-pecten-rib-wavelength-lambda-sim>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-local-critical-load-ratio-in-the-fresh-repair-callus-p-c-loc-p-c-sqrt-rho>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-log-log-quarter-power-foundation-scaling-exponent-alpha-lambda-c-ei-k-alpha>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-repair-scar-index-at-the-adult-margin-delta-w-dmg-w-ctrl-w-ctrl-healing-completeness>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-subcritical-compressive-load-negative-control-amplitude-p-p-c-0-65-1-vs-wild-type>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-supercritical-pitchfork-rib-amplitude-correlation-across-p-p-c-sweep>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-morphometric-validation-2> ;
+        pk:hasScore "0.83"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-12-species-antimarginal-rib-wavelength-scaling-correlation-chirat-et-al-2013-erlich-et-al-2016> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "12-species antimarginal rib wavelength scaling correlation (Chirat et al. 2013 / Erlich et al. 2016) = 1.0 Pearson r" ;
+        dct:description "RMSE = 0.1125 mm, p=3.63e-26" ;
+        schema:measurementTechnique "Linear regression of predicted 2*pi*(EI/k)^(1/4) vs measured wavelength across 12 species in 4 clades (p=3.63e-26, RMSE=0.1125 mm)" ;
+        schema:name "12-species antimarginal rib wavelength scaling correlation (Chirat et al. 2013 / Erlich et al. 2016)" ;
+        schema:unitText "Pearson r" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-12-species-antimarginal-rib-wavelength-scaling-correlation-chirat-et-al-2013-erlich-et-al-2016-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-12-species-antimarginal-rib-wavelength-scaling-correlation-chirat-et-al-2013-erlich-et-al-2016-reference> a schema:PropertyValue ;
+        dct:source "Chirat, Moulton & Goriely (2013) PNAS 110:6015-6020 & Erlich et al. (2016) J. R. Soc. Interface 13:20160592" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-12-species-rib-count-scaling-correlation-n-ribs-phi-0-r-lambda-c> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "12-species rib count scaling correlation N_ribs = (Phi_0 * R) / lambda_c = 1.0 Pearson r" ;
+        dct:description "RMSE = 0.0766 ribs, p=2.84e-23" ;
+        schema:measurementTechnique "Correlation of predicted vs observed antimarginal rib count across 12 bivalve, gastropod, ammonite, and brachiopod species (RMSE=0.0766 ribs)" ;
+        schema:name "12-species rib count scaling correlation N_ribs = (Phi_0 * R) / lambda_c" ;
+        schema:unitText "Pearson r" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-12-species-rib-count-scaling-correlation-n-ribs-phi-0-r-lambda-c-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-12-species-rib-count-scaling-correlation-n-ribs-phi-0-r-lambda-c-reference> a schema:PropertyValue ;
+        dct:source "Erlich, Moulton, Goriely & Chirat (2016) J. R. Soc. Interface 13:20160592 Fig. 4" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-adult-rib-count-after-predator-chip-and-mantle-repair-default-chip-5-deg-half-angle-rho-1-15> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Adult rib count after predator chip and mantle repair (default chip 5 deg half-angle, rho=1.15) = 14.0 ribs" ;
+        dct:description "registry error = 0.000 lambda, adult damaged-vs-control profile r = 0.9995" ;
+        schema:measurementTechnique "Wrap-aware crest count on the adult (R=55 mm) margin of the damaged accretionary trajectory; control trajectory = 14 ribs; ribs in chipped sector at damage = 0 (pre-damage 1)" ;
+        schema:name "Adult rib count after predator chip and mantle repair (default chip 5 deg half-angle, rho=1.15)" ;
+        schema:unitText "ribs" ;
+        schema:value "14.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-adult-rib-count-after-predator-chip-and-mantle-repair-default-chip-5-deg-half-angle-rho-1-15-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-adult-rib-count-after-predator-chip-and-mantle-repair-default-chip-5-deg-half-angle-rho-1-15-reference> a schema:PropertyValue ;
+        dct:source "Pecten jacobaeus N=14 primary costae (Chirat et al. 2013 PNAS; specimen segmentation) — repair re-forms ribs in register with the template" ;
+        schema:value "14.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-biological-specimen-polar-angular-rib-spacing-cv-ribbed-bivalve-shell-specimen-jpg> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Biological specimen polar angular rib-spacing CV (ribbed_bivalve_shell_specimen.jpg) = 0.2196 CV (std/mean)" ;
+        dct:description "mean angular spacing = 9.40° across 128° fan" ;
+        schema:measurementTechnique "Coefficient of variation of inter-rib angular spacing across n=14 radial costae in Pecten jacobaeus specimen" ;
+        schema:name "Biological specimen polar angular rib-spacing CV (ribbed_bivalve_shell_specimen.jpg)" ;
+        schema:unitText "CV (std/mean)" ;
+        schema:value "0.2196" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-biological-specimen-polar-angular-rib-spacing-cv-ribbed-bivalve-shell-specimen-jpg-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-biological-specimen-polar-angular-rib-spacing-cv-ribbed-bivalve-shell-specimen-jpg-reference> a schema:PropertyValue ;
+        dct:source "Erlich et al. (2016) J. R. Soc. Interface periodic antimarginal costae angular dispersion (CV < 0.25)" ;
+        schema:value "0.2" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-biological-specimen-segmented-primary-radial-costae-count-ribbed-bivalve-shell-specimen-jpg> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Biological specimen segmented primary radial costae count (ribbed_bivalve_shell_specimen.jpg) = 14.0 ribs" ;
+        dct:description "angular spacing CV = 0.2196, adult arc wavelength = 68.93 px" ;
+        schema:measurementTechnique "Polar ray-averaged Difference-of-Gaussians angular ridge detection across fan [-64°, +64°] on Pecten jacobaeus valve (mean dtheta = 9.40°, CV = 0.2196)" ;
+        schema:name "Biological specimen segmented primary radial costae count (ribbed_bivalve_shell_specimen.jpg)" ;
+        schema:unitText "ribs" ;
+        schema:value "14.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-biological-specimen-segmented-primary-radial-costae-count-ribbed-bivalve-shell-specimen-jpg-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-biological-specimen-segmented-primary-radial-costae-count-ribbed-bivalve-shell-specimen-jpg-reference> a schema:PropertyValue ;
+        dct:source "Pecten jacobaeus taxonomic diagnosis & Chirat et al. (2013) PNAS (14-16 primary radial costae)" ;
+        schema:value "14.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-critical-predator-chip-arc-in-lambda-c-for-repair-induced-rib-intercalation-at-rho-1> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Critical predator chip arc (in lambda_c) for repair-induced rib intercalation at rho = 1 = 1.9687 chip arc / lambda_c(r_d)" ;
+        dct:description "transition lies between the grid points 1.09 and 1.97 lambda; stiffer callus (rho >= 1.3) nucleates defects at smaller chips" ;
+        schema:measurementTechnique "Smallest chip arc on the grid [0.66, 1.09, 1.53, 1.97, 2.62] lambda producing an extra adult rib with a non-stiffened callus; fraction of the 20-cell (chip x rho) phase diagram healing in register = 0.35" ;
+        schema:name "Critical predator chip arc (in lambda_c) for repair-induced rib intercalation at rho = 1" ;
+        schema:unitText "chip arc / lambda_c(r_d)" ;
+        schema:value "1.9687" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-critical-predator-chip-arc-in-lambda-c-for-repair-induced-rib-intercalation-at-rho-1-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-critical-predator-chip-arc-in-lambda-c-for-repair-induced-rib-intercalation-at-rho-1-reference> a schema:PropertyValue ;
+        dct:source "Half-integer rounding heuristic (a template gap > 1.5 lambda can host one more crest than it lost) — heuristic, not a published value" ;
+        schema:value "1.5" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-elastica-small-strain-amplitude-law-correlation-a-num-vs-2-pi-sqrt-w-dl> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Hollow-spine elastica small-strain amplitude law correlation A_num vs (2/pi) sqrt(W dL) = 1.0 Pearson r" ;
+        dct:description "mean |A_num - A_lin| / A_lin = 0.0259" ;
+        schema:measurementTechnique "Clamped planar inextensible elastica (M=96, W=6.0 mm) relaxed by L-BFGS-B at eps in [0.005, 0.03]; mean relative amplitude error = 0.0259" ;
+        schema:name "Hollow-spine elastica small-strain amplitude law correlation A_num vs (2/pi) sqrt(W dL)" ;
+        schema:unitText "Pearson r" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-elastica-small-strain-amplitude-law-correlation-a-num-vs-2-pi-sqrt-w-dl-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-elastica-small-strain-amplitude-law-correlation-a-num-vs-2-pi-sqrt-w-dl-reference> a schema:PropertyValue ;
+        dct:source "Clamped Euler-elastica first mode (Moulton, Goriely & Chirat 2012 J. Theor. Biol. planar rod reduction): Delta L = pi^2 A^2 / (4 W)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-neck-gap-wall-thickness-after-self-contact-contact-penalty-resolution> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Hollow-spine neck gap / wall thickness after self-contact (contact penalty resolution) = 0.9997 ratio" ;
+        dct:description "closure first detected at eps=4.807" ;
+        schema:measurementTechnique "Minimum distance between non-adjacent flank nodes at the largest growth excess eps=6.0, divided by the wall thickness t" ;
+        schema:name "Hollow-spine neck gap / wall thickness after self-contact (contact penalty resolution)" ;
+        schema:unitText "ratio" ;
+        schema:value "0.9997" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-neck-gap-wall-thickness-after-self-contact-contact-penalty-resolution-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-neck-gap-wall-thickness-after-self-contact-contact-penalty-resolution-reference> a schema:PropertyValue ;
+        dct:source "Self-contact constraint d_ij >= t (closed hollow tube wall-to-wall contact)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-self-contact-closure-growth-excess-eps-close-reduced-2d-elastica-of-a-murex-spine-fold> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Hollow-spine self-contact closure growth excess eps_close (reduced 2D elastica of a Murex spine fold) = 4.8068 ratio (L - W) / W" ;
+        dct:description "neck widest at eps=1.70, monotone narrowing afterwards = True; reduced model, not Rudraraju 2019 3D FEM" ;
+        schema:measurementTechnique "Continuation sweep of the self-contact-penalised elastica; first eps at which the inter-flank neck gap reaches the wall thickness t=0.35 mm (H/W at closure = 2.312, lumen = 34.66 mm^2)" ;
+        schema:name "Hollow-spine self-contact closure growth excess eps_close (reduced 2D elastica of a Murex spine fold)" ;
+        schema:unitText "ratio (L - W) / W" ;
+        schema:value "4.8068" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-self-contact-closure-growth-excess-eps-close-reduced-2d-elastica-of-a-murex-spine-fold-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-hollow-spine-self-contact-closure-growth-excess-eps-close-reduced-2d-elastica-of-a-murex-spine-fold-reference> a schema:PropertyValue ;
+        dct:source "Mesh-convergence reference of the same reduced model at M=224 segments (datasets/mollusc_shell_marginal_buckling/pass3_spine_closure_damage_repair_reference.json); no independent published closure strain is vendored" ;
+        schema:value "5.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-intercalating-multicostate-vs-isometric-constant-rib-adult-count-ratio> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Intercalating multicostate vs isometric constant-rib adult count ratio = 1.9643 ratio (N_intercal / N_isometric)" ;
+        dct:description "intercalating N=27.5 vs isometric N=14.0" ;
+        schema:measurementTechnique "Ratio of adult antimarginal rib count in constant-wavelength intercalating regime (Chlamys/Spirifer, N=27.5) vs isometric Pecten regime (N=14.0)" ;
+        schema:name "Intercalating multicostate vs isometric constant-rib adult count ratio" ;
+        schema:unitText "ratio (N_intercal / N_isometric)" ;
+        schema:value "1.9643" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-intercalating-multicostate-vs-isometric-constant-rib-adult-count-ratio-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-intercalating-multicostate-vs-isometric-constant-rib-adult-count-ratio-reference> a schema:PropertyValue ;
+        dct:source "Erlich, Moulton, Goriely & Chirat (2016) J. R. Soc. Interface 13:20160592 Sec. 3" ;
+        schema:value "1.9643" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-l-bfgs-b-relaxed-winkler-beam-adult-pecten-rib-wavelength-lambda-sim> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "L-BFGS-B relaxed Winkler-beam adult Pecten rib wavelength lambda_sim = 8.7728 mm" ;
+        dct:description "simulated ribs = 14.01 vs ref 14.0" ;
+        schema:measurementTechnique "Sub-bin spectral peak wavelength of L-BFGS-B relaxed fourth-order nonlinear Winkler-beam mantle margin at P/P_c=1.45" ;
+        schema:name "L-BFGS-B relaxed Winkler-beam adult Pecten rib wavelength lambda_sim" ;
+        schema:unitText "mm" ;
+        schema:value "8.7728" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-l-bfgs-b-relaxed-winkler-beam-adult-pecten-rib-wavelength-lambda-sim-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-l-bfgs-b-relaxed-winkler-beam-adult-pecten-rib-wavelength-lambda-sim-reference> a schema:PropertyValue ;
+        dct:source "Chirat et al. (2013) PNAS adult Pecten jacobaeus analytical wavelength 8.7766 mm" ;
+        schema:value "8.7766" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-local-critical-load-ratio-in-the-fresh-repair-callus-p-c-loc-p-c-sqrt-rho> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Local critical-load ratio in the fresh repair callus P_c,loc / P_c = sqrt(rho) = 1.0724 ratio" ;
+        dct:description "analytical identity; checked against the Lean monotonicity theorem" ;
+        schema:measurementTechnique "sqrt(k_repair / k) for the default callus stiffening rho = 1.15 entering k(s) of the heterogeneous Winkler foundation" ;
+        schema:name "Local critical-load ratio in the fresh repair callus P_c,loc / P_c = sqrt(rho)" ;
+        schema:unitText "ratio" ;
+        schema:value "1.0724" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-local-critical-load-ratio-in-the-fresh-repair-callus-p-c-loc-p-c-sqrt-rho-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-local-critical-load-ratio-in-the-fresh-repair-callus-p-c-loc-p-c-sqrt-rho-reference> a schema:PropertyValue ;
+        dct:source "P_c = 2 sqrt(E I k) (Chirat et al. 2013 Eq. 2); Lean theorem MathOfBiology.Loop_072.chirat_repair_callus_raises_critical_load" ;
+        schema:value "1.0724" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-log-log-quarter-power-foundation-scaling-exponent-alpha-lambda-c-ei-k-alpha> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Log-log quarter-power foundation scaling exponent alpha (lambda_c ~ (EI/k)^alpha) = 0.25 exponent" ;
+        dct:description "SE = ±0.0003" ;
+        schema:measurementTechnique "Log-log OLS slope of log(lambda_obs) vs log(EI/k) across 12 shell taxa (SE ± 0.0003)" ;
+        schema:name "Log-log quarter-power foundation scaling exponent alpha (lambda_c ~ (EI/k)^alpha)" ;
+        schema:unitText "exponent" ;
+        schema:value "0.25" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-log-log-quarter-power-foundation-scaling-exponent-alpha-lambda-c-ei-k-alpha-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-log-log-quarter-power-foundation-scaling-exponent-alpha-lambda-c-ei-k-alpha-reference> a schema:PropertyValue ;
+        dct:source "Chirat, Moulton & Goriely (2013) PNAS 110:6015-6020 Eq. (lambda_c = 2*pi*(EI/k)^(1/4))" ;
+        schema:value "0.25" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-repair-scar-index-at-the-adult-margin-delta-w-dmg-w-ctrl-w-ctrl-healing-completeness> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Repair scar index at the adult margin Delta = ||w_dmg - w_ctrl|| / ||w_ctrl|| (healing completeness) = 0.03 ratio" ;
+        dct:description "sector amplitude ratio at damage = 0.791 -> adult 1.005" ;
+        schema:measurementTechnique "RMS difference between damaged and matched-control margins at R=55 mm; peak scar index after chip = 0.2695; exponential healing-length fit = 8.31 mm vs imposed callus decay 7.0 mm (consistency check)" ;
+        schema:name "Repair scar index at the adult margin Delta = ||w_dmg - w_ctrl|| / ||w_ctrl|| (healing completeness)" ;
+        schema:unitText "ratio" ;
+        schema:value "0.03" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-repair-scar-index-at-the-adult-margin-delta-w-dmg-w-ctrl-w-ctrl-healing-completeness-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-repair-scar-index-at-the-adult-margin-delta-w-dmg-w-ctrl-w-ctrl-healing-completeness-reference> a schema:PropertyValue ;
+        dct:source "Full healing of the mantle-repair perturbation under template memory (Chirat et al. 2013 mechanical-template argument; Vermeij 1987 repair scars)" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-subcritical-compressive-load-negative-control-amplitude-p-p-c-0-65-1-vs-wild-type> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Subcritical compressive load negative control amplitude (P/P_c = 0.65 < 1 vs wild-type) = 1e-06 mm" ;
+        dct:description "subcritical ribs = 0.0 vs wild-type A_sim = 0.5244 mm" ;
+        schema:measurementTechnique "L-BFGS-B relaxed mantle deflection amplitude under subcritical thrust P/P_c = 0.65 < 1 (negative control vs P/P_c = 1.45 wild-type)" ;
+        schema:name "Subcritical compressive load negative control amplitude (P/P_c = 0.65 < 1 vs wild-type)" ;
+        schema:unitText "mm" ;
+        schema:value "1e-06" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-subcritical-compressive-load-negative-control-amplitude-p-p-c-0-65-1-vs-wild-type-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-subcritical-compressive-load-negative-control-amplitude-p-p-c-0-65-1-vs-wild-type-reference> a schema:PropertyValue ;
+        dct:source "Chirat et al. (2013) PNAS (for P < P_c = 2*sqrt(E*I*k), the mantle margin remains unbuckled with 0 ribs)" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-supercritical-pitchfork-rib-amplitude-correlation-across-p-p-c-sweep> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Supercritical pitchfork rib amplitude correlation across P/P_c sweep = 0.9992 Pearson r" ;
+        dct:description "wild-type P/P_c=1.45 A_sim=0.5244 mm vs A_theory=0.5231 mm" ;
+        schema:measurementTechnique "Correlation of L-BFGS-B relaxed rib amplitude vs analytical pitchfork law A_eq(P) across 8 thrust ratios P/P_c in [0.65, 1.85] (RMSE=0.0127 mm)" ;
+        schema:name "Supercritical pitchfork rib amplitude correlation across P/P_c sweep" ;
+        schema:unitText "Pearson r" ;
+        schema:value "0.9992" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-supercritical-pitchfork-rib-amplitude-correlation-across-p-p-c-sweep-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-measurement-supercritical-pitchfork-rib-amplitude-correlation-across-p-p-c-sweep-reference> a schema:PropertyValue ;
+        dct:source "Chirat et al. (2013) PNAS SI Sec. S2 supercritical pitchfork bifurcation normal form" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "2013-chirat-mollusc-shell-marginal-buckling.py L2036–L2222" ;
+        dct:description "16 reference-anchored measurements (9 Pass 2 + 7 Pass 3), all with reference_value / unit" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L2036-L2222> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "2013-chirat-mollusc-shell-marginal-buckling.py L892–L979" ;
+        dct:description "evaluate_damage_repair: matched control, scar index, exponential heal-length fit, wrap-aware rib count, registry error restricted to +/- lambda/2, local P_c ratio sqrt(rho)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L892-L979> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 remediated assessment, Phase B audit subagent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/72> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2012.07.009>,
+            <https://doi.org/10.1073/pnas.1220443110>,
+            <https://doi.org/10.1098/rsif.2016.0592>,
+            <https://doi.org/10.1371/journal.pcbi.1007213>,
+            <https://press.princeton.edu/books/paperback/9780691000800/evolution-and-escalation> .
+    <https://doi.org/10.1016/j.jtbi.2012.07.009> dct:date "2012"^^xsd:gYear ;
+        dct:title "Mechanical growth and morphogenesis of seashells" .
+    <https://doi.org/10.1073/pnas.1220443110> dct:date "2013"^^xsd:gYear ;
+        dct:title "Mechanical basis of morphogenesis and convergent evolution of spiny seashells" .
+    <https://doi.org/10.1098/rsif.2016.0592> dct:date "2016"^^xsd:gYear ;
+        dct:title "The physical basis of mollusk shell chiral coiling and antimarginal rib ornamentation" .
+    <https://doi.org/10.1371/journal.pcbi.1007213> dct:date "2019"^^xsd:gYear ;
+        dct:title "A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth" .
+    <https://press.princeton.edu/books/paperback/9780691000800/evolution-and-escalation> dct:date "1987"^^xsd:gYear ;
+        dct:title "Evolution and Escalation: An Ecological History of Life" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Chirat, Moulton & Goriely (2013) & Erlich et al. (2016) mollusc shell marginal buckling, hollow-spine closure and predator damage / mantle repair — Morphometric validation 83/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T20:02:13Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-chirat-mollusc-shell-marginal-buckling-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/72> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

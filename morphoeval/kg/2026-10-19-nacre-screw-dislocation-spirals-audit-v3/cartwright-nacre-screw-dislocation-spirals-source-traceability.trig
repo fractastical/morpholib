@@ -1,0 +1,114 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-cartwright-nacre-screw-dislocation-spirals> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-cartwright-nacre-screw-dislocation-spirals-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-cartwright-nacre-screw-dislocation-spirals-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Cartwright & Checa (2007), Cartwright et al. (2009) & BCF (1951) nacre screw-dislocation spirals, Frank-Read target loops, chitin pore mineral-bridge columnar vs sheet transition, 3D cholesteric chitin precursor coupling and brick-and-mortar tablet-sliding fracture — Source and data traceability: 88/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 2 provenance is intact: 4 dataset files SHA-256-verified at runtime, `paper_citations.bib` with the 4 original DOIs, scout manifest and README. Pass 3 adds a second SHA-256-pinned reference table (`cholesteric_fracture_reference.json`, 82 lines, with a provenance_note) and `pass3_citations.bib` (98 lines, 9 new entries), both verified fail-closed by `verify_pass3_dataset_integrity()`, and the dataset README gains a Pass 3 section with an explicit 'transcribed offline / approx' caveat (+3 for the honesty of the caveat). Deductions: every numeric target and all nine new DOIs were written from memory with no network access and none is verified — a SHA pin on an unverified table pins the transcription, not the source (-6); the Pass 2 supersaturation / 12-species tables still carry no figure or table citation for their `lambda_obs` columns (-4); de Gennes & Prost has no DOI and the ISBN given is for the 1993 hardback, which could not be checked (-1); the `pitch_tower` / `tower_spacing` / `spacing` literals in the Voronoi solver and the 0.019867 um/px calibration are not traced to the reference JSON (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "datasets/nacre_screw_dislocation_spirals/cholesteric_fracture_reference.json L1–L82: Pass 3 reference table with provenance_note 'transcribed offline ... must be re-verified' (L4) and empirical_targets flagged approx (L68-L79) <https://github.com/fractastical/morpholib/blob/9987db7d/datasets/nacre_screw_dislocation_spirals/cholesteric_fracture_reference.json#L1-L82>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-source-traceability-3> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "models/2019-cartwright-nacre-screw-dislocation-spirals.py L117–L191" ;
+        dct:description "EXPECTED_SHA256_PASS3 (L117-L124) and EXPECTED_SHA256 (L127-L144) registries; verify_dataset_integrity / verify_pass3_dataset_integrity / load_pass3_reference_data fail closed on mismatch" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2019-cartwright-nacre-screw-dislocation-spirals.py#L117-L191> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/nacre_screw_dislocation_spirals/README.md L12–L19" ;
+        dct:description "Pass 3 section listing the new files, SHA-256 values and the offline-transcription caveat; states tau_p, psi, G_p, Phi were not fitted to Jackson" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/datasets/nacre_screw_dislocation_spirals/README.md#L12-L19> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/nacre_screw_dislocation_spirals/pass3_citations.bib L1–L98" ;
+        dct:description "9 new BibTeX entries (de Gennes, Kleman, Jackson, Currey, Gao, Ji, Jäger, Barthelat, Wang); DOIs unverified this pass" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/datasets/nacre_screw_dislocation_spirals/pass3_citations.bib#L1-L98> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 remediation-round primary assessor, slot-078 Phase B)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/78> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/b97416>,
+            <https://doi.org/10.1016/S0006-3495(00)76426-5>,
+            <https://doi.org/10.1016/j.jmps.2004.03.006>,
+            <https://doi.org/10.1016/j.jmps.2006.07.007>,
+            <https://doi.org/10.1073/pnas.0631609100>,
+            <https://doi.org/10.1073/pnas.0900867106>,
+            <https://doi.org/10.1098/rsif.2006.0188>,
+            <https://doi.org/10.1098/rspb.1977.0050>,
+            <https://doi.org/10.1098/rspb.1988.0056>,
+            <https://doi.org/10.1098/rsta.1951.0006>,
+            <https://doi.org/10.1098/rsta.2011.0600>,
+            <https://doi.org/10.1557/JMR.2001.0340>,
+            <https://global.oup.com/academic/product/the-physics-of-liquid-crystals-9780198517856> .
+    <https://doi.org/10.1007/b97416> dct:date "2003"^^xsd:gYear ;
+        dct:title "Soft Matter Physics: An Introduction" .
+    <https://doi.org/10.1016/S0006-3495(00)76426-5> dct:date "2000"^^xsd:gYear ;
+        dct:title "Mineralized collagen fibrils: a mechanical model with a staggered arrangement of mineral particles" .
+    <https://doi.org/10.1016/j.jmps.2004.03.006> dct:date "2004"^^xsd:gYear ;
+        dct:title "Mechanical properties of nanostructure of biological materials" .
+    <https://doi.org/10.1016/j.jmps.2006.07.007> dct:date "2007"^^xsd:gYear ;
+        dct:title "On the mechanics of mother-of-pearl: a key feature in the material hierarchical structure" .
+    <https://doi.org/10.1073/pnas.0631609100> dct:date "2003"^^xsd:gYear ;
+        dct:title "Materials become insensitive to flaws at nanoscale: lessons from nature" .
+    <https://doi.org/10.1073/pnas.0900867106> dct:date "2009"^^xsd:gYear ;
+        dct:title "Spiral and target patterns in bivalve nacre" .
+    <https://doi.org/10.1098/rsif.2006.0188> dct:date "2007"^^xsd:gYear ;
+        dct:title "The dynamics of nacre self-assembly" .
+    <https://doi.org/10.1098/rspb.1977.0050> dct:date "1977"^^xsd:gYear ;
+        dct:title "Mechanical properties of mother of pearl in tension" .
+    <https://doi.org/10.1098/rspb.1988.0056> dct:date "1988"^^xsd:gYear ;
+        dct:title "The mechanical design of nacre" .
+    <https://doi.org/10.1098/rsta.1951.0006> dct:date "1951"^^xsd:gYear ;
+        dct:title "The growth of crystals and the equilibrium structure of their surfaces" .
+    <https://doi.org/10.1098/rsta.2011.0600> dct:date "1969"^^xsd:gYear ;
+        dct:title "Crystal growth as an excitable medium" .
+    <https://doi.org/10.1557/JMR.2001.0340> dct:date "2001"^^xsd:gYear ;
+        dct:title "Deformation mechanisms in nacre" .
+    <https://global.oup.com/academic/product/the-physics-of-liquid-crystals-9780198517856> dct:date "1993"^^xsd:gYear ;
+        dct:title "The Physics of Liquid Crystals (2nd ed.)" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Cartwright & Checa (2007), Cartwright et al. (2009) & BCF (1951) nacre screw-dislocation spirals, Frank-Read target loops, chitin pore mineral-bridge columnar vs sheet transition, 3D cholesteric chitin precursor coupling and brick-and-mortar tablet-sliding fracture — Source and data traceability 88/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-21T00:00:09Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-cartwright-nacre-screw-dislocation-spirals-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/78> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

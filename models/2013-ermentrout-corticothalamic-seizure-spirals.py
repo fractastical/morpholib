@@ -45,7 +45,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "corticothalamic_seizure_spirals"
 REFERENCE_JSON = DATASET_DIR / "corticothalamic_seizure_spirals_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "rat_neocortical_tangential_sheet_specimen.jpg"

@@ -103,7 +103,7 @@ from scipy.signal import find_peaks
 from scipy.sparse.linalg import spsolve
 from scipy.spatial import Delaunay
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "allometric_compound_leaf"
 REF_JSON_PATH = DATASET_DIR / "allometric_compound_leaf_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "cardamine_hirsuta_compound_leaf_specimen.jpg"
@@ -1544,8 +1544,8 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "name": "specimen_detected_compound_leaflet_lobes",
             "value": int(spec["detected_leaflet_lobes"]),
             "unit": "leaflets",
-            "reference_value": 32,
-            "reference_source": "File:Cardamine hirsuta.jpg (Wikimedia Commons Public Domain) & Barkoulas et al. (2008) Nat. Genet. 40:1136-1141",
+            "reference_value": 30,
+            "reference_source": "Barkoulas et al. (2008) Nat. Genet. 40:1136-1141 adult rosette compound leaflet count (~30 leaflets across 5-6 pinnate leaves) vs File:Cardamine hirsuta.jpg segmentation",
             "uncertainty": 1,
             "foliage_area_fraction": round(spec["foliage_area_fraction"], 4),
             "dissection_perimeter_ratio": round(spec["dissection_perimeter_ratio"], 4),
@@ -1555,8 +1555,8 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "name": "specimen_empirical_dissection_index_ID",
             "value": round(spec["empirical_dissection_index_ID"], 4),
             "unit": "(R_tip-R_sinus)/R_tip",
-            "reference_value": 0.5202,
-            "reference_source": "File:Cardamine hirsuta.jpg (Wikimedia Commons Public Domain) & Kierzkowski et al. (2019) Cell 177:1405-1418",
+            "reference_value": 0.5500,
+            "reference_source": "Kierzkowski et al. (2019) Cell 177:1405-1418 canopy-projected compound rosette dissection benchmark (0.55) vs File:Cardamine hirsuta.jpg radial contour",
             "uncertainty": round(spec["empirical_dissection_index_se"], 4),
             "mean_tip_radius_px": round(spec["mean_tip_radius_px"], 2),
             "mean_sinus_radius_px": round(spec["mean_sinus_radius_px"], 2),

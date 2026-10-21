@@ -75,7 +75,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "dichotomous_tree_branching"
 REF_JSON_PATH = DATASET_DIR / "dichotomous_tree_branching_reference.json"
 BIB_PATH = DATASET_DIR / "paper_citations.bib"

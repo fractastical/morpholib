@@ -1,0 +1,374 @@
+# MorphoEval Pass 3 (v3) Audit — Moulton, Goriely & Chirat (2015) J. Theor. Biol. & Chirat et al. (2013) PNAS Mollusc Aperture Spine Buckling, 2026-10-20 (v3)
+#
+# Pass 3 re-score of `2015-moulton-mollusc-aperture-spine-buckling.py` (now 2029 lines; 13 self-test checks;
+# 17 `measure_morphoeval()` entries) after the remediation of both open Pass 2 items in the instrumented loop
+# `morphoeval/runs/2026-10-19-mollusc-aperture-spine-buckling-loop-pass3`, superseding
+# `2026-10-19-mollusc-aperture-spine-buckling-audit-v2` (91.4 consensus).
+#   - Primary assessor: Claude Fable 5.1 (Pass 3 Phase B audit agent), scoring from the Phase A handoff note,
+#     `git diff` of the script and Lean module, a fresh `--self-test` run (PASSED 13/13, 74 s) and `lean` (exit 0).
+#   - Second assessor block kept from v2 for provenance continuity; no blinded second pass was run in Pass 3.
+#
+# What Pass 3 changed (both Pass 2 remediation items, closed with REDUCED models — not the full requested ones):
+#   1. Reduced Koiter / Föppl-von-Kármán thin-shell surface w(s,t) of the mantle margin on a bi-periodic torus
+#      with a tanh varix growth window P(t) and additive oblique spiral-cord ridge forcing
+#      f_cord = eps_cord K0 A_onset cos(k_c (s cos psi + t sin psi)) (`solve_koiter_shell_cord_spine_coupling`,
+#      L670-900), relaxed from band-limited noise by semi-implicit gradient flow + L-BFGS-B. Emergent spine count
+#      17 free (theory 16.47) vs 16 cord-locked (registration 1.00); Arnold-type locking tongue widths [1,2,5,9]
+#      over eps in {0, 0.01, 0.04, 0.15} (`sweep_cord_locking`, L902-938); oblique de-registration at
+#      psi* = 35.0 deg vs rigid-spine estimate 22.8 deg with partial spine-ridge tilt following
+#      (`sweep_cord_obliquity`, L941-990). A pure foundation-stiffness modulation at k_c was tested and abandoned
+#      (it parametrically pumps k_c/2, Mathieu). NOT a 3D finite-strain Koiter FE shell; the planar elastica
+#      cross-section module is still a separate module (its height law is reused at L747 only as a scale).
+#   2. Inverse-WKB mantle-edge thickness profile h(u)/h_bar = (lambda(u)/lambda_bar)^(4/3) inferred from the
+#      *Murex pecten* specimen's 15 inter-spine spacings (`infer_specimen_thickness_gradient`, L1008-1044;
+#      two-harmonic fit R^2 = 0.29, h_max/h_min = 1.71), fed into a graded-rigidity comb D(s) = (h/h_bar)^3
+#      (`solve_graded_thickness_comb`, L1047-1148; Pearson r = 0.991 between emergent spacing and WKB
+#      lambda(s); uniform control CV ~ 0) and an allometric instar series with Brent root beta* = 4/3
+#      (`evaluate_ontogenetic_instar_series`, L1151-1190). NOT micro-CT data and NOT *Chicoreus ramosus*.
+#   3. Main figure 2x3 -> 3x3 (panels G-I), standalone `render_pass3_koiter_figure` (L1573-1649) and
+#      `render_cord_locking_gif` (L1652-1676); 5 new live CLI flags (L1988-1992); 5 SHA-256-pinned dataset files
+#      (`pass3_koiter_cord_thickness_reference.json` added, L119-121); `pass3_citations.bib`; README Pass 3 section.
+#   4. Lean: 2 new theorems (`cord_varix_intersection_registration`, `ontogenetic_spine_count_conservation`),
+#      5 total, 0 sorry, 0 warnings; registered as equations 4-5 in the math KG YAML.
+#
+# Scores below are the primary assessor's: weighted overall 87.5 (dimension mean 88.0). The overall score goes DOWN relative to v2 (91.4) because reading the
+# remediated script against the new emergent solvers exposed that most of the Pass 2 headline numbers were
+# prescribed or self-referential: the 1-D comb spine count is pinned to round(L/lambda_1) = 16 by construction and
+# seeded with the 16-mode (L230-263), the "elastica" is a parametric omega-loop (L367-375), the frond cascade and
+# the 120 deg varix spacing are hand-drawn cosines / prescribed bursts (L411-417, L457-462), and five of the
+# reference values equal the script's own outputs (L1806, L1826, L1866, L1773, L1236). Line numbers refer to
+# the files at commit 9987db7d (working tree with the Phase A edits applied).
+
+audit:
+  id: 2026-10-19-mollusc-aperture-spine-buckling-audit-v3
+  supersedes_audit_id: 2026-10-19-mollusc-aperture-spine-buckling-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Pass 3 remediated assessment, Phase B audit agent)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 2 rubric verification; carried for provenance, not re-run in Pass 3)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/77
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 9987db7d
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediated evaluation of `2015-moulton-mollusc-aperture-spine-buckling.py` (2029 lines,
+      13 self-test checks, 17 measurements) superseding `2026-10-19-mollusc-aperture-spine-buckling-audit-v2`.
+      Line numbers refer to the working tree at 9987db7d with the Phase A remediation applied (uncommitted
+      under the campaign's zero-conflict isolation rule). The manor2008 DOI could not be verified offline.
+
+references:
+  moulton2015:
+    title: "The role of mechanics in the growth and form of mollusc shells: hierarchical spine folding and secondary fractal serrations"
+    authors: "Moulton DE, Goriely A, Chirat R"
+    venue: "Journal of Theoretical Biology 364:420-430 (2015)"
+    doi: 10.1016/j.jtbi.2014.09.021
+  chirat2013:
+    title: "Mechanical basis of morphogenesis and convergent evolution of spiny seashells"
+    authors: "Chirat R, Moulton DE, Goriely A"
+    venue: "Proceedings of the National Academy of Sciences 110(15):6015-6020 (2013)"
+    doi: 10.1073/pnas.1220443110
+  moulton2012:
+    title: "Mechanical growth and morphogenesis of seashells"
+    authors: "Moulton DE, Goriely A, Chirat R"
+    venue: "Journal of Theoretical Biology 311:69-79 (2012)"
+    doi: 10.1016/j.jtbi.2012.07.009
+  rudraraju2019:
+    title: "A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth"
+    authors: "Rudraraju S, Moulton DE, Chirat R, Goriely A"
+    venue: "PLoS Computational Biology 15(7):e1007213 (2019)"
+    doi: 10.1371/journal.pcbi.1007213
+  koiter1966:
+    title: "On the nonlinear theory of thin elastic shells"
+    authors: "Koiter WT"
+    venue: "Proceedings of the Koninklijke Nederlandse Akademie van Wetenschappen B 69:1-54 (1966)"
+    url: https://dwc.knaw.nl/toegangen/digital-library-knaw/?pagetype=publist&search_author=PE00002224
+  manor2008:
+    title: "Wave-number locking in spatially forced pattern-forming systems"
+    authors: "Manor R, Hagberg A, Meron E"
+    venue: "EPL (Europhysics Letters) 83(1):10005 (2008)"
+    doi: 10.1209/0295-5075/83/10005
+
+simulations:
+  - id: moulton-mollusc-aperture-spine-buckling
+    name: "Moulton, Goriely & Chirat (2015) & Chirat et al. (2013) hierarchical mollusc aperture spine folding and fractal frond serration"
+    organism: "Murex pecten (Venus comb murex) & Chicoreus ramosus (ramose murex / Muricidae)"
+    script: models/2015-moulton-mollusc-aperture-spine-buckling.py
+    output: docs/media/mollusc_aperture_spine_buckling_comparison.png
+    extra_outputs:
+      - docs/media/mollusc_aperture_spine_buckling_growth.gif
+      - docs/media/mollusc_aperture_spine_buckling_koiter_cord_ontogeny.png
+      - docs/media/mollusc_aperture_spine_buckling_cord_locking.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-mollusc-aperture-spine-buckling-audit-v2
+    source_refs:
+      - moulton2015
+      - chirat2013
+      - moulton2012
+      - rudraraju2019
+      - koiter1966
+      - manor2008
+    claim_boundary:
+      reported_in_source:
+        - "Chirat, Moulton & Goriely (2013): the mantle edge is an elastic strip growing against the calcified shell margin; excess growth gamma > gamma_c buckles it with wavelength lambda_1 ~ (E h_1^3 / 3 K_s)^(1/4) set by the mantle thickness and the foundation stiffness, giving comb spines along the siphonal canal of Murex pecten and varix spines in muricids"
+        - "Moulton, Goriely & Chirat (2015): further growth folds each spine into a Kirchhoff elastica loop that self-contacts into a hollow tube, and thinner secondary/tertiary mantle generations produce the fractal frond cascade k_{i+1}/k_i = (h_i/h_{i+1})^(3/4) of Chicoreus ramosus"
+        - "Rudraraju et al. (2019): the full problem is a finite-strain morphoelastic shell with surface and volume growth, solved by finite elements"
+        - "Koiter (1966) and Manor, Hagberg & Meron (2008): the thin-shell energy used for the reduced surface model, and wave-number locking of a pattern-forming system to a spatially periodic forcing (Arnold tongues)"
+      reconstructed_in_script:
+        - "Hierarchical wavenumber law k_i^* = (3 K_s / (E h_i^3))^(1/4); 1-D unilateral fourth-order comb energy minimised by L-BFGS-B at the rounded mode q_mode = 2 pi round(L/lambda_1)/L; parametric omega-loop spine profile with a linear neck-gap law; prescribed 3-stage frond cosines; prescribed 120 deg varix bursts; 10-species cross-taxa table; DoG specimen segmentation (Pass 2)"
+        - "Pass 3: reduced linearised Koiter/FvK surface w(s,t) on a 192x96 bi-periodic torus (L_s = 67.2 mm, L_t = 24 mm, D = 1, K_0 = (k_1^*)^4) with varix growth window P(t), additive cord ridge forcing, semi-implicit gradient flow + L-BFGS-B relaxation from noise, emergent spine count / cord-intersection registration / ridge tilt; locking-tongue and obliquity sweeps; inverse-WKB h(u) from the specimen spacing profile; graded-rigidity 1-D comb with uniform control; allometric instar series with Brent root beta*"
+      transfer_boundary:
+        - "The Koiter surface is linearised (no finite membrane strain, flat reference torus, nondimensional D = 1 with outputs labelled mm) and the planar elastica cross-section is not coupled to it; both are separate modules, so the Pass 2 item 1 (3D finite-strain Koiter FE coupling) is addressed only in reduced form"
+        - "h(s) is inferred from a Murex pecten photograph via inverse WKB (R^2 = 0.29, floor 0.35), not measured by micro-CT, and the species is not the Chicoreus ramosus the Pass 2 item asked for; no Chicoreus specimen is vendored"
+        - "The 1-D comb spine count 16, the 120 deg varix spacing, the Chicoreus k_2/k_1 = 3.80, the neck-gap delta -3.1059 mm, the specimen CV 0.2092 reference, beta* = 4/3 and the rigid-spine 22.8 deg are prescribed or self-referential and must not be read as validations"
+      does_not_claim:
+        - "A finite-strain shell FE solution, a numerically integrated Kirchhoff-Clebsch elastica, emergent fractal frond serrations, emergent varix periodicity, measured mantle thickness data for any species, or sourced empirical k_2/k_1 and spine counts for the 10 muricid species"
+    summary: >-
+      Pass 3 (v3) remediated evaluation of `2015-moulton-mollusc-aperture-spine-buckling.py`
+      (weighted overall 87.5/100, DOWN from the 91.4/100 Pass 2 consensus). Both Pass 2 remediation items were
+      closed with honestly labelled reduced models: a linearised Koiter/FvK mantle-margin surface with a varix
+      growth window and oblique spiral-cord ridge forcing (`solve_koiter_shell_cord_spine_coupling`, L670-900;
+      17 free vs 16 cord-locked emergent spines, registration 1.00, locking tongue [1,2,5,9], de-registration at
+      psi* = 35.0 deg with spine-ridge tilt), and an inverse-WKB specimen thickness gradient feeding a
+      graded-rigidity comb (r = 0.991 to the local WKB wavelength) and an allometric instar series (beta* = 4/3)
+      (`infer_specimen_thickness_gradient` / `solve_graded_thickness_comb` / `evaluate_ontogenetic_instar_series`,
+      L1008-1190). The new emergent solvers, relaxed from noise, expose that the Pass 2 1-D comb count is pinned
+      to round(L/lambda_1) by construction (L230-263), that the elastica, frond cascade and varix cycle are
+      parametric/prescribed (L367-375, L411-417, L457-462), and that five reference values are the script's own
+      outputs; these are the Pass 4 items. 13 self-test checks pass (74 s), 5 Lean theorems verify with 0 sorry,
+      5 dataset files are SHA-256-pinned, and the 3x3 figure, two GIFs and a standalone Pass 3 figure render.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Credit: the Pass 3 Koiter/FvK surface is a genuine reduced shell model — bilaplacian bending, varix
+          pre-compression P(t) along s, Winkler foundation K_0 = (k_1^*)^4 from the Moulton-Chirat law, cubic
+          saturation, and additive cord ridge forcing — relaxed from band-limited noise so the spine count (17
+          free vs theory 16.47; 16 when cord-locked) and the cord registration are emergent, not seeded
+          (L670-900); the Mathieu k_c/2 pumping argument for rejecting stiffness modulation (L744-748) is correct
+          physics; the graded-rigidity comb D(s) = (h/h_bar)^3 with local P_c(s) reproduces the WKB spacing law
+          (L1047-1148); the instar scaling N_1 ∝ L^(1-3 beta/4) is exact (L1151-1190) and both laws are
+          machine-checked (Lean Laws 4-5). Deductions: the Pass 2 1-D comb is not an emergent solver — the
+          foundation is built from the rounded mode q_mode = 2 pi round(L/lambda_1)/L and the initial guess is the
+          16-mode itself (L230-263), so N = 16 is prescribed (-3); the "Kirchhoff-Clebsch elastica" does not
+          integrate the ODE at L43-44, it draws a parametric omega loop with a linear neck-gap law and an uncited
+          height law 4.8 sqrt(gamma - gamma_c) (L364-375) (-3); the frond cascade and the 120 deg varix cycle are
+          prescribed cosines and bursts (L411-417, L457-462), only the k-ratios come from the model (-2); the
+          Koiter model is linearised on a flat torus with nondimensional D = 1 but mm-labelled outputs, and the
+          elastica cross-section is not coupled to it (-2); K_s = 0.48 for the frond cascade vs K_s_eff = 1.98
+          for the comb/Koiter solvers are two different foundation stiffnesses for the same law (L163, L213,
+          L677) (-1); Pass 2 credited 93 for solvers that this pass shows were templated, so the dimension falls.
+        evidence:
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [670, 900], note: "Pass 3 reduced Koiter/FvK surface: bilaplacian + P(t) w_ss + K_0 w + kappa_3 w^3 - f_cord, varix tanh window (L727-731), cord ridge forcing with Mathieu justification (L744-748), noise init + gradient flow + L-BFGS-B, emergent count / registration / tilt (L835-865)", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1047, 1190], note: "Graded-rigidity comb D(s)=(h/h_bar)^3 with local P_c(s) and uniform control; allometric instar series with Brent root beta* = 4/3", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [230, 263], note: "1-D comb foundation k_sub = q_mode^4 with q_mode = 2 pi round(L/lambda_1)/L and 16-mode seeded init: spine count 16 is prescribed, theory gives 16.47", supports: false}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [364, 375], note: "Elastica is a parametric omega loop (cos^1.8 profile) with linear neck gap and height 4.8 sqrt(gamma-gamma_c); the ODE in the header (L43-44) is not integrated", supports: false}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [411, 417], note: "Frond stages are hand-drawn cosines; only k2_ratio / k3_ratio come from the wavenumber law", supports: false}
+          - {file: morphoeval/lean/loops/Loop_077_mollusc_aperture_spine_buckling.lean, lines: [127, 188], note: "Laws 4-5: cord/varix intersection count = free spine count when lambda_c cos_den = lambda_1 cos_num; spine-count exponent 4 - 3 beta vanishes iff beta = 4/3; 0 sorry", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          Credit: the SHA-256-locked *Murex pecten* specimen is now used quantitatively twice — DoG comb
+          segmentation (n = 16, CV = 0.2092; `segment_murex_specimen`, L559-634) and, new in Pass 3, its 15
+          inter-spine spacings drive the inverse-WKB thickness profile h(u)/h_bar = (lambda/lambda_bar)^(4/3)
+          that is then tested against the graded comb (panel I, L1486-1517; CV 0.112 emergent vs 0.209
+          specimen); the specimen is visible in panels F and I of the 3x3 figure and the Koiter surface in panel
+          G shows cord-registered spines in 3-D (`render_pass3_koiter_figure`, L1573-1649). Deductions: every
+          *Chicoreus ramosus* claim (frond cascade, h(s) across instars) has no specimen — the Pass 2 item
+          explicitly asked for Chicoreus thickness data and the closure uses a Murex photograph (-6); the
+          two-harmonic thickness fit has R^2 = 0.29 and is floored at 0.35 (L1031), so the inferred
+          h_max/h_min = 1.71 is weakly constrained, and the first segmented spacing (find_peaks distance = 26 px,
+          L585) is plausibly a spurious peak that inflates the gradient (-4); the emergent graded-comb CV (0.112)
+          reaches only about half the specimen CV (-2); the cord-locking GIF and Koiter surface are compared with
+          no muricid varix photograph (-2).
+        evidence:
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [559, 634], note: "DoG comb-spine segmentation on the SHA-256-locked Murex pecten specimen (find_peaks distance 26 px at L585)", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1008, 1044], note: "Inverse-WKB thickness profile from the specimen's 15 spacings; two-harmonic periodic fit R^2 = 0.29 with a 0.35 floor (L1031) — quantitative specimen use but weakly constrained", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1486, 1517], note: "Panel I: specimen spacing vs WKB fit vs emergent graded spacing vs uniform control", supports: true}
+          - {file: docs/media/mollusc_aperture_spine_buckling_comparison.png, lines: [0, 0], note: "3x3 synthesis figure: Murex comb, elastica closure, Chicoreus frond, varix cycle, 10-species scaling, specimen segmentation, Koiter surface (G), locking tongue (H), thickness gradient (I); no Chicoreus specimen anywhere", supports: true}
+          - {file: docs/media/mollusc_aperture_spine_buckling_koiter_cord_ontogeny.png, lines: [0, 0], note: "Standalone Pass 3 figure: 3-D Koiter surface with cord-registered spines, obliquity de-registration + tilt, graded comb with h(s), instar series; compared with no varix photograph", supports: true}
+          - {file: datasets/mollusc_aperture_spine_buckling/README.md, lines: [37, 49], note: "Pass 3 section states the h(s) is inferred from the Murex specimen, not measured, and that no Chicoreus specimen is vendored", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Credit: Pass 3 adds five live CLI flags `--cord-angle`, `--eps-cord`, `--n-cords`, `--beta`,
+          `--skip-pass3-media` (L1988-1992) threaded through `compute_pass3_bundle` (L1193-1238, L2015);
+          the locking-tongue sweep spans n_cords 12-20 x eps in {0, 0.01, 0.04, 0.15} with the eps = 0 control
+          recovering the free mode (`sweep_cord_locking`, L902-938); the obliquity sweep covers realised psi in
+          {0, 9.9, 19.3, 27.7, 35.0} deg with registration, tilt and the rigid-spine sinc(delta phi) prediction
+          (`sweep_cord_obliquity`, L941-990); the beta sweep {0.75, 1, 4/3, 1.5} gives slopes {+0.44, +0.25, 0,
+          -0.125}; the Pass 2 gamma sweep (0.96 / 1.26 / 1.42 / 1.68) and 3 frond generations remain.
+          Deductions: `--K-s` reaches only the frond synthesiser (L1263, `K_s_MPa_per_mm`) while the comb, Koiter
+          and graded solvers use the separate default `K_s_eff = 1.98` (L213, L677, L907, L947, L1052) — so the
+          flag does not move the headline spine counts (-5); `--gamma-varix` changes only the Koiter height scale,
+          never the wavelength (frozen at onset by design, L721-725), and `--E` does not reach the elastica/varix
+          modules (-3); the obliquity is quantised to integer m_t for bi-periodicity so the requested psi is only
+          approximately realised (L737-740) (-2); the `--self-test` help string still says "8-check" (L1981) (-1).
+        evidence:
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1981, 1992], note: "CLI: --self-test (help text stale: '8-check'), --E, --K-s, --gamma-varix, --seed, plus Pass 3 --cord-angle, --eps-cord, --n-cords, --beta, --skip-pass3-media", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [902, 990], note: "Locking-tongue sweep (n_cords x eps_cord, eps = 0 control) and obliquity sweep with sinc(phase drift) rigid-spine prediction", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1259, 1263], note: "--K-s is passed only to synthesize_chicoreus_fractal_frond; comb/Koiter/graded solvers use K_s_eff = 1.98 defaults (L213, L677, L1052)", supports: false}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1151, 1190], note: "beta sweep {0.75, 1, 4/3, 1.5} and Brent root for the spine-count-conserving exponent", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          Credit: `measure_morphoeval()` (L1681-1871) now returns 17 reference-anchored entries; the 8 new ones
+          are genuinely emergent or inferred quantities with meaningful nulls — free Koiter spine count 17 vs
+          16.47 theory, cord registration 1.00 vs 0.5 chance, de-registration psi* 34.99 deg vs the 22.78 deg
+          rigid estimate (the gap is interpreted as tilt compensation), spine tilt 10.45 deg at psi = 19.3 deg,
+          WKB spacing Pearson r = 0.9907 vs 1.0, graded CV 0.112 vs specimen 0.209, h_max/h_min 1.71 vs the
+          uniform null 1.0, beta* = 1.3333 vs 4/3 (L1698-1776). Deductions: five Pass 2 / Pass 3 reference
+          values are the script's own output or an analytic identity — the neck-gap delta reference -3.1059 mm
+          (L1826) is the linear formula's result, the specimen CV reference 0.2092 (L1866) is the measured value,
+          the Chicoreus k_2/k_1 reference 3.80 (L1806) is achieved by choosing h_2 = 0.0708 so that
+          (0.42/0.0708)^(3/4) = 3.80 (L182, L391), beta* = 4/3 (L1773) is the trivial root of 4 - 3 beta, and
+          the 22.78 deg "reference" (L1236) is the script's own rigid-spine estimate (-7); the "L-BFGS-B relaxed
+          spine count 16.0 vs 16.0" (L1812-1820) and the "120.0 deg" varix spacing (L1832-1840) are prescribed,
+          as shown under model-fidelity (-5); the 10-species cross-taxa correlations (r = 1.0000, 0.9987;
+          `evaluate_cross_taxa_muricids`, L497-556) rest on `k2_over_k1_obs` / `n_primary_spines_obs` values in
+          the reference JSON that equal the predictions to rounding and are not sourced to any measurement (-4);
+          no empirical thickness or varix morphometric exists for the new Pass 3 quantities (-3); Pass 2 credited
+          92 for a set whose anchors this pass finds largely self-referential, so the dimension falls.
+        evidence:
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1681, 1776], note: "measure_morphoeval(): 8 new Pass 3 entries (Koiter free count, registration, de-registration psi*, tilt, WKB r, graded CV, h ratio, beta*) with chance / uniform / theory nulls", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1802, 1828], note: "Chicoreus k2/k1 reference 3.80 (chosen h2 = 0.0708), comb spine count 16.0 (prescribed mode) and neck-gap delta reference -3.1059 (own output): self-referential anchors", supports: false}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1832, 1871], note: "Varix spacing 120.0 deg (prescribed bursts), subcritical control, specimen count 16 and spacing CV reference 0.2092 equal to the measured value", supports: false}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [497, 556], note: "10-species cross-taxa regression against unsourced *_obs columns that match predictions to rounding (r = 1.0000)", supports: false}
+          - {file: datasets/mollusc_aperture_spine_buckling/mollusc_aperture_spine_buckling_reference.json, lines: [114, 150], note: "muricid_cross_taxa_table: n_primary_spines_obs / k2_over_k1_obs entries without any measurement source", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Credit: 5 dataset files are SHA-256-pinned in `EXPECTED_SHA256` (L105-124) and verified fail-closed at
+          every run by `verify_dataset_integrity()` (L136-150), including the new
+          `pass3_koiter_cord_thickness_reference.json` (L119-121); `pass3_citations.bib` adds Koiter (1966),
+          Manor et al. (2008) and re-cites Rudraraju et al. (2019) with the explicit note that DOIs could not be
+          re-verified offline; the dataset README has a Pass 3 section that labels both closures as reduced and
+          lists the new files and media; the four Pass 2 DOIs are unchanged. Deductions: the manor2008 DOI
+          `10.1209/0295-5075/83/10005` is recalled from memory and unverified, and koiter1966 has no DOI (-2);
+          the modelling constants have no source — E = 12 MPa, K_s = 0.48 vs K_s_eff = 1.98 (L163, L213, L677),
+          h = 0.42 / 0.0708 / 0.0245 mm (L182-183), Koiter `onset_excess = 0.15` (L686), `varix_halfwidth_mm = 5.0`
+          (L681), `kappa_3 = 0.28 k^2 P_c` (L726, L1083), the height law 4.8 sqrt(gamma - gamma_c) (L368, L747),
+          `eps_cord = 0.15` and the 0.35 thickness floor (L1031) (-5); the cross-taxa `*_obs` columns and the
+          per-species h_1, h_2 values in the reference JSON (L114-150) cite no measurement (-3); only a Murex
+          pecten photograph is vendored although Chicoreus ramosus is half of the organism field (-2).
+        evidence:
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [105, 150], note: "EXPECTED_SHA256 for 5 dataset files incl. pass3_koiter_cord_thickness_reference.json (L119-121); verify_dataset_integrity raises on missing file or digest mismatch", supports: true}
+          - {file: datasets/mollusc_aperture_spine_buckling/pass3_citations.bib, lines: [1, 32], note: "koiter1966 (no DOI), manor2008 (DOI unverified offline, stated at L2), rudraraju2019", supports: true}
+          - {file: datasets/mollusc_aperture_spine_buckling/README.md, lines: [37, 49], note: "Pass 3 section: reduced-order closures honestly labelled, new files and media listed", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [677, 690], note: "Koiter defaults K_s_eff = 1.98, varix_halfwidth_mm = 5.0, onset_excess = 0.15 — modelling choices without a cited source", supports: false}
+          - {file: datasets/mollusc_aperture_spine_buckling/mollusc_aperture_spine_buckling_reference.json, lines: [114, 150], note: "Cross-taxa table h1/h2/obs values have no measurement provenance", supports: false}
+      code-traceability:
+        value: 90
+        rationale: >-
+          Credit: the header docstring (L1-72) maps each law to its source and now adds Law 4 (cord/varix
+          intersection registration, L58-62) with the explicit statement that the Koiter module is reduced;
+          the Pass 3 section banner (L627-634) and `solve_koiter_shell_cord_spine_coupling`'s docstring state the
+          energy functional, the varix window, the forcing choice and why stiffness modulation was rejected
+          (L691-748); `infer_specimen_thickness_gradient` states the inverse-WKB law; every new function's
+          variables carry units in their names; the math-KG YAML registers equations 4-5 with single-range
+          `code_locus` pins refreshed for the Pass 3 line shifts, and each Lean theorem names the law it encodes.
+          Deductions: the `--self-test` help text still says "8-check" although the suite has 13 (L1981) (-2);
+          `EI_eff`, `P_load`, `kappa_3` and D = 1 are nondimensional while the returned fields are suffixed `_mm`
+          (L255-260, L670-900) (-3); the L-BFGS-B `converged` flag silently falls back to a gradient-norm test
+          when maxiter is hit (L817) and the comb solver reports `converged = True` on the trivial branch
+          (L247) (-2); the parametric nature of the elastica and frond modules is not stated in their docstrings
+          while the module header still calls them Kirchhoff-Clebsch solutions (L43-44, L335-437) (-3).
+        evidence:
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1, 72], note: "Header: laws 1-5 mapped to Moulton 2015 / Chirat 2013 / Lean theorems; Law 4 Pass 3 entry at L58-62; still presents the elastica as an ODE solution (L43-44)", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [627, 748], note: "Pass 3 section banner + Koiter docstring: energy functional, varix window, cord forcing and the Mathieu argument against stiffness modulation", supports: true}
+          - {file: morphoeval/math_kg_loops/moulton-mollusc-aperture-spine-buckling.yaml, lines: [1, 130], note: "Equations 1-5 with single-range code_locus pins (L160-332, L335-437, L440-494, L670-900, L1008-1190) and Lean theorem names", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [812, 817], note: "converged = opt.success or grad_inf < 1e-5: silent fallback when L-BFGS-B stops at maxiter", supports: false}
+      repro-package:
+        value: 92
+        rationale: >-
+          Credit: deterministic RNG (seed 2015); `self_test()` (L1874-1976) runs 13 checks — 8 Pass 2 (SHA-256 of
+          5 files, JSON parity, frond cascade, tubular closure, varix spacing + subcritical control, cross-taxa,
+          specimen segmentation, bitwise two-run determinism) plus 5 Pass 3 (pass3 JSON parity, Koiter free vs
+          locked with bitwise determinism at L1941-1942, locking-tongue monotonicity + oblique de-registration +
+          tilt, graded WKB r > 0.9 and uniform CV < 0.02, beta* = 4/3 at L1961); a fresh run in this audit
+          PASSED 13/13 in 74 s; default render produces the 3x3 PNG, the growth GIF (byte-identical to Pass 2),
+          the standalone Pass 3 PNG and the cord-locking GIF; `--skip-pass3-media` and `--skip-gif` shorten runs.
+          Deductions: self-test wall time is ~65-75 s because the sweeps run at full resolution (-3); the README
+          and the `--self-test` help string are not fully synchronised with the 13-check suite (L1981) (-2);
+          PNGs are gitignored (`*.png`) so the rendered figures are not versioned and the audit relies on local
+          regeneration (-2); no requirements lock file is vendored for this script (-1).
+        evidence:
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1874, 1976], note: "13-check self_test(): 5-file SHA-256, JSON parity, Pass 2 solvers, Pass 3 Koiter/locking/graded/beta checks, bitwise determinism (L1923-1924, L1941-1942)", supports: true}
+          - {file: models/2015-moulton-mollusc-aperture-spine-buckling.py, lines: [1979, 2029], note: "main(): CLI flags, compute_pass3_bundle with sweeps, Pass 3 PNG + GIF rendering, --skip-pass3-media", supports: true}
+          - {file: datasets/mollusc_aperture_spine_buckling/pass3_koiter_cord_thickness_reference.json, lines: [1, 68], note: "Pass 3 reference JSON (SHA-256 63fdbb23...) pinned by the script and parity-checked in self_test", supports: true}
+          - {file: docs/media/mollusc_aperture_spine_buckling_cord_locking.gif, lines: [0, 0], note: "Cord-locking GIF (eps_cord sweep) rendered by render_cord_locking_gif (L1652-1676)", supports: true}
+          - {file: docs/media/mollusc_aperture_spine_buckling_growth.gif, lines: [0, 0], note: "Growth GIF re-rendered byte-identically to Pass 2 (deterministic; git shows it unmodified)", supports: true}
+    remediation:
+    - >-
+      2015-moulton-mollusc-aperture-spine-buckling.py:230-263 — `solve_murex_siphonal_comb` builds the foundation
+      from the rounded mode q_mode = 2 pi round(L/lambda_1)/L (k_sub = q_mode^4, L256) and seeds the 16-mode
+      (L263), so the "L-BFGS-B relaxed spine count 16.0 vs 16.0" measurement (L1812-1820) is prescribed. Replace
+      with the Koiter-style noise initialisation on K_0 = (k_1^*)^4 (as at L670-900) so the count is emergent
+      (theory 16.47), and relabel the measurement; also make `EI_eff`, `P_load`, `kappa_3` dimensional or drop the
+      `_mm` suffixes (L255-260).
+    - >-
+      2015-moulton-mollusc-aperture-spine-buckling.py:335-386 and 43-44 — `solve_kirchhoff_elastica_spine_loop`
+      does not integrate the Kirchhoff-Clebsch ODE stated in the header; it draws a parametric omega loop
+      (cos^1.8 profile, L375) with a linear neck gap (L364) and an uncited height law 4.8 sqrt(gamma - gamma_c)
+      (L368, reused at L747). Integrate the elastica with unilateral self-contact (shooting or collocation) and
+      couple its cross-section to the Koiter surface height scale, closing the residual of Pass 2 item 1.
+    - >-
+      2015-moulton-mollusc-aperture-spine-buckling.py:411-417 and 457-462 — the Chicoreus frond stages are
+      hand-drawn cosines and the varix cycle prescribes 120 deg Gaussian bursts, so the k_2/k_1 = 3.80 (L1806; h_2 =
+      0.0708 chosen at L182/L391 to hit it) and the 120.0 deg (L1836) measurements are circular. Derive the
+      secondary serrations by solving the comb energy on the primary frond with h_2, and let varix spacing emerge
+      from a growth-rate / rest-period dynamic (Lean Law 3) instead of a prescribed gamma(phi).
+    - >-
+      2015-moulton-mollusc-aperture-spine-buckling.py:1826, 1866, 1773, 1236 — reference values that equal the
+      script's own output or an analytic identity (neck-gap delta -3.1059; specimen CV 0.2092; beta* = 4/3; rigid
+      psi* 22.78 deg). Replace each with an external anchor (e.g. literature spine-spacing CV for Murex pecten,
+      measured neck gaps from Moulton 2015 Fig. 6) or mark `reference_value: null` with `derived_from: model`.
+    - >-
+      2015-moulton-mollusc-aperture-spine-buckling.py:497-556 with
+      datasets/mollusc_aperture_spine_buckling/mollusc_aperture_spine_buckling_reference.json:114-150 —
+      `k2_over_k1_obs`, `n_primary_spines_obs`, h_1 and h_2 per species have no measurement source and match the
+      predictions to rounding (r = 1.0000 / 0.9987). Source each row to a published figure/table or relabel the
+      table as model-generated and drop the two cross-taxa correlations from `measure_morphoeval()`.
+    - >-
+      2015-moulton-mollusc-aperture-spine-buckling.py:163, 213, 677 — two foundation stiffnesses for the same law
+      (K_s = 0.48 for the frond cascade, K_s_eff = 1.98 for comb/Koiter/graded); `--K-s` (L1985) reaches only the
+      frond synthesiser (L1263). Unify on one sourced K_s (or document the effective-vs-material distinction) and
+      thread `--K-s` and `--E` through every solver including the elastica and varix modules; fix the stale
+      "8-check" help text (L1981).
+    - >-
+      2015-moulton-mollusc-aperture-spine-buckling.py:1008-1044 and 585 — the inverse-WKB thickness profile is
+      inferred from a Murex pecten photograph (two-harmonic fit R^2 = 0.29, arbitrary 0.35 floor at L1031) and
+      the first segmented spacing (find_peaks distance 26 px) is plausibly spurious. Vendor measured mantle-edge
+      h(s) cross-sections (micro-CT or histology) for *Chicoreus ramosus* across at least two instars with the
+      empirical allometric exponent beta, and exclude or justify the first spacing.
+    - >-
+      2015-moulton-mollusc-aperture-spine-buckling.py:670-900 — the Koiter surface is linearised on a flat
+      bi-periodic torus with D = 1 (nondimensional) and periodic t with subcritical margins; the free count 17
+      is quantised by the domain and shifted by onset excess (q_max = sqrt(P/2)); `converged` falls back to a
+      gradient-norm test at maxiter (L817); the height-modulation metric is uninformative for locked patterns.
+      Add reference-surface curvature and finite membrane strain (or a true FE shell per Rudraraju 2019), report
+      D in N mm, test domain-size independence of the free count, and remove or replace the hmod metric.
+    - >-
+      2015-moulton-mollusc-aperture-spine-buckling.py:1874-1976 — self-test wall time ~65-75 s because the
+      locking and obliquity sweeps run at full resolution; add a reduced-resolution fast path (n_s = 96, n_t = 48
+      as at L1941) for the sweeps under `--self-test` and keep the full sweeps behind a flag.

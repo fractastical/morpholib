@@ -958,7 +958,7 @@ def load_canonical_fixture_morphologies(fixture_path: Optional[Path] = None) -> 
     """Load the 6 canonical Planform morphologies from the vendored JSON fixture when
     `planformDB_2.5.0.edb` is not present locally."""
     import json
-    fp = fixture_path or (Path(__file__).resolve().parent / "datasets" / "planform" / "planform_canonical_silhouettes_v1.json")
+    fp = fixture_path or (Path(__file__).resolve().parent.parent / "datasets" / "planform" / "planform_canonical_silhouettes_v1.json")
     data = json.loads(fp.read_text(encoding="utf-8"))
     morphs: Dict[int, Morphology] = {}
     for rec in data.get("morphologies", []):

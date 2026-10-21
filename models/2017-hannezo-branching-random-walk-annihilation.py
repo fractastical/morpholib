@@ -82,7 +82,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "branching_random_walk_annihilation"
 REF_JSON = DATASET_DIR / "branching_random_walk_annihilation_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "mouse_branched_ductal_network_specimen.jpg"

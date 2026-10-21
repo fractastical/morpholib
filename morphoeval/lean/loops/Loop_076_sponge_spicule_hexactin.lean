@@ -219,4 +219,104 @@ theorem euplectella_checkerboard_diagonal_bracing_shear_stiffness :
     lattice_shear_stiffness_scaled 10 130 1 < lattice_shear_stiffness_scaled 10 130 2 := by
   decide
 
+-- ============================================================================
+-- PASS 3 · Law 5: Cohesive-Zone Laminate Progressive Fracture under Three-Point
+--   Bending (Weaver et al. 2007; He & Hutchinson 1989; Hillerborg et al. 1976)
+-- ============================================================================
+
+/-- He & Hutchinson (1989) crack-deflection test for zero elastic mismatch: the crack
+    deflects along the organic interlayer iff `G_i / G_s < 1/4`, i.e. `4 G_i < G_s`
+    (fracture energies in tenths of J/m²). -/
+def interlayer_deflects (G_i G_s : Nat) : Bool :=
+  4 * G_i < G_s
+
+/-- Hillerborg cohesive process-zone length `l_cz = E G_i / T_max²`
+    (E in MPa, G_i in tenths of J/m², T_max in MPa; result in tenths of µm). -/
+def hillerborg_length (E G_i T_max : Nat) : Nat :=
+  E * G_i / (T_max * T_max)
+
+/-- External work absorbed by the laminate up to final failure in the progressive-failure
+    model: the elastic energy `W_el` stored at the first through-layer crack (identical to
+    the monolithic rod of the same outer radius, which fails catastrophically there) plus
+    the interface dissipation `G_i · 2πr · a` of each of the `N` deflected interlayer
+    cracks (`dW_interface` per layer). -/
+def laminate_fracture_work (W_el dW_interface N : Nat) : Nat :=
+  W_el + N * dW_interface
+
+/-- Theorem 5 (`cohesive_laminate_progressive_fracture_work_exceeds_monolith`):
+    (a) With the Pass 3 default constants the organic interlayer (`G_i = 1.2 J/m²`,
+        `G_s = 8 J/m²`) satisfies the He-Hutchinson deflection criterion, while a fused
+        interlayer (`G_i = G_s`) does not — so the fused ablation fails like a monolith;
+    (b) the Hillerborg length for `E = 36 GPa`, `G_i = 1.2 J/m²`, `T_max = 40 MPa` is
+        exactly `27 µm` (`270` tenths of µm);
+    (c) for every positive stored energy, positive per-layer interface dissipation and at
+        least one deflected interlayer, the laminate's work of fracture strictly exceeds
+        the monolith's (`W_el`), and it is monotone non-decreasing in the layer count. -/
+theorem cohesive_laminate_progressive_fracture_work_exceeds_monolith :
+    interlayer_deflects 12 80 = true ∧
+    interlayer_deflects 80 80 = false ∧
+    hillerborg_length 36000 12 40 = 270 ∧
+    (∀ W_el dW N : Nat, 1 ≤ dW → 1 ≤ N →
+        W_el < laminate_fracture_work W_el dW N) ∧
+    (∀ W_el dW N : Nat,
+        laminate_fracture_work W_el dW N ≤ laminate_fracture_work W_el dW (N + 1)) := by
+  refine ⟨by decide, by decide, by decide, ?_, ?_⟩
+  · intro W_el dW N hdW hN
+    unfold laminate_fracture_work
+    exact Nat.lt_add_of_pos_right (Nat.mul_pos hN hdW)
+  · intro W_el dW N
+    unfold laminate_fracture_work
+    have h : N * dW ≤ (N + 1) * dW := Nat.mul_le_mul_right dW (Nat.le_succ N)
+    exact Nat.add_le_add_left h W_el
+
+-- ============================================================================
+-- PASS 3 · Law 6: External Helical Surface Ridges — sin²(2ψ) Torsional Projection
+--   and Parallel-Axis Ovalization Gain (Aizenberg et al. 2005)
+-- ============================================================================
+
+/-- Netting-analysis torsional projection of a helical ridge, written in terms of
+    `t = 100 · sin² ψ ∈ [0, 100]`: `sin² ψ cos² ψ ∝ t (100 − t)`. -/
+def ridge_shear_projection (t : Nat) : Nat :=
+  t * (100 - t)
+
+/-- Twice the squared sine of the ridge azimuths for `N` equally spaced ridges
+    (`2 sin²(2πk/N)`, exact rationals ×2) for `N = 4` and `N = 8`, and four times for
+    `N = 12` (30° steps). -/
+def two_sin_sq_4 : List Nat := [0, 2, 0, 2]
+def two_sin_sq_8 : List Nat := [0, 1, 2, 1, 0, 1, 2, 1]
+def four_sin_sq_12 : List Nat := [0, 1, 3, 4, 3, 1, 0, 1, 3, 4, 3, 1]
+
+/-- Parallel-axis second-moment gain `I_eff / I_wall = 1 + N_r A_r / 2` in percent for
+    `N_r` ridges of area ratio `A_r` (percent). -/
+def ridge_ovalization_gain_percent (N_r A_r : Nat) : Nat :=
+  100 + N_r * A_r / 2
+
+/-- Cage torsional stiffness at ψ = 45° (×2 scaling): `2 K_wall + N_r · 2 k_r`. -/
+def cage_torsion_45_scaled (K_wall2 k_r2 N_r : Nat) : Nat :=
+  K_wall2 + N_r * k_r2
+
+/-- Theorem 6 (`euplectella_helical_ridge_shear_projection_and_parallel_axis_gain`):
+    (a) The helical-ridge torsional projection `t (100 − t)` is maximised at `t = 50`
+        (`sin² ψ = 1/2`, i.e. `ψ = 45°`) over the whole admissible range `t ≤ 100`;
+    (b) for `N_r ∈ {4, 8, 12}` equally spaced ridges `Σ_k sin²(2πk/N_r) = N_r / 2`
+        (sums `4 = 2·(4/2)`, `8 = 2·(8/2)`, `24 = 4·(12/2)`), which is the identity behind
+        the closed-form ovalization gain;
+    (c) with `A_r = 25 %`: `N_r = 8` gives a `200 %` (2.00×) second-moment gain and
+        `N_r = 12` gives `250 %`, strictly monotone in the ridge count;
+    (d) the Pass 3 default cage (`2 K_wall = 15`, `2 k_r = 13`, `N_r = 8`) has scaled
+        torsional stiffness `119` (`59.5` vs the `7.5` checkerboard wall, gain `7.93×`),
+        strictly above the Law-4 wall alone. -/
+theorem euplectella_helical_ridge_shear_projection_and_parallel_axis_gain :
+    ridge_shear_projection 50 = 2500 ∧
+    ((List.range 101).all (fun t => decide (ridge_shear_projection t ≤ 2500))) = true ∧
+    two_sin_sq_4.sum = 2 * (4 / 2) ∧
+    two_sin_sq_8.sum = 2 * (8 / 2) ∧
+    four_sin_sq_12.sum = 4 * (12 / 2) ∧
+    ridge_ovalization_gain_percent 8 25 = 200 ∧
+    ridge_ovalization_gain_percent 12 25 = 250 ∧
+    ridge_ovalization_gain_percent 8 25 < ridge_ovalization_gain_percent 12 25 ∧
+    cage_torsion_45_scaled 15 13 8 = 119 ∧
+    cage_torsion_45_scaled 15 13 0 < cage_torsion_45_scaled 15 13 8 := by
+  decide
+
 end MathOfBiology.Loop_076

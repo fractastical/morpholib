@@ -99,7 +99,7 @@ from scipy import sparse
 from scipy import stats
 from scipy.sparse.linalg import spsolve
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "limb_bud_elongation_pushing"
 REF_JSON = DATASET_DIR / "limb_bud_elongation_pushing_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "mouse_limb_bud_specimen.jpg"

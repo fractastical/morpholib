@@ -55,7 +55,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage, spatial, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "social_wasp_comb_hexagons"
 REF_JSON_PATH = DATASET_DIR / "social_wasp_comb_hexagons_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "polistes_wasp_comb_specimen.jpg"

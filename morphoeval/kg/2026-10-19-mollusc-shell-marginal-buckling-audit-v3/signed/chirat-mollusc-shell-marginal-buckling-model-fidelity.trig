@@ -1,0 +1,122 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAZE_Qv6IdnNx4VBXwnHm3kuGvvl_Sj9V3AZQ4sNHgazE/> .
+@prefix this: <https://w3id.org/np/RAZE_Qv6IdnNx4VBXwnHm3kuGvvl_Sj9V3AZQ4sNHgazE> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-chirat-mollusc-shell-marginal-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Chirat, Moulton & Goriely (2013) & Erlich et al. (2016) mollusc shell marginal buckling, hollow-spine closure and predator damage / mantle repair — Model fidelity to source: 86/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "The Pass 2 core is intact: exact fourth-order nonlinear Winkler-beam energy minimised by spectral L-BFGS-B (`relax_winkler_mantle_margin`, L221-359) with P_c = 2 sqrt(EI k), lambda_c = 2 pi (EI/k)^(1/4) and the supercritical pitchfork law (L164-202). Pass 3 adds a physically honest reduced model of spine closure — an inextensible planar elastica with clamped roots, end penalty and pairwise self-contact penalty, continuation in eps, and the small-strain amplitude law A = (2/pi) sqrt(W dL) recovered to r = 0.99999 (L511-729) — and a heterogeneous-foundation extension with template memory that keeps the default path bitwise identical (L244-252, L292-298). Deductions: the requested 3D finite-strain morphoelastic FEM was not built; the elastica has no out-of-plane coupling, stretching energy or growth tensor, and W, t are prescribed (-4); the solver never converges to its ftol = 1e-16 / gtol = 1e-13 tolerances and always exits at maxiter (L310, L357), so the \"equilibria\" are iteration-count-limited (-3); the periodic FFT margin on [0, L) is applied to an open valve fan, which makes an intercalated rib slide the whole pattern (L234, L263, L328) (-2); the `antimarginal_intercalating_multicostate` and `cancellate_spiny_episodic_varix` rib fields are prescribed cosines rather than solver output and `n_ribs_adult = 2 n_base - 0.5` is hard-coded (L364-459, L435) (-3); EI = 1.085 is back-fitted to the rib count rather than derived from mantle mechanics (L224, L473) (-2)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2013-chirat-mollusc-shell-marginal-buckling.py L364–L459: 3D accretionary synthesis; intercalating and varix regimes are prescribed cosine fields and n_ribs_adult = 2*n_base - 0.5 is hard-coded at L435, not solver output <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L364-L459>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-5> ;
+        pk:hasScore "0.86"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2013-chirat-mollusc-shell-marginal-buckling.py L164–L202" ;
+        dcterms:description "Analytical P_c, lambda_c and pitchfork amplitude law" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L164-L202> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2013-chirat-mollusc-shell-marginal-buckling.py L221–L359" ;
+        dcterms:description "Spectral L-BFGS-B Winkler-beam minimiser; Pass 3 k_profile (real-space k(s) w) and w_init template memory; ftol 1e-16 / gtol 1e-13 at L310 are never met, n_iterations == maxiter at L357" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L221-L359> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2013-chirat-mollusc-shell-marginal-buckling.py L511–L644" ;
+        dcterms:description "Reduced planar inextensible elastica with clamped roots, end penalty mu_end = 400 and pairwise self-contact penalty; analytic gradients; W, t prescribed" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L511-L644> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "2013-chirat-mollusc-shell-marginal-buckling.py L647–L743" ;
+        dcterms:description "Continuation sweep in eps, small-strain law check, eps_close by interpolation of the neck gap through t, tube surface stacking (no out-of-plane coupling)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L647-L743> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity-5> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_072_mollusc_shell_marginal_buckling.lean L18–L167" ;
+        dcterms:description "7 Lean 4 theorems (4 Pass 2 + 3 Pass 3: callus raises P_c, repair rib-count bookkeeping, closure monotone in neck gap); 0 sorry, lean exit 0" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/morphoeval/lean/loops/Loop_072_mollusc_shell_marginal_buckling.lean#L18-L167> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 remediated assessment, Phase B audit subagent)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/72> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2012.07.009>,
+            <https://doi.org/10.1073/pnas.1220443110>,
+            <https://doi.org/10.1098/rsif.2016.0592>,
+            <https://doi.org/10.1371/journal.pcbi.1007213>,
+            <https://press.princeton.edu/books/paperback/9780691000800/evolution-and-escalation> .
+
+    <https://doi.org/10.1016/j.jtbi.2012.07.009> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Mechanical growth and morphogenesis of seashells" .
+
+    <https://doi.org/10.1073/pnas.1220443110> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Mechanical basis of morphogenesis and convergent evolution of spiny seashells" .
+
+    <https://doi.org/10.1098/rsif.2016.0592> dcterms:date "2016"^^xsd:gYear ;
+        dcterms:title "The physical basis of mollusk shell chiral coiling and antimarginal rib ornamentation" .
+
+    <https://doi.org/10.1371/journal.pcbi.1007213> dcterms:date "2019"^^xsd:gYear ;
+        dcterms:title "A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth" .
+
+    <https://press.princeton.edu/books/paperback/9780691000800/evolution-and-escalation> dcterms:date "1987"^^xsd:gYear ;
+        dcterms:title "Evolution and Escalation: An Ecological History of Life" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "olzWIgYTxRPQAOydleUp2u5M7P1kePH4/J7Q7RB+6A7mIq3P1EGx3nok2aG2Ee5KkBCsRUhSFyCPB8n9uVR/amyjdDfYK4WbFLXNtnzfh1968XdM6arsD9zUp/tWupbprrexP71CJNEQUj7YQOxtyvaCAPfQNK++TON0Bar3eykKA+CrgBV0rqwbzp/0Sxsh1GfaLTJI7KP6NogJECZcuVre4HhzN09rhh9bBh2op6Zxj4hRf+dHexQBLUxNeUzLrJUL7gf8z2p7HyGU8XTcPhB5yjV2GBj8KXfbNWTJr3XNfUL2lH8K7VaXCfSeb7iRxL4kyeQtWMKwH0Moc4VXWg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Chirat, Moulton & Goriely (2013) & Erlich et al. (2016) mollusc shell marginal buckling, hollow-spine closure and predator damage / mantle repair — Model fidelity to source 86/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T20:02:13Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-chirat-mollusc-shell-marginal-buckling-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/72> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

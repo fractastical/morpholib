@@ -98,7 +98,7 @@ from scipy.sparse.linalg import eigsh, splu
 from scipy.spatial import Delaunay, Voronoi, cKDTree
 from scipy.stats import pearsonr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "mammalian_coat_markings"
 REF_JSON_PATH = DATASET_DIR / "mammalian_coat_markings_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "panthera_pardus_specimen.jpg"

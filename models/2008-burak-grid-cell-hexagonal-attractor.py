@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2008-burak-grid-cell-hexagonal-attractor.py — Pass 2 Remediated Implementation
+2008-burak-grid-cell-hexagonal-attractor.py — Pass 3 Remediated Implementation
 Burak & Fiete (2009) PLoS Comput. Biol. 5(2):e1000291, Hafting et al. (2005)
 Nature 436:801-806, Stensola et al. (2012) Nature 492:72-78 & Brandon et al. (2011)
 Science 332:595-599
@@ -26,6 +26,23 @@ Mathematical Formalism & Lean 4 Alignment (`morphoeval/lean/loops/Loop_088_grid_
      Grid cells along the dorso-ventral MEC axis cluster into discrete modules M_1..M_4 with wavelengths
        lambda_m in {38, 54, 76, 108} cm,   lambda_{m+1} / lambda_m approx sqrt(2) approx 1.4142,
      doubling hexagonal unit-cell area at every module transition (lambda_{m+1}^2 / lambda_m^2 = 2).
+  4. [Pass 3] Border-Cell Boundary Resetting of Path-Integration Drift (`border_reset_bounds_drift_variance`;
+     Hardcastle, Ganguli & Giocomo 2015 Neuron 86:827-839; Solstad et al. 2008 Science 322:1865-1868):
+       e(t + dt) = e(t) + g * v(t) dt + sigma * sqrt(dt) * xi(t)   (phase-level reduction of law 2 with noise)
+       wall contact (|x_i| > L - d_border):  e_i <- (1 - reset_gain) * e_i
+     Free error variance grows as sigma^2 t (unbounded, diffusive); border reset bounds it by the variance
+     accumulated since the last wall contact (Section 4b, `simulate_border_reset_drift`).
+  5. [Pass 3] Dorso-Ventral HCN1 h-Current Resonance Coupled to Kernel Width beta_m
+     (`hcn1_resonance_inverse_scale_law`; Giocomo et al. 2007 Science 315:1719; Giocomo & Hasselmo 2008
+     J. Neurosci. 28:9414; Giocomo et al. 2011 Cell 147:1159; Hutcheon & Yarom 2000):
+       C dV/dt = -g_L V - g_h w + I,   tau_h dw/dt = V - w,   Z(omega) = 1 / (g_L + g_h/(1 + i omega tau_h) + i omega C)
+       beta_m = beta_1 * (f_res(m) / f_res(1))^2   <=>   lambda_m = lambda_1 * f_res(1) / f_res(m)
+     tau_h slows dorsal -> ventral, lowering f_res and widening the Mexican-hat kernel; calibrated at M1 only,
+     so predicted lambda_2..lambda_4 are compared honestly against Stensola (Section 4c). HCN1-/- (slower,
+     smaller I_h) is run through the CANN as regime `hcn1_knockout_expanded_module`.
+
+Pass 3 literature values in `datasets/grid_cell_hexagonal_attractor/border_reset_hcn1_reference.json`
+were transcribed offline (flagged `approx_unverified`) and must be checked by the Pass 3 audit.
 """
 
 from __future__ import annotations
@@ -43,12 +60,14 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "grid_cell_hexagonal_attractor"
 REFERENCE_JSON = DATASET_DIR / "grid_cell_hexagonal_attractor_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "rat_entorhinal_hippocampal_specimen.jpg"
+PASS3_REFERENCE_JSON = DATASET_DIR / "border_reset_hcn1_reference.json"
 OUT_PNG = ROOT / "docs" / "media" / "grid_cell_hexagonal_attractor_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "grid_cell_hexagonal_attractor_growth.gif"
+OUT_PASS3_PNG = ROOT / "docs" / "media" / "grid_cell_hexagonal_attractor_border_reset_hcn1.png"
 
 
 # --------------------------------------------------------------------------- #
@@ -422,8 +441,9 @@ def simulate_burak_fiete_regime(
 
 
 def evaluate_all_regimes_and_morphospace() -> dict[str, Any]:
-    """Evaluate all 6 canonical regimes from `grid_cell_hexagonal_attractor_reference.json`
-    plus a 10x10 2D parameter morphospace over (l_shift_px, alpha_vel)."""
+    """Evaluate all 6 canonical regimes from `grid_cell_hexagonal_attractor_reference.json`, the Pass 3
+    HCN1-/- expanded-scale regime, the border-cell reset drift session + noise sweep, and a 10x10 2D
+    parameter morphospace over (l_shift_px, alpha_vel)."""
     ref = load_reference()
     regimes_out: dict[str, dict[str, Any]] = {}
     for reg in ref["experimental_regimes"]:
@@ -435,6 +455,21 @@ def evaluate_all_regimes_and_morphospace() -> dict[str, Any]:
             planform_mode=str(reg["planform_mode"]),
             record_frames=(rid in ("m1_dorsal_hexagonal_cann", "medial_septum_inactivation_pinned_null")),
         )
+
+    # Pass 3: HCN1 h-current resonance gradient -> kernel width beta_m, plus the
+    # Giocomo et al. (2011) HCN1-/- expanded-scale regime run through the CANN with
+    # lambda_KO = lambda_1 * f_res(WT) / f_res(KO)  (beta_KO = beta_1 * (f_KO / f_WT)^2)
+    hcn = evaluate_hcn1_dorsoventral_resonance()
+    regimes_out["hcn1_knockout_expanded_module"] = simulate_burak_fiete_regime(
+        lambda_cm=float(hcn["ko_lambda_cm"]),
+        l_shift_px=1.5,
+        alpha_vel=0.18,
+        planform_mode="hexagonal_cann",
+    )
+
+    # Pass 3: border-cell boundary resetting of multi-minute path-integration drift
+    border = simulate_border_reset_drift(lambda_cm=38.0)
+    border_sweep = sweep_border_reset_noise(lambda_cm=38.0)
 
     # 10x10 2D morphospace over (l_shift_px in [0, 2.2], alpha_vel in [0, 0.28])
     l_grid = np.linspace(0.0, 2.2, 10)
@@ -452,6 +487,366 @@ def evaluate_all_regimes_and_morphospace() -> dict[str, Any]:
         "l_grid": l_grid,
         "alpha_grid": alpha_grid,
         "gain_map": gain_map,
+        "hcn": hcn,
+        "border": border,
+        "border_sweep": border_sweep,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 4b. Pass 3 — Border-Cell Boundary Resetting of Path-Integration Drift
+#     (Hardcastle, Ganguli & Giocomo 2015; Solstad et al. 2008)
+# --------------------------------------------------------------------------- #
+def load_pass3_reference() -> dict[str, Any]:
+    """Load the Pass 3 reference table `border_reset_hcn1_reference.json`
+    (border-cell reset + HCN1 resonance parameters; literature values flagged
+    `approx_unverified` were transcribed offline and must be checked by the audit)."""
+    return json.loads(PASS3_REFERENCE_JSON.read_text(encoding="utf-8"))
+
+
+def _p3(block: dict[str, Any], key: str) -> float:
+    """Read a `{value, status, note}` scalar from the Pass 3 reference table."""
+    entry = block[key]
+    return float(entry["value"]) if isinstance(entry, dict) else float(entry)
+
+
+def generate_foraging_trajectory(
+    n_steps: int,
+    dt_s: float,
+    half_cm: float,
+    speed_cm_s: float,
+    heading_tau_s: float,
+    rng: np.random.Generator,
+    n_trials: int = 1,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Ornstein-Uhlenbeck-heading random foraging walk with reflecting walls on the
+    [-half_cm, half_cm]^2 open field. Returns (pos[n_trials, n_steps, 2], vel[n_trials, n_steps, 2])."""
+    pos = np.zeros((n_trials, n_steps, 2), dtype=float)
+    vel = np.zeros((n_trials, n_steps, 2), dtype=float)
+    heading = rng.uniform(0.0, 2.0 * np.pi, size=n_trials)
+    xy = rng.uniform(-0.5 * half_cm, 0.5 * half_cm, size=(n_trials, 2))
+    kick = np.sqrt(2.0 * dt_s / heading_tau_s)
+    for k in range(n_steps):
+        heading = heading + kick * rng.standard_normal(n_trials)
+        step_xy = speed_cm_s * dt_s * np.stack([np.cos(heading), np.sin(heading)], axis=1)
+        new_xy = xy + step_xy
+        # Reflecting walls: flip the heading component that would leave the box
+        for d in range(2):
+            out_hi = new_xy[:, d] > half_cm
+            out_lo = new_xy[:, d] < -half_cm
+            new_xy[out_hi, d] = 2.0 * half_cm - new_xy[out_hi, d]
+            new_xy[out_lo, d] = -2.0 * half_cm - new_xy[out_lo, d]
+            flip = out_hi | out_lo
+            if np.any(flip):
+                heading[flip] = (np.pi - heading[flip]) if d == 0 else (-heading[flip])
+        vel[:, k, :] = (new_xy - xy) / dt_s
+        xy = new_xy
+        pos[:, k, :] = xy
+    return pos, vel
+
+
+def simulate_border_reset_drift(
+    lambda_cm: float = 38.0,
+    sigma_drift: float | None = None,
+    reset_gain: float | None = None,
+    session_s: float | None = None,
+    n_trials: int | None = None,
+    seed: int = 2008,
+) -> dict[str, Any]:
+    """Phase-level reduction of the Burak-Fiete attractor over a multi-minute foraging
+    session with (i) free diffusive + systematic drift and (ii) border-cell resetting.
+
+    Decoded position x_dec(t) = x_true(t) + e(t) with the attractor phase error
+        e(t + dt) = e(t) + g * v(t) dt + sigma * sqrt(dt) * xi(t)
+    (g = velocity-gain miscalibration, sigma = sqrt(2 D) phase diffusion from spiking
+    noise, Burak & Fiete 2009 Fig. 6). When the rat is within `border_zone_cm` of the
+    wall x = +/-L (resp. y = +/-L), border cells (Solstad et al. 2008) reset the
+    perpendicular component: e_x <- (1 - reset_gain) e_x (Hardcastle et al. 2015).
+    Both conditions share the same trajectory and noise realisation."""
+    ref3 = load_pass3_reference()["border_reset_model"]
+    half_cm = 0.5 * _p3(ref3, "arena_side_cm")
+    T = _p3(ref3, "session_s") if session_s is None else float(session_s)
+    dt = _p3(ref3, "dt_s")
+    speed = _p3(ref3, "rat_speed_cm_s")
+    tau_head = _p3(ref3, "heading_ou_tau_s")
+    sigma = _p3(ref3, "sigma_drift_cm_per_sqrt_s") if sigma_drift is None else float(sigma_drift)
+    gain_err = _p3(ref3, "gain_miscalibration")
+    zone = _p3(ref3, "border_zone_cm")
+    rg = _p3(ref3, "reset_gain") if reset_gain is None else float(reset_gain)
+    n_tr = int(_p3(ref3, "n_trials")) if n_trials is None else int(n_trials)
+    n_steps = int(round(T / dt))
+
+    rng = np.random.default_rng(seed)
+    pos, vel = generate_foraging_trajectory(n_steps, dt, half_cm, speed, tau_head, rng, n_trials=n_tr)
+    noise = sigma * np.sqrt(dt) * rng.standard_normal((n_tr, n_steps, 2))
+    drift_inc = gain_err * vel * dt + noise
+
+    # (i) Free drift: cumulative sum of increments (no boundary information)
+    err_free = np.cumsum(drift_inc, axis=1)
+
+    # (ii) Border-cell reset: sequential pass with perpendicular-component reset
+    err_reset = np.zeros_like(err_free)
+    time_since_contact = np.zeros((n_tr, n_steps), dtype=float)
+    e = np.zeros((n_tr, 2), dtype=float)
+    tsc = np.full(n_tr, np.inf)
+    n_contacts = np.zeros(n_tr, dtype=int)
+    for k in range(n_steps):
+        e = e + drift_inc[:, k, :]
+        near_wall = np.abs(pos[:, k, :]) > (half_cm - zone)  # [n_tr, 2] per axis
+        e = np.where(near_wall, (1.0 - rg) * e, e)
+        any_contact = np.any(near_wall, axis=1)
+        tsc = np.where(any_contact, 0.0, tsc + dt)
+        n_contacts += any_contact.astype(int)
+        err_reset[:, k, :] = e
+        time_since_contact[:, k] = tsc
+
+    mag_free = np.linalg.norm(err_free, axis=2)
+    mag_reset = np.linalg.norm(err_reset, axis=2)
+    t_arr = dt * np.arange(1, n_steps + 1)
+    rms_free_t = np.sqrt(np.mean(mag_free ** 2, axis=0))
+    rms_reset_t = np.sqrt(np.mean(mag_reset ** 2, axis=0))
+    analytic_free_t = np.sqrt(2.0 * sigma ** 2 * t_arr)  # 2D diffusion, g = 0 null
+
+    # Hardcastle et al. (2015): error grows with time since last boundary contact
+    finite = np.isfinite(time_since_contact)
+    tsc_flat = time_since_contact[finite]
+    err_flat = mag_reset[finite]
+    bins = np.linspace(0.0, max(float(np.percentile(tsc_flat, 97)), 1.0), 13)
+    bin_idx = np.clip(np.digitize(tsc_flat, bins) - 1, 0, len(bins) - 2)
+    tsc_centres = 0.5 * (bins[:-1] + bins[1:])
+    err_vs_tsc = np.array([
+        float(np.sqrt(np.mean(err_flat[bin_idx == b] ** 2))) if np.any(bin_idx == b) else np.nan
+        for b in range(len(bins) - 1)
+    ])
+    valid = np.isfinite(err_vs_tsc)
+    tsc_r = float(np.corrcoef(tsc_centres[valid], err_vs_tsc[valid])[0, 1]) if valid.sum() > 2 else 0.0
+    tsc_slope = float(np.polyfit(tsc_centres[valid], err_vs_tsc[valid], 1)[0]) if valid.sum() > 2 else 0.0
+
+    # Single-cell arena rate maps from the drifting decoded phase (occupancy-normalised,
+    # 5 cm bins); gridness averaged over trials, maps of trial 0 kept for display
+    k_arena = 4.0 * np.pi / (np.sqrt(3.0) * lambda_cm)
+    n_bins = 30
+    edges = np.linspace(-half_cm, half_cm, n_bins + 1)
+    ring_px = lambda_cm / (2.0 * half_cm / n_bins)
+
+    def _rate_map(trial: int, err: np.ndarray) -> np.ndarray:
+        dec = pos[trial] + err
+        carrier = np.zeros(n_steps, dtype=float)
+        for m_ang in (0.0, 2.0 * np.pi / 3.0, 4.0 * np.pi / 3.0):
+            carrier += np.cos(k_arena * (dec[:, 0] * np.cos(m_ang) + dec[:, 1] * np.sin(m_ang)))
+        rate = np.maximum(carrier / 3.0 - 0.12, 0.0) ** 1.25
+        occ, _, _ = np.histogram2d(pos[trial, :, 0], pos[trial, :, 1], bins=[edges, edges])
+        acc, _, _ = np.histogram2d(pos[trial, :, 0], pos[trial, :, 1], bins=[edges, edges], weights=rate)
+        rmap = np.where(occ > 0, acc / np.maximum(occ, 1), 0.0)
+        return ndi.gaussian_filter(rmap, sigma=0.6)
+
+    g_free_trials = []
+    g_reset_trials = []
+    map_free = map_reset = None
+    for tr in range(n_tr):
+        mf = _rate_map(tr, err_free[tr])
+        mr = _rate_map(tr, err_reset[tr])
+        g_free_trials.append(compute_autocorrelogram_and_gridness(mf, expected_ring_px=ring_px)["gridness_60"])
+        g_reset_trials.append(compute_autocorrelogram_and_gridness(mr, expected_ring_px=ring_px)["gridness_60"])
+        if tr == 0:
+            map_free, map_reset = mf, mr
+    g_free = float(np.mean(g_free_trials))
+    g_reset = float(np.mean(g_reset_trials))
+
+    return {
+        "t_s": t_arr,
+        "pos": pos,
+        "err_free": err_free,
+        "err_reset": err_reset,
+        "rms_free_t": rms_free_t,
+        "rms_reset_t": rms_reset_t,
+        "analytic_free_t": analytic_free_t,
+        "final_rms_free": float(rms_free_t[-1]),
+        "final_rms_reset": float(rms_reset_t[-1]),
+        "final_rms_analytic": float(analytic_free_t[-1]),
+        "max_rms_reset": float(np.max(rms_reset_t)),
+        "tsc_centres": tsc_centres,
+        "err_vs_tsc": err_vs_tsc,
+        "tsc_r": tsc_r,
+        "tsc_slope_cm_per_s": tsc_slope,
+        "border_zone_dwell_fraction": float(np.mean(n_contacts) / n_steps),
+        "map_free": map_free,
+        "map_reset": map_reset,
+        "gridness_free": g_free,
+        "gridness_reset": g_reset,
+        "gridness_free_trials": np.array(g_free_trials),
+        "gridness_reset_trials": np.array(g_reset_trials),
+        "sigma_drift": sigma,
+        "reset_gain": rg,
+        "session_s": T,
+        "half_cm": half_cm,
+        "lambda_cm": lambda_cm,
+    }
+
+
+def sweep_border_reset_noise(lambda_cm: float = 38.0, n_trials: int = 6) -> dict[str, Any]:
+    """Sweep the phase-diffusion amplitude sigma = sqrt(2 D) (Burak & Fiete 2009: D ~ 1/N)
+    and compare final RMS error and single-cell gridness with and without border reset."""
+    ref3 = load_pass3_reference()["border_reset_model"]
+    sigmas = [float(s) for s in ref3["sigma_sweep_cm_per_sqrt_s"]]
+    rows = []
+    for s in sigmas:
+        out = simulate_border_reset_drift(lambda_cm=lambda_cm, sigma_drift=s, n_trials=n_trials, seed=2008 + int(round(100 * s)))
+        rows.append({
+            "sigma": s,
+            "final_rms_free": out["final_rms_free"],
+            "final_rms_reset": out["final_rms_reset"],
+            "gridness_free": out["gridness_free"],
+            "gridness_reset": out["gridness_reset"],
+        })
+    return {"sigmas": sigmas, "rows": rows}
+
+
+# --------------------------------------------------------------------------- #
+# 4c. Pass 3 — Dorso-Ventral HCN1 h-Current Resonance Coupled to Kernel Width beta_m
+#     (Giocomo et al. 2007; Giocomo & Hasselmo 2008; Giocomo et al. 2011; Hutcheon & Yarom 2000)
+# --------------------------------------------------------------------------- #
+def hcn_impedance_curve(
+    tau_h_ms: float,
+    g_h_rel: float,
+    tau_m_ms: float,
+    f_hz: np.ndarray,
+) -> np.ndarray:
+    """|Z(f)| (normalised to 1/g_L) of the linearised stellate membrane
+        C dV/dt = -g_L V - g_h w + I,   tau_h dw/dt = V - w,
+    Z(omega) = 1 / (g_L + g_h/(1 + i omega tau_h) + i omega C)  (Hutcheon & Yarom 2000)."""
+    omega = 2.0 * np.pi * f_hz
+    tau_h = tau_h_ms * 1e-3
+    tau_m = tau_m_ms * 1e-3
+    y = 1.0 + g_h_rel / (1.0 + 1j * omega * tau_h) + 1j * omega * tau_m
+    return np.abs(1.0 / y)
+
+
+def hcn_resonance_frequency(tau_h_ms: float, g_h_rel: float, tau_m_ms: float) -> dict[str, float]:
+    """Resonance frequency f_res = argmax |Z(f)| on a fine 0.05-30 Hz grid and the
+    resonance strength Q = |Z(f_res)| / |Z(0)|."""
+    f_grid = np.linspace(0.05, 30.0, 6000)
+    z = hcn_impedance_curve(tau_h_ms, g_h_rel, tau_m_ms, f_grid)
+    i_max = int(np.argmax(z))
+    z0 = float(hcn_impedance_curve(tau_h_ms, g_h_rel, tau_m_ms, np.array([1e-4]))[0])
+    return {"f_res_hz": float(f_grid[i_max]), "q_factor": float(z[i_max] / z0), "natural_f_hz": float(np.sqrt((1.0 + g_h_rel) / (tau_m_ms * 1e-3 * tau_h_ms * 1e-3)) / (2.0 * np.pi))}
+
+
+def hcn_zap_resonance_time_domain(tau_h_ms: float, g_h_rel: float, tau_m_ms: float) -> dict[str, Any]:
+    """Validate the analytic impedance by forward-Euler integration of the 2-variable
+    membrane driven by a ZAP chirp current (f_start -> f_end over `duration_s`);
+    returns the FFT-ratio impedance and its peak frequency."""
+    zap = load_pass3_reference()["hcn1_resonance_model"]["zap_chirp"]
+    f0, f1, T, dt = float(zap["f_start_hz"]), float(zap["f_end_hz"]), float(zap["duration_s"]), float(zap["dt_ms"]) * 1e-3
+    t = np.arange(0.0, T, dt)
+    phase = 2.0 * np.pi * (f0 * t + 0.5 * (f1 - f0) * t ** 2 / T)
+    i_zap = np.sin(phase)
+    tau_h = tau_h_ms * 1e-3
+    tau_m = tau_m_ms * 1e-3
+    v = np.zeros_like(t)
+    vv = 0.0
+    ww = 0.0
+    for k in range(len(t)):
+        dv = (-vv - g_h_rel * ww + i_zap[k]) / tau_m
+        dw = (vv - ww) / tau_h
+        vv += dt * dv
+        ww += dt * dw
+        v[k] = vv
+    freqs = np.fft.rfftfreq(len(t), d=dt)
+    z_td = np.abs(np.fft.rfft(v)) / np.maximum(np.abs(np.fft.rfft(i_zap)), 1e-9)
+    band = (freqs >= 0.5) & (freqs <= 18.0)
+    f_peak = float(freqs[band][int(np.argmax(z_td[band]))])
+    return {"freqs": freqs[band], "z_td": z_td[band], "f_peak_hz": f_peak, "t": t, "v": v}
+
+
+def evaluate_hcn1_dorsoventral_resonance() -> dict[str, Any]:
+    """Dorso-ventral HCN1 gradient -> resonance frequency -> Mexican-hat kernel width.
+
+    tau_h(y) interpolates geometrically between the dorsal and ventral I_h time constants;
+    f_res(y) follows from the impedance; the Giocomo et al. (2007) inverse law fixes
+        beta_m = beta_1 * (f_res(m) / f_res(1))^2   <=>   lambda_m = lambda_1 * f_res(1) / f_res(m),
+    calibrated at Module M1 ONLY, so lambda_2..lambda_4 are predictions compared against
+    Stensola et al. (2012). HCN1-/- (Giocomo et al. 2011) is modelled as slower, smaller I_h."""
+    ref = load_reference()["canonical_parameters"]
+    h = load_pass3_reference()["hcn1_resonance_model"]
+    g_h_rel = _p3(h, "g_h_over_g_L")
+    tau_m = _p3(h, "membrane_tau_ms")
+    tau_d = _p3(h, "tau_h_dorsal_ms")
+    tau_v = _p3(h, "tau_h_ventral_ms")
+    beta_1 = float(ref["beta_base"])
+    lambdas_obs = [float(x) for x in h["stensola_modules_cm"]]
+    lambda_1 = lambdas_obs[0]
+
+    # Continuous dorso-ventral profile (24 positions)
+    y_dv = np.linspace(0.0, 1.0, 24)
+    tau_profile = tau_d * (tau_v / tau_d) ** y_dv
+    f_profile = np.array([hcn_resonance_frequency(tp, g_h_rel, tau_m)["f_res_hz"] for tp in tau_profile])
+    f_1 = float(f_profile[0])
+    lambda_profile = lambda_1 * f_1 / f_profile
+    beta_profile = beta_1 * (f_profile / f_1) ** 2
+
+    # Discrete module centres
+    mod_pos = h["module_dv_positions"]
+    modules = []
+    f_grid = np.linspace(0.1, 20.0, 400)
+    for idx, mname in enumerate(("M1", "M2", "M3", "M4")):
+        yv = float(mod_pos[mname])
+        tau_m_h = tau_d * (tau_v / tau_d) ** yv
+        res = hcn_resonance_frequency(tau_m_h, g_h_rel, tau_m)
+        lam_pred = lambda_1 * f_1 / res["f_res_hz"]
+        modules.append({
+            "module": mname,
+            "y_dv": yv,
+            "tau_h_ms": tau_m_h,
+            "f_res_hz": res["f_res_hz"],
+            "q_factor": res["q_factor"],
+            "lambda_pred_cm": lam_pred,
+            "lambda_obs_cm": lambdas_obs[idx],
+            "beta_hcn": beta_1 * (res["f_res_hz"] / f_1) ** 2,
+            "beta_stensola": beta_1 * (lambda_1 / lambdas_obs[idx]) ** 2,
+            "lambda_times_f": lam_pred * res["f_res_hz"],
+            "z_curve": hcn_impedance_curve(tau_m_h, g_h_rel, tau_m, f_grid),
+        })
+
+    # HCN1 knockout (Giocomo et al. 2011): slower & smaller I_h at the dorsal position
+    ko = hcn_resonance_frequency(tau_d * _p3(h, "hcn1_ko_tau_h_factor"), g_h_rel * _p3(h, "hcn1_ko_g_h_factor"), tau_m)
+    ko_expansion = f_1 / ko["f_res_hz"]
+    ko_lambda = lambda_1 * ko_expansion
+    ko_curve = hcn_impedance_curve(tau_d * _p3(h, "hcn1_ko_tau_h_factor"), g_h_rel * _p3(h, "hcn1_ko_g_h_factor"), tau_m, f_grid)
+
+    # Time-domain ZAP validation at M1
+    zap = hcn_zap_resonance_time_domain(tau_d, g_h_rel, tau_m)
+
+    pred = np.array([m["lambda_pred_cm"] for m in modules])
+    obs = np.array(lambdas_obs)
+    return {
+        "y_dv": y_dv,
+        "tau_profile_ms": tau_profile,
+        "f_profile_hz": f_profile,
+        "lambda_profile_cm": lambda_profile,
+        "beta_profile": beta_profile,
+        "modules": modules,
+        "f_grid": f_grid,
+        "f_res_dorsal_hz": f_1,
+        "f_res_ventral_hz": float(f_profile[-1]),
+        "f_ratio_dorsal_ventral": f_1 / float(f_profile[-1]),
+        "lambda_pred_m4_over_m1": float(pred[-1] / pred[0]),
+        "lambda_obs_m4_over_m1": float(obs[-1] / obs[0]),
+        "pred_vs_obs_rmse_cm": float(np.sqrt(np.mean((pred[1:] - obs[1:]) ** 2))),
+        "pred_vs_obs_r": float(np.corrcoef(pred, obs)[0, 1]),
+        "ko_f_res_hz": ko["f_res_hz"],
+        "ko_spacing_expansion": float(ko_expansion),
+        "ko_lambda_cm": float(ko_lambda),
+        "ko_curve": ko_curve,
+        "zap_f_peak_hz": zap["f_peak_hz"],
+        "zap_freqs": zap["freqs"],
+        "zap_z": zap["z_td"],
+        # Giocomo et al. (2007) inverse law tested on OBSERVED Stensola wavelengths:
+        # lambda_obs(m) * f_res(m) should be constant if HCN1 resonance alone set the scale
+        "obs_lambda_f_products": [m["lambda_obs_cm"] * m["f_res_hz"] for m in modules],
+        "obs_lambda_f_cv": float(np.std([m["lambda_obs_cm"] * m["f_res_hz"] for m in modules]) / np.mean([m["lambda_obs_cm"] * m["f_res_hz"] for m in modules])),
+        "g_h_rel": g_h_rel,
+        "tau_m_ms": tau_m,
     }
 
 
@@ -522,10 +917,161 @@ def segment_rat_hippocampal_entorhinal_specimen(path: Path = SPECIMEN_PATH) -> d
 
 
 # --------------------------------------------------------------------------- #
+# 5b. Pass 3 — 9-Panel Border-Reset & HCN1 Resonance Figure
+# --------------------------------------------------------------------------- #
+def _style_axes(fig: Any, axes: Any) -> None:
+    fig.patch.set_facecolor("#0b0f17")
+    for ax in np.ravel(axes):
+        ax.set_facecolor("#131b29")
+        ax.tick_params(colors="#cbd5e1", labelsize=8)
+        for sp in ax.spines.values():
+            sp.set_color("#334155")
+
+
+def render_pass3_figure(suite: dict[str, Any]) -> None:
+    """Render `grid_cell_hexagonal_attractor_border_reset_hcn1.png`: border-cell error
+    correction over a 10-min session (row A/B) and the dorso-ventral HCN1 resonance
+    gradient coupled to beta_m with the HCN1-/- CANN regime (row C)."""
+    b = suite["border"]
+    sw = suite["border_sweep"]
+    h = suite["hcn"]
+    ko = suite["regimes"]["hcn1_knockout_expanded_module"]
+    m1 = suite["regimes"]["m1_dorsal_hexagonal_cann"]
+    L = b["half_cm"]
+    lam = b["lambda_cm"]
+
+    fig, axes = plt.subplots(3, 3, figsize=(16.5, 13.8), dpi=135)
+    _style_axes(fig, axes)
+    tc = {"color": "#f8fafc", "fontsize": 9.6, "fontweight": "bold"}
+    lc = {"color": "#cbd5e1", "fontsize": 8.5}
+    lg = {"facecolor": "#0f172a", "edgecolor": "#334155", "labelcolor": "#f8fafc", "fontsize": 7.0}
+
+    # A1: trajectory + decoded positions (trial 0, first 90 s)
+    ax = axes[0, 0]
+    n_show = int(90.0 / (b["t_s"][1] - b["t_s"][0]))
+    p0 = b["pos"][0, :n_show]
+    ax.plot(p0[:, 0], p0[:, 1], color="#94a3b8", lw=0.9, label="True path $\\mathbf{r}(t)$ (90 s)")
+    df = p0 + b["err_free"][0, :n_show]
+    dr = p0 + b["err_reset"][0, :n_show]
+    ax.plot(df[:, 0], df[:, 1], color="#f43f5e", lw=0.8, alpha=0.9, label="Decoded, free drift")
+    ax.plot(dr[:, 0], dr[:, 1], color="#22c55e", lw=0.8, alpha=0.9, label="Decoded, border reset")
+    zone = L - 5.0
+    ax.plot([-L, L, L, -L, -L], [-L, -L, L, L, -L], color="#f8fafc", lw=1.2)
+    ax.plot([-zone, zone, zone, -zone, -zone], [-zone, -zone, zone, zone, -zone], "--", color="#38bdf8", lw=0.9, label="Border-cell zone (5 cm)")
+    ax.set_xlim(-L - 8, L + 8)
+    ax.set_ylim(-L - 8, L + 8)
+    ax.set_aspect("equal")
+    ax.set_title("A1. Foraging Path & Decoded Attractor Phase (Solstad 2008 border cells)", **tc)
+    ax.set_xlabel("Arena $x$ (cm)", **lc)
+    ax.set_ylabel("Arena $y$ (cm)", **lc)
+    ax.legend(loc="upper right", **lg)
+
+    # A2: RMS error vs time
+    ax = axes[0, 1]
+    t_min = b["t_s"] / 60.0
+    ax.plot(t_min, b["rms_free_t"], color="#f43f5e", lw=2.0, label=f"Free drift (sim, final {b['final_rms_free']:.1f} cm)")
+    ax.plot(t_min, b["analytic_free_t"], "--", color="#f59e0b", lw=1.5, label="$\\sqrt{2\\sigma^2 t}$ diffusion null ($g=0$)")
+    ax.plot(t_min, b["rms_reset_t"], color="#22c55e", lw=2.0, label=f"Border reset (final {b['final_rms_reset']:.1f} cm)")
+    ax.axhline(0.5 * lam, color="#a855f7", lw=1.0, ls=":", label="$\\lambda_1/2 = 19$ cm (field aliasing)")
+    ax.set_title(f"A2. RMS Path-Integration Error, {b['session_s']/60:.0f}-min Session ($\\sigma={b['sigma_drift']:.2f}$ cm/$\\sqrt{{s}}$)", **tc)
+    ax.set_xlabel("Session time (min)", **lc)
+    ax.set_ylabel("RMS error $\\|e(t)\\|$ (cm, 16 trials)", **lc)
+    ax.legend(loc="upper left", **lg)
+
+    # A3: error vs time since last boundary contact (Hardcastle 2015)
+    ax = axes[0, 2]
+    v = np.isfinite(b["err_vs_tsc"])
+    ax.plot(b["tsc_centres"][v], b["err_vs_tsc"][v], "o-", color="#38bdf8", lw=2.0, ms=5, label="Reset condition (RMS, binned)")
+    fit = np.polyfit(b["tsc_centres"][v], b["err_vs_tsc"][v], 1)
+    ax.plot(b["tsc_centres"][v], np.polyval(fit, b["tsc_centres"][v]), "--", color="#f59e0b", lw=1.4,
+            label=f"Linear fit slope {b['tsc_slope_cm_per_s']:.3f} cm/s, $r={b['tsc_r']:.3f}$")
+    ax.set_title("A3. Error vs Time Since Boundary Contact (Hardcastle et al. 2015)", **tc)
+    ax.set_xlabel("Time since last wall contact (s)", **lc)
+    ax.set_ylabel("RMS error (cm)", **lc)
+    ax.legend(loc="upper left", **lg)
+
+    # B1/B2: single-cell rate maps free vs reset
+    for ax, mp, g, name, cmap in (
+        (axes[1, 0], b["map_free"], b["gridness_free"], "Free Drift", "magma"),
+        (axes[1, 1], b["map_reset"], b["gridness_reset"], "Border Reset", "viridis"),
+    ):
+        ax.imshow(mp.T, origin="lower", cmap=cmap, extent=[-L, L, -L, L])
+        ax.set_title(f"B{1 if name == 'Free Drift' else 2}. Single-Cell Rate Map, {name} ($\\bar{{G}}_{{60}}={g:.2f}$)", **tc)
+        ax.set_xlabel("Arena $x$ (cm)", **lc)
+        ax.set_ylabel("Arena $y$ (cm)", **lc)
+
+    # B3: noise sweep
+    ax = axes[1, 2]
+    sig = np.array(sw["sigmas"])
+    ax.plot(sig, [r["final_rms_free"] for r in sw["rows"]], "o-", color="#f43f5e", lw=2.0, label="Final RMS error, free (cm)")
+    ax.plot(sig, [r["final_rms_reset"] for r in sw["rows"]], "s-", color="#22c55e", lw=2.0, label="Final RMS error, reset (cm)")
+    ax.set_xlabel("Phase diffusion $\\sigma=\\sqrt{2D}$ (cm/$\\sqrt{s}$)", **lc)
+    ax.set_ylabel("Final RMS error (cm)", **lc)
+    ax2 = ax.twinx()
+    ax2.plot(sig, [r["gridness_free"] for r in sw["rows"]], "o--", color="#fb923c", lw=1.4, label="$\\bar{G}_{60}$ free")
+    ax2.plot(sig, [r["gridness_reset"] for r in sw["rows"]], "s--", color="#38bdf8", lw=1.4, label="$\\bar{G}_{60}$ reset")
+    ax2.set_ylabel("Mean gridness $\\bar{G}_{60}$", **lc)
+    ax2.tick_params(colors="#cbd5e1", labelsize=8)
+    ax.set_title("B3. Noise Sweep: Drift Amplitude vs Error & Gridness (Burak-Fiete $D\\propto 1/N$)", **tc)
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc="center left", **lg)
+
+    # C1: impedance curves M1..M4 + KO, ZAP validation at M1
+    ax = axes[2, 0]
+    cols = ["#38bdf8", "#22c55e", "#f59e0b", "#a855f7"]
+    for mod, c in zip(h["modules"], cols):
+        ax.plot(h["f_grid"], mod["z_curve"], color=c, lw=1.8,
+                label=f"{mod['module']} $\\tau_h={mod['tau_h_ms']:.0f}$ ms, $f_{{res}}={mod['f_res_hz']:.2f}$ Hz")
+        ax.axvline(mod["f_res_hz"], color=c, lw=0.8, ls=":", alpha=0.7)
+    ax.plot(h["f_grid"], h["ko_curve"], color="#f43f5e", lw=1.8, ls="--", label=f"HCN1$^{{-/-}}$ $f_{{res}}={h['ko_f_res_hz']:.2f}$ Hz")
+    zf, zz = h["zap_freqs"], h["zap_z"]
+    zz_n = zz / np.max(zz) * np.max(h["modules"][0]["z_curve"])
+    ax.plot(zf[::6], zz_n[::6], ".", color="#f8fafc", ms=3, alpha=0.7, label=f"M1 ZAP time-domain (peak {h['zap_f_peak_hz']:.2f} Hz)")
+    ax.set_xlim(0, 20)
+    ax.set_title("C1. Stellate $|Z(f)|$: Dorso-Ventral $I_h$ Gradient (Giocomo 2007/2008)", **tc)
+    ax.set_xlabel("Frequency (Hz)", **lc)
+    ax.set_ylabel("$|Z(f)|\\, g_L$", **lc)
+    ax.legend(loc="upper right", **lg)
+
+    # C2: predicted lambda(y_dv) vs Stensola discrete modules
+    ax = axes[2, 1]
+    ax.plot(h["y_dv"], h["lambda_profile_cm"], color="#38bdf8", lw=2.2, label="HCN1 resonance prediction $\\lambda_1 f_1/f_{res}(y)$")
+    yv = [m["y_dv"] for m in h["modules"]]
+    ax.plot(yv, [m["lambda_obs_cm"] for m in h["modules"]], "D", color="#f59e0b", ms=9, label="Stensola 2012 modules {38,54,76,108}")
+    ax.plot(yv, [m["lambda_pred_cm"] for m in h["modules"]], "o", color="#22c55e", ms=7, label="Predicted at module centres")
+    ax.plot([0.0], [h["ko_lambda_cm"]], "X", color="#f43f5e", ms=10, label=f"HCN1$^{{-/-}}$ dorsal $\\lambda_{{KO}}={h['ko_lambda_cm']:.1f}$ cm")
+    ax.set_title(f"C2. $\\beta_m=\\beta_1(f_m/f_1)^2$: Predicted vs Observed Scale (RMSE {h['pred_vs_obs_rmse_cm']:.1f} cm)", **tc)
+    ax.set_xlabel("Normalised dorso-ventral position $y_{DV}$", **lc)
+    ax.set_ylabel("Grid wavelength $\\lambda$ (cm)", **lc)
+    ax.legend(loc="upper left", **lg)
+
+    # C3: HCN1-/- CANN regime autocorrelogram
+    ax = axes[2, 2]
+    ax.imshow(ko["autocorr"], cmap="coolwarm", vmin=-0.6, vmax=1.0, origin="lower", extent=[-135, 135, -135, 135])
+    for ang_deg in range(0, 360, 60):
+        rad = np.deg2rad(ang_deg)
+        ax.plot([0, ko["lambda_cm"] * np.cos(rad)], [0, ko["lambda_cm"] * np.sin(rad)], "--", color="#f8fafc", lw=1.0, alpha=0.85)
+        ax.plot([0, m1["lambda_cm"] * np.cos(rad)], [0, m1["lambda_cm"] * np.sin(rad)], ":", color="#38bdf8", lw=1.0, alpha=0.85)
+    ax.set_title(f"C3. HCN1$^{{-/-}}$ CANN Autocorrelogram ($\\lambda={ko['lambda_cm']:.1f}$ cm, $\\beta={ko['beta_m']:.4f}$, $G_{{60}}={ko['gridness_60']:.2f}$)", **tc)
+    ax.set_xlabel("Lag $\\Delta x$ (cm) — white: KO spacing, blue: WT M1 38 cm", **lc)
+    ax.set_ylabel("Lag $\\Delta y$ (cm)", **lc)
+
+    fig.suptitle(
+        "Pass 3 — Border-Cell Error Correction of Path-Integration Drift (Hardcastle et al. 2015) & HCN1 h-Current Resonance Gradient Coupled to Kernel Width $\\beta_m$ (Giocomo et al. 2007, 2011)",
+        color="#f8fafc", fontsize=11.0, fontweight="bold", y=0.992,
+    )
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.978])
+    fig.savefig(OUT_PASS3_PNG, dpi=135)
+    plt.close(fig)
+
+
+# --------------------------------------------------------------------------- #
 # 6. 9-Panel Dark-Mode Visualization & 24-Frame Animated GIF
 # --------------------------------------------------------------------------- #
 def render_all(skip_gif: bool = False) -> dict[str, Any]:
-    """Render the 9-panel dark-mode comparison figure (`grid_cell_hexagonal_attractor_comparison.png`)
+    """Render the 9-panel dark-mode comparison figure (`grid_cell_hexagonal_attractor_comparison.png`),
+    the Pass 3 companion figure (`grid_cell_hexagonal_attractor_border_reset_hcn1.png`),
     and 24-frame animated path-integration GIF (`grid_cell_hexagonal_attractor_growth.gif`)."""
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
     inv = compute_lean_grid_attractor_invariants()
@@ -706,7 +1252,8 @@ def render_all(skip_gif: bool = False) -> dict[str, Any]:
 
     # Panel C3: 6-Regime Hexagonal Gridness G_60 & Path-Integration Tracking Summary
     ax = axes[2, 2]
-    r_names = ["M1\n38cm", "M2\n54cm", "M3\n76cm", "M4\n108cm", "Square\n90deg", "Pinned\nl=0"]
+    ko = reg["hcn1_knockout_expanded_module"]
+    r_names = ["M1\n38cm", "M2\n54cm", "M3\n76cm", "M4\n108cm", "Square\n90deg", "Pinned\nl=0", f"HCN1-/-\n{ko['lambda_cm']:.0f}cm"]
     g60_vals = [
         m1["gridness_60"],
         m2["gridness_60"],
@@ -714,6 +1261,7 @@ def render_all(skip_gif: bool = False) -> dict[str, Any]:
         m4["gridness_60"],
         sq["gridness_60"],
         pin["gridness_60"],
+        ko["gridness_60"],
     ]
     path_r_vals = [
         m1["path_r"],
@@ -722,14 +1270,15 @@ def render_all(skip_gif: bool = False) -> dict[str, Any]:
         m4["path_r"],
         sq["path_r"],
         pin["path_r"],
+        ko["path_r"],
     ]
     xp = np.arange(len(r_names))
     ax.bar(xp - 0.18, g60_vals, width=0.35, color="#38bdf8", label="Hexagonal Gridness $G_{60}$")
     ax.bar(xp + 0.18, path_r_vals, width=0.35, color="#22c55e", label="Path Tracking $r_{\\mathrm{path}}$")
     ax.axhline(0.0, color="#64748b", lw=1.0)
     ax.set_xticks(xp)
-    ax.set_xticklabels(r_names, color="#cbd5e1", fontsize=7.8)
-    ax.set_title("C3. 6-Regime Gridness $G_{60}$ & Path-Integration Summary", color="#f8fafc", fontsize=9.8, fontweight="bold")
+    ax.set_xticklabels(r_names, color="#cbd5e1", fontsize=7.4)
+    ax.set_title("C3. 7-Regime Gridness $G_{60}$ & Path-Integration Summary", color="#f8fafc", fontsize=9.8, fontweight="bold")
     ax.set_ylabel("Gridness $G_{60}$ / Correlation $r$", color="#cbd5e1", fontsize=8.5)
     ax.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.0, loc="lower left")
 
@@ -743,6 +1292,9 @@ def render_all(skip_gif: bool = False) -> dict[str, Any]:
     fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.978])
     fig.savefig(OUT_PNG, dpi=135)
     plt.close(fig)
+
+    # Pass 3 companion figure (border-cell reset + HCN1 resonance)
+    render_pass3_figure(suite)
 
     if not skip_gif:
         frames_pil: list[Image.Image] = []
@@ -793,7 +1345,8 @@ def render_all(skip_gif: bool = False) -> dict[str, Any]:
 # 7. MorphoEval Quantitative Measurements Hook (`measure_morphoeval()`)
 # --------------------------------------------------------------------------- #
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 6 quantitative reference-anchored morphometric measurements for `measure_outputs.py`."""
+    """Compute 13 quantitative reference-anchored morphometric measurements for `measure_outputs.py`
+    (6 Pass 2 + 4 border-reset + 3 HCN1 resonance)."""
     inv = compute_lean_grid_attractor_invariants()
     suite = evaluate_all_regimes_and_morphospace()
     spec = segment_rat_hippocampal_entorhinal_specimen(SPECIMEN_PATH)
@@ -805,6 +1358,10 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     m4 = reg["m4_ventral_large_scale_module"]
     sq = reg["square_90deg_nonresonant_control"]
     pin = reg["medial_septum_inactivation_pinned_null"]
+    ko = reg["hcn1_knockout_expanded_module"]
+    b = suite["border"]
+    sw = suite["border_sweep"]
+    h = suite["hcn"]
 
     return [
         {
@@ -867,18 +1424,92 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"Lamina Pearson r = {spec['lamina_r']:.4f} (RMSE = {spec['lamina_rmse']:.4f}, N = {spec['n_segmented_somata']} segmented NeuN+ somata, MBP+ fiber fraction = {spec['mbp_fiber_fraction']:.4f})",
             "derived_from": "script",
         },
+        # ---- Pass 3: border-cell boundary resetting (Hardcastle et al. 2015) ----
+        {
+            "name": "Free-drift path-integration RMS error after a 10-min foraging session (no boundary information)",
+            "value": round(b["final_rms_free"], 4),
+            "unit": "cm",
+            "method": "RMS over 16 trials of ||e(T)|| for the phase-level Burak-Fiete reduction with sigma = 1.0 cm/sqrt(s) diffusion + 3 percent velocity-gain miscalibration, T = 600 s, 150 cm arena",
+            "reference_value": round(b["final_rms_analytic"], 4),
+            "reference_source": "Analytic 2D diffusion null sqrt(2 sigma^2 T) for g = 0 (Burak & Fiete 2009 Fig. 6 diffusive drift; Lean 4 border_reset_bounds_drift_variance)",
+            "note": f"Simulated free RMS error {b['final_rms_free']:.2f} cm vs analytic sqrt(2 sigma^2 T) = {b['final_rms_analytic']:.2f} cm (gain-miscalibration bias and reflecting walls make the sim deviate from the pure diffusion null); exceeds lambda_1/2 = 19 cm so single-cell fields alias",
+            "derived_from": "script",
+        },
+        {
+            "name": "Border-cell reset path-integration RMS error after a 10-min foraging session / free-drift RMS error",
+            "value": round(b["final_rms_reset"] / b["final_rms_free"], 4),
+            "unit": "dimensionless ratio",
+            "method": "Same trajectories and noise realisation; error component perpendicular to a wall reset to 0 whenever the rat is within 5 cm of that wall (Solstad et al. 2008 border cells)",
+            "reference_value": 0.0,
+            "reference_source": "Hardcastle, Ganguli & Giocomo (2015) Neuron 86:827-839 (boundary contact reduces grid error along the wall-perpendicular axis); reference 0 is the ideal complete-reset limit, the qualitative claim is ratio << 1",
+            "note": f"Reset RMS {b['final_rms_reset']:.2f} cm vs free {b['final_rms_free']:.2f} cm (ratio {b['final_rms_reset'] / b['final_rms_free']:.4f}); max reset RMS over the session {b['max_rms_reset']:.2f} cm; border-zone dwell fraction {b['border_zone_dwell_fraction']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Hardcastle et al. (2015) Pearson r between grid error and time since last boundary contact",
+            "value": round(b["tsc_r"], 4),
+            "unit": "Pearson r",
+            "method": "RMS decoding error in 12 bins of time-since-last-wall-contact (reset condition, 16 trials), Pearson r of binned RMS error vs bin centre",
+            "reference_value": 1.0,
+            "reference_source": "Hardcastle et al. (2015) Neuron 86:827-839 Fig. 2 (grid error increases monotonically with time since boundary encounter); reference is the perfect-monotone sign, not a reported r",
+            "note": f"r = {b['tsc_r']:.4f}, slope {b['tsc_slope_cm_per_s']:.4f} cm/s of time since contact",
+            "derived_from": "script",
+        },
+        {
+            "name": "Single-cell hexagonal gridness G_60 retained by border reset minus free-drift gridness over a 10-min session",
+            "value": round(b["gridness_reset"] - b["gridness_free"], 4),
+            "unit": "rotational correlation difference",
+            "method": "Mean over 16 trials of G_60 of occupancy-normalised 5 cm-bin rate maps built from the drifting decoded phase, reset minus free",
+            "reference_value": 0.0,
+            "reference_source": "Hardcastle et al. (2015) (boundary anchoring preserves grid periodicity); reference 0 = null hypothesis of no effect, expected sign > 0",
+            "note": f"G_60 reset = {b['gridness_reset']:.4f}, free = {b['gridness_free']:.4f}; noise sweep sigma={sw['sigmas']}: free {[round(r['gridness_free'], 2) for r in sw['rows']]}, reset {[round(r['gridness_reset'], 2) for r in sw['rows']]}",
+            "derived_from": "script",
+        },
+        # ---- Pass 3: HCN1 h-current resonance gradient coupled to beta_m ----
+        {
+            "name": "Dorsal MEC stellate h-current resonance frequency f_res (tau_h = 80 ms) from linearised I_h membrane impedance",
+            "value": round(h["f_res_dorsal_hz"], 4),
+            "unit": "Hz",
+            "method": "argmax |Z(f)| of Z = 1/(g_L + g_h/(1 + i omega tau_h) + i omega C) with g_h/g_L = 0.5, C/g_L = 12 ms, validated by forward-Euler ZAP chirp FFT ratio",
+            "reference_value": 6.4,
+            "reference_source": "Giocomo et al. (2007) Science 315:1719-1722 dorsal stellate subthreshold resonance/MPO frequency (value transcribed offline, approx_unverified)",
+            "note": f"Analytic f_res = {h['f_res_dorsal_hz']:.3f} Hz, ZAP time-domain peak = {h['zap_f_peak_hz']:.3f} Hz; ventral (tau_h = 160 ms) f_res = {h['f_res_ventral_hz']:.3f} Hz vs ref 4.2 Hz; dorsal/ventral ratio {h['f_ratio_dorsal_ventral']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "HCN1-resonance-predicted Module M4 / M1 grid scale ratio lambda_4/lambda_1 via beta_m = beta_1 (f_m/f_1)^2",
+            "value": round(h["lambda_pred_m4_over_m1"], 4),
+            "unit": "dimensionless scale ratio",
+            "method": "Giocomo et al. (2007) inverse law lambda ~ 1/f_res imposed on the Mexican-hat kernel width, calibrated at M1 only, tau_h interpolated geometrically 80 -> 160 ms across y_DV",
+            "reference_value": round(h["lambda_obs_m4_over_m1"], 4),
+            "reference_source": "Stensola et al. (2012) Nature 492:72-78 observed lambda_4/lambda_1 = 108/38",
+            "note": f"Predicted {h['lambda_pred_m4_over_m1']:.4f} vs observed {h['lambda_obs_m4_over_m1']:.4f}; predicted module wavelengths {[round(m['lambda_pred_cm'], 1) for m in h['modules']]} cm vs {[m['lambda_obs_cm'] for m in h['modules']]} cm (RMSE {h['pred_vs_obs_rmse_cm']:.1f} cm, r = {h['pred_vs_obs_r']:.4f}); CV of lambda_obs * f_res = {h['obs_lambda_f_cv']:.4f} (0 if resonance alone set the scale) -> the I_h gradient under-predicts the ventral expansion",
+            "derived_from": "script",
+        },
+        {
+            "name": "Giocomo et al. (2011) HCN1-/- grid spacing expansion factor lambda_KO/lambda_WT predicted from slower, smaller I_h",
+            "value": round(h["ko_spacing_expansion"], 4),
+            "unit": "dimensionless ratio",
+            "method": "f_res(WT)/f_res(KO) with tau_h x 2.5 and g_h x 0.6 at the dorsal position; the resulting lambda_KO is run through the 4-subpopulation CANN as regime hcn1_knockout_expanded_module",
+            "reference_value": 1.3,
+            "reference_source": "Giocomo et al. (2011) Cell 147:1159-1170 (HCN1 KO expands grid spacing, order 20-40 percent; value approx_unverified)",
+            "note": f"Predicted expansion {h['ko_spacing_expansion']:.4f} (lambda_KO = {h['ko_lambda_cm']:.1f} cm, f_res,KO = {h['ko_f_res_hz']:.3f} Hz); CANN KO regime G_60 = {ko['gridness_60']:.4f}, beta_KO = {ko['beta_m']:.5f}, path_r = {ko['path_r']:.4f}",
+            "derived_from": "script",
+        },
     ]
 
 
 # --------------------------------------------------------------------------- #
-# 8. Deterministic 8-Check Verification Suite (`--self-test`)
+# 8. Deterministic 11-Check Verification Suite (`--self-test`)
 # --------------------------------------------------------------------------- #
 def run_self_test() -> int:
-    """Run 8 deterministic verification checks covering SHA-256 locks, Lean 4 invariants,
-    all 6 experimental regimes, rat hippocampal-entorhinal CV segmentation, and bitwise reproducibility."""
+    """Run 11 deterministic verification checks covering SHA-256 locks, Lean 4 invariants,
+    all 7 experimental regimes, rat hippocampal-entorhinal CV segmentation, bitwise reproducibility,
+    Pass 3 border-cell reset drift bounds, HCN1 resonance gradient, and measurement determinism."""
     # Check 1: SHA-256 digest verification of vendored dataset files
     verified = verify_dataset_sha256()
-    assert len(verified) == 3, f"Expected 3 verified dataset files, got {len(verified)}"
+    assert len(verified) == 4, f"Expected 4 verified dataset files, got {len(verified)}"
+    assert "datasets/grid_cell_hexagonal_attractor/border_reset_hcn1_reference.json" in verified
 
     # Check 2: Exact Lean 4 algebraic & spectral invariants
     inv = compute_lean_grid_attractor_invariants()
@@ -926,11 +1557,65 @@ def run_self_test() -> int:
     assert np.allclose(m1["s_final"], m1_repeat["s_final"], atol=0.0)
     assert m1["gridness_60"] == m1_repeat["gridness_60"]
 
+    # Check 9 (Pass 3): Border-cell boundary resetting bounds multi-minute drift (Hardcastle 2015)
+    b = suite["border"]
+    assert b["session_s"] >= 600.0, "Session must be multi-minute (>= 10 min)"
+    assert b["final_rms_free"] > 0.5 * b["lambda_cm"], f"Free drift should exceed lambda/2 by session end, got {b['final_rms_free']}"
+    assert b["final_rms_reset"] < 0.35 * b["final_rms_free"], f"Border reset should cut RMS error by > 65%, got {b['final_rms_reset']} vs {b['final_rms_free']}"
+    assert b["max_rms_reset"] < 0.5 * b["lambda_cm"], f"Reset error must stay below lambda/2, got {b['max_rms_reset']}"
+    assert b["tsc_r"] > 0.8, f"Error must grow with time since boundary contact, r = {b['tsc_r']}"
+    assert b["tsc_slope_cm_per_s"] > 0.0
+    assert b["gridness_reset"] > b["gridness_free"], f"Border reset must retain more gridness: {b['gridness_reset']} vs {b['gridness_free']}"
+    # Analytic diffusion null: free RMS within 35% of sqrt(2 sigma^2 T) despite gain bias / walls
+    assert abs(b["final_rms_free"] - b["final_rms_analytic"]) < 0.35 * b["final_rms_analytic"]
+    # Complete-reset limit is exact: zero error at wall contact steps (reset_gain = 1)
+    b_zero = simulate_border_reset_drift(lambda_cm=38.0, reset_gain=1.0, session_s=120.0, n_trials=2, seed=7)
+    near = np.abs(b_zero["pos"]) > (b_zero["half_cm"] - 5.0)
+    assert np.all(np.abs(b_zero["err_reset"][near]) == 0.0)
+    # No-reset limit (reset_gain = 0) reproduces free drift exactly
+    b_none = simulate_border_reset_drift(lambda_cm=38.0, reset_gain=0.0, session_s=120.0, n_trials=2, seed=7)
+    assert np.allclose(b_none["err_reset"], b_none["err_free"], atol=1e-9)
+    # Noise sweep: free error increases monotonically with sigma; reset error always lower
+    sw = suite["border_sweep"]
+    free_err = [r["final_rms_free"] for r in sw["rows"]]
+    assert all(free_err[i] < free_err[i + 1] for i in range(len(free_err) - 1)), free_err
+    assert all(r["final_rms_reset"] < r["final_rms_free"] for r in sw["rows"])
+
+    # Check 10 (Pass 3): HCN1 h-current resonance gradient coupled to beta_m (Giocomo 2007/2008/2011)
+    h = suite["hcn"]
+    assert abs(h["f_res_dorsal_hz"] - h["zap_f_peak_hz"]) < 0.15, f"Analytic vs ZAP f_res mismatch: {h['f_res_dorsal_hz']} vs {h['zap_f_peak_hz']}"
+    assert h["f_res_dorsal_hz"] > h["f_res_ventral_hz"] > 0.0
+    f_prof = h["f_profile_hz"]
+    assert all(f_prof[i] >= f_prof[i + 1] for i in range(len(f_prof) - 1)), "f_res must decrease dorsal -> ventral"
+    assert all(h["modules"][i]["beta_hcn"] > h["modules"][i + 1]["beta_hcn"] for i in range(3)), "beta_m must narrow ventrally"
+    assert abs(h["modules"][0]["lambda_pred_cm"] - 38.0) < 1e-9 and abs(h["modules"][0]["beta_hcn"] - 0.038) < 1e-12
+    for mod in h["modules"]:
+        assert abs(mod["lambda_pred_cm"] * mod["f_res_hz"] - 38.0 * h["f_res_dorsal_hz"]) < 1e-6  # imposed inverse law
+    assert h["lambda_pred_m4_over_m1"] < h["lambda_obs_m4_over_m1"], "Honest residual: I_h gradient under-predicts Stensola M4/M1"
+    assert h["ko_spacing_expansion"] > 1.0, "HCN1 KO must expand spacing"
+    ko = reg["hcn1_knockout_expanded_module"]
+    assert ko["lambda_cm"] > 38.0 and ko["beta_m"] < m1["beta_m"]
+    assert ko["gridness_60"] > 0.9, f"HCN1 KO CANN regime must remain hexagonal, got {ko['gridness_60']}"
+    # Natural-frequency law omega_0^2 C tau_h = g_L + g_h: doubling tau_h scales omega_0^2 by 1/2 exactly
+    f_nat_d = hcn_resonance_frequency(80.0, 0.5, 12.0)["natural_f_hz"]
+    f_nat_v = hcn_resonance_frequency(160.0, 0.5, 12.0)["natural_f_hz"]
+    assert abs((f_nat_d / f_nat_v) ** 2 - 2.0) < 1e-9
+
+    # Check 11 (Pass 3): measure_morphoeval() emits 13 reference-anchored measurements deterministically
+    meas = measure_morphoeval()
+    assert len(meas) == 13, f"Expected 13 measurements, got {len(meas)}"
+    assert all(("reference_value" in m) and ("unit" in m) for m in meas)
+    meas_repeat = measure_morphoeval()
+    assert [m["value"] for m in meas] == [m["value"] for m in meas_repeat]
+
     print(
-        f"[2008-burak-grid-cell-hexagonal-attractor] SELF-TEST OK: "
+        f"[2008-burak-grid-cell-hexagonal-attractor] SELF-TEST OK (11 checks): "
         f"M1 G_60={m1['gridness_60']:.4f}, scale_ratio={inv['mean_scale_ratio']:.4f}, "
         f"path_r={m1['path_r']:.4f}, sq_G60={sq['gridness_60']:.4f}, "
-        f"pinned_G60={pin['gridness_60']:.4f}, specimen_r={spec['lamina_r']:.4f} (N={spec['n_segmented_somata']})."
+        f"pinned_G60={pin['gridness_60']:.4f}, specimen_r={spec['lamina_r']:.4f} (N={spec['n_segmented_somata']}); "
+        f"border free/reset RMS={b['final_rms_free']:.2f}/{b['final_rms_reset']:.2f} cm (tsc r={b['tsc_r']:.3f}, G60 {b['gridness_free']:.2f}->{b['gridness_reset']:.2f}); "
+        f"HCN1 f_res dorsal/ventral={h['f_res_dorsal_hz']:.2f}/{h['f_res_ventral_hz']:.2f} Hz (ZAP {h['zap_f_peak_hz']:.2f}), "
+        f"pred M4/M1={h['lambda_pred_m4_over_m1']:.3f} vs {h['lambda_obs_m4_over_m1']:.3f}, KO expansion={h['ko_spacing_expansion']:.3f} (G60={ko['gridness_60']:.3f})."
     )
     return 0
 
@@ -939,7 +1624,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Burak & Fiete (2009), Hafting et al. (2005) & Stensola et al. (2012) Entorhinal Grid-Cell Hexagonal Attractor"
     )
-    parser.add_argument("--self-test", action="store_true", help="Run 8-check deterministic verification suite")
+    parser.add_argument("--self-test", action="store_true", help="Run 11-check deterministic verification suite")
     parser.add_argument("--skip-gif", action="store_true", help="Skip animated GIF generation")
     args = parser.parse_args()
 

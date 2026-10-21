@@ -1,0 +1,91 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-coccolith-emiliania-calcite-rosette> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics — Source and data traceability: 82/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The dataset folder vendors the SHA-256-pinned specimen, reference JSON, scout manifest and bib verified fail-closed at runtime; the new `coccosphere_contact_vesicle_tension_reference.json` tags every constant `classical_formula` or `model_assumption` and states that no value is quoted from Jaya et al. (2016); `pass3_citations.bib` adds Reissner (1946) and the dataset README documents both Pass 3 extensions and their limits. Deductions: the new JSON is not SHA-256 pinned in EXPECTED_SHA256 / verify_dataset_integrity, so Pass 3 constants are not integrity-checked (-5); Jaya et al. (2016) is given the venue \"Nat. Commun. / J. Struct. Biol.\" and Walker et al. (2018) \"Nat. Commun. / New Phytol.\" with a Nat. Commun. DOI although the title is a New Phytologist paper — both pairs are internally inconsistent and could not be resolved offline (-6); the seed-paper DOI differs between the campaign record (10.1038/356145a0) and the script / bib (10.1038/356516a0, consistent with pp. 516-518) — unresolved offline (-3); the Reissner 1946 DOI is unverified (-2); the 12-taxon table carries no per-row citation for N_seg, w_0 or L_d (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "models/2022-coccolith-emiliania-calcite-rosette.py L120–L146: verify_dataset_integrity: SHA-256 of specimen JPG, scout manifest and paper_citations.bib checked against the reference JSON; the Pass 3 JSON is not in the pinned set <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L120-L146>",
+            "models/2022-coccolith-emiliania-calcite-rosette.py L31–L46: Header citations: Jaya 2016 venue 'Nat. Commun. / J. Struct. Biol.', Walker 2018 'Nat. Commun. / New Phytol.' with DOI 10.1038/s41467-018-04168-9 — inconsistent venue/DOI pairs <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L31-L46>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-source-traceability-3> ;
+        pk:hasScore "0.82"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "datasets/emiliania_calcite_rosette/coccosphere_contact_vesicle_tension_reference.json L32–L60" ;
+        dct:description "Contact-model parameters with per-constant provenance tags (all model_assumption) and the statement that nothing is quoted from Jaya et al. 2016" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/datasets/emiliania_calcite_rosette/coccosphere_contact_vesicle_tension_reference.json#L32-L60> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/emiliania_calcite_rosette/README.md L12–L17" ;
+        dct:description "Pass 3 additions documented with provenance caveats and the lambda* = 1.656 inference stated as not independently measured" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/datasets/emiliania_calcite_rosette/README.md#L12-L17> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/emiliania_calcite_rosette/pass3_citations.bib L1–L14" ;
+        dct:description "Reissner (1946) entry; DOI not verified offline" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/datasets/emiliania_calcite_rosette/pass3_citations.bib#L1-L14> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 primary assessor, Phase B)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/80> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/sapm194625180>,
+            <https://doi.org/10.1038/356516a0>,
+            <https://doi.org/10.1038/ncomms11904>,
+            <https://doi.org/10.1038/s41467-018-04168-9>,
+            <https://doi.org/10.1098/rspb.1993.0073> .
+    <https://doi.org/10.1002/sapm194625180> dct:date "1946"^^xsd:gYear ;
+        dct:title "Stresses and small displacements of shallow spherical shells. I" .
+    <https://doi.org/10.1038/356516a0> dct:date "1992"^^xsd:gYear ;
+        dct:title "Crystallographic control of biomineral morphology in coccoliths" .
+    <https://doi.org/10.1038/ncomms11904> dct:date "2016"^^xsd:gYear ;
+        dct:title "Coccospheres confer mechanical protection: insights into the Emiliania huxleyi architectural design" .
+    <https://doi.org/10.1038/s41467-018-04168-9> dct:date "2018"^^xsd:gYear ;
+        dct:title "The requirement for calcification differs between ecologically important coccolithophore species" .
+    <https://doi.org/10.1098/rspb.1993.0073> dct:date "1993"^^xsd:gYear ;
+        dct:title "Construction of stage-specific models of coccolith biomineralization in Emiliania huxleyi" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics — Source and data traceability 82/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T23:59:40Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/80> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

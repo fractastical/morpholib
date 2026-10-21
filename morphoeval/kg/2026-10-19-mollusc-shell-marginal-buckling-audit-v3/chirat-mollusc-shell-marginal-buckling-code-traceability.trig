@@ -1,0 +1,86 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-chirat-mollusc-shell-marginal-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-chirat-mollusc-shell-marginal-buckling-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-chirat-mollusc-shell-marginal-buckling-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Chirat, Moulton & Goriely (2013) & Erlich et al. (2016) mollusc shell marginal buckling, hollow-spine closure and predator damage / mantle repair — Code-to-model traceability: 90/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The header docstring (L1-78) maps Laws 1-5 to Chirat et al. (2013) PNAS, Erlich et al. (2016), Rudraraju et al. (2019) and the 7 Lean theorems by name, and states plainly that Law 5 is an honest reduced stand-in for the 3D FEM (L74-77); the Pass 3 functions carry docstrings tying k(s) to the callus theorem (L244-252) and the elastica energy to its terms (L524-531); the math-KG YAML registers the two new laws with single-range `code_locus` pins refreshed to current lines. Deductions: the `--self-test` help string still says \"Run 8-check verification suite\" although 12 checks run (L2343) (-2); the section banner at L1265 still says \"6-Panel Synthesis Figure\" for a 3 x 3 figure (-1); the hard-coded 1.085 / 0.285 / 1.250 constants in `measure_morphoeval` (L2039, L2042) are not traced to the JSON (-2); `mu_end = mu_contact = 400` penalties are chosen without a cited rationale (L517-519) (-2); the heuristic reference values are labelled as such in `reference_source` strings, which is credited (-3 net total)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "2013-chirat-mollusc-shell-marginal-buckling.py L2036–L2043: measure_morphoeval hard-codes L=122.87, EI=1.085, k=0.285, kappa_3=1.250 rather than reading the pinned JSON <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L2036-L2043>",
+            "2013-chirat-mollusc-shell-marginal-buckling.py L2343–L2343: Stale CLI help: 'Run 8-check verification suite' while self_test() runs 12 checks <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L2343-L2343>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-code-traceability-2> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2013-chirat-mollusc-shell-marginal-buckling.py L1–L78" ;
+        dct:description "Header docstring: Laws 1-5 with DOIs and Lean theorem names; Law 5 explicitly a reduced stand-in for Rudraraju 2019 FEM" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/2013-chirat-mollusc-shell-marginal-buckling.py#L1-L78> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-chirat-mollusc-shell-marginal-buckling-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/chirat-mollusc-shell-marginal-buckling.yaml L39–L113" ;
+        dct:description "5 equations with single-range code_locus pins (L164-185, L187-202, L364-492, L748-1035, L511-743) matching current function boundaries" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/e651a8b8/morphoeval/math_kg_loops/chirat-mollusc-shell-marginal-buckling.yaml#L39-L113> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 remediated assessment, Phase B audit subagent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/72> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2012.07.009>,
+            <https://doi.org/10.1073/pnas.1220443110>,
+            <https://doi.org/10.1098/rsif.2016.0592>,
+            <https://doi.org/10.1371/journal.pcbi.1007213>,
+            <https://press.princeton.edu/books/paperback/9780691000800/evolution-and-escalation> .
+    <https://doi.org/10.1016/j.jtbi.2012.07.009> dct:date "2012"^^xsd:gYear ;
+        dct:title "Mechanical growth and morphogenesis of seashells" .
+    <https://doi.org/10.1073/pnas.1220443110> dct:date "2013"^^xsd:gYear ;
+        dct:title "Mechanical basis of morphogenesis and convergent evolution of spiny seashells" .
+    <https://doi.org/10.1098/rsif.2016.0592> dct:date "2016"^^xsd:gYear ;
+        dct:title "The physical basis of mollusk shell chiral coiling and antimarginal rib ornamentation" .
+    <https://doi.org/10.1371/journal.pcbi.1007213> dct:date "2019"^^xsd:gYear ;
+        dct:title "A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth" .
+    <https://press.princeton.edu/books/paperback/9780691000800/evolution-and-escalation> dct:date "1987"^^xsd:gYear ;
+        dct:title "Evolution and Escalation: An Ecological History of Life" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Chirat, Moulton & Goriely (2013) & Erlich et al. (2016) mollusc shell marginal buckling, hollow-spine closure and predator damage / mantle repair — Code-to-model traceability 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T20:02:13Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-chirat-mollusc-shell-marginal-buckling-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/72> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

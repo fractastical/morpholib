@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2013-thomas-coral-calice-septa-insertion.py — Pass 2 (v2) Remediated Implementation
+2013-thomas-coral-calice-septa-insertion.py — Pass 3 (v3) Remediated Implementation
 ===================================================================================
 Faithful mathematical, biophysical, and morphometric reproduction of:
 
@@ -62,6 +62,38 @@ Mathematical & Biophysical Architecture (Linked to Lean 4 `MathOfBiology.Loop_07
     As `Pe` increases (`Pe in {1, 4, 16, 36}`), laminar boundary-layer thinning on the
     upstream face (`theta = 0`) enhances calcification relative to the downstream wake
     (`theta = pi`), polarizing the calice and septa toward the oncoming current.
+
+Pass 3 (v3) remediation additions (closing the two Pass 2 audit items):
+----------------------------------------------------------------------
+  - Law 4 (`MathOfBiology.Loop_074.turbinate_corallum_septal_cycles_monotone`):
+    REDUCED 3D corallum. The 2D calice is extruded into an accreting conical
+    (ceratoid/trochoid/turbinate, Wells 1956 apical-angle classes 20/40/70/120 deg)
+    corallum on a cylindrical voxel grid (z, r, theta): R(z) = R_ped + z tan(phi/2).
+    Because R(z) is non-decreasing in z, the active Milne-Edwards cycle k(R(z)) and the
+    septal count N_hex(k(z)) are non-decreasing along the growth axis, i.e. septal
+    insertion fronts are stacked at the heights where R(z) crosses R_k. Three endothecal
+    architectures are resolved: `caryophylliid` (septotheca + pali, no endotheca),
+    `dissepimented` (vesicular endothecal dissepiment floors of spacing h_d in the outer
+    loculi, alternating phase in adjacent loculi) and `synapticulate` (synapticular rings
+    of rods bridging adjacent septa at fixed radii, cf. Fungiidae). This is an honest
+    reduced kinematic/geometric model, NOT a 3D FEM or accretive growth solver; the
+    residual is carried as a Pass 4 item. The corallum apical angle is measured from the
+    side-profile panel of the vendored Caryophyllia specimen (`segment_caryophyllia_corallum_profile`).
+
+  - Law 5 (`MathOfBiology.Loop_074.oscillatory_surge_dipole_cancellation`):
+    Oscillatory reef surge. The quasi-steady Péclet flux law of Law 3 is driven by a
+    sinusoidal free-stream U(t) = U_max sin(2 pi t / T), Keulegan-Carpenter number
+    KC = U_max T / L (Keulegan & Carpenter 1958). Flow reversal flips the sign of the
+    dipole (cos theta) term, so the period-averaged dipole asymmetry <A_1> vanishes
+    EXACTLY (Lean theorem), while the quadrupole (cos 2 theta) term survives: bidirectional
+    surge produces a bilaterally elongated but unpolarized calice, whereas unidirectional
+    current polarizes it upstream (Chindapol et al. 2013 unidirectional vs bidirectional
+    runs). The surge excursion amplitude a = U_max T / (2 pi) sets a boundary-layer
+    renewal efficiency eta(KC) = 1 - exp(-KC / (2 pi)) (a = L  <=>  KC = 2 pi), so the
+    surviving quadrupole saturates with KC with half-saturation KC_50 = 2 pi ln 2.
+    Oscillatory mass-transfer enhancement measured on reefs (Falter et al. 2005;
+    Reidenbach et al. 2006) is NOT reproduced by this quasi-steady closure and is carried
+    as a residual.
 """
 
 from __future__ import annotations
@@ -82,7 +114,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import signal, stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "coral_calice_septa_insertion"
 REF_JSON = DATASET_DIR / "coral_calice_septa_insertion_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "scleractinian_coral_septa_specimen.jpg"
@@ -91,11 +123,27 @@ BIB_FILE = DATASET_DIR / "paper_citations.bib"
 
 OUT_PNG = ROOT / "docs" / "media" / "coral_calice_septa_insertion_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "coral_calice_septa_insertion_growth.gif"
+OUT_PNG_3D = ROOT / "docs" / "media" / "coral_calice_septa_insertion_corallum3d.png"
+OUT_PNG_SURGE = ROOT / "docs" / "media" / "coral_calice_septa_insertion_surge_kc.png"
+OUT_GIF_SURGE = ROOT / "docs" / "media" / "coral_calice_septa_insertion_surge_phase.gif"
+PASS3_REF_JSON = DATASET_DIR / "corallum3d_surge_reference.json"
 
 DEFAULT_LAMBDA_S_MM = 0.5235987755982988  # pi / 6 mm so R_1 = 0.50 mm, R_2 = 1.00 mm, R_3 = 2.00 mm, R_4 = 4.00 mm, R_5 = 8.00 mm
 DEFAULT_ALPHA_CYCLES = (0.78, 0.62, 0.46, 0.31, 0.19, 0.12)
 DEFAULT_BETA_PE = 0.18
 DEFAULT_GAMMA_PE = 0.12
+
+# Pass 3: Wells (1956, Treatise Part F, p. F333) solitary-corallum shape classes by apical angle
+WELLS_1956_APICAL_ANGLE_CLASSES_DEG: dict[str, float] = {
+    "ceratoid": 20.0,
+    "trochoid": 40.0,
+    "turbinate": 70.0,
+    "patellate": 120.0,
+}
+CORALLUM_ARCHITECTURES = ("caryophylliid", "dissepimented", "synapticulate")
+# Keulegan-Carpenter renewal scale: surge excursion a = U_max T / (2 pi) equals the corallite size L when KC = 2 pi
+KC_RENEWAL_SCALE = 2.0 * math.pi
+KC_50_ANALYTIC = 2.0 * math.pi * math.log(2.0)  # half-saturation of eta(KC) = 1 - exp(-KC / (2 pi))
 
 # Cryptographic SHA-256 Registry for `datasets/coral_calice_septa_insertion/`
 EXPECTED_SHA256: dict[str, str] = {
@@ -450,6 +498,436 @@ def evaluate_peclet_flow_sweep(pe_values: tuple[float, ...] = (0.0, 1.0, 4.0, 16
 
 
 # =============================================================================
+# 4b. Pass 3 / Law 5: Oscillatory Reef Surge — Keulegan-Carpenter Coupling of the
+#     Péclet Boundary-Layer Flux (unidirectional current vs bidirectional surge)
+# =============================================================================
+def surge_renewal_efficiency(KC: float, kc_scale: float = KC_RENEWAL_SCALE) -> float:
+    """Boundary-layer renewal efficiency eta(KC) = 1 - exp(-KC / (2 pi)).
+    The surge excursion amplitude a = U_max / omega = U_max T / (2 pi) = L * KC / (2 pi); when
+    a << L the fluid parcel never clears the corallite within a half-cycle and the quasi-steady
+    advective boundary layer of Law 3 is not re-established (eta -> 0, diffusive limit); when
+    a >> L each half-cycle fully renews it (eta -> 1). The exponential form is a modelling choice
+    (single kinematic scale, no fitted constant)."""
+    return float(1.0 - math.exp(-max(KC, 0.0) / kc_scale))
+
+
+def compute_oscillatory_surge_flux(
+    Pe_max: float,
+    KC: float,
+    n_phase: int = 64,
+    n_theta: int = 360,
+    j0: float = 1.0,
+    beta_Pe: float = DEFAULT_BETA_PE,
+    gamma_Pe: float = DEFAULT_GAMMA_PE,
+) -> dict[str, Any]:
+    """Period-averaged calcification-precursor flux around the calice rim under sinusoidal
+    bidirectional surge U(t) = U_max sin(2 pi t / T), Keulegan-Carpenter number KC = U_max T / L
+    (Keulegan & Carpenter 1958 J. Res. NBS 60:423). The quasi-steady Law 3 flux is evaluated at
+    the instantaneous Pe(t) = Pe_max |sin(omega t)| with the dipole term carrying the sign of U(t):
+      j(theta, t) = j_0 [1 + eta(KC) beta sqrt(Pe(t)) sgn(U) cos theta + eta(KC) gamma (Pe(t)/(1+Pe(t))) cos 2theta].
+    Over a full period the dipole cancels exactly (Lean `oscillatory_surge_dipole_cancellation`),
+    the quadrupole survives, so surge elongates the calice along the surge axis without polarizing it.
+    Phases are sampled at cell centres so that every phase has an exact mirror phase u -> -u."""
+    thetas = np.linspace(0.0, 2.0 * math.pi, n_theta, endpoint=False)
+    phases = (np.arange(n_phase) + 0.5) / n_phase * 2.0 * math.pi
+    u = np.sin(phases)
+    eta = surge_renewal_efficiency(KC)
+    Pe_t = Pe_max * np.abs(u)
+    s_t = np.sqrt(Pe_t)
+    q_t = Pe_t / (1.0 + Pe_t)
+
+    cos_t = np.cos(thetas)[None, :]
+    cos2_t = np.cos(2.0 * thetas)[None, :]
+    raw = j0 * (
+        1.0
+        + eta * beta_Pe * (s_t * np.sign(u))[:, None] * cos_t
+        + eta * gamma_Pe * q_t[:, None] * cos2_t
+    )
+    flux_t = np.maximum(0.16 * j0, raw)  # same diffusive floor as the steady Law 3 model
+    flux_mean = flux_t.mean(axis=0)
+
+    i0, i90, i180, i270 = 0, n_theta // 4, n_theta // 2, (3 * n_theta) // 4
+    j_up, j_dn = float(flux_mean[i0]), float(flux_mean[i180])
+    j_ax = 0.5 * (j_up + j_dn)
+    j_lat = 0.5 * float(flux_mean[i90] + flux_mean[i270])
+    A1_mean = (j_up - j_dn) / (j_up + j_dn)
+    A2_mean = (j_ax - j_lat) / (j_ax + j_lat)
+    # Instantaneous dipole asymmetry per phase (polarization that an observer would see at time t)
+    A1_t = (flux_t[:, i0] - flux_t[:, i180]) / (flux_t[:, i0] + flux_t[:, i180])
+
+    steady = compute_peclet_boundary_flux(Pe_max, n_theta=n_theta, j0=j0, beta_Pe=beta_Pe, gamma_Pe=gamma_Pe)
+    j_lat_steady = 0.5 * float(steady["flux_profile"][i90] + steady["flux_profile"][i270])
+    j_ax_steady = 0.5 * float(steady["flux_profile"][i0] + steady["flux_profile"][i180])
+    A2_steady = (j_ax_steady - j_lat_steady) / (j_ax_steady + j_lat_steady)
+
+    return {
+        "Pe_max": float(Pe_max),
+        "KC": float(KC),
+        "renewal_efficiency": eta,
+        "thetas_rad": thetas,
+        "phases_rad": phases,
+        "flux_phase_profiles": flux_t,
+        "flux_mean_profile": flux_mean,
+        "instantaneous_dipole_asymmetry": A1_t,
+        "mean_dipole_asymmetry": float(A1_mean),
+        "mean_quadrupole_asymmetry": float(A2_mean),
+        "axial_lateral_flux_ratio": float(j_ax / j_lat),
+        "peak_instantaneous_dipole_asymmetry": float(np.max(np.abs(A1_t))),
+        "mean_sqrt_pe_factor": float(np.mean(np.sqrt(np.abs(u)))),
+        "steady_dipole_asymmetry": float(steady["dipole_asymmetry_index"]),
+        "steady_quadrupole_asymmetry": float(A2_steady),
+        "steady_flux_profile": steady["flux_profile"],
+    }
+
+
+def evaluate_keulegan_carpenter_sweep(
+    Pe_max: float = 16.0,
+    kc_values: tuple[float, ...] = (0.5, 1.0, 2.0, 4.0, KC_RENEWAL_SCALE, 10.0, 20.0, 50.0, 200.0),
+) -> dict[str, Any]:
+    """Sweep the Keulegan-Carpenter number at fixed Pe_max and compare bidirectional surge against
+    the unidirectional Law 3 current: <A_1> stays 0 for every KC while the surviving quadrupole
+    <A_2>(KC) saturates with eta(KC); the numerically located half-saturation KC_50 is checked
+    against the closed form 2 pi ln 2."""
+    records = [compute_oscillatory_surge_flux(Pe_max, kc) for kc in kc_values]
+    a2 = np.array([r["mean_quadrupole_asymmetry"] for r in records], dtype=float)
+    etas = np.array([r["renewal_efficiency"] for r in records], dtype=float)
+    a1_abs_max = float(max(abs(r["mean_dipole_asymmetry"]) for r in records))
+
+    # Dense scan for KC_50 (half of the eta -> 1 saturation value of <A_2>)
+    kc_dense = np.linspace(0.05, 60.0, 1200)
+    a2_dense = np.array([compute_oscillatory_surge_flux(Pe_max, kc, n_theta=72)["mean_quadrupole_asymmetry"] for kc in kc_dense])
+    a2_sat = compute_oscillatory_surge_flux(Pe_max, 1e6, n_theta=72)["mean_quadrupole_asymmetry"]
+    idx50 = int(np.argmin(np.abs(a2_dense - 0.5 * a2_sat)))
+    kc50_numeric = float(kc_dense[idx50])
+
+    r_eta, _ = stats.pearsonr(etas, a2)
+    return {
+        "Pe_max": float(Pe_max),
+        "kc_values": [float(k) for k in kc_values],
+        "records": records,
+        "max_abs_mean_dipole_asymmetry": a1_abs_max,
+        "pearson_r_quadrupole_vs_renewal": float(r_eta),
+        "kc50_numeric": kc50_numeric,
+        "kc50_analytic": float(KC_50_ANALYTIC),
+        "kc_dense": kc_dense,
+        "a2_dense": a2_dense,
+        "a2_saturated": float(a2_sat),
+        "steady_dipole_asymmetry": float(records[0]["steady_dipole_asymmetry"]),
+        "steady_quadrupole_asymmetry": float(records[0]["steady_quadrupole_asymmetry"]),
+        "mean_sqrt_pe_factor": float(records[0]["mean_sqrt_pe_factor"]),
+    }
+
+
+def reef_keulegan_carpenter_number(U_max_m_s: float, T_s: float, L_m: float) -> float:
+    """KC = U_max T / L for a reef wave orbital velocity amplitude, wave period and body size."""
+    return float(U_max_m_s * T_s / L_m)
+
+
+# =============================================================================
+# 4c. Pass 3 / Law 4: Reduced 3D Accreting Conical (Trochoid/Turbinate) Corallum
+#     With Septa, Endothecal Dissepiments and Synapticulae (cylindrical voxel model)
+# =============================================================================
+LABEL_VOID, LABEL_THECA, LABEL_SEPTUM, LABEL_DISSEPIMENT, LABEL_SYNAPTICULA, LABEL_COLUMELLA, LABEL_PALUS = 0, 1, 2, 3, 4, 5, 6
+LABEL_NAMES = {
+    LABEL_VOID: "void",
+    LABEL_THECA: "theca",
+    LABEL_SEPTUM: "septum",
+    LABEL_DISSEPIMENT: "dissepiment",
+    LABEL_SYNAPTICULA: "synapticula",
+    LABEL_COLUMELLA: "columella",
+    LABEL_PALUS: "palus",
+}
+
+
+def corallum_height_mm(R_top_mm: float, apical_angle_deg: float, R_pedicel_mm: float) -> float:
+    """Height of a conical corallum: H = (R_top - R_ped) / tan(phi / 2)."""
+    return float((R_top_mm - R_pedicel_mm) / math.tan(math.radians(0.5 * apical_angle_deg)))
+
+
+def corallum_radius_profile_mm(z_mm: np.ndarray, R_top_mm: float, apical_angle_deg: float, R_pedicel_mm: float) -> np.ndarray:
+    """Conical radius profile R(z) = R_ped + z tan(phi/2) (non-decreasing in z; Lean `cone_radius_monotone`)."""
+    return np.minimum(R_top_mm, R_pedicel_mm + np.asarray(z_mm, dtype=float) * math.tan(math.radians(0.5 * apical_angle_deg)))
+
+
+def _septa_angles_up_to_cycle(max_k: int) -> tuple[np.ndarray, np.ndarray]:
+    """All Milne-Edwards septal angles (rad) and their cycle index for cycles 1..max_k."""
+    angs: list[float] = []
+    cyc: list[int] = []
+    for k in range(1, max_k + 1):
+        if k == 1:
+            a_k = np.linspace(0.0, 2.0 * math.pi, 6, endpoint=False)
+        else:
+            n_prev = milne_edwards_cumulative_septa(k - 1)
+            a_k = (np.arange(n_prev) + 0.5) * (2.0 * math.pi / n_prev)
+        angs.extend(float(a) for a in a_k)
+        cyc.extend([k] * len(a_k))
+    return np.array(angs, dtype=float), np.array(cyc, dtype=int)
+
+
+def simulate_turbinate_corallum_3d(
+    R_top_mm: float = 5.0,
+    apical_angle_deg: float = 40.0,
+    R_pedicel_mm: float = 0.60,
+    architecture: str = "caryophylliid",
+    lambda_s_mm: float = DEFAULT_LAMBDA_S_MM,
+    alpha_cycles: tuple[float, ...] = DEFAULT_ALPHA_CYCLES,
+    septum_thickness_mm: float = 0.10,
+    theca_thickness_mm: float = 0.16,
+    columella_fraction: float = 0.18,
+    dissepiment_spacing_mm: float = 0.60,
+    dissepiment_inner_fraction: float = 0.55,
+    dissepiment_tilt: float = 0.5,
+    dissepiment_thickness_mm: float = 0.05,
+    synapticula_ring_radii: tuple[float, ...] = (0.45, 0.65, 0.85),
+    synapticula_spacing_mm: float = 0.60,
+    synapticula_thickness_mm: float = 0.10,
+    n_z: int = 72,
+    n_r: int = 48,
+    n_theta: int = 360,
+) -> dict[str, Any]:
+    """Reduced 3D corallum: the Law 1/2 calice is extruded along the growth axis z on a cylindrical
+    voxel grid (z, r/R(z), theta). Septa of cycle k exist wherever R(z) >= R_k (so insertion fronts
+    stack along z), have constant physical thickness t_s (angular width t_s / (r R)), radial reach
+    alpha_k and (cycles 1-3) paliform lobes. Architectures:
+      caryophylliid  — septotheca + pali + columella, no endotheca (Caryophyllia-like);
+      dissepimented  — + vesicular endothecal dissepiment floors (spacing h_d, tilted toward the
+                       axis, half-period phase shift in adjacent loculi) in the outer r > f_d zone;
+      synapticulate  — + synapticular rings of rods bridging adjacent septa at fixed radii (Fungiidae-like).
+    Returns the label volume, per-level septal counts and per-element volumes (mm^3).
+    Honest limits: kinematic geometry only — no accretion dynamics, no mechanics, no FEM."""
+    if architecture not in CORALLUM_ARCHITECTURES:
+        raise ValueError(f"architecture must be one of {CORALLUM_ARCHITECTURES}")
+    H = corallum_height_mm(R_top_mm, apical_angle_deg, R_pedicel_mm)
+    z = np.linspace(0.0, H, n_z)
+    dz = z[1] - z[0]
+    R_z = corallum_radius_profile_mm(z, R_top_mm, apical_angle_deg, R_pedicel_mm)
+    r = (np.arange(n_r) + 0.5) / n_r
+    dr = 1.0 / n_r
+    th = np.linspace(0.0, 2.0 * math.pi, n_theta, endpoint=False)
+    dth = 2.0 * math.pi / n_theta
+    RRn, THn = np.meshgrid(r, th, indexing="ij")  # (n_r, n_theta)
+
+    labels = np.zeros((n_z, n_r, n_theta), dtype=np.uint8)
+    septa_per_level = np.zeros(n_z, dtype=int)
+    cycle_per_level = np.zeros(n_z, dtype=int)
+    max_cycle_cap = len(alpha_cycles)
+
+    for iz in range(n_z):
+        R = float(R_z[iz])
+        k_z = active_cycle_from_radius(R, lambda_s_mm=lambda_s_mm, max_cap=max_cycle_cap)
+        cycle_per_level[iz] = k_z
+        septa_per_level[iz] = milne_edwards_cumulative_septa(k_z)
+        lab = np.zeros((n_r, n_theta), dtype=np.uint8)
+        r_phys = RRn * R
+
+        # Columella (fascicular pillar) and outer theca ring of constant physical thickness
+        lab[RRn <= columella_fraction] = LABEL_COLUMELLA
+        lab[r_phys >= R - theca_thickness_mm] = LABEL_THECA
+
+        # Radial septa (cycles 1..k_z) + paliform lobes (cycles <= 3)
+        angs, cycs = _septa_angles_up_to_cycle(k_z)
+        septum_mask = np.zeros((n_r, n_theta), dtype=bool)
+        pali_mask = np.zeros((n_r, n_theta), dtype=bool)
+        for ang, k in zip(angs, cycs):
+            dtheta = np.abs(np.arctan2(np.sin(THn - ang), np.cos(THn - ang)))
+            arc = dtheta * r_phys  # physical tangential distance from the septal mid-plane
+            reach = float(alpha_cycles[k - 1])
+            septum_mask |= (arc <= 0.5 * septum_thickness_mm) & (RRn >= 1.0 - reach)
+            if k <= 3:
+                pali_r = 1.0 - reach - 0.03
+                pali_mask |= (arc <= 0.8 * septum_thickness_mm) & (np.abs(RRn - pali_r) <= 0.03) & (RRn > columella_fraction)
+        lab[septum_mask & (lab == LABEL_VOID)] = LABEL_SEPTUM
+        lab[pali_mask & (lab == LABEL_VOID)] = LABEL_PALUS
+
+        if architecture == "dissepimented":
+            # Loculus index from the sorted septal angles at this level; adjacent loculi alternate phase
+            sorted_angs = np.sort(angs)
+            loc_idx = np.searchsorted(sorted_angs, THn, side="right") % len(sorted_angs)
+            phase = 0.5 * dissepiment_spacing_mm * (loc_idx % 2)
+            tilt_offset = dissepiment_tilt * (RRn - 1.0) * dissepiment_spacing_mm  # plates dip toward the wall
+            z_rel = z[iz] - phase - tilt_offset
+            n_plate = np.round(z_rel / dissepiment_spacing_mm)
+            z_plate = n_plate * dissepiment_spacing_mm
+            on_plate = np.abs(z_rel - z_plate) <= 0.5 * dz
+            zone = (RRn >= dissepiment_inner_fraction) & (r_phys < R - theca_thickness_mm)
+            diss_mask = on_plate & zone & (lab == LABEL_VOID)
+            lab[diss_mask] = LABEL_DISSEPIMENT
+
+        if architecture == "synapticulate":
+            n_rod = np.round(z[iz] / synapticula_spacing_mm)
+            on_level = abs(z[iz] - n_rod * synapticula_spacing_mm) <= 0.5 * dz
+            if on_level:
+                syn_mask = np.zeros((n_r, n_theta), dtype=bool)
+                for r_s in synapticula_ring_radii:
+                    syn_mask |= np.abs(RRn - r_s) * R <= 0.5 * synapticula_thickness_mm
+                lab[syn_mask & (lab == LABEL_VOID)] = LABEL_SYNAPTICULA
+
+        labels[iz] = lab
+
+    # Volumes: dV = (r R) (dr R) dtheta dz; thin horizontal elements (dissepiments, synapticular rods)
+    # occupy one voxel layer in z but are physically thinner than dz -> sub-voxel thickness weights.
+    cell_vol = (RRn * dr * dth * dz)[None, :, :] * (R_z[:, None, None] ** 2)
+    thickness_weight = {
+        LABEL_DISSEPIMENT: min(1.0, dissepiment_thickness_mm / dz),
+        LABEL_SYNAPTICULA: min(1.0, synapticula_thickness_mm / dz),
+    }
+    volumes = {
+        name: float(cell_vol[labels == lbl].sum() * thickness_weight.get(lbl, 1.0))
+        for lbl, name in LABEL_NAMES.items()
+        if lbl != LABEL_VOID
+    }
+    envelope_volume = float(np.sum(math.pi * R_z**2 * dz))
+    skeletal_volume = float(sum(volumes.values()))
+    rim_lab = labels[-1]
+    rim_area_frac = float((rim_lab != LABEL_VOID).astype(float).__mul__(RRn * dr * dth).sum() / math.pi)
+
+    return {
+        "architecture": architecture,
+        "labels": labels,
+        "z_mm": z,
+        "R_z_mm": R_z,
+        "r_norm": r,
+        "theta_rad": th,
+        "H_mm": H,
+        "R_top_mm": float(R_top_mm),
+        "apical_angle_deg": float(apical_angle_deg),
+        "septa_per_level": septa_per_level,
+        "cycle_per_level": cycle_per_level,
+        "n_insertion_fronts": int(np.sum(np.diff(cycle_per_level) > 0)),
+        "insertion_front_heights_mm": [float(z[i + 1]) for i in np.where(np.diff(cycle_per_level) > 0)[0]],
+        "rim_septa_count": int(septa_per_level[-1]),
+        "volumes_mm3": volumes,
+        "skeletal_volume_mm3": skeletal_volume,
+        "envelope_volume_mm3": envelope_volume,
+        "skeletal_volume_fraction": skeletal_volume / envelope_volume,
+        "rim_skeletal_area_fraction": rim_area_frac,
+        "n_dissepiment_floors": int(math.floor(H / dissepiment_spacing_mm)) if architecture == "dissepimented" else 0,
+        "n_synapticular_levels": int(math.floor(H / synapticula_spacing_mm)) + 1 if architecture == "synapticulate" else 0,
+    }
+
+
+def corallum_longitudinal_section(sim: dict[str, Any], theta_cut_deg: float = 1.875, n_x: int = 260, n_zz: int = 260) -> dict[str, Any]:
+    """Resample the cylindrical label volume onto a Cartesian (x, z) longitudinal section through the
+    plane theta = theta_cut and theta_cut + 180 deg (1.875 deg = mid-loculus between S1 at 0 deg and S4 at
+    3.75 deg at the calice rim, so loculi, dissepiments and synapticulae are visible rather than a septal plane)."""
+    labels, z, R_z, th = sim["labels"], sim["z_mm"], sim["R_z_mm"], sim["theta_rad"]
+    n_z, n_r, n_theta = labels.shape
+    R_top = float(R_z.max())
+    xs = np.linspace(-1.05 * R_top, 1.05 * R_top, n_x)
+    zs = np.linspace(0.0, float(z[-1]), n_zz)
+    XX, ZZ = np.meshgrid(xs, zs)
+    iz = np.clip(np.round(ZZ / z[-1] * (n_z - 1)).astype(int), 0, n_z - 1)
+    R_loc = R_z[iz]
+    rn = np.abs(XX) / R_loc
+    ir = np.clip((rn * n_r).astype(int), 0, n_r - 1)
+    th_pos = math.radians(theta_cut_deg)
+    ith_pos = int(round(th_pos / (2.0 * math.pi) * n_theta)) % n_theta
+    ith_neg = int(round((th_pos + math.pi) / (2.0 * math.pi) * n_theta)) % n_theta
+    ith = np.where(XX >= 0.0, ith_pos, ith_neg)
+    sec = labels[iz, ir, ith]
+    sec = np.where(rn <= 1.0, sec, LABEL_VOID).astype(np.uint8)
+    return {"x_mm": xs, "z_mm": zs, "section": sec}
+
+
+def corallum_tangential_section(sim: dict[str, Any], r_frac: float = 0.85, theta_max_deg: float = 90.0) -> dict[str, Any]:
+    """Unrolled cylindrical (tangential) section at fixed r / R(z) = r_frac: theta on the x-axis, z on the
+    y-axis — the classical view in which septa are vertical bars and dissepiments / synapticulae are the
+    horizontal elements bridging adjacent loculi."""
+    labels, z, r = sim["labels"], sim["z_mm"], sim["r_norm"]
+    n_theta = labels.shape[2]
+    ir = int(np.clip(np.argmin(np.abs(r - r_frac)), 0, len(r) - 1))
+    ith_max = int(round(theta_max_deg / 360.0 * n_theta))
+    sec = labels[:, ir, :ith_max]
+    return {"section": sec, "theta_deg": np.degrees(sim["theta_rad"][:ith_max]), "z_mm": z, "r_frac": float(r[ir])}
+
+
+def corallum_transverse_section(sim: dict[str, Any], z_mm: float, n_xy: int = 220) -> dict[str, Any]:
+    """Resample the label volume onto a Cartesian (x, y) transverse section at height z."""
+    labels, z, R_z = sim["labels"], sim["z_mm"], sim["R_z_mm"]
+    n_z, n_r, n_theta = labels.shape
+    iz = int(np.clip(np.round(z_mm / z[-1] * (n_z - 1)), 0, n_z - 1))
+    R = float(R_z[iz])
+    lin = np.linspace(-1.05 * R, 1.05 * R, n_xy)
+    XX, YY = np.meshgrid(lin, lin)
+    rn = np.hypot(XX, YY) / R
+    ir = np.clip((rn * n_r).astype(int), 0, n_r - 1)
+    ith = (np.round(np.mod(np.arctan2(YY, XX), 2.0 * math.pi) / (2.0 * math.pi) * n_theta).astype(int)) % n_theta
+    sec = np.where(rn <= 1.0, labels[iz, ir, ith], LABEL_VOID).astype(np.uint8)
+    return {"xy_mm": lin, "section": sec, "R_mm": R, "z_mm": float(z[iz]), "septa": int(sim["septa_per_level"][iz])}
+
+
+def evaluate_corallum_architectures(apical_angle_deg: float = 40.0, **kwargs: Any) -> dict[str, Any]:
+    """Run the three endothecal architectures at identical outer geometry and tabulate volumes."""
+    sims = {arch: simulate_turbinate_corallum_3d(apical_angle_deg=apical_angle_deg, architecture=arch, **kwargs) for arch in CORALLUM_ARCHITECTURES}
+    base = sims["caryophylliid"]["skeletal_volume_fraction"]
+    return {
+        "sims": sims,
+        "skeletal_volume_fraction": {a: s["skeletal_volume_fraction"] for a, s in sims.items()},
+        "endotheca_volume_increment": {a: s["skeletal_volume_fraction"] / base for a, s in sims.items()},
+        "insertion_front_heights_mm": sims["caryophylliid"]["insertion_front_heights_mm"],
+        "rim_septa_count": sims["caryophylliid"]["rim_septa_count"],
+        "H_mm": sims["caryophylliid"]["H_mm"],
+    }
+
+
+def segment_caryophyllia_corallum_profile() -> dict[str, Any]:
+    """Measure the corallum side profile from the middle panel of the vendored specimen micrograph:
+    per-row foreground width between the calice rim (widest row) and the pedicel waist (narrowest
+    row below it), linear fit of half-width vs height -> apical angle phi = 2 atan(slope), classified
+    against the Wells (1956) ceratoid/trochoid/turbinate/patellate apical-angle classes. Also counts
+    the external costae visible across the near face just below the calice rim (costae correspond
+    1:1 to septa, so the visible half should carry ~N/2 costae). Pixel scale of the side view is
+    unknown (differs from the top panel), so only shape (angle) and counts are used, not mm."""
+    img_rgb = np.asarray(Image.open(SPECIMEN_JPG).convert("RGB"))
+    gray = np.asarray(Image.open(SPECIMEN_JPG).convert("L"), dtype=float) / 255.0
+    y0, y1 = 400, 660  # middle panel (side view) rows, below the calice panel and above the rock base
+    widths = np.zeros(y1 - y0)
+    lefts = np.zeros(y1 - y0)
+    rights = np.zeros(y1 - y0)
+    for i, y in enumerate(range(y0, y1)):
+        xs = np.where(gray[y] > 0.15)[0]
+        if len(xs) >= 3:
+            lefts[i], rights[i] = xs.min(), xs.max()
+            widths[i] = xs.max() - xs.min()
+    widths_s = ndi.uniform_filter1d(widths, size=5)
+    i_rim = int(np.argmax(widths_s[: 100]))
+    i_waist = i_rim + int(np.argmin(widths_s[i_rim : i_rim + 200]))
+    rows = np.arange(i_rim, i_waist + 1)
+    half_w = 0.5 * widths_s[rows]
+    height_px = rows[-1] - rows  # height above the waist increases upward
+    slope, intercept, r_fit, _, _ = stats.linregress(height_px, half_w)
+    apical_angle = float(np.degrees(2.0 * math.atan(slope)))
+    nearest = min(WELLS_1956_APICAL_ANGLE_CLASSES_DEG.items(), key=lambda kv: abs(kv[1] - apical_angle))
+
+    # Costae count across the near face ~10% below the rim: dark/bright stripe ridges along the row
+    y_costae = y0 + i_rim + int(0.12 * (i_waist - i_rim))
+    xl, xr = int(lefts[y_costae - y0]), int(rights[y_costae - y0])
+    band = gray[y_costae - 3 : y_costae + 4, xl:xr].mean(axis=0)
+    band_bg = ndi.uniform_filter1d(band, size=15, mode="nearest")
+    ridge = ndi.gaussian_filter1d(np.clip(band - band_bg, 0.0, None), 1.0)
+    peaks, _ = signal.find_peaks(ridge, distance=3, prominence=0.01)
+    return {
+        "side_rgb": img_rgb[y0:y1, :, :],
+        "row_offset": y0,
+        "rim_row": int(y0 + i_rim),
+        "waist_row": int(y0 + i_waist),
+        "rim_width_px": float(widths_s[i_rim]),
+        "waist_width_px": float(widths_s[i_waist]),
+        "corallum_height_px": int(i_waist - i_rim),
+        "half_width_slope": float(slope),
+        "profile_fit_r": float(r_fit),
+        "apical_angle_deg": round(apical_angle, 3),
+        "wells_class": nearest[0],
+        "wells_class_angle_deg": nearest[1],
+        "costae_row": int(y_costae),
+        "costae_x_px": (xl + peaks).astype(int),
+        "costae_count_visible": int(len(peaks)),
+        "lefts_px": lefts,
+        "rights_px": rights,
+    }
+
+
+# =============================================================================
 # 5. Cross-Taxa Scleractinian Corallite Septa Scaling
 # =============================================================================
 def evaluate_cross_taxa_corallite_scaling() -> dict[str, Any]:
@@ -482,6 +960,19 @@ def evaluate_cross_taxa_corallite_scaling() -> dict[str, Any]:
 # =============================================================================
 # 6. Automated Polar-Coordinate Segmentation of Caryophyllia Specimen
 # =============================================================================
+def otsu_threshold(values: np.ndarray, n_bins: int = 256) -> float:
+    """Otsu (1979) maximum between-class variance threshold on grayscale values in [0, 1]."""
+    hist, edges = np.histogram(np.asarray(values, dtype=float).ravel(), bins=n_bins, range=(0.0, 1.0))
+    hist = hist.astype(float)
+    centers = 0.5 * (edges[:-1] + edges[1:])
+    w0 = np.cumsum(hist)
+    w1 = w0[-1] - w0
+    m0 = np.cumsum(hist * centers) / np.maximum(w0, 1e-12)
+    m1 = (np.sum(hist * centers) - np.cumsum(hist * centers)) / np.maximum(w1, 1e-12)
+    between = w0[:-1] * w1[:-1] * (m0[:-1] - m1[:-1]) ** 2
+    return float(centers[int(np.argmax(between))])
+
+
 def segment_caryophyllia_specimen() -> dict[str, Any]:
     """Perform automated polar-coordinate radial ridge segmentation on the top-down
     calice view of *Caryophyllia (Caryophyllia) quadragenaria* (`scleractinian_coral_septa_specimen.jpg`,
@@ -551,7 +1042,31 @@ def segment_caryophyllia_specimen() -> dict[str, Any]:
     minor_reach_mean = float(reaches_arr[minor_mask].mean())
     reach_hierarchy_ratio = major_reach_mean / max(minor_reach_mean, 1e-9)
 
+    # Pass 3: skeletal area fraction of the calice disc (Otsu threshold, 0.20R..0.92R annulus, excludes
+    # the columella core and thecal rim) and septal duty cycle on the 0.80R ring -> mean septal thickness,
+    # used to set the physical septum thickness of the reduced 3D corallum.
+    yy_px, xx_px = np.mgrid[0 : calice_gray.shape[0], 0 : calice_gray.shape[1]]
+    rr_frac = np.hypot(xx_px - cx, yy_px - cy) / R_px
+    disc = (rr_frac >= 0.20) & (rr_frac <= 0.92)
+    otsu_thr = otsu_threshold(calice_gray[disc])
+    skeletal_area_fraction = float((calice_gray[disc] > otsu_thr).mean())
+    th_fine = np.linspace(0.0, 2.0 * math.pi, 1440, endpoint=False)
+    x_ring = np.clip((cx + 0.80 * R_px * np.cos(th_fine)).astype(int), 0, calice_gray.shape[1] - 1)
+    y_ring = np.clip((cy + 0.80 * R_px * np.sin(th_fine)).astype(int), 0, calice_gray.shape[0] - 1)
+    duty_0p8 = float((calice_gray[y_ring, x_ring] > otsu_thr).mean())
+    R_mm_specimen = R_px * 0.02445  # calibration_mm_per_px from coral_calice_septa_insertion_reference.json
+    # Septal duty cycle is mapped onto the model rim septal count N_hex(4) = 48 (specimen shows 40, an incomplete S4),
+    # so the model reproduces the specimen's skeletal fill fraction at 0.80R rather than its per-septum thickness.
+    septum_thickness_mm_est = duty_0p8 * 2.0 * math.pi * 0.80 * R_mm_specimen / 48.0
+    septum_thickness_mm_per_septum = duty_0p8 * 2.0 * math.pi * 0.80 * R_mm_specimen / max(len(peaks), 1)
+
     return {
+        "otsu_threshold": round(float(otsu_thr), 4),
+        "skeletal_area_fraction": round(skeletal_area_fraction, 4),
+        "septal_duty_cycle_0p8R": round(duty_0p8, 4),
+        "septum_thickness_mm_est": round(float(septum_thickness_mm_est), 4),
+        "septum_thickness_mm_per_detected_septum": round(float(septum_thickness_mm_per_septum), 4),
+        "R_mm_specimen": round(float(R_mm_specimen), 4),
         "calice_rgb": calice_rgb,
         "calice_gray": calice_gray,
         "center_xy_px": (round(cx, 2), round(cy, 2)),
@@ -816,7 +1331,7 @@ def render_comparison_figure(
     ax_f.legend(loc="lower right", fontsize=7.0, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
 
     fig.suptitle(
-        "Milne-Edwards & Haime (1848), Kunth (1869) & Chindapol et al. (2013) — Scleractinian Coral Septal Insertion & Péclet Morphogenesis (v2)",
+        "Milne-Edwards & Haime (1848), Kunth (1869) & Chindapol et al. (2013) — Scleractinian Coral Septal Insertion & Péclet Morphogenesis (v3)",
         color="white",
         fontsize=12.2,
         fontweight="bold",
@@ -895,16 +1410,399 @@ def render_growth_gif(out_path: Path = OUT_GIF) -> Path:
 
 
 # =============================================================================
+# 7b. Pass 3 Figures: 3D Corallum Architectures & Keulegan-Carpenter Surge Sweep
+# =============================================================================
+LABEL_COLORS = {
+    LABEL_VOID: (0.043, 0.059, 0.090, 0.0),
+    LABEL_THECA: (0.831, 0.831, 0.831, 1.0),
+    LABEL_SEPTUM: (0.980, 0.800, 0.082, 1.0),
+    LABEL_DISSEPIMENT: (0.220, 0.741, 0.973, 1.0),
+    LABEL_SYNAPTICULA: (0.957, 0.247, 0.369, 1.0),
+    LABEL_COLUMELLA: (0.655, 0.545, 0.980, 1.0),
+    LABEL_PALUS: (0.204, 0.827, 0.600, 1.0),
+}
+
+
+def _labels_to_rgba(sec: np.ndarray) -> np.ndarray:
+    lut = np.zeros((max(LABEL_COLORS) + 1, 4), dtype=float)
+    for lbl, col in LABEL_COLORS.items():
+        lut[lbl] = col
+    return lut[sec]
+
+
+def render_corallum3d_figure(
+    out_path: Path = OUT_PNG_3D,
+    apical_angle_deg: float | None = None,
+    septum_thickness_mm: float | None = None,
+) -> tuple[Path, dict[str, Any]]:
+    """Pass 3 figure: reduced 3D conical corallum (cutaway), longitudinal sections of the three
+    endothecal architectures, transverse sections across the stacked insertion fronts, the specimen
+    side-profile apical-angle fit, and per-architecture skeletal volume budgets."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    profile = segment_caryophyllia_corallum_profile()
+    specimen = segment_caryophyllia_specimen()
+    phi = float(apical_angle_deg if apical_angle_deg is not None else profile["apical_angle_deg"])
+    t_s = float(septum_thickness_mm if septum_thickness_mm is not None else specimen["septum_thickness_mm_est"])
+    archs = evaluate_corallum_architectures(apical_angle_deg=phi, septum_thickness_mm=t_s)
+    sims = archs["sims"]
+    base = sims["caryophylliid"]
+
+    fig = plt.figure(figsize=(19.0, 11.0), dpi=140, facecolor="#0b0f17")
+    gs = GridSpec(2, 4, figure=fig, hspace=0.30, wspace=0.26)
+
+    # Panel A: 3D cutaway (back half of the costate theca + longitudinal cut face)
+    ax_a = fig.add_subplot(gs[0, 0], projection="3d", facecolor="#0b0f17")
+    th_b = np.linspace(0.5 * math.pi, 1.5 * math.pi, 121)
+    z_b = base["z_mm"][::2]
+    R_b = base["R_z_mm"][::2]
+    N_b = base["septa_per_level"][::2]
+    TH_B, Z_B = np.meshgrid(th_b, z_b)
+    R_B = R_b[:, None] * (1.0 + 0.03 * np.cos(N_b[:, None] * TH_B))  # external costae follow septal count
+    ax_a.plot_surface(R_B * np.cos(TH_B), R_B * np.sin(TH_B), Z_B, color="#9ca3af", alpha=0.55, linewidth=0, antialiased=False)
+    sec = corallum_longitudinal_section(sims["dissepimented"], n_x=160, n_zz=160)
+    XX_s, ZZ_s = np.meshgrid(sec["x_mm"], sec["z_mm"])
+    ax_a.plot_surface(XX_s, np.zeros_like(XX_s), ZZ_s, facecolors=_labels_to_rgba(sec["section"]), linewidth=0, antialiased=False, shade=False)
+    ax_a.set_title(f"A. 3D conical corallum cutaway (φ={phi:.1f}°, H={base['H_mm']:.1f} mm)", color="white", fontsize=9.0, fontweight="bold")
+    ax_a.set_xlabel("x (mm)", color="white", fontsize=7)
+    ax_a.set_ylabel("y (mm)", color="white", fontsize=7)
+    ax_a.set_zlabel("z (mm)", color="white", fontsize=7)
+    ax_a.tick_params(colors="#9ca3af", labelsize=6)
+    ax_a.view_init(elev=22, azim=-60)
+    ax_a.set_box_aspect((1, 1, 1.3))
+
+    # Panels B-D: unrolled tangential (cylindrical) sections at r = 0.85 R(z), theta in [0, 90 deg]
+    for col, arch in enumerate(CORALLUM_ARCHITECTURES, start=1):
+        ax = fig.add_subplot(gs[0, col], facecolor="#111827")
+        s = corallum_tangential_section(sims[arch], r_frac=0.85, theta_max_deg=90.0)
+        ax.imshow(_labels_to_rgba(s["section"]), origin="lower", extent=(0.0, 90.0, 0.0, s["z_mm"][-1]), aspect="auto", interpolation="nearest")
+        for zf, kf in zip(sims[arch]["insertion_front_heights_mm"], range(2, 2 + len(sims[arch]["insertion_front_heights_mm"]))):
+            ax.axhline(zf, color="#38bdf8", lw=0.8, ls="--", alpha=0.8)
+            ax.text(1.0, zf + 0.15, f"S{kf} front (R={corallum_radius_profile_mm(np.array([zf]), 5.0, phi, 0.6)[0]:.2f} mm)", color="#38bdf8", fontsize=6.2)
+        v = sims[arch]["volumes_mm3"]
+        ax.set_title(
+            f"{'BCD'[col-1]}. {arch} — tangential section at r=0.85R(z)\nV_skel/V_env={sims[arch]['skeletal_volume_fraction']:.3f}; diss={v['dissepiment']:.1f}, syn={v['synapticula']:.1f} mm³",
+            color="white",
+            fontsize=8.6,
+            fontweight="bold",
+        )
+        ax.set_xlabel("θ (deg; septa = vertical bars, loculi between)", color="white", fontsize=7.5)
+        ax.set_ylabel("growth axis z (mm)", color="white", fontsize=7.5)
+        ax.tick_params(colors="#9ca3af", labelsize=7)
+
+    # Panel E: transverse sections across the insertion fronts (dissepimented architecture)
+    ax_e = fig.add_subplot(gs[1, 0], facecolor="#111827")
+    ax_e.axis("off")
+    z_levels = [0.6, 2.6, 7.0, base["H_mm"]]
+    sub = ax_e.inset_axes([0.0, 0.0, 1.0, 0.92])
+    sub.axis("off")
+    for i, zl in enumerate(z_levels):
+        ts = corallum_transverse_section(sims["dissepimented"], zl, n_xy=160)
+        ins = ax_e.inset_axes([0.02 + 0.49 * (i % 2), 0.50 - 0.48 * (i // 2), 0.46, 0.44], facecolor="#0b0f17")
+        ins.imshow(_labels_to_rgba(ts["section"]), origin="lower", interpolation="nearest")
+        ins.set_title(f"z={ts['z_mm']:.1f} mm, R={ts['R_mm']:.2f} mm, N={ts['septa']}", color="white", fontsize=6.8)
+        ins.set_xticks([])
+        ins.set_yticks([])
+    ax_e.set_title("E. Transverse sections across stacked\nMilne-Edwards insertion fronts (N=6→12→24→48)", color="white", fontsize=8.6, fontweight="bold")
+
+    # Panel F: specimen side profile with apical angle fit
+    ax_f = fig.add_subplot(gs[1, 1], facecolor="#111827")
+    ax_f.imshow(profile["side_rgb"])
+    r0 = profile["row_offset"]
+    rows = np.arange(profile["rim_row"], profile["waist_row"] + 1)
+    xc = 0.5 * (profile["lefts_px"][rows - r0] + profile["rights_px"][rows - r0])
+    hw_fit = profile["half_width_slope"] * (rows[-1] - rows) + 0.5 * profile["waist_width_px"]
+    ax_f.plot(xc - hw_fit, rows - r0, color="#facc15", lw=1.6, label=f"cone fit φ={profile['apical_angle_deg']:.1f}° (r={profile['profile_fit_r']:.3f})")
+    ax_f.plot(xc + hw_fit, rows - r0, color="#facc15", lw=1.6)
+    ax_f.axhline(profile["rim_row"] - r0, color="#38bdf8", lw=0.8, ls="--")
+    ax_f.axhline(profile["waist_row"] - r0, color="#f43f5e", lw=0.8, ls="--")
+    ax_f.scatter(profile["costae_x_px"], np.full(len(profile["costae_x_px"]), profile["costae_row"] - r0), s=9, color="#34d399", zorder=5, label=f"{profile['costae_count_visible']} costae (visible half)")
+    ax_f.set_title(
+        f"F. Specimen side profile: φ={profile['apical_angle_deg']:.1f}° → Wells (1956) '{profile['wells_class']}' ({profile['wells_class_angle_deg']:.0f}°)",
+        color="white",
+        fontsize=8.4,
+        fontweight="bold",
+    )
+    ax_f.legend(loc="lower right", fontsize=6.6, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+    ax_f.tick_params(colors="#9ca3af", labelsize=7)
+    ax_f.set_xlabel("Micrograph X (px, ZooKeys 227, CC BY 3.0)", color="white", fontsize=7.5)
+
+    # Panel G: septal count vs z and radius profile with Wells classes
+    ax_g = fig.add_subplot(gs[1, 2], facecolor="#111827")
+    ax_g.step(base["z_mm"], base["septa_per_level"], where="post", color="#facc15", lw=2.2, label="N_hex(k(R(z))) septa")
+    ax_g.set_xlabel("growth axis z (mm)", color="white", fontsize=8)
+    ax_g.set_ylabel("septa at level z", color="#facc15", fontsize=8)
+    ax_g2 = ax_g.twinx()
+    ax_g2.plot(base["z_mm"], base["R_z_mm"], color="#38bdf8", lw=1.8, label=f"R(z), φ={phi:.1f}° (specimen)")
+    for name, ang in WELLS_1956_APICAL_ANGLE_CLASSES_DEG.items():
+        zz = np.linspace(0, base["H_mm"], 50)
+        ax_g2.plot(zz, corallum_radius_profile_mm(zz, 5.0, ang, 0.6), color="#9ca3af", lw=0.8, ls=":", alpha=0.8)
+        ax_g2.text(base["H_mm"] * 0.55, min(5.0, corallum_radius_profile_mm(np.array([base["H_mm"] * 0.55]), 5.0, ang, 0.6)[0]) + 0.08, f"{name} {ang:.0f}°", color="#9ca3af", fontsize=6.2)
+    ax_g2.set_ylabel("R(z) (mm)", color="#38bdf8", fontsize=8)
+    ax_g2.tick_params(colors="#9ca3af", labelsize=7)
+    ax_g.tick_params(colors="#9ca3af", labelsize=7)
+    ax_g.set_title("G. Septal insertion fronts along z (Lean: monotone)\n& Wells (1956) apical-angle classes", color="white", fontsize=8.6, fontweight="bold")
+    ax_g.grid(True, alpha=0.22, color="#374151")
+    ax_g.legend(loc="upper left", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    # Panel H: skeletal volume budgets per architecture + rim area fraction vs specimen
+    ax_h = fig.add_subplot(gs[1, 3], facecolor="#111827")
+    x_pos = np.arange(len(CORALLUM_ARCHITECTURES))
+    bottom = np.zeros(len(x_pos))
+    for lbl in (LABEL_THECA, LABEL_SEPTUM, LABEL_PALUS, LABEL_COLUMELLA, LABEL_DISSEPIMENT, LABEL_SYNAPTICULA):
+        vals = np.array([sims[a]["volumes_mm3"][LABEL_NAMES[lbl]] / sims[a]["envelope_volume_mm3"] for a in CORALLUM_ARCHITECTURES])
+        ax_h.bar(x_pos, vals, bottom=bottom, color=LABEL_COLORS[lbl][:3], edgecolor="white", width=0.6, label=LABEL_NAMES[lbl])
+        bottom += vals
+    ax_h.set_xticks(x_pos)
+    ax_h.set_xticklabels(CORALLUM_ARCHITECTURES, color="white", fontsize=7.5)
+    ax_h.set_ylabel("skeletal volume fraction V_i / V_envelope", color="white", fontsize=8)
+    ax_h.axhline(specimen["skeletal_area_fraction"], color="#f43f5e", lw=1.4, ls="--", label=f"specimen calice area fraction (Otsu) {specimen['skeletal_area_fraction']:.3f}")
+    ax_h.axhline(base["rim_skeletal_area_fraction"], color="#facc15", lw=1.4, ls=":", label=f"model rim area fraction {base['rim_skeletal_area_fraction']:.3f}")
+    ax_h.set_title(f"H. Skeletal volume budget (t_s={t_s:.3f} mm from specimen duty cycle)", color="white", fontsize=8.6, fontweight="bold")
+    ax_h.tick_params(colors="#9ca3af", labelsize=7)
+    ax_h.set_ylim(0, 1.0)
+    ax_h.legend(loc="upper left", fontsize=6.0, ncol=2, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+    ax_h.grid(True, axis="y", alpha=0.22, color="#374151")
+
+    fig.suptitle(
+        "Pass 3 — Reduced 3D Conical Corallum: Septa, Endothecal Dissepiments & Synapticulae (Wells 1956 classes; Caryophyllia quadragenaria specimen profile)",
+        color="white",
+        fontsize=11.5,
+        fontweight="bold",
+        y=0.985,
+    )
+    fig.savefig(out_path, dpi=140, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return out_path, {"profile": profile, "archs": archs, "specimen": specimen, "septum_thickness_mm": t_s}
+
+
+def render_surge_kc_figure(out_path: Path = OUT_PNG_SURGE, Pe_max: float = 16.0) -> tuple[Path, dict[str, Any]]:
+    """Pass 3 figure: unidirectional current vs bidirectional surge — phase-resolved flux, period-mean
+    profiles, instantaneous vs mean dipole asymmetry, KC sweep of the surviving quadrupole, and
+    reef KC regimes."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    kc_sweep = evaluate_keulegan_carpenter_sweep(Pe_max=Pe_max)
+    osc = compute_oscillatory_surge_flux(Pe_max, KC_RENEWAL_SCALE)
+    ref = json.loads(PASS3_REF_JSON.read_text(encoding="utf-8")) if PASS3_REF_JSON.exists() else {}
+
+    fig = plt.figure(figsize=(18.5, 10.5), dpi=140, facecolor="#0b0f17")
+    gs = GridSpec(2, 3, figure=fig, hspace=0.32, wspace=0.26)
+    th_deg = np.degrees(osc["thetas_rad"])
+
+    ax_a = fig.add_subplot(gs[0, 0], facecolor="#111827")
+    im = ax_a.pcolormesh(th_deg, np.degrees(osc["phases_rad"]), osc["flux_phase_profiles"], cmap="inferno", shading="auto")
+    ax_a.set_xlabel("rim angle θ (deg; 0° = +x surge axis)", color="white", fontsize=8)
+    ax_a.set_ylabel("surge phase ωt (deg)", color="white", fontsize=8)
+    ax_a.set_title(f"A. Phase-resolved flux j(θ, t), Pe_max={Pe_max:.0f}, KC=2π (η={osc['renewal_efficiency']:.3f})", color="white", fontsize=9, fontweight="bold")
+    ax_a.tick_params(colors="#9ca3af", labelsize=7)
+    cb = fig.colorbar(im, ax=ax_a, fraction=0.046)
+    cb.ax.tick_params(colors="#9ca3af", labelsize=7)
+
+    ax_b = fig.add_subplot(gs[0, 1], facecolor="#111827")
+    ax_b.plot(th_deg, osc["steady_flux_profile"], color="#f43f5e", lw=2.2, label=f"unidirectional Pe={Pe_max:.0f}: A_1={osc['steady_dipole_asymmetry']:.3f}, A_2={osc['steady_quadrupole_asymmetry']:.3f}")
+    ax_b.plot(th_deg, osc["flux_mean_profile"], color="#38bdf8", lw=2.2, label=f"bidirectional surge ⟨j⟩: A_1={osc['mean_dipole_asymmetry']:.1e}, A_2={osc['mean_quadrupole_asymmetry']:.3f}")
+    ax_b.plot(th_deg, np.ones_like(th_deg), color="#9ca3af", lw=1.2, ls="--", label="Pe = 0 diffusion")
+    ax_b.set_xlabel("rim angle θ (deg)", color="white", fontsize=8)
+    ax_b.set_ylabel("normal flux j_n / j_0", color="white", fontsize=8)
+    ax_b.set_title("B. Period-mean surge flux vs unidirectional current", color="white", fontsize=9, fontweight="bold")
+    ax_b.tick_params(colors="#9ca3af", labelsize=7)
+    ax_b.grid(True, alpha=0.22, color="#374151")
+    ax_b.legend(loc="upper center", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    ax_c = fig.add_subplot(gs[0, 2], facecolor="#111827")
+    ax_c.plot(np.degrees(osc["phases_rad"]), osc["instantaneous_dipole_asymmetry"], color="#facc15", lw=2.0, label="instantaneous A_1(t)")
+    ax_c.axhline(osc["mean_dipole_asymmetry"], color="#38bdf8", lw=1.8, label=f"period mean ⟨A_1⟩ = {osc['mean_dipole_asymmetry']:.1e}")
+    ax_c.axhline(osc["steady_dipole_asymmetry"], color="#f43f5e", lw=1.6, ls="--", label=f"unidirectional A_1 = {osc['steady_dipole_asymmetry']:.3f}")
+    ax_c.set_xlabel("surge phase ωt (deg)", color="white", fontsize=8)
+    ax_c.set_ylabel("dipole asymmetry A_1", color="white", fontsize=8)
+    ax_c.set_title("C. Polarization cancels over a surge period\n(Lean: oscillatory_surge_dipole_cancellation)", color="white", fontsize=9, fontweight="bold")
+    ax_c.tick_params(colors="#9ca3af", labelsize=7)
+    ax_c.grid(True, alpha=0.22, color="#374151")
+    ax_c.legend(loc="lower left", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    ax_d = fig.add_subplot(gs[1, 0], facecolor="#111827")
+    ax_d.plot(kc_sweep["kc_dense"], kc_sweep["a2_dense"], color="#38bdf8", lw=2.0, label="⟨A_2⟩(KC) bidirectional")
+    ax_d.scatter(kc_sweep["kc_values"], [r["mean_quadrupole_asymmetry"] for r in kc_sweep["records"]], color="#facc15", s=28, zorder=5, label="sweep points")
+    ax_d.axhline(kc_sweep["steady_quadrupole_asymmetry"], color="#f43f5e", lw=1.4, ls="--", label=f"unidirectional A_2 = {kc_sweep['steady_quadrupole_asymmetry']:.3f}")
+    ax_d.axvline(kc_sweep["kc50_analytic"], color="#34d399", lw=1.2, ls=":", label=f"KC_50 = 2π ln2 = {kc_sweep['kc50_analytic']:.3f} (numeric {kc_sweep['kc50_numeric']:.3f})")
+    ax_d.set_xscale("log")
+    ax_d.set_xlabel("Keulegan-Carpenter number KC = U_max T / L", color="white", fontsize=8)
+    ax_d.set_ylabel("period-mean quadrupole ⟨A_2⟩ (bilateral elongation)", color="white", fontsize=8)
+    ax_d.set_title("D. KC sweep: surviving quadrupole saturates with η(KC)", color="white", fontsize=9, fontweight="bold")
+    ax_d.tick_params(colors="#9ca3af", labelsize=7)
+    ax_d.grid(True, alpha=0.22, color="#374151", which="both")
+    ax_d.legend(loc="upper left", fontsize=6.6, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    ax_e = fig.add_subplot(gs[1, 1], facecolor="#111827")
+    kcs = np.array(kc_sweep["kc_values"])
+    ax_e.semilogx(kcs, [abs(r["mean_dipole_asymmetry"]) for r in kc_sweep["records"]], "o-", color="#38bdf8", lw=1.8, label="|⟨A_1⟩| bidirectional (≈ 0 ∀ KC)")
+    ax_e.semilogx(kcs, [r["peak_instantaneous_dipole_asymmetry"] for r in kc_sweep["records"]], "s--", color="#facc15", lw=1.6, label="peak instantaneous |A_1(t)|")
+    ax_e.axhline(kc_sweep["steady_dipole_asymmetry"], color="#f43f5e", lw=1.4, ls="--", label="unidirectional A_1")
+    ax_e.set_xlabel("KC", color="white", fontsize=8)
+    ax_e.set_ylabel("dipole asymmetry", color="white", fontsize=8)
+    ax_e.set_title("E. Unidirectional polarization vs bidirectional surge (all KC)", color="white", fontsize=9, fontweight="bold")
+    ax_e.tick_params(colors="#9ca3af", labelsize=7)
+    ax_e.grid(True, alpha=0.22, color="#374151", which="both")
+    ax_e.legend(loc="center right", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    ax_f = fig.add_subplot(gs[1, 2], facecolor="#111827")
+    regimes = ref.get("reef_keulegan_carpenter_regimes", [])
+    if regimes:
+        names = [r["label"] for r in regimes]
+        kc_vals = [reef_keulegan_carpenter_number(r["U_max_m_s"], r["T_s"], r["L_m"]) for r in regimes]
+        etas = [surge_renewal_efficiency(k) for k in kc_vals]
+        bars = ax_f.barh(np.arange(len(names)), kc_vals, color=["#34d399" if e > 0.5 else "#f43f5e" for e in etas], edgecolor="white")
+        ax_f.set_yticks(np.arange(len(names)))
+        ax_f.set_yticklabels(names, color="white", fontsize=6.8)
+        for b, k, e in zip(bars, kc_vals, etas):
+            ax_f.text(k * 1.05, b.get_y() + b.get_height() / 2, f"KC={k:.1f}, η={e:.2f}", color="white", fontsize=6.6, va="center")
+        ax_f.axvline(KC_RENEWAL_SCALE, color="#facc15", lw=1.2, ls=":", label="KC = 2π (excursion = size)")
+        ax_f.set_xscale("log")
+        ax_f.legend(loc="lower right", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+    ax_f.set_xlabel("KC (from U_max, T, L in corallum3d_surge_reference.json)", color="white", fontsize=8)
+    ax_f.set_title("F. Reef surge regimes: corallite vs colony scale", color="white", fontsize=9, fontweight="bold")
+    ax_f.tick_params(colors="#9ca3af", labelsize=7)
+    ax_f.grid(True, axis="x", alpha=0.22, color="#374151", which="both")
+
+    fig.suptitle(
+        "Pass 3 — Keulegan-Carpenter Surge Coupling of the Chindapol (2013) Péclet Boundary-Layer Flux: Unidirectional Polarization vs Bidirectional Elongation",
+        color="white",
+        fontsize=11.5,
+        fontweight="bold",
+        y=0.985,
+    )
+    fig.savefig(out_path, dpi=140, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return out_path, {"kc_sweep": kc_sweep, "osc": osc}
+
+
+def render_surge_phase_gif(out_path: Path = OUT_GIF_SURGE, Pe_max: float = 16.0, n_frames: int = 16) -> Path:
+    """Animated surge cycle: instantaneous polar flux profile and the accumulating period mean."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    osc = compute_oscillatory_surge_flux(Pe_max, KC_RENEWAL_SCALE, n_phase=n_frames)
+    th = osc["thetas_rad"]
+    frames: list[Image.Image] = []
+    running = np.zeros_like(th)
+    for i in range(n_frames):
+        running = (running * i + osc["flux_phase_profiles"][i]) / (i + 1)
+        fig = plt.figure(figsize=(8.4, 4.4), dpi=100, facecolor="#0b0f17")
+        ax1 = fig.add_subplot(1, 2, 1, projection="polar", facecolor="#111827")
+        ax1.plot(th, osc["flux_phase_profiles"][i], color="#facc15", lw=2.0)
+        ax1.plot(th, running, color="#38bdf8", lw=1.6)
+        ax1.set_ylim(0, 2.0)
+        ax1.tick_params(colors="#9ca3af", labelsize=6)
+        ph = np.degrees(osc["phases_rad"][i])
+        ax1.set_title(f"ωt={ph:.0f}°, U/U_max={math.sin(math.radians(ph)):+.2f}\ninstant (yellow) vs running mean (blue)", color="white", fontsize=8)
+        ax2 = fig.add_subplot(1, 2, 2, facecolor="#111827")
+        ax2.plot(np.degrees(osc["phases_rad"][: i + 1]), osc["instantaneous_dipole_asymmetry"][: i + 1], "o-", color="#facc15", lw=1.5, ms=3)
+        ax2.axhline(0.0, color="#38bdf8", lw=1.2)
+        ax2.set_xlim(0, 360)
+        ax2.set_ylim(-0.7, 0.7)
+        ax2.set_xlabel("surge phase (deg)", color="white", fontsize=7)
+        ax2.set_ylabel("A_1(t)", color="white", fontsize=7)
+        ax2.set_title(f"Pe_max={Pe_max:.0f}, KC=2π: dipole reverses each half-cycle", color="white", fontsize=8)
+        ax2.tick_params(colors="#9ca3af", labelsize=6)
+        fig.canvas.draw()
+        w_px, h_px = fig.canvas.get_width_height()
+        buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape((h_px, w_px, 4))
+        frames.append(Image.fromarray(buf[:, :, :3]))
+        plt.close(fig)
+    frames[0].save(out_path, save_all=True, append_images=frames[1:], duration=160, loop=0)
+    return out_path
+
+
+# =============================================================================
 # 8. MorphoEval Quantitative Measurement Suite & 8-Check Self-Test
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored quantitative morphometrics for `morphoeval/measure_outputs.py`."""
+    """Compute 9 (Pass 2) + 7 (Pass 3) reference-anchored quantitative morphometrics for
+    `morphoeval/measure_outputs.py`."""
     sim_s4 = simulate_scleractinian_calice_2d(R_mm=4.20, Pe=0.0)
     sim_s5 = simulate_scleractinian_calice_2d(R_mm=8.20, Pe=0.0)
     sim_rug = simulate_rugosa_kunth_calice_2d(R_mm=4.20, stage_m=3)
     pe_sweep = evaluate_peclet_flow_sweep()
     cross_taxa = evaluate_cross_taxa_corallite_scaling()
     specimen = segment_caryophyllia_specimen()
+    # Pass 3
+    profile = segment_caryophyllia_corallum_profile()
+    archs = evaluate_corallum_architectures(apical_angle_deg=profile["apical_angle_deg"], septum_thickness_mm=specimen["septum_thickness_mm_est"])
+    base3d = archs["sims"]["caryophylliid"]
+    kc_sweep = evaluate_keulegan_carpenter_sweep(Pe_max=16.0)
+    osc = compute_oscillatory_surge_flux(16.0, KC_RENEWAL_SCALE)
+    # closed-form (1/pi) int_0^pi sqrt(sin x) dx = B(3/4, 1/2) / pi = Gamma(3/4) Gamma(1/2) / (pi Gamma(5/4)) = 0.76276
+    mean_sqrt_sin_exact = math.gamma(0.75) * math.gamma(0.5) / (math.pi * math.gamma(1.25))
+
+    pass3 = [
+        {
+            "name": "Specimen corallum apical angle from side-profile cone fit (scleractinian_coral_septa_specimen.jpg)",
+            "value": round(profile["apical_angle_deg"], 3),
+            "unit": "deg",
+            "method": f"OLS slope of half-width vs height over rows {profile['rim_row']}..{profile['waist_row']} of the side view (fit r={profile['profile_fit_r']:.4f}); phi = 2 atan(slope); nearest Wells (1956) class = {profile['wells_class']}",
+            "reference_value": 40.0,
+            "reference_source": "Wells (1956) Treatise Invert. Paleont. Part F trochoid class (~40 deg) as used in the Cairns & Kitahara (2012) ZooKeys 227 glossary; dataset README describes the corallum as trochoid (recalled offline, unverified)",
+            "note": f"rim width {profile['rim_width_px']:.1f} px, waist width {profile['waist_width_px']:.1f} px over {profile['corallum_height_px']} px; side-view pixel scale unknown so only the angle is used",
+            "derived_from": "output",
+        },
+        {
+            "name": "Specimen visible costae count across the near face below the calice rim (side view)",
+            "value": float(profile["costae_count_visible"]),
+            "unit": "costae",
+            "method": f"Background-subtracted ridge peaks along row {profile['costae_row']} of the side view between the corallum edges",
+            "reference_value": 20.0,
+            "reference_source": "Costae correspond 1:1 to septa in Caryophyllia (Cairns & Kitahara 2012 glossary); 40 septa -> ~20 costae on the visible half",
+            "note": "Oblique view and the dark costal band under-count edge costae; treated as a lower bound",
+            "derived_from": "output",
+        },
+        {
+            "name": "3D corallum calice-rim skeletal area fraction vs specimen calice Otsu area fraction",
+            "value": round(base3d["rim_skeletal_area_fraction"], 4),
+            "unit": "area fraction",
+            "method": f"Caryophylliid 3D model top level (R_top=5.0 mm, 48 septa, t_s={specimen['septum_thickness_mm_est']:.3f} mm from the specimen 0.80R duty cycle {specimen['septal_duty_cycle_0p8R']:.3f}) skeletal area / pi R^2, compared with the Otsu-thresholded bright fraction of the specimen calice annulus 0.20R..0.92R",
+            "reference_value": round(specimen["skeletal_area_fraction"], 4),
+            "reference_source": "Cairns & Kitahara (2012) ZooKeys 227:1-47 Caryophyllia quadragenaria calice micrograph (Otsu threshold {:.3f})".format(specimen["otsu_threshold"]),
+            "note": "Septal thickness is calibrated from the same specimen, so only the reach distribution, pali, theca and columella are independently tested",
+            "derived_from": "output",
+        },
+        {
+            "name": "3D corallum septal insertion fronts stacked along the growth axis (caryophylliid, phi from specimen)",
+            "value": float(base3d["n_insertion_fronts"]),
+            "unit": "fronts",
+            "method": f"Number of z-levels where the active Milne-Edwards cycle k(R(z)) increments on the conical corallum R(z)=0.6+z tan(phi/2), H={base3d['H_mm']:.2f} mm; front heights {', '.join(f'{z:.2f}' for z in base3d['insertion_front_heights_mm'])} mm",
+            "reference_value": 3.0,
+            "reference_source": "Milne-Edwards & Haime (1848): S2, S3, S4 fronts at R_2=1.0, R_3=2.0, R_4=4.0 mm below R_top=5.0 mm; Lean theorem turbinate_corallum_septal_cycles_monotone",
+            "note": f"rim septa = {base3d['rim_septa_count']} (model) vs 40 observed in C. quadragenaria (incomplete 4th cycle)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Endothecal dissepiments skeletal volume increment relative to caryophylliid architecture (3D)",
+            "value": round(archs["endotheca_volume_increment"]["dissepimented"], 4),
+            "unit": "ratio (V_skel,diss / V_skel,caryo)",
+            "method": f"Skeletal volume fraction {archs['skeletal_volume_fraction']['dissepimented']:.4f} (dissepimented, h_d=0.60 mm, t_d=0.05 mm, outer zone r>0.55) / {archs['skeletal_volume_fraction']['caryophylliid']:.4f} (caryophylliid); synapticulate = {archs['skeletal_volume_fraction']['synapticulate']:.4f}",
+            "reference_value": round(archs["endotheca_volume_increment"]["dissepimented"], 4),
+            "reference_source": "Model-internal (no literature volume budget for dissepimentaria available offline; parameters tagged 'model' in corallum3d_surge_reference.json)",
+            "note": "Self-referential reference: reported for expressivity/ablation, not as validation",
+            "derived_from": "script",
+        },
+        {
+            "name": "Bidirectional surge period-mean dipole asymmetry <A_1> (Pe_max=16, KC=2pi) vs unidirectional A_1",
+            "value": round(abs(osc["mean_dipole_asymmetry"]), 6),
+            "unit": "asymmetry index A_1",
+            "method": f"Period mean over 64 mirror-symmetric phases of the quasi-steady Law 3 flux with sign-reversing dipole; unidirectional A_1 at Pe=16 is {osc['steady_dipole_asymmetry']:.4f}, peak instantaneous surge |A_1(t)| = {osc['peak_instantaneous_dipole_asymmetry']:.4f}",
+            "reference_value": 0.0,
+            "reference_source": "Chindapol et al. (2013) PLoS Comput. Biol. 9(1):e1002849 (bidirectional flow preserves colony symmetry; unidirectional flow skews growth upstream) & Lean theorem oscillatory_surge_dipole_cancellation",
+            "note": f"Surviving quadrupole <A_2> = {osc['mean_quadrupole_asymmetry']:.4f} (axial/lateral flux {osc['axial_lateral_flux_ratio']:.4f}) vs unidirectional A_2 = {osc['steady_quadrupole_asymmetry']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Keulegan-Carpenter half-saturation KC_50 of surge-driven bilateral elongation (numeric vs 2 pi ln 2)",
+            "value": round(kc_sweep["kc50_numeric"], 4),
+            "unit": "KC = U_max T / L",
+            "method": f"Dense KC scan (0.05..60) of <A_2>(KC) at Pe_max=16; KC where <A_2> reaches half its eta->1 saturation {kc_sweep['a2_saturated']:.4f}; Pearson r(<A_2>, eta) = {kc_sweep['pearson_r_quadrupole_vs_renewal']:.4f}; mean sqrt|sin| factor {kc_sweep['mean_sqrt_pe_factor']:.5f} vs exact {mean_sqrt_sin_exact:.5f}",
+            "reference_value": round(KC_50_ANALYTIC, 4),
+            "reference_source": "Closed form from eta(KC) = 1 - exp(-KC/(2 pi)) with excursion a = U_max T/(2 pi) (Keulegan & Carpenter 1958 J. Res. NBS 60:423, DOI 10.6028/jres.060.043, recalled offline)",
+            "note": "Checks the numerical sweep against the model's own closed form; the renewal law itself is a modelling choice",
+            "derived_from": "script",
+        },
+    ]
 
     return [
         {
@@ -997,11 +1895,11 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"Major reach = {specimen['major_septa_reach_ratio']:.4f} R vs Minor reach = {specimen['minor_septa_reach_ratio']:.4f} R",
             "derived_from": "output",
         },
-    ]
+    ] + pass3
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
+    """Run the 8-check Pass 2 suite plus 4 Pass 3 checks (3D corallum, surge/KC coupling)."""
     # 1. Cryptographic SHA-256 verification of all vendored dataset files
     digests = verify_dataset_integrity()
     assert len(digests) == 4, "Expected 4 SHA-256-verified dataset files"
@@ -1051,25 +1949,76 @@ def self_test() -> bool:
     assert np.allclose(run1["field"], run2["field"], atol=0.0)
     assert np.allclose(run1["nutrient_field"], run2["nutrient_field"], atol=0.0)
 
+    # 9. (Pass 3) Reduced 3D corallum: septal cycles monotone along z, 3 insertion fronts below R_top=5 mm,
+    #    48 rim septa, dissepiments/synapticulae only in their architectures, volumes positive & additive
+    assert PASS3_REF_JSON.exists(), "Missing Pass 3 reference JSON"
+    archs = evaluate_corallum_architectures(apical_angle_deg=40.0, n_z=48, n_r=32, n_theta=240)
+    for arch, s3 in archs["sims"].items():
+        assert np.all(np.diff(s3["cycle_per_level"]) >= 0), f"{arch}: septal cycle not monotone along z"
+        assert s3["rim_septa_count"] == 48 and s3["n_insertion_fronts"] == 3
+        assert (s3["volumes_mm3"]["dissepiment"] > 0.0) == (arch == "dissepimented")
+        assert (s3["volumes_mm3"]["synapticula"] > 0.0) == (arch == "synapticulate")
+        assert 0.0 < s3["skeletal_volume_fraction"] < 1.0
+        assert math.isclose(sum(s3["volumes_mm3"].values()), s3["skeletal_volume_mm3"], rel_tol=1e-9)
+    assert archs["endotheca_volume_increment"]["dissepimented"] > 1.0
+    assert archs["endotheca_volume_increment"]["synapticulate"] > 1.0
+    # Front heights must sit where R(z) crosses R_2, R_3, R_4 = 1, 2, 4 mm (within one z-cell)
+    dz_test = archs["H_mm"] / 47
+    for z_f, R_k in zip(archs["insertion_front_heights_mm"], (1.0, 2.0, 4.0)):
+        z_expected = (R_k - 0.6) / math.tan(math.radians(20.0))
+        assert abs(z_f - z_expected) <= dz_test + 1e-9, (z_f, z_expected)
+
+    # 10. (Pass 3) Specimen side profile: trochoid apical angle (Wells 1956 ~40 deg), good linear fit
+    prof = segment_caryophyllia_corallum_profile()
+    assert 25.0 < prof["apical_angle_deg"] < 55.0 and prof["wells_class"] == "trochoid"
+    assert prof["profile_fit_r"] > 0.98
+    assert 0.0 < spec["septum_thickness_mm_est"] < 0.6 and 0.0 < spec["skeletal_area_fraction"] < 1.0
+
+    # 11. (Pass 3) Surge/KC coupling: exact dipole cancellation for every KC, quadrupole survives and is
+    #     monotone in KC, KC_50 matches 2 pi ln 2, unidirectional polarization recovered as KC -> inf
+    kc = evaluate_keulegan_carpenter_sweep(Pe_max=16.0)
+    assert kc["max_abs_mean_dipole_asymmetry"] < 1e-12
+    a2_vals = [r["mean_quadrupole_asymmetry"] for r in kc["records"]]
+    assert all(b >= a for a, b in zip(a2_vals, a2_vals[1:])) and a2_vals[-1] > 0.0
+    assert abs(kc["kc50_numeric"] - kc["kc50_analytic"]) < 0.06
+    assert kc["records"][-1]["peak_instantaneous_dipole_asymmetry"] > 0.5 * kc["steady_dipole_asymmetry"]
+    assert kc["steady_dipole_asymmetry"] > 0.5
+    assert math.isclose(surge_renewal_efficiency(KC_RENEWAL_SCALE), 1.0 - math.exp(-1.0), rel_tol=1e-12)
+    assert math.isclose(kc["mean_sqrt_pe_factor"], math.gamma(0.75) * math.gamma(0.5) / (math.pi * math.gamma(1.25)), abs_tol=2e-3)
+
+    # 12. (Pass 3) Determinism of the 3D voxel model and the surge solver
+    s_a = simulate_turbinate_corallum_3d(apical_angle_deg=36.0, architecture="dissepimented", n_z=24, n_r=24, n_theta=120)
+    s_b = simulate_turbinate_corallum_3d(apical_angle_deg=36.0, architecture="dissepimented", n_z=24, n_r=24, n_theta=120)
+    assert np.array_equal(s_a["labels"], s_b["labels"])
+    o_a = compute_oscillatory_surge_flux(16.0, 3.0)["flux_mean_profile"]
+    o_b = compute_oscillatory_surge_flux(16.0, 3.0)["flux_mean_profile"]
+    assert np.array_equal(o_a, o_b)
+
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 16
+    assert all(("reference_value" in m and "unit" in m) for m in meas)
     print(
-        f"[self_test] 2013-thomas-coral-calice-septa-insertion.py (v2) PASSED all 8 checks "
+        f"[self_test] 2013-thomas-coral-calice-septa-insertion.py (v3) PASSED all 12 checks "
         f"(7-species r={cross['pearson_r_septa']:.4f}, Pe sweep r={pe_sweep['pearson_r_asymmetry_vs_sqrt_pe']:.4f}, "
         f"specimen septa={spec['n_septa_detected']}, Δθ={spec['mean_angular_spacing_deg']:.2f}°, "
-        f"reach ratio={spec['reach_hierarchy_ratio']:.4f})."
+        f"reach ratio={spec['reach_hierarchy_ratio']:.4f}, apical angle={prof['apical_angle_deg']:.1f}° [{prof['wells_class']}], "
+        f"3D fronts={archs['sims']['caryophylliid']['n_insertion_fronts']}, surge <A_1>={kc['max_abs_mean_dipole_asymmetry']:.1e}, "
+        f"KC_50={kc['kc50_numeric']:.3f} vs {kc['kc50_analytic']:.3f})."
     )
     return True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite")
+    ap.add_argument("--self-test", action="store_true", help="Run 12-check verification suite (8 Pass 2 + 4 Pass 3)")
     ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
+    ap.add_argument("--skip-pass3", action="store_true", help="Skip the Pass 3 3D-corallum and surge/KC figures")
     ap.add_argument("--R-mm", type=float, default=None, help="Override calice radius R (mm)")
     ap.add_argument("--lambda-s-mm", type=float, default=None, help="Override inter-septal threshold wavelength lambda_s (mm)")
-    ap.add_argument("--Pe", type=float, default=None, help="Override laminar flow Péclet number Pe")
-    ap.add_argument("--seed", type=int, default=2013, help="Deterministic seed (default: 2013)")
+    ap.add_argument("--Pe", type=float, default=None, help="Override laminar flow Péclet number Pe (also Pe_max of the surge figure)")
+    ap.add_argument("--apical-angle-deg", type=float, default=None, help="Override 3D corallum apical angle (default: measured from the specimen side profile)")
+    ap.add_argument("--septum-thickness-mm", type=float, default=None, help="Override 3D septum thickness (default: estimated from the specimen 0.80R duty cycle)")
+    ap.add_argument("--seed", type=int, default=2013, help="Accepted for interface parity; the model is fully deterministic and has no stochastic component (unused)")
     args = ap.parse_args()
 
     if args.self_test:
@@ -1090,6 +2039,16 @@ def main() -> int:
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF)
         print(f"[render] Wrote {gif}")
+    if not args.skip_pass3:
+        png3d, info3d = render_corallum3d_figure(OUT_PNG_3D, apical_angle_deg=args.apical_angle_deg, septum_thickness_mm=args.septum_thickness_mm)
+        prof = info3d["profile"]
+        print(f"[render] Wrote {png3d} (apical angle {prof['apical_angle_deg']:.2f} deg -> {prof['wells_class']}; t_s={info3d['septum_thickness_mm']:.3f} mm)")
+        png_surge, info_surge = render_surge_kc_figure(OUT_PNG_SURGE, Pe_max=float(args.Pe) if args.Pe is not None else 16.0)
+        kc = info_surge["kc_sweep"]
+        print(f"[render] Wrote {png_surge} (max |<A_1>| = {kc['max_abs_mean_dipole_asymmetry']:.1e}; KC_50 = {kc['kc50_numeric']:.3f} vs {kc['kc50_analytic']:.3f})")
+        if not args.skip_gif:
+            gif_surge = render_surge_phase_gif(OUT_GIF_SURGE, Pe_max=float(args.Pe) if args.Pe is not None else 16.0)
+            print(f"[render] Wrote {gif_surge}")
     return 0
 
 

@@ -111,7 +111,7 @@ from PIL import Image
 from scipy import ndimage, stats
 from scipy.spatial import Voronoi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "neuromesodermal_jamming"
 REF_JSON = DATASET_DIR / "neuromesodermal_jamming_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "zebrafish_tailbud_psm_specimen.jpg"

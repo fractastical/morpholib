@@ -1,0 +1,389 @@
+# MorphoEval Pass 3 (v3) Audit — Milne-Edwards & Haime (1848), Kunth (1869) & Chindapol et al. (2013) Scleractinian Coral Calice Septal Insertion, 2026-10-20 (v3)
+#
+# Pass 3 re-score of `2013-thomas-coral-calice-septa-insertion.py` (now 2056 lines; 12 self-test checks) and
+# `datasets/coral_calice_septa_insertion/` after the remediation of both open v2 items in the instrumented loop
+# `morphoeval/runs/2026-10-19-coral-calice-septa-insertion-loop-pass3`, superseding
+# `2026-10-19-coral-calice-septa-insertion-audit-v2` (91.6 dual-agent consensus).
+#   - Primary assessor: Claude Fable 5.1 (Phase B audit subagent, scoring from the Phase A handoff, the
+#     `git diff` of the script and the Lean module, a fresh `--self-test` run and a fresh `lean` check at e651a8b8)
+#   - Second assessor: Claude Fable 5.1 Phase A remediation agent's defect list (handoff note section (b)),
+#     taken as the independent defect enumeration the primary assessor verified line by line.
+#
+# SLOT METADATA MISMATCH (flagged, not fixed): the campaign dispatch `morphoeval/cloud/dispatches/slot-074.json`
+# carries `slug: foraminifera-apertural-growth` and the Pass 3 prompt names *Ammonia beccarii* / Topa & Tyszka
+# (2002) Paleobiology (10.1666/0094-8373(2002)028<0450:LMOFS>2.0.CO;2). The script, dataset, Lean module and
+# both prior audits are about Scleractinian coral calice septal insertion (*Caryophyllia quadragenaria*). This
+# audit scores the code that exists (coral), keeps the coral references, and records the mismatch here and in the
+# dispatch record. The telemetry `init` of the pass3 run used the prompt's paper string as instructed.
+#
+# What Pass 3 changed (both v2 remediation items, closed as honest reduced models):
+#   1. Reduced 3D accreting corallum: conical profile R(z) = R_ped + z tan(phi/2) with Wells (1956) apical-angle
+#      classes (ceratoid 20 / trochoid 40 / turbinate 70 / patellate 120 deg), a cylindrical label volume
+#      (z, r/R(z), theta) carrying theca, columella, pali, septa of cycle k wherever R(z) >= R_k (so the N = 6 ->
+#      12 -> 24 -> 48 insertion fronts stack along the growth axis), and two endothecal architectures —
+#      vesicular dissepiments (outer loculi, 0.60 mm spacing, tilted, alternating phase) and synapticulae (rings
+#      at r in {0.45, 0.65, 0.85} R bridging adjacent septa) — ablated at identical outer geometry
+#      (`simulate_turbinate_corallum_3d`, `evaluate_corallum_architectures`, L642-L870). The apical angle is now
+#      MEASURED from the side-profile panel of the SHA-256-pinned specimen (36.66 deg, cone fit r = 0.993 ->
+#      Wells trochoid) and the septal thickness from the 0.80 R septal duty cycle (0.277 mm)
+#      (`segment_caryophyllia_corallum_profile` L873-L930; Otsu area fraction 0.532, L963-L1087).
+#   2. Keulegan-Carpenter oscillatory surge: U(t) = U_max sin(omega t), Pe(t) = Pe_max |sin omega t|, the dipole
+#      term carries sgn(U); 64 mirror-symmetric phases give an exactly cancelling period-mean dipole <A_1> = 3e-16
+#      while the quadrupole (bilateral elongation) survives, scaled by a renewal law eta(KC) = 1 - exp(-KC/2pi)
+#      with half-saturation KC_50 = 2 pi ln 2 = 4.355 (numeric 4.350) (`compute_oscillatory_surge_flux`,
+#      `evaluate_keulegan_carpenter_sweep`, L504-L627); compared against the unidirectional case at equal Pe_max
+#      (A_1 = 0.647 at Pe = 16).
+#   3. Two new figures and one GIF (`docs/media/coral_calice_septa_insertion_corallum3d.png`,
+#      `_surge_kc.png`, `_surge_phase.gif`), 7 new `measure_morphoeval()` entries (16 total), 4 new self-test
+#      checks (12 total), CLI flags `--skip-pass3`, `--apical-angle-deg`, `--septum-thickness-mm`, the new
+#      reference table `corallum3d_surge_reference.json` (every row provenance-tagged) and `pass3_citations.bib`.
+#   4. Lean: 3 new theorems (`turbinate_corallum_septal_cycles_monotone`, `oscillatory_surge_dipole_cancellation`,
+#      `surge_mean_of_mirror_phases_zero`) + 3 lemmas, 0 `sorry`s, registered as Law 4 / Law 5 in
+#      `morphoeval/math_kg_loops/thomas-coral-calice-septa-insertion.yaml`.
+#
+# Why the overall score moves only slightly despite closing both items: the remediation exposed defects the v2
+# audit did not penalise — several `reference_value`s equal the measured value (self-referential), the Pe-sweep
+# "Pearson r vs sqrt(Pe)" correlates a monotone closed form with itself, the Law 3 flux law is a phenomenological
+# ansatz rather than Chindapol's equations with unsourced hard-coded flow constants, the cross-taxa table is
+# recalled rather than digitised, and every Pass 3 literature value is recalled offline with unverified DOIs.
+# morphometric-validation and source-traceability therefore go DOWN; parameter-expressivity and repro-package go up.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the
+# working tree at commit e651a8b8 (uncommitted Pass 3 edits included) and were verified with grep.
+
+audit:
+  id: 2026-10-19-coral-calice-septa-insertion-audit-v3
+  supersedes_audit_id: 2026-10-19-coral-calice-septa-insertion-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Pass 3 Phase B primary assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-fable-5-1-phase-a
+    label: "Claude Fable 5.1 (Pass 3 Phase A remediation agent — independent defect enumeration in the handoff note)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/74
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e651a8b8
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediated evaluation of `2013-thomas-coral-calice-septa-insertion.py` (2056 lines,
+      12 self-test checks, 16 measure_morphoeval() entries) superseding
+      `2026-10-19-coral-calice-septa-insertion-audit-v2`. e651a8b8 is HEAD; the Pass 3 edits to the script,
+      the Lean module, the math-KG YAML, the dataset folder and the media are in the working tree
+      (not committed by this loop, per the zero-conflict isolation rule). Slot metadata mismatch:
+      dispatch slug `foraminifera-apertural-growth` / Topa & Tyszka (2002) vs the coral script actually audited.
+
+references:
+  milneedwards1848:
+    title: "Recherches sur les polypiers. Premier mémoire: Observations sur la structure et le développement des polypiers en général"
+    authors: "Milne-Edwards H, Haime J"
+    venue: "Annales des Sciences Naturelles, Zoologie (Série 3) 9:37-89 (1848)"
+    doi: 10.5962/bhl.title.11574
+  kaandorp2001:
+    title: "The Algorithmic Beauty of Seaweeds, Sponges and Corals"
+    authors: "Kaandorp JA, Kübler JE"
+    venue: "Springer-Verlag, Berlin (2001)"
+    doi: 10.1007/978-3-662-04339-4
+  chindapol2013:
+    title: "Modelling Growth and Form of the Scleractinian Coral Pocillopora verrucosa and the Influence of Hydrodynamics"
+    authors: "Chindapol N, Kaandorp JA, Cronemberger C, Mass T, Genin A"
+    venue: "PLoS Computational Biology 9(1):e1002849 (2013)"
+    doi: 10.1371/journal.pcbi.1002849
+  kunth1869:
+    title: "Beiträge zur Kenntniss fossiler Korallen. 2. Das Wachsthumsgesetz der Zoantharia rugosa und über Calceola sandalina"
+    authors: "Kunth A"
+    venue: "Zeitschrift der Deutschen Geologischen Gesellschaft 21:647-688 (1869)"
+    doi: 10.1127/zdgg/21/1869/647
+  cairns2012:
+    title: "An illustrated key to the genera and subgenera of the Recent azooxanthellate Scleractinia (Cnidaria, Anthozoa), with an attached glossary"
+    authors: "Cairns SD, Kitahara MV"
+    venue: "ZooKeys 227:1-47 (2012)"
+    doi: 10.3897/zookeys.227.3612
+  keulegan1958:
+    title: "Forces on cylinders and plates in an oscillating fluid"
+    authors: "Keulegan GH, Carpenter LH"
+    venue: "Journal of Research of the National Bureau of Standards 60(5):423-440 (1958) — DOI recalled offline, unverified"
+    doi: 10.6028/jres.060.043
+  falter2005:
+    title: "Effects of surface roughness and oscillatory flow on the dissolution of plaster forms: Evidence for nutrient mass transfer to coral reef communities"
+    authors: "Falter JL, Atkinson MJ, Coimbra CFM"
+    venue: "Limnology and Oceanography 50(1):246-254 (2005) — DOI recalled offline, unverified"
+    doi: 10.4319/lo.2005.50.1.0246
+  reidenbach2006:
+    title: "The effects of waves and morphology on mass transfer within branched reef corals"
+    authors: "Reidenbach MA, Koseff JR, Monismith SG, Steinbuck JV, Genin A"
+    venue: "Limnology and Oceanography 51(2):1134-1141 (2006) — DOI recalled offline, unverified"
+    doi: 10.4319/lo.2006.51.2.1134
+  wells1956:
+    title: "Scleractinia"
+    authors: "Wells JW"
+    venue: "In: Moore RC (ed.) Treatise on Invertebrate Paleontology, Part F, Coelenterata, pp. F328-F444. Geological Society of America & University of Kansas Press (1956) — no DOI; apical-angle classes recalled offline"
+    url: https://www.biodiversitylibrary.org/bibliography/5663
+  otsu1979:
+    title: "A threshold selection method from gray-level histograms"
+    authors: "Otsu N"
+    venue: "IEEE Transactions on Systems, Man, and Cybernetics 9(1):62-66 (1979)"
+    doi: 10.1109/TSMC.1979.4310076
+
+simulations:
+  - id: thomas-coral-calice-septa-insertion
+    name: "Milne-Edwards & Haime (1848), Kunth (1869) & Chindapol et al. (2013) Scleractinian coral calice septal insertion, reduced 3D corallum & Keulegan-Carpenter surge morphogenesis"
+    organism: "Caryophyllia (Caryophyllia) quadragenaria & Pocillopora verrucosa (Scleractinia stony corals)"
+    script: 2013-thomas-coral-calice-septa-insertion.py
+    output: docs/media/coral_calice_septa_insertion_comparison.png
+    extra_outputs:
+      - docs/media/coral_calice_septa_insertion_growth.gif
+      - docs/media/coral_calice_septa_insertion_corallum3d.png
+      - docs/media/coral_calice_septa_insertion_surge_kc.png
+      - docs/media/coral_calice_septa_insertion_surge_phase.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-coral-calice-septa-insertion-audit-v2
+    source_refs:
+      - milneedwards1848
+      - kaandorp2001
+      - chindapol2013
+      - kunth1869
+      - cairns2012
+      - keulegan1958
+      - falter2005
+      - reidenbach2006
+      - wells1956
+      - otsu1979
+    claim_boundary:
+      reported_in_source:
+        - "Milne-Edwards & Haime (1848): hexameral cyclic septal insertion N_hex(k) = 6 * 2^(k-1) with decreasing radial reach of successive cycles"
+        - "Kunth (1869): Paleozoic Rugosa serial insertion in four fossular loci, N_rugosa(m) = 6 + 4m"
+        - "Chindapol et al. (2013): advection-diffusion limited accretive growth of Pocillopora verrucosa with upstream-polarised growth under unidirectional flow and symmetric, compact growth under bidirectional (surge) flow"
+        - "Wells (1956) Treatise Part F: solitary corallum shape classes by apical angle (ceratoid, trochoid, turbinate, patellate) and the endothecal elements dissepiments and synapticulae"
+        - "Keulegan & Carpenter (1958): the ratio U_max T / L governing oscillatory-flow forces on bodies; Falter et al. (2005) and Reidenbach et al. (2006): oscillatory flow enhances mass transfer to reef corals relative to unidirectional flow at the same speed"
+      reconstructed_in_script:
+        - "2D calice insertion with perimeter-threshold triggering 2 pi R_k = N_hex(k) lambda_s, Kunth Rugosa comparison, a phenomenological boundary-layer flux law j(theta) = j0 (1 + beta sqrt(Pe) cos theta + gamma Pe/(1+Pe) cos 2theta) with Pe = 0 symmetry control, a reduced kinematic 3D conical corallum (cylindrical label volume) with stacked insertion fronts, pali, dissepiments and synapticulae ablated at fixed outer geometry, specimen-measured apical angle (side-profile cone fit) and septal thickness (0.80 R duty cycle), Otsu calice area fraction, an oscillatory surge quasi-steady closure with sgn(U) dipole and a renewal law eta(KC) = 1 - exp(-KC/2pi), KC sweep and reef KC estimates"
+      transfer_boundary:
+        - "The 3D corallum is kinematic (labels assigned from the cone profile), not accretive growth or mechanics; dissepiment/synapticula spacings and thicknesses are modelling choices tagged `provenance: model`"
+        - "The quasi-steady surge closure gives <sqrt(Pe(t))>/sqrt(Pe_max) = 0.763 < 1, i.e. it cannot reproduce the oscillatory mass-transfer ENHANCEMENT of Falter 2005 / Reidenbach 2006; only the symmetry (dipole cancellation) claim of Chindapol 2013 is reproduced"
+        - "The Law 3 flux law and the ellipticity formula are this script's ansatz, not equations from Chindapol et al. (2013); the JSON 'Eqs. (1)-(8)' pointer is unverified"
+      does_not_claim:
+        - "Finite-element or accretive growth of the corallum, validated dissepiment/synapticula geometry, a digitised cross-taxa septa table, verified Pass 3 DOIs, or that the 48 model rim septa match the specimen's 40"
+    summary: >-
+      Pass 3 (v3) remediated evaluation of `2013-thomas-coral-calice-septa-insertion.py`. Both v2 remediation
+      items are closed as honest reduced models: a kinematic 3D conical corallum (Wells 1956 apical-angle
+      classes; septal insertion fronts N = 6 -> 12 -> 24 -> 48 stacked along z; dissepiments and synapticulae
+      ablated at fixed outer geometry; apical angle 36.66 deg and septal thickness 0.277 mm measured from the
+      pinned specimen), and a Keulegan-Carpenter oscillatory surge coupling of the Péclet boundary-layer flux
+      (period-mean dipole <A_1> = 3e-16 vs unidirectional 0.647; quadrupole survives; KC_50 = 4.350 vs
+      2 pi ln 2 = 4.355). The Pass 2 content (hexameral doubling, Kunth Rugosa, Pe sweep, 7-species scaling,
+      40-septa specimen segmentation) is unchanged. 7 new Lean declarations (3 theorems + 3 lemmas, 0 sorrys),
+      12/12 self-test checks, 16 morphometrics, 5 rendered outputs. The score moves 91.6 -> ~90 because the
+      re-audit penalises defects v2 passed: self-referential reference values, a closed-form-vs-itself Pe
+      correlation, a phenomenological flux law with unsourced constants, a recalled cross-taxa table, and
+      offline-recalled Pass 3 literature values with unverified DOIs.
+    scores:
+      model-fidelity:
+        value: 89
+        rationale: >-
+          Laws 1 and 2 (Milne-Edwards hexameral doubling, Kunth 4-fossula serial insertion) are implemented
+          exactly and machine-checked; the Pass 3 3D corallum correctly stacks the insertion fronts along the
+          growth axis (cycle k present wherever R(z) >= R_k, proven monotone in Lean) and the surge closure
+          correctly reproduces the Chindapol (2013) symmetry statement (dipole cancels under bidirectional flow,
+          bilateral quadrupole survives; proven for mirror phases in Lean). Deductions, two of them new in this
+          round: the Law 3 flux law j0(1 + beta sqrt(Pe) cos theta + gamma Pe/(1+Pe) cos 2theta), the 0.16 j0
+          wake floor and the ellipticity formula are a phenomenological ansatz, not Chindapol's advection-
+          diffusion equations, and the rim modulation constants 0.035 / 0.025 / 0.42 / 0.35 / 0.06 are unsourced
+          (-5); the 3D corallum is kinematic, not accretive or mechanical, so dissepiments/synapticulae are
+          placed, not grown (-3); the renewal law eta(KC) = 1 - exp(-KC/2pi) is a modelling choice and the
+          quasi-steady closure gives a mean transfer BELOW the unidirectional case (0.763), opposite to the
+          Falter/Reidenbach enhancement (-3). v2's 93 did not price the Law 3 ansatz; v3 does.
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [199, 365], note: "Milne-Edwards new/cumulative septa, cycle threshold radius, and the 2D Scleractinian calice solver; rim modulation constants 0.035 (L274) etc. are unsourced", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [435, 501], note: "Phenomenological boundary-layer flux law with 0.16 j0 floor clamp (L454) and ellipticity formula (L462): not Chindapol's equations", supports: false}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [504, 627], note: "Pass 3 surge: eta(KC) renewal law, sgn(U) dipole over 64 mirror phases, KC sweep and reef KC estimates; <sqrt Pe(t)>/sqrt Pe_max = 0.763 (no enhancement)", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [642, 870], note: "Pass 3 reduced 3D corallum: cone profile, label volume with theca/columella/pali/septa/dissepiments/synapticulae, sections and architecture ablation (kinematic, not accretive)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_074_coral_calice_septa_insertion.lean, lines: [157, 248], note: "New Lean theorems: cone_radius/active_cycle/cumulative septa monotone, turbinate_corallum_septal_cycles_monotone (6/12/24/48 fronts), oscillatory_surge_dipole_cancellation, surge_mean_of_mirror_phases_zero", supports: true}
+      specimen-match:
+        value: 91
+        rationale: >-
+          The Pass 2 polar ridge segmentation (40 septa, 9.00 deg spacing, major/minor reach 1.4368) is
+          retained and Pass 3 adds two genuinely new specimen measurements: the apical angle fitted on the
+          side-profile panel (36.66 deg, r = 0.993, Wells trochoid; the README had already called the corallum
+          'costate trochoid'), and an Otsu calice skeletal area fraction (0.532) compared with the 3D rim
+          (0.493). Deductions: the septal thickness used in the 3D model is calibrated from the same specimen it
+          is then compared to, so the rim-area check is only partly independent (-3); the costae count (15 vs
+          ~20 expected) is an under-counting detector on an oblique view and is reported as a lower bound (-2);
+          the model's 48 rim septa vs the specimen's 40 (incomplete S4) remains unresolved from Pass 2 (-3);
+          the side view has no pixel scale, so only angles and counts are usable (-1).
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [873, 930], note: "segment_caryophyllia_corallum_profile: per-row half-width cone fit on side-view rows 400-660 -> apical angle 36.66 deg, Wells class, visible costae count", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [963, 1087], note: "otsu_threshold + segment_caryophyllia_specimen: 40 septa, 9.00 deg, reach 1.4368, Otsu area fraction 0.532 and 0.80 R septal duty cycle (sets t_s = 0.277 mm; circular w.r.t. the rim-area check)", supports: true}
+          - {file: datasets/coral_calice_septa_insertion/corallum3d_surge_reference.json, lines: [52, 61], note: "side_view_rows_px, cone-fit method, expected trochoid class and the caveat that costae are undercounted on the oblique view", supports: true}
+          - {file: docs/media/coral_calice_septa_insertion_corallum3d.png, lines: [0, 0], note: "8-panel figure: 3D cutaway, tangential sections, transverse sections at the 6/12/24/48 fronts, specimen side-profile fit, septa-vs-z with Wells classes, volume budget vs specimen area fraction", supports: true}
+          - {file: docs/media/coral_calice_septa_insertion_comparison.png, lines: [0, 0], note: "Panel E specimen segmentation overlay retained (v3 title); panel titles overlap at fontsize 9.6", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Pass 3 adds three independent control axes with visible morphological consequences: the apical angle
+          across the four Wells classes (changes corallum height and the z-positions of the insertion fronts),
+          the endothecal architecture ablation (caryophylliid / dissepimented / synapticulate at identical outer
+          geometry, volume budget reported), and the Keulegan-Carpenter number across 0.5-200 plus a dense scan
+          (quadrupole saturates, dipole stays zero), alongside the retained R, lambda_s and Pe sweeps and the
+          7-species table. New CLI flags `--apical-angle-deg`, `--septum-thickness-mm`, `--skip-pass3`, and
+          `--Pe` now also drives the surge figure. Deductions: `--seed` is a documented no-op (-2); the
+          dissepiment/synapticula spacings and thicknesses are not CLI-exposed and are fixed model constants
+          (-3); the architecture ablation changes volume but no growth outcome (-2).
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [136, 146], note: "Wells (1956) apical-angle classes, CORALLUM_ARCHITECTURES and KC renewal constants", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [583, 623], note: "evaluate_keulegan_carpenter_sweep over KC in {0.5..200} + dense scan, KC_50 numeric vs analytic; reef_keulegan_carpenter_number", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [859, 870], note: "evaluate_corallum_architectures: three-architecture ablation at identical outer geometry", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [2011, 2052], note: "CLI: --self-test, --skip-gif, --skip-pass3, --R-mm, --lambda-s-mm, --Pe, --apical-angle-deg, --septum-thickness-mm; --seed accepted but unused (L2021)", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          16 reference-anchored measurements now: the 9 Pass 2 entries plus 7 Pass 3 entries, of which four are
+          real external or specimen comparisons (apical angle 36.66 vs Wells trochoid 40 deg; costae 15 vs 20;
+          3D rim area fraction 0.493 vs specimen Otsu 0.532; KC_50 numeric 4.350 vs analytic 4.355) and two are
+          exact-symmetry checks (3 insertion fronts; <A_1> = 1e-16 vs 0). Deductions, most of them defects v2
+          did not price: the 7-species r reference 0.9985, the Pe-sweep r reference 0.9990 and the specimen
+          reach-ratio reference 1.4368 are self-referential or hand-set (the reach ratio reference equals the
+          measured value and was copied into the reference JSON), and the new dissepiment volume increment
+          explicitly uses reference = value (-6); the Pe-sweep 'Pearson r vs sqrt(Pe)' correlates a monotone
+          closed form with itself and the Pe = 36 up/down ratio in the script (13.73, floor clamp) still
+          disagrees with the JSON table (14.375) (-4); the cross-taxa `observed_septa_mean` / `typical_peclet_Pe`
+          / `major_minor_reach_ratio` values are recalled, not digitised (-3); the KC_50 check validates the
+          script against its own analytic closed form (-1). quick_gate remains 100.
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [1716, 1898], note: "measure_morphoeval(): 7 Pass 3 entries (L1734-L1804) + 9 Pass 2 entries; 16 total", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [1775, 1784], note: "Dissepiment volume increment: reference_value = value, declared model-internal (expressivity, not validation)", supports: false}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [1808, 1817], note: "7-species Pearson r with hand-set reference 0.9985 (self-referential)", supports: false}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [1858, 1867], note: "Pe-sweep Pearson r vs sqrt(Pe) with hand-set reference 0.9990; correlates a closed form with itself; note reports 13.73 vs JSON 14.375", supports: false}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [1888, 1897], note: "Specimen reach ratio reference 1.4368 equals the measured value", supports: false}
+          - {file: datasets/coral_calice_septa_insertion/coral_calice_septa_insertion_reference.json, lines: [95, 109], note: "cross_taxa_corallite_septa_table recalled values and Pe=36 up/down ratio 14.375 (script gives 13.73)", supports: false}
+      source-traceability:
+        value: 90
+        rationale: >-
+          The four SHA-256-pinned files are untouched and still verified fail-closed at runtime; Pass 3 adds
+          `corallum3d_surge_reference.json` in which EVERY row carries a provenance tag (`specimen`, `model`, or
+          `recalled offline: ...`) and `pass3_citations.bib` with the five new sources, and the dataset README
+          gains a Pass 3 section stating the honest limits. Deductions: all Pass 3 literature values (Wells
+          apical angles, reef U_max/T, Falter/Reidenbach/Keulegan DOIs) are recalled offline with
+          `doi_verified_offline: false` (-4); eight 3D geometry constants are `provenance: model` (-2); the
+          Milne-Edwards DOI is a BHL title-level DOI and the Kunth DOI is unverifiable offline (carried from v2,
+          -2); the new JSON and bib are not SHA-256-pinned by `EXPECTED_SHA256` (-2). The slot-metadata mismatch
+          (dispatch slug / prompt organism) is a campaign-level record defect, not a repository one, and is not
+          scored here.
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [148, 197], note: "EXPECTED_SHA256 registry (4 files), sha256_file, verify_dataset_integrity, load_reference_data; new Pass 3 JSON/bib not pinned", supports: true}
+          - {file: datasets/coral_calice_septa_insertion/corallum3d_surge_reference.json, lines: [1, 82], note: "Pass 3 reference table: every row provenance-tagged; model constants L32-L44; Wells classes L47-L50 recalled offline", supports: true}
+          - {file: datasets/coral_calice_septa_insertion/pass3_citations.bib, lines: [1, 65], note: "Keulegan & Carpenter 1958, Falter 2005, Reidenbach 2006, Wells 1956, Otsu 1979 — DOIs recalled offline, unverified", supports: true}
+          - {file: datasets/coral_calice_septa_insertion/README.md, lines: [29, 50], note: "Pass 3 section: new non-pinned files, what is measured from the specimen, honest limits of the 3D corallum and surge closure", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          The header docstring (L1-L97) now lists the Pass 3 sources and maps each Pass 3 function to its law;
+          `surge_renewal_efficiency` states in its docstring that the exponential form is a modelling choice;
+          the Pass 3 measurements name their reference source and flag the model-internal one; the math-KG YAML
+          registers Laws 4 and 5 with one `file#La-Lb` range per `code_locus` and refreshed Pass 2 loci.
+          Deductions: the Law 3 rim-modulation constants (0.035, 0.025, 0.42, 0.35, 0.06) in
+          `simulate_scleractinian_calice_2d` carry no citation (-4); the reference JSON cites Chindapol 'Eqs.
+          (1)-(8)' for a flux law that is not Chindapol's (-3); the dissepiment phase/tilt choices in the 3D
+          builder are commented but not sourced (-2).
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [1, 97], note: "v3 header docstring: five Pass 2 sources plus Pass 3 additions and function map", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [246, 365], note: "simulate_scleractinian_calice_2d: hard-coded rim modulation constants (e.g. 0.035 at L274) without citation", supports: false}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [504, 512], note: "surge_renewal_efficiency docstring declares eta(KC) = 1 - exp(-KC/2pi) a kinematic modelling choice", supports: true}
+          - {file: morphoeval/math_kg_loops/thomas-coral-calice-septa-insertion.yaml, lines: [74, 111], note: "Law 4 (3D corallum fronts) and Law 5 (surge dipole cancellation) registered with single-range code_locus and code_locus_secondary", supports: true}
+          - {file: datasets/coral_calice_septa_insertion/coral_calice_septa_insertion_reference.json, lines: [64, 64], note: "Governing-equation section cites Chindapol 'Eqs. (1)-(8)' for a phenomenological flux ansatz", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          `--self-test` passes 12/12 checks in ~7 s CPU (SHA-256 provenance, JSON-code parity, doubling, Kunth
+          divergence, Pe = 0 symmetry, 7-species scaling, specimen segmentation parity, bitwise determinism of
+          the 2D, 3D and surge outputs, 3D monotone fronts/volumes, specimen trochoid angle and fit, surge
+          cancellation / KC_50 / mean-sqrt-sin closed form Gamma(3/4)Gamma(1/2)/(pi Gamma(5/4)), and the
+          16-entry measurement contract); the default render takes ~8 s and writes all five outputs; `lean`
+          exits 0 with 0 sorrys. Deductions: the repository `.gitignore` excludes `*.png`, so the three PNG
+          outputs are untracked artefacts and only the GIFs are versioned (pre-existing, -3); `--seed` is a
+          no-op kept for interface parity (-1); matplotlib font-cache rebuilds dominate first-run wall time in
+          a clean sandbox and no MPLCONFIGDIR note is given (-1); the Pass 3 JSON/bib are not integrity-pinned
+          (-2).
+        evidence:
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [1901, 2008], note: "self_test(): 8 Pass 2 + 4 Pass 3 checks, bitwise determinism of 3D labels and surge profile, len(meas) == 16", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [1433, 1713], note: "render_corallum3d_figure, render_surge_kc_figure, render_surge_phase_gif: the three new outputs", supports: true}
+          - {file: 2013-thomas-coral-calice-septa-insertion.py, lines: [2021, 2021], note: "--seed accepted for interface parity; model has no stochastic component (no-op)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_074_coral_calice_septa_insertion.lean, lines: [1, 25], note: "Zero-dependency Lean module, verify command, namespace; 249 lines, 0 sorrys, exits 0", supports: true}
+    remediation:
+      - >-
+        2013-thomas-coral-calice-septa-insertion.py:1808-1817, 1858-1867, 1888-1897 and
+        datasets/coral_calice_septa_insertion/coral_calice_septa_insertion_reference.json
+        (`reference_major/minor_septa_reach_ratio`) — the 7-species r reference (0.9985), the Pe-sweep r
+        reference (0.9990) and the specimen reach-ratio reference (1.4368 = measured value) are hand-set or
+        self-referential. Replace with literature-digitised anchors (e.g. a published Caryophyllia S1/S2 vs S3/S4
+        reach ratio, or Chindapol 2013 Fig. 5 asymmetry at matched Pe) or mark `derived_from: self` and exclude
+        from the validation count.
+      - >-
+        2013-thomas-coral-calice-septa-insertion.py:435-501 and :246-365 — Law 3 is a phenomenological ansatz
+        j0(1 + beta sqrt(Pe) cos theta + gamma Pe/(1+Pe) cos 2theta) with a 0.16 j0 wake floor (L454), the
+        ellipticity formula (L462) and rim-modulation constants 0.035/0.025/0.42/0.35/0.06 (L274 ff.) that have
+        no source; the JSON (L64) attributes it to Chindapol 'Eqs. (1)-(8)'. Either solve the 2D
+        advection-diffusion boundary-layer problem numerically (Chindapol's actual model) or relabel the law as
+        this script's reduced closure in the docstring, JSON and math-KG, and make the Pe = 36 ratio consistent
+        (script 13.73 vs JSON 14.375).
+      - >-
+        2013-thomas-coral-calice-septa-insertion.py:504-580 — the quasi-steady surge closure gives
+        <sqrt(Pe(t))>/sqrt(Pe_max) = 0.763 < 1, so it predicts LOWER mean transfer under surge than under a
+        unidirectional current at the same speed, contrary to Falter et al. (2005) / Reidenbach et al. (2006).
+        Add an unsteady boundary-layer renewal term (Stokes-layer thickness sqrt(2 nu/omega) or a Womersley-type
+        correction) so the KC dependence of the MEAN flux, not only its symmetry, is tested, and replace the
+        unvalidated eta(KC) = 1 - exp(-KC/2pi) with a fitted or derived law.
+      - >-
+        2013-thomas-coral-calice-septa-insertion.py:667-806 and
+        datasets/coral_calice_septa_insertion/corallum3d_surge_reference.json:32-44 — the 3D corallum is a
+        kinematic label volume: dissepiment spacing 0.60 mm, thickness 0.05 mm, tilt 0.5, synapticula radii
+        {0.45, 0.65, 0.85} R and spacing 0.60 mm are `provenance: model`. Replace with digitised values from a
+        longitudinal-section micrograph (e.g. a Flabellum or Fungia section vendored with SHA-256) and add a
+        minimal accretion rule (e.g. dissepiment laid when the polyp base lifts by h_d) so the endotheca is grown,
+        not placed.
+      - >-
+        2013-thomas-coral-calice-septa-insertion.py:873-930 and :1746-1755 — the specimen apical angle (36.66
+        deg) and costae count (15, undercounted) come from a side view with unknown pixel scale and oblique
+        orientation; the septal thickness (0.277 mm) is calibrated on the same specimen it is compared to in the
+        rim-area check (L1756-L1765). Vendor a second, independent Caryophyllia specimen (scaled side view and
+        calice) so apical angle, costae and rim area are tested out-of-sample, and resolve the 48 model vs 40
+        specimen septa discrepancy by truncating S4 to the specimen's incomplete cycle.
+      - >-
+        datasets/coral_calice_septa_insertion/coral_calice_septa_insertion_reference.json:95-109 — the
+        `cross_taxa_corallite_septa_table` (`observed_septa_mean`, `typical_peclet_Pe`,
+        `major_minor_reach_ratio`) is recalled, not digitised; `evaluate_cross_taxa_corallite_scaling`
+        (L933-L960) consumes it as if it were data. Replace with per-species values traced to Cairns & Kitahara
+        (2012) generic diagnoses or Veron (2000) with page pins, or mark the table `provenance: recalled`.
+      - >-
+        2013-thomas-coral-calice-septa-insertion.py:148-160 and datasets/coral_calice_septa_insertion/pass3_citations.bib,
+        corallum3d_surge_reference.json — the Pass 3 JSON and bib are not in `EXPECTED_SHA256`, and all Pass 3
+        DOIs (10.6028/jres.060.043, 10.4319/lo.2005.50.1.0246, 10.4319/lo.2006.51.2.1134, 10.1109/TSMC.1979.4310076)
+        plus the carried BHL title-level Milne-Edwards DOI and the Kunth DOI are unverified offline. Pin the new
+        files and verify every DOI online in the next round; flag `doi_verified_offline: true` only after resolution.
+      - >-
+        2013-thomas-coral-calice-septa-insertion.py:2021 and :1090-1342 — `--seed` is a no-op; remove it or add
+        a stochastic septal-insertion jitter so it has an effect. Panel titles in `render_comparison_figure`
+        overlap horizontally at fontsize 9.6 and the 3D cutaway in the corallum3d figure is small; fix the layout.
+      - >-
+        morphoeval/cloud/dispatches/slot-074.json (`slug: foraminifera-apertural-growth`) and the Pass 3 prompt
+        (Ammonia beccarii / Topa & Tyszka 2002) do not describe this script; the pass3 telemetry `init` carries
+        the foraminifera paper string. Correct the campaign slot metadata (or spin the foraminifera paper into
+        its own slot) so later passes audit the right organism.

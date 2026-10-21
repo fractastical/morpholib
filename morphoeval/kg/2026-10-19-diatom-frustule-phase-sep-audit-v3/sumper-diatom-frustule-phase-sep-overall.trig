@@ -1,0 +1,87 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sumper-diatom-frustule-phase-sep> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation (Pass 3: centrifugal precipitation front + 3-stage single-domain quench) — MorphoEval overall 89.0/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) remediated evaluation of `2002-sumper-diatom-frustule-phase-sep.py` (rubric-weighted overall 89.0/100, v2 89.3; unweighted dimension mean 89.6). Both v2 remediation items are closed as honest reduced models: the Cahn-Hilliard solver is now coupled to a radially advancing quench + lagging silica precipitation front (`simulate_radial_quench_costae`, L405-L538) and the emergent slow-front regime (A = +0.647 at v = 0.10, Pe = 0.045) gives radial bifurcating lamellae while fast fronts (A = -0.942 at v = 0.40) give concentric ones, against a 3-seed isotropic null of -0.110 +/- 0.112 — the Furukawa (1992) directional-quench transition in polar geometry; and an explicit 3-stage 512^2 single-domain quench (`simulate_three_stage_hierarchy`, L600-L713) resolves 12 foramina -> 48 cribrum -> 225 cribrella with a_2/a_3 = 5.108 (ref 5.067) and d_3 = 46.5 nm (ref 42). The remediation exposed the next layer of defects: the costae model has no specimen margin view to compare against, three of the seven new measurements use model-internal references, the new JSON is documentation-only (not SHA-pinned, not loaded), the two new DOIs are unverified offline, and the Pass 2 hard-coded SEM statistics strings and the circular `segmented_reference_metrics` parity check remain. Self-test PASS (11 checks, 30 s); Lean 6 theorems, 0 sorry. Overall 89.0/100 (faithfulness 88.1, reproducibility 91.3); rubric morphoeval 0.1.0; checkpoint commit a69596cc; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1. Dimension assessments: Model fidelity to source 93, Morphological realism / specimen match 85, Parameter expressivity 89, Morphometric validation 86, Source and data traceability 90, Code-to-model traceability 92, Reproducibility package 92. Output judged: docs/media/diatom_frustule_phase_sep_comparison.png: rendered output of models/2002-sumper-diatom-frustule-phase-sep.py at a69596cc, image/png, 1162913 B, 2775×2070 px, artifact_sha256 a9c947d7cead9aa4a0732db15d97ed3496cfd5451433cba2f7314b23cf1a6e47 (sha256 a9c947d7cead9aa4a0732db15d97ed3496cfd5451433cba2f7314b23cf1a6e47), spec_fingerprint a0656c1e84af378ca65d37247e04ce369aa44a7a1166c9de2688cf2ac0451d64. Dual provenance: spec_fingerprint: a0656c1e84af378ca65d37247e04ce369aa44a7a1166c9de2688cf2ac0451d64; artifact_sha256: a9c947d7cead9aa4a0732db15d97ed3496cfd5451433cba2f7314b23cf1a6e47; input_dataset_sha256: {datasets/diatom_frustule_phase_sep/coscinodiscus_diatom_specimen.jpg=47aca39b720b67b1..., datasets/diatom_frustule_phase_sep/diatom_frustule_phase_sep_reference.json=b6ffc32e8bdecb23..., datasets/diatom_frustule_phase_sep/scout_manifest.json=0eea5a04552420e8...}. Supersedes audit: 2026-10-19-diatom-frustule-phase-sep-audit-v2. Claim boundary: reported_in_source: Sumper (2002): LCPA/silica liquid-liquid phase separation inside the SDV yields three self-similar hexagonal pore tiers (foramen d_1 = 1250 nm / a_1 = 1850 nm; cribrum d_2 = 220 / a_2 = 380 nm; cribrella d_3 = 42 / a_3 = 75 nm) | Lenoci & Camp (2008): a two-stage quenched Cahn-Hilliard model with solidified silica walls reproduces nested foramen/cribrum pore hierarchies; linear spinodal dispersion sigma(k) = M k^2 (1 - 3 phi0^2 - eps^2 k^2) | Furukawa (1992): a quench front moving at speed v through a binary mixture produces lamellae perpendicular to the front at slow speeds and parallel to the front at fast speeds, with an isotropic limit as v -> infinity | Schmid & Volcani (1983): C. wailesii valve morphogenesis proceeds centrifugally from the pattern centre with radial costae branching toward the margin; reconstructed_in_script: Semi-implicit spectral Cahn-Hilliard solver with exact zero-mode mass conservation, extended with a spatially varying bulk term phi^3 - a(x) phi and a zero-mobility frozen mask with total-mass re-projection (L178-L243) | Radial quench front a(r,t) = tanh((R0 + v t - r)/w) with lagging solidification front R_s = R - lag lambda_c on a disc, conserved thermal noise, margin gradient-tensor anisotropy A, front Peclet number v/(lambda_c sigma_max), 5-speed ablation and 3-seed isotropic null (L346-L580) | Three-stage single-domain 512^2 quench with per-tier eps from lambda_c inversion at 12.5 nm/px, eroded parent-pore chambers with frozen walls, per-tier counts, nested multiplicities, nearest-neighbour pitches and equivalent diameters (L587-L724) | Pass 2 two-stage hierarchy, dispersion relation, eps sweep, SEM segmentation of 139 foramina / 74 cribrum pores, hexatic |psi_6| and 3-tier log-linear scaling (L124-L171, L244-L331, L730-L975); transfer_boundary: The costae model is validated against its own isotropic null and the sign of A, not against a specimen: the vendored SEM shows the valve face at three magnifications and no margin, so no empirical A or rib spacing exists in the package | Front speed, solidification lag (1.0 lambda_c), noise amplitude (0.005), front width (2.0) and R0 (8) were selected from ~24 exploratory runs to reach the radial regime; the stage durations (290, 160, 100 steps) and erosions (0, 3, 1 px) of the 3-stage model were tuned from 4 trial runs for nested-count visibility. None of these values is from the cited papers | Frozen-silica conservation is global (leaked spectral flux spread uniformly over all mobile pixels), not local; the 3-stage cribrella sit at the grid floor (d_3 = 3.4 px target, 3.7 px measured), so their pitch/diameter are resolution-biased upward | Costae (phi0 = 0 rib layer) and areolae (phi0 = -0.30 droplet layer) are separate simulations; the model does not produce both in one domain; does_not_claim: Quantitative agreement with measured C. wailesii costae spacing or bifurcation count, the exact Furukawa crossover speed, cribrum-per-foramen multiplicities of 7-19 (model gives 4.8 at 512^2), SDV chemistry, or online verification of the Furukawa (1992) and Schmid & Volcani (1983) DOIs." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2002-sumper-diatom-frustule-phase-sep.py:1297-1318 and 540-566 — measure_morphoeval() ignores --N/--seed/ --v-front/--N3/--nm-per-px, the C4 sweep uses a fixed 5-speed list, and the isotropic null uses the median-speed step count with only 3 seeds (sd 0.11 ~ mean). Honour the CLI in the measurement block, use the slow-speed step count for the null, and raise the null to >= 8 seeds so the self-test tolerance |A| < 0.35 (L1536) can be tightened.",
+            "remediation needed: 2002-sumper-diatom-frustule-phase-sep.py:1394-1412 and 1261 — the d_1/a_1 method string hard-codes '24.01 px, CV=0.133 ... 34.80 px, CV=0.075 ... n=139' and 'relative error=2.1%', the |psi_6| reference 0.75 (L1409) has no literature source, and the GIF title hard-codes '(139 foramina)'. Compute every number from `spec`, cite or remove the 0.75, and discuss the two-stage 2.04 vs 7.0 cribrum-per-foramen miss (L1424-L1432) in its note.",
+            "remediation needed: 2002-sumper-diatom-frustule-phase-sep.py:19-24 and datasets/diatom_frustule_phase_sep/paper_citations.bib:45-67 — the Furukawa (1992) and Schmid & Volcani (1983) DOIs were transcribed offline and not verified; verify them (and the 'Furukawa transition' regime assignment) when network access is available and clear the doi_verified_online flags.",
+            "remediation needed: 2002-sumper-diatom-frustule-phase-sep.py:228-238 and 489-496 — frozen-silica conservation is a global re-projection of leaked spectral flux onto all mobile pixels (across all chambers in the 3-stage run). Replace with a conservative finite-volume variable-mobility update (M = 0 on frozen pixels) so conservation is local, and report per-chamber drift instead of the eroded-mask diagnostic.",
+            "remediation needed: 2002-sumper-diatom-frustule-phase-sep.py:405-440 and 600-633 — the costae parameters (solidify_lag_lambda=1.0, noise_amp=0.005, front_width=2.0, R0=8, v_front=0.10) and the 3-stage stage durations (290, 160, 100 steps) and erosions (0, 3, 1 px) were hand-picked from exploratory runs to reach the radial regime / visible nesting; the docstrings state the mechanism but not the tuning. Flag each value as tuned in the docstring and the new JSON, and add a lag/noise sweep (or a 1D front-speed scan in v and lag) so the radial-concentric crossover is reported as a phase boundary rather than a single point.",
+            "remediation needed: 2002-sumper-diatom-frustule-phase-sep.py:534-535 and 1571 — radial_frame_coherence_margin / lab_frame_coherence_margin are returned but unused (meaningless for the lamellar rib layer), and the --self-test help still says '8-check'. Remove or gate the dead fields behind a droplet-regime check and update the help text; also animate the 3-stage 512^2 run (the growth GIF still shows only the Pass 2 two-stage 128^2 run).",
+            "remediation needed: 2002-sumper-diatom-frustule-phase-sep.py:600-713 — at 12.5 nm/px the cribrella are 3.4 px (grid floor; d_3 measured 3.7 px = 46.5 nm vs 42) and the domain holds only 12 foramina with 4.8 cribrum each (Sumper 7-19). Run a >= 1024^2 grid or <= 6 nm/px and a stage-2 duration/composition sweep, and add a resolution-convergence measurement for d_3 and a_3.",
+            "remediation needed: 2002-sumper-diatom-frustule-phase-sep.py:86-117 and datasets/diatom_frustule_phase_sep/centrifugal_front_three_stage_reference.json — the new reference table is neither in EXPECTED_SHA256 nor read by the script, so the Pass 3 parameters are traced only to source code. Pin it, load it in verify_and_load_reference(), and drive the costae/3-stage defaults and the self-test tolerances from it.",
+            "remediation needed: datasets/diatom_frustule_phase_sep/coscinodiscus_diatom_specimen.jpg and 2002-sumper-diatom-frustule-phase-sep.py:1319-1339 — no vendored specimen shows the C. wailesii valve margin, so the costae anisotropy A and the radial-minus- concentric contrast are referenced to the model's own isotropic null and the analytic 0. Vendor a SHA-256-pinned margin/costae SEM (e.g. Schmid & Volcani 1983 plates), measure rib spacing vs radius and the bifurcation count, and replace the model-null references with the specimen values." ;
+        pk:hasScore "0.89"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 Phase B primary assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0378-4371(92)90111-2>,
+            <https://doi.org/10.1021/la7022784>,
+            <https://doi.org/10.1063/1.1744102>,
+            <https://doi.org/10.1111/j.0022-3646.1983.00387.x>,
+            <https://doi.org/10.1126/science.1070026>,
+            <https://doi.org/10.1166/jnn.2006.174> .
+    <https://doi.org/10.1016/0378-4371(92)90111-2> dct:date "1992"^^xsd:gYear ;
+        dct:title "Phase separation by directional quenching and morphological transition" .
+    <https://doi.org/10.1021/la7022784> dct:date "2008"^^xsd:gYear ;
+        dct:title "Self-assembly of hierarchical nanostructures in diatom biosilica" .
+    <https://doi.org/10.1063/1.1744102> dct:date "1958"^^xsd:gYear ;
+        dct:title "Free energy of a nonuniform system. I. Interfacial free energy" .
+    <https://doi.org/10.1111/j.0022-3646.1983.00387.x> dct:date "1983"^^xsd:gYear ;
+        dct:title "Wall morphogenesis in Coscinodiscus wailesii Gran and Angst. I. Valve morphology and development of its architecture" .
+    <https://doi.org/10.1126/science.1070026> dct:date "2002"^^xsd:gYear ;
+        dct:title "A phase separation model for the nanopatterning of diatom biosilica" .
+    <https://doi.org/10.1166/jnn.2006.174> dct:date "2006"^^xsd:gYear ;
+        dct:title "Pore architecture of diatom frustules: potential nanostructured membranes for molecular and particle separations" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sumper (2002) & Lenoci-Camp (2008) hierarchical Cahn-Hilliard diatom biosilica phase separation (Pass 3: centrifugal precipitation front + 3-stage single-domain quench) — MorphoEval overall 89.0/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-21T00:00:04Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sumper-diatom-frustule-phase-sep-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/71>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-sumper-diatom-frustule-phase-sep> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

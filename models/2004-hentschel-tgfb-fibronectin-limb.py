@@ -108,7 +108,7 @@ from scipy.fft import dct, idct
 from scipy.signal import find_peaks
 from scipy.stats import pearsonr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "tgfb_fibronectin_limb"
 REF_JSON_PATH = DATASET_DIR / "tgfb_fibronectin_limb_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "chick_limb_chondrogenesis_specimen.jpg"

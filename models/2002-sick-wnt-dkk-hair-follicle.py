@@ -116,7 +116,7 @@ from scipy import ndimage as ndi
 from scipy.signal import find_peaks
 from scipy.spatial import Delaunay, cKDTree
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "wnt_dkk_hair_follicle"
 REF_JSON_PATH = DATASET_DIR / "wnt_dkk_hair_follicle_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "hair_follicle_placode_specimen.jpg"

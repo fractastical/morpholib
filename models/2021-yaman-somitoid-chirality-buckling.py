@@ -124,7 +124,7 @@ from scipy import ndimage as ndi
 from scipy import optimize, signal, stats
 from scipy.spatial import SphericalVoronoi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "somitoid_chirality_buckling"
 REFERENCE_JSON = DATASET_DIR / "somitoid_chirality_buckling_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "somitoid_rosette_specimen.jpg"

@@ -1,0 +1,331 @@
+# MorphoEval audit — Young et al. (1992) Nature & Jaya et al. (2016) Emiliania huxleyi V/R Calcite Coccolith Rosette & Interlocking Coccosphere, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `models/2022-coccolith-emiliania-calcite-rosette.py` (v3, 1954 lines) after the remediation
+# loop `morphoeval/runs/2026-10-19-emiliania-calcite-rosette-loop-pass3`, superseding
+# `2026-10-19-emiliania-calcite-rosette-audit-v2` (consensus 91.8).
+#   - Primary assessor: Claude Fable 5.1 (Phase B audit of the Phase A remediation; same working tree, commit 9987db7d)
+#   - Second assessor: Gemini 4 Argon (Phase A builder, rubric cross-check of the handoff evidence)
+#
+# What Pass 3 changed (both open v2 remediation items):
+#   1. Coccosphere Voronoi tiling -> nanoindentation contact: `build_coccosphere_voronoi_tiling` (scipy
+#      SphericalVoronoi, 42 suture edges = 3(F-2)), `evaluate_coccosphere_nanoindentation_contact` (reduced
+#      lumped-plate FE: one radial DOF per coccolith, Reissner shell + protoplast foundation + lap-joint suture
+#      shear springs, quasi-static load ramp 10 pN -> 400 uN with cascade-resolved SLIDE / FRACTURE / ARREST /
+#      EXPOSURE events) and `evaluate_contact_regime_map` (sigma_lock x t_head_ratio regime map). Interlocked
+#      Morph A: slide 13.2 uN -> apex fracture 55.1 uN -> arrested (sigma_neigh/sigma_f = 0.28) -> exposure 68.7 uN;
+#      truncated T-heads -> shedding at 6.6e-3 uN. Panels G/H and a new contact GIF.
+#   2. Golgi vesicle rim tension -> baseplate eccentricity: `baseplate_aspect_from_tension_anisotropy` (exact
+#      support-function law b/a = (2 + lambda)/(1 + 2 lambda)), `relax_vesicle_rim_contour` (area-conserving
+#      semi-implicit relaxation, 160 nodes) and `evaluate_vesicle_rim_tension_eccentricity` (lambda* = 1.6562
+#      inferred from the SEM b/a = 0.8478; relaxed b/a = 0.8461, ellipse RMS residual 0.20 % of a). Panel I.
+#   3. Lean: 2 new theorems (6 total, 0 sorry); 7 new measurements (16 total); self-test 8 -> 12 checks;
+#      `coccosphere_contact_vesicle_tension_reference.json` with per-constant provenance tags; `pass3_citations.bib`.
+#
+# Why the overall score goes DOWN from 91.8: this round was told to find the next layer of defects, and the
+# re-read against the current file exposes problems the v2 audit credited as strengths: the 12-taxon
+# "observed" distal lengths equal the formula to the rounding digit (circular, r = 1.0000), the SEM ellipse
+# semi-axes / centre / tilt are hand-annotated in the JSON rather than detected (so b/a, L_d and the new
+# lambda* all rest on one annotation), the 2.36x / 0.042 buckling constants and the 0.225 T-head slope are
+# prescribed or tuned, the vendored JSON governing equation (tanh) does not match the code (linear), and two
+# venue / DOI pairs are internally inconsistent. The Pass 3 mechanisms themselves are honest reduced models
+# whose constants are all tagged `model_assumption` and whose limits are stated in the code, README and
+# figure titles. Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale.
+# Line numbers refer to the files in the working tree at commit 9987db7d.
+
+audit:
+  id: 2026-10-19-emiliania-calcite-rosette-audit-v3
+  supersedes_audit_id: 2026-10-19-emiliania-calcite-rosette-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Pass 3 primary assessor, Phase B)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 3 builder / rubric cross-check)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/80
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 9987db7d
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `models/2022-coccolith-emiliania-calcite-rosette.py` (1954 lines; 12 self-test
+      checks, 2.7 s; default render 5.7 s producing the 3x3 PNG and two GIFs) superseding
+      `2026-10-19-emiliania-calcite-rosette-audit-v2`. The script was moved from the repository root into
+      `models/` by an upstream commit; the audit `script` and evidence paths use the current location.
+
+references:
+  young1992:
+    title: "Crystallographic control of biomineral morphology in coccoliths"
+    authors: "Young JR, Didymus JM, Bown PR, Prins B, Mann S"
+    venue: "Nature 356(6369):516-518 (1992)"
+    doi: 10.1038/356516a0
+  didymus1993:
+    title: "Construction of stage-specific models of coccolith biomineralization in Emiliania huxleyi"
+    authors: "Didymus JM, Young JR, Mann S"
+    venue: "Proceedings of the Royal Society of London B 252(1335):259-264 (1993)"
+    doi: 10.1098/rspb.1993.0073
+  jaya2016:
+    title: "Coccospheres confer mechanical protection: insights into the Emiliania huxleyi architectural design"
+    authors: "Jaya BN, Hoffmann R, Kirchlechner C, Dehm G, Scheu C, Langer G"
+    venue: "Nature Communications / Journal of Structural Biology 7:11904 (2016) — venue string internally inconsistent; kept as in v2, not verifiable offline"
+    doi: 10.1038/ncomms11904
+  walker2018:
+    title: "The requirement for calcification differs between ecologically important coccolithophore species"
+    authors: "Walker CE, Taylor AR, Langer G, Durak GM, Heath S, Probert I, Tyrrell T, Brownlee C, Wheeler GL"
+    venue: "Nature Communications / New Phytologist 9:1-12 (2018) — title is a New Phytologist paper; the Nat. Commun. DOI below is doubtful, kept as in v2, not verifiable offline"
+    doi: 10.1038/s41467-018-04168-9
+  reissner1946:
+    title: "Stresses and small displacements of shallow spherical shells. I"
+    authors: "Reissner E"
+    venue: "Journal of Mathematics and Physics 25:80-85 (1946) — DOI not verified offline"
+    doi: 10.1002/sapm194625180
+
+simulations:
+  - id: coccolith-emiliania-calcite-rosette
+    name: "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics"
+    organism: "Emiliania huxleyi (Morphotypes A, B, B/C, C, R, O) & Gephyrocapsa / Calcidiscus / Coccolithus (Haptophyta)"
+    script: models/2022-coccolith-emiliania-calcite-rosette.py
+    output: docs/media/emiliania_calcite_rosette_comparison.png
+    extra_outputs:
+      - docs/media/emiliania_calcite_rosette_growth.gif
+      - docs/media/emiliania_calcite_rosette_contact_indentation.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [young1992, didymus1993, jaya2016, walker2018, reissner1946]
+    supersedes_audit_id: 2026-10-19-emiliania-calcite-rosette-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Young et al. (1992): coccolith shield elements nucleate as alternating V- and R-units with mutually orthogonal calcite c-axis orientations on an organic baseplate ring; morphology follows from crystallographic control of {10-14} growth"
+        - "Didymus et al. (1993): stage-specific E. huxleyi coccolith growth from proto-coccolith ring to T-shaped hammer elements of the distal shield"
+        - "Jaya et al. (2016): E. huxleyi coccospheres confer mechanical protection; under nanoindentation individual coccoliths slide relative to each other and cracks are arrested at coccolith boundaries"
+        - "Walker et al. (2018): the requirement for calcification differs between coccolithophore species; reduced calcification under acidification / CAP perturbation"
+        - "Reissner (1946): point-load stiffness of a thin shallow spherical shell k = 4 E h^2 / (R sqrt(3 (1 - nu^2)))"
+      reconstructed_in_script:
+        - "3D V/R c-axis ring with exact orthogonality, T-shaped hammer-element rosette across morphotypes A/B/C/R and an acidification / CAP ablation control, 12-taxon L_d(N_seg) scaling table, spherical coccosphere Voronoi / Euler packing with a prescribed 2.36x buckling amplification, elliptical polar DoG spoke segmentation of the vendored SEM micrograph"
+        - "Pass 3: spherical-Voronoi suture network, reduced lumped-plate FE flat-punch nanoindentation with Coulomb + organic-interlock slide thresholds, plate bending fracture and cascade arrest tests, sigma_lock x overlap regime map; anisotropic vesicle rim tension law b/a = (2 + lambda)/(1 + 2 lambda) with an area-conserving contour relaxation and lambda* inferred from the SEM aspect ratio"
+      transfer_boundary:
+        - "The contact model is a lumped network (one radial DOF per coccolith), not a continuum 3D FEM with Hertzian punch contact; E_cell, p_turgor, mu, sigma_lock, sigma_f, alpha_p, phi_res are order-of-magnitude `model_assumption` constants and no number is quoted from Jaya et al. (2016); the v2 2.36x amplification is not reproduced (model protection ratio ~1e4, measuring shedding rather than buckling)"
+        - "lambda* = 1.656 is a calibration to the hand-annotated SEM ellipse (92 x 78 px), not an independent measurement of vesicle rim tension anisotropy; only the normal Laplace balance is imposed"
+        - "The 12-taxon 'observed' L_d column equals the formula prediction to the rounding digit, so r = 1.0000 is a self-consistency check, not a validation against measured taxa"
+      does_not_claim:
+        - "Continuum fracture mechanics of calcite plates, measured interlock shear strength, independent vesicle rim tension data, detection of the SEM ellipse from pixels (centre, semi-axes and tilt are annotations), or verification of the Jaya 2016 / Walker 2018 venue-DOI pairs and the Reissner 1946 DOI (offline round)"
+    summary: >-
+      Pass 3 closes both v2 remediation items with honest reduced models: a Voronoi suture-network
+      nanoindentation contact model that reproduces the Jaya et al. (2016) qualitative sequence (suture sliding
+      first, apex fracture arrested at the neighbours, punch-through exposure later) and a tension-anisotropy
+      law for the Golgi vesicle rim that yields the SEM baseplate aspect ratio at an inferred lambda*, both
+      with provenance-tagged constants, two new Lean theorems, seven new measurements and four new self-test
+      checks. The re-read, however, finds that several v2 strengths were over-credited: the 12-taxon scaling
+      validation is circular, the specimen aspect ratio and distal length are transcriptions of hand annotations
+      (only the spoke count is detected), the buckling amplification and T-head slope are prescribed or tuned,
+      the vendored governing equation (tanh) disagrees with the code (linear), the new JSON is not SHA-pinned,
+      the regime map ignores `--n-cocc`, and two venue/DOI pairs are inconsistent. Overall 79.3 (down from 91.8).
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: >-
+          The V/R ring, T-head rosette and Euler packing are implemented as before, and the two Pass 3
+          mechanisms are mechanically coherent: the contact model couples a Reissner shell stiffness, a
+          protoplast foundation and lap-joint suture springs on the actual spherical Voronoi edges, resolves
+          slide / fracture / arrest / exposure cascades, and reproduces the Jaya et al. (2016) qualitative order
+          (sliding at 13.2 uN before apex fracture at 55.1 uN = sigma_f h^2 / alpha_p, arrested with
+          sigma_neigh/sigma_f = 0.28); the vesicle law b/a = (2 + lambda)/(1 + 2 lambda) is the exact
+          support-function solution of tau(psi) kappa(psi) = p and the relaxation reproduces it to 0.0034 over
+          lambda in [1, 2.5]. Deductions: the coccosphere buckling load 0.042 E h^2 (1 + 0.012 (N - 12)) and the
+          2.36x amplification remain prescribed, unsourced constants that the new contact model does not
+          reproduce (-6); the T-head slope 0.225 is tuned so that Omega = 4.2 gives the JSON's 1.72 and is linear
+          whereas the vendored governing equation uses tanh(max(Omega - 1, 0)) (-4); the contact model is lumped
+          (one radial DOF per plate, no Hertzian contact, no plate bending field) with all seven constants
+          `model_assumption` (-4); the vesicle model imposes only the normal Laplace balance, with tangential
+          equilibrium assumed to be supplied by anchored cytoskeleton, and lambda* is a fit (-3); the 44.61 deg
+          rhombohedral angle is stated but unused and the 22.5 / 1.05 volume ratios are hard-coded (-3).
+        evidence:
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [529, 575], note: "build_coccosphere_voronoi_tiling: scipy SphericalVoronoi on Fibonacci generators, tile areas, 42 great-circle suture edges = 3(F-2), apex tile", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [578, 806], note: "evaluate_coccosphere_nanoindentation_contact: lumped-plate FE (K = diag(k_cell + phi_lock k_Reissner A_i/A_tot) + Laplacian(k_ij)), Coulomb + sigma_lock slide threshold, alpha_p P/h^2 fracture, arrest and exposure tests, cascade-resolved event list", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [860, 989], note: "Vesicle rim: exact law b/a = (2+lambda)/(1+2lambda), area-conserving semi-implicit contour relaxation, lambda* inferred from SEM b/a and sweep lambda in [1, 2.5]", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [470, 478], note: "Prescribed 0.042 E h^2 (1 + 0.012 (N-12)) buckling load and interlock_amplification = 2.36 with no source; not reproduced by the contact model", supports: false}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [264, 264], note: "t_head_ratio = 1 + 0.225 c_CAP max(Omega-1, 0): linear slope tuned to give 1.72 at Omega = 4.2; JSON governing equation (line 75) uses tanh", supports: false}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [200, 202], note: "Rhombohedral {10-14} angle 44.61 deg stated but unused; R/V volume ratios 22.5 / 1.05 hard-coded without source", supports: false}
+          - {file: morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean, lines: [218, 314], note: "Pass 3 theorems: suture_capacity_ratio_selects_sliding_vs_fracture (zero capacity at d_ov = 0, monotone in d_ov, Pi-selector) and vesicle_rim_tension_anisotropy_sets_baseplate_aspect (circle at lambda = 1, b < a for lambda > 1, strictly decreasing, b/a > 1/2, 0.847 < b/a(1.656) < 0.848); lean exits 0, 0 sorry", supports: true}
+      specimen-match:
+        value: 72
+        rationale: >-
+          The 3x3 figure shows the SEM overlay (Panel F) and the new Panel I places the relaxed vesicle rim
+          over the SEM ellipse and the isotropic circle; the relaxed contour deviates from the best-fit ellipse
+          by 0.20 % of a, below the 1.09 % one-pixel precision of the 92 x 78 px annotation, and the contact GIF
+          renders the indentation cascade on the Voronoi sphere. Deductions: the ellipse centre, semi-axes, tilt
+          and the pixel calibration are hand-annotated in the reference JSON and read by the segmentation
+          function rather than detected, so the specimen b/a = 0.8478, e = 0.5303 and L_d = 3.50 um are
+          transcriptions, and the Pass 3 lambda* is calibrated to the same annotation — only the N_seg = 32 DoG
+          spoke count is measured from pixels (-14); the coccosphere panels compare with no micrograph of an
+          indented or fractured coccosphere, so the slide-then-arrest sequence is matched to Jaya et al. (2016)
+          only qualitatively (-8); the comparison PNG is gitignored (`*.png`) so the figure judged here is the
+          regenerated one, not a committed artifact (-3); the growth GIF is unchanged from Pass 2 (-3).
+        evidence:
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [994, 1078], note: "segment_emiliania_coccolith_specimen: ellipse centre / semi-axes (L1013) / tilt / calibration come from JSON annotations; only the angular DoG spoke peaks are detected", supports: false}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [956, 989], note: "evaluate_vesicle_rim_tension_eccentricity: lambda* inferred from reference_b_over_a (the annotation), relaxed b/a = 0.8461 vs 0.8478, ellipse RMS residual 0.20 % of a vs 1.09 % pixel precision", supports: true}
+          - {file: docs/media/emiliania_calcite_rosette_comparison.png, lines: [0, 0], note: "3x3 synthesis: Panels A-F as Pass 2 (SEM overlay in F), G contact F-u curves and events, H sigma_lock x overlap regime map, I relaxed rim vs SEM ellipse vs isotropic circle with b/a(lambda) inset", supports: true}
+          - {file: docs/media/emiliania_calcite_rosette_contact_indentation.gif, lines: [0, 0], note: "11-frame indentation cascade on the Voronoi coccosphere (interlocked vs truncated T-heads)", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1476, 1539], note: "render_growth_gif unchanged from Pass 2; no Pass 3 content in the growth GIF", supports: false}
+          - {file: docs/media/emiliania_calcite_rosette_growth.gif, lines: [0, 0], note: "2-panel rosette growth GIF regenerated by the v3 script; content identical in design to Pass 2 (no vesicle / contact frames)", supports: false}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          Pass 3 adds genuine sweeps whose outcomes change qualitatively: the sigma_lock in {5..400 MPa} x
+          t_head_ratio in [1, 2] regime map moves through shedding -> interlock sliding -> sliding-then-arrested
+          fracture, with fracture-first only at sigma_lock >= 200 MPa and crack propagation only at 400 MPa and
+          ratio 2.0; the F_expose vs overlap sweep is monotone; the vesicle law is swept over lambda in [1, 2.5]
+          and inverted on the 12-taxon b/a column (lambda 1.08-1.69). The Pass 2 morphotype / acidification
+          regimes, Omega and N_cocc sweeps and the seven CLI overrides remain. Deductions: evaluate_contact_regime_map
+          always builds the N_cocc = 16 tiling and ignores `--n-cocc` (only Panel G and the measurements honour
+          the override) (-6); sigma_lock, E_cell, p_turgor, lambda and the load ramp have no CLI exposure (-5);
+          the t_head_ratio axis of the regime map is entered directly rather than driven through Omega / c_CAP,
+          so the CAP-acidification link is not swept end to end (-3); Panel D's 2.36x N_cocc sweep still reports
+          a prescribed constant (-2).
+        evidence:
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [809, 855], note: "evaluate_contact_regime_map: 7 x 11 sigma_lock x t_head_ratio regime codes and F_expose; uses build_coccosphere_voronoi_tiling() with default N_cocc = 16 regardless of --n-cocc", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1917, 1924], note: "CLI: --self-test, --skip-gif, --n-seg, --w0, --l-spoke, --omega, --n-cocc, --seed; no sigma_lock / lambda / E_cell overrides", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [347, 372], note: "Five morphotype / acidification regimes retained from Pass 2", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [818, 818], note: "til = build_coccosphere_voronoi_tiling() — regime map not wired to the n_cocc override", supports: false}
+      morphometric-validation:
+        value: 74
+        rationale: >-
+          measure_morphoeval() now returns 16 measurements with reference values, including seven new ones:
+          Voronoi edge count 42 vs 3(F-2), arrest ratio 0.28 (< 1), capacity ratio Pi = 0.286 (< 1, sliding
+          first), relaxed b/a 0.8461 vs 0.8478, lambda* 1.6562 vs the naive (a/b)^3 estimate 1.6411, ellipse RMS
+          residual 0.198 % vs 1.087 % pixel precision, and the protection ratio ~1.04e4 vs 2.36 reported as a
+          negative control. Deductions: the headline 12-taxon correlation r = 1.0000 / RMSE 0.004 um compares an
+          "observed" column that equals the formula to the rounding digit — a circular validation that v2 credited
+          (-10); the arrest and capacity references (1.0) are decision thresholds and the 2.36 reference is the
+          unsourced v2 constant, so three of the seven new measurements have no literature anchor (-6); the
+          specimen b/a and L_d measurements are transcriptions of annotations, and the vesicle b/a comparison is
+          against the same annotation (-6); no measured nanoindentation force, stiffness or fracture load from
+          Jaya et al. (2016) is compared because the paper could not be re-read offline (-4).
+        evidence:
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1613, 1795], note: "measure_morphoeval: 16 reference-anchored measurements (7 new Pass 3 entries at L1630-1701)", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1661, 1669], note: "Protection-ratio measurement anchored to the unsourced v2 2.36 constant; explicitly reported as not reproduced (~1e4, dominated by assumed E_cell)", supports: false}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [374, 426], note: "evaluate_cross_taxa_scaling: r = 1.0000 against l_d_obs_um values that equal l_d_pred_um to the rounding digit for all 12 taxa (circular)", supports: false}
+          - {file: datasets/emiliania_calcite_rosette/emiliania_calcite_rosette_reference.json, lines: [96, 107], note: "cross_taxa_coccolithophore_table: l_d_obs_um = round(l_d_pred_um, 2) for every row", supports: false}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1641, 1659], note: "Arrest ratio and Pi measurements: reference_value 1.0 is a threshold, stated as such in reference_source", supports: true}
+      source-traceability:
+        value: 82
+        rationale: >-
+          The dataset folder vendors the SHA-256-pinned specimen, reference JSON, scout manifest and bib verified
+          fail-closed at runtime; the new `coccosphere_contact_vesicle_tension_reference.json` tags every constant
+          `classical_formula` or `model_assumption` and states that no value is quoted from Jaya et al. (2016);
+          `pass3_citations.bib` adds Reissner (1946) and the dataset README documents both Pass 3 extensions and
+          their limits. Deductions: the new JSON is not SHA-256 pinned in EXPECTED_SHA256 / verify_dataset_integrity,
+          so Pass 3 constants are not integrity-checked (-5); Jaya et al. (2016) is given the venue "Nat. Commun. /
+          J. Struct. Biol." and Walker et al. (2018) "Nat. Commun. / New Phytol." with a Nat. Commun. DOI although
+          the title is a New Phytologist paper — both pairs are internally inconsistent and could not be resolved
+          offline (-6); the seed-paper DOI differs between the campaign record (10.1038/356145a0) and the script /
+          bib (10.1038/356516a0, consistent with pp. 516-518) — unresolved offline (-3); the Reissner 1946 DOI is
+          unverified (-2); the 12-taxon table carries no per-row citation for N_seg, w_0 or L_d (-2).
+        evidence:
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [120, 146], note: "verify_dataset_integrity: SHA-256 of specimen JPG, scout manifest and paper_citations.bib checked against the reference JSON; the Pass 3 JSON is not in the pinned set", supports: false}
+          - {file: datasets/emiliania_calcite_rosette/coccosphere_contact_vesicle_tension_reference.json, lines: [32, 60], note: "Contact-model parameters with per-constant provenance tags (all model_assumption) and the statement that nothing is quoted from Jaya et al. 2016", supports: true}
+          - {file: datasets/emiliania_calcite_rosette/README.md, lines: [12, 17], note: "Pass 3 additions documented with provenance caveats and the lambda* = 1.656 inference stated as not independently measured", supports: true}
+          - {file: datasets/emiliania_calcite_rosette/pass3_citations.bib, lines: [1, 14], note: "Reissner (1946) entry; DOI not verified offline", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [31, 46], note: "Header citations: Jaya 2016 venue 'Nat. Commun. / J. Struct. Biol.', Walker 2018 'Nat. Commun. / New Phytol.' with DOI 10.1038/s41467-018-04168-9 — inconsistent venue/DOI pairs", supports: false}
+      code-traceability:
+        value: 85
+        rationale: >-
+          The module header lists the Pass 3 sections and their limits, the contact-model docstring maps every
+          stiffness and threshold to its formula (k_cell, k_mem via Reissner 1946, k_ij lap joint, N_ij hoop
+          force, alpha_p P/h^2 fracture), the vesicle functions cite the support-function derivation, the Panel E
+          title now says "prescribed", and the new Lean theorems are named in the measurement sources. Deductions:
+          the vendored JSON governing equation for the T-head uses tanh while the code is linear in
+          max(Omega - 1, 0) — a formula mismatch between the stated source and the implementation (-5); the
+          shaft-width factor 0.62 w_0, the morphotype-R factors 1.28 / 1.45, the 0.28 angular-pitch factor, the
+          acidification spoke factor 0.55 + 0.35 Omega and the interlock threshold 1.35 are uncited (-5); the
+          0.042 / 0.012 / 2.36 buckling constants are labelled prescribed but not traced to any derivation (-3);
+          the 44.61 deg constant is documented but dead (-2).
+        evidence:
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1, 58], note: "v3 header: Pass 3 sections 4b/4c described with their limits; five primary sources with DOIs", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [596, 620], note: "Contact-model docstring maps k_cell, k_mem (Reissner 1946), k_ij lap joint, N_ij hoop force, slide and fracture thresholds to formulas", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [264, 298], note: "Uncited constants: 0.225 slope (L264), 0.55 + 0.35 Omega (L267), 0.62 and 1.28 (L272), interlock threshold 1.35 (L278), 0.28 and 1.45 (L298)", supports: false}
+          - {file: datasets/emiliania_calcite_rosette/emiliania_calcite_rosette_reference.json, lines: [75, 75], note: "t_head_hammer_width governing equation uses tanh(max(Omega-1, 0)) whereas the code uses a linear slope", supports: false}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1287, 1287], note: "Panel E title states the 2.36x amplification is prescribed", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          `--self-test` passes 12 checks in 2.7 s (8 Pass 2 + Voronoi/Euler consistency for F = 12/16/20, contact
+          regime ordering / arrest / F_expose monotonicity / determinism, vesicle law round-trip / lambda = 1 circle
+          / sim-vs-law / sub-pixel ellipticity / lambda* parity, Pass 3 JSON parity); default render is 5.7 s and
+          deterministic (seed 2022); `lean` exits 0 on the 6-theorem file; the dataset README and the math-KG YAML
+          are updated. Deductions: the new Pass 3 JSON is not SHA-pinned so a silent edit of its constants would
+          not fail the integrity check (-4); the comparison PNG is gitignored, so the primary artifact is not
+          committed and byte-identity across machines is not pinned (-3); the growth GIF is unchanged while the
+          Pass 3 content lives only in a second GIF (-2); no requirements lock pins the numpy / scipy versions
+          used here (-1).
+        evidence:
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1797, 1912], note: "self_test(): 12 checks including Voronoi/Euler consistency, contact regime ordering, arrest, F_expose monotone, determinism, vesicle law round-trip and Pass 3 JSON parity", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1542, 1608], note: "render_contact_indentation_gif: 11-frame deterministic contact GIF", supports: true}
+          - {file: models/2022-coccolith-emiliania-calcite-rosette.py, lines: [1915, 1954], note: "main(): CLI wiring, --skip-gif, deterministic seed default 2022", supports: true}
+          - {file: morphoeval/math_kg_loops/coccolith-emiliania-calcite-rosette.yaml, lines: [105, 124], note: "Equations 5-6 registered with single-range code_locus pins to the Pass 3 functions", supports: true}
+    remediation:
+    - >-
+      models/2022-coccolith-emiliania-calcite-rosette.py:470-478 and 1287 — the coccosphere buckling load
+      0.042 E h^2 (1 + 0.012 (N - 12)) and interlock_amplification = 2.36 are prescribed constants with no source,
+      and the Pass 3 contact model yields a protection ratio ~1e4 for a different quantity (shedding, not
+      buckling). Either derive the buckling load from the Reissner / Zoelly shell formula already used in the
+      contact model and compute the interlock amplification from the suture stiffness, or remove the 2.36x claim
+      from Panels D/E and measurement #4.
+    - >-
+      models/2022-coccolith-emiliania-calcite-rosette.py:374-426 with
+      datasets/emiliania_calcite_rosette/emiliania_calcite_rosette_reference.json:96-107 — l_d_obs_um equals
+      round(l_d_pred_um, 2) for all 12 taxa, so r = 1.0000 / RMSE 0.004 um is circular. Replace the observed column
+      with per-taxon literature measurements (with citations) or relabel Panel C and measurement #8 as a
+      self-consistency check and drop the correlation from the validation set.
+    - >-
+      models/2022-coccolith-emiliania-calcite-rosette.py:994-1078 (L1013) — the SEM ellipse centre, semi-axes
+      (92 x 78 px), tilt and calibration are JSON annotations; b/a = 0.8478, L_d = 3.50 um and the Pass 3 lambda*
+      all rest on them. Fit the ellipse from pixels (e.g. edge points of the distal shield rim, least-squares
+      conic) and report the fitted vs annotated values with a residual.
+    - >-
+      models/2022-coccolith-emiliania-calcite-rosette.py:264 vs
+      datasets/emiliania_calcite_rosette/emiliania_calcite_rosette_reference.json:75 — the code's linear
+      t_head_ratio = 1 + 0.225 c_CAP max(Omega - 1, 0) (slope tuned to give 1.72 at Omega = 4.2) does not match
+      the vendored governing equation tanh(max(Omega - 1, 0)). Make the JSON and the code agree and derive or cite
+      the slope / saturation.
+    - >-
+      models/2022-coccolith-emiliania-calcite-rosette.py:120-146 — the Pass 3 JSON
+      coccosphere_contact_vesicle_tension_reference.json is loaded (L522-526) but not SHA-256 pinned in
+      EXPECTED_SHA256 / verify_dataset_integrity. Add it to the pinned set and to the reference-JSON specimen
+      metadata so the Pass 3 constants are integrity-checked.
+    - >-
+      models/2022-coccolith-emiliania-calcite-rosette.py:818 — evaluate_contact_regime_map builds the default
+      N_cocc = 16 tiling and ignores the --n-cocc override that Panel G and the measurements honour; thread n_cocc
+      through, and expose sigma_lock, E_cell, p_turgor and lambda as CLI overrides (L1917-1924).
+    - >-
+      models/2022-coccolith-emiliania-calcite-rosette.py:31-46 and datasets/emiliania_calcite_rosette/paper_citations.bib —
+      Jaya et al. (2016) venue "Nat. Commun. / J. Struct. Biol." and Walker et al. (2018) "Nat. Commun. / New
+      Phytol." with DOI 10.1038/s41467-018-04168-9 are internally inconsistent (the Walker title is a New
+      Phytologist paper); the seed-paper DOI is 10.1038/356145a0 in the campaign record vs 10.1038/356516a0 here.
+      Resolve all three online in Pass 4 and update header, bib and audit references.
+    - >-
+      models/2022-coccolith-emiliania-calcite-rosette.py:578-806 — the contact model is a lumped network (one
+      radial DOF per coccolith) with seven order-of-magnitude constants; a Pass 4 step toward the v2 item is a
+      per-coccolith Kirchhoff plate bending field (or at least a Hertzian punch contact on the apex tile) and at
+      least one force / stiffness anchor read from Jaya et al. (2016) once the paper can be accessed.
+    - >-
+      models/2022-coccolith-emiliania-calcite-rosette.py:1476-1539 — render_growth_gif is unchanged from Pass 2;
+      add the vesicle rim relaxation (lambda from 1 to lambda*) as a third GIF panel or frames so the Pass 3
+      eccentricity mechanism is animated alongside the rosette growth.

@@ -1,0 +1,116 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-cartwright-nacre-screw-dislocation-spirals> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-cartwright-nacre-screw-dislocation-spirals-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-cartwright-nacre-screw-dislocation-spirals-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Cartwright & Checa (2007), Cartwright et al. (2009) & BCF (1951) nacre screw-dislocation spirals, Frank-Read target loops, chitin pore mineral-bridge columnar vs sheet transition, 3D cholesteric chitin precursor coupling and brick-and-mortar tablet-sliding fracture — Model fidelity to source: 89/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The Pass 2 solvers are unchanged and still match Cartwright & Checa (2007) / BCF (1951) as formulated: Gibbs-Thomson step velocity, multi-dislocation eikonal step flow, Frank-Read dipole clearance, mineral-bridge columnar vs sheet stacking and Voronoi coalescence. Pass 3 adds a correct de Gennes cholesteric construction (n = (cos phi, sin phi, 0), phi = (pi/h_0)(z - u), half-pitch = h_0, n = -n so S = cos 2 phi) in which the BCF phase enters as the layer displacement u, so membranes are helicoids and the Burgers vector equals the net screw charge (+5 vs a template-free v2), and a tension-shear-chain / Schmid-slip / waviness-hardening / Griffith-cap fracture model that reproduces the Jackson, Wang and Gao orders of magnitude (+4). Deductions: the cholesteric coupling is kinematic — no Frank free-energy, no pitch selection, no director dynamics — so it is a template imposed by the BCF phase rather than the self-assembly Cartwright et al. (2009) describe, and the function's own docstring says so (-5); the terrace pitch returned to the ledger is 0.15 raw + 0.85 analytic, so the solver's pitch is never actually tested against theory (-3); the Law 3 stacking margin is a hard-coded literal (42 - 80*2, 78 - 36*1) rather than computed from the simulated fields (-3); tablets are elastic-brittle with no intra-tablet crystal plasticity and sigma_f = Phi sigma_crit / 2 hits 170 MPa by the flaw = h/2 convention (-3); `pitch_tower`, `tower_spacing`, `spacing` constants are unsourced (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "models/2019-cartwright-nacre-screw-dislocation-spirals.py L435–L451: _measure_radial_terrace_pitch returns 0.15 * raw_pitch + 0.85 * theo_pitch — the reported 'measured' pitch is 85 % the analytic value <https://github.com/fractastical/morpholib/blob/9987db7d/models/2019-cartwright-nacre-screw-dislocation-spirals.py#L435-L451>",
+            "models/2019-cartwright-nacre-screw-dislocation-spirals.py L521–L529: Docstring states the coupling is a kinematic liquid-crystal template, NOT a Frank free-energy minimisation; q / period / Burgers are consistency checks of the construction <https://github.com/fractastical/morpholib/blob/9987db7d/models/2019-cartwright-nacre-screw-dislocation-spirals.py#L521-L529>",
+            "models/2019-cartwright-nacre-screw-dislocation-spirals.py L719–L735: stacking_margin = 42 - 80 * 2 and 78 - 36 * 1 are literals, not computed from the simulated mineral-bridge / terrace fields <https://github.com/fractastical/morpholib/blob/9987db7d/models/2019-cartwright-nacre-screw-dislocation-spirals.py#L719-L735>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-model-fidelity-3> ;
+        pk:hasScore "0.89"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "models/2019-cartwright-nacre-screw-dislocation-spirals.py L480–L611" ;
+        dct:description "reconstruct_continuous_bcf_phase (exact Phi_2D from floor/angle) and simulate_cholesteric_chitin_lamellar_3d: helicoidal director, S = cos 2 phi, aragonite occupancy, finite-difference twist rate, z-spectrum period, loop-integral Burgers vector" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2019-cartwright-nacre-screw-dislocation-spirals.py#L480-L611> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "models/2019-cartwright-nacre-screw-dislocation-spirals.py L995–L1110" ;
+        dct:description "simulate_tablet_sliding_fracture: TSC elastic branch, Schmid yield sigma_y = Phi rho tau_p / 2, waviness hardening H = E_n tan^2 psi / t_m, Griffith cap, three failure-mode branches (L1037-L1046), Gamma collapse to Gamma_m on brittle fracture (L1073-L1077)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2019-cartwright-nacre-screw-dislocation-spirals.py#L995-L1110> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cartwright-nacre-screw-dislocation-spirals-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean L118–L201" ;
+        dct:description "Theorems cholesteric_half_pitch_screw_dislocation_coupling (P = 2 h_0, (+1,-1) zero Burgers, (+1,+1) b = P, 2 pi v_z strictly increasing in h_0) and tsc_tablet_sliding_fracture_toughness (sigma_y < sigma_f ductile at 20 MPa, yield-before-fracture iff tau_p <= 22, Gamma monotone and inside Jackson range); 5 theorems, 0 sorry, lean exit 0" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/morphoeval/lean/loops/Loop_078_nacre_screw_dislocation_spirals.lean#L118-L201> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 remediation-round primary assessor, slot-078 Phase B)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/78> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/b97416>,
+            <https://doi.org/10.1016/S0006-3495(00)76426-5>,
+            <https://doi.org/10.1016/j.jmps.2004.03.006>,
+            <https://doi.org/10.1016/j.jmps.2006.07.007>,
+            <https://doi.org/10.1073/pnas.0631609100>,
+            <https://doi.org/10.1073/pnas.0900867106>,
+            <https://doi.org/10.1098/rsif.2006.0188>,
+            <https://doi.org/10.1098/rspb.1977.0050>,
+            <https://doi.org/10.1098/rspb.1988.0056>,
+            <https://doi.org/10.1098/rsta.1951.0006>,
+            <https://doi.org/10.1098/rsta.2011.0600>,
+            <https://doi.org/10.1557/JMR.2001.0340>,
+            <https://global.oup.com/academic/product/the-physics-of-liquid-crystals-9780198517856> .
+    <https://doi.org/10.1007/b97416> dct:date "2003"^^xsd:gYear ;
+        dct:title "Soft Matter Physics: An Introduction" .
+    <https://doi.org/10.1016/S0006-3495(00)76426-5> dct:date "2000"^^xsd:gYear ;
+        dct:title "Mineralized collagen fibrils: a mechanical model with a staggered arrangement of mineral particles" .
+    <https://doi.org/10.1016/j.jmps.2004.03.006> dct:date "2004"^^xsd:gYear ;
+        dct:title "Mechanical properties of nanostructure of biological materials" .
+    <https://doi.org/10.1016/j.jmps.2006.07.007> dct:date "2007"^^xsd:gYear ;
+        dct:title "On the mechanics of mother-of-pearl: a key feature in the material hierarchical structure" .
+    <https://doi.org/10.1073/pnas.0631609100> dct:date "2003"^^xsd:gYear ;
+        dct:title "Materials become insensitive to flaws at nanoscale: lessons from nature" .
+    <https://doi.org/10.1073/pnas.0900867106> dct:date "2009"^^xsd:gYear ;
+        dct:title "Spiral and target patterns in bivalve nacre" .
+    <https://doi.org/10.1098/rsif.2006.0188> dct:date "2007"^^xsd:gYear ;
+        dct:title "The dynamics of nacre self-assembly" .
+    <https://doi.org/10.1098/rspb.1977.0050> dct:date "1977"^^xsd:gYear ;
+        dct:title "Mechanical properties of mother of pearl in tension" .
+    <https://doi.org/10.1098/rspb.1988.0056> dct:date "1988"^^xsd:gYear ;
+        dct:title "The mechanical design of nacre" .
+    <https://doi.org/10.1098/rsta.1951.0006> dct:date "1951"^^xsd:gYear ;
+        dct:title "The growth of crystals and the equilibrium structure of their surfaces" .
+    <https://doi.org/10.1098/rsta.2011.0600> dct:date "1969"^^xsd:gYear ;
+        dct:title "Crystal growth as an excitable medium" .
+    <https://doi.org/10.1557/JMR.2001.0340> dct:date "2001"^^xsd:gYear ;
+        dct:title "Deformation mechanisms in nacre" .
+    <https://global.oup.com/academic/product/the-physics-of-liquid-crystals-9780198517856> dct:date "1993"^^xsd:gYear ;
+        dct:title "The Physics of Liquid Crystals (2nd ed.)" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Cartwright & Checa (2007), Cartwright et al. (2009) & BCF (1951) nacre screw-dislocation spirals, Frank-Read target loops, chitin pore mineral-bridge columnar vs sheet transition, 3D cholesteric chitin precursor coupling and brick-and-mortar tablet-sliding fracture — Model fidelity to source 89/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-21T00:00:09Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-cartwright-nacre-screw-dislocation-spirals-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/78> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -103,7 +103,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy.spatial import ConvexHull, Delaunay, Voronoi, cKDTree
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "avian_feather_bud_hexagonal"
 REF_JSON_PATH = DATASET_DIR / "avian_feather_bud_hexagonal_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "chick_feather_bud_hexagonal_specimen.jpg"

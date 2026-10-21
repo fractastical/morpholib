@@ -1,9 +1,27 @@
 #!/usr/bin/env python3
 """
-2002-sumper-diatom-frustule-phase-sep.py — Pass 2 (v2 Remediated)
+2002-sumper-diatom-frustule-phase-sep.py — Pass 3 (v3 Remediated)
 =============================================================================
 Hierarchical Cahn-Hilliard Phase-Separation Model of Diatom Frustule Biosilica
 Nanopatterning in *Coscinodiscus wailesii* (Slot 071).
+
+Pass 3 additions (closing the Pass 2 audit remediation items):
+  R1. `simulate_radial_quench_costae` — the 2D Cahn-Hilliard equation coupled to a
+      radially advancing (centrifugal) quench + lagging silica-precipitation front,
+          a(r,t) = tanh((R0 + v t - r)/w),   frozen (zero-mobility) silica for r < R(t) - lag,
+      i.e. Furukawa's (1992) directional quench in polar geometry. Emergent result: slow
+      fronts give RADIAL bifurcating silica lamellae (costae striation), fast fronts give
+      concentric (front-parallel) lamellae, v -> inf recovers the isotropic quench.
+      `run_front_velocity_sweep` is the 5-point ablation + isotropic null.
+  R2. `simulate_three_stage_hierarchy` — explicit 3-stage 512x512 single-domain quench at
+      12.5 nm/px (foramen -> cribrum -> cribrella) with frozen-wall chamber confinement,
+      compared against Sumper's tier table (d_2, d_3, a_2/a_3, cribrella per cribrum pore).
+  5. Furukawa H (1992). "Phase separation by directional quenching and morphological
+     transition." Physica A 180(1-2):128-155 (doi:10.1016/0378-4371(92)90111-2).
+  6. Schmid A-MM, Volcani BE (1983). "Wall morphogenesis in Coscinodiscus wailesii Gran
+     and Angst. I. Valve morphology and development of its architecture."
+     J. Phycol. 19(4):387-402 (doi:10.1111/j.0022-3646.1983.00387.x).
+     (Refs 5-6 DOIs transcribed offline; not re-verified online in Pass 3.)
 
 Primary Literature & Mathematical Mapping:
   1. Sumper M (2002). "A phase separation model for the nanopatterning of diatom
@@ -38,6 +56,8 @@ Formal Lean 4 Proofs (0 sorrys):
     * `MathOfBiology.Loop_071.cahn_hilliard_mass_conservation_zero_mode`
     * `MathOfBiology.Loop_071.cahn_hilliard_spinodal_band_selection`
     * `MathOfBiology.Loop_071.sumper_2002_hierarchical_hex_packing`
+    * `MathOfBiology.Loop_071.directional_quench_stable_ahead_of_front`  (Pass 3)
+    * `MathOfBiology.Loop_071.frozen_front_monotone_irreversible`         (Pass 3)
 """
 
 from __future__ import annotations
@@ -59,12 +79,13 @@ from scipy import ndimage as ndi
 from scipy import stats
 from scipy.spatial import cKDTree
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "diatom_frustule_phase_sep"
 REF_JSON_PATH = DATASET_DIR / "diatom_frustule_phase_sep_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "coscinodiscus_diatom_specimen.jpg"
 COMPARISON_PNG = ROOT / "docs" / "media" / "diatom_frustule_phase_sep_comparison.png"
 GROWTH_GIF = ROOT / "docs" / "media" / "diatom_frustule_phase_sep_growth.gif"
+COSTAE_GIF = ROOT / "docs" / "media" / "diatom_frustule_phase_sep_radial_costae.gif"
 
 EXPECTED_SHA256: dict[Path, str] = {
     SPECIMEN_JPG_PATH: "47aca39b720b67b1b46754c89f679425db1012e92131277a3d09b1562274a1ad",
@@ -164,16 +185,34 @@ def simulate_cahn_hilliard_2d(
     noise_amp: float = 0.08,
     seed: int = 2002,
     record_every: int = 0,
+    a_field: np.ndarray | None = None,
+    frozen_mask: np.ndarray | None = None,
+    frozen_value: float = -1.0,
 ) -> tuple[np.ndarray, list[np.ndarray]]:
     """Semi-implicit Fourier pseudospectral solver for the 2D periodic fourth-order
     Cahn-Hilliard equation:
-        d(phi)/dt = M * laplacian(phi^3 - phi - eps^2 * laplacian(phi))
+        d(phi)/dt = M * laplacian(phi^3 - a(x) * phi - eps^2 * laplacian(phi))
     Uses unconditional biharmonic stabilization `(1 + dt * M * eps^2 * k^4)` in
     Fourier space and enforces exact zero-mode conservation `hat(phi)(0,0) = N^2 * phi0`.
+
+    Pass 3 extensions (both default to the Pass 2 behaviour bitwise when unset):
+      * `a_field(x)`: spatially varying quench field (Furukawa 1992 directional-quench
+        form of the bulk term). `a = +1` is the unstable double well (inside the
+        spinodal); `a = -1` is a single-well stable mixture (no demixing).
+      * `frozen_mask`: solidified-silica pixels held at `frozen_value` (zero mobility,
+        wetting boundary for the mobile chambers). Any flux the periodic spectral
+        update leaks across the frozen boundary is re-projected uniformly onto the
+        mobile pixels so that the total order parameter is conserved exactly.
     """
     rng = np.random.default_rng(seed)
     phi = phi0 + noise_amp * rng.standard_normal((N, N))
     phi = phi - np.mean(phi) + phi0
+    mobile = None
+    if frozen_mask is not None:
+        phi[frozen_mask] = frozen_value
+        mobile = ~frozen_mask
+        n_mobile = int(np.sum(mobile))
+        mass0 = float(np.sum(phi))
 
     kx = 2.0 * np.pi * np.fft.fftfreq(N, d=1.0)
     ky = 2.0 * np.pi * np.fft.fftfreq(N, d=1.0)
@@ -185,11 +224,18 @@ def simulate_cahn_hilliard_2d(
     frames: list[np.ndarray] = [phi.copy()] if record_every > 0 else []
     phi_hat = np.fft.fft2(phi)
     for step in range(1, steps + 1):
-        nl = (phi**3) - phi
+        nl = (phi**3) - phi if a_field is None else (phi**3) - a_field * phi
         nl_hat = np.fft.fft2(nl)
         phi_hat = (phi_hat - dt * M * K2 * nl_hat) / denom
-        phi_hat[0, 0] = (N * N) * phi0
-        phi = np.fft.ifft2(phi_hat).real
+        if mobile is None:
+            phi_hat[0, 0] = (N * N) * phi0
+            phi = np.fft.ifft2(phi_hat).real
+        else:
+            phi = np.fft.ifft2(phi_hat).real
+            phi[frozen_mask] = frozen_value
+            if n_mobile > 0:
+                phi[mobile] += (mass0 - float(np.sum(phi))) / n_mobile
+            phi_hat = np.fft.fft2(phi)
         if record_every > 0 and step % record_every == 0:
             frames.append(phi.copy())
     return phi, frames
@@ -284,6 +330,400 @@ def simulate_two_stage_hierarchical_diatom(
 
 
 # ============================================================================
+# 3b. PASS 3 — Radially Advancing Centrifugal Silica-Precipitation Front Coupled
+#     to Cahn-Hilliard (Directional Quench; Furukawa 1992) -> Costae Striation
+# ============================================================================
+
+def _polar_grids(N: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Return (r, theta, cos(theta), sin(theta)) grids about the valve centre (N/2, N/2)."""
+    c = 0.5 * (N - 1)
+    yy, xx = np.meshgrid(np.arange(N) - c, np.arange(N) - c, indexing="ij")
+    r = np.sqrt(xx**2 + yy**2)
+    theta = np.arctan2(yy, xx)
+    return r, theta, np.cos(theta), np.sin(theta)
+
+
+def radial_anisotropy_index(phi: np.ndarray, r_min: float, r_max: float) -> float:
+    """Gradient-tensor anisotropy of the pattern in the annulus r_min <= r < r_max:
+        A = < |d_theta phi|^2 - |d_r phi|^2 > / < |d_theta phi|^2 + |d_r phi|^2 >
+    (both derivatives per unit arc length). A -> +1 for purely radial stripes/ribs
+    (phi varies only azimuthally), A -> -1 for concentric rings, A ~ 0 isotropic."""
+    N = phi.shape[0]
+    r, _, ct, st = _polar_grids(N)
+    gy, gx = np.gradient(phi)
+    g_r = gx * ct + gy * st
+    g_t = -gx * st + gy * ct
+    ann = (r >= r_min) & (r < r_max)
+    e_r = float(np.sum(g_r[ann] ** 2))
+    e_t = float(np.sum(g_t[ann] ** 2))
+    tot = e_r + e_t
+    return float((e_t - e_r) / tot) if tot > 1e-12 else 0.0
+
+
+def pore_centroids(mask: np.ndarray, min_area: int = 6) -> np.ndarray:
+    """Centroids (x, y) of connected components of a boolean pore mask with area >= min_area."""
+    lab, n = ndi.label(mask)
+    if n == 0:
+        return np.zeros((0, 2))
+    idx = np.arange(1, n + 1)
+    areas = ndi.sum_labels(np.ones_like(mask, dtype=float), lab, idx)
+    cents = ndi.center_of_mass(np.ones_like(mask, dtype=float), lab, idx)
+    pts = [(float(cx), float(cy)) for (cy, cx), a in zip(cents, areas) if a >= min_area]
+    return np.array(pts) if pts else np.zeros((0, 2))
+
+
+def bond_orientation_coherence(points_xy: np.ndarray, frame_angles: np.ndarray | None = None) -> float:
+    """Long-range 6-fold bond-orientation coherence
+        C_6 = | (1/N_b) sum_bonds exp(6 i (theta_bond - theta_frame)) |
+    over ALL nearest-neighbour bonds (cutoff 1.45 x median NN distance). With
+    `frame_angles=None` the laboratory frame is used (straight pore rows anywhere
+    in the field give C_6 -> 1). With `frame_angles` = local radial direction of
+    each pore the measure is radial-frame coherence: rows/ribs locked to the radial
+    direction everywhere around the valve give C_6 -> 1, isotropic quench -> ~0."""
+    n = len(points_xy)
+    if n < 7:
+        return 0.0
+    tree = cKDTree(points_xy)
+    dists, idxs = tree.query(points_xy, k=7)
+    cutoff = 1.45 * float(np.median(dists[:, 1]))
+    acc = 0.0 + 0.0j
+    n_b = 0
+    for i in range(n):
+        vecs = points_xy[idxs[i, 1:7]] - points_xy[i]
+        d = np.linalg.norm(vecs, axis=1)
+        ok = d <= cutoff
+        if not np.any(ok):
+            continue
+        ang = np.arctan2(vecs[ok, 1], vecs[ok, 0])
+        if frame_angles is not None:
+            ang = ang - frame_angles[i]
+        acc += np.sum(np.exp(6j * ang))
+        n_b += int(np.sum(ok))
+    return float(abs(acc) / n_b) if n_b > 0 else 0.0
+
+
+def simulate_radial_quench_costae(
+    N: int = 160,
+    phi0: float = 0.00,
+    epsilon: float = 1.00,
+    M: float = 1.0,
+    v_front: float = 0.10,
+    front_width: float = 2.0,
+    solidify_lag_lambda: float = 1.0,
+    R0: float = 8.0,
+    dt: float = 0.10,
+    noise_amp: float = 0.005,
+    seed: int = 2002,
+    record_every: int = 0,
+    bulk_control: bool = False,
+) -> dict[str, Any]:
+    """Pass 3 remediation item 1 (reduced, honest model).
+
+    Coscinodiscus valve silicification proceeds centrifugally from the central
+    annulus towards the margin (Schmid & Volcani 1983). We model the silica
+    deposition vesicle as a disc swept by a radially advancing front
+        R(t) = R0 + v_front * t
+    that converts the LCPA/silicic-acid mixture from a stable (single-well,
+    a = -1) state ahead of the front into the spinodal (double-well, a = +1)
+    state behind it — Furukawa's (1992) directional quench written in polar form,
+        a(r, t) = tanh((R(t) - r) / w),
+    coupled to the Cahn-Hilliard equation d(phi)/dt = M lap(phi^3 - a phi - eps^2 lap phi).
+    A lagging precipitation (solidification) front R_s(t) = R(t) - lag freezes the
+    pattern (zero mobility) once silica has condensed around the LCPA phase; the
+    frozen mass is re-projected onto the mobile region so that the TOTAL order
+    parameter is conserved exactly (|drift| ~ 1e-16). A weak conserved thermal
+    noise (noise_amp) seeds the instability as the front passes.
+
+    Emergent result (no template): for the near-critical rib layer (phi0 = 0) the
+    front speed selects the morphology — slow fronts (v = 0.05-0.10 px/t, i.e.
+    Pe = v / (lambda_c * sigma_max) < ~0.1) give RADIAL, bifurcating silica lamellae
+    (costae) that branch to keep their spacing as the circumference grows; faster
+    fronts give concentric lamellae parallel to the front; v -> infinity recovers the
+    isotropic bulk quench (Furukawa 1992 morphological transition). Off-critical
+    droplet compositions (phi0 = -0.3) only give front-parallel (concentric) rows.
+
+    `bulk_control=True` runs the same disc with a = +1 everywhere from t = 0
+    (classic isotropic quench; no front, no freezing) for the same number of steps
+    as the isotropic null against which radial costae alignment is measured.
+    """
+    rng = np.random.default_rng(seed)
+    r, theta, _, _ = _polar_grids(N)
+    disc = r < 0.5 * N - 2.0
+    R_max = 0.5 * N - 4.0
+
+    alpha = 1.0 - 3.0 * phi0**2
+    lambda_c = 2.0 * math.pi / math.sqrt(alpha / (2.0 * epsilon**2))
+    sigma_max = M * alpha**2 / (4.0 * epsilon**2)
+    lag = solidify_lag_lambda * lambda_c
+    steps = int(math.ceil((R_max - R0) / (v_front * dt)))
+
+    phi = phi0 + noise_amp * rng.standard_normal((N, N))
+    phi = phi - np.mean(phi) + phi0
+    mass0 = float(np.sum(phi))
+
+    kx = 2.0 * np.pi * np.fft.fftfreq(N, d=1.0)
+    KX, KY = np.meshgrid(kx, kx, indexing="ij")
+    K2 = KX**2 + KY**2
+    denom = 1.0 + dt * M * (epsilon**2) * K2**2
+
+    frozen = np.zeros((N, N), dtype=bool)
+    phi_frozen = np.zeros((N, N))
+    frames: list[tuple[float, np.ndarray]] = []
+    R_t = R0
+    for step in range(1, steps + 1):
+        R_t = R0 + v_front * step * dt
+        if bulk_control:
+            a_field = np.ones((N, N))
+        else:
+            a_field = np.tanh((R_t - r) / front_width)
+        # conserved thermal noise in the mobile region
+        xi = noise_amp * rng.standard_normal((N, N))
+        xi[frozen] = 0.0
+        xi -= np.mean(xi)
+        nl = phi**3 - a_field * phi
+        phi_hat = np.fft.fft2(phi + xi)
+        phi_hat = (phi_hat - dt * M * K2 * np.fft.fft2(nl)) / denom
+        phi_new = np.fft.ifft2(phi_hat).real
+        if not bulk_control:
+            # lagging silica precipitation front: freeze newly solidified annulus
+            newly = (r < R_t - lag) & ~frozen
+            phi_frozen[newly] = phi_new[newly]
+            frozen |= newly
+            phi_new[frozen] = phi_frozen[frozen]
+            mobile = ~frozen
+            n_mob = int(np.sum(mobile))
+            if n_mob > 0:
+                phi_new[mobile] += (mass0 - float(np.sum(phi_new))) / n_mob
+        phi = phi_new
+        if record_every > 0 and (step % record_every == 0 or step == steps):
+            frames.append((R_t, phi.copy()))
+
+    pores = (phi > 0.05) & disc
+    pores = ndi.binary_opening(pores, structure=np.ones((2, 2)))
+    pts = pore_centroids(pores)
+    # margin annulus = outer 40% of the swept radius; core = inner 40%
+    r_margin_in, r_margin_out = 0.6 * R_max, R_max
+    r_core_out = 0.4 * R_max
+    c = 0.5 * (N - 1)
+    if len(pts) > 0:
+        pr = np.hypot(pts[:, 0] - c, pts[:, 1] - c)
+        pth = np.arctan2(pts[:, 1] - c, pts[:, 0] - c)
+        sel = (pr >= r_margin_in) & (pr < r_margin_out)
+        pts_m, th_m = pts[sel], pth[sel]
+    else:
+        pts_m, th_m = np.zeros((0, 2)), np.zeros(0)
+    return {
+        "phi": phi,
+        "frozen_mask": frozen,
+        "quenched_mask": (r < R_t) if not bulk_control else disc,
+        "steps": steps,
+        "t_final": float(steps * dt),
+        "R_final": float(R_t),
+        "lambda_c_px": float(lambda_c),
+        "sigma_max": float(sigma_max),
+        "peclet_front": float(v_front / (lambda_c * sigma_max)),
+        "solidify_lag_px": float(lag),
+        "v_front": float(v_front),
+        "phi0": float(phi0),
+        "mass_drift": float(abs(np.sum(phi) - mass0) / (N * N)),
+        "anisotropy_margin": radial_anisotropy_index(phi, r_margin_in, r_margin_out),
+        "anisotropy_core": radial_anisotropy_index(phi, 0.0, r_core_out),
+        "pore_centroids": pts,
+        "n_pores": int(len(pts)),
+        "n_pores_margin": int(len(pts_m)),
+        "radial_frame_coherence_margin": bond_orientation_coherence(pts_m, th_m),
+        "lab_frame_coherence_margin": bond_orientation_coherence(pts_m, None),
+        "frames": frames,
+    }
+
+
+def run_front_velocity_sweep(
+    velocities: tuple[float, ...] = (0.05, 0.10, 0.20, 0.40, 0.80),
+    N: int = 160,
+    phi0: float = 0.00,
+    seed: int = 2002,
+) -> dict[str, Any]:
+    """Ablation over the centrifugal front speed v_front (5 values spanning the
+    Furukawa radial -> concentric -> isotropic transition) plus the isotropic
+    bulk-quench null (no front). Reports the margin radial anisotropy A(v)."""
+    rows: list[dict[str, float]] = []
+    for v in velocities:
+        res = simulate_radial_quench_costae(N=N, phi0=phi0, v_front=v, seed=seed)
+        rows.append(
+            {
+                "v_front": float(v),
+                "peclet_front": res["peclet_front"],
+                "anisotropy_margin": res["anisotropy_margin"],
+                "anisotropy_core": res["anisotropy_core"],
+                "mass_drift": res["mass_drift"],
+                "steps": res["steps"],
+            }
+        )
+    # isotropic null: same disc & step count as the median speed, averaged over 3 seeds
+    # (a single lamellar realisation has O(0.1-0.3) anisotropy fluctuations)
+    ctrl_runs = [
+        simulate_radial_quench_costae(N=N, phi0=phi0, v_front=velocities[len(velocities) // 2], seed=seed + i, bulk_control=True)
+        for i in range(3)
+    ]
+    ctrl_vals = [c["anisotropy_margin"] for c in ctrl_runs]
+    a_vals = [row["anisotropy_margin"] for row in rows]
+    return {
+        "velocities": list(velocities),
+        "rows": rows,
+        "anisotropies": a_vals,
+        "best_velocity": float(velocities[int(np.argmax(a_vals))]),
+        "control_anisotropy_margin": float(np.mean(ctrl_vals)),
+        "control_anisotropy_margin_sd": float(np.std(ctrl_vals)),
+        "control_anisotropy_values": ctrl_vals,
+        "control": ctrl_runs[0],
+    }
+
+
+# ============================================================================
+# 3c. PASS 3 — Explicit 3-Stage 512x512 Single-Domain Hierarchy
+#     (Foramen -> Cribrum -> Cribrella) at a Fixed Physical Scale (nm / px)
+# ============================================================================
+
+def epsilon_for_pitch(pitch_px: float, phi0: float) -> float:
+    """Invert lambda_c = 2*pi*sqrt(2)*eps/sqrt(1 - 3*phi0^2) for the interfacial
+    parameter eps whose fastest-growing spinodal wavelength equals `pitch_px`."""
+    return float(pitch_px * math.sqrt(1.0 - 3.0 * phi0**2) / (2.0 * math.pi * math.sqrt(2.0)))
+
+
+def _nn_pitch(points_xy: np.ndarray) -> float:
+    if len(points_xy) < 2:
+        return 0.0
+    d, _ = cKDTree(points_xy).query(points_xy, k=2)
+    return float(np.mean(d[:, 1]))
+
+
+def simulate_three_stage_hierarchy(
+    N: int = 512,
+    nm_per_px: float = 12.5,
+    tiers: list[dict[str, Any]] | None = None,
+    phi0_tiers: tuple[float, float, float] = (-0.30, -0.26, -0.26),
+    dt_tiers: tuple[float, float, float] = (50.0, 2.6, 0.10),
+    steps_tiers: tuple[int, int, int] = (290, 160, 100),
+    seed: int = 2002,
+) -> dict[str, Any]:
+    """Pass 3 remediation item 2. One N x N domain at a fixed physical scale
+    (default 12.5 nm/px, so Sumper's tiers a_1 = 1850 nm, a_2 = 380 nm, a_3 = 75 nm
+    are 148, 30.4 and 6.0 px). The three quenches are run SEQUENTIALLY IN THE SAME
+    DOMAIN: after tier k-1 the silica outside its (slightly eroded) pores is treated as
+    precipitated and FROZEN (zero mobility, phi = -1 wetting wall), and tier k is a fresh
+    Cahn-Hilliard quench of the LCPA phase confined to the unsolidified chambers, with
+    eps_k inverted from the target pitch via lambda_c(eps). Tier 1 is unconfined.
+    The CH equation is scale invariant (x -> L x, eps -> L eps, t -> L^2 t), so the
+    large-eps tiers legitimately use proportionally larger dt (dt_tiers).
+
+    Honest limits: the tertiary cribrella at 12.5 nm/px are only d_3 = 42/12.5 = 3.4 px
+    across (resolved as >= 6-pixel components but at the grid floor), and the domain holds
+    only ~12 foramina. A finer physical scale would need a > 1024 grid.
+    """
+    if tiers is None:
+        tiers = verify_and_load_reference()["sumper_2002_hierarchical_tiers"]["tiers"]
+    pitches_px = [t["lattice_pitch_nm"] / nm_per_px for t in tiers]
+    eps_tiers = [epsilon_for_pitch(p, phi0_tiers[i]) for i, p in enumerate(pitches_px)]
+
+    fields: list[np.ndarray] = []
+    pore_masks: list[np.ndarray] = []
+    chamber_masks: list[np.ndarray] = []
+    mass_drift: list[float] = []
+    parent = np.ones((N, N), dtype=bool)
+    erode_px = [0, 3, 1]
+    for k in range(3):
+        frozen = None if k == 0 else ~parent
+        phi_k, _ = simulate_cahn_hilliard_2d(
+            N=N,
+            phi0=phi0_tiers[k],
+            epsilon=eps_tiers[k],
+            dt=dt_tiers[k],
+            steps=steps_tiers[k],
+            seed=seed + 71 * k,
+            frozen_mask=frozen,
+            frozen_value=phi0_tiers[k],
+        )
+        # mass conservation diagnostic over the mobile chambers
+        if frozen is None:
+            mass_drift.append(float(abs(np.mean(phi_k) - phi0_tiers[k])))
+        else:
+            mass_drift.append(float(abs(np.mean(phi_k[parent]) - phi0_tiers[k])))
+        pores_k = (phi_k > 0.05) & parent
+        pores_k = ndi.binary_opening(pores_k, structure=np.ones((2, 2)))
+        fields.append(phi_k)
+        pore_masks.append(pores_k)
+        chamber_masks.append(parent.copy())
+        if k < 2 and erode_px[k + 1] > 0:
+            parent = ndi.binary_erosion(pores_k, structure=np.ones((3, 3)), iterations=erode_px[k + 1])
+        else:
+            parent = pores_k
+
+    # Per-tier counts, nested multiplicity and pitches (px -> nm)
+    labs = [ndi.label(m) for m in pore_masks]
+    counts = [int(n) for _, n in labs]
+    cents = [pore_centroids(m, min_area=6 if k == 2 else 20) for k, m in enumerate(pore_masks)]
+    pitches_sim_px = [_nn_pitch(c) for c in cents]
+    # equivalent diameters
+    diams_px = []
+    for (lab, n), min_a in zip(labs, (20, 20, 6)):
+        if n == 0:
+            diams_px.append(0.0)
+            continue
+        areas = ndi.sum_labels(np.ones((N, N)), lab, np.arange(1, n + 1))
+        areas = areas[areas >= min_a]
+        diams_px.append(float(np.mean(2.0 * np.sqrt(areas / math.pi))) if len(areas) else 0.0)
+
+    def _children_per_parent(parent_lab: np.ndarray, n_parent: int, child_lab: np.ndarray) -> float:
+        vals: list[int] = []
+        for pid in range(1, n_parent + 1):
+            reg = parent_lab == pid
+            if np.sum(reg) < 20:
+                continue
+            ids = set(np.unique(child_lab[reg])) - {0}
+            if ids:
+                vals.append(len(ids))
+        return float(np.mean(vals)) if vals else 0.0
+
+    cribrum_per_foramen = _children_per_parent(labs[0][0], counts[0], labs[1][0])
+    cribrella_per_cribrum = _children_per_parent(labs[1][0], counts[1], labs[2][0])
+
+    # Composite biosilica density: +1 wall, 0.35 cribrum plate, -0.25 cribrella sieve plate, -1 open cribrella pore
+    composite = np.ones((N, N))
+    composite[pore_masks[0]] = 0.35
+    composite[pore_masks[1]] = -0.25
+    composite[pore_masks[2]] = -1.0
+
+    return {
+        "N": N,
+        "nm_per_px": float(nm_per_px),
+        "target_pitches_px": [float(p) for p in pitches_px],
+        "epsilons": [float(e) for e in eps_tiers],
+        "fields": fields,
+        "pore_masks": pore_masks,
+        "chamber_masks": chamber_masks,
+        "composite": composite,
+        "counts": counts,
+        "pitches_sim_px": [float(p) for p in pitches_sim_px],
+        "pitches_sim_nm": [float(p * nm_per_px) for p in pitches_sim_px],
+        "diameters_sim_nm": [float(d * nm_per_px) for d in diams_px],
+        "cribrum_per_foramen": cribrum_per_foramen,
+        "cribrella_per_cribrum": cribrella_per_cribrum,
+        "mass_drift_tiers": mass_drift,
+    }
+
+
+_THREE_STAGE_CACHE: dict[tuple[int, float, int], dict[str, Any]] = {}
+
+
+def three_stage_cached(N: int = 512, nm_per_px: float = 12.5, seed: int = 2002) -> dict[str, Any]:
+    """Run `simulate_three_stage_hierarchy` once per process for a given (N, scale, seed)."""
+    key = (int(N), float(nm_per_px), int(seed))
+    if key not in _THREE_STAGE_CACHE:
+        _THREE_STAGE_CACHE[key] = simulate_three_stage_hierarchy(N=N, nm_per_px=nm_per_px, seed=seed)
+    return _THREE_STAGE_CACHE[key]
+
+
+# ============================================================================
 # 4. Spectral Morphometrics (Sub-Bin Parabolic Peak) & Hexatic Order |psi_6|
 # ============================================================================
 
@@ -337,6 +777,7 @@ def compute_spectral_and_pore_metrics(phi: np.ndarray, epsilon: float = 1.50) ->
         ring_sharpness = float(radial[k_idx] / med_bg)
 
     # Pore connected components (minority LCPA droplet phase)
+    row_c6 = 0.0
     if std_phi < 0.05:
         n_pores = 0
         psi6_mean = 0.0
@@ -353,6 +794,7 @@ def compute_spectral_and_pore_metrics(phi: np.ndarray, epsilon: float = 1.50) ->
                     centroids.append((cx, cy))
         n_pores = int(n_comp)
         psi6_mean = compute_hexatic_psi6(np.array(centroids)) if len(centroids) >= 7 else 0.0
+        row_c6 = bond_orientation_coherence(np.array(centroids), None) if len(centroids) >= 7 else 0.0
 
     disp = compute_spinodal_dispersion(phi0=phi0, epsilon=epsilon)
     return {
@@ -362,6 +804,7 @@ def compute_spectral_and_pore_metrics(phi: np.ndarray, epsilon: float = 1.50) ->
         "ring_sharpness": float(ring_sharpness),
         "pore_count": int(n_pores),
         "hexatic_psi6": float(psi6_mean),
+        "row_coherence_c6": float(row_c6),
         "mass_mean": float(phi0),
         "std_phi": float(std_phi),
         "radial_psd": radial,
@@ -472,6 +915,9 @@ def segment_coscinodiscus_specimen(ref_doc: dict[str, Any]) -> dict[str, Any]:
     dists_f, _ = tree_f.query(pts_f, k=7)
     nn_pitch_f = dists_f[:, 1]
     psi6_f = compute_hexatic_psi6(pts_f)
+    # Pass 3: long-range (lab-frame) row coherence of the SEM foramen lattice — the
+    # straight fasciculate areola rows of panel a1 (Coscinodiscus rows run radially).
+    row_coherence_f = bond_orientation_coherence(pts_f, None)
 
     mean_diam_f = float(np.mean(diams_f))
     cv_diam_f = float(np.std(diams_f) / mean_diam_f)
@@ -516,6 +962,7 @@ def segment_coscinodiscus_specimen(ref_doc: dict[str, Any]) -> dict[str, Any]:
         "foramen_pitch_cv": cv_pitch_f,
         "foramen_diameter_to_pitch_ratio": diam_to_pitch_f,
         "foramen_hexatic_psi6": psi6_f,
+        "foramen_row_coherence_c6": row_coherence_f,
         "roi_cribrum": roi_cribrum,
         "centroids_cribrum": np.array(centroids_c),
         "cribrum_pore_count": len(diams_c),
@@ -538,12 +985,22 @@ def render_all_outputs(
     steps: int = 650,
     seed: int = 2002,
     skip_gif: bool = False,
+    v_front: float = 0.10,
+    N3: int = 512,
+    nm_per_px: float = 12.5,
 ) -> dict[str, Any]:
     """Execute all simulations, parameter sweeps, negative controls, and specimen
     segmentations, then render `docs/media/diatom_frustule_phase_sep_comparison.png`
-    and `docs/media/diatom_frustule_phase_sep_growth.gif`."""
+    (Pass 3: 3 rows x 4 panels), `docs/media/diatom_frustule_phase_sep_growth.gif`
+    and `docs/media/diatom_frustule_phase_sep_radial_costae.gif`."""
     ref_doc = verify_and_load_reference()
     COMPARISON_PNG.parent.mkdir(parents=True, exist_ok=True)
+
+    # 0. Pass 3 models: centrifugal front -> costae (with v_front sweep + isotropic null)
+    #    and explicit 3-stage N3 x N3 single-domain hierarchy at nm_per_px.
+    costae = simulate_radial_quench_costae(N=160, v_front=v_front, seed=seed, record_every=200)
+    front_sweep = run_front_velocity_sweep(N=128, seed=seed)  # 5 speeds + isotropic null (128^2 keeps the sweep ~10 s)
+    three = three_stage_cached(N=N3, nm_per_px=nm_per_px, seed=seed)
 
     # 1. Two-stage hierarchical Cahn-Hilliard simulation (Foramen -> Cribrum)
     hier = simulate_two_stage_hierarchical_diatom(
@@ -576,9 +1033,9 @@ def render_all_outputs(
     # 5. Biological specimen segmentation (*Coscinodiscus wailesii* SEM)
     spec = segment_coscinodiscus_specimen(ref_doc)
 
-    # 6. Render 8-panel dark-themed synthesis figure (2 rows x 4 columns)
+    # 6. Render 12-panel dark-themed synthesis figure (3 rows x 4 columns)
     plt.style.use("dark_background")
-    fig, axes = plt.subplots(2, 4, figsize=(18.5, 9.2), dpi=150)
+    fig, axes = plt.subplots(3, 4, figsize=(18.5, 13.8), dpi=150)
     fig.patch.set_facecolor("#0b0f19")
     for ax in axes.flat:
         ax.set_facecolor("#111827")
@@ -687,16 +1144,107 @@ def render_all_outputs(
     ax.legend(fontsize=7.8, loc="upper left", framealpha=0.35)
     ax.grid(alpha=0.2)
 
+    # ---- Pass 3 row C ---------------------------------------------------------
+    # Panel C1: Explicit 3-stage N3 x N3 single-domain hierarchy (composite silica density)
+    ax = axes[2, 0]
+    ax.imshow(three["composite"], cmap="bone", vmin=-1.0, vmax=1.0)
+    c3 = three["counts"]
+    ax.set_title(
+        f"C1. 3-Stage {N3}×{N3} Single-Domain Quench ({nm_per_px:g} nm/px)\n"
+        f"{c3[0]} foramina → {c3[1]} cribrum → {c3[2]} cribrella "
+        f"({three['cribrum_per_foramen']:.1f} / {three['cribrella_per_cribrum']:.1f} per parent)",
+        fontsize=9.5,
+        color="#a78bfa",
+    )
+    ax.axis("off")
+
+    # Panel C2: zoom on the largest foramen vs SEM a3 cribrum/cribrella tiers
+    ax = axes[2, 1]
+    lab_f3, n_f3 = ndi.label(three["pore_masks"][0])
+    if n_f3 > 0:
+        sizes = ndi.sum_labels(np.ones_like(lab_f3, dtype=float), lab_f3, np.arange(1, n_f3 + 1))
+        big = int(np.argmax(sizes)) + 1
+        ys, xs = np.nonzero(lab_f3 == big)
+        half = int(max(np.ptp(ys), np.ptp(xs)) * 0.65) + 6
+        cy_, cx_ = int(ys.mean()), int(xs.mean())
+        y0z, y1z = max(0, cy_ - half), min(N3, cy_ + half)
+        x0z, x1z = max(0, cx_ - half), min(N3, cx_ + half)
+        ax.imshow(three["composite"][y0z:y1z, x0z:x1z], cmap="bone", vmin=-1.0, vmax=1.0)
+        bar_px = 200.0 / nm_per_px
+        ax.plot([4, 4 + bar_px], [y1z - y0z - 6, y1z - y0z - 6], color="#fbbf24", lw=3)
+        ax.text(4, y1z - y0z - 10, "200 nm", color="#fbbf24", fontsize=7.5)
+    d_nm = three["diameters_sim_nm"]
+    ax.set_title(
+        f"C2. Zoom: one foramen → cribrum → cribrella (sim)\n"
+        f"d₂={d_nm[1]:.0f} nm (ref 220), d₃={d_nm[2]:.0f} nm (ref 42); a₂/a₃={three['pitches_sim_px'][1] / max(three['pitches_sim_px'][2], 1e-9):.2f} (ref 5.07)",
+        fontsize=9.5,
+        color="#a78bfa",
+    )
+    ax.axis("off")
+
+    # Panel C3: Centrifugal precipitation front -> radial costae lamellae
+    ax = axes[2, 2]
+    ax.imshow(-costae["phi"], cmap="bone", vmin=-1.0, vmax=1.0)
+    th_c = np.linspace(0, 2 * np.pi, 200)
+    c_ = 0.5 * (160 - 1)
+    ax.plot(c_ + costae["R_final"] * np.cos(th_c), c_ + costae["R_final"] * np.sin(th_c), color="#f472b6", lw=1.0, ls="--")
+    ax.plot(c_ + 0.6 * (0.5 * 160 - 4.0) * np.cos(th_c), c_ + 0.6 * (0.5 * 160 - 4.0) * np.sin(th_c), color="#fbbf24", lw=0.8, ls=":")
+    ax.set_title(
+        f"C3. Centrifugal Front Quench → Radial Costae (v={costae['v_front']:.2f}, Pe={costae['peclet_front']:.3f})\n"
+        f"margin A={costae['anisotropy_margin']:+.3f} vs isotropic null {front_sweep['control_anisotropy_margin']:+.2f}±{front_sweep['control_anisotropy_margin_sd']:.2f}; Δmass={costae['mass_drift']:.0e}",
+        fontsize=9.5,
+        color="#f472b6",
+    )
+    ax.axis("off")
+
+    # Panel C4: Front-velocity ablation A(v): radial -> concentric -> isotropic transition
+    ax = axes[2, 3]
+    vs = np.array(front_sweep["velocities"])
+    ax.plot(vs, front_sweep["anisotropies"], "o-", color="#f472b6", lw=2.0, label="margin A (radial > 0 > concentric)")
+    ax.plot(vs, [r_["anisotropy_core"] for r_ in front_sweep["rows"]], "s--", color="#a78bfa", lw=1.4, label="core A")
+    ax.axhline(front_sweep["control_anisotropy_margin"], color="#9ca3af", lw=1.0, ls=":", label="isotropic bulk quench (no front)")
+    ax.axhline(0.0, color="#4b5563", lw=0.8)
+    ax.set_xscale("log")
+    ax.set_xlabel("front speed v_front (px / time)", fontsize=8.5)
+    ax.set_ylabel("radial anisotropy A = ⟨|∂θφ|²−|∂rφ|²⟩/⟨|∇φ|²⟩", fontsize=8.5)
+    ax.set_ylim(-1.05, 1.05)
+    ax.set_title(
+        f"C4. Front-Speed Ablation (Furukawa 1992 transition)\n"
+        f"SEM a1 row coherence C₆={spec['foramen_row_coherence_c6']:.3f} vs isotropic sim C₆={m_drop['row_coherence_c6']:.3f}",
+        fontsize=9.5,
+        color="#f472b6",
+    )
+    ax.legend(fontsize=7.5, loc="lower left", framealpha=0.35)
+    ax.grid(alpha=0.2)
+
     fig.suptitle(
-        "Sumper (2002) Science & Lenoci–Camp (2008) Langmuir: Hierarchical Cahn-Hilliard Phase Separation in Coscinodiscus Diatom Biosilica",
+        "Sumper (2002) Science & Lenoci–Camp (2008) Langmuir: Hierarchical Cahn-Hilliard Phase Separation in Coscinodiscus Diatom Biosilica (Pass 3)",
         fontsize=12.5,
         fontweight="bold",
         color="#f9fafb",
-        y=0.98,
+        y=0.985,
     )
-    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.95])
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.965])
     fig.savefig(COMPARISON_PNG, facecolor=fig.get_facecolor())
     plt.close(fig)
+
+    # 6b. Pass 3 animated GIF of the centrifugal precipitation front sweeping the valve
+    if not skip_gif:
+        gif_frames: list[Image.Image] = []
+        for R_t, field2d in costae["frames"]:
+            fig_r, ax_r = plt.subplots(1, 1, figsize=(4.2, 4.4), dpi=100)
+            fig_r.patch.set_facecolor("#0b0f19")
+            ax_r.imshow(-field2d, cmap="bone", vmin=-1.0, vmax=1.0)
+            ax_r.plot(c_ + R_t * np.cos(th_c), c_ + R_t * np.sin(th_c), color="#f472b6", lw=1.2, ls="--")
+            ax_r.set_title(f"Centrifugal quench front R(t)={R_t:.1f} px (v={costae['v_front']:.2f})", fontsize=8.5, color="#f472b6")
+            ax_r.axis("off")
+            fig_r.tight_layout()
+            fig_r.canvas.draw()
+            w, h = fig_r.canvas.get_width_height()
+            buf = np.frombuffer(fig_r.canvas.buffer_rgba(), dtype=np.uint8).reshape((h, w, 4))[:, :, :3]
+            gif_frames.append(Image.fromarray(buf).convert("P", palette=Image.Palette.ADAPTIVE))
+            plt.close(fig_r)
+        gif_frames[0].save(COSTAE_GIF, save_all=True, append_images=gif_frames[1:], duration=160, loop=0)
 
     # 7. Render animated GIF of two-stage hierarchical Cahn-Hilliard morphogenesis
     if not skip_gif:
@@ -736,6 +1284,9 @@ def render_all_outputs(
         "control_metrics": m_ctrl,
         "sweep": sweep,
         "specimen": spec,
+        "costae": costae,
+        "front_sweep": front_sweep,
+        "three_stage": three,
     }
 
 
@@ -752,6 +1303,91 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     m_ctrl = compute_spectral_and_pore_metrics(phi_ctrl, epsilon=1.50)
     sweep = run_epsilon_wavelength_sweep(N=128, phi0=-0.30, seed=2002)
     spec = segment_coscinodiscus_specimen(ref_doc)
+    # Pass 3 models
+    costae = simulate_radial_quench_costae(N=160, v_front=0.10, seed=2002)
+    costae_fast = simulate_radial_quench_costae(N=160, v_front=0.40, seed=2002)
+    null_vals = [
+        simulate_radial_quench_costae(N=160, v_front=0.20, seed=2002 + i, bulk_control=True)["anisotropy_margin"] for i in range(3)
+    ]
+    null_mean, null_sd = float(np.mean(null_vals)), float(np.std(null_vals))
+    three = three_stage_cached(N=512, nm_per_px=12.5, seed=2002)
+    tiers = ref_doc["sumper_2002_hierarchical_tiers"]["tiers"]
+    ref_a1_a2 = tiers[0]["lattice_pitch_nm"] / tiers[1]["lattice_pitch_nm"]
+    ref_a2_a3 = tiers[1]["lattice_pitch_nm"] / tiers[2]["lattice_pitch_nm"]
+    p_sim = three["pitches_sim_px"]
+
+    pass3_measurements: list[dict[str, Any]] = [
+        {
+            "name": "Centrifugal precipitation-front quench: margin radial anisotropy A at slow front speed (v = 0.10 px/t)",
+            "value": round(costae["anisotropy_margin"], 4),
+            "unit": "anisotropy index (+1 radial lamellae, 0 isotropic, -1 concentric)",
+            "method": "gradient-tensor anisotropy <|d_theta phi|^2 - |d_r phi|^2>/<|grad phi|^2> in the outer 40% annulus of a 160^2 disc swept by a(r,t)=tanh((R0+v t - r)/w) with lagging frozen silica front (lag = 1.0 lambda_c), phi0 = 0",
+            "derived_from": "script",
+            "reference_value": round(null_mean, 4),
+            "reference_source": "isotropic bulk-quench null (same disc, a = +1 everywhere, no front, no freezing; mean of 3 seeds); Furukawa (1992) Physica A 180:128 directional-quench morphology transition predicts front-perpendicular lamellae at slow front speed",
+            "note": f"Pe = v/(lambda_c sigma_max) = {costae['peclet_front']:.3f}; core A = {costae['anisotropy_core']:+.3f}; fast front (v = 0.40) margin A = {costae_fast['anisotropy_margin']:+.3f} (concentric); null A = {null_mean:+.3f} +/- {null_sd:.3f} (3 seeds); the vendored SEM has no valve-margin view, so no direct specimen value exists for A (Pass 4 item)",
+        },
+        {
+            "name": "Centrifugal front quench: radial-minus-concentric morphology contrast A(v=0.10) - A(v=0.40)",
+            "value": round(costae["anisotropy_margin"] - costae_fast["anisotropy_margin"], 4),
+            "unit": "anisotropy index difference",
+            "method": "same model at two front speeds; positive values mean slow fronts give radial costae and fast fronts give front-parallel (concentric) lamellae",
+            "derived_from": "script",
+            "reference_value": 0.0,
+            "reference_source": "isotropic null (no front) has no speed dependence: contrast = 0; sign predicted by Furukawa (1992)",
+            "note": f"A(0.10) = {costae['anisotropy_margin']:+.3f}, A(0.40) = {costae_fast['anisotropy_margin']:+.3f}",
+        },
+        {
+            "name": "Centrifugal front quench total order-parameter conservation with frozen-silica mass re-projection",
+            "value": round(costae["mass_drift"], 12),
+            "unit": "|<phi(T)> - <phi(0)>|",
+            "method": "mean absolute drift of the domain-averaged order parameter after the frozen-region projection step at every time step",
+            "derived_from": "script",
+            "reference_value": 0.0,
+            "reference_source": "Lean 4 Theorem MathOfBiology.Loop_071.cahn_hilliard_mass_conservation_zero_mode & frozen_front_monotone_irreversible",
+            "note": f"{costae['steps']} steps, final front radius {costae['R_final']:.1f} px",
+        },
+        {
+            "name": "3-stage 512x512 single-domain quench: tertiary cribrella pores per cribrum pore",
+            "value": round(three["cribrella_per_cribrum"], 3),
+            "unit": "cribrella / cribrum pore",
+            "method": "connected tier-3 pores (eps_3 = %.3f) inside each frozen-wall-confined tier-2 cribrum pore chamber on one 512^2 grid at 12.5 nm/px" % three["epsilons"][2],
+            "derived_from": "script",
+            "reference_value": float(tiers[2]["subpores_per_parent"]),
+            "reference_source": "Sumper (2002) Science 295:2430 Fig. 3-4 centered-hexagonal H(1) = 7 cribrella per cribrum pore (reference JSON tier 3 subpores_per_parent)",
+            "note": f"counts foramina/cribrum/cribrella = {three['counts']}, cribrum per foramen = {three['cribrum_per_foramen']:.2f} (ref {tiers[1]['subpores_per_parent']})",
+        },
+        {
+            "name": "3-stage 512x512 quench: simulated tertiary cribrella pore diameter d_3",
+            "value": round(three["diameters_sim_nm"][2], 1),
+            "unit": "nm",
+            "method": "mean equivalent diameter of tier-3 connected pores (>= 6 px) x 12.5 nm/px",
+            "derived_from": "script",
+            "reference_value": float(tiers[2]["pore_diameter_nm"]),
+            "reference_source": "Sumper (2002) Science 295:2430 / Losic et al. (2006) Table 1: d_3 = 42 nm",
+            "note": f"d_2 sim = {three['diameters_sim_nm'][1]:.0f} nm (ref {tiers[1]['pore_diameter_nm']:.0f}); resolution floor 3.4 px at this scale",
+        },
+        {
+            "name": "3-stage 512x512 quench: simulated inter-tier pitch ratio a_2 / a_3 (cribrum / cribrella)",
+            "value": round(p_sim[1] / p_sim[2], 4) if p_sim[2] > 0 else 0.0,
+            "unit": "ratio",
+            "method": "mean nearest-neighbour centroid pitch of tier-2 pores divided by that of tier-3 pores in the same 512^2 domain",
+            "derived_from": "script",
+            "reference_value": round(ref_a2_a3, 4),
+            "reference_source": "Sumper (2002) / Losic et al. (2006): a_2 = 380 nm, a_3 = 75 nm -> 5.067",
+            "note": f"a_1/a_2 sim = {p_sim[0] / p_sim[1]:.3f} (ref {ref_a1_a2:.3f}); sim pitches px = {[round(x, 1) for x in p_sim]} vs targets {[round(x, 1) for x in three['target_pitches_px']]}",
+        },
+        {
+            "name": "Coscinodiscus wailesii SEM foramen-row long-range coherence C_6 vs isotropic Cahn-Hilliard Stage-1 quench",
+            "value": round(spec["foramen_row_coherence_c6"], 4),
+            "unit": "C_6 = |<exp(6 i theta_bond)>| over all NN bonds",
+            "method": "lab-frame bond-orientation coherence of the n=139 segmented SEM foramina (straight fasciculate rows) vs the same statistic on the isotropic Stage-1 simulation droplets",
+            "derived_from": "script",
+            "reference_value": round(m_drop["row_coherence_c6"], 4),
+            "reference_source": "isotropic bulk Cahn-Hilliard quench (this script, Stage 1): the long-range row order of the valve is NOT produced by an isotropic quench and motivates the directional (centrifugal) front",
+            "note": f"SEM C_6 = {spec['foramen_row_coherence_c6']:.3f}; isotropic sim C_6 = {m_drop['row_coherence_c6']:.3f}",
+        },
+    ]
 
     return [
         {
@@ -824,7 +1460,7 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "reference_source": "Sumper (2002) Science 295:2430 self-similar LCPA droplet subdivision d_m = d_1 * rho^(m-1)",
             "note": f"effective inter-tier scale ratio rho={spec['hierarchy_effective_rho']:.4f} (ref 0.1800), p={spec['hierarchy_log_p']:.2e}",
         },
-    ]
+    ] + pass3_measurements
 
 
 # ============================================================================
@@ -880,15 +1516,52 @@ def self_test() -> int:
     run_b, _ = simulate_cahn_hilliard_2d(N=64, phi0=-0.30, epsilon=1.50, steps=120, seed=2002)
     assert np.allclose(run_a, run_b, atol=0.0, rtol=0.0), "Bitwise determinism check failed"
 
-    # Check 8: Verify measure_morphoeval() returns >=6 valid metrics with references
+    # Check 8: Verify measure_morphoeval() returns >=14 valid metrics with references
     meas = measure_morphoeval()
-    assert len(meas) >= 6 and all(m.get("value") is not None for m in meas)
+    assert len(meas) >= 14 and all(m.get("value") is not None for m in meas)
+    assert all("reference_value" in m for m in meas), "Every measurement needs a reference_value"
+
+    # Check 9 (Pass 3): centrifugal precipitation front — exact mass conservation under the
+    # frozen-silica projection, frozen region strictly inside the quenched region, slow
+    # front gives radial (A > 0) costae while the fast front is front-parallel (A < 0) and
+    # the isotropic null is near 0; a_field=None path stays bitwise identical (Check 7).
+    slow = simulate_radial_quench_costae(N=96, v_front=0.10, seed=2002)
+    fast = simulate_radial_quench_costae(N=96, v_front=0.40, seed=2002)
+    null = simulate_radial_quench_costae(N=96, v_front=0.10, seed=2002, bulk_control=True)
+    assert slow["mass_drift"] < 1e-12, f"front-quench mass drift {slow['mass_drift']:.2e}"
+    assert not np.any(slow["frozen_mask"] & ~slow["quenched_mask"]), "frozen pixels must lie behind the quench front"
+    assert np.sum(slow["frozen_mask"]) > 0.5 * np.sum(slow["quenched_mask"]), "most of the swept disc should have solidified"
+    assert slow["anisotropy_margin"] > 0.15, f"slow front should give radial costae, A={slow['anisotropy_margin']:+.3f}"
+    assert fast["anisotropy_margin"] < 0.0, f"fast front should give concentric lamellae, A={fast['anisotropy_margin']:+.3f}"
+    assert abs(null["anisotropy_margin"]) < 0.35, f"isotropic null should be ~0 (single realisation), A={null['anisotropy_margin']:+.3f}"
+    assert slow["anisotropy_margin"] > null["anisotropy_margin"] + 0.1
+
+    # Check 10 (Pass 3): 3-stage single-domain hierarchy at reduced grid (256^2, same nm/px)
+    # — strictly nested counts, decreasing tier pitches, chamber mass conservation.
+    three = simulate_three_stage_hierarchy(N=256, nm_per_px=12.5, seed=2002)
+    assert three["counts"][0] >= 1 and three["counts"][1] > three["counts"][0] and three["counts"][2] > three["counts"][1], three["counts"]
+    assert three["pitches_sim_px"][0] > three["pitches_sim_px"][1] > three["pitches_sim_px"][2] > 0, three["pitches_sim_px"]
+    assert all(np.all(three["pore_masks"][k] <= three["chamber_masks"][k]) for k in range(3)), "tier pores must stay inside their chambers"
+    assert max(three["mass_drift_tiers"]) < 5e-3, three["mass_drift_tiers"]
+    assert abs(epsilon_for_pitch(canon["lambda_c_droplet_px"], canon["phi0_droplet"]) - canon["epsilon_primary"]) < 1e-9
+
+    # Check 11 (Pass 3): the frozen-mask solver conserves total mass exactly and holds walls
+    walls = np.zeros((48, 48), dtype=bool)
+    walls[:, :8] = True
+    phi_w, _ = simulate_cahn_hilliard_2d(N=48, phi0=-0.26, epsilon=0.65, dt=0.12, steps=60, seed=5, frozen_mask=walls, frozen_value=-0.26)
+    assert np.allclose(phi_w[walls], -0.26, atol=0.0, rtol=0.0)
+    # total mass is fixed at the post-wall-placement value (= phi0 up to the O(noise/sqrt(N^2))
+    # mean of the noise that the wall pixels overwrote); exact (1e-16) conservation of that
+    # value is asserted in Check 9 via `mass_drift`
+    assert abs(float(np.mean(phi_w)) - (-0.26)) < 2e-3
 
     print(
-        f"[2002-sumper-diatom-frustule-phase-sep v2] SELF-TEST PASSED "
+        f"[2002-sumper-diatom-frustule-phase-sep v3] SELF-TEST PASSED (11 checks) "
         f"(SEM foramina={spec['foramen_pore_count']}, d/a={spec['foramen_diameter_to_pitch_ratio']:.3f}, "
         f"|psi_6|={spec['foramen_hexatic_psi6']:.3f}, sweep r={sweep['pearson_r']:.4f}, "
-        f"hierarchical pores={hier['n_foramen_pores']}->{hier['n_cribrum_subpores']})"
+        f"hierarchical pores={hier['n_foramen_pores']}->{hier['n_cribrum_subpores']}, "
+        f"costae A slow/fast/null={slow['anisotropy_margin']:+.3f}/{fast['anisotropy_margin']:+.3f}/{null['anisotropy_margin']:+.3f}, "
+        f"3-stage counts={three['counts']}, measurements={len(meas)})"
     )
     return 0
 
@@ -901,7 +1574,10 @@ def main() -> int:
     ap.add_argument("--epsilon", type=float, default=1.50, help="Primary interfacial parameter epsilon (default: 1.50)")
     ap.add_argument("--steps", type=int, default=650, help="Primary Cahn-Hilliard integration steps (default: 650)")
     ap.add_argument("--seed", type=int, default=2002, help="Deterministic RNG seed (default: 2002)")
-    ap.add_argument("--skip-gif", action="store_true", help="Skip rendering animated GIF")
+    ap.add_argument("--skip-gif", action="store_true", help="Skip rendering animated GIFs")
+    ap.add_argument("--v-front", type=float, default=0.10, help="Pass 3 centrifugal precipitation-front speed in px/time (default: 0.10; radial costae regime)")
+    ap.add_argument("--N3", type=int, default=512, help="Pass 3 three-stage single-domain grid size (default: 512)")
+    ap.add_argument("--nm-per-px", type=float, default=12.5, help="Pass 3 physical scale of the three-stage grid (default: 12.5 nm/px)")
     args = ap.parse_args()
 
     if args.self_test:
@@ -914,12 +1590,17 @@ def main() -> int:
         steps=args.steps,
         seed=args.seed,
         skip_gif=args.skip_gif,
+        v_front=args.v_front,
+        N3=args.N3,
+        nm_per_px=args.nm_per_px,
     )
     print(
-        f"[2002-sumper-diatom-frustule-phase-sep v2] Rendered {COMPARISON_PNG.relative_to(ROOT)} & "
-        f"{GROWTH_GIF.relative_to(ROOT)} | "
+        f"[2002-sumper-diatom-frustule-phase-sep v3] Rendered {COMPARISON_PNG.relative_to(ROOT)}, "
+        f"{GROWTH_GIF.relative_to(ROOT)} & {COSTAE_GIF.relative_to(ROOT)} | "
         f"foramina={res['hierarchical']['n_foramen_pores']} -> cribrum={res['hierarchical']['n_cribrum_subpores']} | "
-        f"sweep r={res['sweep']['pearson_r']:.4f} | SEM d/a={res['specimen']['foramen_diameter_to_pitch_ratio']:.3f}"
+        f"sweep r={res['sweep']['pearson_r']:.4f} | SEM d/a={res['specimen']['foramen_diameter_to_pitch_ratio']:.3f} | "
+        f"costae A={res['costae']['anisotropy_margin']:+.3f} (null {res['front_sweep']['control_anisotropy_margin']:+.3f}) | "
+        f"3-stage counts={res['three_stage']['counts']}"
     )
     return 0
 

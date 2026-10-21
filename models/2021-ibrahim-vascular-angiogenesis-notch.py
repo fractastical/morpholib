@@ -117,7 +117,7 @@ from PIL import Image
 from scipy import ndimage, optimize, spatial, stats
 from skimage.morphology import skeletonize
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "vascular_angiogenesis_notch"
 REF_JSON = DATASET_DIR / "vascular_angiogenesis_notch_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "huvec_angiogenic_sprouting_plexus_specimen.jpg"

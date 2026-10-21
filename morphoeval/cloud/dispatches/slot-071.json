@@ -21,5 +21,93 @@
   "slot_index": 71,
   "slug": "diatom-frustule-phase-sep",
   "target_script": "2002-sumper-diatom-frustule-phase-sep.py",
-  "delta": 37.4
+  "delta": 37.4,
+  "pass3_run_id": "2026-10-19-diatom-frustule-phase-sep-loop-pass3",
+  "pass3_status": "completed_signed_not_published",
+  "pass3_supersedes_audit": "2026-10-19-diatom-frustule-phase-sep-audit-v2",
+  "pass3_audit_v3": "morphoeval/audits/2026-10-19-diatom-frustule-phase-sep-audit-v3.yaml",
+  "pass3_audit_id": "2026-10-19-diatom-frustule-phase-sep-audit-v3",
+  "pass3_score": 89.0,
+  "pass3_score_note": "rubric-weighted overall from the v3 KG REPORT.md (v2 REPORT 89.3; unweighted 7-dimension mean 89.6); flat by design: two items closed, deeper defects exposed",
+  "pass3_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 85,
+    "parameter-expressivity": 89,
+    "morphometric-validation": 86,
+    "source-traceability": 90,
+    "code-traceability": 92,
+    "repro-package": 92
+  },
+  "pass2_dims": {
+    "model-fidelity": 92,
+    "specimen-match": 87,
+    "parameter-expressivity": 86,
+    "morphometric-validation": 88,
+    "source-traceability": 93,
+    "code-traceability": 91,
+    "repro-package": 90
+  },
+  "pass3_completed_at": "2026-10-21T00:00:16Z",
+  "pass3_checkpoint_commit": "a69596cc",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-diatom-frustule-phase-sep-audit-v3",
+  "pass3_remediation_items_closed": [
+    "R1 centrifugal precipitation front coupled to Cahn-Hilliard -> radial costae lamellae (simulate_radial_quench_costae, run_front_velocity_sweep)",
+    "R2 explicit 3-stage 512x512 single-domain quench resolving cribrella (simulate_three_stage_hierarchy)"
+  ],
+  "pass3_remediation_closed": [
+    "Couple the 2D Cahn-Hilliard equation to a radially advancing centrifuge-driven silica precipitation front to model radial rib (costae) striation near the Coscinodiscus valve margin. -> simulate_cahn_hilliard_2d a_field/frozen_mask (L178-L243), simulate_radial_quench_costae (L405-L538), run_front_velocity_sweep (L540-L580); A(v=0.10)=+0.647 radial vs A(v=0.40)=-0.942 concentric vs null -0.110",
+    "Extend the two-stage hierarchical quench to an explicit 3-stage 512x512 grid simulation resolving tertiary cribrella pores simultaneously within a single domain. -> epsilon_for_pitch (L587-L590), simulate_three_stage_hierarchy (L600-L713), three_stage_cached (L718-L723); 12 -> 48 -> 225 pores, a_2/a_3 = 5.108 (ref 5.067), d_3 = 46.5 nm (ref 42)"
+  ],
+  "pass3_remediation_open": [
+    "L405-L440, L600-L633: costae parameters (lag 1.0, noise 0.005, width 2.0, R0 8, v 0.10) and 3-stage durations/erosions were hand-tuned; flag as tuned and sweep lag/noise to report the radial-concentric crossover as a phase boundary",
+    "specimen + L1319-L1339: no vendored valve-margin SEM; A and the contrast are referenced to the model's own isotropic null; vendor a SHA-pinned margin/costae SEM (Schmid & Volcani 1983) and measure rib spacing vs radius / bifurcation count",
+    "L86-L117 + centrifugal_front_three_stage_reference.json: new JSON not SHA-pinned and not loaded; pin it and drive Pass 3 defaults and self-test tolerances from it",
+    "L1394-L1412, L1261: hard-coded '24.01 px ... n=139', 'relative error=2.1%', '(139 foramina)' strings; |psi_6| ref 0.75 unsourced; two-stage 2.04 vs 7.0 miss undiscussed",
+    "L228-L238, L489-L496: frozen-silica conservation is a global re-projection; implement a conservative finite-volume variable-mobility update with per-chamber drift",
+    "L600-L713: cribrella at the grid floor (3.4-3.7 px) and only 12 foramina / 4.8 cribrum each; run >= 1024^2 or <= 6 nm/px with a stage-2 sweep and a resolution-convergence measurement",
+    "L1297-L1318, L540-L566: measure_morphoeval() ignores CLI params; null uses median-speed step count with 3 seeds (sd ~ mean); honour CLI, use slow-speed steps, >= 8 null seeds, tighten |A| < 0.35 (L1536)",
+    "L534-L535, L1571: dead radial/lab-frame coherence outputs for the lamellar layer; '--self-test' help says '8-check'; 3-stage 512^2 run has no animation",
+    "L19-L24, paper_citations.bib L45-L67: Furukawa 1992 and Schmid & Volcani 1983 DOIs transcribed offline, not verified"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_071.directional_quench_stable_ahead_of_front",
+    "MathOfBiology.Loop_071.frozen_front_monotone_irreversible"
+  ],
+  "pass3_lean_theorems_verified": 6,
+  "pass3_lean_verification": "lean morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean -> exit 0, 0 sorry",
+  "pass3_self_test": "PASS (11 checks, 30.2 s wall)",
+  "pass3_measurements_total": 14,
+  "pass3_self_test_checks": 11,
+  "pass3_new_media": [
+    "docs/media/diatom_frustule_phase_sep_radial_costae.gif"
+  ],
+  "pass3_new_dataset_files": [
+    "datasets/diatom_frustule_phase_sep/centrifugal_front_three_stage_reference.json"
+  ],
+  "pass3_handoff_note": "/tmp/pass3/handoff/slot-071.md",
+  "pass3_phase_a_completed_at": "2026-10-20T20:06:00Z",
+  "pass3_artifacts": [
+    "models/2002-sumper-diatom-frustule-phase-sep.py",
+    "morphoeval/lean/loops/Loop_071_diatom_frustule_phase_sep.lean",
+    "morphoeval/math_kg_loops/sumper-diatom-frustule-phase-sep.yaml",
+    "datasets/diatom_frustule_phase_sep/README.md",
+    "datasets/diatom_frustule_phase_sep/paper_citations.bib",
+    "datasets/diatom_frustule_phase_sep/centrifugal_front_three_stage_reference.json",
+    "docs/media/diatom_frustule_phase_sep_comparison.png",
+    "docs/media/diatom_frustule_phase_sep_growth.gif",
+    "docs/media/diatom_frustule_phase_sep_radial_costae.gif",
+    "docs/media/diatom_frustule_phase_sep_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-diatom-frustule-phase-sep-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-diatom-frustule-phase-sep-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-diatom-frustule-phase-sep-audit-v3/",
+    "morphoeval/runs/2026-10-19-diatom-frustule-phase-sep-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-diatom-frustule-phase-sep-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-diatom-frustule-phase-sep-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-diatom-frustule-phase-sep-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-diatom-frustule-phase-sep-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-diatom-frustule-phase-sep-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-071.json"
+  ]
 }

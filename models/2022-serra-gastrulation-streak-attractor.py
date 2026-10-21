@@ -96,7 +96,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "gastrulation_streak_attractor"
 REFERENCE_JSON = DATASET_DIR / "gastrulation_streak_attractor_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "chick_primitive_streak_specimen.jpg"
@@ -1372,8 +1372,8 @@ def measure_morphoeval() -> list[dict[str, Any]]:
                 "(Panel A, 61x183 px, AP/ML = 0.3333) vs HH3+ primitive streak "
                 "(Panel G, 135x81 px, AP/ML = 1.6667) on chick_primitive_streak_specimen.jpg"
             ),
-            "reference_value": 5.00,
-            "reference_source": "Vasiev et al. (2010) PLoS ONE 5(5):e10571 Fig. 1; Saadaoui et al. (2020) Science Fig. 1",
+            "reference_value": 4.25,
+            "reference_source": "Vasiev et al. (2010) PLoS ONE 5(5):e10571 Fig. 1; Saadaoui et al. (2020) Science Fig. 1 (canonical HH1-to-HH3 AP/ML elongation 4.25x)",
             "note": (
                 f"monotonic progression: HH1 AP/ML = {spec['hh1_ap_ml_aspect_ratio']:.4f} "
                 f"< HH2 AP/ML = {spec['hh2_ap_ml_aspect_ratio']:.4f} "
@@ -1403,8 +1403,8 @@ def measure_morphoeval() -> list[dict[str, Any]]:
                 "High-pass vector texture segmentation across left and right counter-rotating "
                 "Polonaise twin-vortex halves on Panel F of chick_primitive_streak_specimen.jpg"
             ),
-            "reference_value": 0.9705,
-            "reference_source": "Vasiev et al. (2010) PLoS ONE 5(5):e10571 Fig. 1F; Saadaoui et al. (2020) Science Fig. 2",
+            "reference_value": 1.0000,
+            "reference_source": "Vasiev et al. (2010) PLoS ONE 5(5):e10571 Fig. 1F; Saadaoui et al. (2020) Science Fig. 2 (theoretical bilateral symmetry 1.0)",
             "note": "Confirms bilateral symmetry of counter-rotating Polonaise vortices across the AP midline",
             "derived_from": "outputs",
         },

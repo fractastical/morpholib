@@ -99,7 +99,7 @@ from scipy import ndimage as ndi
 from scipy import stats
 from scipy.spatial import ConvexHull, Voronoi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "auxin_pin1_meristem_mechanics"
 REF_JSON_PATH = DATASET_DIR / "auxin_pin1_meristem_mechanics_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "arabidopsis_sam_meristem_specimen.jpg"

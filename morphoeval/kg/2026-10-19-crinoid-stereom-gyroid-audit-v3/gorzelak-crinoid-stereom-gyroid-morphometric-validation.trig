@@ -1,0 +1,316 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-gorzelak-crinoid-stereom-gyroid> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-gorzelak-crinoid-stereom-gyroid-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-gorzelak-crinoid-stereom-gyroid-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Yang et al. (2022) & Donnay & Pawson (1969) biogenic single-crystal calcite TPMS echinoderm stereom (Diamond D, Gyroid G, Primitive P), Gibson-Ashby cellular mechanics, nanoindentation twin-band arrest FEM & syncytial ACC templating — Morphometric validation: 86/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credit: `measure_morphoeval()` (L1842-2028) now returns 16 reference-anchored measurements; the 7 new ones (L1863-1934) report a non-trivial FEM result (max lamella 2.78 um against the geometric arrest bound a_0/sqrt(6) = 6.04 um; twinned-area ratio 0.123 against the phi = 0.50 null; k ratio 0.193) and the templating result (IoU 0.753 against 1.0 with the 0.418 flux-matched control in the method string). Deductions: the headline Pass 2 validation — 12-species r = 0.9997 (L1938-1947) — is circular because the table's e_rel_obs equals e_rel_pred +/- 0.002 by construction (-5); the Gibson-Ashby 2.0x at phi = 0.5 (L1988-1997) is the algebraic identity C phi/(C phi^2), chi = -4 (L1978-1987) is a lookup (L446-453) not computed from the field, and Z = 0 (L1998-2007) is assigned via get_tpms_nodal_strut_vectors(\"none\") (L441) (-3); several Pass 3 references are weak: the stiffness ratio reference 0.19 is Gibson-Ashby stretching although the 2D honeycomb is bending-dominated (L1895-1903), the pore-arrest fraction 0.26 vs ideal 1.0 includes notch-singularity elements at hexagon vertices (L1885-1893), the largest-domain fraction measures 0.766 against a reference of 1.0 (the single chance primary-nucleation event at k_1 = 1e-7 seeds a second domain holding 23% of the crystalline pixels; the self-test's `domains <= 2` does not catch this and the Phase A handoff reported it as ~0.999) (L1915-1923), and the ACC-fraction reference 0.0 is asymptotic rather than a literature time point (L1925-1934) (-3); the specimen a_0 reference is self-referential (L2018-2027) (-1). Net -6 from v2." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "datasets/crinoid_stereom_gyroid/crinoid_stereom_gyroid_reference.json L86–L98: DEFECT: cross_taxa_echinoderm_stereom_table has no per-row figure/table/DOI provenance; TPMS-type assignments (e.g. Cidaris rugosa 'Primitive P') unsupported <https://github.com/fractastical/morpholib/blob/9987db7d/datasets/crinoid_stereom_gyroid/crinoid_stereom_gyroid_reference.json#L86-L98>",
+            "models/2020-gorzelak-crinoid-stereom-gyroid.py L1885–L1903: Pass 3 references of limited strength: pore-arrest ideal 1.0 vs 0.26 (notch-vertex twinning), stiffness ratio reference 0.19 = stretching C phi while the honeycomb section is bending-dominated (GA 2.3 (t/l)^3 = 0.288 noted in the source string) <https://github.com/fractastical/morpholib/blob/9987db7d/models/2020-gorzelak-crinoid-stereom-gyroid.py#L1885-L1903>",
+            "models/2020-gorzelak-crinoid-stereom-gyroid.py L1915–L1923: DEFECT: largest-domain fraction measures 0.766 (measurements.yaml) vs reference 1.0 — a chance primary event seeds a 23% second domain; the self-test's domains <= 2 (L2130) does not catch it <https://github.com/fractastical/morpholib/blob/9987db7d/models/2020-gorzelak-crinoid-stereom-gyroid.py#L1915-L1923>",
+            "models/2020-gorzelak-crinoid-stereom-gyroid.py L1938–L1947: DEFECT: 12-species Pearson r = 0.9997 is circular — reference-table e_rel_obs is e_rel_pred +/- 0.002 for every row <https://github.com/fractastical/morpholib/blob/9987db7d/models/2020-gorzelak-crinoid-stereom-gyroid.py#L1938-L1947>",
+            "models/2020-gorzelak-crinoid-stereom-gyroid.py L1978–L2007: DEFECT: chi = -4 is a genus lookup (L446-453), 2.0x Gibson-Ashby ratio is the identity C phi/(C phi^2), pinch-off Z = 0 is assigned via the 'none' strut set (L441) <https://github.com/fractastical/morpholib/blob/9987db7d/models/2020-gorzelak-crinoid-stereom-gyroid.py#L1978-L2007>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-12-species-echinodermata-tpms-vs-labyrinthic-stereom-relative-modulus-correlation-e-e-s>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-3d-schwarz-diamond-tpms-implicit-surface-mean-curvature-h-on-zero-level-set>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-3d-schwarz-diamond-tpms-zero-level-set-solid-volume-fraction-phi-c-0>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-acc-fraction-of-spicule-mineral-remaining-after-48-h-of-templated-secondary-nucleation-transformation>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-crinoid-ossicle-sem-specimen-segmented-solid-calcite-volume-fraction-crinoid-stereom-ossicle-specimen-jpg>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-crinoid-ossicle-sem-specimen-segmented-trabecular-lattice-period-a-0-crinoid-stereom-ossicle-specimen-jpg>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-elastic-flat-punch-indentation-stiffness-ratio-of-the-111-diamond-lattice-section-to-the-monolithic-single-crystal>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-gibson-ashby-stretching-tpms-phi-1-vs-bending-foam-phi-2-stiffness-amplification-at-phi-0-50>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-largest-crystallographic-domain-fraction-of-spicule-calcite-under-secondary-nucleation-dominated-acc-calcite-transformation>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-fraction-of-lattice-twinned-elements-adjacent-to-a-strut-pore-interface-free-surface-arrest>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-twin-band-max-lamella-run-length-in-the-111-diamond-lattice-section-at-4x-monolith-twin-onset-depth>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-twinned-area-confinement-ratio-lattice-monolith-at-equal-indentation-depth-4x-onset>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-schwarz-diamond-z-4-tetrahedral-inter-strut-angle-arccos-1-3-in-protoreaster-nodosus>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-super-threshold-pinch-off-ablation-negative-control-nodal-strut-valence-c-1-35>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-syncytial-membrane-templating-fidelity-iou-mineral-tpms-template-after-48-h-of-acc-vesicle-delivery>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-tpms-unit-cell-euler-characteristic-chi-2-2g-for-genus-g-3-bicontinuous-stereom>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-morphometric-validation-2> ;
+        pk:hasScore "0.86"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-12-species-echinodermata-tpms-vs-labyrinthic-stereom-relative-modulus-correlation-e-e-s> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "12-species Echinodermata TPMS vs labyrinthic stereom relative modulus correlation E*/E_s = 0.9997 Pearson r" ;
+        dct:description "TPMS mean E*/E_s = 0.1750 vs labyrinthic mean = 0.0647" ;
+        schema:measurementTechnique "Correlation of Gibson-Ashby stretching (phi^1) and bending (phi^2) relative modulus predictions against observed stereom stiffness across 12 Asteroidea, Crinoidea, Echinoidea, and Ophiuroidea species (RMSE=0.0013)" ;
+        schema:name "12-species Echinodermata TPMS vs labyrinthic stereom relative modulus correlation E*/E_s" ;
+        schema:unitText "Pearson r" ;
+        schema:value "0.9997" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-12-species-echinodermata-tpms-vs-labyrinthic-stereom-relative-modulus-correlation-e-e-s-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-12-species-echinodermata-tpms-vs-labyrinthic-stereom-relative-modulus-correlation-e-e-s-reference> a schema:PropertyValue ;
+        dct:source "Yang et al. (2022) Science 375:647-652 & Gibson & Ashby (1997) Cellular Solids" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-3d-schwarz-diamond-tpms-implicit-surface-mean-curvature-h-on-zero-level-set> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3D Schwarz Diamond TPMS implicit-surface mean curvature H on zero level set = 0.0 dimensionless curvature |<H>|*a_0/(2*pi)" ;
+        dct:description "mean Gaussian curvature <K> = -0.6769 <= 0, saddle fraction = 100.0%" ;
+        schema:measurementTechnique "Surface-averaged implicit mean curvature H = -div(grad F / |grad F|)/2 on |F_D(X,Y,Z)| <= 0.18" ;
+        schema:name "3D Schwarz Diamond TPMS implicit-surface mean curvature H on zero level set" ;
+        schema:unitText "dimensionless curvature |<H>|*a_0/(2*pi)" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-3d-schwarz-diamond-tpms-implicit-surface-mean-curvature-h-on-zero-level-set-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-3d-schwarz-diamond-tpms-implicit-surface-mean-curvature-h-on-zero-level-set-reference> a schema:PropertyValue ;
+        dct:source "Schoen (1970) NASA TN D-5541 & Lean 4 theorem tpms_minimal_surface_zero_mean_curvature_and_nonpositive_gaussian" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-3d-schwarz-diamond-tpms-zero-level-set-solid-volume-fraction-phi-c-0> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3D Schwarz Diamond TPMS zero-level-set solid volume fraction phi(c = 0) = 0.5 volume fraction" ;
+        dct:description "Gyroid phi_G(0) = 0.5000, odd inversion residual = 1.55e-15" ;
+        schema:measurementTechnique "Exact 3D unit-cell voxel fraction of F_D(X,Y,Z) > 0 at threshold c = 0 under odd inversion symmetry F(-X,-Y,-Z) = -F(X,Y,Z)" ;
+        schema:name "3D Schwarz Diamond TPMS zero-level-set solid volume fraction phi(c = 0)" ;
+        schema:unitText "volume fraction" ;
+        schema:value "0.5" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-3d-schwarz-diamond-tpms-zero-level-set-solid-volume-fraction-phi-c-0-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-3d-schwarz-diamond-tpms-zero-level-set-solid-volume-fraction-phi-c-0-reference> a schema:PropertyValue ;
+        dct:source "Yang et al. (2022) Science 375:647-652 & Lean 4 theorem tpms_odd_inversion_symmetry_and_half_volume_fraction_at_zero" ;
+        schema:value "0.5" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-acc-fraction-of-spicule-mineral-remaining-after-48-h-of-templated-secondary-nucleation-transformation> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "ACC fraction of spicule mineral remaining after 48 h of templated secondary-nucleation transformation = 0.0299 mass fraction ACC / (ACC + calcite)" ;
+        dct:description "kinetic constants are model choices (see nanoindentation_spiculogenesis_reference.json); not a literature fit" ;
+        schema:measurementTechnique "Final A / (A + C) of the templated wild-type run (ACC fraction at 12/24/36 h = 0.966/0.787/0.326)" ;
+        schema:name "ACC fraction of spicule mineral remaining after 48 h of templated secondary-nucleation transformation" ;
+        schema:unitText "mass fraction ACC / (ACC + calcite)" ;
+        schema:value "0.0299" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-acc-fraction-of-spicule-mineral-remaining-after-48-h-of-templated-secondary-nucleation-transformation-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-acc-fraction-of-spicule-mineral-remaining-after-48-h-of-templated-secondary-nucleation-transformation-reference> a schema:PropertyValue ;
+        dct:source "Asymptotic complete ACC -> calcite transformation (Beniash et al. 1997; Politi et al. 2008 report a transient ACC fraction decreasing with spicule age; exact values not digitised offline)" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-crinoid-ossicle-sem-specimen-segmented-solid-calcite-volume-fraction-crinoid-stereom-ossicle-specimen-jpg> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Crinoid ossicle SEM specimen segmented solid calcite volume fraction (crinoid_stereom_ossicle_specimen.jpg) = 0.5187 volume fraction" ;
+        dct:description "Panel J periodic phi = 0.5473, Panel I labyrinthic phi = 0.3875" ;
+        schema:measurementTechnique "Difference-of-Gaussians segmented solid calcite trabecular area fraction in Panel K [111] hexagonal stereom ROI" ;
+        schema:name "Crinoid ossicle SEM specimen segmented solid calcite volume fraction (crinoid_stereom_ossicle_specimen.jpg)" ;
+        schema:unitText "volume fraction" ;
+        schema:value "0.5187" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-crinoid-ossicle-sem-specimen-segmented-solid-calcite-volume-fraction-crinoid-stereom-ossicle-specimen-jpg-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-crinoid-ossicle-sem-specimen-segmented-solid-calcite-volume-fraction-crinoid-stereom-ossicle-specimen-jpg-reference> a schema:PropertyValue ;
+        dct:source "Yang et al. (2022) Science 375:647-652 (bicontinuous TPMS stereom phi ~ 0.50)" ;
+        schema:value "0.5" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-crinoid-ossicle-sem-specimen-segmented-trabecular-lattice-period-a-0-crinoid-stereom-ossicle-specimen-jpg> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Crinoid ossicle SEM specimen segmented trabecular lattice period a_0 (crinoid_stereom_ossicle_specimen.jpg) = 14.8 um" ;
+        dct:description "period CV = 0.3360 across 325 intervals, pore NN = 14.25 px" ;
+        schema:measurementTechnique "1D horizontal DoG trabecular peak spacing across Panel K stereom scanlines (325 intervals, mean = 19.67 px at 0.752384 um/px)" ;
+        schema:name "Crinoid ossicle SEM specimen segmented trabecular lattice period a_0 (crinoid_stereom_ossicle_specimen.jpg)" ;
+        schema:unitText "um" ;
+        schema:value "14.8" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-crinoid-ossicle-sem-specimen-segmented-trabecular-lattice-period-a-0-crinoid-stereom-ossicle-specimen-jpg-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-crinoid-ossicle-sem-specimen-segmented-trabecular-lattice-period-a-0-crinoid-stereom-ossicle-specimen-jpg-reference> a schema:PropertyValue ;
+        dct:source "Yang et al. (2022) Science 375:647-652 (echinoderm TPMS stereom lattice constant a_0 = 13.8-15.2 um)" ;
+        schema:value "14.8" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-elastic-flat-punch-indentation-stiffness-ratio-of-the-111-diamond-lattice-section-to-the-monolithic-single-crystal> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Elastic flat-punch indentation stiffness ratio of the [111] Diamond lattice section to the monolithic single crystal = 0.1931 stiffness ratio k_lattice / k_monolith" ;
+        dct:description "2D plane-strain honeycomb section with t/l = 0.500 (thick-strut regime); order-of-magnitude cross-check only" ;
+        schema:measurementTechnique "Ratio of the elastic punch reaction per unit depth from the plane-strain FEM (lattice 8490 vs monolith 43966 N/mm per mm depth)" ;
+        schema:name "Elastic flat-punch indentation stiffness ratio of the [111] Diamond lattice section to the monolithic single crystal" ;
+        schema:unitText "stiffness ratio k_lattice / k_monolith" ;
+        schema:value "0.1931" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-elastic-flat-punch-indentation-stiffness-ratio-of-the-111-diamond-lattice-section-to-the-monolithic-single-crystal-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-elastic-flat-punch-indentation-stiffness-ratio-of-the-111-diamond-lattice-section-to-the-monolithic-single-crystal-reference> a schema:PropertyValue ;
+        dct:source "Gibson & Ashby (1997) stretching-dominated relative modulus C_stretch*phi = 0.38*0.50 = 0.19 used in Section 5; Gibson-Ashby regular-honeycomb in-plane prediction 2.3 (t/l)^3 = 0.288 is the bending-dominated 2D alternative" ;
+        schema:value "0.19" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-gibson-ashby-stretching-tpms-phi-1-vs-bending-foam-phi-2-stiffness-amplification-at-phi-0-50> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Gibson-Ashby stretching TPMS (phi^1) vs bending foam (phi^2) stiffness amplification at phi = 0.50 = 2.0 modulus ratio (E_stretch / E_bend)" ;
+        dct:description "stretching E*/E_s(0.5) = 0.1900 vs equal-C bending foam = 0.0950" ;
+        schema:measurementTechnique "Ratio of stretching-dominated TPMS relative modulus C*phi^1 to bending-dominated foam modulus C*phi^2 at 50% solid fraction" ;
+        schema:name "Gibson-Ashby stretching TPMS (phi^1) vs bending foam (phi^2) stiffness amplification at phi = 0.50" ;
+        schema:unitText "modulus ratio (E_stretch / E_bend)" ;
+        schema:value "2.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-gibson-ashby-stretching-tpms-phi-1-vs-bending-foam-phi-2-stiffness-amplification-at-phi-0-50-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-gibson-ashby-stretching-tpms-phi-1-vs-bending-foam-phi-2-stiffness-amplification-at-phi-0-50-reference> a schema:PropertyValue ;
+        dct:source "Gibson & Ashby (1997) Cellular Solids & Lean 4 theorem gibson_ashby_stretching_vs_bending_cellular_modulus_scaling" ;
+        schema:value "2.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-largest-crystallographic-domain-fraction-of-spicule-calcite-under-secondary-nucleation-dominated-acc-calcite-transformation> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Largest crystallographic domain fraction of spicule calcite under secondary-nucleation-dominated ACC -> calcite transformation = 0.7664 fraction of crystalline pixels" ;
+        dct:description "secondary share of conversion events = 0.9999; no-secondary ablation -> 4913 domains" ;
+        schema:measurementTechnique "Fraction of calcite pixels (C > 1/2) belonging to the largest domain after 48 h with k_secondary=0.6, k_primary=1e-07 (domains = 2; primary-dominant ablation k_primary=0.02 -> 239 domains)" ;
+        schema:name "Largest crystallographic domain fraction of spicule calcite under secondary-nucleation-dominated ACC -> calcite transformation" ;
+        schema:unitText "fraction of crystalline pixels" ;
+        schema:value "0.7664" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-largest-crystallographic-domain-fraction-of-spicule-calcite-under-secondary-nucleation-dominated-acc-calcite-transformation-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-largest-crystallographic-domain-fraction-of-spicule-calcite-under-secondary-nucleation-dominated-acc-calcite-transformation-reference> a schema:PropertyValue ;
+        dct:source "Donnay & Pawson (1969) Science 166:1147-1150 (single-crystal diffraction of echinoderm skeletal elements); Politi et al. (2008) PNAS 105:17362-17366 (secondary nucleation); Lean 4 theorem syncytial_secondary_nucleation_single_domain_and_acc_depletion" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-fraction-of-lattice-twinned-elements-adjacent-to-a-strut-pore-interface-free-surface-arrest> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Nanoindentation FEM fraction of lattice twinned elements adjacent to a strut-pore interface (free-surface arrest) = 0.26 fraction" ;
+        dct:description "lattice twinned elements n=200, bands=26, r90 damage radius 15.69 um vs monolith 15.31 um" ;
+        schema:measurementTechnique "Fraction of twinned lattice elements with a 4-connected pore neighbour at 4x onset depth (monolith has no internal free surfaces: 0 by construction)" ;
+        schema:name "Nanoindentation FEM fraction of lattice twinned elements adjacent to a strut-pore interface (free-surface arrest)" ;
+        schema:unitText "fraction" ;
+        schema:value "0.26" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-fraction-of-lattice-twinned-elements-adjacent-to-a-strut-pore-interface-free-surface-arrest-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-fraction-of-lattice-twinned-elements-adjacent-to-a-strut-pore-interface-free-surface-arrest-reference> a schema:PropertyValue ;
+        dct:source "Idealised arrest: every twin lamella terminates on a strut free surface (Yang et al. 2022 Science 375:647-652, qualitative)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-twin-band-max-lamella-run-length-in-the-111-diamond-lattice-section-at-4x-monolith-twin-onset-depth> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Nanoindentation FEM twin-band max lamella run length in the [111] Diamond lattice section at 4x monolith twin-onset depth = 2.775 um" ;
+        dct:description "lamella/bond = 0.4593 (must be <= 1); strut width 3.02 um; converged=True in 45 iterations" ;
+        schema:measurementTechnique "Plane-strain Q4 crystal-plasticity FEM (two e-twin variants at +/-26.25 deg, perfectly plastic tau_twin, initial-strain iteration, 120x120 elements, h=0.370 um); longest contiguous twinned run along a twin direction at depth 0.549 um (monolith: 16.84 um)" ;
+        schema:name "Nanoindentation FEM twin-band max lamella run length in the [111] Diamond lattice section at 4x monolith twin-onset depth" ;
+        schema:unitText "um" ;
+        schema:value "2.775" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-twin-band-max-lamella-run-length-in-the-111-diamond-lattice-section-at-4x-monolith-twin-onset-depth-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-twin-band-max-lamella-run-length-in-the-111-diamond-lattice-section-at-4x-monolith-twin-onset-depth-reference> a schema:PropertyValue ;
+        dct:source "Geometric arrest bound: [111]-projected Diamond strut length a_0/sqrt(6) = 6.04 um (Yang et al. 2022 Science 375:647-652: twin bands/dislocations arrested at strut-pore interfaces); Lean 4 theorem twin_lamella_arrest_and_dislocation_pileup_bounded_by_strut_length" ;
+        schema:value "6.0421" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-twinned-area-confinement-ratio-lattice-monolith-at-equal-indentation-depth-4x-onset> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Nanoindentation FEM twinned-area confinement ratio lattice / monolith at equal indentation depth (4x onset) = 0.1229 area ratio" ;
+        dct:description "ratio by depth nan, 0.036, 0.123, 0.173 at delta/delta_on = (1.0, 2.0, 4.0, 6.0); plastic-work ratio 0.103" ;
+        schema:measurementTechnique "Twinned element area of the [111] Diamond lattice section (27.4 um^2) divided by that of the monolithic single crystal (222.9 um^2) at the same punch depth 0.549 um" ;
+        schema:name "Nanoindentation FEM twinned-area confinement ratio lattice / monolith at equal indentation depth (4x onset)" ;
+        schema:unitText "area ratio" ;
+        schema:value "0.1229" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-twinned-area-confinement-ratio-lattice-monolith-at-equal-indentation-depth-4x-onset-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-nanoindentation-fem-twinned-area-confinement-ratio-lattice-monolith-at-equal-indentation-depth-4x-onset-reference> a schema:PropertyValue ;
+        dct:source "Null expectation: twinned area proportional to the section solid fraction phi = 0.50 (reference table naive_solid_fraction_damage_null); Yang et al. (2022) report damage confined to indent-adjacent struts" ;
+        schema:value "0.5" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-schwarz-diamond-z-4-tetrahedral-inter-strut-angle-arccos-1-3-in-protoreaster-nodosus> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Schwarz Diamond Z=4 tetrahedral inter-strut angle arccos(-1/3) in Protoreaster nodosus = 109.4712 deg" ;
+        dct:description "exact cos(theta) = -0.333333 (-1/3), vector sum norm = 0.00e+00" ;
+        schema:measurementTechnique "Inter-strut angle between 4-valent [111] tetrahedral trabecular struts meeting at Schwarz Diamond vertex nodes" ;
+        schema:name "Schwarz Diamond Z=4 tetrahedral inter-strut angle arccos(-1/3) in Protoreaster nodosus" ;
+        schema:unitText "deg" ;
+        schema:value "109.4712" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-schwarz-diamond-z-4-tetrahedral-inter-strut-angle-arccos-1-3-in-protoreaster-nodosus-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-schwarz-diamond-z-4-tetrahedral-inter-strut-angle-arccos-1-3-in-protoreaster-nodosus-reference> a schema:PropertyValue ;
+        dct:source "Yang et al. (2022) Science 375:647-652 & Lean 4 theorem tpms_nodal_connectivity_valence_and_diamond_tetrahedral_angle" ;
+        schema:value "109.4712" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-super-threshold-pinch-off-ablation-negative-control-nodal-strut-valence-c-1-35> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Super-threshold pinch-off ablation negative control nodal strut valence (c = 1.35) = 0.0 connected struts Z" ;
+        dct:description "ablation phi = 0.0422, bicontinuous = False" ;
+        schema:measurementTechnique "Nodal strut coordination number when level-set threshold exceeds pinch-off limit (c = 1.35 -> bicontinuity lost)" ;
+        schema:name "Super-threshold pinch-off ablation negative control nodal strut valence (c = 1.35)" ;
+        schema:unitText "connected struts Z" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-super-threshold-pinch-off-ablation-negative-control-nodal-strut-valence-c-1-35-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-super-threshold-pinch-off-ablation-negative-control-nodal-strut-valence-c-1-35-reference> a schema:PropertyValue ;
+        dct:source "Schoen (1970) NASA TN D-5541 & Lean 4 theorem tpms_odd_inversion_symmetry_and_half_volume_fraction_at_zero" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-syncytial-membrane-templating-fidelity-iou-mineral-tpms-template-after-48-h-of-acc-vesicle-delivery> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Syncytial membrane templating fidelity IoU(mineral, TPMS template) after 48 h of ACC vesicle delivery = 0.7531 intersection over union" ;
+        dct:description "IoU gain over untemplated control = 1.800x; vesicles inside template = 0.976" ;
+        schema:measurementTechnique "IoU between the final mineral footprint (A + C > 1/2) and the syncytial template cavity after 3012 accepted ~1.0 um ACC vesicles (p_in=1.0, p_out=0.03); untemplated flux-matched control IoU = 0.4183" ;
+        schema:name "Syncytial membrane templating fidelity IoU(mineral, TPMS template) after 48 h of ACC vesicle delivery" ;
+        schema:unitText "intersection over union" ;
+        schema:value "0.7531" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-syncytial-membrane-templating-fidelity-iou-mineral-tpms-template-after-48-h-of-acc-vesicle-delivery-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-syncytial-membrane-templating-fidelity-iou-mineral-tpms-template-after-48-h-of-acc-vesicle-delivery-reference> a schema:PropertyValue ;
+        dct:source "Ideal membrane templating (Beniash et al. 1997 Proc R Soc B 264:461-465; Vidavsky et al. 2014 PNAS 111:39-44; Wilt 2002 Zool Sci 19:253-261)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-tpms-unit-cell-euler-characteristic-chi-2-2g-for-genus-g-3-bicontinuous-stereom> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "TPMS unit-cell Euler characteristic chi = 2 - 2g for genus g = 3 bicontinuous stereom = -4.0 Euler characteristic chi" ;
+        dct:description "unit-cell genus g = 3, bicontinuous = True" ;
+        schema:measurementTechnique "Topological Euler characteristic chi = 2 - 2g per fundamental unit cell of genus g = 3 Diamond/Gyroid/Primitive TPMS" ;
+        schema:name "TPMS unit-cell Euler characteristic chi = 2 - 2g for genus g = 3 bicontinuous stereom" ;
+        schema:unitText "Euler characteristic chi" ;
+        schema:value "-4.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-tpms-unit-cell-euler-characteristic-chi-2-2g-for-genus-g-3-bicontinuous-stereom-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-measurement-tpms-unit-cell-euler-characteristic-chi-2-2g-for-genus-g-3-bicontinuous-stereom-reference> a schema:PropertyValue ;
+        dct:source "Schoen (1970) NASA TN D-5541 & Lean 4 theorem tpms_nodal_connectivity_valence_and_diamond_tetrahedral_angle" ;
+        schema:value "-4.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "models/2020-gorzelak-crinoid-stereom-gyroid.py L1842–L2028" ;
+        dct:description "measure_morphoeval(): 16 measurements (9 Pass 2 + 7 Pass 3), each with value, unit, method, reference_value, reference_source, note" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2020-gorzelak-crinoid-stereom-gyroid.py#L1842-L2028> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gorzelak-crinoid-stereom-gyroid-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "models/2020-gorzelak-crinoid-stereom-gyroid.py L1863–L1934" ;
+        dct:description "7 Pass 3 measurements: max lamella vs a_0/sqrt(6) bound, twinned-area ratio vs phi null, pore-arrest fraction, elastic stiffness ratio, templating IoU (with control), largest-domain fraction, final ACC fraction" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2020-gorzelak-crinoid-stereom-gyroid.py#L1863-L1934> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Pass 3 remediated assessment, executed by Claude Fable 5.1 Phase B subagent)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/79> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0040-1951(96)00273-9>,
+            <https://doi.org/10.1017/CBO9781139878326>,
+            <https://doi.org/10.1063/1.1665587>,
+            <https://doi.org/10.1073/pnas.0806604105>,
+            <https://doi.org/10.1073/pnas.1312833110>,
+            <https://doi.org/10.1080/14786445108561060>,
+            <https://doi.org/10.1098/rspb.1997.0066>,
+            <https://doi.org/10.1126/science.166.3909.1147>,
+            <https://doi.org/10.1126/science.abm8666>,
+            <https://doi.org/10.1130/0016-7606(1954)65%5B883:EDOCC%5D2.0.CO;2>,
+            <https://doi.org/10.2108/zsj.19.253> .
+    <https://doi.org/10.1016/S0040-1951(96)00273-9> dct:date "1997"^^xsd:gYear ;
+        dct:title "Strength characteristics of the r, f, and c slip systems in calcite" .
+    <https://doi.org/10.1017/CBO9781139878326> dct:date "1997"^^xsd:gYear ;
+        dct:title "Cellular Solids: Structure and Properties (2nd ed.)" .
+    <https://doi.org/10.1063/1.1665587> dct:date "1970"^^xsd:gYear ;
+        dct:title "Infinite periodic minimal surfaces without self-intersections" .
+    <https://doi.org/10.1073/pnas.0806604105> dct:date "2008"^^xsd:gYear ;
+        dct:title "Transformation mechanism of amorphous calcium carbonate into calcite in the sea urchin larval spicule" .
+    <https://doi.org/10.1073/pnas.1312833110> dct:date "2014"^^xsd:gYear ;
+        dct:title "Initial stages of calcium uptake and mineral deposition in sea urchin embryos" .
+    <https://doi.org/10.1080/14786445108561060> dct:date "1951"^^xsd:gYear ;
+        dct:title "The equilibrium of linear arrays of dislocations" .
+    <https://doi.org/10.1098/rspb.1997.0066> dct:date "1997"^^xsd:gYear ;
+        dct:title "Amorphous calcium carbonate transforms into calcite during sea urchin larval spicule growth" .
+    <https://doi.org/10.1126/science.166.3909.1147> dct:date "1969"^^xsd:gYear ;
+        dct:title "X-ray diffraction studies of echinoderm plates" .
+    <https://doi.org/10.1126/science.abm8666> dct:date "2022"^^xsd:gYear ;
+        dct:title "A damage-tolerant, dual-scale, single-crystalline microlattice in the knobby starfish, Protoreaster nodosus" .
+    <https://doi.org/10.1130/0016-7606(1954)65%5B883:EDOCC%5D2.0.CO;2> dct:date "1954"^^xsd:gYear ;
+        dct:title "Experimental deformation of calcite crystals" .
+    <https://doi.org/10.2108/zsj.19.253> dct:date "2002"^^xsd:gYear ;
+        dct:title "Biomineralization of the spicules of sea urchin embryos" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Yang et al. (2022) & Donnay & Pawson (1969) biogenic single-crystal calcite TPMS echinoderm stereom (Diamond D, Gyroid G, Primitive P), Gibson-Ashby cellular mechanics, nanoindentation twin-band arrest FEM & syncytial ACC templating — Morphometric validation 86/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-21T00:02:14Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-gorzelak-crinoid-stereom-gyroid-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/79> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

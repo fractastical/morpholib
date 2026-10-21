@@ -191,4 +191,108 @@ theorem duboc_nodal_left_right_rudiment_multiplicity :
     total_primary_podia 5 0 0 = 2 * total_primary_podia 5 0 1 := by
   decide
 
+-- ============================================================================
+-- Law 4 (Pass 3): Ocular Plate Rule (Mooi & David 1998, 2008) Biserial Plate
+--        Addition on the Domed Test — 20 Meridional Columns, Newest Plate at the
+--        Ocular, Alternating a/b Column Counts
+-- ============================================================================
+
+/-- Number of meridional plate columns on a regular euechinoid test:
+    `m_rays` biserial ambulacra (2 columns each) + `m_rays` biserial
+    interambulacra (2 columns each). -/
+def opr_meridional_columns (m_rays : Nat) : Nat :=
+  2 * m_rays + 2 * m_rays
+
+/-- Position (counted from the ocular / apical end, 0 = adjacent to the ocular)
+    of the plate with birth index `b` in a column holding `n` plates, when every
+    new plate is nucleated at the ocular end and displaces older plates orally
+    (Ocular Plate Rule). -/
+def opr_position_from_ocular (n b : Nat) : Nat :=
+  n - 1 - b
+
+/-- Number of plates that the `a` column receives when `k` plates are added
+    alternately to the two columns of a biserial ambulacrum, starting with `a`. -/
+def opr_alternating_count_a (k : Nat) : Nat :=
+  (k + 1) / 2
+
+/-- Number of plates that the `b` column receives under the same alternation. -/
+def opr_alternating_count_b (k : Nat) : Nat :=
+  k / 2
+
+/-- Theorem 4 (`opr_biserial_plate_addition_law`):
+    (a) A pentaradial test (`m_rays = 5`) has exactly `20` meridional columns
+        (`5 * 2` ambulacral + `5 * 2` interambulacral), of which `10` are ambulacral;
+    (b) Under the Ocular Plate Rule the youngest plate (`b = n - 1`) always sits at
+        position `0`, adjacent to the ocular, for every column length `n ≥ 1`, and
+        plate position from the ocular strictly increases with plate age
+        (`b₁ < b₂ < n → position b₂ < position b₁`);
+    (c) Alternating biserial addition splits any number `k` of new plates between
+        the `a` and `b` columns so that the counts always sum to `k` and never
+        differ by more than one plate (`a = b` or `a = b + 1`). -/
+theorem opr_biserial_plate_addition_law :
+    opr_meridional_columns 5 = 20 ∧
+    2 * 5 = 10 ∧
+    (∀ n : Nat, 1 ≤ n → opr_position_from_ocular n (n - 1) = 0) ∧
+    (∀ n b₁ b₂ : Nat, b₁ < b₂ → b₂ < n →
+        opr_position_from_ocular n b₂ < opr_position_from_ocular n b₁) ∧
+    (∀ k : Nat, opr_alternating_count_a k + opr_alternating_count_b k = k) ∧
+    (∀ k : Nat, opr_alternating_count_a k = opr_alternating_count_b k ∨
+                opr_alternating_count_a k = opr_alternating_count_b k + 1) := by
+  refine ⟨rfl, rfl, ?_, ?_, ?_, ?_⟩
+  · intro n hn
+    unfold opr_position_from_ocular
+    omega
+  · intro n b₁ b₂ h₁ h₂
+    unfold opr_position_from_ocular
+    omega
+  · intro k
+    unfold opr_alternating_count_a opr_alternating_count_b
+    omega
+  · intro k
+    unfold opr_alternating_count_a opr_alternating_count_b
+    omega
+
+-- ============================================================================
+-- Law 5 (Pass 3): Continuous Nodal Dose-Response (Hill Repression) Reduces to
+--        the Discrete Duboc (2005) Left-Right Rudiment Law at the Dose Extremes
+-- ============================================================================
+
+/-- Integer (per-mille) Hill repression of hydrocoel competence by a Nodal dose
+    `d` with half-maximal constant `K` and Hill coefficient 2:
+    `P(d) = 1000 * K^2 / (K^2 + d^2)`. -/
+def nodal_hill_competence_permille (d K : Nat) : Nat :=
+  1000 * (K * K) / (K * K + d * d)
+
+/-- Expected number of hydrocoel rings (per mille) as the sum of the two pouch
+    competences under left and right Nodal doses. -/
+def nodal_expected_rings_permille (dL dR K : Nat) : Nat :=
+  nodal_hill_competence_permille dL K + nodal_hill_competence_permille dR K
+
+/-- Nearest-integer ring count from the per-mille expectation. -/
+def nodal_rings_rounded (dL dR K : Nat) : Nat :=
+  (nodal_expected_rings_permille dL dR K + 500) / 1000
+
+/-- Theorem 5 (`nodal_dose_response_hill_reduces_to_discrete_law`), with `K = 10`
+    and a wild-type right dose `d_WT = 100 = 10 K` (strong repression):
+    (a) Competence is `1000` (full) at zero dose, `500` at `d = K` (EC50), and
+        drops monotonically through `d ∈ {0, 5, 10, 20, 50, 100}`;
+    (b) Rounded ring counts reproduce Law 3: WT `(0, 100) → 1` ring, Nodal
+        morpholino `(0, 0) → 2` rings, bilateral Nodal GOF `(100, 100) → 0` rings,
+        so `5 *` rings gives `5`, `10`, `0` primary podia exactly as
+        `total_primary_podia` does. -/
+theorem nodal_dose_response_hill_reduces_to_discrete_law :
+    nodal_hill_competence_permille 0 10 = 1000 ∧
+    nodal_hill_competence_permille 10 10 = 500 ∧
+    nodal_hill_competence_permille 5 10 > nodal_hill_competence_permille 10 10 ∧
+    nodal_hill_competence_permille 10 10 > nodal_hill_competence_permille 20 10 ∧
+    nodal_hill_competence_permille 20 10 > nodal_hill_competence_permille 50 10 ∧
+    nodal_hill_competence_permille 50 10 > nodal_hill_competence_permille 100 10 ∧
+    nodal_rings_rounded 0 100 10 = active_hydrocoel_rings 0 1 ∧
+    nodal_rings_rounded 0 0 10 = active_hydrocoel_rings 0 0 ∧
+    nodal_rings_rounded 100 100 10 = active_hydrocoel_rings 1 1 ∧
+    5 * nodal_rings_rounded 0 100 10 = total_primary_podia 5 0 1 ∧
+    5 * nodal_rings_rounded 0 0 10 = total_primary_podia 5 0 0 ∧
+    5 * nodal_rings_rounded 100 100 10 = total_primary_podia 5 1 1 := by
+  decide
+
 end MathOfBiology.Loop_075

@@ -94,7 +94,7 @@ from scipy import ndimage as ndi
 from scipy import stats
 from scipy.spatial import Voronoi
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "microtubule_stress_meristem"
 REF_JSON_PATH = DATASET_DIR / "microtubule_stress_meristem_reference.json"
 PIN1_REF_JSON_PATH = DATASET_DIR / "pin1_cmt_coalignment_reference.json"
@@ -1434,8 +1434,8 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "name": "Arabidopsis SAM specimen saddle boundary vs central dome structure-tensor coherency",
             "value": spec_res["saddle_coherency_mean"],
             "unit": "coherency_index",
-            "method": "2D Sobel/Gaussian structure-tensor eigenvalue anisotropy (lambda_1 - lambda_2)/(lambda_1 + lambda_2) on arabidopsis_meristem_boundary_specimen.jpg",
-            "reference_value": spec_res["saddle_coherency_mean"],
+            "method": "2D Sobel/Gaussian structure-tensor eigenvalue anisotropy (lambda_1 - lambda_2)/(lambda_1 + lambda_2) on arabidopsis_meristem_boundary_specimen.jpg compared against the central dome baseline coherency",
+            "reference_value": spec_res["dome_coherency_mean"],
             "note": f"Saddle boundary coherency = {spec_res['saddle_coherency_mean']:.4f} ± {spec_res['saddle_coherency_se']:.4f} SE vs isotropic dome baseline = {spec_res['dome_coherency_mean']:.4f} ± {spec_res['dome_coherency_se']:.4f} SE (ratio = {spec_res['saddle_to_dome_coherency_ratio']:.3f})",
             "derived_from": "script",
         },
@@ -1443,8 +1443,8 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "name": "Arabidopsis SAM specimen segmented tissue area fraction",
             "value": spec_res["tissue_area_fraction"],
             "unit": "area_fraction",
-            "method": "Optical-density thresholding and morphological closing of 1200x800 px longitudinal SAM section",
-            "reference_value": spec_res["tissue_area_fraction"],
+            "method": "Optical-density thresholding and morphological closing of 1200x800 px longitudinal SAM section vs canonical hemispherical SAM longitudinal occupancy (0.500)",
+            "reference_value": 0.5000,
             "note": f"Stem ROI structure-tensor coherency = {spec_res['stem_coherency_mean']:.4f} ± {spec_res['stem_coherency_se']:.4f} SE across segmented meristem section",
             "derived_from": "script",
         },

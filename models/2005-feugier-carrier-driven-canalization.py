@@ -100,7 +100,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 from scipy import stats
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "carrier_driven_canalization"
 REF_JSON_PATH = DATASET_DIR / "carrier_driven_canalization_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "leaf_tip_venation_loops_specimen.jpg"

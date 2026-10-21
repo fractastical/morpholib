@@ -1,0 +1,357 @@
+# MorphoEval audit — Chirat, Moulton & Goriely (2013) PNAS & Erlich et al. (2016) Mollusc Shell Marginal Buckling, 2026-10-19 (v3)
+#
+# Pass 3 (remediation round) re-score of `2013-chirat-mollusc-shell-marginal-buckling.py` (v3, 2387 lines) after the
+# instrumented loop `morphoeval/runs/2026-10-19-mollusc-shell-marginal-buckling-loop-pass3` closed both open v2
+# remediation items, superseding `2026-10-19-mollusc-shell-marginal-buckling-audit-v2` (91.3).
+#   - Primary assessor: Claude Fable 5.1 (Phase B audit subagent, reading the Phase A handoff, the diff and the
+#     current file; line numbers verified against commit e651a8b8 working tree)
+#   - Second assessor: rubric verification pass of the same agent family (no independent blinded run this pass)
+#
+# What Pass 3 changed (both v2 remediation items):
+#   1. Hollow tubular Murex spine self-contact closure — closed with an explicitly REDUCED model, not the requested
+#      3D finite-strain morphoelastic FEM: planar inextensible Euler-elastica cross-section of a growing spine fold
+#      (arc length L = W(1+eps), clamped flank roots at W = 6 mm, end-position penalty, pairwise self-contact penalty
+#      at wall thickness t = 0.35 mm, analytic gradients, L-BFGS-B, continuation in eps)
+#      (`relax_spine_cross_section_elastica` L511-644, `evaluate_spine_closure_sweep` L647-729,
+#      `build_hollow_spine_tube_surface` L732-743). Small-strain law A = (2/pi) sqrt(W dL): r = 0.99999;
+#      eps_close = 4.81 at M = 96 (5.00 at M = 160/224); gap/t after contact 0.9997.
+#   2. Predator-induced marginal damage + localized mantle repair — `relax_winkler_mantle_margin` (L221-359) gained a
+#      heterogeneous foundation k(s) (spectral EI d4 + P d2 via FFT, real-space k(s) w) and a template-memory `w_init`;
+#      `simulate_damage_repair_trajectory` (L748-889) runs 14 accretionary stations r in [28, 55] mm with a chipped
+#      sector at station 4 and an exponentially decaying callus; `evaluate_damage_repair` (L892-979) and
+#      `evaluate_repair_outcome_phase_diagram` (L982-1034) give adult N = 14 in register (registry error 0.000 lambda,
+#      scar index 0.27 -> 0.030) and a 5 x 4 (chip x rho) rib-intercalation phase diagram.
+#   3. 3 new Lean 4 theorems (7 total, 0 sorry): `chirat_repair_callus_raises_critical_load`,
+#      `erlich_repair_in_register_rib_count`, `chirat_spine_self_contact_closure_monotone`.
+#   4. New SHA-256-pinned reference table `pass3_spine_closure_damage_repair_reference.json` (5 verified files),
+#      `pass3_citations.bib` (Vermeij 1987), README "Pass 3 Additions"; 3 x 3 synthesis PNG (panels G-I new),
+#      new 3D PNG and 14-frame damage/repair GIF; self-test 8 -> 12 checks; measure_morphoeval 9 -> 16 measurements.
+#
+# Why the overall score goes DOWN (91.3 -> 87.0, weighted) even though both items were closed: this round looked one layer
+# deeper and found defects the v2 audit did not penalise — the wild-type EI = 1.085 mN mm^2 is back-fitted to the
+# rib count and contradicts the vendored JSON (0.18 / 1.79), the 12-species "collapse" regresses lambda_obs against
+# parameters that were set from lambda_obs (a tautology), the Winkler solver never reaches its tolerance and exits at
+# maxiter, the three new Pass 3 reference values are model-internal (mesh convergence, rounding heuristic,
+# consistency check) rather than empirical, and the slot's dispatch/telemetry metadata still carry the wrong
+# paper (Lenoci & Camp 2008 diatom biosilica). Scores are uncalibrated criterion-referenced scores on the rubric's
+# 0-100 scale. Line numbers refer to the working-tree files at commit e651a8b8.
+
+audit:
+  id: 2026-10-19-mollusc-shell-marginal-buckling-audit-v3
+  supersedes_audit_id: 2026-10-19-mollusc-shell-marginal-buckling-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Pass 3 remediated assessment, Phase B audit subagent)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-fable-5-1-thinking-high
+    label: "Claude Fable 5.1 Thinking High (Pass 3 Phase A builder; handoff evidence cross-checked against the diff)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/72
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e651a8b8
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 3 (v3) remediated evaluation of `2013-chirat-mollusc-shell-marginal-buckling.py`
+      (2387 lines, 12 self-test checks, 16 measurements) superseding
+      `2026-10-19-mollusc-shell-marginal-buckling-audit-v2`. e651a8b8 is the HEAD at audit time; the
+      remediated script, Lean module, math-KG YAML, dataset additions and media are uncommitted
+      working-tree changes on top of it (parallel-loop file isolation forbids committing from this slot).
+
+references:
+  chirat2013:
+    title: "Mechanical basis of morphogenesis and convergent evolution of spiny seashells"
+    authors: "Chirat R, Moulton DE, Goriely A"
+    venue: "Proceedings of the National Academy of Sciences 110(15):6015-6020 (2013)"
+    doi: 10.1073/pnas.1220443110
+  erlich2016:
+    title: "The physical basis of mollusk shell chiral coiling and antimarginal rib ornamentation"
+    authors: "Erlich A, Moulton DE, Goriely A, Chirat R"
+    venue: "Journal of the Royal Society Interface 13(123):20160592 (2016)"
+    doi: 10.1098/rsif.2016.0592
+  moulton2012:
+    title: "Mechanical growth and morphogenesis of seashells"
+    authors: "Moulton DE, Goriely A, Chirat R"
+    venue: "Journal of Theoretical Biology 311:69-79 (2012)"
+    doi: 10.1016/j.jtbi.2012.07.009
+  rudraraju2019:
+    title: "A computational framework for the morpho-elastic development of molluskan shells by surface and volume growth"
+    authors: "Rudraraju S, Moulton DE, Chirat R, Goriely A"
+    venue: "PLoS Computational Biology 15(7):e1007213 (2019)"
+    doi: 10.1371/journal.pcbi.1007213
+  vermeij1987:
+    title: "Evolution and Escalation: An Ecological History of Life"
+    authors: "Vermeij GJ"
+    venue: "Princeton University Press, Princeton NJ (1987). ISBN 978-0-691-08446-6. Book, no DOI; not verifiable offline during Pass 3"
+    url: https://press.princeton.edu/books/paperback/9780691000800/evolution-and-escalation
+
+simulations:
+  - id: chirat-mollusc-shell-marginal-buckling
+    name: "Chirat, Moulton & Goriely (2013) & Erlich et al. (2016) mollusc shell marginal buckling, hollow-spine closure and predator damage / mantle repair"
+    organism: "Pecten jacobaeus (Mediterranean scallop / Bivalvia, Ammonitida & Brachiopoda); Murex hollow spines (Gastropoda)"
+    script: 2013-chirat-mollusc-shell-marginal-buckling.py
+    output: docs/media/mollusc_shell_marginal_buckling_comparison.png
+    extra_outputs:
+      - docs/media/mollusc_shell_marginal_buckling_growth.gif
+      - docs/media/mollusc_shell_marginal_buckling_spine_closure_repair_3d.png
+      - docs/media/mollusc_shell_marginal_buckling_damage_repair.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-mollusc-shell-marginal-buckling-audit-v2
+    source_refs:
+      - chirat2013
+      - erlich2016
+      - moulton2012
+      - rudraraju2019
+      - vermeij1987
+    claim_boundary:
+      reported_in_source:
+        - "Chirat, Moulton & Goriely (2013): the mantle margin is an elastic beam on the Winkler foundation of the calcified shell edge; compressive growth thrust P above P_c = 2 sqrt(EI k) buckles it at lambda_c = 2 pi (EI/k)^(1/4), and hollow spines form where the buckled fold grows faster than its base"
+        - "Erlich et al. (2016): isometric vs rib-intercalating antimarginal ornamentation follows from whether lambda_c scales with the margin length (constant N) or stays fixed (N grows)"
+        - "Rudraraju et al. (2019): a 3D finite-strain morphoelastic shell FEM with surface and volume growth reproduces spine formation and closure"
+        - "Vermeij (1987): durophagous predators chip shell margins; molluscs repair the break and leave repair scars"
+      reconstructed_in_script:
+        - "Spectral L-BFGS-B minimisation of the fourth-order nonlinear Winkler-beam energy on a periodic margin (Pass 2), now with heterogeneous foundation k(s) and template-memory warm start; pitchfork amplitude law and subcritical control; 3D accretionary valve synthesis across 4 regimes; 12-species quarter-power regression; Pecten specimen costae segmentation; (Pass 3) planar inextensible elastica cross-section of a hollow spine fold with self-contact penalty, continuation in growth excess eps, and stacking into a tube surface; (Pass 3) 14-station damage/repair accretionary trajectory, scar index, healing-length fit, registry error, 5 x 4 chip-size x callus-stiffness outcome phase diagram"
+      transfer_boundary:
+        - "The hollow-spine closure model is a 2D cross-section elastica with prescribed base width W = 6 mm and wall thickness t = 0.35 mm; there is no out-of-plane coupling between cross-sections, no shell stretching energy and no growth tensor, so eps_close = 4.81 is a reduced-model number and its reference value (5.00) is mesh convergence of the same model, not a Murex measurement"
+        - "The repair callus stiffness ratio rho = 1.15 and decay length l_heal = 7 mm are prescribed, not measured; the critical chip arc 1.97 lambda is compared with a half-integer rounding heuristic (1.5 lambda), not a published repair-scar statistic"
+        - "EI = 1.085 mN mm^2 for Pecten is the value that makes lambda_c = 8.7766 mm give exactly 14 ribs over L = 122.87 mm; the vendored JSON default_parameters.EI_mN_mm2 is 0.18 and the Adult_V ontogenetic stage is 1.79, so the wild-type calibration is self-referential"
+      does_not_claim:
+        - "A 3D finite-strain morphoelastic shell finite-element solution (Rudraraju et al. 2019), emergent spine base width or wall thickness, measured repair-callus mechanics, free-edge (non-periodic) margin boundary conditions, or an independent empirical closure strain for Murex spines"
+    summary: >-
+      Pass 3 (v3) remediated evaluation of `2013-chirat-mollusc-shell-marginal-buckling.py`
+      (weighted 87.0/100, down from 91.3 in Pass 2 because this round penalises defects the v2
+      audit did not). Both v2 remediation items are closed: hollow-spine self-contact closure by a
+      reduced planar elastica with contact penalty (`relax_spine_cross_section_elastica` L511-644,
+      `evaluate_spine_closure_sweep` L647-729; small-strain law r = 0.99999, eps_close = 4.81, gap/t
+      after contact 0.9997), and predator chip + mantle repair by a heterogeneous-foundation
+      Winkler trajectory with template memory (`simulate_damage_repair_trajectory` L748-889,
+      `evaluate_damage_repair` L892-979, `evaluate_repair_outcome_phase_diagram` L982-1034; adult
+      N = 14 in register, registry error 0.000 lambda, scar index 0.27 -> 0.030, defects from chips
+      >= 1.97 lambda at rho = 1). 7 Lean theorems (3 new, 0 sorry), 12 self-test checks, 16
+      measurements, 5 SHA-256-pinned dataset files. Newly exposed defects: back-fitted EI = 1.085
+      vs JSON 0.18 / 1.79; tautological 12-species collapse; Winkler solver always exits at
+      maxiter; Pass 3 reference values are model-internal; dispatch/telemetry metadata still name
+      the wrong paper (Lenoci & Camp 2008 diatom biosilica); stale "8-check" CLI help.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The Pass 2 core is intact: exact fourth-order nonlinear Winkler-beam energy minimised by
+          spectral L-BFGS-B (`relax_winkler_mantle_margin`, L221-359) with P_c = 2 sqrt(EI k),
+          lambda_c = 2 pi (EI/k)^(1/4) and the supercritical pitchfork law (L164-202). Pass 3 adds a
+          physically honest reduced model of spine closure — an inextensible planar elastica with
+          clamped roots, end penalty and pairwise self-contact penalty, continuation in eps, and the
+          small-strain amplitude law A = (2/pi) sqrt(W dL) recovered to r = 0.99999 (L511-729) — and
+          a heterogeneous-foundation extension with template memory that keeps the default path
+          bitwise identical (L244-252, L292-298). Deductions: the requested 3D finite-strain
+          morphoelastic FEM was not built; the elastica has no out-of-plane coupling, stretching
+          energy or growth tensor, and W, t are prescribed (-4); the solver never converges to its
+          ftol = 1e-16 / gtol = 1e-13 tolerances and always exits at maxiter (L310, L357), so the
+          "equilibria" are iteration-count-limited (-3); the periodic FFT margin on [0, L) is applied
+          to an open valve fan, which makes an intercalated rib slide the whole pattern (L234, L263,
+          L328) (-2); the `antimarginal_intercalating_multicostate` and `cancellate_spiny_episodic_varix`
+          rib fields are prescribed cosines rather than solver output and `n_ribs_adult = 2 n_base - 0.5`
+          is hard-coded (L364-459, L435) (-3); EI = 1.085 is back-fitted to the rib count rather than
+          derived from mantle mechanics (L224, L473) (-2).
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [164, 202], note: "Analytical P_c, lambda_c and pitchfork amplitude law", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [221, 359], note: "Spectral L-BFGS-B Winkler-beam minimiser; Pass 3 k_profile (real-space k(s) w) and w_init template memory; ftol 1e-16 / gtol 1e-13 at L310 are never met, n_iterations == maxiter at L357", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [511, 644], note: "Reduced planar inextensible elastica with clamped roots, end penalty mu_end = 400 and pairwise self-contact penalty; analytic gradients; W, t prescribed", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [647, 743], note: "Continuation sweep in eps, small-strain law check, eps_close by interpolation of the neck gap through t, tube surface stacking (no out-of-plane coupling)", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [364, 459], note: "3D accretionary synthesis; intercalating and varix regimes are prescribed cosine fields and n_ribs_adult = 2*n_base - 0.5 is hard-coded at L435, not solver output", supports: false}
+          - {file: morphoeval/lean/loops/Loop_072_mollusc_shell_marginal_buckling.lean, lines: [18, 167], note: "7 Lean 4 theorems (4 Pass 2 + 3 Pass 3: callus raises P_c, repair rib-count bookkeeping, closure monotone in neck gap); 0 sorry, lean exit 0", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          The SHA-256-locked *Pecten jacobaeus* valve is still segmented to all 14 primary costae
+          (`segment_pecten_specimen`, L1181-1265; dtheta = 9.40 deg, CV = 0.2196), and the Pass 3
+          3 x 3 synthesis figure plus the new 3D figure and 14-frame GIF render a recognisable
+          hollow spine fold closing into a tube and a chipped valve healing back into register
+          (L1267-1785, L1896-2033). Deductions: no Murex specimen is vendored, so the spine
+          geometry (W = 6 mm, t = 0.35 mm, H/W at closure 2.31) is compared with nothing (-5); no
+          repair-scar specimen or image is vendored, so the damage/repair trajectory is validated
+          only against its own control (-4); the damaged-valve surface below the first station is a
+          presentation-only linear amplitude ramp (L1051-1057) (-1); the Pecten segmentation uses a
+          fixed `find_peaks` prominence/distance (L1232) tuned to this one image (-1); panel
+          titles A/B/C overlap slightly in the 3 x 3 layout (pre-existing) (-1); the Pass 2 image
+          evidence remains valid.
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [1181, 1265], note: "Polar DoG ridge segmentation of 14 primary radial costae; fixed find_peaks prominence 0.0018 / distance 22 at L1232", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [1896, 2033], note: "render_pass3_3d_figure (hollow spine tube + chipped valve) and render_damage_repair_gif (14 frames)", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [1037, 1070], note: "build_damaged_valve_surface: chip notch for the figure; inner region below first station is a linear ramp (L1051-1057), presentation only", supports: false}
+          - {file: docs/media/mollusc_shell_marginal_buckling_comparison.png, lines: [0, 0], note: "3 x 3 synthesis figure: A-F Pass 2 panels, G spine closure sweep, H chip/repair kymograph, I repair-outcome phase diagram", supports: true}
+          - {file: docs/media/mollusc_shell_marginal_buckling_spine_closure_repair_3d.png, lines: [0, 0], note: "New 3D figure: stacked spine cross-sections forming a hollow tube; chipped valve with repaired ribs in register", supports: true}
+          - {file: datasets/mollusc_shell_marginal_buckling/README.md, lines: [1, 40], note: "Only one specimen (Pecten jacobaeus valve) is vendored; no Murex spine or repair-scar specimen", supports: false}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Pass 3 adds four wired CLI flags (`--spine-W`, `--spine-t`, `--chip-half-angle`,
+          `--repair-k-ratio`, L2350-2353) that flow through `render_comparison_figure` overrides
+          (L1276-1285) into the elastica sweep and the repair evaluation; the repair-outcome phase
+          diagram sweeps chip half-angle {3,5,7,9,12} deg x rho {1.0,1.15,1.3,1.6} with a shared
+          control (L982-1034) and the outcome is monotone in chip size (self-test #12); the
+          closure sweep is a continuation in eps with the neck gap, aspect ratio and lumen area
+          tracked (L647-729). Pass 2 coverage (4 regimes, 8-point P/P_c sweep, 12 species,
+          `--EI --k --P-ratio --R-adult --seed`) is retained. Deductions: `--seed` affects only the
+          Winkler/damage noise, not the elastica (-2); `evaluate_repair_outcome_phase_diagram` is
+          called with the default seed and ignores the chip/rho overrides, so the CLI flags move
+          panel H but not panel I (L1289) (-3); l_heal and the station schedule are not exposed (-2);
+          the mesh resolution M that moves eps_close from 4.81 to 5.00 is not a CLI parameter (-3).
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [2341, 2384], note: "argparse: 4 new Pass 3 flags (L2350-2353) plus the Pass 2 set, all forwarded as overrides", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [1276, 1289], note: "Overrides consumed by evaluate_spine_closure_sweep and evaluate_damage_repair; phase diagram at L1289 takes only seed (ignores chip/rho overrides)", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [982, 1034], note: "5 x 4 chip-size x callus-stiffness outcome phase diagram with shared control", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [647, 729], note: "Continuation in eps with gap, aspect ratio, lumen area; M (segments) is a function argument, not a CLI flag", supports: true}
+      morphometric-validation:
+        value: 83
+        rationale: >-
+          `measure_morphoeval()` (L2036-2222) now returns 16 measurements with reference values:
+          the 9 Pass 2 metrics are unchanged (lambda_sim 8.7728 vs 8.7766 mm, pitchfork r 0.9992,
+          specimen 14 costae, CV 0.2196) and 7 are new (small-strain r = 1.0, eps_close 4.8068,
+          gap/t 0.9997, adult N 14, scar index 0.030, local P_c ratio sqrt(rho) 1.0724, critical chip
+          1.97 lambda). Deductions, which drive this dimension down from 92: the three headline
+          Pass 3 references are not independent data — eps_close is compared with mesh convergence
+          of the same model at M = 224 (L2069-2079), the critical chip with a rounding heuristic
+          (L2119-2129), and the heal-length fit 8.3 mm with the imposed 7 mm (consistency check,
+          L2089-2110) (-5); the 12-species quarter-power "collapse" regresses lambda_obs against
+          2 pi (EI/k)^(1/4) where the JSON EI, k were themselves set from lambda_obs, so r = 1.0000
+          and alpha = 0.2500 are tautological (L1073-1139) (-3); the rib-count ratio 27.5/14 compares
+          the hard-coded `2 n_base - 0.5` with its own reference (L435) (-1); the rib count in the
+          damage trajectory depends on a `find_peaks` prominence threshold of 0.25 A_eq (L836), so
+          the sector count 1 -> 0 at damage is threshold-dependent (-1); the registry/defect metrics
+          inherit the periodic-margin artefact (adult correlation ~ 0 in defect cells) (-1).
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [2036, 2222], note: "16 reference-anchored measurements (9 Pass 2 + 7 Pass 3), all with reference_value / unit", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [2069, 2079], note: "eps_close reference is the same model's mesh-convergence value at M = 224, stated as such — not an empirical closure strain", supports: false}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [2119, 2129], note: "Critical chip reference is a half-integer rounding heuristic (1.5 lambda), stated as such; numeric value 1.97 lambda", supports: false}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [1073, 1139], note: "12-species regression of lambda_obs on 2 pi (EI/k)^(1/4) with EI, k read from the JSON that was fitted to lambda_obs — tautological r = 1.0000", supports: false}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [892, 979], note: "evaluate_damage_repair: matched control, scar index, exponential heal-length fit, wrap-aware rib count, registry error restricted to +/- lambda/2, local P_c ratio sqrt(rho)", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [829, 840], note: "Rib crest count via find_peaks with prominence 0.25 A_eq (L836) — threshold-dependent", supports: false}
+      source-traceability:
+        value: 89
+        rationale: >-
+          Five dataset files are now SHA-256-pinned and verified fail-closed at runtime
+          (`EXPECTED_SHA256` L110-131, `verify_dataset_integrity` L141-153), including the new
+          `pass3_spine_closure_damage_repair_reference.json` (sha dcc719fa...); the four Pass 2 DOIs
+          are unchanged and `pass3_citations.bib` adds Vermeij (1987) for predator damage; the
+          README documents the Pass 3 additions and the specimen licence. Deductions: EI = 1.085
+          mN mm^2 is hard-coded in the script (L224, L371, L473, L516, L651, L758, L1276, L2039) but the
+          pinned reference JSON gives default_parameters.EI_mN_mm2 = 0.180 (JSON L65) and Adult_V
+          EI = 1.79131 (JSON L132-136) — only the 12-species row (JSON L149) matches, and that row
+          is back-fitted (-3); Vermeij (1987) is a book with no DOI and could not be verified offline
+          (-1); the slot's dispatch JSON `slug` is `cahn-hilliard-biosilica` and the telemetry run's
+          `paper` field names Lenoci & Camp (2008) diatom biosilica, so the campaign metadata for
+          this loop points at the wrong source (not fixable from this slot's file list) (-1).
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [110, 153], note: "EXPECTED_SHA256 with 5 pinned files (Pass 3 JSON added) and fail-closed verify_dataset_integrity()", supports: true}
+          - {file: datasets/mollusc_shell_marginal_buckling/pass3_spine_closure_damage_repair_reference.json, lines: [1, 68], note: "Pass 3 reference table: elastica parameters, mesh-convergence eps_close, repair parameters, in-register rib count, rounding-heuristic critical chip", supports: true}
+          - {file: datasets/mollusc_shell_marginal_buckling/pass3_citations.bib, lines: [1, 12], note: "Vermeij (1987) book entry with ISBN; explicitly flagged as not verifiable offline", supports: true}
+          - {file: datasets/mollusc_shell_marginal_buckling/README.md, lines: [33, 40], note: "Pass 3 Additions section with SHA-256 of the new reference table", supports: true}
+          - {file: datasets/mollusc_shell_marginal_buckling/mollusc_shell_marginal_buckling_reference.json, lines: [65, 149], note: "default_parameters.EI_mN_mm2 = 0.180 (L65) and Adult_V EI = 1.79131 (L136) disagree with the script's hard-coded 1.085; only the back-fitted Pecten row (L149) matches", supports: false}
+          - {file: morphoeval/cloud/dispatches/slot-072.json, lines: [25, 25], note: "slug 'cahn-hilliard-biosilica' — slot metadata names the wrong paper/organism for this script", supports: false}
+      code-traceability:
+        value: 90
+        rationale: >-
+          The header docstring (L1-78) maps Laws 1-5 to Chirat et al. (2013) PNAS, Erlich et al.
+          (2016), Rudraraju et al. (2019) and the 7 Lean theorems by name, and states plainly that
+          Law 5 is an honest reduced stand-in for the 3D FEM (L74-77); the Pass 3 functions carry
+          docstrings tying k(s) to the callus theorem (L244-252) and the elastica energy to its
+          terms (L524-531); the math-KG YAML registers the two new laws with single-range
+          `code_locus` pins refreshed to current lines. Deductions: the `--self-test` help string
+          still says "Run 8-check verification suite" although 12 checks run (L2343) (-2); the
+          section banner at L1265 still says "6-Panel Synthesis Figure" for a 3 x 3 figure (-1);
+          the hard-coded 1.085 / 0.285 / 1.250 constants in `measure_morphoeval` (L2039, L2042) are
+          not traced to the JSON (-2); `mu_end = mu_contact = 400` penalties are chosen without a
+          cited rationale (L517-519) (-2); the heuristic reference values are labelled as such in
+          `reference_source` strings, which is credited (-3 net total).
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [1, 78], note: "Header docstring: Laws 1-5 with DOIs and Lean theorem names; Law 5 explicitly a reduced stand-in for Rudraraju 2019 FEM", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [2343, 2343], note: "Stale CLI help: 'Run 8-check verification suite' while self_test() runs 12 checks", supports: false}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [2036, 2043], note: "measure_morphoeval hard-codes L=122.87, EI=1.085, k=0.285, kappa_3=1.250 rather than reading the pinned JSON", supports: false}
+          - {file: morphoeval/math_kg_loops/chirat-mollusc-shell-marginal-buckling.yaml, lines: [39, 113], note: "5 equations with single-range code_locus pins (L164-185, L187-202, L364-492, L748-1035, L511-743) matching current function boundaries", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic seeds (`seed=2013`, per-station `seed + i`), a 12-check `self_test()`
+          (L2225-2338) covering SHA-256 provenance for 5 files, JSON parity, subcritical control,
+          pitchfork sweep, 4 regimes, 12-species collapse, specimen segmentation, bitwise
+          determinism, elastica small-strain law and monotone closure, heterogeneous-k reduction to
+          the Pass 2 solver, chip/repair in-register healing, and phase-diagram monotonicity; all
+          12 pass (verified this pass, 50 s CPU / 1:53 wall under parallel-loop contention). Four
+          media files regenerate from the default invocation. Deductions: self-test #10 tolerates
+          1-2 % of A_eq shape differences because the solver stops at maxiter rather than at
+          tolerance (L2289-2300) (-3); self-test wall time has grown from seconds to ~20 s idle /
+          minutes under contention with no `--quick` path (-2); the CLI help is stale (L2343) (-1);
+          the uncommitted working-tree state means the audited artefacts are not yet reproducible
+          from a commit hash (-4; isolation constraint, not a script defect).
+        evidence:
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [2225, 2338], note: "12-check self_test(): 8 Pass 2 + 4 Pass 3 checks; PASSED all 12 at audit time", supports: true}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [2289, 2300], note: "Check 10 tolerates 1 % / 2 % of A_eq shape differences between code paths because L-BFGS-B exits at maxiter, not tolerance", supports: false}
+          - {file: 2013-chirat-mollusc-shell-marginal-buckling.py, lines: [2360, 2384], note: "Default invocation writes comparison PNG, Pass 3 3D PNG, growth GIF and damage/repair GIF; --skip-gif honoured", supports: true}
+          - {file: docs/media/mollusc_shell_marginal_buckling_damage_repair.gif, lines: [0, 0], note: "14-frame accretionary damage/repair GIF regenerated deterministically from seed 2013", supports: true}
+    remediation:
+      - >-
+        2013-chirat-mollusc-shell-marginal-buckling.py:511-743 — the hollow-spine closure is a planar
+        inextensible elastica with prescribed W = 6 mm, t = 0.35 mm and penalties mu = 400; no out-of-plane
+        coupling between cross-sections, no shell stretching energy, no growth tensor. Build the 3D
+        finite-strain morphoelastic shell FEM with volumetric growth (Rudraraju et al. 2019) or at least a
+        Kirchhoff-rod / shell-strip model in which W and t emerge from the margin solution, and validate
+        eps_close against a measured Murex spine cross-section rather than mesh convergence of the same model.
+      - >-
+        2013-chirat-mollusc-shell-marginal-buckling.py:224, 371, 473, 516, 651, 758, 1276, 2039 vs
+        datasets/mollusc_shell_marginal_buckling/mollusc_shell_marginal_buckling_reference.json:65, 132-136, 149 —
+        EI = 1.085 mN mm^2 is hard-coded in eight places and is the value that makes lambda_c = 8.7766 mm give
+        exactly 14 ribs over L = 122.87 mm, while the pinned JSON gives default EI = 0.180 and Adult_V EI = 1.79131.
+        Read EI from the JSON (one stage), derive it from mantle thickness and modulus, and report the rib count
+        as a prediction rather than a calibration target.
+      - >-
+        2013-chirat-mollusc-shell-marginal-buckling.py:1073-1139 — the 12-species quarter-power regression
+        uses EI, k values that were set from lambda_obs, so r = 1.0000 and alpha = 0.2500 are tautological.
+        Replace with an independent predictor (e.g. measured shell thickness h -> EI ~ E h^3/12 and k from
+        margin curvature) or re-label the panel and measurement as a consistency check, not a validation.
+      - >-
+        2013-chirat-mollusc-shell-marginal-buckling.py:310, 357, 605, 2289-2300 — L-BFGS-B never meets
+        ftol = 1e-16 / gtol = 1e-13 and always exits at maxiter (600; 500 in the trajectory), which is why
+        self-test #10 needs a 1-2 % of A_eq tolerance. Use realistic tolerances (ftol ~ 1e-12, gtol ~ 1e-8)
+        and assert convergence (`opt.success`) in the self-test, or switch to a Newton-Krylov solve of the
+        Euler-Lagrange equation.
+      - >-
+        2013-chirat-mollusc-shell-marginal-buckling.py:234, 263, 328, 834-836 — the margin is periodic on
+        [0, L) (FFT), so a repair-induced extra rib slides the whole 14 -> 15 pattern globally (adult
+        correlation ~ 0 in defect cells of the phase diagram); the rib count also depends on a find_peaks
+        prominence of 0.25 A_eq. Implement a free-edge or auricle-pinned (hinged) margin with a
+        finite-difference or Chebyshev discretisation so defects localise, and report rib counts with a
+        sensitivity to the prominence threshold.
+      - >-
+        2013-chirat-mollusc-shell-marginal-buckling.py:2069-2079, 2119-2129, 2089-2110 — the three Pass 3
+        headline references (eps_close vs M = 224 convergence, critical chip vs 1.5 lambda rounding
+        heuristic, heal length 8.3 vs imposed 7 mm) are model-internal. Vendor at least one empirical
+        anchor: repair-scar frequency / in-register rate from Vermeij (1987) or a later shell-repair survey,
+        or digitised Murex spine cross-sections.
+      - >-
+        2013-chirat-mollusc-shell-marginal-buckling.py:1289 and 2343, 1265 — `evaluate_repair_outcome_phase_diagram`
+        is called with the default seed only, so `--chip-half-angle` / `--repair-k-ratio` move panel H but not
+        panel I; `--self-test` help still says "8-check" (12 run) and the section banner still says "6-Panel"
+        (3 x 3). Forward the overrides as the grid centre and fix the two stale strings.
+      - >-
+        morphoeval/cloud/dispatches/slot-072.json:25 and morphoeval/runs/2026-10-19-mollusc-shell-marginal-buckling-loop-pass3.yaml
+        (run.paper) — slot metadata names `cahn-hilliard-biosilica` / Lenoci & Camp (2008) diatom biosilica /
+        *Thalassiosira pseudonana* for a Chirat/Erlich mollusc-shell script. Correct the campaign dispatch slug,
+        paper and organism fields at the campaign level (outside this slot's allowed file list).

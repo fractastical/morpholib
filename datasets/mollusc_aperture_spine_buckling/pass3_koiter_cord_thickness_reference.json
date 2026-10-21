@@ -1,0 +1,68 @@
+{
+  "dataset_id": "moulton-2015-mollusc-aperture-spine-buckling-pass3-v1",
+  "title": "Pass 3 reference table: reduced Koiter-type shell cord/varix spine coupling and mantle-edge thickness gradient / ontogenetic allometry for 2015-moulton-mollusc-aperture-spine-buckling.py",
+  "supersedes_audit": "2026-10-19-mollusc-aperture-spine-buckling-audit-v2",
+  "scope_note": "Both Pass 2 remediation items are closed with reduced-order models, not with a full 3D finite-strain Koiter shell FEM (Rudraraju et al. 2019) nor with micro-CT thickness data. (1) The mantle-margin surface w(s,t) is relaxed under the linearised Koiter / Foppl-von Karman thin-shell energy on a Winkler foundation with a varix growth window and oblique spiral-cord ridge forcing; spines, their count, registration and tilt are emergent (noise initial condition). (2) The along-margin thickness gradient h(s) is INFERRED from the SHA-256-locked Murex pecten specimen spacing profile by the inverse WKB law h ∝ lambda^(4/3), fed into a graded-rigidity comb solver, and an allometric instar series h_1 ∝ L^beta is propagated analytically. Residuals carried to Pass 4: true finite-strain FE shell with growth tensor; measured micro-CT h(s) cross-sections of Chicoreus ramosus instars.",
+  "sources": [
+    {"id": "moulton2015", "doi": "10.1016/j.jtbi.2014.09.021", "use": "hierarchical wavenumber law k^* = (3 K_s / (E h^3))^(1/4); local (WKB) extension to slowly varying h(s)"},
+    {"id": "chirat2013", "doi": "10.1073/pnas.1220443110", "use": "varix spines as mantle-margin buckling; spine positions relative to spiral cords in Muricidae (cord-templating hypothesis tested as a locking tongue)"},
+    {"id": "moulton2012", "doi": "10.1016/j.jtbi.2012.07.009", "use": "mantle-edge growth stretch gamma and the elastic foundation picture of the margin"},
+    {"id": "rudraraju2019", "doi": "10.1371/journal.pcbi.1007213", "use": "3D morphoelastic shell FEM framework that the reduced Koiter surface model approximates (residual)"},
+    {"id": "koiter1966", "citation": "Koiter WT (1966). On the nonlinear theory of thin elastic shells. Proc. Kon. Ned. Akad. Wetensch. B69:1-54.", "doi": null, "use": "Koiter shell energy (membrane + bending) whose linearised, prestressed form is used here"},
+    {"id": "manor2008", "citation": "Manor R, Hagberg A, Meron E (2008). Wave-number locking in spatially forced pattern-forming systems. EPL 83:10005.", "doi": "10.1209/0295-5075/83/10005", "use": "resonant spatial forcing and wavenumber-locking (Arnold-tongue) response of a pattern-forming system, the mechanism by which cord ridges lock varix spines"}
+  ],
+  "koiter_defaults": {
+    "L_s_mm": 67.2,
+    "L_t_mm": 24.0,
+    "n_s": 192,
+    "n_t": 96,
+    "h1_mm": 0.445,
+    "E_MPa": 12.0,
+    "K_s_eff": 1.98,
+    "gamma": 1.68,
+    "gamma_c": 1.08,
+    "onset_excess": 0.15,
+    "varix_halfwidth_mm": 5.0,
+    "sigma_varix_mm": 1.5,
+    "n_cords": 16,
+    "cord_obliquity_requested_deg": 10.0,
+    "cord_obliquity_realised_deg": 9.93,
+    "eps_cord": 0.15,
+    "k1_star_mm_inv": 1.5394,
+    "lambda1_mm": 4.0813,
+    "n_free_spines_theory": 16.465,
+    "energy": "U[w] = ∫∫ [ ½ D (∇²w)² − ½ P(t) (∂_s w)² + ½ K_0 w² + ¼ κ₃ w⁴ − f_cord(s,t) w ] ds dt,  D = 1, K_0 = (k_1^*)^4, P_c = 2 sqrt(D K_0), P(t) = P_c (1 + onset_excess) · window(t), κ₃ = 0.28 (k_1^*)² P_c, f_cord = eps_cord K_0 A_onset cos(k_c (s cos ψ + t sin ψ))",
+    "relaxation": "semi-implicit spectral gradient flow (3000 steps, dt = 0.25 / (P k_1^{*2})) from band-limited noise, then L-BFGS-B polish on the same energy",
+    "spine_height_law": "accreted height = 4.8 sqrt(gamma - gamma_c) mm (same elastica height law as solve_kirchhoff_elastica_spine_loop); wavelength frozen at onset",
+    "note_on_cord_representation": "A pure foundation-stiffness modulation at the cord wavenumber k_c would parametrically pump k_c/2 (Mathieu resonance) and cannot register spines to cords; cords are therefore represented as additive ridge forcing (pre-deflection of the margin where cords meet it)."
+  },
+  "cord_locking_sweep": {
+    "n_cords": [12, 13, 14, 15, 16, 17, 18, 19, 20],
+    "eps_list": [0.0, 0.01, 0.04, 0.15],
+    "grid": "n_s = 160, n_t = 64",
+    "expected_locking_tongue_width_monotone": true,
+    "expected_full_lock_at_eps_0_15": 9,
+    "obliquity_sweep_requested_deg": [0.0, 10.0, 19.0, 28.0, 35.0],
+    "obliquity_sweep_realised_deg": [0.0, 9.93, 19.29, 27.65, 34.99],
+    "obliquity_quantisation": "tan(psi) = (m_t / L_t) / (n_cords / L_s), integer m_t, so the cord field is bi-periodic on the (s,t) torus",
+    "rigid_spine_deregistration_estimate": "tan(psi*) = lambda_c / (2 W) with lambda_c = 4.2 mm, 2W = 10 mm  =>  psi* = 22.8 deg; the emergent spines tilt toward the cords, so numerical de-registration occurs later (reported by the script)"
+  },
+  "thickness_gradient": {
+    "method": "inverse WKB: h(u)/h_bar = (lambda(u)/lambda_bar)^(4/3) from the specimen inter-spine spacing profile along the siphonal canal (u in [0,1]); periodic two-harmonic least-squares fit; floor 0.35",
+    "specimen": "datasets/mollusc_aperture_spine_buckling/murex_pecten_aperture_specimen.jpg (sha256 2f87d4ec30ebec6adb82f91aec67eb300e3469f57920cbccf9c9bb0d22b703a8)",
+    "specimen_spacing_cv_obs": 0.2092,
+    "graded_comb": "D(s) = (h(s)/h_bar)^3, uniform supercriticality P(s) = P_c(s) (1 + onset_excess), onset_excess = 0.04, 512 points, gradient flow 6000 steps + L-BFGS-B",
+    "status": "INFERRED from specimen, not measured; micro-CT cross-sections of Chicoreus ramosus mantle edge across instars were NOT available offline (Pass 4 residual)"
+  },
+  "ontogeny": {
+    "law": "N_1(L) = L / lambda_1(h_1(L)) with h_1 = h_ref (L / L_ref)^beta  =>  N_1 ∝ L^(1 − 3 beta / 4)",
+    "beta_star_conservation": 1.3333333333333333,
+    "beta_sweep": [0.75, 1.0, 1.3333333333333333, 1.5],
+    "expected_log_slopes": [0.4375, 0.25, 0.0, -0.125],
+    "instars": 6,
+    "growth_ratio_per_instar": 1.22,
+    "L_ref_mm": 67.2,
+    "h_ref_mm": 0.445,
+    "status": "analytic propagation of the wavelength law; the allometric exponent beta of real Chicoreus ramosus instars is unknown here (Pass 4 residual: measure h_1 across instars by micro-CT)"
+  }
+}

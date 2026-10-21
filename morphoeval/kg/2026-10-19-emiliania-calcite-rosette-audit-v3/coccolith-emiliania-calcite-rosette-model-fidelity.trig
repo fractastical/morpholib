@@ -1,0 +1,97 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-coccolith-emiliania-calcite-rosette> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics — Model fidelity to source: 80/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The V/R ring, T-head rosette and Euler packing are implemented as before, and the two Pass 3 mechanisms are mechanically coherent: the contact model couples a Reissner shell stiffness, a protoplast foundation and lap-joint suture springs on the actual spherical Voronoi edges, resolves slide / fracture / arrest / exposure cascades, and reproduces the Jaya et al. (2016) qualitative order (sliding at 13.2 uN before apex fracture at 55.1 uN = sigma_f h^2 / alpha_p, arrested with sigma_neigh/sigma_f = 0.28); the vesicle law b/a = (2 + lambda)/(1 + 2 lambda) is the exact support-function solution of tau(psi) kappa(psi) = p and the relaxation reproduces it to 0.0034 over lambda in [1, 2.5]. Deductions: the coccosphere buckling load 0.042 E h^2 (1 + 0.012 (N - 12)) and the 2.36x amplification remain prescribed, unsourced constants that the new contact model does not reproduce (-6); the T-head slope 0.225 is tuned so that Omega = 4.2 gives the JSON's 1.72 and is linear whereas the vendored governing equation uses tanh(max(Omega - 1, 0)) (-4); the contact model is lumped (one radial DOF per plate, no Hertzian contact, no plate bending field) with all seven constants `model_assumption` (-4); the vesicle model imposes only the normal Laplace balance, with tangential equilibrium assumed to be supplied by anchored cytoskeleton, and lambda* is a fit (-3); the 44.61 deg rhombohedral angle is stated but unused and the 22.5 / 1.05 volume ratios are hard-coded (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "models/2022-coccolith-emiliania-calcite-rosette.py L200–L202: Rhombohedral {10-14} angle 44.61 deg stated but unused; R/V volume ratios 22.5 / 1.05 hard-coded without source <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L200-L202>",
+            "models/2022-coccolith-emiliania-calcite-rosette.py L264–L264: t_head_ratio = 1 + 0.225 c_CAP max(Omega-1, 0): linear slope tuned to give 1.72 at Omega = 4.2; JSON governing equation (line 75) uses tanh <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L264-L264>",
+            "models/2022-coccolith-emiliania-calcite-rosette.py L470–L478: Prescribed 0.042 E h^2 (1 + 0.012 (N-12)) buckling load and interlock_amplification = 2.36 with no source; not reproduced by the contact model <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L470-L478>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity-4> ;
+        pk:hasScore "0.8"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "models/2022-coccolith-emiliania-calcite-rosette.py L529–L575" ;
+        dct:description "build_coccosphere_voronoi_tiling: scipy SphericalVoronoi on Fibonacci generators, tile areas, 42 great-circle suture edges = 3(F-2), apex tile" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L529-L575> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "models/2022-coccolith-emiliania-calcite-rosette.py L578–L806" ;
+        dct:description "evaluate_coccosphere_nanoindentation_contact: lumped-plate FE (K = diag(k_cell + phi_lock k_Reissner A_i/A_tot) + Laplacian(k_ij)), Coulomb + sigma_lock slide threshold, alpha_p P/h^2 fracture, arrest and exposure tests, cascade-resolved event list" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L578-L806> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "models/2022-coccolith-emiliania-calcite-rosette.py L860–L989" ;
+        dct:description "Vesicle rim: exact law b/a = (2+lambda)/(1+2lambda), area-conserving semi-implicit contour relaxation, lambda* inferred from SEM b/a and sweep lambda in [1, 2.5]" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/models/2022-coccolith-emiliania-calcite-rosette.py#L860-L989> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean L218–L314" ;
+        dct:description "Pass 3 theorems: suture_capacity_ratio_selects_sliding_vs_fracture (zero capacity at d_ov = 0, monotone in d_ov, Pi-selector) and vesicle_rim_tension_anisotropy_sets_baseplate_aspect (circle at lambda = 1, b < a for lambda > 1, strictly decreasing, b/a > 1/2, 0.847 < b/a(1.656) < 0.848); lean exits 0, 0 sorry" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987db7d/morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean#L218-L314> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 primary assessor, Phase B)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/80> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/sapm194625180>,
+            <https://doi.org/10.1038/356516a0>,
+            <https://doi.org/10.1038/ncomms11904>,
+            <https://doi.org/10.1038/s41467-018-04168-9>,
+            <https://doi.org/10.1098/rspb.1993.0073> .
+    <https://doi.org/10.1002/sapm194625180> dct:date "1946"^^xsd:gYear ;
+        dct:title "Stresses and small displacements of shallow spherical shells. I" .
+    <https://doi.org/10.1038/356516a0> dct:date "1992"^^xsd:gYear ;
+        dct:title "Crystallographic control of biomineral morphology in coccoliths" .
+    <https://doi.org/10.1038/ncomms11904> dct:date "2016"^^xsd:gYear ;
+        dct:title "Coccospheres confer mechanical protection: insights into the Emiliania huxleyi architectural design" .
+    <https://doi.org/10.1038/s41467-018-04168-9> dct:date "2018"^^xsd:gYear ;
+        dct:title "The requirement for calcification differs between ecologically important coccolithophore species" .
+    <https://doi.org/10.1098/rspb.1993.0073> dct:date "1993"^^xsd:gYear ;
+        dct:title "Construction of stage-specific models of coccolith biomineralization in Emiliania huxleyi" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Young et al. (1992) & Jaya et al. (2016) Emiliania huxleyi V/R calcite crystal coccolith rosette shield & interlocking spherical coccosphere mechanics — Model fidelity to source 80/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T23:59:40Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-coccolith-emiliania-calcite-rosette-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/80> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

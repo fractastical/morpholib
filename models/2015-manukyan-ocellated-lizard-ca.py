@@ -94,7 +94,7 @@ from scipy import ndimage as ndi
 from scipy.spatial import cKDTree
 from scipy.stats import pearsonr, spearmanr
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "datasets" / "ocellated_lizard_ca"
 REF_JSON_PATH = DATASET_DIR / "ocellated_lizard_ca_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "timon_lepidus_specimen.jpg"

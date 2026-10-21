@@ -12,5 +12,92 @@
   "pass1_score": 52.2,
   "pass2_score": 91.8,
   "quick_gate_v2": 100,
-  "delta": 39.6
+  "delta": 39.6,
+  "pass3_status": "completed",
+  "pass3_run_id": "2026-10-19-emiliania-calcite-rosette-loop-pass3",
+  "audit_v3": "morphoeval/audits/2026-10-19-emiliania-calcite-rosette-audit-v3.yaml",
+  "pass3_audit_id": "2026-10-19-emiliania-calcite-rosette-audit-v3",
+  "pass3_score": 79.3,
+  "pass3_dims": {
+    "model-fidelity": 80,
+    "specimen-match": 72,
+    "parameter-expressivity": 84,
+    "morphometric-validation": 74,
+    "source-traceability": 82,
+    "code-traceability": 85,
+    "repro-package": 90
+  },
+  "pass3_dims_v2": {
+    "model-fidelity": 93,
+    "specimen-match": 90,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 92,
+    "source-traceability": 94,
+    "code-traceability": 92,
+    "repro-package": 91
+  },
+  "pass3_delta": -12.5,
+  "pass3_completed_at": "2026-10-21T00:00:11Z",
+  "pass3_checkpoint_commit": "9987db7d",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-emiliania-calcite-rosette-audit-v3",
+  "pass3_remediation_items_closed": [
+    "Voronoi suture-network nanoindentation contact model (reduced lumped-plate FE): coccolith sliding vs fracture arrest (evaluate_coccosphere_nanoindentation_contact, evaluate_contact_regime_map)",
+    "Golgi vesicle cytoskeletal rim tension anisotropy sets baseplate b/a = 0.8478 (e = 0.5303): b/a = (2+lambda)/(1+2lambda), lambda* = 1.656 inferred (evaluate_vesicle_rim_tension_eccentricity)"
+  ],
+  "pass3_remediation_closed": [
+    "Couple 3D coccosphere Voronoi tiling to finite-element nanoindentation contact mechanics to simulate individual coccolith sliding vs fracture arrest (Jaya et al. 2016) -> build_coccosphere_voronoi_tiling L529-575, evaluate_coccosphere_nanoindentation_contact L578-806, evaluate_contact_regime_map L809-855 (reduced lumped-plate FE; continuum FEM residual carried to Pass 4)",
+    "Model intracellular Golgi coccolith vesicle cytoskeletal ring tension that sets the initial elliptical eccentricity e = 0.5303 of the organic baseplate -> baseplate_aspect_from_tension_anisotropy L860-873, relax_vesicle_rim_contour L880-953, evaluate_vesicle_rim_tension_eccentricity L956-989 (lambda* = 1.6562 inferred from the SEM annotation)"
+  ],
+  "pass3_remediation_open": [
+    "L470-478, L1287: 0.042 E h^2 (1 + 0.012 (N-12)) buckling load and 2.36x interlock amplification are prescribed, unsourced, and not reproduced by the contact model — derive from the Reissner/Zoelly shell stiffness or drop the claim",
+    "L374-426 + reference JSON L96-107: 12-taxon l_d_obs_um equals round(l_d_pred_um, 2) for every row (circular r = 1.0000) — replace with cited literature measurements or relabel as self-consistency",
+    "L994-1078 (L1013): SEM ellipse centre / semi-axes / tilt / calibration are JSON annotations, not detected; b/a, L_d and lambda* rest on them — fit the ellipse from pixels and report fitted vs annotated",
+    "L264 vs reference JSON L75: linear t_head_ratio slope 0.225 (tuned to 1.72 at Omega = 4.2) vs vendored tanh governing equation — reconcile and cite",
+    "L120-146: coccosphere_contact_vesicle_tension_reference.json is loaded (L522-526) but not SHA-256 pinned — add to EXPECTED_SHA256 / verify_dataset_integrity",
+    "L818: evaluate_contact_regime_map ignores --n-cocc; expose sigma_lock, E_cell, p_turgor, lambda as CLI overrides (L1917-1924)",
+    "L31-46 + paper_citations.bib: Jaya 2016 and Walker 2018 venue/DOI pairs inconsistent; seed DOI 10.1038/356145a0 (campaign) vs 10.1038/356516a0 (script) — resolve online in Pass 4",
+    "L578-806: lumped contact network with seven model_assumption constants — add per-coccolith plate bending / Hertzian apex contact and at least one force anchor from Jaya et al. 2016",
+    "L1476-1539: render_growth_gif unchanged from Pass 2 — animate the vesicle rim relaxation (lambda 1 -> lambda*)"
+  ],
+  "pass3_residuals": [
+    "Contact model is lumped (1 radial DOF per coccolith), not a continuum 3D FEM with Hertzian punch contact; constants sigma_lock, sigma_f, E_cell, p_turgor, mu are provenance-tagged model assumptions",
+    "Vesicle rim tension anisotropy lambda* is calibrated to the SEM aspect ratio, not independently measured; Pass 2 2.36x buckling amplification constant remains prescribed and is not reproduced by the contact model"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_080.suture_capacity_ratio_selects_sliding_vs_fracture",
+    "MathOfBiology.Loop_080.vesicle_rim_tension_anisotropy_sets_baseplate_aspect"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_self_test": "PASSED all 12 checks",
+  "pass3_measurements": 16,
+  "pass3_new_files": [
+    "datasets/emiliania_calcite_rosette/coccosphere_contact_vesicle_tension_reference.json",
+    "datasets/emiliania_calcite_rosette/pass3_citations.bib",
+    "docs/media/emiliania_calcite_rosette_contact_indentation.gif"
+  ],
+  "pass3_artifacts": [
+    "models/2022-coccolith-emiliania-calcite-rosette.py",
+    "morphoeval/lean/loops/Loop_080_emiliania_calcite_rosette.lean",
+    "morphoeval/math_kg_loops/coccolith-emiliania-calcite-rosette.yaml",
+    "datasets/emiliania_calcite_rosette/README.md",
+    "datasets/emiliania_calcite_rosette/coccosphere_contact_vesicle_tension_reference.json",
+    "datasets/emiliania_calcite_rosette/pass3_citations.bib",
+    "docs/media/emiliania_calcite_rosette_comparison.png",
+    "docs/media/emiliania_calcite_rosette_growth.gif",
+    "docs/media/emiliania_calcite_rosette_contact_indentation.gif",
+    "docs/media/emiliania_calcite_rosette_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-emiliania-calcite-rosette-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-emiliania-calcite-rosette-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-emiliania-calcite-rosette-audit-v3/",
+    "morphoeval/runs/2026-10-19-emiliania-calcite-rosette-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-emiliania-calcite-rosette-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-emiliania-calcite-rosette-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-emiliania-calcite-rosette-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-emiliania-calcite-rosette-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-emiliania-calcite-rosette-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-080.json"
+  ],
+  "pass3_handoff": "/tmp/pass3/handoff/slot-080.md"
 }
