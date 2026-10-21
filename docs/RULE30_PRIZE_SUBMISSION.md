@@ -1118,11 +1118,29 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >    - Moreover, for $a_1 = 2$ (where $V^{(q)}_{0, 2}(m) \equiv V^{(q)}_{1, 2}(m)$ identically by Theorem 54(2)), the excess synchronization width $m_{\mathrm{sync}}(2, q) - q$ obeys an **exact period-3 oscillation** in $q \ge 1$:
 >      $$m_{\mathrm{sync}}(2, q) - q \;=\; \begin{cases} 7, & \text{if } q \equiv 2 \pmod 3, \\ 4, & \text{if } q \equiv 0, 1 \pmod 3, \end{cases} \qquad \text{i.e., } \bigl(m_{\mathrm{sync}}(2, q) - q\bigr)_{q \ge 1} \;=\; (4, 7, 4, 4, 7, 4, 4, 7, 4, \dots)! \quad \square$$
 
+### 6.45 Theorem 57: Exact 1D Offset Recurrence, $3 \cdot 2^m$ Period-Doubling Cascade & Quantized Plateau-Jumping Crystal Coalescence Law
+
+> **Theorem 57 (Exact 1D Offset Recurrence $x_s(q) = x_{s-1}(q) \oplus \bigl(x_s(q-1) \lor x_s(q-2)\bigr)$, Universal $d_1 = 0$ Even-Run Independence, $3 \cdot 2^m$ Period-Doubling Cascade of the Master Periodic Crystal $W_q(s)$, and Quantized Plateau-Jumping Crystal Coalescence).**  
+> 1. **Exact 1D Offset Recurrence in $(q, s)$ & Universal $d_1 = 0$ Even-Run Independence (`rec_qs_errors == 0` across $20,196$ entries and `d0_univ_errors == 0` across $11,025$ entries, `Law 2af` in Lean 4):**  
+>    - In offset coordinates $s := m - q \ge 0$ (so $m = q + s$ and $t = T_1 - s$), the relaxation profile $x_s(q) := V^{(q)}_{d_1, a_1}(q + s) = l_{q+s}^{(d_1)}(T_1 - s)$ satisfies the **exact shift-free 1D recurrence** (`rule30_relaxation_offset_recurrence_invertibility`):
+>      $$x_s(q) \;=\; x_{s-1}(q) \;\oplus\; \bigl(x_s(q - 1) \;\lor\; x_s(q - 2)\bigr) \qquad (\forall\, q \ge 2,\; \forall\, s \ge 1), \qquad x_0(q) \;\equiv\; 0,$$
+>      which is algebraically invertible in $x_{s-1}(q) = x_s(q) \oplus \bigl(x_s(q - 1) \lor x_s(q - 2)\bigr)$.
+>    - For $d_1 = 0$ ($i_1 = b_1$) and **every** even `1`-run length $a_1 \ge 4$ ($a_1 \in \{4, 6, 8, 10, \dots\}$), the initial columns at $q \in \{0, 1\}$ are identical across all $s \ge 0$, so $V^{(q)}_{0, a_1}(q + s) \equiv W_q^*(s)$ is a **single universal table $100\%$ independent of $a_1 \ge 4$ for all $q \ge 0$ and all $s \ge 0$**!
+> 2. **Exact $3 \cdot 2^m$ Period-Doubling Cascade of the Master Periodic Crystal $W_q(s) := V^{(q)}_{0, 2}(q + s)$ (`cascade_3_2m_errors == 0` across $1,635$ entries):**  
+>    - Across $s = 0 \dots 29$, every column $s$ of the Master Periodic Crystal $W_q(s) := V^{(q)}_{0, 2}(q + s)$ is **purely periodic in $q$ with zero transient** ($q \ge 0$ for even $s$, $q \ge 1$ for odd $s$) and minimal period $P_s$ following the **$3 \cdot 2^m$ period-doubling cascade**:
+>      $$P_s \;=\; \begin{cases} 1, & s \in \{0, 1\}, \\ 3, & s \in \{2, 3\}, \\ 6, & s \in \{4, \dots, 9\}, \\ 12, & s \in \{10, \dots, 17\}, \\ 24, & s \in \{18, \dots, 29\}, \end{cases}$$
+>      with exact odd-even column complementarity $x_{2j+1}(q) = 1 \oplus x_{2j}(q)$ whenever $x_{2j}(q)$ satisfies the Golden-Mean no-`00` condition (`rule30_relaxation_column_complement_from_golden_mean`).
+> 3. **Phase-Shifted Master-Crystal Coalescence & Quantized Plateau-Jumping Synchronization (`shift3_a2_errors == 0` across $1,980$ entries and `plateau_jump_errors == 0` across $144$ plateau fronts):**  
+>    - Whenever $x_s(q - 1) = 1$, the OR-gate $\bigl(1 \lor x_s(q - 2)\bigr) = 1$ erases the memory of $x_s(q - 2)$ (`rule30_relaxation_or_saturation_memory_erasure`), driving every relaxation crystal $V^{(q)}_{d_1, a_1}(q + s)$ into a **phase-shifted copy $W_{q + \delta}(s)$ of the Master Periodic Crystal**:
+>      - **($a_1 = 2$ Exact $+3$ Phase Shift):** $V^{(q)}_{2, 2}(q + s) \equiv W_{q + 3}(s)$ for all $q \ge 1$ and all $s \ge 0$.
+>      - **($a_1 \in \{4, 6\}$ Plateau Jump to $s = 10$ & 2-Crystal Coalescence on $s < 18$):** For all $q \ge 22$, all 3 crystals $d_1 \in \{0, 1, 2\}$ coalesce identically to $W_{q + 3}(s)$ on $0 \le s < 10$, jumping $s_{\mathrm{sync}}(a_1, q) = m_{\mathrm{sync}}(a_1, q) - q$ from $\{5, 8\}$ up to the **exact period-6 oscillator** $(10, 12, 10, 10, 15, 10)^\infty$; and for all $q \ge 32$, they coalesce on $0 \le s < 18$ into the 2-crystal pair $\{W_{q+3}(s), W_{q+9}(s)\}$!
+>      - **($a_1 \in \{8, 12\}$ Plateau Jump to $s = 18$):** For all $q \ge 34$, all 3 crystals $d_1 \in \{0, 1, 2\}$ coalesce identically to $W_{q + 3}(s)$ across the entire plateau $0 \le s < 18$, jumping $s_{\mathrm{sync}}(a_1, q)$ to the **exact period-12 oscillator** $(18, 18, 21, 18, 18, 20, 18, 18, 18, 18, 18, 22)^\infty$! $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All fifty-five theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All fifty-six theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

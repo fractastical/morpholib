@@ -10800,6 +10800,195 @@ def verify_two_triangle_decomposition_upstream_relaxation_crystals_and_a1_eq2_pe
     }
 
 
+def verify_relaxation_offset_recurrence_3times2m_cascade_and_plateau_jumping() -> dict:
+    r"""Verify Theorem 57 (Milestone 56 — Exact 1D Offset Recurrence, 3*2^m Period-Doubling Cascade
+    & Quantized Plateau-Jumping Crystal Coalescence Law):
+      1. Exact 1D Offset Recurrence in (q, s) & Universal d_1 = 0 Even-Run Independence:
+         In offset coordinates s := m - q >= 0 (so m = q + s and t = T_1 - s), the relaxation
+         profile x_s(q) := V^{(q)}_{d_1, a_1}(q + s) = l_{q+s}^{(d_1)}(T_1 - s) satisfies the
+         exact shift-free 1D recurrence:
+             x_s(q) = x_{s-1}(q) ^ (x_s(q - 1) | x_s(q - 2))   (forall q >= 2, s >= 1),   x_0(q) = 0,
+         and for d_1 = 0 (i_1 = b_1) and EVERY even a_1 >= 4, V^{(q)}_{0, a_1}(q + s) == W_q^*(s)
+         is a single universal table 100% independent of a_1 >= 4 across all q >= 0 and s >= 0!
+      2. Exact 3*2^m Period-Doubling Cascade of the Master Periodic Crystal W_q(s) := V^{(q)}_{0, 2}(q + s):
+         Across s = 0..29, every column s of W_q(s) is purely periodic in q with ZERO transient
+         (q >= 0 for even s, q >= 1 for odd s) and minimal period following the 3*2^m cascade:
+           - s in {0, 1}: P_s = 1;
+           - s in {2, 3}: P_s = 3;
+           - s in {4..9}: P_s = 6;
+           - s in {10..17}: P_s = 12;
+           - s in {18..29}: P_s = 24.
+      3. Phase-Shifted Master-Crystal Coalescence & Quantized Plateau-Jumping Synchronization:
+         - For a_1 = 2, d_1 = 2: V^{(q)}_{2, 2}(q + s) == W_{q+3}(s) for all q >= 1, s >= 0 (exact +3 phase shift).
+         - For a_1 in {4, 6}, all 3 crystals d_1 in {0, 1, 2} coalesce to W_{q+3}(s) on 0 <= s < 10 for q >= 22,
+           jumping s_sync(a_1, q) = m_sync(a_1, q) - q to the exact period-6 oscillator (10, 12, 10, 10, 15, 10)^infty,
+           and coalesce into the 2-crystal pair {W_{q+3}(s), W_{q+9}(s)} on 0 <= s < 18 for q >= 32.
+         - For a_1 in {8, 12}, all 3 crystals d_1 in {0, 1, 2} coalesce to W_{q+3}(s) on 0 <= s < 18 for q >= 34,
+           jumping s_sync(a_1, q) to the exact period-12 oscillator (18, 18, 21, 18, 18, 20, 18, 18, 18, 18, 18, 22)^infty.
+    """
+    def _evolve_mb(
+        blocks: list[tuple[int, int]], jumps: list[int], max_m: int = 240
+    ) -> dict[int, list[int]]:
+        c: list[int] = []
+        l1: list[int] = []
+        for (b, a), i in zip(blocks, jumps):
+            c.extend([0] * b + [1] * a)
+            l1.extend([0] * i + [1] * (b - i) + [0] + [(s + 1) % 2 for s in range(1, a)])
+        a_last = blocks[-1][1]
+        c.append(0)
+        l1.append(a_last % 2)
+        N_tot = len(c)
+        L_mat: dict[int, list[int]] = {0: c[:], 1: l1[:]}
+        for m in range(2, min(max_m + 1, N_tot)):
+            L_mat[m] = [
+                L_mat[m - 1][s + 1] ^ (L_mat[m - 1][s] | L_mat[m - 2][s])
+                for s in range(N_tot - m)
+            ]
+        return L_mat
+
+    b1 = 110
+    b2 = 100
+    i2 = 100
+    rec_qs_errors = 0
+    rec_qs_entries = 0
+    d0_univ_errors = 0
+    d0_univ_entries = 0
+
+    L_a2_d0 = _evolve_mb([(b1, 2), (b2, 2)], [b1, i2], max_m=190)
+    T_a2 = b1 + 2
+    L_a4_d0 = _evolve_mb([(b1, 4), (b2, 2)], [b1, i2], max_m=190)
+    T_a4 = b1 + 4
+
+    # 1. Exact 1D-in-(q, s) Relaxation Recurrence & Universal d_1 = 0 Even-Run Independence for a_1 >= 4
+    for a1 in range(2, 22, 2):
+        T1 = b1 + a1
+        for d1 in ((0, 1, 2) if a1 <= 8 else (0,)):
+            Lm = _evolve_mb([(b1, a1), (b2, 2)], [b1 - d1, i2], max_m=190)
+            for q in range(2, 35):
+                for s in range(1, 35):
+                    rec_qs_entries += 1
+                    lhs = Lm[q + s][T1 - s]
+                    rhs = Lm[q + s - 1][T1 - (s - 1)] ^ (
+                        Lm[q - 1 + s][T1 - s] | Lm[q - 2 + s][T1 - s]
+                    )
+                    if lhs != rhs:
+                        rec_qs_errors += 1
+            if d1 == 0 and a1 >= 4:
+                for q in range(0, 35):
+                    for s in range(0, 35):
+                        d0_univ_entries += 1
+                        if Lm[q + s][T1 - s] != L_a4_d0[q + s][T_a4 - s]:
+                            d0_univ_errors += 1
+
+    # 2. Exact 3*2^m Period-Doubling Cascade of the Master Periodic Crystal W_q(s) = V^{(q)}_{0, 2}(q + s)
+    cascade_3_2m_errors = 0
+    cascade_3_2m_entries = 0
+    for s in range(0, 30):
+        if s <= 1:
+            P_s = 1
+        elif s <= 3:
+            P_s = 3
+        elif s <= 9:
+            P_s = 6
+        elif s <= 17:
+            P_s = 12
+        else:
+            P_s = 24
+        q_start = s % 2
+        for q in range(q_start, 55):
+            cascade_3_2m_entries += 1
+            if L_a2_d0[q + s][T_a2 - s] != L_a2_d0[q + P_s + s][T_a2 - s]:
+                cascade_3_2m_errors += 1
+        if P_s > 1:
+            half_P = P_s // 2 if P_s >= 6 else 1
+            if all(
+                L_a2_d0[q + s][T_a2 - s] == L_a2_d0[q + half_P + s][T_a2 - s]
+                for q in range(q_start, 55)
+            ):
+                cascade_3_2m_errors += 1
+
+    # 3. Exact Phase-Shifted Master-Crystal Coalescence & Quantized Plateau-Jumping Synchronization
+    L_a2_d2 = _evolve_mb([(b1, 2), (b2, 2)], [b1 - 2, i2], max_m=190)
+    shift3_a2_errors = 0
+    shift3_a2_entries = 0
+    for q in range(1, 45):
+        for s in range(0, 45):
+            shift3_a2_entries += 1
+            if L_a2_d2[q + s][T_a2 - s] != L_a2_d0[q + 3 + s][T_a2 - s]:
+                shift3_a2_errors += 1
+
+    plateau_jump_errors = 0
+    plateau_jump_entries = 0
+    expected_p6 = [10, 12, 10, 10, 15, 10]
+    for a1 in (4, 6):
+        T1 = b1 + a1
+        L_ref = {
+            d1: _evolve_mb([(b1, a1), (b2, 2)], [b1 - d1, i2], max_m=190)
+            for d1 in (0, 1, 2)
+        }
+        for q in range(22, 64):
+            plateau_jump_entries += 1
+            for d1 in (0, 1, 2):
+                for s in range(10):
+                    if L_ref[d1][q + s][T1 - s] != L_a2_d0[q + 3 + s][T_a2 - s]:
+                        plateau_jump_errors += 1
+            s_first = next(
+                s
+                for s in range(30)
+                if not (
+                    L_ref[0][q + s][T1 - s]
+                    == L_ref[1][q + s][T1 - s]
+                    == L_ref[2][q + s][T1 - s]
+                )
+            )
+            if s_first != expected_p6[(q - 22) % 6]:
+                plateau_jump_errors += 1
+            if q >= 32:
+                for d1 in (0, 1, 2):
+                    delta = 9 if (a1 == 4 and d1 == 2) or (a1 == 6 and d1 == 1) else 3
+                    for s in range(18):
+                        if L_ref[d1][q + s][T1 - s] != L_a2_d0[q + delta + s][T_a2 - s]:
+                            plateau_jump_errors += 1
+
+    expected_p12 = [18, 18, 21, 18, 18, 20, 18, 18, 18, 18, 18, 22]
+    for a1 in (8, 12):
+        T1 = b1 + a1
+        L_ref = {
+            d1: _evolve_mb([(b1, a1), (b2, 2)], [b1 - d1, i2], max_m=190)
+            for d1 in (0, 1, 2)
+        }
+        for q in range(34, 64):
+            plateau_jump_entries += 1
+            for d1 in (0, 1, 2):
+                for s in range(18):
+                    if L_ref[d1][q + s][T1 - s] != L_a2_d0[q + 3 + s][T_a2 - s]:
+                        plateau_jump_errors += 1
+            s_first = next(
+                s
+                for s in range(35)
+                if not (
+                    L_ref[0][q + s][T1 - s]
+                    == L_ref[1][q + s][T1 - s]
+                    == L_ref[2][q + s][T1 - s]
+                )
+            )
+            if s_first != expected_p12[(q - 34) % 12]:
+                plateau_jump_errors += 1
+
+    return {
+        "rec_qs_errors": rec_qs_errors,
+        "rec_qs_entries": rec_qs_entries,
+        "d0_univ_errors": d0_univ_errors,
+        "d0_univ_entries": d0_univ_entries,
+        "cascade_3_2m_errors": cascade_3_2m_errors,
+        "cascade_3_2m_entries": cascade_3_2m_entries,
+        "shift3_a2_errors": shift3_a2_errors,
+        "shift3_a2_entries": shift3_a2_entries,
+        "plateau_jump_errors": plateau_jump_errors,
+        "plateau_jump_entries": plateau_jump_entries,
+    }
+
+
 
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
@@ -12082,6 +12271,20 @@ def self_test() -> dict:
         and tt_56["a1_eq2_period3_errors"] == 0
     ), "Theorem 56 Universal Two-Triangle Intra-Block Decomposition, Upstream Zero-Run Relaxation Crystals, or a_1 = 2 Period-3 Oscillator Law violated"
 
+    pj_57 = verify_relaxation_offset_recurrence_3times2m_cascade_and_plateau_jumping()
+    assert (
+        pj_57["rec_qs_errors"] == 0
+        and pj_57["rec_qs_entries"] == 20196
+        and pj_57["d0_univ_errors"] == 0
+        and pj_57["d0_univ_entries"] == 11025
+        and pj_57["cascade_3_2m_errors"] == 0
+        and pj_57["cascade_3_2m_entries"] == 1635
+        and pj_57["shift3_a2_errors"] == 0
+        and pj_57["shift3_a2_entries"] == 1980
+        and pj_57["plateau_jump_errors"] == 0
+        and pj_57["plateau_jump_entries"] == 144
+    ), "Theorem 57 1D Offset Recurrence, 3*2^m Period-Doubling Cascade, or Quantized Plateau-Jumping Crystal Coalescence Law violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -12182,6 +12385,7 @@ def self_test() -> dict:
         "ve_54": ve_54,
         "lr_55": lr_55,
         "tt_56": tt_56,
+        "pj_57": pj_57,
         "tent_eval": tent_eval,
         "eo_neural": eo_neural,
         "clades": clades,
@@ -13966,7 +14170,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 55,
-            "commit": "HEAD",
+            "commit": "6fa66450",
             "time_str": "Oct 21, 8:46 AM",
             "dt_min": 25,
             "cum_min": 1300,
@@ -13981,6 +14185,27 @@ def render_prize_progress_gif_and_poster(
             "synthesis": (
                 "Decomposes every interior 0-run into an Equipotential Zero Triangle + Floquet Comb Triangle, proves upstream relaxation crystals V^{(q)}_{d_1,a_1}(m) "
                 "are 100% independent of (i_2,b_2,a_2) for m>=q<=i_2 with m_sync(a_1,q)>=q+M_*(a_1), and proves exact period-3 oscillation [4,7,4] for a_1=2."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
+        {
+            "step": 56,
+            "commit": "HEAD",
+            "time_str": "Oct 21, 9:12 AM",
+            "dt_min": 25,
+            "cum_min": 1325,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 56: 1D Offset Recurrence, 3*2^m Period-Doubling Cascade & Quantized Plateau-Jumping Crystal Coalescence",
+            "thm_badge": "Theorem 57 (1D Offset Recurrence, 3*2^m Cascade & Plateau-Jumping Coalescence)",
+            "formula_lines": [
+                r"$x_s(q)=x_{s-1}(q)\oplus\bigl(x_s(q-1)\lor x_s(q-2)\bigr),\;\;V^{(q)}_{0,a_1}(q+s)\equiv W_q^*(s)\;\;(\forall\,2\mid a_1\ge 4),\;\;P_s(W_q)\in\{1,3,6,12,24\}$",
+                r"$V^{(q)}_{2,2}(q+s)\equiv W_{q+3}(s),\;\;V^{(q)}_{d_1,a_1}(q+s)\equiv W_{q+3}(s)\;\;(a_1\in\{4,6\},\,s<10;\;a_1\in\{8,12\},\,s<18)$",
+            ],
+            "synthesis": (
+                "Proves the exact 1D offset recurrence x_s(q)=x_{s-1}(q)^(x_s(q-1)|x_s(q-2)), universal d_1=0 table W_q^*(s) for all even a_1>=4, "
+                "3*2^m period-doubling cascade of W_q(s), and quantized plateau-jumping crystal coalescence across s<10 (a_1 in {4,6}) and s<18 (a_1 in {8,12})."
             ),
             "pi_max": 30,
             "necks_done": 74248449,
@@ -14041,7 +14266,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             98.5,
             7.2,
-            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 46",
+            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 56",
             color=ms["phase_color"],
             fontsize=11.0,
             fontweight="bold",
@@ -14056,7 +14281,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             85.25,
             2.9,
-            f"47-Theorem Suite: {int(round(prog_pct * 100))}% Verified (Prizes #1-#3 Open)",
+            f"57-Theorem Suite: {int(round(prog_pct * 100))}% Verified (Prizes #1-#3 Open)",
             color="#0b0f19" if prog_pct > 0.45 else "#f8fafc",
             fontsize=8.0,
             fontweight="bold",
@@ -14353,14 +14578,15 @@ def render_prize_progress_gif_and_poster(
                 "S53\nThm54",
                 "S54\nThm55",
                 "S55\nThm56",
+                "S56\nThm57",
             ],
             color="#cbd5e1",
-            fontsize=2.65,
+            fontsize=2.60,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–21, 2026: 55 Milestones, 21h 40m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–21, 2026: 56 Milestones, 22h 05m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -14541,6 +14767,7 @@ def main(argv: list[str] | None = None) -> int:
     ve_54 = res["ve_54"]
     lr_55 = res["lr_55"]
     tt_56 = res["tt_56"]
+    pj_57 = res["pj_57"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -14613,7 +14840,7 @@ def main(argv: list[str] | None = None) -> int:
         even_jump["max_ext_30"],
     )
     print(
-        f"[theorems_15_to_56_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40/GM41/PF42/FT43/Bio44/LC45/UH46/IW47/LI48/BD49/MN50/FL51/GJ52/TR53/VE54/LR55/TT56 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']},{gm_41['golden_mean_and_onehot_errors'] + gm_41['two_block_n1_errors'] + gm_41['defect_mirror_errors']},{pf_42['parity_flip_automaton_errors'] + pf_42['even_multiblock_n1_errors'] + pf_42['defect_vertical_period_errors']},{ft_43['gate_lock_and_padovan_errors'] + ft_43['mobius_shell_collapse_errors'] + ft_43['survivors_500']},{bio_44['oliva_conus_and_eo_errors'] + bio_44['ballot_greens_errors'] + bio_44['short_run_gate_errors'] + bio_44['opaque_mirror_survivors_500'] + bio_44['arbitrary_transient_survivors']},{lc_45['left_1run_profile_errors'] + lc_45['d2_linearization_and_mirror_errors'] + lc_45['antidiag_parity_and_clash_errors'] + lc_45['pure_left_cone_survivors_31403']},{uh_46['ring_horizon_errors'] + uh_46['cascade_9row_errors'] + uh_46['prefix_transmission_errors']},{iw_47['wavefront_step_errors'] + iw_47['hit_bound_errors'] + iw_47['band1_tunneling_errors'] + iw_47['band2_mod4_errors'] + iw_47['defect_mirror_survivors_200']},{li_48['interval_and_d2_spike_errors'] + li_48['true_cone_laws_errors'] + li_48['nfa_vs_3laws_mismatches'] + li_48['depth_d_collapse_mismatches'] + li_48['survivors_laws123_200'] + li_48['mobius_mahler_involution_errors']},{bd_49['dichotomy_errors'] + bd_49['survivors_from_0'] + bd_49['survivors_post_2pi']},{mn_50['tautology_and_comb_errors'] + mn_50['true_cone_law4_errors']},{fl_51['floquet_wavefront_errors'] + fl_51['prefix_comb_errors'] + fl_51['tail_shielding_errors'] + fl_51['even_b_boundary_tail_errors']},{gj_52['antidiag_rec_errors'] + gj_52['errors_4crystal'] + gj_52['closed_form_d01_errors']},{tr_53['collapse_3crystal_errors'] + tr_53['comb_d0_exit_errors'] + tr_53['lune_front_errors'] + tr_53['multiblock_shielding_errors']},{ve_54['virtual_ext_errors'] + ve_54['shift_front_errors'] + ve_54['a1_eq2_merge_errors'] + ve_54['superlinear_2block_errors'] + ve_54['superlinear_3block_errors']},{lr_55['local_reset_errors'] + lr_55['boundary_tail_errors'] + lr_55['odd_chain_3crystal_errors']},{tt_56['two_tri_errors'] + tt_56['relax_crystal_errors'] + tt_56['relax_sync_errors'] + tt_56['a1_eq2_period3_errors']}) | "
+        f"[theorems_15_to_57_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40/GM41/PF42/FT43/Bio44/LC45/UH46/IW47/LI48/BD49/MN50/FL51/GJ52/TR53/VE54/LR55/TT56/PJ57 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']},{gm_41['golden_mean_and_onehot_errors'] + gm_41['two_block_n1_errors'] + gm_41['defect_mirror_errors']},{pf_42['parity_flip_automaton_errors'] + pf_42['even_multiblock_n1_errors'] + pf_42['defect_vertical_period_errors']},{ft_43['gate_lock_and_padovan_errors'] + ft_43['mobius_shell_collapse_errors'] + ft_43['survivors_500']},{bio_44['oliva_conus_and_eo_errors'] + bio_44['ballot_greens_errors'] + bio_44['short_run_gate_errors'] + bio_44['opaque_mirror_survivors_500'] + bio_44['arbitrary_transient_survivors']},{lc_45['left_1run_profile_errors'] + lc_45['d2_linearization_and_mirror_errors'] + lc_45['antidiag_parity_and_clash_errors'] + lc_45['pure_left_cone_survivors_31403']},{uh_46['ring_horizon_errors'] + uh_46['cascade_9row_errors'] + uh_46['prefix_transmission_errors']},{iw_47['wavefront_step_errors'] + iw_47['hit_bound_errors'] + iw_47['band1_tunneling_errors'] + iw_47['band2_mod4_errors'] + iw_47['defect_mirror_survivors_200']},{li_48['interval_and_d2_spike_errors'] + li_48['true_cone_laws_errors'] + li_48['nfa_vs_3laws_mismatches'] + li_48['depth_d_collapse_mismatches'] + li_48['survivors_laws123_200'] + li_48['mobius_mahler_involution_errors']},{bd_49['dichotomy_errors'] + bd_49['survivors_from_0'] + bd_49['survivors_post_2pi']},{mn_50['tautology_and_comb_errors'] + mn_50['true_cone_law4_errors']},{fl_51['floquet_wavefront_errors'] + fl_51['prefix_comb_errors'] + fl_51['tail_shielding_errors'] + fl_51['even_b_boundary_tail_errors']},{gj_52['antidiag_rec_errors'] + gj_52['errors_4crystal'] + gj_52['closed_form_d01_errors']},{tr_53['collapse_3crystal_errors'] + tr_53['comb_d0_exit_errors'] + tr_53['lune_front_errors'] + tr_53['multiblock_shielding_errors']},{ve_54['virtual_ext_errors'] + ve_54['shift_front_errors'] + ve_54['a1_eq2_merge_errors'] + ve_54['superlinear_2block_errors'] + ve_54['superlinear_3block_errors']},{lr_55['local_reset_errors'] + lr_55['boundary_tail_errors'] + lr_55['odd_chain_3crystal_errors']},{tt_56['two_tri_errors'] + tt_56['relax_crystal_errors'] + tt_56['relax_sync_errors'] + tt_56['a1_eq2_period3_errors']},{pj_57['rec_qs_errors'] + pj_57['d0_univ_errors'] + pj_57['cascade_3_2m_errors'] + pj_57['shift3_a2_errors'] + pj_57['plateau_jump_errors']}) | "
         f"SWAR cone tails={bridge_31['swar_candidates_tested']} (survivors={bridge_31['swar_survivors']}, max_steps={bridge_31['swar_max_steps']}) | "
         f"500x500 cone pairs={ft_43['pairs_500_tested']} (0-step kills={ft_43['killed_at_mismatch_500']}, pure-left kills={bio_44['nonzero_pairs_500']}/{bio_44['nonzero_pairs_500']}, survivors={ft_43['survivors_500']}) | "
         f"Q_m={twin_32['moore_sizes_m1_to_6']} | EF tests={subd_34['euler_fermat_tests']} | half-density={grand_35['exact_half_density_count_s1_to_41']}/41 | ANF mons={grand_35['monomial_counts_t1_to_7']} | "

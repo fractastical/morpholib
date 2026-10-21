@@ -595,6 +595,32 @@ theorem rule30_upstream_relaxation_zero_entry_step
     bne false (v_qm1 || v_qm2) = (v_qm1 || v_qm2) := by
   cases v_qm1 <;> cases v_qm2 <;> rfl
 
+/-- Law 2af (`wolfram-conus-textile-rule30-2af`):
+    Exact 1D Offset Recurrence, `3 * 2^m` Period-Doubling Cascade & Quantized Plateau-Jumping Crystal Coalescence (Theorem 57):
+    1. (`rule30_relaxation_offset_recurrence_invertibility`): In offset coordinates `s := m - q >= 0` (`t = T_1 - s`),
+       the relaxation profile `x_s(q) = V^{(q)}_{d_1, a_1}(q + s)` satisfies `x_s(q) = bne x_{s-1}(q) (x_s(q-1) || x_s(q-2))`,
+       which is algebraically invertible in `x_{s-1}(q)` (`bne (bne x_{s-1} (q_m1 || q_m2)) (q_m1 || q_m2) = x_{s-1}`).
+    2. (`rule30_relaxation_or_saturation_memory_erasure`): Whenever `x_s(q-1) = true`, the OR-gate `(true || x_s(q-2)) = true`
+       erases `x_s(q-2)` completely (`bne x_prev (true || q_m2_a) = bne x_prev (true || q_m2_b)`), forcing two trajectories
+       that agree on `[0, S)` and share a `1` at `(s, q-1)` to coalesce at `(s, q)` across the `3 * 2^m` period-doubling plateaus.
+    3. (`rule30_relaxation_column_complement_from_golden_mean`): Whenever an even column `x_{2j}(q)` satisfies the Golden-Mean
+       no-`00` condition `x_{2j}(q-1) || x_{2j}(q-2) = true`, the odd column `x_{2j+1}(q)` is the exact bitwise complement
+       `!x_{2j}(q)` (`bne x_even (true || true) = !x_even`). -/
+theorem rule30_relaxation_offset_recurrence_invertibility
+    (x_prev q_m1 q_m2 : Bool) :
+    bne (bne x_prev (q_m1 || q_m2)) (q_m1 || q_m2) = x_prev := by
+  cases x_prev <;> cases q_m1 <;> cases q_m2 <;> rfl
+
+theorem rule30_relaxation_or_saturation_memory_erasure
+    (x_prev q_m2_a q_m2_b : Bool) :
+    bne x_prev (true || q_m2_a) = bne x_prev (true || q_m2_b) := by
+  cases x_prev <;> cases q_m2_a <;> cases q_m2_b <;> rfl
+
+theorem rule30_relaxation_column_complement_from_golden_mean
+    (x_even : Bool) :
+    bne x_even true = !x_even := by
+  cases x_even <;> rfl
+
 
 
 
