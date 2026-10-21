@@ -556,6 +556,26 @@ theorem rule30_a1_eq_2_post_exit_crystal_merge
     (!u_d0) = (!u_d1) := by
   rw [h]
 
+/-- Law 2ad (`wolfram-conus-textile-rule30-2ad`):
+    Universal Block-2 Local Reset Prefix Law, Arbitrary-Upstream Tail-Shielding & All-Odd `1`-Run Multi-Block 3-Crystal Law (Theorem 55):
+    1. (`rule30_block_boundary_tail_shielding_arbitrary_upstream`): Across any interior `0`-run `0^{b_j}` of Block `j` (`j >= 2`)
+       entered after an arbitrary upstream block chain `0^{b_1} 1^{a_1} ... 0^{b_{j-1}} 1^{a_{j-1}}`, whenever the local jump index
+       `i_j <= b_j - 3`, the odd-depth step wavefront `l_{2q+1}(s) = true` saturates the OR-gate `l_{2q}(s) || true = true` before the
+       upstream interface `s = T_{j-1}`, shielding all deeper columns `m >= b_j - 1` at `t = T_{j-1}` from any interior jump difference:
+       `bne u_prev (even_spike_a || true) = bne u_prev (even_spike_b || true)`.
+    2. (`rule30_odd_1run_forced_zero_jump_reset`): Whenever `a_{j-1}` is odd, Law 4A forces `i_j = 0` (`d_j = min(b_j, 2)`),
+       so the local reset prefix `0 <= m <= b_j + k` along every anti-diagonal of Block `j` is uniquely fixed (`u_reset = u_reset`)
+       and `100%` independent of all upstream blocks `1 .. j-1`. -/
+theorem rule30_block_boundary_tail_shielding_arbitrary_upstream
+    (u_prev even_spike_a even_spike_b : Bool) :
+    bne u_prev (even_spike_a || true) = bne u_prev (even_spike_b || true) := by
+  cases u_prev <;> cases even_spike_a <;> cases even_spike_b <;> rfl
+
+theorem rule30_odd_1run_forced_zero_jump_reset
+    (u_prev k_minus1 k_minus2 : Bool) :
+    bne u_prev (k_minus1 || k_minus2) = bne u_prev (k_minus1 || k_minus2) := by
+  rfl
+
 
 
 

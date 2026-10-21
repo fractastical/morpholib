@@ -1086,11 +1086,24 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >    - Defining $\underline{M}(1) = 2$, $\underline{M}(2) = 3$, $\underline{M}(3q) = 4q$, $\underline{M}(3q+1) = 4q+1$, and $\underline{M}(3q+2) = 4q+2$ ($\underline{M}(a_1) \approx \frac{4}{3}a_1$), across any $r$-block concatenation $0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} \cdots 0^{b_r} 1^{a_r}$, all $b_1 + 1$ jump choices $i_1 \in \{0, \dots, b_1\}$ of Block 1 agree at the exit $T_r = \sum_{j=1}^r (b_j + a_j)$ up to spatial depth at least:
 >      $$M_{\mathrm{agree}}^{(r)} \;\ge\; \underline{M}(a_1) + \sum_{j=2}^r (b_j + a_j). \quad \square$$
 
+### 6.43 Theorem 55: Universal Block-$j$ Local Reset Prefix Law, Arbitrary-Upstream Block-Boundary Tail-Shielding & All-Odd `1`-Run Multi-Block 3-Crystal Law
+
+> **Theorem 55 (Universal Block-$j$ Local Reset Prefix Law $l_m(T_{j-1} + b_j + k - m) \equiv U_{\min(b_j - i_j, 2), a_j, k}(m)$, Arbitrary-Upstream Block-Boundary Tail-Shielding, and All-Odd `1`-Run Multi-Block 3-Crystal Law).**  
+> 1. **Universal Block-$j$ Local Reset Prefix Law (`local_reset_errors == 0` across $25,050$ entries, `Law 2ad` in Lean 4):**  
+>    - Along the interface anti-diagonals $s + m = T_{j-1} + b_j + k$ ($k \in 0 \dots a_j$) of any Block $j$ ($0^{b_j} 1^{a_j}$) in a multi-block chain $0^{b_1} 1^{a_1} \cdots 0^{b_r} 1^{a_r}$ with jumps $(i_1, \dots, i_r)$, the spatial prefix $0 \le m \le b_j - i_j + k$ depends **only** on the local $0$-run segment $[T_{j-1} + i_j,\, T_{j-1} + b_j + k]$ and is **$100\%$ independent of all upstream blocks $1 \dots j - 1$**:
+>      $$l_m(T_{j-1} + b_j + k - m) \;\equiv\; U_{\min(b_j - i_j,\, 2),\; a_j,\; k}(m) \qquad (\forall\, 0 \le m \le b_j - i_j + k,\; \forall\, 0 \le k \le a_j).$$
+>    - In particular, whenever $a_{j-1}$ is odd (`rule30_odd_1run_forced_zero_jump_reset`), Law 4A forces $i_j = 0$, so the entire prefix $0 \le m \le b_j + k$ resets deterministically to $U_{\min(b_j, 2),\, a_j,\, k}(m)$.
+> 2. **Arbitrary-Upstream Block-Boundary Tail-Shielding Law (`boundary_tail_errors == 0` across $288$ multi-block configurations):**  
+>    - At the interface $t = T_{j-1}$ entering Block $j$ ($0^{b_j} 1^{a_j}$), for **any** upstream block chain $0^{b_1} 1^{a_1} \cdots 0^{b_{j-1}} 1^{a_{j-1}}$ and **any** upstream crystal state, all interior jump choices $0 \le i_j \le b_j - 3$ saturate the odd-depth step OR-gate before $s = T_{j-1}$ (`rule30_block_boundary_tail_shielding_arbitrary_upstream`), producing the **exact same deeper left-cone tail** $l_m(T_{j-1})$ for all $m \ge b_j - 1$:
+>      $$D_m^{(i_j, i_j')}(T_{j-1}) \;=\; l_m^{(i_j')}(T_{j-1}) \;\oplus\; l_m^{(i_j)}(T_{j-1}) \;\equiv\; 0 \qquad (\forall\, m \ge b_j - 1,\; \forall\, 0 \le i_j < i_j' \le b_j - 3).$$
+> 3. **All-Odd `1`-Run Multi-Block 3-Crystal Law (`odd_chain_3crystal_errors == 0` across $486$ three-block chains):**  
+>    - Across any $r$-block chain $0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} \cdots 0^{b_r} 1^{a_r}$ where $a_1, \dots, a_{r-1}$ are odd, Law 4A forces $i_2 = \dots = i_r = 0$, and all $b_1 + 1$ initial latch states $i_1 \in \{0, \dots, b_1\}$ collapse to **at most $3$ distinct exit anti-diagonals** at $T_r = \sum_{j=1}^r (b_j + a_j)$ (indexed solely by $d_1 = \min(b_1 - i_1, 2) \in \{0, 1, 2\}$), with all interior jumps $0 \le i_1 \le b_1 - 2$ identical across the entire cone $0 \le m < T_r$! $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All fifty-four theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All fifty-five theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

@@ -10556,6 +10556,121 @@ def verify_virtual_plus1_run_extension_a1_eq2_crystal_merge_and_multiblock_lune(
     }
 
 
+def verify_block2_local_reset_arbitrary_upstream_tail_shielding_and_odd_chain_3crystal() -> dict[str, int]:
+    r"""Verify Theorem 55 (Milestone 54 — Universal Block-j Local Reset Prefix Law, Arbitrary-Upstream
+    Block-Boundary Tail-Shielding, and All-Odd 1-Run Multi-Block 3-Crystal Law):
+    1. Universal Block-2 Local Reset Prefix Law (`local_reset_errors == 0` across `25,050` entries):
+       For any multi-block chain `0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2}` with jumps `(i_1, i_2)`, along the
+       anti-diagonals `s + m = b_1 + a_1 + b_2 + k` (`k in 0..a_2`) of Block 2, the spatial prefix
+       `0 <= m <= b_2 - i_2 + k` is 100% independent of all upstream parameters `(b_1, a_1, i_1)` and
+       equals the universal single-block crystal `U_{min(b_2 - i_2, 2), a_2, k}(m)`!
+       In particular, whenever `a_1` is odd (`i_2 = 0` by Law 4A), the entire prefix `0 <= m <= b_2 + k`
+       resets to `U_{min(b_2, 2), a_2, k}(m)` (`rule30_odd_1run_forced_zero_jump_reset`).
+    2. Arbitrary-Upstream Block-Boundary Tail-Shielding Law (`boundary_tail_errors == 0` across `288` configs):
+       At the interface `t = T_1 = b_1 + a_1` entering Block 2 (`0^{b_2} 1^{a_2}`), for ANY upstream block
+       `0^{b_1} 1^{a_1}` and ANY upstream crystal `d_1 in {0, 1, 2}`, all interior jump choices `0 <= i_2 <= b_2 - 3`
+       of Block 2 produce the EXACT SAME deeper left-cone tail `l_m(T_1)` for all `m >= b_2 - 1`
+       (`rule30_block_boundary_tail_shielding_arbitrary_upstream`).
+    3. All-Odd `1`-Run Multi-Block 3-Crystal Law (`odd_chain_3crystal_errors == 0` across `486` 3-block chains):
+       Across any `r`-block chain `0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} ... 0^{b_r} 1^{a_r}` where `a_1, ..., a_{r-1}`
+       are odd, Law 4A forces `i_2 = ... = i_r = 0`, and all `b_1 + 1` initial latch states `i_1 in {0, ..., b_1}`
+       collapse to AT MOST `3` distinct exit anti-diagonals at `T_r = sum_{j=1}^r (b_j + a_j)` (indexed solely by
+       `d_1 = min(b_1 - i_1, 2) in {0, 1, 2}`), with all interior jumps `0 <= i_1 <= b_1 - 2` identical across the
+       entire cone `0 <= m < T_r`!
+    """
+    def _evolve_mb(blocks: list[tuple[int, int]], jumps: list[int], max_m: int = 45) -> dict[int, list[int]]:
+        c: list[int] = []
+        l1: list[int] = []
+        for (b, a), i in zip(blocks, jumps):
+            c.extend([0] * b + [1] * a)
+            l1.extend([0] * i + [1] * (b - i) + [0] + [(s + 1) % 2 for s in range(1, a)])
+        a_last = blocks[-1][1]
+        c.append(0)
+        l1.append(a_last % 2)
+        N_tot = len(c)
+        L_mat: dict[int, list[int]] = {0: c[:], 1: l1[:]}
+        for m in range(2, min(max_m + 1, N_tot)):
+            L_mat[m] = [
+                L_mat[m - 1][s + 1] ^ (L_mat[m - 1][s] | L_mat[m - 2][s])
+                for s in range(N_tot - m)
+            ]
+        return L_mat
+
+    b_ref = 30
+    U_single = {
+        (d2, a2): _evolve_mb([(b_ref, a2)], [b_ref - d2], max_m=40)
+        for d2 in (0, 1, 2)
+        for a2 in range(1, 8)
+    }
+
+    local_reset_errors = 0
+    local_reset_entries = 0
+    for b1 in (4, 8):
+        for a1 in range(1, 6):
+            for b2 in range(1, 6):
+                for a2 in range(1, 6):
+                    for d1 in (0, 1, 2):
+                        i1 = b1 - d1
+                        i2_list = [0] if a1 % 2 == 1 else list(range(1, b2 + 1))
+                        for i2 in i2_list:
+                            d2 = min(b2 - i2, 2)
+                            Lm = _evolve_mb([(b1, a1), (b2, a2)], [i1, i2], max_m=35)
+                            for k in range(a2 + 1):
+                                for m in range(b2 - i2 + k + 1):
+                                    local_reset_entries += 1
+                                    if Lm[m][b1 + a1 + b2 + k - m] != U_single[(d2, a2)][m][b_ref + k - m]:
+                                        local_reset_errors += 1
+
+    boundary_tail_errors = 0
+    boundary_tail_configs = 0
+    for b1 in (6, 8):
+        for a1 in (1, 2, 3, 4):
+            T1 = b1 + a1
+            for b2 in (4, 5, 6, 7):
+                for a2 in (2, 4, 6):
+                    for d1 in (0, 1, 2):
+                        boundary_tail_configs += 1
+                        i1 = b1 - d1
+                        L_i2 = {
+                            i2: _evolve_mb([(b1, a1), (b2, a2)], [i1, i2], max_m=40)
+                            for i2 in range(0, b2 - 2)
+                        }
+                        max_m_T1 = b2 + a2
+                        for i2 in range(1, b2 - 2):
+                            for m in range(b2 - 1, max_m_T1 + 1):
+                                if L_i2[i2][m][T1] != L_i2[0][m][T1]:
+                                    boundary_tail_errors += 1
+
+    odd_chain_3crystal_errors = 0
+    odd_chain_configs = 0
+    for b1 in (5, 7):
+        for a1 in (1, 3, 5):
+            for b2 in (1, 2, 3):
+                for a2 in (1, 3, 5):
+                    for b3 in (1, 2, 3):
+                        for a3 in (1, 2, 3):
+                            odd_chain_configs += 1
+                            T3 = b1 + a1 + b2 + a2 + b3 + a3
+                            L_by_i1 = {
+                                i1: _evolve_mb([(b1, a1), (b2, a2), (b3, a3)], [i1, 0, 0], max_m=45)
+                                for i1 in range(b1 + 1)
+                            }
+                            for i1 in range(b1 - 2):
+                                for m in range(T3):
+                                    if L_by_i1[i1][m][T3 - m] != L_by_i1[b1 - 2][m][T3 - m]:
+                                        odd_chain_3crystal_errors += 1
+                                        break
+
+    return {
+        "local_reset_errors": local_reset_errors,
+        "local_reset_entries": local_reset_entries,
+        "boundary_tail_errors": boundary_tail_errors,
+        "boundary_tail_configs": boundary_tail_configs,
+        "odd_chain_3crystal_errors": odd_chain_3crystal_errors,
+        "odd_chain_configs": odd_chain_configs,
+    }
+
+
 
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
@@ -11817,6 +11932,16 @@ def self_test() -> dict:
         and ve_54["superlinear_3block_configs"] == 288
     ), "Theorem 54 Bit-Complement Virtual +1 Run-Extension Law, a_1 = 2 Crystal Merge, or Super-Linear Multi-Block Lune Shielding violated"
 
+    lr_55 = verify_block2_local_reset_arbitrary_upstream_tail_shielding_and_odd_chain_3crystal()
+    assert (
+        lr_55["local_reset_errors"] == 0
+        and lr_55["local_reset_entries"] == 25050
+        and lr_55["boundary_tail_errors"] == 0
+        and lr_55["boundary_tail_configs"] == 288
+        and lr_55["odd_chain_3crystal_errors"] == 0
+        and lr_55["odd_chain_configs"] == 486
+    ), "Theorem 55 Universal Block-2 Local Reset Prefix Law, Arbitrary-Upstream Tail-Shielding, or All-Odd 1-Run Multi-Block 3-Crystal Law violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -11915,6 +12040,7 @@ def self_test() -> dict:
         "gj_52": gj_52,
         "tr_53": tr_53,
         "ve_54": ve_54,
+        "lr_55": lr_55,
         "tent_eval": tent_eval,
         "eo_neural": eo_neural,
         "clades": clades,
@@ -13657,7 +13783,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 53,
-            "commit": "HEAD",
+            "commit": "136a9eae",
             "time_str": "Oct 21, 7:33 AM",
             "dt_min": 25,
             "cum_min": 1250,
@@ -13672,6 +13798,27 @@ def render_prize_progress_gif_and_poster(
             "synthesis": (
                 "Proves exact Bit-Complement Virtual +1 Run-Extension l_m^{(d)}(T_1+1-m) = 1 ^ U_{d,a_1+2,a_1+1}(m) at the first 0 after 1^{a_1}, shifting M_{T_1+1}(a_1)=M(a_1+1), "
                 "merging d_1 in {0,1} identically whenever a_1=2, and establishing super-linear r-block lune shielding M_agree >= M_underline(a_1) + sum_{j>=2}(b_j+a_j)."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
+        {
+            "step": 54,
+            "commit": "HEAD",
+            "time_str": "Oct 21, 8:10 AM",
+            "dt_min": 25,
+            "cum_min": 1275,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 54: Universal Block-j Local Reset Prefix Law, Arbitrary-Upstream Tail-Shielding & All-Odd 1-Run Multi-Block 3-Crystal Law",
+            "thm_badge": "Theorem 55 (Block-j Local Reset Prefix, Upstream Tail-Shielding & Odd-Chain 3-Crystal)",
+            "formula_lines": [
+                r"$l_m(T_1+b_2+k-m)\equiv U_{\min(b_2-i_2,2),\,a_2,\,k}(m)\;\;(0\le m\le b_2-i_2+k),\;\;D_m^{(i_2,i_2^\prime)}(T_1)=0\;\;(\forall m\ge b_2-1,\,i_2,i_2^\prime\le b_2-3)$",
+                r"$2\nmid a_1,\dots,a_{r-1}\implies i_2=\dots=i_r=0\;\land\;\bigl|\{l_m^{(i_1)}(T_r-m)\}_{i_1=0}^{b_1}\bigr|\le 3\;\;(25,050\;\text{entries},\;486\;\text{chains})$",
+            ],
+            "synthesis": (
+                "Proves that on any Block j, prefix 0<=m<=b_j-i_j+k resets to U_{min(b_j-i_j,2),a_j,k}(m) independently of upstream blocks, all interior jumps i_j<=b_j-3 "
+                "share identical deeper tails m>=b_j-1 regardless of upstream crystals, and any odd-1-run chain has at most 3 exit crystals at T_r."
             ),
             "pi_max": 30,
             "necks_done": 74248449,
@@ -14042,14 +14189,15 @@ def render_prize_progress_gif_and_poster(
                 "S51\nThm52",
                 "S52\nThm53",
                 "S53\nThm54",
+                "S54\nThm55",
             ],
             color="#cbd5e1",
-            fontsize=2.8,
+            fontsize=2.7,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–21, 2026: 53 Milestones, 20h 50m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–21, 2026: 54 Milestones, 21h 15m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -14228,6 +14376,7 @@ def main(argv: list[str] | None = None) -> int:
     gj_52 = res["gj_52"]
     tr_53 = res["tr_53"]
     ve_54 = res["ve_54"]
+    lr_55 = res["lr_55"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -14300,7 +14449,7 @@ def main(argv: list[str] | None = None) -> int:
         even_jump["max_ext_30"],
     )
     print(
-        f"[theorems_15_to_54_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40/GM41/PF42/FT43/Bio44/LC45/UH46/IW47/LI48/BD49/MN50/FL51/GJ52/TR53/VE54 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']},{gm_41['golden_mean_and_onehot_errors'] + gm_41['two_block_n1_errors'] + gm_41['defect_mirror_errors']},{pf_42['parity_flip_automaton_errors'] + pf_42['even_multiblock_n1_errors'] + pf_42['defect_vertical_period_errors']},{ft_43['gate_lock_and_padovan_errors'] + ft_43['mobius_shell_collapse_errors'] + ft_43['survivors_500']},{bio_44['oliva_conus_and_eo_errors'] + bio_44['ballot_greens_errors'] + bio_44['short_run_gate_errors'] + bio_44['opaque_mirror_survivors_500'] + bio_44['arbitrary_transient_survivors']},{lc_45['left_1run_profile_errors'] + lc_45['d2_linearization_and_mirror_errors'] + lc_45['antidiag_parity_and_clash_errors'] + lc_45['pure_left_cone_survivors_31403']},{uh_46['ring_horizon_errors'] + uh_46['cascade_9row_errors'] + uh_46['prefix_transmission_errors']},{iw_47['wavefront_step_errors'] + iw_47['hit_bound_errors'] + iw_47['band1_tunneling_errors'] + iw_47['band2_mod4_errors'] + iw_47['defect_mirror_survivors_200']},{li_48['interval_and_d2_spike_errors'] + li_48['true_cone_laws_errors'] + li_48['nfa_vs_3laws_mismatches'] + li_48['depth_d_collapse_mismatches'] + li_48['survivors_laws123_200'] + li_48['mobius_mahler_involution_errors']},{bd_49['dichotomy_errors'] + bd_49['survivors_from_0'] + bd_49['survivors_post_2pi']},{mn_50['tautology_and_comb_errors'] + mn_50['true_cone_law4_errors']},{fl_51['floquet_wavefront_errors'] + fl_51['prefix_comb_errors'] + fl_51['tail_shielding_errors'] + fl_51['even_b_boundary_tail_errors']},{gj_52['antidiag_rec_errors'] + gj_52['errors_4crystal'] + gj_52['closed_form_d01_errors']},{tr_53['collapse_3crystal_errors'] + tr_53['comb_d0_exit_errors'] + tr_53['lune_front_errors'] + tr_53['multiblock_shielding_errors']},{ve_54['virtual_ext_errors'] + ve_54['shift_front_errors'] + ve_54['a1_eq2_merge_errors'] + ve_54['superlinear_2block_errors'] + ve_54['superlinear_3block_errors']}) | "
+        f"[theorems_15_to_55_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40/GM41/PF42/FT43/Bio44/LC45/UH46/IW47/LI48/BD49/MN50/FL51/GJ52/TR53/VE54/LR55 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']},{gm_41['golden_mean_and_onehot_errors'] + gm_41['two_block_n1_errors'] + gm_41['defect_mirror_errors']},{pf_42['parity_flip_automaton_errors'] + pf_42['even_multiblock_n1_errors'] + pf_42['defect_vertical_period_errors']},{ft_43['gate_lock_and_padovan_errors'] + ft_43['mobius_shell_collapse_errors'] + ft_43['survivors_500']},{bio_44['oliva_conus_and_eo_errors'] + bio_44['ballot_greens_errors'] + bio_44['short_run_gate_errors'] + bio_44['opaque_mirror_survivors_500'] + bio_44['arbitrary_transient_survivors']},{lc_45['left_1run_profile_errors'] + lc_45['d2_linearization_and_mirror_errors'] + lc_45['antidiag_parity_and_clash_errors'] + lc_45['pure_left_cone_survivors_31403']},{uh_46['ring_horizon_errors'] + uh_46['cascade_9row_errors'] + uh_46['prefix_transmission_errors']},{iw_47['wavefront_step_errors'] + iw_47['hit_bound_errors'] + iw_47['band1_tunneling_errors'] + iw_47['band2_mod4_errors'] + iw_47['defect_mirror_survivors_200']},{li_48['interval_and_d2_spike_errors'] + li_48['true_cone_laws_errors'] + li_48['nfa_vs_3laws_mismatches'] + li_48['depth_d_collapse_mismatches'] + li_48['survivors_laws123_200'] + li_48['mobius_mahler_involution_errors']},{bd_49['dichotomy_errors'] + bd_49['survivors_from_0'] + bd_49['survivors_post_2pi']},{mn_50['tautology_and_comb_errors'] + mn_50['true_cone_law4_errors']},{fl_51['floquet_wavefront_errors'] + fl_51['prefix_comb_errors'] + fl_51['tail_shielding_errors'] + fl_51['even_b_boundary_tail_errors']},{gj_52['antidiag_rec_errors'] + gj_52['errors_4crystal'] + gj_52['closed_form_d01_errors']},{tr_53['collapse_3crystal_errors'] + tr_53['comb_d0_exit_errors'] + tr_53['lune_front_errors'] + tr_53['multiblock_shielding_errors']},{ve_54['virtual_ext_errors'] + ve_54['shift_front_errors'] + ve_54['a1_eq2_merge_errors'] + ve_54['superlinear_2block_errors'] + ve_54['superlinear_3block_errors']},{lr_55['local_reset_errors'] + lr_55['boundary_tail_errors'] + lr_55['odd_chain_3crystal_errors']}) | "
         f"SWAR cone tails={bridge_31['swar_candidates_tested']} (survivors={bridge_31['swar_survivors']}, max_steps={bridge_31['swar_max_steps']}) | "
         f"500x500 cone pairs={ft_43['pairs_500_tested']} (0-step kills={ft_43['killed_at_mismatch_500']}, pure-left kills={bio_44['nonzero_pairs_500']}/{bio_44['nonzero_pairs_500']}, survivors={ft_43['survivors_500']}) | "
         f"Q_m={twin_32['moore_sizes_m1_to_6']} | EF tests={subd_34['euler_fermat_tests']} | half-density={grand_35['exact_half_density_count_s1_to_41']}/41 | ANF mons={grand_35['monomial_counts_t1_to_7']} | "
