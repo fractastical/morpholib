@@ -3567,3 +3567,44 @@ All associated documents, figures, and verification artifacts have been updated,
    - Updated script links and regenerated the 46-step animated dashboard GIF and high-resolution poster with the final commit hashes and scorecard labels.
 
 ---
+
+### Turn 65 — User
+
+> i thnk we should have a couple other agents (fable?) audit this process to see ho we are doing
+
+#### Assistant
+
+All findings from the independent **Fable Rule 30 Proof Audit** (`claude-fable-5-1-thinking-high`) and **Independent GPT Rule 30 Audit** (`gpt-5.6-sol-medium`) have been applied, verified in Python, rendered into the prize progress animation/poster, and pushed to `origin/main` (`87d80bc9`).
+
+![Wolfram Rule 30 Prize Progress Poster (Referee-Audited)](/Users/jdietz/Documents/GitHub/infinitemorphospace/docs/media/rule30_prize_progress_poster.png)
+
+### Summary of Referee-Audit Updates Applied (`87d80bc9`)
+
+1. **Theorem 4(4) Global Acyclicity across Even-Parity Branch Splits Repaired & Machine-Checked:**
+   - Updated the proof of Theorem 4(4) in [`docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md`](docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md) and [`docs/RULE30_PRIZE_SUBMISSION.md`](docs/RULE30_PRIZE_SUBMISSION.md) using the 4-step **Half-Period Shift-Invariance Closure**:
+     1. The backward map $G_P(v, w) := (\mathrm{rotr}_1(w) \oplus (v \lor w),\, v)$ is single-valued on **all** of $\mathbb{F}_2^P \times \mathbb{F}_2^P$ and satisfies $G_P(v, w) = (u, v)$ across **every** directed edge $(u, v) \to (v, w)$ in the branching graph $\mathcal{B}_P$ (including both branches $\sigma \in \{0, 1\}$ of any even-parity barrier split), so every vertex has in-degree $\le 1$.
+     2. $G_P$ preserves the $+P/2$-shift-invariant subspace $\mathcal{S}_{P/2} := \{(x, y) : \mathrm{rotr}_{P/2}(x) = x,\; \mathrm{rotr}_{P/2}(y) = y\}$.
+     3. The plateau root $r_P = (\mathbf{0}_P, b_{\text{root}})$ is $+P/2$-anti-periodic ($r_P \notin \mathcal{S}_{P/2}$), whereas its unique backward image $G_P(r_P) = (u_{\text{root}}, \mathbf{0}_P) \in \mathcal{S}_{P/2}$.
+     4. Therefore no forward path from $r_P$ in $\mathcal{B}_P$ can ever reach $(u_{\text{root}}, \mathbf{0}_P)$ or return to $r_P$, proving $\mathcal{B}_P$ is unconditionally cycle-free.
+   - Added automated verification (`shift_invariance_errors == 0`) to `verify_backward_determinism_and_barrier_census()` in [`models/1984-wolfram-conus-textile-rule30.py`](models/1984-wolfram-conus-textile-rule30.py).
+
+2. **Explicit Scope Qualification ($t_0 = \Pi - 1$ vs. All-$t_0 \ge 0$, and $k_1 \dots k_4$ vs. $k_5$):**
+   - Explicitly distinguished **all-$t_0 \ge 0$ cylinder-transducer / gate-lock theorems** ($\Pi=1$, $1^a 0^b$ for $a \ge 8$, $(1^7 0)^r$, $(1^8 0^2)^r$, $2r/4r$-run words with $a_i \ge 9$) from **boundary-onset ($t_0 = \Pi - 1$) exterior-$0^\infty$ checks** ($74,248,449$ primitive necklaces for $\Pi \le 30$; Theorems 17/19 for $a, b \le 60$) and **$500 \times 500$ Opaque Mirror checks** ($249,500$ pairs $(t_0, \Pi) \in [0, 500) \times [1, 500)$).
+   - Clarified in Theorem 46(1) that $k_1 = 3, k_2 = 8, k_3 = 29, k_4 = 400$ (odd upstream weights) are $100\%$ universal across all center sequences, while on $P = 16$ the first even-weight barrier ($k = 53,208, \mathrm{wt} = 6$) produces the 16-leaf tree $k_5 \in [87,867,\, 894,235]$ (all 16 leaves of which still double to $P = 32$).
+   - Added a **Three-Tier Evidence Classification Table** (Tier A: Unconditionally Proved $\forall \Pi, \forall t_0$; Tier B: Machine-Verified on Finite Domains; Tier C: Open Asymptotic Conjectures) and documented Fable's finding on **Pure Left-Cone Opaque Mirror ($\approx 7\Pi$ kill window on sparse pulses $0^{\Pi-1} 1$) vs. the Depth-1 Right Cylinder ($\le 19$ steps)** in [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](docs/RULE30_PRIZE_STATUS_AND_GAPS.md).
+
+3. **Referee-Audited Poster & Animation Badges:**
+   - Regenerated [`docs/media/rule30_prize_progress.gif`](docs/media/rule30_prize_progress.gif) and [`docs/media/rule30_prize_progress_poster.png`](docs/media/rule30_prize_progress_poster.png) with the header badge `"47-Theorem Suite: 100% Verified (Prizes #1-#3 Open)"` and strict `PROVED` vs. `VERIFIED` vs. `Gen. Pi OPEN` row labels in Panel E.
+
+---
+
+### Turn 66 — User
+
+> please make sure you also update any github issues as a result of hte audit
+
+#### Assistant
+
+Updated all Rule 30 GitHub issues ([Issue #14](https://github.com/fractastical/morpholib/issues/14#issuecomment-6305649928), [Issue #15](https://github.com/fractastical/morpholib/issues/15#issuecomment-6305650464), and [Issue #16](https://github.com/fractastical/morpholib/issues/16#issuecomment-6305650170)) with the referee audit addenda, the 4-step Half-Period Shift-Invariance Closure proof for Theorem 4(4), the $k_1 \dots k_4$ vs. $k_5 \in [87,867,\, 894,235]$ horizon invariance breakdown (Theorem 46), the complete Theorems 38–47 summary, and the Three-Tier Evidence Classification table.
+
+---
+
