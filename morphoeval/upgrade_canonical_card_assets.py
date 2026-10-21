@@ -352,7 +352,131 @@ def build_raup_six_shells_and_gif():
     print(f"  Saved {out_raup_gif} ({out_raup_gif.stat().st_size // 1024} KB)")
 
 
+def build_conus_rule30_gif_and_sync_specimens():
+    print("4. Upgrading 1984 Wolfram/Meinhardt Conus textile 3D pigmented shell GIF & syncing docs/media/specimens/...")
+    import shutil
+    # Generate Rule 30 + activator-substrate space-time field and map its mahogany/cream
+    # tent pattern directly onto a 3D Conus textile Raup shell at the exact vertical specimen angle!
+    raup_mod = load_module("raup_mod", "models/create_raup_animations.py")
+    W_grid, T_steps = 160, 160
+    ca = np.zeros((T_steps, W_grid), dtype=int)
+    rng = np.random.default_rng(30)
+    ca[0] = rng.choice([0, 1], size=W_grid, p=[0.78, 0.22])
+    for t in range(1, T_steps):
+        left = np.roll(ca[t - 1], 1)
+        center = ca[t - 1]
+        right = np.roll(ca[t - 1], -1)
+        ca[t] = left ^ (center | right)  # Exact Wolfram Elementary Cellular Automaton Rule 30
+
+    # Smooth slightly with anisotropic triangular kernel to match biological pigment diffusion
+    from scipy.ndimage import gaussian_filter
+    pigment = gaussian_filter(ca.astype(float), sigma=(0.8, 0.6))
+    pigment = (pigment - pigment.min()) / (pigment.max() - pigment.min() + 1e-9)
+
+    # Build RGB texture in Conus textile palette: cream white (#fff8eb) tents + mahogany brown (#6b240c) lines
+    cream = np.array([1.0, 0.97, 0.91])
+    amber = np.array([0.82, 0.48, 0.16])
+    mahogany = np.array([0.36, 0.11, 0.04])
+    tex_rgb = np.zeros((T_steps, W_grid, 3), dtype=float)
+    for c in range(3):
+        tex_rgb[:, :, c] = np.where(
+            pigment < 0.48,
+            cream[c] * (1.0 - pigment / 0.48) + amber[c] * (pigment / 0.48),
+            amber[c] * (1.0 - (pigment - 0.48) / 0.52) + mahogany[c] * ((pigment - 0.48) / 0.52),
+        )
+
+    # 3D Conus textile mesh (orient vertically with apex at top, matching conus_textile_shell.jpg!)
+    X, Y, Z = raup_mod.raup_shell(W=3.2, D=0.02, T=1.65, S=0.55, turns=4, res=72, apex_up=True)
+    # Map (phi, theta) surface to the Rule 30 pigment texture
+    n_phi, n_theta = X.shape
+    facecolors = np.zeros((n_phi, n_theta, 4), dtype=float)
+    for i in range(n_phi):
+        for j in range(n_theta):
+            ti = int((j / n_theta) * (T_steps - 1))
+            xi = int((i / n_phi) * (W_grid - 1))
+            facecolors[i, j, :3] = tex_rgb[ti, xi]
+            facecolors[i, j, 3] = 1.0
+
+    fig_c = plt.figure(figsize=(10.0, 4.8), dpi=95, facecolor="#0b1325")
+    ax_3d = fig_c.add_subplot(1, 2, 1, projection="3d", facecolor="#0f172a")
+    ax_kym = fig_c.add_subplot(1, 2, 2, facecolor="#0f172a")
+    fig_c.subplots_adjust(left=0.02, right=0.98, top=0.82, bottom=0.09, wspace=0.12)
+
+    n_frames = 28
+
+    def animate_conus(frame):
+        azim = (frame / n_frames) * 360.0
+        t_cur = int(25 + (T_steps - 26) * (frame / (n_frames - 1)))
+
+        # Left Panel: 3D Pigmented Conus textile Shell (same vertical apex-up angle as specimen!)
+        ax_3d.clear()
+        ax_3d.set_facecolor("#0f172a")
+        fc_now = facecolors.copy()
+        j_cut = int((t_cur / T_steps) * n_theta)
+        if j_cut < n_theta:
+            fc_now[:, j_cut:, :3] = 0.25 + 0.75 * fc_now[:, j_cut:, :3]
+        ax_3d.plot_surface(
+            X, Y, Z, rstride=1, cstride=2, facecolors=fc_now,
+            antialiased=True, shade=True, linewidth=0.0
+        )
+        raup_mod.fit_axes(ax_3d, X, Y, Z, zoom=1.35)
+        ax_3d.view_init(elev=14.0, azim=azim)
+        ax_3d.set_axis_off()
+        ax_3d.set_title(
+            f"3D Conus textile Shell Surface\nRule 30 Mantle Accretion (azim={azim:.0f}°)",
+            color="#f8fafc", fontsize=9.8, fontweight="bold"
+        )
+
+        # Right Panel: Live 1D Mantle-Edge Rule 30 Space-Time Kymograph
+        ax_kym.clear()
+        ax_kym.set_facecolor("#0f172a")
+        shown = np.ones_like(tex_rgb) * 0.12
+        shown[:t_cur, :, :] = tex_rgb[:t_cur, :, :]
+        ax_kym.imshow(shown, aspect="auto", extent=[0, W_grid, T_steps, 0])
+        ax_kym.axhline(t_cur, color="#38bdf8", lw=2.0, label=f"Active Mantle Edge (t = {t_cur})")
+        ax_kym.set_xlabel("Mantle Edge Position x (Cells)", color="#cbd5e1", fontsize=8.5)
+        ax_kym.set_ylabel("Accretion Time t ↓", color="#cbd5e1", fontsize=8.5)
+        ax_kym.tick_params(colors="#94a3b8", labelsize=7.5)
+        for sp in ax_kym.spines.values():
+            sp.set_color("#38bdf8")
+        ax_kym.set_title(
+            "Wolfram Rule 30 Space-Time Kymograph\ns_i(t+1) = s_{i-1}(t) XOR (s_i(t) OR s_{i+1}(t))",
+            color="#f8fafc", fontsize=9.8, fontweight="bold"
+        )
+        ax_kym.legend(loc="lower right", fontsize=7.5, facecolor="#0b1325", edgecolor="#38bdf8", labelcolor="#f8fafc")
+        fig_c.suptitle(
+            "Wolfram (1984) & Meinhardt (1987) — Conus textile Shell Pigmentation (3D Shell & Rule 30 Kymograph)",
+            color="#facc15", fontsize=10.8, fontweight="bold", y=0.96
+        )
+
+    anim_c = FuncAnimation(fig_c, animate_conus, frames=n_frames, interval=110)
+    out_conus_gif = ROOT / "docs" / "media" / "conus_textile_rule30.gif"
+    anim_c.save(out_conus_gif, writer=PillowWriter(fps=10))
+    plt.close(fig_c)
+    print(f"  Saved {out_conus_gif} ({out_conus_gif.stat().st_size // 1024} KB)")
+
+    # Copy all 8 canonical pillar specimens into `docs/media/specimens/` so they ALWAYS load locally
+    # inside `docs/` without needing `../` traversal or remote fallback!
+    spec_dir = ROOT / "docs" / "media" / "specimens"
+    spec_dir.mkdir(parents=True, exist_ok=True)
+    canonical_map = {
+        "thompson-scarus-pomacanthus": "datasets/thompson/scarus_pomacanthus_600pt_specimen.jpg",
+        "turing-gray-scott": "datasets/turing/pomacanthus_imperator_flank_stripes_specimen.jpg",
+        "raup-shell-coiling": "datasets/raup/raup_coiled_shells_specimen.jpg",
+        "vogel-phyllotaxis": "datasets/phyllotaxis/helianthus_annuus_capitulum_specimen.jpg",
+        "wolfram-conus-textile-rule30": "datasets/conus/conus_textile_shell.jpg",
+        "runions-leaf-venation": "datasets/venation/ginkgo_open_venation_specimen.jpg",
+        "planform-morphology-animation": "datasets/species_gallery/II_Anaima_Invertebrata/Schmidtea_mediterranea.jpg",
+        "cervera-levin-mafe": "datasets/species_gallery/II_Anaima_Invertebrata/Schmidtea_mediterranea.jpg",
+    }
+    for slug, rel_src in canonical_map.items():
+        dst = spec_dir / f"{slug}.jpg"
+        shutil.copy2(ROOT / rel_src, dst)
+        print(f"  Mirrored {rel_src} -> {dst.relative_to(ROOT)}")
+
+
 if __name__ == "__main__":
     build_thompson_600pt_assets()
     build_turing_flank_closeup()
     build_raup_six_shells_and_gif()
+    build_conus_rule30_gif_and_sync_specimens()

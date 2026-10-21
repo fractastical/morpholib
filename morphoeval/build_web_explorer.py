@@ -977,6 +977,13 @@ def main() -> int:
         return "../" + relPath;
       }
 
+      function resolveSpecimenUrl(m) {
+        if (CANONICAL_PILLARS.some(p => p.slug === m.slug)) {
+          return `media/specimens/${m.slug}.jpg`;
+        }
+        return resolveAssetUrl(m.specimen);
+      }
+
       const CANONICAL_PILLARS = [
         {
           slug: "thompson-scarus-pomacanthus",
@@ -1038,6 +1045,7 @@ def main() -> int:
           const r = SUBALTERN_ROWS.findIndex(x => x.key === m.subaltern);
           const c = CAUSE_COLS.findIndex(x => x.key === m.cause);
           const simUrl = m.gif ? resolveAssetUrl(m.gif) : "";
+          const localCanonicalSpecimen = `media/specimens/${p.slug}.jpg`;
           const specimenUrl = resolveAssetUrl(m.specimen);
           const scriptUrl = `${DATA.repo_url}/${m.script}`;
           const leanUrl = `${DATA.repo_url}/${m.lean}`;
@@ -1054,7 +1062,7 @@ def main() -> int:
             </div>
             <div class="canonical-stage">
               <div class="pane-specimen" title="Canonical Specimen (${m.species})">
-                <img src="${specimenUrl}" alt="${m.species}" onerror="this.src='${DATA.raw_url}/${m.specimen}'" loading="lazy" />
+                <img src="${localCanonicalSpecimen}" alt="${m.species}" onerror="this.onerror=null;this.src='${specimenUrl}'" loading="lazy" />
                 <span class="pane-badge">Specimen</span>
               </div>
               <div class="pane-sim" title="Dynamical Simulation (${m.script})">
@@ -1261,7 +1269,7 @@ def main() -> int:
           card.style.borderColor = borderColor;
 
           const simUrl = m.gif ? resolveAssetUrl(m.gif) : "";
-          const specimenUrl = resolveAssetUrl(m.specimen);
+          const specimenUrl = resolveSpecimenUrl(m);
           const scriptUrl = `${DATA.repo_url}/${m.script}`;
           const leanUrl = `${DATA.repo_url}/${m.lean}`;
 
@@ -1276,7 +1284,7 @@ def main() -> int:
             <div class="tile-stage-split">
               <div class="pane-specimen" title="Canonical Biological Specimen (${m.species})">
                 ${specimenUrl
-                  ? `<img src="${specimenUrl}" alt="${m.species}" onerror="this.src='${DATA.raw_url}/${m.specimen}'" />`
+                  ? `<img src="${specimenUrl}" alt="${m.species}" onerror="this.onerror=null;this.src='${DATA.raw_url}/${m.specimen}'" />`
                   : ``
                 }
                 <span class="pane-badge">Canonical Specimen</span>
@@ -1315,7 +1323,7 @@ def main() -> int:
       function openModal(m, rank) {
         const backdrop = document.getElementById("modal-backdrop");
         const body = document.getElementById("modal-body");
-        const specimenUrl = resolveAssetUrl(m.specimen);
+        const specimenUrl = resolveSpecimenUrl(m);
         body.innerHTML = `
           <h2 style="font-size:1.18rem;color:#fff;">#${rank} &nbsp;<em>${m.species}</em> (${m.common}) — Audit: <span style="color:#34d399">${m.score.toFixed(1)}/100</span> &nbsp;|&nbsp; Image Fitness: <span style="color:#facc15">${m.img_fit.toFixed(1)}/100</span></h2>
           <p style="font-size:0.80rem;color:#cbd5e1;margin-top:4px;">
@@ -1327,7 +1335,7 @@ def main() -> int:
           </p>
           <div class="modal-grid">
             <div class="modal-specimen-box">
-              <img src="${specimenUrl}" alt="${m.species}" onerror="this.src='${DATA.raw_url}/${m.specimen}'" />
+              <img src="${specimenUrl}" alt="${m.species}" onerror="this.onerror=null;this.src='${DATA.raw_url}/${m.specimen}'" />
               <div style="font-size:0.72rem;color:#94a3b8;margin-top:6px;">SHA-256 Locked Canonical Specimen:<br><code>${m.specimen}</code></div>
             </div>
             <div class="cause-list">
