@@ -283,7 +283,8 @@ SimResult simulate_cell_view(
     bool record_snapshots = false,
     int max_swaps = -1,
     int max_steps = -1,
-    bool stop_when_sorted = true
+    bool stop_when_sorted = true,
+    bool selection_movable_pyc310 = false
 ) {
     SplitMix64 rng(seed);
     int n = static_cast<int>(cells.size());
@@ -345,6 +346,13 @@ SimResult simulate_cell_view(
                 did_compare = true;
                 if (cells[t].frozen == FrozenKind::Immovable) {
                     c.target = (d == 1) ? (t + 1) : (t - 1);
+                } else if (cells[t].frozen == FrozenKind::Movable && selection_movable_pyc310) {
+                    // [U4] SelectionSortCell.cpython-310.pyc bytecode rule (Paper Fig. 5B)
+                    if (c.value < cells[t].value && t == cells[t].target) {
+                        swap_q = t;
+                    } else {
+                        c.target = (d == 1) ? (t + 1) : (t - 1);
+                    }
                 } else if (c.value < cells[t].value) {
                     swap_q = t;
                 } else {
@@ -545,8 +553,9 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Immovable Frozen Error Tolerance (f = 3) & Delayed Gratification
+    // Immovable (Fig. 5C) & Movable (Fig. 5B) Frozen Error Tolerance (f = 3) & Delayed Gratification
     double sum_immov_f3[3] = {0, 0, 0};
+    double sum_mov_f3[3] = {0, 0, 0};
     double sum_dg_f3_b = 0.0, sum_dg_i = 0.0;
     for (int r = 0; r < reps; ++r) {
         std::vector<int> vals(n);
@@ -563,6 +572,12 @@ int main(int argc, char** argv) {
             sum_immov_f3[a_idx] += rf.final_error;
             if (a == Algotype::Bubble) sum_dg_f3_b += rf.dg;
             if (a == Algotype::Insertion) sum_dg_i += rf.dg;
+
+            auto rm = simulate_cell_view(
+                make_cells(vals, std::vector<Algotype>(n, a), f3, FrozenKind::Movable),
+                seed * 4000 + r * 13 + a_idx, true, false, -1, -1, true, true
+            );
+            sum_mov_f3[a_idx] += rm.final_error;
         }
     }
 
@@ -584,20 +599,27 @@ int main(int argc, char** argv) {
         sum_dup_final += rd.final_agg;
     }
 
-    // Cross-purpose opposite-direction B(inc)+I(dec) and B(dec)+S(inc)
+    // Cross-purpose opposite-direction B(inc)+I(dec) and B(dec)+S(inc) — jointly shuffled (algotype, direction) pairs!
     int cross_reps = std::max(6, reps / 2);
     double sum_cross_bi = 0.0, sum_cross_bs = 0.0;
     for (int r = 0; r < cross_reps; ++r) {
         std::vector<int> v(n);
         std::iota(v.begin(), v.end(), 1);
         rng.shuffle(v);
+        std::vector<std::pair<Algotype, int>> spec_bi(n), spec_bs(n);
+        for (int i = 0; i < n; ++i) {
+            spec_bi[i] = (i < n / 2) ? std::make_pair(Algotype::Bubble, 1) : std::make_pair(Algotype::Insertion, -1);
+            spec_bs[i] = (i < n / 2) ? std::make_pair(Algotype::Bubble, -1) : std::make_pair(Algotype::Selection, 1);
+        }
+        rng.shuffle(spec_bi);
+        rng.shuffle(spec_bs);
         std::vector<Algotype> at_bi(n), at_bs(n);
         std::vector<int> dir_bi(n), dir_bs(n);
         for (int i = 0; i < n; ++i) {
-            at_bi[i] = (i < n / 2) ? Algotype::Bubble : Algotype::Insertion;
-            dir_bi[i] = (i < n / 2) ? 1 : -1;
-            at_bs[i] = (i < n / 2) ? Algotype::Bubble : Algotype::Selection;
-            dir_bs[i] = (i < n / 2) ? -1 : 1;
+            at_bi[i] = spec_bi[i].first;
+            dir_bi[i] = spec_bi[i].second;
+            at_bs[i] = spec_bs[i].first;
+            dir_bs[i] = spec_bs[i].second;
         }
         auto r_bi = simulate_cell_view(make_cells(v, at_bi, {}, FrozenKind::None, dir_bi), seed * 8000 + r * 23, true, false, 120 * n, 120 * n * 20, false);
         auto r_bs = simulate_cell_view(make_cells(v, at_bs, {}, FrozenKind::None, dir_bs), seed * 9000 + r * 29, true, false, 120 * n, 120 * n * 20, false);
@@ -620,6 +642,9 @@ int main(int argc, char** argv) {
     ofs << "    \"bubble\": {\"swaps\": " << res_k_b.swaps << ", \"final_error\": " << res_k_b.final_error << ", \"free_inversions\": " << res_k_b.free_inversions << ", \"dg\": " << res_k_b.dg << "},\n";
     ofs << "    \"insertion\": {\"swaps\": " << res_k_i.swaps << ", \"final_error\": " << res_k_i.final_error << ", \"free_inversions\": " << res_k_i.free_inversions << ", \"dg\": " << res_k_i.dg << "},\n";
     ofs << "    \"selection\": {\"swaps\": " << res_k_s.swaps << ", \"final_error\": " << res_k_s.final_error << ", \"free_inversions\": " << res_k_s.free_inversions << ", \"dg\": " << res_k_s.dg << "},\n";
+    ofs << "    \"insertion_final_values\": [";
+    for (int i = 0; i < n_kymo; ++i) ofs << res_k_i.final_values[i] << (i + 1 < n_kymo ? ", " : "");
+    ofs << "],\n";
     ofs << "    \"selection_final_values\": [";
     for (int i = 0; i < n_kymo; ++i) ofs << res_k_s.final_values[i] << (i + 1 < n_kymo ? ", " : "");
     ofs << "],\n";
@@ -634,6 +659,8 @@ int main(int argc, char** argv) {
     ofs << "    \"fig4b_bubble_step_speedup\": " << (sum_trad_tot[0] / sum_cell_tot[0]) << ",\n";
     ofs << "    \"fig4b_insertion_step_speedup\": " << (sum_trad_tot[1] / sum_cell_tot[1]) << ",\n";
     ofs << "    \"fig4b_selection_step_overhead\": " << (sum_cell_tot[2] / sum_trad_tot[2]) << ",\n";
+    ofs << "    \"fig5b_selection_movable_f3\": " << (sum_mov_f3[2] / reps) << ",\n";
+    ofs << "    \"fig5b_bubble_movable_f3\": " << (sum_mov_f3[0] / reps) << ",\n";
     ofs << "    \"fig5c_selection_immovable_f3\": " << (sum_immov_f3[2] / reps) << ",\n";
     ofs << "    \"fig5c_bubble_immovable_f3\": " << (sum_immov_f3[0] / reps) << ",\n";
     ofs << "    \"fig7a_bubble_dg_f3\": " << (sum_dg_f3_b / reps) << ",\n";

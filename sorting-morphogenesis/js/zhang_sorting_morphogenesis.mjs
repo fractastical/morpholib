@@ -246,7 +246,8 @@ export function simulateCellView(
   recordSnapshots = false,
   maxSwaps = -1,
   maxSteps = -1,
-  stopWhenSorted = true
+  stopWhenSorted = true,
+  selectionMovablePyc310 = false
 ) {
   const cells = cellsInput.map((c) => ({ ...c }));
   const rng = new SplitMix64(seed);
@@ -306,6 +307,12 @@ export function simulateCellView(
         didCompare = true;
         if (cells[t].frozen === FrozenKind.Immovable) {
           c.target = d === 1 ? t + 1 : t - 1;
+        } else if (cells[t].frozen === FrozenKind.Movable && selectionMovablePyc310) {
+          if (c.value < cells[t].value && t === cells[t].target) {
+            swapQ = t;
+          } else {
+            c.target = d === 1 ? t + 1 : t - 1;
+          }
         } else if (c.value < cells[t].value) {
           swapQ = t;
         } else {
@@ -488,6 +495,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
 
   const sumImmovF3 = [0, 0, 0];
+  const sumMovF3 = [0, 0, 0];
   let sumDgF3B = 0.0;
   let sumDgI = 0.0;
   for (let r = 0; r < reps; ++r) {
@@ -503,6 +511,18 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       sumImmovF3[aIdx] += rf.final_error;
       if (a === Algotype.Bubble) sumDgF3B += rf.dg;
       if (a === Algotype.Insertion) sumDgI += rf.dg;
+
+      const rm = simulateCellView(
+        makeCells(vals, new Array(n).fill(a), f3, FrozenKind.Movable),
+        seed * 4000n + BigInt(r * 13 + aIdx),
+        true,
+        false,
+        -1,
+        -1,
+        true,
+        true
+      );
+      sumMovF3[aIdx] += rm.final_error;
     }
   }
 
@@ -529,10 +549,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const v = Array.from({ length: n }, (_, i) => i + 1);
     rng.shuffle(v);
     const half = Math.floor(n / 2);
-    const atBI = Array.from({ length: n }, (_, i) => (i < half ? Algotype.Bubble : Algotype.Insertion));
-    const dirBI = Array.from({ length: n }, (_, i) => (i < half ? 1 : -1));
-    const atBS = Array.from({ length: n }, (_, i) => (i < half ? Algotype.Bubble : Algotype.Selection));
-    const dirBS = Array.from({ length: n }, (_, i) => (i < half ? -1 : 1));
+    const specBI = Array.from({ length: n }, (_, i) => (i < half ? [Algotype.Bubble, 1] : [Algotype.Insertion, -1]));
+    const specBS = Array.from({ length: n }, (_, i) => (i < half ? [Algotype.Bubble, -1] : [Algotype.Selection, 1]));
+    rng.shuffle(specBI);
+    rng.shuffle(specBS);
+    const atBI = specBI.map((p) => p[0]);
+    const dirBI = specBI.map((p) => p[1]);
+    const atBS = specBS.map((p) => p[0]);
+    const dirBS = specBS.map((p) => p[1]);
 
     const rBI = simulateCellView(makeCells(v, atBI, [], FrozenKind.None, dirBI), seed * 8000n + BigInt(r * 23), true, false, 120 * n, 120 * n * 20, false);
     const rBS = simulateCellView(makeCells(v, atBS, [], FrozenKind.None, dirBS), seed * 9000n + BigInt(r * 29), true, false, 120 * n, 120 * n * 20, false);
@@ -551,6 +575,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       bubble: { swaps: resKB.swaps, final_error: resKB.final_error, free_inversions: resKB.free_inversions, dg: Number(resKB.dg.toFixed(4)) },
       insertion: { swaps: resKI.swaps, final_error: resKI.final_error, free_inversions: resKI.free_inversions, dg: Number(resKI.dg.toFixed(4)) },
       selection: { swaps: resKS.swaps, final_error: resKS.final_error, free_inversions: resKS.free_inversions, dg: Number(resKS.dg.toFixed(4)) },
+      insertion_final_values: resKI.final_values,
       selection_final_values: resKS.final_values,
       bubble_final_values: resKB.final_values,
     },
@@ -561,6 +586,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       fig4b_bubble_step_speedup: Number((sumTradTot[0] / sumCellTot[0]).toFixed(4)),
       fig4b_insertion_step_speedup: Number((sumTradTot[1] / sumCellTot[1]).toFixed(4)),
       fig4b_selection_step_overhead: Number((sumCellTot[2] / sumTradTot[2]).toFixed(4)),
+      fig5b_selection_movable_f3: Number((sumMovF3[2] / reps).toFixed(4)),
+      fig5b_bubble_movable_f3: Number((sumMovF3[0] / reps).toFixed(4)),
       fig5c_selection_immovable_f3: Number((sumImmovF3[2] / reps).toFixed(4)),
       fig5c_bubble_immovable_f3: Number((sumImmovF3[0] / reps).toFixed(4)),
       fig7a_bubble_dg_f3: Number((sumDgF3B / reps).toFixed(4)),

@@ -98,8 +98,8 @@ Generates:
 
 ---
 
-## Standalone Manuscript, Target Journals & Candidate Co-Authors
+## Standalone Manuscript
 
-- **Compiled 10-Page Manuscript PDF:** [`docs/zhang_levin_sorting_morphogenesis_manuscript.pdf`](../docs/zhang_levin_sorting_morphogenesis_manuscript.pdf) (LaTeX source: [`docs/zhang_levin_sorting_morphogenesis_manuscript.tex`](../docs/zhang_levin_sorting_morphogenesis_manuscript.tex))
-- **Publication Strategy, Top 5 Target Venues (*Adaptive Behavior*, *Patterns*, *ReScience C*, *Artificial Life*, *Philosophies*) & Candidate Co-Authors + Outreach Emails:** [`docs/zhang_levin_publication_and_coauthors.md`](../docs/zhang_levin_publication_and_coauthors.md)
+- **Compiled Manuscript PDF:** [`docs/zhang_levin_sorting_morphogenesis_manuscript.pdf`](../docs/zhang_levin_sorting_morphogenesis_manuscript.pdf) (LaTeX source: [`docs/zhang_levin_sorting_morphogenesis_manuscript.tex`](../docs/zhang_levin_sorting_morphogenesis_manuscript.tex))
+
 

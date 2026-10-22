@@ -169,67 +169,90 @@ def run_insertion_prefix_reset_ablation(n: int = 60, reps: int = 20, seed: int =
 
 
 # ============================================================================
-# Ablation 2: Bubble Sort "Delayed Gratification" vs. Exact Lyapunov Potential
-# I(v) (Total Inversions) & Zero Cross-Barrier Transport
+# Ablation 2: Bubble & Selection "Delayed Gratification" vs. Exact Lyapunov
+# Potential I(v) (Total Inversions) at f = 0 (Intact) and f = 1 (Damaged)
 # ============================================================================
 def run_delayed_gratification_lyapunov_audit(n: int = 40, seed: int = 42) -> Dict[str, object]:
     rng = np.random.default_rng(seed)
     vals = list(rng.permutation(np.arange(1, n + 1)))
     f_pos = [n // 2]
-    # Put a large value at the immovable barrier
     idx_hi = vals.index(n - 1)
     vals[f_pos[0]], vals[idx_hi] = vals[idx_hi], vals[f_pos[0]]
 
-    res = simulate(
+    # 1. Damaged Bubble sort (f = 1 immovable barrier at n // 2)
+    res_b_f1 = simulate(
         make_cells(vals, ["B"] * n, f_pos, "immovable"),
         stop_when_sorted=True,
         seed=seed + 7,
         record_snapshots=True,
     )
-    snaps = res.value_snapshots
+    snaps = res_b_f1.value_snapshots
     assert snaps is not None
     mono_err_trace = [monotonicity_error(row) for row in snaps]
     lyapunov_inv_trace = [total_pair_inversions(row) for row in snaps]
 
-    # Count how many steps increased total inversions I(v) vs monotonicity_error(v)
-    lyapunov_increases = sum(
-        1 for t in range(1, len(lyapunov_inv_trace)) if lyapunov_inv_trace[t] >= lyapunov_inv_trace[t - 1]
-    )
+    # Assert that EVERY single Bubble swap decreases I(v) by exactly -1
+    deltas_b = [lyapunov_inv_trace[t] - lyapunov_inv_trace[t - 1] for t in range(1, len(lyapunov_inv_trace))]
+    assert all(d == -1 for d in deltas_b), f"Expected all Bubble ΔI == -1, got {set(deltas_b)}"
+    lyapunov_increases = sum(1 for d in deltas_b if d >= 0)
     mono_increases = sum(
         1 for t in range(1, len(mono_err_trace)) if mono_err_trace[t] > mono_err_trace[t - 1]
     )
 
-    # Check if ANY cell ever crossed f_pos[0]
     left_set_init = set(snaps[0][: f_pos[0]])
     left_set_final = set(snaps[-1][: f_pos[0]])
     cells_crossed_barrier = len(left_set_init ^ left_set_final)
 
+    # 2. Intact Bubble sort (f = 0, zero frozen defects) across 15 seeds
+    dg_f0_list = []
+    uphill_i_f0 = 0
+    for r in range(15):
+        v0 = list(rng.permutation(np.arange(1, n + 1)))
+        res_f0 = simulate(make_cells(v0, ["B"] * n), stop_when_sorted=True, seed=seed * 50 + r, record_snapshots=True)
+        dg_f0_list.append(res_f0.dg)
+        inv_f0 = [total_pair_inversions(row) for row in res_f0.value_snapshots]
+        uphill_i_f0 += sum(1 for t in range(1, len(inv_f0)) if inv_f0[t] >= inv_f0[t - 1])
+
+    # 3. Damaged Selection sort (f = 1): check ΔI <= -1 on every non-local swap
+    res_s_f1 = simulate(
+        make_cells(vals, ["S"] * n, f_pos, "immovable"),
+        stop_when_sorted=True,
+        seed=seed + 19,
+        record_snapshots=True,
+    )
+    inv_s = [total_pair_inversions(row) for row in res_s_f1.value_snapshots]
+    deltas_s = [inv_s[t] - inv_s[t - 1] for t in range(1, len(inv_s))]
+    assert all(d <= -1 for d in deltas_s), f"Expected all Selection ΔI <= -1, got {max(deltas_s)}"
+
     return {
-        "total_swaps": int(res.swaps),
+        "total_swaps": int(res_b_f1.swaps),
         "mono_err_trace": mono_err_trace,
         "lyapunov_inv_trace": lyapunov_inv_trace,
         "mono_error_uphill_steps": int(mono_increases),
         "lyapunov_inversion_uphill_steps": int(lyapunov_increases),
+        "bubble_delta_I_every_swap": -1,
+        "selection_delta_I_range": [int(min(deltas_s)), int(max(deltas_s))],
+        "selection_lyapunov_uphill_steps": 0,
+        "intact_f0_mean_dg": round(float(np.mean(dg_f0_list)), 4),
+        "intact_f0_lyapunov_uphill_steps": int(uphill_i_f0),
         "cells_crossing_immovable_barrier": int(cells_crossed_barrier),
-        "dg_score": round(float(res.dg), 4),
+        "dg_score": round(float(res_b_f1.dg), 4),
     }
 
 
 # ============================================================================
 # Ablation 3: Algotype Clustering Mechanism — Kinematic Transport Speed Asymmetry
-# (Unique Values) vs. Strict-Inequality Tie-Stability (Duplicate Values)
+# (Unique Values) vs. Strict-Inequality Tie-Freeze (Duplicate Values)
+# All 4 arms run under the EXACT same active-cell scheduler!
 # ============================================================================
 def run_clustering_mechanism_ablation(n: int = 80, reps: int = 15, seed: int = 42) -> Dict[str, object]:
     rng = np.random.default_rng(seed)
     grid = np.linspace(0.0, 1.0, 101)
 
-    # 1. Unique values (B+S): transient kinematic wave
     uniq_bs_curves = []
-    # 2. Duplicate values (B+S) with standard strict `<` comparison (stable on ties)
     dup_strict_curves = []
-    # 3. Duplicate values (B+S) where Bubble swaps on `<=` ties (destroying tie stability)
-    dup_unstable_curves = []
-    # 4. Homo-algotype control: B1 + B2 (two labels running the IDENTICAL Bubble algorithm!)
+    dup_unstable_stop_at_sorted_curves = []
+    dup_unstable_post_mix_curves = []
     homo_b1b2_curves = []
 
     for r in range(reps):
@@ -238,50 +261,76 @@ def run_clustering_mechanism_ablation(n: int = 80, reps: int = 15, seed: int = 4
         at: List[Algotype] = ["B"] * (n // 2) + ["S"] * (n - n // 2)
         rng.shuffle(at)
 
-        # (1) Unique B+S
+        # (1) Unique B+S (same active-cell scheduler)
         ru = simulate(make_cells(vu, at), seed=seed * 1000 + r)
         uniq_bs_curves.append(np.interp(grid, np.linspace(0, 1, len(ru.aggregation_trace)), ru.aggregation_trace))
 
-        # (2) Duplicate B+S (standard strict `<`)
+        # (2) Duplicate B+S with standard strict `<` comparison
         rd = simulate(make_cells(vd, at), seed=seed * 2000 + r)
         dup_strict_curves.append(np.interp(grid, np.linspace(0, 1, len(rd.aggregation_trace)), rd.aggregation_trace))
 
-        # (3) Duplicate B+S with tie-swapping (`<=` on equal values for 400 extra mixing steps)
+        # (3) Controlled `<=` tie-swap ablation inside the EXACT same active-cell scheduler:
+        #     Both active-cell eligibility and Bubble swap proposal use `<=` instead of `<`.
         cells_u = make_cells(vd, at)
-        py_rng = random.Random(seed * 3000 + r)
-        agg_tr_u = [aggregation_value([c.algotype for c in cells_u])]
-        # First sort with standard rules, then allow equal-key neighbor swaps (or allow `<=` during sort)
-        for step in range(n * n * 4):
+        py_rng = random.Random(seed * 2000 + r)
+        agg_tr_stop = [aggregation_value([c.algotype for c in cells_u])]
+        agg_tr_mix = [agg_tr_stop[0]]
+        reached_sorted = False
+        post_sorted_swaps = 0
+        for _ in range(n * n * 20):
             err = monotonicity_error([c.value for c in cells_u])
-            if err == 0 and step > n * n:
+            if err == 0:
+                reached_sorted = True
+            if reached_sorted and post_sorted_swaps >= 400:
                 break
-            p = py_rng.randrange(n)
+            # Compute active indices using the exact same O(n) pass as simulate(), with `<=` for Bubble
+            act = []
+            for p_idx in range(n):
+                c = cells_u[p_idx]
+                if c.algotype == "B":
+                    l_ok = p_idx > 0 and c.value <= cells_u[p_idx - 1].value
+                    r_ok = p_idx < n - 1 and c.value >= cells_u[p_idx + 1].value
+                    if l_ok or r_ok:
+                        act.append(p_idx)
+                elif c.algotype == "S":
+                    if p_idx != c.target and 0 <= c.target < n:
+                        act.append(p_idx)
+            if not act:
+                break
+            p = act[py_rng.randrange(len(act))]
             c = cells_u[p]
             swap_q = -1
             if c.algotype == "B":
                 side = -1 if py_rng.random() < 0.5 else 1
                 q = p + side
                 if 0 <= q < n:
-                    # Unstable tie-breaking: `<=` instead of `<`
                     if (side == -1 and c.value <= cells_u[q].value) or (side == 1 and c.value >= cells_u[q].value):
                         swap_q = q
-            else:
+            elif c.algotype == "S":
                 t = c.target
                 if 0 <= t < n and t != p:
                     if c.value < cells_u[t].value:
                         swap_q = t
                     else:
-                        c.target = (t + 1) % n
+                        c.target = t + 1
             if swap_q >= 0:
                 cells_u[p], cells_u[swap_q] = cells_u[swap_q], cells_u[p]
                 if cells_u[p].algotype == "S":
                     cells_u[p].target = 0
                 if cells_u[swap_q].algotype == "S":
                     cells_u[swap_q].target = 0
-                agg_tr_u.append(aggregation_value([cell.algotype for cell in cells_u]))
-        dup_unstable_curves.append(np.interp(grid, np.linspace(0, 1, len(agg_tr_u)), agg_tr_u))
+                cur_agg = aggregation_value([cell.algotype for cell in cells_u])
+                agg_tr_mix.append(cur_agg)
+                if not reached_sorted:
+                    agg_tr_stop.append(cur_agg)
+                else:
+                    post_sorted_swaps += 1
 
-        # (4) Null control: two arbitrary labels ("B_tag0" vs "B_tag1") both running Bubble Sort
+        dup_unstable_stop_at_sorted_curves.append(np.interp(grid, np.linspace(0, 1, len(agg_tr_stop)), agg_tr_stop))
+        dup_unstable_post_mix_curves.append(np.interp(grid, np.linspace(0, 1, len(agg_tr_mix)), agg_tr_mix))
+
+        # (4) Null control inside the EXACT same active-cell scheduler:
+        #     Two labels ("B_tag0" vs "B_tag1") both running the identical Bubble rule in simulate()
         cells_null = make_cells(vu, ["B"] * n)
         tags = [0] * (n // 2) + [1] * (n - n // 2)
         rng.shuffle(tags)
@@ -289,30 +338,46 @@ def run_clustering_mechanism_ablation(n: int = 80, reps: int = 15, seed: int = 4
             c.uid = tags[i]
         py_rng2 = random.Random(seed * 4000 + r)
         null_tr = [sum(1 for i in range(n - 1) if cells_null[i].uid == cells_null[i + 1].uid) / n]
-        for _ in range(n * n * 5):
+        for _ in range(n * n * 20):
             if monotonicity_error([c.value for c in cells_null]) == 0:
                 break
-            p = py_rng2.randrange(n - 1)
-            if cells_null[p].value > cells_null[p + 1].value:
-                cells_null[p], cells_null[p + 1] = cells_null[p + 1], cells_null[p]
+            act_n = [
+                p_idx
+                for p_idx in range(n)
+                if (p_idx > 0 and cells_null[p_idx].value < cells_null[p_idx - 1].value)
+                or (p_idx < n - 1 and cells_null[p_idx].value > cells_null[p_idx + 1].value)
+            ]
+            if not act_n:
+                break
+            p = act_n[py_rng2.randrange(len(act_n))]
+            side = -1 if py_rng2.random() < 0.5 else 1
+            q = p + side
+            if 0 <= q < n and (
+                (side == -1 and cells_null[p].value < cells_null[q].value)
+                or (side == 1 and cells_null[p].value > cells_null[q].value)
+            ):
+                cells_null[p], cells_null[q] = cells_null[q], cells_null[p]
                 null_tr.append(sum(1 for i in range(n - 1) if cells_null[i].uid == cells_null[i + 1].uid) / n)
         homo_b1b2_curves.append(np.interp(grid, np.linspace(0, 1, len(null_tr)), null_tr))
 
     c_uniq = np.mean(uniq_bs_curves, axis=0)
     c_dup_strict = np.mean(dup_strict_curves, axis=0)
-    c_dup_unstable = np.mean(dup_unstable_curves, axis=0)
+    c_dup_stop = np.mean(dup_unstable_stop_at_sorted_curves, axis=0)
+    c_dup_mix = np.mean(dup_unstable_post_mix_curves, axis=0)
     c_null = np.mean(homo_b1b2_curves, axis=0)
 
     return {
         "grid_pct": (grid * 100.0).tolist(),
         "unique_bs_curve": c_uniq.tolist(),
         "duplicate_strict_curve": c_dup_strict.tolist(),
-        "duplicate_unstable_ties_curve": c_dup_unstable.tolist(),
+        "duplicate_unstable_stop_at_sorted_curve": c_dup_stop.tolist(),
+        "duplicate_unstable_ties_curve": c_dup_mix.tolist(),
         "identical_dynamics_null_curve": c_null.tolist(),
         "unique_bs_peak": round(float(np.max(c_uniq)), 3),
         "unique_bs_final": round(float(c_uniq[-1]), 3),
         "duplicate_strict_final": round(float(c_dup_strict[-1]), 3),
-        "duplicate_unstable_final": round(float(c_dup_unstable[-1]), 3),
+        "duplicate_unstable_stop_at_sorted_final": round(float(c_dup_stop[-1]), 3),
+        "duplicate_unstable_final": round(float(c_dup_mix[-1]), 3),
         "identical_dynamics_null_peak": round(float(np.max(c_null)), 3),
     }
 
@@ -395,8 +460,9 @@ def render_platonic_claims_audit_figure(
     ax_c = fig.add_subplot(gs[0, 2], facecolor="#0f172a")
     pct = np.asarray(ab3["grid_pct"])
     ax_c.plot(pct, ab3["unique_bs_curve"], color="#38bdf8", lw=2.3, label=f"Unique Values B+S (Fig. 8A: Kinematic Wave Peak={ab3['unique_bs_peak']:.2f} → {ab3['unique_bs_final']:.2f})")
-    ax_c.plot(pct, ab3["duplicate_strict_curve"], color="#4ade80", lw=2.3, label=f"Duplicate Values B+S (`<` Strict Tie-Stability: stays at {ab3['duplicate_strict_final']:.2f})")
-    ax_c.plot(pct, ab3["duplicate_unstable_ties_curve"], color="#ef4444", lw=2.0, ls="--", label=f"Duplicate Values B+S (`<=` Unstable Ties Ablation: drops to {ab3['duplicate_unstable_final']:.2f})")
+    ax_c.plot(pct, ab3["duplicate_strict_curve"], color="#4ade80", lw=2.3, label=f"Duplicate Values B+S (`<` No Equal-Key Swaps: stays at {ab3['duplicate_strict_final']:.2f})")
+    ax_c.plot(pct, ab3["duplicate_unstable_stop_at_sorted_curve"], color="#f59e0b", lw=2.0, ls="-.", label=f"Duplicate Values B+S (`<=` at First Sorted: {ab3['duplicate_unstable_stop_at_sorted_final']:.2f})")
+    ax_c.plot(pct, ab3["duplicate_unstable_ties_curve"], color="#ef4444", lw=2.0, ls="--", label=f"Duplicate Values B+S (`<=` + Post-Sort Mixing: {ab3['duplicate_unstable_final']:.2f})")
     ax_c.plot(pct, ab3["identical_dynamics_null_curve"], color="#94a3b8", lw=1.6, ls=":", label=f"Null Control (Two Labels Running Same Bubble Rule: {ab3['identical_dynamics_null_peak']:.2f})")
     ax_c.set_xlim(0, 100)
     ax_c.set_ylim(0.44, 0.76)
@@ -405,7 +471,7 @@ def render_platonic_claims_audit_figure(
     ax_c.set_title("C. Audit of Claim 3: Why Algotypes Cluster Without Sensing", color="#4ade80", fontsize=10.2, fontweight="bold")
     ax_c.tick_params(colors="#94a3b8", labelsize=8)
     ax_c.grid(alpha=0.2, color="#334155")
-    ax_c.legend(loc="upper left", fontsize=6.9, facecolor="#0b1325", edgecolor="#334155", labelcolor="#f8fafc")
+    ax_c.legend(loc="upper left", fontsize=6.5, facecolor="#0b1325", edgecolor="#334155", labelcolor="#f8fafc")
 
     # -------------------------------------------------------------------------
     # Panel D & E (Bottom Full-Width Table): Claim-by-Claim Verdict Matrix
@@ -417,6 +483,8 @@ def render_platonic_claims_audit_figure(
         color="#facc15", fontsize=11.0, fontweight="bold",
     )
 
+    err_w = ab1["with_explicit_freeze_reset"][3]
+    err_wo = ab1["without_explicit_freeze_reset"][3]
     rows = [
         [
             "Levin's Claim in 'Ingressing Minds' (2025/2026)",
@@ -426,20 +494,20 @@ def render_platonic_claims_audit_figure(
         ],
         [
             "1. 'No code was added to check if a swap failed\nor to handle broken/frozen cells' (Sec. 6.3)",
-            "Bubble & Selection have no exception handler;\nBUT InsertionSortCell.py (L74–76) explicitly checks\n`if cells[i].status == FREEZE: prev = -1`.",
-            "Without L74–76's explicit `prev = -1` reset at frozen cells,\na single high-valued frozen defect permanently halts all\ndownstream Insertion cells (`err` jumps from 2.9 → 21.8).",
-            "PARTIALLY REFUTED\n(True for Bubble/Selection;\nFalse for Insertion Sort)",
+            "Bubble has no defect handler; Selection advances\n`target` past FREEZE; InsertionSortCell.py (L74–76)\nexplicitly resets `if status == FREEZE: prev = -1`.",
+            f"Without L74–76's explicit `prev = -1` defect-aware reset,\na single high-valued frozen cell permanently halts all\ndownstream Insertion cells (`err` jumps from {err_w:.1f} → {err_wo:.1f} at f=3).",
+            "PARTIALLY REFUTED\n(True for Bubble; Insertion\n& Selection branch on FREEZE)",
         ],
         [
             "2. 'Delayed Gratification: algorithm temporarily\nde-sorts the array to go around a barrier,\nunlike gradient-following magnets' (Fig. 14A–B)",
-            "Adjacent monotonicity error E(v) ticks up (+1)\nbefore dropping, yielding DG > 0; Selection\nachieves low error (err ≈ f) across barriers.",
-            "• Bubble/Insertion NEVER go around an immovable defect\n  (0 cross-barrier swaps, Lean Theorem 1).\n• Global pairwise inversions I(v) decrease by -1 on EVERY\n  Bubble swap (0 uphill steps! Strictly gradient descent on I(v)).\n• E(v) is a non-monotone projection that ticks up even at f=0.\n• Selection bypasses defects via a global index pointer `target`.",
-            "METAPHOR OVERSTATED\n(System performs strict downhill\ngradient descent on I(v) with\n0 lookahead or barrier detours)",
+            f"Adjacent monotonicity error E(v) ticks up (+1)\n{ab2['mono_error_uphill_steps']} times (DG={ab2['dg_score']:.2f} at f=1; DG={ab2['intact_f0_mean_dg']:.2f} at f=0);\nSelection achieves err ≈ f across barriers.",
+            f"• Bubble/Insertion NEVER go around an immovable defect\n  (0 cross-barrier swaps, Lean Theorem 1).\n• Global pairwise inversions I(v) strictly decrease on EVERY\n  same-direction swap (Bubble ΔI = -1, Selection ΔI ∈ [{ab2['selection_delta_I_range'][0]}, -1], 0 uphill!).\n• E(v) is a coarse 1D projection that ticks up even at f=0 (DG={ab2['intact_f0_mean_dg']:.2f}).",
+            "METAPHOR OVERSTATED\n(Strict monotone Lyapunov\ndescent on I(v) with 0 uphill\nsteps & 0 barrier detours)",
         ],
         [
             "3. 'Chimeric algotype clustering side-quest\nwithout any code checking neighbor algotypes'\n(Sec. 6.3 & Fig. 14C)",
-            "Unique values: aggregation rises 0.50 → 0.64\nthen relaxes to 0.50 (Fig. 8A).\nDuplicate values: stays at 0.69 (Fig. 8D).",
-            "• Code NEVER reads `neighbor.algotype` (100% verified).\n• Unique values (Fig. 8A) IS a genuine kinematic phase-separation\n  wave (Selection sweeps left at O(1)/hit vs Bubble O(n²) diffusion),\n  NOT textbook duplicate-key stability (contra blog critics).\n• Duplicate values (Fig. 8D) stay clustered due to Selection scan\n  order + strict `<` tie-stability (collapses to 0.50 under `<=`).",
+            f"Unique values: aggregation rises 0.50 → {ab3['unique_bs_peak']:.2f}\nthen returns to {ab3['unique_bs_final']:.2f} (Fig. 8A).\nDuplicate values: stays at {ab3['duplicate_strict_final']:.2f} (Fig. 8D).",
+            f"• Code NEVER reads `neighbor.algotype` (100% verified).\n• Unique values (Fig. 8A) IS a genuine kinematic phase-separation\n  wave (Selection target-pointer advection vs Bubble diffusion),\n  NOT duplicate-key stability (impossible when all n keys are unique).\n• Duplicate values (Fig. 8D) freeze at {ab3['duplicate_strict_final']:.2f} under `<` vs {ab3['duplicate_unstable_stop_at_sorted_final']:.2f}/{ab3['duplicate_unstable_final']:.2f} under `<=`.",
             "EMPIRICALLY JUSTIFIED\n(Genuine kinematic differential-\nmotility segregation without\nhomophilic adhesion code)",
         ],
         [

@@ -81,7 +81,7 @@ Because [`zhang_sorting_morphogenesis.cpp`](./cpp/zhang_sorting_morphogenesis.cp
 
 ## 4. Evaluation of Subsequent "Latent Platonic Space" Claims (`Ingressing Minds`, 2025/2026)
 
-See **[`PLATONIC_SPACE_CLAIMS_EVALUATION.md`](./PLATONIC_SPACE_CLAIMS_EVALUATION.md)**, [`audit_platonic_space_claims.py`](./audit_platonic_space_claims.py), our compiled 10-page standalone manuscript (**[`docs/zhang_levin_sorting_morphogenesis_manuscript.pdf`](../docs/zhang_levin_sorting_morphogenesis_manuscript.pdf)**), and our **Publication Strategy, Target Venues & Candidate Co-Authors Guide** (**[`docs/zhang_levin_publication_and_coauthors.md`](../docs/zhang_levin_publication_and_coauthors.md)**) for our 3-ablation mechanistic audit of the philosophical & empirical conclusions drawn when citing this paper in *Ingressing Minds* (PsyArXiv `doi:10.31234/osf.io/5g2xj_v3` / *Philosophies* 2026, `11(5):161`, Section 6.3 & Figure 14):
+See **[`PLATONIC_SPACE_CLAIMS_EVALUATION.md`](./PLATONIC_SPACE_CLAIMS_EVALUATION.md)**, [`audit_platonic_space_claims.py`](./audit_platonic_space_claims.py), and our compiled standalone manuscript (**[`docs/zhang_levin_sorting_morphogenesis_manuscript.pdf`](../docs/zhang_levin_sorting_morphogenesis_manuscript.pdf)**) for our 3-ablation mechanistic audit of the philosophical & empirical conclusions drawn when citing this paper in *Ingressing Minds* (PsyArXiv `doi:10.31234/osf.io/5g2xj_v3` / *Philosophies* 2026, `11(5):161`, Section 6.3 & Figure 14):
 
 ![Evaluating Michael Levin's Latent Platonic Space Claims on Sorting Morphogenesis](../docs/media/zhang_levin_platonic_claims_audit.png)
 

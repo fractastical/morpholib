@@ -191,7 +191,7 @@ def render_multilang_port_figure(
     fig.text(
         0.5, 0.922,
         "Bit-Exact SplitMix64 Cross-Language Agreement (0 Cell Mismatches Across C++20, Node.js & Python) · "
-        "Line-by-Line Mapping to Zhangtaining/cell_research@1fd2bd59 · 4 Machine-Checked Lean 4 Theorems (0 sorry)",
+        "Line-by-Line Mapping to Zhangtaining/cell_research@1fd2bd59 · 6 Machine-Checked Lean 4 Theorems (0 sorry)",
         color="#94a3b8", fontsize=9.3, ha="center",
     )
 
@@ -329,31 +329,32 @@ def render_multilang_port_figure(
 
     lean_theorems = [
         (
-            "Theorem 1: bubble_adjacent_swap_cannot_cross_immovable_defect",
+            "Theorem 1: bubble_adjacent_swap_preserves_left_partition",
             "Proves any legal adjacent swap (p, p+1) avoiding an immovable defect at d\n"
-            "satisfies (p < d ∧ p+1 < d) ∨ (d < p ∧ d < p+1), so 0 cells can ever\n"
-            "cross the barrier under Bubble or Insertion local neighbor swaps.",
+            "preserves left (i < d → swap_pos p i < d) and right (d < i → d < swap_pos p i)\n"
+            "partitions, so 0 cells can ever cross an immovable barrier.",
         ),
         (
-            "Theorem 2: selection_nonlocal_swap_eliminates_cross_defect_inversion",
-            "Proves Selection's non-local (p, target) swap across t < d < p strictly\n"
-            "eliminates the cross-barrier inversion pair_inversion(v_t, v_p) : 1 → 0.",
+            "Theorem 2: insertion_freeze_reset_unblocks_and_checks_post_frozen_order",
+            "Stateful list fold over List (Nat × Bool) proving that resetting prev := none\n"
+            "at frozen cells unblocks sorted post-frozen segments while rejecting unsorted\n"
+            "post-frozen segments [(2,F), (50,T), (12,F), (6,F)] = false.",
         ),
         (
-            "Theorem 3: insertion_frozen_prefix_reset_unblocks_downstream",
-            "Proves that without prefix reset, an out-of-order frozen cell v_frozen > v2\n"
-            "permanently blocks downstream Insertion cells (false), whereas upstream's\n"
-            "InsertionSortCell.is_enable_to_move reset rule unblocks them (true).",
+            "Theorem 3: lyapunov_descent_vs_monotonicity_error_projection_artifact",
+            "Proves that swapping 4 ↔ 1 in [2, 4, 1, 3] → [2, 1, 4, 3] strictly DECREASES\n"
+            "pairwise inversions I(v) (3 → 2) while strictly INCREASING adjacent\n"
+            "monotonicity error E(v) (1 → 2).",
         ),
         (
-            "Theorem 4: delayed_gratification_strict_positive_when_recovery_exceeds_setback",
-            "Proves dg_net_recovery y (y + net_gain) = net_gain > 0 for every setback-\n"
-            "recovery excursion with recovery x = y + net_gain > y.",
+            "Theorem 4: adjacent_swap_strictly_decreases_inversions_window3",
+            "Proves ∀ (a b c : Nat), b > c → pairwise_inversions [a, c, b] + 1 =\n"
+            "pairwise_inversions [a, b, c] (strict ΔI = -1 Lyapunov descent).",
         ),
         (
-            "Theorem 5: chimeric_segregation_maximizes_same_neighbors",
-            "Proves homotypic 2-domain segregation (B...B S...S) achieves 2m - 2\n"
-            "same-algotype adjacent pairs vs. 0 for alternating arrays.",
+            "Theorem 5 & 6: selection_nonlocal_swap & chimeric_segregation_bounds",
+            "Proves Selection swap across [high, mid, low] (high > low) strictly decreases\n"
+            "pairwise_inversions, and homotypic [B,B,B,B,S,S,S,S] maximizes adjacency.",
         ),
     ]
     y_t = 0.90
@@ -385,19 +386,26 @@ def main() -> int:
     # 3. Run Python SplitMix64 port
     py_kymo = run_python_splitmix_kymograph(seed=42)
 
-    # 4. Verify Lean 4 formal proofs
+    # 4. Verify Lean 4 formal proofs (must exit 0 AND have zero sorryAx / zero sorry warnings)
     lean_bin = shutil.which("lean") or "/Users/jdietz/.elan/bin/lean"
     lean_file = ROOT / "morphoeval" / "lean" / "loops" / "Loop_zhang_sorting_morphogenesis.lean"
     lean_res = subprocess.run([lean_bin, str(lean_file)], capture_output=True, text=True)
-    lean_ok = (lean_res.returncode == 0)
+    lean_stdout_stderr = (lean_res.stdout or "") + (lean_res.stderr or "")
+    lean_ok = (
+        lean_res.returncode == 0
+        and "sorryAx" not in lean_stdout_stderr
+        and "declaration uses 'sorry'" not in lean_stdout_stderr
+    )
 
     cpp_data = json.loads(cpp_json.read_text(encoding="utf-8"))
     js_data = json.loads(js_json.read_text(encoding="utf-8"))
 
-    # Verify bit-exact agreement across C++20, Node.js, and Python
+    # Verify bit-exact agreement across C++20, Node.js, and Python for ALL 3 algotypes (Bubble, Insertion, Selection)
     assert cpp_data["kymograph_n42"]["selection_final_values"] == js_data["kymograph_n42"]["selection_final_values"] == py_kymo["selection"]["final_values"], "Selection final array mismatch!"
     assert cpp_data["kymograph_n42"]["bubble_final_values"] == js_data["kymograph_n42"]["bubble_final_values"] == py_kymo["bubble"]["final_values"], "Bubble final array mismatch!"
+    assert cpp_data["kymograph_n42"]["insertion_final_values"] == js_data["kymograph_n42"]["insertion_final_values"] == py_kymo["insertion"]["final_values"], "Insertion final array mismatch!"
     assert cpp_data["benchmarks"] == js_data["benchmarks"], "C++20 vs Node.js benchmark mismatch!"
+    assert lean_ok, f"Lean 4 verification failed or contained sorryAx:\n{lean_stdout_stderr}"
 
     print(
         f"[MULTI-LANG VERIFIED] C++20 ({cpp_data['elapsed_ms']:.1f} ms) == Node.js ({js_data['elapsed_ms']:.1f} ms) == "
