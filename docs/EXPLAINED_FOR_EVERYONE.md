@@ -1,6 +1,7 @@
 # The Visual Guide for Everyone: How Nature Builds 10,000 Fishes & Sea Shells
 
-📄 **[Download the 6-Page Illustrated Visual Guide PDF (`docs/thompson_1917_visual_guide_for_everyone.pdf`)](./thompson_1917_visual_guide_for_everyone.pdf)** ([LaTeX source](./thompson_1917_visual_guide_for_everyone.tex))
+**Primary Author:** Joel Dietz ([Infinite Morphospace Project](https://github.com/fractastical/morpholib))  
+📄 **[Download the 5-Page Illustrated Visual Guide PDF (`docs/thompson_1917_visual_guide_for_everyone.pdf`)](./thompson_1917_visual_guide_for_everyone.pdf)** ([LaTeX source](./thompson_1917_visual_guide_for_everyone.tex))
 
 This page (and the companion 6-page PDF above) explains our discoveries at a **smart 13-year-old level** using five separate, full-width, large-font visual diagrams with zero overlapping text and zero dense academic jargon. (For the full mathematical equations, Lean 4 proofs, and referee audits, see **[`docs/KEY_DISCOVERIES.md`](./KEY_DISCOVERIES.md)** and **[`docs/thompson_1917_fish_transformations_manuscript.pdf`](./thompson_1917_fish_transformations_manuscript.pdf)**.)
 
