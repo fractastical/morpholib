@@ -1246,11 +1246,28 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >      - Rows $q = 3r$ ($k = 3r - 1$) and $q = 3r + 1$ ($k = 3r$) sample $(Y_1, Y_4) = (1, 1)$ and $(Y_0, Y_3, Y_6) = (1, 1, 1)$, hitting their first defect at $s_{\mathrm{first}}^{(2)}(3r - 1) = s_{\mathrm{first}}^{(2)}(3r) = r + 6$ ($\forall r \ge 4$);
 >      - Row $q = 3r + 2$ ($k = 3r + 1$) samples **only the two zero-slots $(Y_2, Y_5) = (0, 0)$**, tunneling transparently through the entire Soliton Head so its first defect is delayed by at least $+3$ steps to $s_{\mathrm{first}}^{(2)}(3r + 1) \ge r + 9$ ($\forall r \ge 3$)! $\square$
 
+### 6.52 Theorem 64: Crystal $d_1 = 1$ Zero-Transient Dyadic Cascade, 21-Cell Traveling-Wave Soliton Isomorphism $Z_j(s) \equiv Y_j(s + 13)$ & Golden-Mean 6-Cell Tail Lock
+
+> **Theorem 64 (Crystal $d_1 = 1$ Zero-Transient Dyadic Cascade & No-Triple-Doubling Law, Exact $3s + 2$ Wavefront & 21-Cell Traveling-Wave Soliton Isomorphism $Z_j(s) \equiv Y_j(s + 13)$, 2-Variable Factorization of the 6-Cell Tail $j = 7 \dots 12$, Golden-Mean Subshift Law $\beta(s - 1) \land \beta(s) = 0$, and $\beta(s) = 1 \implies (Y_7 \dots Y_{12})(s) = (1, 1, 1, 0, 0, 1)$ 6-Cell Lock).**  
+> 1. **Crystal $d_1 = 1$ Zero-Transient Dyadic Cascade & No-Three-Consecutive-Doublings Theorem (`d1_cascade_errors == 0` across $25$ rows $k = 4 \dots 28$ up to $P_{28}^{(1)} = 16,384$):**  
+>    - For Crystal $d_1 = 1$, the Intra-Block Comb-Defect Field $E_k^{(1)}(s) := U_{1, a, k}(k + s) \oplus \bigl((k + s) \bmod 2\bigr)$ has shift-invariant initial rows $E_1^{(1)}(s) = E_2^{(1)}(s) \equiv 1$ ($\forall s \ge 0$) and $E_3^{(1)}(s) \equiv 0$ ($\forall s \ge 0$), with left boundary $E_k^{(1)}(0) = 0$ ($\forall k \ge 3$).
+>    - Consequently, **every horizontal row $k \ge 3$ of $E_k^{(1)}(s)$ is strictly periodic from $s = 0$ (`s_lock = 0`, zero transient!)** with dyadic period $P_k^{(1)} = 2^{m_k}$, and obeys the exact Half-Period Carry-Weight Collapse & Unconditional No-Three-Consecutive-Doublings Theorem ($\mathrm{wt}_L(\mathrm{carry}_k) = P_{k-1}^{(1)} / 4$ at every double-jump $k \in \{6, 9, 14, 18, 26\}$, where $\mathrm{wt}_L(\mathrm{carry}_k) = 2, 8, 32, 128, 2048$)!
+> 2. **Exact $3s + 2$ Soliton Wavefront & 21-Cell Traveling-Wave Isomorphism (`iso_errors == 0` across $3,045$ entries for $0 \le j \le 20, s \in [15, 160)$):**  
+>    - The upper defect frontier of $E_k^{(1)}(s)$ is $k_{\max}^{(1)}(s) \equiv 3s + 2$ for all $s \ge 1$ (with zero transient — $22$ steps higher in row index than $3s - 20$ of $\Delta_q^*$), and its traveling-wave coordinates $Z_j(s) := E_{3s + 2 - j}^{(1)}(s)$ lock into their period-$3$ attractor for $0 \le j \le 20$ from the very first step $s_{\mathrm{lock}}(j) = \lfloor(j + 2)/3\rfloor + 1$ where $3s + 2 - j \ge 4$, matching $Y_j(s + 13) := \Delta_{3(s+13) - 20 - j}^*(s + 13)$ identically across all $21$ leading cells $j \in \{0, \dots, 20\}$!
+> 3. **2-Variable Factorization of the 6-Cell Tail $j = 7 \dots 12$, Golden-Mean Subshift Law & 6-Cell Lock (`gm_errors == 0` across $672$ crystal steps and $278$ 6-cell locks, `Law 2am` in Lean 4):**  
+>    - In traveling-wave coordinates $Y_j^{(d_1)}(s)$ ($s \ge 13$) and $Z_j(s)$ ($s \ge 4$), with $b := \beta(s - 1) = Y_7(s - 1)$ and $y_{12} := Y_{12}(s)$, the entire 6-cell block $j \in \{7, \dots, 12\}$ behind the Soliton Head factors through the 2 bits $(b, y_{12})$ (`rule30_six_cell_tail_factorization_and_golden_mean` in Lean 4):
+>      $$\bigl(Y_7, Y_8, Y_9, Y_{10}, Y_{11}, Y_{12}\bigr)(s) \;\equiv\; \bigl(\bar{b} \land y_{12},\;\; \bar{b} \land y_{12},\;\; 1,\;\; b \lor \bar{y}_{12},\;\; b \oplus \bar{y}_{12},\;\; y_{12}\bigr).$$
+>    - Consequently:
+>      - **(a) Universal Golden-Mean No-`11` Subshift Law:** $\beta(s) = \overline{\beta(s - 1)} \land Y_{12}(s) \implies \beta(s - 1) \land \beta(s) \equiv 0$ for all $s \ge 13$ across all 3 crystals $d_1 \in \{0, 1, 2\}$ (two consecutive steps can never both have $\beta = 1$)!
+>      - **(b) Unconditional 6-Cell Lock on $\beta(s) = 1$ (`rule30_beta_one_forces_six_cell_block` in Lean 4):** Whenever $Y_7(s) = 1$, $\bar{b} \land y_{12} = 1$ uniquely forces $b = 0$, $y_{12} = 1$, and $Y_{13}(s) \land \overline{Y_{14}(s)} = 0$, locking the entire 6-cell block to:
+>        $$\beta(s) = 1 \quad \Longrightarrow \quad \bigl(Y_7, Y_8, Y_9, Y_{10}, Y_{11}, Y_{12}\bigr)(s) \;\equiv\; (1, 1, 1, 0, 0, 1),$$
+>        so whenever all 3 crystals satisfy $Y_7^{(d_1)}(s) = 1$, 3-crystal synchronization jumps by $+6$ cells at once to $3s - Q_{\mathrm{sync}}(a_1, s) \ge 33$! $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All sixty-two theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All sixty-three theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only

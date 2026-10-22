@@ -797,6 +797,50 @@ theorem rule30_mod3_soliton_slot_sampling :
     (soliton_head_bit 2 = false ∧ soliton_head_bit 5 = false) := by
   decide
 
+/-- Law 2am (`wolfram-conus-textile-rule30-2am`):
+    Crystal `d_1 = 1` Zero-Transient Dyadic Cascade & `3s + 2` Soliton Isomorphism,
+    2-Variable Factorization of the 6-Cell Tail `j = 7..12`, Golden-Mean Subshift Law
+    `beta(s - 1) && beta(s) = false`, and `beta(s) = true ==> (Y_7..Y_{12})(s) = (1, 1, 1, 0, 0, 1)`
+    6-Cell Lock (Theorem 64):
+    1. (`rule30_six_cell_tail_factorization_and_golden_mean`): In traveling-wave coordinates
+       `Y_j(s) = Delta_{3s - 20 - j}(s)` (`s >= 13`) and `Z_j(s) = E_{3s + 2 - j}^{(1)}(s)` (`s >= 4`),
+       given `Y_7(s - 1) = Y_8(s - 1) = b` and `Y_9(s - 1) = true`, the entire 6-cell block
+       `(Y_7, Y_8, Y_9, Y_{10}, Y_{11}, Y_{12})(s)` factors through `(b, y12)` where `y12 := Y_{12}(s)`:
+         `Y_7(s) = Y_8(s) = (!b) && y12`, `Y_9(s) = true`, `Y_{10}(s) = b || (!y12)`, `Y_{11}(s) = bne b (!y12)`,
+       forcing the Golden-Mean Subshift Law `(b && Y_7(s)) = false` (`(beta(s-1), beta(s)) != (true, true)`).
+    2. (`rule30_beta_one_forces_six_cell_block`): Whenever `Y_7(s) = true` (`(!b) && y12 = true`), it
+       uniquely forces `b = false` and `y12 = true`, locking the entire 6-cell block to
+       `(Y_7, Y_8, Y_9, Y_{10}, Y_{11}, Y_{12})(s) = (true, true, true, false, false, true)` and
+       `(Y_{13}(s) && (!Y_{14}(s))) = false`! -/
+theorem rule30_six_cell_tail_factorization_and_golden_mean
+    (b y13 y14 : Bool) :
+    let y12 := bne true (y13 && (!y14))
+    let y11 := bne b ((!y12) && y13)
+    let y10 := bne b (y11 && (!y12))
+    let y9 := bne true ((!y10) && y11)
+    let y8 := bne false (y9 && (!y10))
+    let y7 := bne true ((!y8) && y9)
+    y7 = ((!b) && y12) ∧
+    y8 = ((!b) && y12) ∧
+    y9 = true ∧
+    y10 = (b || (!y12)) ∧
+    y11 = bne b (!y12) ∧
+    (b && y7) = false := by
+  cases b <;> cases y13 <;> cases y14 <;> decide
+
+theorem rule30_beta_one_forces_six_cell_block
+    (b y13 y14 : Bool) :
+    let y12 := bne true (y13 && (!y14))
+    let y11 := bne b ((!y12) && y13)
+    let y10 := bne b (y11 && (!y12))
+    let y9 := bne true ((!y10) && y11)
+    let y8 := bne false (y9 && (!y10))
+    let y7 := bne true ((!y8) && y9)
+    y7 = true →
+      (y7, y8, y9, y10, y11, y12) = (true, true, true, false, false, true) ∧
+      b = false ∧ (y13 && (!y14)) = false := by
+  cases b <;> cases y13 <;> cases y14 <;> decide
+
 
 
 
