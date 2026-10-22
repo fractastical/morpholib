@@ -649,6 +649,9 @@ def main() -> int:
       display: flex;
       flex-direction: column;
       gap: 10px;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
     }
     .zoom-banner {
       background: var(--bg-panel);
@@ -952,6 +955,9 @@ def main() -> int:
       padding: 12px 14px;
       margin-bottom: 12px;
       display: none;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
     }
     .subcomponent-zoom-panel.visible {
       display: block;
@@ -1006,6 +1012,8 @@ def main() -> int:
       gap: 5px;
       overflow-x: auto;
       padding-bottom: 6px;
+      max-width: 100%;
+      width: 100%;
     }
     .subcomponent-rung-btn {
       background: #131e36;
