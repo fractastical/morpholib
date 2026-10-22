@@ -2,7 +2,7 @@
   "group": "insects: Vespinae hornet and yellowjacket forewings",
   "registered_on": "2026-10-22",
   "data": {
-    "landmarks": "Abels J & Wedmann S (2021) PANGAEA 10.1594/PANGAEA.937651 (coordinates) and 937635 (specimen list); 1,030 wings, 17 vein-intersection landmarks, data of Perrard A et al. (2014) PLoS ONE 9:e87939",
+    "landmarks": "Abels J & Wedmann S (2021) PANGAEA 10.1594/PANGAEA.937651 (coordinates) and 937635 (specimen list); 1,030 wings, 19 vein-intersection landmarks (the file has 19 columns pairs; an earlier repo script mis-stated 17 - corrected before running, no test changed), data of Perrard A et al. (2014) PLoS ONE 9:e87939",
     "phylogeny": "Open Tree of Life synthetic tree, induced subtree for the 30 matched species (api.opentreeoflife.org v3, fetched 2026-10-22); topology only. Branch lengths: Grafen (1989) node heights (rho = 1), so 'time' is relative to crown depth = 1 and is NOT in Myr. A dated Vespinae tree (e.g. Lopez-Osorio et al. 2015) can replace it without changing anything else.",
     "status": "landmark data in hand (used once for an allometry test, never for shape prediction); phylogeny fetched before any shape analysis; hypotheses committed before the script was run"
   },
@@ -34,7 +34,7 @@
   ],
   "protocol": {
     "species_set": "all named extant species with >= 1 wing in the PANGAEA table, excluding the fossil Palaeovespa and the uncertain 'Vespula?' record; species mean after GPA; species not placed on the Open Tree (Vespula nursei) are dropped before any analysis",
-    "shape_space": "17 landmarks, GPA, consensus M0; Thompson-7 basis = thompson_mode_basis(M0) from thompson/run_phylogenetic_prediction_engine.py; full space = all 30 non-rigid Procrustes dimensions (34 - 4); PCA-7 = first 7 PCs of species-mean Procrustes residuals",
+    "shape_space": "19 landmarks, GPA, consensus M0; Thompson-7 basis = thompson_mode_basis(M0) from thompson/run_phylogenetic_prediction_engine.py; full space = all 34 non-rigid Procrustes dimensions (38 - 4); PCA-7 = first 7 PCs of species-mean Procrustes residuals",
     "process_models": "fit_models (WN, BM, lambda, OU, EB; AICc) in each space; best model by AICc used for prediction",
     "validation": "leave-one-species-out conditional Gaussian prediction (predict()) with tau = Grafen height to the nearest remaining species; compared with consensus and nearest-tip copying; error = Procrustes RMS after OPA to the held-out mean",
     "tests": "W1, W6 variance: direct comparison; W2: share = 1 - (RMS_T7^2 - RMS_full^2)/(RMS_cons^2 - RMS_full^2) style as in the engine (identical formula); W3, W4: paired one-sided Wilcoxon on per-species RMS, alpha 0.05 because n = 30; W5: fitted lambda; W7: per-landmark residual variance of the T7 reconstruction, apical landmarks vs the rest",
