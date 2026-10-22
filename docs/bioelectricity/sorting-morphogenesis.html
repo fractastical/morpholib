@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Self-Sorting Cells, "Platonic Space" &amp; Causal Emergence 2.0 — By Joel Dietz | Bioelectricity Nexus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #070b14;
+      --bg-panel: #0f172a;
+      --bg-card: #131e36;
+      --bg-card-hover: #192747;
+      --border: #263859;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-emerald: #22c55e;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-purple: #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+    h1, h2, h3, .font-display { font-family: 'Space Grotesk', sans-serif; }
+    code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .container { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+    .hero {
+      background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.14), transparent 55%),
+                  radial-gradient(circle at 80% 30%, rgba(168, 85, 247, 0.14), transparent 55%),
+                  linear-gradient(180deg, #0b1326 0%, #070b14 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 36px 0 28px;
+    }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+    .badge {
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent-cyan);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .badge.amber { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.45); color: #fbbf24; }
+    .badge.emerald { background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.45); color: #4ade80; }
+    .badge.purple { background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.45); color: #c084fc; }
+    .hero h1 { font-size: clamp(1.7rem, 3.1vw, 2.5rem); font-weight: 700; line-height: 1.2; margin-bottom: 12px; color: #ffffff; }
+    .hero-sub { font-size: 1.05rem; color: #cbd5e1; max-width: 980px; margin-bottom: 18px; }
+    .tldr-banner {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.14) 0%, rgba(56, 189, 248, 0.12) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-left: 5px solid var(--accent-amber);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 0.96rem;
+      color: #f8fafc;
+    }
+    .action-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .btn-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: #e2e8f0;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .btn-link:hover { border-color: var(--accent-emerald); color: #fff; background: rgba(34, 197, 94, 0.14); }
+    .btn-link.primary { background: rgba(56, 189, 248, 0.18); border-color: var(--accent-cyan); color: #fff; }
+    .nav-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .tab-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    .tab-btn:hover { background: var(--bg-card-hover); color: #fff; border-color: var(--accent-cyan); }
+    .tab-btn.active { background: var(--accent-cyan); color: #06101e; border-color: #fff; box-shadow: 0 0 20px rgba(56, 189, 248, 0.35); }
+    .tab-pane { display: none; padding-top: 28px; }
+    .tab-pane.active { display: block; }
+    .step-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 26px;
+      margin-bottom: 26px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .step-num {
+      background: var(--accent-cyan);
+      color: #04101f;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 0.86rem;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+    .step-card h2 { font-size: 1.38rem; color: #fff; }
+    .step-card p { color: #cbd5e1; font-size: 0.98rem; margin-bottom: 14px; }
+    .step-img { width: 100%; border-radius: 12px; border: 1px solid #334155; background: #0b1325; margin-top: 8px; }
+    .callout {
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 4px solid var(--accent-emerald);
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin-top: 14px;
+      color: #e2e8f0;
+      font-size: 0.94rem;
+    }
+    .callout.rose { background: rgba(244, 63, 94, 0.12); border-left-color: var(--accent-rose); }
+    .callout.amber { background: rgba(245, 158, 11, 0.12); border-left-color: var(--accent-amber); }
+    .callout.purple { background: rgba(168, 85, 247, 0.12); border-left-color: var(--accent-purple); }
+    .sandbox-grid { display: grid; grid-template-columns: 370px 1fr; gap: 24px; align-items: start; }
+    @media (max-width: 940px) { .sandbox-grid { grid-template-columns: 1fr; } }
+    .controls-card, .canvas-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .preset-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: #e2e8f0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .preset-btn:hover { border-color: var(--accent-cyan); background: var(--bg-card-hover); }
+    .preset-btn.active { border-color: var(--accent-emerald); background: rgba(34, 197, 94, 0.16); color: #fff; }
+    .sim-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    .sim-btn {
+      flex: 1;
+      background: var(--accent-cyan);
+      color: #06101e;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.86rem;
+      cursor: pointer;
+    }
+    .sim-btn.secondary { background: var(--bg-card); color: #f8fafc; border: 1px solid var(--border); }
+    .metrics-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+    @media (max-width: 700px) { .metrics-bar { grid-template-columns: repeat(2, 1fr); } }
+    .metric-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+    .metric-val { font-family: 'JetBrains Mono', monospace; font-size: 1.18rem; font-weight: 700; color: var(--accent-cyan); }
+    .metric-lbl { font-size: 0.74rem; color: var(--text-muted); margin-top: 2px; }
+    .magazine-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    @media (max-width: 860px) { .magazine-grid { grid-template-columns: 1fr; } }
+    pre.code-block {
+      background: #050811;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      color: #38bdf8;
+      font-size: 0.84rem;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="container">
+      <div class="badge-row">
+        <span class="badge">BIOELECTRICITY NEXUS × PROJECT DELPHI</span>
+        <span class="badge amber">ILLUSTRATED STUDENT'S EDITION + LAB SIMULATOR</span>
+        <span class="badge emerald">4 LANGUAGES · C++20 · JS · PYTHON · LEAN 4</span>
+        <span class="badge purple">HOEL CAUSAL EMERGENCE 2.0</span>
+      </div>
+      <h1>Self-Sorting Cells, "Platonic Space," and Why a 6-Line Algorithm Sparked a Huge Debate</h1>
+      <p class="hero-sub">
+        How 100 Kids in Gym Class Explain Autonomous Morphogenesis (Zhang, Goldstein &amp; Levin 2025), Why "Delayed Gratification" Was an Optical Illusion of the Ruler, and How Erik Hoel's Causal Emergence 2.0 (2026) Settles the Debate.
+      </p>
+
+      <div class="tldr-banner">
+        <strong>⚡ The 60-Second Story:</strong> When independent "cells" sort themselves in a line without a central controller, both camps in the online debate got something right and something wrong: <strong>(1)</strong> Insertion Sort contains a hidden 3-line code rescue (<code>if FREEZE: prev = -1</code>) for broken cells; <strong>(2)</strong> "Delayed Gratification" (messiness going up) is an optical illusion of measuring only neighbor steps <em>E(v)</em> (CE 2.0 = <code>-0.253</code>) while true total inversions <em>I(v)</em> go <strong>strictly downhill on every swap</strong> (CE 2.0 = <code>+0.119</code>, 100% deterministic); and <strong>(3)</strong> the blog critics' "textbook Bubble-sort stability" claim is refuted twice — by mid-sort clustering on unique numbers (<code>0.624</code>) and by <strong>Anti-Clustering at C = 2 copies per number (<code>0.477 &lt; 0.50</code>, <code>S B | S B | S B</code>)</strong>!
+      </div>
+
+      <div class="action-links">
+        <a class="btn-link primary" href="../zhang_levin_13yo_illustrated_guide.pdf" target="_blank">🎨 Illustrated Student's Guide PDF (4-Page Magazine Edition)</a>
+        <a class="btn-link" href="../zhang_levin_sorting_morphogenesis_manuscript.pdf" target="_blank">🔬 Full Academic &amp; CE 2.0 Manuscript PDF (8 Pages)</a>
+        <a class="btn-link" href="./index.html">🐟 D'Arcy Thompson 10,000-Fish Bioelectric Hub</a>
+        <a class="btn-link" href="./bioelectricity_nexus_feed.json" target="_blank">🔌 JSON API Feed for bioelectricity.net</a>
+      </div>
+
+      <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('guide13', this)">1. Illustrated Guide (For Everyone)</button>
+        <button class="tab-btn" onclick="switchTab('sim', this)">2. Interactive Gym-Class Cell Simulator</button>
+        <button class="tab-btn" onclick="switchTab('magazine', this)">3. 4-Page Magazine PDF Spread</button>
+        <button class="tab-btn" onclick="switchTab('ce2', this)">4. Hoel's Causal Emergence 2.0 &amp; Ablations</button>
+        <button class="tab-btn" onclick="switchTab('embed', this)">5. Embed on bioelectricity.net</button>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+
+    <!-- ================================================================== -->
+    <!-- TAB 1: ILLUSTRATED GUIDE FOR EVERYONE (4 CUSTOM DIAGRAMS)          -->
+    <!-- ================================================================== -->
+    <div id="tab-guide13" class="tab-pane active">
+
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num">GUIDE 1</span>
+          <h2>The Three "Cell Personalities" (Algotypes) &amp; How They Handle a Frozen Kid</h2>
+        </div>
+        <p>
+          Imagine 100 kids standing in a line in gym class wearing jerseys from <code>#1</code> to <code>#100</code>, with no gym teacher telling them where to stand. Zhang, Goldstein &amp; Levin (2025) gave each kid one of three local rules: <strong>Bubble (B, blue)</strong> only swaps with immediate neighbors; <strong>Insertion (I, green)</strong> only steps left if everyone to the left is already sorted; and <strong>Selection (S, orange)</strong> keeps a mental finger pointing at a target slot (<code>0, 1, 2...</code>) and teleports straight there!
+        </p>
+        <img class="step-img" src="../media/zhang_13yo_fig1_three_personalities.png" alt="Illustrated Guide 1: The Three Cell Personalities" />
+        <div class="callout">
+          <strong>Discovery #1 — The 3-Line Code Rescue Inside Insertion Sort:</strong> In <em>Ingressing Minds</em>, Levin wrote that zero special code was added for broken cells. That is 100% true for Bubble and Selection — but in <code>InsertionSortCell.py</code> (lines 74–76), there is a 3-line check (<code>if status == FREEZE: prev = -1</code>) that resets Insertion's memory right after a frozen kid! Removing those 3 lines causes Insertion Sort's error to jump <strong>4.5× higher (4.9 → 21.95)</strong>.
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num" style="background: var(--accent-rose); color: #fff;">GUIDE 2</span>
+          <h2>Why "Delayed Gratification" Was an Optical Illusion of the Ruler!</h2>
+        </div>
+        <p>
+          Why did the paper's messiness score go <em>up</em> (+1) 47 times during Bubble sort, making it look like the kids were "walking backwards around a wall"? Because <strong>zero Bubble kids ever cross a frozen wall</strong> — instead, the paper's ruler was playing an optical trick!
+        </p>
+        <img class="step-img" src="../media/zhang_13yo_fig2_two_rulers_illusion.png" alt="Illustrated Guide 2: Two Rulers Optical Illusion" />
+        <div class="callout rose">
+          <strong>Ruler 1 (Total Pairs I, Green Arches) vs. Ruler 2 (Neighbor Steps E, Red Arrows):</strong> When <code>4</code> and <code>1</code> swap in <code>[2, 4, 1, 3] → [2, 1, 4, 3]</code>, Total Out-of-Order Pairs <em>I(v)</em> goes <strong>strictly DOWN (3 → 2)</strong>, while Neighbor Steps <em>E(v)</em> goes <strong>UP (1 → 2)</strong> only because one big cliff (<code>4 &gt; 1</code>) split into two small steps (<code>2 &gt; 1</code> and <code>4 &gt; 3</code>)! In Erik Hoel's 2026 <em>Causal Emergence 2.0</em> test, Ruler 1 has <strong>positive emergence (+0.119, 100% deterministic)</strong> while Ruler 2 has <strong>negative emergence (-0.253)</strong>.
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num" style="background: var(--accent-amber);">GUIDE 3</span>
+          <h2>Why the Computer-Science Blog Critics Were Wrong Twice About "Secret Cliques"!</h2>
+        </div>
+        <p>
+          Online computer-science critics claimed that Bubble and Selection cells only cluster together because of textbook 1960s <strong>Bubble-sort stability on duplicate numbers</strong>. Our experiments proved the critics wrong twice: first on <strong>all-unique numbers</strong> (where Selection "sports cars" outrun Bubble "pedestrians" to create a <code>0.624</code> traffic wave), and second via the <strong>C = 2 Anti-Clustering smoking gun</strong> on duplicate numbers!
+        </p>
+        <img class="step-img" src="../media/zhang_13yo_fig3_sports_cars_vs_pedestrians.png" alt="Illustrated Guide 3: Sports Cars vs Pedestrians and C=2 Anti-Clustering" />
+      </div>
+
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num" style="background: var(--accent-emerald);">GUIDE 4</span>
+          <h2>Seeing Both Proofs in the Real Computer Experiments</h2>
+        </div>
+        <img class="step-img" src="../media/zhang_13yo_fig4_real_data_curves.png" alt="Illustrated Guide 4: Real Computer Experiment Curves" />
+      </div>
+
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- TAB 2: INTERACTIVE GYM-CLASS CELL SIMULATOR                        -->
+    <!-- ================================================================== -->
+    <div id="tab-sim" class="tab-pane">
+      <div class="sandbox-grid">
+        <div class="controls-card">
+          <h3 style="color: #fff; margin-bottom: 10px;">Live Gym-Class Cell Simulator</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            Pick an experiment below and watch the jerseys swap in real time while comparing <strong>Ruler 1 (Total Pairs I)</strong> vs. <strong>Ruler 2 (Neighbor Steps E)</strong> and <strong>Clique Clustering</strong>!
+          </p>
+
+          <button class="preset-btn active" id="sc-rulers" onclick="loadScenario('rulers', this)">
+            1. "Two Rulers" Illusion (Bubble + 1 Frozen #99)
+          </button>
+          <button class="preset-btn" id="sc-insertion-on" onclick="loadScenario('insertion_on', this)">
+            2A. Insertion Sort WITH 3-Line Reset (`prev = -1`)
+          </button>
+          <button class="preset-btn" id="sc-insertion-off" onclick="loadScenario('insertion_off', this)">
+            2B. Insertion Sort WITHOUT Reset (Freezes Behind #99!)
+          </button>
+          <button class="preset-btn" id="sc-unique" onclick="loadScenario('unique_wave', this)">
+            3. Unique Numbers: Sports Cars (S) vs. Pedestrians (B)
+          </button>
+          <button class="preset-btn" id="sc-c2" onclick="loadScenario('c2_anticluster', this)">
+            4. C = 2 Duplicate Copies: `S B | S B` Anti-Clustering!
+          </button>
+          <button class="preset-btn" id="sc-c6" onclick="loadScenario('c6_cliques', this)">
+            5. C = 6 Duplicate Copies: `SSS | BBB` Mega-Cliques!
+          </button>
+
+          <div class="sim-btn-row">
+            <button class="sim-btn" id="playBtn" onclick="togglePlay()">▶ Play / Pause</button>
+            <button class="sim-btn secondary" onclick="stepOnce()">⏭ 1 Swap</button>
+            <button class="sim-btn secondary" onclick="resetSim()">↺ Reset</button>
+          </div>
+
+          <div class="callout" id="simExplanation" style="font-size: 0.84rem; margin-top: 10px;">
+            Watch the green line (Ruler 1: Total Pairs I) go <strong>strictly down by -1 on every single swap</strong>, while the red line (Ruler 2: Neighbor Steps E) bounces uphill!
+          </div>
+        </div>
+
+        <div class="canvas-card">
+          <h3 id="simTitle" style="color: #fff; margin-bottom: 4px;">Experiment 1: The "Two Rulers" Optical Illusion</h3>
+          <p id="simSub" style="color: var(--accent-cyan); font-size: 0.86rem; margin-bottom: 12px;">
+            16 Bubble Kids (Blue) + 1 Immovable Frozen #99 Wall (Red)
+          </p>
+          <canvas id="simCanvas" width="760" height="430" style="width:100%; max-width:760px; border-radius:12px; border:1px solid #334155; background:#0b1325;"></canvas>
+
+          <div class="metrics-bar">
+            <div class="metric-box">
+              <div class="metric-val" id="mSwaps">0</div>
+              <div class="metric-lbl">Total Swaps Completed</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-val" id="mRulerI" style="color: #4ade80;">0 (0 uphill)</div>
+              <div class="metric-lbl">Ruler 1: Total Pairs I(v)</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-val" id="mRulerE" style="color: #f87171;">0 (0 bumps)</div>
+              <div class="metric-lbl">Ruler 2: Neighbor Steps E(v)</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-val" id="mAgg" style="color: #fbbf24;">—</div>
+              <div class="metric-lbl">Same-Personality Clustering</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- TAB 3: 4-PAGE MAGAZINE PDF SPREAD                                  -->
+    <!-- ================================================================== -->
+    <div id="tab-magazine" class="tab-pane">
+      <div class="step-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+          <div>
+            <h2>4-Page Magazine Edition Preview</h2>
+            <p style="margin-bottom:0;">Full-color handbook layout ready for classroom handouts or direct download on <code>bioelectricity.net</code>.</p>
+          </div>
+          <a class="btn-link primary" href="../zhang_levin_13yo_illustrated_guide.pdf" target="_blank">📥 Download 4-Page PDF (1.2 MB)</a>
+        </div>
+        <div class="magazine-grid">
+          <img class="step-img" src="../media/zhang_13yo_page_1.png" alt="Page 1 of Illustrated Guide" />
+          <img class="step-img" src="../media/zhang_13yo_page_2.png" alt="Page 2 of Illustrated Guide" />
+          <img class="step-img" src="../media/zhang_13yo_page_3.png" alt="Page 3 of Illustrated Guide" />
+          <img class="step-img" src="../media/zhang_13yo_page_4.png" alt="Page 4 of Illustrated Guide" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- TAB 4: HOEL'S CAUSAL EMERGENCE 2.0 & ABLATION DASHBOARD            -->
+    <!-- ================================================================== -->
+    <div id="tab-ce2" class="tab-pane">
+      <div class="step-card">
+        <h2>Erik Hoel's Causal Emergence 2.0 (2026) &amp; 3-Ablation Audit</h2>
+        <p>
+          Full quantitative synthesis from our technical manuscript (<code>docs/zhang_levin_sorting_morphogenesis_manuscript.pdf</code>), showing exact Markov transition matrices on the symmetric group <em>S<sub>n</sub></em> (up to <em>N = 720</em> micro-states), why CE 2.0 resolves the dimensionality penalty of CE 1.0, and the 3 code/mechanistic ablations.
+        </p>
+        <img class="step-img" src="../media/zhang_hoel_quantifying_emergence_ce2.png" alt="Hoel Causal Emergence 2.0 Figure" />
+        <img class="step-img" src="../media/zhang_levin_platonic_claims_audit.png" alt="Platonic Space Claims Audit Figure" style="margin-top: 20px;" />
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- TAB 5: EMBED ON BIOELECTRICITY.NET                                 -->
+    <!-- ================================================================== -->
+    <div id="tab-embed" class="tab-pane">
+      <div class="step-card">
+        <h2>30-Second Integration into <code>bioelectricity.net</code></h2>
+        <p>Drop this module into any page on <strong>bioelectricity.net</strong> using an <code>&lt;iframe&gt;</code>, the React/TypeScript component (<code>SortingMorphogenesisWidget.tsx</code>), or the JSON feed.</p>
+
+        <h3 style="margin-top: 16px; color: var(--accent-cyan);">Option A — Standalone <code>&lt;iframe&gt;</code> Embed</h3>
+        <pre class="code-block">&lt;iframe
+  src="https://fractastical.github.io/morpholib/bioelectricity/sorting-morphogenesis.html"
+  title="Self-Sorting Cells, Platonic Space &amp; Causal Emergence 2.0 — Illustrated Guide &amp; Simulator by Joel Dietz"
+  style="width: 100%; height: 920px; border: 1px solid #263859; border-radius: 16px; background: #070b14;"
+  loading="lazy"
+  allowfullscreen
+&gt;&lt;/iframe&gt;</pre>
+
+        <h3 style="margin-top: 18px; color: var(--accent-emerald);">Option B — Native React / Vite Component (<code>SortingMorphogenesisWidget.tsx</code>)</h3>
+        <pre class="code-block">import { SortingMorphogenesisWidget } from './components/SortingMorphogenesisWidget';
+
+export function SortingMorphogenesisSection() {
+  return &lt;SortingMorphogenesisWidget defaultTab="guide" /&gt;;
+}</pre>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      btn.classList.add('active');
+      if (tabId === 'sim') drawSim();
+    }
+
+    // --- Interactive Gym-Class Cell Simulator ---
+    let cells = [];
+    let currentScenario = 'rulers';
+    let swaps = 0;
+    let uphillI = 0;
+    let uphillE = 0;
+    let traceI = [];
+    let traceE = [];
+    let traceAgg = [];
+    let timer = null;
+
+    function countInversions(arr) {
+      let inv = 0;
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].frozen) continue;
+        for (let j = i + 1; j < arr.length; j++) {
+          if (arr[j].frozen) continue;
+          if (arr[i].val > arr[j].val) inv++;
+        }
+      }
+      return inv;
+    }
+
+    function countAdjError(arr) {
+      let err = 0;
+      for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i].frozen || arr[i + 1].frozen) continue;
+        if (arr[i].val > arr[i + 1].val) err++;
+      }
+      return err;
+    }
+
+    function computeAgg(arr) {
+      let same = 0, total = 0;
+      for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i].algo === arr[i + 1].algo) same++;
+        total++;
+      }
+      return total > 0 ? same / total : 0.5;
+    }
+
+    function loadScenario(sc, btn) {
+      if (btn) {
+        document.querySelectorAll('#tab-sim .preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      if (timer) { clearInterval(timer); timer = null; }
+      currentScenario = sc;
+      swaps = 0; uphillI = 0; uphillE = 0;
+      cells = [];
+
+      const titleEl = document.getElementById('simTitle');
+      const subEl = document.getElementById('simSub');
+      const noteEl = document.getElementById('simExplanation');
+
+      if (sc === 'rulers') {
+        titleEl.textContent = 'Experiment 1: The "Two Rulers" Optical Illusion';
+        subEl.textContent = '14 Bubble Kids (Blue) + 1 Frozen #99 Wall (Red)';
+        noteEl.innerHTML = 'Watch the <strong>green curve (Ruler 1: Total Pairs I)</strong> slide strictly downhill (-1 on every swap, 0 uphill steps!), while the <strong>red curve (Ruler 2: Neighbor Steps E)</strong> jumps uphill whenever a big cliff splits into two smaller steps!';
+        const nums = [11, 4, 14, 2, 13, 7, 1, 99, 12, 5, 15, 3, 10, 6, 8];
+        cells = nums.map(v => ({ val: v, algo: 'B', frozen: v === 99, target: 0 }));
+      } else if (sc === 'insertion_on' || sc === 'insertion_off') {
+        const withReset = sc === 'insertion_on';
+        titleEl.textContent = withReset
+          ? 'Experiment 2A: Insertion Sort WITH 3-Line Reset (`if FREEZE: prev = -1`)'
+          : 'Experiment 2B: Insertion Sort WITHOUT Reset (Cells Freeze Behind #99!)';
+        subEl.textContent = '14 Insertion Kids (Green) + Frozen #99 at Slot 3';
+        noteEl.innerHTML = withReset
+          ? 'With lines 74–76 of <code>InsertionSortCell.py</code> active (<code>if FREEZE: prev = -1</code>), Insertion kids reset their left-prefix check right after Frozen #99 and sort the right side cleanly!'
+          : 'Without those 3 lines of reset code, every Insertion kid to the right of Frozen #99 sees an unsorted prefix (<code>2, 99, 6...</code>) and is <strong>permanently paralyzed</strong>!';
+        const nums = [5, 2, 99, 12, 4, 14, 7, 3, 15, 8, 1, 13, 6, 10, 9];
+        cells = nums.map(v => ({ val: v, algo: 'I', frozen: v === 99, target: 0, resetFreeze: withReset }));
+      } else if (sc === 'unique_wave') {
+        titleEl.textContent = 'Experiment 3: Unique Numbers — Selection "Sports Cars" vs. Bubble "Pedestrians"';
+        subEl.textContent = '16 Unique Jersey Numbers (8 Selection S in Orange, 8 Bubble B in Blue)';
+        noteEl.innerHTML = 'Zero duplicate numbers! Yet Selection kids (orange) immediately teleport small numbers to the left front of the line, shoving Bubble kids (blue) into a contiguous traffic wave on the right!';
+        const pairs = [
+          [14,'B'],[3,'S'],[11,'B'],[1,'S'],[16,'B'],[6,'S'],[9,'B'],[2,'S'],
+          [15,'B'],[8,'S'],[12,'B'],[4,'S'],[13,'B'],[7,'S'],[10,'B'],[5,'S']
+        ];
+        cells = pairs.map(([v, a]) => ({ val: v, algo: a, frozen: false, target: 0 }));
+      } else if (sc === 'c2_anticluster') {
+        titleEl.textContent = 'Experiment 4: C = 2 Duplicate Copies → `S B | S B | S B` Anti-Clustering!';
+        subEl.textContent = '8 Jersey Numbers × 2 Copies Each (1 Selection S + 1 Bubble B per Number)';
+        noteEl.innerHTML = 'Because Selection scans from the left (<code>0, 1, 2...</code>), Selection grabs the LEFT slot of each 2-kid pair and Bubble gets pushed to the RIGHT slot (<code>S B | S B | S B</code>), driving clustering <strong>below 0.50</strong>!';
+        const pairs = [
+          [4,'B'],[1,'S'],[3,'B'],[2,'S'],[4,'S'],[1,'B'],[2,'B'],[3,'S'],
+          [6,'B'],[5,'S'],[6,'S'],[5,'B'],[8,'B'],[7,'S'],[8,'S'],[7,'B']
+        ];
+        cells = pairs.map(([v, a]) => ({ val: v, algo: a, frozen: false, target: 0 }));
+      } else if (sc === 'c6_cliques') {
+        titleEl.textContent = 'Experiment 5: C = 6 Duplicate Copies → `SSS | BBB` Mega-Cliques!';
+        subEl.textContent = '3 Jersey Numbers (#1, #2, #3) × 6 Copies Each (3 Selection S + 3 Bubble B)';
+        noteEl.innerHTML = 'With 6 copies of each jersey number, Selection packs all 3 of its copies into the LEFT half of each number group and pushes Bubble into the RIGHT half (<code>SSS | BBB</code>), creating huge same-personality cliques!';
+        const pairs = [
+          [3,'B'],[1,'S'],[2,'B'],[1,'B'],[3,'S'],[2,'S'],
+          [2,'B'],[3,'B'],[1,'S'],[2,'S'],[1,'B'],[3,'S'],
+          [3,'B'],[2,'B'],[1,'S'],[3,'S'],[2,'S'],[1,'B']
+        ];
+        cells = pairs.map(([v, a]) => ({ val: v, algo: a, frozen: false, target: 0 }));
+      }
+
+      traceI = [countInversions(cells)];
+      traceE = [countAdjError(cells)];
+      traceAgg = [computeAgg(cells)];
+      updateMetrics();
+      drawSim();
+    }
+
+    function doOneSwap() {
+      const n = cells.length;
+      for (let attempt = 0; attempt < 120; attempt++) {
+        const i = Math.floor(Math.random() * n);
+        const c = cells[i];
+        if (c.frozen) continue;
+
+        if (c.algo === 'B') {
+          const dir = Math.random() < 0.5 ? -1 : 1;
+          const j = i + dir;
+          if (j >= 0 && j < n && !cells[j].frozen) {
+            if ((dir === -1 && c.val < cells[j].val) || (dir === 1 && c.val > cells[j].val)) {
+              const oldI = countInversions(cells);
+              const oldE = countAdjError(cells);
+              const tmp = cells[i]; cells[i] = cells[j]; cells[j] = tmp;
+              swaps++;
+              const newI = countInversions(cells);
+              const newE = countAdjError(cells);
+              if (newI > oldI) uphillI++;
+              if (newE > oldE) uphillE++;
+              traceI.push(newI); traceE.push(newE); traceAgg.push(computeAgg(cells));
+              return true;
+            }
+          }
+        } else if (c.algo === 'I') {
+          if (i === 0 || cells[i - 1].frozen) continue;
+          let sortedLeft = true;
+          let prev = -1;
+          for (let k = 0; k < i; k++) {
+            if (cells[k].frozen) {
+              if (c.resetFreeze) prev = -1;
+              else prev = cells[k].val;
+              continue;
+            }
+            if (prev > cells[k].val) { sortedLeft = false; break; }
+            prev = cells[k].val;
+          }
+          if (sortedLeft && c.val < cells[i - 1].val) {
+            const oldI = countInversions(cells);
+            const oldE = countAdjError(cells);
+            const tmp = cells[i]; cells[i] = cells[i - 1]; cells[i - 1] = tmp;
+            swaps++;
+            const newI = countInversions(cells);
+            const newE = countAdjError(cells);
+            if (newI > oldI) uphillI++;
+            if (newE > oldE) uphillE++;
+            traceI.push(newI); traceE.push(newE); traceAgg.push(computeAgg(cells));
+            return true;
+          }
+        } else if (c.algo === 'S') {
+          const t = c.target % n;
+          if (cells[t].frozen) {
+            c.target = (t + 1) % n;
+            continue;
+          }
+          if (t !== i && ((t < i && c.val < cells[t].val) || (t > i && c.val > cells[t].val))) {
+            const oldI = countInversions(cells);
+            const oldE = countAdjError(cells);
+            const tmp = cells[i]; cells[i] = cells[t]; cells[t] = tmp;
+            c.target = (t + 1) % n;
+            swaps++;
+            const newI = countInversions(cells);
+            const newE = countAdjError(cells);
+            if (newI > oldI) uphillI++;
+            if (newE > oldE) uphillE++;
+            traceI.push(newI); traceE.push(newE); traceAgg.push(computeAgg(cells));
+            return true;
+          } else {
+            c.target = (t + 1) % n;
+          }
+        }
+      }
+      return false;
+    }
+
+    function stepOnce() {
+      doOneSwap();
+      updateMetrics();
+      drawSim();
+    }
+
+    function togglePlay() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      } else {
+        timer = setInterval(() => {
+          const moved = doOneSwap();
+          updateMetrics();
+          drawSim();
+          if (!moved) { clearInterval(timer); timer = null; }
+        }, 180);
+      }
+    }
+
+    function resetSim() {
+      loadScenario(currentScenario, null);
+    }
+
+    function updateMetrics() {
+      const curI = traceI[traceI.length - 1];
+      const curE = traceE[traceE.length - 1];
+      const curAgg = traceAgg[traceAgg.length - 1];
+      document.getElementById('mSwaps').textContent = swaps;
+      document.getElementById('mRulerI').textContent = `${curI} (${uphillI} uphill)`;
+      document.getElementById('mRulerE').textContent = `${curE} (${uphillE} bumps)`;
+      const hasMixed = cells.some(c => c.algo === 'S') && cells.some(c => c.algo === 'B');
+      document.getElementById('mAgg').textContent = hasMixed ? (curAgg * 100).toFixed(1) + '%' : 'Single Algo';
+    }
+
+    function drawSim() {
+      const canvas = document.getElementById('simCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Background
+      ctx.fillStyle = '#0b1325';
+      ctx.fillRect(0, 0, W, H);
+
+      // Top section: Jersey Cards
+      const n = cells.length;
+      const padX = 24;
+      const boxW = Math.min(44, (W - 2 * padX) / n - 4);
+      const totalRowW = n * (boxW + 4);
+      const startX = (W - totalRowW) / 2;
+      const cardY = 38;
+      const cardH = 68;
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('LIVE GYM-CLASS LINE OF CELLS (JERSEY NUMBER + PERSONALITY BADGE)', W / 2, 22);
+
+      cells.forEach((c, idx) => {
+        const x = startX + idx * (boxW + 4);
+        let fill = '#2563eb', border = '#93c5fd', badge = 'B';
+        if (c.frozen) { fill = '#dc2626'; border = '#fef08a'; badge = 'FROZEN'; }
+        else if (c.algo === 'I') { fill = '#16a34a'; border = '#86efac'; badge = 'I'; }
+        else if (c.algo === 'S') { fill = '#ea580c'; border = '#fdba74'; badge = 'S'; }
+
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = border;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(x, cardY, boxW, cardH, 7);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 15px Space Grotesk, sans-serif';
+        ctx.fillText('#' + c.val, x + boxW / 2, cardY + 30);
+
+        ctx.fillStyle = c.frozen ? '#fef08a' : '#e2e8f0';
+        ctx.font = 'bold 10px JetBrains Mono, monospace';
+        ctx.fillText(badge, x + boxW / 2, cardY + 54);
+      });
+
+      // Bottom section: Live Chart
+      const gx = 56, gy = 142, gw = W - 84, gh = H - 172;
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#263859';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(gx, gy, gw, gh, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      // Grid lines
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      for (let k = 1; k <= 3; k++) {
+        const yLine = gy + (gh * k) / 4;
+        ctx.beginPath(); ctx.moveTo(gx, yLine); ctx.lineTo(gx + gw, yLine); ctx.stroke();
+      }
+
+      const maxSteps = Math.max(10, traceI.length - 1);
+      const maxI = Math.max(1, traceI[0]);
+      const maxE = Math.max(1, ...traceE);
+
+      // Plot Ruler 1: Total Inversions I(v) (Green)
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      traceI.forEach((v, idx) => {
+        const px = gx + (idx / maxSteps) * gw;
+        const py = gy + gh - 14 - (v / maxI) * (gh - 34);
+        if (idx === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+
+      // Plot Ruler 2: Neighbor Steps E(v) (Red)
+      ctx.strokeStyle = '#f87171';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      traceE.forEach((v, idx) => {
+        const px = gx + (idx / maxSteps) * gw;
+        const py = gy + gh - 14 - (v / maxE) * (gh - 34);
+        if (idx === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+
+      // Legend inside chart
+      ctx.textAlign = 'left';
+      ctx.font = 'bold 11.5px Inter, sans-serif';
+      ctx.fillStyle = '#4ade80';
+      ctx.fillText('━ Ruler 1: Total Out-of-Order Pairs I(v) (Strictly Downhill!)', gx + 14, gy + 20);
+      ctx.fillStyle = '#f87171';
+      ctx.fillText('━ Ruler 2: Neighbor Steps E(v) (Illusory Bumps)', gx + 390, gy + 20);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadScenario('rulers', document.getElementById('sc-rulers'));
+    });
+  </script>
+</body>
+</html>
