@@ -83,13 +83,13 @@ def main():
     fig1 = plt.figure(figsize=(14.5, 5.4), dpi=220, facecolor="white")
     gs1 = gridspec.GridSpec(1, 3, figure=fig1, width_ratios=[1.05, 1.0, 1.0], wspace=0.14, top=0.83, bottom=0.22, left=0.03, right=0.97)
 
-    # 1A: Original 1917 Drawing Scan
+    # 1A: Original 1917 Drawing Scan (full horizontal width x0=0.0 to x1=0.90 so the snout of Scarus is never clipped!)
     ax1a = fig1.add_subplot(gs1[0, 0])
     scan_p = CACHE_DIR / "ongrowthform1917thom_0769.jp2"
     if scan_p.exists():
         im = Image.open(scan_p).convert("L")
         w_im, h_im = im.size
-        crop_im = np.asarray(im.crop((int(0.05 * w_im), int(0.37 * h_im), int(0.95 * w_im), int(0.575 * h_im))))
+        crop_im = np.asarray(im.crop((0, int(0.365 * h_im), int(0.89 * w_im), int(0.58 * h_im))))
         ax1a.imshow(crop_im, cmap="gray", vmin=0, vmax=255)
     ax1a.set_xticks([]); ax1a.set_yticks([])
     ax1a.set_title("A. Thompson's 1917 Drawing\nParrotfish (Left) → Angelfish (Right)", fontsize=13.0, fontweight="bold", color="#0f172a", pad=12)

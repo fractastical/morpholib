@@ -89,25 +89,25 @@ SCAN_LEAVES = {
         "page": 748,
         "figs": "Figs. 373–374 (Argyropelecus → Sternoptyx, oblique shear)",
         "sha256": "4702f08497883dae29f8cb4a94dc0609282279d58b90413357e868eb3775d545",
-        "crop": (0.05, 0.56, 0.95, 0.86),
+        "crop": (0.04, 0.56, 0.96, 0.86),
     },
     769: {
         "page": 749,
         "figs": "Figs. 375–376 (Scarus → Pomacanthus, coaxial circles)",
         "sha256": "69cdc9e24bd757b476c763516fb9fcd45db7dc8c7e28f83a4c142417b762c6fa",
-        "crop": (0.05, 0.37, 0.95, 0.575),
+        "crop": (0.0, 0.365, 0.89, 0.58),
     },
     770: {
         "page": 750,
         "figs": "Figs. 377–380 (Polyprion → Pseudopriacanthus → Scorpaena → Antigonia, fan)",
         "sha256": "199272c4fb296f7710b879ce97fd26418d07b54b68cc9eaf36d2612cb207a7e1",
-        "crop": (0.05, 0.14, 0.95, 0.72),
+        "crop": (0.08, 0.14, 0.96, 0.72),
     },
     771: {
         "page": 751,
         "figs": "Figs. 381–382 (Diodon → Orthagoriscus mola, hyperbolic/radial expansion)",
         "sha256": "8fe15b0c9cb101449a14e28669dd17f48f410c660f9755598bad6aeb91eb797c",
-        "crop": (0.05, 0.25, 0.95, 0.57),
+        "crop": (0.0, 0.25, 0.91, 0.57),
     },
 }
 
