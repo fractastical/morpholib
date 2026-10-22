@@ -2,9 +2,11 @@
 
 This document provides a technical deep-dive into the primary biological, morphometric, and mathematical discoveries produced in this repository through our **12-step closed-loop methodology** (combining primary-literature partial differential / discrete equations, SHA-256-locked museum and empirical datasets, machine-checked **Lean 4** proofs in [`morphoeval/lean/MathOfBiology.lean`](../morphoeval/lean/MathOfBiology.lean) with `0 sorry`, and blinded multi-agent referee audits).
 
-👉 **Want the jargon-free version with step-by-step diagrams first?** Read **[`docs/EXPLAINED_FOR_EVERYONE.md`](./EXPLAINED_FOR_EVERYONE.md)**.
+👉 **Want the jargon-free version with step-by-step diagrams first?** Read **[`docs/EXPLAINED_FOR_EVERYONE.md`](./EXPLAINED_FOR_EVERYONE.md)** or download the **[6-Page Large-Font Visual Guide PDF (`docs/thompson_1917_visual_guide_for_everyone.pdf`)](./thompson_1917_visual_guide_for_everyone.pdf)**.
 
-![How Nature Builds 10,000 Different Fishes: The 4-Panel Visual Guide for Everyone](./thompson_1917_visual_guide_for_everyone.png)
+![Step 1 — D'Arcy Thompson's 1917 Rubber Graph-Paper Idea](./guide_step1_1917_rubber_sheet.png)
+
+![Step 4 — Two Simple Rules of Fish Evolution Across 10,303 Species](./guide_step4_outside_vs_inside_rules.png)
 
 > ### 🐟 The 60-Second Plain-English Lead-In: How Nature Builds 10,000 Different Fishes
 > In 1917, **D'Arcy Thompson** drew a famous picture: he took a drawing of a fish on a piece of graph paper, bent the grid lines like a sheet of rubber, and showed that the stretched drawing turned into a totally different fish (like a flat angelfish or a giant ocean sunfish). He believed nature doesn't redesign every bone from scratch—it just turns a few global **"growth knobs"** that stretch or curve the whole body at once.

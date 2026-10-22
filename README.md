@@ -31,9 +31,11 @@ Morphogenesis is how a living thing gets its shape, and regeneration is how it g
 
 ## Key Scientific & Mathematical Discoveries
 
-👉 **[Visual Guide for Everyone (13-Year-Old Level with Diagrams): `docs/EXPLAINED_FOR_EVERYONE.md`](./docs/EXPLAINED_FOR_EVERYONE.md)** · 🔬 **[Full Technical Deep-Dive: `docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md)** · 💬 **[Full Discovery & Peer-Review Chat Log: `docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](./docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md)** ([JSONL](./docs/thompson_1917_discovery_chat_log.jsonl))
+👉 **[Visual Guide for Everyone (Markdown): `docs/EXPLAINED_FOR_EVERYONE.md`](./docs/EXPLAINED_FOR_EVERYONE.md)** · 📄 **[Visual Guide PDF (6 Pages, Large-Font Separate Diagrams): `docs/thompson_1917_visual_guide_for_everyone.pdf`](./docs/thompson_1917_visual_guide_for_everyone.pdf)** · 🔬 **[Full Technical Deep-Dive: `docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md)** · 💬 **[Full Discovery & Peer-Review Chat Log: `docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](./docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md)** ([JSONL](./docs/thompson_1917_discovery_chat_log.jsonl))
 
-![How Nature Builds 10,000 Different Fishes: The 4-Panel Visual Guide for Everyone](./docs/thompson_1917_visual_guide_for_everyone.png)
+![Step 1 — D'Arcy Thompson's 1917 Rubber Graph-Paper Idea](./docs/guide_step1_1917_rubber_sheet.png)
+
+![Step 4 — Two Simple Rules of Fish Evolution Across 10,303 Species](./docs/guide_step4_outside_vs_inside_rules.png)
 
 > ### 🐟 The 60-Second Story (Plain-English Lead-In: How Nature Builds 10,000 Fishes)
 > In 1917, **D'Arcy Thompson** drew a famous picture: he placed a drawing of a fish on graph paper, bent the grid lines like a sheet of rubber, and showed that the stretched drawing turned into a totally different fish (like a flat angelfish or a giant ocean sunfish). For the last 30 years, biologists tried to test Thompson's idea on computer datasets and concluded it failed across fish families. **Why?**
