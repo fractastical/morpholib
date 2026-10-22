@@ -1848,8 +1848,8 @@ def main() -> int:
               </div>
               <div class="pane-sim" title="Dynamical Simulation (${m.script})">
                 ${simUrl
-                  ? `<img class="anim-gif" src="${simUrl}" alt="${m.genus} simulation" onerror="this.onerror=null;this.src='${DATA.raw_url}/docs/${m.gif}'" loading="lazy" />`
-                  : `<img class="anim-gif" src="${specimenUrl}" alt="${m.genus} specimen" onerror="this.onerror=null;this.src='${DATA.raw_url}/${m.specimen}'" loading="lazy" />`
+                  ? `<img class="anim-gif" src="${simUrl}" alt="${m.genus} simulation" onerror="this.onerror=null;this.src='${DATA.raw_url}/docs/${m.gif}'" />`
+                  : `<img class="anim-gif" src="${specimenUrl}" alt="${m.genus} specimen" onerror="this.onerror=null;this.src='${DATA.raw_url}/${m.specimen}'" />`
                 }
                 <span class="pane-badge" style="color:#facc15;border-color:rgba(250,204,21,0.45);">Simulation</span>
                 <span class="mode-tag">${m.tier === "pass3_audited" ? "Pass 3 Audited" : (m.tier === "core_validated" ? "Core Validated" : m.scale_short)}</span>
