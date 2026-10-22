@@ -31,7 +31,7 @@ Morphogenesis is how a living thing gets its shape, and regeneration is how it g
 
 ## Key Scientific & Mathematical Discoveries
 
-👉 **[Visual Guide for Everyone (Markdown): `docs/EXPLAINED_FOR_EVERYONE.md`](./docs/EXPLAINED_FOR_EVERYONE.md)** · 📄 **[Visual Guide PDF (6 Pages, Large-Font Separate Diagrams): `docs/thompson_1917_visual_guide_for_everyone.pdf`](./docs/thompson_1917_visual_guide_for_everyone.pdf)** · 🔬 **[Full Technical Deep-Dive: `docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md)** · 💬 **[Full Discovery & Peer-Review Chat Log: `docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](./docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md)** ([JSONL](./docs/thompson_1917_discovery_chat_log.jsonl))
+👉 **[Visual Guide for Everyone (Markdown): `docs/EXPLAINED_FOR_EVERYONE.md`](./docs/EXPLAINED_FOR_EVERYONE.md)** · 📄 **[Visual Guide PDF (5 Pages, Large-Font Separate Diagrams): `docs/thompson_1917_visual_guide_for_everyone.pdf`](./docs/thompson_1917_visual_guide_for_everyone.pdf)** · ⚡ **[Interactive `bioelectricity.net` Web Module & Sandbox (`docs/bioelectricity/`)](https://fractastical.github.io/morpholib/bioelectricity/)** ([Integration Guide](./docs/bioelectricity/README.md)) · 🔬 **[Full Technical Deep-Dive: `docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md)** · 💬 **[Full Discovery & Peer-Review Chat Log: `docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](./docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md)** ([JSONL](./docs/thompson_1917_discovery_chat_log.jsonl))
 
 ![Step 1 — D'Arcy Thompson's 1917 Rubber Graph-Paper Idea](./docs/guide_step1_1917_rubber_sheet.png)
 

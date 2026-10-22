@@ -4104,3 +4104,16 @@ Done — I split the composite graphic into **5 separate, spacious, large-font i
 ## Turn 39 — User (Thursday, Oct 22, 2026, 10:26 AM (UTC-7))
 
 looks good now , we can use slight friendlyier fomrattin and you can credit me Joel Dietz as the primary author
+
+### Assistant Response (Turn 39)
+
+Done — I updated both PDFs, the visual guide, the discovery page, and the outreach emails to credit **Joel Dietz** as the primary author, upgraded the Visual Guide PDF with a **friendly magazine-style sans-serif layout** (rounded TikZ header banner, color-coded step banners, soft rounded callout cards, and zebra-striped summary table), opened the updated PDF on your Mac, and pushed everything to `origin/main` ([`5db31a2e`](https://github.com/fractastical/morpholib/commit/5db31a2e)):
+
+- **5-Page Friendly Visual Guide PDF (`By Joel Dietz`, opened on your Mac right now):**
+  [`docs/thompson_1917_visual_guide_for_everyone.pdf`](https://github.com/fractastical/morpholib/blob/main/docs/thompson_1917_visual_guide_for_everyone.pdf) ([LaTeX source](./docs/thompson_1917_visual_guide_for_everyone.tex))
+- **20-Page Full Academic Manuscript PDF (`Joel Dietz` as Primary Author):**
+  [`docs/thompson_1917_fish_transformations_manuscript.pdf`](https://github.com/fractastical/morpholib/blob/main/docs/thompson_1917_fish_transformations_manuscript.pdf) ([LaTeX source](./docs/thompson_1917_fish_transformations_manuscript.tex))
+- **Markdown Visual Guide & Technical Deep-Dive:**
+  [`docs/EXPLAINED_FOR_EVERYONE.md`](./docs/EXPLAINED_FOR_EVERYONE.md) $\cdot$ [`docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md) $\cdot$ [`docs/thompson_1917_outreach_emails.md`](./docs/thompson_1917_outreach_emails.md)
+
+---
