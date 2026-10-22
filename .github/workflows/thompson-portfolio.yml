@@ -89,7 +89,10 @@ jobs:
           python3 thompson/portfolio/summarise_portfolio.py
           exit $status
 
-      - name: Open or update the results pull request
+      # Pushes the results branch regardless; opening the PR additionally needs
+      # Settings -> Actions -> General -> "Allow GitHub Actions to create and approve pull requests".
+      - name: Push results branch and open/update the pull request
+        continue-on-error: true
         uses: peter-evans/create-pull-request@v6
         with:
           branch: thompson-portfolio-results
