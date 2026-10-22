@@ -284,15 +284,21 @@ CAUSE_ORDER = [
 
 def _resolve_dataset_dir_and_specimen(slug: str, explicit_dir: str = "", fig_rel: str = "", slot: int | None = None, script_name: str = "") -> tuple[str, str]:
     import re as _re
-    if script_name and (ROOT / script_name).exists():
-        txt = (ROOT / script_name).read_text(errors="replace")
-        m = _re.search(r"datasets[\" /]+([A-Za-z0-9_]+)", txt)
-        if m:
-            cdir = ROOT / "datasets" / m.group(1)
-            if cdir.is_dir():
-                specs = sorted(list(cdir.glob("*specimen*.jpg")) + list(cdir.glob("*specimen*.png")) + list(cdir.glob("*.jpg")) + list(cdir.glob("*.png")))
-                if specs:
-                    return str(cdir.relative_to(ROOT)), str(specs[0].relative_to(ROOT))
+    script_candidates = []
+    if script_name:
+        script_candidates.append(ROOT / script_name)
+        script_candidates.append(ROOT / "models" / Path(script_name).name)
+    for sc_path in script_candidates:
+        if sc_path.exists():
+            txt = sc_path.read_text(errors="replace")
+            m = _re.search(r"datasets[\" /]+([A-Za-z0-9_]+)", txt)
+            if m:
+                cdir = ROOT / "datasets" / m.group(1)
+                if cdir.is_dir():
+                    specs = sorted(list(cdir.glob("*specimen*.jpg")) + list(cdir.glob("*specimen*.png")) + list(cdir.glob("*.jpg")) + list(cdir.glob("*.png")))
+                    if specs:
+                        return str(cdir.relative_to(ROOT)), str(specs[0].relative_to(ROOT))
+            break
     if slot is not None:
         disp_path = ROOT / f"morphoeval/cloud/dispatches/slot-{slot:03d}.json"
         if disp_path.exists():

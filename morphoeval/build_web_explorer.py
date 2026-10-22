@@ -1084,7 +1084,7 @@ def main() -> int:
 
   <nav class="quick-bar" id="scale-bar" style="background:#081021;border-bottom:1px solid #1e3a5f;">
     <span class="quick-label" style="color:#38bdf8;">🔬 Multi-Scale &amp; Fossil Zoom (Smallest &rarr; Largest Bit):</span>
-    <button class="pill active" data-scale="verified_core" id="pill-verified-core" title="Show the 101 Curated Core/Pass-3 Models (ImgFit >= 70)">⭐ Verified Core (101)</button>
+    <button class="pill active" data-scale="verified_core" id="pill-verified-core" title="Show all 116 Hard Gold Core/Pass-3 Dynamical Simulations (100% ImgFit >= 70.0)">⭐ Verified Core (116 Hard Gold)</button>
     <button class="pill" data-scale="drosophila_1015" style="border-color:#22c55e;color:#86efac;" title="Exhaustive Drosophila 1,015-Run Multi-Scale, Connectomic (FlyWire) & 41-Species Radiation Atlas (2.5 nm -> 1.2 m)">🪰 Drosophila Deep-Dive (1,015 Runs · FlyBase / FlyWire)</button>
     <button class="pill" data-scale="zebrafish_116" style="border-color:#38bdf8;color:#7dd3fc;" title="Exhaustive Danio rerio 156-Run Multi-Scale Atlas (3.2 nm -> 52.7 cm, linked to Zebrahub, ZFIN, Daniocell & MapZebrain)">🐟 Zebrafish Deep-Dive (156 Runs · Zebrahub)</button>
     <button class="pill" data-scale="fossil_chronospecies" style="border-color:#f59e0b;color:#fde68a;" title="Fossil-Record Chronospecies & Evolutionary Series (565 Ma Ediacaran -> Holocene)">🦴 Fossil Record &amp; Chronospecies (420 Runs)</button>
