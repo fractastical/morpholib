@@ -31,7 +31,7 @@ Morphogenesis is how a living thing gets its shape, and regeneration is how it g
 
 ## Key Scientific & Mathematical Discoveries
 
-👉 **[Read the Full Technical Deep-Dive: `docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md)**
+👉 **[Read the Full Technical Deep-Dive: `docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md)** · 💬 **[Full Discovery & Peer-Review Chat Log: `docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](./docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md)** ([JSONL](./docs/thompson_1917_discovery_chat_log.jsonl))
 
 Beyond reproducing classic models, running our **12-step closed verification loop** (SHA-256-locked empirical data + **Lean 4** kernel proofs in [`morphoeval/lean/MathOfBiology.lean`](./morphoeval/lean/MathOfBiology.lean) with `0 sorry` + blinded cross-provider referee audits) produced two flagship original discoveries:
 
