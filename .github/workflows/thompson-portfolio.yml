@@ -1,0 +1,108 @@
+# Thompson prediction-engine portfolio: unattended scoring of the locked predictions
+# against every comparison dataset registered in docs/THOMPSON_DATASET_PORTFOLIO.md.
+#
+# Runs on GitHub's runners (independent of any laptop), weekly and on demand, and on
+# changes to the scoring code.  Every source listed in the matrix is fetched from its
+# public mirror, scored with thompson/portfolio/score_locked_predictions.py (which
+# refuses to run if the locked prediction files' SHA-256 differ from the manifest), and
+# the results are pushed to the branch `thompson-portfolio-results` as a pull request.
+# The locked predictions and the registered probabilities are never modified here.
+
+name: Thompson portfolio scoring
+
+on:
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: "Space-separated sources to score (default: all known to the scorer)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays 06:17 UTC
+  push:
+    branches: [main]
+    paths:
+      - "thompson/portfolio/**"
+      - ".github/workflows/thompson-portfolio.yml"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: thompson-portfolio
+  cancel-in-progress: false
+
+jobs:
+  score:
+    name: Fetch inputs, verify locks, score all sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Restore input cache
+        uses: actions/cache@v4
+        with:
+          path: .thompson_cache
+          key: thompson-inputs-${{ hashFiles('thompson/portfolio/fetch_inputs.py') }}
+
+      - name: Fetch public inputs (checksummed where pinned)
+        run: python3 thompson/portfolio/fetch_inputs.py
+
+      - name: Verify locked prediction files against the registered manifest
+        run: |
+          python3 - <<'EOF'
+          import hashlib, json, sys
+          m = json.load(open("thompson_blind_predictions_manifest.json"))
+          bad = [f for f, d in m["files"].items() if hashlib.sha256(open(f, "rb").read()).hexdigest() != d]
+          print("locked files OK" if not bad else f"HASH MISMATCH: {bad}"); sys.exit(1 if bad else 0)
+          EOF
+
+      - name: Score every source
+        env:
+          MPLCONFIGDIR: /tmp/mpl
+          SOURCES: ${{ github.event.inputs.sources }}
+        run: |
+          if [ -z "$SOURCES" ]; then
+            SOURCES=$(python3 -c "import importlib.util,sys; s=importlib.util.spec_from_file_location('m','thompson/portfolio/score_locked_predictions.py'); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); print(' '.join(sorted(m.SOURCES)))")
+          fi
+          echo "sources: $SOURCES"
+          status=0
+          for src in $SOURCES; do
+            echo "::group::$src"
+            python3 thompson/portfolio/score_locked_predictions.py --source "$src" || status=1
+            echo "::endgroup::"
+          done
+          python3 thompson/portfolio/summarise_portfolio.py
+          exit $status
+
+      - name: Open or update the results pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: thompson-portfolio-results
+          base: main
+          title: "Thompson portfolio: scored sub-predictions (automated)"
+          commit-message: "Thompson portfolio: automated scoring run ${{ github.run_id }}"
+          add-paths: |
+            thompson/portfolio/results/*.json
+            docs/portfolio/*.md
+            docs/portfolio/*.png
+          body: |
+            Automated run of `thompson/portfolio/score_locked_predictions.py` for every registered
+            comparison source (workflow run ${{ github.run_id }}). Locked prediction hashes verified.
+            See `docs/portfolio/PORTFOLIO_STATUS.md` for registered probability vs realised outcome.
+          labels: thompson-portfolio
+          delete-branch: false
