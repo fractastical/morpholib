@@ -465,7 +465,7 @@ def build_conus_rule30_gif_and_sync_specimens():
         "raup-shell-coiling": "datasets/raup/raup_coiled_shells_specimen.jpg",
         "vogel-phyllotaxis": "datasets/phyllotaxis/helianthus_annuus_capitulum_specimen.jpg",
         "wolfram-conus-textile-rule30": "datasets/conus/conus_textile_shell.jpg",
-        "runions-leaf-venation": "datasets/venation/ginkgo_open_venation_specimen.jpg",
+        "runions-leaf-venation": "datasets/venation/reticulate_vein_skeleton_specimen.jpg",
         "planform-morphology-animation": "datasets/species_gallery/II_Anaima_Invertebrata/Schmidtea_mediterranea.jpg",
         "cervera-levin-mafe": "datasets/species_gallery/II_Anaima_Invertebrata/Schmidtea_mediterranea.jpg",
     }
