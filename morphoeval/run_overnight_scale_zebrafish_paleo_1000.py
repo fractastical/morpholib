@@ -973,6 +973,14 @@ def build_species_cross_link_registry(all_entries: list[dict[str, Any]]) -> dict
         for rank_idx, x in enumerate(items, start=1):
             x["species_scale_rank"] = f"{rank_idx}/{len(items)}"
             x["species_total_runs"] = len(items)
+            # Keep up to 16 representative scale rungs (earliest/smallest, core, and evenly spaced across scales)
+            # per individual model entry so aristotelian_categories_index.json stays compact (~6 MB), while
+            # species_multiscale_registry.json stores the complete species ladder once per species.
+            if len(items) <= 16:
+                rep_sibs = items
+            else:
+                step = max(1, len(items) // 14)
+                rep_sibs = [items[0]] + items[1:-1:step][:14] + [items[-1]]
             x["sibling_slugs_ordered_by_size"] = [
                 {
                     "slug": sib["slug"],
@@ -983,7 +991,7 @@ def build_species_cross_link_registry(all_entries: list[dict[str, Any]]) -> dict
                     "poion": sib.get("poion_form", ""),
                     "geological_age_ma": sib.get("geological_age_ma", 0.0),
                 }
-                for sib in items
+                for sib in rep_sibs
             ]
         species_summary[sp_name] = {
             "species": sp_name,

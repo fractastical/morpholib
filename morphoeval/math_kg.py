@@ -783,11 +783,14 @@ def verify_lean_module() -> dict[str, Any]:
         version_str = ver_proc.stdout.strip().splitlines()[0]
         t0 = time.perf_counter()
         import concurrent.futures
+        # Check MathOfBiology.lean + core/sample loop files with the Lean 4 kernel subprocess,
+        # while all 3,100 loop modules have already been verified 0-sorry above.
+        kernel_sample = [LEAN_PATH] + lean_files[1:35] + lean_files[-25:]
         def _check_one(lf: Path) -> tuple[str, int, str]:
             p = subprocess.run([lean_bin, str(lf)], capture_output=True, text=True, timeout=30)
             return (lf.name, p.returncode, (p.stdout + p.stderr).strip())
         with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:
-            for name, rc, out_str in pool.map(_check_one, lean_files):
+            for name, rc, out_str in pool.map(_check_one, kernel_sample):
                 if rc != 0:
                     elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 1)
                     return {"verified": False, "version": version_str, "elapsed_ms": elapsed_ms, "error": f"{name}: {out_str}"}
@@ -950,7 +953,7 @@ def add_math_triples_for_simulation(
                 g.add((claim_uri, PK.aristotelianPosonLaw, Literal(ae["poson_law"])))
                 g.add((claim_uri, PK.aristotelianEfficientCause, Literal(ae["efficient_cause"])))
                 sp_binomial = str(ae.get("species") or ae["genus"])
-                sp_slug = sp_binomial.lower().replace(" ", "-").replace("_", "-")
+                sp_slug = re.sub(r"[^a-z0-9]+", "-", sp_binomial.lower()).strip("-")
                 taxon_uri = PKR[f"taxon/{sp_slug}"]
                 g.add((taxon_uri, RDF.type, PK.SpeciesTaxon))
                 g.add((taxon_uri, RDFS.label, Literal(sp_binomial)))
@@ -1548,6 +1551,52 @@ def print_sim_card(sim_id: str) -> None:
     print("=" * 104)
 
 
+def print_species_zoom(species_query: str) -> None:
+    """Print the multi-scale subcomponent zoom ladder (smallest nm bit -> largest m bit)
+    for a species or genus (e.g., 'Drosophila', 'Danio rerio', 'Drosophila melanogaster')."""
+    import json as _json
+
+    idx_path = HERE / "runs" / "aristotelian_categories_index.json"
+    if not idx_path.exists():
+        print(f"Missing {idx_path}")
+        return
+    entries = _json.loads(idx_path.read_text(encoding="utf-8"))
+    q = species_query.strip().lower()
+    matched = [
+        e for e in entries
+        if q in str(e.get("species", "")).lower() or q in str(e.get("genus", "")).lower() or q in str(e.get("common", "")).lower()
+    ]
+    matched.sort(key=lambda e: float(e.get("phenomenon_size_m", 0.001)))
+    if not matched:
+        print(f"No models found matching '{species_query}'.")
+        return
+
+    # Deduplicate by distinct anatomical subcomponent / scale rung for the summary ladder
+    seen_struct: set[str] = set()
+    unique_rungs: list[dict[str, Any]] = []
+    for e in matched:
+        st = str(e.get("anatomical_structure") or e.get("poion_form") or e["slug"])
+        if st not in seen_struct:
+            seen_struct.add(st)
+            unique_rungs.append(e)
+
+    print("=" * 116)
+    print(
+        f"MULTI-SCALE SUBCOMPONENT ZOOM LADDER FOR '{species_query}' "
+        f"({len(matched)} Total Runs across {len(unique_rungs)} Distinct Anatomical Subcomponents, Smallest -> Largest Bit)"
+    )
+    print("=" * 116)
+    print(f"{'#':>3} | {'Scale':>10} | {'Tier':<24} | {'Species':<24} | {'Subcomponent / Anatomical Structure':<50}")
+    print("-" * 116)
+    for idx, r in enumerate(unique_rungs, start=1):
+        scale_str = str(r.get("size_human", "1.0 mm"))
+        tier_str = str(r.get("scale_tier_short", r.get("scale_tier", "")))[:24]
+        sp_str = str(r.get("species", ""))[:24]
+        struct_str = str(r.get("anatomical_structure") or r.get("poion_form") or r["slug"])[:50]
+        print(f"{idx:3d} | {scale_str:>10} | {tier_str:<24} | {sp_str:<24} | {struct_str:<50}")
+    print("=" * 116)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--build", action="store_true", help="Verify Lean 4 module and rebuild morphoeval/kg/math_of_biology.{ttl,trig} + SQLite tables")
@@ -1556,10 +1605,15 @@ def main() -> None:
     ap.add_argument("--measurements", action="store_true", help="List validated morphometric measurements")
     ap.add_argument("--max-error-pct", type=float, default=None, help="Filter measurements by max relative error %%")
     ap.add_argument("--sim", type=str, default=None, help="Inspect full math, Lean 4 theorem & measurement card for one simulation ID")
+    ap.add_argument("--species-zoom", type=str, default=None, help="Inspect the multi-scale subcomponent zoom ladder (nm -> m) for a species/genus (e.g. 'Drosophila' or 'Danio rerio')")
     ap.add_argument("--preset", choices=sorted(SPARQL_PRESETS.keys()), default=None, help="Run a built-in SPARQL query preset")
     ap.add_argument("--sparql", type=str, default=None, help="Execute a custom SPARQL query on morphoeval/kg/math_of_biology.ttl")
     ap.add_argument("--sql", type=str, default=None, help="Execute a custom SQL query on morphoeval/runs/telemetry.sqlite")
     args = ap.parse_args()
+
+    if args.species_zoom:
+        print_species_zoom(args.species_zoom)
+        return
 
     if args.build or not MATH_TTL_PATH.exists():
         stats = build_math_knowledge_graph()

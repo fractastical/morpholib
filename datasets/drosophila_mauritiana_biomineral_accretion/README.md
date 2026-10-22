@@ -1,0 +1,15 @@
+# Dataset: `drosophila_mauritiana_biomineral_accretion` (Slot #2728 — *Drosophila mauritiana* · `1.2 mm`)
+
+- **Organism (*Ousia*)**: *Drosophila mauritiana* (Mauritius Endemic Fruit Fly (Compact Spinose Genital Arch Lobe))
+- **Characteristic Phenomenon Size**: `1.2 mm` (`0.001217 m`, `log10 = -2.915`, Tier `6_organ_mm`)
+- **Anatomical / Developmental / Connectomic Structure**: Biomineralized shell whorl / spicule / test in Drosophila mauritiana (Mauritius Endemic Fruit Fly)
+- **Geological Horizon**: Holocene (Extant) (`0 Ma`)
+- **Evolutionary / Scale Lineage Group**: Sophophora melanogaster Subgroup Radiation (0–12 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 8. Crystal Accretion & TPMS (VIII. Biomineralization, Shells & Spicules)
+- **External Multi-Modal Atlases**:
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

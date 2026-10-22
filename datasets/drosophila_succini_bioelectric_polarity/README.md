@@ -1,0 +1,16 @@
+# Dataset: `drosophila_succini_bioelectric_polarity` (Slot #3099 — *Drosophila succini* · `2.3 µm`)
+
+- **Organism (*Ousia*)**: *Drosophila succini* (Eocene Baltic Amber Stem Drosophilid (44 Ma Lutetian Amber Inclusion))
+- **Characteristic Phenomenon Size**: `2.3 µm` (`2.28e-06 m`, `log10 = -5.642`, Tier `3_subcellular_um`)
+- **Anatomical / Developmental / Connectomic Structure**: Gap-junction bioelectric domain & ion-channel patch in Drosophila succini (Eocene Baltic Amber Stem Drosophilid)
+- **Geological Horizon**: Middle Eocene (Lutetian Baltic Amber) (`44 Ma`)
+- **Evolutionary / Scale Lineage Group**: Cenozoic Amber Drosophilid Chronospecies (44 Ma Eocene → 0 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 9. Bioelectric V_mem & Attractors (IX. Bioelectric Regeneration & Neural Maps)
+- **External Multi-Modal Atlases**:
+  - [Paleobiology Database (PBDB) — Drosophila succini (Middle Eocene (Lutetian Baltic Amber))](https://paleobiodb.org/classic/checkTaxonInfo?taxon_name=Drosophila)
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

@@ -6,17 +6,25 @@ model_spec:
   critical_growth_threshold_g_c: 1.18
   cortical_nodes_N: 240
   seed: 2014
+  pass3_surface_3d:
+    model: "Generalized Swift-Hohenberg film-on-curved-substrate planform (Stoop et al. 2015) on a triaxial ellipsoidal hemisphere, cotangent Laplace-Beltrami, 10242 nodes"
+    icosphere_subdivisions: 5
+    eps_scale_at_gw38: 0.5
+    g2_curvature_coeff: 0.35
+    ap_thickness_gradient_beta_sweep: [0.0, 0.1, 0.2, 0.3]
+    residual: "Sulcal depth imported from 2D coronal solver; full 3D tetrahedral neo-Hookean FEM on MRI templates carried to Pass 4"
   inputs:
     - datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json
     - datasets/cortical_gyrification_folding/cerebral_cortex_gyri_specimen.jpg
     - datasets/cortical_gyrification_folding/scout_manifest.json
     - datasets/cortical_gyrification_folding/paper_citations.bib
+    - datasets/cortical_gyrification_folding/surface_sh_3d_reference.json
 equations:
   - law_name: "Tallinen et al. (2014) Multiplicative Cortical Growth Decomposition & Critical Buckling Threshold"
     formula: "F = F_e G,  G = diag(g, 1);  Δg = g - g_c = 0 ⇔ g = g_c (lissencephalic threshold)"
     lean_decl: "MathOfBiology.Loop_061.cortical_growth_excess"
     lean_theorem: "MathOfBiology.Loop_061.tallinen_critical_growth_threshold"
-    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L24-L35"
+    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L25-L35"
     lean_code: |
       def cortical_growth_excess (g g_c : Int) : Int :=
         g - g_c
@@ -26,13 +34,14 @@ equations:
     variables: "F: total deformation gradient; F_e: elastic deformation gradient; G: tangential cortical growth tensor with linear factor g; g_c = 1.18: critical sulcal creasing threshold"
     role: "Establishes the multiplicative growth decomposition of tangential cortical expansion relative to the subcortical white-matter core and the critical threshold separating lissencephaly (g <= g_c) from gyrencephaly (g > g_c)"
     source_citation: "Tallinen et al. (2014) PNAS 111:12667-12672 Eq. (1) & Fig. 1-2; Tallinen et al. (2016) Nature Physics 12:588-593"
-    code_locus: "1975-richman-cortical-gyrification-buckling.py#L120-L185"
+    code_locus: "1975-richman-cortical-gyrification-buckling.py#L162-L169"
+    code_locus_secondary: "1975-richman-cortical-gyrification-buckling.py#L540-L552 (eps = eps_scale * (g - g_c)/(g_38 - g_c) in relax_surface_swift_hohenberg)"
 
   - law_name: "Richman et al. (1975) & Tallinen et al. (2014) Cube-Law Sulcal Wavelength Scaling"
     formula: "U_tot(λ) ~ μ_c h^3 / λ^2 + 3 μ_s λ  ⇒  ∂U_tot/∂λ = 0  ⇔  λ = 2π h (μ_c / (3 μ_s))^(1/3)"
     lean_decl: "MathOfBiology.Loop_061.richman_wavelength_residual"
     lean_theorem: "MathOfBiology.Loop_061.richman_cube_law_wavelength_stationarity"
-    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L51-L60"
+    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L51-L59"
     lean_code: |
       def richman_wavelength_residual (lam h mu_c mu_s : Int) : Int :=
         3 * mu_s * (lam * lam * lam) - 2 * mu_c * (h * h * h)
@@ -42,7 +51,8 @@ equations:
     variables: "λ: sulcal folding wavelength (mm); h: cortical gray-matter thickness (mm); μ_c: cortical shear modulus (kPa); μ_s: subcortical white-matter shear modulus (kPa)"
     role: "Predicts linear scaling of gyral/sulcal wavelength with cortical thickness h and cube-root scaling with cortical-to-subcortical stiffness ratio across normal, polymicrogyric, and comparative mammalian brains"
     source_citation: "Richman et al. (1975) Science 189:18-21 Eq. (1) & Table 1; Tallinen et al. (2014) PNAS 111:12667-12672 Fig. 3-4"
-    code_locus: "1975-richman-cortical-gyrification-buckling.py#L140-L240"
+    code_locus: "1975-richman-cortical-gyrification-buckling.py#L172-L178"
+    code_locus_secondary: "1975-richman-cortical-gyrification-buckling.py#L851-L922 (11-species scaling collapse in evaluate_mammalian_cross_species)"
 
   - law_name: "Zilles et al. (1988) & Tallinen et al. (2016) Gyrification Index Buried Sulcal Perimeter Law"
     formula: "GI = P_pial / P_hull = 1 + (2 N_sulci d_sulcus) / P_hull ≥ 1.0  (GI = 1.0 ⇔ N_sulci = 0)"
@@ -58,4 +68,58 @@ equations:
     variables: "GI: coronal gyrification index; P_pial: total pial contour perimeter (mm); P_hull: outer convex hull perimeter (mm); N_sulci: number of sulcal infoldings; d_sulcus: mean sulcal depth (mm)"
     role: "Quantifies the ratio of total pial surface contour to outer convex hull perimeter across human fetal gestation (GW22-GW38) and across 11 mammalian species"
     source_citation: "Zilles et al. (1988) Anat. Embryol. 179:173-179; Tallinen et al. (2016) Nature Physics 12:588-593 Fig. 3-4"
-    code_locus: "1975-richman-cortical-gyrification-buckling.py#L245-L345"
+    code_locus: "1975-richman-cortical-gyrification-buckling.py#L181-L189"
+    code_locus_secondary: "1975-richman-cortical-gyrification-buckling.py#L336-L345 (P_pial = P_hull + 2 N d in relax_neohookean_cortical_shell)"
+
+  - law_name: "(Pass 3) Generalized Swift-Hohenberg Film-on-Curved-Substrate Linear Mode Selection (Stoop et al. 2015)"
+    formula: "∂ₜu = ε u − (1 + Δ/k_c(x)²)² u + g₂ u² − u³;  σ(k) = ε − (1 − k²/k_c²)²,  argmax_k σ = k_c,  σ(0) = ε − 1 < 0"
+    lean_decl: "MathOfBiology.Loop_061.sh_growth_rate"
+    lean_theorem: "MathOfBiology.Loop_061.swift_hohenberg_fastest_mode"
+    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L99-L113"
+    lean_code: |
+      def sh_growth_rate (eps kc2 k2 : Int) : Int :=
+        eps - (kc2 - k2) * (kc2 - k2)
+      theorem swift_hohenberg_fastest_mode (eps kc2 : Int) :
+          sh_growth_rate eps kc2 kc2 = eps ∧
+          (∀ k2 : Int, sh_growth_rate eps kc2 k2 ≤ eps) ∧
+          sh_growth_rate eps kc2 0 = eps - kc2 * kc2
+    variables: "u: inward normal buckling amplitude on the hemisphere surface; ε = ε₀ (g − g_c)/(g_GW38 − g_c): dimensionless overstress from the growth excess; k_c(x) = 2π/λ(h(x)): locally preferred wavenumber; g₂ ∝ h/R: curvature-induced quadratic coefficient (dimple-favouring); Δ: cotangent Laplace-Beltrami operator on the ellipsoid"
+    role: "Reduced 3D surface model replacing the requested volumetric FEM: selects the Richman wavelength on the curved hemisphere, produces the Stoop hexagonal-dimple (low ε) → labyrinth with Y-junctions (high ε) transition across GW26 → GW38, and damps the uniform mode"
+    source_citation: "Stoop N, Lagrange R, Terwagne D, Reis PM, Dunkel J (2015) Nature Materials 14:337-342 Eq. (1); Cross MC, Hohenberg PC (1993) Rev. Mod. Phys. 65:851"
+    code_locus: "1975-richman-cortical-gyrification-buckling.py#L515-L576"
+    code_locus_secondary: "1975-richman-cortical-gyrification-buckling.py#L443-L468 (cotangent_laplace_beltrami) and #L610-L669 (count_sulcal_y_junctions)"
+
+  - law_name: "(Pass 3) Regional Cortical-Thickness Gradient ⇒ Regional Sulcal Wavelength Ratio"
+    formula: "h(x) = h₀ (1 + β x/a);  λ(x) = 2π h(x) (μ_c/3μ_s)^{1/3};  λ_ant/λ_post = h_ant/h_post = (1+β)/(1−β)"
+    lean_decl: "MathOfBiology.Loop_061.local_wavelength"
+    lean_theorem: "MathOfBiology.Loop_061.regional_wavelength_tracks_thickness"
+    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L128-L137"
+    lean_code: |
+      def local_wavelength (C h : Int) : Int :=
+        C * h
+      theorem regional_wavelength_tracks_thickness (C h_ant h_post h0 d b : Int) :
+          local_wavelength C h_ant * h_post = local_wavelength C h_post * h_ant ∧
+          local_wavelength C (h0 * (d + b)) * (d - b) =
+            local_wavelength C (h0 * (d - b)) * (d + b)
+    variables: "h₀ = 2.60 mm: mean cortical thickness; β ∈ {0, 0.1, 0.2, 0.3}: anterior-posterior gradient (β = 0.3 spans 2.08-3.12 mm, inside the Fischl & Dale 2000 regional range); x/a ∈ [-1, 1]: normalised AP coordinate; λ_ant, λ_post: emergent wavelengths in the anterior / posterior thirds"
+    role: "Applies the Richman cube law locally to a regional thickness gradient and tests that the nonlinear 3D planform adapts its wavelength regionally (no locking): emergent slope 1.006, r = 1.0000 over the 4-point sweep"
+    source_citation: "Richman et al. (1975) Science 189:18-21 Eq. (1); Fischl B, Dale AM (2000) PNAS 97:11050-11055 (regional thickness range)"
+    code_locus: "1975-richman-cortical-gyrification-buckling.py#L760-L802"
+    code_locus_secondary: "1975-richman-cortical-gyrification-buckling.py#L497-L503 (regional_thickness_field) and #L578-L591 (local_wavelength_from_field)"
+
+  - law_name: "(Pass 3) 3D Crease-Wall Gyrification Index (Law 3 lifted from coronal perimeter to hemispheric area)"
+    formula: "A_pial = A_hull + 2 L_fundus d̄ = A_hull + L_zero d̄;  GI_3D = A_pial/A_hull = 1 + L_zero d̄ / A_hull ≥ 1  (GI_3D = 1 ⇔ L_fundus = 0)"
+    lean_decl: "MathOfBiology.Loop_061.gyrification_area_excess"
+    lean_theorem: "MathOfBiology.Loop_061.gyrification_index_3d_crease_wall"
+    lean_locus: "morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean#L150-L159"
+    lean_code: |
+      def gyrification_area_excess (A_hull L_f d : Int) : Int :=
+        (A_hull + 2 * L_f * d) - A_hull
+      theorem gyrification_index_3d_crease_wall (A_hull L_f d : Int) :
+          gyrification_area_excess A_hull 0 d = 0 ∧
+          gyrification_area_excess A_hull L_f d = (2 * L_f) * d
+    variables: "A_hull: ellipsoid hull area (mm²); L_zero: emergent u = 0 iso-contour length (marching triangles, mm) = 2 L_fundus; d̄: mean sulcal depth (mm) imported from the 2D coronal solver of the same stage; GI_3D: area-based gyrification index"
+    role: "Computes the 3D gyrification index of the hemispheric planform (GW38: 2.60 vs 2.56 observed) with only the fundus length emergent; the smooth displaced-surface area ratio is reported as a lower bound"
+    source_citation: "Zilles et al. (1988) Anat. Embryol. 179:173-179; Tallinen et al. (2016) Nature Physics 12:588-593 (area-based GI)"
+    code_locus: "1975-richman-cortical-gyrification-buckling.py#L691-L714"
+    code_locus_secondary: "1975-richman-cortical-gyrification-buckling.py#L671-L688 (isocontour_length_on_mesh)"

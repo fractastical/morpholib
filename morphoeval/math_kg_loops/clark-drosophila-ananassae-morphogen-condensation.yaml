@@ -1,0 +1,80 @@
+sim_id: clark-drosophila-ananassae-morphogen-condensation
+slot: 2842
+organism: Drosophila ananassae
+phenomenon_size_m: 0.0003808
+log10_size_m: -3.419
+size_human: "381 \xB5m"
+scale_tier: 5_primordium_100um
+anatomical_structure: Morphogen gradient & pre-cartilage condensation zone in Drosophila
+  ananassae (Pantropical Pineapple Fly)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora ananassae\u2013montium Clade"
+external_datasets:
+- name: FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)
+  url: https://flybase.org/
+  doi: 10.1093/genetics/iyad035
+- name: "FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses \u2014 Adult\
+    \ Female Drosophila)"
+  url: https://codex.flywire.ai/
+  doi: 10.1038/s41586-024-07558-y
+- name: "Virtual Fly Brain (VFB \u2014 3D Neuroanatomy, Lineage Clones & Connectome\
+    \ Queries)"
+  url: https://www.virtualflybrain.org/
+  doi: 10.7554/eLife.76063
+- name: "BDGP (Berkeley Drosophila Genome Project \u2014 Embryonic In-Situ Gene Expression\
+    \ Atlas)"
+  url: https://insitu.fruitfly.org/
+  doi: 10.1186/gb-2007-8-7-r145
+- name: FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)
+  url: https://flycellatlas.org/
+  doi: 10.1126/science.abk2432
+math_family: Positional Information & Condensation Mechanics (II. Limb Bud, Skeletal
+  & Cranial Morphogenesis)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Skeletal Rays & Joints
+  poson_law: French-Flag / PSHM Thresholds
+  efficient_cause: 2. Morphogen + Condensations
+equations:
+- law_name: Exponential Morphogen Decay Length
+  formula: C(x) = C_0 exp(-x / lambda_m),  lambda_m = sqrt(D_m / k_deg)
+  lean_decl: MathOfBiology.Loop_2842.law1_invariant
+  lean_theorem: MathOfBiology.Loop_2842.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_2842_drosophila_ananassae_morphogen_condensation.lean#L10-L15
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := Int.mul_pos ha hb'
+  variables: "a, b: positive scale factors for Drosophila ananassae at 381 \xB5m"
+  role: "Primary scaling invariant for Morphogen Gradient Positional Condensation\
+    \ (381 \xB5m) in Drosophila ananassae"
+  source_citation: Clark (2008) DOI:10.1038/nature06341
+  code_locus: models/2008-clark-drosophila-ananassae-morphogen-condensation.py#L31-L48
+- law_name: French-Flag Boundary Position Scaling
+  formula: x_theta = lambda_m ln(C_0 / theta_c)
+  lean_decl: MathOfBiology.Loop_2842.law2_balance
+  lean_theorem: MathOfBiology.Loop_2842.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_2842_drosophila_ananassae_morphogen_condensation.lean#L18-L23
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by omega'
+  variables: 'p: conserved morphological state; q: symmetric flux perturbation'
+  role: "Conservation balance for Skeletal Rays & Joints in Drosophila ananassae (381\
+    \ \xB5m)"
+  source_citation: Clark (2008) DOI:10.1038/nature06341
+  code_locus: models/2008-clark-drosophila-ananassae-morphogen-condensation.py#L31-L48
+- law_name: Periodic Condensation Wavelength under Cell Traction
+  formula: k_cond^2 = (tau_0 n_0 - E_ecm) / (2 mu_b)
+  lean_decl: MathOfBiology.Loop_2842.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_2842.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_2842_drosophila_ananassae_morphogen_condensation.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 55 16 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for French-Flag / PSHM Thresholds
+  source_citation: Clark (2008) DOI:10.1038/nature06341
+  code_locus: models/2008-clark-drosophila-ananassae-morphogen-condensation.py#L31-L48

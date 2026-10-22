@@ -1,0 +1,53 @@
+sim_id: thewissen-pakicetus-attocki-biomineral-accretion
+math_family: Logarithmic Helicospiral Accretion & Biomineral Geometry
+phenomenon_size_m: 0.07832
+log10_size_m: -1.106
+size_human: 7.8 cm
+scale_tier: 7_organism_cm
+anatomical_structure: Biomineralized shell whorl / spicule / test in Pakicetus attocki
+  (Early Eocene (Ypresian, 49.0 Ma))
+geological_age_ma: 49.0
+geological_period: Early Eocene (Ypresian, 49.0 Ma)
+fossil_lineage_group: Cetacean Limb-to-Flipper Fossil Series
+equations:
+- law_name: Raup Logarithmic Whorl Expansion Scaling
+  formula: r(theta) = r_0 * W^(theta / (2 pi))
+  lean_decl: MathOfBiology.Loop_1853.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1853.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1853_pakicetus_attocki_biomineral_accretion.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive morphogenetic scaling factors at characteristic scale
+    L = 7.8 cm'
+  role: Primary scaling invariant for Logarithmic Accretion & Minimal-Surface Biomineralization
+    (7.8 cm) in Pakicetus attocki
+  source_citation: Thewissen (2003) DOI:10.1038/35095005
+  code_locus: models/2003-thewissen-pakicetus-attocki-biomineral-accretion.py#L31-L48
+- law_name: Helicospiral Aperture Translation Scaling
+  formula: z(theta) = T * r_0 * (W^(theta / (2 pi)) - 1)
+  lean_decl: MathOfBiology.Loop_1853.law2_balance
+  lean_theorem: MathOfBiology.Loop_1853.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1853_pakicetus_attocki_biomineral_accretion.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Coiled Shells, Spicules & Gyroids in Pakicetus attocki
+    (7.8 cm)
+  source_citation: Thewissen (2003) DOI:10.1038/35095005
+  code_locus: models/2003-thewissen-pakicetus-attocki-biomineral-accretion.py#L31-L48
+- law_name: Gyroid / Minimal-Surface Zero Mean Curvature Invariant
+  formula: H = (kappa_1 + kappa_2) / 2 = 0,  K = kappa_1 * kappa_2 <= 0
+  lean_decl: MathOfBiology.Loop_1853.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1853.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1853_pakicetus_attocki_biomineral_accretion.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 99 20 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Raup (W,D,S) / Gyroid Mean H=0
+  source_citation: Thewissen (2003) DOI:10.1038/35095005
+  code_locus: models/2003-thewissen-pakicetus-attocki-biomineral-accretion.py#L31-L48

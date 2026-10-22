@@ -1,0 +1,84 @@
+sim_id: wolfram-conus-textile-rule30
+math_family: Elementary Cellular Automata (GF(2)), Neurosecretory Mantle Threshold Automaton & Reaction-Diffusion PDE
+equations:
+  - law_name: Wolfram (1983, 1984) Rule 30 Boolean & GF(2) Algebraic Normal Form
+    formula: "a_{t+1, i} = a_{t, i-1} ⊕ (a_{t, i} ∨ a_{t, i+1}) ≡ a_{t, i-1} + a_{t, i} + a_{t, i+1} + a_{t, i} a_{t, i+1} (mod 2)"
+    lean_decl: MathOfBiology.rule30
+    lean_theorem: MathOfBiology.rule30_anf_equiv
+    lean_locus: morphoeval/lean/MathOfBiology.lean#L21-L37
+    lean_code: |
+      def rule30 (p q r : Bool) : Bool := bne p (q || r)
+      def rule30_anf (p q r : Bool) : Bool := bne (bne p q) (bne r (q && r))
+      theorem rule30_anf_equiv (p q r : Bool) : rule30 p q r = rule30_anf p q r := by
+        cases p <;> cases q <;> cases r <;> rfl
+    variables: "a_{t,i} ∈ {0, 1}: pigment state at mantle cell i and step t; ⊕: XOR; ∨: OR"
+    role: Discrete chaotic generator of self-similar white triangular tents on Conus textile shells and OEIS A051023 center column
+    source_citation: "Wolfram (1983) Rev. Mod. Phys. 55:601; (1984) Nature 311:419"
+    code_locus: 1984-wolfram-conus-textile-rule30.py#L96-L152
+  - law_name: Erica Jen (1990) Left-Bijective Spatial Inverse & Diagonal Period-Doubling Recursion
+    formula: "a_{t, i-1} = a_{t+1, i} ⊕ (a_{t, i} ∨ a_{t, i+1}),   d_k(t+1) = d_{k-2}(t) ⊕ (d_{k-1}(t) ∨ d_k(t))"
+    lean_decl: MathOfBiology.rule30_left_inverse
+    lean_theorem: MathOfBiology.jen_1990_left_bijective
+    lean_locus: morphoeval/lean/MathOfBiology.lean#L39-L61
+    lean_code: |
+      def rule30_left_inverse (a_next q r : Bool) : Bool := bne a_next (q || r)
+      theorem jen_1990_left_bijective (p q r : Bool) :
+          rule30_left_inverse (rule30 p q r) q r = p := by
+        cases p <;> cases q <;> cases r <;> rfl
+      theorem jen_1990_barrier_shielding (d_km2 d_k : Bool) :
+          jen_diagonal_step d_km2 true d_k = !d_km2 := by
+        cases d_km2 <;> cases d_k <;> rfl
+    variables: "d_k(t) = a_{t, k-t}: k-th left-cone diagonal; P_k = 2^m: exact temporal period doubling at k ∈ {0, 3, 8, 29, 400, ...}"
+    role: Proves exact left-bijectivity (0 bit errors) and explains why left-cone diagonals lock into period-doubling crystals separated by d_{k-1}=0 barriers
+    source_citation: "Jen (1990) Physica D 45(1-3):3-18 Theorem 1 & Section 2"
+    code_locus: 1984-wolfram-conus-textile-rule30.py#L172-L256
+  - law_name: Meinhardt & Klingler (1987) 3-Species Activator-Substrate-Hormone Mantle PDE
+    formula: "∂a/∂t = ρ s (a^2 / (1 + κ a^2) + ρ_0) - μ_a a + D_a ∂^2a/∂x^2,   ∂s/∂t = σ (h / (1 + γ h)) - ρ s a^2 - μ_s s + D_s ∂^2s/∂x^2"
+    lean_decl: MathOfBiology.meinhardt_activator_reaction
+    lean_theorem: MathOfBiology.meinhardt_basal_quiescence
+    lean_locus: morphoeval/lean/MathOfBiology.lean#L240-L255
+    lean_code: |
+      def meinhardt_activator_reaction (rho kappa rho0 mu_a : Nat) (a s : Nat) : Int :=
+        Int.ofNat (rho * s * (a * a + rho0 * (1 + kappa * a * a))) -
+          Int.ofNat (mu_a * a * (1 + kappa * a * a))
+      theorem meinhardt_basal_quiescence (rho kappa mu_a s : Nat) :
+          meinhardt_activator_reaction rho kappa 0 mu_a 0 s = 0 := by
+        simp [meinhardt_activator_reaction]
+    variables: "a(x,t): pigment activator; s(x,t): depleted substrate; h(x,t): fast-diffusing systemic hormone"
+    role: Continuous biochemical mechanism producing self-extinguishing pigment triangles and V-shaped travelling waves after mantle lesion
+    source_citation: "Meinhardt & Klingler (1987) J. Theor. Biol. 126(1):63-89 Eq. (1)-(3)"
+    code_locus: 1984-wolfram-conus-textile-rule30.py#L8598-L8640
+  - law_name: Ermentrout-Oster (1986) / Boettiger-Ermentrout-Oster (2009) Neurosecretory Mantle Threshold Isomorphism to Rule 30
+    formula: "S_{t+1,i} = H(∑_r W_E(r) A_{t,i+r} - ∑_r W_I(r) A_{t,i+r} - R_{t,i} - θ);   E(l,c,r) = 2l + c + r - cr ∈ [1, 2] ⟺ l ⊕ (c ∨ r)"
+    lean_decl: MathOfBiology.ermentrout_oster_neural_gate
+    lean_theorem: MathOfBiology.ermentrout_oster_neural_gate_eq_rule30
+    lean_locus: morphoeval/lean/MathOfBiology.lean#L256-L275
+    lean_code: |
+      def ermentrout_oster_net_excitation (l c r : Bool) : Nat :=
+        2 * (if l then 1 else 0) + (if c then 1 else 0) + (if r then 1 else 0) - (if c && r then 1 else 0)
+      def ermentrout_oster_neural_gate (l c r : Bool) : Bool :=
+        let e := ermentrout_oster_net_excitation l c r
+        decide (1 ≤ e ∧ e ≤ 2)
+      theorem ermentrout_oster_neural_gate_eq_rule30 (l c r : Bool) :
+          ermentrout_oster_neural_gate l c r = rule30 l c r := by
+        cases l <;> cases c <;> cases r <;> rfl
+    variables: "S_{t,i} ∈ {0,1}: mantle secretomotor firing; R_{t,i}: refractory inhibitor; E(l,c,r) ∈ {0,1,2,3}: 3-cell net synaptic drive"
+    role: Proves that the discrete 3-cell asymmetric threshold limit of the Ermentrout-Oster neural mantle model is algebraically isomorphic to Wolfram Rule 30
+    source_citation: "Ermentrout, Campbell & Oster (1986) The Veliger 28(4):369-388; Boettiger, Ermentrout & Oster (2009) PNAS 106(16):6837-6842"
+    code_locus: 1984-wolfram-conus-textile-rule30.py#L8453-L8523
+  - law_name: Molluscan Clade Wolfram Class II (Rule 90) vs. Class III (Rule 30) Boolean Jacobian & Chirality Dichotomy
+    formula: "Rule 90 (Oliva): ∂f/∂l = ∂f/∂r = 1, f(l,c,r) = f(r,c,l);   Rule 30 (Conus): ∂f/∂l = 1, ∂f/∂r = ¬c, f(1,1,0) ≠ f(0,1,1)"
+    lean_decl: MathOfBiology.rule90
+    lean_theorem: MathOfBiology.rule30_right_jacobian_center_gated
+    lean_locus: morphoeval/lean/MathOfBiology.lean#L277-L302
+    lean_code: |
+      def rule90 (l _c r : Bool) : Bool := bne l r
+      theorem rule90_reflection_symmetric (l c r : Bool) : rule90 l c r = rule90 r c l := by
+        cases l <;> cases r <;> rfl
+      theorem rule30_right_jacobian_center_gated (l c r : Bool) :
+          bne (rule30 l c r) (rule30 l c (!r)) = !c := by
+        cases l <;> cases c <;> cases r <;> rfl
+    variables: "∂f/∂l, ∂f/∂r: directional Boolean derivatives; ρ_carry = P(a_{t+1,i} ≠ l ⊕ r): 2D quadratic ANF carry density"
+    role: Resolves the 1D horizontal chord indiscriminability gap by proving why 2D tent-wall chirality and quadratic ANF carry separate Class III Conus (Rule 30) from Class II Oliva (Rule 90)
+    source_citation: "Waddington & Cowe (1969) J. Theor. Biol. 25:219; Wolfram (1984) Nature 311:419; Meinhardt (1995) Ch. 5-6"
+    code_locus: 1984-wolfram-conus-textile-rule30.py#L8526-L8595

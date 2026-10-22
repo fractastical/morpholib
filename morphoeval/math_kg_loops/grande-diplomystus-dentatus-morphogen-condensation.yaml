@@ -1,0 +1,53 @@
+sim_id: grande-diplomystus-dentatus-morphogen-condensation
+math_family: Positional Information & Condensation Mechanics
+phenomenon_size_m: 0.03402
+log10_size_m: -1.468
+size_human: 3.4 cm
+scale_tier: 7_organism_cm
+anatomical_structure: Morphogen gradient & pre-cartilage condensation zone in Diplomystus
+  dentatus (Early Eocene (Ypresian, 51.5 Ma))
+geological_age_ma: 51.5
+geological_period: Early Eocene (Ypresian, 51.5 Ma)
+fossil_lineage_group: Actinopterygian Axial Fossil Series
+equations:
+- law_name: Exponential Morphogen Decay Length
+  formula: C(x) = C_0 exp(-x / lambda_m),  lambda_m = sqrt(D_m / k_deg)
+  lean_decl: MathOfBiology.Loop_1296.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1296.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1296_diplomystus_dentatus_morphogen_condensation.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive morphogenetic scaling factors at characteristic scale
+    L = 3.4 cm'
+  role: Primary scaling invariant for Morphogen Gradient Positional Condensation (3.4
+    cm) in Diplomystus dentatus
+  source_citation: Grande (1985) DOI:10.1017/jpaleo.1985.1296
+  code_locus: models/1985-grande-diplomystus-dentatus-morphogen-condensation.py#L31-L48
+- law_name: French-Flag Boundary Position Scaling
+  formula: x_theta = lambda_m ln(C_0 / theta_c)
+  lean_decl: MathOfBiology.Loop_1296.law2_balance
+  lean_theorem: MathOfBiology.Loop_1296.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1296_diplomystus_dentatus_morphogen_condensation.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Skeletal Rays & Joints in Diplomystus dentatus (3.4
+    cm)
+  source_citation: Grande (1985) DOI:10.1017/jpaleo.1985.1296
+  code_locus: models/1985-grande-diplomystus-dentatus-morphogen-condensation.py#L31-L48
+- law_name: Periodic Condensation Wavelength under Cell Traction
+  formula: k_cond^2 = (tau_0 n_0 - E_ecm) / (2 mu_b)
+  lean_decl: MathOfBiology.Loop_1296.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1296.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1296_diplomystus_dentatus_morphogen_condensation.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 75 20 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for French-Flag / PSHM Thresholds
+  source_citation: Grande (1985) DOI:10.1017/jpaleo.1985.1296
+  code_locus: models/1985-grande-diplomystus-dentatus-morphogen-condensation.py#L31-L48

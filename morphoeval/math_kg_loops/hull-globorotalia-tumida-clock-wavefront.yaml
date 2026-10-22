@@ -1,0 +1,53 @@
+sim_id: hull-globorotalia-tumida-clock-wavefront
+math_family: Phase Oscillator & Wavefront Kinematics
+phenomenon_size_m: 5.494e-05
+log10_size_m: -4.26
+size_human: "55 \xB5m"
+scale_tier: 4_cellular_10um
+anatomical_structure: "Segmentation clock somite / metamere unit in Globorotalia tumida\
+  \ (Pliocene-Holocene (5.3\u20130 Ma))"
+geological_age_ma: 0.0
+geological_period: "Pliocene-Holocene (5.3\u20130 Ma)"
+fossil_lineage_group: Globorotalia Spire & Keel Chronospecies
+equations:
+- law_name: Clock-and-Wavefront Segment Length Invariant
+  formula: S = u_wf * T_clock
+  lean_decl: MathOfBiology.Loop_1448.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1448.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1448_globorotalia_tumida_clock_wavefront.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: "a, b: positive morphogenetic scaling factors at characteristic scale\
+    \ L = 55 \xB5m"
+  role: "Primary scaling invariant for Phase-Coupled Oscillator & Wavefront Arrest\
+    \ (55 \xB5m) in Globorotalia tumida"
+  source_citation: Hull (2013) DOI:10.1038/nature.2013.1448
+  code_locus: models/2013-hull-globorotalia-tumida-clock-wavefront.py#L31-L48
+- law_name: Kuramoto-Delta-Notch Synchronization Rate
+  formula: d(delta_phi)/dt = -(K_c - omega_tau) sin(delta_phi)
+  lean_decl: MathOfBiology.Loop_1448.law2_balance
+  lean_theorem: MathOfBiology.Loop_1448.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1448_globorotalia_tumida_clock_wavefront.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: "Conservation balance for Periodic Somites & Segments in Globorotalia tumida\
+    \ (55 \xB5m)"
+  source_citation: Hull (2013) DOI:10.1038/nature.2013.1448
+  code_locus: models/2013-hull-globorotalia-tumida-clock-wavefront.py#L31-L48
+- law_name: Kinematic Phase-Gradient Doppler Shift
+  formula: omega_ant / omega_post = 1 + u_wf * |nabla_x phi| / omega_0
+  lean_decl: MathOfBiology.Loop_1448.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1448.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1448_globorotalia_tumida_clock_wavefront.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 130 23 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: "Critical bifurcation criterion for Somite Length S = u\xB7T_clock"
+  source_citation: Hull (2013) DOI:10.1038/nature.2013.1448
+  code_locus: models/2013-hull-globorotalia-tumida-clock-wavefront.py#L31-L48

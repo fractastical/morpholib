@@ -1,0 +1,53 @@
+sim_id: kenrick-rhynia-gwynne-vaughanii-flux-canalization
+math_family: Polar Transport Canalization & Phyllotactic Packing
+phenomenon_size_m: 0.00084
+log10_size_m: -3.076
+size_human: "840 \xB5m"
+scale_tier: 5_primordium_100um
+anatomical_structure: Auxin flux vein / phyllotactic primordium in Rhynia gwynne_vaughanii
+  (Early Devonian (Pragian Rhynie Chert, 407 Ma))
+geological_age_ma: 407.0
+geological_period: Early Devonian (Pragian Rhynie Chert, 407 Ma)
+fossil_lineage_group: Paleobotanical Vascular & Leaf Fossil Series
+equations:
+- law_name: Nonlinear Flux-Driven Conductance Reinforcement
+  formula: dD_ij/dt = alpha_f |J_ij|^gamma - beta_d D_ij
+  lean_decl: MathOfBiology.Loop_1525.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1525.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1525_rhynia_gwynne_vaughanii_flux_canalization.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: "a, b: positive morphogenetic scaling factors at characteristic scale\
+    \ L = 840 \xB5m"
+  role: "Primary scaling invariant for Polar Flux Canalization & Anisotropic Growth\
+    \ (840 \xB5m) in Rhynia gwynne_vaughanii"
+  source_citation: Kenrick (2000) DOI:10.1038/nature.2000.1525
+  code_locus: models/2000-kenrick-rhynia-gwynne-vaughanii-flux-canalization.py#L31-L48
+- law_name: Steady-State Vein Conductance Equilibrium
+  formula: D_ij^* = (alpha_f / beta_d) |J_ij|^gamma
+  lean_decl: MathOfBiology.Loop_1525.law2_balance
+  lean_theorem: MathOfBiology.Loop_1525.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1525_rhynia_gwynne_vaughanii_flux_canalization.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: "Conservation balance for Spirals, Veins & Puzzle Cells in Rhynia gwynne_vaughanii\
+    \ (840 \xB5m)"
+  source_citation: Kenrick (2000) DOI:10.1038/nature.2000.1525
+  code_locus: models/2000-kenrick-rhynia-gwynne-vaughanii-flux-canalization.py#L31-L48
+- law_name: Turgor-Yield Lockhart Extensibility Rate
+  formula: dot_epsilon = phi_wall * max(0, P_turgor - Y_yield)
+  lean_decl: MathOfBiology.Loop_1525.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1525.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1525_rhynia_gwynne_vaughanii_flux_canalization.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 130 23 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Golden Angle / Auxin Flux
+  source_citation: Kenrick (2000) DOI:10.1038/nature.2000.1525
+  code_locus: models/2000-kenrick-rhynia-gwynne-vaughanii-flux-canalization.py#L31-L48

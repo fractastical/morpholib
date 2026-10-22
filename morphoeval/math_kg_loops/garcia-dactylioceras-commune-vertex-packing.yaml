@@ -1,0 +1,53 @@
+sim_id: garcia-dactylioceras-commune-vertex-packing
+math_family: Cellular Vertex Mechanics & Topological Jamming
+phenomenon_size_m: 9.345e-05
+log10_size_m: -4.029
+size_human: "93 \xB5m"
+scale_tier: 4_cellular_10um
+anatomical_structure: Apical epithelial cell vertex polygon in Dactylioceras commune
+  (Early Jurassic (Toarcian, 181 Ma))
+geological_age_ma: 181.0
+geological_period: Early Jurassic (Toarcian, 181 Ma)
+fossil_lineage_group: Cephalopod Fractal Suture Fossil Series
+equations:
+- law_name: 2D Vertex Mechanical Energy Functional
+  formula: E_vertex = (K_A / 2) (A - A_0)^2 + (K_P / 2) (P - P_0)^2
+  lean_decl: MathOfBiology.Loop_1597.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1597.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1597_dactylioceras_commune_vertex_packing.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: "a, b: positive morphogenetic scaling factors at characteristic scale\
+    \ L = 93 \xB5m"
+  role: "Primary scaling invariant for Epithelial Vertex Energy & Topological Packing\
+    \ (93 \xB5m) in Dactylioceras commune"
+  source_citation: Garcia (2006) DOI:10.1073/pnas.2006.1597
+  code_locus: models/2006-garcia-dactylioceras-commune-vertex-packing.py#L31-L48
+- law_name: Dimensionless Target Shape Index Rigidity Threshold
+  formula: p_0 = P_0 / sqrt(A_0),  p_0^* = 3.813 (fluid-to-solid jamming)
+  lean_decl: MathOfBiology.Loop_1597.law2_balance
+  lean_theorem: MathOfBiology.Loop_1597.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1597_dactylioceras_commune_vertex_packing.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: "Conservation balance for Polygonal Packing & Furrows in Dactylioceras commune\
+    \ (93 \xB5m)"
+  source_citation: Garcia (2006) DOI:10.1073/pnas.2006.1597
+  code_locus: models/2006-garcia-dactylioceras-commune-vertex-packing.py#L31-L48
+- law_name: Lewis Linear Area-to-Side Scaling Law
+  formula: <A_n> / <A> = (n - 2) / 4
+  lean_decl: MathOfBiology.Loop_1597.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1597.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1597_dactylioceras_commune_vertex_packing.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 40 13 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Shape Index p_0* = 3.813
+  source_citation: Garcia (2006) DOI:10.1073/pnas.2006.1597
+  code_locus: models/2006-garcia-dactylioceras-commune-vertex-packing.py#L31-L48

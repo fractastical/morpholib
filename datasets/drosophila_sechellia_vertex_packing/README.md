@@ -1,0 +1,15 @@
+# Dataset: `drosophila_sechellia_vertex_packing` (Slot #2715 — *Drosophila sechellia* · `5.5 µm`)
+
+- **Organism (*Ousia*)**: *Drosophila sechellia* (Seychelles Morinda-Specialist Fly (Loss of Larval Shavenbaby Trichomes))
+- **Characteristic Phenomenon Size**: `5.5 µm` (`5.482e-06 m`, `log10 = -5.261`, Tier `3_subcellular_um`)
+- **Anatomical / Developmental / Connectomic Structure**: Apical epithelial cell vertex polygon in Drosophila sechellia (Seychelles Morinda-Specialist Fly)
+- **Geological Horizon**: Holocene (Extant) (`0 Ma`)
+- **Evolutionary / Scale Lineage Group**: Sophophora melanogaster Subgroup Radiation (0–12 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 5. Vertex / Potts / Nematics (V. Vertex Models, Jamming & Active Nematics)
+- **External Multi-Modal Atlases**:
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

@@ -18,17 +18,38 @@ model_spec:
     B_feedforward: 1.0
     stensola_modules_cm: [38.0, 54.0, 76.0, 108.0]
     seed: 2008
+    pass3_border_reset:
+      arena_side_cm: 150.0
+      session_s: 600.0
+      dt_s: 0.1
+      sigma_drift_cm_per_sqrt_s: 1.0
+      gain_miscalibration: 0.03
+      border_zone_cm: 5.0
+      reset_gain: 1.0
+      n_trials: 16
+      sigma_sweep: [0.25, 0.5, 1.0, 1.5, 2.0]
+    pass3_hcn1_resonance:
+      g_h_over_g_L: 0.5
+      membrane_tau_ms: 12.0
+      tau_h_dorsal_ms: 80.0
+      tau_h_ventral_ms: 160.0
+      hcn1_ko_tau_h_factor: 2.5
+      hcn1_ko_g_h_factor: 0.6
+  pass3_border_reset_model: "e(t+dt) = e(t) + g v(t) dt + sigma sqrt(dt) xi(t);  wall contact |x_i| > L - d_border  ==>  e_i <- (1 - reset_gain) e_i"
+  pass3_hcn1_resonance_model: "C dV/dt = -g_L V - g_h w + I,  tau_h dw/dt = V - w,  Z(omega) = 1/(g_L + g_h/(1 + i omega tau_h) + i omega C),  beta_m = beta_1 (f_res(m)/f_res(1))^2"
   inputs:
     - datasets/grid_cell_hexagonal_attractor/grid_cell_hexagonal_attractor_reference.json
     - datasets/grid_cell_hexagonal_attractor/rat_entorhinal_hippocampal_specimen.jpg
     - datasets/grid_cell_hexagonal_attractor/scout_manifest.json
     - datasets/grid_cell_hexagonal_attractor/paper_citations.bib
+    - datasets/grid_cell_hexagonal_attractor/border_reset_hcn1_reference.json
+    - datasets/grid_cell_hexagonal_attractor/pass3_citations.bib
 equations:
   - law_name: "Burak & Fiete (2009) / Hafting et al. (2005) Resonant Triad Wavevector Closure & 60 deg Hexagonal Planform Selection Law"
     formula: "k_1 + k_2 + k_3 = 0, |k_i| = k_c  ==>  Delta_E_3^(hex)(A) = 6 * A^3 > 0 = Delta_E_3^(sq)(A)  ==>  G_60^(hex) > 1.0 > G_60^(sq)"
     lean_decl: "MathOfBiology.Loop_088.hex_cubic_triad_gain"
     lean_theorem: "MathOfBiology.Loop_088.hexagonal_resonant_triad_selection"
-    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L21-L65"
+    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L26-L72"
     lean_code: |
       def hex_ring_norm_sq (kx ky : Int) : Int :=
         kx * kx + 3 * ky * ky
@@ -59,12 +80,12 @@ equations:
     variables: "k_1, k_2, k_3: 120 deg critical-ring wavevectors satisfying k_1 + k_2 + k_3 = 0; A > 0: Fourier mode amplitude; hex_cubic_triad_gain(A): cubic energy gain from rectified [u]_+ positivity"
     role: "Proves that three 120 deg wavevectors on the surround-inhibition Fourier ring form a closed resonant triad k_1 + k_2 + k_3 = 0 with strictly positive cubic rectification gain 6*A^3 > 0, selecting 60 deg hexagonal grid-cell lattices over non-resonant 90 deg square modes"
     source_citation: "Burak & Fiete (2009) PLoS Comput. Biol. 5(2):e1000291 Figs. 1-2; Hafting et al. (2005) Nature 436:801-806 Fig. 1"
-    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L90-L185"
+    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L100-L198"
   - law_name: "Burak & Fiete (2009) 4-Subpopulation Asymmetric Shift & Linear Velocity Path Integration Law"
     formula: "(1 + alpha * v) * l * T - (1 - alpha * v) * l * T = 2 * alpha * l * v * T;   l = 0 or alpha = 0 ==> Delta_Phi = 0"
     lean_decl: "MathOfBiology.Loop_088.burak_phase_shift"
     lean_theorem: "MathOfBiology.Loop_088.burak_fiete_velocity_path_integration"
-    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L68-L120"
+    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L76-L128"
     lean_code: |
       def burak_phase_shift (alpha l v T : Int) : Int :=
         2 * alpha * l * v * T
@@ -102,12 +123,12 @@ equations:
     variables: "alpha: velocity modulation gain; l: outgoing kernel shift along preferred head direction e_hat(theta); v: animal velocity; T: integration interval"
     role: "Proves that opposing head-direction subpopulations cancel baseline drift B and translate the hexagonal bump attractor strictly proportionally to displacement v*T, whereas symmetric weights (l=0) or medial-septum inactivation (alpha=0) pin the attractor phase (Delta_Phi = 0)"
     source_citation: "Burak & Fiete (2009) PLoS Comput. Biol. 5(2):e1000291 Eqs. 1-3 & Fig. 2; Brandon et al. (2011) Science 332:595-599"
-    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L188-L320"
+    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L275-L441"
   - law_name: "Stensola et al. (2012) Discrete Dorso-Ventral MEC Grid Module Scale Ratio sqrt(2) & Area Doubling Law"
     formula: "lambda_{m+1} / lambda_m = sqrt(2) approx 1.4142  ==>  lambda_{m+1}^2 = 2 * lambda_m^2,   lambda_{m+2} = 2 * lambda_m"
     lean_decl: "MathOfBiology.Loop_088.module_area_sq"
     lean_theorem: "MathOfBiology.Loop_088.stensola_discrete_module_area_doubling"
-    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L123-L157"
+    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L132-L166"
     lean_code: |
       def module_area_sq (lambda_1_sq : Nat) (m : Nat) : Nat :=
         (2 ^ m) * lambda_1_sq
@@ -132,4 +153,65 @@ equations:
     variables: "lambda_1_sq: dorsal Module M1 squared grid period; m in {0, 1, 2, 3}: discrete dorso-ventral MEC module index; stensola_wavelength_cm(m): empirical rat module wavelengths {38, 54, 76, 108} cm"
     role: "Proves that the Stensola et al. (2012) sqrt(2) scale ratio doubles the hexagonal unit-cell area at each discrete dorso-ventral module transition (8x across M1->M4) and doubles linear wavelength every two modules"
     source_citation: "Stensola et al. (2012) Nature 492(7427):72-78 Figs. 1-3"
-    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L322-L415"
+    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L443-L494"
+  - law_name: "Hardcastle, Ganguli & Giocomo (2015) Border-Cell Boundary Resetting Bounds Diffusive Path-Integration Drift Law (Pass 3)"
+    formula: "Var_free(n) = n sigma^2 (additive, unbounded);  Var_reset(n, k) = (n - k) sigma^2 <= Var_free(n);  n - k <= w  ==>  Var_reset <= w sigma^2"
+    lean_decl: "MathOfBiology.Loop_088.reset_drift_var"
+    lean_theorem: "MathOfBiology.Loop_088.border_reset_bounds_drift_variance"
+    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L170-L209"
+    lean_code: |
+      def free_drift_var (sigma_sq n : Nat) : Nat :=
+        n * sigma_sq
+      def reset_drift_var (sigma_sq n k : Nat) : Nat :=
+        (n - k) * sigma_sq
+      theorem border_reset_bounds_drift_variance (sigma_sq n m k w : Nat) (hw : n - k ≤ w) :
+          free_drift_var sigma_sq (n + m) = free_drift_var sigma_sq n + free_drift_var sigma_sq m ∧
+          reset_drift_var sigma_sq n k ≤ free_drift_var sigma_sq n ∧
+          reset_drift_var sigma_sq n n = 0 ∧
+          reset_drift_var sigma_sq n 0 = free_drift_var sigma_sq n ∧
+          reset_drift_var sigma_sq n k ≤ free_drift_var sigma_sq w ∧
+          free_drift_var 1 600 = 600 := by
+        refine ⟨?_, ?_, ?_, ?_, ?_, by decide⟩
+        · dsimp [free_drift_var]
+          exact Nat.add_mul n m sigma_sq
+        · dsimp [reset_drift_var, free_drift_var]
+          exact Nat.mul_le_mul_right sigma_sq (Nat.sub_le n k)
+        · dsimp [reset_drift_var]
+          simp
+        · dsimp [reset_drift_var, free_drift_var]
+        · dsimp [reset_drift_var, free_drift_var]
+          exact Nat.mul_le_mul_right sigma_sq hw
+    variables: "sigma_sq: per-step phase-error variance (spiking/synaptic noise, Burak & Fiete 2009 D ~ 1/N); n: integration steps; k: step of last border-cell wall contact; w: maximal inter-contact interval"
+    role: "Proves that boundary-blind path integration accumulates error variance linearly in time (diffusive drift) while border-cell resetting (Solstad et al. 2008) bounds the variance by the time since the last wall contact, uniformly in session length when contacts recur (Hardcastle et al. 2015)"
+    source_citation: "Hardcastle K, Ganguli S, Giocomo LM (2015) Neuron 86(3):827-839; Solstad T et al. (2008) Science 322:1865-1868; Burak & Fiete (2009) Fig. 6"
+    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L548-L703"
+    code_locus_secondary: "2008-burak-grid-cell-hexagonal-attractor.py#L513-L545"
+  - law_name: "Giocomo et al. (2007, 2011) HCN1 h-Current Resonance Time Constant -> Mexican-Hat Kernel Width / Grid Scale Inverse Law (Pass 3)"
+    formula: "omega_0^2 C tau_h = g_L + g_h  (tau_h -> k tau_h scales the product by k);  lambda_pred(m) = lambda_1 f_1 / f_m  (f_m <= f_1  ==>  lambda_pred >= lambda_1;  f_m = f_1  ==>  lambda_pred = lambda_1)"
+    lean_decl: "MathOfBiology.Loop_088.hcn_lambda_pred"
+    lean_theorem: "MathOfBiology.Loop_088.hcn1_resonance_inverse_scale_law"
+    lean_locus: "morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean#L213-L248"
+    lean_code: |
+      def hcn_omega_sq_c_tau (omega_sq C tau : Nat) : Nat :=
+        omega_sq * (C * tau)
+      def hcn_lambda_pred (lambda_1 f_1 f_m : Nat) : Nat :=
+        lambda_1 * f_1 / f_m
+      theorem hcn1_resonance_inverse_scale_law (omega_sq C tau k lambda_1 f_1 f_m : Nat)
+          (hf : 0 < f_m) (hle : f_m ≤ f_1) :
+          hcn_omega_sq_c_tau omega_sq C (k * tau) = k * hcn_omega_sq_c_tau omega_sq C tau ∧
+          hcn_lambda_pred lambda_1 f_1 f_1 = lambda_1 ∧
+          lambda_1 ≤ hcn_lambda_pred lambda_1 f_1 f_m ∧
+          hcn_lambda_pred 38 522 377 = 52 := by
+        have hf1 : 0 < f_1 := Nat.lt_of_lt_of_le hf hle
+        refine ⟨?_, ?_, ?_, by decide⟩
+        · dsimp [hcn_omega_sq_c_tau]
+          rw [Nat.mul_left_comm C k tau, Nat.mul_left_comm omega_sq k (C * tau)]
+        · dsimp [hcn_lambda_pred]
+          exact Nat.mul_div_cancel lambda_1 hf1
+        · dsimp [hcn_lambda_pred]
+          exact (Nat.le_div_iff_mul_le hf).mpr (Nat.mul_le_mul_left lambda_1 hle)
+    variables: "omega_0: natural resonance angular frequency of the linearised I_h membrane; C: capacitance; tau_h: h-current activation time constant (dorsal 80 ms -> ventral 160 ms; HCN1-/- x 2.5); g_L, g_h: leak and h conductances; lambda_1, f_1: dorsal M1 calibration wavelength and resonance frequency; f_m: module resonance frequency"
+    role: "Proves that slowing the HCN1 h-current lowers the stellate resonance frequency (omega_0^2 ~ 1/tau_h) and that the imposed Giocomo (2007) inverse law beta_m = beta_1 (f_m/f_1)^2 widens the Mexican-hat kernel and expands grid spacing monotonically, reproducing the M1 calibration exactly; the script shows the resulting M4/M1 prediction (1.39) under-predicts Stensola (2.84)"
+    source_citation: "Giocomo LM et al. (2007) Science 315:1719-1722; Giocomo LM, Hasselmo ME (2008) J. Neurosci. 28:9414-9425; Giocomo LM et al. (2011) Cell 147:1159-1170; Hutcheon B, Yarom Y (2000) Trends Neurosci. 23:216-222"
+    code_locus: "2008-burak-grid-cell-hexagonal-attractor.py#L709-L852"
+    code_locus_secondary: "2008-burak-grid-cell-hexagonal-attractor.py#L443-L494"

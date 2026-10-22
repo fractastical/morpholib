@@ -22,11 +22,40 @@ model_spec:
     N_stem_cells: 240
     N_pile_threshold: 55
     seed: 2020
+    pass3_lattice_nx_ny_nz: "8x8x7"
+    pass3_lattice_nodes: 456
+    pass3_lattice_springs: 3085
+    pass3_k_spring: 300.0
+    pass3_zeta_damping: 0.85
+    pass3_mass: 1.0
+    pass3_g: 9.81
+    pass3_mu_friction_uniform: 0.65
+    pass3_stokes_drag_gamma: 2.0
+    pass3_dt_s: 0.002
+    pass3_t_settle_s: 1.0
+    pass3_gait_search_candidates: 10
+    pass3_stokeslet_eps: 0.12
+    pass3_boundary_ds: 0.10
+    pass3_pocket_depth_r_in: 0.25
+    pass3_cell_radius_a: 0.06
+    pass3_wall_mobility: 0.35
+    pass3_tau_adhesion: 0.6
+    pass3_orbit_radius: 2.8
+    pass3_arena_radius: 5.0
+    pass3_T_total: 70.0
+  pass3_additional_equations:
+    lattice_node_ode: "m x_i'' = sum_j [k_ij(|x_j - x_i| - L_ij(t)) - c (v_j - v_i).d_ij] d_ij - m g z + F_ground(x_i, v_i) - gamma v_i"
+    ground_contact: "F_n = k_g max(0, -z) - c_g z';  F_t = -mu F_n v_t / (|v_t| + v_eps)"
+    regularized_stokeslet_2d: "u(x) = (1/4 pi mu) sum_k [ -(ln r_eps + 1/2 - eps^2/r_eps^2) f_k + (f_k . x_k) x_k / r_eps^2 ],  r_eps^2 = |x - x_k|^2 + eps^2"
+    squirmer_mobility: "sum_k S_eps(p_j - p_k) f_k = U + Omega z x p_j + u_slip(p_j);  sum_k f_k = 0;  sum_k p_k x f_k = 0"
+    cell_advection: "x_c' = m_wall u(x_c);  capture if (|x_b| < R and |phi_b| < theta/2) or (contact dwell >= tau_adh on front half)"
   inputs:
     - datasets/xenobot_evolutionary_biobots/xenobot_evolutionary_biobots_reference.json
     - datasets/xenobot_evolutionary_biobots/xenopus_biobot_specimen.jpg
     - datasets/xenobot_evolutionary_biobots/scout_manifest.json
     - datasets/xenobot_evolutionary_biobots/paper_citations.bib
+    - datasets/xenobot_evolutionary_biobots/lattice3d_stokes_capture_reference.json
+    - datasets/xenobot_evolutionary_biobots/pass3_citations.bib
 equations:
   - law_name: "Kriegman et al. (2020) Voxel Spring-Lattice Actuation & Passive Ectoderm Volume Invariance Law"
     formula: "L_{ij}(t) = L_{ij,0}(1 + ε_act a_{ij} sin(ω t + φ_{ij}));   a_{ij}=0 ⟹ L_{ij}(t)=L_{ij,0};   L_{ij}(+s)+L_{ij}(-s)=2L_{ij,0}"
@@ -48,7 +77,7 @@ equations:
     variables: "L_{ij,0}: rest spring length between adjacent voxels; a_{ij} in {0,1}: tissue type (0 = passive ectoderm, 1 = contractile cardiac progenitor); epsilon_act = 0.18: volumetric contraction strain; f_act = 1.5 Hz: cardiac contraction frequency"
     role: "Governs rhythmic volumetric actuation of contractile cardiac voxels while enforcing strict rest-volume invariance in passive animal-cap ectoderm voxels"
     source_citation: "Kriegman, Blackiston, Levin & Bongard (2020) PNAS 117(4):1853-1859 SI Appendix S1; Cheney et al. (2013) GECCO pp. 167-174"
-    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L125-L215"
+    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L170-L271"
   - law_name: "Ventral-Concavity Asymmetric Substrate Ratchet & Dorsal Inversion Collapse Law"
     formula: "Δx_stride(μ_ant, μ_post, e) = (μ_ant - μ_post) e;   μ_ant = μ_post ⟹ Δx_stride = 0;   Δx_stride(μ_post, μ_ant, e) = -Δx_stride(μ_ant, μ_post, e)"
     lean_decl: "MathOfBiology.Loop_083.xenobot_stride"
@@ -69,7 +98,7 @@ equations:
     variables: "mu_ant = 0.65: anterior ventral leg substrate friction; mu_post = 0.18: posterior ventral leg substrate friction; e: cyclic ventral cardiac contraction stroke"
     role: "Proves that ventral-concavity bipedal leg asymmetry rectifies zero-mean cardiac oscillations into net forward locomotion, whereas 180-deg dorsal inversion equalizes contact friction and collapses net propulsion"
     source_citation: "Kriegman, Blackiston, Levin & Bongard (2020) PNAS 117(4):1853-1859 Figs. 1-3"
-    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L220-L360"
+    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L274-L415"
   - law_name: "AFPO Phase-Robustness Transferability & Pac-Man Kinematic Self-Replication Law"
     formula: "T_sim2real(F_det, F_rob) = I(F_det ≥ F_min ∧ F_rob ≥ F_rob_min);   N_daughters(θ_mouth) = floor(η_sweep(θ_mouth) v_orbit ρ_free / N_thresh)"
     lean_decl: "MathOfBiology.Loop_083.kinematic_daughter_generations"
@@ -90,4 +119,60 @@ equations:
     variables: "F_det: synchronous cardiac phase displacement (body lengths); F_rob: phase-randomized cardiomyocyte displacement; eta_mouth(theta_mouth): C-shaped Pac-Man concavity sweeping efficiency; N_thresh = 55: critical stem-cell pile size for self-sustaining daughter spheroid compaction"
     role: "Formalizes the Kriegman et al. (2020) phase-randomization sim-to-real transferability filter and the Kriegman et al. (2021) C-shaped Pac-Man kinematic self-replication advantage over spherical morphologies"
     source_citation: "Kriegman et al. (2020) PNAS 117:1853-1859 Fig. 2; Kriegman et al. (2021) PNAS 118:e2112672118 Figs. 1-4"
-    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L365-L520"
+    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L417-L536"
+  - law_name: "Regularised-Stokeslet Force-Free Cancellation & Squirmer Mobility Superposition Law (Pass 3)"
+    formula: "Σ_k c f_k = c Σ_k f_k = 0 for a force-free body;   U(β) = U0 + β U1,  U(β₁+β₂) = U(β₁) + β₂ U1"
+    lean_decl: "MathOfBiology.Loop_083.squirmer_velocity"
+    lean_theorem: "MathOfBiology.Loop_083.stokeslet_force_free_cancellation_and_mobility_superposition"
+    lean_locus: "morphoeval/lean/loops/Loop_083_xenobot_evolutionary_biobots.lean#L101-L135"
+    lean_code: |
+      def stokeslet_constant_part (c f1 f2 f3 : Int) : Int :=
+        c * f1 + c * f2 + c * f3
+      def squirmer_velocity (U0 U1 beta : Int) : Int :=
+        U0 + beta * U1
+      theorem stokeslet_force_free_cancellation_and_mobility_superposition
+          (c f1 f2 f3 U0 U1 b1 b2 : Int) (hff : f1 + f2 + f3 = 0) :
+          stokeslet_constant_part c f1 f2 f3 = 0 ∧
+          squirmer_velocity U0 U1 0 = U0 ∧
+          squirmer_velocity U0 U1 1 = U0 + U1 ∧
+          squirmer_velocity U0 U1 (b1 + b2) = squirmer_velocity U0 U1 b1 + b2 * U1 := by
+        refine ⟨?_, ?_, ?_, ?_⟩
+        · unfold stokeslet_constant_part
+          rw [← Int.mul_add, ← Int.mul_add, hff, Int.mul_zero]
+        · simp [squirmer_velocity]
+        · simp [squirmer_velocity]
+        · simp [squirmer_velocity, Int.add_mul]
+          omega
+    variables: "f_k: regularised Stokeslet strengths on the parent boundary; c: the common scalar part of the 2D kernel (-(1/2) constant and far-field -ln r); U0, U1: rigid velocity at zero and unit left/right ciliary turn bias; beta: turn bias"
+    role: "Guarantees that the force-free squirmer flow has no net-Stokeslet (log) far field and that the mobility is affine in the turn bias, which is how the orbit radius is fitted and the precessing orbit is driven without re-solving the boundary integral"
+    source_citation: "Cortez (2001) SIAM J. Sci. Comput. 23:1204-1225 (regularised Stokeslets); Blake (1971) J. Fluid Mech. 46:199-208 (squirmer); Kriegman et al. (2021) PNAS 118:e2112672118"
+    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L923-L1080"
+    code_locus_secondary: "2020-kriegman-xenobot-evolutionary-biobots.py#L1082-L1332"
+  - law_name: "3D Voxel Lattice Stokes-Drag Dissipation & Passive-Spring Rest Law (Pass 3)"
+    formula: "P_drag = γ v·v ≥ 0 for γ ≥ 0;   P_drag(γ=0) = 0;   a_ij = 0 ⟹ L_ij(t) = L_ij,0"
+    lean_decl: "MathOfBiology.Loop_083.drag_power"
+    lean_theorem: "MathOfBiology.Loop_083.lattice_drag_dissipation_nonneg_and_passive_spring_rest"
+    lean_locus: "morphoeval/lean/loops/Loop_083_xenobot_evolutionary_biobots.lean#L138-L166"
+    lean_code: |
+      def drag_power (gamma v : Int) : Int :=
+        gamma * (v * v)
+      theorem int_mul_self_nonneg (v : Int) : 0 ≤ v * v := by
+        rcases Int.le_total 0 v with h | h
+        · exact Int.mul_nonneg h h
+        · have h' : 0 ≤ -v := Int.neg_nonneg_of_nonpos h
+          have hm := Int.mul_nonneg h' h'
+          rwa [Int.neg_mul_neg] at hm
+      theorem lattice_drag_dissipation_nonneg_and_passive_spring_rest
+          (gamma v L0 eps s : Int) (hg : 0 ≤ gamma) :
+          0 ≤ drag_power gamma v ∧
+          drag_power 0 v = 0 ∧
+          voxel_rest_length L0 0 eps s = L0 := by
+        refine ⟨?_, ?_, ?_⟩
+        · exact Int.mul_nonneg hg (int_mul_self_nonneg v)
+        · simp [drag_power]
+        · simp [voxel_rest_length]
+    variables: "gamma: per-node Stokes drag coefficient (non-dimensional, default 2.0); v: node velocity; L_ij,0: spring rest length; a_ij: fraction of cardiac voxels adjoining the spring (0 for passive-only springs)"
+    role: "Explains the monotone fitness decrease with Stokes drag (gamma in {0,1,2,4,8}) and the zero locomotion of the passive_only_control body in the 8x8x7 lattice"
+    source_citation: "Kriegman, Blackiston, Levin & Bongard (2020) PNAS 117(4):1853-1859 SI Appendix S1 (VoxCAD 8x8x7 workspace); Hiller & Lipson (2014) Soft Robotics 1:88-101 (VoxCAD dynamics)"
+    code_locus: "2020-kriegman-xenobot-evolutionary-biobots.py#L674-L917"
+    code_locus_secondary: "2020-kriegman-xenobot-evolutionary-biobots.py#L560-L672"

@@ -1,0 +1,15 @@
+# Dataset: `drosophila_simulans_branching_tree` (Slot #2706 — *Drosophila simulans* · `722 µm`)
+
+- **Organism (*Ousia*)**: *Drosophila simulans* (Cosmopolitan Sister Fruit Fly (Clasper Posterior Lobe Arc))
+- **Characteristic Phenomenon Size**: `722 µm` (`0.0007224 m`, `log10 = -3.141`, Tier `5_primordium_100um`)
+- **Anatomical / Developmental / Connectomic Structure**: Bifurcating vascular / bronchial / hyphal branch in Drosophila simulans (Cosmopolitan Sister Fruit Fly)
+- **Geological Horizon**: Holocene (Extant) (`0 Ma`)
+- **Evolutionary / Scale Lineage Group**: Sophophora melanogaster Subgroup Radiation (0–12 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 6. Tip-Splitting & Flow Trees (VI. Branching Morphogenesis & Vascular Networks)
+- **External Multi-Modal Atlases**:
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

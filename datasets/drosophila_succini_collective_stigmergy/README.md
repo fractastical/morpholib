@@ -1,0 +1,16 @@
+# Dataset: `drosophila_succini_collective_stigmergy` (Slot #3100 — *Drosophila succini* · `5.1 mm`)
+
+- **Organism (*Ousia*)**: *Drosophila succini* (Eocene Baltic Amber Stem Drosophilid (44 Ma Lutetian Amber Inclusion))
+- **Characteristic Phenomenon Size**: `5.1 mm` (`0.00513 m`, `log10 = -2.290`, Tier `6_organ_mm`)
+- **Anatomical / Developmental / Connectomic Structure**: Collective swarm / biofilm / colonial array in Drosophila succini (Eocene Baltic Amber Stem Drosophilid)
+- **Geological Horizon**: Middle Eocene (Lutetian Baltic Amber) (`44 Ma`)
+- **Evolutionary / Scale Lineage Group**: Cenozoic Amber Drosophilid Chronospecies (44 Ma Eocene → 0 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 10. Stigmergy & Active Swarms (X. Collective Migration, Biofilms & Eusocial Nests)
+- **External Multi-Modal Atlases**:
+  - [Paleobiology Database (PBDB) — Drosophila succini (Middle Eocene (Lutetian Baltic Amber))](https://paleobiodb.org/classic/checkTaxonInfo?taxon_name=Drosophila)
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

@@ -87,8 +87,14 @@ PASS3_REF_JSON_PATH = DATASET_DIR / "voronoi_ca_ip3_branching_reference.json"
 PASS3_BIB_PATH = DATASET_DIR / "pass3_citations.bib"
 
 EXPECTED_SHA256: dict[str, str] = {
+    # Pass 3 re-pin: the repository-wide commit 398c37e0 ("Replace synthetic planarian
+    # composites with 6 genuine published PlanformDB microscope photographs") replaced this
+    # specimen with a genuine published micrograph, invalidating the Pass 2 pin
+    # (466029cc0561067890bb0f69d224d8f799745eeb67a0699246107611737fb546).  The digest below
+    # is the currently committed specimen; all specimen-derived morphometrics in this script
+    # were re-measured against it during Pass 3.
     "datasets/bioelectric_morphogen_coupling/planarian_ap_polarity_specimen.jpg": (
-        "466029cc0561067890bb0f69d224d8f799745eeb67a0699246107611737fb546"
+        "0dde9f5e83a87dd9bdc3627e19ebc891cb4f8e99cf632fe637bccf082abfb990"
     ),
     "datasets/bioelectric_morphogen_coupling/scout_manifest.json": (
         "bc8a4a2c8e734e1dd555ef8630edf4c34c798ffd1588619a0289290cc42b8004"
@@ -1146,11 +1152,23 @@ def evaluate_pass3_network_suite(seed: int = 2017, n_cells: int = 420) -> dict[s
 def segment_planarian_specimen(specimen_path: Path = SPECIMEN_PATH) -> dict[str, Any]:
     """
     Segment the dorsal bright-field whole-mount micrograph of the freshwater planarian
-    (`datasets/bioelectric_morphogen_coupling/planarian_ap_polarity_specimen.jpg`, CC BY 2.5):
-      1. Segment the planarian body contour (x_min = 8 px anterior head tip to
-         x_max = 1486 px posterior tail tip, length = 1478 px) and dorsoventral width W(s).
-      2. Localize the bilateral pair of anterior photoreceptor ocelli (eyespots) via
-         local Gaussian contrast in the anterior head region (s < 0.22).
+    (`datasets/bioelectric_morphogen_coupling/planarian_ap_polarity_specimen.jpg`):
+      1. Segment the planarian body contour (luminance < 215, morphological closing, hole
+         filling, largest connected component — which also discards the top-left scale bar)
+         and the dorsoventral width profile W(s) over 60 AP bins.
+      2. Localize the bilateral pair of anterior photoreceptor ocelli (eyespots) via local
+         Gaussian background subtraction inside the anterior head region (s < 0.15), with
+         body-length-scaled kernels.
+
+    SPECIMEN PROVENANCE (Pass 3): Passes 1-2 used the 1493x564 px Wikimedia Commons
+    `File:Smediterranea.jpg` (CC BY 2.5), segmented length 1478 px, ocelli at x/L = 0.0528.
+    Campaign commit `398c37e0` ("Replace synthetic planarian composites with 6 genuine
+    published PlanformDB microscope photographs") replaced the vendored file with a 720x500 px
+    published PlanformDB bright-field photograph, which broke the Pass 2 SHA-256 pin.  Pass 3
+    re-pins to the committed photograph: segmented length 626 px, max width 167 px, aspect
+    ratio 3.75, N = 2 ocelli at x/L = 0.0565 and 0.0495 (mean 0.0530, separation 0.0454 L).
+    `scout_manifest.json` is itself SHA-256-pinned and still describes the Wikimedia original,
+    so it was deliberately NOT edited; the discrepancy is recorded in the dataset README.
     """
     img = np.asarray(Image.open(specimen_path).convert("RGB"))
     gray = 0.299 * img[:, :, 0] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 2]
@@ -1180,12 +1198,18 @@ def segment_planarian_specimen(specimen_path: Path = SPECIMEN_PATH) -> dict[str,
             widths_px[i] = float(col_y.max() - col_y.min())
             midline_y[i] = float(np.mean(col_y))
 
-    ant_limit = x_min + int(0.22 * (x_max - x_min))
+    ant_limit = x_min + int(0.15 * (x_max - x_min))
     ant_region = worm_mask.copy()
     ant_region[:, ant_limit:] = False
-    ant_interior = ndi.binary_erosion(worm_mask, iterations=8) & ant_region
+    # Pass 3: the ocelli kernels were tuned on the 1478 px-long Pass 1/2 specimen; the
+    # specimen committed in 398c37e0 is only ~626 px long, so the erosion and the local
+    # background sigma are scaled with the measured body length (with floors) instead of
+    # being hard-coded in pixels.  Without this the eroded anterior interior swallows the
+    # eyespots and the detector locks onto trunk pigmentation at x/L ~ 0.12.
+    scale_k = length_px / 1478.0
+    ant_interior = ndi.binary_erosion(worm_mask, iterations=max(6, int(round(8 * scale_k)))) & ant_region
 
-    local_bg = ndi.gaussian_filter(gray, sigma=12.0)
+    local_bg = ndi.gaussian_filter(gray, sigma=max(4.0, 12.0 * scale_k))
     dark_contrast = (local_bg - gray) * ant_interior
     thresh = float(np.percentile(dark_contrast[ant_interior], 96.5))
     ocelli_mask = ndi.binary_opening(dark_contrast > thresh, iterations=1)
@@ -1196,10 +1220,15 @@ def segment_planarian_specimen(specimen_path: Path = SPECIMEN_PATH) -> dict[str,
     ocelli_yx = sorted(ocelli_yx, key=lambda pt: pt[0])
     ocelli_xy = [[float(pt[1]), float(pt[0])] for pt in ocelli_yx]
     ocelli_rel_s = [(pt[0] - x_min) / length_px for pt in ocelli_xy]
+    inter_ocelli_px = float(
+        math.hypot(ocelli_xy[0][0] - ocelli_xy[1][0], ocelli_xy[0][1] - ocelli_xy[1][1])
+    )
 
     return {
         "image_rgb": img,
         "worm_mask": worm_mask,
+        "inter_ocelli_distance_px": inter_ocelli_px,
+        "inter_ocelli_distance_rel": inter_ocelli_px / max(1.0, length_px),
         "x_min": x_min,
         "x_max": x_max,
         "length_px": length_px,
@@ -1755,10 +1784,10 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "name": "Planarian specimen bilateral photoreceptor ocelli relative AP position",
             "value": round(spec["mean_ocelli_rel_s"], 4),
             "unit": "x / L (anterior fraction)",
-            "method": "Automated Gaussian local-contrast ocelli segmentation on planarian_ap_polarity_specimen.jpg (N=2 eyespots at x/L=0.0528)",
+            "method": "Automated Gaussian local-contrast ocelli segmentation (body-length-scaled kernels) on the vendored PlanformDB planarian_ap_polarity_specimen.jpg",
             "reference_value": 0.065,
-            "reference_source": "Vendored Schmidtea mediterranea dorsal specimen (CC BY 2.5, File:Smediterranea.jpg) & simulated anterior ERK head blastema peak x/L = 0.065",
-            "note": f"detected {spec['n_ocelli_detected']} bilateral ocelli at x/L = {[round(v, 4) for v in spec['ocelli_rel_s']]} (std = {np.std(spec['ocelli_rel_s']):.4f}), body length = {spec['length_px']:.0f} px",
+            "reference_source": "MODEL-SIDE reference, not an independent empirical datum: the eyespot AP position hard-coded in synthesize_2d_planarian_morphology() for the anterior ERK head domain (x/L = 0.065). This measurement is therefore a model-vs-specimen agreement check; an independently published Schmidtea mediterranea ocelli x/L value should replace it in Pass 4",
+            "note": f"detected {spec['n_ocelli_detected']} bilateral ocelli at x/L = {[round(v, 4) for v in spec['ocelli_rel_s']]} (std = {np.std(spec['ocelli_rel_s']):.4f}), separation = {spec['inter_ocelli_distance_rel']:.4f} L, body length = {spec['length_px']:.0f} px, aspect ratio = {spec['aspect_ratio']:.2f}; specimen replaced by campaign commit 398c37e0 (720x500 PlanformDB photograph, SHA-256 re-pinned in Pass 3)",
             "derived_from": "output",
         },
         {
@@ -1947,10 +1976,22 @@ def self_test() -> int:
     Vn = network_voltage_profile(net, -20.0, -60.0)
     lu_a = network_implicit_stepper(network_sg_operator(Vn, net, D=1.0, z=1.0, G_0=1.8), 2.0)
     lu_b = network_implicit_stepper(network_sg_operator(Vn, net, D=1.0, z=1.0, G_0=0.3), 2.0)
-    ca_, cb_ = np.ones(net["n_cells"]), np.ones(net["n_cells"])
-    for _ in range(1500):
-        ca_, cb_ = lu_a.solve(ca_), lu_b.solve(cb_)
-    assert float(np.max(np.abs(ca_ - cb_))) < 1e-6
+    # Relax each case to its own steady state (a fixed iteration count is not a fair
+    # comparison: the G_0 = 0.3 operator relaxes ~6x more slowly, so it would still be
+    # transient after the number of steps that converges G_0 = 1.8).
+    ab_steady = []
+    for lu_ in (lu_a, lu_b):
+        c_ = np.ones(net["n_cells"])
+        for _ in range(30000):
+            c_next = lu_.solve(c_)
+            converged = float(np.max(np.abs(c_next - c_))) < 1e-13
+            c_ = c_next
+            if converged:
+                break
+        else:
+            raise AssertionError("G_0 ablation did not reach steady state")
+        ab_steady.append(c_)
+    assert float(np.max(np.abs(ab_steady[0] - ab_steady[1]))) < 1e-6
 
     # 12. Coupled 5-HT/IP3/Ca2+ network: WT 5-HT enriches posterior, IP3 (z<0) and Ca2+
     #     (VGCC) enrich the anterior; the flat-V octanol and cryptic states are uniform & identical

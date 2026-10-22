@@ -49,7 +49,7 @@ equations:
     variables: "V(x,t): resting membrane potential (mV); V_hyper = -65 mV: posterior hyperpolarized attractor; V_thresh = -42.5 mV: unstable voltage threshold; V_depol = -20 mV: H,K-ATPase-depolarized anterior blastema attractor"
     role: "Establishes exact bistability of the resting membrane potential across the hyperpolarized posterior trunk state and the H,K-ATPase-depolarized anterior blastema state"
     source_citation: "Beane et al. (2011) Chem. Biol. 18(1):77-89 Fig. 2; Pietak & Levin (2017) J. R. Soc. Interface 14:20170425"
-    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L120-L195"
+    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L148-L226"
   - law_name: "Oviedo et al. (2010) & Pietak-Levin (2017) Voltage-Gated Gap-Junction Symmetry & Isolation Law"
     formula: "G_GJ(ΔV) = (1 - η_oct) G_0 / (1 + (ΔV / V_0)^2),   G_GJ(-ΔV) = G_GJ(ΔV),   0 < G_GJ(ΔV) ≤ G_0"
     lean_decl: "MathOfBiology.Loop_081.gj_bell_denom"
@@ -65,7 +65,7 @@ equations:
     variables: "ΔV = V_i - V_j: trans-junctional voltage difference; V_0: gap-junction half-inactivation voltage; G_0: maximal innexin conductance; η_oct: 8-octanol gap-junction blockade fraction"
     role: "Proves bidirectional symmetry and voltage-drop-induced closure of innexin gap junctions, allowing the depolarized anterior blastema to self-isolate from the hyperpolarized trunk"
     source_citation: "Oviedo et al. (2010) Dev. Biol. 339(1):188-199; Pietak & Levin (2017) J. R. Soc. Interface 14:20170425 Eq. (5)"
-    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L198-L285"
+    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L241-L260"
   - law_name: "Beane et al. (2011) Four Canonical Bioelectric Regeneration Phenotypes (1H1T, 0H2T, 2H0T)"
     formula: "Ca_ss(V) = (1 + exp(-(V - V_thresh)/k_V))^{-1};   (N_head, N_tail) = (1,1) [WT],  (0,2) [SCH-28080 / H,K-ATPase RNAi],  (2,0) [Ivermectin / 8-Octanol]"
     lean_decl: "MathOfBiology.Loop_081.planarian_head_tail_counts"
@@ -87,4 +87,74 @@ equations:
     variables: "V_ant = V(0,T), V_post = V(L,T): steady-state anterior and posterior blastema potentials; N_head, N_tail: regenerated head and tail counts"
     role: "Proves the four canonical experimental regeneration outcomes of Beane et al. (2011) and Oviedo et al. (2010): wild-type 1H1T, SCH-28080/RNAi 0H2T headless, ivermectin 2H0T double-headed, and 8-octanol 2H0T double-headed"
     source_citation: "Beane et al. (2011) Chem. Biol. 18(1):77-89 Figs. 1-6 & Table 1"
-    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L288-L410"
+    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L295-L444"
+  - law_name: "Pass 3 — 2D Finite-Volume Body-Mesh Gap-Junction Flux Conservation (Specimen-Silhouette Mesh)"
+    formula: "div_i = Σ_{j∈N(i)} G_ij (V_j - V_i),  G_ij = (1 - η_oct) G_edge / (1 + ((V_j - V_i)/V_0,edge)^2),  G_edge = G_0 r^2,  V_0,edge = V_0 / r;   Σ_i div_i = 0  (zero-flux Neumann margin)"
+    lean_decl: "MathOfBiology.Loop_081.edge_pair_sum"
+    lean_theorem: "MathOfBiology.Loop_081.mesh_gj_flux_conservation"
+    lean_locus: "morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean#L96-L123"
+    lean_code: |
+      def edge_pair_sum (fluxes : List Int) : Int :=
+        (fluxes.map (fun f => f + (-f))).foldr (· + ·) 0
+      theorem mesh_gj_flux_conservation (G Vi Vj : Int) (fluxes : List Int) :
+          G * (Vj - Vi) + G * (Vi - Vj) = 0 ∧
+          edge_pair_sum fluxes = 0 := by
+        refine ⟨?_, ?_⟩
+        · have h : (Vj - Vi) + (Vi - Vj) = 0 := by omega
+          rw [← Int.mul_add, h, Int.mul_zero]
+        · induction fluxes with
+          | nil => rfl
+          | cons f rest ih =>
+            simp only [edge_pair_sum, List.map_cons, List.foldr_cons] at ih ⊢
+            rw [ih, Int.add_right_neg]
+            rfl
+    variables: "V_i: cell-centred membrane potential on the 2D body mesh (mV); G_ij: voltage-gated innexin edge conductance; r = (n_x - 1)/(N_ref - 1): mesh cells per 1D cell; N(i): in-mask 4-neighbourhood"
+    role: "Guarantees that the 2D finite-volume solver on the segmented Schmidtea mediterranea silhouette conserves gap-junctional charge exactly, so 1D and 2D blastema phenotypes (1H1T / 0H2T / 2H0T) differ only through geometry (self-test check 9)"
+    source_citation: "Pietak & Levin (2017) J. R. Soc. Interface 14:20170425 (BETSE finite-volume gap-junction network); Beane et al. (2011) Chem. Biol. 18(1):77-89"
+    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L721-L749"
+    code_locus_secondary: "2011-beane-planarian-hk-atpase-anterior.py#L766-L867"
+  - law_name: "Pass 3 — Slit Midline Exclusion & Smed-slit RNAi Midline Collapse of the Photoreceptor Eye Field"
+    formula: "E(x,y) = H(x,y) (1 - S(y)) (1 - d^2),  S(y) = (1 - η_slit) exp(-(y/σ_slit)^2),  d = y / w_half(x);   S(0) = 1 ⇒ E(x,0) = 0;   η_slit = 1 ⇒ argmax_y E = 0 (midline collapse)"
+    lean_decl: "MathOfBiology.Loop_081.eye_field"
+    lean_theorem: "MathOfBiology.Loop_081.slit_midline_exclusion_and_collapse"
+    lean_locus: "morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean#L126-L148"
+    lean_code: |
+      def eye_field (H slit_free lateral : Int) : Int :=
+        H * slit_free * lateral
+      theorem slit_midline_exclusion_and_collapse (H d2 : Int) (hH : 0 ≤ H) (hd : 0 ≤ d2) :
+          eye_field H 0 (1 - 0) = 0 ∧
+          eye_field H 1 (1 - d2) ≤ eye_field H 1 (1 - 0) := by
+        refine ⟨by simp [eye_field], ?_⟩
+        have h1 : H * (1 - d2) ≤ H * (1 - 0) := Int.mul_le_mul_of_nonneg_left (by omega) hH
+        simpa [eye_field] using h1
+    variables: "H(x,y): Ca_v-gated head commitment on the 2D mesh; S(y): Smed-slit midline repellent stripe (σ_slit = 0.02 L a priori); N(y): Smed-netrin attractant (σ_netrin = 0.05 L); d: relative mediolateral coordinate; η_slit, η_netrin: RNAi knockdown fractions"
+    role: "Proves that the bilateral photoreceptor pair is excluded from the midline by Smed-slit and that silencing slit collapses both eye-field maxima onto the midline (cyclopic Smed-slit RNAi phenotype); the growth-cone model then routes visual axons along c(y) = k_netrin ∂_y N - k_slit ∂_y S with a Robo-Slit crossing switch (self-test check 10)"
+    source_citation: "Cebrià, Guo, Jopek & Newmark (2007) Dev. Biol. 307:394-406; Cebrià & Newmark (2005) Development 132:3691-3703; Kidd, Bland & Goodman (1999) Cell 96:785-794"
+    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L870-L947"
+    code_locus_secondary: "2011-beane-planarian-hk-atpase-anterior.py#L950-L1118"
+  - law_name: "Pass 3 — V_mem-Coupled Stochastic Neoblast Division Rate: Non-Negativity & Depolarisation Monotonicity"
+    formula: "λ_i(t) = λ_0 [1 + A_body a(t) + A_local w(s_i) m(t)] [1 + β_V (Ca_ss(V(s_i,t)) - 1/2)],  Ca_ss ∈ [0,1], 0 ≤ β_V ≤ 1;   λ_i ≥ 0,  ∂λ_i/∂Ca_ss ≥ 0;   P(head | progeny) = (1 - η_nif) Ca_ss(V_blastema)"
+    lean_decl: "MathOfBiology.Loop_081.vmem_rate_factor"
+    lean_theorem: "MathOfBiology.Loop_081.vmem_neoblast_rate_nonneg_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean#L151-L179"
+    lean_code: |
+      def vmem_rate_factor (b c : Int) : Int :=
+        2 + b * (c - 1)
+      theorem vmem_neoblast_rate_nonneg_monotone (b c1 c2 : Int)
+          (hb0 : 0 ≤ b) (hb2 : b ≤ 2) (hc0 : 0 ≤ c1) (hc : c1 ≤ c2) :
+          0 ≤ vmem_rate_factor b c1 ∧
+          vmem_rate_factor b c1 ≤ vmem_rate_factor b c2 ∧
+          vmem_rate_factor 0 c1 = 2 := by
+        refine ⟨?_, ?_, by simp [vmem_rate_factor]⟩
+        · have h1 : b * (-1) ≤ b * (c1 - 1) := Int.mul_le_mul_of_nonneg_left (by omega) hb0
+          have h2 : b * (-1) = -b := by simp
+          simp only [vmem_rate_factor]
+          omega
+        · have h1 : b * (c1 - 1) ≤ b * (c2 - 1) := Int.mul_le_mul_of_nonneg_left (by omega) hb0
+          simp only [vmem_rate_factor]
+          omega
+    variables: "λ_i: neoblast division intensity (h^-1); λ_0 = 0.02 h^-1 baseline; a(t): body-wide wound pulse (peak 6 h); m(t): missing-tissue signal (peak 47.8 h); β_V = 0.3: depolarisation coupling (β_V = 0 ablation); Ca_ss(V): L-type Ca_v open probability; η_nif: nifedipine block"
+    role: "Establishes well-posedness (non-negative Poisson intensity) and monotone depolarisation-dependence of the V_mem-coupled stochastic neoblast division model whose progeny populate the blastema and adopt head/tail identity through the Ca_v gate (self-test check 12)"
+    source_citation: "Wenemoser & Reddien (2010) Dev. Biol. 344:979-991; Guedelhoefer & Sánchez Alvarado (2012) Development 139:3510-3520; Beane et al. (2011) Chem. Biol. 18(1):77-89 Fig. 5"
+    code_locus: "2011-beane-planarian-hk-atpase-anterior.py#L1124-L1262"
+    code_locus_secondary: "2011-beane-planarian-hk-atpase-anterior.py#L1265-L1308"

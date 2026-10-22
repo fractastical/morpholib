@@ -18,6 +18,18 @@ model_spec:
     b_MD_deprived: -0.36
     b_MD_reverse: 0.28
     seed: 1989
+    pass3_lambda_orientation_um: 700.0
+    pass3_coupling_D_um2: 4500.0
+    pass3_blob_selectivity_suppression: 0.6
+    pass3_coupling_sweep_scales: [0.0, 0.25, 0.5, 1.0]
+    pass3_operculum_amplitude_um: 1000.0
+    pass3_operculum_width_um: 2000.0
+    pass3_calcarine_depth_um: 1600.0
+    pass3_calcarine_width_um: 500.0
+    pass3_perimeter_semi_axes_um: [3000.0, 2900.0]
+    pass3_heat_cfl: 0.2
+  orientation_coupling: "dz/dt = A*(I_z*z)*C_Delta - gamma*z - |z|^2 z + div(D_c w n n^T grad z) - beta_blob S_Delta^2 z,  z = r exp(2 i theta),  n = grad S_Delta/|grad S_Delta|"
+  curved_manifold: "g_ij = delta_ij + h_i h_j,  Delta_g f = (1/sqrt g) d_i(sqrt g g^{ij} d_j f),  I * S = H_{sigma_E^2/2} S - kappa_I H_{sigma_I^2/2} S  (Laplace-Beltrami heat kernels, zero-flux elliptical perimeter)"
   inputs:
     - datasets/ocular_dominance_stripes/ocular_dominance_stripes_reference.json
     - datasets/ocular_dominance_stripes/odc_tangential_pattern_specimen.png
@@ -58,7 +70,7 @@ equations:
     variables: "S_L, S_R: left-eye and right-eye geniculocortical synaptic densities in V1 Layer IVC; S_Sigma = S_L + S_R: conserved total synaptic density; S_Delta = S_L - S_R: ocular dominance difference mode; C_LL, C_LR: within-eye and between-eye LGN activity correlations; C_Delta = C_LL - C_LR: difference correlation"
     role: "Proves that subtractive homeostatic normalization identically conserves total cortical synaptic weight (dS_Sigma/dt = 0) while decoupling the ocular dominance difference mode S_Delta = S_L - S_R so that positive difference correlation C_Delta = C_LL - C_LR > 0 strictly amplifies eye-specific segregation"
     source_citation: "Miller, Keller & Stryker (1989) Science 245(4918):605-615 Eqs. 1-6"
-    code_locus: "1989-miller-ocular-dominance-stripes.py#L84-L165"
+    code_locus: "1989-miller-ocular-dominance-stripes.py#L95-L222"
   - law_name: "Swindale (1980) & Miller, Keller & Stryker (1989) Mexican-Hat Band-Pass Peak Wavenumber & Characteristic Column Wavelength Law"
     formula: "k_c^2 = 2 * ln(kappa_I * sigma_I^2 / sigma_E^2) / (sigma_I^2 - sigma_E^2) > 0;   lambda_c = 2 * pi / k_c = 2 * w_col approx 800 um"
     lean_decl: "MathOfBiology.Loop_087.mexican_hat_denom"
@@ -84,7 +96,7 @@ equations:
     variables: "sigma_E, sigma_I: intracortical excitatory and inhibitory lateral interaction ranges (109 um, 218 um); kappa_I: relative inhibitory amplitude (0.75); k_c: fastest-growing Fourier wavenumber; lambda_c = 2 * w_col: full-cycle ocular dominance band wavelength (800 um for 400 um single-eye column width)"
     role: "Proves positivity of the Mexican-hat Fourier band-pass denominator sigma_I^2 - sigma_E^2 > 0 and inhibitory moment ratio kappa_I * sigma_I^2 / sigma_E^2 = 3 > 1, selecting the characteristic macaque V1 Layer IVC stripe wavelength lambda_c ~ 800 um (400 um per single-eye column)"
     source_citation: "Miller, Keller & Stryker (1989) Science 245:605-615; Swindale (1980) Proc. R. Soc. B 208:243-264; Hubel, Wiesel & LeVay (1977) Phil. Trans. R. Soc. B 278:377-409"
-    code_locus: "1989-miller-ocular-dominance-stripes.py#L112-L195"
+    code_locus: "1989-miller-ocular-dominance-stripes.py#L117-L199"
   - law_name: "Hubel, Wiesel & LeVay (1977) Monocular Deprivation Territory Shift vs Stryker & Harris (1986) Bilateral TTX Blockade Law"
     formula: "f_L(Delta_MD) = 0.5 - Delta_MD < 0.5 < f_R(Delta_MD) = 0.5 + Delta_MD, f_L + f_R = 1;   C_Delta = 0 ==> omega(k) = -gamma < 0"
     lean_decl: "MathOfBiology.Loop_087.deprived_eye_pct"
@@ -122,4 +134,67 @@ equations:
     variables: "delta_md > 0: monocular deprivation competitive shift (percentage points); deprived_eye_pct, open_eye_pct: Layer IVC cortical territory percentages occupied by deprived and open eyes; dispersion_omega(C_Delta, AK_hat, gamma): Fourier growth rate under bilateral TTX blockade (C_Delta = 0)"
     role: "Proves that critical-period monocular deprivation shifts cortical territory away from 50/50 symmetry (shrinking deprived-eye stripes to 24% and expanding open-eye columns to 76% while conserving total area 100%), whereas bilateral TTX blockade (C_Delta = 0) makes omega(k) = -gamma < 0 for all wavenumbers and prevents column segregation"
     source_citation: "Hubel, Wiesel & LeVay (1977) Phil. Trans. R. Soc. B 278(961):377-409; Stryker & Harris (1986) J. Neurosci. 6(8):2117-2133"
-    code_locus: "1989-miller-ocular-dominance-stripes.py#L198-L345"
+    code_locus: "1989-miller-ocular-dominance-stripes.py#L210-L303"
+  - law_name: "Swindale (1992) & Obermayer & Blasdel (1993) Orthogonal Iso-Orientation / Ocular Dominance Border Coupling Quadratic Form (Pass 3)"
+    formula: "dz/dt = A*(I_z*z)*C_Delta - gamma*z - |z|^2 z + div(D_c * w * n n^T grad z) - beta_blob * S_Delta^2 * z,  n = grad S_Delta/|grad S_Delta|;   v^T (g g^T) v = (g . v)^2 >= 0, = 0 iff grad theta _|_ grad S_Delta"
+    lean_decl: "MathOfBiology.Loop_087.coupling_form"
+    lean_theorem: "MathOfBiology.Loop_087.orthogonal_coupling_quadratic_form"
+    lean_locus: "morphoeval/lean/loops/Loop_087_ocular_dominance_stripes.lean#L164-L202"
+    lean_code: |
+      def dot2 (g1 g2 v1 v2 : Int) : Int :=
+        g1 * v1 + g2 * v2
+      def coupling_form (g1 g2 v1 v2 : Int) : Int :=
+        dot2 g1 g2 v1 v2 * dot2 g1 g2 v1 v2
+      theorem orthogonal_coupling_quadratic_form (g1 g2 v1 v2 : Int)
+          (h_orth : g1 * v1 + g2 * v2 = 0) :
+          coupling_form g1 g2 v1 v2 = 0 ∧
+          (∀ a b c d : Int, coupling_form a b c d ≥ 0) ∧
+          coupling_form 3 4 (-4) 3 = 0 ∧
+          coupling_form 3 4 3 4 = 625 ∧
+          coupling_form 3 4 3 4 > coupling_form 3 4 (-4) 3 := by
+        refine ⟨?_, ?_, by decide, by decide, by decide⟩
+        · dsimp [coupling_form, dot2]
+          rw [h_orth]
+          rfl
+        · intro a b c d
+          dsimp [coupling_form]
+          rcases Int.le_total 0 (dot2 a b c d) with h | h
+          · exact Int.mul_nonneg h h
+          · exact Int.mul_nonneg_of_nonpos_of_nonpos h h
+    variables: "z = r exp(2 i theta): complex orientation preference field (r selectivity, theta preferred orientation); g = grad S_Delta: ocular dominance gradient (normal to OD borders); v = grad z: orientation gradient; D_c = 4500 um^2: anisotropic coupling diffusivity; w = |g|^2/(|g|^2 + eps^2): border weight; beta_blob = 0.6: selectivity suppression at OD column centres"
+    role: "Proves the Pass 3 anisotropic coupling tensor n n^T is positive semidefinite (its quadratic form (g . v)^2 is non-negative), so the coupling is a stable gradient flow whose energy vanishes exactly when the orientation gradient is orthogonal to the OD gradient, i.e. when iso-orientation contours cross OD borders at right angles; the script measures the resulting intersection angle (coupled ~67 deg vs uncoupled ablation ~42 deg, random baseline 45 deg), pinwheel density and CO-blob-like low-selectivity patches at OD column centres"
+    source_citation: "Swindale (1992) Biol. Cybern. 66(3):217-230; Obermayer & Blasdel (1993) J. Neurosci. 13(10):4114-4129; Horton & Hubel (1981) Nature 292:762-764; Kaschube et al. (2010) Science 330:1113-1116"
+    code_locus: "1989-miller-ocular-dominance-stripes.py#L366-L524"
+    code_locus_secondary: "1989-miller-ocular-dominance-stripes.py#L309-L359"
+  - law_name: "Curved Riemannian V1 Sheet Chart Projection Compression of the Intrinsic Stripe Period (Pass 3)"
+    formula: "g_ij = delta_ij + h_i h_j;  Delta_g f = (1/sqrt g) d_i(sqrt g g^{ij} d_j f);  I * S = H_{sigma_E^2/2} S - kappa_I H_{sigma_I^2/2} S;   lambda_chart^2 (1 + slope^2) = lambda^2  ==>  lambda_chart^2 <= lambda^2"
+    lean_decl: "MathOfBiology.Loop_087.intrinsic_period_sq"
+    lean_theorem: "MathOfBiology.Loop_087.curved_chart_projection_compression"
+    lean_locus: "morphoeval/lean/loops/Loop_087_ocular_dominance_stripes.lean#L205-L239"
+    lean_code: |
+      def chart_metric (slope_sq : Int) : Int :=
+        1 + slope_sq
+      def intrinsic_period_sq (lambda_chart_sq slope_sq : Int) : Int :=
+        lambda_chart_sq * chart_metric slope_sq
+      theorem curved_chart_projection_compression (lambda_chart_sq slope_sq : Int)
+          (h_slope : slope_sq ≥ 0) (h_pos : lambda_chart_sq ≥ 0) :
+          lambda_chart_sq ≤ intrinsic_period_sq lambda_chart_sq slope_sq ∧
+          intrinsic_period_sq lambda_chart_sq 0 = lambda_chart_sq ∧
+          intrinsic_period_sq (400 * 400) 3 = 800 * 800 ∧
+          chart_metric slope_sq ≥ 1 := by
+        refine ⟨?_, ?_, by decide, ?_⟩
+        · dsimp [intrinsic_period_sq, chart_metric]
+          have h_prod : lambda_chart_sq * slope_sq ≥ 0 := Int.mul_nonneg h_pos h_slope
+          have h_expand : lambda_chart_sq * (1 + slope_sq) = lambda_chart_sq + lambda_chart_sq * slope_sq := by
+            rw [Int.mul_add, Int.mul_one]
+          rw [h_expand]
+          omega
+        · dsimp [intrinsic_period_sq, chart_metric]
+          omega
+        · dsimp [chart_metric]
+          omega
+    variables: "h(u,v): cortical height field over the 6.4 mm chart (operculum dome amplitude 1000 um / width 2000 um, calcarine groove depth 1600 um / width 500 um); g_ij: induced metric, sqrt g <= 2.44; H_t: Laplace-Beltrami heat kernel (Gaussian of width sigma == heat flow for time sigma^2/2); lambda: intrinsic stripe period (~800 um); lambda_chart: period seen in the flat chart; slope^2 = h'^2 along the chart direction"
+    role: "Proves that on the curved V1 sheet the intrinsic stripe period selected by the Mexican-hat band-pass is invariant while its chart projection is compressed by 1/sqrt(1 + slope^2) (equality only in the flat limit); the script realises the Mexican hat as a difference of Laplace-Beltrami heat kernels with zero-flux elliptical perimeter and measures intrinsic lambda_g ratio (calcarine wall / flat) ~1.07, chart ratio ~0.72, and OD border / perimeter intersection angle ~70 deg (LeVay et al. 1985)"
+    source_citation: "Miller, Keller & Stryker (1989) Science 245:605-615; LeVay, Connolly, Houde & Van Essen (1985) J. Neurosci. 5(2):486-501"
+    code_locus: "1989-miller-ocular-dominance-stripes.py#L531-L731"
+    code_locus_secondary: "1989-miller-ocular-dominance-stripes.py#L309-L336"

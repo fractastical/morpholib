@@ -354,6 +354,7 @@ def build_unified_entries() -> list[dict[str, Any]]:
     c1000_path = ROOT / "morphoeval/runs/campaign_1000_expansion_summary.json"
     c500_path = ROOT / "morphoeval/runs/campaign_500_expansion_summary.json"
     c2100_path = ROOT / "morphoeval/runs/campaign_2100_scale_paleo_summary.json"
+    c3100_path = ROOT / "morphoeval/runs/campaign_3100_drosophila_summary.json"
     c_extra: list[dict[str, Any]] = []
     if c1000_path.exists():
         c_extra.extend(json.loads(c1000_path.read_text()))
@@ -361,6 +362,8 @@ def build_unified_entries() -> list[dict[str, Any]]:
         c_extra.extend(json.loads(c500_path.read_text()))
     if c2100_path.exists():
         c_extra.extend(json.loads(c2100_path.read_text()))
+    if c3100_path.exists():
+        c_extra.extend(json.loads(c3100_path.read_text()))
 
     entries: list[dict[str, Any]] = []
     for r in c100 + c_extra:

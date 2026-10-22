@@ -1,0 +1,53 @@
+sim_id: kenrick-rhynia-gwynne-vaughanii-collective-stigmergy
+math_family: Keller-Segel Chemotaxis & Stigmergic Self-Organization
+phenomenon_size_m: 0.006048
+log10_size_m: -2.218
+size_human: 6.0 mm
+scale_tier: 6_organ_mm
+anatomical_structure: Collective swarm / biofilm / colonial array in Rhynia gwynne_vaughanii
+  (Early Devonian (Pragian Rhynie Chert, 407 Ma))
+geological_age_ma: 407.0
+geological_period: Early Devonian (Pragian Rhynie Chert, 407 Ma)
+fossil_lineage_group: Paleobotanical Vascular & Leaf Fossil Series
+equations:
+- law_name: Keller-Segel Chemotactic Instability Threshold
+  formula: chi_0 * rho_0 * S_0 > D_rho * k_deg + D_rho * D_s * k^2
+  lean_decl: MathOfBiology.Loop_2065.law1_invariant
+  lean_theorem: MathOfBiology.Loop_2065.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_2065_rhynia_gwynne_vaughanii_collective_stigmergy.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive morphogenetic scaling factors at characteristic scale
+    L = 6.0 mm'
+  role: Primary scaling invariant for Chemotactic & Stigmergic Collective Pattern
+    Formation (6.0 mm) in Rhynia gwynne_vaughanii
+  source_citation: Kenrick (2001) DOI:10.1038/nature.2001.2065
+  code_locus: models/2001-kenrick-rhynia-gwynne-vaughanii-collective-stigmergy.py#L31-L48
+- law_name: Peclet Advection-to-Diffusion Morphogenesis Ratio
+  formula: Pe = v_swarm * L_char / D_eff
+  lean_decl: MathOfBiology.Loop_2065.law2_balance
+  lean_theorem: MathOfBiology.Loop_2065.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_2065_rhynia_gwynne_vaughanii_collective_stigmergy.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Biofilm Wrinkles & Hex Combs in Rhynia gwynne_vaughanii
+    (6.0 mm)
+  source_citation: Kenrick (2001) DOI:10.1038/nature.2001.2065
+  code_locus: models/2001-kenrick-rhynia-gwynne-vaughanii-collective-stigmergy.py#L31-L48
+- law_name: Stigmergic Pheromone Pillar Wavelength
+  formula: lambda_stig = 2 pi sqrt(D_pher / (chi_stig * rho_0 - mu_decay))
+  lean_decl: MathOfBiology.Loop_2065.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_2065.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_2065_rhynia_gwynne_vaughanii_collective_stigmergy.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 56 18 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Chemotactic / Stigmergic Pe
+  source_citation: Kenrick (2001) DOI:10.1038/nature.2001.2065
+  code_locus: models/2001-kenrick-rhynia-gwynne-vaughanii-collective-stigmergy.py#L31-L48

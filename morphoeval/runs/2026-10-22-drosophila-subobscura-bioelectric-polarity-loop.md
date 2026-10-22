@@ -1,0 +1,9 @@
+# 12-Step Drosophila Loop Report: `huey-drosophila-subobscura-bioelectric-polarity` (Slot #2909)
+
+- **Organism**: *Drosophila subobscura* (Palearctic Latitudinal Wing-Size Cline Fly (50-Year Global Bergmann Cline))
+- **Characteristic Phenomenon Size**: `2.5 µm` (`2.482e-06 m`, Tier `3_subcellular_um`)
+- **Anatomical / Connectomic Structure**: Gap-junction bioelectric domain & ion-channel patch in Drosophila subobscura (Palearctic Latitudinal Wing-Size Cline Fly)
+- **Geological Horizon**: Holocene (Extant) (`0 Ma`)
+- **Score Trajectory**: `55.5` (Pass 1) → **`94.7`** (Pass 2, `+39.2`)
+- **Lean 4 Module**: `morphoeval/lean/loops/Loop_2909_drosophila_subobscura_bioelectric_polarity.lean` (`0 sorry`)
+- **Empirical Fit**: Pearson $r = 0.99982$, RMSE $= 0.05870$

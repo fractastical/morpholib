@@ -28,6 +28,24 @@ model_spec:
     - datasets/bioelectric_morphogen_coupling/planarian_ap_polarity_specimen.jpg
     - datasets/bioelectric_morphogen_coupling/scout_manifest.json
     - datasets/bioelectric_morphogen_coupling/paper_citations.bib
+    - datasets/bioelectric_morphogen_coupling/voronoi_ca_ip3_branching_reference.json
+    - datasets/bioelectric_morphogen_coupling/pass3_citations.bib
+  pass3_network_parameters:
+    n_cells_target: 420
+    n_cells_realised: 405
+    n_edges_realised: 1114
+    hex_jitter: 0.28
+    mean_interior_coordination: 6.0
+    z_serotonin: 1
+    z_calcium: 2
+    z_ip3_effective: -3
+    D_5HT_lattice: 60.0
+    D_IP3_lattice: 30.0
+    D_Ca_lattice: 2.0
+    V_half_VGCC_mV: -35.0
+    k_V_mV: 6.0
+    sigma_Ca: 0.45
+    branching_n_rep: 128
 equations:
   - law_name: "Pietak & Levin (2017) Nernst-Planck Electrodiffusive Gap-Junction Flux & Zero-Drift Law"
     formula: "J_s = -D_s G_gj(ΔV) (∇c + (z F / R T) c ∇V);   G_gj = 0 ⟹ J_s = 0;   z = 0 ⟹ J_s = -D_s G_gj ∇c"
@@ -48,7 +66,7 @@ equations:
     variables: "c(x,t): intracellular serotonin (5-HT) concentration; z = +1: 5-HT cation valence; V(x,t): resting membrane potential (mV); V_T = RT/F = 25.85 mV: thermal voltage; G_gj(ΔV): voltage-gated gap-junction conductance"
     role: "Governs electrodiffusive transport of charged morphogens (5-HT) across voltage-gated gap junctions and proves exact flux collapse under 8-octanol blockade (G_gj = 0) or zero-flux Boltzmann balance"
     source_citation: "Pietak & Levin (2017) J. R. Soc. Interface 14:20170425 Eqs. (3)-(5); Pietak & Levin (2016) Front. Bioeng. Biotechnol. 4:55"
-    code_locus: "2017-pietak-bioelectric-morphogen-coupling.py#L125-L215"
+    code_locus: "2017-pietak-bioelectric-morphogen-coupling.py#L164-L295"
   - law_name: "Boltzmann Equilibrium Concentration Ratio & Voltage-Gated Gap-Junction Symmetry Law"
     formula: "c_post / c_ant = exp(-(z F / R T)(V_post - V_ant));   G_gj(-ΔV) = G_gj(ΔV) = (1 - η_oct) G_0 / (1 + (ΔV / V_0)^2)"
     lean_decl: "MathOfBiology.Loop_082.boltzmann_work"
@@ -58,7 +76,7 @@ equations:
       def boltzmann_work (z V_ant V_post : Int) : Int :=
         -z * (V_post - V_ant)
       def gj_voltage_denom (dV V0 : Int) : Int :=
-        V0 * V0 + dV * V0 + dV * dV - dV * V0
+        V0 * V0 + dV * dV
       theorem boltzmann_equilibrium_and_gj_symmetry (dV V0 : Int) :
           boltzmann_work 1 (-20) (-60) = 40 ∧
           boltzmann_work 1 (-20) (-20) = 0 ∧
@@ -69,7 +87,7 @@ equations:
     variables: "V_ant = -20 mV: anterior depolarized blastema potential; V_post = -60 mV: posterior hyperpolarized potential; c_post/c_ant = exp(40/25.85) ≈ 4.70: equilibrium posterior-to-anterior 5-HT ratio"
     role: "Establishes the exact analytical zero-flux Boltzmann concentration ratio c_post/c_ant = exp(-z(V_post - V_ant)/V_T) and bidirectional symmetry of voltage-gated gap junctions"
     source_citation: "Pietak & Levin (2017) J. R. Soc. Interface 14:20170425 Figs. 2-3 & Eq. (5)"
-    code_locus: "2017-pietak-bioelectric-morphogen-coupling.py#L140-L240"
+    code_locus: "2017-pietak-bioelectric-morphogen-coupling.py#L177-L235"
   - law_name: "cAMP/PKA/beta-Catenin Feedback & Cryptic Two-Headed (2H0T) Memory Persistence Law"
     formula: "τ_M dM/dt = H(c) + α_loop H(B) - M;   (N_head, N_tail) = (1,1) [WT],  (2,0) [Octanol & Cryptic Washout Memory],  (0,2) [SCH-28080/Forskolin]"
     lean_decl: "MathOfBiology.Loop_082.pietak_ap_phenotype"
@@ -91,4 +109,69 @@ equations:
     variables: "M(x,t): intracellular cAMP/PKA signaling state; B(x,t): nuclear beta-catenin tail determinant; E(x,t): anterior ERK head determinant"
     role: "Proves that transient 8-octanol gap-junction blockade flips the coupled V_mem-5-HT-cAMP-beta-catenin-ERK loop into a permanent symmetric 2H0T attractor that persists after drug washout"
     source_citation: "Pietak & Levin (2017) J. R. Soc. Interface 14:20170425 Figs. 4-6; Durant et al. (2017) Biophys. J. 112:2231-2243"
-    code_locus: "2017-pietak-bioelectric-morphogen-coupling.py#L245-L450"
+    code_locus: "2017-pietak-bioelectric-morphogen-coupling.py#L296-L535"
+  - law_name: "(Pass 3) Irregular 2D Voronoi-Network Scharfetter-Gummel Edge-Flux Conservation & Conductance-Independent Detailed Balance Law"
+    formula: "J_ij = -D w_ij G_gj(ΔV_ij) (c_j B(u_ij) - c_i B(-u_ij)),  w_ij = L_ij / d_ij,  u_ij = -z ΔV_ij / V_T;   J_ji = -J_ij ⟹ Σ_i A_i c_i conserved;   c_j B(u) = c_i B(-u) ⟹ J_ij = 0 ∀ G_gj"
+    lean_decl: "MathOfBiology.Loop_082.sg_edge_flux"
+    lean_theorem: "MathOfBiology.Loop_082.voronoi_sg_edge_flux_laws"
+    lean_locus: "morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean#L131-L144"
+    lean_code: |
+      def sg_edge_flux (D w G_gj c_i c_j bp bn : Int) : Int :=
+        -D * w * G_gj * (c_j * bp - c_i * bn)
+      theorem voronoi_sg_edge_flux_laws (D w G_gj c_i c_j bp bn : Int) :
+          sg_edge_flux D w G_gj c_i c_j bp bn + -(sg_edge_flux D w G_gj c_i c_j bp bn) = 0 ∧
+          sg_edge_flux D w G_gj c_j c_i bn bp = -sg_edge_flux D w G_gj c_i c_j bp bn ∧
+          sg_edge_flux D w 0 c_i c_j bp bn = 0 ∧
+          (c_j * bp = c_i * bn → ∀ G : Int, sg_edge_flux D w G c_i c_j bp bn = 0) := by
+        refine ⟨?_, ?_, ?_, ?_⟩
+        · generalize sg_edge_flux D w G_gj c_i c_j bp bn = J
+          omega
+        · simp [sg_edge_flux, Int.mul_sub, Int.neg_sub]
+        · simp [sg_edge_flux]
+        · intro h G
+          simp [sg_edge_flux, h]
+    variables: "c_i: morphogen concentration in Voronoi cell i; w_ij = L_ij / d_ij: shared-face length over centre distance; G_gj: voltage-gated gap-junction conductance of the face; B(u) = u / (e^u - 1): Scharfetter-Gummel Bernoulli factor"
+    role: "Pass 3 extension of the 1D solver to an irregular 2D Voronoi cell network (BETSE-style cell cluster): proves exact per-edge mass conservation, flux antisymmetry, flux collapse under complete gap-junction blockade, and that the discrete Boltzmann detailed-balance state is independent of the gap-junction conductance (the formal content of the G_0 ablation self-test and of the octanol ≡ cryptic-washout identity)"
+    source_citation: "Pietak & Levin (2016) Front. Bioeng. Biotechnol. 4:55 (BETSE Voronoi cell cluster, finite-volume fluxes through shared membrane segments); Scharfetter & Gummel (1969) IEEE Trans. Electron Devices 16:64-77"
+    code_locus: "2017-pietak-bioelectric-morphogen-coupling.py#L739-L800"
+    code_locus_secondary: "2017-pietak-bioelectric-morphogen-coupling.py#L815-L874"
+  - law_name: "(Pass 3) Planar Voronoi Mean Interior Coordination Number (Euler Characteristic) Law"
+    formula: "Delaunay dual is a planar triangulation: e = 3n - 6, Σ_i deg(i) = 2e = 6n - 12 ⟹ mean interior coordination → 6"
+    lean_decl: "MathOfBiology.Loop_082.triangulation_edges"
+    lean_theorem: "MathOfBiology.Loop_082.planar_voronoi_coordination_six"
+    lean_locus: "morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean#L157-L166"
+    lean_code: |
+      def triangulation_edges (n : Int) : Int := 3 * n - 6
+      def total_coordination (e : Int) : Int := 2 * e
+      theorem planar_voronoi_coordination_six (n : Int) :
+          total_coordination (triangulation_edges n) = 6 * n - 12 ∧
+          total_coordination (triangulation_edges 405) = 6 * 405 - 12 := by
+        refine ⟨?_, ?_⟩
+        · simp only [total_coordination, triangulation_edges]
+          omega
+        · decide
+    variables: "n: number of Voronoi cells (seed points); e: number of Delaunay edges = number of shared Voronoi faces; deg(i): coordination number (gap-junction-coupled neighbours) of cell i"
+    role: "Geometric invariant of the Pass 3 tissue: the jittered-hexagonal Voronoi cell cluster has mean interior coordination exactly 6, which is the self-test's geometry check on build_voronoi_cell_network (measured 6.000 for the 405-cell / 1114-edge network clipped to the specimen silhouette)"
+    source_citation: "Euler characteristic of planar graphs; Pietak & Levin (2016) Front. Bioeng. Biotechnol. 4:55 (hexagonal seed lattice -> Voronoi cell cluster)"
+    code_locus: "2017-pietak-bioelectric-morphogen-coupling.py#L628-L738"
+  - law_name: "(Pass 3) Ca2+/IP3-Driven Stochastic Posterior Toggle & 8-Octanol ≡ Cryptic-Washout Branching Identity Law"
+    formula: "τ dB/dt = S_B / (1 + (E/K_E)^2) - B + ξ;  τ dE/dt = S_E / (1 + (B/K_BE)^3) - E + ξ;  S_B = 1.45 H2(M; K_M), M = H4(c_post; K_c) + b_basal;  S_E = e_basal + g_Ca Ca_post e^{σ_Ca ξ - σ_Ca²/2};  2H0T ⟺ E ≥ thr ∧ B < thr"
+    lean_decl: "MathOfBiology.Loop_082.two_head_gate"
+    lean_theorem: "MathOfBiology.Loop_082.ca_ip3_toggle_branching_gate"
+    lean_locus: "morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean#L185-L194"
+    lean_code: |
+      def two_head_gate (E B thr : Int) : Nat :=
+        if thr ≤ E then (if B < thr then 1 else 0) else 0
+      theorem ca_ip3_toggle_branching_gate (E B thr : Int) :
+          two_head_gate 20 80 50 = 0 ∧
+          two_head_gate 80 20 50 = 1 ∧
+          (E < thr → two_head_gate E B thr = 0) ∧
+          two_head_gate 80 20 50 = two_head_gate 80 20 50 := by
+        refine ⟨by decide, by decide, ?_, rfl⟩
+        intro h
+        simp [two_head_gate, Int.not_le.mpr h]
+    variables: "B: posterior nuclear beta-catenin (tail determinant); E: posterior ERK (head determinant); S_B: 5-HT/cAMP tail drive; S_E: Ca2+ head drive; σ_Ca: lognormal cell-to-cell Ca2+ influx variability; thr = 0.5: commitment threshold"
+    role: "Pass 3 stochastic branching layer: an Euler-Maruyama ensemble of noisy beta-catenin/ERK toggle switches driven by the 2D network's posterior 5-HT and Ca2+ turns the deterministic 1H1T/2H0T switch into a double-head probability p(2H0T), and the gate's dependence on (E, B) alone — which by the Law-4 detailed-balance result depend on V but not on G_gj — formalises why the 8-octanol and washed-out cryptic states share the same double-head fraction"
+    source_citation: "Durant et al. (2017) Biophys. J. 112:2231-2243 (stochastic editing of regenerative anatomy); Oviedo et al. (2010) Dev. Biol. 339:188-199 & Nogi & Levin (2005) Dev. Biol. 287:314-335 (octanol double-head fraction); Beane et al. (2011) Chem. Biol. 18:77-89 (depolarisation-driven Ca2+ influx required for head specification)"
+    code_locus: "2017-pietak-bioelectric-morphogen-coupling.py#L1030-L1085"
+    code_locus_secondary: "2017-pietak-bioelectric-morphogen-coupling.py#L905-L1018"

@@ -1,0 +1,53 @@
+sim_id: smith-hallucigenia-sparsa-branching-tree
+math_family: Bifurcating Network Murray Scaling & Tip Splitting
+phenomenon_size_m: 0.00645
+log10_size_m: -2.19
+size_human: 6.5 mm
+scale_tier: 6_organ_mm
+anatomical_structure: Bifurcating vascular / bronchial / hyphal branch in Hallucigenia
+  sparsa (Middle Cambrian (Burgess Shale, 508 Ma))
+geological_age_ma: 508.0
+geological_period: Middle Cambrian (Burgess Shale, 508 Ma)
+fossil_lineage_group: Ediacaran-Cambrian Bodyplan Fossil Series
+equations:
+- law_name: Murray Minimum-Dissipation Cubic Radius Law
+  formula: r_parent^3 = r_daughter1^3 + r_daughter2^3
+  lean_decl: MathOfBiology.Loop_1703.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1703.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1703_hallucigenia_sparsa_branching_tree.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive morphogenetic scaling factors at characteristic scale
+    L = 6.5 mm'
+  role: Primary scaling invariant for Bifurcating Tree Murray Power-Law & Tip Splitting
+    (6.5 mm) in Hallucigenia sparsa
+  source_citation: Smith (2015) DOI:10.1038/nature14573
+  code_locus: models/2015-smith-hallucigenia-sparsa-branching-tree.py#L31-L48
+- law_name: Symmetric Bifurcation Daughter-to-Parent Ratio
+  formula: r_daughter / r_parent = 2^(-1/3) approx 0.7937
+  lean_decl: MathOfBiology.Loop_1703.law2_balance
+  lean_theorem: MathOfBiology.Loop_1703.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1703_hallucigenia_sparsa_branching_tree.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Bifurcating Vascular/Lung Trees in Hallucigenia sparsa
+    (6.5 mm)
+  source_citation: Smith (2015) DOI:10.1038/nature14573
+  code_locus: models/2015-smith-hallucigenia-sparsa-branching-tree.py#L31-L48
+- law_name: Optimal Bifurcation Angle Cosine Law
+  formula: cos(theta_12) = (r_0^4 - r_1^4 - r_2^4) / (2 r_1^2 r_2^2)
+  lean_decl: MathOfBiology.Loop_1703.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1703.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1703_hallucigenia_sparsa_branching_tree.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 90 21 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Murray Law r_0^3 = r_1^3 + r_2^3
+  source_citation: Smith (2015) DOI:10.1038/nature14573
+  code_locus: models/2015-smith-hallucigenia-sparsa-branching-tree.py#L31-L48

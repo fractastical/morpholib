@@ -1,0 +1,57 @@
+sim_id: prindle-biofilm-potassium-percolation-ca
+math_family: 2D Greenberg-Hastings Excitable Ion-Channel Cellular Automaton & Directed Percolation
+equations:
+  - law_name: Greenberg-Hastings 3-State YugO K+ Channel Refractory Wave Annihilation Law
+    formula: "s_{t+1} = 1 if (s_t = 0 ∧ comp ∧ nbr_fire), 2 if (s_t = 1), 0 if (s_t = 2);   s_t = 1 ⟹ s_{t+1} = 2"
+    lean_decl: MathOfBiology.BiofilmPotassiumPercolationCA.biofilm_ca_step
+    lean_theorem: MathOfBiology.BiofilmPotassiumPercolationCA.biofilm_refractory_prevents_backfire
+    lean_locus: morphoeval/lean/loops/Loop_prindle_biofilm_potassium_percolation_ca.lean#L27-L44
+    lean_code: |
+      def biofilm_ca_step (competent : Bool) (state : Nat) (neighbor_firing : Bool) : Nat :=
+        if state == 0 then
+          if competent && neighbor_firing then 1 else 0
+        else if state == 1 then
+          2
+        else
+          0
+      theorem biofilm_refractory_prevents_backfire (competent neighbor_firing : Bool) :
+          biofilm_ca_step competent 1 neighbor_firing = 2 ∧
+          biofilm_ca_step competent 2 neighbor_firing = 0 := by
+        simp [biofilm_ca_step]
+    variables: "state ∈ {0: resting, 1: K+ firing, 2: refractory}; competent: YugO gating competence; neighbor_firing: extracellular K+ trigger"
+    role: Guarantees unidirectional K+ depolarization pulse propagation and mutual annihilation of colliding wavefronts
+    source_citation: "Prindle et al. (2015) Nature 527:59-63; Larkin et al. (2018) Cell Systems 7:137-145"
+    code_locus: 2015-prindle-biofilm-potassium-percolation-ca.py#L61-L150
+  - law_name: YugO Potassium Channel Deletion (ΔyugO) Quiescent Absorbing State Theorem
+    formula: "competent = false ∧ s_t = 0 ⟹ s_{t+1} = 0;   competent = true ∧ s_t = 0 ∧ nbr_fire = true ⟹ s_{t+1} = 1"
+    lean_decl: MathOfBiology.BiofilmPotassiumPercolationCA.biofilm_ca_step
+    lean_theorem: MathOfBiology.BiofilmPotassiumPercolationCA.delta_yugO_quiescent_vs_wildtype_firing
+    lean_locus: morphoeval/lean/loops/Loop_prindle_biofilm_potassium_percolation_ca.lean#L50-L57
+    lean_code: |
+      theorem delta_yugO_quiescent_vs_wildtype_firing (neighbor_firing : Bool) :
+          biofilm_ca_step false 0 neighbor_firing = 0 ∧
+          biofilm_ca_step true 0 true = 1 := by
+        simp [biofilm_ca_step]
+    variables: "competent = false: ΔyugO mutant; competent = true: wild-type NCIB 3610"
+    role: Proves that genetic deletion of the YugO K+ channel abolishes active electrical wave transmission across the biofilm periphery
+    source_citation: "Prindle et al. (2015) Nature 527:59-63 Fig. 2"
+    code_locus: 2015-prindle-biofilm-potassium-percolation-ca.py#L61-L150
+  - law_name: Signal Percolation Colony Benefit-Minus-Cost Monotonicity (Larkin et al. 2018)
+    formula: "U(reach, n_fire) = B · reach - C · n_fire;   B ≥ 1 ∧ reach_1 < reach_2 ⟹ U(reach_1, n_fire) < U(reach_2, n_fire)"
+    lean_decl: MathOfBiology.BiofilmPotassiumPercolationCA.biofilm_percolation_utility
+    lean_theorem: MathOfBiology.BiofilmPotassiumPercolationCA.biofilm_percolation_utility_monotone
+    lean_locus: morphoeval/lean/loops/Loop_prindle_biofilm_potassium_percolation_ca.lean#L63-L76
+    lean_code: |
+      def biofilm_percolation_utility (B reach C n_firing : Int) : Int :=
+        B * reach - C * n_firing
+      theorem biofilm_percolation_utility_monotone (B reach_1 reach_2 C n_firing : Int)
+          (hB : B ≥ 1) (hr : reach_1 < reach_2) :
+          biofilm_percolation_utility B reach_1 C n_firing <
+            biofilm_percolation_utility B reach_2 C n_firing := by
+        unfold biofilm_percolation_utility
+        have hmul : B * reach_1 < B * reach_2 := Int.mul_lt_mul_of_pos_left hr (by omega)
+        omega
+    variables: "B: glutamate-gating benefit per reached periphery cell; C: metabolic cost per firing cell (C/B ≈ 0.16)"
+    role: Explains why wild-type B. subtilis poised near the critical percolation threshold phi_c = 0.50 maximizes colony-wide coordination per unit cost
+    source_citation: "Larkin et al. (2018) Cell Systems 7(2):137-145.e3 Eqs. 1-4"
+    code_locus: 2015-prindle-biofilm-potassium-percolation-ca.py#L140-L202

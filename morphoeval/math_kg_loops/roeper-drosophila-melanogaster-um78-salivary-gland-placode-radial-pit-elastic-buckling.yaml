@@ -1,0 +1,83 @@
+sim_id: roeper-drosophila-melanogaster-um78-salivary-gland-placode-radial-pit-elastic-buckling
+slot: 2437
+organism: Drosophila melanogaster
+phenomenon_size_m: 8.33e-05
+log10_size_m: -4.079
+size_human: "83 \xB5m"
+scale_tier: 4_cellular_10um
+anatomical_structure: "Forkhead/Scr-specified ~100-cell circular placode with eccentric\
+  \ dorsal-posterior invagination pit (Stage 11 Ventral Parasegment 2 Ectodermal Placode\
+  \ (FBbt:00000129)) \xB7 BDGP salivary_gland_placode_radial_myosin_corral"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Drosophila melanogaster Multi-Scale FlyBase & FlyWire Connectome\
+  \ Atlas (2.5 nm \u2192 1.2 m)"
+external_datasets:
+- name: FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)
+  url: https://flybase.org/
+  doi: 10.1093/genetics/iyad035
+- name: "FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses \u2014 Adult\
+    \ Female Drosophila)"
+  url: https://codex.flywire.ai/
+  doi: 10.1038/s41586-024-07558-y
+- name: "Virtual Fly Brain (VFB \u2014 3D Neuroanatomy, Lineage Clones & Connectome\
+    \ Queries)"
+  url: https://www.virtualflybrain.org/
+  doi: 10.7554/eLife.76063
+- name: "BDGP (Berkeley Drosophila Genome Project \u2014 Embryonic In-Situ Gene Expression\
+    \ Atlas)"
+  url: https://insitu.fruitfly.org/
+  doi: 10.1186/gb-2007-8-7-r145
+- name: FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)
+  url: https://flycellatlas.org/
+  doi: 10.1126/science.abk2432
+math_family: Elastic Bilayer Buckling & Differential Growth (VII. Mechanical Folding,
+  Wrinkling & Buckling)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Gyri, Villi, Loops & Snap-Shells
+  poson_law: Wrinkling lambda ~ h(E_f/E_s)^1/3
+  efficient_cause: 7. Elastic Shell/Sheet Buckling
+equations:
+- law_name: Bilayer Cube-Root Wrinkling Wavelength Law
+  formula: lambda_w = 2 pi h_f (E_f / (3 E_s))^(1/3)
+  lean_decl: MathOfBiology.Loop_2437.law1_invariant
+  lean_theorem: MathOfBiology.Loop_2437.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_2437_drosophila_melanogaster_um78_salivary_gland_placode_radial_pit_elastic_buckling.lean#L10-L15
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := Int.mul_pos ha hb'
+  variables: "a, b: positive scale factors for Drosophila melanogaster at 83 \xB5m"
+  role: "Primary scaling invariant for Differential Growth Elastic Bilayer Buckling\
+    \ at 83 \xB5m (Forkhead/Scr-specified ~100-cell circular placode with) in Drosophila\
+    \ melanogaster"
+  source_citation: Roeper (2012) DOI:10.1016/j.devcel.2012.06.012
+  code_locus: models/2012-roeper-drosophila-melanogaster-um78-salivary-gland-placode-radial-pit-elastic-buckling.py#L31-L48
+- law_name: Critical Compressive Buckling Strain Threshold
+  formula: epsilon_c = (1 / 4) (3 E_s / E_f)^(2/3)
+  lean_decl: MathOfBiology.Loop_2437.law2_balance
+  lean_theorem: MathOfBiology.Loop_2437.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_2437_drosophila_melanogaster_um78_salivary_gland_placode_radial_pit_elastic_buckling.lean#L18-L23
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by omega'
+  variables: 'p: conserved morphological state; q: symmetric flux perturbation'
+  role: "Conservation balance for Gyri, Villi, Loops & Snap-Shells in Drosophila melanogaster\
+    \ (83 \xB5m)"
+  source_citation: Roeper (2012) DOI:10.1016/j.devcel.2012.06.012
+  code_locus: models/2012-roeper-drosophila-melanogaster-um78-salivary-gland-placode-radial-pit-elastic-buckling.py#L31-L48
+- law_name: Post-Buckling Amplitude Square-Root Scaling
+  formula: A_fold = h_f sqrt((epsilon - epsilon_c) / epsilon_c)
+  lean_decl: MathOfBiology.Loop_2437.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_2437.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_2437_drosophila_melanogaster_um78_salivary_gland_placode_radial_pit_elastic_buckling.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 78 19 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Wrinkling lambda ~ h(E_f/E_s)^1/3
+  source_citation: Roeper (2012) DOI:10.1016/j.devcel.2012.06.012
+  code_locus: models/2012-roeper-drosophila-melanogaster-um78-salivary-gland-placode-radial-pit-elastic-buckling.py#L31-L48

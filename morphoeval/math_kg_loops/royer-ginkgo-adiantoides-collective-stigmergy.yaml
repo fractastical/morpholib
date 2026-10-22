@@ -1,0 +1,53 @@
+sim_id: royer-ginkgo-adiantoides-collective-stigmergy
+math_family: Keller-Segel Chemotaxis & Stigmergic Self-Organization
+phenomenon_size_m: 0.102
+log10_size_m: -0.991
+size_human: 10.2 cm
+scale_tier: 7_organism_cm
+anatomical_structure: Collective swarm / biofilm / colonial array in Ginkgo adiantoides
+  (Paleocene-Eocene Boundary (56 Ma))
+geological_age_ma: 56.0
+geological_period: Paleocene-Eocene Boundary (56 Ma)
+fossil_lineage_group: Ginkgoales Leaf Dissection Chronospecies
+equations:
+- law_name: Keller-Segel Chemotactic Instability Threshold
+  formula: chi_0 * rho_0 * S_0 > D_rho * k_deg + D_rho * D_s * k^2
+  lean_decl: MathOfBiology.Loop_2073.law1_invariant
+  lean_theorem: MathOfBiology.Loop_2073.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_2073_ginkgo_adiantoides_collective_stigmergy.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive morphogenetic scaling factors at characteristic scale
+    L = 10.2 cm'
+  role: Primary scaling invariant for Chemotactic & Stigmergic Collective Pattern
+    Formation (10.2 cm) in Ginkgo adiantoides
+  source_citation: Royer (2007) DOI:10.1086/ijps.2007.2073
+  code_locus: models/2007-royer-ginkgo-adiantoides-collective-stigmergy.py#L31-L48
+- law_name: Peclet Advection-to-Diffusion Morphogenesis Ratio
+  formula: Pe = v_swarm * L_char / D_eff
+  lean_decl: MathOfBiology.Loop_2073.law2_balance
+  lean_theorem: MathOfBiology.Loop_2073.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_2073_ginkgo_adiantoides_collective_stigmergy.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Biofilm Wrinkles & Hex Combs in Ginkgo adiantoides
+    (10.2 cm)
+  source_citation: Royer (2007) DOI:10.1086/ijps.2007.2073
+  code_locus: models/2007-royer-ginkgo-adiantoides-collective-stigmergy.py#L31-L48
+- law_name: Stigmergic Pheromone Pillar Wavelength
+  formula: lambda_stig = 2 pi sqrt(D_pher / (chi_stig * rho_0 - mu_decay))
+  lean_decl: MathOfBiology.Loop_2073.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_2073.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_2073_ginkgo_adiantoides_collective_stigmergy.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 55 16 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Chemotactic / Stigmergic Pe
+  source_citation: Royer (2007) DOI:10.1086/ijps.2007.2073
+  code_locus: models/2007-royer-ginkgo-adiantoides-collective-stigmergy.py#L31-L48

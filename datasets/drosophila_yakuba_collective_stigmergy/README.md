@@ -1,0 +1,15 @@
+# Dataset: `drosophila_yakuba_collective_stigmergy` (Slot #2740 — *Drosophila yakuba* · `4.4 mm`)
+
+- **Organism (*Ousia*)**: *Drosophila yakuba* (Afrotropical Savanna Fruit Fly (Abdominal Yellow/Tan Melanic Gradation))
+- **Characteristic Phenomenon Size**: `4.4 mm` (`0.004377 m`, `log10 = -2.359`, Tier `6_organ_mm`)
+- **Anatomical / Developmental / Connectomic Structure**: Collective swarm / biofilm / colonial array in Drosophila yakuba (Afrotropical Savanna Fruit Fly)
+- **Geological Horizon**: Holocene (Extant) (`0 Ma`)
+- **Evolutionary / Scale Lineage Group**: Sophophora melanogaster Subgroup Radiation (0–12 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 10. Stigmergy & Active Swarms (X. Collective Migration, Biofilms & Eusocial Nests)
+- **External Multi-Modal Atlases**:
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

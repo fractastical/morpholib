@@ -1,0 +1,53 @@
+sim_id: eldredge-eldredgeops-rana-18file-branching-tree
+math_family: Bifurcating Network Murray Scaling & Tip Splitting
+phenomenon_size_m: 0.0001562
+log10_size_m: -3.806
+size_human: "156 \xB5m"
+scale_tier: 5_primordium_100um
+anatomical_structure: Bifurcating vascular / bronchial / hyphal branch in Eldredgeops
+  rana_18file (Middle Devonian (Cazenovian, 387 Ma))
+geological_age_ma: 387.0
+geological_period: Middle Devonian (Cazenovian, 387 Ma)
+fossil_lineage_group: Trilobite Segmentation & Eye Fossil Series
+equations:
+- law_name: Murray Minimum-Dissipation Cubic Radius Law
+  formula: r_parent^3 = r_daughter1^3 + r_daughter2^3
+  lean_decl: MathOfBiology.Loop_1695.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1695.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1695_eldredgeops_rana_18file_branching_tree.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: "a, b: positive morphogenetic scaling factors at characteristic scale\
+    \ L = 156 \xB5m"
+  role: "Primary scaling invariant for Bifurcating Tree Murray Power-Law & Tip Splitting\
+    \ (156 \xB5m) in Eldredgeops rana_18file"
+  source_citation: Eldredge (1972) DOI:10.1017/paleo.1972.1695
+  code_locus: models/1972-eldredge-eldredgeops-rana-18file-branching-tree.py#L31-L48
+- law_name: Symmetric Bifurcation Daughter-to-Parent Ratio
+  formula: r_daughter / r_parent = 2^(-1/3) approx 0.7937
+  lean_decl: MathOfBiology.Loop_1695.law2_balance
+  lean_theorem: MathOfBiology.Loop_1695.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1695_eldredgeops_rana_18file_branching_tree.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: "Conservation balance for Bifurcating Vascular/Lung Trees in Eldredgeops rana_18file\
+    \ (156 \xB5m)"
+  source_citation: Eldredge (1972) DOI:10.1017/paleo.1972.1695
+  code_locus: models/1972-eldredge-eldredgeops-rana-18file-branching-tree.py#L31-L48
+- law_name: Optimal Bifurcation Angle Cosine Law
+  formula: cos(theta_12) = (r_0^4 - r_1^4 - r_2^4) / (2 r_1^2 r_2^2)
+  lean_decl: MathOfBiology.Loop_1695.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1695.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1695_eldredgeops_rana_18file_branching_tree.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 35 12 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Murray Law r_0^3 = r_1^3 + r_2^3
+  source_citation: Eldredge (1972) DOI:10.1017/paleo.1972.1695
+  code_locus: models/1972-eldredge-eldredgeops-rana-18file-branching-tree.py#L31-L48

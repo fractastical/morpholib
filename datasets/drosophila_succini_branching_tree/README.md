@@ -1,0 +1,16 @@
+# Dataset: `drosophila_succini_branching_tree` (Slot #3096 — *Drosophila succini* · `997 µm`)
+
+- **Organism (*Ousia*)**: *Drosophila succini* (Eocene Baltic Amber Stem Drosophilid (44 Ma Lutetian Amber Inclusion))
+- **Characteristic Phenomenon Size**: `997 µm` (`0.0009975 m`, `log10 = -3.001`, Tier `5_primordium_100um`)
+- **Anatomical / Developmental / Connectomic Structure**: Bifurcating vascular / bronchial / hyphal branch in Drosophila succini (Eocene Baltic Amber Stem Drosophilid)
+- **Geological Horizon**: Middle Eocene (Lutetian Baltic Amber) (`44 Ma`)
+- **Evolutionary / Scale Lineage Group**: Cenozoic Amber Drosophilid Chronospecies (44 Ma Eocene → 0 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 6. Tip-Splitting & Flow Trees (VI. Branching Morphogenesis & Vascular Networks)
+- **External Multi-Modal Atlases**:
+  - [Paleobiology Database (PBDB) — Drosophila succini (Middle Eocene (Lutetian Baltic Amber))](https://paleobiodb.org/classic/checkTaxonInfo?taxon_name=Drosophila)
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

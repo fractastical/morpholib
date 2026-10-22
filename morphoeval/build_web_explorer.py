@@ -83,6 +83,19 @@ DANIO_CAUSE_GIFS: dict[str, str] = {
     "10. Stigmergy & Active Swarms": "media/neural_crest_chase_and_run_growth.gif",
 }
 
+DROSOPHILA_CAUSE_GIFS: dict[str, str] = {
+    "1. Chemical Turing / RD": "media/french_flag_morphogen_growth.gif",
+    "2. Morphogen + Condensations": "media/french_flag_morphogen_growth.gif",
+    "3. Phase/Delay Oscillators": "media/delta_notch_phase_synchrony_growth.gif",
+    "4. Polar Auxin & Turgor Stress": "media/hoffmann_wing_lloyd.gif",
+    "5. Vertex / Potts / Nematics": "media/drosophila_wing_vertex_model_growth.gif",
+    "6. Tip-Splitting & Flow Trees": "media/tracheal_viscous_fingering_growth.gif",
+    "7. Elastic Shell/Sheet Buckling": "media/drosophila_ventral_furrow_growth.gif",
+    "8. Crystal Accretion & TPMS": "media/diatom_frustule_phase_sep_growth.gif",
+    "9. Bioelectric V_mem & Attractors": "media/cajal_dendritic_wiring_growth.gif",
+    "10. Stigmergy & Active Swarms": "media/global_morphogenetic_flow_growth.gif",
+}
+
 
 def resolve_danio_tracked_specimen(slug: str, cause: str, species: str, genus_to_gallery: dict[str, str]) -> str:
     """Resolve a git-tracked canonical Zebrafish/Danio specimen photograph matched to developmental stage."""
@@ -99,6 +112,23 @@ def resolve_danio_tracked_specimen(slug: str, cause: str, species: str, genus_to
     if any(k in slug for k in ["stripe", "melanophore", "iridophore", "caudal"]):
         return "datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg"
     return genus_to_gallery.get(species, "datasets/species_gallery/I_Enaima_Vertebrata/Danio_rerio.jpg")
+
+
+def resolve_drosophila_tracked_specimen(slug: str, cause: str, species: str, genus_to_gallery: dict[str, str]) -> str:
+    """Resolve a git-tracked canonical Drosophila specimen photograph matched to species or developmental stage."""
+    if species != "Drosophila melanogaster" and species in genus_to_gallery:
+        return genus_to_gallery[species]
+    if any(k in slug for k in ["ventral-furrow", "cephalic-furrow", "actomyosin-pulsatile", "cellularization", "salivary-gland"]):
+        return "datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_specimen.jpg"
+    if any(k in slug for k in ["germband", "stokes-flow", "dorsal-closure", "syncytial", "bicoid", "eve-pair-rule", "blastoderm"]):
+        return "datasets/global_morphogenetic_flow/drosophila_germband_extension_specimen.jpg"
+    if any(k in slug for k in ["wing-pouch", "vertex", "ecadherin", "frizzled", "trichome", "notum", "bristle"]):
+        return "datasets/drosophila_wing_vertex_model/drosophila_wing_epithelium_specimen.jpg"
+    if any(k in slug for k in ["wing-disc", "dpp-tkv", "eye-disc", "leg-disc", "haltere"]):
+        return "datasets/wing_disc_dome_folding/drosophila_wing_disc_specimen.jpg"
+    if any(k in slug for k in ["flywire", "mushroom-body", "antennal-lobe", "ellipsoid-body", "optic-lobe", "nerve-cord", "bruchpilot", "neuroblast"]):
+        return "datasets/cajal_dendritic_wiring/cajal_purkinje_dendritic_arbor_specimen.jpg"
+    return genus_to_gallery.get(species, "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg")
 
 
 def resolve_lean_file(slot: int | None, slug: str) -> str:
@@ -158,6 +188,19 @@ def main() -> int:
                     matched_gif = "media/fgf8_wavefront_somitogenesis_growth.gif"
                 else:
                     matched_gif = DANIO_CAUSE_GIFS.get(cause_key, "media/zebrafish_three_cell_stripes_growth.gif")
+            elif e.get("genus") == "Drosophila":
+                if any(k in slug for k in ["ventral-furrow", "cephalic-furrow", "actomyosin-pulsatile", "salivary-gland"]):
+                    matched_gif = "media/drosophila_ventral_furrow_growth.gif"
+                elif any(k in slug for k in ["germband", "stokes-flow", "dorsal-closure"]):
+                    matched_gif = "media/global_morphogenetic_flow_growth.gif"
+                elif any(k in slug for k in ["wing-disc", "dpp-tkv", "eye-disc", "leg-disc"]):
+                    matched_gif = "media/wing_disc_dome_folding_growth.gif"
+                elif any(k in slug for k in ["tracheal", "malpighian", "dorsal-vessel"]):
+                    matched_gif = "media/tracheal_viscous_fingering_growth.gif"
+                elif any(k in slug for k in ["flywire", "mushroom-body", "antennal-lobe", "ellipsoid-body", "optic-lobe", "nerve-cord", "bruchpilot"]):
+                    matched_gif = "media/cajal_dendritic_wiring_growth.gif"
+                else:
+                    matched_gif = DROSOPHILA_CAUSE_GIFS.get(cause_key, "media/drosophila_wing_vertex_model_growth.gif")
             else:
                 matched_gif = CAUSE_FALLBACK_GIFS.get(cause_key, "media/turing_gray_scott.gif")
 
@@ -166,6 +209,10 @@ def main() -> int:
             if e.get("genus") == "Danio":
                 sp_rel = resolve_danio_tracked_specimen(
                     slug, e.get("efficient_cause", ""), e.get("species", "Danio rerio"), genus_to_gallery
+                )
+            elif e.get("genus") == "Drosophila":
+                sp_rel = resolve_drosophila_tracked_specimen(
+                    slug, e.get("efficient_cause", ""), e.get("species", "Drosophila melanogaster"), genus_to_gallery
                 )
             else:
                 sp_rel = (
@@ -897,6 +944,92 @@ def main() -> int:
       gap: 8px;
       flex-wrap: wrap;
     }
+    .subcomponent-zoom-panel {
+      background: linear-gradient(180deg, #0b1426 0%, #0d182e 100%);
+      border: 1px solid #1e3a5f;
+      border-left: 4px solid #38bdf8;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .subcomponent-zoom-panel.visible {
+      display: block;
+    }
+    .subcomponent-hdr {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .subcomponent-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subcomponent-sub {
+      font-size: 0.73rem;
+      color: #94a3b8;
+    }
+    .scale-ruler-track {
+      position: relative;
+      height: 26px;
+      background: #070c18;
+      border: 1px solid #263554;
+      border-radius: 6px;
+      margin: 8px 0 10px 0;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      overflow: hidden;
+    }
+    .scale-ruler-dot {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #38bdf8;
+      border: 1px solid #060911;
+      cursor: pointer;
+      transform: translateX(-50%);
+      transition: transform 0.12s ease, background 0.12s ease;
+    }
+    .scale-ruler-dot:hover, .scale-ruler-dot.active {
+      transform: translateX(-50%) scale(1.65);
+      background: #facc15;
+      z-index: 5;
+    }
+    .subcomponent-rungs-strip {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .subcomponent-rung-btn {
+      background: #131e36;
+      border: 1px solid #293d61;
+      color: #cbd5e1;
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 0.69rem;
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: left;
+      flex-shrink: 0;
+      transition: all 0.12s ease;
+    }
+    .subcomponent-rung-btn:hover, .subcomponent-rung-btn.active {
+      background: #1d3158;
+      border-color: #facc15;
+      color: #ffffff;
+    }
+    .subcomponent-rung-btn strong {
+      color: #7dd3fc;
+      display: block;
+      font-size: 0.72rem;
+    }
   </style>
 </head>
 <body>
@@ -943,10 +1076,11 @@ def main() -> int:
 
   <nav class="quick-bar" id="scale-bar" style="background:#081021;border-bottom:1px solid #1e3a5f;">
     <span class="quick-label" style="color:#38bdf8;">🔬 Multi-Scale &amp; Fossil Zoom (Smallest &rarr; Largest Bit):</span>
-    <button class="pill active" data-scale="verified_core" id="pill-verified-core" title="Show the 101 Verified Core/Pass-3 Models (ImgFit >= 70)">⭐ Verified Core (101)</button>
-    <button class="pill" data-scale="all_2116" title="Browse all 2,116 Models sorted from smallest nm bit to largest m bit">🌐 All 2,116 Models (Smallest &rarr; Largest)</button>
-    <button class="pill" data-scale="zebrafish_116" style="border-color:#38bdf8;color:#7dd3fc;" title="Exhaustive Danio rerio 116-Run Multi-Scale Atlas (3.2 nm -> 52.7 cm, linked to Zebrahub, ZFIN, Daniocell & MapZebrain)">🐟 Zebrafish Deep-Dive (116 Runs · Zebrahub)</button>
-    <button class="pill" data-scale="fossil_chronospecies" style="border-color:#f59e0b;color:#fde68a;" title="Fossil-Record Chronospecies & Evolutionary Series (565 Ma Ediacaran -> Holocene)">🦴 Fossil Record &amp; Chronospecies (400 Runs)</button>
+    <button class="pill active" data-scale="verified_core" id="pill-verified-core" title="Show the 101 Curated Core/Pass-3 Models (ImgFit >= 70)">⭐ Verified Core (101)</button>
+    <button class="pill" data-scale="drosophila_1015" style="border-color:#22c55e;color:#86efac;" title="Exhaustive Drosophila 1,015-Run Multi-Scale, Connectomic (FlyWire) & 41-Species Radiation Atlas (2.5 nm -> 1.2 m)">🪰 Drosophila Deep-Dive (1,015 Runs · FlyBase / FlyWire)</button>
+    <button class="pill" data-scale="zebrafish_116" style="border-color:#38bdf8;color:#7dd3fc;" title="Exhaustive Danio rerio 156-Run Multi-Scale Atlas (3.2 nm -> 52.7 cm, linked to Zebrahub, ZFIN, Daniocell & MapZebrain)">🐟 Zebrafish Deep-Dive (156 Runs · Zebrahub)</button>
+    <button class="pill" data-scale="fossil_chronospecies" style="border-color:#f59e0b;color:#fde68a;" title="Fossil-Record Chronospecies & Evolutionary Series (565 Ma Ediacaran -> Holocene)">🦴 Fossil Record &amp; Chronospecies (420 Runs)</button>
+    <button class="pill" data-scale="all_2116" title="Browse all 3,116 Models sorted from smallest nm bit to largest m bit">🌐 All 3,116 Models (Smallest &rarr; Largest)</button>
     <button class="pill" data-scale="tier_1" title="Tier 1: Molecular & Ion-Channel Complexes (1–50 nm)">1–50 nm (Molecular)</button>
     <button class="pill" data-scale="tier_2" title="Tier 2: Subcellular Nanostructures & Junctions (50 nm–1 µm)">50 nm–1 µm (Nanostructure)</button>
     <button class="pill" data-scale="tier_3" title="Tier 3: Organelles, Cilia & Cytoskeletal Arrays (1–10 µm)">1–10 µm (Subcellular)</button>
@@ -987,6 +1121,8 @@ def main() -> int:
           <button class="btn" id="btn-next">Next 9 ▶</button>
         </div>
       </div>
+
+      <div class="subcomponent-zoom-panel" id="subcomponent-zoom-panel"></div>
 
       <div class="tiles-grid" id="tiles-grid"></div>
     </section>
@@ -1107,15 +1243,27 @@ def main() -> int:
       function getFilteredModelsForMatrix() {
         let pool = [];
         if (scaleFilterMode === "verified_core") {
-          pool = MODELS.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
+          pool = MODELS.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD && (m.tier === "pass3_audited" || m.tier === "core_validated"));
+        } else if (scaleFilterMode === "drosophila_1015") {
+          pool = MODELS.filter(m => m.genus === "Drosophila");
+          if (enforceImageThreshold) {
+            pool = pool.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
+          }
+          return pool.sort((a, b) => {
+            const aCore = (a.tier === "pass3_audited" || a.tier === "core_validated") ? 1 : 0;
+            const bCore = (b.tier === "pass3_audited" || b.tier === "core_validated") ? 1 : 0;
+            if (bCore !== aCore) return bCore - aCore;
+            return a.size_m - b.size_m;
+          });
         } else if (scaleFilterMode === "zebrafish_116") {
           pool = MODELS.filter(m => m.genus === "Danio");
           if (enforceImageThreshold) {
             pool = pool.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
           }
           return pool.sort((a, b) => {
-            if (!!b.passes !== !!a.passes) return b.passes ? 1 : -1;
-            if (b.img_fit !== a.img_fit) return b.img_fit - a.img_fit;
+            const aCore = (a.tier === "pass3_audited" || a.tier === "core_validated") ? 1 : 0;
+            const bCore = (b.tier === "pass3_audited" || b.tier === "core_validated") ? 1 : 0;
+            if (bCore !== aCore) return bCore - aCore;
             return a.size_m - b.size_m;
           });
         } else if (scaleFilterMode === "fossil_chronospecies") {
@@ -1185,7 +1333,7 @@ def main() -> int:
       rebuildCellMap();
 
       document.getElementById("top-summary").textContent =
-        `Multi-Scale Morphospace (${DATA.total_models.toLocaleString()} Models · ${DATA.total_genera} Genera · ${DATA.total_species} Species/Chronospecies · 3.2 nm → 5.6 m) · Includes 156-Run Zebrafish (Zebrahub) Deep-Dive & 18 Fossil-Record Chronospecies Lineages`;
+        `Multi-Scale Morphospace (${DATA.total_models.toLocaleString()} Models · ${DATA.total_genera} Genera · ${DATA.total_species} Species/Chronospecies · 2.5 nm → 5.6 m) · Includes 1,015-Run Drosophila (FlyBase/FlyWire) Atlas, 156-Run Zebrafish (Zebrahub) Atlas & 20 Fossil Lineages`;
 
       const IS_GITHUB_PAGES = window.location.hostname.endsWith("github.io");
 
@@ -1526,6 +1674,10 @@ def main() -> int:
           banner.style.borderLeftColor = "#facc15";
           titleEl.textContent = `Search Results for "${searchQuery}" — ${list.length} Model${list.length === 1 ? "" : "s"} (Sorted Smallest → Largest Bit)`;
           metaEl.textContent = `Showing ${list.length} matching runs ordered by characteristic phenomenon size (nm → m). Click any card for its full species scale ladder & nanopub cross-links.`;
+        } else if (selectedR === -1 && scaleFilterMode === "drosophila_1015") {
+          banner.style.borderLeftColor = "#22c55e";
+          titleEl.textContent = `🪰 Drosophila (D. melanogaster & 40 Comparative Species) Multi-Scale & FlyWire Connectome Atlas — ${list.length} Verified Runs (2.5 nm → 1.2 m)`;
+          metaEl.textContent = `Pass-3 Audited Animated Core Simulations (#1–#5) first, followed by 60 D. melanogaster developmental/connectomic scales (2.5 nm Innexin-2 -> 580 µm 139,255-neuron FlyWire brain -> 1.2 m odor plume) & 40 comparative Drosophila species.`;
         } else if (selectedR === -1 && scaleFilterMode === "zebrafish_116") {
           banner.style.borderLeftColor = "#38bdf8";
           titleEl.textContent = `🐟 Zebrafish (Danio rerio & Sister Danionins) Multi-Scale Atlas — ${list.length} Runs (3.2 nm → 52.7 cm · Linked to Zebrahub)`;
@@ -1554,6 +1706,8 @@ def main() -> int:
             `Each card compares the biological specimen (Left) with the mathematical simulation (Right) and displays its physical phenomenon scale (nm → m). Click any card for its species scale ladder.`;
         }
 
+        renderSubcomponentZoomPanel(list);
+
         const start = pageOffset;
         const slice = list.slice(start, start + 9);
         document.getElementById("pager-info").textContent =
@@ -1562,6 +1716,99 @@ def main() -> int:
         document.getElementById("btn-next").disabled = pageOffset + 9 >= list.length;
 
         renderNineTiles(slice, start, searchQuery ? "#facc15" : rowObj.color);
+      }
+
+      function renderSubcomponentZoomPanel(list) {
+        const panel = document.getElementById("subcomponent-zoom-panel");
+        if (!panel) return;
+        const isDrosophilaZoom = (scaleFilterMode === "drosophila_1015") || (selectedR === 4) || (searchQuery.toLowerCase().includes("drosophila"));
+        const isZebrafishZoom = (scaleFilterMode === "zebrafish_116") || (selectedR === 3) || (searchQuery.toLowerCase().includes("danio") || searchQuery.toLowerCase().includes("zebrafish"));
+
+        if (!isDrosophilaZoom && !isZebrafishZoom && scaleFilterMode === "verified_core" && !searchQuery) {
+          panel.className = "subcomponent-zoom-panel";
+          panel.innerHTML = "";
+          return;
+        }
+
+        const focusGenus = isDrosophilaZoom ? "Drosophila" : (isZebrafishZoom ? "Danio" : "");
+        const sourceModels = focusGenus ? MODELS.filter(m => m.genus === focusGenus) : list;
+        if (sourceModels.length === 0) {
+          panel.className = "subcomponent-zoom-panel";
+          panel.innerHTML = "";
+          return;
+        }
+
+        // Deduplicate by anatomical subcomponent structure / scale rung sorted smallest -> largest
+        const seenStructures = new Set();
+        const uniqueRungs = [];
+        const sortedByScale = [...sourceModels].sort((a, b) => a.size_m - b.size_m);
+        sortedByScale.forEach(m => {
+          const key = m.structure || `${m.size_human}-${m.poion}`;
+          if (!seenStructures.has(key)) {
+            seenStructures.add(key);
+            uniqueRungs.push(m);
+          }
+        });
+
+        const minLog = -9.0; // 1 nm
+        const maxLog = 0.2;  // ~1.6 m
+        const dotsHtml = uniqueRungs.map((r, idx) => {
+          const pct = Math.min(98, Math.max(2, ((r.log10_m - minLog) / (maxLog - minLog)) * 100));
+          const shortStruct = (r.structure || r.poion).split("&")[0].trim().slice(0, 34);
+          return `<div class="scale-ruler-dot" style="left:${pct.toFixed(1)}%;" data-rung-slug="${r.slug}" title="[#${idx + 1}] ${r.size_human} — ${r.structure || r.poion} (${r.species})"></div>`;
+        }).join("");
+
+        const buttonsHtml = uniqueRungs.map((r, idx) => {
+          const shortStruct = (r.structure || r.poion).split("&")[0].trim().slice(0, 30);
+          return `<button class="subcomponent-rung-btn" data-rung-slug="${r.slug}" title="Click to zoom to ${r.size_human}: ${r.structure || r.poion} (${r.species})">
+            <strong>#${idx + 1} · ${r.size_human}</strong>
+            <span>${shortStruct}</span>
+          </button>`;
+        }).join("");
+
+        const headerLabel = focusGenus === "Drosophila"
+          ? `🪰 Drosophila Subcomponent Scale Zoom Ladder (${uniqueRungs.length} Anatomical Subcomponents · 2.5 nm Innexin Pore → 580 µm FlyWire Brain → 1.2 m Odor Plume)`
+          : (focusGenus === "Danio"
+              ? `🐟 Zebrafish (Danio rerio) Subcomponent Scale Zoom Ladder (${uniqueRungs.length} Anatomical Subcomponents · 3.2 nm Connexin/Her1 → 55 µm Somite → 52.7 cm Shoal)`
+              : `🔬 Multi-Scale Subcomponent Zoom Ladder (${uniqueRungs.length} Distinct Scale Rungs · Smallest nm Bit → Largest m Bit)`);
+
+        const atlasBadges = focusGenus === "Drosophila"
+          ? `<span style="font-size:0.72rem;color:#86efac;">Linked to <a href="https://codex.flywire.ai/" target="_blank" style="color:#38bdf8;">FlyWire Connectome</a> · <a href="https://flybase.org/" target="_blank" style="color:#38bdf8;">FlyBase</a> · <a href="https://www.virtualflybrain.org/" target="_blank" style="color:#38bdf8;">Virtual Fly Brain</a> · <a href="https://flycellatlas.org/" target="_blank" style="color:#38bdf8;">FlyCellAtlas</a></span>`
+          : (focusGenus === "Danio"
+              ? `<span style="font-size:0.72rem;color:#7dd3fc;">Linked to <a href="https://zebrahub.ds.czbiohub.org/" target="_blank" style="color:#38bdf8;">Zebrahub (scRNA + 4D Light-Sheet)</a> · <a href="https://zfin.org/" target="_blank" style="color:#38bdf8;">ZFIN</a> · <a href="https://daniocell.nichd.nih.gov/" target="_blank" style="color:#38bdf8;">Daniocell</a> · <a href="https://mapzebrain.org/" target="_blank" style="color:#38bdf8;">MapZebrain</a></span>`
+              : `<span style="font-size:0.72rem;color:#94a3b8;">Click any dot on the logarithmic scale ruler or any subcomponent card below to inspect its simulation &amp; jump to that scale</span>`);
+
+        panel.className = "subcomponent-zoom-panel visible";
+        panel.style.borderLeftColor = focusGenus === "Drosophila" ? "#22c55e" : "#38bdf8";
+        panel.innerHTML = `
+          <div class="subcomponent-hdr">
+            <div>
+              <div class="subcomponent-title">${headerLabel}</div>
+              <div class="subcomponent-sub">Click any subcomponent rung below (or dot on the 10<sup>-9</sup> m &rarr; 10<sup>0</sup> m ruler) to zoom into that subcomponent's cards and open its detailed modal.</div>
+            </div>
+            <div>${atlasBadges}</div>
+          </div>
+          <div class="scale-ruler-track" title="Logarithmic Spatial Scale Ruler (1 nm left -> 1.5 m right)">
+            <span style="position:absolute;left:6px;font-size:0.62rem;color:#64748b;pointer-events:none;">1 nm (10⁻⁹ m)</span>
+            <span style="position:absolute;left:33%;font-size:0.62rem;color:#64748b;pointer-events:none;">1 µm (10⁻⁶ m)</span>
+            <span style="position:absolute;left:66%;font-size:0.62rem;color:#64748b;pointer-events:none;">1 mm (10⁻³ m)</span>
+            <span style="position:absolute;right:6px;font-size:0.62rem;color:#64748b;pointer-events:none;">1 m (10⁰ m)</span>
+            ${dotsHtml}
+          </div>
+          <div class="subcomponent-rungs-strip">${buttonsHtml}</div>
+        `;
+
+        panel.querySelectorAll("[data-rung-slug]").forEach(el => {
+          el.onclick = () => {
+            const slug = el.getAttribute("data-rung-slug");
+            const idxInList = list.findIndex(m => m.slug === slug);
+            if (idxInList >= 0) {
+              pageOffset = Math.floor(idxInList / 9) * 9;
+              updateView();
+            }
+            window.__openModelBySlug(slug);
+          };
+        });
       }
 
       function renderNineTiles(modelsSlice, baseIndex, borderColor) {

@@ -19,8 +19,17 @@ model_spec:
     kappa_chem: 1.40
     kappa_coop: 0.35
     seed: 1976
+  pass3_4d_extension:
+    retinal_ephb_gradient: "R_B(z_k) = exp(alpha_B * s_EphB * z_k),  z: dorsal -> ventral"
+    tectal_ephrinb_gradient: "L_B(v_l) = exp(alpha_B * s_ephrinB * v_l),  v: lateral -> medial"
+    attractive_dv_energy: "E_B(z,v) = 0.5 * ((ln R_B(z) - ln L_B(v)) / (alpha_B * sigma_chem))^2"
+    separable_4d_energy: "E(i,k,j,l) = E_A(x_i,y_j) + E_B(z_k,v_l)"
+    wave_correlation_kernel: "K_ret = max(corr_e[s_a, s_b] - 3/sqrt(n_events), 0), diag 0; s_a(e) = 1 iff RGC a inside wave disc (c(e), r_wave)"
+    tensor_growth_law: "dW/dt = W .* [ -anneal(t) kappa_chem E + kappa_coop (K_ret (x) K_y (x) K_v) W ] + Sinkhorn Group II normalisation (mu_comp)"
+    parameters_4d: {N_x: 16, N_z: 16, N_y: 16, N_v: 16, sigma_chem: 0.40, kappa_coop: 24.0, sigma_tec: 0.07, wave_radius_wt: 0.12, wave_n_events: 1500, wave_seed: 1991, seed: 2002, steps: 120, dt: 0.08}
   inputs:
     - datasets/retinotectal_chemoaffinity/retinotectal_chemoaffinity_reference.json
+    - datasets/retinotectal_chemoaffinity/pass3_dv_ephb_wave_reference.json
     - datasets/retinotectal_chemoaffinity/zebrafish_retinotectal_specimen.jpg
     - datasets/retinotectal_chemoaffinity/scout_manifest.json
     - datasets/retinotectal_chemoaffinity/paper_citations.bib
@@ -29,7 +38,7 @@ equations:
     formula: "R_A(x) * L_A(y^*(x)) = gamma_0 = R_0 * L_0 * exp(alpha)  ==>  y_WT^*(x) = 1 - x;   x_1 < x_2 ==> y_WT^*(x_2) < y_WT^*(x_1)"
     lean_decl: "MathOfBiology.Loop_086.wt_inverted_map"
     lean_theorem: "MathOfBiology.Loop_086.retinotectal_chemoaffinity_inversion"
-    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L19-L60"
+    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L24-L65"
     lean_code: |
       def sq_int (z : Int) : Int :=
         z * z
@@ -57,12 +66,12 @@ equations:
     variables: "x in [0, L]: retinal nasal-temporal RGC coordinate; y in [0, L]: tectal anterior-posterior target coordinate; R_A(x), L_A(y): counter-graded EphA receptor and ephrin-A ligand concentrations; gamma_0: reciprocal mass-action signaling setpoint"
     role: "Proves that reciprocal EphA * ephrin-A mass-action equilibrium uniquely selects the strictly decreasing inverted retinotectal map y_WT*(x) = L - x with zero chemoaffinity mismatch energy, mapping nasal retina (x=0) to posterior tectum (y=L) and temporal retina (x=L) to anterior tectum (y=0)"
     source_citation: "Prestige & Willshaw (1975) Proc. R. Soc. B 190:77-98; Brown et al. (2000) Cell 102:77-88 Fig. 1; Koulakov & Tsigankov (2004) BMC Neurosci. 5:30"
-    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L90-L185"
+    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L97-L197"
   - law_name: "Brown et al. (2000) Isl2-EphA3 Knock-In Anterior Shift & Dual Topographic Map Bifurcation Law"
     formula: "y_KI^*(x) = 1 - (1/alpha) * ln(exp(alpha * x) + Delta_R / R_0) < y_WT^*(x);   y_caudal^*(x) - y_rostral^*(x) = 0.5 (ki/ki homozygote)"
     lean_decl: "MathOfBiology.Loop_086.ki_unclamped_map"
     lean_theorem: "MathOfBiology.Loop_086.isl2_epha3_knockin_map_bifurcation"
-    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L63-L107"
+    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L68-L112"
     lean_code: |
       def ki_unclamped_map (x L delta_R : Int) : Int :=
         L - x - delta_R
@@ -89,12 +98,12 @@ equations:
     variables: "delta_R > 0: exogenous EphA3 receptor knock-in level on 50% Isl2+ RGCs; hom_rostral_branch(x), hom_caudal_branch(x): bifurcated rostral (Isl2+) and caudal (Isl2-) topographic maps in ki/ki homozygotes; het_clamped_branch(x): heterozygous ki/+ rostral-convergent branch"
     role: "Proves that elevating EphA3 on 50% (Isl2+) of RGCs strictly shifts their termination zone anteriorly relative to neighbor Isl2- WT RGCs, generating two complete non-overlapping maps separated by L/2 in ki/ki homozygotes vs rostral-pole collapse in ki/+ heterozygotes"
     source_citation: "Brown et al. (2000) Cell 102(1):77-88 Figs. 2, 3 & 6"
-    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L188-L295"
+    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L190-L335"
   - law_name: "Prestige & Willshaw (1975) Group II Half-Tectum Compression & Half-Retina Expansion vs Group I Rigid Lock Law"
     formula: "y_comp^*(x) = (1 - x) / 2 in [0, 0.5] (slope -0.5);   y_exp^*(x) = 1 - 2*x in [0, 1] for x in [0, 0.5] (slope -2.0)"
     lean_decl: "MathOfBiology.Loop_086.group_ii_half_tectum_comp"
     lean_theorem: "MathOfBiology.Loop_086.prestige_willshaw_group_ii_plasticity"
-    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L110-L150"
+    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L115-L155"
     lean_code: |
       def group_ii_half_tectum_comp (x : Int) : Int :=
         (100 - x) / 2
@@ -119,4 +128,76 @@ equations:
     variables: "group_ii_half_tectum_comp(x): Group II compressed map onto rostral half-tectum [0, L/2]; group_i_truncated_map(x): Group I rigid affinity map without target normalization; group_ii_half_retina_exp(x): Group II expanded map of nasal half-retina [0, L/2] onto full tectum [0, L]"
     role: "Proves that Prestige & Willshaw (1975) Group II relative synaptic competition compresses the full retinal map by 1/2 onto a surgically halved tectum and expands a half-retina by 2x across an intact tectum, whereas Group I rigid affinity piles up nasal axons at the cut border"
     source_citation: "Prestige & Willshaw (1975) Proc. R. Soc. B 190(1098):77-98 Figs. 1-6; Willshaw & von der Malsburg (1976) Proc. R. Soc. B 194:431-445"
-    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L220-L335"
+    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L238-L360"
+  - law_name: "Pass 3 — Orthogonal EphB/Ephrin-B Attractive Dorsoventral Mapping & 4D Tensor Separability Law"
+    formula: "E(i,k,j,l) = E_A(x_i,y_j) + E_B(z_k,v_l),  E_B(z,v) = 0.5*((s_EphB z - s_ephrinB v)/sigma_chem)^2  ==>  (x,z) |-> (y*,v*) = (1 - x, (s_EphB/s_ephrinB) z);  WT: v* = z (slope +1, attractive), AP: y* = 1 - x (slope -1, repulsive), zero cross-talk;  EphB2/B3 hypomorph s_EphB = 0.35 (Group I limit): v* = 0.35 z <= z, lateral shift 0.65 at the ventral pole, 0 at the dorsal pole"
+    lean_decl: "MathOfBiology.Loop_086.dv_attractive_map"
+    lean_theorem: "MathOfBiology.Loop_086.ephb_dorsoventral_attractive_orthogonal_map"
+    lean_theorem_secondary: "MathOfBiology.Loop_086.ephb_hypomorph_lateral_shift"
+    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L163-L224"
+    lean_code: |
+      def dv_attractive_map (z : Int) : Int :=
+        z
+      def dv_attractive_energy (z v : Int) : Int :=
+        sq_int (z - v)
+      def ephb_hypomorph_map (z : Int) : Int :=
+        35 * z / 100
+      theorem ephb_dorsoventral_attractive_orthogonal_map (x x_1 x_2 z z_1 z_2 L : Int)
+          (hx : x_1 < x_2) (hz : z_1 < z_2) :
+          dv_attractive_energy z (dv_attractive_map z) = 0 ∧
+          dv_attractive_map z_1 < dv_attractive_map z_2 ∧
+          wt_inverted_map x_2 L < wt_inverted_map x_1 L ∧
+          wt_inverted_map x L + x = L ∧
+          dv_attractive_map z - z = 0 ∧
+          dv_attractive_map 0 = 0 ∧
+          dv_attractive_map 100 = 100 := by
+        refine ⟨?_, ?_, ?_, ?_, ?_, by decide, by decide⟩
+        · dsimp [dv_attractive_energy, dv_attractive_map, sq_int]
+          have h : z - z = 0 := by omega
+          rw [h]
+          decide
+        · dsimp [dv_attractive_map]
+          omega
+        · dsimp [wt_inverted_map]
+          omega
+        · dsimp [wt_inverted_map]
+          omega
+        · dsimp [dv_attractive_map]
+          omega
+      theorem ephb_hypomorph_lateral_shift (z : Int) (hz : z ≥ 0) :
+          ephb_hypomorph_map z ≤ dv_attractive_map z ∧
+          (z ≥ 3 → ephb_hypomorph_map z < dv_attractive_map z) ∧
+          ephb_hypomorph_map 0 = dv_attractive_map 0 ∧
+          ephb_hypomorph_map 100 = 35 ∧
+          dv_attractive_map 100 - ephb_hypomorph_map 100 = 65 := by
+        refine ⟨?_, ?_, by decide, by decide, by decide⟩
+        · dsimp [ephb_hypomorph_map, dv_attractive_map]
+          omega
+        · intro h3
+          dsimp [ephb_hypomorph_map, dv_attractive_map]
+          omega
+    variables: "z in [0, L]: dorsoventral retinal RGC coordinate (EphB rises ventrally); v in [0, L]: mediolateral tectal coordinate (ephrin-B1 rises medially); s_EphB, s_ephrinB: gradient scale factors (1 WT, 0.35 EphB2/B3 hypomorph, 0 flat); W_{(i,k),(j,l)}: 4D retinotectal synaptic tensor; sigma_chem: chemoaffinity tolerance"
+    role: "Proves that attractive EphB forward signalling selects the strictly increasing dorsoventral map v* = z (opposite monotonicity to the repulsive AP map y* = L - x), that the separable 4D energy makes the two axes independent (AP target depends only on x, DV target only on z), and that a shallow EphB gradient shifts ventral termination zones laterally while leaving the dorsal pole fixed (Group I limit; Group II column competition erodes the shift in the script's mu_comp sweep)"
+    source_citation: "Hindges R, McLaughlin T, Genoud N, Henkemeyer M, O'Leary DDM (2002) Neuron 35(3):475-487, doi 10.1016/S0896-6273(02)00799-7; Mann F, Ray S, Harris WA, Holt CE (2002) Neuron 35(3):461-473, doi 10.1016/S0896-6273(02)00786-9"
+    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L538-L680"
+    code_locus_secondary: "1976-willshaw-retinotectal-chemoaffinity.py#L683-L722"
+  - law_name: "Pass 3 — Spontaneous Retinal Wave Co-Firing Compact-Support Law for the Willshaw-von der Malsburg Cooperative Kernel K_ret"
+    formula: "s_a(e) = 1 iff |p_a - c(e)| <= r_wave;  C_wave = corr_e[s_a, s_b];  K_ret = max(C_wave - 3/sqrt(n_events), 0) with zero diagonal;  (p, q in domain(c, r)) ==> |p - q| <= 2 r  ==>  K_ret[a,b] = 0 whenever |p_a - p_b| > 2 r_wave;  r = 0 (beta2-nAChR-/-, no waves) ==> p = q (diagonal kernel, no neighbour-driven refinement, enlarged TZ)"
+    lean_decl: "MathOfBiology.Loop_086.in_wave_domain"
+    lean_theorem: "MathOfBiology.Loop_086.wave_cofiring_bounds_separation"
+    lean_locus: "morphoeval/lean/loops/Loop_086_retinotectal_chemoaffinity.lean#L226-L248"
+    lean_code: |
+      def in_wave_domain (c r p : Int) : Prop :=
+        c - r ≤ p ∧ p ≤ c + r
+      theorem wave_cofiring_bounds_separation (c r p q : Int)
+          (hp : in_wave_domain c r p) (hq : in_wave_domain c r q) :
+          p - q ≤ 2 * r ∧ q - p ≤ 2 * r ∧ (r = 0 → p = q) := by
+        dsimp [in_wave_domain] at hp hq
+        refine ⟨by omega, by omega, ?_⟩
+        intro hr
+        omega
+    variables: "c: wave initiation centre; r (r_wave): wave domain radius; p, q: retinal positions of two RGCs; s_a(e): binary burst raster of RGC a in event e; C_wave: pairwise Pearson burst correlation; K_ret: Hebbian cooperative kernel driving (K_ret (x) K_y (x) K_v) W in the 4D tensor growth law"
+    role: "Proves that co-firing in bounded cholinergic wave domains confines the correlation-derived cooperative kernel to retinal separations <= 2 r_wave, and that without waves (r = 0) only self-correlation remains, formalising why beta2-nAChR knockout retinae lose neighbour-driven termination-zone refinement while gradient-set polarity is preserved"
+    source_citation: "Meister M, Wong ROL, Baylor DA, Shatz CJ (1991) Science 252(5008):939-943, doi 10.1126/science.2035024; Feller MB et al. (1996) Science 272(5265):1182-1187, doi 10.1126/science.272.5265.1182; McLaughlin T, Torborg CL, Feller MB, O'Leary DDM (2003) Neuron 40(6):1147-1160, doi 10.1016/S0896-6273(03)00790-6; Willshaw DJ, von der Malsburg C (1976) Proc. R. Soc. B 194:431-445"
+    code_locus: "1976-willshaw-retinotectal-chemoaffinity.py#L464-L535"
+    code_locus_secondary: "1976-willshaw-retinotectal-chemoaffinity.py#L607-L629"

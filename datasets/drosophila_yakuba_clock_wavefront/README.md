@@ -1,0 +1,15 @@
+# Dataset: `drosophila_yakuba_clock_wavefront` (Slot #2733 — *Drosophila yakuba* · `194 µm`)
+
+- **Organism (*Ousia*)**: *Drosophila yakuba* (Afrotropical Savanna Fruit Fly (Abdominal Yellow/Tan Melanic Gradation))
+- **Characteristic Phenomenon Size**: `194 µm` (`0.0001945 m`, `log10 = -3.711`, Tier `5_primordium_100um`)
+- **Anatomical / Developmental / Connectomic Structure**: Segmentation clock somite / metamere unit in Drosophila yakuba (Afrotropical Savanna Fruit Fly)
+- **Geological Horizon**: Holocene (Extant) (`0 Ma`)
+- **Evolutionary / Scale Lineage Group**: Sophophora melanogaster Subgroup Radiation (0–12 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 3. Phase/Delay Oscillators (III. Segmentation Clock & Wavefront)
+- **External Multi-Modal Atlases**:
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

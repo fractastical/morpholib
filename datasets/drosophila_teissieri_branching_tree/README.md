@@ -1,0 +1,15 @@
+# Dataset: `drosophila_teissieri_branching_tree` (Slot #2766 — *Drosophila teissieri* · `936 µm`)
+
+- **Organism (*Ousia*)**: *Drosophila teissieri* (Afrotropical Highland Forest Fly (Multi-Spined Clasper Surstylus))
+- **Characteristic Phenomenon Size**: `936 µm` (`0.0009362 m`, `log10 = -3.029`, Tier `5_primordium_100um`)
+- **Anatomical / Developmental / Connectomic Structure**: Bifurcating vascular / bronchial / hyphal branch in Drosophila teissieri (Afrotropical Highland Forest Fly)
+- **Geological Horizon**: Holocene (Extant) (`0 Ma`)
+- **Evolutionary / Scale Lineage Group**: Sophophora melanogaster Subgroup Radiation (0–12 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 6. Tip-Splitting & Flow Trees (VI. Branching Morphogenesis & Vascular Networks)
+- **External Multi-Modal Atlases**:
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

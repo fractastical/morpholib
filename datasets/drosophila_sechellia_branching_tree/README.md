@@ -1,0 +1,15 @@
+# Dataset: `drosophila_sechellia_branching_tree` (Slot #2716 — *Drosophila sechellia* · `768 µm`)
+
+- **Organism (*Ousia*)**: *Drosophila sechellia* (Seychelles Morinda-Specialist Fly (Loss of Larval Shavenbaby Trichomes))
+- **Characteristic Phenomenon Size**: `768 µm` (`0.0007675 m`, `log10 = -3.115`, Tier `5_primordium_100um`)
+- **Anatomical / Developmental / Connectomic Structure**: Bifurcating vascular / bronchial / hyphal branch in Drosophila sechellia (Seychelles Morinda-Specialist Fly)
+- **Geological Horizon**: Holocene (Extant) (`0 Ma`)
+- **Evolutionary / Scale Lineage Group**: Sophophora melanogaster Subgroup Radiation (0–12 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 6. Tip-Splitting & Flow Trees (VI. Branching Morphogenesis & Vascular Networks)
+- **External Multi-Modal Atlases**:
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

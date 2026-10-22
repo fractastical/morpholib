@@ -18,17 +18,35 @@ model_spec:
     eta_mmp_wt: 1.0
     eta_mmp_gm6001_inhibited: 0.04
     seed: 2019
+    pass3_tau_0_stages: 4.0
+    pass3_kappa_meckels: 0.9
+    pass3_kappa_ceratohyal: 0.7
+    pass3_kappa_palatoquadrate: 1.0
+    pass3_K_joint: 0.08
+    pass3_D_mmp2: 0.004
+    pass3_D_mmp9: 0.002
+    pass3_k_mmp2: 0.25
+    pass3_k_mmp9: 0.5
+    pass3_Z_half: 0.3
+    pass3_eta_max: 1.25
+    pass3_gm6001_active_fraction: 0.04
+  pass3_cartilage_maxwell_rod: "ds_k/dt = kappa_k * (dL_k/dt)/L0_k - s_k * m(Z_k)/tau_0;   m(Z) = Z/(Z_half + Z);   F_cartilage on node a of rod (a,b) = +s_k * (x_b - x_a)/|x_b - x_a|"
+  pass3_mmp_gated_node_dynamics: "dx_i/dt = eta_i(Z) * [ F_attractor_i + F_cartilage_i ],   eta_i = eta_max * Z_i/(Z_half + Z_i),   i in 7 nodes of R^3 (5 landmarks + 2 jaw joints)"
+  pass3_mmp_zymography_field: "dM_m/dt = D_m Lap(M_m) - k_m M_m + S_m(x,y,t), m in {MMP-2 constitutive, MMP-9 inducible};   Z = a_GM * (M_2 + M_9);   sources along optic nerves (eye -> chiasm) and at jaw muscle insertions"
+  pass3_total_energy_dissipation: "E = V_3D(X) + sum_k L0_k s_k^2/(2 kappa_k);   dE/dt = -sum_i eta_i ||F_i||^2 - sum_k L0_k s_k^2 m(Z_k)/(kappa_k tau_0) <= 0"
   inputs:
     - datasets/xenopus_craniofacial_remap/xenopus_craniofacial_remap_reference.json
     - datasets/xenopus_craniofacial_remap/xenopus_craniofacial_specimen.jpg
     - datasets/xenopus_craniofacial_remap/scout_manifest.json
     - datasets/xenopus_craniofacial_remap/paper_citations.bib
+    - datasets/xenopus_craniofacial_remap/cartilage_mmp_zymography_reference.json
+    - datasets/xenopus_craniofacial_remap/pass3_citations.bib
 equations:
   - law_name: "Vandenberg, Adams & Levin (2012) Procrustes Lyapunov Error Equilibrium & Strict Closed-Loop Attractor Decrease Law"
     formula: "V(X) = (1/2) ||X - X^*||_F^2 >= 0;   V(X^*) = 0;   dV/dt = -sum_i ||dx_i/dt||^2 / eta_MMP < 0 (X != X^*)"
     lean_decl: "MathOfBiology.Loop_085.procrustes_lyapunov_2x"
     lean_theorem: "MathOfBiology.Loop_085.procrustes_lyapunov_strict_decrease"
-    lean_locus: "morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean#L18-L55"
+    lean_locus: "morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean#L20-L55"
     lean_code: |
       def sq_int (z : Int) : Int :=
         z * z
@@ -48,12 +66,12 @@ equations:
     variables: "X(t) = (x_i, y_i): 2D Procrustes craniofacial landmark coordinates across NF stages 45..65; X^* = (x_star, y_star): target post-metamorphic froglet landmark coordinates; V(X): Procrustes Lyapunov error functional"
     role: "Proves that the target froglet craniofacial anatomy X^* is the unique zero-error global minimum of the Procrustes Lyapunov functional and that closed-loop attractor remodeling steps strictly contract Procrustes error toward 0"
     source_citation: "Vandenberg, Adams & Levin (2012) Dev. Dyn. 241(5):863-878 Figs. 1-5; Pezzulo & Levin (2016) J. R. Soc. Interface 13:20160555"
-    code_locus: "2019-bischof-xenopus-craniofacial-remap.py#L115-L215"
+    code_locus: "2019-bischof-xenopus-craniofacial-remap.py#L97-L182"
   - law_name: "Open-Loop Fixed-Displacement Vector Failure vs Closed-Loop Attractor Convergence & MMP Arrest Law"
     formula: "x_i^open(T) - x_i^* = x_i(0) - x_i^WT(0) = delta_0 != 0;   dx_i/dt = -eta_MMP * K_i * (x_i - x_i^*);   eta_MMP = 0 ==> dx_i/dt = 0"
     lean_decl: "MathOfBiology.Loop_085.closed_loop_vel"
     lean_theorem: "MathOfBiology.Loop_085.open_loop_divergence_and_mmp_arrest"
-    lean_locus: "morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean#L58-L89"
+    lean_locus: "morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean#L57-L88"
     lean_code: |
       def open_loop_final (x_0 x_wt_0 x_star : Int) : Int :=
         x_0 + (x_star - x_wt_0)
@@ -72,12 +90,12 @@ equations:
     variables: "x_0: perturbed initial organ coordinate at NF stage 45; x_wt_0: wild-type NF 45 coordinate; delta_0 = x_0 - x_wt_0: initial Picasso surgical/teratogenic displacement; eta_MMP: matrix metalloproteinase remodeling mobility; K_i: target-homing stiffness"
     role: "Proves that open-loop hardwired displacement (Null Model 1 in Vandenberg et al. 2012 Fig. 1A) permanently retains the initial Picasso scramble defect delta_0, whereas closed-loop attractor dynamics scale migration speed with defect distance, stop at x_star, and arrest under GM6001 MMP inhibition (eta_MMP = 0, Pinet et al. 2019)"
     source_citation: "Vandenberg, Adams & Levin (2012) Dev. Dyn. 241:863-878 Fig. 1 & Discussion; Pinet et al. (2019) Development 146:dev175893 Figs. 3-6"
-    code_locus: "2019-bischof-xenopus-craniofacial-remap.py#L218-L355"
+    code_locus: "2019-bischof-xenopus-craniofacial-remap.py#L184-L328"
   - law_name: "Bilateral Symmetry Restoration & Multi-Perturbation Craniofacial Equifinality Law"
     formula: "A_sym^2(x_L, y_L, x_R, y_R) = (x_L + x_R)^2 + (y_L - y_R)^2;   lim_{t->T} A_sym^2(X^closed(t)) = A_sym^2(-x^*, y^*, x^*, y^*) = 0"
     lean_decl: "MathOfBiology.Loop_085.bilateral_asymmetry_sq"
     lean_theorem: "MathOfBiology.Loop_085.bilateral_symmetry_restoration_regimes"
-    lean_locus: "morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean#L92-L129"
+    lean_locus: "morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean#L90-L128"
     lean_code: |
       def bilateral_asymmetry_sq (x_L y_L x_R y_R : Int) : Int :=
         sq_int (x_L + x_R) + sq_int (y_L - y_R)
@@ -104,4 +122,48 @@ equations:
     variables: "(x_L, y_L), (x_R, y_R): left and right dorsolateral eye or naris coordinates; (-x_star, y_star), (x_star, y_star): mirror-symmetric froglet target coordinates"
     role: "Establishes that closed-loop craniofacial remodeling eliminates initial bilateral asymmetry (5696 -> 0) and restores mirror-symmetric eye and naris placement across scrambled Picasso, caudal eye rotation, and lateral jaw perturbations, whereas open-loop displacement preserves the initial asymmetry (5696)"
     source_citation: "Vandenberg, Adams & Levin (2012) Dev. Dyn. 241:863-878 Figs. 3-7; Pinet et al. (2019) Development 146:dev175893"
-    code_locus: "2019-bischof-xenopus-craniofacial-remap.py#L290-L435"
+    code_locus: "2019-bischof-xenopus-craniofacial-remap.py#L129-L136"
+    code_locus_secondary: "2019-bischof-xenopus-craniofacial-remap.py#L184-L268"
+  - law_name: "Pass 3 MMP-Gated Maxwell Cartilage Stress Relaxation & GM6001 Arrest Law"
+    formula: "s' = s + kappa * dstrain - s * m / 4;   m = 0 (MMP arrest) ==> s' = s + kappa * dstrain (elastic, pre-strain conserved);   m = 1, dstrain = 0, s >= 4 ==> 0 <= s' < s;   100 -> 75 -> 57"
+    lean_decl: "MathOfBiology.Loop_085.maxwell_stress_step"
+    lean_theorem: "MathOfBiology.Loop_085.maxwell_cartilage_relaxation_and_mmp_arrest"
+    lean_locus: "morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean#L130-L157"
+    lean_code: |
+      def maxwell_stress_step (s dstrain kappa : Int) (mmp_active : Bool) : Int :=
+        if mmp_active then s + kappa * dstrain - s / 4 else s + kappa * dstrain
+      theorem maxwell_cartilage_relaxation_and_mmp_arrest (s kappa d : Int) :
+          maxwell_stress_step s 0 kappa false = s ∧
+          maxwell_stress_step s d kappa false = s + kappa * d ∧
+          (0 ≤ s → 0 ≤ maxwell_stress_step s 0 kappa true ∧ maxwell_stress_step s 0 kappa true ≤ s) ∧
+          (4 ≤ s → maxwell_stress_step s 0 kappa true < s) ∧
+          maxwell_stress_step 100 0 kappa true = 75 ∧
+          maxwell_stress_step (maxwell_stress_step 100 0 kappa true) 0 kappa true = 57 := by
+        simp only [maxwell_stress_step, Int.mul_zero, Int.add_zero, ite_true]
+        refine ⟨rfl, rfl, ?_, ?_, ?_, ?_⟩ <;> omega
+    variables: "s: dimensionless Maxwell rod stress of a Meckel's / ceratohyal / palatoquadrate cartilage; kappa: rod stiffness; dstrain: strain increment per stage step; m in {0,1}: active gelatinase gate (GM6001 blockade = 0); relaxation time tau_0 = 4 steps"
+    role: "Formalises the Pass 3 viscoelastic cartilage coupling: with active MMP the perturbation pre-strain stored in the chondrocranial rods relaxes monotonically (Maxwell flow), whereas under GM6001 arrest the rods stay elastic and conserve their stress, which is what pins the landmarks away from X^* in simulate_cartilage_mmp_remap"
+    source_citation: "Pinet, Deolankar, Leung & McLaughlin (2019) Development 146:dev175893 (MMP-dependent tissue remodelling required for craniofacial correction); Maxwell viscoelastic rod reduction (this work, unsourced constants in cartilage_mmp_zymography_reference.json)"
+    code_locus: "2019-bischof-xenopus-craniofacial-remap.py#L460-L517"
+    code_locus_secondary: "2019-bischof-xenopus-craniofacial-remap.py#L519-L634"
+  - law_name: "Pass 3 Elastic Cartilage Pinning Residual vs Relaxed-Cartilage Target Convergence Law"
+    formula: "x_eq = (K x^* + kappa x_rest)/(K + kappa);   kappa = 0 ==> x_eq = x^*;   K = kappa = 1 ==> x_eq - x^* = (x_rest - x^*)/2 != 0 for x_rest != x^*;   (28, -8): pinned 10 vs relaxed 28"
+    lean_decl: "MathOfBiology.Loop_085.pinned_equilibrium"
+    lean_theorem: "MathOfBiology.Loop_085.elastic_pinning_residual"
+    lean_locus: "morphoeval/lean/loops/Loop_085_xenopus_craniofacial_remap.lean#L159-L185"
+    lean_code: |
+      def pinned_equilibrium (K kappa x_star x_rest : Int) : Int :=
+        (K * x_star + kappa * x_rest) / (K + kappa)
+      theorem elastic_pinning_residual (x_star x_rest : Int) :
+          pinned_equilibrium 1 0 x_star x_rest = x_star ∧
+          pinned_equilibrium 1 1 x_star x_rest - x_star = (x_rest - x_star) / 2 ∧
+          (x_rest ≠ x_star → 2 ≤ x_rest - x_star ∨ x_rest - x_star ≤ -1 →
+            pinned_equilibrium 1 1 x_star x_rest ≠ x_star) ∧
+          pinned_equilibrium 1 1 28 (-8) = 10 ∧
+          pinned_equilibrium 26 0 28 (-8) = 28 := by
+        refine ⟨?_, ?_, ?_, by decide, by decide⟩ <;> simp only [pinned_equilibrium] <;> omega
+    variables: "K: attractor homing gain; kappa: effective elastic stiffness of the un-relaxed cartilage rod (0 once the Maxwell stress has relaxed); x^*: froglet target landmark coordinate; x_rest: landmark position at which the rod is at its NF 45 rest length"
+    role: "Explains the Pass 3 GM6001 residual defect and the Maxwell stress-arrest ratio: an elastic (MMP-arrested) cartilage rod shifts the overdamped equilibrium of a landmark to the stiffness-weighted mean of target and rest positions, so the Procrustes error cannot vanish, whereas relaxed cartilage (active MMP) restores exact convergence to X^*"
+    source_citation: "Vandenberg, Adams & Levin (2012) Dev. Dyn. 241:863-878 (target-morphology convergence); Pinet et al. (2019) Development 146:dev175893 (MMP inhibition blocks correction); 1D overdamped spring reduction (this work)"
+    code_locus: "2019-bischof-xenopus-craniofacial-remap.py#L656-L704"
+    code_locus_secondary: "2019-bischof-xenopus-craniofacial-remap.py#L1454-L1552"

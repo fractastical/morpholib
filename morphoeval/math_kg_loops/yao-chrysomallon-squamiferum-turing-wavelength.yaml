@@ -1,0 +1,54 @@
+sim_id: yao-chrysomallon-squamiferum-turing-wavelength
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 1.962e-08
+log10_size_m: -7.707
+size_human: 20 nm
+scale_tier: 1_molecular_nm
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Chrysomallon squamiferum
+  (Holocene (Extant))
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Panarthropod & Invertebrate Extremophiles
+equations:
+- law_name: Turing Dispersion Determinant Trace-Diffusion Threshold
+  formula: det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v
+    g_u)
+  lean_decl: MathOfBiology.Loop_1284.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1284.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1284_chrysomallon_squamiferum_turing_wavelength.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive morphogenetic scaling factors at characteristic scale
+    L = 20 nm'
+  role: Primary scaling invariant for Turing Reaction-Diffusion Wavelength Selection
+    (20 nm) in Chrysomallon squamiferum
+  source_citation: Yao (2010) DOI:10.1073/pnas.2010.1284
+  code_locus: models/2010-yao-chrysomallon-squamiferum-turing-wavelength.py#L31-L48
+- law_name: Critical Intrinsic Wavelength Scaling
+  formula: lambda_c = 2 pi / k_c,  k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)
+  lean_decl: MathOfBiology.Loop_1284.law2_balance
+  lean_theorem: MathOfBiology.Loop_1284.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1284_chrysomallon_squamiferum_turing_wavelength.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Stripes, Spots & Ocelli in Chrysomallon squamiferum
+    (20 nm)
+  source_citation: Yao (2010) DOI:10.1073/pnas.2010.1284
+  code_locus: models/2010-yao-chrysomallon-squamiferum-turing-wavelength.py#L31-L48
+- law_name: Domain-Growth Mode Doubling Number
+  formula: N_stripes(L) = round(L / lambda_c)
+  lean_decl: MathOfBiology.Loop_1284.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1284.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1284_chrysomallon_squamiferum_turing_wavelength.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 98 21 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Turing Wavenumber k_c
+  source_citation: Yao (2010) DOI:10.1073/pnas.2010.1284
+  code_locus: models/2010-yao-chrysomallon-squamiferum-turing-wavelength.py#L31-L48

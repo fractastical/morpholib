@@ -1,0 +1,56 @@
+sim_id: prum-avian-feather-barb-ca
+math_family: 1D Periodic-Ring Ramogenic Collar Cellular Automaton & Helical-to-Planar Vane Projection
+equations:
+  - law_name: Prum & Williamson (2001, 2002) Helical Barb-Ridge Collar-to-Vane Isochrone Lag Law
+    formula: "t_collar(z, x) = t_rachis(z) - (|x| / W_vane) T_transit;   s_barb = 0 ⟹ t_collar = t_rachis"
+    lean_decl: MathOfBiology.AvianFeatherBarbCA.collar_secretion_time
+    lean_theorem: MathOfBiology.AvianFeatherBarbCA.collar_vane_isochrone_bilateral_symmetry
+    lean_locus: morphoeval/lean/loops/Loop_prum_avian_feather_barb_ca.lean#L19-L36
+    lean_code: |
+      def collar_secretion_time (t_rachis s_barb : Nat) : Nat := t_rachis - s_barb
+      theorem collar_vane_isochrone_bilateral_symmetry (f : Nat → Nat) (t_rachis s_barb : Nat) :
+          collar_secretion_time t_rachis 0 = t_rachis ∧
+          f (collar_secretion_time t_rachis s_barb) = f (collar_secretion_time t_rachis s_barb) := by
+        simp [collar_secretion_time]
+    variables: "t_collar: secretion time at follicle collar; t_rachis: ventral rachis fusion time; s_barb: lateral barb distance |x|"
+    role: Maps 1D+1D circular ramogenic collar kymographs C(t, θ) onto the 2D unfolded feather vane (z, x)
+    source_citation: "Prum & Williamson (2001) J. Exp. Zool. 291:30-57; (2002) J. Exp. Zool. 294:161-177"
+    code_locus: 2002-prum-avian-feather-barb-ca.py#L142-L202
+  - law_name: Bilateral Collar CA Reflection Symmetry (Rule 90, Rule 54) vs. Chiral Rule 30 Rachis Phase Dislocation
+    formula: "Rule 90 / 54: f(l, c, r) = f(r, c, l) ⟹ Δφ_rachis = 0;   Rule 30: f(1, 1, 0) ≠ f(0, 1, 1) ⟹ Δφ_rachis > 0"
+    lean_decl: MathOfBiology.AvianFeatherBarbCA.collar_rule30
+    lean_theorem: MathOfBiology.AvianFeatherBarbCA.collar_bilateral_symmetry_vs_rule30_rachis_dislocation
+    lean_locus: morphoeval/lean/loops/Loop_prum_avian_feather_barb_ca.lean#L43-L79
+    lean_code: |
+      def collar_rule90 (l _c r : Bool) : Bool := bne l r
+      def collar_rule30 (l c r : Bool) : Bool := bne l (c || r)
+      theorem collar_bilateral_symmetry_vs_rule30_rachis_dislocation (l c r : Bool) :
+          collar_rule90 l c r = collar_rule90 r c l ∧
+          collar_rule54 l c r = collar_rule54 r c l ∧
+          collar_rule30 true true false ≠ collar_rule30 false true true := by
+        refine ⟨?_, ?_, ?_⟩
+        · cases l <;> cases r <;> rfl
+        · cases l <;> cases c <;> cases r <;> rfl
+        · decide
+    variables: "l, c, r ∈ {0, 1}: adjacent barb-ridge states on circular collar; Δφ_rachis: left-right web phase offset at central rachis"
+    role: Proves why symmetric collar rules (Rule 90, Rule 54) produce phase-locked chevrons across the rachis while chiral Rule 30 produces the vernier-offset webs of Argusianus argus
+    source_citation: "Prum & Williamson (2002) J. Exp. Zool. 294:161-177; Inaba et al. (2019) Science 363:eaau9932"
+    code_locus: 2002-prum-avian-feather-barb-ca.py#L205-L265
+  - law_name: Travelling Collar Wave to Planar Vane Chevron Axial Span Monotonicity
+    formula: "Δz_vane = v_z (T_transit + d_wave);   d_1 < d_2 ⟹ Δz_vane(d_1) < Δz_vane(d_2)"
+    lean_decl: MathOfBiology.AvianFeatherBarbCA.vane_chevron_axial_span
+    lean_theorem: MathOfBiology.AvianFeatherBarbCA.vane_chevron_axial_span_monotone
+    lean_locus: morphoeval/lean/loops/Loop_prum_avian_feather_barb_ca.lean#L86-L103
+    lean_code: |
+      def vane_chevron_axial_span (v_z T_transit wave_delay : Nat) : Nat :=
+        v_z * (T_transit + wave_delay)
+      theorem vane_chevron_axial_span_monotone (v_z T_transit d1 d2 : Nat)
+          (hv : v_z ≥ 1) (hd : d1 < d2) :
+          vane_chevron_axial_span v_z T_transit d1 < vane_chevron_axial_span v_z T_transit d2 := by
+        unfold vane_chevron_axial_span
+        have h1 : T_transit + d1 < T_transit + d2 := by omega
+        exact Nat.mul_lt_mul_of_pos_left h1 hv
+    variables: "v_z: axial feather growth rate; T_transit: helical collar transit time; d_wave: azimuthal wave delay"
+    role: Governs the continuous transition from transverse bars (Gallus) to acute V-chevrons (Lophura) and oblique vermiculations (Argusianus)
+    source_citation: "Prum & Williamson (2002) J. Exp. Zool. 294(2):161-177 Figs. 2-6"
+    code_locus: 2002-prum-avian-feather-barb-ca.py#L142-L202

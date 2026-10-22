@@ -104,8 +104,10 @@ OUT_PNG = ROOT / "docs" / "media" / "planarian_hk_atpase_anterior_comparison.png
 OUT_GIF = ROOT / "docs" / "media" / "planarian_hk_atpase_anterior_growth.gif"
 
 EXPECTED_SHA256: dict[str, str] = {
+    # Pass 3 (Phase B): the campaign commit 398c37e0 replaced the 1493x564 Wikimedia composite with a
+    # 720x500 published PlanformDB bright-field photograph; the pin below is that committed file's digest.
     "datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg": (
-        "466029cc0561067890bb0f69d224d8f799745eeb67a0699246107611737fb546"
+        "0dde9f5e83a87dd9bdc3627e19ebc891cb4f8e99cf632fe637bccf082abfb990"
     ),
     "datasets/planarian_hk_atpase_anterior/scout_manifest.json": (
         "9de72183ede698f04d87a137a1e4d3a235dbcac613bf9da6e5c553eef9d94294"
@@ -517,12 +519,15 @@ def segment_planarian_specimen(specimen_path: Path = SPECIMEN_PATH) -> dict[str,
       1. Isolate the pigmented planarian body silhouette from the bright background
          (luminance < 215) via morphological closing, hole filling, and connected-component
          selection (removing the top-left scale bar).
-      2. Extract the anteroposterior (AP) body axis (x_min = 8 px anterior tip to
-         x_max = 1486 px posterior tail tip, total length L = 1478 px), midline y(x),
-         and dorsoventral width profile W(s) across normalized AP coordinate s in [0, 1].
+      2. Extract the anteroposterior (AP) body axis (x_min = 46 px anterior tip to
+         x_max = 672 px posterior tail tip, total length L = 626 px on the 720x500
+         PlanformDB photograph committed in 398c37e0), midline y(x), and dorsoventral
+         width profile W(s) across normalized AP coordinate s in [0, 1].
       3. Detect the bilateral pair of dark photoreceptor ocelli (eyespots) inside the
-         anterior head region (s < 0.22) via local Gaussian background subtraction
-         (sigma = 12 px) and connected-component center-of-mass localization.
+         anterior head region (s < 0.15) via local Gaussian background subtraction
+         with a body-length-scaled kernel (sigma = 12 px * L / 1478 px, floor 4 px;
+         erosion = 8 px * L / 1478 px, floor 6 px) and connected-component
+         center-of-mass localization.
     """
     img = np.asarray(Image.open(specimen_path).convert("RGB"))
     gray = 0.299 * img[:, :, 0] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 2]
@@ -556,12 +561,13 @@ def segment_planarian_specimen(specimen_path: Path = SPECIMEN_PATH) -> dict[str,
             pigment_profile[i] = float(255.0 - np.mean(gray[col_y, xc]))
 
     # Detect the two bilateral photoreceptor ocelli (eyespots) in the anterior head region
-    ant_limit = x_min + int(0.22 * (x_max - x_min))
+    ant_limit = x_min + int(0.15 * (x_max - x_min))
     ant_region = worm_mask.copy()
     ant_region[:, ant_limit:] = False
-    ant_interior = ndi.binary_erosion(worm_mask, iterations=8) & ant_region
+    scale_k = length_px / 1478.0  # kernel sizes were tuned on the 1478 px Pass 1-2 image
+    ant_interior = ndi.binary_erosion(worm_mask, iterations=max(6, int(round(8 * scale_k)))) & ant_region
 
-    local_bg = ndi.gaussian_filter(gray, sigma=12.0)
+    local_bg = ndi.gaussian_filter(gray, sigma=max(4.0, 12.0 * scale_k))
     dark_contrast = (local_bg - gray) * ant_interior
     thresh = float(np.percentile(dark_contrast[ant_interior], 96.5))
     ocelli_mask = ndi.binary_opening(dark_contrast > thresh, iterations=1)
@@ -1893,9 +1899,9 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "name": "Schmidtea mediterranea specimen bilateral photoreceptor ocelli count & relative AP position",
             "value": round(spec["mean_ocelli_rel_s"], 4),
             "unit": "x / L (anterior fraction)",
-            "method": "Automated Gaussian local-contrast ocelli detection on schmidtea_mediterranea_specimen.jpg (N=2 eyespots at x/L=0.0528, inter-ocelli spacing=67.1 px)",
+            "method": f"Automated Gaussian local-contrast ocelli detection on schmidtea_mediterranea_specimen.jpg (N={spec['n_ocelli_detected']} eyespots at x/L={spec['mean_ocelli_rel_s']:.4f}, inter-ocelli spacing={spec['inter_ocelli_distance_px']:.1f} px)",
             "reference_value": 0.065,
-            "reference_source": "Vendored Schmidtea mediterranea dorsal specimen (CC BY 2.5, File:Smediterranea.jpg) & simulated anterior head blastema center x/L = 0.065",
+            "reference_source": "Vendored Schmidtea mediterranea dorsal specimen (published PlanformDB bright-field photograph, committed 398c37e0) & simulated anterior head blastema center x/L = 0.065",
             "note": f"detected {spec['n_ocelli_detected']} bilateral ocelli at x/L = {[round(v, 4) for v in spec['ocelli_rel_s']]} (std = {np.std(spec['ocelli_rel_s']):.4f}), body length = {spec['length_px']:.0f} px, aspect ratio = {spec['aspect_ratio']:.3f}",
             "derived_from": "output",
         },
@@ -1987,7 +1993,8 @@ def self_test() -> int:
     assert 0.03 <= spec["mean_ocelli_rel_s"] <= 0.12, (
         f"Expected ocelli in anterior head region s in [0.03, 0.12], got {spec['mean_ocelli_rel_s']:.4f}"
     )
-    assert spec["length_px"] > 1400.0, "Invalid segmented Schmidtea mediterranea body length"
+    assert spec["length_px"] > 500.0 and spec["aspect_ratio"] > 3.0, "Invalid segmented Schmidtea mediterranea body length / aspect ratio"
+    assert abs(spec["ocelli_rel_s"][0] - spec["ocelli_rel_s"][1]) < 0.02, "Bilateral ocelli must lie at the same AP level"
 
     # 8. Verify bitwise two-run solver determinism
     r1 = simulate_planarian_bioelectric_pde(regime="wild_type_1H1T", steps=400, seed=2011)

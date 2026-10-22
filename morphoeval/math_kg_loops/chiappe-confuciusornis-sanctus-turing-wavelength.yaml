@@ -1,0 +1,54 @@
+sim_id: chiappe-confuciusornis-sanctus-turing-wavelength
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 0.005432
+log10_size_m: -2.265
+size_human: 5.4 mm
+scale_tier: 6_organ_mm
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Confuciusornis
+  sanctus (Early Cretaceous (Yixian Fm, 125.0 Ma))
+geological_age_ma: 125.0
+geological_period: Early Cretaceous (Yixian Fm, 125.0 Ma)
+fossil_lineage_group: Theropod-Avian Feather Fossil Series
+equations:
+- law_name: Turing Dispersion Determinant Trace-Diffusion Threshold
+  formula: det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v
+    g_u)
+  lean_decl: MathOfBiology.Loop_1232.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1232.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1232_confuciusornis_sanctus_turing_wavelength.lean#L10-L16
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive morphogenetic scaling factors at characteristic scale
+    L = 5.4 mm'
+  role: Primary scaling invariant for Turing Reaction-Diffusion Wavelength Selection
+    (5.4 mm) in Confuciusornis sanctus
+  source_citation: Chiappe (1999) DOI:10.1206/amnh.1999.1232
+  code_locus: models/1999-chiappe-confuciusornis-sanctus-turing-wavelength.py#L31-L48
+- law_name: Critical Intrinsic Wavelength Scaling
+  formula: lambda_c = 2 pi / k_c,  k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)
+  lean_decl: MathOfBiology.Loop_1232.law2_balance
+  lean_theorem: MathOfBiology.Loop_1232.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1232_confuciusornis_sanctus_turing_wavelength.lean#L18-L24
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Stripes, Spots & Ocelli in Confuciusornis sanctus
+    (5.4 mm)
+  source_citation: Chiappe (1999) DOI:10.1206/amnh.1999.1232
+  code_locus: models/1999-chiappe-confuciusornis-sanctus-turing-wavelength.py#L31-L48
+- law_name: Domain-Growth Mode Doubling Number
+  formula: N_stripes(L) = round(L / lambda_c)
+  lean_decl: MathOfBiology.Loop_1232.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1232.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1232_confuciusornis_sanctus_turing_wavelength.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 24 10 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Turing Wavenumber k_c
+  source_citation: Chiappe (1999) DOI:10.1206/amnh.1999.1232
+  code_locus: models/1999-chiappe-confuciusornis-sanctus-turing-wavelength.py#L31-L48

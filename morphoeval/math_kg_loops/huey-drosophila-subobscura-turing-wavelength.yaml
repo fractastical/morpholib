@@ -1,0 +1,81 @@
+sim_id: huey-drosophila-subobscura-turing-wavelength
+slot: 2901
+organism: Drosophila subobscura
+phenomenon_size_m: 0.0001241
+log10_size_m: -3.906
+size_human: "124 \xB5m"
+scale_tier: 5_primordium_100um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila subobscura
+  (Palearctic Latitudinal Wing-Size Cline Fly)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Sophophora obscura & willistoni Clade
+external_datasets:
+- name: FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)
+  url: https://flybase.org/
+  doi: 10.1093/genetics/iyad035
+- name: "FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses \u2014 Adult\
+    \ Female Drosophila)"
+  url: https://codex.flywire.ai/
+  doi: 10.1038/s41586-024-07558-y
+- name: "Virtual Fly Brain (VFB \u2014 3D Neuroanatomy, Lineage Clones & Connectome\
+    \ Queries)"
+  url: https://www.virtualflybrain.org/
+  doi: 10.7554/eLife.76063
+- name: "BDGP (Berkeley Drosophila Genome Project \u2014 Embryonic In-Situ Gene Expression\
+    \ Atlas)"
+  url: https://insitu.fruitfly.org/
+  doi: 10.1186/gb-2007-8-7-r145
+- name: FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)
+  url: https://flycellatlas.org/
+  doi: 10.1126/science.abk2432
+math_family: Reaction-Diffusion & Turing Dispersion (I. Reaction-Diffusion & Stripe
+  Splitting)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+- law_name: Turing Dispersion Determinant Trace-Diffusion Threshold
+  formula: det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v
+    g_u)
+  lean_decl: MathOfBiology.Loop_2901.law1_invariant
+  lean_theorem: MathOfBiology.Loop_2901.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_2901_drosophila_subobscura_turing_wavelength.lean#L10-L15
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := Int.mul_pos ha hb'
+  variables: "a, b: positive scale factors for Drosophila subobscura at 124 \xB5m"
+  role: "Primary scaling invariant for Turing Reaction-Diffusion Wavelength Selection\
+    \ (124 \xB5m) in Drosophila subobscura"
+  source_citation: Huey (2000) DOI:10.1126/science.287.5451.308
+  code_locus: models/2000-huey-drosophila-subobscura-turing-wavelength.py#L31-L48
+- law_name: Critical Intrinsic Wavelength Scaling
+  formula: lambda_c = 2 pi / k_c,  k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)
+  lean_decl: MathOfBiology.Loop_2901.law2_balance
+  lean_theorem: MathOfBiology.Loop_2901.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_2901_drosophila_subobscura_turing_wavelength.lean#L18-L23
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by omega'
+  variables: 'p: conserved morphological state; q: symmetric flux perturbation'
+  role: "Conservation balance for Stripes, Spots & Ocelli in Drosophila subobscura\
+    \ (124 \xB5m)"
+  source_citation: Huey (2000) DOI:10.1126/science.287.5451.308
+  code_locus: models/2000-huey-drosophila-subobscura-turing-wavelength.py#L31-L48
+- law_name: Domain-Growth Mode Doubling Number
+  formula: N_stripes(L) = round(L / lambda_c)
+  lean_decl: MathOfBiology.Loop_2901.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_2901.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_2901_drosophila_subobscura_turing_wavelength.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 120 23 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Turing Wavenumber k_c
+  source_citation: Huey (2000) DOI:10.1126/science.287.5451.308
+  code_locus: models/2000-huey-drosophila-subobscura-turing-wavelength.py#L31-L48

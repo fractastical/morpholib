@@ -1,0 +1,15 @@
+# Dataset: `drosophila_yakuba_biomineral_accretion` (Slot #2738 — *Drosophila yakuba* · `1.3 mm`)
+
+- **Organism (*Ousia*)**: *Drosophila yakuba* (Afrotropical Savanna Fruit Fly (Abdominal Yellow/Tan Melanic Gradation))
+- **Characteristic Phenomenon Size**: `1.3 mm` (`0.001337 m`, `log10 = -2.874`, Tier `6_organ_mm`)
+- **Anatomical / Developmental / Connectomic Structure**: Biomineralized shell whorl / spicule / test in Drosophila yakuba (Afrotropical Savanna Fruit Fly)
+- **Geological Horizon**: Holocene (Extant) (`0 Ma`)
+- **Evolutionary / Scale Lineage Group**: Sophophora melanogaster Subgroup Radiation (0–12 Ma)
+- **Aristotelian Division**: II. Anaima (Invertebrata) → Entoma (Arthropoda)
+- **Biophysical Cause (*Poiein*)**: 8. Crystal Accretion & TPMS (VIII. Biomineralization, Shells & Spicules)
+- **External Multi-Modal Atlases**:
+  - [FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)](https://flybase.org/)
+  - [FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses — Adult Female Drosophila)](https://codex.flywire.ai/)
+  - [Virtual Fly Brain (VFB — 3D Neuroanatomy, Lineage Clones & Connectome Queries)](https://www.virtualflybrain.org/)
+  - [BDGP (Berkeley Drosophila Genome Project — Embryonic In-Situ Gene Expression Atlas)](https://insitu.fruitfly.org/)
+  - [FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)](https://flycellatlas.org/)

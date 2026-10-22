@@ -1,0 +1,82 @@
+sim_id: hayashi-drosophila-melanogaster-um19-ommatidial-eight-photoreceptor-rosette-clock-wavefront
+slot: 2333
+organism: Drosophila melanogaster
+phenomenon_size_m: 1.664e-05
+log10_size_m: -4.779
+size_human: "17 \xB5m"
+scale_tier: 4_cellular_10um
+anatomical_structure: "R8 founder + R2/R5, R3/R4, R1/R6, R7 photoreceptors + 4 Semper\
+  \ cone cells + 2 primary pigment cells (Third-Instar & 40 h APF Retinal Ommatidial\
+  \ Precluster (FBbt:00004510)) \xB7 FlyCellAtlas retinal_ommatidial_19_cell_unit"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Drosophila melanogaster Multi-Scale FlyBase & FlyWire Connectome\
+  \ Atlas (2.5 nm \u2192 1.2 m)"
+external_datasets:
+- name: FlyBase (Drosophila Genetics, Developmental Ontology & Mutant Phenotype Database)
+  url: https://flybase.org/
+  doi: 10.1093/genetics/iyad035
+- name: "FlyWire Whole-Brain Connectome (139,255 Neurons & 54.5M Synapses \u2014 Adult\
+    \ Female Drosophila)"
+  url: https://codex.flywire.ai/
+  doi: 10.1038/s41586-024-07558-y
+- name: "Virtual Fly Brain (VFB \u2014 3D Neuroanatomy, Lineage Clones & Connectome\
+    \ Queries)"
+  url: https://www.virtualflybrain.org/
+  doi: 10.7554/eLife.76063
+- name: "BDGP (Berkeley Drosophila Genome Project \u2014 Embryonic In-Situ Gene Expression\
+    \ Atlas)"
+  url: https://insitu.fruitfly.org/
+  doi: 10.1186/gb-2007-8-7-r145
+- name: FlyCellAtlas (Whole-Body Single-Cell Transcriptomic Atlas of Drosophila melanogaster)
+  url: https://flycellatlas.org/
+  doi: 10.1126/science.abk2432
+math_family: Phase Oscillator & Wavefront Kinematics (III. Segmentation Clock & Wavefront)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Periodic Somites & Segments
+  poson_law: "Somite Length S = u\xB7T_clock"
+  efficient_cause: 3. Phase/Delay Oscillators
+equations:
+- law_name: Clock-and-Wavefront Segment Length Invariant
+  formula: S = u_wf * T_clock
+  lean_decl: MathOfBiology.Loop_2333.law1_invariant
+  lean_theorem: MathOfBiology.Loop_2333.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_2333_drosophila_melanogaster_um19_ommatidial_eight_photoreceptor_rosette_clock_wavefront.lean#L10-L15
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := Int.mul_pos ha hb'
+  variables: "a, b: positive scale factors for Drosophila melanogaster at 17 \xB5m"
+  role: "Primary scaling invariant for Phase-Coupled Oscillator & Wavefront Arrest\
+    \ at 17 \xB5m (R8 founder + R2/R5, R3/R4, R1/R6, R7 photoreceptors + ) in Drosophila\
+    \ melanogaster"
+  source_citation: Hayashi (2004) DOI:10.1038/nature02952
+  code_locus: models/2004-hayashi-drosophila-melanogaster-um19-ommatidial-eight-photoreceptor-rosette-clock-wavefront.py#L31-L48
+- law_name: Kuramoto-Delta-Notch Synchronization Rate
+  formula: d(delta_phi)/dt = -(K_c - omega_tau) sin(delta_phi)
+  lean_decl: MathOfBiology.Loop_2333.law2_balance
+  lean_theorem: MathOfBiology.Loop_2333.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_2333_drosophila_melanogaster_um19_ommatidial_eight_photoreceptor_rosette_clock_wavefront.lean#L18-L23
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by omega'
+  variables: 'p: conserved morphological state; q: symmetric flux perturbation'
+  role: "Conservation balance for Periodic Somites & Segments in Drosophila melanogaster\
+    \ (17 \xB5m)"
+  source_citation: Hayashi (2004) DOI:10.1038/nature02952
+  code_locus: models/2004-hayashi-drosophila-melanogaster-um19-ommatidial-eight-photoreceptor-rosette-clock-wavefront.py#L31-L48
+- law_name: Kinematic Phase-Gradient Doppler Shift
+  formula: omega_ant / omega_post = 1 + u_wf * |nabla_x phi| / omega_0
+  lean_decl: MathOfBiology.Loop_2333.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_2333.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_2333_drosophila_melanogaster_um19_ommatidial_eight_photoreceptor_rosette_clock_wavefront.lean#L26-L31
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 56 15 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: "Critical bifurcation criterion for Somite Length S = u\xB7T_clock"
+  source_citation: Hayashi (2004) DOI:10.1038/nature02952
+  code_locus: models/2004-hayashi-drosophila-melanogaster-um19-ommatidial-eight-photoreceptor-rosette-clock-wavefront.py#L31-L48
