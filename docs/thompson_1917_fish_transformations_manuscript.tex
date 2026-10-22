@@ -391,6 +391,37 @@ Why do internal 17-landmark wireframes diverge from a single global coordinate g
 \end{enumerate}
 
 % ============================================================================
+\section{Downstream Implications for Evolutionary Biology and Phylogenetic Comparative Methods (PCMs)}
+\label{sec:pcm_implications}
+
+Beyond resolving the historical debate over D'Arcy Thompson's 1917 drawings, decomposing each species' shape into its \textbf{Global 8p Thompson Field} ($\Delta Y_i^{\mathrm{Thompson}}$) plus its \textbf{Local Modular Residual} ($\boldsymbol{\varepsilon}_i^{\mathrm{Modular}} = Y_i - Y_i^{\mathrm{Thompson}}$) has four immediate downstream consequences for phylogenetic comparative methods (\texttt{geomorph}, \texttt{mvMORPH}, \texttt{phytools}, \texttt{OUwie}; \texttt{thompson/run\_pcm\_downstream\_implications.py}; Fig.~\ref{fig:pcm_implications}):
+
+\begin{enumerate}
+  \item \textbf{Resolving Harmon et al.'s (2010) ``Rare Early Burst'' Paradox (Removing Sympatric Tip-Rate Inflation):}
+  A celebrated puzzle in macroevolutionary comparative biology is why empirical shape datasets almost never support Simpson's (1944) ``Early Burst'' model of adaptive radiation, instead favoring single-stationary-peak Ornstein--Uhlenbeck (OU) or ``Late Burst'' models with elevated evolutionary rates near the tips of the phylogeny (Harmon et al.\ 2010~\cite{Harmon2010}). Evaluating the apparent evolutionary rate $\sigma^2(t) = d_P^2 / t$ across our 4,334 time-calibrated pairs (Fig.~\ref{fig:pcm_implications}A) reveals why:
+  \begin{itemize}
+    \item In the \textbf{Local Craniofacial/Jaw Module} ($\mathrm{LM}\,1\text{--}2, 11\text{--}17$), the apparent evolutionary rate spikes by $\mathbf{5.37\times}$ in young congeneric tip divergences ($0\text{--}10\text{ Myr}$: $\sigma^2_{\mathrm{jaw}} = 1.58 \times 10^{-5}\text{ Proc}^2/\text{Myr}$ vs.\ $25\text{--}50\text{ Myr}$: $0.30 \times 10^{-5}$), driven by sympatric competitive character displacement.
+    \item Because standard 17-landmark schemes place $53\%$ of all landmarks in the head, unseparated landmark PCA mixes this $5.37\times$ sympatric jaw tip-spike into $\mathrm{PC1}/\mathrm{PC2}$, creating an artificial ``Late Burst'' / high-$\alpha$ OU signature that masks the deep-time macroevolutionary radiation ($50\text{--}110\text{ Myr}$), where the \textbf{Global 8p Thompson Body Rate rebounds to $2.17\times$ the jaw rate} ($0.73\text{--}1.22 \times 10^{-5}$ vs.\ $0.34\text{--}0.83 \times 10^{-5}\text{ Proc}^2/\text{Myr}$).
+  \end{itemize}
+
+  \item \textbf{$4.5\times$ Higher Phylogenetic Signal-to-Tip Ratio for Clade Inference \& Systematics:}
+  Across $10{,}303$ species ($440$ families, $987$ genera; Fig.~\ref{fig:pcm_implications}B), axial body and fin-insertion traits (\texttt{PPL} $86.3\%$, \texttt{PDL} $85.4\%$, \texttt{BD} $78.7\%$ between-family variance vs.\ only $6.3\%\text{--}7.5\%$ within-genus variance) achieve a $\mathbf{10.5\times\text{ to }13.6\times}$ \textbf{Phylogenetic-to-Tip Signal Ratio}, whereas craniofacial snout and eye traits (\texttt{POL} $59.0\%$, \texttt{ED} $58.5\%$ between-family vs.\ $19.1\%\text{--}19.4\%$ within-genus) drop $\mathbf{4.5\times}$ to just $3.04\times\text{--}3.07\times$. Phylogenetic placement of fossil fishes and deep macroevolutionary disparity analyses should therefore isolate the Global Thompson Body/Fin subspace, whereas ecological niche-packing and character-displacement models should operate on the orthogonal Local Craniofacial Residual.
+
+  \item \textbf{Diffeomorphic Ancestral State Reconstruction (ASR) on Phylogenetic Internal Nodes:}
+  Standard Ancestral State Reconstruction (ASR) computes internal node shapes as linear combinations of tip semilandmark coordinates. At the phylogenetic midpoint ($\alpha = 0.5$) between divergent clades (Fig.~\ref{fig:pcm_implications}C), 600-semilandmark curve TPS folds the ancestral 2D tissue grid ($\det D\Phi \le 0$) on \textbf{5 of 6 classic lineage transitions} (and $6/6$ at $\alpha = 1.0$), generating physically impossible self-intersecting ancestral anatomy. Interpolating along Thompson's 8-parameter coordinate parameters guarantees $\mathbf{100.0\%}$ diffeomorphic ancestral states ($\det D\Phi > 0$ for all $\alpha \in [0, 1]$) and reduces ancestral interior landmark error by $\mathbf{38.4\%}$ ($0.0369$ vs.\ $0.0523$ mean RMS).
+
+  \item \textbf{Eliminating the $p \gg n$ Covariance Singularity Crisis in Multivariate PCMs (Adams \& Collyer 2018, 2019):}
+  Fitting multivariate BM/OU models in \texttt{mvMORPH} or \texttt{geomorph} requires inverting a $p \times p$ evolutionary rate matrix $\mathbf{\Sigma}$ ($465$ free covariance parameters for $p = 30$ Procrustes coordinates; $720{,}600$ for $p = 1{,}200$ semilandmark coordinates), which is strictly singular ($\kappa(\mathbf{\Sigma}) = \infty$) for clades with $n \le 30$ species and severely ill-conditioned ($\kappa = 62{,}743$ at $n = 40$; $\kappa = 7{,}388$ at $n = 62$; Fig.~\ref{fig:pcm_implications}D)~\cite{AdamsCollyer2018}. Projecting shapes into the 4D non-rigid Thompson coordinate subspace (in identical Procrustes units) reduces $\mathbf{\Sigma}$ to 10 covariance parameters, lowering the condition number by $\mathbf{>1{,}000\times}$ (to $\kappa = \mathbf{7.0\text{--}17.9}$, well-conditioned for any clade with $n \ge 6$ species) while preserving $92.0\%$ of non-affine Relative-Warp variance.
+\end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\textwidth]{outreach_fig8_pcm_downstream_implications.png}
+  \caption{\textbf{Four Downstream Implications for Evolutionary Biology \& Phylogenetic Comparative Methods (PCMs).} \textbf{(A)} Resolving Harmon et al.'s (2010) ``Rare Early Burst'' paradox across 4,334 dated pairs: local craniofacial/jaw rates spike $5.37\times$ in young sympatric tip divergences ($0\text{--}10\text{ Myr}$), whereas the Global 8p Thompson body rate dominates deep clade radiation ($50\text{--}110\text{ Myr}$) by up to $2.17\times$. \textbf{(B)} Across $10{,}303$ species ($440$ families), axial body and fin-insertion traits exhibit a $4.5\times$ higher Phylogenetic-to-Tip Signal Ratio ($10.5\times\text{--}13.6\times$) than craniofacial jaw/eye traits ($3.0\times$). \textbf{(C)} Ancestral State Reconstruction (ASR) at phylogenetic midpoints ($\alpha = 0.5$): 8p Thompson geodesic midpoints eliminate curve-TPS grid folding and cut interior landmark error by $38.4\%$. \textbf{(D)} Condition number $\kappa(\mathbf{\Sigma})$ of the multivariate evolutionary rate matrix across clade sizes $n = 8 \dots 62$: Thompson's coordinate basis eliminates $p \gg n$ singularity ($\kappa = 7.4$ vs.\ $7{,}388$).}
+  \label{fig:pcm_implications}
+\end{figure}
+
+% ============================================================================
 \appendix
 \section{Exhaustive Historiographical \& Methodological Audit of Prior Literature (1917--2024): Verbatim Quotes, Exact Failure Modes, and Quantitative Resolution}
 \label{app:literature_audit}
@@ -600,6 +631,12 @@ J.~S. Huxley, \emph{Problems of Relative Growth}, Methuen \& Co., London, 1932 (
 
 \bibitem{Medawar1958}
 P.~B. Medawar, ``D'Arcy Thompson and Growth and Form,'' in \emph{D'Arcy Wentworth Thompson: The Scholar-Naturalist, 1860--1948}, by R.~D'Arcy Thompson, Oxford University Press, London, pp.\ 219--233 (1958); see also P.~B. Medawar, ``Size, shape, and age,'' in \emph{Essays on Growth and Form Presented to D'Arcy Wentworth Thompson}, Oxford University Press, pp.\ 157--187 (1945).
+
+\bibitem{Harmon2010}
+L.~J. Harmon et al., ``Early bursts of body size and shape evolution are rare in comparative data,'' \emph{Evolution} \textbf{64}(8), 2385--2396 (2010).
+
+\bibitem{AdamsCollyer2018}
+D.~C. Adams and M.~L. Collyer, ``Multivariate phylogenetic comparative methods: Evaluations, comparisons, and recommendations,'' \emph{Systematic Biology} \textbf{67}(1), 14--31 (2018); ``Phylogenetic comparative methods and the evolution of multivariate phenotypes,'' \emph{Annual Review of Ecology, Evolution, and Systematics} \textbf{50}, 405--425 (2019).
 
 \end{thebibliography}
 
