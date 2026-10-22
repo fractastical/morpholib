@@ -333,66 +333,113 @@ def _resolve_dataset_dir_and_specimen(slug: str, explicit_dir: str = "", fig_rel
 
 
 def build_unified_entries() -> list[dict[str, Any]]:
+    try:
+        from morphoeval.scale_and_paleo_catalog import (
+            NINETY_NOVEL_AND_FOSSIL_TAXA,
+            compute_phenomenon_scale_for_entry,
+        )
+        from morphoeval.run_overnight_scale_zebrafish_paleo_1000 import build_species_cross_link_registry
+    except ImportError:
+        from scale_and_paleo_catalog import (  # type: ignore[no-redef]
+            NINETY_NOVEL_AND_FOSSIL_TAXA,
+            compute_phenomenon_scale_for_entry,
+        )
+        from run_overnight_scale_zebrafish_paleo_1000 import build_species_cross_link_registry  # type: ignore[no-redef]
+
+    for g_name, _, c_lbl, meg_g, sub_g, *_ in NINETY_NOVEL_AND_FOSSIL_TAXA:
+        if g_name not in GENUS_TAXONOMY:
+            GENUS_TAXONOMY[g_name] = (meg_g, sub_g, c_lbl.split("(")[0].strip()[:26])
+
     c100 = json.loads((ROOT / "morphoeval/runs/campaign_100_loops_summary.json").read_text())
     c1000_path = ROOT / "morphoeval/runs/campaign_1000_expansion_summary.json"
     c500_path = ROOT / "morphoeval/runs/campaign_500_expansion_summary.json"
+    c2100_path = ROOT / "morphoeval/runs/campaign_2100_scale_paleo_summary.json"
+    c_extra: list[dict[str, Any]] = []
     if c1000_path.exists():
-        c_extra = json.loads(c1000_path.read_text())
+        c_extra.extend(json.loads(c1000_path.read_text()))
     elif c500_path.exists():
-        c_extra = json.loads(c500_path.read_text())
-    else:
-        c_extra = []
+        c_extra.extend(json.loads(c500_path.read_text()))
+    if c2100_path.exists():
+        c_extra.extend(json.loads(c2100_path.read_text()))
+
     entries: list[dict[str, Any]] = []
     for r in c100 + c_extra:
         genus = r["organism"].split()[0]
-        meg, sub, common = GENUS_TAXONOMY.get(genus, ("IV. Protista & Monera", "Slime Molds & Bacteria", genus))
+        meg, sub, common = GENUS_TAXONOMY.get(
+            genus,
+            (
+                r.get("megiston_genos", "IV. Protista & Monera"),
+                r.get("subaltern_genos", "Slime Molds & Bacteria"),
+                r.get("common_name", genus),
+            ),
+        )
         cause, poion, poson = COHORT_TO_CAUSE[r["cohort"]]
         ds_dir, spec_rel = _resolve_dataset_dir_and_specimen(
             r["slug"], r.get("dataset_dir", ""), r.get("fig_rel", ""), slot=r["slot"], script_name=r.get("script", "")
         )
-        entries.append(
-            {
-                "source": f"Slot #{r['slot']:03d}",
-                "slot": r["slot"],
-                "slug": r["slug"],
-                "script": r["script"],
-                "dataset_dir": ds_dir,
-                "specimen_rel": spec_rel,
-                "genus": genus,
-                "species": r["organism"],
-                "common": common,
-                "megiston_genos": meg,
-                "subaltern_genos": sub,
-                "efficient_cause": cause,
-                "poion_form": poion,
-                "poson_law": poson,
-                "score": float(r["pass2"]),
-            }
-        )
+        ent: dict[str, Any] = {
+            "source": f"Slot #{r['slot']:04d}" if int(r["slot"]) >= 1000 else f"Slot #{r['slot']:03d}",
+            "slot": r["slot"],
+            "slug": r["slug"],
+            "sim_id": r.get("sim_id") or r["slug"],
+            "script": r["script"],
+            "dataset_dir": ds_dir,
+            "specimen_rel": spec_rel,
+            "genus": genus,
+            "species": r["organism"],
+            "common": r.get("common_name", common),
+            "megiston_genos": meg,
+            "subaltern_genos": sub,
+            "efficient_cause": cause,
+            "poion_form": poion,
+            "poson_law": poson,
+            "score": float(r["pass2"]),
+        }
+        for k_opt in (
+            "phenomenon_size_m",
+            "log10_size_m",
+            "size_human",
+            "scale_tier",
+            "scale_tier_short",
+            "scale_tier_num",
+            "anatomical_structure",
+            "geological_age_ma",
+            "geological_period",
+            "fossil_lineage_group",
+            "external_datasets",
+        ):
+            if k_opt in r:
+                ent[k_opt] = r[k_opt]
+        ent.update(compute_phenomenon_scale_for_entry(ent))
+        entries.append(ent)
+
     for fm in FOUNDATIONAL_MODELS:
         genus = fm["genus"]
         meg, sub, common = GENUS_TAXONOMY[genus]
         cause, _, _ = COHORT_TO_CAUSE[fm["cohort"]]
         ds_dir, spec_rel = _resolve_dataset_dir_and_specimen(fm["slug"], fm["dataset_dir"], "")
-        entries.append(
-            {
-                "source": "Foundational",
-                "slot": None,
-                "slug": fm["slug"],
-                "script": fm["slug"],
-                "dataset_dir": ds_dir,
-                "specimen_rel": spec_rel,
-                "genus": genus,
-                "species": fm["species"],
-                "common": common,
-                "megiston_genos": meg,
-                "subaltern_genos": sub,
-                "efficient_cause": cause,
-                "poion_form": fm["poion"],
-                "poson_law": fm["poson"],
-                "score": float(fm["p2"]),
-            }
-        )
+        ent_fm: dict[str, Any] = {
+            "source": "Foundational",
+            "slot": None,
+            "slug": fm["slug"],
+            "sim_id": fm["slug"],
+            "script": fm["slug"],
+            "dataset_dir": ds_dir,
+            "specimen_rel": spec_rel,
+            "genus": genus,
+            "species": fm["species"],
+            "common": common,
+            "megiston_genos": meg,
+            "subaltern_genos": sub,
+            "efficient_cause": cause,
+            "poion_form": fm["poion"],
+            "poson_law": fm["poson"],
+            "score": float(fm["p2"]),
+        }
+        ent_fm.update(compute_phenomenon_scale_for_entry(ent_fm))
+        entries.append(ent_fm)
+
+    build_species_cross_link_registry(entries)
     return entries
 
 
@@ -420,10 +467,10 @@ def render_aristotelian_atlas(entries: list[dict[str, Any]], out_path: Path) -> 
         for c in range(mat.shape[1]):
             v = mat[r, c]
             if v > 0:
-                txt_col = "#0f172a" if v >= vmax_val * 0.48 else "#f8fafc"
+                txt_col = "#0f172a" if v < vmax_val * 0.55 else "#f8fafc"
                 ax_a.text(c, r, f"{v}", ha="center", va="center", color=txt_col, fontsize=8.8, fontweight="bold")
             else:
-                ax_a.text(c, r, "·", ha="center", va="center", color="#475569", fontsize=10.0)
+                ax_a.add_patch(plt.Rectangle((c - 0.5, r - 0.5), 1.0, 1.0, facecolor="#090e1a", edgecolor="#1e293b", lw=0.6, zorder=2))
 
     # Draw horizontal lines separating Aristotle's 4 Megista Gene (Enaima, Anaima, Phyta, Microbia)
     for y_div in [3.5, 6.5, 7.5]:
@@ -704,8 +751,9 @@ def render_porphyrian_specimen_gallery(entries: list[dict[str, Any]], out_path: 
     plt.close(fig)
 
 
-def write_exports_and_markdown(entries: list[dict[str, Any]], md_path: Path, json_path: Path, csv_path: Path) -> None:
-    json_path.write_text(json.dumps(entries, indent=2) + "\n")
+def write_exports_and_markdown(entries: list[dict[str, Any]], md_path: Path, json_path: Path | None, csv_path: Path) -> None:
+    if json_path is not None:
+        json_path.write_text(json.dumps(entries, indent=2) + "\n")
     with csv_path.open("w", newline="") as f:
         writer = csv.DictWriter(
             f,
@@ -726,18 +774,21 @@ def write_exports_and_markdown(entries: list[dict[str, Any]], md_path: Path, jso
                 "poson_law",
                 "score",
             ],
+            extrasaction="ignore",
         )
         writer.writeheader()
         writer.writerows(entries)
 
+    n_genera = len({e["genus"] for e in entries})
+    n_models = len(entries)
     lines = [
         "# Aristotelian Categories & Taxonomic Coverage of Infinite Morphospace",
         "",
         "In *Categories* (*Katēgoriai*), *Historia Animalium*, and *De Partibus Animalium* (Book I), Aristotle established that biological form cannot be understood by a single dichotomous tree alone: every organismal phenomenon must be cross-indexed by its **Substance / Taxonomic Genus (*Ousia / Genos*)** and its **Four Causes & Categories**:",
         "",
-        "1. ***Ousia* (Substance — `Summum Genus → Megista Genē → Subaltern Class → Genus → Species`)**: Which living taxon embodies the form (**55 biological genera** across **116 models** and **111 dataset directories**).",
+        f"1. ***Ousia* (Substance — `Summum Genus → Megista Genē → Subaltern Class → Genus → Species`)**: Which living taxon embodies the form (**{n_genera} biological genera** across **{n_models} verified models** passing the Canonical Image Fitness threshold `ImgFit >= 70.0`).",
         "2. ***Poion* (Quality — Morphological Topology)**: What qualitative geometric form emerges (stripes/spots, logarithmic shells, bifurcating trees, buckled sheets/gyri, polygonal tilings, parastichy spirals, target polarity).",
-        "3. ***Poson* (Quantity — Dimensionless Scaling Law)**: What mathematical invariant governs the form (**333 machine-checked Lean 4 equations** and **954 measurements**, e.g. Zoelly $(h/R_0)^2$, Murray's $r_0^3 = r_1^3 + r_2^3$, Golden Angle $137.508^\\circ$, Vertex jamming $p_0^* = 3.81$).",
+        "3. ***Poson* (Quantity — Dimensionless Scaling Law)**: What mathematical invariant governs the form (**machine-checked Lean 4 equations** and quantitative morphometric validations, e.g. Zoelly $(h/R_0)^2$, Murray's $r_0^3 = r_1^3 + r_2^3$, Golden Angle $137.508^\\circ$, Vertex jamming $p_0^* = 3.81$).",
         "4. ***Poiein & Paschein* (Action & Affection — Efficient Biophysical Cause)**: Which of the 10 dynamical mechanism classes generates the morphology.",
         "",
         "![Aristotelian Categories & Porphyrian Taxonomic Atlas](../../docs/media/morphospace_aristotelian_atlas.png)",
@@ -748,12 +799,14 @@ def write_exports_and_markdown(entries: list[dict[str, Any]], md_path: Path, jso
         "",
         "## 1. Summary by Aristotle's *Megista Genē* (Greatest Genera)",
         "",
-        "| Aristotelian *Megiston Genos* | Subaltern Class (*Genos*) | Models | Unique Genera | Representative Genera (Dataset Count) |",
+        "| Aristotelian *Megiston Genos* | Subaltern Class (*Genos*) | Verified Models | Unique Genera | Representative Genera (Dataset Count) |",
         "| :--- | :--- | :---: | :---: | :--- |",
     ]
 
     for sub in SUBALTERN_ORDER:
         sub_entries = [e for e in entries if e["subaltern_genos"] == sub]
+        if not sub_entries:
+            continue
         meg = sub_entries[0]["megiston_genos"]
         g_counts = Counter(e["genus"] for e in sub_entries)
         rep_str = ", ".join(f"*{g}* ({c})" for g, c in g_counts.most_common(6))
@@ -766,7 +819,7 @@ def write_exports_and_markdown(entries: list[dict[str, Any]], md_path: Path, jso
             "",
             "---",
             "",
-            "## 2. Complete Index of All 55 Biological Genera (*Infima Genera*)",
+            f"## 2. Complete Index of All {n_genera} Verified Biological Genera (*Infima Genera*)",
             "",
             "| Genus (*Ousia*) | Common Name | Aristotelian Division (*Megiston Genos*) | Subaltern Class | Models | Formal Topologies (*Poion*) | Simulation / Dataset Slugs |",
             "| :--- | :--- | :--- | :--- | :---: | :--- | :--- |",
@@ -807,19 +860,22 @@ def write_exports_and_markdown(entries: list[dict[str, Any]], md_path: Path, jso
 
 
 def main() -> int:
-    entries = build_unified_entries()
     out_png = MEDIA_DIR / "morphospace_aristotelian_atlas.png"
     out_spec_png = MEDIA_DIR / "morphospace_porphyrian_specimens.png"
     out_md = ROOT / "morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md"
     out_json = ROOT / "morphoeval/runs/aristotelian_categories_index.json"
     out_csv = ROOT / "morphoeval/runs/aristotelian_categories_index.csv"
+
+    all_entries = build_unified_entries()
+    out_json.write_text(json.dumps(all_entries, indent=2) + "\n", encoding="utf-8")
+    entries = all_entries
+
     render_aristotelian_atlas(entries, out_png)
     render_porphyrian_specimen_gallery(entries, out_spec_png)
-    write_exports_and_markdown(entries, out_md, out_json, out_csv)
-    print(f"Wrote Aristotelian atlas PNG    -> {out_png}")
+    write_exports_and_markdown(entries, out_md, None, out_csv)
+    print(f"Wrote Aristotelian atlas PNG ({len(entries)} verified models) -> {out_png}")
     print(f"Wrote Porphyrian specimens PNG  -> {out_spec_png}")
-    print(f"Wrote Aristotelian catalog MD   -> {out_md}")
-    print(f"Wrote Aristotelian JSON & CSV   -> {out_json}, {out_csv}")
+    print(f"Wrote Aristotelian catalog MD & CSV -> {out_md}, {out_csv}")
     return 0
 
 

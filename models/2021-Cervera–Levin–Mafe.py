@@ -92,7 +92,7 @@ if any(flag in sys.argv for flag in ("--no-show", "--self-test", "--gif")) or no
 import matplotlib.pyplot as plt
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
 PLANFORM_DATASET_DIR = REPO_ROOT / "datasets" / "planform"
 
 FIXTURE_CHECKSUMS: Dict[str, str] = {

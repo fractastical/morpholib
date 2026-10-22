@@ -691,6 +691,22 @@
     <span class="quick-label">Jump to Category:</span>
   </nav>
 
+  <nav class="quick-bar" id="scale-bar" style="background:#081021;border-bottom:1px solid #1e3a5f;">
+    <span class="quick-label" style="color:#38bdf8;">🔬 Multi-Scale &amp; Fossil Zoom (Smallest &rarr; Largest Bit):</span>
+    <button class="pill active" data-scale="verified_core" id="pill-verified-core" title="Show the 101 Verified Core/Pass-3 Models (ImgFit >= 70)">⭐ Verified Core (101)</button>
+    <button class="pill" data-scale="all_2116" title="Browse all 2,116 Models sorted from smallest nm bit to largest m bit">🌐 All 2,116 Models (Smallest &rarr; Largest)</button>
+    <button class="pill" data-scale="zebrafish_116" style="border-color:#38bdf8;color:#7dd3fc;" title="Exhaustive Danio rerio 116-Run Multi-Scale Atlas (3.2 nm -> 52.7 cm, linked to Zebrahub, ZFIN, Daniocell & MapZebrain)">🐟 Zebrafish Deep-Dive (116 Runs · Zebrahub)</button>
+    <button class="pill" data-scale="fossil_chronospecies" style="border-color:#f59e0b;color:#fde68a;" title="Fossil-Record Chronospecies & Evolutionary Series (565 Ma Ediacaran -> Holocene)">🦴 Fossil Record &amp; Chronospecies (400 Runs)</button>
+    <button class="pill" data-scale="tier_1" title="Tier 1: Molecular & Ion-Channel Complexes (1–50 nm)">1–50 nm (Molecular)</button>
+    <button class="pill" data-scale="tier_2" title="Tier 2: Subcellular Nanostructures & Junctions (50 nm–1 µm)">50 nm–1 µm (Nanostructure)</button>
+    <button class="pill" data-scale="tier_3" title="Tier 3: Organelles, Cilia & Cytoskeletal Arrays (1–10 µm)">1–10 µm (Subcellular)</button>
+    <button class="pill" data-scale="tier_4" title="Tier 4: Single Cells & Vertex Polygons (10–100 µm)">10–100 µm (Single Cell)</button>
+    <button class="pill" data-scale="tier_5" title="Tier 5: Tissue Primordia, Somites & Neuromasts (100 µm–1 mm)">100 µm–1 mm (Primordium)</button>
+    <button class="pill" data-scale="tier_6" title="Tier 6: Developing Organs, Embryo Axes & Suture Lobes (1–10 mm)">1–10 mm (Organ / Embryo)</button>
+    <button class="pill" data-scale="tier_7" title="Tier 7: Whole Organisms, Fins, Shells & Skulls (1–25 cm)">1–25 cm (Whole Organism)</button>
+    <button class="pill" data-scale="tier_8" title="Tier 8: Macro-Skeletal, Shoaling & Colonial Architecture (0.25–15 m)">0.25–15 m (Macro / Shoal)</button>
+  </nav>
+
   <main class="workspace" id="matrix-workspace">
     <section class="matrix-panel">
       <div class="panel-hdr">
@@ -805,14 +821,79 @@
       let selectedC = 3;
       let pageOffset = 0;
       let searchQuery = "";
+      let scaleFilterMode = "verified_core";
       const IMAGE_THRESHOLD = 70.0;
 
-      document.getElementById("top-summary").textContent =
-        `Comparing real biological organisms (left of each card) with published mathematical simulations (right) across ${MODELS.length} verified models (${DATA.total_genera} genera) · Every model linked to its paper DOI, Python solver & Lean 4 proof`;
-      const legendSumEl = document.getElementById("matrix-legend-summary");
-      if (legendSumEl) {
-        legendSumEl.textContent = `${populatedCells} Populated Categories (${MODELS.length} Verified Models across ${DATA.total_genera} Genera)`;
+      // Index all models by species (sorted smallest -> largest size_m) and by fossil lineage
+      const speciesLadderMap = {};
+      const lineageLadderMap = {};
+      MODELS.forEach(m => {
+        if (!speciesLadderMap[m.species]) speciesLadderMap[m.species] = [];
+        speciesLadderMap[m.species].push(m);
+        if (m.lineage) {
+          if (!lineageLadderMap[m.lineage]) lineageLadderMap[m.lineage] = [];
+          lineageLadderMap[m.lineage].push(m);
+        }
+      });
+      Object.values(speciesLadderMap).forEach(arr => arr.sort((a, b) => a.size_m - b.size_m));
+      Object.values(lineageLadderMap).forEach(arr => arr.sort((a, b) => (b.age_ma - a.age_ma) || (a.size_m - b.size_m)));
+
+      function getFilteredModelsForMatrix() {
+        if (scaleFilterMode === "verified_core") {
+          return MODELS.filter(m => m.passes);
+        }
+        if (scaleFilterMode === "zebrafish_116") {
+          return MODELS.filter(m => m.genus === "Danio").sort((a, b) => a.size_m - b.size_m);
+        }
+        if (scaleFilterMode === "fossil_chronospecies") {
+          return MODELS.filter(m => m.age_ma > 0 || (m.lineage && m.lineage.includes("Chronospecies"))).sort((a, b) => (b.age_ma - a.age_ma) || (a.size_m - b.size_m));
+        }
+        if (scaleFilterMode.startsWith("tier_")) {
+          const tnum = Number(scaleFilterMode.replace("tier_", ""));
+          return MODELS.filter(m => m.scale_num === tnum).sort((a, b) => a.size_m - b.size_m);
+        }
+        return [...MODELS].sort((a, b) => a.size_m - b.size_m);
       }
+
+      function rebuildCellMap() {
+        for (let r = 0; r < 10; r++) {
+          for (let c = 0; c < 10; c++) {
+            cellMap[r][c] = [];
+          }
+        }
+        const activePool = getFilteredModelsForMatrix();
+        activePool.forEach(m => {
+          const r = SUBALTERN_ROWS.findIndex(x => x.key === m.subaltern);
+          const c = CAUSE_COLS.findIndex(x => x.key === m.cause);
+          if (r >= 0 && c >= 0) {
+            cellMap[r][c].push(m);
+          }
+        });
+        maxCellCount = 1;
+        populatedCells = 0;
+        for (let r = 0; r < 10; r++) {
+          for (let c = 0; c < 10; c++) {
+            if (cellMap[r][c].length > 0) {
+              populatedCells++;
+              if (cellMap[r][c].length > maxCellCount) maxCellCount = cellMap[r][c].length;
+            }
+            if (scaleFilterMode === "verified_core") {
+              cellMap[r][c].sort((a, b) => (b.rank_score - a.rank_score) || (a.size_m - b.size_m));
+            } else {
+              cellMap[r][c].sort((a, b) => a.size_m - b.size_m);
+            }
+          }
+        }
+        const legendSumEl = document.getElementById("matrix-legend-summary");
+        if (legendSumEl) {
+          legendSumEl.textContent = `${populatedCells}/100 Populated Cells (${activePool.length.toLocaleString()} Models in Active Filter · ${DATA.total_models.toLocaleString()} Total Models across ${DATA.total_genera} Genera & ${DATA.total_species} Species/Chronospecies)`;
+        }
+      }
+
+      rebuildCellMap();
+
+      document.getElementById("top-summary").textContent =
+        `Multi-Scale Morphospace (${DATA.total_models.toLocaleString()} Models · ${DATA.total_genera} Genera · ${DATA.total_species} Species/Chronospecies · 3.2 nm → 5.6 m) · Includes 116-Run Zebrafish (Zebrahub) Deep-Dive & 18 Fossil-Record Chronospecies Lineages`;
 
       function resolveAssetUrl(relPath) {
         if (!relPath) return "";
@@ -1066,37 +1147,61 @@
             m.doi.toLowerCase().includes(q) ||
             m.citation.toLowerCase().includes(q) ||
             m.poson.toLowerCase().includes(q) ||
-            m.poion.toLowerCase().includes(q)
-          );
+            m.poion.toLowerCase().includes(q) ||
+            (m.lineage && m.lineage.toLowerCase().includes(q)) ||
+            (m.period && m.period.toLowerCase().includes(q)) ||
+            (m.size_human && m.size_human.toLowerCase().includes(q))
+          ).sort((a, b) => a.size_m - b.size_m);
+        }
+        if (scaleFilterMode === "zebrafish_116" || scaleFilterMode === "fossil_chronospecies" || scaleFilterMode === "all_2116" || scaleFilterMode.startsWith("tier_")) {
+          if (selectedR === -1) {
+            return getFilteredModelsForMatrix();
+          }
         }
         return cellMap[selectedR][selectedC];
       }
 
       function updateView() {
+        rebuildCellMap();
         renderCanonicalShowcase();
         renderMatrixTable();
-        document.querySelectorAll(".pill").forEach(btn => {
-          const isMatch = !searchQuery && Number(btn.dataset.r) === selectedR && Number(btn.dataset.c) === selectedC;
+        document.querySelectorAll("#quick-bar .pill").forEach(btn => {
+          const isMatch = !searchQuery && selectedR >= 0 && Number(btn.dataset.r) === selectedR && Number(btn.dataset.c) === selectedC;
           btn.classList.toggle("active", isMatch);
+        });
+        document.querySelectorAll("#scale-bar .pill").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.scale === scaleFilterMode);
         });
 
         const list = getCurrentList();
-        const rowObj = SUBALTERN_ROWS[selectedR];
-        const colObj = CAUSE_COLS[selectedC];
+        const rowObj = selectedR >= 0 ? SUBALTERN_ROWS[selectedR] : { label: "All Taxa", color: "#38bdf8" };
+        const colObj = selectedC >= 0 ? CAUSE_COLS[selectedC] : { short: "All Mechanisms" };
         const banner = document.getElementById("zoom-banner");
         const titleEl = document.getElementById("zoom-title");
         const metaEl = document.getElementById("zoom-meta");
 
         if (searchQuery.trim().length > 0) {
           banner.style.borderLeftColor = "#facc15";
-          titleEl.textContent = `Search Results for "${searchQuery}" — ${list.length} Verified Model${list.length === 1 ? "" : "s"}`;
-          metaEl.textContent = `Each card shows the real organism photograph (Left) and the mathematical simulation from the published paper (Right). Click any card for full details.`;
+          titleEl.textContent = `Search Results for "${searchQuery}" — ${list.length} Model${list.length === 1 ? "" : "s"} (Sorted Smallest → Largest Bit)`;
+          metaEl.textContent = `Showing ${list.length} matching runs ordered by characteristic phenomenon size (nm → m). Click any card for its full species scale ladder & nanopub cross-links.`;
+        } else if (selectedR === -1 && scaleFilterMode === "zebrafish_116") {
+          banner.style.borderLeftColor = "#38bdf8";
+          titleEl.textContent = `🐟 Zebrafish (Danio rerio & Sister Danionins) Multi-Scale Atlas — ${list.length} Runs (3.2 nm → 52.7 cm · Linked to Zebrahub)`;
+          metaEl.textContent = `Ordered from smallest molecular bit (4.2 nm Connexin/Her1/Her7 complexes) to largest collective shoal (52.7 cm) across all 10 developmental stages & Zebrahub scRNA-seq/4D light-sheet clusters.`;
+        } else if (selectedR === -1 && scaleFilterMode === "fossil_chronospecies") {
+          banner.style.borderLeftColor = "#f59e0b";
+          titleEl.textContent = `🦴 Fossil Record & Evolutionary Chronospecies Series — ${list.length} Runs (565 Ma Ediacaran → Holocene)`;
+          metaEl.textContent = `Ordered from oldest geological stratum (565 Ma Ediacaran rangeomorphs, Cambrian trilobites, Devonian fin-to-limb, Mesozoic ammonites) to extant living fossils.`;
+        } else if (selectedR === -1) {
+          banner.style.borderLeftColor = "#38bdf8";
+          titleEl.textContent = `🔬 Multi-Scale Phenomenon Zoom (${scaleFilterMode}) — ${list.length} Models (Smallest → Largest Bit)`;
+          metaEl.textContent = `Continuously ordered by physical phenomenon scale L_char (from nanometer channel pores to meter-scale colonies). Click any matrix cell on the left to filter by Taxon × Mechanism.`;
         } else {
           banner.style.borderLeftColor = rowObj.color;
           titleEl.textContent =
-            `Category: ${rowObj.label} × ${colObj.short} — ${list.length} Verified Model${list.length === 1 ? "" : "s"}`;
+            `Category: ${rowObj.label} × ${colObj.short} — ${list.length} Model${list.length === 1 ? "" : "s"}`;
           metaEl.textContent =
-            `Each card compares the real organism photograph (Left) with the mathematical simulation from the published paper (Right). Click any card for equations, DOI & code.`;
+            `Each card compares the biological specimen (Left) with the mathematical simulation (Right) and displays its physical phenomenon scale (nm → m). Click any card for its species scale ladder.`;
         }
 
         const start = pageOffset;
@@ -1123,13 +1228,17 @@
           const specimenUrl = resolveSpecimenUrl(m);
           const scriptUrl = `${DATA.repo_url}/${m.script}`;
           const leanUrl = `${DATA.repo_url}/${m.lean}`;
+          const sibCount = (speciesLadderMap[m.species] || []).length;
+          const paleoTag = m.age_ma > 0 ? `<span class="tile-score" style="color:#fde68a;background:rgba(245,158,11,0.18);" title="Geological Age: ${m.period}">🦴 ${m.age_ma} Ma</span>` : ``;
 
           card.innerHTML = `
             <div class="tile-header">
-              <div class="tile-rank-genus">#${rank} &nbsp;<em>${m.genus}</em> (${m.common})</div>
+              <div class="tile-rank-genus" title="${m.species} (${m.common})">#${rank} &nbsp;<em>${m.species}</em> (${m.common})</div>
               <div class="tile-scores-wrap">
+                <span class="tile-score" style="color:#7dd3fc;background:rgba(56,189,248,0.16);" title="Characteristic Phenomenon Scale: ${m.size_human} (log10=${m.log10_m.toFixed(2)} m · ${m.scale_short})">📏 ${m.size_human}</span>
+                ${paleoTag}
                 <span class="tile-score" title="MorphoEval Overall Audit Score">Audit ${m.score.toFixed(1)}</span>
-                <span class="tile-imgfit" title="Canonical Specimen Image Fitness (${m.img_status})">ImgFit ${m.img_fit.toFixed(1)}</span>
+                <span class="tile-imgfit" title="${sibCount} total multi-scale runs associated with ${m.species}">🔗 ${sibCount}x</span>
               </div>
             </div>
             <div class="tile-stage-split">
@@ -1138,7 +1247,7 @@
                   ? `<img src="${specimenUrl}" alt="${m.species}" onerror="this.onerror=null;this.src='${DATA.raw_url}/${m.specimen}'" />`
                   : ``
                 }
-                <span class="pane-badge">Canonical Specimen</span>
+                <span class="pane-badge">${m.age_ma > 0 ? `Fossil (${m.age_ma} Ma)` : `Specimen (${m.size_human})`}</span>
               </div>
               <div class="pane-sim" title="Dynamical Simulation (${m.script})">
                 ${simUrl
@@ -1146,11 +1255,11 @@
                   : `<img class="anim-gif" src="${specimenUrl}" alt="${m.genus} specimen" loading="lazy" />`
                 }
                 <span class="pane-badge" style="color:#facc15;border-color:rgba(250,204,21,0.45);">Simulation</span>
-                <span class="mode-tag">${m.tier === "pass3_audited" ? "Pass 3 Audited" : (m.tier === "core_validated" ? "Core Validated" : "Template Stub")}</span>
+                <span class="mode-tag">${m.tier === "pass3_audited" ? "Pass 3 Audited" : (m.tier === "core_validated" ? "Core Validated" : m.scale_short)}</span>
               </div>
             </div>
             <div class="tile-footer">
-              <div class="footer-script" title="${m.citation}">${m.script} · ${m.img_metric || m.poson}</div>
+              <div class="footer-script" title="${m.structure || m.citation}">${m.structure ? m.structure : `${m.script} · ${m.poson}`}</div>
               <div class="footer-links-row">
                 ${m.paper_url
                   ? `<a class="tile-link" href="${m.paper_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Original Scientific Paper: ${m.citation}">📄 Paper (${m.doi || "DOI"}) ↗</a>`
@@ -1171,18 +1280,49 @@
         });
       }
 
+      window.__openModelBySlug = function(slug) {
+        const found = MODELS.find(x => x.slug === slug);
+        if (found) openModal(found, found.slot || found.id);
+      };
+
       function openModal(m, rank) {
         const backdrop = document.getElementById("modal-backdrop");
         const body = document.getElementById("modal-body");
         const specimenUrl = resolveSpecimenUrl(m);
+        const sameSpeciesList = speciesLadderMap[m.species] || [m];
+        const sameLineageList = (m.lineage && lineageLadderMap[m.lineage]) ? lineageLadderMap[m.lineage] : [];
+
+        const speciesLadderHtml = sameSpeciesList.map((sib, idx) => {
+          const isCur = sib.slug === m.slug;
+          return `<button class="pill ${isCur ? 'active' : ''}" style="margin:2px;font-size:0.70rem;" onclick="window.__openModelBySlug('${sib.slug}')" title="${sib.structure || sib.poion} (${sib.cause})">
+            #${idx + 1} · <strong>${sib.size_human}</strong> (${sib.poion.split(',')[0]})
+          </button>`;
+        }).join("");
+
+        const extAtlasesHtml = (m.ext_ds && m.ext_ds.length > 0)
+          ? `<div class="cause-item" style="border-left-color:#22c55e;">
+               <strong>🔬 External Multi-Modal Atlases &amp; Databases (Zebrahub / PBDB / ZFIN):</strong><br>
+               ${m.ext_ds.map(d => `<a href="${d.url}" target="_blank" rel="noopener" style="color:#38bdf8;margin-right:12px;font-weight:700;">🔗 ${d.name} ↗</a>`).join("<br>")}
+             </div>`
+          : ``;
+
+        const lineageHtml = sameLineageList.length > 1
+          ? `<div class="cause-item" style="border-left-color:#f59e0b;margin-top:10px;">
+               <strong>🦴 Evolutionary &amp; Fossil Chronospecies Lineage (${m.lineage} — ${sameLineageList.length} Runs across Geological Time):</strong>
+               <div style="margin-top:6px;max-height:110px;overflow-y:auto;">
+                 ${sameLineageList.slice(0, 30).map(ls => `<button class="pill ${ls.slug === m.slug ? 'active' : ''}" style="margin:2px;font-size:0.68rem;" onclick="window.__openModelBySlug('${ls.slug}')"><em>${ls.species}</em> (${ls.age_ma > 0 ? ls.age_ma + ' Ma' : 'Extant'} · ${ls.size_human})</button>`).join("")}
+               </div>
+             </div>`
+          : ``;
+
         body.innerHTML = `
-          <h2 style="font-size:1.18rem;color:#fff;">#${rank} &nbsp;<em>${m.species}</em> (${m.common}) — Audit: <span style="color:#34d399">${m.score.toFixed(1)}/100</span> &nbsp;|&nbsp; Image Fitness: <span style="color:#facc15">${m.img_fit.toFixed(1)}/100</span></h2>
+          <h2 style="font-size:1.18rem;color:#fff;">#${rank} &nbsp;<em>${m.species}</em> (${m.common}) — Scale: <span style="color:#38bdf8">${m.size_human}</span> &nbsp;|&nbsp; Audit: <span style="color:#34d399">${m.score.toFixed(1)}/100</span></h2>
           <p style="font-size:0.80rem;color:#cbd5e1;margin-top:4px;">
             <strong>Primary Scientific Paper:</strong> ${m.citation}
             ${m.paper_url ? ` — <a href="${m.paper_url}" target="_blank" rel="noopener" style="color:#38bdf8;font-weight:700;">https://doi.org/${m.doi} ↗</a>` : ``}
           </p>
-          <p style="font-size:0.78rem;color:#a7f3d0;margin-top:3px;">
-            <strong>Image-to-Math Validation Status:</strong> ${m.img_status} (${m.img_metric})
+          <p style="font-size:0.78rem;color:#fde68a;margin-top:3px;">
+            <strong>Physical Phenomenon Scale &amp; Stratum:</strong> <code>${m.size_human}</code> (<code>${m.size_m} m</code>, <code>log10 = ${m.log10_m.toFixed(2)}</code>, Tier <code>${m.scale_tier}</code>) &nbsp;·&nbsp; <strong>Geological Horizon:</strong> ${m.period} (${m.age_ma} Ma)
           </p>
           <div class="modal-grid">
             <div class="modal-specimen-box">
@@ -1190,14 +1330,16 @@
               <div style="font-size:0.72rem;color:#94a3b8;margin-top:6px;">SHA-256 Locked Canonical Specimen:<br><code>${m.specimen}</code></div>
             </div>
             <div class="cause-list">
-              <div class="cause-item"><strong>1. Ousia (Substance / Taxonomic Hierarchy):</strong><br>${m.megiston} &rarr; ${m.subaltern} &rarr; Genus <em>${m.genus}</em></div>
+              <div class="cause-item"><strong>1. Ousia (Substance &amp; Anatomical Structure):</strong><br>${m.megiston} &rarr; ${m.subaltern} &rarr; <em>${m.species}</em><br><span style="color:#7dd3fc">${m.structure || m.poion}</span></div>
               <div class="cause-item"><strong>2. Poion (Quality / Morphological Topology):</strong><br>${m.poion} (${m.math})</div>
               <div class="cause-item"><strong>3. Poson (Quantity / Dimensionless Scaling Law):</strong><br>${m.poson}</div>
               <div class="cause-item"><strong>4. Poiein (Action / Efficient Biophysical Cause):</strong><br>${m.cause}</div>
-              <div class="cause-item"><strong>5. Upstream Reference Software &amp; Formal Proof:</strong><br>
-                Upstream Solver/Repo: <a href="${m.upstream_url}" target="_blank" rel="noopener" style="color:#38bdf8">${m.upstream_label} ↗</a><br>
-                Lean 4 Proof Module: <code>${m.lean}</code> (0 sorry)
+              ${extAtlasesHtml}
+              <div class="cause-item"><strong>5. Nanopub Species Cross-Links (Smallest &rarr; Largest Bit in <em>${m.species}</em> — ${sameSpeciesList.length} Associated Runs):</strong>
+                <div style="font-size:0.72rem;color:#cbd5e1;margin:3px 0;">Every nanopublication for <em>${m.species}</em> links to <code>pkr:taxon/${m.species.toLowerCase().replace(/[^a-z0-9]+/g, '-')}</code> via <code>pk:speciesTaxon</code> and cross-links all ${sameSpeciesList.length} sibling claims below via <code>pk:sameSpeciesClaim</code>:</div>
+                <div style="margin-top:5px;max-height:135px;overflow-y:auto;">${speciesLadderHtml}</div>
               </div>
+              ${lineageHtml}
             </div>
           </div>
           <div class="modal-links">
@@ -1233,6 +1375,23 @@
         pageOffset = 0;
         updateView();
       };
+
+      document.querySelectorAll("#scale-bar .pill").forEach(btn => {
+        btn.onclick = () => {
+          scaleFilterMode = btn.dataset.scale;
+          searchQuery = "";
+          document.getElementById("search-box").value = "";
+          pageOffset = 0;
+          if (scaleFilterMode === "verified_core") {
+            selectedR = 7;
+            selectedC = 3;
+          } else {
+            selectedR = -1;
+            selectedC = -1;
+          }
+          updateView();
+        };
+      });
 
       function openHowItWorksModal() {
         const backdrop = document.getElementById("modal-backdrop");

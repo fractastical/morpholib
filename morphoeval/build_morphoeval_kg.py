@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """
-build_morphoeval_kg.py — MorphoEval audit -> ProbKnow-conformant nanopublications.
+build_morphoeval_kg.py — MorphoEval audit -> Project Delphi-conformant nanopublications.
 
 MorphoEval is the morphology-simulation sibling of BioEval / NeuroEval: a
 versioned, weighted rubric (morphoeval/rubric.yaml) scored 0-100 per dimension
 for each simulation script, so simulations can be checkpointed and re-scored.
 
-The graph is expressed in the ProbKnow / Project Delphi ontology (v1.3,
-https://w3id.org/probknow/ontology/, vendored in morphoeval/vendor/) and shaped by
-the governed templates of the ProbKnow Space (https://w3id.org/spaces/probknow;
+The graph is expressed in the Project Delphi (formerly ProbKnow) ontology (v1.3,
+https://w3id.org/delphi/ontology/, vendored in morphoeval/vendor/) and shaped by
+the governed templates of the Project Delphi Space (https://w3id.org/spaces/delphi;
 template nanopubs vendored in morphoeval/vendor/templates/), so every nanopub
 links the template it was created from, Nanodash renders it with that form, and
 the checkpoints live in the same probabilistic knowledge graph as the Levin-lab
 claims.  Mapping (rubric scores are pk:hasScore, never pk:hasProbability — see
 project-delphi-ontology #12):
 
-    per simulation   pk:Claim (ProbKnow claim template v3)
+    per simulation   pk:Claim (Project Delphi claim template v3)
                        pkr:claim/morphoeval-<sim>: label, description, pk:context
                        (scripts, output, organism, commit, non-DOI sources),
                        pk:derivedFromPaper <doi>, pk:hasAssessment -> the 8
@@ -24,7 +24,7 @@ project-delphi-ontology #12):
                        pk:weightOfEvidence = overall / 100 (optional unit-interval
                        rescaling of the uncalibrated 0-100 rubric score; omit
                        with --omit-probability)
-    per dimension    pk:LLMClaimAssessment (ProbKnow rubric-assessment template)
+    per dimension    pk:LLMClaimAssessment (Project Delphi rubric-assessment template)
                        pkr:assessment/morphoeval-<sim>-<dim> (stable across
                        re-scores; "-<role>-<assessor>" suffix for a second assessor):
                        <claim> pk:hasAssessment <it>, dct:subject the dimension
@@ -41,15 +41,15 @@ project-delphi-ontology #12):
     overall          the same, with the rubric itself as dct:subject;
                        remediation items and open needs as pk:evidenceAgainst
     rubric           pk:Concept with skos:narrower pk:Concept per dimension
-                       (ProbKnow rubric template)
+                       (Project Delphi rubric template)
 
-Provenance follows the Space's "Extracted from a paper by ProbKnow" template v2
+Provenance follows the Space's "Extracted from a paper by Project Delphi" template v2
 (prov:wasAttributedTo the model and the publisher; prov:wasDerivedFrom each
 source — DOI, dataset or repository URL — with its title and year; rdfs:seeAlso
 the tracking issue), the rubric the generic "Attributed to" template.
 Pubinfo: rdfs:label, dct:created (full UTC timestamp), dct:creator <ORCID>,
 dct:license CC BY 4.0, npx:hasNanopubType, npx:introduces, pk:domain, and the
-nt:wasCreatedFrom{,Provenance,Pubinfo}Template links (Creator, License, ProbKnow
+nt:wasCreatedFrom{,Provenance,Pubinfo}Template links (Creator, License, Project Delphi
 domain, and Supersedes when superseding).
 
 Every nanopub is one file on the nanopub temp base (http://purl.org/nanopub/temp/np001/),
@@ -60,7 +60,7 @@ Usage
 -----
     python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<audit>.yaml
     ... --check             validate the audit against the rubric only
-    ... --conform           offline ProbKnow + template-shape conformance check on the output
+    ... --conform           offline Project Delphi + template-shape conformance check on the output
     ... --supersede         re-issue: same-named nanopubs supersede the URIs in this dir's published.json
     ... --supersede-from D  reuse/supersede nanopubs published from another audit dir (repeatable)
     ... --no-resolve-heads  skip the Nanopub Query head check before superseding (not recommended)
@@ -98,28 +98,33 @@ TEMPLATE_DIR = HERE / "vendor" / "templates"
 NP = Namespace("http://www.nanopub.org/nschema#")
 NPX = Namespace("http://purl.org/nanopub/x/")
 NT = Namespace("https://w3id.org/np/o/ntemplate/")
-PK = Namespace("https://w3id.org/probknow/ontology/")
-PKR = Namespace("https://w3id.org/probknow/resource/")
+PK = Namespace("https://w3id.org/delphi/ontology/")
+PKR = Namespace("https://w3id.org/delphi/resource/")
 TEMP = "http://purl.org/nanopub/temp/np001/"             # nanopub temp base (pre-signing)
 THIS = URIRef(TEMP)
 
-# Governed templates of the ProbKnow Space (https://w3id.org/spaces/probknow), as published
-# by tkuhn/probknow-ontology nanopubs/signed/template-iris.json, plus the ecosystem's Creator,
+# Governed templates of the Project Delphi Space (https://w3id.org/spaces/delphi), as published
+# by fractastical/project-delphi-ontology nanopubs/signed/template-iris.json, plus the ecosystem's Creator,
 # License and Supersedes pubinfo templates and the generic "Attributed to" provenance template.
 TEMPLATES = {
-    "claim": URIRef("https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template"),           # claim v3
-    "rubric-assessment": URIRef("https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template"),
-    "rubric": URIRef("https://w3id.org/np/RAbjeus1yO4SqlPLnpIWNLS6nvW0DGF3879tVduuE0y00/template"),
-    "provenance-extraction": URIRef("https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA"),  # v2
+    "claim": URIRef("https://w3id.org/np/RA3z187EzQXy4zopVZAmFg2sa_QymD1MKfzMxGzNqdNZM/template"),           # delphi claim v4
+    "rubric-assessment": URIRef("https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template"),
+    "rubric": URIRef("https://w3id.org/np/RA9RhJb1TEse-WGWwZwxC5Xe2TAwH6OKecZgRXzX4af3U/template"),
+    "provenance-extraction": URIRef("https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y"),  # delphi extraction
     "provenance-attributed": URIRef("https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU"),
     "pubinfo-creator": URIRef("https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI"),
     "pubinfo-license": URIRef("https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8"),
-    "pubinfo-domain": URIRef("https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0"),
+    "pubinfo-domain": URIRef("https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY"),
     "pubinfo-supersedes": URIRef("https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw"),
 }
-# Templates the 2026-10-13 … 2026-10-19 nanopubs were built against (claim v2, the generic
-# LLM-assessment template, provenance v1); still vendored so `--conform` can check those files.
+# Templates the 2026-10-13 … 2026-10-20 nanopubs were built against (claim v2/v3, rubric/assessment v1,
+# the generic LLM-assessment template, provenance v1/v2, domain v1); still vendored so `--conform` can check those files.
 LEGACY_TEMPLATES = {
+    "claim-v3": URIRef("https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template"),
+    "rubric-assessment-v1": URIRef("https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template"),
+    "rubric-v1": URIRef("https://w3id.org/np/RAbjeus1yO4SqlPLnpIWNLS6nvW0DGF3879tVduuE0y00/template"),
+    "provenance-extraction-v2": URIRef("https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA"),
+    "pubinfo-domain-v1": URIRef("https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0"),
     "claim-v2": URIRef("https://w3id.org/np/RAIVOEuhWNK4BuCbL_XRChRVlV6LKpFicBzwHpmuRxHWI/template"),
     "llm-assessment": URIRef("https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template"),
     "provenance-extraction-v1": URIRef("https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg"),
@@ -237,7 +242,7 @@ def validate(rubric, audit) -> list[str]:
             if not (ev := s.get("evidence") or []):
                 errs.append(f"{sid}/{did}: no evidence (rubric forbids unevidenced scores)")
             for e in ev:
-                if not (ROOT / e["file"]).exists():
+                if not (ROOT / e["file"]).exists() and not (ROOT / "models" / Path(e["file"]).name).exists():
                     errs.append(f"{sid}/{did}: evidence file not found: {e['file']}")
                 a, b = e["lines"]
                 if a > b or a < 0:
@@ -334,7 +339,7 @@ def squash(text) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# Nanopub construction (ProbKnow template shapes, temp base, one nanopub per file)
+# Nanopub construction (Project Delphi template shapes, temp base, one nanopub per file)
 # --------------------------------------------------------------------------- #
 def _bind(g):
     for p, n in (("this", Namespace(TEMP)), ("sub", Namespace(TEMP)), ("np", NP), ("npx", NPX), ("nt", NT),
@@ -440,7 +445,7 @@ class NanopubBuilder:
 
     # ---- graphs ------------------------------------------------------------ #
     def provenance_extraction(self, agents, papers, see_also=()):
-        """'Extracted from a paper by ProbKnow' provenance (v2): attributed to the agents, derived
+        """'Extracted from a paper by Project Delphi' provenance (v2): attributed to the agents, derived
         from each source (DOI IRI, or the URL of a dataset / repository) with its title and year,
         rdfs:seeAlso the tracking issue."""
         asrt = URIRef(TEMP + "assertion")
@@ -453,7 +458,7 @@ class NanopubBuilder:
         t += [(asrt, RDFS.seeAlso, s) for s in see_also if s is not None]
         return t
 
-    # ---- ProbKnow resources ----------------------------------------------------- #
+    # ---- Project Delphi resources ----------------------------------------------- #
     def assessment_uri(self, sim: dict, dim_id: str) -> URIRef:
         """Stable across re-scores (no audit id: the pass is identified by dct:created, the
         commit in the description and the npx:supersedes chain); an independent second
@@ -710,14 +715,14 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
             superseded.append((name, old))
         p.write_text(text); written.append(p); _merge(ds)
 
-    # ---- 1. rubric as a pk:Concept with one narrower concept per dimension (ProbKnow rubric template) -- #
+    # ---- 1. rubric as a pk:Concept with one narrower concept per dimension (Project Delphi rubric template) -- #
     if not is_second_assessor:
         tr = [(rubric_uri, RDF.type, PK.Concept),
               (rubric_uri, RDF.type, SKOS.Concept),
               (rubric_uri, RDFS.label, Literal(f"{rubric['name']} v{rubric['version']}")),
               (rubric_uri, DCTERMS.description, Literal(
                   "Weighted 0-100 rubric for the faithfulness of a morphology simulation to its organism and "
-                  "source model; Overall = weighted mean. Each score is a pk:LLMClaimAssessment (ProbKnow "
+                  "source model; Overall = weighted mean. Each score is a pk:LLMClaimAssessment (Project Delphi "
                   "rubric-assessment template) of the pk:Claim pkr:claim/morphoeval-<sim> against one dimension "
                   "(dct:subject the dimension concept, pk:assessmentType morphoeval/<version>/<dimension>) with "
                   "pk:hasScore = score/100 — an uncalibrated rubric score, not a probability — and a pk:hasVerdict "
@@ -771,7 +776,7 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                   (au, PK.hasScore, unit_interval(score / 100.0))]
             return t + model_triples
 
-        # ---- 2. the faithfulness CLAIM (ProbKnow claim template) ------------------------ #
+        # ---- 2. the faithfulness CLAIM (Project Delphi claim template) ------------------ #
         if not is_second_assessor:
             non_doi = [r for r in papers if not r.get("doi")]
             context = (f"script(s): {', '.join(B.script_uri(s) for s in scripts)}; output: {sim.get('output', 'n/a')}; "
@@ -785,6 +790,59 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                 context += f"; claim_boundary: [{cb_txt}]"
             if non_doi:
                 context += "; other sources: " + ", ".join(f"{squash(r['title'])} <{ref_uri(r)}>" for r in non_doi)
+
+            # Look up multi-scale phenomenon size & sibling species claims from species_multiscale_registry.json
+            sp_reg_path = Path(__file__).resolve().parent / "runs" / "species_multiscale_registry.json"
+            pub_scale_extras = []
+            if sp_reg_path.exists():
+                import json as _json
+                if not hasattr(build, "_sp_reg_cache"):
+                    build._sp_reg_cache = _json.loads(sp_reg_path.read_text(encoding="utf-8"))
+                sp_map = build._sp_reg_cache.get("species", {})
+                # Match by sim_id or slug or organism prefix
+                matched_sp = None
+                matched_run = None
+                for sp_k, sp_info in sp_map.items():
+                    for r_item in sp_info.get("runs_smallest_to_largest", []):
+                        if r_item.get("sim_id") == sim["id"] or r_item.get("slug") == sim["id"] or sim["id"].endswith("-" + r_item.get("slug", "")):
+                            matched_sp = sp_info
+                            matched_run = r_item
+                            break
+                    if matched_sp:
+                        break
+                if not matched_sp:
+                    org_head = organism.split("(")[0].strip()
+                    for sp_k, sp_info in sp_map.items():
+                        if sp_k.lower() in org_head.lower() or sp_info["genus"].lower() in org_head.lower():
+                            matched_sp = sp_info
+                            matched_run = (sp_info.get("runs_smallest_to_largest") or [None])[0]
+                            break
+                if matched_sp and matched_run:
+                    sp_slug = matched_sp["species"].lower().replace(" ", "-").replace("_", "-")
+                    taxon_uri = PKR[f"taxon/{sp_slug}"]
+                    context += (
+                        f"; phenomenon_size: {matched_run['size_human']} ({matched_run['size_m']} m, "
+                        f"log10={matched_run['log10_size_m']} m, tier={matched_run['scale_tier']}); "
+                        f"species_scale_ladder ({matched_sp['total_runs']} runs from {matched_sp['min_size_human']} to {matched_sp['max_size_human']}): "
+                        + ", ".join(
+                            f"{r_it['size_human']}:{r_it['slug']}"
+                            for r_it in matched_sp["runs_smallest_to_largest"][:8]
+                        )
+                    )
+                    pub_scale_extras.extend([
+                        (THIS, PK.speciesTaxon, taxon_uri),
+                        (THIS, PK.speciesBinomial, Literal(str(matched_sp["species"]))),
+                        (THIS, PK.phenomenonScaleTier, Literal(str(matched_run["scale_tier"]))),
+                        (THIS, PK.geologicalPeriod, Literal(str(matched_sp.get("geological_period", "Holocene (Extant)")))),
+                    ])
+                    for sib_uri_str in matched_sp.get("claim_uris_smallest_to_largest", [])[:15]:
+                        sib_ref = URIRef(sib_uri_str)
+                        if sib_ref != claim:
+                            pub_scale_extras.append((THIS, PK.sameSpeciesClaim, sib_ref))
+                    for ext_d in matched_sp.get("external_datasets", []):
+                        if ext_d.get("url"):
+                            pub_scale_extras.append((THIS, PK.externalAtlasDataset, URIRef(ext_d["url"])))
+
             tr = [(claim, RDF.type, PK.Claim),
                   (claim, RDFS.label, Literal(claim_label)),
                   (claim, DCTERMS.description, Literal(
@@ -798,12 +856,12 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
             tr += [(claim, PK.derivedFromPaper, ref_uri(r)) for r in papers if r.get("doi")]
             tr += [(claim, PK.hasAssessment, au) for au in assessments + [overall_au]]
             tr += B.artifact_triples(claim, scripts)
-            pub = [(THIS, RDFS.seeAlso, B.script_uri(s)) for s in scripts] + ([(THIS, RDFS.seeAlso, issue)] if issue else [])
+            pub = [(THIS, RDFS.seeAlso, B.script_uri(s)) for s in scripts] + ([(THIS, RDFS.seeAlso, issue)] if issue else []) + pub_scale_extras
             emit(f"{sim['id']}-claim.trig",
                  B.nanopub(f"Claim: {sim['name']} is faithful", PK.Claim, claim, dom, tr,
                            B.provenance_extraction([B.orcid], papers, [issue]), "claim", "provenance-extraction", pub))
 
-        # ---- 3. one pk:LLMClaimAssessment per rubric dimension (ProbKnow rubric-assessment template) -- #
+        # ---- 3. one pk:LLMClaimAssessment per rubric dimension (Project Delphi rubric-assessment template) -- #
         for d, au in zip(rubric["dimensions"], assessments):
             did, s = d["id"], sim["scores"][d["id"]]
             verdict_text = ("not applicable (neutral baseline)" if s.get("not_applicable") else verdict(s["value"]))
@@ -886,7 +944,7 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
 
 
 # --------------------------------------------------------------------------- #
-# Offline conformance: ProbKnow terms + the shape of each graph against its template
+# Offline conformance: Project Delphi terms + the shape of each graph against its template
 # --------------------------------------------------------------------------- #
 class Template:
     """A nanopub template parsed from its (vendored) nanopub: statements with subject /
@@ -1011,7 +1069,9 @@ def conformance(files: list[Path]) -> list[str]:
     onto = Graph().parse(ONTOLOGY_PATH, format="turtle")
     onto_iri = next(onto.subjects(RDF.type, URIRef("http://www.w3.org/2002/07/owl#Ontology")))
     onto_base = str(onto_iri).rstrip("/") + "/"
-    declared = {str(PK) + str(s)[len(onto_base):] for s in onto.subjects() if str(s).startswith(onto_base)}
+    PK_LEGACY = Namespace("https://w3id.org/probknow/ontology/")
+    declared = ({str(PK) + str(s)[len(onto_base):] for s in onto.subjects() if str(s).startswith(onto_base)}
+                | {str(PK_LEGACY) + str(s)[len(onto_base):] for s in onto.subjects() if str(s).startswith(onto_base)})
     templates = load_templates()
     probs: list[str] = []
     for f in files:
@@ -1041,11 +1101,13 @@ def conformance(files: list[Path]) -> list[str]:
             ns = str(n)
             if ns.startswith(FORBIDDEN_PREFIXES):
                 probs.append(f"{f.name}: forbidden legacy IRI {ns}")
-            if ns.startswith(str(PK)) and ns not in declared:
+            if (ns.startswith(str(PK)) or ns.startswith(str(PK_LEGACY))) and ns not in declared:
                 probs.append(f"{f.name}: undeclared pk: term {ns}")
-        for p in (DCTERMS.creator, DCTERMS.license, NPX.hasNanopubType, NPX.introduces, PK.domain, DCTERMS.created):
+        for p in (DCTERMS.creator, DCTERMS.license, NPX.hasNanopubType, NPX.introduces, DCTERMS.created):
             if (THIS, p, None) not in pub:
                 probs.append(f"{f.name}: pubinfo lacks {p.n3(ds.namespace_manager)}")
+        if (THIS, PK.domain, None) not in pub and (THIS, PK_LEGACY.domain, None) not in pub:
+            probs.append(f"{f.name}: pubinfo lacks pk:domain")
         created = pub.value(THIS, DCTERMS.created)
         if created is not None and (created.datatype != XSD.dateTime or "T00:00:00" in str(created)):
             probs.append(f"{f.name}: dct:created {created} is not a full xsd:dateTime with a real time")
@@ -1064,7 +1126,7 @@ def conformance(files: list[Path]) -> list[str]:
                 if target is not None and (THIS, NPX.hasNanopubType, target) not in pub:
                     probs.append(f"{f.name}: npx:hasNanopubType is not the template's target type {target}")
         elif any((None, RDF.type, c) in asrt for c in (PK.Claim, PK.LLMClaimAssessment)):
-            probs.append(f"{f.name}: a ProbKnow claim/assessment without nt:wasCreatedFromTemplate")
+            probs.append(f"{f.name}: a Project Delphi claim/assessment without nt:wasCreatedFromTemplate")
         # provenance against its template
         for pt in pub.objects(THIS, NT.wasCreatedFromProvenanceTemplate):
             t = templates.get(str(pt))
@@ -1117,7 +1179,7 @@ def report(rubric, audit, rows) -> str:
          f"tracked in {A.get('tracked_by', '—')}{chain_note}", "",
          "Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; "
          "`pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings "
-         "for the ProbKnow rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** "
+         "for the Project Delphi rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** "
          "(weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` "
          "+ `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** "
          "renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** "
@@ -1219,7 +1281,7 @@ def main():
     ap.add_argument("audit", nargs="?", default=None)
     ap.add_argument("--out", default=None, help="output dir (default morphoeval/kg/<audit-id>)")
     ap.add_argument("--check", action="store_true", help="validate the audit only")
-    ap.add_argument("--conform", action="store_true", help="run the offline ProbKnow + template-shape conformance check")
+    ap.add_argument("--conform", action="store_true", help="run the offline Project Delphi + template-shape conformance check")
     ap.add_argument("--query", action="store_true", help="run a demo SPARQL on the merged graph")
     ap.add_argument("--supersede", action="store_true",
                     help="nanopubs whose content changed get npx:supersedes <URI recorded in kg/<audit>/published.json>")
@@ -1323,9 +1385,9 @@ def main():
     if args.conform:
         probs = conformance(written)
         if probs:
-            print(f"\nProbKnow conformance: {len(probs)} problem(s)"); [print("  -", p) for p in probs]
+            print(f"\nProject Delphi (ProbKnow) conformance: {len(probs)} problem(s)"); [print("  -", p) for p in probs]
             sys.exit(2)
-        print(f"ProbKnow conformance: OK ({len(written)} nanopubs; pk: terms all declared in {ONTOLOGY_PATH.name}; "
+        print(f"Project Delphi (ProbKnow) conformance: OK ({len(written)} nanopubs; pk: terms all declared in {ONTOLOGY_PATH.name}; "
               f"assertions, provenance and pubinfo match their linked templates; full timestamps; no legacy IRIs)")
     if args.query:
         print("\nSPARQL: overall assessments")

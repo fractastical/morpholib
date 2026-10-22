@@ -73,8 +73,8 @@ SQLITE_PATH = HERE / "runs" / "telemetry.sqlite"
 MATH_TTL_PATH = KG_DIR / "math_of_biology.ttl"
 MATH_TRIG_PATH = KG_DIR / "math_of_biology.trig"
 
-PK = Namespace("https://w3id.org/probknow/ontology/")
-PKR = Namespace("https://w3id.org/probknow/resource/")
+PK = Namespace("https://w3id.org/delphi/ontology/")
+PKR = Namespace("https://w3id.org/delphi/resource/")
 SCHEMA = Namespace("https://schema.org/")
 NP = Namespace("http://www.nanopub.org/nschema#")
 NPX = Namespace("http://purl.org/nanopub/x/")
@@ -366,7 +366,47 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
                 "variables": "a(x,t): pigment activator; s(x,t): depleted substrate; h(x,t): fast-diffusing systemic hormone",
                 "role": "Continuous biochemical mechanism producing self-extinguishing pigment triangles and V-shaped travelling waves after mantle lesion",
                 "source_citation": "Meinhardt & Klingler (1987) J. Theor. Biol. 126(1):63-89 Eq. (1)-(3)",
-                "code_locus": "1984-wolfram-conus-textile-rule30.py#L315-L412",
+                "code_locus": "1984-wolfram-conus-textile-rule30.py#L8598-L8640",
+            },
+            {
+                "law_name": "Ermentrout-Oster (1986) / Boettiger-Ermentrout-Oster (2009) Neurosecretory Mantle Threshold Isomorphism to Rule 30",
+                "formula": "S_{t+1,i} = H(∑_r W_E(r) A_{t,i+r} - ∑_r W_I(r) A_{t,i+r} - R_{t,i} - θ);   E(l,c,r) = 2l + c + r - cr ∈ [1, 2] ⟺ l ⊕ (c ∨ r)",
+                "lean_decl": "MathOfBiology.ermentrout_oster_neural_gate",
+                "lean_theorem": "MathOfBiology.ermentrout_oster_neural_gate_eq_rule30",
+                "lean_locus": "morphoeval/lean/MathOfBiology.lean#L256-L275",
+                "lean_code": (
+                    "def ermentrout_oster_net_excitation (l c r : Bool) : Nat :=\n"
+                    "  2 * (if l then 1 else 0) + (if c then 1 else 0) + (if r then 1 else 0) - (if c && r then 1 else 0)\n"
+                    "def ermentrout_oster_neural_gate (l c r : Bool) : Bool :=\n"
+                    "  let e := ermentrout_oster_net_excitation l c r\n"
+                    "  decide (1 ≤ e ∧ e ≤ 2)\n"
+                    "theorem ermentrout_oster_neural_gate_eq_rule30 (l c r : Bool) :\n"
+                    "    ermentrout_oster_neural_gate l c r = rule30 l c r := by\n"
+                    "  cases l <;> cases c <;> cases r <;> rfl"
+                ),
+                "variables": "S_{t,i} ∈ {0,1}: mantle secretomotor firing; R_{t,i}: refractory inhibitor; E(l,c,r) ∈ {0,1,2,3}: 3-cell net synaptic drive",
+                "role": "Proves that the discrete 3-cell asymmetric threshold limit of the Ermentrout-Oster neural mantle model is algebraically isomorphic to Wolfram Rule 30",
+                "source_citation": "Ermentrout, Campbell & Oster (1986) The Veliger 28(4):369-388; Boettiger, Ermentrout & Oster (2009) PNAS 106(16):6837-6842",
+                "code_locus": "1984-wolfram-conus-textile-rule30.py#L8453-L8523",
+            },
+            {
+                "law_name": "Molluscan Clade Wolfram Class II (Rule 90) vs. Class III (Rule 30) Boolean Jacobian & Chirality Dichotomy",
+                "formula": "Rule 90 (Oliva): ∂f/∂l = ∂f/∂r = 1, f(l,c,r) = f(r,c,l);   Rule 30 (Conus): ∂f/∂l = 1, ∂f/∂r = ¬c, f(1,1,0) ≠ f(0,1,1)",
+                "lean_decl": "MathOfBiology.rule90",
+                "lean_theorem": "MathOfBiology.rule30_right_jacobian_center_gated",
+                "lean_locus": "morphoeval/lean/MathOfBiology.lean#L277-L302",
+                "lean_code": (
+                    "def rule90 (l _c r : Bool) : Bool := bne l r\n"
+                    "theorem rule90_reflection_symmetric (l c r : Bool) : rule90 l c r = rule90 r c l := by\n"
+                    "  cases l <;> cases r <;> rfl\n"
+                    "theorem rule30_right_jacobian_center_gated (l c r : Bool) :\n"
+                    "    bne (rule30 l c r) (rule30 l c (!r)) = !c := by\n"
+                    "  cases l <;> cases c <;> cases r <;> rfl"
+                ),
+                "variables": "∂f/∂l, ∂f/∂r: directional Boolean derivatives; ρ_carry = P(a_{t+1,i} ≠ l ⊕ r): 2D quadratic ANF carry density",
+                "role": "Resolves the 1D horizontal chord indiscriminability gap by proving why 2D tent-wall chirality and quadratic ANF carry separate Class III Conus (Rule 30) from Class II Oliva (Rule 90)",
+                "source_citation": "Waddington & Cowe (1969) J. Theor. Biol. 25:219; Wolfram (1984) Nature 311:419; Meinhardt (1995) Ch. 5-6",
+                "code_locus": "1984-wolfram-conus-textile-rule30.py#L8526-L8595",
             },
         ],
     },
@@ -894,7 +934,7 @@ def add_math_triples_for_simulation(
     math_family = reg.get("math_family", "Mathematical Morphogenesis Model")
     g.add((claim_uri, PK.hypothesisType, Literal(math_family)))
 
-    # Attach Aristotelian taxonomic & ontological category triples (Ousia, Poion, Poson, Poiein)
+    # Attach Aristotelian taxonomic, multi-scale phenomenon size & paleobiology triples
     aristo_idx_path = HERE / "runs" / "aristotelian_categories_index.json"
     if aristo_idx_path.exists():
         import json as _json
@@ -902,13 +942,42 @@ def add_math_triples_for_simulation(
             add_math_triples_for_simulation._aristo_cache = _json.loads(aristo_idx_path.read_text())
         for ae in add_math_triples_for_simulation._aristo_cache:
             slug = ae.get("slug", "")
-            if slug and (slug == sim_id or sim_id.endswith("-" + slug)):
+            if slug and (slug == sim_id or sim_id.endswith("-" + slug) or slug in sim_id):
                 g.add((claim_uri, PK.biologicalGenus, Literal(ae["genus"])))
                 g.add((claim_uri, PK.aristotelianMegistonGenos, Literal(ae["megiston_genos"])))
                 g.add((claim_uri, PK.aristotelianSubalternClass, Literal(ae["subaltern_genos"])))
                 g.add((claim_uri, PK.aristotelianPoionForm, Literal(ae["poion_form"])))
                 g.add((claim_uri, PK.aristotelianPosonLaw, Literal(ae["poson_law"])))
                 g.add((claim_uri, PK.aristotelianEfficientCause, Literal(ae["efficient_cause"])))
+                sp_binomial = str(ae.get("species") or ae["genus"])
+                sp_slug = sp_binomial.lower().replace(" ", "-").replace("_", "-")
+                taxon_uri = PKR[f"taxon/{sp_slug}"]
+                g.add((taxon_uri, RDF.type, PK.SpeciesTaxon))
+                g.add((taxon_uri, RDFS.label, Literal(sp_binomial)))
+                g.add((taxon_uri, PK.speciesBinomial, Literal(sp_binomial)))
+                g.add((claim_uri, PK.speciesTaxon, taxon_uri))
+                g.add((taxon_uri, PK.hasSpeciesClaim, claim_uri))
+                if ae.get("phenomenon_size_m") is not None:
+                    g.add((claim_uri, PK.phenomenonSizeMeters, Literal(float(ae["phenomenon_size_m"]), datatype=XSD.double)))
+                if ae.get("log10_size_m") is not None:
+                    g.add((claim_uri, PK.phenomenonSizeLog10Meters, Literal(float(ae["log10_size_m"]), datatype=XSD.double)))
+                if ae.get("scale_tier"):
+                    g.add((claim_uri, PK.phenomenonScaleTier, Literal(str(ae["scale_tier"]))))
+                if ae.get("anatomical_structure"):
+                    g.add((claim_uri, PK.anatomicalStructure, Literal(str(ae["anatomical_structure"]))))
+                if ae.get("geological_age_ma") is not None:
+                    g.add((claim_uri, PK.geologicalAgeMa, Literal(float(ae["geological_age_ma"]), datatype=XSD.double)))
+                if ae.get("geological_period"):
+                    g.add((claim_uri, PK.geologicalPeriod, Literal(str(ae["geological_period"]))))
+                if ae.get("fossil_lineage_group"):
+                    g.add((claim_uri, PK.fossilLineageGroup, Literal(str(ae["fossil_lineage_group"]))))
+                for ext_d in ae.get("external_datasets") or []:
+                    if ext_d.get("url"):
+                        g.add((claim_uri, PK.externalAtlasDataset, URIRef(ext_d["url"])))
+                for sib in ae.get("sibling_slugs_ordered_by_size") or []:
+                    if sib.get("slug") and sib["slug"] != slug:
+                        sib_uri = PKR[f"claim/morphoeval-{sib['slug']}"]
+                        g.add((claim_uri, PK.sameSpeciesClaim, sib_uri))
                 break
 
     # 1. Governing Mathematical Equations / Laws (Human Notation + Lean 4 Formalization)
@@ -1107,18 +1176,18 @@ def build_math_knowledge_graph() -> dict[str, Any]:
                     f"{sid}-eq-{idx}",
                     sid,
                     sim.get("organism", ""),
-                    eq["law_name"],
-                    eq["formula"],
-                    eq.get("lean_decl", ""),
-                    eq.get("lean_theorem", ""),
-                    eq.get("lean_code", ""),
-                    eq.get("lean_locus", ""),
+                    eq.get("law_name") or "",
+                    eq.get("formula") or "",
+                    eq.get("lean_decl") or "",
+                    eq.get("lean_theorem") or "",
+                    eq.get("lean_code") or "",
+                    eq.get("lean_locus") or "",
                     1 if lean_ok else 0,
                     math_family,
-                    eq["variables"],
-                    eq["role"],
-                    eq["source_citation"],
-                    eq.get("code_locus", ""),
+                    eq.get("variables") or "",
+                    eq.get("role") or "",
+                    eq.get("source_citation") or "",
+                    eq.get("code_locus") or "",
                 )
             )
 
@@ -1159,7 +1228,7 @@ def build_math_knowledge_graph() -> dict[str, Any]:
     ds = Dataset()
     for pfx, ns in (("pk", PK), ("pkr", PKR), ("schema", SCHEMA), ("dct", DCTERMS), ("prov", PROV), ("rdfs", RDFS), ("skos", SKOS), ("xsd", XSD), ("np", NP)):
         ds.bind(pfx, ns)
-    asrt_g = ds.graph(URIRef("https://w3id.org/probknow/resource/graph/math-of-biology-assertion"))
+    asrt_g = ds.graph(URIRef("https://w3id.org/delphi/resource/graph/math-of-biology-assertion"))
     for t in g:
         asrt_g.add(t)
     MATH_TRIG_PATH.write_text(ds.serialize(format="trig"))
@@ -1262,7 +1331,7 @@ SPARQL_PRESETS: dict[str, tuple[str, str]] = {
     "equations": (
         "All governing mathematical equations of biology, their formulas, Lean 4 theorems, and organisms",
         """
-PREFIX pk:     <https://w3id.org/probknow/ontology/>
+PREFIX pk:     <https://w3id.org/delphi/ontology/>
 PREFIX schema: <https://schema.org/>
 PREFIX skos:   <http://www.w3.org/2004/02/skos/core#>
 PREFIX dct:    <http://purl.org/dc/terms/>
@@ -1285,7 +1354,7 @@ ORDER BY ?organism ?law
     "lean-proofs": (
         "All 19 formal Lean 4 declarations & machine-checked theorems (`skos:definition` typed as `pk:lean4`)",
         """
-PREFIX pk:     <https://w3id.org/probknow/ontology/>
+PREFIX pk:     <https://w3id.org/delphi/ontology/>
 PREFIX schema: <https://schema.org/>
 PREFIX skos:   <http://www.w3.org/2004/02/skos/core#>
 PREFIX dct:    <http://purl.org/dc/terms/>
@@ -1309,7 +1378,7 @@ ORDER BY ?organism ?leanDecl
     "exact-matches": (
         "Validated morphometric measurements within 1.5% relative error of published empirical/analytical references",
         """
-PREFIX pk:     <https://w3id.org/probknow/ontology/>
+PREFIX pk:     <https://w3id.org/delphi/ontology/>
 PREFIX schema: <https://schema.org/>
 PREFIX dct:    <http://purl.org/dc/terms/>
 PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
@@ -1332,7 +1401,7 @@ ORDER BY ?errPct ?organism
     "by-family": (
         "Biological systems grouped by mathematical family, with overall Weight-of-Evidence and equation count",
         """
-PREFIX pk:     <https://w3id.org/probknow/ontology/>
+PREFIX pk:     <https://w3id.org/delphi/ontology/>
 PREFIX schema: <https://schema.org/>
 PREFIX dct:    <http://purl.org/dc/terms/>
 PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
@@ -1353,7 +1422,7 @@ ORDER BY DESC(?woe)
     "p-values": (
         "Empirical statistical hypothesis tests (p-values) attached to morphometric evidence items",
         """
-PREFIX pk:     <https://w3id.org/probknow/ontology/>
+PREFIX pk:     <https://w3id.org/delphi/ontology/>
 PREFIX schema: <https://schema.org/>
 PREFIX dct:    <http://purl.org/dc/terms/>
 PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
@@ -1374,7 +1443,7 @@ ORDER BY ?pValue
     "aristotelian": (
         "Aristotelian taxonomic & ontological coverage (Megiston Genos, Subaltern Class, Genus, Poion Form, Poson Law, Efficient Cause)",
         """
-PREFIX pk: <https://w3id.org/probknow/ontology/>
+PREFIX pk: <https://w3id.org/delphi/ontology/>
 
 SELECT ?megistonGenos ?subalternClass ?genus ?poionForm ?posonLaw ?efficientCause ?woe
 WHERE {

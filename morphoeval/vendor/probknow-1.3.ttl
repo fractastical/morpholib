@@ -1,9 +1,9 @@
-# Vendored copy of the ProbKnow / Project Delphi ontology, version 1.3, for OFFLINE conformance checks.
+# Vendored copy of the Project Delphi (formerly ProbKnow) ontology, version 1.3, for OFFLINE conformance checks.
 # Source: https://github.com/fractastical/project-delphi-ontology/blob/main/probknow.ttl (MIT / CC BY 4.0 per upstream).
 #         vendored from branch lean-formal-verification-terms (PR #18, rebased on 1.2 = PR #13 pk:hasScore); adds pk:lean4, pk:leanDeclaration, pk:leanTheorem, pk:leanVerified used by math_kg.py.
 # Do not edit; refresh from upstream when the ontology version changes.
-@prefix pk:      <https://w3id.org/probknow/ontology/> .
-@prefix pkr:     <https://w3id.org/probknow/resource/> .
+@prefix pk:      <https://w3id.org/delphi/ontology/> .
+@prefix pkr:     <https://w3id.org/delphi/resource/> .
 @prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
@@ -21,25 +21,25 @@
 #  Ontology declaration
 #################################################################
 
-<https://w3id.org/probknow/ontology> a owl:Ontology ;
-    dcterms:title "ProbKnow: Probabilistic Knowledge Graph Ontology for Frontier Science"@en ;
-    dcterms:description """The vocabulary (T-Box) used by the PKG Aggregator (probknow.com) to
+<https://w3id.org/delphi/ontology> a owl:Ontology ;
+    dcterms:title "Project Delphi: Probabilistic Knowledge Graph Ontology for Frontier Science"@en ;
+    dcterms:description """The vocabulary (T-Box) used by Project Delphi / Science Oracle (scienceoracle.com; formerly ProbKnow) to
 represent scientific papers, the discrete claims extracted from them, the hypotheses those claims
 cluster into, the economic predictions attached to hypotheses, and the probabilistic assessments
 that a panel of independent models assign to each claim. The ontology reuses PROV-O, SKOS, Dublin
 Core Terms, the SPAR ontologies (CiTO, FaBiO) and the Nanopublication schema wherever a standard
 term exists, and mints terms only for the probabilistic-evaluation layer, which has no settled
 standard."""@en ;
-    owl:versionIRI <https://w3id.org/probknow/ontology/1.3> ;
+    owl:versionIRI <https://w3id.org/delphi/ontology/1.3> ;
     owl:versionInfo "1.3" ;
-    owl:priorVersion <https://w3id.org/probknow/ontology/1.2> ;
-    # Term IRIs are slash-based and unversioned (https://w3id.org/probknow/ontology/<Term>),
+    owl:priorVersion <https://w3id.org/delphi/ontology/1.2> ;
+    # Term IRIs are slash-based and unversioned (https://w3id.org/delphi/ontology/<Term>),
     # following the SPAR ontologies; the version lives in owl:versionIRI only. Version 1.0
     # used hash terms under https://w3id.org/probknow/ontology/1.0#, mapped in the crosswalk.
     # Version 1.2 added pk:hasScore (rubric scores). Version 1.3 adds the formal-verification
     # layer (pk:lean4, pk:leanDeclaration, pk:leanTheorem, pk:leanVerified); no existing term
     # changed meaning.
-    dcterms:creator "PKG Aggregator (probknow.com)" ;
+    dcterms:creator "Project Delphi / Science Oracle (scienceoracle.com; formerly ProbKnow)" ;
     dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
     rdfs:seeAlso <http://purl.obolibrary.org/obo/sepio.owl> ,   # SEPIO — evidence & provenance (alignment target)
                  <http://purl.obolibrary.org/obo/eco.owl> .      # ECO — evidence & conclusion types (alignment target)
@@ -47,7 +47,7 @@ standard."""@en ;
 #################################################################
 #  Resource (A-Box) namespace policy — documentation only
 #################################################################
-# Individuals are minted under pkr: <https://w3id.org/probknow/resource/> using the pattern
+# Individuals are minted under pkr: <https://w3id.org/delphi/resource/> using the pattern
 #   pkr:<type>/<id>     e.g. pkr:hypothesis/3f2a…, pkr:claim/…, pkr:paper/…, pkr:model/claude-opus-4-6,
 #                            pkr:assessment/…, pkr:economic-prediction/…, pkr:platonic/L1
 # This single resource namespace supersedes the legacy, non-dereferenceable identifiers used by
@@ -334,6 +334,104 @@ pk:yearsToAchievement a owl:DatatypeProperty ;
     rdfs:domain pk:EconomicPrediction ;
     rdfs:range xsd:decimal ;
     rdfs:comment "Estimated number of years until the prediction is realized."@en .
+
+#################################################################
+#  Multi-scale morphospace, taxonomic & paleobiological layer
+#################################################################
+
+pk:SpeciesTaxon a owl:Class ;
+    rdfs:label "Species or Chronospecies Taxon"@en ;
+    rdfs:comment "Canonical biological species or fossil chronospecies node aggregating all multi-scale claims, simulations, and empirical datasets for that organism."@en .
+
+pk:speciesTaxon a owl:ObjectProperty ;
+    rdfs:label "species taxon"@en ;
+    rdfs:range pk:SpeciesTaxon ;
+    rdfs:comment "Links a nanopublication, claim, or simulation to its canonical biological species or chronospecies node (pkr:taxon/<slug>)."@en .
+
+pk:hasSpeciesClaim a owl:ObjectProperty ;
+    rdfs:label "has species claim"@en ;
+    rdfs:domain pk:SpeciesTaxon ;
+    rdfs:range pk:Claim ;
+    rdfs:comment "Links a species taxon node to every morphological claim/simulation associated with that species across spatial scales."@en .
+
+pk:sameSpeciesClaim a owl:ObjectProperty ;
+    rdfs:label "same-species sibling claim"@en ;
+    rdfs:comment "Cross-links a nanopublication or claim to another claim modeling the same biological species (often at a smaller or larger spatial scale or developmental stage)."@en .
+
+pk:sameLineageClaim a owl:ObjectProperty ;
+    rdfs:label "same-lineage evolutionary/fossil claim"@en ;
+    rdfs:comment "Cross-links a nanopublication or claim to a chronospecies or evolutionary sister-species variation across geological time."@en .
+
+pk:externalAtlasDataset a owl:ObjectProperty ;
+    rdfs:label "external atlas or multimodal dataset"@en ;
+    rdfs:comment "Links a claim or taxon to an external biological atlas or single-cell/4D-imaging hub (e.g., Zebrahub, ZFIN, Daniocell, MapZebrain, IDR, Paleobiology Database)."@en .
+
+pk:phenomenonSizeMeters a owl:DatatypeProperty ;
+    rdfs:label "phenomenon characteristic size (m)"@en ;
+    rdfs:range xsd:double ;
+    rdfs:comment "Characteristic physical spatial scale of the modeled biological phenomenon in meters (from ~1e-9 m molecular complexes to ~1e1 m whole-colony/tree scales)."@en .
+
+pk:phenomenonSizeLog10Meters a owl:DatatypeProperty ;
+    rdfs:label "log10 of phenomenon size in meters"@en ;
+    rdfs:range xsd:double ;
+    rdfs:comment "Base-10 logarithm of pk:phenomenonSizeMeters, used for continuous multi-scale ordering and zooming from smallest bit to largest bit."@en .
+
+pk:phenomenonScaleTier a owl:DatatypeProperty ;
+    rdfs:label "phenomenon spatial scale tier"@en ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Hierarchical spatial scale band (1_molecular_nm, 2_macromolecular_100nm, 3_subcellular_um, 4_cellular_10um, 5_primordium_100um, 6_organ_mm, 7_organism_cm, 8_colonial_m)."@en .
+
+pk:anatomicalStructure a owl:DatatypeProperty ;
+    rdfs:label "anatomical or developmental structure"@en ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Specific subcellular, cellular, tissue, organ, or whole-body structure and developmental stage."@en .
+
+pk:geologicalAgeMa a owl:DatatypeProperty ;
+    rdfs:label "geological age (Ma)"@en ;
+    rdfs:range xsd:double ;
+    rdfs:comment "Geological age in millions of years before present (0.0 for extant taxa; > 0.0 for fossil record horizons and chronospecies)."@en .
+
+pk:geologicalPeriod a owl:DatatypeProperty ;
+    rdfs:label "geological period or stage"@en ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Stratigraphic period/stage (e.g., Holocene/Extant, Miocene, Late Cretaceous, Middle Devonian, Cambrian, Ediacaran)."@en .
+
+pk:fossilLineageGroup a owl:DatatypeProperty ;
+    rdfs:label "evolutionary or fossil chronospecies lineage"@en ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Named evolutionary lineage or chronospecies series linking variations of a taxon across the fossil record."@en .
+
+pk:biologicalGenus a owl:DatatypeProperty ;
+    rdfs:label "biological genus"@en ;
+    rdfs:range xsd:string .
+
+pk:speciesBinomial a owl:DatatypeProperty ;
+    rdfs:label "species binomial"@en ;
+    rdfs:range xsd:string .
+
+pk:commonName a owl:DatatypeProperty ;
+    rdfs:label "common name"@en ;
+    rdfs:range xsd:string .
+
+pk:aristotelianMegistonGenos a owl:DatatypeProperty ;
+    rdfs:label "Aristotelian Megiston Genos"@en ;
+    rdfs:range xsd:string .
+
+pk:aristotelianSubalternClass a owl:DatatypeProperty ;
+    rdfs:label "Aristotelian Subaltern Class"@en ;
+    rdfs:range xsd:string .
+
+pk:aristotelianPoionForm a owl:DatatypeProperty ;
+    rdfs:label "Aristotelian Poion (formal quality)"@en ;
+    rdfs:range xsd:string .
+
+pk:aristotelianPosonInvariant a owl:DatatypeProperty ;
+    rdfs:label "Aristotelian Poson (quantitative invariant)"@en ;
+    rdfs:range xsd:string .
+
+pk:aristotelianPoieinCause a owl:DatatypeProperty ;
+    rdfs:label "Aristotelian Poiein (efficient cause)"@en ;
+    rdfs:range xsd:string .
 
 #################################################################
 #  Backward-compatibility crosswalk (legacy term → current term)
