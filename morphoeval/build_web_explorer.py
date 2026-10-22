@@ -647,7 +647,8 @@ def main() -> int:
     .pane-specimen img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: #070a12;
     }
     .pane-sim img.anim-gif {
       width: 100%;
@@ -977,7 +978,15 @@ def main() -> int:
         return "../" + relPath;
       }
 
+      const ANIMATED_SPECIMEN_SLUGS = new Set([
+        "planform-morphology-animation",
+        "cervera-levin-mafe",
+      ]);
+
       function resolveSpecimenUrl(m) {
+        if (ANIMATED_SPECIMEN_SLUGS.has(m.slug)) {
+          return `media/specimens/${m.slug}.gif`;
+        }
         if (CANONICAL_PILLARS.some(p => p.slug === m.slug)) {
           return `media/specimens/${m.slug}.jpg`;
         }
@@ -1045,7 +1054,7 @@ def main() -> int:
           const r = SUBALTERN_ROWS.findIndex(x => x.key === m.subaltern);
           const c = CAUSE_COLS.findIndex(x => x.key === m.cause);
           const simUrl = m.gif ? resolveAssetUrl(m.gif) : "";
-          const localCanonicalSpecimen = `media/specimens/${p.slug}.jpg`;
+          const localCanonicalSpecimen = resolveSpecimenUrl(m);
           const specimenUrl = resolveAssetUrl(m.specimen);
           const scriptUrl = `${DATA.repo_url}/${m.script}`;
           const leanUrl = `${DATA.repo_url}/${m.lean}`;
