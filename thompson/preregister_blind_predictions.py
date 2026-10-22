@@ -282,7 +282,7 @@ def main() -> int:
     }
     OUT_JSON.write_text(json.dumps(out, separators=(",", ":")), encoding="utf-8")
     with OUT_CSV.open("w", newline="") as fh:
-        w = csv.writer(fh)
+        w = csv.writer(fh, lineterminator="\n")
         hdr = ["species", "family", "tau_myr", "outside_crown", "nearest_training_species"]
         for k in RATIO_DEFS:
             hdr += [f"full30_{k}", f"full30_{k}_lo95", f"full30_{k}_hi95", f"thompson7_{k}", f"thompson7_{k}_lo95", f"thompson7_{k}_hi95", f"consensus_{k}", f"nearest_{k}", f"fammean_{k}"]

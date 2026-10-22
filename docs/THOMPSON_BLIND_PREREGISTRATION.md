@@ -1,6 +1,6 @@
 # Pre-registered blind predictions: Thompson 1917 phylogenetic prediction engine
 
-Registered 2026-10-22 at commit `9680b574d2e7` by [`thompson/preregister_blind_predictions.py`](../thompson/preregister_blind_predictions.py). Predictions: [`thompson_blind_predictions_registered.json`](../thompson_blind_predictions_registered.json) (SHA-256 `c604f94d3100c209cb2f7a6ddef96ae3e53b864b3bc751291d969796a99bacee`), [`thompson_blind_predictions_registered.csv`](../thompson_blind_predictions_registered.csv) (SHA-256 `2c36c58811697dd38ac94a6d75ef675e2949abc30506a340f48bce89814daa6f`).
+Registered 2026-10-22 at commit `7889d9396de0` by [`thompson/preregister_blind_predictions.py`](../thompson/preregister_blind_predictions.py). Predictions: [`thompson_blind_predictions_registered.json`](../thompson_blind_predictions_registered.json) (SHA-256 `2e41cb1aaf1b21035f7d4970178861ee0ad6698a5b31ba35d8f1b87bca03b38b`), [`thompson_blind_predictions_registered.csv`](../thompson_blind_predictions_registered.csv) (SHA-256 `1d50205ffc2ed9954e707eba2e3db6aaa4871620df6cecf9e4cf766fe3046171`).
 
 ## What is predicted
 
