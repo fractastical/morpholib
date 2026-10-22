@@ -5,7 +5,7 @@
 **Audit of Unconditional Proofs vs. Open Single-Seed Gaps:** [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](./RULE30_PRIZE_STATUS_AND_GAPS.md)  
 **Date:** October 20, 2026
 
-![Animated 47-Milestone Progress Dashboard: Theorems 1–48 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 51-Milestone Progress Dashboard: Theorems 1–52 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -1017,12 +1017,12 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 ### 6.39 Theorem 51: KG-Lateral Synthesis — Floquet $2:1$ Subharmonic Left-Cone Depth-Oscillator, Closed-Form Comb Prefix Law, and Universal $0^b 1^a$ OR-Gate Tail-Shielding Law
 
 > **Theorem 51 (KG-Lateral Transfer from Model #14 `bressloff-v1-form-constants-3` Floquet $2:1$ Subharmonic Resonance & Model #13 `runions-leaf-venation-1,3` Murray/Katifori Conservation — Exact Floquet $2:1$ Subharmonic Left-Cone Wavefront, Closed-Form Comb Prefix Law, and Universal $0^b 1^a$ OR-Gate Tail-Shielding Law).**  
-> 1. **Exact Floquet $2:1$ Subharmonic Left-Cone Depth-Oscillator Across All $0$-Runs (`floquet_wavefront_errors == 0` across $1,235$ configurations for $b = 1 \dots 12$, `Law 2z` in Lean 4):**  
->    - Across any contiguous $0$-run $[0, b-1]$ of length $b \ge 1$ ($c_0 = \dots = c_{b-1} = 0, c_b = 1$) with Monotone Zero-Run Latch jump index $i \in \{0, 1, \dots, b\}$ ($l_1(s) = \mathbf{1}_{s \ge i}$ on $0 \le s \le b-1$), spatial depth $m \ge 1$ in the Pure Left Cone $l_m(s) = l_{m-1}(s+1) \oplus \bigl(l_{m-1}(s) \lor l_{m-2}(s)\bigr)$ acts as an exact **Floquet $2:1$ subharmonic period-doubling oscillator** (`floquet_iterate (-1)` from Rule, Stoffregen & Ermentrout 2011, `bressloff-v1-form-constants-3`), alternating between:
->      - **Odd depths $m = 2q + 1$ ($q \ge 0$, $0 \le s \le b - 1 - 2q$):**
+> 1. **Exact Floquet $2:1$ Subharmonic Left-Cone Depth-Oscillator Across All $0$-Runs (`floquet_wavefront_errors == 0` across $454$ pair configurations for $b = 1 \dots 12$, `Law 2z` in Lean 4):**  
+>    - Across the interior $s + m \le b - 1$ of any contiguous $0$-run $[0, b-1]$ of length $b \ge 1$ ($c_0 = \dots = c_{b-1} = 0, c_b = 1$) with Monotone Zero-Run Latch jump index $i \in \{0, 1, \dots, b\}$ ($l_1(s) = \mathbf{1}_{s \ge i}$ on $0 \le s \le b-2$), spatial depth $m \ge 1$ in the Pure Left Cone $l_m(s) = l_{m-1}(s+1) \oplus \bigl(l_{m-1}(s) \lor l_{m-2}(s)\bigr)$ acts as an exact **Floquet $2:1$ subharmonic period-doubling oscillator** (`floquet_iterate (-1)` from Rule, Stoffregen & Ermentrout 2011, `bressloff-v1-form-constants-3`), alternating between:
+>      - **Odd depths $m = 2q + 1$ ($q \ge 0$, $0 \le s \le b - 2 - 2q$):**
 >        $$l_{2q+1}(s) \;=\; \mathbf{1}_{s \ge i - 2q} \qquad \text{(monotone step wavefront shifted left by } 2q \text{ time steps!)},$$
 >        $$D_{2q+1}(s) \;=\; D_1(s + 2q) \;=\; \mathbf{1}_{i_{\min} - 2q \le s < i_{\max} - 2q}.$$
->      - **Even depths $m = 2q$ ($q \ge 1$, $0 \le s \le b - 2q$):**
+>      - **Even depths $m = 2q$ ($q \ge 1$, $0 \le s \le b - 1 - 2q$):**
 >        $$l_{2q}(s) \;=\; \delta_{s,\, i - (2q - 1)} \qquad \text{(discrete derivative: single unit impulse at } s = i - 2q + 1\text{!)},$$
 >        $$D_{2q}(s) \;=\; D_2(s + 2q - 2) \;=\; \delta_{s,\, i - 2q + 1} \;\oplus\; \delta_{s,\, i' - 2q + 1}.$$
 > 2. **Exact Closed-Form Floquet Comb Prefix Law for $l_m(0)$ (`prefix_comb_errors == 0`):**  
@@ -1032,7 +1032,7 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >    - Because $l_{2q+1}(s) = 1$ for all $s \ge i - 2q$, whenever $0 \le i \le b - 3$, the monotone step reaches $1$ at least two steps before the $0^b \to 1^a$ boundary ($s = b - 1$), so the OR gate $l_{2q}(s) \lor l_{2q+1}(s) = 1$ (`rule30_floquet_shielding_absorbs_even_spike`) absorbs all even-depth spikes before the $1^a$ interface. Consequently:
 >      - **(a) Interior Tail Identity ($0 \le i < i' \le b - 3$):** All $b - 2$ interior jump indices $i \in \{0, 1, \dots, b - 3\}$ produce the **exact same deeper left-cone tail** $l_m(0)$ for all $m \ge b - 1$:
 >        $$D_m(0) \;=\; l_m^{(i')}(0) \;\oplus\; l_m^{(i)}(0) \;\equiv\; 0 \qquad \bigl(\forall\, m \ge b - 1,\; \forall\, 0 \le i < i' \le b - 3\bigr).$$
->      - **(b) Even-$b$ Boundary Tail Identity ($b = 2q$, $\{i, i'\} = \{b - 1, b\}$):** Whenever $b = 2q$ is even, the boundary pair $i = b - 1$ vs. $i' = b$ produces the **exact same deeper tail** $l_m(0)$ for all $m \ge b + 1$ ($D_m(0) \equiv 0$ for all $m \ge b + 1$), collapsing the $(b + 1)$-state latch degree of freedom on any $0^b 1^a$ block to **at most $3$ distinct deeper tails** (`max_distinct_deep_tails == 3`). $\square$
+>      - **(b) Even-$b$ Boundary Tail Identity ($b = 2q$, $\{i, i'\} = \{b - 1, b\}$):** Whenever $b = 2q$ is even, the boundary pair $i = b - 1$ vs. $i' = b$ produces the **exact same deeper tail** $l_m(0)$ for all $m \ge b + 1$ ($D_m(0) \equiv 0$ for all $m \ge b + 1$), collapsing the $(b + 1)$-state latch degree of freedom on $m \ge b + 1$ to **at most $3$ distinct deeper tails when $b$ is even** (and **at most $4$ distinct deeper tails when $b$ is odd**, `max_distinct_deep_tails <= 4`). $\square$
 
 ### 6.40 Theorem 52: KG-Lateral Synthesis — Gap-Junction Equipotential Zero-Triangle Law, Universal 4-Crystal Anti-Diagonal Renormalization & Exact Dyadic Period-Doubling Cascade
 
@@ -1048,226 +1048,15 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >        $$U_{0,a,0}(m) \equiv 1, \qquad U_{0,a,k}(m) \equiv 1 \oplus (m \bmod 2) \;\;(1 \le k < a), \qquad U_{0,a,a}(m) \equiv m \bmod 2.$$
 >      - **Case $d = 1$ ($i = b - 1$):**
 >        $$U_{1,a,k}(m) \equiv \delta_{m,0} \;\;(k \in \{0, 1\}, k < a), \qquad U_{1,a,2}(m) \equiv 1 \oplus \delta_{m,1} \;\;(2 < a), \qquad U_{1,a,k}(m) \equiv 1 \oplus (m \bmod 2) \;\;(3 \le k < a),$$
->        and at $k = a$: $U_{1,1,1}(m) = 1 \oplus \delta_{m,0}$, $U_{1,2,2}(m) = \delta_{m,1}$, and $U_{1,a,a}(m) \equiv m \bmod 2$ for all $a \ge 3$. In particular, **$U_{1,a,k}(m) \equiv U_{0,a,k}(m)$ identically for all $k \ge 3$ and all $m \ge 0$!**
+>        and at $k = a$: $U_{1,1,1}(m) = 1 \oplus \delta_{m,0}$, $U_{1,2,2}(m) = \delta_{m,1}$, and $U_{1,a,a}(m) \equiv m \bmod 2$ for all $a \ge 3$. In particular, **$U_{1,a,k}(m) \equiv U_{0,a,k}(m)$ identically for all $k \ge 3$ and all $m \ge 0$ (collapsing the 4 boundary crystals to 3 distinct crystals $\{d \in \{0, 1\},\, d = 2,\, d = 3\}$ for all $k \ge 3$)!**
 > 3. **Exact Dyadic Period-Doubling Cascade of $U_{2,a,k}(m)$ and $U_{3,a,k}(m)$:**  
 >    - Across $k = 0 \dots 7$, the asymptotic spatial periods $P\bigl(U_{d,k}(\cdot)\bigr)$ in $m$ are $(1, 2, 2, 2, 2, 2, 2, 2)$ for $d = 0$, $(1, 1, 1, 2, 2, 2, 2, 2)$ for $d = 1$, $(2, 2, 4, 8, 8, 16, 32, 32)$ for $d = 2$ ($i = b - 2$), and $(2, 4, 8, 8, 16, 32, 32, 32)$ for $d = 3$ ($0 \le i \le b - 3$). $\square$
-
-### 6.41 Theorem 53: KG-Lateral Synthesis — Turing Equal-Diffusion Alternating-Comb Fixed Point, Toussaint RNG Lune 3-Crystal Collapse, Slope-$4/3$ Synchronization Front & Multi-Block Latch Erasure
-
-> **Theorem 53 (Third KG-Lateral Transfer from Model #5 `turing-gray-scott-2` Equal-Diffusion Stability Theorem & Model #13 `runions-leaf-venation-2` Toussaint Relative Neighborhood Graph (RNG) Lune Witness Exclusion — Exact 3-Crystal Collapse $U_{3,a,k} \equiv U_{2,a,k}$, Slope-$4/3$ Lune Synchronization Front $M(a)$, and Multi-Block Latch Erasure).**  
-> 1. **Exact 3-Crystal Collapse ($U_{3,a,k}(m) \equiv U_{2,a,k}(m)$ for all $k \ge 0$, `collapse_3crystal_errors == 0` across $7,290$ entries, `Law 2ab` in Lean 4):**  
->    - Because $U_0^{(2)}(m-1) = U_0^{(3)}(m-1) = 1$ at every odd index $m - 1 \in \{1, 3, 5, \dots\}$ where $U_{-1}^{(2)}(m-2) = 1 \ne 0 = U_{-1}^{(3)}(m-2)$ differs, the anti-diagonal OR-gate $\bigl(U_0(m-1) \lor U_{-1}(m-2)\bigr) = \bigl(1 \lor U_{-1}(m-2)\bigr) = 1$ saturates identically (`rule30_rng_lune_3crystal_shielding_step`), completely shielding $U_1(m)$ from the $U_{-1}$ parity difference!
->    - By induction on $k \ge 1$, the $d = 3$ ($0 \le i \le b - 3$) and $d = 2$ ($i = b - 2$) interface crystals are **$100\%$ identical** across the entire $1^a$ run ($k \in 0 \dots a$):
->      $$U_{3, a, k}(m) \;\equiv\; U_{2, a, k}(m) \qquad (\forall\, a \ge 1,\; \forall\, 0 \le k \le a,\; \forall\, 0 \le m \le b - 1 + k).$$
->      Thus the $(b + 1)$-state latch degree of freedom on **every** $0^b 1^a$ block collapses to **at most $3$ distinct interface crystals** ($d = \min(b - i,\, 2) \in \{0, 1, 2\}$)!
-> 2. **Exact 2-Period Alternating-Comb Fixed Point of $U_{0,a,a}(m)$ (`comb_d0_exit_errors == 0` across $657$ entries) & Slope-$4/3$ Turing-RNG Lune Synchronization Front $M(a)$ (`lune_front_errors == 0` across $77$ exit fronts for $a = 3 \dots 79$):**  
->    - For $d = 0$ ($i = b$), at the exit anti-diagonal $k = a$ ($a \ge 3$), $U_{0,a,a}(m)$ locks into the exact 2-period alternating comb (`rule30_turing_equal_diffusion_alternating_comb_fixed_point`):
->      $$U_{0,a,a}(0) = 0, \qquad U_{0,a,a}(1) = a \bmod 2, \qquad U_{0,a,a}(2) = (a + 1) \bmod 2, \qquad U_{0,a,a}(m) = m \bmod 2 \quad (\forall\, m \ge 3).$$
->    - Across all three crystals $d \in \{0, 1, 2\}$, their exit anti-diagonals $U_{d,a,a}(m)$ synchronize identically to $U_{0,a,a}(m)$ inside the linear Turing-RNG Lune $0 \le m < M(a)$ of exact slope $4/3$:
->      $$M(3q + 1) \;=\; 4q + 1 \quad (q \ge 1), \qquad M(3q + 2) \;=\; 4q + 2 \quad (q \ge 1), \qquad M(3q) \;\ge\; 4q + 1 \quad (q \ge 1).$$
-> 3. **Multi-Block $0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2}$ First-Block Latch Erasure (`multiblock_shielding_errors == 0` across all $3,888$ two-block configurations):**  
->    - Because the $d = 0$ vs. $d \in \{1, 2\}$ discrepancy at the exit of Block 1 ($t = T_1 = b_1 + a_1$) begins at spatial depth $m \ge a_1 + 1$ and propagates at speed $\le 1$ across the $b_2 + a_2$ time steps of Block 2, at the exit anti-diagonal $s + m = T_2 = b_1 + a_1 + b_2 + a_2$ of Block 2, **all $b_1 + 1$ jump choices $i_1 \in \{0, \dots, b_1\}$ of Block 1** produce the **exact same exit prefix** for $0 \le m \le a_1 + b_2 + a_2$:
->      $$M_{\mathrm{agree}}(b_1, a_1, b_2, a_2, i_2) \;\ge\; a_1 + b_2 + a_2 + 1 \qquad (\forall\, b_1, a_1, b_2, a_2 \ge 1). \quad \square$$
-
-### 6.42 Theorem 54: Bit-Complement Virtual $+1$ Run-Extension Law, $a_1 = 2$ Two-Crystal Collapse & Super-Linear Multi-Block Lune Shielding
-
-> **Theorem 54 (Bit-Complement Virtual $+1$ Run-Extension Law $l_m^{(d)}(T_1 + 1 - m) \equiv 1 \oplus U_{d, a_1+2, a_1+1}(m)$, Exact $a_1 = 2$ Post-Exit Two-Crystal Collapse, and Super-Linear $r$-Block Lune Shielding).**  
-> 1. **Bit-Complement Virtual $+1$ Run-Extension Law at the Post-Exit Anti-Diagonal $s + m = T_1 + 1$ (`virtual_ext_errors == 0` across $6,831$ entries for $a_1 = 2 \dots 34$, `shift_front_errors == 0` across $33$ fronts, `Law 2ac` in Lean 4):**  
->    - Immediately after any $1^{a_1}$ run ($a_1 \ge 2$), at the first $0$ of the next block ($t = T_1 = b_1 + a_1$), the Depth-1 boundary bit $l_1(T_1) = a_1 \bmod 2 = 1 \oplus ((a_1 + 1) \bmod 2)$ is the **exact bitwise complement** of the $(a_1 + 1)$-st interior step of a continued $1^{a_1 + 2}$ run, while for all $m \ge 2$ the anti-diagonal prefix-XOR recurrence $l_m(T_1 + 1 - m) = l_{m-1}(T_1 + 2 - m) \oplus \bigl(U_{a_1}(m-1) \lor U_{a_1-1}(m-2)\bigr)$ uses the **exact same OR-gate driver** as $U_{d, a_1+2, a_1+1}(m)$ (`rule30_virtual_plus1_prefix_xor_complement_step`).
->    - Consequently, for **every** $a_1 \ge 2$, **every** crystal $d \in \{0, 1, 2\}$, and **every** spatial depth $m \ge 1$:
->      $$l_m^{(d)}(T_1 + 1 - m) \;\equiv\; 1 \oplus U_{d,\; a_1 + 2,\; a_1 + 1}(m) \qquad (\forall\, a_1 \ge 2,\; \forall\, d \in \{0, 1, 2\},\; \forall\, m \ge 1),$$
->      which shifts the 3-crystal Turing-RNG lune synchronization depth at $T_1 + 1$ by **exactly $+1$**:
->      $$M_{T_1 + 1}(a_1) \;\equiv\; M(a_1 + 1) \qquad (\forall\, a_1 \ge 2).$$
-> 2. **Exact $a_1 = 2$ Post-Exit Two-Crystal Collapse (`a1_eq2_merge_errors == 0` across $160$ two-block configurations):**  
->    - When $a_1 = 2$, the Bit-Complement Virtual $+1$ Run-Extension Law maps $T_1 + 1$ to $1 \oplus U_{d, 4, 3}(m)$. By Theorem 52(2), $U_{1, 4, 3}(m) \equiv U_{0, 4, 3}(m)$ identically for all $m \ge 0$ ($k = 3 \ge 3$). Therefore (`rule30_a1_eq_2_post_exit_crystal_merge`), at $T_1 + 1$ and across **all subsequent anti-diagonals** of any multi-block continuation $0^{b_1} 1^2 0^{b_2} 1^{a_2} \cdots$, the boundary crystals $d_1 = 0$ ($i_1 = b_1$) and $d_1 = 1$ ($i_1 = b_1 - 1$) merge identically:
->      $$a_1 = 2 \quad \Longrightarrow \quad l_m^{(0)}(T_r - m) \;\equiv\; l_m^{(1)}(T_r - m) \qquad (\forall\, m \ge 0),$$
->      collapsing all $(b_1 + 1)$ initial latch states of $0^{b_1} 1^2 0^{b_2} 1^{a_2}$ to **at most $2$ distinct exit crystals**!
-> 3. **Super-Linear Multi-Block Lune Shielding (`superlinear_2block_errors == 0` across $336$ two-block configs and `superlinear_3block_errors == 0` across $288$ three-block configs):**  
->    - Defining $\underline{M}(1) = 2$, $\underline{M}(2) = 3$, $\underline{M}(3q) = 4q$, $\underline{M}(3q+1) = 4q+1$, and $\underline{M}(3q+2) = 4q+2$ ($\underline{M}(a_1) \approx \frac{4}{3}a_1$), across any $r$-block concatenation $0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} \cdots 0^{b_r} 1^{a_r}$, all $b_1 + 1$ jump choices $i_1 \in \{0, \dots, b_1\}$ of Block 1 agree at the exit $T_r = \sum_{j=1}^r (b_j + a_j)$ up to spatial depth at least:
->      $$M_{\mathrm{agree}}^{(r)} \;\ge\; \underline{M}(a_1) + \sum_{j=2}^r (b_j + a_j). \quad \square$$
-
-### 6.43 Theorem 55: Universal Block-$j$ Local Reset Prefix Law, Arbitrary-Upstream Block-Boundary Tail-Shielding & All-Odd `1`-Run Multi-Block 3-Crystal Law
-
-> **Theorem 55 (Universal Block-$j$ Local Reset Prefix Law $l_m(T_{j-1} + b_j + k - m) \equiv U_{\min(b_j - i_j, 2), a_j, k}(m)$, Arbitrary-Upstream Block-Boundary Tail-Shielding, and All-Odd `1`-Run Multi-Block 3-Crystal Law).**  
-> 1. **Universal Block-$j$ Local Reset Prefix Law (`local_reset_errors == 0` across $25,050$ entries, `Law 2ad` in Lean 4):**  
->    - Along the interface anti-diagonals $s + m = T_{j-1} + b_j + k$ ($k \in 0 \dots a_j$) of any Block $j$ ($0^{b_j} 1^{a_j}$) in a multi-block chain $0^{b_1} 1^{a_1} \cdots 0^{b_r} 1^{a_r}$ with jumps $(i_1, \dots, i_r)$, the spatial prefix $0 \le m \le b_j - i_j + k$ depends **only** on the local $0$-run segment $[T_{j-1} + i_j,\, T_{j-1} + b_j + k]$ and is **$100\%$ independent of all upstream blocks $1 \dots j - 1$**:
->      $$l_m(T_{j-1} + b_j + k - m) \;\equiv\; U_{\min(b_j - i_j,\, 2),\; a_j,\; k}(m) \qquad (\forall\, 0 \le m \le b_j - i_j + k,\; \forall\, 0 \le k \le a_j).$$
->    - In particular, whenever $a_{j-1}$ is odd (`rule30_odd_1run_forced_zero_jump_reset`), Law 4A forces $i_j = 0$, so the entire prefix $0 \le m \le b_j + k$ resets deterministically to $U_{\min(b_j, 2),\, a_j,\, k}(m)$.
-> 2. **Arbitrary-Upstream Block-Boundary Tail-Shielding Law (`boundary_tail_errors == 0` across $288$ multi-block configurations):**  
->    - At the interface $t = T_{j-1}$ entering Block $j$ ($0^{b_j} 1^{a_j}$), for **any** upstream block chain $0^{b_1} 1^{a_1} \cdots 0^{b_{j-1}} 1^{a_{j-1}}$ and **any** upstream crystal state, all interior jump choices $0 \le i_j \le b_j - 3$ saturate the odd-depth step OR-gate before $s = T_{j-1}$ (`rule30_block_boundary_tail_shielding_arbitrary_upstream`), producing the **exact same deeper left-cone tail** $l_m(T_{j-1})$ for all $m \ge b_j - 1$:
->      $$D_m^{(i_j, i_j')}(T_{j-1}) \;=\; l_m^{(i_j')}(T_{j-1}) \;\oplus\; l_m^{(i_j)}(T_{j-1}) \;\equiv\; 0 \qquad (\forall\, m \ge b_j - 1,\; \forall\, 0 \le i_j < i_j' \le b_j - 3).$$
-> 3. **All-Odd `1`-Run Multi-Block 3-Crystal Law (`odd_chain_3crystal_errors == 0` across $486$ three-block chains):**  
->    - Across any $r$-block chain $0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} \cdots 0^{b_r} 1^{a_r}$ where $a_1, \dots, a_{r-1}$ are odd, Law 4A forces $i_2 = \dots = i_r = 0$, and all $b_1 + 1$ initial latch states $i_1 \in \{0, \dots, b_1\}$ collapse to **at most $3$ distinct exit anti-diagonals** at $T_r = \sum_{j=1}^r (b_j + a_j)$ (indexed solely by $d_1 = \min(b_1 - i_1, 2) \in \{0, 1, 2\}$), with all interior jumps $0 \le i_1 \le b_1 - 2$ identical across the entire cone $0 \le m < T_r$! $\square$
-
-### 6.44 Theorem 56: Universal Two-Triangle Intra-Block Decomposition, Upstream Zero-Run Relaxation Crystals $V^{(q)}_{d_1, a_1}(m)$ & Exact $a_1 = 2$ Period-3 Synchronization Oscillator Law
-
-> **Theorem 56 (Universal Two-Triangle Intra-Block Decomposition, Upstream Zero-Run Relaxation Crystals $V^{(q)}_{d_1, a_1}(m)$ across $1 \le q \le i_2$, and Exact $a_1 = 2$ Period-3 Synchronization Oscillator Law).**  
-> 1. **Universal Two-Triangle Intra-Block Decomposition (`two_tri_errors == 0` across $13,608$ entries, `Law 2ae` in Lean 4):**  
->    - On any Block $j$ ($0^{b_j} 1^{a_j}$ starting at $T_{j-1}$) with even preceding `1`-run $a_{j-1} = 2k$ ($k \ge 1$) and jump index $0 \le i_j \le b_j - 1$, Law 4B forces $l_1(T_{j-1} + s) = \mathbf{1}_{s < i_j}$ ($1^{i_j} 0^{b_j - i_j}$) across the $0^{b_j}$ run. By downward induction on $m$, this boundary profile partitions the interior of the $0^{b_j}$ run into two universal triangles that are **$100\%$ independent of all upstream blocks $1 \dots j - 1$**:
->      - **(a) Equipotential Zero Triangle ($0 \le s < i_j$):**
->        $$l_m(T_{j-1} + s) \;=\; 0 \qquad (\forall\, 1 \le m \le i_j,\; \forall\, 0 \le s \le i_j - m).$$
->      - **(b) Universal Floquet Comb Triangle ($i_j \le s < b_j$):** Along every anti-diagonal $s + m = T_{j-1} + i_j + r$ ($1 \le r \le b_j - i_j$), the prefix $1 \le m \le r$ is the exact period-2 parity comb (`rule30_comb_triangle_antidiagonal_step`):
->        $$l_m(T_{j-1} + i_j + r - m) \;=\; m \bmod 2 \qquad (\forall\, 1 \le r \le b_j - i_j,\; \forall\, 1 \le m \le r).$$
-> 2. **Universal Upstream Zero-Run Relaxation Crystals $V^{(q)}_{d_1, a_1}(m)$ (`relax_crystal_errors == 0` across $20,868$ entries):**  
->    - Along the $q$-th post-exit anti-diagonal $s + m = T_1 + q$ ($1 \le q \le i_2$) entering the Equipotential Zero Triangle of Block 2, because $l_m(T_1 + q - m) = 0$ for all $1 \le m \le q$ (`rule30_upstream_relaxation_zero_entry_step`), the anti-diagonal prefix-XOR recurrence for all deeper cells $m \ge q$ starts from $l_q(T_1) = 0$ and depends **exclusively** on the upstream Block 1 crystal $d_1 = \min(b_1 - i_1, 2) \in \{0, 1, 2\}$ and $a_1$:
->      $$l_m^{(d_1)}(T_1 + q - m) \;\equiv\; V^{(q)}_{d_1,\, a_1}(m) \qquad (\forall\, 1 \le q \le i_2,\; \forall\, m \ge q),$$
->      which is **$100\%$ independent of $(i_2, b_2, a_2)$**!
-> 3. **Monotone Lune Synchronization Shift & Exact $a_1 = 2$ Period-3 Synchronization Oscillator Law (`relax_sync_errors == 0` across $210$ fronts for even $a_1 \in \{2, \dots, 30\}, q \in \{1, \dots, 15\}$; `a1_eq2_period3_errors == 0`):**  
->    - For every even $a_1 \ge 2$ and every relaxation step $q \ge 1$, the 3 upstream relaxation crystals $V^{(q)}_{0, a_1}(m), V^{(q)}_{1, a_1}(m), V^{(q)}_{2, a_1}(m)$ are **identically synchronized** for all $0 \le m < m_{\mathrm{sync}}(a_1, q)$, where
->      $$m_{\mathrm{sync}}(a_1, q) \;\ge\; q + \underline{M}(a_1) \qquad (\forall\, \text{even } a_1 \ge 2,\; \forall\, q \ge 1).$$
->    - Moreover, for $a_1 = 2$ (where $V^{(q)}_{0, 2}(m) \equiv V^{(q)}_{1, 2}(m)$ identically by Theorem 54(2)), the excess synchronization width $m_{\mathrm{sync}}(2, q) - q$ obeys an **exact period-3 oscillation** in $q \ge 1$:
->      $$m_{\mathrm{sync}}(2, q) - q \;=\; \begin{cases} 7, & \text{if } q \equiv 2 \pmod 3, \\ 4, & \text{if } q \equiv 0, 1 \pmod 3, \end{cases} \qquad \text{i.e., } \bigl(m_{\mathrm{sync}}(2, q) - q\bigr)_{q \ge 1} \;=\; (4, 7, 4, 4, 7, 4, 4, 7, 4, \dots)! \quad \square$$
-
-### 6.45 Theorem 57: Exact 1D Offset Recurrence, $3 \cdot 2^m$ Period-Doubling Cascade & Quantized Plateau-Jumping Crystal Coalescence Law
-
-> **Theorem 57 (Exact 1D Offset Recurrence $x_s(q) = x_{s-1}(q) \oplus \bigl(x_s(q-1) \lor x_s(q-2)\bigr)$, Universal $d_1 = 0$ Even-Run Independence, $3 \cdot 2^m$ Period-Doubling Cascade of the Master Periodic Crystal $W_q(s)$, and Quantized Plateau-Jumping Crystal Coalescence).**  
-> 1. **Exact 1D Offset Recurrence in $(q, s)$ & Universal $d_1 = 0$ Even-Run Independence (`rec_qs_errors == 0` across $20,196$ entries and `d0_univ_errors == 0` across $11,025$ entries, `Law 2af` in Lean 4):**  
->    - In offset coordinates $s := m - q \ge 0$ (so $m = q + s$ and $t = T_1 - s$), the relaxation profile $x_s(q) := V^{(q)}_{d_1, a_1}(q + s) = l_{q+s}^{(d_1)}(T_1 - s)$ satisfies the **exact shift-free 1D recurrence** (`rule30_relaxation_offset_recurrence_invertibility`):
->      $$x_s(q) \;=\; x_{s-1}(q) \;\oplus\; \bigl(x_s(q - 1) \;\lor\; x_s(q - 2)\bigr) \qquad (\forall\, q \ge 2,\; \forall\, s \ge 1), \qquad x_0(q) \;\equiv\; 0,$$
->      which is algebraically invertible in $x_{s-1}(q) = x_s(q) \oplus \bigl(x_s(q - 1) \lor x_s(q - 2)\bigr)$.
->    - For $d_1 = 0$ ($i_1 = b_1$) and **every** even `1`-run length $a_1 \ge 4$ ($a_1 \in \{4, 6, 8, 10, \dots\}$), the initial columns at $q \in \{0, 1\}$ are identical across all $s \ge 0$, so $V^{(q)}_{0, a_1}(q + s) \equiv W_q^*(s)$ is a **single universal table $100\%$ independent of $a_1 \ge 4$ for all $q \ge 0$ and all $s \ge 0$**!
-> 2. **Exact $3 \cdot 2^m$ Period-Doubling Cascade of the Master Periodic Crystal $W_q(s) := V^{(q)}_{0, 2}(q + s)$ (`cascade_3_2m_errors == 0` across $1,635$ entries):**  
->    - Across $s = 0 \dots 29$, every column $s$ of the Master Periodic Crystal $W_q(s) := V^{(q)}_{0, 2}(q + s)$ is **purely periodic in $q$ with zero transient** ($q \ge 0$ for even $s$, $q \ge 1$ for odd $s$) and minimal period $P_s$ following the **$3 \cdot 2^m$ period-doubling cascade**:
->      $$P_s \;=\; \begin{cases} 1, & s \in \{0, 1\}, \\ 3, & s \in \{2, 3\}, \\ 6, & s \in \{4, \dots, 9\}, \\ 12, & s \in \{10, \dots, 17\}, \\ 24, & s \in \{18, \dots, 29\}, \end{cases}$$
->      with exact odd-even column complementarity $x_{2j+1}(q) = 1 \oplus x_{2j}(q)$ whenever $x_{2j}(q)$ satisfies the Golden-Mean no-`00` condition (`rule30_relaxation_column_complement_from_golden_mean`).
-> 3. **Phase-Shifted Master-Crystal Coalescence & Quantized Plateau-Jumping Synchronization (`shift3_a2_errors == 0` across $1,980$ entries and `plateau_jump_errors == 0` across $144$ plateau fronts):**  
->    - Whenever $x_s(q - 1) = 1$, the OR-gate $\bigl(1 \lor x_s(q - 2)\bigr) = 1$ erases the memory of $x_s(q - 2)$ (`rule30_relaxation_or_saturation_memory_erasure`), driving every relaxation crystal $V^{(q)}_{d_1, a_1}(q + s)$ into a **phase-shifted copy $W_{q + \delta}(s)$ of the Master Periodic Crystal**:
->      - **($a_1 = 2$ Exact $+3$ Phase Shift):** $V^{(q)}_{2, 2}(q + s) \equiv W_{q + 3}(s)$ for all $q \ge 1$ and all $s \ge 0$.
->      - **($a_1 \in \{4, 6\}$ Plateau Jump to $s = 10$ & 2-Crystal Coalescence on $s < 18$):** For all $q \ge 22$, all 3 crystals $d_1 \in \{0, 1, 2\}$ coalesce identically to $W_{q + 3}(s)$ on $0 \le s < 10$, jumping $s_{\mathrm{sync}}(a_1, q) = m_{\mathrm{sync}}(a_1, q) - q$ from $\{5, 8\}$ up to the **exact period-6 oscillator** $(10, 12, 10, 10, 15, 10)^\infty$; and for all $q \ge 32$, they coalesce on $0 \le s < 18$ into the 2-crystal pair $\{W_{q+3}(s), W_{q+9}(s)\}$!
->      - **($a_1 \in \{8, 12\}$ Plateau Jump to $s = 18$):** For all $q \ge 34$, all 3 crystals $d_1 \in \{0, 1, 2\}$ coalesce identically to $W_{q + 3}(s)$ across the entire plateau $0 \le s < 18$, jumping $s_{\mathrm{sync}}(a_1, q)$ to the **exact period-12 oscillator** $(18, 18, 21, 18, 18, 20, 18, 18, 18, 18, 18, 22)^\infty$! $\square$
-
-### 6.46 Theorem 58: Full $0^{b_j}$ Three-Regime Interior Law, $r = 1$ All-Ones Complement Relaxation Law, Universal Slope-3 Comb Penetration Law & Super-Reset Horizon Extension
-
-> **Theorem 58 (Full $0^{b_j}$ Three-Regime Interior Law, $r = 1$ All-Ones Complement Relaxation Law, Universal Slope-3 Upstream Comb Penetration Law $q \ge i_2 + 3s + 2 \implies l_{q+s}(T_1 - s) = (q + s) \bmod 2$, and Universal Block-$j$ Super-Reset Horizon Extension $0 \le m \le b_j + k + \lfloor(b_j - i_j - 2)/3\rfloor_+$).**  
-> 1. **Full $0^{b_j}$ Three-Regime Interior Law & $r = 1$ All-Ones Bit-Complement Relaxation Law (`three_regime_errors == 0` across $19,500$ entries and `r1_comp_errors == 0` across $2,100$ entries, `Law 2ag` in Lean 4):**  
->    - Across the **entire** $0^{b_j}$ run ($1 \le q \le b_j$ and **all** $1 \le m \le q$, including across the Equipotential Zero Triangle $q - i_j < m \le q$), the anti-diagonal prefix $l_m(T_{j-1} + q - m)$ obeys the exact three-regime law:
->      $$l_m(T_{j-1} + q - m) \;=\; \begin{cases} 0, & \text{if } 1 \le q \le i_j \;\;(r \le 0), \\ 1, & \text{if } q = i_j + 1 \;\;(r = 1), \\ m \bmod 2, & \text{if } i_j + 2 \le q \le b_j \;\;(r \ge 2). \end{cases}$$
->    - Consequently, along the $r = 1$ boundary anti-diagonal $q = i_2 + 1$, the entry bit at $s = 0$ ($t = T_1$) flips from $0$ to $l_{i_2+1}(T_1) = 1$ while both prior anti-diagonals $q = i_2, i_2 - 1$ lie inside the Equipotential Zero Triangle (`rule30_r1_all_ones_complement_step`), forcing every deeper cell $m \ge i_2 + 1$ to be the **exact bitwise complement** of the pure relaxation crystal $V^{(i_2 + 1)}_{d_1, a_1}(m)$:
->      $$l_m(T_1 + i_2 + 1 - m) \;\equiv\; 1 \;\oplus\; V^{(i_2 + 1)}_{d_1,\, a_1}(m) \qquad (\forall\, m \ge i_2 + 1).$$
-> 2. **Universal Slope-3 Upstream Comb Penetration Law (`slope3_errors == 0` across $53,652$ entries):**  
->    - The shift-free 1D offset recurrence $x_s(q) = x_{s-1}(q) \oplus \bigl(x_s(q - 1) \lor x_s(q - 2)\bigr)$ ($s := m - q \ge 0$, $t = T_1 - s$) holds across **all** $q \in \{2, \dots, b_2\}$ and $s \ge 1$ (both inside $q \le i_2$ and across $q > i_2$), with boundary column $x_0(q) = q \bmod 2$ for all $q \ge i_2 + 2$.
->    - By the **3-Step Comb Absorption Lemma** (`rule30_three_step_comb_absorption` in Lean 4), whenever column $s - 1$ locks to the period-2 alternating comb $(q + s - 1) \bmod 2$ at $q \ge q_0$, for **every** initial state $(x_s(q_0 - 2), x_s(q_0 - 1)) \in \{0, 1\}^2$, column $s$ locks to the flipped alternating comb $(q + s) \bmod 2$ within at most $3$ steps ($q \ge q_0 + 3$), proving by induction on $s \ge 0$ that the Floquet comb penetrates backward into upstream Block 1 at exact slope $3$:
->      $$q \;\ge\; i_2 + 3s + 2 \quad \Longrightarrow \quad l_{q+s}(T_1 - s) \;\equiv\; (q + s) \bmod 2 \qquad (\forall\, s \ge 0,\; \forall\, a_1, d_1, i_2),$$
->      completely erasing both the jump index $i_2$ and the upstream Block 1 state $(a_1, d_1)$!
-> 3. **Universal Block-$j$ Super-Reset Horizon Extension (`super_reset_errors == 0` across $210,342$ entries):**  
->    - Because the interior comb extends across all $1 \le m \le b_j$ and penetrates into upstream Block $j - 1$ for $0 \le s \le \max\bigl(0, \lfloor(b_j - i_j - 2)/3\rfloor\bigr)$, along every Block-$j$ interface anti-diagonal $t + m = T_{j-1} + b_j + k$ ($0 \le k \le a_j$), the Upstream-Independent Local Reset Law (Theorem 55(1)) extends from $m \le b_j - i_j + k$ to the **Super-Reset Horizon**:
->      $$l_m(T_{j-1} + b_j + k - m) \;\equiv\; U_{\min(b_j - i_j,\, 2),\; a_j,\; k}(m) \qquad \left(\forall\, 0 \le m \le b_j + k + \max\!\left(0,\, \left\lfloor\frac{b_j - i_j - 2}{3}\right\rfloor\right)\right)! \quad \square$$
-
-### 6.47 Theorem 59: Zero-Comb Complementarity, Upstream Synchronization Prefix Preservation & Slope-$4/3$ Odd-Run Amplification Law
-
-> **Theorem 59 (Zero-Comb Complementarity, Upstream Synchronization Prefix Preservation, Slope-$4/3$ Odd-Run Zero-Block Amplification, and Universal $r$-Block Recursive Prefix-Preservation Law).**  
-> 1. **Exact Zero-Comb Complementarity & Prefix-Preservation Law for 2-Block Chains (`two_block_errors == 0` across $4,380$ configurations, `Law 2ah` in Lean 4):**  
->    - Across any 2-block chain $c = 0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2}0$ with jump $i_2 \in \{0, \dots, b_2\}$, the Block-2 zero run $0^{b_2}$ splits into the Equipotential Zero Triangle $1 \le q \le i_2$ (width $i_2$) and the Floquet Comb Triangle $i_2 + 1 \le q \le b_2$ (width $r_2 = b_2 - i_2$, so $i_2 + r_2 = b_2$):
->      - On the Equipotential Zero Triangle $1 \le q \le i_2$, the 3 Block-1 crystals $d_1 \in \{0, 1, 2\}$ synchronize across offset $0 \le s < s_{\mathrm{zero}}(a_1, i_2)$, where:
->        $$s_{\mathrm{zero}}(a_1, i_2) \;:=\; \begin{cases} \underline{M}(a_1), & \text{if } i_2 \le 1, \\ \min\bigl(s_{\mathrm{sync}}(a_1, i_2),\, s_{\mathrm{sync}}(a_1, i_2 - 1)\bigr), & \text{if } i_2 \ge 2. \end{cases}$$
->      - On the Floquet Comb Triangle $i_2 + 1 \le q \le b_2$, because the entry column $x_0(q)$ depends **only** on $(i_2, k_2)$ and is $100\%$ independent of $d_1 \in \{0, 1, 2\}$, the shift-free 1D offset recurrence $x_s(q) = x_{s-1}(q) \oplus \bigl(x_s(q-1) \lor x_s(q-2)\bigr)$ (`rule30_upstream_sync_step_preservation`) **simultaneously preserves** the entire zero-triangle agreement $0 \le s < s_{\mathrm{zero}}(a_1, i_2)$ **and** forces Slope-3 Comb Penetration on $0 \le s < s_{\mathrm{comb}}(r_2, k_2)$, where $r_{\mathrm{eff}} := r_2 - \mathbf{1}_{k_2 \ge 1}$ and $s_{\mathrm{comb}}(r_2, k_2) := \mathbf{1}_{r_{\mathrm{eff}} \ge 2}\bigl(\lfloor(r_{\mathrm{eff}} - 2)/3\rfloor + 1\bigr)$.
->      - Consequently, along every anti-diagonal $t + m = T_1 + b_2 + k_2$ ($0 \le k_2 \le a_2$), all $b_1 + 1$ Block-1 jump indices $i_1 \in \{0, \dots, b_1\}$ are identically synchronized up to at least (`rule30_zero_comb_complementarity_bound`):
->        $$M_{\mathrm{sync}}^{(2)}(a_1, b_2, i_2, k_2) \;\ge\; b_2 + k_2 + \max\bigl(s_{\mathrm{zero}}(a_1, i_2),\; s_{\mathrm{comb}}(b_2 - i_2, k_2)\bigr).$$
-> 2. **Slope-$4/3$ Odd-Run Zero-Block Amplification Law (`odd_slope43_errors == 0` across $240$ odd-$a_1$ configurations):**  
->    - Whenever $a_{j-1}$ is odd, the Rule 30 right-seam alternating comb forces $l_1(T_{j-1}) = a_{j-1} \bmod 2 = 1$, which forces $i_j = 0$ (zero Equipotential Zero Triangle, $100\%$ Floquet Comb Triangle $r_j = b_j$).
->    - Thus for every odd $a_1$, $M_{\mathrm{sync}}^{(2)}(a_1, b_2, 0, k_2) \ge b_2 + k_2 + \max\bigl(\underline{M}(a_1), \lfloor(b_2 - 3)/3\rfloor + 1\bigr) \ge \frac{4}{3} b_2 + k_2 - 1$ (`rule30_odd_run_slope_four_thirds_amplification`)!
-> 3. **Universal $r$-Block Recursive Prefix-Preservation Law (`three_block_errors == 0` across $5,376$ three-block configurations):**  
->    - Across any 3-block chain $c = 0^{b_1} 1^{a_1} 0^{b_2} 1^{a_2} 0^{b_3} 1^{a_3}0$, the Block-2 exit agreement $s_2^*(a_1, b_2, i_2, a_2) := \min\bigl(s_2(k_2 = a_2),\, s_2(k_2 = a_2 - 1)\bigr)$ is $100\%$ preserved across Block 3, forcing:
->      $$M_{\mathrm{sync}}^{(3)}(a_1, b_2, i_2, a_2, b_3, i_3, k_3) \;\ge\; b_3 + k_3 + b_2 + a_2 + \max\bigl(s_{\mathrm{zero}}(a_1, i_2),\; s_{\mathrm{comb}}(b_2 - i_2, 1)\bigr)! \quad \square$$
-
-### 6.48 Theorem 60: Universal Odd-Run Post-Exit Comb Table $C_q^*(s)$, Exact $3s - 19$ Lune-Accelerated Comb Frontier & $+7$ Column Boosted Super-Reset Horizon
-
-> **Theorem 60 (Universal $d_1 = 0$ Odd-Run Post-Exit Comb Table $C_q^*(s)$, Exact Closed-Form Lune-Accelerated Comb-Lock Frontier $Q_{\mathrm{comb}}(a_1, s) = 3s - 19$, and $+7$ Column Boosted Super-Reset Horizon).**  
-> 1. **Universal $d_1 = 0$ Odd-Run Post-Exit Comb Table $C_q^*(s)$ (`univ_odd_errors == 0` across $16,000$ entries, `Law 2ai` in Lean 4):**  
->    - Whenever $a_1 \ge 3$ is odd (so $i_2 = 0$ is forced by $l_1(T_1) = 1$), for $d_1 = 0$ ($i_1 = b_1$) the initial columns at $q = 0$ ($k = a_1$) and $q = -1$ ($k = a_1 - 1$) are $U_{0, a_1, a_1}(s) = s \bmod 2$ ($\forall s \ge 0$) and $U_{0, a_1, a_1-1}(s - 1) = (0, 1, 0, (s - 1) \bmod 2)$, which are **$100\%$ independent of odd $a_1 \ge 3$ for all $s \ge 0$**!
->    - Because the entry column $x_0(q) = q \bmod 2$ ($q \ge 0$) is also independent of $a_1$, the shift-free 1D offset recurrence $x_s(q) = x_{s-1}(q) \oplus \bigl(x_s(q - 1) \lor x_s(q - 2)\bigr)$ uniquely determines a **single universal post-exit 2D table** $C_q^*(s)$ ($q \ge 0, s \ge 0$) such that:
->      $$l_{q+s}^{(0)}(T_1 - s) \;\equiv\; C_q^*(s) \qquad (\forall\, \text{odd } a_1 \ge 3,\; \forall\, q, s \ge 0,\; 100\%\text{ independent of } a_1,\, b_1,\, b_2,\, a_2)!$$
-> 2. **Exact Closed-Form Lune-Accelerated 3-Crystal Comb-Lock Frontier $Q_{\mathrm{comb}}(a_1, s)$ (`frontier_errors == 0` across $208$ frontiers):**  
->    - Because all 3 Block-1 crystals $d_1 \in \{0, 1, 2\}$ agree with $C_q^*(s)$ inside the Turing-RNG Lune $0 \le s < \underline{M}(a_1)$ where $C_q^*(s)$ already locks to the alternating comb $(q + s) \bmod 2$ at $Q_{\mathrm{comb}}^*(0 \dots 9) = (0, 0, 3, 6, 4, 4, 7, 10, 8, 8)$, the minimal threshold $Q_{\mathrm{comb}}(a_1, s)$ such that all 3 crystals lock to $(q + s) \bmod 2$ for all $q \ge Q_{\mathrm{comb}}(a_1, s)$ has the exact closed form (`rule30_lune_accelerated_comb_frontier_step`):
->      - For $a_1 = 1$: $Q_{\mathrm{comb}}(1, 0) = 0$ and $Q_{\mathrm{comb}}(1, s) = 3s + 1$ for $s \ge 1$ ($1$ step earlier than $3s + 2$).
->      - For $a_1 = 3$: $Q_{\mathrm{comb}}(3, s) = 0$ for $s \le 1$ and $Q_{\mathrm{comb}}(3, s) = 3s - 3$ for $s \ge 2$ (**$5$ steps earlier** than $3s + 2$).
->      - For **all odd $a_1 \ge 5$**: $Q_{\mathrm{comb}}(a_1, s) = Q_{\mathrm{comb}}^*(s)$ for $0 \le s < 9$ and
->        $$Q_{\mathrm{comb}}(a_1, s) \;=\; 8 + 3(s - 9) \;=\; 3s - 19 \qquad (\forall\, \text{odd } a_1 \ge 5,\; \forall\, s \ge 9),$$
->        which locks to the alternating comb **$21$ steps earlier in $q$** than the unseeded worst-case bound $3s + 2$!
-> 3. **$+7$ Column Boosted Odd-Run Super-Reset Horizon & Synchronization Law (`sync_odd_errors == 0` across $288$ configs, `super_odd_errors == 0` across $25,272$ entries):**  
->    - Inverting $Q_{\mathrm{comb}}(a_1, u) \le q_{\mathrm{eff}}$ ($q_{\mathrm{eff}} := b_2 - \mathbf{1}_{k_2 \ge 1}$) yields the boosted comb penetration width (`rule30_boosted_odd_run_super_reset_gain`):
->      $$S_{\mathrm{comb}}^{\mathrm{odd}}(a_1, q_{\mathrm{eff}}) \;=\; \left\lfloor\frac{q_{\mathrm{eff}} + 19}{3}\right\rfloor + 1 \qquad (\forall\, \text{odd } a_1 \ge 5,\; \forall\, q_{\mathrm{eff}} \ge 10),$$
->      exceeding the unseeded $\lfloor(q_{\mathrm{eff}} - 2)/3\rfloor + 1$ penetration by **$+7$ full spatial columns** and extending the Universal Super-Reset Horizon $l_m(T_1 + b_2 + k_2 - m) \equiv U_{2, a_2, k_2}(m)$ to all $0 \le m < b_2 + k_2 + S_{\mathrm{comb}}^{\mathrm{odd}}(a_1, q_{\mathrm{eff}})$! $\square$
-
-### 6.49 Theorem 61: Single 2-Cell Source Comb-Defect Field $\Delta_q^*(s)$, Zero-Transient Horizontal Dyadic Cascade & Self-Shielding Soliton Head $(1,1,0,1,1,0,1)$ / $3s - 26$ Synchronization Frontier
-
-> **Theorem 61 (Single 2-Cell Source Comb-Defect Field $\Delta_q^*(s)$, Zero-Transient Horizontal Dyadic Period-Doubling Cascade $P_q = 2^{m_q}$, and Self-Shielding Soliton Head $(1,1,0,1,1,0,1)$ / $3s - 26$ Synchronization Frontier for Odd $a_1 \ge 9$).**  
-> 1. **Exact Comb-Defect Recurrence & Single 2-Cell Source Law (`rec_errors == 0` across $18,225$ entries, `Law 2aj` in Lean 4):**  
->    - For the Universal Odd-Run Post-Exit Table $C_q^*(s) := l_{q+s}^{(0)}(T_1 - s)$ ($q \ge -1, s \ge 0$, odd $a_1 \ge 3$), defining the **XOR Comb-Defect Field** $\Delta_q^*(s) := C_q^*(s) \oplus \bigl((q + s) \bmod 2\bigr)$ cancels the alternating background identically (`rule30_comb_defect_recurrence_identity` in Lean 4):
->      $$\Delta_q^*(s) \;=\; \Delta_q^*(s - 1) \;\oplus\; \Bigl(\overline{C_{q-1}^*(s)} \land \overline{C_{q-2}^*(s)}\Bigr) \;=\; \Delta_q^*(s - 1) \;\oplus\; \begin{cases} \Delta_{q-1}^*(s) \land \overline{\Delta_{q-2}^*(s)}, & \text{if } 2 \mid (q + s), \\ \overline{\Delta_{q-1}^*(s)} \land \Delta_{q-2}^*(s), & \text{if } 2 \nmid (q + s), \end{cases}$$
->      with boundary values $\Delta_q^*(0) \equiv 0$, $\Delta_0^*(s) \equiv 0$, and $\Delta_{-1}^*(s) = \mathbf{1}_{s \in \{2, 3\}}$ — proving that the entire 2D table $C_q^*(s)$ is generated by a **single 2-cell initial defect at $q = -1, s \in \{2, 3\}$**!
-> 2. **Zero-Transient Horizontal Dyadic Period-Doubling Cascade (`dyad_errors == 0` across $2,838$ entries):**  
->    - At $q = 1$, $\Delta_1^*(s) = \mathbf{1}_{s \ge 2}$. At $q = 2$, because $C_0^*(1) = 1 \implies \overline{C_0^*(1)} = 0$ annihilates the $s = 1$ transient of $\Delta_1^*(1)$, $\Delta_2^*(s) = (0, 0, 1, 1)^\infty$ is **strictly periodic of period $4$ from $s = 0$ (`s_lock = 0`, zero transient!)**; and at $q = 3$, $\Delta_2^*(1) = 0$ likewise annihilates the $s = 1$ transient of $\Delta_1^*(1)$, making $\Delta_3^*(s) = (0, 0, 1, 1, 1, 1, 0, 0)^\infty$ strictly periodic of period $8$ from $s = 0$.
->    - By induction on $q \ge 2$, **every horizontal row $q \ge 2$ of $\Delta_q^*(s)$ is strictly periodic from $s = 0$ (`s_lock = 0`) with exact dyadic period $P_q = 2^{m_q}$**:
->      $$P_2 \dots P_{13} \;=\; (4,\; 8,\; 8,\; 16,\; 32,\; 32,\; 64,\; 64,\; 64,\; 128,\; 256,\; 256).$$
-> 3. **Autonomous Traveling-Wave Soliton Head $(1,1,0,1,1,0,1)$ & $3s - 26$ Synchronization Frontier for Odd $a_1 \ge 9$ (`soliton_errors == 0` across $873$ entries, `sync_a9_errors == 0` across $160$ entries):**  
->    - In traveling-wave coordinates $Y_j(s) := \Delta_{3s - 20 - j}^*(s)$ behind $q = 3s - 19$, since $(3s - 20 - j) + s = 4s - 20 - j \equiv j \pmod 2$, the parity switch depends **only on $j \bmod 2$** ($100\%$ autonomous in $s$):
->      $$Y_j(s) \;=\; Y_{j-3}(s - 1) \;\oplus\; \begin{cases} Y_{j+1}(s) \land \overline{Y_{j+2}(s)}, & \text{if } 2 \mid j, \\ \overline{Y_{j+1}(s)} \land Y_{j+2}(s), & \text{if } 2 \nmid j. \end{cases}$$
->    - For all $s \ge 13$, the leading $10$ cells $j \in \{0, \dots, 9\}$ lock into the **Self-Shielding Soliton Head** (`rule30_soliton_head_self_shielding` in Lean 4):
->      $$(Y_0, Y_1, Y_2, Y_3, Y_4, Y_5, Y_6)(s) \;\equiv\; (1, 1, 0, 1, 1, 0, 1), \qquad Y_7(s) \;\equiv\; Y_8(s), \qquad Y_9(s) \;\equiv\; 1,$$
->      where $Y_9 = 1 \implies Y_7 = Y_8 \implies Y_6 = 1 \implies \overline{Y_6} \land Y_7 = 0$ completely shields $j \in \{0, \dots, 5\}$ from all deeper cells $j \ge 7$!
->    - For **every odd $a_1 \ge 9$**, all 3 Block-1 crystals $d_1 \in \{0, 1, 2\}$ share this exact 7-bit Soliton Head behind $3s - 19$, forcing 3-crystal synchronization at
->      $$Q_{\mathrm{sync}}(a_1, s) \;\le\; \max(0,\, 3s - 26) \qquad (\forall\, \text{odd } a_1 \ge 9,\; \forall\, s \ge 0),$$
->      which is **$7$ steps earlier than $3s - 19$ and $28$ steps earlier than $3s + 2$**, with $3s - Q_{\mathrm{sync}}(a_1, s)$ locking into the period-$3$ multiset $\{26, 26, 30\}$! $\square$
-
-### 6.50 Theorem 62: Half-Period Carry-Weight Collapse, Unconditional No-Three-Consecutive-Doublings Theorem, Half-Period Prefix-XOR Law & 14-Cell Soliton Head Inductive Closure
-
-> **Theorem 62 (Exact Half-Period Carry-Weight Collapse $\mathrm{wt}_L(\mathrm{carry}_q) = \mathrm{wt}_{L/2}(\overline{C_{q-2}^*})$, Unconditional No-Three-Consecutive-Doublings Theorem $P_{q-1} = 2 P_{q-2} = 4 P_{q-3} \implies P_q = P_{q-1}$, Half-Period Prefix-XOR Law, and Unconditional 14-Cell Soliton Head Inductive Closure).**  
-> 1. **Exact Half-Period Carry-Weight Collapse & Unconditional No-Three-Consecutive-Doublings Theorem (`carry_collapse_errors == 0`, `no_triple_errors == 0` across $23$ dyadic rows $q = 4 \dots 26$ up to $P_{26} = 16,384$, `Law 2ak` in Lean 4):**  
->    - Whenever row $q - 1$ doubles its horizontal period ($P_{q-1} = 2 P_{q-2} = L \ge 4$), $\Delta_{q-1}^*(s + L/2) = 1 \oplus \Delta_{q-1}^*(s) \iff C_{q-1}^*(s + L/2) = 1 \oplus C_{q-1}^*(s)$ (Half-Period Anti-Symmetry) while $C_{q-2}^*(s + L/2) = C_{q-2}^*(s)$ (Half-Period Symmetry).
->    - Consequently, for every $s \in \{1, \dots, L/2\}$, the two half-period carry terms $\mathrm{carry}_q(s) = \overline{C_{q-1}^*(s)} \land \overline{C_{q-2}^*(s)}$ and $\mathrm{carry}_q(s + L/2) = C_{q-1}^*(s) \land \overline{C_{q-2}^*(s)}$ are mutually exclusive (`rule30_half_period_carry_collapse` in Lean 4) and sum identically to:
->      $$\mathrm{carry}_q(s) + \mathrm{carry}_q(s + L/2) \;=\; \overline{C_{q-2}^*(s)} \qquad \Longrightarrow \qquad \mathrm{wt}_L(\mathrm{carry}_q) \;:=\; \sum_{s=1}^{L} \mathrm{carry}_q(s) \;\equiv\; \mathrm{wt}_{L/2}\bigl(\overline{C_{q-2}^*}\bigr)!$$
->    - **Corollary (Unconditional No-Three-Consecutive-Doublings Theorem for $q \ge 4$):** Whenever **both** row $q - 2$ and row $q - 1$ double their periods ($P_{q-2} = 2 P_{q-3} = L/2 \ge 4$ and $P_{q-1} = 2 P_{q-2} = L \ge 8$), row $q - 2$ also satisfies Half-Period Anti-Symmetry $C_{q-2}^*(s + L/4) = 1 \oplus C_{q-2}^*(s)$ with $L/4 \ge 2$ even, so $\overline{C_{q-2}^*(s)} + \overline{C_{q-2}^*(s + L/4)} = 1$ for every $1 \le s \le L/4$, forcing the exact quarter-period carry weight:
->      $$\mathrm{wt}_L(\mathrm{carry}_q) \;=\; \frac{L}{4} \;=\; \frac{P_{q-1}}{4} \;\equiv\; 0 \pmod 2 \qquad (\forall\, L \ge 8) \qquad \Longrightarrow \qquad P_q \;=\; P_{q-1}!$$
->      Thus **no three consecutive rows can ever period-double for $q \ge 4$**: every double-jump ($q \in \{4, 7, 13, 19, 26, \dots\}$) is unconditionally followed by a period plateau $P_q = P_{q-1}$ with $\mathrm{wt}_L(\mathrm{carry}_q) = P_{q-1}/4$!
-> 2. **Exact Half-Period Prefix-XOR Law (`prefix_xor_errors == 0` across $59,560$ entries):**  
->    - Whenever $P_{q-1} = 2 P_{q-2} = L$, summing $\mathrm{carry}_q(u + L/2) \oplus \mathrm{carry}_q(u) = \overline{C_{q-2}^*(u)}$ from $u = 1$ to $s$ yields the exact half-period difference identity:
->      $$\Delta_q^*(s + L/2) \;\oplus\; \Delta_q^*(s) \;\equiv\; \Delta_q^*(L/2) \;\oplus\; \bigoplus_{u=1}^{s} \overline{C_{q-2}^*(u)} \qquad (\forall\, s \ge 0).$$
-> 3. **Unconditional 14-Cell Soliton Head Inductive Closure (`closure_errors == 0` across $378$ crystal profiles across $d_1 \in \{0, 1, 2\}$ and odd $a_1 \ge 9$, `rule30_soliton_head_inductive_closure` in Lean 4):**  
->    - In traveling-wave coordinates $Y_j(s) := \Delta_{3s - 20 - j}(s)$, suppose at step $s - 1 \ge 12$ we have $(Y_0, \dots, Y_6)(s - 1) = (1, 1, 0, 1, 1, 0, 1)$, $Y_7(s - 1) = Y_8(s - 1) =: b$, and $Y_9(s - 1) = 1$. Then at step $s$, for **every** $(b, Y_{13}(s), Y_{14}(s)) \in \{0, 1\}^3$ without exception:
->      1. Since $j = 12$ is even and $Y_9(s - 1) = 1$, $Y_{12}(s) = 1 \oplus \bigl(Y_{13}(s) \land \overline{Y_{14}(s)}\bigr)$, which implies $Y_{12}(s) \lor Y_{13}(s) \equiv 1$ (i.e., $\overline{Y_{12}(s)} \implies Y_{13}(s) = 1$).
->      2. Consequently, $\overline{Y_{12}(s)} \land Y_{13}(s) \equiv \overline{Y_{12}(s)}$, so $Y_{11}(s) = b \oplus \overline{Y_{12}(s)}$ and $Y_{10}(s) = b \oplus \bigl(Y_{11}(s) \land \overline{Y_{12}(s)}\bigr) = b \lor \overline{Y_{12}(s)}$.
->      3. Therefore, the carry into $j = 9$ vanishes identically: $\overline{Y_{10}(s)} \land Y_{11}(s) = (\bar{b} \land Y_{12}(s)) \land (b \oplus \overline{Y_{12}(s)}) \equiv 0$, forcing $Y_9(s) = Y_6(s - 1) \oplus 0 = 1$, $Y_8(s) = \overline{Y_{10}(s)} = Y_7(s)$, and $Y_6(s) = 1$ — **closing the Soliton Head induction unconditionally for all $s \ge 13$ and all $d_1 \in \{0, 1, 2\}$**! $\square$
-
-### 6.51 Theorem 63: Intra-Block / Post-Exit Crystal Unification $U_{2, a, k}(k + s) \equiv C_{k+1}^*(s + 1)$, 4-Bit Affine Codeword Gap $\{27, 28, 29\}$ & Modulo-3 Soliton Tunneling Law
-
-> **Theorem 63 (Exact Intra-Block / Post-Exit Crystal Unification $U_{2, a, k}(k + s) \equiv C_{k+1}^*(s + 1)$, 4-Bit Affine Codeword $(\beta, \beta, 1, \bar{\beta})$ & Forbidden Synchronization Gap $\{27, 28, 29\}$, and Modulo-3 Soliton Slot-Sampling / Transparent Tunneling Law).**  
-> 1. **Exact Intra-Block / Post-Exit Crystal Unification (`unif_errors == 0` across $1,440$ entries for $k = 1 \dots 24, s = 0 \dots 59$):**  
->    - In offset coordinates $s := m - k \ge 0$ ($m = k + s$, $t = b_1 - s$), the Universal Intra-Block Crystal $X_k^{(2)}(s) := U_{2, a, k}(k + s) = l_{k+s}^{(2)}(b_1 - s)$ satisfies the exact same shift-free 1D recurrence $X_k(s) = X_k(s - 1) \oplus \bigl(X_{k-1}(s) \lor X_{k-2}(s)\bigr)$ as the Universal Odd-Run Post-Exit Table $C_q^*(s)$, with matching boundary conditions $X_0^{(2)}(s) \equiv C_1^*(s + 1)$ ($\forall s \ge 1$), $X_1^{(2)}(s) \equiv C_2^*(s + 1)$ ($\forall s \ge 0$), and $X_k^{(2)}(0) = (k + 1) \bmod 2 \equiv C_{k+1}^*(1)$ ($\forall k \ge 1$).
->    - Because the recurrence for $s \ge 1$ never queries $X_0^{(2)}(0)$, induction on $k \ge 1$ and $s \ge 0$ proves that **the Universal Intra-Block Crystal $U_{2, a, k}$ and the Universal Odd-Run Post-Exit Table $C_q^*$ are the exact same mathematical object**:
->      $$U_{2, a, k}(k + s) \;\equiv\; C_{k+1}^*(s + 1), \qquad E_k^{(2)}(s) \;:=\; U_{2, a, k}(k + s) \oplus \bigl((k + s) \bmod 2\bigr) \;\equiv\; \Delta_{k+1}^*(s + 1) \qquad (\forall\, k \ge 1,\; \forall\, s \ge 0)!$$
-> 2. **4-Bit Affine Codeword Law & Forbidden Synchronization Gap $\{27, 28, 29\}$ (`gap_errors == 0` across $224$ frontiers for odd $a_1 \in \{9, \dots, 21\}, s \in [13, 44]$, `Law 2al` in Lean 4):**  
->    - By Theorem 62(3), for every crystal $d_1 \in \{0, 1, 2\}$ and all $s \ge 13$, the 4-cell block $j \in \{7, 8, 9, 10\}$ behind the 7-bit Soliton Head $(Y_0 \dots Y_6) = (1, 1, 0, 1, 1, 0, 1)$ is constrained to the **1-parameter 4-bit affine codeword**:
->      $$\bigl(Y_7^{(d_1)}(s),\, Y_8^{(d_1)}(s),\, Y_9^{(d_1)}(s),\, Y_{10}^{(d_1)}(s)\bigr) \;\equiv\; \bigl(\beta_{d_1},\, \beta_{d_1},\, 1,\, 1 \oplus \beta_{d_1}\bigr), \qquad \beta_{d_1} \;:=\; Y_7^{(d_1)}(s).$$
->    - Consequently (`rule30_four_bit_affine_codeword_jump` in Lean 4), whenever all 3 crystals agree at $j = 7$ ($\beta_0 = \beta_1 = \beta_2$), they automatically agree across all 4 cells $j \in \{7, 8, 9, 10\}$ ($q = 3s - 27 \dots 3s - 30$), proving unconditionally that $3s - Q_{\mathrm{sync}}(a_1, s)$ **can never take a value in the forbidden 3-value gap $\{27, 28, 29\}$** (`3s - Q_sync = 26` or `3s - Q_sync >= 30` for all $s \ge 13$ and odd $a_1 \ge 9$)!
-> 3. **Modulo-3 Soliton Slot-Sampling & Transparent Tunneling of $q = 3r + 2$ (`mod3_errors == 0` across $48$ rows, `rule30_mod3_soliton_slot_sampling` in Lean 4):**  
->    - For $d_1 = 1$, the first defect $s_{\mathrm{first}}^{(1)}(k) := \min\{s \ge 0 : E_k^{(1)}(s) = 1\}$ satisfies $s_{\mathrm{first}}^{(1)}(3q + 1) = s_{\mathrm{first}}^{(1)}(3q + 2) = q$ (recovering the Turing-RNG Lune synchronization front $M(3q + r) = 4q + r = k + q$) and $s_{\mathrm{first}}^{(1)}(3q) \ge q + 2$ ($\forall q \ge 1$).
->    - For $d_1 = 2$ ($E_k^{(2)}(s) = \Delta_q^*(s + 1)$ with $q = k + 1$), as $s' = s + 1$ advances by $+1$, the traveling-wave index $j(s') = 3s' - 20 - q$ steps by $+3$, so row $q$ samples **only the single congruence class $j \equiv 1 - q \pmod 3$** of the Soliton Head $(Y_0 \dots Y_6) = (1, 1, 0, 1, 1, 0, 1)$:
->      - Rows $q = 3r$ ($k = 3r - 1$) and $q = 3r + 1$ ($k = 3r$) sample $(Y_1, Y_4) = (1, 1)$ and $(Y_0, Y_3, Y_6) = (1, 1, 1)$, hitting their first defect at $s_{\mathrm{first}}^{(2)}(3r - 1) = s_{\mathrm{first}}^{(2)}(3r) = r + 6$ ($\forall r \ge 4$);
->      - Row $q = 3r + 2$ ($k = 3r + 1$) samples **only the two zero-slots $(Y_2, Y_5) = (0, 0)$**, tunneling transparently through the entire Soliton Head so its first defect is delayed by at least $+3$ steps to $s_{\mathrm{first}}^{(2)}(3r + 1) \ge r + 9$ ($\forall r \ge 3$)! $\square$
-
-### 6.52 Theorem 64: Crystal $d_1 = 1$ Zero-Transient Dyadic Cascade, 21-Cell Traveling-Wave Soliton Isomorphism $Z_j(s) \equiv Y_j(s + 13)$ & Golden-Mean 6-Cell Tail Lock
-
-> **Theorem 64 (Crystal $d_1 = 1$ Zero-Transient Dyadic Cascade & No-Triple-Doubling Law, Exact $3s + 2$ Wavefront & 21-Cell Traveling-Wave Soliton Isomorphism $Z_j(s) \equiv Y_j(s + 13)$, 2-Variable Factorization of the 6-Cell Tail $j = 7 \dots 12$, Golden-Mean Subshift Law $\beta(s - 1) \land \beta(s) = 0$, and $\beta(s) = 1 \implies (Y_7 \dots Y_{12})(s) = (1, 1, 1, 0, 0, 1)$ 6-Cell Lock).**  
-> 1. **Crystal $d_1 = 1$ Zero-Transient Dyadic Cascade & No-Three-Consecutive-Doublings Theorem (`d1_cascade_errors == 0` across $25$ rows $k = 4 \dots 28$ up to $P_{28}^{(1)} = 16,384$):**  
->    - For Crystal $d_1 = 1$, the Intra-Block Comb-Defect Field $E_k^{(1)}(s) := U_{1, a, k}(k + s) \oplus \bigl((k + s) \bmod 2\bigr)$ has shift-invariant initial rows $E_1^{(1)}(s) = E_2^{(1)}(s) \equiv 1$ ($\forall s \ge 0$) and $E_3^{(1)}(s) \equiv 0$ ($\forall s \ge 0$), with left boundary $E_k^{(1)}(0) = 0$ ($\forall k \ge 3$).
->    - Consequently, **every horizontal row $k \ge 3$ of $E_k^{(1)}(s)$ is strictly periodic from $s = 0$ (`s_lock = 0`, zero transient!)** with dyadic period $P_k^{(1)} = 2^{m_k}$, and obeys the exact Half-Period Carry-Weight Collapse & Unconditional No-Three-Consecutive-Doublings Theorem ($\mathrm{wt}_L(\mathrm{carry}_k) = P_{k-1}^{(1)} / 4$ at every double-jump $k \in \{6, 9, 14, 18, 26\}$, where $\mathrm{wt}_L(\mathrm{carry}_k) = 2, 8, 32, 128, 2048$)!
-> 2. **Exact $3s + 2$ Soliton Wavefront & 21-Cell Traveling-Wave Isomorphism (`iso_errors == 0` across $3,045$ entries for $0 \le j \le 20, s \in [15, 160)$):**  
->    - The upper defect frontier of $E_k^{(1)}(s)$ is $k_{\max}^{(1)}(s) \equiv 3s + 2$ for all $s \ge 1$ (with zero transient — $22$ steps higher in row index than $3s - 20$ of $\Delta_q^*$), and its traveling-wave coordinates $Z_j(s) := E_{3s + 2 - j}^{(1)}(s)$ lock into their period-$3$ attractor for $0 \le j \le 20$ from the very first step $s_{\mathrm{lock}}(j) = \lfloor(j + 2)/3\rfloor + 1$ where $3s + 2 - j \ge 4$, matching $Y_j(s + 13) := \Delta_{3(s+13) - 20 - j}^*(s + 13)$ identically across all $21$ leading cells $j \in \{0, \dots, 20\}$!
-> 3. **2-Variable Factorization of the 6-Cell Tail $j = 7 \dots 12$, Golden-Mean Subshift Law & 6-Cell Lock (`gm_errors == 0` across $672$ crystal steps and $278$ 6-cell locks, `Law 2am` in Lean 4):**  
->    - In traveling-wave coordinates $Y_j^{(d_1)}(s)$ ($s \ge 13$) and $Z_j(s)$ ($s \ge 4$), with $b := \beta(s - 1) = Y_7(s - 1)$ and $y_{12} := Y_{12}(s)$, the entire 6-cell block $j \in \{7, \dots, 12\}$ behind the Soliton Head factors through the 2 bits $(b, y_{12})$ (`rule30_six_cell_tail_factorization_and_golden_mean` in Lean 4):
->      $$\bigl(Y_7, Y_8, Y_9, Y_{10}, Y_{11}, Y_{12}\bigr)(s) \;\equiv\; \bigl(\bar{b} \land y_{12},\;\; \bar{b} \land y_{12},\;\; 1,\;\; b \lor \bar{y}_{12},\;\; b \oplus \bar{y}_{12},\;\; y_{12}\bigr).$$
->    - Consequently:
->      - **(a) Universal Golden-Mean No-`11` Subshift Law:** $\beta(s) = \overline{\beta(s - 1)} \land Y_{12}(s) \implies \beta(s - 1) \land \beta(s) \equiv 0$ for all $s \ge 13$ across all 3 crystals $d_1 \in \{0, 1, 2\}$ (two consecutive steps can never both have $\beta = 1$)!
->      - **(b) Unconditional 6-Cell Lock on $\beta(s) = 1$ (`rule30_beta_one_forces_six_cell_block` in Lean 4):** Whenever $Y_7(s) = 1$, $\bar{b} \land y_{12} = 1$ uniquely forces $b = 0$, $y_{12} = 1$, and $Y_{13}(s) \land \overline{Y_{14}(s)} = 0$, locking the entire 6-cell block to:
->        $$\beta(s) = 1 \quad \Longrightarrow \quad \bigl(Y_7, Y_8, Y_9, Y_{10}, Y_{11}, Y_{12}\bigr)(s) \;\equiv\; (1, 1, 1, 0, 0, 1),$$
->        so whenever all 3 crystals satisfy $Y_7^{(d_1)}(s) = 1$, 3-crystal synchronization jumps by $+6$ cells at once to $3s - Q_{\mathrm{sync}}(a_1, s) \ge 33$! $\square$
 
 ---
 
 ## 7. One-Command Verification
 
-All sixty-three theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All fifty-two theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only
