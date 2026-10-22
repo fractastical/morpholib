@@ -213,8 +213,9 @@
       <div class="action-links">
         <a class="btn-link primary" href="../zhang_levin_13yo_illustrated_guide.pdf" target="_blank">🎨 Illustrated Student's Guide PDF (4-Page Magazine Edition)</a>
         <a class="btn-link" href="../zhang_levin_sorting_morphogenesis_manuscript.pdf" target="_blank">🔬 Full Academic &amp; CE 2.0 Manuscript PDF (8 Pages)</a>
+        <a class="btn-link" href="./integration-guide.html">🛠️ Queryable Integration Guide &amp; Embed Builder</a>
+        <a class="btn-link" href="./integration-guide.json" target="_blank">📘 integration-guide.json</a>
         <a class="btn-link" href="./index.html">🐟 D'Arcy Thompson 10,000-Fish Bioelectric Hub</a>
-        <a class="btn-link" href="./bioelectricity_nexus_feed.json" target="_blank">🔌 JSON API Feed for bioelectricity.net</a>
       </div>
 
       <div class="nav-tabs">
@@ -642,6 +643,18 @@ export function SortingMorphogenesisSection() {
       document.getElementById('mRulerE').textContent = `${curE} (${uphillE} bumps)`;
       const hasMixed = cells.some(c => c.algo === 'S') && cells.some(c => c.algo === 'B');
       document.getElementById('mAgg').textContent = hasMixed ? (curAgg * 100).toFixed(1) + '%' : 'Single Algo';
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'MORPHOLIB_SIM_STATE',
+          scenario: currentScenario,
+          swaps: swaps,
+          ruler1_inversions_I: curI,
+          ruler1_uphill_steps: uphillI,
+          ruler2_adj_error_E: curE,
+          ruler2_uphill_bumps: uphillE,
+          algotype_clustering: Number(curAgg.toFixed(4))
+        }, '*');
+      }
     }
 
     function drawSim() {
@@ -746,8 +759,75 @@ export function SortingMorphogenesisSection() {
       ctx.fillText('━ Ruler 2: Neighbor Steps E(v) (Illusory Bumps)', gx + 390, gy + 20);
     }
 
+    function activateTabById(tabId) {
+      const validTabs = ['guide13', 'sim', 'magazine', 'ce2', 'embed'];
+      if (!validTabs.includes(tabId)) return;
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      const pane = document.getElementById('tab-' + tabId);
+      if (pane) pane.classList.add('active');
+      const idx = validTabs.indexOf(tabId);
+      const btns = document.querySelectorAll('.tab-btn');
+      if (btns[idx]) btns[idx].classList.add('active');
+      if (tabId === 'sim') drawSim();
+    }
+
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      if (!msg || typeof msg !== 'object') return;
+      if (msg.type === 'MORPHOLIB_SET_TAB' && msg.tab) {
+        activateTabById(msg.tab);
+      } else if (msg.type === 'MORPHOLIB_SET_SCENARIO' && msg.scenario) {
+        activateTabById('sim');
+        const btnMap = {
+          rulers: 'sc-rulers',
+          insertion_on: 'sc-insertion-on',
+          insertion_off: 'sc-insertion-off',
+          unique_wave: 'sc-unique',
+          c2_anticluster: 'sc-c2',
+          c6_cliques: 'sc-c6'
+        };
+        loadScenario(msg.scenario, document.getElementById(btnMap[msg.scenario]));
+        if (msg.autoplay) togglePlay();
+      } else if (msg.type === 'MORPHOLIB_STEP_ONCE') {
+        stepOnce();
+      } else if (msg.type === 'MORPHOLIB_RESET') {
+        resetSim();
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
-      loadScenario('rulers', document.getElementById('sc-rulers'));
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      const scParam = params.get('scenario') || 'rulers';
+      const autoParam = params.get('autoplay');
+      const compactParam = params.get('compact');
+
+      if (compactParam === '1' || compactParam === 'true') {
+        const heroEl = document.querySelector('.hero');
+        if (heroEl) heroEl.style.display = 'none';
+      }
+
+      const btnMap = {
+        rulers: 'sc-rulers',
+        insertion_on: 'sc-insertion-on',
+        insertion_off: 'sc-insertion-off',
+        unique_wave: 'sc-unique',
+        c2_anticluster: 'sc-c2',
+        c6_cliques: 'sc-c6'
+      };
+      loadScenario(scParam, document.getElementById(btnMap[scParam] || 'sc-rulers'));
+
+      if (tabParam) {
+        activateTabById(tabParam);
+      } else if (params.has('scenario')) {
+        activateTabById('sim');
+      }
+
+      if (autoParam === '1' || autoParam === 'true') {
+        activateTabById('sim');
+        togglePlay();
+      }
     });
   </script>
 </body>

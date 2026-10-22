@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Queryable Integration Guide &amp; Embed Builder for bioelectricity.net — Infinite Morphospace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #070b14;
+      --bg-panel: #0f172a;
+      --bg-card: #131e36;
+      --border: #263859;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-emerald: #22c55e;
+      --accent-amber: #f59e0b;
+      --accent-purple: #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+    h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+    code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .container { max-width: 1260px; margin: 0 auto; padding: 0 24px; }
+    .hero {
+      background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.14), transparent 55%),
+                  radial-gradient(circle at 80% 30%, rgba(34, 197, 94, 0.12), transparent 55%),
+                  linear-gradient(180deg, #0b1326 0%, #070b14 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 34px 0 26px;
+    }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+    .badge {
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent-cyan);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+    .badge.emerald { background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.45); color: #4ade80; }
+    .badge.purple { background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.45); color: #c084fc; }
+    .hero h1 { font-size: clamp(1.65rem, 2.8vw, 2.35rem); color: #fff; margin-bottom: 8px; }
+    .hero p { color: #cbd5e1; max-width: 940px; font-size: 0.98rem; }
+    .action-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .btn-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: #e2e8f0;
+      padding: 7px 13px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .btn-link:hover { border-color: var(--accent-cyan); color: #fff; }
+    .builder-grid {
+      display: grid;
+      grid-template-columns: 390px 1fr;
+      gap: 24px;
+      margin-top: 28px;
+      align-items: start;
+    }
+    @media (max-width: 960px) { .builder-grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+    .card h2 { font-size: 1.22rem; color: #fff; margin-bottom: 12px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 700; color: #cbd5e1; margin-bottom: 5px; }
+    .form-group select, .form-group input[type=text] {
+      width: 100%;
+      background: #080d1a;
+      color: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 11px;
+      font-size: 0.86rem;
+    }
+    .code-box {
+      background: #04070f;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      color: #38bdf8;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-top: 8px;
+    }
+    .copy-btn {
+      background: var(--accent-cyan);
+      color: #04101f;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      margin-top: 10px;
+    }
+    .api-table th, .api-table td {
+      border: 1px solid var(--border);
+      padding: 9px 12px;
+      text-align: left;
+    }
+    .api-table th { background: var(--bg-card); color: var(--accent-cyan); font-family: 'Space Grotesk', sans-serif; }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="container">
+      <div class="badge-row">
+        <span class="badge">QUERYABLE INTEGRATION GUIDE</span>
+        <span class="badge emerald">OPENAPI 3.1 + JSON SCHEMA</span>
+        <span class="badge purple">URL PARAMS + POSTMESSAGE RPC</span>
+      </div>
+      <h1>Queryable Integration Guide &amp; Live Embed Builder for <code>bioelectricity.net</code></h1>
+      <p>
+        Configure URL query parameters (<code>?tab=...&amp;scenario=...&amp;autoplay=1&amp;compact=1</code>), inspect the machine-readable JSON/OpenAPI endpoints, and test <code>window.postMessage</code> RPC events live.
+      </p>
+      <div class="action-links">
+        <a class="btn-link" href="./integration-guide.json" target="_blank">📘 integration-guide.json (Queryable Spec)</a>
+        <a class="btn-link" href="./openapi.json" target="_blank">⚙️ openapi.json (OpenAPI 3.1 Schema)</a>
+        <a class="btn-link" href="./bioelectricity_nexus_feed.json" target="_blank">🔌 bioelectricity_nexus_feed.json</a>
+        <a class="btn-link" href="./sorting-morphogenesis.html">🧬 Sorting Morphogenesis App</a>
+        <a class="btn-link" href="../zhang_levin_13yo_illustrated_guide.pdf" target="_blank">🎨 4-Page Student Guide PDF</a>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <div class="builder-grid">
+      <div>
+        <div class="card">
+          <h2>1. Interactive URL &amp; Embed Query Builder</h2>
+
+          <div class="form-group">
+            <label>Module:</label>
+            <select id="qModule" onchange="updateQueryBuilder()">
+              <option value="sorting">Self-Sorting Cells, Platonic Space &amp; CE 2.0</option>
+              <option value="thompson">D'Arcy Thompson 10,000-Fish Bioelectric Morphospace</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="grpTab">
+            <label>Initial Tab (<code>?tab=</code>):</label>
+            <select id="qTab" onchange="updateQueryBuilder()">
+              <option value="guide13">guide13 — 13-Year-Old's Illustrated Guide</option>
+              <option value="sim" selected>sim — Interactive Gym-Class Cell Simulator</option>
+              <option value="magazine">magazine — 4-Page Magazine PDF Spread</option>
+              <option value="ce2">ce2 — Hoel's Causal Emergence 2.0 &amp; Ablations</option>
+              <option value="embed">embed — Embed Code Reference</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="grpScenario">
+            <label>Simulator Experiment (<code>?scenario=</code>):</label>
+            <select id="qScenario" onchange="updateQueryBuilder()">
+              <option value="rulers">rulers — Exp 1: "Two Rulers" Optical Illusion</option>
+              <option value="insertion_on">insertion_on — Exp 2A: Insertion WITH 3-Line Reset</option>
+              <option value="insertion_off">insertion_off — Exp 2B: Insertion WITHOUT Reset (Freezes!)</option>
+              <option value="unique_wave">unique_wave — Exp 3: Unique Numbers (Sports Cars vs. Pedestrians)</option>
+              <option value="c2_anticluster" selected>c2_anticluster — Exp 4: C = 2 Anti-Clustering (`S B | S B`)</option>
+              <option value="c6_cliques">c6_cliques — Exp 5: C = 6 Mega-Cliques (`SSS | BBB`)</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="grpFlags" style="display:flex; gap:16px; margin-top:10px;">
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="qAutoplay" checked onchange="updateQueryBuilder()" />
+              <span><code>autoplay=1</code></span>
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="qCompact" checked onchange="updateQueryBuilder()" />
+              <span><code>compact=1</code> (Hide Hero)</span>
+            </label>
+          </div>
+
+          <div class="form-group" style="margin-top:14px;">
+            <label>Generated Queryable URL:</label>
+            <div class="code-box" id="outUrl"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Generated <code>&lt;iframe&gt;</code> Snippet:</label>
+            <div class="code-box" id="outIframe"></div>
+            <button class="copy-btn" onclick="copyText('outIframe')">📋 Copy &lt;iframe&gt; Code</button>
+          </div>
+
+          <div class="form-group">
+            <label>Live Telemetry from Iframe (<code>postMessage</code>):</label>
+            <div class="code-box" id="outTelemetry" style="color:#4ade80;">Waiting for simulator swap events...</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <h2>2. Live Queryable Iframe Preview</h2>
+          <iframe
+            id="previewFrame"
+            src="./sorting-morphogenesis.html?tab=sim&scenario=c2_anticluster&autoplay=1&compact=1"
+            style="width:100%; height:670px; border:1px solid #263859; border-radius:12px; background:#070b14;"
+          ></iframe>
+        </div>
+
+        <div class="card">
+          <h2>3. Queryable URL Parameters &amp; JSON Endpoints Reference</h2>
+          <table class="api-table">
+            <thead>
+              <tr>
+                <th>Parameter / Endpoint</th>
+                <th>Values / Type</th>
+                <th>Behavior in <code>bioelectricity.net</code></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>?tab=</code></td>
+                <td><code>guide13</code> | <code>sim</code> | <code>magazine</code> | <code>ce2</code> | <code>embed</code></td>
+                <td>Opens directly to the 13yo Illustrated Guide, Live Simulator, 4-Page Magazine Spread, or CE 2.0 Dashboard.</td>
+              </tr>
+              <tr>
+                <td><code>?scenario=</code></td>
+                <td><code>rulers</code> | <code>insertion_on</code> | <code>insertion_off</code> | <code>unique_wave</code> | <code>c2_anticluster</code> | <code>c6_cliques</code></td>
+                <td>Pre-loads any of the 6 cell-sorting experiments directly in the HTML5 canvas simulator.</td>
+              </tr>
+              <tr>
+                <td><code>?autoplay=1</code></td>
+                <td><code>1</code> | <code>true</code></td>
+                <td>Starts sorting immediately on load without requiring a user click.</td>
+              </tr>
+              <tr>
+                <td><code>?compact=1</code></td>
+                <td><code>1</code> | <code>true</code></td>
+                <td>Hides the top title banner for clean inline embedding inside an article card.</td>
+              </tr>
+              <tr>
+                <td><code>integration-guide.json</code></td>
+                <td>Static JSON API</td>
+                <td>Machine-queryable manifest of all parameters, deep-links, PDFs, and <code>postMessage</code> commands.</td>
+              </tr>
+              <tr>
+                <td><code>openapi.json</code></td>
+                <td>OpenAPI 3.1</td>
+                <td>Standard OpenAPI specification for AI agents, MCP tools, and automated documentation ingestion.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const PROD_BASE = 'https://fractastical.github.io/morpholib/bioelectricity';
+
+    function updateQueryBuilder() {
+      const mod = document.getElementById('qModule').value;
+      const tab = document.getElementById('qTab').value;
+      const sc = document.getElementById('qScenario').value;
+      const auto = document.getElementById('qAutoplay').checked;
+      const compact = document.getElementById('qCompact').checked;
+
+      const isSorting = mod === 'sorting';
+      document.getElementById('grpTab').style.display = isSorting ? 'block' : 'none';
+      document.getElementById('grpScenario').style.display = (isSorting && tab === 'sim') ? 'block' : 'none';
+      document.getElementById('grpFlags').style.display = isSorting ? 'flex' : 'none';
+
+      let relPath = isSorting ? 'sorting-morphogenesis.html' : 'index.html';
+      const params = new URLSearchParams();
+      if (isSorting) {
+        params.set('tab', tab);
+        if (tab === 'sim') params.set('scenario', sc);
+        if (auto) params.set('autoplay', '1');
+        if (compact) params.set('compact', '1');
+      }
+      const qs = params.toString() ? '?' + params.toString() : '';
+      const fullUrl = `${PROD_BASE}/${relPath}${qs}`;
+      const localUrl = `./${relPath}${qs}`;
+
+      document.getElementById('outUrl').textContent = fullUrl;
+      document.getElementById('outIframe').textContent =
+`<iframe
+  src="${fullUrl}"
+  title="Infinite Morphospace × Bioelectricity Nexus Module by Joel Dietz"
+  style="width: 100%; height: ${compact ? 700 : 920}px; border: 1px solid #263859; border-radius: 16px; background: #070b14;"
+  loading="lazy"
+  allowfullscreen
+></iframe>`;
+
+      document.getElementById('previewFrame').src = localUrl;
+    }
+
+    function copyText(id) {
+      const txt = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(txt);
+    }
+
+    window.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'MORPHOLIB_SIM_STATE') {
+        document.getElementById('outTelemetry').textContent = JSON.stringify(e.data, null, 2);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', updateQueryBuilder);
+  </script>
+</body>
+</html>
