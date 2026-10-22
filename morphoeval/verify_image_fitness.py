@@ -124,12 +124,13 @@ FOUNDATIONAL_SPECIMENS: dict[str, str] = {
     "turing-gray-scott": "datasets/turing/pomacanthus_imperator_flank_stripes_specimen.jpg",
     "raup-shell-coiling": "datasets/raup/raup_coiled_shells_specimen.jpg",
     "wolfram-conus-textile-rule30": "datasets/conus/conus_textile_shell.jpg",
+    "runions-leaf-venation": "datasets/venation/reticulate_vein_skeleton_specimen.jpg",
     "hoffmann-wing-venation": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
     "eshghi-odonata-wing-cells": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
     "chindapol-coral-flow": "datasets/species_gallery/II_Anaima_Invertebrata/Madracis_mirabilis.jpg",
     "petroff-stromatolite": "datasets/species_gallery/IV_Protista_Monera_Mycota/Bacillus_subtilis.jpg",
-    "planform-morphology-animation": "datasets/species_gallery/II_Anaima_Invertebrata/Schmidtea_mediterranea.jpg",
-    "cervera-levin-mafe": "datasets/species_gallery/II_Anaima_Invertebrata/Schmidtea_mediterranea.jpg",
+    "planform-morphology-animation": "docs/media/specimens/planform-morphology-animation.jpg",
+    "cervera-levin-mafe": "docs/media/specimens/cervera-levin-mafe.jpg",
     "lobo-limbform-morphology": "datasets/species_gallery/I_Enaima_Vertebrata/Ambystoma_mexicanum.jpg",
     "santella-wormguides-celegans": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
     "bressloff-cowan-V1-hallucination": "datasets/species_gallery/I_Enaima_Vertebrata/Homo_sapiens.jpg",
@@ -352,68 +353,147 @@ def compute_specimen_cv_signature(img_path: Path) -> dict[str, Any]:
 
 
 def resolve_sim_media_path(entry: dict[str, Any]) -> Path | None:
-    """Resolve the rendered simulation GIF or PNG for a model in `docs/media/`."""
+    """Resolve the rendered animated simulation GIF for a model in `docs/media/`."""
     media_dir = ROOT / "docs" / "media"
-    slug_u = entry["slug"].replace("-", "_")
+    slug = entry["slug"]
+    explicit_map = {
+        "thompson-scarus-pomacanthus": "thompson_scarus_pomacanthus.gif",
+        "turing-gray-scott": "turing_gray_scott.gif",
+        "raup-shell-coiling": "raup_shell_coiling.gif",
+        "vogel-phyllotaxis": "vogel_phyllotaxis_growth.gif",
+        "wolfram-conus-textile-rule30": "conus_textile_rule30.gif",
+        "runions-leaf-venation": "runions_leaf_venation_growth.gif",
+        "planform-morphology-animation": "planform_morphospace_timeline.gif",
+        "cervera-levin-mafe": "cervera_levin_mafe_gj_block.gif",
+        "lobo-limbform-morphology": "limbform_morphospace_timeline.gif",
+        "hoffmann-wing-venation": "odonata_wing_cells_deep_time.gif",
+        "eshghi-odonata-wing-cells": "odonata_wing_cells_deep_time.gif",
+        "chindapol-coral-flow": "chindapol_coral_flow_growth.gif",
+        "petroff-stromatolite": "petroff_stromatolite_dome_to_cone.gif",
+        "santella-wormguides-celegans": "celegans_embryo_timeline.gif",
+        "bressloff-cowan-V1-hallucination": "bressloff_v1_form_constants.gif",
+    }
+    if slug in explicit_map and (media_dir / explicit_map[slug]).exists():
+        return media_dir / explicit_map[slug]
+
+    slug_u = slug.replace("-", "_")
     ds_name = entry.get("dataset_dir", "").split("/")[-1]
     script_name = Path(entry.get("script", "")).name
     script_stem = re.sub(r"^\d{4}-[a-z0-9]+-", "", script_name.replace(".py", "")).replace("-", "_")
 
-    candidates = []
-    for key in [slug_u, ds_name, script_stem]:
+    candidates: list[Path] = []
+    # Prioritize exact dataset_dir name (ds_name) and script_stem before slug_u so slots with legacy slugs
+    # resolve to their exact dataset's *_growth.gif, and only match animated .gif files!
+    for key in [ds_name, script_stem, slug_u]:
         if not key:
             continue
-        candidates.extend(sorted(media_dir.glob(f"*{key}*vertex*.gif")))
-        candidates.extend(sorted(media_dir.glob(f"*{key}*mesh*.gif")))
+        candidates.extend(sorted(media_dir.glob(f"{key}*vertex*.gif")))
+        candidates.extend(sorted(media_dir.glob(f"{key}*mesh*.gif")))
+        candidates.extend(sorted(media_dir.glob(f"{key}_growth.gif")))
         candidates.extend(sorted(media_dir.glob(f"*{key}*growth.gif")))
         candidates.extend(sorted(media_dir.glob(f"*{key}*.gif")))
-        candidates.extend(sorted(media_dir.glob(f"*{key}*.png")))
     for c in candidates:
         if not c.name.startswith("morphospace_"):
             return c
     return None
 
 
-def compute_sim_vs_specimen_cv_similarity(spec_sig: dict[str, Any], sim_path: Path | None) -> float:
+def compute_sim_vs_specimen_cv_similarity(spec_sig: dict[str, Any], spec_path: Path | None, sim_path: Path | None) -> float:
     """
-    Compute direct computer-vision feature similarity (0-100) between the canonical specimen
-    image signature and the final frame of the rendered simulation GIF/PNG.
-    Compares structure-tensor orientation coherency, radial 2D FFT spatial wavelength,
-    and foreground geometry.
+    Compute strict, multi-metric computer-vision & dynamical fidelity (0-100) directly between
+    the canonical specimen photograph (`spec_path`) and the animated simulation GIF (`sim_path`).
+
+    Strictly enforces:
+      - Animated simulation requirement (`n_frames >= 6` and non-zero temporal motion; static PNGs score 0)
+      - Spatial resolution gate (`min(width, height) >= 340` px)
+      - 2D/3D morphological occupancy gate (penalizes sparse 1D line charts / empty backgrounds)
+      - 12-bin Sobel gradient orientation spectrum similarity (30%)
+      - 24-bin 2D radial FFT spatial-frequency spectrum similarity (30%)
+      - Structure-tensor coherency & texture edge-density similarity (25%)
+      - Foreground occupancy & aspect match (15%)
     """
-    if not spec_sig.get("valid") or sim_path is None or not sim_path.exists():
-        return 72.0
+    if not spec_sig.get("valid") or spec_path is None or not spec_path.exists() or sim_path is None or not sim_path.exists():
+        return 0.0
     try:
-        with Image.open(sim_path) as im:
-            n_total = getattr(im, "n_frames", 1)
-            im.seek(max(0, n_total - 1))
-            sim_rgb = np.asarray(im.convert("RGB").resize((160, 120), Image.Resampling.BILINEAR), dtype=np.float64) / 255.0
-        # Crop out margins/titles to focus on simulation canvas
-        sim_crop = sim_rgb[18:104, 12:148, :]
-        gray = 0.299 * sim_crop[:, :, 0] + 0.587 * sim_crop[:, :, 1] + 0.114 * sim_crop[:, :, 2]
-        gx = ndi.sobel(gray, axis=1)
-        gy = ndi.sobel(gray, axis=0)
-        jxx = ndi.gaussian_filter(gx * gx, sigma=2.5)
-        jyy = ndi.gaussian_filter(gy * gy, sigma=2.5)
-        jxy = ndi.gaussian_filter(gx * gy, sigma=2.5)
-        coh_sim = float(np.mean(np.sqrt((jxx - jyy) ** 2 + 4.0 * jxy * jxy) / (jxx + jyy + 1e-9)))
+        with Image.open(spec_path) as sp_im:
+            sp_rgb = np.asarray(sp_im.convert("RGB").resize((240, 180), Image.Resampling.BILINEAR), dtype=np.float64) / 255.0
+        with Image.open(sim_path) as sm_im:
+            w, h = sm_im.size
+            n_total = getattr(sm_im, "n_frames", 1)
+            if n_total < 2:
+                # Static 1-frame PNGs are not dynamical simulations
+                return 35.0
+            sm_im.seek(0)
+            sm_first = np.asarray(sm_im.convert("RGB").resize((240, 180), Image.Resampling.BILINEAR), dtype=np.float64) / 255.0
+            sm_im.seek(max(0, n_total - 1))
+            sm_last = np.asarray(sm_im.convert("RGB").resize((240, 180), Image.Resampling.BILINEAR), dtype=np.float64) / 255.0
 
-        win = gray - np.mean(gray)
-        fft2 = np.abs(np.fft.fftshift(np.fft.fft2(win))) ** 2
-        cy, cx = win.shape[0] // 2, win.shape[1] // 2
-        yy, xx = np.ogrid[: win.shape[0], : win.shape[1]]
-        rr = np.hypot(xx - cx, yy - cy).astype(int)
-        max_r = min(cx, cy)
-        radial_prof = np.bincount(rr.ravel(), weights=fft2.ravel())[:max_r] / np.maximum(1, np.bincount(rr.ravel())[:max_r])
-        k_dom = int(np.argmax(radial_prof[2:]) + 2) if len(radial_prof) > 4 else 4
-        wl_sim = float(min(win.shape) / max(k_dom, 1)) / float(min(win.shape))
+        # 1. Resolution & temporal dynamics multipliers
+        min_dim = min(w, h)
+        res_factor = min(1.0, max(0.55, min_dim / 360.0))
+        frame_diff = float(np.mean(np.abs(sm_last - sm_first)))
+        if n_total < 6 or frame_diff < 0.003:
+            anim_factor = 0.72
+        elif n_total < 10:
+            anim_factor = 0.88
+        else:
+            anim_factor = 1.00
 
-        d_coh = abs(coh_sim - float(spec_sig.get("coherency", 0.35)))
-        d_wl = abs(wl_sim - float(spec_sig.get("wavelength_norm", 0.25)))
-        sim_score = 100.0 * (0.55 * np.exp(-2.2 * d_coh) + 0.45 * np.exp(-2.5 * d_wl))
-        return round(float(np.clip(sim_score, 45.0, 98.0)), 1)
+        # 2. Extract interior regions (excluding figure title/footer bars)
+        gray_sp = 0.299 * sp_rgb[14:166, 14:226, 0] + 0.587 * sp_rgb[14:166, 14:226, 1] + 0.114 * sp_rgb[14:166, 14:226, 2]
+        gray_sm = 0.299 * sm_last[22:158, 14:226, 0] + 0.587 * sm_last[22:158, 14:226, 1] + 0.114 * sm_last[22:158, 14:226, 2]
+
+        # Detect sparse 1D line charts / empty canvases via mode-background fraction
+        hist, edges = np.histogram(gray_sm, bins=32, range=(0.0, 1.0))
+        mode_val = 0.5 * (edges[int(np.argmax(hist))] + edges[int(np.argmax(hist)) + 1])
+        bg_frac = float(np.mean(np.abs(gray_sm - mode_val) < 0.045))
+        fg_sim = 1.0 - bg_frac
+
+        def _features(g: np.ndarray):
+            gx = ndi.sobel(g, axis=1)
+            gy = ndi.sobel(g, axis=0)
+            mag = np.hypot(gx, gy) + 1e-9
+            ang = (np.arctan2(gy, gx) + np.pi) % np.pi
+            ori_hist, _ = np.histogram(ang, bins=12, range=(0.0, np.pi), weights=mag)
+            ori_hist = ori_hist / (np.sum(ori_hist) + 1e-9)
+            ori_sorted = np.sort(ori_hist)
+
+            jxx = ndi.gaussian_filter(gx * gx, sigma=2.8)
+            jyy = ndi.gaussian_filter(gy * gy, sigma=2.8)
+            jxy = ndi.gaussian_filter(gx * gy, sigma=2.8)
+            coh = float(np.mean(np.sqrt((jxx - jyy) ** 2 + 4.0 * jxy * jxy) / (jxx + jyy + 1e-9)))
+
+            win = (g - np.mean(g)) / (np.std(g) + 1e-6)
+            fft2 = np.abs(np.fft.fftshift(np.fft.fft2(win))) ** 2
+            cy, cx = win.shape[0] // 2, win.shape[1] // 2
+            yy, xx = np.ogrid[: win.shape[0], : win.shape[1]]
+            rr = np.hypot(xx - cx, yy - cy).astype(int)
+            r_prof = np.bincount(rr.ravel(), weights=fft2.ravel())[:32] / np.maximum(1, np.bincount(rr.ravel())[:32])
+            r_log = np.log1p(r_prof[2:24])
+            r_log = r_log / (np.linalg.norm(r_log) + 1e-9)
+
+            edge_rel = float(np.mean(mag > np.mean(mag) * 1.15))
+            return ori_hist, ori_sorted, coh, r_log, edge_rel
+
+        sp_ori, sp_ori_s, sp_coh, sp_rfft, sp_ed = _features(gray_sp)
+        sm_ori, sm_ori_s, sm_coh, sm_rfft, sm_ed = _features(gray_sm)
+
+        ori_sim = 0.60 * float(1.0 - 0.5 * np.sum(np.abs(sp_ori - sm_ori))) + 0.40 * float(1.0 - 0.5 * np.sum(np.abs(sp_ori_s - sm_ori_s)))
+        fft_sim = float(np.clip(np.dot(sp_rfft, sm_rfft), 0.0, 1.0))
+        coh_sim = 0.65 * float(np.exp(-3.0 * abs(sp_coh - sm_coh))) + 0.35 * float(np.exp(-3.5 * abs(sp_ed - sm_ed)))
+        occ_sim = float(np.clip(min(fg_sim / 0.32, 1.0), 0.15, 1.0))
+
+        # Strict penalty for sparse 1D line plots or near-empty frames
+        sparse_penalty = 0.0
+        if fg_sim < 0.14:
+            sparse_penalty = 24.0 * (0.14 - fg_sim) / 0.14
+        elif fg_sim < 0.22:
+            sparse_penalty = 10.0 * (0.22 - fg_sim) / 0.08
+
+        raw = 100.0 * (0.30 * ori_sim + 0.30 * fft_sim + 0.25 * coh_sim + 0.15 * occ_sim) * res_factor * anim_factor - sparse_penalty
+        return round(float(np.clip(raw, 10.0, 96.0)), 1)
     except Exception:
-        return 72.0
+        return 0.0
 
 
 IMAGE_FITNESS_THRESHOLD = 70.0
@@ -424,7 +504,7 @@ def main() -> int:
     species_manifest: list[dict[str, Any]] = json.loads(SPECIES_MANIFEST_JSON.read_text(encoding="utf-8"))
     genus_to_gallery = {sm["genus"]: sm["gallery_path"] for sm in species_manifest}
 
-    core_keys: set[str] = set()
+    core_keys: set[str] = {"foundational-canonical", "morphology"}
     for e in entries:
         slot = e.get("slot")
         if slot is None or int(slot) <= 100:
@@ -507,14 +587,14 @@ def main() -> int:
         is_expansion = slot is not None and int(slot) > 100
         sim_media_path = None if is_expansion else resolve_sim_media_path(e)
         sim_media_rel = str(sim_media_path.relative_to(ROOT)) if sim_media_path else ""
-        if sim_media_rel and sim_media_rel not in sim_cv_cache:
-            base_cv = compute_sim_vs_specimen_cv_similarity(cv_sig, sim_media_path)
-            # Also check companion _comparison.png if available (which contains the rendered specimen overlay panel)
-            comp_png = (ROOT / "docs" / "media" / f"{slug.replace('-', '_')}_comparison.png")
-            if comp_png.exists() and comp_png != sim_media_path:
-                base_cv = max(base_cv, compute_sim_vs_specimen_cv_similarity(cv_sig, comp_png))
-            sim_cv_cache[sim_media_rel] = base_cv
-        cv_sim_similarity = sim_cv_cache.get(sim_media_rel, 72.0) if not is_expansion else round(42.0 + 18.0 * cv_sig.get("coherency", 0.3), 1)
+        cache_key = f"{sp_rel}::{sim_media_rel}"
+        if sim_media_rel and cache_key not in sim_cv_cache:
+            # Strictly grade ONLY the actual animated simulation GIF shown in the Web Explorer
+            # against the canonical specimen photograph (no _comparison.png fallback!)
+            sim_cv_cache[cache_key] = compute_sim_vs_specimen_cv_similarity(
+                cv_sig, ROOT / sp_rel if sp_rel else None, sim_media_path
+            )
+        cv_sim_similarity = sim_cv_cache.get(cache_key, 0.0) if not is_expansion else round(42.0 + 18.0 * cv_sig.get("coherency", 0.3), 1)
 
         if is_expansion:
             audit_tier = "expansion_template"
@@ -527,28 +607,18 @@ def main() -> int:
             # Rank score places audited core/100-loop models (rank_score >= 100) ahead of un-fitted expansion templates
             rank_score = round(honest_score - 35.0, 2)
         else:
-            p2_ref = round(float(e.get("pass2_score", e["score"])), 1)
             if aud and aud["pass_num"] == 3:
                 audit_tier = "pass3_audited"
                 tier_counts["pass3_audited"] += 1
                 honest_score = aud["overall"]
-                # Blend Pass 3 strict sub-score (65%) with Pass 2 validated sub-score (35%) so models with
-                # verified Pass 2 specimen overlays are not dropped below 70.0 solely for 3D Pass 3 extensions
-                v2_spec = float(aud.get("v2_specimen_match") or p2_ref)
-                v2_morph = float(aud.get("v2_morphometric_validation") or p2_ref)
-                spec_sub = 0.65 * float(aud["specimen_match"]) + 0.35 * v2_spec
-                morph_sub = 0.65 * float(aud["morphometric_validation"]) + 0.35 * v2_morph
+                spec_sub = float(aud["specimen_match"])
+                morph_sub = float(aud["morphometric_validation"])
             elif aud:
                 audit_tier = "core_validated"
                 tier_counts["core_validated"] += 1
                 honest_score = aud["overall"]
-                # If a foundational script had an early v1/v2 audit before its index specimen remediation, blend with p2_ref
-                if p2_ref > aud["overall"] + 10.0:
-                    spec_sub = 0.25 * float(aud["specimen_match"]) + 0.75 * p2_ref
-                    morph_sub = 0.25 * float(aud["morphometric_validation"]) + 0.75 * p2_ref
-                else:
-                    spec_sub = float(aud["specimen_match"])
-                    morph_sub = float(aud["morphometric_validation"])
+                spec_sub = float(aud["specimen_match"])
+                morph_sub = float(aud["morphometric_validation"])
             else:
                 audit_tier = "core_validated"
                 tier_counts["core_validated"] += 1
@@ -556,23 +626,30 @@ def main() -> int:
                 spec_sub = honest_score
                 morph_sub = honest_score
 
-            # Image fitness combines specimen-match (50%) + morphometric-validation (25%)
-            # + direct CV specimen-vs-simulation feature similarity (25%), penalized only if 0 real measurements exist
-            penalty = 8.0 if (img_meas_self > 0 and img_meas_real == 0) else 0.0
-            image_fitness_score = round(
-                max(50.0, min(98.0, 0.50 * spec_sub + 0.25 * morph_sub + 0.25 * cv_sim_similarity - penalty)),
-                1,
-            )
-            if image_fitness_score < IMAGE_FITNESS_THRESHOLD:
-                image_fitness_status = f"Suppressed (<{IMAGE_FITNESS_THRESHOLD:.0f}): Low Specimen Fitness ({image_fitness_score:.1f})"
+            # Strict Image Fitness:
+            #   - 55% direct CV specimen-vs-simulation visual & dynamical similarity (orientation, radial FFT, coherency, occupancy)
+            #   - 30% audit specimen-match (un-inflated)
+            #   - 15% audit morphometric-validation (un-inflated)
+            # Models with missing GIFs or static PNGs (cv_sim_similarity < 58.0) cannot pass!
+            penalty = 10.0 if (img_meas_self > 0 and img_meas_real == 0) else 0.0
+            if cv_sim_similarity < 40.0:
+                image_fitness_score = cv_sim_similarity
+            else:
+                image_fitness_score = round(
+                    max(10.0, min(96.0, 0.55 * cv_sim_similarity + 0.30 * spec_sub + 0.15 * morph_sub - penalty)),
+                    1,
+                )
+            if image_fitness_score < IMAGE_FITNESS_THRESHOLD or cv_sim_similarity < 58.0:
+                image_fitness_score = min(image_fitness_score, 68.5)
+                image_fitness_status = f"Suppressed (<{IMAGE_FITNESS_THRESHOLD:.0f}): Insufficient Simulation-to-Specimen Fidelity ({image_fitness_score:.1f}, CV={cv_sim_similarity:.1f})"
             elif img_meas_real > 0:
                 real_img_meas_count += 1
-                image_fitness_status = f"Verified Fit (≥{IMAGE_FITNESS_THRESHOLD:.0f} · {img_meas_real} image metrics)"
+                image_fitness_status = f"Verified Fit (≥{IMAGE_FITNESS_THRESHOLD:.0f} · CV={cv_sim_similarity:.1f} · {img_meas_real} metrics)"
             else:
-                image_fitness_status = f"Verified CV Contour + Morphometric Fit (≥{IMAGE_FITNESS_THRESHOLD:.0f})"
-            rank_score = round(100.0 + 0.55 * honest_score + 0.45 * image_fitness_score, 2)
+                image_fitness_status = f"Verified CV + Morphometric Fit (≥{IMAGE_FITNESS_THRESHOLD:.0f} · CV={cv_sim_similarity:.1f})"
+            rank_score = round(100.0 + 0.45 * honest_score + 0.55 * image_fitness_score, 2)
 
-        passes_threshold = bool(image_fitness_score >= IMAGE_FITNESS_THRESHOLD and not is_expansion)
+        passes_threshold = bool(image_fitness_score >= IMAGE_FITNESS_THRESHOLD and cv_sim_similarity >= 58.0 and not is_expansion)
         if passes_threshold:
             passed_threshold_count += 1
         else:

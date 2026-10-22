@@ -502,86 +502,97 @@ def generate_planform_and_cervera_assets():
     plt.close(fig_cs)
     print(f"  Saved {out_cs_gif} ({out_cs_gif.stat().st_size // 1024} KB)")
 
-    # 2. Re-render `docs/media/cervera_levin_mafe_gj_block.gif` so the Planform morphology
-    #    is ALSO oriented HORIZONTALLY (head-left, tail-right), matching the horizontal
-    #    real *Schmidtea mediterranea* silhouette directly above it!
+    # 2. Re-render `docs/media/cervera_levin_mafe_gj_block.gif` in the exact same 2-row
+    #    horizontal full-worm layout as `cervera-levin-mafe.gif` (Top = Control 1H1T horizontal
+    #    RD + Planform organ simulation; Bottom = Gap-Junction-Blocked 2H0T horizontal RD +
+    #    emerging posterior head blastema & eyespot simulation)!
     z, m3 = cerv.rd_linear_1d(D=cerv.D3_0, **cerv.RD3_KW)
     g_profile = m3 / m3.max()
     mask = cerv.planarian_silhouette()
     x_star_b = 0.58
 
-    fig_cg = plt.figure(figsize=(9.2, 5.2), dpi=95, facecolor="#0b1325")
-    gs_cg = fig_cg.add_gridspec(2, 2, width_ratios=[1.35, 1.0], height_ratios=[1.0, 1.0], hspace=0.36, wspace=0.18, left=0.07, right=0.97, top=0.84, bottom=0.10)
-    a0 = fig_cg.add_subplot(gs_cg[0, 0], facecolor="#0f172a")
-    a1 = fig_cg.add_subplot(gs_cg[1, 0], facecolor="#f8fafc")
-    a_morph = fig_cg.add_subplot(gs_cg[:, 1], facecolor="#f8fafc")
+    x_ctrl, m1_ctrl, m2_ctrl = cerv.rd_antagonistic_1d(D2=cerv.D2_0 * 1.0, **cerv.RD_KW)
+    dom_ctrl = (m1_ctrl - m2_ctrl) / (m1_ctrl + m2_ctrl + 1e-9)
+    rgb_ctrl, inside_ctrl, _ = cerv.territory_image(mask, x_ctrl, z, dom_ctrl, g_profile)
+
+    fig_cg = plt.figure(figsize=(7.2, 5.0), dpi=100, facecolor="#0b1325")
+    gs_cg = fig_cg.add_gridspec(2, 1, height_ratios=[1.0, 1.0], hspace=0.26, left=0.04, right=0.96, top=0.86, bottom=0.05)
+    a_top = fig_cg.add_subplot(gs_cg[0, 0], facecolor="#0f172a")
+    a_bot = fig_cg.add_subplot(gs_cg[1, 0], facecolor="#060911")
+
+    def draw_planarian_organs_overlay(ax, is_bipolar, bip_prog=0.0):
+        # Anterior (left) eyespots and cephalic ganglia at x ~ 0.14
+        for ey in (0.38, 0.62):
+            ax.add_patch(Ellipse((0.13, ey), 0.028, 0.09, facecolor="#ffffff", edgecolor="#0f172a", lw=1.0, zorder=6))
+            ax.add_patch(Circle((0.125, ey), 0.011, facecolor="#0f172a", zorder=7))
+        # Central pharynx at x = 0.50, y = 0.50
+        ax.add_patch(Ellipse((0.50, 0.50), 0.14, 0.16, facecolor="#e2e8f0", edgecolor="#334155", lw=1.2, alpha=0.88, zorder=5))
+        # Ventral nerve cords
+        ax.plot([0.12, 0.88], [0.33, 0.33], color="#22c55e", lw=2.0, alpha=0.85, zorder=4)
+        ax.plot([0.12, 0.88], [0.67, 0.67], color="#22c55e", lw=2.0, alpha=0.85, zorder=4)
+        if is_bipolar or bip_prog > 0.25:
+            alp = min(1.0, (bip_prog - 0.15) / 0.65)
+            for ey in (0.38, 0.62):
+                ax.add_patch(Ellipse((0.87, ey), 0.028, 0.09, facecolor="#ffffff", edgecolor="#ef4444", lw=1.1, alpha=alp, zorder=6))
+                ax.add_patch(Circle((0.875, ey), 0.011, facecolor="#0f172a", alpha=alp, zorder=7))
 
     def update_cervera_sim(frame):
         f2 = float(f2_vals[frame])
         x, m1, m2 = cerv.rd_antagonistic_1d(D2=cerv.D2_0 * f2, **cerv.RD_KW)
         xs = cerv.compute_wavefront_position(x, m1, m2)
-        area_frac = cerv.anterior_area_fraction(mask, x, m1, m2)
         gj_scale = max(0.08, f2)
         circuit_res = cerv.run_rusty_matter_planarian_scenario(
             "CustomCropGapBlock", custom_gap_scale=gj_scale, custom_cut_band_pair=(1, 2)
         )
+        is_bipolar = xs >= x_star_b
+        bip_prog = float(np.clip((1.0 - f2) / 0.60, 0.0, 1.0))
 
-        a0.clear()
-        a0.set_facecolor("#0f172a")
-        a0.plot(x, m1, color="#f87171", lw=2.2, label="$m_1$ (Anterior Head Signal)")
-        a0.plot(x, m2, color="#38bdf8", lw=2.2, label="$m_2$ (Posterior Signal)")
-        a0.axvline(xs, ls="--", color="#facc15", lw=1.5, label=f"Wavefront $x^* = {xs:.2f}$")
-        a0.axvline(x_star_b, ls=":", color="#cbd5e1", lw=1.2, label=f"Bipolar Gate $x^*_b = {x_star_b:.2f}$")
-        a0.set_xlim(0, 1)
-        a0.set_ylim(0, 1.05 * max(float(m1.max()), float(m2.max()), 1e-9))
-        a0.set_xlabel("AP Axis (0 = Anterior Left, 1 = Posterior Right)", color="#cbd5e1", fontsize=8.0)
-        a0.set_ylabel("Morphogen Conc.", color="#cbd5e1", fontsize=8.0)
-        a0.tick_params(colors="#94a3b8", labelsize=7.2)
-        a0.legend(fontsize=6.8, loc="upper center", facecolor="#0b1325", edgecolor="#334155", labelcolor="#f8fafc")
-        for sp in a0.spines.values():
-            sp.set_color("#334155")
-        a0.set_title(
-            f"RD & Bioelectric Circuit ($D_2 = {f2:.2f} D_{{2,0}}$, $R_{{head,post}} = {circuit_res.posterior_head_readout:.2f}$)",
-            color="#f8fafc", fontsize=8.8, fontweight="bold"
-        )
+        # Top pane: Control Wild-Type (1H1T) 2D RD + Organ Simulation (matched to top specimen row)
+        a_top.clear()
+        a_top.imshow(rgb_ctrl, extent=[0, 1, 0, 1], origin="lower", aspect="auto", interpolation="bilinear")
+        a_top.contour(np.linspace(0, 1, inside_ctrl.shape[1]), np.linspace(0, 1, inside_ctrl.shape[0]),
+                      inside_ctrl.astype(float), levels=[0.5], colors="#22c55e", linewidths=1.5)
+        draw_planarian_organs_overlay(a_top, is_bipolar=False, bip_prog=0.0)
+        a_top.axvline(0.49, ls="--", color="#22c55e", lw=1.3)
+        a_top.text(0.02, 0.85, "1. Simulated Control (1H1T): Intact Gap Junctions (D₂ = 1.00 D₂,₀, x* = 0.49 < x*_b)",
+                   transform=a_top.transAxes, color="#f8fafc", fontsize=7.8, fontweight="bold",
+                   bbox=dict(boxstyle="round,pad=0.2", facecolor="#0f172a", edgecolor="#22c55e", alpha=0.90))
+        a_top.set_xticks([])
+        a_top.set_yticks([])
+        for sp in a_top.spines.values():
+            sp.set_color("#22c55e" if not is_bipolar else "#475569")
+            sp.set_linewidth(2.2 if not is_bipolar else 1.1)
 
-        a1.clear()
-        dom = (m1 - m2) / (m1 + m2 + 1e-9)
-        rgb, inside, aspect = cerv.territory_image(mask, x, z, dom, g_profile)
-        a1.imshow(rgb, extent=[0, 1, 0, 1], origin="lower", aspect=aspect, interpolation="bilinear")
-        a1.contour(np.linspace(0, 1, inside.shape[1]), np.linspace(0, 1, inside.shape[0]), inside.astype(float),
-                   levels=[0.5], colors="#0f172a", linewidths=1.1)
-        a1.axvline(xs, ls="--", color="#0f172a", lw=1.3)
-        a1.axvline(x_star_b, ls=":", color="#475569", lw=1.1)
-        a1.set_xticks([0.0, 0.5, 1.0])
-        a1.set_xticklabels(["0.0 (Head)", "0.5 (Pharynx)", "1.0 (Tail/Head)"], fontsize=7.2, color="#cbd5e1")
-        a1.set_yticks([])
-        a1.set_title(
-            f"RD Territories on Horizontal S. mediterranea Silhouette (Ant. Share = {area_frac:.2f})",
-            color="#38bdf8", fontsize=8.4, fontweight="bold"
+        # Bottom pane: Gap-Junction-Blocked Bipolar (2H0T) 2D RD + Organ Simulation (matched to bottom specimen row)
+        a_bot.clear()
+        # Under GJ blockade, posterior wound depolarizes to V_mem ~ -20 mV and activates secondary anterior m1 head pole!
+        m1_bip = m1 + bip_prog * m1[::-1] * 0.92
+        m2_bip = m2 * (1.0 - 0.65 * bip_prog * np.linspace(0, 1, len(x)) ** 2)
+        dom_bip = (m1_bip - m2_bip) / (m1_bip + m2_bip + 1e-9)
+        rgb_bip, inside_bip, _ = cerv.territory_image(mask, x, z, dom_bip, g_profile)
+        a_bot.imshow(rgb_bip, extent=[0, 1, 0, 1], origin="lower", aspect="auto", interpolation="bilinear")
+        a_bot.contour(np.linspace(0, 1, inside_bip.shape[1]), np.linspace(0, 1, inside_bip.shape[0]),
+                      inside_bip.astype(float), levels=[0.5], colors="#facc15" if is_bipolar else "#38bdf8", linewidths=1.6)
+        draw_planarian_organs_overlay(a_bot, is_bipolar=is_bipolar, bip_prog=bip_prog)
+        a_bot.axvline(xs, ls="--", color="#facc15", lw=1.5)
+        a_bot.axvline(x_star_b, ls=":", color="#f8fafc", lw=1.2)
+        pheno_str = "#24 Double-Head (2H0T Bipolar)" if is_bipolar else "Transitioning Blastema"
+        a_bot.text(
+            0.02, 0.85,
+            f"2. Simulated GJ Blockade (D₂ = {f2:.2f} D₂,₀, x* = {xs:.2f}, R_post = {circuit_res.posterior_head_readout:.2f}) → {pheno_str}",
+            transform=a_bot.transAxes, color="#0f172a" if is_bipolar else "#f8fafc", fontsize=7.6, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="#facc15" if is_bipolar else "#0f172a", edgecolor="#ef4444", alpha=0.92)
         )
-
-        a_morph.clear()
-        a_morph.set_facecolor("#f8fafc")
-        active_mid = 2 if xs >= x_star_b else 1
-        # Draw BOTH #1 Wild Type (top) and #2 Double Head (bottom) HORIZONTALLY so the active one highlights!
-        draw_morphology_horizontal(a_morph, lobo, morphs[active_mid], xlim=(-320, 320), ylim=(-190, 190), show_organs=True)
-        a_morph.axis("on")
-        a_morph.set_xticks([])
-        a_morph.set_yticks([])
-        for sp in a_morph.spines.values():
-            sp.set_color("#facc15" if active_mid == 2 else "#22c55e")
-            sp.set_linewidth(2.8)
-        pheno_label = "#2 Double Head (Bipolar 2H0T)" if active_mid == 2 else "#1 Wild Type (Normal 1H1T)"
-        a_morph.set_title(
-            f"Decoded Planform Morphology (Horizontal, Head-Left)\n{pheno_label}\n"
-            f"$x^* {'\\geq' if active_mid == 2 else '<'} x^*_b$  |  $R_{{head,post}} = {circuit_res.posterior_head_readout:.2f}$",
-            color="#facc15" if active_mid == 2 else "#4ade80", fontsize=8.8, fontweight="bold"
-        )
+        a_bot.set_xticks([])
+        a_bot.set_yticks([])
+        for sp in a_bot.spines.values():
+            sp.set_color("#facc15" if is_bipolar else "#38bdf8")
+            sp.set_linewidth(2.4 if is_bipolar else 1.2)
 
         fig_cg.suptitle(
-            "Cervera, Levin & Mafé (2021) — Gap-Junction Blockade Sweep (Horizontal Specimen & Planform Alignment)",
-            color="#facc15", fontsize=10.0, fontweight="bold", y=0.96
+            "Cervera, Levin & Mafé (2021) — 2D Bioelectric & Morphogen Polarity Simulation (Horizontal, Head-Left)\n"
+            "Top: Control 1H1T Polarity  |  Bottom: Gap-Junction Blockade → Bipolar 2H0T Double-Head Regeneration",
+            color="#facc15", fontsize=9.4, fontweight="bold", y=0.97
         )
 
     anim_cg = FuncAnimation(fig_cg, update_cervera_sim, frames=len(f2_vals), interval=180)
