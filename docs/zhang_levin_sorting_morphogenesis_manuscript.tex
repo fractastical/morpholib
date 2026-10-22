@@ -1,0 +1,243 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{float}
+
+\geometry{margin=0.92in}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  citecolor=blue!70!black,
+  urlcolor=blue!70!black
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{finding}[theorem]{Empirical Finding}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\DG}{\mathrm{DG}}
+
+\title{\textbf{Multi-Language Replication, Formal Verification, and Mechanistic Audit of Autonomous Cell-Sorting Morphogenesis and Its ``Latent Platonic Space'' Claims}\\[0.55em]
+\large Bit-Exact Reproduction of Zhang, Goldstein \& Levin (2025) Across Python~3, C++20, Node.js, and Lean~4, with a Three-Ablation Evaluation of \emph{Ingressing Minds} (Levin 2025/2026)}
+
+\author{
+  \textbf{Joel Dietz} \quad \emph{[+ Candidate Co-Authors: see Section~\ref{sec:venues_coauthors}]}\\
+  Infinite Morphospace Research Project $\cdot$ \texttt{https://github.com/fractastical/morpholib}
+}
+
+\date{October 22, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+In a landmark study of minimal basal cognition, Zhang, Goldstein \& Levin (2025, \emph{Adaptive Behavior} 33(1):25--54) reconceptualized classical sorting algorithms (Bubble, Insertion, and Selection sort) as decentralized 1D arrays of autonomous cells that compare and swap positions locally without a central controller. They reported three striking empirical phenomena: (i) autonomous cell arrays tolerate frozen (`broken') cells better than traditional top-down algorithms, (ii) sorting trajectories around frozen defects exhibit \emph{Delayed Gratification} ($\DG > 0$, temporary increases in monotonicity error followed by larger reductions), and (iii) chimeric arrays mixing two algotypes spontaneously cluster by algotype (`aggregation $> 0.50$') even though cells cannot sense their neighbors' algotype labels. Subsequently, Levin (2025/2026, \emph{Ingressing Minds}, PsyArXiv \texttt{10.31234/osf.io/5g2xj\_v3}; \emph{Philosophies} 11(5):161, Section~6.3 \& Fig.~14) cited these sorting results as primary evidence that even transparent, deterministic algorithms exhibit unprogrammed cognitive ``side-quests'' that ingress from a non-physical \emph{Latent Platonic Space of Patterns}. Conversely, several computer-science commentators dismissed the chimeric clustering results as a trivial artifact of textbook duplicate-key sort stability.
+
+Here we resolve both sides of this debate through a four-language replication, machine-checked formal verification, and three-ablation mechanistic audit:
+\begin{enumerate}
+  \item \textbf{Bit-Exact Multi-Language Replication (Python~3, C++20, Node.js) \& Line-by-Line Upstream Traceability:} Auditing the authors' reference codebase (\texttt{Zhangtaining/cell\_research@1fd2bd59}), we port the complete autonomous sorting architecture to native \textbf{C++20}, \textbf{JavaScript/Node.js (ES Module)}, and \textbf{Python~3} coupled to a shared 64-bit \texttt{SplitMix64} PRNG, achieving $100\%$ bit-exact kymograph and cell-array agreement ($0$ cell mismatches across languages) and replicating all $14/14$ published quantitative benchmarks ($n = 100$).
+  \item \textbf{Five Machine-Checked Theorems in Lean~4 (\texttt{0 sorry}):} In \texttt{Loop\_zhang\_sorting\_morphogenesis.lean}, we formally prove local barrier pinning ($\text{cross-swaps} = 0$) for Bubble/Insertion sort, non-local target-pointer defect tunneling for Selection sort, Insertion prefix-reset unblocking, positive net recovery under Delayed Gratification, and homotypic domain aggregation bounds.
+  \item \textbf{Three-Ablation Mechanistic Audit of the ``Latent Platonic Space'' Claims:}
+  \begin{itemize}
+    \item \emph{Ablation 1 (``No error-handling code was added''):} While true for Bubble and Selection sort, \texttt{InsertionSortCell.py} (L68--82) contains an explicit \texttt{if status == FREEZE: prev = -1} exception handler that resets prefix checking at frozen cells. Ablating those three lines causes Insertion sort's final error ($n=60, f=3$) to jump $4.5\times$ ($4.90 \to 21.95$) as all downstream cells permanently halt.
+    \item \emph{Ablation 2 (``Delayed Gratification / Going around a barrier against the gradient''):} In Bubble and Insertion sort, $0$ cells ever cross an immovable barrier. Moreover, Bubble sort \emph{never moves against its true energy gradient}: the global pairwise inversion Lyapunov potential $I(v) = \#\{(i<j): v_i > v_j\}$ strictly decreases by $\Delta I = -1$ on \emph{every single swap} ($0$ uphill steps out of $192$ swaps). The paper's \texttt{monotonicity\_error} $E(v) = \#\{i : v_i > v_{i+1}\}$ ticks upward ($47$ times, $\DG = 0.764$) only because $E(v)$ is a coarse 1D boundary projection of $I(v)$ that increases whenever an interior swap splits one multi-step inversion into two adjacent steps (occurring even at $f = 0$, $\DG = 0.38$).
+    \item \emph{Ablation 3 (``Spontaneous algotype clustering'' vs.\ ``Textbook stability'' critiques):} Online critics who dismissed chimeric clustering as textbook duplicate-key stability were wrong about Paper Fig.~8A, where all $n$ keys $1 \dots n$ are strictly unique ($0$ duplicate keys) yet aggregation genuinely peaks at $0.624\text{--}0.640$ mid-sort. We show that unique-key clustering is a genuine \textbf{kinematic transport-speed phase-separation wave} ($O(1)$ per-hit Selection pointer advection sweeping left vs.\ $O(n^2)$ Bubble diffusion), whereas permanent duplicate-key clustering ($0.634\text{--}0.690$ in Fig.~8D) arises from Selection scan order plus strict `$<$' tie-stability (collapsing to $0.514$ when ties swap under `$\le$').
+  \end{itemize}
+\end{enumerate}
+We conclude that \textbf{Weak Structural Platonism} (``mathematical free lunches'' arising from the Coxeter/Bruhat lattice of the symmetric group $S_n$ and differential transport kinetics) is rigorously justified, whereas \textbf{Strong Dualist Ingress} (claiming these behaviors are ``not predicted, explained, or produced'' by the local rules) is unnecessary once the exact Lyapunov and kinematic equations are written down.
+\end{abstract}
+
+\tableofcontents
+
+% ============================================================================
+\section{Introduction: Sorting Algorithms as a Minimal Model of Morphogenesis and Basal Agency}
+
+How much mechanistic complexity is required for a decentralized collection of subunits to navigate around structural defects, trade short-term setbacks for long-term order, or segregate into homotypic domains? In developmental biology, embryonic tissues routinely self-assemble and repair target anatomical configurations despite perturbations, chimeric cell mixing, or damaged components~\cite{Levin2024BioEssays,McMillenLevin2024}. Because biological cells contain thousands of gene-regulatory, bioelectric, and biomechanical feedback loops, critics can always attribute seemingly goal-directed morphogenetic repair to unmeasured molecular pathways or evolutionary pre-adaptation.
+
+To strip away all hidden biological machinery, Zhang, Goldstein \& Levin (2025)~\cite{ZhangGoldsteinLevin2025} introduced a transparent computational model: a 1D array of $n$ integers in which each number is an autonomous ``cell'' running one of three classical sorting policies (``algotypes'': \textbf{Bubble} $\mathtt{B}$, \textbf{Insertion} $\mathtt{I}$, or \textbf{Selection} $\mathtt{S}$) concurrently without a central controller. They reported three headline findings:
+\begin{enumerate}
+  \item \textbf{Efficiency \& Error Tolerance Around Frozen Defects (Figs.~4--5):} Decentralized Bubble and Insertion arrays sort using the same mean number of swaps ($\approx \binom{n}{2}/2 \approx 2,482$ for $n=100$) as top-down algorithms while requiring $1.50\times$ and $2.03\times$ fewer total operations (`comparisons + swaps'). When $f \in \{1, 2, 3\}$ cells are ``frozen'' (`immovable', refusing to swap), autonomous Selection arrays achieve significantly lower final monotonicity error ($\approx 1, 2, 3$) than Bubble or Insertion arrays ($\approx 1.9, 3.8, 5.5$).
+  \item \textbf{Delayed Gratification ($\DG > 0$, Figs.~6--7):} Along sorting trajectories with frozen defects, monotonicity error $E(v)$ exhibits temporary increases (setbacks $y > 0$) followed by larger decreases (recoveries $x > y$), quantified by $\DG = \langle (x - y)/y \rangle$.
+  \item \textbf{Spontaneous Chimeric Algotype Clustering (Figs.~8--10):} In 50/50 chimeric arrays mixing two algotypes ($\mathtt{B+S}$, $\mathtt{I+S}$, or $\mathtt{B+I}$), the fraction of adjacent cells sharing the same algotype rises from the $0.50$ random baseline to a transient peak of $0.64\text{--}0.65$ on unique keys $1 \dots n$ (Fig.~8A) and remains permanently elevated at $0.66\text{--}0.70$ on duplicate keys $1 \dots 10$ (Fig.~8D), even though no cell can inspect its neighbor's algotype.
+\end{enumerate}
+
+In subsequent theoretical papers developing a framework of \emph{Ingressing Minds} and a \emph{Latent Platonic Space of Patterns}~\cite{Levin2025PsyArXiv,Levin2026Philosophies,Levin2024AlgorithmsRedux}, Levin used these sorting experiments (Section~6.3 and Figure~14 of~\cite{Levin2026Philosophies}) to argue that:
+\begin{quote}
+\emph{``The critical thing is that we did not add steps to the algorithm to check whether a swap had been completed, or to do specific things if an operation failed\dots\ This ability to back-track to deal with a broken piece of data is not explicitly in the algorithm\dots\ Groups of cells with identical algotypes tended to form and persist\dots\ Necessity is determined by the physical or computational properties of the medium in which an agent is embodied. The freedom consists of side-quests --- not incompatible with, but not predicted, explained, or produced, by that medium.''}~\cite[Sec.~6.3, pp.~22--23]{Levin2026Philosophies}
+\end{quote}
+
+Conversely, several computer-science commentators~\cite{Sweet2026} argued that the reported clustering is merely textbook \emph{algorithmic stability} on duplicate keys (first analyzed by Knuth~\cite{Knuth1973}) and that attributing it to a Platonic space commits a ``god-of-the-gaps'' inference.
+
+Until now, neither camp had inspected the exact line-by-line upstream code (\texttt{Zhangtaining/cell\_research@1fd2bd59}), ported the system to independent compiled and scripted languages to verify every numerical claim, or run targeted code ablations to isolate the mathematical causes of error tolerance, Delayed Gratification, and chimeric clustering. We do so here.
+
+% ============================================================================
+\section{Multi-Language Replication \& Line-by-Line Upstream Code Traceability}
+
+We audited the authors' Python reference repository (\texttt{Zhangtaining/cell\_research} at commit \texttt{1fd2bd5921c1f6b423a71f691d5189106a8a1020}) and identified six exact upstream implementation rules (\textbf{[U1]--\textbf{[U6]}}) that govern all published figures:
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Exact Upstream Code Traceability from \texttt{Zhangtaining/cell\_research@1fd2bd59} to Our Four-Language Ports.}}
+\label{tab:traceability}
+\footnotesize
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{p{0.05\textwidth} p{0.21\textwidth} p{0.24\textwidth} p{0.22\textwidth} p{0.20\textwidth}}
+\toprule
+\textbf{ID} & \textbf{Paper Figure \& Rule} & \textbf{Upstream File \& Lines} & \textbf{Upstream Logic} & \textbf{Ported Functions (C++20 / JS / Py / Lean 4)} \\
+\midrule
+\textbf{[U1]} & Bubble local neighbor swap \& pinning (Figs.~4A, 4B, 5C) & \texttt{BubbleSortCell.py} (\texttt{should\_move} L38--52, \texttt{move} L54--74) & Inspects $p-1$ or $p+1$ at random ($p=0.5$); swaps if out of order and neighbor $\neq \mathtt{FREEZE}$. & \texttt{cell\_should\_move()}, \texttt{simulate\_cell\_view()}, Lean Thm.~1 \\
+\textbf{[U2]} & Insertion prefix-reset at frozen defects (Figs.~4A, 5B, 5C, 7B) & \texttt{InsertionSortCell.py} (\texttt{is\_enable\_to\_move} L68--82) & Scans $0 \dots p-1$; \textbf{resets \texttt{prev = -1} whenever \texttt{status == FREEZE}} (L74--76) so frozen cells do not block right-hand cells. & \texttt{left\_sorted\_with\_frozen\_reset()}, \texttt{\_left\_sorted()}, Lean Thm.~2 \\
+\textbf{[U3]} & Selection \texttt{ideal\_position} pointer \& swap reset (Figs.~4A, 4B, 5C) & \texttt{SelectionSortCell.py} (L41--88) \& \texttt{MultiThreadCell.py} (\texttt{swap} L104--118) & Scans \texttt{target} $0 \to n-1$; swaps non-locally across barriers. \texttt{update()} resets \texttt{target = 0} on swap ($11.0\times$ swaps, Fig.~4A); keeping \texttt{target} gives $1.17\times$ steps (Fig.~4B). & \texttt{simulate\_cell\_view()} (\texttt{selection\_reset\_on\_swap}), Lean Thm.~1b \\
+\textbf{[U4]} & Movable (passive) frozen bytecode rule (Fig.~5B) & \texttt{SelectionSortCell.\allowbreak cpython-310.pyc} & Increments \texttt{target} when pointing at a passive \texttt{FREEZE} cell unless \texttt{t == occ.target}. & \texttt{\_propose(selection\_\allowbreak movable\_mode="pyc310")} \\
+\textbf{[U5]} & Delayed Gratification run segmentation (Figs.~6D, 7A--C) & \texttt{delay\_gratification\_\allowbreak analysis\_for\_not\_\allowbreak move.py} (L24--89) & Deduplicates $E(v_t)$, groups same-sign $\Delta E_t$ into alternating setback ($y>0$) \& recovery ($x>0$) runs: $\DG = \langle (x-y)/y \rangle$. & \texttt{delayed\_gratification()}, \texttt{delayedGratification()}, Lean Thm.~3 \\
+\textbf{[U6]} & Chimeric algotype aggregation (Figs.~8A, 8D--E, 9, 10) & \texttt{cell\_type\_aggregation\_\allowbreak analysis.py} (L518--538) & $A(t) = \frac{1}{n}\sum_{i=0}^{n-2} \mathbf{1}[\mathrm{algo}_i = \mathrm{algo}_{i+1}]$. & \texttt{aggregation\_value()}, \texttt{aggregationValue()}, Lean Thm.~4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\textwidth]{media/zhang_goldstein_levin_kymograph_validation.png}
+  \caption{\textbf{Space-Time Kymograph Defect-Front Analysis and 14-Benchmark Quantitative Validation of Zhang, Goldstein \& Levin (2025).} \textbf{(A)} Space-time value kymographs ($n=42, f=2$ immovable defects at dashed red lines $i=14, 28$) for Bubble (locally pinned, $\text{inv}=301$), Insertion (prefix-reset bypass, $\DG=1.20$), and Selection (non-local target-pointer tunneling, $\text{inv}=0$). \textbf{(B)} Displacement-error kymograph $|v_{t,i} - i|/N$ contrasting Bubble's persistent disorder wake against Selection's complete defect tunneling. \textbf{(C)} Chimeric $\mathtt{B+S}$ duplicate-value kymograph showing sorted value bands (left) alongside persistent homotypic algotype domains ($\text{agg}=0.60$, right). \textbf{(D--F)} Quantitative replication of all 14 published paper benchmarks ($n=100$).}
+  \label{fig:kymo_validation}
+\end{figure}
+
+To prove that every behavior is a deterministic consequence of rules \textbf{[U1]--\textbf{[U6]}} rather than a Python or OS-threading artifact, we implemented standalone ports in **C++20** (\texttt{sorting-morphogenesis/cpp/zhang\_sorting\_morphogenesis.cpp}) and **JavaScript / Node.js** (\texttt{sorting-morphogenesis/js/zhang\_sorting\_morphogenesis.mjs}) sharing an identical 64-bit \texttt{SplitMix64} PRNG with Python (\texttt{sorting-morphogenesis/verify\_multilang\_ports.py}). As shown in Figure~\ref{fig:multilang}, C++20, Node.js, and Python produce \textbf{bit-for-bit identical kymographs ($0$ cell mismatches across all 42 cells and all time steps)} and identical 4-decimal-place ensemble benchmarks across all 14 paper claims.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\textwidth]{media/zhang_multilang_port_verification.png}
+  \caption{\textbf{Multi-Language Port Verification (Python~3, C++20, Node.js, Lean~4) and Upstream Code Traceability.} \textbf{(A--B)} Bit-exact cross-language space-time kymographs and final 42-cell array overlays ($\Delta = 0$ cells between C++20, Node.js, and Python). \textbf{(C)} Quantitative parity across Published Paper (2025), C++20 ($798\text{ ms}$), and Node.js ($3,893\text{ ms}$) on $n=100$. \textbf{(D)} Upstream code traceability matrix. \textbf{(E)} Machine-checked Lean~4 formal theorem scorecard (\texttt{0 sorry}).}
+  \label{fig:multilang}
+\end{figure}
+
+% ============================================================================
+\section{Three-Ablation Mechanistic Audit of the ``Latent Platonic Space'' Claims}
+
+In \emph{Ingressing Minds}~\cite[Sec.~6.3 \& Fig.~14]{Levin2025PsyArXiv,Levin2026Philosophies}, Levin cites three properties of the sorting arrays as evidence of unexpected cognitive competencies ingressing from a Platonic space. We tested each claim via direct code ablation in \texttt{sorting-morphogenesis/audit\_platonic\_space\_claims.py} (Figure~\ref{fig:platonic_audit}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\textwidth]{media/zhang_levin_platonic_claims_audit.png}
+  \caption{\textbf{Three-Ablation Mechanistic Audit of the ``Latent Platonic Space'' Claims (\emph{Ingressing Minds}, Sec.~6.3 \& Fig.~14).} \textbf{(A)} Ablating the explicit \texttt{if FREEZE: prev = -1} exception handler in \texttt{InsertionSortCell.py} (L74--76) causes Insertion sort's final error ($n=60$) to jump $4.5\times$ ($4.9 \to 21.9$). \textbf{(B)} Plotting the paper's adjacent monotonicity error $E(v)$ (blue solid, $47$ uphill ticks, $\DG = 0.76$) alongside the true global pairwise inversion Lyapunov potential $I(v)$ (yellow dashed, $0$ uphill steps, $\Delta I = -1$ on every swap) proves that Bubble sort never moves against its gradient and moves $0$ cells across the barrier. \textbf{(C)} Chimeric algotype aggregation $A(t)$ across four conditions: unique keys $\mathtt{B+S}$ (blue: genuine kinematic wave peaking at $0.624$), duplicate keys with strict `$<$' ties (green: permanent clustering at $0.634$), duplicate keys with unstable `$\le$' ties (red dashed: collapses to $0.514$), and null control of two labels running identical Bubble dynamics (grey dotted: flat at $0.516$). \textbf{(D)} Claim-by-claim scientific verdict matrix.}
+  \label{fig:platonic_audit}
+\end{figure}
+
+\subsection{Ablation 1: Did the Code Contain an Explicit Broken-Cell Exception Handler?}
+
+In Section~6.3 of \emph{Ingressing Minds}~\cite{Levin2026Philosophies}, Levin states: \emph{``The critical thing is that we did not add steps to the algorithm to check whether a swap had been completed, or to do specific things if an operation failed.''}
+
+While this statement holds for \texttt{BubbleSortCell.py} and \texttt{SelectionSortCell.py}, our code audit revealed that \texttt{InsertionSortCell.py} (\texttt{is\_enable\_to\_move}, lines 68--82) contains an \textbf{explicit broken-cell exception handler}:
+\begin{verbatim}
+for i in range(self.current_position[0]):
+    if self.cells[i].status == CellStatus.FREEZE:
+        prev = -1   # Explicit reset of prefix check at frozen cells!
+        continue
+    if self.cells[i].value < prev:
+        return False
+    prev = self.cells[i].value
+\end{verbatim}
+In standard Insertion sort, element $p$ only moves left when the prefix $0 \dots p-1$ is sorted. Without lines 74--76 resetting \texttt{prev = -1} at each frozen cell, a single frozen cell holding a large value $v_{\text{frozen}} > v_{d+1}$ causes \texttt{is\_enable\_to\_move()} to return \texttt{False} forever for every cell $p > d+1$. As shown in Figure~\ref{fig:platonic_audit}A (and proved in Lean~4 Theorem~2, \texttt{insertion\_frozen\_prefix\_reset\_unblocks\_downstream}), ablating those three lines causes Insertion sort's final monotonicity error ($n=60$) to jump from $1.8 \to 17.6$ ($f=1$), $3.5 \to 19.7$ ($f=2$), and $\mathbf{4.9 \to 21.95}$ ($f=3$).
+
+\subsection{Ablation 2: Does ``Delayed Gratification'' Move Against the Gradient or Around Barriers?}
+
+In Figure~14A--B of \emph{Ingressing Minds}~\cite{Levin2026Philosophies}, Levin contrasts the sorting array with two magnets separated by a wooden barrier (which cannot move against their magnetic gradient to go around the obstacle) and interprets temporary increases in monotonicity error $E(v)$ ($\DG > 0$) as the algorithm \emph{``temporarily going against its gradient to recoup gains later''} to move numbers around a frozen cell.
+
+Two mathematical theorems refute this physical interpretation for local-swap algorithms:
+\begin{enumerate}
+  \item \textbf{Zero Cross-Barrier Transport in Bubble and Insertion Sort (Lean Theorem~1):} Any legal adjacent swap $(p, p+1)$ that avoids an immovable defect at index $d$ satisfies $(p < d \land p+1 < d) \lor (d < p \land d < p+1)$. Consequently, the set of values to the left of $d$ and the set of values to the right of $d$ are invariant under all Bubble and Insertion trajectories ($\text{cells crossing barrier} = 0$, Fig.~\ref{fig:platonic_audit}B). Selection sort bypasses the defect only because \texttt{SelectionSortCell} is endowed with a global index pointer \texttt{target} that swaps $(p, \text{target})$ non-locally across arbitrary array distances.
+  \item \textbf{Strict Downhill Gradient Descent on the True Lyapunov Potential $I(v)$:} On the symmetric group $S_n$, the natural energy (Lyapunov) function of adjacent transpositions is the \textbf{total pairwise inversion count} (the word length in the Coxeter group $A_{n-1}$):
+  \begin{equation}
+    I(v) \;=\; \#\bigl\{(i, j) : 0 \le i < j < n \;\land\; v_i > v_j\bigr\}.
+  \end{equation}
+  Every legal Bubble swap exchanges an adjacent inversion $v_p > v_{p+1}$, which satisfies the exact identity
+  \begin{equation}
+    I(v^{(t+1)}) - I(v^{(t)}) \;=\; -1 \quad \forall\, t = 1, \dots, T_{\text{swaps}}.
+  \end{equation}
+  As shown by the yellow dashed line in Figure~\ref{fig:platonic_audit}B, $I(v)$ exhibits \textbf{zero uphill steps ($0/192$ swaps)}! Why, then, does the paper's adjacent monotonicity error $E(v) = \#\{i : v_i > v_{i+1}\}$ (blue solid line) tick upward $47$ times ($\DG = 0.764$)? Because $E(v)$ counts only \emph{adjacent} descents (the number of descending runs minus $1$). Whenever Bubble sort swaps an interior pair $a > b$ inside a 4-tuple $[x, a, b, y]$ satisfying $b < x < a$ and $b < y < a$ (for example, $[2, 4, 1, 3] \to [2, 1, 4, 3]$), total inversions strictly decrease ($I: 3 \to 2$), but one large cliff ($4 > 1$) is split into two smaller adjacent steps ($2 > 1$ and $4 > 3$), incrementing $E(v)$ from $1 \to 2$. This projection artifact occurs even when there are \textbf{zero frozen cells ($f = 0$, where Bubble sort has $\DG = 0.38$)}.
+\end{enumerate}
+
+\subsection{Ablation 3: What Drives Spontaneous Algotype Clustering (and Why Blog Critics Missed Fig.~8A)?}
+
+In Section~6.3 and Figure~14C of \emph{Ingressing Minds}~\cite{Levin2026Philosophies}, Levin highlights that in chimeric arrays ($\mathtt{B+S}$ or $\mathtt{I+S}$), same-algotype cells cluster ($A(t) > 0.50$) without any code inspecting \texttt{neighbor.algotype}. Conversely, critics~\cite{Sweet2026} claimed this clustering is merely textbook duplicate-key sort stability~\cite{Knuth1973}.
+
+Our ablation suite (Figure~\ref{fig:platonic_audit}C) shows that \textbf{the empirical clustering phenomenon is 100\% real and that the ``textbook duplicate-key stability'' critique is mathematically impossible on Paper Fig.~8A}, while also providing a complete physical-kinematic derivation that requires no non-physical causation:
+\begin{enumerate}
+  \item \textbf{Unique Keys ($1 \dots n$, Paper Fig.~8A — Blue Curve in Fig.~\ref{fig:platonic_audit}C):} When all $n$ keys are distinct, duplicate keys do not exist, so textbook stability cannot operate. Yet aggregation in a 50/50 $\mathtt{B+S}$ chimera rises from $0.500$ to a peak of $\mathbf{0.624\text{--}0.640}$ at $\sim 25\%$ progress before relaxing to $0.501$ at completion. The mechanism is \textbf{kinematic transport-speed phase separation}: Selection cells advance their \texttt{target} pointer from $0$ upward and jump directly to the left boundary in $O(1)$ swaps per match, creating a left-moving advective wave of Selection cells that displaces slow, diffusively swapping ($O(n^2)$) Bubble cells into a contiguous right-hand domain until the Bubble cells finish sorting to their final unique ranks.
+  \item \textbf{Duplicate Keys ($1 \dots 10$, Paper Fig.~8D — Green vs.\ Red Curves in Fig.~\ref{fig:platonic_audit}C):} When 10 copies of each key $1 \dots 10$ are present, aggregation rises to $\mathbf{0.634\text{--}0.690}$ and \emph{remains permanently elevated}. Why? Because Selection cells scan \texttt{target} from $0 \to n-1$ and claim the \textbf{leftmost slots} of each key $k$'s equivalence class before Bubble cells arrive, and because the strict comparison `$<$' never swaps equal keys ($v_p == v_q$). When we ablate Bubble's comparison on ties from `$<$' to `$\le$' (\texttt{duplicate\_unstable\_ties\_curve}, red dashed curve in Fig.~\ref{fig:platonic_audit}C), equal-valued cells continue mixing within each plateau and permanent clustering collapses to $\mathbf{0.514}$.
+\end{enumerate}
+
+% ============================================================================
+\section{Synthesis: Weak Structural Platonism vs.\ Strong Dualist Ingress}
+
+Our findings establish a clean, constructive middle ground between reductionist dismissal and strong dualism:
+\begin{itemize}
+  \item \textbf{Where Levin's ``Mathematical Free Lunch'' (Weak Structural Platonism) Is Justified:} When biological cells or engineered agents instantiate simple local rules, evolution does not need to separately encode every global competency in DNA. The mathematical structure of the \textbf{symmetric group $S_n$ Coxeter/Bruhat lattice} (which guarantees that any sequence of local inversions converges to the unique identity permutation without local minima on $I(v)$) and \textbf{differential motility transport} (which automatically generates transient phase separation between fast-advecting and slow-diffusing species) provides genuine ``free lunches'' that developmental systems can exploit.
+  \item \textbf{Where Strong Dualist Ingress Is Unnecessary:} Describing Delayed Gratification or chimeric clustering as ``side-quests --- not predicted, explained, or produced by that medium'' is unwarranted. Every trajectory, $\DG$ excursion, and aggregation wave is $100\%$ produced and quantitatively predicted by the Markov transition matrix of the implemented local rules.
+\end{itemize}
+
+% ============================================================================
+\section{Target Publication Venues \& Candidate Co-Authors}
+\label{sec:venues_coauthors}
+
+This manuscript and its multi-language verification suite (\texttt{C++20}, \texttt{Node.js}, \texttt{Python~3}, \texttt{Lean~4}) are structured for submission to five target venues:
+\begin{enumerate}
+  \item \textbf{\emph{Adaptive Behavior} (SAGE):} The exact journal that published Zhang, Goldstein \& Levin (2025)~\cite{ZhangGoldsteinLevin2025}; ideal for a direct replication, multi-language port, and three-ablation mechanistic analysis.
+  \item \textbf{\emph{Patterns} (Cell Press):} High-impact Cell Press journal covering computational patterns, formal verification, and emergent complexity (which recently published Hoel's \emph{Causal Emergence 2.0}, \emph{Patterns} 7:101472, 2026~\cite{Hoel2026Patterns}).
+  \item \textbf{\emph{Artificial Life} (MIT Press):} Flagship venue for minimal models of agency, decentralized morphogenesis, and kinematic phase separation.
+  \item \textbf{\emph{Philosophies} (MDPI) / \emph{Biology \& Philosophy} (Springer):} Direct peer-reviewed companion/response to Levin's September 2026 \emph{Philosophies} article (\emph{Ingressing Minds}, 11(5):161)~\cite{Levin2026Philosophies}.
+  \item \textbf{\emph{ReScience C} (\texttt{rescience.github.io}):} Peer-reviewed journal dedicated specifically to open-source replications of published computational papers in independent languages (C++20 / Node.js / Lean~4 replication of a Python paper).
+\end{enumerate}
+
+\noindent\textbf{Candidate Co-Authors \& Collaborators (Outreach Package in \texttt{docs/zhang\_levin\_publication\_and\_coauthors.md}):}
+\begin{itemize}
+  \item \textbf{Original Authors (Adversarial-Collaborative or Joint Mechanistic Follow-Up):} Prof.\ Michael Levin (Tufts University / Allen Discovery Center), Taining Zhang, and Adam Goldstein.
+  \item \textbf{Causal Emergence, Coarse-Graining \& Algorithmic Information Theory:} Prof.\ Erik Hoel (Tufts University, author of \emph{Causal Emergence 2.0} in \emph{Patterns} 2026~\cite{Hoel2026Patterns}, ideal for formalizing the macro-projection $E(v)$ vs.\ micro-potential $I(v)$), Prof.\ Josh Bongard (University of Vermont, co-author on Xenobots and polycomputing), and Dr.\ Hector Zenil (King's College London / Oxford Immune Algorithmics).
+  \item \textbf{Embodied Agency, Irruption Theory \& Philosophy of Biology:} Prof.\ Tom Froese (OIST, author of \emph{Irruption and Absorption}, \emph{Entropy} 2024) and Prof.\ Chris Fields (Tufts collaborator on scale-free biology).
+  \item \textbf{Open Reproducibility \& Multi-Language Replication:} Dr.\ Nicolas P.\ Rougier (Inria Bordeaux, Co-Founder \& Editor-in-Chief of \emph{ReScience C}).
+\end{itemize}
+
+\begin{thebibliography}{99}
+
+\bibitem{ZhangGoldsteinLevin2025}
+T.~Zhang, A.~Goldstein, and M.~Levin, ``Classical sorting algorithms as a model of morphogenesis: Self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence,'' \emph{Adaptive Behavior} \textbf{33}(1), 25--54 (2025). \texttt{doi:10.1177/10597123241269740}. Code: \texttt{https://github.com/Zhangtaining/cell\_research} (commit \texttt{1fd2bd59}).
+
+\bibitem{Levin2025PsyArXiv}
+M.~Levin, ``Ingressing Minds: Causal Patterns Beyond Genetics and Environment in Natural, Synthetic, and Hybrid Embodiments,'' \emph{PsyArXiv} (2025). \texttt{doi:10.31234/osf.io/5g2xj\_v3}.
+
+\bibitem{Levin2026Philosophies}
+M.~Levin, ``Ingressing Minds: Causal, Non-Physical Patterns In-Form Natural, Synthetic, and Hybrid Embodiments,'' \emph{Philosophies} \textbf{11}(5), 161 (2026). \texttt{doi:10.3390/philosophies11050161}.
+
+\bibitem{Levin2024AlgorithmsRedux}
+M.~Levin, ``Algorithms Redux: Finding unexpected properties in truly minimal systems,'' \emph{Thoughtforms.life} (August 20, 2024); ``Patterns of Form and Behavior: A Brief Introduction'' (August 2025).
+
+\bibitem{Levin2024BioEssays}
+M.~Levin, ``The Multiscale Wisdom of the Body: Collective Intelligence as a Tractable Interface for Next-Generation Biomedicine,'' \emph{BioEssays} \textbf{47}(3), e202400196 (2025). \texttt{doi:10.1002/bies.202400196}.
+
+\bibitem{McMillenLevin2024}
+P.~T. McMillen and M.~Levin, ``Collective intelligence: A unifying concept for integrating biology across scales and substrates,'' \emph{Communications Biology} \textbf{7}(1), 378 (2024). \texttt{doi:10.1038/s42003-024-06037-4}.
+
+\bibitem{Hoel2026Patterns}
+E.~Hoel, ``Quantifying emergent complexity (Causal Emergence 2.0),'' \emph{Patterns} \textbf{7}(1), 101472 (2026). \texttt{doi:10.1016/j.patter.2025.101472}.
+
+\bibitem{Knuth1973}
+D.~E. Knuth, \emph{The Art of Computer Programming, Volume 3: Sorting and Searching} (Addison-Wesley, Reading, MA, 1973).
+
+\bibitem{Sweet2026}
+N.~Sweet, ``Why Michael Levin's Bubble Sort `Revelation' Is Misunderstood: 1960s Algorithm Theory Meets God-of-the-Gaps Argument,'' \emph{Sweet Rationalism} (2026).
+
+\end{thebibliography}
+
+\end{document}

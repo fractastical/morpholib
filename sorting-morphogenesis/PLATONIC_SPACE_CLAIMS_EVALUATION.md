@@ -95,3 +95,11 @@ Generates:
 - `docs/media/zhang_levin_platonic_claims_audit.png`
 - `sorting-morphogenesis/figures/zhang_levin_platonic_claims_audit.png`
 - `sorting-morphogenesis/figures/platonic_claims_ablation_metrics.json`
+
+---
+
+## Standalone Manuscript, Target Journals & Candidate Co-Authors
+
+- **Compiled 10-Page Manuscript PDF:** [`docs/zhang_levin_sorting_morphogenesis_manuscript.pdf`](../docs/zhang_levin_sorting_morphogenesis_manuscript.pdf) (LaTeX source: [`docs/zhang_levin_sorting_morphogenesis_manuscript.tex`](../docs/zhang_levin_sorting_morphogenesis_manuscript.tex))
+- **Publication Strategy, Top 5 Target Venues (*Adaptive Behavior*, *Patterns*, *ReScience C*, *Artificial Life*, *Philosophies*) & Candidate Co-Authors + Outreach Emails:** [`docs/zhang_levin_publication_and_coauthors.md`](../docs/zhang_levin_publication_and_coauthors.md)
+
