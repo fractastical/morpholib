@@ -7,7 +7,9 @@ Replication of:
 > **Adaptive Behavior**, 33(1), 25–54.
 > [doi:10.1177/10597123241269740](https://doi.org/10.1177/10597123241269740) · Preprint: [arXiv:2401.05375](https://arxiv.org/abs/2401.05375)
 
-Reference implementation audited against the authors' repository [`Zhangtaining/cell_research`](https://github.com/Zhangtaining/cell_research) at pinned commit [`1fd2bd5921c1f6b423a71f691d5189106a8a1020`](https://github.com/Zhangtaining/cell_research/tree/1fd2bd5921c1f6b423a71f691d5189106a8a1020) (2024-10-30), with upstream replication notes filed at [Zhangtaining/cell_research#2](https://github.com/Zhangtaining/cell_research/issues/2).
+Reference implementation audited against the authors' repository [`Zhangtaining/cell_research`](https://github.com/Zhangtaining/cell_research) at pinned commit [`1fd2bd5921c1f6b423a71f691d5189106a8a1020`](https://github.com/Zhangtaining/cell_research/tree/1fd2bd5921c1f6b423a71f691d5189106a8a1020) (2024-10-30), with upstream replication notes filed at [Zhangtaining/cell_research#2](https://github.com/Zhangtaining/cell_research/issues/2), and ported across **four languages** (**Python 3**, **C++20**, **JavaScript / Node.js**, and **Lean 4** — see [`REPLICATION_AND_PORT_GUIDE.md`](./REPLICATION_AND_PORT_GUIDE.md) for the line-by-line upstream code traceability map).
+
+![Multi-Language Port Verification & Upstream Code Traceability](../docs/media/zhang_multilang_port_verification.png)
 
 ![Zhang, Goldstein & Levin (2025) — Space-Time Kymographs & 14-Benchmark Quantitative Validation](../docs/media/zhang_goldstein_levin_kymograph_validation.png)
 

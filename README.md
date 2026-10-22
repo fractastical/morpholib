@@ -632,11 +632,14 @@ Kahng, Odle & Wakeman's (2024) geometry of reef-coral colonies. A colony lays do
 Zhang, Goldstein & Levin's (2025) model of autonomous cell-view sorting morphogenesis: 1D arrays of cells that sort themselves locally by Bubble, Insertion or Selection rules without a central controller, navigating around passive (`movable`) and stuck (`immovable`) frozen defects, exhibiting Delayed Gratification (temporary increases in monotonicity error followed by larger reductions), and spontaneously segregating by algotype in chimeric arrays. Includes deterministic seed-locked paired A/B lane comparisons (`--compare-ab`) and a 4-tier claim-boundary catalog ([`sorting-morphogenesis/catalog.json`](./sorting-morphogenesis/catalog.json)).
 
 ```bash
+python3 sorting-morphogenesis/verify_multilang_ports.py                           # C++20 + Node.js + Python + Lean 4 bit-exact verifier & traceability figure
 python3 sorting-morphogenesis/validate_kymograph_and_paper.py --n 100 --reps 15   # standalone 6-panel kymograph & 14-benchmark paper validation + GIF
-python3 sorting-morphogenesis/sorting_morphogenesis.py                            # self-tests + quick replication summary
-python3 sorting-morphogenesis/run_experiments.py --n 100 --reps 15                # full 8-figure suite in sorting-morphogenesis/figures/
-python3 sorting-morphogenesis/run_experiments.py --compare-ab --n 100             # seed-locked paired A/B comparison + CSV
+clang++ -std=c++20 -O3 sorting-morphogenesis/cpp/zhang_sorting_morphogenesis.cpp -o sorting-morphogenesis/cpp/zhang_sorting_cpp && ./sorting-morphogenesis/cpp/zhang_sorting_cpp
+node sorting-morphogenesis/js/zhang_sorting_morphogenesis.mjs
+lean morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean                  # 5 machine-checked Lean 4 theorems (0 sorry)
 ```
+
+![Zhang, Goldstein & Levin (2025) — Multi-Language Port Verification (Python 3, C++20, Node.js, Lean 4) & Upstream Traceability](docs/media/zhang_multilang_port_verification.png)
 
 ![Zhang, Goldstein & Levin (2025) — Space-Time Kymographs & 14-Benchmark Quantitative Validation](docs/media/zhang_goldstein_levin_kymograph_validation.png)
 
