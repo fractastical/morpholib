@@ -180,21 +180,20 @@ Water doesn't flow around an invisible internal skeleton; it flows around the \t
 Why did the 9 head dots break the global rubber sheet? Because when closely related \textbf{sister species live side-by-side on the same coral reef}, they already have the same swimming body --- which means they would be fighting over the exact same food! To stop competing, sister species rapidly rewire their \textbf{jaws, snouts, and eyes $3.3\times$ to $9.3\times$ faster than their bodies} ($85.4\%$ of within-genus change): one cousin evolves jaws to crunch coral, another sucks in tiny plankton, and another scrapes algae!
 }
 
-\newpage
 % ============================================================================
 \stepbanner{sky}{Step 5 --- The Final Scoreboard in Four Simple Numbers}{Summary of our tests across all 6 classic 1917 pairs and 10,303 fish species}
 
 \begin{figure}[H]
   \centering
   \vspace{-0.3em}
-  \includegraphics[width=0.96\textwidth]{guide_step5_10000_fishes_scoreboard.png}
+  \includegraphics[width=0.92\textwidth]{guide_step5_10000_fishes_scoreboard.png}
   \vspace{-0.5em}
 \end{figure}
 
-\vspace{0.2em}
+\vspace{0.15em}
 \begin{table}[H]
 \centering
-\renewcommand{\arraystretch}{1.45}
+\renewcommand{\arraystretch}{1.35}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}p{0.27\textwidth}p{0.20\textwidth}p{0.22\textwidth}p{0.27\textwidth}@{}}
 \toprule
@@ -211,48 +210,6 @@ Why did the 9 head dots break the global rubber sheet? Because when closely rela
 \end{tabular}%
 }
 \end{table}
-
-\newpage
-% ============================================================================
-\stepbanner{navy}{Appendix --- Citations, Verbatim Quotes \& Where Prior Tests Failed}{Exhaustive documentation of what D'Arcy Thompson actually wrote in 1917 and the 5 specific traps that tripped up earlier studies}
-
-\begin{enumerate}
-  \item \textbf{What D'Arcy Thompson Actually Wrote (\emph{On Growth and Form}, 1917, Ch.\ XVII, pp.\ 748--751):}
-  \begin{itemize}
-    \item \emph{Figs.\ 373--374 (\emph{Argyropelecus} $\to$ \emph{Sternoptyx}, p.\ 748):} ``Transfer the figure to an oblique coordinate system whose axes are inclined at an angle of $70^\circ$\dots\ we obtain a very good outline of an allied fish, \emph{Sternoptyx diaphana}.''
-    \item \emph{Figs.\ 375--376 (\emph{Scarus} $\to$ \emph{Pomacanthus}, p.\ 749):} ``Deform its rectilinear coordinates into a system of (approximately) coaxial circles\dots\ we obtain a very good outline of an allied fish, belonging to a neighbouring family, of the genus \emph{Pomacanthus}.''
-    \item \emph{Figs.\ 377--380 (\emph{Polyprion} $\to$ \emph{Pristigenys} $\to$ \emph{Scorpaena} $\to$ \emph{Antigonia}, p.\ 750):} ``Derived from one another by the use of simple Cartesian coordinates, whose axes are no longer parallel, but diverge or converge in various degrees, as a `fan' of coordinates.''
-    \item \emph{Figs.\ 381--382 (\emph{Diodon} $\to$ \emph{Mola mola}, p.\ 751):} ``Making the verticals into a system of concentric circles, and the horizontals into a system of curves approximately hyperbolic\dots\ Notice how the whole contour of the body, visibility of the jaws, position of the eye, and above all the immense dorsal and anal fins\dots\ are all simultaneous results of the one general deformation.''
-  \end{itemize}
-
-  \item \textbf{Failure Mode 1 --- Giving Up on 2D Grids as ``Too Cumbersome'' (Huxley 1932; Medawar 1945, 1958):}
-  Julian Huxley (\emph{Problems of Relative Growth}, 1932, p.\ 105) wrote that Thompson's grid method \emph{``does not lend itself to further analysis, for the simple reason that it gives no quantitative expression for the growth-gradients,''} and Peter Medawar (1958, p.\ 232) wrote that it was \emph{``analytically too cumbersome.''} \textbf{Resolution:} Formulating Thompson's four grid families as explicit 5- to 8-parameter smooth equations allows Levenberg--Marquardt optimization to solve each grid in $<10\text{ ms}$ ($\mathrm{RMS} < 10^{-13}$).
-
-  \item \textbf{Failure Mode 2 --- Overfitting With Exact 34-Parameter Thin-Plate Splines (Bookstein 1989 vs.\ Bookstein 2023, 2024):}
-  Fred Bookstein introduced the exact interpolating Thin-Plate Spline (TPS) in 1989 (\emph{IEEE TPAMI} 11:567), but in 2023--2024 (\emph{Evolutionary Biology} 50:1--23; 51:1--19) he repudiated exact TPS interpolation as a test of Thompson's grids: \emph{``The thin-plate spline is an exact interpolant: its residuals at the landmarks are identically zero. But D'Arcy Thompson's grids were smooth, low-dimensional geometric hypotheses\dots\ A spline that fits every landmark exactly cannot falsify a global transformation law.''} \textbf{Resolution:} Even an exact 34-parameter TPS fitted to the 17 landmarks of \emph{Scarus} $\to$ \emph{Pomacanthus} degrades the real 600-point silhouette ($\mathrm{IoU}$ drops from $0.662 \to 0.629$), whereas 8-parameter Thompson grids beat 12p quadratic trends by $\mathrm{AIC}_c$ in $\mathbf{84.9\%\text{--}92.1\%}$ of 4,505 pairs.
-
-  \item \textbf{Failure Mode 3 --- The 17-Landmark Head-Bias \& Fin-Omission Trap (Claverie \& Wainwright 2014; Friedman et al.\ 2019):}
-  Claverie \& Wainwright (2014, \emph{PLoS ONE} 9:e112732, Fig.\ 1) placed $9/17$ landmarks ($53\%$) in the skull/jaws and $8/17$ at basal fin insertions on the body wall (\emph{``anterior and posterior insertions of the dorsal and anal fins\dots\ rather than the distal tips''}) to avoid museum fin-pinning noise. When used to test Thompson's grids across families, the 9 head landmarks hijack least-squares ($587.1\%$ silhouette error when fitted alone on \emph{Scarus} $\to$ \emph{Pomacanthus}) while $0\%$ of the distal fin webs are sampled, causing 17-landmark fits to worsen whole-fish silhouettes ($40.6\% \to 56.2\%$).
-
-  \item \textbf{Failure Mode 4 --- Grid Folding ($\det D\Phi < 0$) in Standard 600-Semilandmark Curve TPS (Bookstein 1997; Felice et al.\ 2018):}
-  On the exact same 600-semilandmark outlines, standard arc-length curve TPS (Bookstein 1997) slides semilandmarks non-homologously across hypertrophied dorsal/anal fin lobes (cf.\ Felice, Randau \& Goswami 2018, \emph{Evolution} 72:2580), \textbf{folding and inverting the 2D interior tissue grid on 6 of 6 pairs} ($\min \det D\Phi = -6.76$) and worsening out-of-sample interior landmark prediction up to $2.4\times$, whereas 8p Thompson grids remain $\mathbf{100\%}$ diffeomorphic ($\det D\Phi > 0$ on $6/6$ pairs).
-
-  \item \textbf{Failure Mode 5 --- Confounding Global Morphospace ($\mathbf{G}_{\max}$) With Reef Jaw Competition in Raw Space (Schluter 1996):}
-  Schluter (1996, \emph{Evolution} 50:1766) predicted that clade radiation ($\mathbf{r}_{\max}$) should track within-genus variance ($\mathbf{g}_{\max}$), yet raw landmark angles are $\theta = 64.6^\circ\text{--}75.2^\circ$. \textbf{Resolution:} Raw space mixes sympatric jaw competition ($3.26\times\text{--}9.27\times$ craniofacial amplification within genera, $p = 9.2 \times 10^{-5}$) with axial body evolution. Once separated into Global 8p Thompson Morphospace across $791 \to 6{,}614 \to 10{,}303$ species ($440$ families), $\mathbf{g}_{\max}$ and $\mathbf{r}_{\max}$ align at $\mathbf{|\cos\theta| = 0.935\text{--}0.989}$ ($\theta = 20.7^\circ\text{--}8.5^\circ$)!
-\end{enumerate}
-
-\newpage
-% ============================================================================
-\stepbanner{emerald}{Archival Museum Plates \& Field Specimen Photographs (All 9 Taxa)}{The actual historical lithographs and underwater/museum specimen photographs from which the 600-point outlines and 17 skeleton dots were extracted}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.99\textwidth]{thompson_1917_archival_field_plates.png}
-\end{figure}
-
-\friendlycard{emerald}{emeraldbg}{How to Read the 9 Specimen Plates Above}{%
-\textbf{Cyan Outline:} The continuous 600-point whole-body contour (capturing the dorsal fin, anal fin, caudal tail, and ventral keel). \textbf{Yellow Dashed Box:} The 8-dot trunk wireframe used by standard databases (chopping off all the fins!). \textbf{Gold Circles:} The 9 dots packed inside the head and jaws ($53\%$ of the weight). \textbf{Pink Squares:} The 8 dots where the fin bases touch the body wall ($0\%$ on the outer fins).
-}
 
 \newpage
 % ============================================================================
@@ -279,8 +236,128 @@ If you discover a mystery fish or a fossil and want to know which family it belo
 \textbf{Un-Crumpled Ancestors:} If you try to draw the halfway ``missing link'' ancestor between two fishes using a standard 600-dot computer spline, the grid \textbf{folds and crumples over itself on 5 out of 6 pairs}! Turning D'Arcy Thompson's 8 growth knobs halfway back ($50\%$) draws a smooth, realistic ancestor on \textbf{6 out of 6 pairs ($100\%$)} and cuts internal bone error by $38\%$. \textbf{Small Fossil Groups:} Standard math crashes unless you have $>30$ species in a group; Thompson's 8-knob sheet works cleanly with as few as \textbf{6 fossil species} ($1{,}000\times$ more stable math!).
 }
 
-\friendlycard{navy}{cardbg}{4.\ What Comes Next --- Bioelectric ``Growth Compilers,'' Crabs, Birds \& Regeneration}{%
-How does a living embryo actually ``turn'' one of D'Arcy Thompson's 8 growth knobs? Research in \textbf{bioelectricity} (Michael Levin's lab \& \texttt{bioelectricity.net}) shows that cells use \textbf{resting voltage maps ($V_{\mathrm{mem}}$)} like an electrical blueprint: a \emph{global voltage gradient} across the body trunk acts as Thompson's rubber sheet to scale the body and fins, while a separate \emph{local ``electric face'' circuit} in the head rewires the jaws! Next, we can test this exact ``Global Sheet + Local Tool'' law on \textbf{crab shells, bird beaks, mammal skulls, and bioelectric tissue regeneration}.
+\friendlycard{navy}{cardbg}{4.\ What Comes Next --- Bioelectric ``Growth Compilers'' \& Our Full 28-Page Technical Paper}{%
+How does a living embryo actually ``turn'' one of D'Arcy Thompson's 8 growth knobs? Research in \textbf{bioelectricity} (Michael Levin's lab \& \texttt{bioelectricity.net}) shows that cells use \textbf{resting voltage maps ($V_{\mathrm{mem}}$)} like an electrical blueprint: a \emph{global voltage gradient} across the body trunk acts as Thompson's rubber sheet to scale the body and fins, while a separate \emph{local ``electric face'' circuit} in the head rewires the jaws!\\[0.3em]
+\textbf{Want the Full Mathematical Equations \& Proofs?} See the \textbf{Supporting Appendices} on the next pages, or read our full 28-page academic manuscript (\texttt{docs/thompson\_1917\_fish\_transformations\_manuscript.pdf}) and technical deep-dive (\texttt{docs/KEY\_DISCOVERIES.md}).
+}
+
+\newpage
+% ============================================================================
+% APPENDIX A: ARCHIVAL MUSEUM PLATES & FULL 6-PAIR SUPPORTING TABLE
+% ============================================================================
+\stepbanner{emerald}{Appendix A --- Archival Museum Plates, Field Photos \& All 6 Classic Pairs}{The actual historical lithographs and underwater/museum specimen photographs from which the 600-point outlines and 17 skeleton dots were extracted}
+
+\begin{figure}[H]
+  \centering
+  \vspace{-0.2em}
+  \includegraphics[width=0.95\textwidth]{thompson_1917_archival_field_plates.png}
+  \vspace{-0.4em}
+\end{figure}
+
+\vspace{0.2em}
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.35}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llcccccc@{}}
+\toprule
+\rowcolor{navy}
+\textcolor{white}{\textbf{1917 Fish Pair}} & \textcolor{white}{\textbf{Thompson's Grid}} & \textcolor{white}{\textbf{No Stretch}} & \textcolor{white}{\textbf{17-Dot Fit}} & \textcolor{white}{\textbf{600-pt Grid Fit}} & \textcolor{white}{\textbf{Fin-Base Box $\to$ Warp}} & \textcolor{white}{\textbf{Fin-Tip Box $\to$ Warp}} & \textcolor{white}{\textbf{Un-Folded Grid?}} \\
+\midrule
+\rowcolor{cardbg}
+\textbf{1.\ \emph{Argyropelecus} $\to$ \emph{Sternoptyx}} & $70^\circ$ Oblique Shear (5p) & $58.4\%$ & $63.0\%$ \textcolor{crimson}{(Worse)} & \textbf{\textcolor{emerald}{45.6\%}} & $76.7\% \to \mathbf{89.9\%}$ & $23.7\% \to \mathbf{71.8\%}$ & \textbf{100\% Smooth} \\
+\textbf{2.\ \emph{Scarus} $\to$ \emph{Pomacanthus}} & Coaxial Circles (8p) & $40.6\%$ & $56.2\%$ \textcolor{crimson}{(Worse)} & \textbf{\textcolor{emerald}{28.5\%}} & $39.6\% \to \mathbf{70.7\%}$ & $2.4\% \to \mathbf{35.3\%}$ & \textbf{100\% Smooth} \\
+\rowcolor{cardbg}
+\textbf{3.\ \emph{Polyprion} $\to$ \emph{Pristigenys}} & Diverging Fan (8p) & $33.2\%$ & $20.7\%$ & \textbf{\textcolor{emerald}{17.2\%}} & $59.2\% \to \mathbf{81.6\%}$ & $71.2\% \to \mathbf{73.7\%}$ & \textbf{100\% Smooth} \\
+\textbf{4.\ \emph{Pristigenys} $\to$ \emph{Scorpaena}} & Converging Fan (8p) & $120.1\%$ & $59.4\%$ & \textbf{\textcolor{emerald}{35.5\%}} & $81.1\% \to \mathbf{94.0\%}$ & $54.7\% \to \mathbf{90.7\%}$ & \textbf{100\% Smooth} \\
+\rowcolor{cardbg}
+\textbf{5.\ \emph{Scorpaena} $\to$ \emph{Antigonia}} & Diverging Fan (8p) & $102.2\%$ & $143.7\%$ \textcolor{crimson}{(Worse)} & \textbf{\textcolor{emerald}{57.6\%}} & $37.2\% \to \mathbf{67.5\%}$ & $42.2\% \to \mathbf{53.2\%}$ & \textbf{100\% Smooth} \\
+\textbf{6.\ \emph{Diodon} $\to$ \emph{Mola mola}} & Radial Flare (8p) & $70.8\%$ & $69.4\%$ & \textbf{\textcolor{emerald}{49.0\%}} & $56.0\% \to \mathbf{97.2\%}$ & $52.0\% \to \mathbf{74.7\%}$ & \textbf{100\% Smooth} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\newpage
+% ============================================================================
+% APPENDIX B: THREE-DATASET VALIDATION (10,303 SPECIES) & SUPPORTING PLATES
+% ============================================================================
+\stepbanner{sky}{Appendix B --- Supporting Data Across 3 Independent Datasets (10,303 Species)}{Replicating the ``Outside Rubber Sheet vs.\ Inside Jaw Competition'' discovery across 440 fish families and 69,682 sister-species pairs}
+
+\begin{figure}[H]
+  \centering
+  \vspace{-0.2em}
+  \includegraphics[width=0.95\textwidth]{outreach_fig6_three_dataset_validation.png}
+  \vspace{-0.4em}
+\end{figure}
+
+\vspace{0.2em}
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.38}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}p{0.28\textwidth}p{0.22\textwidth}p{0.22\textwidth}p{0.24\textwidth}@{}}
+\toprule
+\rowcolor{navy}
+\textcolor{white}{\textbf{Dataset Tested}} & \textcolor{white}{\textbf{Scale (\# Species / Families)}} & \textcolor{white}{\textbf{150-Myr Body Alignment}} & \textcolor{white}{\textbf{Same-Reef Jaw Amplification}} \\
+\midrule
+\rowcolor{cardbg}
+\textbf{Dataset 1:} Claverie \& Wainwright (2014) 17-Dot Reef Fishes & \textbf{791 Species}, 62 Genera, 48 Families (4,334 Dated Pairs) & \textbf{\textcolor{emerald}{93.5\% Alignment}} ($\theta = 20.7^\circ$ along Thompson Grid) & \textbf{\textcolor{amber}{3.26$\times$ Faster Jaws}} ($47.0\%$ vs.\ $14.4\%$; Diet $p = 9.2 \times 10^{-5}$) \\
+\textbf{Dataset 2:} FishBase Global 2D Landmark Archive & \textbf{6,614 Species}, 660 Genera (4,646 Sister Spp.), 426 Families & \textbf{\textcolor{emerald}{98.9\% Alignment}} ($\theta = 8.5^\circ$ along Thompson Grid!) & Local Head/Fin Modules Diverge at $\theta = 63.8^\circ$ \\
+\rowcolor{cardbg}
+\textbf{Dataset 3:} Price et al.\ (2019) / Mosimann 11-Trait Matrix & \textbf{10,303 Species}, 987 Genera (7,895 Sister Spp.), 440 Families & \textbf{\textcolor{sky}{90.8\% of Family Evolution}} Is on Body \& Fin Positions & \textbf{\textcolor{amber}{9.27$\times$ Faster Head/Jaws}} ($85.4\%$ vs.\ $9.2\%$; 69,682 Pairs) \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\newpage
+% ============================================================================
+% APPENDIX C: VERBATIM QUOTES, CITATIONS & WHERE PRIOR STUDIES FAILED
+% ============================================================================
+\stepbanner{navy}{Appendix C --- Verbatim Quotes, Citations \& Where Prior Tests Failed}{Exhaustive documentation of what D'Arcy Thompson actually wrote in 1917 and the 5 specific traps that tripped up earlier studies}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.32}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}p{0.21\textwidth}p{0.25\textwidth}p{0.25\textwidth}p{0.25\textwidth}@{}}
+\toprule
+\rowcolor{navy}
+\textcolor{white}{\textbf{Prior Study}} & \textcolor{white}{\textbf{What They Did or Quoted}} & \textcolor{white}{\textbf{Why Their Test Failed}} & \textcolor{white}{\textbf{How Our Study Fixed It}} \\
+\midrule
+\rowcolor{cardbg}
+\textbf{Huxley (1932)}; \textbf{Medawar (1945, 1958)} & Called Thompson's 2D grids \emph{``analytically too cumbersome''} and replaced them with 1D power laws $y = b x^\alpha$. & Had no computer solver to fit 2D curved circles, fans, or flares. & Wrote all 4 grid families as 5--8 knob equations solved in $<10\text{ ms}$ ($\mathrm{RMS} < 10^{-13}$). \\
+\textbf{Bookstein (1989)} \emph{vs.}\ \textbf{Bookstein (2023, 2024)} & Invented 34-parameter Thin-Plate Splines (1989), then warned in 2023--2024 that exact splines overfit ($0$ error). & A 34-knob spline bends around local head noise and \textbf{worsens the real fish outline} ($\mathrm{IoU}: 0.662 \to 0.629$). & 8-knob Thompson grids beat 12-knob polynomials in $\mathbf{85\%\text{--}92\%}$ of 4,505 pairs by $\mathrm{AIC}_c$. \\
+\rowcolor{cardbg}
+\textbf{Claverie \& Wainwright (2014)}; \textbf{Friedman (2019)} & Standardized the 17-dot fish skeleton database across 791 Indo-Pacific species. & Packed \textbf{9/17 dots ($53\%$) in the skull} and \textbf{0\% on the outer fins}, swinging the back of the sheet off target. & Fitting the 600-point whole-body outline cuts mismatch in half ($56.2\% \to \mathbf{28.5\%}$). \\
+\textbf{Bookstein (1997)}; \textbf{Felice et al.\ (2018)} & Standard 600-dot curve Thin-Plate Splines slid by perimeter arc-length. & Big dorsal/anal fins slide dots to the wrong body parts, \textbf{folding the 2D grid on 6 of 6 pairs}! & 8-knob Thompson grids stay \textbf{100\% un-folded on 6/6 pairs} and predict internal bones. \\
+\rowcolor{cardbg}
+\textbf{Schluter (1996)} ($\mathbf{G}$ vs.\ $\mathbf{R}$ Line of Least Resistance) & Predicted family evolution ($\mathbf{R}$) should follow within-genus variation ($\mathbf{G}$), but raw angles missed by $65^\circ\text{--}75^\circ$. & Raw dots mix \textbf{same-reef jaw competition ($3.3\times\text{--}9.3\times$ faster)} with slow body evolution. & Separating the Outside Rubber Sheet from Inside Jaws gives a $\mathbf{93.5\%\text{--}98.9\%}$ match! \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\begin{enumerate}
+  \item \textbf{D'Arcy Thompson's Original Verbatim Quotes (\emph{On Growth and Form}, 1917, Ch.\ XVII, pp.\ 748--751):}
+  \begin{itemize}
+    \item \emph{Figs.\ 373--374 (\emph{Argyropelecus} $\to$ \emph{Sternoptyx}, p.\ 748):} ``Transfer the figure to an oblique coordinate system whose axes are inclined at an angle of $70^\circ$\dots\ we obtain a very good outline of an allied fish, \emph{Sternoptyx diaphana}.''
+    \item \emph{Figs.\ 375--376 (\emph{Scarus} $\to$ \emph{Pomacanthus}, p.\ 749):} ``Deform its rectilinear coordinates into a system of (approximately) coaxial circles\dots\ we obtain a very good outline of an allied fish, belonging to a neighbouring family, of the genus \emph{Pomacanthus}.''
+    \item \emph{Figs.\ 377--380 (\emph{Polyprion} $\to$ \emph{Pristigenys} $\to$ \emph{Scorpaena} $\to$ \emph{Antigonia}, p.\ 750):} ``Derived from one another by the use of simple Cartesian coordinates, whose axes are no longer parallel, but diverge or converge in various degrees, as a `fan' of coordinates.''
+    \item \emph{Figs.\ 381--382 (\emph{Diodon} $\to$ \emph{Mola mola}, p.\ 751):} ``Making the verticals into a system of concentric circles, and the horizontals into a system of curves approximately hyperbolic\dots\ Notice how the whole contour of the body, visibility of the jaws, position of the eye, and above all the immense dorsal and anal fins\dots\ are all simultaneous results of the one general deformation.''
+  \end{itemize}
+  \item \textbf{Fred Bookstein's Verbatim Repudiation of Exact Thin-Plate Splines (\emph{Evolutionary Biology} 50:1--23, 2023, pp.\ 2--4):}
+  \emph{``The thin-plate spline is an exact interpolant: its residuals at the landmarks are identically zero. But D'Arcy Thompson's grids were smooth, low-dimensional geometric hypotheses, not exact interpolants\dots\ A spline that fits every landmark exactly cannot falsify a global transformation law, because it forces local modular discrepancies into high-spatial-frequency bending energy.''}
+\end{enumerate}
+
+\friendlycard{navy}{skybg}{Where to Read the Full 28-Page Academic Paper \& Interactive Code}{%
+\begin{itemize}
+  \item \textbf{Full 28-Page Academic Manuscript PDF (All Equations, 9 Figures, 6 Tables \& 23 Citations):} \texttt{docs/thompson\_1917\_fish\_transformations\_manuscript.pdf}
+  \item \textbf{Comprehensive Technical Deep-Dive (Thompson + Wolfram Rule 30 Proofs):} \texttt{docs/KEY\_DISCOVERIES.md}
+  \item \textbf{Interactive Web Sandbox \& \texttt{bioelectricity.net} Module:} \url{https://fractastical.github.io/morpholib/bioelectricity/}
+  \item \textbf{Full Discovery \& Peer-Review Chat Log:} \texttt{docs/THOMPSON\_1917\_DISCOVERY\_CHAT\_LOG.md}
+\end{itemize}
 }
 
 \end{document}
