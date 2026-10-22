@@ -36,6 +36,7 @@ This document provides a technical deep-dive into the primary biological, morpho
    - [1.9 Appendix: Exhaustive Historiographical & Methodological Audit of Prior Literature (1917–2024) — Verbatim Quotes & Where Prior Tests Failed](#19-appendix-exhaustive-historiographical--methodological-audit-of-prior-literature-19172024--verbatim-quotes--where-prior-tests-failed)
    - [1.10 Downstream Implications for Evolutionary Biology & Phylogenetic Comparative Methods (PCMs)](#110-downstream-implications-for-evolutionary-biology--phylogenetic-comparative-methods-pcms)
    - [1.11 A Time-Calibrated Phylogenetic Prediction Engine: Horizon-Calibrated Error, Registered Predictions, and a Monte Bolca Fossil Test](#111-a-time-calibrated-phylogenetic-prediction-engine-horizon-calibrated-error-registered-predictions-and-a-monte-bolca-fossil-test)
+   - [1.12 Pre-Registered Blind Test Against 5,180 Never-Seen Species (FishShapes v1): What Held and What Did Not](#112-pre-registered-blind-test-against-5180-never-seen-species-fishshapes-v1-what-held-and-what-did-not)
 2. [**Discovery II — Genuine Mathematical & Biological Discoveries in Wolfram's Rule 30 and *Conus textile* Shell Morphogenesis**](#discovery-ii--genuine-mathematical--biological-discoveries-in-wolframs-rule-30-and-conus-textile-shell-morphogenesis)
    - [2.1 Closed-Form Kogge–Stone Carry-Lookahead Cycle Operator $\mathcal{T}_P$ (Theorem 1–2)](#21-closed-form-koggestone-carry-lookahead-cycle-operator-mathcalt_p-theorem-12)
    - [2.2 Unconditional Non-Cycling & Infinite Period-Doubling $\lim_{k\to\infty} P_k = \infty$ for All $P = 2^m$ (Theorem 4)](#22-unconditional-non-cycling--infinite-period-doubling-lim_ktoinfty-p_k--infty-for-all-p--2m-theorem-4)
@@ -251,6 +252,33 @@ Sections 1.1–1.10 established that Thompson's coordinate law *interpolates* an
 6. **Monte Bolca test against published fossil proportions (~50 Ma).** Ten fossil taxa in seven sampled families, 16 published ratio measurements (Bannikov 2006, 2014; Bannikov & Carnevale 2010; Bellwood & Sorbini 1996; Tyler & Bannikov 1997). The fossil falls inside the 50-Ma predictive interval in $6/16$ measurements; the time-sliced prediction is closer to the fossil than the living-family mean in $6/16$; the predicted direction of change is right in $7/16$. For body depth alone (the ratio least affected by measurement convention): $4/10$, $5/10$, $6/10$. **Against the stasis null (fossil = living mean) this is a null result, reported as such**; it is limited by stem placements of several Bolca taxa, by calliper-vs-landmark conventions, and by most sampled family crowns being younger than 50 Ma. The one sharp outcome is *Eoplatax papilio*: the engine predicts the ephippid lineage at 50 Ma at BDmax/SL $0.67\ [0.57, 0.77]$ — far shallower than living *Platax* ($1.02$) — while the fossil is as disc-shaped as living *Platax* ($\approx 0.8$–$1.05$, photo estimate). The stem-state prediction is falsified: either the *Platax* disc was in place 50 Myr ago (deep-time stasis that a $\lambda \approx 0.96$ process, which regresses stem states toward the clade ancestor, does not anticipate), or *Eoplatax* sits closer to crown *Platax* than a stem placement assumes.
 
 ![Phylogenetic prediction engine: process models, horizon-calibrated error, blind 1917 tests, time-sliced body plans](./outreach_fig9_phylogenetic_prediction_engine.png)
+
+### 1.12 Pre-Registered Blind Test Against 5,180 Never-Seen Species (FishShapes v1): What Held and What Did Not
+
+**Executable Scripts & Data:** [`thompson/preregister_blind_predictions.py`](../thompson/preregister_blind_predictions.py) $\cdot$ [`thompson/score_blind_predictions.py`](../thompson/score_blind_predictions.py) $\cdot$ [`docs/THOMPSON_BLIND_PREREGISTRATION.md`](./THOMPSON_BLIND_PREREGISTRATION.md) $\cdot$ [`docs/THOMPSON_BLIND_TEST_RESULTS.md`](./THOMPSON_BLIND_TEST_RESULTS.md) $\cdot$ [`thompson_blind_predictions_registered.json`](../thompson_blind_predictions_registered.json) $\cdot$ [`thompson_blind_test_results.json`](../thompson_blind_test_results.json) $\cdot$ [`docs/outreach_fig10_blind_test_fishshapes.png`](./outreach_fig10_blind_test_fishshapes.png)
+
+The engine of §1.11 was validated only by internal hold-out. Here it was tested the way a prediction should be: predictions for **every one of the 10,888 species on the Rabosky tree not in the training set** were generated, hashed (SHA-256), committed (`dac08493`) and recorded in a nanopublication together with seven hypotheses and a complete scoring protocol — *before* the comparison dataset was downloaded or opened. The comparison dataset is FishShapes v1 (Price et al. 2022, *Ecology*; 16,523 Smithsonian specimens, calliper measurements, CC0), which had never been used in this repository. The scoring script verifies the hashes before reading any data.
+
+| Pre-registered hypothesis | Result | Verdict |
+|---|---|---|
+| **H1** (primary) Within 50 Myr of a training species, full 30-D prediction of BDmax/SL beats the consensus | $n = 1{,}122$; median error $0.038$ vs $0.093$ (ratio $0.41$), $p = 10^{-103}$; $r = 0.87$ predicted vs observed | ✓ |
+| **H2** (primary) … and beats copying the nearest training relative | $0.038$ vs $0.040$ (ratio $0.96$), $p = 0.06$ | ✗ |
+| **H3** (primary) 95% intervals cover 85–97% of species within 50 Myr | $92.6\%$ | ✓ |
+| **H4** (primary) Beyond 50 Myr, no better than the consensus | $n = 4{,}058$; ratio $0.52$ — it is *much* better than the consensus | ✗ |
+| **H5** Error rises monotonically with horizon | $\rho = 0.86$, 4/6 steps | ✗ |
+| **H6** Thompson-7 worse than full-30 but beats consensus | $0.059$ vs $0.038$ vs $0.093$, $p = 10^{-81}$ | ✓ |
+| **H7** Caudal-peduncle depth replicates H1 | ratio $0.50$, $p = 10^{-81}$ | ✓ |
+
+What the blind test establishes:
+
+1. **The within-50-Myr skill is real.** For species the model had never seen, the predicted body depth lands within a median $0.038$ BDmax/SL (about 10% of a typical depth) of the museum calliper value, with calibrated intervals (93% coverage vs 95% nominal). This is the first out-of-sample confirmation of the time-calibrated engine.
+2. **But most of that skill is the nearest relative.** Gaussian-process conditioning on the whole tree improves on simply copying the nearest training species by only 4% on this ratio. The internal hold-out's larger margin was on 17-landmark RMS, which integrates over the whole configuration. H2 was the right hypothesis to register and it did not hold.
+3. **The ~50 Myr horizon is real but was mis-described.** Error jumps from $0.043$ (25–50 Myr) to $0.109$ (50–80 Myr) and coverage collapses from 93% to 65%, with a systematic *over*-prediction of body depth (median predicted $0.34$ vs observed $0.24$): distant teleosts are more elongate than a reef-fish training set anticipates. H4 failed only because it was phrased as "no better than the grand consensus", and a reef-fish consensus ($0.41$) is a worse teleost-wide prior than the GLS root state ($\approx 0.28$). The correct deep-horizon statement is "degrades to a clade-wide prior", not "to the consensus".
+4. **The a-priori Thompson modes are ~50% worse than the full shape space** on this ratio while still beating the consensus — the same ordering as the internal result (§1.11), now confirmed out of sample.
+
+Preregistration nanopub: `RAilN4nbRHp3e3ZHqlbIgeL3UGPRV_KtQHtJD3gzVVdqw`; outcome nanopub: `RAQkewOrIGQdmvfK89OnwOHLmJWQVBymeURWqfmAmbS70` (test registry; see [`nanopubs/thompson_predictions/`](../nanopubs/thompson_predictions/)).
+
+![Blind test against FishShapes v1](./outreach_fig10_blind_test_fishshapes.png)
 
 ---
 
