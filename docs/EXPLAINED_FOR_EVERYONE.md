@@ -72,3 +72,24 @@ To be sure our answer wasn't a fluke of just a few fish, we tested **three indep
 Here are the actual historical museum lithographs (Monaco 1896 & 1911 deep-sea expeditions, US National Museum 1896, Bloch 1796, British Museum 1887) and NOAA/IFREMER field specimen photographs for all nine of D'Arcy Thompson's 1917 fishes, showing the extracted **600-point whole-body outline (cyan)** alongside the **9 gold head dots** and **8 pink fin-base dots**:
 
 ![Archival Museum Plates & Field Specimen Photographs for All Nine 1917 Taxa](./thompson_1917_archival_field_plates.png)
+
+---
+
+## Step 7 — Why This Changes How We Understand Evolution (Four Big Takeaways & What Comes Next)
+
+Once you separate the **Outside Rubber Sheet (How the Fish Swims)** from the **Inside Head & Jaws (What the Fish Eats)**, four big mysteries in evolutionary biology suddenly make sense:
+
+![Step 7 — Four New Superpowers for Evolutionary Biology](./guide_step6_evolutionary_implications.png)
+
+1. **Solving the "Missing Early Explosion" Mystery (Highway Cruising vs. Parking-Lot Dodging):**
+   For decades, scientists wondered why computer models didn't show a big burst of new body plans millions of years ago when fish families first appeared—instead, evolution looked like it sped up **$5.4\times$** right at the very end (`0–10 Myr`, orange line in **Panel A** above)! **Why?** Because their computers mixed two different speeds: the **Body** is like a car cruising steadily down a 100-million-year highway to build new fish families (`2.2×` stronger across `50–110 Myr`), while the **Jaws** are like cars swerving in a crowded parking lot right now so neighbors on the same coral reef don't fight over the same food!
+2. **How to Build the Tree of Life Without Getting Tricked (`4.5×` Cleaner Family Clues):**
+   If you discover a mystery fish or a fossil and want to know which family it belongs to, which part of the body should you trust? **Trust the Body and Fin Positions, not the Jaws!** Because sister species on the same reef rewire their jaws so fast, jaws can fool you. Across 10,303 species, the positions of the pelvic and dorsal fins carry **$4.5\times$ cleaner family history** (`13.6×` vs. `3.0×` in **Panel B**) than the snout or eyes.
+3. **Drawing Extinct "Missing Link" Ancestors Without Crumpling the Tissue + Fixing Small Fossil Math:**
+   - **Un-Crumpled Ancestors:** If you try to draw the halfway "missing link" ancestor between two fishes using a standard 600-dot computer spline, the grid **folds and crumples over itself on `5 out of 6` pairs**! Turning D'Arcy Thompson's 8 growth knobs halfway back (`50%`) draws a smooth, realistic ancestor on **`6 out of 6` pairs (`100%`)** and cuts internal bone error by **$38\%$**.
+   - **Small Fossil Groups:** Standard computer math crashes unless you have $>30$ species in a group; Thompson's 8-knob sheet works cleanly with as few as **6 fossil species** ($1,000\times$ more stable math!).
+4. **What Comes Next — Bioelectric "Growth Compilers," Crabs, Birds & Regeneration:**
+   How does a living embryo actually "turn" one of D'Arcy Thompson's 8 growth knobs? Research in **bioelectricity** (Michael Levin's lab & **[bioelectricity.net](https://bioelectricity.net)**) shows that living cells use **resting voltage maps ($V_{\text{mem}}$)** like an electrical blueprint:
+   - A **global voltage gradient** across the body trunk acts as Thompson's rubber sheet, telling the whole body and fins how much to stretch or curve.
+   - A separate **local "electric face" circuit** in the head lets a species quickly rewire its jaws for new food—without having to rebuild its swimming body!
+   - Next, we can test this exact **"Global Sheet + Local Tool"** rule on **crab shells, bird beaks, mammal skulls, and bioelectric tissue regeneration**!

@@ -307,7 +307,81 @@ def main():
     fig5.savefig(DOCS_DIR / "guide_step5_10000_fishes_scoreboard.png", dpi=220)
     plt.close(fig5)
 
-    print("Regenerated all 5 figures with external legends and zero overlaps!")
+    # =========================================================================
+    # STEP 6: WHAT THIS MEANS FOR EVOLUTIONARY THEORY (13YO VISUAL DIAGRAM)
+    # =========================================================================
+    fig6 = plt.figure(figsize=(14.5, 5.8), dpi=220, facecolor="white")
+    gs6 = gridspec.GridSpec(1, 2, figure=fig6, width_ratios=[1.0, 1.0], wspace=0.18, top=0.80, bottom=0.25, left=0.06, right=0.96)
+
+    # 6A: "Parking-Lot Dodging" (Jaws) vs. "100-Million-Year Highway" (Body)
+    ax6a = fig6.add_subplot(gs6[0, 0])
+    time_bins = ["0–10 Myr\n(Same-Reef\nNeighbors)", "10–25 Myr\n(Young\nGenera)", "25–50 Myr\n(Within\nFamilies)", "50–80 Myr\n(New\nFamilies)", "80–110 Myr\n(Deep Body\nRadiations)"]
+    xt6 = np.arange(len(time_bins))
+    jaw_speed = [1.58, 0.71, 0.30, 0.34, 0.83]
+    body_speed = [1.22, 0.70, 0.42, 0.73, 1.22]
+
+    ax6a.axvspan(-0.4, 0.6, color="#fef3c7", alpha=0.55)
+    ax6a.axvspan(2.5, 4.4, color="#e0f2fe", alpha=0.55)
+    ax6a.plot(xt6, jaw_speed, "s--", color="#d97706", lw=2.8, markersize=9,
+              label="Jaw Speed (5.4× 'Parking-Lot Swerve' When Neighbors Share a Reef!)")
+    ax6a.plot(xt6, body_speed, "o-", color="#0284c7", lw=3.2, markersize=9.5,
+              label="Body & Fin Speed (Cruises Ahead 2.2× to Build New Fish Families!)")
+
+    for i in range(len(xt6)):
+        ax6a.text(xt6[i], body_speed[i] + 0.08, f"{body_speed[i]:.2f}", ha="center", va="bottom", fontsize=9.2, fontweight="bold", color="#0369a1")
+        off_y = 0.08 if i == 0 else -0.16
+        ax6a.text(xt6[i], jaw_speed[i] + off_y, f"{jaw_speed[i]:.2f}", ha="center", va="bottom", fontsize=9.2, fontweight="bold", color="#b45309")
+
+    ax6a.set_ylim(0.05, 1.92)
+    ax6a.set_xticks(xt6)
+    ax6a.set_xticklabels(time_bins, fontsize=8.8, fontweight="bold")
+    ax6a.set_ylabel("Speed of Shape Change (Rate per Myr)", fontsize=10.2, fontweight="bold")
+    ax6a.set_title("A. Solving the 'Missing Early Explosion' Mystery\nJaws Sprint Near the End (0–10 Myr); Bodies Build Deep Families (50–110 Myr)",
+                   fontsize=11.8, fontweight="bold", color="#0f172a", pad=12)
+    ax6a.legend(loc="upper center", bbox_to_anchor=(0.5, -0.18), fontsize=9.2, frameon=True, facecolor="#f8fafc")
+    ax6a.grid(True, ls="--", alpha=0.35)
+
+    # 6B: Four Big Upgrades for Future Science (Family Trees, Ancestors, Fossils, Bioelectricity)
+    ax6b = fig6.add_subplot(gs6[0, 1])
+    imp_labels = [
+        "1. Family Tree Clues\n(Fin/Body vs.\nJaw Signal)",
+        "2. Drawing Extinct\n'Missing Link' Ancestors\n(Valid Un-Folded Grids)",
+        "3. Small Fossil Groups\n(Works With Just 6\nSpecies vs. Needing 35+)",
+        "4. Bioelectric Blueprint\n(Global Body Voltage\nHighway Match)",
+    ]
+    x6b = np.arange(len(imp_labels))
+    w6 = 0.34
+    old_way = [22.0, 16.7, 0.0, 4.6]
+    new_way = [100.0, 100.0, 100.0, 98.9]
+
+    b_old = ax6b.bar(x6b - w6 / 2, old_way, width=w6, color="#cbd5e1", edgecolor="#334155", lw=1.0,
+                     label="Old Method (Jaws / 600-Dot Spline / Unseparated Dots)")
+    b_new = ax6b.bar(x6b + w6 / 2, new_way, width=w6, color=["#0284c7", "#16a34a", "#8b5cf6", "#f59e0b"],
+                     edgecolor="#0f172a", lw=1.1, label="New Method (Thompson's 8-Knob Rubber Sheet + Jaw Split)")
+
+    old_tags = ["3.0×\n(Noisy Jaws)", "1 of 6\n(Folds 5/6!)", "0%\n(Math Crashes!)", "4.6%\n(No Match)"]
+    new_tags = ["13.6×\n(4.5× Cleaner!)", "6 of 6\n(100% Smooth!)", "100%\n(Works on 6 Spp!)", "98.9%\n(Matches Grid!)"]
+
+    for bar, t_str in zip(b_old, old_tags):
+        h = bar.get_height()
+        ax6b.text(bar.get_x() + bar.get_width() / 2, h + 2.2, t_str, ha="center", va="bottom", fontsize=8.4, fontweight="bold", color="#475569")
+    for bar, t_str in zip(b_new, new_tags):
+        h = bar.get_height()
+        ax6b.text(bar.get_x() + bar.get_width() / 2, h + 2.2, t_str, ha="center", va="bottom", fontsize=8.8, fontweight="bold", color="#0f172a")
+
+    ax6b.set_ylim(0, 122)
+    ax6b.set_xticks(x6b)
+    ax6b.set_xticklabels(imp_labels, fontsize=8.6, fontweight="bold")
+    ax6b.set_ylabel("Success / Signal Score (%)", fontsize=10.2, fontweight="bold")
+    ax6b.set_title("B. Four New Superpowers for Evolutionary Biology\nBetter Family Trees, Un-Crumpled Ancestors, Fossil Math & Bioelectricity",
+                   fontsize=11.8, fontweight="bold", color="#0f172a", pad=12)
+    ax6b.legend(loc="upper center", bbox_to_anchor=(0.5, -0.18), fontsize=9.2, frameon=True, facecolor="#f8fafc")
+    ax6b.grid(axis="y", ls="--", alpha=0.35)
+
+    fig6.savefig(DOCS_DIR / "guide_step6_evolutionary_implications.png", dpi=220)
+    plt.close(fig6)
+
+    print("Regenerated all 6 figures with external legends and zero overlaps!")
 
 
 if __name__ == "__main__":
