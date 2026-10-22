@@ -637,11 +637,14 @@ Zhang, Goldstein & Levin's (2025) model of autonomous cell-view sorting morphoge
 
 ```bash
 python3 sorting-morphogenesis/verify_multilang_ports.py                           # C++20 + Node.js + Python + Lean 4 bit-exact verifier & traceability figure
+python3 sorting-morphogenesis/audit_platonic_space_claims.py                      # 3-ablation audit of Levin's 'Latent Platonic Space' (2025/2026) claims
 python3 sorting-morphogenesis/validate_kymograph_and_paper.py --n 100 --reps 15   # standalone 6-panel kymograph & 14-benchmark paper validation + GIF
 clang++ -std=c++20 -O3 sorting-morphogenesis/cpp/zhang_sorting_morphogenesis.cpp -o sorting-morphogenesis/cpp/zhang_sorting_cpp && ./sorting-morphogenesis/cpp/zhang_sorting_cpp
 node sorting-morphogenesis/js/zhang_sorting_morphogenesis.mjs
 lean morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean                  # 5 machine-checked Lean 4 theorems (0 sorry)
 ```
+
+![Evaluating Michael Levin's Latent Platonic Space Claims on Sorting Morphogenesis](docs/media/zhang_levin_platonic_claims_audit.png)
 
 ![Zhang, Goldstein & Levin (2025) — Multi-Language Port Verification (Python 3, C++20, Node.js, Lean 4) & Upstream Traceability](docs/media/zhang_multilang_port_verification.png)
 

@@ -76,3 +76,12 @@ Because [`zhang_sorting_morphogenesis.cpp`](./cpp/zhang_sorting_morphogenesis.cp
 | **§4.4 Fig. 9** | Cross-Purpose `B(inc)+I(dec)` Sortedness | `73.73%` | `75.47%` | `75.47%` | `75.32%` |
 | **§4.4 Fig. 9** | Cross-Purpose `B(dec)+S(inc)` Sortedness | `42.50%` | `47.33%` | `47.33%` | `47.47%` |
 | **Kymograph ($n=42, f=2$)** | Selection vs. Bubble Non-Frozen Inversions | `0` vs. `>200` | **`0` vs. `241`** (`0` diff) | **`0` vs. `241`** (`0` diff) | **`0` vs. `241`** (`0` diff) |
+
+---
+
+## 4. Evaluation of Subsequent "Latent Platonic Space" Claims (`Ingressing Minds`, 2025/2026)
+
+See **[`PLATONIC_SPACE_CLAIMS_EVALUATION.md`](./PLATONIC_SPACE_CLAIMS_EVALUATION.md)** and [`audit_platonic_space_claims.py`](./audit_platonic_space_claims.py) for our 3-ablation mechanistic audit of the philosophical & empirical conclusions drawn when citing this paper in *Ingressing Minds* (PsyArXiv `doi:10.31234/osf.io/5g2xj_v3` / *Philosophies* 2026, `11(5):161`, Section 6.3 & Figure 14):
+
+![Evaluating Michael Levin's Latent Platonic Space Claims on Sorting Morphogenesis](../docs/media/zhang_levin_platonic_claims_audit.png)
+
