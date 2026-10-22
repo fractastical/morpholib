@@ -87,8 +87,16 @@ def nanopub_conf(prof: dict, use_test_server: bool):
     from nanopub import NanopubConf, Profile
     profile = Profile(orcid_id=prof["orcid_id"], name=prof["name"], private_key=Path(prof["private_key"]), public_key=Path(prof["public_key"]),
                       introduction_nanopub_uri=prof.get("introduction_nanopub_uri"))
-    return NanopubConf(profile=profile, use_test_server=use_test_server, add_prov_generated_time=False,
+    conf = NanopubConf(profile=profile, use_test_server=use_test_server, add_prov_generated_time=False,
                        add_pubinfo_generated_time=False, attribute_publication_to_profile=False)
+    if not use_test_server:
+        # nanopub-py's default production server (registry.petapico.org) refuses connections;
+        # use the KnowledgePixels production registry, as nanopubs/publish_all_nanopubs.py does.
+        conf.use_server = PROD_REGISTRY
+    return conf
+
+
+PROD_REGISTRY = "https://registry.knowledgepixels.com/np/"
 
 
 def slug(s: str) -> str:
@@ -289,11 +297,12 @@ def main() -> int:
     ap.add_argument("--sign", action="store_true", help="also write signed.<name>.trig using the ~/.nanopub profile")
     ap.add_argument("--publish", choices=["test", "prod"], help="sign and publish each nanopub to the test or production registry; appends to a manifest")
     ap.add_argument("--only", nargs="*", help="restrict signing/publishing to nanopub ids containing any of these substrings")
+    ap.add_argument("--commit", help="git commit to cite as the generating commit (default: HEAD); pass the original commit to reproduce identical trusty URIs")
     ap.add_argument("--out", type=Path, default=OUT_DIR)
     args = ap.parse_args()
 
     d = json.loads(IN_JSON.read_text())
-    commit = git_commit()
+    commit = args.commit or git_commit()
     today = dt.date.today().isoformat()
     prof = read_profile()
     orcid, name = prof.get("orcid_id"), prof.get("name")
