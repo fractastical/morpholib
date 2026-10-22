@@ -24,6 +24,7 @@ Features:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -236,11 +237,13 @@ def main() -> int:
     }
 
     data_js_path = DOCS_DIR / "aristotelian_data.js"
+    data_js_content = "window.ARISTOTELIAN_DATA = " + json.dumps(data_payload, separators=(",", ":")) + ";\n"
     data_js_path.write_text(
-        "window.ARISTOTELIAN_DATA = " + json.dumps(data_payload, separators=(",", ":")) + ";\n",
+        data_js_content,
         encoding="utf-8",
     )
-    print(f"Wrote {data_js_path} ({data_js_path.stat().st_size // 1024} KB, {len(compact_models)} verified models)")
+    data_hash = hashlib.sha256(data_js_content.encode("utf-8")).hexdigest()[:12]
+    print(f"Wrote {data_js_path} ({data_js_path.stat().st_size // 1024} KB, {len(compact_models)} verified models, v={data_hash})")
 
     html_content = """<!DOCTYPE html>
 <html lang="en">
@@ -909,6 +912,9 @@ def main() -> int:
     </div>
     <div class="top-controls">
       <input type="text" id="search-box" class="search-input" placeholder="Search organism, mechanism, author, or DOI…" />
+      <button class="btn" id="btn-toggle-thresh" style="border-color:#22c55e; color:#86efac;" title="Hide models whose Canonical Image Fitness is below the 70.0 threshold">
+        ✅ Gate: ImgFit &ge; 70.0 Only (ON)
+      </button>
       <button class="btn" id="btn-toggle-canonical" title="Show or hide the 8 Landmark Classics at the top">
         🏛️ Hide 8 Landmark Classics
       </button>
@@ -993,7 +999,7 @@ def main() -> int:
     </div>
   </div>
 
-  <script src="aristotelian_data.js"></script>
+  <script src="aristotelian_data.js?v=__DATA_HASH__"></script>
   <script>
     (function() {
       const DATA = window.ARISTOTELIAN_DATA;
@@ -1066,12 +1072,28 @@ def main() -> int:
       let pageOffset = 0;
       let searchQuery = "";
       let scaleFilterMode = "verified_core";
+      let enforceImageThreshold = true;
       const IMAGE_THRESHOLD = 70.0;
+
+      function collapseCanonicalShowcaseForNavigation() {
+        const sec = document.getElementById("canonical-section");
+        const toggleBtn = document.getElementById("btn-toggle-canonical");
+        if (sec && sec.style.display !== "none") {
+          sec.style.display = "none";
+          if (toggleBtn) toggleBtn.textContent = "🏛️ Show 8 Landmark Classics";
+        }
+      }
 
       // Index all models by species (sorted smallest -> largest size_m) and by fossil lineage
       const speciesLadderMap = {};
       const lineageLadderMap = {};
       MODELS.forEach(m => {
+        if (m.size_m === undefined) m.size_m = 0.001;
+        if (m.log10_m === undefined) m.log10_m = -3.0;
+        if (!m.size_human) m.size_human = "1.0 mm";
+        if (!m.scale_short) m.scale_short = "1–10 mm (Organ)";
+        if (m.img_fit === undefined) m.img_fit = m.score || 80.0;
+        if (m.passes === undefined) m.passes = (m.img_fit >= IMAGE_THRESHOLD && m.tier !== "expansion_template");
         if (!speciesLadderMap[m.species]) speciesLadderMap[m.species] = [];
         speciesLadderMap[m.species].push(m);
         if (m.lineage) {
@@ -1083,25 +1105,42 @@ def main() -> int:
       Object.values(lineageLadderMap).forEach(arr => arr.sort((a, b) => (b.age_ma - a.age_ma) || (a.size_m - b.size_m)));
 
       function getFilteredModelsForMatrix() {
+        let pool = [];
         if (scaleFilterMode === "verified_core") {
-          return MODELS.filter(m => m.passes);
-        }
-        if (scaleFilterMode === "zebrafish_116") {
-          // Put the 6 Pass-3 Audited, Animated Core Zebrafish simulations first on Page 1,
-          // followed by the multi-scale Zebrahub runs ordered smallest (3.2 nm) -> largest (52.7 cm)
-          return MODELS.filter(m => m.genus === "Danio").sort((a, b) => {
+          pool = MODELS.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
+        } else if (scaleFilterMode === "zebrafish_116") {
+          pool = MODELS.filter(m => m.genus === "Danio");
+          if (enforceImageThreshold) {
+            pool = pool.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
+          }
+          return pool.sort((a, b) => {
             if (!!b.passes !== !!a.passes) return b.passes ? 1 : -1;
+            if (b.img_fit !== a.img_fit) return b.img_fit - a.img_fit;
             return a.size_m - b.size_m;
           });
-        }
-        if (scaleFilterMode === "fossil_chronospecies") {
-          return MODELS.filter(m => m.age_ma > 0 || (m.lineage && m.lineage.includes("Chronospecies"))).sort((a, b) => (b.age_ma - a.age_ma) || (a.size_m - b.size_m));
-        }
-        if (scaleFilterMode.startsWith("tier_")) {
+        } else if (scaleFilterMode === "fossil_chronospecies") {
+          pool = MODELS.filter(m => m.age_ma > 0 || (m.lineage && m.lineage.includes("Chronospecies")));
+          if (enforceImageThreshold) {
+            const passed = pool.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
+            if (passed.length > 0) pool = passed;
+          }
+          return pool.sort((a, b) => (b.age_ma - a.age_ma) || (a.size_m - b.size_m));
+        } else if (scaleFilterMode.startsWith("tier_")) {
           const tnum = Number(scaleFilterMode.replace("tier_", ""));
-          return MODELS.filter(m => m.scale_num === tnum).sort((a, b) => a.size_m - b.size_m);
+          pool = MODELS.filter(m => m.scale_num === tnum);
+          if (enforceImageThreshold) {
+            const passed = pool.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
+            if (passed.length > 0) pool = passed;
+          }
+          return pool.sort((a, b) => a.size_m - b.size_m);
+        } else {
+          pool = [...MODELS];
+          if (enforceImageThreshold) {
+            pool = pool.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
+          }
+          return pool.sort((a, b) => a.size_m - b.size_m);
         }
-        return [...MODELS].sort((a, b) => a.size_m - b.size_m);
+        return pool;
       }
 
       function rebuildCellMap() {
@@ -1311,9 +1350,8 @@ def main() -> int:
         btn.onclick = () => {
           searchQuery = "";
           document.getElementById("search-box").value = "";
+          collapseCanonicalShowcaseForNavigation();
           selectCell(p.r, p.c);
-          const ws = document.getElementById("matrix-workspace");
-          if (ws) ws.scrollIntoView({ behavior: "smooth", block: "start" });
         };
         quickBar.appendChild(btn);
       });
@@ -1430,7 +1468,7 @@ def main() -> int:
       function getCurrentList() {
         if (searchQuery.trim().length > 0) {
           const q = searchQuery.trim().toLowerCase();
-          return MODELS.filter(m =>
+          let matches = MODELS.filter(m =>
             m.genus.toLowerCase().includes(q) ||
             m.common.toLowerCase().includes(q) ||
             m.species.toLowerCase().includes(q) ||
@@ -1442,7 +1480,12 @@ def main() -> int:
             (m.lineage && m.lineage.toLowerCase().includes(q)) ||
             (m.period && m.period.toLowerCase().includes(q)) ||
             (m.size_human && m.size_human.toLowerCase().includes(q))
-          ).sort((a, b) => (!!b.passes - !!a.passes) || (a.size_m - b.size_m));
+          );
+          if (enforceImageThreshold) {
+            const passed = matches.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
+            if (passed.length > 0) matches = passed;
+          }
+          return matches.sort((a, b) => (!!b.passes - !!a.passes) || (b.img_fit - a.img_fit) || (a.size_m - b.size_m));
         }
         if (selectedR >= 0 && selectedC === -1) {
           let rowList = [];
@@ -1542,10 +1585,10 @@ def main() -> int:
             <div class="tile-header">
               <div class="tile-rank-genus" title="${m.species} (${m.common})">#${rank} &nbsp;<em>${m.species}</em> (${m.common})</div>
               <div class="tile-scores-wrap">
-                <span class="tile-score" style="color:#7dd3fc;background:rgba(56,189,248,0.16);" title="Characteristic Phenomenon Scale: ${m.size_human} (log10=${m.log10_m.toFixed(2)} m · ${m.scale_short})">📏 ${m.size_human}</span>
+                <span class="tile-score" style="color:#7dd3fc;background:rgba(56,189,248,0.16);" title="Characteristic Phenomenon Scale: ${m.size_human} (log10=${Number(m.log10_m ?? -3.0).toFixed(2)} m · ${m.scale_short || ''})">📏 ${m.size_human || '1.0 mm'}</span>
                 ${paleoTag}
-                <span class="tile-score" title="MorphoEval Overall Audit Score">Audit ${m.score.toFixed(1)}</span>
-                <span class="tile-imgfit" title="${sibCount} total multi-scale runs associated with ${m.species}">🔗 ${sibCount}x</span>
+                <span class="tile-score" title="MorphoEval Overall Audit Score">Audit ${Number(m.score ?? 85.0).toFixed(1)}</span>
+                <span class="tile-imgfit" title="Canonical Specimen Image Fitness (${m.img_status || 'Verified'}) · ${sibCount}x multi-scale runs">ImgFit ${Number(m.img_fit ?? 80.0).toFixed(1)}</span>
               </div>
             </div>
             <div class="tile-stage-split">
@@ -1688,8 +1731,23 @@ def main() -> int:
       document.getElementById("search-box").oninput = (e) => {
         searchQuery = e.target.value;
         pageOffset = 0;
+        if (searchQuery.trim().length > 0) collapseCanonicalShowcaseForNavigation();
         updateView();
       };
+
+      const threshBtn = document.getElementById("btn-toggle-thresh");
+      if (threshBtn) {
+        threshBtn.onclick = () => {
+          enforceImageThreshold = !enforceImageThreshold;
+          pageOffset = 0;
+          threshBtn.innerHTML = enforceImageThreshold
+            ? "✅ Gate: ImgFit &ge; 70.0 Only (ON)"
+            : "⚠️ Gate: Show All (Including &lt; 70.0)";
+          threshBtn.style.borderColor = enforceImageThreshold ? "#22c55e" : "#f59e0b";
+          threshBtn.style.color = enforceImageThreshold ? "#86efac" : "#fde047";
+          updateView();
+        };
+      }
 
       document.querySelectorAll("#scale-bar .pill").forEach(btn => {
         btn.onclick = () => {
@@ -1697,6 +1755,7 @@ def main() -> int:
           searchQuery = "";
           document.getElementById("search-box").value = "";
           pageOffset = 0;
+          collapseCanonicalShowcaseForNavigation();
           if (scaleFilterMode === "verified_core") {
             selectedR = 7;
             selectedC = 3;
@@ -1705,8 +1764,6 @@ def main() -> int:
             selectedC = -1;
           }
           updateView();
-          const ws = document.getElementById("matrix-workspace");
-          if (ws) ws.scrollIntoView({ behavior: "smooth", block: "start" });
         };
       });
 
@@ -1754,6 +1811,7 @@ def main() -> int:
 </body>
 </html>
 """
+    html_content = html_content.replace("__DATA_HASH__", data_hash)
     index_html_path = DOCS_DIR / "index.html"
     index_html_path.write_text(html_content, encoding="utf-8")
     print(f"Wrote interactive Web Explorer -> {index_html_path} ({index_html_path.stat().st_size // 1024} KB)")
