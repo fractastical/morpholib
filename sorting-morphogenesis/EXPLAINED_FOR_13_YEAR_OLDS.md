@@ -91,6 +91,8 @@ Our experiments proved **the critics were wrong twice**:
 
 ![Illustrated Guide 3: Why 'Secret Cliques' Form — And How C = 2 Copies Proves the Blog Critics Wrong!](../docs/media/zhang_13yo_fig3_sports_cars_vs_pedestrians.png)
 
+![Illustrated Guide 4: Seeing the Proof in the Real Computer Experiments!](../docs/media/zhang_13yo_fig4_real_data_curves.png)
+
 ---
 
 ## The Take-Home Lesson (Why Both Biology and Math Win)

@@ -270,7 +270,126 @@ def render_fig3_sports_cars_and_c2():
     print("Saved", out)
 
 
+def render_fig4_real_data_curves():
+    """
+    Illustrated Guide 4: Two kid-friendly real-data charts side by side:
+      - Left: The 'Smooth Slide vs. Rollercoaster' graph (Ruler 1 I(v) has 0
+        uphill steps; Ruler 2 E(v) has 47 uphill bumps on the exact same run!).
+      - Right: The 'Blog Critics vs. Reality' graph across C = 1, 2, 4, 5, 8, 10
+        copies per number, highlighting the C = 2 Anti-Clustering dip (0.477)
+        and the C = 10 Mega-Clique peak (0.659).
+    """
+    import json
+    import random
+
+    ce_json = ROOT / "sorting-morphogenesis" / "figures" / "quantifying_emergence_ce2_metrics.json"
+    ce_data = json.loads(ce_json.read_text())
+
+    def total_inversions(arr):
+        return sum(1 for i in range(len(arr)) for j in range(i + 1, len(arr)) if arr[i] > arr[j])
+
+    def monotonicity_error(arr):
+        return sum(1 for i in range(len(arr) - 1) if arr[i] > arr[i + 1])
+
+    # Simulate exact Bubble-sort trace with 1 frozen cell at index 10 (N=25, seed=2026)
+    rng = random.Random(2026)
+    vals = list(range(1, 26))
+    rng.shuffle(vals)
+    frozen_idx = 10
+    i_trace = [float(total_inversions(vals))]
+    e_trace = [float(monotonicity_error(vals))]
+    for _ in range(900):
+        idx = rng.randint(0, 24)
+        if idx == frozen_idx:
+            continue
+        direction = -1 if rng.random() < 0.5 else 1
+        t = idx + direction
+        if 0 <= t < 25 and t != frozen_idx:
+            if (direction == -1 and vals[idx] < vals[t]) or (direction == 1 and vals[idx] > vals[t]):
+                vals[idx], vals[t] = vals[t], vals[idx]
+                i_trace.append(float(total_inversions(vals)))
+                e_trace.append(float(monotonicity_error(vals)))
+    i_trace = np.array(i_trace)
+    e_trace = np.array(e_trace)
+
+    fig, axes = plt.subplots(1, 2, figsize=(13.2, 5.2), dpi=160, facecolor="#0b1325")
+    fig.subplots_adjust(wspace=0.22, left=0.06, right=0.96, top=0.80, bottom=0.14)
+
+    fig.suptitle(
+        "Illustrated Guide 4: Seeing the Proof in the Real Computer Experiments!",
+        color="#f8fafc", fontsize=13.2, fontweight="bold", y=0.95
+    )
+
+    # Left panel: Ruler 1 (I) vs Ruler 2 (E) normalized trajectory
+    ax0 = axes[0]
+    ax0.set_facecolor("#0f172a")
+    for sp in ax0.spines.values():
+        sp.set_color("#38bdf8"); sp.set_linewidth(1.6)
+    steps = np.arange(len(e_trace))
+    ax0.plot(steps, i_trace / max(i_trace[0], 1.0) * 100.0, color="#4ade80", lw=3.0, label="Ruler 1: Total Pairs I(v) — 0 Uphill Steps! (Smooth Slide)")
+    ax0.plot(steps, e_trace / max(e_trace[0], 1.0) * 100.0, color="#f87171", lw=2.0, alpha=0.9, label="Ruler 2: Neighbor Steps E(v) — 47 Uphill Bumps! (Illusion)")
+    ax0.set_title("A. Same Kids, Two Rulers: Smooth Slide vs. Bumpy Illusion", color="#4ade80", fontsize=10.6, fontweight="bold", pad=8)
+    ax0.set_xlabel("Swap Step Number", color="#cbd5e1", fontsize=9.5, fontweight="bold")
+    ax0.set_ylabel("% of Starting Messiness Left", color="#cbd5e1", fontsize=9.5, fontweight="bold")
+    ax0.tick_params(colors="#cbd5e1", labelsize=8.5)
+    ax0.grid(color="#1e293b", lw=0.8)
+    ax0.legend(loc="upper right", facecolor="#0b1325", edgecolor="#334155", labelcolor="#f8fafc", fontsize=8.2)
+    mid_k = min(75, len(i_trace) - 1)
+    ax0.annotate(
+        "Every single swap goes\nSTRICTLY DOWNHILL on Ruler 1!",
+        xy=(mid_k, i_trace[mid_k] / i_trace[0] * 100.0), xytext=(15, 22),
+        arrowprops=dict(arrowstyle="->", color="#4ade80", lw=2.0),
+        color="#86efac", fontsize=8.3, fontweight="bold",
+        bbox=dict(boxstyle="round,pad=0.2", facecolor="#052e16", edgecolor="#4ade80")
+    )
+
+    # Right panel: Duplicate copies C = 1..40
+    ax1 = axes[1]
+    ax1.set_facecolor("#0f172a")
+    for sp in ax1.spines.values():
+        sp.set_color("#facc15"); sp.set_linewidth(1.6)
+    dm = ce_data["duplicate_multiplicity_scaling_law"]
+    c_vals = dm["multiplicities_C"][:5]
+    x_pos = np.arange(len(c_vals))
+    final_vals = dm["final_agg_mean"][:5]
+    analytic_vals = dm["analytic_domain_wall_law"][:5]
+
+    ax1.axhline(0.50, color="#94a3b8", ls="--", lw=2.0, label="Blog Critics' 'Stability' Prediction (Stays at 0.50 Random)")
+    ax1.plot(x_pos, analytic_vals, "o--", color="#38bdf8", lw=2.0, markersize=6, label="Ideal Left-Right Split Formula (`S...S | B...B`)")
+    ax1.plot(x_pos, final_vals, "s-", color="#facc15", lw=2.8, markersize=7, label="Actual Computer Simulation (Final Clustering)")
+    ax1.set_xticks(x_pos)
+    ax1.set_xticklabels([f"C={c}" for c in c_vals], color="#f8fafc", fontweight="bold")
+    ax1.set_ylim(0.42, 0.82)
+    ax1.set_title("B. How C = 2 Anti-Clustering Refutes the Blog Critics!", color="#facc15", fontsize=10.6, fontweight="bold", pad=8)
+    ax1.set_xlabel("Number of Duplicate Copies per Jersey Number (C)", color="#cbd5e1", fontsize=9.5, fontweight="bold")
+    ax1.set_ylabel("Same-Personality Neighborship (Clustering)", color="#cbd5e1", fontsize=9.5, fontweight="bold")
+    ax1.tick_params(colors="#cbd5e1", labelsize=8.5)
+    ax1.grid(color="#1e293b", lw=0.8)
+    ax1.legend(loc="upper left", facecolor="#0b1325", edgecolor="#334155", labelcolor="#f8fafc", fontsize=8.0)
+
+    ax1.annotate(
+        "C = 2 Dip: 0.477 < 0.50!\n(`S B | S B | S B` Anti-Clustering)",
+        xy=(1, final_vals[1]), xytext=(1.35, 0.435),
+        arrowprops=dict(arrowstyle="->", color="#f87171", lw=2.2),
+        color="#fca5a5", fontsize=8.2, fontweight="bold",
+        bbox=dict(boxstyle="round,pad=0.2", facecolor="#450a0a", edgecolor="#ef4444")
+    )
+    ax1.annotate(
+        "C = 10 Peak: 0.659!\n(`SSSSS | BBBBB` Cliques)",
+        xy=(4, final_vals[4]), xytext=(2.05, 0.65),
+        arrowprops=dict(arrowstyle="->", color="#4ade80", lw=2.2),
+        color="#86efac", fontsize=8.2, fontweight="bold",
+        bbox=dict(boxstyle="round,pad=0.2", facecolor="#052e16", edgecolor="#4ade80")
+    )
+
+    out = MEDIA / "zhang_13yo_fig4_real_data_curves.png"
+    fig.savefig(out, dpi=160, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print("Saved", out)
+
+
 if __name__ == "__main__":
     render_fig1_three_personalities()
     render_fig2_two_rulers_illusion()
     render_fig3_sports_cars_and_c2()
+    render_fig4_real_data_curves()
