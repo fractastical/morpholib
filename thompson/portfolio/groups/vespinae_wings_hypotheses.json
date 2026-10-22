@@ -1,0 +1,43 @@
+{
+  "group": "insects: Vespinae hornet and yellowjacket forewings",
+  "registered_on": "2026-10-22",
+  "data": {
+    "landmarks": "Abels J & Wedmann S (2021) PANGAEA 10.1594/PANGAEA.937651 (coordinates) and 937635 (specimen list); 1,030 wings, 17 vein-intersection landmarks, data of Perrard A et al. (2014) PLoS ONE 9:e87939",
+    "phylogeny": "Open Tree of Life synthetic tree, induced subtree for the 30 matched species (api.opentreeoflife.org v3, fetched 2026-10-22); topology only. Branch lengths: Grafen (1989) node heights (rho = 1), so 'time' is relative to crown depth = 1 and is NOT in Myr. A dated Vespinae tree (e.g. Lopez-Osorio et al. 2015) can replace it without changing anything else.",
+    "status": "landmark data in hand (used once for an allometry test, never for shape prediction); phylogeny fetched before any shape analysis; hypotheses committed before the script was run"
+  },
+  "what_thompson_specifically_adds": "Thompson (1917) claimed that the difference between related forms is a single smooth deformation of the coordinate grid, describable by a few global parameters. The engine encodes this as 7 generic deformation modes of the plane (aspect, shear, two fans, radial bow, two conformal quadratics) evaluated at the Procrustes consensus; they contain no anatomy and apply unchanged to any 2-D landmark set. The Thompson-specific question for a new group is therefore not 'can the tree predict shape' (that is the phylogenetic engine) but 'is this group's shape evolution Thompsonian', i.e. how much of the between-species variance and of the phylogenetic predictability lives in those 7 global modes. In fishes the answer was: 58% of variance, 55% of the prediction gain, and the full shape space beat Thompson-7 by ~50%.",
+  "fish_reference": {
+    "shape_variance_captured_thompson7": 0.579,
+    "shape_variance_captured_pca7": 0.862,
+    "share_of_prediction_gain_captured_by_thompson7": 0.555,
+    "pagel_lambda_thompson7": 0.959,
+    "pagel_lambda_full": 0.924,
+    "loo_ratio_full_vs_consensus_nearest_bin": 0.355,
+    "loo_ratio_full_vs_nearest_tip_nearest_bin": 0.841
+  },
+  "hypotheses": [
+    {"id": "W1", "primary": true, "statement": "The 7 generic Thompson modes capture a LARGER share of between-species wing-shape variance in Vespinae than in fish bodies: > 0.58 (species means after GPA).", "p": 0.70,
+     "reasoning": "Insect wing venation is among the most integrated morphological systems known (Klingenberg 2009; Houle et al. 2017): shape differences between species are dominated by whole-wing elongation, shear and bending, which is exactly what the global modes describe. Fish bodies have independently varying fin positions and jaws."},
+    {"id": "W2", "primary": true, "statement": "Thompson-7 captures a LARGER share of the full-space leave-one-species-out prediction gain (relative to the consensus) than in fish: > 0.555.", "p": 0.60,
+     "reasoning": "Follows from W1 if the integrated component is also the heritable, phylogenetically structured one; but with 30 species the estimate is noisy."},
+    {"id": "W3", "primary": true, "statement": "Full-space phylogenetic prediction beats the consensus in leave-one-species-out (median Procrustes RMS ratio < 0.8, paired Wilcoxon p < 0.05 given n = 30).", "p": 0.80,
+     "reasoning": "Species within Vespa vs Vespula vs Provespa differ consistently; any phylogenetic method should beat the grand mean."},
+    {"id": "W4", "primary": false, "statement": "Full-space prediction improves on copying the nearest relative's mean wing by less than 10% (ratio > 0.9), as in fish.", "p": 0.60,
+     "reasoning": "In fish the extra information in the tree beyond the nearest neighbour was small; a 30-species polytomous tree offers even less."},
+    {"id": "W5", "primary": false, "statement": "Pagel's lambda fitted on the Thompson-7 scores exceeds 0.7 (strong phylogenetic signal in the global deformation modes).", "p": 0.65,
+     "reasoning": "Wing shape carries strong phylogenetic signal in Hymenoptera (Perrard et al. 2014 recovered genera and species groups from wings alone)."},
+    {"id": "W6", "primary": false, "statement": "A data-driven 7-D PCA basis still beats the a-priori Thompson-7 basis in representation (variance captured) AND in prediction, as in fish.", "p": 0.75,
+     "reasoning": "A fitted basis can only lose to an a-priori one by chance; the question is by how much, which W1 addresses."},
+    {"id": "W7", "primary": false, "statement": "Representation of species differences by Thompson-7 is not uniform across the wing: the residual after the 7 global modes concentrates in the distal/apical landmarks (marginal cell and apex), i.e. the Thompsonian description fails locally where the venation is most variable.", "p": 0.55,
+     "reasoning": "Perrard et al. (2014) found the apical region most informative for species identification; local variation there is not a global grid deformation."}
+  ],
+  "protocol": {
+    "species_set": "all named extant species with >= 1 wing in the PANGAEA table, excluding the fossil Palaeovespa and the uncertain 'Vespula?' record; species mean after GPA; species not placed on the Open Tree (Vespula nursei) are dropped before any analysis",
+    "shape_space": "17 landmarks, GPA, consensus M0; Thompson-7 basis = thompson_mode_basis(M0) from thompson/run_phylogenetic_prediction_engine.py; full space = all 30 non-rigid Procrustes dimensions (34 - 4); PCA-7 = first 7 PCs of species-mean Procrustes residuals",
+    "process_models": "fit_models (WN, BM, lambda, OU, EB; AICc) in each space; best model by AICc used for prediction",
+    "validation": "leave-one-species-out conditional Gaussian prediction (predict()) with tau = Grafen height to the nearest remaining species; compared with consensus and nearest-tip copying; error = Procrustes RMS after OPA to the held-out mean",
+    "tests": "W1, W6 variance: direct comparison; W2: share = 1 - (RMS_T7^2 - RMS_full^2)/(RMS_cons^2 - RMS_full^2) style as in the engine (identical formula); W3, W4: paired one-sided Wilcoxon on per-species RMS, alpha 0.05 because n = 30; W5: fitted lambda; W7: per-landmark residual variance of the T7 reconstruction, apical landmarks vs the rest",
+    "no_tuning": "the mode basis, the tests and the thresholds are fixed here; nothing is changed after the script runs"
+  }
+}
