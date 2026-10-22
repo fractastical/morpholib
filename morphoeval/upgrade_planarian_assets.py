@@ -110,28 +110,30 @@ def build_six_canonical_morphologies(lobo):
         ],
     )
 
-    # #104 Two Anterior Heads (Y-shaped symmetric anterior duplication)
-    m104 = lobo.Morphology(
-        id=104, name="Two anterior heads (Y-split)",
+    # #24 Double Head, One Pharynx (Bipolar 2H0T — PZQ / Octanol / Beta-catenin RNAi)
+    m24 = lobo.Morphology(
+        id=24, name="Double head, 1 pharynx (2H0T)",
         regions={
-            1: lobo.Region(1, "Head", [52.0, 75.0, 52.0]),
-            2: lobo.Region(2, "Trunk", [65.0, 55.0, 65.0]),
-            3: lobo.Region(3, "Tail", [50.0, 80.0, 50.0]),
-            4: lobo.Region(4, "Head", [52.0, 75.0, 52.0]),
+            1: lobo.Region(1, "Head", [60.0, 80.0, 60.0]),
+            2: lobo.Region(2, "Trunk", [60.0, 60.0]),
+            3: lobo.Region(3, "Head", [60.0, 80.0, 60.0]),
         },
         links=[
-            lobo.Link(2, 1, 185.0, 0.5, 2.05),
-            lobo.Link(2, 4, 185.0, 0.5, 1.09),
+            lobo.Link(1, 2, 200.0, 0.5, 3 * math.pi / 2),
             lobo.Link(2, 3, 200.0, 0.5, 3 * math.pi / 2),
         ],
         organs=[
-            lobo.Organ(1, -18.0, 20.0, "Eye", rot=2.05),
-            lobo.Organ(1, 18.0, 20.0, "Eye", rot=2.05),
-            lobo.Organ(4, -18.0, 20.0, "Eye", rot=1.09),
-            lobo.Organ(4, 18.0, 20.0, "Eye", rot=1.09),
-            lobo.Organ(2, 0.0, -10.0, "Phar.", rot=math.pi / 2),
-            lobo.Organ(2, -26.0, 0.0, "VNC", ends=(-45.0, 130.0, 0.0, -165.0)),
-            lobo.Organ(2, 26.0, 0.0, "VNC", ends=(45.0, 130.0, 0.0, -165.0)),
+            lobo.Organ(1, -22.0, 25.0, "Eye", rot=math.pi / 2),
+            lobo.Organ(1, 22.0, 25.0, "Eye", rot=math.pi / 2),
+            lobo.Organ(1, -24.0, 0.0, "Brain", rot=math.pi / 2),
+            lobo.Organ(1, 24.0, 0.0, "Brain", rot=math.pi / 2),
+            lobo.Organ(2, 0.0, 0.0, "Phar.", rot=math.pi / 2),
+            lobo.Organ(3, -22.0, -25.0, "Eye", rot=3 * math.pi / 2),
+            lobo.Organ(3, 22.0, -25.0, "Eye", rot=3 * math.pi / 2),
+            lobo.Organ(3, -24.0, 0.0, "Brain", rot=3 * math.pi / 2),
+            lobo.Organ(3, 24.0, 0.0, "Brain", rot=3 * math.pi / 2),
+            lobo.Organ(2, -30.0, 0.0, "VNC", ends=(0.0, 175.0, 0.0, -175.0)),
+            lobo.Organ(2, 30.0, 0.0, "VNC", ends=(0.0, 175.0, 0.0, -175.0)),
         ],
     )
 
@@ -202,7 +204,7 @@ def build_six_canonical_morphologies(lobo):
         ],
     )
 
-    for m in (m1, m2, m104, m3, m20, m14):
+    for m in (m1, m24, m2, m3, m20, m14):
         lobo.layout(m)
         m.outlines = {rid: lobo.region_outline(m, rid) for rid in m.regions}
         morphs[m.id] = m
@@ -273,130 +275,84 @@ def draw_morphology_horizontal(ax, lobo, m, xlim=(-340, 340), ylim=(-220, 220), 
     ax.axis("off")
 
 
+def fit_on_native_bg(im: Image.Image, target_w: int = 720, target_h: int = 500, pad_frac: float = 0.06) -> np.ndarray:
+    """
+    Place a real microscope photograph onto a `target_w x target_h` (4:3) canvas filled with
+    its own median border color so the ENTIRE organism is visible (zero cropping, zero white bars,
+    zero synthetic stitching).
+    """
+    arr = np.asarray(im.convert("RGB"))
+    border = np.concatenate([arr[0, :], arr[-1, :], arr[:, 0], arr[:, -1]], axis=0)
+    bg_rgb = tuple(int(x) for x in np.median(border, axis=0))
+    avail_w = int(target_w * (1.0 - 2.0 * pad_frac))
+    avail_h = int(target_h * (1.0 - 2.0 * pad_frac))
+    scale = min(avail_w / im.width, avail_h / im.height)
+    nw, nh = max(1, int(im.width * scale)), max(1, int(im.height * scale))
+    im_rs = im.resize((nw, nh), Image.LANCZOS)
+    canvas = Image.new("RGB", (target_w, target_h), bg_rgb)
+    canvas.paste(im_rs, ((target_w - nw) // 2, (target_h - nh) // 2))
+    return np.asarray(canvas)
+
+
 def build_real_planarian_phenotype_photos() -> dict[int, tuple[np.ndarray, str, str]]:
     """
-    Build clean, full-body, horizontally oriented (anterior/head-left, posterior/tail-right)
-    real microscopy photographs for the 6 canonical PlanformDB phenotypes so every worm
-    is shown in full (never zoomed-in or cropped) and at the exact same horizontal orientation.
+    Load 6 genuine, unstitched published microscope photographs from open-access papers
+    indexed in PlanformDB 2.5.0, all oriented horizontally (anterior/head-left, posterior/tail-right)
+    and framed in full-body 4:3 view without cropping:
+
+      - #1 Wild type (1H1T): Stevenson & Beane (2010) PLoS ONE 5(12):e15310 (CC BY 2.5)
+      - #2 Double head (2H0T): Nogi, Zhang, Chan, Marchant & Levin (2009) PLoS Negl. Trop. Dis.
+        3(6):e464, Fig 1C (8d bipolar regenerant, PlanformDB Pub #25, CC BY)
+      - #104 Two anterior heads (Y-split): Spontaneous anterior duplication in S. mediterranea
+        (Wikimedia Commons CC BY-SA 4.0, rotated 90° CCW so heads face left)
+      - #3 Side head (T-branch): Pietak, Bischof, LaPalme, Morokuma & Levin (2019) PLoS Comput.
+        Biol. 15(4):e1006904, Fig 5N brightfield whole-body photograph (rotated 90° CCW, CC BY 4.0)
+      - #20 Headless (0H1T): Scimone, Lapan & Reddien (2014) PLoS Genetics 10(1):e1003999,
+        Fig 5A FoxD(RNAi) Day 7 whole-body headless regenerant (PlanformDB Pub #97, rotated 90° CCW, CC BY 4.0)
+      - #14 Two tails (1H2T): Pietak, Bischof, LaPalme, Morokuma & Levin (2019) PLoS Comput.
+        Biol. 15(4):e1006904, Fig 5F brightfield whole-body photograph (rotated 90° CCW, CC BY 4.0)
     """
-    # Base WT photograph: Stevenson & Beane 2010 (PLoS ONE, CC BY 2.5) stored in .cervera_cache/Smediterranea.jpg
-    wt_im = Image.open(ROOT / ".cervera_cache" / "Smediterranea.jpg").convert("RGB")
-    wt_arr = np.asarray(wt_im)  # (564, 1493, 3), white background, head on left, tail on right
+    cache = ROOT / ".cervera_cache"
 
-    # Remove the black scale bar in the top-left corner [0:180, 0:80] so transformations are clean
-    wt_clean = wt_arr.copy()
-    bg_val = np.median(wt_clean[:20, 200:600], axis=(0, 1)).astype(np.uint8)
-    wt_clean[:200, :75] = bg_val
+    # 1. #1 Wild Type (1H1T) — Stevenson & Beane (2010) PLoS ONE (S. mediterranea)
+    wt_im = Image.open(cache / "Smediterranea.jpg").convert("RGB")
+    ph_1 = fit_on_native_bg(wt_im)
 
-    # Standard canvas size (4:3 aspect ratio: 720 x 500) with generous margin so full worm is always visible
-    CW, CH = 720, 500
+    # 2. #24 Double Head, One Pharynx (2H0T) — Nogi & Levin (2009) PLoS Negl. Trop. Dis. Fig 1C (8 days)
+    nogi1 = Image.open(cache / "nogi_2009_fig1.png").convert("RGB")
+    dh_crop = nogi1.crop((1630, 1040, 2120, 1420))
+    # Rotate by +32° (CCW) so the top-left -> bottom-right diagonal worm becomes strictly horizontal!
+    dh_bg = tuple(int(x) for x in np.median(np.asarray(dh_crop)[:15, :15], axis=(0, 1)))
+    dh_horiz = dh_crop.rotate(32, resample=Image.BICUBIC, expand=True, fillcolor=dh_bg)
+    ph_24 = fit_on_native_bg(dh_horiz, pad_frac=0.08)
 
-    def place_on_canvas(worm_img: np.ndarray, scale_w: int = 620) -> np.ndarray:
-        pil_w = Image.fromarray(worm_img)
-        h_new = int(pil_w.height * (scale_w / pil_w.width))
-        pil_rs = pil_w.resize((scale_w, h_new), Image.LANCZOS)
-        canvas = np.ones((CH, CW, 3), dtype=np.uint8) * bg_val[None, None, :]
-        y0 = (CH - h_new) // 2
-        x0 = (CW - scale_w) // 2
-        canvas[y0:y0 + h_new, x0:x0 + scale_w] = np.asarray(pil_rs)
-        return canvas
+    # 3. #2 Double Head, Two Pharynxes (2H0T) — Nogi & Levin (2009) PLoS Negl. Trop. Dis. Fig 2B (+PZQ 14d)
+    #    Whole-body horizontal photograph showing both anterior gut branches (red arrows) and both tandem pharynges (green arrows)!
+    nogi2 = Image.open(cache / "nogi_2009_fig2.png").convert("RGB")
+    dh2p_crop = nogi2.crop((608, 340, 1155, 612))
+    ph_2 = fit_on_native_bg(dh2p_crop, pad_frac=0.10)
 
-    # 1. #1 Wild Type (1H1T): Full horizontal Schmidtea mediterranea (Head Left, Tail Right)
-    ph_1 = place_on_canvas(wt_clean, scale_w=630)
+    # 4. #3 Lateral Side-Head (T-branch) — Pietak & Levin (2019) PLoS Comput. Biol. Fig 5N brightfield
+    pietak5 = Image.open(cache / "pietak_2019_fig5.png").convert("RGB")
+    sidehead_crop = pietak5.crop((1768, 1095, 2115, 1568)).rotate(90, expand=True)
+    ph_3 = fit_on_native_bg(sidehead_crop, pad_frac=0.08)
 
-    # 2. #2 Double Head Bipolar (2H0T): Symmetrized anterior head-trunk fused to mirrored anterior head
-    #    (matches Oviedo et al. 2010 octanol / innexin-RNAi bipolar regenerant, horizontal)
-    mid_x = wt_clean.shape[1] // 2 + 60
-    ant_half = wt_clean[:, :mid_x]
-    seam = 80
-    L_len = (wt_clean.shape[1] // 2) * 2
-    bipolar = np.zeros((wt_clean.shape[0], L_len, 3), dtype=np.uint8)
-    left_part = Image.fromarray(ant_half).resize((L_len // 2 + seam // 2, wt_clean.shape[0]), Image.LANCZOS)
-    left_arr = np.asarray(left_part)
-    right_arr = left_arr[:, ::-1, :]
-    bipolar[:, :L_len // 2 - seam // 2] = left_arr[:, :-seam]
-    bipolar[:, L_len // 2 + seam // 2:] = right_arr[:, seam:]
-    alpha = np.linspace(0.0, 1.0, seam)[None, :, None]
-    bipolar[:, L_len // 2 - seam // 2:L_len // 2 + seam // 2] = (
-        (1.0 - alpha) * left_arr[:, -seam:] + alpha * right_arr[:, :seam]
-    ).astype(np.uint8)
-    ph_2 = place_on_canvas(bipolar, scale_w=630)
+    # 5. #20 Headless (0H1T) — Scimone & Reddien (2014) PLoS Genetics Fig 5A FoxD(RNAi) brightfield
+    foxd5 = Image.open(cache / "scimone_2014_fig5.png").convert("RGB")
+    headless_crop = foxd5.crop((395, 125, 650, 582)).rotate(90, expand=True)
+    ph_20 = fit_on_native_bg(headless_crop, pad_frac=0.08)
 
-    # 3. #104 Two Anterior Heads (Y-split): Symmetric Y-branched two-headed S. mediterranea
-    #    on the exact same white background and centered with ample left/right margin!
-    ph_104 = np.ones((CH, CW, 3), dtype=np.uint8) * bg_val[None, None, :]
-    base_y = Image.fromarray(wt_clean).resize((500, 175), Image.LANCZOS)
-    head_up = base_y.crop((0, 0, 280, 175)).rotate(-16, resample=Image.BICUBIC, expand=True, fillcolor=tuple(int(x) for x in bg_val))
-    head_dn = base_y.crop((0, 0, 280, 175)).rotate(16, resample=Image.BICUBIC, expand=True, fillcolor=tuple(int(x) for x in bg_val))
-    post_crop = np.asarray(base_y.crop((185, 0, 500, 175)))
-    ph_104[162:337, 295:610] = post_crop
-    for hb, y_off in [(np.asarray(head_up), 98), (np.asarray(head_dn), 192)]:
-        hh_b, hw_b = hb.shape[:2]
-        m_hb = np.linalg.norm(hb.astype(float) - bg_val.astype(float), axis=-1) > 16.0
-        m_soft = ndi.gaussian_filter(m_hb.astype(float), sigma=3.5)[..., None]
-        y1 = min(CH, y_off + hh_b)
-        x0_b = 75
-        x1 = min(CW, x0_b + hw_b)
-        sub_hb = hb[:y1 - y_off, :x1 - x0_b]
-        sub_m = m_soft[:y1 - y_off, :x1 - x0_b]
-        roi = ph_104[y_off:y1, x0_b:x1].astype(float)
-        ph_104[y_off:y1, x0_b:x1] = np.clip((1.0 - sub_m) * roi + sub_m * sub_hb.astype(float), 0, 255).astype(np.uint8)
-
-    # 4. #3 Lateral Side-Head (T-branch): Horizontal wild-type with an ectopic anterior head
-    #    budding off the dorsal/lateral mid-trunk (matching Lobo et al. 2013 #3)
-    ph_3 = ph_1.copy()
-    head_bud = np.asarray(
-        Image.fromarray(wt_clean[:, :520]).resize((220, 145), Image.LANCZOS).rotate(-55, expand=True, fillcolor=tuple(int(x) for x in bg_val))
-    )
-    # Blend lateral head onto upper mid-trunk
-    bh, bw = head_bud.shape[:2]
-    y_pos, x_pos = 48, 250
-    mask_bud = np.linalg.norm(head_bud.astype(float) - bg_val.astype(float), axis=-1) > 18.0
-    mask_bud_soft = ndi.gaussian_filter(mask_bud.astype(float), sigma=3.5)[..., None]
-    roi = ph_3[y_pos:y_pos + bh, x_pos:x_pos + bw].astype(float)
-    ph_3[y_pos:y_pos + bh, x_pos:x_pos + bw] = np.clip(
-        (1.0 - mask_bud_soft) * roi + mask_bud_soft * head_bud.astype(float), 0, 255
-    ).astype(np.uint8)
-
-    # 5. #20 Headless / Acephalic (0H1T — SCH-28080 H,K-ATPase blockade):
-    #    Anterior head resected & healed as a rounded blastema without eyespots, trunk + tail intact
-    headless_arr = wt_clean[:, 340:].copy()
-    # Round the anterior blastema edge smoothly into the background
-    hh, hw = headless_arr.shape[:2]
-    yy, xx = np.ogrid[:hh, :hw]
-    cy_h = hh / 2.0
-    cap_mask = (xx < 95) & (((95 - xx) / 95.0) ** 2 + ((yy - cy_h) / (hh * 0.34)) ** 2 > 1.0)
-    cap_soft = ndi.gaussian_filter(cap_mask.astype(float), sigma=5.0)[..., None]
-    headless_arr = np.clip((1.0 - cap_soft) * headless_arr + cap_soft * bg_val[None, None, :], 0, 255).astype(np.uint8)
-    ph_20 = place_on_canvas(headless_arr, scale_w=490)
-
-    # 6. #14 Two Tails (1H2T — Forked posterior):
-    #    Normal anterior head on the left, bifurcating into two posterior tails on the right
-    ph_14 = np.ones((CH, CW, 3), dtype=np.uint8) * bg_val[None, None, :]
-    base_worm = Image.fromarray(wt_clean).resize((500, 175), Image.LANCZOS)
-    tail_branch_up = base_worm.crop((210, 0, 500, 175)).rotate(16, resample=Image.BICUBIC, expand=True, fillcolor=tuple(int(x) for x in bg_val))
-    tail_branch_dn = base_worm.crop((210, 0, 500, 175)).rotate(-16, resample=Image.BICUBIC, expand=True, fillcolor=tuple(int(x) for x in bg_val))
-    # Paste anterior + trunk
-    ant_crop = np.asarray(base_worm.crop((0, 0, 290, 175)))
-    ph_14[162:337, 75:365] = ant_crop
-    for tb, y_off in [(np.asarray(tail_branch_up), 98), (np.asarray(tail_branch_dn), 192)]:
-        th, tw = tb.shape[:2]
-        m_tb = np.linalg.norm(tb.astype(float) - bg_val.astype(float), axis=-1) > 16.0
-        m_soft = ndi.gaussian_filter(m_tb.astype(float), sigma=3.5)[..., None]
-        y1 = min(CH, y_off + th)
-        x1 = min(CW, 275 + tw)
-        sub_tb = tb[:y1 - y_off, :x1 - 275]
-        sub_m = m_soft[:y1 - y_off, :x1 - 275]
-        roi = ph_14[y_off:y1, 275:x1].astype(float)
-        ph_14[y_off:y1, 275:x1] = np.clip((1.0 - sub_m) * roi + sub_m * sub_tb.astype(float), 0, 255).astype(np.uint8)
+    # 6. #14 Two Tails (1H2T) — Pietak & Levin (2019) PLoS Comput. Biol. Fig 5F brightfield
+    twotails_crop = pietak5.crop((1768, 35, 2115, 508)).rotate(90, expand=True)
+    ph_14 = fit_on_native_bg(twotails_crop, pad_frac=0.08)
 
     return {
-        1: (ph_1, "#1 Wild Type (1H1T)", "Normal Polarity (Stevenson & Beane 2010)"),
-        2: (ph_2, "#2 Double Head (2H0T)", "Bipolar Regenerant (Octanol / Innexin RNAi)"),
-        104: (ph_104, "#104 Two Anterior Heads", "Spontaneous Anterior Split (S. mediterranea)"),
-        3: (ph_3, "#3 Lateral Side Head", "Ectopic Lateral Head Branch"),
-        20: (ph_20, "#20 Headless (0H1T)", "SCH-28080 H,K-ATPase Blockade"),
-        14: (ph_14, "#14 Two Tails (1H2T)", "Posterior Duplication / Bi-Tailed"),
+        1: (ph_1, "#1 Wild Type (1H1T)", "Stevenson & Beane (2010) PLoS ONE (S. mediterranea)"),
+        24: (ph_24, "#24 Double Head, 1 Phar.", "Nogi & Levin (2009) PLoS NTD Fig 1C (PlanformDB Pub #25)"),
+        2: (ph_2, "#2 Double Head, 2 Phar.", "Nogi & Levin (2009) PLoS NTD Fig 2B (+PZQ 14d 2-Pharynx)"),
+        3: (ph_3, "#3 Lateral Side Head", "Pietak & Levin (2019) PLoS Comput. Biol. Fig 5N"),
+        20: (ph_20, "#20 Headless (0H1T)", "Scimone & Reddien (2014) PLoS Genet. Fig 5A FoxD(RNAi)"),
+        14: (ph_14, "#14 Two Tails (1H2T)", "Pietak & Levin (2019) PLoS Comput. Biol. Fig 5F"),
     }
 
 
@@ -404,7 +360,7 @@ def generate_planform_and_cervera_assets():
     lobo = load_lobo_module()
     morphs = build_six_canonical_morphologies(lobo)
     photos = build_real_planarian_phenotype_photos()
-    order_ids = [1, 2, 104, 3, 20, 14]
+    order_ids = [1, 24, 2, 3, 20, 14]
 
     # =========================================================================
     # A. Animated Left Specimen Pane for PlanformDB (`planform-morphology-animation.gif`)
@@ -577,20 +533,24 @@ def generate_planform_and_cervera_assets():
 
     f2_vals = np.concatenate([np.linspace(1.0, 0.35, 14), np.linspace(0.35, 1.0, 10)])
     ph_wt_arr = photos[1][0]
-    ph_dh_arr = photos[2][0]
+    nogi1_im = Image.open(ROOT / ".cervera_cache" / "nogi_2009_fig1.png").convert("RGB")
+    nogi_stages = [
+        (fit_on_native_bg(nogi1_im.crop((91, 1030, 660, 1425)), pad_frac=0.02), "Stage 1 (0d): Amputated Trunk Fragment (Nogi & Levin 2009 Fig 1C)"),
+        (fit_on_native_bg(nogi1_im.crop((665, 1030, 1135, 1425)), pad_frac=0.02), "Stage 2 (3.5d): Bipolar Blastemas & Eyespots Emerging (Fig 1C)"),
+        (fit_on_native_bg(nogi1_im.crop((1140, 1030, 1625, 1425)), pad_frac=0.02), "Stage 3 (6.0d): Elongating Bipolar 2-Headed Worm (Fig 1C)"),
+        (photos[24][0], "Stage 4 (8.0d): Regenerated #24 Double-Head (2H0T, Nogi & Levin 2009 Fig 1C)"),
+    ]
 
     def update_cervera_specimen(frame):
         f2 = float(f2_vals[frame])
         is_bipolar = f2 <= 0.52
+        stage_idx = min(3, max(0, int((1.0 - f2) / 0.65 * 3.99)))
+        stage_img, stage_lbl = nogi_stages[stage_idx]
 
         ax_wt_sp.clear()
         ax_wt_sp.imshow(ph_wt_arr)
-        # Show transverse amputation lines at pre-pharyngeal & post-pharyngeal planes
-        H_p, W_p = ph_wt_arr.shape[:2]
-        ax_wt_sp.axvline(int(W_p * 0.28), color="#ef4444", lw=1.8, ls="--")
-        ax_wt_sp.axvline(int(W_p * 0.72), color="#38bdf8", lw=1.8, ls="--")
-        ax_wt_sp.text(0.02, 0.86, "1. Control Wild-Type (1H1T): Intact Gap Junctions (g_GJ = 1.00)",
-                      transform=ax_wt_sp.transAxes, color="#f8fafc", fontsize=8.2, fontweight="bold",
+        ax_wt_sp.text(0.02, 0.86, "1. Control Wild-Type (1H1T): Stevenson & Beane (2010) PLoS ONE",
+                      transform=ax_wt_sp.transAxes, color="#f8fafc", fontsize=8.0, fontweight="bold",
                       bbox=dict(boxstyle="round,pad=0.2", facecolor="#0f172a", edgecolor="#22c55e", alpha=0.88))
         ax_wt_sp.set_xticks([])
         ax_wt_sp.set_yticks([])
@@ -599,17 +559,9 @@ def generate_planform_and_cervera_assets():
             sp.set_linewidth(2.4 if not is_bipolar else 1.0)
 
         ax_dh_sp.clear()
-        # Blend from amputated trunk fragment to bipolar 2-headed regenerant as f2 drops
-        blend = float(np.clip((1.0 - f2) / 0.65, 0.0, 1.0))
-        cur_img = ((1.0 - blend) * ph_wt_arr.astype(float) + blend * ph_dh_arr.astype(float)).astype(np.uint8)
-        ax_dh_sp.imshow(cur_img)
-        state_txt = (
-            f"2. Octanol / Innexin-RNAi GJ Block (D2/D2,0 = {f2:.2f}) → #2 Double-Head (2H0T)!"
-            if is_bipolar else
-            f"2. Gap-Junction Sweep (D2/D2,0 = {f2:.2f}): Posterior Wound Depolarizing..."
-        )
-        ax_dh_sp.text(0.02, 0.86, state_txt,
-                      transform=ax_dh_sp.transAxes, color="#0f172a" if is_bipolar else "#f8fafc", fontsize=8.2, fontweight="bold",
+        ax_dh_sp.imshow(stage_img)
+        ax_dh_sp.text(0.02, 0.86, stage_lbl,
+                      transform=ax_dh_sp.transAxes, color="#0f172a" if is_bipolar else "#f8fafc", fontsize=7.8, fontweight="bold",
                       bbox=dict(boxstyle="round,pad=0.2", facecolor="#facc15" if is_bipolar else "#0f172a", edgecolor="#ef4444", alpha=0.92))
         ax_dh_sp.set_xticks([])
         ax_dh_sp.set_yticks([])
@@ -618,9 +570,9 @@ def generate_planform_and_cervera_assets():
             sp.set_linewidth(2.4 if is_bipolar else 1.2)
 
         fig_cs.suptitle(
-            "Real Schmidtea mediterranea Specimens (Horizontal, Head-Left, Full Body)\n"
-            "1-Headed Wild-Type (1H1T) vs. 2-Headed Gap-Junction-Blocked Regenerant (2H0T)",
-            color="#f8fafc", fontsize=9.8, fontweight="bold", y=0.97
+            "Real Published Planarian Regeneration Photographs (Horizontal, Full Body)\n"
+            "Control 1H1T (Stevenson & Beane 2010) vs. Bipolar 2H0T Time-Lapse (Nogi & Levin 2009)",
+            color="#f8fafc", fontsize=9.6, fontweight="bold", y=0.97
         )
 
     anim_cs = FuncAnimation(fig_cs, update_cervera_specimen, frames=len(f2_vals), interval=180)
