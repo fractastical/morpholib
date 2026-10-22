@@ -180,6 +180,46 @@ Our ablation suite (Figure~\ref{fig:platonic_audit}C) shows that \textbf{the emp
 \end{enumerate}
 
 % ============================================================================
+\section{Quantifying Emergence: Applying Hoel's Causal Emergence 1.0 \& 2.0 to Sorting Morphogenesis}
+
+Why did adjacent monotonicity error $E(v)$ produce apparent uphill ``Delayed Gratification'' excursions while total pairwise inversions $I(v)$ descended deterministically? And why did computer-science critics misattribute duplicate-key clustering to ``textbook Bubble-sort stability''? Both questions are answered quantitatively by applying **Erik Hoel's Causal Emergence 1.0 (PNAS 2013)~\cite{Hoel2013PNAS} and Causal Emergence 2.0 (\emph{Patterns} 2026, \texttt{PyMergence})~\cite{Hoel2026Patterns,ComolattiHoel2025}** directly to the exact Transition Probability Matrices (TPMs) of the sorting morphogenesis Markov chain (\texttt{sorting-morphogenesis/quantify\_emergence\_ce2.py}, Figure~\ref{fig:ce2_emergence}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\textwidth]{media/zhang_hoel_quantifying_emergence_ce2.png}
+  \caption{\textbf{Quantifying Emergence in Sorting Morphogenesis via Hoel's Causal Emergence 1.0 (PNAS 2013) and Causal Emergence 2.0 (\emph{Patterns} 2026).} \textbf{(A)} Across the exact permutation Markov chains $S_3 \dots S_6$ ($N = 6, 24, 120, 720$ microstates), coarse-graining onto the Coxeter inversion potential $I(v)$ raises the intensive Causal Primitive $\mathrm{CP} = \mathrm{det} - \mathrm{deg}$ from $0.850 \to \mathbf{0.969}$ ($\det = 1.0000$, green bars), whereas coarse-graining onto the paper's adjacent monotonicity error $E(v)$ collapses $\mathrm{CP}$ to $\mathbf{0.597}$ ($\det = 0.721$, red bars). \textbf{(B)} Exact Hoel (2013/2026) decomposition $\Delta\mathrm{EI} = \Delta I_{\mathrm{eff}} + \Delta I_{\mathrm{size}}$ showing why CE~1.0 ($\Delta\mathrm{EI} < 0$) was blinded by the state-space dimensionality penalty $\Delta I_{\mathrm{size}} = \mathrm{eff}_m \log_2(M/N) < 0$ ($16 \ll 720$), whereas CE~2.0 ($\Delta\mathrm{CP} = +0.1191 > 0$) isolates the true macro-scale effectiveness gain. \textbf{(C)} Duplicate-key multiplicity scaling law across $C \in \{1, 2, 4, 8, 10, 20, 40\}$ copies per key ($n=80$): at $C=2$, $66.2\%$ of Selection cells pack into the left slot of each 2-cell key plateau (\texttt{SB|SB|SB}), producing \textbf{anti-clustering} ($A_{\mathrm{final}} = 0.477 < 0.50$), whereas at $C=10$ ($75.0\%$ Selection in the left half of each 10-cell plateau, \texttt{SSSSS|BBBBB}), aggregation rises to $\mathbf{0.659}$ --- refuting ``textbook Bubble-sort stability'' even on duplicate keys. \textbf{(D--E)} Telescoping path apportioning on $S_6$ and verification across Hoel's (2013--2026) benchmark corpus.}
+  \label{fig:ce2_emergence}
+\end{figure}
+
+\subsection{Positive Causal Emergence 2.0 on $I(v)$ vs.\ Negative Emergence on $E(v)$}
+
+For an $N \times N$ row-stochastic transition probability matrix $T$, let $\mathrm{det}(T) = 1 - \langle H(T_{i,\cdot})\rangle / \log_2 N$ and $\mathrm{deg}(T) = 1 - H(N^{-1}\sum_i T_{i,\cdot}) / \log_2 N$. In Hoel (2013)~\cite{Hoel2013PNAS}, Effective Information is $\mathrm{EI}(T) = \mathrm{CP}(T)\,\log_2 N$, where $\mathrm{CP}(T) = \mathrm{det}(T) - \mathrm{deg}(T) \in [0, 1]$ is the intensive \textbf{Causal Primitive} (equal to Eells/Cheng sufficiency-plus-necessity $\mathrm{suff} + \mathrm{nec} - 1$~\cite{ComolattiHoel2025,Hoel2026Patterns}).
+
+Constructing the exact $N \times N$ micro-TPMs on $S_3, S_4, S_5, S_6$ ($N = 6, 24, 120, 720$ permutations) and coarse-graining onto $I(v)$ versus $E(v)$ yields three exact results (proved in Lean~4 Theorem~7, \texttt{hoel\_ce2\_sorting\_inversion\_emergence\_vs\_error\_loss}):
+\begin{enumerate}
+  \item \textbf{The Coxeter Inversion Potential $I(v)$ Is a Genuine Causally Emergent Macro-Scale ($\Delta\mathrm{CP} > 0$):} On $S_6$ ($N = 720$ microstates), micro-scale branching over active cells yields $\mathrm{det}_{\mathrm{micro}} = 0.8687$ ($0.8229$ on raw steps) and $\mathrm{CP}_{\mathrm{micro}} = 0.8496$ ($0.8130$ raw). Coarse-graining onto the $M = 16$ inversion levels $I(v) \in \{0 \dots 15\}$ makes the macro-chain \textbf{$100\%$ deterministic ($\mathrm{det}_I = 1.0000$)} and raises $\mathrm{CP}_I$ to $\mathbf{0.9687}$ --- giving \textbf{positive Causal Emergence 2.0 of $\Delta\mathrm{CP} = +0.1191$} ($+0.1557$ spatiotemporal gain over raw steps; $+0.1145$ on $S_5$, $+0.0937$ on $S_4$). Along the multi-scale partition chain $\pi^{(0)} (S_6, 720) \to \pi^{(1)} ((I, \text{head}), 31) \to \pi^{(2)} (I(v), 16)$, the step-wise gains telescope identically:
+  \begin{equation}
+    \mathrm{CP}_0 (0.8496) \;+\; \Delta\mathrm{CP}_1 (+0.0475) \;+\; \Delta\mathrm{CP}_2 (+0.0716) \;=\; \mathrm{CP}_2 (0.9687).
+  \end{equation}
+  \item \textbf{Why CE~2.0 (\emph{Patterns} 2026) Succeeds Where CE~1.0 (PNAS 2013) Was Blinded by Dimensionality:} Under Hoel's (2013) exact splitting identity (proved in \texttt{Loop\_causal\_emergence.lean}, Theorem~1),
+  \begin{equation}
+    \Delta\mathrm{EI} \;=\; \underbrace{(\mathrm{CP}_M - \mathrm{CP}_m)\log_2 M}_{\Delta I_{\mathrm{eff}} \;=\; +0.476\text{ bits}} \;+\; \underbrace{\mathrm{CP}_m (\log_2 M - \log_2 N)}_{\Delta I_{\mathrm{size}} \;=\; -4.663\text{ bits}} \;=\; -4.187\text{ bits}.
+  \end{equation}
+  Because $I(v)$ compresses $720$ permutations into $16$ inversion levels, the extensive size penalty $\Delta I_{\mathrm{size}} = -4.663\text{ bits}$ masks the $+0.476\text{ bits}$ effectiveness gain in CE~1.0 --- the exact pathology that motivated Hoel (2026)~\cite{Hoel2026Patterns} to formulate intensive Causal Apportioning ($\Delta\mathrm{CP} = +0.1191 > 0$) in CE~2.0.
+  \item \textbf{The Paper's Adjacent Monotonicity Error $E(v)$ Has Strictly Negative Causal Emergence ($\Delta\mathrm{CP} = -0.2525 < 0$):} Because $E(v)$ is non-lumpable (microstates with identical $E(v)$ transition to $E-1$, $E$, or $E+1$), coarse-graining $S_6 \to E(v)$ degrades determinism from $0.8687 \to \mathbf{0.7209}$ and drops $\mathrm{CP}$ from $0.8496 \to \mathbf{0.5971}$ ($\Delta\mathrm{CP} = -0.2525$ on $S_6$, $-0.2756$ on $S_5$, $-0.2986$ on $S_4$). In causal-emergence terms, ``Delayed Gratification'' on $E(v)$ is the signature of projecting a $100\%$ deterministic macro-flow ($I(v)$) onto a non-Markovian observer coordinate ($E(v)$).
+\end{enumerate}
+
+\subsection{The Intra-Plateau \texttt{S...S | B...B} Micro-Segregation Law Refutes ``Bubble-Sort Stability'' Even on Duplicate Keys}
+
+Why does duplicate-key chimeric sorting ($\mathtt{B+S}$, Paper Fig.~8D) maintain permanently elevated algotype aggregation ($A_{\mathrm{final}} \approx 0.66\text{--}0.69$)? Critics~\cite{Sweet2026} claimed that because Bubble sort is a stable sort, equal keys simply retain their initial order. However, since initial algotype labels are assigned by a uniform random permutation ($A_{\mathrm{init}} = 0.50$), \emph{preserving initial relative order among equal keys would leave final aggregation at $0.50$ for every duplicate multiplicity $C$}!
+
+By sweeping the duplicate multiplicity $C = n / K \in \{1, 2, 4, 8, 10, 20, 40\}$ copies per key ($n = 80$, Figure~\ref{fig:ce2_emergence}C), we uncover the true mechanism: because Selection cells scan their \texttt{target} pointer from $0 \to n-1$, \textbf{$71\%\text{--}75\%$ of Selection cells pack into the left half of every key $k$'s $C$-cell plateau}, leaving Bubble cells in the right half (\texttt{S...S | B...B}). This produces two diagnostic predictions that are impossible under textbook sort stability:
+\begin{itemize}
+  \item \textbf{Anti-Clustering at $C = 2$ Copies per Key ($A_{\mathrm{final}} = 0.477 < 0.50$):} When each key has exactly $C = 2$ copies ($1$ $\mathtt{S}$ and $1$ $\mathtt{B}$ on average), packing $\mathtt{S}$ into the left slot and $\mathtt{B}$ into the right slot of each 2-cell plateau creates the alternating sequence $\mathtt{S\,B \mid S\,B \mid S\,B}$, driving final same-algotype adjacency \emph{below} the $0.50$ random baseline!
+  \item \textbf{Domain-Wall Scaling $A_{\mathrm{final}}(C) \approx p_{\mathrm{purity}}(1 - \alpha/C) + (1-p_{\mathrm{purity}})/2$ for $C \ge 4$:} As $C$ grows to $8\text{--}20$ copies per key, each key plateau contains two contiguous homotypic sub-blocks ($\approx C/2$ $\mathtt{S}$ cells followed by $\approx C/2$ $\mathtt{B}$ cells) separated by only two domain walls per $C$ cells, driving $A_{\mathrm{final}}$ monotonically up to $\mathbf{0.659 \pm 0.013}$ at $C = 10$.
+\end{itemize}
+
+% ============================================================================
 \section{Synthesis: Weak Structural Platonism vs.\ Strong Dualist Ingress}
 
 Our findings establish a clean, constructive middle ground between reductionist dismissal and strong dualism:
@@ -207,6 +247,12 @@ M.~Levin, ``The Multiscale Wisdom of the Body: Collective Intelligence as a Trac
 
 \bibitem{McMillenLevin2024}
 P.~T. McMillen and M.~Levin, ``Collective intelligence: A unifying concept for integrating biology across scales and substrates,'' \emph{Communications Biology} \textbf{7}(1), 378 (2024). \texttt{doi:10.1038/s42003-024-06037-4}.
+
+\bibitem{Hoel2013PNAS}
+E.~P. Hoel, L.~Albantakis, and G.~Tononi, ``Quantifying causal emergence shows that macro can beat micro,'' \emph{Proceedings of the National Academy of Sciences USA} \textbf{110}(49), 19790--19795 (2013). \texttt{doi:10.1073/pnas.1314922110}.
+
+\bibitem{ComolattiHoel2025}
+R.~Comolatti and E.~P. Hoel, ``Consilience in Causation: Causal Emergence Is Found Across Measures of Causation,'' \emph{Entropy} \textbf{27}(8), 825 (2025). \texttt{doi:10.3390/e27080825}.
 
 \bibitem{Hoel2026Patterns}
 E.~Hoel, ``Quantifying emergent complexity (Causal Emergence 2.0),'' \emph{Patterns} \textbf{7}(1), 101472 (2026). \texttt{doi:10.1016/j.patter.2025.101472}.

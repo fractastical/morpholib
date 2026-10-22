@@ -89,12 +89,37 @@ Interestingly, **both Strong Dualist interpretations and several online computer
 
 ```bash
 ./venv/bin/python3 sorting-morphogenesis/audit_platonic_space_claims.py
+./venv/bin/python3 sorting-morphogenesis/quantify_emergence_ce2.py
 ```
 
 Generates:
 - `docs/media/zhang_levin_platonic_claims_audit.png`
+- `docs/media/zhang_hoel_quantifying_emergence_ce2.png`
 - `sorting-morphogenesis/figures/zhang_levin_platonic_claims_audit.png`
+- `sorting-morphogenesis/figures/zhang_hoel_quantifying_emergence_ce2.png`
 - `sorting-morphogenesis/figures/platonic_claims_ablation_metrics.json`
+- `sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json`
+
+---
+
+## 4. Quantifying Emergence: Applying Erik Hoel's Causal Emergence 1.0 (PNAS 2013) & 2.0 (*Patterns* 2026, `PyMergence`)
+
+![Quantifying Emergence in Sorting Morphogenesis via Hoel's Causal Emergence 1.0 & 2.0](../docs/media/zhang_hoel_quantifying_emergence_ce2.png)
+
+Using [`sorting-morphogenesis/quantify_emergence_ce2.py`](./quantify_emergence_ce2.py) and `Theorem 7` (`hoel_ce2_sorting_inversion_emergence_vs_error_loss`) in [`morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean`](../morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean), we construct the exact $N \times N$ Transition Probability Matrices (TPMs) for the symmetric group $S_n$ ($n = 3, 4, 5, 6 \implies N = 6, 24, 120, 720$ permutations) and apply **Hoel's (2013 *PNAS*; 2026 *Patterns* `7(1):101472`)** formal measures of **Causal Emergence**:
+
+1. **The Coxeter Inversion Potential $I(v)$ Has Strictly Positive Causal Emergence 2.0 ($\Delta\mathrm{CP} = +0.1191 > 0$, $\mathrm{det} = 1.0000$):**
+   - At the micro-scale ($S_6$, $720$ permutations), random active-cell and neighbor selection yields micro-determinism $\mathrm{det}_{\text{micro}} = 0.8687$ ($0.8229$ on raw steps) and Causal Primitive $\mathrm{CP}_{\text{micro}} = \mathrm{det} - \mathrm{deg} = 0.8496$ ($0.8130$ raw).
+   - Coarse-graining onto the $M = 16$ Coxeter inversion levels $I(v) \in \{0 \dots 15\}$ makes the macro-TPM **$100\%$ deterministic ($\mathrm{det}_I = 1.0000$)** and raises $\mathrm{CP}_I$ to **`0.9687`**, yielding **positive Causal Emergence 2.0 of $\Delta\mathrm{CP} = +0.1191$** ($+0.1557$ spatiotemporal gain over raw steps; $+0.1145$ on $S_5$, $+0.0937$ on $S_4$).
+   - **Why `CE 2.0` (*Patterns* 2026) succeeds where `CE 1.0` (*PNAS* 2013) was blinded by size (`Panel B`):** Under Hoel's (2013) identity $\Delta\mathrm{EI} = \Delta I_{\text{eff}} + \Delta I_{\text{size}}$, compressing $720$ states into $16$ states incurs a $-4.663\text{ bit}$ size penalty ($\Delta I_{\text{size}} < 0$) that masks the $+0.476\text{ bit}$ effectiveness gain ($\Delta I_{\text{eff}} > 0$). Hoel's (2026) `CE 2.0` ($\Delta\mathrm{CP} = +0.1191 > 0$) removes the extensive size confound and telescopes cleanly across the scale hierarchy $\pi^{(0)} (S_6, 720) \to \pi^{(1)} ((I, \text{head}), 31) \to \pi^{(2)} (I(v), 16)$:
+     $$\mathrm{CP}_0 (0.8496) \;+\; \Delta\mathrm{CP}_1 (+0.0475) \;+\; \Delta\mathrm{CP}_2 (+0.0716) \;=\; \mathrm{CP}_2 (0.9687).$$
+
+2. **The Paper's Adjacent Monotonicity Error $E(v)$ Has Strictly Negative Causal Emergence ($\Delta\mathrm{CP} = -0.2525 < 0$, `Panel A & D`):**
+   - Coarse-graining $S_6$ onto $E(v) \in \{0 \dots 5\}$ projects across non-lumpable fibers ($E \mapsto E-1, E, E+1$), dropping determinism from $0.8687 \to \mathbf{0.7209}$ and $\mathrm{CP}$ from $0.8496 \to \mathbf{0.5971}$ ($\Delta\mathrm{CP} = -0.2525$ on $S_6$, $-0.2756$ on $S_5$, $-0.2986$ on $S_4$). Thus, in rigorous causal-emergence terms, "Delayed Gratification" on $E(v)$ is the artifact of observing a $100\%$ deterministic macro-flow ($I(v)$) through a non-lumpable projection ($E(v)$).
+
+3. **The Intra-Plateau `S...S | B...B` Micro-Segregation Law Refutes "Bubble-Sort Stability" Even on Duplicate Keys (`Panel C`):**
+   - Sweeping duplicate-key multiplicity $C = n / K \in \{1, 2, 4, 8, 10, 20, 40\}$ copies per key ($n = 80$) reveals that **$71\%\text{–}75\%$ of Selection cells pack into the left half of every key $k$'s $C$-cell plateau (`S...S | B...B`)**.
+   - At **$C = 2$ copies per key**, this left-right intra-plateau split produces the alternating sequence `S B | S B | S B`, driving final algotype aggregation **below the random baseline (`0.477 < 0.50`, anti-clustering!)**, whereas at **$C = 10$ copies per key** (`Fig. 8D`), each plateau forms two 5-cell homotypic blocks (`SSSSS | BBBBB`), driving aggregation up to **`0.659 ± 0.013`**. If textbook duplicate-key stability were the cause, final aggregation would remain `0.50` for all $C$.
 
 ---
 

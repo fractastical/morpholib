@@ -11,6 +11,8 @@ Reference implementation audited against the authors' repository [`Zhangtaining/
 
 ![Evaluating Michael Levin's Latent Platonic Space Claims on Sorting Morphogenesis](../docs/media/zhang_levin_platonic_claims_audit.png)
 
+![Quantifying Emergence in Sorting Morphogenesis via Hoel's Causal Emergence 1.0 & 2.0](../docs/media/zhang_hoel_quantifying_emergence_ce2.png)
+
 ![Multi-Language Port Verification & Upstream Code Traceability](../docs/media/zhang_multilang_port_verification.png)
 
 ![Zhang, Goldstein & Levin (2025) — Space-Time Kymographs & 14-Benchmark Quantitative Validation](../docs/media/zhang_goldstein_levin_kymograph_validation.png)
