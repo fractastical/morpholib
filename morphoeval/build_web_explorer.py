@@ -161,7 +161,7 @@ def main() -> int:
         slug_u = slug.replace("-", "_")
         matched_gif = ""
         sim_rel = e.get("sim_media_rel", "")
-        if sim_rel and sim_rel in tracked_repo_files and sim_rel.startswith("docs/media/"):
+        if sim_rel and (sim_rel in tracked_repo_files or (ROOT / sim_rel).exists()) and sim_rel.startswith("docs/media/"):
             matched_gif = sim_rel.replace("docs/", "")
         if not matched_gif:
             for cand in [
