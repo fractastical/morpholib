@@ -30,9 +30,9 @@ T = (135, [
         (60, ["Ammophilinae", "Sphecinae"]),                       # Sphecidae
         (118, [
             "Larrinae",
-            (112, [
+            (115, [
                 "Philanthinae",
-                (115 - 3, [                                       # Anthophila crown ~112
+                (110, [                                           # Anthophila crown ~110
                     (85, ["Meganomiinae", "Melittini"]),          # Melittidae
                     (108, [
                         (100, [                                   # long-tongued
