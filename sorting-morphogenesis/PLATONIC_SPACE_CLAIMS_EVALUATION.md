@@ -123,8 +123,9 @@ Using [`sorting-morphogenesis/quantify_emergence_ce2.py`](./quantify_emergence_c
 
 ---
 
-## Standalone Manuscript
+## Standalone Manuscript & Plain-English Companion
 
 - **Compiled Manuscript PDF:** [`docs/zhang_levin_sorting_morphogenesis_manuscript.pdf`](../docs/zhang_levin_sorting_morphogenesis_manuscript.pdf) (LaTeX source: [`docs/zhang_levin_sorting_morphogenesis_manuscript.tex`](../docs/zhang_levin_sorting_morphogenesis_manuscript.tex))
+- **The 13-Year-Old's Guide (Plain-English Walkthrough):** [`sorting-morphogenesis/EXPLAINED_FOR_13_YEAR_OLDS.md`](./EXPLAINED_FOR_13_YEAR_OLDS.md)
 
 
