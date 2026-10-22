@@ -64,3 +64,11 @@ To be sure our answer wasn't a fluke of just a few fish, we tested **three indep
 | **2. Ocean Sunfish Fin Bases** | `56.0%` *(Box Only)* | **`97.2%` (`+41%` Jump)** | You need Thompson's exponential flare to match the giant tail-fins. |
 | **3. 150-Myr Body Highway** | `4.6%` *(Local Noise)* | **`98.9%` *(Follows Grid!)* ** | Across 426 families, whole body plans evolve along Thompson's grid. |
 | **4. Reef Sister-Species Jaws** | `14.6%` *(Slow Body)* | **`85.4%` (`9.3×` Jaw Speed!)** | Across 10,303 species, neighbors on the same reef rapidly rewire their jaws to share food. |
+
+---
+
+## Step 6 — The Real Archival Museum Plates & Field Photographs (All 9 of Thompson's 1917 Fishes)
+
+Here are the actual historical museum lithographs (Monaco 1896 & 1911 deep-sea expeditions, US National Museum 1896, Bloch 1796, British Museum 1887) and NOAA/IFREMER field specimen photographs for all nine of D'Arcy Thompson's 1917 fishes, showing the extracted **600-point whole-body outline (cyan)** alongside the **9 gold head dots** and **8 pink fin-base dots**:
+
+![Archival Museum Plates & Field Specimen Photographs for All Nine 1917 Taxa](./thompson_1917_archival_field_plates.png)

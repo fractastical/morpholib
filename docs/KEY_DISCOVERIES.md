@@ -75,6 +75,8 @@ When we evaluated these four coordinate laws on both the **standard 17 homologou
 
 ![Bookstein Outreach Plate](./outreach_fig1_bookstein_silhouette_paradox.png)
 
+![Archival Museum Plates & Field Specimen Photographs for All Nine 1917 Taxa](./thompson_1917_archival_field_plates.png)
+
 ### 1.2 Direct 600-Semilandmark Outline Fitting (Anchored on Bookstein's Baseline) Recovers All Six 1917 Pairs
 
 To prevent non-homologous tangential sliding around the perimeter—Bookstein's (1997) classic objection to unanchored outline morphometrics—we formulated a direct 600-semilandmark outline estimator that minimizes the symmetric bidirectional Chamfer distance between the warped 600-point source outline $\Phi_\theta(B_S)$ and target outline $B_T$, anchored **solely at Bookstein's two axial baseline endpoints** ($\mathrm{LM}\,2$, anterior snout tip $\mathbf{x}_{\mathrm{snout}}$, and $\mathbf{x}_{\mathrm{ped}} = \tfrac{1}{2}(\mathrm{LM}\,5 + \mathrm{LM}\,6)$, caudal peduncle midpoint, with weight $\lambda_{\mathrm{ax}} = 0.15$):
