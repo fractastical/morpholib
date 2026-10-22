@@ -16,6 +16,8 @@ Then they ran computer experiments on this line of kids and saw **three weird th
 2. **"Delayed Gratification":** Sometimes, the line temporarily gets *more* messy (according to their messiness score) before getting much cleaner a few steps later.
 3. **"Secret Clique Clustering":** When you mix 50 **Bubble** kids and 50 **Selection** kids in the same line, the Bubble kids temporarily group together with other Bubble kids, and Selection kids group together with other Selection kids — **even though their jerseys don't show who is Bubble or Selection!**
 
+![Illustrated Guide 1: The Three Cell Personalities (Algotypes) & How They Handle a Frozen Kid](../docs/media/zhang_13yo_fig1_three_personalities.png)
+
 ---
 
 ## The Big Debate: "Platonic Ghost Minds" vs. "Nothing to See Here!"
@@ -63,6 +65,8 @@ Here is what we discovered — and why **both camps got something right and some
   4. **How Erik Hoel's "Causal Emergence 2.0" settles it (`Panel A & D` below):**
      When we plug both rulers into Erik Hoel's 2026 *Causal Emergence 2.0* formula, **Ruler 1 ($I(v)$) is `100%` deterministic and has *positive* Causal Emergence (`+0.119`)**, whereas **Ruler 2 ($E(v)$) has *negative* Causal Emergence (`-0.253`)**. In plain English: the kids are sliding straight downhill on $I(v)$ at every single step, and the "uphill backtracking" is an optical illusion caused by using Ruler 2!
 
+![Illustrated Guide 2: Why 'Delayed Gratification' Was an Optical Illusion of the Ruler!](../docs/media/zhang_13yo_fig2_two_rulers_illusion.png)
+
 ![Quantifying Emergence in Sorting Morphogenesis via Hoel's Causal Emergence 1.0 & 2.0](../docs/media/zhang_hoel_quantifying_emergence_ce2.png)
 
 ---
@@ -84,6 +88,8 @@ Our experiments proved **the critics were wrong twice**:
    - Instead, because Selection kids always scan from the left end of the line (`0, 1, 2...`), **75% of the Selection kids grab the *left* spots of each number's group, pushing the Bubble kids to the *right* spots (`S...S | B...B`)**:
      - When there are **`C = 2` copies of each number** (one `S` and one `B` wearing `#1`, one `S` and one `B` wearing `#2`, etc.), putting `S` on the left and `B` on the right of each pair creates the alternating pattern **`S B | S B | S B`** — which drives clustering **below `0.50` (`0.477` — Anti-Clustering!)**!
      - When there are **`C = 10` copies of each number**, putting 5 `S` kids on the left and 5 `B` kids on the right of each group creates **`SSSSS | BBBBB`**, driving clustering **way up to `0.659`**!
+
+![Illustrated Guide 3: Why 'Secret Cliques' Form — And How C = 2 Copies Proves the Blog Critics Wrong!](../docs/media/zhang_13yo_fig3_sports_cars_vs_pedestrians.png)
 
 ---
 

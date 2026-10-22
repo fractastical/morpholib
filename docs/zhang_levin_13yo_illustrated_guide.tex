@@ -1,0 +1,142 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{float}
+
+\geometry{margin=0.88in}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  citecolor=blue!70!black,
+  urlcolor=blue!70!black
+}
+
+\title{\textbf{The Illustrated Student's Guide to Self-Sorting Cells, ``Platonic Space,'' and Why a 6-Line Algorithm Sparked a Huge Debate}\\[0.45em]
+\large How 100 Kids in Gym Class Explain Morphogenesis, Causal Emergence, and Mathematical ``Free Lunches''}
+
+\author{
+  \textbf{Joel Dietz}\\
+  Infinite Morphospace Research Project $\cdot$ \texttt{https://github.com/fractastical/morpholib}
+}
+
+\date{October 22, 2026}
+
+\begin{document}
+\maketitle
+
+\section{The Gym-Class Puzzle: What If There Is No Gym Teacher?}
+
+Imagine 100 kids standing in a line in gym class, each wearing a jersey with a random number from $\mathbf{1}$ to $\mathbf{100}$. Normally, the gym teacher (a \textbf{central controller}) walks down the line and tells specific kids to swap places until everyone is lined up in order from $1$ to $100$.
+
+In 2025, three researchers --- \textbf{Taining Zhang, Adam Goldstein, and Michael Levin} (\emph{Adaptive Behavior} 33(1):25--54) --- asked a great question: \textbf{What if there is no gym teacher?} What if each kid is an independent ``cell'' who can only look at their neighbors and decide on their own whether to swap?
+
+They gave the kids three different ``personalities'' (which they called \textbf{algotypes}, after classical computer-science sorting algorithms):
+\begin{enumerate}
+  \item \textbf{Bubble kids (\texttt{B} --- Blue):} Look at the kid immediately to your left or right. If your number is smaller than your left neighbor's (or bigger than your right neighbor's), swap places!
+  \item \textbf{Insertion kids (\texttt{I} --- Green):} Only step left if everyone to your left is already in order.
+  \item \textbf{Selection kids (\texttt{S} --- Orange):} Keep a mental finger pointing at slot $\#1$, then $\#2$, then $\#3\dots$ If your number is smaller than whoever is standing at that target slot, teleport straight there and swap with them!
+\end{enumerate}
+
+When they ran computer experiments on this line of kids, they saw \textbf{three surprising behaviors}:
+\begin{itemize}
+  \item \textbf{1.\ Sorting Around ``Frozen'' Kids:} If 2 or 3 kids refuse to move (``frozen defects''), the rest of the line still manages to sort itself!
+  \item \textbf{2.\ ``Delayed Gratification'':} Sometimes, the line temporarily gets \emph{more} messy (according to their messiness ruler) before getting much cleaner a few steps later.
+  \item \textbf{3.\ ``Secret Clique Clustering'':} When you mix 50 \textbf{Bubble} kids and 50 \textbf{Selection} kids in the same line, the Bubble kids group together with other Bubble kids, and Selection kids group together with other Selection kids --- \textbf{even though their jerseys don't show who is Bubble or Selection!}
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\textwidth]{media/zhang_13yo_fig1_three_personalities.png}
+  \caption{\textbf{The Three ``Cell Personalities'' (Algotypes) and How They Handle a Frozen Kid.} \textbf{Top (Bubble \texttt{B}):} Only swaps with immediate neighbors, so kid $\#2$ is blocked forever behind Frozen $\#99$. \textbf{Middle (Insertion \texttt{I}):} Normally halts if anyone to the left is out of order, but lines 74--76 of \texttt{InsertionSortCell.py} contain a 3-line reset rule (\texttt{if FREEZE: prev = -1}) that tells Insertion kids to start their check fresh right after a frozen kid. \textbf{Bottom (Selection \texttt{S}):} Uses a long-range \texttt{target} pointer to teleport right over Frozen $\#99$.}
+  \label{fig:13yo_fig1}
+\end{figure}
+
+% ============================================================================
+\section{The Big Debate: ``Platonic Ghost Minds'' vs.\ ``Nothing to See Here!''}
+
+After that paper came out, a big debate broke out between two camps:
+\begin{itemize}
+  \item \textbf{Camp 1 --- Michael Levin's ``Platonic Space'' Claim (\emph{Ingressing Minds}, 2025/2026):}
+  Levin argued that because nobody wrote code telling the numbers how to handle broken cells, how to ``temporarily get messier to go around a wall,'' or how to ``find friends with the same personality,'' these behaviors must be \textbf{unprogrammed cognitive ``side-quests''} beaming in from a non-physical \textbf{Platonic Space of Patterns} (the same mathematical realm where $\pi$ and prime numbers live).
+  \item \textbf{Camp 2 --- The Computer-Science Blog Critics:}
+  Several computer scientists wrote blog posts saying: \emph{``Come on! That clustering is just a 1960s textbook trick called \textbf{Bubble-sort stability} (when two kids wear the exact same number, Bubble sort doesn't swap them). There's nothing new here at all!''}
+\end{itemize}
+
+To find out who was right, we read every single line of their original Python code, translated it into three other computer languages (\textbf{C++20}, \textbf{JavaScript}, and the \textbf{Lean~4} math theorem prover), and ran 3 ``what-if'' experiments (ablations) plus Erik Hoel's brand-new 2026 \textbf{Causal Emergence 2.0} math test. We discovered that \textbf{both camps got something right and something wrong!}
+
+% ============================================================================
+\section{Discovery 1: Did They Really Add ``Zero Code'' for Frozen Kids?}
+
+In \emph{Ingressing Minds}, Levin wrote that they \emph{``did not add steps to the algorithm\dots\ to do specific things if an operation failed.''}
+\begin{itemize}
+  \item For \textbf{Bubble} kids, that is $100\%$ true! If a Bubble kid tries to swap with a frozen kid, the frozen kid simply doesn't move.
+  \item \textbf{Insertion} kids, however, have a strict rule: \emph{``Never step left unless everyone to your left is already in order.''} If a frozen kid wearing $\#99$ is stuck near the front of the line (Figure~\ref{fig:13yo_fig1}, middle row), then the line to the left is \emph{never} in order --- so every single Insertion kid behind $\#99$ would freeze forever!
+  \item When we looked at lines 74--76 of their file \texttt{InsertionSortCell.py}, we found \textbf{3 lines of special code} that explicitly check \texttt{if status == FREEZE: prev = -1} (telling Insertion kids: \emph{``If you see a frozen kid, pretend the line starts over right after them!''}). When we deleted those 3 lines of code, the Insertion kids froze up and their final error jumped $\mathbf{4.5\times}$ higher ($4.9 \to 21.95$)!
+\end{itemize}
+
+% ============================================================================
+\section{Discovery 2: Why ``Delayed Gratification'' Was an Optical Illusion of the Ruler!}
+
+Levin compared the sorting line to a person walking \emph{backwards} around a wall to reach a goal (unlike two magnets stuck on opposite sides of a wooden board), because the paper's messiness score (\textbf{Neighbor Steps $E(v)$}) goes \emph{up} ($+1$) 47 times before going down.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\textwidth]{media/zhang_13yo_fig2_two_rulers_illusion.png}
+  \caption{\textbf{Why ``Delayed Gratification'' Was an Optical Illusion of the Ruler!} Look at 4 kids: $\mathbf{[2, 4, 1, 3]}$. Before the swap (left), there are $\mathbf{3}$ out-of-order pairs under \textbf{Ruler 1} ($2>1$, $4>1$, $4>3$, green arches) and $\mathbf{1}$ neighbor cliff under \textbf{Ruler 2} ($4>1$, red arrow). When $4$ and $1$ swap to make $\mathbf{[2, 1, 4, 3]}$ (right), \textbf{Ruler 1 goes strictly DOWN from $3 \to 2$} (closer to sorted!), but \textbf{Ruler 2 goes UP from $1 \to 2$} because swapping $4 \leftrightarrow 1$ split one big cliff ($4>1$) into two smaller steps ($2>1$ and $4>3$)!}
+  \label{fig:13yo_fig2}
+\end{figure}
+
+Figure~\ref{fig:13yo_fig2} shows why that happens:
+\begin{enumerate}
+  \item \textbf{Zero Bubble kids ever cross the wall:} Because Bubble kids only swap with immediate neighbors, if a frozen kid stands at spot $\#20$, \textbf{zero kids from the left of $\#20$ ever reach the right of $\#20$}!
+  \item \textbf{Two Different Rulers for Messiness:}
+  \begin{itemize}
+    \item \textbf{Ruler 1 --- Total Out-of-Order Pairs $I(v)$ (Green Arches):} Count \emph{every} pair of kids in the whole line where a bigger number is standing to the left of a smaller number. Every single Bubble swap in history reduces $I(v)$ by $\mathbf{-1}$ ($\mathbf{0}$ uphill steps out of 192 swaps!).
+    \item \textbf{Ruler 2 --- Only Neighbor Steps $E(v)$ (Red Arrows):} Only count how many times a kid is bigger than the kid \emph{immediately} to their right. When $4$ and $1$ swap in $[2, 4, 1, 3] \to [2, 1, 4, 3]$, Total Pairs $I(v)$ goes \textbf{down ($3 \to 2$)}, but Neighbor Steps $E(v)$ goes \textbf{up ($1 \to 2$)} because one big cliff ($4 > 1$) got split into two small steps ($2 > 1$ and $4 > 3$).
+  \end{itemize}
+  \item \textbf{Erik Hoel's ``Causal Emergence 2.0'' Test Proves Ruler 1 Is the Real Law:}
+  When we test both rulers using Erik Hoel's 2026 \emph{Causal Emergence 2.0} math (\emph{Patterns} 7:101472), \textbf{Ruler 1 ($I(v)$) is $100\%$ deterministic with positive Causal Emergence ($+0.119$)}, whereas \textbf{Ruler 2 ($E(v)$) has negative Causal Emergence ($-0.253$)}. The kids never walked backwards --- Ruler 2 just had a blind spot!
+\end{enumerate}
+
+% ============================================================================
+\section{Discovery 3: Why the Computer-Science Critics Were Wrong Twice About the ``Secret Cliques''!}
+
+Remember how the online blog critics claimed: \emph{``The Bubble and Selection kids only cluster together because of textbook Bubble-sort stability on duplicate numbers!''}? Our experiments proved the critics were wrong \textbf{twice}:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.99\textwidth]{media/zhang_13yo_fig3_sports_cars_vs_pedestrians.png}
+  \caption{\textbf{How $C = 2$ Copies per Number Proves the Blog Critics Wrong!} Because Selection kids (\texttt{S}, orange) scan their target pointer from the left end of the line ($0, 1, 2\dots$), \textbf{$75\%$ of Selection kids grab the LEFT spots of each number's group, pushing Bubble kids (\texttt{B}, blue) to the RIGHT spots}. \textbf{Top (Case A, $C=2$ copies per number):} Putting \texttt{S} on the left and \texttt{B} on the right of each 2-kid pair creates the alternating pattern \texttt{S B | S B | S B}, which drives clustering \textbf{below random ($0.477 < 0.50$, Anti-Clustering!)} --- the exact opposite of textbook stability! \textbf{Bottom (Case B, $C=8\text{--}10$ copies):} Putting all \texttt{S} kids on the left half and all \texttt{B} kids on the right half (\texttt{SSSS | BBBB}) creates huge cliques ($0.659 > 0.50$).}
+  \label{fig:13yo_fig3}
+\end{figure}
+
+\begin{enumerate}
+  \item \textbf{Test 1 --- Zero Duplicate Numbers ($1 \dots 80$, All Unique):}
+  When every single kid wears a different number, ``duplicate-key stability'' is impossible because there are no duplicates! Yet halfway through sorting, the Bubble and Selection kids \textbf{still cluster together ($0.50 \to 0.624$)}! Why? Because \textbf{Selection kids move like sports cars and Bubble kids move like pedestrians}: Selection kids teleport small numbers straight to the front of the line, shoving a wave of Bubble kids into the right half of the line.
+  \item \textbf{Test 2 --- The $C = 2$ ``Anti-Clustering'' Smoking Gun on Duplicate Numbers (Figure~\ref{fig:13yo_fig3}):}
+  Even when there \emph{are} duplicate numbers, if textbook Bubble-sort stability were the cause, keeping randomly shuffled equal numbers in their starting order would leave clustering at $\mathbf{0.50}$ (random) for every group size $C$. Instead, because Selection kids always scan from the left ($0, 1, 2\dots$), \textbf{$75\%$ of Selection kids grab the left half of every number's group (\texttt{S...S | B...B})}:
+  \begin{itemize}
+    \item When there are $\mathbf{C = 2}$ \textbf{copies of each number} (Figure~\ref{fig:13yo_fig3}, top), putting \texttt{S} on the left and \texttt{B} on the right of each pair creates $\mathtt{S\,B \mid S\,B \mid S\,B}$, driving clustering \textbf{below $0.50$ ($0.477$ --- Anti-Clustering!)}!
+    \item When there are $\mathbf{C = 8\text{--}10}$ \textbf{copies of each number} (Figure~\ref{fig:13yo_fig3}, bottom), each group forms $\mathtt{SSSSS \mid BBBBB}$, driving clustering \textbf{way up to $0.659$}!
+  \end{itemize}
+\end{enumerate}
+
+% ============================================================================
+\section{The Take-Home Lesson: Why Both Biology and Math Win}
+
+\begin{enumerate}
+  \item \textbf{What Michael Levin Got Right (``Mathematical Free Lunches''):}
+  You really \emph{do} get ``more out than you put in'' when cells follow simple local rules! Without any central gym teacher or friend-detector code, the geometry of permutations and differences in movement speed automatically create self-sorting, error tolerance, and group segregation. Real biological embryos exploit these mathematical ``free lunches'' every day.
+  \item \textbf{Why You Don't Need Ghosts in the Machine:}
+  Once you use the right mathematical ruler --- \textbf{Total Out-of-Order Pairs $I(v)$} (which has $+0.119$ Causal Emergence) instead of \textbf{Neighbor Steps $E(v)$} ($-0.253$), and \textbf{sports-car vs.\ pedestrian traffic waves (\texttt{S...S | B...B})} --- $100\%$ of the behavior is explained and predicted by the 6 lines of code!
+\end{enumerate}
+
+\end{document}

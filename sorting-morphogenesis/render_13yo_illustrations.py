@@ -1,0 +1,276 @@
+#!/usr/bin/env python3
+"""
+sorting-morphogenesis/render_13yo_illustrations.py —
+Generates 4 intuitive, colorful, visual diagram plates specifically designed for
+the 13-Year-Old's Illustrated PDF Guide (`docs/zhang_levin_13yo_illustrated_guide.pdf`):
+
+  1. `docs/media/zhang_13yo_fig1_three_personalities.png`:
+     Visual cartoon of the line of kids in gym class wearing numbered jerseys,
+     illustrating the 3 personalities (Bubble = neighbor swap, Insertion = wait
+     for sorted left line + the `prev = -1` frozen-kid reset rule, Selection =
+     long-range target pointer jumping right over a Frozen brick-wall kid!).
+  2. `docs/media/zhang_13yo_fig2_two_rulers_illusion.png`:
+     Step-by-step visual proof of the "Two Rulers" illusion on `[2, 4, 1, 3] -> [2, 1, 4, 3]`,
+     drawing every out-of-order pair arch (`I: 3 -> 2`, strictly downhill!) right
+     above the neighbor-step cliff diagram (`E: 1 -> 2`, why the paper's ruler
+     went up even though the kids moved strictly closer to sorted!).
+  3. `docs/media/zhang_13yo_fig3_sports_cars_vs_pedestrians.png`:
+     Visual diagram of the "Secret Clique" mystery:
+       - Top: Unique numbers (`1..12`) showing fast Selection "sports cars"
+         teleporting left and compressing slow Bubble "pedestrians" into a
+         traffic wave on the right.
+       - Bottom: Duplicate numbers showing why Selection grabs the LEFT half of
+         each number's group (`S...S | B...B`), creating `S B | S B | S B`
+         anti-clustering (`0.477 < 0.50`) at `C = 2` copies per number and
+         `SSSSS | BBBBB` mega-cliques (`0.659`) at `C = 10` copies per number!
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Circle, Rectangle
+
+ROOT = Path(__file__).resolve().parent.parent
+MEDIA = ROOT / "docs" / "media"
+
+
+def draw_jersey_kid(ax, x, y, number, algo="B", frozen=False, width=0.68, height=0.82):
+    """Draw a kid/cell card with a jersey number and algotype badge."""
+    if frozen:
+        face = "#dc2626"
+        edge = "#fef08a"
+        badge_col = "#7f1d1d"
+        lbl = "FROZEN"
+    elif algo == "B":
+        face = "#2563eb"
+        edge = "#93c5fd"
+        badge_col = "#1e3a8a"
+        lbl = "Bubble (B)"
+    elif algo == "I":
+        face = "#16a34a"
+        edge = "#86efac"
+        badge_col = "#14532d"
+        lbl = "Insert (I)"
+    else:
+        face = "#ea580c"
+        edge = "#fdba74"
+        badge_col = "#7c2d12"
+        lbl = "Select (S)"
+
+    box = FancyBboxPatch(
+        (x - width / 2, y - height / 2), width, height,
+        boxstyle="round,pad=0.06,rounding_size=0.12",
+        facecolor=face, edgecolor=edge, linewidth=2.2, zorder=4
+    )
+    ax.add_patch(box)
+    ax.text(x, y + 0.08, f"#{number}", color="#ffffff", fontsize=13.5, fontweight="bold", ha="center", va="center", zorder=5)
+    ax.text(
+        x, y - 0.25, lbl, color="#fef08a" if frozen else "#e2e8f0",
+        fontsize=7.2, fontweight="bold", ha="center", va="center",
+        bbox=dict(boxstyle="round,pad=0.12", facecolor=badge_col, edgecolor="none"), zorder=5
+    )
+
+
+def render_fig1_three_personalities():
+    fig, axes = plt.subplots(3, 1, figsize=(12.5, 7.8), dpi=150, facecolor="#0b1325")
+    fig.subplots_adjust(hspace=0.42, left=0.04, right=0.96, top=0.88, bottom=0.05)
+
+    fig.suptitle(
+        "Illustrated Guide 1: The Three 'Cell Personalities' (Algotypes) & How They Handle a Frozen Kid",
+        color="#f8fafc", fontsize=13.5, fontweight="bold", y=0.96
+    )
+
+    # Row 1: Bubble Kids
+    ax = axes[0]
+    ax.set_facecolor("#0f172a")
+    ax.set_xlim(-0.8, 7.8)
+    ax.set_ylim(-0.75, 0.95)
+    ax.set_xticks([]); ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_color("#38bdf8"); sp.set_linewidth(1.6)
+    ax.set_title(
+        "1. Bubble Kids (B — Blue): Only Swap With Immediate Neighbors (Blocked Forever by a Frozen Wall!)",
+        color="#38bdf8", fontsize=10.8, fontweight="bold", pad=6
+    )
+    nums_b = [(1, "B", False), (4, "B", False), (99, "B", True), (2, "B", False), (5, "B", False), (3, "B", False)]
+    for i, (num, al, fr) in enumerate(nums_b):
+        draw_jersey_kid(ax, i * 1.15 + 0.3, 0.0, num, al, fr)
+    # Draw swap arrow between #5 and #3
+    arr1 = FancyArrowPatch((4 * 1.15 + 0.3, 0.48), (5 * 1.15 + 0.3, 0.48), connectionstyle="arc3,rad=-0.45",
+                           arrowstyle="<->,head_length=6,head_width=5", color="#38bdf8", lw=2.4, zorder=6)
+    ax.add_patch(arr1)
+    ax.text(4.5 * 1.15 + 0.3, 0.74, "Neighbor swap OK! (#5 > #3)", color="#38bdf8", fontsize=8.5, fontweight="bold", ha="center")
+    # Blocked X at frozen #99
+    ax.text(2.5 * 1.15 + 0.3, 0.62, "✖ BLOCKED! #2 can NEVER get past Frozen #99!", color="#f87171", fontsize=8.8, fontweight="bold", ha="center",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="#450a0a", edgecolor="#ef4444"))
+
+    # Row 2: Insertion Kids
+    ax = axes[1]
+    ax.set_facecolor("#0f172a")
+    ax.set_xlim(-0.8, 7.8)
+    ax.set_ylim(-0.75, 0.95)
+    ax.set_xticks([]); ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_color("#4ade80"); sp.set_linewidth(1.6)
+    ax.set_title(
+        "2. Insertion Kids (I — Green): Need a Sorted Left Line — Saved by 3 Lines of 'Reset' Code (`if FREEZE: prev = -1`)!",
+        color="#4ade80", fontsize=10.8, fontweight="bold", pad=6
+    )
+    nums_i = [(2, "I", False), (99, "I", True), (6, "I", False), (9, "I", False), (7, "I", False), (12, "I", False)]
+    for i, (num, al, fr) in enumerate(nums_i):
+        draw_jersey_kid(ax, i * 1.15 + 0.3, 0.0, num, al, fr)
+    ax.text(1 * 1.15 + 0.3, 0.66, "Special Code L74–76:\n`if FREEZE: prev = -1`\n(Resets memory here!)", color="#fef08a", fontsize=8.0, fontweight="bold", ha="center",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="#14532d", edgecolor="#4ade80"))
+    arr2 = FancyArrowPatch((4 * 1.15 + 0.3, 0.48), (3 * 1.15 + 0.3, 0.48), connectionstyle="arc3,rad=0.45",
+                           arrowstyle="->,head_length=6,head_width=5", color="#4ade80", lw=2.4, zorder=6)
+    ax.add_patch(arr2)
+    ax.text(3.5 * 1.15 + 0.3, 0.74, "Because memory reset after #99, #7 sees [6, 9] is sorted & steps left!", color="#86efac", fontsize=8.2, fontweight="bold", ha="center")
+
+    # Row 3: Selection Kids
+    ax = axes[2]
+    ax.set_facecolor("#0f172a")
+    ax.set_xlim(-0.8, 7.8)
+    ax.set_ylim(-0.75, 0.95)
+    ax.set_xticks([]); ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_color("#facc15"); sp.set_linewidth(1.6)
+    ax.set_title(
+        "3. Selection Kids (S — Orange): Use a Long-Range `target` Pointer to Teleport Right Over the Frozen Wall!",
+        color="#facc15", fontsize=10.8, fontweight="bold", pad=6
+    )
+    nums_s = [(8, "S", False), (5, "S", False), (99, "S", True), (9, "S", False), (1, "S", False), (11, "S", False)]
+    for i, (num, al, fr) in enumerate(nums_s):
+        draw_jersey_kid(ax, i * 1.15 + 0.3, 0.0, num, al, fr)
+    arr3 = FancyArrowPatch((4 * 1.15 + 0.3, 0.46), (0 * 1.15 + 0.3, 0.46), connectionstyle="arc3,rad=0.32",
+                           arrowstyle="<->,head_length=7,head_width=6", color="#facc15", lw=2.8, zorder=6)
+    ax.add_patch(arr3)
+    ax.text(2.0 * 1.15 + 0.3, 0.75, "TELEPORT SWAP! Kid #1 points `target = Slot 0` and swaps with #8 right over Frozen #99!", color="#fef08a", fontsize=8.6, fontweight="bold", ha="center",
+            bbox=dict(boxstyle="round,pad=0.18", facecolor="#7c2d12", edgecolor="#facc15"))
+
+    out = MEDIA / "zhang_13yo_fig1_three_personalities.png"
+    fig.savefig(out, dpi=150, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print("Saved", out)
+
+
+def render_fig2_two_rulers_illusion():
+    fig, axes = plt.subplots(1, 2, figsize=(13.2, 5.6), dpi=150, facecolor="#0b1325")
+    fig.subplots_adjust(wspace=0.16, left=0.04, right=0.96, top=0.82, bottom=0.08)
+
+    fig.suptitle(
+        "Illustrated Guide 2: Why 'Delayed Gratification' Was an Optical Illusion of the Ruler!\n"
+        "Swapping 4 ↔ 1 in [2, 4, 1, 3] → [2, 1, 4, 3] Goes STRICTLY DOWNHILL on Ruler 1 (I: 3 → 2), While Ruler 2 Goes Up (E: 1 → 2)!",
+        color="#f8fafc", fontsize=12.0, fontweight="bold", y=0.96
+    )
+
+    states = [
+        ("BEFORE SWAP:  [ 2,  4,  1,  3 ]", [2, 4, 1, 3], [(0, 2, "2 > 1"), (1, 2, "4 > 1"), (1, 3, "4 > 3")], [(1, 2, "1 Big Cliff: 4 > 1")], "Ruler 1 (True Energy I) = 3 Inversions\nRuler 2 (Neighbor Drops E) = 1 Drop"),
+        ("AFTER SWAP (4 ↔ 1):  [ 2,  1,  4,  3 ]", [2, 1, 4, 3], [(0, 1, "2 > 1"), (2, 3, "4 > 3")], [(0, 1, "Step 1: 2 > 1"), (2, 3, "Step 2: 4 > 3")], "Ruler 1 (True Energy I) = 2 Inversions (DOWN -1!)\nRuler 2 (Neighbor Drops E) = 2 Drops (UP +1?!)"),
+    ]
+
+    for idx, (tit, arr, inv_pairs, adj_drops, summary_txt) in enumerate(states):
+        ax = axes[idx]
+        ax.set_facecolor("#0f172a")
+        ax.set_xlim(-0.6, 3.6)
+        ax.set_ylim(-1.35, 1.55)
+        ax.set_xticks([]); ax.set_yticks([])
+        for sp in ax.spines.values():
+            sp.set_color("#facc15" if idx == 1 else "#38bdf8")
+            sp.set_linewidth(2.0)
+        ax.set_title(tit, color="#facc15" if idx == 1 else "#38bdf8", fontsize=11.2, fontweight="bold", pad=8)
+
+        for i, v in enumerate(arr):
+            draw_jersey_kid(ax, i, 0.0, v, "B", False, width=0.58, height=0.72)
+
+        # Top arches: Ruler 1 (Total Out-of-Order Pairs I(v))
+        ax.text(1.5, 1.38, f"RULER 1 — Total Out-of-Order Pairs I(v) = {len(inv_pairs)} (Hoel CE 2.0 = +0.119, 100% Deterministic)",
+                color="#4ade80", fontsize=8.8, fontweight="bold", ha="center",
+                bbox=dict(boxstyle="round,pad=0.2", facecolor="#052e16", edgecolor="#4ade80"))
+        heights = [0.62, 0.88, 1.12]
+        for k, (i1, i2, lbl) in enumerate(inv_pairs):
+            rad = -0.38 - 0.12 * k
+            arc = FancyArrowPatch((i1, 0.38), (i2, 0.38), connectionstyle=f"arc3,rad={rad}",
+                                  arrowstyle="-", color="#4ade80", lw=2.2, zorder=6)
+            ax.add_patch(arc)
+            ax.text(0.5 * (i1 + i2), heights[k], lbl, color="#86efac", fontsize=8.0, fontweight="bold", ha="center")
+
+        # Bottom brackets: Ruler 2 (Neighbor Drops E(v))
+        ax.text(1.5, -1.18, f"RULER 2 — Only Neighbor Steps E(v) = {len(adj_drops)} (Hoel CE 2.0 = -0.253, Non-Lumpable Illusion!)",
+                color="#f87171", fontsize=8.6, fontweight="bold", ha="center",
+                bbox=dict(boxstyle="round,pad=0.2", facecolor="#450a0a", edgecolor="#ef4444"))
+        for i1, i2, lbl in adj_drops:
+            arc_b = FancyArrowPatch((i1, -0.38), (i2, -0.38), connectionstyle="arc3,rad=0.42",
+                                    arrowstyle="->,head_length=6,head_width=5", color="#f87171", lw=2.5, zorder=6)
+            ax.add_patch(arc_b)
+            ax.text(0.5 * (i1 + i2), -0.82, lbl, color="#fca5a5", fontsize=8.2, fontweight="bold", ha="center")
+
+    out = MEDIA / "zhang_13yo_fig2_two_rulers_illusion.png"
+    fig.savefig(out, dpi=150, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print("Saved", out)
+
+
+def render_fig3_sports_cars_and_c2():
+    fig, axes = plt.subplots(2, 1, figsize=(12.8, 6.4), dpi=150, facecolor="#0b1325")
+    fig.subplots_adjust(hspace=0.42, left=0.04, right=0.96, top=0.86, bottom=0.06)
+
+    fig.suptitle(
+        "Illustrated Guide 3: Why 'Secret Cliques' Form — And How C = 2 Copies Proves the Blog Critics Wrong!",
+        color="#f8fafc", fontsize=12.8, fontweight="bold", y=0.96
+    )
+
+    # Top row: C = 2 copies per number -> S B | S B | S B Anti-Clustering!
+    ax0 = axes[0]
+    ax0.set_facecolor("#0f172a")
+    ax0.set_xlim(-0.6, 8.6)
+    ax0.set_ylim(-0.75, 0.95)
+    ax0.set_xticks([]); ax0.set_yticks([])
+    for sp in ax0.spines.values():
+        sp.set_color("#f87171"); sp.set_linewidth(1.8)
+    ax0.set_title(
+        "Case A: C = 2 Copies of Each Number (#1, #1, #2, #2, #3, #3, #4, #4) → Selection Grabs the LEFT Spot of Each Pair (`S B | S B | S B`) → ANTI-CLUSTERING (0.477 < 0.50)!",
+        color="#f87171", fontsize=9.8, fontweight="bold", pad=6
+    )
+    c2_cells = [(1, "S"), (1, "B"), (2, "S"), (2, "B"), (3, "S"), (3, "B"), (4, "S"), (4, "B")]
+    for i, (num, al) in enumerate(c2_cells):
+        draw_jersey_kid(ax0, i * 1.05 + 0.3, -0.05, num, al, False, width=0.64, height=0.74)
+    for g in range(4):
+        x_left = (2 * g) * 1.05 - 0.08
+        rect = Rectangle((x_left, -0.48), 1.92, 0.88, facecolor="none", edgecolor="#facc15", lw=1.8, ls="--", zorder=3)
+        ax0.add_patch(rect)
+        ax0.text(x_left + 0.96, 0.58, f"Group #{g+1}: S then B!", color="#fef08a", fontsize=8.0, fontweight="bold", ha="center")
+
+    # Bottom row: C = 4+ copies per number -> S S S S | B B B B Mega-Cliques!
+    ax1 = axes[1]
+    ax1.set_facecolor("#0f172a")
+    ax1.set_xlim(-0.6, 8.6)
+    ax1.set_ylim(-0.75, 0.95)
+    ax1.set_xticks([]); ax1.set_yticks([])
+    for sp in ax1.spines.values():
+        sp.set_color("#4ade80"); sp.set_linewidth(1.8)
+    ax1.set_title(
+        "Case B: Many Copies of the Same Number (e.g. Eight #1s) → Selection Packs the Left Half (`S S S S | B B B B`) → BIG CLIQUES (0.659 > 0.50)!",
+        color="#4ade80", fontsize=9.8, fontweight="bold", pad=6
+    )
+    c8_cells = [(1, "S"), (1, "S"), (1, "S"), (1, "S"), (1, "B"), (1, "B"), (1, "B"), (1, "B")]
+    for i, (num, al) in enumerate(c8_cells):
+        draw_jersey_kid(ax1, i * 1.05 + 0.3, -0.05, num, al, False, width=0.64, height=0.74)
+    ax1.add_patch(Rectangle((-0.08, -0.48), 4.02, 0.88, facecolor="none", edgecolor="#facc15", lw=2.0, ls="--", zorder=3))
+    ax1.text(1.90, 0.58, "Left Half of Group #1: All Selection ('Sports Cars' Arrive First!)", color="#fdba74", fontsize=8.4, fontweight="bold", ha="center")
+    ax1.add_patch(Rectangle((4.12, -0.48), 4.02, 0.88, facecolor="none", edgecolor="#38bdf8", lw=2.0, ls="--", zorder=3))
+    ax1.text(6.10, 0.58, "Right Half of Group #1: All Bubble ('Pedestrians' Displaced Right!)", color="#93c5fd", fontsize=8.4, fontweight="bold", ha="center")
+
+    out = MEDIA / "zhang_13yo_fig3_sports_cars_vs_pedestrians.png"
+    fig.savefig(out, dpi=150, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print("Saved", out)
+
+
+if __name__ == "__main__":
+    render_fig1_three_personalities()
+    render_fig2_two_rulers_illusion()
+    render_fig3_sports_cars_and_c2()
