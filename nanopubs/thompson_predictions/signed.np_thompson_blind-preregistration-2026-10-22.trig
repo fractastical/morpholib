@@ -1,0 +1,128 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix mlt: <https://w3id.org/morpholib/thompson/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <https://w3id.org/morpholib/thompson/np/blind-preregistration-2026-10-22/RAilN4nbRHp3e3ZHqlbIgeL3UGPRV_KtQHtJD3gzVVdqw/> .
+@prefix this: <https://w3id.org/morpholib/thompson/np/blind-preregistration-2026-10-22/RAilN4nbRHp3e3ZHqlbIgeL3UGPRV_KtQHtJD3gzVVdqw> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://github.com/fractastical/morpholib/blob/main/thompson/run_phylogenetic_prediction_engine.py> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/s41586-018-0273-1>,
+            <https://doi.org/10.1371/journal.pone.0112732> ;
+        prov:wasGeneratedBy <https://github.com/fractastical/morpholib/commit/dac08493e6f0e578c3409e6f6db830be6971844a> .
+
+    <https://github.com/fractastical/morpholib/commit/dac08493e6f0e578c3409e6f6db830be6971844a> a prov:Activity ;
+        rdfs:label "Run of thompson/run_phylogenetic_prediction_engine.py at morpholib commit dac08493e6f0" ;
+        prov:endedAtTime "2026-10-22"^^xsd:date ;
+        prov:used <https://doi.org/10.1038/s41586-018-0273-1>,
+            <https://doi.org/10.1371/journal.pone.0112732>,
+            <https://github.com/fractastical/morpholib/blob/main/thompson/run_phylogenetic_prediction_engine.py> .
+
+    <https://github.com/fractastical/morpholib/blob/main/thompson/run_phylogenetic_prediction_engine.py> a prov:SoftwareAgent ;
+        rdfs:label "Thompson 1917 phylogenetic prediction engine (7 linearised Thompson modes + Pagel-lambda PGLS on the Rabosky 2018 tree)" .
+}
+
+sub:assertion {
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22> a mlt:BlindPredictionPreregistration ;
+        rdfs:label "Pre-registration of 10888 blind body-shape predictions (Thompson 1917 phylogenetic prediction engine), 2026-10-22" ;
+        dcterms:description "Predictions of body-proportion ratios and 17-landmark configurations for every species on the Rabosky et al. (2018) tree not in the Claverie & Wainwright (2014) training set, frozen before the comparison dataset (FishShapes, Price et al. 2022) was downloaded or inspected. The hashes above identify the frozen files; the hypotheses and protocol above are the complete analysis plan." ;
+        mlt:gitCommit <https://github.com/fractastical/morpholib/commit/dac08493e6f0e578c3409e6f6db830be6971844a> ;
+        mlt:hasHypothesis <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H1>,
+            <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H2>,
+            <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H3>,
+            <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H4>,
+            <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H5>,
+            <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H6>,
+            <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H7> ;
+        mlt:lockedFile <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-file-thompson_blind_predictions_registered-csv>,
+            <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-file-thompson_blind_predictions_registered-json> ;
+        mlt:modelFull30 "Pagel lambda=0.924" ;
+        mlt:modelThompson7 "Pagel lambda=0.959" ;
+        mlt:nTargetSpecies 10888 ;
+        mlt:nTrainingSpecies 743 ;
+        mlt:protocol_calibration "Landmark-based ratios differ systematically from calliper ratios (e.g. landmark BDmax is the vertical landmark extent). A single linear map obs = alpha + beta * landmark_ratio is fitted by least squares on the TRAINING species present in the comparison dataset, using their OBSERVED landmark ratios (not predictions). It is applied to predicted point estimates and interval bounds of every method (prediction, consensus, nearest-relative copy, family mean alike), so it cannot favour one method. Raw results are reported alongside." ;
+        mlt:protocol_comparison_dataset "FishShapes v1 (Price, Larouche, Friedman, Corn, Wainwright & Martinez 2022, Ecology 103:e3829; Dryad). Linear measurements of museum specimens for ~6,000 teleost species. Never downloaded, opened, or used in this repository before the registration commit; the FishBase morphometric tables already in .thompson_cache/ are NOT the comparison dataset." ;
+        mlt:protocol_error_metric "absolute error |predicted ratio - observed species ratio|; summarised by median within tau bins and overall; paired one-sided Wilcoxon signed-rank tests, alpha = 0.01 for primary hypotheses, with n reported." ;
+        mlt:protocol_exclusions "The 743 training species and the 7 digitised 1917 museum species are excluded from scoring (they may be used only for the convention calibration below). Species not on the Rabosky tree cannot be predicted and are excluded." ;
+        mlt:protocol_fallback_dataset "If FishShapes cannot be obtained, any independent published dataset of standard length and maximum body depth per species not previously used here, declared before opening it." ;
+        mlt:protocol_horizon_tau "tau = age (Myr) of the MRCA between the target and its nearest training species on the Rabosky tree, computed from the tree alone, before any data are seen. Species outside the sampled crown clade get tau = crown age and the root-state prediction." ;
+        mlt:protocol_no_tuning "No model, basis, bin edge, exclusion or metric may be changed after the comparison data are opened. Anything learned afterwards is exploratory and will be labelled as such in the results document." ;
+        mlt:protocol_per_species_value "Median across specimens of (measurement / standard length) computed per specimen. Specimens with missing SL or measurement are dropped; species need >= 1 specimen." ;
+        mlt:protocol_species_matching "Exact match of 'Genus_species' after normalising case, whitespace/underscore and stripping subspecies/author strings; no fuzzy matching. Synonyms are not resolved (a conservative choice that only loses power)." ;
+        mlt:ratioDefinition_BDmax_over_SL "maximum body depth excluding fin webs / standard length. Landmark proxy: vertical extent of the 17 landmarks / (snout to caudal-fin insertion midpoint). PRIMARY." ;
+        mlt:ratioDefinition_CPD_over_SL "caudal-peduncle depth / standard length. Landmark proxy: distance between dorsal (LM5) and ventral (LM6) caudal-fin insertions / SL. SECONDARY (the dataset's 'minimum' peduncle depth will be a little smaller than the insertion-to-insertion distance)." ;
+        mlt:ratioDefinition_HL_over_SL "head length / standard length. Landmark proxy: snout (mean LM1-2) to opercle landmark (LM11) / SL. EXPLORATORY (only if the dataset reports head length)." ;
+        mlt:ratioDefinition_PD_over_SL "predorsal length / standard length. Landmark proxy: snout to dorsal-fin origin (LM3), straight line / SL. EXPLORATORY." .
+
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H1> a mlt:PreregisteredHypothesis ;
+        rdfs:label "H1" ;
+        dcterms:description "For target species with a training relative within 50 Myr (tau < 50), the full 30-D phylogenetic prediction of BDmax/SL has smaller absolute error than the grand-consensus value. Test: one-sided paired Wilcoxon signed-rank on |error| across species; also median |error| ratio. Expected: full30 median |error| < 0.8 x consensus median |error|." ;
+        mlt:isPrimary true .
+
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H2> a mlt:PreregisteredHypothesis ;
+        rdfs:label "H2" ;
+        dcterms:description "For tau < 50, the full 30-D prediction beats copying the nearest training relative's observed landmark ratio (same test). Expected margin smaller than H1; this held at every horizon < 50 Myr in the internal hold-out." ;
+        mlt:isPrimary true .
+
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H3> a mlt:PreregisteredHypothesis ;
+        rdfs:label "H3" ;
+        dcterms:description "After the pre-specified measurement-convention calibration (Section 'Calibration'), the 95% predictive intervals of BDmax/SL for tau < 50 contain the observed species value in 85-97% of species. Raw (uncalibrated) coverage is also reported." ;
+        mlt:isPrimary true .
+
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H4> a mlt:PreregisteredHypothesis ;
+        rdfs:label "H4" ;
+        dcterms:description "For tau >= 50, the full 30-D prediction does NOT beat the consensus by more than 10% in median |error| (the ~50 Myr horizon found internally and in the Thompson-pair analysis)." ;
+        mlt:isPrimary true .
+
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H5> a mlt:PreregisteredHypothesis ;
+        rdfs:label "H5" ;
+        dcterms:description "Median |error| of the full 30-D prediction increases monotonically across the tau bins [0,5), [5,10), [10,25), [25,50), [50,80), [80,120), [120,inf) (Spearman rho > 0 on bin medians; at least 5 of 6 consecutive steps non-decreasing)." ;
+        mlt:isPrimary false .
+
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H6> a mlt:PreregisteredHypothesis ;
+        rdfs:label "H6" ;
+        dcterms:description "The a-priori 7-Thompson-mode prediction is worse than the full 30-D prediction (median |error| larger) but still beats the consensus for tau < 50." ;
+        mlt:isPrimary false .
+
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-H7> a mlt:PreregisteredHypothesis ;
+        rdfs:label "H7" ;
+        dcterms:description "Secondary ratio CPD/SL: full 30-D beats consensus for tau < 50 (as H1). Exploratory HL/SL, PD/SL likewise if present in the dataset." ;
+        mlt:isPrimary false .
+
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-file-thompson_blind_predictions_registered-csv> a mlt:LockedFile ;
+        rdfs:label "thompson_blind_predictions_registered.csv" ;
+        mlt:sha256 "1d50205ffc2ed9954e707eba2e3db6aaa4871620df6cecf9e4cf766fe3046171" ;
+        mlt:url <https://github.com/fractastical/morpholib/blob/dac08493e6f0e578c3409e6f6db830be6971844a/thompson_blind_predictions_registered.csv> .
+
+    <https://w3id.org/morpholib/thompson/preregistration/blind-preregistration-2026-10-22-file-thompson_blind_predictions_registered-json> a mlt:LockedFile ;
+        rdfs:label "thompson_blind_predictions_registered.json" ;
+        mlt:sha256 "2e41cb1aaf1b21035f7d4970178861ee0ad6698a5b31ba35d8f1b87bca03b38b" ;
+        mlt:url <https://github.com/fractastical/morpholib/blob/dac08493e6f0e578c3409e6f6db830be6971844a/thompson_blind_predictions_registered.json> .
+}
+
+sub:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:pubinfo {
+    sub:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "kC/f1MA5pjzfstHMWb9jXu6N4e+/uHyK8nqlzBuzX/ovTZ7pUja73XuOSRTmq6afoPmSpoZkRJSgbn/QkOUxxxJe0y0bI/A1cnE3l4T6s6oVOYTnHXSvKuHXJIy2LVF56S1ol4vGUVYjcjXkeKcHSPYjPd9WUaYQ4NgP+EAe53zfXzF7gsdvgD4hsDPXeEtTqBGBe8G5It8oJ+7rcJvmFfNjeWVJ+GJzlE4SyYH8D3iCgQW60gbAX+4+MWMD+4FcPRZxzq6zF0INnKI6P3RawzaMeh3xtUoEpgj7BKSIVbmKnIy5zCmUwUIKjnA0n6E0ZNvsObD7yMdyfYA3K7lSMg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    orcid:0009-0007-4948-9192 rdfs:label "Joel Dietz" .
+
+    this: dcterms:created "2026-10-22"^^xsd:date ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:isPartOf <https://github.com/fractastical/morpholib/blob/main/docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md> ;
+        dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> .
+}
+
