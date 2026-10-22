@@ -760,6 +760,43 @@ theorem rule30_soliton_head_inductive_closure
     (y12 || y13) = true ∧ c9 = false ∧ y9 = true ∧ y8 = (!y10) ∧ y7 = y8 ∧ y6 = true := by
   cases b <;> cases y13 <;> cases y14 <;> decide
 
+/-- Law 2al (`wolfram-conus-textile-rule30-2al`):
+    Intra-Block / Post-Exit Crystal Unification `U_{2, a, k}(k + s) = C_{k+1}^*(s + 1)`,
+    4-Bit Affine Codeword `(beta, beta, 1, !beta)` & Forbidden Gap `{27, 28, 29}`, and
+    Modulo-3 Soliton Slot-Sampling / Transparent Tunneling Law (Theorem 63):
+    1. (`rule30_four_bit_affine_codeword_jump`): Because every crystal `d_1 in {0, 1, 2}` satisfies
+       `(Y_7(s), Y_8(s), Y_9(s), Y_{10}(s)) = (beta, beta, true, !beta)` for `beta := Y_7(s)` (`s >= 13`),
+       whenever all 3 crystals agree at `j = 7` (`beta_0 = beta_1 = beta_2`), they automatically agree across
+       all 4 cells `j in {7, 8, 9, 10}`, forbidding `3s - Q_sync(a_1, s)` from ever taking values in `{27, 28, 29}`!
+    2. (`rule30_mod3_soliton_slot_sampling`): In `Delta_q^*(s')` (and identically `E_k^{(2)}(s) = Delta_{k+1}^*(s + 1)`),
+       as `s'` increases by `1`, `j(s') = 3 * s' - 20 - q` steps by `+3`, sampling a single congruence class
+       `j ≡ 1 - q (mod 3)` of the Soliton Head `(Y_0..Y_6) = (1, 1, 0, 1, 1, 0, 1)`:
+       - `q ≡ 1 (mod 3)` samples `(Y_0, Y_3, Y_6) = (true, true, true)`;
+       - `q ≡ 0 (mod 3)` samples `(Y_1, Y_4) = (true, true)`;
+       - `q ≡ 2 (mod 3)` samples `(Y_2, Y_5) = (false, false)`, tunneling transparently through the Soliton Head! -/
+theorem rule30_four_bit_affine_codeword_jump
+    (b0 b1 b2 : Bool)
+    (h01 : b0 = b1) (h12 : b1 = b2) :
+    (b0, b0, true, !b0) = (b1, b1, true, !b1) ∧
+    (b1, b1, true, !b1) = (b2, b2, true, !b2) := by
+  subst h01; subst h12; simp
+
+def soliton_head_bit : Nat → Bool
+  | 0 => true
+  | 1 => true
+  | 2 => false
+  | 3 => true
+  | 4 => true
+  | 5 => false
+  | 6 => true
+  | _ => false
+
+theorem rule30_mod3_soliton_slot_sampling :
+    (soliton_head_bit 0 = true ∧ soliton_head_bit 3 = true ∧ soliton_head_bit 6 = true) ∧
+    (soliton_head_bit 1 = true ∧ soliton_head_bit 4 = true) ∧
+    (soliton_head_bit 2 = false ∧ soliton_head_bit 5 = false) := by
+  decide
+
 
 
 

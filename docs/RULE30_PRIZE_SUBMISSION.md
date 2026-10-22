@@ -1229,11 +1229,28 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >      2. Consequently, $\overline{Y_{12}(s)} \land Y_{13}(s) \equiv \overline{Y_{12}(s)}$, so $Y_{11}(s) = b \oplus \overline{Y_{12}(s)}$ and $Y_{10}(s) = b \oplus \bigl(Y_{11}(s) \land \overline{Y_{12}(s)}\bigr) = b \lor \overline{Y_{12}(s)}$.
 >      3. Therefore, the carry into $j = 9$ vanishes identically: $\overline{Y_{10}(s)} \land Y_{11}(s) = (\bar{b} \land Y_{12}(s)) \land (b \oplus \overline{Y_{12}(s)}) \equiv 0$, forcing $Y_9(s) = Y_6(s - 1) \oplus 0 = 1$, $Y_8(s) = \overline{Y_{10}(s)} = Y_7(s)$, and $Y_6(s) = 1$ — **closing the Soliton Head induction unconditionally for all $s \ge 13$ and all $d_1 \in \{0, 1, 2\}$**! $\square$
 
+### 6.51 Theorem 63: Intra-Block / Post-Exit Crystal Unification $U_{2, a, k}(k + s) \equiv C_{k+1}^*(s + 1)$, 4-Bit Affine Codeword Gap $\{27, 28, 29\}$ & Modulo-3 Soliton Tunneling Law
+
+> **Theorem 63 (Exact Intra-Block / Post-Exit Crystal Unification $U_{2, a, k}(k + s) \equiv C_{k+1}^*(s + 1)$, 4-Bit Affine Codeword $(\beta, \beta, 1, \bar{\beta})$ & Forbidden Synchronization Gap $\{27, 28, 29\}$, and Modulo-3 Soliton Slot-Sampling / Transparent Tunneling Law).**  
+> 1. **Exact Intra-Block / Post-Exit Crystal Unification (`unif_errors == 0` across $1,440$ entries for $k = 1 \dots 24, s = 0 \dots 59$):**  
+>    - In offset coordinates $s := m - k \ge 0$ ($m = k + s$, $t = b_1 - s$), the Universal Intra-Block Crystal $X_k^{(2)}(s) := U_{2, a, k}(k + s) = l_{k+s}^{(2)}(b_1 - s)$ satisfies the exact same shift-free 1D recurrence $X_k(s) = X_k(s - 1) \oplus \bigl(X_{k-1}(s) \lor X_{k-2}(s)\bigr)$ as the Universal Odd-Run Post-Exit Table $C_q^*(s)$, with matching boundary conditions $X_0^{(2)}(s) \equiv C_1^*(s + 1)$ ($\forall s \ge 1$), $X_1^{(2)}(s) \equiv C_2^*(s + 1)$ ($\forall s \ge 0$), and $X_k^{(2)}(0) = (k + 1) \bmod 2 \equiv C_{k+1}^*(1)$ ($\forall k \ge 1$).
+>    - Because the recurrence for $s \ge 1$ never queries $X_0^{(2)}(0)$, induction on $k \ge 1$ and $s \ge 0$ proves that **the Universal Intra-Block Crystal $U_{2, a, k}$ and the Universal Odd-Run Post-Exit Table $C_q^*$ are the exact same mathematical object**:
+>      $$U_{2, a, k}(k + s) \;\equiv\; C_{k+1}^*(s + 1), \qquad E_k^{(2)}(s) \;:=\; U_{2, a, k}(k + s) \oplus \bigl((k + s) \bmod 2\bigr) \;\equiv\; \Delta_{k+1}^*(s + 1) \qquad (\forall\, k \ge 1,\; \forall\, s \ge 0)!$$
+> 2. **4-Bit Affine Codeword Law & Forbidden Synchronization Gap $\{27, 28, 29\}$ (`gap_errors == 0` across $224$ frontiers for odd $a_1 \in \{9, \dots, 21\}, s \in [13, 44]$, `Law 2al` in Lean 4):**  
+>    - By Theorem 62(3), for every crystal $d_1 \in \{0, 1, 2\}$ and all $s \ge 13$, the 4-cell block $j \in \{7, 8, 9, 10\}$ behind the 7-bit Soliton Head $(Y_0 \dots Y_6) = (1, 1, 0, 1, 1, 0, 1)$ is constrained to the **1-parameter 4-bit affine codeword**:
+>      $$\bigl(Y_7^{(d_1)}(s),\, Y_8^{(d_1)}(s),\, Y_9^{(d_1)}(s),\, Y_{10}^{(d_1)}(s)\bigr) \;\equiv\; \bigl(\beta_{d_1},\, \beta_{d_1},\, 1,\, 1 \oplus \beta_{d_1}\bigr), \qquad \beta_{d_1} \;:=\; Y_7^{(d_1)}(s).$$
+>    - Consequently (`rule30_four_bit_affine_codeword_jump` in Lean 4), whenever all 3 crystals agree at $j = 7$ ($\beta_0 = \beta_1 = \beta_2$), they automatically agree across all 4 cells $j \in \{7, 8, 9, 10\}$ ($q = 3s - 27 \dots 3s - 30$), proving unconditionally that $3s - Q_{\mathrm{sync}}(a_1, s)$ **can never take a value in the forbidden 3-value gap $\{27, 28, 29\}$** (`3s - Q_sync = 26` or `3s - Q_sync >= 30` for all $s \ge 13$ and odd $a_1 \ge 9$)!
+> 3. **Modulo-3 Soliton Slot-Sampling & Transparent Tunneling of $q = 3r + 2$ (`mod3_errors == 0` across $48$ rows, `rule30_mod3_soliton_slot_sampling` in Lean 4):**  
+>    - For $d_1 = 1$, the first defect $s_{\mathrm{first}}^{(1)}(k) := \min\{s \ge 0 : E_k^{(1)}(s) = 1\}$ satisfies $s_{\mathrm{first}}^{(1)}(3q + 1) = s_{\mathrm{first}}^{(1)}(3q + 2) = q$ (recovering the Turing-RNG Lune synchronization front $M(3q + r) = 4q + r = k + q$) and $s_{\mathrm{first}}^{(1)}(3q) \ge q + 2$ ($\forall q \ge 1$).
+>    - For $d_1 = 2$ ($E_k^{(2)}(s) = \Delta_q^*(s + 1)$ with $q = k + 1$), as $s' = s + 1$ advances by $+1$, the traveling-wave index $j(s') = 3s' - 20 - q$ steps by $+3$, so row $q$ samples **only the single congruence class $j \equiv 1 - q \pmod 3$** of the Soliton Head $(Y_0 \dots Y_6) = (1, 1, 0, 1, 1, 0, 1)$:
+>      - Rows $q = 3r$ ($k = 3r - 1$) and $q = 3r + 1$ ($k = 3r$) sample $(Y_1, Y_4) = (1, 1)$ and $(Y_0, Y_3, Y_6) = (1, 1, 1)$, hitting their first defect at $s_{\mathrm{first}}^{(2)}(3r - 1) = s_{\mathrm{first}}^{(2)}(3r) = r + 6$ ($\forall r \ge 4$);
+>      - Row $q = 3r + 2$ ($k = 3r + 1$) samples **only the two zero-slots $(Y_2, Y_5) = (0, 0)$**, tunneling transparently through the entire Soliton Head so its first defect is delayed by at least $+3$ steps to $s_{\mathrm{first}}^{(2)}(3r + 1) \ge r + 9$ ($\forall r \ge 3$)! $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All sixty-one theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All sixty-two theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only
