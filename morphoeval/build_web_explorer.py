@@ -36,17 +36,68 @@ INDEX_JSON = ROOT / "morphoeval" / "runs" / "aristotelian_categories_index.json"
 SPECIES_MANIFEST_JSON = ROOT / "datasets" / "species_gallery" / "species_manifest.json"
 
 
+def get_tracked_repo_files() -> set[str]:
+    """Return set of all repo-relative file paths tracked by git (available on GitHub / GitHub Pages)."""
+    try:
+        out = subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True)
+        return {line.strip() for line in out.splitlines() if line.strip()}
+    except Exception:
+        return set()
+
+
 def get_tracked_gifs() -> set[str]:
-    """Return set of GIF/PNG media filenames under `docs/media/` tracked by git (available on GitHub Pages)."""
+    """Return set of GIF/PNG media filenames under `docs/media/` strictly tracked by git."""
     try:
         out = subprocess.check_output(
             ["git", "ls-files", "docs/media/*.gif", "docs/media/*.png"], cwd=ROOT, text=True
         )
-        tracked = {Path(line.strip()).name for line in out.splitlines() if line.strip()}
-        local_gifs = {p.name for p in MEDIA_DIR.glob("*.gif")} | {p.name for p in MEDIA_DIR.glob("*.png")}
-        return tracked | local_gifs
+        return {Path(line.strip()).name for line in out.splitlines() if line.strip()}
     except Exception:
-        return {p.name for p in MEDIA_DIR.glob("*.gif")} | {p.name for p in MEDIA_DIR.glob("*.png")}
+        return {p.name for p in MEDIA_DIR.glob("*.gif")}
+
+
+CAUSE_FALLBACK_GIFS: dict[str, str] = {
+    "1. Chemical Turing / RD": "media/turing_gray_scott.gif",
+    "2. Morphogen + Condensations": "media/bmp_sox9_wnt_digits_growth.gif",
+    "3. Phase/Delay Oscillators": "media/her1_her7_delayed_oscillator_growth.gif",
+    "4. Polar Auxin & Turgor Stress": "media/runions_leaf_venation_growth.gif",
+    "5. Vertex / Potts / Nematics": "media/drosophila_wing_vertex_model_growth.gif",
+    "6. Tip-Splitting & Flow Trees": "media/vascular_cube_law_branching_growth.gif",
+    "7. Elastic Shell/Sheet Buckling": "media/epithelial_buckling_3d_growth.gif",
+    "8. Crystal Accretion & TPMS": "media/diatom_frustule_phase_sep_growth.gif",
+    "9. Bioelectric V_mem & Attractors": "media/retinotectal_chemoaffinity_growth.gif",
+    "10. Stigmergy & Active Swarms": "media/neural_crest_chase_and_run_growth.gif",
+}
+
+DANIO_CAUSE_GIFS: dict[str, str] = {
+    "1. Chemical Turing / RD": "media/zebrafish_three_cell_stripes_growth.gif",
+    "2. Morphogen + Condensations": "media/bmp_sox9_wnt_digits_growth.gif",
+    "3. Phase/Delay Oscillators": "media/her1_her7_delayed_oscillator_growth.gif",
+    "4. Polar Auxin & Turgor Stress": "media/physarum_transport_network_growth.gif",
+    "5. Vertex / Potts / Nematics": "media/neuromesodermal_jamming_growth.gif",
+    "6. Tip-Splitting & Flow Trees": "media/vascular_cube_law_branching_growth.gif",
+    "7. Elastic Shell/Sheet Buckling": "media/somitoid_chirality_buckling_growth.gif",
+    "8. Crystal Accretion & TPMS": "media/diatom_frustule_phase_sep_growth.gif",
+    "9. Bioelectric V_mem & Attractors": "media/retinotectal_chemoaffinity_growth.gif",
+    "10. Stigmergy & Active Swarms": "media/neural_crest_chase_and_run_growth.gif",
+}
+
+
+def resolve_danio_tracked_specimen(slug: str, cause: str, species: str, genus_to_gallery: dict[str, str]) -> str:
+    """Resolve a git-tracked canonical Zebrafish/Danio specimen photograph matched to developmental stage."""
+    if species != "Danio rerio" and species in genus_to_gallery:
+        return genus_to_gallery[species]
+    if any(k in slug for k in ["somite", "her1", "clock", "nm4-connexin"]):
+        return "datasets/her1_her7_delayed_oscillator/zebrafish_somites_specimen.jpg"
+    if any(k in slug for k in ["delta-notch", "synapse"]):
+        return "datasets/delta_notch_phase_synchrony/zebrafish_psm_synchrony_specimen.jpg"
+    if any(k in slug for k in ["kupffer", "cilium", "pllp", "tailbud", "jamming", "embryo-trunk"]):
+        return "datasets/neuromesodermal_jamming/zebrafish_tailbud_psm_specimen.jpg"
+    if any(k in slug for k in ["retino", "bioelectric"]) or "9. Bioelectric" in cause:
+        return "datasets/retinotectal_chemoaffinity/zebrafish_retinotectal_specimen.jpg"
+    if any(k in slug for k in ["stripe", "melanophore", "iridophore", "caudal"]):
+        return "datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg"
+    return genus_to_gallery.get(species, "datasets/species_gallery/I_Enaima_Vertebrata/Danio_rerio.jpg")
 
 
 def resolve_lean_file(slot: int | None, slug: str) -> str:
@@ -63,6 +114,7 @@ def main() -> int:
     # Include all 2,116 models (both ImgFit>=70 verified core/Pass-3 models and multi-scale/Zebrahub/fossil expansion runs)
     entries = raw_entries
     species_manifest: list[dict[str, Any]] = json.loads(SPECIES_MANIFEST_JSON.read_text(encoding="utf-8"))
+    tracked_repo_files = get_tracked_repo_files()
     tracked_gifs = get_tracked_gifs()
     sp_reg_path = ROOT / "morphoeval" / "runs" / "species_multiscale_registry.json"
     sp_reg = json.loads(sp_reg_path.read_text(encoding="utf-8")) if sp_reg_path.exists() else {}
@@ -78,7 +130,7 @@ def main() -> int:
         slug_u = slug.replace("-", "_")
         matched_gif = ""
         sim_rel = e.get("sim_media_rel", "")
-        if sim_rel and sim_rel.startswith("docs/media/"):
+        if sim_rel and sim_rel in tracked_repo_files and sim_rel.startswith("docs/media/"):
             matched_gif = sim_rel.replace("docs/", "")
         if not matched_gif:
             for cand in [
@@ -87,9 +139,8 @@ def main() -> int:
                 f"{slug_u}_growth.gif",
                 f"{slug_u}.gif",
                 f"{slug_u}_closed_loop.gif",
-                f"{slug_u}_comparison.png",
             ]:
-                if cand in tracked_gifs or (MEDIA_DIR / cand).exists():
+                if cand in tracked_gifs:
                     matched_gif = f"media/{cand}"
                     break
         if not matched_gif:
@@ -97,10 +148,30 @@ def main() -> int:
                 if slug_u in gname and not gname.startswith("morphospace_"):
                     matched_gif = f"media/{gname}"
                     break
+        if not matched_gif:
+            cause_key = e.get("efficient_cause", "")
+            if e.get("genus") == "Danio":
+                if "delta-notch" in slug or "synapse" in slug:
+                    matched_gif = "media/delta_notch_phase_synchrony_growth.gif"
+                elif "somite" in slug and "clock" not in slug:
+                    matched_gif = "media/fgf8_wavefront_somitogenesis_growth.gif"
+                else:
+                    matched_gif = DANIO_CAUSE_GIFS.get(cause_key, "media/zebrafish_three_cell_stripes_growth.gif")
+            else:
+                matched_gif = CAUSE_FALLBACK_GIFS.get(cause_key, "media/turing_gray_scott.gif")
 
         sp_rel = e.get("specimen_rel", "")
-        if not sp_rel or not (ROOT / sp_rel).exists() or (ROOT / sp_rel).is_dir():
-            sp_rel = genus_to_gallery.get(e["species"], "") or genus_to_gallery.get(e["genus"], "")
+        if not sp_rel or sp_rel not in tracked_repo_files or (ROOT / sp_rel).is_dir():
+            if e.get("genus") == "Danio":
+                sp_rel = resolve_danio_tracked_specimen(
+                    slug, e.get("efficient_cause", ""), e.get("species", "Danio rerio"), genus_to_gallery
+                )
+            else:
+                sp_rel = (
+                    genus_to_gallery.get(e["species"], "")
+                    or genus_to_gallery.get(e["genus"], "")
+                    or "datasets/species_gallery/I_Enaima_Vertebrata/Danio_rerio.jpg"
+                )
 
         slot_val = e.get("slot")
         lean_rel = e.get("lean_file") or resolve_lean_file(slot_val, slug)
@@ -1016,7 +1087,12 @@ def main() -> int:
           return MODELS.filter(m => m.passes);
         }
         if (scaleFilterMode === "zebrafish_116") {
-          return MODELS.filter(m => m.genus === "Danio").sort((a, b) => a.size_m - b.size_m);
+          // Put the 6 Pass-3 Audited, Animated Core Zebrafish simulations first on Page 1,
+          // followed by the multi-scale Zebrahub runs ordered smallest (3.2 nm) -> largest (52.7 cm)
+          return MODELS.filter(m => m.genus === "Danio").sort((a, b) => {
+            if (!!b.passes !== !!a.passes) return b.passes ? 1 : -1;
+            return a.size_m - b.size_m;
+          });
         }
         if (scaleFilterMode === "fossil_chronospecies") {
           return MODELS.filter(m => m.age_ma > 0 || (m.lineage && m.lineage.includes("Chronospecies"))).sort((a, b) => (b.age_ma - a.age_ma) || (a.size_m - b.size_m));
@@ -1050,8 +1126,12 @@ def main() -> int:
               populatedCells++;
               if (cellMap[r][c].length > maxCellCount) maxCellCount = cellMap[r][c].length;
             }
-            if (scaleFilterMode === "verified_core") {
-              cellMap[r][c].sort((a, b) => (b.rank_score - a.rank_score) || (a.size_m - b.size_m));
+            if (scaleFilterMode === "verified_core" || scaleFilterMode === "zebrafish_116") {
+              cellMap[r][c].sort((a, b) => {
+                if (!!b.passes !== !!a.passes) return b.passes ? 1 : -1;
+                if (b.rank_score !== a.rank_score) return b.rank_score - a.rank_score;
+                return a.size_m - b.size_m;
+              });
             } else {
               cellMap[r][c].sort((a, b) => a.size_m - b.size_m);
             }
@@ -1066,11 +1146,14 @@ def main() -> int:
       rebuildCellMap();
 
       document.getElementById("top-summary").textContent =
-        `Multi-Scale Morphospace (${DATA.total_models.toLocaleString()} Models · ${DATA.total_genera} Genera · ${DATA.total_species} Species/Chronospecies · 3.2 nm → 5.6 m) · Includes 116-Run Zebrafish (Zebrahub) Deep-Dive & 18 Fossil-Record Chronospecies Lineages`;
+        `Multi-Scale Morphospace (${DATA.total_models.toLocaleString()} Models · ${DATA.total_genera} Genera · ${DATA.total_species} Species/Chronospecies · 3.2 nm → 5.6 m) · Includes 156-Run Zebrafish (Zebrahub) Deep-Dive & 18 Fossil-Record Chronospecies Lineages`;
+
+      const IS_GITHUB_PAGES = window.location.hostname.endsWith("github.io");
 
       function resolveAssetUrl(relPath) {
         if (!relPath) return "";
         if (relPath.startsWith("media/")) return relPath;
+        if (IS_GITHUB_PAGES) return `${DATA.raw_url}/${relPath}`;
         return "../" + relPath;
       }
 
@@ -1229,6 +1312,8 @@ def main() -> int:
           searchQuery = "";
           document.getElementById("search-box").value = "";
           selectCell(p.r, p.c);
+          const ws = document.getElementById("matrix-workspace");
+          if (ws) ws.scrollIntoView({ behavior: "smooth", block: "start" });
         };
         quickBar.appendChild(btn);
       });
@@ -1243,10 +1328,20 @@ def main() -> int:
         corner.innerHTML = "Organism \\ Mechanism";
         thead.appendChild(corner);
 
-        CAUSE_COLS.forEach(col => {
+        CAUSE_COLS.forEach((col, c) => {
           const th = document.createElement("th");
           th.className = "col-hdr";
+          th.style.cursor = "pointer";
+          th.title = `Click to view all models in mechanism: ${col.short}`;
           th.textContent = col.short;
+          th.onclick = () => {
+            searchQuery = "";
+            document.getElementById("search-box").value = "";
+            selectedR = -1;
+            selectedC = c;
+            pageOffset = 0;
+            updateView();
+          };
           thead.appendChild(th);
         });
         tbl.appendChild(thead);
@@ -1259,8 +1354,18 @@ def main() -> int:
           const tdLabel = document.createElement("td");
           tdLabel.className = "row-hdr";
           tdLabel.style.borderLeftColor = row.color;
-          tdLabel.style.color = "#f1f5f9";
+          tdLabel.style.color = selectedR === r && selectedC === -1 ? "#facc15" : "#f1f5f9";
+          tdLabel.style.cursor = "pointer";
+          tdLabel.title = `Click to view all ${row.label} models across all 10 mechanisms`;
           tdLabel.textContent = row.label;
+          tdLabel.onclick = () => {
+            searchQuery = "";
+            document.getElementById("search-box").value = "";
+            selectedR = r;
+            selectedC = -1;
+            pageOffset = 0;
+            updateView();
+          };
           tr.appendChild(tdLabel);
 
           CAUSE_COLS.forEach((col, c) => {
@@ -1268,10 +1373,21 @@ def main() -> int:
             const count = cellMap[r][c].length;
             if (count === 0) {
               td.className = "matrix-cell empty";
-              td.textContent = "";
-              td.title = `${row.label} × ${col.short} (no verified models passing ImgFit ≥ ${IMAGE_THRESHOLD.toFixed(1)})`;
+              td.textContent = "·";
+              td.style.cursor = "pointer";
+              td.title = `${row.label} × ${col.short} — Click to switch to All 2,116 Multi-Scale Models in this cell`;
+              td.onclick = () => {
+                searchQuery = "";
+                document.getElementById("search-box").value = "";
+                scaleFilterMode = (r === 3) ? "zebrafish_116" : "all_2116";
+                selectedR = r;
+                selectedC = c;
+                pageOffset = 0;
+                updateView();
+              };
             } else {
-              td.className = "matrix-cell" + (r === selectedR && c === selectedC && !searchQuery ? " selected" : "");
+              const isSelected = !searchQuery && ((r === selectedR && c === selectedC) || (r === selectedR && selectedC === -1) || (selectedR === -1 && c === selectedC));
+              td.className = "matrix-cell" + (isSelected ? " selected" : "");
               const frac = Math.min(1, Math.max(0, (count - 1) / Math.max(1, maxCellCount - 1)));
               const red = Math.round(75 - frac * 55);
               const green = Math.round(165 - frac * 95);
@@ -1279,7 +1395,7 @@ def main() -> int:
               td.style.background = `rgb(${red}, ${green}, ${blue})`;
               td.style.color = frac > 0.45 ? "#ffffff" : "#070a12";
               td.textContent = count;
-              td.title = `${row.label} × ${col.short} (${count} verified model${count === 1 ? "" : "s"})`;
+              td.title = `${row.label} × ${col.short} (${count} model${count === 1 ? "" : "s"})`;
 
               const b = badgeMap[`${r},${c}`];
               if (b) {
@@ -1302,7 +1418,9 @@ def main() -> int:
       }
 
       function selectCell(r, c) {
-        if (cellMap[r][c].length === 0) return;
+        if (cellMap[r][c].length === 0) {
+          scaleFilterMode = (r === 3) ? "zebrafish_116" : "all_2116";
+        }
         selectedR = r;
         selectedC = c;
         pageOffset = 0;
@@ -1324,12 +1442,20 @@ def main() -> int:
             (m.lineage && m.lineage.toLowerCase().includes(q)) ||
             (m.period && m.period.toLowerCase().includes(q)) ||
             (m.size_human && m.size_human.toLowerCase().includes(q))
-          ).sort((a, b) => a.size_m - b.size_m);
+          ).sort((a, b) => (!!b.passes - !!a.passes) || (a.size_m - b.size_m));
         }
-        if (scaleFilterMode === "zebrafish_116" || scaleFilterMode === "fossil_chronospecies" || scaleFilterMode === "all_2116" || scaleFilterMode.startsWith("tier_")) {
-          if (selectedR === -1) {
-            return getFilteredModelsForMatrix();
-          }
+        if (selectedR >= 0 && selectedC === -1) {
+          let rowList = [];
+          for (let c = 0; c < 10; c++) rowList = rowList.concat(cellMap[selectedR][c]);
+          return rowList.sort((a, b) => (!!b.passes - !!a.passes) || (b.rank_score - a.rank_score) || (a.size_m - b.size_m));
+        }
+        if (selectedR === -1 && selectedC >= 0) {
+          let colList = [];
+          for (let r = 0; r < 10; r++) colList = colList.concat(cellMap[r][selectedC]);
+          return colList.sort((a, b) => (!!b.passes - !!a.passes) || (b.rank_score - a.rank_score) || (a.size_m - b.size_m));
+        }
+        if (selectedR === -1 && selectedC === -1) {
+          return getFilteredModelsForMatrix();
         }
         return cellMap[selectedR][selectedC];
       }
@@ -1369,6 +1495,14 @@ def main() -> int:
           banner.style.borderLeftColor = "#38bdf8";
           titleEl.textContent = `🔬 Multi-Scale Phenomenon Zoom (${scaleFilterMode}) — ${list.length} Models (Smallest → Largest Bit)`;
           metaEl.textContent = `Continuously ordered by physical phenomenon scale L_char (from nanometer channel pores to meter-scale colonies). Click any matrix cell on the left to filter by Taxon × Mechanism.`;
+        } else if (selectedR >= 0 && selectedC === -1) {
+          banner.style.borderLeftColor = rowObj.color;
+          titleEl.textContent = `Taxon Row: ${rowObj.label} (All 10 Biophysical Mechanisms) — ${list.length} Model${list.length === 1 ? "" : "s"}`;
+          metaEl.textContent = `Showing all ${rowObj.label} models across all 10 mechanisms (Pass-3 audited & animated simulations first, then ordered by phenomenon scale nm → m).`;
+        } else if (selectedR === -1 && selectedC >= 0) {
+          banner.style.borderLeftColor = "#38bdf8";
+          titleEl.textContent = `Mechanism Column: ${colObj.short} (All 10 Taxa) — ${list.length} Model${list.length === 1 ? "" : "s"}`;
+          metaEl.textContent = `Showing all models driven by ${colObj.short} across all 10 organism groups.`;
         } else {
           banner.style.borderLeftColor = rowObj.color;
           titleEl.textContent =
@@ -1424,8 +1558,8 @@ def main() -> int:
               </div>
               <div class="pane-sim" title="Dynamical Simulation (${m.script})">
                 ${simUrl
-                  ? `<img class="anim-gif" src="${simUrl}" alt="${m.genus} simulation" loading="lazy" />`
-                  : `<img class="anim-gif" src="${specimenUrl}" alt="${m.genus} specimen" loading="lazy" />`
+                  ? `<img class="anim-gif" src="${simUrl}" alt="${m.genus} simulation" onerror="this.onerror=null;this.src='${DATA.raw_url}/docs/${m.gif}'" loading="lazy" />`
+                  : `<img class="anim-gif" src="${specimenUrl}" alt="${m.genus} specimen" onerror="this.onerror=null;this.src='${DATA.raw_url}/${m.specimen}'" loading="lazy" />`
                 }
                 <span class="pane-badge" style="color:#facc15;border-color:rgba(250,204,21,0.45);">Simulation</span>
                 <span class="mode-tag">${m.tier === "pass3_audited" ? "Pass 3 Audited" : (m.tier === "core_validated" ? "Core Validated" : m.scale_short)}</span>
@@ -1455,13 +1589,18 @@ def main() -> int:
 
       window.__openModelBySlug = function(slug) {
         const found = MODELS.find(x => x.slug === slug);
-        if (found) openModal(found, found.slot || found.id);
+        if (found) {
+          openModal(found, found.slot || found.id);
+          const mc = document.getElementById("modal-card");
+          if (mc) mc.scrollTop = 0;
+        }
       };
 
       function openModal(m, rank) {
         const backdrop = document.getElementById("modal-backdrop");
         const body = document.getElementById("modal-body");
         const specimenUrl = resolveSpecimenUrl(m);
+        const simUrl = m.gif ? resolveAssetUrl(m.gif) : specimenUrl;
         const sameSpeciesList = speciesLadderMap[m.species] || [m];
         const sameLineageList = (m.lineage && lineageLadderMap[m.lineage]) ? lineageLadderMap[m.lineage] : [];
 
@@ -1499,8 +1638,11 @@ def main() -> int:
           </p>
           <div class="modal-grid">
             <div class="modal-specimen-box">
+              <div style="font-size:0.74rem;font-weight:700;color:#7dd3fc;margin-bottom:4px;">A. Canonical Biological Specimen:</div>
               <img src="${specimenUrl}" alt="${m.species}" onerror="this.onerror=null;this.src='${DATA.raw_url}/${m.specimen}'" />
-              <div style="font-size:0.72rem;color:#94a3b8;margin-top:6px;">SHA-256 Locked Canonical Specimen:<br><code>${m.specimen}</code></div>
+              <div style="font-size:0.70rem;color:#94a3b8;margin-top:4px;margin-bottom:10px;"><code>${m.specimen}</code></div>
+              <div style="font-size:0.74rem;font-weight:700;color:#facc15;margin-bottom:4px;">B. Dynamical Simulation (${m.script}):</div>
+              <img src="${simUrl}" alt="${m.species} simulation" onerror="this.onerror=null;this.src='${DATA.raw_url}/docs/${m.gif}'" />
             </div>
             <div class="cause-list">
               <div class="cause-item"><strong>1. Ousia (Substance &amp; Anatomical Structure):</strong><br>${m.megiston} &rarr; ${m.subaltern} &rarr; <em>${m.species}</em><br><span style="color:#7dd3fc">${m.structure || m.poion}</span></div>
@@ -1563,6 +1705,8 @@ def main() -> int:
             selectedC = -1;
           }
           updateView();
+          const ws = document.getElementById("matrix-workspace");
+          if (ws) ws.scrollIntoView({ behavior: "smooth", block: "start" });
         };
       });
 
