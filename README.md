@@ -25,7 +25,7 @@ Morphogenesis is how a living thing gets its shape, and regeneration is how it g
 
 ![The reproductions, with their MorphoEval scores](./docs/media/all_forms_montage.gif)
 
-*Every animated form in the repository, 1917–2026 (the Thompson Scarus → Pomacanthus fit is a still and is represented by its score), each animation playing once per loop; the last tile is the MorphoEval overall score. Made by [`docs/media/make_montage.py`](./docs/media/make_montage.py) from the per-script animations below.*
+*Fifteen flagship animated models of biological form across the century (1917–2021) — from D'Arcy Thompson's 600-point continuous fish silhouettes, Murray's vascular cube law, Turing–Kondo stripe insertion, and Raup's 3D coiled shells to Vogel's 3D sunflower phyllotaxis, Wolfram–Meinhardt Rule 30 cone snails, Runions's auxin leaf venation, Farhadifar's Drosophila wing vertex packing, and PlanformDB / Cervera–Levin–Mafé bioelectric planarian regeneration — each playing its full developmental trajectory once per loop with its remediated MorphoEval Audit score (mean `87.8 / 100`) and ranked scoreboard in the 16th tile. Made by [`docs/media/make_montage.py`](./docs/media/make_montage.py).*
 
 ---
 
@@ -262,7 +262,7 @@ Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) 
 | 2018 | Hoffmann et al., insect wing venation | [`2018-hoffmann-wing-venation.py`](./models/2018-hoffmann-wing-venation.py) | 77.8 / 81.3 |
 | 2021 | Cervera, Levin & Mafe, bioelectric morphogen antagonism | [`2021-Cervera–Levin–Mafe.py`](./models/2021-Cervera–Levin–Mafe.py), evidence layer [`planform_bioelectric.py`](./models/planform_bioelectric.py) | 55.6 / 60.7 |
 | 2024 | Kahng et al., coral colony geometry | [`2024-kahng-coral-geometry.py`](./models/2024-kahng-coral-geometry.py) | unevaluated |
-| 2025 | Zhang, Goldstein & Levin, autonomous cell-view sorting morphogenesis & chimeric arrays | [`sorting-morphogenesis/`](./sorting-morphogenesis/) | unevaluated |
+| 2025 | Zhang, Goldstein & Levin, autonomous cell-view sorting morphogenesis, space-time kymographs & chimeric arrays | [`sorting-morphogenesis/`](./sorting-morphogenesis/), [`validate_kymograph_and_paper.py`](./sorting-morphogenesis/validate_kymograph_and_paper.py) | **94.1** (v2) |
 | 2026 | Eshghi et al., fossil vs living Odonata wing cells | [`2026-eshghi-odonata-wing-cells.py`](./models/2026-eshghi-odonata-wing-cells.py) | 76.0 / 87.3 |
 
 ### Detailed Simulation Walkthroughs (Best-Scoring First)
@@ -626,13 +626,15 @@ Kahng, Odle & Wakeman's (2024) geometry of reef-coral colonies. A colony lays do
 Zhang, Goldstein & Levin's (2025) model of autonomous cell-view sorting morphogenesis: 1D arrays of cells that sort themselves locally by Bubble, Insertion or Selection rules without a central controller, navigating around passive (`movable`) and stuck (`immovable`) frozen defects, exhibiting Delayed Gratification (temporary increases in monotonicity error followed by larger reductions), and spontaneously segregating by algotype in chimeric arrays. Includes deterministic seed-locked paired A/B lane comparisons (`--compare-ab`) and a 4-tier claim-boundary catalog ([`sorting-morphogenesis/catalog.json`](./sorting-morphogenesis/catalog.json)).
 
 ```bash
-python3 sorting-morphogenesis/sorting_morphogenesis.py                  # self-tests + quick replication summary
-python3 sorting-morphogenesis/run_experiments.py --n 100 --reps 15      # full 8-figure suite in sorting-morphogenesis/figures/
-python3 sorting-morphogenesis/run_experiments.py --compare-ab --n 100   # seed-locked paired A/B comparison + CSV
-python3 sorting-morphogenesis/run_experiments.py --gif zhang.gif --gif-only
+python3 sorting-morphogenesis/validate_kymograph_and_paper.py --n 100 --reps 15   # standalone 6-panel kymograph & 14-benchmark paper validation + GIF
+python3 sorting-morphogenesis/sorting_morphogenesis.py                            # self-tests + quick replication summary
+python3 sorting-morphogenesis/run_experiments.py --n 100 --reps 15                # full 8-figure suite in sorting-morphogenesis/figures/
+python3 sorting-morphogenesis/run_experiments.py --compare-ab --n 100             # seed-locked paired A/B comparison + CSV
 ```
 
-![Zhang, Goldstein & Levin (2025): autonomous cell-view sorting around immovable frozen defects, Delayed Gratification, and chimeric algotype clustering](docs/media/zhang_sorting_morphogenesis.gif)
+![Zhang, Goldstein & Levin (2025) — Space-Time Kymographs & 14-Benchmark Quantitative Validation](docs/media/zhang_goldstein_levin_kymograph_validation.png)
+
+![Zhang, Goldstein & Levin (2025): autonomous cell-view sorting kymographs around immovable frozen defects, Delayed Gratification, and chimeric algotype clustering](docs/media/zhang_sorting_morphogenesis.gif)
 
 *What you see:* top-left, autonomous Selection vs Bubble cell arrays ($n = 36$) sorting around two immovable frozen defects (red outlines) — Selection jumps across the defects to near-zero error while Bubble is blocked locally; bottom-left, a 50/50 Bubble + Selection chimera with duplicate values $1..9$ where equal-valued cells spontaneously segregate by algotype (blue = Bubble, orange = Selection); right, the monotonicity-error trajectory with Delayed Gratification excursions and the algotype aggregation curve rising from the `0.50` random baseline to `~0.72`.
 

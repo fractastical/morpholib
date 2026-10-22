@@ -94,6 +94,7 @@ UPSTREAM_REPOS_BY_SLUG_SUBSTR: list[tuple[str, str, str]] = [
     ("planform-morphology-animation", "https://lobolab.umbc.edu/planform/", "PlanformDB (Lobo & Levin Lab)"),
     ("lobo-limbform-morphology", "https://lobolab.umbc.edu/limbform/", "LimbformDB (Lobo & Levin Lab)"),
     ("cervera-levin-mafe", "https://github.com/allencenter", "Allen Discovery Center Bioelectric Modeling"),
+    ("zhang-sorting-morphogenesis", "https://github.com/Zhangtaining/cell_research", "Zhang, Goldstein & Levin (2025) cell_research"),
     ("xenopus-ca2-wave-vectors", "https://github.com/fractastical/morpholib/tree/main/wave-vector-analysis", "MorphoLib Ca²⁺ Wave-Vector Pipeline"),
 ]
 
@@ -126,6 +127,7 @@ FOUNDATIONAL_DOIS: dict[str, tuple[str, str]] = {
     "lobo-limbform-morphology": ("10.1093/bioinformatics/btu582", "Lobo, D., Feldman, E. B. & Levin, M. (2014) Limbform: A Functional Ontology-Based Database of Limb Regeneration Experiments, Bioinformatics 30(24):3598-3600"),
     "santella-wormguides-celegans": ("10.1038/nmeth.1263", "Bao, Z., Santella, A. et al. (2006) Automated Cell Lineage Tracing in Caenorhabditis elegans, Nature Methods 3:563-569"),
     "bressloff-cowan-V1-hallucination": ("10.1098/rstb.2000.0769", "Bressloff, P. C., Cowan, J. D. et al. (2001) Geometric Visual Hallucinations, Euclidean Symmetry and the Functional Architecture of Striate Cortex, Phil. Trans. R. Soc. B 356:299-330"),
+    "zhang-sorting-morphogenesis": ("10.1177/10597123241269740", "Zhang, T., Goldstein, A. & Levin, M. (2025) Classical Sorting Algorithms as a Model of Morphogenesis: Self-Sorting Arrays Reveal Unexpected Competencies in a Minimal Model of Basal Intelligence, Adaptive Behavior 33(1):25-54"),
     "xenopus-ca2-wave-vectors": ("10.1242/dev.199845", "Dietz, J. et al. (2026) Embryonic Ca2+ Spark Wave-Vector Dynamics in Xenopus laevis"),
 }
 
@@ -141,6 +143,7 @@ FOUNDATIONAL_SPECIMENS: dict[str, str] = {
     "petroff-stromatolite": "datasets/species_gallery/IV_Protista_Monera_Mycota/Bacillus_subtilis.jpg",
     "planform-morphology-animation": "docs/media/specimens/planform-morphology-animation.jpg",
     "cervera-levin-mafe": "docs/media/specimens/cervera-levin-mafe.jpg",
+    "zhang-sorting-morphogenesis": "datasets/zhang_sorting_morphogenesis/zhang_sorting_kymograph_specimen.jpg",
     "lobo-limbform-morphology": "datasets/species_gallery/I_Enaima_Vertebrata/Ambystoma_mexicanum.jpg",
     "santella-wormguides-celegans": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
     "bressloff-cowan-V1-hallucination": "datasets/species_gallery/I_Enaima_Vertebrata/Homo_sapiens.jpg",
@@ -170,7 +173,7 @@ def load_latest_audit_scores(core_slugs_and_scripts: set[str] | None = None) -> 
                 # Quick filename filter: skip the ~2,000 expansion-only audit files (slots 101-1100)
                 base_stem = re.sub(r"^20\d{2}-\d{2}-\d{2}-", "", stem)
                 base_stem = re.sub(r"-audit(?:-v\d+)?$", "", base_stem)
-                if not any(base_stem in k or k in base_stem for k in core_slugs_and_scripts):
+                if not any((len(k) >= 12 and (base_stem in k or k in base_stem)) or base_stem == k for k in core_slugs_and_scripts):
                     continue
             d = yaml.load(Path(fpath).read_text(encoding="utf-8"), Loader=SafeLoader)
             if not d or "audit" not in d:
@@ -375,6 +378,7 @@ def resolve_sim_media_path(entry: dict[str, Any]) -> Path | None:
         "runions-leaf-venation": "runions_leaf_venation_growth.gif",
         "planform-morphology-animation": "planform_morphospace_timeline.gif",
         "cervera-levin-mafe": "cervera_levin_mafe_gj_block.gif",
+        "zhang-sorting-morphogenesis": "zhang_sorting_morphogenesis.gif",
         "lobo-limbform-morphology": "limbform_morphospace_timeline.gif",
         "hoffmann-wing-venation": "odonata_wing_cells_deep_time.gif",
         "eshghi-odonata-wing-cells": "odonata_wing_cells_deep_time.gif",
@@ -554,9 +558,13 @@ def main() -> int:
             e["specimen_rel"] = sp_rel
 
         # Compute or lookup CV signature of the canonical specimen image
-        if sp_rel not in cv_cache:
-            cv_cache[sp_rel] = compute_specimen_cv_signature(ROOT / sp_rel) if sp_rel else {"valid": False}
-        cv_sig = cv_cache[sp_rel]
+        is_expansion = slot is not None and int(slot) > 100
+        if is_expansion and isinstance(e.get("cv_signature"), dict) and e["cv_signature"].get("valid"):
+            cv_sig = e["cv_signature"]
+        else:
+            if sp_rel not in cv_cache:
+                cv_cache[sp_rel] = compute_specimen_cv_signature(ROOT / sp_rel) if sp_rel else {"valid": False}
+            cv_sig = cv_cache[sp_rel]
 
         # Lookup audit record
         aud = audit_by_key.get(script) or audit_by_key.get(slug)
@@ -612,13 +620,15 @@ def main() -> int:
             custom_rel = resolve_multiscale_custom_gif(e)
             if custom_rel and (ROOT / custom_rel).exists():
                 sim_media_path = ROOT / custom_rel
+            elif e.get("sim_media_rel") and (ROOT / e["sim_media_rel"]).exists():
+                sim_media_path = ROOT / e["sim_media_rel"]
             else:
-                sim_media_path = resolve_sim_media_path(e)
+                sim_media_path = None
         else:
             sim_media_path = resolve_sim_media_path(e)
         sim_media_rel = str(sim_media_path.relative_to(ROOT)) if sim_media_path else ""
         cache_key = f"{sp_rel}::{sim_media_rel}"
-        if sim_media_rel and cache_key not in sim_cv_cache:
+        if not is_unfitted_expansion and not is_multiscale_atlas and sim_media_rel and cache_key not in sim_cv_cache:
             # Strictly grade ONLY the actual animated simulation GIF shown in the Web Explorer
             # against the canonical specimen photograph (no _comparison.png fallback!)
             sim_cv_cache[cache_key] = compute_sim_vs_specimen_cv_similarity(

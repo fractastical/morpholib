@@ -9,6 +9,8 @@ Replication of:
 
 Reference implementation audited against the authors' repository [`Zhangtaining/cell_research`](https://github.com/Zhangtaining/cell_research) at pinned commit [`1fd2bd5921c1f6b423a71f691d5189106a8a1020`](https://github.com/Zhangtaining/cell_research/tree/1fd2bd5921c1f6b423a71f691d5189106a8a1020) (2024-10-30), with upstream replication notes filed at [Zhangtaining/cell_research#2](https://github.com/Zhangtaining/cell_research/issues/2).
 
+![Zhang, Goldstein & Levin (2025) — Space-Time Kymographs & 14-Benchmark Quantitative Validation](../docs/media/zhang_goldstein_levin_kymograph_validation.png)
+
 ![Zhang, Goldstein & Levin (2025): autonomous cell-view sorting around frozen defects and chimeric aggregation](../docs/media/zhang_sorting_morphogenesis.gif)
 
 ---

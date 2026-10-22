@@ -1416,6 +1416,12 @@ def main() -> int:
           title: "Javier Cervera, Michael Levin & Salvador Mafé — Bioelectric Memory",
           subtitle: "Voltage-Gated Gap Junctions: 1-Headed vs. 2-Headed Regenerating Planaria",
         },
+        {
+          slug: "zhang-sorting-morphogenesis",
+          year: "2025",
+          title: "Taining Zhang, Adam Goldstein & Michael Levin — Cell-Sorting Morphogenesis",
+          subtitle: "Space-Time Kymographs: Frozen-Defect Tunneling, Delayed Gratification & Chimeric Clustering",
+        },
       ];
 
       function renderCanonicalShowcase() {
