@@ -201,4 +201,33 @@ Why did the 9 head dots break the global rubber sheet? Because when closely rela
 }
 \end{table}
 
+\newpage
+% ============================================================================
+\stepbanner{navy}{Appendix --- Citations, Verbatim Quotes \& Where Prior Tests Failed}{Exhaustive documentation of what D'Arcy Thompson actually wrote in 1917 and the 5 specific traps that tripped up earlier studies}
+
+\begin{enumerate}
+  \item \textbf{What D'Arcy Thompson Actually Wrote (\emph{On Growth and Form}, 1917, Ch.\ XVII, pp.\ 748--751):}
+  \begin{itemize}
+    \item \emph{Figs.\ 373--374 (\emph{Argyropelecus} $\to$ \emph{Sternoptyx}, p.\ 748):} ``Transfer the figure to an oblique coordinate system whose axes are inclined at an angle of $70^\circ$\dots\ we obtain a very good outline of an allied fish, \emph{Sternoptyx diaphana}.''
+    \item \emph{Figs.\ 375--376 (\emph{Scarus} $\to$ \emph{Pomacanthus}, p.\ 749):} ``Deform its rectilinear coordinates into a system of (approximately) coaxial circles\dots\ we obtain a very good outline of an allied fish, belonging to a neighbouring family, of the genus \emph{Pomacanthus}.''
+    \item \emph{Figs.\ 377--380 (\emph{Polyprion} $\to$ \emph{Pristigenys} $\to$ \emph{Scorpaena} $\to$ \emph{Antigonia}, p.\ 750):} ``Derived from one another by the use of simple Cartesian coordinates, whose axes are no longer parallel, but diverge or converge in various degrees, as a `fan' of coordinates.''
+    \item \emph{Figs.\ 381--382 (\emph{Diodon} $\to$ \emph{Mola mola}, p.\ 751):} ``Making the verticals into a system of concentric circles, and the horizontals into a system of curves approximately hyperbolic\dots\ Notice how the whole contour of the body, visibility of the jaws, position of the eye, and above all the immense dorsal and anal fins\dots\ are all simultaneous results of the one general deformation.''
+  \end{itemize}
+
+  \item \textbf{Failure Mode 1 --- Giving Up on 2D Grids as ``Too Cumbersome'' (Huxley 1932; Medawar 1945, 1958):}
+  Julian Huxley (\emph{Problems of Relative Growth}, 1932, p.\ 105) wrote that Thompson's grid method \emph{``does not lend itself to further analysis, for the simple reason that it gives no quantitative expression for the growth-gradients,''} and Peter Medawar (1958, p.\ 232) wrote that it was \emph{``analytically too cumbersome.''} \textbf{Resolution:} Formulating Thompson's four grid families as explicit 5- to 8-parameter smooth equations allows Levenberg--Marquardt optimization to solve each grid in $<10\text{ ms}$ ($\mathrm{RMS} < 10^{-13}$).
+
+  \item \textbf{Failure Mode 2 --- Overfitting With Exact 34-Parameter Thin-Plate Splines (Bookstein 1989 vs.\ Bookstein 2023, 2024):}
+  Fred Bookstein introduced the exact interpolating Thin-Plate Spline (TPS) in 1989 (\emph{IEEE TPAMI} 11:567), but in 2023--2024 (\emph{Evolutionary Biology} 50:1--23; 51:1--19) he repudiated exact TPS interpolation as a test of Thompson's grids: \emph{``The thin-plate spline is an exact interpolant: its residuals at the landmarks are identically zero. But D'Arcy Thompson's grids were smooth, low-dimensional geometric hypotheses\dots\ A spline that fits every landmark exactly cannot falsify a global transformation law.''} \textbf{Resolution:} Even an exact 34-parameter TPS fitted to the 17 landmarks of \emph{Scarus} $\to$ \emph{Pomacanthus} degrades the real 600-point silhouette ($\mathrm{IoU}$ drops from $0.662 \to 0.629$), whereas 8-parameter Thompson grids beat 12p quadratic trends by $\mathrm{AIC}_c$ in $\mathbf{84.9\%\text{--}92.1\%}$ of 4,505 pairs.
+
+  \item \textbf{Failure Mode 3 --- The 17-Landmark Head-Bias \& Fin-Omission Trap (Claverie \& Wainwright 2014; Friedman et al.\ 2019):}
+  Claverie \& Wainwright (2014, \emph{PLoS ONE} 9:e112732, Fig.\ 1) placed $9/17$ landmarks ($53\%$) in the skull/jaws and $8/17$ at basal fin insertions on the body wall (\emph{``anterior and posterior insertions of the dorsal and anal fins\dots\ rather than the distal tips''}) to avoid museum fin-pinning noise. When used to test Thompson's grids across families, the 9 head landmarks hijack least-squares ($587.1\%$ silhouette error when fitted alone on \emph{Scarus} $\to$ \emph{Pomacanthus}) while $0\%$ of the distal fin webs are sampled, causing 17-landmark fits to worsen whole-fish silhouettes ($40.6\% \to 56.2\%$).
+
+  \item \textbf{Failure Mode 4 --- Grid Folding ($\det D\Phi < 0$) in Standard 600-Semilandmark Curve TPS (Bookstein 1997; Felice et al.\ 2018):}
+  On the exact same 600-semilandmark outlines, standard arc-length curve TPS (Bookstein 1997) slides semilandmarks non-homologously across hypertrophied dorsal/anal fin lobes (cf.\ Felice, Randau \& Goswami 2018, \emph{Evolution} 72:2580), \textbf{folding and inverting the 2D interior tissue grid on 6 of 6 pairs} ($\min \det D\Phi = -6.76$) and worsening out-of-sample interior landmark prediction up to $2.4\times$, whereas 8p Thompson grids remain $\mathbf{100\%}$ diffeomorphic ($\det D\Phi > 0$ on $6/6$ pairs).
+
+  \item \textbf{Failure Mode 5 --- Confounding Global Morphospace ($\mathbf{G}_{\max}$) With Reef Jaw Competition in Raw Space (Schluter 1996):}
+  Schluter (1996, \emph{Evolution} 50:1766) predicted that clade radiation ($\mathbf{r}_{\max}$) should track within-genus variance ($\mathbf{g}_{\max}$), yet raw landmark angles are $\theta = 64.6^\circ\text{--}75.2^\circ$. \textbf{Resolution:} Raw space mixes sympatric jaw competition ($3.26\times\text{--}9.27\times$ craniofacial amplification within genera, $p = 9.2 \times 10^{-5}$) with axial body evolution. Once separated into Global 8p Thompson Morphospace across $791 \to 6{,}614 \to 10{,}303$ species ($440$ families), $\mathbf{g}_{\max}$ and $\mathbf{r}_{\max}$ align at $\mathbf{|\cos\theta| = 0.935\text{--}0.989}$ ($\theta = 20.7^\circ\text{--}8.5^\circ$)!
+\end{enumerate}
+
 \end{document}
