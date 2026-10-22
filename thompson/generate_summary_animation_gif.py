@@ -279,7 +279,7 @@ def main():
                       ha="center", va="bottom" if off_y > 0 else "top",
                       fontsize=7.0, fontweight="bold", color="#14532d")
 
-        ax_e.text(2.52, 0.045, "← ~50 Myr Cliff\n(<50 Myr: inside σ_gen;\n >50 Myr: Fin/Head=1.48×)",
+        ax_e.text(2.52, 0.045, "← ~50 Myr Transition\n(<50 Myr: inside σ_gen;\n >50 Myr: Fin/Head=1.48×)",
                   color="#991b1b", fontsize=7.2, fontweight="bold",
                   bbox=dict(boxstyle="round,pad=0.18", facecolor="#fff1f2", edgecolor="#fecdd3", alpha=0.92))
 
@@ -287,8 +287,8 @@ def main():
         ax_e.set_xticks(xb)
         ax_e.set_xticklabels(bins_labels, fontsize=7.6, fontweight="bold")
         ax_e.set_ylabel("Post-Warp Procrustes RMS", fontsize=8.6, fontweight="bold")
-        ax_e.set_title("E. Procrustes RMS vs. Genus Disparity (4,334 Pairs)\n<50 Myr Reaches σ_genus (50-61%); >50 Myr Jumps 3×",
-                       fontsize=9.1, fontweight="bold", pad=8)
+        ax_e.set_title("E. Procrustes RMS vs. Intrageneric Disparity (4,334 Pairs)\n<50 Myr Within σ_genus (50-61%); >50 Myr Fin/Head Decouples",
+                       fontsize=9.0, fontweight="bold", pad=8)
         ax_e.legend(loc="upper left", fontsize=6.8, framealpha=0.94)
         ax_e.grid(True, ls="--", alpha=0.35)
 

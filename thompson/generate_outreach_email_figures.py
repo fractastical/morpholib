@@ -280,15 +280,15 @@ def build_all_outreach_figures():
                   ha="center", va="bottom" if offset_y > 0 else "top",
                   fontsize=7.7, fontweight="bold", color="#14532d")
 
-    ax2a.text(2.50, 0.0445, "← ~45-50 Myr Phylogenetic Cliff\n   • <50 Myr: 8p RMS = 0.0105 (inside σ_genus!)\n   • >50 Myr: 8p RMS jumps 2.5-3.3× as\n     fin insertions decouple from skull",
-              color="#991b1b", fontsize=8.0, fontweight="bold",
+    ax2a.text(2.50, 0.0445, "← ~45-50 Myr Evolutionary Disparity Transition\n   • <50 Myr: 8p RMS = 0.0105 (inside σ_genus!)\n   • >50 Myr: 8p RMS jumps 2.5-3.3× as\n     median-fin insertions decouple from skull",
+              color="#991b1b", fontsize=7.8, fontweight="bold",
               bbox=dict(boxstyle="round,pad=0.24", facecolor="#fff1f2", edgecolor="#fecdd3", alpha=0.94))
 
     ax2a.set_ylim(0.003, 0.058)
     ax2a.set_xticks(xb)
     ax2a.set_xticklabels(bins_labels, fontsize=8.8, fontweight="bold")
     ax2a.set_ylabel("Post-Warp 17-LM Procrustes RMS Residual", fontsize=9.2, fontweight="bold", color="#0f172a")
-    ax2a.set_title("A. Standard Procrustes RMS Residual vs. Within-Genus Disparity (σ_genus) Across 4,334 Dated Pairs",
+    ax2a.set_title("A. Post-Warp Procrustes RMS Residual vs. Intrageneric Disparity (σ_genus) Across 4,334 Dated Pairs",
                    fontsize=10.2, fontweight="bold", pad=10)
     ax2a.legend(loc="upper left", fontsize=7.4, framealpha=0.95)
     ax2a.grid(True, ls="--", alpha=0.35)
@@ -300,8 +300,8 @@ def build_all_outreach_figures():
     fin_rms = [0.0112, 0.0132, 0.0326]
     ratios = ["1.16x", "1.28x", "1.48x"]
 
-    ax2b.bar(xt - 0.18, head_rms, width=0.34, color="#0284c7", label="Craniofacial Landmarks (LM 1-2, 11-17; 9 pts)")
-    ax2b.bar(xt + 0.18, fin_rms, width=0.34, color="#e11d48", label="Median/Paired Fin Insertions (LM 3-10; 8 pts)")
+    ax2b.bar(xt - 0.18, head_rms, width=0.34, color="#0284c7", label="Craniofacial Partition (LM 1-2, 11-17; 9 pts)")
+    ax2b.bar(xt + 0.18, fin_rms, width=0.34, color="#e11d48", label="Fin-Insertion Partition (LM 3-10; 8 pts)")
 
     for i in range(3):
         ax2b.text(xt[i], max(head_rms[i], fin_rms[i]) + 0.0014, f"{ratios[i]}\n(Fin/Head)", ha="center", va="bottom", fontsize=8.1, fontweight="bold", color="#9f1239")
@@ -311,7 +311,7 @@ def build_all_outreach_figures():
     ax2b.set_xticks(xt)
     ax2b.set_xticklabels(tiers_short, fontsize=8.8, fontweight="bold")
     ax2b.set_ylabel("Post-Warp Procrustes RMS Residual", fontsize=9, fontweight="bold")
-    ax2b.set_title("B. Why Global Grids Break Above 50 Myr:\nFin Insertions Decouple From Head (Satterfield 2024)", fontsize=9.8, fontweight="bold", pad=10)
+    ax2b.set_title("B. Modular Evolution Above 50 Myr:\nFin Insertions Decouple From Cranium (Satterfield 2024)", fontsize=9.6, fontweight="bold", pad=10)
     ax2b.legend(loc="upper left", fontsize=7.4, framealpha=0.94)
     ax2b.grid(axis="y", ls="--", alpha=0.35)
 

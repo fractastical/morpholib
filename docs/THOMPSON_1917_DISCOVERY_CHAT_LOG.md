@@ -2818,3 +2818,95 @@ Previously, we only binned pairs by **divergence time ($t$ in Myr)** and used Th
 The new figure is at `./outreach_fig4_wainwright_600pt_and_convergence.png` (and live on GitHub).
 
 ---
+
+### Assistant Response (Turn 27)
+
+*Tools executed:* `Shell` (Find the most recent chat transcript files)
+
+**Exploring Agent Transcripts**
+
+I'm currently reviewing the agent transcripts located in `/Users/jdietz/.cursor/projects/Users-jdietz-Documents-GitHub-infinitemorphospace/agent-transcripts`. My immediate goal is to find and extract the relevant chat transcript, along with any associated files, to cleanly transfer them into the `docs/` directory.
+
+---
+
+### Assistant Response (Turn 27)
+
+*Tools executed:* `Shell` (Find the exact transcript file for this chat session)
+
+**Locating Relevant Files**
+
+I'm currently sifting through transcript directories to pinpoint the specific one containing the Thompson conversation, denoted by the identifier `f9ff9fb3-9578-4598-98e8-9aeb88477207`. My goal is to isolate the correct data cluster among the possibilities I've identified.
+
+---
+
+### Assistant Response (Turn 27)
+
+*Tools executed:* `Shell` (Inspect structure of current session transcript)
+
+**Analyzing Chat Logs**
+
+I am currently examining the structure of this specific chat session, aiming to export it as a human-readable Markdown transcript.
+
+---
+
+### Assistant Response (Turn 27)
+
+*Tools executed:* `Shell` (List all user turns in the transcript)
+
+**Analyzing Message Formats**
+
+I'm currently examining the structure of each `message` within `0e50eb21-062e-47c3-9ded-1b0bbe630bee.jsonl`. My aim is to develop a script that can effectively extract and organize this data. This script will then be used to export the content of `docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`, ensuring the final exchange with Prof. Wainwright is included.
+
+---
+
+### Assistant Response (Turn 27)
+
+*Tools executed:* `Shell` (Export full chat log to Markdown and JSONL in docs/)
+
+**Analyzing All Records**
+
+I'm currently reviewing all 360 records, from Turn 0's initial data source inquiry to Turn 328's discussion takeaways with Peter.
+
+---
+
+### Assistant Response (Turn 27)
+
+Done — I exported the entire 27-turn research, mathematical modeling, referee-audit, and domain-expert feedback dialogue into both human-readable Markdown and structured JSONL, linked both from the top of [`README.md`](./README.md) and [`docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md), and pushed everything to `origin/main` ([`203a2ca9`](https://github.com/fractastical/morpholib/commit/203a2ca9) and [`f2995b51`](https://github.com/fractastical/morpholib/commit/f2995b51)).
+
+### 1. Live Links to the Full Chat Log & New Wainwright Benchmark
+
+- **Full Readable Markdown Chat Log (`261 KB`, all 27 turns + embedded figures):**
+  [`docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](https://github.com/fractastical/morpholib/blob/main/docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md)
+- **Structured Machine-Readable Transcript (`300 KB`, 340 JSONL events):**
+  [`docs/thompson_1917_discovery_chat_log.jsonl`](https://github.com/fractastical/morpholib/blob/main/docs/thompson_1917_discovery_chat_log.jsonl)
+- **New 6-Panel Plate Answering Both of Prof. Wainwright's Takeaways:**
+  [`docs/outreach_fig4_wainwright_600pt_and_convergence.png`](https://github.com/fractastical/morpholib/blob/main/docs/outreach_fig4_wainwright_600pt_and_convergence.png)
+- **Executable Script & JSON Benchmark:**
+  [`thompson/run_wainwright_600pt_and_convergence_tests.py`](https://github.com/fractastical/morpholib/blob/main/thompson/run_wainwright_600pt_and_convergence_tests.py) · [`thompson_wainwright_600pt_and_convergence.json`](https://github.com/fractastical/morpholib/blob/main/thompson_wainwright_600pt_and_convergence.json)
+
+![New 6-Panel Plate Answering Prof. Wainwright's Two Takeaways](./outreach_fig4_wainwright_600pt_and_convergence.png)
+
+---
+
+### 2. Summary of How the New Benchmark Answers Both of Prof. Wainwright's Takeaways
+
+#### Takeaway 1: *"How is Thompson's method better than any old 600-point version?"* (Panels A–C)
+Previously, comparing a 17-landmark fit against a 600-point Thompson fit changed the *input* ($17 \to 600$ points). Now we **hold the 600-point silhouette input fixed** across all 6 of Thompson's 1917 pairs and test **5 competing 600-point methods** head-to-head:
+1. **1D Elliptic Fourier Descriptors (EFD, 8p = 2 harmonics):** Parameterizes only a 1D perimeter curve $(x(s), y(s))$ and has **no 2D interior coordinate map $\Phi(x,y)$ at all** (`0%` ability to predict where internal organs, eye, opercle, or spine move).
+2. **Standard 600-Point Arc-Length Semilandmark Thin-Plate Splines (`600-pt Boundary TPS`, Panel A):** Because standard 600-point outline TPS matches boundary points by perimeter arc-length ($s \in [0, 1]$), enlarged dorsal/anal fin lobes slide boundary points non-homologously along the contour, **tearing and folding the 2D interior tissue grid on `6 of 6` pairs (`0%` globally bijective; $\min \det D\Phi = -6.76$, with up to $25.1\%$ of the body inverted!)** and degrading **zero-shot prediction of the 14 held-out interior skeletal landmarks on `6 of 6` pairs** (up to **$2.4\times$ worse RMS**: `0.072` vs. **`0.032`** on *Polyprion* $\to$ *Pristigenys*; `0.107` vs. **`0.045`** on *Pristigenys* $\to$ *Scorpaena*; `0.134` vs. **`0.091`** on *Scorpaena* $\to$ *Antigonia*).
+3. **12-Parameter Quadratic Polynomial on the 600 Points:** Folds the 2D tissue grid ($\det D\Phi \le 0$) on **`4 of 6` pairs** (`33%` bijective) and degrades held-out interior landmark prediction by up to **$2.1\times$** (`0.092` vs. **`0.045`** on *Pristigenys* $\to$ *Scorpaena*).
+4. **6-Parameter Linear Affine on the 600 Points:** Cannot bend or fan the contour (`16.2%–32.2%` higher Chamfer contour loss than 8p Thompson).
+5. **8-Parameter D'Arcy Thompson Coordinate Grids on the 600 Points (Panels B–C):** The **only** 600-point method that achieves low contour error, **`100%` global 2D tissue bijectivity (`6/6` pairs, $\det D\Phi > 0$ everywhere)**, and accurate **zero-shot prediction of held-out internal skeletal anatomy** (eye, jaw, opercle, fin bases) when fitted *solely* to the outer silhouette!
+
+#### Takeaway 2: *"A data-driven approach for the 'morphospace' part of evolution vs. convergent evolution"* (Panels D–F)
+1. **Unsupervised Data-Driven 8p SVD-Warp Ceiling (`Leave-One-Family-Out CV` across 48 families, Panel D):**
+   Without assuming Thompson's equations *a priori*, we learned the optimal 8-parameter coordinate basis directly from the 791 species (6p affine + top 2 Empirical Non-Affine Singular Vectors of $Y_i - \text{Affine}(M_0 \to Y_i)$). Across all 791 held-out species:
+   - **6p Linear Affine:** explains **`25.1%` median** (`29.3%` mean) of shape divergence from the consensus ancestor $M_0$.
+   - **Optimal 8p Data-Driven SVD Ceiling:** explains **`55.3%` median** (`53.1%` mean).
+   - **Thompson's 1917 Analytical 8p Laws:** explain **`50.9%` median** (`50.8%` mean) — capturing **`92.0%` (median) / `95.6%` (mean) of the theoretical data-driven 8-parameter SVD ceiling** without a single data-trained basis vector, while capturing **`83.4%` of Empirical Morphospace `PC1`**, **`95.8%` of `PC2`**, and **`88.6%` of the primary `(PC1, PC2)` morphospace plane** (vs. `33.1%` of `PC1` for 6p affine).
+2. **Convergent vs. Divergent Evolution & Wainwright's "Many-to-One" Mapping (Panels E–F):**
+   Decomposing every genus's evolutionary deformation from the consensus ancestor $M_0$ into its **Global 8p Thompson Field** + **Local Modular Residual** ($\Delta Y_g = \Delta Y_g^{\text{Thompson}} + \Delta Y_g^{\text{Modular}}$) across **5 distantly related deep-bodied reef families (`> 95 Myr` apart: Chaetodontidae, Pomacanthidae, Acanthuridae, Pomacentridae, Siganidae; 38 inter-family pairs)** and **6 elongated swimmer families** shows:
+   - Convergent families evolve along **strongly parallel 8p Thompson coordinate trajectories** (**median cosine similarity $\cos \theta = +0.693$** in the deep-bodied guild and **$+0.714$** in the elongated guild, vs. **$-0.699$** across divergent guilds, $p < 10^{-8}$), adding **`+16.3%` to `+43.6%` explained variance** over 6p affine (*Siganus* `4.2% → 41.6%`, *Acanthurus* `19.0% → 62.6%`, *Ctenochaetus* `37.2% → 68.7%`).
+   - Meanwhile, their **local head-and-fin modular residuals are nearly twice as divergent ($\cos \theta = +0.416$, or $+0.08$ centered)**—giving a direct coordinate-field proof of **Wainwright's (2005) "many-to-one mapping" of form to function**: convergent reef-fish families evolve along the *same* global Thompson coordinate trajectory to build a deep-bodied hydrofoil silhouette, while shifting their internal jaws and fin insertions in family-specific ways.
+
+---

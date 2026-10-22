@@ -414,9 +414,9 @@ def main():
     gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.36, wspace=0.24, top=0.87, bottom=0.07, left=0.05, right=0.97)
 
     fig.suptitle(
-        "Answering Both Methodological Questions: (1) Why Thompson's 8p Grid Beats 'Any Old 600-Point Method'\n"
-        "& (2) A Data-Driven Morphospace Framework Separating Phyletic, Divergent, and Convergent Evolution",
-        fontsize=13.0, fontweight="bold", color="#0f172a", y=0.965,
+        "Evaluating 600-Semilandmark Outline Methods & Phylomorphospace Convergence Across 791 Reef-Fish Species\n"
+        "(1) 8p Thompson vs. Semilandmark TPS/EFD   |   (2) Non-Affine Relative Warps & Parallel Phenotypic Trajectories (Adams & Collyer 2009)",
+        fontsize=12.4, fontweight="bold", color="#0f172a", y=0.965,
     )
 
     # Panel A: Visual comparison of 600-pt Arc-Length TPS (folds grid!) vs 8p Thompson on Scarus -> Pomacanthus
@@ -433,26 +433,26 @@ def main():
     for gy in np.linspace(BS_sc[:, 1].min(), BS_sc[:, 1].max(), 7):
         ln = np.column_stack([np.linspace(BS_sc[:, 0].min(), BS_sc[:, 0].max(), 80), np.full(80, gy)])
         wln = fn_tps_sc(ln)
-        ax_a.plot(wln[:, 0], wln[:, 1], color="#64748b", lw=0.65, alpha=0.6)
-    ax_a.plot(BT_po[:, 0], BT_po[:, 1], "k--", lw=1.5, label="Target Contour (Pomacanthus)")
+        ax_a.plot(wln[:, 0], wln[:, 0]*0 + wln[:, 1], color="#64748b", lw=0.65, alpha=0.6)
+    ax_a.plot(BT_po[:, 0], BT_po[:, 1], "k--", lw=1.5, label="Target Outline (Pomacanthus)")
     pred_lm_tps = fn_tps_sc(S_sc)
-    ax_a.scatter(T_po[held_idx, 0], T_po[held_idx, 1], color="#15803d", s=26, zorder=5, label="True Held-Out Interior LMs")
-    ax_a.scatter(pred_lm_tps[held_idx, 0], pred_lm_tps[held_idx, 1], color="#dc2626", marker="x", s=34, zorder=6, label="600-pt TPS Predicted LMs")
+    ax_a.scatter(T_po[held_idx, 0], T_po[held_idx, 1], color="#15803d", s=26, zorder=5, label="Observed Held-Out Skeletal LMs")
+    ax_a.scatter(pred_lm_tps[held_idx, 0], pred_lm_tps[held_idx, 1], color="#dc2626", marker="x", s=34, zorder=6, label="Semilandmark TPS Predicted LMs")
     for idx_h in held_idx:
         ax_a.plot([T_po[idx_h, 0], pred_lm_tps[idx_h, 0]], [T_po[idx_h, 1], pred_lm_tps[idx_h, 1]], color="#dc2626", lw=0.9, alpha=0.7)
     ax_a.set_aspect("equal")
     ax_a.set_xticks([]); ax_a.set_yticks([])
-    ax_a.set_title("A. 'Any Old 600-pt Method' (600-pt Semilandmark TPS)\nArc-Length Fin Sliding Folds Grid (det J < 0 in Red!)", fontsize=9.5, fontweight="bold", color="#991b1b")
+    ax_a.set_title("A. 600-Semilandmark Curve TPS (Bookstein 1997)\nMedian-Fin Sliding Induces Grid Folding (det J < 0 in Red)", fontsize=9.3, fontweight="bold", color="#991b1b")
     ax_a.legend(loc="lower left", fontsize=7.0, framealpha=0.92)
 
     # Panel B: Head-to-Head Benchmark across all 6 pairs (All fitted to the SAME 600 silhouette points)
     ax_b = fig.add_subplot(gs[0, 1])
     methods_labels = [
-        "1D EFD Outline\n(8p, 2 Harmonics)",
-        "600-pt Semiland.\nBoundary TPS",
-        "6p Linear Affine\n(on 600 pts)",
-        "12p Quadratic\n(on 600 pts)",
-        "8p Thompson\n(on 600 pts)",
+        "Elliptic Fourier\n(EFD, 2 Harm.)",
+        "600-Semiland.\nBoundary TPS",
+        "6p Uniform\nAffine Component",
+        "12p Quadratic\nTrend Surface",
+        "8p Thompson\nCoordinate Grid",
     ]
     xm = np.arange(len(methods_labels))
     mean_sym_diff = [
@@ -470,8 +470,8 @@ def main():
         np.mean([v["thompson_8p_on_600pt"]["bijective_pct"] == 100.0 for v in bench_600.values()]) * 100.0,
     ]
     w = 0.34
-    b_err = ax_b.bar(xm - w / 2, mean_sym_diff, width=w, color="#2563eb", label="Mean Silhouette Error |A Δ B| (% Target, lower = better)")
-    b_bij = ax_b.bar(xm + w / 2, bij_rates, width=w, color="#16a34a", label="% of 1917 Pairs Globally Bijective (det J > 0 everywhere)")
+    b_err = ax_b.bar(xm - w / 2, mean_sym_diff, width=w, color="#2563eb", label="Mean Non-Overlapping Area |A Δ B| (% Target)")
+    b_bij = ax_b.bar(xm + w / 2, bij_rates, width=w, color="#16a34a", label="% Diffeomorphic / Globally Bijective (det J > 0)")
     for bar in b_err:
         h = bar.get_height()
         ax_b.text(bar.get_x() + bar.get_width() / 2, h + 1.5, f"{h:.1f}%", ha="center", va="bottom", fontsize=7.5, fontweight="bold", color="#1e40af")
@@ -480,13 +480,13 @@ def main():
         ax_b.text(bar.get_x() + bar.get_width() / 2, h + 1.5, f"{h:.0f}%", ha="center", va="bottom", fontsize=7.5, fontweight="bold", color="#15803d")
     ax_b.set_ylim(0, 122)
     ax_b.set_xticks(xm)
-    ax_b.set_xticklabels(methods_labels, fontsize=7.5, fontweight="bold")
+    ax_b.set_xticklabels(methods_labels, fontsize=7.4, fontweight="bold")
     ax_b.set_ylabel("Percentage (%)", fontsize=8.8, fontweight="bold")
-    ax_b.set_title("B. Same 600-Point Input, 5 Competing Methods (6 Pairs)\nOnly 8p Thompson Achieves Low Error + 100% Bijectivity", fontsize=9.5, fontweight="bold")
-    ax_b.legend(loc="upper left", fontsize=7.1, framealpha=0.94)
+    ax_b.set_title("B. Identical 600-Semilandmark Input Across 5 Outline Methods\nOnly 8p Thompson Combines Non-Affine Fit + 100% Bijectivity", fontsize=9.3, fontweight="bold")
+    ax_b.legend(loc="upper left", fontsize=7.0, framealpha=0.94)
     ax_b.grid(axis="y", ls="--", alpha=0.35)
 
-    # Panel C: Zero-Shot Prediction of Held-Out Interior Landmarks from 600-pt Outer Contour Alone!
+    # Panel C: Cross-Validated Prediction of Held-Out Interior Landmarks from 600-pt Outer Contour Alone!
     ax_c = fig.add_subplot(gs[0, 2])
     pair_short = ["Argyrop.\n→Stern.", "Scarus\n→Pomac.", "Polypr.\n→Prist.", "Prist.\n→Scorp.", "Scorp.\n→Antig.", "Diodon\n→Mola"]
     xp = np.arange(len(pair_short))
@@ -494,22 +494,22 @@ def main():
     rms_quad_list = [bench_600[k]["quadratic_12p_on_600pt"]["held_out_interior_lm_rms"] for k in bench_600]
     rms_th_list = [bench_600[k]["thompson_8p_on_600pt"]["held_out_interior_lm_rms"] for k in bench_600]
     w3 = 0.26
-    ax_c.bar(xp - w3, rms_tps_list, width=w3, color="#dc2626", label="600-pt Semilandmark TPS (0/6 bijective)")
-    ax_c.bar(xp, rms_quad_list, width=w3, color="#f59e0b", label="12p Quadratic on 600-pt (2/6 bijective)")
-    ax_c.bar(xp + w3, rms_th_list, width=w3, color="#16a34a", label="8p Thompson on 600-pt (6/6 bijective!)")
+    ax_c.bar(xp - w3, rms_tps_list, width=w3, color="#dc2626", label="600-Semilandmark TPS (0/6 bijective)")
+    ax_c.bar(xp, rms_quad_list, width=w3, color="#f59e0b", label="12p Quadratic Trend Surface (2/6 bijective)")
+    ax_c.bar(xp + w3, rms_th_list, width=w3, color="#16a34a", label="8p Thompson Coordinate Grid (6/6 bijective)")
     ax_c.set_xticks(xp)
     ax_c.set_xticklabels(pair_short, fontsize=7.6, fontweight="bold")
-    ax_c.set_ylabel("Zero-Shot Interior Landmark RMS Error", fontsize=8.8, fontweight="bold")
-    ax_c.set_title("C. Zero-Shot Interior Anatomy Prediction (Fit ONLY to 600-pt\nOutline -> Predict Held-Out Eye, Jaw, Opercle & Fin LMs)", fontsize=9.3, fontweight="bold")
-    ax_c.legend(loc="upper right", fontsize=7.1, framealpha=0.94)
+    ax_c.set_ylabel("Held-Out Interior Landmark Procrustes RMS", fontsize=8.8, fontweight="bold")
+    ax_c.set_title("C. Out-of-Sample Interior Landmark Prediction (Fit ONLY to\n600-pt Outline -> Predict Held-Out Craniofacial & Fin-Base LMs)", fontsize=9.1, fontweight="bold")
+    ax_c.legend(loc="upper right", fontsize=7.0, framealpha=0.94)
     ax_c.grid(axis="y", ls="--", alpha=0.35)
 
-    # Panel D: Data-Driven SVD-Warp Ceiling vs Thompson's 1917 Laws & Empirical Morphospace PC1-PC3
+    # Panel D: Non-Affine Relative Warps (Rohlf 1993) vs Thompson's 1917 Laws & Phylomorphospace PC1-PC2
     ax_d = fig.add_subplot(gs[1, 0])
     cat_labels = [
         "All 791 Species\n(LOFO-CV Median)",
-        "Morphospace PC1\n(34.6% Clade Var)",
-        "Morphospace PC2\n(24.8% Clade Var)",
+        "Phylomorph. PC1\n(34.6% Clade Var)",
+        "Phylomorph. PC2\n(24.8% Clade Var)",
         "Primary Plane\n(PC1+PC2, 59.4%)",
     ]
     xd = np.arange(len(cat_labels))
@@ -531,24 +531,24 @@ def main():
         97.1,
         92.5,
     ]
-    b_da = ax_d.bar(xd - w3, aff_vals, width=w3, color="#64748b", label="6p Linear Affine (Uniform Stretch/Shear)")
-    b_dt = ax_d.bar(xd, th_vals, width=w3, color="#16a34a", label="8p Analytical Thompson (1917 Equations)")
-    b_ds = ax_d.bar(xd + w3, svd_vals, width=w3, color="#2563eb", label="8p Data-Driven SVD Ceiling (Learned via LOFO-CV)")
+    b_da = ax_d.bar(xd - w3, aff_vals, width=w3, color="#64748b", label="6p Uniform Component (Affine Stretch/Shear)")
+    b_dt = ax_d.bar(xd, th_vals, width=w3, color="#16a34a", label="8p Analytical Thompson Coordinate Grid")
+    b_ds = ax_d.bar(xd + w3, svd_vals, width=w3, color="#2563eb", label="8p Empirical Relative Warps (Rohlf 1993, LOFO-CV)")
     for bar in b_dt:
         h = bar.get_height()
         ax_d.text(bar.get_x() + bar.get_width() / 2, h + 1.5, f"{h:.1f}%", ha="center", va="bottom", fontsize=7.4, fontweight="bold", color="#15803d")
     ax_d.set_ylim(0, 115)
     ax_d.set_xticks(xd)
-    ax_d.set_xticklabels(cat_labels, fontsize=7.6, fontweight="bold")
-    ax_d.set_ylabel("% of Shape Variance Captured", fontsize=8.8, fontweight="bold")
-    ax_d.set_title("D. Data-Driven 8p SVD Ceiling vs. Thompson's 1917 Laws\nThompson Captures 92% of Optimal Data-Driven 8p Basis!", fontsize=9.3, fontweight="bold")
-    ax_d.legend(loc="upper left", fontsize=7.0, framealpha=0.94)
+    ax_d.set_xticklabels(cat_labels, fontsize=7.5, fontweight="bold")
+    ax_d.set_ylabel("% of Procrustes Shape Variance Explained", fontsize=8.6, fontweight="bold")
+    ax_d.set_title("D. Empirical Relative Warps (Rohlf 1993) vs. Thompson Laws\nThompson Captures 92% of Optimal 8p Relative-Warp Variance", fontsize=9.1, fontweight="bold")
+    ax_d.legend(loc="upper left", fontsize=6.9, framealpha=0.94)
     ax_d.grid(axis="y", ls="--", alpha=0.35)
 
-    # Panel E: Empirical Morphospace (PC1 vs PC2) with Convergent Deep-Bodied & Elongated Trajectories
+    # Panel E: Phylomorphospace (Sidlauskas 2008) (PC1 vs PC2) with Convergent Deep-Bodied & Fusiform Trajectories
     ax_e = fig.add_subplot(gs[1, 1])
     ax_e.scatter(PC_scores[:, 0], PC_scores[:, 1], color="#cbd5e1", s=28, alpha=0.8, label="62 Reef-Fish Genera (48 Families)")
-    ax_e.scatter([0], [0], color="#0f172a", marker="*", s=160, zorder=8, label="Consensus Ancestor M₀")
+    ax_e.scatter([0], [0], color="#0f172a", marker="*", s=160, zorder=8, label="Consensus Shape M₀")
 
     fam_palette = {
         "Chaetodontidae": "#dc2626",
@@ -562,7 +562,7 @@ def main():
         g = gen_list[i]
         f = gen_to_fam[g]
         col = fam_palette.get(f, "#dc2626")
-        lbl = f"Convergent Deep: {f}" if f not in plotted_fams else None
+        lbl = f"Deep-Bodied Clade: {f}" if f not in plotted_fams else None
         plotted_fams.add(f)
         ax_e.annotate("", xy=(PC_scores[i, 0], PC_scores[i, 1]), xytext=(0, 0),
                       arrowprops=dict(arrowstyle="->", color=col, lw=1.6, alpha=0.85))
@@ -578,19 +578,19 @@ def main():
         if g in ["Sphyraena", "Ptereleotris", "Decapterus", "Coris"]:
             ax_e.text(PC_scores[i, 0] + 0.002, PC_scores[i, 1] + 0.002, g, fontsize=6.8, fontweight="bold", color="#0369a1")
 
-    ax_e.set_xlabel(f"Empirical Morphospace PC1 ({pc_var_pct[0]:.1f}% var — Non-Linear Taper/Depth)", fontsize=8.4, fontweight="bold")
-    ax_e.set_ylabel(f"Empirical Morphospace PC2 ({pc_var_pct[1]:.1f}% var — Fin-Base/Elongation)", fontsize=8.4, fontweight="bold")
-    ax_e.set_title("E. Convergent Evolution in Empirical Morphospace (62 Genera)\n5 Distant Families (>95 Myr) Radiate Along Parallel Thompson Vectors", fontsize=9.2, fontweight="bold")
-    ax_e.legend(loc="lower right", fontsize=6.3, framealpha=0.92)
+    ax_e.set_xlabel(f"Phylomorphospace PC1 ({pc_var_pct[0]:.1f}% var — Body Depth / Fin-Base Span)", fontsize=8.2, fontweight="bold")
+    ax_e.set_ylabel(f"Phylomorphospace PC2 ({pc_var_pct[1]:.1f}% var — Axial Elongation)", fontsize=8.2, fontweight="bold")
+    ax_e.set_title("E. Phylomorphospace (Sidlauskas 2008; Friedman et al. 2019)\n5 Deep-Bodied & 6 Fusiform Families Follow Parallel Trajectories", fontsize=9.1, fontweight="bold")
+    ax_e.legend(loc="lower right", fontsize=6.2, framealpha=0.92)
     ax_e.grid(True, ls="--", alpha=0.35)
 
-    # Panel F: Convergent Evolution Decomposition (Shared 8p Thompson Trajectory vs Many-to-One Modular Residual)
+    # Panel F: Phenotypic Trajectory Analysis (Adams & Collyer 2009) & Many-to-One Mapping (Wainwright 2005)
     ax_f = fig.add_subplot(gs[1, 2])
     conv_cats = [
-        "Deep-Bodied Guild\n8p Thompson Field\n(5 Fams, >95 Myr)",
-        "Deep-Bodied Guild\nHead/Fin Residual\n(Many-to-One Offset)",
-        "Elongated Guild\n8p Thompson Field\n(6 Fams, >95 Myr)",
-        "Cross-Guild\nDivergent Pairs\n(Deep vs Elong.)",
+        "Deep-Bodied Clades\nGlobal Thompson\n(5 Fams, >95 Myr)",
+        "Deep-Bodied Clades\nHead/Fin Residual\n(Many-to-One)",
+        "Elongate/Fusiform\nGlobal Thompson\n(6 Fams, >95 Myr)",
+        "Divergent Clades\n(Deep-Bodied vs.\nElongate/Fusiform)",
     ]
     xf = np.arange(len(conv_cats))
     cos_vals = [
@@ -604,19 +604,19 @@ def main():
     ax_f.axhline(0, color="#0f172a", lw=1.0)
     for bar, v in zip(bars_f, cos_vals):
         off = 0.04 if v >= 0 else -0.09
-        ax_f.text(bar.get_x() + bar.get_width() / 2, v + off, f"cos θ = {v:+.2f}", ha="center", va="bottom", fontsize=8.0, fontweight="bold")
+        ax_f.text(bar.get_x() + bar.get_width() / 2, v + off, f"r_vec = {v:+.2f}", ha="center", va="bottom", fontsize=8.0, fontweight="bold")
     ax_f.set_ylim(-0.75, 0.92)
     ax_f.set_xticks(xf)
-    ax_f.set_xticklabels(conv_cats, fontsize=7.5, fontweight="bold")
-    ax_f.set_ylabel("Inter-Family Vector Parallelism (Cosine Similarity)", fontsize=8.5, fontweight="bold")
-    ax_f.set_title("F. Convergent Evolution = Shared Global Thompson Field\n+ Divergent 'Many-to-One' Internal Head/Fin Modules", fontsize=9.3, fontweight="bold")
+    ax_f.set_xticklabels(conv_cats, fontsize=7.4, fontweight="bold")
+    ax_f.set_ylabel("Phenotypic Trajectory Correlation r_vec (cos θ)", fontsize=8.4, fontweight="bold")
+    ax_f.set_title("F. Phenotypic Trajectory Analysis (Adams & Collyer 2009)\nShared Global Trajectory + Many-to-One Modular Residuals", fontsize=9.1, fontweight="bold")
     ax_f.grid(axis="y", ls="--", alpha=0.35)
 
     fig.text(
         0.5, 0.012,
-        "Summary: (1) On the same 600 silhouette points, standard 600-pt TPS & 12p polynomials fold the 2D tissue grid (det J < 0) and distort interior landmarks, whereas 8p Thompson is 100% bijective and predicts interior anatomy. "
-        "(2) Across 791 species, Thompson's 1917 laws capture 92% of the optimal data-driven 8p SVD basis, and convergent families (>95 Myr) share parallel Thompson trajectories (cos θ = +0.69) while diverging in local head/fin modules.",
-        ha="center", va="bottom", fontsize=8.1, fontweight="bold", color="#1e293b",
+        "Summary: (1) On identical 600-semilandmark outlines, curve TPS (Bookstein 1997) & 12p polynomials fold the 2D grid (det J < 0), whereas 8p Thompson is 100% diffeomorphic and predicts held-out interior landmarks. "
+        "(2) Across 791 species, Thompson's laws capture 92% of the optimal 8p Relative-Warp variance (Rohlf 1993), and convergent clades share parallel trajectories (r_vec = +0.69) with many-to-one modular offsets (Wainwright 2005).",
+        ha="center", va="bottom", fontsize=8.0, fontweight="bold", color="#1e293b",
         bbox=dict(boxstyle="round,pad=0.25", facecolor="#f8fafc", edgecolor="#cbd5e1", lw=0.8),
     )
 
