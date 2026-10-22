@@ -64,7 +64,7 @@ We also normalized all terminology and axis labels across the manuscript and fig
 
 Best regards,
 
-Joel Dietz's [Infinite Morphospace](https://github.com/fractastical/morpholib) Research Project
+Joel Dietz (Project Delphi · [github.com/fractastical/morpholib](https://github.com/fractastical/morpholib))
 
 ---
 
@@ -103,7 +103,7 @@ We have drafted a manuscript (attached as `thompson_1917_fish_transformations_ma
 
 With warm regards,
 
-Joel Dietz's [Infinite Morphospace](https://github.com/fractastical/morpholib) Research Project
+Joel Dietz (Project Delphi · [github.com/fractastical/morpholib](https://github.com/fractastical/morpholib))
 
 ---
 
@@ -136,7 +136,7 @@ We have attached the full manuscript (`thompson_1917_fish_transformations_manusc
 
 Warm regards,
 
-Joel Dietz's [Infinite Morphospace](https://github.com/fractastical/morpholib) Research Project
+Joel Dietz (Project Delphi · [github.com/fractastical/morpholib](https://github.com/fractastical/morpholib))
 
 ---
 
@@ -174,7 +174,7 @@ We have attached our manuscript (`thompson_1917_fish_transformations_manuscript.
 
 With warm regards,
 
-Joel Dietz's [Infinite Morphospace](https://github.com/fractastical/morpholib) Research Project
+Joel Dietz (Project Delphi · [github.com/fractastical/morpholib](https://github.com/fractastical/morpholib))
 
 ---
 
@@ -211,5 +211,5 @@ We have attached our manuscript (`thompson_1917_fish_transformations_manuscript.
 
 With best regards,
 
-Joel Dietz's [Infinite Morphospace](https://github.com/fractastical/morpholib) Research Project
+Joel Dietz (Project Delphi · [github.com/fractastical/morpholib](https://github.com/fractastical/morpholib))
 

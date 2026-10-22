@@ -9,7 +9,7 @@ export interface InfiniteMorphospaceWidgetProps {
 
 /**
  * Drop-in React component for bioelectricity.net (Bioelectricity Nexus).
- * Primary Author: Joel Dietz (Infinite Morphospace Research Project)
+ * Primary Author: Joel Dietz (Project Delphi)
  */
 export const InfiniteMorphospaceWidget: React.FC<InfiniteMorphospaceWidgetProps> = ({
   height = 900,

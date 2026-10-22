@@ -1,6 +1,6 @@
 # Key Scientific & Mathematical Discoveries in *Infinite Morphospace*
 
-**Primary Author:** Joel Dietz ([Infinite Morphospace Research Project](https://github.com/fractastical/morpholib))
+**Primary Author:** Joel Dietz ([Project Delphi](https://github.com/fractastical/morpholib))
 
 This document provides a technical deep-dive into the primary biological, morphometric, and mathematical discoveries produced in this repository through our **12-step closed-loop methodology** (combining primary-literature partial differential / discrete equations, SHA-256-locked museum and empirical datasets, machine-checked **Lean 4** proofs in [`morphoeval/lean/MathOfBiology.lean`](../morphoeval/lean/MathOfBiology.lean) with `0 sorry`, and blinded multi-agent referee audits).
 

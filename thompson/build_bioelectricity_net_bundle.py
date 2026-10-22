@@ -165,7 +165,7 @@ def main():
         "target_site": "https://bioelectricity.net",
         "primary_author": {
             "name": "Joel Dietz",
-            "affiliation": "Infinite Morphospace Research Project",
+            "affiliation": "Project Delphi",
             "github": "https://github.com/fractastical/morpholib",
         },
         "embed_urls": {
@@ -546,7 +546,7 @@ def main():
   <section class="hero">
     <div class="container">
       <div class="badge-row">
-        <span class="badge">BIOELECTRICITY NEXUS × INFINITE MORPHOSPACE</span>
+        <span class="badge">BIOELECTRICITY NEXUS × PROJECT DELPHI</span>
         <span class="badge amber">PRIMARY AUTHOR: JOEL DIETZ</span>
         <span class="badge emerald">10,303 FISH SPECIES · 440 FAMILIES · LEAN 4 VERIFIED</span>
       </div>
@@ -924,7 +924,7 @@ export interface InfiniteMorphospaceWidgetProps {
 
 /**
  * Drop-in React component for bioelectricity.net (Bioelectricity Nexus).
- * Primary Author: Joel Dietz (Infinite Morphospace Research Project)
+ * Primary Author: Joel Dietz (Project Delphi)
  */
 export const InfiniteMorphospaceWidget: React.FC<InfiniteMorphospaceWidgetProps> = ({
   height = 900,
