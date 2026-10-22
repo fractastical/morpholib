@@ -5,7 +5,7 @@
 **Audit of Unconditional Proofs vs. Open Single-Seed Gaps:** [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](./RULE30_PRIZE_STATUS_AND_GAPS.md)  
 **Date:** October 20, 2026
 
-![Animated 51-Milestone Progress Dashboard: Theorems 1–52 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 46-Milestone Progress Dashboard: Theorems 1–47 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -960,103 +960,11 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 > 3. **Direct Period-$\Pi$ Defect Opaque-Mirror Clash ($c_t \land D_1(t) = 1$) Across All $39,606$ Non-Zero Pairs in $[0, 200) \times [1, 200)$ (`defect_mirror_survivors_200 == 0`):**  
 >    - In any valid Rule 30 trajectory with $\Pi$-periodic center column for $t \ge t_0$, Opaque Mirror forces $l_1(t) = 1 \oplus c_{t+1} = l_1(t + \Pi)$ whenever $c_t = 1$, so $c_t \land D_1(t) = 0$ is mandatory for all $t \ge t_0$. Across all $39,606$ non-zero periodic pairs $(t_0, \Pi) \in [0, 200) \times [1, 200)$, **$100\%$ ($39,606 / 39,606$)** produce a direct Period-$\Pi$ Defect Opaque-Mirror clash $c_t \land D_1(t) = 1$ in at most $35$ post-mismatch steps (`0` survivors). $\square$
 
-### 6.36 Theorem 48: Zero-Run Latch-Interval & $D_2$ Endpoint-Spike Law, Exact 3-Law Pure Left-Cone Equivalence of the Depth-1 Right Cylinder, Depth-$d$ Collapse, and Exact $\mathbb{F}_2[[x]]$ Sierpiński–Mahler Möbius Rationality Involution
-
-> **Theorem 48 (Zero-Run Latch-Interval & $D_2$ Endpoint-Spike Law, Exact 3-Law Pure Left-Cone Equivalence of the Depth-1 Right Cylinder with Depth-$d$ Collapse, and Exact $\mathbb{F}_2[[x]]$ Sierpiński–Mahler Möbius Rationality Involution).**  
-> 1. **Zero-Run Latch-Interval & $D_2$ Endpoint-Spike Law (`PATH-1`, `interval_and_d2_spike_errors == 0`):**  
->    - Whenever $c_t = 0$, the center seam equation $c_{t+1} = l_1(t) \oplus (c_t \lor r_1(t))$ collapses identically to $r_1(t) = c_{t+1} \oplus l_1(t)$, so the right neighbor $r_1(t)$ is $100\%$ determined by the Pure Left Cone on every $0$-bit of $c_t$ (`0` errors across $600$ steps of the Rule 30 cone).
->    - On any $0$-run $[t_{\mathrm{start}},\, t_{\mathrm{start}} + b - 1]$ of length $b \ge 1$ where $c_t = 0$, the Monotone Latch ($c_t = 0 \land r_1(t) = 1 \implies r_1(t+1) = 0 \oplus (1 \lor r_2(t)) = 1$) forces $r_1(t)$ and $r_1(t + \Pi)$ to be monotone step functions $0^i 1^{b-i}$ and $0^{i'} 1^{b-i'}$ ($0 \le i, i' \le b$).
->    - Because $c_{t+1+\Pi} = c_{t+1}$, the Period-$\Pi$ Defect $D_1(t) := l_1(t + \Pi) \oplus l_1(t) \equiv r_1(t + \Pi) \oplus r_1(t)$ across the entire $0$-run $[t_{\mathrm{start}},\, t_{\mathrm{start}} + b - 1]$ is the exact contiguous interval indicator $\mathbf{1}_{[t_{\mathrm{start}} + \min(i, i'),\, t_{\mathrm{start}} + \max(i, i'))}(t)$ (forbidding `1 0 ... 1` inside every $0$-run), and the linearized depth-2 defect $D_2(t) = D_1(t+1) \oplus D_1(t)$ has Hamming weight $\mathrm{wt}_{\mathrm{run}}(D_2) \in \{0, 2\}$ (**at most two endpoint spikes per $0$-run!**) and zero net XOR parity $\bigoplus_{t = t_{\mathrm{start}}-1}^{t_{\mathrm{start}}+b-1} D_2(t) = 0$ (`0` errors across all $818$ configurations for $b = 1 \dots 12$).
-> 2. **Exact 3-Law Pure Left-Cone Equivalence & Depth-$d$ Right-Cylinder Collapse (`PATH-2`, `nfa_vs_3laws_mismatches == 0`, `depth_d_collapse_mismatches == 0`):**  
->    - Because $r_1(t) = 1$ makes the OR gate at $x = 1$ opaque to $r_2(t)$ ($r_1(t+1) = 1 \oplus c_t$ deterministically) and $r_1(t+1) = 0$ resets the next step to unconstrained $\{0, 1\}$, a trajectory $(c_t, l_1(t))$ is compatible with the Depth-$1$ Right Cylinder NFA **if and only if** it satisfies three local Pure Left-Cone laws with **zero right-half-plane state**:
->      - **Law 1 (Opaque Mirror on `1`):** $c_t = 1 \implies c_{t+1} \oplus l_1(t) = 1$,
->      - **Law 2 (Zero-Run Latch on `00`):** $c_t = 0 \land c_{t+1} = 0 \land l_1(t) = 1 \implies c_{t+2} \oplus l_1(t+1) = 1$,
->      - **Law 3 (Single-One Bridge on `010`):** $(c_{t-1}, c_t, c_{t+1}) = (0, 1, 0) \land l_1(t-1) = 0 \implies c_{t+2} \oplus l_1(t+1) = 0$.
->    - Exhaustively verified across all $2,046$ periodic words of periods $\Pi = 1 \dots 10$ (and $8,190$ words of $\Pi = 1 \dots 12$): `0` mismatches between the Depth-$1$ NFA and Laws 1–3, and the Depth-$d$ Right Cylinders for $d = 1, 2, 3, 4$ yield the exact same $18$ survivors for $\Pi = 1 \dots 10$ ($10$ all-zero words $0^\Pi$ eliminated by Theorem 9 + $8$ cyclic shifts of `10`, `100`, `1101110`, `0` Depth-$d$ collapse mismatches).
->    - Across all $39,606$ non-zero periodic pairs $(t_0, \Pi) \in [0, 200) \times [1, 200)$, adding Laws 2 & 3 to Law 1 strictly accelerates refutation on **$9,895$ pairs** (and **$7,551$ pairs** in Period-$\Pi$ Defect mode), reducing the worst-case post-mismatch horizon from $30$ steps to **$20$ steps** (and from $35$ to **$26$ steps** in Defect mode).
-> 3. **Exact $\mathbb{F}_2[[x]]$ Sierpiński–Mahler Möbius Rationality Involution (`PATH-3`, `mobius_mahler_involution_errors == 0`):**  
->    - Over $\mathbb{F}_2[[x]] / (x^{2^m})$, for any sequence $f(k)$ and its Mahler transform $\gamma(u) = \bigoplus_{k \subseteq u} f(k)$, their generating series $F(x) = \sum_{k \ge 0} f(k) x^k$ and $\Gamma(y) = \sum_{u \ge 0} \gamma(u) y^u$ are linked by the exact self-inverse Möbius transformation:
->      $$\Gamma(x) \;\equiv\; \frac{1}{1 + x}\,F\!\left(\frac{x}{1 + x}\right) \pmod{x^{2^m}}, \qquad F(x) \;\equiv\; \frac{1}{1 + x}\,\Gamma\!\left(\frac{x}{1 + x}\right) \pmod{x^{2^m}},$$
->      verified with `0` errors up to $2^m = 256$ on both parities $p \in \{0, 1\}$ of the Rule 30 center column $c_{2k+p}$. $\square$
-
-### 6.37 Theorem 49: Exact $0^b \to 1$ Boundary Dichotomy, Doubled-Phase Pure Left-Cone Elimination of All $8,178$ Non-Zero Periodic Words on $\Pi \le 12$, and Christol $2$-Kernel Saturation
-
-> **Theorem 49 (Exact $0^b \to 1$ Boundary Dichotomy, Doubled-Phase Pure Left-Cone Elimination of All $8,178$ Non-Zero Words on $\Pi = 1 \dots 12$, and Christol $2$-Kernel Dyadic Saturation).**  
-> 1. **Exact $0^b \to 1$ Boundary Dichotomy (`PATH-1`, `dichotomy_errors == 0` across $2,040$ configurations):**  
->    - Across any contiguous $0$-run $[t - b,\, t - 1]$ of length $b \ge 1$ ($c_{t-b} = \dots = c_{t-1} = 0$) followed by $c_t = 1$, the single Pure Left-Cone bit $l_1(t - 1) \in \{0, 1\}$ partitions the boundary into two mutually exclusive deterministic regimes (`Law 2x` in Lean 4):
->      - **Case A ($l_1(t - 1) = 1 \iff r_1(t - 1) = 0$ — Retroactive Whole-Run Zero Collapse):** Because $r_1$ is monotone non-decreasing ($0^i 1^{b-i}$) across $[t - b,\, t - 1]$, $r_1(t - 1) = 0$ forces $r_1(s) = 0$ for *every* $s \in [t - b,\, t - 1]$, which retroactively forces $l_1(s) = c_{s+1} \oplus r_1(s) = 0$ across the entire preceding interior $[t - b,\, t - 2]$ ($l_1(t-b \dots t-1) = 0^{b-1} 1$).
->      - **Case B ($l_1(t - 1) = 0 \iff r_1(t - 1) = 1$ — Forward 2-Step Right-Seam Triple Lock):** Having $r_1(t - 1) = 1$ at $(c_{t-1}, c_t) = (0, 1)$ triggers two consecutive Opaque OR-gate transitions at $x = 1$: $r_1(t) = 0 \oplus (1 \lor r_2(t-1)) = 1$ and $r_1(t+1) = 1 \oplus (1 \lor r_2(t)) = 0$, deterministically locking the triple $(r_1(t-1), r_1(t), r_1(t+1)) = (1, 1, 0)$ regardless of $r_2(t-1), r_2(t) \in \{0, 1\}$.
-> 2. **Doubled-Phase Pure Left-Cone Elimination of All $8,178$ Non-Zero Periodic Words on $\Pi = 1 \dots 12$ (`PATH-2`, `survivors_from_0 == 0`, `survivors_post_2pi == 0`):**  
->    - Whereas $8$ non-zero periodic words across $\Pi \le 10$ survived Laws 1–3 on the single-phase window $[2\Pi, 4\Pi)$ in Theorem 48, the inward defect wavefront $D_1(t) = l_1(t+\Pi) \oplus l_1(t)$ flips the phase of $l_1(t)$ across successive $\Pi$-windows. Evaluating the Pure Left-Cone functional $l_1(t) = B_t(1)$ under Laws 1–3 from $t = 0$ and across the doubled post-transient window $[2\Pi,\, 6\Pi + 14)$ **eliminates $100\%$ of all $8,178$ non-zero periodic words across $\Pi = 1 \dots 12$** (`0` survivors, with worst-case refutation at `max_kill_from_0 = 20` steps from $t = 0$ and `max_kill_post_2pi = 19` steps after $2\Pi$).
-> 3. **Christol $2$-Kernel Dyadic Saturation & $\mathbb{F}_2$ Hankel Matrix Full-Rank Growth of $c_t$ (`PATH-7` & `PATH-3`):**  
->    - Across the first $7$ dyadic octaves $0 \le r \le 6$ ($\sum_{r=0}^6 2^r = 127$ arithmetic progressions $t \mapsto c_{2^r t + s}$), all **$127 / 127$ ($100\%$) $2$-kernel slices are pairwise distinct** on $32$-bit windows (zero collisions), and the $n \times n$ $\mathbb{F}_2$ Hankel matrices $H_n(c)_{i,j} = c_{i+j}$ achieve ranks $(15, 31, 64, 128, 255)$ for $n = (16, 32, 64, 128, 256)$. $\square$
-
-### 6.38 Theorem 50: Universal Depth-2 Right-Seam Tautology, All-Odd `0 1^{2k-1} 0` & All-Even `0 1^{2k} 0` Pure Left-Cone Laws, and Exact Myhill–Nerode Minimal DFA State Hierarchy
-
-> **Theorem 50 (Universal Depth-2 Right-Seam Tautology, All-Odd `0 1^{2k-1} 0` Bridge Law 4A, All-Even `0 1^{2k} 0` Two-Step Latch/Tunneling Law 4B, and Exact Myhill–Nerode Minimal DFA State Hierarchy $|\mathcal{M}_d| = (3, 6, 17, 67, 373)$).**  
-> 1. **Universal Depth-2 Right-Seam Tautology & Period-2 Parity Comb (`PATH-1` & `PATH-2`, `tautology_and_comb_errors == 0` across $32,736$ configurations, `Law 2y` in Lean 4):**  
->    - Whenever $c_t = 1$ and $r_1(t) = 0$, the Depth-2 right-half-plane updates
->      $$r_1(t+1) \;=\; 1 \oplus \bigl(0 \lor r_2(t)\bigr) \;=\; \overline{r_2(t)}, \qquad r_2(t+1) \;=\; 0 \oplus \bigl(r_2(t) \lor r_3(t)\bigr) \;=\; r_2(t) \lor r_3(t)$$
->      satisfy the unconditional Boolean tautology:
->      $$r_1(t+1) \lor r_2(t+1) \;=\; \overline{r_2(t)} \lor r_2(t) \lor r_3(t) \;\equiv\; 1 \qquad \bigl(\forall\, r_2(t), r_3(t) \in \{0, 1\}\bigr),$$
->      forcing the deterministic two-step right-seam lock $r_1(t+2) = c_{t+1} \oplus (r_1(t+1) \lor r_2(t+1)) \equiv 1 \oplus c_{t+1}$ regardless of $r_2(t), r_3(t)$!
->    - By 2-step induction on $k \ge 1$, across **any `1`-run $(c_0, c_1, \dots, c_a, c_{a+1}) = (0, 1^a, 0)$ of arbitrary length $a \ge 1$** entered with $l_1(0) = 0$ ($r_1(0) = 1 \implies r_1(1) = 1 \implies r_1(2) = 0$), every even index satisfies $r_1(2k) = 0$ ($2 \le 2k \le a + 1$), yielding two universal Pure Left-Cone laws valid for **all $a \ge 1$**:
->      - **Law 4A (All-Odd `1`-Run Bridge Law on `0 1^{2k-1} 0`, $\forall k \ge 1$):** For every odd run length $a = 2k - 1 \in \{1, 3, 5, 7, \dots\}$, $r_1(a+1) = 0$, so:
->        $$l_1(0) = 0 \quad \Longrightarrow \quad c_{a+2} \oplus l_1(a + 1) = 0.$$
->      - **Law 4B (All-Even `1`-Run Two-Step Latch & Single-Zero Tunneling Law on `0 1^{2k} 0`, $\forall k \ge 1$):** For every even run length $a = 2k \in \{2, 4, 6, 8, \dots\}$, $r_1(a) = 0$ forces $r_1(a+2) = 1 \oplus c_{a+1} = 1$, so:
->        - On `0 1^{2k} 0 0` ($c_{a+2} = 0$), $c_{a+3} \oplus l_1(a+2) = 1$ unconditionally (even when $l_1(a+1) = 0$).
->        - On `0 1^{2k} 0 1` ($c_{a+2} = 1$), $r_1(a+2) = 1 \implies r_1(a+3) = 0$, so the parity-comb lock **tunnels unbroken across the single zero $c_{a+1} = 0$** into the next `1`-run regardless of $l_1(a+1)$.
->      - Verified with `0` errors across all $32,736$ configurations for $a = 1 \dots 10$ and on $T = 1,000$ steps of the true Rule 30 cone (`88` Law 4A hits, `20` Law 4B-`00` hits, `17` Law 4B-`01` tunneling hits, `0` errors).
-> 2. **Exact Myhill–Nerode Minimal DFA State Hierarchy of Depth-$d$ Right Cylinders ($d = 1 \dots 5$):**  
->    - Over the full input alphabet $(c_t, c_{t+1}, l_1(t)) \in \{0, 1\}^3$, subset construction and Moore partition refinement of the Depth-$d$ Right Cylinder NFA ($2^d$ microstates) yield:
->      - **Reachable non-empty subset states:** $(3,\; 8,\; 26,\; 100,\; 598)$ for $d = 1, 2, 3, 4, 5$,
->      - **Minimal Myhill–Nerode DFA equivalence classes:** $|\mathcal{M}_d| = (3,\; 6,\; 17,\; 67,\; 373)$ for $d = 1, 2, 3, 4, 5$.
-> 3. **Strictly Monotone Post-Mismatch Refutation Acceleration ($d = 1 \to 2 \to 3 \to 4$):**  
->    - Across all $39,606$ non-zero pairs $(t_0, \Pi) \in [0, 200) \times [1, 200)$ warmed up on the true cone prefix, increasing cylinder depth $d = 1 \to 2 \to 3 \to 4$ strictly accelerates refutation on **$393$ pairs** ($d = 2$ vs $d = 1$), **$313$ pairs** ($d = 3$ vs $d = 2$), and **$192$ pairs** ($d = 4$ vs $d = 3$) (`898` total depth accelerations), reducing the worst-case post-mismatch survival horizon to **`17` steps** at $d = 3, 4$ (`0` survivors). $\square$
-
-### 6.39 Theorem 51: KG-Lateral Synthesis — Floquet $2:1$ Subharmonic Left-Cone Depth-Oscillator, Closed-Form Comb Prefix Law, and Universal $0^b 1^a$ OR-Gate Tail-Shielding Law
-
-> **Theorem 51 (KG-Lateral Transfer from Model #14 `bressloff-v1-form-constants-3` Floquet $2:1$ Subharmonic Resonance & Model #13 `runions-leaf-venation-1,3` Murray/Katifori Conservation — Exact Floquet $2:1$ Subharmonic Left-Cone Wavefront, Closed-Form Comb Prefix Law, and Universal $0^b 1^a$ OR-Gate Tail-Shielding Law).**  
-> 1. **Exact Floquet $2:1$ Subharmonic Left-Cone Depth-Oscillator Across All $0$-Runs (`floquet_wavefront_errors == 0` across $454$ pair configurations for $b = 1 \dots 12$, `Law 2z` in Lean 4):**  
->    - Across the interior $s + m \le b - 1$ of any contiguous $0$-run $[0, b-1]$ of length $b \ge 1$ ($c_0 = \dots = c_{b-1} = 0, c_b = 1$) with Monotone Zero-Run Latch jump index $i \in \{0, 1, \dots, b\}$ ($l_1(s) = \mathbf{1}_{s \ge i}$ on $0 \le s \le b-2$), spatial depth $m \ge 1$ in the Pure Left Cone $l_m(s) = l_{m-1}(s+1) \oplus \bigl(l_{m-1}(s) \lor l_{m-2}(s)\bigr)$ acts as an exact **Floquet $2:1$ subharmonic period-doubling oscillator** (`floquet_iterate (-1)` from Rule, Stoffregen & Ermentrout 2011, `bressloff-v1-form-constants-3`), alternating between:
->      - **Odd depths $m = 2q + 1$ ($q \ge 0$, $0 \le s \le b - 2 - 2q$):**
->        $$l_{2q+1}(s) \;=\; \mathbf{1}_{s \ge i - 2q} \qquad \text{(monotone step wavefront shifted left by } 2q \text{ time steps!)},$$
->        $$D_{2q+1}(s) \;=\; D_1(s + 2q) \;=\; \mathbf{1}_{i_{\min} - 2q \le s < i_{\max} - 2q}.$$
->      - **Even depths $m = 2q$ ($q \ge 1$, $0 \le s \le b - 1 - 2q$):**
->        $$l_{2q}(s) \;=\; \delta_{s,\, i - (2q - 1)} \qquad \text{(discrete derivative: single unit impulse at } s = i - 2q + 1\text{!)},$$
->        $$D_{2q}(s) \;=\; D_2(s + 2q - 2) \;=\; \delta_{s,\, i - 2q + 1} \;\oplus\; \delta_{s,\, i' - 2q + 1}.$$
-> 2. **Exact Closed-Form Floquet Comb Prefix Law for $l_m(0)$ (`prefix_comb_errors == 0`):**  
->    - At the start $t = 0$ of any $0^b 1^a$ block with jump index $0 \le i \le b - 2$, the Pure Left-Cone spatial prefix $l_m(0)$ for $1 \le m \le b - 1$ is independent of $a$ and given in closed form by:
->      $$l_m(0) \;=\; \begin{cases} 0, & 1 \le m < i + 1, \\ 1, & m = i + 1 \quad \text{(leading impulse at depth } m = i + 1\text{)}, \\ m \bmod 2, & i + 2 \le m \le b - 1 \quad \text{(universal Floquet } 2:1 \text{ comb } 1, 0, 1, 0, \dots\text{)}. \end{cases}$$
-> 3. **Universal $0^b 1^a$ OR-Gate Tail-Shielding Law (`tail_shielding_errors == 0`, `even_b_boundary_tail_errors == 0` across $720$ block configurations for $b = 1 \dots 12, a = 1 \dots 8$):**  
->    - Because $l_{2q+1}(s) = 1$ for all $s \ge i - 2q$, whenever $0 \le i \le b - 3$, the monotone step reaches $1$ at least two steps before the $0^b \to 1^a$ boundary ($s = b - 1$), so the OR gate $l_{2q}(s) \lor l_{2q+1}(s) = 1$ (`rule30_floquet_shielding_absorbs_even_spike`) absorbs all even-depth spikes before the $1^a$ interface. Consequently:
->      - **(a) Interior Tail Identity ($0 \le i < i' \le b - 3$):** All $b - 2$ interior jump indices $i \in \{0, 1, \dots, b - 3\}$ produce the **exact same deeper left-cone tail** $l_m(0)$ for all $m \ge b - 1$:
->        $$D_m(0) \;=\; l_m^{(i')}(0) \;\oplus\; l_m^{(i)}(0) \;\equiv\; 0 \qquad \bigl(\forall\, m \ge b - 1,\; \forall\, 0 \le i < i' \le b - 3\bigr).$$
->      - **(b) Even-$b$ Boundary Tail Identity ($b = 2q$, $\{i, i'\} = \{b - 1, b\}$):** Whenever $b = 2q$ is even, the boundary pair $i = b - 1$ vs. $i' = b$ produces the **exact same deeper tail** $l_m(0)$ for all $m \ge b + 1$ ($D_m(0) \equiv 0$ for all $m \ge b + 1$), collapsing the $(b + 1)$-state latch degree of freedom on $m \ge b + 1$ to **at most $3$ distinct deeper tails when $b$ is even** (and **at most $4$ distinct deeper tails when $b$ is odd**, `max_distinct_deep_tails <= 4`). $\square$
-
-### 6.40 Theorem 52: KG-Lateral Synthesis — Gap-Junction Equipotential Zero-Triangle Law, Universal 4-Crystal Anti-Diagonal Renormalization & Exact Dyadic Period-Doubling Cascade
-
-> **Theorem 52 (KG-Lateral Transfer from Model #6 `cervera-levin-mafe-1` Gap-Junction Equipotential Zero-Current Law & Model #7 `planform-morphology-animation-1` Axial Region Concatenation — Universal 4-Crystal Anti-Diagonal Renormalization, Exact Closed-Form Boundary Anti-Diagonal Crystals for $d \in \{0, 1\}$, and Dyadic Period-Doubling Cascade for $d \in \{2, 3\}$).**  
-> 1. **Universal 4-Crystal Anti-Diagonal Renormalization Across All $0^b 1^a$ Blocks (`errors_4crystal == 0` across $101,645$ entries for $b = 1 \dots 14, a = 1 \dots 10$, `Law 2aa` in Lean 4):**  
->    - Along the $0^b \to 1^a$ interface anti-diagonals $s + m = b + k$ ($k \in 0 \dots a$), substituting $t = b + k - m$ into Jen's Pure Left-Cone recurrence $l_m(t) = l_{m-1}(t+1) \oplus \bigl(l_{m-1}(t) \lor l_{m-2}(t)\bigr)$ yields the exact 1D spatial prefix-XOR recurrence in $U_k(m) := l_m(b + k - m)$ (`antidiag_rec_errors == 0` across $880$ entries):
->      $$U_k(m) \;=\; U_k(m - 1) \;\oplus\; \bigl(U_{k-1}(m - 1) \;\lor\; U_{k-2}(m - 2)\bigr) \qquad (\forall\, m \ge 2,\; k \ge 1).$$
->    - Because the $0^b$ run initializes $U_{-1}(m)$ and $U_0(m)$ solely through the boundary distance $d := \min(b - i,\, 3) \in \{0, 1, 2, 3\}$, for **every** $b \ge 1$, **every** $a \ge 1$, **every** jump index $i \in \{0, \dots, b\}$, and **every** $k \in \{0, \dots, a\}$, the anti-diagonal profile $l_m^{(i)}(b + k - m)$ is **$100\%$ independent of $(b, i)$** once indexed by $d = \min(b - i, 3)$:
->      $$l_m^{(i)}(b + k - m) \;\equiv\; U_{\min(b - i,\, 3),\; a,\; k}(m) \qquad \bigl(\forall\, 0 \le m \le b - 1 + k,\text{ and up to } m = b + k \text{ when } i \ge b - 2\bigr).$$
-> 2. **Exact Closed-Form Boundary Anti-Diagonal Crystals for $d = 0$ ($i = b$) and $d = 1$ ($i = b - 1$) (`closed_form_d01_errors == 0` across $20,930$ entries):**  
->    - By the Gap-Junction Equipotential Zero-Current Law (`cervera-levin-mafe-1`, `rule30_gap_junction_equipotential_zero_triangle_step`), when $i = b$ ($l_1 = 0^{b-1} 1$) or $i = b - 1$ ($l_1 = 0^b$), the interior $0$-run forms an equipotential zero triangle $l_m(s) \equiv 0$ ($0 \le s \le b - 1 - m$), yielding exact closed-form anti-diagonals for **all $m \ge 0$**:
->      - **Case $d = 0$ ($i = b$):**
->        $$U_{0,a,0}(m) \equiv 1, \qquad U_{0,a,k}(m) \equiv 1 \oplus (m \bmod 2) \;\;(1 \le k < a), \qquad U_{0,a,a}(m) \equiv m \bmod 2.$$
->      - **Case $d = 1$ ($i = b - 1$):**
->        $$U_{1,a,k}(m) \equiv \delta_{m,0} \;\;(k \in \{0, 1\}, k < a), \qquad U_{1,a,2}(m) \equiv 1 \oplus \delta_{m,1} \;\;(2 < a), \qquad U_{1,a,k}(m) \equiv 1 \oplus (m \bmod 2) \;\;(3 \le k < a),$$
->        and at $k = a$: $U_{1,1,1}(m) = 1 \oplus \delta_{m,0}$, $U_{1,2,2}(m) = \delta_{m,1}$, and $U_{1,a,a}(m) \equiv m \bmod 2$ for all $a \ge 3$. In particular, **$U_{1,a,k}(m) \equiv U_{0,a,k}(m)$ identically for all $k \ge 3$ and all $m \ge 0$ (collapsing the 4 boundary crystals to 3 distinct crystals $\{d \in \{0, 1\},\, d = 2,\, d = 3\}$ for all $k \ge 3$)!**
-> 3. **Exact Dyadic Period-Doubling Cascade of $U_{2,a,k}(m)$ and $U_{3,a,k}(m)$:**  
->    - Across $k = 0 \dots 7$, the asymptotic spatial periods $P\bigl(U_{d,k}(\cdot)\bigr)$ in $m$ are $(1, 2, 2, 2, 2, 2, 2, 2)$ for $d = 0$, $(1, 1, 1, 2, 2, 2, 2, 2)$ for $d = 1$, $(2, 2, 4, 8, 8, 16, 32, 32)$ for $d = 2$ ($i = b - 2$), and $(2, 4, 8, 8, 16, 32, 32, 32)$ for $d = 3$ ($0 \le i \le b - 3$). $\square$
-
 ---
 
 ## 7. One-Command Verification
 
-All fifty-two theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
+All forty-seven theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only
