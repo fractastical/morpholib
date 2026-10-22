@@ -31,7 +31,9 @@ Morphogenesis is how a living thing gets its shape, and regeneration is how it g
 
 ## Key Scientific & Mathematical Discoveries
 
-👉 **[Read the Full Technical Deep-Dive: `docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md)** · 💬 **[Full Discovery & Peer-Review Chat Log: `docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](./docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md)** ([JSONL](./docs/thompson_1917_discovery_chat_log.jsonl))
+👉 **[Visual Guide for Everyone (13-Year-Old Level with Diagrams): `docs/EXPLAINED_FOR_EVERYONE.md`](./docs/EXPLAINED_FOR_EVERYONE.md)** · 🔬 **[Full Technical Deep-Dive: `docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md)** · 💬 **[Full Discovery & Peer-Review Chat Log: `docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](./docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md)** ([JSONL](./docs/thompson_1917_discovery_chat_log.jsonl))
+
+![How Nature Builds 10,000 Different Fishes: The 4-Panel Visual Guide for Everyone](./docs/thompson_1917_visual_guide_for_everyone.png)
 
 > ### 🐟 The 60-Second Story (Plain-English Lead-In: How Nature Builds 10,000 Fishes)
 > In 1917, **D'Arcy Thompson** drew a famous picture: he placed a drawing of a fish on graph paper, bent the grid lines like a sheet of rubber, and showed that the stretched drawing turned into a totally different fish (like a flat angelfish or a giant ocean sunfish). For the last 30 years, biologists tried to test Thompson's idea on computer datasets and concluded it failed across fish families. **Why?**
