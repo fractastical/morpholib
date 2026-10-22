@@ -1,0 +1,38 @@
+{
+  "group": "insects: bee (Anthophila) forewings across 10 families, with apoid-wasp outgroups and two Eocene fossil tribes",
+  "registered_on": "2026-10-22",
+  "data": {
+    "landmarks": "De Meulemeester T, Michez D, Aytekin AM, Danforth BN (2012) J Syst Palaeontol 10:755 / Dehon M et al. (2014) PLoS ONE 9:e108865, supplementary S4 'Scores' sheet: 633 forewings, 18 vein-intersection landmarks (raw pixel coordinates), labelled to tribe (49 units) in 10 bee families and 3 apoid-wasp families; 41 wings digitised from literature drawings (Michener 2000, Engel 2001, etc.), the rest from museum specimens",
+    "units": "tribe (or subfamily/family where the dataset's label is at that level); unit mean after GPA; units with fewer than 3 wings are dropped before analysis (Isepeolini 1, Dissoglotini 1, Protepeolini 2, Brachynomadini 2, Stenotritidae 2)",
+    "fossils": "Electrapini (n=6) and Melikertini (n=3), extinct corbiculate tribes from Baltic amber (~45 Ma; Engel 2001), are NOT used as tips; they are time-slice targets for B8",
+    "phylogeny": "datasets/thompson/bees/bee_tribe_tree_dated.json, assembled by hand from Branstetter 2017, Cardinal & Danforth 2013, Bossert 2019/2022, Danforth 2004, Gibbs 2012, Almeida 2012 (sources and age rounding documented in build_tribe_tree.py); committed before any analysis",
+    "status": "landmark data in hand (used once in an unrelated allometry script, never for shape prediction); tree and hypotheses committed before the scoring script was written"
+  },
+  "why_this_group": "Same organ and same 7 a-priori Thompson modes as the Vespinae test, but a ~110 Myr crown instead of ~30 Myr and 42 extant units spread over 13 families. If the hornet result ('species differ by local venation shifts, not by a global grid deformation; no phylogenetic signal at 30 Myr') is general for Hymenoptera wings, B1 and B6 should repeat; if deep divergence adds global proportional change (wing elongation, apical shift), the Thompson share should rise. The deep tree is also the first chance to test the horizon rule on a non-fish group (B7) and to repeat the fossil time-slice design (B8).",
+  "fish_reference": {"shape_variance_captured_thompson7": 0.579, "shape_variance_captured_pca7": 0.862, "share_of_prediction_gain_captured_by_thompson7": 0.555, "pagel_lambda_full": 0.924},
+  "vespinae_reference": {"shape_variance_captured_thompson7": 0.388, "shape_variance_captured_pca7": 0.955, "best_model": "white noise", "loo_ratio_full_vs_consensus": 1.00, "t7_residual_middle_vs_ends": "0.71 vs 0.45/0.59"},
+  "hypotheses": [
+    {"id": "B1", "primary": true, "statement": "The 7 a-priori Thompson modes capture LESS than 58% (the fish value) of between-unit forewing variance, as in Vespinae (39%).", "p": 0.65,
+     "reasoning": "Hornets showed wing differences are local vein shifts; across 110 Myr some global proportional change (elongation, marginal-cell position) is expected to enter, so the share should rise relative to hornets but stay below fish bodies."},
+    {"id": "B2", "primary": true, "statement": "A fitted 7-D PCA captures > 85% of between-unit variance (wing shape differences are low-dimensional even across families).", "p": 0.80, "reasoning": "Vespinae: 96%; fish: 86%."},
+    {"id": "B3", "primary": true, "statement": "Phylogenetic signal is detectable: AICc selects a non-white-noise process in the full shape space AND Pagel's lambda fitted in that space exceeds 0.5.", "p": 0.75,
+     "reasoning": "Families and subfamilies of bees are routinely recovered from wing venation (the dataset's own authors classified fossils this way); at 110 Myr the tree should carry signal that a 30 Myr polytomy could not."},
+    {"id": "B4", "primary": true, "statement": "Leave-one-unit-out full-space phylogenetic prediction beats the grand consensus: median Procrustes RMS ratio < 0.8, paired one-sided Wilcoxon p < 0.05.", "p": 0.65,
+     "reasoning": "Follows from B3; weakened because many units are the sole representative of their subfamily or family (horizon > 50 Myr)."},
+    {"id": "B5", "primary": false, "statement": "Full-space prediction improves on copying the nearest unit's mean wing by less than 10% (ratio > 0.9), as in fish and hornets.", "p": 0.60, "reasoning": "Consistent finding so far; the tree is resolved here, which gives the Gaussian conditioning more to work with, hence not higher."},
+    {"id": "B6", "primary": false, "statement": "The residual after the 7 Thompson modes concentrates in interior landmarks: mean unexplained fraction of the middle landmarks exceeds that of both ends of the long axis (replicating Vespinae).", "p": 0.60, "reasoning": "Hornets: middle 0.71 vs ends 0.45/0.59; venation geometry is interior."},
+    {"id": "B7", "primary": false, "statement": "Horizon effect: units whose nearest other unit is > 60 Myr away have median full-space LOO error at least 1.5x that of units with a relative within 30 Myr.", "p": 0.70,
+     "reasoning": "Direct analogue of the fish 50 Myr cliff on a tree whose crown is 60% as old; the 0.28 x crown rule puts the bee horizon near 30 Myr."},
+    {"id": "B8", "primary": true, "statement": "Fossil time-slice test: the predicted stem-Apini lineage state at 45 Ma is closer (Procrustes RMS) to the observed mean wing of each Eocene corbiculate tribe (Electrapini, Melikertini) than the extant grand consensus is, for BOTH tribes.", "p": 0.60,
+     "reasoning": "Engel (2001) places both fossil tribes among corbiculates near Apini, so the 45 Ma stem-Apini state should be the right ancestor; the Monte Bolca fish test gave only ~50% success on an analogous design, so this is far from certain. Secondary read-out: Mahalanobis^2 of each fossil mean in Thompson-7 space against the predictive distribution, vs chi^2_7 95% = 14.1."},
+    {"id": "B9", "primary": false, "statement": "Conditional on B4: the 7 Thompson modes capture less than 55.5% (fish) of the full-space prediction gain over the consensus.", "p": 0.60, "reasoning": "If the phylogenetically structured component is local venation, T7 cannot carry it."}
+  ],
+  "protocol": {
+    "shape_space": "18 landmarks, GPA on all extant wings, unit means re-superimposed; consensus M0; Thompson-7 basis = thompson_mode_basis(M0); full space = within-fold PCA of unit-mean Procrustes residuals retaining 95% of variance (n = 42 units makes the raw 32-D space singular); PCA-7 for the W6-type comparison",
+    "process_models": "fit_models (WN, BM, lambda, OU, EB; AICc) with branch lengths in Myr from the dated tribe tree; best model by AICc used for prediction, refitted inside every leave-one-out fold",
+    "validation": "leave-one-unit-out conditional Gaussian prediction; tau = Myr to the nearest remaining unit; baselines = extant consensus, nearest-unit copy; error = Procrustes RMS after OPA to the held-out unit mean",
+    "fossils": "virtual node on the Apini lineage at 45 Ma (Tree.virtual_node), predicted from all 42 extant unit means; alt placement on the Bombini lineage reported but not scored; fossil unit means superimposed onto M0 by OPA",
+    "tests": "B1, B2, B6: direct; B3: AICc + lambda; B4, B5: paired one-sided Wilcoxon on per-unit RMS, alpha 0.05 (n = 42); B7: ratio of medians; B8: both fossils closer than consensus; B9: gain-share formula from the engine",
+    "no_tuning": "the tree, the mode basis, the unit-inclusion rule, the tests and the thresholds are fixed here; nothing is changed after the script runs"
+  }
+}
