@@ -2,24 +2,76 @@
 
 ## 1. Compiled Manuscript & High-Resolution Visual Assets
 
-- **Compiled LaTeX Manuscript PDF (12 pages):** `docs/thompson_1917_fish_transformations_manuscript.pdf`
+- **Compiled LaTeX Manuscript PDF (16 pages):** `docs/thompson_1917_fish_transformations_manuscript.pdf`
 - **LaTeX Source:** `docs/thompson_1917_fish_transformations_manuscript.tex`
 - **Full-Page Manuscript Figures:**
-  1. `thompson_stick_vs_silhouette_reality.png` — 4x5 plate contrasting the 8-vertex 17-landmark trunk polygon against the 600-point continuous fish silhouette across Thompson's 1917 pairs.
-  2. `thompson_silhouette_area_difference.png` — 3x5 plate quantifying the exact Area of Difference ($|\Omega_A \Delta \Omega_B| = |\Omega_B \setminus \Omega_A|\text{ [Red Missing]} + |\Omega_A \setminus \Omega_B|\text{ [Blue Overhang]}$) across Unwarped (Row 1), 17-Landmark Fit (Row 2), and Direct 600-Point Silhouette Fit (Row 3).
+  1. `thompson_stick_vs_silhouette_reality.png` — 4x5 plate contrasting the 8-vertex 17-landmark skeletal wireframe against the 600-semilandmark whole-body outline across Thompson's 1917 pairs.
+  2. `thompson_silhouette_area_difference.png` — 3x5 plate quantifying the exact non-overlapping area ($|\Omega_A \Delta \Omega_B| = |\Omega_B \setminus \Omega_A|\text{ [Red Missing]} + |\Omega_A \setminus \Omega_B|\text{ [Blue Overhang]}$) across Unwarped 4p Procrustes similarity (Row 1), 17-Landmark Fit (Row 2), and Direct 600-Semilandmark Outline Fit (Row 3).
   3. `thompson_four_families_atlas.png` — 3x4 macroevolutionary atlas across 791 species, 4,505 pairs, and 4,334 time-calibrated divergences on the Rabosky et al. (2018) megaphylogeny.
-  4. `thompson_rigor_ablation_and_jacobian.png` — 2x2 methodological stress-test plate: (A) causal landmark ablation (9-Head-LM vs. 17-LM vs. 10-Outer-Trunk-LM vs. Direct 600-pt Silhouette across all 6 pairs), (B) Jacobian diffeomorphic bijectivity ($\det D\Phi(x,y) > 0$), (C) bidirectional invertibility ($S \leftrightarrow T$), and (D) unbinned logistic horizon & 187 node-disjoint independent pairs.
+  4. `thompson_rigor_ablation_and_jacobian.png` — 2x2 methodological stress-test plate: (A) landmark partition ablation (9-Craniofacial-LM vs. All 17-LM vs. 10-Outer-Trunk-LM vs. Direct 600-Semilandmark Outline across all 6 pairs), (B) Jacobian diffeomorphic bijectivity ($\det D\Phi(x,y) > 0$), (C) bidirectional invertibility ($S \leftrightarrow T$), and (D) unbinned logistic disparity transition & 187 phylogenetically independent node-disjoint pairs.
+  5. `docs/outreach_fig4_wainwright_600pt_and_convergence.png` — 2x3 benchmark plate: (A–C) head-to-head comparison of 5 competing 600-semilandmark outline methods (Elliptic Fourier Descriptors, 600-semilandmark curve TPS, 6p uniform affine, 12p quadratic trend surface, and 8p Thompson grid) on diffeomorphic bijectivity and out-of-sample interior landmark prediction; (D–F) empirical non-affine Relative Warps (Rohlf 1993), Phylomorphospace (`PC1` vs. `PC2`; Sidlauskas 2008), and Phenotypic Trajectory Analysis ($r_{\text{vec}} = \cos \theta$; Adams & Collyer 2009) across convergent deep-bodied and elongate/fusiform clades.
 - **Tailored Email Summary Plates (1-page visual attachments):**
   1. `docs/outreach_fig1_bookstein_silhouette_paradox.png` (for Prof. Fred L. Bookstein)
   2. `docs/outreach_fig2_price_wainwright_horizon.png` (for Prof. Samantha A. Price, Dr. Sarah T. Friedman, and Prof. Peter C. Wainwright)
   3. `docs/outreach_fig3_evans_larouche_modularity.png` (for Prof. Kory M. Evans and Dr. Olivier Larouche)
+  4. `docs/outreach_fig4_wainwright_600pt_and_convergence.png` (Follow-up for Prof. Peter C. Wainwright addressing 600-semilandmark methods & phylomorphospace convergence)
 
 ---
 
-## 2. Email Draft 1 — Prof. Fred L. Bookstein (University of Vienna / University of Michigan)
+## 2. Follow-Up Email Draft — Prof. Peter C. Wainwright (UC Davis)
+
+**To:** `pcwainwright@ucdavis.edu`  
+**Subject:** Re: Testing Thompson's 1917 grids — (1) 8p Thompson vs. standard 600-semilandmark TPS/EFD & (2) Relative Warps, Phylomorphospace, and Phenotypic Trajectory Analysis  
+**Attachments:**
+1. `docs/outreach_fig4_wainwright_600pt_and_convergence.png` (inline + attached)
+2. `docs/outreach_fig2_price_wainwright_horizon.png` (updated with continuous Procrustes RMS vs. intrageneric disparity $\sigma_{\text{genus}}$)
+3. `docs/thompson_1917_fish_transformations_manuscript.pdf` (updated 16-page manuscript with Section 6)
+
+---
+
+Hi Peter,
+
+Thank you so much for talking with us today — your two critiques hit the exact methodological heart of the paper:
+1. *When we move from 17 landmarks to 600 outline points, how do we show D'Arcy Thompson's 8-parameter coordinate law is actually better than any standard 600-semilandmark outline method?*
+2. *How do we take a genuinely data-driven approach to the morphospace and test phyletic vs. convergent evolution across the 791 species (and normalize all our terminology onto standard geometric morphometric & ichthyological conventions)?*
+
+We just ran both sets of analyses across all six 1917 pairs and all 791 species (48 families, 62 multi-species genera), updated the manuscript (Section 6, attached), and summarized the results in the attached 6-panel plate (**`outreach_fig4_wainwright_600pt_and_convergence.png`**):
+
+### 1. Holding the 600-Semilandmark Input Fixed: Why 8p Thompson Outperforms Standard 600-Semilandmark Curve TPS, EFD, and Polynomial Surfaces (Panels A–C)
+
+Previously, comparing a 17-landmark fit against a 600-point Thompson fit changed the input data ($17 \to 600$ points). To make a strictly fair comparison, we **held the 600-semilandmark outline input fixed** across all six of Thompson's 1917 pairs and benchmarked **five competing 600-point outline methods** head-to-head on four criteria: (i) non-overlapping silhouette area $|\Omega_A \Delta \Omega_B|$, (ii) Chamfer contour residual, (iii) **global 2D diffeomorphic bijectivity ($\det D\Phi(x,y) > 0$ everywhere, no tissue grid folding)**, and (iv) **out-of-sample prediction of the 14 held-out interior skeletal landmarks** (eye, jaw, opercle, pectoral & median fin insertions) when the coordinate map is fitted *solely* to the 600-point outer outline:
+
+* **Elliptic Fourier Descriptors (EFD, 8p = 2 harmonics; Kuhl & Giardina 1982):** Parameterizes only a 1D closed boundary curve $(x(s), y(s))$ and defines **no 2D ambient coordinate transformation $\Phi: \mathbb{R}^2 \to \mathbb{R}^2$** (`0%` ability to predict where internal craniofacial or axial skeletal landmarks map inside the body).
+* **Standard 600-Semilandmark Curve Thin-Plate Spline (Bookstein 1997; Panel A):** Because curve-semilandmark TPS pairs boundary points by perimeter arc-length ($s \in [0, 1]$), disproportionate hypertrophy of the dorsal and anal fin lobes in *Pomacanthus*, *Sternoptyx*, *Scorpaena*, *Antigonia*, and *Mola* slides semilandmarks non-homologously along the contour, **folding and inverting the 2D interior coordinate grid on `6 of 6` pairs (`0%` globally diffeomorphic; $\min \det D\Phi = -6.76$, with up to $25.1\%$ of the body domain inverted, shown in red in Panel A)** and degrading **out-of-sample prediction of held-out interior skeletal landmarks on `6 of 6` pairs** (up to **$2.4\times$ higher Procrustes RMS**: `0.072` vs. **`0.032`** on *Polyprion* $\to$ *Pristigenys*; `0.107` vs. **`0.045`** on *Pristigenys* $\to$ *Scorpaena*; `0.134` vs. **`0.091`** on *Scorpaena* $\to$ *Antigonia*).
+* **12-Parameter Quadratic Polynomial Trend Surface (Bookstein 1991) on the 600 Semilandmarks:** Folds the 2D coordinate grid ($\det D\Phi \le 0$) on **`4 of 6` pairs** (`33%` globally diffeomorphic) and degrades held-out interior landmark prediction by up to **$2.1\times$** (`0.092` vs. **`0.045`** on *Pristigenys* $\to$ *Scorpaena*).
+* **6-Parameter Uniform (Affine) Component vs. 8-Parameter Thompson Grid on the 600 Semilandmarks (Panels B–C):** Adding Thompson's 2 non-affine bending parameters to the 6p uniform component cuts Chamfer contour loss by **$16.2\%\text{–}32.2\%$** on the exact same 600 points (reducing $|\Omega_A \Delta \Omega_B|$ from $27.4\% \to \mathbf{22.6\%}$, $\mathrm{IoU} = 0.794$ on *Scarus* $\to$ *Pomacanthus* under multi-start optimization). **Thompson's 8-parameter coordinate grid is the only 600-point method that simultaneously achieves low non-affine contour error, `100%` global diffeomorphic bijectivity (`6/6` pairs, $\det D\Phi > 0$), and accurate out-of-sample prediction of held-out interior skeletal landmarks from the outer outline alone.**
+
+### 2. Data-Driven Relative Warps (Rohlf 1993), Phylomorphospace (Sidlauskas 2008), and Phenotypic Trajectory Analysis of Convergent Evolution (Adams & Collyer 2009) (Panels D–F)
+
+To test the morphospace and convergent evolution directly from the 791-species data without assuming Thompson's formulas *a priori*, we ran three standard geometric morphometric analyses:
+
+* **Leave-One-Family-Out Cross-Validation Against Empirical 8p Relative Warps (Rohlf 1993; Panel D):**
+  Decomposing total Procrustes variation from the consensus configuration $M_0$ into the **6-parameter uniform (affine) component** plus the **non-affine Relative Warps** ($\mathrm{RW1}, \mathrm{RW2}$ learned strictly on the 47 training families in each fold across all 48 families), the 6p uniform component explains **`25.1%` median** (`29.3%` mean) of shape variance across the 791 held-out species, and the optimal data-driven **8p Empirical Relative-Warp ceiling (`6p Uniform + RW1 + RW2`) explains `55.3%` median** (`53.1%` mean). Without a single data-trained eigenvector, **D'Arcy Thompson's 1917 analytical 8p coordinate laws explain `50.9%` median (`50.8%` mean) — capturing `92.0%` (median) / `95.6%` (mean) of the theoretical data-driven 8-parameter Relative-Warp variance ceiling!**
+* **Capturing the Primary Phylomorphospace Plane (`PC1 + PC2`; Sidlauskas 2008; Panel D–E):**
+  Across the 62 multi-species reef-fish genera in phylomorphospace, the 6p uniform component captures only **`33.1%` of Phylomorphospace `PC1`** ($34.6\%$ of clade variance) and **`48.9%` of the `(PC1, PC2)` plane**, because `PC1` couples body deepening with non-affine anterior-to-posterior fanning of the dorsal and anal fin insertions (`LM 3–4, 7–8`). By contrast, **8-parameter Thompson grids capture `83.4%` of `PC1`, `95.8%` of `PC2`, and `88.6%` of the primary `(PC1, PC2)` phylomorphospace plane**.
+* **Phenotypic Trajectory Analysis (Adams & Collyer 2009) & Many-to-One Mapping (Wainwright et al. 2005; Panels E–F):**
+  Applying Phenotypic Trajectory Analysis from the consensus ancestral shape $M_0$ to each genus mean ($\Delta Y_g = \Delta Y_g^{\text{Thompson}} + \Delta Y_g^{\text{Modular}}$) across **5 distantly related deep-bodied reef-fish families (`> 95 Myr` apart: Chaetodontidae, Pomacanthidae, Acanthuridae, Pomacentridae, Siganidae; 38 inter-family pairs)** and **6 elongate/fusiform families (14 inter-family pairs)** shows:
+  1. Along convergent trajectories from $M_0$, 8p Thompson coordinate grids add **`+16.3%` to `+43.6%` explained Procrustes variance** over the 6p uniform component (*Siganus* `4.2% → 41.6%`, *Acanthurus* `19.0% → 62.6%`, *Ctenochaetus* `37.2% → 68.7%`, *Chaetodontoplus* `23.7% → 54.4%`, *Pomacanthus* `37.0% → 53.3%`).
+  2. Distantly related families converging on the deep-bodied or elongate/fusiform morphotype exhibit **high phenotypic trajectory correlation** along their global 8p Thompson vectors (**median $r_{\text{vec}} = \cos \theta = +0.693$** in deep-bodied clades and **$r_{\text{vec}} = +0.714$** in elongate/fusiform clades, vs. **$-0.699$** between divergent clades, $p < 10^{-8}$).
+  3. At the same time, their **local craniofacial and fin-insertion modular residuals are nearly twice as divergent ($r_{\text{vec}} = +0.416$)** — giving a direct coordinate-field demonstration of **many-to-one mapping of form to function (Wainwright et al. 2005)**: butterflyfishes, angelfishes, surgeonfishes, damselfishes, and rabbitfishes follow the *same* global 8p Thompson trajectory into deep-bodied phylomorphospace, while modifying their internal jaws and fin-base insertions along clade-specific paths.
+
+We also normalized all terminology and axis labels across the manuscript and figures (including plotting continuous post-warp Procrustes RMS residuals directly against the intrageneric disparity band $\sigma_{\text{genus}} \le 0.0110$ in `outreach_fig2_price_wainwright_horizon.png`). Thank you again for the extraordinarily helpful guidance!
+
+Best regards,
+
+[Your Name]
+
+---
+
+## 3. Email Draft 1 — Prof. Fred L. Bookstein (University of Vienna / University of Michigan)
 
 **To:** `fred.bookstein@univie.ac.at` (or `fred@cns.nyu.edu` / `fbookst@umich.edu`)  
-**Subject:** Empirical test of your 2023/2024 *Evolutionary Biology* critiques across Thompson's 1917 fish pairs & 791 species (with a surprising 17-landmark vs. silhouette paradox)  
+**Subject:** Empirical test of your 2023/2024 *Evolutionary Biology* critiques across Thompson's 1917 fish pairs & 791 species (17-landmark wireframes vs. 600-semilandmark outlines)  
 **Attachments:**
 1. `docs/outreach_fig1_bookstein_silhouette_paradox.png` (inline + attached)
 2. `docs/thompson_1917_fish_transformations_manuscript.pdf`
@@ -30,61 +82,26 @@ Dear Professor Bookstein,
 
 Your recent papers in *Evolutionary Biology* (*"Reworking geometric morphometrics into a methodology of transformation grids,"* 2023; *"Quadratic trends: A morphometric tool both old and new,"* 2024) made a point that struck us deeply: exact Thin-Plate Spline interpolants fit any pair of landmark configurations with zero residual and therefore cannot falsify D'Arcy Thompson's hypothesis of low-dimensional coordinate transformations (*On Growth and Form*, 1917, Ch. XVII, pp. 748–751, Figs. 373–382).
 
-Inspired by your critique, we formalized all four of Thompson's 1917 fish coordinate families as explicit 5- to 8-parameter maps — **I. Oblique shear** (5p, Figs. 373–374), **II. Complex Möbius coaxial circles** (8p, Figs. 375–376), **III. Bilinear fan of coordinates** (8p, Figs. 377–380), and **IV. Hyperbolic/radial flare** (8p, Figs. 381–382) — and benchmarked them against 4p similarity, 6p affine, 12p quadratic polynomial trend surfaces, and 34p exact TPS across all six of Thompson's 1917 pairs and 4,505 pairs from the 791-species Indo-Pacific reef-fish dataset (Claverie & Wainwright 2014; Friedman et al. 2019).
+Inspired by your critique, we formalized all four of Thompson's 1917 fish coordinate families as explicit 5- to 8-parameter maps — **I. Oblique shear** (5p, Figs. 373–374), **II. Complex Möbius coaxial circles** (8p, Figs. 375–376), **III. Bilinear fan of coordinates** (8p, Figs. 377–380), and **IV. Hyperbolic/radial flare** (8p, Figs. 381–382) — and benchmarked them against 4p Procrustes similarity, the 6p uniform (affine) component, 12p quadratic polynomial trend surfaces, and 34p exact TPS across all six of Thompson's 1917 pairs and 4,505 pairs from the 791-species Indo-Pacific reef-fish dataset (Claverie & Wainwright 2014; Friedman et al. 2019).
 
-When we inspected the resulting transformation grids Visually, we uncovered a striking methodological paradox that directly extends your 2023–2024 papers (summarized in the attached plate **`outreach_fig1_bookstein_silhouette_paradox.png`**):
+When we inspected the resulting transformation grids visually, we uncovered a striking methodological discrepancy that directly extends your 2023–2024 papers (summarized in the attached plate **`outreach_fig1_bookstein_silhouette_paradox.png`**):
 
-1. **Why Fitting to the Standard 17 Ichthyological Landmarks Actually Worsens Real Fish Silhouettes (Panels A–B):**
-   In the standard 17-landmark reef-fish protocol, **9 of the 17 landmarks (53% of the least-squares weight) sit inside the head and opercle**, while the remaining 8 only mark where the fin bases insert into the body wall — amputating 100% of the dorsal fin, anal fin, caudal tail, and ventral keel. Consequently, when we fit Thompson's 8-parameter coaxial grid (or even an exact 34-parameter TPS!) to the 17 landmarks of *Scarus ghobban* $\to$ *Pomacanthus semicirculatus* (Figs. 375–376) and carry the real 600-point fish silhouette along with the grid, the 9 head landmarks pull the grid the wrong way for the posterior body: the symmetric Area of Difference ($|A \Delta B| = |B \setminus A| + |A \setminus B|$) **worsens from 40.6% (unwarped) to 56.2% of target fish area** (creating a **47.2% blue posterior overhang**, Panel B), and silhouette $\text{IoU}$ drops from $0.662 \to 0.618$ ($0.629$ under exact 34p TPS). The same degradation occurs on *Scorpaena* $\to$ *Antigonia* ($|A \Delta B|: 102.1\% \to 143.7\%$) and *Argyropelecus* $\to$ *Sternoptyx* ($58.4\% \to 63.0\%$).
+1. **Why Fitting to the Standard 17 Ichthyological Landmarks Degrades Whole-Body Fish Silhouettes (Panels A–B):**
+   In the standard 17-landmark reef-fish protocol, **9 of the 17 landmarks (53% of the least-squares weight) sit inside the craniofacial partition**, while the remaining 8 only mark where the fin bases insert into the body wall — omitting 100% of the distal dorsal fin, anal fin, caudal fin, and ventral keel. Consequently, when we fit Thompson's 8-parameter coaxial grid (or even an exact 34-parameter TPS!) to the 17 landmarks of *Scarus ghobban* $\to$ *Pomacanthus semicirculatus* (Figs. 375–376) and carry the real 600-semilandmark fish outline along with the grid, the 9 craniofacial landmarks steer the grid the wrong way for the posterior body: the symmetric non-overlapping area ($|A \Delta B| = |B \setminus A| + |A \setminus B|$) **worsens from 40.6% (unwarped) to 56.2% of target fish area** (creating a **47.2% blue posterior overhang**, Panel B), and silhouette $\text{IoU}$ drops from $0.662 \to 0.618$ ($0.629$ under exact 34p TPS). The same degradation occurs on *Scorpaena* $\to$ *Antigonia* ($|A \Delta B|: 102.2\% \to 143.7\%$) and *Argyropelecus* $\to$ *Sternoptyx* ($58.4\% \to 63.0\%$).
 
-2. **Direct 600-Point Continuous Silhouette Fitting (Anchored on Your Two-Point Baseline) Recovers Thompson's 1917 Transformations (Panels C–E):**
-   Thompson never fitted 17 head-heavy points — he drew continuous outlines of the entire fish including its fins. When we fit the **exact same 5- to 8-parameter Thompson coordinate families directly to the 600-point continuous fish silhouettes** (anchored only at your two axial baseline endpoints, snout tip $\text{LM } 2$ and caudal peduncle base $\tfrac{1}{2}(\text{LM } 5 + \text{LM } 6)$, to prevent tangential perimeter sliding, with $100\%$ positive Jacobian determinant $\det D\Phi > 0$ everywhere), Thompson's transformations are dramatically recovered across every 1917 pair:
-   - *Scarus* $\to$ *Pomacanthus* (8p Coaxial, Panel C): Area of Difference $|A \Delta B|$ is **cut in half from 56.2% to 28.5%** ($\text{IoU}: 0.618 \to \mathbf{0.749}$; reverse *Pomacanthus* $\to$ *Scarus* $= \mathbf{26.0\%}$, $\text{IoU} = \mathbf{0.765}$).
+2. **Direct 600-Semilandmark Outline Fitting (Anchored on Your Two-Point Baseline) Recovers Thompson's 1917 Transformations (Panels C–E):**
+   Thompson never fitted 17 craniofacial-heavy points — he deformed continuous outlines of the entire fish including its median fins. When we fit the **exact same 5- to 8-parameter Thompson coordinate families directly to the 600-semilandmark outlines** (anchored only at your two axial baseline endpoints, snout tip $\text{LM } 2$ and caudal peduncle midpoint $\tfrac{1}{2}(\text{LM } 5 + \text{LM } 6)$, to prevent tangential perimeter sliding, with $100\%$ positive Jacobian determinant $\det D\Phi > 0$ everywhere), Thompson's transformations are recovered across every 1917 pair (whereas a standard 600-semilandmark curve TPS folds the interior coordinate grid with $\det D\Phi < 0$ on all 6 pairs):
+   - *Scarus* $\to$ *Pomacanthus* (8p Coaxial, Panel C): Non-overlapping area $|A \Delta B|$ is **cut in half from 56.2% to 28.5%** ($\text{IoU}: 0.618 \to \mathbf{0.749}$; reverse *Pomacanthus* $\to$ *Scarus* $= \mathbf{26.0\%}$, $\text{IoU} = \mathbf{0.765}$).
    - *Scorpaena* $\to$ *Antigonia* (8p Fan, Panel D): $|A \Delta B|$ drops **$2.5\times$ from 143.7% to 57.6%** ($\text{IoU}: 0.389 \to \mathbf{0.599}$).
    - *Pristigenys* $\to$ *Scorpaena* (8p Fan, Panel E): $|A \Delta B|$ drops **$3.4\times$ from 120.1% to 35.5%** ($\text{IoU} = \mathbf{0.694}$).
    - *Polyprion* $\to$ *Pristigenys* (8p Fan): $|A \Delta B|$ drops to **17.2%** ($\text{IoU} = \mathbf{0.839}$).
 
 3. **8-Parameter Thompson Coordinate Laws vs. 12-Parameter Quadratic Trends Across 4,505 Pairs (Panel F):**
-   On the 17-landmark skeleton ($n = 34$ scalar coordinates), your 2024 quadratic trend surface (12p) and Thompson's 8-parameter families can be compared directly via small-sample $\text{AIC}_c$ and Leave-One-Landmark-Out cross-validation (LOO-CV). Across 4,505 pairs, 8-parameter Thompson grids sit at the exact parsimony sweet spot: they beat 6p affine in **82.2%** of intrafamily pairs and beat 12p quadratic trends by $\text{AIC}_c$ in **84.9%** of intrafamily and **92.1%** of interfamily pairs. And on *Diodon hystrix* $\to$ *Mola mola* (Figs. 381–382), Thompson's 8-parameter exponential radial flare ($y' = v e^{r_2 u}$) jumps from **25.2% (affine) to 79.7% variance explained** ($\Delta\text{AIC}_c = -41.9$, passing LOO-CV with $0.0461 < d_0 = 0.0814$).
+   On the 17-landmark configuration ($n = 34$ scalar coordinates), your 2024 quadratic trend surface (12p) and Thompson's 8-parameter families can be compared directly via small-sample $\text{AIC}_c$ and Leave-One-Landmark-Out cross-validation (LOO-CV). Across 4,505 pairs, 8-parameter Thompson grids sit at the parsimony optimum: they beat the 6p uniform affine component in **82.2%** of intrafamily pairs and beat 12p quadratic trends by $\text{AIC}_c$ in **84.9%** of intrafamily and **92.1%** of interfamily pairs, while capturing **92.0%** of the optimal 8-parameter empirical Relative-Warp variance (Rohlf 1993) across all 791 species.
 
-We have drafted a short manuscript (attached as `thompson_1917_fish_transformations_manuscript.pdf`, with all Python code openly reproducible) and would be honored to hear your thoughts — or, if this direction interests you, to invite you to join us as a co-author in shaping the paper for *Evolutionary Biology* or *Systematic Biology*.
+We have drafted a manuscript (attached as `thompson_1917_fish_transformations_manuscript.pdf`, with all Python code openly reproducible) and would be honored to hear your thoughts — or, if this direction interests you, to invite you to join us as a co-author in shaping the paper for *Evolutionary Biology* or *Systematic Biology*.
 
 With warm regards,
-
-[Your Name]
-
----
-
-## 3. Email Draft 2 — Prof. Samantha A. Price, Dr. Sarah T. Friedman & Prof. Peter C. Wainwright (Clemson / UC Davis)
-
-**To:** `sprice6@clemson.edu`, `pcwainwright@ucdavis.edu`, `sarah.friedman@noaa.gov` (or current address)  
-**Subject:** A ~45–50 Myr phylogenetic horizon for D'Arcy Thompson's coordinate grids across your 791 reef-fish dataset + Satterfield et al. (2024) fin-body decoupling  
-**Attachments:**
-1. `docs/outreach_fig2_price_wainwright_horizon.png` (inline + attached)
-2. `docs/thompson_1917_fish_transformations_manuscript.pdf`
-
----
-
-Dear Professors Price and Wainwright and Dr. Friedman,
-
-Your 791-species Indo-Pacific shore-fish landmark dataset (Claverie & Wainwright 2014; Friedman et al. 2019) and your recent work on fin-body modularity (Satterfield, Claverie & Wainwright 2024, *Evolution*) made it possible to answer a century-old question in evolutionary morphology: **Over what phylogenetic timescale do D'Arcy Thompson's 1917 global coordinate transformations (*On Growth and Form*, Figs. 373–382) actually govern teleost body shape evolution, and why do they break down across deep divergences?**
-
-We formalized all four of Thompson's 1917 coordinate families (5p oblique shear, 8p coaxial circles, 8p bilinear fan, and 8p hyperbolic/radial expansion) and fitted them across **4,505 taxonomic pairs** in your 791-species dataset, **4,334 time-calibrated divergences** on the Rabosky et al. (2018) tree, and **all six exact species pairs Thompson drew in 1917** (both on the 17 landmarks and on 600-point continuous fish silhouettes).
-
-The attached visual summary (**`outreach_fig2_price_wainwright_horizon.png`**) highlights three findings that directly connect your 2014, 2019, and 2024 papers:
-
-1. **A Sharp $\sim 45\text{–}50\text{ Myr}$ Phylogenetic Horizon Across 4,334 Dated Pairs (Panel A):**
-   When we measure how often an 8-parameter Thompson coordinate grid reduces the Procrustes RMS residual all the way to the target genus's own interspecific biological noise floor, Thompson's grids succeed in **53.0%** of pairs diverged $0\text{–}10\text{ Myr}$ ($n=149$), **61.3%** at $10\text{–}25\text{ Myr}$ ($n=359$), and **49.7%** at $25\text{–}50\text{ Myr}$ ($n=346$ — nearly double the 6p affine rate of $27.5\%$). Then, right at **$\sim 45\text{–}50\text{ Myr}$**, global coordinate transformations hit a sharp phylogenetic cliff, dropping to **10.6%** at $50\text{–}80\text{ Myr}$ ($n=170$), **1.0%** at $80\text{–}110\text{ Myr}$ ($n=618$), and **0.0%** above $110\text{ Myr}$ ($n=2,692$).
-
-2. **Direct Confirmation of Satterfield, Claverie & Wainwright (2024) Fin–Body Decoupling (Panel B):**
-   Partitioning the post-transformation residuals by anatomical module reveals *why* global grids break above $50\text{ Myr}$: median and paired fin insertion landmarks ($\text{LM } 3\text{–}10$) exhibit **$1.16\times$ (intrageneric) $\to 1.28\times$ (intrafamily) $\to 1.48\times$ to $2.03\times$ (interfamily)** larger residuals than craniofacial landmarks ($\text{LM } 1\text{–}2, 11\text{–}17$). Above $\sim 45\text{–}50\text{ Myr}$, dorsal, anal, and pectoral fin insertions migrate across the body wall independently of the cranium.
-
-3. **Resolving the 17-Landmark vs. Whole-Fish Silhouette Paradox (Panels C–E):**
-   Because 9 of the 17 landmarks ($53\%$) sit in the head and opercle while $0\%$ sit on the outer fin margins, fitting a coordinate grid to the 17 landmarks on interfamily pairs such as *Scarus ghobban* $\to$ *Pomacanthus semicirculatus* (Figs. 375–376, $112.8\text{ Myr}$) actually **worsens the real 600-point fish silhouette** compared to not warping at all (the Area of Difference $|A \Delta B|$ increases from **40.6% to 56.2%** due to a **47.2% blue posterior overhang**, Panel C). Yet when we fit the exact same 8-parameter coaxial grid **directly to the 600-point continuous fish silhouettes** (Panel D), the Area of Difference is slashed in half to **28.5%** ($\text{IoU} = \mathbf{0.749}$), and on *Polyprion* $\to$ *Pristigenys* (Panel E) it drops to **17.2%** ($\text{IoU} = \mathbf{0.839}$).
-
-We have attached our draft manuscript (`thompson_1917_fish_transformations_manuscript.pdf`). Because this work builds directly on your reef-fish morphospace and fin-body modularity discoveries, we would love to hear your feedback and would be thrilled to explore collaborating as co-authors on a joint submission to *Evolution*, *Proceedings of the Royal Society B*, or *Systematic Biology*.
-
-Best regards,
 
 [Your Name]
 
@@ -93,7 +110,7 @@ Best regards,
 ## 4. Email Draft 3 — Prof. Kory M. Evans (Rice University) & Dr. Olivier Larouche
 
 **To:** `kory.evans@rice.edu`, `olivier.larouche@univ-lille.fr` (or current institutional address)  
-**Subject:** How teleost head-trunk-fin modularity explains the 17-landmark vs. silhouette paradox in D'Arcy Thompson's 1917 fish grids  
+**Subject:** How teleost craniofacial-trunk-fin modularity explains the 17-landmark vs. outline discrepancy in D'Arcy Thompson's 1917 fish grids  
 **Attachments:**
 1. `docs/outreach_fig3_evans_larouche_modularity.png` (inline + attached)
 2. `docs/thompson_1917_fish_transformations_manuscript.pdf`
@@ -102,20 +119,20 @@ Best regards,
 
 Dear Professor Evans and Dr. Larouche,
 
-Your work on head-trunk-fin modularity and evolutionary allometry across teleost fishes inspired us to look closely at what happens to individual anatomical modules when D'Arcy Thompson's famous 1917 coordinate transformations (*On Growth and Form*, Figs. 373–382) are tested across 791 Indo-Pacific reef fishes (4,505 pairs) and all six of Thompson's original 1917 species pairs.
+Your work on craniofacial-trunk-fin modularity and evolutionary allometry across teleost fishes inspired us to look closely at what happens to individual anatomical partitions when D'Arcy Thompson's famous 1917 coordinate transformations (*On Growth and Form*, Figs. 373–382) are tested across 791 Indo-Pacific reef fishes (4,505 pairs) and all six of Thompson's original 1917 species pairs.
 
-In doing so, we discovered a striking geometric consequence of teleost modularity that explains why standard 17-landmark morphometrics and continuous whole-fish silhouettes give opposite answers on Thompson's classic pairs (shown in the attached plate **`outreach_fig3_evans_larouche_modularity.png`**):
+In doing so, we uncovered a striking geometric consequence of teleost modularity that explains why standard 17-landmark morphometrics and continuous whole-body outlines give opposite answers on Thompson's classic pairs (shown in the attached plate **`outreach_fig3_evans_larouche_modularity.png`**):
 
-1. **Why 9/17 Craniofacial Landmarks Hijack Global Coordinate Grids (Panels A–C):**
-   In the standard 17-landmark teleost scheme, 9 of the 17 points ($53\%$ of the ordinary least-squares weight) lie inside the head and opercle ($\text{LM } 1\text{–}2, 11\text{–}17$), while the other 8 mark only the basal insertion points of the fins ($\text{LM } 3\text{–}10$). When head proportions and median fin contours decouple across families, fitting Thompson's grid to the 17 landmarks forces the grid to satisfy the 9 head points at the expense of the posterior trunk and fins:
-   - On *Scorpaena scrofa* $\to$ *Antigonia capros* (Figs. 379–380, 8p Fan), the 17-landmark fit blows up the symmetric Area of Difference $|A \Delta B|$ on the real 600-point fish silhouette from **102.1% (unwarped) to 143.7%**, creating a massive **135.4% blue posterior overhang** (Panel B).
-   - When the exact same 8-parameter fan is fitted **directly to the 600-point whole-body silhouette** (Panel C), $|A \Delta B|$ is cut **$2.5\times$ to 57.6%** ($\text{IoU}$ jumps from $0.389 \to \mathbf{0.599}$).
-   - Across all six of Thompson's 1917 pairs (Panel D), 17-landmark fitting worsens the whole-body silhouette Area of Difference in three pairs (*Argyropelecus* $\to$ *Sternoptyx*, *Scarus* $\to$ *Pomacanthus*, and *Scorpaena* $\to$ *Antigonia*), whereas direct 600-point silhouette fitting substantially reduces $|A \Delta B|$ in every single pair.
+1. **Why 9/17 Craniofacial Landmarks Bias Global Coordinate Grids (Panels A–C):**
+   In the standard 17-landmark teleost scheme, 9 of the 17 points ($53\%$ of the ordinary least-squares weight) lie inside the craniofacial partition ($\text{LM } 1\text{–}2, 11\text{–}17$), while the other 8 mark only the basal insertion points of the fins ($\text{LM } 3\text{–}10$). When craniofacial proportions and median-fin contours decouple across families, fitting Thompson's grid to the 17 landmarks forces the grid to satisfy the 9 craniofacial points at the expense of the posterior trunk and fins:
+   - On *Scorpaena scrofa* $\to$ *Antigonia capros* (Figs. 379–380, 8p Fan), the 17-landmark fit inflates the symmetric non-overlapping area $|A \Delta B|$ on the real 600-semilandmark fish outline from **102.2% (unwarped) to 143.7%**, creating a **135.4% blue posterior overhang** (Panel B).
+   - When the exact same 8-parameter fan is fitted **directly to the 600-semilandmark whole-body outline** (Panel C), $|A \Delta B|$ is cut **$2.5\times$ to 57.6%** ($\text{IoU}$ jumps from $0.389 \to \mathbf{0.599}$).
+   - Across all six of Thompson's 1917 pairs (Panel D), 17-landmark fitting worsens the whole-body silhouette non-overlapping area in three pairs (*Argyropelecus* $\to$ *Sternoptyx*, *Scarus* $\to$ *Pomacanthus*, and *Scorpaena* $\to$ *Antigonia*), whereas direct 600-semilandmark outline fitting substantially reduces $|A \Delta B|$ in every single pair with $100\%$ diffeomorphic bijectivity.
 
-2. **The *Diodon hystrix* $\to$ *Mola mola* Trunk-vs.-Fin Allometric Triumph (Panel E):**
-   On Thompson's culmination pair (*Diodon* $\to$ *Mola mola*, Figs. 381–382, $79.3\text{ Myr}$ divergence), an 8-parameter exponential radial flare ($x' = u + r_1 v^2,\; y' = v e^{r_2 u}$) explains **79.7% of the 17-landmark trunk variance** compared to just **25.2% for affine** ($\Delta\text{AIC}_c = -41.9$, LOO-CV $= 0.0461 < d_0 = 0.0814$). At the same time, *Mola mola*'s full 600-point silhouette (including its towering dorsal and anal fins) is **$2.26\times$ taller** than its 17-landmark trunk polygon ($0.786$ vs. $0.349$), providing a textbook separation between axial truncation (captured by the 8p radial grid) and appendicular fin hypertrophy.
+2. **The *Diodon hystrix* $\to$ *Mola mola* Trunk-vs.-Fin Allometric Partition (Panel E):**
+   On Thompson's culmination pair (*Diodon* $\to$ *Mola mola*, Figs. 381–382, $79.3\text{ Myr}$ divergence), an 8-parameter exponential radial flare ($x' = u + r_1 v^2,\; y' = v e^{r_2 u}$) explains **79.7% of the 17-landmark trunk variance** compared to just **25.2% for the 6p uniform affine component** ($\Delta\text{AIC}_c = -41.9$, LOO-CV $= 0.0461 < d_0 = 0.0814$). At the same time, *Mola mola*'s full 600-semilandmark silhouette (including its hypertrophied dorsal and anal fins) is **$2.26\times$ taller** than its 17-landmark trunk wireframe ($0.786$ vs. $0.349$), providing a textbook separation between axial truncation (captured by the 8p radial grid) and median-fin hypertrophy.
 
-We have attached the full manuscript (`thompson_1917_fish_transformations_manuscript.pdf`) and would love to hear your thoughts — and if you are interested in collaborating to extend the modular analysis (e.g., comparing separate sub-grids for the craniofacial, trunk, and fin modules), we would be delighted to welcome you as co-authors.
+We have attached the full manuscript (`thompson_1917_fish_transformations_manuscript.pdf`) and would love to hear your thoughts — and if you are interested in collaborating to extend the modular analysis (e.g., comparing separate sub-grids for the craniofacial, axial trunk, and median-fin modules), we would be delighted to welcome you as co-authors.
 
 Warm regards,
 

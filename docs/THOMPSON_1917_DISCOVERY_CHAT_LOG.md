@@ -2910,3 +2910,39 @@ Previously, comparing a 17-landmark fit against a 600-point Thompson fit changed
    - Meanwhile, their **local head-and-fin modular residuals are nearly twice as divergent ($\cos \theta = +0.416$, or $+0.08$ centered)**—giving a direct coordinate-field proof of **Wainwright's (2005) "many-to-one mapping" of form to function**: convergent reef-fish families evolve along the *same* global Thompson coordinate trajectory to build a deep-bodied hydrofoil silhouette, while shifting their internal jaws and fin insertions in family-specific ways.
 
 ---
+
+## Turn 28 — User (Wednesday, Oct 21, 2026, 5:25 PM (UTC-7))
+
+in general you also need to normalize on standard terms in this fish morphology literature rather than inventing new things
+
+### Assistant Response (Turn 28)
+
+I completely agree — inventing ad-hoc or machine-learning-flavored terms (`"Genus Noise Floor"`, `"Stick-Polygon"`, `"Lever-Arm Trap"`, `"Phylogenetic Cliff"`, `"Zero-Shot Prediction"`, `"SVD-Warp Ceiling"`, `"Swimmer Guild"`) creates unnecessary friction for fish morphologists and comparative biomechanists who already have a precise, established vocabulary for every single one of these concepts.
+
+I have normalized the terminology across the figures (`outreach_fig1`–`4`), the animated summary GIF (`thompson_1917_silhouette_paradox_summary.gif`), [`README.md`](./README.md), [`docs/KEY_DISCOVERIES.md`](./docs/KEY_DISCOVERIES.md), and the exported chat log, and pushed the updated assets to `origin/main` ([`210a6d31`](https://github.com/fractastical/morpholib/commit/210a6d31)).
+
+### Terminology Normalization Map Applied Across Figures & Text
+
+| Our Previous Coined / ML Term | Standard Fish Morphology & Geometric Morphometrics Term (with Citation) |
+| :--- | :--- |
+| `"% Reaching Genus Noise Floor"` | **Post-Warp Procrustes RMS Residual vs. Intrageneric Disparity ($\sigma_{\text{genus}}$)** (Claverie & Wainwright 2014; Friedman et al. 2019) |
+| `"600-Point Continuous Silhouette"` / `"Any Old 600-pt Method"` | **600-Semilandmark Whole-Body Outline** / **Curve-Semilandmark Thin-Plate Spline** (Bookstein 1997) & **Elliptic Fourier Descriptors (EFD)** (Kuhl & Giardina 1982) |
+| `"17-Landmark Stick-Polygon"` | **17-Landmark Skeletal Wireframe / Configuration** (Claverie & Wainwright 2014) |
+| `"Statistical Lever-Arm Trap"` | **Craniofacial Landmark Density & Extrapolation Bias** (`9/17` landmarks in the craniofacial partition vs. `8/17` at basal fin insertions) |
+| `"6p Linear Affine"` vs. `"8p Non-Linear"` | **6p Uniform (Affine) Component** vs. **Non-Affine Component** (Bookstein 1991; Rohlf 1993) |
+| `"Data-Driven 8p SVD-Warp Ceiling"` | **Empirical Non-Affine Relative Warps (RW1 + RW2)** (Rohlf 1993) |
+| `"Empirical Morphospace (PC1 vs PC2)"` | **Phylomorphospace (`PC1` vs. `PC2`)** (Sidlauskas 2008; Friedman et al. 2019) |
+| `"Inter-Family Vector Parallelism (Cosine Similarity)"` | **Phenotypic Trajectory Analysis ($r_{\text{vec}} = \cos \theta$)** (Adams & Collyer 2009; Stayton 2015) |
+| `"Deep-Bodied Guild"` vs. `"Elongated Swimmer Guild"` | **Deep-Bodied Clades** vs. **Elongate / Fusiform Clades** (Webb 1984; Claverie & Wainwright 2014) |
+| `"Zero-Shot Interior Anatomy Prediction"` | **Out-of-Sample (Cross-Validated) Prediction of Held-Out Interior Skeletal Landmarks** |
+| `"Phylogenetic Cliff"` | **Macroevolutionary Disparity Transition / Evolutionary Modularity Between Craniofacial and Fin-Insertion Partitions** (Larouche et al. 2018; Evans et al. 2021; Satterfield, Claverie & Wainwright 2024) |
+
+![Normalized Outreach Figure 4: 600-Semilandmark Outline Methods, Relative Warps, Phylomorphospace & Phenotypic Trajectory Analysis](./outreach_fig4_wainwright_600pt_and_convergence.png)
+
+![Normalized Outreach Figure 2: Post-Warp Procrustes RMS Residual vs. Intrageneric Disparity](./outreach_fig2_price_wainwright_horizon.png)
+
+---
+
+## Turn 29 — User (Wednesday, Oct 21, 2026, 5:42 PM (UTC-7))
+
+what's next?
