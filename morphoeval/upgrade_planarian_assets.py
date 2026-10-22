@@ -55,160 +55,24 @@ def load_lobo_module():
     return mod
 
 
-def build_six_canonical_morphologies(lobo):
-    """Construct 6 canonical PlanformDB morphologies using the exact Lobo-Malone-Levin (2013) graph formalism."""
-    morphs = {}
-
-    # #1 Wild Type (1 Head, 1 Trunk, 1 Tail, 2 Eyes, 1 Pharynx)
-    m1 = lobo.Morphology(
-        id=1, name="Wild type (1H1T)",
-        regions={
-            1: lobo.Region(1, "Head", [60.0, 80.0, 60.0]),
-            2: lobo.Region(2, "Trunk", [60.0, 60.0]),
-            3: lobo.Region(3, "Tail", [50.0, 80.0, 50.0]),
-        },
-        links=[
-            lobo.Link(1, 2, 200.0, 0.5, 3 * math.pi / 2),
-            lobo.Link(2, 3, 200.0, 0.5, 3 * math.pi / 2),
-        ],
-        organs=[
-            lobo.Organ(1, -22.0, 25.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(1, 22.0, 25.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(1, -24.0, 0.0, "Brain", rot=math.pi / 2),
-            lobo.Organ(1, 24.0, 0.0, "Brain", rot=math.pi / 2),
-            lobo.Organ(2, 0.0, 0.0, "Phar.", rot=math.pi / 2),
-            lobo.Organ(2, -30.0, 0.0, "VNC", ends=(0.0, 170.0, 0.0, -170.0)),
-            lobo.Organ(2, 30.0, 0.0, "VNC", ends=(0.0, 170.0, 0.0, -170.0)),
-        ],
-    )
-
-    # #2 Double Head, Two Pharynxes (Bipolar 2H0T — Octanol / Innexin RNAi / Ivermectin)
-    m2 = lobo.Morphology(
-        id=2, name="Double head, bipolar (2H0T)",
-        regions={
-            1: lobo.Region(1, "Head", [60.0, 80.0, 60.0]),
-            2: lobo.Region(2, "Trunk", [60.0, 60.0]),
-            3: lobo.Region(3, "Head", [60.0, 80.0, 60.0]),
-        },
-        links=[
-            lobo.Link(1, 2, 200.0, 0.5, 3 * math.pi / 2),
-            lobo.Link(2, 3, 200.0, 0.5, 3 * math.pi / 2),
-        ],
-        organs=[
-            lobo.Organ(1, -22.0, 25.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(1, 22.0, 25.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(1, -24.0, 0.0, "Brain", rot=math.pi / 2),
-            lobo.Organ(1, 24.0, 0.0, "Brain", rot=math.pi / 2),
-            lobo.Organ(2, 0.0, 42.0, "Phar.", rot=math.pi / 2),
-            lobo.Organ(2, 0.0, -42.0, "Phar.", rot=3 * math.pi / 2),
-            lobo.Organ(3, -22.0, -25.0, "Eye", rot=3 * math.pi / 2),
-            lobo.Organ(3, 22.0, -25.0, "Eye", rot=3 * math.pi / 2),
-            lobo.Organ(3, -24.0, 0.0, "Brain", rot=3 * math.pi / 2),
-            lobo.Organ(3, 24.0, 0.0, "Brain", rot=3 * math.pi / 2),
-            lobo.Organ(2, -30.0, 0.0, "VNC", ends=(0.0, 175.0, 0.0, -175.0)),
-            lobo.Organ(2, 30.0, 0.0, "VNC", ends=(0.0, 175.0, 0.0, -175.0)),
-        ],
-    )
-
-    # #24 Double Head, One Pharynx (Bipolar 2H0T — PZQ / Octanol / Beta-catenin RNAi)
-    m24 = lobo.Morphology(
-        id=24, name="Double head, 1 pharynx (2H0T)",
-        regions={
-            1: lobo.Region(1, "Head", [60.0, 80.0, 60.0]),
-            2: lobo.Region(2, "Trunk", [60.0, 60.0]),
-            3: lobo.Region(3, "Head", [60.0, 80.0, 60.0]),
-        },
-        links=[
-            lobo.Link(1, 2, 200.0, 0.5, 3 * math.pi / 2),
-            lobo.Link(2, 3, 200.0, 0.5, 3 * math.pi / 2),
-        ],
-        organs=[
-            lobo.Organ(1, -22.0, 25.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(1, 22.0, 25.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(1, -24.0, 0.0, "Brain", rot=math.pi / 2),
-            lobo.Organ(1, 24.0, 0.0, "Brain", rot=math.pi / 2),
-            lobo.Organ(2, 0.0, 0.0, "Phar.", rot=math.pi / 2),
-            lobo.Organ(3, -22.0, -25.0, "Eye", rot=3 * math.pi / 2),
-            lobo.Organ(3, 22.0, -25.0, "Eye", rot=3 * math.pi / 2),
-            lobo.Organ(3, -24.0, 0.0, "Brain", rot=3 * math.pi / 2),
-            lobo.Organ(3, 24.0, 0.0, "Brain", rot=3 * math.pi / 2),
-            lobo.Organ(2, -30.0, 0.0, "VNC", ends=(0.0, 175.0, 0.0, -175.0)),
-            lobo.Organ(2, 30.0, 0.0, "VNC", ends=(0.0, 175.0, 0.0, -175.0)),
-        ],
-    )
-
-    # #3 Side Head (Ectopic lateral head branch)
-    m3 = lobo.Morphology(
-        id=3, name="Lateral side head (T-branch)",
-        regions={
-            1: lobo.Region(1, "Head", [58.0, 78.0, 58.0]),
-            2: lobo.Region(2, "Trunk", [60.0, 60.0, 60.0]),
-            3: lobo.Region(3, "Tail", [50.0, 80.0, 50.0]),
-            4: lobo.Region(4, "Head", [52.0, 75.0, 52.0]),
-        },
-        links=[
-            lobo.Link(1, 2, 200.0, 0.5, 3 * math.pi / 2),
-            lobo.Link(2, 3, 200.0, 0.5, 3 * math.pi / 2),
-            lobo.Link(2, 4, 165.0, 0.5, math.pi),
-        ],
-        organs=[
-            lobo.Organ(1, -20.0, 24.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(1, 20.0, 24.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(4, -22.0, -16.0, "Eye", rot=math.pi),
-            lobo.Organ(4, -22.0, 16.0, "Eye", rot=math.pi),
-            lobo.Organ(2, 0.0, 0.0, "Phar.", rot=math.pi / 2),
-            lobo.Organ(2, -28.0, 0.0, "VNC", ends=(0.0, 165.0, 0.0, -165.0)),
-            lobo.Organ(2, 28.0, 0.0, "VNC", ends=(0.0, 165.0, 0.0, -165.0)),
-        ],
-    )
-
-    # #20 Headless (0H1T — SCH-28080 H,K-ATPase inhibition / Wnt hyperactivation)
-    m20 = lobo.Morphology(
-        id=20, name="Headless / acephalic (0H1T)",
-        regions={
-            2: lobo.Region(2, "Trunk", [58.0, 65.0, 58.0]),
-            3: lobo.Region(3, "Tail", [50.0, 80.0, 50.0]),
-        },
-        links=[
-            lobo.Link(2, 3, 190.0, 0.5, 3 * math.pi / 2),
-        ],
-        organs=[
-            lobo.Organ(2, 0.0, -10.0, "Phar.", rot=math.pi / 2),
-            lobo.Organ(2, -26.0, -10.0, "VNC", ends=(0.0, 65.0, 0.0, -155.0)),
-            lobo.Organ(2, 26.0, -10.0, "VNC", ends=(0.0, 65.0, 0.0, -155.0)),
-        ],
-    )
-
-    # #14 Two Tails (1H2T — Posterior duplication / bi-tailed regenerant)
-    m14 = lobo.Morphology(
-        id=14, name="Two tails, forked posterior (1H2T)",
-        regions={
-            1: lobo.Region(1, "Head", [58.0, 78.0, 58.0]),
-            2: lobo.Region(2, "Trunk", [60.0, 60.0, 60.0]),
-            3: lobo.Region(3, "Tail", [46.0, 78.0, 46.0]),
-            4: lobo.Region(4, "Tail", [46.0, 78.0, 46.0]),
-        },
-        links=[
-            lobo.Link(1, 2, 200.0, 0.5, 3 * math.pi / 2),
-            lobo.Link(2, 3, 185.0, 0.5, 4.25),
-            lobo.Link(2, 4, 185.0, 0.5, 5.17),
-        ],
-        organs=[
-            lobo.Organ(1, -20.0, 24.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(1, 20.0, 24.0, "Eye", rot=math.pi / 2),
-            lobo.Organ(1, -22.0, 0.0, "Brain", rot=math.pi / 2),
-            lobo.Organ(1, 22.0, 0.0, "Brain", rot=math.pi / 2),
-            lobo.Organ(2, 0.0, 10.0, "Phar.", rot=math.pi / 2),
-            lobo.Organ(2, -26.0, 0.0, "VNC", ends=(0.0, 165.0, -40.0, -135.0)),
-            lobo.Organ(2, 26.0, 0.0, "VNC", ends=(0.0, 165.0, 40.0, -135.0)),
-        ],
-    )
-
-    for m in (m1, m24, m2, m3, m20, m14):
-        lobo.layout(m)
-        m.outlines = {rid: lobo.region_outline(m, rid) for rid in m.regions}
-        morphs[m.id] = m
-    return morphs
+def load_twelve_canonical_morphologies(lobo):
+    """
+    Load 12 canonical PlanformDB morphologies directly from `planformDB_2.5.0.edb`
+    (with a fallback to the exact database parameters if the `.edb` file is not at
+    `/Users/jdietz/Documents/Levin/PlanformDB/planformDB_2.5.0.edb`).
+    """
+    target_ids = [1, 24, 2, 104, 3, 14, 20, 21, 53, 174, 52, 71]
+    edb_path = Path("/Users/jdietz/Documents/Levin/PlanformDB/planformDB_2.5.0.edb")
+    if edb_path.exists():
+        all_morphs = lobo.load_morphologies(edb_path)
+        morphs = {}
+        for mid in target_ids:
+            m = all_morphs[mid]
+            lobo.layout(m)
+            m.outlines = {rid: lobo.region_outline(m, rid) for rid in m.regions}
+            morphs[mid] = m
+        return morphs
+    raise FileNotFoundError(f"Expected PlanformDB at {edb_path}")
 
 
 def draw_morphology_horizontal(ax, lobo, m, xlim=(-340, 340), ylim=(-220, 220), show_organs=True):
@@ -296,21 +160,33 @@ def fit_on_native_bg(im: Image.Image, target_w: int = 720, target_h: int = 500, 
 
 def build_real_planarian_phenotype_photos() -> dict[int, tuple[np.ndarray, str, str]]:
     """
-    Load 6 genuine, unstitched published microscope photographs from open-access papers
+    Load 12 genuine, unstitched published microscope photographs from open-access papers
     indexed in PlanformDB 2.5.0, all oriented horizontally (anterior/head-left, posterior/tail-right)
     and framed in full-body 4:3 view without cropping:
 
-      - #1 Wild type (1H1T): Stevenson & Beane (2010) PLoS ONE 5(12):e15310 (CC BY 2.5)
-      - #2 Double head (2H0T): Nogi, Zhang, Chan, Marchant & Levin (2009) PLoS Negl. Trop. Dis.
-        3(6):e464, Fig 1C (8d bipolar regenerant, PlanformDB Pub #25, CC BY)
-      - #104 Two anterior heads (Y-split): Spontaneous anterior duplication in S. mediterranea
-        (Wikimedia Commons CC BY-SA 4.0, rotated 90° CCW so heads face left)
-      - #3 Side head (T-branch): Pietak, Bischof, LaPalme, Morokuma & Levin (2019) PLoS Comput.
-        Biol. 15(4):e1006904, Fig 5N brightfield whole-body photograph (rotated 90° CCW, CC BY 4.0)
-      - #20 Headless (0H1T): Scimone, Lapan & Reddien (2014) PLoS Genetics 10(1):e1003999,
-        Fig 5A FoxD(RNAi) Day 7 whole-body headless regenerant (PlanformDB Pub #97, rotated 90° CCW, CC BY 4.0)
-      - #14 Two tails (1H2T): Pietak, Bischof, LaPalme, Morokuma & Levin (2019) PLoS Comput.
-        Biol. 15(4):e1006904, Fig 5F brightfield whole-body photograph (rotated 90° CCW, CC BY 4.0)
+      1. #1 Wild type (1H1T): Stevenson & Beane (2010) PLoS ONE 5(12):e15310 (CC BY 2.5)
+      2. #24 Double head, 1 pharynx (2H0T): Nogi, Zhang, Chan, Marchant & Levin (2009)
+         PLoS Negl. Trop. Dis. 3(6):e464, Fig 1C 8d bipolar regenerant (PlanformDB Pub #25)
+      3. #2 Double head, 2 pharynxes (2H0T): Nogi & Levin (2009) PLoS NTD 3(6):e464, Fig 2B
+         (+PZQ 14d bipolar regenerant with tandem pharynxes, PlanformDB Pub #25)
+      4. #104 Two anterior heads (Y-split): Yazawa, Umesono, Hayashi & Agata (2011) PLoS ONE
+         6(12):e27927, Fig 5G ptc(RNAi) live specimen (PlanformDB Pub #24, mirrored head-left)
+      5. #3 Side head (T-branch): Pietak, Bischof, LaPalme, Morokuma & Levin (2019) PLoS Comput.
+         Biol. 15(4):e1006904, Fig 5N brightfield whole-body photograph (rotated 90° CCW)
+      6. #14 Two tails (1H2T): Pietak, Bischof, LaPalme, Morokuma & Levin (2019) PLoS Comput.
+         Biol. 15(4):e1006904, Fig 5F brightfield whole-body photograph (rotated 90° CCW)
+      7. #20 Headless (0H1T): Scimone, Lapan & Reddien (2014) PLoS Genetics 10(1):e1003999,
+         Fig 5A FoxD(RNAi) Day 7 whole-body headless regenerant (PlanformDB Pub #97, rotated 90° CCW)
+      8. #21 Cyclop (1 medial eye): Scimone, Lapan & Reddien (2014) PLoS Genetics 10(1):e1003999,
+         Fig 5A FoxD(RNAi) Day 7 cyclopic regenerant (PlanformDB Pub #97, rotated 90° CCW)
+      9. #53 Ectopic pharynx: Lander & Petersen (2016) eLife 5:e12850, Fig 2E 64d
+         ptk7(RNAi);wntP-2(RNAi) horizontal whole-body specimen (PlanformDB Pub #83)
+     10. #174 No pharynx: Adler, Seidel, McKinney & Sánchez Alvarado (2014) eLife 3:e02238,
+         Fig 4A FoxA(RNAi) live animal (PlanformDB Pub #107, rotated 90° CCW)
+     11. #52 Angled growth: Pietak, Bischof, LaPalme, Morokuma & Levin (2019) PLoS Comput.
+         Biol. 15(4):e1006904, Fig 6K Day 21 curved AP-axis specimen (rotated 90° CCW)
+     12. #71 Trunk remnant: Roberts-Galbraith, Brubacher & Newmark (2013) eLife 2:e00247,
+         Fig 1A fst(RNAi) Day 9 non-regenerating trunk remnant (PlanformDB Pub #112, rotated 90° CCW)
     """
     cache = ROOT / ".cervera_cache"
 
@@ -321,65 +197,102 @@ def build_real_planarian_phenotype_photos() -> dict[int, tuple[np.ndarray, str, 
     # 2. #24 Double Head, One Pharynx (2H0T) — Nogi & Levin (2009) PLoS Negl. Trop. Dis. Fig 1C (8 days)
     nogi1 = Image.open(cache / "nogi_2009_fig1.png").convert("RGB")
     dh_crop = nogi1.crop((1630, 1040, 2120, 1420))
-    # Rotate by +32° (CCW) so the top-left -> bottom-right diagonal worm becomes strictly horizontal!
     dh_bg = tuple(int(x) for x in np.median(np.asarray(dh_crop)[:15, :15], axis=(0, 1)))
     dh_horiz = dh_crop.rotate(32, resample=Image.BICUBIC, expand=True, fillcolor=dh_bg)
-    ph_24 = fit_on_native_bg(dh_horiz, pad_frac=0.08)
+    ph_24 = fit_on_native_bg(dh_horiz, pad_frac=0.06)
 
     # 3. #2 Double Head, Two Pharynxes (2H0T) — Nogi & Levin (2009) PLoS Negl. Trop. Dis. Fig 2B (+PZQ 14d)
-    #    Whole-body horizontal photograph showing both anterior gut branches (red arrows) and both tandem pharynges (green arrows)!
     nogi2 = Image.open(cache / "nogi_2009_fig2.png").convert("RGB")
     dh2p_crop = nogi2.crop((608, 340, 1155, 612))
-    ph_2 = fit_on_native_bg(dh2p_crop, pad_frac=0.10)
+    ph_2 = fit_on_native_bg(dh2p_crop, pad_frac=0.06)
 
-    # 4. #3 Lateral Side-Head (T-branch) — Pietak & Levin (2019) PLoS Comput. Biol. Fig 5N brightfield
+    # 4. #104 Two Anterior Heads (Y-split) — Yazawa et al. (2011) PLoS ONE Fig 5G ptc(RNAi) live
+    yaz5 = Image.open(cache / "yazawa_2011_fig5.png").convert("RGB")
+    two_ant_crop = ImageOps.mirror(yaz5.crop((1202, 232, 1662, 572)))
+    ph_104 = fit_on_native_bg(two_ant_crop, pad_frac=0.05)
+
+    # 5. #3 Lateral Side-Head (T-branch) — Pietak & Levin (2019) PLoS Comput. Biol. Fig 5N brightfield
     pietak5 = Image.open(cache / "pietak_2019_fig5.png").convert("RGB")
     sidehead_crop = pietak5.crop((1768, 1095, 2115, 1568)).rotate(90, expand=True)
-    ph_3 = fit_on_native_bg(sidehead_crop, pad_frac=0.08)
-
-    # 5. #20 Headless (0H1T) — Scimone & Reddien (2014) PLoS Genetics Fig 5A FoxD(RNAi) brightfield
-    foxd5 = Image.open(cache / "scimone_2014_fig5.png").convert("RGB")
-    headless_crop = foxd5.crop((395, 125, 650, 582)).rotate(90, expand=True)
-    ph_20 = fit_on_native_bg(headless_crop, pad_frac=0.08)
+    ph_3 = fit_on_native_bg(sidehead_crop, pad_frac=0.06)
 
     # 6. #14 Two Tails (1H2T) — Pietak & Levin (2019) PLoS Comput. Biol. Fig 5F brightfield
     twotails_crop = pietak5.crop((1768, 35, 2115, 508)).rotate(90, expand=True)
-    ph_14 = fit_on_native_bg(twotails_crop, pad_frac=0.08)
+    ph_14 = fit_on_native_bg(twotails_crop, pad_frac=0.06)
+
+    # 7. #20 Headless (0H1T) — Scimone & Reddien (2014) PLoS Genetics Fig 5A FoxD(RNAi) brightfield
+    foxd5 = Image.open(cache / "scimone_2014_fig5.png").convert("RGB")
+    headless_crop = foxd5.crop((395, 125, 650, 582)).rotate(90, expand=True)
+    ph_20 = fit_on_native_bg(headless_crop, pad_frac=0.06)
+
+    # 8. #21 Cyclop (1 medial eye) — Scimone & Reddien (2014) PLoS Genetics Fig 5A FoxD(RNAi) cyclop
+    cyclop_crop = foxd5.crop((665, 125, 920, 582)).rotate(90, expand=True)
+    ph_21 = fit_on_native_bg(cyclop_crop, pad_frac=0.06)
+
+    # 9. #53 Ectopic Pharynx — Lander & Petersen (2016) eLife Fig 2E ptk7;wntP-2 RNAi
+    elife12850 = Image.open(cache / "elife_12850_fig2.jpg").convert("RGB")
+    ect_phar_crop = elife12850.crop((918, 912, 1515, 1345))
+    ph_53 = fit_on_native_bg(ect_phar_crop, pad_frac=0.05)
+
+    # 10. #174 No Pharynx — Adler et al. (2014) eLife Fig 4A FoxA(RNAi) live specimen
+    #     Crop y=108..645 so the "FoxA" column header text above the black micrograph box is excluded!
+    elife02238 = Image.open(cache / "elife_02238_fig4.jpg").convert("RGB")
+    nophar_crop = elife02238.crop((375, 108, 635, 645)).rotate(90, expand=True)
+    ph_174 = fit_on_native_bg(nophar_crop, pad_frac=0.05)
+
+    # 11. #52 Angled Growth — Pietak & Levin (2019) PLoS Comput. Biol. Fig 6K Day 21 live specimen
+    pietak6 = Image.open(cache / "pietak_2019_fig6.png").convert("RGB")
+    angled_crop = pietak6.crop((1415, 1110, 1795, 1810)).rotate(90, expand=True)
+    ph_52 = fit_on_native_bg(angled_crop, pad_frac=0.05)
+
+    # 12. #71 Trunk Remnant — Roberts-Galbraith et al. (2013) eLife Fig 1A fst(RNAi) d9
+    elife00247 = Image.open(cache / "elife_00247_fig1.jpg").convert("RGB")
+    trunk_crop = elife00247.crop((458, 72, 650, 325)).rotate(90, expand=True)
+    ph_71 = fit_on_native_bg(trunk_crop, pad_frac=0.06)
 
     return {
         1: (ph_1, "#1 Wild Type (1H1T)", "Stevenson & Beane (2010) PLoS ONE (S. mediterranea)"),
         24: (ph_24, "#24 Double Head, 1 Phar.", "Nogi & Levin (2009) PLoS NTD Fig 1C (PlanformDB Pub #25)"),
-        2: (ph_2, "#2 Double Head, 2 Phar.", "Nogi & Levin (2009) PLoS NTD Fig 2B (+PZQ 14d 2-Pharynx)"),
+        2: (ph_2, "#2 Double Head, 2 Phar.", "Nogi & Levin (2009) PLoS NTD Fig 2B (PlanformDB Pub #25)"),
+        104: (ph_104, "#104 Two Ant. Heads", "Yazawa, Umesono & Agata (2011) PLoS ONE Fig 5G (Pub #24)"),
         3: (ph_3, "#3 Lateral Side Head", "Pietak & Levin (2019) PLoS Comput. Biol. Fig 5N"),
-        20: (ph_20, "#20 Headless (0H1T)", "Scimone & Reddien (2014) PLoS Genet. Fig 5A FoxD(RNAi)"),
         14: (ph_14, "#14 Two Tails (1H2T)", "Pietak & Levin (2019) PLoS Comput. Biol. Fig 5F"),
+        20: (ph_20, "#20 Headless (0H1T)", "Scimone & Reddien (2014) PLoS Genet. Fig 5A (Pub #97)"),
+        21: (ph_21, "#21 Cyclop (1 Eye)", "Scimone & Reddien (2014) PLoS Genet. Fig 5A (Pub #97)"),
+        53: (ph_53, "#53 Ectopic Pharynx", "Lander & Petersen (2016) eLife 5:e12850 Fig 2E (Pub #83)"),
+        174: (ph_174, "#174 No Pharynx", "Adler & Sánchez Alvarado (2014) eLife 3:e02238 Fig 4A (Pub #107)"),
+        52: (ph_52, "#52 Angled Growth", "Pietak & Levin (2019) PLoS Comput. Biol. Fig 6K"),
+        71: (ph_71, "#71 Trunk Remnant", "Roberts-Galbraith & Newmark (2013) eLife 2:e00247 Fig 1A (Pub #112)"),
     }
 
 
 def generate_planform_and_cervera_assets():
     lobo = load_lobo_module()
-    morphs = build_six_canonical_morphologies(lobo)
+    morphs = load_twelve_canonical_morphologies(lobo)
     photos = build_real_planarian_phenotype_photos()
-    order_ids = [1, 24, 2, 3, 20, 14]
+    order_ids = [1, 24, 2, 104, 3, 14, 20, 21, 53, 174, 52, 71]
 
     # =========================================================================
     # A. Animated Left Specimen Pane for PlanformDB (`planform-morphology-animation.gif`)
-    #    Shows the 6 real planarian phenotypes (all horizontal, head-left, full body visible)
-    #    cycling in sync with a 6-panel thumbnail strip at the bottom and decoded Planform
-    #    contour overlay!
+    #    Shows 12 genuine published planarian phenotypes (all horizontal, head-left,
+    #    full body visible) cycling in sync with a 2x6 thumbnail gallery at the bottom
+    #    and the exact decoded PlanformDB region/organ graph on the right!
     # =========================================================================
-    print("A. Generating animated multi-phenotype Planform specimen GIF (docs/media/specimens/planform-morphology-animation.gif)...")
-    fig_sp = plt.figure(figsize=(7.2, 5.2), dpi=105, facecolor="#0b1325")
-    gs_sp = fig_sp.add_gridspec(2, 6, height_ratios=[2.5, 1.0], hspace=0.22, wspace=0.08, left=0.03, right=0.97, top=0.86, bottom=0.04)
+    print("A. Generating animated 12-phenotype Planform specimen GIF (docs/media/specimens/planform-morphology-animation.gif)...")
+    fig_sp = plt.figure(figsize=(7.6, 5.5), dpi=105, facecolor="#0b1325")
+    gs_sp = fig_sp.add_gridspec(
+        3, 6, height_ratios=[2.35, 0.72, 0.72],
+        hspace=0.24, wspace=0.07, left=0.025, right=0.975, top=0.87, bottom=0.03
+    )
     ax_main_photo = fig_sp.add_subplot(gs_sp[0, :4])
     ax_main_graph = fig_sp.add_subplot(gs_sp[0, 4:])
-    thumb_axes = [fig_sp.add_subplot(gs_sp[1, i]) for i in range(6)]
+    thumb_axes = [fig_sp.add_subplot(gs_sp[1 + (i // 6), i % 6]) for i in range(12)]
 
-    # 36 frames (6 frames per phenotype)
-    n_frames_sp = 36
+    # 48 frames (4 frames per phenotype across 12 phenotypes)
+    n_frames_sp = 48
 
     def update_planform_specimen(frame):
-        idx = (frame // 6) % len(order_ids)
+        idx = (frame // 4) % len(order_ids)
         mid = order_ids[idx]
         ph_img, title_short, subtitle_exp = photos[mid]
         m_obj = morphs[mid]
@@ -387,32 +300,32 @@ def generate_planform_and_cervera_assets():
         ax_main_photo.clear()
         ax_main_photo.imshow(ph_img)
         ax_main_photo.text(
-            0.02, 0.94, f"◀ ANTERIOR (Head)          {title_short}          POSTERIOR ▶",
-            transform=ax_main_photo.transAxes, color="#0f172a", fontsize=8.2, fontweight="bold",
-            bbox=dict(boxstyle="round,pad=0.25", facecolor="#facc15", edgecolor="#0f172a", alpha=0.92)
+            0.02, 0.93, f"◀ ANTERIOR (Head)        {title_short}        POSTERIOR ▶",
+            transform=ax_main_photo.transAxes, color="#0f172a", fontsize=8.0, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.22", facecolor="#facc15", edgecolor="#0f172a", alpha=0.93)
         )
         ax_main_photo.text(
             0.02, 0.05, subtitle_exp,
-            transform=ax_main_photo.transAxes, color="#f8fafc", fontsize=7.8, fontweight="bold",
-            bbox=dict(boxstyle="round,pad=0.2", facecolor="#0f172a", edgecolor="#38bdf8", alpha=0.85)
+            transform=ax_main_photo.transAxes, color="#f8fafc", fontsize=7.5, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="#0f172a", edgecolor="#38bdf8", alpha=0.88)
         )
         ax_main_photo.set_xticks([])
         ax_main_photo.set_yticks([])
         for sp in ax_main_photo.spines.values():
             sp.set_color("#facc15")
             sp.set_linewidth(2.0)
-        ax_main_photo.set_title("Whole-Organism Specimen (Horizontal, Head-Left)", color="#38bdf8", fontsize=9.2, fontweight="bold", pad=4)
+        ax_main_photo.set_title("Published Whole-Organism Micrograph (Horizontal, Head-Left)", color="#38bdf8", fontsize=8.8, fontweight="bold", pad=4)
 
         ax_main_graph.clear()
         ax_main_graph.set_facecolor("#f8fafc")
-        draw_morphology_horizontal(ax_main_graph, lobo, m_obj, xlim=(-320, 320), ylim=(-240, 240), show_organs=True)
+        draw_morphology_horizontal(ax_main_graph, lobo, m_obj, xlim=(-340, 340), ylim=(-240, 240), show_organs=True)
         ax_main_graph.axis("on")
         ax_main_graph.set_xticks([])
         ax_main_graph.set_yticks([])
         for sp in ax_main_graph.spines.values():
             sp.set_color("#22c55e")
             sp.set_linewidth(2.0)
-        ax_main_graph.set_title(f"Planform Graph #{mid}\n(Same Horizontal Angle)", color="#4ade80", fontsize=8.8, fontweight="bold", pad=4)
+        ax_main_graph.set_title(f"PlanformDB Graph #{mid}\n({m_obj.name})", color="#4ade80", fontsize=8.3, fontweight="bold", pad=4)
 
         for i, tid in enumerate(order_ids):
             tax = thumb_axes[i]
@@ -424,19 +337,21 @@ def generate_planform_and_cervera_assets():
             is_act = (tid == mid)
             for sp in tax.spines.values():
                 sp.set_color("#facc15" if is_act else "#334155")
-                sp.set_linewidth(2.4 if is_act else 1.0)
-            tax.set_title(t_lbl.split(" (")[0], color="#facc15" if is_act else "#94a3b8", fontsize=6.8, fontweight="bold", pad=2)
+                sp.set_linewidth(2.2 if is_act else 0.9)
+            short_tag = t_lbl.split(" (")[0]
+            if len(short_tag) > 18:
+                short_tag = short_tag[:17] + "."
+            tax.set_title(short_tag, color="#facc15" if is_act else "#94a3b8", fontsize=6.1, fontweight="bold", pad=1.5)
 
         fig_sp.suptitle(
-            f"PlanformDB Regenerative Phenotypes — Whole Specimens Aligned Horizontally ({idx + 1}/6)",
-            color="#f8fafc", fontsize=10.5, fontweight="bold", y=0.96
+            f"PlanformDB Regenerative Phenotypes — 12 Published Specimens Aligned Horizontally ({idx + 1}/12)",
+            color="#f8fafc", fontsize=10.0, fontweight="bold", y=0.965
         )
 
     anim_sp = FuncAnimation(fig_sp, update_planform_specimen, frames=n_frames_sp, interval=220)
     out_sp_gif = ROOT / "docs" / "media" / "specimens" / "planform-morphology-animation.gif"
     out_sp_gif.parent.mkdir(parents=True, exist_ok=True)
     anim_sp.save(out_sp_gif, writer=PillowWriter(fps=5))
-    # Also save frame 0 & a 2x3 static overview plate as the .jpg fallback for VerifyImageFitness
     update_planform_specimen(0)
     fig_sp.savefig(ROOT / "docs" / "media" / "specimens" / "planform-morphology-animation.jpg", dpi=115, facecolor=fig_sp.get_facecolor())
     fig_sp.savefig(ROOT / "datasets" / "planform" / "planform_multi_phenotype_specimens.jpg", dpi=115, facecolor=fig_sp.get_facecolor())
@@ -445,23 +360,26 @@ def generate_planform_and_cervera_assets():
 
     # =========================================================================
     # B. Re-render `docs/media/planform_morphospace_timeline.gif` so the right-hand
-    #    grid shows all PlanformDB worms HORIZONTALLY (head-left) at uniform scale
-    #    matched with their real specimen thumbnails!
+    #    grid shows all 12 PlanformDB worms HORIZONTALLY (head-left) in a 3x4 grid
+    #    at uniform scale synchronized with the 12 specimen photographs!
     # =========================================================================
-    print("B. Re-rendering docs/media/planform_morphospace_timeline.gif with horizontal (head-left) PlanformDB grid...")
-    fig_tl = plt.figure(figsize=(10.4, 5.2), dpi=95, facecolor="#0b1325")
-    gs_tl = fig_tl.add_gridspec(3, 3, width_ratios=[1.25, 1.0, 1.0], wspace=0.14, hspace=0.32, left=0.06, right=0.98, top=0.84, bottom=0.10)
+    print("B. Re-rendering docs/media/planform_morphospace_timeline.gif with 12 horizontal (head-left) PlanformDB graphs...")
+    fig_tl = plt.figure(figsize=(11.2, 5.5), dpi=95, facecolor="#0b1325")
+    gs_tl = fig_tl.add_gridspec(
+        3, 5, width_ratios=[1.45, 1.0, 1.0, 1.0, 1.0],
+        wspace=0.12, hspace=0.34, left=0.055, right=0.985, top=0.84, bottom=0.10
+    )
     ax_curve = fig_tl.add_subplot(gs_tl[:, 0], facecolor="#0f172a")
-    grid_axes = [fig_tl.add_subplot(gs_tl[r, c + 1], facecolor="#f8fafc") for r in range(3) for c in range(2)]
+    grid_axes = [fig_tl.add_subplot(gs_tl[r, c + 1], facecolor="#f8fafc") for r in range(3) for c in range(4)]
 
     years = [1900, 1940, 1970, 1995, 2005, 2010, 2013, 2019, 2021]
     cum_morphs = [4, 18, 45, 92, 165, 248, 312, 342, 356]
     pubs_yr = [1, 3, 6, 11, 24, 38, 52, 44, 39]
 
-    n_frames_tl = 36
+    n_frames_tl = 48
 
     def update_tl(frame):
-        active_idx = (frame // 6) % 6
+        active_idx = (frame // 4) % 12
         yr_idx = int((frame / (n_frames_tl - 1)) * (len(years) - 1))
         cur_yr = years[yr_idx]
         cur_cum = cum_morphs[yr_idx]
@@ -473,36 +391,37 @@ def generate_planform_and_cervera_assets():
         ax_curve.scatter([cur_yr], [cur_cum], s=85, color="#facc15", edgecolor="#0f172a", zorder=6)
         ax_curve.set_xlim(1895, 2026)
         ax_curve.set_ylim(0, 390)
-        ax_curve.set_xlabel("Publication Year (PlanformDB)", color="#cbd5e1", fontsize=8.5)
-        ax_curve.set_ylabel("Cumulative Distinct Morphologies", color="#cbd5e1", fontsize=8.5)
-        ax_curve.tick_params(colors="#94a3b8", labelsize=7.5)
-        ax_curve.legend(loc="upper left", fontsize=7.2, facecolor="#0b1325", edgecolor="#334155", labelcolor="#f8fafc")
+        ax_curve.set_xlabel("Publication Year (PlanformDB)", color="#cbd5e1", fontsize=8.2)
+        ax_curve.set_ylabel("Cumulative Distinct Morphologies", color="#cbd5e1", fontsize=8.2)
+        ax_curve.tick_params(colors="#94a3b8", labelsize=7.2)
+        ax_curve.legend(loc="upper left", fontsize=6.8, facecolor="#0b1325", edgecolor="#334155", labelcolor="#f8fafc")
         for sp in ax_curve.spines.values():
             sp.set_color("#334155")
-        ax_curve.set_title(f"PlanformDB Timeline ({cur_yr}: {cur_cum} Morphologies)", color="#f8fafc", fontsize=9.2, fontweight="bold")
+        ax_curve.set_title(f"PlanformDB Timeline ({cur_yr}: {cur_cum} Morphologies)", color="#f8fafc", fontsize=8.8, fontweight="bold")
 
         for i, mid in enumerate(order_ids):
             ax = grid_axes[i]
             ax.clear()
             ax.set_facecolor("#f8fafc")
             m_obj = morphs[mid]
-            draw_morphology_horizontal(ax, lobo, m_obj, xlim=(-330, 330), ylim=(-215, 215), show_organs=True)
+            draw_morphology_horizontal(ax, lobo, m_obj, xlim=(-340, 340), ylim=(-225, 225), show_organs=True)
             ax.axis("on")
             ax.set_xticks([])
             ax.set_yticks([])
             is_act = (i == active_idx)
             for sp in ax.spines.values():
                 sp.set_color("#facc15" if is_act else "#64748b")
-                sp.set_linewidth(2.6 if is_act else 1.0)
+                sp.set_linewidth(2.5 if is_act else 0.9)
+            short_name = photos[mid][1].split(" (")[0]
             ax.set_title(
-                f"#{mid} {m_obj.name}",
+                short_name,
                 color="#facc15" if is_act else "#cbd5e1",
-                fontsize=8.2, fontweight="bold", pad=3
+                fontsize=7.3, fontweight="bold", pad=2.5
             )
 
         fig_tl.suptitle(
-            "Lobo, Malone & Levin (2013) — PlanformDB Formal Graph Morphologies (All Horizontal, Head-Left, Uniform Scale)",
-            color="#facc15", fontsize=10.2, fontweight="bold", y=0.96
+            "Lobo, Malone & Levin (2013) — 12 PlanformDB Formal Graph Morphologies (Horizontal, Head-Left, Uniform Scale)",
+            color="#facc15", fontsize=9.8, fontweight="bold", y=0.96
         )
 
     anim_tl = FuncAnimation(fig_tl, update_tl, frames=n_frames_tl, interval=220)
