@@ -104,35 +104,32 @@ We tested two mathematical properties of the trajectories—and proved both in L
 
 ![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig2_two_rulers_illusion.png)
 
-### The 13-Year-Old’s Guide to "Causal Emergence 2.0": Why Zooming Out to the Right Scoreboard Beats Watching Individual Pixels!
+### The 13-Year-Old’s Guide to "Causal Emergence": How Choosing the Right Scoreboard Beats a Coin Flip!
 
-Wait—how can we *prove* mathematically that **Ruler 1 (`I(v)`)** is the "real" law of the sorting line and **Ruler 2 (`E(v)`)** is a blurry illusion? That is where **Erik Hoel’s *Causal Emergence 2.0*** (*Patterns* 2026, upgrading his classic 2013 *PNAS* paper) comes in.
+Wait—how can we *prove* mathematically that **Ruler 1 (`I(v)`)** is the real law of the sorting line and **Ruler 2 (`E(v)`)** is just a blurry illusion?
 
-Here is the 13-year-old version of how Causal Emergence works (**Illustrated Guide 5** below):
-
-1. **Level 1 — The "Zoomed-In" Micro-View (Watching Exact Lines of Kids = A Noisy Coin Flip!):**
-   Suppose the kids are standing in the line **`[2, 4, 1, 3]`** (**Box 1** below). Because kids wake up at random to look at their neighbors, we don't know which kid will move first:
-   * **50% chance:** Kid `#4` swaps with `#1` → the next line is **`[2, 1, 4, 3]`**.
-   * **50% chance:** Kid `#4` swaps with `#3` → the next line is **`[2, 4, 3, 1]`**.
-   If you are trying to predict the *exact* line of kids at the next step, it’s a coin toss! Across all 720 possible ways to line up 6 kids (`S_6`), the zoomed-in micro-view is only **86.9% predictable** (its Causal Score is **`CP = 0.850`**).
-
-2. **Level 2 — Zooming Out to a "Good" Macro-Scoreboard (Ruler 1: Total Out-of-Order Pairs `I(v)` = 100% Predictable!):**
-   Now stop squinting at which exact kid moved, and just look at **Ruler 1 (`I`)** on the scoreboard (**Box 2** below):
-   * In **`[2, 4, 1, 3]`**, we start at **`I = 3`**.
-   * If the kids branch to Line A (`[2, 1, 4, 3]`), what is `I`? **`I = 2`**!
-   * If the kids branch to Line B (`[2, 4, 3, 1]`), what is `I`? **Also `I = 2`**!
-   * **Every single branch lands on the exact same score (`3 → 2 → 1 → 0`)!**
-   By zooming out to Ruler 1, the coin-flip noise completely disappears and predictability jumps from **86.9% to 100.0%** (`CP` rises from `0.850 → 0.969`, giving a **Positive Causal Emergence 2.0 boost of `ΔCP = +0.1191 > 0`**). In plain English: **the zoomed-out scoreboard is MORE deterministic than the zoomed-in pixels!**
-
-3. **Level 3 — Zooming Out to a "Bad" Macro-Scoreboard (Ruler 2: Neighbor Drops `E(v)` = A Blurry Mess!):**
-   What happens if we zoom out using the paper’s ruler, **Ruler 2 (`E`)** (**Box 3** below)?
-   Ruler 2 puts `[2, 4, 1, 3]`, `[1, 4, 2, 3]`, and `[1, 3, 2, 4]` into the *exact same bucket* (`E = 1 neighbor drop`). But from that bucket, one swap can make `E` **go UP to `E = 2`** (`[2, 1, 4, 3]`), **stay flat at `E = 1`** (`[1, 2, 4, 3]`), or **drop to `E = 0`** (`[1, 2, 3, 4]`)!
-   Instead of cleaning up the coin-flip noise, Ruler 2 scrambles the future: predictability crashes from **86.9% down to 72.1%**, giving **Negative Causal Emergence (`ΔCP = −0.2525 < 0`)**.
-
-4. **Why Erik Hoel Needed "Causal Emergence 2.0" (2026) to Fix "Causal Emergence 1.0" (2013) (`Box 4` below):**
-   Here is a cool math bonus: in Hoel’s original 2013 formula (**CE 1.0**), a scoreboard got points for *both* accuracy AND having lots of possible numbers. Because Ruler 1 compresses `720` different lines of kids into just `16` scores (`I = 0..15`), the old 2013 formula slapped Ruler 1 with a huge **`−4.66 bit` "small-scoreboard penalty"** that hid its **`+0.48 bit` accuracy gain** (`Total ΔEI = −4.19 bits`, making CE 1.0 miss the law!). Hoel’s brand-new 2026 formula (**CE 2.0**) measures pure cause-and-effect reliability per step (`ΔCP = +0.1191 > 0`), immediately spotting that Ruler 1 is a 100% deterministic law!
+That is what **Erik Hoel’s *Causal Emergence*** (*PNAS* 2013; upgraded to **Causal Emergence 2.0** in *Patterns* 2026) measures. It tests whether "zooming out" to a big-picture scoreboard makes the future *more* predictable or *less* predictable. Here is how it works in 3 simple steps:
 
 ![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig5_causal_emergence_explained.png)
+
+* **STEP 1 — Zoomed In on Individual Kids (50/50 Coin Flip!):**
+  Look at the top row above. In the line **`[2, 4, 1, 3]`**, kids wake up at random to check their neighbors.
+  * **50% Coin Flip:** Kid `#4` checks left and swaps with `#1` → the next line is **`[2, 1, 4, 3]`**.
+  * **50% Coin Flip:** Kid `#4` checks right and swaps with `#3` → the next line is **`[2, 4, 3, 1]`**.
+  If you are zoomed in watching exact lines of kids, **you can't predict which line comes next—it’s a 50/50 coin flip!** (Across all 720 ways to line up 6 kids, zoomed-in predictability is only **86.9%**.)
+
+* **STEP 2 — Zoom Out to Ruler 1 (Total Out-of-Order Pairs = 100% Certainty!):**
+  Now look at the green middle row above. Stop worrying about which exact kid moved, and just look at **Ruler 1 (Total Out-of-Order Pairs)** on the scoreboard:
+  * Starting line `[2, 4, 1, 3]` has **3 pairs** out of order.
+  * Coin-flip Line A (`[2, 1, 4, 3]`) has **2 pairs** out of order!
+  * Coin-flip Line B (`[2, 4, 3, 1]`) *also* has **2 pairs** out of order!
+  * **Both coin flips land on the exact same score (`3 → 2 → 1 → 0`)!**
+  When zooming out turns a noisy coin flip into a **100% predictable countdown**, Hoel calls that **Positive Causal Emergence (`+0.119`)**. In plain English: **the zoomed-out scoreboard is MORE predictable than watching individual kids!**
+
+* **STEP 3 — Zoom Out to Ruler 2 (Neighbor Drops = A Blurry Ruler That Scrambles the Future!):**
+  Now look at the red bottom row above. Ruler 2 puts `[2, 4, 1, 3]` and `[1, 3, 2, 4]` into the *exact same bucket* (`1 Neighbor Drop`). From that bucket, the very next swap can make the score **go UP to 2 drops** (looking like "going backwards"!), **stay flat at 1 drop**, or **drop to 0**! Predictability crashes from `86.9%` down to **`72.1%`** (**Negative Causal Emergence, `−0.253`**).
+
+*(Bonus for math nerds: Why did we need Hoel’s 2026 **Causal Emergence 2.0** instead of his 2013 **CE 1.0**? As shown in the full technical benchmark below, the old 2013 formula gave scoreboards extra points just for having lots of possible numbers, slapping Ruler 1 with a `−4.66 bit` penalty because `16` scores is smaller than `720` permutations. Hoel’s 2026 CE 2.0 removes that size penalty and immediately spots the 100% deterministic countdown!)*
 
 ![](https://fractastical.github.io/morpholib/media/zhang_hoel_quantifying_emergence_ce2.png)
 

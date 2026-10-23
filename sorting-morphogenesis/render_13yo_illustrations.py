@@ -390,127 +390,104 @@ def render_fig4_real_data_curves():
 
 def render_fig5_causal_emergence_13yo():
     """
-    Illustrated Guide 5: The 13-Year-Old's Guide to 'Causal Emergence 2.0' (Erik Hoel 2013 & 2026):
-      - Panel A (Top-Left): Micro-View ('Pixel Vision') — Starting at [2, 4, 1, 3], random
-        kid choice branches into two different next lines ([2, 1, 4, 3] or [2, 4, 3, 1]).
-        Looks like a 50/50 coin flip (86.9% determinism)!
-      - Panel B (Top-Right): Macro-View ('Ruler 1 Vision', Total Pairs I(v)) — Both branches
-        land on I = 2! 100% deterministic (3 -> 2 -> 1 -> 0), Causal Emergence = +0.119!
-      - Panel C (Bottom-Left): Bad Macro-View ('Ruler 2 Vision', Neighbor Steps E(v)) —
-        Starting from E = 1, the next step can go UP to E = 2 or DOWN to E = 0!
-        72.1% determinism, Causal Emergence = -0.253 (Blurry Ruler Illusion!).
-      - Panel D (Bottom-Right): Why CE 2.0 (2026) Beat CE 1.0 (2013) — CE 1.0 penalized
-        Ruler 1 (-4.66 bits) just for having fewer buckets (16 vs. 720), hiding the
-        +0.48 bit accuracy gain. CE 2.0 fixes the scorecard (+0.119 vs. -0.253)!
+    Illustrated Guide 5: A super-clean, 3-step visual cartoon of Causal Emergence
+    (Erik Hoel 2013 & 2026) that a 13-year-old can understand in 10 seconds:
+      - Step 1 (Top Row): The Coin-Flip Problem at the Micro-Level ("Zoomed In")
+      - Step 2 (Middle Row, Green): Zooming Out to a GOOD Scoreboard (Ruler 1 = 100% Certainty!)
+      - Step 3 (Bottom Row, Red): Zooming Out to a BLURRY Scoreboard (Ruler 2 = Scrambled Guesswork!)
     """
-    fig, axes = plt.subplots(2, 2, figsize=(13.6, 8.2), dpi=160, facecolor="#0b1325")
-    fig.subplots_adjust(wspace=0.16, hspace=0.34, left=0.04, right=0.96, top=0.86, bottom=0.06)
+    fig, axes = plt.subplots(3, 1, figsize=(12.6, 8.2), dpi=160, facecolor="#0b1325")
+    fig.subplots_adjust(hspace=0.38, left=0.04, right=0.96, top=0.87, bottom=0.05)
 
     fig.suptitle(
-        "Illustrated Guide 5: What Is 'Causal Emergence 2.0' (Hoel 2026)?\n"
-        "Why Zooming Out to the Right Scoreboard Turns a Noisy Coin-Flip Into a 100% Predictable Law!",
-        color="#f8fafc", fontsize=13.0, fontweight="bold", y=0.96
+        "What Is 'Causal Emergence'? How Choosing the Right Scoreboard Beats a Coin Flip!",
+        color="#f8fafc", fontsize=14.0, fontweight="bold", y=0.96
     )
 
-    # --- Panel A: Micro-View (Noisy Coin Flip!) ---
-    ax = axes[0, 0]
-    ax.set_facecolor("#0f172a")
-    ax.set_xlim(0, 10); ax.set_ylim(0, 6)
-    ax.set_xticks([]); ax.set_yticks([])
-    for sp in ax.spines.values():
-        sp.set_color("#38bdf8"); sp.set_linewidth(1.8)
-    ax.set_title("1. Micro-Scale ('Zoomed In'): Which Exact Line Comes Next? (Coin Flip!)", color="#38bdf8", fontsize=10.2, fontweight="bold", pad=6)
+    # --- STEP 1 (TOP): ZOOMED IN ON INDIVIDUAL KIDS = 50/50 COIN FLIP ---
+    ax0 = axes[0]
+    ax0.set_facecolor("#0f172a")
+    ax0.set_xlim(0, 10); ax0.set_ylim(0, 4.2)
+    ax0.set_xticks([]); ax0.set_yticks([])
+    for sp in ax0.spines.values():
+        sp.set_color("#38bdf8"); sp.set_linewidth(2.0)
+    ax0.set_title(
+        "STEP 1 — Zoomed In on Individual Kids: You Can't Predict Which Line Comes Next! (50/50 Coin Flip)",
+        color="#38bdf8", fontsize=11.0, fontweight="bold", pad=6
+    )
 
-    # Start state box
-    ax.text(1.9, 3.1, "Start Line:\n[ 2, 4, 1, 3 ]\n(I = 3, E = 1)", color="#f8fafc", fontsize=9.2, fontweight="bold", ha="center", va="center",
-            bbox=dict(boxstyle="round,pad=0.35", facecolor="#1e293b", edgecolor="#38bdf8", lw=2.0))
-    # Branch 1 (Top)
-    ax.annotate("", xy=(5.6, 4.55), xytext=(3.4, 3.45), arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#38bdf8", lw=2.4))
-    ax.text(4.35, 4.45, "50% chance:\nSwap 4 ↔ 1", color="#93c5fd", fontsize=8.0, fontweight="bold", ha="center")
-    ax.text(7.6, 4.55, "Line A: [ 2, 1, 4, 3 ]\n(I = 2, E = 2 ↑)", color="#f8fafc", fontsize=8.8, fontweight="bold", ha="center", va="center",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#1e3a8a", edgecolor="#60a5fa", lw=1.8))
-    # Branch 2 (Bottom)
-    ax.annotate("", xy=(5.6, 1.65), xytext=(3.4, 2.75), arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#38bdf8", lw=2.4))
-    ax.text(4.35, 1.65, "50% chance:\nSwap 4 ↔ 3", color="#93c5fd", fontsize=8.0, fontweight="bold", ha="center")
-    ax.text(7.6, 1.65, "Line B: [ 2, 4, 3, 1 ]\n(I = 2, E = 2 ↑)", color="#f8fafc", fontsize=8.8, fontweight="bold", ha="center", va="center",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#1e3a8a", edgecolor="#60a5fa", lw=1.8))
-    ax.text(5.0, 0.42, "Micro Predictability = 86.9% (Causal Score CP = 0.850)\nBecause random kids wake up first, exact micro-lines branch like a coin toss!",
-            color="#bae6fd", fontsize=8.0, fontweight="bold", ha="center",
-            bbox=dict(boxstyle="round,pad=0.2", facecolor="#082f49", edgecolor="#0284c7"))
+    ax0.text(1.55, 2.1, "Starting Line:\n[ 2,  4,  1,  3 ]", color="#ffffff", fontsize=11.0, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.38", facecolor="#1e293b", edgecolor="#38bdf8", lw=2.2))
 
-    # --- Panel B: Good Macro-View (Ruler 1 I(v) -> 100% Deterministic!) ---
-    ax = axes[0, 1]
-    ax.set_facecolor("#0f172a")
-    ax.set_xlim(0, 10); ax.set_ylim(0, 6)
-    ax.set_xticks([]); ax.set_yticks([])
-    for sp in ax.spines.values():
-        sp.set_color("#4ade80"); sp.set_linewidth(2.0)
-    ax.set_title("2. Zoom Out to Ruler 1 (Total Pairs I): 100% Predictable Countdown!", color="#4ade80", fontsize=10.2, fontweight="bold", pad=6)
+    ax0.annotate("", xy=(4.7, 3.1), xytext=(2.85, 2.35), arrowprops=dict(arrowstyle="->,head_length=8,head_width=6", color="#38bdf8", lw=2.6))
+    ax0.text(3.75, 3.32, "50% Coin Flip\n(#4 swaps with #1)", color="#93c5fd", fontsize=8.8, fontweight="bold", ha="center")
+    ax0.text(6.1, 3.1, "Possible Next Line A:\n[ 2,  1,  4,  3 ]", color="#ffffff", fontsize=10.2, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.32", facecolor="#1e3a8a", edgecolor="#60a5fa", lw=2.0))
 
-    xs_i = [1.4, 3.8, 6.2, 8.6]
-    vals_i = ["I = 3\n(Start)", "I = 2\n(Both Land Here!)", "I = 1\n(Next Swap)", "I = 0\n(Sorted!)"]
-    for k, (xp, lbl) in enumerate(zip(xs_i, vals_i)):
-        ax.text(xp, 3.35, lbl, color="#ffffff", fontsize=8.8, fontweight="bold", ha="center", va="center",
-                bbox=dict(boxstyle="round,pad=0.32", facecolor="#14532d" if k < 3 else "#15803d", edgecolor="#4ade80", lw=2.2))
+    ax0.annotate("", xy=(4.7, 1.1), xytext=(2.85, 1.85), arrowprops=dict(arrowstyle="->,head_length=8,head_width=6", color="#38bdf8", lw=2.6))
+    ax0.text(3.75, 0.82, "50% Coin Flip\n(#4 swaps with #3)", color="#93c5fd", fontsize=8.8, fontweight="bold", ha="center")
+    ax0.text(6.1, 1.1, "Possible Next Line B:\n[ 2,  4,  3,  1 ]", color="#ffffff", fontsize=10.2, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.32", facecolor="#1e3a8a", edgecolor="#60a5fa", lw=2.0))
+
+    ax0.text(8.65, 2.1, "Zoomed-In\nPredictability:\n86.9%\n(Noisy because\nrandom kids\nwake up first!)",
+             color="#bae6fd", fontsize=9.2, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.32", facecolor="#082f49", edgecolor="#0284c7", lw=1.8))
+
+    # --- STEP 2 (MIDDLE): ZOOM OUT TO RULER 1 = 100% PREDICTABLE! ---
+    ax1 = axes[1]
+    ax1.set_facecolor("#0f172a")
+    ax1.set_xlim(0, 10); ax1.set_ylim(0, 4.2)
+    ax1.set_xticks([]); ax1.set_yticks([])
+    for sp in ax1.spines.values():
+        sp.set_color("#4ade80"); sp.set_linewidth(2.2)
+    ax1.set_title(
+        "STEP 2 — Zoom Out to Ruler 1 (Total Out-of-Order Pairs): Both Coin Flips Land on the EXACT SAME Score!",
+        color="#4ade80", fontsize=11.0, fontweight="bold", pad=6
+    )
+
+    xs_i = [1.2, 3.45, 5.7, 7.55]
+    lbls_i = ["Start Score:\n3 Pairs\nOut of Order", "Next Score:\n2 Pairs\n(Line A & B Both = 2!)", "Next Score:\n1 Pair\nOut of Order", "Final Score:\n0 Pairs\n(100% Sorted!)"]
+    for k, (xp, lb) in enumerate(zip(xs_i, lbls_i)):
+        ax1.text(xp, 2.1, lb, color="#ffffff", fontsize=9.4, fontweight="bold", ha="center", va="center",
+                 bbox=dict(boxstyle="round,pad=0.34", facecolor="#14532d" if k < 3 else "#15803d", edgecolor="#4ade80", lw=2.2))
         if k < 3:
-            ax.annotate("", xy=(xs_i[k+1] - 0.95, 3.35), xytext=(xp + 0.95, 3.35),
-                        arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#4ade80", lw=2.8))
-            ax.text(0.5 * (xp + xs_i[k+1]), 4.25, "100% Sure!\n(ΔI = −1)", color="#86efac", fontsize=7.8, fontweight="bold", ha="center")
+            ax1.annotate("", xy=(xs_i[k+1] - 0.88, 2.1), xytext=(xp + 0.88, 2.1),
+                         arrowprops=dict(arrowstyle="->,head_length=8,head_width=6", color="#4ade80", lw=3.0))
+            ax1.text(0.5 * (xp + xs_i[k+1]), 3.18, "Always −1!", color="#86efac", fontsize=8.8, fontweight="bold", ha="center")
 
-    ax.text(5.0, 0.95, "✔ POSITIVE CAUSAL EMERGENCE 2.0 (ΔCP = +0.1191 > 0)!\nDeterminism jumps 86.9% → 100.0% (CP: 0.850 → 0.969) because EVERY\nbranch at the micro-level does the exact same thing on Ruler 1 (I drops by −1)!",
-            color="#dcfce7", fontsize=8.0, fontweight="bold", ha="center",
-            bbox=dict(boxstyle="round,pad=0.24", facecolor="#052e16", edgecolor="#22c55e"))
+    ax1.text(9.05, 2.1, "✔ POSITIVE\nEMERGENCE!\n100% Sure!\n(Hoel Score:\n+0.119)",
+             color="#dcfce7", fontsize=9.4, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.32", facecolor="#052e16", edgecolor="#22c55e", lw=2.0))
 
-    # --- Panel C: Bad Macro-View (Ruler 2 E(v) -> Negative Emergence!) ---
-    ax = axes[1, 0]
-    ax.set_facecolor("#0f172a")
-    ax.set_xlim(0, 10); ax.set_ylim(0, 6)
-    ax.set_xticks([]); ax.set_yticks([])
-    for sp in ax.spines.values():
-        sp.set_color("#f87171"); sp.set_linewidth(1.8)
-    ax.set_title("3. Zoom Out to Ruler 2 (Neighbor Drops E): Blurry & Scrambled!", color="#f87171", fontsize=10.2, fontweight="bold", pad=6)
+    # --- STEP 3 (BOTTOM): ZOOM OUT TO RULER 2 = SCRAMBLED MESS! ---
+    ax2 = axes[2]
+    ax2.set_facecolor("#0f172a")
+    ax2.set_xlim(0, 10); ax2.set_ylim(0, 4.2)
+    ax2.set_xticks([]); ax2.set_yticks([])
+    for sp in ax2.spines.values():
+        sp.set_color("#f87171"); sp.set_linewidth(2.0)
+    ax2.set_title(
+        "STEP 3 — Zoom Out to Ruler 2 (Only Neighbor Drops): A Blurry Ruler That Scrambles the Future!",
+        color="#f87171", fontsize=11.0, fontweight="bold", pad=6
+    )
 
-    ax.text(2.0, 3.35, "Ruler 2 Score:\nE = 1 Drop\n(Lumps [2,4,1,3]\nwith [1,3,2,4]!)", color="#ffffff", fontsize=8.4, fontweight="bold", ha="center", va="center",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#450a0a", edgecolor="#f87171", lw=2.0))
-    # 3 scrambled arrows
-    targets_e = [
-        (4.85, "E = 2 (Goes UP +1!)\nif [2,4,1,3] → [2,1,4,3]", "#fca5a5"),
-        (3.35, "E = 1 (Stays Flat 0)\nif [1,4,2,3] → [1,2,4,3]", "#cbd5e1"),
-        (1.85, "E = 0 (Goes DOWN −1)\nif [1,3,2,4] → [1,2,3,4]", "#86efac"),
+    ax2.text(1.75, 2.1, "Start Score:\n1 Neighbor Drop\n(Lumps [2, 4, 1, 3]\nwith [1, 3, 2, 4]!)",
+             color="#ffffff", fontsize=9.2, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.32", facecolor="#450a0a", edgecolor="#f87171", lw=2.0))
+
+    branches_e = [
+        (3.35, "Goes UP to 2 Drops! (Looks like 'going backwards'!)", "#fca5a5"),
+        (2.10, "Stays Flat at 1 Drop! (Looks like nothing happened!)", "#cbd5e1"),
+        (0.85, "Goes DOWN to 0 Drops! (Sorted in one step!)", "#86efac"),
     ]
-    for yp, txt, col in targets_e:
-        ax.annotate("", xy=(5.4, yp), xytext=(3.65, 3.35), arrowprops=dict(arrowstyle="->,head_length=6,head_width=5", color="#f87171", lw=2.2))
-        ax.text(7.55, yp, txt, color=col, fontsize=8.0, fontweight="bold", ha="center", va="center",
-                bbox=dict(boxstyle="round,pad=0.22", facecolor="#1e293b", edgecolor="#ef4444", lw=1.4))
+    for yp, txt, col in branches_e:
+        ax2.annotate("", xy=(4.3, yp), xytext=(3.1, 2.1), arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#f87171", lw=2.4))
+        ax2.text(6.15, yp, txt, color=col, fontsize=8.8, fontweight="bold", ha="center", va="center",
+                 bbox=dict(boxstyle="round,pad=0.24", facecolor="#1e293b", edgecolor="#ef4444", lw=1.5))
 
-    ax.text(5.0, 0.55, "✖ NEGATIVE CAUSAL EMERGENCE (ΔCP = −0.2525 < 0)!\nDeterminism crashes 86.9% → 72.1% (CP: 0.850 → 0.597) because Ruler 2\nlumps together lines that go in opposite directions ('Delayed Gratification' illusion)!",
-            color="#fee2e2", fontsize=7.9, fontweight="bold", ha="center",
-            bbox=dict(boxstyle="round,pad=0.2", facecolor="#450a0a", edgecolor="#ef4444"))
-
-    # --- Panel D: Why Hoel's 2026 CE 2.0 Beat 2013 CE 1.0 ---
-    ax = axes[1, 1]
-    ax.set_facecolor("#0f172a")
-    for sp in ax.spines.values():
-        sp.set_color("#facc15"); sp.set_linewidth(1.8)
-    ax.set_title("4. Why Hoel's 2026 'CE 2.0' Fixed the 2013 'CE 1.0' Size Penalty!", color="#facc15", fontsize=10.2, fontweight="bold", pad=8)
-
-    labels = ["CE 1.0 Accuracy\nGain (ΔI_eff)", "CE 1.0 Bucket-Size\nPenalty (ΔI_size)", "Old 2013 CE 1.0\nTotal (ΔEI bits)", "New 2026 CE 2.0:\nRuler 1 I(v) (×10)", "New 2026 CE 2.0:\nRuler 2 E(v) (×10)"]
-    vals = [0.476, -4.663, -4.187, 1.191, -2.525]
-    cols = ["#38bdf8", "#94a3b8", "#f97316", "#4ade80", "#f87171"]
-    x_b = np.arange(len(labels))
-    bars = ax.bar(x_b, vals, color=cols, edgecolor="#f8fafc", linewidth=1.2, width=0.58)
-    ax.axhline(0, color="#f8fafc", lw=1.2)
-    ax.set_xticks(x_b)
-    ax.set_xticklabels(labels, color="#f8fafc", fontsize=7.6, fontweight="bold")
-    ax.set_ylim(-5.6, 2.3)
-    ax.set_ylabel("Score (Bits / Scaled ΔCP)", color="#cbd5e1", fontsize=8.5, fontweight="bold")
-    ax.tick_params(colors="#cbd5e1", labelsize=8.0)
-    ax.grid(axis="y", color="#1e293b", lw=0.8)
-
-    val_labels = ["+0.48 bits\n(Cleaner!)", "−4.66 bits\n(16 vs 720)", "−4.19 bits\n(Fooled!)", "+0.119 ΔCP\n(Ruler 1 Wins!)", "−0.253 ΔCP\n(Ruler 2 Fails!)"]
-    for bar, v, vl in zip(bars, vals, val_labels):
-        ypos = v + 0.18 if v >= 0 else v - 0.82
-        ax.text(bar.get_x() + bar.get_width() / 2, ypos, vl, color="#f8fafc", fontsize=7.5, fontweight="bold", ha="center")
+    ax2.text(9.05, 2.1, "✖ NEGATIVE\nEMERGENCE!\nDrops to 72.1%!\n(Hoel Score:\n−0.253)",
+             color="#fee2e2", fontsize=9.4, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.32", facecolor="#450a0a", edgecolor="#ef4444", lw=2.0))
 
     out = MEDIA / "zhang_13yo_fig5_causal_emergence_explained.png"
     fig.savefig(out, dpi=160, facecolor=fig.get_facecolor())
@@ -520,81 +497,74 @@ def render_fig5_causal_emergence_13yo():
 
 def render_fig6_decisive_comparison_d_vs_dp():
     """
-    Illustrated Guide 6: Answering the 'D vs. D + P Decisive-Comparison' &
-    'Frozen Update Rule / Fresh Risk' Challenge:
-      - Left (Panel A — D vs. D + P on Sorting Arrays & Bioelectric Models):
-        Separates D (dynamical/regulatory rules) from P_struct (mathematical
-        invariants/symmetries of D that compress & predict held-out regimes)
-        and P_dualist ('unexplained non-physical side-quests' adding 0.00
-        incremental predictive power over D).
-      - Right (Panel B — The 5-Rule 'Frozen Update Rule' Checklist in Action):
-        1. Lock Hard Core & Bridge Before Observation (SHA-256 + Nanopub RAilN4nb...)
-        2. Define Invariants Independently of Residuals (7 tangent Thompson modes, I(v))
-        3. Held-Out Embodiments & Negative Controls (5,180 unseen fishes, 1,027 hornet wings)
-        4. Failed Bridges Cost Something (H2 p=0.061, Bolca Eoplatax, Vespinae 0/7)
-        5. Every Repair Buys Fresh Risk (npx:supersedes chains + C1-C8 wing causal tests)
+    Illustrated Guide 6: A super-clean, 2-step 13-year-old cartoon explaining:
+      - Row 1: The 'D vs. D + P' Test (Does adding a 'Platonic Ghost' P make a single
+        new prediction beyond the 6 lines of code D? No: 0 new predictions!)
+      - Row 2: The 'Frozen Rules' Test (How a math pattern DOES earn real credit:
+        lock your prediction BEFORE peeking at new animals, and if it fails on
+        hornet wings, take the loss honestly!)
     """
-    fig, axes = plt.subplots(1, 2, figsize=(13.8, 6.2), dpi=160, facecolor="#0b1325")
-    fig.subplots_adjust(wspace=0.16, left=0.04, right=0.96, top=0.81, bottom=0.08)
+    fig, axes = plt.subplots(2, 1, figsize=(12.6, 5.8), dpi=160, facecolor="#0b1325")
+    fig.subplots_adjust(hspace=0.42, left=0.04, right=0.96, top=0.84, bottom=0.06)
 
     fig.suptitle(
-        "Illustrated Guide 6: The 'D vs. D + P' Decisive-Comparison & Frozen Update Rule\n"
-        "When Does a Latent-Space Bridge Earn Incremental Standing — And When Does Failure Cost It Something?",
-        color="#f8fafc", fontsize=12.2, fontweight="bold", y=0.96
+        "How Do You Prove a Pattern Is Real? The 'Frozen Rules' Test!",
+        color="#f8fafc", fontsize=14.0, fontweight="bold", y=0.96
     )
 
-    # Left panel: D vs D + P_struct vs D + P_dualist
+    # --- ROW 1: D vs D + P on Sorting Kids ---
     ax0 = axes[0]
     ax0.set_facecolor("#0f172a")
-    ax0.set_xlim(0, 10); ax0.set_ylim(0, 6.6)
+    ax0.set_xlim(0, 10); ax0.set_ylim(0, 4.0)
     ax0.set_xticks([]); ax0.set_yticks([])
     for sp in ax0.spines.values():
-        sp.set_color("#38bdf8"); sp.set_linewidth(1.8)
-    ax0.set_title("A. Separating 'D', 'P_structural' (Math Invariants), and 'P_dualist' (Ghosts)", color="#38bdf8", fontsize=10.0, fontweight="bold", pad=8)
+        sp.set_color("#38bdf8"); sp.set_linewidth(2.0)
+    ax0.set_title(
+        "RULE 1 — A Ghost Sticker ('+ P') Doesn't Get Credit If the 6 Lines of Code ('D') Already Predict 100%!",
+        color="#38bdf8", fontsize=10.8, fontweight="bold", pad=6
+    )
 
-    # Box D
-    ax0.text(5.0, 5.55, "Base Account D (Local Dynamical / Regulatory Rules)\n• Sorting: 6 cell rules [U1]–[U6]  |  • Bioelectric: Nernst–Planck + V_mem PDE  |  • Anatomy: 34D landmarks",
-             color="#f8fafc", fontsize=7.9, fontweight="bold", ha="center", va="center",
-             bbox=dict(boxstyle="round,pad=0.28", facecolor="#082f49", edgecolor="#38bdf8", lw=1.8))
+    ax0.text(1.85, 2.0, "Model D (The Code Alone)\n• 6 Lines of Kid Swap Rules\n• Ruler 1 Countdown (I − 1)\n• Sports Cars vs. Pedestrians",
+             color="#ffffff", fontsize=9.4, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.35", facecolor="#082f49", edgecolor="#38bdf8", lw=2.2))
 
-    # Branch Left: D + P_structural (Earns Credit!)
-    ax0.annotate("", xy=(2.6, 4.15), xytext=(4.2, 4.95), arrowprops=dict(arrowstyle="->,head_length=6,head_width=5", color="#4ade80", lw=2.2))
-    ax0.text(2.6, 3.15, "D + P_structural (Mathematical Invariant Bridge)\n• Defined independently of residual (Coxeter I(v),\n  7 tangent Thompson modes, Boltzmann exp(-ΔV/V_T))\n• Compresses 30D → 7D (κ: 201 → 20) & predicts\n  held-out 600-pt interior bones (2.4× better than TPS!)",
-             color="#dcfce7", fontsize=7.5, fontweight="bold", ha="center", va="center",
-             bbox=dict(boxstyle="round,pad=0.28", facecolor="#052e16", edgecolor="#4ade80", lw=2.0))
+    ax0.text(5.15, 2.0, "Model D + P (Code + Ghost)\n• Exact Same 6 Lines of Code\n• PLUS a 'Platonic Ghost'\n  Sticker on the Box",
+             color="#ffffff", fontsize=9.4, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.35", facecolor="#3b0764", edgecolor="#a855f7", lw=2.2))
 
-    # Branch Right: D + P_dualist (Zero Incremental Standing!)
-    ax0.annotate("", xy=(7.5, 4.15), xytext=(5.8, 4.95), arrowprops=dict(arrowstyle="->,head_length=6,head_width=5", color="#f87171", lw=2.2))
-    ax0.text(7.5, 3.15, "D + P_dualist ('Non-Physical Side-Quest' Ingress)\n• Claims DG > 0 & algotype cliques are 'not\n  predicted, explained, or produced by medium D'\n• Tested across Py / C++20 / Node.js / Lean 4:\n  Zero differential predictions: P(D + P) − P(D) = 0!",
-             color="#fee2e2", fontsize=7.5, fontweight="bold", ha="center", va="center",
-             bbox=dict(boxstyle="round,pad=0.28", facecolor="#450a0a", edgecolor="#ef4444", lw=2.0))
+    ax0.annotate("", xy=(7.15, 2.0), xytext=(6.45, 2.0), arrowprops=dict(arrowstyle="->,head_length=8,head_width=6", color="#facc15", lw=2.8))
 
-    ax0.text(5.0, 0.90, "✔ DECISIVE VERDICT: P_structural earns real compression & out-of-sample credit;\n✖ P_dualist ('non-physical side-quests') earns 0.00 incremental standing over D!",
-             color="#fef08a", fontsize=8.0, fontweight="bold", ha="center", va="center",
-             bbox=dict(boxstyle="round,pad=0.25", facecolor="#1e293b", edgecolor="#facc15", lw=1.8))
+    ax0.text(8.55, 2.0, "Extra Swaps Predicted\nby the Ghost:\nZERO (0.00)!\n(Code D gets 100%\nof the credit!)",
+             color="#fef08a", fontsize=9.5, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.34", facecolor="#1e293b", edgecolor="#facc15", lw=2.2))
 
-    # Right panel: The 5-Rule Frozen Update Protocol in Action
+    # --- ROW 2: LOCK YOUR PREDICTIONS BEFORE PEEKING ---
     ax1 = axes[1]
     ax1.set_facecolor("#0f172a")
-    ax1.set_xlim(0, 10); ax1.set_ylim(0, 6.6)
+    ax1.set_xlim(0, 10); ax1.set_ylim(0, 4.0)
     ax1.set_xticks([]); ax1.set_yticks([])
     for sp in ax1.spines.values():
-        sp.set_color("#4ade80"); sp.set_linewidth(1.8)
-    ax1.set_title("B. 'A Failed Bridge Must Cost Something; A Repair Must Buy Fresh Risk'", color="#4ade80", fontsize=10.0, fontweight="bold", pad=8)
+        sp.set_color("#4ade80"); sp.set_linewidth(2.0)
+    ax1.set_title(
+        "RULE 2 — Lock Your Guess in a Digital Safe BEFORE Peeking at New Animals (And Take Losses Honestly!)",
+        color="#4ade80", fontsize=10.8, fontweight="bold", pad=6
+    )
 
-    rows = [
-        (5.45, "1. Freeze Hard Core, Invariant & Update Rule BEFORE Observation",
-         "Locked SHA-256 hashes (commit dac08493) & signed Nanopub RAilN4nb... before downloading FishShapes v1", "#38bdf8", "#082f49"),
-        (4.10, "2. Held-Out Embodiments & Negative Controls Where Bridge WON",
-         "• 1,122 unseen fishes (<50 Myr): beats Consensus (p = 10⁻¹⁰³, r = 0.87, 92.6% coverage)\n• Homologous fin tips: curved Thompson bridge beats 4p Box-Stretch (35.3% vs 2.4%, 15×)", "#4ade80", "#052e16"),
-        (2.55, "3. Where Failed Bridges COST Confidence (Recorded in Outcome Nanopub RAJancw...)",
-         "• H2 Failed (FishShapes): Tree GLS beat Nearest-Neighbor by only 4% (p = 0.061 → H2 rejected!)\n• Vespinae Hornet Wings (1,027 wings, commit 330ea961): 0/7 passed (38.8% vs 95.5% PCA → falsified!)", "#f87171", "#450a0a"),
-        (0.95, "4. Every Repair Buys Fresh Risk (Immutable npx:supersedes Chains)",
-         "Failed Vespinae wing test forced a NEW pre-registered causal test C1–C8 across hornet & bee wings\n(commits 1da6218f → ae3b36b6) before running a single P-drift or PGLS allometry calculation!", "#facc15", "#1e293b"),
-    ]
-    for yp, head, body, ec, fc in rows:
-        ax1.text(5.0, yp, f"{head}\n{body}", color="#f8fafc", fontsize=7.35, fontweight="bold", ha="center", va="center",
-                 bbox=dict(boxstyle="round,pad=0.22", facecolor=fc, edgecolor=ec, lw=1.7))
+    ax1.text(1.75, 2.0, "1. Lock the Safe First!\nWe locked our 8-knob fish\ngrid predictions BEFORE\ndownloading 5,180 new fish!",
+             color="#ffffff", fontsize=9.2, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.34", facecolor="#082f49", edgecolor="#38bdf8", lw=2.0))
+
+    ax1.annotate("", xy=(3.65, 2.0), xytext=(3.10, 2.0), arrowprops=dict(arrowstyle="->,head_length=8,head_width=6", color="#4ade80", lw=2.6))
+
+    ax1.text(5.15, 2.0, "2. Where It WON:\n✔ Crushed the baseline on\n1,122 unseen fish (r = 0.87)!\n✔ 15× better on angelfish fins!",
+             color="#dcfce7", fontsize=9.2, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.34", facecolor="#052e16", edgecolor="#22c55e", lw=2.0))
+
+    ax1.annotate("", xy=(7.0, 2.0), xytext=(6.60, 2.0), arrowprops=dict(arrowstyle="->,head_length=8,head_width=6", color="#f87171", lw=2.6))
+
+    ax1.text(8.50, 2.0, "3. Where It LOST (Fair & Square!):\n✖ Failed on 1,027 hornet wings\n(0 out of 7 passed — bug wings\ndon't stretch like fish bodies!)",
+             color="#fee2e2", fontsize=9.0, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.34", facecolor="#450a0a", edgecolor="#ef4444", lw=2.0))
 
     out = MEDIA / "zhang_13yo_fig6_decisive_comparison_d_vs_dp.png"
     fig.savefig(out, dpi=160, facecolor=fig.get_facecolor())

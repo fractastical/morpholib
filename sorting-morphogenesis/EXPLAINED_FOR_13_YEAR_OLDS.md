@@ -33,47 +33,57 @@ So we did what scientists are supposed to do: **we read every single line of the
 
 Here is what we discovered — and why **both camps got something right and something wrong!**
 
-![Evaluating Michael Levin's Latent Platonic Space Claims on Sorting Morphogenesis](../docs/media/zhang_levin_platonic_claims_audit.png)
-
 ---
 
 ## Discovery 1: Did They Really Add "Zero Code" for Frozen Kids? (Mostly True, With One Sneaky Exception!)
 
 * **The Claim:** Levin wrote that they *"did not add steps to the algorithm... to do specific things if an operation failed."*
-* **What We Found in the Code (`Panel A` above):**
+* **What We Found in the Code (Row 2 of Guide 1 above):**
   - For **Bubble** kids, that's 100% true! If a Bubble kid tries to swap with a frozen kid, the frozen kid just doesn't budge.
   - **Insertion** kids, however, have a rule: *"Never move left unless everyone to your left is already in order."* If a frozen kid wearing `#99` is stuck near the front of the line, then the line to the left is *never* in order — so every single Insertion kid behind `#99` would freeze forever!
   - When we looked at lines 74–76 of their file `InsertionSortCell.py`, we found **3 lines of special code** that explicitly check `if status == FREEZE: prev = -1` (basically telling Insertion kids: *"If you see a frozen kid, pretend the line starts over right after them!"*).
-  - When we deleted those 3 lines of code (`Panel A`, red bars), the Insertion kids froze up and their final error jumped **`4.5×` higher (`4.9 → 21.95`)**!
+  - When we deleted those 3 lines of code, the Insertion kids froze up and their final error jumped **`4.5×` higher (`4.9 → 21.95`)**!
 
 ---
 
 ## Discovery 2: Are the Cells Really "Going Backwards to Go Around a Wall"? (No — The Ruler Was Playing a Trick!)
 
-* **The Claim:** Levin compared the sorting line to a person walking *backwards* around a wall to reach a goal (unlike two magnets stuck on opposite sides of a wooden board), because the paper's messiness score (**Adjacent Error $E(v)$**) goes *up* (`+1`) 47 times before going down (`Panel B`, blue jagged line).
-* **What We Found (`Panel B` above & `Panel A` below):**
+* **The Claim:** Levin compared the sorting line to a person walking *backwards* around a wall to reach a goal (unlike two magnets stuck on opposite sides of a wooden board), because the paper's messiness score (**Neighbor Drops $E(v)$**) goes *up* (`+1`) 47 times before going down.
+* **What We Found (Illustrated Guide 2 below):**
   1. **Zero Bubble kids ever cross the wall:** In Bubble and Insertion sort, kids only swap with their immediate neighbors. If an immovable frozen kid is standing at spot `#20`, **zero kids from the left of `#20` ever reach the right of `#20`**! (Selection kids only jump across `#20` because their rule lets them teleport straight to any spot in the line.)
-  2. **Why did the messiness score $E(v)$ go up?** Because there are **two different rulers** for measuring how scrambled a line of kids is:
-     - **Ruler 1 — Total Out-of-Order Pairs $I(v)$ (The True Energy):** Count *every* pair of kids in the whole line where a bigger number is standing to the left of a smaller number.
-     - **Ruler 2 — Neighbor Steps $E(v)$ (The Paper's Ruler):** Only count how many times a kid is bigger than the kid *immediately* to their right.
+  2. **Why did the messiness score go up?** Because there are **two different rulers** for measuring how scrambled a line of kids is:
+     - **Ruler 1 — Total Out-of-Order Pairs $I(v)$ (Green Arches below):** Count *every* pair of kids in the whole line where a bigger number is standing to the left of a smaller number.
+     - **Ruler 2 — Neighbor Drops $E(v)$ (Red Arrows below):** Only count how many times a kid is bigger than the kid *immediately* to their right.
   3. Look at a line of just 4 kids: **`[2, 4, 1, 3]`**:
      - Under **Ruler 1 (Total Pairs $I$)**, there are **3** out-of-order pairs: `(2,1)`, `(4,1)`, and `(4,3)`.
-     - Under **Ruler 2 (Neighbor Steps $E$)**, there is only **1** neighbor drop: `4 -> 1` (since `2 < 4` and `1 < 3`).
+     - Under **Ruler 2 (Neighbor Drops $E$)**, there is only **1** neighbor drop: `4 → 1` (since `2 < 4` and `1 < 3`).
      - Now let the Bubble kids swap `4` and `1` to get **`[2, 1, 4, 3]`**!
-     - What happened to **Total Pairs $I$**? It went **strictly down from `3 → 2`** (only `(2,1)` and `(4,3)` are left). In fact, **every single Bubble swap in history reduces $I(v)$ by `-1` (`0` uphill steps out of 192 swaps — the yellow straight line in `Panel B`!)**.
-     - Why did **Neighbor Steps $E$** go **up from `1 → 2`** (`2 > 1` and `4 > 3`)? Because swapping `4` and `1` broke one big cliff (`4 -> 1`) into two smaller steps (`2 -> 1` and `4 -> 3`)!
-  4. **How Erik Hoel's "Causal Emergence 2.0" settles it (`Illustrated Guide 5` & `Panel A/D` below):**
-     Wait — how do we prove mathematically that **Ruler 1 ($I(v)$)** is the real law and **Ruler 2 ($E(v)$)** is a blurry illusion?
-     - **Zoomed-In Micro-View (Coin Flip, 86.9% Predictable):** If you watch the exact line `[2, 4, 1, 3]`, you don't know which kid will wake up first — there is a 50% chance `#4` swaps with `#1` (`→ [2, 1, 4, 3]`) and a 50% chance `#4` swaps with `#3` (`→ [2, 4, 3, 1]`).
-     - **Zoom Out to Ruler 1 ($I(v)$, 100% Predictable, $\Delta\mathrm{CP} = +0.119$):** Both branches (`[2, 1, 4, 3]` and `[2, 4, 3, 1]`) land on the **exact same score: $I = 2$**! The coin-flip noise disappears and the countdown `3 → 2 → 1 → 0` becomes **100% deterministic**! In Erik Hoel's math, when zooming out makes a system *more* predictable than watching individual pieces, that's called **Positive Causal Emergence** ($\Delta\mathrm{CP} = +0.1191 > 0$).
-     - **Zoom Out to Ruler 2 ($E(v)$, Blurry Mess, $\Delta\mathrm{CP} = -0.253$):** Ruler 2 lumps `[2, 4, 1, 3]` and `[1, 3, 2, 4]` into the same bucket (`E = 1`), where the next step can go UP to `E = 2`, stay at `E = 1`, or go DOWN to `E = 0`! Predictability crashes to **72.1%** (**Negative Causal Emergence**, $\Delta\mathrm{CP} = -0.2525 < 0$).
-     - **Why Hoel's 2026 "CE 2.0" beat 2013 "CE 1.0":** Hoel's old 2013 formula penalized Ruler 1 (`-4.66 bits`) just because `16` scores (`I = 0..15`) is smaller than `720` possible lines of 6 kids, hiding the `+0.48 bit` accuracy boost. Hoel's 2026 **Causal Emergence 2.0** removes that unfair size penalty and immediately spots the 100% deterministic countdown!
+     - What happened to **Ruler 1 (Total Pairs $I$)**? It went **strictly down from `3 → 2`** (only `(2,1)` and `(4,3)` are left). In fact, **every single Bubble swap in history reduces $I(v)$ by `−1` (`0` uphill steps out of 192 swaps!)**.
+     - Why did **Ruler 2 (Neighbor Drops $E$)** go **up from `1 → 2`** (`2 > 1` and `4 > 3`)? Because swapping `4` and `1` broke one big cliff (`4 → 1`) into two smaller steps (`2 → 1` and `4 → 3`)!
 
 ![Illustrated Guide 2: Why 'Delayed Gratification' Was an Optical Illusion of the Ruler!](../docs/media/zhang_13yo_fig2_two_rulers_illusion.png)
 
-![Illustrated Guide 5: What Is 'Causal Emergence 2.0' (Hoel 2026)?](../docs/media/zhang_13yo_fig5_causal_emergence_explained.png)
+---
 
-![Quantifying Emergence in Sorting Morphogenesis via Hoel's Causal Emergence 1.0 & 2.0](../docs/media/zhang_hoel_quantifying_emergence_ce2.png)
+## Discovery 2B: What Is "Causal Emergence"? (How Choosing the Right Scoreboard Beats a Coin Flip!)
+
+Wait — how do we prove mathematically that **Ruler 1 (Total Pairs)** is the real law of the sorting line and **Ruler 2 (Neighbor Drops)** is just a blurry illusion?
+
+A scientist named **Erik Hoel** invented a cool math test called **Causal Emergence** (updated to **Causal Emergence 2.0** in 2026) that tests whether "zooming out" to a big-picture scoreboard makes the future *more* predictable or *less* predictable. Here is how it works in 3 simple steps (**Illustrated Guide 5** below):
+
+![What Is 'Causal Emergence'? How Choosing the Right Scoreboard Beats a Coin Flip!](../docs/media/zhang_13yo_fig5_causal_emergence_explained.png)
+
+* **STEP 1 — Zoomed In on Individual Kids (50/50 Coin Flip!):**
+  Look at the top row above. In the line **`[2, 4, 1, 3]`**, kids wake up at random to check their neighbors. If `#4` checks left, it swaps with `#1` (`→ [2, 1, 4, 3]`). If `#4` checks right, it swaps with `#3` (`→ [2, 4, 3, 1]`). So if you are zoomed in watching exact lines of kids, **you can't predict which line comes next — it's a 50/50 coin flip** (`86.9%` predictability across all 720 lines of 6 kids)!
+* **STEP 2 — Zoom Out to Ruler 1 (Total Pairs = 100% Certainty!):**
+  Now look at the green middle row above. What if we stop worrying about which exact kid moved, and just watch **Ruler 1 (Total Out-of-Order Pairs)** on the scoreboard?
+  - Starting line `[2, 4, 1, 3]` has **3 pairs** out of order.
+  - Coin-flip Line A (`[2, 1, 4, 3]`) has **2 pairs** out of order!
+  - Coin-flip Line B (`[2, 4, 3, 1]`) *also* has **2 pairs** out of order!
+  - **Both coin flips land on the exact same score (`3 → 2 → 1 → 0`)!**
+  When zooming out turns a noisy coin flip into a **100% predictable countdown**, Hoel calls that **Positive Causal Emergence (`+0.119`)**. The zoomed-out scoreboard is *more* predictable than watching individual kids!
+* **STEP 3 — Zoom Out to Ruler 2 (Neighbor Drops = Scrambled Guesswork!):**
+  Now look at the red bottom row above. Ruler 2 puts `[2, 4, 1, 3]` and `[1, 3, 2, 4]` into the *same* bucket (`1 Neighbor Drop`). From that bucket, the next swap can make the score **go UP to 2 drops**, **stay flat at 1 drop**, or **drop to 0**! Predictability crashes to `72.1%` (**Negative Causal Emergence, `−0.253`**). That proves "going backwards" was just a blurry-ruler illusion!
 
 ---
 
@@ -81,19 +91,19 @@ Here is what we discovered — and why **both camps got something right and some
 
 Remember how the online blog critics said: *"The Bubble and Selection kids only cluster together because of textbook Bubble-sort stability on duplicate numbers!"*?
 
-Our experiments proved **the critics were wrong twice**:
+Our experiments proved **the critics were wrong twice** (**Illustrated Guides 3 & 4** below):
 
-1. **Test 1 — What if there are ZERO duplicate numbers (`1` to `100`, all unique)? (`Panel C` of Fig. 1, blue curve)**
+1. **Test 1 — What if there are ZERO duplicate numbers (`1` to `80`, all unique)?**
    - When every single kid has a different number (`1..80`), "duplicate-key stability" is impossible because there are no duplicates!
    - Yet halfway through sorting, the Bubble and Selection kids **still cluster together (`0.50 → 0.624`)**!
    - **Why?** Because **Selection kids move like sports cars and Bubble kids move like pedestrians!** Selection kids immediately teleport small numbers to the far-left front of the line (`0, 1, 2...`), shoving a big wave of Bubble kids into the right half of the line before the slow Bubble kids finish wiggling into their final spots.
 
-2. **Test 2 — The `C = 2` "Anti-Clustering" Smoking Gun on Duplicate Numbers! (`Panel C` of Fig. 2 above)**
+2. **Test 2 — The `C = 2` "Anti-Clustering" Smoking Gun on Duplicate Numbers!**
    - What if there *are* duplicate numbers (say, several kids wearing `#1`, several wearing `#2`, etc.)?
    - If the blog critics were right and "Bubble-sort stability" just kept equal numbers in their starting random order, then the clustering score at the end would stay at **`0.50` (random)** no matter how many copies ($C$) of each number you have.
-   - Instead, because Selection kids always scan from the left end of the line (`0, 1, 2...`), **75% of the Selection kids grab the *left* spots of each number's group, pushing the Bubble kids to the *right* spots (`S...S | B...B`)**:
-     - When there are **`C = 2` copies of each number** (one `S` and one `B` wearing `#1`, one `S` and one `B` wearing `#2`, etc.), putting `S` on the left and `B` on the right of each pair creates the alternating pattern **`S B | S B | S B`** — which drives clustering **below `0.50` (`0.477` — Anti-Clustering!)**!
-     - When there are **`C = 10` copies of each number**, putting 5 `S` kids on the left and 5 `B` kids on the right of each group creates **`SSSSS | BBBBB`**, driving clustering **way up to `0.659`**!
+   - Instead, because Selection kids always scan from the left end of the line (`0, 1, 2...`), **Selection kids grab the *left* spots of each number's group, pushing the Bubble kids to the *right* spots (`S...S | B...B`)**:
+     - **Case A (`C = 2` copies of each number):** Putting `S` on the left and `B` on the right of each pair creates the alternating pattern **`S B | S B | S B`** — which drives clustering **below `0.50` (`0.477` — Anti-Clustering!)**!
+     - **Case B (`C = 8–10` copies of each number):** Putting `S` kids on the left and `B` kids on the right of each group creates **`SSSSS | BBBBB`**, driving clustering **way up to `0.659`**!
 
 ![Illustrated Guide 3: Why 'Secret Cliques' Form — And How C = 2 Copies Proves the Blog Critics Wrong!](../docs/media/zhang_13yo_fig3_sports_cars_vs_pedestrians.png)
 
@@ -101,14 +111,13 @@ Our experiments proved **the critics were wrong twice**:
 
 ---
 
-## The Take-Home Lesson: The "D vs. D + P" Test & Why Both Biology and Math Win
+## The Take-Home Lesson: The "Frozen Rules" Test & Why Both Biology and Math Win
 
-![Illustrated Guide 6: The 'D vs. D + P' Decisive-Comparison & Frozen Update Rule](../docs/media/zhang_13yo_fig6_decisive_comparison_d_vs_dp.png)
+![How Do You Prove a Pattern Is Real? The 'Frozen Rules' Test!](../docs/media/zhang_13yo_fig6_decisive_comparison_d_vs_dp.png)
 
-1. **What Michael Levin got right ("Mathematical Free Lunches" / $P_{\text{structural}}$):**
-   You really *do* get "more out than you put in" when cells follow simple local rules! Without any central controller or friend-detector code, the geometry of permutations ($S_n$) and differences in movement speed automatically create self-sorting, error tolerance, and temporary group segregation. Real biological embryos use these exact kinds of physical and mathematical "free lunches" every day.
-2. **Why you don't need ghosts in the machine ($P_{\text{dualist}}$ adds $0.00$ predictions over $D$):**
-   Once you use the right mathematical ruler — **Total Out-of-Order Pairs $I(v)$** (which has $+0.119$ Causal Emergence) instead of **Neighbor Steps $E(v)$** ($-0.253$), and **traffic-speed waves (`S...S | B...B`)** — 100% of the behavior is explained and predicted by the 6 lines of code ($D$), so adding a non-physical "Platonic side-quest" ($P_{\text{dualist}}$) changes zero predictions!
-3. **Why "Freezing the Rules" Before You Peek Is the Golden Rule of Science:**
-   Just putting a "Platonic" sticker on a file doesn't prove anything. To earn credit, a math pattern has to make a locked prediction on brand-new species *before* you peek at the data — and if a prediction fails (like our fish model did when we tested it on 1,027 hornet wings!), it has to take the loss honestly and pre-register a new test!
-
+1. **What Michael Levin got right ("Mathematical Free Lunches"):**
+   You really *do* get "more out than you put in" when cells follow simple local rules! Without any central controller or friend-detector code, the geometry of permutations and differences in movement speed automatically create self-sorting, error tolerance, and group separation.
+2. **Rule 1 — Why you don't need a "Platonic Ghost" sticker (`+ P` adds `0` new predictions over the code `D`):**
+   Once you use the right scoreboard — **Ruler 1 (Total Pairs, `+0.119` emergence)** instead of **Ruler 2 (Neighbor Drops, `−0.253`)**, and **traffic-speed waves (`S...S | B...B`)** — 100% of the behavior is already predicted by the 6 lines of code (`D`). Putting a "Platonic Ghost" sticker (`+ P`) on the box predicts **zero (`0.00`)** extra swaps!
+3. **Rule 2 — Lock Your Guess in a Digital Safe *Before* You Peek (And Take Losses Honestly!):**
+   To prove a mathematical pattern is real in biology, you have to lock your predictions in a digital safe *before* you peek at new animals — and let failed guesses fail! When we locked our 8-knob fish-stretching grid before downloading **5,180 brand-new fish species**, it crushed the baseline on unseen fish (`r = 0.87`), **and** when we tested that same fish grid on **1,027 hornet wings**, it failed (`0 out of 7` passed — because bug wings don't stretch like fish bodies!). That's how real science separates true mathematical laws from ghost stories.
