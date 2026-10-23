@@ -129,9 +129,7 @@ That is what **Erik Hoel’s *Causal Emergence*** (*PNAS* 2013; upgraded to **Ca
 * **STEP 3 — Zoom Out to Ruler 2 (Neighbor Drops = A Blurry Ruler That Scrambles the Future!):**
   Now look at the red bottom row above. Ruler 2 puts `[2, 4, 1, 3]` and `[1, 3, 2, 4]` into the *exact same bucket* (`1 Neighbor Drop`). From that bucket, the very next swap can make the score **go UP to 2 drops** (looking like "going backwards"!), **stay flat at 1 drop**, or **drop to 0**! Predictability crashes from `86.9%` down to **`72.1%`** (**Negative Causal Emergence, `−0.253`**).
 
-*(Bonus for math nerds: Why did we need Hoel’s 2026 **Causal Emergence 2.0** instead of his 2013 **CE 1.0**? As shown in the full technical benchmark below, the old 2013 formula gave scoreboards extra points just for having lots of possible numbers, slapping Ruler 1 with a `−4.66 bit` penalty because `16` scores is smaller than `720` permutations. Hoel’s 2026 CE 2.0 removes that size penalty and immediately spots the 100% deterministic countdown!)*
-
-![](https://fractastical.github.io/morpholib/media/zhang_hoel_quantifying_emergence_ce2.png)
+*(Bonus for math nerds: Why did we need Hoel’s 2026 **Causal Emergence 2.0** instead of his 2013 **CE 1.0**? In our full technical benchmark below, Panel B shows that the old 2013 formula gave scoreboards extra points just for having lots of possible numbers—slapping Ruler 1 with a `−4.66 bit` size penalty because `16` scores is smaller than `720` permutations. Hoel’s 2026 CE 2.0 removes that size penalty and immediately spots the 100% deterministic countdown!)*
 
 * **Verdict on Claim 2 — Optical Illusion of the Ruler:** The sorting cells never move against their dynamical gradient. They slide 100% deterministically downhill on their true Lyapunov energy `I(v)` (`ΔCP = +0.1191 > 0`) at every single step, while the observer watches them through a blurry, negative-emergence ruler `E(v)` (`ΔCP = −0.2525 < 0`).
 
@@ -159,6 +157,10 @@ When we ran the ablations (**Panel C** of both figures above, and Illustrated Gu
    * When there are **`C = 10` copies of each number** (`Fig. 8D`), putting 5 `S` cells on the left and 5 `B` cells on the right of each group creates **`SSSSS | BBBBB`**, driving permanent clustering **up to `0.659`**! (And when we change `<` to `<=` on ties in **Panel C**, red dashed curve, the permanent clustering collapses back to `0.497–0.514`.)
 
 ![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig3_sports_cars_vs_pedestrians.png)
+
+And here is the full quantitative sweep from our computer experiments (`sorting-morphogenesis/quantify_emergence_ce2.py`), showing both the exact **Causal Emergence 1.0 vs. 2.0** scores across `S_3..S_6` (**Panels A–B**) and the **`C = 2` Anti-Clustering dip (`0.477 < 0.50`) vs. `C = 10` Clique peak (`0.659`)** (**Panel C**):
+
+![](https://fractastical.github.io/morpholib/media/zhang_hoel_quantifying_emergence_ce2.png)
 
 * **Verdict on Claim 3 — Empirically Vindicated (via Kinematic Phase Separation):** The clustering is 100% real and refutes the blog critics’ "textbook stability" dismissal—yet it is also 100% produced and predicted by the kinematic transport equations of the two algorithms without needing non-physical ghosts. ([Try the live `C = 2` simulator in your browser here!](https://fractastical.github.io/morpholib/bioelectricity/sorting-morphogenesis.html?tab=sim&scenario=c2_anticluster&autoplay=1))
 
