@@ -213,3 +213,67 @@ With best regards,
 
 Joel Dietz (Project Delphi · [github.com/fractastical/morpholib](https://github.com/fractastical/morpholib))
 
+---
+
+## 7. Email Draft 6 — Dr. Emma Sherratt (University of Adelaide), Prof. J. Scott Keogh & Dr. Ian G. Brennan (Australian National University)
+
+**To:** `emma.sherratt@adelaide.edu.au`, `scott.keogh@anu.edu.au`, `ian.brennan@anu.edu.au`  
+**Subject:** Pre-registered tests of D'Arcy Thompson's 7 global coordinate modes on your Australian Anura (166 spp), *Varanus* crania (1,091 skulls), and Leporidae crania (317 skulls) datasets  
+**Attachments:**
+1. `docs/portfolio/fig_australian_frogs.png` (inline + attached)
+2. `docs/portfolio/fig_varanus_lizards.png` (inline + attached)
+3. `docs/portfolio/fig_leporidae_skulls.png` (inline + attached)
+
+---
+
+Dear Dr. Sherratt, Professor Keogh, and Dr. Brennan,
+
+To test how D'Arcy Thompson's 1917 global coordinate transformations (*On Growth and Form*, Ch. XVII) generalize beyond teleost fishes across tetrapod radiations, we built a pre-registered phylogenetic morphospace and prediction pipeline ([`fractastical/morpholib`](https://github.com/fractastical/morpholib), with hypotheses SHA-256-locked and published as cryptographic Nanopublications [`RAQ_Giwd735...`](https://registry.knowledgepixels.com/np/RAQ_Giwd735IPhYg-cOMyPE6t4K9WPM9XlijGkNC6_eJ4) before running) and evaluated it across three of your landmark datasets:
+
+1. **Continental Radiation of Australian Anura (`166` Species, `55` Lateral Body/Tail Landmarks; Sherratt, Vidal-García, Anstis & Keogh 2017, *Evol. Biol.*):**
+   - Unlike reef fishes (`57.9%` of interspecific variance in Thompson's 7 global modes due to decoupled spiny dorsal/anal fin insertions), your 55-landmark anuran contours have **`66.2%` of between-species Procrustes variance** inside the 7 a-priori Thompson modes (`88.9%` in 7-D PCA), with strong phylogenetic signal ($\hat{\lambda} = 0.682$ in Thompson-7, $\hat{\lambda} = 0.737$ in full space; **Hypothesis AF2 ✓**).
+   - Leave-one-species-out phylogenetic prediction across the 166 species significantly beats the grand consensus (**median Procrustes RMS ratio $= 0.805$, $p = 1.5 \times 10^{-14}$; Hypothesis AF3 ✓**), with the 7 Thompson modes alone capturing **`60.2%`** of the full-space phylogenetic prediction gain (`fig_australian_frogs.png`).
+2. **Indo-Australasian *Varanus* Monitor Lizard Crania (`1,091` Dorsal [33 LM] & `1,098` Lateral [10 LM] Skulls Across `80` Taxa; Brennan et al. 2021, *Syst. Biol.*):**
+   - Across the 80 *Varanus* taxa (from dwarf *V. sparnus* to giant *V. komodoensis*), Thompson's 7 global modes capture **`59.5%` of interspecific dorsal cranial variance** and **`55.2%` of lateral cranial variance** (**Hypothesis VL1 ✓**; `fig_varanus_lizards.png`).
+   - Remarkably, while full-space leave-one-species-out prediction overfits local cranial landmarks (`LOO ratio = 1.00`), restricting phylogenetic prediction strictly to **Thompson's 7 global coordinate modes beats the consensus (`LOO ratio = 0.893`, $p < 10^{-6}$)**, while intraspecific cranial variation aligns strongly with interspecific divergence in the local modular residual subspace ($|\cos\theta|_{\text{res}} = 0.937$ vs. $0.106$ in T7).
+3. **Leporidae Mammalian Crania (`317` Skulls, `22` Species, `74` Landmarks; Sherratt & Kraatz 2023):**
+   - Captures **`51.1%`** of interspecific variance in Thompson's 7 modes with pure Brownian phylogenetic signal ($\hat{\lambda} = 1.000$) and `0.89×` LOO prediction error (`fig_leporidae_skulls.png`).
+
+All code, pre-registered JSON manifests, and per-species predictions are openly archived in our repository ([`docs/portfolio/PORTFOLIO_STATUS.md`](https://github.com/fractastical/morpholib/blob/main/docs/portfolio/PORTFOLIO_STATUS.md)). We would be delighted to hear your thoughts or explore a comparative tetrapod follow-up together!
+
+Warm regards,
+
+Joel Dietz (Project Delphi · [github.com/fractastical/morpholib](https://github.com/fractastical/morpholib))
+
+---
+
+## 8. Email Draft 7 — Prof. Simon Joly (Université de Montréal / Montreal Botanical Garden)
+
+**To:** `simon.joly@umontreal.ca`  
+**Subject:** Pre-registered test of D'Arcy Thompson's global coordinate modes & developmental channelling on your Antillean Gesneriaceae floral corolla dataset (296 flowers, 48 species)  
+**Attachments:**
+1. `docs/portfolio/fig_antillean_flowers.png` (inline + attached)
+2. `docs/outreach_fig11_dataset_portfolio.png` (inline + attached)
+
+---
+
+Dear Professor Joly,
+
+In Chapter XVI of *On Growth and Form* (1917), D'Arcy Thompson pointed to sympetalous floral corollas (such as tubular vs. campanulate bells) as the botanical archetype of smooth coordinate transformations, yet never tested them quantitatively across a phylogeny. When we built our pre-registered cross-kingdom morphospace pipeline ([`fractastical/morpholib`](https://github.com/fractastical/morpholib)), we selected your Antillean Gesneriaceae dataset (Joly et al. 2018, *Evolution* `72:244–260`; `296` corollas across `48` species and `32` 2D landmarks on `BestTree.tre`) as our primary seed-plant test (`thompson/portfolio/groups/antillean_flowers_hypotheses.json`, SHA-256-locked in Nanopub [`RAQ_Giwd735...`](https://registry.knowledgepixels.com/np/RAQ_Giwd735IPhYg-cOMyPE6t4K9WPM9XlijGkNC6_eJ4)).
+
+Scoring the pre-registered hypotheses (`docs/portfolio/antillean_flowers.md`, attached in **`fig_antillean_flowers.png`**) yielded a remarkable confirmation of your 2018 findings (**`3/4` hypotheses supported, Brier score `0.179`**):
+
+1. **Angiosperm Corolla Tubes Are Ultra-Thompsonian (`82.1%` Variance in 7 Modes; Hypothesis FP1 ✓):**
+   Across all 48 Gesneriaceae species spanning hummingbird, bat, and generalist pollination syndromes, D'Arcy Thompson's 7 a-priori global coordinate modes capture **`82.1%` of between-species Procrustes variance** (`96.8%` in fitted 7-D PCA), far exceeding teleost fish bodies (`57.9%`) and insect wings (`38.8%–49.0%`).
+2. **Leave-One-Species-Out Phylogenetic Prediction Beats Consensus (`0.69×` Error; Hypothesis FP3 ✓):**
+   On `BestTree.tre`, leave-one-species-out phylogenetic prediction reduces median Procrustes RMS error to **`0.689×` the grand consensus** ($p = 0.0055$; $\hat{\lambda}_{\text{full}} = 0.852$).
+3. **Near-Perfect Developmental Channelling Inside the 7-D Thompson Subspace (`|cos θ| = 0.978`; Hypothesis FP4 ✓):**
+   In your 2018 *Evolution* paper, you showed that intraspecific floral variation channels evolutionary transitions between pollination syndromes. When we decompose that alignment into Thompson's 7 global growth modes vs. the 53-dimensional non-Thompson residual subspace, **intraspecific floral variation aligns with interspecific macroevolutionary divergence at $|\cos\theta|_{\text{T7}} = 0.9779$ inside the 7-D Thompson subspace, vs. just $|\cos\theta|_{\text{res}} = 0.1430$ in the orthogonal residual subspace!** That is, the developmental line of least resistance that steers floral transitions between hummingbird tubes and bat bells is almost purely a 7-parameter D'Arcy Thompson coordinate transformation.
+
+We would love to hear your thoughts on this result and would be honored to share our scripts or collaborate on a short botanical morphospace follow-up.
+
+With warm regards,
+
+Joel Dietz (Project Delphi · [github.com/fractastical/morpholib](https://github.com/fractastical/morpholib))
+
+
