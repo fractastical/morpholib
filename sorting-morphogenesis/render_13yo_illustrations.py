@@ -518,9 +518,97 @@ def render_fig5_causal_emergence_13yo():
     print("Saved", out)
 
 
+def render_fig6_decisive_comparison_d_vs_dp():
+    """
+    Illustrated Guide 6: Answering the 'D vs. D + P Decisive-Comparison' Challenge:
+      - Left (Lane A — Model D Alone): Dynamical / Regulatory / Geometric Medium D
+        (local cell rules, Nernst-Planck electrodiffusion, 8-knob Thompson coordinate
+        fields, Lyapunov descent).
+      - Center (The Incremental Bridge Test): Does adding a separate Platonic
+        Ingression hypothesis (+ P) make a single new, pre-registered quantitative
+        prediction that differs from D alone?
+      - Right (Two Real Outcomes from Our Pipeline):
+          1. On Sorting Arrays (Claims 1-3): D alone predicts 100% of the trajectory
+             (ΔI = -1, ΔCP = +0.119, C=2 anti-clustering 0.477). Incremental credit
+             for Strong Dualist P = 0.00!
+          2. On Pre-Registered Blind Tests (Claim 4, FishShapes v1 & Vespinae Wings):
+             We pre-registered H1-H7 (commit dac08493, Nanopub RAilN4nb...) BEFORE
+             downloading 5,180 unseen fish species (4/7 passed, p=10^-103; H2 failed
+             at p=0.061) and 30 hornet species (0/7 passed — falsified as non-Thompsonian!).
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(13.6, 5.8), dpi=160, facecolor="#0b1325")
+    fig.subplots_adjust(wspace=0.18, left=0.04, right=0.96, top=0.81, bottom=0.08)
+
+    fig.suptitle(
+        "Illustrated Guide 6: Testing 'D' (Dynamical Math) vs. 'D + P' (Adding Platonic Ingression)\n"
+        "Why Metadata Labels Don't Earn Credit — Only Pre-Registered Differential Predictions Do!",
+        color="#f8fafc", fontsize=12.4, fontweight="bold", y=0.96
+    )
+
+    # Left panel: D vs D + P on Sorting Morphogenesis
+    ax0 = axes[0]
+    ax0.set_facecolor("#0f172a")
+    ax0.set_xlim(0, 10); ax0.set_ylim(0, 6.5)
+    ax0.set_xticks([]); ax0.set_yticks([])
+    for sp in ax0.spines.values():
+        sp.set_color("#38bdf8"); sp.set_linewidth(1.8)
+    ax0.set_title("A. The 'D vs. D + P' Test on Self-Sorting Cells (Claims 1–3)", color="#38bdf8", fontsize=10.4, fontweight="bold", pad=8)
+
+    # Box D
+    ax0.text(2.6, 4.9, "Model D (Medium Alone)\n• 6 Local Rules [U1]–[U6]\n• Coxeter Lattice I(v) (ΔI = −1)\n• Kinematic Speeds O(1) vs O(n²)",
+             color="#f8fafc", fontsize=8.3, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.32", facecolor="#082f49", edgecolor="#38bdf8", lw=2.0))
+    # Box D + P
+    ax0.text(7.5, 4.9, "Model D + P (With 'Ingression')\n• Same 6 Rules D\n• + Non-Physical 'Side-Quest' P\n  ('Not produced by medium')",
+             color="#f8fafc", fontsize=8.3, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.32", facecolor="#3b0764", edgecolor="#a855f7", lw=2.0))
+
+    ax0.annotate("", xy=(5.0, 2.75), xytext=(2.6, 3.85), arrowprops=dict(arrowstyle="->,head_length=6,head_width=5", color="#38bdf8", lw=2.2))
+    ax0.annotate("", xy=(5.0, 2.75), xytext=(7.5, 3.85), arrowprops=dict(arrowstyle="->,head_length=6,head_width=5", color="#a855f7", lw=2.2))
+
+    ax0.text(5.0, 2.15, "DECISIVE COMPARISON: Does '+ P' predict a single\ncell swap not already forced by D's Markov matrix?\nNO! C++20 / Node.js / Python / Lean 4 prove P(D+P) − P(D) = 0!",
+             color="#fef08a", fontsize=8.2, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.28", facecolor="#1e293b", edgecolor="#facc15", lw=2.0))
+
+    ax0.text(5.0, 0.62, "✔ Result: Model D earns 100% of the empirical credit.\nAdding Strong Dualist 'P' earns ZERO incremental standing!",
+             color="#dcfce7", fontsize=8.1, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.22", facecolor="#052e16", edgecolor="#22c55e"))
+
+    # Right panel: Pre-Registered Rival Bridges & Falsification in Project Delphi
+    ax1 = axes[1]
+    ax1.set_facecolor("#0f172a")
+    ax1.set_xlim(0, 10); ax1.set_ylim(0, 6.5)
+    ax1.set_xticks([]); ax1.set_yticks([])
+    for sp in ax1.spines.values():
+        sp.set_color("#4ade80"); sp.set_linewidth(1.8)
+    ax1.set_title("B. How Our Pre-Registered Pipeline Separates Rival Bridges", color="#4ade80", fontsize=10.4, fontweight="bold", pad=8)
+
+    rows = [
+        (5.25, "1. Lock Bridge & Rivals BEFORE Unblinding (Nanopub RAilN4nb...)",
+         "SHA-256 locked 10,888 species predictions & H1–H7 vs. Consensus / Nearest-Copy / Box-Stretch", "#38bdf8", "#082f49"),
+        (3.75, "2. Where the Thompson Bridge WON (FishShapes v1 & 600-pt Fins)",
+         "• Beats Consensus within 50 Myr (p = 10⁻¹⁰³, r = 0.87, 92.6% coverage)\n• Beats 4p Box-Stretch on homologous fin tips (+13% to +48%, 2.4% → 35.3%)", "#4ade80", "#052e16"),
+        (2.10, "3. Where Pre-Registered Bridges FAILED (And Lowered Confidence!)",
+         "• H2 Refuted (FishShapes): Tree GLS only beat Nearest-Neighbor by 4% (p = 0.061)\n• Bolca 50 Ma Stem Refuted: Eoplatax papilio already disc-shaped (1.02 vs 0.67)\n• Vespinae Hornet Wings (1,027 wings): 0/7 held (38.8% vs 95.5% PCA) → Non-Thompsonian!", "#f87171", "#450a0a"),
+    ]
+    for yp, head, body, ec, fc in rows:
+        ax1.text(5.0, yp, f"{head}\n{body}", color="#f8fafc", fontsize=7.6, fontweight="bold", ha="center", va="center",
+                 bbox=dict(boxstyle="round,pad=0.26", facecolor=fc, edgecolor=ec, lw=1.8))
+
+    ax1.text(5.0, 0.52, "Category labels (like legacy 'P1 Platonic') are just filing cabinets —\na model only earns credit when it beats a rival on a locked test that can FAIL!",
+             color="#fef08a", fontsize=7.8, fontweight="bold", ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.2", facecolor="#1e293b", edgecolor="#facc15"))
+
+    out = MEDIA / "zhang_13yo_fig6_decisive_comparison_d_vs_dp.png"
+    fig.savefig(out, dpi=160, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print("Saved", out)
+
+
 if __name__ == "__main__":
     render_fig1_three_personalities()
     render_fig2_two_rulers_illusion()
     render_fig3_sports_cars_and_c2()
     render_fig4_real_data_curves()
     render_fig5_causal_emergence_13yo()
+    render_fig6_decisive_comparison_d_vs_dp()
