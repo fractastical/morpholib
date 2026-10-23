@@ -14,7 +14,7 @@ When board members of the organization asked me to explain it, I did so as follo
 
 This satisfied her, but she said that until I explained it that way, most of the Mike Levin orbit concepts sounded instead impermeable or much like "woo science."
 
-In my case, I was fortunately aided by Mike Levin himself, who gave me a list of articles to read in which order to get started on learning the space, to which I added a massive pile of his papers, which I synthesized with a knowledge graph ([Project Delphi](https://github.com/fractastical/morpholib)), which then became an independent product (**MorphoEval**) that now is able to autonomously build out the math of biology.
+In my case, I was fortunately aided by Mike Levin himself, who gave me a list of articles to read in which order to get started on learning the space, to which I added a massive pile of his papers, which I synthesized with a knowledge graph ([Project Delphi](https://github.com/fractastical/morpholib)). That knowledge graph then evolved into an independent methodology and verification engine—the **Adversarial Epistemic Loop (AEL) / Delphi-MorphoEval Protocol**—that now is able to autonomously build out, audit, and formally prove the math of biology.
 
 ![](https://fractastical.github.io/morpholib/media/all_forms_montage.gif)
 *Fifteen flagship animated models of biological form (1917–2025) in our open-source [Infinite Morphospace](https://github.com/fractastical/morpholib) repository—audited by independent AI referees from competing labs and formally checked in the Lean 4 theorem prover.*
@@ -238,9 +238,11 @@ How does a living tissue actually store a target coordinate in that morphospace?
 
 ---
 
-## How We Built and Audited This: Methods, Models, Knowledge-Graph Queries & Code Provenance
+## How We Built and Audited This: The Adversarial Epistemic Loop (AEL) & Delphi-MorphoEval Protocol
 
 How do you keep yourself honest when testing high-profile scientific claims—especially when both the "Platonic Space" camp and the "Nothing New Here" blog critics have strong priors?
+
+We call our methodology the **Adversarial Epistemic Loop (AEL)** (implemented in the **Delphi-MorphoEval 12-Step Protocol**): every verbal claim is translated into multi-language executable code and machine-checked **Lean 4** theorems, locked against **SHA-256** empirical datasets, audited blind by **three competing AI model families** (Anthropic, Google DeepMind, and OpenAI), and pre-registered as cryptographically signed **Nanopublications** before unblinding held-out species.
 
 Just as we did for our D’Arcy Thompson study, we documented the entire investigation in a **4-Page Illustrated Magazine Edition Methods & Provenance PDF** ([`docs/levin_latent_space_methods_and_provenance.pdf`](https://fractastical.github.io/morpholib/levin_latent_space_methods_and_provenance.pdf) and [`docs/LEVIN_LATENT_SPACE_METHODS.md`](https://github.com/fractastical/morpholib/blob/main/docs/LEVIN_LATENT_SPACE_METHODS.md)) that answers five concrete questions so anyone can understand and re-run our experiments:
 

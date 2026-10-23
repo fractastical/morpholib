@@ -1,4 +1,4 @@
-# Methods & Provenance: Evaluating Michael Levin's "Latent Space of Patterns" Across Sorting Morphogenesis, D'Arcy Thompson's 10,303-Species Morphospace & Bioelectric Attractors
+# Methods & Provenance: The Adversarial Epistemic Loop (AEL) / Delphi-MorphoEval Protocol for Evaluating Michael Levin's "Latent Space of Patterns"
 
 **Primary Author:** Joel Dietz ([Project Delphi](https://github.com/fractastical/morpholib))  
 **Date:** October 22, 2026  
