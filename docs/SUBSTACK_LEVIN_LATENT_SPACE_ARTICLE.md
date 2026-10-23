@@ -4,7 +4,7 @@
 
 ---
 
-For some time I have been participating actively in documenting the scientific potential of bioelectricity (which goes back to Galvani’s frog experiments) and the various fascinating, though usually hypothetical, metaphysical concepts that often travel side by side with it ([bioelectricity.net](https://bioelectricity.net)). As a historian of math, it doesn’t bother me that sci-fi concepts (such as *psi*) and real science can develop side by side—historically, Kepler’s astrophysics and Newton’s alchemy grew out of the same soil—but I’m equally aware that religious effects can take over and obliterate free critical thinking (including in Buddhist traditions that bind one to absolute obedience to a guru).
+For some time I have been participating actively in documenting the scientific potential of bioelectricity (which goes back to Galvani’s frog experiments; see [Bioelectricity Foundations](https://bioelectricity.net/bioelectricity-foundations)) and the various fascinating, though usually hypothetical, metaphysical concepts that often travel side by side with it ([bioelectricity.net](https://bioelectricity.net)). As a historian of math, it doesn’t bother me that sci-fi concepts (such as *psi*) and real science can develop side by side—historically, Kepler’s astrophysics and Newton’s alchemy grew out of the same soil—but I’m equally aware that religious effects can take over and obliterate free critical thinking (including in Buddhist traditions that bind one to absolute obedience to a guru).
 
 When I was working at the California Institute of Machine Consciousness in early 2026, my then-employer Joscha Bach would often elatedly insert concepts of *morphogenesis* into conversations. This term means, roughly, how things get to be their current shape, and tends to be a pretty mathy set of explanations.
 
@@ -162,7 +162,7 @@ And here is the full quantitative sweep from our computer experiments (`sorting-
 
 ![](https://fractastical.github.io/morpholib/media/zhang_hoel_quantifying_emergence_ce2.png)
 
-* **Verdict on Claim 3 — Empirically Vindicated (via Kinematic Phase Separation):** The clustering is 100% real and refutes the blog critics’ "textbook stability" dismissal—yet it is also 100% produced and predicted by the kinematic transport equations of the two algorithms without needing non-physical ghosts. ([Try the live `C = 2` simulator in your browser here!](https://fractastical.github.io/morpholib/bioelectricity/sorting-morphogenesis.html?tab=sim&scenario=c2_anticluster&autoplay=1))
+* **Verdict on Claim 3 — Empirically Vindicated (via Kinematic Phase Separation):** The clustering is 100% real and refutes the blog critics’ "textbook stability" dismissal—yet it is also 100% produced and predicted by the kinematic transport equations of the two algorithms without needing non-physical ghosts. ([Try the live `C = 2` Sorting Morphogenesis Simulator on bioelectricity.net here!](https://bioelectricity.net/sorting-morphogenesis))
 
 ---
 
@@ -197,7 +197,7 @@ When we audited the morphometrics literature across **three independent datasets
 
 ![](https://fractastical.github.io/morpholib/guide_step4_outside_vs_inside_rules.png)
 
-* **Verdict on Claim 4 — Strongly Confirmed:** Across 10,303 species, Thompson’s and Levin’s core thesis—that macroevolution navigates a low-dimensional geometric coordinate manifold while local modules handle rapid ecological competition—is a quantitative law of vertebrate evolution.
+* **Verdict on Claim 4 — Strongly Confirmed:** Across 10,303 species, Thompson’s and Levin’s core thesis—that macroevolution navigates a low-dimensional geometric coordinate manifold while local modules handle rapid ecological competition—is a quantitative law of vertebrate evolution. ([Explore the interactive 10,303-Species Fish Morphospace on bioelectricity.net here!](https://bioelectricity.net/bioelectric-morphospace))
 
 ---
 
@@ -366,8 +366,10 @@ We don't need non-physical ghosts beaming into the machine, and we don't need re
 ---
 
 ### Interactive Labs, Papers & Code for Readers
-* **Play with the Live Sorting Morphogenesis, "Two Rulers" & `C = 2` Anti-Clustering Simulator:** [https://fractastical.github.io/morpholib/bioelectricity/sorting-morphogenesis.html](https://fractastical.github.io/morpholib/bioelectricity/sorting-morphogenesis.html)
-* **Explore the 10,303-Species D’Arcy Thompson & Bioelectric Morphospace Sandbox:** [https://fractastical.github.io/morpholib/bioelectricity/](https://fractastical.github.io/morpholib/bioelectricity/)
+* **Bioelectricity Foundations (Galvani to Modern V_mem Prepatterns):** [https://bioelectricity.net/bioelectricity-foundations](https://bioelectricity.net/bioelectricity-foundations)
+* **Play with the Live Sorting Morphogenesis, "Two Rulers" & `C = 2` Anti-Clustering Simulator:** [https://bioelectricity.net/sorting-morphogenesis](https://bioelectricity.net/sorting-morphogenesis)
+* **Explore the 10,303-Species D’Arcy Thompson & Bioelectric Fish Morphospace:** [https://bioelectricity.net/bioelectric-morphospace](https://bioelectricity.net/bioelectric-morphospace)
+* **Read the 4-Page Illustrated Methods & Provenance Guide (PDF):** [https://fractastical.github.io/morpholib/levin_latent_space_methods_and_provenance.pdf](https://fractastical.github.io/morpholib/levin_latent_space_methods_and_provenance.pdf)
 * **Read the 8-Page Sorting Morphogenesis & Causal Emergence 2.0 Paper (PDF):** [https://fractastical.github.io/morpholib/zhang_levin_sorting_morphogenesis_manuscript.pdf](https://fractastical.github.io/morpholib/zhang_levin_sorting_morphogenesis_manuscript.pdf)
 * **Read the 28-Page D’Arcy Thompson 1917 & 10,303-Species Paper (PDF):** [https://fractastical.github.io/morpholib/thompson_1917_fish_transformations_manuscript.pdf](https://fractastical.github.io/morpholib/thompson_1917_fish_transformations_manuscript.pdf)
 * **Open-Source Repository (Python 3, C++20, Node.js, Lean 4 Proofs & Signed Nanopublications):** [https://github.com/fractastical/morpholib](https://github.com/fractastical/morpholib)
