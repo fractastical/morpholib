@@ -1,6 +1,6 @@
 # Portfolio sub-prediction: FishShapes v1 (Price et al. 2022)
 
-Scored 2026-10-22 by `thompson/portfolio/score_locked_predictions.py --source fishshapes_v1` against the predictions locked at commit `7889d9396de0` (hashes verified at run time). Comparison data: Price SA et al. 2022 Ecology 103:e3829; Zenodo 6642650 (CC0); `.thompson_cache/fishshapes_v1/FishShapes_specimensv1.csv` sha256 `7447fdc92c5fd5c9…`, 16,523 specimens, 6,095 species; 5,180 registered target species matched (training and 1917 species excluded).
+Scored 2026-10-23 by `thompson/portfolio/score_locked_predictions.py --source fishshapes_v1` against the predictions locked at commit `7889d9396de0` (hashes verified at run time). Comparison data: Price SA et al. 2022 Ecology 103:e3829; Zenodo 6642650 (CC0); `.thompson_cache/fishshapes_v1/FishShapes_specimensv1.csv` sha256 `7447fdc92c5fd5c9…`, 16,523 specimens, 6,095 species; 5,180 registered target species matched (training and 1917 species excluded).
 
 ![figure](./fig_fishshapes_v1.png)
 
@@ -23,7 +23,7 @@ Registered in `docs/THOMPSON_DATASET_PORTFOLIO.md` as *A linear calliper traits,
 | 80–120 | 930 | **0.1262** | 0.1331 | 0.1924 | 0.1651 | 0.1179 | 68% / 66% |
 | 120–∞ | 2103 | **0.0829** | 0.0995 | 0.1235 | 0.1919 | – | 83% / 81% |
 
-Within 50 Myr (n=1122): ratio vs consensus 0.41 (p=1e-103), vs nearest 0.96 (p=0.061), coverage 93%, r(pred, obs)=0.87; T7 between consensus and full-30: yes.
+Within 50 Myr (n=1122): ratio vs consensus 0.41 (p=1.1e-103), vs nearest 0.96 (p=0.06), coverage 93%, r(pred, obs)=0.87; T7 between consensus and full-30: yes.
 Beyond 50 Myr (n=4058): ratio vs consensus 0.52, coverage 75%, median predicted 0.279 vs observed 0.229.
 
 ## Error by horizon: CPD_over_SL (calibrated median |error|)
@@ -43,7 +43,7 @@ Beyond 50 Myr (n=4054): ratio vs consensus 0.82, coverage 68%, median predicted 
 
 ## Calibration (training species only)
 
-- BDmax_over_SL: {"alpha": -0.010133883453389059, "beta": 1.0182831978209776, "r": 0.9544022441053134, "n_training_species": 710, "residual_sd": 0.04240334259059489}
+- BDmax_over_SL: {"alpha": -0.010133883453388892, "beta": 1.0182831978209772, "r": 0.954402244105313, "n_training_species": 710, "residual_sd": 0.042403342590594875}
 - CPD_over_SL: {"alpha": 0.0049200505871830336, "beta": 0.8676245899023962, "r": 0.9342309398190517, "n_training_species": 711, "residual_sd": 0.012632479530787602}
 
 ## Notes
