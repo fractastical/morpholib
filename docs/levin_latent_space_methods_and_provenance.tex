@@ -1,0 +1,400 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,calc,positioning}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{colortbl}
+
+\geometry{
+  a4paper,
+  top=0.46in,
+  bottom=0.46in,
+  left=0.50in,
+  right=0.50in,
+  headheight=16pt,
+  headsep=6pt,
+  footskip=16pt
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2.0pt}
+
+% --- Color Palette (Magazine / Project Delphi Style) ---
+\definecolor{navybg}{HTML}{0B1325}
+\definecolor{panelbg}{HTML}{0F172A}
+\definecolor{slateink}{HTML}{1E293B}
+\definecolor{mutedink}{HTML}{475569}
+
+\definecolor{sky}{HTML}{0284C7}
+\definecolor{skylight}{HTML}{E0F2FE}
+\definecolor{skyborder}{HTML}{38BDF8}
+
+\definecolor{emerald}{HTML}{15803D}
+\definecolor{emeraldlight}{HTML}{DCFCE7}
+\definecolor{emeraldborder}{HTML}{4ADE80}
+
+\definecolor{amber}{HTML}{B45309}
+\definecolor{amberlight}{HTML}{FEF3C7}
+\definecolor{amberborder}{HTML}{F59E0B}
+
+\definecolor{crimson}{HTML}{B91C1C}
+\definecolor{crimsonlight}{HTML}{FEE2E2}
+\definecolor{crimsonborder}{HTML}{F87171}
+
+\definecolor{purple}{HTML}{6D28D9}
+\definecolor{purplelight}{HTML}{F3E8FF}
+\definecolor{purpleborder}{HTML}{A78BFA}
+
+\definecolor{goldaccent}{HTML}{FACC15}
+\definecolor{cyanaccent}{HTML}{38BDF8}
+\definecolor{softgray}{HTML}{F8FAFC}
+\definecolor{cardgray}{HTML}{F1F5F9}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=sky,
+  citecolor=sky,
+  urlcolor=sky,
+  pdftitle={Methods, Models, Knowledge-Graph Queries & Code Provenance: Evaluating Michael Levin's Latent Space Claims — By Joel Dietz},
+  pdfauthor={Joel Dietz (Project Delphi)}
+}
+
+% --- Inline Pill Badge ---
+\newcommand{\pillbadge}[2]{%
+  \tikz[baseline=(char.base)]{%
+    \node[
+      shape=rectangle,
+      rounded corners=2.5pt,
+      fill=#1,
+      text=white,
+      inner xsep=4.5pt,
+      inner ysep=1.5pt,
+      font=\sffamily\bfseries\scriptsize
+    ] (char) {#2};%
+  }%
+}
+
+% --- Magazine Section Header Banner ---
+\newcommand{\prettysection}[3]{%
+  \vspace{2.0pt}%
+  \noindent
+  \begin{tikzpicture}
+    \node[
+      rectangle,
+      rounded corners=4.5pt,
+      fill=#2!10,
+      draw=#2!65,
+      line width=0.95pt,
+      inner xsep=9pt,
+      inner ysep=4.2pt,
+      text width=\dimexpr\textwidth-20pt\relax,
+      align=left
+    ] (secbox) {%
+      \tikz[baseline=(n.base)]{
+        \node[circle, fill=#2, text=white, inner sep=2.2pt, font=\sffamily\bfseries\footnotesize] (n) {#1};
+      }%
+      \hspace{5pt}{\sffamily\bfseries\normalsize\color{navybg}#3}%
+    };
+    \fill[#2, rounded corners=1.5pt] (secbox.south west) rectangle ([xshift=3.8pt]secbox.north west);
+  \end{tikzpicture}%
+  \vspace{1pt}\par
+}
+
+% --- Styled Callout Card ---
+\newcommand{\calloutcard}[5]{%
+  \noindent
+  \begin{tikzpicture}
+    \node[
+      rectangle,
+      rounded corners=5pt,
+      fill=#2,
+      draw=#1!65,
+      line width=1.0pt,
+      inner xsep=9.5pt,
+      inner ysep=5.5pt,
+      text width=\dimexpr\textwidth-21pt\relax,
+      align=left
+    ] (card) {%
+      {\sffamily\bfseries\scriptsize\tikz[baseline=(b.base)]{\node[rounded corners=2.5pt,fill=#1,text=white,inner xsep=5pt,inner ysep=1.5pt](b){#3};}}%
+      \hspace{5pt}{\sffamily\bfseries\small\color{navybg}#4}\\[2.0pt]
+      {\footnotesize\color{slateink}#5}%
+    };
+    \fill[#1, rounded corners=1.5pt] (card.south west) rectangle ([xshift=4pt]card.north west);
+  \end{tikzpicture}\par
+}
+
+% --- Dark Framed Figure Card ---
+\newcommand{\prettyfigure}[4]{%
+  \noindent
+  \begin{tikzpicture}
+    \node[
+      rectangle,
+      rounded corners=6pt,
+      fill=navybg,
+      draw=cyanaccent!80,
+      line width=1.0pt,
+      inner sep=5.0pt,
+      text width=\dimexpr\textwidth-13.5pt\relax,
+      align=center
+    ] (figcard) {%
+      \includegraphics[width=0.985\textwidth,height=#1,keepaspectratio]{#2}\\[2.0pt]
+      \begin{minipage}{0.96\textwidth}
+        \raggedright
+        {\sffamily\bfseries\scriptsize\color{goldaccent}#3}\hspace{3pt}%
+        {\sffamily\scriptsize\color{white!92!black}#4}%
+      \end{minipage}
+    };
+  \end{tikzpicture}\par
+}
+
+% --- Header & Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[L]{%
+  \tikz[baseline=(h.base)]{
+    \node[rounded corners=2pt, fill=navybg, text=goldaccent, inner xsep=5pt, inner ysep=1.8pt, font=\sffamily\bfseries\scriptsize] (h) {METHODS \& PROVENANCE};
+  }\hspace{4pt}{\sffamily\scriptsize\color{mutedink}Evaluating Michael Levin's ``Latent Space'' Claims $\cdot$ Sorting, CE 2.0, Thompson \& Bioelectricity}
+}
+\fancyhead[R]{{\sffamily\bfseries\scriptsize\color{sky}Joel Dietz $\cdot$ Project Delphi}}
+\fancyfoot[L]{{\sffamily\scriptsize\color{mutedink}\texttt{github.com/fractastical/morpholib} $\cdot$ \texttt{docs/LEVIN\_LATENT\_SPACE\_METHODS.md}}}
+\fancyfoot[R]{%
+  \tikz[baseline=(p.base)]{
+    \node[rounded corners=2pt, fill=sky, text=white, inner xsep=6pt, inner ysep=1.8pt, font=\sffamily\bfseries\scriptsize] (p) {Page \thepage\ of 4};
+  }
+}
+
+\begin{document}
+
+% ============================================================================
+% PAGE 1: HERO BANNER + AI/LLM AGENT ARCHITECTURE + MATHEMATICAL MODELS
+% ============================================================================
+\noindent
+\begin{tikzpicture}
+  \node[
+    rectangle,
+    rounded corners=8pt,
+    fill=navybg,
+    draw=cyanaccent,
+    line width=1.4pt,
+    inner xsep=14pt,
+    inner ysep=9.5pt,
+    text width=\dimexpr\textwidth-30.8pt\relax
+  ] (hero) {%
+    {\sffamily\bfseries\scriptsize\color{goldaccent}PROJECT DELPHI $\cdot$ METHODS, MODELS, KNOWLEDGE-GRAPH QUERIES \& CODE PROVENANCE}\\[3pt]
+    {\sffamily\bfseries\fontsize{15.5}{18.5}\selectfont\color{white}How We Tested Michael Levin's ``Latent Space'' Claims: 4-Language Ports, Causal Emergence 2.0, 10,303 Fishes \& Lean 4 Proofs}\\[4pt]
+    {\sffamily\footnotesize\color{cyanaccent!90!white}Complete methodological report covering cross-provider AI referee audits (Anthropic, Google, OpenAI), 24 mathematical \& biophysical models, line-pinned upstream code ablations (\texttt{Zhangtaining/cell\_research@1fd2bd59}), and signed Nanopublications.}\\[4pt]
+    \tikz[baseline=(a.base)]{\node[rounded corners=2.5pt,fill=sky,text=white,inner xsep=5pt,inner ysep=1.5pt,font=\sffamily\bfseries\scriptsize](a){AUTHOR: JOEL DIETZ};}\hspace{4pt}%
+    \tikz[baseline=(b.base)]{\node[rounded corners=2.5pt,fill=emerald,text=white,inner xsep=5pt,inner ysep=1.5pt,font=\sffamily\bfseries\scriptsize](b){PYTHON + C++20 + NODE.JS + LEAN 4};}\hspace{4pt}%
+    \tikz[baseline=(c.base)]{\node[rounded corners=2.5pt,fill=purple,text=white,inner xsep=5pt,inner ysep=1.5pt,font=\sffamily\bfseries\scriptsize](c){HOEL CE 2.0 + 10,303 FISHES};}\hspace{4pt}%
+    \tikz[baseline=(d.base)]{\node[rounded corners=2.5pt,fill=amber,text=white,inner xsep=5pt,inner ysep=1.5pt,font=\sffamily\bfseries\scriptsize](d){3-COMPANY AI REFEREE AUDIT};}%
+  };
+\end{tikzpicture}
+
+\calloutcard{amber}{amberlight}{FIVE QUESTIONS ANSWERED}{What This Methods \& Provenance Guide Covers at a Glance}{%
+\textbf{1.\ What AI \& Human Reviewers Were Used?} Three competing AI families (\texttt{gemini-4-argon}, \texttt{claude-fable-5-1} / \texttt{sonnet-5-5}, and OpenAI \texttt{gpt-5.6-sol}) plus human PI \& domain critiques. \textbf{2.\ What Mathematical Models Were Fitted?} 24 models across sorting Markov chains, Hoel's \emph{Causal Emergence 2.0}, D'Arcy Thompson 8-knob coordinate fields, and bioelectric/biomechanical PDEs. \textbf{3.\ How Did We Audit Upstream Code?} Line-by-line traceability to \texttt{Zhangtaining/cell\_research@1fd2bd59} (\texttt{[U1]--\texttt{[U6]}}). \textbf{4.\ How Did the Knowledge Graph Drive Discovery?} Querying \texttt{pk:evidenceAgainst} triples and signing 200+ Nanopubs. \textbf{5.\ How Can Readers Reproduce It?} 12 deterministic CLI commands.
+}
+
+\prettysection{1}{sky}{AI / LLM Agent Models, Blinded 3-Company Referee Architecture \& Human Review}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.04}
+\scriptsize
+\begin{tabular}{@{}p{0.21\textwidth}p{0.22\textwidth}p{0.52\textwidth}@{}}
+\toprule
+\rowcolor{navybg}
+\textcolor{white}{\textbf{Agent / Human Role}} & \textcolor{white}{\textbf{Model / Affiliation}} & \textcolor{white}{\textbf{Exact Contributions \& Artifacts Across Claims 1--7}} \\
+\midrule
+\rowcolor{softgray}
+\textbf{1.\ Multi-Language Port Builder, CE 2.0 Architect \& Discovery Synthesis} & \pillbadge{sky}{gemini-4-argon}\newline Google DeepMind (\texttt{medium}) & $\bullet$ Ported \texttt{Zhangtaining/cell\_research@1fd2bd59} to \textbf{Python 3}, \textbf{C++20}, \textbf{Node.js}, and \textbf{Lean 4} (\texttt{0} cell mismatches across languages).\newline
+$\bullet$ Built the 3-ablation Platonic Space audit (\texttt{audit\_platonic\_space\_claims.py}) and exact $S_3 \dots S_6$ Markov-chain \textbf{Causal Emergence 2.0} analyzer (\texttt{quantify\_emergence\_ce2.py}).\newline
+$\bullet$ Executed blinded 2nd-assessor MorphoEval pass ($\rho = 0.891$ across 10 scripts; \texttt{90.8/100} on Thompson) and the 10,303-species Thompson vs.\ competition synthesis. \\
+\textbf{2.\ Primary Referee, Pass 3 Biophysical Builder \& Blind-Test Architect} & \pillbadge{purple}{claude-fable-5-1}\newline Anthropic (\texttt{thinking-high}) \& \texttt{claude-sonnet-5-5} & $\bullet$ Authored the \texttt{pk:evidenceAgainst} remediation triples in \texttt{2026-10-17-thompson-audit.yaml} (L330--337) that sparked the 600-point outline breakthrough, and built the 5,180-species \texttt{FishShapes v1} blind preregistration/scoring pipeline.\newline
+$\bullet$ Built \& audited Pass 3 extensions for \textbf{Planarian Electrodiffusion} (\texttt{Slot 081/082}: 2D Voronoi Scharfetter--Gummel), \textbf{Picasso Tadpoles} (\texttt{Slot 085}: 3D Maxwell cartilage + MMP-2/9 zymography), and \textbf{Xenobots} (\texttt{Slot 083}: 8$\times$8$\times$7 3D lattice + Stokeslet squirmer). \\
+\rowcolor{softgray}
+\textbf{3.\ Independent 3rd-Company Bioelectric Referee} & \pillbadge{crimson}{gpt-5.6-sol}\newline OpenAI (\texttt{medium}) & $\bullet$ Scored \texttt{2021-Cervera--Levin--Mafe.py} blind in Pass 1 (\texttt{44.9/100}) \& Pass 2 (\texttt{55.6/100}, \texttt{2026-10-17-cervera-audit-v2.yaml}): caught an unused \texttt{f3} loop variable, a hard-coded \texttt{0.58} pharynx threshold, a bisection clipping bug in \texttt{f2\_for\_shift}, and wrong PMID \texttt{34418508 $\to$ 34411690}, motivating \texttt{models/planform\_bioelectric.py} (63 PlanformDB series). \\
+\textbf{4.\ Principal Investigator \& External Critiques} & \pillbadge{emerald}{Joel Dietz} (Project Delphi)\newline \pillbadge{amber}{Prof.\ P.\ C.\ Wainwright} \& \pillbadge{amber}{Nathan Sweet} & $\bullet$ \textbf{Joel Dietz (PI):} Synthesized the Levin-lab knowledge graph; exposed the 17-dot skull seesaw trap; required the 4p Box-vs.-Warping deconfounding test; and initiated the 3-ablation + Hoel CE 2.0 audit of \emph{Ingressing Minds} vs.\ CS blog critiques.\newline
+$\bullet$ \textbf{Prof.\ P.\ C.\ Wainwright (UC Davis)} \& \textbf{Nathan Sweet (\emph{Sweet Rationalism}):} Prompted the 600-pt Curve-TPS/EFD benchmark and the $C=2$ vs.\ $C=10$ duplicate-key stability tests. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\prettysection{2}{emerald}{Mathematical, Algorithmic \& Biophysical Models Fitted Across Claims 1--7}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.04}
+\scriptsize
+\begin{tabular}{@{}p{0.25\textwidth}p{0.35\textwidth}p{0.35\textwidth}@{}}
+\toprule
+\rowcolor{navybg}
+\textcolor{white}{\textbf{Claim \& Model Family}} & \textcolor{white}{\textbf{Governing Equation / Algorithmic Rule}} & \textcolor{white}{\textbf{What It Tests / Key Quantitative Result}} \\
+\midrule
+\rowcolor{softgray}
+\textbf{Claim 1: Insertion Prefix-Reset Ablation (\texttt{[U2]})} & \texttt{if status == FREEZE: prev = -1} (\texttt{InsertionSortCell.py} L74--76) vs.\ strict prefix fold & Ablating L74--76 spikes final error $\mathbf{4.5\times}$ ($\mathbf{4.90 \to 21.95}$ at $n=60, f=3$); proved in Lean 4 Thm 2. \\
+\textbf{Claim 2: Coxeter Lyapunov $I(v)$ vs.\ Neighbor Error $E(v)$} & $I(v) = \#\{(i<j): v_i > v_j\}$ ($\Delta I = -1$ every Bubble swap) vs.\ $E(v) = \#\{i: v_i > v_{i+1}\}$ & $0$ cells cross barrier (Lean Thm 1); $I(v)$ has \textbf{0 uphill steps} ($0/192$), while $E(v)$ ticks up $47$ times ($\mathrm{DG}=0.764$). \\
+\rowcolor{softgray}
+\textbf{Claim 2: Hoel Causal Emergence 1.0 \& 2.0 on $S_3 \dots S_6$} & $\mathrm{CP}(\pi) = \mathrm{det}(\pi) - \mathrm{deg}(\pi)$ (Hoel 2026 \emph{Patterns}) \& $\Delta\mathrm{EI} = \Delta I_{\mathrm{eff}} + \Delta I_{\mathrm{size}}$ (Hoel 2013 \emph{PNAS}) & On $S_6$ ($N=720$): $I(v)$ has $\mathrm{det}=1.000, \mathbf{\Delta\mathrm{CP}=+0.1191>0}$; $E(v)$ has $\mathrm{det}=0.721, \mathbf{\Delta\mathrm{CP}=-0.2525<0}$. \\
+\textbf{Claim 3: Kinematic Phase Separation \& $C$-Sweep} & $O(1)$ Selection pointer advection vs.\ $O(n^2)$ Bubble diffusion; multiplicity $C = n/K \in \{1 \dots 40\}$ & Unique keys (\texttt{0} ties, Fig.\ 8A) peak at $\mathbf{0.624\text{--}0.640}$; duplicate keys at $\mathbf{C=2}$ give \textbf{Anti-Clustering ($\mathbf{0.477 < 0.50}$, \texttt{SB|SB})}! \\
+\rowcolor{softgray}
+\textbf{Claim 4: D'Arcy Thompson 8p Coordinate Laws (16 Models)} & Oblique Shear (5p), Coaxial Circles (8p), Bilinear Fan (8p), Radial Flare (8p) vs.\ 4p Box \& 600-pt TPS & Beats 4p Box by $\mathbf{+13\%\text{ to }+48\%}$ on homologous fin LMs ($100\%$ $\det D\Phi > 0$); aligns with 150 Myr evolution at $\mathbf{93.5\%\text{--}98.9\%}$. \\
+\textbf{Claim 5: Planarian Bistable $V_{\mathrm{mem}}$ \& Voronoi 5-HT PDE} & $J_{ij} = -D G_{\mathrm{gj}}(\Delta V_{ij})\frac{L_{ij}}{d_{ij}}(c_j B(u_{ij}) - c_i B(-u_{ij}))$, $c_{\mathrm{post}}/c_{\mathrm{ant}} = \exp(-\Delta V / V_T) = 4.7002$ & $G_{\mathrm{gj}}$ cancels at zero flux: transient 8-octanol locks permanent cryptic \texttt{2H0T} memory after washout (\texttt{Slot 081/082}). \\
+\rowcolor{softgray}
+\textbf{Claim 6: Picasso Tadpole 3D Cartilage \& VFE Homeostat} & $\dot{\mathbf{x}}_i = \eta_i(Z)[\mathbf{F}_i^{\mathrm{attr}} + \mathbf{F}_i^{\mathrm{cart}}]$, $\dot{E} \le 0$ (\texttt{Slot 085}) \& Active Inference $\dot{F} \le 0$ (\texttt{Slot 084}) & Closed-loop descent restores scrambled NF 45$\to$65 face ($\mathrm{RMSE}=0.00$); GM6001 MMP block ($\eta_{\mathrm{MMP}}\to 0.04$) arrests recovery. \\
+\textbf{Claim 7: Xenobot 3D Voxel Lattice \& Stokeslet Squirmer} & 8$\times$8$\times$7 mass-spring lattice (456 nodes) + Cortez (2001) regularized-Stokeslet ciliary flow (\texttt{Slot 083}) & C-shaped ``Pac-Man'' concavity ($\theta \approx 105^\circ$) is a hydrodynamic capture optimum ($\mathbf{3\text{--}4}$ daughter generations vs.\ $1$ for sphere). \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+% ============================================================================
+% PAGE 2: UPSTREAM CODE TRACEABILITY +SORTING / CE 2.0 VISUAL SYNTHESIS
+% ============================================================================
+\prettysection{3}{purple}{Line-by-Line Upstream Code Traceability (\texttt{Zhangtaining/cell\_research@1fd2bd59})}
+
+\prettyfigure{1.62in}{../docs/media/zhang_multilang_port_verification.png}{FOUR-LANGUAGE BIT-EXACT REPLICATION (\texttt{sorting-morphogenesis/verify\_multilang\_ports.py}):}{Porting rules \texttt{[U1]--\texttt{[U6]}} to Python 3, C++20 (\texttt{798 ms}), Node.js (\texttt{3,893 ms}), and Lean 4 (\texttt{0 sorry}) produces bit-for-bit identical space-time kymographs ($\Delta = 0$ cells across all 42 cells and time steps) and replicates all 14/14 published benchmarks of Zhang, Goldstein \& Levin (2025).}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.08}
+\scriptsize
+\begin{tabular}{@{}p{0.05\textwidth}p{0.22\textwidth}p{0.25\textwidth}p{0.23\textwidth}p{0.19\textwidth}@{}}
+\toprule
+\rowcolor{navybg}
+\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Paper Figure \& Phenomenon}} & \textcolor{white}{\textbf{Upstream File \& Line Locus}} & \textcolor{white}{\textbf{Exact Upstream Code Logic}} & \textcolor{white}{\textbf{Ported \& Lean-Verified In}} \\
+\midrule
+\rowcolor{softgray}
+\textbf{[U1]} & Bubble local swap \& barrier pinning (Figs.\ 4A--B, 5C) & \texttt{BubbleSortCell.py}\newline (\texttt{should\_move} L38--52, \texttt{move} L54--74) & Inspects $p-1$ or $p+1$ ($p=0.5$); swaps if out of order \& $\ne \mathtt{FREEZE}$. $0$ cells cross barrier. & \texttt{cell\_should\_move()},\newline Lean Thm 1 \\
+\textbf{[U2]} & \textbf{Insertion \texttt{FREEZE} prefix-reset handler} (Figs.\ 5B--C, \textbf{Claim 1}) & \texttt{InsertionSortCell.py}\newline (\texttt{is\_enable\_to\_move} \textbf{L68--82}, \textbf{L74--76}) & Executes \textbf{\texttt{if status == FREEZE: prev = -1}} to reset prefix check. Ablation spikes error $4.5\times$. & \texttt{\_left\_sorted()},\newline Lean Thm 2 \\
+\rowcolor{softgray}
+\textbf{[U3]} & Selection \texttt{ideal\_position} pointer \& reset (Figs.\ 4A--B, 5C) & \texttt{SelectionSortCell.py} (L41--88) \& \texttt{MultiThreadCell.py} (L104--118) & Scans \texttt{target} $0 \to n-1$; swaps non-locally. Resetting \texttt{target=0} on swap gives $11.05\times$ swaps. & \texttt{simulate\_cell\_view()},\newline Lean Thm 4 \\
+\textbf{[U4]} & Selection passive (\texttt{movable}) freeze bytecode (Fig.\ 5B) & \texttt{\_\_pycache\_\_/SelectionSortCell.\allowbreak cpython-310.pyc} & Increments \texttt{target} when pointing at a passive \texttt{FREEZE} cell unless \texttt{t == occ.target}. & \texttt{\_propose(mode=\allowbreak "pyc310")} \\
+\rowcolor{softgray}
+\textbf{[U5]} & Delayed Gratification run segmentation (Figs.\ 6D, 7A--C, \textbf{Claim 2}) & \texttt{analysis/delay\_gratification\_\allowbreak analysis\_for\_not\_move.py} (L24--89) & Deduplicates $E(v_t)$, groups same-sign $\Delta E_t$ into setback ($y>0$) \& recovery ($x>0$): $\langle(x-y)/y\rangle$. & \texttt{delayed\_gratification()},\newline Lean Thms 3 \& 6 \\
+\textbf{[U6]} & Chimeric algotype aggregation (Figs.\ 8A, 8D--E, \textbf{Claim 3}) & \texttt{analysis/cell\_type\_\allowbreak aggregation\_analysis.py} (L518--538) & $A(t) = \frac{1}{n}\sum_{i=0}^{n-2}\mathbf{1}[\mathrm{algo}_i = \mathrm{algo}_{i+1}]$. & \texttt{aggregation\_value()},\newline Lean Thm 5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\prettyfigure{1.65in}{../docs/media/zhang_levin_platonic_claims_audit.png}{THREE-ABLATION AUDIT OF ``INGRESSING MINDS'' (\texttt{sorting-morphogenesis/audit\_platonic\_space\_claims.py}):}{(A) Ablating \texttt{if FREEZE: prev = -1} in \texttt{InsertionSortCell.py} spikes error $4.5\times$ ($4.90 \to 21.95$). (B) Every Bubble swap descends by $\Delta I = -1$ ($0$ uphill steps on $I(v)$), while coarse-grained $E(v)$ ticks up 47 times. (C) Unique keys (\texttt{0} duplicates, blue) still cluster to $0.624$ via kinematic speed waves; ablating `$<$' to `$\le$' on duplicate ties (red) collapses permanent clustering to $0.497\text{--}0.514$.}
+
+\vspace{2pt}
+\prettyfigure{1.55in}{../docs/media/zhang_hoel_quantifying_emergence_ce2.png}{ERIK HOEL'S CAUSAL EMERGENCE 1.0 \& 2.0 ON SORTING MORPHOGENESIS (\texttt{quantify\_emergence\_ce2.py}):}{(A--B) On $S_6$ ($N=720$), coarse-graining onto $I(v)$ yields $100\%$ determinism and positive Causal Emergence 2.0 ($\Delta\mathrm{CP} = +0.1191 > 0$), whereas $E(v)$ yields negative emergence ($\Delta\mathrm{CP} = -0.2525 < 0$). (C) Duplicate multiplicity sweep $C \in \{1 \dots 40\}$: at $C=2$, Selection left-packing (\texttt{SB|SB|SB}) produces \textbf{Anti-Clustering ($0.477 < 0.50$)}, refuting textbook Bubble-sort stability!}
+
+\newpage
+% ============================================================================
+% PAGE 3: KNOWLEDGE GRAPH, NANOPUBS, LEAN 4 PROOFS & BIOELECTRIC MODELS
+% ============================================================================
+\prettysection{4}{amber}{Machine-Checked Lean 4 Theorems (\texttt{0 sorry}) \& Signed Nanopub Provenance}
+
+\calloutcard{purple}{purplelight}{HOW THE KNOWLEDGE GRAPH DROVE REMEDIATION}{From \texttt{pk:evidenceAgainst} Triples to New Discoveries}{%
+Every simulation is serialized into governed Project Delphi RDF Nanopublications (\texttt{pk:Claim} + \texttt{pk:LLMClaimAssessment}) and signed with RSA-2048 keys (\texttt{morphoeval/sign\_morphoeval.py}). When independent referees (\texttt{gpt-5.6-sol} on Cervera 2021; \texttt{claude-fable-5-1} on Thompson 1917 and Slots 081--085) scored Pass 1/Pass 2 scripts, their line-pinned \texttt{pk:evidenceAgainst} triples directly triggered: (1) the \textbf{600-point direct outline solver} that uncovered the $9/17$ skull-dot seesaw trap in D'Arcy Thompson's fishes, (2) the \textbf{63-series \texttt{PlanformDB 2.5.0} bioelectric extractor} (\texttt{planform\_bioelectric.py}), and (3) the \textbf{Pass 3 2D/3D PDE \& Stokes fluid upgrades} across Slots 081--085.
+}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.08}
+\scriptsize
+\begin{tabular}{@{}p{0.23\textwidth}p{0.39\textwidth}p{0.33\textwidth}@{}}
+\toprule
+\rowcolor{navybg}
+\textcolor{white}{\textbf{Claim / Module}} & \textcolor{white}{\textbf{Lean 4 File \& Machine-Checked Theorems (\texttt{0 sorry})}} & \textcolor{white}{\textbf{MorphoEval Referee Scores \& Signed Nanopubs}} \\
+\midrule
+\rowcolor{softgray}
+\textbf{Claims 1--3: Sorting Morphogenesis \& Hoel CE 2.0} & \texttt{Loop\_zhang\_sorting\_morphogenesis.lean} (6 thms) \& \texttt{Loop\_causal\_emergence.lean} (5 thms): \texttt{bubble\_adjacent\_swap\_preserves\_left\_partition}, \texttt{insertion\_freeze\_reset\_unblocks...}, \texttt{lyapunov\_descent\_vs\_monotonicity...}, \texttt{hoel\_ce2\_sorting\_inversion\_emergence...} & $\bullet$ MorphoEval v2: \textbf{94.1 / 100}\newline
+$\bullet$ Verified across Python 3, C++20, Node.js, and Lean 4 (\texttt{0 sorryAx}). \\
+\textbf{Claim 4: D'Arcy Thompson 1917 \& 10,303 Fishes} & \texttt{morphoeval/lean/MathOfBiology.lean} (\S5, L536--560): \texttt{tps\_kernel\_zero\_at\_origin}, \texttt{thompson\_unit\_shear\_area\_preserving} & $\bullet$ Primary (\texttt{claude-fable-5-1}): \texttt{76.6} $\cdot$ Blinded 2nd (\texttt{gemini-4-argon}): \textbf{\texttt{90.8}} (Panel \textbf{83.7/100})\newline
+$\bullet$ \textbf{80 Production Nanopubs} (incl.\ blind preregistration \texttt{RAilN4nb...} \& outcome \texttt{RAJancwG...}). \\
+\rowcolor{softgray}
+\textbf{Claim 5: Planarian \texttt{2H0T} Bioelectric Memory (\texttt{Slots 081, 082} \& \texttt{Cervera})} & \texttt{Loop\_081\_planarian\_hk\_atpase\_anterior.lean} (6 thms: bistable $V_{\mathrm{mem}}$, \texttt{mesh\_gj\_flux\_conservation}, \texttt{slit\_midline\_exclusion...}), \texttt{Loop\_082\_bioelectric\_\allowbreak morphogen\_coupling.lean} (5 thms: Boltzmann ratio, cryptic \texttt{2H0T}), \texttt{MathOfBiology.lean} (\S7--8) & $\bullet$ \texttt{Slot 081} (Beane 2011): Pass 2 \texttt{93.5} $\to$ Pass 3 \textbf{\texttt{87.7/100}} (30 signed nanopubs)\newline
+$\bullet$ \texttt{Slot 082} (Pietak \& Levin 2017): Pass 2 \textbf{\texttt{93.8/100}} + Pass 3 405-cell 2D Voronoi Scharfetter--Gummel\newline
+$\bullet$ \texttt{Cervera 2021}: OpenAI \texttt{gpt-5.6-sol} (\texttt{44.9} $\to$ \texttt{55.6}). \\
+\textbf{Claim 6: Picasso Tadpoles \& Limb VFE (\texttt{Slots 084, 085})} & \texttt{Loop\_084\_bioelectric\_target\_morphology\_memory.lean} (3 thms: VFE Lyapunov $\dot{F}\le 0$, denervation arrest) \& \texttt{Loop\_085\_xenopus\_craniofacial\_remap.lean} (5 thms: Procrustes $\dot{V}\le 0$, open-loop divergence, 3D Maxwell rod relaxation) & $\bullet$ \texttt{Slot 084} (Pezzulo \& Levin 2015): Pass 1 \texttt{59.6} $\to$ Pass 2 \textbf{\texttt{91.6/100}} (20 signed nanopubs)\newline
+$\bullet$ \texttt{Slot 085} (Vandenberg 2012): Pass 2 \texttt{92.0} $\to$ Pass 3 \textbf{\texttt{89.0/100}} (30 signed nanopubs). \\
+\rowcolor{softgray}
+\textbf{Claim 7: Xenobots \& Kinematic Replication (\texttt{Slot 083})} & \texttt{Loop\_083\_xenobot\_evolutionary\_biobots.lean} (5 thms: AFPO robustness, C-mouth compaction, \texttt{stokeslet\_force\_free\_cancellation...}, \texttt{lattice\_drag\_dissipation\_nonneg...}) & $\bullet$ \texttt{Slot 083} (Kriegman, Blackiston, Levin \& Bongard 2020/2021): Pass 1 \texttt{60.2} $\to$ Pass 2 \texttt{91.5} $\to$ Pass 3 \textbf{\texttt{82.7/100}} (30 signed nanopubs). \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\prettyfigure{1.65in}{../docs/media/bioelectric_morphogen_coupling_voronoi_ca_ip3.png}{CLAIM 5 — PASS 3 2D VORONOI SCHARFETTER--GUMMEL ELECTRODIFFUSION (\texttt{2017-pietak-bioelectric-morphogen-coupling.py}):}{405-cell / 1,114-edge BETSE-style Voronoi tissue network on the segmented \emph{Schmidtea mediterranea} silhouette coupling 5-HT ($z=+1$), $\mathrm{IP}_3$ ($z=-3$), and $\mathrm{Ca}^{2+}$ ($z=+2$) electrodiffusion to an Euler--Maruyama ensemble ($n=256$ blastemas) of noisy $\beta$-catenin/ERK switches ($p(\mathtt{2H0T})$ vs.\ posterior $V_{\mathrm{mem}}$).}
+
+\vspace{2pt}
+\prettyfigure{1.65in}{../docs/media/xenobot_evolutionary_biobots_lattice3d_stokes.png}{CLAIM 7 — PASS 3 3D VOXEL MASS-SPRING LATTICE \& STOKESLET SQUIRMER CAPTURE (\texttt{2020-kriegman-xenobot-evolutionary-biobots.py}):}{Left: 8$\times$8$\times$7 3D voxel lattice (456 nodes, 3,085 springs) with uniform Coulomb ground contact and explicit per-node Stokes drag. Right: 2D force- and torque-free regularized-Stokeslet squirmer advecting finite-size stem cells into the $\theta = 105^\circ$ C-shaped pocket (`3--4` daughter generations vs.\ `1` for a sphere).}
+
+\newpage
+% ============================================================================
+% PAGE 4: CRYPTOGRAPHIC DATA PROVENANCE + 12-COMMAND REPRODUCIBILITY MAP
+% ============================================================================
+\prettysection{5}{crimson}{Cryptographic Data Provenance Across All 7 Claims (SHA-256 Locked)}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.12}
+\scriptsize
+\begin{tabular}{@{}p{0.23\textwidth}p{0.24\textwidth}p{0.24\textwidth}p{0.24\textwidth}@{}}
+\toprule
+\rowcolor{navybg}
+\textcolor{white}{\textbf{Dataset / Source Asset}} & \textcolor{white}{\textbf{Scale \& Biological System}} & \textcolor{white}{\textbf{Primary Citation \& License}} & \textcolor{white}{\textbf{Local Path \& Cryptographic Pin}} \\
+\midrule
+\rowcolor{softgray}
+\textbf{1.\ Cell-Research Upstream \& Claim Catalog} & $n=100$ sorting benchmarks, 6 rules \texttt{[U1]--\texttt{[U6]}}, 3 ablations & Zhang, Goldstein \& Levin (2025) \emph{Adaptive Behavior} 33:25 & \texttt{Zhangtaining/cell\_research}\newline Commit: \texttt{1fd2bd5921c1f6b4...} \\
+\textbf{2.\ Causal Emergence Corpus (2013--2026)} & 10 papers, $S_3 \dots S_6$ TPMs ($N=6\dots 720$), 84 Konect nets & Hoel et al.\ (2013 \emph{PNAS}); Hoel \& Levin (2020); Hoel (2026 \emph{Patterns}) & \texttt{datasets/causal\_emergence/}\newline SHA-256: \texttt{bd724684971266a5...} \\
+\rowcolor{softgray}
+\textbf{3.\ Three Teleost Morphometric Datasets} & \textbf{791} (17 LMs), \textbf{6,614} (11 LMs), \& \textbf{10,303 spp.} (440 families; 69,682 pairs) & Claverie \& Wainwright (2014); Rabosky (2018); Froese \& Pauly (2021) & \texttt{datasets/thompson/trimmed\_...}\newline SHA-256: \texttt{ab5315f3be273285...} \\
+\textbf{4.\ FishShapes v1 Blind Test Dataset} & \textbf{16,523 Smithsonian specimens}, \textbf{5,180 blind matches} ($n=1{,}122 < 50\text{ Myr}$) & Price et al.\ (2022) \emph{Ecology} 103:e3829 (Dryad / Zenodo \texttt{6642650}, CC0) & Locked \emph{before} download (\texttt{dac08493})\newline MD5: \texttt{122b495274d0167c...} \\
+\rowcolor{softgray}
+\textbf{5.\ PlanformDB 2.5.0 \& Bioelectric Series} & \textbf{63 bioelectric experiment series} (\emph{S.\ mediterranea} \texttt{1H1T}/\texttt{2H0T}/\texttt{0H2T}) & Oviedo (2010); Beane (2011); Lobo, Malone \& Levin (2013); Pietak (2017) & \texttt{datasets/planform/planform\_}\newline \texttt{bioelectric\_series\_v1.json} \\
+\textbf{6.\ Picasso Tadpole, Limb VFE \& Xenobot Datasets} & \emph{X.\ laevis} NF 45$\to$65 face LMs, \emph{A.\ mexicanum} limb, \emph{Xenopus} biobot & Vandenberg, Adams \& Levin (2012); Pezzulo (2015); Kriegman (2020, 2021) & \texttt{datasets/xenopus\_craniofacial\_\allowbreak remap/}, \texttt{xenobot\_evolutionary\_\allowbreak biobots/} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\prettyfigure{1.65in}{../docs/media/xenopus_craniofacial_remap_cartilage_mmp.png}{CLAIM 6 — PASS 3 3D MAXWELL VISCOELASTIC CARTILAGE RODS \& MMP-2/MMP-9 ZYMOGRAPHY (\texttt{2019-bischof-xenopus-craniofacial-remap.py}):}{Couples the 5 Procrustes craniofacial landmarks in 3D to Meckel's, ceratohyal, and palatoquadrate Maxwell viscoelastic cartilage rods ($\dot{E} \le 0$) and explicit-Euler MMP-2/MMP-9 gelatinase reaction--diffusion fields along the optic nerves and jaw insertions (reproducing both Picasso face normalization and GM6001 arrest).}
+
+\prettysection{6}{emerald}{End-to-End Reproducibility Command Map (12 Deterministic Commands)}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.14}
+\scriptsize
+\begin{tabular}{@{}p{0.04\textwidth}p{0.49\textwidth}p{0.42\textwidth}@{}}
+\toprule
+\rowcolor{navybg}
+\textcolor{white}{\textbf{\#}} & \textcolor{white}{\textbf{Command (Run from Repository Root)}} & \textcolor{white}{\textbf{Claims \& Primary Artifacts Verified}} \\
+\midrule
+\rowcolor{softgray}
+\textbf{1} & \texttt{python3 sorting-morphogenesis/verify\_multilang\_ports.py} & \textbf{Claims 1--3:} Python 3 + C++20 + Node.js + Lean 4 bit-exact parity (\texttt{0} mismatches) \\
+\textbf{2} & \texttt{python3 sorting-morphogenesis/audit\_platonic\_space\_claims.py} & \textbf{Claims 1--3:} 3-ablation audit of \emph{Ingressing Minds} (\texttt{zhang\_levin\_platonic\_claims\_audit.png}) \\
+\rowcolor{softgray}
+\textbf{3} & \texttt{python3 sorting-morphogenesis/quantify\_emergence\_ce2.py} & \textbf{Claim 2 \& 3:} Hoel CE 1.0/2.0 on $S_3\dots S_6$ ($\Delta\mathrm{CP}=+0.119$ vs.\ $-0.253$) \& $C=2$ sweep \\
+\textbf{4} & \texttt{python3 sorting-morphogenesis/validate\_kymograph\_and\_paper.py --n 100 --reps 15} & \textbf{Claims 1--3:} Space-time kymographs \& 14/14 paper benchmarks ($n=100$) \\
+\rowcolor{softgray}
+\textbf{5} & \texttt{lean morphoeval/lean/loops/Loop\_zhang\_sorting\_morphogenesis.lean} & \textbf{Claims 1--3:} Kernel-checks all 6 sorting \& CE 2.0 theorems (\texttt{0 sorry}) \\
+\textbf{6} & \texttt{python3 thompson/1917-thompson-silhouette-area-paradox.py \&\& python3 thompson/run\_box\_vs\_warping\_audit.py} & \textbf{Claim 4:} 17-LM head seesaw paradox \& 4p Box-Stretch vs.\ homologous Thompson warps \\
+\rowcolor{softgray}
+\textbf{7} & \texttt{python3 thompson/run\_three\_dataset\_validation.py} & \textbf{Claim 4:} 3-dataset validation ($791 \to 6{,}614 \to 10{,}303$ spp.; $|\cos\theta|=0.935\text{--}0.989$) \\
+\textbf{8} & \texttt{python3 thompson/score\_blind\_predictions.py} & \textbf{Claim 4:} Hash-verified blind test on 5,180 unseen \texttt{FishShapes v1} species ($p=10^{-103}$) \\
+\rowcolor{softgray}
+\textbf{9} & \texttt{python3 models/2011-beane-planarian-hk-atpase-anterior.py --self-test \&\& python3 models/2017-pietak-bioelectric-morphogen-coupling.py --self-test} & \textbf{Claim 5:} Planarian 2D mesh bistable $V_{\mathrm{mem}}$ \& 405-cell Voronoi 5-HT electrodiffusion \\
+\textbf{10} & \texttt{python3 models/2019-bischof-xenopus-craniofacial-remap.py --self-test \&\& python3 models/2015-pezzulo-bioelectric-target-morphology-memory.py --self-test} & \textbf{Claim 6:} Picasso tadpole 3D Maxwell cartilage + MMP zymography \& limb VFE homeostat \\
+\rowcolor{softgray}
+\textbf{11} & \texttt{python3 models/2020-kriegman-xenobot-evolutionary-biobots.py --self-test} & \textbf{Claim 7:} Xenobot 8$\times$8$\times$7 3D voxel lattice \& regularized-Stokeslet squirmer capture \\
+\textbf{12} & \texttt{lean morphoeval/lean/MathOfBiology.lean \&\& lean morphoeval/lean/loops/Loop\_082\_bioelectric\_morphogen\_coupling.lean} & \textbf{All Claims:} Kernel-checks core \& bioelectric Lean 4 theorems (\texttt{0 sorry}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
