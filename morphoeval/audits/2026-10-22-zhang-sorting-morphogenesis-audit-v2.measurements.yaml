@@ -1,46 +1,84 @@
+audit: 2026-10-22-zhang-sorting-morphogenesis-audit-v2
 measurements:
   zhang-sorting-morphogenesis:
-    - name: "Fig 4A Bubble Sort Mean Swaps (Cell-View vs Published)"
-      value: 2461.4
-      reference_value: 2448.8
-      unit: "swaps"
-    - name: "Fig 4A Insertion Sort Mean Swaps (Cell-View vs Published)"
-      value: 2461.4
-      reference_value: 2482.8
-      unit: "swaps"
-    - name: "Fig 4A Selection Eager Swap Ratio (Cell-View / Traditional)"
-      value: 11.09
-      reference_value: 11.06
-      unit: "ratio"
-    - name: "Fig 4B Bubble Total Steps Speedup (Traditional / Cell-View)"
-      value: 1.56
-      reference_value: 1.50
-      unit: "ratio"
-    - name: "Fig 4B Insertion Total Steps Speedup (Traditional / Cell-View)"
-      value: 2.04
-      reference_value: 2.03
-      unit: "ratio"
-    - name: "Fig 5C Selection Final Monotonicity Error at f=3 Immovable Frozen Cells"
-      value: 2.93
-      reference_value: 3.00
-      unit: "inversions"
-    - name: "Fig 5C Bubble Final Monotonicity Error at f=3 Immovable Frozen Cells"
-      value: 5.47
-      reference_value: 5.50
-      unit: "inversions"
-    - name: "Fig 7B Insertion Delayed Gratification Mean (f=0..3)"
-      value: 1.125
-      reference_value: 1.140
-      unit: "DG_ratio"
-    - name: "Fig 8A Unique-Value Chimera (B+S) Peak Algotype Aggregation"
-      value: 0.635
-      reference_value: 0.645
+    - name: "Ablation 1 — Insertion Sort Final Error WITH L74-76 FREEZE Prefix Reset (n=60, f=3)"
+      value: 4.90
+      unit: "monotonicity_error"
+      method: "Mean final adjacent monotonicity error E(v) with upstream InsertionSortCell.py L74-76 `if status == FREEZE: prev = -1` active"
+      derived_from: script
+      reference_value: 4.90
+      reference_source: "Zhangtaining/cell_research@1fd2bd59 InsertionSortCell.py L68-82 & audit_platonic_space_claims.py"
+    - name: "Ablation 1 — Insertion Sort Final Error WITHOUT L74-76 FREEZE Prefix Reset (n=60, f=3)"
+      value: 21.95
+      unit: "monotonicity_error"
+      method: "Mean final adjacent monotonicity error E(v) when the 3-line `if status == FREEZE: prev = -1` handler is ablated"
+      derived_from: script
+      reference_value: 4.90
+      reference_source: "Levin (2026) Philosophies 11(5):161 Sec. 6.3 & Lean 4 Theorem 2 insertion_freeze_reset_unblocks_and_checks_post_frozen_order"
+      note: "4.5x error jump (4.90 -> 21.95) when explicit FREEZE prefix reset is removed"
+    - name: "Ablation 2 — Bubble Sort Uphill Steps on True Coxeter Inversion Potential I(v) (192 Swaps)"
+      value: 0
+      unit: "uphill_steps"
+      method: "Count of swap steps where pairwise inversions I(v) = #{(i<j): v_i > v_j} increases (Delta I > 0)"
+      derived_from: script
+      reference_value: 0
+      reference_source: "Lean 4 Theorem 3 adjacent_swap_strictly_decreases_inversions_window3 (Delta I = -1 on every swap)"
+    - name: "Ablation 2 — Bubble Sort Uphill Ticks on Coarse-Grained Adjacent Error E(v) (192 Swaps)"
+      value: 47
+      unit: "uphill_steps"
+      method: "Count of swap steps where adjacent monotonicity error E(v) = #{i: v_i > v_{i+1}} ticks upward by +1"
+      derived_from: script
+      reference_value: 47
+      reference_source: "Zhang, Goldstein & Levin (2025) Figs. 6-7 & Lean 4 Theorem 3 lyapunov_descent_vs_monotonicity_error_projection_artifact"
+    - name: "Ablation 2 — Cells Crossing Immovable Frozen Barrier in Bubble & Insertion Sort"
+      value: 0
+      unit: "cells"
+      method: "Exact count of cells crossing from left of immovable defect d to right of d under adjacent swaps"
+      derived_from: script
+      reference_value: 0
+      reference_source: "Lean 4 Theorem 1 bubble_adjacent_swap_preserves_left_partition"
+    - name: "Hoel Causal Emergence 2.0 (Patterns 2026) Delta CP on Coxeter Inversions I(v) (S_6, N=720)"
+      value: 0.1191
+      unit: "Delta_CP"
+      method: "Intensive Causal Primitive gain CP(I) - CP(micro) on exact 720x720 S_6 permutation Markov chain"
+      derived_from: script
+      reference_value: 0.1191
+      reference_source: "Hoel (2026) Patterns 7(1):101472 & Lean 4 Theorem 6 hoel_ce2_sorting_inversion_emergence_vs_error_loss"
+      note: "Macro determinism on I(v) = 1.0000 (CP = 0.9687 vs micro CP = 0.8496)"
+    - name: "Hoel Causal Emergence 2.0 (Patterns 2026) Delta CP on Neighbor Error E(v) (S_6, N=720)"
+      value: -0.2525
+      unit: "Delta_CP"
+      method: "Intensive Causal Primitive change CP(E) - CP(micro) when projecting S_6 onto adjacent error E(v)"
+      derived_from: script
+      reference_value: -0.2525
+      reference_source: "Hoel (2026) Patterns 7(1):101472 & Lean 4 Theorem 6 hoel_ce2_sorting_inversion_emergence_vs_error_loss"
+      note: "Determinism drops from 0.8687 to 0.7209 (negative causal emergence)"
+    - name: "Ablation 3 — Unique-Key Chimera (B+S, 0 Ties, Fig. 8A) Peak Algotype Aggregation"
+      value: 0.624
       unit: "fraction"
-    - name: "Fig 8D Duplicate-Value Chimera (B+S) Persistent Final Aggregation"
-      value: 0.688
-      reference_value: 0.690
+      method: "Peak same-algotype neighbor fraction A(t) on strictly unique keys 1..80 (zero duplicate keys)"
+      derived_from: script
+      reference_value: 0.640
+      reference_source: "Zhang, Goldstein & Levin (2025) Fig. 8A & audit_platonic_space_claims.py"
+    - name: "Ablation 3 — Duplicate-Key C=2 Copies per Key Anti-Clustering (S B | S B)"
+      value: 0.4767
       unit: "fraction"
-    - name: "Fig 9 Cross-Purpose Chimera B(inc)+I(dec) Final Sortedness (%)"
-      value: 75.32
-      reference_value: 73.73
-      unit: "percent"
+      method: "Final same-algotype neighbor fraction A_final at C=2 copies per key (n=80, 66.2% Selection in left slot)"
+      derived_from: script
+      reference_value: 0.5000
+      reference_source: "quantify_emergence_ce2.py duplicate multiplicity scaling law (refutes textbook sort stability)"
+    - name: "Ablation 3 — Duplicate-Key C=10 Copies per Key Homotypic Clique Clustering (SSSSS | BBBBB)"
+      value: 0.6592
+      unit: "fraction"
+      method: "Final same-algotype neighbor fraction A_final at C=10 copies per key (n=80, 75.0% Selection in left half)"
+      derived_from: script
+      reference_value: 0.6600
+      reference_source: "Zhang, Goldstein & Levin (2025) Fig. 8D & quantify_emergence_ce2.py"
+    - name: "Decisive Comparison D vs. D + P_dualist Cell-Swap Trajectory Difference (Py / C++20 / JS / Lean 4)"
+      value: 0
+      unit: "cell_mismatches"
+      method: "Bit-exact kymograph cell mismatch count across Python 3, C++20, and Node.js SplitMix64 ports"
+      derived_from: script
+      reference_value: 0
+      reference_source: "verify_multilang_ports.py & Sweet (2026) D vs. D+P decisive-comparison criterion"
+missing: []
