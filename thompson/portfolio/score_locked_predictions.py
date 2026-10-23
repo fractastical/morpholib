@@ -122,7 +122,91 @@ def load_fishbase_morphmet():
                  "citation": "Froese R & Pauly D (eds) 2021 FishBase 06/2021 (rfishbase release fb-21.06; CC BY-NC)", "traits": list(cols)}
 
 
-SOURCES = {"fishshapes_v1": load_fishshapes_v1, "fishbase_morphmet": load_fishbase_morphmet}
+def _parse_tps_blocks(path: Path):
+    import re
+    txt = path.read_text(encoding="utf-8", errors="replace")
+    blocks = [b.strip() for b in re.split(r"(?=LM=\d+)", txt) if b.strip().startswith("LM=")]
+    out = []
+    for b in blocks:
+        lines = b.splitlines()
+        k = int(lines[0].split("=")[1])
+        pts = np.array([[float(x) for x in l.split()] for l in lines[1:1 + k]], dtype=float)
+        meta = {}
+        for l in lines[1 + k:]:
+            if "=" in l:
+                kk, vv = l.split("=", 1)
+                meta[kk.strip()] = vv.strip()
+        out.append((pts, meta))
+    return out
+
+
+def load_ronco2021_tanganyika_cichlids():
+    rc = CACHE / "ronco2021"
+    vouch_path = rc / "01_specimen_voucher_key.csv"
+    tps_path = rc / "06_landmark_data_body_shape.tps"
+    vouch, sp_code = {}, {}
+    with vouch_path.open(newline="", encoding="utf-8", errors="replace") as fh:
+        for r in csv.DictReader(fh):
+            nm = norm_name(r["Species"])
+            if nm:
+                vouch[r["ID"].strip()] = nm
+                sp_code[r["SpeciesID"].strip()] = nm
+    specs = _parse_tps_blocks(tps_path)
+    rows = defaultdict(lambda: defaultdict(list)); n = 0
+    for pts, meta in specs:
+        n += 1
+        id_str = meta.get("ID", "")
+        parts = id_str.split("_")
+        nm = (vouch.get(parts[0]) if parts else None) or (sp_code.get(parts[1]) if len(parts) > 1 else None)
+        if not nm:
+            continue
+        snout = pts[0]
+        caud = 0.5 * (pts[4] + pts[5])
+        v = caud - snout
+        sl = float(np.linalg.norm(v))
+        if sl <= 0:
+            continue
+        u_perp = np.array([-v[1], v[0]]) / sl
+        ys = (pts - snout) @ u_perp
+        rows[nm]["BDmax_over_SL"].append(float((ys.max() - ys.min()) / sl))
+        rows[nm]["HL_over_SL"].append(float(np.linalg.norm(pts[12] - snout) / sl))
+    obs = {nm: {k: float(np.median(v)) for k, v in d.items() if v} for nm, d in rows.items()}
+    return obs, {"name": "Lake Tanganyika cichlid body-shape landmarks (Ronco et al. 2021)", "file": str(tps_path.relative_to(REPO_ROOT)),
+                 "sha256": sha256(tps_path), "n_records": n, "unit": "specimen",
+                 "citation": "Ronco F et al. 2021 Nature 589:76-81; Zenodo 3989859 (CC BY 4.0)", "traits": ["BDmax_over_SL", "HL_over_SL"]}
+
+
+def load_burns_sidlauskas2019_characiformes():
+    tps_path = CACHE / "burns2019" / "Disparity_Data.TPS"
+    specs = _parse_tps_blocks(tps_path)
+    rows = defaultdict(lambda: defaultdict(list)); n = 0
+    for pts, meta in specs:
+        n += 1
+        nm = norm_name(meta.get("IMAGE", ""))
+        if not nm:
+            continue
+        snout = pts[0]
+        caud = 0.5 * (pts[8] + pts[9])
+        v = caud - snout
+        sl = float(np.linalg.norm(v))
+        if sl <= 0:
+            continue
+        u_perp = np.array([-v[1], v[0]]) / sl
+        ys = (pts - snout) @ u_perp
+        rows[nm]["BDmax_over_SL"].append(float((ys.max() - ys.min()) / sl))
+        rows[nm]["PD_over_SL"].append(float(np.linalg.norm(pts[4] - snout) / sl))
+    obs = {nm: {k: float(np.median(v)) for k, v in d.items() if v} for nm, d in rows.items()}
+    return obs, {"name": "Characiformes body-shape landmarks (Burns & Sidlauskas 2019)", "file": str(tps_path.relative_to(REPO_ROOT)),
+                 "sha256": sha256(tps_path), "n_records": n, "unit": "specimen",
+                 "citation": "Burns MD & Sidlauskas BL 2019 Evolution 73:569-587; Dryad/Zenodo 4988906 (CC0)", "traits": ["BDmax_over_SL", "PD_over_SL"]}
+
+
+SOURCES = {
+    "fishshapes_v1": load_fishshapes_v1,
+    "fishbase_morphmet": load_fishbase_morphmet,
+    "ronco2021_tanganyika_cichlids": load_ronco2021_tanganyika_cichlids,
+    "burns_sidlauskas2019_characiformes": load_burns_sidlauskas2019_characiformes,
+}
 
 
 # ---------------------------------------------------------------- scoring
@@ -241,11 +325,11 @@ def main() -> int:
         verdict["P2_nearest_margin_under_10pct"] = {"registered_p_H2_passes": registered["p_pass_registered"]["BDmax_over_SL"]["P2_H2_passes"], "realised_H2": hb["near"]["H2_beats_nearest"], "ratio": hb["near"]["ratio_nearest"],
                                           "realised": bool(hb["near"]["ratio_nearest"] > 0.9), "H2_formally_passes": hb["near"]["H2_beats_nearest"], "simulated_interval": sim.get("ratio_nearest_near")}
         verdict["coverage_calibrated_within_50"] = {"registered_p": registered["p_pass_registered"]["BDmax_over_SL"]["coverage_calibrated_within_50"], "realised": hb["near"]["H3_coverage_calibrated"], "coverage": hb["near"]["coverage95"], "simulated_interval": sim.get("coverage_near")}
-        if hb.get("far") and registered.get("P3_deep_prediction"):
-            p3 = registered["P3_deep_prediction"]
-            ri, ci = p3["ratio_consensus_interval"], p3["coverage_interval_pct"]
-            verdict["P3_deep_horizon"] = {"registered_p": p3["p_pass_subjective"], "pass_interval_ratio": ri, "pass_interval_coverage": ci, "ratio": hb["far"]["ratio_consensus"], "coverage": hb["far"]["coverage95"],
-                                          "realised": bool(ri[0] <= hb["far"]["ratio_consensus"] <= ri[1] and ci[0] <= hb["far"]["coverage95"] <= ci[1])}
+    if registered and hb.get("far") and registered.get("P3_deep_prediction"):
+        p3 = registered["P3_deep_prediction"]
+        ri, ci = p3["ratio_consensus_interval"], p3["coverage_interval_pct"]
+        verdict["P3_deep_horizon"] = {"registered_p": p3["p_pass_subjective"], "pass_interval_ratio": ri, "pass_interval_coverage": ci, "ratio": hb["far"]["ratio_consensus"], "coverage": hb["far"]["coverage95"],
+                                      "realised": bool(ri[0] <= hb["far"]["ratio_consensus"] <= ri[1] and ci[0] <= hb["far"]["coverage95"] <= ci[1])}
     if "HL_over_SL" in traits and hyp.get("HL_over_SL_cal", {}).get("near") and hb.get("near"):
         rh, rp = hyp["HL_over_SL_cal"]["near"]["ratio_consensus"], hyp.get("PD_over_SL_cal", {}).get("near", {}).get("ratio_consensus")
         verdict["P4_head_predorsal_weaker"] = {"registered_p": 0.6, "ratio_BDmax": hb["near"]["ratio_consensus"], "ratio_HL": rh, "ratio_PD": rp,
@@ -322,10 +406,15 @@ def make_figure(R: dict, preds: dict, cal) -> None:
     axes[0].legend(fontsize=7)
     ax = axes[-1]; k = "BDmax_over_SL"
     sel = [r for r in R["per_species"] if k in r and r["tau"] < HORIZON]
+    title_prefix = "tau < 50 Myr"
+    if not sel:
+        sel = [r for r in R["per_species"] if k in r]
+        title_prefix = "deep horizon (tau >= 50 Myr)"
     o = np.array([r[k]["obs"] for r in sel]); pv = np.array([cal(k, preds[r["species"]]["full30"][k]["pred"], True) for r in sel]); tau_ = np.array([r["tau"] for r in sel])
     sc = ax.scatter(pv, o, c=tau_, cmap="viridis", s=8, alpha=0.6); lim = [0.05, max(o.max(), pv.max()) * 1.05]
     ax.plot(lim, lim, "k--", lw=1); ax.set_xlim(lim); ax.set_ylim(lim); plt.colorbar(sc, ax=ax, label="tau (Myr)")
-    ax.set_xlabel("predicted BDmax/SL (full 30-D, calibrated)"); ax.set_ylabel("observed BDmax/SL"); ax.set_title(f"tau < 50 Myr: n={len(sel)}, r={np.corrcoef(pv, o)[0, 1]:.2f}", fontsize=10)
+    r_val = float(np.corrcoef(pv, o)[0, 1]) if np.std(pv) > 1e-12 and np.std(o) > 1e-12 else 0.0
+    ax.set_xlabel("predicted BDmax/SL (full 30-D, calibrated)"); ax.set_ylabel("observed BDmax/SL"); ax.set_title(f"{title_prefix}: n={len(sel)}, r={r_val:.2f}", fontsize=10)
     fig.suptitle(f"Locked Thompson-engine predictions vs {R['meta']['name']}: {R['n_matched']:,} never-seen species", fontsize=11, fontweight="bold")
     fig.tight_layout(); fig.savefig(DOC_DIR / f"fig_{R['source']}.png", dpi=140); print(f"    wrote {DOC_DIR / f'fig_{R['source']}.png'}")
 
