@@ -490,8 +490,8 @@ def generate_planform_and_cervera_assets():
 
         fig_cs.suptitle(
             "Real Published Planarian Regeneration Photographs (Horizontal, Full Body)\n"
-            "Control 1H1T (Stevenson & Beane 2010) vs. Bipolar 2H0T Time-Lapse (Nogi & Levin 2009)",
-            color="#f8fafc", fontsize=9.6, fontweight="bold", y=0.97
+            "Control 1H1T (Stevenson & Beane 2010) vs. Bipolar 2H0T (Nogi & Levin 2009)",
+            color="#f8fafc", fontsize=8.6, fontweight="bold", y=0.965
         )
 
     anim_cs = FuncAnimation(fig_cs, update_cervera_specimen, frames=len(f2_vals), interval=180)
@@ -516,7 +516,7 @@ def generate_planform_and_cervera_assets():
     rgb_ctrl, inside_ctrl, _ = cerv.territory_image(mask, x_ctrl, z, dom_ctrl, g_profile)
 
     fig_cg = plt.figure(figsize=(7.2, 5.0), dpi=100, facecolor="#0b1325")
-    gs_cg = fig_cg.add_gridspec(2, 1, height_ratios=[1.0, 1.0], hspace=0.26, left=0.04, right=0.96, top=0.86, bottom=0.05)
+    gs_cg = fig_cg.add_gridspec(2, 1, height_ratios=[1.0, 1.0], hspace=0.26, left=0.04, right=0.96, top=0.83, bottom=0.05)
     a_top = fig_cg.add_subplot(gs_cg[0, 0], facecolor="#0f172a")
     a_bot = fig_cg.add_subplot(gs_cg[1, 0], facecolor="#060911")
 
@@ -590,9 +590,9 @@ def generate_planform_and_cervera_assets():
             sp.set_linewidth(2.4 if is_bipolar else 1.2)
 
         fig_cg.suptitle(
-            "Cervera, Levin & Mafé (2021) — 2D Bioelectric & Morphogen Polarity Simulation (Horizontal, Head-Left)\n"
-            "Top: Control 1H1T Polarity  |  Bottom: Gap-Junction Blockade → Bipolar 2H0T Double-Head Regeneration",
-            color="#facc15", fontsize=9.4, fontweight="bold", y=0.97
+            "Cervera, Levin & Mafé (2021) — 2D Bioelectric & Morphogen Polarity (Head-Left)\n"
+            "Top: Control 1H1T Polarity  |  Bottom: GJ Blockade → Bipolar 2H0T Double-Head",
+            color="#facc15", fontsize=8.4, fontweight="bold", y=0.945
         )
 
     anim_cg = FuncAnimation(fig_cg, update_cervera_sim, frames=len(f2_vals), interval=180)
