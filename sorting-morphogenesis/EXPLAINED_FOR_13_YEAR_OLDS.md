@@ -101,9 +101,14 @@ Our experiments proved **the critics were wrong twice**:
 
 ---
 
-## The Take-Home Lesson (Why Both Biology and Math Win)
+## The Take-Home Lesson: The "D vs. D + P" Test & Why Both Biology and Math Win
 
-1. **What Michael Levin got right ("Mathematical Free Lunches"):**
-   You really * do * get "more out than you put in" when cells follow simple local rules! Without any central controller or friend-detector code, the geometry of permutations ($S_n$) and differences in movement speed automatically create self-sorting, error tolerance, and temporary group segregation. Real biological embryos use these exact kinds of physical and mathematical "free lunches" every day.
-2. **Why you don't need ghosts in the machine:**
-   Once you use the right mathematical ruler — **Total Out-of-Order Pairs $I(v)$** (which has $+0.119$ Causal Emergence) instead of **Neighbor Steps $E(v)$** ($-0.253$), and **traffic-speed waves (`S...S | B...B`)** — 100% of the behavior is explained and predicted by the 6 lines of code!
+![Illustrated Guide 6: The 'D vs. D + P' Decisive-Comparison & Frozen Update Rule](../docs/media/zhang_13yo_fig6_decisive_comparison_d_vs_dp.png)
+
+1. **What Michael Levin got right ("Mathematical Free Lunches" / $P_{\text{structural}}$):**
+   You really *do* get "more out than you put in" when cells follow simple local rules! Without any central controller or friend-detector code, the geometry of permutations ($S_n$) and differences in movement speed automatically create self-sorting, error tolerance, and temporary group segregation. Real biological embryos use these exact kinds of physical and mathematical "free lunches" every day.
+2. **Why you don't need ghosts in the machine ($P_{\text{dualist}}$ adds $0.00$ predictions over $D$):**
+   Once you use the right mathematical ruler — **Total Out-of-Order Pairs $I(v)$** (which has $+0.119$ Causal Emergence) instead of **Neighbor Steps $E(v)$** ($-0.253$), and **traffic-speed waves (`S...S | B...B`)** — 100% of the behavior is explained and predicted by the 6 lines of code ($D$), so adding a non-physical "Platonic side-quest" ($P_{\text{dualist}}$) changes zero predictions!
+3. **Why "Freezing the Rules" Before You Peek Is the Golden Rule of Science:**
+   Just putting a "Platonic" sticker on a file doesn't prove anything. To earn credit, a math pattern has to make a locked prediction on brand-new species *before* you peek at the data — and if a prediction fails (like our fish model did when we tested it on 1,027 hornet wings!), it has to take the loss honestly and pre-register a new test!
+
