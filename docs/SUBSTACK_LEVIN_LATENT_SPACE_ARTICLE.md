@@ -14,7 +14,7 @@ When board members of the organization asked me to explain it, I did so as follo
 
 This satisfied her, but she said that until I explained it that way, most of the Mike Levin orbit concepts sounded instead impermeable or much like "woo science."
 
-In my case, I was fortunately aided by Mike Levin himself, who gave me a list of articles to read in which order to get started on learning the space, to which I added a massive pile of his papers, which I synthesized with a knowledge graph ([Project Delphi](https://github.com/fractastical/morpholib)). That knowledge graph then evolved into an independent methodology and verification engine—the **Adversarial Epistemic Loop (AEL) / Delphi-MorphoEval Protocol**—that now is able to autonomously build out, audit, and formally prove the math of biology.
+In my case, I was fortunately aided by Mike Levin himself, who gave me a list of articles to read in which order to get started on learning the space, to which I added a massive pile of his papers, which I synthesized with a knowledge graph ([Project Delphi](https://github.com/fractastical/morpholib)). That knowledge graph then evolved into a three-stage series of open-source verification engines—starting with **NeuroEval** ([doi:10.5281/zenodo.20622878](https://doi.org/10.5281/zenodo.20622878), evaluating data transparency and neural-coding rigor in computational and biohybrid/wetware neuroscience papers), followed by **BioEval** ([doi:10.5281/zenodo.20567719](https://doi.org/10.5281/zenodo.20567719), evaluating bioinformatics and computational-biology papers), and finally culminating in **MorphoEval** (and our **Adversarial Epistemic Loop / AEL** protocol), which turns that auditing machinery inward to autonomously build out, audit, and formally prove the math of biology in executable code and Lean 4.
 
 ![](https://fractastical.github.io/morpholib/media/all_forms_montage.gif)
 *Fifteen flagship animated models of biological form (1917–2025) in our open-source [Infinite Morphospace](https://github.com/fractastical/morpholib) repository—audited by independent AI referees from competing labs and formally checked in the Lean 4 theorem prover.*
@@ -240,11 +240,14 @@ How does a living tissue actually store a target coordinate in that morphospace?
 
 ---
 
-## How We Built and Audited This: The Adversarial Epistemic Loop (AEL) & Delphi-MorphoEval Protocol
+## How We Built and Audited This: From NeuroEval → BioEval → MorphoEval (The Adversarial Epistemic Loop)
 
 How do you keep yourself honest when testing high-profile scientific claims—especially when both the "Platonic Space" camp and the "Nothing New Here" blog critics have strong priors?
 
-We call our methodology the **Adversarial Epistemic Loop (AEL)** (implemented in the **Delphi-MorphoEval 12-Step Protocol**): every verbal claim is translated into multi-language executable code and machine-checked **Lean 4** theorems, locked against **SHA-256** empirical datasets, audited blind by **three competing AI model families** (Anthropic, Google DeepMind, and OpenAI), and pre-registered as cryptographically signed **Nanopublications** before unblinding held-out species.
+The methodology used in this article—which we call the **Adversarial Epistemic Loop (AEL)**—was developed across three successive evaluation systems in Project Delphi:
+1. **Stage 1 — NeuroEval ([Zenodo `10.5281/zenodo.20622878`](https://doi.org/10.5281/zenodo.20622878)):** Built first to evaluate data transparency, reproducibility, and neural-coding rigor in computational and biohybrid/wetware neuroscience papers.
+2. **Stage 2 — BioEval ([Zenodo `10.5281/zenodo.20567719`](https://doi.org/10.5281/zenodo.20567719)):** Extended that rubric to score bioinformatics and computational-biology papers for reproducibility, statistical calibration, and information-theoretic rigor.
+3. **Stage 3 — MorphoEval ([`fractastical/morpholib`](https://github.com/fractastical/morpholib)):** Turned the evaluation machinery from *grading published papers* to *generating, executing, and auditing the mathematical models themselves* in a 12-step closed loop—where every verbal claim is translated into multi-language executable code and machine-checked **Lean 4** theorems, locked against **SHA-256** empirical datasets, audited blind by **three competing AI model families** (Anthropic, Google DeepMind, and OpenAI), and pre-registered as cryptographically signed **Nanopublications** before unblinding held-out species.
 
 Just as we did for our D’Arcy Thompson study, we documented the entire investigation in a **4-Page Illustrated Magazine Edition Methods & Provenance PDF** ([`docs/levin_latent_space_methods_and_provenance.pdf`](https://fractastical.github.io/morpholib/levin_latent_space_methods_and_provenance.pdf) and [`docs/LEVIN_LATENT_SPACE_METHODS.md`](https://github.com/fractastical/morpholib/blob/main/docs/LEVIN_LATENT_SPACE_METHODS.md)) that answers five concrete questions so anyone can understand and re-run our experiments:
 
