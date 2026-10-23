@@ -223,7 +223,7 @@ How does a living tissue actually store a target coordinate in that morphospace?
 
 ---
 
-## The Final Scoreboard (Copy-Paste Summary)
+## The Final Scoreboard: What Held Up and What Didn't
 
 * **Claim 1 — Sorting Array Error Tolerance ("No error-handling code was added"):**
   **PARTIALLY REFUTED.** True for Bubble sort (while Selection advances its target pointer past frozen cells), but **false for Insertion sort**, which contains an explicit 3-line `if status == FREEZE: prev = -1` reset in `InsertionSortCell.py` (L74–76). Deleting those 3 lines spikes Insertion sort’s error **4.5× higher (`4.90 → 21.95`)**.
