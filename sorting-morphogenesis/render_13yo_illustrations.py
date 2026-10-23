@@ -572,6 +572,119 @@ def render_fig6_decisive_comparison_d_vs_dp():
     print("Saved", out)
 
 
+def render_fig7_final_scoreboard():
+    """
+    Illustrated Guide 7: 'The Final Scoreboard: What Held Up and What Didn't'
+    A clean, high-impact visual summary card across all 7 tested claims in the
+    Substack article, with color-coded status badges, key numbers, and a bottom
+    split-verdict banner ('Mathematical Free Lunches: YES' vs. 'Platonic Ghosts: NO').
+    """
+    fig, ax = plt.subplots(figsize=(13.2, 7.6), dpi=160, facecolor="#0b1325")
+    fig.subplots_adjust(left=0.02, right=0.98, top=0.87, bottom=0.03)
+    ax.set_facecolor("#0b1325")
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+    ax.axis("off")
+
+    fig.suptitle(
+        "The Final Scoreboard: What Held Up and What Didn't Across All 7 Claims",
+        color="#f8fafc", fontsize=15.0, fontweight="bold", y=0.955
+    )
+    ax.text(
+        50, 98.5,
+        "Audited via the Adversarial Epistemic Loop (AEL): 4-Language Code Ports (Py / C++20 / JS / Lean 4), Hoel CE 2.0, 10,303 Fishes & Pre-Registered Nanopubs",
+        color="#93c5fd", fontsize=9.2, fontweight="bold", ha="center", va="center"
+    )
+
+    rows = [
+        (
+            "CLAIM 1 · Sorting Error Tolerance",
+            "\"Zero error-handling code was added for broken cells\"",
+            "True for Bubble, but InsertionSortCell.py (L74–76) has an explicit 3-line\n`if status == FREEZE: prev = -1` rescue. Deleting it spikes error 4.5× (4.9 → 21.95)!",
+            "PARTIALLY REFUTED\n(3-Line Code Rescue)",
+            "#f59e0b", "#451a03", "#fef3c7"
+        ),
+        (
+            "CLAIM 2 · 'Delayed Gratification'",
+            "\"Cells go against their gradient to walk around a barrier\"",
+            "0 Bubble/Insertion cells cross a barrier (Lean Thm 1). Every swap goes strictly downhill\n(ΔI = −1, 0 uphill steps) on Ruler 1 (CE 2.0 = +0.119). Only blurry Ruler 2 ticks up (CE 2.0 = −0.253).",
+            "OPTICAL ILLUSION\n(Blurry Ruler E vs. I)",
+            "#ef4444", "#450a0a", "#fee2e2"
+        ),
+        (
+            "CLAIM 3 · Secret Clique Clustering",
+            "\"Cells cluster by personality without friend-sensing code\"",
+            "100% Real — and CS blog critics were wrong twice! Unique keys (0 ties) still cluster to 0.624\nvia speed waves; C = 2 duplicate copies causes Anti-Clustering (0.477 < 0.50, `S B | S B`)!",
+            "EMPIRICALLY VINDICATED\n(Critics Refuted Twice!)",
+            "#22c55e", "#052e16", "#dcfce7"
+        ),
+        (
+            "CLAIM 4 · D'Arcy Thompson Grids",
+            "\"Macroevolution tunes low-dimensional coordinate sheets\"",
+            "17-dot tests failed only because 53% of dots sit in the skull. On 600-pt homologous fin outlines,\n8-knob grids win by +13% to +48% and align 93.5%–98.9% across 10,303 fish species (blind p = 10⁻¹⁰³).",
+            "STRONGLY CONFIRMED\n(10,303 Fish Species)",
+            "#22c55e", "#052e16", "#dcfce7"
+        ),
+        (
+            "CLAIMS 5–7 · Bioelectric & Biobot Attractors",
+            "\"2-Headed Planarians, Picasso Tadpoles & Xenobots\"",
+            "Zero-flux Nernst–Planck Boltzmann ratio (exp(40/25.85) ≈ 4.70) locks permanent 2H0T memory;\nclosed-loop Lyapunov descent (dV/dt ≤ 0) & θ = 105° Stokes squirmer capture reproduce all regimes.",
+            "STRONGLY CONFIRMED\n(Dynamical Attractors)",
+            "#38bdf8", "#082f49", "#e0f2fe"
+        ),
+    ]
+
+    y_tops = [83.5, 66.5, 49.5, 32.5, 15.5]
+    for y_c, (c_title, c_quote, c_detail, verdict, border_col, badge_bg, badge_fg) in zip(y_tops, rows):
+        # Row card background
+        card = FancyBboxPatch(
+            (1.5, y_c - 6.8), 97.0, 13.8,
+            boxstyle="round,pad=0.4,rounding_size=1.4",
+            facecolor="#0f172a", edgecolor=border_col, linewidth=2.0, zorder=2
+        )
+        ax.add_patch(card)
+
+        # Left column: Claim title & quote
+        ax.text(3.2, y_c + 2.4, c_title, color=border_col, fontsize=10.2, fontweight="bold", ha="left", va="center", zorder=4)
+        ax.text(3.2, y_c - 2.3, c_quote, color="#cbd5e1", fontsize=8.6, style="italic", ha="left", va="center", zorder=4)
+
+        # Middle column: What our audit proved
+        ax.text(34.5, y_c, c_detail, color="#f8fafc", fontsize=8.5, fontweight="bold", ha="left", va="center", zorder=4)
+
+        # Right column: Verdict badge
+        badge = FancyBboxPatch(
+            (79.5, y_c - 4.6), 17.8, 9.2,
+            boxstyle="round,pad=0.3,rounding_size=1.2",
+            facecolor=badge_bg, edgecolor=border_col, linewidth=2.0, zorder=3
+        )
+        ax.add_patch(badge)
+        ax.text(88.4, y_c, verdict, color=badge_fg, fontsize=8.8, fontweight="bold", ha="center", va="center", zorder=4)
+
+    # Bottom synthesis bar
+    bot_left = FancyBboxPatch(
+        (1.5, 0.8), 47.5, 6.2,
+        boxstyle="round,pad=0.3,rounding_size=1.0",
+        facecolor="#052e16", edgecolor="#22c55e", linewidth=1.8, zorder=2
+    )
+    ax.add_patch(bot_left)
+    ax.text(25.25, 3.9, "✔ Weak Structural Platonism ('Mathematical Free Lunches'): 100% REAL (Coxeter S_n, Thompson Grids, Nernst–Planck)",
+            color="#dcfce7", fontsize=8.3, fontweight="bold", ha="center", va="center", zorder=4)
+
+    bot_right = FancyBboxPatch(
+        (51.0, 0.8), 47.5, 6.2,
+        boxstyle="round,pad=0.3,rounding_size=1.0",
+        facecolor="#450a0a", edgecolor="#ef4444", linewidth=1.8, zorder=2
+    )
+    ax.add_patch(bot_right)
+    ax.text(74.75, 3.9, "✖ Strong Dualist Ingress ('Non-Physical Ghosts'): UNNECESSARY (0.00 Extra Predictions Beyond the Local Code D!)",
+            color="#fee2e2", fontsize=8.3, fontweight="bold", ha="center", va="center", zorder=4)
+
+    out = MEDIA / "substack_final_scoreboard.png"
+    fig.savefig(out, dpi=160, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print("Saved", out)
+
+
 if __name__ == "__main__":
     render_fig1_three_personalities()
     render_fig2_two_rulers_illusion()
@@ -579,3 +692,4 @@ if __name__ == "__main__":
     render_fig4_real_data_curves()
     render_fig5_causal_emergence_13yo()
     render_fig6_decisive_comparison_d_vs_dp()
+    render_fig7_final_scoreboard()
