@@ -388,8 +388,139 @@ def render_fig4_real_data_curves():
     print("Saved", out)
 
 
+def render_fig5_causal_emergence_13yo():
+    """
+    Illustrated Guide 5: The 13-Year-Old's Guide to 'Causal Emergence 2.0' (Erik Hoel 2013 & 2026):
+      - Panel A (Top-Left): Micro-View ('Pixel Vision') — Starting at [2, 4, 1, 3], random
+        kid choice branches into two different next lines ([2, 1, 4, 3] or [2, 4, 3, 1]).
+        Looks like a 50/50 coin flip (86.9% determinism)!
+      - Panel B (Top-Right): Macro-View ('Ruler 1 Vision', Total Pairs I(v)) — Both branches
+        land on I = 2! 100% deterministic (3 -> 2 -> 1 -> 0), Causal Emergence = +0.119!
+      - Panel C (Bottom-Left): Bad Macro-View ('Ruler 2 Vision', Neighbor Steps E(v)) —
+        Starting from E = 1, the next step can go UP to E = 2 or DOWN to E = 0!
+        72.1% determinism, Causal Emergence = -0.253 (Blurry Ruler Illusion!).
+      - Panel D (Bottom-Right): Why CE 2.0 (2026) Beat CE 1.0 (2013) — CE 1.0 penalized
+        Ruler 1 (-4.66 bits) just for having fewer buckets (16 vs. 720), hiding the
+        +0.48 bit accuracy gain. CE 2.0 fixes the scorecard (+0.119 vs. -0.253)!
+    """
+    fig, axes = plt.subplots(2, 2, figsize=(13.6, 8.2), dpi=160, facecolor="#0b1325")
+    fig.subplots_adjust(wspace=0.16, hspace=0.34, left=0.04, right=0.96, top=0.86, bottom=0.06)
+
+    fig.suptitle(
+        "Illustrated Guide 5: What Is 'Causal Emergence 2.0' (Hoel 2026)?\n"
+        "Why Zooming Out to the Right Scoreboard Turns a Noisy Coin-Flip Into a 100% Predictable Law!",
+        color="#f8fafc", fontsize=13.0, fontweight="bold", y=0.96
+    )
+
+    # --- Panel A: Micro-View (Noisy Coin Flip!) ---
+    ax = axes[0, 0]
+    ax.set_facecolor("#0f172a")
+    ax.set_xlim(0, 10); ax.set_ylim(0, 6)
+    ax.set_xticks([]); ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_color("#38bdf8"); sp.set_linewidth(1.8)
+    ax.set_title("1. Micro-Scale ('Zoomed In'): Which Exact Line Comes Next? (Coin Flip!)", color="#38bdf8", fontsize=10.2, fontweight="bold", pad=6)
+
+    # Start state box
+    ax.text(1.9, 3.1, "Start Line:\n[ 2, 4, 1, 3 ]\n(I = 3, E = 1)", color="#f8fafc", fontsize=9.2, fontweight="bold", ha="center", va="center",
+            bbox=dict(boxstyle="round,pad=0.35", facecolor="#1e293b", edgecolor="#38bdf8", lw=2.0))
+    # Branch 1 (Top)
+    ax.annotate("", xy=(5.6, 4.55), xytext=(3.4, 3.45), arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#38bdf8", lw=2.4))
+    ax.text(4.35, 4.45, "50% chance:\nSwap 4 ↔ 1", color="#93c5fd", fontsize=8.0, fontweight="bold", ha="center")
+    ax.text(7.6, 4.55, "Line A: [ 2, 1, 4, 3 ]\n(I = 2, E = 2 ↑)", color="#f8fafc", fontsize=8.8, fontweight="bold", ha="center", va="center",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="#1e3a8a", edgecolor="#60a5fa", lw=1.8))
+    # Branch 2 (Bottom)
+    ax.annotate("", xy=(5.6, 1.65), xytext=(3.4, 2.75), arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#38bdf8", lw=2.4))
+    ax.text(4.35, 1.65, "50% chance:\nSwap 4 ↔ 3", color="#93c5fd", fontsize=8.0, fontweight="bold", ha="center")
+    ax.text(7.6, 1.65, "Line B: [ 2, 4, 3, 1 ]\n(I = 2, E = 2 ↑)", color="#f8fafc", fontsize=8.8, fontweight="bold", ha="center", va="center",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="#1e3a8a", edgecolor="#60a5fa", lw=1.8))
+    ax.text(5.0, 0.42, "Micro Predictability = 86.9% (Causal Score CP = 0.850)\nBecause random kids wake up first, exact micro-lines branch like a coin toss!",
+            color="#bae6fd", fontsize=8.0, fontweight="bold", ha="center",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="#082f49", edgecolor="#0284c7"))
+
+    # --- Panel B: Good Macro-View (Ruler 1 I(v) -> 100% Deterministic!) ---
+    ax = axes[0, 1]
+    ax.set_facecolor("#0f172a")
+    ax.set_xlim(0, 10); ax.set_ylim(0, 6)
+    ax.set_xticks([]); ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_color("#4ade80"); sp.set_linewidth(2.0)
+    ax.set_title("2. Zoom Out to Ruler 1 (Total Pairs I): 100% Predictable Countdown!", color="#4ade80", fontsize=10.2, fontweight="bold", pad=6)
+
+    xs_i = [1.4, 3.8, 6.2, 8.6]
+    vals_i = ["I = 3\n(Start)", "I = 2\n(Both Land Here!)", "I = 1\n(Next Swap)", "I = 0\n(Sorted!)"]
+    for k, (xp, lbl) in enumerate(zip(xs_i, vals_i)):
+        ax.text(xp, 3.35, lbl, color="#ffffff", fontsize=8.8, fontweight="bold", ha="center", va="center",
+                bbox=dict(boxstyle="round,pad=0.32", facecolor="#14532d" if k < 3 else "#15803d", edgecolor="#4ade80", lw=2.2))
+        if k < 3:
+            ax.annotate("", xy=(xs_i[k+1] - 0.95, 3.35), xytext=(xp + 0.95, 3.35),
+                        arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#4ade80", lw=2.8))
+            ax.text(0.5 * (xp + xs_i[k+1]), 4.25, "100% Sure!\n(ΔI = −1)", color="#86efac", fontsize=7.8, fontweight="bold", ha="center")
+
+    ax.text(5.0, 0.95, "✔ POSITIVE CAUSAL EMERGENCE 2.0 (ΔCP = +0.1191 > 0)!\nDeterminism jumps 86.9% → 100.0% (CP: 0.850 → 0.969) because EVERY\nbranch at the micro-level does the exact same thing on Ruler 1 (I drops by −1)!",
+            color="#dcfce7", fontsize=8.0, fontweight="bold", ha="center",
+            bbox=dict(boxstyle="round,pad=0.24", facecolor="#052e16", edgecolor="#22c55e"))
+
+    # --- Panel C: Bad Macro-View (Ruler 2 E(v) -> Negative Emergence!) ---
+    ax = axes[1, 0]
+    ax.set_facecolor("#0f172a")
+    ax.set_xlim(0, 10); ax.set_ylim(0, 6)
+    ax.set_xticks([]); ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_color("#f87171"); sp.set_linewidth(1.8)
+    ax.set_title("3. Zoom Out to Ruler 2 (Neighbor Drops E): Blurry & Scrambled!", color="#f87171", fontsize=10.2, fontweight="bold", pad=6)
+
+    ax.text(2.0, 3.35, "Ruler 2 Score:\nE = 1 Drop\n(Lumps [2,4,1,3]\nwith [1,3,2,4]!)", color="#ffffff", fontsize=8.4, fontweight="bold", ha="center", va="center",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="#450a0a", edgecolor="#f87171", lw=2.0))
+    # 3 scrambled arrows
+    targets_e = [
+        (4.85, "E = 2 (Goes UP +1!)\nif [2,4,1,3] → [2,1,4,3]", "#fca5a5"),
+        (3.35, "E = 1 (Stays Flat 0)\nif [1,4,2,3] → [1,2,4,3]", "#cbd5e1"),
+        (1.85, "E = 0 (Goes DOWN −1)\nif [1,3,2,4] → [1,2,3,4]", "#86efac"),
+    ]
+    for yp, txt, col in targets_e:
+        ax.annotate("", xy=(5.4, yp), xytext=(3.65, 3.35), arrowprops=dict(arrowstyle="->,head_length=6,head_width=5", color="#f87171", lw=2.2))
+        ax.text(7.55, yp, txt, color=col, fontsize=8.0, fontweight="bold", ha="center", va="center",
+                bbox=dict(boxstyle="round,pad=0.22", facecolor="#1e293b", edgecolor="#ef4444", lw=1.4))
+
+    ax.text(5.0, 0.55, "✖ NEGATIVE CAUSAL EMERGENCE (ΔCP = −0.2525 < 0)!\nDeterminism crashes 86.9% → 72.1% (CP: 0.850 → 0.597) because Ruler 2\nlumps together lines that go in opposite directions ('Delayed Gratification' illusion)!",
+            color="#fee2e2", fontsize=7.9, fontweight="bold", ha="center",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="#450a0a", edgecolor="#ef4444"))
+
+    # --- Panel D: Why Hoel's 2026 CE 2.0 Beat 2013 CE 1.0 ---
+    ax = axes[1, 1]
+    ax.set_facecolor("#0f172a")
+    for sp in ax.spines.values():
+        sp.set_color("#facc15"); sp.set_linewidth(1.8)
+    ax.set_title("4. Why Hoel's 2026 'CE 2.0' Fixed the 2013 'CE 1.0' Size Penalty!", color="#facc15", fontsize=10.2, fontweight="bold", pad=8)
+
+    labels = ["CE 1.0 Accuracy\nGain (ΔI_eff)", "CE 1.0 Bucket-Size\nPenalty (ΔI_size)", "Old 2013 CE 1.0\nTotal (ΔEI bits)", "New 2026 CE 2.0:\nRuler 1 I(v) (×10)", "New 2026 CE 2.0:\nRuler 2 E(v) (×10)"]
+    vals = [0.476, -4.663, -4.187, 1.191, -2.525]
+    cols = ["#38bdf8", "#94a3b8", "#f97316", "#4ade80", "#f87171"]
+    x_b = np.arange(len(labels))
+    bars = ax.bar(x_b, vals, color=cols, edgecolor="#f8fafc", linewidth=1.2, width=0.58)
+    ax.axhline(0, color="#f8fafc", lw=1.2)
+    ax.set_xticks(x_b)
+    ax.set_xticklabels(labels, color="#f8fafc", fontsize=7.6, fontweight="bold")
+    ax.set_ylim(-5.6, 2.3)
+    ax.set_ylabel("Score (Bits / Scaled ΔCP)", color="#cbd5e1", fontsize=8.5, fontweight="bold")
+    ax.tick_params(colors="#cbd5e1", labelsize=8.0)
+    ax.grid(axis="y", color="#1e293b", lw=0.8)
+
+    val_labels = ["+0.48 bits\n(Cleaner!)", "−4.66 bits\n(16 vs 720)", "−4.19 bits\n(Fooled!)", "+0.119 ΔCP\n(Ruler 1 Wins!)", "−0.253 ΔCP\n(Ruler 2 Fails!)"]
+    for bar, v, vl in zip(bars, vals, val_labels):
+        ypos = v + 0.18 if v >= 0 else v - 0.82
+        ax.text(bar.get_x() + bar.get_width() / 2, ypos, vl, color="#f8fafc", fontsize=7.5, fontweight="bold", ha="center")
+
+    out = MEDIA / "zhang_13yo_fig5_causal_emergence_explained.png"
+    fig.savefig(out, dpi=160, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print("Saved", out)
+
+
 if __name__ == "__main__":
     render_fig1_three_personalities()
     render_fig2_two_rulers_illusion()
     render_fig3_sports_cars_and_c2()
     render_fig4_real_data_curves()
+    render_fig5_causal_emergence_13yo()

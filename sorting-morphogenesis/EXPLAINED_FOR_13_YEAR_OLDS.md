@@ -62,10 +62,16 @@ Here is what we discovered — and why **both camps got something right and some
      - Now let the Bubble kids swap `4` and `1` to get **`[2, 1, 4, 3]`**!
      - What happened to **Total Pairs $I$**? It went **strictly down from `3 → 2`** (only `(2,1)` and `(4,3)` are left). In fact, **every single Bubble swap in history reduces $I(v)$ by `-1` (`0` uphill steps out of 192 swaps — the yellow straight line in `Panel B`!)**.
      - Why did **Neighbor Steps $E$** go **up from `1 → 2`** (`2 > 1` and `4 > 3`)? Because swapping `4` and `1` broke one big cliff (`4 -> 1`) into two smaller steps (`2 -> 1` and `4 -> 3`)!
-  4. **How Erik Hoel's "Causal Emergence 2.0" settles it (`Panel A & D` below):**
-     When we plug both rulers into Erik Hoel's 2026 *Causal Emergence 2.0* formula, **Ruler 1 ($I(v)$) is `100%` deterministic and has *positive* Causal Emergence (`+0.119`)**, whereas **Ruler 2 ($E(v)$) has *negative* Causal Emergence (`-0.253`)**. In plain English: the kids are sliding straight downhill on $I(v)$ at every single step, and the "uphill backtracking" is an optical illusion caused by using Ruler 2!
+  4. **How Erik Hoel's "Causal Emergence 2.0" settles it (`Illustrated Guide 5` & `Panel A/D` below):**
+     Wait — how do we prove mathematically that **Ruler 1 ($I(v)$)** is the real law and **Ruler 2 ($E(v)$)** is a blurry illusion?
+     - **Zoomed-In Micro-View (Coin Flip, 86.9% Predictable):** If you watch the exact line `[2, 4, 1, 3]`, you don't know which kid will wake up first — there is a 50% chance `#4` swaps with `#1` (`→ [2, 1, 4, 3]`) and a 50% chance `#4` swaps with `#3` (`→ [2, 4, 3, 1]`).
+     - **Zoom Out to Ruler 1 ($I(v)$, 100% Predictable, $\Delta\mathrm{CP} = +0.119$):** Both branches (`[2, 1, 4, 3]` and `[2, 4, 3, 1]`) land on the **exact same score: $I = 2$**! The coin-flip noise disappears and the countdown `3 → 2 → 1 → 0` becomes **100% deterministic**! In Erik Hoel's math, when zooming out makes a system *more* predictable than watching individual pieces, that's called **Positive Causal Emergence** ($\Delta\mathrm{CP} = +0.1191 > 0$).
+     - **Zoom Out to Ruler 2 ($E(v)$, Blurry Mess, $\Delta\mathrm{CP} = -0.253$):** Ruler 2 lumps `[2, 4, 1, 3]` and `[1, 3, 2, 4]` into the same bucket (`E = 1`), where the next step can go UP to `E = 2`, stay at `E = 1`, or go DOWN to `E = 0`! Predictability crashes to **72.1%** (**Negative Causal Emergence**, $\Delta\mathrm{CP} = -0.2525 < 0$).
+     - **Why Hoel's 2026 "CE 2.0" beat 2013 "CE 1.0":** Hoel's old 2013 formula penalized Ruler 1 (`-4.66 bits`) just because `16` scores (`I = 0..15`) is smaller than `720` possible lines of 6 kids, hiding the `+0.48 bit` accuracy boost. Hoel's 2026 **Causal Emergence 2.0** removes that unfair size penalty and immediately spots the 100% deterministic countdown!
 
 ![Illustrated Guide 2: Why 'Delayed Gratification' Was an Optical Illusion of the Ruler!](../docs/media/zhang_13yo_fig2_two_rulers_illusion.png)
+
+![Illustrated Guide 5: What Is 'Causal Emergence 2.0' (Hoel 2026)?](../docs/media/zhang_13yo_fig5_causal_emergence_explained.png)
 
 ![Quantifying Emergence in Sorting Morphogenesis via Hoel's Causal Emergence 1.0 & 2.0](../docs/media/zhang_hoel_quantifying_emergence_ce2.png)
 
