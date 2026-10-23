@@ -52,7 +52,10 @@ Updated 2026-10-23 by `thompson/portfolio/summarise_portfolio.py` (run unattende
 | [Vespinae hornet forewings (Perrard et al. 2014)](./vespinae_wings.md) | Arthropoda: Insecta | 1,027 wings, 30 spp, 19 LMs | **38.8%** | 95.5% | 0.533 (WN) | 1.00 / 0.99 | 0/7 (Brier 0.448) |
 | [Causal decomposition of wing divergence (P-drift vs. allometry)](./why_wings.md) | Arthropoda: Insecta | Hornet + Bee forewings (P-matrix drift & allometry) | — | — | — | — | 5/13 (Brier 0.254) |
 
-## 5. Calibration of the registered probabilities
+## 5. Calibration of the registered probabilities & Published Nanopublications
 
 - **Fish portfolio claims resolved:** 9 claims (7/9 passed; Brier score = **0.174**, where 0 = perfect and 0.25 = coin flip).
-- **Multi-clade 2D Geometric Morphometrics hypotheses resolved:** **38/82** pre-registered hypotheses supported across 12 clade studies spanning **Mollusca, Actinopterygii, Aves, Mammalia, and Insecta (Diptera, Lepidoptera, Hymenoptera)**.
+- **Multi-clade 2D Geometric Morphometrics hypotheses resolved:** **38/82** pre-registered hypotheses supported across 15 clade studies spanning **Mollusca, Actinopterygii, Amphibia, Squamata, Aves, Mammalia, Angiospermae, and Insecta (Diptera, Lepidoptera, Hymenoptera)**.
+- **Signed Production Nanopublications (`nanopubs/multiclade_portfolio_to_nanopubs.py`):**
+  - **Multi-Clade Preregistration Manifest:** [`RAQ_Giwd735IPhYg-cOMyPE6t4K9WPM9XlijGkNC6_eJ4`](https://registry.knowledgepixels.com/np/RAQ_Giwd735IPhYg-cOMyPE6t4K9WPM9XlijGkNC6_eJ4)
+  - **Master Cross-Kingdom Synthesis Nanopub (linking all 5 fish + 15 clade outcome nanopubs):** [`RAOvI_PZUXLZtKjyVfq4ILVoIxqVCsTXmLXd0J7ZujfEo`](https://registry.knowledgepixels.com/np/RAOvI_PZUXLZtKjyVfq4ILVoIxqVCsTXmLXd0J7ZujfEo)

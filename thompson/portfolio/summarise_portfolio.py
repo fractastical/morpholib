@@ -189,10 +189,13 @@ def main() -> int:
     if brier_fish:
         L += [
             "",
-            "## 5. Calibration of the registered probabilities",
+            "## 5. Calibration of the registered probabilities & Published Nanopublications",
             "",
             f"- **Fish portfolio claims resolved:** {n_fish_claims} claims (7/9 passed; Brier score = **{sum(brier_fish) / len(brier_fish):.3f}**, where 0 = perfect and 0.25 = coin flip).",
-            f"- **Multi-clade 2D Geometric Morphometrics hypotheses resolved:** **{tot_clade_pass}/{tot_clade_hyps}** pre-registered hypotheses supported across 12 clade studies spanning **Mollusca, Actinopterygii, Aves, Mammalia, and Insecta (Diptera, Lepidoptera, Hymenoptera)**.",
+            f"- **Multi-clade 2D Geometric Morphometrics hypotheses resolved:** **{tot_clade_pass}/{tot_clade_hyps}** pre-registered hypotheses supported across 15 clade studies spanning **Mollusca, Actinopterygii, Amphibia, Squamata, Aves, Mammalia, Angiospermae, and Insecta (Diptera, Lepidoptera, Hymenoptera)**.",
+            "- **Signed Production Nanopublications (`nanopubs/multiclade_portfolio_to_nanopubs.py`):**",
+            "  - **Multi-Clade Preregistration Manifest:** [`RAQ_Giwd735IPhYg-cOMyPE6t4K9WPM9XlijGkNC6_eJ4`](https://registry.knowledgepixels.com/np/RAQ_Giwd735IPhYg-cOMyPE6t4K9WPM9XlijGkNC6_eJ4)",
+            "  - **Master Cross-Kingdom Synthesis Nanopub (linking all 5 fish + 15 clade outcome nanopubs):** [`RAOvI_PZUXLZtKjyVfq4ILVoIxqVCsTXmLXd0J7ZujfEo`](https://registry.knowledgepixels.com/np/RAOvI_PZUXLZtKjyVfq4ILVoIxqVCsTXmLXd0J7ZujfEo)",
         ]
     try:
         from thompson.portfolio.sync_scholarly_gateway_to_paper_pipeline import build_gateway_markdown_section
