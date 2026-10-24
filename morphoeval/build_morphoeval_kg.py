@@ -644,6 +644,34 @@ def latest_version(np_uri: str, timeout: float = 30.0) -> str | None:
 # --------------------------------------------------------------------------- #
 # Build
 # --------------------------------------------------------------------------- #
+def reintroduced(written: list[Path], out_dir: Path, exempt: set[Path]) -> list[str]:
+    """Nanopubs this run emits that another audit directory has already published.
+
+    A claim or assessment IRI is derived from the simulation id (see claim_uri), so it is
+    stable across audits by design. Re-emitting one from a different audit directory
+    without npx:supersedes publishes a *second* introduction of the same resource, and
+    leaves consumers to guess which is current: they fall back on dct:created ordering, so
+    a re-score can silently win or lose depending only on which run happened to be later.
+
+    Directories named by --supersede-from / --rubric-from are exempt, because nanopubs
+    built against them do carry npx:supersedes, as is out_dir itself (that is --supersede).
+    """
+    names = {p.name for p in written}
+    hits: list[str] = []
+    for manifest_path in sorted((HERE / "kg").glob("*/published.json")):
+        prev_dir = manifest_path.parent.resolve()
+        if prev_dir == out_dir.resolve() or prev_dir in exempt:
+            continue
+        try:
+            manifest = json.loads(manifest_path.read_text())
+        except (OSError, ValueError):
+            continue
+        for name, entry in sorted(manifest.items()):
+            if name in names and entry.get("published") and entry.get("nanopub"):
+                hits.append(f"{name}: already published from {prev_dir.name} as {entry['nanopub']}")
+    return hits
+
+
 def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_heads: bool = True,
           omit_probability: bool = False):
     """supersede: {file name: {"nanopub": published trusty URI, "path": its file, "text": its unsigned TriG}}.
@@ -1291,6 +1319,9 @@ def main():
     ap.add_argument("--rubric-from", metavar="KG_DIR", action="append", default=[],
                     help="the audit dir the rubric nanopub is published from: 00-rubric.trig is not re-emitted here "
                          "when identical to that dir's (use when this audit shares no simulation with it)")
+    ap.add_argument("--allow-reintroduction", action="store_true",
+                    help="emit a nanopub for a resource another audit dir already published, without "
+                         "npx:supersedes (by default this is refused)")
     ap.add_argument("--no-resolve-heads", action="store_true",
                     help="do not check on Nanopub Query that a superseded URI is still the head of its chain")
     ap.add_argument("--omit-probability", action="store_true",
@@ -1373,6 +1404,17 @@ def main():
             print(f"    {n}  {old}  -> head {head}")
     print(f"wrote {len(written)} nanopubs, {merged_path.name} ({len(merged)} triples), {report_path.name}")
     print(f"  -> {out_dir}")
+    if not args.allow_reintroduction:
+        exempt = {Path(d).resolve() for d in (args.supersede_from + args.rubric_from)}
+        if hits := reintroduced(written, out_dir, exempt):
+            print(f"\nRE-INTRODUCED RESOURCES: {len(hits)} nanopub(s) re-publish a resource that "
+                  f"another audit directory already introduced, with no npx:supersedes")
+            for h in hits:
+                print("  -", h)
+            print("  the files above were written but must not be signed as they stand: pass "
+                  "--supersede-from <that kg dir> so they carry npx:supersedes, or "
+                  "--allow-reintroduction to introduce the resource a second time deliberately")
+            sys.exit(3)
     if audit.get("_measurements"):
         ms = audit["_measurements"]
         print(f"  morphology snapshot: {sum(len(v) for v in ms.get('outputs', {}).values())} fingerprinted output(s), "
