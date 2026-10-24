@@ -79,6 +79,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.parse
 import urllib.request
@@ -185,6 +186,89 @@ def resolve_supersession_chain(audit: dict) -> tuple[list[str], list[str]]:
         sup_a = sup_doc.get("audit", {})
         sup = sup_a.get("supersedes") or sup_a.get("supersedes_audit_id")
     return list(reversed(chain)), errs
+
+
+def _git(*args: str) -> str | None:
+    """Run git in the repository root. None when it fails or git is unavailable."""
+    try:
+        r = subprocess.run(["git", "-C", str(ROOT), *args], capture_output=True, text=True)
+    except OSError:
+        return None
+    return r.stdout.strip() if r.returncode == 0 else None
+
+
+def _same_repo(remote: str | None, repository: str) -> bool:
+    """Whether a git remote URL and the audit's checkpoint.repository name the same repo."""
+    def norm(u: str) -> str:
+        u = u.strip().removesuffix(".git")
+        for pre in ("git@github.com:", "ssh://git@github.com/", "https://github.com/", "http://github.com/"):
+            if u.startswith(pre):
+                return u[len(pre):].lower()
+        return u.lower()
+    return bool(remote) and norm(remote) == norm(repository)
+
+
+def pinned_paths(audit: dict) -> dict[str, str]:
+    """{repo path: why it is cited} for every path this audit pins to the checkpoint commit.
+
+    These are the paths that become {repository}/blob/{commit}/<path> URLs: the assessed
+    scripts (rdfs:seeAlso on the nanopub, dct:subject and schema:SoftwareSourceCode on the
+    claim) and every line-ranged evidence item (prov:wasDerivedFrom). Generated outputs are
+    excluded: they carry lines [0, 0] and are described rather than linked.
+    """
+    out: dict[str, str] = {}
+
+    def walk(node, sid: str) -> None:
+        if isinstance(node, dict):
+            f, lines = node.get("file"), node.get("lines")
+            if f and isinstance(lines, (list, tuple)) and len(lines) == 2 and (lines[1] or 0) > 0:
+                out.setdefault(str(f), f"{sid}: evidence L{lines[0]}-{lines[1]}")
+            for v in node.values():
+                walk(v, sid)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v, sid)
+
+    for sim in audit.get("simulations") or []:
+        if sim.get("status") != "evaluated":
+            continue
+        for script in [sim.get("script")] + list(sim.get("also") or []):
+            if script:
+                out.setdefault(str(script), f"{sim['id']}: assessed script")
+        walk(sim, sim["id"])
+    return out
+
+
+def verify_pinned_loci(audit: dict) -> tuple[list[str], list[str]]:
+    """Check that every commit-pinned path really exists at the checkpoint commit.
+
+    The nanopubs cite their evidence as {repository}/blob/{commit}/<path>, and those URLs
+    are the whole audit trail: a path that was never committed, or a commit that was never
+    pushed, publishes an immutable nanopub whose evidence no one else can retrieve. Checked
+    with git against this checkout, offline. Returns (errors, notes).
+    """
+    cp = (audit.get("audit") or {}).get("checkpoint") or {}
+    repo, commit = cp.get("repository"), cp.get("commit")
+    if not (repo and commit):
+        return [], []
+    if _git("rev-parse", "--git-dir") is None:
+        return [], ["not a git checkout: commit-pinned loci not verified"]
+    if _git("rev-parse", "--is-shallow-repository") == "true":
+        return [], ["shallow checkout: commit-pinned loci not verified (git fetch --unshallow to check them)"]
+    if not _same_repo(_git("remote", "get-url", "origin"), repo):
+        return [], [f"checkpoint.repository {repo} is not this checkout's origin: loci not verified"]
+    if _git("cat-file", "-e", f"{commit}^{{commit}}") is None:
+        return [f"checkpoint.commit {commit} is not a commit in this checkout (unpushed or rewritten?); "
+                f"every cited {repo}/blob/{commit}/... URL would 404"], []
+    notes = []
+    if not _git("branch", "-r", "--contains", commit):
+        notes.append(f"checkpoint.commit {commit} is on no remote branch: push it, or the cited blob "
+                     f"URLs resolve only in this clone")
+    errs = [f"{why}: {path} does not exist at checkpoint.commit {commit} "
+            f"-> {repo}/blob/{commit}/{path} would 404"
+            for path, why in sorted(pinned_paths(audit).items())
+            if _git("cat-file", "-e", f"{commit}:{path}") is None]
+    return errs, notes
 
 
 def validate(rubric, audit) -> list[str]:
@@ -1291,6 +1375,8 @@ def main():
     ap.add_argument("--rubric-from", metavar="KG_DIR", action="append", default=[],
                     help="the audit dir the rubric nanopub is published from: 00-rubric.trig is not re-emitted here "
                          "when identical to that dir's (use when this audit shares no simulation with it)")
+    ap.add_argument("--no-verify-loci", action="store_true",
+                    help="skip the check that every commit-pinned evidence path exists at checkpoint.commit")
     ap.add_argument("--no-resolve-heads", action="store_true",
                     help="do not check on Nanopub Query that a superseded URI is still the head of its chain")
     ap.add_argument("--omit-probability", action="store_true",
@@ -1341,6 +1427,21 @@ def main():
     if errs := validate(rubric, audit):
         print("INVALID audit:"); [print("  -", e) for e in errs]; sys.exit(1)
     print(f"audit {audit['audit']['id']} valid against rubric {rubric['version']}")
+    loci_errs, loci_notes = verify_pinned_loci(audit)
+    for note in loci_notes:
+        print(f"  note: {note}")
+    if loci_errs:
+        # Fatal on a real build, a warning under --check. The cloud-loop CI gate runs
+        # `--check --conform`, so warning there keeps this check from failing CI on audits
+        # that were published before it existed; a build that would actually emit the
+        # unresolvable URLs stops.
+        fatal = not args.check and not args.no_verify_loci
+        print(f"{'UNVERIFIABLE' if fatal else 'warning: unverifiable'} commit-pinned loci: {len(loci_errs)}")
+        for e in loci_errs:
+            print("  -", e)
+        if fatal:
+            print("  commit and push these paths, or pass --no-verify-loci to publish anyway")
+            sys.exit(1)
     if args.check:
         return
     out_dir = Path(args.out) if args.out else HERE / "kg" / audit["audit"]["id"]
