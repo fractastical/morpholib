@@ -824,6 +824,119 @@ def render_fig8_ai_vs_human_authorship_heatmap():
     print("Saved", out)
 
 
+def render_fig9_causal_emergence_practitioner_workflow():
+    """
+    Illustrated Guide 9: Practitioner's 5-Step Workflow for Applying
+    Causal Emergence 1.0 (PNAS 2013) & Causal Emergence 2.0 (Patterns 2026) in Practice.
+      - Row 1 (Steps 1–3): Build Micro-TPM -> Define Candidate Macro-Partitions -> Coarse-Grain TPMs
+      - Row 2 (Steps 4–5): Compute CE 1.0 vs. CE 2.0 (Det, Deg, CP, ΔEI) -> Multi-Scale Path Apportioning & Diagnosis
+    """
+    fig, axes = plt.subplots(2, 1, figsize=(14.4, 7.6), dpi=160, facecolor="#0b1325")
+    fig.subplots_adjust(hspace=0.38, left=0.03, right=0.97, top=0.86, bottom=0.05)
+
+    fig.suptitle(
+        "Practitioner's Guide: The 5-Step Recipe for Applying Causal Emergence 1.0 & 2.0 in Practice",
+        color="#f8fafc", fontsize=14.6, fontweight="bold", y=0.96
+    )
+    fig.text(
+        0.5, 0.905,
+        "How to Test Any Biological, Neural, or Algorithmic System for True Macro-Scale Causation (Hoel 2013 PNAS · Hoel & Levin 2020 · Hoel 2026 Patterns)",
+        color="#93c5fd", fontsize=9.0, fontweight="bold", ha="center"
+    )
+
+    # --- TOP ROW: STEPS 1, 2, 3 (FROM SYSTEM TO COARSE-GRAINED TPMs) ---
+    ax0 = axes[0]
+    ax0.set_facecolor("#0f172a")
+    ax0.set_xlim(0, 100); ax0.set_ylim(0, 10)
+    ax0.set_xticks([]); ax0.set_yticks([])
+    for sp in ax0.spines.values():
+        sp.set_color("#38bdf8"); sp.set_linewidth(1.9)
+    ax0.set_title(
+        "PHASE A (Steps 1–3) — Build the Micro-TPM, Choose Competing Macro-Variables (Rulers), and Coarse-Grain",
+        color="#38bdf8", fontsize=10.8, fontweight="bold", pad=6
+    )
+
+    b_s1 = FancyBboxPatch((1.5, 1.2), 29.5, 7.6, boxstyle="round,pad=0.35,rounding_size=1.0", facecolor="#082f49", edgecolor="#38bdf8", lw=2.0)
+    ax0.add_patch(b_s1)
+    ax0.text(16.25, 7.5, "STEP 1 · Build Micro-TPM T_m (N × N)", color="#38bdf8", fontsize=9.2, fontweight="bold", ha="center")
+    ax0.text(16.25, 4.1,
+             "• Enumerate microstates s ∈ {1..N}\n"
+             "  (e.g. N=720 permutations in S_6,\n"
+             "  or N=32 gene states in 5-gene GRN)\n"
+             "• Intervene uniformly: do(S_t = s_i)\n"
+             "• Record row probabilities P(s_j | s_i)",
+             color="#f8fafc", fontsize=7.9, fontweight="bold", ha="center", va="center", linespacing=1.28)
+
+    ax0.annotate("", xy=(34.2, 5.0), xytext=(31.4, 5.0), arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#facc15", lw=2.6))
+
+    b_s2 = FancyBboxPatch((34.6, 1.2), 30.5, 7.6, boxstyle="round,pad=0.35,rounding_size=1.0", facecolor="#1e293b", edgecolor="#facc15", lw=2.0)
+    ax0.add_patch(b_s2)
+    ax0.text(49.85, 7.5, "STEP 2 · Define Candidate Rulers π(s)", color="#facc15", fontsize=9.2, fontweight="bold", ha="center")
+    ax0.text(49.85, 4.1,
+             "• Define competing macro-projections\n"
+             "  π: {1..N} → {1..M} BEFORE scoring:\n"
+             "  1. Candidate A: Coxeter Inversions I(v)\n"
+             "     (M = 16 levels on S_6)\n"
+             "  2. Candidate B: Neighbor Drops E(v)\n"
+             "     (M = 6 levels on S_6)",
+             color="#f8fafc", fontsize=7.9, fontweight="bold", ha="center", va="center", linespacing=1.28)
+
+    ax0.annotate("", xy=(68.3, 5.0), xytext=(65.5, 5.0), arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#4ade80", lw=2.6))
+
+    b_s3 = FancyBboxPatch((68.7, 1.2), 29.8, 7.6, boxstyle="round,pad=0.35,rounding_size=1.0", facecolor="#052e16", edgecolor="#4ade80", lw=2.0)
+    ax0.add_patch(b_s3)
+    ax0.text(83.6, 7.5, "STEP 3 · Coarse-Grain to Macro T_M", color="#4ade80", fontsize=9.2, fontweight="bold", ha="center")
+    ax0.text(83.6, 4.1,
+             "• Average micro-rows inside each\n"
+             "  macro-bucket U_a = {s : π(s) = a}\n"
+             "  and sum columns into U_b:\n"
+             "  T_M[a,b] = (1/|U_a|) ∑_{i∈U_a} ∑_{j∈U_b} T_m[i,j]\n"
+             "• Check lumpability: do all rows i ∈ U_a\n"
+             "  give the same macro-transition?",
+             color="#dcfce7", fontsize=7.8, fontweight="bold", ha="center", va="center", linespacing=1.28)
+
+    # --- BOTTOM ROW: STEPS 4 & 5 (COMPUTE CE 1.0 vs CE 2.0 & MULTI-SCALE TELESCOPING) ---
+    ax1 = axes[1]
+    ax1.set_facecolor("#0f172a")
+    ax1.set_xlim(0, 100); ax1.set_ylim(0, 10)
+    ax1.set_xticks([]); ax1.set_yticks([])
+    for sp in ax1.spines.values():
+        sp.set_color("#a855f7"); sp.set_linewidth(1.9)
+    ax1.set_title(
+        "PHASE B (Steps 4–5) — Compare CE 1.0 (2013) vs. CE 2.0 (2026) and Telescope Across the Scale Hierarchy",
+        color="#c084fc", fontsize=10.8, fontweight="bold", pad=6
+    )
+
+    b_s4 = FancyBboxPatch((1.5, 1.2), 46.5, 7.6, boxstyle="round,pad=0.35,rounding_size=1.0", facecolor="#2e1065", edgecolor="#a855f7", lw=2.0)
+    ax1.add_patch(b_s4)
+    ax1.text(24.75, 7.5, "STEP 4 · Compute Determinism, Degeneracy, CE 1.0 & CE 2.0", color="#e9d5ff", fontsize=9.2, fontweight="bold", ha="center")
+    ax1.text(24.75, 4.1,
+             "• Determinism (Sufficiency):  det(T) = 1 − ⟨H(row_i)⟩ / log₂(N)\n"
+             "• Degeneracy (1 − Necessity): deg(T) = 1 − H(⟨row⟩) / log₂(N)\n"
+             "• CE 2.0 Causal Primitive (Intensive):  CP(T) = det(T) − deg(T) ∈ [−1, 1]\n"
+             "• CE 1.0 Effective Info (Extensive):   EI(T) = CP(T) × log₂(N) bits\n"
+             "• Why CE 2.0 beats CE 1.0 when M ≪ N:  ΔEI = ΔI_eff (+0.48b) + ΔI_size (−4.66b)!",
+             color="#f8fafc", fontsize=7.85, fontweight="bold", ha="center", va="center", linespacing=1.28)
+
+    ax1.annotate("", xy=(51.2, 5.0), xytext=(48.4, 5.0), arrowprops=dict(arrowstyle="->,head_length=7,head_width=5", color="#22c55e", lw=2.6))
+
+    b_s5 = FancyBboxPatch((51.6, 1.2), 46.9, 7.6, boxstyle="round,pad=0.35,rounding_size=1.0", facecolor="#0f172a", edgecolor="#22c55e", lw=2.0)
+    ax1.add_patch(b_s5)
+    ax1.text(75.05, 7.5, "STEP 5 · Multi-Scale Telescoping & Practical Decision Rule", color="#4ade80", fontsize=9.2, fontweight="bold", ha="center")
+    ax1.text(75.05, 4.1,
+             "• Telescope across scales π^(0) → π^(1) → π^(2) (Hoel 2026):\n"
+             "  CP_0 (0.8496) + ΔCP_1 (+0.0477) + ΔCP_2 (+0.0714) = CP_2 (0.9687)\n"
+             "• DECISION RULE FOR PRACTITIONERS:\n"
+             "  ✔ ΔCP > 0 (e.g. I(v) = +0.1191, det = 1.00): True Macro-Law (Use for Control!)\n"
+             "  ✖ ΔCP < 0 (e.g. E(v) = −0.2525, det = 0.72): Lossy Projection Artifact (Discard!)",
+             color="#dcfce7", fontsize=7.85, fontweight="bold", ha="center", va="center", linespacing=1.28)
+
+    out = MEDIA / "substack_ce2_practitioner_workflow.png"
+    fig.savefig(out, dpi=160, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print("Saved", out)
+
+
 if __name__ == "__main__":
     render_fig1_three_personalities()
     render_fig2_two_rulers_illusion()
@@ -833,3 +946,4 @@ if __name__ == "__main__":
     render_fig6_decisive_comparison_d_vs_dp()
     render_fig7_final_scoreboard()
     render_fig8_ai_vs_human_authorship_heatmap()
+    render_fig9_causal_emergence_practitioner_workflow()
