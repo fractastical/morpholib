@@ -104,34 +104,9 @@ We tested two mathematical properties of the trajectories—and proved both in L
 
 ![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig2_two_rulers_illusion.png)
 
-### The 13-Year-Old’s Guide to "Causal Emergence": How Choosing the Right Scoreboard Beats a Coin Flip!
+*(Note: Even if you plug both rulers into Erik Hoel’s 2026 Causal Emergence 2.0 metric—a popular framework in the Tufts/Levin orbit for scoring whether a macro-variable is more deterministic than the micro-state—Ruler 1 `I(v)` scores `100%` determinism (`ΔCP = +0.1191 > 0` on active swaps), whereas the paper’s Ruler 2 `E(v)` drops to `72.1%` determinism (`ΔCP = −0.2525 < 0`) because it lumps `[2, 4, 1, 3]` and `[1, 3, 2, 4]` into the same `E = 1` bucket. But you don't even need Hoel’s information theory to see that splitting one cliff `4 → 1` into two smaller steps `2 → 1` and `4 → 3` is an optical illusion of the ruler!)*
 
-Wait—how can we *prove* mathematically that **Ruler 1 (`I(v)`)** is the real law of the sorting line and **Ruler 2 (`E(v)`)** is just a blurry illusion?
-
-That is what **Erik Hoel’s *Causal Emergence*** (*PNAS* 2013; upgraded to **Causal Emergence 2.0** in *Patterns* 2026) measures. It tests whether "zooming out" to a big-picture scoreboard makes the future *more* predictable or *less* predictable. Here is how it works in 3 simple steps:
-
-![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig5_causal_emergence_explained.png)
-
-* **STEP 1 — Zoomed In on Individual Kids (50/50 Coin Flip!):**
-  Look at the top row above. In the line **`[2, 4, 1, 3]`**, kids wake up at random to check their neighbors.
-  * **50% Coin Flip:** Kid `#4` checks left and swaps with `#1` → the next line is **`[2, 1, 4, 3]`**.
-  * **50% Coin Flip:** Kid `#4` checks right and swaps with `#3` → the next line is **`[2, 4, 3, 1]`**.
-  If you are zoomed in watching exact lines of kids, **you can't predict which line comes next—it’s a 50/50 coin flip!** (Across all 720 ways to line up 6 kids, zoomed-in predictability is only **86.9%**.)
-
-* **STEP 2 — Zoom Out to Ruler 1 (Total Out-of-Order Pairs = 100% Certainty!):**
-  Now look at the green middle row above. Stop worrying about which exact kid moved, and just look at **Ruler 1 (Total Out-of-Order Pairs)** on the scoreboard:
-  * Starting line `[2, 4, 1, 3]` has **3 pairs** out of order.
-  * Coin-flip Line A (`[2, 1, 4, 3]`) has **2 pairs** out of order!
-  * Coin-flip Line B (`[2, 4, 3, 1]`) *also* has **2 pairs** out of order!
-  * **Both coin flips land on the exact same score (`3 → 2 → 1 → 0`)!**
-  When zooming out turns a noisy coin flip into a **100% predictable countdown**, Hoel calls that **Positive Causal Emergence (`+0.119`)**. In plain English: **the zoomed-out scoreboard is MORE predictable than watching individual kids!**
-
-* **STEP 3 — Zoom Out to Ruler 2 (Neighbor Drops = A Blurry Ruler That Scrambles the Future!):**
-  Now look at the red bottom row above. Ruler 2 puts `[2, 4, 1, 3]` and `[1, 3, 2, 4]` into the *exact same bucket* (`1 Neighbor Drop`). From that bucket, the very next swap can make the score **go UP to 2 drops** (looking like "going backwards"!), **stay flat at 1 drop**, or **drop to 0**! Predictability crashes from `86.9%` down to **`72.1%`** (**Negative Causal Emergence, `−0.253`**).
-
-*(Bonus for math nerds: Why did we need Hoel’s 2026 **Causal Emergence 2.0** instead of his 2013 **CE 1.0**? In our full technical benchmark below, Panel B shows that the old 2013 formula gave scoreboards extra points just for having lots of possible numbers—slapping Ruler 1 with a `−4.66 bit` size penalty because `16` scores is smaller than `720` permutations. Hoel’s 2026 CE 2.0 removes that size penalty and immediately spots the 100% deterministic countdown!)*
-
-* **Verdict on Claim 2 — Optical Illusion of the Ruler:** The sorting cells never move against their dynamical gradient. They slide 100% deterministically downhill on their true Lyapunov energy `I(v)` (`ΔCP = +0.1191 > 0`) at every single step, while the observer watches them through a blurry, negative-emergence ruler `E(v)` (`ΔCP = −0.2525 < 0`).
+* **Verdict on Claim 2 — Optical Illusion of the Ruler:** The sorting cells never move against their dynamical gradient. They slide 100% deterministically downhill on their true Lyapunov energy `I(v)` (`ΔI = −1` on every single swap), while the observer watches them through a blurry neighbor-drop ruler `E(v)`.
 
 ---
 
@@ -158,9 +133,9 @@ When we ran the ablations (**Panel C** of both figures above, and Illustrated Gu
 
 ![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig3_sports_cars_vs_pedestrians.png)
 
-And here is the full quantitative sweep from our computer experiments (`sorting-morphogenesis/quantify_emergence_ce2.py`), showing both the exact **Causal Emergence 1.0 vs. 2.0** scores across `S_3..S_6` (**Panels A–B**) and the **`C = 2` Anti-Clustering dip (`0.477 < 0.50`) vs. `C = 10` Clique peak (`0.659`)** (**Panel C**):
+And here are the real computer-experiment curves side by side—showing **(A)** the smooth downhill slide on Ruler 1 (`I(v)`, `0` uphill steps) vs. the 47 illusory bumps on Ruler 2 (`E(v)`), and **(B)** how the `C = 2` Anti-Clustering dip (`0.477 < 0.50`) and `C = 10` Clique peak (`0.659`) refute the blog critics’ flat `0.50` prediction:
 
-![](https://fractastical.github.io/morpholib/media/zhang_hoel_quantifying_emergence_ce2.png)
+![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig4_real_data_curves.png)
 
 * **Verdict on Claim 3 — Empirically Vindicated (via Kinematic Phase Separation):** The clustering is 100% real and refutes the blog critics’ "textbook stability" dismissal—yet it is also 100% produced and predicted by the kinematic transport equations of the two algorithms without needing non-physical ghosts. ([Try the live `C = 2` Sorting Morphogenesis Simulator on bioelectricity.net here!](https://bioelectricity.net/sorting-morphogenesis))
 
