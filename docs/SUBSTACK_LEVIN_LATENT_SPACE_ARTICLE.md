@@ -1,6 +1,6 @@
-# Between Galvani’s Frogs and Plato’s Ghosts: Testing Michael Levin’s "Latent Space" Claims with Code, Math, and 10,303 Fish
+# Why Michael Levin Is 81.6% Right: Testing His "Latent Platonic Space" Claims with Code, Math, and 10,303 Fish (Between Galvani’s Frogs and Plato’s Ghosts)
 
-*In a sea of internet debates between "Platonic Ingression" and reductionist blog critics, an internet philosopher who can code doesn’t have to guess—because every single core claim can be tested with tools at our fingertips.*
+*In a sea of internet debates between "Platonic Ingression" and reductionist blog critics, an internet philosopher who can code doesn’t have to guess—because every single core claim can be tested with tools at our fingertips (`92.4%` right on structural math, `0.0%` on non-physical ghosts).*
 
 ---
 
@@ -327,82 +327,6 @@ Just as we did for our D’Arcy Thompson study, we documented the entire investi
    * **Hypothesis & Philosophical Direction (`80.6%` Human / `19.4%` AI):** The personal narrative (Galvani, Joscha Bach at CIMC, the board member’s "woo science" question, Mike Levin’s reading list, the Foresight Institute metascience reflection), the visual skepticism that exposed the `9/17` skull-dot seesaw trap and the 4-parameter Box-Stretch illusion, and the `D` vs. `D + P` framing were driven by the human author (**Joel Dietz**, `85%–95%` human in Sections 1, 5, 7, and 8).
    * **Article Prose Word Count (`38.4%` Direct Human Writing & Edits / `61.6%` AI-Assisted Technical Synthesis):** Section 1 (the personal introduction) is **`92%` verbatim human prose**, and Section 8 (the `D` vs. `D + P` synthesis, Foresight metascience reflection, and conclusion) is **`52%` human prose**, while the technical claim walkthroughs and methods summaries (Sections 2–7) were `62%–78%` drafted by `gemini-4-argon` and `claude-fable-5-1` from the repository’s locked JSON/YAML audit files and edited by the human author.
    * **Multi-Language Simulation Code, Lean 4 Proofs & Referee Audits (`85.8%` AI Agents / `14.2%` Human):** The C++20, Node.js, and Python ports, the 2D/3D PDE and Stokeslet fluid solvers, the 25+ kernel-checked **Lean 4** theorems (`0 sorry`), and the blinded cross-provider referee audits (`claude-fable-5-1`, `claude-sonnet-5-5-high`, `gemini-4-argon`, and OpenAI’s `gpt-5.6-sol`) were `85%–96%` executed by the AI agents under deterministic `--self-test` gates.
-
----
-
-## Practitioner’s Guide: How to Use Causal Emergence 1.0 (PNAS 2013) & Causal Emergence 2.0 (*Patterns* 2026) in Practice
-
-Because so many researchers and engineers ask *"How do I actually run Erik Hoel’s Causal Emergence 1.0 and 2.0 on my own biological, neural, or agent-based model—and when should I use CE 2.0 instead of CE 1.0?"*, we also wrote a standalone **[Practitioner’s Guide to Causal Emergence 1.0 & 2.0 (`docs/CAUSAL_EMERGENCE_PRACTITIONERS_GUIDE.md`)](https://github.com/fractastical/morpholib/blob/main/docs/CAUSAL_EMERGENCE_PRACTITIONERS_GUIDE.md)** backed by [`sorting-morphogenesis/quantify_emergence_ce2.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/quantify_emergence_ce2.py) and 6 machine-checked Lean 4 theorems in [`morphoeval/lean/loops/Loop_causal_emergence.lean`](https://github.com/fractastical/morpholib/blob/main/morphoeval/lean/loops/Loop_causal_emergence.lean).
-
-Here is the complete 5-step recipe you can apply to any system:
-
-![](https://fractastical.github.io/morpholib/media/substack_ce2_practitioner_workflow.png)
-*The 5-Step Practitioner’s Recipe for testing any biological, neural, or algorithmic system with Erik Hoel’s Causal Emergence 1.0 (PNAS 2013) and Causal Emergence 2.0 (Patterns 2026).*
-
-### Step 1 — Build the Interventional Micro-TPM `T_m` (`N × N`)
-Enumerate your system’s `N` discrete microstates `s ∈ {1..N}` (for example, `N = 720` permutations in `S_6`, or `N = 32` Boolean gene states in Hoel & Levin’s 2020 5-gene mammalian cardiac network). Intervene uniformly on each state (`do(S_t = s_i)` with weight `1/N`) and record the single-step transition probabilities `T_m[i, j] = P(S_{t+1} = s_j | do(S_t = s_i))`.
-* **Practical Pitfall #1 (Interventional `do` vs. Observational Stationarity):** Never weight rows by the long-run stationary distribution `P_ss(i)`! In a sorting or developmental system that converges to a single target state (like `[1, 2, 3, 4, 5, 6]`), the absorbing target state holds ~100% of the stationary weight, erasing the transient developmental pathway you are trying to measure. Always weight interventional rows uniformly (`1/N`).
-
-### Step 2 — Define Competing Candidate Macro-Rulers `π(s)` *Before* Scoring
-A macro-variable ("ruler" or coarse-graining) is a partition map `π: {1..N} → {1..M}` that groups the `N` microstates into `M < N` macro-buckets `U_1, U_2, ..., U_M`. To run a fair test, define your competing candidate rulers up front:
-* **Candidate Ruler A (`π_I`):** Total Pairwise Inversions `I(v) = #{(i < j) : v_i > v_j}` (`M = 16` buckets on `S_6`).
-* **Candidate Ruler B (`π_E`):** Adjacent Neighbor Drops `E(v) = #{i : v_i > v_{i+1}}` (`M = 6` buckets on `S_6`).
-
-### Step 3 — Coarse-Grain `T_m` into the Macro-TPM `T_M` (`M × M`) and Check Markov Lumpability
-For each macro-bucket `U_a = {s_i : π(s_i) = a}`, average the rows of `T_m` uniformly across `i ∈ U_a` and sum the columns across `j ∈ U_b`:
-`T_M[a, b] = (1 / |U_a|) × ∑_{i ∈ U_a} ∑_{j ∈ U_b} T_m[i, j]`.
-* **Practical Pitfall #2 (Markov Lumpability vs. Projection Noise):** A macro-ruler `π` is **dynamically lumpable** if every microstate `i` inside bucket `U_a` has the *exact same* probability of transitioning to bucket `U_b`. On `S_6`, every permutation with `I(v) = k` transitions with `100%` probability to `I(v) = k − 1` (zero within-bucket variance!), whereas permutations with `E(v) = 1` transition to `E = 0`, `E = 1`, or `E = 2` depending on which hidden microstate they came from.
-
-### Step 4 — Compute Determinism, Degeneracy, CE 1.0 (`EI`), and CE 2.0 (`CP`)
-For both `T_m` (`N × N`) and `T_M` (`M × M`), compute the two normalized causal primitives in `[0, 1]`:
-1. **Determinism (Causal Sufficiency):** `det(T) = 1 − ⟨H(T[i, ·])⟩ / log₂(N)`, where `H(p) = −∑ p_j log₂(p_j)` is the Shannon row entropy. (`det = 1.0` means zero branching noise.)
-2. **Degeneracy (`1 −` Causal Necessity):** `deg(T) = 1 − H(bar_u) / log₂(N)`, where `bar_u = (1/N) ∑_i T[i, ·]` is the average effect distribution. (`deg = 0.0` means distinct causes never collapse onto the same output.)
-3. **CE 2.0 Intensive Causal Primitive (Hoel 2026 *Patterns*):**
-   `CP(T) = det(T) − deg(T) ∈ [−1, 1]` (equal to Eells/Cheng `sufficiency + necessity − 1`).
-4. **CE 1.0 Extensive Effective Information (Hoel et al. 2013 *PNAS*):**
-   `EI(T) = CP(T) × log₂(N)` bits.
-
-* **Why You Must Check CE 2.0 (`ΔCP = CP_M − CP_m`) Whenever `M ≪ N`:**
-  In `Loop_causal_emergence.lean` (Theorem 1), we proved Hoel’s exact splitting identity:
-  `ΔEI = EI_M − EI_m = (CP_M − CP_m) × log₂(M)  +  CP_m × (log₂(M) − log₂(N))`.
-  The first term `ΔI_eff = (CP_M − CP_m) × log₂(M)` is the **true intensive accuracy gain (`+0.476 bits` on `I(v)`)**, while the second term `ΔI_size = CP_m × log₂(M / N)` is a **negative dimensionality penalty (`−4.666 bits` because `M = 16 ≪ N = 720`)**!
-  * **When to use CE 1.0 (`ΔEI`):** When comparing two scales of similar state-space capacity (`M ≈ N`), or when you want to maximize total Shannon channel capacity (`bits` transmitted per intervention).
-  * **When to use CE 2.0 (`ΔCP`):** Whenever your candidate macro-law is a **low-dimensional order parameter or Lyapunov coordinate (`M ≪ N`)**—because CE 1.0’s `log₂(M/N)` size penalty will falsely reject a `100%` deterministic macro-law, whereas CE 2.0 (`ΔCP = +0.1191 > 0`) immediately detects it!
-
-### Step 5 — Multi-Scale Path Apportioning (`π^(0) → π^(1) → π^(2)`) & Copy-Paste Python Code
-In Hoel’s (2026) **Causal Emergence 2.0**, if you have a hierarchy of scales from micro to meso to macro (`π^(0) → π^(1) → π^(2)`), the intensive gains `ΔCP_k = CP(π^(k)) − CP(π^(k−1))` telescope identically:
-* On `S_6`: `CP(S_6) [0.8496] + ΔCP(Meso (I, head)) [+0.0477] + ΔCP(Macro I(v)) [+0.0714] = CP(I(v)) [0.9687]`.
-* **Decision Rule:** Keep any macro-scale step where `ΔCP_k > 0` (`I(v): +0.1191`, true macro-law); discard any projection where `ΔCP_k < 0` (`E(v): −0.2525`, lossy observer artifact).
-
-Here is the complete 30-line NumPy function you can copy-paste into any Python project to compute both CE 1.0 and CE 2.0:
-
-```python
-import numpy as np
-
-def compute_ce1_and_ce2(tpm: np.ndarray) -> dict:
-    """Compute Hoel's CE 1.0 (EI bits) and CE 2.0 (CP = det - deg) on an N x N row-stochastic TPM."""
-    n = tpm.shape[0]
-    log2_n = float(np.log2(n))
-    p = np.clip(tpm, 1e-15, 1.0)
-    det = 1.0 - float(np.mean(-np.sum(tpm * np.log2(p), axis=1))) / log2_n
-    u_e = np.clip(np.mean(tpm, axis=0), 1e-15, 1.0)
-    deg = 1.0 - float(-np.sum(u_e * np.log2(u_e))) / log2_n
-    cp = det - deg  # CE 2.0 Intensive Causal Primitive (Eells sufficiency + necessity - 1)
-    return {"n": n, "det": round(det, 4), "deg": round(deg, 4), "CP_ce2": round(cp, 4), "EI_ce1_bits": round(cp * log2_n, 4)}
-
-def coarse_grain_tpm(tpm_micro: np.ndarray, macro_labels: list[int]) -> np.ndarray:
-    """Coarse-grain an N x N micro-TPM onto M macro-buckets defined by macro_labels[0..N-1]."""
-    uniq = sorted(set(macro_labels))
-    u_idx = {u: i for i, u in enumerate(uniq)}
-    tpm_M = np.zeros((len(uniq), len(uniq)), dtype=float)
-    for u in uniq:
-        rows = [i for i, lbl in enumerate(macro_labels) if lbl == u]
-        for r in rows:
-            for c, prob in enumerate(tpm_micro[r]):
-                if prob > 0:
-                    tpm_M[u_idx[u], u_idx[macro_labels[c]]] += prob / len(rows)
-    return tpm_M
-```
 
 ---
 
