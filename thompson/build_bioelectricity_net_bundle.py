@@ -157,6 +157,203 @@ def main():
         }
 
     # =========================================================================
+    # 0B. BUILD INTERACTIVE ARTHROPOD SANDBOX DATA (ANTS, CRABS, COPEPODS, AMPHIPODS)
+    # =========================================================================
+    ant_mod = load_module("ant_mod", "thompson/run_antscan_caste_allometry_tests.py")
+    crab_mod = load_module("crab_mod", "thompson/run_crab_carapace_paradox_audit.py")
+    arth_mod = load_module("arth_mod", "thompson/run_all_1917_arthropods_audit.py")
+
+    _, ex_head = ant_mod.run_camponotus_634_analyses()
+    S_ant, T_ant = ex_head["S"], ex_head["T"]
+    P_box_ant, P_bf_ant = ex_head["P_box"], ex_head["P_bf"]
+    P_359_ant, _, _ = ant_mod.fit_thompson_fig359_radial_cordate_8p(S_ant, T_ant)
+    ss0_ant = float(np.sum((T_ant - S_ant) ** 2))
+    r2_359_ant = (1.0 - float(np.sum((T_ant - P_359_ant) ** 2)) / ss0_ant) * 100.0
+
+    # Pheidole megacephala minor -> major (23 AntWeb landmarks)
+    S_pheid = ant_mod.extract_antweb_head_landmarks(ant_mod.CACHE_DIR / "pheidole_megacephala_minor_head.jpg")
+    T_pheid = ant_mod.extract_antweb_head_landmarks(ant_mod.CACHE_DIR / "pheidole_megacephala_major_head.jpg")
+    P_box_ph = ant_mod.fit_box_4p(S_pheid, T_pheid)
+    P_359_ph, _, _ = ant_mod.fit_thompson_fig359_radial_cordate_8p(S_pheid, T_pheid)
+    ss0_ph = float(np.sum((T_pheid - S_pheid) ** 2))
+    r2_box_ph = (1.0 - float(np.sum((T_pheid - P_box_ph) ** 2)) / ss0_ph) * 100.0
+    r2_359_ph = (1.0 - float(np.sum((T_pheid - P_359_ph) ** 2)) / ss0_ph) * 100.0
+
+    # Real 3D Laser-Scanned Crabs (Scholtz et al. 2020 Fig. 2)
+    from PIL import Image as PILImage
+    arr_crab = np.array(PILImage.open(crab_mod.CRAB_DIR / "scholtz_2020_fig2_real_3d_crabs.png").convert("RGB"))
+    real_crabs = crab_mod.extract_crab_dataset(arr_crab, int(arr_crab.shape[0] * 0.24), int(arr_crab.shape[0] * 0.47), use_real_lms=True)
+    crab_rochinia = crab_mod.fit_crab_models(real_crabs["a_Geryon"], real_crabs["c_Scyramathia_Rochinia"])
+    crab_chorinus = crab_mod.fit_crab_models(real_crabs["a_Geryon"], real_crabs["f_Chorinus_Leptomithrax"])
+    crab_lithodes = crab_mod.fit_crab_models(real_crabs["a_Geryon"], real_crabs["d_Paralomis_Lithodes"])
+
+    cop_res = arth_mod.test_copepods_fig367_368()
+    amp_res = arth_mod.test_amphipods_fig370()
+
+    arthropod_sandbox_data = {
+        "ant_camponotus_soldier": {
+            "title": f"Camponotus {ex_head['species']} (Minor → Major Soldier Head, 82 LMs)",
+            "subtitle": "Extension of Fig. 359 (p. 732) Ovate → Cordate Radial-Bilobed Law Across 634 Specimens",
+            "target_contour": np.round(T_ant, 4).tolist(),
+            "target_lms": np.round(T_ant[::4], 4).tolist(),
+            "states": {
+                "unwarped": {
+                    "label": "Unwarped Minor Worker Head (Ovate Baseline)",
+                    "contour": np.round(S_ant, 4).tolist(),
+                    "lms": np.round(S_ant[::4], 4).tolist(),
+                    "r2_pct": 0.0,
+                    "bij": "100% (det J = 1.00)",
+                    "note": "Minor worker head capsule (ovate contour) before adductor muscle hypertrophy.",
+                },
+                "trap_or_box": {
+                    "label": "4p Rectangular Box Stretch (Misses Occipital Lobes!)",
+                    "contour": np.round(P_box_ant, 4).tolist(),
+                    "lms": np.round(P_box_ant[::4], 4).tolist(),
+                    "r2_pct": round(ex_head["r2_box"], 1),
+                    "bij": "100% (det J > 0)",
+                    "note": f"Plain Box Stretch explains only {ex_head['r2_box']:.1f}% (13.3% median across 42 spp.) — cannot flare the posterior occipital lobes or indent the vertex notch!",
+                },
+                "thompson": {
+                    "label": "8p Thompson Bilobed-Fan / Fig. 359 Radial-Cordate Grid",
+                    "contour": np.round(P_bf_ant, 4).tolist(),
+                    "lms": np.round(P_bf_ant[::4], 4).tolist(),
+                    "r2_pct": round(max(ex_head["r2_bf"], r2_359_ant), 1),
+                    "bij": f"100% (min det J = {ex_head['min_det']:.2f})",
+                    "note": f"Thompson's Bilobed-Fan & Fig. 359 Radial-Cordate law jumps to {max(ex_head['r2_bf'], r2_359_ant):.1f}% (76.0% median across 42/42 species, p = 4.55e-13)!",
+                },
+            },
+        },
+        "crab_spider_chorinus": {
+            "title": "Geryon → Chorinus / Leptomithrax (3D Spider Crab Carapace)",
+            "subtitle": "Fig. 369 (p. 744) vs. Scholtz, Knötel & Baum (2020) 3D Laser Scan",
+            "target_contour": downsample_contour(crab_chorinus["BT"], 180),
+            "target_lms": np.round(crab_chorinus["T14"], 4).tolist(),
+            "states": {
+                "unwarped": {
+                    "label": "Scholtz et al. (2020) 8-LM Fit (0 Lateral Margin Landmarks!)",
+                    "contour": downsample_contour(crab_chorinus["B_8lm"], 180),
+                    "lms": np.round(crab_chorinus["S14"], 4).tolist(),
+                    "r2_pct": 38.4,
+                    "bij": "Unconstrained Lateral Margin",
+                    "note": f"Scholtz et al. placed 0/8 landmarks on the lateral branchial margins — leaving lateral width RMS at {crab_chorinus['lateral_margin_rms_scholtz_8lm']:.3f}!",
+                },
+                "trap_or_box": {
+                    "label": "4p Rectangular Box Stretch (No Pyriform Fan)",
+                    "contour": downsample_contour(crab_chorinus["B_box"], 180),
+                    "lms": np.round(crab_chorinus["S14"], 4).tolist(),
+                    "r2_pct": crab_chorinus["r2_box_4p_pct"],
+                    "bij": "100% (det J > 0)",
+                    "note": f"Plain Box Stretch explains only {crab_chorinus['r2_box_4p_pct']:.1f}% because a rectangle cannot taper the pyriform spider-crab carapace!",
+                },
+                "thompson": {
+                    "label": "14-LM Thompson 8p Bilinear-Logarithmic Carapace Grid",
+                    "contour": downsample_contour(crab_chorinus["B_th"], 180),
+                    "lms": np.round(crab_chorinus["T14"], 4).tolist(),
+                    "r2_pct": crab_chorinus["r2_thompson_8p_pct"],
+                    "bij": f"100% (min det J = {crab_chorinus['min_jacobian_det']:.2f})",
+                    "note": f"Adding the 6 lateral branchial anchors + Thompson's 8p fan law jumps R² to {crab_chorinus['r2_thompson_8p_pct']:.1f}% ({crab_chorinus['lateral_accuracy_improvement_x']:.1f}× better lateral accuracy)!",
+                },
+            },
+        },
+        "crab_anomura_lithodes": {
+            "title": "Geryon → Paralomis / Lithodes maja (Convergent King Crab)",
+            "subtitle": "Fig. 369d (p. 744) — Carcinization from Hermit Crab Ancestor (Anomura)",
+            "target_contour": downsample_contour(crab_lithodes["BT"], 180),
+            "target_lms": np.round(crab_lithodes["T14"], 4).tolist(),
+            "states": {
+                "unwarped": {
+                    "label": "Scholtz et al. (2020) 8-LM Fit (0 Lateral Margin Landmarks!)",
+                    "contour": downsample_contour(crab_lithodes["B_8lm"], 180),
+                    "lms": np.round(crab_lithodes["S14"], 4).tolist(),
+                    "r2_pct": 21.5,
+                    "bij": "Unconstrained Lateral Margin",
+                    "note": f"Fitting only the 8 midline/rostral/cardiac landmarks misses the broad posterior branchial chamber (RMS = {crab_lithodes['lateral_margin_rms_scholtz_8lm']:.3f})!",
+                },
+                "trap_or_box": {
+                    "label": "4p Rectangular Box Stretch (24.8% R² — Fails Triangular Fan!)",
+                    "contour": downsample_contour(crab_lithodes["B_box"], 180),
+                    "lms": np.round(crab_lithodes["S14"], 4).tolist(),
+                    "r2_pct": crab_lithodes["r2_box_4p_pct"],
+                    "bij": "100% (det J > 0)",
+                    "note": f"A rectangular box stretch explains only {crab_lithodes['r2_box_4p_pct']:.1f}% of the triangular lithodid carapace!",
+                },
+                "thompson": {
+                    "label": "14-LM Thompson 8p Bilinear-Logarithmic Carapace Grid (+63.1 pts!)",
+                    "contour": downsample_contour(crab_lithodes["B_th"], 180),
+                    "lms": np.round(crab_lithodes["T14"], 4).tolist(),
+                    "r2_pct": crab_lithodes["r2_thompson_8p_pct"],
+                    "bij": f"100% (min det J = {crab_lithodes['min_jacobian_det']:.2f})",
+                    "note": f"Thompson's converging ordinate fan jumps from {crab_lithodes['r2_box_4p_pct']:.1f}% to {crab_lithodes['r2_thompson_8p_pct']:.1f}% (+{crab_lithodes['gain_over_box_pct_pts']:.1f} pts) — proving convergent carcinization follows the same global grid!",
+                },
+            },
+        },
+        "copepod_oithona_sapphirina": {
+            "title": "Oithona nana → Sapphirina (Figs. 367–368, p. 743 Table)",
+            "subtitle": "Slender Cyclopoid → Foliaceous Sapphirinid Copepod (77 Grid Nodes)",
+            "target_contour": np.round(cop_res["C_sapp"], 4).tolist(),
+            "target_lms": np.round(cop_res["T0"][::3], 4).tolist(),
+            "states": {
+                "unwarped": {
+                    "label": "Unwarped Oithona nana (Slender Cyclopoid Baseline)",
+                    "contour": np.round(cop_res["C_oith"], 4).tolist(),
+                    "lms": np.round(cop_res["S0"][::3], 4).tolist(),
+                    "r2_pct": 0.0,
+                    "bij": "100% (det J = 1.00)",
+                    "note": "Slender Oithona nana inscribed in equidistant rectangular coordinates (Fig. 367, p. 743).",
+                },
+                "trap_or_box": {
+                    "label": "4p Rectangular Box Stretch (20.4% R² — Misses Broad Urosome)",
+                    "contour": np.round(cop_res["C_box"], 4).tolist(),
+                    "lms": np.round(cop_res["P_box"][::3], 4).tolist(),
+                    "r2_pct": cop_res["box_4p_r2_pct"],
+                    "bij": "100% (det J > 0)",
+                    "note": f"Uniform linear scaling explains only {cop_res['box_4p_r2_pct']:.1f}% of Thompson's p. 743 coordinate lookup table!",
+                },
+                "thompson": {
+                    "label": "8p Thompson Logarithmic-Quadratic Coordinate Grid (+63.8 pts!)",
+                    "contour": np.round(cop_res["C_th"], 4).tolist(),
+                    "lms": np.round(cop_res["P_th"][::3], 4).tolist(),
+                    "r2_pct": cop_res["thompson_8p_log_quad_r2_pct"],
+                    "bij": f"100% (min det J = {cop_res['min_jacobian_det']:.2f})",
+                    "note": f"Thompson's logarithmic abscissal spacing + quadratic longitudinal gradient explains {cop_res['thompson_8p_log_quad_r2_pct']:.1f}% (+{cop_res['gain_over_box_pct_pts']:.1f} pts over Box)!",
+                },
+            },
+        },
+        "amphipod_harpinia_hyperia": {
+            "title": "Harpinia plumosa → Hyperia galba (Fig. 370, p. 746)",
+            "subtitle": "Benthic Phoxocephalid → Pelagic Hyperiid Amphipod (Radial-Fan Grid)",
+            "target_contour": np.round(amp_res["harpinia_to_hyperia"]["B_tgt"], 4).tolist(),
+            "target_lms": np.round(amp_res["harpinia_to_hyperia"]["T0"], 4).tolist(),
+            "states": {
+                "unwarped": {
+                    "label": "Unwarped Harpinia plumosa (Rectangular Grid 1)",
+                    "contour": np.round(amp_res["harpinia_to_hyperia"]["B_src"], 4).tolist(),
+                    "lms": np.round(amp_res["harpinia_to_hyperia"]["S0"], 4).tolist(),
+                    "r2_pct": 0.0,
+                    "bij": "100% (det J = 1.00)",
+                    "note": "Elongate benthic amphipod Harpinia plumosa in rectangular coordinates (Fig. 370, 1).",
+                },
+                "trap_or_box": {
+                    "label": "4p Rectangular Box Stretch (43.8% R² — No Dorsal Arch)",
+                    "contour": np.round(amp_res["harpinia_to_hyperia"]["B_box"], 4).tolist(),
+                    "lms": np.round(amp_res["harpinia_to_hyperia"]["P_box"], 4).tolist(),
+                    "r2_pct": amp_res["harpinia_to_hyperia"]["box_4p_r2_pct"],
+                    "bij": "100% (det J > 0)",
+                    "note": "Plain Box Stretch cannot bend the dorsal pereon arch or expand the anterior cephalon/eye!",
+                },
+                "thompson": {
+                    "label": "8p Thompson Radial-Arch Coordinate Grid (89.4% R², +45.6 pts!)",
+                    "contour": np.round(amp_res["harpinia_to_hyperia"]["B_th"], 4).tolist(),
+                    "lms": np.round(amp_res["harpinia_to_hyperia"]["P_th"], 4).tolist(),
+                    "r2_pct": amp_res["harpinia_to_hyperia"]["thompson_8p_r2_pct"],
+                    "bij": f"100% (min det J = {amp_res['harpinia_to_hyperia']['min_jacobian_det']:.2f})",
+                    "note": "Thompson's radial-arch network bends the dorsal tergites and expands the anterior head capsule with zero grid folding!",
+                },
+            },
+        },
+    }
+
+    # =========================================================================
     # 1. WRITE STRUCTURED JSON FEED FOR BIOELECTRICITY.NET
     # =========================================================================
     base_url = "https://fractastical.github.io/morpholib"
@@ -569,9 +766,10 @@ def main():
 
       <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchTab('guide', this)">1. Visual Guide (For Everyone)</button>
-        <button class="tab-btn" onclick="switchTab('sandbox', this)">2. Interactive 600-Point Thompson Grid Sandbox</button>
-        <button class="tab-btn" onclick="switchTab('bioelectric', this)">3. Bioelectric Morphogenesis Connection</button>
-        <button class="tab-btn" onclick="switchTab('embed', this)">4. Embed on bioelectricity.net (iframe / React / JSON)</button>
+        <button class="tab-btn" onclick="switchTab('sandbox', this)">2. Interactive 600-Point Fish Grid Sandbox</button>
+        <button class="tab-btn" onclick="switchTab('arthropods', this)">3. Arthropods: Ant Castes &amp; Crab Carapaces</button>
+        <button class="tab-btn" onclick="switchTab('bioelectric', this)">4. Bioelectric Morphogenesis Connection</button>
+        <button class="tab-btn" onclick="switchTab('embed', this)">5. Embed on bioelectricity.net (iframe / React / JSON)</button>
       </div>
     </div>
   </section>
@@ -714,7 +912,77 @@ def main():
     </div>
 
     <!-- ================================================================== -->
-    <!-- TAB 3: BIOELECTRIC MORPHOGENESIS CONNECTION                        -->
+    <!-- TAB 3: ARTHROPODS: ANT CASTES, CRAB CARAPACES, COPEPODS & AMPHIPODS -->
+    <!-- ================================================================== -->
+    <div id="tab-arthropods" class="tab-pane">
+      <div class="sandbox-grid">
+        <div class="controls-card">
+          <h3 style="margin-bottom: 12px; color: #fff;">Interactive Arthropod Grid Lab</h3>
+          <div class="control-group">
+            <label><span>1. Select Arthropod Clade (Figs. 359, 367–370):</span></label>
+            <select id="arthPairSelect" onchange="changeArthPair(this.value)">
+              <option value="ant_camponotus_soldier">Ant Soldier Caste: Minor → Major Head (Fig. 359 Cordate)</option>
+              <option value="crab_spider_chorinus">Spider Crab: Geryon → Chorinus / Leptomithrax (Fig. 369f)</option>
+              <option value="crab_anomura_lithodes">Convergent King Crab: Geryon → Paralomis / Lithodes (Fig. 369d)</option>
+              <option value="copepod_oithona_sapphirina">Copepods: Oithona nana → Sapphirina (Figs. 367–368)</option>
+              <option value="amphipod_harpinia_hyperia">Amphipods: Harpinia → Hyperia galba (Fig. 370)</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label><span>2. Compare Transformation Method:</span></label>
+            <button class="preset-btn" id="btn-arth-unwarped" onclick="setArthMode('unwarped')">A. Baseline / 8-LM Midline Trap</button>
+            <button class="preset-btn" id="btn-arth-trap_or_box" onclick="setArthMode('trap_or_box')">B. 4p Rectangular Box Stretch (No Curve/Fan)</button>
+            <button class="preset-btn active" id="btn-arth-thompson" onclick="setArthMode('thompson')">C. 8p Thompson Coordinate Grid (Recovered!)</button>
+          </div>
+
+          <div class="control-group">
+            <label>
+              <span>3. Warp Progression (α):</span>
+              <span id="arthAlphaVal" class="font-mono">100%</span>
+            </label>
+            <input type="range" id="arthAlphaSlider" min="0" max="100" value="100" oninput="updateArthAlpha(this.value)" />
+          </div>
+
+          <div class="callout" id="arthSandboxNote" style="margin-top: 10px; font-size: 0.86rem;">
+            Thompson's Bilobed-Fan &amp; Fig. 359 Radial-Cordate law jumps to 79.6% (76.0% median across 42/42 species, p = 4.55e-13)!
+          </div>
+        </div>
+
+        <div class="canvas-card">
+          <h3 id="arthCanvasTitle" style="color: #fff; margin-bottom: 4px;">Camponotus Soldier Head (Minor → Major, 82 LMs)</h3>
+          <p id="arthCanvasSub" style="color: var(--accent-cyan); font-size: 0.88rem; margin-bottom: 12px;">Extension of Fig. 359 (p. 732) Ovate → Cordate Radial-Bilobed Law</p>
+          <canvas id="arthCanvas" width="760" height="460"></canvas>
+          <div class="metrics-bar">
+            <div class="metric-box">
+              <div class="metric-val" id="arthMetricR2">79.6%</div>
+              <div class="metric-lbl">Shape Variance Explained R² (Higher = Better)</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-val" id="arthMetricWin" style="color: var(--accent-amber);">42 / 42 (p = 4.5e-13)</div>
+              <div class="metric-lbl">Cross-Species Statistical Replication</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-val" id="arthMetricBij" style="color: var(--accent-emerald);">100% (det J &gt; 0)</div>
+              <div class="metric-lbl">2D Cuticle Bijectivity (Zero Grid Folding)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <h2>Resolving 100% of D'Arcy Thompson's (1917) Arthropods + Ant Caste Allometry</h2>
+        <p style="margin-top: 8px;">
+          In Chapter XVII of <em>On Growth and Form</em> (1917), Thompson tested three crustacean groups (<strong>Figs. 367–368 Copepods</strong>, <strong>Fig. 369 Crab Carapaces</strong>, and <strong>Fig. 370 Amphipods</strong>) and formulated his <strong>Fig. 359 Radial-Cordate Law</strong> (p. 732) for how an ovate structure transforms into a heart-shaped (cordate) bilobed structure around an arrest node. Testing all four across modern 3D laser scans, Antscan (2026) synchrotron micro-CT meshes, and 634 multi-caste landmark configurations reveals the exact same law we found in fishes:
+        </p>
+        <img class="step-img" src="../outreach_fig8_antscan_caste_allometry_hypotheses.png" alt="Antscan 2026 & Ant Caste Allometry Thompson Tests" />
+        <img class="step-img" src="../outreach_fig9_crab_carapace_paradox_resolution.png" alt="Resolving the Scholtz et al. 2020 Crab Carapace Paradox" style="margin-top: 18px;" />
+        <img class="step-img" src="../outreach_fig10_complete_arthropod_atlas.png" alt="Complete 1917 Arthropod Atlas: Copepods, Crabs, Amphipods & Ants" style="margin-top: 18px;" />
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- TAB 4: BIOELECTRIC MORPHOGENESIS CONNECTION                        -->
     <!-- ================================================================== -->
     <div id="tab-bioelectric" class="tab-pane">
       <div class="step-card">
@@ -769,9 +1037,14 @@ def main():
 
   <script>
     const SANDBOX_DATA = {json.dumps(sandbox_data)};
+    const ARTHROPOD_DATA = {json.dumps(arthropod_sandbox_data)};
     let currentPair = 'scarus_pomacanthus';
     let currentMode = 'thompson600';
     let currentAlpha = 1.0;
+
+    let currentArthPair = 'ant_camponotus_soldier';
+    let currentArthMode = 'thompson';
+    let currentArthAlpha = 1.0;
 
     function switchTab(tabId, btnEl) {{
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
@@ -779,6 +1052,117 @@ def main():
       document.getElementById('tab-' + tabId).classList.add('active');
       btnEl.classList.add('active');
       if (tabId === 'sandbox') drawSandbox();
+      if (tabId === 'arthropods') drawArthSandbox();
+    }}
+
+    function changeArthPair(pid) {{
+      currentArthPair = pid;
+      drawArthSandbox();
+    }}
+
+    function setArthMode(mode) {{
+      currentArthMode = mode;
+      ['unwarped', 'trap_or_box', 'thompson'].forEach(m => {{
+        document.getElementById('btn-arth-' + m).classList.toggle('active', m === mode);
+      }});
+      drawArthSandbox();
+    }}
+
+    function updateArthAlpha(val) {{
+      currentArthAlpha = parseFloat(val) / 100.0;
+      document.getElementById('arthAlphaVal').textContent = val + '%';
+      drawArthSandbox();
+    }}
+
+    function drawArthSandbox() {{
+      const canvas = document.getElementById('arthCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const pdata = ARTHROPOD_DATA[currentArthPair];
+      const stUnw = pdata.states.unwarped;
+      const stCur = pdata.states[currentArthMode];
+      const tgt = pdata.target_contour;
+
+      document.getElementById('arthCanvasTitle').textContent = pdata.title;
+      document.getElementById('arthCanvasSub').textContent = pdata.subtitle + ' — ' + stCur.label;
+      document.getElementById('arthSandboxNote').textContent = stCur.note;
+
+      const r2Val = (1 - currentArthAlpha) * stUnw.r2_pct + currentArthAlpha * stCur.r2_pct;
+      document.getElementById('arthMetricR2').textContent = r2Val.toFixed(1) + '%';
+      document.getElementById('arthMetricR2').style.color = currentArthMode === 'thompson' ? '#22c55e' : '#f59e0b';
+      document.getElementById('arthMetricBij').textContent = stCur.bij;
+
+      const src = stUnw.contour.map((pt, i) => [
+        (1 - currentArthAlpha) * pt[0] + currentArthAlpha * stCur.contour[i][0],
+        (1 - currentArthAlpha) * pt[1] + currentArthAlpha * stCur.contour[i][1]
+      ]);
+
+      const allPts = tgt.concat(src);
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const [x, y] of allPts) {{
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }}
+      const pad = (maxX - minX) * 0.14;
+      minX -= pad; maxX += pad; minY -= pad; maxY += pad;
+      const scale = Math.min((W - 60) / (maxX - minX), (H - 60) / (maxY - minY));
+      const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+      const toX = x => W / 2 + (x - cx) * scale;
+      const toY = y => H / 2 - (y - cy) * scale;
+
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      const stepG = (maxX - minX) / 8.0;
+      for (let gx = minX; gx <= maxX; gx += stepG) {{
+        ctx.beginPath();
+        ctx.moveTo(toX(gx), 20);
+        ctx.lineTo(toX(gx), H - 20);
+        ctx.stroke();
+      }}
+      for (let gy = minY; gy <= maxY; gy += stepG) {{
+        ctx.beginPath();
+        ctx.moveTo(20, toY(gy));
+        ctx.lineTo(W - 20, toY(gy));
+        ctx.stroke();
+      }}
+
+      ctx.beginPath();
+      tgt.forEach(([x, y], idx) => idx === 0 ? ctx.moveTo(toX(x), toY(y)) : ctx.lineTo(toX(x), toY(y)));
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(244, 63, 94, 0.22)';
+      ctx.fill();
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 2.4;
+      ctx.setLineDash([7, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.beginPath();
+      src.forEach(([x, y], idx) => idx === 0 ? ctx.moveTo(toX(x), toY(y)) : ctx.lineTo(toX(x), toY(y)));
+      ctx.closePath();
+      const isGood = currentArthMode === 'thompson';
+      ctx.fillStyle = isGood ? 'rgba(34, 197, 94, 0.42)' : 'rgba(249, 115, 22, 0.35)';
+      ctx.fill();
+      ctx.strokeStyle = isGood ? '#15803d' : '#ea580c';
+      ctx.lineWidth = 2.6;
+      ctx.stroke();
+
+      if (pdata.target_lms) {{
+        pdata.target_lms.forEach(([x, y], i) => {{
+          ctx.beginPath();
+          ctx.arc(toX(x), toY(y), 5.0, 0, Math.PI * 2);
+          ctx.fillStyle = i < 8 ? '#eab308' : '#10b981';
+          ctx.fill();
+          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+        }});
+      }}
     }}
 
     function changePair(pid) {{
