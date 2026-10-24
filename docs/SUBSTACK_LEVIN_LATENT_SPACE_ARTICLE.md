@@ -223,40 +223,31 @@ How does a living tissue actually store a target coordinate in that morphospace?
 
 ---
 
-## The Final Scoreboard: How Right Is Michael Levin? (`77.6%` Equal-Weight Score Across All 7 Claims — `90.5%` on Structural Math, `0.0%` on Non-Physical Ghosts)
+## The Final Scoreboard: How Right Is Michael Levin? (`81.6%` Across the 3 Equal `33.3%` Pillars — `92.4%` on Structural Math, `0.0%` on Non-Physical Ghosts)
 
 ![](https://fractastical.github.io/morpholib/media/substack_final_scoreboard.png)
 
-To give a concrete, transparent answer to *"How right is Michael Levin across all 7 claims?"*, we weighted **every single claim equally at `10 points` each (`7 × 10 = 70 points` total)**, separating **Empirical & Structural Math (`D + P_structural`, 60 points of weight)** from **Strong Dualist Ingression (`P_dualist`, 10 points of weight)**:
+To give a concrete, transparent answer to *"How right is Michael Levin?"*, we gave **each of the three major pillars of this article an equal `33.3%` (`1/3`) weight**:
+1. **Pillar I — Self-Sorting Cells (Claims 1–3 = `33.3%` total, `11.1%` each)**
+2. **Pillar II — D’Arcy Thompson’s Generative Morphospace (Claim 4 = `33.3%` total)**
+3. **Pillar III — Bioelectric & Xenobot Attractors (Claims 5–7 = `33.3%` total, `11.1%` each)**
 
-* **Claim 1 — Sorting Array Error Tolerance (`6.7 / 10 pts = 67%` — PARTIALLY REFUTED):**
-  * **Bubble Sort (`+3.33 / 3.33 pts`):** Works with zero error-handling code.
-  * **Selection Sort (`+3.33 / 3.33 pts`):** Teleports across immovable barriers (while advancing `target` past passive frozen cells in `.pyc` bytecode).
-  * **Insertion Sort (`+0.0 / 3.33 pts`):** Contains an explicit 3-line `if status == FREEZE: prev = -1` exception handler in `InsertionSortCell.py` (L74–76). Deleting those 3 lines spikes error **4.5× higher (`4.90 → 21.95`)**.
-* **Claim 2 — Sorting "Delayed Gratification" (`1.3 / 10 pts = 13%` — OPTICAL ILLUSION OF THE RULER):**
-  * **Empirical Curve `E(v)` (`+1.3 / 3.33 pts`):** The neighbor-drop curve `E(v)` genuinely ticks up 47 times (`DG = 0.764`), just as reported in the paper.
-  * **Barrier Detour Claim (`+0.0 / 3.33 pts`):** Proved in Lean 4 Theorem 1 that **`0` Bubble or Insertion cells ever cross an immovable barrier**.
-  * **Going Against the Gradient Claim (`+0.0 / 3.33 pts`):** Every single Bubble swap goes **strictly downhill (`ΔI = −1`, `0/192` uphill steps)** on the true pairwise inversion potential `I(v)` (**Hoel Causal Emergence 2.0 = `+0.119`**), whereas `E(v)` has negative causal emergence (`−0.253`).
-* **Claim 3 — Chimeric Algotype Clustering (`8.7 / 10 pts = 87%` — EMPIRICALLY VINDICATED & CRITICS REFUTED TWICE):**
-  * **Unique Keys `Fig. 8A` (`+4.35 / 4.35 pts`):** Strictly unique keys (`0` duplicates) still peak at **`0.624–0.640`** via kinematic speed waves (`O(1)` Selection sports cars vs. `O(n²)` Bubble pedestrians)—refuting the CS blog critics!
-  * **Duplicate Keys & `C = 2` Anti-Clustering (`+4.35 / 4.35 pts`):** `C = 2` copies per key produces **Anti-Clustering (`0.477 < 0.50`, `S B | S B`)** while `C = 10` produces homotypic cliques (`0.659`, `SSSSS | BBBBB`), refuting textbook sort stability a second time!
-  * **Dualist "Unproduced Side-Quest" Claim (`+0.0 / 1.3 pts`):** 100% of the clustering is produced and predicted by the local Markov transition matrix.
-* **Claim 4 — D’Arcy Thompson’s Low-Dimensional Generative Morphospace (`9.6 / 10 pts = 96%` — STRONGLY CONFIRMED):**
-  * **600-Point Homologous Fin Outlines (`+5.0 / 5.0 pts`):** Standard 17-dot tests failed only because 53% of the dots sit in the skull. On homologous perimeter outlines, Thompson’s 8-knob grids win by **`+13%` to `+48%`** (`100%` un-folded vs. `0%` for 600-pt Thin-Plate Splines).
-  * **10,303-Species Evolution & 5,180-Species Blind Test (`+4.6 / 5.0 pts`):** Aligns with **150 Myr of fish body-plan evolution at `93.5%–98.9%`** across 440 families and crushes the clade consensus in our pre-registered blind test (`p = 10⁻¹⁰³`, `r = 0.87`; losing `0.4 pts` only because `H2` nearest-neighbor margin was `4%`, `p = 0.061`).
-* **Claim 5 — Planarian `2H0T` Bioelectric Target Memory (`9.5 / 10 pts = 95%` — STRONGLY CONFIRMED):**
-  * **Nernst–Planck Boltzmann Electrophoresis (`+5.0 / 5.0 pts`):** Exact zero-flux ratio `exp(40/25.85) ≈ 4.70` verified in 1D PDE and 405-cell 2D Voronoi Scharfetter–Gummel networks.
-  * **Permanent Cryptic `2H0T` Memory After Washout (`+4.5 / 5.0 pts`):** `G_gj` cancels at zero flux, permanently locking the two-headed attractor after 8-octanol washout.
-* **Claim 6 — Picasso Tadpole Closed-Loop Homeostasis (`9.5 / 10 pts = 95%` — STRONGLY CONFIRMED):**
-  * **Closed-Loop Lyapunov Descent vs. Open-Loop Null (`+5.0 / 5.0 pts`):** Open-loop displacement fails (`100%` error retained); Procrustes / Variational Free Energy descent (`dV/dt ≤ 0`) restores the target face.
-  * **3D Maxwell Cartilage & MMP-2/9 Zymography (`+4.5 / 5.0 pts`):** Reproduces mechanical stress relaxation and GM6001 arrest.
-* **Claim 7 — Xenobot Kinematic Self-Replication (`9.0 / 10 pts = 90%` — STRONGLY CONFIRMED):**
-  * **3D Voxel Mass-Spring Lattice Locomotion (`+4.5 / 5.0 pts`):** 8×8×7 3D lattice (456 nodes, 3,085 springs) reproduces phase-noise-robust gait.
-  * **Regularized-Stokeslet Squirmer C-Mouth Capture (`+4.5 / 5.0 pts`):** Confirms `θ ≈ 105°` C-mouth concavity as the hydrodynamic optimum (`3–4` daughter generations vs. `1` for a sphere).
-* **How the Equal-Weight Subcomponents Add Up (`(6.7 + 1.3 + 8.7 + 9.6 + 9.5 + 9.5 + 9.0) / 70 = 54.3 / 70 pts = 77.6%`):**
-  * **Equal-Weight Mean Across All 7 Claims: `(67% + 13% + 87% + 96% + 95% + 95% + 90%) / 7 = 77.6%`**
-  * **On Empirical Phenomena & Structural Mathematical Free Lunches (`D + P_structural`): `54.3 / 60 pts = 90.5% RIGHT!`**
-  * **On Strong Dualist "Non-Physical Ingression" (`P_dualist`): `0.0 / 10 pts = 0.0% NEEDED!`**
+Here is how the subcomponents add up across the three equal pillars:
+
+* **Pillar I — Self-Sorting Cells (`18.5 / 33.3 pts = 55.6%` of Pillar I):**
+  * **Claim 1 — Sorting Error Tolerance (`7.4 / 11.1 pts = 67%` — PARTIALLY REFUTED):** Bubble (`+3.7 / 3.7`) and Selection (`+3.7 / 3.7`) work without error-handling code, while Insertion (`+0.0 / 3.7`) relies on an explicit 3-line `if status == FREEZE: prev = -1` reset in `InsertionSortCell.py` (L74–76; `4.5×` error jump when removed).
+  * **Claim 2 — Sorting "Delayed Gratification" (`1.5 / 11.1 pts = 13%` — OPTICAL ILLUSION OF THE RULER):** The neighbor-drop curve `E(v)` genuinely ticks up 47 times (`+1.5 / 3.7`), but Lean 4 Theorem 1 proves `0` Bubble/Insertion cells cross an immovable barrier (`+0.0 / 3.7`) and every Bubble swap goes strictly downhill (`ΔI = −1`, `0/192` uphill steps, `+0.0 / 3.7`) on `I(v)` (**Hoel Causal Emergence 2.0 = `+0.119` vs. `−0.253` on `E(v)`**).
+  * **Claim 3 — Secret Clique Clustering (`9.6 / 11.1 pts = 87%` — EMPIRICALLY VINDICATED & CRITICS REFUTED TWICE):** Strictly unique keys (`Fig. 8A`, `+4.8 / 4.8`) and `C = 2` anti-clustering vs. `C = 10` cliques (`+4.8 / 4.8`) are 100% real and refute the CS blog critics twice, while `+0.0 / 1.5` pts go to non-physical dualism.
+* **Pillar II — D’Arcy Thompson’s Generative Morphospace (`32.0 / 33.3 pts = 96.0%` of Pillar II):**
+  * **Claim 4 — 600-Point Homologous Fin Outlines (`+16.7 / 16.7 pts`) & 10,303-Species / 5,180-Blind-Test Validation (`+15.3 / 16.6 pts` — STRONGLY CONFIRMED):** Standard 17-dot tests failed only because 53% of the dots sit in the skull. On homologous perimeter outlines, Thompson’s 8-knob grids win by **`+13%` to `+48%`** (`100%` un-folded) and align with **150 Myr of fish body-plan evolution at `93.5%–98.9%`** across 440 families (`p = 10⁻¹⁰³` in our pre-registered blind test; losing `1.3 pts` only because `H2` nearest-neighbor margin was `4%`, `p = 0.061`).
+* **Pillar III — Bioelectric Memory (`2H0T` Planarians), Picasso Tadpoles & Xenobots (`31.1 / 33.3 pts = 93.3%` of Pillar III):**
+  * **Claim 5 — Planarian `2H0T` Bioelectric Memory (`10.6 / 11.1 pts = 95%`):** Zero-flux Nernst–Planck Boltzmann ratio (`exp(40/25.85) ≈ 4.70`) cancels `G_gj` at equilibrium and locks permanent two-headed memory after washout.
+  * **Claim 6 — Picasso Tadpole Homeostasis (`10.6 / 11.1 pts = 95%`):** Closed-loop Procrustes / Variational Free Energy Lyapunov descent (`dV/dt ≤ 0`) coupled to 3D Maxwell cartilage & MMP zymography reproduces face normalization and GM6001 arrest.
+  * **Claim 7 — Xenobot Kinematic Self-Replication (`10.0 / 11.1 pts = 90%`):** 8×8×7 3D voxel lattice and 2D regularized-Stokeslet squirmer confirm `θ ≈ 105°` C-mouth concavity as the hydrodynamic capture optimum (`3–4` daughter generations).
+* **How the 3 Equal Pillars Add Up (`18.5 + 32.0 + 31.1 = 81.6 / 100 pts = 81.6% Overall`):**
+  * **3-Pillar Composite Score: `(55.6% + 96.0% + 93.3%) / 3 = 81.6%`**
+  * **On Empirical Phenomena & Structural Mathematical Free Lunches (`D + P_structural`): `81.6 / 88.3 pts = 92.4% RIGHT!`**
+  * **On Strong Dualist "Non-Physical Ingression" (`P_dualist`): `0.0 / 11.7 pts = 0.0% NEEDED!`**
 
 ---
 

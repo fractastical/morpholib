@@ -575,154 +575,141 @@ def render_fig6_decisive_comparison_d_vs_dp():
 def render_fig7_final_scoreboard():
     """
     Illustrated Guide 7: 'The Final Scoreboard: How Right Is Michael Levin?'
-    All 7 claims are equally weighted (10 points each = 70 points total -> 76.7%):
-      - Claim 1 (Sorting Error Tolerance):     6.7 / 10 pts (67%)
-      - Claim 2 ('Delayed Gratification'):     1.3 / 10 pts (13%)
-      - Claim 3 (Secret Clique Clustering):    8.7 / 10 pts (87%)
-      - Claim 4 (D'Arcy Thompson Grids):       9.6 / 10 pts (96%)
-      - Claim 5 (Planarian 2H0T Memory):       9.5 / 10 pts (95%)
-      - Claim 6 (Picasso Tadpole Homeostat):   9.5 / 10 pts (95%)
-      - Claim 7 (Xenobot Self-Replication):    9.0 / 10 pts (90%)
+    Uses the 3-Pillar Equal Split (33.3% per Pillar = 100.0% Total):
+      - Pillar I   (33.3% weight) — Sorting Morphogenesis (Claims 1–3, 11.1% each):
+          • Claim 1 (Error Tolerance):       7.4 / 11.1 pts (67%)
+          • Claim 2 ('Delayed Gratification'): 1.5 / 11.1 pts (13%)
+          • Claim 3 (Secret Clique Clustering): 9.6 / 11.1 pts (87%)
+          -> Pillar I Subtotal = 18.5 / 33.3 pts (55.6% of Pillar I)
+      - Pillar II  (33.3% weight) — D'Arcy Thompson Morphospace (Claim 4, 33.3%):
+          • Claim 4 (10,303 Fishes & 5,180 Blind Test): 32.0 / 33.3 pts (96.0% of Pillar II)
+      - Pillar III (33.3% weight) — Bioelectric & Biobot Attractors (Claims 5–7, 11.1% each):
+          • Claim 5 (Planarian 2H0T Memory):    10.6 / 11.1 pts (95%)
+          • Claim 6 (Picasso Tadpole Homeostat): 10.6 / 11.1 pts (95%)
+          • Claim 7 (Xenobot Self-Replication):  10.0 / 11.1 pts (90%)
+          -> Pillar III Subtotal = 31.1 / 33.3 pts (93.3% of Pillar III)
       -------------------------------------------------------------------------
-      EQUAL-WEIGHT TOTAL:  54.3 / 70 pts = 77.6% Mean Across All 7 Claims!
-        • Empirical & Structural Math (D + P_structural): 90.5% Right (54.3 / 60 pts)
-        • Strong Dualist 'Non-Physical Ghosts' (P_dualist): 0.0% Needed (0.0 / 10 pts)
+      3-PILLAR TOTAL:  18.5 + 32.0 + 31.1 = 81.6 / 100 pts (81.6% Overall!)
+        • Empirical & Structural Math (D + P_structural): 92.4% Right (81.6 / 88.3 pts)
+        • Strong Dualist 'Non-Physical Ghosts' (P_dualist): 0.0% Needed (0.0 / 11.7 pts)
     """
-    fig, ax = plt.subplots(figsize=(14.6, 10.2), dpi=160, facecolor="#0b1325")
-    fig.subplots_adjust(left=0.02, right=0.98, top=0.88, bottom=0.02)
+    fig, ax = plt.subplots(figsize=(14.6, 8.8), dpi=160, facecolor="#0b1325")
+    fig.subplots_adjust(left=0.02, right=0.98, top=0.87, bottom=0.03)
     ax.set_facecolor("#0b1325")
     ax.set_xlim(0, 100)
-    ax.set_ylim(0, 122)
+    ax.set_ylim(0, 106)
     ax.axis("off")
 
     fig.suptitle(
-        "The Final Scoreboard: How Right Is Michael Levin? (77.6% Equal-Weight Score Across All 7 Claims)",
-        color="#f8fafc", fontsize=15.0, fontweight="bold", y=0.962
+        "The Final Scoreboard: How Right Is Michael Levin? (81.6% Across the 3 Equal 33.3% Pillars)",
+        color="#f8fafc", fontsize=15.0, fontweight="bold", y=0.958
     )
     ax.text(
-        50, 119.8,
-        "Every Claim Weighted Equally (10 Pts Each = 70 Pts Total):  (6.7 + 1.3 + 8.7 + 9.6 + 9.5 + 9.5 + 9.0) / 70 = 77.6% Overall  (90.5% on Structural Math · 0.0% on Ghosts)",
-        color="#93c5fd", fontsize=8.9, fontweight="bold", ha="center", va="center"
+        50, 104.2,
+        "Three Equal 33.3% Pillars:  Pillar I Sorting (18.5 / 33.3)  +  Pillar II Thompson Grids (32.0 / 33.3)  +  Pillar III Bioelectric Attractors (31.1 / 33.3)  =  81.6 / 100%",
+        color="#93c5fd", fontsize=8.8, fontweight="bold", ha="center", va="center"
     )
 
     rows = [
         (
             "CLAIM 1 · Sorting Error Tolerance",
-            "\"Zero code added for broken cells\" (Weight: 10 pts)",
-            "• Bubble (+3.3/3.3) & Selection (+3.3/3.3) need zero error-handling code\n• InsertionSortCell.py (L74–76) has explicit 3-line `FREEZE` reset (+0/3.3)",
-            "6.7 / 10 pts (67%)\nPARTIALLY REFUTED",
+            "Pillar I.A · Weight: 11.1% (1/3 of 33.3%)",
+            "• Bubble (+3.7/3.7) & Selection (+3.7/3.7) need zero error-handling code\n• InsertionSortCell.py (L74–76) has explicit 3-line `FREEZE` reset (+0/3.7)",
+            "7.4 / 11.1 pts (67%)\nPARTIALLY REFUTED",
             "#f59e0b", "#451a03", "#fef3c7"
         ),
         (
             "CLAIM 2 · 'Delayed Gratification'",
-            "\"Going against gradient around a wall\" (Weight: 10 pts)",
-            "• Neighbor curve E(v) ticks up (+1.3/3.3), but 0 Bubble cells cross wall (+0/3.3)\n• True energy I(v) goes strictly downhill ΔI = −1 on 192/192 swaps (+0/3.3)",
-            "1.3 / 10 pts (13%)\nOPTICAL ILLUSION",
+            "Pillar I.B · Weight: 11.1% (1/3 of 33.3%)",
+            "• Neighbor curve E(v) ticks up (+1.5/3.7), but 0 Bubble cells cross wall (+0/3.7)\n• True energy I(v) goes strictly downhill ΔI = −1 on 192/192 swaps (+0/3.7)",
+            "1.5 / 11.1 pts (13%)\nOPTICAL ILLUSION",
             "#ef4444", "#450a0a", "#fee2e2"
         ),
         (
             "CLAIM 3 · Secret Clique Clustering",
-            "\"Cliques form without friend-sensing\" (Weight: 10 pts)",
-            "• Unique keys (+4.35/4.35) & C=2/C=10 duplicate laws (+4.35/4.35) 100% real\n• Refutes CS blog critics twice, but 100% produced by speed waves (+0/1.3 ghost)",
-            "8.7 / 10 pts (87%)\nEMPIRICALLY VINDICATED",
+            "Pillar I.C · Weight: 11.1% (1/3 of 33.3%)",
+            "• Unique keys (+4.8/4.8) & C=2/C=10 duplicate laws (+4.8/4.8) 100% real\n• Refutes CS blog critics twice, but 100% produced by speed waves (+0/1.5 ghost)",
+            "9.6 / 11.1 pts (87%)\nEMPIRICALLY VINDICATED",
             "#22c55e", "#052e16", "#dcfce7"
         ),
         (
             "CLAIM 4 · D'Arcy Thompson Grids",
-            "\"Evolution tunes 8-knob body sheets\" (Weight: 10 pts)",
-            "• 600-pt homologous fin outlines beat 4p Box by +13% to +48% (+5.0/5.0)\n• Aligns 93.5%–98.9% across 10,303 fishes & 5,180 blind test (+4.6/5.0)",
-            "9.6 / 10 pts (96%)\nSTRONGLY CONFIRMED",
+            "Pillar II · Weight: 33.3% (10,303 Fishes)",
+            "• 600-pt homologous fin outlines beat 4p Box by +13% to +48% (+16.7/16.7)\n• Aligns 93.5%–98.9% across 10,303 fishes & 5,180 blind test (+15.3/16.6)",
+            "32.0 / 33.3 pts (96%)\nSTRONGLY CONFIRMED",
             "#22c55e", "#052e16", "#dcfce7"
         ),
         (
-            "CLAIM 5 · Planarian 2H0T Memory",
-            "\"Rewritable voltage memory without DNA change\" (10 pts)",
-            "• Zero-flux Nernst–Planck Boltzmann ratio exp(40/25.85) ≈ 4.70 (+5.0/5.0)\n• G_gj cancels at equilibrium, locking permanent 2H0T after washout (+4.5/5.0)",
-            "9.5 / 10 pts (95%)\nSTRONGLY CONFIRMED",
-            "#38bdf8", "#082f49", "#e0f2fe"
-        ),
-        (
-            "CLAIM 6 · Picasso Tadpole Homeostat",
-            "\"Scrambled organs navigate closed-loop to target\" (10 pts)",
-            "• Open-loop model fails (100% error kept); closed-loop Lyapunov dV/dt ≤ 0 (+5/5)\n• 3D Maxwell cartilage rods + MMP-2/9 zymography match GM6001 arrest (+4.5/5)",
-            "9.5 / 10 pts (95%)\nSTRONGLY CONFIRMED",
-            "#38bdf8", "#082f49", "#e0f2fe"
-        ),
-        (
-            "CLAIM 7 · Xenobot Self-Replication",
-            "\"C-mouth frog biobots self-replicate kinematically\" (10 pts)",
-            "• 8×8×7 3D voxel spring lattice reproduces evolved locomotion (+4.5/5.0)\n• 2D regularized-Stokeslet squirmer confirms θ ≈ 105° C-mouth optimum (+4.5/5.0)",
-            "9.0 / 10 pts (90%)\nSTRONGLY CONFIRMED",
+            "CLAIMS 5–7 · Bioelectric Attractors",
+            "Pillar III · Weight: 33.3% (3 × 11.1% each)",
+            "• Claim 5 Planarian 2H0T Boltzmann memory exp(40/25.85) ≈ 4.70 (+10.6/11.1)\n• Claim 6 Picasso Frogs (+10.6/11.1) & Claim 7 Xenobot Stokes (+10.0/11.1)",
+            "31.1 / 33.3 pts (93%)\nSTRONGLY CONFIRMED",
             "#38bdf8", "#082f49", "#e0f2fe"
         ),
     ]
 
-    y_tops = [108.5, 94.0, 79.5, 65.0, 50.5, 36.0, 21.5]
+    y_tops = [91.5, 75.5, 59.5, 43.5, 27.5]
     for y_c, (c_title, c_quote, c_detail, verdict, border_col, badge_bg, badge_fg) in zip(y_tops, rows):
         card = FancyBboxPatch(
-            (1.2, y_c - 5.8), 97.6, 11.8,
-            boxstyle="round,pad=0.35,rounding_size=1.3",
-            facecolor="#0f172a", edgecolor=border_col, linewidth=1.9, zorder=2
+            (1.2, y_c - 6.4), 97.6, 13.0,
+            boxstyle="round,pad=0.4,rounding_size=1.4",
+            facecolor="#0f172a", edgecolor=border_col, linewidth=2.0, zorder=2
         )
         ax.add_patch(card)
 
-        ax.plot([31.5, 31.5], [y_c - 4.8, y_c + 4.8], color="#334155", lw=1.2, ls=":", zorder=3)
-        ax.plot([76.0, 76.0], [y_c - 4.8, y_c + 4.8], color="#334155", lw=1.2, ls=":", zorder=3)
+        ax.plot([31.5, 31.5], [y_c - 5.3, y_c + 5.3], color="#334155", lw=1.2, ls=":", zorder=3)
+        ax.plot([76.0, 76.0], [y_c - 5.3, y_c + 5.3], color="#334155", lw=1.2, ls=":", zorder=3)
 
-        ax.text(2.5, y_c + 2.1, c_title, color=border_col, fontsize=9.3, fontweight="bold", ha="left", va="center", zorder=4)
-        ax.text(2.5, y_c - 2.0, c_quote, color="#cbd5e1", fontsize=7.9, style="italic", ha="left", va="center", zorder=4)
+        ax.text(2.5, y_c + 2.3, c_title, color=border_col, fontsize=9.6, fontweight="bold", ha="left", va="center", zorder=4)
+        ax.text(2.5, y_c - 2.2, c_quote, color="#cbd5e1", fontsize=8.1, style="italic", ha="left", va="center", zorder=4)
 
-        ax.text(32.8, y_c, c_detail, color="#f8fafc", fontsize=7.85, fontweight="bold", ha="left", va="center", linespacing=1.28, zorder=4)
+        ax.text(32.8, y_c, c_detail, color="#f8fafc", fontsize=8.0, fontweight="bold", ha="left", va="center", linespacing=1.32, zorder=4)
 
         badge = FancyBboxPatch(
-            (77.4, y_c - 4.2), 20.0, 8.4,
-            boxstyle="round,pad=0.28,rounding_size=1.1",
-            facecolor=badge_bg, edgecolor=border_col, linewidth=1.9, zorder=3
+            (77.4, y_c - 4.5), 20.0, 9.0,
+            boxstyle="round,pad=0.3,rounding_size=1.2",
+            facecolor=badge_bg, edgecolor=border_col, linewidth=2.0, zorder=3
         )
         ax.add_patch(badge)
-        ax.text(87.4, y_c, verdict, color=badge_fg, fontsize=8.2, fontweight="bold", ha="center", va="center", linespacing=1.22, zorder=4)
+        ax.text(87.4, y_c, verdict, color=badge_fg, fontsize=8.4, fontweight="bold", ha="center", va="center", linespacing=1.25, zorder=4)
 
-    # Stacked equal-weight bar showing all 7 claims (10 pts each = 70 pts total)
-    bar_y = 9.8
-    bar_h = 4.6
-    ax.text(1.4, bar_y + bar_h / 2, "EQUAL-WEIGHT SUM (7 × 10 = 70):\n6.7+1.3+8.7+9.6+9.5+9.5+9.0 =",
-            color="#facc15", fontsize=7.8, fontweight="bold", ha="left", va="center")
+    # Stacked percentage bar showing the 3 × 33.3% Pillars: 18.5 + 32.0 + 31.1 = 81.6 / 100
+    bar_y = 12.2
+    bar_h = 5.4
+    ax.text(1.4, bar_y + bar_h / 2, "3-PILLAR SUM (3 × 33.3%):\n18.5 + 32.0 + 31.1 = 81.6%",
+            color="#facc15", fontsize=8.0, fontweight="bold", ha="left", va="center")
 
-    seg_x = 26.0
-    total_w = 72.5  # 70 pts mapped to 72.5 width units
+    seg_x = 24.5
+    total_w = 74.0  # 100 pts mapped to 74.0 width units
     segments = [
-        (6.7,  "#f59e0b", "C1: 6.7"),
-        (1.3,  "#ef4444", "1.3"),
-        (8.7,  "#22c55e", "C3: 8.7"),
-        (9.6,  "#16a34a", "C4: 9.6"),
-        (9.5,  "#0284c7", "C5: 9.5"),
-        (9.5,  "#0369a1", "C6: 9.5"),
-        (9.0,  "#0ea5e9", "C7: 9.0"),
-        (15.7, "#334155", "Missed / Overstated: 15.7 / 70 (22.4%)"),
+        (18.5, "#f59e0b", "Pillar I (Sorting 1–3): 18.5%"),
+        (32.0, "#16a34a", "Pillar II (Thompson 4): 32.0%"),
+        (31.1, "#0284c7", "Pillar III (Bioelectric 5–7): 31.1%"),
+        (18.4, "#334155", "Missed / Overstated: 18.4%"),
     ]
     cur_x = seg_x
     for pts, col, lbl in segments:
-        w = (pts / 70.0) * total_w
-        rect = Rectangle((cur_x, bar_y), w, bar_h, facecolor=col, edgecolor="#0b1325", lw=1.3, zorder=3)
+        w = (pts / 100.0) * total_w
+        rect = Rectangle((cur_x, bar_y), w, bar_h, facecolor=col, edgecolor="#0b1325", lw=1.5, zorder=3)
         ax.add_patch(rect)
-        ax.text(cur_x + w / 2, bar_y + bar_h / 2, lbl, color="#ffffff", fontsize=7.1, fontweight="bold", ha="center", va="center", zorder=4)
+        ax.text(cur_x + w / 2, bar_y + bar_h / 2, lbl, color="#ffffff", fontsize=7.4, fontweight="bold", ha="center", va="center", zorder=4)
         cur_x += w
 
-    # Bottom synthesis bar: 3 boxes (Equal-Weight Mean 77.6%, Structural Math 90.5%, Dualist Ghosts 0.0%)
-    b1 = FancyBboxPatch((1.2, 0.6), 30.5, 7.4, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#1e293b", edgecolor="#facc15", linewidth=2.0, zorder=2)
+    # Bottom synthesis bar: 3 boxes (3-Pillar Total 81.6%, Structural Math 92.4%, Dualist Ghosts 0.0%)
+    b1 = FancyBboxPatch((1.2, 0.8), 30.5, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#1e293b", edgecolor="#facc15", linewidth=2.0, zorder=2)
     ax.add_patch(b1)
-    ax.text(16.45, 4.3, "EQUAL-WEIGHT MEAN: 77.6% (54.3 / 70 pts)\n(Average of 67%, 13%, 87%, 96%, 95%, 95%, 90%)",
-            color="#fef08a", fontsize=7.8, fontweight="bold", ha="center", va="center", linespacing=1.22, zorder=4)
+    ax.text(16.45, 4.9, "3-PILLAR SCORE: 81.6% (81.6 / 100 pts)\n(18.5 Sorting + 32.0 Thompson + 31.1 Bioelectric)",
+            color="#fef08a", fontsize=7.9, fontweight="bold", ha="center", va="center", linespacing=1.25, zorder=4)
 
-    b2 = FancyBboxPatch((33.2, 0.6), 33.0, 7.4, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#052e16", edgecolor="#22c55e", linewidth=2.0, zorder=2)
+    b2 = FancyBboxPatch((33.2, 0.8), 33.0, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#052e16", edgecolor="#22c55e", linewidth=2.0, zorder=2)
     ax.add_patch(b2)
-    ax.text(49.7, 4.3, "✔ Empirical & Structural Math (D + P_struct): 90.5%\n(54.3 / 60 pts — Free Lunches & Attractors Are Real!)",
-            color="#dcfce7", fontsize=7.8, fontweight="bold", ha="center", va="center", linespacing=1.22, zorder=4)
+    ax.text(49.7, 4.9, "✔ Empirical & Structural Math (D + P_struct): 92.4%\n(81.6 / 88.3 pts — Free Lunches & Attractors Are Real!)",
+            color="#dcfce7", fontsize=7.9, fontweight="bold", ha="center", va="center", linespacing=1.25, zorder=4)
 
-    b3 = FancyBboxPatch((67.6, 0.6), 31.2, 7.4, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#450a0a", edgecolor="#ef4444", linewidth=2.0, zorder=2)
+    b3 = FancyBboxPatch((67.6, 0.8), 31.2, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#450a0a", edgecolor="#ef4444", linewidth=2.0, zorder=2)
     ax.add_patch(b3)
-    ax.text(83.2, 4.3, "✖ Strong Dualist Ghosts (P_dualist): 0.0%\n(0.0 / 10 pts — 0.00 Extra Swaps Beyond Code D!)",
-            color="#fee2e2", fontsize=7.8, fontweight="bold", ha="center", va="center", linespacing=1.22, zorder=4)
+    ax.text(83.2, 4.9, "✖ Strong Dualist Ghosts (P_dualist): 0.0%\n(0.0 / 11.7 pts — 0.00 Extra Swaps Beyond Code D!)",
+            color="#fee2e2", fontsize=7.9, fontweight="bold", ha="center", va="center", linespacing=1.25, zorder=4)
 
     out = MEDIA / "substack_final_scoreboard.png"
     fig.savefig(out, dpi=160, facecolor=fig.get_facecolor())
