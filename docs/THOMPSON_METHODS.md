@@ -11,6 +11,7 @@
 - **Blind Preregistration & Scoring vs. FishShapes v1:** [`docs/THOMPSON_BLIND_PREREGISTRATION.md`](./THOMPSON_BLIND_PREREGISTRATION.md) · [`docs/THOMPSON_BLIND_TEST_RESULTS.md`](./THOMPSON_BLIND_TEST_RESULTS.md)
 - **Forward Dataset Portfolio & Unattended Scoring Status:** [`docs/THOMPSON_DATASET_PORTFOLIO.md`](./THOMPSON_DATASET_PORTFOLIO.md) · [`docs/portfolio/PORTFOLIO_STATUS.md`](./portfolio/PORTFOLIO_STATUS.md) · [`docs/portfolio/fishbase_morphmet.md`](./portfolio/fishbase_morphmet.md) · [`docs/portfolio/vespinae_wings.md`](./portfolio/vespinae_wings.md)
 - **Full 43-Turn Discovery & Peer-Review Chat Log:** [`docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](./THOMPSON_1917_DISCOVERY_CHAT_LOG.md) ([JSONL](./thompson_1917_discovery_chat_log.jsonl))
+- **Minimal Standalone Reference Repository (Closed-Loop Architecture, Prompts, Gates & KG Solver):** [`https://github.com/fractastical/project-delphi-loop`](https://github.com/fractastical/project-delphi-loop) (`run_loop.py`, `run_discovery_loop.py`, `query_kg_solver.py`, and [`kg/explore_kg.html`](https://github.com/fractastical/project-delphi-loop/blob/main/kg/explore_kg.html))
 
 ---
 

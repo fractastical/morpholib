@@ -168,10 +168,10 @@
   }\hspace{4pt}{\sffamily\scriptsize\color{mutedink}D'Arcy Thompson (1917) Study $\cdot$ Models, Knowledge-Graph Queries \& Repository Code Reuse}
 }
 \fancyhead[R]{{\sffamily\bfseries\scriptsize\color{sky}Joel Dietz $\cdot$ Project Delphi}}
-\fancyfoot[L]{{\sffamily\scriptsize\color{mutedink}\texttt{github.com/fractastical/morpholib} $\cdot$ \texttt{docs/THOMPSON\_METHODS.md}}}
+\fancyfoot[L]{{\sffamily\scriptsize\color{mutedink}\texttt{github.com/fractastical/morpholib} $\cdot$ \texttt{github.com/fractastical/project-delphi-loop} $\cdot$ \texttt{docs/THOMPSON\_METHODS.md}}}
 \fancyfoot[R]{%
   \tikz[baseline=(p.base)]{
-    \node[rounded corners=2pt, fill=sky, text=white, inner xsep=6pt, inner ysep=1.8pt, font=\sffamily\bfseries\scriptsize] (p) {Page \thepage\ of 4};
+    \node[rounded corners=2pt, fill=sky, text=white, inner xsep=6pt, inner ysep=1.8pt, font=\sffamily\bfseries\scriptsize] (p) {Page \thepage\ of 5};
   }
 }
 
@@ -264,9 +264,44 @@ $\bullet$ \textbf{Prof.\ P.\ C.\ Wainwright (Turns 22--28):} Co-creator of the 7
 
 \newpage
 % ============================================================================
-% PAGE 2: KNOWLEDGE GRAPH QUERIES, 79 PRODUCTION NANOPUBS & LEAN 4 PROOFS
+% PAGE 2: SYSTEM ARCHITECTURE, CLOSED-LOOP PAYLOADS & VERBATIM PROMPTS
 % ============================================================================
-\prettysection{3}{purple}{Did We Query and Publish to the Knowledge Graph? Yes --- Both Ways}
+\prettysection{3}{sky}{System Architecture, Component Data Contracts \& Verbatim Prompts}
+
+\prettyfigure{2.95in}{thompson_system_architecture_and_dataflow.png}{END-TO-END 3-LOOP SYSTEM ARCHITECTURE \& DATA-FLOW DIAGRAM (\texttt{thompson/generate\_architecture\_diagram.py}):}{Shows how (Loop 1) the Automated 12-Step MorphoEval Builder (\texttt{claude-fable-5-1}), Deterministic Sidecar (\texttt{measure\_outputs.py} + Lean 4), and Blinded Cross-Provider Referee (\texttt{gemini-4-argon} in an isolated worktree) pass SHA-256-locked YAML/TriG artifacts; (Loop 2) how reading \texttt{pk:evidenceAgainst} in Turn 2 and PI/domain-expert prompts drove 8 modular Python solvers across 43 turns; and (Loop 3) how 10,888 species predictions were locked in Nanopub \texttt{RAilN4nb...} before unblinding \texttt{FishShapes v1} and running weekly GitHub Actions CI scoring.}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.05}
+\scriptsize
+\begin{tabular}{@{}p{0.21\textwidth}p{0.21\textwidth}p{0.25\textwidth}p{0.28\textwidth}@{}}
+\toprule
+\rowcolor{navybg}
+\textcolor{white}{\textbf{Source Component}} & \textcolor{white}{\textbf{Target Component}} & \textcolor{white}{\textbf{Exact File / Payload Passed}} & \textcolor{white}{\textbf{Schema \& Deterministic Gate}} \\
+\midrule
+\rowcolor{softgray}
+\textbf{1.\ Pinned Data + Lean 4} (\texttt{datasets/thompson/}, \texttt{MathOfBiology.lean}) & \textbf{Builder Agent} (\texttt{claude-fable-5-1}, \texttt{1917-thompson-*.py}) & \texttt{trimmed\_tps\_Claverie2014.csv}, \texttt{0768..0771.jp2}, 9 specimen plates & 791 rows $\times$ 34 floats; \texttt{hashlib.sha256} verified at load; \texttt{lean} kernel exit \texttt{0} (\texttt{0 sorry}). \\
+\textbf{2.\ Builder Script} (\texttt{1917-thompson-scarus-pomacanthus.py}) & \textbf{Sidecar Verifier} (\texttt{morphoeval/measure\_outputs.py}) & \texttt{thompson\_outline\_metrics.csv} + rendered PNGs & \texttt{--self-test} synthetic recovery $<10^{-6}$; dual-rasterizer $\mathrm{IoU}$ ($900\text{px}$ vs.\ $1000\text{px}$) agrees to $0.0001$. \\
+\rowcolor{softgray}
+\textbf{3.\ Dual Referees} (\texttt{claude-fable-5-1} + blinded \texttt{gemini-4-argon}) & \textbf{KG Compiler \& Signer} (\texttt{build\_morphoeval\_kg.py}, \texttt{sign\_morphoeval.py}) & \texttt{2026-10-17-thompson-audit.yaml} \& \texttt{.measurements.yaml} $\to$ 9 \texttt{.trig} nanopubs & 7 rubric scores ($0\text{--}100$), line-pinned loci, 6 \texttt{remediation:} items $\to$ \texttt{pk:evidenceAgainst} (\texttt{RAYFKAfy...}). \\
+\textbf{4.\ Signed Audit KG + PI/Expert Prompts} (Turns 1--43 JSONL) & \textbf{Discovery Agent} (\texttt{gemini-4-argon}, 8 solver scripts) & \texttt{pk:evidenceAgainst} (L332) + verbatim prompts $\to$ \texttt{importlib.util} foundation & Emits 7 \texttt{thompson\_*\_summary.json} files ($\det D\Phi > 0$ on $600\times 600$ grid, $\Delta\mathrm{AIC}_c$, $|\cos\theta|=0.935\text{--}0.989$). \\
+\rowcolor{softgray}
+\textbf{5.\ Prediction Engine \& Preregistration} (\texttt{claude-fable-5-1}) & \textbf{Blind Scorer \& CI Runner} (\texttt{score\_blind\_predictions.py}, \texttt{thompson-portfolio.yml}) & \texttt{thompson\_blind\_predictions\_registered.csv} + Nanopubs \texttt{RAilN4nb...} \& \texttt{RA9ZKlSD...} & Locks SHA-256 \texttt{2e41cb1a...} at \texttt{dac08493} \textbf{before} \texttt{FishShapes v1} download; CI aborts on 1-byte mismatch. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\calloutcard{sky}{skylight}{VERBATIM ORCHESTRATION PROMPTS}{Exact Prompts Driving the Builder, Blinded Referee \& 43-Turn Discovery Loop}{%
+$\bullet$ \textbf{12-Step Builder/Remediation Prompt (\texttt{morphoeval/cloud\_orchestrator.py:142-215}):} \emph{``Execute all 12 steps of the closed remediation loop (Pass 1 $\to$ Pass 2): Step 1 scout ... Step 4 Lean 4 theorems with 0 sorry ... Step 7 audit across all 7 dimensions of morphoeval/rubric.yaml with line-pinned evidence and explicit remediation items ... Step 8 measure\_outputs.py ... Step 12 remediate every weakness identified in Pass 1 and re-run with --supersede-from.''}\\[1.5pt]
+$\bullet$ \textbf{Blinded Cross-Provider Referee Prompt (\texttt{2026-10-17-blinded-sample-audit.yaml}):} Spawned in a detached git worktree with \texttt{morphoeval/audits/}, \texttt{kg/}, \texttt{runs/} removed: \emph{``Score all 7 rubric dimensions using ONLY morphoeval/rubric.yaml, the target script at commit 5659d5e, and the deterministic .measurements.yaml sidecar without consulting prior audits.''}\\[1.5pt]
+$\bullet$ \textbf{Key Human-in-the-Loop Prompts (\texttt{docs/thompson\_1917\_discovery\_chat\_log.jsonl}):} \textbf{Turn 2:} \emph{``did we ever managed to definitively test thompson's hypotheses?''} ($\to$ queried \texttt{pk:evidenceAgainst}) $\cdot$ \textbf{Turn 9:} \emph{``i have a hard time seeing that the simplifications of the fish forms lead to the result you are saying''} ($\to$ exposed the $9/17$ skull-dot seesaw via 600-pt silhouettes) $\cdot$ \textbf{Turn 22:} \emph{``what's going on in E 'Phylogenetic horizon' asks Prof Wainwright''} ($\to$ 600-pt Curve-TPS/EFD benchmark) $\cdot$ \textbf{Turns 33--35:} \emph{``separating out the morphospace version of evolution from other competitive pressures ... we need other data sets to test it on''} ($\to 10{,}303$ spp.) $\cdot$ \textbf{Turn 37:} \emph{``figure out if the 600 point version really matches the actual claims of thompson regarding skewing or warping otherwise it just seems that 600 points is better than 17 points''} ($\to$ 4p Box-Stretch deconfounding audit).
+}
+
+\newpage
+% ============================================================================
+% PAGE 3: KNOWLEDGE GRAPH QUERIES, 79 PRODUCTION NANOPUBS & LEAN 4 PROOFS
+% ============================================================================
+\prettysection{4}{purple}{Did We Query and Publish to the Knowledge Graph? Yes --- Both Ways}
 
 \prettyfigure{1.45in}{../docs/media/morphoeval_pipeline.png}{THE 12-STEP MORPHOEVAL + LEAN 4 + NANOPUB LOOP:}{Every model is pinned to SHA-256 data (Step 3) and Lean 4 theorems (Step 4), audited by two cross-provider LLM assessors (Step 7), measured by an independent rasterizer sidecar (Step 8), compiled into RDF nanopublications (Step 9), RSA-2048 signed (Step 10), and queried in Step 12 to drive remediation.}
 
@@ -304,7 +339,7 @@ In the 2026-10-17 script, the coaxial grid had been fitted \emph{only to the 17 
 % ============================================================================
 % PAGE 3: REPOSITORY CODE REUSE + CRYPTOGRAPHIC DATA PROVENANCE
 % ============================================================================
-\prettysection{4}{amber}{What Other Code in This Repository Was Useful and Reused?}
+\prettysection{5}{amber}{What Other Code in This Repository Was Useful and Reused?}
 
 Rather than writing disconnected scripts, the Thompson suite dynamically imports and extends six core modules across the repository (while leaving unrelated subprojects such as \texttt{wave-vector-analysis/} untouched):
 
@@ -330,7 +365,7 @@ Rather than writing disconnected scripts, the Thompson suite dynamically imports
 \end{tabular}
 \end{table}
 
-\prettysection{5}{crimson}{Complete Cryptographic Data Provenance Table (8 Independent Sources)}
+\prettysection{6}{crimson}{Complete Cryptographic Data Provenance Table (8 Independent Sources)}
 
 Every dataset, 1917 scan, museum plate, phylogenetic tree, fossil table, and blind test file is hash-verified at runtime:
 
@@ -363,14 +398,14 @@ Every dataset, 1917 scan, museum plate, phylogenetic tree, fossil table, and bli
 % ============================================================================
 % PAGE 4: VISUAL SYNTHESIS OF THE PIPELINE + REPRODUCIBILITY COMMAND MAP
 % ============================================================================
-\prettysection{6}{sky}{Visual Synthesis: Deconfounding 600-Pt Outlines \& Phylogenetic Prediction}
+\prettysection{7}{sky}{Visual Synthesis: Deconfounding 600-Pt Outlines \& Phylogenetic Prediction}
 
 \prettyfigure{2.22in}{outreach_fig7_box_stretch_vs_true_thompson_warping.png}{DECONFOUNDING ``600 POINTS VS.\ 17 POINTS'' (\texttt{thompson/run\_box\_vs\_warping\_audit.py}):}{Triggered by Turn 37 of the discovery log: on unlabeled 600-pt black shadows (Panel A), a 4p Rectangular Box Stretch ($x'=ax+t_x, y'=dy+t_y$, zero skew/curve) ``cheats'' by stretching the mid-belly onto posterior fins (Panel B, only $2.4\%$ match on \emph{Pomacanthus} fin tips). When homologous perimeter fin bases ($\mathrm{LM}\,1\text{--}8$, Panel C) and fin apices (12 pts, Panel D) are enforced without internal skull dots, Box Stretch fails and Thompson's skew \& curvature warps jump by $\mathbf{+11.0\%\text{ to }+48.0\%}$!}
 
 \vspace{2pt}
 \prettyfigure{2.22in}{outreach_fig9_phylogenetic_prediction_engine.png}{TIME-CALIBRATED PHYLOGENETIC PREDICTION ENGINE (\texttt{thompson/run\_phylogenetic\_prediction\_engine.py}):}{Linearizing Thompson's 1917 coordinate families at the Procrustes consensus yields 7 orthogonal tangent modes ($\kappa = 20.3$ vs.\ $201$ in 30-D). Pagel's $\hat{\lambda} = 0.959$ wins by $\Delta\mathrm{AIC}_c > 2{,}400$ across 1,499 tree nodes, outperforming nearest-relative copying inside the $\sim 50\text{ Myr}$ horizon across 2,229 hold-outs and generating 68 falsifiable crown/MRCA/Monte Bolca nanopublications.}
 
-\prettysection{7}{emerald}{End-to-End Reproducibility Command Map (12 Deterministic Commands)}
+\prettysection{8}{emerald}{End-to-End Reproducibility Command Map (12 Deterministic Commands)}
 
 \begin{table}[h!]
 \centering
