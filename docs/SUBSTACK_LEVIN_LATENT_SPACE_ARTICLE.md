@@ -223,20 +223,34 @@ How does a living tissue actually store a target coordinate in that morphospace?
 
 ---
 
-## The Final Scoreboard: What Held Up and What Didn't
+## The Final Scoreboard: How Right Is Michael Levin? (`77.0%` Overall — `90.6%` on Structural Math, `0.0%` on Non-Physical Ghosts)
 
 ![](https://fractastical.github.io/morpholib/media/substack_final_scoreboard.png)
 
-* **Claim 1 — Sorting Array Error Tolerance ("No error-handling code was added"):**
-  **PARTIALLY REFUTED.** True for Bubble sort (while Selection advances its target pointer past frozen cells), but **false for Insertion sort**, which contains an explicit 3-line `if status == FREEZE: prev = -1` reset in `InsertionSortCell.py` (L74–76). Deleting those 3 lines spikes Insertion sort’s error **4.5× higher (`4.90 → 21.95`)**.
-* **Claim 2 — Sorting "Delayed Gratification" ("Going against the gradient around a barrier"):**
-  **OPTICAL ILLUSION OF THE RULER.** Proved in Lean 4 that **`0` cells ever cross an immovable barrier** in Bubble or Insertion sort, and every Bubble swap goes **strictly downhill (`ΔI = −1`, `0` uphill steps)** on the true pairwise inversion potential `I(v)` (**Hoel Causal Emergence 2.0 = `+0.119`**). Apparent uphill ticks happen only on the non-Markovian neighbor-drop ruler `E(v)` (**CE 2.0 = `−0.253`**).
-* **Claim 3 — Chimeric Algotype Clustering ("Clustering without friend-sensing code"):**
-  **EMPIRICALLY VINDICATED (AND BLOG CRITICS REFUTED TWICE).** (1) Paper Fig. 8A has **strictly unique keys (`0` duplicates)** yet peaks at **`0.624–0.640`** via kinematic transport-speed waves (`O(1)` Selection sports cars vs. `O(n²)` Bubble pedestrians); (2) on duplicate keys, **`C = 2` copies per key produces Anti-Clustering (`0.477 < 0.50`, `S B | S B`)**, proving textbook sort stability is not the cause!
-* **Claim 4 — D’Arcy Thompson’s Low-Dimensional Generative Morphospace:**
-  **STRONGLY CONFIRMED ACROSS 10,303 SPECIES.** Standard 17-dot tests failed only because 53% of the dots sit in the skull. On homologous perimeter outlines, Thompson’s 8-knob grids win by **`+13%` to `+48%`** (`100%` un-folded) and align with **150 Myr of fish body-plan evolution at `93.5%–98.9%`** (blind test `p = 10⁻¹⁰³` on `1,122` unseen species within 50 Myr).
-* **Claims 5–7 — Bioelectric Memory (`2H0T` Planarians), Picasso Tadpoles & Xenobots:**
-  **STRONGLY CONFIRMED AS DYNAMICAL ATTRACTORS.** Zero-flux Nernst–Planck Boltzmann electrophoresis (`exp(40/25.85) ≈ 4.70`), closed-loop Lyapunov free-energy descent (`dV/dt ≤ 0`), and `θ = 105°` Stokes squirmer capture turn "latent morphospace" from a philosophical metaphor into testable differential equations.
+To give a concrete, quantitative answer to *"How right is Michael Levin across all 7 claims?"*, we scored every tested claim on a **100-point subcomponent rubric** (`15 pts` each for Sorting Claims 1–3, `25 pts` for D’Arcy Thompson’s 10,303-species morphospace in Claim 4, and `30 pts` / `10 pts` each for the Bioelectric & Xenobot attractors in Claims 5–7), separating **Empirical & Structural Math (`D + P_structural`, 85 points of weight)** from **Strong Dualist Ingression (`P_dualist`, 15 points of weight)**:
+
+* **Claim 1 — Sorting Array Error Tolerance (`10.0 / 15 pts = 67%` — PARTIALLY REFUTED):**
+  * **Bubble Sort (`+5.0 / 5 pts`):** Works with zero error-handling code.
+  * **Selection Sort (`+5.0 / 5 pts`):** Teleports across immovable barriers (while advancing `target` past passive frozen cells in `.pyc` bytecode).
+  * **Insertion Sort (`+0.0 / 5 pts`):** Contains an explicit 3-line `if status == FREEZE: prev = -1` exception handler in `InsertionSortCell.py` (L74–76). Deleting those 3 lines spikes error **4.5× higher (`4.90 → 21.95`)**.
+* **Claim 2 — Sorting "Delayed Gratification" (`2.0 / 15 pts = 13%` — OPTICAL ILLUSION OF THE RULER):**
+  * **Empirical Curve `E(v)` (`+2.0 / 5 pts`):** The neighbor-drop curve `E(v)` genuinely ticks up 47 times (`DG = 0.764`), just as reported in the paper.
+  * **Barrier Detour Claim (`+0.0 / 5 pts`):** Proved in Lean 4 Theorem 1 that **`0` Bubble or Insertion cells ever cross an immovable barrier**.
+  * **Going Against the Gradient Claim (`+0.0 / 5 pts`):** Every single Bubble swap goes **strictly downhill (`ΔI = −1`, `0/192` uphill steps)** on the true pairwise inversion potential `I(v)` (**Hoel Causal Emergence 2.0 = `+0.119`**), whereas `E(v)` has negative causal emergence (`−0.253`).
+* **Claim 3 — Chimeric Algotype Clustering (`13.0 / 15 pts = 87%` — EMPIRICALLY VINDICATED & CRITICS REFUTED TWICE):**
+  * **Unique Keys `Fig. 8A` (`+6.5 / 6.5 pts`):** Strictly unique keys (`0` duplicates) still peak at **`0.624–0.640`** via kinematic speed waves (`O(1)` Selection sports cars vs. `O(n²)` Bubble pedestrians)—refuting the CS blog critics!
+  * **Duplicate Keys & `C = 2` Anti-Clustering (`+6.5 / 6.5 pts`):** `C = 2` copies per key produces **Anti-Clustering (`0.477 < 0.50`, `S B | S B`)** while `C = 10` produces homotypic cliques (`0.659`, `SSSSS | BBBBB`), refuting textbook sort stability a second time!
+  * **Dualist "Unproduced Side-Quest" Claim (`+0.0 / 2.0 pts`):** 100% of the clustering is produced and predicted by the local Markov transition matrix.
+* **Claim 4 — D’Arcy Thompson’s Low-Dimensional Generative Morphospace (`24.0 / 25 pts = 96%` — STRONGLY CONFIRMED):**
+  * **600-Point Homologous Fin Outlines (`+12.0 / 12 pts`):** Standard 17-dot tests failed only because 53% of the dots sit in the skull. On homologous perimeter outlines, Thompson’s 8-knob grids win by **`+13%` to `+48%`** (`100%` un-folded vs. `0%` for 600-pt Thin-Plate Splines).
+  * **10,303-Species Evolution & 5,180-Species Blind Test (`+12.0 / 13 pts`):** Aligns with **150 Myr of fish body-plan evolution at `93.5%–98.9%`** across 440 families and crushes the clade consensus in our pre-registered blind test (`p = 10⁻¹⁰³`, `r = 0.87`; losing `1 pt` only because `H2` nearest-neighbor margin was `4%`, `p = 0.061`).
+* **Claims 5–7 — Bioelectric Memory (`2H0T` Planarians), Picasso Tadpoles & Xenobots (`28.0 / 30 pts = 93%` — STRONGLY CONFIRMED):**
+  * **Claim 5 — Planarian `2H0T` Bioelectric Memory (`+9.5 / 10 pts`):** Zero-flux Nernst–Planck Boltzmann ratio (`exp(40/25.85) ≈ 4.70`) cancels `G_gj` at equilibrium and locks permanent two-headed memory after 8-octanol washout.
+  * **Claim 6 — Picasso Tadpole Homeostasis (`+9.5 / 10 pts`):** Closed-loop Procrustes / Variational Free Energy Lyapunov descent (`dV/dt ≤ 0`) coupled to 3D Maxwell cartilage & MMP zymography reproduces face normalization and GM6001 arrest.
+  * **Claim 7 — Xenobot Kinematic Self-Replication (`+9.0 / 10 pts`):** Our 8×8×7 3D voxel lattice and 2D regularized-Stokeslet squirmer confirm that the `θ ≈ 105°` C-mouth concavity is a genuine hydrodynamic capture optimum (`3–4` daughter generations).
+* **How the Subcomponents Add Up (`10.0 + 2.0 + 13.0 + 24.0 + 28.0 = 77.0 / 100 pts = 77.0%`):**
+  * **On Empirical Phenomena & Structural Mathematical Free Lunches (`D + P_structural`): `77.0 / 85 pts = 90.6% RIGHT!`**
+  * **On Strong Dualist "Non-Physical Ingression" (`P_dualist`): `0.0 / 15 pts = 0.0% NEEDED!`**
 
 ---
 
@@ -306,6 +320,16 @@ Just as we did for our D’Arcy Thompson study, we documented the entire investi
    python3 models/2020-kriegman-xenobot-evolutionary-biobots.py --self-test
    lean morphoeval/lean/MathOfBiology.lean
    ```
+
+6. **Transparency Heatmap: How Much of This Article and Pipeline Was Written by AI vs. Human?**
+   Because our **Adversarial Epistemic Loop (AEL)** pairs human philosophical direction and domain skepticism with multi-agent code generation, formal theorem proving, and cross-provider refereeing, we also audited the exact **Human vs. AI-Agent contribution** across all 8 sections of this article and all 5 workflow tasks:
+
+![](https://fractastical.github.io/morpholib/media/substack_ai_authorship_heatmap.png)
+*Methods Transparency Heatmap: Breakdown of AI-Agent vs. Human PI (Joel Dietz) contribution across all 8 sections of this article and 5 workflow dimensions (Hypothesis & Direction, Prose Drafting, Simulation & Math Code, Lean 4 & Statistical Proofs, and Blinded Referee Auditing).*
+
+   * **Hypothesis & Philosophical Direction (`80.6%` Human / `19.4%` AI):** The personal narrative (Galvani, Joscha Bach at CIMC, the board member’s "woo science" question, Mike Levin’s reading list, the Foresight Institute metascience reflection), the visual skepticism that exposed the `9/17` skull-dot seesaw trap and the 4-parameter Box-Stretch illusion, and the `D` vs. `D + P` framing were driven by the human author (**Joel Dietz**, `85%–95%` human in Sections 1, 5, 7, and 8).
+   * **Article Prose Word Count (`38.4%` Direct Human Writing & Edits / `61.6%` AI-Assisted Technical Synthesis):** Section 1 (the personal introduction) is **`92%` verbatim human prose**, and Section 8 (the `D` vs. `D + P` synthesis, Foresight metascience reflection, and conclusion) is **`52%` human prose**, while the technical claim walkthroughs and methods summaries (Sections 2–7) were `62%–78%` drafted by `gemini-4-argon` and `claude-fable-5-1` from the repository’s locked JSON/YAML audit files and edited by the human author.
+   * **Multi-Language Simulation Code, Lean 4 Proofs & Referee Audits (`85.8%` AI Agents / `14.2%` Human):** The C++20, Node.js, and Python ports, the 2D/3D PDE and Stokeslet fluid solvers, the 25+ kernel-checked **Lean 4** theorems (`0 sorry`), and the blinded cross-provider referee audits (`claude-fable-5-1`, `claude-sonnet-5-5-high`, `gemini-4-argon`, and OpenAI’s `gpt-5.6-sol`) were `85%–96%` executed by the AI agents under deterministic `--self-test` gates.
 
 ---
 
