@@ -85,12 +85,14 @@ def compute_ce1_and_ce2(tpm: np.ndarray) -> Dict[str, float]:
     Given an N x N row-stochastic Transition Probability Matrix (TPM):
       - `determinism`: 1 - <H(S_{t+1} | do(S_t = s))> / log2(N)  in [0, 1]
       - `degeneracy`:  1 - H(U_E) / log2(N)                      in [0, 1]
-      - `cp_eff` (CE 2.0 Causal Primitive / Effectiveness): determinism - degeneracy
+      - `cp_eff` (CE 2.0 Causal Primitive / Effectiveness): determinism - degeneracy in [0, 1]
       - `EI_bits` (CE 1.0 Effective Information): cp_eff * log2(N)
+    For a degenerate 1-state space (N <= 1), log2(N) = 0 and no causal transitions exist,
+    so determinism, cp_eff, and EI_bits are defined as 0.0 (avoiding spurious ΔCP > 0 on M = 1 collapse).
     """
     n = tpm.shape[0]
     if n <= 1:
-        return {"n_states": n, "log2_n": 0.0, "determinism": 1.0, "degeneracy": 0.0, "cp_eff": 1.0, "EI_bits": 0.0}
+        return {"n_states": int(n), "log2_n": 0.0, "determinism": 0.0, "degeneracy": 1.0, "cp_eff": 0.0, "EI_bits": 0.0}
     log2_n = float(np.log2(n))
     eps = 1e-15
     p_clip = np.clip(tpm, eps, 1.0)
@@ -203,6 +205,11 @@ def analyze_sn_sorting_markov_chains() -> Dict[int, Dict[str, object]]:
         w_norm = weights / np.sum(weights)
         ec_bits = float(-np.sum(w_norm * np.log2(w_norm)))
 
+        # Full 3-bin path Emergent Complexity across [cp_micro, max(0, dcp_1), max(0, dcp_2)]
+        path_w = np.array([cp0, max(1e-9, dcp_meso), max(1e-9, dcp_macro)], dtype=float)
+        path_w_norm = path_w / np.sum(path_w)
+        ec_path_3bin_bits = float(-np.sum(path_w_norm * np.log2(path_w_norm)))
+
         results[n_arr] = {
             "n": n_arr,
             "n_micro_states": N,
@@ -213,12 +220,15 @@ def analyze_sn_sorting_markov_chains() -> Dict[int, Dict[str, object]]:
             "macro_I_raw": m_inv_raw,
             "macro_E_swap": m_err_sw,
             "ce2_delta_cp_I_swap": round(m_inv_sw["cp_eff"] - m_micro_sw["cp_eff"], 4),
+            "ce2_delta_cp_I_spatiotemporal_swap_vs_raw": round(m_inv_sw["cp_eff"] - m_micro_raw["cp_eff"], 4),
+            "ce2_delta_cp_I_raw_like_for_like": round(m_inv_raw["cp_eff"] - m_micro_raw["cp_eff"], 4),
             "ce2_delta_cp_I_raw": round(m_inv_sw["cp_eff"] - m_micro_raw["cp_eff"], 4),
             "ce2_delta_cp_E_swap": round(m_err_sw["cp_eff"] - m_micro_sw["cp_eff"], 4),
             "ce1_delta_EI_I_bits": round(m_inv_sw["EI_bits"] - m_micro_sw["EI_bits"], 4),
             "ce1_delta_I_eff_bits": round(delta_i_eff_inv, 4),
             "ce1_delta_I_size_bits": round(delta_i_size_inv, 4),
             "ce2_emergent_complexity_bits": round(ec_bits, 4),
+            "ce2_emergent_complexity_3bin_path_bits": round(ec_path_3bin_bits, 4),
             "path_apportioning_telescoping": {
                 "cp_micro": round(cp0, 4),
                 "dcp_micro_to_meso": round(cp1 - cp0, 4),
