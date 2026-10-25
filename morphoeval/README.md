@@ -18,8 +18,10 @@ morphoeval/
   build_morphoeval_kg.py           audit -> ProbKnow nanopubs (.trig) + merged .ttl + REPORT.md
   sign_morphoeval.py               sign / publish (test -> prod) -> kg/<audit-id>/signed/ + published.json
   check_signed.mjs                 independent trusty+signature verification (@nanopub/sign, Rust/WASM)
-  vendor/probknow-1.3.ttl          vendored ontology for the offline --conform check
-  vendor/templates/*.trig          the ProbKnow Space's governed template nanopubs (shape check)
+  vendor/probknow-1.3.ttl          vendored ontology (1.x) for the offline --conform check
+  vendor/delphi-2.0.ttl            Project Delphi ontology 2.0 (agent/model split; deprecated terms marked)
+  vendor/templates/*.trig          the ProbKnow Space's governed template nanopubs (shape check);
+                                   *-2.0-staged.STAGEDxx.trig = unpublished 2.0 sources, offline check only
   kg/<audit-id>/                   generated graph for that audit (commit it: it IS the checkpoint)
 ```
 
@@ -193,6 +195,40 @@ templates so `--conform` still checks them.
 | the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (rubric template; `skos:narrower` one `pk:Concept` per dimension, the dimension id in its `dct:description`) |
 | provenance | "Extracted from a paper by ProbKnow" template v2: `prov:wasAttributedTo` the model and the publisher, `prov:wasDerivedFrom` each source (DOI, dataset or repository URL) with `dct:title` / `dct:date` (the parenthesised year of `venue`, or an explicit `year`), `rdfs:seeAlso` the tracking issue; the rubric uses the generic "Attributed to" template |
 | the scorer | `pkr:model/<assessor-id>` (`claude-fable-5-1`, `gpt-5.6-sol`, or `gemini-4-argon`) a `pk:Model` (`dct:identifier`, `prov:actedOnBehalfOf` the publisher's ORCID, in the assertion) |
+
+### Project Delphi ontology 2.0 (`--ontology-version 2.0`)
+
+[Ontology 2.0](https://github.com/fractastical/project-delphi-ontology/blob/main/ONTOLOGY.md#deprecated-in-20--migrating)
+deprecates `pk:assessedBy` (→ `prov:wasAttributedTo`), `pk:Model` (→ `prov:SoftwareAgent` for the
+assessor + `pk:usesModel` → `pk:LanguageModel` for the model it runs) and `pk:derivedFromPaper`
+(→ `prov:wasDerivedFrom`). Published nanopubs keep their meaning (the deprecated terms retain
+subsumption axioms); this is about new output. Under `--ontology-version 2.0` (or
+`audit.ontology.version: "2.0"`) the builder emits, per assessment:
+
+```turtle
+pkr:assessment/morphoeval-<sim>-<dim>  prov:wasAttributedTo pkr:agent/<agent-id> .
+pkr:agent/<agent-id>  a prov:SoftwareAgent ; rdfs:label "<assessor.label>" ;
+    prov:actedOnBehalfOf <ORCID> ; pk:usesModel pkr:model/<assessor.id> .
+pkr:model/<assessor.id>  a pk:LanguageModel ; rdfs:label "<assessor.model_label>" ;
+    dct:identifier "<assessor.id>" ; foaf:homepage <assessor.homepage> .
+```
+
+`<agent-id>` defaults to `morphoeval-<audit-id>-<assessor.id>` (one agent per audit pass and
+model, so a Pass 2 and a Pass 3 referee over the same model are distinct agents; override with
+`assessor.agent.id` / `assessor.agent.label`); the model label defaults to `assessor.label` up to
+its first parenthesis (override with `assessor.model_label`). The claim's sources move to
+`prov:wasDerivedFrom`; `pkr:model/<id>` keeps denoting the model.
+
+**Status (morpholib #23):** the 2.0 claim and rubric-assessment templates are staged upstream
+(`project-delphi-ontology/nanopubs/src/04-…`, `18-…`) but not yet signed and published, so a 2.0
+build fails closed until their trusty IRIs are supplied — in
+`vendor/templates/delphi-2.0-template-iris.json` (`{"claim": "...", "rubric-assessment": "..."}`)
+or with `--template-iri claim=<IRI> --template-iri rubric-assessment=<IRI>`. Until then
+`--allow-staged-templates` links the vendored staged sources under placeholder IRIs so the 2.0
+shape can be exercised offline with `--conform` (which also rejects any term 2.0 deprecates in a
+2.0-templated file); `sign_morphoeval.py` refuses such files. Once the IRIs are live: drop them
+into the json, vendor the signed templates as `*.<first 8 chars of RA…>.trig`, delete the
+`*-staged.*` copies, and make `"2.0"` the default in `build_morphoeval_kg.py`.
 
 Evidence is back as nodes: the rubric-assessment template has a grouped
 statement for `pk:EvidenceItem`s (code loci, generated outputs, measurements

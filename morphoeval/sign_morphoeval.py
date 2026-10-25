@@ -80,6 +80,13 @@ def main():
         if input("Publish to the PRODUCTION nanopub network (immutable)? type 'yes': ").strip() != "yes":
             sys.exit("aborted")
 
+    # Files built with `--ontology-version 2.0 --allow-staged-templates` link placeholder template
+    # IRIs (https://w3id.org/np/STAGED…) for an offline shape check only (morpholib #23).
+    if staged := [f.name for f in files if "https://w3id.org/np/STAGED" in f.read_text()]:
+        sys.exit(f"refusing to sign {len(staged)} file(s) that link a STAGED (unpublished) Project Delphi 2.0 "
+                 f"template placeholder: {', '.join(staged[:3])}{'…' if len(staged) > 3 else ''}; rebuild with "
+                 f"the published template IRIs (--template-iri / vendor/templates/delphi-2.0-template-iris.json)")
+
     conf = NanopubConf(profile=load_profile(), use_test_server=(a.publish == "test"))
     for f in files:
         ds = Dataset(); ds.parse(f, format="trig")

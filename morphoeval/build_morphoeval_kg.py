@@ -29,7 +29,11 @@ project-delphi-ontology #12):
                        re-scores; "-<role>-<assessor>" suffix for a second assessor):
                        <claim> pk:hasAssessment <it>, dct:subject the dimension
                        concept, pk:assessmentType "morphoeval/<rubric>/<dim>",
-                       pk:assessedBy pkr:model/<assessor> a pk:Model,
+                       the assessor (ontology 1.x: pk:assessedBy pkr:model/<assessor>
+                       a pk:Model; ontology 2.0: prov:wasAttributedTo
+                       pkr:agent/<agent> a prov:SoftwareAgent, which
+                       pk:usesModel pkr:model/<assessor> a pk:LanguageModel —
+                       see "Ontology 2.0" below),
                        pk:hasScore = score/100 (uncalibrated rubric score on the
                        unit interval, required by the template), pk:hasVerdict
                        band, dct:date, dct:description = rationale,
@@ -56,6 +60,35 @@ Every nanopub is one file on the nanopub temp base (http://purl.org/nanopub/temp
 so it can be sealed with sign_morphoeval.py (or nanopub-java / @nanopub/sign),
 which mints the trusty https://w3id.org/np/RA... URI.
 
+Ontology 2.0 (project-delphi-ontology PR #20; tracked in morpholib #23)
+-----------------------------------------------------------------------
+Project Delphi 2.0 deprecates pk:assessedBy (-> prov:wasAttributedTo), pk:Model
+(-> prov:SoftwareAgent for the assessor + pk:usesModel -> pk:LanguageModel for
+the model it runs) and pk:derivedFromPaper (-> prov:wasDerivedFrom).  Under
+`--ontology-version 2.0` (or `audit.ontology.version: "2.0"`) the builder emits
+
+    <assessment> prov:wasAttributedTo pkr:agent/<agent-id> .
+    pkr:agent/<agent-id> a prov:SoftwareAgent ; rdfs:label <assessor.label> ;
+        prov:actedOnBehalfOf <ORCID> ; pk:usesModel pkr:model/<assessor.id> .
+    pkr:model/<assessor.id> a pk:LanguageModel ; rdfs:label <assessor.model_label> ;
+        dct:identifier <assessor.id> ; foaf:homepage <assessor.homepage> .
+
+where <agent-id> is `assessor.agent.id` (default `morphoeval-<audit-id>-<assessor.id>`:
+one agent per audit pass and model, so two passes over the same model stay
+distinguishable), the agent's label is `assessor.agent.label` (default
+`assessor.label`, which already describes the configuration) and the model's
+label is `assessor.model_label` (default `assessor.label` before its first
+parenthesis).  The claim's sources move to prov:wasDerivedFrom.
+
+The 2.0 claim and rubric-assessment templates are staged upstream
+(project-delphi-ontology nanopubs/src/04-…, 18-…) but NOT yet signed and
+published; their trusty IRIs are read from vendor/templates/delphi-2.0-template-iris.json
+(absent until then) or `--template-iri claim=<IRI> --template-iri rubric-assessment=<IRI>`.
+Without them a 2.0 build fails closed.  The staged sources are vendored as
+`*-2.0-staged.STAGED0x.trig`; `--allow-staged-templates` links those placeholder
+IRIs so the 2.0 shape can be exercised offline with --conform.  Files built
+that way must never be signed or published.
+
 Usage
 -----
     python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<audit>.yaml
@@ -64,6 +97,7 @@ Usage
     ... --supersede         re-issue: same-named nanopubs supersede the URIs in this dir's published.json
     ... --supersede-from D  reuse/supersede nanopubs published from another audit dir (repeatable)
     ... --no-resolve-heads  skip the Nanopub Query head check before superseding (not recommended)
+    ... --ontology-version 2.0 [--template-iri KEY=IRI ...] [--allow-staged-templates]
 
 Before a nanopub supersedes a published URI, the current head of that URI's
 version chain is resolved with Nanopub Query's `get-latest-version-of-np` (the
@@ -93,8 +127,11 @@ from rdflib.namespace import DCTERMS, FOAF, PROV, RDF, RDFS, SKOS, XSD
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 RUBRIC_PATH = HERE / "rubric.yaml"
-ONTOLOGY_PATH = HERE / "vendor" / "probknow-1.3.ttl"
+ONTOLOGY_PATH = HERE / "vendor" / "probknow-1.3.ttl"      # 1.x terms (files built before 2.0)
+ONTOLOGY_2_PATH = HERE / "vendor" / "delphi-2.0.ttl"      # 2.0 (keeps the deprecated terms, marked)
 TEMPLATE_DIR = HERE / "vendor" / "templates"
+TEMPLATE_IRIS_V2_PATH = TEMPLATE_DIR / "delphi-2.0-template-iris.json"
+DEFAULT_ONTOLOGY_VERSION = "1.3"
 
 NP = Namespace("http://www.nanopub.org/nschema#")
 NPX = Namespace("http://purl.org/nanopub/x/")
@@ -130,6 +167,42 @@ LEGACY_TEMPLATES = {
     "llm-assessment": URIRef("https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template"),
     "provenance-extraction-v1": URIRef("https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg"),
 }
+# Project Delphi ontology 2.0 templates (claim with prov:wasDerivedFrom; rubric assessment attributed to a
+# prov:SoftwareAgent that pk:usesModel a pk:LanguageModel).  Staged upstream in project-delphi-ontology
+# nanopubs/src/{04,18}-… and vendored here from commit fe39dff under placeholder codes; the published trusty
+# IRIs go into delphi-2.0-template-iris.json ({"claim": "...", "rubric-assessment": "..."}) once they exist.
+STAGED_TEMPLATES_V2 = {
+    "claim": URIRef("https://w3id.org/np/STAGED04-delphi-claim-2-0-not-published/template"),
+    "rubric-assessment": URIRef("https://w3id.org/np/STAGED18-delphi-rubric-assessment-2-0-not-published/template"),
+}
+TRUSTY_TEMPLATE_RE = re.compile(r"^https://w3id\.org/np/RA[A-Za-z0-9_-]{43}(/template)?$")
+
+
+def templates_v2(overrides: dict[str, str] | None = None, allow_staged: bool = False) -> dict[str, URIRef]:
+    """The 2.0 template IRIs: vendored json, then --template-iri overrides.  Every IRI must be a
+    published trusty IRI unless --allow-staged-templates, which falls back to the vendored staged
+    sources for the keys still missing (offline shape checks only; never sign those files)."""
+    iris: dict[str, str] = {}
+    if TEMPLATE_IRIS_V2_PATH.exists():
+        iris.update(json.loads(TEMPLATE_IRIS_V2_PATH.read_text()))
+    iris.update(overrides or {})
+    out = {}
+    for key in STAGED_TEMPLATES_V2:
+        iri = iris.get(key)
+        if iri and not TRUSTY_TEMPLATE_RE.match(iri) and not allow_staged:
+            sys.exit(f"--ontology-version 2.0: template IRI for '{key}' is not a published trusty IRI: {iri}")
+        if not iri:
+            if not allow_staged:
+                sys.exit(f"--ontology-version 2.0: the Project Delphi 2.0 '{key}' template is not published yet "
+                         f"(project-delphi-ontology nanopubs/src, morpholib #23); give its IRI with "
+                         f"--template-iri {key}=<https://w3id.org/np/RA…/template> or in "
+                         f"{TEMPLATE_IRIS_V2_PATH.relative_to(ROOT)}, or pass --allow-staged-templates "
+                         f"for an offline shape check (output must not be signed)")
+            iri = str(STAGED_TEMPLATES_V2[key])
+        out[key] = URIRef(iri)
+    return out
+
+
 SCHEMA = Namespace("https://schema.org/")
 LANGUAGE_BY_SUFFIX = {".py": "Python", ".lean": "Lean 4", ".jl": "Julia", ".r": "R", ".R": "R", ".m": "MATLAB"}
 LATEST_VERSION_API = ("https://query.knowledgepixels.com/api/"
@@ -148,10 +221,13 @@ def load(audit_path: Path):
     rubric = yaml.safe_load(RUBRIC_PATH.read_text())
     audit = yaml.safe_load(Path(audit_path).read_text())
     onto = audit["audit"].get("ontology") or {}
+    if isinstance(onto, str):                      # e.g. "https://w3id.org/delphi/ontology/1.3"
+        onto = {"version": onto.rstrip("/").rsplit("/", 1)[-1]}
     if onto.get("base"):
         PK = Namespace(onto["base"])
     if onto.get("resource_base"):
         PKR = Namespace(onto["resource_base"])
+    audit["audit"]["_ontology_version"] = str(onto.get("version") or DEFAULT_ONTOLOGY_VERSION)
     # optional morphology snapshot (fingerprints + morphometrics) from measure_outputs.py
     side = Path(audit_path).with_name(Path(audit_path).stem + ".measurements.yaml")
     audit["_measurements"] = yaml.safe_load(side.read_text()) if side.exists() else None
@@ -281,7 +357,8 @@ def validate(rubric, audit) -> list[str]:
     if A["rubric_version"] != rubric["version"]:
         errs.append(f"audit targets rubric {A['rubric_version']} but rubric.yaml is {rubric['version']}")
     if not A.get("assessor", {}).get("id"):
-        errs.append("audit.assessor.id is required (the pk:Model that produced the scores)")
+        errs.append("audit.assessor.id is required (the language model that produced the scores: "
+                    "pk:Model under ontology 1.x, pk:LanguageModel run by a prov:SoftwareAgent under 2.0)")
     _, chain_errs = resolve_supersession_chain(audit)
     errs.extend(chain_errs)
     refs = audit.get("references", {})
@@ -438,14 +515,27 @@ def slug(text: str) -> str:
 
 
 class NanopubBuilder:
-    def __init__(self, audit, rubric):
+    def __init__(self, audit, rubric, ontology_version: str = DEFAULT_ONTOLOGY_VERSION,
+                 templates: dict | None = None):
         self.A = audit["audit"]
         self.rubric = rubric
         self.orcid = publisher_orcid(audit)
         self.license = URIRef(self.A.get("license", "https://creativecommons.org/licenses/by/4.0/"))
+        self.ontology_version = ontology_version
+        self.v2 = ontology_version.split(".")[0] not in ("0", "1")
+        self.templates = {**TEMPLATES, **(templates or {})}
         a = self.A["assessor"]
         self.model = PKR[f"model/{a['id']}"]
         self.model_label = a.get("label", a["id"])
+        # Ontology 2.0 splits the 1.x pk:Model node into the assessor (a prov:SoftwareAgent: the model
+        # together with its prompt, role and scaffolding — what assessor.label already describes) and
+        # the language model it ran (pkr:model/<id>, now a pk:LanguageModel with a plain model name).
+        ag = a.get("agent") or {}
+        agent_id = ag.get("id") or "morphoeval-" + str(self.A["id"]) + "-" + str(a["id"])
+        self.agent = PKR["agent/" + slug(agent_id)]
+        self.agent_label = ag.get("label") or self.model_label
+        self.lm_label = a.get("model_label") or re.sub(r"\s*\(.*$", "", self.model_label, flags=re.S).strip() or a["id"]
+        self.assessor = self.agent if self.v2 else self.model
         # Real creation time (UTC, seconds); MORPHOEVAL_CREATED pins it for reproducible rebuilds.
         stamp = os.environ.get("MORPHOEVAL_CREATED") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         self.created = Literal(stamp, datatype=XSD.dateTime, normalize=False)
@@ -621,12 +711,31 @@ class NanopubBuilder:
         return t
 
     def model_triples(self) -> list:
+        """The assessor as the rubric-assessment template describes it.  1.x: one pk:Model node.
+        2.0 (template statements 8–15): the prov:SoftwareAgent, acting on behalf of the publisher,
+        pk:usesModel the pk:LanguageModel (label, dct:identifier, foaf:homepage)."""
         a = self.A["assessor"]
-        t = [(self.model, RDF.type, PK.Model), (self.model, RDFS.label, Literal(self.model_label)),
-             (self.model, DCTERMS.identifier, Literal(a["id"])), (self.model, PROV.actedOnBehalfOf, self.orcid)]
+        if self.v2:
+            t = [(self.agent, RDF.type, PROV.SoftwareAgent), (self.agent, RDFS.label, Literal(self.agent_label)),
+                 (self.agent, PROV.actedOnBehalfOf, self.orcid), (self.agent, PK.usesModel, self.model),
+                 (self.model, RDF.type, PK.LanguageModel), (self.model, RDFS.label, Literal(self.lm_label)),
+                 (self.model, DCTERMS.identifier, Literal(a["id"]))]
+        else:
+            t = [(self.model, RDF.type, PK.Model), (self.model, RDFS.label, Literal(self.model_label)),
+                 (self.model, DCTERMS.identifier, Literal(a["id"])), (self.model, PROV.actedOnBehalfOf, self.orcid)]
         if a.get("homepage"):
             t.append((self.model, FOAF.homepage, URIRef(a["homepage"])))
         return t
+
+    def attribution_triple(self, assessment: URIRef) -> tuple:
+        """1.x: <assessment> pk:assessedBy <model>; 2.0: <assessment> prov:wasAttributedTo <agent>
+        (pk:assessedBy is deprecated in Project Delphi 2.0 as redundant with prov:wasAttributedTo)."""
+        return (assessment, PROV.wasAttributedTo, self.agent) if self.v2 else (assessment, PK.assessedBy, self.model)
+
+    @property
+    def derived_from_paper(self) -> URIRef:
+        """Claim -> source paper: pk:derivedFromPaper (1.x claim template) or prov:wasDerivedFrom (2.0)."""
+        return PROV.wasDerivedFrom if self.v2 else PK.derivedFromPaper
 
     def assessment_date(self):
         d = self.A.get("date")
@@ -657,12 +766,12 @@ class NanopubBuilder:
                    (THIS, NPX.introduces, introduces),
                    (THIS, PK.domain, dom),
                    (dom, RDFS.label, Literal(domain_slug)),
-                   (THIS, NT.wasCreatedFromProvenanceTemplate, TEMPLATES[provenance_key]),
-                   (THIS, NT.wasCreatedFromPubinfoTemplate, TEMPLATES["pubinfo-creator"]),
-                   (THIS, NT.wasCreatedFromPubinfoTemplate, TEMPLATES["pubinfo-license"]),
-                   (THIS, NT.wasCreatedFromPubinfoTemplate, TEMPLATES["pubinfo-domain"])]
+                   (THIS, NT.wasCreatedFromProvenanceTemplate, self.templates[provenance_key]),
+                   (THIS, NT.wasCreatedFromPubinfoTemplate, self.templates["pubinfo-creator"]),
+                   (THIS, NT.wasCreatedFromPubinfoTemplate, self.templates["pubinfo-license"]),
+                   (THIS, NT.wasCreatedFromPubinfoTemplate, self.templates["pubinfo-domain"])]
         if template_key:
-            triples.append((THIS, NT.wasCreatedFromTemplate, TEMPLATES[template_key]))
+            triples.append((THIS, NT.wasCreatedFromTemplate, self.templates[template_key]))
         for t in triples + list(pubinfo_extra):
             g.add(t)
         return ds
@@ -763,14 +872,17 @@ def reintroduced(written: list[Path], out_dir: Path, exempt: set[Path]) -> list[
 
 
 def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_heads: bool = True,
-          omit_probability: bool = True):
+          omit_probability: bool = True, ontology_version: str | None = None, templates: dict | None = None):
     """supersede: {file name: {"nanopub": published trusty URI, "path": its file, "text": its unsigned TriG}}.
     A nanopub whose content differs from the published one of the same name gets npx:supersedes <old>
     (after confirming <old> is still the head of its chain); one whose content is identical to a nanopub
     published from another audit dir is not re-emitted and is reported in ``build.unchanged``; one
     whose published URI is no longer the head was superseded elsewhere and is reported in
-    ``build.skipped``."""
-    B = NanopubBuilder(audit, rubric)
+    ``build.skipped``.  ontology_version "2.0" emits the Project Delphi 2.0 shape (see module doc) and
+    needs the 2.0 claim / rubric-assessment template IRIs in ``templates``."""
+    ontology_version = ontology_version or audit["audit"].get("_ontology_version") or DEFAULT_ONTOLOGY_VERSION
+    audit["audit"]["_ontology_version"] = ontology_version
+    B = NanopubBuilder(audit, rubric, ontology_version, templates)
     B.set_measurements(audit.get("_measurements"))
     A, refs = audit["audit"], audit.get("references", {})
     is_second_assessor = (A.get("role") == "second_assessor")
@@ -884,7 +996,7 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
         gs = group_scores(rubric, sim["scores"])
         claim_label = f"{sim['name']} faithfully reproduces {organism} morphology"
         model_triples = B.model_triples()
-        agents = [B.model, B.orcid]
+        agents = [B.assessor, B.orcid]
         pub_common = [(THIS, RDFS.seeAlso, issue)] if issue else []
         pub_common += [(THIS, DCTERMS.conformsTo, rubric_uri)]
         assessments = [B.assessment_uri(sim, d["id"]) for d in rubric["dimensions"]]
@@ -900,7 +1012,7 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
             t += [(au, DCTERMS.description, Literal(description)),
                   (claim, PK.hasAssessment, au),
                   (au, DCTERMS.subject, dimension),
-                  (au, PK.assessedBy, B.model),
+                  B.attribution_triple(au),
                   (au, PK.assessmentType, Literal(atype)),
                   (au, PK.hasVerdict, Literal(verdict_text)),
                   (au, PK.hasScore, unit_interval(score / 100.0))]
@@ -978,7 +1090,7 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                   (claim, PK.context, Literal(context))]
             if not omit_prob:
                 tr.append((claim, PK.weightOfEvidence, unit_interval(gs["overall"] / 100.0)))
-            tr += [(claim, PK.derivedFromPaper, ref_uri(r)) for r in papers if r.get("doi")]
+            tr += [(claim, B.derived_from_paper, ref_uri(r)) for r in papers if r.get("doi")]
             tr += B.artifact_triples(claim, scripts)
             pub = [(THIS, RDFS.seeAlso, B.artifact_uri(s)) for s in scripts] + ([(THIS, RDFS.seeAlso, issue)] if issue else []) + pub_scale_extras
             emit(f"{sim['id']}-claim.trig",
@@ -1179,9 +1291,14 @@ class Template:
         return probs
 
 
-def load_templates() -> dict[str, Template]:
+def load_templates(extra: dict | None = None) -> dict[str, Template]:
     out = {}
-    for key, uri in {**LEGACY_TEMPLATES, **TEMPLATES}.items():
+    v2 = {}
+    if TEMPLATE_IRIS_V2_PATH.exists():
+        v2.update(json.loads(TEMPLATE_IRIS_V2_PATH.read_text()))
+    uris = [*LEGACY_TEMPLATES.values(), *TEMPLATES.values(), *STAGED_TEMPLATES_V2.values(),
+            *v2.values(), *(extra or {}).values()]          # same keys across generations: merge by value
+    for uri in uris:
         code = str(uri).split("/np/")[1][:8]
         matches = list(TEMPLATE_DIR.glob(f"*.{code}.trig"))
         if matches:
@@ -1189,14 +1306,37 @@ def load_templates() -> dict[str, Template]:
     return out
 
 
-def conformance(files: list[Path]) -> list[str]:
-    onto = Graph().parse(ONTOLOGY_PATH, format="turtle")
-    onto_iri = next(onto.subjects(RDF.type, URIRef("http://www.w3.org/2002/07/owl#Ontology")))
-    onto_base = str(onto_iri).rstrip("/") + "/"
+OWL = Namespace("http://www.w3.org/2002/07/owl#")
+
+
+def declared_terms() -> tuple[set[str], set[str]]:
+    """(all pk: terms declared by the vendored ontologies, those 2.0 marks owl:deprecated), spelled in
+    the canonical and the legacy probknow namespaces."""
     PK_LEGACY = Namespace("https://w3id.org/probknow/ontology/")
-    declared = ({str(PK) + str(s)[len(onto_base):] for s in onto.subjects() if str(s).startswith(onto_base)}
-                | {str(PK_LEGACY) + str(s)[len(onto_base):] for s in onto.subjects() if str(s).startswith(onto_base)})
-    templates = load_templates()
+    declared, deprecated = set(), set()
+    for path in (ONTOLOGY_PATH, ONTOLOGY_2_PATH):
+        if not path.exists():
+            continue
+        onto = Graph().parse(path, format="turtle")
+        onto_iri = next(onto.subjects(RDF.type, OWL.Ontology))
+        onto_base = str(onto_iri).rstrip("/") + "/"
+        for s in onto.subjects():
+            if not str(s).startswith(onto_base):
+                continue
+            local = str(s)[len(onto_base):]
+            declared |= {str(PK) + local, str(PK_LEGACY) + local}
+            if path == ONTOLOGY_2_PATH and (s, OWL.deprecated, Literal(True)) in onto:
+                deprecated |= {str(PK) + local, str(PK_LEGACY) + local}
+    return declared, deprecated
+
+
+def conformance(files: list[Path], templates_extra: dict | None = None) -> list[str]:
+    declared, deprecated = declared_terms()
+    PK_LEGACY = Namespace("https://w3id.org/probknow/ontology/")
+    v2_templates = set(map(str, STAGED_TEMPLATES_V2.values())) | set(map(str, (templates_extra or {}).values()))
+    if TEMPLATE_IRIS_V2_PATH.exists():
+        v2_templates |= set(json.loads(TEMPLATE_IRIS_V2_PATH.read_text()).values())
+    templates = load_templates(templates_extra)
     probs: list[str] = []
     for f in files:
         raw = f.read_text()
@@ -1221,12 +1361,16 @@ def conformance(files: list[Path]) -> list[str]:
         for g in ds.graphs():
             for s, p, o in g:
                 nodes.update(x for x in (s, p, o) if isinstance(x, URIRef))
+        # a file built against a 2.0 template must not carry the terms 2.0 deprecates (#23)
+        is_v2 = any(str(o) in v2_templates for o in pub.objects(THIS, NT.wasCreatedFromTemplate))
         for n in nodes:
             ns = str(n)
             if ns.startswith(FORBIDDEN_PREFIXES):
                 probs.append(f"{f.name}: forbidden legacy IRI {ns}")
             if (ns.startswith(str(PK)) or ns.startswith(str(PK_LEGACY))) and ns not in declared:
                 probs.append(f"{f.name}: undeclared pk: term {ns}")
+            if is_v2 and ns in deprecated:
+                probs.append(f"{f.name}: term deprecated in Project Delphi 2.0 used with a 2.0 template: {ns}")
         for p in (DCTERMS.creator, DCTERMS.license, NPX.hasNanopubType, NPX.introduces, DCTERMS.created):
             if (THIS, p, None) not in pub:
                 probs.append(f"{f.name}: pubinfo lacks {p.n3(ds.namespace_manager)}")
@@ -1297,9 +1441,13 @@ def report(rubric, audit, rows) -> str:
     A = audit["audit"]; dims = rubric["dimensions"]
     chain, _ = resolve_supersession_chain(audit)
     chain_note = f" · supersession chain `{' -> '.join(chain)}`" if len(chain) > 1 else ""
+    v2 = str(A.get("_ontology_version", DEFAULT_ONTOLOGY_VERSION)).split(".")[0] not in ("0", "1")
+    assessor_note = (f"assessor `pkr:agent/…` (prov:SoftwareAgent) running `pkr:model/{A['assessor']['id']}` "
+                     f"(pk:LanguageModel; Project Delphi 2.0)" if v2
+                     else f"assessor `pkr:model/{A['assessor']['id']}`")
     L = [f"# MorphoEval report — audit `{A['id']}`", "",
          f"Rubric **{rubric['version']}** · checkpoint `{A['checkpoint']['commit']}` · "
-         f"assessor `pkr:model/{A['assessor']['id']}` (pk:LLMClaimAssessment) · "
+         f"{assessor_note} (pk:LLMClaimAssessment) · "
          f"tracked in {A.get('tracked_by', '—')}{chain_note}", "",
          "Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; "
          "`pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings "
@@ -1391,9 +1539,12 @@ DEMO_QUERY = """
 PREFIX pk:   <%s>
 PREFIX dct:  <http://purl.org/dc/terms/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
 SELECT ?claim ?score ?verdict ?model WHERE {
   ?c pk:hasAssessment ?a ; rdfs:label ?claim .
-  ?a a pk:LLMClaimAssessment ; pk:assessmentType ?code ; pk:hasScore ?score ; pk:hasVerdict ?verdict ; pk:assessedBy ?m .
+  ?a a pk:LLMClaimAssessment ; pk:assessmentType ?code ; pk:hasScore ?score ; pk:hasVerdict ?verdict .
+  # 1.x: pk:assessedBy <model>; 2.0: prov:wasAttributedTo <agent> (no inference on Nanopub Query, so both)
+  ?a pk:assessedBy|prov:wasAttributedTo ?m .
   ?m rdfs:label ?model .
   FILTER(STRENDS(?code, "/overall"))
 } ORDER BY ?score
@@ -1429,6 +1580,16 @@ def main():
                     help="include pk:weightOfEvidence on the claim nanopub")
     ap.add_argument("--list-needs", action="store_true",
                     help="list pressure-ranked open remediation needs across all morphoeval/audits/*.yaml and exit")
+    ap.add_argument("--ontology-version", choices=["1.3", "2.0"], default=None,
+                    help="Project Delphi ontology shape to emit (default: audit.ontology.version, else 1.3). 2.0 "
+                         "attributes assessments to a prov:SoftwareAgent that pk:usesModel a pk:LanguageModel "
+                         "and needs the 2.0 template IRIs (project-delphi-ontology; morpholib #23)")
+    ap.add_argument("--template-iri", metavar="KEY=IRI", action="append", default=[],
+                    help="2.0 template IRI for KEY in {claim, rubric-assessment}; overrides "
+                         "vendor/templates/delphi-2.0-template-iris.json (repeatable)")
+    ap.add_argument("--allow-staged-templates", action="store_true",
+                    help="2.0 only: link the vendored STAGED placeholder IRIs for templates not yet published, "
+                         "for an offline --conform shape check; the output must not be signed")
     args = ap.parse_args()
 
     if args.list_needs:
@@ -1489,6 +1650,21 @@ def main():
             sys.exit(1)
     if args.check:
         return
+    ontology_version = args.ontology_version or audit["audit"].get("_ontology_version") or DEFAULT_ONTOLOGY_VERSION
+    v2_templates = None
+    if ontology_version.split(".")[0] not in ("0", "1"):
+        overrides = {}
+        for kv in args.template_iri:
+            key, _, iri = kv.partition("=")
+            if key not in STAGED_TEMPLATES_V2 or not iri:
+                sys.exit(f"--template-iri: expected KEY=IRI with KEY in {sorted(STAGED_TEMPLATES_V2)}, got {kv!r}")
+            overrides[key] = iri
+        v2_templates = templates_v2(overrides, allow_staged=args.allow_staged_templates)
+        staged = [k for k, v in v2_templates.items() if str(v).startswith("https://w3id.org/np/STAGED")]
+        print(f"ontology 2.0 shape: assessments prov:wasAttributedTo pkr:agent/…, pk:usesModel pkr:model/…"
+              + (f"; STAGED placeholder templates for {staged} — offline check only, DO NOT SIGN" if staged else ""))
+    elif args.template_iri or args.allow_staged_templates:
+        sys.exit("--template-iri / --allow-staged-templates apply to --ontology-version 2.0 only")
     out_dir = Path(args.out) if args.out else HERE / "kg" / audit["audit"]["id"]
     supersede = None
     if args.supersede or args.supersede_from or args.rubric_from:
@@ -1516,7 +1692,9 @@ def main():
                                 "extra_nanopubs": extras}
     written, merged_path, report_path, merged, superseded = build(rubric, audit, out_dir, supersede,
                                                                   resolve_heads=not args.no_resolve_heads,
-                                                                  omit_probability=args.omit_probability)
+                                                                  omit_probability=args.omit_probability,
+                                                                  ontology_version=ontology_version,
+                                                                  templates=v2_templates)
     if getattr(build, "unchanged", None):
         print(f"  {len(build.unchanged)} nanopub(s) identical to already-published ones, not re-emitted:")
         for n, old in build.unchanged:
@@ -1548,12 +1726,14 @@ def main():
         for n, old in superseded:
             print(f"    {n}  supersedes  {old}")
     if args.conform:
-        probs = conformance(written)
+        probs = conformance(written, v2_templates)
         if probs:
             print(f"\nProject Delphi (ProbKnow) conformance: {len(probs)} problem(s)"); [print("  -", p) for p in probs]
             sys.exit(2)
-        print(f"Project Delphi (ProbKnow) conformance: OK ({len(written)} nanopubs; pk: terms all declared in {ONTOLOGY_PATH.name}; "
-              f"assertions, provenance and pubinfo match their linked templates; full timestamps; no legacy IRIs)")
+        print(f"Project Delphi (ProbKnow) conformance: OK ({len(written)} nanopubs; pk: terms all declared in "
+              f"{ONTOLOGY_PATH.name} / {ONTOLOGY_2_PATH.name}; assertions, provenance and pubinfo match their linked "
+              f"templates; full timestamps; no legacy IRIs"
+              + ("; no terms deprecated in 2.0" if v2_templates else "") + ")")
     if args.query:
         print("\nSPARQL: overall assessments")
         for r in merged.query(DEMO_QUERY % PK):
