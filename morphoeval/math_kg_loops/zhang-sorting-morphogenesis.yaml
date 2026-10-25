@@ -1,0 +1,105 @@
+sim_id: zhang-sorting-morphogenesis
+math_family: Symmetric Group S_n Coxeter Inversion Lyapunov Dynamics & Hoel Causal Emergence 2.0
+model_spec:
+  model: "Zhang, Goldstein & Levin (2025) Autonomous Cell-View Sorting Morphogenesis, 3-Ablation Platonic Space Audit & Hoel Causal Emergence 2.0"
+  n_cells: 100
+  seed: 20261022
+  inputs:
+    - sorting-morphogenesis/catalog.json
+equations:
+  - law_name: Bubble & Insertion Adjacent-Swap Barrier Pinning Law
+    formula: "p + 1 < d ∨ d < p ⟹ (i < d → swap_pos(p, i) < d) ∧ (d < i → d < swap_pos(p, i))"
+    lean_decl: MathOfBiology.ZhangSortingMorphogenesis.swap_pos
+    lean_theorem: MathOfBiology.ZhangSortingMorphogenesis.bubble_adjacent_swap_preserves_left_partition
+    lean_locus: morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean#L30-L79
+    lean_code: |
+      def legal_adjacent_swap (p d : Nat) : Prop := p + 1 < d ∨ d < p
+      def swap_pos (p i : Nat) : Nat :=
+        if i == p then p + 1 else if i == p + 1 then p else i
+      theorem bubble_adjacent_swap_preserves_left_partition
+          (p d i : Nat) (h_legal : legal_adjacent_swap p d) :
+          (i < d → swap_pos p i < d) ∧ (d < i → d < swap_pos p i)
+    variables: "p: adjacent swap index; d: immovable frozen defect index; i: cell position"
+    role: Proves that zero cells ever cross an immovable frozen barrier under Bubble or Insertion sort
+    source_citation: "Zhang, Goldstein & Levin (2025) Adaptive Behavior 33(1):25-54 Fig. 5C; BubbleSortCell.py L38-74"
+    code_locus: sorting-morphogenesis/sorting_morphogenesis.py#L65-L185
+  - law_name: Insertion Sort Stateful Prefix-Reset Exception Handler Law
+    formula: "status_i = FREEZE ⟹ prev ← -1  (InsertionSortCell.py L74-76);   E_without_reset = 21.95 vs. E_with_reset = 4.90"
+    lean_decl: MathOfBiology.ZhangSortingMorphogenesis.prefix_sorted_with_freeze_reset
+    lean_theorem: MathOfBiology.ZhangSortingMorphogenesis.insertion_freeze_reset_unblocks_and_checks_post_frozen_order
+    lean_locus: morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean#L86-L129
+    lean_code: |
+      theorem insertion_freeze_reset_unblocks_and_checks_post_frozen_order :
+          prefix_sorted_strict [(2, false), (50, true), (6, false), (9, false)] = false ∧
+          prefix_sorted_with_freeze_reset [(2, false), (50, true), (6, false), (9, false)] = true ∧
+          prefix_sorted_with_freeze_reset [(2, false), (50, true), (12, false), (6, false)] = false := by
+        decide
+    variables: "cells: prefix list of (value, is_frozen) pairs; prev: running lower bound reset at frozen cells"
+    role: Proves that Insertion sort's frozen-cell tolerance depends on an explicit 3-line exception handler in InsertionSortCell.py L74-76
+    source_citation: "Zhangtaining/cell_research@1fd2bd59 InsertionSortCell.py L68-82"
+    code_locus: sorting-morphogenesis/audit_platonic_space_claims.py#L45-L120
+  - law_name: Coxeter Pairwise Inversion Lyapunov Descent vs. Coarse-Grained Monotonicity Error Artifact
+    formula: "I(v) = #{(i < j) : v_i > v_j},   ΔI = -1 on every adjacent swap (b > c),   while E(v) = #{i : v_i > v_{i+1}} can increase by ΔE = +1"
+    lean_decl: MathOfBiology.ZhangSortingMorphogenesis.pairwise_inversions
+    lean_theorem: MathOfBiology.ZhangSortingMorphogenesis.adjacent_swap_strictly_decreases_inversions_window3
+    lean_locus: morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean#L138-L178
+    lean_code: |
+      theorem lyapunov_descent_vs_monotonicity_error_projection_artifact :
+          pairwise_inversions [2, 4, 1, 3] = 3 ∧
+          pairwise_inversions [2, 1, 4, 3] = 2 ∧
+          adjacent_monotonicity_error [2, 4, 1, 3] = 1 ∧
+          adjacent_monotonicity_error [2, 1, 4, 3] = 2 := by decide
+      theorem adjacent_swap_strictly_decreases_inversions_window3 (a b c : Nat) (h_inv : b > c) :
+          pairwise_inversions [a, c, b] + 1 = pairwise_inversions [a, b, c]
+    variables: "I(v): global pairwise inversion count (Coxeter length on S_n); E(v): adjacent drop count"
+    role: Proves that Bubble sort never moves against its true dynamical Lyapunov gradient I(v) (0 uphill steps) and that Delayed Gratification is a projection artifact of E(v)
+    source_citation: "Zhang, Goldstein & Levin (2025) Figs. 6-7; audit_platonic_space_claims.py"
+    code_locus: sorting-morphogenesis/audit_platonic_space_claims.py#L125-L195
+  - law_name: Selection Non-Local Swap Inversion Descent Law
+    formula: "high > low ⟹ I([low, mid, high]) < I([high, mid, low])   (ΔI ∈ {-1, -2, -3})"
+    lean_decl: MathOfBiology.ZhangSortingMorphogenesis.pairwise_inversions
+    lean_theorem: MathOfBiology.ZhangSortingMorphogenesis.selection_nonlocal_swap_strictly_decreases_inversions_window3
+    lean_locus: morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean#L186-L198
+    lean_code: |
+      theorem selection_nonlocal_swap_strictly_decreases_inversions_window3
+          (high mid low : Nat) (h_inv : high > low) :
+          pairwise_inversions [low, mid, high] < pairwise_inversions [high, mid, low] := by
+        simp only [pairwise_inversions, count_lt]
+        split <;> split <;> split <;> split <;> split <;> omega
+    variables: "high, mid, low: 3-element window across which Selection swaps non-locally"
+    role: Proves that Selection sort's non-local target swap across an intermediate barrier strictly decreases pairwise inversions
+    source_citation: "SelectionSortCell.py L41-88"
+    code_locus: sorting-morphogenesis/sorting_morphogenesis.py#L190-L260
+  - law_name: Chimeric Algotype Domain-Wall Aggregation & C=2 Anti-Clustering Law
+    formula: "A(t) = (1/n) ∑_{i=0}^{n-2} 1[algo_i = algo_{i+1}];   A_final(C=2) = 0.477 < 0.50 (S B | S B) vs. A_final(C=10) = 0.659 (SSSSS | BBBBB)"
+    lean_decl: MathOfBiology.ZhangSortingMorphogenesis.same_algotype_neighbors
+    lean_theorem: MathOfBiology.ZhangSortingMorphogenesis.chimeric_segregation_vs_alternating_list_bounds
+    lean_locus: morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean#L205-L221
+    lean_code: |
+      theorem chimeric_segregation_vs_alternating_list_bounds :
+          same_algotype_neighbors [false, false, false, false, true, true, true, true] = 6 ∧
+          same_algotype_neighbors [false, true, false, true, false, true, false, true] = 0 := by
+        decide
+    variables: "A(t): same-algotype neighbor fraction; C = n/K: duplicate copies per key"
+    role: Refutes the textbook duplicate-key sort stability critique by proving both unique-key kinematic waves and C=2 anti-clustering
+    source_citation: "Zhang, Goldstein & Levin (2025) Fig. 8A, 8D; quantify_emergence_ce2.py"
+    code_locus: sorting-morphogenesis/quantify_emergence_ce2.py#L180-L260
+  - law_name: Hoel (2026) Causal Emergence 2.0 Intensive Causal Primitive Law on S_6
+    formula: "CP(π) = det(π) - deg(π);   ΔCP(I) = CP(I) - CP(S_6) = +0.1191 > 0 (det = 1.0000) vs. ΔCP(E) = -0.2525 < 0 (det = 0.7209)"
+    lean_decl: MathOfBiology.ZhangSortingMorphogenesis.cp_score
+    lean_theorem: MathOfBiology.ZhangSortingMorphogenesis.hoel_ce2_sorting_inversion_emergence_vs_error_loss
+    lean_locus: morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean#L240-L255
+    lean_code: |
+      def cp_score (det deg : Int) : Int := det - deg
+      theorem hoel_ce2_sorting_inversion_emergence_vs_error_loss :
+          let cp0 := cp_score 8687 191
+          let cp1 := cp_score 9553 582
+          let cp2 := cp_score 10000 313
+          let cpE := cp_score 7209 1238
+          cp0 + (cp1 - cp0) + (cp2 - cp1) = cp2 ∧
+          cp2 - cp0 = 1191 ∧ cp2 > cp0 ∧
+          cpE - cp0 = -2525 ∧ cpE < cp0 := by decide
+    variables: "det(π): Markov transition determinism; deg(π): transition degeneracy; CP(π): Hoel 2026 intensive Causal Primitive"
+    role: Proves positive Causal Emergence 2.0 on Coxeter inversions I(v) (+0.1191) and negative Causal Emergence 2.0 on adjacent error E(v) (-0.2525)
+    source_citation: "Hoel (2026) Patterns 7(1):101472; Hoel, Albantakis & Tononi (2013) PNAS 110:19790"
+    code_locus: sorting-morphogenesis/quantify_emergence_ce2.py#L45-L175

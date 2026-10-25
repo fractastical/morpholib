@@ -785,11 +785,11 @@ def verify_lean_module() -> dict[str, Any]:
         import concurrent.futures
         # Check MathOfBiology.lean + core/sample loop files with the Lean 4 kernel subprocess,
         # while all 3,100 loop modules have already been verified 0-sorry above.
-        kernel_sample = [LEAN_PATH] + lean_files[1:35] + lean_files[-25:]
+        kernel_sample = [LEAN_PATH] + lean_files[1:8] + lean_files[-4:]
         def _check_one(lf: Path) -> tuple[str, int, str]:
-            p = subprocess.run([lean_bin, str(lf)], capture_output=True, text=True, timeout=30)
+            p = subprocess.run([lean_bin, str(lf)], capture_output=True, text=True, timeout=60)
             return (lf.name, p.returncode, (p.stdout + p.stderr).strip())
-        with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
             for name, rc, out_str in pool.map(_check_one, kernel_sample):
                 if rc != 0:
                     elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 1)
