@@ -209,12 +209,37 @@ All four governing algebraic laws are formalized and verified by the Lean~4 kern
   \item \textbf{Theorem 4 (\texttt{dpo\_two\_phase\_rule\_reducibility\_conservation}):} Proves region-count conservation $\text{Tr} + H + Ta = V_0 + L$ and the exact additive step-cost reduction $k_{\text{prim}} = L + H + Ta$ under the 3-rule primitive basis $\mathcal{B}_3 = \{L_1, D_1, D_2\}$.
 \end{enumerate}
 
-\begin{thebibliography}{12}
+% ============================================================================
+\section{Discussion: Unifying Lobo's Regulated Graph-Grammar and Target-Morphology Corpus (2010--2015)}
+
+A remarkable historical feature of Daniel Lobo's research trajectory is that it spans two seemingly separate mathematical paradigms that had never previously been connected in executable form:
+\begin{enumerate}
+  \item \textbf{String- and Boolean-Regulated Graph Grammars (M\'alaga, 2010--2012):} Before creating \texttt{PlanformDB} and \texttt{LimbformDB} at Tufts, Lobo, Vico, and Dassow developed the formal theory of \emph{graph grammars with string-regulated rewriting} (\texttt{ELSA}/\texttt{ELSA3})~\cite{Lobo2010Biosystems,Lobo2011TCS} and \emph{Boolean-network-regulated graph grammars}~\cite{Lobo2012BookChapter}. In \texttt{ELSA}, development starts from a single zygote edge and applies four edge-replacement operations---\texttt{Duplicate} ($D$), \texttt{Split} ($S$), \texttt{Resize} ($R$), and \texttt{Connect} ($C$)---controlled either by an expression-domain substring or by an intracellular Kauffman Boolean network with a differentiation node.
+  \item \textbf{Graph-Encoded Phenotype Databases, Linear Target-Morphology Encodings, and PDE Network Inference (Tufts, 2013--2015):} When Lobo and Levin built \texttt{PlanformDB} (2013)~\cite{Lobo2013Planform,Lobo2013BiologyOpen} and \texttt{LimbformDB} (2014)~\cite{Lobo2014Limbform,Lobo2014Regeneration}, they used graphs to store \emph{static resultant morphologies} and compared them via heuristic \emph{graph edit distance} (GED). However, in their subsequent theoretical and reverse-engineering papers, they did \emph{not} use Lobo's 2011 graph grammars to generate the \texttt{PlanformDB} graphs: instead, Lobo et al.\ (2014, \emph{J.\ R.\ Soc.\ Interface})~\cite{Lobo2014LinearEncoding} contrasted \emph{nonlinear recursive encodings} (such as L-systems, where solving the inverse problem for trophic antler memory or bipolar planaria is intractable because small rule edits trigger global branch cascades) against \emph{linear encodings} of target morphology, while Lobo \& Levin (2015, \emph{PLOS Comput.\ Biol.})~\cite{Lobo2015PLOSCompBiol} used evolutionary search over continuous reaction--diffusion PDEs on a fixed 2D domain to infer $\beta$-catenin/\emph{notum}/\emph{wnt1} pathways.
+\end{enumerate}
+
+Our Multiway DPO Hypergraph Rewrite System ($\mathcal{B}_3 = \{L_1, D_1, D_2\}$) provides the missing formal bridge between Lobo's 2011 regulated graph grammars and his 2013--2015 regenerative databases:
+\begin{itemize}
+  \item \textbf{Connecting \texttt{ELSA} Edge-Replacement to \texttt{PlanformDB} \& \texttt{LimbformDB}:} Lobo, Vico \& Dassow's (2011)~\cite{Lobo2011TCS} edge-splitting production and differentiation bit map directly onto our DPO edge-replacement basis $\mathcal{B}_3$: the universal budding rule $L_1$ is the topological dual of \texttt{ELSA}'s division rule, while the unary replacements $D_1$ ($\mathtt{Blastema} \to \mathtt{Head}$) and $D_2$ ($\mathtt{Blastema} \to \mathtt{Tail}$) formalize the terminal differentiation lock in pure DPO hypergraph semantics (\texttt{SPEC.md} \S2).
+  \item \textbf{Resolving the 2014 ``Nonlinear vs.\ Linear Inverse Problem'' Paradox~\cite{Lobo2014LinearEncoding}:} In Lobo et al.\ (2014, Fig.~5)~\cite{Lobo2014LinearEncoding}, recursive rewriting grammars (L-systems) were classified as \emph{nonlinear encodings} whose inverse problem is intractable because every rule fires globally at every step, amplifying any small edit across the entire tree. Our Two-Phase Decomposition (Proposition~3.1 and Lean Theorem~4) shows \emph{why} regenerative graph rewriting escapes that paradox: because $D_1$ and $D_2$ consume the pluripotent tag $[[0]]$, differentiated regions are \textbf{terminally locked} against further $L_1$ budding, and Phase~I topological budding ($L_1$) commutes with Phase~II local fate specification ($D_1, D_2$). Consequently, changing the bioelectric \texttt{RuleWeights} at a single wound site alters only that branch's local fate ($D_1$ vs.\ $D_2$) or adds a single local tine ($L_1$) at exact additive step cost $k_{\text{prim}} = L + H + Ta$---giving a recursive DPO graph grammar the \textbf{local invertibility of a linear encoding}.
+  \item \textbf{Replacing Heuristic Graph Edit Distance with Exact 64-Bit McKay IR Hashes:} Where \texttt{Planform} (2013) and the 2015 PDE evolutionary search~\cite{Lobo2015PLOSCompBiol} relied on $O(V^3)$ heuristic graph-edit or concentration-grid distances, \texttt{HypergraphRewritingEngine}'s McKay IR canonicalizer (\texttt{ir\_core.hpp}) assigns every morphology an exact, schedule-independent 64-bit isomorphism hash and compresses the $11!$ multi-step tree search space by $44{,}534\times$ in $85\text{ ms}$.
+\end{itemize}
+
+\begin{thebibliography}{16}
 \bibitem{Assar2026}
 R.~Assar (2026). \emph{Rewriting the Universe: High-Performance Hypergraph Rewriting for the Wolfram Physics Project}. Technical Report, Wolfram Institute (\texttt{v1.0.0-rc2}, \url{https://github.com/WolframInstitute/HypergraphRewritingEngine}).
 
 \bibitem{Wolfram2020}
 S.~Wolfram (2020). A class of models with the potential to represent fundamental physics. \emph{Complex Systems} 29(2):107--536. \texttt{doi:10.25088/ComplexSystems.29.2.107}.
+
+\bibitem{Lobo2010Biosystems}
+D.~Lobo and F.~J.~Vico (2010). Evolutionary development of tensegrity structures. \emph{BioSystems} 101(3):167--176. \texttt{doi:10.1016/j.biosystems.2010.06.005}.
+
+\bibitem{Lobo2011TCS}
+D.~Lobo, F.~J.~Vico, and J.~Dassow (2011). Graph grammars with string-regulated rewriting. \emph{Theoretical Computer Science} 412(43):6101--6111. \texttt{doi:10.1016/j.tcs.2011.07.004}.
+
+\bibitem{Lobo2012BookChapter}
+D.~Lobo, J.~D.~Fern\'andez, and F.~J.~Vico (2012). Behavior-finding: morphogenetic designs shaped by function. In R.~Doursat, H.~Sayama, and O.~Michel (Eds.), \emph{Morphogenetic Engineering: Toward Programmable Complex Systems}, pp.~441--472, Springer. \texttt{doi:10.1007/978-3-642-33902-8\_17}.
 
 \bibitem{Lobo2013Planform}
 D.~Lobo, T.~J.~Malone, and M.~Levin (2013). Planform: an application and database of graph-encoded planarian regenerative experiments. \emph{Bioinformatics} 29(8):1098--1100. \texttt{doi:10.1093/bioinformatics/btt088}.
@@ -227,6 +252,12 @@ D.~Lobo, E.~B.~Feldman, M.~Shah, T.~J.~Malone, and M.~Levin (2014). Limbform: a 
 
 \bibitem{Lobo2014Regeneration}
 D.~Lobo, E.~B.~Feldman, M.~Shah, T.~J.~Malone, and M.~Levin (2014). A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration. \emph{Regeneration} 1(2):37--56. \texttt{doi:10.1002/reg2.13}.
+
+\bibitem{Lobo2014LinearEncoding}
+D.~Lobo, M.~Solano, G.~A.~Bubenik, and M.~Levin (2014). A linear-encoding model explains the variability of the target morphology in regeneration. \emph{Journal of The Royal Society Interface} 11(92):20130918. \texttt{doi:10.1098/rsif.2013.0918}.
+
+\bibitem{Lobo2015PLOSCompBiol}
+D.~Lobo and M.~Levin (2015). Inferring regulatory networks from experimental morphological phenotypes: a computational method reverse-engineers planarian regeneration. \emph{PLOS Computational Biology} 11(6):e1004295. \texttt{doi:10.1371/journal.pcbi.1004295}.
 
 \bibitem{Oviedo2010}
 N.~J.~Oviedo, J.~Morokuma, P.~Walentek, et al., and M.~Levin (2010). Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration. \emph{Developmental Biology} 339(1):188--199. \texttt{doi:10.1016/j.ydbio.2009.12.012}.
