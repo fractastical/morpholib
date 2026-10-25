@@ -1,4 +1,4 @@
-# Publication Strategy, Target Venues & Upstream Citations: Multiway Hypergraph Rewriting, McKay IR Canonicalization, and Rule Reducibility in Regenerative Morphospace
+# Publication Strategy, Target Venues & Upstream Citations: Planarian and Limb Regeneration as a Multiway Double-Pushout (DPO) Hypergraph Rewrite System
 
 ## 1. Manuscript & Reproducible Artifact Package
 
