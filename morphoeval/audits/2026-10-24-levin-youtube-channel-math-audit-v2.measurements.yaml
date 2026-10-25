@@ -1,0 +1,208 @@
+# Referee re-measurement sidecar for 2026-10-24-levin-youtube-channel-math-audit-v2 (Claude Fable 5.1).
+# Every value below was re-derived independently of models/2026-levin-channel-math-synthesis.py (exact rationals for
+# Law 7, an explicit joint distribution for Law 18, closed forms evaluated afresh for the rest) and then compared with
+# the script's output. `reference_value` is given ONLY where a reference independent of the script's own `ref`
+# expression exists; for the other 18 laws it is omitted and the `note` says why. The v1 sidecar set
+# reference_value == value for 23 of 25 laws with reference_source '... & Lean 4 Theorem N'.
+audit: 2026-10-24-levin-youtube-channel-math-audit-v2
+supersedes_audit_id: 2026-10-24-levin-youtube-channel-math-audit
+provenance:
+  levin-youtube-channel-math:
+    spec_fingerprint: cf19761e9e6760d1e706dce6a8fdea337079e70d318494d21ee724915d6bb697
+    artifact_sha256: 2e2cd28df81d42a235a6c03f640c7a351859e4a4f758ee4692323ad541edbfaa
+    input_dataset_sha256:
+      datasets/levin_youtube_channel/levin_youtube_catalog.json: 38aab3be23160a82403c57ccb5f9b6f6cca81519b4d10444dd4f20f530acf2d3
+      datasets/levin_youtube_channel/paper_citations.bib: 5acabab1711c18992b353aa93b95d5e38cfd4cc3bcc1d4c034b7b2ee265cb3db
+      models/2026-levin-channel-math-synthesis.py: e7263d9e37f3c7b60bcf71fa212232ea060d23a5019d6ae1f135e48d26414d48
+      morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean: c49a06c0e5b476fadf42565afd6a36b86f2ffec8c52bf0fca9cadf9b5b97bee3
+    note: >-
+      spec_fingerprint = SHA-256 of the canonical JSON of summary['laws'] written by run_all(); artifact_sha256 is
+      the 8-panel PNG (media/ and docs/ copies are byte-identical). The catalog is hashed here for the record only:
+      the script does not read it.
+measurements:
+  levin-youtube-channel-math:
+    - name: "Referee count - laws whose Python evaluation computes something beyond one plugged-in expression"
+      value: 2
+      unit: "laws_of_25"
+      method: "Line-by-line classification of L49-L200: Law 7 (99-term secretary objective + argmax) and Law 8 (4 x 3 truth table). Law 5 excluded as circular (fits its own generating function); Laws 1-4, 11-16, 18, 20-23, 25 are one-point evaluations; Laws 6, 9, 10, 17, 19, 24 are literals or tautologies"
+      derived_from: script
+      note: "Classification table: genuine 2 / circular 1 / one-point 16 / literal-tautology 6"
+    - name: "Referee count - Lean theorems that quantify universally over a non-trivial structural statement"
+      value: 2
+      unit: "theorems_of_25"
+      method: "Loop_levin_youtube_channel_math.lean: Law 8 (L136-L140) and Law 10 (L165-L167) exhaustive Bool proofs. 10 theorems pair a trivially-universal identity with ground constants (Laws 1, 2, 3, 4, 6, 9, 11, 19, 22, 24); 13 are entirely ground `decide` (Laws 5, 7, 12-18, 20, 21, 23, 25)"
+      derived_from: script
+      note: "Both modules compile (lean 4.35.0, exit 0, 0 sorry); the count is about what is stated, not whether it checks"
+    - name: "Referee count - laws with a resolvable DOI/URL in the v1 audit references"
+      value: 6
+      unit: "laws_of_25"
+      method: "Laws 1 (levin2019/2022), 5 (chvykov2021), 7 (froese2024, mismatched), 8 (bongard2023), 12 and 18 (pigozzi2025). 19 laws have none"
+      derived_from: script
+    - name: "Law 1 (TAME light cone) - R_eff(N=100, G_gj=1.0, G_half=0.1)"
+      value: 91.0
+      unit: "cell_diameters"
+      method: "1 + 99 * 1.0/(1.0 + 0.1) re-evaluated; matches script L52"
+      derived_from: script
+      note: "No independent reference: Levin (2019, 2022) publish no R_eff formula; the equation is a Delphi O2 formalisation and the v1 reference 91.0 was the same expression"
+    - name: "Law 2 (Cervera-Levin-Mafe) - open fraction G_ij/G_0 at V_i = V_j = -60 mV (V_th = -35, V_0 = 5)"
+      value: 0.98666
+      unit: "fraction"
+      method: "1 / (1 + exp(-5))^2 re-evaluated to 5 significant figures"
+      derived_from: script
+      reference_value: 0.98666
+      reference_source: "Analytic value of the Bell-Boltzmann form at the stated constants (independent re-evaluation; not a published measurement). Script rounds to 0.9867, v1 ref 0.9866"
+      note: "A single point on a published closed form; no ODE integration, no conductance measurement from Cervera-Levin-Mafe is compared"
+    - name: "Law 3 (Pietak-Levin Boltzmann ratio) - c_post/c_ant = exp(40 mV / 25.85 mV)"
+      value: 4.6992
+      unit: "ratio"
+      method: "exp(40/25.85) re-evaluated = 4.69918; kT/e at 300 K = 25.86 mV"
+      derived_from: script
+      reference_value: 4.6992
+      reference_source: "Analytic value of exp(z F dV / R T) at dV = 40 mV, 25.85 mV (independent re-evaluation). The script's ref 4.7002 (L205) corresponds to dV = 40.006 mV and is a transcription error that passes only under the 0.01 absolute tolerance"
+      note: "No published concentration ratio from Pietak & Levin (2016, 2017) is compared; the 40 mV gradient is a chosen constant"
+    - name: "Law 4 (galvanotaxis) - cathodal enrichment exp(Pe_E) at Pe_E = 4"
+      value: 54.5982
+      unit: "fold_enrichment"
+      method: "exp(4.0) re-evaluated"
+      derived_from: script
+      note: "No independent reference: Pe_E = 4 is unsourced and the script's ref is round(exp(4.0), 4), the identical expression (L206)"
+    - name: "Law 5 (Chvykov low rattling) - log-log slope of P_ss vs r_exit"
+      value: -1.0
+      unit: "dimensionless"
+      method: "Analytic: with p_ss := r^-1 / Z (script L75), ln p_ss = -ln r - ln Z, so the OLS slope is exactly -1 for any r grid; no fit is needed"
+      derived_from: script
+      note: "Circular by construction; the 15.625x 'enrichment' is 1.25/0.08. Chvykov et al. (2021) report measured low-rattling enrichment on smarticle collectives; none of that is compared"
+    - name: "Law 6 (epiplexity) - L_F = E_F + H_F"
+      value: 0.94
+      unit: "bits_per_symbol"
+      method: "0.82 + 0.12 (script L81-L82)"
+      derived_from: script
+      note: "No independent reference: both summands are invented constants; no epiplexity estimator is run on any sequence"
+    - name: "Law 7 (secretary problem) - optimal cutoff k* and success probability P_opt for N = 100"
+      value: 0.371043
+      unit: "probability"
+      method: "Exact rational maximisation of (k/N) * sum_{j=k}^{N-1} 1/j over k = 1..99 (Fraction arithmetic): argmax k* = 37, P* = 0.3710428"
+      derived_from: script
+      reference_value: 0.371043
+      reference_source: "Classical secretary-problem optimum for N = 100 (Lindley 1961; Gilbert & Mosteller 1966), independently re-derived; the 1/e = 0.367879 the v1 sidecar used is the N -> infinity asymptote"
+      note: "Genuine computation. Attribution to Froese (2023, 2024) is unsupported; floor(100/e) = 36, not 37, and the Lean theorem brackets 100566 = 37 * 2718 rather than 100000"
+    - name: "Law 8 (polycomputing) - truth-table agreement of XOR / AND / OR observers on s = a + b"
+      value: 1.0
+      unit: "fraction"
+      method: "All 4 input pairs x 3 observers enumerated independently: 12/12 agree"
+      derived_from: script
+      reference_value: 1.0
+      reference_source: "Exhaustive enumeration (independent); the Lean theorem bongard_levin_polycomputing_dual_observer_exact proves the same statement for all Bool a, b"
+      note: "Correct, but a 4-row combinatoric; Bongard & Levin (2023) publish no such equation (O2 tag is right)"
+    - name: "Law 9 (KAN) - outer summand count 2n + 1 at n = 4"
+      value: 9
+      unit: "univariate_summands"
+      method: "2 * 4 + 1"
+      derived_from: script
+      note: "No independent reference beyond the definition; no function is represented or fitted"
+    - name: "Law 10 (Hopfield k-SAT) - clause energy at the planted assignment"
+      value: 0
+      unit: "energy_units"
+      method: "Script L106 assigns the literal 0; no clause, literal or assignment exists in the code to re-evaluate"
+      derived_from: script
+      note: "Not a measurement: a literal. The Lean theorem does prove the single-clause iff for all Bool triples"
+    - name: "Law 11 (natural induction) - Delta E = -eta N^2 at eta = 0.05, N = 16"
+      value: -12.8
+      unit: "energy_units"
+      method: "-0.05 * 256"
+      derived_from: script
+      note: "No independent reference; no network is instantiated, so the identity Delta E = -eta N^2 (which assumes s_i s_j Delta J_ij summed over all N^2 ordered pairs) is asserted, not observed"
+    - name: "Law 12 (GRN conditioning) - J_US,CS after T = 15 pairings"
+      value: 0.8
+      unit: "coupling_weight"
+      method: "0.05 + 15 * 0.05"
+      derived_from: script
+      note: "No independent reference; Pigozzi et al. (2025) report conditioning in continuous GRN ODEs, not a linear weight ramp"
+    - name: "Law 13 (Brenner exploratory noise) - variance expansion ratio"
+      value: 400.0
+      unit: "fold_expansion"
+      method: "(1.0/0.05) / (0.1/2.0)"
+      derived_from: script
+      note: "No independent reference; the four constants are chosen; no SDE is simulated"
+    - name: "Law 14 (variational free energy) - dF/dt at kappa = 0.5, |grad F|^2 = 4"
+      value: -2.0
+      unit: "nats_per_sec"
+      method: "-0.5 * 4.0"
+      derived_from: script
+      note: "No independent reference; no generative model or gradient flow exists in the code"
+    - name: "Law 15 (mortal computation) - T_surv = E_reserve / (P_diss - P_harvest)"
+      value: 50.0
+      unit: "time_units"
+      method: "100 / (5 - 3)"
+      derived_from: script
+      note: "No independent reference; constants chosen"
+    - name: "Law 16 (Shannon-Hartley) - C = 1/2 log2(1 + SNR) at SNR = 15"
+      value: 2.0
+      unit: "bits_per_symbol"
+      method: "0.5 * log2(16)"
+      derived_from: script
+      note: "No independent reference; SNR = 15 is chosen to give an integer. The Lean theorem registered for this law proves a different equation (100 - 20 - 50 = 30)"
+    - name: "Law 17 (causal emergence 2.0) - Delta CP(I) on S_6"
+      value: 0.1191
+      unit: "Delta_CP"
+      method: "(1.0000 - 0.0313) - (0.8687 - 0.0191) re-evaluated from the six constants typed into L143-L145"
+      derived_from: script
+      reference_value: 0.1191
+      reference_source: "sorting-morphogenesis/PLATONIC_SPACE_CLAIMS_EVALUATION.md L113 (repository-internal prior S_6 run: CP_micro 0.8496, CP_I 0.9687); not from Hoel (2026)"
+      note: "Model-internal reference; the practitioner's guide gives deg_m = 0.0192 where the script uses 0.0191. Nothing is recomputed in this script"
+    - name: "Law 18 (O-information) - Omega(XOR_3) from the explicit joint distribution"
+      value: -1.0
+      unit: "bits"
+      method: "Joint p(x1, x2, x1 xor x2) = 1/4 constructed; H(X^3) = 2, H(X_i) = 1, H(X_-i) = 2; Omega = (3-2)*2 + 3*(1-2) = -1 computed from the distribution, not typed in"
+      derived_from: script
+      reference_value: -1.0
+      reference_source: "Independent computation from the XOR joint distribution with the Rosas et al. (2019) definition"
+      note: "The script's value agrees but is obtained from hand-typed entropies (L153)"
+    - name: "Law 19 (Bode waterbed) - net log-sensitivity integral"
+      value: 0
+      unit: "nepers_rad_per_sec"
+      method: "-6 + 6 (script L158-L160)"
+      derived_from: script
+      note: "Not a measurement: two literals that sum to zero; no S(iw) is defined or integrated"
+    - name: "Law 20 (multicellular PD) - breakeven cluster size and first strictly dominant cluster size (b = 2, c = 1)"
+      value: 4
+      unit: "cells"
+      method: "pi_C(k) = (1 - 1/sqrt k) b - c = 0 at k = 4 (independent); pi_C(k) > pi_D(k) = b/sqrt k first holds at k = 17 (pi_C(16) = pi_D(16) = 0.5)"
+      derived_from: script
+      reference_value: 4
+      reference_source: "Closed-form threshold of the Delphi O2 payoff (independent re-derivation); not a published value. Shreesha & Levin (2025) OSF report lattice-simulation outcomes, not this formula"
+      note: "The script's and figure's 'dominance at k = 16' is wrong by one: strict dominance begins at k = 17"
+    - name: "Law 21 (Fisher natural gradient) - dU/dt at lambda_min = 2, |grad U|^2 = 9"
+      value: 18.0
+      unit: "fitness_per_gen"
+      method: "2.0 * 9.0"
+      derived_from: script
+      note: "No independent reference; a scalar product, not a quadratic form with a metric tensor"
+    - name: "Law 22 (odd elasticity) - cycle work (K12 - K21) * Area"
+      value: 12
+      unit: "work_units"
+      method: "3 * 4"
+      derived_from: script
+      note: "No independent reference; Tan et al. (2022) report measured chiral-crystal rotation and odd moduli, none compared. pheidole_alpha = 1.42 (L180) is unused and unsourced"
+    - name: "Law 23 (ephaptic coupling) - d(Delta phi^2)/dt at g_eph = 2, Delta phi = 5"
+      value: -100
+      unit: "rad2_per_sec"
+      method: "-2 * 2 * 25"
+      derived_from: script
+      note: "No independent reference; no cable equation or phase model is integrated"
+    - name: "Law 24 (Ca2+ integral feedback) - steady-state error [Ca]_ss - Ca_target"
+      value: 0
+      unit: "nM"
+      method: "ca_target - ca_target (script L192-L193)"
+      derived_from: script
+      note: "Not a measurement: an identity x - x = 0. The integral-feedback ODE, its saturation and the remodeling bifurcation named in the law are not implemented"
+    - name: "Law 25 (NCA memory transfer) - error after 4 halvings from e_0 = 64"
+      value: 4
+      unit: "l2_error"
+      method: "64 // 2^4"
+      derived_from: script
+      note: "No independent reference; no NCA is run, rho = 1/2 is assumed"
+missing:
+  - simulation: levin-youtube-channel-math
+    file: datasets/levin_youtube_channel/levin_youtube_catalog.json
+    reason: "Declared as an input in morphoeval/math_kg_loops/levin-youtube-channel-math.yaml L7-L8 and as a specimen in the v1 audit, but never opened by models/2026-levin-channel-math-synthesis.py"

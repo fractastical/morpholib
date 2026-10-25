@@ -1,0 +1,582 @@
+# MorphoEval audit — @drmichaellevin "25 Governing Mathematical Laws" synthesis suite, 2026-10-24 (v2, independent referee)
+#
+# Independent cross-provider referee re-score (Claude Fable 5.1, Anthropic) of the 25-equation suite built by
+# gemini-4-argon, superseding `2026-10-24-levin-youtube-channel-math-audit` (93.8, self-assessed by the builder).
+# Same critical standard as `2026-10-19-planarian-hk-atpase-anterior-audit-v3` and `2026-10-17-thompson-audit`:
+# score what the evidence supports, credit nothing unverifiable, cite line numbers, mark every defect `supports: false`.
+#
+# Headline findings (details, line numbers and the per-law classification are in the evidence and remediation below):
+#   1. The v1 audit scored a different artefact. Its evidence loci (`lines: [64, 335]`, `[338, 460]` on a 403-line
+#      script; `Loop_...lean [1, 108]` for "6 theorems"; `MathOfBiology.lean [1152, 1278]` on a 1268-line file) describe
+#      the earlier 6-law version. The 25-law rewrite was never re-scored; 93.8 was carried over to it unexamined.
+#   2. Of the 25 Python "verifications" (L49-L200) only 2 compute anything beyond a single plugged-in arithmetic
+#      expression (Law 7 secretary-problem sum, Law 8 four-row truth table); Law 5 fits a power law to data generated
+#      by that same power law; 16 are one-point evaluations whose `ref` is the same expression or its rounded value;
+#      6 are bare literals or tautologies (`e_sat_planted = 0`, `-6 + 6`, `ca_target - ca_target`, `0.82 + 0.12`,
+#      `2 * 4 + 1`, six hard-coded S_6 decimals). No ODE, PDE, Markov chain, GRN, Langevin, NCA or cable equation
+#      named in the law titles is ever integrated.
+#   3. Of the 25 Lean theorems, 2 prove a universally-quantified structural statement (Laws 8, 10: exhaustive Bool
+#      truth tables); 10 carry one trivially-universal conjunct (`x - x = 0`, `(a + b) - b = a`, `g * (-d + d) = 0`,
+#      commutativity) next to ground constants; 13 are entirely ground `by decide` arithmetic on plugged-in numbers
+#      (`125 * 8 = 8 * 125`, `100 / (5 - 3) = 50`, `2*2*3*3 + 2*0*0 = 18`). Law 7's theorem uses `N_scaled = 100566`,
+#      which is `37 * 2718`, not `100 * 1000`: `floor(100000 / 2718) = 36`, so the constant was chosen to make the
+#      bracket hold. `all_lean4_verified: True` (L232) is a hard-coded literal; the script never invokes `lean`.
+#   4. No empirical biological data enter the script. It no longer opens `levin_youtube_catalog.json` (no `open`,
+#      `json.load` or path to it anywhere in L23-L39), although the math-KG YAML still lists it under `inputs`
+#      (L7-L8), the v1 audit lists it as a script input and a "specimen", and the README still describes "6 laws".
+#      The catalog's `mappedMathLaws` field still uses the superseded 6-law taxonomy (e.g. the Weinberg Ca2+ talk
+#      `3Jol76a-urM` is mapped to the TAME law). The catalog SHA-256 quoted in the Substack article is verified by no code.
+#   5. All 25 v1 measurements are `derived_from: script` with `reference_source` pointing at the suite's own Lean
+#      theorem; 23 have `reference_value == value` by construction. No measurement compares against a number measured
+#      on an organism, an experiment, or a published figure.
+#   6. Bibliography: 6 DOIs for 25 laws by ~25 speakers (19 laws have no `references` entry); the bib has 10 entries,
+#      2 without any identifier, and 17 laws have no bib entry at all. Crossref resolution (this audit, 2026-10-24)
+#      shows the v1 `froese2024` entry pairs the title of Entropy 25(5):748 (2023) with the DOI of Entropy 26(4):288
+#      (2024, "Irruption and Absorption"), whose abstract contains no optimal-stopping law; `pigozzi2025` is article
+#      1027, not 1112; the bib's `biswas2023` title ("Fromasikan to Pavlov...") is not the title of DOI
+#      10.3390/ijms24010285; `chvykov2021` has "active matter" for "active collectives".
+#   7. Rubric tags: 4 laws carry C5 (pre-registered out-of-sample compression) with no pre-registration artefact;
+#      Laws 16, 21, 22 are tagged O1 "verbatim" but implement Delphi scalar reductions; Law 7's O1 attribution to
+#      Froese is unsupported (the 1/e law is Lindley 1961 / Gilbert-Mosteller 1966); docs section 3 says T2 = 8/25
+#      and T4 = 8/25 while the table and script carry T2 = 9, T4 = 7.
+#   8. CLI exposes only `--self-test` (L398-L403); zero model parameters can be varied.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the
+# working-tree files at HEAD bfe377c2 on 2026-10-24; every audited file except `MathOfBiology.lean` is an
+# uncommitted, untracked working-tree file at audit time, so no commit yet contains the artefacts being scored.
+
+audit:
+  id: 2026-10-24-levin-youtube-channel-math-audit-v2
+  supersedes_audit_id: 2026-10-24-levin-youtube-channel-math-audit
+  rubric_version: 0.1.0
+  date: "2026-10-24"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Anthropic; independent cross-provider MorphoEval referee, Pass 2)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+    - id: gemini-4-argon
+      name: "Gemini 4 Argon (builder of the 25-law suite and author of the superseded v1 self-audit)"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: bfe377c2
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      lean: "4.35.0"
+    note: >-
+      Referee pass over the uncommitted working tree at HEAD bfe377c2 (2026-10-24). Audited files and SHA-256:
+      models/2026-levin-channel-math-synthesis.py (403 lines, e7263d9e...), morphoeval/lean/loops/
+      Loop_levin_youtube_channel_math.lean (396 lines, 25 theorems, c49a06c0...), morphoeval/lean/MathOfBiology.lean
+      (1268 lines; section 16 L1152-L1267 holds 6 Levin theorems and duplicates the section number of the Wolfram
+      block at L1037), morphoeval/math_kg_loops/levin-youtube-channel-math.yaml (385 lines, 525dee9f...),
+      docs/BIOLOGICAL_LAW_CRITERIA.md (82 lines, 8b903638...), docs/bioelectricity/levin_youtube_kg.json
+      (1865 lines, 119fefdc...), datasets/levin_youtube_channel/levin_youtube_catalog.json (374 videos,
+      38aab3be...), paper_citations.bib (10 entries, 5acabab1...). Reproduced here: `--self-test` exits 0 in 0.3 s
+      (25 assertions at absolute tolerance 0.01); `lean` exits 0 on both modules in < 3 s with 0 `sorry`;
+      `build_morphoeval_kg.py ... --conform` on the v1 audit reports OK, i.e. schema conformance does not detect
+      stale evidence loci or tautological measurements. The v1 checkpoint commit a2201fd3 exists but does not
+      contain the 25-law files.
+
+references:
+  levin2019:
+    title: "The Computational Boundary of a 'Self': Developmental Bioelectricity Drives Multicellularity and Scale-Free Cognition"
+    authors: "Levin M"
+    venue: "Frontiers in Psychology 10:2688 (2019)"
+    doi: 10.3389/fpsyg.2019.02688
+    note: "Crossref-resolved 2026-10-24; title and locator match"
+  levin2022:
+    title: "Technological Approach to Mind Everywhere: An Experimentally-Grounded Framework for Understanding Diverse Bodies and Minds"
+    authors: "Levin M"
+    venue: "Frontiers in Systems Neuroscience 16:768201 (2022)"
+    doi: 10.3389/fnsys.2022.768201
+    note: "Crossref-resolved 2026-10-24; title and locator match"
+  chvykov2021:
+    title: "Low rattling: A predictive principle for self-organization in active collectives"
+    authors: "Chvykov P, Berrueta TA, Vardhan A, Savoie W, Samland A, Murphey TD, Wiesenfeld K, Goldman DI, England JL"
+    venue: "Science 371(6524):90-95 (2021)"
+    doi: 10.1126/science.abc6182
+    note: "Crossref-resolved 2026-10-24; the v1 audit and paper_citations.bib give the title as '...in active matter'"
+  bongard2023:
+    title: "There's Plenty of Room Right Here: Biological Systems as Evolved, Overloaded, Multi-Scale Machines"
+    authors: "Bongard J, Levin M"
+    venue: "Biomimetics 8(1):110 (2023)"
+    doi: 10.3390/biomimetics8010110
+    note: "Crossref-resolved 2026-10-24; title and locator match"
+  pigozzi2025:
+    title: "Associative conditioning in gene regulatory network models increases integrative causal emergence"
+    authors: "Pigozzi F, Goldstein A, Levin M"
+    venue: "Communications Biology 8:1027 (2025)"
+    doi: 10.1038/s42003-025-08411-2
+    note: "Crossref-resolved 2026-10-24: article number 1027; the v1 audit, bib, math-KG YAML and docs all cite '8:1112'"
+  froese2024:
+    title: "Irruption and Absorption: A 'Black-Box' Framework for How Mind and Matter Make a Difference to Each Other"
+    authors: "Froese T"
+    venue: "Entropy 26(4):288 (2024)"
+    doi: 10.3390/e26040288
+    note: "Crossref-resolved 2026-10-24. The v1 audit and bib attach this DOI to the title of a different paper (Entropy 25(5):748, 2023). Neither abstract mentions an optimal-stopping or 1/e law"
+  froese2023:
+    title: "Irruption Theory: A Novel Conceptualization of the Enactive Account of Motivated Activity"
+    authors: "Froese T"
+    venue: "Entropy 25(5):748 (2023)"
+    doi: 10.3390/e25050748
+    note: "Crossref-resolved 2026-10-24; this is the paper whose title the v1 `froese2024` entry carries"
+  biswas2023:
+    title: "Learning in Transcriptional Network Models: Computational Discovery of Pathway-Level Memory and Effective Interventions"
+    authors: "Biswas S, Clawson W, Levin M"
+    venue: "International Journal of Molecular Sciences 24(1):285 (2023)"
+    doi: 10.3390/ijms24010285
+    note: "Crossref-resolved 2026-10-24; paper_citations.bib L53-L62 gives this DOI the title 'Fromasikan to Pavlov: Associative Memory and Learning in Gene Regulatory Networks', which is not the title of record"
+  watson2016:
+    title: "How Can Evolution Learn?"
+    authors: "Watson RA, Szathmary E"
+    venue: "Trends in Ecology & Evolution 31(2):147-157 (2016)"
+    doi: 10.1016/j.tree.2015.11.009
+    note: "Crossref-resolved 2026-10-24; in the bib but absent from the v1 audit references"
+  pietak2016:
+    title: "Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine"
+    authors: "Pietak A, Levin M"
+    venue: "Frontiers in Bioengineering and Biotechnology 4:55 (2016)"
+    doi: 10.3389/fbioe.2016.00055
+    note: "Crossref-resolved 2026-10-24; Law 3 source, cited in the math-KG YAML without a DOI and absent from audit and bib"
+  pietak2017:
+    title: "Bioelectric gene and reaction networks: computational modeling of genetic, biochemical, and bioelectrical dynamics in pattern regulation"
+    authors: "Pietak A, Levin M"
+    venue: "Journal of the Royal Society Interface 14(134):20170425 (2017)"
+    doi: 10.1098/rsif.2017.0425
+    note: "DOI resolves (2026-10-24); Law 3 source, absent from audit and bib"
+  rosas2019:
+    title: "Quantifying high-order interdependencies via multivariate extensions of the mutual information"
+    authors: "Rosas FE, Mediano PAM, Gastpar M, Jensen HJ"
+    venue: "Physical Review E 100:032305 (2019)"
+    doi: 10.1103/PhysRevE.100.032305
+    note: "Crossref-resolved 2026-10-24; the O-information definition used by Law 18, absent from audit and bib"
+  tan2022:
+    title: "Odd dynamics of living chiral crystals"
+    authors: "Tan TH, Mietke A, Li J, Chen Y, Higinbotham H, Foster PJ, Gokhale S, Dunkel J, Fakhri N"
+    venue: "Nature 607:287-293 (2022)"
+    doi: 10.1038/s41586-022-04889-6
+    note: "Crossref-resolved 2026-10-24; Law 22 source, absent from audit and bib"
+  scheibner2020:
+    title: "Odd elasticity"
+    authors: "Scheibner C, Souslov A, Banerjee D, Surowka P, Irvine WTM, Vitelli V"
+    venue: "Nature Physics 16:475-480 (2020)"
+    doi: 10.1038/s41567-020-0795-y
+    note: "Crossref-resolved 2026-10-24; the odd-modulus work-per-cycle result that Law 22 reduces to a scalar product"
+  gilbert1966:
+    title: "Recognizing the Maximum of a Sequence"
+    authors: "Gilbert JP, Mosteller F"
+    venue: "Journal of the American Statistical Association 61(313):35-73 (1966)"
+    doi: 10.1080/01621459.1966.10502008
+    note: "DOI transcribed offline (doi_verified_offline: false); the classical secretary-problem 1/e result that Law 7 computes and attributes to Froese"
+  liu2024kan:
+    title: "KAN: Kolmogorov-Arnold Networks"
+    authors: "Liu Z, Wang Y, Vaidya S, Ruehle F, Halverson J, Soljacic M, Hou TY, Tegmark M"
+    venue: "arXiv:2404.19756 (2024)"
+    url: https://arxiv.org/abs/2404.19756
+    note: "Law 9 source; absent from audit and bib"
+  ororbia2023mortal:
+    title: "Mortal Computation: A Foundation for Biomimetic Intelligence"
+    authors: "Ororbia A, Friston K"
+    venue: "arXiv:2311.09589 (2023)"
+    url: https://arxiv.org/abs/2311.09589
+    note: "Law 15 source as cited in the math-KG YAML; absent from audit and bib"
+  guichard2025nca:
+    title: "A Neural Cellular Automaton Model of Memory Transfer"
+    authors: "Guichard E, Nichele S"
+    venue: "arXiv:2504.11855 (2025)"
+    url: https://arxiv.org/abs/2504.11855
+    note: "Law 25 source as cited in the math-KG YAML; absent from audit and bib"
+  shreesha2025:
+    title: "Extended Iterated, Spatialized Prisoner's Dilemma: Game Theory of Multicellularity with Agent-Controlled Borders"
+    authors: "Shreesha L, Levin M"
+    venue: "OSF preprint kpzju_v2 (2025)"
+    url: https://osf.io/kpzju_v2
+    note: "Law 20 source; in the bib, absent from the v1 audit references"
+  catalog:
+    title: "datasets/levin_youtube_channel/levin_youtube_catalog.json - 374-video metadata index of @drmichaellevin"
+    authors: "gemini-4-argon (crawl of 2026-10-24)"
+    venue: "repository dataset; SHA-256 38aab3be23160a82403c57ccb5f9b6f6cca81519b4d10444dd4f20f530acf2d3; no transcript text, no crawl script, not read by the audited script"
+    url: https://www.youtube.com/@drmichaellevin
+
+simulations:
+  - id: levin-youtube-channel-math
+    name: "@drmichaellevin 25-law mathematical synthesis & biological-law-criteria suite (referee re-score)"
+    organism: "None. No organism, tissue, cell population, specimen image or experimental dataset is loaded or compared; the claimed subjects (bioelectric collectives, GRNs, active matter) appear only in comments and law titles"
+    script: models/2026-levin-channel-math-synthesis.py
+    output: media/levin_youtube_channel_math_synthesis.png
+    also:
+      - docs/levin_youtube_channel_math_synthesis.png
+      - morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean
+      - morphoeval/runs/levin_youtube_channel_math_summary.json
+    domain: morphogenesis
+    status: evaluated
+    supersedes_audit_id: 2026-10-24-levin-youtube-channel-math-audit
+    provenance:
+      spec_fingerprint: cf19761e9e6760d1e706dce6a8fdea337079e70d318494d21ee724915d6bb697
+      artifact_sha256: 2e2cd28df81d42a235a6c03f640c7a351859e4a4f758ee4692323ad541edbfaa
+      input_dataset_sha256:
+        datasets/levin_youtube_channel/levin_youtube_catalog.json: 38aab3be23160a82403c57ccb5f9b6f6cca81519b4d10444dd4f20f530acf2d3
+        datasets/levin_youtube_channel/paper_citations.bib: 5acabab1711c18992b353aa93b95d5e38cfd4cc3bcc1d4c034b7b2ee265cb3db
+    claim_boundary:
+      reported_in_source:
+        - "Levin (2019, 2022): TAME cognitive-light-cone framework (diagrammatic, no closed-form R_eff(N, G_gj) is published)"
+        - "Chvykov et al. (2021) Science 371:90: low-rattling stationary measure P_ss(x) ~ r(x)^(-gamma) tested on robotic 'smarticle' collectives"
+        - "Bongard & Levin (2023) Biomimetics 8:110: polycomputing as a conceptual framework (no XOR/AND/OR state-map equation is published)"
+        - "Pigozzi, Goldstein & Levin (2025) Commun. Biol. 8:1027: associative conditioning in continuous GRN ODE models; Watson & Szathmary (2016) TREE 31:147: natural induction / Hebbian attractor deepening"
+        - "Rosas et al. (2019) Phys. Rev. E 100:032305: O-information Omega(X^n); Scheibner et al. (2020) / Tan et al. (2022): odd elasticity and chiral crystal work cycles; Gilbert & Mosteller (1966): the 1/e secretary-problem law"
+        - "Pietak & Levin (2016, 2017): Nernst-Planck electrodiffusion in BETSE; Cervera, Levin & Mafe: voltage-gated gap-junction bistability (cited in the KG without DOI)"
+      reconstructed_in_script:
+        - "25 scalar quantities evaluated once each at hard-coded constants (L49-L200); a 24-state power-law table and its own log-log fit (Law 5, L72-L77); a 99-term secretary-problem sum (Law 7, L84-L89); a 4-row x 3-gate truth table (Law 8, L91-L96)"
+        - "A `laws_summary` list (L202-L228) assigning each law an `equation_origin` (O1/O2), an `epistemic_tier` (T1-T4), a `criteria_passed` list (C1-C5), video IDs, the computed `metric` and a `ref` that is, for 23 of 25 laws, the same expression or its rounded value"
+        - "An 8-panel figure (L244-L377) whose panels 5, 6 and 8 plot analytic decoration curves (10 exp(-0.8 t), a piecewise sine for ln|S|, exp(-0.4 t), 0.5^(t/2), exp(-0.6 t) cos(1.2 t)) that are not produced by any computation in verify_all_25_laws()"
+        - "25 Lean 4 theorems in Loop_levin_youtube_channel_math.lean (0 sorry; 2 exhaustive Bool proofs, 10 trivially-universal identities paired with ground constants, 13 ground `decide` checks); 6 earlier theorems in MathOfBiology.lean section 16"
+      transfer_boundary:
+        - "Every dynamical law in the titles (Cervera gap-junction ODE, Nernst-Planck PDE, Chvykov Markov jump process, Brenner Langevin SDE, Friston gradient flow, Weinberg Ca2+ integral-feedback ODE, Rebbin cable equation, Guichard NCA) is replaced by a single algebraic consequence evaluated at one point; none is integrated, so no regime, bifurcation, threshold or breakdown horizon (criterion C4) is actually exhibited"
+        - "The S_6 causal-emergence numbers in Law 17 (0.8687, 0.0191, 1.0000, 0.0313, 0.7209, 0.1238) are copied from the repository's own earlier sorting-morphogenesis run (sorting-morphogenesis/PLATONIC_SPACE_CLAIMS_EVALUATION.md L112-L118), not recomputed and not from Hoel (2026)"
+        - "Law 5's slope of -1.0000 is guaranteed by construction (p_ss is defined as r_exit^-1 / Z at L75); it tests numpy.polyfit, not Chvykov's law"
+        - "Law 7's Python optimum (k* = 37, P = 0.37104) is the classical secretary problem; its Lean theorem brackets 100566 = 37 x 2718 rather than 100 x 1000 (floor(100000/2718) = 36), so the machine-checked statement is not floor(N/e) = 37"
+        - "Law 16's Python metric (Shannon-Hartley capacity 2.0 bits at SNR 15, L136-L139) and its Lean theorem (E_total - E_maint - E_info = 30, Loop L251-L258) are different equations; the measurement sidecar reports the former under the latter's theorem name"
+        - "The video catalog is metadata only (titles, durations, views, descriptions, a stale 6-law `mappedMathLaws` field); no transcript, slide or figure text is parsed, so 'extracted from the channel' is a manual attribution, not a reproducible extraction"
+      does_not_claim:
+        - "This referee audit does not claim any of the 25 source equations is wrong as published; it scores whether the suite implements, exercises and validates them, and whether the O1/O2, T1-T4 and C1-C5 tags are earned by the artefacts"
+        - "It does not verify the content of the 72 referenced videos (no transcripts are available offline) and does not re-derive the S_6 causal-emergence numbers"
+        - "It does not claim the Lean modules fail: both compile with 0 sorry; the finding is about what the theorems state, not whether they check"
+    source_refs:
+      - levin2019
+      - levin2022
+      - chvykov2021
+      - bongard2023
+      - pigozzi2025
+      - froese2024
+      - froese2023
+      - biswas2023
+      - watson2016
+      - pietak2016
+      - pietak2017
+      - rosas2019
+      - tan2022
+      - scheibner2020
+      - gilbert1966
+      - liu2024kan
+      - ororbia2023mortal
+      - guichard2025nca
+      - shreesha2025
+      - catalog
+    summary: >-
+      Independent referee re-score of the 25-law `@drmichaellevin` synthesis suite: 26.4/100 (v1 self-score 93.8),
+      verdict band 'unfaithful'. The v1 audit's evidence loci belong to the superseded 6-law script, so the 25-law
+      rewrite had never been examined. On examination: 2 of 25 Python laws compute anything (Law 7 secretary sum, Law
+      8 truth table), 1 fits its own generating function (Law 5), 16 evaluate one closed-form expression at one
+      hard-coded point with `ref` set to the same expression, and 6 are literals or tautologies (Laws 6, 9, 10, 17,
+      19, 24); no ODE/PDE/SDE/Markov/NCA system named in any title is integrated. In Lean, 2 theorems are genuine
+      exhaustive Bool proofs (Laws 8, 10), 10 pair a trivially-universal identity with ground constants, 13 are
+      entirely ground `decide` arithmetic, and Law 7's theorem brackets a rigged constant (100566 = 37 x 2718).
+      Nothing empirical is loaded: the script no longer reads `levin_youtube_catalog.json` (still declared as an
+      input in the math-KG YAML and as a 'specimen' in v1), the catalog's law mapping is the stale 6-law taxonomy,
+      and all 25 v1 measurements reference the suite's own Lean theorem with `reference_value == value` for 23.
+      The bibliography covers 6 of 25 laws, and Crossref resolution shows a title/DOI mismatch (`froese2024`), a
+      wrong article number (`pigozzi2025` 1112 vs 1027), a fabricated title (`biswas2023`) and a mis-transcribed
+      title (`chvykov2021`). Four C5 tags have no pre-registration artefact; Laws 16, 21 and 22 are O1-tagged scalar
+      reductions; Law 7's O1 attribution to Froese is unsupported by either Froese paper's abstract; the docs' tier
+      counts (T2 8/25, T4 8/25) disagree with the table and script (9, 7). The CLI exposes only `--self-test`.
+      `--self-test` passes (0.3 s) and both Lean modules compile with 0 sorry; `--conform` on the v1 audit passes,
+      which shows the schema check cannot catch stale loci or tautological measurements.
+    scores:
+      model-fidelity:
+        value: 36
+        rationale: >-
+          What is implemented: each law has its governing equation written in a comment (L49-L200), the two
+          Boltzmann-type closed forms (Laws 2, 3) and the Shannon-Hartley capacity (Law 16) are evaluated with
+          physically meaningful constants, Law 7 computes the full secretary-problem objective over k = 1..99 and
+          recovers k* = 37, P = 0.3710 (independently re-derived here with exact rationals), and Law 8 enumerates
+          all four Boolean inputs for three observers (12/12 agree). Deductions: 16 laws are one-point evaluations
+          whose `ref` is the same expression (Law 4 L70 vs L206 `round(math.exp(4.0), 4)` is literally identical;
+          Laws 1, 11-15, 18, 20-23, 25 likewise), so the self-test can never fail and verifies nothing about the
+          law (-20); 6 laws are bare literals or tautologies: Law 10 `e_sat_planted = 0` (L106) evaluates no clause
+          and no instance despite the comment claiming a planted 3-SAT instance, Law 19 `-6 + 6` (L158-L160), Law
+          24 `ca_target - ca_target` (L191-L193), Law 6 invented `0.82 + 0.12` (L81-L82), Law 9 `2 * 4 + 1` (L101),
+          Law 17 six hard-coded decimals copied from the repository's own earlier S_6 run (L143-L147) (-14); Law 5
+          fits a power law to p_ss = r^-1/Z that it has just defined, so slope = -1 and enrichment = 1.25/0.08 are
+          tautological (-6); no dynamical system in any law title (gap-junction ODE, Nernst-Planck PDE, Markov jump
+          process, Langevin SDE, free-energy gradient flow, Ca2+ integral control, ephaptic cable, NCA) is ever
+          integrated, so the C2 interventional and C4 breakdown-horizon claims are asserted, not exhibited (-10);
+          Law 16's Python metric and Lean theorem are different equations (-4); Law 22's second half (Huxley
+          allometry, alpha = 1.42) is an unused literal at L180 with no computation (-3); Law 20's comment and
+          figure legend say cooperators dominate at k = 16 but pi_C(16) = pi_D(16) = 0.5, strict dominance begins at
+          k = 17 (-2); Law 13's Lean docstring (k_fb 20 -> 1, D 1 -> 20) matches neither its own theorem (20/20,
+          400/1) nor the Python (0.1/2.0, 1.0/0.05) (-1). Not lower because the written equations are, for the O1
+          laws, recognisable statements of the cited results and the two genuine computations are correct.
+        evidence:
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [84, 89], note: "Law 7: genuine 99-term secretary-problem objective and argmax (k* = 37, P_opt = 0.37104; re-derived exactly in this audit). The classical Lindley/Gilbert-Mosteller result, not an equation of Froese 2023/2024", supports: true}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [91, 96], note: "Law 8: exhaustive 4-input x 3-gate truth-table check (12/12); genuine but a 4-row combinatoric, not a dynamical polycomputing substrate", supports: true}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [56, 65], note: "Laws 2-3: single-point evaluations of the Bell-Boltzmann conductance (V = -60 mV) and the Boltzmann ratio exp(40/25.85); correct closed forms, but no ODE integration, no bistability, no wound-isolation regime is computed", supports: true}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [72, 77], note: "Law 5: p_ss is defined as r_exit**-1 / Z (L75) and then np.polyfit recovers slope -1.0000 from it (L76); the 15.625x enrichment is 1.25/0.08. Circular: fits its own generating function", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [79, 82], note: "Law 6: epi_rule30 = 0.82, h_res_rule30 = 0.12 are invented constants with no source; metric = 0.94 and ref = 0.9400", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [98, 101], note: "Law 9: kan_outer_terms = 2 * 4 + 1 = 9; ref = 9. No function is represented, no spline is fitted", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [103, 107], note: "Law 10: `e_sat_planted = 0` and `e_sat_violated = 1` are literals; no clause, literal or assignment is evaluated although the comment claims a planted 3-clause 3-SAT instance", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [109, 139], note: "Laws 11-16: -eta*N^2, w0 + 15*eta, (D/k)/(D/k), -kappa*grad^2, E/(P_diss - P_harvest), 0.5*log2(1+15): one-line scalar arithmetic at hard-coded constants, each with ref equal to the same value in L213-L218", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [141, 147], note: "Law 17: cp values are six hard-coded decimals (0.8687, 0.0191, 1.0000, 0.0313, 0.7209, 0.1238) copied from the repository's own prior S_6 run; nothing is recomputed; ref 0.1191 is the same subtraction", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [149, 153], note: "Law 18: Omega = (3-2)*2 + 3*(1-2) with the entropies typed in; the XOR joint distribution (16 lines to compute exactly) is never constructed", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [155, 160], note: "Law 19: bode_low_suppression = -6, bode_high_amplification = +6, net = 0; no transfer function, no sensitivity integral is evaluated", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [162, 166], note: "Law 20: k_breakeven = int((b/(b-c))**2) = 4 and k_dominance = 16; but pi_C(16) = pi_D(16) = 0.5, so strict dominance begins at k = 17 (re-derived here); the comment and figure legend state k = 16", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [168, 186], note: "Laws 21-23: 2.0 * 9.0 = 18, 3 * 4 = 12 (pheidole_alpha = 1.42 at L180 is dead code), -2 * 2 * 25 = -100; scalar products at hard-coded constants with ref equal to the same product", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [188, 200], note: "Law 24: ca_steady_integral_control = ca_target; ca_steady_error = ca_target - ca_target = 0 identically (no ODE, no saturation, no bifurcation). Law 25: 64 // 2**4 = 4; no NCA, no transfer, no contraction factor is measured", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [202, 228], note: "laws_summary: for 23 of 25 laws `ref` is the metric's own expression or its rounded value; only Law 3 (4.7002 vs computed 4.6992, a transcription error) and Law 7 (1/e asymptote vs finite-N optimum) differ, and both pass only because the tolerance at L384 is an absolute 0.01", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [136, 139], note: "Law 16 Python metric is Shannon-Hartley capacity 0.5*log2(1+SNR); the Lean theorem registered for Law 16 (Loop L251-L258) proves E_total - E_maint - E_info = 30. Different equations under one law id", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [136, 140], note: "Law 8 theorem: universally quantified over (a b : Bool), proves all three observer projections equal XOR/AND/OR by exhaustive cases. One of the two genuine structural proofs", supports: true}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [165, 167], note: "Law 10 theorem: (penalty == 0) = (l1 || l2 || l3) for all Bool triples by exhaustive cases. Genuine, but for one clause, not the sum over M clauses stated in the law", supports: true}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [90, 93], note: "Law 5 theorem: `125 * 8 = 8 * 125 ∧ 125 > 8` by decide. Commutativity of two literals; states nothing about P_ss ~ r^-gamma or any stationary distribution", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [113, 119], note: "Law 7 theorem: froese_stopping_bracket 37 2718 100566. N_scaled = 100566 = 37 * 2718 exactly, not 100 * 1000; floor(100000 / 2718) = 36. The constant was chosen so the bracket holds; the theorem does not establish floor(N/e) = 37 and the docstring's equation is false as stated", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [194, 258], note: "Laws 12-16 theorems: 5 + 15*5 = 80, 20/20 = 1 ∧ 400/1 = 400, -(2*9) = -18, 100/(5-3) = 50, 100-20-50 = 30: all closed terms discharged by `decide`; no variable is quantified", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [271, 287], note: "Laws 17-18 theorems: (10000-313)-(8687-191) = 1191 and (3-2)*2 + 3*(1-2) = -1 with every entropy / determinism typed in as a literal; ground arithmetic", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [316, 334], note: "Laws 20-21 theorems: four and three ground evaluations by decide (e.g. 2*3*3 + 2*0*0 = 18 ∧ 18 > 0); the stated law (positive-definite metric => dU/dt >= 0 for all gradients) is not what is proved, and in Nat non-negativity is vacuous", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [364, 394], note: "Laws 23, 25 theorems: -2*2*5*5 = -100 and 64/2/2/2/2 = 4 by decide; ground", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [25, 31], note: "Law 1 theorem: first conjunct universal in (r_cell g_half) but reduces to r*(0+g)+r*99*0 = r*g by simp; the 91x headline is the ground `1001 / (10 + 1) = 91`", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [56, 63], note: "Law 3 theorem: g_gj * (-dV + dV) = 0 for all Int. The claimed invariant (G_gj cancels from the Boltzmann ratio) is encoded as x * 0 = 0; no exponential, no concentration ratio appears", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [297, 301], note: "Law 19 theorem: 0 - (-k) = k ∧ -k + k = 0 for all Int k; the Bode integral is encoded as additive inverse", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [345, 381], note: "Laws 22, 24 theorems: (k - k) * area = 0 and x - x = 0 as the universal conjuncts; the odd-elasticity tensor cycle integral and the integral-feedback ODE are absent", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [230, 241], note: "`all_lean4_verified: True` is a literal in the returned dict; the script never invokes lean, so the flag written into the summary JSON and the KG payload is unverified by construction", supports: false}
+      specimen-match:
+        value: 10
+        rationale: >-
+          The rubric asks whether the rendered output resembles real specimens or the source authors' own figures,
+          side by side. Nothing of the kind exists: no organism, image, measurement table or published figure is
+          loaded, overlaid or compared. The v1 audit awarded 92 by treating the 374-video metadata catalog as the
+          'specimen'; a list of titles, durations and view counts is not a biological specimen, and the current
+          script does not even open it (no reference to the file anywhere in L23-L39 or the body). The figure's
+          panels 5, 6 and 8 plot analytic decoration curves (10 exp(-0.8 t), 10 - 2t, a piecewise sine for
+          ln|S|, exp(-0.4 t), 0.5^(t/2), exp(-0.6 t) cos(1.2 t)) that are not outputs of verify_all_25_laws() and
+          correspond to no source figure; panel 3 is five bars fixed at 1.0 by hand (L290). The dimension is scored
+          rather than marked not-applicable because the suite claims 'biological law' status with T2 ('validated in
+          wet-lab') and T3 ('validated across multiple biological clades') tiers for 11 laws, and a biological-law
+          claim that is validated against no biology must bear that cost. Residual credit for panels 1, 2, 4 and 7,
+          which at least plot curves produced by the law expressions themselves.
+        evidence:
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [23, 39], note: "Imports and paths: no dataset, image, CSV or catalog path is declared; the only inputs to the suite are the constants typed into verify_all_25_laws()", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [315, 321], note: "Panel 5: f_vfe = 10*exp(-0.8 t), e_res = max(0, 10 - 2t), capacity 0.5*log2(1 + 3t) are drawn directly, not computed by any law; the legend labels them Laws 14-16", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [330, 336], note: "Panel 6: ln|S(iw)| is a hand-written piecewise sine with zero net area; no transfer function exists in the script", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [359, 366], note: "Panel 8: exp(-0.4 t), 0.5^(t/2), |exp(-0.6 t) cos(1.2 t)| labelled as ephaptic phase dispersion, NCA loss and Ca2+ error; none is produced by Laws 23-25 (which return -100, 0 and 4)", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [288, 297], note: "Panel 3: vals = [1.0, 1.0, 1.0, 1.0, 1.0] hand-set and annotated '100%'", supports: false}
+          - {file: datasets/levin_youtube_channel/levin_youtube_catalog.json, lines: [1, 32], note: "Channel metadata (374 videos, 333.05 h, 2,508,589 views, 8 categories). A metadata index, not a specimen; not read by the script", supports: false}
+          - {file: datasets/levin_youtube_channel/levin_youtube_catalog.json, lines: [4382, 4400], note: "Weinberg Ca2+ homeostasis talk `3Jol76a-urM` carries mappedMathLaws = levin-youtube-channel-math-1 (TAME); the catalog's law mapping is the superseded 6-law taxonomy, not the 25-law atlas it is said to document (same for `M4iOslVEG1U` -> TAME, `iyc0943z464` -> Watson)", supports: false}
+          - {file: media/levin_youtube_channel_math_synthesis.png, lines: [0, 0], note: "8-panel atlas (SHA-256 2e2cd28d...; identical copy in docs/). Panels 1, 2, 4, 7 plot the law expressions; panels 3, 5, 6, 8 plot hand-written curves. No specimen or source figure appears in any panel", supports: true}
+      parameter-expressivity:
+        value: 22
+        rationale: >-
+          Four internal sweeps exist and are plotted: R_eff over 201 values of G_gj (L235-L236, panel 1), the
+          24-state rattling table (L74, panel 2), the k = 1..99 secretary objective (L87) and pi_C / pi_D over
+          k = 1..36 (L345-L347, panel 7). Each is a curve of a closed-form expression, not a response of a model to
+          a parameter. Deductions: the CLI (L398-L403) exposes only `--self-test`; not one of N, G_half, V_th, V_0,
+          Delta V, Pe, gamma, eta, N_grn, kappa, SNR, b/c, g_eph, rho or the 3-SAT instance can be varied without
+          editing source (-30); 21 laws have no sweep at all, so monotonic control of any feature of form cannot be
+          judged (-25); Law 4's Peclet number 4 and Law 16's SNR 15 are unsourced single values whose outputs
+          (exp(4), 2 bits) are reported as if measured (-8); no regime switch (wild-type vs blockade, slit vs no
+          slit, below vs above threshold) is run as an alternative parameterisation except by arithmetic on
+          constants (-10). Not lower because the four curves that exist are correct and the self-test is wired to
+          the same code path as the figure.
+        evidence:
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [398, 403], note: "CLI: argparse with a single flag `--self-test`; no model parameter, seed, law selection or output path is exposed", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [230, 241], note: "`curves` dict: the only swept quantities are g_grid/r_eff_curve (Law 1), r_exit/p_ss (Law 5) and p_stop (Law 7); 22 laws contribute no curve", supports: true}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [343, 350], note: "Panel 7: pi_C and pi_D over k = 1..36 at fixed b = 2, c = 1; legend claims k_dom = 16 where the two curves are equal", supports: true}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [67, 70], note: "Law 4: pe_galvano = 4.0 is an unsourced constant; cathodal_enrichment = exp(4) is the only output; no field strength, mobility, diffusivity or length enters", supports: false}
+      morphometric-validation:
+        value: 8
+        rationale: >-
+          The v1 sidecar lists 25 measurements, all `derived_from: script`, every `reference_source` ending in
+          '& Lean 4 Theorem N' (the suite's own restatement), and 23 of 25 with `reference_value` identical to
+          `value` because `ref` is computed by the same expression (abs_error 0.0 in the KG payload). The two that
+          differ are not empirical either: Law 3's 4.7002 is a mis-transcription of exp(40/25.85) = 4.6992, and Law
+          7's 0.3679 is the N -> infinity asymptote of the quantity whose finite-N value the script computes. No
+          measurement is compared with a value measured on an organism, an experiment, an active-matter trial, or a
+          figure in any cited paper; the one set of numbers that originates outside this script (Law 17's S_6
+          causal-emergence values) is copied from the repository's own earlier run rather than recomputed or
+          sourced to Hoel. The replacement sidecar written with this audit re-derives every value independently
+          and records a reference only where an independent one exists (Laws 2, 3, 7, 8, 17, 18, 20); the other 18
+          are reported without a reference and annotated as model-internal. Residual credit for the values being
+          arithmetically correct and reproducible.
+        evidence:
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.measurements.yaml, lines: [4, 10], note: "Measurement 1: value 91.0, reference_value 91.0, reference_source 'Levin (2019) ... & Lean 4 Theorem 1'. Levin 2019 publishes no R_eff formula; the reference is the model's own output", supports: false}
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.measurements.yaml, lines: [18, 24], note: "Measurement 3: value 4.6992 vs reference 4.7002 attributed to Pietak & Levin; the reference is a transcription error of the same exp(40/25.85), not a published number", supports: false}
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.measurements.yaml, lines: [39, 45], note: "Measurement 6: 0.82 + 0.12 = 0.94 bits with reference 0.9400 'Finzi, Kolter & Wilson (2026)'; the constants are invented in the script (L81) and no such numbers are sourced", supports: false}
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.measurements.yaml, lines: [116, 122], note: "Measurement 17: Delta CP 0.1191 with reference 0.1191 'Hoel (2026) Patterns 7:101472'; the number is from sorting-morphogenesis/PLATONIC_SPACE_CLAIMS_EVALUATION.md L113, the repository's own prior computation, not from Hoel", supports: false}
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.measurements.yaml, lines: [165, 179], note: "Measurements 24-25: 0 nM Ca2+ error (identity) and l2 error 4 (64/16) with references 0 and 4 from the same arithmetic", supports: false}
+          - {file: docs/bioelectricity/levin_youtube_kg.json, lines: [989, 1010], note: "verified_measurements[0]: value_num 91.0, ref_num 91.0, abs_error 0.0, within_5pct true. The KG publishes self-referential zero-error comparisons as validated measurements", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [380, 384], note: "run_all: assert abs(metric - ref) < 0.01 is the only validation; with ref computed from the same expression it is unfalsifiable for 23 laws", supports: false}
+          - {file: sorting-morphogenesis/PLATONIC_SPACE_CLAIMS_EVALUATION.md, lines: [111, 118], note: "Origin of the Law 17 constants (det 0.8687, CP 0.8496 / 0.9687 / 0.5971, Delta CP +0.1191 / -0.2525): the repository's own S_6 sorting run", supports: true}
+      source-traceability:
+        value: 35
+        rationale: >-
+          Positives: all 72 distinct video IDs cited by the 25 laws resolve to entries in the catalog (checked here);
+          the six v1 DOIs resolve via doi.org; the catalog records channel ID, snapshot date and per-video
+          descriptions. Deductions: the audit YAML carries 6 references for 25 laws attributed to ~25 different
+          speakers, so 19 laws (2-4, 6, 9-11, 13-17, 19, 21-25) have no DOI or URL anywhere in the audit (-15); the
+          bib has 10 entries, 2 without identifier, and 17 laws have no bib entry (-5); Crossref resolution on
+          2026-10-24 shows `froese2024` pairs the title of Entropy 25(5):748 (2023) with the DOI of Entropy
+          26(4):288 (2024), `pigozzi2025` cites article 1112 where the DOI resolves to 1027 (propagated into the
+          bib, the math-KG YAML and the docs), the bib's `biswas2023` title 'Fromasikan to Pavlov: Associative
+          Memory and Learning in Gene Regulatory Networks' is not the title of record for 10.3390/ijms24010285, and
+          `chvykov2021` reads 'active matter' for 'active collectives' (-15); Law 7 is attributed as a 'Verbatim
+          Published Theorem' to Froese, but neither Froese abstract mentions optimal stopping and the 1/e law is
+          Lindley (1961) / Gilbert & Mosteller (1966) (-8); Law 17's constants are repository-internal with no
+          pointer to their origin (-4); the catalog SHA-256 (38aab3be...) is quoted in the Substack article but
+          verified by no code, the README still says '6 governing mathematical laws', and the catalog's
+          `mappedMathLaws` is the stale 6-law taxonomy (-6); the two uncited sources that the law titles name
+          ('Cervera, Levin & Mafe (2021) Bioelectrochemistry', 'Hoel (2026) Patterns 7:101472') carry no DOI in
+          any file (-4); the Finzi 2026 and Shreesha 2025 entries have no persistent identifier (-3). The
+          references block of this audit adds 14 resolvable identifiers and corrects the four defective entries.
+        evidence:
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml, lines: [46, 76], note: "v1 references: 6 DOIs (Levin 2019/2022, Chvykov 2021, Bongard 2023, Pigozzi 2025, Froese 2024) for 25 laws", supports: false}
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml, lines: [72, 76], note: "froese2024: title 'Irruption Theory: A Novel Conceptualization of the Enactive Account of Motivated Activity' is Entropy 25(5):748 (2023, DOI 10.3390/e25050748); the listed DOI 10.3390/e26040288 resolves to 'Irruption and Absorption: A Black-Box Framework...' (2024). Neither abstract contains an optimal-stopping or 1/e result", supports: false}
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml, lines: [67, 71], note: "pigozzi2025: venue 'Communications Biology 8:1112'; Crossref gives article number 1027 for DOI 10.1038/s42003-025-08411-2", supports: false}
+          - {file: datasets/levin_youtube_channel/paper_citations.bib, lines: [53, 62], note: "biswas2023 title 'Fromasikan to Pavlov: Associative Memory and Learning in Gene Regulatory Networks' does not match the title of record for 10.3390/ijms24010285 ('Learning in Transcriptional Network Models: Computational Discovery of Pathway-Level Memory and Effective Interventions')", supports: false}
+          - {file: datasets/levin_youtube_channel/paper_citations.bib, lines: [86, 98], note: "finzi2026epiplexity and shreesha2025prisoners: @misc entries with no DOI / arXiv id (an OSF URL only for the latter)", supports: false}
+          - {file: datasets/levin_youtube_channel/paper_citations.bib, lines: [1, 98], note: "10 entries total; Laws 2, 3, 4, 9, 10, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25 have no bib entry", supports: false}
+          - {file: morphoeval/math_kg_loops/levin-youtube-channel-math.yaml, lines: [1, 8], note: "model_spec.inputs lists datasets/levin_youtube_channel/levin_youtube_catalog.json; the script contains no reference to that file", supports: false}
+          - {file: datasets/levin_youtube_channel/README.md, lines: [1, 5], note: "README: 'paired with the 6 governing mathematical laws formalized in models/2026-levin-channel-math-synthesis.py' - stale relative to the 25-law rewrite; claims 'SHA-256-verifiable' but no hash is recorded or checked", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [202, 228], note: "72 distinct video IDs across the 25 laws; all 72 are present in levin_youtube_catalog.json (checked in this audit)", supports: true}
+          - {file: docs/BIOLOGICAL_LAW_CRITERIA.md, lines: [64, 64], note: "Law 7 row: 'O1 Verbatim Published Theorem ... Froese (2024) Entropy 26:288'. Unsupported attribution; the 1/e secretary-problem law predates Froese by six decades and is absent from both Froese papers' abstracts", supports: false}
+      code-traceability:
+        value: 44
+        rationale: >-
+          Positives: every law has its equation in a comment immediately above its code (L49-L200); the math-KG YAML
+          registers all 25 laws with a Lean declaration, theorem name, Lean locus and code locus, and the Lean loci
+          are accurate; the docs table and the KG payload carry the same O1/O2, T1-T4 and C1-C5 tags as the script.
+          Deductions: 19 of 25 `code_locus` ranges in the math-KG YAML are off by 1-4 lines (Law 25's L191-L196
+          points at Law 24's code) (-6); Law 16 is registered under one id with a Python equation (Shannon-Hartley),
+          a Lean theorem (ATP budget subtraction) and a YAML formula listing both, so the measurement cannot be
+          traced to the theorem said to verify it (-8); MathOfBiology.lean section 16 (L1152-L1267) holds only 6
+          theorems with merged Laws 4/5 and reuses the section number of the Wolfram block (L1037), while the v1
+          audit cites L1152-L1278 for 'Section 16 ... proofs' on a 1268-line file (-6); 13 theorems are ground
+          `decide` checks and Law 7's constant is rigged, so the 'Lean 4 Kernel Verified' banner on the figure and
+          in the KG traces to arithmetic rather than to the stated laws (-12); `all_lean4_verified` is a hard-coded
+          literal never produced by invoking lean (-5); the v1 audit's evidence ranges ([64, 335], [338, 460],
+          [1, 108]) describe the superseded 6-law files and do not resolve on the current ones (-10); docs section 3
+          states T2 = 8/25 and T4 = 8/25 while its own table and the script carry 9 and 7 (-3); Law 13's Lean
+          docstring, theorem constants and Python constants are three different instances (-2). Not lower because
+          the per-law comment / Lean / YAML triple does exist for every law and the Lean loci resolve.
+        evidence:
+          - {file: morphoeval/math_kg_loops/levin-youtube-channel-math.yaml, lines: [10, 27], note: "Law 1 entry: formula, lean_decl, lean_theorem, lean_locus L16-L31 (accurate), lean_code, code_locus L45-L53 (code is at L49-L54). The registry pattern is complete for all 25 laws", supports: true}
+          - {file: morphoeval/math_kg_loops/levin-youtube-channel-math.yaml, lines: [371, 385], note: "Law 25 code_locus models/...py#L191-L196 points at Law 24's lines; Law 25 is at L195-L200. 19 of 25 loci are off by 1-4 lines (checked programmatically)", supports: false}
+          - {file: morphoeval/math_kg_loops/levin-youtube-channel-math.yaml, lines: [235, 249], note: "Law 16: formula lists both C = 1/2 log2(1 + SNR) and E_prolif = E_total - E_maint - E_info; the code locus computes the first, the Lean theorem proves the second", supports: false}
+          - {file: morphoeval/lean/MathOfBiology.lean, lines: [1152, 1267], note: "Section '16. Michael Levin YouTube Channel ... Core Math': 6 theorems (Laws 4 and 5 merged into one each); section number duplicates '16. Wolfram ... Ruliobiology' at L1037; no trace of Laws 7-25 in the central module", supports: false}
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml, lines: [122, 123], note: "v1 model-fidelity evidence: script lines [64, 335] 'all 6 mathematical laws' and Lean [1, 108] '6 theorems'. The current script holds the laws at L49-L200 and the Lean file has 25 theorems over 396 lines; the v1 loci describe a superseded artefact", supports: false}
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml, lines: [171, 179], note: "v1 code-traceability and repro evidence: MathOfBiology.lean [1152, 1278] (file ends at L1268) and script [338, 460] (file ends at L403): ranges extend past end of file", supports: false}
+          - {file: docs/BIOLOGICAL_LAW_CRITERIA.md, lines: [46, 50], note: "Section 3 counts: T1 7, T2 8, T3 2, T4 8 (= 25). The table at L56-L82 and the script's laws_summary give T1 7, T2 9, T3 2, T4 7", supports: false}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [200, 212], note: "Law 13: docstring says k_fb 20 -> 1 and D 1 -> 20; theorem evaluates D/k at (20, 20) and (400, 1); the Python uses (0.1, 2.0) and (1.0, 0.05)", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [252, 258], note: "Figure suptitle: 'All 25 Governing Laws Across 8 Domains (Lean 4 Kernel Verified, 0 sorry)'. True of compilation; 13 theorems are ground arithmetic and Law 7's bracket constant is 37 * 2718", supports: false}
+      repro-package:
+        value: 52
+        rationale: >-
+          Positives: fully deterministic (no RNG is used, so the `seed: 20261024` in the math-KG YAML is
+          decorative but harmless); `--self-test` exits 0 in 0.3 s; the default run writes the PNG to media/ and
+          docs/ and the summary JSON; `lean` compiles both modules in under 3 s with 0 sorry; Python/numpy/scipy/
+          matplotlib versions are recorded in v1 and re-confirmed here (3.14.7 / 2.5.4 / 1.16.3 / 3.10.7, Lean
+          4.35.0 added). Deductions: the self-test's 25 assertions compare each metric with a `ref` computed by the
+          same expression at absolute tolerance 0.01, so the package cannot fail on any change to the constants
+          that keeps both sides in step and did not catch the Law 3 transcription error (-14); `--self-test`
+          writes morphoeval/runs/levin_youtube_channel_math_summary.json as a side effect even in test mode (-3);
+          the figure (L244-L377), i.e. the shipped output, is not exercised by the self-test (-4); the Lean check
+          is not invoked by the script and `all_lean4_verified` is asserted, not measured (-6); no dependency pin
+          or lock file is specific to this script and matplotlib's font cache goes outside the repo unless
+          MPLCONFIGDIR is set (-3); every audited file except MathOfBiology.lean is an untracked working-tree file,
+          so the v1 checkpoint commit a2201fd3 does not contain the artefacts it scores and no commit can yet be
+          cited for them (-10); the catalog's claimed SHA-256 lock is not enforced anywhere (-3); the Substack
+          article, KG payload and README describe a '6-law' suite in places and a '25-law' suite in others, so a
+          reader cannot tell which package was scored (-5).
+        evidence:
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [380, 395], note: "run_all: 25 assertions at abs tolerance 0.01 against self-computed refs; summary JSON written unconditionally (also in --self-test); figure rendered only when not self-testing", supports: false}
+          - {file: models/2026-levin-channel-math-synthesis.py, lines: [398, 403], note: "Entry point: deterministic, `--self-test` exits 0 in 0.3 s (reproduced in this audit)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, lines: [1, 10], note: "Module header documents `lean morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean`; reproduced here, exit 0, 0 sorry, 2.2 s", supports: true}
+          - {file: morphoeval/math_kg_loops/levin-youtube-channel-math.yaml, lines: [1, 8], note: "seed: 20261024 declared; the script draws no random numbers, and the declared input catalog is not read", supports: false}
+          - {file: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml, lines: [33, 44], note: "v1 checkpoint a2201fd3 with note 'formalizing 6 core mathematical laws'; the 25-law script, Lean loop, YAML, docs and KG payload are untracked in the working tree, so no commit contains what was scored", supports: false}
+          - {file: docs/bioelectricity/levin_youtube_kg.json, lines: [1, 12], note: "KG payload: total_laws 25, all_lean4_verified true (copied from the script's literal), published nanopub URIs for the v1 93.8 assessment; this payload is what downstream consumers read", supports: false}
+    remediation:
+      - >-
+        models/2026-levin-channel-math-synthesis.py:49-200 - replace the 22 one-point / literal evaluations with
+        the dynamical object each law names and compute the law as an output, not an input: integrate the Cervera
+        gap-junction ODE on a 2-cell / 1-D chain and show the depolarised-domain isolation (Law 2); solve the 1-D
+        Nernst-Planck steady state numerically and recover exp(-zF dV/RT) with G_gj swept (Law 3); build a 24-state
+        driven Markov chain with heterogeneous exit rates, compute its stationary vector, then fit the exponent
+        (Law 5); instantiate the 3-clause 3-SAT energy and evaluate it on all 8 assignments (Law 10); run the
+        Hopfield / GRN Hebbian update on an N = 16 network and measure Delta E (Laws 11-12); simulate the
+        Ornstein-Uhlenbeck SDE and measure the stationary variance (Law 13); integrate the Ca2+ integral-feedback
+        ODE with saturation and locate the bifurcation (Law 24); run a minimal NCA and measure the contraction
+        factor (Law 25); compute Omega from the XOR joint distribution (Law 18); evaluate a concrete S(iw) and
+        integrate ln|S| numerically (Law 19). Delete the literals at L106, L158-L159, L191-L192.
+      - >-
+        models/2026-levin-channel-math-synthesis.py:202-228 - for every law set `ref` to a value that does not
+        come from the same expression: a published number with its citation and uncertainty (e.g. Chvykov 2021
+        measured enrichment, Pigozzi 2025 conditioning success rate, Tan 2022 chiral-crystal rotation rate), or
+        state `ref: null` and label the entry 'internal consistency'. Fix Law 3's 4.7002 -> 4.6992 and Law 20's
+        'dominates at k = 16' -> 'k >= 17' (pi_C(16) = pi_D(16)). Lower the assert tolerance at L384 to a relative
+        1e-6 for analytic identities.
+      - >-
+        morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean:113-119 - Law 7: replace N_scaled = 100566 with
+        a statement that is actually true of floor(N/e) (e.g. prove 36 * 2718 <= 100000 < 37 * 2718, i.e.
+        floor(100/e) = 36, and separately state that the discrete optimum is k* = 37 via the computed objective), or
+        drop the floor(N/e) claim; the current theorem checks a constant chosen to make it hold.
+      - >-
+        morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean:90-93, 194-258, 271-287, 316-334, 364-394 -
+        replace the 13 ground `decide` theorems with universally quantified statements of the laws they name: e.g.
+        (Law 5) for all p1 p2 r1 r2, p1 * r1 = p2 * r2 -> r1 < r2 -> p1 > p2; (Law 15) for all e p h, h < p -> ...;
+        (Law 21) for all g11 g22 d1 d2 : Int, 0 < g11 -> 0 < g22 -> 0 <= g11 d1^2 + g22 d2^2; (Law 23) for all g d,
+        0 < g -> d != 0 -> -2 g d^2 < 0; (Law 25) for all n, e / 2^n <= e with strict decrease for e > 0; (Law 16)
+        prove the equation the Python computes or change the Python to the budget identity. Remove the hard-coded
+        `all_lean4_verified: True` at L232 and have run_all() invoke `lean` (or read a lake build artefact) so the
+        flag is measured.
+      - >-
+        morphoeval/math_kg_loops/levin-youtube-channel-math.yaml:7-8 and datasets/levin_youtube_channel/ - either
+        have the script load levin_youtube_catalog.json, verify SHA-256
+        38aab3be23160a82403c57ccb5f9b6f6cca81519b4d10444dd4f20f530acf2d3, and derive something from it (at minimum
+        check that every cited video ID exists and regenerate `mappedMathLaws` from the 25-law table), or remove it
+        from `inputs`. Update `mappedMathLaws` from the 6-law taxonomy to the 25-law ids, rewrite README.md ('6
+        governing mathematical laws') for the 25-law suite, record the catalog hash in the README, and commit the
+        crawl script so the 374-video inventory is reproducible.
+      - >-
+        morphoeval/math_kg_loops/levin-youtube-channel-math.yaml - refresh the 19 drifted `code_locus` ranges (Laws
+        1-12, 19-25) to the current file and add a CI check (the loop validator) that fails when a locus no longer
+        contains the law's comment header.
+      - >-
+        docs/BIOLOGICAL_LAW_CRITERIA.md:56-82, models/...py:202-228 and docs/bioelectricity/levin_youtube_kg.json -
+        retag: Law 7 O1 -> O2 with the attribution corrected to Lindley (1961) / Gilbert & Mosteller (1966) and the
+        Froese link described as 'discussed in', not 'published equation'; Laws 16, 21, 22 O1 -> O2 (budget
+        identity, diagonal 2-component proxy for the Fisher flow, scalar (K12 - K21) * Area in place of the odd
+        modulus cycle integral); remove C5 from Laws 3, 5, 17, 22 until a hash-locked pre-registered held-out test
+        exists for each in this repository and is linked; demote Law 24 (T3 'cross-clade empirical') and Law 23
+        (T2 'validated in wet-lab') to T4 until an empirical comparison exists; reconcile the section 3 tier counts
+        (T2 9, T4 7) with the table. Implement or delete the Huxley allometry half of Law 22 (alpha = 1.42 is
+        dead code at L180 with no source).
+      - >-
+        datasets/levin_youtube_channel/paper_citations.bib and the audit references - correct `froese2024` (split
+        into Entropy 25(5):748 (2023, DOI 10.3390/e25050748) and Entropy 26(4):288 (2024, 'Irruption and
+        Absorption')), `pigozzi2025` (article 1027), `biswas2023` (title of record for 10.3390/ijms24010285),
+        `chvykov2021` ('active collectives'); add DOIs / arXiv ids for the 17 laws with no bib entry (Pietak 2016
+        10.3389/fbioe.2016.00055 and 2017 10.1098/rsif.2017.0425; Rosas 2019 10.1103/PhysRevE.100.032305; Tan 2022
+        10.1038/s41586-022-04889-6; Scheibner 2020 10.1038/s41567-020-0795-y; Liu 2024 arXiv:2404.19756; Ororbia &
+        Friston arXiv:2311.09589; Guichard & Nichele arXiv:2504.11855; Cervera-Levin-Mafe 2021; Hoel 2026 Patterns;
+        Bode 1945; Kolmogorov 1957; Weinberg 2025; Pezzulo & Levin 2015; Friston 2010/2013), each with a note on
+        whether the DOI was resolved.
+      - >-
+        models/2026-levin-channel-math-synthesis.py:398-403 - expose the model constants on the CLI (--n-cells,
+        --g-half, --v-th, --v0, --delta-v-mv, --peclet, --gamma, --n-states, --eta, --n-genes, --kappa, --snr,
+        --b, --c, --g-eph, --rho, --law to select a subset, --no-figure, --out-dir) and make --self-test exercise
+        render_25_laws_atlas() into a temporary directory without writing into morphoeval/runs/.
+      - >-
+        Commit the 25-law script, Lean loop, YAML, docs and KG payload so a checkpoint commit exists, re-run the
+        v1 assessor's audit against that commit with evidence loci that resolve, and in the figure / KG replace
+        'Lean 4 Kernel Verified' with a per-law tag (structural / ground) so readers can see which 2 of 25 theorems
+        quantify over anything.

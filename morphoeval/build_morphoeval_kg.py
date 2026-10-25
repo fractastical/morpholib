@@ -191,7 +191,7 @@ def resolve_supersession_chain(audit: dict) -> tuple[list[str], list[str]]:
 def _git(*args: str) -> str | None:
     """Run git in the repository root. None when it fails or git is unavailable."""
     try:
-        r = subprocess.run(["git", "-C", str(ROOT), *args], capture_output=True, text=True)
+        r = subprocess.run(["git", "-C", str(ROOT), *(str(a) for a in args)], capture_output=True, text=True)
     except OSError:
         return None
     return r.stdout.strip() if r.returncode == 0 else None
@@ -248,7 +248,8 @@ def verify_pinned_loci(audit: dict) -> tuple[list[str], list[str]]:
     with git against this checkout, offline. Returns (errors, notes).
     """
     cp = (audit.get("audit") or {}).get("checkpoint") or {}
-    repo, commit = cp.get("repository"), cp.get("commit")
+    repo = cp.get("repository")
+    commit = str(cp["commit"]) if cp.get("commit") is not None else None
     if not (repo and commit):
         return [], []
     if _git("rev-parse", "--git-dir") is None:
@@ -458,6 +459,10 @@ class NanopubBuilder:
     def script_uri(self, script: str) -> URIRef:
         return URIRef(f"{self.repo}/blob/{self.commit}/{script}")
 
+    def artifact_uri(self, script: str) -> URIRef:
+        """Commit-independent repository + path identity for the claim's SoftwareSourceCode."""
+        return URIRef(f"{self.repo}/blob/main/{script}")
+
     def set_measurements(self, meas: dict | None):
         self.outputs = {sid: {o["file"]: o for o in lst} for sid, lst in (meas or {}).get("outputs", {}).items()}
         self.measurements = (meas or {}).get("measurements", {})
@@ -602,15 +607,15 @@ class NanopubBuilder:
 
     def artifact_triples(self, claim: URIRef, scripts: list) -> list:
         """The assessed scripts as schema:SoftwareSourceCode artifacts of the claim (claim
-        template v3, grouped statement 09), pinned to the checkpoint commit."""
-        if not (self.repo and self.commit):
+        template v4, grouped statement 09), identified by repository + path without coupling
+        the claim nanopub to a specific checkpoint commit (see #22)."""
+        if not self.repo:
             return []
         t = []
         for s in scripts:
-            art = self.script_uri(s)
+            art = self.artifact_uri(s)
             t += [(claim, DCTERMS.subject, art), (art, RDF.type, SCHEMA.SoftwareSourceCode),
-                  (art, RDFS.label, Literal(s)), (art, SCHEMA.codeRepository, URIRef(self.repo)),
-                  (art, SCHEMA.version, Literal(self.commit))]
+                  (art, RDFS.label, Literal(s)), (art, SCHEMA.codeRepository, URIRef(self.repo))]
             if (lang := LANGUAGE_BY_SUFFIX.get(Path(s).suffix)):
                 t.append((art, SCHEMA.programmingLanguage, Literal(lang)))
         return t
@@ -666,9 +671,10 @@ class NanopubBuilder:
         return PKR[f"claim/morphoeval-{sim['id']}"]
 
 
-def add_supersedes(ds: Dataset, old: str):
+def add_supersedes(ds: Dataset, old: str | list[str]):
     g = ds.graph(URIRef(TEMP + "pubinfo"))
-    g.add((THIS, NPX.supersedes, URIRef(old)))
+    for u in ([old] if isinstance(old, str) else old):
+        g.add((THIS, NPX.supersedes, URIRef(u)))
     g.add((THIS, NT.wasCreatedFromPubinfoTemplate, TEMPLATES["pubinfo-supersedes"]))
 
 
@@ -757,7 +763,7 @@ def reintroduced(written: list[Path], out_dir: Path, exempt: set[Path]) -> list[
 
 
 def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_heads: bool = True,
-          omit_probability: bool = False):
+          omit_probability: bool = True):
     """supersede: {file name: {"nanopub": published trusty URI, "path": its file, "text": its unsigned TriG}}.
     A nanopub whose content differs from the published one of the same name gets npx:supersedes <old>
     (after confirming <old> is still the head of its chain); one whose content is identical to a nanopub
@@ -811,6 +817,7 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
             # prev["text"] is None when the unsigned file was removed on an earlier build because
             # the chain's head had moved to another audit dir; the head check below settles it
             old = prev["nanopub"]
+            to_supersede = [old]
             if resolve_heads:
                 head = heads.get(old) or latest_version(old)
                 heads[old] = head
@@ -822,9 +829,20 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                     if same_dir_prev(prev, p) and p.exists():
                         p.unlink()              # stale unsigned copy; the chain's head lives in another audit dir
                     return                      # superseded elsewhere already; its head is re-issued from there
-            add_supersedes(ds, old)
+                for extra in prev.get("extra_nanopubs") or []:
+                    if extra in to_supersede:
+                        continue
+                    eh = heads.get(extra) or latest_version(extra)
+                    heads[extra] = eh
+                    if eh == extra:             # still an un-superseded head on the network -> merge into this head
+                        to_supersede.append(extra)
+            else:
+                for extra in prev.get("extra_nanopubs") or []:
+                    if extra not in to_supersede:
+                        to_supersede.append(extra)
+            add_supersedes(ds, to_supersede)
             text = serialize_trig(ds)
-            superseded.append((name, old))
+            superseded.append((name, ", ".join(to_supersede)))
         p.write_text(text); written.append(p); _merge(ds)
 
     # ---- 1. rubric as a pk:Concept with one narrower concept per dimension (Project Delphi rubric template) -- #
@@ -891,13 +909,9 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
         # ---- 2. the faithfulness CLAIM (Project Delphi claim template) ------------------ #
         if not is_second_assessor:
             non_doi = [r for r in papers if not r.get("doi")]
-            context = (f"script(s): {', '.join(B.script_uri(s) for s in scripts)}; output: {sim.get('output', 'n/a')}; "
-                       f"organism: {organism}; checkpoint commit: {B.commit_uri or 'n/a'}; "
+            context = (f"script(s): {', '.join(B.artifact_uri(s) for s in scripts)}; output: {sim.get('output', 'n/a')}; "
+                       f"organism: {organism}; "
                        f"environment: {', '.join(f'{k} {v}' for k, v in B.env.items()) or 'n/a'}")
-            if (prov_txt := B.sim_provenance_text(sim)):
-                context += f"; {prov_txt}"
-            if (sup_id := sim.get("supersedes_audit_id") or A.get("supersedes") or A.get("supersedes_audit_id")):
-                context += f"; supersedes_audit_id: {sup_id}"
             if (cb_txt := B.claim_boundary_text(sim)):
                 context += f"; claim_boundary: [{cb_txt}]"
             if non_doi:
@@ -960,15 +974,13 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                   (claim, DCTERMS.description, Literal(
                       f"The simulation script(s) {', '.join(scripts)} implement the cited source model as published "
                       f"and produce forms that match real {organism} specimens and the source authors' figures. "
-                      f"A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval "
-                      f"{rubric['version']} overall {gs['overall']}/100, audit {A['id']}) and the assessments.")),
+                      f"A belief under audit, not a fact: its credibility is carried by the MorphoEval rubric assessments.")),
                   (claim, PK.context, Literal(context))]
             if not omit_prob:
                 tr.append((claim, PK.weightOfEvidence, unit_interval(gs["overall"] / 100.0)))
             tr += [(claim, PK.derivedFromPaper, ref_uri(r)) for r in papers if r.get("doi")]
-            tr += [(claim, PK.hasAssessment, au) for au in assessments + [overall_au]]
             tr += B.artifact_triples(claim, scripts)
-            pub = [(THIS, RDFS.seeAlso, B.script_uri(s)) for s in scripts] + ([(THIS, RDFS.seeAlso, issue)] if issue else []) + pub_scale_extras
+            pub = [(THIS, RDFS.seeAlso, B.artifact_uri(s)) for s in scripts] + ([(THIS, RDFS.seeAlso, issue)] if issue else []) + pub_scale_extras
             emit(f"{sim['id']}-claim.trig",
                  B.nanopub(f"Claim: {sim['name']} is faithful", PK.Claim, claim, dom, tr,
                            B.provenance_extraction([B.orcid], papers, [issue]), "claim", "provenance-extraction", pub))
@@ -1410,9 +1422,11 @@ def main():
                     help="skip the check that every commit-pinned evidence path exists at checkpoint.commit")
     ap.add_argument("--no-resolve-heads", action="store_true",
                     help="do not check on Nanopub Query that a superseded URI is still the head of its chain")
-    ap.add_argument("--omit-probability", action="store_true",
-                    help="omit pk:weightOfEvidence on the claim (optional in the claim template); pk:hasScore on the "
-                         "assessments is required by the rubric-assessment template and is always written")
+    ap.add_argument("--omit-probability", action="store_true", default=True,
+                    help="omit pk:weightOfEvidence on the claim (default since #22; pk:hasScore on the "
+                         "assessments is required by the rubric-assessment template and is always written)")
+    ap.add_argument("--include-probability", dest="omit_probability", action="store_false",
+                    help="include pk:weightOfEvidence on the claim nanopub")
     ap.add_argument("--list-needs", action="store_true",
                     help="list pressure-ranked open remediation needs across all morphoeval/audits/*.yaml and exit")
     args = ap.parse_args()
@@ -1490,8 +1504,16 @@ def main():
                 if not m.get("published") or (only and n not in only):
                     continue
                 prev_file = prev_dir / n
+                extras = list((supersede.get(n) or {}).get("extra_nanopubs") or [])
+                if (prev_np := (supersede.get(n) or {}).get("nanopub")) and prev_np not in extras:
+                    extras.append(prev_np)
+                for h_item in m.get("history") or []:
+                    if h_item.get("published") and h_item.get("nanopub") and h_item["nanopub"] not in extras:
+                        extras.append(h_item["nanopub"])
+                extras = [u for u in extras if u != m["nanopub"]]
                 supersede[n] = {"nanopub": m["nanopub"], "path": str(prev_file),
-                                "text": prev_file.read_text() if prev_file.exists() else None}
+                                "text": prev_file.read_text() if prev_file.exists() else None,
+                                "extra_nanopubs": extras}
     written, merged_path, report_path, merged, superseded = build(rubric, audit, out_dir, supersede,
                                                                   resolve_heads=not args.no_resolve_heads,
                                                                   omit_probability=args.omit_probability)

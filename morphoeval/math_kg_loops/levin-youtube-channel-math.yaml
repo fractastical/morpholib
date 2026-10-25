@@ -1,0 +1,150 @@
+sim_id: levin-youtube-channel-math
+math_family: Load-Bearing Mathematical Laws of Multiscale Bioelectricity, Low-Rattling Selection, Polycomputing, Natural Induction GRNs, Causal Emergence 2.0 & Multicellular Game Theory
+model_spec:
+  model: "Michael Levin Academic Content Corpus (@drmichaellevin, 374 Videos / 333.05 Hours): 8 Load-Bearing Mathematical Laws (100% Universally Quantified Lean 4 Proofs & Numerical Solvers)"
+  total_laws: 8
+  channel_concepts_indexed: 17
+  seed: 20261024
+  inputs:
+    - datasets/levin_youtube_channel/levin_youtube_catalog.json
+    - sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json
+equations:
+  - law_name: "Law 1: Levin (2019, 2022) TAME Spatiotemporal Cognitive Light-Cone Scaling & Cancer Gap-Junction Collapse"
+    formula: "-G_gj (V_{i-1} - 2V_i + V_{i+1}) + k_leak V_i = δ_{i,0},   L_PDE(G_gj) = ∑_i V_i / V_0;   G_gj = 0 ⟹ L_PDE = 1.0"
+    lean_decl: LoopLevinYouTubeChannelMath.tame_goal_radius_num
+    lean_theorem: LoopLevinYouTubeChannelMath.tame_cognitive_light_cone_scaling_and_cancer_collapse
+    lean_locus: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L30-L60
+    lean_code: |
+      def tame_goal_radius_num (r_cell N g_gj g_half : Nat) : Nat :=
+        r_cell * (g_gj + g_half) + r_cell * (N - 1) * g_gj
+      theorem tame_cognitive_light_cone_scaling_and_cancer_collapse
+          (r_cell N g_gj g_half g1 g2 : Nat) (hN : 1 ≤ N) (hg : g1 ≤ g2) :
+          tame_goal_radius_num r_cell N 0 g_half = r_cell * g_half ∧
+          tame_goal_radius_num r_cell N g_gj 0 = r_cell * N * g_gj ∧
+          tame_goal_radius_num r_cell N g1 g_half ≤ tame_goal_radius_num r_cell N g2 g_half
+    variables: "N: coupled cell count; G_gj: gap-junctional conductance; k_leak = G_{1/2}/N: membrane leak; L_PDE: spatial morphogenetic reach"
+    role: "O2/T4 100-cell diffusive-restoring BVP solver showing spatial correlation reach collapsing from 32.01 cells at G_gj=1.0 to 1.00 cell at G_gj=0 (oncogenic gap-junction blockade)"
+    source_citation: "Levin (2019) Front. Psychol. 10:2688 (doi:10.3389/fpsyg.2019.02688); Levin (2022) Front. Syst. Neurosci. 16:768201 (doi:10.3389/fnsys.2022.768201); @drmichaellevin [rAsIQGXdVRM], [46b_kB_KPFM], [K5VI0u5_12k], [wj8RkmS3kpM]"
+    code_locus: models/2026-levin-channel-math-synthesis.py#L177-L225
+  - law_name: "Law 2: Cervera, Levin & Mafe (2020) Voltage-Gated Bell-Boltzmann Gap-Junction Bistability & Wound Isolation Law"
+    formula: "C_m dV_i/dt = -I_ion(V_i) + ∑_j G_{ij}(V_i, V_j)(V_j - V_i),   G_{ij} = G_0 / [(1 + exp((V_i - V_th)/V_0))(1 + exp((V_j - V_th)/V_0))]"
+    lean_decl: LoopLevinYouTubeChannelMath.gj_bell_denom
+    lean_theorem: LoopLevinYouTubeChannelMath.cervera_levin_mafe_gap_junction_wound_isolation
+    lean_locus: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L71-L97
+    lean_code: |
+      def gj_bell_denom (b_i b_j : Nat) : Nat := (1 + b_i) * (1 + b_j)
+      def gj_pair_current (g_ij v_i v_j : Int) : Int := g_ij * (v_j - v_i)
+      theorem cervera_levin_mafe_gap_junction_wound_isolation
+          (b_i b_j b_dep : Nat) (g_ij v_i v_j : Int) (h_dep : b_i < b_dep) :
+          gj_bell_denom b_i b_j = gj_bell_denom b_j b_i ∧
+          gj_pair_current g_ij v_i v_j + gj_pair_current g_ij v_j v_i = 0 ∧
+          gj_bell_denom b_i b_j < gj_bell_denom b_dep b_j
+    variables: "V_i: transmembrane voltage; G_{ij}: symmetric voltage-gated Bell-Boltzmann conductance; V_th=-35 mV: gating threshold; V_0=5 mV: thermal slope"
+    role: "O1/T2 biophysical ODE integrated on a 20-cell chain: voltage-gated G_ij isolates a 5-cell depolarized wound (-10 mV) so healthy tissue stays at -60.0 mV (vs -10.0 mV collapse in ungated ohmic control)"
+    source_citation: "Cervera, Levin & Mafe (2020) J. Phys. Chem. Lett. 11:3234 (doi:10.1021/acs.jpclett.0c00641); @drmichaellevin [PIrHLnmI_9o], [-dJSvsP4fzo], [ZCNi05m1Fmg]"
+    code_locus: models/2026-levin-channel-math-synthesis.py#L231-L277
+  - law_name: "Law 3: Pietak & Levin (2016, 2017) Nernst-Planck Zero-Flux Boltzmann Electrophoresis & G_gj Cancellation Law"
+    formula: "J_s = -G_gj [∇c + (z F / R T) c ∇V] = 0  ⟺  ln(c_post / c_ant) = -z F ΔV / (R T)   (for all G_gj ≠ 0)"
+    lean_decl: LoopLevinYouTubeChannelMath.nernst_planck_scaled_flux
+    lean_theorem: LoopLevinYouTubeChannelMath.pietak_levin_nernst_planck_boltzmann_invariant
+    lean_locus: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L107-L129
+    lean_code: |
+      def nernst_planck_scaled_flux (g_gj grad_ln_c z_dV : Int) : Int :=
+        g_gj * (grad_ln_c + z_dV)
+      theorem pietak_levin_nernst_planck_boltzmann_invariant
+          (g_gj grad_ln_c z_dV : Int) (h_open : g_gj ≠ 0) :
+          nernst_planck_scaled_flux g_gj grad_ln_c z_dV = 0 ↔ grad_ln_c = -z_dV
+    variables: "c: intracellular 5-HT+ concentration; z=+1: valence; ΔV: AP voltage difference; G_gj: gap-junction permeability"
+    role: "O1/T2 electrodiffusion law discretized via central differences (without imposing exp(-dv) per edge) across N_ap = 15..240 and 5 values of G_gj in [0.2..5.0], proving O(h^2) convergence to exp(40/25.85) = 4.699184 and exact G_gj cancellation (spread = 0.0)"
+    source_citation: "Pietak & Levin (2016) Front. Bioeng. Biotechnol. 4:55 (doi:10.3389/fbioe.2016.00055); (2017) J. R. Soc. Interface 14:20170425 (doi:10.1098/rsif.2017.0425); @drmichaellevin [L0D4FdJ4K3g], [7UqncReYvso], [SRV1oLRXeE4]"
+    code_locus: models/2026-levin-channel-math-synthesis.py#L283-L331
+  - law_name: "Law 4: Chvykov et al. (2021) Low-Rattling Fluctuation-Dissipation Attractor Selection Law"
+    formula: "P_ss(x) r_exit(x)^γ = C,   0 < P_ss(bulk) ∧ r_exit(sym) < r_exit(bulk) ⟹ P_ss(sym) > P_ss(bulk)"
+    lean_decl: LoopLevinYouTubeChannelMath.chvykov_flux_product
+    lean_theorem: LoopLevinYouTubeChannelMath.chvykov_low_rattling_platonic_attractor_selection
+    lean_locus: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L137-L160
+    lean_code: |
+      def chvykov_flux_product (p_ss r_exit : Nat) : Nat := p_ss * r_exit
+      theorem chvykov_low_rattling_platonic_attractor_selection
+          (p_sym p_bulk r_sym r_bulk : Nat)
+          (h_flux : chvykov_flux_product p_sym r_sym = chvykov_flux_product p_bulk r_bulk)
+          (h_pos : 0 < p_bulk) (h_low_rattling : r_sym < r_bulk) :
+          p_bulk < p_sym
+    variables: "r_exit(x): fixed state exit rate; P_ss(x): stationary probability solved from generator L^T p = 0; α_bias: non-doubly-stochastic routing bias"
+    role: "O1/T2 statistical-mechanics law solved from a 24-state Markov generator L with strictly fixed exit rates r_exit(i) (slope = -1.0000 at α=0, enrichment = 15.625x) and an unconfounded C4 breakdown sweep across non-doubly-stochastic routing bias α in [0, 0.90]"
+    source_citation: "Chvykov et al. (2021) Science 371(6524):90-95 (doi:10.1126/science.abc6182); @drmichaellevin [mOWfZncXt_g], [K8BmMU1Tm-I], [k9lGNyPHurQ]"
+    code_locus: models/2026-levin-channel-math-synthesis.py#L337-L404
+  - law_name: "Law 5: Bongard & Levin (2023) Polycomputing & Multi-Observer Commutative Readout Law"
+    formula: "x_{t+1} = F(x_t),   y^{(m)}_t = π_m(x_t) = g_m(a, b)   (π_1 = XOR, π_2 = AND, π_3 = OR;   π_I(v) = I(v) vs. π_E(v) = E(v) on S_6)"
+    lean_decl: LoopLevinYouTubeChannelMath.poly_state
+    lean_theorem: LoopLevinYouTubeChannelMath.bongard_levin_polycomputing_dual_observer_exact
+    lean_locus: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L168-L188
+    lean_code: |
+      def poly_state (a b : Bool) : Nat := a.toNat + b.toNat
+      def poly_obs_xor (s : Nat) : Bool := s % 2 == 1
+      def poly_obs_and (s : Nat) : Bool := decide (s ≥ 2)
+      def poly_obs_or  (s : Nat) : Bool := decide (s ≥ 1)
+      theorem bongard_levin_polycomputing_dual_observer_exact (a b : Bool) :
+          poly_obs_xor (poly_state a b) = bne a b ∧
+          poly_obs_and (poly_state a b) = (a && b) ∧
+          poly_obs_or  (poly_state a b) = (a || b) ∧
+          poly_state a b = poly_state b a := by cases a <;> cases b <;> decide
+    variables: "F: single physical substrate dynamics; π_m: m-th observer coarse-graining projection"
+    role: "O2/T1 universally quantified Boolean witness (XOR/AND/OR) paired with the S_6 dual-observer sorting readout imported from quantify_emergence_ce2.py (det(I) = 1.0000 vs det(E) = 0.7209)"
+    source_citation: "Bongard & Levin (2023) Biomimetics 8(1):110 (doi:10.3390/biomimetics8010110); @drmichaellevin [9aTqeCzdT_c], [-0YvVQNMFFg], [qxrGa8ThLLo], [1dTRe2mOEfQ]"
+    code_locus: models/2026-levin-channel-math-synthesis.py#L410-L449
+  - law_name: "Law 6: Watson & Szathmary (2016) Natural Induction + Pigozzi, Goldstein & Levin (2025) Non-Neural GRN Conditioning Law"
+    formula: "E(s; J) = -∑_{i,j} J_{ij} s_i s_j,   ΔJ_{ij} = η s_i s_j (η > 0, N > 0) ⟹ ΔE(s) = -η N^2 < 0;   T_1 ≤ T_2 ⟹ J_{US,CS}(T_1) ≤ J_{US,CS}(T_2)"
+    lean_decl: LoopLevinYouTubeChannelMath.grn_hebbian_energy_after
+    lean_theorem: LoopLevinYouTubeChannelMath.watson_pigozzi_grn_natural_induction_and_pavlovian_conditioning
+    lean_locus: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L196-L228
+    lean_code: |
+      def grn_hebbian_energy_after (e_init eta n_genes : Int) : Int :=
+        e_init - eta * n_genes * n_genes
+      def grn_pavlovian_weight (w0 eta T : Nat) : Nat := w0 + T * eta
+      theorem watson_pigozzi_grn_natural_induction_and_pavlovian_conditioning
+          (e_init eta n_genes : Int) (w0 eta_n T1 T2 : Nat)
+          (h_eta : 0 < eta) (h_n : 0 < n_genes) (hT : T1 ≤ T2) :
+          grn_hebbian_energy_after e_init eta n_genes < e_init ∧
+          e_init - grn_hebbian_energy_after e_init eta n_genes = eta * n_genes * n_genes ∧
+          grn_pavlovian_weight w0 eta_n T1 ≤ grn_pavlovian_weight w0 eta_n T2
+    variables: "s ∈ {-1,+1}^N: 16-gene state; J_{ij}: recurrent GRN coupling matrix; [x_CS, x_M, x_US]: 3-gene Pigozzi/Biswas transcriptional conditioning ODE"
+    role: "O1/T4 16-gene Hopfield basin-of-attraction simulation (0% -> 100% recovery across 120 4-flip trials) + 3-gene transcriptional Pavlovian conditioning ODE (CS-only US activation 0.0015 pre-training -> 1.0000 post-training)"
+    source_citation: "Watson & Szathmary (2016) TREE 31:147 (doi:10.1016/j.tree.2015.11.009); Pigozzi, Goldstein & Levin (2025) Commun. Biol. 8:1027 (doi:10.1038/s42003-025-08411-2); Biswas et al. (2023) IJMS 24:285 (doi:10.3390/ijms24010285); @drmichaellevin [K6cc6jbYQpY], [RLsPP8EfRDg], [JkKUelM6K8w], [bujwU3pKc6c]"
+    code_locus: models/2026-levin-channel-math-synthesis.py#L455-L540
+  - law_name: "Law 7: Hoel (2026) & Hoel, Albantakis & Tononi (2013) Causal Emergence 2.0 Intensive Causal Primitive & Path-Telescoping Law"
+    formula: "CP(π) = det(π) - deg(π),   CP(π^{(0)}) + ΔCP_{1,0} + ΔCP_{2,1} = CP(π^{(2)});   ΔCP > 0 ⟺ det(π_M) - deg(π_M) > det(π_m) - deg(π_m)"
+    lean_decl: LoopLevinYouTubeChannelMath.ce2_cp
+    lean_theorem: LoopLevinYouTubeChannelMath.hoel_albantakis_causal_emergence_ce2_primitive_law
+    lean_locus: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L235-L255
+    lean_code: |
+      def ce2_cp (det deg : Int) : Int := det - deg
+      def ce2_gain (det_M deg_M det_m deg_m : Int) : Int :=
+        ce2_cp det_M deg_M - ce2_cp det_m deg_m
+      theorem hoel_albantakis_causal_emergence_ce2_primitive_law
+          (det_0 deg_0 det_1 deg_1 det_2 deg_2 : Int) :
+          ce2_cp det_0 deg_0 + ce2_gain det_1 deg_1 det_0 deg_0 + ce2_gain det_2 deg_2 det_1 deg_1 = ce2_cp det_2 deg_2 ∧
+          (0 < ce2_gain det_2 deg_2 det_0 deg_0 ↔ det_0 - deg_0 < det_2 - deg_2)
+    variables: "det(π): Markov transition determinism; deg(π): transition degeneracy; CP(π): Hoel 2026 intensive Causal Primitive"
+    role: "O1/T1 universally quantified multiscale path-telescoping theorem paired with the SHA-256-verified 720x720 S_6 Markov TPM metrics imported from sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json (ΔCP_I = +0.1191 vs ΔCP_E = -0.2525)"
+    source_citation: "Hoel (2026) Patterns 7(1):101472 (doi:10.1016/j.patter.2025.101472); Hoel, Albantakis & Tononi (2013) PNAS 110:19790 (doi:10.1073/pnas.1314922110); @drmichaellevin [5cXtdZ4blKM], [OPUhmQrmqRg], [L5bQnyq4OtQ]"
+    code_locus: models/2026-levin-channel-math-synthesis.py#L410-L449
+  - law_name: "Law 8: Shreesha & Levin (2025) Spatialized Multicellular Prisoner's Dilemma Merge/Split Threshold Law"
+    formula: "π_C(k) = (1 - 1/√k) b - c ≥ 0 ⟺ b ≤ √k (b - c);   π_C(k) > π_D(k) = b/√k ⟺ 2b < √k (b - c)   (k_crit = 4, tie k = 16, strict dominance k ≥ 17 for b=2, c=1)"
+    lean_decl: LoopLevinYouTubeChannelMath.multicell_coop_scaled_payoff
+    lean_theorem: LoopLevinYouTubeChannelMath.shreesha_morozov_multicellular_prisoners_dilemma_threshold
+    lean_locus: morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L262-L288
+    lean_code: |
+      def multicell_coop_scaled_payoff (sqrt_k b c : Int) : Int :=
+        (sqrt_k - 1) * b - sqrt_k * c
+      def multicell_defect_scaled_payoff (b : Int) : Int := b
+      theorem shreesha_morozov_multicellular_prisoners_dilemma_threshold
+          (sqrt_k b c : Int) (hc : 0 < c) :
+          multicell_coop_scaled_payoff 1 b c = -c ∧
+          multicell_coop_scaled_payoff 1 b c < 0 ∧
+          (0 ≤ multicell_coop_scaled_payoff sqrt_k b c ↔ b ≤ sqrt_k * (b - c)) ∧
+          (multicell_defect_scaled_payoff b < multicell_coop_scaled_payoff sqrt_k b c ↔ 2 * b < sqrt_k * (b - c))
+    variables: "k = m^2: multicellular square cluster size; f_int(m^2) = (4m^2 - 4m)/(4m^2) = 1 - 1/m: exact 2D square-lattice internal bond fraction; b, c: benefit and cost"
+    role: "O2/T4 exact 2D m x m lattice bond-counting and payoff threshold law proving single-cell cooperator extinction (-c < 0), viability breakeven at k = 4, boundary-defector tie at k = 16, and strict dominance for k ≥ 17"
+    source_citation: "Shreesha & Levin (2025) OSF (https://osf.io/kpzju_v2) & @drmichaellevin [iOFHyNliS9M], [oe6v2fTewyU], [Q-yZ-IeZywg]"
+    code_locus: models/2026-levin-channel-math-synthesis.py#L546-L580
