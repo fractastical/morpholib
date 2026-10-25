@@ -1,0 +1,73 @@
+{
+  "group": "vespinae_venation_mechanics",
+  "title": "Account D & Resolved-Phylogeny Overhaul: Biophysical Wing-Venation Truss Mechanics, Perimeter-Interior Seesaw, and Resolved Total-Evidence Phylogeny in Vespinae Hornets (1,027 wings, 30 spp) and Anthophila Bees",
+  "registered_before_run": true,
+  "supersedes_open_questions_in": [
+    "thompson/portfolio/groups/vespinae_wings_hypotheses.json (W1-W7: 0/7 on OpenTree polytomy)",
+    "thompson/portfolio/groups/why_wings_hypotheses.json (C1-C8: 5/13 on P-drift & allometry)"
+  ],
+  "motivation": "Under Rule 2 ('A Repair Must Buy Fresh Risk'), we never silently alter failed hypotheses on the same dataset. In vespinae_wings.py (0/7) and why_wings.py (5/13), three specific anomalies emerged and were explicitly flagged as open causal questions: (1) OpenTree of Life collapsed 13 of 22 Vespa species into a single polytomy, causing AICc to pick White Noise and making nearest-relative copying arbitrary; (2) Thompson's 7 global modes captured only 38.8% of hornet wing variance because the unexplained residual concentrated in the middle interior vein junctions (70.8% unexplained, with R^2 = -0.34 at prestigma LM5 and R^2 = -0.52 at basal Rs-M junction LM14); and (3) bee within-unit covariance P was pooled within tribes (mixing genera) rather than within genera/species. Here we pre-register 8 new testable predictions (D1-D8) resolving all three anomalies via (i) the published Total-Evidence Vespa phylogeny of Perrard et al. (2013, doi:10.3897/jhr.32.4685) + Lopez-Osorio et al. (2015, doi:10.1098/rsos.150159), (ii) an a-priori biophysical 19-node, 28-vein Euler-Bernoulli / Hookean venation-truss & nodal-flexion model (Combes & Daniel 2003, doi:10.1242/jeb.00523, doi:10.1242/jeb.00524; Wootton 1992), and (iii) clean within-genus bee wing replicates (n = 373 wings across Bombus, Anthophora, Habropoda, Pachymelus, Amegilla, Deltoptila, Centris).",
+  "anatomical_partition_19lm": {
+    "perimeter_frame_landmarks_1based": [1, 2, 3, 11, 12, 13, 15, 16, 17, 18, 19],
+    "interior_flexion_crossvein_landmarks_1based": [4, 5, 6, 7, 8, 9, 10, 14],
+    "anatomical_rationale": "Landmarks 1-3, 11-13, 15-19 lie on the outer wing perimeter, basal root (17-19), leading-edge costal/radial spar (12, 13, 3, 2, 1), and posterior cubital/anal margin (16, 15, 11). Landmarks 4-10 and 14 form the interior nodal/prestigmal flexion break (4, 5) and the serial Rs-M and m-cu cross-vein junctions (6, 7, 8, 9, 10, 14) bounding submarginal cells 1Rs, 2Rs, 3Rs and discal cells 1M, 2M along the median flexion furrow."
+  },
+  "hypotheses": [
+    {
+      "id": "D1",
+      "primary": true,
+      "account": "Phylogeny Resolution (Perrard 2013/2015)",
+      "statement": "Replacing the 15-way OpenTree Vespa polytomy with the resolved Total-Evidence phylogeny of Perrard et al. (2013) + Lopez-Osorio et al. (2015) restores phylogenetic signal in hornet wings: Pagel's lambda increases in both Thompson-7 and full shape space compared to the OpenTree polytomy (0.533 / 0.669), and AICc rejects the White Noise (star) model in full shape space.",
+      "p": 0.80
+    },
+    {
+      "id": "D2",
+      "primary": true,
+      "account": "Phylogeny Resolution (Perrard 2013/2015)",
+      "statement": "On the resolved Perrard et al. (2013) phylogeny, copying the nearest phylogenetic relative's mean wing in leave-one-species-out cross-validation beats the global consensus (median Procrustes RMS < consensus RMS 0.0064) and improves significantly over the OpenTree polytomy nearest-neighbor error (0.0073, paired Wilcoxon p < 0.05).",
+      "p": 0.75
+    },
+    {
+      "id": "D3",
+      "primary": true,
+      "account": "Account D (Perimeter-Interior Seesaw)",
+      "statement": "Hornet forewings exhibit a mechanical two-tier division of labor: Thompson's 7 global grid modes (fitted to all 19 landmarks) explain > 50% of between-species variance on the 11 outer perimeter/spar landmarks (matching fish bodies at 57.9%), but < 30% on the 8 interior nodal-flexion & Rs-M cross-vein junctions (LM 4, 5, 6, 7, 8, 9, 10, 14), with at least two interior flexion junctions exhibiting negative R^2 (< 0, i.e., global grid projection actively worsens their error via least-squares seesaw).",
+      "p": 0.85
+    },
+    {
+      "id": "D4",
+      "primary": true,
+      "account": "Account D (A-Priori 7-Mode Venation-Truss Basis)",
+      "statement": "An a-priori 7-dimensional Venation-Mechanics basis B_ven7—constructed purely from the consensus wing M0 without touching interspecific variance D, by combining the 3 primary global aerodynamic modes (aspect, shear, radial bow) with the 4 lowest-energy interior-junction compliance modes of the 28-vein Hookean truss K_truss(M0) with pinned perimeter—captures at least +12 percentage points more between-species wing variance than Thompson-7 (> 50.8% vs 38.8%) and eliminates all negative R^2 landmarks.",
+      "p": 0.80
+    },
+    {
+      "id": "D5",
+      "primary": true,
+      "account": "Account D + Resolved Phylogeny (LOO Prediction)",
+      "statement": "Combining the resolved Perrard (2013) tree with leave-one-species-out phylogenetic prediction beats the consensus in both full space and the a-priori 7-mode Venation-Truss basis B_ven7 (LOO median Procrustes RMS < consensus RMS, paired Wilcoxon p < 0.05), overturning the W3 null result (ratio 1.00) from the unresolved OpenTree polytomy.",
+      "p": 0.70
+    },
+    {
+      "id": "D6",
+      "primary": false,
+      "account": "Account D (Combes-Daniel Flexural Anisotropy & Cell Mechanics)",
+      "statement": "Across the 1,027 hornet wings, the Combes-Daniel (2003) leading-edge spanwise flexural stiffness proxy (normalized anterior costal-radial spar length & curvature) is more tightly canalized across species than the interior submarginal/discal cell area ratios (between-species CV of interior submarginal cell areas 1Rs/2Rs/3Rs exceeds leading-edge spar CV by > 2.5x).",
+      "p": 0.80
+    },
+    {
+      "id": "D7",
+      "primary": false,
+      "account": "Clean Within-Genus Bee Covariance P_genus",
+      "statement": "When bee within-unit covariance is estimated strictly within genera/species using the 373 replicate bee wings in bee_fossil_s001.xlsx + bee_fossil_s002.xlsx (Bombus n=322, Anthophora n=12, Pachymelus n=7, Amegilla n=6, Habropoda n=5, Deltoptila n=3, Centris n=3) rather than pooling across genera within tribes, the Thompson-7 share of clean within-genus variation trace(P_genus) remains between 0.40 and 0.60 (confirming that individual/developmental wing variation in Hymenoptera is ~50% Thompsonian).",
+      "p": 0.75
+    },
+    {
+      "id": "D8",
+      "primary": false,
+      "account": "Clean Within-Genus Bee Covariance P_genus vs Deep Tribe Divergence",
+      "statement": "Replacing the partly-circular within-tribe bee covariance P_tribe with clean within-genus covariance P_genus reduces the fraction of 110-Myr among-tribe bee divergence captured by the top 3 within-unit PCs (from 0.49 under P_tribe by at least 5 percentage points), confirming that part of the apparent bee C2 alignment was shallow among-genus divergence inside tribes.",
+      "p": 0.70
+    }
+  ]
+}
