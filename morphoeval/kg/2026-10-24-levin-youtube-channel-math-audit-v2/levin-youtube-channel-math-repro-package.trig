@@ -1,0 +1,132 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-levin-youtube-channel-math> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-repro-package> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "@drmichaellevin 25-law mathematical synthesis & biological-law-criteria suite (referee re-score) — Reproducibility package: 52/100" ;
+        dct:date "2026-10-24"^^xsd:date ;
+        dct:description "Positives: fully deterministic (no RNG is used, so the `seed: 20261024` in the math-KG YAML is decorative but harmless); `--self-test` exits 0 in 0.3 s; the default run writes the PNG to media/ and docs/ and the summary JSON; `lean` compiles both modules in under 3 s with 0 sorry; Python/numpy/scipy/ matplotlib versions are recorded in v1 and re-confirmed here (3.14.7 / 2.5.4 / 1.16.3 / 3.10.7, Lean 4.35.0 added). Deductions: the self-test's 25 assertions compare each metric with a `ref` computed by the same expression at absolute tolerance 0.01, so the package cannot fail on any change to the constants that keeps both sides in step and did not catch the Law 3 transcription error (-14); `--self-test` writes morphoeval/runs/levin_youtube_channel_math_summary.json as a side effect even in test mode (-3); the figure (L244-L377), i.e. the shipped output, is not exercised by the self-test (-4); the Lean check is not invoked by the script and `all_lean4_verified` is asserted, not measured (-6); no dependency pin or lock file is specific to this script and matplotlib's font cache goes outside the repo unless MPLCONFIGDIR is set (-3); every audited file except MathOfBiology.lean is an untracked working-tree file, so the v1 checkpoint commit a2201fd3 does not contain the artefacts it scores and no commit can yet be cited for them (-10); the catalog's claimed SHA-256 lock is not enforced anywhere (-3); the Substack article, KG payload and README describe a '6-law' suite in places and a '25-law' suite in others, so a reader cannot tell which package was scored (-5)." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "docs/bioelectricity/levin_youtube_kg.json L1–L12: KG payload: total_laws 25, all_lean4_verified true (copied from the script's literal), published nanopub URIs for the v1 93.8 assessment; this payload is what downstream consumers read <https://github.com/fractastical/morpholib/blob/bfe377c2/docs/bioelectricity/levin_youtube_kg.json#L1-L12>",
+            "models/2026-levin-channel-math-synthesis.py L380–L395: run_all: 25 assertions at abs tolerance 0.01 against self-computed refs; summary JSON written unconditionally (also in --self-test); figure rendered only when not self-testing <https://github.com/fractastical/morpholib/blob/bfe377c2/models/2026-levin-channel-math-synthesis.py#L380-L395>",
+            "morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml L33–L44: v1 checkpoint a2201fd3 with note 'formalizing 6 core mathematical laws'; the 25-law script, Lean loop, YAML, docs and KG payload are untracked in the working tree, so no commit contains what was scored <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml#L33-L44>",
+            "morphoeval/math_kg_loops/levin-youtube-channel-math.yaml L1–L8: seed: 20261024 declared; the script draws no random numbers, and the declared input catalog is not read <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/math_kg_loops/levin-youtube-channel-math.yaml#L1-L8>" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-2> ;
+        pk:hasScore "0.52"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L398–L403" ;
+        dct:description "Entry point: deterministic, `--self-test` exits 0 in 0.3 s (reproduced in this audit)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bfe377c2/models/2026-levin-channel-math-synthesis.py#L398-L403> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean L1–L10" ;
+        dct:description "Module header documents `lean morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean`; reproduced here, exit 0, 0 sorry, 2.2 s" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L1-L10> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Anthropic; independent cross-provider MorphoEval referee, Pass 2)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://arxiv.org/abs/2311.09589>,
+            <https://arxiv.org/abs/2404.19756>,
+            <https://arxiv.org/abs/2504.11855>,
+            <https://doi.org/10.1016/j.tree.2015.11.009>,
+            <https://doi.org/10.1038/s41567-020-0795-y>,
+            <https://doi.org/10.1038/s41586-022-04889-6>,
+            <https://doi.org/10.1038/s42003-025-08411-2>,
+            <https://doi.org/10.1080/01621459.1966.10502008>,
+            <https://doi.org/10.1098/rsif.2017.0425>,
+            <https://doi.org/10.1103/PhysRevE.100.032305>,
+            <https://doi.org/10.1126/science.abc6182>,
+            <https://doi.org/10.3389/fbioe.2016.00055>,
+            <https://doi.org/10.3389/fnsys.2022.768201>,
+            <https://doi.org/10.3389/fpsyg.2019.02688>,
+            <https://doi.org/10.3390/biomimetics8010110>,
+            <https://doi.org/10.3390/e25050748>,
+            <https://doi.org/10.3390/e26040288>,
+            <https://doi.org/10.3390/ijms24010285>,
+            <https://osf.io/kpzju_v2>,
+            <https://www.youtube.com/@drmichaellevin> .
+    <https://arxiv.org/abs/2311.09589> dct:date "2023"^^xsd:gYear ;
+        dct:title "Mortal Computation: A Foundation for Biomimetic Intelligence" .
+    <https://arxiv.org/abs/2404.19756> dct:date "2024"^^xsd:gYear ;
+        dct:title "KAN: Kolmogorov-Arnold Networks" .
+    <https://arxiv.org/abs/2504.11855> dct:date "2025"^^xsd:gYear ;
+        dct:title "A Neural Cellular Automaton Model of Memory Transfer" .
+    <https://doi.org/10.1016/j.tree.2015.11.009> dct:date "2016"^^xsd:gYear ;
+        dct:title "How Can Evolution Learn?" .
+    <https://doi.org/10.1038/s41567-020-0795-y> dct:date "2020"^^xsd:gYear ;
+        dct:title "Odd elasticity" .
+    <https://doi.org/10.1038/s41586-022-04889-6> dct:date "2022"^^xsd:gYear ;
+        dct:title "Odd dynamics of living chiral crystals" .
+    <https://doi.org/10.1038/s42003-025-08411-2> dct:date "2025"^^xsd:gYear ;
+        dct:title "Associative conditioning in gene regulatory network models increases integrative causal emergence" .
+    <https://doi.org/10.1080/01621459.1966.10502008> dct:date "1966"^^xsd:gYear ;
+        dct:title "Recognizing the Maximum of a Sequence" .
+    <https://doi.org/10.1098/rsif.2017.0425> dct:date "2017"^^xsd:gYear ;
+        dct:title "Bioelectric gene and reaction networks: computational modeling of genetic, biochemical, and bioelectrical dynamics in pattern regulation" .
+    <https://doi.org/10.1103/PhysRevE.100.032305> dct:date "2019"^^xsd:gYear ;
+        dct:title "Quantifying high-order interdependencies via multivariate extensions of the mutual information" .
+    <https://doi.org/10.1126/science.abc6182> dct:date "2021"^^xsd:gYear ;
+        dct:title "Low rattling: A predictive principle for self-organization in active collectives" .
+    <https://doi.org/10.3389/fbioe.2016.00055> dct:date "2016"^^xsd:gYear ;
+        dct:title "Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine" .
+    <https://doi.org/10.3389/fnsys.2022.768201> dct:date "2022"^^xsd:gYear ;
+        dct:title "Technological Approach to Mind Everywhere: An Experimentally-Grounded Framework for Understanding Diverse Bodies and Minds" .
+    <https://doi.org/10.3389/fpsyg.2019.02688> dct:date "2019"^^xsd:gYear ;
+        dct:title "The Computational Boundary of a 'Self': Developmental Bioelectricity Drives Multicellularity and Scale-Free Cognition" .
+    <https://doi.org/10.3390/biomimetics8010110> dct:date "2023"^^xsd:gYear ;
+        dct:title "There's Plenty of Room Right Here: Biological Systems as Evolved, Overloaded, Multi-Scale Machines" .
+    <https://doi.org/10.3390/e25050748> dct:date "2023"^^xsd:gYear ;
+        dct:title "Irruption Theory: A Novel Conceptualization of the Enactive Account of Motivated Activity" .
+    <https://doi.org/10.3390/e26040288> dct:date "2024"^^xsd:gYear ;
+        dct:title "Irruption and Absorption: A 'Black-Box' Framework for How Mind and Matter Make a Difference to Each Other" .
+    <https://doi.org/10.3390/ijms24010285> dct:date "2023"^^xsd:gYear ;
+        dct:title "Learning in Transcriptional Network Models: Computational Discovery of Pathway-Level Memory and Effective Interventions" .
+    <https://osf.io/kpzju_v2> dct:date "2025"^^xsd:gYear ;
+        dct:title "Extended Iterated, Spatialized Prisoner's Dilemma: Game Theory of Multicellularity with Agent-Controlled Borders" .
+    <https://www.youtube.com/@drmichaellevin> dct:title "datasets/levin_youtube_channel/levin_youtube_catalog.json - 374-video metadata index of @drmichaellevin" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "@drmichaellevin 25-law mathematical synthesis & biological-law-criteria suite (referee re-score) — Reproducibility package 52/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-24T15:40:12Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

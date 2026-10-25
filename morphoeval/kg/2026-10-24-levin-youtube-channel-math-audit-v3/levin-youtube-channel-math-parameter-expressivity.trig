@@ -1,0 +1,136 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-levin-youtube-channel-math> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-parameter-expressivity> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Parameter expressivity: 76/100" ;
+        dct:date "2026-10-24"^^xsd:date ;
+        dct:description "Positives: 14 model flags on the CLI (L894-L912); direct single invocations of 13 of them with non-default values complete (`--n-cells 50`, `--g-half 0.5`, `--b 3`, `--eta 0.01`, `--n-states 12`, `--gamma 2`, `--n-genes 8`, `--c 0.5`, `--v0 2`, `--v-th=-20`, `--seed 7`, `--law 2,4`, `--b 1.2`; reproduced), so the four Pass 3 aborts are gone; the assertions are functions of the CLI values (L843 -args.gamma, L847 eta * n_genes^2, L850 -args.c); Law 1's G_gj grid is now plotted; Law 4's alpha sweep varies one thing (routing) with the rates fixed; `--law` exists. Deductions: `--delta-v-mv 0` aborts at L841 because a zero gradient makes every grid error 0 and the strict convergence test fails (-4); `--law` filters only the output table - all eight solvers and the full figure still run (-4); Laws 2, 5, 6, 7 have no sweep that crosses a regime boundary, so monotonic control of a feature of form can be judged only for Laws 1, 3, 4, 8 (-8); Law 4's alpha is sampled at three points and the alpha dependence is not plotted (-3); Law 2's V_0 = 5 mV and V_th = -35 mV are sourced only in a comment and no Cervera parameter set is reproduced (-3); the Hill G_eff fit the docstring describes would have been the one fitted parameter in Law 1 and is absent (-2)." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "models/2026-levin-channel-math-synthesis.py L388–L390: Law 4 alpha sampled at 0, 0.5, 0.9 only; routing varied with rates fixed (genuine single-knob sweep), but no alpha curve is stored or plotted <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L388-L390>",
+            "models/2026-levin-channel-math-synthesis.py L823–L825: --law filter is applied to laws_table only, after all eight simulate_* calls (L697-L703) have run; the figure (L879-L889) still renders all six panels. The flag selects what is reported, not what is computed <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L823-L825>",
+            "models/2026-levin-channel-math-synthesis.py L841–L841: `assert abs_errors_by_grid[-1] < abs_errors_by_grid[0]`: with --delta-v-mv 0 all errors are exactly 0 and the strict inequality fails (AssertionError reproduced); the only flag that still aborts <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L841-L841>" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-2>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-3> ;
+        pk:hasScore "0.76"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L894–L912" ;
+        dct:description "CLI: 14 model flags (--law, --n-cells, --g-half, --v-th, --v0, --delta-v-mv, --n-states, --gamma, --n-genes, --eta, --b, --c, --seed) plus --self-test, --no-figure, --out-dir" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L894-L912> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L833–L850" ;
+        dct:description "Assertions are parameterised (L843 slope vs -args.gamma; L847 Delta E vs -eta N^2; L850 pi_C(1) = -c; L849 post > pre + 0.5) and precede every write. Reproduced: 13 of 14 non-default flag runs exit 0" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L833-L850> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L311–L317" ;
+        dct:description "Law 3: grid refinement N_ap = 15..240 and G_gj sweep at N_ap = 120 - two genuine sweeps, one of which (grid) has a non-trivial response" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L311-L317> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Anthropic; independent cross-provider MorphoEval referee, Pass 3 / 3.1)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.patter.2025.101472>,
+            <https://doi.org/10.1016/j.tree.2015.11.009>,
+            <https://doi.org/10.1017/9781009300940>,
+            <https://doi.org/10.1021/acs.jpclett.0c00641>,
+            <https://doi.org/10.1038/s42003-025-08411-2>,
+            <https://doi.org/10.1073/pnas.1314922110>,
+            <https://doi.org/10.1080/01621459.1966.10502008>,
+            <https://doi.org/10.1098/rsif.2017.0425>,
+            <https://doi.org/10.1126/science.abc6182>,
+            <https://doi.org/10.3389/fbioe.2016.00055>,
+            <https://doi.org/10.3389/fnsys.2022.768201>,
+            <https://doi.org/10.3389/fpsyg.2019.02688>,
+            <https://doi.org/10.3390/biomimetics8010110>,
+            <https://doi.org/10.3390/e25050748>,
+            <https://doi.org/10.3390/e26040288>,
+            <https://doi.org/10.3390/ijms24010285>,
+            <https://github.com/fractastical/morpholib>,
+            <https://osf.io/kpzju_v2>,
+            <https://www.youtube.com/@drmichaellevin> .
+    <https://doi.org/10.1016/j.patter.2025.101472> dct:date "2026"^^xsd:gYear ;
+        dct:title "Quantifying emergent complexity" .
+    <https://doi.org/10.1016/j.tree.2015.11.009> dct:date "2016"^^xsd:gYear ;
+        dct:title "How Can Evolution Learn?" .
+    <https://doi.org/10.1017/9781009300940> dct:title "Explanation in Biology" .
+    <https://doi.org/10.1021/acs.jpclett.0c00641> dct:date "2020"^^xsd:gYear ;
+        dct:title "Bioelectrical Coupling of Single-Cell States in Multicellular Systems" .
+    <https://doi.org/10.1038/s42003-025-08411-2> dct:date "2025"^^xsd:gYear ;
+        dct:title "Associative conditioning in gene regulatory network models increases integrative causal emergence" .
+    <https://doi.org/10.1073/pnas.1314922110> dct:date "2013"^^xsd:gYear ;
+        dct:title "Quantifying causal emergence shows that macro can beat micro" .
+    <https://doi.org/10.1080/01621459.1966.10502008> dct:date "1966"^^xsd:gYear ;
+        dct:title "Recognizing the Maximum of a Sequence" .
+    <https://doi.org/10.1098/rsif.2017.0425> dct:date "2017"^^xsd:gYear ;
+        dct:title "Bioelectric gene and reaction networks: computational modelling of genetic, biochemical and bioelectrical dynamics in pattern regulation" .
+    <https://doi.org/10.1126/science.abc6182> dct:date "2021"^^xsd:gYear ;
+        dct:title "Low rattling: A predictive principle for self-organization in active collectives" .
+    <https://doi.org/10.3389/fbioe.2016.00055> dct:date "2016"^^xsd:gYear ;
+        dct:title "Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine" .
+    <https://doi.org/10.3389/fnsys.2022.768201> dct:date "2022"^^xsd:gYear ;
+        dct:title "Technological Approach to Mind Everywhere: An Experimentally-Grounded Framework for Understanding Diverse Bodies and Minds" .
+    <https://doi.org/10.3389/fpsyg.2019.02688> dct:date "2019"^^xsd:gYear ;
+        dct:title "The Computational Boundary of a 'Self': Developmental Bioelectricity Drives Multicellularity and Scale-Free Cognition" .
+    <https://doi.org/10.3390/biomimetics8010110> dct:date "2023"^^xsd:gYear ;
+        dct:title "There's Plenty of Room Right Here: Biological Systems as Evolved, Overloaded, Multi-Scale Machines" .
+    <https://doi.org/10.3390/e25050748> dct:date "2023"^^xsd:gYear ;
+        dct:title "Irruption Theory: A Novel Conceptualization of the Enactive Account of Motivated Activity" .
+    <https://doi.org/10.3390/e26040288> dct:date "2024"^^xsd:gYear ;
+        dct:title "Irruption and Absorption: A 'Black-Box' Framework for How Mind and Matter Make a Difference to Each Other" .
+    <https://doi.org/10.3390/ijms24010285> dct:date "2023"^^xsd:gYear ;
+        dct:title "Learning in Transcriptional Network Models: Computational Discovery of Pathway-Level Memory and Effective Interventions" .
+    <https://github.com/fractastical/morpholib> dct:title "sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json - S_n sorting Causal Emergence 2.0 metrics (n = 3..6)" .
+    <https://osf.io/kpzju_v2> dct:date "2025"^^xsd:gYear ;
+        dct:title "Extended Iterated, Spatialized Prisoner's Dilemma: Game Theory of Multicellularity with Agent-Controlled Borders" .
+    <https://www.youtube.com/@drmichaellevin> dct:title "datasets/levin_youtube_channel/levin_youtube_catalog.json - 374-video metadata index of @drmichaellevin" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Parameter expressivity 76/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-25T04:14:13Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-parameter-expressivity> ;
+        npx:supersedes <https://w3id.org/np/RAEhJbrLqrdZgKJwPLUTAONyRk6NTZLdlFAaN7H_qwLow>,
+            <https://w3id.org/np/RAFjY2M9uhw4E-b4PeUVr2vIkcHMxXno3UgvKs2N9S2dc>,
+            <https://w3id.org/np/RASHGyjgxNhkUBIy_5IFNhpKDmtRpLoiTIEjJzv1-RaJo>,
+            <https://w3id.org/np/RAc8iLvOIeST7JbUQNe5rwPg7Y2audWpdcpbHPf4GZj1Y> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

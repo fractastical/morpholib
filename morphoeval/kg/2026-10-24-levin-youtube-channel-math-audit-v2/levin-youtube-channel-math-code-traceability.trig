@@ -1,0 +1,131 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-levin-youtube-channel-math> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-code-traceability> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "@drmichaellevin 25-law mathematical synthesis & biological-law-criteria suite (referee re-score) — Code-to-model traceability: 44/100" ;
+        dct:date "2026-10-24"^^xsd:date ;
+        dct:description "Positives: every law has its equation in a comment immediately above its code (L49-L200); the math-KG YAML registers all 25 laws with a Lean declaration, theorem name, Lean locus and code locus, and the Lean loci are accurate; the docs table and the KG payload carry the same O1/O2, T1-T4 and C1-C5 tags as the script. Deductions: 19 of 25 `code_locus` ranges in the math-KG YAML are off by 1-4 lines (Law 25's L191-L196 points at Law 24's code) (-6); Law 16 is registered under one id with a Python equation (Shannon-Hartley), a Lean theorem (ATP budget subtraction) and a YAML formula listing both, so the measurement cannot be traced to the theorem said to verify it (-8); MathOfBiology.lean section 16 (L1152-L1267) holds only 6 theorems with merged Laws 4/5 and reuses the section number of the Wolfram block (L1037), while the v1 audit cites L1152-L1278 for 'Section 16 ... proofs' on a 1268-line file (-6); 13 theorems are ground `decide` checks and Law 7's constant is rigged, so the 'Lean 4 Kernel Verified' banner on the figure and in the KG traces to arithmetic rather than to the stated laws (-12); `all_lean4_verified` is a hard-coded literal never produced by invoking lean (-5); the v1 audit's evidence ranges ([64, 335], [338, 460], [1, 108]) describe the superseded 6-law files and do not resolve on the current ones (-10); docs section 3 states T2 = 8/25 and T4 = 8/25 while its own table and the script carry 9 and 7 (-3); Law 13's Lean docstring, theorem constants and Python constants are three different instances (-2). Not lower because the per-law comment / Lean / YAML triple does exist for every law and the Lean loci resolve." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "docs/BIOLOGICAL_LAW_CRITERIA.md L46–L50: Section 3 counts: T1 7, T2 8, T3 2, T4 8 (= 25). The table at L56-L82 and the script's laws_summary give T1 7, T2 9, T3 2, T4 7 <https://github.com/fractastical/morpholib/blob/bfe377c2/docs/BIOLOGICAL_LAW_CRITERIA.md#L46-L50>",
+            "models/2026-levin-channel-math-synthesis.py L252–L258: Figure suptitle: 'All 25 Governing Laws Across 8 Domains (Lean 4 Kernel Verified, 0 sorry)'. True of compilation; 13 theorems are ground arithmetic and Law 7's bracket constant is 37 * 2718 <https://github.com/fractastical/morpholib/blob/bfe377c2/models/2026-levin-channel-math-synthesis.py#L252-L258>",
+            "morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml L122–L123: v1 model-fidelity evidence: script lines [64, 335] 'all 6 mathematical laws' and Lean [1, 108] '6 theorems'. The current script holds the laws at L49-L200 and the Lean file has 25 theorems over 396 lines; the v1 loci describe a superseded artefact <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml#L122-L123>",
+            "morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml L171–L179: v1 code-traceability and repro evidence: MathOfBiology.lean [1152, 1278] (file ends at L1268) and script [338, 460] (file ends at L403): ranges extend past end of file <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml#L171-L179>",
+            "morphoeval/lean/MathOfBiology.lean L1152–L1267: Section '16. Michael Levin YouTube Channel ... Core Math': 6 theorems (Laws 4 and 5 merged into one each); section number duplicates '16. Wolfram ... Ruliobiology' at L1037; no trace of Laws 7-25 in the central module <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/lean/MathOfBiology.lean#L1152-L1267>",
+            "morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean L200–L212: Law 13: docstring says k_fb 20 -> 1 and D 1 -> 20; theorem evaluates D/k at (20, 20) and (400, 1); the Python uses (0.1, 2.0) and (1.0, 0.05) <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L200-L212>",
+            "morphoeval/math_kg_loops/levin-youtube-channel-math.yaml L235–L249: Law 16: formula lists both C = 1/2 log2(1 + SNR) and E_prolif = E_total - E_maint - E_info; the code locus computes the first, the Lean theorem proves the second <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/math_kg_loops/levin-youtube-channel-math.yaml#L235-L249>",
+            "morphoeval/math_kg_loops/levin-youtube-channel-math.yaml L371–L385: Law 25 code_locus models/...py#L191-L196 points at Law 24's lines; Law 25 is at L195-L200. 19 of 25 loci are off by 1-4 lines (checked programmatically) <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/math_kg_loops/levin-youtube-channel-math.yaml#L371-L385>" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-code-traceability-1> ;
+        pk:hasScore "0.44"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/levin-youtube-channel-math.yaml L10–L27" ;
+        dct:description "Law 1 entry: formula, lean_decl, lean_theorem, lean_locus L16-L31 (accurate), lean_code, code_locus L45-L53 (code is at L49-L54). The registry pattern is complete for all 25 laws" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bfe377c2/morphoeval/math_kg_loops/levin-youtube-channel-math.yaml#L10-L27> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Anthropic; independent cross-provider MorphoEval referee, Pass 2)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://arxiv.org/abs/2311.09589>,
+            <https://arxiv.org/abs/2404.19756>,
+            <https://arxiv.org/abs/2504.11855>,
+            <https://doi.org/10.1016/j.tree.2015.11.009>,
+            <https://doi.org/10.1038/s41567-020-0795-y>,
+            <https://doi.org/10.1038/s41586-022-04889-6>,
+            <https://doi.org/10.1038/s42003-025-08411-2>,
+            <https://doi.org/10.1080/01621459.1966.10502008>,
+            <https://doi.org/10.1098/rsif.2017.0425>,
+            <https://doi.org/10.1103/PhysRevE.100.032305>,
+            <https://doi.org/10.1126/science.abc6182>,
+            <https://doi.org/10.3389/fbioe.2016.00055>,
+            <https://doi.org/10.3389/fnsys.2022.768201>,
+            <https://doi.org/10.3389/fpsyg.2019.02688>,
+            <https://doi.org/10.3390/biomimetics8010110>,
+            <https://doi.org/10.3390/e25050748>,
+            <https://doi.org/10.3390/e26040288>,
+            <https://doi.org/10.3390/ijms24010285>,
+            <https://osf.io/kpzju_v2>,
+            <https://www.youtube.com/@drmichaellevin> .
+    <https://arxiv.org/abs/2311.09589> dct:date "2023"^^xsd:gYear ;
+        dct:title "Mortal Computation: A Foundation for Biomimetic Intelligence" .
+    <https://arxiv.org/abs/2404.19756> dct:date "2024"^^xsd:gYear ;
+        dct:title "KAN: Kolmogorov-Arnold Networks" .
+    <https://arxiv.org/abs/2504.11855> dct:date "2025"^^xsd:gYear ;
+        dct:title "A Neural Cellular Automaton Model of Memory Transfer" .
+    <https://doi.org/10.1016/j.tree.2015.11.009> dct:date "2016"^^xsd:gYear ;
+        dct:title "How Can Evolution Learn?" .
+    <https://doi.org/10.1038/s41567-020-0795-y> dct:date "2020"^^xsd:gYear ;
+        dct:title "Odd elasticity" .
+    <https://doi.org/10.1038/s41586-022-04889-6> dct:date "2022"^^xsd:gYear ;
+        dct:title "Odd dynamics of living chiral crystals" .
+    <https://doi.org/10.1038/s42003-025-08411-2> dct:date "2025"^^xsd:gYear ;
+        dct:title "Associative conditioning in gene regulatory network models increases integrative causal emergence" .
+    <https://doi.org/10.1080/01621459.1966.10502008> dct:date "1966"^^xsd:gYear ;
+        dct:title "Recognizing the Maximum of a Sequence" .
+    <https://doi.org/10.1098/rsif.2017.0425> dct:date "2017"^^xsd:gYear ;
+        dct:title "Bioelectric gene and reaction networks: computational modeling of genetic, biochemical, and bioelectrical dynamics in pattern regulation" .
+    <https://doi.org/10.1103/PhysRevE.100.032305> dct:date "2019"^^xsd:gYear ;
+        dct:title "Quantifying high-order interdependencies via multivariate extensions of the mutual information" .
+    <https://doi.org/10.1126/science.abc6182> dct:date "2021"^^xsd:gYear ;
+        dct:title "Low rattling: A predictive principle for self-organization in active collectives" .
+    <https://doi.org/10.3389/fbioe.2016.00055> dct:date "2016"^^xsd:gYear ;
+        dct:title "Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine" .
+    <https://doi.org/10.3389/fnsys.2022.768201> dct:date "2022"^^xsd:gYear ;
+        dct:title "Technological Approach to Mind Everywhere: An Experimentally-Grounded Framework for Understanding Diverse Bodies and Minds" .
+    <https://doi.org/10.3389/fpsyg.2019.02688> dct:date "2019"^^xsd:gYear ;
+        dct:title "The Computational Boundary of a 'Self': Developmental Bioelectricity Drives Multicellularity and Scale-Free Cognition" .
+    <https://doi.org/10.3390/biomimetics8010110> dct:date "2023"^^xsd:gYear ;
+        dct:title "There's Plenty of Room Right Here: Biological Systems as Evolved, Overloaded, Multi-Scale Machines" .
+    <https://doi.org/10.3390/e25050748> dct:date "2023"^^xsd:gYear ;
+        dct:title "Irruption Theory: A Novel Conceptualization of the Enactive Account of Motivated Activity" .
+    <https://doi.org/10.3390/e26040288> dct:date "2024"^^xsd:gYear ;
+        dct:title "Irruption and Absorption: A 'Black-Box' Framework for How Mind and Matter Make a Difference to Each Other" .
+    <https://doi.org/10.3390/ijms24010285> dct:date "2023"^^xsd:gYear ;
+        dct:title "Learning in Transcriptional Network Models: Computational Discovery of Pathway-Level Memory and Effective Interventions" .
+    <https://osf.io/kpzju_v2> dct:date "2025"^^xsd:gYear ;
+        dct:title "Extended Iterated, Spatialized Prisoner's Dilemma: Game Theory of Multicellularity with Agent-Controlled Borders" .
+    <https://www.youtube.com/@drmichaellevin> dct:title "datasets/levin_youtube_channel/levin_youtube_catalog.json - 374-video metadata index of @drmichaellevin" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "@drmichaellevin 25-law mathematical synthesis & biological-law-criteria suite (referee re-score) — Code-to-model traceability 44/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-24T15:40:12Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

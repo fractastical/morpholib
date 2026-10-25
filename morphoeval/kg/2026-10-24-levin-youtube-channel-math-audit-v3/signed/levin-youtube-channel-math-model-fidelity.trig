@@ -1,0 +1,222 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAYLLLOK17vFCRq8EgYyW1FTVG9W5HPlrCizRY45Ufj_4/> .
+@prefix this: <https://w3id.org/np/RAYLLLOK17vFCRq8EgYyW1FTVG9W5HPlrCizRY45Ufj_4> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-levin-youtube-channel-math> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-model-fidelity> .
+
+    <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Model fidelity to source: 72/100" ;
+        dcterms:date "2026-10-24"^^xsd:date ;
+        dcterms:description "Verified by running: Law 1's BVP reach is the metric and the asserted quantity, with an independent continuum closed form 31.51 vs 32.01 (+8 of the -8 restored, less -2 for the unimplemented Hill fit/RMS the docstring promises); Law 4 keeps r_exit fixed and breaks detailed balance through a non-doubly- stochastic K_trap - re-derived here: K_trap column sums range 0.15..1.9, so p ∝ 1/r genuinely fails and the slope moves -1.0000 / -0.5598 / +0.1866 against the untouched rates (+8 of -10 restored; -2 because the criteria doc reports +0.7618, a value no run produces); Law 3's edge coefficients are Pade(1,1) and the error falls 7.4e-3 -> 2.5e-5 over N = 15..240 with ratio ~4.1 per doubling, a genuine O(h^2) convergence to exp(dV/V_T) (+4 of -5; the G_gj spread remains linear algebra); Law 6 replaces the tanh unit with a 3-node ODE whose CS-only response 0.0015 -> 1.0 depends on a slow memory node that survives a washout (+3 of -6; -3 kept because the docstring describes a different circuit with different results and the header promises plasticity and extinction that do not exist). Unchanged deductions: Law 2's I_ion is an invented cubic and the wound is a hard clamp (-4); Law 8's k >= 17 threshold applies the square-lattice fraction to non-square k and pi_D is the builder's construction (-4); Law 5 is a 4-row truth table (-3); Law 2's and Law 7's Lean theorems state much less than their names claim (-2); panel A overlays Law 1 on a scaled G_gj axis shared with the cell index (-1); Law 1's `hill_curve` is dead output (-1)." ;
+        dcterms:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "docs/BIOLOGICAL_LAW_CRITERIA.md L62–L62: Law 4 row: 'unconfounded C4 breakdown at alpha = 0.90 -> +0.7618'. The code produces +0.1866 (summary JSON c4_unconfounded_slope_alpha090, --self-test, KG payload L1101); no parameterisation reachable from the CLI was found that yields 0.7618 <https://github.com/fractastical/morpholib/blob/1969a7ea/docs/BIOLOGICAL_LAW_CRITERIA.md#L62-L62>",
+            "models/2026-levin-channel-math-synthesis.py L12–L14: Header: 'sweeps G_gj across 101 values, and fits the phenomenological Hill curve to the PDE curve (reporting the exact RMS residual)'. Code: 51 values (L203), no fit, no residual <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L12-L14>",
+            "models/2026-levin-channel-math-synthesis.py L182–L183: Docstring: 'evaluate the phenomenological Hill approximation with fitted half-saturation G_eff and report the RMS residual between the PDE and Hill curves'. No fit and no residual exist in the function; `hill_curve` (L211) uses the unfitted G_half and is returned at L224 then dropped at L860. Referee: RMS(Hill - PDE) = 55.2 cells over the grid; best-fit G_eff = 2.26 (RMS 3.05) <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L182-L183>",
+            "models/2026-levin-channel-math-synthesis.py L231–L277: Law 2 unchanged since Pass 3: 20-cell ODE, cubic I_ion with roots -60 / -38 / -10 mV, hard clamp of cells 0-4; gated tail -60.003 mV vs ohmic -10.0 mV (reproduced). Genuine two-regime dynamics on an invented current <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L231-L277>",
+            "models/2026-levin-channel-math-synthesis.py L25–L25: Header: 'alpha_bias in [0, 0.95]'; the sweep stops at 0.90 (L390) and the docstring at L344 says [0, 0.90] <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L25-L25>",
+            "models/2026-levin-channel-math-synthesis.py L315–L317: Law 3 G_gj sweep: G_gj multiplies every entry of Q (L301-L302), so the nullspace ratio is invariant by linear algebra; spread 1e-12 is guaranteed, not a result about electrodiffusion <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L315-L317>",
+            "models/2026-levin-channel-math-synthesis.py L31–L35: Header: 'integrates a 3-node transcription-factor ODE network with slow associative weight plasticity (w_CS_M), measuring conditioning acquisition and extinction'. No weight variable, no plasticity rule and no extinction phase exist in the code (L506-L527): the coupling 0.90 is a constant and memory is a state variable <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L31-L35>",
+            "models/2026-levin-channel-math-synthesis.py L413–L418: Law 5: the same 4-row x 3-gate truth table as v2 and Pass 3 <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L413-L418>",
+            "models/2026-levin-channel-math-synthesis.py L461–L469: Law 6 docstring: dx_M = -0.2 x_M + sigma(8 (x_CS x_US - 0.35)), dx_US = -x_US + sigma(8 (I_US + 1.8 x_M x_CS - 0.50)), pre 0.023, post 0.909. Code (L508-L513): -0.02 x_M + 0.25 sigma(12 (... - 0.50)), sigma(12 (I_US + 0.90 x_M x_CS - 0.55)), pre 0.0015, post 1.0. The documented model is not the implemented model <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L461-L469>",
+            "models/2026-levin-channel-math-synthesis.py L550–L560: Law 8 unchanged: thresholds k = 4, 16, 17 from applying 1 - 1/sqrt(k) to all k = 1..36; k = 17 is not realised by any m x m cluster (first exact square with strict dominance is k = 25); pi_D = b / sqrt(k) is the builder's construction <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L550-L560>",
+            "models/2026-levin-channel-math-synthesis.py L607–L612: Panel A: Law 1 reach curve plotted on a twin y-axis against g_scaled = g_grid * 9.5 so that G_gj in [0, 2] spans the 0..19 cell-index axis (L608); the x-axis label reads 'Cell Index i (0..19) / Scaled G_gj'. Law 1 is now plotted (remediates R1's 'no panel') but on a borrowed, rescaled abscissa with no tick labels of its own <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L607-L612>",
+            "morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean L235–L250: Law 7 theorem: integer telescoping and 0 < (e - f) - (a - b) ↔ a - b < e - f for all Int; no reference to a TPM, determinism or degeneracy; unchanged <https://github.com/fractastical/morpholib/blob/1969a7ea/morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L235-L250>",
+            "morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean L71–L97: Law 2 theorem named 'wound_isolation' proves symmetry/monotonicity of (1 + b_i)(1 + b_j) and antisymmetry of g (v_j - v_i). No bistability, isolation or ODE property is stated; unchanged since Pass 3 <https://github.com/fractastical/morpholib/blob/1969a7ea/morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L71-L97>" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-10>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-2>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-3>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-4>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-5>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-6>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-7>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-8>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-9> ;
+        pk:hasScore "0.72"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L177–L225" ;
+        dcterms:description "Law 1: 100-cell BVP, reach 32.0099 at G_gj = 1.0, 1.0 at G_gj = 0, 22.8602 at 0.5; continuum sqrt(1/k) tanh(N sqrt(k)) = 31.5097 (reproduced). Metric L718 and assertions L837-L838 now use the BVP; remediates v3-44.8 R1" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L177-L225> .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-10> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L636–L636" ;
+        dcterms:description "Panel C dashed curve now labelled 'Analytic r_exit^-1 / Z (slope = -1.000)'; the nullspace values are the markers. Remediates v3-44.8 label defect" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L636-L636> .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L360–L365" ;
+        dcterms:description "Law 4 K_trap: row-normalised weights linspace(0.1, 2.5)^2.5 with the diagonal zeroed; column sums are not 1 (re-derived: 0.15..1.9), so the embedded chain is no longer uniform and p ∝ 1/r can fail. Remediates v3-44.8 R2" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L360-L365> .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L367–L390" ;
+        dcterms:description "Law 4 solve_stationary: rate_i = r_exit[i]^gamma at every alpha (L372), fit against log r_exit (L384). Slopes -1.0000 / -0.5598 / +0.1866 (r = 0.2866) at alpha = 0 / 0.5 / 0.9 (reproduced); the two knobs of Pass 3 are separated" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L367-L390> .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L293–L309" ;
+        dcterms:description "Law 3 central-difference edge coefficients a_i = G(-1 + dv/2), b_{i+1} = G(1 + dv/2) (L300-L303): the per-edge ratio is the Pade(1,1) approximant of exp(-dv), not exp(-dv) itself, so agreement with the Boltzmann ratio is a convergence result. Errors 0.007422, 0.001726, 0.000417, 0.000102, 2.5e-5 for N = 15, 30, 60, 120, 240 (reproduced; ratios 4.30, 4.14, 4.09, 4.08 = O(h^2)). Remediates v3-44.8 R3" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L293-L309> .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-5> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L506–L527" ;
+        dcterms:description "Law 6 3-node ODE [x_CS, x_M, x_US]: memory node decays at 0.02 and is charged only by x_CS * x_US; four phases (CS test, paired training t = 25, washout t = 5, CS test t = 10). CS-only US response 0.0015 -> 1.0, memory 4.7103 after training (reproduced). Replaces the 1-D tanh unit; remediates v3-44.8 R4 in code" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L506-L527> .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-6> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L532–L532" ;
+        dcterms:description "Delta E = -eta N^2 is now returned as `single_epoch_delta_e_identity` and asserted as a parameterised identity (L847); the 'analytical_reference' framing of Pass 3 is gone" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L532-L532> .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-7> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L562–L566" ;
+        dcterms:description "Law 8 exact m x m directed bond count 4m^2 total, 4m perimeter, f_int = 1 - 1/m for m = 1..6 (re-derived; m = 5 gives 0.8)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L562-L566> .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-8> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean L107–L127" ;
+        dcterms:description "Law 3 theorem: for all g ≠ 0, grad_ln_c, z_dV : Int, g (grad_ln_c + z_dV) = 0 ↔ grad_ln_c = -z_dV. Universally quantified, hypothesis used non-trivially; unchanged and still the strongest statement in the file" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L107-L127> .
+
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-model-fidelity-9> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean L137–L157" ;
+        dcterms:description "Law 4 theorem: p_sym r_sym = p_bulk r_bulk ∧ 0 < p_bulk ∧ r_sym < r_bulk → p_bulk < p_sym. Quantified and correct; h_flux assumes the law, so it proves a consequence of the law, not the law" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean#L137-L157> .
+
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Anthropic; independent cross-provider MorphoEval referee, Pass 3 / 3.1)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "ctB+U6/7pVv0NyndF1z27BX/qr+T020RsvGHfZHeDNeHbb/Kkexzo46vHYD6e32ejtRaAHGcgtxwmDrAhT1zIQBcNkSGTdNCPCyxnxYuhBlMI2/HovEzfB1djeqB2bK61kdrF9BFK5+k0MWpmxD/nY2obTxLc5Exx7xE0t6D69cvrXOYJSfC9qwLRSmpZ21hhyzRJiqPh36E+Vywa/2IDunzuniivBb5pMelIAFTncnMvwa7/wI0bfhUgHeyacNzlUnZP0tgnUTMUY2KVP4MC1f+6FNBC3C2d1jqwyQ69n6FXdteNRhf9eI//E+ShDkwQMP1NUzYuNgoB6sAwo2SZg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Model fidelity to source 72/100" ;
+        dcterms:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-25T04:14:13Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-model-fidelity> ;
+        npx:supersedes <https://w3id.org/np/RA4B0AF1h260covXDFerM-FNCtIe0TmstJpombvRCyrtU>,
+            <https://w3id.org/np/RA5-VGXEtJo2J4GIj5or7Rinu6sqoDmylSyJLkyZ2eqFM>,
+            <https://w3id.org/np/RA_Rnf_-Q0vtuPolK0e-k7-aWopC2ajOCWv85XtwE-XeM>,
+            <https://w3id.org/np/RAaNlgl5kc57u57RGzwdQahd8Wh5Ia1y29TCFVS_bbTxs> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/j.patter.2025.101472> dcterms:date "2026"^^xsd:gYear ;
+        dcterms:title "Quantifying emergent complexity" .
+
+    <https://doi.org/10.1016/j.tree.2015.11.009> dcterms:date "2016"^^xsd:gYear ;
+        dcterms:title "How Can Evolution Learn?" .
+
+    <https://doi.org/10.1017/9781009300940> dcterms:title "Explanation in Biology" .
+
+    <https://doi.org/10.1021/acs.jpclett.0c00641> dcterms:date "2020"^^xsd:gYear ;
+        dcterms:title "Bioelectrical Coupling of Single-Cell States in Multicellular Systems" .
+
+    <https://doi.org/10.1038/s42003-025-08411-2> dcterms:date "2025"^^xsd:gYear ;
+        dcterms:title "Associative conditioning in gene regulatory network models increases integrative causal emergence" .
+
+    <https://doi.org/10.1073/pnas.1314922110> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Quantifying causal emergence shows that macro can beat micro" .
+
+    <https://doi.org/10.1080/01621459.1966.10502008> dcterms:date "1966"^^xsd:gYear ;
+        dcterms:title "Recognizing the Maximum of a Sequence" .
+
+    <https://doi.org/10.1098/rsif.2017.0425> dcterms:date "2017"^^xsd:gYear ;
+        dcterms:title "Bioelectric gene and reaction networks: computational modelling of genetic, biochemical and bioelectrical dynamics in pattern regulation" .
+
+    <https://doi.org/10.1126/science.abc6182> dcterms:date "2021"^^xsd:gYear ;
+        dcterms:title "Low rattling: A predictive principle for self-organization in active collectives" .
+
+    <https://doi.org/10.3389/fbioe.2016.00055> dcterms:date "2016"^^xsd:gYear ;
+        dcterms:title "Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine" .
+
+    <https://doi.org/10.3389/fnsys.2022.768201> dcterms:date "2022"^^xsd:gYear ;
+        dcterms:title "Technological Approach to Mind Everywhere: An Experimentally-Grounded Framework for Understanding Diverse Bodies and Minds" .
+
+    <https://doi.org/10.3389/fpsyg.2019.02688> dcterms:date "2019"^^xsd:gYear ;
+        dcterms:title "The Computational Boundary of a 'Self': Developmental Bioelectricity Drives Multicellularity and Scale-Free Cognition" .
+
+    <https://doi.org/10.3390/biomimetics8010110> dcterms:date "2023"^^xsd:gYear ;
+        dcterms:title "There's Plenty of Room Right Here: Biological Systems as Evolved, Overloaded, Multi-Scale Machines" .
+
+    <https://doi.org/10.3390/e25050748> dcterms:date "2023"^^xsd:gYear ;
+        dcterms:title "Irruption Theory: A Novel Conceptualization of the Enactive Account of Motivated Activity" .
+
+    <https://doi.org/10.3390/e26040288> dcterms:date "2024"^^xsd:gYear ;
+        dcterms:title "Irruption and Absorption: A 'Black-Box' Framework for How Mind and Matter Make a Difference to Each Other" .
+
+    <https://doi.org/10.3390/ijms24010285> dcterms:date "2023"^^xsd:gYear ;
+        dcterms:title "Learning in Transcriptional Network Models: Computational Discovery of Pathway-Level Memory and Effective Interventions" .
+
+    <https://github.com/fractastical/morpholib> dcterms:title "sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json - S_n sorting Causal Emergence 2.0 metrics (n = 3..6)" .
+
+    <https://osf.io/kpzju_v2> dcterms:date "2025"^^xsd:gYear ;
+        dcterms:title "Extended Iterated, Spatialized Prisoner's Dilemma: Game Theory of Multicellularity with Agent-Controlled Borders" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.patter.2025.101472>,
+            <https://doi.org/10.1016/j.tree.2015.11.009>,
+            <https://doi.org/10.1017/9781009300940>,
+            <https://doi.org/10.1021/acs.jpclett.0c00641>,
+            <https://doi.org/10.1038/s42003-025-08411-2>,
+            <https://doi.org/10.1073/pnas.1314922110>,
+            <https://doi.org/10.1080/01621459.1966.10502008>,
+            <https://doi.org/10.1098/rsif.2017.0425>,
+            <https://doi.org/10.1126/science.abc6182>,
+            <https://doi.org/10.3389/fbioe.2016.00055>,
+            <https://doi.org/10.3389/fnsys.2022.768201>,
+            <https://doi.org/10.3389/fpsyg.2019.02688>,
+            <https://doi.org/10.3390/biomimetics8010110>,
+            <https://doi.org/10.3390/e25050748>,
+            <https://doi.org/10.3390/e26040288>,
+            <https://doi.org/10.3390/ijms24010285>,
+            <https://github.com/fractastical/morpholib>,
+            <https://osf.io/kpzju_v2>,
+            <https://www.youtube.com/@drmichaellevin> .
+
+    <https://www.youtube.com/@drmichaellevin> dcterms:title "datasets/levin_youtube_channel/levin_youtube_catalog.json - 374-video metadata index of @drmichaellevin" .
+}
+

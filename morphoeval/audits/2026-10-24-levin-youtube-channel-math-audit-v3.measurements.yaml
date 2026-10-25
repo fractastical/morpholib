@@ -1,0 +1,208 @@
+# Referee re-measurement sidecar for 2026-10-24-levin-youtube-channel-math-audit-v3 (Claude Fable 5.1, Pass 3.1).
+# Updated in place after the builder closed the Pass 3 remediation items. Every value below was obtained by running
+# models/2026-levin-channel-math-synthesis.py --self-test on 2026-10-24 (file SHA-256 c2c82f39...) and then
+# re-derived or cross-checked independently where a closed form or an independent construction exists (e.g. the
+# Law 1 continuum limit, the Law 3 error-ratio test for O(h^2), the Law 4 K_trap column sums, the Law 2 isolation
+# ratio e^10). `reference_value` is given ONLY where a reference independent of the script's own expression exists;
+# where the script's comparison is an identity of its own construction the entry says so and omits it.
+audit: 2026-10-24-levin-youtube-channel-math-audit-v3
+supersedes_audit_id: 2026-10-24-levin-youtube-channel-math-audit-v2
+provenance:
+  levin-youtube-channel-math:
+    spec_fingerprint: cf60fdd1887c234204e281c3b23afa4f191e046d38cdfdc9431520113f92b430
+    artifact_sha256: 1b921945d2f665bce01dcd2bd4394572807c93e6d3b702050fdbc7b31a75e03f
+    input_dataset_sha256:
+      datasets/levin_youtube_channel/levin_youtube_catalog.json: 216a474f76c137c32c33b96ab93beda695478b16bc6cdb541908c6c875c13557
+      datasets/levin_youtube_channel/paper_citations.bib: 3f0fc6ec4051750b3c3454978b92c5754f9b7aaaaa0b63b9cfcfdddfe57bee09
+      sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json: b54103b87a1f5d77cb03bf7a37462f6267687e7f8234cfe115c24f3cdd74ac86
+      models/2026-levin-channel-math-synthesis.py: c2c82f3994a6ad82a5b710949283da837b35bafcb94c81e2cc828ccc29e80ce1
+      morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean: 88efd6ab0cc3b1d6ed3fcbbcccba9e85baf194a36b32ac886e37d75ca63cb904
+      morphoeval/lean/MathOfBiology.lean: 0d70ca93e2c015baf574f694e97058577172ad8142f5a68ecee6f70425d3129a
+      morphoeval/math_kg_loops/levin-youtube-channel-math.yaml: 96f3b0e4af29dd80c6b031d95f21a14358fe3596b2847c378e31012c68d89de9
+      docs/BIOLOGICAL_LAW_CRITERIA.md: e4702a2c8ec2aa35a6f50b944825ac36a689b62058cd6e233f1a4ab816b1b56f
+      docs/bioelectricity/levin_youtube_kg.json: 5c4aeafffb2169066a4c3477ab265a9c1bd78d7e85bca75b87cd5e4adeec3e85
+      datasets/levin_youtube_channel/README.md: d9c7b3a13faec984cf63929ddeda84dd8d3400d93e1b13962ba78e279c58f06a
+      morphoeval/verify_integrity.py: 1fd1165fc89223a2a5efe0afe378c8d98b48a849d13132255bea9d6971802482
+      morphoeval/runs/levin_youtube_channel_math_summary.json: b492a9b1c0b31d110b96ab837d140301dfe5f5bbfc22d8f5b04dc56e2ff41fe6
+    note: >-
+      spec_fingerprint = SHA-256 of the canonical JSON (sort_keys, compact separators) of summary['laws'] from the
+      --self-test run; identical to the fingerprint of the builder's morphoeval/runs/levin_youtube_channel_math_summary.json
+      (laws block byte-equal). artifact_sha256 is the 6-panel PNG (media/ and docs/ copies are byte-identical). The
+      catalog hash changed from 38aab3be... (v2 / Pass 3) to 216a474f... because mappedMathLaws was regenerated; the
+      new value is pinned at script L63 and README L9. HEAD 8fa7e207; every listed file except MathOfBiology.lean is
+      untracked.
+measurements:
+  levin-youtube-channel-math:
+    - name: "Referee count - laws whose Python evaluation is a dynamical, linear-algebraic or combinatorial computation whose asserted outcome is not fixed by construction"
+      value: 6
+      unit: "laws_of_8"
+      method: "Line-by-line classification of the 918-line script: Law 1 (BVP reach vs continuum limit, L177-L225), Law 2 (20-cell ODE, L231-L277), Law 3 (central-difference convergence, L283-L331), Law 4 (fixed-rate generator with non-doubly-stochastic routing, L337-L404), Law 6 (basin fraction + 3-node ODE, L455-L540), Law 8 (exact bond count, L546-L580). Laws 5 and 7 import or enumerate"
+      derived_from: script
+      note: "Pass 3 count was 3 of 8 (Laws 3 and 4 were correct-by-construction, Law 1 unremediated). Law 3's G_gj spread and Law 8's threshold comparison remain same-expression checks inside otherwise genuine computations"
+    - name: "Referee count - Lean theorems binding at least one universally quantified parameter that appears in the conclusion"
+      value: 8
+      unit: "theorems_of_8"
+      method: "Loop_levin_youtube_channel_math.lean L30-L288 and MathOfBiology.lean L1200-L1375 (identical text; both unchanged since Pass 3): classified with the bound-name-in-conclusion rule now used by verify_integrity.py L170-L187 and the script L142-L153; lean 4.35.0 exit 0 on both files, 0 sorry"
+      derived_from: script
+      note: "Quantified does not mean substantive: Law 7 (integer telescoping) and Law 2's conjuncts 1-2 would hold for any integers; Laws 3 and 4 are the only theorems that use a hypothesis non-trivially"
+    - name: "Referee count - math-KG YAML loci that start at the declaration / definition they cite and lie within the file"
+      value: 8
+      unit: "laws_of_8"
+      method: "Programmatic check of code_locus / lean_locus in morphoeval/math_kg_loops/levin-youtube-channel-math.yaml against the 918-line script and 290-line Lean file: lean loci start at L30/71/107/137/168/196/235/262 (= lean_decl lines), code loci at L177/231/283/337/410/455/410/546 (= def lines); `verify_integrity.py --loop-yaml` 0 violations"
+      derived_from: script
+      note: "Pass 3 count was 2 of 8 (Law 8 lean_locus L269-L299 out of bounds; Laws 3-7 offset). Closed"
+    - name: "Referee count - bib DOIs resolving via Crossref with title and author list of record"
+      value: 13
+      unit: "entries_of_16"
+      method: "api.crossref.org/works/<doi> for all 15 DOI entries on 2026-10-24 plus HTTP GET on the OSF URL: 15/15 DOIs resolve; froese2024 title paraphrased and co-author Karelin absent from the record; hoel2026ce2 carries a 'Causal emergence 2.0:' prefix absent from the record; shreesha2025 has no DOI (URL 200)"
+      derived_from: script
+      note: "Outside the bib: docs/BIOLOGICAL_LAW_CRITERIA.md L31 Ross DOI 10.1017/9781009301435 returns 'Resource not found' (Crossref) / 404 (doi.org); the work is 10.1017/9781009300940 (CUP monograph issued 2025-01-16). Second wrong identifier for the same citation (Pass 3: 10.1017/9781108942850 = Maran, Ecosemiotics)"
+    - name: "Referee count - documented outcome values that disagree with the code's output"
+      value: 7
+      unit: "statements"
+      method: "docs/BIOLOGICAL_LAW_CRITERIA.md L62 (+0.7618 vs computed +0.1866); L64, math-KG YAML L112, KG payload L583 (0.0020 -> 0.9036 vs computed 0.0015 -> 1.0); script L12 (101 G_gj values vs 51 at L203); L13-L14 and L182-L183 (Hill G_eff fit and RMS residual, not implemented); L25 (alpha to 0.95 vs 0.90 at L390); L33-L35 (weight plasticity w_CS_M and extinction, absent); L461-L469 (ODE coefficients -0.2/8/0.35/1.8/0.50 and results 0.023/0.909 vs code -0.02/0.25/12/0.50/0.90/0.55 and 0.0015/1.0)"
+      derived_from: script
+      note: "New in Pass 3.1: the remediation changed the code but the prose was written to a different version of it"
+    - name: "Law 1 (TAME light cone) - BVP spatial reach at G_gj = 1.0, N = 100, G_half = 0.1"
+      value: 32.0099
+      unit: "cells"
+      method: "sum_i V_i / V_0 of the 100-cell steady state (script L186-L201); reproduced; G_gj = 0 gives 1.0, G_gj = 0.5 gives 22.8602. Now the law's metric (L718) and asserted quantity (L837-L838)"
+      derived_from: script
+      reference_value: 31.5097
+      reference_source: "Continuum limit of the same diffusion-leak equation, sqrt(G/k) tanh(N sqrt(k/G)) with k = G_half/N = 0.001 (script L210; referee re-derivation of the closed form); no published reach exists in Levin (2019) Front. Psychol. 10:2688 or Levin (2022) Front. Syst. Neurosci. 16:768201"
+      note: "1.6 % discrepancy is the discrete-vs-continuum correction. The user's closure note quoted 31.6228 = sqrt(1000) (the tanh factor omitted); the script reports 31.5097"
+    - name: "Law 1 (TAME light cone) - Hill formula 1 + (N - 1) G/(G + G_half) at G_gj = 1.0, and its residual against the BVP"
+      value: 91.0
+      unit: "cells"
+      method: "Script L221; referee: RMS(Hill - PDE) over the 51-point grid = 55.19 cells, max ratio 4.80; least-squares G_eff fit of the Hill form to the PDE curve = 2.26 with RMS 3.05"
+      derived_from: script
+      note: "Demoted from metric to a reported aside (closes R1); the fitted G_eff and RMS the docstring (L182-L183) and header (L13-L14) promise are not computed and `hill_curve` (L211, L224) is unused"
+    - name: "Law 2 (Cervera gap junction) - healthy-tail V_mem, Bell-gated vs ohmic control, t = 80"
+      value: -60.003
+      unit: "mV"
+      method: "RK45 on the 20-cell chain, cells 0-4 clamped at -10 mV (script L231-L277, unchanged since Pass 3); reproduced. Ohmic control tail: -10.0 mV"
+      derived_from: script
+      reference_value: -60.0
+      reference_source: "Polarised stable root of the script's own cubic I_ion; Cervera, Levin & Mafe (2020) J. Phys. Chem. Lett. 11:3234 report isolation of depolarised domains qualitatively, no published tail voltage is compared"
+      note: "Genuine two-regime ODE outcome. Reference is model-internal (the chosen root), not Cervera's reported value"
+    - name: "Law 2 (Cervera gap junction) - Bell conductance isolation ratio G(-60,-60) / G(-10,-10) at V_th = -35, V_0 = 5"
+      value: 22026.47
+      unit: "dimensionless"
+      method: "Script output bell_conductance_isolation_ratio; re-derived in closed form: (1 + e^5)^2 / (1 + e^-5)^2 = e^10 = 22026.4658"
+      derived_from: script
+      reference_value: 22026.4658
+      reference_source: "Closed-form identity e^10 from the Bell-Boltzmann expression of Cervera, Levin & Mafe (2020) for G_ij at symmetric V_i = V_j (referee derivation)"
+      note: "Exact agreement; verifies the implementation of the published G_ij form, not a measured quantity"
+    - name: "Law 3 (Pietak-Levin Nernst-Planck) - central-difference c_post / c_ant at dV = 40 mV, N_ap = 120, G_gj = 1.0"
+      value: 4.699286
+      unit: "dimensionless"
+      method: "Solve of the Pade(1,1) / central-difference flux-balance BVP (script L293-L309); reproduced; relative error 2.18e-5 (0.00218 %)"
+      derived_from: script
+      reference_value: 4.699184
+      reference_source: "Boltzmann ratio exp(40 / 25.85) (Pietak & Levin 2016, Front. Bioeng. Biotechnol. 4:55, zero-flux Nernst-Planck condition); re-derived"
+      note: "Agreement is now a convergence result, not a construction: the edge ratio (1 - dv/2)/(1 + dv/2) differs from exp(-dv) at O(dv^3). The user's closure note quoted 0.036 % at N = 120; the script gives 0.00218 % (0.036 % would correspond to N ≈ 30)"
+    - name: "Law 3 (Pietak-Levin Nernst-Planck) - absolute error of c_post / c_ant vs exp(dV/V_T) across N_ap = 15, 30, 60, 120, 240"
+      value: 2.5e-05
+      unit: "dimensionless (at N_ap = 240)"
+      method: "Script abs_errors_by_grid = [0.007422, 0.001726, 0.000417, 0.000102, 0.000025]; successive ratios 4.30, 4.14, 4.09, 4.08 (referee), consistent with O(h^2)"
+      derived_from: script
+      reference_value: 4.0
+      reference_source: "Expected error ratio per grid doubling for a second-order scheme (standard numerical-analysis result; referee check of the O(h^2) claim at script L288-L289)"
+      note: "Genuine convergence check; closes R3. `--delta-v-mv 0` makes all five errors exactly 0 and the strict test at L841 fails"
+    - name: "Law 3 (Pietak-Levin Nernst-Planck) - spread of c_post / c_ant across G_gj in {0.2, 0.5, 1.0, 2.0, 5.0} at N_ap = 120"
+      value: 1.0e-12
+      unit: "dimensionless"
+      method: "max - min of the five ratios (script L315-L317); reproduced"
+      derived_from: script
+      note: "Still exactly invariant because G_gj multiplies every entry of Q (L301-L302); the invariance is linear algebra, not a result about electrodiffusion"
+    - name: "Law 4 (Chvykov low rattling) - fitted log-log slope of P_ss vs r_exit, alpha = 0"
+      value: -1.0
+      unit: "dimensionless"
+      method: "np.polyfit(log r_exit, log p_ss) on the 24-state generator nullspace (script L367-L386); reproduced (r = -1.000000)"
+      derived_from: script
+      reference_value: -1.0
+      reference_source: "Exact stationary law p_i ∝ 1/r_i for a CTMC with W(i->j) = r_i K_ij and K doubly stochastic (referee derivation; Chvykov et al. 2021 Science 371:90 state P_ss ∝ exp(-gamma R) with gamma fitted, not derived)"
+      note: "Exact by construction for the doubly stochastic baseline; it demonstrates the principle on the kernel class that cannot violate it"
+    - name: "Law 4 (Chvykov low rattling) - enrichment P_ss(r = 0.08) / P_ss(r = 1.25), alpha = 0"
+      value: 15.625
+      unit: "dimensionless"
+      method: "p_ss[0] / p_ss[-1] (script L391); reproduced; = 1.25 / 0.08"
+      derived_from: script
+      note: "Follows from p ∝ 1/r; Chvykov 2021's measured smarticle enrichment is not compared"
+    - name: "Law 4 (Chvykov low rattling) - C4 breakdown slope at alpha = 0.90 with exit rates fixed"
+      value: 0.1866
+      unit: "dimensionless"
+      method: "Script L390: fit of log p_ss against the fixed log r_exit with K(0.9) = 0.1 K_sym + 0.9 K_trap; r = 0.2866; alpha = 0.5 gives -0.5598. Referee: K_trap column sums range 0.15..1.9 (not doubly stochastic), so the breakdown is a property of the generator"
+      derived_from: script
+      note: "Closes R2 (Pass 3 value -0.1556 was a regressor swap). The criteria doc L62 reports +0.7618 for this quantity; no run reproduces that value"
+    - name: "Law 5 (polycomputing) - XOR/AND/OR truth-table agreement from s = a + b"
+      value: 4
+      unit: "rows_of_4"
+      method: "Exhaustive enumeration (script L413-L418); reproduced"
+      derived_from: script
+      reference_value: 4
+      reference_source: "Boolean truth tables for XOR = s mod 2, AND = [s >= 2], OR = [s >= 1] (elementary identity; Bongard & Levin 2023 Biomimetics 8:110 is conceptual)"
+      note: "Unchanged from v2"
+    - name: "Law 6 (Watson natural induction) - single-epoch Delta E on the 16-gene target, eta = 0.05"
+      value: -12.8
+      unit: "energy_units"
+      method: "E(s*, J + eta s s^T) - E(s*, J) with E = -sum_ij J_ij s_i s_j (script L476-L503); reproduced"
+      derived_from: script
+      note: "Identity -eta N^2 for ANY s and J; now returned as `single_epoch_delta_e_identity` (L532) and asserted as such (L847). No reference_value is listed because none independent of the construction exists"
+    - name: "Law 6 (Watson natural induction) - target-attractor basin fraction, before -> after 15 Hebbian epochs"
+      value: 1.0
+      unit: "fraction_of_120_trials"
+      method: "120 four-flip perturbations, 15 synchronous sign updates, hit if s == s* (script L479-L502); pre = 0.0, post = 1.0; basin_trace plotted in panel E; reproduced"
+      derived_from: script
+      note: "Genuine non-identity outcome. Watson & Szathmary (2016) TREE 31:147 give no numeric basin fraction to compare"
+    - name: "Law 6 (Pigozzi conditioning) - CS-only steady US activation of the 3-node ODE, before -> after paired training"
+      value: 1.0
+      unit: "activation"
+      method: "solve_ivp on [x_CS, x_M, x_US] (script L506-L527): CS test from rest 0.0015; paired CS+US t = 25 charges x_M to 4.7103; washout t = 5; CS test t = 10 gives 1.0; reproduced"
+      derived_from: script
+      note: "Replaces the 1-D tanh unit (closes R4 in code). Hand-tuned minimal circuit, not a model from Pigozzi, Goldstein & Levin (2025) Commun. Biol. 8:1027. Documented values differ: docstring L468-L469 0.023 -> 0.909; criteria doc L64 / YAML L112 / KG L583 0.0020 -> 0.9036"
+    - name: "Law 7 (Causal Emergence 2.0) - S_6 Delta CP under the I(v) macro, swap dynamics"
+      value: 0.1191
+      unit: "dimensionless"
+      method: "Read from sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json (script L420-L432) after SHA-256 pin check (L439, asserted L835); CP_I 0.9687 - CP_micro 0.8496 re-subtracted = 0.1191; telescoping 0.8496 + 0.0477 + 0.0714 = 0.9687 re-checked"
+      derived_from: script
+      reference_value: 0.1191
+      reference_source: "Repository artefact quantifying_emergence_ce2_metrics.json (committed bfe377c2, SHA-256 b54103b8...), produced by sorting-morphogenesis/quantify_emergence_ce2.py from the 720-state S_6 TPM; not from Hoel (2026) Patterns 7:101472, which supplies the CP = det - deg definition only"
+      note: "Reference is repository-internal and so labelled; Delta CP_E = -0.2525 also reproduced"
+    - name: "Law 8 (multicellular PD) - exact 2D square-lattice internal bond fraction, m = 5 (k = 25)"
+      value: 0.8
+      unit: "fraction"
+      method: "(4 m^2 - 4 m) / (4 m^2) (script L562-L566); reproduced for m = 1..6"
+      derived_from: script
+      reference_value: 0.8
+      reference_source: "Combinatorial identity 1 - 1/m for directed nearest-neighbour bonds of an m x m cluster (referee re-derivation)"
+      note: "Genuine exact derivation; only exact squares are realised, so the continuum pi_C(k) at non-square k (e.g. k = 17) is an interpolation the lattice count does not justify"
+    - name: "Law 8 (multicellular PD) - viability breakeven / defector tie / strict dominance k at b = 2, c = 1"
+      value: 17
+      unit: "cells"
+      method: "First k with pi_C(k) > pi_D(k) + 1e-9 over k = 1..36 (script L554-L560): breakeven 4, tie 16, strict 17; reproduced; unchanged since Pass 3"
+      derived_from: script
+      reference_value: 17
+      reference_source: "Closed form: pi_C >= 0 ⇔ sqrt(k) >= b / (b - c) = 2 (k >= 4); pi_C = pi_D ⇔ sqrt(k) = 2b / (b - c) = 4 (k = 16); strict for k > 16 (referee derivation)"
+      note: "Reference is the same closed form the script evaluates. Shreesha & Levin (2025, OSF kpzju_v2) agent-based thresholds are not compared"
+    - name: "Catalog verification - cited video IDs resolving in the 374-video catalog, with SHA-256 pin"
+      value: 63
+      unit: "ids_of_63"
+      method: "set(law videos + concept videos) against videoId field (script L99-L118); reproduced; catalog SHA-256 216a474f... equals EXPECTED_CATALOG_SHA256 (L63) and README L9; mappedMathLaws has 9 distinct labels (8 laws + channel_concepts_index), spot-checked for mOWfZncXt_g, PIrHLnmI_9o, 5cXtdZ4blKM, 3Jol76a-urM"
+      derived_from: script
+      reference_value: 63
+      reference_source: "datasets/levin_youtube_channel/levin_youtube_catalog.json (374 entries, 6603 lines; 333.05 h)"
+      note: "Closes R4. No crawl or regeneration script is committed"
+    - name: "CLI expressivity - model flags that complete a --self-test run with a non-default value"
+      value: 13
+      unit: "flags_of_14_tested"
+      method: "Direct single invocations: --n-cells 50, --g-half 0.5, --b 3, --b 1.2, --eta 0.01, --n-states 12, --gamma 2, --n-genes 8, --c 0.5, --v0 2, --v-th=-20, --seed 7, --law 2,4, --n-cells 20 --g-half 1.0 exit 0; --delta-v-mv 0 aborts at L841 (all grid errors 0, strict inequality)"
+      derived_from: script
+      note: "Closes R7's four aborts; assertions (L833-L850) precede the writes (L885-L889), reproduced: the aborting run leaves no artefact"
+missing:
+  - simulation: levin-youtube-channel-math
+    file: models/2011-beane-planarian-hk-atpase-anterior.py
+    reason: "Listed under Law 1 implemented_by (script L715) together with 2015-pezzulo-bioelectric-target-morphology-memory.py; neither is imported, executed or read by the synthesis, so no Law 1 quantity traces to them"
+  - simulation: levin-youtube-channel-math
+    file: docs/bioelectricity/levin_youtube_kg.json
+    reason: "Regenerated for the 8-law suite (closes R5) but no generator script exists in the repository, and its `verified_measurements` block (L672 ff.) is this referee's Pass 3 sidecar copied verbatim, describing the superseded code; L583 (0.0020 -> 0.9036) contradicts L1150 (0.0015 -> 1.0) within the same file"
