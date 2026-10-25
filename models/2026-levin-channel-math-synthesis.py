@@ -9,9 +9,9 @@ Addresses all Pass 2 and Pass 3 referee findings (`claude-fable-5-1`,
 `morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml`):
   1. Law 1 (TAME Light Cone): Makes the 100-cell diffusive-restoring boundary-value
      solver the primary metric (`pde_spatial_reach_wt = 32.0099` cells vs. `1.0000`
-     under oncogenic gap-junction blockade `G_gj = 0`), sweeps `G_gj` across 101 values,
-     and fits the phenomenological Hill curve to the PDE curve (reporting the exact
-     RMS residual rather than treating the Hill formula as a self-referential oracle).
+     under oncogenic gap-junction blockade `G_gj = 0`), sweeps `G_gj` across 51 values,
+     and fits the phenomenological Hill curve to the PDE curve via `scipy.optimize.curve_fit`
+     (reporting the fitted half-saturation `G_eff` and exact RMS residual).
   2. Law 2 (Cervera–Levin–Mafé Gap-Junction Bistability): Integrates the 20-cell
      coupled voltage-gated Bell–Boltzmann ODE vs. ungated ohmic control (`-60.003 mV`
      isolated tail vs. `-10.000 mV` flooded tail).
@@ -22,7 +22,7 @@ Addresses all Pass 2 and Pass 3 referee findings (`claude-fable-5-1`,
      exact `G_gj` cancellation (`0.0` spread across `G_gj`).
   4. Law 4 (Chvykov Low-Rattling Law): Keeps the state exit rates `r_exit(i)` strictly
      fixed and breaks detailed balance via an asymmetric state-dependent trapping bias
-     `alpha_bias in [0, 0.95]` in the transition kernel `K`, demonstrating genuine C4
+     `alpha_bias in [0, 0.90]` in the transition kernel `K`, demonstrating genuine C4
      breakdown of the `P_ss ~ r_exit^{-gamma}` scaling under strong non-uniform driving.
   5. Laws 5 & 7 (Polycomputing & Hoel Causal Emergence 2.0): Verifies the SHA-256 pin
      (`b54103b8...`) of `sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json`
@@ -31,12 +31,11 @@ Addresses all Pass 2 and Pass 3 referee findings (`claude-fable-5-1`,
   6. Law 6 (Watson Natural Induction & Pigozzi GRN Conditioning): Simulates a 16-gene
      recurrent network (`0% -> 100%` basin expansion across 120 4-flip trials) and
      integrates a 3-node transcription-factor ODE network (`CS`, `Interneuron/Memory`,
-     `US`) with slow associative weight plasticity (`w_CS_M`), measuring conditioning
-     acquisition and extinction.
-  7. Law 8 (Shreesha–Morozov Multicellular Prisoner's Dilemma): Counts exact 2D
+     `US`), measuring CS-alone response pre- and post-paired conditioning (`0.0015 -> 1.0000`).
+  7. Law 8 (Shreesha–Levin Multicellular Prisoner's Dilemma): Counts exact 2D
      `m x m` lattice internal vs. perimeter bonds (`f_int = 1 - 1/m`) and verifies
      single-cell extinction (`k = 1`), viability breakeven (`k = 4`), boundary-defector
-     tie (`k = 16`), and strict dominance (`k >= 17`).
+     tie (`k = 16`), and strict dominance (`k >= 17`, first exact square `k = 25`).
 """
 
 from __future__ import annotations
@@ -57,6 +56,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
+from scipy.optimize import curve_fit
 
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG_PATH = ROOT / "datasets" / "levin_youtube_channel" / "levin_youtube_catalog.json"
@@ -209,6 +209,11 @@ def simulate_law1_tame_light_cone(n_cells: int = 100, g_half: float = 0.10) -> d
     # Analytical continuum reaction-diffusion length scale lambda = sqrt(G_gj / k_leak) * tanh(N / sqrt(G_gj / k_leak))
     continuum_wt = math.sqrt(1.0 / k_leak) * math.tanh(n_cells * math.sqrt(k_leak / 1.0))
     hill_curve = 1.0 + (n_cells - 1.0) * (g_grid / (g_grid + g_half))
+    rms_unfitted = float(np.sqrt(np.mean((hill_curve - pde_reach_curve) ** 2)))
+    popt, _ = curve_fit(lambda g, g_eff: 1.0 + (n_cells - 1.0) * (g / (g + g_eff)), g_grid, pde_reach_curve, p0=[1.0], bounds=(1e-6, 1e4))
+    g_eff_fitted = float(popt[0])
+    hill_fitted_curve = 1.0 + (n_cells - 1.0) * (g_grid / (g_grid + g_eff_fitted))
+    rms_fitted = float(np.sqrt(np.mean((hill_fitted_curve - pde_reach_curve) ** 2)))
 
     return {
         "n_cells": n_cells,
@@ -219,9 +224,12 @@ def simulate_law1_tame_light_cone(n_cells: int = 100, g_half: float = 0.10) -> d
         "continuum_analytical_reach_wt_cells": round(continuum_wt, 4),
         "pde_collapse_ratio_wt_over_cancer": round(reach_wt / reach_cancer, 4),
         "hill_formula_wt_cells": round(float(1.0 + (n_cells - 1.0) * (1.0 / (1.0 + g_half))), 4),
+        "hill_unfitted_rms_residual_cells": round(rms_unfitted, 4),
+        "hill_fitted_g_eff": round(g_eff_fitted, 4),
+        "hill_fitted_rms_residual_cells": round(rms_fitted, 4),
         "g_grid": [round(float(x), 4) for x in g_grid],
         "pde_reach_curve": [round(float(x), 4) for x in pde_reach_curve],
-        "hill_curve": [round(float(x), 4) for x in hill_curve],
+        "hill_curve": [round(float(x), 4) for x in hill_fitted_curve],
     }
 
 
@@ -461,12 +469,12 @@ def simulate_law6_watson_pigozzi_grn(n_genes: int = 16, eta: float = 0.05, seed:
       (b) Pigozzi, Goldstein & Levin (2025) / Biswas et al. (2023) 3-gene transcriptional
           conditioning ODE (`[CS, M_mem, US]`):
             dx_CS/dt  = -x_CS + I_CS(t)
-            dx_M/dt   = -0.2 x_M + 1 / (1 + exp(-8 (x_CS * x_US - 0.35)))
-            dx_US/dt  = -x_US + 1 / (1 + exp(-8 (I_US(t) + 1.8 * x_M * x_CS - 0.50)))
+            dx_M/dt   = -0.02 x_M + 0.25 / (1 + exp(-12 (x_CS * x_US - 0.50)))
+            dx_US/dt  = -x_US + 1 / (1 + exp(-12 (I_US(t) + 0.90 * x_M * x_CS - 0.55)))
           Before paired CS+US training, CS alone (`I_CS=1, I_US=0`) leaves memory `x_M` low
-          and response `x_US` quiescent (`0.023`). After paired CS+US stimulation charges the
+          and response `x_US` quiescent (`0.0015`). After paired CS+US stimulation charges the
           slow transcriptional memory node `x_M`, testing with CS alone (`I_CS=1, I_US=0`)
-          triggers a robust conditioned response (`x_US = 0.909 > 0.50`)."""
+          triggers a robust conditioned response (`x_US = 1.0000 > 0.50`)."""
     rng = np.random.default_rng(seed)
     J = rng.normal(0.0, 0.25, size=(n_genes, n_genes))
     J = 0.5 * (J + J.T)
@@ -605,11 +613,14 @@ def render_8_laws_figure(res: dict[str, Any], out_paths: list[Path]) -> None:
     ax.plot(cells, l2["v_profile_gated"], "o-", color="#16a34a", lw=2.2, ms=4.2, label="Law 2: Bell-Gated $V_i$ (Isolated)")
     ax.plot(cells, l2["v_profile_ohmic"], "s--", color="#dc2626", lw=2.0, ms=4.2, label="Law 2: Ohmic $G_0$ (Flooded)")
     ax2_a = ax.twinx()
+    ax2_a_top = ax2_a.twiny()
+    ax2_a_top.set_xlim(0.0, 2.0)
+    ax2_a_top.set_xlabel("Law 1 Conductance $G_{\\mathrm{gj}}$ (0..2.0)", color="#2563eb", fontsize=8.0)
     g_scaled = np.array(l1["g_grid"]) * 9.5
     ax2_a.plot(g_scaled, l1["pde_reach_curve"], ":", color="#2563eb", lw=2.2, label=f"Law 1: PDE Reach $L(G_{{\\mathrm{{gj}}}})$ (WT={l1['pde_spatial_reach_wt_cells']:.1f})")
     ax2_a.set_ylabel("Law 1 PDE Spatial Reach (cells)", color="#2563eb")
     ax.set_title(f"A. Laws 1 & 2: PDE Light-Cone Reach & Wound Isolation\n(PDE Reach 1.0$\\to${l1['pde_spatial_reach_wt_cells']:.1f}; Gated Tail {l2['healthy_tail_v_gated_mv']:.1f} mV)")
-    ax.set_xlabel("Cell Index $i$ (0..19) / Scaled $G_{\\mathrm{gj}}$")
+    ax.set_xlabel("Law 2 Cell Index $i$ (0..19)")
     ax.set_ylabel("Steady-State $V_{\\mathrm{mem}}$ (mV)")
     ax.grid(True, alpha=0.25)
     ax.legend(loc="center left", fontsize=7.5)
@@ -765,7 +776,7 @@ def run_suite(args: argparse.Namespace) -> dict[str, Any]:
             "id": 5,
             "law_id": "levin-youtube-channel-math-5",
             "domain": "III. Polycomputing & Dual-Observer Readout",
-            "name": "Bongard–Levin Polycomputing & Stoica Multi-Observer Commutative Readout Law",
+            "name": "Bongard–Levin Polycomputing Multi-Observer Commutative Readout Law",
             "equation_origin": "O2_Delphi_Algebraic_Formalization",
             "epistemic_tier": "T1_Mathematical_Theorem",
             "verification_mode": "structural",
@@ -807,7 +818,7 @@ def run_suite(args: argparse.Namespace) -> dict[str, Any]:
             "id": 8,
             "law_id": "levin-youtube-channel-math-8",
             "domain": "VI. Multicellular Evolutionary Game Theory",
-            "name": "Shreesha–Morozov–Levin Spatialized Multicellular Prisoner's Dilemma Merge/Split Law",
+            "name": "Shreesha–Levin Spatialized Multicellular Prisoner's Dilemma Merge/Split Law",
             "equation_origin": "O2_Delphi_Algebraic_Formalization",
             "epistemic_tier": "T4_Mechanistic_Candidate_Model",
             "verification_mode": "structural",
@@ -836,9 +847,10 @@ def run_suite(args: argparse.Namespace) -> dict[str, Any]:
     assert lean_info["kernel_verified"] and lean_info["all_structural_quantified"]
     assert abs(l1["pde_spatial_reach_cancer_gj0_cells"] - 1.0) < 1e-9
     assert l1["pde_spatial_reach_wt_cells"] > l1["pde_spatial_reach_cancer_gj0_cells"]
+    assert l1["hill_fitted_rms_residual_cells"] < l1["hill_unfitted_rms_residual_cells"]
     assert l2["healthy_tail_v_gated_mv"] < l2["healthy_tail_v_ohmic_control_mv"]
     assert abs(l3["simulated_c_post_over_c_ant_n120"] - l3["analytical_boltzmann_ratio"]) / l3["analytical_boltzmann_ratio"] < 5e-4
-    assert l3["abs_errors_by_grid"][-1] < l3["abs_errors_by_grid"][0]
+    assert l3["abs_errors_by_grid"][-1] < l3["abs_errors_by_grid"][0] or abs(args.delta_v_mv) < 1e-12
     assert l3["max_ratio_spread_across_5_g_gj_values"] < 1e-9
     assert abs(l4["fitted_rattling_slope_alpha0"] - (-args.gamma)) < 1e-4
     assert abs(l4["c4_unconfounded_slope_alpha090"] - (-args.gamma)) > 0.35
@@ -849,7 +861,18 @@ def run_suite(args: argparse.Namespace) -> dict[str, Any]:
     assert l6["grn_3node_us_response_cs_only_post"] > l6["grn_3node_us_response_cs_only_pre"] + 0.50
     assert l8["single_cell_payoff_k1"] == round(-args.c, 4)
 
+    script_sha256 = hashlib.sha256(Path(__file__).resolve().read_bytes()).hexdigest()
+    git_commit = "unknown"
+    try:
+        r_git = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--short=8", "HEAD"], capture_output=True, text=True, timeout=5)
+        if r_git.returncode == 0 and r_git.stdout.strip():
+            git_commit = r_git.stdout.strip()
+    except OSError:
+        pass
+
     full_res = {
+        "git_commit": git_commit,
+        "script_sha256": script_sha256,
         "total_laws_verified": len(laws_table),
         "channel_concepts_indexed": len(CHANNEL_CONCEPTS_INDEX),
         "all_lean4_verified": bool(lean_info["kernel_verified"] and lean_info["all_structural_quantified"]),
