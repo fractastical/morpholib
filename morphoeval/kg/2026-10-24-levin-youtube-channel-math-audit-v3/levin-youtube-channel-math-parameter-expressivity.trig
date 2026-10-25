@@ -19,34 +19,38 @@ sub:Head {
 sub:assertion {
     <https://w3id.org/delphi/resource/claim/morphoeval-levin-youtube-channel-math> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-parameter-expressivity> .
     <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-parameter-expressivity> a pk:LLMClaimAssessment ;
-        rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Parameter expressivity: 76/100" ;
+        rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Parameter expressivity: 82/100" ;
         dct:date "2026-10-24"^^xsd:date ;
-        dct:description "Positives: 14 model flags on the CLI (L894-L912); direct single invocations of 13 of them with non-default values complete (`--n-cells 50`, `--g-half 0.5`, `--b 3`, `--eta 0.01`, `--n-states 12`, `--gamma 2`, `--n-genes 8`, `--c 0.5`, `--v0 2`, `--v-th=-20`, `--seed 7`, `--law 2,4`, `--b 1.2`; reproduced), so the four Pass 3 aborts are gone; the assertions are functions of the CLI values (L843 -args.gamma, L847 eta * n_genes^2, L850 -args.c); Law 1's G_gj grid is now plotted; Law 4's alpha sweep varies one thing (routing) with the rates fixed; `--law` exists. Deductions: `--delta-v-mv 0` aborts at L841 because a zero gradient makes every grid error 0 and the strict convergence test fails (-4); `--law` filters only the output table - all eight solvers and the full figure still run (-4); Laws 2, 5, 6, 7 have no sweep that crosses a regime boundary, so monotonic control of a feature of form can be judged only for Laws 1, 3, 4, 8 (-8); Law 4's alpha is sampled at three points and the alpha dependence is not plotted (-3); Law 2's V_0 = 5 mV and V_th = -35 mV are sourced only in a comment and no Cervera parameter set is reproduced (-3); the Hill G_eff fit the docstring describes would have been the one fitted parameter in Law 1 and is absent (-2)." ;
+        dct:description "Positives: 14 model flags on the CLI (L917-L935); every one of them completes with a non-default value under --self-test, including the previously aborting `--delta-v-mv 0` (guard at L853) and `--delta-v-mv -40` (reproduced: 17 invocations, all exit 0) (+4 restored); the assertions are functions of the CLI values (L855 -args.gamma, L859 eta * n_genes^2, L862 -args.c); Law 1 now has one genuinely fitted parameter (G_eff, L213) (+2 restored); Law 4's alpha sweep varies routing with the rates fixed; Law 3 has two sweeps. Deductions: `--law` still filters only the output table - all eight solvers and the full figure run (reproduced with `--law 2,4`: the JSON carries all seven law blocks) (-4); Laws 2, 5, 6, 7 have no sweep that crosses a regime boundary, so monotonic control of a feature of form can be judged only for Laws 1, 3, 4, 8 (-8); Law 4's alpha is sampled at three points and the alpha dependence is not plotted (-3); Law 2's V_0 = 5 mV and V_th = -35 mV are sourced only in a comment and no Cervera parameter set is reproduced (-3)." ;
         dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
         pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
-        pk:evidenceAgainst "models/2026-levin-channel-math-synthesis.py L388–L390: Law 4 alpha sampled at 0, 0.5, 0.9 only; routing varied with rates fixed (genuine single-knob sweep), but no alpha curve is stored or plotted <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L388-L390>",
-            "models/2026-levin-channel-math-synthesis.py L823–L825: --law filter is applied to laws_table only, after all eight simulate_* calls (L697-L703) have run; the figure (L879-L889) still renders all six panels. The flag selects what is reported, not what is computed <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L823-L825>",
-            "models/2026-levin-channel-math-synthesis.py L841–L841: `assert abs_errors_by_grid[-1] < abs_errors_by_grid[0]`: with --delta-v-mv 0 all errors are exactly 0 and the strict inequality fails (AssertionError reproduced); the only flag that still aborts <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L841-L841>" ;
+        pk:evidenceAgainst "models/2026-levin-channel-math-synthesis.py L396–L398: Law 4 alpha sampled at 0, 0.5, 0.9 only; routing varied with rates fixed (genuine single-knob sweep), but no alpha curve is stored or plotted <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L396-L398>",
+            "models/2026-levin-channel-math-synthesis.py L834–L836: --law filter is applied to laws_table only, after all eight simulate_* calls (L708-L714) have run; the figure still renders all six panels. The flag selects what is reported, not what is computed (reproduced: --law 2,4 output contains law1_, law3_, law6_, law8_ blocks) <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L834-L836>" ;
         pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-1>,
             <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-2>,
-            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-3> ;
-        pk:hasScore "0.76"^^xsd:double ;
-        pk:hasVerdict "mostly faithful" .
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-3>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-4> ;
+        pk:hasScore "0.82"^^xsd:double ;
+        pk:hasVerdict "faithful" .
     <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-1> a pk:EvidenceItem ;
-        rdfs:label "models/2026-levin-channel-math-synthesis.py L894–L912" ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L917–L935" ;
         dct:description "CLI: 14 model flags (--law, --n-cells, --g-half, --v-th, --v0, --delta-v-mv, --n-states, --gamma, --n-genes, --eta, --b, --c, --seed) plus --self-test, --no-figure, --out-dir" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L894-L912> .
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L917-L935> .
     <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-2> a pk:EvidenceItem ;
-        rdfs:label "models/2026-levin-channel-math-synthesis.py L833–L850" ;
-        dct:description "Assertions are parameterised (L843 slope vs -args.gamma; L847 Delta E vs -eta N^2; L850 pi_C(1) = -c; L849 post > pre + 0.5) and precede every write. Reproduced: 13 of 14 non-default flag runs exit 0" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L833-L850> .
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L844–L862" ;
+        dct:description "Assertions are parameterised and precede every write. Reproduced: --n-cells 50, --g-half 0.5, --g-half 5.0, --b 3, --b 1.2, --eta 0.01, --n-states 12, --gamma 2, --n-genes 8, --c 0.5, --v0 2, --v-th=-20, --seed 7, --n-cells 20 --g-half 1.0, --delta-v-mv 0, --delta-v-mv -40, --law 2,4 all exit 0 under --self-test (14 of 14 flags)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L844-L862> .
     <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-3> a pk:EvidenceItem ;
-        rdfs:label "models/2026-levin-channel-math-synthesis.py L311–L317" ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L853–L853" ;
+        dct:description "`assert errors[-1] < errors[0] or abs(args.delta_v_mv) < 1e-12`: the zero-gradient case is now skipped instead of failing; with --delta-v-mv 0 all ratios are exactly 1.0 and the run completes. Closes Pass 3.1 R6's abort" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L853-L853> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-parameter-expressivity-4> a pk:EvidenceItem ;
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L319–L325" ;
         dct:description "Law 3: grid refinement N_ap = 15..240 and G_gj sweep at N_ap = 120 - two genuine sweeps, one of which (grid) has a non-trivial response" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L311-L317> .
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L319-L325> .
     <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Anthropic; independent cross-provider MorphoEval referee, Pass 3 / 3.1)" ;
+        rdfs:label "Claude Fable 5.1 (Anthropic; independent cross-provider MorphoEval referee, Pass 3 / 3.1 / 3.2)" ;
         dct:identifier "claude-fable-5-1" ;
         prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
         foaf:homepage <https://www.anthropic.com> .
@@ -65,6 +69,7 @@ sub:provenance {
             <https://doi.org/10.1080/01621459.1966.10502008>,
             <https://doi.org/10.1098/rsif.2017.0425>,
             <https://doi.org/10.1126/science.abc6182>,
+            <https://doi.org/10.1371/journal.pcbi.1011465>,
             <https://doi.org/10.3389/fbioe.2016.00055>,
             <https://doi.org/10.3389/fnsys.2022.768201>,
             <https://doi.org/10.3389/fpsyg.2019.02688>,
@@ -79,7 +84,8 @@ sub:provenance {
         dct:title "Quantifying emergent complexity" .
     <https://doi.org/10.1016/j.tree.2015.11.009> dct:date "2016"^^xsd:gYear ;
         dct:title "How Can Evolution Learn?" .
-    <https://doi.org/10.1017/9781009300940> dct:title "Explanation in Biology" .
+    <https://doi.org/10.1017/9781009300940> dct:date "2025"^^xsd:gYear ;
+        dct:title "Explanation in Biology" .
     <https://doi.org/10.1021/acs.jpclett.0c00641> dct:date "2020"^^xsd:gYear ;
         dct:title "Bioelectrical Coupling of Single-Cell States in Multicellular Systems" .
     <https://doi.org/10.1038/s42003-025-08411-2> dct:date "2025"^^xsd:gYear ;
@@ -92,6 +98,8 @@ sub:provenance {
         dct:title "Bioelectric gene and reaction networks: computational modelling of genetic, biochemical and bioelectrical dynamics in pattern regulation" .
     <https://doi.org/10.1126/science.abc6182> dct:date "2021"^^xsd:gYear ;
         dct:title "Low rattling: A predictive principle for self-organization in active collectives" .
+    <https://doi.org/10.1371/journal.pcbi.1011465> dct:date "2023"^^xsd:gYear ;
+        dct:title "Integrated information theory (IIT) 4.0: Formulating the properties of phenomenal existence in physical terms" .
     <https://doi.org/10.3389/fbioe.2016.00055> dct:date "2016"^^xsd:gYear ;
         dct:title "Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine" .
     <https://doi.org/10.3389/fnsys.2022.768201> dct:date "2022"^^xsd:gYear ;
@@ -113,17 +121,14 @@ sub:provenance {
 }
 
 sub:pubinfo {
-    sub: rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Parameter expressivity 76/100" ;
+    sub: rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Parameter expressivity 82/100" ;
         dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-25T04:14:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-25T19:34:11Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
         npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-parameter-expressivity> ;
-        npx:supersedes <https://w3id.org/np/RAEhJbrLqrdZgKJwPLUTAONyRk6NTZLdlFAaN7H_qwLow>,
-            <https://w3id.org/np/RAFjY2M9uhw4E-b4PeUVr2vIkcHMxXno3UgvKs2N9S2dc>,
-            <https://w3id.org/np/RASHGyjgxNhkUBIy_5IFNhpKDmtRpLoiTIEjJzv1-RaJo>,
-            <https://w3id.org/np/RAc8iLvOIeST7JbUQNe5rwPg7Y2audWpdcpbHPf4GZj1Y> ;
+        npx:supersedes <https://w3id.org/np/RArH4SswjXMTfYeYeeJ3orloW0iTDhB4iIm5-QMsjmf7Y> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
         pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
         nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;

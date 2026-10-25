@@ -19,43 +19,48 @@ sub:Head {
 sub:assertion {
     <https://w3id.org/delphi/resource/claim/morphoeval-levin-youtube-channel-math> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-repro-package> .
     <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-repro-package> a pk:LLMClaimAssessment ;
-        rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Reproducibility package: 76/100" ;
+        rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Reproducibility package: 90/100" ;
         dct:date "2026-10-24"^^xsd:date ;
-        dct:description "Positives: `--self-test` exits 0 in 3.4 s, renders into a temporary directory and writes nothing into morphoeval/runs/; all assertions run before any artefact is written (L833-L850 vs L885-L889), so a failed parameterised run leaves no partial outputs (closes R7); both inputs are SHA-256-pinned in code and asserted (L63/L65, L834/L835); the committed summary JSON's `laws` block is byte-equal to the --self-test output (canonical SHA-256 cf60fdd1...); the KG payload, catalog taxonomy and README now describe the same 8-law package; the RNG is seeded and the seed is on the CLI; `lean` runs inside the suite and standalone; Python/numpy/scipy/matplotlib/Lean versions reproduced. Deductions: every audited file except MathOfBiology.lean is still an untracked working-tree file at HEAD 8fa7e207, two commits after the Pass 3 checkpoint, so no commit contains the package scored here (-12); `--delta-v-mv 0` aborts (-2); `--law` does not skip computation or figure panels (-3); no regeneration script for the catalog's mappedMathLaws or for the KG payload is committed, so two of the package's artefacts cannot be rebuilt from source (-4); matplotlib writes a font cache outside the repository unless MPLCONFIGDIR is set (-1); the summary JSON carries no git commit, timestamp or script hash (-2)." ;
+        dct:description "Positives: the whole package is committed at 9987ff10 and unchanged through HEAD 03145ecc (+12 restored); `--self-test` exits 0, renders into a temporary directory and writes nothing into morphoeval/runs/; all assertions precede the writes; both inputs are SHA-256-pinned in code and asserted (L63/L65, L845/L846); the committed summary JSON's `laws` block is byte-equal to the --self-test output (canonical SHA-256 01d7a346...) and now carries the script hash (+1); `--delta-v-mv 0` completes (+2); all 14 flags work; the RNG is seeded and the seed is on the CLI; `lean` runs inside the suite and standalone; Python / numpy / scipy / matplotlib / Lean versions reproduced. Deductions: `--law` does not skip computation or figure panels (-3); no regeneration script for the catalog's mappedMathLaws or for the KG payload is committed, and the payload's stale loci prove it is maintained by hand (-5); matplotlib writes a font cache outside the repository unless MPLCONFIGDIR is set (-1); the summary JSON's git_commit is the parent of the commit that contains it (-1)." ;
         dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-repro-package> ;
         pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
         pk:assessmentType "morphoeval/0.1.0/repro-package" ;
-        pk:evidenceAgainst "models/2026-levin-channel-math-synthesis.py L823–L825: --law filters laws_table after all solvers have run; a single law cannot be run or plotted in isolation <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L823-L825>",
-            "morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v2.yaml L44–L46: v2 recorded that every audited file was untracked at bfe377c2; at 8fa7e207 (git status 2026-10-24 18:05 EDT) the script, Loop .lean, YAML, docs, bib, README, catalog, KG payload, summary JSON and verify_integrity.py remain `??`; no checkpoint commit contains the Pass 3 or Pass 3.1 package <https://github.com/fractastical/morpholib/blob/1969a7ea/morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v2.yaml#L44-L46>" ;
+        pk:evidenceAgainst "docs/bioelectricity/levin_youtube_kg.json L1–L12: schema_version 3.0.0, total_laws 8, channel_concepts_indexed 17, all_lean4_verified true, lean_verification / catalog_verification blocks. Committed, but hand-maintained: no generator, and its loci (L347-L580) lag the script by one revision <https://github.com/fractastical/morpholib/blob/9987ff10/docs/bioelectricity/levin_youtube_kg.json#L1-L12>",
+            "models/2026-levin-channel-math-synthesis.py L834–L836: --law filters laws_table after all solvers have run; a single law cannot be run or plotted in isolation (unchanged) <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L834-L836>" ;
         pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-1>,
             <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-2>,
             <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-3>,
             <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-4>,
-            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-5> ;
-        pk:hasScore "0.76"^^xsd:double ;
-        pk:hasVerdict "mostly faithful" .
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-5>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-6> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
     <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-1> a pk:EvidenceItem ;
-        rdfs:label "models/2026-levin-channel-math-synthesis.py L833–L850" ;
-        dct:description "All 17 assertions precede the writes; reproduced: `--self-test --delta-v-mv 0` aborts with no file written into morphoeval/runs/, media/ or docs/. Closes R7" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L833-L850> .
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L844–L862" ;
+        dct:description "All 18 assertions precede the writes (L902-L912); reproduced: no --self-test run touched morphoeval/runs/ (mtime Oct 25 12:05 before and after), media/ or docs/" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L844-L862> .
     <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-2> a pk:EvidenceItem ;
-        rdfs:label "models/2026-levin-channel-math-synthesis.py L879–L889" ;
-        dct:description "--self-test renders into tempfile.TemporaryDirectory() and skips the summary write (reproduced: morphoeval/runs/ mtime unchanged); default mode writes the summary JSON then media/ and docs/ PNGs" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L879-L889> .
+        rdfs:label "models/2026-levin-channel-math-synthesis.py L902–L912" ;
+        dct:description "--self-test renders into tempfile.TemporaryDirectory() and skips the summary write; default mode writes the summary JSON then media/ and docs/ PNGs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L902-L912> .
     <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-3> a pk:EvidenceItem ;
         rdfs:label "models/2026-levin-channel-math-synthesis.py L61–L69" ;
-        dct:description "EXPECTED_CATALOG_SHA256 216a474f... (L63) and EXPECTED_CE2_SHA256 b54103b8... (L65) pinned; both match the files on disk and are asserted at L834-L835 (reproduced)" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/models/2026-levin-channel-math-synthesis.py#L61-L69> .
+        dct:description "EXPECTED_CATALOG_SHA256 216a474f... (L63) and EXPECTED_CE2_SHA256 b54103b8... (L65) pinned; both match the files on disk and are asserted at L845-L846 (reproduced)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/models/2026-levin-channel-math-synthesis.py#L61-L69> .
     <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-4> a pk:EvidenceItem ;
-        rdfs:label "morphoeval/runs/levin_youtube_channel_math_summary.json L1–L519" ;
-        dct:description "Builder's summary: laws block canonical SHA-256 cf60fdd1... equals the referee's --self-test output; lean_verification kernel_exit_code 0; catalog_verification sha256_matches_pin true. No commit hash, timestamp or script hash recorded in the file" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/morphoeval/runs/levin_youtube_channel_math_summary.json#L1-L519> .
+        rdfs:label "morphoeval/runs/levin_youtube_channel_math_summary.json L1–L524" ;
+        dct:description "Builder's summary: laws block canonical SHA-256 01d7a346... equals the referee's --self-test output; every per-law block equals the --self-test block; lean_verification kernel_exit_code 0; catalog_verification sha256_matches_pin true; script_sha256 equals the committed script" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/morphoeval/runs/levin_youtube_channel_math_summary.json#L1-L524> .
     <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-5> a pk:EvidenceItem ;
         rdfs:label "morphoeval/math_kg_loops/levin-youtube-channel-math.yaml L1–L10" ;
         dct:description "model_spec: seed 20261024 (used by Laws 4 and 6), inputs = catalog + CE2 JSON (both read and hash-checked by the script). No hash recorded in the YAML itself" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/1969a7ea/morphoeval/math_kg_loops/levin-youtube-channel-math.yaml#L1-L10> .
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/morphoeval/math_kg_loops/levin-youtube-channel-math.yaml#L1-L10> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-levin-youtube-channel-math-repro-package-6> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v2.yaml L44–L46" ;
+        dct:description "v2 recorded that every audited file was untracked at bfe377c2 and Pass 3.1 recorded the same at 8fa7e207; at 9987ff10 the script, Loop .lean, YAML, docs, bib, README, catalog, KG payload, summary JSON and figure are all tracked and this audit's two files are tracked too. Closes Pass 3.1 R7" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/9987ff10/morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v2.yaml#L44-L46> .
     <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Anthropic; independent cross-provider MorphoEval referee, Pass 3 / 3.1)" ;
+        rdfs:label "Claude Fable 5.1 (Anthropic; independent cross-provider MorphoEval referee, Pass 3 / 3.1 / 3.2)" ;
         dct:identifier "claude-fable-5-1" ;
         prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
         foaf:homepage <https://www.anthropic.com> .
@@ -74,6 +79,7 @@ sub:provenance {
             <https://doi.org/10.1080/01621459.1966.10502008>,
             <https://doi.org/10.1098/rsif.2017.0425>,
             <https://doi.org/10.1126/science.abc6182>,
+            <https://doi.org/10.1371/journal.pcbi.1011465>,
             <https://doi.org/10.3389/fbioe.2016.00055>,
             <https://doi.org/10.3389/fnsys.2022.768201>,
             <https://doi.org/10.3389/fpsyg.2019.02688>,
@@ -88,7 +94,8 @@ sub:provenance {
         dct:title "Quantifying emergent complexity" .
     <https://doi.org/10.1016/j.tree.2015.11.009> dct:date "2016"^^xsd:gYear ;
         dct:title "How Can Evolution Learn?" .
-    <https://doi.org/10.1017/9781009300940> dct:title "Explanation in Biology" .
+    <https://doi.org/10.1017/9781009300940> dct:date "2025"^^xsd:gYear ;
+        dct:title "Explanation in Biology" .
     <https://doi.org/10.1021/acs.jpclett.0c00641> dct:date "2020"^^xsd:gYear ;
         dct:title "Bioelectrical Coupling of Single-Cell States in Multicellular Systems" .
     <https://doi.org/10.1038/s42003-025-08411-2> dct:date "2025"^^xsd:gYear ;
@@ -101,6 +108,8 @@ sub:provenance {
         dct:title "Bioelectric gene and reaction networks: computational modelling of genetic, biochemical and bioelectrical dynamics in pattern regulation" .
     <https://doi.org/10.1126/science.abc6182> dct:date "2021"^^xsd:gYear ;
         dct:title "Low rattling: A predictive principle for self-organization in active collectives" .
+    <https://doi.org/10.1371/journal.pcbi.1011465> dct:date "2023"^^xsd:gYear ;
+        dct:title "Integrated information theory (IIT) 4.0: Formulating the properties of phenomenal existence in physical terms" .
     <https://doi.org/10.3389/fbioe.2016.00055> dct:date "2016"^^xsd:gYear ;
         dct:title "Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine" .
     <https://doi.org/10.3389/fnsys.2022.768201> dct:date "2022"^^xsd:gYear ;
@@ -122,17 +131,14 @@ sub:provenance {
 }
 
 sub:pubinfo {
-    sub: rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Reproducibility package 76/100" ;
+    sub: rdfs:label "@drmichaellevin 8-law mathematical synthesis & biological-law-criteria suite — Reproducibility package 90/100" ;
         dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-25T04:14:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-25T19:34:11Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
         npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-levin-youtube-channel-math-repro-package> ;
-        npx:supersedes <https://w3id.org/np/RA3HnLX7VPFlMXJtY-hiHQRfn01AZ_XOMHnvrw-j6vqiY>,
-            <https://w3id.org/np/RA6uV8HrfVeEjnEIerHB573a_fy3G2c3S5_hQlH5_q_ms>,
-            <https://w3id.org/np/RAEC0xudFnef6rUbY2X8PauCq4_0L46VdUi-vTbZ9bqMQ>,
-            <https://w3id.org/np/RALXHsSeMufzTQlpuABAXx538r7kVXK78vSjg-8h-4Gp4> ;
+        npx:supersedes <https://w3id.org/np/RACLCsrecTXtTpgHS7rneTmR9r02FGRZ71ZM1rY0JY078> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
         pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
         nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
