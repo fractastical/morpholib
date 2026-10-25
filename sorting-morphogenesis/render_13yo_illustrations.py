@@ -590,8 +590,11 @@ def render_fig7_final_scoreboard():
           -> Pillar III Subtotal = 31.1 / 33.3 pts (93.3% of Pillar III)
       -------------------------------------------------------------------------
       3-PILLAR TOTAL:  18.5 + 32.0 + 31.1 = 81.6 / 100 pts (81.6% Overall!)
-        • Empirical & Structural Math (D + P_structural): 92.4% Right (81.6 / 88.3 pts)
-        • Strong Dualist 'Non-Physical Ghosts' (P_dualist): 0.0% Needed (0.0 / 11.7 pts)
+        • Missing 18.4 pts split: 12.6 dualist/overstated (3.7 Claim 1 Insertion + 7.4 Claim 2
+          barrier/gradient + 1.5 Claim 3 ghost clustering) + 5.8 ordinary modelling shortfalls
+          (2.2 rising E(v) in Claim 2, 1.3 failed H2 in Claim 4, 2.2 reduced-model biophysics in Claims 5–7)
+        • Empirical & Structural Math (D + P_structural): 93.4% Right (81.6 / 87.4 pts)
+        • Strong Dualist 'Non-Physical Ghosts' (P_dualist): 0.0% Needed (0.0 / 12.6 pts)
     """
     fig, ax = plt.subplots(figsize=(14.6, 8.8), dpi=160, facecolor="#0b1325")
     fig.subplots_adjust(left=0.02, right=0.98, top=0.87, bottom=0.03)
@@ -614,7 +617,7 @@ def render_fig7_final_scoreboard():
         (
             "CLAIM 1 · Sorting Error Tolerance",
             "Pillar I.A · Weight: 11.1% (1/3 of 33.3%)",
-            "• Bubble (+3.7/3.7) & Selection (+3.7/3.7) need zero error-handling code\n• InsertionSortCell.py (L74–76) has explicit 3-line `FREEZE` reset (+0/3.7)",
+            "• Bubble (+3.7/3.7) & Selection (+3.7/3.7) only skip frozen cells (a wall, no reset)\n• InsertionSortCell.py (L74–76) has explicit 3-line `FREEZE` reset (+0/3.7)",
             "7.4 / 11.1 pts (67%)\nPARTIALLY REFUTED",
             "#f59e0b", "#451a03", "#fef3c7"
         ),
@@ -642,7 +645,7 @@ def render_fig7_final_scoreboard():
         (
             "CLAIMS 5–7 · Bioelectric Attractors",
             "Pillar III · Weight: 33.3% (3 × 11.1% each)",
-            "• Claim 5 Planarian 2H0T Boltzmann memory exp(40/25.85) ≈ 4.70 (+10.6/11.1)\n• Claim 6 Picasso Frogs (+10.6/11.1) & Claim 7 Xenobot Stokes (+10.0/11.1)",
+            "• Claim 5 Planarian 2H0T Boltzmann memory exp(40/25.85) ≈ 4.70 (+10.6/11.1)\n• Claim 6 Picasso Frogs (+10.6/11.1) & Claim 7 Xenobot Stokes (+10.0/11.1)\n  (−2.2 total = reduced-model biophysics, not dualist deductions)",
             "31.1 / 33.3 pts (93%)\nSTRONGLY CONFIRMED",
             "#38bdf8", "#082f49", "#e0f2fe"
         ),
@@ -695,7 +698,7 @@ def render_fig7_final_scoreboard():
         ax.text(cur_x + w / 2, bar_y + bar_h / 2, lbl, color="#ffffff", fontsize=7.4, fontweight="bold", ha="center", va="center", zorder=4)
         cur_x += w
 
-    # Bottom synthesis bar: 3 boxes (3-Pillar Total 81.6%, Structural Math 92.4%, Dualist Ghosts 0.0%)
+    # Bottom synthesis bar: 3 boxes (3-Pillar Total 81.6%, Structural Math 93.4%, Dualist Ghosts 0.0%)
     b1 = FancyBboxPatch((1.2, 0.8), 30.5, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#1e293b", edgecolor="#facc15", linewidth=2.0, zorder=2)
     ax.add_patch(b1)
     ax.text(16.45, 4.9, "3-PILLAR SCORE: 81.6% (81.6 / 100 pts)\n(18.5 Sorting + 32.0 Thompson + 31.1 Bioelectric)",
@@ -703,12 +706,12 @@ def render_fig7_final_scoreboard():
 
     b2 = FancyBboxPatch((33.2, 0.8), 33.0, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#052e16", edgecolor="#22c55e", linewidth=2.0, zorder=2)
     ax.add_patch(b2)
-    ax.text(49.7, 4.9, "✔ Empirical & Structural Math (D + P_struct): 92.4%\n(81.6 / 88.3 pts — Free Lunches & Attractors Are Real!)",
+    ax.text(49.7, 4.9, "✔ Empirical & Structural Math (D + P_struct): 93.4%\n(81.6 / 87.4 pts — Free Lunches & Attractors Are Real!)",
             color="#dcfce7", fontsize=7.9, fontweight="bold", ha="center", va="center", linespacing=1.25, zorder=4)
 
     b3 = FancyBboxPatch((67.6, 0.8), 31.2, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#450a0a", edgecolor="#ef4444", linewidth=2.0, zorder=2)
     ax.add_patch(b3)
-    ax.text(83.2, 4.9, "✖ Strong Dualist Ghosts (P_dualist): 0.0%\n(0.0 / 11.7 pts — 0.00 Extra Swaps Beyond Code D!)",
+    ax.text(83.2, 4.9, "✖ Strong Dualist Ghosts (P_dualist): 0.0%\n(0.0 / 12.6 pts — 0.00 Extra Swaps Beyond Code D!)",
             color="#fee2e2", fontsize=7.9, fontweight="bold", ha="center", va="center", linespacing=1.25, zorder=4)
 
     out = MEDIA / "substack_final_scoreboard.png"
@@ -720,24 +723,18 @@ def render_fig7_final_scoreboard():
 def render_fig8_ai_vs_human_authorship_heatmap():
     """
     Illustrated Guide 8 (Methods Section): Heatmap of Human vs. AI-Agent Contribution
-    Across All 8 Sections of the Article and 5 Workflow Dimensions:
-      1. Philosophical Framing & Thesis (86% Human / 14% AI)
-      2. Personal Narrative & Historical Context (96% Human / 4% AI)
-      3. Prose Drafting & Visual Formatting (32% Human / 68% AI)
-      4. Multi-Language Code, PDEs & Statistical Runs (14% Human / 86% AI)
-      5. Blinded Cross-Provider Referee Auditing & Lean 4 Proofs (18% Human / 82% AI)
+    Across All 9 Sections of the Article and 5 Workflow Dimensions.
+
+    The summary percentages printed on the figure (and quoted in the Substack article)
+    are COMPUTED from `ai_matrix` below (unweighted mean across sections), so the
+    figure can never disagree with its own cells. Run this function to print them.
     """
-    fig, axes = plt.subplots(1, 2, figsize=(14.4, 6.4), dpi=160, facecolor="#0b1325", gridspec_kw={"width_ratios": [1.55, 1.0]})
-    fig.subplots_adjust(wspace=0.22, left=0.19, right=0.97, top=0.81, bottom=0.15)
+    fig, axes = plt.subplots(1, 2, figsize=(14.4, 6.8), dpi=160, facecolor="#0b1325", gridspec_kw={"width_ratios": [1.55, 1.0]})
+    fig.subplots_adjust(wspace=0.22, left=0.215, right=0.97, top=0.81, bottom=0.15)
 
     fig.suptitle(
         "Methods Transparency: Heatmap of AI-Agent vs. Human Authorship Across This Article",
         color="#f8fafc", fontsize=14.2, fontweight="bold", y=0.955
-    )
-    fig.text(
-        0.5, 0.90,
-        "Overall Article Text Breakdown: 38.4% Direct Human Writing & Edits (Joel Dietz) · 61.6% AI-Assisted Synthesis & Technical Drafting  |  Code/Proofs: 85.8% AI Agents",
-        color="#93c5fd", fontsize=8.9, fontweight="bold", ha="center"
     )
 
     sections = [
@@ -746,9 +743,10 @@ def render_fig8_ai_vs_human_authorship_heatmap():
         "3. Claim 2: Two Rulers & Hoel CE 2.0",
         "4. Claim 3: C=2 Anti-Clustering Wave",
         "5. Claim 4: 10,303 Fishes & Blind Test",
-        "6. Claims 5–7: Planarians, Frogs & Biobots",
-        "7. Methods: NeuroEval → BioEval → MorphoEval",
-        "8. D vs. D+P, Foresight & Conclusion",
+        "6. Claims 5–7: Planaria, Frogs & Biobots",
+        "7. Final Scoreboard & 3-Pillar Rubric",
+        "8. Methods: Neuro→Bio→MorphoEval (AEL)",
+        "9. D vs. D+P, Foresight & Conclusion",
     ]
     dims = [
         "Hypothesis &\nDirection\n(% AI)",
@@ -766,9 +764,37 @@ def render_fig8_ai_vs_human_authorship_heatmap():
         [ 20,  70,  92,  94,  88],  # 4. Claim 3 (C=2 Anti-Clustering)
         [ 15,  65,  88,  90,  85],  # 5. Claim 4 (10,303 Fishes, PI drove 17-dot & box tests!)
         [ 35,  78,  94,  95,  92],  # 6. Claims 5-7 (Bioelectric & Xenobot Pass 3 PDEs)
-        [ 15,  62,  85,  88,  90],  # 7. Methods (NeuroEval -> BioEval -> MorphoEval)
-        [ 10,  48,  75,  80,  82],  # 8. D vs D+P, Foresight failure reflection & Conclusion
+        [ 20,  60,  70,  60,  80],  # 7. Final Scoreboard (PI chose 3-pillar weights & D/P split; AI tallied)
+        [ 15,  62,  85,  88,  90],  # 8. Methods (NeuroEval -> BioEval -> MorphoEval)
+        [ 10,  45,  75,  80,  82],  # 9. D vs D+P, Foresight reflection, Thompson 1913 / Aristotle psyche & Conclusion
     ], dtype=float)
+    assert ai_matrix.shape == (len(sections), len(dims))
+
+    # Summary statistics derived from the matrix itself (unweighted mean over sections).
+    hyp_ai = float(ai_matrix[:, 0].mean())
+    prose_ai = float(ai_matrix[:, 1].mean())
+    tech_ai = float(ai_matrix[:, 2:5].mean())
+    summary = {
+        "hypothesis_ai_pct": round(hyp_ai, 1),
+        "hypothesis_human_pct": round(100 - hyp_ai, 1),
+        "prose_ai_pct": round(prose_ai, 1),
+        "prose_human_pct": round(100 - prose_ai, 1),
+        "code_proof_audit_ai_pct": round(tech_ai, 1),
+        "code_proof_audit_human_pct": round(100 - tech_ai, 1),
+        "prose_ai_range_sections_2_to_8": (int(ai_matrix[1:8, 1].min()), int(ai_matrix[1:8, 1].max())),
+        "tech_ai_range_technical_sections": (int(ai_matrix[[1, 2, 3, 4, 5, 7], 2:5].min()), int(ai_matrix[[1, 2, 3, 4, 5, 7], 2:5].max())),
+        "sections_ge_85pct_human_direction": [i + 1 for i in range(len(sections)) if ai_matrix[i, 0] <= 15],
+    }
+    print("AI-vs-human authorship summary (computed from ai_matrix):")
+    for k, v in summary.items():
+        print(f"  {k}: {v}")
+
+    fig.text(
+        0.5, 0.90,
+        f"Overall Article Text Breakdown (unweighted mean of {len(sections)} sections): {100 - prose_ai:.1f}% Direct Human Writing & Edits (Joel Dietz) · "
+        f"{prose_ai:.1f}% AI-Assisted Synthesis & Technical Drafting  |  Code / Proofs / Audits: {tech_ai:.1f}% AI Agents",
+        color="#93c5fd", fontsize=8.6, fontweight="bold", ha="center"
+    )
 
     ax0 = axes[0]
     ax0.set_facecolor("#0f172a")
@@ -784,7 +810,7 @@ def render_fig8_ai_vs_human_authorship_heatmap():
         for j in range(len(dims)):
             val = int(ai_matrix[i, j])
             hum = 100 - val
-            txt_col = "#0f172a" if val >= 55 else "#f8fafc"
+            txt_col = "#f8fafc" if val >= 55 else "#0f172a"  # YlGnBu: light cells need dark text
             ax0.text(j, i, f"{val}% AI\n({hum}% Hum)", color=txt_col, fontsize=7.3, fontweight="bold", ha="center", va="center")
 
     cbar = fig.colorbar(im, ax=ax0, fraction=0.035, pad=0.03)
@@ -801,8 +827,8 @@ def render_fig8_ai_vs_human_authorship_heatmap():
     prose_hum_pct = 100.0 - prose_ai_pct
     y_pos = np.arange(len(sections))
 
-    ax1.barh(y_pos, prose_hum_pct, color="#22c55e", edgecolor="#0f172a", height=0.62, label="Human Authored / Edited (Joel Dietz: 38.4% Avg)")
-    ax1.barh(y_pos, prose_ai_pct, left=prose_hum_pct, color="#6366f1", edgecolor="#0f172a", height=0.62, label="AI Technical Synthesis (Gemini 4 / Claude 5: 61.6% Avg)")
+    ax1.barh(y_pos, prose_hum_pct, color="#22c55e", edgecolor="#0f172a", height=0.62, label=f"Human Authored / Edited (Joel Dietz: {100 - prose_ai:.1f}% Avg)")
+    ax1.barh(y_pos, prose_ai_pct, left=prose_hum_pct, color="#6366f1", edgecolor="#0f172a", height=0.62, label=f"AI Technical Synthesis (Gemini 4 / Claude 5: {prose_ai:.1f}% Avg)")
 
     for i, (h_p, a_p) in enumerate(zip(prose_hum_pct, prose_ai_pct)):
         if h_p >= 18:
