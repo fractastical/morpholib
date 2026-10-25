@@ -138,6 +138,7 @@ def main() -> int:
         ("bee_wings", "Arthropoda: Insecta", "[Anthophila bee forewings (10 families + Eocene fossils)](./bee_wings.md)"),
         ("vespinae_wings", "Arthropoda: Insecta", "[Vespinae hornet forewings (Perrard et al. 2014)](./vespinae_wings.md)"),
         ("why_wings", "Arthropoda: Insecta", "[Causal decomposition of wing divergence (P-drift vs. allometry)](./why_wings.md)"),
+        ("vespinae_venation_mechanics", "Arthropoda: Insecta", "[Vespinae venation-truss mechanics & resolved Perrard (2013) tree (D1-D8)](./vespinae_venation_mechanics.md)"),
     ]
 
     tot_clade_pass, tot_clade_hyps = 0, 0
@@ -150,6 +151,18 @@ def main() -> int:
             tot_clade_hyps += 7
             L.append(
                 f"| {label} | {phylum_cls} | {rg['n_wings']:,} wings, {rg['n_species']} spp, 19 LMs | **38.8%** | 95.5% | 0.533 (WN) | 1.00 / 0.99 | {rg['n_pass']}/7 (Brier {rg['brier']:.3f}) |"
+            )
+        elif gid == "vespinae_venation_mechanics":
+            tot_clade_pass += rg["n_pass"]
+            tot_clade_hyps += rg["n_total"]
+            v = rg["variance"]
+            pr = rg["phylogeny_comparison"]["perrard2013_resolved"]
+            cons_rms = pr["loo_medians"]["rms_consensus"]
+            L.append(
+                f"| {label} | {phylum_cls} | {rg['n_wings']:,} wings, {rg['n_species']} spp + 373 bee wings (resolved tree + truss/dipole) | "
+                f"**{100*v['thompson7_perimeter_11lm']:.1f}%** perim / **{100*v['dipole7_postrun_all']:.1f}%** dipole-7 | {100*v['pca7_all']:.1f}% | "
+                f"**{pr['lambda_full']:.3f}** (BM) | **{pr['loo_medians']['rms_full']/cons_rms:.2f}** / **{pr['loo_medians']['rms_venation7']/cons_rms:.2f}** | "
+                f"**{rg['n_pass']}/{rg['n_total']}** (Brier {rg['brier']:.3f}) |"
             )
         elif gid == "bee_wings":
             tot_clade_pass += rg["n_pass"]
