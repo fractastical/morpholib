@@ -337,6 +337,7 @@ We don't need non-physical ghosts beaming into the machine, and we don't need re
   * **D’Arcy Thompson FishShapes v1 Pre-Unblinding Preregistration Nanopub:** [`RAilN4nbRHp3e3ZHqlbIgeL3UGPRV_KtQHtJD3gzVVdqw`](https://registry.knowledgepixels.com/np/RAilN4nbRHp3e3ZHqlbIgeL3UGPRV_KtQHtJD3gzVVdqw) (Post-Unblinding Outcome: [`RAJancwGOPEkHzBoZXGv_vu_snW0Lff2FktE85Me1P-fI`](https://registry.knowledgepixels.com/np/RAJancwGOPEkHzBoZXGv_vu_snW0Lff2FktE85Me1P-fI))
 * **Project Delphi Knowledge-Graph Ontology:** [https://github.com/fractastical/project-delphi-ontology](https://github.com/fractastical/project-delphi-ontology)
 * **Open-Source MorphoEval & Infinite Morphospace Repository (Python 3, C++20, Node.js, Lean 4 Proofs & Signed Nanopublications):** [https://github.com/fractastical/morpholib](https://github.com/fractastical/morpholib)
+* **Errata & Cross-Provider Referee Audit Log (`docs/ERRATA_AND_REFEREE_AUDIT_LOG.md`):** [https://github.com/fractastical/morpholib/blob/main/docs/ERRATA_AND_REFEREE_AUDIT_LOG.md](https://github.com/fractastical/morpholib/blob/main/docs/ERRATA_AND_REFEREE_AUDIT_LOG.md)
 
 ---
 
