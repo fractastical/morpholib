@@ -95,6 +95,9 @@ OPEN_PROBLEMS = [
     {"id": "OP-09", "node": "b4", "delphi": None, "title": "Score the zebrafish blind test",
      "gap": "Pre-registered and hash-locked but, in the repo record, never scored. The contract is ready; the scorer must refuse on hash mismatch, as designed.",
      "done": "Run the registered scorer, publish the outcome nanopub either way, and update the graph node from 'registered' to its realised status."},
+    {"id": "OP-11", "node": "f5", "delphi": None, "title": "Cow Turing follow-ups: independent re-score + migration-wave colonisation variant",
+     "gap": "The published negative verdict (static Turing rejected; growing RD vs Eden colonisation p=0.91) rests on a builder-scored Pass 9 assessment — the two blinded Fable audits (54.4, 57.7) predate the Pass 8 scale-matched pipeline. The Eden control is also a minimal interior-founder proxy, while real Holstein white invades from migration fronts; and held-out n=9 limits power.",
+     "done": "A blinded independent re-score of the Pass 8+ tree (audit R11), plus a neural-crest migration-wave colonisation variant scored on the same coat-masked, scale-matched statistics — published as a superseding assessment either way."},
     {"id": "OP-10", "node": "t7", "delphi": None, "title": "Portfolio residue: clades where Thompson-7 failed (Leporidae 0/3, Vespinae 0/7 pre-venation)",
      "gap": "45/90 registered multi-clade hypotheses held; the failures are concentrated and unexplained — is it landmark scheme, tree quality, or a real limit of global grids in those clades?",
      "done": "A per-clade failure autopsy in the style of the why-wings decomposition, with at least one failure converted into a correct, pre-registered prediction."},
@@ -207,8 +210,8 @@ def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> No
 
 MORPHOSWARM_TEMPLATE = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MorphoSwarm — Open Problems · Infinite Morphospace</title>
-<meta name="description" content="Swarm-facing work queue of genuinely open problems from Infinite Morphospace, with Delphi viability colour coding (green >=15%, dark orange <15%) and a machine-readable feed.">
+<title>MorphoSwarm — Open Problems · Project Delphi</title>
+<meta name="description" content="Swarm-facing work queue of genuinely open problems from Project Delphi, with Delphi viability colour coding (green >=15%, dark orange <15%) and a machine-readable feed.">
 <style>
 :root{--bg:#f7f7f5;--panel:#fff;--ink:#1c1c1e;--mut:#5c5c60;--line:#d8d8d3;--acc:#2563eb}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
@@ -217,7 +220,7 @@ main{max-width:1000px;margin:0 auto;padding:18px}h1{font-size:24px}.card{backgro
 .small{font-size:12.5px;line-height:1.45}.mut{color:var(--mut)}a{color:var(--acc)}code{background:#eee;padding:1px 5px;border-radius:4px}
 </style></head><body><main>
 <h1>MorphoSwarm — open problems</h1>
-<p class="small">The swarm-facing work queue for <a href="https://fractastical.github.io/morpholib/problem-graph.html">Infinite Morphospace's problem graph</a>: every problem that is genuinely still open, what exactly blocks it, what counts as closing it, and who has already attempted it. Colour rule, same as the graph: <span class="badge" style="background:#1F8A65">&ge;15% · POSSIBLE PATHWAY</span> <span class="badge" style="background:#C06028">&lt;15% · LOW PROBABILITY</span> <span class="badge" style="background:#888">NOT SCORED</span> — 15% is a visual threshold, not a Delphi source field.</p>
+<p class="small">The swarm-facing work queue for <a href="https://fractastical.github.io/morpholib/problem-graph.html">Project Delphi's problem graph</a>: every problem that is genuinely still open, what exactly blocks it, what counts as closing it, and who has already attempted it. Colour rule, same as the graph: <span class="badge" style="background:#1F8A65">&ge;15% · POSSIBLE PATHWAY</span> <span class="badge" style="background:#C06028">&lt;15% · LOW PROBABILITY</span> <span class="badge" style="background:#888">NOT SCORED</span> — 15% is a visual threshold, not a Delphi source field.</p>
 <div class="card"><b>Swarm protocol</b><ol class="small">
 <li>Pick one OP id. Machine-readable feed: <a href="open-problems.json"><code>open-problems.json</code></a> (this page, as data, for agents).</li>
 <li>Pre-register the attempt before touching held-out data — the repo's contract is hash-locked predictions, scorer refuses on mismatch.</li>
@@ -259,8 +262,8 @@ def main() -> None:
 TEMPLATE = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Problem Graph — Infinite Morphospace</title>
-<meta name="description" content="Every problem attempted in Infinite Morphospace, with branching paths, probabilistic timestamps, per-agent edge colours, and a double-click Bayesian Delphi inspector. Green = posterior >=15% (possible pathway), dark orange = <15%.">
+<title>Problem Graph — Project Delphi</title>
+<meta name="description" content="Every problem attempted in Project Delphi, with branching paths, probabilistic timestamps, per-agent edge colours, and a double-click Bayesian Delphi inspector. Green = posterior >=15% (possible pathway), dark orange = <15%.">
 <style>
 :root{--bg:#f7f7f5;--panel:#fff;--ink:#1c1c1e;--mut:#5c5c60;--line:#d8d8d3;--acc:#2563eb;--green:#1F8A65;--orange:#C06028}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
@@ -336,7 +339,7 @@ a{color:var(--acc)}
 <h2>What the graph says at a glance</h2>
 <div class="grid3">
 <div class="card"><b>Closed</b><p class="small">Thompson outline paradox and its ~50 Myr horizon; Rule 30 off-centre theory (lim P<sub>k</sub> = ∞, k&#8325; = 87,867, crystal density, ANF degree); Zhang sorting replication; KG / nanopub infrastructure.</p></div>
-<div class="card"><b>Honestly negative</b><p class="small">Box-stretch shortcut, Xenopus neighbour prediction (AUC 0.484), pixel Task B, causal emergence as a practical tool, the overnight Rule 30 loop (true lemmas, wrong boundary object), and the BMP pair-equivalence claim (Compara: bmp2b→bmp2 not bmp4, chd→chrd not nog; size prior 0.759 vs 1.283) — kept as pruned branches, not deleted.</p></div>
+<div class="card"><b>Honestly negative</b><p class="small">Box-stretch shortcut, Xenopus neighbour prediction (AUC 0.484), pixel Task B, causal emergence as a practical tool, the overnight Rule 30 loop (true lemmas, wrong boundary object), the BMP pair-equivalence claim (Compara: bmp2b→bmp2 not bmp4, chd→chrd not nog; size prior 0.759 vs 1.283), and the Holstein Turing claim (static RD rejected 6.46 vs ~3.3; growing RD vs melanoblast colonisation indistinguishable, p=0.91 — claim + assessment published as production nanopublications) — kept as pruned branches, not deleted.</p></div>
 <div class="card"><b>Still open</b><p class="small">All three Wolfram prizes (Delphi bridge: 11.5% / 2.0% / 0.04%, all dark orange under the 15% rule — though GPT alone rates Prize 1 at 21.8%, green), diagonal-sample decorrelation, fixed-seed complexity transfer, within-species bee P-matrix, growing-domain Turing, autonomous Meinhardt.</p></div></div>
 <p class="mut small">Attribution honesty note: early Rule 30 turns and several pipeline edges are not attributed to a named model anywhere in the repo, so they use the grey “unattributed” colour instead of a guessed agent. Named attributions come from THOMPSON_METHODS.md §1.13, the Delphi panel list, the flagship Pass N+1 referee split, and the causal-emergence guide. Generated by <code>docs/build_problem_graph_html.py</code> from the repo snapshot; underlying claims live in the linked repo documents.</p>
 </main>
