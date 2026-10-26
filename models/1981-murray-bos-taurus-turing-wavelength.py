@@ -884,14 +884,130 @@ def render_specimens() -> Path:
     return out
 
 
+def animate_full() -> Path:
+    """Full-story GIF: all 10 specimens + RD coat + Eden colonisation + scores.
+
+    Top row cycles through the 10 specimens (flank ROI + cleaned mask,
+    labelled with coverage); bottom row shows the growing-domain RD coat
+    and the melanoblast (Eden) colonisation evolving; the final frames show
+    the held-out distance-v2 comparison from the metrics JSON (if present).
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from PIL import Image
+
+    ref = json.loads(REFERENCE.read_text(encoding="utf-8"))
+    # --- specimens (cow 01 + 9 held out) ---
+    specimens: list[dict] = []
+    gray1 = np.asarray(Image.open(SPECIMEN).convert("L"), dtype=float)
+    dark1, flank1 = roi_dark_mask(gray1, ref["specimen"]["rois"]["flank_roi"])
+    specimens.append({"label": "01 (fit specimen, c.1920)", "flank": flank1, "mask": dark1})
+    for e in ref.get("extra_specimens", []):
+        g = np.asarray(Image.open(DATASET_DIR / e["file"]).convert("L"), dtype=float)
+        dark, flank = roi_dark_mask(g, e["roi"])
+        specimens.append({"label": f"{e['file'][-6:-4]} held-out ({e['license']})",
+                          "flank": flank, "mask": dark})
+    for sp in specimens:
+        cov = patch_stats(sp["mask"])["coverage_fraction"]
+        sp["title"] = f"{sp['label']}  coverage {cov:.2f}"
+
+    # --- model trajectories ---
+    metrics_path = DATASET_DIR / "bos_taurus_turing_wavelength_metrics.json"
+    eden_snaps: list[np.ndarray] = []
+    simulate_melanoblast(seed=SEED, target_coverage=0.65, snapshots=eden_snaps,
+                         snapshot_every=500)
+    rng = np.random.default_rng(SEED)
+    u0, v0 = steady_state()
+    stages = ((60, 80, 2600), (90, 120, 1800), (120, 160, 1800))
+    ny, nx, _ = stages[0]
+    u = np.full((ny, nx), u0) + rng.normal(0.0, 0.05, (ny, nx))
+    v = np.full((ny, nx), v0) + rng.normal(0.0, 0.05, (ny, nx))
+
+    frames: list[Image.Image] = []
+    frame_no = [0]
+
+    def snap(label: str) -> None:
+        i = frame_no[0]
+        sp = specimens[(i // 4) % len(specimens)]
+        coat = np.where(u < np.quantile(u, 0.75), 0, 255).astype("uint8")
+        eden = eden_snaps[min(int(i / 34 * (len(eden_snaps) - 1)), len(eden_snaps) - 1)]
+        fig, axes = plt.subplots(2, 2, figsize=(11, 6.4))
+        axes[0, 0].imshow(sp["flank"], cmap="gray", vmin=0, vmax=255)
+        axes[0, 0].set_title(f"Specimen {sp['title']}", fontsize=9)
+        axes[0, 1].imshow(np.where(sp["mask"], 0, 255).astype("uint8"),
+                          cmap="gray", vmin=0, vmax=255)
+        axes[0, 1].set_title("Cleaned Otsu mask (black = pigment)", fontsize=9)
+        axes[1, 0].imshow(np.asarray(Image.fromarray(coat).resize((640, 480))),
+                          cmap="gray", vmin=0, vmax=255)
+        axes[1, 0].set_title(f"RD growing Turing coat\n{label}", fontsize=9)
+        axes[1, 1].imshow(np.asarray(
+            Image.fromarray(np.where(eden, 0, 255).astype("uint8")).resize((640, 480))),
+            cmap="gray", vmin=0, vmax=255)
+        axes[1, 1].set_title("Melanoblast colonisation (Eden)\nwhite = never colonised", fontsize=9)
+        for ax in axes.ravel():
+            ax.set_xticks([]); ax.set_yticks([])
+        fig.suptitle("Bos taurus coat spotting: 10 specimens, two mechanisms", fontsize=11)
+        fig.tight_layout()
+        fig.canvas.draw()
+        frames.append(Image.frombuffer("RGBA", fig.canvas.get_width_height(),
+                                       fig.canvas.buffer_rgba()).convert("RGB"))
+        plt.close(fig)
+        frame_no[0] += 1
+
+    snap("embryonic domain 80x60, t=0")
+    for si, (ny, nx, steps) in enumerate(stages):
+        if u.shape != (ny, nx):
+            u, v = _resize(u, (ny, nx)), _resize(v, (ny, nx))
+            snap(f"grown to {nx}x{ny}")
+        g = _gamma_map(0.25, (ny, nx), 0.8, rng)
+        for step in range(steps):
+            u, v = _evolve(u, v, g, 1)
+            if (step + 1) % 180 == 0:
+                snap(f"stage {si + 1}/3 on {nx}x{ny}, step {step + 1}/{steps}")
+    snap("adult size -- few large patches, white enclaves")
+
+    # --- final score chart frames (from committed metrics, if available) ---
+    if metrics_path.exists():
+        m = json.loads(metrics_path.read_text(encoding="utf-8"))
+        if "pass6_multi_specimen" in m:
+            held = m["pass6_multi_specimen"]["held_out_distance_v2_mean"]
+            per = m["pass6_multi_specimen"]["per_specimen"]
+            names = ["rd_static_gamma1", "rd_growing_het_best", "melanoblast_eden"]
+            labels = ["RD static", "RD growing-het", "Melanoblast Eden"]
+            fig, ax = plt.subplots(figsize=(11, 6.4))
+            vals = [held[n] for n in names]
+            ax.bar(labels, vals, color=["#b0b0b0", "#4c78a8", "#222222"])
+            for j, n in enumerate(names):
+                pts = [p["distance_v2_mean"][n] for p in per]
+                ax.plot([j] * len(pts), pts, "o", color="red", ms=4, alpha=0.7)
+            ax.set_ylabel("distance v2 on held-out cows (lower = closer)")
+            ax.set_title("Held-out validation, 9 unseen Holsteins (red dots = per-cow)\n"
+                         "Eden wins 7/9 on unfitted statistics; ranking p~0.2 (Fable audit) -- suggestive, not significant")
+            fig.tight_layout()
+            fig.canvas.draw()
+            chart = Image.frombuffer("RGBA", fig.canvas.get_width_height(),
+                                     fig.canvas.buffer_rgba()).convert("RGB")
+            plt.close(fig)
+            frames.extend([chart] * 10)  # hold ~1.2 s
+    out = DATASET_DIR / "bos_taurus_turing_wavelength_full_animation.gif"
+    frames[0].save(out, save_all=True, append_images=frames[1:], duration=120, loop=0)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--no-show", action="store_true", help="write outputs, do not display")
     ap.add_argument("--animate", action="store_true", help="also write the animation GIF")
+    ap.add_argument("--animate-full", action="store_true",
+                    help="write only the full-story GIF (10 specimens + models + scores)")
     args = ap.parse_args()
     if args.self_test:
         self_test()
+        return 0
+    if args.animate_full:
+        print(f"full animation: {animate_full()}")
         return 0
     bundle = run()
     result = bundle["result"]
