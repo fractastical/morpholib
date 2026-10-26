@@ -1,0 +1,38 @@
+audit_id: 2026-10-26-bos-taurus-turing-wavelength-audit-v5
+simulation_id: murray-bos-taurus-turing-wavelength
+organism: Bos taurus (10 Holstein specimens)
+measured_at: '2026-10-26T18:20:00Z'
+method: >-
+  Re-derived by `./venv/bin/python3 models/1981-murray-bos-taurus-turing-wavelength.py --no-show`
+  (metrics JSON in the dataset dir). Specimen statistics from cleaned Otsu
+  masks inside hand-set flank ROIs; model statistics at per-specimen
+  calibrated coverage, 5 seeds, Pass 1-5 parameters unchanged on held-out cows.
+measurements:
+- name: Held-out distance v2, melanoblast-Eden (9 specimens)
+  value: 3.19
+  reference_value: 3.60
+  unit: morphometric distance (lower = closer)
+  method: mean over 9 held-out specimens x 5 seeds; reference = RD growing-het (RD static 6.53); Eden wins 7/9
+  derived_from: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json (pass6_multi_specimen)
+  reference_source: this run
+- name: Enclave boundary roughness across 10 cows (median)
+  value: 10.3
+  reference_value: 5.3
+  unit: perimeter/sqrt(area)
+  method: cleaned Otsu masks; reference = RD growing-het sims (Eden sims ~9.0)
+  derived_from: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+  reference_source: this run
+- name: Pigment coverage range across 10 cows
+  value: 0.51
+  reference_value: 0.77
+  unit: fraction span (0.26-0.77; median 0.48 held-out)
+  method: cleaned Otsu flank masks
+  derived_from: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+  reference_source: cow 01 (Pass 1 specimen)
+- name: Cow-01 enclave roughness before/after mask cleanup
+  value: 9.7
+  reference_value: 11.9
+  unit: perimeter/sqrt(area)
+  method: 2-iteration majority filter (clean_mask) vs raw Otsu mask of Pass 5
+  derived_from: models/1981-murray-bos-taurus-turing-wavelength.py clean_mask()
+  reference_source: Pass-5 metrics (raw mask)

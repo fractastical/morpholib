@@ -383,15 +383,93 @@ def multi_seed_comparison(cow: dict, seeds: tuple[int, ...] = (7, 17, 27, 37, 47
             "rd_growing_field_seed7": rd_fields[seeds[0]]}
 
 
+def clean_mask(mask: np.ndarray, iterations: int = 2) -> np.ndarray:
+    """R3 (partial): majority-filter cleanup of the Otsu mask.
+
+    Removes pixel-scale JPEG/sepia speckle (which inflates perimeter-based
+    roughness) before morphometrics.  A full body/coat mask replacing the
+    rectangular ROI remains open (Pass-6 audit).
+    """
+    m = mask
+    for _ in range(iterations):
+        p = np.pad(m, 1)
+        count = sum(p[dy:dy + m.shape[0], dx:dx + m.shape[1]]
+                    for dy in (0, 1, 2) for dx in (0, 1, 2))
+        m = count >= 5
+    return m
+
+
+def roi_dark_mask(gray: np.ndarray, roi: dict) -> tuple[np.ndarray, np.ndarray]:
+    h, w = gray.shape
+    x0, x1 = int(roi["x_frac"][0] * w), int(roi["x_frac"][1] * w)
+    y0, y1 = int(roi["y_frac"][0] * h), int(roi["y_frac"][1] * h)
+    flank = gray[y0:y1, x0:x1]
+    return clean_mask(flank < otsu_threshold(flank)), flank
+
+
 def specimen_pattern() -> dict:
     from PIL import Image
+    ref = json.loads(REFERENCE.read_text(encoding="utf-8"))
     gray = np.asarray(Image.open(SPECIMEN).convert("L"), dtype=float)
-    h, w = gray.shape
-    x0, x1, y0, y1 = int(0.17 * w), int(0.78 * w), int(0.22 * h), int(0.66 * h)
-    flank = gray[y0:y1, x0:x1]
-    dark = flank < otsu_threshold(flank)
+    dark, flank = roi_dark_mask(gray, ref["specimen"]["rois"]["flank_roi"])
     return {"pigment": patch_stats(dark), "enclaves": patch_stats(~dark),
             "mask": dark, "flank": flank}
+
+
+# ------------------------------------------------------- remediation pass 6
+# R2: nine further Holstein specimens (reference JSON `extra_specimens`,
+# SHA-pinned, CC/PD) held out from every Pass 1-5 fit.  Pass 1-5 parameters
+# (RD gamma/heterogeneity/threshold rule, Eden founder density) are applied
+# unchanged; only the coverage calibration follows each specimen (as before).
+def multi_specimen_comparison(seeds: tuple[int, ...] = (7, 17, 27, 37, 47)) -> dict:
+    from PIL import Image
+    ref = json.loads(REFERENCE.read_text(encoding="utf-8"))
+    specimens = []
+    for e in ref.get("extra_specimens", []):
+        path = DATASET_DIR / e["file"]
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if digest != e["sha256"]:
+            raise ValueError(f"specimen SHA-256 mismatch: {e['file']}")
+        gray = np.asarray(Image.open(path).convert("L"), dtype=float)
+        dark, _ = roi_dark_mask(gray, e["roi"])
+        specimens.append({"file": e["file"],
+                          "pattern": {"pigment": patch_stats(dark),
+                                      "enclaves": patch_stats(~dark)}})
+    # RD fields once per seed; per specimen only the threshold follows coverage.
+    rd_fields = {seed: {"static": simulate(1.0, seed=seed),
+                        "growing": simulate_growing(0.25, seed=seed, heterogeneity=0.8)}
+                 for seed in seeds}
+    per_specimen = []
+    for sp in specimens:
+        cow = sp["pattern"]
+        q = cow["pigment"]["coverage_fraction"]
+        dists: dict[str, list[float]] = {"rd_static_gamma1": [],
+                                         "rd_growing_het_best": [],
+                                         "melanoblast_eden": []}
+        for seed in seeds:
+            dists["rd_static_gamma1"].append(morphometric_distance_v2(
+                cow, coat_pattern_stats(rd_fields[seed]["static"], q, True)))
+            dists["rd_growing_het_best"].append(morphometric_distance_v2(
+                cow, coat_pattern_stats(rd_fields[seed]["growing"], q, True)))
+            eden = simulate_melanoblast(seed=seed, target_coverage=q)
+            dists["melanoblast_eden"].append(morphometric_distance_v2(
+                cow, coat_stats_from_mask(eden)))
+        per_specimen.append({"file": sp["file"], "coverage": q,
+                             "cow_enclave_roughness": cow["enclaves"]["boundary_roughness_mean"],
+                             "cow_enclave_cv": cow["enclaves"]["patch_diameter_cv"],
+                             "distance_v2_mean": {k: float(np.mean(v)) for k, v in dists.items()}})
+    models = ("rd_static_gamma1", "rd_growing_het_best", "melanoblast_eden")
+    held_out = {m: float(np.mean([p["distance_v2_mean"][m] for p in per_specimen]))
+                for m in models}
+    return {"n_held_out": len(specimens), "seeds": list(seeds),
+            "held_out_distance_v2_mean": held_out, "per_specimen": per_specimen,
+            "distribution": {
+                "coverage_median": float(np.median([p["coverage"] for p in per_specimen])),
+                "enclave_roughness_median": float(np.median([p["cow_enclave_roughness"] for p in per_specimen])),
+                "enclave_cv_median": float(np.median([p["cow_enclave_cv"] for p in per_specimen])),
+            },
+            "note": ("Held-out validation: Pass 1-5 fitted parameters unchanged; "
+                     "per-specimen coverage calibration only (as in Pass 5).")}
 
 
 def fit_growing(cow: dict) -> dict:
@@ -582,6 +660,7 @@ def run() -> dict:
                  "and Eden stopping rule are both calibrated to cow coverage; "
                  "all scored statistics are unfitted."),
     }
+    result["pass6_multi_specimen"] = multi_specimen_comparison()
     return {"result": result, "field": base_field, "cow": cow,
             "fit_field": fit["field"], "fit_mask": fit["best_mask"],
             "fit_best": fit["best"], "eden_mask": comp["eden_mask_median_seed"],
@@ -781,6 +860,29 @@ def animate(gamma: float = 0.25, quantile: float = 0.75, heterogeneity: float = 
     return out
 
 
+def render_specimens() -> Path:
+    """Montage of the 9 held-out specimens: flank ROI (top) + cleaned mask."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from PIL import Image
+    ref = json.loads(REFERENCE.read_text(encoding="utf-8"))
+    fig, axes = plt.subplots(2, 9, figsize=(22, 5))
+    for j, e in enumerate(ref.get("extra_specimens", [])):
+        gray = np.asarray(Image.open(DATASET_DIR / e["file"]).convert("L"), dtype=float)
+        dark, flank = roi_dark_mask(gray, e["roi"])
+        axes[0, j].imshow(flank, cmap="gray", vmin=0, vmax=255)
+        axes[0, j].set_title(e["file"][-6:-4], fontsize=8)
+        axes[1, j].imshow(np.where(dark, 0, 255).astype("uint8"), cmap="gray", vmin=0, vmax=255)
+    for ax in axes.ravel():
+        ax.set_xticks([]); ax.set_yticks([])
+    fig.tight_layout()
+    out = DATASET_DIR / "bos_taurus_specimens_montage.png"
+    fig.savefig(out, dpi=110)
+    plt.close(fig)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--self-test", action="store_true")
@@ -796,6 +898,7 @@ def main() -> int:
         json.dumps(result, indent=2), encoding="utf-8")
     out = render(result, bundle["field"], bundle["fit_mask"], bundle["fit_best"],
                  bundle["eden_mask"])
+    print(f"specimens: {render_specimens()}")
     print(json.dumps(result["verdict"], indent=2))
     print(f"figure: {out}")
     if args.animate:

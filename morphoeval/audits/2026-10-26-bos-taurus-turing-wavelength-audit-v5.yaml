@@ -1,0 +1,70 @@
+# MorphoEval audit v5 (Pass 6: multi-specimen held-out validation) — 2026-10-26
+# Addresses R2 (n=1) and R3-partial (mask cleanup).  Nine further Holstein
+# specimens from Wikimedia Commons (CC/PD, SHA-pinned in the reference JSON)
+# are held out from all Pass 1-5 fitting; fitted parameters are applied
+# unchanged.  Builder-assessor (Muse); a fresh blinded Fable re-score of
+# this tree follows as the next pass.  Overall builder: 72.5 -> 73.8.
+audit:
+  id: 2026-10-26-bos-taurus-turing-wavelength-audit-v5
+  rubric_version: 0.1.0
+  date: "2026-10-26"
+  supersedes_audit_id: 2026-10-26-bos-taurus-turing-wavelength-audit-v4
+  assessor:
+    id: muse-wonder-1.0-high
+    label: "Muse Wonder 1.0 (builder-assessor)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 91971266
+    note: "Pass-6 working tree on top of the committed Pass 1-5 checkpoint; committed after audit."
+references:
+  turing1952: {doi: 10.1098/rstb.1952.0012}
+  murray1981: {doi: 10.1016/0022-5193(81)90334-9}
+  schnakenberg1979: {doi: 10.1016/0022-5193(79)90042-0}
+  mitf2016: {doi: 10.1007/s13258-016-0493-4}
+simulations:
+  - id: murray-bos-taurus-turing-wavelength
+    name: "Turing RD vs melanoblast colonisation, held-out multi-specimen validation (Pass 6)"
+    organism: "Bos taurus (Holstein-Friesian, 10 specimens)"
+    script: models/1981-murray-bos-taurus-turing-wavelength.py
+    output: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png
+    extra_outputs:
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_specimens_montage.png
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_animation.gif
+    status: evaluated
+    source_refs: [turing1952, murray1981, schnakenberg1979, mitf2016]
+    summary: >-
+      Held-out (9 specimens, 5 seeds, coverage calibrated per specimen):
+      distance v2 means -- RD static 6.53, RD growing-het 3.60,
+      melanoblast-Eden 3.19; Eden wins 7 of 9 specimens.  Across all 10 cows,
+      enclave roughness median 10.3 and enclave CV median 1.30 (RD sims ~5 /
+      ~0.4; Eden ~9 / ~0.9), while coverage spans 0.26-0.77 -- Holstein
+      spotting is a family of patterns, and its boundary statistics stay
+      melanoblast-like on animals the fits never saw.  Mask cleanup
+      (majority filter) lowers cow-01 enclave roughness 11.9 -> 9.7, so part
+      of the Fable-flagged value was photo noise; the RD gap remains.
+    scores:
+      model-fidelity: {value: 72, rationale: "Unchanged model class from v4.", evidence: [{file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [335, 395], note: "simulate_melanoblast + RD core", supports: true}]}
+      specimen-match: {value: 58, rationale: "Unchanged renderings; montage shows masks track real patch shapes across 9 new animals, with some ROI-edge background noise on 06/08.", evidence: [{file: datasets/bos_taurus_turing_wavelength/bos_taurus_specimens_montage.png, lines: [0, 0], note: "9 held-out flank ROIs + cleaned masks", supports: true}]}
+      parameter-expressivity: {value: 80, rationale: "Unchanged from v4 (founder density + RD sweeps; still no CLI, R7).", evidence: [{file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [420, 470], note: "multi_seed_comparison sweeps", supports: true}]}
+      morphometric-validation:
+        value: 85
+        rationale: "Now genuine held-out validation: parameters fitted on cow 01 are scored unchanged on 9 unseen animals (Eden wins 7/9); per-specimen distances, coverages and cow statistics are all in the metrics JSON. Remaining: per-specimen coverage calibration still follows each animal, founder density was selected on a scored statistic on cow 01, and specimen 07's ROI is partly 3/4-view."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [480, 540], note: "multi_specimen_comparison with SHA checks per specimen", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, lines: [0, 0], note: "pass6_multi_specimen: held-out means + per-specimen table", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Ten specimens total, each with Commons title, licence (PD/CC BY/CC BY-SA), source URL and SHA-256, verified at runtime; image licences require attribution, given in the reference JSON."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_reference.json, lines: [40, 130], note: "extra_specimens provenance block", supports: true}
+      code-traceability: {value: 72, rationale: "Unchanged from v4; ROI fractions now read from the reference JSON in specimen_pattern (one of Fable's hard-coding complaints partially addressed).", evidence: [{file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [440, 480], note: "roi_dark_mask reads ROIs from reference", supports: true}]}
+      repro-package: {value: 78, rationale: "Deterministic seeds, runtime SHA verification of all 10 specimens, self-test green; full run ~55 s (multi-specimen), committed checkpoint. CLI still missing.", evidence: [{file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [560, 600], note: "self-test incl. Pass-6 paths via run()", supports: true}]}
+    remediation:
+      - id: R3b
+        item: "Full body/coat mask: rectangular ROIs still admit background on some specimens (montage 06/08 edges)"
+      - id: R7
+        item: "CLI exposure + commit (commit follows this audit)"
+      - id: R8
+        item: "Fresh blinded Fable re-score of the Pass-6 tree (next pass)"
