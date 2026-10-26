@@ -1,0 +1,67 @@
+audit_id: 2026-10-26-bos-taurus-turing-wavelength-audit
+simulation_id: murray-bos-taurus-turing-wavelength
+organism: Bos taurus
+measured_at: '2026-10-26T17:40:00Z'
+method: >-
+  All values re-derived by running
+  `./venv/bin/python3 models/1981-murray-bos-taurus-turing-wavelength.py --no-show`
+  (metrics JSON in the dataset dir); specimen values by the script's own
+  Otsu segmentation of the SHA-256-pinned photograph. No invented series.
+measurements:
+- name: Cow flank dark-patch count (big components, flank ROI)
+  value: 3
+  reference_value: 142
+  unit: components
+  method: Otsu mask, 4-connected components >= 0.05% of ROI; reference = simulated spots at gamma=1
+  derived_from: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+  reference_source: this run's Schnakenberg simulation (gamma=1)
+- name: Cow flank dark (pigment) coverage
+  value: 0.767
+  reference_value: 0.361
+  unit: fraction of ROI
+  method: Otsu threshold 97 within flank ROI (inner ROI sensitivity 0.855)
+  derived_from: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+  reference_source: simulated field thresholded at its mean (gamma=1)
+- name: Largest patch share of pigment (cow flank)
+  value: 0.992
+  reference_value: 0.013
+  unit: fraction
+  method: largest 4-connected dark component / all dark pixels
+  derived_from: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+  reference_source: simulated field (gamma=1)
+- name: Patch equivalent-diameter CV (cow vs sim gamma=1)
+  value: 1.252
+  reference_value: 0.128
+  unit: coefficient of variation
+  method: sqrt(4A/pi)/ROI-width over big components
+  derived_from: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+  reference_source: simulated field (gamma=1)
+- name: Critical wavenumber k_c (analytic vs numeric sigma maximum)
+  value: 0.612
+  reference_value: 0.487
+  unit: rad/px
+  method: k_c^2 = (D_v f_u + D_u g_v)/(2 D_u D_v); numeric argmax of sigma(k) on 20001-point grid; unstable band k in [0.272, 0.822]
+  derived_from: models/1981-murray-bos-taurus-turing-wavelength.py turing_analysis()
+  reference_source: Turing (1952) dispersion relation, doi:10.1098/rstb.1952.0012
+- name: Simulated FFT wavelength vs analytic lambda_c (gamma=1)
+  value: 11.87
+  reference_value: 10.26
+  unit: px
+  method: dominant non-DC FFT mode of the simulated activator field
+  derived_from: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+  reference_source: lambda_c = 2 pi / k_c
+- name: Equal-diffusion control sigma_max
+  value: -0.1
+  reference_value: 0.0
+  unit: growth rate
+  method: dispersion_sigma with D_v = D_u; must be < 0 (no Turing instability)
+  derived_from: models/1981-murray-bos-taurus-turing-wavelength.py turing_analysis()
+  reference_source: Turing (1952), doi:10.1098/rstb.1952.0012
+artifacts:
+  comparison_png_sha256: 4bb65f17ddfbf3b113935e1a5789c45a5412c3cd41ff863f50c6d81a75c98b8d
+  metrics_json_sha256: 01605e5c2aa0c0be20a7e4f4ccbf3921b07ceb4d44453891239882520c57fef2
+  specimen_sha256: 74f82f3d3bac41565c76001541b880df88b9978ca944e423fa5821731f572555
+note: >-
+  Artifact hashes recomputed after the final (title-layout) run with
+  `shasum -a 256`; the metrics JSON is deterministic under the pinned seed,
+  the PNG should be re-hashed if matplotlib versions change the rendering.

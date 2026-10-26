@@ -1,0 +1,42 @@
+{
+  "schema_version": "morphoeval-reference-2.0",
+  "sim_id": "murray-bos-taurus-turing-wavelength",
+  "organism": "Bos taurus",
+  "common_name": "Domestic cow (Holstein-Friesian)",
+  "aristotelian_categories": {
+    "megiston_genos": "I. Enaima (Vertebrata)",
+    "subaltern_genos": "Mammalia (Zootoka)",
+    "biological_genus": "Bos",
+    "poion_form": "Stripes, Spots & Ocelli",
+    "poson_law": "Turing Wavenumber k_c",
+    "efficient_cause": "1. Chemical Turing / RD"
+  },
+  "model": {
+    "system": "Schnakenberg two-morphogen reaction-diffusion (Murray coat-marking form)",
+    "equations": [
+      "u_t = D_u lap(u) + gamma*(a - u + u^2 v)",
+      "v_t = D_v lap(v) + gamma*(b - u^2 v)"
+    ],
+    "parameters": {"a": 0.1, "b": 0.9, "D_u": 1.0, "D_v": 20.0, "gamma_sweep": [0.25, 1.0, 4.0]},
+    "grid": {"nx": 160, "ny": 120, "dx": 1.0, "dt": 0.01, "steps": 8000, "seed": 7, "boundary": "periodic"}
+  },
+  "specimen": {
+    "file": "bos_taurus_specimen.jpg",
+    "sha256": "74f82f3d3bac41565c76001541b880df88b9978ca944e423fa5821731f572555",
+    "title": "Holstein Cow (22815045791).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Holstein_Cow_(22815045791).jpg",
+    "credit": "Province of Ontario Picture Bureau slide, c.1920; Community Archives of Belleville and Hastings County (Flickr CABHC 22815045791), via Wikimedia Commons",
+    "license": "Public domain",
+    "rois": {
+      "flank_roi": {"x_frac": [0.17, 0.78], "y_frac": [0.22, 0.66]},
+      "inner_flank_roi": {"x_frac": [0.22, 0.72], "y_frac": [0.28, 0.58]}
+    },
+    "roi_note": "Rectangular flank ROIs in image fractions, chosen to cover the torso coat while excluding head, legs and most background; thresholded by Otsu within each ROI. A single historical photograph of one animal: n=1, sepia, no scale bar. ROI sensitivity is reported via the second, tighter ROI."
+  },
+  "claim_boundary": {
+    "reported_in_source": "Murray (1981) proposed an RD pre-pattern for mammalian coat markings and derived scale-dependent pattern classes; Turing (1952) derived the diffusion-driven instability.",
+    "reconstructed_in_script": "Schnakenberg dispersion relation, critical wavenumber/wavelength, equal-diffusion control, nonlinear spot simulation, and patch morphometrics on the specimen photograph.",
+    "transfer_boundary": "Dimensionless simulation units are compared to the photograph only through scale-free statistics (coverage, component counts, diameters normalised by ROI width).",
+    "does_not_claim": "Does not claim cow spotting is (or is not) developmentally caused by these morphogens; tests only whether a single-wavelength Turing pattern is morphometrically consistent with this flank. Does not generalise from n=1 animal/breed."
+  }
+}

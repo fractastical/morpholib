@@ -1,0 +1,85 @@
+# MorphoEval audit v2 (Pass 2 remediation) — Bos taurus Turing, 2026-10-26
+# Remediates Pass-1 finding: static adult-flank Turing = 142 uniform spots vs
+# cow's 1 body-scale patch.  Pass 2 adds domain growth (pre-pattern laid down
+# small, then grown; Murray's scale argument), free coat polarity (pigment =
+# low-activator phase, spots become white enclaves), and an explicit
+# morphometric fit objective.  Same single builder-assessor limitation as v1
+# (R1 still open).  Overall 57.6 -> 66.0.
+audit:
+  id: 2026-10-26-bos-taurus-turing-wavelength-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-26"
+  supersedes_audit_id: 2026-10-26-bos-taurus-turing-wavelength-audit
+  assessor:
+    id: muse-wonder-1.0-high
+    label: "Muse Wonder 1.0 (builder-assessor, single-agent; second assessor pending R1)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b3a5611b
+    note: "Working-tree Pass 2 on top of the Pass-1 round (uncommitted)."
+references:
+  turing1952: {doi: 10.1098/rstb.1952.0012}
+  murray1981: {doi: 10.1016/0022-5193(81)90334-9}
+  mitf2016: {doi: 10.1007/s13258-016-0493-4, role: counter-evidence}
+simulations:
+  - id: murray-bos-taurus-turing-wavelength
+    name: "Murray (1981) Turing pre-pattern vs. Holstein-Friesian cow coat spotting (Pass 2: growing domain)"
+    organism: "Bos taurus (Holstein-Friesian domestic cow)"
+    script: models/1981-murray-bos-taurus-turing-wavelength.py
+    output: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png
+    status: evaluated
+    source_refs: [turing1952, murray1981, mitf2016]
+    summary: >-
+      Best Pass-2 fit: growing domain (80x60 -> 120x90 -> 160x120), gamma=0.25,
+      pigment = low-activator phase at quantile 0.65.  Cow vs fit: pigment
+      patches 3 vs 2, coverage 0.77 vs 0.65, largest patch share 0.992 vs
+      0.942, largest patch diameter 0.756 vs 0.765 ROI widths, white enclaves
+      12 vs 12.  Morphometric distance (explicit objective in code) falls
+      from 5.22 for the Pass-1 gamma=1 presentation (best static: 2.01) to
+      1.19.  This is a FIT on n=1, not independent validation.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: "Growth stages continue the same Schnakenberg RD after each bilinear growth step (Murray scale argument); polarity/threshold are fitted, not derived."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [190, 245], note: "simulate_growing + coat_pattern_stats + morphometric_distance + fit_growing", supports: true}
+      specimen-match:
+        value: 45
+        rationale: "Side-by-side, the fit now reads as a cow coat (connected black field, white enclaves, body-scale patches) instead of polka dots; enclaves are still rounder and more interior than the cow's, and coverage is 0.65 vs 0.77."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png, lines: [0, 0], note: "4-panel comparison incl. Pass-2 fit panel", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: "gamma, growth on/off, polarity and threshold quantile are all swept (48 candidates) with monotonic, interpretable effects on patch count/scale; still no CLI exposure."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [245, 270], note: "fit_growing grid over mode x gamma x polarity x quantile", supports: true}
+      morphometric-validation:
+        value: 68
+        rationale: "Both phases (pigment + enclaves) now scored with one explicit distance; best-fit and top-5 leaderboard written to the metrics JSON. Still n=1 and the same data used to fit and to score."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, lines: [0, 0], note: "pass2_growing_fit: cow_pattern, best, leaderboard", supports: true}
+      source-traceability:
+        value: 85
+        rationale: "Unchanged from v1 (Crossref-verified DOIs, SHA-pinned specimen)."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/paper_citations.bib, lines: [1, 32], note: "Crossref-verified DOIs", supports: true}
+      code-traceability:
+        value: 65
+        rationale: "Growth/polarity/fit code is docstring-mapped to the Murray scale argument; Murray section pinning still missing (R4)."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [170, 200], note: "Pass-2 remediation comment block + simulate_growing", supports: true}
+      repro-package:
+        value: 70
+        rationale: "Deterministic seed covers the fit grid; full run now ~17 s. No CLI, uncommitted checkpoint."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [460, 480], note: "self_test still passes after Pass-2 changes", supports: true}
+    remediation:
+      - id: R1
+        item: "Independent second assessor (different provider) — still builder-scored"
+      - id: R2
+        item: "More specimens (>=10 flanks) to break the fit-on-n=1 circle"
+      - id: R3
+        item: "Body-mask segmentation instead of rectangular ROIs"
+      - id: R6
+        item: "Enclave boundaries too smooth/round and too interior vs cow's jagged edge-invading white patches — add boundary-roughness to the morphometrics and a mechanism that roughens (heterogeneity / clonal growth)"

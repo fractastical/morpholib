@@ -1,0 +1,373 @@
+# MorphoEval BLINDED SECOND-ASSESSOR audit — Murray (1981) Turing pre-pattern vs Holstein cow flank
+#
+# Blinding statement.  This assessment was produced by claude-fable-5-1 acting as an independent
+# second assessor.  The assessor did NOT read: morphoeval/audits/*bos-taurus* (v1, v2, v3 or their
+# .measurements.yaml), morphoeval/runs/*bos-taurus*, the scoring tables in morphoeval/README.md, or
+# the git history/log of any of these files.  No prior score for this script was seen or inferred.
+# What WAS read: morphoeval/rubric.yaml, morphoeval/schema.yaml, the validation code paths of
+# morphoeval/build_morphoeval_kg.py, the target script in full, every file in
+# datasets/bos_taurus_turing_wavelength/ (the generated metrics JSON was treated as the builder's
+# claim under test, not as evidence), and two unrelated audits for file shape only.
+#
+# Independent verification performed (2026-10-26, macOS, ./venv python 3.14.7 / numpy 2.5.4 /
+# matplotlib 3.10.7 / Pillow 12.0.0):
+#   * `--self-test` passes in 1.6 s; `--no-show --animate` completes in 26 s and reproduces the
+#     committed-in-working-tree metrics JSON byte-for-byte and the PNG/GIF with identical SHA-256
+#     (PNG 5b4fc499..., GIF 05203b24...).
+#   * Steady state (u0,v0)=(1.0,0.9), Jacobian [[0.8,1],[-1.8,-1]], tr=-0.2, det=1, cross-term 15,
+#     225 > 80, k_c^2 = 0.375, lambda_c = 10.26, band k in [0.272, 0.822], k* = 0.4866 (eigenvalue
+#     scan) and lambda ~ gamma^-1/2 all recomputed independently and match the script.
+#   * Equal-diffusion control: max sigma = Re(eig J) = -0.1 at k=0; correct.
+#   * Explicit-Euler bound dt < 1/(4 D_v) = 0.0125 > DT = 0.01; correct.
+#   * All three DOIs resolved via the Crossref API to the claimed works (see findings for the
+#     author-attribution error on the MITF paper).
+#   * Re-ran the Pass-2/3 grid search, a 5-seed sensitivity test of the winning configuration,
+#     FFT wavelengths of static vs grown fields, and a row/column dark-fraction profile of the
+#     flank ROI mask (see rationales).
+
+audit:
+  id: 2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit
+  rubric_version: 0.1.0
+  date: "2026-10-26"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 — blinded independent second assessor (role: second_assessor)"
+    homepage: https://www.anthropic.com
+  role: second_assessor
+  blinded: true
+  did_not_read:
+    - "morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit*.yaml (any version, incl. .measurements.yaml)"
+    - "morphoeval/runs/*bos-taurus*"
+    - "morphoeval/README.md scoring tables"
+    - "git log / history for the target script and dataset"
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b3a5611bb7994ffaf492830e33db0c83a1fbb48e
+    note: >-
+      HEAD at time of assessment. The target script and the whole dataset directory are
+      UNTRACKED in the working tree (git status '??'), so none of the cited loci exist at this
+      commit; line numbers refer to the working-tree file as read on 2026-10-26.
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+      lockfile: requirements.lock.txt (matches the venv for numpy/matplotlib/pillow)
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. Lond. B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "J. Theor. Biol. 88(1):161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  edea2017_mitf_cattle:
+    title: "Association of MITF loci with coat color spotting patterns in Ethiopian cattle"
+    authors: "Edea Z, Dadi H, Dessie T, Kim K-S  (Crossref; NOT 'Bacha et al.' as the script docstring states)"
+    venue: "Genes & Genomics 39(3):285-293 (online 2016-11-14)"
+    doi: 10.1007/s13258-016-0493-4
+  specimen_holstein_1920:
+    title: "Holstein Cow (22815045791).jpg — Province of Ontario Picture Bureau lantern slide, c.1920 (public domain)"
+    authors: "Community Archives of Belleville and Hastings County, via Wikimedia Commons"
+    url: https://commons.wikimedia.org/wiki/File:Holstein_Cow_(22815045791).jpg
+
+simulations:
+  - id: murray-bos-taurus-turing-wavelength
+    name: "Murray (1981) Schnakenberg Turing pre-pattern vs Holstein-Friesian (Bos taurus) flank spotting"
+    organism: Bos taurus (Holstein-Friesian)
+    script: models/1981-murray-bos-taurus-turing-wavelength.py
+    output: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png
+    also:
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_animation.gif
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_reference.json
+      - datasets/bos_taurus_turing_wavelength/paper_citations.bib
+    domain: morphogenesis
+    status: evaluated
+    source_refs:
+      - turing1952
+      - murray1981
+      - edea2017_mitf_cattle
+      - specimen_holstein_1920
+    provenance:
+      artifact_sha256: 5b4fc4996838f66346407e7120337af6ee79316fdaf5808bd3a13f6f56907e90
+      input_dataset_sha256:
+        bos_taurus_specimen.jpg: 74f82f3d3bac41565c76001541b880df88b9978ca944e423fa5821731f572555
+        bos_taurus_turing_wavelength_animation.gif: 05203b24d3a44036b3c6bd6ae67efa4e23e1588ae33a24fdec08c75c562de466
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952): diffusion-driven instability of a two-morphogen system."
+        - "Murray (1981): RD pre-pattern for mammalian coat markings; pattern class depends on domain size (gamma ~ L^2) at the time the pre-pattern is laid down.  Murray used Thomas (1975) substrate-inhibition kinetics, not Schnakenberg."
+      reconstructed_in_script:
+        - "Schnakenberg kinetics with textbook demo parameters a=0.1, b=0.9, D_v/D_u=20; linear dispersion analysis; explicit-Euler periodic simulation; gamma sweep."
+        - "Pass 2/3 extensions NOT in either cited source: three discrete bilinear domain enlargements with continued RD (no dilution term), a two-scale random multiplicative gamma heterogeneity (+-80 %), free coat polarity, and a 72-candidate grid search minimising an ad hoc 8-term morphometric distance to one photograph."
+      transfer_boundary:
+        - "Dimensionless lattice (160x120, dx=1) compared with a 1112x657 px rectangular crop of a sepia c.1920 photograph only through scale-free statistics; the crop includes background, ground shadow, udder and legs."
+      does_not_claim:
+        - "Does not establish that Holstein spotting is or is not a Turing pattern; n=1 animal, n=1 photograph, no literature morphometrics."
+        - "The Pass-2/3 'fit' is a fit on n=1 and (per this assessment) tautological on its two highest-weighted terms; it is not validation."
+    overall_score: 54.35
+    overall_note: "Weighted mean 20/25/10/15/10/8/12 of the seven scores below (faithfulness 47.1, reproducibility 71.3); no dimension marked not_applicable."
+    summary: >-
+      The linear Turing machinery and the Pass-1 falsification test are correct and honestly
+      reported, and the run is bit-reproducible.  The script's framing goes wrong in three places
+      that this blinded re-assessment identifies independently: (1) the Pass-1 'many spots vs one
+      patch' verdict is an artefact of the polarity choice `u > u.mean()` -- with pigment on the
+      low-activator phase ANY Turing spot field is one connected patch, so the headline contrast
+      is not a property of the mechanism; (2) the Pass-2/3 'remediated fit' is tautological on its
+      two heaviest terms (coverage equals the chosen quantile by construction; largest-patch share
+      ~1 is guaranteed by the connected background) and its leaderboard ordering is inside the
+      seed noise (distance 0.88-2.17 over 5 seeds for the winning configuration vs 1.21-1.57 across
+      the top 5); (3) the specimen morphometrics are computed on a rectangle that merges background
+      above the back, ground shadow below the belly, and the white udder/legs into the 'coat'.  In
+      addition Murray (1981) is misattributed as the source of the Schnakenberg kinetics and
+      parameters, and the MITF counter-evidence paper is attributed to the wrong authors.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: >-
+          Correct where it is Turing: steady state, Jacobian, tr/det conditions, cross-term
+          inequality, k_c, lambda_c, unstable-band roots, numeric sigma maximiser and the
+          equal-diffusion null all re-derived independently and match to machine precision;
+          explicit Euler respects dt < dx^2/(4 D_v); FFT wavelength tracks lambda* (not lambda_c,
+          which the code correctly notes) across gamma.  Docked because (a) the docstring and
+          the parameter comment attribute Schnakenberg kinetics and a=0.1, b=0.9, d=20 to Murray's
+          coat-marking analysis -- Murray (1981) used Thomas (1975) substrate-inhibition kinetics;
+          these are textbook Schnakenberg demo values, so the script is a generic Turing vehicle,
+          not the published model; (b) the 'growing domain' is three discrete bilinear resizes with
+          no dilution term and no citation (Kondo-Asai is named, Crampin/Gaffney/Maini is not),
+          which is not Murray's static gamma ~ L^2 scale argument either; (c) the +-80 % two-scale
+          random gamma heterogeneity is an uncited ad hoc device introduced to roughen boundaries.
+          Schnakenberg (1979) itself is uncited.
+        evidence:
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [87, 136]
+            note: "steady_state / jacobian / dispersion_sigma / turing_analysis -- all verified correct by independent recomputation"
+            supports: true
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [140, 154]
+            note: "5-point periodic Laplacian, explicit Euler with DT=0.01 < 0.0125 stability bound -- correct"
+            supports: true
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [24, 25]
+            note: "Claims Schnakenberg is 'the standard two-morphogen system used by Murray for coat-marking dispersion analysis' -- Murray (1981) used Thomas (1975) kinetics; misattribution"
+            supports: false
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [76, 78]
+            note: "'Schnakenberg / Murray coat-marking parameters' -- a=0.1, b=0.9, D_v=20 are textbook Schnakenberg demo values, not Murray 1981 coat parameters"
+            supports: false
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [169, 218]
+            note: "_resize / simulate_growing: discrete bilinear growth without dilution term; _gamma_map: uncited random gamma heterogeneity"
+            supports: false
+      specimen-match:
+        value: 35
+        rationale: >-
+          Judged side by side on the regenerated PNG and GIF frames: the Pass-1 panel (viridis
+          hexagonal spot lattice) does not resemble the cow and the script says so; the Pass-3
+          panel (black field with ~15 rounded, evenly spaced white blobs of similar size) shares
+          only polarity and connectedness with the specimen, whose white areas are few, large,
+          jagged, and concentrated ventrally (belly, udder, legs) rather than scattered over the
+          flank.  The two simulated morphologies are visually distinct from each other, which is
+          credited.  The specimen itself is one sepia lantern slide (n=1) and the ROI shown as
+          'cow flank' contains background sky/buildings above the back and ground to the right
+          and below, so the left-hand comparison panels are not a clean coat specimen either.
+        evidence:
+          - file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png
+            lines: [0, 0]
+            note: "Regenerated 4-panel figure inspected: Pass-1 lattice and Pass-3 blob field vs ROI/Otsu mask"
+            supports: true
+          - file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_animation.gif
+            lines: [0, 0]
+            note: "38 frames inspected (0, 15, 37): growth stages show uniform rounded enclaves, unlike the cow's irregular ventral white"
+            supports: true
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [254, 262]
+            note: "specimen_pattern: rectangular ROI 0.17-0.78 x 0.22-0.66; row/column dark-fraction profile shows background at top (row 0: 21 % dark rising to 89 % by row 10 %) and ground at the right edge (84-95 % dark in the last 10 % of columns) inside the 'flank'"
+            supports: false
+          - file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_reference.json
+            lines: [30, 34]
+            note: "ROI note acknowledges n=1, sepia, no scale bar; a second tighter ROI is provided for sensitivity"
+            supports: true
+      parameter-expressivity:
+        value: 58
+        rationale: >-
+          gamma visibly and monotonically controls wavelength (FFT 28.3 / 11.9 / 5.4 px for gamma
+          0.25 / 1 / 4 against lambda* 25.8 / 12.9 / 6.5 px) and patch count (21 / 142 / 434);
+          growth monotonically enlarges enclaves (FFT 25.8 -> 39.9 px at gamma 0.25).  But
+          heterogeneity is a single fixed value (0.8), never swept, so its claimed effect on
+          enclave CV/roughness is not demonstrated; the threshold quantile controls coverage
+          exactly (coverage = q) so it is a rendering knob, not a model parameter; a, b, D_v and
+          domain size are constants with no CLI or sweep; the CLI exposes no model parameter at
+          all, and `--no-show` is a no-op because matplotlib is always forced to Agg.
+        evidence:
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [405, 419]
+            note: "GAMMA_SWEEP loop: lambda_c analytic vs FFT and patch stats per gamma -- monotone as claimed"
+            supports: true
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [265, 296]
+            note: "fit_growing grid: heterogeneity hard-coded at 0.8; quantile sets coverage by construction"
+            supports: false
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [604, 623]
+            note: "argparse exposes only --self-test / --no-show / --animate; no parameter axis; --no-show has no effect"
+            supports: false
+      morphometric-validation:
+        value: 40
+        rationale: >-
+          Real morphometrics (coverage, 4-connected component counts, equivalent diameters, CV,
+          perimeter/sqrt(area) roughness) are computed identically on specimen and simulation,
+          the FFT-vs-analytic wavelength check is a genuine internal validation, and the Pass-1
+          verdict is a falsification-style test that the script reports honestly.  Docked heavily
+          because: (1) the comparison target is one photograph, not any literature value
+          (no published Holstein %-white or patch-size statistics are used); (2) the Pass-2/3
+          fit is circular on its two heaviest terms -- coverage (weight 2.0) equals the chosen
+          quantile exactly (0.75 vs cow 0.767) and largest-patch share (~0.997 vs 0.992) is
+          guaranteed by choosing pigment = connected low-activator background; every one of the
+          top-10 candidates I recomputed has pigment_low=True, and a *static* gamma=0.1 field with
+          the same polarity already gives 1 patch / share 1.0 / 11 enclaves (cow: 3 / 0.992 / 12);
+          (3) the leaderboard ordering is not seed-robust: the winning configuration scores
+          0.88, 1.21, 1.83, 1.32, 2.17 over seeds 1,7,2,3,4, a spread wider than the 1.21-1.57 gap
+          separating the top five, so 'growing-het beats growing beats static' is unresolved;
+          (4) the specimen statistics are contaminated by background/ground/udder (see
+          specimen-match) and the cow roughness 13.6 is inflated by JPEG speckle at 1112 px
+          (181 pigment and 463 enclave components) relative to a 160-px lattice; (5) the comment
+          calibrating roughness to 2*sqrt(pi)=3.54 for a disc is wrong for the 4-neighbour
+          perimeter used (a digital disc gives 4.56); (6) the self-test does not exercise any
+          Pass-2/3 code (simulate_growing, _gamma_map, coat_pattern_stats, morphometric_distance,
+          fit_growing).  Partial credit for the explicit 'FIT on n=1, not validation' label.
+        evidence:
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [233, 251]
+            note: "morphometric_distance: coverage weight 2.0 and largest-share L1 are the tautological terms; roughness normalised by cow value"
+            supports: false
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [221, 230]
+            note: "coat_pattern_stats: pigment = field < quantile(field, q) => coverage == q exactly when pigment_low"
+            supports: false
+          - file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+            lines: [197, 275]
+            note: "Builder's 'best' (coverage 0.75 at q=0.75, share 0.997) and 5-row leaderboard, all pigment_low=true, distances 1.21-1.57 -- inside the 0.88-2.17 seed spread I measured"
+            supports: false
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [443, 466]
+            note: "verdict(): Pass-1 falsification test on count and coverage -- honest, but depends on the `u > u.mean()` polarity chosen at L410"
+            supports: true
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [331, 333]
+            note: "Roughness comment '2*sqrt(pi) ~= 3.54 for a perfect disc' is wrong for the city-block perimeter used (digital disc = 4.56)"
+            supports: false
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [508, 532]
+            note: "self_test covers linear analysis, static sim and specimen only; no Pass-2/3 assertions"
+            supports: false
+      source-traceability:
+        value: 70
+        rationale: >-
+          All three DOIs resolve on Crossref to the works claimed (Turing 1952 237(641):37-72;
+          Murray 1981 88(1):161-199; Genes & Genomics MITF paper), the specimen has a source URL,
+          licence, credit and a SHA-256 that the script verifies at runtime, and the dataset README
+          correctly warns that the species_gallery Bos_taurus.jpg is airway histology.  Docked
+          because the script docstring attributes the MITF paper to 'Bacha et al.' when Crossref
+          gives Edea, Dadi, Dessie & Kim (vol. 39(3):285-293); the .bib entry carries no authors,
+          volume or pages while its note claims details were verified; the verdict invokes 'MITF/KIT'
+          but no KIT (the locus actually implicated in Holstein spotting) reference is cited and the
+          cited paper concerns Ethiopian cattle, not Holsteins; Schnakenberg (1979), Thomas (1975)
+          and the named Kondo-Asai growth work are used or invoked but uncited.
+        evidence:
+          - file: datasets/bos_taurus_turing_wavelength/paper_citations.bib
+            lines: [1, 21]
+            note: "Turing 1952 and Murray 1981 entries complete and DOI-resolved by this assessor"
+            supports: true
+          - file: datasets/bos_taurus_turing_wavelength/paper_citations.bib
+            lines: [23, 30]
+            note: "MITF entry: DOI resolves, but no authors/volume/pages despite the note claiming Crossref verification"
+            supports: false
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [18, 22]
+            note: "'Bacha et al.' -- wrong author attribution (Crossref: Edea Z, Dadi H, Dessie T, Kim K-S)"
+            supports: false
+          - file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_reference.json
+            lines: [23, 34]
+            note: "Specimen file, SHA-256, title, source URL, credit and licence recorded; SHA verified at runtime (script L383-L386)"
+            supports: true
+      code-traceability:
+        value: 60
+        rationale: >-
+          The docstring maps each linear-analysis quantity to a named function
+          (steady_state, jacobian, dispersion_sigma, turing_analysis) and the self-test asserts
+          each stated property, so the Turing core is traceable.  No equation, section or figure
+          number from Turing (1952) or Murray (1981) is cited anywhere; the growth and heterogeneity
+          steps trace to no source; the kinetics attribution is wrong (see model-fidelity).  Code
+          hygiene issues that weaken traceability: ROI fractions are hard-coded three times
+          (specimen_pattern, render) instead of read from the reference JSON that specimen_stats
+          already uses; animate() re-implements the growth loop and duplicates the stages tuple
+          instead of calling simulate_growing, with a docstring admitting its defaults are hand-copied
+          from the fit; specimen_pattern returns an unused 'flank' array.
+        evidence:
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [24, 39]
+            note: "Docstring equations -> functions mapping; properties asserted in self_test L510-L517"
+            supports: true
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [258, 258]
+            note: "Hard-coded ROI fractions duplicate reference.json rois.flank_roi"
+            supports: false
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [476, 480]
+            note: "render() hard-codes 0.17/0.22 again instead of using the reference JSON"
+            supports: false
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [562, 598]
+            note: "animate() duplicates stages tuple (cf. L205) and the evolve/resize loop of simulate_growing; defaults hand-copied from the fit (docstring L542-L544)"
+            supports: false
+      repro-package:
+        value: 80
+        rationale: >-
+          Deterministic seed (7); `--self-test` passes in 1.6 s; the full `--no-show --animate` run
+          (26 s) regenerated metrics JSON byte-identical and PNG/GIF with identical SHA-256 to the
+          files already in the working tree; specimen SHA-256 is verified at runtime;
+          requirements.lock.txt pins numpy/matplotlib/pillow to exactly the venv versions; the
+          invocation is documented in the docstring and README; py_compile is clean.  Docked
+          because the script and dataset are untracked (no checkpoint commit contains them, so
+          every cited locus would 404 at the recorded commit), the self-test does not cover the
+          Pass-2/3 path that produces the headline figure panel, the README omits the GIF from its
+          output list, and `--no-show` is documented as a display toggle but has no effect.
+        evidence:
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [76, 84]
+            note: "Constants incl. SEED=7, DT with stability comment, grid, sweep -- deterministic, reproduced bit-for-bit by this assessor"
+            supports: true
+          - file: models/1981-murray-bos-taurus-turing-wavelength.py
+            lines: [381, 386]
+            note: "Runtime SHA-256 verification of the specimen against the reference JSON"
+            supports: true
+          - file: requirements.lock.txt
+            lines: [18, 27]
+            note: "matplotlib==3.10.7, numpy==2.5.4, pillow==12.0.0 -- matches the venv used"
+            supports: true
+          - file: datasets/bos_taurus_turing_wavelength/README.md
+            lines: [9, 10]
+            note: "Documented invocation; output list omits the animation GIF"
+            supports: false
+    remediation:
+      - "R1 (morphometric-validation, L233-L251, L221-L230): remove or disclose the tautological terms. Coverage must not be both set by the quantile and scored (fix the quantile from the cow coverage and drop the term, or threshold at u.mean()); largest-patch share is ~1 for any connected background and must be dropped or replaced by an enclave-side statistic. Report the fit as 'enclave size-distribution / shape fit' only."
+      - "R2 (morphometric-validation, L265-L296): report seed sensitivity. Run the grid over >= 5 seeds and report mean +- sd distance per configuration; only claim 'growing-het > growing > static' if the gap exceeds the seed spread (currently 0.88-2.17 for the winner vs 1.21-1.57 across the top five)."
+      - "R3 (verdict framing, L410 and L443-L466): state explicitly that the Pass-1 'many spots vs one patch' contrast depends on the `u > u.mean()` polarity; with pigment on the low-activator phase a Turing field is trivially one connected patch, so the real test is the enclave (white-spot) size distribution and shape, where the cow (CV 0.99, roughness 11.9) and the sim (CV 0.46, roughness 5.0) still differ."
+      - "R4 (specimen-match / segmentation, L254-L262, L390-L398): replace the rectangular ROI with a coat mask that excludes background above the dorsal line, ground/shadow below the belly, the udder and the legs (polygon in the reference JSON or a manual mask PNG with its own SHA-256); recompute all cow statistics and the verdict."
+      - "R5 (model-fidelity, L24-L25, L76): correct the attribution -- Murray (1981) used Thomas (1975) substrate-inhibition kinetics; a=0.1, b=0.9, d=20 are textbook Schnakenberg demo parameters. Either implement Thomas kinetics with Murray's parameters or re-label the script as 'Schnakenberg Turing vehicle in the spirit of Murray 1981' and cite Schnakenberg (1979) doi:10.1016/0022-5193(79)90042-0."
+      - "R6 (model-fidelity, L169-L218): cite the growing-domain source actually followed (Kondo & Asai 1995 Nature 376:765 and/or Crampin, Gaffney & Maini 1999 Bull. Math. Biol. 61:1093) and either add the dilution term for uniform growth or state that the resize scheme is a discrete approximation without it; cite or justify the gamma-heterogeneity device, and sweep heterogeneity (0, 0.4, 0.8) so its claimed effect on CV/roughness is demonstrated rather than asserted."
+      - "R7 (source-traceability, L18-L22 and paper_citations.bib L23-L30): fix 'Bacha et al.' to Edea Z, Dadi H, Dessie T, Kim K-S (2017) Genes & Genomics 39(3):285-293 and complete the .bib fields; add a KIT/Holstein spotting reference (e.g. the KIT-locus association studies in Holstein-Friesian) or drop 'KIT' from the verdict text."
+      - "R8 (morphometric-validation, L331-L333): correct the roughness calibration comment to the digital-disc value (~4.56 for the 4-neighbour perimeter) or switch to a perimeter estimator for which 2*sqrt(pi) is the disc value; note the resolution dependence between the 1112-px ROI and the 160-px lattice (e.g. downsample the mask to lattice resolution before computing roughness and component counts)."
+      - "R9 (repro-package, L508-L532): extend --self-test to the Pass-2/3 path -- assert simulate_growing increases FFT wavelength relative to simulate at the same gamma, assert coat_pattern_stats coverage == q, and assert fit_growing returns the recorded leaderboard for SEED=7; remove the no-op --no-show or make it do something; add the GIF to the README output list; refactor animate() to call simulate_growing with a frame callback."
+      - "R10 (code-traceability, L258, L476-L480, L564): read ROI fractions and growth stages from the reference JSON in every code path instead of hard-coding them in specimen_pattern, render and animate."
+      - "R11 (process): commit the script and dataset so the checkpoint commit actually contains the cited loci, then re-run the KG check without the 'does not exist at checkpoint' warnings."

@@ -1,0 +1,93 @@
+# MorphoEval audit v3 (Pass 3 remediation) — Bos taurus Turing, 2026-10-26
+# Remediates v2/R6: adds boundary-roughness morphometrics (perimeter/sqrt(area))
+# to patch_stats and to the fit objective, and a two-scale spatially varying
+# gamma (tissue heterogeneity, amplitude grid-tested 0 / 0.45 / 0.8).  Overall
+# 66.0 -> 68.6.  Same single builder-assessor limitation (R1 still open).
+audit:
+  id: 2026-10-26-bos-taurus-turing-wavelength-audit-v3
+  rubric_version: 0.1.0
+  date: "2026-10-26"
+  supersedes_audit_id: 2026-10-26-bos-taurus-turing-wavelength-audit-v2
+  assessor:
+    id: muse-wonder-1.0-high
+    label: "Muse Wonder 1.0 (builder-assessor, single-agent; second assessor pending R1)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b3a5611b
+    note: "Working-tree Pass 3 (uncommitted). Full run ~25 s; animation via --animate."
+references:
+  turing1952: {doi: 10.1098/rstb.1952.0012}
+  murray1981: {doi: 10.1016/0022-5193(81)90334-9}
+  mitf2016: {doi: 10.1007/s13258-016-0493-4, role: counter-evidence}
+simulations:
+  - id: murray-bos-taurus-turing-wavelength
+    name: "Murray (1981) Turing pre-pattern vs. Holstein-Friesian cow coat spotting (Pass 3: heterogeneous growing domain)"
+    organism: "Bos taurus (Holstein-Friesian domestic cow)"
+    script: models/1981-murray-bos-taurus-turing-wavelength.py
+    output: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png
+    extra_outputs:
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_animation.gif
+    status: evaluated
+    source_refs: [turing1952, murray1981, mitf2016]
+    summary: >-
+      Best Pass-3 fit: growing-het, gamma=0.25, heterogeneity 0.8, pigment =
+      low-activator at quantile 0.75.  Cow vs fit: pigment patches 3 vs 2,
+      coverage 0.77 vs 0.75, largest patch share 0.992 vs 0.997, patch
+      diameter CV 1.25 vs 0.90, enclaves 12 vs 15 (coverage 0.23 vs 0.25).
+      Distance 1.21 (roughness-aware objective; Pass-2 winner rescored 1.43,
+      Pass-1 gamma=1 presentation 5.22).  Residual, mechanistically telling:
+      enclave boundary roughness 5.0 vs cow 11.9 and enclave median diameter
+      0.124 vs cow 0.040 -- diffusion smooths boundaries at any gamma-map,
+      while the cow's jagged, edge-invading white patches are what clonal
+      melanoblast growth produces.  The fit is close on areas/counts and
+      still wrong on boundary geometry.
+    scores:
+      model-fidelity:
+        value: 70
+        rationale: "Heterogeneous gamma is a plausible tissue property but is fitted, not sourced; growing-domain RD core unchanged. Net: extra mechanism, extra free parameter."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [205, 235], note: "_gamma_map two-scale heterogeneity + simulate_growing(heterogeneity=...)", supports: true}
+      specimen-match:
+        value: 52
+        rationale: "Animation and stills now read unmistakably as a black-and-white cow coat at arm's length; up close the enclaves remain smooth ovals distributed through the interior, whereas the cow's white invades jaggedly from the belly/edges."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_animation.gif, lines: [0, 0], note: "38-frame growing-domain coat animation beside the cow mask", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png, lines: [0, 0], note: "remediated-fit panel vs specimen", supports: true}
+      parameter-expressivity:
+        value: 82
+        rationale: "Heterogeneity amplitude joins the swept set with a measured effect (distance 1.43 -> 1.21 at 0.8); every swept parameter moves named statistics in the expected direction."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [260, 290], note: "fit_growing includes growing-het mode; leaderboard in metrics JSON", supports: true}
+      morphometric-validation:
+        value: 72
+        rationale: "Boundary roughness (perimeter/sqrt(area), disc = 3.54) added for both phases and enters the objective; it exposes the largest remaining gap (enclaves 5.0 vs 11.9) instead of hiding it. Cow roughness is itself inflated by sepia photo noise -- stated, not corrected. Still fit-and-scored on n=1."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [275, 320], note: "patch_stats boundary_roughness_mean; morphometric_distance roughness terms", supports: true}
+      source-traceability:
+        value: 85
+        rationale: "Unchanged from v1/v2."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/paper_citations.bib, lines: [1, 32], note: "Crossref-verified DOIs", supports: true}
+      code-traceability:
+        value: 68
+        rationale: "Pass-2/3 mechanisms are commented with their Murray/heterogeneity rationale in situ; Murray section pinning still missing (R4)."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [205, 235], note: "_gamma_map rationale in situ", supports: true}
+      repro-package:
+        value: 72
+        rationale: "--animate reproduces the GIF deterministically (38 frames); full run ~25 s in repo venv. No CLI parameter exposure, uncommitted checkpoint."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [500, 530], note: "animate() with fitted defaults; self_test passes", supports: true}
+    remediation:
+      - id: R1
+        item: "Independent second assessor (different provider) — still builder-scored after 3 passes"
+      - id: R2
+        item: "More specimens (>=10 flanks): the only way to tell fit from validation"
+      - id: R3
+        item: "Body-mask segmentation; rectangular ROI inflates cow enclave counts/roughness with edge fragments and photo noise"
+      - id: R5
+        item: "Melanoblast-migration / clonal-growth positive control — the boundary-roughness gap (5.0 vs 11.9) predicts it will beat RD on exactly that statistic"
+      - id: R7
+        item: "Expose gamma/heterogeneity/quantile as CLI and pin per-script dependency versions"

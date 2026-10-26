@@ -1,0 +1,97 @@
+# MorphoEval audit v4 (Pass 5 remediation) — Bos taurus, 2026-10-26
+# Addresses the Fable second-assessor round (54.4): adds the melanoblast
+# (Eden colonisation) positive control (R5), a Fable-corrected distance v2
+# that drops the tautological coverage / largest-share terms, 5-seed
+# distances for every model, self-test coverage of Pass-2/3/5 code, and the
+# attribution fixes (Schnakenberg 1979 cited; MITF authors corrected).
+# Builder-assessor (Muse); the Fable audit remains the independent score.
+# Overall builder: 68.6 -> 72.5.  Fable panel for comparison: 54.4.
+audit:
+  id: 2026-10-26-bos-taurus-turing-wavelength-audit-v4
+  rubric_version: 0.1.0
+  date: "2026-10-26"
+  supersedes_audit_id: 2026-10-26-bos-taurus-turing-wavelength-audit-v3
+  assessor:
+    id: muse-wonder-1.0-high
+    label: "Muse Wonder 1.0 (builder-assessor; independent Fable audit is the second-assessor record)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b3a5611b
+    note: "Working-tree Pass 5 (uncommitted). Full run + animation ~45 s."
+references:
+  turing1952: {doi: 10.1098/rstb.1952.0012}
+  murray1981: {doi: 10.1016/0022-5193(81)90334-9}
+  schnakenberg1979: {doi: 10.1016/0022-5193(79)90042-0}
+  mitf2016: {doi: 10.1007/s13258-016-0493-4, role: counter-evidence-now-also-positive-control}
+simulations:
+  - id: murray-bos-taurus-turing-wavelength
+    name: "Turing RD vs melanoblast colonisation for Holstein cow coat spotting (Pass 5: model comparison)"
+    organism: "Bos taurus (Holstein-Friesian domestic cow)"
+    script: models/1981-murray-bos-taurus-turing-wavelength.py
+    output: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png
+    extra_outputs:
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_animation.gif
+    status: evaluated
+    source_refs: [turing1952, murray1981, schnakenberg1979, mitf2016]
+    summary: >-
+      At coverage calibrated to the cow (0.77) for every model, 5 seeds each,
+      on distance v2 (unfitted statistics only): RD static 4.95+-0.04,
+      RD growing-het 2.75+-0.45, melanoblast-Eden 2.03+-0.70 (seed ranges
+      overlap between the latter two; means separate).  On the discriminating
+      enclave statistics the Eden control is uniformly closer: roughness
+      9.0 vs RD 5.3 (cow 11.9), size CV 0.93 vs 0.38 (cow 0.99), median
+      diameter 0.063 vs 0.122 (cow 0.040), count 9.8 vs 14.8 (cow 12).
+      Founder density 0.002 was selected on 3 seeds against enclave count
+      and disclosed as such.  Conclusion: patch AREA statistics can be
+      fitted by growing RD, but patch BOUNDARY statistics favour clonal
+      melanoblast colonisation -- the mechanism the genetics (MITF/KIT)
+      already implicates.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: "Both mechanisms implemented as named models (Schnakenberg RD with exact dispersion/control; Eden colonisation with dorsal founder line); Murray-vs-Schnakenberg attribution corrected. Eden growth rule is a minimal Eden process, not a fitted migration PDE."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [335, 395], note: "simulate_melanoblast with calibration/selection disclosure", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength/paper_citations.bib, lines: [33, 45], note: "Schnakenberg 1979 added; MITF authors corrected", supports: true}
+      specimen-match:
+        value: 58
+        rationale: "The Eden panel finally reproduces the cow's jagged white territories and rough boundaries; its white network is more branching/interconnected than the cow's belly-invading patches, and the RD panel is unchanged. Arm's-length coat likeness is now carried by the control, not the titular model."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_animation.gif, lines: [0, 0], note: "3-panel animation: cow mask | RD coat | Eden colonisation", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: "Founder density swept with a large, interpretable effect (enclaves 10 -> 72 over 0.002 -> 0.04); RD sweeps retained. Still no CLI exposure (R7)."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [420, 470], note: "multi_seed_comparison over RD configs + Eden at 5 seeds", supports: true}
+      morphometric-validation:
+        value: 80
+        rationale: "Distance v2 scores only unfitted statistics; every model gets 5-seed mean+-sd at matched coverage; the discriminating statistics are reported per model in the metrics JSON. Remaining: n=1 specimen, founder density selected on a scored statistic (disclosed), seed ranges of the top two models overlap."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [395, 420], note: "morphometric_distance_v2 rationale (excludes calibration-set terms)", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, lines: [0, 0], note: "pass5_model_comparison summary by model", supports: true}
+      source-traceability:
+        value: 88
+        rationale: "All four DOIs Crossref-verified including the corrected MITF author list and the added Schnakenberg source."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/paper_citations.bib, lines: [22, 45], note: "Edea et al. full citation + Schnakenberg 1979", supports: true}
+      code-traceability:
+        value: 72
+        rationale: "Attribution now correct in docstring and code comments; Eden model docstring states its biological referent and its calibration/selection disclosures."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [20, 45], note: "corrected source framing incl. Fable-flagged misattributions", supports: true}
+      repro-package:
+        value: 75
+        rationale: "Self-test now asserts growing/heterogeneous RD and Eden behaviour (incl. Eden rougher than RD); deterministic seeds throughout; animation regenerates deterministically. Full pipeline ~45 s; still uncommitted, no CLI."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [560, 585], note: "self-test Pass-2/3/5 assertions", supports: true}
+    remediation:
+      - id: R2
+        item: "More specimens (>=10 flanks) -- now the top item: both models are calibrated/scored on one flank"
+      - id: R3
+        item: "Body/coat mask instead of rectangular ROI (Fable: ROI inflates cow roughness/counts)"
+      - id: R7
+        item: "CLI for gamma/heterogeneity/founder density; commit files to pin the checkpoint"
+      - id: R8
+        item: "Second Fable (or other-provider) round on the Pass-5 tree to re-score independently"
