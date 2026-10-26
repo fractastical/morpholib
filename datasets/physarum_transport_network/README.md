@@ -1,6 +1,6 @@
 # `datasets/physarum_transport_network/` — Tero et al. (2010) *Science* & Tero, Kobayashi & Nakagaki (2007) *J. Theor. Biol.* Adaptive *Physarum* Transport Network Dataset
 
-Formal SHA-256-locked reference dataset and *Physarum polycephalum* acellular plasmodial vein network photograph for `2010-tero-physarum-transport-network.py` (Slot 057 of the Infinite Morphospace & MorphoEval Campaign).
+Formal SHA-256-locked reference dataset and *Physarum polycephalum* acellular plasmodial vein network photograph for `2010-tero-physarum-transport-network.py` (Slot 057 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Mathematical Mechanism
 

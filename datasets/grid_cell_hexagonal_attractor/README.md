@@ -1,6 +1,6 @@
 # Burak & Fiete (2009), Hafting et al. (2005) & Stensola et al. (2012) Entorhinal Grid-Cell Hexagonal Attractor Dataset
 
-Primary reference dataset and biological specimen metadata for `2008-burak-grid-cell-hexagonal-attractor.py` (Slot 088 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `2008-burak-grid-cell-hexagonal-attractor.py` (Slot 088 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Burak & Fiete (2009) *PLoS Comput. Biol.* 5:e1000291, Hafting et al. (2005) *Nature* 436:801-806 & Stensola et al. (2012) *Nature* 492:72-78
 

@@ -3,7 +3,7 @@
 morphoeval/run_overnight_scale_zebrafish_paleo_1000.py — Autonomous 1,000-Loop Multi-Scale,
 Zebrafish (*Danio rerio* / Zebrahub) & Fossil-Record Chronospecies Expansion Engine (Slots #1101–#2100).
 
-Expands Infinite Morphospace from 1,100 campaign loops to 2,100 campaign loops (+1,000 new
+Expands Project Delphi from 1,100 campaign loops to 2,100 campaign loops (+1,000 new
 multi-scale 12-step loops):
   1. Slots #1101–#1200 (100 Exhaustive Zebrafish *Danio rerio* Multi-Scale Runs):
      - 10 Spatial Scale Rungs (4.2 nm molecular complexes -> 28 nm Delta-Notch -> 180 nm Bragg crystals
@@ -110,13 +110,13 @@ def fetch_or_create_taxon_specimen(
         try:
             req = urllib.request.Request(
                 rest_url,
-                headers={"User-Agent": "InfiniteMorphospace-SpeciesAtlas/2.0 (https://github.com/fractastical/morpholib)"},
+                headers={"User-Agent": "ProjectDelphi-SpeciesAtlas/2.0 (https://github.com/fractastical/morpholib)"},
             )
             with urllib.request.urlopen(req, timeout=3.5) as resp:
                 summary = json.loads(resp.read().decode("utf-8", errors="replace"))
             thumb = (summary.get("originalimage") or {}).get("source") or (summary.get("thumbnail") or {}).get("source")
             if thumb and not thumb.lower().endswith(".svg"):
-                img_req = urllib.request.Request(thumb, headers={"User-Agent": "InfiniteMorphospace-SpeciesAtlas/2.0"})
+                img_req = urllib.request.Request(thumb, headers={"User-Agent": "ProjectDelphi-SpeciesAtlas/2.0"})
                 with urllib.request.urlopen(img_req, timeout=4.5) as img_resp:
                     raw = img_resp.read()
                 with Image.open(io.BytesIO(raw)) as im_check:

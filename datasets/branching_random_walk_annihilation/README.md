@@ -1,6 +1,6 @@
 # `datasets/branching_random_walk_annihilation/` — Hannezo et al. (2017) *Cell* & Scheele et al. (2017) *Nature* Unifying Theory of Branching Morphogenesis (BARW) Dataset
 
-Formal SHA-256-locked reference dataset and *Mus musculus* branched epithelial ductal network whole-mount fluorescence micrograph for `2017-hannezo-branching-random-walk-annihilation.py` (Slot 056 of the Infinite Morphospace & MorphoEval Campaign).
+Formal SHA-256-locked reference dataset and *Mus musculus* branched epithelial ductal network whole-mount fluorescence micrograph for `2017-hannezo-branching-random-walk-annihilation.py` (Slot 056 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Mathematical Mechanism
 

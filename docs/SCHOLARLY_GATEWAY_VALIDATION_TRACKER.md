@@ -1,4 +1,4 @@
-# Scholarly Gateway & Professor Validation Tracker (`Infinite Morphospace` ↔ `paper-pipeline`)
+# Scholarly Gateway & Professor Validation Tracker (`Project Delphi` ↔ `paper-pipeline`)
 
 **Last Synced:** 2026-10-23 · **Tracked Discoveries:** `10` · **Tracked Manuscripts in `paper-pipeline`:** `6` · **Gateway Scholars Mapped:** `25` (`3` already contacted/engaged)
 

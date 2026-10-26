@@ -2,7 +2,7 @@
 
 ## Overview
 
-This dataset vendors the empirical reference measurements, governing mathematical equations, literature citations, and biological specimen imagery for **Slot 075 (`slot-075-echinoderm-pentaradial-symmetry`)** of the 100-Loop Infinite Morphospace & MorphoEval Campaign, modeled by `2005-meinhardt-echinoderm-pentaradial-symmetry.py`.
+This dataset vendors the empirical reference measurements, governing mathematical equations, literature citations, and biological specimen imagery for **Slot 075 (`slot-075-echinoderm-pentaradial-symmetry`)** of the 100-Loop Project Delphi & MorphoEval Campaign, modeled by `2005-meinhardt-echinoderm-pentaradial-symmetry.py`.
 
 ## Primary Literature Sources
 

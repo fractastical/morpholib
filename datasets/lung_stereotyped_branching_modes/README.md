@@ -1,6 +1,6 @@
 # `datasets/lung_stereotyped_branching_modes/` — Metzger et al. (2008) & Menshykau et al. (2012, 2014) Lung Stereotyped Branching Modes Reference Package
 
-Formal SHA-256-locked dataset and mammalian bronchial branching specimen for `2008-metzger-lung-stereotyped-branching.py` (Slot 053 of the Infinite Morphospace & MorphoEval Campaign).
+Formal SHA-256-locked dataset and mammalian bronchial branching specimen for `2008-metzger-lung-stereotyped-branching.py` (Slot 053 of the Project Delphi & MorphoEval Campaign).
 
 ## Contents
 

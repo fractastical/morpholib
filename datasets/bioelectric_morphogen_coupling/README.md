@@ -1,6 +1,6 @@
 # Pietak & Levin (2017) / (2016) Bioelectric-Morphogen Coupling Reference Dataset
 
-Primary reference dataset and biological specimen metadata for `2017-pietak-bioelectric-morphogen-coupling.py` (Slot 082 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `2017-pietak-bioelectric-morphogen-coupling.py` (Slot 082 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Pietak & Levin (2017) *J. R. Soc. Interface* 14:20170425 & Pietak & Levin (2016) *Front. Bioeng. Biotechnol.* 4:55
 

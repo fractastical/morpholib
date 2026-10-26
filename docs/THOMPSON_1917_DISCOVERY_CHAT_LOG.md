@@ -4220,8 +4220,8 @@ We matched `bioelectricity.net`'s exact typography (`Space Grotesk`, `Inter`, `J
      - **Global $V_{\text{mem}}$ Axial/Fin Prepatterns $\leftrightarrow$ Thompson's 8-Parameter Coordinate Highway** ($93.5\%\text{–}98.9\%$ alignment across 440 families over $150\text{ Myr}$).
      - **Local Neural-Crest Craniofacial Ionocyte Subroutines ("Electric Face" / "Picasso Frogs") $\leftrightarrow$ Reef Fish Jaw Competition** (rewiring $3.3\times\text{ to }9.3\times$ faster among sympatric sister species).
      - **Lean-4-Verified Neurosecretory Mantle Gate $\leftrightarrow$ Wolfram's Rule 30** (`ermentrout_oster_neural_gate_eq_rule30`, $\lim_{k\to\infty} P_k = \infty$, $k_5 = 87,867$).
-2. **Drop-In React / TypeScript Component ([`docs/bioelectricity/InfiniteMorphospaceWidget.tsx`](./docs/bioelectricity/InfiniteMorphospaceWidget.tsx)):**
-   - Zero-dependency `.tsx` component that can be dropped straight into the `bioelectricity.net` Vite/React codebase (`<InfiniteMorphospaceWidget />`).
+2. **Drop-In React / TypeScript Component ([`docs/bioelectricity/ProjectDelphiWidget.tsx`](./docs/bioelectricity/ProjectDelphiWidget.tsx)):**
+   - Zero-dependency `.tsx` component that can be dropped straight into the `bioelectricity.net` Vite/React codebase (`<ProjectDelphiWidget />`).
 3. **Structured JSON API Feed ([`docs/bioelectricity/bioelectricity_nexus_feed.json`](./docs/bioelectricity/bioelectricity_nexus_feed.json)):**
    - Live JSON endpoint (`https://fractastical.github.io/morpholib/bioelectricity/bioelectricity_nexus_feed.json`) with metadata, TL;DRs, bioelectric connections, hero image URLs, and PDF links for `bioelectricity.net`'s `/publications`, `/tools`, and `/research` pages.
 
@@ -4884,7 +4884,7 @@ Done — I updated the affiliation across all PDFs, Markdown pages, outreach ema
    - Web: [`https://fractastical.github.io/morpholib/thompson_1917_fish_transformations_manuscript.pdf`](https://fractastical.github.io/thompson_1917_fish_transformations_manuscript.pdf)
 3. **Interactive `bioelectricity.net` Web Lab, React Widget & JSON Feed (`BIOELECTRICITY NEXUS × PROJECT DELPHI`):**
    - Web Lab: [`https://fractastical.github.io/morpholib/bioelectricity/`](https://fractastical.github.io/morpholib/bioelectricity/)
-   - React Component: [`docs/bioelectricity/InfiniteMorphospaceWidget.tsx`](./docs/bioelectricity/InfiniteMorphospaceWidget.tsx)
+   - React Component: [`docs/bioelectricity/ProjectDelphiWidget.tsx`](./docs/bioelectricity/ProjectDelphiWidget.tsx)
    - JSON Feed: [`docs/bioelectricity/bioelectricity_nexus_feed.json`](./docs/bioelectricity/bioelectricity_nexus_feed.json)
 4. **Markdown Guides & Outreach Emails:**
    - [`docs/EXPLAINED_FOR_EVERYONE.md`](./docs/EXPLAINED_FOR_EVERYONE.md)

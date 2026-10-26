@@ -1,6 +1,6 @@
 # `datasets/hydractinia_stolon_vascular_net/` — Buss, Anderson & Perry (2015) *Biol. Bull.*, Dudgeon et al. (1999) *Am. Nat.* & Blackstone (1999) *Syst. Biol.* Colonial Hydroid Gastrovascular Stolon Network Dataset
 
-Formal SHA-256-locked reference dataset and Yale Peabody Museum *Hydractinia symbiolongicarpus* colony specimen micrograph (`YPM IZ 080458`) for `2020-badin-hydractinia-stolon-vascular-net.py` (Slot 100 of the Infinite Morphospace & MorphoEval Campaign).
+Formal SHA-256-locked reference dataset and Yale Peabody Museum *Hydractinia symbiolongicarpus* colony specimen micrograph (`YPM IZ 080458`) for `2020-badin-hydractinia-stolon-vascular-net.py` (Slot 100 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Mathematical Mechanism
 

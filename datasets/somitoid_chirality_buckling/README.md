@@ -1,6 +1,6 @@
 # Epithelial Somite Rosette Vertex Mechanics & Mesenchymal-to-Epithelial Transition (MET) Dataset (`datasets/somitoid_chirality_buckling/`)
 
-Reference parameters, formal apico-basal differential interfacial tension vertex equations, EphA4/ephrinB2 somite cleft sorting laws, experimental perturbation regimes (Matrigel embedding, Y-27632 ROCK inhibition, Eph/ephrin boundary knockdown), and biological specimen photography for **Slot 029 (`slot-029-somitoid-chirality-buckling`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal apico-basal differential interfacial tension vertex equations, EphA4/ephrinB2 somite cleft sorting laws, experimental perturbation regimes (Matrigel embedding, Y-27632 ROCK inhibition, Eph/ephrin boundary knockdown), and biological specimen photography for **Slot 029 (`slot-029-somitoid-chirality-buckling`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Yamanaka, Y. et al. (2023).** *"Reconstituting human somitogenesis in vitro."* *Nature* 614(7948):509–520. DOI: `10.1038/s41586-022-05649-2`
 - **Miao, Y. et al. (2023).** *"Reconstruction and deconstruction of human somitogenesis in vitro."* *Nature* 614(7948):500–508. DOI: `10.1038/s41586-022-05655-4`

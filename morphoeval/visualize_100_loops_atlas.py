@@ -222,7 +222,7 @@ def render_10x10_atlas(records: list[dict[str, Any]], out_path: Path) -> None:
     fig.subplots_adjust(left=0.015, right=0.985, bottom=0.015, top=0.935, wspace=0.06, hspace=0.18)
 
     fig.suptitle(
-        "Infinite Morphospace — 100-Loop Autonomous Closed Remediation Atlas (Slots #001–#100)",
+        "Project Delphi — 100-Loop Autonomous Closed Remediation Atlas (Slots #001–#100)",
         color="white",
         fontsize=20,
         fontweight="bold",

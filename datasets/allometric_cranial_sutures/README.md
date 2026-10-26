@@ -1,6 +1,6 @@
 # Miura et al. (2009) & Jaslow (1990) Cranial Suture Fractal Interdigitation Reference Dataset
 
-Primary reference dataset and biological specimen metadata for `2020-bailleul-allometric-cranial-sutures.py` (Slot 020 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `2020-bailleul-allometric-cranial-sutures.py` (Slot 020 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Miura et al. (2009) *PNAS* 106:11218-11223 & Jaslow (1990) *J. Biomech.* 23:313-321
 

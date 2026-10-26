@@ -1,6 +1,6 @@
 # `datasets/pomacanthus_stripe_insertion/` — Kondo & Asai (1995) *Pomacanthus* Reaction-Diffusion Stripe Insertion & Y-Branch Unzipping Reference Package
 
-Formal SHA-256-locked dataset and biological specimen photograph for `1995-kondo-pomacanthus-stripe-insertion.py` (Slot 004 of the 100-Loop Infinite Morphospace Campaign).
+Formal SHA-256-locked dataset and biological specimen photograph for `1995-kondo-pomacanthus-stripe-insertion.py` (Slot 004 of the 100-Loop Project Delphi Campaign).
 
 ## Contents
 

@@ -1,6 +1,6 @@
 # Vandenberg, Adams & Levin (2012) & Pinet et al. (2019) Picasso Tadpole Craniofacial Attractor Remodeling Reference Dataset
 
-Primary reference dataset and biological specimen metadata for `2019-bischof-xenopus-craniofacial-remap.py` (Slot 085 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `2019-bischof-xenopus-craniofacial-remap.py` (Slot 085 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Vandenberg, Adams & Levin (2012) *Dev. Dyn.* 241:863-878 & Pinet et al. (2019) *Development* 146:dev175893
 

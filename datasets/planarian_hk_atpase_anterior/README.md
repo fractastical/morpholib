@@ -1,6 +1,6 @@
 # Beane et al. (2011) Planarian H,K-ATPase Bioelectric $V_{\text{mem}}$ Anterior Polarity Reference Dataset
 
-Primary reference dataset and biological specimen metadata for `2011-beane-planarian-hk-atpase-anterior.py` (Slot 081 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `2011-beane-planarian-hk-atpase-anterior.py` (Slot 081 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Beane et al. (2011) *Chem. Biol.* 18:77–89 & Pietak–Levin (2017)
 

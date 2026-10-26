@@ -1,6 +1,6 @@
 # `datasets/mammalian_coat_markings/` — Murray (1981) Animal Coat Markings Reference Package
 
-Formal SHA-256-locked dataset and biological specimen photograph for `1981-murray-mammalian-coat-markings.py` (Slot 003 of the 100-Loop Infinite Morphospace Campaign).
+Formal SHA-256-locked dataset and biological specimen photograph for `1981-murray-mammalian-coat-markings.py` (Slot 003 of the 100-Loop Project Delphi Campaign).
 
 ## Contents
 

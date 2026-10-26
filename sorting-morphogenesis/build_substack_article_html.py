@@ -333,7 +333,7 @@ def main() -> None:
 </head>
 <body>
   <div class="topbar">
-    <div><strong>Infinite Morphospace</strong> · Substack Museum Edition — <em>{h1_plain}</em></div>
+    <div><strong>Project Delphi</strong> · Substack Museum Edition — <em>{h1_plain}</em></div>
     <div>
       <button class="copy-btn" onclick="copyForSubstack(this)">📋 Copy Entire Article for Substack</button>
       <a href="SUBSTACK_LEVIN_LATENT_SPACE_ARTICLE.md">Markdown Source</a>

@@ -1,6 +1,6 @@
 # Zebrafish Delta–Notch Delayed Phase Synchrony Dataset (`datasets/delta_notch_phase_synchrony/`)
 
-Reference parameters, delayed Kuramoto phase-oscillator equations, collective frequency shift and linear stability criteria, DAPT initiation/failure/rescue perturbation regimes, and biological specimen photography for **Slot 023 (`slot-023-delta-notch-phase-synchrony`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, delayed Kuramoto phase-oscillator equations, collective frequency shift and linear stability criteria, DAPT initiation/failure/rescue perturbation regimes, and biological specimen photography for **Slot 023 (`slot-023-delta-notch-phase-synchrony`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Riedel-Kruse, I. H., Müller, C. & Oates, A. C. (2007).** *"Synchrony dynamics during initiation, failure, and rescue of the segmentation clock."* *Science* 317(5846):1911–1915. DOI: `10.1126/science.1142538`
 - **Morelli, L. G., Ares, S., Herrgen, L., Schröter, C., Jülicher, F. & Oates, A. C. (2009).** *"Delayed coupling theory of vertebrate segmentation."* *HFSP Journal* 3(1):55–66. DOI: `10.2976/1.3027088`

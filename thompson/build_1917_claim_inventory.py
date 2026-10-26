@@ -87,7 +87,7 @@ def verify_against_1917_text(reg: dict) -> list[str]:
     if not CACHE_TXT.exists():
         CACHE_TXT.parent.mkdir(parents=True, exist_ok=True)
         url = reg["source"]["primary_text"]["full_text_url"]
-        req = urllib.request.Request(url, headers={"User-Agent": "infinitemorphospace/1.0 (Thompson 1917 claim inventory)"})
+        req = urllib.request.Request(url, headers={"User-Agent": "projectdelphi/1.0 (Thompson 1917 claim inventory)"})
         CACHE_TXT.write_bytes(urllib.request.urlopen(req).read())  # noqa: S310 - pinned URL + hash checked below
     data = CACHE_TXT.read_bytes()
     want = reg["source"]["primary_text"]["full_text_sha256"]

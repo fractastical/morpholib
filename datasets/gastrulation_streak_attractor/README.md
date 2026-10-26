@@ -1,6 +1,6 @@
 # Avian Gastrulation Tensile Ring, Polonaise Twin-Vortex Flow & Primitive Streak Attractor (`datasets/gastrulation_streak_attractor/`)
 
-Reference parameters, formal 2D viscous epiblast Stokes equations, strain-rate-driven active nematic Myosin-II feedback laws, 5 experimental perturbation regimes, and whole-blastoderm *Gallus gallus* micrographs for **Slot 050 (`slot-050-gastrulation-streak-attractor`, `serra-gastrulation-streak-attractor`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal 2D viscous epiblast Stokes equations, strain-rate-driven active nematic Myosin-II feedback laws, 5 experimental perturbation regimes, and whole-blastoderm *Gallus gallus* micrographs for **Slot 050 (`slot-050-gastrulation-streak-attractor`, `serra-gastrulation-streak-attractor`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Saadaoui, M., Rocancourt, D., Roussel, J., Corson, F. & Gros, J. (2020).** *"A tensile ring drives tissue flows to shape the gastrulating amniote embryo."* *Science* 367(6476):453–458. DOI: `10.1126/science.aaw1965`
 - **Serra, M., Serrano Nájera, G., Chuai, M., Plum, A. M., Santhosh, S., Spurlin, J. W., Saadaoui, M., Gros, J., Weijer, C. J. & Mahadevan, L. (2023).** *"A mechanochemical model recapitulates distinct vertebrate gastrulation modes / Dynamic Morphogenetic Skeletons."* *Nature Methods / Science Advances* 20:1739–1748. DOI: `10.1038/s41592-023-02009-y`

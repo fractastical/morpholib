@@ -1,6 +1,6 @@
 # Active Fluid-to-Solid Jamming Transition in Zebrafish Body Axis Elongation (`datasets/neuromesodermal_jamming/`)
 
-Reference parameters, formal active-foam rigidity-percolation and Bingham viscoplastic equations, experimental perturbation benchmarks, and biological specimen lightsheet microscopy for **Slot 030 (`slot-030-neuromesodermal-jamming`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal active-foam rigidity-percolation and Bingham viscoplastic equations, experimental perturbation benchmarks, and biological specimen lightsheet microscopy for **Slot 030 (`slot-030-neuromesodermal-jamming`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Mongera, A., Rowghanian, P., Gustafson, H. J., Shelton, E., Kealhofer, D. A., Carn, E. K., Serwane, F., Lucio, A. A., Giammona, J. & Campàs, O. (2018).** *"A fluid-to-solid jamming transition underlies vertebrate body axis elongation."* *Nature* 561(7723):401–405. DOI: `10.1038/s41586-018-0479-2`
 - **Kim, S., Pochitaloff, M., Stooke-Vaughan, G. A. & Campàs, O. (2021).** *"Embryonic tissues as active foams."* *Nature Physics* 17(7):859–866. DOI: `10.1038/s41567-021-01215-1`

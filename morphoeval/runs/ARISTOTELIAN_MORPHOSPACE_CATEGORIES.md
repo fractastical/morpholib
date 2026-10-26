@@ -1,4 +1,4 @@
-# Aristotelian Categories & Taxonomic Coverage of Infinite Morphospace
+# Aristotelian Categories & Taxonomic Coverage of Project Delphi
 
 In *Categories* (*Katēgoriai*), *Historia Animalium*, and *De Partibus Animalium* (Book I), Aristotle established that biological form cannot be understood by a single dichotomous tree alone: every organismal phenomenon must be cross-indexed by its **Substance / Taxonomic Genus (*Ousia / Genos*)** and its **Four Causes & Categories**:
 

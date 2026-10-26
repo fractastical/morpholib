@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 morphoeval/visualize_aristotelian_categories.py — Aristotelian Ontological & Taxonomic Atlas
-of the Infinite Morphospace Dataset & Model Collection (116 Models, 111 Datasets, 55 Genera).
+of the Project Delphi Dataset & Model Collection (116 Models, 111 Datasets, 55 Genera).
 
 Organizes every dataset and simulation along Aristotle's two complementary classification systems:
   1. Historia Animalium / Porphyrian Tree (Ousia — Substance / Genus & Species):
@@ -609,7 +609,7 @@ def render_aristotelian_atlas(entries: list[dict[str, Any]], out_path: Path) -> 
     zero_cells = int(np.sum(mat == 0))
 
     card_text = (
-        f"ARISTOTELIAN ONTOLOGY OF INFINITE MORPHOSPACE ({n_models:,} MODELS · {n_genera} GENERA)\n"
+        f"ARISTOTELIAN ONTOLOGY OF PROJECT DELPHI ({n_models:,} MODELS · {n_genera} GENERA)\n"
         "═════════════════════════════════════════════════════════════════════════════════════\n"
         f"1. OUSIA (Substance / Porphyrian Taxonomic Hierarchy — {n_genera} Genera across 4 Kingdoms):\n"
         f"   • I. Enaima (Vertebrates)   : {enaima_m:4d} models across {enaima_g:2d} genera (Mus, Gallus, Homo,\n"
@@ -644,7 +644,7 @@ def render_aristotelian_atlas(entries: list[dict[str, Any]], out_path: Path) -> 
     )
 
     fig.suptitle(
-        "Aristotelian Categories & Porphyrian Taxonomic Atlas of Infinite Morphospace (Ousia × Poion × Poson × Poiein)",
+        "Aristotelian Categories & Porphyrian Taxonomic Atlas of Project Delphi (Ousia × Poion × Poson × Poiein)",
         color="white",
         fontsize=14.5,
         fontweight="bold",
@@ -791,7 +791,7 @@ def write_exports_and_markdown(entries: list[dict[str, Any]], md_path: Path, jso
     n_genera = len({e["genus"] for e in entries})
     n_models = len(entries)
     lines = [
-        "# Aristotelian Categories & Taxonomic Coverage of Infinite Morphospace",
+        "# Aristotelian Categories & Taxonomic Coverage of Project Delphi",
         "",
         "In *Categories* (*Katēgoriai*), *Historia Animalium*, and *De Partibus Animalium* (Book I), Aristotle established that biological form cannot be understood by a single dichotomous tree alone: every organismal phenomenon must be cross-indexed by its **Substance / Taxonomic Genus (*Ousia / Genos*)** and its **Four Causes & Categories**:",
         "",

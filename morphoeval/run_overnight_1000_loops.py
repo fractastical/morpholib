@@ -2,7 +2,7 @@
 """
 morphoeval/run_overnight_1000_loops.py — Autonomous 1,000-Loop Expansion Engine (Slots #0101–#1100).
 
-Expands Infinite Morphospace from 100 campaign loops to 1,100 campaign loops (+1,000 new 12-step
+Expands Project Delphi from 100 campaign loops to 1,100 campaign loops (+1,000 new 12-step
 closed remediation loops across 100 iconic biological genera × 10 biophysical mechanism cohorts),
 populating every cell of the Aristotelian Taxonomic & Ontological Matrix (Ousia × Poion × Poson × Poiein):
 
@@ -414,7 +414,7 @@ def fetch_or_create_genus_specimen(
         try:
             req = urllib.request.Request(
                 rest_url,
-                headers={"User-Agent": "InfiniteMorphospace-SpeciesAtlas/1.0 (https://github.com/fractastical/morpholib)"},
+                headers={"User-Agent": "ProjectDelphi-SpeciesAtlas/1.0 (https://github.com/fractastical/morpholib)"},
             )
             with urllib.request.urlopen(req, timeout=4.0) as resp:
                 summary = json.loads(resp.read().decode("utf-8", errors="replace"))
@@ -422,7 +422,7 @@ def fetch_or_create_genus_specimen(
             if thumb and not thumb.lower().endswith(".svg"):
                 img_req = urllib.request.Request(
                     thumb,
-                    headers={"User-Agent": "InfiniteMorphospace-SpeciesAtlas/1.0"},
+                    headers={"User-Agent": "ProjectDelphi-SpeciesAtlas/1.0"},
                 )
                 with urllib.request.urlopen(img_req, timeout=5.0) as img_resp:
                     raw = img_resp.read()

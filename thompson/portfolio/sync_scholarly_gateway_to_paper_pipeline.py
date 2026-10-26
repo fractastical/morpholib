@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Synchronize all Infinite Morphospace discoveries, pre-registered clade benchmarks,
+Synchronize all Project Delphi discoveries, pre-registered clade benchmarks,
 nanopublication locks, and gateway professor outreach / peer-validation records
 with the sibling `paper-pipeline` repository (`papers_progress.json`) and generate:
-  1. `docs/SCHOLARLY_GATEWAY_VALIDATION_TRACKER.md` in `infinitemorphospace`
+  1. `docs/SCHOLARLY_GATEWAY_VALIDATION_TRACKER.md` in `projectdelphi`
   2. Section 6 of `docs/portfolio/PORTFOLIO_STATUS.md`
   3. Updated paper entries, collaborator lists, and `discovery_gateway_validation`
      registry in `/Users/jdietz/Documents/GitHub/paper-pipeline/papers_progress.json`.
@@ -1158,7 +1158,7 @@ def write_standalone_tracker_md() -> None:
         if s["status"] in ("consulted_and_remediated", "upstream_issue_filed_and_email_ready")
     )
     L = [
-        "# Scholarly Gateway & Professor Validation Tracker (`Infinite Morphospace` ↔ `paper-pipeline`)",
+        "# Scholarly Gateway & Professor Validation Tracker (`Project Delphi` ↔ `paper-pipeline`)",
         "",
         f"**Last Synced:** {dt.date.today().isoformat()} · **Tracked Discoveries:** `{len(DISCOVERIES)}` · "
         f"**Tracked Manuscripts in `paper-pipeline`:** `6` · **Gateway Scholars Mapped:** `{total_scholars}` (`{consulted}` already contacted/engaged)",

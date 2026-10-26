@@ -86,7 +86,7 @@ We would be thrilled to share the code and explore whether you (or Taining and A
 Best regards,
 
 Joel Dietz  
-[Infinite Morphospace Research Project](https://github.com/fractastical/morpholib)
+[Project Delphi Research Project](https://github.com/fractastical/morpholib)
 
 ---
 
@@ -116,4 +116,4 @@ We are preparing this as a standalone manuscript (targeting *Patterns* or *Adapt
 Best regards,
 
 Joel Dietz  
-[Infinite Morphospace Research Project](https://github.com/fractastical/morpholib)
+[Project Delphi Research Project](https://github.com/fractastical/morpholib)

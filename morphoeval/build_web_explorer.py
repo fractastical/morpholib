@@ -297,7 +297,7 @@ def main() -> int:
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Infinite Morphospace — Mathematical Models of Biological Form (1917–2026)</title>
+  <title>Project Delphi — Mathematical Models of Biological Form (1917–2026)</title>
   <style>
     :root {
       --bg-deep: #060911;
@@ -1045,7 +1045,7 @@ def main() -> int:
   <header class="topbar">
     <div>
       <div class="brand-title">
-        <span>Infinite Morphospace — Mathematical Models of Biological Form (1917–2026)</span>
+        <span>Project Delphi — Mathematical Models of Biological Form (1917–2026)</span>
       </div>
       <div class="brand-sub" id="top-summary">
         Side-by-side comparisons of real biological specimens (left) and published mathematical simulations (right) across 116 verified papers, Python solvers, and Lean 4 proofs.
@@ -2032,9 +2032,9 @@ def main() -> int:
         const backdrop = document.getElementById("modal-backdrop");
         const body = document.getElementById("modal-body");
         body.innerHTML = `
-          <h2 style="font-size:1.22rem;color:#fff;">📖 What Infinite Morphospace Is &amp; How It Works</h2>
+          <h2 style="font-size:1.22rem;color:#fff;">📖 What Project Delphi Is &amp; How It Works</h2>
           <p style="font-size:0.84rem;color:#cbd5e1;margin-top:6px;line-height:1.5;">
-            <strong>Infinite Morphospace</strong> is a collection of self-contained Python reproductions of published mathematical models of biological form (1917–2026), paired with <strong>MorphoEval</strong> — a multi-assessor verification layer that checks every simulation against its primary paper, machine-checked <strong>Lean 4</strong> theorems (<code>0 sorry</code>), and SHA-256-locked biological specimen photographs, publishing each audit as cryptographically signed RDF nanopublications.
+            <strong>Project Delphi</strong> is a collection of self-contained Python reproductions of published mathematical models of biological form (1917–2026), paired with <strong>MorphoEval</strong> — a multi-assessor verification layer that checks every simulation against its primary paper, machine-checked <strong>Lean 4</strong> theorems (<code>0 sorry</code>), and SHA-256-locked biological specimen photographs, publishing each audit as cryptographically signed RDF nanopublications.
           </p>
           <div style="margin:12px 0;text-align:center;background:#070a12;padding:8px;border-radius:8px;border:1px solid #263554;">
             <img src="media/morphoeval_pipeline.gif" alt="12-Step MorphoEval Pipeline" style="max-width:100%;border-radius:6px;" />

@@ -1,6 +1,6 @@
 # Anterior RA vs Posterior FGF8/Wnt Bistable Determination-Front Dataset (`datasets/fgf_wnt_bistable_wavefront/`)
 
-Reference parameters, reaction-diffusion PDEs, saddle-node hysteresis equations, experimental perturbation tables, and biological specimen photography for **Slot 025 (`slot-025-fgf-wnt-bistable-wavefront`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, reaction-diffusion PDEs, saddle-node hysteresis equations, experimental perturbation tables, and biological specimen photography for **Slot 025 (`slot-025-fgf-wnt-bistable-wavefront`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Goldbeter, A., Gonze, D. & Pourquié, O. (2007).** *"Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling."* *Dev. Cell* / *Dev. Dyn.* 236(6):1495–1508. DOI: `10.1016/j.devcel.2007.05.015` / `10.1002/dvdy.21193`
 - **Baker, R. E., Schnell, S. & Maini, P. K. (2006).** *"A mathematical investigation of a clock and wavefront model for somitogenesis."* *J. Theor. Biol.* 239(4):413–429. DOI: `10.1016/j.jtbi.2005.07.019`

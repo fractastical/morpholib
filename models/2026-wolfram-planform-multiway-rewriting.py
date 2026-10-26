@@ -95,8 +95,8 @@ REF_JSON = DATA_DIR / "planform_multiway_reference.json"
 BIO_SERIES_JSON = ROOT / "datasets" / "planform" / "planform_bioelectric_series_v1.json"
 HG_CACHE_DIR = ROOT / ".hg_cache"
 
-EXPECTED_REF_SHA256 = "a5f598a0e09e047d5e9b1232a2c2f9caddd19e1a0680071911079f102089d06b"
-EXPECTED_BIO_SERIES_SHA256 = "4e18934438eb666e701418c0710b5eeedd49fa15f654718fd0e9635b2776284d"
+EXPECTED_REF_SHA256 = "52a6fda14d7fd2c9e46864b38b63b22edb625d0a16e2cebf5e1ae62e7a61bea2"
+EXPECTED_BIO_SERIES_SHA256 = "b3fe2ef5bc6febd8d8eb98e324a2bfacf8fba9589313d4771b73787166bf2219"
 EXPECTED_PACLET_SHA256 = "0c8406c412c8999837ded884b1d6d9340405933eda47e5ceca29852a22e16db9"
 PACLET_URL = (
     "https://github.com/WolframInstitute/HypergraphRewritingEngine/releases/download/"
@@ -319,7 +319,7 @@ def resolve_hg_evolve_binary(download: bool = False) -> Optional[Path]:
     paclet_path = HG_CACHE_DIR / "WolframInstitute__HypergraphRewriteEngine-1.0.0.paclet"
     if not paclet_path.is_file() and download:
         HG_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        req = urllib.request.Request(PACLET_URL, headers={"User-Agent": "infinitemorphospace/1.0"})
+        req = urllib.request.Request(PACLET_URL, headers={"User-Agent": "projectdelphi/1.0"})
         with urllib.request.urlopen(req, timeout=120) as resp, open(paclet_path, "wb") as fh:
             fh.write(resp.read())
 

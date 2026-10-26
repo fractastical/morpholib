@@ -1,6 +1,6 @@
 # Mechanochemical Chondrogenesis & Tetrapod Limb Branching Dataset (`datasets/mechanochemical_chondrogenesis/`)
 
-Reference parameters, formal mechanochemical equations, and salamander limb skeleton specimen micro-CT reconstructions for **Slot 013 (`slot-013-mechanochemical-chondrogenesis`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing **Oster, Murray & Harris (1983)** *"Mechanical aspects of mesenchymal morphogenesis"* (*J. Embryol. Exp. Morph.* 78:83–125, DOI: `10.1242/dev.78.1.83`) and **Oster, Murray & Maini (1985)** *"A model for chondrogenic condensations in the developing limb: the role of extracellular matrix and cell tractions"* (*J. Embryol. Exp. Morph.* 89:93–112, DOI: `10.1242/dev.89.1.93`).
+Reference parameters, formal mechanochemical equations, and salamander limb skeleton specimen micro-CT reconstructions for **Slot 013 (`slot-013-mechanochemical-chondrogenesis`)** of the Project Delphi & MorphoEval Campaign, reproducing **Oster, Murray & Harris (1983)** *"Mechanical aspects of mesenchymal morphogenesis"* (*J. Embryol. Exp. Morph.* 78:83–125, DOI: `10.1242/dev.78.1.83`) and **Oster, Murray & Maini (1985)** *"A model for chondrogenic condensations in the developing limb: the role of extracellular matrix and cell tractions"* (*J. Embryol. Exp. Morph.* 89:93–112, DOI: `10.1242/dev.89.1.93`).
 
 ## Governing Mechanochemical Equations
 

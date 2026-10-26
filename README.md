@@ -1,4 +1,4 @@
-# Infinite Morphospace
+# Project Delphi
 
 A collection of small, self-contained reproductions of published models of biological form — from D'Arcy Thompson's transformations to present-day developmental and palaeobiological datasets — plus an evaluation layer ([MorphoEval](#part-1--how-it-works-the-12-step-morphoeval--lean-4-loop)) that scores how faithfully each reproduction follows its source and publishes the scores as nanopublications.
 

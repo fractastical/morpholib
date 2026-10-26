@@ -282,7 +282,7 @@ def render_kg_overview(m: dict[str, Any], out_path: Path) -> None:
 
     # Title & Subtitle
     fig.suptitle(
-        "Infinite Morphospace — Unified Knowledge Graph Size, Ontology Architecture & Datapoints",
+        "Project Delphi — Unified Knowledge Graph Size, Ontology Architecture & Datapoints",
         color="#f8fafc",
         fontsize=17.0,
         fontweight="bold",

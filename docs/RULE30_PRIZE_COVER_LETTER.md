@@ -54,4 +54,4 @@ In accordance with the official [Rule 30 Prize guidelines](https://writings.step
    - Submit the arXiv link, [`docs/RULE30_PRIZE_SUBMISSION.md`](./RULE30_PRIZE_SUBMISSION.md), [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](./RULE30_PRIZE_STATUS_AND_GAPS.md), and the one-command verification scripts (`1984-wolfram-conus-textile-rule30.py` + `morphoeval/lean/MathOfBiology.lean`) via the official Rule 30 Prize submission portal.
 
 Sincerely,  
-**Infinite Morphospace Research Collective**
+**Project Delphi Research Collective**

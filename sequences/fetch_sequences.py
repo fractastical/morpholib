@@ -45,7 +45,7 @@ LINKS_OUT = HERE / "sequence_links.json"
 CACHE = HERE / "cache"
 ENSEMBL = "https://rest.ensembl.org"
 UNIPROT = "https://rest.uniprot.org"
-UA = {"User-Agent": "infinitemorphospace/sequence-linker (research; stdlib urllib)"}
+UA = {"User-Agent": "projectdelphi/sequence-linker (research; stdlib urllib)"}
 
 # Approx. average amino-acid residue mass (Da) -- only used for RELATIVE ranking.
 RESIDUE_DA = 110.0

@@ -1,6 +1,6 @@
 # `datasets/vascular_cube_law_branching/` — Murray (1926a, 1926b), Zamir (1976) & Sherman (1981) Vascular Branching Reference Package
 
-Formal SHA-256-locked dataset and biological specimen fundus photographs for `1959-murray-vascular-cube-law-branching.py` (Slot 052 of the Infinite Morphospace & MorphoEval Campaign).
+Formal SHA-256-locked dataset and biological specimen fundus photographs for `1959-murray-vascular-cube-law-branching.py` (Slot 052 of the Project Delphi & MorphoEval Campaign).
 
 ## Contents
 

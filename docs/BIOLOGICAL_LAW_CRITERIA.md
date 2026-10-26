@@ -1,6 +1,6 @@
 # How Does an Equation Earn "Law" Status in Biology? Criteria, Source Provenance, and the 8 Load-Bearing Laws of `@drmichaellevin`
 
-**Author:** Joel Dietz ([Project Delphi](https://github.com/fractastical/project-delphi-ontology) · [Infinite Morphospace](https://github.com/fractastical/morpholib))  
+**Author:** Joel Dietz ([Project Delphi](https://github.com/fractastical/project-delphi-ontology) · [Project Delphi](https://github.com/fractastical/morpholib))  
 **Date:** October 24, 2026  
 **Companion Artifacts:**
 - **Machine-Queryable Knowledge Graph Payload:** [`docs/bioelectricity/levin_youtube_kg.json`](./bioelectricity/levin_youtube_kg.json)

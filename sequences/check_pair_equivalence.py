@@ -40,7 +40,7 @@ LINKS = HERE / "sequence_links.json"
 CACHE = HERE / "cache"
 DEFAULT_LOG = HERE / "pair_equivalence_log.json"
 ENSEMBL = "https://rest.ensembl.org"
-UA = {"User-Agent": "infinitemorphospace/pair-equivalence-check (research; stdlib urllib)",
+UA = {"User-Agent": "projectdelphi/pair-equivalence-check (research; stdlib urllib)",
       "Accept": "application/json"}
 
 CLAIM = ("Xenopus bmp4/nog give orthologs of the same pair as zebrafish "

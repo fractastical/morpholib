@@ -4,7 +4,7 @@ track_loop.py — Time and token telemetry tracker for the 12-step MorphoEval lo
 
 Tracks wall-clock duration, CPU user/system time, peak RSS memory, LLM token usage
 (input/context tokens, output/completion tokens, subagent tokens, and artifact tokens),
-and SHA-256 artifact provenance across all 12 canonical steps of the Infinite Morphospace
+and SHA-256 artifact provenance across all 12 canonical steps of the Project Delphi
 & MorphoEval pipeline (morphoeval/README.md, morphoeval/report/draw_pipeline.py):
 
   Tier A — Making a reproduction:

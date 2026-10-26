@@ -7,7 +7,7 @@
 - **6-Panel Summary Figure:** [`docs/media/wolfram_planform_multiway_comparison.png`](./docs/media/wolfram_planform_multiway_comparison.png)
 - **Executable Python + WXF Bridge & Self-Tests:** [`models/2026-wolfram-planform-multiway-rewriting.py`](../models/2026-wolfram-planform-multiway-rewriting.py)
 - **Machine-Checked Lean 4 Module (`0 sorry`):** [`morphoeval/lean/loops/Loop_wolfram_planform_multiway.lean`](../morphoeval/lean/loops/Loop_wolfram_planform_multiway.lean)
-- **SHA-256-Locked Reference Fixture:** [`datasets/planform_multiway/planform_multiway_reference.json`](../datasets/planform_multiway/planform_multiway_reference.json) (`a5f598a0e09e047d5e9b1232a2c2f9caddd19e1a0680071911079f102089d06b`)
+- **SHA-256-Locked Reference Fixture:** [`datasets/planform_multiway/planform_multiway_reference.json`](../datasets/planform_multiway/planform_multiway_reference.json) (`52a6fda14d7fd2c9e46864b38b63b22edb625d0a16e2cebf5e1ae62e7a61bea2`)
 
 ---
 

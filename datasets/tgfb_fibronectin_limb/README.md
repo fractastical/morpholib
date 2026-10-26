@@ -1,6 +1,6 @@
 # `datasets/tgfb_fibronectin_limb/` — Hentschel, Glimm, Glazier & Newman (2004) *Proc. R. Soc. B* / Kiskowski et al. (2004) *Dev. Biol.* Multiscale TGF-$\beta$, FGF & Fibronectin Haptotaxis Limb Dataset
 
-Formal SHA-256-locked reference dataset and *Gallus gallus* forelimb skeletal specimen for `2004-hentschel-tgfb-fibronectin-limb.py` (Slot 014 of the 100-Loop Infinite Morphospace Campaign).
+Formal SHA-256-locked reference dataset and *Gallus gallus* forelimb skeletal specimen for `2004-hentschel-tgfb-fibronectin-limb.py` (Slot 014 of the 100-Loop Project Delphi Campaign).
 
 ## Contents
 

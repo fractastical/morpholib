@@ -1,6 +1,6 @@
 # Pulsed Apical Constriction & Viscous-Shell Biomechanics of *Drosophila* Ventral Furrow Invagination (`datasets/drosophila_ventral_furrow/`)
 
-Reference parameters, formal 2D incompressible viscous-vertex cross-sectional equations, Conte et al. (2012) biomechanical synergy regimes, Martin et al. (2009) ratcheted actomyosin pulse parameters, and biological specimen photography for **Slot 046 (`slot-046-drosophila-ventral-furrow`, `he-drosophila-ventral-furrow`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal 2D incompressible viscous-vertex cross-sectional equations, Conte et al. (2012) biomechanical synergy regimes, Martin et al. (2009) ratcheted actomyosin pulse parameters, and biological specimen photography for **Slot 046 (`slot-046-drosophila-ventral-furrow`, `he-drosophila-ventral-furrow`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Conte, V., Muñoz, J. J., Baum, B. & Miodownik, M. (2012).** *"Biomechanical analysis of ventral furrow formation in Drosophila melanogaster."* *PLoS ONE* 7(11):e49973. DOI: `10.1371/journal.pone.0049973`
 - **Martin, A. C., Kaschube, M. & Wieschaus, E. F. (2009).** *"Pulsed contractions of an actin–myosin network drive apical constriction."* *Nature* 457(7228):495–499. DOI: `10.1038/nature07522`

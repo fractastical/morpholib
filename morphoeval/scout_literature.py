@@ -86,7 +86,7 @@ def _http_get_json(url: str, timeout: float = 12.0) -> dict[str, Any]:
     req = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "InfiniteMorphospace-MorphoEval-Scout/1.0 (https://github.com/fractastical/morpholib; mailto:morphoeval@example.org)",
+            "User-Agent": "ProjectDelphi-MorphoEval-Scout/1.0 (https://github.com/fractastical/morpholib; mailto:morphoeval@example.org)",
             "Accept": "application/json",
         },
     )

@@ -1,6 +1,6 @@
 # Methods & Provenance: The Adversarial Epistemic Loop (AEL) / Delphi-MorphoEval Protocol for Evaluating Michael Levin's "Latent Space of Patterns"
 
-**Primary Author:** Joel Dietz ([Project Delphi](https://github.com/fractastical/project-delphi-ontology) · [Infinite Morphospace](https://github.com/fractastical/morpholib))  
+**Primary Author:** Joel Dietz ([Project Delphi](https://github.com/fractastical/project-delphi-ontology) · [Project Delphi](https://github.com/fractastical/morpholib))  
 **Date:** October 22, 2026  
 **Companion Documents:**
 - **4-Page Illustrated Magazine Edition Methods PDF (Sorting, CE 2.0, Thompson & Bioelectric Suite):** [`docs/levin_latent_space_methods_and_provenance.pdf`](./levin_latent_space_methods_and_provenance.pdf) ([LaTeX source](./levin_latent_space_methods_and_provenance.tex))

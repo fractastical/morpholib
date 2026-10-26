@@ -1,6 +1,6 @@
 # `datasets/ocellated_lizard_ca/` — Manukyan et al. (2017) Ocellated Lizard (*Timon lepidus*) Cellular Automaton Reference Package
 
-Formal SHA-256-locked dataset and biological specimen photograph for `2015-manukyan-ocellated-lizard-ca.py` (Slot 009 of the 100-Loop Infinite Morphospace Campaign).
+Formal SHA-256-locked dataset and biological specimen photograph for `2015-manukyan-ocellated-lizard-ca.py` (Slot 009 of the 100-Loop Project Delphi Campaign).
 
 ## Contents
 

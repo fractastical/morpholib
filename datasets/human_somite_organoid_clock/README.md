@@ -1,6 +1,6 @@
 # Human Pluripotent Stem-Cell Segmentation Clock & Metabolic Tempo Scaling Dataset (`datasets/human_somite_organoid_clock/`)
 
-Reference parameters, formal *HES7* delay-differential oscillator equations, species-swap and metabolic perturbation tables, 6-species vertebrate segmentation clock allometry, and biological specimen photography for **Slot 028 (`slot-028-human-somite-organoid-clock`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal *HES7* delay-differential oscillator equations, species-swap and metabolic perturbation tables, 6-species vertebrate segmentation clock allometry, and biological specimen photography for **Slot 028 (`slot-028-human-somite-organoid-clock`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Diaz-Cuadros, M. et al. (2020).** *"In vitro characterization of the human segmentation clock."* *Nature* 580(7801):113–118. DOI: `10.1038/s41586-019-1885-9`
 - **Matsuda, M. et al. (2020).** *"Species-specific oscillation periods of human and mouse segmentation clocks are due to cell autonomous properties of HES7."* *Science* 369(6510):1450–1455. DOI: `10.1126/science.aba7668`

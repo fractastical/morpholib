@@ -1,6 +1,6 @@
 # Gierer & Meinhardt (1972) *Hydra vulgaris* Activator-Inhibitor Reference Dataset
 
-Primary reference dataset and biological specimen metadata for `1972-gierer-hydra-activator-inhibitor.py` (Slot 001 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `1972-gierer-hydra-activator-inhibitor.py` (Slot 001 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Gierer & Meinhardt (1972) *Kybernetik* 12:30–39, Eqs. (15a)–(15b)
 

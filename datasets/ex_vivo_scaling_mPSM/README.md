@@ -1,6 +1,6 @@
 # Ex Vivo Monolayer Presomitic Mesoderm (mPSM) Phase-Gradient Scaling Dataset (`datasets/ex_vivo_scaling_mPSM/`)
 
-Reference parameters, formal phase-gradient scaling laws, multi-size explant scaling tables, and biological specimen photography for **Slot 026 (`slot-026-ex-vivo-scaling-mPSM`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal phase-gradient scaling laws, multi-size explant scaling tables, and biological specimen photography for **Slot 026 (`slot-026-ex-vivo-scaling-mPSM`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Lauschke, V. M., Tsiairis, C. D., François, P. & Aulehla, A. (2013).** *"Scaling of embryonic patterning based on phase-gradient encoding."* *Nature* 493(7430):101–105. DOI: `10.1038/nature11804`
 - **Aulehla, A. et al. (2008).** *"A \(\beta\)-catenin gradient links the clock and wavefront systems in mouse embryo segmentation."* *Nature Cell Biology* 10(2):186–193. DOI: `10.1038/ncb1679`

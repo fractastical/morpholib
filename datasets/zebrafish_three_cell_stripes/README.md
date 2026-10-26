@@ -1,6 +1,6 @@
 # `datasets/zebrafish_three_cell_stripes/` — Nakamasu et al. (2009) Zebrafish Three-Cell Stripe Morphogenesis Reference Package
 
-Formal SHA-256-locked dataset and biological specimen photograph for `2009-nakamasu-zebrafish-three-cell-stripes.py` (Slot 007 of the 100-Loop Infinite Morphospace Campaign).
+Formal SHA-256-locked dataset and biological specimen photograph for `2009-nakamasu-zebrafish-three-cell-stripes.py` (Slot 007 of the 100-Loop Project Delphi Campaign).
 
 ## Contents
 

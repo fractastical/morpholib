@@ -153,7 +153,7 @@ def main(argv=None):
         canvas = Image.new("RGB", (W, H), (226, 232, 240))
         dh = ImageDraw.Draw(canvas)
         dh.rectangle([0, 0, W, header_h], fill=FG)
-        dh.text((10, 6), f"Infinite Morphospace — {len(CLIPS)} reproductions of published models of biological form (1917–2026), scored by MorphoEval",
+        dh.text((10, 6), f"Project Delphi — {len(CLIPS)} reproductions of published models of biological form (1917–2026), scored by MorphoEval",
                 font=font(11, True), fill=(255, 255, 255))
         for t in range(n_tiles):
             r, c = divmod(t, args.cols)

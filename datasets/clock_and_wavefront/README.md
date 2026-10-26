@@ -1,6 +1,6 @@
 # Clock-and-Wavefront Somite Segmentation Dataset (`datasets/clock_and_wavefront/`)
 
-Reference parameters, formal equations, and biological specimen photography for **Slot 021 (`slot-021-clock-and-wavefront`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing **Cooke & Zeeman (1976)** *"A clock and wavefront model for control of the number of repeated structures during animal morphogenesis"* (*J. Theor. Biol.* 58(2):455–476, DOI: `10.1016/S0022-5193(76)80131-2`).
+Reference parameters, formal equations, and biological specimen photography for **Slot 021 (`slot-021-clock-and-wavefront`)** of the Project Delphi & MorphoEval Campaign, reproducing **Cooke & Zeeman (1976)** *"A clock and wavefront model for control of the number of repeated structures during animal morphogenesis"* (*J. Theor. Biol.* 58(2):455–476, DOI: `10.1016/S0022-5193(76)80131-2`).
 
 ## Governing Equations
 

@@ -1,4 +1,4 @@
-# Key Scientific & Mathematical Discoveries in *Infinite Morphospace*
+# Key Scientific & Mathematical Discoveries in *Project Delphi*
 
 **Primary Author:** Joel Dietz ([Project Delphi](https://github.com/fractastical/morpholib))
 

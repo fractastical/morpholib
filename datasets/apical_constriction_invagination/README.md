@@ -1,6 +1,6 @@
 # Viscoelastic Apical Purse-String Constriction & Epithelial Invagination Dataset (`datasets/apical_constriction_invagination/`)
 
-Reference parameters, formal viscoelastic mechanical equations, experimental genetic perturbation tables, and biological specimen photography for **Slot 092 (`slot-092-apical-constriction-invagination`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal viscoelastic mechanical equations, experimental genetic perturbation tables, and biological specimen photography for **Slot 092 (`slot-092-apical-constriction-invagination`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Odell, G. M., Oster, G., Alberch, P. & Burnside, B. (1981).** *"The mechanical basis of morphogenesis. I. Epithelial folding and morphogenesis."* *Developmental Biology* 85(2):446–462. DOI: `10.1016/0012-1606(81)90434-6`
 - **Martin, A. C., Kaschube, M. & Wieschaus, E. F. (2009).** *"Pulsed contractions of an actin–myosin network drive apical constriction."* *Nature* 457(7228):495–499. DOI: `10.1038/nature07522`

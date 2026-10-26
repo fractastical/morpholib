@@ -4,7 +4,7 @@
 *The Herbert Spencer Lecture delivered before the University of Oxford on February 14, 1913*  
 *Oxford at the Clarendon Press (1913)*
 
-**Museum-Illustrated & Annotated Edition for Infinite Morphospace (`morpholib`)**  
+**Museum-Illustrated & Annotated Edition for Project Delphi (`morpholib`)**  
 📄 **[Interactive Museum Reader (`docs/thompson_1913_aristotle_as_a_biologist.html`)](./thompson_1913_aristotle_as_a_biologist.html)** · 🎨 **[Museum Plate Generator (`thompson/generate_aristotle_1913_illustrations.py`)](../thompson/generate_aristotle_1913_illustrations.py)**
 
 ---

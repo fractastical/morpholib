@@ -62,7 +62,7 @@ REGISTRY = Path(__file__).with_name("thompson_1917_claims.json")
 AUDIT_JSON = Path(__file__).with_name("thompson_1917_dataset_audit.json")
 QUEUE_YAML = Path(__file__).with_name("thompson_1917_loop_queue.yaml")
 OUT_MD = ROOT / "docs" / "THOMPSON_1917_DATASET_EXISTENCE.md"
-UA = {"User-Agent": "infinitemorphospace/1.0 (Thompson 1917 dataset scout)", "Accept": "application/json"}
+UA = {"User-Agent": "projectdelphi/1.0 (Thompson 1917 dataset scout)", "Accept": "application/json"}
 
 # ---------------------------------------------------------------------------
 # Per-claim scouting seeds. query = Dryad dataset search; commons = Wikimedia

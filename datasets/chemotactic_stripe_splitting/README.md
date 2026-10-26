@@ -1,6 +1,6 @@
 # `datasets/chemotactic_stripe_splitting/` — Painter, Maini & Othmer (1999) *Pomacanthus* Turing–Chemotaxis Stripe Doubling & Keller–Segel Rippling Reference Package
 
-Formal SHA-256-locked dataset and biological specimen photograph for `1999-painter-chemotactic-stripe-splitting.py` (Slot 005 of the 100-Loop Infinite Morphospace Campaign).
+Formal SHA-256-locked dataset and biological specimen photograph for `1999-painter-chemotactic-stripe-splitting.py` (Slot 005 of the 100-Loop Project Delphi Campaign).
 
 > **Pass 3 source correction (2026-10-19).** The seed DOI `10.1073/pnas.96.10.5549` resolves to
 > Painter KJ, Maini PK, Othmer HG (1999) **"Stripe formation in juvenile *Pomacanthus* explained by a

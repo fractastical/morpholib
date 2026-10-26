@@ -1,6 +1,6 @@
 # `datasets/magnetic_drop_phyllotaxis/` — Douady & Couder (1992, 1996) Magnetic-Drop Phyllotaxis Reference Package
 
-Formal SHA-256-locked reference dataset and biological conifer cone specimen photograph for `1992-douady-magnetic-drop-phyllotaxis.py` (Slot 031 of the 100-Loop Infinite Morphospace & MorphoEval Campaign).
+Formal SHA-256-locked reference dataset and biological conifer cone specimen photograph for `1992-douady-magnetic-drop-phyllotaxis.py` (Slot 031 of the 100-Loop Project Delphi & MorphoEval Campaign).
 
 ## Contents
 

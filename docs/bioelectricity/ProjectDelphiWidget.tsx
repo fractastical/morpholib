@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const BASE_URL = 'https://fractastical.github.io/morpholib';
 
-export interface InfiniteMorphospaceWidgetProps {
+export interface ProjectDelphiWidgetProps {
   defaultTab?: 'guide' | 'sandbox' | 'bioelectric';
   height?: number;
 }
@@ -11,7 +11,7 @@ export interface InfiniteMorphospaceWidgetProps {
  * Drop-in React component for bioelectricity.net (Bioelectricity Nexus).
  * Primary Author: Joel Dietz (Project Delphi)
  */
-export const InfiniteMorphospaceWidget: React.FC<InfiniteMorphospaceWidgetProps> = ({
+export const ProjectDelphiWidget: React.FC<ProjectDelphiWidgetProps> = ({
   height = 900,
 }) => {
   const [view, setView] = useState<'cards' | 'interactive'>('cards');
@@ -135,4 +135,4 @@ export const InfiniteMorphospaceWidget: React.FC<InfiniteMorphospaceWidgetProps>
   );
 };
 
-export default InfiniteMorphospaceWidget;
+export default ProjectDelphiWidget;

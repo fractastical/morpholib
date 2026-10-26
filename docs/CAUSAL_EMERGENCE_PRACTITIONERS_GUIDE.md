@@ -1,6 +1,6 @@
 # Practitioner's Guide to Causal Emergence 1.0 (PNAS 2013) & 2.0 (*Patterns* 2026): How It Works & Where It Breaks
 
-**Primary Author:** Joel Dietz ([Project Delphi](https://github.com/fractastical/project-delphi-ontology) · [Infinite Morphospace](https://github.com/fractastical/morpholib))  
+**Primary Author:** Joel Dietz ([Project Delphi](https://github.com/fractastical/project-delphi-ontology) · [Project Delphi](https://github.com/fractastical/morpholib))  
 **Executable Reference Script:** [`sorting-morphogenesis/quantify_emergence_ce2.py`](../sorting-morphogenesis/quantify_emergence_ce2.py)  
 **Locked Metrics & Benchmarks (`10` Papers, `2013–2026`):** [`datasets/causal_emergence/causal_emergence_reference.json`](../datasets/causal_emergence/causal_emergence_reference.json) & [`sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json`](../sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json)  
 **Machine-Checked Fixed-Point Algebraic Proofs (`0 sorry`):** [`morphoeval/lean/loops/Loop_causal_emergence.lean`](../morphoeval/lean/loops/Loop_causal_emergence.lean) & [`morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean`](../morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean) *(Note: these Lean 4 modules verify the exact integer/fixed-point ring identities of the decompositions and discrete GRN transitions; continuous Shannon entropies $\log_2 p$ are computed in Python/NumPy).*

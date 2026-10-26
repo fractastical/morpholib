@@ -1,6 +1,6 @@
 # `datasets/kidney_ureteric_bud_gdnf_ret/` — Menshykau & Iber (2013), Zubkov et al. (2015) & Watanabe & Costantini (2004) Kidney Ureteric Bud GDNF-RET-Wnt11 Turing Branching Dataset
 
-Formal SHA-256-locked reference dataset and mouse metanephric ureteric bud whole-mount fluorescence specimen for `2012-menshykau-fgf10-shh-lung-turing.py` (Slot 054 of the Infinite Morphospace & MorphoEval Campaign).
+Formal SHA-256-locked reference dataset and mouse metanephric ureteric bud whole-mount fluorescence specimen for `2012-menshykau-fgf10-shh-lung-turing.py` (Slot 054 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Mathematical Mechanism
 

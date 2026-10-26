@@ -1,6 +1,6 @@
 # Prestige & Willshaw (1975) & Brown et al. (2000) Retinotectal Chemoaffinity & Synaptic Competition Dataset
 
-Primary reference dataset and biological specimen metadata for `1976-willshaw-retinotectal-chemoaffinity.py` (Slot 086 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `1976-willshaw-retinotectal-chemoaffinity.py` (Slot 086 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Prestige & Willshaw (1975) *Proc. R. Soc. B* 190:77-98 & Brown et al. (2000) *Cell* 102:77-88
 

@@ -1,6 +1,6 @@
 # `datasets/limb_chondrogenesis_turing/` — Newman & Frisch (1979) *Science* Chick Limb Chondrogenesis Eigenmodes Dataset
 
-Formal SHA-256-locked reference dataset and *Gallus gallus* forelimb skeleton specimen for `1979-newman-limb-chondrogenesis-turing.py` (Slot 012 of the 100-Loop Infinite Morphospace Campaign).
+Formal SHA-256-locked reference dataset and *Gallus gallus* forelimb skeleton specimen for `1979-newman-limb-chondrogenesis-turing.py` (Slot 012 of the 100-Loop Project Delphi Campaign).
 
 ## Contents
 

@@ -6,8 +6,8 @@ This document summarizes the sources used in the current detection run and the u
 
 - Tracks source: `spark_tracks.csv-derived detections`
 - TIFF base path: `/Users/jdietz/Documents/Levin/Embryos`
-- OLD mask source: `/Users/jdietz/Documents/GitHub/infinitemorphospace/wave-vector-analysis/embryo_masks_final`
-- NEW mask source: `/Users/jdietz/Documents/GitHub/infinitemorphospace/datasets/frog_embryo_data_processed`
+- OLD mask source: `/Users/jdietz/Documents/GitHub/projectdelphi/wave-vector-analysis/embryo_masks_final`
+- NEW mask source: `/Users/jdietz/Documents/GitHub/projectdelphi/datasets/frog_embryo_data_processed`
 - Excel coordinates source: `/Users/jdietz/Documents/Levin/Embryos/XY coordinates.xlsx`
 - Excel loaded: **True**
 - Excel parsed folders: **29**

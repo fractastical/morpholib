@@ -82,7 +82,7 @@ PLANFORM_DB_BYTES = 744448
 PLANFORM_DB_STRUCT_VERSION = 2
 
 SCHEMA_ID = "rusty.matter.fields.planformdb_derived_fixture.v1"
-SCHEMA_EXTENSION_ID = "infinitemorphospace.planform_bioelectric_series.v1"
+SCHEMA_EXTENSION_ID = "projectdelphi.planform_bioelectric_series.v1"
 FIXTURE_ID = "planform-bioelectric-series-v1"
 SELECTED_ON = "2026-10-18"
 
@@ -101,7 +101,7 @@ NOTICE_TEXT = (
     "Planform / PlanformDB Notice\n\n"
     "Source: Lobo Lab PlanformDB 2.5.0\n"
     "Source page: https://lobolab.umbc.edu/planform/download/\n\n"
-    "This infinitemorphospace fixture is a small transformed subset of PlanformDB metadata "
+    "This projectdelphi fixture is a small transformed subset of PlanformDB metadata "
     "(experiment, result-set and morphology identifiers, sample counts, observation periods, "
     "drug exposure windows and outcome frequencies). It does not redistribute the raw SQLite "
     "database, region geometry, organ tables, paper figures, or morphology images.\n\n"
@@ -698,7 +698,7 @@ def build_record(series: Dict[str, Any], exp: Dict[str, Any], rs: Dict[str, Any]
         ),
         resultant_morphologies=outcomes,
         transform_notes=notes,
-        # ---- infinitemorphospace extension -------------------------------
+        # ---- projectdelphi extension -------------------------------
         series_id=series["series_id"],
         source_figure=parse_figure(exp["name"]),
         mechanism_class=mechanism_class,
@@ -771,7 +771,7 @@ def extract(db_path: Path, db_sha256: str) -> Dict[str, Any]:
         schema_version=1,
         evidence_type="derived_planformdb_record",
         scope=("PlanformDB 2.5.0-derived bioelectric experiment series S1-S9 for fitting and testing the "
-               "pole-identity link of 2021-Cervera-Levin-Mafe.py (infinitemorphospace calibration, not "
+               "pole-identity link of 2021-Cervera-Levin-Mafe.py (projectdelphi calibration, not "
                "rusty-matter runtime dynamics)."),
         source_database=dict(
             id="planformdb_250",

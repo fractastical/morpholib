@@ -1,6 +1,6 @@
 # Compressible Viscous Stokes–Brinkman Global Morphogenetic Flow & *Drosophila* Germband Extension (`datasets/global_morphogenetic_flow/`)
 
-Reference parameters, formal 2D compressible Stokes–Brinkman active nematic stress tensor equations, Streichan et al. (2018) wild-type and mutant regimes, and whole-embryo confocal microscopy for **Slot 048 (`slot-048-global-morphogenetic-flow`, `streichan-global-morphogenetic-flow`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal 2D compressible Stokes–Brinkman active nematic stress tensor equations, Streichan et al. (2018) wild-type and mutant regimes, and whole-embryo confocal microscopy for **Slot 048 (`slot-048-global-morphogenetic-flow`, `streichan-global-morphogenetic-flow`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Streichan, S. J., Lefebvre, M. F., Noppe, N., Hufnagel, L. & Shraiman, B. I. (2018).** *"Global morphogenetic flow is accurately predicted by the spatial distribution of myosin."* *eLife* 7:e27454. DOI: `10.7554/eLife.27454`
 - **Mayer, M., Depken, M., Bois, J. S., Jülicher, F. & Grill, S. W. (2010).** *"Anisotropies in cortical tension reveal the physical basis of polarizing cortical flows."* *Nature* 467(7315):617–621. DOI: `10.1038/nature09376`

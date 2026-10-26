@@ -1,6 +1,6 @@
 # FGF8 mRNA Decay Wavefront & Determination Front Positioning Dataset (`datasets/fgf8_wavefront_somitogenesis/`)
 
-Reference parameters, formal advection-decay PDE equations, experimental perturbation tables, and biological specimen photography for **Slot 024 (`slot-024-fgf8-wavefront-somitogenesis`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal advection-decay PDE equations, experimental perturbation tables, and biological specimen photography for **Slot 024 (`slot-024-fgf8-wavefront-somitogenesis`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Dubrulle, J., McGrew, M. J. & Pourquié, O. (2001).** *"FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation."* *Cell* 106(2):219–232. DOI: `10.1016/S0092-8674(01)00437-8`
 - **Dubrulle, J. & Pourquié, O. (2004).** *"fgf8 mRNA decay establishes a gradient that couples axial elongation to patterning in the vertebrate embryo."* *Nature* 427(6973):419–422. DOI: `10.1038/nature02332`

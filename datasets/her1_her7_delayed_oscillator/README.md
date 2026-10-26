@@ -1,6 +1,6 @@
 # Zebrafish *her1*/*her7* Delayed Autoinhibitory Oscillator Dataset (`datasets/her1_her7_delayed_oscillator/`)
 
-Reference parameters, delay differential equations (DDEs), Hopf bifurcation threshold, experimental perturbation regimes, and biological specimen photography for **Slot 022 (`slot-022-her1-her7-delayed-oscillator`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, delay differential equations (DDEs), Hopf bifurcation threshold, experimental perturbation regimes, and biological specimen photography for **Slot 022 (`slot-022-her1-her7-delayed-oscillator`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Lewis, J. (2003).** *"Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator."* *Current Biology* 13(16):1398–1408. DOI: `10.1016/S0960-9822(03)00534-7`
 - **Giudicelli, F., Özbudak, E. M., Wright, G. J. & Lewis, J. (2007).** *"Setting the tempo in development: an investigation of the zebrafish somite clock mechanism."* *PLoS Biology* 5(6):e150. DOI: `10.1371/journal.pbio.0050150`

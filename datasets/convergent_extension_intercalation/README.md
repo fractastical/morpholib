@@ -1,6 +1,6 @@
 # Anisotropic Differential Adhesion & Polarized T1 Intercalation in Convergent Extension (`datasets/convergent_extension_intercalation/`)
 
-Reference parameters, formal vertex/adhesion equations, experimental Wnt/PCP and Myosin II perturbation tables, and biological specimen photography for **Slot 093 (`slot-093-convergent-extension-intercalation`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing:
+Reference parameters, formal vertex/adhesion equations, experimental Wnt/PCP and Myosin II perturbation tables, and biological specimen photography for **Slot 093 (`slot-093-convergent-extension-intercalation`)** of the Project Delphi & MorphoEval Campaign, reproducing:
 
 - **Zajac, M., Jones, G. L. & Glazier, J. A. (2003).** *"Simulating convergent extension by way of anisotropic differential adhesion."* *Journal of Theoretical Biology* 222(2):247–259. DOI: `10.1016/S0022-5193(03)00033-X` (`10.1006/jtbi.2003.3177`)
 - **Zajac, M., Jones, G. L. & Glazier, J. A. (2000).** *"Model of convergent extension in animal morphogenesis."* *Physical Review Letters* 85(9):2022–2025. DOI: `10.1103/PhysRevLett.85.2022`

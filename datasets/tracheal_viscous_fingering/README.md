@@ -1,6 +1,6 @@
 # `datasets/tracheal_viscous_fingering/` — Nelson et al. (2017) *Development*, Kim et al. (2015) *Dev. Cell* & Unbekandt et al. (2008) *Mech. Dev.* Reference Package
 
-Formal SHA-256-locked reference dataset and *Mus musculus* pseudoglandular embryonic lung branching specimen for `2015-sugimura-tracheal-viscous-fingering.py` (Slot 059 of the Infinite Morphospace & MorphoEval Campaign).
+Formal SHA-256-locked reference dataset and *Mus musculus* pseudoglandular embryonic lung branching specimen for `2015-sugimura-tracheal-viscous-fingering.py` (Slot 059 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Mathematical & Biomechanical Framework
 

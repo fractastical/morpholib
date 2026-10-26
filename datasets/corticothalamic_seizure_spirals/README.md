@@ -1,6 +1,6 @@
 # Huang et al. (2004, 2010) & Pinto & Ermentrout (2001) Neocortical Spiral Waves & Phase Singularity Dataset
 
-Primary reference dataset and biological specimen metadata for `2013-ermentrout-corticothalamic-seizure-spirals.py` (Slot 089 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `2013-ermentrout-corticothalamic-seizure-spirals.py` (Slot 089 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Huang et al. (2004, 2010) *J. Neurosci.* & Pinto & Ermentrout (2001) *SIAM J. Appl. Math.*
 

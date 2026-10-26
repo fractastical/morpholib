@@ -1,6 +1,6 @@
 # Kriegman, Blackiston, Levin & Bongard (2020, 2021) Xenobot Evolutionary Biomechanics & Kinematic Self-Replication Reference Dataset
 
-Primary reference dataset and biological specimen metadata for `2020-kriegman-xenobot-evolutionary-biobots.py` (Slot 083 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `2020-kriegman-xenobot-evolutionary-biobots.py` (Slot 083 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Kriegman et al. (2020) *PNAS* 117:1853–1859 & Kriegman et al. (2021) *PNAS* 118:e2112672118
 

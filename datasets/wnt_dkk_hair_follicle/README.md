@@ -1,6 +1,6 @@
 # Sick et al. (2006) *Science* & Andl et al. (2002) *Dev. Cell* — WNT/DKK Hair Follicle Spacing Reference Dataset
 
-Primary reference dataset, reaction-diffusion parameter invariants, and biological specimen metadata for `2002-sick-wnt-dkk-hair-follicle.py` (Slot 006 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset, reaction-diffusion parameter invariants, and biological specimen metadata for `2002-sick-wnt-dkk-hair-follicle.py` (Slot 006 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Sick et al. (2006) *Science* 314(5804):1447–1450
 

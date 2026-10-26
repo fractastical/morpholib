@@ -1,6 +1,6 @@
 # YAP-Gated Excitable FitzHugh–Nagumo Segmentation Clock Dataset (`datasets/yap_excitable_segmentation/`)
 
-Reference parameters, formal equations, and biological specimen photography for **Slot 027 (`slot-027-yap-excitable-segmentation`)** of the Infinite Morphospace & MorphoEval Campaign, reproducing **Hubaud, Regev, Mahadevan & Pourquié (2017)** *"Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock"* (*Cell* 171(3):668–682, DOI: `10.1016/j.cell.2017.08.043`).
+Reference parameters, formal equations, and biological specimen photography for **Slot 027 (`slot-027-yap-excitable-segmentation`)** of the Project Delphi & MorphoEval Campaign, reproducing **Hubaud, Regev, Mahadevan & Pourquié (2017)** *"Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock"* (*Cell* 171(3):668–682, DOI: `10.1016/j.cell.2017.08.043`).
 
 ## Governing Equations
 

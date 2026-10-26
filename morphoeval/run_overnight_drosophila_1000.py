@@ -4,7 +4,7 @@ morphoeval/run_overnight_drosophila_1000.py — Autonomous 1,000-Loop *Drosophil
 Developmental, Epithelial, Connectomic (FlyWire / FlyBase / VFB / BDGP / FlyCellAtlas)
 & Evolutionary Species Radiation Expansion Engine (Slots #2101–#3100).
 
-Expands Infinite Morphospace from 2,100 campaign loops to 3,100 campaign loops (+1,000 new
+Expands Project Delphi from 2,100 campaign loops to 3,100 campaign loops (+1,000 new
 *Drosophila* 12-step loops, bringing total repository models to 3,116):
   1. Slots #2101–#2700 (600 Exhaustive *Drosophila melanogaster* Multi-Scale & Connectomic Runs):
      - 60 Spatial, Developmental & Connectomic Rungs (from 2.5 nm Innexin-2 gap-junction pores &
@@ -104,13 +104,13 @@ def fetch_or_create_drosophila_species_specimen(
         try:
             req = urllib.request.Request(
                 rest_url,
-                headers={"User-Agent": "InfiniteMorphospace-DrosophilaAtlas/2.0 (https://github.com/fractastical/morpholib)"},
+                headers={"User-Agent": "ProjectDelphi-DrosophilaAtlas/2.0 (https://github.com/fractastical/morpholib)"},
             )
             with urllib.request.urlopen(req, timeout=2.5) as resp:
                 summary = json.loads(resp.read().decode("utf-8", errors="replace"))
             thumb = (summary.get("originalimage") or {}).get("source") or (summary.get("thumbnail") or {}).get("source")
             if thumb and not thumb.lower().endswith(".svg") and title == f"Drosophila_{species_epithet}":
-                img_req = urllib.request.Request(thumb, headers={"User-Agent": "InfiniteMorphospace-DrosophilaAtlas/2.0"})
+                img_req = urllib.request.Request(thumb, headers={"User-Agent": "ProjectDelphi-DrosophilaAtlas/2.0"})
                 with urllib.request.urlopen(img_req, timeout=3.5) as img_resp:
                     raw = img_resp.read()
                 with Image.open(io.BytesIO(raw)) as im_check:

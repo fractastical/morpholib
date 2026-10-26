@@ -1,6 +1,6 @@
 # Pezzulo & Levin (2015) / Friston, Levin et al. (2015) Bioelectric Target Morphology Memory Reference Dataset
 
-Primary reference dataset and biological specimen metadata for `2015-pezzulo-bioelectric-target-morphology-memory.py` (Slot 084 of the Infinite Morphospace & MorphoEval Campaign).
+Primary reference dataset and biological specimen metadata for `2015-pezzulo-bioelectric-target-morphology-memory.py` (Slot 084 of the Project Delphi & MorphoEval Campaign).
 
 ## Governing Equations — Pezzulo & Levin (2015) *J. R. Soc. Interface* 12:20150772 & Friston, Levin, Sengupta & Pezzulo (2015) *J. R. Soc. Interface* 12:20141383
 

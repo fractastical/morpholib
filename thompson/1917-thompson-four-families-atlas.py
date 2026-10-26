@@ -78,8 +78,8 @@ TREE_URL = "https://fishtreeoflife.org/downloads/actinopt_12k_treePL.tre.xz"
 TREE_SHA256 = "543221541758e2bce063a5a76d6858f4f83a8a770225ee96c4292f7917188da2"
 
 USER_AGENT = (
-    "infinitemorphospace/1.0 "
-    "(https://github.com/jdietz/infinitemorphospace; research@infinitemorphospace.org) "
+    "projectdelphi/1.0 "
+    "(https://github.com/jdietz/infinitemorphospace; research@projectdelphi.org) "
     "python-urllib/3.14"
 )
 

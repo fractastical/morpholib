@@ -8,8 +8,8 @@ This folder (`docs/bioelectricity/`) provides a turnkey integration bundle so ou
   `https://fractastical.github.io/morpholib/bioelectricity/`
 - **Structured JSON API Feed:**  
   `https://fractastical.github.io/morpholib/bioelectricity/bioelectricity_nexus_feed.json`
-- **Drop-In React / TypeScript Component (`InfiniteMorphospaceWidget.tsx`):**  
-  [`docs/bioelectricity/InfiniteMorphospaceWidget.tsx`](./InfiniteMorphospaceWidget.tsx)
+- **Drop-In React / TypeScript Component (`ProjectDelphiWidget.tsx`):**  
+  [`docs/bioelectricity/ProjectDelphiWidget.tsx`](./ProjectDelphiWidget.tsx)
 - **5-Page Visual Guide PDF (13-Year-Old Level, Large-Font Separate Diagrams):**  
   `https://fractastical.github.io/morpholib/thompson_1917_visual_guide_for_everyone.pdf`
 - **20-Page Full Academic Manuscript PDF:**  
@@ -32,14 +32,14 @@ Paste this into any page on `bioelectricity.net`:
 ></iframe>
 ```
 
-### 2. Native React / Vite Component (`InfiniteMorphospaceWidget.tsx`)
-Copy [`InfiniteMorphospaceWidget.tsx`](./InfiniteMorphospaceWidget.tsx) into your `bioelectricity.net` `src/components/` folder and render:
+### 2. Native React / Vite Component (`ProjectDelphiWidget.tsx`)
+Copy [`ProjectDelphiWidget.tsx`](./ProjectDelphiWidget.tsx) into your `bioelectricity.net` `src/components/` folder and render:
 
 ```tsx
-import { InfiniteMorphospaceWidget } from './components/InfiniteMorphospaceWidget';
+import { ProjectDelphiWidget } from './components/ProjectDelphiWidget';
 
 export function MorphospacePage() {
-  return <InfiniteMorphospaceWidget />;
+  return <ProjectDelphiWidget />;
 }
 ```
 

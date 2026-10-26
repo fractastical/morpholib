@@ -2,7 +2,7 @@
 
 ## Overview
 
-This dataset vendors the empirical reference measurements, governing mathematical equations, literature citations, and biological specimen imagery for **Slot 074 (`slot-074-coral-calice-septa-insertion`)** of the 100-Loop Infinite Morphospace & MorphoEval Campaign, modeled by `2013-thomas-coral-calice-septa-insertion.py`.
+This dataset vendors the empirical reference measurements, governing mathematical equations, literature citations, and biological specimen imagery for **Slot 074 (`slot-074-coral-calice-septa-insertion`)** of the 100-Loop Project Delphi & MorphoEval Campaign, modeled by `2013-thomas-coral-calice-septa-insertion.py`.
 
 ## Primary Literature Sources
 

@@ -1,6 +1,6 @@
 # `datasets/vascular_angiogenesis_notch/` — Bentley, Gerhardt & Bates (2008), Hellström et al. (2007) & Jakobsson et al. (2010) VEGF–Dll4–Notch1 Angiogenic Tip/Stalk Selection Reference Package
 
-Formal SHA-256-locked reference dataset and fluorescence biological specimen micrograph for `2021-ibrahim-vascular-angiogenesis-notch.py` (Slot 060 of the 100-Loop Infinite Morphospace & MorphoEval Campaign).
+Formal SHA-256-locked reference dataset and fluorescence biological specimen micrograph for `2021-ibrahim-vascular-angiogenesis-notch.py` (Slot 060 of the 100-Loop Project Delphi & MorphoEval Campaign).
 
 ## Contents
 

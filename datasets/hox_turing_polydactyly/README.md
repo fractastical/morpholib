@@ -1,6 +1,6 @@
 # `datasets/hox_turing_polydactyly/` — Sheth et al. (2012) *Science* Hox-Modulated Turing Polydactyly Dataset
 
-Formal SHA-256-locked reference dataset and vertebrate autopod radiograph specimen for `2012-sheth-hox-turing-polydactyly.py` (Slot 015 of the 100-Loop Infinite Morphospace Campaign).
+Formal SHA-256-locked reference dataset and vertebrate autopod radiograph specimen for `2012-sheth-hox-turing-polydactyly.py` (Slot 015 of the 100-Loop Project Delphi Campaign).
 
 ## Contents
 

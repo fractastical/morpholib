@@ -58,7 +58,7 @@ def build_json_ld() -> str:
                     {
                         "@type": "ListItem",
                         "position": 1,
-                        "name": "Infinite Morphospace (morpholib)",
+                        "name": "Project Delphi (morpholib)",
                         "item": "https://fractastical.github.io/morpholib/",
                     },
                     {
@@ -95,7 +95,7 @@ def build_json_ld() -> str:
                         "name": "Joel Dietz",
                         "affiliation": {
                             "@type": "Organization",
-                            "name": "Project Delphi / Infinite Morphospace",
+                            "name": "Project Delphi",
                             "url": "https://github.com/fractastical/morpholib",
                         },
                     },
@@ -115,7 +115,7 @@ def build_json_ld() -> str:
                 "mainEntityOfPage": CANONICAL_URL,
                 "publisher": {
                     "@type": "Organization",
-                    "name": "Infinite Morphospace (Project Delphi)",
+                    "name": "Project Delphi",
                     "url": "https://fractastical.github.io/morpholib/",
                 },
                 "image": [
@@ -426,7 +426,7 @@ def main():
       </details>
     </section>
     <footer class="crosslinks-footer" role="contentinfo">
-      <strong>Explore Related Modules in Infinite Morphospace (<code>morpholib</code>):</strong>
+      <strong>Explore Related Modules in Project Delphi (<code>morpholib</code>):</strong>
       <div class="crosslinks-grid">
         <a href="index.html">🏛️ Aristotelian 10×10 Morphospace Atlas (116 Verified Models)</a>
         <a href="EXPLAINED_FOR_EVERYONE.md">🐟 Visual Guide: Resolving Thompson’s 1917 Fish Paradox Across 10,303 Species</a>
@@ -447,14 +447,14 @@ def main():
 
   <!-- Primary SEO Meta Tags -->
   <meta name="description" content="Complete annotated and museum-illustrated edition of D’Arcy Wentworth Thompson’s 1913 Oxford lecture 'On Aristotle as a Biologist, With a Prooemion on Herbert Spencer'. Features 17th–19th century copperplates (Malpighi, Johannes Müller’s Mustelus shark placenta, Vérany’s Argonauta, 1848 Admiralty Chart of Lesbos &amp; Pyrrha Lagoon, Turpin’s 1837 Urpflanze), 13 morphogenesis research commentaries, and 25 student reader notes." />
-  <meta name="keywords" content="D'Arcy Wentworth Thompson, On Aristotle as a Biologist, Herbert Spencer Lecture 1913, Lagoon of Pyrrha Lesbos, Gulf of Kalloni, Historia Animalium, De Anima, entelechy, Mustelus laevis yolk-sac placenta, Johannes Müller 1842, Marcello Malpighi chick embryo, Goethe Urpflanze morphology, On Growth and Form, morphogenesis, bioelectric patterning, Infinite Morphospace, morpholib" />
-  <meta name="author" content="D’Arcy Wentworth Thompson (1913); Annotated &amp; Illustrated by Joel Dietz (Infinite Morphospace)" />
+  <meta name="keywords" content="D'Arcy Wentworth Thompson, On Aristotle as a Biologist, Herbert Spencer Lecture 1913, Lagoon of Pyrrha Lesbos, Gulf of Kalloni, Historia Animalium, De Anima, entelechy, Mustelus laevis yolk-sac placenta, Johannes Müller 1842, Marcello Malpighi chick embryo, Goethe Urpflanze morphology, On Growth and Form, morphogenesis, bioelectric patterning, Project Delphi, morpholib" />
+  <meta name="author" content="D’Arcy Wentworth Thompson (1913); Annotated &amp; Illustrated by Joel Dietz (Project Delphi)" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
   <link rel="canonical" href="{CANONICAL_URL}" />
 
   <!-- Open Graph / Facebook / LinkedIn / Substack -->
   <meta property="og:type" content="article" />
-  <meta property="og:site_name" content="Infinite Morphospace (morpholib)" />
+  <meta property="og:site_name" content="Project Delphi (morpholib)" />
   <meta property="og:title" content="On Aristotle as a Biologist (1913) — D’Arcy Wentworth Thompson | Annotated Museum Edition" />
   <meta property="og:description" content="Follow knowledge from the Lagoon of Pyrrha on Lesbos and the dissecting table into De Anima and On Growth and Form—illustrated with 17th–19th century museum copperplates, research commentary, and friendly student notes." />
   <meta property="og:url" content="{CANONICAL_URL}" />
@@ -477,7 +477,7 @@ def main():
   <meta name="citation_author" content="Dietz, Joel" />
   <meta name="citation_publication_date" content="1913/02/14" />
   <meta name="citation_online_date" content="2026/10/25" />
-  <meta name="citation_publisher" content="Clarendon Press, Oxford (1913); Infinite Morphospace / Project Delphi (2026)" />
+  <meta name="citation_publisher" content="Clarendon Press, Oxford (1913); Project Delphi (2026)" />
   <meta name="citation_public_url" content="{CANONICAL_URL}" />
   <meta name="citation_language" content="en" />
 
@@ -793,7 +793,7 @@ def main():
 <body data-view="both">
   <header class="topbar" role="banner">
     <div>
-      <strong>Infinite Morphospace</strong> · D’Arcy Wentworth Thompson (1913) — <em>On Aristotle as a Biologist</em>
+      <strong>Project Delphi</strong> · D’Arcy Wentworth Thompson (1913) — <em>On Aristotle as a Biologist</em>
     </div>
     <div class="topbar-links" role="navigation" aria-label="Commentary layer and navigation controls">
       <span style="color:#94a3b8;font-size:12px;">Annotations:</span>
