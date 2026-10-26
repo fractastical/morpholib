@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
-morphoeval/build_rule30_bayesian_delphi.py — Multi-Agent Project Delphi (v1.3)
+morphoeval/build_rule30_bayesian_delphi.py — Multi-Agent Project Delphi (ontology 2.0)
 Bayesian Assessment of the 47-Theorem Architecture vs. the Three Wolfram Rule 30
 Grand Prizes ($30,000 total: Problems 1, 2, and 3).
 
-Aggregates independent assessments from three distinct LLM model families:
+Aggregates independent assessments from three distinct LLM model families.  Per
+Project Delphi 2.0 (morpholib #23) each assessment is prov:wasAttributedTo a
+prov:SoftwareAgent pkr:agent/rule30-grand-prizes-<model-id> (the assessor:
+model + prompt + role in this panel) which pk:usesModel the pk:LanguageModel:
   1. pkr:model/claude-fable-5-1  (Anthropic — Claude Fable 5.1 Thinking High)
   2. pkr:model/gpt-5.6-sol       (OpenAI    — GPT 5.6 Sol Medium)
   3. pkr:model/gemini-4-argon    (Google    — Gemini 4 Argon)
@@ -626,10 +629,19 @@ def build_rdf_graphs(agg: dict[str, Any]) -> tuple[Graph, Dataset]:
 
     asrt = ds.graph(URIRef("https://w3id.org/delphi/resource/graph/rule30-grand-prizes-bayesian-assertion"))
 
+    # Project Delphi 2.0: the assessor is a prov:SoftwareAgent (this panel's configuration of the
+    # model) that pk:usesModel the pk:LanguageModel; pk:Model / pk:assessedBy are deprecated.
+    agents: dict[str, URIRef] = {}
     for mid, mdata in MODELS.items():
         m_uri = URIRef(mdata["uri"])
+        a_uri = PKR[f"agent/rule30-grand-prizes-{mid}"]
+        agents[mid] = a_uri
         for gr in (g, asrt):
-            gr.add((m_uri, RDF.type, PK.Model))
+            gr.add((a_uri, RDF.type, PROV.SoftwareAgent))
+            gr.add((a_uri, RDFS.label, Literal(f"{mdata['label']} — Rule 30 grand-prize Bayesian assessor", lang="en")))
+            gr.add((a_uri, DCTERMS.identifier, Literal(mdata["agent_id"])))
+            gr.add((a_uri, PK.usesModel, m_uri))
+            gr.add((m_uri, RDF.type, PK.LanguageModel))
             gr.add((m_uri, RDFS.label, Literal(mdata["label"], lang="en")))
             gr.add((m_uri, DCTERMS.identifier, Literal(mid)))
 
@@ -690,24 +702,24 @@ def build_rdf_graphs(agg: dict[str, Any]) -> tuple[Graph, Dataset]:
                 gr.add((a_conj_uri, RDF.type, PK.BayesianAssessment))
                 gr.add((h_conj_uri, PK.hasAssessment, a_conj_uri))
                 gr.add((a_conj_uri, PK.evaluatesHypothesis, h_conj_uri))
-                gr.add((a_conj_uri, PK.assessedBy, m_uri))
+                gr.add((a_conj_uri, PROV.wasAttributedTo, agents[mid]))
                 gr.add((a_conj_uri, PK.hasProbability, Literal(round(ca["posterior"], 6), datatype=XSD.double)))
                 gr.add((a_conj_uri, PK.hasConfidence, Literal(ca["confidence"], datatype=XSD.double)))
                 gr.add((a_conj_uri, PK.bayesFactor, Literal(round(ca["bf"], 4), datatype=XSD.double)))
                 gr.add((a_conj_uri, PK.weightOfEvidenceDeciban, Literal(ca["woe_db"], datatype=XSD.double)))
-                gr.add((a_conj_uri, PK.calibrationMethod, Literal("Project Delphi v1.3 log-odds deciban update")))
+                gr.add((a_conj_uri, PK.calibrationMethod, Literal("Project Delphi 2.0 log-odds deciban update")))
 
                 # Bridge BayesianAssessment
                 gr.add((a_bridge_uri, RDF.type, PK.BayesianAssessment))
                 gr.add((h_bridge_uri, PK.hasAssessment, a_bridge_uri))
                 gr.add((a_bridge_uri, PK.evaluatesHypothesis, h_bridge_uri))
-                gr.add((a_bridge_uri, PK.assessedBy, m_uri))
+                gr.add((a_bridge_uri, PROV.wasAttributedTo, agents[mid]))
                 gr.add((a_bridge_uri, PK.hasProbability, Literal(round(ba["posterior"], 6), datatype=XSD.double)))
                 gr.add((a_bridge_uri, PK.hasConfidence, Literal(ba["confidence"], datatype=XSD.double)))
                 gr.add((a_bridge_uri, PK.bayesFactor, Literal(round(ba["bf"], 4), datatype=XSD.double)))
                 gr.add((a_bridge_uri, PK.weightOfEvidenceDeciban, Literal(ba["net_woe_db"], datatype=XSD.double)))
                 gr.add((a_bridge_uri, PK.hasVerdict, Literal(ba["verdict"])))
-                gr.add((a_bridge_uri, PK.calibrationMethod, Literal("Project Delphi v1.3 signed deciban ledger")))
+                gr.add((a_bridge_uri, PK.calibrationMethod, Literal("Project Delphi 2.0 signed deciban ledger")))
                 for text_for, db_val in ba["evidence_for"]:
                     gr.add((a_bridge_uri, PK.evidenceFor, Literal(f"[+{db_val:.1f} dB] {text_for}")))
                 for text_against, db_val in ba["evidence_against"]:
@@ -716,7 +728,7 @@ def build_rdf_graphs(agg: dict[str, Any]) -> tuple[Graph, Dataset]:
                 # Subgoal LLMClaimAssessment (pk:hasScore, NOT pk:hasProbability per project-delphi-ontology #12)
                 gr.add((a_sg_uri, RDF.type, PK.LLMClaimAssessment))
                 gr.add((c_subgoal_uri, PK.hasAssessment, a_sg_uri))
-                gr.add((a_sg_uri, PK.assessedBy, m_uri))
+                gr.add((a_sg_uri, PROV.wasAttributedTo, agents[mid]))
                 gr.add((a_sg_uri, PK.hasScore, Literal(round(sg_score, 4), datatype=XSD.double)))
                 gr.add((a_sg_uri, PK.hasVerdict, Literal(ba["verdict"])))
 
@@ -727,7 +739,7 @@ def write_markdown_report(agg: dict[str, Any]) -> None:
     lines: list[str] = []
     lines.append("# Multi-Agent Project Delphi Bayesian Assessment: How Close Are We to the Three Wolfram Rule 30 Grand Prizes?")
     lines.append("")
-    lines.append("**Ontology:** Project Delphi v1.3 (`https://w3id.org/delphi/ontology/1.3`, `morphoeval/vendor/probknow-1.3.ttl`)  ")
+    lines.append("**Ontology:** Project Delphi 2.0 (`https://w3id.org/delphi/ontology/2.0`, `morphoeval/vendor/delphi-2.0.ttl`); each assessment is `prov:wasAttributedTo` a `prov:SoftwareAgent` `pkr:agent/rule30-grand-prizes-<model>` that `pk:usesModel` the `pk:LanguageModel` below  ")
     lines.append("**Date:** October 20, 2026  ")
     lines.append("**Panel of Independent Model Assessors:**")
     lines.append("1. `pkr:model/claude-fable-5-1` — **Claude Fable 5.1 Thinking High** (Anthropic)")
@@ -805,7 +817,7 @@ def write_markdown_report(agg: dict[str, Any]) -> None:
         lines.append("")
         lines.append("#### B. Signed Deciban Evidence Ledger for Proof Bridgeability ($H_i^{\\text{bridge}}$)")
         lines.append("")
-        lines.append("| Assessor (`pk:Model`) | Prior $P_0(H_i^{\\text{bridge}})$ | Supporting $\\sum \\text{dB}_{\\text{for}}$ | Obstructing $\\sum \\text{dB}_{\\text{against}}$ | Net $\\text{WoE}$ ($\\text{dB}$) | Bayes Factor $\\text{BF}$ | Posterior $P(H_i^{\\text{bridge}} \\mid \\mathcal{E})$ | Confidence | Verdict (`pk:hasVerdict`) |")
+        lines.append("| Assessor (`prov:SoftwareAgent` → `pk:usesModel`) | Prior $P_0(H_i^{\\text{bridge}})$ | Supporting $\\sum \\text{dB}_{\\text{for}}$ | Obstructing $\\sum \\text{dB}_{\\text{against}}$ | Net $\\text{WoE}$ ($\\text{dB}$) | Bayes Factor $\\text{BF}$ | Posterior $P(H_i^{\\text{bridge}} \\mid \\mathcal{E})$ | Confidence | Verdict (`pk:hasVerdict`) |")
         lines.append("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |")
         for mid in MODELS:
             ba = prob["bridge_assessments"][mid]
@@ -855,7 +867,7 @@ def main() -> None:
         "audit": {
             "id": "2026-10-20-rule30-grand-prizes-bayesian-delphi",
             "date": "2026-10-20",
-            "ontology": "https://w3id.org/delphi/ontology/1.3",
+            "ontology": "https://w3id.org/delphi/ontology/2.0",
             "models": MODELS,
             "problems": PROBLEMS_DATA,
             "panel_consensus": agg,

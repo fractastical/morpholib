@@ -1,6 +1,6 @@
 # Multi-Agent Project Delphi Bayesian Assessment: How Close Are We to the Three Wolfram Rule 30 Grand Prizes?
 
-**Ontology:** Project Delphi v1.3 (`https://w3id.org/delphi/ontology/1.3`, `morphoeval/vendor/probknow-1.3.ttl`)  
+**Ontology:** Project Delphi 2.0 (`https://w3id.org/delphi/ontology/2.0`, `morphoeval/vendor/delphi-2.0.ttl`); each assessment is `prov:wasAttributedTo` a `prov:SoftwareAgent` `pkr:agent/rule30-grand-prizes-<model>` that `pk:usesModel` the `pk:LanguageModel` below  
 **Date:** October 20, 2026  
 **Panel of Independent Model Assessors:**
 1. `pkr:model/claude-fable-5-1` — **Claude Fable 5.1 Thinking High** (Anthropic)
@@ -47,7 +47,7 @@ Following the Project Delphi ontology (`project-delphi-ontology #12`), our Bayes
 
 #### B. Signed Deciban Evidence Ledger for Proof Bridgeability ($H_i^{\text{bridge}}$)
 
-| Assessor (`pk:Model`) | Prior $P_0(H_i^{\text{bridge}})$ | Supporting $\sum \text{dB}_{\text{for}}$ | Obstructing $\sum \text{dB}_{\text{against}}$ | Net $\text{WoE}$ ($\text{dB}$) | Bayes Factor $\text{BF}$ | Posterior $P(H_i^{\text{bridge}} \mid \mathcal{E})$ | Confidence | Verdict (`pk:hasVerdict`) |
+| Assessor (`prov:SoftwareAgent` → `pk:usesModel`) | Prior $P_0(H_i^{\text{bridge}})$ | Supporting $\sum \text{dB}_{\text{for}}$ | Obstructing $\sum \text{dB}_{\text{against}}$ | Net $\text{WoE}$ ($\text{dB}$) | Bayes Factor $\text{BF}$ | Posterior $P(H_i^{\text{bridge}} \mid \mathcal{E})$ | Confidence | Verdict (`pk:hasVerdict`) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Claude Fable 5.1 (Anthropic)** | `5.00%` | `+13.5 dB` | `-13.0 dB` | **`+0.5 dB`** | `1.122` | **`5.576%`** | `0.60` | `PARTIAL_PROGRESS_REDUCED_TO_ONE_OPEN_GLOBAL_LEMMA` |
 | **GPT 5.6 Sol (OpenAI)** | `10.00%` | `+15.0 dB` | `-11.0 dB` | **`+4.0 dB`** | `2.512` | **`21.820%`** | `0.68` | `PROMISING_REDUCTION_BUT_MAJOR_GLOBAL_INVARIANT_MISSING` |
@@ -84,7 +84,7 @@ Following the Project Delphi ontology (`project-delphi-ontology #12`), our Bayes
 
 #### B. Signed Deciban Evidence Ledger for Proof Bridgeability ($H_i^{\text{bridge}}$)
 
-| Assessor (`pk:Model`) | Prior $P_0(H_i^{\text{bridge}})$ | Supporting $\sum \text{dB}_{\text{for}}$ | Obstructing $\sum \text{dB}_{\text{against}}$ | Net $\text{WoE}$ ($\text{dB}$) | Bayes Factor $\text{BF}$ | Posterior $P(H_i^{\text{bridge}} \mid \mathcal{E})$ | Confidence | Verdict (`pk:hasVerdict`) |
+| Assessor (`prov:SoftwareAgent` → `pk:usesModel`) | Prior $P_0(H_i^{\text{bridge}})$ | Supporting $\sum \text{dB}_{\text{for}}$ | Obstructing $\sum \text{dB}_{\text{against}}$ | Net $\text{WoE}$ ($\text{dB}$) | Bayes Factor $\text{BF}$ | Posterior $P(H_i^{\text{bridge}} \mid \mathcal{E})$ | Confidence | Verdict (`pk:hasVerdict`) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Claude Fable 5.1 (Anthropic)** | `3.00%` | `+6.0 dB` | `-10.0 dB` | **`-4.0 dB`** | `0.398` | **`1.216%`** | `0.65` | `STRUCTURAL_REFORMULATION_ONLY_MISSING_DIAGONAL_DECORRELATION` |
 | **GPT 5.6 Sol (OpenAI)** | `8.00%` | `+8.0 dB` | `-12.0 dB` | **`-4.0 dB`** | `0.398` | **`3.346%`** | `0.72` | `UNLIKELY_WITHOUT_NEW_DECORRELATION_OR_ERGODIC_INPUT` |
@@ -118,7 +118,7 @@ Following the Project Delphi ontology (`project-delphi-ontology #12`), our Bayes
 
 #### B. Signed Deciban Evidence Ledger for Proof Bridgeability ($H_i^{\text{bridge}}$)
 
-| Assessor (`pk:Model`) | Prior $P_0(H_i^{\text{bridge}})$ | Supporting $\sum \text{dB}_{\text{for}}$ | Obstructing $\sum \text{dB}_{\text{against}}$ | Net $\text{WoE}$ ($\text{dB}$) | Bayes Factor $\text{BF}$ | Posterior $P(H_i^{\text{bridge}} \mid \mathcal{E})$ | Confidence | Verdict (`pk:hasVerdict`) |
+| Assessor (`prov:SoftwareAgent` → `pk:usesModel`) | Prior $P_0(H_i^{\text{bridge}})$ | Supporting $\sum \text{dB}_{\text{for}}$ | Obstructing $\sum \text{dB}_{\text{against}}$ | Net $\text{WoE}$ ($\text{dB}$) | Bayes Factor $\text{BF}$ | Posterior $P(H_i^{\text{bridge}} \mid \mathcal{E})$ | Confidence | Verdict (`pk:hasVerdict`) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Claude Fable 5.1 (Anthropic)** | `0.50%` | `+2.0 dB` | `-11.0 dB` | **`-9.0 dB`** | `0.126` | **`0.063%`** | `0.80` | `BARRIER_BLOCKED_WRONG_OBJECT_MULTIVARIATE_VS_FIXED_SEED` |
 | **GPT 5.6 Sol (OpenAI)** | `2.00%` | `+3.0 dB` | `-23.0 dB` | **`-20.0 dB`** | `0.010` | **`0.020%`** | `0.85` | `EFFECTIVELY_BLOCKED_BY_FIXED_INPUT_COMPLEXITY_BARRIER` |
