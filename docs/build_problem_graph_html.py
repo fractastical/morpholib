@@ -213,6 +213,64 @@ def prediction_graph_nodes(pred: dict) -> tuple[list[dict], list[dict]]:
     return nodes, edges
 
 
+def load_thompson_claims() -> dict | None:
+    """Thompson (1917) claim registry: 59 claims, the browsable unit of the
+    Thompson programme. Source of truth thompson/thompson_1917_claims.json."""
+    p = Path(__file__).resolve().parent.parent / "thompson" / "thompson_1917_claims.json"
+    if not p.exists():
+        print("WARNING: thompson/thompson_1917_claims.json not found — building without the claims browser")
+        return None
+    reg = json.loads(p.read_text())
+    claims = [{"id": c["id"], "chapter": c["chapter"], "chapter_title": c["chapter_title"],
+               "pages": c["pages"], "figures": c["figures"], "claim": c["claim"], "type": c["type"],
+               "status": c["pass2"]["status"], "what_remains": c["pass2"]["what_remains"],
+               "method": c["pass2"]["method"], "data_needed": c["pass2"]["data_needed"],
+               "effort": f"{c['pass2']['effort_days'][0]}–{c['pass2']['effort_days'][1]}d ({c['pass2']['effort_class']})",
+               "priority": c["pass2"]["priority"]} for c in reg["claims"]]
+    from collections import OrderedDict
+    ch_titles: "OrderedDict[str, None]" = OrderedDict()
+    for c in claims:
+        ch_titles.setdefault(c["chapter_title"], None)
+    return {"n": len(claims), "claims": claims,
+            "chapters": [{"title": t, "node": f"tch-{i}"} for i, t in enumerate(ch_titles)],
+            "inventory_url": "https://github.com/fractastical/morpholib/blob/main/docs/THOMPSON_1917_CLAIM_INVENTORY.md"}
+
+
+def thompson_graph_nodes(thomp: dict) -> tuple[list[dict], list[dict]]:
+    """Thompson claims enter the graph as a collapsible category subtree:
+    t1 -> claims hub -> one node per chapter (category) -> claims are browsed
+    in the claims browser / inspector when a chapter node is selected, so all
+    59 claims are reachable from the graph without 59 graph nodes."""
+    from collections import OrderedDict
+    chapters: "OrderedDict[str, list[dict]]" = OrderedDict()
+    for c in thomp["claims"]:
+        chapters.setdefault(c["chapter_title"], []).append(c)
+    nodes = [{"id": "t-claims", "x": 20, "y": 1705, "status": "partial", "family": "Thompson claims",
+              "label": "Thompson 1917 claims", "sub": "59 claims · double-click a chapter to browse its claims below",
+              "time": "1917 (claims) / registry 2026-10-26", "timeKind": "recorded",
+              "source": "thompson/thompson_1917_claims.json",
+              "detail": ("Every testable claim in On Growth and Form (1917), cited by chapter/pages/figures and "
+                         "assessed: 9 DONE_REPO, 13 PARTIAL_REPO, 13 DONE_ELSEWHERE, 21 UNTESTED, "
+                         "3 NOT_TESTABLE_AS_STATED. Select a chapter node, then browse its claims in the "
+                         "Thompson claims browser below the graph.")}]
+    edges = [{"from": "t1", "to": "t-claims", "agent": "wonder", "label": "59-claim registry"}]
+    xs = [20, 255, 490, 735, 975, 1215]
+    for i, (title, cs) in enumerate(chapters.items()):
+        cid = f"tch-{i}"
+        done = sum(c["status"] in ("DONE_REPO", "DONE_ELSEWHERE") for c in cs)
+        status = "solved" if done == len(cs) else ("open" if done == 0 and all(c["status"] == "UNTESTED" for c in cs) else "partial")
+        nodes.append({"id": cid, "x": xs[i % 6], "y": 1805 + (i // 6) * 88, "status": status,
+                      "family": "Thompson claims", "label": f"Ch. {cs[0]['chapter'].split()[0]} · {len(cs)} claims",
+                      "sub": f"{title} — {done}/{len(cs)} done · click to browse below",
+                      "time": "1917", "timeKind": "recorded", "source": "thompson/thompson_1917_claims.json",
+                      "detail": (f"Chapter {cs[0]['chapter']} — {title}: {len(cs)} claims "
+                                 f"({', '.join(sorted({c['status'] for c in cs}))}). "
+                                 "Its claims are listed in the Thompson claims browser below; "
+                                 "click the chapter filter there or a claim row for the full assessment.")})
+        edges.append({"from": "t-claims", "to": cid, "agent": "wonder"})
+    return nodes, edges
+
+
 def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> None:
     by_id = {n["id"]: n for n in data["NODES"]}
     problems = []
@@ -370,9 +428,19 @@ def main() -> None:
         if errs:
             sys.exit("REFUSING TO BUILD — merged graph (with predictions) failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
         print(f"integrated predictions into graph: +{len(n0)} nodes, +{len(e0)} edges (hub -> 3 organisms -> {len(pred['predictions'])} predictions + meta)")
+    thomp = load_thompson_claims()
+    if thomp:
+        data["AGENTS"].setdefault("wonder", {"name": "Muse Wonder", "role": "Protein-state pilot, prediction registry, claims browsing (this branch of work)"})
+        tn, te = thompson_graph_nodes(thomp)
+        data["NODES"] += tn; data["EDGES"] += te
+        errs = validate(data)
+        if errs:
+            sys.exit("REFUSING TO BUILD — merged graph (with Thompson claims) failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
+        print(f"integrated Thompson claims into graph: +{len(tn)} nodes (hub + {len(tn) - 1} chapter categories), {thomp['n']} claims browsable")
     html = TEMPLATE.replace("/*__SUMMARY__*/", summary_html)
     html = html.replace("/*__DATA__*/", "const DATA = " + json.dumps(data) + ";")
     html = html.replace("/*__PRED__*/", "const PRED = " + json.dumps(pred) + ";")
+    html = html.replace("/*__THOMP__*/", "const THOMP = " + json.dumps(thomp) + ";")
     a.out.write_text(html)
     print(f"wrote {a.out} ({len(html)/1024:.0f} KiB, {len(data['NODES'])} nodes, {len(data['EDGES'])} edges, "
           f"{len(pred['predictions']) if pred else 0} registered predictions)")
@@ -411,9 +479,25 @@ button.on{background:var(--acc);color:#fff;border-color:var(--acc)}button:hover{
 .clickable{cursor:pointer;border:1px solid var(--line);border-radius:7px;padding:7px 9px;margin:5px 0;background:#fff}
 .clickable.sel{border-color:var(--acc);background:#f3f6ff}.bar{ display:inline-block;width:110px;height:8px;background:#eee;vertical-align:middle}.bar>i{display:block;height:8px}
 a{color:var(--acc)}
+.navrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+#nodepicker{flex:1;min-width:200px;font:inherit;font-size:14px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.viewbtn{padding:10px 14px;font-size:14px}
+.nlfam{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin:12px 0 4px}
+.nlrow{display:flex;width:100%;text-align:left;gap:8px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff;margin:5px 0;cursor:pointer;font-size:14px;min-height:48px}
+.nlrow:active{border-color:var(--acc)}
+@media(max-width:760px){
+ main{padding:10px}h1{font-size:19px;line-height:1.25}p,li{font-size:14px}
+ .card{padding:10px 11px;margin:8px 0}.stat{font-size:19px}
+ #graphwrap{height:62vh}#graph{height:100%;width:100%}
+ #drawer{top:0;right:0;width:100%;max-width:100%;height:100dvh;max-height:100dvh;border-radius:0;border:none;padding:14px}
+ #drawer .grid4{grid-template-columns:repeat(2,1fr)}#drawer .grid2{grid-template-columns:1fr}
+ .zoomctl{top:auto;bottom:10px;right:10px}.zoomctl button{padding:10px 12px}
+ button,.clickable{min-height:44px}.clickable{display:flex;align-items:center}
+ .bar{width:70px}a{word-break:break-word}#agentbtns button{flex:1 1 40%}
+}
 </style></head><body><main>
 <h1>Problem graph — every problem attempted, including the branches that failed</h1>
-<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Node dot = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. Click a node to select it; <b>double-click any node to open its inspector</b> — double-clicking the Bayesian Delphi panel (or any Rule 30 prize) opens the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
+<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Node dot = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. Click a node to select it; <b>double-click a node with downstream nodes to collapse/expand everything below it</b> (categories act as folders), and double-click a leaf node to open its inspector — the Bayesian Delphi panel and Rule 30 prizes open the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
 
 /*__SUMMARY__*/
 
@@ -421,7 +505,9 @@ a{color:var(--acc)}
 <div class="row" id="agentbtns" style="margin-top:8px"></div>
 <p class="mut small" id="agentnote"></p></div>
 
-<div id="graphwrap"><svg id="graph" width="1420" height="1640" aria-label="Problem graph (zoomable)"></svg>
+<div class="navrow"><select id="nodepicker" aria-label="Find a problem" onchange="if(this.value)pickNode(this.value)"></select><button id="vgraph" class="viewbtn on" onclick="setView('graph')">Graph</button><button id="vlist" class="viewbtn" onclick="setView('list')">☰ List</button></div>
+<div id="nodelist" hidden></div>
+<div id="graphwrap"><svg id="graph" width="1420" height="2175" aria-label="Problem graph (zoomable)"></svg>
 <div class="zoomctl" role="group" aria-label="Graph zoom controls">
 <button onclick="zoomStep(0.8)" title="Zoom out (− key)" aria-label="Zoom out">−</button>
 <span id="zoompct">100%</span>
@@ -429,7 +515,8 @@ a{color:var(--acc)}
 <button class="zlab" onclick="fitView()" title="Fit whole graph in view (F key)">Fit</button>
 <button class="zlab" onclick="resetView()" title="Reset to 100% (0 key)">Reset</button>
 </div></div>
-<p class="mut small" style="margin:4px 0 0">Zoom &amp; pan: mouse-wheel over the graph zooms to the cursor · drag to pan · pinch on touch screens · <b>+</b>/<b>−</b> keys zoom, <b>F</b> fits, <b>0</b> resets · double-click empty graph space zooms in. Node click / double-click inspect still work.</p>
+<p class="mut small" style="margin:4px 0 0">Zoom &amp; pan: mouse-wheel over the graph zooms to the cursor · drag to pan · pinch on touch screens · <b>+</b>/<b>−</b> keys zoom, <b>F</b> fits, <b>0</b> resets · double-click empty graph space zooms in. <b>Collapse / expand: double-click any node that has downstream nodes to hide or reveal everything downstream of it</b> — category nodes (the project root, organism hubs, Thompson chapter hubs) therefore work as folders; a collapsed node shows <b>▶ +N hidden</b>. Leaf nodes still double-click to their inspector, and every node's detail card has Collapse/Expand and Inspect buttons. <b>On phones:</b> the List view is the primary navigation (tap any problem to inspect); in Graph view a single tap on a node opens its inspector full-screen.</p>
+<div class="row" style="margin:6px 0"><button onclick="expandAll()">Expand all</button><button onclick="collapseCategories()">Collapse to categories</button><span class="small mut">Categories = the root's direct children, the prediction organism hubs, and the Thompson claims hub — double-click any of them (or Expand all) to drill back in.</span></div>
 <div class="row small" style="margin:8px 0">
 <span><i class="badge" style="background:var(--green)">&nbsp;</i> solved / proved</span><span><i class="badge" style="background:#F0A040">&nbsp;</i> partial</span><span><i class="badge" style="background:#C04848">&nbsp;</i> still open / refuted</span><span><i class="badge" style="background:#2E79B5">&nbsp;</i> registered, unscored</span>
 <span>–– dashed halo = probabilistic timestamp</span>
@@ -439,6 +526,9 @@ a{color:var(--acc)}
 
 <h2>Registered predictions — outcome <i>and</i> resolvability, scored</h2>
 <div class="card" id="predpanel"></div>
+
+<h2>Thompson 1917 — browse all 59 claims</h2>
+<div class="card" id="claimpanel"></div>
 
 <div class="grid2">
 <div class="card" id="detail"></div>
@@ -497,7 +587,7 @@ function svgPoint(evt){ const svg=$('graph').getBoundingClientRect(); return {x:
 function zoomAt(px, py, factor){ const k2=Math.max(0.15, Math.min(5, VIEW.k*factor)); const f=k2/VIEW.k; VIEW.tx = px-(px-VIEW.tx)*f; VIEW.ty = py-(py-VIEW.ty)*f; VIEW.k=k2; applyView(); }
 function zoomStep(f){ zoomAt(SW()/2, SH()/2, f); }
 function resetView(){ VIEW.k=1; VIEW.tx=0; VIEW.ty=0; applyView(); }
-function fitView(){ if(!NODES.length) return; const x0=Math.min(...NODES.map(n=>n.x))-30, x1=Math.max(...NODES.map(n=>n.x))+W+30, y0=Math.min(...NODES.map(n=>n.y))-110, y1=Math.max(...NODES.map(n=>n.y))+H+30; VIEW.k=Math.max(0.15, Math.min(2, Math.min(SW()/(x1-x0), SH()/(y1-y0)))); VIEW.tx=(SW()-(x1-x0)*VIEW.k)/2 - x0*VIEW.k; VIEW.ty=(SH()-(y1-y0)*VIEW.k)/2 - y0*VIEW.k; applyView(); }
+function fitView(){ const vis=NODES.filter(n=>!hiddenNodes().has(n.id)); if(!vis.length) return; const x0=Math.min(...vis.map(n=>n.x))-30, x1=Math.max(...vis.map(n=>n.x))+W+30, y0=Math.min(...vis.map(n=>n.y))-110, y1=Math.max(...vis.map(n=>n.y))+H+30; VIEW.k=Math.max(0.15, Math.min(2, Math.min(SW()/(x1-x0), SH()/(y1-y0)))); VIEW.tx=(SW()-(x1-x0)*VIEW.k)/2 - x0*VIEW.k; VIEW.ty=(SH()-(y1-y0)*VIEW.k)/2 - y0*VIEW.k; applyView(); }
 function initZoom(){
  const svg=$('graph');
  svg.addEventListener('wheel', e=>{ e.preventDefault(); const pt=svgPoint(e); zoomAt(pt.x, pt.y, Math.exp(-e.deltaY*0.0015)); }, {passive:false});
@@ -517,7 +607,19 @@ function initZoom(){
    else if(e.key==='0') resetView(); else if(e.key.toLowerCase()==='f') fitView(); });
 }
 
+/* ---- Collapsible downstream: double-click an internal node to hide/reveal
+   ALL nodes downstream of it (following from->to edges). Category hubs
+   (root children, organism hubs, Thompson chapter hub) act as folders. ---- */
+const CHILDREN={}; EDGES.forEach(e=>{ (CHILDREN[e.from] ??= []).push(e.to); });
+const COLLAPSED=new Set();
+function descendants(id){ const seen=new Set(), stack=[...(CHILDREN[id]||[])]; while(stack.length){ const c=stack.pop(); if(seen.has(c)) continue; seen.add(c); (CHILDREN[c]||[]).forEach(x=>stack.push(x)); } return seen; }
+function hiddenNodes(){ const h=new Set(); COLLAPSED.forEach(id=>descendants(id).forEach(x=>h.add(x))); COLLAPSED.forEach(id=>h.delete(id)); return h; }
+function toggleCollapse(id){ COLLAPSED.has(id) ? COLLAPSED.delete(id) : COLLAPSED.add(id); drawGraph(); drawDetail(); }
+function expandAll(){ COLLAPSED.clear(); drawGraph(); }
+function collapseCategories(){ COLLAPSED.clear(); EDGES.filter(e=>e.from==='root').forEach(e=>COLLAPSED.add(e.to)); ['pred-danio','pred-drosophila','pred-xenopus','t-claims'].forEach(id=>{ if(byId[id]) COLLAPSED.add(id); }); drawGraph(); }
+
 function drawGraph(){
+ const HIDDEN=hiddenNodes();
  const svg=$('graph'); const NS='http://www.w3.org/2000/svg'; svg.innerHTML='';
  const vp=document.createElementNS(NS,'g'); vp.setAttribute('id','viewport'); vp.setAttribute('transform', viewTransform()); svg.appendChild(vp);
  const lanes=['Thompson 1917','MorphoEval flagships','Rule 30 — main proof chain','Rule 30 prizes','Levin programme','Bioelectric embryo'], lx=[95,330,565,810,1050,1290];
@@ -525,7 +627,7 @@ function drawGraph(){
  const defs=document.createElementNS(NS,'defs');
  Object.keys(AGENTS).forEach(a=>{const m=document.createElementNS(NS,'marker');m.setAttribute('id','arr-'+a);m.setAttribute('markerWidth','7');m.setAttribute('markerHeight','7');m.setAttribute('refX','6');m.setAttribute('refY','3.5');m.setAttribute('orient','auto');m.innerHTML=`<path d="M0,0 L7,3.5 L0,7 z" fill="${ACOL[a]}"/>`;defs.appendChild(m);});
  svg.appendChild(defs);
- EDGES.forEach((e,i)=>{ const a=byId[e.from],b=byId[e.to]; if(!a||!b)return;
+ EDGES.forEach((e,i)=>{ const a=byId[e.from],b=byId[e.to]; if(!a||!b||HIDDEN.has(e.from)||HIDDEN.has(e.to))return;
   const x1=a.x+W/2,y1=a.y+H,x2=b.x+W/2,y2=b.y,mid=(y1+y2)/2,off=(i%5-2)*3;
   const p=document.createElementNS(NS,'path');
   p.setAttribute('d', Math.abs(x1-x2)<4?`M${x1+off},${y1} L${x2+off},${y2}`:`M${x1+off},${y1} C${x1+off},${mid} ${x2+off},${mid} ${x2+off},${y2}`);
@@ -534,12 +636,15 @@ function drawGraph(){
   p.setAttribute('stroke-width',dim?'1':'2.2'); p.setAttribute('opacity',dim?'0.10':'0.9');
   p.setAttribute('marker-end',`url(#arr-${e.agent})`); vp.appendChild(p);
   if(e.prob!==undefined){ const t=document.createElementNS(NS,'text'); t.setAttribute('x',(x1+x2)/2+off+4); t.setAttribute('y',mid-3); t.setAttribute('font-size','9.5'); t.setAttribute('font-weight','700'); t.setAttribute('fill',probColor(e.prob)); t.textContent=e.prob+'%'; vp.appendChild(t); } });
- NODES.forEach(n=>{ const g=document.createElementNS(NS,'g'); g.style.cursor='pointer';
-  g.addEventListener('click',()=>{ if(suppressClick) return; S.sel=n.id;drawGraph();drawDetail(); if(typeof PRED!=='undefined' && PRED && PRED.predictions.some(p=>p.id===n.id)){ PS.sel=n.id; PS.org='all'; renderPred(); } });
-  g.addEventListener('dblclick',()=>openDrawer(n.id));
+ NODES.forEach(n=>{ if(HIDDEN.has(n.id)) return; const g=document.createElementNS(NS,'g'); g.style.cursor='pointer';
+  g.addEventListener('click',()=>{ if(suppressClick) return; S.sel=n.id;drawGraph();drawDetail(); if(typeof PRED!=='undefined' && PRED && PRED.predictions.some(p=>p.id===n.id)){ PS.sel=n.id; PS.org='all'; renderPred(); } if(typeof THOMP!=='undefined' && THOMP){ const ch=THOMP.chapters.find(c=>c.node===n.id); if(ch){ CS.chapter=ch.title; renderClaims(); $('claimpanel').scrollIntoView({behavior:'smooth', block:'center'}); } } if(window.innerWidth<=760) openDrawer(n.id); });
+  g.addEventListener('dblclick',()=>{ if((CHILDREN[n.id]||[]).length) toggleCollapse(n.id); else openDrawer(n.id); });
   const prob=(n.id==='p1'||n.id==='p2'||n.id==='p3')?DELPHI[n.id].pooled.posterior:undefined;
   const fuzzy=n.timeKind==='probabilistic';
-  let h=`<title>${esc(n.label)} — click to select, double-click to inspect</title>`;
+  const nDown=descendants(n.id).size, isCollapsed=COLLAPSED.has(n.id);
+  let h=`<title>${esc(n.label)} — click to select${nDown?`, double-click to ${isCollapsed?'expand':'collapse'} ${nDown} downstream nodes`:', double-click to inspect'}</title>`;
+  if(isCollapsed) h+=`<rect x="${n.x-4}" y="${n.y-4}" width="${W+8}" height="${H+8}" rx="9" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="7 4"/>`;
+  if(nDown) h+=`<text x="${n.x+W-6}" y="${n.y+13}" text-anchor="end" font-size="10" font-weight="700" fill="#2563eb">${isCollapsed?`▶ +${nDown} hidden`:'▼'}</text>`;
   if(fuzzy)h+=`<rect x="${n.x-4}" y="${n.y-4}" width="${W+8}" height="${H+8}" rx="9" fill="none" stroke="#999" stroke-dasharray="2 5" opacity=".6"/>`;
   h+=`<rect x="${n.x}" y="${n.y}" width="${W}" height="${H}" rx="7" fill="${n.status==='root'?'#eef2ff':'#fff'}" stroke="${prob!==undefined?probColor(prob):(n.id===S.sel?'#2563eb':'#bbb')}" stroke-width="${prob!==undefined?3:(n.id===S.sel?2.5:1.2)}" ${fuzzy?'stroke-dasharray="6 4"':''}/>`;
   h+=`<circle cx="${n.x+10}" cy="${n.y+10}" r="4" fill="${SCOL[n.status]}"/>`;
@@ -555,7 +660,7 @@ function drawGraph(){
 function npLive(uri){ return 'https://registry.knowledgepixels.com/np/' + uri.split('/').pop(); }
 function npLinks(n){ if(!n.nanopubs||!n.nanopubs.length) return ''; return `<hr style="border:none;border-top:1px solid var(--line)"><b class="small">Live nanopublications</b>` + n.nanopubs.map(np=>`<div class="row"><span class="small">🔗 <a href="${npLive(np.uri)}" target="_blank" rel="noreferrer">${esc(np.label)}</a> <span class="mut">· canonical: <a href="${np.uri}" target="_blank" rel="noreferrer">${esc(np.uri)}</a></span></span></div>`).join('') + `<p class="small mut">Live view = Knowledge Pixels registry (canonical morpholib w3id URIs currently 404 at w3id; registry view verified live).</p>`; }
 function edgesList(id){ return EDGES.filter(e=>e.from===id||e.to===id).map(e=>`<div class="row"><span class="sw" style="background:${ACOL[e.agent]}"></span><span class="small">${e.from===id?'→':'←'} ${esc(e.from===id?byId[e.to].label:byId[e.from].label)} — ${AGENTS[e.agent].name}${e.label?` (${esc(e.label)})`:''}</span>${e.prob!==undefined?probBadge(e.prob)+`<span class="small mut">Delphi path-success${e.probNote?` · ${esc(e.probNote)}`:''}</span>`:`<span class="badge" style="background:#888">NOT SCORED</span>`}</div>`).join('') || '<p class="small mut">No recorded edges.</p>'; }
-function drawDetail(){ const n=byId[S.sel]; $('detail').innerHTML=`<div class="row"><b style="flex:1">${esc(n.label)}</b><span class="badge" style="background:${SCOL[n.status]}">${SLAB[n.status]}</span><button class="on" onclick="openDrawer('${n.id}')">Inspect (or double-click)</button></div>
+function drawDetail(){ const n=byId[S.sel]; const nd=descendants(n.id).size; $('detail').innerHTML=`<div class="row"><b style="flex:1">${esc(n.label)}</b><span class="badge" style="background:${SCOL[n.status]}">${SLAB[n.status]}</span>${nd?`<button onclick="toggleCollapse('${n.id}')">${COLLAPSED.has(n.id)?'▶ Expand':'▼ Collapse'} downstream (${nd})</button>`:''}<button class="on" onclick="openDrawer('${n.id}')">Inspect</button></div>
 <p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}${n.timeKind==='probabilistic'?' (probabilistic — see timeline)':''}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p>${npLinks(n)}<hr style="border:none;border-top:1px solid var(--line)"><b class="small">Attempts into / out of this node, by agent</b>${edgesList(n.id)}`; }
 
 function openDrawer(id){ S.sel=id; if(id==='p1'||id==='p2'||id==='p3'){S.prize=id;S.prior=DELPHI[id].pooled.prior;S.agentIdx=3;S.subgoal=DELPHI[id].subgoals[3].id;} if(id==='r6'){S.prize='p1';S.prior=DELPHI.p1.pooled.prior;S.agentIdx=3;S.subgoal='P1.4';} drawGraph(); drawDetail(); renderDrawer(); $('drawer').style.display='block'; }
@@ -621,7 +726,40 @@ ${sel.resolvability_verdict?`<p class="small"><b>Resolvability verdict:</b> ${es
 <p class="small mut">Datasets: ${sel.datasets.map(esc).join(', ')}</p></div></div>
 <h3>Meta-resolvability predictions — grading the solve-rate forecast itself</h3>${metas}`;
 }
-agentButtons(); drawGraph(); drawDetail(); initZoom(); renderPred();
+/* ---- Thompson 1917 claims browser: all 59 claims, browsable from the graph.
+   Chapter graph nodes (tch-*) set the chapter filter; every claim row opens
+   its full Pass-1 citation + Pass-2 assessment. ---- */
+/*__THOMP__*/
+const CCOL = {DONE_REPO:'#1F8A65', DONE_ELSEWHERE:'#2A9A8A', PARTIAL_REPO:'#F0A040', UNTESTED:'#C04848', NOT_TESTABLE_AS_STATED:'#888'};
+const CS = {chapter:'all', status:'all', q:'', sel:null};
+function claimList(){ if(!THOMP) return []; const q=CS.q.trim().toLowerCase();
+ return THOMP.claims.filter(c=>(CS.chapter==='all'||c.chapter_title===CS.chapter)&&(CS.status==='all'||c.status===CS.status)&&(!q||(c.id+' '+c.claim+' '+c.chapter_title).toLowerCase().includes(q))); }
+function renderClaims(){
+ const el=$('claimpanel'); if(!THOMP){ el.innerHTML='<p class="small mut">Thompson claims registry not available in this build.</p>'; return; }
+ if(!CS.sel) CS.sel=THOMP.claims[0].id;
+ const sel=THOMP.claims.find(c=>c.id===CS.sel)||THOMP.claims[0];
+ const list=claimList();
+ const rows=list.map(c=>`<div class="prow ${c.id===sel.id?'sel':''}" onclick="CS.sel='${c.id}';renderClaims()"><span class="dot" style="background:${CCOL[c.status]}"></span><b class="small">${c.id}</b> <span class="badge" style="background:${CCOL[c.status]}">${c.status}</span> <span class="small mut">Ch. ${esc(c.chapter)} · pp. ${esc(c.pages)} · Figs. ${esc(c.figures)} · ${esc(c.priority)} · effort ${esc(c.effort)}</span><br><span class="small">${esc(c.claim.slice(0,150))}${c.claim.length>150?'…':''}</span></div>`).join('') || '<p class="small mut">No claims match these filters.</p>';
+ el.innerHTML=`<div class="row"><b style="flex:1">All ${THOMP.n} claims from <i>On Growth and Form</i> (1917) — cited, then assessed against this repo</b><a class="small" href="${THOMP.inventory_url}">full inventory</a></div>
+<p class="small mut">Status: <span class="badge" style="background:#1F8A65">DONE_REPO 9</span> <span class="badge" style="background:#F0A040">PARTIAL_REPO 13</span> <span class="badge" style="background:#2A9A8A">DONE_ELSEWHERE 13</span> <span class="badge" style="background:#C04848">UNTESTED 21</span> <span class="badge" style="background:#888">NOT_TESTABLE 3</span> · In the graph above, the <b>Thompson 1917 claims</b> hub (bottom band) groups these by chapter — click a chapter node to filter here, double-click it to collapse/expand its place in the graph.</p>
+<div class="row"><select onchange="CS.chapter=this.value;renderClaims()" aria-label="Filter by chapter"><option value="all">All chapters (${THOMP.n})</option>${THOMP.chapters.map(ch=>`<option ${CS.chapter===ch.title?'selected':''} value="${esc(ch.title)}">${esc(ch.title)} (${THOMP.claims.filter(c=>c.chapter_title===ch.title).length})</option>`).join('')}</select>
+<select onchange="CS.status=this.value;renderClaims()" aria-label="Filter by status"><option value="all">All statuses</option>${Object.keys(CCOL).map(s=>`<option ${CS.status===s?'selected':''}>${s}</option>`).join('')}</select>
+<input type="search" placeholder="Search claims…" value="${esc(CS.q)}" oninput="CS.q=this.value;renderClaims()" style="flex:1;min-width:140px;font:inherit;font-size:12.5px;padding:5px 9px;border:1px solid var(--line);border-radius:7px" aria-label="Search claims">
+<span class="small mut">showing ${list.length} / ${THOMP.n}</span></div>
+<div class="predgrid"><div style="max-height:560px;overflow-y:auto">${rows}</div>
+<div class="card" style="margin:0"><b>${sel.id} — Thompson (1917), Ch. ${esc(sel.chapter)} · ${esc(sel.chapter_title)}</b> <span class="badge" style="background:${CCOL[sel.status]}">${sel.status}</span>
+<p class="small"><b>Claim (1917, pp. ${esc(sel.pages)}, Figs. ${esc(sel.figures)}):</b> ${esc(sel.claim)}</p>
+<p class="small"><b>What remains / verdict:</b> ${esc(sel.what_remains)}</p>
+<p class="small"><b>Method that would settle it:</b> ${esc(sel.method)}</p>
+<p class="small"><b>Data needed:</b> ${esc(sel.data_needed)} · <b>Effort:</b> ${esc(sel.effort)} · <b>Priority:</b> ${esc(sel.priority)} · <b>Type:</b> ${esc(sel.type)}</p></div></div>`;
+}
+function renderNav(){ const fams=[...new Set(NODES.map(n=>n.family))];
+ $('nodepicker').innerHTML='<option value="">Find a problem… ('+NODES.length+' nodes)</option>'+fams.map(f=>`<optgroup label="${esc(f)}">`+NODES.filter(n=>n.family===f).map(n=>`<option value="${n.id}">${esc(n.label)} — ${SLAB[n.status]}</option>`).join('')+'</optgroup>').join('');
+ $('nodelist').innerHTML=fams.map(f=>`<div class="nlfam">${esc(f)}</div>`+NODES.filter(n=>n.family===f).map(n=>`<button class="nlrow" onclick="pickNode('${n.id}')"><span style="flex:1"><b>${esc(n.label)}</b><br><span class="mut small">${esc(n.sub)}</span></span><span class="badge" style="background:${SCOL[n.status]}">${SLAB[n.status]}</span>${n.nanopubs?'<span class="small">🔗</span>':''}</button>`).join('')).join(''); }
+function setView(v){ const list=v==='list'; $('nodelist').hidden=!list; $('graphwrap').style.display=list?'none':''; $('vlist').classList.toggle('on',list); $('vgraph').classList.toggle('on',!list); }
+function pickNode(id){ if(!byId[id]) return; S.sel=id; const p=$('nodepicker'); if(p) p.value=id; drawGraph(); drawDetail(); openDrawer(id); }
+agentButtons(); drawGraph(); drawDetail(); initZoom(); renderPred(); renderClaims(); renderNav();
+if(window.matchMedia('(max-width: 760px)').matches) setView('list');
 if(location.hash){ const hid = location.hash.slice(1); if(byId[hid]){ S.sel = hid; drawGraph(); drawDetail(); document.getElementById('detail').scrollIntoView({behavior:'smooth', block:'center'}); } }
 </script></body></html>
 """
