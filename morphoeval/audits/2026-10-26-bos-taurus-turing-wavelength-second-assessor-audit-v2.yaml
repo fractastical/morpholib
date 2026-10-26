@@ -1,0 +1,457 @@
+# MorphoEval audit — BLINDED independent second-assessor assessment (v2) of
+# models/1981-murray-bos-taurus-turing-wavelength.py at commit 6e00a18b (Pass 6:
+# 10 Holstein specimens), 2026-10-26.  Assessor: Claude Fable 5.1 (Anthropic),
+# role second_assessor.
+#
+# Blinding statement: this assessment was produced WITHOUT reading any
+# morphoeval/audits/*bos-taurus* file (primary or earlier second-assessor, any
+# version), any morphoeval/runs/*bos-taurus* loop record, the scoring tables in
+# morphoeval/README.md, or the git history of those files.  Only
+# morphoeval/rubric.yaml, morphoeval/schema.yaml, the validator, the target
+# script, and the dataset directory were read.  'verdict' / 'note' /
+# 'interpretation' strings inside the script and metrics JSON were treated as
+# builder claims to be tested, not as evidence.  All numbers quoted below were
+# re-derived by the assessor (independent numpy re-derivation of the dispersion
+# relation; isolated re-run of --self-test and the full --no-show --animate
+# pipeline in a /tmp copy of the tree; per-specimen ROI re-segmentation and
+# diagnostic renders; SHA-256 recomputation of all 10 specimen files; Wikimedia
+# Commons API licence look-ups for three of the nine extra specimens; paired
+# t / Wilcoxon / binomial tests on the committed seed- and specimen-level
+# distances).  Nothing in the repository other than this file was modified; the
+# full re-run wrote only into /tmp.
+#
+# Overall 57.7 (faithfulness 51.1: model-implementation 62.7, biological-
+# validation 42.5; reproducibility 73.1).  Uncalibrated 0-100 rubric scores,
+# not probabilities.  Line numbers refer to commit 6e00a18b.
+
+audit:
+  id: 2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-26"
+  role: second_assessor
+  blinded: true
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Cursor agent, blinded independent second assessor, v2 at Pass 6)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 6e00a18b1c51d7fac2d66ae551e497d223f468da
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+      scipy: "1.16.3 (assessor's significance tests only; the script does not import scipy)"
+    note: >-
+      HEAD = 6e00a18b ("Bos taurus Pass 6: 9 held-out Holstein specimens");
+      `git diff HEAD` is empty for the script and the dataset directory.  At
+      audit time `git branch -r --contains 6e00a18b` was EMPTY, i.e. the
+      checkpoint commit had not been pushed to any remote branch, so the
+      blob URLs implied by this audit resolve only in the local clone until
+      it is pushed.  The rendered PNG/GIF artifacts are git-ignored
+      repository-wide (.gitignore `*.png`, `*.gif`), so only the metrics
+      JSON, reference JSON, bib, README and the ten specimen JPEGs are part
+      of the checkpoint; artifact digests below were taken from the working
+      tree and are byte-identical to the assessor's isolated re-run.
+      Isolated full run (--no-show --animate) took 62 s wall; --self-test 3.3 s.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "J. Theor. Biol. 88(1):161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81(3):389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  edea2017:
+    title: "Association of MITF loci with coat color spotting patterns in Ethiopian cattle"
+    authors: "Edea Z, Dadi H, Dessie T, Kim I-H, Kim K-S (Crossref, queried by the assessor 2026-10-26; the script/bib list 'Edea A, Dadi H, Dessie T, Kim K-S, Kim J-J' is wrong in the first initial and the fourth author)"
+    venue: "Genes & Genomics 39(3):285-293 (2017; online 2016)"
+    doi: 10.1007/s13258-016-0493-4
+  mort2016:
+    title: "Reconciling diverse mammalian pigmentation patterns with a fundamental mathematical model"
+    authors: "Mort RL, Ross RJH, Hainey KJ, Harrison OJ, Keighren MA, Landini G, Baker RE, Painter KJ, Jackson IJ, Yates CA"
+    venue: "Nature Communications 7:10288 (2016) — NOT cited by the script; the published melanoblast-colonisation model that the script's ad-hoc Eden control stands in for"
+    doi: 10.1038/ncomms10288
+  crampin1999:
+    title: "Reaction and diffusion on growing domains: scenarios for robust pattern formation"
+    authors: "Crampin EJ, Gaffney EA, Maini PK"
+    venue: "Bull. Math. Biol. 61(6):1093-1120 (1999) — NOT cited by the script; the standard growing-domain RD formulation (with dilution term) that the stage-wise bilinear resize approximates"
+    doi: 10.1006/bulm.1999.0131
+
+simulations:
+  - id: murray-bos-taurus-turing-wavelength
+    name: "Murray (1981) Turing pre-pattern (Schnakenberg kinetics) vs melanoblast-colonisation (Eden) control, tested against Holstein-Friesian coat spotting (10 specimens)"
+    organism: "Bos taurus (Holstein-Friesian): black/white coat spotting on the flank"
+    domain: morphogenesis
+    script: models/1981-murray-bos-taurus-turing-wavelength.py
+    output: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png
+    also:
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_reference.json
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json
+      - datasets/bos_taurus_turing_wavelength/paper_citations.bib
+      - datasets/bos_taurus_turing_wavelength/README.md
+    status: evaluated
+    source_refs: [turing1952, murray1981, schnakenberg1979, edea2017]
+    provenance:
+      artifact_sha256: f9b34dc8c524170ecc71818634febb1a19bab16dbacc29ff9fa31758a98cddd2
+      input_dataset_sha256:
+        bos_taurus_specimen.jpg: 74f82f3d3bac41565c76001541b880df88b9978ca944e423fa5821731f572555
+        bos_taurus_specimen_02.jpg: 52cf0c33e41d25d1d49fc2288ab6f1468a8ec70b2c24ab0ed700521164ecb32f
+        bos_taurus_specimen_03.jpg: 72d422a940c8d41d40961b135714d1c54e98f6f3debe8e32aa9393aee72f2d08
+        bos_taurus_specimen_04.jpg: e403d851e3a15ea58200b3d93f7211f642ced0bb5d85f419e173b9f2c79f079b
+        bos_taurus_specimen_05.jpg: 2496efd7b8fa741298d0dceb597595e50479d84f64bdb88e8430815f26e3c9d5
+        bos_taurus_specimen_06.jpg: 202ca256260b9f1582b6af7d11312112d3fffe9450ace31ed32def5d014b78ea
+        bos_taurus_specimen_07.jpg: 142deb5d89ed2ac67215e6ba867491de5af47142da0f6095d0a781f7f6639224
+        bos_taurus_specimen_08.jpg: 312e126d4a9d6d7df8c9b99b1a20d385885c72f707165018dfd5f784b8045daf
+        bos_taurus_specimen_09.jpg: b69fa62e5385a0dd82aa70ba592b474d431bfbdfb5db8c4c4118b3c66b4acb92
+        bos_taurus_specimen_10.jpg: 5cbbe4f7adc00bb619fe7ad6530f6cf4b6c8146f216c8d3f9aa44b86d4f5ee76
+        bos_taurus_turing_wavelength_reference.json: 27653bfe58ab9536bd3aae024279db89f63f145ee07032ca92af9f5f704e1605
+        bos_taurus_turing_wavelength_metrics.json: 98d2db86689cc5351f3a5eed4d405b9c053a713e71edcc47a5da5d0a15824812
+        bos_taurus_specimens_montage.png: 9dece3f3ef7dc686ca4dc6b3e928c6d8750ec186046d5952379a636332b627ab
+        bos_taurus_turing_wavelength_animation.gif: 8a68441496e85d24d3705e3375af0d4783c38d1ab5a8a039f6691633c38241a1
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952): diffusion-driven instability of a homogeneous steady state; Murray (1981): RD pre-pattern as a mechanism for mammalian coat markings with a scale (domain-size) argument; Schnakenberg (1979): the a-u+u^2v / b-u^2v kinetics actually integrated."
+        - "Edea et al. (2017): MITF-locus association with spotting in cattle, i.e. a melanoblast/melanocyte genetic account."
+      reconstructed_in_script:
+        - "Schnakenberg linear Turing analysis (J, tr, det, cross term, k_c, unstable band, numeric sigma maximiser, equal-diffusion control) and explicit-Euler periodic-grid simulation — all independently re-derived by the assessor and found correct."
+        - "Stage-wise 'growing domain' (bilinear resize, no dilution term), a two-scale random gamma multiplier as 'tissue heterogeneity', and a generic Eden colonisation process with a dorsal founder row — none of these is a published model; they are the builder's analogues."
+        - "Otsu + 3x3-majority mask morphometrics on rectangular ROIs of ten colour/sepia photographs, an eight-term 'distance v2', 5-seed comparison on specimen 01 and transfer of the specimen-01-fitted settings to nine further specimens."
+      transfer_boundary:
+        - "Dimensionless 160x120 lattice vs photographs of 288-657 px ROI height; only ratio statistics cross the boundary, but boundary roughness (perimeter/sqrt(area)) is NOT resolution-invariant and diameter/width is NOT aspect-ratio-invariant (see morphometric-validation)."
+      does_not_claim:
+        - "The script does not claim to implement Murray (1981)'s own kinetics (docstring lines 26-31) and does not claim a developmental cause for Holstein spotting; it tests morphometric consistency only."
+        - "This audit does not claim the melanoblast-vs-RD ranking is statistically established: neither the Pass-5 nor the Pass-6 difference reaches p < 0.05 under paired tests on the committed numbers."
+    summary: >-
+      Blinded second-assessor pass at Pass 6.  The Turing core is correct: the
+      assessor's independent numpy re-derivation reproduces J = [[0.8, 1], [-1.8, -1]],
+      tr J = -0.2, det J = 1, cross term 15, k_c^2 = 0.375 (lambda_c = 10.26 px),
+      unstable band k in [0.272, 0.822], numeric sigma_max = 0.263 at k* = 0.487,
+      and an equal-diffusion control with sigma_max = -0.10; dt = 0.01 respects the
+      1/(4 D_v) = 0.0125 explicit-Euler bound.  The script now says plainly that
+      it integrates Schnakenberg (1979), not Murray's coat kinetics.  The full
+      pipeline is byte-reproducible: an isolated re-run reproduced the committed
+      metrics JSON, both PNGs and the 38-frame GIF with identical SHA-256; all
+      ten specimen digests match the reference JSON; three Commons licences
+      checked via the API agree with the JSON.  The biological-validation side
+      remains weak despite real improvements (n = 10, coverage-only calibration,
+      distance v2 without tautological terms, 5 seeds, genuinely held-out model
+      parameters).  Independent findings: (1) the rectangular ROIs are
+      materially contaminated in at least six of ten specimens — the whole
+      head in 08, dark tree background in 09, grass/ground/legs/udder shadow
+      in 03/05/06/10, legs and ground in 01 and 07 — so 'coverage', enclave
+      counts and roughness are partly measuring background, and specimen 07
+      has a single 'enclave' (the white sky-plus-coat) with CV = 0; (2) the
+      boundary-roughness statistic is resolution-dependent: specimen 01's
+      enclave roughness falls from 9.75 at native 1112 px to 6.27 when the ROI
+      is downsampled to the 160 px simulation width, which is close to the RD
+      value (5.3) rather than the Eden value (8.9) — the Eden model's
+      pixel-scale fuzz is being credited as 'cow-like jaggedness'; (3) the
+      headline model ranking is not statistically supported: Pass 5 paired
+      t p = 0.21 (Wilcoxon p = 0.19; Eden median 2.31 vs RD 2.44, the Eden
+      mean being pulled down by one seed at 0.59), Pass 6 Eden wins 7/9
+      specimens (binomial p = 0.18, paired t p = 0.20), and no uncertainty is
+      reported; (4) diameter/width normalisation is aspect-ratio dependent
+      (ROI 03 is 2.8:1 vs the 4:3 lattice, a 0.38 log-unit bias on both
+      diameter terms); (5) the tissue-heterogeneity map is re-drawn from the
+      RNG at every growth stage (lines 219-223), so it is not tissue-attached;
+      (6) nine CC-BY / CC-BY-SA images carry no creator attribution in the
+      reference JSON (CC BY requires it), the Eden control cites no source
+      (Eden 1961 / Mort et al. 2016), the Edea et al. author list that the
+      script says was 'verified via Crossref' is still wrong (Crossref: Edea Z,
+      Dadi H, Dessie T, Kim I-H, Kim K-S), and the README still describes an
+      n = 1 study.  The script's own honest negative verdict about single-wavelength
+      Turing is well supported; its positive claim for the Eden control is not.
+    scores:
+      model-fidelity:
+        value: 64
+        rationale: >-
+          Turing/Schnakenberg core: correct and independently verified.  Steady
+          state (u0 = a+b, v0 = b/(a+b)^2), Jacobian, tr/det stability
+          conditions, cross term D_v f_u + D_u g_v = 15 > 0, inequality
+          225 > 80, k_c^2 = 0.375, band roots of det(J - k^2 D) = 0 and the
+          numeric sigma maximiser (k* = 0.487 != k_c, correctly commented at
+          lines 120-122) all match the assessor's own derivation; the
+          equal-diffusion control is a proper negative control (sigma_max =
+          -0.10); dispersion_sigma returns the real part when the discriminant
+          is negative (correct growth rate).  Explicit Euler dt = 0.01 is under
+          the 0.0125 periodic-lattice bound; FFT wavelength 11.87 px lies
+          between lambda_c 10.26 and lambda* 12.91 as expected for a
+          160-px periodic lattice.  Deductions: (-12) the script is filed under
+          Murray (1981) but integrates Schnakenberg kinetics — now disclosed
+          (lines 26-31) but the model's fidelity to the named source remains
+          loose, and Murray's scale argument is invoked verbally rather than
+          implemented as a domain-size/lambda_c ratio sweep; (-10) the
+          'growing domain' is three bilinear resizes with no dilution term and
+          no growth-rate parameter (Crampin et al. 1999 is the standard; Kondo &
+          Asai is name-checked only), so it is an analogue, not a published
+          growing-domain RD model; (-6) the 'tissue heterogeneity' gamma field
+          is regenerated from the RNG at each stage (lines 219-223: `_gamma_map`
+          is called inside the stage loop), so the heterogeneity is not
+          attached to the tissue through growth — a modelling inconsistency
+          with the stated biological interpretation; (-8) the melanoblast
+          'positive control' is a generic Eden cluster-growth process with a
+          dorsal founder row and random founders (lines 280-314); it has no
+          source citation and does not implement any published melanoblast
+          model (e.g. Mort et al. 2016 proliferation-migration), so the
+          two-model comparison is between a published RD system and an
+          unpublished heuristic.
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [26, 44], note: "Docstring: Schnakenberg kinetics, steady state, Jacobian, Turing conditions, k_c, equal-diffusion control — disclaimer that these are NOT Murray (1981)'s kinetics", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [94, 142], note: "steady_state / jacobian / dispersion_sigma / turing_analysis — assessor re-derived J=[[0.8,1],[-1.8,-1]], kc2=0.375, band [0.272,0.822], sigma_max 0.263, eq-diff -0.10: all match", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [151, 160], note: "Explicit Euler, periodic 5-point Laplacian, dt=0.01 < 1/(4 D_v)=0.0125", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [210, 224], note: "simulate_growing: bilinear resize stages, no dilution term; _gamma_map re-drawn inside the stage loop (219-223) so heterogeneity is not tissue-attached", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [260, 314], note: "simulate_melanoblast: generic Eden growth with dorsal founder row, coverage stopping rule; no source model cited", supports: false}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, lines: [4, 21], note: "Committed linear_turing_analysis block reproduced exactly by the assessor's re-run and independent derivation", supports: true}
+      specimen-match:
+        value: 38
+        rationale: >-
+          Side-by-side renders exist (5-panel comparison PNG, 2x9 montage,
+          38-frame GIF) and the three model outputs are visually distinct from
+          one another, which the rubric requires.  But none resembles a
+          Holstein flank: Pass-1 Turing (gamma = 1) is a uniform hexagonal spot
+          field; the remediated growing-het fit (gamma = 0.25) is ~15
+          near-circular, near-uniform white enclaves on black — the cow's
+          enclaves are one large irregular region plus a few small ones; the
+          Eden panel has pixel-scale fractal fuzz on every boundary, a texture
+          no cow shows (real patch edges are smooth at the pixel scale and
+          irregular only at the macro scale).  The script itself concedes the
+          mismatch for RD (verdict, lines 683-690) and the assessor credits
+          that honesty, but the rubric scores resemblance.  Further
+          deductions: the left-hand 'specimen' panels are Otsu masks of
+          rectangular ROIs that include background and limbs (specimen 01
+          mask shows ground/leg ribbons at bottom left and right; see
+          morphometric-validation for the other nine), so even the specimen
+          side of the comparison is not a clean coat pattern; the comparison
+          PNG shows the raw Otsu mask (lines 711-713) while all Pass-2/5/6
+          statistics use the majority-filtered mask, so the picture and the
+          numbers are not the same object; and the 2x9 montage is rendered at
+          figsize (22, 5) / 110 dpi, giving ~230x100 px thumbnails per ROI
+          that cannot be used to judge segmentation quality.  Credit: three
+          models shown on one coverage-matched footing, GIF shows the growth
+          and colonisation trajectories stage-by-stage, titles carry the
+          numbers.
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png, lines: [0, 0], note: "Five panels: sepia flank ROI, raw Otsu mask, gamma=1 spots (142), growing-het fit (2 patches/15 round enclaves), Eden control (pixel-fuzzy blobs); none resembles the specimen", supports: false}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_specimens_montage.png, lines: [0, 0], note: "2x9 montage of extra specimens; thumbnails too small to judge; several masks visibly include background/limbs", supports: false}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_animation.gif, lines: [0, 0], note: "38 frames; RD ends as uniform round white enclaves, Eden as fuzzy clusters; cow mask panel includes ground/leg ribbons", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [694, 739], note: "render(): raw Otsu mask shown (711-713) while statistics use clean_mask; ROI fractions hard-coded (704-707) rather than read from the reference JSON", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [863, 883], note: "render_specimens(): 2x9 montage at figsize (22,5), dpi 110", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [670, 691], note: "verdict(): script honestly reports single-wavelength Turing does not match (criterion at 680-682)", supports: true}
+      parameter-expressivity:
+        value: 60
+        rationale: >-
+          gamma is a live, monotone wavelength control: the committed sweep
+          gives lambda_FFT = 28.3 / 11.9 / 5.4 px for gamma = 0.25 / 1 / 4
+          against lambda_c = 20.5 / 10.3 / 5.1 (the gamma^-1/2 law, with the
+          expected lattice quantisation at the long-wavelength end), spot
+          counts 21 / 142 / 434, and setting D_v = D_u abolishes the
+          instability (sigma_max = -0.10).  fit_growing sweeps gamma x mode x
+          polarity x quantile (72 candidates) and publishes a leaderboard.
+          Deductions: heterogeneity is binary (0 or 0.8) and never swept, so
+          its claimed effects (patch-size diversification, boundary
+          roughening) are asserted, not demonstrated; founder_fraction for
+          Eden is a fixed 0.002 whose selection on 3 seeds is described only in
+          a docstring (lines 275-278) with no table; a, b, D_v, domain size
+          and the growth schedule are module constants with no CLI exposure
+          (argparse has only --self-test/--no-show/--animate), so a reader
+          cannot exercise any axis without editing source; and the
+          'threshold quantile' axis in the Pass-2 fit is later fixed to the
+          coverage, so the only genuinely free RD axes in Passes 5-6 are gamma
+          and the stage schedule, neither varied there.
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, lines: [69, 148], note: "simulation_sweep: lambda_fft 28.28/11.87/5.40 px, n_patches_big 21/142/434 for gamma 0.25/1/4 — monotone", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [475, 505], note: "fit_growing: 3 modes x 4 gammas x 2 polarities x 3 quantiles; heterogeneity fixed at 0.8", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [83, 90], note: "All physical parameters are module constants; no CLI axes", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [886, 892], note: "argparse exposes only --self-test, --no-show, --animate", supports: false}
+      morphometric-validation:
+        value: 50
+        rationale: >-
+          Genuine progress over a one-photo RD demo: the same patch_stats
+          function is applied to specimen and simulation; coverage is the only
+          calibrated quantity and is calibrated identically for every model
+          (quantile threshold for RD, stopping rule for Eden) — a legitimate
+          nuisance-parameter treatment; distance v2 drops coverage and
+          largest-patch share, which were tautological under that calibration,
+          and the assessor confirmed distance_v2(x, x) = 0; five seeds per
+          model; and the nine extra specimens are genuinely held out from the
+          parameters fitted on specimen 01 (gamma, heterogeneity, polarity,
+          founder density are not re-fitted in multi_specimen_comparison —
+          assessor re-ran and reproduced every per-specimen number).  Against
+          that, five independent defects cap the score at 50.  (a) ROI
+          contamination: the rectangular ROIs plus whole-ROI Otsu include the
+          entire head in 08, dark tree canopy across the top of 09,
+          grass/ground/udder shadow in 03, 05, 06, 10, and legs/ground in 01
+          and 07; in 07 the only 'big enclave' is white sky joined to white
+          coat (enclave count 1, CV 0.0, roughness 16.5, all artefacts of the
+          crop), and in 09 'pigment coverage' 0.59 is mostly background.  The
+          held-out statistics therefore measure crop geometry as much as coat
+          pattern.  (b) Resolution confound: boundary_roughness = perimeter /
+          sqrt(area) on a 4-neighbour digital boundary is not scale-free;
+          the assessor downsampled specimen 01's ROI from 1112 px to 556 / 278 /
+          160 px width and the enclave roughness fell 9.75 -> 8.01 -> 7.24 ->
+          6.27 (pigment 10.83 -> 6.16).  At the simulation's own 160-px
+          resolution the cow is therefore close to the RD value (5.3), and the
+          Eden value (8.9) is pixel-scale fuzz from a coarse lattice, not
+          cow-like morphology.  The self-test assertion that Eden is rougher
+          than RD (line 770) is true but measures lattice artefact.  (c) No
+          inferential statistics: the Pass-5 Eden-vs-RD difference (2.07 vs
+          2.70) is a paired t p = 0.21 / Wilcoxon p = 0.19 on five seeds, the
+          Eden mean being pulled by one seed (0.59; medians 2.31 vs 2.44); in
+          Pass 6 Eden wins 7 of 9 held-out specimens (binomial p = 0.18,
+          paired t p = 0.20) and per-specimen seed spread is not even stored.
+          The figure title 'distance v2 2.07 vs RD 2.70 (5 seeds)' presents an
+          insignificant difference as a result.  (d) diameter/width
+          normalisation depends on ROI aspect ratio: for a patch of fixed
+          area fraction, d/W scales as sqrt(H/W); ROI 03 is 2.8:1 vs the 4:3
+          lattice, a factor 0.69 (0.38 log-units on each of two diameter
+          terms, i.e. up to ~0.75 of distance v2 from geometry alone); most
+          other ROIs carry 0.2-0.25.  (e) Two specimen pipelines coexist:
+          specimen_stats (raw Otsu, used for the Pass-1 verdict and
+          self-test) and specimen_pattern (majority-filtered, used for
+          Passes 2-6) give roughness 13.6 vs 10.8 and 181 vs 38 components for
+          the same ROI, and the JSON reports both without saying so.  Also:
+          the eight distance weights (1, 1, 1, 1, 0.5, 0.5, 0.3, 0.3) are
+          unexplained and no weight-sensitivity is shown; the Eden founder
+          density was selected on the scored enclave-count statistic for
+          specimen 01 (disclosed, lines 275-278) which makes Pass 5 a
+          partially in-sample comparison for Eden; and no literature-reported
+          Holstein morphometric (e.g. published pigmented-area percentages)
+          is used — all targets are self-measured from the photographs.
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [321, 342], note: "morphometric_distance_v2: coverage/largest-share removed; eight weighted terms including resolution-sensitive roughness and width-normalised diameters", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [424, 472], note: "multi_specimen_comparison: held-out specimens, parameters unchanged, coverage-only calibration; stores only per-specimen means (no seed SD, no test)", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [386, 407], note: "clean_mask + roi_dark_mask: whole-ROI Otsu on a rectangle; no body/coat mask, so background, head, legs and shadows enter the statistics", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [542, 558], note: "boundary_roughness = 4-neighbour perimeter / sqrt(area): not resolution-invariant (assessor: cow-01 enclave roughness 9.75 at 1112 px -> 6.27 at 160 px)", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [593, 611], note: "specimen_stats uses the raw Otsu mask (607) whereas specimen_pattern (410-416) uses clean_mask — two inconsistent specimen pipelines", supports: false}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, lines: [293, 339], note: "Pass-5 by-seed distances: Eden [2.42,2.91,2.14,2.31,0.59] vs RD [3.28,2.31,2.17,3.27,2.44] — paired t p=0.21, Wilcoxon p=0.19 (assessor)", supports: false}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, lines: [351, 456], note: "Pass-6: Eden 3.19 vs RD 3.60 held-out mean; Eden wins 7/9 (binomial p=0.18); specimen 07 enclave CV 0.0 (single enclave = sky+coat)", supports: false}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_reference.json, lines: [170, 223], note: "ROIs for 07/08/09 as fractions of the full frame; 08 contains the whole head, 09 dark tree canopy, 07 sky and ground (assessor's diagnostic renders)", supports: false}
+      source-traceability:
+        value: 68
+        rationale: >-
+          Strong points: four primary sources with DOIs (Turing 1952, Murray
+          1981, Schnakenberg 1979, Edea et al. 2017) in script header and bib,
+          all four DOIs resolving on Crossref to the stated titles (assessor
+          query; Schnakenberg = J. Theor. Biol. 81:389-400, Crampin and Mort
+          DOIs below also resolve);
+          all ten specimen SHA-256 digests recomputed by the assessor match the
+          reference JSON and are verified at runtime (lines 430-432, 594-597);
+          each extra specimen has a Commons source URL, title and licence, and
+          the assessor's Commons API look-ups agree for 02 (Public domain,
+          Keith Weller / USDA), 08 (CC BY 4.0, Quintin Soloviev) and 09
+          (CC BY-SA 4.0, Cvmontuy).  Deductions: (-10) none of the nine
+          CC-BY / CC-BY-SA images records its creator — the JSON has
+          title/url/licence only — which does not satisfy the attribution
+          condition of those licences (specimen 01 alone has a credit line);
+          (-6) the Eden / melanoblast-colonisation control has no source at
+          all (neither Eden 1961 nor Mort et al. 2016 is cited), so the
+          competing model is untraceable; (-5) the local files are
+          Commons-rendered 1920-px derivatives ('Special:FilePath?width=1600
+          (served 1920w)'), so the pinned digests cannot be matched against
+          the Commons originals' sha1 and re-download is not guaranteed to be
+          byte-identical — pinning works only because the JPEGs are committed;
+          (-4) the README still describes a single c.1920 specimen and lists
+          only two outputs, with no mention of the nine extra specimens, the
+          montage, the GIF, or the licences; (-7) the Edea et al. author
+          list, which the script header (lines 23-25) and bib (line 34)
+          state was 'verified via Crossref 2026-10-26', is still wrong:
+          Crossref returns Zewdu Edea, Hailu Dadi, Tadelle Dessie, Il-Hoi Kim,
+          Kwan-Suk Kim, whereas the script/bib give 'Edea A, Dadi H, Dessie T,
+          Kim K-S, Kim J-J' (wrong first initial, wrong fourth author,
+          swapped Kims) — a verification claim that does not hold; the bib
+          entry for Schnakenberg (1979) also lacks volume/pages (81, 389-400).
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [12, 24], note: "Four DOIs in the header; attribution correction for Edea et al. disclosed", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_reference.json, lines: [41, 48], note: "Specimen 01: SHA-256, source URL, credit line, licence — complete", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_reference.json, lines: [79, 242], note: "Nine extra specimens: SHA-256, title, URL, licence — but no creator/attribution field for any CC-licensed image; files are re-rendered 1920-px derivatives", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [428, 432], note: "Runtime SHA-256 verification of each extra specimen", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength/paper_citations.bib, lines: [24, 43], note: "Edea et al. entry 'Edea, A. … Kim, Kwan-Suk and Kim, Jae-Jung' claimed Crossref-verified; Crossref gives Edea Z, Dadi H, Dessie T, Kim I-H, Kim K-S. Schnakenberg lacks volume/pages; no entry for the Eden/melanoblast model", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [20, 25], note: "Header repeats the incorrect Edea author list together with the 'verified via Crossref' claim", supports: false}
+          - {file: datasets/bos_taurus_turing_wavelength/README.md, lines: [1, 12], note: "README describes n=1 specimen and two outputs only; nine extra specimens, montage, GIF and licences absent", supports: false}
+      code-traceability:
+        value: 66
+        rationale: >-
+          The linear-analysis path is well traced: every docstring equation
+          (steady state, Jacobian, Turing inequalities, k_c, lambda_c,
+          equal-diffusion control) maps to a named function and to a
+          self-test assertion, and the k_c-vs-k* subtlety is commented in
+          place.  Pass 2-6 code is traced only to the audit loop ('Fable
+          audit', 'R2', 'R3', 'Pass-6 audit') rather than to sources: the
+          growing-domain scheme cites no equation (Murray's scale argument and
+          Kondo-Asai are named in a comment, not pinned to a section or
+          figure), the heterogeneity construction (coarse + 0.55 x fine,
+          normalised by max |.|) is unexplained, the Eden process has no
+          source, the distance-v2 weights have no derivation, and the
+          founder-density choice lives in a docstring.  Maintainability
+          defects that break the trace between data and figure: render()
+          re-hard-codes the ROI fractions 0.17 / 0.22 (lines 704-707) instead
+          of reading the reference JSON, animate() hard-codes '/ 34.0'
+          frames for progress matching (line 824), and the raw-vs-clean mask
+          duality is not documented anywhere.
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [114, 142], note: "turing_analysis: each reported quantity corresponds to a docstring equation; band-vs-maximiser comment at 120-122", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [742, 776], note: "self_test asserts each stated linear property plus Pass-2/5 shape, coverage and roughness-ordering checks", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [163, 207], note: "Pass-2/3 comments trace to audit passes and name Murray/Kondo-Asai without equation or section pointers; heterogeneity recipe unexplained", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [704, 707], note: "ROI fractions duplicated as literals in render()", supports: false}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [822, 825], note: "animate(): hard-coded 34.0 frame count for progress matching", supports: false}
+      repro-package:
+        value: 82
+        rationale: >-
+          Excellent determinism: the assessor's isolated re-run in a /tmp copy
+          of the tree (same venv) reproduced the committed metrics JSON and
+          the comparison PNG, montage PNG and 38-frame GIF with byte-identical
+          SHA-256; --self-test passes in 3.3 s and the full --no-show
+          --animate run completes in 62 s; seeds are fixed (7; 7/17/27/37/47);
+          all specimen inputs are SHA-verified at runtime; invocation is
+          documented in the docstring; requirements.lock.txt pins
+          numpy 2.5.4 / matplotlib 3.10.7 / pillow 12.0.0 matching the
+          environment used.  Deductions: (-6) the checkpoint commit was on no
+          remote branch at audit time, so the checkpoint is not yet
+          externally resolvable; (-4) PNG/GIF outputs are git-ignored
+          repository-wide, so the rendered artifacts that this audit inspects
+          are not part of the committed checkpoint and must be regenerated
+          (they do regenerate identically, which mitigates); (-4) self-test
+          does not exercise multi_specimen_comparison (the Pass-6 SHA checks,
+          ROI parsing and distance-v2 identity are untested), and the
+          `--animate` path shares no code with run() for the specimen mask
+          (uses the raw Otsu mask again); (-4) README invocation/outputs list
+          is stale (no montage/GIF/metrics-JSON schema), and the explicit
+          Euler scheme has no runtime assertion of the dt bound.
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [62, 66], note: "Documented invocations: --self-test, --no-show, --no-show --animate", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [886, 911], note: "main(): writes metrics JSON, comparison PNG, montage, optional GIF; deterministic seeds; assessor re-run byte-identical", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [742, 776], note: "self_test covers linear analysis, static sim, specimen 01, growing, Eden — not Pass 6", supports: false}
+          - {file: requirements.lock.txt, lines: [18, 27], note: "matplotlib==3.10.7, numpy==2.5.4, pillow==12.0.0 pinned; matches the audit environment", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, lines: [1, 3], note: "Committed metrics JSON SHA-256 98d2db86… equals the assessor's isolated re-run output", supports: true}
+    remediation:
+      - "ROI/segmentation (morphometric-validation, specimen-match): replace the rectangular ROI + whole-ROI Otsu with a coat mask — at minimum a hand-drawn polygon per specimen stored in the reference JSON that excludes head, legs, udder, sky and ground; better, a two-class (coat vs background) segmentation followed by Otsu inside the coat. Re-derive all Pass-5/6 numbers; specimens 07, 08, 09 should change most. Store the per-specimen ROI polygons and the resulting masks (or their SHA-256) so the segmentation is auditable."
+      - "Resolution confound (morphometric-validation): make the comparison scale-matched — either downsample every specimen mask to the simulation lattice width (160 px) before patch_stats, or run the simulations at the specimen resolution — and report roughness at matched resolution. Replace perimeter/sqrt(area) with a scale-free shape statistic (e.g. solidity or convexity defect ratio measured on smoothed contours). Re-check whether the Eden control still 'wins' once its lattice fuzz is no longer credited."
+      - "Statistics (morphometric-validation): report per-seed and per-specimen distributions with a paired test (seeds are shared across models) and a bootstrap CI on the Pass-6 mean difference; state in the figure title and metrics 'note' that Eden-vs-RD is not significant at n = 5 seeds / 9 specimens (assessor: p ≈ 0.2 throughout). Increase seeds (≥ 20) — the Eden run is cheap — and store seed SDs in pass6 per_specimen."
+      - "Aspect-ratio bias (morphometric-validation): normalise diameters by sqrt(ROI area) instead of ROI width, or crop/pad the simulation to each specimen's ROI aspect ratio before thresholding."
+      - "Model fidelity: attach the heterogeneity field to the tissue (generate once on the embryonic grid and resize it with u and v), add the dilution term for the growing domain (Crampin, Gaffney & Maini 1999, doi:10.1006/bulm.1999.0131) or state explicitly that growth is instantaneous resize; cite Eden (1961) and Mort et al. (2016, doi:10.1038/ncomms10288) for the melanoblast control and, ideally, implement the Mort et al. proliferation-plus-migration rule rather than a generic Eden process."
+      - "Consistency: use one specimen pipeline (clean_mask or raw) for verdict, self-test, render() and animate(); read ROI fractions from the reference JSON in render(); remove the hard-coded 34.0 in animate()."
+      - "Source traceability / licensing: add an `author`/`credit` field for each CC-BY / CC-BY-SA image (Commons 'Artist' metadata: e.g. 02 Keith Weller/USDA, 08 Quintin Soloviev, 09 Cvmontuy), record the Commons original sha1 and the exact derivative URL fetched, complete the Schnakenberg bib entry (vol 81, pp 389-400), correct the Edea et al. author list in both the script header and the bib to 'Edea Z, Dadi H, Dessie T, Kim I-H, Kim K-S' (Crossref) and drop the 'verified' wording until it is, and update README.md to describe the ten-specimen design, the montage, the GIF and the licences."
+      - "Repro package: push the checkpoint commit to the remote; extend self_test to call multi_specimen_comparison on one seed (SHA checks + distance_v2(x,x)==0); assert DT < 1/(4*max(D_U,D_V)) at import; consider committing the comparison PNG via a .gitignore exception as other datasets do for *_specimen.png."
+    unverifiable:
+      - "Commons licence/author metadata was checked for specimens 02, 08 and 09 only; 03-07 and 10 are taken on trust from the reference JSON."
+      - "Whether the nine extra-specimen ROIs were chosen before or after inspecting model distances cannot be established from the committed tree (git history of the dataset was off-limits under blinding); the parameter hold-out is verified from code, the ROI-choice hold-out is not."

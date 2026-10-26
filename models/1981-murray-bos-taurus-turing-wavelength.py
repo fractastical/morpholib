@@ -17,11 +17,12 @@ Primary sources (DOIs verified against Crossref, 2026-10-26):
      doi:10.1016/0022-5193(81)90334-9
   Counter-evidence the model must face (white spotting in cattle is a
   melanoblast migration/survival trait, not an established RD pre-pattern):
-  3. Edea A, Dadi H, Dessie T, Kim K-S, Kim J-J (2016). Association of MITF
+  3. Edea Z, Dadi H, Dessie T, Kim I-H, Kim K-S (2016). Association of MITF
      loci with coat color spotting patterns in Ethiopian cattle.
      Genes & Genomics 39(3):285-293. doi:10.1007/s13258-016-0493-4
-     (author list verified via Crossref 2026-10-26, correcting an earlier
-     misattribution in this docstring, flagged by the Fable second assessor)
+     (full author list from Crossref: Zewdu Edea, Hailu Dadi, Tadelle Dessie,
+     Il-Hoi Kim, Kwan-Suk Kim; corrected twice after successive Fable audits
+     flagged first the surname attribution and then the initials)
 
 Model implemented (Schnakenberg (1979) kinetics, doi:10.1016/0022-5193(79)90042-0
 -- the standard two-morphogen demo system.  Note, also flagged by the Fable
