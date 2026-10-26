@@ -1,0 +1,93 @@
+# MorphoEval audit v7 (Pass 9: publication of the tested negative hypothesis) — 2026-10-26
+# Re-issues the Pass 8 assessment at the publication checkpoint with the loop
+# framed as an explicit claim and verdict.  The biological claim under test --
+# "Holstein-Friesian spotting is a Turing RD pre-pattern (Murray 1981)" -- is
+# NOT supported: static Turing is rejected and growing-domain RD is
+# indistinguishable from stochastic melanoblast colonisation at matched
+# measurement scale.  The rubric scores below score the simulation PACKAGE
+# (as in v1-v6), not the hypothesis; the claim boundary states the negative
+# verdict so the overall score cannot be misread as support for the claim.
+# Builder-assessor (Muse).  Overall carried from v6: 74.6.
+audit:
+  id: 2026-10-26-bos-taurus-turing-wavelength-audit-v7
+  rubric_version: 0.1.0
+  date: "2026-10-26"
+  supersedes_audit_id: 2026-10-26-bos-taurus-turing-wavelength-audit-v6
+  assessor: {id: muse-wonder-1.0-high, label: "Muse Wonder 1.0 (builder-assessor)"}
+  domain: morphogenesis
+  checkpoint: {repository: https://github.com/fractastical/morpholib, commit: 2e5574cb673de7d817650ef02de8f6b9e9e9394f,
+               note: "Pass-9 publication checkpoint: claim framing, verdict and claim boundaries committed; KG built, signed and nanopub-published from this audit."}
+references:
+  turing1952: {doi: 10.1098/rstb.1952.0012}
+  murray1981: {doi: 10.1016/0022-5193(81)90334-9}
+  schnakenberg1979: {doi: 10.1016/0022-5193(79)90042-0}
+  mitf2016: {doi: 10.1007/s13258-016-0493-4}
+  mort2016: {doi: 10.1038/ncomms10288}
+  jivanji2019: {doi: 10.1186/s12711-019-0506-2}
+  jivanji2025: {doi: 10.1126/sciadv.adt5913}
+simulations:
+  - id: murray-bos-taurus-turing-wavelength
+    name: "Turing RD claim for Holstein coat spotting (tested negative hypothesis)"
+    organism: "Bos taurus (Holstein-Friesian, 10 specimens)"
+    script: models/1981-murray-bos-taurus-turing-wavelength.py
+    output: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png
+    extra_outputs:
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_specimens_montage.png
+      - datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_full_animation.gif
+    status: evaluated
+    source_refs: [turing1952, murray1981, schnakenberg1979, mitf2016, mort2016, jivanji2019, jivanji2025]
+    summary: >-
+      TESTED NEGATIVE HYPOTHESIS, published as such.  Claim tested: the
+      black-and-white spotting of Holstein-Friesian cattle is laid down by a
+      Turing reaction-diffusion pre-pattern with a characteristic wavelength
+      (Murray 1981).  Verdict: not supported.  A static single-wavelength
+      Turing pattern is rejected on 10 coat-masked specimens (held-out
+      morphometric distance 6.46 vs ~3.3 for body-scale alternatives; the
+      cows carry a few body-scale patches, specimen 01: 3 patches, 99.2% of
+      pigment in one, where the Turing field makes ~125 uniform spots at
+      lambda_c = 10.26 px).  A growing-domain RD variant cannot be
+      distinguished from a stochastic melanoblast-colonisation (Eden)
+      control once all masks are measured at the same scale (held-out RD
+      growing-het 3.29 vs Eden 3.43; Eden wins 4/9; paired Wilcoxon
+      p = 0.91; bootstrap 95% CI of the mean difference -0.80..1.14), so
+      adult patch statistics are not evidence for a Turing mechanism in
+      this system.  The negative result agrees with the causal genetics:
+      KIT/MITF regulatory variants cause Holstein spotting (Jivanji et al.
+      2019, 2025) acting through melanoblast survival, proliferation and
+      migration, modelled quantitatively as stochastic colonisation (Mort
+      et al. 2016); no activator-inhibitor morphogen pair is known in
+      cattle skin.  Scores below (overall 74.6) rate the simulation
+      package's fidelity and reproducibility, never the truth of the
+      tested claim.
+    claim_boundary:
+      reported_in_source:
+        - "Murray (1981) proposed a reaction-diffusion pre-pattern mechanism for mammalian coat markings; Turing (1952) supplied the instability theory. Neither paper measured Holstein coat patterns against the mechanism."
+        - "Established cattle genetics: KIT/MITF regulatory variants cause Holstein white spotting (Jivanji et al. 2019 GWAS; Jivanji et al. 2025 causal variants confirmed in edited mice), and mammalian melanoblast colonisation is stochastic migration plus proliferation (Mort et al. 2016)."
+      reconstructed_in_script:
+        - "Schnakenberg-kinetics RD (not Murray's own kinetics) on static and growing domains with gamma heterogeneity, compared with an Eden-process melanoblast-colonisation control, on 10 coat-masked Holstein specimens at matched measurement scale with paired Wilcoxon/bootstrap statistics (Pass 8)."
+        - "Published result is negative: static Turing rejected (6.46 vs ~3.3); growing RD vs colonisation indistinguishable (3.29 vs 3.43, p = 0.91). Two blinded independent assessments (54.4, 57.7) overturned two earlier builder conclusions (Passes 4, 7-8) before this verdict was reached."
+      transfer_boundary:
+        - "The verdict concerns Holstein-Friesian flank spotting measured by adult patch statistics. It does not transfer to other breeds, other pattern elements (e.g. fine speckling), embryonic pre-pattern stages not observable in adult coat, or other species; Turing mechanisms are experimentally established in other systems (e.g. palate rugae) and nothing here bears on them."
+      does_not_claim:
+        - "Does NOT claim the Murray/Turing hypothesis is supported -- the tested claim is reported as a negative result, and the rubric overall (74.6) scores the simulation package, not the hypothesis."
+        - "Does NOT claim all reaction-diffusion models are excluded: a growing-domain RD is statistically indistinguishable from colonisation on these statistics, so adult coat morphology alone cannot identify the mechanism either way."
+        - "Does NOT claim the Eden control is the true mechanism; it is a minimal colonisation proxy, and its founder density was selected on specimen 01 (disclosed)."
+        - "Does NOT claim independent confirmation of the Pass 8+ verdict: the Pass 9 assessment is builder-scored (independent re-score is remediation R11), held-out n = 9 specimens limits power, and coat segmentation is a saturation heuristic."
+    scores:
+      model-fidelity: {value: 74, rationale: "Tissue-attached heterogeneity and a stated no-dilution limitation improve the growing-domain model's honesty; Eden remains a minimal Eden process without a literature-pinned migration law.", evidence: [{file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [233, 290], note: "simulate_growing: material-coordinate heterogeneity, dilution disclaimer", supports: true}]}
+      specimen-match: {value: 60, rationale: "Coat-masked specimen panels now track real patch shapes with background excluded (montage/full animation); model panels unchanged in character -- RD smooth ovals, Eden jagged networks, neither matching patch placement.", evidence: [{file: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_full_animation.gif, lines: [0, 0], note: "coat-mask panels (grey = not coat)", supports: true}]}
+      parameter-expressivity: {value: 80, rationale: "Unchanged sweeps; 12 seeds now used in the held-out comparison.", evidence: [{file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [513, 560], note: "multi_specimen_comparison 12-seed default", supports: true}]}
+      morphometric-validation:
+        value: 85
+        rationale: "Coat-domain, scale-matched, aspect-corrected morphometrics with paired significance testing and bootstrap CIs; the pipeline now overturns the builder's own earlier conclusion, which is what validation is for. Remaining: coat segmentation is saturation-heuristic (fails where coloured background is achromatic), n=9 held-out specimens limits power, Eden founder density was still selected on cow 01."
+        evidence:
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [442, 512], note: "coat_segment + scale_pattern", supports: true}
+          - {file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [513, 560], note: "multi_specimen_comparison with paired Wilcoxon + bootstrap CI", supports: true}
+      source-traceability: {value: 90, rationale: "10 pinned, credited, licensed specimens; all papers Crossref-verified, including the 2026-10-26 additions (Mort 2016; Jivanji 2019, 2025) that carry the established melanoblast account.", evidence: [{file: datasets/bos_taurus_turing_wavelength/paper_citations.bib, lines: [35, 64], note: "mort2016melanoblast, jivanji2019gwas, jivanji2025sciadv entries", supports: true}]}
+      code-traceability: {value: 74, rationale: "Pass-8/9 changes carry in-situ Fable-round citations and the CLAIM UNDER TEST block states the verdict in the script header; animate paths still duplicate some constants.", evidence: [{file: models/1981-murray-bos-taurus-turing-wavelength.py, lines: [57, 80], note: "CLAIM UNDER TEST block: claim, negative verdict, literature", supports: true}]}
+      repro-package: {value: 76, rationale: "Self-test green at the publication checkpoint; deterministic; but the full pipeline is ~100 s and the animation generators duplicate the growing-domain loop (Fable nit, still open).", evidence: [{file: datasets/bos_taurus_turing_wavelength/README.md, lines: [7, 21], note: "claim, verdict and claim boundaries as published", supports: true}]}
+    remediation:
+      - id: R9
+        item: "Cite Eden (1961) / a melanoblast migration source for the control; consider a migration-wave (neural-crest front) variant, whose enclaves invade from edges like real Holstein white"
+      - id: R11
+        item: "Independent re-score of the Pass-8+ tree before any Eden-vs-RD claim is quoted (the published negative verdict on static Turing does not depend on it; the RD-vs-colonisation null does)"
