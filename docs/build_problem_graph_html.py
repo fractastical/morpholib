@@ -27,6 +27,35 @@ def extract_literal(src: str, name: str) -> str:
             if depth == 0: return src[i:j + 1]
     raise ValueError(name)
 
+def validate(data: dict) -> list[str]:
+    """Self-checks so the generator 'knows what it's doing': it refuses to
+    emit a page from incoherent data instead of deploying silent nonsense."""
+    errs: list[str] = []
+    nodes, edges, agents = data["NODES"], data["EDGES"], data["AGENTS"]
+    ids = [n["id"] for n in nodes]
+    if len(ids) != len(set(ids)):
+        errs.append("duplicate node ids")
+    for e in edges:
+        if e["from"] not in ids or e["to"] not in ids:
+            errs.append(f"edge references missing node: {e}")
+        if e["agent"] not in agents:
+            errs.append(f"edge references unknown agent: {e}")
+    for pid, prize in data["DELPHI"].items():
+        if abs(sum(s["weight"] for s in prize["subgoals"]) - 100) > 1e-9:
+            errs.append(f"{pid}: subgoal weights do not sum to 100")
+        for agent_key, total_key in (("fable", "fable"), ("gpt", "gpt"), ("gemini", "gemini")):
+            weighted = sum(s["weight"] * s[agent_key] for s in prize["subgoals"]) / 100
+            if abs(weighted - prize["subgoalTotal"][total_key]) > 0.6:
+                errs.append(f"{pid}/{total_key}: weighted subgoals {weighted:.2f} != stated total {prize['subgoalTotal'][total_key]}")
+        for row in [*prize["agents"], prize["pooled"]]:
+            odds = (row["prior"] / 100) / (1 - row["prior"] / 100) * row["bf"]
+            posterior = 100 * odds / (1 + odds)
+            if abs(posterior - row["posterior"]) > 0.15:
+                errs.append(f"{pid}/{row['agent']}: posterior {row['posterior']} != prior x BF = {posterior:.2f}")
+            if abs((row["forDb"] + row["againstDb"]) - row["netDb"]) > 0.51:
+                errs.append(f"{pid}/{row['agent']}: forDb + againstDb != netDb")
+    return errs
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--canvas", type=Path, default=DEFAULT_CANVAS)
@@ -40,6 +69,11 @@ def main() -> None:
     if out.returncode != 0:
         sys.exit(out.stderr)
     data = json.loads(out.stdout)
+    errs = validate(data)
+    if errs:
+        sys.exit("REFUSING TO BUILD — data failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
+    print(f"self-checks passed: {len(data['NODES'])} nodes, {len(data['EDGES'])} edges, "
+          f"{len(data['DELPHI'])} Delphi prizes (weights=100, weighted totals and prior x BF posteriors verified)")
     html = TEMPLATE.replace("/*__DATA__*/", "const DATA = " + json.dumps(data) + ";")
     a.out.write_text(html)
     print(f"wrote {a.out} ({len(html)/1024:.0f} KiB, {len(data['NODES'])} nodes, {len(data['EDGES'])} edges)")
