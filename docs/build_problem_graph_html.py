@@ -100,7 +100,41 @@ OPEN_PROBLEMS = [
      "done": "A per-clade failure autopsy in the style of the why-wings decomposition, with at least one failure converted into a correct, pre-registered prediction."},
 ]
 
-def build_morphoswarm(data: dict, out_dir: Path) -> None:
+def load_predictions() -> dict | None:
+    """Registered outcome+resolvability predictions (predictions/), with the
+    resolution evidence merged in. Source of truth stays the registry JSON;
+    the graph page is a view of it, never a second copy edited by hand."""
+    reg_path = Path(__file__).resolve().parent.parent / "predictions" / "prediction_registry.json"
+    if not reg_path.exists():
+        print("WARNING: predictions/prediction_registry.json not found — building without the predictions panel")
+        return None
+    reg = json.loads(reg_path.read_text())
+    evidence = {}
+    for f in sorted(reg_path.parent.glob("resolutions/*.json")):
+        for r in json.loads(f.read_text()).get("resolutions", []):
+            evidence[r["prediction_id"]] = r
+    preds = []
+    for p in reg["predictions"]:
+        ev = evidence.get(p["prediction_id"], {})
+        preds.append({
+            "id": p["prediction_id"], "organism": p["organism"], "mechanism": p["mechanism"],
+            "cls": p["class"], "prediction": p["prediction"], "quant": p["quantitative_expectation"],
+            "falsifier": p["falsifier"], "test_source": p["test_source"], "datasets": p["datasets"],
+            "res_category": p["resolvability"]["predicted_category"],
+            "res_confidence": p["resolvability"]["confidence"],
+            "expected_verdict": p["resolvability"]["expected_verdict_on_outcome"],
+            "outcome": p.get("outcome") or ev.get("outcome_verdict") or "registered_untested",
+            "evidence": ev.get("evidence", ""), "resolvability_verdict": ev.get("resolvability_verdict", ""),
+        })
+    return {"registered_on": reg["registered_on"], "predictions": preds,
+            "meta": [{"id": m["meta_id"], "prediction": m["prediction"], "outcome": m.get("outcome") or "registered_untested"}
+                     for m in reg.get("meta_resolvability_predictions", [])],
+            "tallies": reg.get("scoring", {}).get("tallies", {}),
+            "registry_url": "https://github.com/fractastical/morpholib/blob/main/predictions/prediction_registry.json",
+            "resolutions_url": "https://github.com/fractastical/morpholib/tree/main/predictions/resolutions"}
+
+
+def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> None:
     by_id = {n["id"]: n for n in data["NODES"]}
     problems = []
     for op in OPEN_PROBLEMS:
@@ -147,7 +181,27 @@ def build_morphoswarm(data: dict, out_dir: Path) -> None:
         cards.append(f"""<div class="card" id="{p['id']}"><div class="row"><b>{p['id']} · {p['title']}</b>{badge(p['viability'])}</div>
 <p class="small"><b>The gap:</b> {p['gap']}</p><p class="small"><b>Definition of done:</b> {p['done']}</p>{rng}
 <p class="small mut">Attempted so far by: {', '.join(p['attempted_by']) or 'no recorded attempt'} · Source: {p['source']} · <a href="{p['graph_url']}">graph node</a></p></div>""")
-    html = MORPHOSWARM_TEMPLATE.replace("/*__CARDS__*/", "\n".join(cards))
+    if pred:  # partially-resolved registered predictions are genuine open work for the swarm
+        partials = [p for p in pred["predictions"] if p["outcome"] == "partially_resolved"]
+        feed["registered_prediction_followups"] = {
+            "note": "Registered predictions scored partially_resolved on 2026-10-26: outcome neither confirmed nor refuted; each names the exact missing series. Closing one means supplying that series, not re-arguing the prediction.",
+            "items": [{"id": p["id"], "organism": p["organism"], "mechanism": p["mechanism"],
+                       "missing_evidence": p["evidence"]} for p in partials],
+            "registry_url": pred["registry_url"]}
+        (out_dir / "open-problems.json").write_text(json.dumps(feed, indent=2) + "\n")  # rewrite: feed was first written above, before follow-ups existed
+        pcards = "".join(
+            f'<div class="card" id="{p["id"]}"><div class="row"><b>{p["id"]} · {p["organism"]} — {p["mechanism"]}</b>'
+            f'<span class="badge" style="background:#F0A040">PARTIALLY RESOLVED</span></div>'
+            f'<p class="small"><b>Registered prediction:</b> {p["prediction"]}</p>'
+            f'<p class="small"><b>What is missing (from the resolution record):</b> {p["evidence"]}</p>'
+            f'<p class="small mut">Registry: <a href="{pred["registry_url"]}">{p["id"]}</a> · Test source: {p["test_source"]}</p></div>'
+            for p in partials)
+        followups = ('<h2 style="font-size:18px">Registered-prediction follow-ups — partially resolved</h2>'
+                     '<p class="small">From the 2026-10-26 outcome+resolvability registry (9 confirmed, 5 partial, 0 refuted). '
+                     'These five are open precisely where the resolution record says the decisive series does not yet exist.</p>' + pcards)
+    else:
+        followups = ""
+    html = MORPHOSWARM_TEMPLATE.replace("/*__CARDS__*/", "\n".join(cards)).replace("/*__PRED_FOLLOWUPS__*/", followups)
     (out_dir / "morphoswarm.html").write_text(html)
     print(f"wrote {out_dir / 'morphoswarm.html'} and {out_dir / 'open-problems.json'} ({len(problems)} open problems)")
 
@@ -171,6 +225,7 @@ main{max-width:1000px;margin:0 auto;padding:18px}h1{font-size:24px}.card{backgro
 <li>Close by updating the source documents, then re-run <code>docs/build_problem_graph_html.py</code> — its self-checks must pass before anything deploys.</li></ol>
 <p class="small mut">Note: this project's name is a work-queue label for this repo's agent swarm. It is unrelated to the robotic-swarm MorphoSwarm of Ben Zion et al. (Science Robotics 2022; doi:10.5281/zenodo.7573761).</p></div>
 /*__CARDS__*/
+/*__PRED_FOLLOWUPS__*/
 <p class="small mut">Snapshot 2026-10-26 · Source repo: <a href="https://github.com/fractastical/morpholib">github.com/fractastical/morpholib</a> · Viability numbers: docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md · Regenerate: <code>python3 docs/build_problem_graph_html.py</code></p>
 </main></body></html>
 """
@@ -193,10 +248,13 @@ def main() -> None:
         sys.exit("REFUSING TO BUILD — data failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
     print(f"self-checks passed: {len(data['NODES'])} nodes, {len(data['EDGES'])} edges, "
           f"{len(data['DELPHI'])} Delphi prizes (weights=100, weighted totals and prior x BF posteriors verified)")
+    pred = load_predictions()
     html = TEMPLATE.replace("/*__DATA__*/", "const DATA = " + json.dumps(data) + ";")
+    html = html.replace("/*__PRED__*/", "const PRED = " + json.dumps(pred) + ";")
     a.out.write_text(html)
-    print(f"wrote {a.out} ({len(html)/1024:.0f} KiB, {len(data['NODES'])} nodes, {len(data['EDGES'])} edges)")
-    build_morphoswarm(data, a.out.parent)
+    print(f"wrote {a.out} ({len(html)/1024:.0f} KiB, {len(data['NODES'])} nodes, {len(data['EDGES'])} edges, "
+          f"{len(pred['predictions']) if pred else 0} registered predictions)")
+    build_morphoswarm(data, a.out.parent, pred)
 
 TEMPLATE = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
@@ -212,7 +270,17 @@ p,li{font-size:13.5px;line-height:1.45}.mut{color:var(--mut)}.small{font-size:12
 button{font:inherit;font-size:12.5px;padding:5px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;cursor:pointer}
 button.on{background:var(--acc);color:#fff;border-color:var(--acc)}button:hover{border-color:var(--acc)}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.sw{display:inline-block;width:18px;height:4px;margin-right:6px;vertical-align:middle}
-#graphwrap{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:9px}
+#graphwrap{overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:9px;position:relative}
+#graph{cursor:grab;touch-action:none;display:block;width:100%;height:auto}
+#graph:active{cursor:grabbing}
+.zoomctl{position:absolute;top:10px;right:10px;z-index:20;display:flex;gap:4px;align-items:center;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:8px;padding:4px}
+.zoomctl button{font-size:15px;font-weight:700;line-height:1;padding:5px 10px}
+.zoomctl .zlab{font-size:11.5px;padding:5px 7px}
+#zoompct{font-size:12px;font-weight:700;min-width:44px;text-align:center;color:var(--acc)}
+.predgrid{display:grid;grid-template-columns:minmax(300px,44%) 1fr;gap:12px}@media(max-width:900px){.predgrid{grid-template-columns:1fr}}
+.prow{cursor:pointer;border:1px solid var(--line);border-radius:7px;padding:7px 9px;margin:5px 0;background:#fff}
+.prow:hover{border-color:var(--acc)}.prow.sel{border-color:var(--acc);background:#f3f6ff}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}@media(max-width:900px){.grid3{grid-template-columns:1fr}}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}@media(max-width:900px){.grid4{grid-template-columns:repeat(2,1fr)}}
@@ -229,12 +297,23 @@ a{color:var(--acc)}
 <div class="row" id="agentbtns" style="margin-top:8px"></div>
 <p class="mut small" id="agentnote"></p></div>
 
-<div id="graphwrap"><svg id="graph" width="1420" height="960"></svg></div>
+<div id="graphwrap"><svg id="graph" width="1420" height="960" aria-label="Problem graph (zoomable)"></svg>
+<div class="zoomctl" role="group" aria-label="Graph zoom controls">
+<button onclick="zoomStep(0.8)" title="Zoom out (− key)" aria-label="Zoom out">−</button>
+<span id="zoompct">100%</span>
+<button onclick="zoomStep(1.25)" title="Zoom in (+ key)" aria-label="Zoom in">+</button>
+<button class="zlab" onclick="fitView()" title="Fit whole graph in view (F key)">Fit</button>
+<button class="zlab" onclick="resetView()" title="Reset to 100% (0 key)">Reset</button>
+</div></div>
+<p class="mut small" style="margin:4px 0 0">Zoom &amp; pan: mouse-wheel over the graph zooms to the cursor · drag to pan · pinch on touch screens · <b>+</b>/<b>−</b> keys zoom, <b>F</b> fits, <b>0</b> resets · double-click empty graph space zooms in. Node click / double-click inspect still work.</p>
 <div class="row small" style="margin:8px 0">
 <span><i class="badge" style="background:var(--green)">&nbsp;</i> solved / proved</span><span><i class="badge" style="background:#F0A040">&nbsp;</i> partial</span><span><i class="badge" style="background:#C04848">&nbsp;</i> still open / refuted</span><span><i class="badge" style="background:#2E79B5">&nbsp;</i> registered, unscored</span>
 <span>–– dashed halo = probabilistic timestamp</span>
 <span><i class="badge" style="background:var(--green)">&nbsp;</i> <b>green border/badge = possible pathway (posterior ≥15%)</b></span>
 <span><i class="badge" style="background:var(--orange)">&nbsp;</i> <b>dark orange = probability &lt;15% success</b> — all 3 pooled Delphi prizes currently sit here (15% is a visual threshold, not a Delphi source field)</span></div>
+
+<h2>Registered predictions — outcome <i>and</i> resolvability, scored</h2>
+<div class="card" id="predpanel"></div>
 
 <div class="grid2">
 <div class="card" id="detail"></div>
@@ -281,10 +360,42 @@ function agentButtons(){ $('agentbtns').innerHTML = `<button class="${S.agent===
  $('agentnote').textContent = S.agent==='all' ? 'Showing every recorded attempt. Multi-agent / pooled edges use indigo; grey edges are work the repo record does not attribute to a named model.' : `${AGENTS[S.agent].name}: ${AGENTS[S.agent].role}. Other agents' edges are dimmed.`; }
 function setAgent(a){ S.agent=a; agentButtons(); drawGraph(); }
 
+/* ---- Zoom & pan: the whole graph lives in <g id="viewport">; view state
+   {k=scale, tx, ty} is applied as its transform. Wheel zooms to the cursor,
+   drag pans, two-pointer pinch zooms, buttons/keys mirror the same ops. ---- */
+const VIEW = {k:1, tx:0, ty:0};
+let suppressClick = false;
+const viewTransform = () => `translate(${VIEW.tx},${VIEW.ty}) scale(${VIEW.k})`;
+function applyView(){ const vp=document.getElementById('viewport'); if(vp) vp.setAttribute('transform', viewTransform()); const z=$('zoompct'); if(z) z.textContent = Math.round(VIEW.k*100)+'%'; }
+function svgPoint(evt){ const svg=$('graph').getBoundingClientRect(); return {x:(evt.clientX-svg.left)*1420/svg.width, y:(evt.clientY-svg.top)*960/svg.height}; }
+function zoomAt(px, py, factor){ const k2=Math.max(0.15, Math.min(5, VIEW.k*factor)); const f=k2/VIEW.k; VIEW.tx = px-(px-VIEW.tx)*f; VIEW.ty = py-(py-VIEW.ty)*f; VIEW.k=k2; applyView(); }
+function zoomStep(f){ zoomAt(710, 480, f); }
+function resetView(){ VIEW.k=1; VIEW.tx=0; VIEW.ty=0; applyView(); }
+function fitView(){ if(!NODES.length) return; const x0=Math.min(...NODES.map(n=>n.x))-30, x1=Math.max(...NODES.map(n=>n.x))+W+30, y0=Math.min(...NODES.map(n=>n.y))-110, y1=Math.max(...NODES.map(n=>n.y))+H+30; VIEW.k=Math.max(0.15, Math.min(2, Math.min(1420/(x1-x0), 960/(y1-y0)))); VIEW.tx=(1420-(x1-x0)*VIEW.k)/2 - x0*VIEW.k; VIEW.ty=(960-(y1-y0)*VIEW.k)/2 - y0*VIEW.k; applyView(); }
+function initZoom(){
+ const svg=$('graph');
+ svg.addEventListener('wheel', e=>{ e.preventDefault(); const pt=svgPoint(e); zoomAt(pt.x, pt.y, Math.exp(-e.deltaY*0.0015)); }, {passive:false});
+ const pointers=new Map(); let drag=null, pinchD=0;
+ svg.addEventListener('pointerdown', e=>{ pointers.set(e.pointerId,{x:e.clientX,y:e.clientY}); svg.setPointerCapture(e.pointerId);
+   if(pointers.size===1) drag={x:e.clientX,y:e.clientY,moved:0};
+   if(pointers.size===2){ const [a,b]=[...pointers.values()]; pinchD=Math.hypot(a.x-b.x,a.y-b.y); drag=null; } });
+ svg.addEventListener('pointermove', e=>{ if(!pointers.has(e.pointerId)) return; pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(pointers.size===2){ const [a,b]=[...pointers.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const r=svg.getBoundingClientRect(); const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2}; if(pinchD>0) zoomAt((mid.x-r.left)*1420/r.width,(mid.y-r.top)*960/r.height, d/pinchD); pinchD=d; return; }
+   if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.moved+=Math.abs(dx)+Math.abs(dy); if(drag.moved>4) suppressClick=true;
+   const r=svg.getBoundingClientRect(); VIEW.tx+=dx*1420/r.width; VIEW.ty+=dy*960/r.height; drag.x=e.clientX; drag.y=e.clientY; applyView(); });
+ const end=e=>{ pointers.delete(e.pointerId); if(pointers.size<2) pinchD=0; if(pointers.size===0){ drag=null; setTimeout(()=>suppressClick=false, 50); } };
+ svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+ svg.addEventListener('dblclick', e=>{ if(e.target===svg){ const pt=svgPoint(e); zoomAt(pt.x, pt.y, 1.4); } });
+ document.addEventListener('keydown', e=>{ if(e.target.matches('input,textarea,select')) return;
+   if(e.key==='+'||e.key==='=') zoomStep(1.25); else if(e.key==='-') zoomStep(0.8);
+   else if(e.key==='0') resetView(); else if(e.key.toLowerCase()==='f') fitView(); });
+}
+
 function drawGraph(){
  const svg=$('graph'); const NS='http://www.w3.org/2000/svg'; svg.innerHTML='';
+ const vp=document.createElementNS(NS,'g'); vp.setAttribute('id','viewport'); vp.setAttribute('transform', viewTransform()); svg.appendChild(vp);
  const lanes=['Thompson 1917','MorphoEval flagships','Rule 30 — main proof chain','Rule 30 prizes','Levin programme','Bioelectric embryo'], lx=[95,330,565,810,1050,1290];
- lanes.forEach((l,i)=>{const t=document.createElementNS(NS,'text');t.setAttribute('x',lx[i]);t.setAttribute('y',96);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','11');t.setAttribute('font-weight','700');t.setAttribute('fill','#888');t.textContent=l.toUpperCase();svg.appendChild(t);});
+ lanes.forEach((l,i)=>{const t=document.createElementNS(NS,'text');t.setAttribute('x',lx[i]);t.setAttribute('y',96);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','11');t.setAttribute('font-weight','700');t.setAttribute('fill','#888');t.textContent=l.toUpperCase();vp.appendChild(t);});
  const defs=document.createElementNS(NS,'defs');
  Object.keys(AGENTS).forEach(a=>{const m=document.createElementNS(NS,'marker');m.setAttribute('id','arr-'+a);m.setAttribute('markerWidth','7');m.setAttribute('markerHeight','7');m.setAttribute('refX','6');m.setAttribute('refY','3.5');m.setAttribute('orient','auto');m.innerHTML=`<path d="M0,0 L7,3.5 L0,7 z" fill="${ACOL[a]}"/>`;defs.appendChild(m);});
  svg.appendChild(defs);
@@ -295,9 +406,9 @@ function drawGraph(){
   p.setAttribute('fill','none'); p.setAttribute('stroke',ACOL[e.agent]);
   const dim = S.agent!=='all'&&S.agent!==e.agent;
   p.setAttribute('stroke-width',dim?'1':'2.2'); p.setAttribute('opacity',dim?'0.10':'0.9');
-  p.setAttribute('marker-end',`url(#arr-${e.agent})`); svg.appendChild(p); });
+  p.setAttribute('marker-end',`url(#arr-${e.agent})`); vp.appendChild(p); });
  NODES.forEach(n=>{ const g=document.createElementNS(NS,'g'); g.style.cursor='pointer';
-  g.addEventListener('click',()=>{S.sel=n.id;drawGraph();drawDetail();});
+  g.addEventListener('click',()=>{ if(suppressClick) return; S.sel=n.id;drawGraph();drawDetail();});
   g.addEventListener('dblclick',()=>openDrawer(n.id));
   const prob=(n.id==='p1'||n.id==='p2'||n.id==='p3')?DELPHI[n.id].pooled.posterior:undefined;
   const fuzzy=n.timeKind==='probabilistic';
@@ -311,7 +422,7 @@ function drawGraph(){
   if(fuzzy)h+=`<text x="${n.x+W-8}" y="${n.y+14}" text-anchor="end" font-size="9" font-weight="700" fill="#888">~prob.</text>`;
   if(n.id==='r6'||prob!==undefined)h+=`<text x="${n.x+W-8}" y="${n.y+H-9}" text-anchor="end" font-size="8" font-weight="700" fill="#2563eb">DOUBLE-CLICK TO INSPECT</text>`;
   h+=`<foreignObject x="${n.x+6}" y="${n.y+24}" width="${W-12}" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:9.5px;line-height:1.25;color:#5c5c60;text-align:center;font-family:inherit">${esc(n.sub)}</div></foreignObject>`;
-  g.innerHTML=h; svg.appendChild(g); });
+  g.innerHTML=h; vp.appendChild(g); });
 }
 function edgesList(id){ return EDGES.filter(e=>e.from===id||e.to===id).map(e=>`<div class="row"><span class="sw" style="background:${ACOL[e.agent]}"></span><span class="small">${e.from===id?'→':'←'} ${esc(e.from===id?byId[e.to].label:byId[e.from].label)} — ${AGENTS[e.agent].name}${e.label?` (${esc(e.label)})`:''}</span></div>`).join('') || '<p class="small mut">No recorded edges.</p>'; }
 function drawDetail(){ const n=byId[S.sel]; $('detail').innerHTML=`<div class="row"><b style="flex:1">${esc(n.label)}</b><span class="badge" style="background:${SCOL[n.status]}">${SLAB[n.status]}</span><button class="on" onclick="openDrawer('${n.id}')">Inspect (or double-click)</button></div>
@@ -348,7 +459,39 @@ function renderDrawer(){
  $('drawer').innerHTML=h;
 }
 function adjPrior(d){ S.prior=Math.max(0.1,Math.min(90,+(S.prior+d).toFixed(2))); renderDrawer(); }
-agentButtons(); drawGraph(); drawDetail();
+/* ---- Registered predictions panel (data injected from the registry) ---- */
+/*__PRED__*/
+const PCOL = {confirmed:'#1F8A65', partially_resolved:'#F0A040', refuted:'#C04848', registered_untested:'#2E79B5', confirmed_meta:'#1F8A65'};
+const PLAB = {confirmed:'CONFIRMED', partially_resolved:'PARTIALLY RESOLVED', refuted:'REFUTED', registered_untested:'REGISTERED, UNSCORED'};
+const RCAT = {current_datasets_only:'solvable in-repo alone', current_plus_public_sources:'solvable in-repo + public sources', partial_only:'partially solvable only'};
+const PS = {org:'all', sel:null};
+function predList(){ return PRED ? PRED.predictions.filter(p=>PS.org==='all'||p.organism===PS.org) : []; }
+function renderPred(){
+ const el=$('predpanel'); if(!PRED){ el.innerHTML='<p class="small mut">Prediction registry not available in this build.</p>'; return; }
+ const t=PRED.tallies||{}, orgs=[...new Set(PRED.predictions.map(p=>p.organism))];
+ if(!PS.sel && PRED.predictions.length) PS.sel=PRED.predictions[0].id;
+ const sel=PRED.predictions.find(p=>p.id===PS.sel) || PRED.predictions[0];
+ const rows=predList().map(p=>`<div class="prow ${p.id===sel.id?'sel':''}" onclick="PS.sel='${p.id}';renderPred()"><span class="dot" style="background:${PCOL[p.outcome]||'#888'}"></span><b class="small">${p.id}</b> <span class="small">${esc(p.organism)} · ${esc(p.mechanism)}</span><br><span class="badge" style="background:${PCOL[p.outcome]||'#888'}">${PLAB[p.outcome]||p.outcome}</span> <span class="small mut">${RCAT[p.res_category]||p.res_category} (forecast conf ${p.res_confidence}, expected verdict: ${esc(p.expected_verdict)})</span></div>`).join('');
+ const metas=PRED.meta.map(m=>`<div class="prow"><span class="dot" style="background:${PCOL[m.outcome]||'#888'}"></span><b class="small">${m.id}</b> <span class="badge" style="background:${PCOL[m.outcome]||'#888'}">${PLAB[m.outcome]||m.outcome}</span><br><span class="small">${esc(m.prediction)}</span></div>`).join('');
+ el.innerHTML=`<div class="row"><b style="flex:1">Registered ${PRED.registered_on} — before any scoring. Two independent grades per row: did the biology hold, and could current data even decide it?</b><a class="small" href="${PRED.registry_url}">registry JSON</a><a class="small" href="${PRED.resolutions_url}">resolution records</a></div>
+<div class="grid4" style="margin-top:8px">
+<div class="card"><div class="small mut">Registered predictions</div><div class="stat">${PRED.predictions.length}</div><div class="small mut">3 organisms · 4 resolution batches</div></div>
+<div class="card"><div class="small mut">Outcomes confirmed</div><div class="stat" style="color:#1F8A65">${t.confirmed ?? 0}</div><div class="small mut">${t.refuted ?? 0} refuted</div></div>
+<div class="card"><div class="small mut">Partially resolved</div><div class="stat" style="color:#B87700">${t.partially_resolved ?? 0}</div><div class="small mut">each names its missing series — follow-ups on <a href="morphoswarm.html">MorphoSwarm</a></div></div>
+<div class="card"><div class="small mut">Meta-resolvability</div><div class="stat">${PRED.meta.filter(m=>m.outcome==='confirmed').length}/${PRED.meta.length}</div><div class="small mut">solve-rate forecasts confirmed (2 refuted — forecast was optimistic by one row)</div></div></div>
+<div class="row"><button class="${PS.org==='all'?'on':''}" onclick="PS.org='all';renderPred()">All organisms</button>${orgs.map(o=>`<button class="${PS.org===o?'on':''}" onclick="PS.org='${o}';renderPred()">${o}</button>`).join('')}</div>
+<div class="predgrid"><div>${rows}</div>
+<div class="card" style="margin:0"><b>${sel.id} · ${esc(sel.organism)} — ${esc(sel.mechanism)}</b> <span class="badge" style="background:${PCOL[sel.outcome]||'#888'}">${PLAB[sel.outcome]||sel.outcome}</span>
+<p class="small"><b>Outcome prediction:</b> ${esc(sel.prediction)}</p>
+<p class="small"><b>Quantitative expectation:</b> ${esc(sel.quant)}</p>
+<p class="small"><b>Resolvability forecast:</b> ${RCAT[sel.res_category]||sel.res_category} (confidence ${sel.res_confidence}; expected verdict ${esc(sel.expected_verdict)}) · <b>Falsifier:</b> ${esc(sel.falsifier)}</p>
+<p class="small"><b>Test source:</b> ${esc(sel.test_source)}</p>
+${sel.evidence?`<p class="small"><b>Resolution evidence:</b> ${esc(sel.evidence)}</p>`:''}
+${sel.resolvability_verdict?`<p class="small"><b>Resolvability verdict:</b> ${esc(sel.resolvability_verdict)}</p>`:''}
+<p class="small mut">Datasets: ${sel.datasets.map(esc).join(', ')}</p></div></div>
+<h3>Meta-resolvability predictions — grading the solve-rate forecast itself</h3>${metas}`;
+}
+agentButtons(); drawGraph(); drawDetail(); initZoom(); renderPred();
 if(location.hash){ const hid = location.hash.slice(1); if(byId[hid]){ S.sel = hid; drawGraph(); drawDetail(); document.getElementById('detail').scrollIntoView({behavior:'smooth', block:'center'}); } }
 </script></body></html>
 """
