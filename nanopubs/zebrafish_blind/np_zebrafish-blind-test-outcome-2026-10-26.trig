@@ -1,0 +1,86 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix mlt: <https://w3id.org/morpholib/thompson/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/assertion> {
+    <https://w3id.org/morpholib/thompson/blind-test/zebrafish-blind-test-outcome-2026-10-26> a mlt:BlindPredictionTestOutcome ;
+        rdfs:label "Outcome of the pre-registered blind test of 24 hpf zebrafish cell-type composition (Zebrahub): 0/4 hypotheses supported (0/2 primary), 77 classes in union" ;
+        dcterms:description "All four registered hypotheses failed. The logit-linear extrapolation from 10-19 hpf is worse than simply copying the 19 hpf composition (Z1: TVD 0.661 vs last-stage 0.621); only 26% of classes >=2% land within a factor of 2 (Z2); emergent classes carry 0.44 of 24 hpf cells (Z3 bound 0.25); interval coverage is 50% at a narrow median width (Z4). Per-class inspection shows developmental label succession, not smooth proportion drift: optic vesicle (predicted 0.136) is replaced by optic cup (true 0.072, predicted 0), and hindbrain/neurons/fin/muscle pioneers emerge after 19 hpf. Cell-type composition at this stage transition turns over by maturation and renaming, which a per-class proportion extrapolator cannot represent. Negative result, reported as registered." ;
+        mlt:comparisonDataset <https://doi.org/10.6084/m9.figshare.20510367.v1> ;
+        mlt:comparisonDatasetMd5 "5487b3edd2b996e2eb112dfcd272e82b" ;
+        mlt:comparisonDatasetSha256 "17d5be7ca4f30c8f59c8eb9cf3e15e2178e9172097b24a94a13a947c1e5edf70" ;
+        mlt:hasHypothesisOutcome <https://w3id.org/morpholib/thompson/blind-test/zebrafish-blind-test-outcome-2026-10-26-Z1>,
+            <https://w3id.org/morpholib/thompson/blind-test/zebrafish-blind-test-outcome-2026-10-26-Z2>,
+            <https://w3id.org/morpholib/thompson/blind-test/zebrafish-blind-test-outcome-2026-10-26-Z3>,
+            <https://w3id.org/morpholib/thompson/blind-test/zebrafish-blind-test-outcome-2026-10-26-Z4> ;
+        mlt:preregistrationDocument <https://github.com/fractastical/morpholib/blob/main/embryo-blind/zebrafish-blind/ZEBRAFISH_BLIND_PREREGISTRATION.md> ;
+        mlt:resultsDocument <https://github.com/fractastical/morpholib/blob/main/embryo-blind/zebrafish-blind/ZEBRAFISH_BLIND_RESULTS.md> ;
+        mlt:verifiedLockedFileSha256 "zebrafish_predictions_registered.csv: e0a181b23e5e150742a5446633dc50c01e21712c87e954f315773cfb8ee3926c",
+            "zebrafish_predictions_registered.json: 05c2db088170ea8d8a97a4a5260ffd5e9cb7379d58a59ac9bff3cb7a75d0f17f",
+            "zebrafish_train_stage_by_celltype.csv: 5cb898c023e018d29aad9080418e9cebddffd2de551815550db59159cfed8ec8" .
+
+    <https://w3id.org/morpholib/thompson/blind-test/zebrafish-blind-test-outcome-2026-10-26-Z1> a mlt:HypothesisOutcome ;
+        rdfs:label "Z1" ;
+        dcterms:description "Total variation distance (0.5 * L1 over the union of training and true 24 hpf classes) of the logit-linear extrapolation is smaller than both the last-stage (19 hpf) baseline and the training-mean baseline." ;
+        mlt:isPrimary true ;
+        mlt:resultSummary "{\"tvd_primary\": 0.6613485883537247, \"tvd_last19\": 0.620907571627691, \"tvd_mean_train\": 0.7573497220071241}" ;
+        mlt:supported false .
+
+    <https://w3id.org/morpholib/thompson/blind-test/zebrafish-blind-test-outcome-2026-10-26-Z2> a mlt:HypothesisOutcome ;
+        rdfs:label "Z2" ;
+        dcterms:description "Among classes with true 24 hpf proportion >= 0.02, at least 60% are predicted within a factor of 2 (0.5 <= pred/true <= 2)." ;
+        mlt:isPrimary true ;
+        mlt:resultSummary "{\"n_classes_ge_0.02\": 19, \"frac_within_factor2\": 0.2631578947368421}" ;
+        mlt:supported false .
+
+    <https://w3id.org/morpholib/thompson/blind-test/zebrafish-blind-test-outcome-2026-10-26-Z3> a mlt:HypothesisOutcome ;
+        rdfs:label "Z3" ;
+        dcterms:description "Emergent classes (proportion < 0.001 at every training stage, including classes absent from training) carry < 0.25 of all cells at 24 hpf. The model predicts 0 for them, so this bounds the irreducible miss from new/renamed types." ;
+        mlt:isPrimary false ;
+        mlt:resultSummary "{\"emergent_mass_at_24hpf\": 0.44006504568685145}" ;
+        mlt:supported false .
+
+    <https://w3id.org/morpholib/thompson/blind-test/zebrafish-blind-test-outcome-2026-10-26-Z4> a mlt:HypothesisOutcome ;
+        rdfs:label "Z4" ;
+        dcterms:description "The per-class 95% prediction intervals contain the true proportion for at least 70% of classes with true proportion >= 0.01 AND the median interval width (hi-lo) over those classes is <= 0.50 (so coverage cannot be bought with vacuous intervals; late-appearing classes are expected to have genuinely wide intervals and may fail this)." ;
+        mlt:isPrimary false ;
+        mlt:resultSummary "{\"coverage_ge_0.01\": 0.5, \"n\": 24, \"median_interval_width_ge_0.01\": 0.07859}" ;
+        mlt:supported false .
+}
+
+<https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/pubinfo> {
+    <https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/> dcterms:created "2026-10-26"^^xsd:date ;
+        dcterms:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dcterms:isPartOf <https://github.com/fractastical/morpholib/blob/main/docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md> ;
+        dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> .
+
+    <https://orcid.org/0009-0007-4948-9192> rdfs:label "Joel Dietz" .
+}
+
+<https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/provenance> {
+    <https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/assertion> prov:wasAttributedTo <https://github.com/fractastical/morpholib/blob/main/thompson/run_phylogenetic_prediction_engine.py> ;
+        prov:wasDerivedFrom <https://doi.org/10.6084/m9.figshare.20510367.v1> ;
+        prov:wasGeneratedBy <https://github.com/fractastical/morpholib/blob/main/embryo-blind/zebrafish-blind/score_zebrafish_blind.py>,
+            <https://github.com/fractastical/morpholib/commit/0dfd5daff56460e59fb04875797a5a29def3cece> .
+
+    <https://github.com/fractastical/morpholib/commit/0dfd5daff56460e59fb04875797a5a29def3cece> a prov:Activity ;
+        rdfs:label "Run of thompson/run_phylogenetic_prediction_engine.py at morpholib commit 0dfd5daff564" ;
+        prov:endedAtTime "2026-10-26"^^xsd:date ;
+        prov:used <https://doi.org/10.1038/s41586-018-0273-1>,
+            <https://doi.org/10.1371/journal.pone.0112732>,
+            <https://github.com/fractastical/morpholib/blob/main/thompson/run_phylogenetic_prediction_engine.py> .
+
+    <https://github.com/fractastical/morpholib/blob/main/thompson/run_phylogenetic_prediction_engine.py> a prov:SoftwareAgent ;
+        rdfs:label "Thompson 1917 phylogenetic prediction engine (7 linearised Thompson modes + Pagel-lambda PGLS on the Rabosky 2018 tree)" .
+}
+
+<https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/Head> {
+    <https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/> a np:Nanopublication ;
+        np:hasAssertion <https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/assertion> ;
+        np:hasProvenance <https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/provenance> ;
+        np:hasPublicationInfo <https://w3id.org/morpholib/thompson/np/zebrafish-blind-test-outcome-2026-10-26/pubinfo> .
+}
+
