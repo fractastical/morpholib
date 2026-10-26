@@ -137,6 +137,72 @@ def load_predictions() -> dict | None:
             "resolutions_url": "https://github.com/fractastical/morpholib/tree/main/predictions/resolutions"}
 
 
+PRED_NODE_LABELS = {  # short graph labels; full text lives in the registry/panel
+    "ZF-TUR-01": "BMP–Chordin shuttling", "ZF-TUR-02": "Tolloid cleavage → dorsalized",
+    "ZF-HH-01": "Shh lipidation gradient", "ZF-CLK-01": "Somite ∝ clock period",
+    "ZF-VTX-01": "Jamming at p0*=3.813", "DM-WG-01": "Wg lipidation gates spread",
+    "DM-HH-01": "HhN cholesterol range", "DM-DPP-01": "Dpp mature chain 132aa",
+    "DM-CLK-NEG-01": "✗ No clock in long-germ fly", "DM-MUR-NEG-01": "✗ Trachea vs Murray=3",
+    "XT-BMP-01": "Noggin dorsalizes (BMP bind)", "XT-SHH-01": "Xenopus Shh dual lipidation",
+    "XT-DQ-01": "BMP4 accession is a fragment", "XT-CLK-01": "Xenopus somite ∝ period",
+}
+OUTCOME_STATUS = {"confirmed": "solved", "partially_resolved": "partial", "refuted": "refuted"}
+
+
+def prediction_graph_nodes(pred: dict) -> tuple[list[dict], list[dict]]:
+    """Inject the predictions INTO the problem graph as nodes+edges (not just a
+    panel): hub -> organism -> prediction, plus cross-links from the existing
+    nodes this work builds on (BMP pair-equivalence test, zebrafish and
+    Xenopus blind tests). Coordinates extend the canvas downward (new band)."""
+    org_slug = {"Danio rerio": "pred-danio", "Drosophila melanogaster": "pred-drosophila",
+                "Xenopus tropicalis": "pred-xenopus"}
+    org_x = {"Danio rerio": 255, "Drosophila melanogaster": 610, "Xenopus tropicalis": 975}
+    nodes = [{
+        "id": "pred0", "x": 610, "y": 975, "status": "root", "family": "Registered predictions",
+        "label": "Registered predictions", "sub": "outcome + resolvability, registered 2026-10-26 before scoring",
+        "time": "2026-10-26", "timeKind": "recorded", "source": "predictions/prediction_registry.json",
+        "detail": ("14 predictions for the 3 best-supported organisms (Danio, Drosophila, Xenopus), each with TWO "
+                   "registered claims: an outcome prediction and a resolvability prediction (can current data decide "
+                   "it?). Scored 2026-10-26: 9 confirmed, 5 partially resolved, 0 refuted; meta-resolvability 2/4.")},
+        {"id": "pred-meta", "x": 1215, "y": 1075, "status": "partial", "family": "Registered predictions",
+         "label": "Meta-resolvability 2/4", "sub": "solve-rate forecasts: 2 confirmed, 2 refuted",
+         "time": "2026-10-26", "timeKind": "recorded", "source": "predictions/prediction_registry.json (META-RES-01..04)",
+         "detail": "; ".join(f"{m['id']} [{m['outcome']}]: {m['prediction']}" for m in pred["meta"])},
+    ]
+    edges = [{"from": "root", "to": "pred0", "agent": "wonder"},
+             {"from": "pred0", "to": "pred-meta", "agent": "wonder"},
+             {"from": "f4", "to": "pred-danio-x", "agent": "wonder", "label": "BMP evidence base"},
+             {"from": "b4", "to": "pred-danio-x", "agent": "wonder", "label": "zebrafish programme"},
+             {"from": "b2", "to": "pred-xenopus-x", "agent": "wonder", "label": "xenopus programme"}]
+    edges[2]["to"] = edges[3]["to"] = org_slug["Danio rerio"]; edges[4]["to"] = org_slug["Xenopus tropicalis"]
+    by_org: dict[str, list[dict]] = {}
+    for p in pred["predictions"]:
+        by_org.setdefault(p["organism"], []).append(p)
+    for org, plist in by_org.items():
+        oid = org_slug[org]
+        nodes.append({"id": oid, "x": org_x[org], "y": 1075, "status": "partial" if any(
+            p["outcome"] == "partially_resolved" for p in plist) else "solved",
+            "family": "Registered predictions", "label": org,
+            "sub": f"{len(plist)} predictions · {sum(p['outcome'] == 'confirmed' for p in plist)} confirmed · "
+                   f"{sum(p['outcome'] == 'partially_resolved' for p in plist)} partial",
+            "time": "2026-10-26", "timeKind": "recorded", "source": "predictions/prediction_registry.json",
+            "detail": f"Registered prediction organism: {org} — selected for dataset depth, protein-catalog coverage, and a public mutant/literature test atlas."})
+        edges.append({"from": "pred0", "to": oid, "agent": "wonder"})
+        for i, p in enumerate(plist):
+            nodes.append({
+                "id": p["id"], "x": org_x[org], "y": 1175 + i * 88,
+                "status": OUTCOME_STATUS.get(p["outcome"], "registered"),
+                "family": "Registered predictions", "label": p["id"],
+                "sub": f"{PRED_NODE_LABELS.get(p['id'], p['mechanism'])} · {p['outcome']} · {p['res_category']} (conf {p['res_confidence']})",
+                "time": "2026-10-26", "timeKind": "recorded",
+                "source": "predictions/prediction_registry.json + predictions/resolutions/",
+                "detail": (f"OUTCOME: {p['prediction']} QUANTITATIVE: {p['quant']} "
+                           f"RESOLVABILITY FORECAST: {p['res_category']} (conf {p['res_confidence']}, expected {p['expected_verdict']}). "
+                           f"EVIDENCE: {p['evidence'] or '—'}")})
+            edges.append({"from": oid, "to": p["id"], "agent": "wonder"})
+    return nodes, edges
+
+
 def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> None:
     by_id = {n["id"]: n for n in data["NODES"]}
     problems = []
@@ -252,6 +318,14 @@ def main() -> None:
     print(f"self-checks passed: {len(data['NODES'])} nodes, {len(data['EDGES'])} edges, "
           f"{len(data['DELPHI'])} Delphi prizes (weights=100, weighted totals and prior x BF posteriors verified)")
     pred = load_predictions()
+    if pred:  # integrate predictions into the graph itself, then re-validate the merged graph
+        data["AGENTS"]["wonder"] = {"name": "Muse Wonder", "role": "Protein-state pilot, prediction registry, resolution scoring (this branch of work)"}
+        n0, e0 = prediction_graph_nodes(pred)
+        data["NODES"] += n0; data["EDGES"] += e0
+        errs = validate(data)
+        if errs:
+            sys.exit("REFUSING TO BUILD — merged graph (with predictions) failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
+        print(f"integrated predictions into graph: +{len(n0)} nodes, +{len(e0)} edges (hub -> 3 organisms -> {len(pred['predictions'])} predictions + meta)")
     html = TEMPLATE.replace("/*__DATA__*/", "const DATA = " + json.dumps(data) + ";")
     html = html.replace("/*__PRED__*/", "const PRED = " + json.dumps(pred) + ";")
     a.out.write_text(html)
@@ -300,7 +374,7 @@ a{color:var(--acc)}
 <div class="row" id="agentbtns" style="margin-top:8px"></div>
 <p class="mut small" id="agentnote"></p></div>
 
-<div id="graphwrap"><svg id="graph" width="1420" height="960" aria-label="Problem graph (zoomable)"></svg>
+<div id="graphwrap"><svg id="graph" width="1420" height="1640" aria-label="Problem graph (zoomable)"></svg>
 <div class="zoomctl" role="group" aria-label="Graph zoom controls">
 <button onclick="zoomStep(0.8)" title="Zoom out (− key)" aria-label="Zoom out">−</button>
 <span id="zoompct">100%</span>
@@ -349,7 +423,7 @@ a{color:var(--acc)}
 <script>
 /*__DATA__*/
 const {AGENTS, NODES, EDGES, DELPHI, CONCORDANCE} = DATA;
-const ACOL = {human:'#E8C030', fable:'#7B64B8', gemini:'#2E79B5', gpt:'#1F8A65', sonnet:'#C85898', grok:'#F0A040', wainwright:'#2A9A8A', panel:'#5A6CC0', unattributed:'#8888A8'};
+const ACOL = {human:'#E8C030', fable:'#7B64B8', gemini:'#2E79B5', gpt:'#1F8A65', sonnet:'#C85898', grok:'#F0A040', wainwright:'#2A9A8A', panel:'#5A6CC0', unattributed:'#8888A8', wonder:'#0E7C7B'};
 const SCOL = {solved:'#1F8A65', partial:'#F0A040', open:'#C04848', refuted:'#C04848', registered:'#2E79B5', root:'#2563eb'};
 const SLAB = {solved:'solved / proved', partial:'partial', open:'OPEN', refuted:'refuted / pruned', registered:'registered, unscored', root:'umbrella'};
 const W=150,H=62, byId={}; NODES.forEach(n=>byId[n.id]=n);
@@ -370,11 +444,12 @@ const VIEW = {k:1, tx:0, ty:0};
 let suppressClick = false;
 const viewTransform = () => `translate(${VIEW.tx},${VIEW.ty}) scale(${VIEW.k})`;
 function applyView(){ const vp=document.getElementById('viewport'); if(vp) vp.setAttribute('transform', viewTransform()); const z=$('zoompct'); if(z) z.textContent = Math.round(VIEW.k*100)+'%'; }
-function svgPoint(evt){ const svg=$('graph').getBoundingClientRect(); return {x:(evt.clientX-svg.left)*1420/svg.width, y:(evt.clientY-svg.top)*960/svg.height}; }
+const SW=()=>+$('graph').getAttribute('width'), SH=()=>+$('graph').getAttribute('height');
+function svgPoint(evt){ const svg=$('graph').getBoundingClientRect(); return {x:(evt.clientX-svg.left)*SW()/svg.width, y:(evt.clientY-svg.top)*SH()/svg.height}; }
 function zoomAt(px, py, factor){ const k2=Math.max(0.15, Math.min(5, VIEW.k*factor)); const f=k2/VIEW.k; VIEW.tx = px-(px-VIEW.tx)*f; VIEW.ty = py-(py-VIEW.ty)*f; VIEW.k=k2; applyView(); }
-function zoomStep(f){ zoomAt(710, 480, f); }
+function zoomStep(f){ zoomAt(SW()/2, SH()/2, f); }
 function resetView(){ VIEW.k=1; VIEW.tx=0; VIEW.ty=0; applyView(); }
-function fitView(){ if(!NODES.length) return; const x0=Math.min(...NODES.map(n=>n.x))-30, x1=Math.max(...NODES.map(n=>n.x))+W+30, y0=Math.min(...NODES.map(n=>n.y))-110, y1=Math.max(...NODES.map(n=>n.y))+H+30; VIEW.k=Math.max(0.15, Math.min(2, Math.min(1420/(x1-x0), 960/(y1-y0)))); VIEW.tx=(1420-(x1-x0)*VIEW.k)/2 - x0*VIEW.k; VIEW.ty=(960-(y1-y0)*VIEW.k)/2 - y0*VIEW.k; applyView(); }
+function fitView(){ if(!NODES.length) return; const x0=Math.min(...NODES.map(n=>n.x))-30, x1=Math.max(...NODES.map(n=>n.x))+W+30, y0=Math.min(...NODES.map(n=>n.y))-110, y1=Math.max(...NODES.map(n=>n.y))+H+30; VIEW.k=Math.max(0.15, Math.min(2, Math.min(SW()/(x1-x0), SH()/(y1-y0)))); VIEW.tx=(SW()-(x1-x0)*VIEW.k)/2 - x0*VIEW.k; VIEW.ty=(SH()-(y1-y0)*VIEW.k)/2 - y0*VIEW.k; applyView(); }
 function initZoom(){
  const svg=$('graph');
  svg.addEventListener('wheel', e=>{ e.preventDefault(); const pt=svgPoint(e); zoomAt(pt.x, pt.y, Math.exp(-e.deltaY*0.0015)); }, {passive:false});
@@ -383,9 +458,9 @@ function initZoom(){
    if(pointers.size===1) drag={x:e.clientX,y:e.clientY,moved:0};
    if(pointers.size===2){ const [a,b]=[...pointers.values()]; pinchD=Math.hypot(a.x-b.x,a.y-b.y); drag=null; } });
  svg.addEventListener('pointermove', e=>{ if(!pointers.has(e.pointerId)) return; pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-   if(pointers.size===2){ const [a,b]=[...pointers.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const r=svg.getBoundingClientRect(); const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2}; if(pinchD>0) zoomAt((mid.x-r.left)*1420/r.width,(mid.y-r.top)*960/r.height, d/pinchD); pinchD=d; return; }
+   if(pointers.size===2){ const [a,b]=[...pointers.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const r=svg.getBoundingClientRect(); const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2}; if(pinchD>0) zoomAt((mid.x-r.left)*SW()/r.width,(mid.y-r.top)*SH()/r.height, d/pinchD); pinchD=d; return; }
    if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.moved+=Math.abs(dx)+Math.abs(dy); if(drag.moved>4) suppressClick=true;
-   const r=svg.getBoundingClientRect(); VIEW.tx+=dx*1420/r.width; VIEW.ty+=dy*960/r.height; drag.x=e.clientX; drag.y=e.clientY; applyView(); });
+   const r=svg.getBoundingClientRect(); VIEW.tx+=dx*SW()/r.width; VIEW.ty+=dy*SH()/r.height; drag.x=e.clientX; drag.y=e.clientY; applyView(); });
  const end=e=>{ pointers.delete(e.pointerId); if(pointers.size<2) pinchD=0; if(pointers.size===0){ drag=null; setTimeout(()=>suppressClick=false, 50); } };
  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
  svg.addEventListener('dblclick', e=>{ if(e.target===svg){ const pt=svgPoint(e); zoomAt(pt.x, pt.y, 1.4); } });
@@ -411,7 +486,7 @@ function drawGraph(){
   p.setAttribute('stroke-width',dim?'1':'2.2'); p.setAttribute('opacity',dim?'0.10':'0.9');
   p.setAttribute('marker-end',`url(#arr-${e.agent})`); vp.appendChild(p); });
  NODES.forEach(n=>{ const g=document.createElementNS(NS,'g'); g.style.cursor='pointer';
-  g.addEventListener('click',()=>{ if(suppressClick) return; S.sel=n.id;drawGraph();drawDetail();});
+  g.addEventListener('click',()=>{ if(suppressClick) return; S.sel=n.id;drawGraph();drawDetail(); if(typeof PRED!=='undefined' && PRED && PRED.predictions.some(p=>p.id===n.id)){ PS.sel=n.id; PS.org='all'; renderPred(); } });
   g.addEventListener('dblclick',()=>openDrawer(n.id));
   const prob=(n.id==='p1'||n.id==='p2'||n.id==='p3')?DELPHI[n.id].pooled.posterior:undefined;
   const fuzzy=n.timeKind==='probabilistic';
