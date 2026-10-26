@@ -471,6 +471,120 @@ def cmd_poll(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Prediction-resolution campaign (predictions/prediction_registry.json)
+# Batches group the 14 registered outcome+resolvability predictions so one
+# Cloud Agent resolves one coherent batch on its own branch/PR, writing ONLY
+# predictions/resolutions/<batch>.json (registry itself is locked).
+PREDICTION_REGISTRY = ROOT / "predictions" / "prediction_registry.json"
+PREDICTION_BATCHES: dict[str, dict[str, Any]] = {
+    "inrepo-quick": {"title": "In-repo quick resolutions (current datasets only)",
+                     "ids": ["XT-DQ-01", "DM-DPP-01"]},
+    "zebrafish": {"title": "Zebrafish outcome predictions (ZFIN + literature)",
+                  "ids": ["ZF-TUR-01", "ZF-TUR-02", "ZF-HH-01", "ZF-CLK-01", "ZF-VTX-01"]},
+    "drosophila": {"title": "Drosophila outcome predictions (FlyBase + literature)",
+                   "ids": ["DM-WG-01", "DM-HH-01", "DM-CLK-NEG-01", "DM-MUR-NEG-01"]},
+    "xenopus": {"title": "Xenopus outcome predictions (Xenbase + UniProt)",
+                "ids": ["XT-BMP-01", "XT-SHH-01", "XT-CLK-01"]},
+}
+
+
+def load_prediction_batch(batch: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    reg = json.loads(PREDICTION_REGISTRY.read_text(encoding="utf-8"))
+    by_id = {p["prediction_id"]: p for p in reg["predictions"]}
+    missing = [i for i in PREDICTION_BATCHES[batch]["ids"] if i not in by_id]
+    if missing:
+        raise KeyError(f"Registry is missing prediction ids for batch {batch}: {missing}")
+    return reg, [by_id[i] for i in PREDICTION_BATCHES[batch]["ids"]]
+
+
+def build_prediction_prompt(batch: str) -> str:
+    reg, rows = load_prediction_batch(batch)
+    branch = f"morphoeval/predictions-{batch}"
+    return f"""You are resolving registered predictions for the Infinite Morphospace repo — batch `{batch}` ({PREDICTION_BATCHES[batch]['title']}), branch `{branch}`.
+
+## LOCKED REGISTRY — DO NOT EDIT IT
+`predictions/prediction_registry.json` / `.csv` were registered on {reg['registered_on']} BEFORE scoring (blind discipline). **Do not modify them.** Your deliverable is exactly ONE new file: `predictions/resolutions/{batch}.json`. Do not modify any other existing file.
+
+## YOUR TASK — for each prediction below, attempt resolution via its stated resolution_route
+Use (a) repo data (`datasets/`, `sequences/sequence_links.json`, the `protein_states.json` sidecars), (b) live public sources (UniProt REST, ZFIN, FlyBase, Xenbase, and the cited literature — search the web/APIs as needed). No new wet-lab work.
+
+For every prediction record:
+- `prediction_id`, `attempted_on` (ISO date), `resolution_route_used`
+- `outcome_verdict`: one of `confirmed` | `refuted` | `partially_resolved` | `unresolved_with_current_data`
+- `evidence`: concrete values/records you found (accessions, lengths, phenotype names, measured numbers, URLs/DOIs) — quote numbers, never paraphrase vaguely
+- `resolvability_verdict`: actual category vs the registered `resolvability.predicted_category`: one of `as_predicted` | `harder_than_predicted` | `easier_than_predicted`, with one sentence why. This scores the SEPARATE resolvability prediction — do not conflate it with whether the biology confirmed.
+- If you can only bound it, say `partially_resolved`, give the bound you established, and name the exact missing data — do not guess a verdict.
+
+Top-level file fields: `batch`, `branch`, `registered_on` (copy from registry), `resolved_by` = "cloud-orchestrator prediction-resolution agent", `resolutions` (the per-prediction records), and `notes` (anything the local merge must know). Validate the file parses as JSON before committing, and verify `git diff --name-only --diff-filter=MD origin/main` shows no modified existing files (your resolution file is a new file).
+
+## THE REGISTERED PREDICTIONS (authoritative copy)
+```json
+{json.dumps(rows, indent=2)}
+```
+"""
+
+
+def prediction_dispatch_records() -> list[dict[str, Any]]:
+    out = []
+    if DISPATCH_LOG_DIR.exists():
+        for f in sorted(DISPATCH_LOG_DIR.glob("prediction-*.json")):
+            try:
+                out.append(json.loads(f.read_text(encoding="utf-8")))
+            except Exception:
+                continue
+    return out
+
+
+def cmd_pred_status(args: argparse.Namespace) -> int:
+    print(f"=== Prediction-Resolution Campaign ({PREDICTION_REGISTRY.name}) ===")
+    records = {r["batch"]: r for r in prediction_dispatch_records()}
+    resolutions = ROOT / "predictions" / "resolutions"
+    for batch, meta in PREDICTION_BATCHES.items():
+        rec = records.get(batch)
+        res_file = resolutions / f"{batch}.json"
+        if res_file.exists():
+            state = "RESOLVED (resolution file in tree)"
+        elif rec:
+            state = f"dispatched agent={rec.get('agent_id')} status={rec.get('status')} branch={rec.get('branch_name')}"
+        else:
+            state = "pending (ready to dispatch)"
+        print(f"  {batch:14s} {len(meta['ids'])} predictions [{', '.join(meta['ids'])}]\n  {'':14s} -> {state}")
+    print("\nMeta-resolvability predictions META-RES-01..04 are scored locally after all batches land.")
+    return 0
+
+
+def cmd_pred_prompt(args: argparse.Namespace) -> int:
+    if args.batch not in PREDICTION_BATCHES:
+        print(f"Unknown batch {args.batch}; choose from {sorted(PREDICTION_BATCHES)}", file=sys.stderr)
+        return 1
+    print(build_prediction_prompt(args.batch))
+    return 0
+
+
+def cmd_pred_dispatch(args: argparse.Namespace) -> int:
+    batches = list(PREDICTION_BATCHES) if args.all else [args.batch]
+    if any(b not in PREDICTION_BATCHES for b in batches):
+        print(f"Choose --batch from {sorted(PREDICTION_BATCHES)} or pass --all", file=sys.stderr)
+        return 1
+    DISPATCH_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    for batch in batches:
+        branch = f"morphoeval/predictions-{batch}"
+        prompt = build_prediction_prompt(batch)
+        if args.dry_run:
+            print(f"  [DRY-RUN] batch `{batch}` -> branch `{branch}` | {len(PREDICTION_BATCHES[batch]['ids'])} predictions | prompt={len(prompt):,} chars")
+            continue
+        res = asyncio.run(_dispatch_via_cursor_sdk(prompt=prompt, repo=args.repo, branch_name=branch, model=args.model))
+        rec = {"kind": "prediction_resolution", "batch": batch,
+               "prediction_ids": PREDICTION_BATCHES[batch]["ids"], "branch_name": branch,
+               "dispatched_at": utc_now_iso(), **res}
+        (DISPATCH_LOG_DIR / f"prediction-{batch}.json").write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+        print(f"  [DISPATCHED] batch `{batch}` -> agent_id={rec.get('agent_id')} branch={branch}")
+    if not args.dry_run:
+        print("\n[cloud_orchestrator] Prediction-resolution agents launched — you can close your laptop; PRs will appear automatically.")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd")
@@ -493,6 +607,16 @@ def main() -> int:
 
     sub.add_parser("poll", help="Poll live status of dispatched Cursor Cloud Agents")
 
+    sub.add_parser("pred-status", help="Show prediction-resolution batch status")
+    p_pp = sub.add_parser("pred-prompt", help="Print the resolution prompt for a prediction batch")
+    p_pp.add_argument("--batch", required=True, help=f"One of {sorted(PREDICTION_BATCHES)}")
+    p_pd = sub.add_parser("pred-dispatch", help="Dispatch Cloud Agents to resolve prediction batches")
+    p_pd.add_argument("--batch", default=None, help=f"One of {sorted(PREDICTION_BATCHES)}")
+    p_pd.add_argument("--all", action="store_true", help="Dispatch all prediction batches")
+    p_pd.add_argument("--repo", default=DEFAULT_REPO)
+    p_pd.add_argument("--model", default=None)
+    p_pd.add_argument("--dry-run", action="store_true", help="Preview without calling the API")
+
     args = ap.parse_args()
     if args.cmd == "status":
         return cmd_status(args)
@@ -502,6 +626,12 @@ def main() -> int:
         return cmd_dispatch(args)
     if args.cmd == "poll":
         return cmd_poll(args)
+    if args.cmd == "pred-status":
+        return cmd_pred_status(args)
+    if args.cmd == "pred-prompt":
+        return cmd_pred_prompt(args)
+    if args.cmd == "pred-dispatch":
+        return cmd_pred_dispatch(args)
     ap.print_help()
     return 0
 

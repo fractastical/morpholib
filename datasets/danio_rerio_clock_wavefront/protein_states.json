@@ -1,0 +1,164 @@
+{
+  "schema_version": "protein-state-sidecar-1.0-pilot",
+  "pilot": "zebrafish (Danio rerio) -- extant species, states measured from UniProt, not inferred",
+  "dataset": "datasets/danio_rerio_clock_wavefront",
+  "sim_id": "nakamasu-danio-rerio-clock-wavefront",
+  "organism": "Danio rerio",
+  "poson_law": "Somite Length S = u\u00b7T_clock",
+  "generated_from": [
+    "sequences/sequence_links.json",
+    "UniProtKB REST feature tables (live)"
+  ],
+  "claim_boundary": {
+    "protein_state_gives_you": "Which molecular species actually diffuses (mature/signalling chain after signal-peptide and proprotein cleavage, not the precursor), a RELATIVE diffusion ranking D_rel ~ MW^(-1/3) between those species, and qualitative membrane tethering when lipidation is annotated (ShhNp: N-palmitate + C-cholesterol).",
+    "protein_state_does_not_give_you": "Absolute diffusion coefficients, production/degradation rates, Her1 half-life or segmentation-clock period, wavefront speed, receptor affinities. Those are kinetic facts for the cited literature / ZFIN, labelled literature_required below.",
+    "therefore": "Every morphospace prediction here is DIRECTIONAL or a ratio under a stated held-fixed assumption (e.g. lambda ~ sqrt(D/k) at fixed k), never an absolute fit."
+  },
+  "protein_states": [
+    {
+      "gene_symbol": "her1",
+      "pathway": "Notch/Her-Hes clock",
+      "morphogen_role": "clock_oscillator",
+      "uniprot": "Q90463",
+      "ensembl_gene_id": "ENSDARG00000014722",
+      "expression_atlas": "https://zfin.org/action/quicksearch?query=her1",
+      "why": "her1 is the somitogenesis segmentation-clock oscillator - pairs with clock-wavefront models rather than steady Turing patterns.",
+      "protein_state": {
+        "source": "UniProtKB feature table + comments (live REST, not hand-copied)",
+        "accession": "Q90463",
+        "protein_name": null,
+        "precursor_length_aa": 328,
+        "sequence_mass_kda": 36.6,
+        "signal_peptide": null,
+        "propeptides": [],
+        "chains": [],
+        "domains": [
+          {
+            "start": 12,
+            "end": 69,
+            "length_aa": 58,
+            "description": "BHLH"
+          },
+          {
+            "start": 118,
+            "end": 152,
+            "length_aa": 35,
+            "description": "Orange"
+          }
+        ],
+        "lipidation": [],
+        "glycosylation": [],
+        "modified_residues": [],
+        "cleavage_sites": [],
+        "disulfide_bond_count": 0,
+        "subcellular_location": [
+          "Nucleus"
+        ],
+        "ptm_comments": [],
+        "function_comments": [],
+        "keywords": [
+          "Developmental protein",
+          "DNA-binding",
+          "Nucleus",
+          "Repressor",
+          "Transcription",
+          "Transcription regulation"
+        ],
+        "url": "https://www.uniprot.org/uniprotkb/Q90463"
+      },
+      "status": "measured_state_extant_species",
+      "diffusible_species": {
+        "basis": "not_applicable",
+        "length_aa": null,
+        "note": "Nuclear bHLH transcriptional repressor (UniProt location: Nucleus). Intracellular oscillator, not a diffusible morphogen; D_rel is not defined for it."
+      }
+    },
+    {
+      "gene_symbol": "fgf8a",
+      "pathway": "FGF",
+      "morphogen_role": "gradient_source",
+      "uniprot": "O57341",
+      "ensembl_gene_id": "ENSDARG00000003399",
+      "expression_atlas": "https://zfin.org/action/quicksearch?query=fgf8a",
+      "why": "Fgf8a (acerebellar): midbrain-hindbrain organiser gradient; classic Wolpert positional-information morphogen.",
+      "protein_state": {
+        "source": "UniProtKB feature table + comments (live REST, not hand-copied)",
+        "accession": "O57341",
+        "protein_name": "Fibroblast growth factor 8",
+        "precursor_length_aa": 210,
+        "sequence_mass_kda": 24.7,
+        "signal_peptide": {
+          "start": 1,
+          "end": 27,
+          "length_aa": 27,
+          "description": ""
+        },
+        "propeptides": [],
+        "chains": [
+          {
+            "start": 28,
+            "end": 210,
+            "length_aa": 183,
+            "description": "Fibroblast growth factor 8"
+          }
+        ],
+        "domains": [],
+        "lipidation": [],
+        "glycosylation": [],
+        "modified_residues": [],
+        "cleavage_sites": [],
+        "disulfide_bond_count": 0,
+        "subcellular_location": [
+          "Secreted"
+        ],
+        "ptm_comments": [],
+        "function_comments": [
+          "Plays an important role in the regulation of embryonic development, cell proliferation, cell differentiation and cell migration (By similarity). Required for Kupffer's vesicle ciliogenesis (PubMed:19164561)"
+        ],
+        "keywords": [
+          "Growth factor",
+          "Reference proteome",
+          "Secreted",
+          "Signal"
+        ],
+        "url": "https://www.uniprot.org/uniprotkb/O57341"
+      },
+      "diffusible_species": {
+        "basis": "annotated_chain",
+        "description": "Fibroblast growth factor 8",
+        "length_aa": 183,
+        "note": "Secreted chain after signal-peptide cleavage.",
+        "D_rel_vs_mature_bmp2b": 0.8736
+      },
+      "status": "measured_state_extant_species"
+    }
+  ],
+  "effect_on_morphogenetic_state": {
+    "poson_law": "Somite Length S = u * T_clock",
+    "her1_state_moves": {
+      "parameter": "T_clock (period), via Her/Hes autorepression delay + protein/mRNA degradation",
+      "captured_from_uniprot": "Identity, 328 aa nuclear bHLH repressor, domains (bHLH 12-69, Orange 118-152). No modified-residue / degradation annotation in UniProt.",
+      "literature_required": "Her1 half-life, transcriptional/translational delays, and the resulting ~30 min zebrafish clock period must come from the somitogenesis literature / ZFIN, not from sequence or UniProt state."
+    },
+    "fgf8a_state_moves": {
+      "parameter": "u (wavefront position/speed), via the posterior FGF gradient cells exit as it regresses",
+      "captured_from_uniprot": {
+        "basis": "annotated_chain",
+        "description": "Fibroblast growth factor 8",
+        "length_aa": 183,
+        "note": "Secreted chain after signal-peptide cleavage.",
+        "D_rel_vs_mature_bmp2b": 0.8736
+      }
+    },
+    "worked_sensitivity": {
+      "formula": "dS/S = dT/T at fixed u (equivalently dS/S = du/u at fixed T)",
+      "S_multiplier_for_T_change": {
+        "-20%": 0.8,
+        "-10%": 0.9,
+        "+10%": 1.1,
+        "+20%": 1.2
+      },
+      "reading": "A protein-state change that altered Her1 degradation would move somite length in direct proportion to the period change -- but the size of that period change is literature_required, so no numeric S prediction is claimed here."
+    }
+  }
+}
