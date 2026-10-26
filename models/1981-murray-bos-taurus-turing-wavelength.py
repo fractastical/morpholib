@@ -198,42 +198,53 @@ def _gamma_map(gamma: float, shape: tuple[int, int], heterogeneity: float,
     """
     if heterogeneity <= 0:
         return gamma
-    # Two-scale heterogeneity: a coarse component diversifies patch sizes,
-    # a fine component roughens enclave boundaries (the homogeneous system
-    # otherwise makes near-circular spots, unlike the cow's jagged patches).
+    return gamma * _het_multiplier(shape, heterogeneity, rng)
+
+
+def _het_multiplier(shape: tuple[int, int], heterogeneity: float,
+                    rng: np.random.Generator) -> np.ndarray:
+    """Two-scale multiplier field in [1-het, 1+het] (coarse + fine scales)."""
     coarse = rng.normal(0.0, 1.0, (max(shape[0] // 16, 2), max(shape[1] // 16, 2)))
     fine = rng.normal(0.0, 1.0, (max(shape[0] // 5, 2), max(shape[1] // 5, 2)))
     smooth = _resize(coarse, shape) + 0.55 * _resize(fine, shape)
     smooth /= (np.abs(smooth).max() + 1e-12)
-    return gamma * (1.0 + heterogeneity * smooth)
+    return 1.0 + heterogeneity * smooth
 
 
 def simulate_growing(gamma: float, seed: int = SEED,
                      stages: tuple[tuple[int, int, int], ...] = ((60, 80, 2600), (90, 120, 1800), (120, 160, 1800)),
                      heterogeneity: float = 0.0) -> np.ndarray:
-    """RD on a growing domain: evolve, bilinearly grow, evolve again (x3)."""
+    """RD on a growing domain: evolve, bilinearly grow, evolve again (x3).
+
+    Pass 8: the heterogeneity multiplier is drawn ONCE at the final size
+    and rescaled to each stage, so it is attached to the tissue (material
+    coordinates) instead of being re-drawn per stage (Fable round 2).
+    Limitation (stated, not modelled): interpolation conserves morphogen
+    concentration across growth steps; there is no dilution term.
+    """
     rng = np.random.default_rng(seed)
     u0, v0 = steady_state()
     ny, nx, steps = stages[0]
     u = np.full((ny, nx), u0) + rng.normal(0.0, 0.05, (ny, nx))
     v = np.full((ny, nx), v0) + rng.normal(0.0, 0.05, (ny, nx))
+    mult_full = (_het_multiplier((stages[-1][0], stages[-1][1]), heterogeneity, rng)
+                 if heterogeneity > 0 else None)
     for ny, nx, steps in stages:
         if u.shape != (ny, nx):
             u, v = _resize(u, (ny, nx)), _resize(v, (ny, nx))
-        g = _gamma_map(gamma, (ny, nx), heterogeneity, rng)
+        g = gamma * _resize(mult_full, (ny, nx)) if mult_full is not None else gamma
         u, v = _evolve(u, v, g, steps)
     return u
 
 
 def coat_pattern_stats(field: np.ndarray, quantile: float, pigment_low: bool) -> dict:
-    """Patch stats for BOTH phases: pigment patches and white enclaves."""
+    """Patch stats for BOTH phases (scale-matched to the lattice, Pass 8)."""
     thr = float(np.quantile(field, quantile))
     pigment = field < thr if pigment_low else field > thr
-    pig = patch_stats(pigment)
-    enc = patch_stats(~pigment)
+    out = scale_pattern(pigment)
     return {
         "threshold_quantile": quantile, "pigment_low_activator": pigment_low,
-        "pigment": pig, "enclaves": enc, "mask": pigment,
+        "pigment": out["pigment"], "enclaves": out["enclaves"], "mask": out["mask"],
     }
 
 
@@ -316,7 +327,8 @@ def simulate_melanoblast(seed: int = SEED, founder_fraction: float = 0.002,
 
 
 def coat_stats_from_mask(mask: np.ndarray) -> dict:
-    return {"pigment": patch_stats(mask), "enclaves": patch_stats(~mask)}
+    out = scale_pattern(mask)
+    return {"pigment": out["pigment"], "enclaves": out["enclaves"]}
 
 
 def morphometric_distance_v2(cow: dict, sim: dict) -> float:
@@ -408,13 +420,70 @@ def roi_dark_mask(gray: np.ndarray, roi: dict) -> tuple[np.ndarray, np.ndarray]:
     return clean_mask(flank < otsu_threshold(flank)), flank
 
 
+def coat_segment(rgb: np.ndarray, roi: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Pass 8 (R3b): coat mask from colour, replacing rectangle-only stats.
+
+    Black/white coat is achromatic; grass, sky, trees and dirt are not.
+    Coat candidate = low HSV saturation OR very dark (black fur makes
+    saturation estimates noisy); then largest component + hole filling.
+    Pigment = luminance below Otsu (computed inside the coat domain).
+    Returns (pigment, coat_domain, flank_luminance) at ROI resolution.
+    """
+    from matplotlib.colors import rgb_to_hsv
+    h, w, _ = rgb.shape
+    x0, x1 = int(roi["x_frac"][0] * w), int(roi["x_frac"][1] * w)
+    y0, y1 = int(roi["y_frac"][0] * h), int(roi["y_frac"][1] * h)
+    crop = rgb[y0:y1, x0:x1].astype(float) / 255.0
+    sat = rgb_to_hsv(crop)[..., 1]
+    lum = crop.mean(axis=2)
+    coat = clean_mask((sat < 0.35) | (lum < 0.22), iterations=1)
+    labels, sizes = label_components(coat)
+    if sizes:
+        counts = np.bincount(labels.ravel(), minlength=len(sizes) + 1)
+        coat = labels == int(np.argmax(counts[1:]) + 1)
+        # fill holes: non-coat components not touching the border are interior
+        inv_labels, inv_sizes = label_components(~coat)
+        border = set(np.unique(np.concatenate(
+            [inv_labels[0, :], inv_labels[-1, :], inv_labels[:, 0], inv_labels[:, -1]])))
+        holes = np.isin(inv_labels, [l for l in range(1, len(inv_sizes) + 1)
+                                     if l not in border])
+        coat = coat | holes
+    vals = (lum[coat] * 255).astype(np.uint8) if coat.any() else np.array([0], dtype=np.uint8)
+    hist, _ = np.histogram(vals, bins=256, range=(0, 256))
+    p = hist / max(hist.sum(), 1)
+    om = np.cumsum(p)
+    mu = np.cumsum(p * np.arange(256))
+    thr = int(np.argmax(np.where(om * (1 - om) > 0,
+                                 (mu[-1] * om - mu) ** 2 / np.maximum(om * (1 - om), 1e-12), 0)))
+    pigment = clean_mask(coat & (lum * 255 < thr), iterations=2)
+    return pigment & coat, coat, lum * 255.0
+
+
+def scale_pattern(pigment: np.ndarray, domain: np.ndarray | None = None) -> dict:
+    """Resample a pigment/domain pair to the (NY, NX) lattice and score it.
+
+    Pass 8 scale-matching (Fable round 2): specimen masks are measured at
+    the same 160-px lattice width as the simulations, so perimeter-based
+    roughness is not credited for photo resolution the sims cannot have.
+    """
+    from PIL import Image
+    def rs(z: np.ndarray) -> np.ndarray:
+        im = Image.fromarray(z.astype(np.float32)).resize((NX, NY), Image.BILINEAR)
+        return np.asarray(im) > 0.5
+    pig = rs(pigment)
+    dom = rs(domain) if domain is not None else np.ones_like(pig)
+    return {"pigment": patch_stats(pig, dom), "enclaves": patch_stats(dom & ~pig, dom),
+            "mask": pig, "domain": dom}
+
+
 def specimen_pattern() -> dict:
     from PIL import Image
     ref = json.loads(REFERENCE.read_text(encoding="utf-8"))
-    gray = np.asarray(Image.open(SPECIMEN).convert("L"), dtype=float)
-    dark, flank = roi_dark_mask(gray, ref["specimen"]["rois"]["flank_roi"])
-    return {"pigment": patch_stats(dark), "enclaves": patch_stats(~dark),
-            "mask": dark, "flank": flank}
+    rgb = np.asarray(Image.open(SPECIMEN).convert("RGB"))
+    pigment, coat, flank = coat_segment(rgb, ref["specimen"]["rois"]["flank_roi"])
+    out = scale_pattern(pigment, coat)
+    out["flank"] = flank
+    return out
 
 
 # ------------------------------------------------------- remediation pass 6
@@ -422,7 +491,7 @@ def specimen_pattern() -> dict:
 # SHA-pinned, CC/PD) held out from every Pass 1-5 fit.  Pass 1-5 parameters
 # (RD gamma/heterogeneity/threshold rule, Eden founder density) are applied
 # unchanged; only the coverage calibration follows each specimen (as before).
-def multi_specimen_comparison(seeds: tuple[int, ...] = (7, 17, 27, 37, 47)) -> dict:
+def multi_specimen_comparison(seeds: tuple[int, ...] = (7, 17, 27, 37, 47, 57, 67, 77, 87, 97, 107, 117)) -> dict:
     from PIL import Image
     ref = json.loads(REFERENCE.read_text(encoding="utf-8"))
     specimens = []
@@ -431,11 +500,12 @@ def multi_specimen_comparison(seeds: tuple[int, ...] = (7, 17, 27, 37, 47)) -> d
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         if digest != e["sha256"]:
             raise ValueError(f"specimen SHA-256 mismatch: {e['file']}")
-        gray = np.asarray(Image.open(path).convert("L"), dtype=float)
-        dark, _ = roi_dark_mask(gray, e["roi"])
+        rgb = np.asarray(Image.open(path).convert("RGB"))
+        pigment, coat, _lum = coat_segment(rgb, e["roi"])
+        pat = scale_pattern(pigment, coat)
         specimens.append({"file": e["file"],
-                          "pattern": {"pigment": patch_stats(dark),
-                                      "enclaves": patch_stats(~dark)}})
+                          "pattern": {"pigment": pat["pigment"],
+                                      "enclaves": pat["enclaves"]}})
     # RD fields once per seed; per specimen only the threshold follows coverage.
     rd_fields = {seed: {"static": simulate(1.0, seed=seed),
                         "growing": simulate_growing(0.25, seed=seed, heterogeneity=0.8)}
@@ -462,8 +532,30 @@ def multi_specimen_comparison(seeds: tuple[int, ...] = (7, 17, 27, 37, 47)) -> d
     models = ("rd_static_gamma1", "rd_growing_het_best", "melanoblast_eden")
     held_out = {m: float(np.mean([p["distance_v2_mean"][m] for p in per_specimen]))
                 for m in models}
+    # Pass 8: paired significance, Eden vs RD-growing across specimens
+    # (Fable round 2: the Pass-5/6 ranking was reported without any test).
+    diffs = np.array([p["distance_v2_mean"]["melanoblast_eden"]
+                      - p["distance_v2_mean"]["rd_growing_het_best"]
+                      for p in per_specimen])
+    brng = np.random.default_rng(0)
+    boots = [float(np.mean(brng.choice(diffs, size=len(diffs), replace=True)))
+             for _ in range(10000)]
+    paired = {
+        "contrast": "melanoblast_eden - rd_growing_het_best (per-specimen, seed-averaged)",
+        "mean_diff": float(np.mean(diffs)),
+        "bootstrap_95ci": [float(np.percentile(boots, 2.5)), float(np.percentile(boots, 97.5))],
+        "eden_wins": int((diffs < 0).sum()), "n_specimens": len(diffs),
+    }
+    try:
+        from scipy import stats as _st
+        paired["wilcoxon_p"] = float(_st.wilcoxon(diffs).pvalue)
+        paired["paired_t_p"] = float(_st.ttest_1samp(diffs, 0.0).pvalue)
+    except Exception:
+        paired["wilcoxon_p"] = None
+        paired["paired_t_p"] = None
     return {"n_held_out": len(specimens), "seeds": list(seeds),
             "held_out_distance_v2_mean": held_out, "per_specimen": per_specimen,
+            "paired_eden_vs_rd": paired,
             "distribution": {
                 "coverage_median": float(np.median([p["coverage"] for p in per_specimen])),
                 "enclave_roughness_median": float(np.median([p["cow_enclave_roughness"] for p in per_specimen])),
@@ -533,12 +625,21 @@ def label_components(mask: np.ndarray) -> tuple[np.ndarray, list[int]]:
     return labels, sizes
 
 
-def patch_stats(mask: np.ndarray) -> dict:
-    """Coverage / component statistics shared by specimen and simulation."""
+def patch_stats(mask: np.ndarray, domain: np.ndarray | None = None) -> dict:
+    """Coverage / component statistics shared by specimen and simulation.
+
+    Pass 8: statistics are taken inside `domain` (default: whole frame) and
+    diameters are normalised by sqrt(domain area), not by frame width, so
+    ROIs of different aspect ratios are comparable (Fable round-2 finding).
+    """
+    if domain is None:
+        domain = np.ones_like(mask)
+    mask = mask & domain
     labels, sizes = label_components(mask)
     total = int(mask.sum())
-    big = [s for s in sizes if s >= MIN_PATCH_FRACTION * mask.size]
-    width = mask.shape[1]
+    n_domain = int(domain.sum())
+    big = [s for s in sizes if s >= MIN_PATCH_FRACTION * n_domain]
+    width = float(np.sqrt(n_domain))
     diams = [float(np.sqrt(4.0 * s / np.pi) / width) for s in big]
     # Boundary roughness: perimeter / sqrt(area) per big component
     # (~4.6 for a digital disc under this 4-neighbour perimeter -- not the
@@ -548,7 +649,7 @@ def patch_stats(mask: np.ndarray) -> dict:
     if big:
         counts = np.bincount(labels.ravel(), minlength=len(sizes) + 1)
         big_labels = [lab for lab in range(1, len(sizes) + 1)
-                      if counts[lab] >= MIN_PATCH_FRACTION * mask.size]
+                      if counts[lab] >= MIN_PATCH_FRACTION * n_domain]
         padded = np.pad(labels, 1)
         for lab in big_labels:
             comp = padded[1:-1, 1:-1] == lab
@@ -558,7 +659,7 @@ def patch_stats(mask: np.ndarray) -> dict:
                         + (comp & (padded[1:-1, :-2] != lab)).sum())
             roughness.append(float(perim / np.sqrt(counts[lab])))
     return {
-        "coverage_fraction": float(total / mask.size),
+        "coverage_fraction": float(total / n_domain),
         "n_components_all": len(sizes),
         "n_patches_big": len(big),
         "largest_patch_share_of_pigment": float(big[0] / total) if big and total else 0.0,
@@ -870,11 +971,12 @@ def render_specimens() -> Path:
     ref = json.loads(REFERENCE.read_text(encoding="utf-8"))
     fig, axes = plt.subplots(2, 9, figsize=(22, 5))
     for j, e in enumerate(ref.get("extra_specimens", [])):
-        gray = np.asarray(Image.open(DATASET_DIR / e["file"]).convert("L"), dtype=float)
-        dark, flank = roi_dark_mask(gray, e["roi"])
+        rgb = np.asarray(Image.open(DATASET_DIR / e["file"]).convert("RGB"))
+        pigment, coat, flank = coat_segment(rgb, e["roi"])
         axes[0, j].imshow(flank, cmap="gray", vmin=0, vmax=255)
         axes[0, j].set_title(e["file"][-6:-4], fontsize=8)
-        axes[1, j].imshow(np.where(dark, 0, 255).astype("uint8"), cmap="gray", vmin=0, vmax=255)
+        disp = np.where(pigment, 0, np.where(coat, 255, 128)).astype("uint8")
+        axes[1, j].imshow(disp, cmap="gray", vmin=0, vmax=255)
     for ax in axes.ravel():
         ax.set_xticks([]); ax.set_yticks([])
     fig.tight_layout()
@@ -900,14 +1002,15 @@ def animate_full() -> Path:
     ref = json.loads(REFERENCE.read_text(encoding="utf-8"))
     # --- specimens (cow 01 + 9 held out) ---
     specimens: list[dict] = []
-    gray1 = np.asarray(Image.open(SPECIMEN).convert("L"), dtype=float)
-    dark1, flank1 = roi_dark_mask(gray1, ref["specimen"]["rois"]["flank_roi"])
-    specimens.append({"label": "01 (fit specimen, c.1920)", "flank": flank1, "mask": dark1})
+    rgb1 = np.asarray(Image.open(SPECIMEN).convert("RGB"))
+    dark1, coat1, flank1 = coat_segment(rgb1, ref["specimen"]["rois"]["flank_roi"])
+    specimens.append({"label": "01 (fit specimen, c.1920)", "flank": flank1,
+                      "mask": dark1, "coat": coat1})
     for e in ref.get("extra_specimens", []):
-        g = np.asarray(Image.open(DATASET_DIR / e["file"]).convert("L"), dtype=float)
-        dark, flank = roi_dark_mask(g, e["roi"])
+        rgb = np.asarray(Image.open(DATASET_DIR / e["file"]).convert("RGB"))
+        dark, coat, flank = coat_segment(rgb, e["roi"])
         specimens.append({"label": f"{e['file'][-6:-4]} held-out ({e['license']})",
-                          "flank": flank, "mask": dark})
+                          "flank": flank, "mask": dark, "coat": coat})
     for sp in specimens:
         cov = patch_stats(sp["mask"])["coverage_fraction"]
         sp["title"] = f"{sp['label']}  coverage {cov:.2f}"
@@ -935,9 +1038,10 @@ def animate_full() -> Path:
         fig, axes = plt.subplots(2, 2, figsize=(11, 6.4))
         axes[0, 0].imshow(sp["flank"], cmap="gray", vmin=0, vmax=255)
         axes[0, 0].set_title(f"Specimen {sp['title']}", fontsize=9)
-        axes[0, 1].imshow(np.where(sp["mask"], 0, 255).astype("uint8"),
+        axes[0, 1].imshow(np.where(sp["mask"], 0,
+                                   np.where(sp["coat"], 255, 128)).astype("uint8"),
                           cmap="gray", vmin=0, vmax=255)
-        axes[0, 1].set_title("Cleaned Otsu mask (black = pigment)", fontsize=9)
+        axes[0, 1].set_title("Coat mask (black = pigment, grey = not coat)", fontsize=9)
         axes[1, 0].imshow(np.asarray(Image.fromarray(coat).resize((640, 480))),
                           cmap="gray", vmin=0, vmax=255)
         axes[1, 0].set_title(f"RD growing Turing coat\n{label}", fontsize=9)
@@ -982,8 +1086,13 @@ def animate_full() -> Path:
                 pts = [p["distance_v2_mean"][n] for p in per]
                 ax.plot([j] * len(pts), pts, "o", color="red", ms=4, alpha=0.7)
             ax.set_ylabel("distance v2 on held-out cows (lower = closer)")
-            ax.set_title("Held-out validation, 9 unseen Holsteins (red dots = per-cow)\n"
-                         "Eden wins 7/9 on unfitted statistics; ranking p~0.2 (Fable audit) -- suggestive, not significant")
+            pr = m["pass6_multi_specimen"].get("paired_eden_vs_rd", {})
+            if pr:
+                ax.set_title("Held-out validation, 9 unseen Holsteins (red dots = per-cow), coat-mask + scale-matched\n"
+                             f"Eden wins {pr.get('eden_wins', '?')}/9, mean diff {pr.get('mean_diff', float('nan')):+.2f}, "
+                             f"Wilcoxon p={pr.get('wilcoxon_p') if pr.get('wilcoxon_p') is not None else float('nan'):.2f} -- models indistinguishable at matched scale")
+            else:
+                ax.set_title("Held-out validation, 9 unseen Holsteins (red dots = per-cow)")
             fig.tight_layout()
             fig.canvas.draw()
             chart = Image.frombuffer("RGBA", fig.canvas.get_width_height(),
