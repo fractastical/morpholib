@@ -40,6 +40,12 @@ def validate(data: dict) -> list[str]:
             errs.append(f"edge references missing node: {e}")
         if e["agent"] not in agents:
             errs.append(f"edge references unknown agent: {e}")
+        if "prob" in e:  # Delphi path-success posterior; never an invented number
+            if not (0 <= e["prob"] <= 100):
+                errs.append(f"edge {e['from']}->{e['to']}: prob {e['prob']} outside 0-100")
+            if e["to"] in data["DELPHI"] and abs(e["prob"] - data["DELPHI"][e["to"]]["pooled"]["posterior"]) > 0.6:
+                errs.append(f"edge {e['from']}->{e['to']}: prob {e['prob']} != Delphi pooled posterior "
+                            f"{data['DELPHI'][e['to']]['pooled']['posterior']} for its target")
     for pid, prize in data["DELPHI"].items():
         if abs(sum(s["weight"] for s in prize["subgoals"]) - 100) > 1e-9:
             errs.append(f"{pid}: subgoal weights do not sum to 100")
@@ -95,7 +101,7 @@ OPEN_PROBLEMS = [
     {"id": "OP-09", "node": "b4", "delphi": None, "title": "Score the zebrafish blind test",
      "gap": "Pre-registered and hash-locked but, in the repo record, never scored. The contract is ready; the scorer must refuse on hash mismatch, as designed.",
      "done": "Run the registered scorer, publish the outcome nanopub either way, and update the graph node from 'registered' to its realised status."},
-    {"id": "OP-11", "node": "f5", "delphi": None, "title": "Cow Turing follow-ups: independent re-score + migration-wave colonisation variant",
+    {"id": "OP-11", "node": "f5", "delphi": "bos", "title": "Cow Turing follow-ups: independent re-score + migration-wave colonisation variant",
      "gap": "The published negative verdict (static Turing rejected; growing RD vs Eden colonisation p=0.91) rests on a builder-scored Pass 9 assessment — the two blinded Fable audits (54.4, 57.7) predate the Pass 8 scale-matched pipeline. The Eden control is also a minimal interior-founder proxy, while real Holstein white invades from migration fronts; and held-out n=9 limits power.",
      "done": "A blinded independent re-score of the Pass 8+ tree (audit R11), plus a neural-crest migration-wave colonisation variant scored on the same coat-masked, scale-matched statistics — published as a superseding assessment either way."},
     {"id": "OP-10", "node": "t7", "delphi": None, "title": "Portfolio residue: clades where Thompson-7 failed (Leporidae 0/3, Vespinae 0/7 pre-venation)",
@@ -387,7 +393,8 @@ a{color:var(--acc)}
 <span><i class="badge" style="background:var(--green)">&nbsp;</i> solved / proved</span><span><i class="badge" style="background:#F0A040">&nbsp;</i> partial</span><span><i class="badge" style="background:#C04848">&nbsp;</i> still open / refuted</span><span><i class="badge" style="background:#2E79B5">&nbsp;</i> registered, unscored</span>
 <span>–– dashed halo = probabilistic timestamp</span>
 <span><i class="badge" style="background:var(--green)">&nbsp;</i> <b>green border/badge = possible pathway (posterior ≥15%)</b></span>
-<span><i class="badge" style="background:var(--orange)">&nbsp;</i> <b>dark orange = probability &lt;15% success</b> — all 3 pooled Delphi prizes currently sit here (15% is a visual threshold, not a Delphi source field)</span></div>
+<span><i class="badge" style="background:var(--orange)">&nbsp;</i> <b>dark orange = probability &lt;15% success</b> — all 3 pooled Delphi prizes currently sit here (15% is a visual threshold, not a Delphi source field)</span>
+<span><b>Edge % = Delphi path-success posterior</b> (pooled panel, where a panel has scored that route; green ≥15%, dark orange &lt;15%) — edges with no panel show <span class="badge" style="background:#888">NOT SCORED</span> in the inspector, never an invented number</span></div>
 
 <h2>Registered predictions — outcome <i>and</i> resolvability, scored</h2>
 <div class="card" id="predpanel"></div>
@@ -484,7 +491,8 @@ function drawGraph(){
   p.setAttribute('fill','none'); p.setAttribute('stroke',ACOL[e.agent]);
   const dim = S.agent!=='all'&&S.agent!==e.agent;
   p.setAttribute('stroke-width',dim?'1':'2.2'); p.setAttribute('opacity',dim?'0.10':'0.9');
-  p.setAttribute('marker-end',`url(#arr-${e.agent})`); vp.appendChild(p); });
+  p.setAttribute('marker-end',`url(#arr-${e.agent})`); vp.appendChild(p);
+  if(e.prob!==undefined){ const t=document.createElementNS(NS,'text'); t.setAttribute('x',(x1+x2)/2+off+4); t.setAttribute('y',mid-3); t.setAttribute('font-size','9.5'); t.setAttribute('font-weight','700'); t.setAttribute('fill',probColor(e.prob)); t.textContent=e.prob+'%'; vp.appendChild(t); } });
  NODES.forEach(n=>{ const g=document.createElementNS(NS,'g'); g.style.cursor='pointer';
   g.addEventListener('click',()=>{ if(suppressClick) return; S.sel=n.id;drawGraph();drawDetail(); if(typeof PRED!=='undefined' && PRED && PRED.predictions.some(p=>p.id===n.id)){ PS.sel=n.id; PS.org='all'; renderPred(); } });
   g.addEventListener('dblclick',()=>openDrawer(n.id));
@@ -502,7 +510,7 @@ function drawGraph(){
   h+=`<foreignObject x="${n.x+6}" y="${n.y+24}" width="${W-12}" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:9.5px;line-height:1.25;color:#5c5c60;text-align:center;font-family:inherit">${esc(n.sub)}</div></foreignObject>`;
   g.innerHTML=h; vp.appendChild(g); });
 }
-function edgesList(id){ return EDGES.filter(e=>e.from===id||e.to===id).map(e=>`<div class="row"><span class="sw" style="background:${ACOL[e.agent]}"></span><span class="small">${e.from===id?'→':'←'} ${esc(e.from===id?byId[e.to].label:byId[e.from].label)} — ${AGENTS[e.agent].name}${e.label?` (${esc(e.label)})`:''}</span></div>`).join('') || '<p class="small mut">No recorded edges.</p>'; }
+function edgesList(id){ return EDGES.filter(e=>e.from===id||e.to===id).map(e=>`<div class="row"><span class="sw" style="background:${ACOL[e.agent]}"></span><span class="small">${e.from===id?'→':'←'} ${esc(e.from===id?byId[e.to].label:byId[e.from].label)} — ${AGENTS[e.agent].name}${e.label?` (${esc(e.label)})`:''}</span>${e.prob!==undefined?probBadge(e.prob)+`<span class="small mut">Delphi path-success${e.probNote?` · ${esc(e.probNote)}`:''}</span>`:`<span class="badge" style="background:#888">NOT SCORED</span>`}</div>`).join('') || '<p class="small mut">No recorded edges.</p>'; }
 function drawDetail(){ const n=byId[S.sel]; $('detail').innerHTML=`<div class="row"><b style="flex:1">${esc(n.label)}</b><span class="badge" style="background:${SCOL[n.status]}">${SLAB[n.status]}</span><button class="on" onclick="openDrawer('${n.id}')">Inspect (or double-click)</button></div>
 <p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}${n.timeKind==='probabilistic'?' (probabilistic — see timeline)':''}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p><hr style="border:none;border-top:1px solid var(--line)"><b class="small">Attempts into / out of this node, by agent</b>${edgesList(n.id)}`; }
 
