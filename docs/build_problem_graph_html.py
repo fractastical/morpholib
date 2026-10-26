@@ -54,7 +54,126 @@ def validate(data: dict) -> list[str]:
                 errs.append(f"{pid}/{row['agent']}: posterior {row['posterior']} != prior x BF = {posterior:.2f}")
             if abs((row["forDb"] + row["againstDb"]) - row["netDb"]) > 0.51:
                 errs.append(f"{pid}/{row['agent']}: forDb + againstDb != netDb")
+    for op in OPEN_PROBLEMS:
+        if op["node"] not in ids:
+            errs.append(f"{op['id']}: references missing graph node {op['node']}")
+        if op["delphi"] is not None and op["delphi"] not in data["DELPHI"]:
+            errs.append(f"{op['id']}: references missing Delphi prize {op['delphi']}")
+    if len({op["id"] for op in OPEN_PROBLEMS}) != len(OPEN_PROBLEMS):
+        errs.append("duplicate MorphoSwarm OP ids")
     return errs
+
+# MorphoSwarm work queue: the genuinely open problems, curated against graph
+# node ids (validated below). `delphi` links to a Delphi prize for a scored
+# viability; without it the problem is honestly NOT SCORED and the swarm's
+# first task on it is to Delphi-score it, not to assume a probability.
+OPEN_PROBLEMS = [
+    {"id": "OP-01", "node": "p1", "delphi": "p1", "title": "Prize 1 — close the transparent-gate loophole (short runs 1≤a_i≤7)",
+     "gap": "Defects D1(t)=1 are proved to arrive infinitely often, but not proved to ever land on a closed gate {c_t=1}. Depth-1 right cylinder has positive topological entropy (~0.32 bits/step) on short runs, so no deeper local transducer closes this; it needs a global phase-spreading / mixing invariant.",
+     "done": "A proof (ideally Lean-checked) that for all t0, Π and short-run words, some D1(t)=1 lands on {c_t=1} — or a counterexample word, which would be just as valuable."},
+    {"id": "OP-02", "node": "p2", "delphi": "p2", "title": "Prize 2 — diagonal-sample decorrelation along j=⌊S/2⌋",
+     "gap": "Exact 1/2 density is proved on crystals, but the diagonal sample visits a vanishing 2^-n fraction of each period and no Weyl / exponential-sum discrepancy bound exists along the moving diagonal.",
+     "done": "A discrepancy bound for S -> A_S(floor(S/2)) transferring crystal density to the center column, or a proof that such a bound fails."},
+    {"id": "OP-03", "node": "p3", "delphi": "p3", "title": "Prize 3 — fixed-seed specialisation transfer",
+     "gap": "Multivariate deg(c_T)=2T-1 collapses under specialisation to the unit seed; a uniform Omega(T) bound needs P-vs-EXP-type machinery. Delphi posterior 0.04% — work here should be a barrier result, not another attempt at the bound.",
+     "done": "A formal barrier / relativisation result for the fixed-seed problem, or a specified computational model in which the bound is provable."},
+    {"id": "OP-04", "node": "t5", "delphi": None, "title": "Prediction beyond the ~50 Myr horizon",
+     "gap": "The Thompson prediction engine collapses to a clade prior beyond ~50 Myr and the Monte Bolca test was a null result vs stasis (6/16). What, if anything, carries predictive signal at deep horizons — stem placements, fossil-calibrated priors, non-Gaussian processes?",
+     "done": "A pre-registered deep-horizon test (registered before unblinding, as in the FishShapes protocol) that beats the clade-prior baseline beyond 50 Myr, or a sharper null."},
+    {"id": "OP-05", "node": "t8", "delphi": None, "title": "Within-species bee P-matrix (the one missing input)",
+     "gap": "The why-wings causal decomposition is clean for hornets (within-species P) but weaker for bees, where P is within-tribe. A within-species bee wing dataset would make the hornet/bee comparison exact.",
+     "done": "A within-species bee forewing landmark dataset with replicates, run through the registered C1-C8 pipeline without changing its hypotheses."},
+    {"id": "OP-06", "node": "f3", "delphi": None, "title": "Flagship structural debt: growing-domain Turing, autonomous Meinhardt, C. elegans voxel calibration",
+     "gap": "Pass N+1 left these explicit: the Turing flagship lacks a 2D growing-domain solver; Meinhardt shell parameters are not autonomous; C. elegans lacks true voxel calibration (eggshell 'ASSUMED 50 um').",
+     "done": "Each sub-item closed by a self-test that fails on the current code and passes on the fix, with the audit score re-derived, not asserted."},
+    {"id": "OP-07", "node": "b2", "delphi": None, "title": "Xenopus neighbour transfer: kill the orientation confound",
+     "gap": "Headline blind test was negative (LOOO AUC 0.484); orientation carries the signal (0.833) and the PCA side-split subset is suspect (clean-geometry subset 0.802). Is there any wave-feature signal once geometry is ground-truth?",
+     "done": "A v2 pre-registration using only ground-truth-geometry videos, scored by the hash-locked contract, whichever way it comes out."},
+    {"id": "OP-08", "node": "b3", "delphi": None, "title": "Pixel v2: image-proximity (mirror) neighbour prediction",
+     "gap": "Post-unblinding HTHT mirror signal (AUC 0.61-0.65) is exploratory only and confounded with headward direction because pokes were at the tail. Needs a registered test where mirror and headward predictions separate.",
+     "done": "Pre-registered pixel-v2 scoring on videos where poke position separates the mirror and headward hypotheses."},
+    {"id": "OP-09", "node": "b4", "delphi": None, "title": "Score the zebrafish blind test",
+     "gap": "Pre-registered and hash-locked but, in the repo record, never scored. The contract is ready; the scorer must refuse on hash mismatch, as designed.",
+     "done": "Run the registered scorer, publish the outcome nanopub either way, and update the graph node from 'registered' to its realised status."},
+    {"id": "OP-10", "node": "t7", "delphi": None, "title": "Portfolio residue: clades where Thompson-7 failed (Leporidae 0/3, Vespinae 0/7 pre-venation)",
+     "gap": "45/90 registered multi-clade hypotheses held; the failures are concentrated and unexplained — is it landmark scheme, tree quality, or a real limit of global grids in those clades?",
+     "done": "A per-clade failure autopsy in the style of the why-wings decomposition, with at least one failure converted into a correct, pre-registered prediction."},
+]
+
+def build_morphoswarm(data: dict, out_dir: Path) -> None:
+    by_id = {n["id"]: n for n in data["NODES"]}
+    problems = []
+    for op in OPEN_PROBLEMS:
+        node = by_id[op["node"]]
+        attempted = sorted({e["agent"] for e in data["EDGES"] if e["to"] == op["node"]})
+        entry = {**op, "status": node["status"], "graph_node_label": node["label"],
+                 "source": node["source"], "attempted_by_agent_ids": attempted,
+                 "attempted_by": [data["AGENTS"][a]["name"] for a in attempted],
+                 "graph_url": f"https://fractastical.github.io/morpholib/problem-graph.html#{op['node']}"}
+        if op["delphi"]:
+            prize = data["DELPHI"][op["delphi"]]
+            entry["viability"] = {"kind": "delphi_bridge_posterior_percent", "pooled": prize["pooled"]["posterior"],
+                                  "panel_range_percent": [r["posterior"] for r in prize["agents"]],
+                                  "classification": "possible_pathway" if prize["pooled"]["posterior"] >= 15 else "below_15_percent",
+                                  "note": "Green/possible uses the >=15% visual threshold on the pooled posterior; individual agents may differ (see panel_range_percent)."}
+        else:
+            entry["viability"] = {"kind": "not_scored", "pooled": None,
+                                  "classification": "not_scored",
+                                  "note": "No Delphi probability exists for this problem. Do not invent one: the first swarm task is a pre-registered Delphi scoring."}
+        problems.append(entry)
+    feed = {"name": "MorphoSwarm — open problems work queue", "snapshot": "2026-10-26",
+            "source_repo": "https://github.com/fractastical/morpholib",
+            "graph_url": "https://fractastical.github.io/morpholib/problem-graph.html",
+            "colour_rule": {"green_possible_pathway": "pooled Delphi bridge posterior >= 15%", "dark_orange": "pooled Delphi bridge posterior < 15%", "grey": "not scored"},
+            "protocol": ["Pick one OP id; do not work two on the same branch without noting it.",
+                         "Pre-register the attempt (hypotheses + scoring) before touching held-out data, following the repo's hash-locked blind-test contract.",
+                         "Report negative results as results; pruned branches stay in the graph.",
+                         "Close by updating the source documents and re-running docs/build_problem_graph_html.py, whose self-checks must pass."],
+            "problems": problems}
+    (out_dir / "open-problems.json").write_text(json.dumps(feed, indent=2) + "\n")
+
+    def badge(v):
+        if v["kind"] == "not_scored":
+            return '<span class="badge" style="background:#888">NOT SCORED — Delphi-score first</span>'
+        cls = "POSSIBLE PATHWAY" if v["classification"] == "possible_pathway" else "&lt;15% · LOW PROBABILITY"
+        col = "#1F8A65" if v["classification"] == "possible_pathway" else "#C06028"
+        return f'<span class="badge" style="background:{col}">{v["pooled"]}% · {cls}</span>'
+    cards = []
+    for p in problems:
+        rng = ""
+        if p["viability"]["kind"] != "not_scored":
+            vals = p["viability"]["panel_range_percent"]
+            rng = f'<p class="small mut">Panel range: {min(vals)}% – {max(vals)}% (individual agents can cross the 15% line even when the pooled value does not)</p>'
+        cards.append(f"""<div class="card" id="{p['id']}"><div class="row"><b>{p['id']} · {p['title']}</b>{badge(p['viability'])}</div>
+<p class="small"><b>The gap:</b> {p['gap']}</p><p class="small"><b>Definition of done:</b> {p['done']}</p>{rng}
+<p class="small mut">Attempted so far by: {', '.join(p['attempted_by']) or 'no recorded attempt'} · Source: {p['source']} · <a href="{p['graph_url']}">graph node</a></p></div>""")
+    html = MORPHOSWARM_TEMPLATE.replace("/*__CARDS__*/", "\n".join(cards))
+    (out_dir / "morphoswarm.html").write_text(html)
+    print(f"wrote {out_dir / 'morphoswarm.html'} and {out_dir / 'open-problems.json'} ({len(problems)} open problems)")
+
+MORPHOSWARM_TEMPLATE = r"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MorphoSwarm — Open Problems · Infinite Morphospace</title>
+<meta name="description" content="Swarm-facing work queue of genuinely open problems from Infinite Morphospace, with Delphi viability colour coding (green >=15%, dark orange <15%) and a machine-readable feed.">
+<style>
+:root{--bg:#f7f7f5;--panel:#fff;--ink:#1c1c1e;--mut:#5c5c60;--line:#d8d8d3;--acc:#2563eb}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:1000px;margin:0 auto;padding:18px}h1{font-size:24px}.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin:12px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}.badge{display:inline-block;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.small{font-size:12.5px;line-height:1.45}.mut{color:var(--mut)}a{color:var(--acc)}code{background:#eee;padding:1px 5px;border-radius:4px}
+</style></head><body><main>
+<h1>MorphoSwarm — open problems</h1>
+<p class="small">The swarm-facing work queue for <a href="https://fractastical.github.io/morpholib/problem-graph.html">Infinite Morphospace's problem graph</a>: every problem that is genuinely still open, what exactly blocks it, what counts as closing it, and who has already attempted it. Colour rule, same as the graph: <span class="badge" style="background:#1F8A65">&ge;15% · POSSIBLE PATHWAY</span> <span class="badge" style="background:#C06028">&lt;15% · LOW PROBABILITY</span> <span class="badge" style="background:#888">NOT SCORED</span> — 15% is a visual threshold, not a Delphi source field.</p>
+<div class="card"><b>Swarm protocol</b><ol class="small">
+<li>Pick one OP id. Machine-readable feed: <a href="open-problems.json"><code>open-problems.json</code></a> (this page, as data, for agents).</li>
+<li>Pre-register the attempt before touching held-out data — the repo's contract is hash-locked predictions, scorer refuses on mismatch.</li>
+<li>Negative results are results. Pruned branches stay in the graph; do not quietly retry a refuted branch as if new.</li>
+<li>Close by updating the source documents, then re-run <code>docs/build_problem_graph_html.py</code> — its self-checks must pass before anything deploys.</li></ol>
+<p class="small mut">Note: this project's name is a work-queue label for this repo's agent swarm. It is unrelated to the robotic-swarm MorphoSwarm of Ben Zion et al. (Science Robotics 2022; doi:10.5281/zenodo.7573761).</p></div>
+/*__CARDS__*/
+<p class="small mut">Snapshot 2026-10-26 · Source repo: <a href="https://github.com/fractastical/morpholib">github.com/fractastical/morpholib</a> · Viability numbers: docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md · Regenerate: <code>python3 docs/build_problem_graph_html.py</code></p>
+</main></body></html>
+"""
 
 def main() -> None:
     ap = argparse.ArgumentParser()
@@ -77,6 +196,7 @@ def main() -> None:
     html = TEMPLATE.replace("/*__DATA__*/", "const DATA = " + json.dumps(data) + ";")
     a.out.write_text(html)
     print(f"wrote {a.out} ({len(html)/1024:.0f} KiB, {len(data['NODES'])} nodes, {len(data['EDGES'])} edges)")
+    build_morphoswarm(data, a.out.parent)
 
 TEMPLATE = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
@@ -103,7 +223,7 @@ button.on{background:var(--acc);color:#fff;border-color:var(--acc)}button:hover{
 a{color:var(--acc)}
 </style></head><body><main>
 <h1>Problem graph — every problem attempted, including the branches that failed</h1>
-<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Node dot = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. Click a node to select it; <b>double-click any node to open its inspector</b> — double-clicking the Bayesian Delphi panel (or any Rule 30 prize) opens the full per-agent, per-subgoal Delphi ledger.</p>
+<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Node dot = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. Click a node to select it; <b>double-click any node to open its inspector</b> — double-clicking the Bayesian Delphi panel (or any Rule 30 prize) opens the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
 
 <div class="card"><b>Agent legend — who attempted what</b> <span class="badge" style="background:var(--acc)">edge colour = agent</span>
 <div class="row" id="agentbtns" style="margin-top:8px"></div>
@@ -229,6 +349,7 @@ function renderDrawer(){
 }
 function adjPrior(d){ S.prior=Math.max(0.1,Math.min(90,+(S.prior+d).toFixed(2))); renderDrawer(); }
 agentButtons(); drawGraph(); drawDetail();
+if(location.hash){ const hid = location.hash.slice(1); if(byId[hid]){ S.sel = hid; drawGraph(); drawDetail(); document.getElementById('detail').scrollIntoView({behavior:'smooth', block:'center'}); } }
 </script></body></html>
 """
 
