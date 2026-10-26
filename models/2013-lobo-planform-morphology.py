@@ -1089,10 +1089,44 @@ def check_encoding(morphs: Dict[int, Morphology]) -> None:
     print(f"  wild type: AP length {wt['ap_length']} units, ML width {wt['ml_width']}, aspect {wt['aspect']}")
 
 
+def self_test() -> int:
+    """Offline deterministic checks (Pass N+1 remediation): canonical fixture
+    decode, wild-type morphometrics, and — when PLANFORM_DB_PATH is set — the
+    pinned PlanformDB fingerprint. Returns 0 on pass, 1 on fail."""
+    fails = []
+    morphs = load_canonical_fixture_morphologies()
+    for mid in CANONICAL_SILHOUETTE_IDS:
+        if mid not in morphs:
+            fails.append(f"canonical morphology #{mid} missing from fixture")
+    if not fails:
+        wt = morphometrics(morphs[1])
+        if not (450.0 <= wt["ap_length"] <= 650.0 and wt["aspect"] > 3.0):
+            fails.append(f"wild-type morphometrics out of range: {wt}")
+        dh = morphometrics(morphs[2])
+        if dh["n_heads"] < 2:
+            fails.append(f"double-head #2 has n_heads={dh['n_heads']}, expected >= 2")
+        print(f"[{'PASS' if not fails else 'FAIL'}] canonical fixture: WT AP "
+              f"{wt['ap_length']} x ML {wt['ml_width']} (aspect {wt['aspect']}), "
+              f"#2 heads={dh['n_heads']}")
+    db_env = os.getenv("PLANFORM_DB_PATH")
+    if db_env and Path(db_env).is_file():
+        digest, size = db_fingerprint(db_env)
+        ok = digest == PLANFORM_DB_SHA256 and size == PLANFORM_DB_BYTES
+        print(f"[{'PASS' if ok else 'FAIL'}] PlanformDB fingerprint {digest[:12]}… ({size} bytes)")
+        if not ok:
+            fails.append("PLANFORM_DB_PATH file is not the audited planformDB_2.5.0.edb")
+    for f in fails:
+        print(f"  - {f}")
+    print(f"[{'PASS' if not fails else 'FAIL'}] 2013-lobo-planform-morphology self-test")
+    return 1 if fails else 0
+
+
 # --------------------------------------------------------------------------
 def main(argv: Optional[Sequence[str]] = None) -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("db", nargs="?", help="path to planformDB_*.edb (or set PLANFORM_DB_PATH)")
+    p.add_argument("--self-test", action="store_true",
+                   help="run offline deterministic checks (canonical fixture decode + WT morphometrics) and exit")
     p.add_argument("--strict-db", action="store_true",
                    help="exit instead of warning if the database is not the audited planformDB_2.5.0.edb")
     p.add_argument("--out-dir", default=".", help="where to write outputs (default: cwd)")
@@ -1105,6 +1139,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     p.add_argument("--fps", type=int, default=2)
     p.add_argument("--per-page", type=int, default=8, help="morphologies per timeline frame")
     args = p.parse_args(argv)
+
+    if args.self_test:
+        sys.exit(self_test())
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

@@ -583,7 +583,7 @@ def segment_white(a: np.ndarray, thr: float = 10.0) -> np.ndarray:
     lab = color.rgb2lab(a)
     d = np.sqrt((100 - lab[..., 0]) ** 2 + lab[..., 1] ** 2 + lab[..., 2] ** 2)
     m = filters.gaussian(d, 1.5) > thr
-    m = morphology.binary_closing(m, morphology.disk(3))
+    m = morphology.closing(m, morphology.disk(3))
     return morphology.remove_small_holes(_largest(m), max_size=5000)
 
 
@@ -606,9 +606,9 @@ def segment_field(a: np.ndarray, box: Tuple[float, float, float, float], clip_be
     grad = np.sqrt(sum(filters.sobel(lab[..., k]) ** 2 for k in range(3)))
     elev = filters.gaussian(md, 1.5) + 3 * filters.gaussian(grad, 1.0)
     core = (md > np.percentile(md, 100 * core_q)) & ~outside
-    core = _largest(ndi.binary_fill_holes(morphology.binary_closing(core, morphology.disk(15))))
-    hull = morphology.binary_erosion(morphology.convex_hull_image(core), morphology.disk(6))
-    core = morphology.binary_erosion(core, morphology.disk(6))
+    core = _largest(ndi.binary_fill_holes(morphology.closing(core, morphology.disk(15))))
+    hull = morphology.erosion(morphology.convex_hull_image(core), morphology.disk(6))
+    core = morphology.erosion(core, morphology.disk(6))
     # the spotted skin is textured where the sand is not: the most textured pixels inside the hull of the
     # core also seed the fish (this is what reaches the dark caudal peduncle, which the colour model does not)
     Lc = lab[..., 0]; tex = np.sqrt(np.maximum(filters.gaussian(Lc ** 2, 3) - filters.gaussian(Lc, 3) ** 2, 0))
@@ -620,7 +620,7 @@ def segment_field(a: np.ndarray, box: Tuple[float, float, float, float], clip_be
     if clip_below is not None:
         m[int(clip_below * H):] = False
     m = _largest(ndi.binary_fill_holes(m))
-    return morphology.binary_opening(m, morphology.disk(3))
+    return morphology.opening(m, morphology.disk(3))
 
 
 def boundary_points(mask: np.ndarray, n: int = N_BOUNDARY) -> np.ndarray:

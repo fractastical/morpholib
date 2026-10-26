@@ -250,6 +250,14 @@ def load_morphologies(db_path: str) -> Dict[int, Morphology]:
                 m.joints[jid].host_link, m.joints[jid].host_dist, m.joints[jid].host_ang = lid, float(dist), float(ang)
     finally:
         conn.close()
+    # Pass N+1: Link.side/reversed/inverted are decoded and stored but never
+    # read by layout/geometry. Say so loudly instead of silently ignoring
+    # them (they may encode chirality the renderer does not reproduce).
+    n_flagged = sum(1 for m in morphs.values() for l in m.links.values()
+                    if l.side or l.reversed or l.inverted)
+    if n_flagged:
+        print(f"  WARNING: {n_flagged} links carry Side/Reversed/Inverted flags that this "
+              "decoder stores but does not apply (orientation/chirality not rendered)")
     empty = [mid for mid, m in morphs.items() if not m.links]
     for mid in empty:
         print(f"  skipping morphology {mid} '{morphs[mid].name}': no segments encoded")
@@ -345,6 +353,8 @@ def control_points(m: Morphology, jid: int) -> List[Tuple[float, float]]:
     params = [p for p in j.params if not math.isnan(p)]
     if len(params) < len(dirs):                       # 9 joints in 2.1.0 are short of parameters
         fill = float(np.mean(params)) if params else 20.0
+        print(f"  note: morphology {m.id} joint {jid}: {len(dirs) - len(params)} radii "
+              f"padded with mean radius {fill:.1f} (joint is short of parameters in LimbformDB 2.1.0)")
         params = params + [fill] * (len(dirs) - len(params))
     # kept in edge order: point i lies on the bisector between edges i and i+1 (or +90/+180/+270 for a terminal)
     return list(zip(dirs, [max(p, 1.0) for p in params[:len(dirs)]]))
@@ -961,10 +971,44 @@ def write_csv(morphs: Dict[int, Morphology], first: Dict, out: Path) -> None:
     print(f"  saved {out}  ({len(rows)} rows)")
 
 
+def self_test(db_arg: Optional[str] = None) -> int:
+    """Deterministic checks on the cached LimbformDB (Pass N+1 remediation):
+    DB SHA-256, morphology count, radii encoding rule, Fig.1 morphometrics.
+    Returns 0 on pass, 1 on fail. Never downloads."""
+    fails = []
+    try:
+        db = resolve_db_path(db_arg, download=False)
+    except SystemExit:
+        print("[FAIL] LimbformDB not available (no cached .ldb, LIMBFORM_DB_PATH unset)")
+        return 1
+    if sha256_of(Path(db)) != DB_SHA256:
+        fails.append("LimbformDB SHA-256 differs from pinned LimbformDB 2.1.0")
+    morphs = load_morphologies(db)
+    if len(morphs) < 500:
+        fails.append(f"only {len(morphs)} morphologies decoded, expected >= 500")
+    good, total = check_encoding(morphs)
+    if total == 0 or good / total < 0.99:
+        fails.append(f"encoding rule holds for {good}/{total} joints (< 99%)")
+    for mid in FIG1_IDS:
+        if mid not in morphs:
+            fails.append(f"Fig.1 morphology #{mid} missing")
+    if not fails:
+        mm = morphometrics(morphs[FIG1_IDS[0]])
+        if mm["pd_length"] <= 0 or mm["n_segments"] <= 0:
+            fails.append(f"Fig.1 #{FIG1_IDS[0]} morphometrics degenerate: {mm}")
+    print(f"[{'PASS' if not fails else 'FAIL'}] 2014-lobo-limbform-morphology self-test: "
+          f"{len(morphs)} morphologies, encoding {good}/{total}")
+    for f in fails:
+        print(f"  - {f}")
+    return 1 if fails else 0
+
+
 # --------------------------------------------------------------------------
 def main(argv: Optional[Sequence[str]] = None) -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("db", nargs="?", help="path to limbformDB_2.1.0.ldb (or set LIMBFORM_DB_PATH)")
+    p.add_argument("--self-test", action="store_true",
+                   help="run deterministic checks on the cached LimbformDB and exit (no download)")
     p.add_argument("--download", action="store_true", help="download LimbformDB 2.1.0 into .limbform_cache/")
     p.add_argument("--out-dir", default=".")
     p.add_argument("--ids", type=int, nargs="*", help="morphology ids for the gallery")
@@ -975,6 +1019,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     p.add_argument("--fps", type=int, default=2)
     p.add_argument("--per-page", type=int, default=12)
     args = p.parse_args(argv)
+
+    if args.self_test:
+        sys.exit(self_test(args.db))
 
     db = resolve_db_path(args.db, args.download)
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)

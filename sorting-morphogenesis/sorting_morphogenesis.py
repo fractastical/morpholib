@@ -1167,7 +1167,26 @@ if __name__ == "__main__":
     parser.add_argument("--reps", type=int, default=15, help="Paired seed replicates (default: 15)")
     parser.add_argument("--seed", type=int, default=42, help="Base RNG seed")
     parser.add_argument("--validate-catalog", action="store_true", help="Validate catalog.json claim-boundary schema")
+    parser.add_argument("--self-test", action="store_true",
+                        help="Run deterministic checks (catalog schema + a small seed-locked sorting run) and exit")
     args = parser.parse_args()
+
+    if args.self_test:
+        ok, errs = validate_claim_boundary_catalog()
+        print(f"[{'PASS' if ok else 'FAIL'}] Claim-boundary catalog schema validation ({len(errs)} errors)")
+        for e in errs:
+            print(f"  - {e}")
+        # Small deterministic cell-view run: a reversed array of one algotype
+        # must sort fully under the shared seed.
+        import random as _random
+        rng = _random.Random(42)
+        values = list(range(12, 0, -1))
+        cells = make_cells(values, ["B"] * len(values))
+        res = simulate(cells, seed=42)
+        sorted_ok = res.final_values == sorted(values) and res.final_error == 0
+        print(f"[{'PASS' if sorted_ok else 'FAIL'}] deterministic Bubble run: "
+              f"final_error={res.final_error}, swaps={res.swaps}, steps={res.steps}")
+        raise SystemExit(0 if (ok and sorted_ok) else 1)
 
     if args.validate_catalog or args.compare_ab:
         ok, errs = validate_claim_boundary_catalog()

@@ -186,6 +186,17 @@ def collect(audits: list[dict], rubric: dict):
     weights = {d["id"]: d["weight"] for d in rubric["dimensions"]}
     hist_primary, hist_blinded, hist_all = [], [], []
     for a in audits:
+        # Skip non-canonical audit schemas (e.g. the autonomous slot campaign
+        # YAMLs keyed by top-level `audit_id` with no `audit:`/`simulations:`
+        # blocks). Without this guard, collect() — and every consumer such as
+        # docs/media/make_montage.py scores() — crashes with KeyError: 'audit'
+        # on the thousands of slot audits now tracked under morphoeval/audits/.
+        if not isinstance(a, dict) or not isinstance(a.get("audit"), dict):
+            continue
+        if not isinstance(a["audit"].get("assessor"), dict) or "id" not in a["audit"]["assessor"]:
+            continue
+        if not isinstance(a.get("simulations"), list):
+            continue
         role = a["audit"].get("role", "primary")
         assessor_id = a["audit"]["assessor"]["id"]
         for s in a["simulations"]:

@@ -188,11 +188,20 @@ def make_figure(output, show, n_particles):
     pe_rel = [d / 0.25 for d in drifts]          # relative Pe (advection fraction)
 
     print("Growing corals by DLA-with-drift (drift ~ Peclet number)...")
+    # Pass N+1: metrics are averaged over 5 seeds per drift. A single 700-
+    # particle DLA colony is noisy enough that the upstream/smmag curves were
+    # non-monotonic in Pe (dip at Pe_rel=0.60); the displayed colony is the
+    # first seed, the curves are seed means.
     results = []
+    seed_orders = []
     for i, d in enumerate(drifts):
-        order, m = simulate_coral(d, n_particles=n_particles, seed=100 + i)
+        runs = [simulate_coral(d, n_particles=n_particles, seed=100 + i + 37 * j) for j in range(5)]
+        seed_orders.append([o for o, _ in runs])
+        order = runs[0][0]
+        m = {k: float(np.mean([r[1][k] for r in runs])) for k in runs[0][1]}
+        m["placed"] = runs[0][1]["placed"]; m["span"] = runs[0][1]["span"]
         results.append((order, m))
-        print(f"  Pe~{pe_rel[i]:.2f}  upstream={m['upstream']:+5.1f} cells  "
+        print(f"  Pe~{pe_rel[i]:.2f}  upstream={m['upstream']:+5.1f} cells (5-seed mean)  "
               f"R_gyr={m['r_gyr']:5.1f}  (placed={m['placed']}, span={m['span']})")
 
     # coral-ish colormap (old growth -> fresh tips)
@@ -218,6 +227,11 @@ def make_figure(output, show, n_particles):
         half = 0.5 * max(xs_i.max() - xs_i.min(), ys_i.max() - ys_i.min()) + 8
         ax.set_xlim(cxc - half, cxc + half)
         ax.set_ylim(cyc - half, cyc + half)
+        # Mark the seed (Pass N+1: panels re-centre on the cluster, which hid
+        # the upstream shift; the seed + dotted seed line make it visible).
+        _c = order.shape[0] // 2
+        ax.axvline(_c, color="k", ls=":", lw=0.8, alpha=0.45)
+        ax.plot([_c], [_c], marker="+", color="k", ms=9, mew=1.6)
         if idx > 0:                                     # flow direction arrow (+x)
             ax.annotate("", xy=(0.93, 0.08), xytext=(0.60, 0.08),
                         xycoords="axes fraction",
@@ -284,6 +298,11 @@ def make_figure(output, show, n_particles):
     # ====================================================================== #
     print("\nMORPHOMETRICS (branch-tip symmetry about the flow axis):")
     morphs = [morphometrics(order) for order, _ in results]
+    # Seed-averaged smmag/rbar for the (d)/(e) curves (roses stay single-colony)
+    morphs_avg = []
+    for orders in seed_orders:
+        mms = [morphometrics(o) for o in orders]
+        morphs_avg.append({k: float(np.mean([mm[k] for mm in mms])) for k in ("smmag", "rbar", "n_tips")})
     for i, mm in enumerate(morphs):
         print(f"  Pe~{pe_rel[i]:.2f}  smmag={mm['smmag']:.3f}  "
               f"Rbar={mm['rbar']:.3f}  (n_tips={mm['n_tips']})")
@@ -309,7 +328,7 @@ def make_figure(output, show, n_particles):
 
     # ----- (d) symmetry magnitude smmag vs Pe (paper Fig. 12) --------------- #
     ax = fig2.add_subplot(gs2[1, 0])
-    sm = [mm["smmag"] for mm in morphs]
+    sm = [mm["smmag"] for mm in morphs_avg]
     ax.plot(pe_rel, sm, "o-", color="#c0603f", lw=2)
     ax.set_title("(d) Symmetry magnitude  smmag  vs Pe", fontsize=10.5)
     ax.set_xlabel("relative Péclet number")
@@ -318,7 +337,7 @@ def make_figure(output, show, n_particles):
 
     # ----- (e) branch-direction alignment (resultant length) vs Pe --------- #
     ax = fig2.add_subplot(gs2[1, 1])
-    rb = [mm["rbar"] for mm in morphs]
+    rb = [mm["rbar"] for mm in morphs_avg]
     ax.plot(pe_rel, rb, "s-", color="#1f77b4", lw=2)
     ax.set_title("(e) Branch-direction alignment vs Pe", fontsize=10.5)
     ax.set_xlabel("relative Péclet number")
@@ -383,6 +402,9 @@ def make_gif(output, n_particles, n_frames=48, fps=10):
             shown = np.ma.masked_where((order < 0) | (order > cut), order)
             ax.imshow(shown, origin="lower", cmap=coral_cmap, vmin=0, vmax=n_particles, interpolation="nearest")
             ax.set_xlim(cxc - half, cxc + half); ax.set_ylim(cyc - half, cyc + half)
+            _c = order.shape[0] // 2
+            ax.axvline(_c, color="k", ls=":", lw=0.8, alpha=0.45)
+            ax.plot([_c], [_c], marker="+", color="k", ms=9, mew=1.6)
             ax.set_xticks([]); ax.set_yticks([])
             ax.set_title(f"{label}\nPe_rel = {d / 0.25:.2f}", fontsize=10)
             if d > 0:
@@ -400,9 +422,24 @@ def make_gif(output, n_particles, n_frames=48, fps=10):
     print(f"Saved animation to {Path(output).resolve()}  ({len(frames)} frames)")
 
 
+def self_test():
+    """Deterministic checks (Pass N+1): seed-averaged upstream shift must be
+    larger under strong drift than under no flow. Exits 0/1."""
+    ups = {}
+    for d in (0.0, 0.22):
+        ms = [simulate_coral(d, n_particles=250, seed=310 + j)[1] for j in range(3)]
+        ups[d] = float(np.mean([m["upstream"] for m in ms]))
+    ok = ups[0.22] > ups[0.0]
+    print(f"[{'PASS' if ok else 'FAIL'}] 2013-chindapol-coral-flow self-test: "
+          f"upstream (3-seed mean, 250 polyps) drift=0 {ups[0.0]:+.1f} vs drift=0.22 {ups[0.22]:+.1f}")
+    raise SystemExit(0 if ok else 1)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--self-test", action="store_true",
+                    help="run deterministic seed-averaged checks and exit")
     ap.add_argument("-o", "--output", default="chindapol_coral_flow_morphospace.png",
                     help="output PNG path (default: repo root)")
     ap.add_argument("--particles", type=int, default=700,
@@ -412,6 +449,8 @@ def main():
                     help="save the figure without opening a window")
     ap.set_defaults(show=True)
     args = ap.parse_args()
+    if args.self_test:
+        self_test()
     make_figure(args.output, args.show, args.particles)
     if args.gif:
         make_gif(args.gif, args.particles)

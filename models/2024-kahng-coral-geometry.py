@@ -174,15 +174,27 @@ def make_figure(output, show):
             label="hemispheroid")
     ax.plot(size, cone_extension(size, G, rho, alpha=1.0), color="#9467bd", lw=2,
             label="cone (α=1)")
-    ax.plot(size, disc_extension(size, G, rho, h=0.5), color="#d62728", lw=2,
-            label="disc (h=0.5 cm)")
+    # Pass N+1: the equal-G,rho disc reaches 26 cm/yr at r=30 cm and crushed
+    # the hemisphere/cone curves into the bottom of the axis. It now goes on
+    # a twin axis; the main axis also shows the biologically realised
+    # Leptoseris disc (DISC parameters), and the plateau lines are labelled
+    # as the continuum rates (the curves are the 1-yr discrete step Dr).
+    ax.plot(size, disc_extension(size, DISC["G"], DISC["rho"], h=DISC["h"]), color="#d62728", lw=2,
+            ls="-", label="disc (Leptoseris G, ρ, h=0.2 cm)")
     ax.axhline(G / rho, color="#1f77b4", ls=":", lw=1,
-               label=f"hemisphere plateau G/ρ={G/rho:.2f}")
+               label=f"continuum dR/dt = G/ρ = {G/rho:.2f} (curve = 1-yr step Δr)")
     ax.axhline(G * np.sqrt(2) / rho, color="#9467bd", ls=":", lw=1,
-               label=f"cone plateau √2·G/ρ={G*np.sqrt(2)/rho:.2f}")
+               label=f"continuum cone dh/dt = √2·G/ρ = {G*np.sqrt(2)/rho:.2f}")
+    ax.set_ylim(0, 4.0)
+    ax2 = ax.twinx()
+    ax2.plot(size, disc_extension(size, G, rho, h=0.5), color="#d62728", lw=1.4,
+             ls="--", label="disc (equal G, ρ, h=0.5 cm)")
+    ax2.set_ylabel("disc (equal G, ρ) extension  (cm yr⁻¹)", fontsize=8, color="#d62728")
+    ax2.tick_params(labelsize=7, colors="#d62728")
+    ax2.legend(fontsize=7, loc="upper left")
     ax.set_title("(c) Linear extension rate vs size", fontsize=11)
     ax.set_xlabel("colony size  (cm)"); ax.set_ylabel("extension  C  (cm yr⁻¹)")
-    ax.grid(alpha=0.25); ax.legend(fontsize=7.5, loc="center right")
+    ax.grid(alpha=0.25); ax.legend(fontsize=7, loc="center right")
 
     # ----- (d) cone SAP vs height for a range of aspect ratios (Fig. 3) ----- #
     ax = fig.add_subplot(gs[1, 0])
@@ -263,7 +275,7 @@ def make_figure(output, show):
     print(f"  giving ~{hemisphere_sap(np.array([1.0]), MASSIVE['G'], MASSIVE['rho'])[0] / hemisphere_sap(np.array([25.0]), MASSIVE['G'], MASSIVE['rho'])[0]:.0f}x faster surface growth at r=1 cm than at r=25 cm.")
 
 
-def make_gif(output, years=15, fps=4):
+def make_gif(output, years=10, fps=4):
     """Iterate the master rule V(t+1) = V(t) + G S(t)/rho year by year for the four
     shapes with equal G and rho (shape alone).  Left: the hemisphere and the cone,
     whose S:V falls as they grow, drawn to scale year by year.  Right: surface area
@@ -300,11 +312,14 @@ def make_gif(output, years=15, fps=4):
             ax.set_xlim(-lim, lim); ax.set_ylim(-lim * 0.05, lim * 1.05); ax.set_aspect("equal", adjustable="box")
             ax.axhline(0, color="k", lw=0.6); ax.tick_params(labelsize=7); ax.set_xlabel("cm", fontsize=8)
         yrs = np.arange(years + 1)
+        # Plot S/S0 (Pass N+1: absolute S on a log axis ran to 10^12 cm^2 and
+        # flattened the hemisphere/cone trajectories against the axis).
+        Srel = S / S[0]
         for i, (n, c) in enumerate(zip(names, cols)):
-            a2.plot(yrs[:t + 1], S[:t + 1, i], color=c, lw=2, label=n)
-            a2.plot(yrs[t], S[t, i], "o", color=c)
-        a2.set_yscale("log"); a2.set_xlim(0, years); a2.set_ylim(S.min() * 0.8, S.max() * 1.5)
-        a2.set_xlabel("year"); a2.set_ylabel("surface area S (cm²), log scale")
+            a2.plot(yrs[:t + 1], Srel[:t + 1, i], color=c, lw=2, label=n)
+            a2.plot(yrs[t], Srel[t, i], "o", color=c)
+        a2.set_yscale("log"); a2.set_xlim(0, years); a2.set_ylim(0.8, Srel.max() * 1.5)
+        a2.set_xlabel("year"); a2.set_ylabel("surface area S/S₀, log scale")
         a2.set_title("surface area: disc & cylinder keep S:V → exponential;\nhemisphere & cone lose S:V → slow down", fontsize=9)
         a2.legend(fontsize=7.5, loc="upper left"); a2.grid(alpha=0.25)
         fig.suptitle(f"Kahng et al. 2024: V(t+1) = V(t) + G·S/ρ with equal G, ρ (shape alone) — year {t}", fontsize=11, y=0.97)
@@ -316,9 +331,34 @@ def make_gif(output, years=15, fps=4):
     print(f"Saved animation to {Path(output).resolve()}  ({len(frames)} frames)")
 
 
+def self_test():
+    """Analytic checks (Pass N+1): continuum limits of the discrete 1-yr step,
+    disc SAP identity, and the microfragmentation SAP ratio. Exits 0/1."""
+    checks = [
+        ("hemisphere discrete step -> continuum G/rho",
+         abs(hemisphere_extension(1e6, 1.64, 1.28) - 1.64 / 1.28) < 1e-3),
+        ("disc SAP == G/(rho h)",
+         abs(disc_sap(0.061, 2.67, 0.20) - 0.061 / (2.67 * 0.20)) < 1e-12),
+        ("cone plateau sqrt(1+a^2) G/rho at large h",
+         abs(cone_extension(1e6, 1.50, 1.20, 1.0) - np.sqrt(2) * 1.50 / 1.20) < 1e-3),
+        ("microfragmentation SAP ratio r=1 vs 25 cm > 18x",
+         hemisphere_sap(np.array([1.0]), MASSIVE["G"], MASSIVE["rho"])[0]
+         > 18 * hemisphere_sap(np.array([25.0]), MASSIVE["G"], MASSIVE["rho"])[0]),
+        ("Leptoseris disc extension at 30 cm is biological (< 4 cm/yr)",
+         disc_extension(30, DISC["G"], DISC["rho"], h=DISC["h"]) < 4.0),
+    ]
+    ok = all(v for _, v in checks)
+    for name, v in checks:
+        print(f"[{'PASS' if v else 'FAIL'}] {name}")
+    print(f"[{'PASS' if ok else 'FAIL'}] 2024-kahng-coral-geometry self-test")
+    raise SystemExit(0 if ok else 1)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--self-test", action="store_true",
+                    help="run analytic continuum-limit checks and exit")
     ap.add_argument("-o", "--output", default="kahng_coral_geometry_morphospace.png",
                     help="output PNG path (default: repo root)")
     ap.add_argument("--no-show", dest="show", action="store_false",
@@ -326,6 +366,8 @@ def main():
     ap.add_argument("--gif", metavar="PATH", help="also write a year-by-year growth animation of the four shapes to PATH")
     ap.set_defaults(show=True)
     args = ap.parse_args()
+    if args.self_test:
+        self_test()
     make_figure(args.output, args.show)
     if args.gif:
         make_gif(args.gif)

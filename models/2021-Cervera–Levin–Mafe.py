@@ -790,7 +790,11 @@ def load_oviedo_2010_planform_records() -> Dict[str, Any]:
 # =============================================================================
 def _load_lobo_2013_module():
     """Import 2013-lobo-planform-morphology.py dynamically for silhouette decoding."""
-    mod_path = REPO_ROOT / "2013-lobo-planform-morphology.py"
+    # The Planform script moved under models/ with the other reproductions;
+    # keep a repo-root fallback for older checkouts.
+    mod_path = REPO_ROOT / "models" / "2013-lobo-planform-morphology.py"
+    if not mod_path.is_file():
+        mod_path = REPO_ROOT / "2013-lobo-planform-morphology.py"
     spec = importlib.util.spec_from_file_location("lobo2013", mod_path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Could not load {mod_path}")

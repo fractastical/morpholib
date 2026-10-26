@@ -42,7 +42,14 @@ def main(argv=None):
     ap.add_argument("--no-show", action="store_true")
     ap.add_argument("--out", default=None, help="save the figure here instead of / as well as showing it")
     ap.add_argument("--export-mesh", default=None, help="export the 3x3 W x T morphospace slice as a SurfaceMesh3D JSON or OBJ file")
+    ap.add_argument("--self-test", action="store_true",
+                    help="run the shared renderer self-test (parameter recovery from the mesh) and exit")
     args = ap.parse_args(argv)
+
+    if args.self_test:
+        from create_raup_animations import self_test
+        self_test()
+        return
 
     data_file = Path(__file__).resolve().parent.parent / "datasets" / "raup" / "variables.json"
     if data_file.exists():

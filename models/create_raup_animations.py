@@ -312,30 +312,41 @@ def create_animated_gif(shells, output_path, num_frames=120, fps=15, res=60):
     anim = FuncAnimation(fig, animate, frames=num_frames, interval=1000 / fps, blit=False)
     anim.save(output_path, writer=PillowWriter(fps=fps))
     plt.close(fig)
-    print(f"  saved {output_path} ({num_frames} frames)")
+    from PIL import Image
+    with Image.open(output_path) as im:          # count what was actually stored
+        stored = getattr(im, "n_frames", 1)
+        while True:
+            try:
+                im.seek(im.tell() + 1); stored = im.tell() + 1
+            except EOFError:
+                break
+    print(f"  saved {output_path} ({stored} frames stored, {num_frames} requested)")
 
 
 def create_parameter_space_visualization(data, output_path):
+    """One-parameter sweeps about a fixed base point (Pass N+1: the old sheet
+    zipped W with D and with T along a diagonal, so each panel confounded two
+    parameters, and S was never swept). Row 1 varies D, row 2 varies T, and a
+    dedicated S sweep at S in {0.5, 1, 2} shows the unlabelled fourth
+    parameter; every title prints all four parameters."""
     print(f"Creating parameter space sheet: {output_path}")
-    Wr, Dr, Tr = (data["core_variables"][k]["typical_range"] for k in "WDT")
-    Ws = np.linspace(Wr["min"], Wr["max"], 3)
-    Ds = np.linspace(Dr["min"], Dr["max"], 3)
-    Ts = np.linspace(Tr["min"], Tr["max"], 3)
-    fig = plt.figure(figsize=(16, 11)); fig.subplots_adjust(0, 0.02, 1, 0.9, wspace=0, hspace=0.1)
-    for i, (W, D) in enumerate(zip(Ws, Ds)):
-        ax = fig.add_subplot(2, 3, i + 1, projection="3d")
-        X, Y, Z = raup_shell(W=W, D=D, T=1.0, turns=5, res=40)
-        ax.plot_wireframe(X, Y, Z, rstride=4, cstride=4, color="steelblue", linewidth=0.5, alpha=0.85)
-        fit_axes(ax, X, Y, Z); ax.set_axis_off()
-        ax.set_title(f"W={W:.2f}, D={D:.2f}, T=1.00", fontsize=11)
-    for i, (W, T) in enumerate(zip(Ws, Ts)):
-        ax = fig.add_subplot(2, 3, i + 4, projection="3d")
-        X, Y, Z = raup_shell(W=W, D=0.1, T=T, turns=5, res=40)
-        ax.plot_wireframe(X, Y, Z, rstride=4, cstride=4, color="coral", linewidth=0.5, alpha=0.85)
-        fit_axes(ax, X, Y, Z); ax.set_axis_off()
-        ax.set_title(f"W={W:.2f}, D=0.10, T={T:.2f}", fontsize=11)
-    fig.suptitle("Raup's coiling model: W and D (top, T fixed) · W and T (bottom, D fixed)\n"
-                 "ranges from datasets/raup/variables.json", fontsize=14, fontweight="bold")
+    base = dict(W=2.2, D=0.1, T=1.0, S=1.0)
+    sweeps = [("D", [0.0, 0.25, 0.5], "steelblue"), ("T", [0.0, 2.0, 4.0], "coral"),
+              ("S", [0.5, 1.0, 2.0], "seagreen")]
+    rows = len(sweeps)
+    fig = plt.figure(figsize=(16, 11 * rows / 3)); fig.subplots_adjust(0, 0.02, 1, 0.9, wspace=0, hspace=0.1)
+    for r, (key, values, color) in enumerate(sweeps):
+        for i, v in enumerate(values):
+            params = dict(base); params[key] = v
+            ax = fig.add_subplot(rows, 3, r * 3 + i + 1, projection="3d")
+            X, Y, Z = raup_shell(turns=5, res=40, **params)
+            ax.plot_wireframe(X, Y, Z, rstride=4, cstride=4, color=color, linewidth=0.5, alpha=0.85)
+            fit_axes(ax, X, Y, Z); ax.set_axis_off()
+            ax.set_title(f"W={params['W']:.2f}, D={params['D']:.2f}, T={params['T']:.2f}, S={params['S']:.2f}",
+                         fontsize=11)
+    fig.suptitle("Raup's coiling model: one-parameter sweeps about W=2.2, D=0.1, T=1.0, S=1.0\n"
+                 "top: D · middle: T · bottom: S (ranges from datasets/raup/variables.json)",
+                 fontsize=14, fontweight="bold")
     fig.savefig(output_path, dpi=110, bbox_inches="tight")
     plt.close(fig)
     print(f"  saved {output_path}")

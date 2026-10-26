@@ -1371,19 +1371,25 @@ def self_test() -> bool:
     ok = ok and ctrl_ok
 
     # 5. Biological specimen segmentation (Pomacanthus stripes + Y-junctions & Ostracion spots)
+    # Pass N+1 honesty fix: the Y-junction detector count and the Kondo r are
+    # NOT gated as validation. The detector reports ~22 junctions vs 2-3
+    # published for the adult ROI (7-10x over-detection, disclosed, not
+    # hidden behind a 5-25 range check), and the Kondo r is a calibration
+    # consistency check, not independent validation, because the 1D PDE
+    # domain is sized with the same wavelength used to count stripes.
     bio_ok = (
         8.0 <= bio["poma_mean_spacing_px"] <= 14.0
         and bio["poma_spacing_cv"] < 0.25
-        and 5 <= bio["poma_y_junctions"] <= 25
-        and bio["kondo_corr_r"] > 0.98
         and bio["ost_n_spots"] >= 15
         and det_ok
     )
     print(
         f"[{'PASS' if bio_ok else 'FAIL'}] Biological specimens (Kondo & Asai 1995): "
         f"Pomacanthus spacing={bio['poma_mean_spacing_px']:.2f} px (CV={bio['poma_spacing_cv']:.3f}, "
-        f"Y-junctions={bio['poma_y_junctions']}), Ostracion spots={bio['ost_n_spots']}, "
-        f"1D PDE Kondo r={bio['kondo_corr_r']:.4f}, deterministic={det_ok}"
+        f"Y-junctions detected={bio['poma_y_junctions']} vs 2-3 published in the adult ROI "
+        f"(known over-detection, not gated), Ostracion spots={bio['ost_n_spots']}, "
+        f"1D PDE Kondo r={bio['kondo_corr_r']:.4f} (calibration consistency, not independent "
+        f"validation), deterministic={det_ok}"
     )
     ok = ok and bio_ok
 

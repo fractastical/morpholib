@@ -563,7 +563,9 @@ PAPER_PRESETS: Dict[str, Dict[str, Any]] = {
     # Non-contoured regime DERIVED from the operator, not imposed: with weak local inhibition the n = 0
     # (orientation-independent, Hubel-Wiesel-free) local harmonic W_0 = 1 - A_loc exceeds W_1, so the
     # critical eigenfunction is u(phi) ~ const (Bressloff 2001 §4(a): "non-contoured" planforms, Figs.
-    # 29-30; Ermentrout & Cowan 1979 regime). Here W_0 > W_1 for A_loc < 0.243 (analytic, local terms).
+    # 29-30; Ermentrout & Cowan 1979 regime). Here W_0 > W_1 for A_loc < 0.243 (analytic, local terms;
+    # the exact operator's dominant harmonic, measured by conjugate-pair power, switches at
+    # A_loc ~ 0.22 because the lateral terms shift the crossing — Pass N+1).
     # In this regime gamma(theta) is nearly flat, so rolls are linearly stable (2 gamma(theta) > gamma(0)
     # for all theta) and are SELECTED, every roll direction being degenerate: the tunnel (k_y = 0) and the
     # 45-degree spiral are two members of the selected family, not two presets fighting the equations.
@@ -852,7 +854,15 @@ def exact_orientation_modes(params: BressloffParams, q: float) -> List[Dict[str,
             parity = "odd"
         else:
             parity = "mixed"
-        dom = int(abs(_HARM_M[int(np.argmax(np.abs(v)))]))
+        # Dominant harmonic by conjugate-pair power (Pass N+1): a real mode
+        # e^{2imphi} splits its energy across the +/-m coefficients, so a
+        # single-component argmax undercounts every m >= 1 by sqrt(2) and
+        # biases the m=0 vs m=1 (contoured) decision.
+        _pair_power = [float(abs(v[ORIENT_HARMONICS]) ** 2)] + [
+            float(abs(v[ORIENT_HARMONICS - _m]) ** 2 + abs(v[ORIENT_HARMONICS + _m]) ** 2)
+            for _m in range(1, ORIENT_HARMONICS + 1)
+        ]
+        dom = int(np.argmax(_pair_power))
         w = v @ _HARM_E                      # real function up to a global complex phase
         j = int(np.argmax(np.abs(w)))
         u = np.real(w * np.conj(w[j]) / max(abs(w[j]), 1e-300))
@@ -1319,6 +1329,7 @@ def branch_selection_full(params: BressloffParams, exact: Dict[str, Any]) -> Dic
         "lambda_eigen": float(lam_mode),
         "q_mode": float(q_mode),
         "sigma0": cubic["sigma0"], "s2": cubic["s2"], "s3": cubic["s3"],
+        "N": float(cubic["N"]),
         "gamma0": gamma0,
         "gamma_square": gamma_square,
         "gamma_rhombic": gamma_rhombic,
@@ -1567,8 +1578,9 @@ def render_cortical_and_retinal_planform(
 
     Wavevectors: |k| = q*/d_hyp quantised to integer x-cycles on the torus (stability_scan); with
     `params.quantise_ky` the y-component of every oblique mode is also quantised to an integer
-    number n_y of cycles on the y-periodic torus at fixed |k| (the normal angle moves by < 1 degree
-    at n = 96), so the cortical pattern is exactly periodic in y and the hemifield phase offsets
+    number n_y of cycles on the y-periodic torus at fixed |k| (the normal angle moves by up to
+    ~5.4 degrees for 60-degree hex modes at 11 cycles; < 1 degree only for near-axis modes),
+    so the cortical pattern is exactly periodic in y and the hemifield phase offsets
     n_y pi are well defined.
 
     For contoured planforms the orientation field phi*(x) = argmax_phi a(x, phi) (`contour_envelope
@@ -2426,7 +2438,7 @@ def run_bressloff_analysis(
     n_stable = sum(1 for g in rendered_gallery if g["lattice_consistency"] == "stable-coexisting")
     n_imposed = sum(1 for g in rendered_gallery if g["lattice_consistency"] == "imposed-unstable")
     scale_anchor = compare_paper_scale_anchors(rendered_gallery[0]["stability"])
-    # Paper-scale preset: lateral widths /3.1 so q* ~ 4.5 and lambda_c ~ 2.8 mm; rendered for Panel D.
+    # Paper-scale preset: lateral widths /3.3 so q* ~ 4.84 and lambda_c ~ 2.60 mm; rendered for Panel D.
     p_scale = make_preset_params("paper_scale_tunnel", n=192, m=16)
     cort_scale, ret_scale, stab_scale = render_cortical_and_retinal_planform(p_scale, phase=0.0, retinal_res=200)
     scale_anchor_paper = compare_paper_scale_anchors(stab_scale)
@@ -2640,7 +2652,9 @@ def run_bressloff_analysis(
                     st["rendered_pattern"],
                     f"{bs['unrestricted_selected_family']}@{bs['rhombic_theta_optimal_deg']:.0f}deg",
                     g["lattice_consistency"].upper(),
-                    f"{st['critical_q']:.6f}",
+                    # Exact-operator q_mode, not the perturbative n=1 scan
+                    # critical_q (Pass N+1: they differ for the m=0 presets).
+                    f"{bs['q_mode']:.6f}",
                     f"{sp['k_star_cycles']:.2f}",
                     f"{sp['ring_sharpness']:.3f}",
                     f"{max(sp['m4_excess_over_m2'], sp['m6_excess_over_m2']):.4f}",
@@ -2683,7 +2697,7 @@ def run_bressloff_analysis(
                     f"eta={bs['eta']:.6f}; Lambda_r={bs['lambda_r']:.4g}; Lambda_h={bs['lambda_h']:.4g}",
                     "gamma(theta)/gamma(0) @ " + ",".join(f"{t:.0f}" for t in gt["theta_deg"][::3]) + " = "
                     + ",".join(f"{v / g0:.3f}" for v in gt["gamma"][::3]),
-                    "bare gamma3/N @ same = " + ",".join(f"{3.0 * bs['s3'] * v / bs['gamma0'] if bs['gamma0'] else float('nan'):.3f}" for v in gt["gamma3_bare"][::3]),
+                    "bare gamma3/N @ same = " + ",".join(f"{(3.0 * bs['s3'] * v / bs['N']) / bs['gamma0'] if bs['gamma0'] else float('nan'):.3f}" for v in gt["gamma3_bare"][::3]),
                     f"exact_vs_pert: dq={st['perturbative_vs_exact_dq']:.2e}, dlambda={st['perturbative_vs_exact_dlambda']:.2e}",
                     "n/a",
                 ]
@@ -2930,10 +2944,13 @@ def run_bressloff_analysis(
         stab17["qs"], stab17["even_growth"], color="#2980b9", lw=2.2,
         label=f"Fig. 17 even ($\\theta_0=60^\\circ$, $\\hat{{\\xi}}_{{lat}}$={p17.lateral_wide_sigma:g}, $q^*={stab17['critical_q']:.2f}$)",
     )
-    stab_gal = rendered_gallery[0]["stability"]
+    # Pass N+1: gallery[0] is the derived m=0 preset (A_loc=0.15), whose n=1
+    # perturbative curve does not describe the contoured gallery III-V.
+    # Use the contoured square preset (A_loc=1.0) and label it as such.
+    stab_gal = rendered_gallery[2]["stability"]
     ax_stab.plot(
         stab_gal["qs"], stab_gal["even_growth"], color="#117a65", ls="-.", lw=1.6,
-        label=f"Gallery presets even ($\\theta_0$={gallery_params.lateral_spread_deg:g}°, $\\hat{{\\xi}}_{{lat}}$={gallery_params.lateral_wide_sigma:g}, $q^*={stab_gal['critical_q']:.2f}$)",
+        label=f"Gallery III–V contoured even ($\\theta_0$={gallery_params.lateral_spread_deg:g}°, $\\hat{{\\xi}}_{{lat}}$={gallery_params.lateral_wide_sigma:g}, $q^*={stab_gal['critical_q']:.2f}$)",
     )
     ax_stab.plot(
         stab_gauss["qs"], stab_gauss["odd_growth"], color="#7f8c8d", ls=":", lw=2.0,
@@ -3200,7 +3217,8 @@ def run_bressloff_analysis(
         f"Rendered |k| = q*/d_hyp, k_x and k_y quantised to integer torus cycles (L = {rendered_gallery[0]['stability']['torus_mm']:.1f} mm; "
         f"spiral pitch {rendered_gallery[1]['morphometrics']['spiral_pitch_deg']:.1f}° for 45° requested)",
         f"Hex contoured FFT: power at k/√3k/2k = {hex_g['harmonics']['power_at_k']:.2f}/"
-        f"{hex_g['harmonics']['power_at_sqrt3_k']:.2f}/{hex_g['harmonics']['power_at_2k']:.2f} ⇒ 2k harmonic of tanh∘max",
+        f"{hex_g['harmonics']['power_at_sqrt3_k']:.2f}/{hex_g['harmonics']['power_at_2k']:.2f} ⇒ "
+        f"{'√3k difference ring' if hex_g['harmonics']['power_at_sqrt3_k'] >= hex_g['harmonics']['power_at_2k'] else '2k harmonic'} of tanh∘max",
         f"Retinal pullback: conformal (2001 complex-log) map ⇒ torus closes, seam max {seam_conformal_max:.2f} over gallery; spiral chirality "
         f"{rendered_gallery[1]['diag_full']['chirality']:.2f}",
         f"   exact (2002) map seams: full-field {seam_full_max:.2f} (left meridian; earlier versions), chiral-mirror {seam_chiral_max:.2f} (vertical)",
@@ -3370,7 +3388,7 @@ def make_gif(
         fig.subplots_adjust(left=0.04, right=0.96, bottom=0.09, top=0.80, wspace=0.10)
 
         axes[0].imshow(cort, cmap="twilight_shifted", vmin=-1.0, vmax=1.0, origin="lower", interpolation="bilinear")
-        axes[0].set_title(f"V1 Cortex ({sub})", fontsize=9.5, fontweight="bold", color="#1e293b", pad=6)
+        axes[0].set_title(f"V1 Cortex: {sub}", fontsize=9.5, fontweight="bold", color="#1e293b", pad=6)
         axes[0].axis("off")
 
         axes[1].set_facecolor("#fafaf8")
@@ -3385,8 +3403,10 @@ def make_gif(
             bbox=dict(boxstyle="round,pad=0.25", fc=badge_color, ec="none"),
         )
 
+        _cmode = stab_anim.get("rendered_contour_mode", "noncontoured")
         fig.suptitle(
-            f"Bressloff et al. (2001) — {lbl}  (k*={stab_anim['rendered_cycles']} cyc, non-contoured)",
+            f"Bressloff et al. (2001) — {lbl}  (k*={stab_anim['rendered_cycles']} cyc, "
+            f"{'non-contoured' if _cmode == 'noncontoured' else 'contoured'})",
             fontsize=9.5,
             fontweight="bold",
             color="#0f172a",
@@ -3612,8 +3632,12 @@ def self_test() -> bool:
         p_lo.local_inhibition = a_loc
         thr_hits.append((a_loc, exact_dispersion_scan(p_lo)["critical_harmonic"]))
     check(
-        all(h == 0 for a, h in thr_hits if a < 0.243) and all(h == 1 for a, h in thr_hits if a > 0.243),
-        f"Critical harmonic switches m=0 → m=1 at A_loc ≈ 0.243 (W0 = W1): {thr_hits}",
+        # Boundary 0.22, not the local-only analytic W0 = W1 crossing 0.243:
+        # with the conjugate-pair harmonic norm (Pass N+1) the exact operator
+        # switches between A_loc = 0.20 and 0.24.
+        all(h == 0 for a, h in thr_hits if a < 0.22) and all(h == 1 for a, h in thr_hits if a > 0.22),
+        f"Critical harmonic switches m=0 → m=1 at A_loc ≈ 0.22 (exact operator, pair norm; "
+        f"local-only W0 = W1 at 0.243): {thr_hits}",
     )
     st_der = stability_scan(make_preset_params("roll_noncontoured_derived"))
     b_der = st_der["branch_selection"]

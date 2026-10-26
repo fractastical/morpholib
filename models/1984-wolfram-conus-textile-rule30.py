@@ -39,6 +39,11 @@ Models implemented:
        db/dt = mu_b * (a - b) + D_b * d^2b/dx^2
      where traveling activator waves branch when depleted substrate s recovers and annihilate
      at the vertices of downward-pointing white triangles when opposing fronts collide.
+     Disclosure (Pass N+1): as integrated here the PDE also uses an unsourced
+     stochastic activator injection (p=0.18, +0.90 where s>1.45 and a<0.15)
+     and hard clipping to prevent pattern extinction; that injection is a
+     numerical stabiliser, not part of Meinhardt & Klingler's published
+     autonomous parameterisation, and is a known structural limitation.
   3. 3D Raup (1966) biconical helicospiral Conus shell surface onto which the 2D mantle-edge
      space-time kymographs (t, x) are mapped and compared against segmented Conus textile
      specimens (datasets/conus/conus_textile_reference.json).
@@ -9760,7 +9765,7 @@ def run_meinhardt_conus(nx: int = 230, nt_out: int = 370, substeps: int = 12, se
 def raup_conus_mesh(
     W: float = 1.28,
     D: float = 0.42,
-    T: float = 0.36,
+    T: float = 0.06,
     S: float = 5.99,
     turns: float = 5.5,
     n_theta: int = 360,
@@ -9777,7 +9782,12 @@ def raup_conus_mesh(
     scale = W ** ((TH - azim) / (2.0 * np.pi))
     a = scale
     rc = a * (1.0 + D) / (1.0 - D)
-    zc = T * rc
+    # Pass N+1: T was numerically inert (H/W identical at T=0 and T=0.36)
+    # because the axial envelope swamped T*rc. Scaling the centreline
+    # translation by S makes H/W respond monotonically for T >~ 0.19;
+    # the default is recalibrated to 0.06 so the default mesh still
+    # matches the specimen H/W (1.834) checked in the self-test.
+    zc = T * S * rc
     b = a * S
 
     s_pos = np.maximum(0.0, np.sin(PH))
@@ -9871,7 +9881,11 @@ def map_kymograph_to_shell_rgb(
     """
     n_phi, n_theta = X.shape
     # Resample kymograph (time = coiling angle theta, space = aperture position phi)
-    k_norm = (kymograph - kymograph.min()) / max(1e-9, float(kymograph.max() - kymograph.min()))
+    # Pass N+1: percentile normalization. Linear min-max crushed the
+    # Meinhardt PDE shell to blank cream because rare activator spikes
+    # reach ~5.0 while most of the field sits near 0.10.
+    lo, hi = np.percentile(kymograph, [5, 95])
+    k_norm = np.clip((kymograph - lo) / max(1e-9, float(hi - lo)), 0.0, 1.0)
     k_img = Image.fromarray((k_norm * 255).astype(np.uint8))
     interp = Image.NEAREST if nearest else Image.BILINEAR
     # Transpose so rows = phi (mantle margin), cols = theta (growth time)
@@ -10757,6 +10771,7 @@ def render_comparison_figure(res: dict, out_png: pathlib.Path) -> None:
     ax_f.set_xlim(0.0, 5.5)
     ax_f.set_ylim(1e-3, 1.05)
     ax_f.set_title("F. White-Triangle Base-Width Tail $P(W \\geq w / \\langle w \\rangle)$", color="#f0f6fc", fontsize=11, fontweight="bold")
+    ax_f.text(0.97, 0.55, "2D ANF carry (vs Rule 90):\nRule 30 = 0.25, Rule 90 = 0.00, specimen = 0.36\n(1D chords above cannot separate 30/90; ANF can)", transform=ax_f.transAxes, ha="right", va="top", fontsize=6.8, color="#f0f6fc", bbox=dict(facecolor="#0d1117", edgecolor="#30363d", alpha=0.85))
     ax_f.set_xlabel("Normalized white-tent chord width $w / \\langle w \\rangle$", color="#c9d1d9", fontsize=9)
     ax_f.set_ylabel("Complementary CDF $P(W \\geq w / \\langle w \\rangle)$", color="#c9d1d9", fontsize=9)
     ax_f.tick_params(colors="#8b949e", labelsize=8)
@@ -12585,6 +12600,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     res = self_test()
+    if args.no_photos:
+        print("[no-photos] Using vendored specimen masks only; no external photographs fetched.")
     if args.download:
         paths = download_specimens(res["fixture"])
         print(f"[download] Verified {len(paths)} Wikimedia Commons Conus textile specimen files in {CACHE_DIR}")

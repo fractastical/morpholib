@@ -185,7 +185,7 @@ def build_thompson_600pt_assets():
         ax_l.fill(cur_B[:, 0], cur_B[:, 1], color="#22c55e", alpha=0.28)
         ax_l.plot(cur_B[:, 0], cur_B[:, 1], color="#4ade80", lw=2.0, label="Warped Scarus (600-pt Coaxial Fit)")
         ax_l.scatter(cur_B[::12, 0], cur_B[::12, 1], color="#facc15", s=8, zorder=5)
-        ax_l.set_xlim(-0.48, 0.48)
+        ax_l.set_xlim(-0.62, 0.62)
         ax_l.set_ylim(-0.42, 0.42)
         ax_l.set_aspect("equal")
         ax_l.set_xticks([])
@@ -213,7 +213,7 @@ def build_thompson_600pt_assets():
         if t > 0.65:
             ax_r.plot(BS_lm[:, 0], BS_lm[:, 1], color="#f59e0b", lw=1.2, ls=":", label="Old 17-LM Fit (IoU=0.618)")
             ax_r.legend(loc="lower right", fontsize=7.0, facecolor="#0b1325", edgecolor="#f59e0b", labelcolor="#facc15")
-        ax_r.set_xlim(-0.48, 0.48)
+        ax_r.set_xlim(-0.62, 0.62)
         ax_r.set_ylim(-0.42, 0.42)
         ax_r.set_xticks([])
         ax_r.set_yticks([])
@@ -226,7 +226,7 @@ def build_thompson_600pt_assets():
         )
         fig_anim.suptitle(
             "D'Arcy Thompson (1917) — Direct 600-Point Continuous Silhouette Coaxial Transformation\n"
-            f"600-Pt Fit: IoU = {bd_600['iou']:.3f} (|Ω_A Δ Ω_B| = {bd_600['sym_diff_pct_of_target']:.1f}%)   vs.   17-Landmark Stick Fit: IoU = {bd_lm['iou']:.3f} (|Ω_A Δ Ω_B| = {bd_lm['sym_diff_pct_of_target']:.1f}%)",
+            f"600-Pt Fit (in-sample): IoU = {bd_600['iou']:.3f} (|Ω_A Δ Ω_B| = {bd_600['sym_diff_pct_of_target']:.1f}%)   vs.   17-Landmark Stick Fit: IoU = {bd_lm['iou']:.3f} (|Ω_A Δ Ω_B| = {bd_lm['sym_diff_pct_of_target']:.1f}%)",
             color="#facc15", fontsize=10.2, fontweight="bold", y=0.96
         )
 

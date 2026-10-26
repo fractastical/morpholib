@@ -53,7 +53,18 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from scipy import ndimage as ndi
 from scipy.spatial import cKDTree
-from skimage.morphology import binary_closing, binary_opening, disk
+from skimage.morphology import closing as _closing, opening as _opening, disk
+
+
+def binary_closing(image, footprint):
+    """skimage >= 0.26 deprecates binary_closing (removed in 0.28); the
+    boolean closing is closing(image, footprint) for boolean input."""
+    return _closing(np.asarray(image, dtype=bool), footprint)
+
+
+def binary_opening(image, footprint):
+    """Boolean opening; see binary_closing above."""
+    return _opening(np.asarray(image, dtype=bool), footprint)
 from skimage.measure import label, regionprops
 from skimage.feature import peak_local_max
 from skimage.segmentation import watershed
@@ -380,9 +391,43 @@ def make_gif(output, downsample=2, n_iter=18, fps=4):
     print(f"Saved animation to {Path(output).resolve()}  ({len(frames)} frames)")
 
 
+def self_test():
+    """Deterministic checks at downsample 2 (Pass N+1 remediation): cached
+    wing image present, segmentation yields a plausible domain count, and the
+    Lloyd model is seed-deterministic with circularity in (0, hexagon ceiling].
+    Exits 0 on pass, 1 on fail. Never downloads."""
+    png = CACHE / "Arigomphus_villosipes_LHW.png"
+    if not png.exists():
+        print("[FAIL] example wing not cached (.wing_cache/); run the script once to fetch it")
+        raise SystemExit(1)
+    gray = np.asarray(plt.imread(png))
+    if gray.ndim == 3:
+        gray = 0.2126 * gray[..., 0] + 0.7152 * gray[..., 1] + 0.0722 * gray[..., 2]
+    if gray.max() <= 1.0:
+        gray = gray * 255.0
+    gray = gray[::2, ::2].astype(float)
+    seg = segment_wing(gray)
+    real_lab, peaks = real_domains(seg)
+    n_cells = int(peaks.shape[0])
+    m1 = model_wing(seg, n_cells, seed=0)
+    m2 = model_wing(seg, n_cells, seed=0)
+    deterministic = bool((m1["labels"] == m2["labels"]).all())
+    rc, _, _ = domain_stats(real_lab)
+    mc, _, _ = domain_stats(m1["labels"])
+    ok = (300 <= n_cells <= 1500 and deterministic
+          and 0.0 < float(mc.mean()) <= HEXAGON_CIRC + 0.05
+          and 0.0 < float(rc.mean()) <= HEXAGON_CIRC + 0.05)
+    print(f"[{'PASS' if ok else 'FAIL'}] 2018-hoffmann-wing-venation self-test "
+          f"(downsample 2): {n_cells} real domains, circularity real "
+          f"{rc.mean():.3f} / model {mc.mean():.3f}, deterministic={deterministic}")
+    raise SystemExit(0 if ok else 1)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--self-test", action="store_true",
+                    help="run deterministic checks on the cached wing image and exit")
     ap.add_argument("-o", "--output", default="hoffmann_wing_recapitulation.png",
                     help="output PNG path (default: repo root)")
     ap.add_argument("--downsample", type=int, default=1,
@@ -392,6 +437,8 @@ def main():
                     help="save the figure without opening a window")
     ap.set_defaults(show=True)
     args = ap.parse_args()
+    if args.self_test:
+        self_test()
     make_figure(args.output, args.show, max(1, args.downsample))
     if args.gif:
         make_gif(args.gif, downsample=max(2, args.downsample))

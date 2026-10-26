@@ -801,6 +801,11 @@ def deep_time_animation(df: pd.DataFrame, pbdb: pd.DataFrame, zip_path: Path, ta
             draw_time(None)
             draw_cells(None)
             ax_wing.axis("off")
+            # Pass N+1: the intro wing panel was blank, which read as a
+            # missing-drawing defect in the shipped GIF; label it instead.
+            ax_wing.text(0.5, 0.5, "fossil venation drawings follow,\neach at true scale (mm)",
+                         ha="center", va="center", fontsize=10, color="#666666",
+                         transform=ax_wing.transAxes)
             info("Odonata wing cells through deep time\n\n"
                  f"{len(fo)} fossil wings · {fo.species.nunique()} extinct species · "
                  f"{fo.age_ma.max():.0f}–{fo.age_ma.min():.0f} Ma\n"
@@ -906,8 +911,36 @@ def deep_time_animation(df: pd.DataFrame, pbdb: pd.DataFrame, zip_path: Path, ta
 
 
 # --------------------------------------------------------------------------
+def self_test(data_dir: Path) -> int:
+    """Deterministic checks on the vendored tables (Pass N+1 remediation):
+    wing count, group composition, N~L scaling slopes and fossil cell-size
+    band. Returns 0 on pass, 1 on fail. No downloads, no re-segmentation."""
+    fails = []
+    df = load_wings(data_dir)
+    pbdb = load_pbdb(data_dir)
+    if len(df) != 463:
+        fails.append(f"vendored wing table has {len(df)} rows, expected 463")
+    if pbdb.empty or "genus" not in pbdb.columns:
+        fails.append("PBDB occurrence table empty or missing genus column")
+    stats = report(df)
+    for grp, s in stats.items():
+        if not (0.5 <= s["slope_count"] <= 2.5):
+            fails.append(f"{grp}: N~L slope {s['slope_count']:.2f} outside [0.5, 2.5]")
+    fo = df[df.group == "fossil"]
+    med = float(fo.cell_len_median_mm.median())
+    if not (CELL_BAND[0] <= med <= CELL_BAND[1]):
+        fails.append(f"fossil median cell {med:.2f} mm outside dominant band {CELL_BAND}")
+    print(f"[{'PASS' if not fails else 'FAIL'}] 2026-eshghi-odonata-wing-cells self-test: "
+          f"{len(df)} wings, fossil median cell {med:.2f} mm")
+    for f in fails:
+        print(f"  - {f}")
+    return 1 if fails else 0
+
+
 def main(argv=None) -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--self-test", action="store_true",
+                   help="run deterministic checks on the vendored CSV tables and exit (no downloads)")
     p.add_argument("--data-dir", default=str(DATA_DIR))
     p.add_argument("--cache-dir", default=str(CACHE_DIR))
     p.add_argument("--out-dir", default=".")
@@ -920,6 +953,9 @@ def main(argv=None) -> None:
                    help="skip re-segmenting the fossil drawings (needs the Zenodo archive)")
     p.add_argument("--fps", type=float, default=0.8)
     args = p.parse_args(argv)
+
+    if args.self_test:
+        sys.exit(self_test(Path(args.data_dir)))
 
     data_dir, cache, out_dir = Path(args.data_dir), Path(args.cache_dir), Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

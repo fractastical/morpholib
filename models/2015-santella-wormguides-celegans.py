@@ -487,7 +487,7 @@ def draw_shell(ax, shell: Optional[np.ndarray], um: float) -> None:
 
 
 def draw_embryo(ax, f: Frame, um: float, offset: int, title: bool = True, s_scale: float = 1.0,
-                shell: Optional[np.ndarray] = None) -> None:
+                shell: Optional[np.ndarray] = None, shell_frame: Optional[int] = None) -> None:
     """Dorsal-ish projection (x = anterior-posterior axis of the image, y = image y); nuclei as discs
     with their recorded diameter, coloured by founder lineage, back-to-front by z; the atlas's
     eggshell outline (convex hull of its mesh in x, y) when given."""
@@ -504,7 +504,13 @@ def draw_embryo(ax, f: Frame, um: float, offset: int, title: bool = True, s_scal
     ax.set_aspect("equal"); ax.set_xlim(5, 65); ax.set_ylim(40, 0)
     ax.set_xticks([10, 35, 60]); ax.set_yticks([0, 30]); ax.tick_params(labelsize=7)
     if title:
-        ax.set_title(f"frame {f.t} · {f.t + offset} min · {len(f.names)} cells", fontsize=9)
+        # Pass N+1: name the source frame of the (nearest-sampled) shell mesh
+        # so static/nearest substitutions are visible, and label the time as
+        # atlas movie minutes (the +offset metadata shift is not resolved to
+        # post-cleavage time).
+        shell_note = f" · shell from frame {shell_frame}" if shell_frame is not None and shell_frame != f.t else ""
+        ax.set_title(f"frame {f.t} · atlas movie {f.t + offset} min (+{offset} metadata offset) · "
+                     f"{len(f.names)} cells{shell_note}", fontsize=8)
 
 
 def read_obj(path: Path) -> Tuple[np.ndarray, np.ndarray]:
@@ -610,9 +616,10 @@ def four_views(frames, local, um, offset, parts, mesh_cells, shells, out: Path, 
                  "x = depth-first order of the Sulston tree (the schematic layer)", fontsize=10, loc="left", pad=14)
     by_t = {f.t: f for f in frames}
     for i, t in enumerate(pick):
-        a = fig.add_subplot(gs[1, i]); draw_embryo(a, by_t[t], um, offset, shell=shell_for(shells, t))
+        a = fig.add_subplot(gs[1, i]); draw_embryo(a, by_t[t], um, offset, shell=shell_for(shells, t),
+                                                   shell_frame=min(shells, key=lambda k: abs(k - t)) if shells else None)
         if i == 0:
-            a.set_ylabel("µm (eggshell = 50 µm)", fontsize=7)
+            a.set_ylabel("µm (eggshell assumed 50 µm)", fontsize=7)
     row_b = fig.add_subplot(gs[1, :], frameon=False); row_b.set_xticks([]); row_b.set_yticks([])
     row_b.set_title("B  Formal geometry: nuclear positions and recorded diameters (to scale) inside the atlas's eggshell outline, "
                     "coloured by founder lineage " + "  ".join(f"■{k}" for k in FOUNDERS) + "  ■other  — WormGUIDES DISPIM_061416 / JIM113",
@@ -653,8 +660,9 @@ def timeline_gif(frames, rows, um, offset, shells, out: Path, step: int = 3, fps
     for f in frames[::step]:
         fig = plt.figure(figsize=(10, 5.2))
         gs = fig.add_gridspec(1, 2, width_ratios=[1.35, 1])
-        a = fig.add_subplot(gs[0]); draw_embryo(a, f, um, offset, shell=shell_for(shells, f.t))
-        a.set_xlabel("µm (eggshell outline = 50 µm long)"); a.set_ylabel("µm")
+        a = fig.add_subplot(gs[0]); draw_embryo(a, f, um, offset, shell=shell_for(shells, f.t),
+                                                shell_frame=min(shells, key=lambda k: abs(k - f.t)) if shells else None)
+        a.set_xlabel("µm (eggshell outline assumed 50 µm long)"); a.set_ylabel("µm")
         b = fig.add_subplot(gs[1])
         b.plot(tmin, counts, color="#444"); b.axvline(f.t + offset, color="#c0392b", lw=1)
         stack = np.array([[r[f"n_{k}"] for k in FOUNDERS] for r in rows]).T
@@ -670,9 +678,41 @@ def timeline_gif(frames, rows, um, offset, shells, out: Path, step: int = 3, fps
     print(f"  saved {out}  ({len(imgs)} frames)")
 
 
+def self_test() -> int:
+    """Offline deterministic checks (Pass N+1 remediation): pinned-input
+    SHA-256 verification, lineage encoding, movie offset and the *assumed*
+    50 um eggshell calibration (labelled as an assumption, not a measured
+    voxel size). Returns 0 on pass, 1 on fail. Never downloads."""
+    fails = []
+    try:
+        local = fetch_inputs(False, False)
+    except SystemExit as e:
+        print(f"[FAIL] pinned inputs unavailable: {e}")
+        return 1
+    offset = movie_offset(local[f"wormguides/{WG_FILES['production']}"])
+    frames = [read_nuclei(local[f"wormguides/{WG_NUCLEI.format(t=t)}"], t) for t in range(1, N_FRAMES + 1)]
+    if len(frames) != N_FRAMES or not (frames[-1].names and len(frames[-1].names) > len(frames[0].names)):
+        fails.append(f"frame/nucleus decode degenerate: {len(frames)} frames, "
+                     f"{len(frames[0].names)} -> {len(frames[-1].names)} nuclei")
+    enc = check_encoding(frames)
+    print(f"  encoding check: {enc}")
+    shells = {t: shell_outline(local[f"wormguides/{WG_SHELL.format(t=t)}"]) for t in SHELL_FRAMES}
+    um = calibrate(shells[CALIB_FRAME])
+    if not (0.01 < um < 10.0):
+        fails.append(f"assumed-50um calibration implausible: {um} um/unit")
+    print(f"[{'PASS' if not fails else 'FAIL'}] 2015-santella-wormguides-celegans self-test: "
+          f"{len(frames)} frames, offset +{offset} min, calibration {um:.4f} um/unit "
+          f"(eggshell ASSUMED {EMBRYO_LENGTH_UM:.0f} um; voxel size unresolved)")
+    for f in fails:
+        print(f"  - {f}")
+    return 1 if fails else 0
+
+
 # --------------------------------------------------------------------------
 def main(argv: Optional[Sequence[str]] = None) -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--self-test", action="store_true",
+                   help="run offline deterministic checks on the pinned cache and exit (no download)")
     p.add_argument("--download", action="store_true", help="fetch the pinned inputs into .celegans_cache/")
     p.add_argument("--pin", action="store_true", help="(re)write datasets/celegans/pinned_inputs.sha256 from the cache")
     p.add_argument("--out-dir", default=".")
@@ -680,6 +720,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     p.add_argument("--no-anim", action="store_true")
     p.add_argument("--step", type=int, default=3, help="frame step of the GIF")
     args = p.parse_args(argv)
+
+    if args.self_test:
+        sys.exit(self_test())
 
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
     local = fetch_inputs(args.download, args.pin)

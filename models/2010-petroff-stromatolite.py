@@ -96,7 +96,7 @@ def hex_lattice(spacing: float, nx: int = 7, ny: int = 5) -> np.ndarray:
     return np.asarray(pts, dtype=float)
 
 
-def solve_laplace_nutrient_flux(P: np.ndarray, nx_grid: int = 80, nz_grid: int = 60) -> tuple[np.ndarray, float]:
+def solve_laplace_nutrient_flux(P: np.ndarray, nx_grid: int = 80, nz_grid: int = 60, n_iter: int = 90) -> tuple[np.ndarray, float]:
     """Solve the steady-state 2D Laplace diffusion equation nabla^2 c = 0 above the
     lamina interface P (with c = 0 inside/on the mat and c = 1 at the top diffusive
     boundary layer z = z_top, periodic/Neumann on lateral walls; Petroff et al. 2010 Eqs. 3-5)
@@ -119,7 +119,7 @@ def solve_laplace_nutrient_flux(P: np.ndarray, nx_grid: int = 80, nz_grid: int =
     c[mat_mask] = 0.0
     c[-1, :] = 1.0
 
-    for _ in range(90):
+    for _ in range(n_iter):
         c_pad = np.pad(c, ((1, 1), (1, 1)), mode="edge")
         c_new = 0.25 * (c_pad[2:, 1:-1] + c_pad[:-2, 1:-1] + c_pad[1:-1, 2:] + c_pad[1:-1, :-2])
         c_new[mat_mask] = 0.0
@@ -172,9 +172,13 @@ def _advance_front(P: np.ndarray, v: float, lam: float, dt: float, smooth: float
     nx *= flip
     nz *= flip
 
-    # Coupled diffusive flux weighting along the interface (Laplace point-effect concentration at apex)
-    z_rel = z / (float(z.max()) + 1e-9)
-    w_flux = 0.15 + 0.85 * (z_rel ** 1.6)
+    # Coupled diffusive flux weighting along the interface: solve the steady
+    # Laplace nutrient field above the current front (Petroff Eqs. 3-5) and
+    # weight vertical growth by J_n(s)/J_crest. Pass N+1 remediation: before
+    # this, solve_laplace_nutrient_flux was dead code during growth and an
+    # ad-hoc algebraic height weight was used instead.
+    j_norm, _lap = solve_laplace_nutrient_flux(P, nx_grid=56, nz_grid=40, n_iter=40)
+    w_flux = 0.15 + 0.85 * j_norm
 
     x = x + dt * (lam * nx)
     z = z + dt * (v * w_flux + lam * nz)
@@ -253,18 +257,37 @@ def segment_microbial_mat_specimen(img_path: Path = SPECIMEN_PATH) -> dict[str, 
     mask = ndi.binary_closing(mask, structure=np.ones((3, 3)))
     mask = ndi.binary_fill_holes(mask)
     fg_frac = float(np.mean(mask))
-    eroded = ndi.binary_erosion(mask)
-    perim = float(np.sum(mask ^ eroded)) + 1e-6
-    area = float(np.sum(mask))
+    # Pass N+1: circularity/coherency on the largest connected component only.
+    # Whole-image thresholding fragments the dish into speckles and gave a
+    # degenerate circ=0.03; the colony is the dominant component.
+    lab_cc, n_cc = ndi.label(mask)
+    if n_cc > 0:
+        sizes = ndi.sum(np.ones_like(lab_cc), lab_cc, index=np.arange(1, n_cc + 1))
+        colony = lab_cc == (int(np.argmax(sizes)) + 1)
+    else:
+        colony = mask
+    eroded = ndi.binary_erosion(colony)
+    perim = float(np.sum(colony ^ eroded)) + 1e-6
+    area = float(np.sum(colony))
     circ = float(np.clip(4.0 * np.pi * area / (perim ** 2), 0.0, 1.0))
 
+    # True radial coherency: fraction of gradient energy aligned with the
+    # radial direction from the colony centroid (was: generic structure-tensor
+    # anisotropy, which is not radial).
     gx = ndi.sobel(gray, axis=1)
     gy = ndi.sobel(gray, axis=0)
-    jxx = ndi.gaussian_filter(gx * gx, sigma=2.5)
-    jyy = ndi.gaussian_filter(gy * gy, sigma=2.5)
-    jxy = ndi.gaussian_filter(gx * gy, sigma=2.5)
-    coh = np.sqrt((jxx - jyy) ** 2 + 4.0 * jxy * jxy) / (jxx + jyy + 1e-9)
-    mean_coh = float(np.mean(coh[mask])) if area > 20 else float(np.mean(coh))
+    ys, xs = np.nonzero(colony)
+    if area > 20 and len(ys):
+        cy, cx = float(ys.mean()), float(xs.mean())
+        yy, xx = np.mgrid[0:gray.shape[0], 0:gray.shape[1]]
+        ex, ey = xx - cx, yy - cy
+        en = np.hypot(ex, ey) + 1e-9
+        ex, ey = ex / en, ey / en
+        g2 = gx * gx + gy * gy + 1e-12
+        radial_frac = ((gx * ex + gy * ey) ** 2) / g2
+        mean_coh = float(np.mean(radial_frac[colony]))
+    else:
+        mean_coh = 0.0
     return {
         "foreground_area_fraction": round(fg_frac, 4),
         "colony_circularity": round(circ, 4),
@@ -411,8 +434,19 @@ def make_figure(output: str | Path, show: bool = False, beta_mid: float = 1.5, D
         with Image.open(SPECIMEN_PATH) as im:
             rgb_sp = np.asarray(im.convert("RGB").resize((240, 180), Image.Resampling.BILINEAR))
         ax.imshow(rgb_sp)
+        # Overlay the largest-component colony contour actually measured
+        # (Pass N+1: panel previously showed the raw photo with no mask).
+        _g = 0.299 * rgb_sp[:, :, 0] + 0.587 * rgb_sp[:, :, 1] + 0.114 * rgb_sp[:, :, 2]
+        _b = np.concatenate([_g[0, :], _g[-1, :], _g[:, 0], _g[:, -1]])
+        _m = np.abs(_g - float(np.median(_b))) >= max(float(np.percentile(np.abs(_g - float(np.median(_b))), 45.0)), 0.06 * 255)
+        _m = ndi.binary_fill_holes(ndi.binary_closing(_m, structure=np.ones((3, 3))))
+        _lab, _n = ndi.label(_m)
+        if _n > 0:
+            _sizes = ndi.sum(np.ones_like(_lab), _lab, index=np.arange(1, _n + 1))
+            _col = _lab == (int(np.argmax(_sizes)) + 1)
+            ax.contour(_col.astype(float), levels=[0.5], colors="white", linewidths=0.9)
         ax.set_title(
-            f"(c) Microbial Mat Specimen Segmentation\n"
+            f"(c) Microbial Mat Specimen Segmentation (white = colony)\n"
             f"area={spec['foreground_area_fraction']:.2f}, circ={spec['colony_circularity']:.2f}, coh={spec['radial_coherency']:.2f}",
             fontsize=10, fontweight="bold",
         )
@@ -461,7 +495,9 @@ def make_figure(output: str | Path, show: bool = False, beta_mid: float = 1.5, D
     out = Path(output)
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=150, bbox_inches="tight")
-    if out.resolve() != MEDIA_PNG.resolve():
+    # Only mirror to the committed media PNG for the default output path;
+    # a custom -o must not silently overwrite docs/media (Pass N+1).
+    if out.resolve() == DEFAULT_PNG.resolve():
         MEDIA_PNG.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(MEDIA_PNG, dpi=150, bbox_inches="tight")
     if show:

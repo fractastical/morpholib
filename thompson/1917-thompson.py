@@ -68,12 +68,13 @@ def real_silhouette(key="Scarus_ghobban", allow_download=True, n=600):
 
 
 def register(B, A):
-    """Similarity (scale + translation, no rotation) putting silhouette B's snout and tail tip on A's."""
+    """Similarity (scale + translation, no rotation) matching B's bounding-box
+    width and centre to A's. (Not a snout/tail-tip landmark registration.)"""
     sa, sb = A[:, 0].max() - A[:, 0].min(), B[:, 0].max() - B[:, 0].min()
     return (B - (B.max(0) + B.min(0)) / 2) * (sa / sb) + (A.max(0) + A.min(0)) / 2
 
 
-def transform_points(x, y, c=0.25):
+def transform_points(x, y, c=0.18):
     """Thompson's Scarus -> Pomacanthus grid: the Cartesian lines become two pencils of coaxial
     circles, which is what the complex map z -> z / (1 - c z) does to them (a Moebius
     transformation: lines go to circles through the image of infinity, 1/c on the axis)."""
@@ -100,7 +101,7 @@ def demo():
     axs[0].set_title(f'Original shape ({what})')
     axs[0].axis('equal')
     axs[1].plot(transformed_x, transformed_y, 'r-')
-    axs[1].set_title('Under the coaxial-circle map z -> z/(1 - cz), c = 0.25 (Pomacanthus-wise)')
+    axs[1].set_title('Under the coaxial-circle map z -> z/(1 - cz), c = 0.18 (Pomacanthus-wise)')
     axs[1].axis('equal')
     plt.show()
 
@@ -175,7 +176,8 @@ def make_gif(output, n_steps=20, fps=10):
         # compare the two shapes rather than their placement
         target = register(P, np.column_stack(coaxial(S[:, 0], S[:, 1], 1.0))) if P is not None else None
         head = ("D'Arcy Thompson 1917: a related form is the same drawing on a deformed grid\n"
-                "solid: a real Scarus ghobban (silhouette of a photograph) · dashed: a real Pomacanthus semicirculatus")
+                "solid: a real Scarus ghobban (silhouette of a photograph) · dashed (coaxial panel only): "
+                "a real Pomacanthus semicirculatus")
     frames = []
     for label, f in FAMILIES:
         ts = np.concatenate([np.linspace(0, 1, n_steps), np.full(fps, 1.0), np.linspace(1, 0, n_steps)[1:]])
@@ -191,7 +193,37 @@ def make_gif(output, n_steps=20, fps=10):
     print(f"Saved animation to {output}  ({len(frames)} frames)")
 
 
+def self_test() -> int:
+    """Deterministic offline checks (Pass N+1: this script previously had no
+    --self-test, so the flag silently launched the network demo). Every
+    deformation family must be the identity at t=0, the Moebius map at c=0
+    must be the identity, and register() must match bounding boxes."""
+    rng = np.random.default_rng(1917)
+    x, y = rng.normal(size=200), rng.normal(size=200)
+    ok = True
+    for label, f in FAMILIES:
+        X, Y = f(x.copy(), y.copy(), 0.0)
+        good = bool(np.allclose(X, x) and np.allclose(Y, y))
+        ok &= good
+        print(f"[{'PASS' if good else 'FAIL'}] {label.split('(')[0].strip()}: identity at t=0")
+    X, Y = transform_points(x, y, c=0.0)
+    good = bool(np.allclose(X, x) and np.allclose(Y, y))
+    ok &= good
+    print(f"[{'PASS' if good else 'FAIL'}] coaxial Moebius map: identity at c=0")
+    A = rng.normal(size=(50, 2)) * [3.0, 1.0] + [1.0, 2.0]
+    B = rng.normal(size=(50, 2)) * [1.0, 2.0] - [2.0, 0.0]
+    R = register(B, A)
+    good = bool(np.isclose(R[:, 0].max() - R[:, 0].min(), A[:, 0].max() - A[:, 0].min())
+                and np.allclose((R.max(0) + R.min(0)) / 2, (A.max(0) + A.min(0)) / 2))
+    ok &= good
+    print(f"[{'PASS' if good else 'FAIL'}] register(): bounding-box width/centre matched")
+    print(f"[{'PASS' if ok else 'FAIL'}] 1917-thompson self-test")
+    return 0 if ok else 1
+
+
 if __name__ == "__main__":
+    if len(sys.argv) >= 2 and sys.argv[1] == "--self-test":
+        raise SystemExit(self_test())
     if len(sys.argv) >= 3 and sys.argv[1] == "--gif":
         make_gif(sys.argv[2])
     else:
