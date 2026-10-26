@@ -55,6 +55,18 @@ class TestPairEquivalenceLoggedClaim(unittest.TestCase):
         self.assertAlmostEqual(pairs["xenopus_tropicalis"]["D_inhibitor_over_D_activator"],
                                1.283, places=3)
 
+    def test_catalog_declares_corrected_relationship(self):
+        # After the 2026-10-26 refutation, catalog.json must carry the
+        # correction in machine-readable form, and its declared size-prior
+        # flags must match the ratios computed from the pinned sequences.
+        cc = self.log["subclaim_C_catalog_consistency"]
+        self.assertTrue(cc["catalog_consistent"], cc)
+        for row in cc["entries"]:
+            if "declared_size_prior_supports_faster_inhibitor" in row:
+                self.assertEqual(row["relationship"],
+                                 "functionally_analogous_not_orthologous", row)
+                self.assertTrue(row["flag_matches_computed"], row)
+
     def test_pair_equivalence_claim_is_refuted_offline(self):
         # The logged claim requires BOTH pairs to pass; zebrafish does not.
         equiv = self.log["subclaim_B_diffusion_equivalence"]

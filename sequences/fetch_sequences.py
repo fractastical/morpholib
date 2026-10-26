@@ -55,9 +55,22 @@ TAXON = {"danio_rerio": 7955, "xenopus_tropicalis": 8364, "drosophila_melanogast
 
 
 def _get(url: str, accept: str) -> str:
-    req = urllib.request.Request(url, headers={**UA, "Accept": accept})
-    with urllib.request.urlopen(req, timeout=30) as r:  # noqa: S310 (fixed public APIs)
-        return r.read().decode("utf-8")
+    # Retry transient 5xx / timeouts: one flaky Ensembl window otherwise
+    # silently degrades sequence_links.json to UniProt-only fallbacks.
+    import time
+    last = None
+    for delay in (0, 3, 10):
+        if delay:
+            time.sleep(delay)
+        try:
+            req = urllib.request.Request(url, headers={**UA, "Accept": accept})
+            with urllib.request.urlopen(req, timeout=30) as r:  # noqa: S310 (fixed public APIs)
+                return r.read().decode("utf-8")
+        except Exception as exc:
+            last = exc
+            if getattr(exc, "code", None) is not None and exc.code < 500:
+                raise
+    raise last
 
 
 def gc_fraction(seq: str) -> float:
@@ -84,6 +97,8 @@ def uniprot_fallback(entry: dict, why_failed: str) -> dict:
     the reviewed UniProt protein, labelled as such -- never silently substituted."""
     sp, sym = entry["species"], entry["gene_symbol"]
     out = {k: entry[k] for k in ("species", "gene_symbol", "pathway", "morphogen_role", "usable_in", "why", "expression_atlas")}
+    if entry.get("pair_equivalence_check"):  # corrected cross-species relationship (2026-10-26 logged test)
+        out["pair_equivalence_check"] = entry["pair_equivalence_check"]
     q = urllib.parse.quote(f"gene_exact:{sym} AND organism_id:{TAXON[sp]} AND reviewed:true")
     hits = json.loads(_get(f"{UNIPROT}/uniprotkb/search?query={q}&fields=accession,length&format=json&size=1", "application/json"))["results"]
     if not hits:
@@ -167,6 +182,8 @@ def fetch_uniprot_state(accession: str) -> dict:
 def resolve_entry(entry: dict) -> dict:
     sp, sym = entry["ensembl_species"], entry["gene_symbol"]
     out = {k: entry[k] for k in ("species", "gene_symbol", "pathway", "morphogen_role", "usable_in", "why", "expression_atlas")}
+    if entry.get("pair_equivalence_check"):  # corrected cross-species relationship (2026-10-26 logged test)
+        out["pair_equivalence_check"] = entry["pair_equivalence_check"]
     try:
         if entry.get("ensembl_id"):  # e.g. WormBase WBGene IDs for C. elegans
             gene = json.loads(_get(f"{ENSEMBL}/lookup/id/{entry['ensembl_id']}", "application/json"))

@@ -152,10 +152,53 @@ def check_orthology(resolved: dict) -> dict:
     return {"tests": tests, "claim_holds": all(t["claim_holds"] for t in tests)}
 
 
+CATALOG = HERE / "catalog.json"
+
+
+def check_catalog_consistency(equiv: dict) -> dict:
+    """Sub-claim C: catalog.json must now declare the corrected relationship.
+
+    Every pair entry must carry pair_equivalence_check with
+    relationship=functionally_analogous_not_orthologous, and its declared
+    size-prior flag must match the ratio computed from the pinned sequences.
+    A future edit that re-introduces an orthology claim, or contradicts the
+    computed ordering, fails here even if the historical claim is forgotten.
+    """
+    entries = {(e["species"], e["gene_symbol"]): e
+               for e in json.loads(CATALOG.read_text())["entries"]}
+    computed = {r["species"]: r["supports_faster_inhibitor"] for r in equiv["pairs"]}
+    rows, ok = [], True
+    for sp, act, inh in PAIRS:
+        for sym in (act, inh):
+            chk = entries.get((sp, sym), {}).get("pair_equivalence_check")
+            if not chk:
+                rows.append({"species": sp, "gene_symbol": sym, "present": False})
+                ok = False
+                continue
+            flag_ok = chk.get("declared_size_prior_supports_faster_inhibitor") == computed[sp]
+            rel_ok = chk.get("relationship") == "functionally_analogous_not_orthologous"
+            rows.append({"species": sp, "gene_symbol": sym, "present": True,
+                         "relationship": chk.get("relationship"),
+                         "declared_size_prior_supports_faster_inhibitor":
+                             chk.get("declared_size_prior_supports_faster_inhibitor"),
+                         "computed_supports_faster_inhibitor": computed[sp],
+                         "flag_matches_computed": flag_ok, "relationship_ok": rel_ok})
+            ok = ok and flag_ok and rel_ok
+    mouse = entries.get(("mus_musculus", "Bmp4"), {})
+    mouse_chk = mouse.get("pair_equivalence_check", {})
+    mouse_ok = ("paralog" in mouse_chk.get("activator_relationship", "")
+                and "ortholog to compare against zebrafish bmp2b" not in mouse.get("why", ""))
+    rows.append({"species": "mus_musculus", "gene_symbol": "Bmp4",
+                 "relationship": mouse_chk.get("relationship"),
+                 "paralog_wording_ok": mouse_ok})
+    return {"entries": rows, "catalog_consistent": ok and mouse_ok}
+
+
 def run(online: bool = False) -> dict:
     resolved = load_resolved()
     hashes = verify_hashes(resolved)
     equiv = check_equivalence(resolved)
+    catalog_check = check_catalog_consistency(equiv)
     log = {
         "schema_version": "pair-equivalence-log-1.0",
         "logged_at": "2026-10-26",
@@ -172,6 +215,7 @@ def run(online: bool = False) -> dict:
         "subclaim_B_diffusion_equivalence": equiv,
         "subclaim_A_orthology": (check_orthology(resolved) if online
                                  else {"status": "UNRESOLVED (run with --online)"}),
+        "subclaim_C_catalog_consistency": catalog_check,
     }
     b_fail = not equiv["all_pairs_pass"]
     a_fail = online and not log["subclaim_A_orthology"].get("claim_holds", False)
@@ -217,7 +261,10 @@ def main(argv=None) -> int:
                   f"{t['predicted_xenopus_ortholog']} | actual {actual} | holds: {t['claim_holds']}")
     else:
         print("  orthology: UNRESOLVED (offline; rerun with --online)")
-    print(f"VERDICT: {log['verdict']}")
+    cc = log["subclaim_C_catalog_consistency"]
+    print(f"  catalog consistency: {cc['catalog_consistent']} "
+          f"({sum(1 for r in cc['entries'] if r.get('present', True))} entries checked)")
+    print(f"VERDICT (original claim): {log['verdict']}")
     for reason in log["refutation_reasons"]:
         print(f"  - {reason}")
     print(f"Log written: {args.log}")
