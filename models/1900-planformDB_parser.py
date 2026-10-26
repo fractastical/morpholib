@@ -1,3 +1,15 @@
+"""DEPRECATED -- superseded by ``2013-lobo-planform-morphology.py`` (issue #1).
+
+This historical parser drew each morphology as the convex hull of its organ
+landmarks (see ``render_morphology_shape`` / ``render_wild_type_base``), which
+discarded the Planform region graph (``Region`` + ``RegionParam`` +
+``RegionsLink``) and collapsed every phenotype onto the same blob. It is kept
+for provenance of the original PlanformDB timeline statistics only; do NOT
+use its morphology renders. The region-graph renderer, with auricles, eyes,
+pharynx and two ventral nerve cords, is::
+
+    python3 models/2013-lobo-planform-morphology.py <planformDB_2.5.0.edb>
+"""
 import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -907,7 +919,10 @@ def plot_time_series(df: pd.DataFrame, title: str = "Innovation Timeline: Experi
 
 if __name__ == "__main__":
     import sys
-    
+
+    print("WARNING: 1900-planformDB_parser.py is DEPRECATED for morphology rendering "
+          "(convex hull of organs; issue #1). Use 2013-lobo-planform-morphology.py instead.")
+
     # Allow command-line argument to override environment variable
     if len(sys.argv) > 1:
         DB_PATH = sys.argv[1]

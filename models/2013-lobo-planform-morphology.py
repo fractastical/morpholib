@@ -392,13 +392,64 @@ def extent(m: Morphology, pad: float = 20.0) -> Tuple[float, float, float, float
     return (pts[:, 0].min() - pad, pts[:, 0].max() + pad, pts[:, 1].min() - pad, pts[:, 1].max() + pad)
 
 
-def silhouette(m: Morphology, res: int = 256, smooth: float = 0.0
+def _radius_in_direction(m: Morphology, rid: int, angle: float) -> float:
+    """Region radius in ``angle`` by circular interpolation of its control radii."""
+    pts = sorted(control_points(m, rid))
+    angs = [p[0] for p in pts] + [pts[0][0] + TWO_PI]
+    rads = [p[1] for p in pts] + [pts[0][1]]
+    a = angle % TWO_PI
+    if a < angs[0]:
+        a += TWO_PI
+        angs = [x + TWO_PI if x < angs[0] else x for x in angs]
+    return float(np.interp(a, angs, rads))
+
+
+def auricle_centres(m: Morphology, rid: int) -> List[Tuple[float, float, float]]:
+    """(x, y, radius) of the two auricle discs for a Head region.
+
+    Species template (issue #1 remediation), *not* PlanformDB data: a wild-type
+    *Schmidtea mediterranea* head is spade-shaped, with auricles at its
+    posterolateral corners. Each Head region therefore gets two discs centred
+    part-way toward its free end and offset laterally to the head's edge, in
+    the head's own frame (free direction from its single link, else away from
+    the centroid of the other regions) -- so a posterior head in a double-head
+    morphology gets correctly oriented auricles too. Rendering only: the
+    decoded morphometrics (`morphometrics`, SDF export) never use this layer.
+    """
+    cx, cy = m.positions[rid]
+    _radii = [r for _, r in control_points(m, rid)]
+    if max(_radii) < 20.0 or min(_radii) < 5.0:
+        return []  # vestigial/degenerate head (e.g. #71 params [60, 0, 60]): discs would be detached dots
+    free = _free_direction(m, rid)
+    if free is None:
+        others = [p for r, p in m.positions.items() if r != rid]
+        vx, vy = cx - np.mean([p[0] for p in others]), cy - np.mean([p[1] for p in others])
+        free = math.atan2(vy, vx) if (vx or vy) else math.pi / 2
+    r_free = _radius_in_direction(m, rid, free)
+    r_lat = _radius_in_direction(m, rid, free + math.pi / 2)
+    ux, uy = math.cos(free), math.sin(free)
+    lx, ly = -uy, ux
+    discs = []
+    for side in (+1.0, -1.0):
+        ax_ = cx + ux * (0.38 * r_free) + side * lx * (0.92 * r_lat)
+        ay_ = cy + uy * (0.38 * r_free) + side * ly * (0.92 * r_lat)
+        discs.append((float(ax_), float(ay_), float(0.38 * r_lat)))
+    return discs
+
+
+def silhouette(m: Morphology, res: int = 256, smooth: float = 0.0,
+               species_template: bool = False
                ) -> Tuple[np.ndarray, Tuple[float, float, float, float]]:
     """Boolean union of the region outlines on a ``res``x``res`` grid.
 
     ``smooth`` (in model units) applies a Gaussian blur and re-thresholds, which
     rounds the small concave notches where neighbouring region blobs meet
     without changing the overall extent appreciably. 0 disables smoothing.
+
+    ``species_template`` layers the *S. mediterranea* auricle discs
+    (`auricle_centres`) onto every Head region before smoothing, giving the
+    rendered body the spade-shaped head of a real specimen. It is off by
+    default so morphometrics stay a pure decode of the Planform graph.
     """
     x0, x1, y0, y1 = extent(m)
     xs = np.linspace(x0, x1, res)
@@ -409,6 +460,14 @@ def silhouette(m: Morphology, res: int = 256, smooth: float = 0.0
     for poly in m.outlines.values():
         mask |= MplPath(poly).contains_points(grid)
     mask = mask.reshape(res, res)
+    if species_template:
+        flat = mask.ravel()
+        for rid, reg in m.regions.items():
+            if reg.type != "Head":
+                continue
+            for ax_, ay_, ar in auricle_centres(m, rid):
+                flat |= (grid[:, 0] - ax_) ** 2 + (grid[:, 1] - ay_) ** 2 <= ar ** 2
+        mask = flat.reshape(res, res)
     if smooth > 0:
         sigma = smooth / ((x1 - x0) / (res - 1))
         mask = gaussian_filter(mask.astype(float), sigma) >= 0.5
@@ -490,9 +549,15 @@ def _gradient_fill(ax, poly: np.ndarray, c_tip: str, c_base: str, direction: Opt
 
 
 def draw_morphology(ax, m: Morphology, show_organs: bool = True, outline_lw: float = 1.6,
-                    smooth: float = 6.0) -> None:
-    """Planform-style cartoon: one smooth body outline, region fills with head/tail fades, organs."""
-    mask, (x0, x1, y0, y1) = silhouette(m, smooth=smooth)
+                    smooth: float = 6.0, species_template: bool = True) -> None:
+    """Planform-style cartoon: one smooth body outline, region fills with head/tail fades, organs.
+
+    With ``species_template`` (default) the outline carries the auricle discs
+    of a real *S. mediterranea* head (see `auricle_centres`); the region fills
+    are clipped to that outline, so the head reads as a spade-shaped head
+    rather than a plain rounded cap.
+    """
+    mask, (x0, x1, y0, y1) = silhouette(m, smooth=smooth, species_template=species_template)
 
     # body outline = (smoothed) union boundary of all regions
     cs = ax.contour(
@@ -510,6 +575,18 @@ def draw_morphology(ax, m: Morphology, show_organs: bool = True, outline_lw: flo
         if clip is not None and len(clip.vertices):
             for art in list(ax.images[before[0]:]) + list(ax.patches[before[1]:]):
                 art.set_clip_path(clip, transform=ax.transData)
+
+    if species_template:
+        # fill the auricle discs (they extend past the decoded head outline)
+        for rid, reg in m.regions.items():
+            if reg.type != "Head":
+                continue
+            for ax_, ay_, ar in auricle_centres(m, rid):
+                disc = Circle((ax_, ay_), ar, facecolor=REGION_COLORS["Head"],
+                              edgecolor="none", zorder=1.25)
+                ax.add_patch(disc)
+                if clip is not None and len(clip.vertices):
+                    disc.set_clip_path(clip, transform=ax.transData)
 
     if not show_organs:
         return
@@ -1105,9 +1182,28 @@ def self_test() -> int:
         dh = morphometrics(morphs[2])
         if dh["n_heads"] < 2:
             fails.append(f"double-head #2 has n_heads={dh['n_heads']}, expected >= 2")
+        # organ sets must distinguish the canonical phenotypes (issue #1)
+        expected_organs = {1: (2, 1, 2), 2: (4, 2, 2), 20: (0, 1, 2), 24: (4, 1, 2)}  # (eyes, pharynges, VNCs)
+        for mid, (eyes, phar, vnc) in expected_organs.items():
+            mm = morphometrics(morphs[mid])
+            if (mm["n_eyes"], mm["n_pharynges"], mm["n_vnc"]) != (eyes, phar, vnc):
+                fails.append(f"#{mid} organs eyes/phar/vnc={(mm['n_eyes'], mm['n_pharynges'], mm['n_vnc'])}, expected {(eyes, phar, vnc)}")
+        # species template: auricles must widen the WT head zone vs. the plain decode
+        def _head_width(mask, bounds):
+            x0, x1, y0, y1 = bounds
+            rows = np.where(mask.any(axis=1))[0]
+            head_rows = rows[int(0.8 * len(rows)):]  # anterior (+y) fifth
+            return float(np.max([mask[r].sum() for r in head_rows]) * (x1 - x0) / mask.shape[1])
+        plain = silhouette(morphs[1], smooth=6.0)
+        templ = silhouette(morphs[1], smooth=6.0, species_template=True)
+        if not _head_width(*templ) > _head_width(*plain) * 1.05:
+            fails.append(f"auricle template does not widen WT head ({_head_width(*templ):.1f} vs plain {_head_width(*plain):.1f})")
+        n_discs = sum(len(auricle_centres(morphs[1], r)) for r, g in morphs[1].regions.items() if g.type == "Head")
+        if n_discs != 2:
+            fails.append(f"WT has {n_discs} auricle discs, expected 2")
         print(f"[{'PASS' if not fails else 'FAIL'}] canonical fixture: WT AP "
               f"{wt['ap_length']} x ML {wt['ml_width']} (aspect {wt['aspect']}), "
-              f"#2 heads={dh['n_heads']}")
+              f"#2 heads={dh['n_heads']}, auricle head width {_head_width(*plain):.0f} -> {_head_width(*templ):.0f}")
     db_env = os.getenv("PLANFORM_DB_PATH")
     if db_env and Path(db_env).is_file():
         digest, size = db_fingerprint(db_env)

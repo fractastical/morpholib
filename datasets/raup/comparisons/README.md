@@ -50,5 +50,17 @@ The script will automatically detect scanned images and display them side-by-sid
 ## Current Status
 
 **Generated:** 2025-01-05  
-**Scanned Images:** Not yet added (placeholders shown)  
+**Scanned Images:** Not yet added (placeholders shown) — the `empirical_*` and
+`paper_figure_*` images in this folder are model-only reconstructions with
+placeholder right-hand panels; they are **not** comparisons against the paper.
+
+**Superseding specimen comparison (issue #1, 2026-10-26):**
+`venv/bin/python morphoeval/issue1_model_vs_reference.py` renders the six
+model panels beside the committed specimen plate
+(`datasets/raup/raup_coiled_shells_specimen.jpg`) in
+`docs/media/raup_model_vs_reference.png`, recovering W/D/T from each mesh
+(<1e-6) and checking the spire/width ranking against the reference taxa.
+The old placeholder generator (`generate_paper_comparisons.py`, which also has
+a stale import path) is retained for provenance only.
+
 **Next Step:** Scan original figures from Raup (1966) paper and add to this folder

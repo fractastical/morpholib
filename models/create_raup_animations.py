@@ -47,9 +47,11 @@ Parameter sets.  The six (W, D, T) panels and the parameter ranges are read from
 datasets/raup/variables.json.  They are *illustrative* points in the morphospace chosen so
 that each descriptive name (planispiral, turreted, evolute disc, conical, high-spired,
 globose) is geometrically true, and labelled with the kind of shell they resemble (cf.
-Nautilus, Turritella, ...); they are not measurements Raup published for those taxa, and the
-panels are not compared with specimens here.  The 2025 values they replace, and why, are
-recorded in variables.json under empirical_shells_provenance.
+Nautilus, Turritella, ...); they are not measurements Raup published for those taxa.
+They *are* compared with specimen photographs, as morphospace-region/ranking
+checks (not fits), by morphoeval/issue1_model_vs_reference.py, which writes
+docs/media/raup_model_vs_reference.png (issue #1).  The 2025 values they
+replace, and why, are recorded in variables.json under empirical_shells_provenance.
 
 Outputs (git-ignored; docs/media/raup_shell_coiling.gif is the downsized copy):
     raup_shell_animation.gif         six forms, side view then overhead, rotating

@@ -105,6 +105,16 @@ def draw_morphology_horizontal(ax, lobo, m, xlim=(-340, 340), ylim=(-220, 220), 
             )
         )
 
+    # Auricle species template (issue #1): S. mediterranea spade-shaped head,
+    # discs from the flagship renderer, transformed with the same rotation.
+    for rid, reg in m.regions.items():
+        if reg.type != "Head":
+            continue
+        for ax_, ay_, ar in lobo.auricle_centres(m, rid):
+            ch = to_horiz_pts(np.array([[ax_, ay_]]))[0]
+            ax.add_patch(Circle((ch[0], ch[1]), ar, facecolor=lobo.REGION_COLORS["Head"],
+                                edgecolor="none", alpha=0.92, zorder=2.25))
+
     if show_organs:
         for o in sorted(m.organs, key=lambda o: {"VNC": 0, "Phar.": 1, "Brain": 2, "Eye": 3}[o.kind]):
             rcx, rcy = m.positions[o.region]
