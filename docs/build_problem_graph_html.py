@@ -309,6 +309,39 @@ main{max-width:1000px;margin:0 auto;padding:18px}h1{font-size:24px}.card{backgro
 </main></body></html>
 """
 
+def summary_cards(data: dict, pred: dict | None) -> str:
+    """Headline counts at the top of the graph, computed from the graph data
+    itself (never hand-typed, so they cannot drift from the nodes below).
+    'Definitively solved' = graph status solved/proved; the core graph carries
+    no calibrated per-node confidence, so no 90% figure is invented for it --
+    the only literal >=90% confidences in the record are the registered
+    resolvability confidences in predictions/, counted separately."""
+    nodes = [n for n in data["NODES"] if n["status"] != "root"]
+    attempts = [e for e in data["EDGES"] if e["from"] != "root"]
+    solved = [n for n in nodes if n["status"] == "solved"]
+    refuted = [n for n in nodes if n["status"] == "refuted"]
+    rest = len(nodes) - len(solved) - len(refuted)
+    agents = len({e["agent"] for e in attempts})
+    pred_html = ""
+    if pred:
+        conf90 = [p for p in pred["predictions"]
+                  if p["outcome"] == "confirmed" and p["res_confidence"] >= 0.90]
+        confirmed = sum(p["outcome"] == "confirmed" for p in pred["predictions"])
+        ids = ", ".join(f"{p['id']} ({p['res_confidence']:.2f})" for p in conf90)
+        pred_html = (f'<p class="small" style="margin-top:8px"><b>Literal ≥90%:</b> '
+                     f'{len(conf90)} of {len(pred["predictions"])} registered predictions were confirmed at a '
+                     f'registered resolvability confidence ≥0.90 — {ids} '
+                     f'({confirmed} confirmed overall). That confidence grades whether current data could '
+                     f'<i>decide</i> the prediction, not the biology itself.</p>')
+    return f"""<div class="grid4" style="margin-top:10px">
+<div class="card"><div class="small mut">Problems attempted</div><div class="stat">{len(nodes)}</div><div class="small mut">graph nodes, umbrella root excluded</div></div>
+<div class="card"><div class="small mut">Solution attempts tried</div><div class="stat">{len(attempts)}</div><div class="small mut">recorded agent attempts (edges) by {agents} agents</div></div>
+<div class="card"><div class="small mut">Shown definitively</div><div class="stat" style="color:var(--green)">{len(solved)}</div><div class="small mut">status solved / proved in the graph</div></div>
+<div class="card"><div class="small mut">Definitively refuted</div><div class="stat" style="color:#C04848">{len(refuted)}</div><div class="small mut">pruned branches, kept not deleted · {rest} partial / open / registered</div></div>
+</div>
+<div class="card"><b>How to read “shown definitively”.</b> <span class="small">The core graph records no calibrated per-node confidence, so the {len(solved)} above is its <i>solved / proved</i> status bucket — proof-grade or hash-locked-score-grade resolution as documented per node — not a 90% posterior, and no such number is invented here.</span>{pred_html}</div>"""
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--canvas", type=Path, default=DEFAULT_CANVAS)
@@ -328,6 +361,7 @@ def main() -> None:
     print(f"self-checks passed: {len(data['NODES'])} nodes, {len(data['EDGES'])} edges, "
           f"{len(data['DELPHI'])} Delphi prizes (weights=100, weighted totals and prior x BF posteriors verified)")
     pred = load_predictions()
+    summary_html = summary_cards(data, pred)  # core-graph counts, before predictions are merged in
     if pred:  # integrate predictions into the graph itself, then re-validate the merged graph
         data["AGENTS"]["wonder"] = {"name": "Muse Wonder", "role": "Protein-state pilot, prediction registry, resolution scoring (this branch of work)"}
         n0, e0 = prediction_graph_nodes(pred)
@@ -336,7 +370,8 @@ def main() -> None:
         if errs:
             sys.exit("REFUSING TO BUILD — merged graph (with predictions) failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
         print(f"integrated predictions into graph: +{len(n0)} nodes, +{len(e0)} edges (hub -> 3 organisms -> {len(pred['predictions'])} predictions + meta)")
-    html = TEMPLATE.replace("/*__DATA__*/", "const DATA = " + json.dumps(data) + ";")
+    html = TEMPLATE.replace("/*__SUMMARY__*/", summary_html)
+    html = html.replace("/*__DATA__*/", "const DATA = " + json.dumps(data) + ";")
     html = html.replace("/*__PRED__*/", "const PRED = " + json.dumps(pred) + ";")
     a.out.write_text(html)
     print(f"wrote {a.out} ({len(html)/1024:.0f} KiB, {len(data['NODES'])} nodes, {len(data['EDGES'])} edges, "
@@ -379,6 +414,8 @@ a{color:var(--acc)}
 </style></head><body><main>
 <h1>Problem graph — every problem attempted, including the branches that failed</h1>
 <p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Node dot = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. Click a node to select it; <b>double-click any node to open its inspector</b> — double-clicking the Bayesian Delphi panel (or any Rule 30 prize) opens the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
+
+/*__SUMMARY__*/
 
 <div class="card"><b>Agent legend — who attempted what</b> <span class="badge" style="background:var(--acc)">edge colour = agent</span>
 <div class="row" id="agentbtns" style="margin-top:8px"></div>
