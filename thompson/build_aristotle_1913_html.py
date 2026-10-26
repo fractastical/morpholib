@@ -377,8 +377,12 @@ def main():
                 item_txt = raw_lines[i].strip()[2:].strip()
                 is_conn = "Morpholib connection" in item_txt
                 li_cls = ' class="morpholib-conn" data-layer="research"' if is_conn else ""
-                ul_items.append(f"<li{li_cls}>{format_inline(item_txt)}</li>")
                 i += 1
+                # Attach indented continuation lines (e.g. source URLs) to the same <li>
+                while i < n and raw_lines[i].startswith("  ") and raw_lines[i].strip():
+                    item_txt += " <br/>" + raw_lines[i].strip()
+                    i += 1
+                ul_items.append(f"<li{li_cls}>{format_inline(item_txt)}</li>")
             body_parts.append("<ul>\n" + "\n".join(ul_items) + "\n</ul>")
             continue
 
@@ -397,8 +401,42 @@ def main():
 
     toc_html = " · ".join(
         f'<a href="#{sid}">{html.escape(stitle)}</a>' for sid, stitle in toc_items
-    )
+    ) + ' · <a href="#faq-section">FAQ &amp; Key Questions</a>'
     json_ld_str = build_json_ld()
+
+    faq_visible_html = """
+    <hr />
+    <section id="faq-section" class="faq-section" aria-labelledby="faq-heading">
+      <h2 id="faq-heading" class="editorial-heading">FREQUENTLY ASKED QUESTIONS &amp; KEY TAKEAWAYS</h2>
+      <details class="faq-item" open>
+        <summary>1. Where did Aristotle conduct his main marine biology observations according to D’Arcy Wentworth Thompson?</summary>
+        <p>In his 1913 Oxford lecture <em>On Aristotle as a Biologist</em>, D’Arcy Wentworth Thompson demonstrates from internal geographical evidence in the <em>Historia Animalium</em> that Aristotle conducted a pivotal cluster of his marine zoological studies at the sheltered <strong>Lagoon of Pyrrha</strong> (modern <strong>Gulf of Kalloni</strong>) on the island of <strong>Lesbos (Mitylene)</strong> between 345 and 342 BCE—before he went to Macedon to tutor Alexander and ten years before he founded the Lyceum in Athens.</p>
+      </details>
+      <details class="faq-item" open>
+        <summary>2. What zoological discoveries of Aristotle were later confirmed by modern anatomists like Cuvier, Steno, and Johannes Müller?</summary>
+        <p>Thompson highlights three famous anatomical and embryological cases: <strong>(a)</strong> the specialized reproductive <em>hectocotylus</em> arm of male cephalopods and the cephalic yolk-sac of the cuttlefish (<em>Sepia</em>) embryo; <strong>(b)</strong> the yolk-sac placenta (<em>placenta vitellina</em>) of the smooth dogfish <em>Mustelus laevis</em> (γαλεὸς λεῖος), rediscovered by Nicolaus Steno in 1673 and celebrated by Johannes Müller in 1842; and <strong>(c)</strong> the day-by-day embryology of the chick in the egg, beginning with the leaping point (<em>punctum saliens</em>) of the beating heart on the third day.</p>
+      </details>
+      <details class="faq-item" open>
+        <summary>3. How does D’Arcy Thompson contrast Herbert Spencer and Aristotle as thinkers about living form?</summary>
+        <p>Thompson argues that <strong>Herbert Spencer</strong> approached biology with the training and habits of a railway and bridge engineer—focusing on mechanical causation, stress, strain, and scaling limits ($\propto L^2$ bone cross-section versus $\propto L^3$ gravitational bulk)—whereas <strong>Aristotle</strong> was first and foremost a field naturalist and comparative anatomist whose study of living organization, developmental stages, and biological capacities shaped his psychology (<em>De Anima</em>) and philosophy.</p>
+      </details>
+      <details class="faq-item" open>
+        <summary>4. How does Thompson’s 1913 lecture connect to On Growth and Form (1917) and modern morphogenesis research?</summary>
+        <p>The 1913 lecture bridges Spencer’s physical mechanics (Roux’s <em>Entwicklungsmechanik</em> and Culmann’s stress trajectories) with Aristotle’s focus on organized wholes. In <em>On Growth and Form</em> (1917), Thompson operationalizes this through coordinate transformations of biological outlines. In modern computational morphometrics and bioelectric patterning (e.g., Pai et al. 2012 on <em>Xenopus</em> transmembrane voltage $V_{\\text{mem}}$), this requires separating representation choice (600-point outlines vs. 17 skeletal landmarks), contour provenance, sampled numerical Jacobian checks, and experimental perturbation.</p>
+      </details>
+    </section>
+    <footer class="crosslinks-footer" role="contentinfo">
+      <strong>Explore Related Modules in Infinite Morphospace (<code>morpholib</code>):</strong>
+      <div class="crosslinks-grid">
+        <a href="index.html">🏛️ Aristotelian 10×10 Morphospace Atlas (116 Verified Models)</a>
+        <a href="EXPLAINED_FOR_EVERYONE.md">🐟 Visual Guide: Resolving Thompson’s 1917 Fish Paradox Across 10,303 Species</a>
+        <a href="bioelectricity/index.html">⚡ Interactive Bioelectricity &amp; Thompson Coordinate Sandbox</a>
+        <a href="bioelectricity/sorting-morphogenesis.html">🧬 Self-Sorting Cells &amp; Causal Emergence 2.0 Lab</a>
+        <a href="bioelectricity/galvani-interactive.html">🐸 Galvani (1791) Bioelectricity &amp; Live Animated Twitch Lab</a>
+        <a href="substack_levin_latent_space_article.html">📄 Testing Michael Levin’s Latent Platonic Space Claims</a>
+      </div>
+    </footer>
+    """
 
     html_doc = f"""<!DOCTYPE html>
 <html lang="en" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">
@@ -686,6 +724,60 @@ def main():
     li {{
       margin-bottom: 8px;
     }}
+    .faq-section {{
+      margin-top: 36px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }}
+    details.faq-item {{
+      background: #efe9d8;
+      border: 1px solid var(--gold-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 12px 0;
+    }}
+    details.faq-item summary {{
+      font-weight: 700;
+      color: #1c1917;
+      cursor: pointer;
+      font-size: 0.96rem;
+    }}
+    details.faq-item p {{
+      margin: 10px 0 4px 0;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: #292524;
+      text-align: left;
+    }}
+    footer.crosslinks-footer {{
+      margin-top: 38px;
+      padding: 18px 20px;
+      background: #0b1325;
+      color: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid #38bdf8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 0.9rem;
+    }}
+    .crosslinks-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }}
+    .crosslinks-grid a {{
+      color: #7dd3fc;
+      text-decoration: none;
+      background: #16223b;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #263554;
+      font-weight: 600;
+      font-size: 0.84rem;
+    }}
+    .crosslinks-grid a:hover {{
+      border-color: #facc15;
+      color: #fef08a;
+    }}
     body[data-view="research"] [data-layer="student"] {{
       display: none !important;
     }}
@@ -719,6 +811,7 @@ def main():
       <strong>Contents &amp; Quick Jump:</strong> {toc_html}
     </nav>
     {chr(10).join(body_parts)}
+    {faq_visible_html}
   </main>
 
   <script>
