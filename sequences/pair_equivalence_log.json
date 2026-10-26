@@ -1,0 +1,84 @@
+{
+  "schema_version": "pair-equivalence-log-1.0",
+  "logged_at": "2026-10-26",
+  "claim_under_test": "Xenopus bmp4/nog give orthologs of the same pair as zebrafish bmp2b/chd, so diffusion priors can be compared across species.",
+  "claim_source": "sequences/README.md, 'The curated panel' (Turing / reaction-diffusion pairs)",
+  "evidence_basis": {
+    "sequences": "sequences/sequence_links.json + sequences/cache/*.fasta (SHA-256 pinned)",
+    "taxon_ids": {
+      "danio_rerio": 7955,
+      "xenopus_tropicalis": 8364
+    },
+    "orthology_source": "Ensembl Compara REST (live)"
+  },
+  "hash_verification": {
+    "all_verified": true,
+    "n": 17
+  },
+  "subclaim_B_diffusion_equivalence": {
+    "pairs": [
+      {
+        "species": "danio_rerio",
+        "activator": "bmp2b",
+        "inhibitor": "chd",
+        "activator_aa": 411,
+        "inhibitor_aa": 940,
+        "activator_accession": "ENSDARG00000041430",
+        "inhibitor_accession": "O57472",
+        "D_inhibitor_over_D_activator": 0.759,
+        "supports_faster_inhibitor": false
+      },
+      {
+        "species": "xenopus_tropicalis",
+        "activator": "bmp4",
+        "inhibitor": "nog",
+        "activator_aa": 469,
+        "inhibitor_aa": 222,
+        "activator_accession": "ENSXETG00000008620",
+        "inhibitor_accession": "ENSXETG00000043161",
+        "D_inhibitor_over_D_activator": 1.2831,
+        "supports_faster_inhibitor": true
+      }
+    ],
+    "all_pairs_pass": false
+  },
+  "subclaim_A_orthology": {
+    "tests": [
+      {
+        "gene": "danio_rerio bmp2b",
+        "gene_id": "ENSDARG00000041430",
+        "predicted_xenopus_ortholog": "ENSXETG00000008620",
+        "predicted_symbol": "bmp4",
+        "actual_homologies": [
+          {
+            "type": "ortholog_one2many",
+            "target_id": "ENSXETG00000005519",
+            "target_symbol": "bmp2"
+          }
+        ],
+        "claim_holds": false
+      },
+      {
+        "gene": "danio_rerio chd",
+        "gene_id": null,
+        "predicted_xenopus_ortholog": "ENSXETG00000043161",
+        "predicted_symbol": "nog",
+        "actual_homologies": [
+          {
+            "type": "ortholog_one2one",
+            "target_id": "ENSXETG00000017290",
+            "target_symbol": "chrd"
+          }
+        ],
+        "query_error": null,
+        "claim_holds": false
+      }
+    ],
+    "claim_holds": false
+  },
+  "verdict": "REFUTED",
+  "refutation_reasons": [
+    "diffusion ordering fails for: danio_rerio (D_inhibitor/D_activator <= 1 under the repo size prior)",
+    "Ensembl Compara ortholog targets are not the catalog bmp4/nog genes (paralog / non-homolog substitution)"
+  ]
+}
