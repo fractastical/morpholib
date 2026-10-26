@@ -1,0 +1,113 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix mlt: <https://w3id.org/morpholib/thompson/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/provenance> {
+    <https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/assertion> prov:wasAttributedTo <https://github.com/fractastical/morpholib/blob/main/nanopubs/thompson_1917_process_to_nanopub.py> ;
+        prov:wasGeneratedBy <https://github.com/fractastical/morpholib/commit/11a5328e3b223608984fe13f7679647803f688fd> .
+
+    <https://github.com/fractastical/morpholib/commit/11a5328e3b223608984fe13f7679647803f688fd> a prov:Activity ;
+        rdfs:label "Thompson 1917 process-nanopub generation at morpholib commit 11a5328e3b22 (working-tree artifacts pinned by SHA-256 in the assertion)" ;
+        prov:endedAtTime "2026-10-26"^^xsd:date ;
+        prov:used <https://archive.org/details/ongrowthform1917thom>,
+            <https://github.com/fractastical/morpholib/blob/main/nanopubs/thompson_1917_process_to_nanopub.py> .
+
+    <https://github.com/fractastical/morpholib/blob/main/nanopubs/thompson_1917_process_to_nanopub.py> a prov:SoftwareAgent ;
+        rdfs:label "Thompson 1917 claim-validation process: claim registry -> validation assessment -> dataset-existence scout -> loop queue -> MorphoEval loop" .
+}
+
+<https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/Head> {
+    <https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/> a np:Nanopublication ;
+        np:hasAssertion <https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/assertion> ;
+        np:hasProvenance <https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/provenance> ;
+        np:hasPublicationInfo <https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/pubinfo> .
+}
+
+<https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/assertion> {
+    <https://w3id.org/morpholib/thompson/process/1917-claim-validation-workflow> a prov:Plan,
+            mlt:ClaimValidationWorkflow ;
+        rdfs:label "Process for validating every claim in Thompson (1917) On Growth and Form: citation -> validation assessment -> dataset-existence scout -> loop queue -> MorphoEval loop" ;
+        mlt:dateOfClaimsValidated "1917"^^xsd:gYear ;
+        mlt:failureMode "DATASET_MISMATCH: if the scouted dataset does not match the claim's species/variables, the loop stops and reports mismatch instead of fitting an analogue and claiming a verdict. Analogues must be labelled as such.",
+            "UNPROBED is not 'no dataset': a failed/rate-limited probe (e.g. Dryad HTTP 429) is recorded as UNPROBED and re-probed by the loop with throttling and caching." ;
+        mlt:hasProcessStep <https://w3id.org/morpholib/thompson/process/step1-claim-citation>,
+            <https://w3id.org/morpholib/thompson/process/step2-validation-assessment>,
+            <https://w3id.org/morpholib/thompson/process/step3-dataset-existence-scout>,
+            <https://w3id.org/morpholib/thompson/process/step4-loop-queueing>,
+            <https://w3id.org/morpholib/thompson/process/step5-loop-execution> ;
+        mlt:leafToPrintedPageRule "printed_page = IA leaf - 20 (checked: leaf 769 = p. 749)" ;
+        mlt:mergeBackRule "Loops write only new files and a per-claim result.json; a human merges verdicts back into thompson/thompson_1917_claims.json. Loops must not edit the registry." ;
+        mlt:nClaims 59 ;
+        mlt:nDoneRepo 9 ;
+        mlt:nFullLoop 22 ;
+        mlt:nHumanRequired 5 ;
+        mlt:nInRepoDatasets 15 ;
+        mlt:nLitNoDirectTest 30 ;
+        mlt:nLitPartiallyRefuted 5 ;
+        mlt:nLitSuperseded 4 ;
+        mlt:nLitSupported 6 ;
+        mlt:nLoopQueueSlots 47 ;
+        mlt:nLoopWithSeed 25 ;
+        mlt:nPartialRepo 13 ;
+        mlt:nPublicScriptable 22 ;
+        mlt:nUntested 21 ;
+        mlt:sourceEdition "Thompson, D.W. (1917) On Growth and Form, 1st edition, Cambridge University Press (not the 1942 2nd edition or 1961 abridgement)" ;
+        mlt:sourceFullTextSha256 "1ba78d3708fba8c8cf1b819cf951dad72ccb0ac34fb3dd13e5c23745b68f9ff0" ;
+        mlt:sourceInternetArchiveId "ongrowthform1917thom" .
+
+    <https://github.com/fractastical/morpholib/blob/main/thompson/thompson_1917_dataset_audit.json> a prov:Entity ;
+        rdfs:label "thompson/thompson_1917_dataset_audit.json (repo artifact)" ;
+        mlt:bytes 96343 ;
+        mlt:sha256 "a0bc797767654ca4e951b1b3683a773923448b02124a61259e89cccd7a071f1a" .
+
+    <https://github.com/fractastical/morpholib/blob/main/thompson/thompson_1917_loop_queue.yaml> a prov:Entity ;
+        rdfs:label "thompson/thompson_1917_loop_queue.yaml (repo artifact)" ;
+        mlt:bytes 51327 ;
+        mlt:sha256 "1d017aa92fb9cf889af47a1a631a328e1f204c1e12b930db1839b482c6f44d61" .
+
+    <https://w3id.org/morpholib/thompson/process/step5-loop-execution> a mlt:ProcessStep ;
+        rdfs:label "Step 5 — Loop execution and audit (per claim)" ;
+        dcterms:description "MorphoEval 12-step loop: fetch+SHA-pin dataset, fit, --self-test, rubric audit, independent measurement, KG/nanopub of the RESULT, linking back to the claim's process-instance nanopub." ;
+        mlt:followsStep <https://w3id.org/morpholib/thompson/process/step4-loop-queueing> .
+
+    <https://github.com/fractastical/morpholib/blob/main/thompson/thompson_1917_claims.json> a prov:Entity ;
+        rdfs:label "thompson/thompson_1917_claims.json (repo artifact)" ;
+        mlt:bytes 59402 ;
+        mlt:sha256 "4bba069cf816d2b1e4e97a9d4498cce183ab166a76b66ffc2de5b616d3980261" .
+
+    <https://w3id.org/morpholib/thompson/process/step1-claim-citation> a mlt:ProcessStep ;
+        rdfs:label "Step 1 — Claim citation (Pass 1)" ;
+        dcterms:description "Extract each distinct testable assertion from Thompson (1917, 1st ed.) with chapter, printed pages (IA leaf - 20) and figures; date_made=1917 on every row; OCR-verify chapter/figure anchors against the pinned IA full text." ;
+        mlt:producesArtifact <https://github.com/fractastical/morpholib/blob/main/thompson/thompson_1917_claims.json> .
+
+    <https://w3id.org/morpholib/thompson/process/step2-validation-assessment> a mlt:ProcessStep ;
+        rdfs:label "Step 2 — Validation assessment (Pass 2)" ;
+        dcterms:description "Score each claim against repo artifacts: status (DONE_REPO/PARTIAL_REPO/DONE_ELSEWHERE/UNTESTED/NOT_TESTABLE_AS_STATED), verdict where one exists, method, data needed, blockers, effort in person-days." ;
+        mlt:followsStep <https://w3id.org/morpholib/thompson/process/step1-claim-citation> ;
+        mlt:producesArtifact <https://github.com/fractastical/morpholib/blob/main/thompson/thompson_1917_claims.json> .
+
+    <https://w3id.org/morpholib/thompson/process/step3-dataset-existence-scout> a mlt:ProcessStep ;
+        rdfs:label "Step 3 — Dataset-existence scout" ;
+        dcterms:description "Probe local repo paths, Dryad API v2 (throttled, cached; failures recorded as UNPROBED, never as 'no dataset'), Wikimedia Commons, and the digitise-Thompson's-own-1917-plates fallback. Emit existence class + automation tier per claim." ;
+        mlt:followsStep <https://w3id.org/morpholib/thompson/process/step2-validation-assessment> ;
+        mlt:producesArtifact <https://github.com/fractastical/morpholib/blob/main/thompson/thompson_1917_dataset_audit.json> .
+
+    <https://w3id.org/morpholib/thompson/process/step4-loop-queueing> a mlt:ProcessStep ;
+        rdfs:label "Step 4 — Loop queueing" ;
+        dcterms:description "Turn every FULL_LOOP/LOOP_WITH_SEED claim into a campaign-compatible slot plus a 12-step cloud-loop prompt with the claim override (dataset verification, DATASET_MISMATCH stop, result.json merge-back)." ;
+        mlt:followsStep <https://w3id.org/morpholib/thompson/process/step3-dataset-existence-scout> ;
+        mlt:producesArtifact <https://github.com/fractastical/morpholib/blob/main/thompson/thompson_1917_loop_queue.yaml> .
+}
+
+<https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/pubinfo> {
+    <https://orcid.org/0009-0007-4948-9192> rdfs:label "Joel Dietz" .
+
+    <https://w3id.org/morpholib/thompson/np/process-1917-claim-validation-workflow/> dcterms:created "2026-10-26"^^xsd:date ;
+        dcterms:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dcterms:isPartOf <https://github.com/fractastical/morpholib/blob/main/docs/THOMPSON_1917_DATASET_EXISTENCE.md> ;
+        dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> .
+}
+

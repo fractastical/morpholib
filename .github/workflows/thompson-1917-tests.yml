@@ -1,0 +1,37 @@
+name: Thompson 1917 pipeline tests
+
+# Guards the dated-claim pipeline: claim registry (all 1917) <-> literature
+# counterclaims <-> dataset audit <-> loop queue <-> nanopubs/manifests.
+# Hermetic: no network calls, no signing, no publishing.
+
+on:
+  push:
+    paths:
+      - "thompson/**"
+      - "nanopubs/thompson_1917_*.py"
+      - "nanopubs/thompson_predictions/**"
+      - "docs/THOMPSON_1917_*.md"
+      - "tests/**"
+      - "pytest.ini"
+      - ".github/workflows/thompson-1917-tests.yml"
+  pull_request:
+    paths:
+      - "thompson/**"
+      - "nanopubs/thompson_1917_*.py"
+      - "nanopubs/thompson_predictions/**"
+      - "docs/THOMPSON_1917_*.md"
+      - "tests/**"
+      - "pytest.ini"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install minimal test dependencies
+        run: pip install pytest rdflib
+      - name: Run Thompson 1917 tests
+        run: python -m pytest tests/ -q
