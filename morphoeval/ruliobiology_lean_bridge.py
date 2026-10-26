@@ -150,9 +150,24 @@ def cross_check(n_random: int, cap: int, rng_seed: int) -> dict:
 # --------------------------------------------------------------------------- #
 # Drawing: large cells, hairline borders, quiet palette
 # --------------------------------------------------------------------------- #
-PAPER = "#f7f3ea"
-PALETTE = ["#f7f3ea", "#b23a2f", "#4f7f52", "#5a4a7a", "#c9962b"]   # void, red, green, purple, gold
-BORDER = "#f7f3ea"
+PAPER = "#ffffff"
+PALETTE = ["#ffffff", "#c8553d", "#4f8a6b", "#6c5b7b", "#e0a93c"]   # void, red, green, purple, gold
+INK = "#2b2b2b"
+INK_SOFT = "#8a8a8a"
+RULE = "#d9d9d9"
+
+
+def _rgb(grid: np.ndarray) -> np.ndarray:
+    from matplotlib.colors import to_rgb
+    lut = np.array([to_rgb(c) for c in PALETTE])
+    return lut[grid]
+
+
+def _quiet(ax) -> None:
+    ax.set_xticks([]); ax.set_yticks([])
+    ax.set_facecolor(PAPER)
+    for s in ax.spines.values():
+        s.set_visible(False)
 
 
 def draw_cells(ax, grid: np.ndarray, border: float = 0.12) -> None:
@@ -170,62 +185,120 @@ def draw_cells(ax, grid: np.ndarray, border: float = 0.12) -> None:
     ax.set_xlim(0, w)
     ax.set_ylim(h, 0)
     ax.set_aspect("equal")
-    ax.set_facecolor(PAPER)
-    ax.set_xticks([]); ax.set_yticks([])
-    for s in ax.spines.values():
-        s.set_visible(False)
+    _quiet(ax)
 
 
-def render_showcase(lineage: dict, cap: int, out: pathlib.Path, n_details: int = 3,
-                    detail_steps: int = 110) -> pathlib.Path:
-    """One organism: whole body on the left, `n_details` zoomed windows on the right,
-    fitness trace across the top."""
+def render_showcase(lineage: dict, cap: int, out: pathlib.Path, n_tiles: int = 4,
+                    tile: int = 40, cell_px: float = 3.0, tile_cell_px: float = 8.5,
+                    dpi: int = 150) -> pathlib.Path:
+    """A plate: the whole organism in vertical strips at a fixed cell size, a row of
+    equal square detail tiles at a larger cell size, a sparkline of the lineage's
+    fitness, and a one-line caption. No axes, ticks or frames."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     champ = lean_develop(lineage["genome"], cap)
-    grid = stages_to_grid(champ["stages"])
+    stages = champ["stages"]
+    grid = stages_to_grid(stages)
     h, w = grid.shape
+    axis_col = -min(s["offset"] for s in stages)          # column of the seed cell
 
-    fig = plt.figure(figsize=(16, 15), facecolor=PAPER)
-    gs = fig.add_gridspec(1 + n_details, 2, width_ratios=[1, 1.9],
-                          height_ratios=[0.9] + [3.0] * n_details, hspace=0.12, wspace=0.04,
-                          left=0.04, right=0.98, top=0.95, bottom=0.02)
+    # --- geometry (inches) ---------------------------------------------------
+    cell = cell_px / dpi
+    tcell = tile_cell_px / dpi
+    n_strips = max(1, int(round(np.sqrt(1.6 * h / w))))  # strip grid ≈ 16:10
+    strip_h = -(-h // n_strips)
+    gap, margin = 0.30, 0.55
+    strips_w_in = n_strips * w * cell + (n_strips - 1) * gap
+    strips_h_in = strip_h * cell
+    tile_in = tile * tcell
+    tiles_w_in = n_tiles * tile_in + (n_tiles - 1) * gap
+    content_w = max(strips_w_in, tiles_w_in)
+    title_h, spark_h, label_h, caption_h = 0.50, 0.55, 0.22, 0.30
+    fig_w = content_w + 2 * margin
+    fig_h = (margin + title_h + spark_h + 0.35 + label_h + strips_h_in + 0.45
+             + label_h + tile_in + caption_h + margin)
 
-    ax = fig.add_subplot(gs[0, :])
+    fig = plt.figure(figsize=(fig_w, fig_h), facecolor=PAPER)
+    X = lambda x_in: x_in / fig_w                         # inches -> figure fraction
+    Y = lambda y_in: 1 - y_in / fig_h                     # from the top
+    y = margin
+
+    # --- title ----------------------------------------------------------------
+    n_breaks = len(lineage["breakthroughs"]) - 1
+    fig.text(X(margin), Y(y), "Rulioorganism", fontsize=13, color=INK, ha="left", va="top")
+    fig.text(X(margin), Y(y + 0.26),
+             f"symmetric 5-colour cellular automaton · {len(lineage['trace'])} point mutations from the null rule · "
+             f"{n_breaks} breakthroughs · lifetime {champ['lifetime']} · width {w}",
+             fontsize=8.5, color=INK_SOFT, ha="left", va="top")
+    y += title_h
+
+    # --- sparkline --------------------------------------------------------------
+    ax = fig.add_axes([X(margin), Y(y + spark_h), X(content_w), spark_h / fig_h])
     trace = lineage["trace"]
-    ax.step(range(1, len(trace) + 1), trace, where="post", color="#333", lw=1.2)
+    ax.step(range(1, len(trace) + 1), trace, where="post", color=INK, lw=0.9)
     for b in lineage["breakthroughs"][1:]:
-        ax.plot(b["step"], b["fitness"], "o", color=PALETTE[1], ms=3.5)
-    ax.set_facecolor(PAPER)
-    ax.set_xlabel("point mutation", fontsize=9)
-    ax.set_ylabel("lifetime", fontsize=9)
-    ax.tick_params(labelsize=8)
-    for s in ("top", "right"):
-        ax.spines[s].set_visible(False)
-    ax.set_title(f"lifetime {champ['lifetime']}, width {w}, {len(lineage['breakthroughs']) - 1} breakthroughs "
-                 f"in {len(trace)} mutations from the null rule\ngenome {lineage['genome']}",
-                 fontsize=9, loc="left", family="monospace")
+        ax.plot(b["step"], b["fitness"], "o", color=PALETTE[1], ms=3, mec=PAPER, mew=0.6)
+    ax.set_xlim(0, len(trace) * 1.04)
+    ax.set_ylim(-0.04 * max(trace), 1.15 * max(trace))
+    ax.text(len(trace) * 1.005, trace[-1], f"{trace[-1]}", fontsize=7.5, color=INK, va="center")
+    ax.text(0, 1.12 * max(trace), "lifetime fitness along the lineage, one step per point mutation",
+            fontsize=7.5, color=INK_SOFT, va="top")
+    ax.axhline(0, color=RULE, lw=0.6)
+    _quiet(ax)
+    y += spark_h + 0.35
 
-    # whole body
-    ax_body = fig.add_subplot(gs[1:, 0])
-    draw_cells(ax_body, grid, border=0.0)
-    ax_body.set_title("whole organism", fontsize=10)
+    # --- body in strips --------------------------------------------------------------
+    x0 = margin + (content_w - strips_w_in) / 2
+    for i in range(n_strips):
+        t0, t1 = i * strip_h, min(h, (i + 1) * strip_h)
+        sub = np.zeros((strip_h, w), dtype=np.int8)
+        sub[: t1 - t0] = grid[t0:t1]
+        left = x0 + i * (w * cell + gap)
+        fig.text(X(left), Y(y), f"steps {t0}–{t1}", fontsize=7.5, color=INK_SOFT, ha="left", va="top")
+        ax = fig.add_axes([X(left), Y(y + label_h + strips_h_in), (w * cell) / fig_w, strips_h_in / fig_h])
+        ax.imshow(_rgb(sub), interpolation="nearest", aspect="auto")
+        _quiet(ax)
+    y += label_h + strips_h_in + 0.45
 
-    # detail windows, evenly spaced through life
-    starts = [int(h * f) for f in np.linspace(0.08, 0.82, n_details)]
-    for i, t0 in enumerate(starts):
-        t1 = min(h, t0 + detail_steps)
-        sub = grid[t0:t1]
-        cols = np.flatnonzero(sub.any(axis=0))
-        sub = sub[:, cols[0] : cols[-1] + 1]
-        ax = fig.add_subplot(gs[1 + i, 1])
-        draw_cells(ax, sub)
-        ax.set_title(f"steps {t0}–{t1}", fontsize=10, loc="left")
-        ax_body.axhspan(t0, t1, color="#333", alpha=0.07, lw=0)
+    # --- detail tiles ---------------------------------------------------------------
+    x0 = margin + (content_w - tiles_w_in) / 2
+    fig.text(X(x0), Y(y), f"detail · {tile} × {tile} cells, the densest tissue in each quarter of life",
+             fontsize=7.5, color=INK_SOFT, ha="left", va="top")
+    live = (grid > 0).astype(np.int32)
+    # summed-area table -> live-cell count of any tile window in O(1)
+    S = np.zeros((h + 1, w + 1), dtype=np.int64)
+    S[1:, 1:] = live.cumsum(0).cumsum(1)
+    def count(t0: int, c0: int) -> int:
+        t1, c1 = min(h, t0 + tile), min(w, c0 + tile)
+        return int(S[t1, c1] - S[t0, c1] - S[t1, c0] + S[t0, c0])
+    bands = np.linspace(0, max(1, h - tile), n_tiles + 1).astype(int)
+    for i in range(n_tiles):
+        best, best_tc = -1, (bands[i], max(0, axis_col - tile // 2))
+        for t0 in range(bands[i], max(bands[i] + 1, bands[i + 1]), 4):
+            for c0 in range(0, max(1, w - tile + 1), 2):
+                n = count(t0, c0)
+                if n > best:
+                    best, best_tc = n, (t0, c0)
+        t0, c0 = best_tc
+        sub = np.zeros((tile, tile), dtype=np.int8)
+        src = grid[t0 : t0 + tile, c0 : c0 + tile]
+        sub[: src.shape[0], : src.shape[1]] = src
+        left = x0 + i * (tile_in + gap)
+        ax = fig.add_axes([X(left), Y(y + label_h + tile_in), tile_in / fig_w, tile_in / fig_h])
+        draw_cells(ax, sub, border=0.16)
+        ax.text(0, tile + 1.2, f"t = {t0}–{t0 + tile}", fontsize=7, color=INK_SOFT, va="top")
+    y += label_h + tile_in + 0.08
 
-    fig.savefig(out, dpi=110, facecolor=PAPER)
+    # --- caption ----------------------------------------------------------------------
+    fig.text(X(margin), Y(y + caption_h), f"genome {lineage['genome']}", fontsize=7, color=INK_SOFT,
+             family="monospace", ha="left", va="bottom")
+    fig.text(X(margin + content_w), Y(y + caption_h),
+             "computed and proved in morphoeval/lean/Ruliobiology.lean", fontsize=7, color=INK_SOFT,
+             ha="right", va="bottom")
+
+    fig.savefig(out, dpi=dpi, facecolor=PAPER)
     plt.close(fig)
     return out
 
