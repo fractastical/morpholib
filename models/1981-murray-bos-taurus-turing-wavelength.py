@@ -54,10 +54,29 @@ Specimen:
   computed on the simulated pigment field, across a gamma sweep (gamma
   rescales the selected wavelength, lambda ~ gamma^-1/2).
 
-Honest expectation (and what the run in fact shows): a Turing system makes
-*many* quasi-uniform patches (one per wavelength cell); this cow's flank is
-*one* giant patch covering most of the flank.  The script reports the
-mismatch instead of tuning it away.  See the loop record:
+CLAIM UNDER TEST (published as a tested negative hypothesis, Pass 9):
+  "The black-and-white spotting of Holstein-Friesian cattle is laid down by
+  a Turing reaction-diffusion pre-pattern (Murray 1981) with a
+  characteristic wavelength."
+  Verdict of this loop: NOT SUPPORTED.  A static single-wavelength Turing
+  pattern is rejected outright (it makes ~10^2 uniform spots; the cows
+  carry a few body-scale patches -- held-out distance 6.46 vs ~3.3 for
+  body-scale alternatives).  A growing-domain RD variant cannot be
+  distinguished from stochastic melanoblast colonisation (Eden control) on
+  adult patch statistics at matched measurement scale (3.29 vs 3.43,
+  Wilcoxon p = 0.91, Pass 8), so adult coat morphology alone is not
+  evidence for a Turing mechanism here.  This agrees with the established
+  developmental genetics: causal KIT/MITF regulatory variants
+  (Jivanji et al. 2025, doi:10.1126/sciadv.adt5913; GWAS: Jivanji et al.
+  2019, doi:10.1186/s12711-019-0506-2) act through melanoblast survival,
+  proliferation and migration, and mammalian white spotting is modelled
+  quantitatively as stochastic colonisation, not a Turing instability
+  (Mort et al. 2016, doi:10.1038/ncomms10288).  No activator-inhibitor
+  morphogen pair has been identified in cattle skin.  A tested negative
+  hypothesis is a result: this loop's claim and its MorphoEval assessment
+  are published as nanopublications (morphoeval/kg/, audit v7) stating
+  exactly this, with claim boundaries.  The script reports the mismatch
+  instead of tuning it away.  See the loop record:
   morphoeval/runs/2026-10-26-bos-taurus-turing-wavelength-loop.md
 
 Usage:
