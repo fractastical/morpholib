@@ -4,8 +4,17 @@ morphoeval/cloud_orchestrator.py — Cloud Orchestrator for 100 Offline MorphoEv
 
 Dispatches and monitors autonomous Cursor Cloud Agents (`bc-...` VMs running on Cursor's
 cloud infrastructure while your laptop is offline) via `cursor-sdk` (`CloudAgentOptions`)
-or the Cursor Cloud Agents REST API (`https://api.cursor.com/v0/agents`), coordinated with
+or the Cursor Cloud Agents REST API (`https://api.cursor.com/v1/agents`), coordinated with
 GitHub branches and Pull Requests.
+
+Account gates (cannot be fixed from this repo — see `doctor` subcommand):
+  1. Cursor Privacy Mode must NOT be "Privacy Mode (Legacy)": cloud agents are
+     rejected with "Cloud agent is not supported in Privacy Mode (Legacy)".
+     Switch it at cursor.com/dashboard (Settings -> Privacy Mode).
+  2. The Cursor GitHub App must be installed on the target repo, otherwise
+     `GET /v1/repositories` will not list it and dispatch fails.
+  3. `CURSOR_API_KEY` must be set (user key from Cursor Dashboard -> API Keys,
+     or a team service-account key). Never commit it.
 
 Key Architectural Guarantees:
   1. Step 1 (`01_scout`) is actively executed inside every Cloud Agent loop using
@@ -50,8 +59,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import asyncio
-import base64
 import json
 import os
 import re
@@ -156,7 +163,7 @@ def build_cloud_agent_prompt(slot_entry: dict[str, Any], run_date: str | None = 
     audit_v2_id = f"{d_str}-{slug}-audit-v2"
     branch_name = f"morphoeval/loop-{slot_num:03d}-{slug}"
 
-    return f"""You are executing Autonomous Cloud Loop **{slot_id}** (`{branch_name}`) of the 100-Loop Infinite Morphospace & MorphoEval Campaign.
+    return f"""You are executing Autonomous Cloud Loop **{slot_id}** (`{branch_name}`) of the 100-Loop Project Delphi & MorphoEval Campaign.
 
 ## CRITICAL RULE #1 — STRICT ZERO-CONFLICT FILE ISOLATION
 Because 100 Cloud Agent loops run in parallel across isolated branches/PRs, **your final commit MUST NOT modify or delete ANY existing tracked file in `origin/main`**.
@@ -214,36 +221,88 @@ python3 morphoeval/track_loop.py init --run-id {run_id} --target {sim_id} --pape
 """
 
 
-async def _dispatch_via_cursor_sdk(
+CURSOR_API_BASE = "https://api.cursor.com/v1"
+DEFAULT_MODEL = "composer-2.5"
+
+
+def _require_api_key() -> str:
+    api_key = os.environ.get("CURSOR_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError(
+            "CURSOR_API_KEY environment variable is not set. "
+            "Create a key at Cursor Dashboard -> API Keys (or a team service-account key), "
+            "then `export CURSOR_API_KEY='...'` locally / add it as the CURSOR_API_KEY "
+            "GitHub repo secret for Actions. Or run with --dry-run to preview."
+        )
+    return api_key
+
+
+def _api_request(method: str, path: str, payload: dict[str, Any] | None = None, timeout: int = 30) -> dict[str, Any]:
+    """One Cloud Agents REST API v1 call. Raises RuntimeError with the raw
+    server message (privacy-mode / GitHub-App rejections land here verbatim)."""
+    api_key = _require_api_key()
+    req = urllib.request.Request(
+        f"{CURSOR_API_BASE}{path}",
+        data=json.dumps(payload).encode("utf-8") if payload is not None else None,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "ProjectDelphi-CloudOrchestrator/2.0",
+        },
+        method=method,
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8", errors="replace"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:2000]
+        raise RuntimeError(
+            f"Cursor Cloud Agents API {method} {path} -> HTTP {exc.code}: {detail}\n"
+            "Hints: 'Privacy Mode (Legacy)' rejects cloud agents (switch Privacy Mode at "
+            "cursor.com/dashboard); a repo missing from GET /v1/repositories means the "
+            "Cursor GitHub App is not installed on it; 401 means the key is wrong/revoked."
+        ) from exc
+
+
+def _dispatch_via_cursor_sdk(
     prompt: str,
     repo: str,
     branch_name: str,
     model: str | None = None,
 ) -> dict[str, Any]:
-    """Dispatch a Cursor Cloud Agent via `cursor-sdk` (`CloudAgentOptions`) if installed,
-    or fall back to the Cursor Cloud Agents REST API (`/v0/agents`)."""
-    try:
-        from cursor_sdk import Agent, CloudAgentOptions  # type: ignore
+    """Dispatch a Cursor Cloud Agent via `cursor-sdk` if installed, else REST v1.
 
-        opts_kwargs: dict[str, Any] = {
-            "repos": [repo],
-            "branch_name": branch_name,
-            "auto_create_pr": True,
-            "skip_reviewer_request": True,
-        }
-        if model:
-            opts_kwargs["model"] = model
-        agent = await Agent.create(CloudAgentOptions(**opts_kwargs))
+    NOTE (v1 API): there is no caller-chosen branch name — with
+    `auto_create_pr=True` the server pushes to an auto-generated `cursor/...`
+    branch and opens the PR. `branch_name` is therefore only the *requested*
+    isolation label recorded in the dispatch log / prompt; the actual branch
+    and PR URL appear on the run (`git.branches[]`) and are picked up by `poll`.
+    """
+    try:
+        from cursor_sdk import Agent, CloudAgentOptions, CloudRepository  # type: ignore
+    except ImportError:
+        return _dispatch_via_rest_api(prompt=prompt, repo=repo, branch_name=branch_name, model=model)
+
+    api_key = _require_api_key()
+    repo_url = repo if repo.startswith("http") else f"https://github.com/{repo}"
+    with Agent.create(
+        model=model or DEFAULT_MODEL,
+        api_key=api_key,
+        cloud=CloudAgentOptions(
+            repos=[CloudRepository(url=repo_url, starting_ref=DEFAULT_BASE_BRANCH)],
+            auto_create_pr=True,
+            skip_reviewer_request=True,
+        ),
+    ) as agent:
         run = agent.send(prompt)
         return {
             "transport": "cursor_sdk",
-            "agent_id": agent.id,
+            "agent_id": agent.agent_id,
             "run_id": getattr(run, "id", None),
-            "branch_name": branch_name,
+            "requested_branch_name": branch_name,
             "status": "dispatched",
         }
-    except ImportError:
-        return _dispatch_via_rest_api(prompt=prompt, repo=repo, branch_name=branch_name, model=model)
 
 
 def _dispatch_via_rest_api(
@@ -253,68 +312,52 @@ def _dispatch_via_rest_api(
     model: str | None = None,
     base_ref: str = DEFAULT_BASE_BRANCH,
 ) -> dict[str, Any]:
-    """Direct HTTPS fallback to Cursor Cloud Agents API (`POST https://api.cursor.com/v0/agents`)
+    """Direct HTTPS fallback to the Cloud Agents API (`POST /v1/agents`)
     requiring zero external packages beyond standard library + `CURSOR_API_KEY`."""
-    api_key = os.environ.get("CURSOR_API_KEY", "").strip()
-    if not api_key:
-        raise RuntimeError(
-            "CURSOR_API_KEY environment variable is not set. "
-            "Export CURSOR_API_KEY='key_...' (from cursor.com/settings -> Cloud Agents API) "
-            "or run with --dry-run to preview."
-        )
     repo_url = repo if repo.startswith("http") else f"https://github.com/{repo}"
     payload: dict[str, Any] = {
         "prompt": {"text": prompt},
-        "source": {"repository": repo_url, "ref": base_ref},
-        "target": {
-            "branchName": branch_name,
-            "autoCreatePr": True,
-            "openAsCursorGithubApp": False,
-            "skipReviewerRequest": True,
-        },
+        "repos": [{"url": repo_url, "startingRef": base_ref}],
+        "autoCreatePR": True,
+        "skipReviewerRequest": True,
     }
     if model:
-        payload["model"] = model
+        payload["model"] = {"id": model}
 
-    auth_b64 = base64.b64encode(f"{api_key}:".encode("utf-8")).decode("ascii")
-    req = urllib.request.Request(
-        "https://api.cursor.com/v0/agents",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Basic {auth_b64}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "User-Agent": "InfiniteMorphospace-CloudOrchestrator/1.0",
-        },
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        body = json.loads(resp.read().decode("utf-8", errors="replace"))
+    body = _api_request("POST", "/agents", payload)
+    agent = body.get("agent") or {}
+    run = body.get("run") or {}
     return {
-        "transport": "cursor_rest_v0",
-        "agent_id": body.get("id") or body.get("agentId"),
-        "status": body.get("status", "CREATING"),
-        "branch_name": branch_name,
-        "web_url": body.get("target", {}).get("url") or body.get("url"),
+        "transport": "cursor_rest_v1",
+        "agent_id": agent.get("id") or body.get("id"),
+        "run_id": run.get("id"),
+        "status": run.get("status") or agent.get("status", "CREATING"),
+        "requested_branch_name": branch_name,
+        "web_url": agent.get("url") or body.get("url"),
         "raw": body,
     }
 
 
 def poll_cloud_agent(agent_id: str) -> dict[str, Any]:
-    """Query status of a Cursor Cloud Agent (`bc-...`) via `GET https://api.cursor.com/v0/agents/{id}`."""
-    api_key = os.environ.get("CURSOR_API_KEY", "").strip()
-    if not api_key:
-        raise RuntimeError("CURSOR_API_KEY is required to poll Cloud Agents.")
-    auth_b64 = base64.b64encode(f"{api_key}:".encode("utf-8")).decode("ascii")
-    req = urllib.request.Request(
-        f"https://api.cursor.com/v0/agents/{agent_id}",
-        headers={
-            "Authorization": f"Basic {auth_b64}",
-            "Accept": "application/json",
-        },
-    )
-    with urllib.request.urlopen(req, timeout=20) as resp:
-        return json.loads(resp.read().decode("utf-8", errors="replace"))
+    """Query a Cloud Agent (`bc-...`) via `GET /v1/agents/{id}` (+ its latest run)."""
+    live = _api_request("GET", f"/agents/{agent_id}")
+    out: dict[str, Any] = {
+        "status": live.get("status"),
+        "web_url": live.get("url"),
+        "latest_run_id": live.get("latestRunId"),
+    }
+    run_id = live.get("latestRunId")
+    if run_id:
+        try:
+            run = _api_request("GET", f"/agents/{agent_id}/runs/{run_id}")
+            out["run_status"] = run.get("status")
+            branches = (run.get("git") or {}).get("branches") or []
+            if branches:
+                out["branch_name"] = branches[0].get("branch")
+                out["pr_url"] = branches[0].get("prUrl")
+        except Exception as exc:  # run lookup is best-effort; agent status above is authoritative
+            out["run_poll_error"] = str(exc)
+    return out
 
 
 def parse_slot_selector(selector: str) -> list[int]:
@@ -411,13 +454,11 @@ def cmd_dispatch(args: argparse.Namespace) -> int:
             )
             continue
 
-        res = asyncio.run(
-            _dispatch_via_cursor_sdk(
-                prompt=prompt,
-                repo=args.repo,
-                branch_name=branch_name,
-                model=args.model,
-            )
+        res = _dispatch_via_cursor_sdk(
+            prompt=prompt,
+            repo=args.repo,
+            branch_name=branch_name,
+            model=args.model,
         )
         rec = {
             "slot": snum,
@@ -459,8 +500,12 @@ def cmd_poll(args: argparse.Namespace) -> int:
         if aid and os.environ.get("CURSOR_API_KEY"):
             try:
                 live = poll_cloud_agent(aid)
-                rec["status"] = live.get("status", rec.get("status"))
-                rec["pr_url"] = live.get("target", {}).get("prUrl") or rec.get("pr_url")
+                rec["status"] = live.get("run_status") or live.get("status") or rec.get("status")
+                rec["pr_url"] = live.get("pr_url") or rec.get("pr_url")
+                if live.get("branch_name"):
+                    rec["branch_name"] = live["branch_name"]
+                if live.get("web_url"):
+                    rec["web_url"] = live["web_url"]
                 f.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
             except Exception as exc:
                 rec["poll_error"] = str(exc)
@@ -501,7 +546,7 @@ def load_prediction_batch(batch: str) -> tuple[dict[str, Any], list[dict[str, An
 def build_prediction_prompt(batch: str) -> str:
     reg, rows = load_prediction_batch(batch)
     branch = f"morphoeval/predictions-{batch}"
-    return f"""You are resolving registered predictions for the Infinite Morphospace repo — batch `{batch}` ({PREDICTION_BATCHES[batch]['title']}), branch `{branch}`.
+    return f"""You are resolving registered predictions for the Project Delphi repo — batch `{batch}` ({PREDICTION_BATCHES[batch]['title']}), branch `{branch}`.
 
 ## LOCKED REGISTRY — DO NOT EDIT IT
 `predictions/prediction_registry.json` / `.csv` were registered on {reg['registered_on']} BEFORE scoring (blind discipline). **Do not modify them.** Your deliverable is exactly ONE new file: `predictions/resolutions/{batch}.json`. Do not modify any other existing file.
@@ -574,7 +619,7 @@ def cmd_pred_dispatch(args: argparse.Namespace) -> int:
         if args.dry_run:
             print(f"  [DRY-RUN] batch `{batch}` -> branch `{branch}` | {len(PREDICTION_BATCHES[batch]['ids'])} predictions | prompt={len(prompt):,} chars")
             continue
-        res = asyncio.run(_dispatch_via_cursor_sdk(prompt=prompt, repo=args.repo, branch_name=branch, model=args.model))
+        res = _dispatch_via_cursor_sdk(prompt=prompt, repo=args.repo, branch_name=branch, model=args.model)
         rec = {"kind": "prediction_resolution", "batch": batch,
                "prediction_ids": PREDICTION_BATCHES[batch]["ids"], "branch_name": branch,
                "dispatched_at": utc_now_iso(), **res}
@@ -583,6 +628,81 @@ def cmd_pred_dispatch(args: argparse.Namespace) -> int:
     if not args.dry_run:
         print("\n[cloud_orchestrator] Prediction-resolution agents launched — you can close your laptop; PRs will appear automatically.")
     return 0
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    """Diagnose why Cloud Agents won't start. Repo-side checks are fixable here;
+    account-side gates (Privacy Mode, GitHub App, API key) are only detectable."""
+    ok = True
+
+    def report(passed: bool, label: str, detail: str = "") -> None:
+        nonlocal ok
+        ok = ok and passed
+        print(f"  [{'PASS' if passed else 'FAIL'}] {label}" + (f" — {detail}" if detail else ""))
+
+    print("=== Cloud Agent Doctor ===")
+    repo_url = args.repo if args.repo.startswith("http") else f"https://github.com/{args.repo}"
+
+    env_json = ROOT / ".cursor" / "environment.json"
+    if env_json.exists():
+        try:
+            json.loads(env_json.read_text(encoding="utf-8"))
+            report(True, ".cursor/environment.json present and valid JSON", str(env_json.relative_to(ROOT)))
+        except Exception as exc:
+            report(False, ".cursor/environment.json is invalid JSON", str(exc))
+    else:
+        report(False, ".cursor/environment.json missing", "cloud VMs get no install step; add one")
+
+    try:
+        import cursor_sdk  # noqa: F401
+
+        report(True, "cursor-sdk installed", "(SDK transport available)")
+    except ImportError:
+        print("  [WARN] cursor-sdk not installed — REST v1 fallback will be used "
+              "(`venv/bin/pip install cursor-sdk` to enable the SDK transport)")
+
+    if not os.environ.get("CURSOR_API_KEY", "").strip():
+        report(False, "CURSOR_API_KEY not set",
+               "create one at Cursor Dashboard -> API Keys, then export it "
+               "(and add it as a GitHub repo secret for Actions). Dispatch is impossible without it.")
+        print("\nResult: BLOCKED — set CURSOR_API_KEY, then re-run `doctor`.")
+        return 1
+    report(True, "CURSOR_API_KEY is set")
+
+    try:
+        models = _api_request("GET", "/models")
+        ids = [m.get("id") for m in models.get("items", [])][:5]
+        report(True, "API key authenticates against /v1/models", f"e.g. {', '.join(i for i in ids if i)}")
+    except Exception as exc:
+        report(False, "API key rejected by /v1/models", str(exc).splitlines()[0])
+        print("\nResult: BLOCKED — fix the API key above, then re-run `doctor`.")
+        return 1
+
+    # Strictly rate-limited (1/min) and slow for large accounts — this is the
+    # one call that proves the Cursor GitHub App can see the target repo.
+    try:
+        repos = _api_request("GET", "/repositories", timeout=90)
+        urls = {(r.get("url") or "").rstrip("/") for r in repos.get("items", [])}
+        if repo_url.rstrip("/") in urls:
+            report(True, "Cursor GitHub App can see target repo", repo_url)
+        elif not urls:
+            print(f"  [WARN] GET /v1/repositories returned no repos (service-account keys always "
+                  f"see an empty list) — cannot verify the GitHub App gate for {repo_url}")
+        else:
+            report(False, "Cursor GitHub App cannot see target repo",
+                   f"{repo_url} not in {len(urls)} connected repos — install/authorize the "
+                   "Cursor GitHub App on this repo (cursor.com/dashboard -> Integrations / "
+                   "GitHub), then re-run `doctor`.")
+    except Exception as exc:
+        print(f"  [WARN] GET /v1/repositories check failed: {str(exc).splitlines()[0]}")
+
+    print(
+        "\nNote: 'Privacy Mode (Legacy)' is an account setting this script cannot read — "
+        "if dispatch still returns 'Cloud agent is not supported in Privacy Mode (Legacy)', "
+        "switch Privacy Mode at cursor.com/dashboard and retry."
+    )
+    print(f"\nResult: {'READY — try `dispatch --count 1 --dry-run`, then a single live dispatch.' if ok else 'BLOCKED — fix the FAIL lines above.'}")
+    return 0 if ok else 1
 
 
 def main() -> int:
@@ -607,6 +727,9 @@ def main() -> int:
 
     sub.add_parser("poll", help="Poll live status of dispatched Cursor Cloud Agents")
 
+    p_doc = sub.add_parser("doctor", help="Diagnose Cloud Agent blockers (API key, GitHub App, environment.json)")
+    p_doc.add_argument("--repo", default=DEFAULT_REPO, help="GitHub owner/repo")
+
     sub.add_parser("pred-status", help="Show prediction-resolution batch status")
     p_pp = sub.add_parser("pred-prompt", help="Print the resolution prompt for a prediction batch")
     p_pp.add_argument("--batch", required=True, help=f"One of {sorted(PREDICTION_BATCHES)}")
@@ -626,6 +749,8 @@ def main() -> int:
         return cmd_dispatch(args)
     if args.cmd == "poll":
         return cmd_poll(args)
+    if args.cmd == "doctor":
+        return cmd_doctor(args)
     if args.cmd == "pred-status":
         return cmd_pred_status(args)
     if args.cmd == "pred-prompt":

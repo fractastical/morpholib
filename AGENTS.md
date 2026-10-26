@@ -212,3 +212,10 @@ By default, the batch publisher targets `waves/` and planform-generated files; `
 - Manual XY annotations are not currently reliable ground truth without transformation. `COORDINATE_SYSTEM_WARNING.md` documents that the Excel coordinates can exceed TIFF image bounds, so treat `compare_xy_coordinates.py` results cautiously until the coordinate-space mismatch is resolved.
 - Several wave-analysis docs and shell wrappers assume a repo-root execution context and filenames like `spark_tracks.csv` / `vector_clusters.csv`. If you change output locations, update downstream commands accordingly.
 - `nanopubs/publish_batch.sh` will try to activate `../venv` automatically if it exists; publishing is expected to happen only after nanopub profile setup and usually should be tested against the test registry before production.
+
+## Cursor Cloud specific instructions
+
+- Cloud agents start from `.cursor/environment.json`: its `install` step pip-installs `requirements.txt`, `cursor-sdk`, and `pytest` into the system Python. There is no `venv/` in the cloud VM — use `python3` directly, not `venv/bin/python`.
+- Validate changes with `python3 -m compileall .` and, where relevant, `python3 -m pytest tests/ -q`. Most other validation is script-specific smoke testing (run the touched script's `--self-test` if it has one).
+- Cloud-agent loop/PR work must keep strict zero-conflict isolation: create only new, uniquely named files and never modify or delete existing tracked files on `main` (see `morphoeval/cloud_orchestrator.py`).
+- Do not commit secrets. `CURSOR_API_KEY` comes from the Cursor dashboard / repo secrets, never from a file in this repo.
