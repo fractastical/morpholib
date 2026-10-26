@@ -46,6 +46,13 @@ def validate(data: dict) -> list[str]:
             if e["to"] in data["DELPHI"] and abs(e["prob"] - data["DELPHI"][e["to"]]["pooled"]["posterior"]) > 0.6:
                 errs.append(f"edge {e['from']}->{e['to']}: prob {e['prob']} != Delphi pooled posterior "
                             f"{data['DELPHI'][e['to']]['pooled']['posterior']} for its target")
+    for n in nodes:
+        for np in n.get("nanopubs", []):
+            uri = np.get("uri", "")
+            if not uri.startswith("https://w3id.org/") or "/RA" not in uri:
+                errs.append(f"{n['id']}: nanopub uri not a trusty w3id URI: {uri}")
+            if not np.get("label"):
+                errs.append(f"{n['id']}: nanopub link without label")
     for pid, prize in data["DELPHI"].items():
         if abs(sum(s["weight"] for s in prize["subgoals"]) - 100) > 1e-9:
             errs.append(f"{pid}: subgoal weights do not sum to 100")
@@ -502,14 +509,17 @@ function drawGraph(){
   if(prob!==undefined)h+=`<rect x="${n.x}" y="${n.y+H-5}" width="${W}" height="5" fill="${probColor(prob)}"/><text x="${n.x+18}" y="${n.y+14}" font-size="9" font-weight="700" fill="${probColor(prob)}">bridge ${prob}%</text>`;
   if(n.id==='r6')h+=`<rect x="${n.x}" y="${n.y+H-5}" width="${W/3}" height="5" fill="${probColor(DELPHI.p1.pooled.posterior)}"/><rect x="${n.x+W/3}" y="${n.y+H-5}" width="${W/3}" height="5" fill="${probColor(DELPHI.p2.pooled.posterior)}"/><rect x="${n.x+2*W/3}" y="${n.y+H-5}" width="${W/3}" height="5" fill="${probColor(DELPHI.p3.pooled.posterior)}"/>`;
   h+=`<text x="${n.x+W/2}" y="${n.y+20}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1c1c1e">${esc(n.label)}</text>`;
+  if(n.nanopubs&&n.nanopubs.length)h+=`<text x="${n.x+6}" y="${n.y+H-8}" font-size="8" font-weight="700" fill="#2563eb">🔗 ${n.nanopubs.length} live nanopub${n.nanopubs.length>1?'s':''}</text>`;
   if(fuzzy)h+=`<text x="${n.x+W-8}" y="${n.y+14}" text-anchor="end" font-size="9" font-weight="700" fill="#888">~prob.</text>`;
   if(n.id==='r6'||prob!==undefined)h+=`<text x="${n.x+W-8}" y="${n.y+H-9}" text-anchor="end" font-size="8" font-weight="700" fill="#2563eb">DOUBLE-CLICK TO INSPECT</text>`;
   h+=`<foreignObject x="${n.x+6}" y="${n.y+24}" width="${W-12}" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:9.5px;line-height:1.25;color:#5c5c60;text-align:center;font-family:inherit">${esc(n.sub)}</div></foreignObject>`;
   g.innerHTML=h; vp.appendChild(g); });
 }
+function npLive(uri){ return 'https://registry.knowledgepixels.com/np/' + uri.split('/').pop(); }
+function npLinks(n){ if(!n.nanopubs||!n.nanopubs.length) return ''; return `<hr style="border:none;border-top:1px solid var(--line)"><b class="small">Live nanopublications</b>` + n.nanopubs.map(np=>`<div class="row"><span class="small">🔗 <a href="${npLive(np.uri)}" target="_blank" rel="noreferrer">${esc(np.label)}</a> <span class="mut">· canonical: <a href="${np.uri}" target="_blank" rel="noreferrer">${esc(np.uri)}</a></span></span></div>`).join('') + `<p class="small mut">Live view = Knowledge Pixels registry (canonical morpholib w3id URIs currently 404 at w3id; registry view verified live).</p>`; }
 function edgesList(id){ return EDGES.filter(e=>e.from===id||e.to===id).map(e=>`<div class="row"><span class="sw" style="background:${ACOL[e.agent]}"></span><span class="small">${e.from===id?'→':'←'} ${esc(e.from===id?byId[e.to].label:byId[e.from].label)} — ${AGENTS[e.agent].name}${e.label?` (${esc(e.label)})`:''}</span>${e.prob!==undefined?probBadge(e.prob)+`<span class="small mut">Delphi path-success${e.probNote?` · ${esc(e.probNote)}`:''}</span>`:`<span class="badge" style="background:#888">NOT SCORED</span>`}</div>`).join('') || '<p class="small mut">No recorded edges.</p>'; }
 function drawDetail(){ const n=byId[S.sel]; $('detail').innerHTML=`<div class="row"><b style="flex:1">${esc(n.label)}</b><span class="badge" style="background:${SCOL[n.status]}">${SLAB[n.status]}</span><button class="on" onclick="openDrawer('${n.id}')">Inspect (or double-click)</button></div>
-<p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}${n.timeKind==='probabilistic'?' (probabilistic — see timeline)':''}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p><hr style="border:none;border-top:1px solid var(--line)"><b class="small">Attempts into / out of this node, by agent</b>${edgesList(n.id)}`; }
+<p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}${n.timeKind==='probabilistic'?' (probabilistic — see timeline)':''}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p>${npLinks(n)}<hr style="border:none;border-top:1px solid var(--line)"><b class="small">Attempts into / out of this node, by agent</b>${edgesList(n.id)}`; }
 
 function openDrawer(id){ S.sel=id; if(id==='p1'||id==='p2'||id==='p3'){S.prize=id;S.prior=DELPHI[id].pooled.prior;S.agentIdx=3;S.subgoal=DELPHI[id].subgoals[3].id;} if(id==='r6'){S.prize='p1';S.prior=DELPHI.p1.pooled.prior;S.agentIdx=3;S.subgoal='P1.4';} drawGraph(); drawDetail(); renderDrawer(); $('drawer').style.display='block'; }
 function closeDrawer(){ $('drawer').style.display='none'; }
@@ -519,7 +529,7 @@ function bar(v,c){ return `<span class="bar"><i style="width:${Math.max(0,Math.m
 function renderDrawer(){
  const n=byId[S.sel]; const isD = n.id==='r6'||n.id==='p1'||n.id==='p2'||n.id==='p3';
  let h=`<div class="row"><div style="flex:1"><b>${isD?'Inspector — Bayesian Delphi panel':'Inspector — '+esc(n.label)}</b><div class="small mut">${isD?'Every number transcribed from docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md (2026-10-20). Click prizes, agents and subgoals.':esc(n.sub)}</div></div><span class="badge" style="background:${SCOL[n.status]}">${SLAB[n.status]}</span><button onclick="closeDrawer()">Close</button></div><hr style="border:none;border-top:1px solid var(--line)">`;
- if(!isD){ h+=`<p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p><b class="small">Attempts through this node</b>${edgesList(n.id)}<div class="card" style="background:#f3f6ff">Tip: double-click the Bayesian Delphi panel node (or Prize 1 / 2 / 3) for the deep per-agent, per-subgoal inspector.</div>`; $('drawer').innerHTML=h; return; }
+ if(!isD){ h+=`<p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p>${npLinks(n)}<b class="small">Attempts through this node</b>${edgesList(n.id)}<div class="card" style="background:#f3f6ff">Tip: double-click the Bayesian Delphi panel node (or Prize 1 / 2 / 3) for the deep per-agent, per-subgoal inspector.</div>`; $('drawer').innerHTML=h; return; }
  const d=DELPHI[S.prize], rows=[...d.agents, d.pooled], row=rows[Math.min(S.agentIdx,rows.length-1)], sg=d.subgoals.find(s=>s.id===S.subgoal)||d.subgoals[0];
  const odds=(S.prior/100)/(1-S.prior/100)*d.pooled.bf, post=100*odds/(1+odds);
  h+=`<div class="row">${['p1','p2','p3'].map(p=>`<button class="${S.prize===p?'on':''}" onclick="setPrize('${p}')"><span class="badge" style="background:${probColor(DELPHI[p].pooled.posterior)}">&nbsp;</span> ${DELPHI[p].title} · ${DELPHI[p].pooled.posterior}%</button>`).join('')}</div>`;
