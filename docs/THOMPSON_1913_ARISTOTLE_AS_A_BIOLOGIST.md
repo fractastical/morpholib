@@ -4,8 +4,8 @@
 *The Herbert Spencer Lecture delivered before the University of Oxford on February 14, 1913*  
 *Oxford at the Clarendon Press (1913)*
 
-**Annotated & Illustrated Edition for Infinite Morphospace (`morpholib`)**  
-📄 **[Interactive Illustrated Edition (`docs/thompson_1913_aristotle_as_a_biologist.html`)](./thompson_1913_aristotle_as_a_biologist.html)** · 🎨 **[Illustration Generator (`thompson/generate_aristotle_1913_illustrations.py`)](../thompson/generate_aristotle_1913_illustrations.py)**
+**Museum-Illustrated & Annotated Edition for Infinite Morphospace (`morpholib`)**  
+📄 **[Interactive Museum Reader (`docs/thompson_1913_aristotle_as_a_biologist.html`)](./thompson_1913_aristotle_as_a_biologist.html)** · 🎨 **[Museum Plate Generator (`thompson/generate_aristotle_1913_illustrations.py`)](../thompson/generate_aristotle_1913_illustrations.py)**
 
 ---
 
@@ -13,11 +13,11 @@
 
 Thompson’s central claim is that Aristotle’s biology helped form his philosophy. The lecture asks us to follow knowledge from the shore and the dissecting table into an account of life, mind, and explanation. Its opening tribute to Herbert Spencer prepares that argument: an engineer and a naturalist may approach the same living world with different expectations about what makes it intelligible.
 
-The commentary below offers a critical reading of that argument and draws connections to morphogenesis research. All added passages are labelled **Editorial commentary** and use a different typeface. Thompson’s full lecture and his 31 notes remain in place. Original page numbers refer to the 1913 printed text; references `[E1]` to `[E10]` identify additional sources listed after the notes.
+The commentary below offers a critical reading of that argument and draws connections to morphogenesis research. All added passages are labelled **Editorial commentary** and use a different typeface. Thompson’s full lecture and his 31 notes remain in place. Original page numbers refer to the 1913 printed text; references `[E1]` to `[E20]` identify primary sources and archival museum plates listed after the notes.
 
-![Plate I — The Engineer and the Naturalist: Spencer’s Mechanical Scaling vs. Goethe & Aristotle’s Subordination of Parts](./media/thompson_1913_fig1_spencer_vs_aristotle.png)
+![Figure 1 — D’Arcy Wentworth Thompson around 1906, cabinet portrait by Moffat, Edinburgh](./media/thompson_1906_moffat_portrait.jpg)
 
-*Plate I — Visual companion to the Prooemion on Herbert Spencer and Editorial Commentaries 1–3 (Original pp. 4–11): (A) Spencer’s engineering scaling law ($\propto L^2$ structural cross-section vs. $\propto L^3$ gravitational load and buoyant aquatic speed, Note 9); (B) Goethe (1795/1807), Von Baer, and Spencer’s transition from homogeneous metameric repetition to heterogeneous functional subordination; and (C) the four distinct explanatory registers (cosmic equilibration, individual ontogeny, phylogenetic descent, and physical morphogenesis).*
+*Figure 1 — D’Arcy Wentworth Thompson (1860–1948) around 1906, before the 1913 Oxford lecture and On Growth and Form (1917). Cabinet photograph by Moffat (125 Princes St., Edinburgh), courtesy of University of St Andrews Libraries and Museums, `ms48534-ph-2-5`; CC0 via Wikimedia Commons (`[E12]`).*
 
 ---
 
@@ -52,6 +52,10 @@ Now these words are found in the *Life of Goethe*, by Lewes, Herbert Spencer’s
 > **`EDITORIAL COMMENTARY 1 — EVOLUTION IN SEVERAL SENSES`** *(Original pages 5 to 7)*  
 > `Spencer’s evolution here encompasses cosmic change, individual development, mental life, and social organization. Darwin’s origin of species is one reference point within that much broader scheme. Thompson’s interest in Goethe makes the distinction especially useful: increasing differentiation within a developing organism is a different claim from descent between species. The lecture moves between these scales easily. A careful reading keeps track of which process is being explained each time.`
 
+![Figure 2 — P. J. F. Turpin’s 1837 Végétal Type, Idéal, Appendiculé illustrating Goethe’s plant morphology](./media/turpin_1837_urpflanze_plate.jpg)
+
+*Figure 2 — P. J. F. Turpin’s copperplate engraving “Végétal Type, Idéal, Appendiculé” (published 1837 to illustrate Goethe’s morphological writings). Reading the central axis upward from the roots through cotyledons, foliage leaves, bracts, sepals, petals, stamens, and carpels shows how serial plant organs are compared as differentiated variations of an underlying organ type (`[E13]`, `[E14]`).*
+
 As in former days Descartes, and as Democritus and Epicurus in days of old, so did Spencer find in matter and in motion, or rather in matter and in force, the fabric of a world. He draws a broad picture, confessedly of a mechanical kind, of alternate cosmic rhythms of the Universe, in which as motion is dissipated, so matter cleaves from the dispersed and homogeneous into more coherent and more segregated shapes; until in the turn of the great wheel, a new redistribution of matter and motion takes place, and evolution is inevitably followed by dissolution at its heels; so the whole present order perishes, *exitio terras cum dabit una dies*. Nevertheless, so vast is the cosmic rhythm, that again the wheel turns, and the dust and ashes of a Universe are co-ordinated and integrated anew, to make ‘another and another frame of things, For ever!’
 
 All the while Spencer recognizes that Space, Time, Motion, and Matter itself are remote from Absolute Reality, and have their source in our own Empiricism. The ‘Persistence of Force’ is the only truth which transcends experience; and what we ultimately mean by the persistence of force is a cause which transcends our conception and our knowledge.
@@ -64,6 +68,10 @@ Under the guidance of a wholesome restraint, a whole school of morphologists, Ro
 
 > **`EDITORIAL COMMENTARY 2 — THE FUTURE PROGRAMME OF PHYSICAL MORPHOLOGY`** *(Original pages 7 to 8)*  
 > `Stress, strain, gravity, and size make this passage a useful bridge to On Growth and Form, published in 1917. In that book Thompson proposes physical explanations for bodily form while treating questions about consciousness separately. [E1] My reading is that the engineer’s perspective supplies something he wants biology to retain, even as he turns toward Aristotle. The contrast between the two thinkers therefore introduces a question about explanatory scope: which features of living organization does a particular method illuminate?`
+
+![Plate I — Museum Folio: Prooemion on Herbert Spencer, Goethe’s Morphology & Culmann’s Graphic Statics](./media/thompson_1913_fig1_spencer_vs_aristotle.png)
+
+*Plate I — Museum folio accompanying the Prooemion on Herbert Spencer and Editorial Commentaries 1–2 (Original pp. 4–10): (A) 1913 Oxford Clarendon Press title page; (B) Moffat’s c. 1906 cabinet portrait of D’Arcy Wentworth Thompson (`[E12]`); (C) archival portrait of Herbert Spencer (1820–1903); (D) Joseph Karl Stieler’s 1828 portrait of J. W. von Goethe (`[E13]`); (E) P. J. F. Turpin’s 1837 ideal plant engraving (`[E14]`); (F) Culmann and H. Meyer’s comparison of stress trajectories in a Fairbairn crane-head and the human femur trabeculae from On Growth and Form (1917, Fig. 335, p. 682, `[E1]`); (G) cantilever bridge and quadrupedal backbone stress-diagrams (1917, Figs. 346 & 349, pp. 700–704); and (H) Spencer’s scaling corollary ($\propto L^2$ cross-section vs. $\propto L^3$ gravitational load and buoyant aquatic speed, Note 9).*
 
 In the *Ethics*, Spencer undertakes to establish ‘rules of right conduct’ on a scientific basis, and he does not minimize the difficulty of getting rid of ‘supernatural ethics’, nor of forming a science of ‘what ought to be’. Nevertheless, he does his best to connect absolute Ethics with his universal formula of cosmic evolution and equilibration. Ethics must be based on science, and not on metaphysics. There is, he holds, not only an Ethic for all reasonable beings, but a principle of Ethic for all living things; life and not reason is the essential thing. All conservation implies evolution, and individuality is developed by the inevitable changes of a changing world.<sup><a href="#note-10">[10]</a></sup>
 
@@ -119,9 +127,9 @@ I take it then as probable, or even proven, that an important part of Aristotle�
 > **`EDITORIAL COMMENTARY 5 — FROM GEOGRAPHY TO INTELLECTUAL INFLUENCE`** *(Original pages 13 to 14)*  
 > `Thompson’s geographical inference is more specific than his conclusion about philosophy. Repeated local observations support a connection between Aristotle’s natural history and Lesbos. Establishing that particular observations preceded particular philosophical arguments would require further chronological evidence. Establishing that they caused those arguments requires another step. The progression from location, to date, to intellectual influence is worth watching: a persuasive historical reconstruction can contain claims supported to different degrees.`
 
-![Plate II — Insula Nobilis et Amoena: Aristotle’s Marine Field Station at the Lagoon of Pyrrha (Lesbos, 345–342 BC)](./media/thompson_1913_fig2_lesbos_pyrrha_lagoon.png)
+![Plate II — Museum Folio: 1848/1860 Admiralty Chart of Mityleni (Lesbos) & Classical Engravings of the Lagoon Fauna](./media/thompson_1913_fig2_lesbos_pyrrha_lagoon.png)
 
-*Plate II — Visual companion to Original pp. 12–14, Notes 12–13, and Editorial Commentaries 4–5: (A) Biographical and zoological geography of the Aegean showing Stagira, Assos/Atarneus, Cape Lectum, the Lagoon of Pyrrha (Gulf of Kalloni) on Lesbos, Athens, and Chalcis; and (B) the marine and coastal fauna recorded by Aristotle around Lesbos and the Asiatic coast (starfish, winter-breeding sea-urchins, dredged scallops, Cape Lectum purple Murex, shelled cephalopods, and the presence/absence lagoon census).*
+*Plate II — Museum folio accompanying Original pp. 12–14, Notes 12–13, and Editorial Commentaries 4–5: (A) British Admiralty Chart No. 1665 of Mityleni Island (Lesbos) with the Gulfs of Adramyti and Sandarli (surveyed by Capt. R. Copeland, R.N., 1832–1849, `[E15]`), showing Port Kalloni (the ancient Lagoon of Pyrrha running “far into its bosom”), the narrow entrance channel inset, Mitylene, and Cape Malia; (B) Pentelic marble bust of Aristotle after Lysippos (Palazzo Altemps, Rome); (C) Ernst Haeckel’s 1904 Tafel 40 lithograph of Asteridea (starfishes); (D) Nicolas Robert’s 17th-century painting of Pecten jacobaeus (scallop) and Wenceslas Hollar’s 17th-century etching of Murex brandaris (`[E16]`); and (E) Duméril and Bibron’s 1836 copperplate of the Chameleon skeleton (`Erpétologie générale`).*
 
 Aristotle is no tyro in biology. When he writes upon Mechanics or on Physics we read him with difficulty: his ways are not our ways; his explanations seem laboured; his science has an archaic look, as it were coming from another world to ours, a world before Galileo. Speaking with all diffidence, I have my doubts as to his mathematics. In spite of a certain formidable passage in the *Ethics*, where we have a sort of *ethica more geometrico demonstrata*, in spite of his favourite use of the equality of the angles of a triangle to two right angles as an example of proof indisputable, in spite even of his treatise *De Lineis Insecabilibus*, I am tempted to suspect that he sometimes passed shyly beneath the superscription over Plato’s door.
 
@@ -185,6 +193,10 @@ In the seventeenth century, the anatomist Steno actually rediscovered the phenom
 
 I used to think of this phenomenon as one that Aristotle might have learned from the fishermen, but, after a more careful study of Johannes Müller’s book, I am convinced that this is not the case. It was a discovery that could only have been made by a skilled and learned anatomist.
 
+![Figure 3 — Johannes Müller’s 1842 Tafel III of the smooth shark of Aristotle (Mustelus laevis)](./media/muller_1842_mustelus_placenta_taf3.jpg)
+
+*Figure 3 — Original copperplate Tafel III (drawn by C. E. Weber) from Johannes Müller’s famous 1842 monograph Über den glatten Hai des Aristoteles, und über die Verschiedenheiten unter den Haifischen und Rochen in der Entwickelung des Eies (Berlin, `[E18]`), depicting the embryo of Aristotle’s γαλεὸς λεῖος (Mustelus laevis) attached by its umbilical stalk to the ruffled yolk-sac placenta (placenta vitellina).*
+
 In a lengthy and beautiful account Aristotle describes the development of the chick. It is on the third day that the embryo becomes sufficiently formed for the modern student to begin its study, and it was after just three days (a little earlier, as Aristotle notes, in little birds, a little later in larger ones) that Aristotle saw the first clear indication of the embryo. Like a speck of blood, he saw the heart beating, and its two umbilical blood-vessels breaking out over the yolk.
 
 A little later he saw the whole form of the body, noting the disproportionate size of head and eyes, and found the two sets of blood-vessels leading, the one to the yolk-sac, the other to the new-formed allantois. In the tiny chick of the tenth day, he saw the stomach and other viscera; he noted the altered position of the heart and great blood-vessels; he traced clearly and fully the surrounding membranes; he opened the little eye to seek, but failed to find, the lens.
@@ -204,9 +216,9 @@ To these arguments Aristotle added the more idealistic belief that the seat of t
 > **`EDITORIAL COMMENTARY 8 — OBSERVATION AND THE THEORY BUILT FROM IT`** *(Original pages 22 to 23)*  
 > `The beating embryonic heart and the heart’s anatomical position are observations; the conclusion about the soul’s central seat is an interpretation of them. Those statements deserve separate treatment. Thompson gives us enough detail to understand why the inference might have seemed compelling without making the observations logically sufficient for it. For a claim and evidence system, this is an especially clear example: preserving an observation’s provenance should leave room to revise the causal or philosophical claim attached to it.`
 
-![Plate III — Anatomia Animata: From Cephalopod, Shark & Chick Embryology to the Biological Architecture of De Anima](./media/thompson_1913_fig3_cephalopod_embryology_soul.png)
+![Plate III — Museum Folio: Historical Copperplates of Aristotle’s Embryology & the Architecture of De Anima](./media/thompson_1913_fig3_cephalopod_embryology_soul.png)
 
-*Plate III — Visual companion to Original pp. 17–29, Notes 18–29, and Editorial Commentaries 7–13: (A–D) Aristotle’s four master comparative and developmental case studies (Sepia cephalic yolk-sac and hectocotylus arm, Mustelus laevis selachian placenta vitellina, Day-3 chick punctum saliens with vitelline and allantoic vessels, and the cotyledonary plant node); and (E) the nested geometry of the tripartite soul (De Anima II.1–3, “as a triangle within a square”) contrasted with Bergson’s diverging evolutionary tree and Driesch’s vitalist entelechy.*
+*Plate III — Museum folio accompanying Original pp. 17–29, Notes 18–29, and Editorial Commentaries 7–13: (A) J. A. Herklots (1859) lithograph of Sepia officinalis with its two long anchor tentacles beside Cuvier’s (1829) engraving of the detached male hectocotylus arm (`[E17]`); (B) Jean-Baptiste Vérany’s (1851) chromolithograph of Argonauta argo (Plate 17 of Mollusques méditerranéens, `[E17]`); (C) Johannes Müller’s (1842) Tafel III of Mustelus laevis and its yolk-sac placenta (`[E18]`); (D) Marcello Malpighi’s (1673/1687) Royal Society copperplate of the chick embryo in De formatione pulli in ovo showing the area vasculosa and looping heart tubes (`[E19]`); (E) Müller & Henle’s (1841) Plate 27 comparing Mustelus vulgaris and Mustelus laevis; (F) 13th/14th-century illuminated manuscript leaf of Aristotle’s De Anima (`Vaticanus Palatinus latinus 1033`, `[E20]`); (G) Didacus Valades’s (1579) Renaissance engraving of the Scala Naturae (`Rhetorica Christiana`, `[E20]`); and (H) classical geometric diagram of Aristotle’s nested psychē (“as a triangle within a square,” De Anima II.3) and First vs. Second Actuality (ἐντελέχεια ἡ πρώτη).*
 
 And now is it possible to trace directly the influence of Aristotle’s scientific training and biological learning upon his sociology, his psychology, or in general on his philosophy? That such an influence must have been at work is, *prima facie*, obvious. The physician who becomes a philosopher will remain a physician to the end; the engineer will remain an engineer; and the ideas of pure mathematics, Roger Bacon’s ‘alphabet of philosophy’, will find issue and expression in the philosophy of such mathematicians as Plato, Leibnitz, Spinoza, or Descartes.
 
@@ -293,9 +305,9 @@ The little Greek I know, first learnt at my Father’s knee, is but a child’s 
 
 `Bioelectric patterning offers a concrete modern connection in method. Pai and colleagues reported that changing membrane voltage disrupted normal eye development and could induce ectopic eyes in Xenopus laevis. [E6] The explanatory advance depends on intervention as well as observation. Applied to a morphogenesis programme, the useful sequence is to record the pattern, propose the causal relationship, and test a prediction that could discriminate it from alternatives. Aristotle’s organized natural history, Thompson’s physical questions, and present experiments can each contribute at a different step.`
 
-![Plate IV — Editorial Synthesis for Morphogenesis Research: Representation, Provenance, Numerical Checks & Bioelectric Intervention](./media/thompson_1913_fig4_morpholib_four_connections.png)
+![Plate IV — From 1917 Woodcuts to Computational Morphospace: The Four Morpholib Connections](./media/thompson_1913_fig4_morpholib_four_connections.png)
 
-*Plate IV — Visual synthesis of Citations `[E6]`–`[E10]` and Morpholib Connections 1–4: (A) Connection 1 (`[E7]`): 17 skeletal landmarks (`IoU = 0.618`) versus 600-point whole-body silhouette fitting (`IoU = 0.749`) on Scarus → Pomacanthus; (B) Connection 2 (`[E8]`): landmark-reconstructed B-spline contour (`build_diodon_silhouette_from_landmarks`) versus photograph-segmented contour (`extract_aligned_silhouette_and_lms`); (C) Connection 3 (`[E9]`): 90×90 finite-difference Jacobian determinant field (`compute_jacobian_stats`, 100% sampled positivity vs. continuum global injectivity); and (D) Connection 4 (`[E10]`) & `[E6]`: MorphoEval’s separation of implementation, biological validation, and reproducibility alongside Pai et al. (2012) bioelectric $V_{\text{mem}}$ perturbation in Xenopus laevis.*
+*Plate IV — Museum and computational synthesis of Citations `[E6]`–`[E10]` and Morpholib Connections 1–4: (A) Connection 1 (`[E7]`): Thompson’s 1917 Figs. 375–376 woodcut (`Scarus → Pomacanthus`) paired with the quantitative comparison of 17 skeletal landmarks (`IoU = 0.618`) versus 600-point whole-body silhouette fitting (`IoU = 0.749`); (B) Connection 2 (`[E8]`): Thompson’s 1917 Figs. 381–382 woodcut (`Diodon → Orthagoriscus`) paired with Provenance Class A (`build_diodon_silhouette_from_landmarks`, landmark-interpolated B-spline) versus Provenance Class B (`extract_aligned_silhouette_and_lms`, segmented from the 1887 British Museum engraving); (C) Connection 3 (`[E9]`): 90×90 finite-difference Jacobian determinant check (`compute_jacobian_stats`, 100.0% sampled positivity vs. continuum global injectivity); and (D) Connection 4 (`[E10]`) & `[E6]`: Aristotle’s Four Causes (`[E5]`, `[E11]`), MorphoEval’s three-pillar uncalibrated rating separation, and Pai et al. (2012) bioelectric $V_{\text{mem}}$ perturbation in Xenopus laevis.*
 
 * **`Morpholib connection 1 — Choosing what counts as form.`** `The repository compares a 17-landmark representation for 791 reef-fish species with densely sampled outlines, including 600-point contours. Its current README reports that directly fitting outlines improves the Scarus to Pomacanthus intersection-over-union score from 0.662 to 0.749, while fitting skeletal landmarks can worsen outline agreement. These are repository-reported results, not independently reproduced here. [E7] Their relevance to this lecture is precise: a representation selects the features that an explanatory scheme must answer to. Success on one representation need not transfer to another.`
 * **`Morpholib connection 2 — The provenance of an outline.`** `The silhouette script extracts contours from photographs through background estimation, segmentation, and alignment. It also contains a function that constructs a Diodon outline from landmarks, adding fin and tail extensions before smoothing the contour. [E8] A reconstructed contour and a photograph-derived contour therefore need distinct provenance labels in any comparison. Increasing the number of sampled points increases geometric resolution; it does not automatically supply that many independent biological observations.`
@@ -342,9 +354,9 @@ Original page and note numbers are given in parentheses.
 
 ---
 
-## SOURCES FOR EDITORIAL COMMENTARY
+## SOURCES FOR EDITORIAL COMMENTARY & ARCHIVAL PLATES
 
-- **[E1]** Thompson, D’Arcy Wentworth. *On Growth and Form* (1917), Introduction and Chapter XVII *On the Theory of Transformations*. Primary text for the physical programme and the distinction between comparing forms and explaining their production.  
+- **[E1]** Thompson, D’Arcy Wentworth. *On Growth and Form* (1917), Introduction, Chapter XVI (*On Form and Mechanical Efficiency*, Figs. 334–351), and Chapter XVII (*On the Theory of Transformations*, Figs. 373–382). Primary text for the physical programme and the distinction between comparing forms and explaining their production.  
   [https://www.gutenberg.org/files/55264/55264-h/55264-h.htm](https://www.gutenberg.org/files/55264/55264-h/55264-h.htm)
 - **[E2]** Plutarch. *Life of Alexander* 7.2 to 7.3, translated by Bernadotte Perrin. Primary account describing Aristotle as Alexander’s teacher.  
   [https://lexundria.com/plut_alex/7/prr](https://lexundria.com/plut_alex/7/prr)
@@ -352,7 +364,7 @@ Original page and note numbers are given in parentheses.
   [https://classics.mit.edu/Aristotle/parts_animals.1.i.html](https://classics.mit.edu/Aristotle/parts_animals.1.i.html)
 - **[E4]** Aristotle. *De Anima* II.1 to II.3, translated by J. A. Smith. Primary text for soul, actuality, and the capacities of living things.  
   [https://classics.mit.edu/Aristotle/soul.2.ii.html](https://classics.mit.edu/Aristotle/soul.2.ii.html)
-- **[E5]** Aristotle. *Physics* II.8, translated by R. P. Hardie and R. K. Gaye. Primary text for natural purposiveness and its relation to deliberation.  
+- **[E5]** Aristotle. *Physics* II.3 and II.8–9, translated by R. P. Hardie and R. K. Gaye. Primary text for the four causes, natural purposiveness, and conditional necessity.  
   [https://classics.mit.edu/Aristotle/physics.2.ii.html](https://classics.mit.edu/Aristotle/physics.2.ii.html)
 - **[E6]** Pai, V. P., Aw, S., Shomrat, T., Lemire, J. M., and Levin, M. (2012). Transmembrane voltage potential controls embryonic eye patterning in *Xenopus laevis*. *Development* 139, 313–323. doi:10.1242/dev.073759. Primary experimental study.  
   [https://doi.org/10.1242/dev.073759](https://doi.org/10.1242/dev.073759)
@@ -364,3 +376,16 @@ Original page and note numbers are given in parentheses.
   [https://github.com/fractastical/morpholib/blob/main/thompson/run_rigor_stress_tests.py](https://github.com/fractastical/morpholib/blob/main/thompson/run_rigor_stress_tests.py)
 - **[E10]** MorphoEval documentation. Rubric dimensions, score semantics, and checkpointed evidence. File blob SHA `216f0efa9dd9d94f7ec3c1dab38cea48eaf9f33c`.  
   [https://github.com/fractastical/morpholib/blob/main/morphoeval/README.md](https://github.com/fractastical/morpholib/blob/main/morphoeval/README.md)
+- **[E11]** Thompson, D’Arcy Wentworth. *On Aristotle as a Biologist, With a Prooemion on Herbert Spencer* (Oxford: Clarendon Press, 1913). Original University of California archival scan (`onaristotleasbio00thomrich`).  
+  [https://archive.org/details/onaristotleasbio00thomrich](https://archive.org/details/onaristotleasbio00thomrich)
+- **[E12]** Moffat, Edinburgh. Cabinet portrait of D’Arcy Wentworth Thompson, circa 1906. University of St Andrews Libraries and Museums, `ms48534-ph-2-5` (CC0, public domain).
+- **[E13]** Stieler, Joseph Karl. Portrait of Johann Wolfgang von Goethe (1828), Neue Pinakothek, Munich (public domain, via Wikimedia Commons).
+- **[E14]** Turpin, Pierre Jean François. *Végétal Type, Idéal, Appendiculé* (1837), Plate 3 illustrating Goethe’s *Œuvres d’histoire naturelle*. Houghton Library, Harvard University, `hyde_47587_95_plate_3` (public domain).
+- **[E15]** Hydrographic Office of the British Admiralty. *Admiralty Chart No. 1665: Mityleni Island with the Gulfs of Adramyti and Sandarli*, surveyed by Capt. Richard Copeland, R.N. (1832) and Capt. Thomas Graves, R.N. (1848–1849), showing Port Kalloni (the ancient Lagoon of Pyrrha).
+- **[E16]** Robert, Nicolas (17th c.), *Pecten jacobaeus*; Hollar, Wenceslas (1607–1677), copperplate etching of *Murex brandaris*; and Haeckel, Ernst (1904), *Kunstformen der Natur*, Tafel 40 (*Asteridea*).
+- **[E17]** Herklots, Jan Adrianus (1859), *Sepia officinalis* (*De Weekdieren van Nederland*); Vérany, Jean-Baptiste (1851), *Argonauta argo*, Plate 17 of *Mollusques méditerranéens*; and Cuvier, Georges (1829), *Mémoire sur un ver parasite d’un nouveau genre (Hectocotylus octopodis)*.
+- **[E18]** Müller, Johannes (1842). *Über den glatten Hai des Aristoteles, und über die Verschiedenheiten unter den Haifischen und Rochen in der Entwickelung des Eies* (Berlin, Tafel III drawn by C. E. Weber), and Müller & Henle (1841), *Systematische Beschreibung der Plagiostomen*, Plate 27.  
+  [https://archive.org/details/10861147bsb](https://archive.org/details/10861147bsb)
+- **[E19]** Malpighi, Marcello (1673 / 1687). *Dissertatio epistolica de formatione pulli in ovo* (London: Royal Society, `b30338505_0001` & *Opera omnia* Tom. II, p. 56, Wellcome Collection `L0000170`).  
+  [https://archive.org/details/b30338505_0001](https://archive.org/details/b30338505_0001)
+- **[E20]** Aristotle, *De Anima*, 13th/14th-century illuminated Latin manuscript leaf (`Biblioteca Apostolica Vaticana, Pal. lat. 1033`); and Valades, Didacus (1579), *Scala Naturae* copperplate in *Rhetorica Christiana* (Perugia).

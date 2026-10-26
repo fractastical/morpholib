@@ -1,53 +1,78 @@
 #!/usr/bin/env python3
 """
-Generate bespoke high-resolution illustration plates for D'Arcy Wentworth Thompson's
-1913 Herbert Spencer Lecture at Oxford: 'On Aristotle as a Biologist, With a Prooemion
-on Herbert Spencer', annotated with critical commentary and connections to Morpholib
-& Morphogenesis Research.
+Generate authentic museum-grade archival & copperplate plates for D'Arcy Wentworth
+Thompson's 1913 Herbert Spencer Lecture at Oxford: 'On Aristotle as a Biologist,
+With a Prooemion on Herbert Spencer', integrating the portraits, 17th–19th century
+monograph engravings, and archival plates from both the 1913 lecture and the
+Readable .docx edition.
 
 Outputs (saved to docs/media/):
   1. thompson_1913_fig1_spencer_vs_aristotle.png
-     - The Engineer (Spencer: stress, strain, scaling L^2 vs L^3) vs. The Naturalist
-       (Aristotle: developmental differentiation, Goethe's law of subordination of parts,
-       and Thompson's 1917 bridge).
+     - Museum Folio Plate I (Prooemion & Commentaries 1–3):
+       (A) 1913 Clarendon Press Title Page (Oxford)
+       (B) Moffat Cabinet Portrait of D'Arcy Wentworth Thompson (c. 1906, St Andrews)
+       (C) Herbert Spencer Portrait (1820–1903)
+       (D) Joseph Karl Stieler's Portrait of Goethe (1828)
+       (E) P. J. F. Turpin's 'Végétal Type, Idéal, Appendiculé' (1837 Urpflanze engraving)
+       (F) Culmann & H. Meyer's Crane-Head vs. Human Femur Trabeculae (On Growth and Form 1917, Fig. 335)
+       (G) Thompson's Cantilever Bridge & Titanotherium Backbone Stress-Diagram (1917, Figs. 346 & 349)
+
   2. thompson_1913_fig2_lesbos_pyrrha_lagoon.png
-     - Map of the Aegean & the Lagoon of Pyrrha (Kalloni) on Lesbos paired with a
-       6-panel anatomical & ecological plate of the exact creatures Aristotle observed
-       there (Starfish pentaradial diagram, Scallop Pecten shell, Sea-Urchin test,
-       Purple Murex shell, Chameleon & Lagoon Fish migration diagram, and Sepia
-       cuttlebone & anchor-arm anatomy).
+     - Museum Folio Plate II (Aristotle on Lesbos & the Lagoon of Pyrrha, pp. 12–14):
+       (A) Royal Navy Admiralty Chart No. 1665 of Mityleni Island (Lesbos) & Port Kalloni
+           (ancient Lagoon of Pyrrha), surveyed by Capt. R. Copeland R.N. (1832/1848)
+       (B) Palazzo Altemps Classical Marble Bust of Aristotle (after Lysippos)
+       (C) Haeckel's Tafel 40 (Asteridea / Starfishes of the Lagoon, 1904 lithograph)
+       (D) Nicolas Robert's 17th-century vellum painting of Pecten jacobaeus (Scallop)
+       (E) Wenceslas Hollar's 17th-century copperplate etching of Murex brandaris (Cape Lectum)
+       (F) Duméril & Bibron's 19th-century lithograph of Chamaeleo chamaeleon skeleton (Asiatic coast)
+
   3. thompson_1913_fig3_cephalopod_embryology_soul.png
-     - Crisp anatomical & embryological diagrams of Aristotle's four master case studies:
-       (A) Cephalopod comparative anatomy (Sepia vs Octopus funnel, gut & hectocotylus arm)
-       (B) Selachian placenta vitellina (Mustelus laevis yolk-sac interdigitating with uterus)
-       (C) Chick Day-3 punctum saliens (beating heart, vitelline & allantoic vessels)
-       (D) Plant embryo cor/cerebrum & experimental regeneration
-       + (E) The Tripartite Soul (Threptike -> Aisthetike -> Nous) vs. Bergson's Diverging Tree
-             and Driesch's Entelechy (Editorial Commentaries 7–13).
+     - Museum Folio Plate III (Anatomia Animata & De Anima, pp. 17–29):
+       (A) J. A. Herklots (1859) lithograph of Sepia officinalis (showing two long anchor tentacles)
+       (B) J.-B. Vérany (1851) chromolithograph of Argonauta argo (Plate 17, Mollusques méditerranéens)
+       (C) Cuvier (1829) engraving of the detached male Hectocotylus arm
+       (D) Johannes Müller (1842) Tafel III from 'Über den glatten Hai des Aristoteles' showing
+           Mustelus laevis (γαλεὸς λεῖος) embryo attached to the maternal placenta vitellina
+       (E) Marcello Malpighi (1673/1687) 'De formatione pulli in ovo' copperplate of the Day-3
+           chick embryo punctum saliens, area vasculosa, and looping heart tubes
+       (F) Didacus Valades (1579) Renaissance copperplate of the Scala Naturae (Great Chain of Being)
+       (G) 13th/14th-century illuminated manuscript leaf of Aristotle's De Anima (Vaticanus Pal. lat. 1033)
+       (H) Classical Geometric Engraving of Aristotle's Nested Psychē ('as a triangle within a square',
+           De Anima II.3) and First vs. Second Actuality (ἐντελέχεια ἡ πρώτη)
+
   4. thompson_1913_fig4_morpholib_four_connections.png
-     - Visual synthesis of the 4 Morpholib Connections in the Editorial Synthesis:
-       (C1) 17-LM wireframe (IoU 0.618) vs. 600-pt silhouette (IoU 0.749) on Scarus -> Pomacanthus
-       (C2) Photograph-derived contour (Mola mola) vs. landmark-reconstructed B-spline contour (Diodon)
-       (C3) 90x90 Finite-Difference Jacobian Determinant field (det DPhi > 0, 100% sampled positivity)
-       (C4) MorphoEval 3-pillar uncalibrated assessment separation (Impl 30 / Bio 40 / Repro 30)
-            and Pai et al. (2012) Xenopus bioelectric Vmem intervention vs. observation.
+     - Museum & Computational Synthesis Plate IV (Editorial Synthesis & Morpholib Connections 1–4):
+       Pairs D'Arcy Thompson's original 1917 woodcuts (Figs. 375–376 Scarus -> Pomacanthus and
+       Figs. 381–382 Diodon -> Orthagoriscus/Mola) and British Museum 1887 engraving with the
+       4 Morpholib quantitative verification panels ([E6]–[E10]).
 """
 
 from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import shutil
 
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from matplotlib.path import Path as MplPath
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MEDIA_DIR = REPO_ROOT / "docs" / "media"
+CACHE_1913 = REPO_ROOT / ".thompson_cache" / "aristotle_1913"
+CACHE_DOCX = REPO_ROOT / ".thompson_cache" / "aristotle_docx"
+CACHE_MAIN = REPO_ROOT / ".thompson_cache"
 MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+
+PARCHMENT_BG = "#f7f3e8"
+CARD_BG = "#fcfaf2"
+BORDER_GOLD = "#8c6d3f"
+INK_DARK = "#1c1917"
+INK_MUTED = "#44403c"
 
 
 def load_module(name: str, rel_path: str):
@@ -57,134 +82,169 @@ def load_module(name: str, rel_path: str):
     return mod
 
 
-def load_specimen_img(rel_path: str, size: tuple[int, int] = (320, 240)) -> np.ndarray:
-    p = REPO_ROOT / rel_path
-    if not p.exists():
-        return np.full((size[1], size[0], 3), 240, dtype=np.uint8)
-    im = Image.open(p).convert("RGB")
-    w, h = im.size
-    target_ratio = size[0] / size[1]
-    cur_ratio = w / h
-    if cur_ratio > target_ratio:
-        new_w = int(h * target_ratio)
-        left = (w - new_w) // 2
-        im = im.crop((left, 0, left + new_w, h))
-    else:
-        new_h = int(w / target_ratio)
-        top = (h - new_h) // 2
-        im = im.crop((0, top, w, top + new_h))
-    im = im.resize(size, Image.LANCZOS)
-    return np.asarray(im)
+def open_fitted(path: Path, box_size: tuple[int, int] = (500, 500), pad_color=(252, 250, 242), crop_frac: tuple[float, float, float, float] | None = None) -> np.ndarray:
+    if not path.exists():
+        return np.full((box_size[1], box_size[0], 3), 245, dtype=np.uint8)
+    im = Image.open(path).convert("RGB")
+    if crop_frac is not None:
+        w, h = im.size
+        x0, y0, x1, y1 = crop_frac
+        im = im.crop((int(x0 * w), int(y0 * h), int(x1 * w), int(y1 * h)))
+    im = ImageOps.contain(im, box_size, Image.LANCZOS)
+    canvas = Image.new("RGB", box_size, pad_color)
+    ox = (box_size[0] - im.width) // 2
+    oy = (box_size[1] - im.height) // 2
+    canvas.paste(im, (ox, oy))
+    return np.asarray(canvas)
+
+
+def style_museum_ax(ax, title: str, subtitle: str = "", border_color: str = BORDER_GOLD):
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_color(border_color)
+        sp.set_linewidth(1.5)
+    ax.set_title(title, fontsize=9.8, fontweight="bold", fontfamily="serif", color=INK_DARK, pad=5)
+    if subtitle:
+        ax.set_xlabel(subtitle, fontsize=8.0, fontfamily="serif", color=INK_MUTED, labelpad=4)
+
+
+def copy_standalone_museum_assets():
+    """Also copy key standalone museum portraits/plates into docs/media/ for inline embedding."""
+    pairs = [
+        (CACHE_DOCX / "image1.jpg", MEDIA_DIR / "thompson_1906_moffat_portrait.jpg"),
+        (CACHE_DOCX / "image2.jpg", MEDIA_DIR / "goethe_1828_stieler_portrait.jpg"),
+        (CACHE_DOCX / "turpin_1837_urpflanze.jpg", MEDIA_DIR / "turpin_1837_urpflanze_plate.jpg"),
+        (CACHE_1913 / "muller1842_n84.jpg", MEDIA_DIR / "muller_1842_mustelus_placenta_taf3.jpg"),
+        (CACHE_1913 / "malpighi_chick_1687.jpg", MEDIA_DIR / "malpighi_1687_pulli_in_ovo_plate.jpg"),
+        (CACHE_1913 / "argonauta_verany_1851.jpg", MEDIA_DIR / "verany_1851_argonauta_plate17.jpg"),
+        (CACHE_1913 / "lesbos_admiralty_1860.jpg", MEDIA_DIR / "lesbos_admiralty_chart_1860.jpg"),
+    ]
+    for src, dst in pairs:
+        if src.exists():
+            shutil.copy2(src, dst)
 
 
 def build_fig1_spencer_vs_aristotle():
     """
-    Figure 1: Prooemion on Herbert Spencer vs. Aristotle & Goethe
-    (Editorial Commentaries 1, 2, and 3).
+    Plate I: Prooemion on Herbert Spencer, Goethe's Morphology, and Physical Form (1913 -> 1917).
     """
-    fig = plt.figure(figsize=(15.5, 5.6), dpi=200, facecolor="#ffffff")
+    fig = plt.figure(figsize=(16.5, 9.4), dpi=200, facecolor=PARCHMENT_BG)
     gs = gridspec.GridSpec(
-        1, 3, figure=fig, width_ratios=[1.05, 1.05, 1.1],
-        wspace=0.22, left=0.04, right=0.97, top=0.80, bottom=0.14
+        2, 4, figure=fig, height_ratios=[1.0, 1.08], width_ratios=[0.92, 0.92, 0.92, 1.24],
+        hspace=0.34, wspace=0.18, left=0.03, right=0.97, top=0.88, bottom=0.07
     )
 
     fig.suptitle(
-        "Plate I — The Engineer and the Naturalist: Spencer’s Mechanical Scaling vs. Goethe & Aristotle’s Subordination of Parts\n"
-        "(Illustrating the Prooemion on Herbert Spencer & Editorial Commentaries 1–3, Original pp. 4–11)",
-        fontsize=12.5, fontweight="bold", color="#0f172a", y=0.95
+        "PLATE I — PROOEMION ON HERBERT SPENCER, GOETHE’S MORPHOLOGY & PHYSICAL STRUCTURAL MECHANICS\n"
+        "Archival Portraits, the 1913 Oxford Title Page, Turpin’s 1837 Urpflanze & Culmann’s Graphic Statics in On Growth and Form (1917)",
+        fontsize=12.6, fontweight="bold", fontfamily="serif", color=INK_DARK, y=0.96
     )
 
-    # Panel A: Spencer's Bridge-Builder & Galileo-Spencer Scaling Law (pp. 7-8, Note 9)
-    ax1 = fig.add_subplot(gs[0, 0])
+    # Row 1, Col 0: 1913 Clarendon Press Title Page
+    ax00 = fig.add_subplot(gs[0, 0])
+    img_title = open_fitted(CACHE_1913 / "thompson1913_title_n4.jpg", (420, 560), crop_frac=(0.06, 0.04, 0.94, 0.95))
+    ax00.imshow(img_title)
+    style_museum_ax(
+        ax00,
+        "A. Oxford Clarendon Press (1913)",
+        "Original title page of the Herbert Spencer\nLecture delivered Feb. 14, 1913"
+    )
+
+    # Row 1, Col 1: D'Arcy Wentworth Thompson (c. 1906 Moffat Cabinet Card)
+    ax01 = fig.add_subplot(gs[0, 1])
+    img_dwt = open_fitted(CACHE_DOCX / "image1.jpg", (420, 560))
+    ax01.imshow(img_dwt)
+    style_museum_ax(
+        ax01,
+        "B. D’Arcy W. Thompson (c. 1906)",
+        "Cabinet portrait by Moffat, Edinburgh;\nSt Andrews ms48534-ph-2-5 [E1, E12]"
+    )
+
+    # Row 1, Col 2: Herbert Spencer (1820–1903)
+    ax02 = fig.add_subplot(gs[0, 2])
+    img_spencer = open_fitted(CACHE_1913 / "spencer_portrait.jpg", (420, 560))
+    ax02.imshow(img_spencer)
+    style_museum_ax(
+        ax02,
+        "C. Herbert Spencer (1820–1903)",
+        "Railway bridge-builder on the Birmingham–\nCrewe line & author of Synthetic Philosophy"
+    )
+
+    # Row 2, Col 0: Goethe (1828 Stieler Portrait)
+    ax10 = fig.add_subplot(gs[1, 0])
+    img_goethe = open_fitted(CACHE_DOCX / "image2.jpg", (420, 520))
+    ax10.imshow(img_goethe)
+    style_museum_ax(
+        ax10,
+        "D. J. W. von Goethe (Stieler, 1828)",
+        "Author of Zur Morphologie (1795/1807):\n‘subordination of parts’ (pp. 6–7) [E3, E13]"
+    )
+
+    # Row 2, Col 1: Turpin's 1837 Ideal Plant (Urpflanze)
+    ax11 = fig.add_subplot(gs[1, 1])
+    img_turpin = open_fitted(CACHE_DOCX / "turpin_1837_urpflanze.jpg", (420, 520), crop_frac=(0.04, 0.02, 0.96, 0.96))
+    ax11.imshow(img_turpin)
+    style_museum_ax(
+        ax11,
+        "E. Turpin’s Ideal Plant (1837)",
+        "Végétal Type, Idéal, Appendiculé illustrating\nGoethe’s organ metamorphosis [E4, E14]"
+    )
+
+    # Row 2, Col 2: Culmann's Crane-Head vs. Human Femur Trabeculae (On Growth and Form 1917, Fig. 335)
+    ax12 = fig.add_subplot(gs[1, 2])
+    img_femur = open_fitted(CACHE_1913 / "gutenberg_i682.png", (420, 520), pad_color=(255, 255, 255))
+    ax12.imshow(img_femur)
+    style_museum_ax(
+        ax12,
+        "F. Crane-Head & Femur (1917, Fig. 335)",
+        "Culmann & H. Meyer’s stress trajectories\nin bone trabeculae (pp. 7–8, Comm. 2) [E1]"
+    )
+
+    # Col 3 (spanning both rows): Bridge-Builder Cantilevers (1917 Figs. 341 & 349) + Scaling Law (Note 9)
+    gs_right = gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=gs[:, 3], height_ratios=[0.95, 1.05], hspace=0.32)
+
+    ax_bridge = fig.add_subplot(gs_right[0, 0])
+    im_b1 = Image.open(CACHE_1913 / "gutenberg_i696b.png").convert("RGB") if (CACHE_1913 / "gutenberg_i696b.png").exists() else Image.open(CACHE_1913 / "gutenberg_i700b.png").convert("RGB")
+    im_b2 = Image.open(CACHE_1913 / "gutenberg_i704.png").convert("RGB")
+    w_comp = 560
+    h_comp = 360
+    comp_canvas = Image.new("RGB", (w_comp, h_comp), (255, 255, 255))
+    b1_fit = ImageOps.contain(im_b1, (w_comp - 20, 150), Image.LANCZOS)
+    b2_fit = ImageOps.contain(im_b2, (w_comp - 20, 175), Image.LANCZOS)
+    comp_canvas.paste(b1_fit, ((w_comp - b1_fit.width) // 2, 12))
+    comp_canvas.paste(b2_fit, ((w_comp - b2_fit.width) // 2, 175))
+    ax_bridge.imshow(np.asarray(comp_canvas))
+    style_museum_ax(
+        ax_bridge,
+        "G. Bridge-Builder Statics in Anatomy (1917, Figs. 346 & 349)",
+        "Cantilever truss & stress-diagram of the quadrupedal spine (p. 8, Note 8)"
+    )
+
+    ax_scale = fig.add_subplot(gs_right[1, 0])
+    ax_scale.set_facecolor(CARD_BG)
     L = np.linspace(0.5, 4.0, 200)
-    strength_cross_section = L ** 2
-    weight_volume = L ** 3
-    aquatic_speed = 1.8 * (L ** 0.5)
-
-    ax1.plot(L, strength_cross_section / strength_cross_section[-1] * 100, color="#0284c7", lw=2.6,
-             label=r"Structural Cross-Section / Bone Stress Limit ($\propto L^2$)")
-    ax1.plot(L, weight_volume / weight_volume[-1] * 100, color="#dc2626", lw=2.6, ls="--",
-             label=r"Gravitational Mass / Load on Terrestrial Frame ($\propto L^3$)")
-    ax1.plot(L, aquatic_speed / aquatic_speed[-1] * 65, color="#0d9488", lw=2.3, ls="-.",
-             label=r"Aquatic Locomotive Speed (Buoyant Medium, Note 9)")
-
-    ax1.axvline(2.4, color="#64748b", ls=":", lw=1.3)
-    ax1.annotate(
-        "Terrestrial / Avian\nSize Ceiling\n(Princ. Biol. i. 156)",
-        xy=(2.4, 52), xytext=(1.05, 68),
-        fontsize=8.8, fontweight="bold", color="#991b1b",
-        bbox=dict(boxstyle="round,pad=0.3", fc="#fef2f2", ec="#f87171", lw=1.0),
-        arrowprops=dict(arrowstyle="->", color="#dc2626", lw=1.2)
+    ax_scale.plot(L, (L ** 2) / 16.0 * 100, color="#1d4ed8", lw=2.3, label=r"Supporting Cross-Section Area ($\propto L^2$)")
+    ax_scale.plot(L, (L ** 3) / 64.0 * 100, color="#b91c1c", lw=2.3, ls="--", label=r"Gravitational Bulk / Weight ($\propto L^3$)")
+    ax_scale.plot(L, (L ** 0.5) / 2.0 * 68, color="#0f766e", lw=2.1, ls="-.", label=r"Aquatic Speed in Buoyant Water (Note 9)")
+    ax_scale.axvline(2.4, color=BORDER_GOLD, ls=":", lw=1.4)
+    ax_scale.annotate(
+        "Terrestrial & Avian\nSize Limit\n(Princ. Biol. i. 156)",
+        xy=(2.4, 48), xytext=(0.75, 62),
+        fontsize=8.0, fontfamily="serif", fontweight="bold", color="#7f1d1d",
+        bbox=dict(boxstyle="round,pad=0.28", fc="#fef2f2", ec="#b91c1c", lw=0.9),
+        arrowprops=dict(arrowstyle="->", color="#b91c1c", lw=1.1)
     )
-    ax1.set_title("A. Spencer the Engineer (pp. 7–8, Note 9)\nStress, Strain & Size Limits in Organisms", fontsize=10.8, fontweight="bold", color="#0f172a", pad=8)
-    ax1.set_xlabel("Characteristic Linear Dimension $L$ (Relative Scale)", fontsize=9.2, color="#334155")
-    ax1.set_ylabel("Normalized Mechanical Magnitude (%)", fontsize=9.2, color="#334155")
-    ax1.set_xlim(0.5, 4.0)
-    ax1.set_ylim(0, 105)
-    ax1.grid(True, ls=":", alpha=0.45, color="#cbd5e1")
-    ax1.legend(loc="upper left", fontsize=7.8, frameon=True, facecolor="#f8fafc", edgecolor="#cbd5e1")
-
-    # Panel B: Goethe (1795/1807), Von Baer & Spencer's Law of Differentiation (pp. 6-7)
-    ax2 = fig.add_subplot(gs[0, 1])
-    ax2.set_xlim(0, 10)
-    ax2.set_ylim(0, 10)
-    ax2.axis("off")
-    ax2.set_title("B. Goethe, Von Baer & Spencer (pp. 6–7, Notes 3–6)\nHomogeneous Repetition → Heterogeneous Subordination", fontsize=10.8, fontweight="bold", color="#0f172a", pad=8)
-
-    ax2.text(5.0, 9.25, "1. Homogeneous / Unsubordinated State (Goethe, Zur Morphologie)",
-             ha="center", va="center", fontsize=8.8, fontweight="bold", color="#334155")
-    for i, x_c in enumerate(np.linspace(1.5, 8.5, 7)):
-        circ = mpatches.Circle((x_c, 7.6), 0.52, facecolor="#bae6fd", edgecolor="#0284c7", lw=1.6)
-        ax2.add_patch(circ)
-        if i < 6:
-            ax2.plot([x_c + 0.52, x_c + 0.64], [7.6, 7.6], color="#0284c7", lw=1.8)
-    ax2.text(5.0, 6.55, "Identical metameric units ($U_1 \\simeq U_2 \\simeq \\dots \\simeq U_n$): low functional subordination",
-             ha="center", va="center", fontsize=8.0, style="italic", color="#475569")
-
-    ax2.annotate("", xy=(5.0, 5.15), xytext=(5.0, 6.15),
-                 arrowprops=dict(arrowstyle="->,head_width=0.35,head_length=0.35", color="#0f172a", lw=2.0))
-    ax2.text(5.3, 5.65, "Ontogenetic Differentiation\n(Wolff → Goethe → Von Baer)", fontsize=8.0, fontweight="bold", color="#0f172a", va="center")
-
-    ax2.text(5.0, 4.55, "2. Heterogeneous / Subordinated Organization",
-             ha="center", va="center", fontsize=8.8, fontweight="bold", color="#15803d")
-    nodes = [
-        (5.0, 3.4, "Central Coordinating Axis\n(Heart / Neural Hub)", "#dcfce7", "#15803d", 2.7, 0.9),
-        (1.9, 1.3, "Sensory / Cranial\nModule", "#fef3c7", "#b45309", 2.2, 0.85),
-        (5.0, 1.3, "Visceral / Nutrient\nModule", "#fce7f3", "#be185d", 2.2, 0.85),
-        (8.1, 1.3, "Locomotor / Distal\nAppendages", "#e0e7ff", "#4338ca", 2.2, 0.85),
-    ]
-    for x0, y0, lbl, fc, ec, w, h in nodes:
-        box = mpatches.FancyBboxPatch(
-            (x0 - w / 2, y0 - h / 2), w, h,
-            boxstyle="round,pad=0.12,rounding_size=0.2", facecolor=fc, edgecolor=ec, lw=1.5
-        )
-        ax2.add_patch(box)
-        ax2.text(x0, y0, lbl, ha="center", va="center", fontsize=7.7, fontweight="bold", color="#0f172a")
-    for x_t in (1.9, 5.0, 8.1):
-        ax2.annotate("", xy=(x_t, 1.82), xytext=(5.0, 2.88),
-                     arrowprops=dict(arrowstyle="<->", color="#475569", lw=1.3))
-
-    # Panel C: Editorial Commentary 1-3 Table — Four Distinct Meanings of "Evolution" & Method
-    ax3 = fig.add_subplot(gs[0, 2])
-    ax3.set_xlim(0, 10)
-    ax3.set_ylim(0, 10)
-    ax3.axis("off")
-    ax3.set_title("C. Editorial Commentaries 1–3: Disentangling Scales & Habits\nWhy the Engineer and Naturalist See Different Problems", fontsize=10.8, fontweight="bold", color="#0f172a", pad=8)
-
-    cards = [
-        (8.1, "1. Cosmic Equilibration (Spencer)", "Redistribution of matter & motion; alternation of\naggregation and dissolution ('Persistence of Force').", "#f1f5f9", "#475569"),
-        (5.8, "2. Individual Ontogeny (Aristotle / Von Baer)", "Embryonic differentiation from homogeneous germ\nto subordinated organs within a single lifetime.", "#e0f2fe", "#0284c7"),
-        (3.5, "3. Phylogenetic Descent (Darwin)", "Historical divergence of lineages across geological time\n(distinct from a conceptual scala naturae).", "#dcfce7", "#15803d"),
-        (1.2, "4. Physical Morphogenesis (Roux / Thompson 1917)", "Entwicklungsmechanik: how stress, strain, tension & bioelectric\nfields physically shape tissue—bridging Spencer & Aristotle.", "#fef3c7", "#b45309"),
-    ]
-    for y_c, title_c, body_c, fc, ec in cards:
-        rect = mpatches.FancyBboxPatch(
-            (0.3, y_c - 0.85), 9.4, 1.85,
-            boxstyle="round,pad=0.1,rounding_size=0.2", facecolor=fc, edgecolor=ec, lw=1.5
-        )
-        ax3.add_patch(rect)
-        ax3.text(0.65, y_c + 0.42, title_c, ha="left", va="center", fontsize=8.7, fontweight="bold", color=ec)
-        ax3.text(0.65, y_c - 0.25, body_c, ha="left", va="center", fontsize=7.9, color="#1e293b")
+    ax_scale.set_xlim(0.5, 4.0)
+    ax_scale.set_ylim(0, 105)
+    ax_scale.set_xlabel("Relative Linear Scale $L$ (Commentary 2 / Reader Note 6)", fontsize=8.2, fontfamily="serif", color=INK_DARK)
+    ax_scale.set_ylabel("Normalized Magnitude (%)", fontsize=8.2, fontfamily="serif", color=INK_DARK)
+    ax_scale.set_title("H. Spencer’s Scaling Corollary (p. 8, Note 9)", fontsize=9.8, fontweight="bold", fontfamily="serif", color=INK_DARK, pad=5)
+    ax_scale.grid(True, ls=":", alpha=0.45, color="#a8a29e")
+    ax_scale.legend(loc="upper left", fontsize=7.3, frameon=True, facecolor=PARCHMENT_BG, edgecolor=BORDER_GOLD)
+    for sp in ax_scale.spines.values():
+        sp.set_color(BORDER_GOLD)
+        sp.set_linewidth(1.5)
 
     out_path = MEDIA_DIR / "thompson_1913_fig1_spencer_vs_aristotle.png"
     fig.savefig(out_path, dpi=200)
@@ -194,169 +254,112 @@ def build_fig1_spencer_vs_aristotle():
 
 def build_fig2_lesbos_pyrrha_lagoon():
     """
-    Figure 2: Aristotle's Field Station on Lesbos (The Lagoon of Pyrrha / Kalloni)
-    and the Fauna of the Asiatic Coast (pp. 12–14, Commentaries 4–5).
+    Plate II: Insula Nobilis et Amoena — The 1848/1860 Admiralty Chart of Mityleni (Lesbos)
+    & Port Kalloni (Lagoon of Pyrrha) paired with 17th–19th century museum engravings.
     """
-    fig = plt.figure(figsize=(16.0, 6.7), dpi=200, facecolor="#ffffff")
+    fig = plt.figure(figsize=(16.5, 9.2), dpi=200, facecolor=PARCHMENT_BG)
     gs = gridspec.GridSpec(
-        1, 2, figure=fig, width_ratios=[1.12, 1.38],
-        wspace=0.16, left=0.04, right=0.97, top=0.83, bottom=0.09
+        2, 4, figure=fig, width_ratios=[1.28, 1.28, 1.0, 1.0],
+        hspace=0.32, wspace=0.16, left=0.03, right=0.97, top=0.88, bottom=0.07
     )
 
     fig.suptitle(
-        "Plate II — Insula Nobilis et Amoena: Aristotle’s Marine Field Station at the Lagoon of Pyrrha (Lesbos, 345–342 BC)\n"
-        "(Illustrating Original pp. 12–14, Notes 12–13 & Editorial Commentaries 4–5: From Local Place-Names to Biological Science)",
-        fontsize=12.4, fontweight="bold", color="#0f172a", y=0.95
+        "PLATE II — INSULA NOBILIS ET AMOENA: ADMIRALTY CHART OF LESBOS (PYRRHA LAGOON) & MUSEUM SPECIMEN PLATES\n"
+        "The 1848/1860 Hydrographic Survey of Mityleni & Port Kalloni alongside 17th–19th Century Engravings of Aristotle’s Lagoon Fauna (pp. 12–14)",
+        fontsize=12.4, fontweight="bold", fontfamily="serif", color=INK_DARK, y=0.96
     )
 
-    # Left panel: Schematic Biogeographical Map of the Northern/Eastern Aegean & Lesbos / Pyrrha Lagoon
-    ax_map = fig.add_subplot(gs[0, 0])
-    ax_map.set_facecolor("#e0f2fe")
-    ax_map.set_xlim(22.5, 27.5)
-    ax_map.set_ylim(37.8, 41.2)
+    # Left 2x2 span: 1848/1860 Admiralty Chart No. 1665 of Mityleni Island (Lesbos) with Port Kalloni (Pyrrha) annotated
+    ax_chart = fig.add_subplot(gs[:, :2])
+    chart_im = Image.open(CACHE_1913 / "lesbos_admiralty_1860.jpg").convert("RGB")
+    cw, ch = chart_im.size
+    ax_chart.imshow(np.asarray(chart_im))
 
-    macedon = [(22.5, 40.2), (23.3, 40.0), (23.4, 39.9), (23.9, 40.0), (24.4, 40.3), (25.5, 40.8), (26.5, 40.6), (26.5, 41.2), (22.5, 41.2)]
-    greece_main = [(22.5, 37.8), (23.8, 37.9), (24.1, 38.3), (23.3, 38.9), (22.9, 39.4), (22.5, 40.2)]
-    euboea = [(23.1, 38.8), (23.9, 38.6), (24.6, 38.0), (24.2, 38.4), (23.4, 39.0)]
-    asia_minor = [(26.2, 40.0), (26.08, 39.48), (26.6, 39.3), (26.9, 38.9), (26.3, 38.3), (27.2, 37.8), (27.5, 37.8), (27.5, 40.5), (26.6, 40.3)]
-
-    for poly_pts in (macedon, greece_main, euboea, asia_minor):
-        ax_map.add_patch(mpatches.Polygon(poly_pts, closed=True, facecolor="#f1f5f9", edgecolor="#64748b", lw=1.2))
-
-    lesbos_outer = [
-        (25.83, 39.18), (26.05, 39.35), (26.38, 39.38), (26.60, 39.05),
-        (26.42, 38.97), (26.25, 39.03),
-        (26.12, 39.09), (26.17, 39.21), (26.26, 39.22), (26.23, 39.13), (26.08, 39.07),
-        (25.92, 39.10)
-    ]
-    ax_map.add_patch(mpatches.Polygon(lesbos_outer, closed=True, facecolor="#fde68a", edgecolor="#b45309", lw=2.0, zorder=4))
-
-    ax_map.scatter([26.20], [39.18], s=140, color="#dc2626", edgecolor="white", lw=1.5, zorder=6)
-    ax_map.annotate(
-        "LAGOON OF PYRRHA (Lesbos)\n• Starfish pest & scallop drought\n• Winter-breeding sea-urchins\n• Breeding migration of lagoon fishes",
-        xy=(26.20, 39.18), xytext=(22.65, 39.32),
-        fontsize=8.1, fontweight="bold", color="#7f1d1d",
-        bbox=dict(boxstyle="round,pad=0.35", fc="#fef2f2", ec="#dc2626", lw=1.3),
-        arrowprops=dict(arrowstyle="->", color="#dc2626", lw=1.6),
+    # Annotate Port Kalloni (Lagoon of Pyrrha), Cape Malia, and Entrance inset on the Admiralty Chart
+    # In Admiralty Chart 1665: Port Kalloni runs into the center of the island around (0.43*cw, 0.46*ch)
+    ax_chart.scatter([0.43 * cw], [0.45 * ch], s=180, facecolors="none", edgecolors="#b91c1c", lw=2.6, zorder=6)
+    ax_chart.annotate(
+        "PORT KALLONI — ANCIENT LAGOON OF PYRRHA\n"
+        "‘Far into its bosom, by the little town of Pyrrha,\n"
+        "runs a broad and sheltered lagoon’ (pp. 12–13):\n"
+        "• Starfish pest & scallop drought/dredging\n"
+        "• Winter-breeding sea-urchins & breeding fish migration",
+        xy=(0.43 * cw, 0.45 * ch), xytext=(0.30 * cw, 0.12 * ch),
+        fontsize=8.3, fontfamily="serif", fontweight="bold", color="#7f1d1d",
+        bbox=dict(boxstyle="round,pad=0.38", fc="#fef2f2", ec="#b91c1c", lw=1.5),
+        arrowprops=dict(arrowstyle="->,head_width=0.35", color="#b91c1c", lw=1.8),
         zorder=7
     )
-
-    sites = [
-        (23.78, 40.52, "Stagira\n(Birthplace, 384 BC)", "#1e293b", (-25, -26)),
-        (26.34, 39.49, "Assos / Atarneus\n(Court of Hermias, 347–345 BC)", "#0369a1", (-55, 16)),
-        (26.08, 39.48, "Cape Lectum\n(Giant purple Murex)", "#7c3aed", (-85, -8)),
-        (26.55, 39.10, "Mitylene & Cape Malia\n(Landward vs. seaward sponges)", "#b45309", (-55, -28)),
-        (23.72, 37.98, "Athens (Lyceum)\n(335–323 BC)", "#15803d", (-10, 14)),
-        (23.60, 38.46, "Chalcis (Euboea)\n(Retirement, 322 BC)", "#475569", (-65, 12)),
-        (26.85, 38.45, "Asiatic / Ionian Coast\n(Chameleon dissections)", "#0f766e", (-75, -22)),
-    ]
-    for lon, lat, lbl, col, offset in sites:
-        ax_map.scatter([lon], [lat], s=50, color=col, edgecolor="white", lw=1.0, zorder=5)
-        ax_map.annotate(
-            lbl, xy=(lon, lat), xytext=offset, textcoords="offset points",
-            fontsize=7.5, fontweight="bold", color=col,
-            bbox=dict(boxstyle="round,pad=0.2", fc="white", ec=col, alpha=0.9, lw=0.8),
-            arrowprops=dict(arrowstyle="-", color=col, lw=0.8),
-            zorder=6
-        )
-
-    ax_map.set_title("A. Biographical & Zoological Geography of the Historia Animalium\nWhy Lesbos & the Asiatic Coast Preceded the Lyceum (pp. 12–14)", fontsize=10.5, fontweight="bold", color="#0f172a", pad=8)
-    ax_map.set_xlabel("Longitude (°E)", fontsize=8.8, color="#334155")
-    ax_map.set_ylabel("Latitude (°N)", fontsize=8.8, color="#334155")
-    ax_map.grid(True, ls=":", alpha=0.4, color="#94a3b8")
-
-    # Right panel: 2x3 Gallery combining real museum specimen photos & crisp anatomical diagrams
-    gs_spec = gridspec.GridSpecFromSubplotSpec(2, 3, subplot_spec=gs[0, 1], hspace=0.38, wspace=0.15)
-
-    # Tile 1: Crisp Pentaradial Starfish Diagram (Asterias in Pyrrha Lagoon)
-    ax_s1 = fig.add_subplot(gs_spec[0, 0])
-    ax_s1.set_facecolor("#0f172a")
-    theta = np.linspace(0, 2 * np.pi, 500)
-    r_star = 0.52 + 0.36 * np.cos(5 * theta - np.pi / 2)
-    r_star = np.maximum(r_star, 0.18)
-    ax_s1.fill(r_star * np.cos(theta), r_star * np.sin(theta), color="#fb923c", edgecolor="#fed7aa", lw=2.0, alpha=0.9)
-    for k_arm in range(5):
-        ang = k_arm * 2 * np.pi / 5 + np.pi / 2
-        rs = np.linspace(0.12, 0.78, 8)
-        ax_s1.plot(rs * np.cos(ang), rs * np.sin(ang), "o-", color="#fef08a", markersize=3.2, lw=1.0)
-    ax_s1.add_patch(mpatches.Circle((0, 0), 0.12, facecolor="#f97316", edgecolor="#fef08a", lw=1.5))
-    ax_s1.set_xlim(-1.05, 1.05)
-    ax_s1.set_ylim(-1.0, 1.0)
-    ax_s1.set_aspect("equal")
-    ax_s1.set_xticks([]); ax_s1.set_yticks([])
-    ax_s1.set_title("1. Starfish (Asterias)", fontsize=9.2, fontweight="bold", color="#0f172a", pad=4)
-    ax_s1.set_xlabel("Abundant in Pyrrha Lagoon;\n'a pest to the fishermen' (p. 13)", fontsize=7.8, color="#334155", labelpad=4)
-
-    # Tile 2: Real Sea-Urchin Test Photo (Strongylocentrotus / Echinus)
-    ax_s2 = fig.add_subplot(gs_spec[0, 1])
-    urchin_img = load_specimen_img("datasets/species_gallery/II_Anaima_Invertebrata/Strongylocentrotus_purpuratus.jpg", size=(320, 220))
-    ax_s2.imshow(urchin_img)
-    ax_s2.set_xticks([]); ax_s2.set_yticks([])
-    ax_s2.set_title("2. Sea-Urchin (Echinus)", fontsize=9.2, fontweight="bold", color="#0f172a", pad=4)
-    ax_s2.set_xlabel("Comes into season in winter\nin the Pyrrha lagoon (p. 13)", fontsize=7.8, color="#334155", labelpad=4)
-
-    # Tile 3: Scallop (Pecten) Radial Ribbed Valve Diagram
-    ax_s3 = fig.add_subplot(gs_spec[0, 2])
-    ax_s3.set_facecolor("#0f172a")
-    th_p = np.linspace(-0.62 * np.pi, 0.62 * np.pi, 300)
-    r_p = 0.85 * (np.cos(th_p * 0.72) ** 0.6) * (1.0 + 0.04 * np.cos(16 * th_p))
-    x_p = r_p * np.sin(th_p)
-    y_p = r_p * np.cos(th_p) - 0.35
-    ax_s3.fill(np.concatenate([[-0.32, 0.32], x_p]), np.concatenate([[-0.35, -0.35], y_p]),
-               color="#fda4af", edgecolor="#ffe4e6", lw=1.8, alpha=0.9)
-    # Hinge ears (auricles)
-    ax_s3.fill([-0.38, 0.38, 0.25, -0.25], [-0.35, -0.35, -0.48, -0.48], color="#fb7185", edgecolor="#ffe4e6", lw=1.4)
-    for rib_a in np.linspace(-0.52 * np.pi, 0.52 * np.pi, 13):
-        r_end = 0.82 * (np.cos(rib_a * 0.72) ** 0.6)
-        ax_s3.plot([0, r_end * np.sin(rib_a)], [-0.35, r_end * np.cos(rib_a) - 0.35], color="#881337", lw=1.0, alpha=0.7)
-    ax_s3.set_xlim(-0.95, 0.95)
-    ax_s3.set_ylim(-0.62, 0.65)
-    ax_s3.set_aspect("equal")
-    ax_s3.set_xticks([]); ax_s3.set_yticks([])
-    ax_s3.set_title("3. Scallop (Pecten)", fontsize=9.2, fontweight="bold", color="#0f172a", pad=4)
-    ax_s3.set_xlabel("Exterminated in Pyrrha by\ndrought & fishermen's dredge (p. 13)", fontsize=7.8, color="#334155", labelpad=4)
-
-    # Tile 4: Real Murex Shell Photograph (Cape Lectum)
-    ax_s4 = fig.add_subplot(gs_spec[1, 0])
-    murex_img = load_specimen_img("datasets/species_gallery/II_Anaima_Invertebrata/Murex_pecten.jpg", size=(320, 220))
-    ax_s4.imshow(murex_img)
-    ax_s4.set_xticks([]); ax_s4.set_yticks([])
-    ax_s4.set_title("4. Purple Murex Shell", fontsize=9.2, fontweight="bold", color="#0f172a", pad=4)
-    ax_s4.set_xlabel("Big purple shells recorded\nat Cape Lectum (p. 12)", fontsize=7.8, color="#334155", labelpad=4)
-
-    # Tile 5: Real Coiled Cephalopod Shell Photo (Nautilus / Argonauta comparison)
-    ax_s5 = fig.add_subplot(gs_spec[1, 1])
-    naut_img = load_specimen_img("datasets/species_gallery/II_Anaima_Invertebrata/Nautilus_pompilius.jpg", size=(320, 220))
-    ax_s5.imshow(naut_img)
-    ax_s5.set_xticks([]); ax_s5.set_yticks([])
-    ax_s5.set_title("5. Shelled Cephalopods", fontsize=9.2, fontweight="bold", color="#0f172a", pad=4)
-    ax_s5.set_xlabel("Argonauta & chambered shells\nin Mediterranean waters (p. 19)", fontsize=7.8, color="#334155", labelpad=4)
-
-    # Tile 6: Lagoon of Pyrrha Ecological & Seasonal Table (p. 13)
-    ax_s6 = fig.add_subplot(gs_spec[1, 2])
-    ax_s6.set_facecolor("#f8fafc")
-    ax_s6.set_xlim(0, 10)
-    ax_s6.set_ylim(0, 10)
-    ax_s6.set_xticks([]); ax_s6.set_yticks([])
-    ax_s6.text(5.0, 8.8, "Pyrrha Lagoon Field Notes", ha="center", va="center", fontsize=8.4, fontweight="bold", color="#0f172a")
-    notes_txt = (
-        "• Present:\n"
-        "  Starfish, winter sea-urchins,\n"
-        "  resident gudgeon (κωβιός)\n"
-        "• Absent inside lagoon:\n"
-        "  Octopus, parrot-wrasse,\n"
-        "  spiny dogfish, crawfish\n"
-        "• Asiatic coast:\n"
-        "  Chameleon dissections"
+    # Inset chart on the left of the Admiralty sheet: "ENTRANCE TO PORT KALLONI"
+    ax_chart.annotate(
+        "Admiralty Inset:\nEntrance to Port Kalloni\n(Lagoon Channel)",
+        xy=(0.12 * cw, 0.50 * ch), xytext=(0.04 * cw, 0.78 * ch),
+        fontsize=7.8, fontfamily="serif", fontweight="bold", color="#1e3a8a",
+        bbox=dict(boxstyle="round,pad=0.3", fc="#eff6ff", ec="#1d4ed8", lw=1.2),
+        arrowprops=dict(arrowstyle="->", color="#1d4ed8", lw=1.5),
+        zorder=7
     )
-    ax_s6.text(0.7, 4.4, notes_txt, ha="left", va="center", fontsize=7.4, color="#1e293b", linespacing=1.28)
-    ax_s6.set_title("6. Presence / Absence Ecology", fontsize=9.2, fontweight="bold", color="#0f172a", pad=4)
-    ax_s6.set_xlabel("Systematic habitat census vs.\nfolklore (Comm. 5 & 7, p. 13)", fontsize=7.8, color="#334155", labelpad=4)
+    # Cape Malia (SE promontory near Mitylene)
+    ax_chart.annotate(
+        "Mitylene & Cape Malia\n(Landward vs. seaward sponges, p. 12)",
+        xy=(0.68 * cw, 0.67 * ch), xytext=(0.54 * cw, 0.85 * ch),
+        fontsize=7.8, fontfamily="serif", fontweight="bold", color="#78350f",
+        bbox=dict(boxstyle="round,pad=0.3", fc="#fffbeb", ec="#b45309", lw=1.2),
+        arrowprops=dict(arrowstyle="->", color="#b45309", lw=1.5),
+        zorder=7
+    )
+    style_museum_ax(
+        ax_chart,
+        "A. British Admiralty Chart No. 1665: Mityleni Island (Lesbos) & Gulfs of Adramyti and Sandarli (Surveyed 1832–1849)",
+        "Showing the sheltered Lagoon of Pyrrha (Port Kalloni), the narrow seaward channel, Mitylene, Cape Malia, and the Mysian/Trojan coast (pp. 12–14)"
+    )
 
-    for ax_tile in (ax_s1, ax_s2, ax_s3, ax_s4, ax_s5, ax_s6):
-        for sp in ax_tile.spines.values():
-            sp.set_color("#b45309")
-            sp.set_linewidth(1.4)
+    # Right 2x2 grid: 4 Museum Plates
+    # R0, C2: Palazzo Altemps Bust of Aristotle + Haeckel Asteridea
+    ax_ar = fig.add_subplot(gs[0, 2])
+    img_ar = open_fitted(CACHE_1913 / "aristotle_bust.jpg", (420, 440), crop_frac=(0.05, 0.02, 0.95, 0.95))
+    ax_ar.imshow(img_ar)
+    style_museum_ax(
+        ax_ar,
+        "B. Bust of Aristotle (Palazzo Altemps)",
+        "Pentelic marble copy after Lysippos;\n‘first and foremost a biologist’ (p. 11)"
+    )
+
+    # R0, C3: Haeckel Tafel 40 — Asteridea (Starfishes)
+    ax_st = fig.add_subplot(gs[0, 3])
+    img_st = open_fitted(CACHE_1913 / "haeckel_asteridea_40.jpg", (420, 440), crop_frac=(0.04, 0.04, 0.96, 0.96))
+    ax_st.imshow(img_st)
+    style_museum_ax(
+        ax_st,
+        "C. Starfishes — Asteridea (Tafel 40)",
+        "Ernst Haeckel (1904) lithograph; abundant\nin Pyrrha as ‘a pest to fishermen’ (p. 13)"
+    )
+
+    # R1, C2: Nicolas Robert (17th c.) Scallop (Pecten jacobaeus) + Wenceslas Hollar (17th c.) Murex
+    ax_sh = fig.add_subplot(gs[1, 2])
+    im_pec = Image.open(CACHE_1913 / "robert_pecten.jpg").convert("RGB")
+    im_mur = Image.open(CACHE_1913 / "hollar_murex.jpg").convert("RGB")
+    sh_canvas = Image.new("RGB", (420, 440), (252, 250, 242))
+    pec_fit = ImageOps.contain(im_pec, (400, 210), Image.LANCZOS)
+    mur_fit = ImageOps.contain(im_mur, (400, 200), Image.LANCZOS)
+    sh_canvas.paste(pec_fit, ((420 - pec_fit.width) // 2, 8))
+    sh_canvas.paste(mur_fit, ((420 - mur_fit.width) // 2, 228))
+    ax_sh.imshow(np.asarray(sh_canvas))
+    style_museum_ax(
+        ax_sh,
+        "D. Pecten (Robert) & Murex (Hollar, 17th c.)",
+        "Top: Pecten jacobaeus (dredged in Pyrrha);\nBottom: Murex etching (Cape Lectum, p. 12)"
+    )
+
+    # R1, C3: Chameleon Skeleton Engraving (Duméril & Bibron, Erpétologie générale)
+    ax_ch = fig.add_subplot(gs[1, 3])
+    img_ch = open_fitted(CACHE_1913 / "chameleon_historical.jpg", (420, 440), pad_color=(255, 255, 255))
+    ax_ch.imshow(img_ch)
+    style_museum_ax(
+        ax_ch,
+        "E. Chameleon Skeleton (Duméril, 1836)",
+        "Erpétologie générale copperplate; native to\nthe Asiatic coast, dissected by Aristotle (p. 13)"
+    )
 
     out_path = MEDIA_DIR / "thompson_1913_fig2_lesbos_pyrrha_lagoon.png"
     fig.savefig(out_path, dpi=200)
@@ -366,194 +369,151 @@ def build_fig2_lesbos_pyrrha_lagoon():
 
 def build_fig3_cephalopod_embryology_soul():
     """
-    Figure 3: Aristotle's Masterpieces of Comparative Anatomy & Embryology
-    (Cuttlefish, Selachian Yolk-Sac Placenta, Chick Punctum Saliens) and the
-    Biological Roots of De Anima (pp. 17–29, Commentaries 7–13).
+    Plate III: Anatomia Animata — Original 16th–19th Century Copperplates of Aristotle's
+    Zoological & Embryological Discoveries and the Architecture of De Anima.
     """
-    fig = plt.figure(figsize=(16.0, 6.6), dpi=200, facecolor="#ffffff")
+    fig = plt.figure(figsize=(16.5, 9.6), dpi=200, facecolor=PARCHMENT_BG)
     gs = gridspec.GridSpec(
-        1, 2, figure=fig, width_ratios=[1.25, 1.15],
-        wspace=0.18, left=0.04, right=0.97, top=0.82, bottom=0.10
+        2, 4, figure=fig, height_ratios=[1.04, 1.0], width_ratios=[1.0, 1.0, 1.05, 1.05],
+        hspace=0.34, wspace=0.16, left=0.03, right=0.97, top=0.88, bottom=0.07
     )
 
     fig.suptitle(
-        "Plate III — Anatomia Animata: From Cephalopod, Shark & Chick Embryology to the Biological Architecture of De Anima\n"
-        "(Illustrating Original pp. 17–29, Notes 18–29 & Editorial Commentaries 7–13: Connected Observations vs. Theoretical Inference)",
-        fontsize=12.3, fontweight="bold", color="#0f172a", y=0.95
+        "PLATE III — ANATOMIA ANIMATA: HISTORICAL COPPERPLATES OF ARISTOTLE’S EMBRYOLOGY & THE ARCHITECTURE OF DE ANIMA\n"
+        "Herklots (1859), Vérany (1851), Cuvier (1829), Johannes Müller’s Mustelus Placenta (1842), Malpighi’s Chick (1673/1687) & De Anima (pp. 17–29)",
+        fontsize=12.2, fontweight="bold", fontfamily="serif", color=INK_DARK, y=0.96
     )
 
-    # Left: 2x2 Crisp Anatomical & Embryological Diagrams (pp. 17-23)
-    gs_left = gridspec.GridSpecFromSubplotSpec(2, 2, subplot_spec=gs[0, 0], hspace=0.40, wspace=0.16)
-
-    # Panel A: Cuttlefish (Sepia) Anatomy, Yolk-Sac Embryo & Hectocotylus Arm (pp. 17-19)
-    ax_a = fig.add_subplot(gs_left[0, 0])
-    ax_a.set_facecolor("#f8fafc")
-    ax_a.set_xlim(0, 10)
-    ax_a.set_ylim(0, 10)
-    ax_a.set_xticks([]); ax_a.set_yticks([])
-
-    # Mantle + Cuttlebone + Ink-bag + Funnel + 8 short arms + 2 long anchor tentacles + Hectocotylus
-    mantle = mpatches.Ellipse((3.2, 5.4), 4.2, 2.6, facecolor="#bae6fd", edgecolor="#0369a1", lw=1.8)
-    cuttlebone = mpatches.Ellipse((3.1, 6.1), 3.4, 0.7, facecolor="#ffffff", edgecolor="#0284c7", lw=1.2, ls="--")
-    inkbag = mpatches.Ellipse((2.6, 4.6), 1.3, 0.55, facecolor="#1e293b", edgecolor="#0f172a", lw=1.0)
-    head_c = mpatches.Circle((5.6, 5.4), 0.95, facecolor="#7dd3fc", edgecolor="#0369a1", lw=1.6)
-    yolk_c = mpatches.Circle((7.5, 7.6), 0.95, facecolor="#fde047", edgecolor="#ca8a04", lw=1.5)
-    for p_patch in (mantle, cuttlebone, inkbag, head_c, yolk_c):
-        ax_a.add_patch(p_patch)
-    ax_a.plot([5.6, 5.6], [5.7, 5.7], "o", color="#0f172a", markersize=5)  # Eye
-    # Two long anchor arms (Sepia)
-    t_x = np.linspace(6.4, 9.5, 40)
-    ax_a.plot(t_x, 5.1 + 0.35 * np.sin((t_x - 6.4) * 2.2), color="#0369a1", lw=2.2)
-    ax_a.plot(t_x, 4.3 - 0.35 * np.sin((t_x - 6.4) * 2.2), color="#dc2626", lw=2.2, ls="-.")
-    ax_a.plot([6.2, 7.0], [6.0, 7.0], color="#ca8a04", lw=1.8)  # Cephalic yolk stalk
-
-    ax_a.text(3.1, 6.1, "Cuttlebone", ha="center", va="center", fontsize=6.6, fontweight="bold", color="#0369a1")
-    ax_a.text(2.6, 4.6, "Ink-bag", ha="center", va="center", fontsize=6.3, color="white", fontweight="bold")
-    ax_a.text(7.5, 7.6, "Cephalic\nYolk-Sac", ha="center", va="center", fontsize=6.5, fontweight="bold", color="#854d0e")
-    ax_a.text(8.1, 5.8, "Anchor Arms", ha="center", fontsize=6.8, fontweight="bold", color="#0369a1")
-    ax_a.text(7.8, 3.1, "Male Hectocotylus Arm", ha="center", fontsize=6.8, fontweight="bold", color="#dc2626")
-    ax_a.set_title("A. Cephalopod Treatise (pp. 17–19)", fontsize=9.3, fontweight="bold", color="#0f172a", pad=4)
-    ax_a.set_xlabel("Sepia cuttlebone, largest ink-bag, anchor arms,\ncephalic yolk-sac & hectocotylus arm", fontsize=7.6, color="#334155", labelpad=4)
-
-    # Panel B: Selachian Yolk-Sac Placenta (Mustelus laevis / γαλεὸς λεῖος, pp. 20-21)
-    ax_b = fig.add_subplot(gs_left[0, 1])
-    ax_b.set_facecolor("#f8fafc")
-    ax_b.set_xlim(0, 10)
-    ax_b.set_ylim(0, 10)
-    ax_b.set_xticks([]); ax_b.set_yticks([])
-
-    # Maternal uterine wall at bottom with interdigitating folds
-    x_u = np.linspace(0.6, 9.4, 300)
-    y_u = 2.4 + 0.55 * np.sin((x_u - 0.6) * 3.6)
-    ax_b.fill_between(x_u, 0.4, y_u, color="#fecdd3", edgecolor="#be123c", lw=1.6)
-    ax_b.text(5.0, 1.05, "Maternal Uterine Wall & Vascular Folds", ha="center", va="center", fontsize=7.2, fontweight="bold", color="#9f1239")
-
-    # Interweaving Yolk-Sac Placenta
-    y_yolk = 2.65 + 0.55 * np.sin((x_u - 0.6) * 3.6)
-    ax_b.fill_between(x_u[60:240], y_yolk[60:240], 4.8, color="#fef08a", edgecolor="#ca8a04", lw=1.5)
-    ax_b.text(5.0, 3.85, "Interdigitating Yolk-Sac (Placenta Vitellina)", ha="center", va="center", fontsize=6.9, fontweight="bold", color="#854d0e")
-
-    # Embryo shark above connected by umbilical yolk stalk
-    shark_body = mpatches.Ellipse((5.2, 7.6), 5.2, 1.4, facecolor="#cbd5e1", edgecolor="#334155", lw=1.6)
-    ax_b.add_patch(shark_body)
-    ax_b.plot([5.0, 5.0], [4.8, 6.9], color="#dc2626", lw=2.4)
-    ax_b.text(5.2, 7.6, "Embryo γαλεὸς λεῖος (Mustelus laevis)", ha="center", va="center", fontsize=7.2, fontweight="bold", color="#0f172a")
-    ax_b.text(6.8, 5.85, "Vitelline Stalk", ha="center", fontsize=6.8, fontweight="bold", color="#dc2626")
-    ax_b.set_title("B. Shark Placenta Vitellina (pp. 20–21)", fontsize=9.3, fontweight="bold", color="#0f172a", pad=4)
-    ax_b.set_xlabel("Rediscovered by Steno (1673) & J. Müller (1842);\nyolk-sac distinguished from mammalian allantois", fontsize=7.6, color="#334155", labelpad=4)
-
-    # Panel C: Chick Embryo Day 3 — Punctum Saliens (pp. 21-23, Commentary 8)
-    ax_c = fig.add_subplot(gs_left[1, 0])
-    ax_c.set_facecolor("#f8fafc")
-    ax_c.set_xlim(0, 10)
-    ax_c.set_ylim(0, 10)
-    ax_c.set_xticks([]); ax_c.set_yticks([])
-
-    egg_shell = mpatches.Ellipse((5.0, 5.0), 8.6, 6.8, facecolor="#fffbeb", edgecolor="#d97706", lw=1.8)
-    yolk_sac = mpatches.Ellipse((3.6, 4.4), 3.6, 2.8, facecolor="#fde047", edgecolor="#ca8a04", lw=1.5)
-    allantois = mpatches.Ellipse((6.8, 4.2), 2.5, 2.0, facecolor="#bae6fd", edgecolor="#0284c7", lw=1.5)
-    embryo_c = mpatches.Ellipse((5.1, 6.8), 2.4, 1.2, facecolor="#fce7f3", edgecolor="#be185d", lw=1.5)
-    for p_patch in (egg_shell, yolk_sac, allantois, embryo_c):
-        ax_c.add_patch(p_patch)
-    # Punctum saliens (beating heart speck) + 2 umbilical vessels
-    ax_c.scatter([5.1], [6.6], s=95, color="#dc2626", edgecolor="white", lw=1.2, zorder=6)
-    ax_c.plot([5.1, 3.6], [6.6, 4.6], color="#dc2626", lw=2.0)
-    ax_c.plot([5.1, 6.8], [6.6, 4.3], color="#2563eb", lw=2.0)
-    ax_c.text(5.1, 7.75, "Day-3 Punctum Saliens (Heart)", ha="center", fontsize=7.0, fontweight="bold", color="#dc2626")
-    ax_c.text(3.6, 4.3, "Yolk-Sac\nVessel", ha="center", va="center", fontsize=6.7, fontweight="bold", color="#854d0e")
-    ax_c.text(6.8, 4.2, "Allantois\nVessel", ha="center", va="center", fontsize=6.7, fontweight="bold", color="#0369a1")
-    ax_c.set_title("C. Chick Embryo Day 3–10 (pp. 21–23)", fontsize=9.3, fontweight="bold", color="#0f172a", pad=4)
-    ax_c.set_xlabel("Observation (heart appears first + 2 vessels)\nvs. Inference ('central seat of the soul', Comm. 8)", fontsize=7.6, color="#334155", labelpad=4)
-
-    # Panel D: Plant Embryo Center (Cor/Cerebrum) & Polity-Organism Analogy (pp. 23-25, Comm. 9)
-    ax_d = fig.add_subplot(gs_left[1, 1])
-    ax_d.set_facecolor("#f8fafc")
-    ax_d.set_xlim(0, 10)
-    ax_d.set_ylim(0, 10)
-    ax_d.set_xticks([]); ax_d.set_yticks([])
-
-    cot_l = mpatches.Ellipse((3.4, 5.2), 2.6, 4.2, angle=15, facecolor="#bbf7d0", edgecolor="#15803d", lw=1.6)
-    cot_r = mpatches.Ellipse((6.6, 5.2), 2.6, 4.2, angle=-15, facecolor="#bbf7d0", edgecolor="#15803d", lw=1.6)
-    ax_d.add_patch(cot_l); ax_d.add_patch(cot_r)
-    # Plumule (stem up) and Radicle (root down) from central node
-    ax_d.annotate("", xy=(5.0, 8.7), xytext=(5.0, 5.2), arrowprops=dict(arrowstyle="->", color="#15803d", lw=2.4))
-    ax_d.annotate("", xy=(5.0, 1.3), xytext=(5.0, 5.2), arrowprops=dict(arrowstyle="->", color="#b45309", lw=2.4))
-    ax_d.scatter([5.0], [5.2], s=110, color="#dc2626", edgecolor="white", lw=1.4, zorder=6)
-    ax_d.text(5.0, 9.1, "Ascending Shoot (Stem)", ha="center", fontsize=6.9, fontweight="bold", color="#15803d")
-    ax_d.text(5.0, 0.75, "Descending Radicle (Root)", ha="center", fontsize=6.9, fontweight="bold", color="#b45309")
-    ax_d.text(5.0, 5.2, "  Cor / Node", ha="left", va="center", fontsize=7.0, fontweight="bold", color="#dc2626")
-    ax_d.text(2.5, 5.2, "Seed-\nLeaf", ha="center", va="center", fontsize=6.8, fontweight="bold", color="#166534")
-    ax_d.text(7.5, 5.2, "Seed-\nLeaf", ha="center", va="center", fontsize=6.8, fontweight="bold", color="#166534")
-    ax_d.set_title("D. Plant Embryo & Inductive Method (pp. 23–25)", fontsize=9.3, fontweight="bold", color="#0f172a", pad=4)
-    ax_d.set_xlabel("Central point between cotyledons (p. 23);\n200+ Constitutions compiled like species (Comm. 9)", fontsize=7.6, color="#334155", labelpad=4)
-
-    for ax_tile in (ax_a, ax_b, ax_c, ax_d):
-        for sp in ax_tile.spines.values():
-            sp.set_color("#0284c7")
-            sp.set_linewidth(1.4)
-
-    # Right: Nested Geometry of the Soul ("like a triangle within a square", p. 27)
-    # vs. Bergson's Diverging Tree (p. 28) & Driesch's Entelechy (p. 29)
-    ax_r = fig.add_subplot(gs[0, 1])
-    ax_r.set_xlim(0, 10)
-    ax_r.set_ylim(0, 10)
-    ax_r.axis("off")
-    ax_r.set_title(
-        "E. Aristotle’s Nested Psychē (De Anima II.1–3) vs. Bergson’s Diverging Tree\n"
-        "‘As a triangle within a square, each lower grade is implicit in the higher’ (pp. 26–29)",
-        fontsize=10.4, fontweight="bold", color="#0f172a", pad=8
+    # R0, C0: Herklots (1859) Sepia officinalis + Cuvier (1829) Hectocotylus arm
+    ax00 = fig.add_subplot(gs[0, 0])
+    im_sep = Image.open(CACHE_1913 / "sepia_herklots_1859.jpg").convert("RGB")
+    im_hec = Image.open(CACHE_1913 / "hectocotylus_cuvier.jpg").convert("RGB")
+    c00 = Image.new("RGB", (440, 460), (255, 255, 255))
+    s_fit = ImageOps.contain(im_sep, (240, 440), Image.LANCZOS)
+    h_fit = ImageOps.contain(im_hec, (180, 440), Image.LANCZOS)
+    c00.paste(s_fit, (8, (460 - s_fit.height) // 2))
+    c00.paste(h_fit, (252, (460 - h_fit.height) // 2))
+    ax00.imshow(np.asarray(c00))
+    style_museum_ax(
+        ax00,
+        "A. Sepia (1859) & Hectocotylus (1829)",
+        "Left: Sepia officinalis with 2 long anchor arms;\nRight: Detached male hectocotylus arm (pp. 17–19)"
     )
 
-    nested_boxes = [
-        (0.3, 3.6, 5.4, 5.8, "#ede9fe", "#6d28d9",
-         "3. Διανοητικὴ Ψυχή / Νοῦς (Rational Soul — Man)",
-         "• Knowledge, deliberation & wisdom\n• 'Cometh from afar' (θύραθεν, De Gen. An. 736b27)"),
-        (0.65, 3.85, 4.7, 3.9, "#e0f2fe", "#0284c7",
-         "2. Αἰσθητικὴ & Κινητικὴ Ψυχή (Sentient — Animals)",
-         "• Sensation, locomotion, fear, courage & sagacity\n• Comparative psychology across animal kinds"),
-        (1.0, 4.1, 4.0, 2.0, "#dcfce7", "#15803d",
-         "1. Πρώτη / Θρεπτικὴ Ψυχή (Nutrient Soul — Plants & All Life)",
-         "• Nutrition, growth & reproduction\n• Form/actuality of an organized body (ἐντελέχεια ἡ πρώτη)"),
+    # R0, C1: Vérany (1851) Argonauta argo chromolithograph (Plate 17)
+    ax01 = fig.add_subplot(gs[0, 1])
+    img_arg = open_fitted(CACHE_1913 / "argonauta_verany_1851.jpg", (440, 460), crop_frac=(0.03, 0.03, 0.97, 0.97))
+    ax01.imshow(img_arg)
+    style_museum_ax(
+        ax01,
+        "B. Argonauta argo (Vérany, 1851, Pl. 17)",
+        "Mollusques méditerranéens chromolithograph\nshowing the two webbed dorsal arms (p. 19)"
+    )
+
+    # R0, C2: Johannes Müller (1842) Tafel III — Mustelus laevis (γαλεὸς λεῖος) Placenta Vitellina
+    ax02 = fig.add_subplot(gs[0, 2])
+    img_mul = open_fitted(CACHE_1913 / "muller1842_n84.jpg", (460, 460), crop_frac=(0.04, 0.04, 0.96, 0.95))
+    ax02.imshow(img_mul)
+    style_museum_ax(
+        ax02,
+        "C. Johannes Müller’s Tafel III (1842)",
+        "Über den glatten Hai des Aristoteles: Mustelus\nlaevis embryo & yolk-sac placenta (pp. 20–21)"
+    )
+
+    # R0, C3: Marcello Malpighi (1673/1687) De formatione pulli in ovo (Chick Embryo Punctum Saliens)
+    ax03 = fig.add_subplot(gs[0, 3])
+    img_mal = open_fitted(CACHE_1913 / "malpighi_chick_1687.jpg", (460, 460), crop_frac=(0.03, 0.03, 0.97, 0.97))
+    ax03.imshow(img_mal)
+    style_museum_ax(
+        ax03,
+        "D. Malpighi’s Pulli in Ovo (1673/1687)",
+        "Royal Society copperplate of the chick embryo,\nvitelline vessels & looping heart (pp. 21–23)"
+    )
+
+    # R1, C0: Müller & Henle (1841) Mustelus vulgaris vs. Mustelus laevis
+    ax10 = fig.add_subplot(gs[1, 0])
+    img_mh = open_fitted(CACHE_1913 / "mustelus_muller_henle_1841.jpg", (440, 430), crop_frac=(0.02, 0.05, 0.98, 0.95))
+    ax10.imshow(img_mh)
+    style_museum_ax(
+        ax10,
+        "E. Mustelus vulgaris vs. M. laevis (1841)",
+        "Müller & Henle Plate 27: the two almost indis-\ntinguishable sharks (only M. laevis is placental)"
+    )
+
+    # R1, C1: Illuminated Manuscript of Aristotle's De Anima (Vaticanus Palatinus latinus 1033)
+    ax11 = fig.add_subplot(gs[1, 1])
+    img_ms = open_fitted(CACHE_1913 / "aristotle_de_anima_manuscript.jpg", (440, 430), crop_frac=(0.05, 0.02, 0.95, 0.95))
+    ax11.imshow(img_ms)
+    style_museum_ax(
+        ax11,
+        "F. Aristotle’s De Anima (Vat. Pal. lat. 1033)",
+        "Medieval illuminated parchment leaf of On the\nSoul: biology as the foundation of psychology"
+    )
+
+    # R1, C2: Valades (1579) Scala Naturae (Great Chain of Being)
+    ax12 = fig.add_subplot(gs[1, 2])
+    img_sc = open_fitted(CACHE_1913 / "scala_naturae_bonnet_or_bovillus.jpg", (460, 430), crop_frac=(0.06, 0.03, 0.94, 0.97))
+    ax12.imshow(img_sc)
+    style_museum_ax(
+        ax12,
+        "G. Scala Naturae Engraving (Valades, 1579)",
+        "Rhetorica Christiana copperplate of the ladder of\nnature (plants → animals → man, pp. 26–28)"
+    )
+
+    # R1, C3: Classical Euclidean Woodcut Diagram of De Anima II.3 ("Triangle within a Square") & First Actuality
+    ax13 = fig.add_subplot(gs[1, 3])
+    ax13.set_facecolor(CARD_BG)
+    ax13.set_xlim(0, 10)
+    ax13.set_ylim(0, 10)
+
+    # Classical woodcut-style double border inside panel H
+    ax13.add_patch(mpatches.Rectangle((0.35, 0.35), 9.3, 9.3, fill=False, edgecolor=INK_DARK, lw=1.2))
+    ax13.add_patch(mpatches.Rectangle((0.50, 0.50), 9.0, 9.0, fill=False, edgecolor=BORDER_GOLD, lw=0.8))
+
+    ax13.text(5.0, 8.95, "DE ANIMA II.3 (414b20–32) — GEOMETRICAL INCLUSION",
+              ha="center", va="center", fontsize=7.6, fontfamily="serif", fontweight="bold", color=INK_DARK)
+
+    # Concentric classical woodcut frames: Pentagon/Square containing Triangle
+    # Outer frame: Rational (Dianoetike / Nous)
+    ax13.add_patch(mpatches.Rectangle((0.9, 4.1), 8.2, 4.3, facecolor="#f5f0e1", edgecolor=INK_DARK, lw=1.6))
+    ax13.text(5.0, 7.95, "III. ΔΙΑΝΟΗΤΙΚΗ ΨΥΧΗ / ΝΟΥΣ (Rational — Humans)",
+              ha="center", va="center", fontsize=7.5, fontfamily="serif", fontweight="bold", color=INK_DARK)
+
+    # Middle frame: Sensitive (Aisthetike)
+    ax13.add_patch(mpatches.Rectangle((1.45, 4.35), 7.1, 3.1, facecolor="#ebe3ce", edgecolor=INK_DARK, lw=1.4, ls="--"))
+    ax13.text(5.0, 7.05, "II. ΑΙΣΘΗΤΙΚΗ ΨΥΧΗ (Sensitive — Animals & Humans)",
+              ha="center", va="center", fontsize=7.3, fontfamily="serif", fontweight="bold", color=INK_DARK)
+
+    # Inner frame: Nutritive (Threptike / Prote Psyche) with inscribed Triangle-in-Square emblem
+    ax13.add_patch(mpatches.Rectangle((2.0, 4.6), 6.0, 2.0, facecolor="#dfd4b8", edgecolor=INK_DARK, lw=1.3))
+    ax13.text(5.0, 6.12, "I. ΠΡΩΤΗ / ΘΡΕΠΤΙΚΗ ΨΥΧΗ (Nutritive — All Life)",
+              ha="center", va="center", fontsize=7.2, fontfamily="serif", fontweight="bold", color=INK_DARK)
+    ax13.text(5.0, 5.20, "Nourishment · Growth · Reproduction\n‘As the triangle is implied in the quadrangle’ (p. 27)",
+              ha="center", va="center", fontsize=6.9, fontfamily="serif", style="italic", color=INK_MUTED)
+
+    # Bottom section of H: Potentiality -> First Actuality (Entelecheia) -> Second Actuality (Figures 5 & 6 of .docx)
+    ax13.plot([0.8, 9.2], [3.65, 3.65], color=BORDER_GOLD, lw=1.0)
+    ax13.text(5.0, 3.25, "ΕΝΤΕΛΕΧΕΙΑ Η ΠΡΩΤΗ (De Anima II.1, 412a27 — Reader Note 23)",
+              ha="center", va="center", fontsize=7.3, fontfamily="serif", fontweight="bold", color=INK_DARK)
+
+    stages = [
+        (2.0, 1.85, "1. Δύναμις\n(Potentiality)\nAble to learn", "#f5f0e1"),
+        (5.0, 1.85, "2. Ἐντελέχεια Α΄\n(First Actuality)\nPossesses capacity", "#dfd4b8"),
+        (8.0, 1.85, "3. Ἐνέργεια / Β΄\n(Second Actuality)\nActively exercising", "#efe8d4"),
     ]
-    for x0, y0, w, h, fc, ec, head_txt, body_txt in nested_boxes:
-        rect = mpatches.FancyBboxPatch(
-            (x0, y0), w, h,
-            boxstyle="round,pad=0.08,rounding_size=0.18", facecolor=fc, edgecolor=ec, lw=1.6
-        )
-        ax_r.add_patch(rect)
-        ax_r.text(x0 + 0.2, y0 + h - 0.36, head_txt, ha="left", va="center", fontsize=8.0, fontweight="bold", color=ec)
-        ax_r.text(x0 + 0.2, y0 + h - 0.98, body_txt, ha="left", va="center", fontsize=7.4, color="#1e293b")
+    for sx, sy, stxt, sfc in stages:
+        ax13.add_patch(mpatches.FancyBboxPatch(
+            (sx - 1.18, sy - 0.85), 2.36, 1.7,
+            boxstyle="round,pad=0.06,rounding_size=0.12", facecolor=sfc, edgecolor=INK_DARK, lw=1.2
+        ))
+        ax13.text(sx, sy, stxt, ha="center", va="center", fontsize=6.6, fontfamily="serif", color=INK_DARK)
+    ax13.annotate("", xy=(3.78, 1.85), xytext=(3.22, 1.85), arrowprops=dict(arrowstyle="->", color=INK_DARK, lw=1.3))
+    ax13.annotate("", xy=(6.78, 1.85), xytext=(6.22, 1.85), arrowprops=dict(arrowstyle="->", color=INK_DARK, lw=1.3))
 
-    ax_r.text(7.9, 9.1, "Bergson’s Recasting (p. 28)\nDiverging Outgrowths vs. Ladder",
-              ha="center", va="center", fontsize=8.4, fontweight="bold", color="#b45309")
-    ax_r.plot([7.9, 7.9], [4.2, 5.4], color="#78350f", lw=3.0)
-    ax_r.plot([7.9, 6.6], [5.4, 7.6], color="#15803d", lw=2.2)
-    ax_r.plot([7.9, 7.9], [5.4, 7.8], color="#d97706", lw=2.2)
-    ax_r.plot([7.9, 9.2], [5.4, 7.6], color="#2563eb", lw=2.2)
-    ax_r.scatter([7.9, 6.6, 7.9, 9.2], [4.2, 7.6, 7.8, 7.6], s=55, color=["#78350f", "#15803d", "#d97706", "#2563eb"], zorder=5)
-    ax_r.text(7.9, 3.85, "Original Activity", ha="center", va="top", fontsize=7.4, fontweight="bold", color="#78350f")
-    ax_r.text(6.6, 7.85, "Torpor\n(Plants)", ha="center", va="bottom", fontsize=7.3, fontweight="bold", color="#15803d")
-    ax_r.text(7.9, 8.0, "Instinct\n(Insects)", ha="center", va="bottom", fontsize=7.3, fontweight="bold", color="#b45309")
-    ax_r.text(9.2, 7.85, "Intelligence\n(Vertebrates)", ha="center", va="bottom", fontsize=7.3, fontweight="bold", color="#2563eb")
-
-    comm_box = mpatches.FancyBboxPatch(
-        (0.3, 0.35), 9.4, 2.8,
-        boxstyle="round,pad=0.1,rounding_size=0.2", facecolor="#fffbeb", edgecolor="#d97706", lw=1.5
-    )
-    ax_r.add_patch(comm_box)
-    ax_r.text(
-        0.55, 2.75,
-        "Editorial Commentaries 10–13: Separating Conceptual Order, Vitalism & Mechanism",
-        ha="left", va="center", fontsize=8.6, fontweight="bold", color="#92400e"
-    )
-    ax_r.text(
-        0.55, 1.48,
-        "• Comm. 10 (Psychē): Organization & capacities of a living body—not a claim that every plant has subjective consciousness.\n"
-        "• Comm. 11 (Order vs. Genealogy): A conceptual grading of capacities ≠ a phylogenetic lineage or developmental trajectory.\n"
-        "• Comm. 12 (Entelechy vs. Driesch): Aristotle’s actuality of an organized body ≠ Driesch’s non-physical vitalist exception.\n"
-        "• Comm. 13 (Final Causes → Homeostasis): Natural purposiveness (Physics II.8) translates in modern morphogenesis into\n"
-        "  testable feedback questions: specify the maintained variable, the tolerated perturbations, and the recovery mechanism.",
-        ha="left", va="center", fontsize=7.55, color="#1e293b"
+    style_museum_ax(
+        ax13,
+        "H. Nested Psychē & First Actuality (De Anima II.1–3)",
+        "Classical restatement of Figures 5 & 6 (Reader Notes 18–23):\ninclusive capacities & first vs. second actuality [E4, E9]"
     )
 
     out_path = MEDIA_DIR / "thompson_1913_fig3_cephalopod_embryology_soul.png"
@@ -564,9 +524,8 @@ def build_fig3_cephalopod_embryology_soul():
 
 def build_fig4_morpholib_four_connections():
     """
-    Figure 4: The Editorial Synthesis for Morphogenesis Research —
-    Visualizing [E6] Pai et al. (2012) Bioelectric Patterning and
-    Morpholib Connections 1, 2, 3, and 4 ([E7]–[E10]).
+    Plate IV: Editorial Synthesis for Morphogenesis Research — Pairing Thompson's
+    original 1917 woodcuts & museum lithographs with the 4 Morpholib Connections ([E6]–[E10]).
     """
     sil_mod = load_module("sil_mod", "thompson/1917-thompson-silhouette-area-paradox.py")
     at, sp_mod = sil_mod.load_modules()
@@ -590,82 +549,103 @@ def build_fig4_morpholib_four_connections():
     BS_dio_raw = sil_mod.build_diodon_silhouette_from_landmarks(S_dio_raw, 600)
     T_mola, BT_mola = sil_mod.extract_aligned_silhouette_and_lms("Mola_mola", meta, mean_c, sp_mod)
 
-    fig = plt.figure(figsize=(16.2, 9.6), dpi=200, facecolor="#ffffff")
+    fig = plt.figure(figsize=(16.5, 9.6), dpi=200, facecolor=PARCHMENT_BG)
     gs = gridspec.GridSpec(
-        2, 2, figure=fig, hspace=0.32, wspace=0.18,
-        left=0.05, right=0.97, top=0.88, bottom=0.07
+        2, 2, figure=fig, hspace=0.34, wspace=0.18,
+        left=0.04, right=0.97, top=0.88, bottom=0.07
     )
 
     fig.suptitle(
-        "Plate IV — Editorial Synthesis for Morphogenesis Research: Representation, Provenance, Numerical Checks & Bioelectric Intervention\n"
-        "(Illustrating Citations [E6]–[E10] & Morpholib Connections 1–4 from the Annotated 1913 Lecture)",
-        fontsize=12.4, fontweight="bold", color="#0f172a", y=0.96
+        "PLATE IV — FROM 1917 WOODCUTS TO COMPUTATIONAL MORPHOSPACE: THE FOUR MORPHOLIB CONNECTIONS\n"
+        "Thompson’s Original 1917 Engravings (Figs. 375–376 & 381–382) Paired with Representation, Provenance, Jacobian & Bioelectric Audits [E6–E10]",
+        fontsize=12.2, fontweight="bold", fontfamily="serif", color=INK_DARK, y=0.96
     )
 
-    # Panel A: Morpholib Connection 1 [E7] — Choosing What Counts as Form
+    # Panel A: Morpholib Connection 1 [E7] — 1917 Figs. 375–376 Woodcut + 17-LM vs 600-pt Silhouette
     ax1 = fig.add_subplot(gs[0, 0])
+    ax1.set_facecolor(CARD_BG)
     head_idx = [0, 1, 10, 11, 12, 13, 14, 15, 16]
     fin_idx = [2, 3, 4, 5, 6, 7, 8, 9]
 
-    ax1.fill(BT_po[:, 0], BT_po[:, 1], color="#e2e8f0", alpha=0.65, label="Target Outline: Pomacanthus (600 pts)")
-    ax1.plot(BT_po[:, 0], BT_po[:, 1], color="#475569", lw=1.8, ls="--")
-    ax1.plot(BS_sc_lm[:, 0], BS_sc_lm[:, 1], color="#dc2626", lw=2.0, ls=":",
-             label="17-Landmark Fit (9/17 in skull → IoU drops 0.662 → 0.618)")
-    ax1.plot(BS_sc_sil[:, 0], BS_sc_sil[:, 1], color="#15803d", lw=2.5,
-             label="Direct 600-pt Silhouette Fit (IoU improves to 0.749)")
-    ax1.scatter(T_po[head_idx, 0], T_po[head_idx, 1], c="#f59e0b", edgecolors="#0f172a", s=45, zorder=5,
-                label="9 Craniofacial Landmarks (53% weight)")
-    ax1.scatter(T_po[fin_idx, 0], T_po[fin_idx, 1], c="#ec4899", edgecolors="#0f172a", marker="s", s=40, zorder=5,
-                label="8 Fin-Base Insertions (0% on distal fins)")
+    # Inset of Thompson's original 1917 Fig. 375-376 woodcut on the left of Panel A
+    ax1_in = ax1.inset_axes([0.02, 0.14, 0.38, 0.78])
+    img_375 = open_fitted(CACHE_1913 / "gutenberg_i749.png", (360, 320), pad_color=(255, 255, 255))
+    ax1_in.imshow(img_375)
+    ax1_in.set_xticks([]); ax1_in.set_yticks([])
+    for sp in ax1_in.spines.values():
+        sp.set_color(BORDER_GOLD)
+        sp.set_linewidth(1.2)
+    ax1_in.set_title("1917 Woodcut (Figs. 375–376)\nScarus → Pomacanthus", fontsize=7.6, fontfamily="serif", fontweight="bold", color=INK_DARK, pad=3)
+
+    # Right side of Panel A: Quantitative overlay
+    offset_x = 0.24
+    ax1.fill(BT_po[:, 0] + offset_x, BT_po[:, 1], color="#e7e5e4", alpha=0.8, label="Target: Pomacanthus (600-pt outline)")
+    ax1.plot(BT_po[:, 0] + offset_x, BT_po[:, 1], color="#44403c", lw=1.7, ls="--")
+    ax1.plot(BS_sc_lm[:, 0] + offset_x, BS_sc_lm[:, 1], color="#b91c1c", lw=2.0, ls=":",
+             label="17-Landmark Fit (9/17 in skull → IoU 0.618)")
+    ax1.plot(BS_sc_sil[:, 0] + offset_x, BS_sc_sil[:, 1], color="#15803d", lw=2.4,
+             label="Direct 600-pt Outline Fit (IoU 0.749)")
+    ax1.scatter(T_po[head_idx, 0] + offset_x, T_po[head_idx, 1], c="#d97706", edgecolors=INK_DARK, s=40, zorder=5,
+                label="9 Craniofacial LMs (53% weight)")
+    ax1.scatter(T_po[fin_idx, 0] + offset_x, T_po[fin_idx, 1], c="#be185d", edgecolors=INK_DARK, marker="s", s=36, zorder=5,
+                label="8 Fin-Base LMs (0% on distal fins)")
 
     ax1.set_aspect("equal")
-    ax1.set_xlim(-0.46, 0.52)
+    ax1.set_xlim(-0.56, 0.72)
     ax1.set_ylim(-0.38, 0.38)
-    ax1.set_xticks([]); ax1.set_yticks([])
-    ax1.set_title(
-        "A. Morpholib Connection 1 [E7]: Choosing What Counts as Form\n"
-        "17 Skeletal Landmarks vs. 600-Point Whole-Body Silhouette (Scarus → Pomacanthus)",
-        fontsize=10.2, fontweight="bold", color="#0f172a", pad=6
+    style_museum_ax(
+        ax1,
+        "A. Morpholib Connection 1 [E7]: Choosing What Counts as Form (Figure 4 of .docx)",
+        "Why fitting 17 internal skeletal dots degrades outline IoU (0.662 → 0.618) while 600-pt outline fitting achieves 0.749"
     )
-    ax1.legend(loc="lower left", fontsize=7.5, frameon=True, facecolor="#f8fafc", edgecolor="#cbd5e1", ncol=1)
+    ax1.legend(loc="lower right", fontsize=7.2, frameon=True, facecolor=PARCHMENT_BG, edgecolor=BORDER_GOLD)
 
-    # Panel B: Morpholib Connection 2 [E8] — The Provenance of an Outline
+    # Panel B: Morpholib Connection 2 [E8] — 1917 Figs. 381–382 Woodcut + BMNH 1887 Mola Engraving + Provenance Classes
     ax2 = fig.add_subplot(gs[0, 1])
-    dio_shift = np.array([-0.30, 0.0])
-    mola_shift = np.array([0.28, 0.0])
+    ax2.set_facecolor(CARD_BG)
 
-    BS_dio_s = BS_dio_raw * 0.75 + dio_shift
-    S_dio_s = S_dio_raw * 0.75 + dio_shift
-    BT_mola_s = BT_mola * 0.72 + mola_shift
-    T_mola_s = T_mola * 0.72 + mola_shift
+    ax2_in = ax2.inset_axes([0.02, 0.14, 0.36, 0.78])
+    img_381 = open_fitted(CACHE_1913 / "gutenberg_i751.png", (320, 340), pad_color=(255, 255, 255))
+    ax2_in.imshow(img_381)
+    ax2_in.set_xticks([]); ax2_in.set_yticks([])
+    for sp in ax2_in.spines.values():
+        sp.set_color(BORDER_GOLD)
+        sp.set_linewidth(1.2)
+    ax2_in.set_title("1917 Woodcut (Figs. 381–382)\nDiodon → Orthagoriscus", fontsize=7.6, fontfamily="serif", fontweight="bold", color=INK_DARK, pad=3)
 
-    ax2.fill(BS_dio_s[:, 0], BS_dio_s[:, 1], color="#fef3c7", alpha=0.85)
-    ax2.plot(BS_dio_s[:, 0], BS_dio_s[:, 1], color="#d97706", lw=2.3,
-             label="Reconstructed Contour: build_diodon_silhouette_from_landmarks()\n(17 LMs + synthetic fin/caudal extensions + periodic B-spline)")
-    ax2.scatter(S_dio_s[:, 0], S_dio_s[:, 1], c="#b45309", edgecolors="white", s=38, zorder=5)
+    dio_shift = np.array([-0.02, 0.0])
+    mola_shift = np.array([0.44, 0.0])
+    BS_dio_s = BS_dio_raw * 0.68 + dio_shift
+    S_dio_s = S_dio_raw * 0.68 + dio_shift
+    BT_mola_s = BT_mola * 0.65 + mola_shift
+    T_mola_s = T_mola * 0.65 + mola_shift
 
-    ax2.fill(BT_mola_s[:, 0], BT_mola_s[:, 1], color="#ccfbf1", alpha=0.85)
-    ax2.plot(BT_mola_s[:, 0], BT_mola_s[:, 1], color="#0d9488", lw=2.3,
-             label="Photograph-Derived Contour: extract_aligned_silhouette_and_lms()\n(LAB background threshold + morphological closing on 1887 plate)")
-    ax2.scatter(T_mola_s[:, 0], T_mola_s[:, 1], c="#0f766e", edgecolors="white", s=38, zorder=5)
+    ax2.fill(BS_dio_s[:, 0], BS_dio_s[:, 1], color="#fef3c7", alpha=0.88)
+    ax2.plot(BS_dio_s[:, 0], BS_dio_s[:, 1], color="#b45309", lw=2.2,
+             label="Class A (Diodon): Reconstructed from 17 LMs + fin extensions (build_diodon_silhouette_from_landmarks)")
+    ax2.scatter(S_dio_s[:, 0], S_dio_s[:, 1], c="#92400e", edgecolors="white", s=34, zorder=5)
 
-    ax2.axvline(0.0, color="#94a3b8", ls="--", lw=1.2)
-    ax2.text(-0.30, 0.29, "Provenance Class A:\nLandmark-Interpolated Spline", ha="center", fontsize=8.4, fontweight="bold", color="#b45309")
-    ax2.text(0.28, 0.29, "Provenance Class B:\nImage-Segmented Silhouette", ha="center", fontsize=8.4, fontweight="bold", color="#0f766e")
+    ax2.fill(BT_mola_s[:, 0], BT_mola_s[:, 1], color="#dcfce7", alpha=0.88)
+    ax2.plot(BT_mola_s[:, 0], BT_mola_s[:, 1], color="#15803d", lw=2.2,
+             label="Class B (Mola mola): Segmented from 1887 British Museum engraving (extract_aligned_silhouette_and_lms)")
+    ax2.scatter(T_mola_s[:, 0], T_mola_s[:, 1], c="#166534", edgecolors="white", s=34, zorder=5)
+
+    ax2.text(-0.02, 0.27, "Provenance Class A:\nLandmark B-Spline", ha="center", fontsize=7.8, fontfamily="serif", fontweight="bold", color="#92400e")
+    ax2.text(0.44, 0.27, "Provenance Class B:\n1887 Plate Silhouette", ha="center", fontsize=7.8, fontfamily="serif", fontweight="bold", color="#166534")
 
     ax2.set_aspect("equal")
-    ax2.set_xlim(-0.62, 0.62)
-    ax2.set_ylim(-0.36, 0.36)
-    ax2.set_xticks([]); ax2.set_yticks([])
-    ax2.set_title(
-        "B. Morpholib Connection 2 [E8]: Distinct Provenance Labels for Contours\n"
-        "Why 600 Sampled Points ≠ 600 Independent Biological Observations",
-        fontsize=10.2, fontweight="bold", color="#0f172a", pad=6
+    ax2.set_xlim(-0.58, 0.74)
+    ax2.set_ylim(-0.38, 0.38)
+    style_museum_ax(
+        ax2,
+        "B. Morpholib Connection 2 [E8]: The Provenance of an Outline",
+        "Why a landmark-interpolated contour (Diodon) and an image-segmented contour (Mola) require distinct provenance labels"
     )
-    ax2.legend(loc="lower center", fontsize=7.5, frameon=True, facecolor="#f8fafc", edgecolor="#cbd5e1")
+    ax2.legend(loc="lower right", fontsize=6.9, frameon=True, facecolor=PARCHMENT_BG, edgecolor=BORDER_GOLD)
 
-    # Panel C: Morpholib Connection 3 [E9] — What a Mathematical Check Establishes
+    # Panel C: Morpholib Connection 3 [E9] — 90x90 Finite-Difference Jacobian Check
     ax3 = fig.add_subplot(gs[1, 0])
+    ax3.set_facecolor(CARD_BG)
     lo = BS_sc.min(0)
     hi = BS_sc.max(0)
     xs = np.linspace(lo[0], hi[0], 90)
@@ -685,88 +665,95 @@ def build_fig4_morpholib_four_connections():
 
     warped_inside = grid_fn(pts[inside])
     det_inside = det_J[: len(warped_inside)]
-    sc_plot = ax3.scatter(warped_inside[:, 0], warped_inside[:, 1], c=det_inside, cmap="viridis", s=8, alpha=0.9)
-    ax3.plot(BS_sc_sil[:, 0], BS_sc_sil[:, 1], color="#0f172a", lw=2.0, label="Warped 600-pt Contour Boundary")
+    sc_plot = ax3.scatter(warped_inside[:, 0], warped_inside[:, 1], c=det_inside, cmap="YlOrBr", s=8, alpha=0.9)
+    ax3.plot(BS_sc_sil[:, 0], BS_sc_sil[:, 1], color=INK_DARK, lw=2.0)
     cbar = fig.colorbar(sc_plot, ax=ax3, fraction=0.042, pad=0.02)
-    cbar.set_label(r"Sampled $\det D\Phi(x,y)$ (90×90 Grid)", fontsize=8.2)
+    cbar.set_label(r"Sampled $\det D\Phi(x,y)$ (90×90 Grid)", fontsize=8.0, fontfamily="serif")
 
     min_det = float(np.min(det_J))
     pct_pos = float(100.0 * np.mean(det_J > 0))
     ax3.annotate(
-        f"Sampled Check (compute_jacobian_stats):\n"
-        f"• Grid: 90×90 interior + 600 contour pts\n"
-        f"• Positive det J: {pct_pos:.1f}% (min = {min_det:.3f})\n"
-        f"• Scope note [E9]: Tests sampled local folding;\n"
-        f"  does not alone prove global continuous injectivity",
-        xy=(0.0, -0.25), xytext=(-0.44, -0.34),
-        fontsize=7.6, color="#0f172a",
-        bbox=dict(boxstyle="round,pad=0.3", fc="#f8fafc", ec="#0284c7", lw=1.1)
+        f"compute_jacobian_stats() [E9]:\n"
+        f"• Sampled on 90×90 bounding grid + 600 contour pts\n"
+        f"• Sampled positive det J: {pct_pos:.1f}% (min = {min_det:.3f})\n"
+        f"• Epistemic scope: rules out sampled local folding;\n"
+        f"  does not by itself prove continuum global injectivity",
+        xy=(0.0, -0.25), xytext=(-0.45, -0.35),
+        fontsize=7.5, fontfamily="serif", color=INK_DARK,
+        bbox=dict(boxstyle="round,pad=0.3", fc=PARCHMENT_BG, ec=BORDER_GOLD, lw=1.1)
     )
-
     ax3.set_aspect("equal")
     ax3.set_xlim(-0.46, 0.52)
     ax3.set_ylim(-0.38, 0.38)
-    ax3.set_xticks([]); ax3.set_yticks([])
-    ax3.set_title(
-        "C. Morpholib Connection 3 [E9]: What a Mathematical Check Establishes\n"
-        "Finite-Difference Jacobian Determinant on a 90×90 Grid vs. Global Continuum Claims",
-        fontsize=10.2, fontweight="bold", color="#0f172a", pad=6
+    style_museum_ax(
+        ax3,
+        "C. Morpholib Connection 3 [E9]: What a Numerical Check Establishes",
+        "Separating a sampled finite-difference Jacobian test (90×90 grid) from an analytical proof over a continuous domain"
     )
 
-    # Panel D: Morpholib Connection 4 [E10] & Bioelectric Intervention [E6]
+    # Panel D: Morpholib Connection 4 [E10], Aristotle's Four Causes (Reader Note 24), & Bioelectric Patterning [E6]
     ax4 = fig.add_subplot(gs[1, 1])
+    ax4.set_facecolor(CARD_BG)
     ax4.set_xlim(0, 10)
     ax4.set_ylim(0, 10)
-    ax4.axis("off")
-    ax4.set_title(
-        "D. Morpholib Connection 4 [E10] & Bioelectric Intervention [E6]\n"
-        "Separating Implementation, Empirical Validation & Perturbation Tests",
-        fontsize=10.2, fontweight="bold", color="#0f172a", pad=6
-    )
 
-    ax4.text(5.0, 9.25, "MorphoEval Rubric Separation [E10] (Uncalibrated Ratings, Not Probabilities)",
-             ha="center", va="center", fontsize=8.6, fontweight="bold", color="#0f172a")
-    pillars = [
-        (0.4, 6.2, 2.9, 2.5, "#e0f2fe", "#0284c7", "1. Implementation (30)",
-         "• model-fidelity (20)\n• param-expressivity (10)\nDoes code match paper?"),
-        (3.55, 6.2, 2.9, 2.5, "#dcfce7", "#15803d", "2. Bio Validation (40)",
-         "• specimen-match (25)\n• morphometrics (15)\nDoes model fit organism?"),
-        (6.7, 6.2, 2.9, 2.5, "#f3e8ff", "#7c3aed", "3. Reproducibility (30)",
-         "• source-trace (10)\n• code-trace (8)\n• repro-package (12)"),
+    # Top: Aristotle's Four Causes (Reader Note 24 Table) -> MorphoEval Three Pillars [E10]
+    ax4.text(5.0, 9.28, "ARISTOTLE’S FOUR CAUSES [E5, E11] & MORPHOEVAL’S THREE PILLARS [E10]",
+             ha="center", va="center", fontsize=8.1, fontfamily="serif", fontweight="bold", color=INK_DARK)
+
+    causes = [
+        (0.35, 5.95, 4.45, 2.85, "#f5f0e1",
+         "Aristotle’s Four Causes (Reader Note 24)",
+         "• Material (Ὕλη): Bronze / tissue & ion channels\n"
+         "• Formal (Εἶδος): Defining structure & geometry\n"
+         "• Efficient (Κινοῦν): Sculptor / biophysical process\n"
+         "• Final (Τέλος): Functional end / homeostatic setpoint"),
+        (5.15, 5.95, 4.50, 2.85, "#ebe3ce",
+         "MorphoEval Audit Separation [E10]",
+         "• Implementation (30): Code-to-paper fidelity\n"
+         "• Biological Validation (40): Specimen & metric fit\n"
+         "• Reproducibility (30): SHA-256 & line traceability\n"
+         "  (Uncalibrated ratings, linked to checkpoint evidence)"),
     ]
-    for x0, y0, w, h, fc, ec, t_p, b_p in pillars:
+    for x0, y0, w, h, fc, head_c, body_c in causes:
         ax4.add_patch(mpatches.FancyBboxPatch(
-            (x0, y0), w, h, boxstyle="round,pad=0.08,rounding_size=0.18", facecolor=fc, edgecolor=ec, lw=1.5
+            (x0, y0), w, h, boxstyle="round,pad=0.08,rounding_size=0.14", facecolor=fc, edgecolor=BORDER_GOLD, lw=1.3
         ))
-        ax4.text(x0 + w / 2, y0 + h - 0.38, t_p, ha="center", va="center", fontsize=8.0, fontweight="bold", color=ec)
-        ax4.text(x0 + 0.16, y0 + 0.95, b_p, ha="left", va="center", fontsize=7.3, color="#1e293b")
+        ax4.text(x0 + 0.18, y0 + h - 0.38, head_c, ha="left", va="center", fontsize=7.6, fontfamily="serif", fontweight="bold", color=INK_DARK)
+        ax4.text(x0 + 0.18, y0 + 1.12, body_c, ha="left", va="center", fontsize=7.0, fontfamily="serif", color=INK_MUTED, linespacing=1.28)
 
-    xen_img = load_specimen_img("datasets/species_gallery/I_Enaima_Vertebrata/Xenopus_laevis.jpg", size=(240, 180))
-    ax_inset = ax4.inset_axes([0.04, 0.06, 0.30, 0.46])
-    ax_inset.imshow(xen_img)
-    ax_inset.set_xticks([]); ax_inset.set_yticks([])
-    for sp in ax_inset.spines.values():
-        sp.set_color("#15803d")
-        sp.set_linewidth(1.4)
-    ax_inset.set_title("Xenopus laevis [E6]", fontsize=7.8, fontweight="bold", color="#0f172a", pad=3)
+    # Bottom: Pai et al. (2012) Xenopus laevis Bioelectric Intervention [E6]
+    xen_img = open_fitted(REPO_ROOT / "datasets/species_gallery/I_Enaima_Vertebrata/Xenopus_laevis.jpg", (240, 180))
+    ax_in4 = ax4.inset_axes([0.04, 0.07, 0.29, 0.45])
+    ax_in4.imshow(xen_img)
+    ax_in4.set_xticks([]); ax_in4.set_yticks([])
+    for sp in ax_in4.spines.values():
+        sp.set_color(BORDER_GOLD)
+        sp.set_linewidth(1.3)
+    ax_in4.set_title("Xenopus laevis [E6]", fontsize=7.5, fontfamily="serif", fontweight="bold", color=INK_DARK, pad=3)
 
-    bio_box = mpatches.FancyBboxPatch(
-        (3.6, 0.55), 6.0, 4.7,
-        boxstyle="round,pad=0.1,rounding_size=0.18", facecolor="#f0fdf4", edgecolor="#15803d", lw=1.5
-    )
-    ax4.add_patch(bio_box)
-    ax4.text(3.85, 4.75, "From Observation to Intervention (Pai et al. 2012, Dev. 139:313) [E6]",
-             ha="left", va="center", fontsize=8.1, fontweight="bold", color="#166534")
+    ax4.add_patch(mpatches.FancyBboxPatch(
+        (3.55, 0.65), 6.10, 4.65,
+        boxstyle="round,pad=0.08,rounding_size=0.14", facecolor="#f5f0e1", edgecolor=INK_DARK, lw=1.3
+    ))
+    ax4.text(3.78, 4.82, "Observation vs. Perturbation: Pai et al. (2012) Development 139:313 [E6]",
+             ha="left", va="center", fontsize=7.7, fontfamily="serif", fontweight="bold", color=INK_DARK)
     ax4.text(
-        3.85, 2.55,
-        "1. Record Pattern (Aristotle’s Step):\n"
-        "   Map endogenous hyperpolarized $V_{\\mathrm{mem}}$ eye-field domain in early embryo.\n"
-        "2. Propose Physical/Causal Law (Thompson’s Step):\n"
-        "   Transmembrane voltage window controls Pax6 / Rx1 eye morphogenesis.\n"
-        "3. Discriminating Perturbation Test (Modern Experimental Step):\n"
-        "   Depolarizing native field disrupts normal eye; imposing hyperpolarized\n"
-        "   $V_{\\mathrm{mem}}$ mRNA elsewhere induces ectopic eyes outside the head.",
-        ha="left", va="center", fontsize=7.35, color="#1e293b"
+        3.78, 2.55,
+        "1. Connected Natural History (Aristotle): Record endogenous hyperpolarized\n"
+        "   transmembrane voltage ($V_{\\mathrm{mem}}$) domain in the anterior neural field.\n"
+        "2. Physical & Geometric Question (Thompson): Specify how voltage gradients\n"
+        "   couple to morphogenetic gene expression (Pax6 / Rx1) and tissue boundaries.\n"
+        "3. Discriminating Experimental Intervention (Modern): Depolarizing the native\n"
+        "   domain disrupts normal eye formation; imposing the hyperpolarized $V_{\\mathrm{mem}}$\n"
+        "   state ectopically induces complete eyes outside the head.",
+        ha="left", va="center", fontsize=6.95, fontfamily="serif", color=INK_MUTED, linespacing=1.26
+    )
+
+    style_museum_ax(
+        ax4,
+        "D. Morpholib Connection 4 [E10], the Four Causes & Bioelectric Intervention [E6]",
+        "Preserving model, measured organism, and causal perturbation as connected but distinct scientific records"
     )
 
     out_path = MEDIA_DIR / "thompson_1913_fig4_morpholib_four_connections.png"
@@ -776,6 +763,7 @@ def build_fig4_morpholib_four_connections():
 
 
 def main():
+    copy_standalone_museum_assets()
     build_fig1_spencer_vs_aristotle()
     build_fig2_lesbos_pyrrha_lagoon()
     build_fig3_cephalopod_embryology_soul()
