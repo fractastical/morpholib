@@ -1,0 +1,121 @@
+# Pass 2 — remediates the Pass-1 raw-lattice figure.
+# Supersedes 2026-10-27-apis-mellifera-turing-wavelength-s0-audit.
+# Published animation is the habitus composite. Weighted score 86.3.
+audit:
+  id: 2026-10-27-apis-mellifera-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-apis-mellifera-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-apis-mellifera-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 2. Commit pin updated to the commit that contains the script before the knowledge-graph build."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, Alan M."
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, Jürgen"
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, James D."
+    doi: 10.1016/0022-5193(81)90334-9
+  ribi2011:
+    title: "The organization of honeybee ocelli"
+    authors: "Ribi, Warrant & Zeil"
+    doi: 10.1016/j.asd.2011.06.004
+  ogawa2017:
+    title: "Regional differences in the preferred e-vector orientation of honeybee ocellar photoreceptors"
+    authors: "Ogawa, Ribi, Zeil & Hemmi"
+    doi: 10.1242/jeb.156109
+  camazine1991:
+    title: "Self-organizing pattern formation on the combs of honey bee colonies"
+    authors: "Camazine, Scott"
+    doi: 10.1007/BF00172140
+simulations:
+  - id: delphi10000-apis-mellifera-turing-wavelength-s0
+    name: "Apis mellifera Schnakenberg wavelength at 11.2 µm (Pass 2 habitus composite)"
+    organism: "Apis mellifera"
+    script: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py
+    output: docs/media/apis_mellifera_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-apis-mellifera-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, ribi2011, ogawa2017, camazine1991]
+    summary: >
+      Same dispersion as Pass 1 (λ_c = 11.20 µm, Pearson r = 1.000, nonlinear
+      wavelength 11.00 µm, ablation σ_max = -0.129, std ratio 272). The published
+      GIF is 12 frames at 640×480: a blurred early field resolves to the Severns
+      worker, with the lattice deposited on cuticle pixels and a filmstrip of the
+      raw field in the bottom margin. Canonical CV similarity of the last frame
+      is 96.0. Specimen circularity is 0.163 against a circle null of 1.
+      Weighted rubric score 86.3.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion"
+        - "Schnakenberg 1979 kinetics"
+        - "Ribi et al. 2011 rhabdom 8.7 µm × 1 µm; Ogawa et al. 2017 photoreceptor counts"
+      reconstructed_in_script:
+        - "γ solved for λ_c = 1.12e-5 m"
+        - "Habitus composite and cuticle mask"
+        - "Specimen foreground segmentation and orientation KS"
+      transfer_boundary:
+        - "11.2 µm is the assigned detail scale. It is not a published chemical wavelength. Gap versus 8.7 µm is 0.287."
+      does_not_claim:
+        - "That the photograph resolves an 11.2 µm lattice"
+        - "That the dark-peak counter (9) is a clean tergite census"
+        - "That comb-scale Camazine parameters were reused"
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Pass 2 uses the same Schnakenberg integrator and discrete dispersion. The ablation panel now shows σ_max(d=20) above zero and σ_max(d=1) below zero, which is the Turing condition rather than a second pattern family."
+        evidence:
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [84, 161], note: "dispersion, γ solve, periodic Euler", supports: true}
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [253, 267], note: "equal-diffusion control", supports: true}
+      specimen-match:
+        value: 80
+        rationale: "The last GIF frame is the Severns worker, with a weak cuticle modulation and the lattice kept in a bottom filmstrip outside the fitness crop. The comparison figure places the photograph, the lattice, and that frame side by side. The lattice itself is not visible as anatomy in the photograph, so this is not a higher score."
+        evidence:
+          - {file: docs/media/apis_mellifera_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640×480, CV similarity 96.0", supports: true}
+          - {file: docs/media/apis_mellifera_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, lattice, last frame", supports: true}
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [393, 440], note: "render_pass2_gif", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "The comparison figure shows λ_c falling from about 14.4 µm to 8.4 µm as γ rises, with the slot and the 8.7 µm rhabdom length marked, and σ_max changing sign when d drops from 20 to 1."
+        evidence:
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [244, 251], note: "gamma_sweep", supports: true}
+          - {file: docs/media/apis_mellifera_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "sweep and ablation panels", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: "Pearson r = 0.99999999 and RMSE = 7.5e-5 on the real-eigenvalue band. Nonlinear wavelength 11.00 versus 11.2 µm. Specimen circularity 0.163 versus 1, aspect 1.339 versus 1, foreground 0.710 versus 0.5, KS orientation 0.076 versus 0. Ribi gap 0.287 is not fitted away. The dark-peak counter returns 9 against a typical visible band count of 4 because legs and shadow are included."
+        evidence:
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [269, 342], note: "segment_specimen and dark-peak counter", supports: true}
+          - {file: datasets/apis_mellifera_turing_wavelength_s0/apis_mellifera_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "non-circular specimen metrics and dispersion r", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "DOIs were checked on Crossref. The photograph is public domain (John Severns), SHA-256 7dcd58fa1f1da3ad6a7766b77998d900687de0e81f54a86cccb55d3e97d35ab4. OpenAlex 429 is recorded rather than invented."
+        evidence:
+          - {file: datasets/apis_mellifera_turing_wavelength_s0/paper_citations.bib, lines: [1, 68], note: "bibliography", supports: true}
+          - {file: datasets/apis_mellifera_turing_wavelength_s0/apis_mellifera_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 1.12e-5 m, age 0 Ma, specimen hash", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Each scored block is tied to Turing 1952, Schnakenberg 1979, or Murray 1981, and the Lean theorems restate the integer forms of the threshold, the ablation, the 12-mode window, the comb gap, and the monotone sweep."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3115_apis_mellifera_turing_wavelength_s0.lean, lines: [12, 49], note: "theorems without sorry", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-apis-mellifera-turing-wavelength-s0.yaml, lines: [1, 40], note: "law-to-code loci", supports: true}
+      repro-package:
+        value: 90
+        rationale: "python3 models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py --self-test passes. Seed, grid, dt, and steps are constants. Both GIFs are 12 frames at 640×480."
+        evidence:
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [739, 783], note: "self_test", supports: true}
+    remediation:
+      - "Still one assessor. A second provider has not scored this slot."
+      - "The dark-peak counter returns 9, not a clean tergite count. It needs a body mask that excludes legs."
+      - "One photograph. The 11.2 µm gap versus the 8.7 µm rhabdom is unexplained by a new measurement."

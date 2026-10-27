@@ -1,0 +1,109 @@
+# Pass 1 — Apis mellifera Turing wavenumber at 11.2 µm, Holocene 0 Ma.
+# The raw spot-lattice GIF is what this pass scores. It does not look like the worker.
+# A rotation-tolerant CV score against the photograph is nevertheless 91.4; that number
+# is reported and is not treated as a morphological match.
+audit:
+  id: 2026-10-27-apis-mellifera-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 1 working tree. Commit pin updated to the commit that contains the script before the knowledge-graph build."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, Alan M."
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, Jürgen"
+    doi: 10.1016/0022-5193(79)90042-0
+  ribi2011:
+    title: "The organization of honeybee ocelli"
+    authors: "Ribi, Warrant & Zeil"
+    doi: 10.1016/j.asd.2011.06.004
+  camazine1991:
+    title: "Self-organizing pattern formation on the combs of honey bee colonies"
+    authors: "Camazine, Scott"
+    doi: 10.1007/BF00172140
+simulations:
+  - id: delphi10000-apis-mellifera-turing-wavelength-s0
+    name: "Apis mellifera Schnakenberg wavelength at 11.2 µm (Pass 1 raw field)"
+    organism: "Apis mellifera"
+    script: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py
+    output: datasets/apis_mellifera_turing_wavelength_s0/pass1_raw_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, ribi2011, camazine1991]
+    summary: >
+      Discrete dispersion peaks at 11.20 µm (k_c = 5.612e5 m^-1, log10 = -4.951)
+      with Pearson r = 1.000 between Fourier-mode growth and the discrete symbol
+      (RMSE 7.5e-5). The nonlinear lattice wavelength is 11.00 µm. Equal diffusion
+      gives σ_max = -0.129. Pass 1 publishes only the raw lattice, which does not
+      resemble the worker. CV similarity of that GIF to the Severns photograph is
+      91.4 and is not counted as a specimen match.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion and the requirement that diffusivities differ"
+        - "Schnakenberg 1979 kinetics"
+        - "Ribi, Warrant & Zeil 2011 rhabdom sheet 8.7 µm by 1 µm"
+      reconstructed_in_script:
+        - "γ = 1.2618 chosen so the discrete argmax is 11.2 µm on a 134.4 µm window"
+        - "Explicit Euler, seed 3115, periodic boundary"
+      transfer_boundary:
+        - "No source measured a chemical wavelength of 11.2 µm in the honeybee. Relative gap versus the 8.7 µm rhabdom long axis is 0.287."
+      does_not_claim:
+        - "That the raw lattice is a picture of the worker"
+        - "That Camazine 1991 comb parameters were reused"
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "The code integrates Schnakenberg kinetics and scores modes against the discrete Laplacian symbol of the Turing dispersion. γ is solved for the assigned wavelength rather than taken from a honeybee fit, which is disclosed."
+        evidence:
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [84, 120], note: "σ(k), k_c, and the γ solve", supports: true}
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [130, 161], note: "periodic explicit Euler", supports: true}
+      specimen-match:
+        value: 42
+        rationale: "The Pass-1 GIF is an orange spot lattice on a dark field. Side by side with the Severns worker it is not the animal. Canonical CV similarity is 91.4 because both images are warm and textured; that score is not a morphological match."
+        evidence:
+          - {file: datasets/apis_mellifera_turing_wavelength_s0/pass1_raw_field.gif, lines: [0, 0], note: "12 frames, 640×480, raw lattice", supports: true}
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [367, 383], note: "render_pass1_raw", supports: true}
+      parameter-expressivity:
+        value: 78
+        rationale: "γ sweep and the d = 1 ablation run inside the script and the self-test, but the Pass-1 figure is only the raw field, so a reader of that figure cannot see the monotone wavelength curve."
+        evidence:
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [244, 267], note: "gamma_sweep and ablation_control", supports: true}
+          - {file: datasets/apis_mellifera_turing_wavelength_s0/pass1_raw_comparison.png, lines: [0, 0], note: "Pass-1 figure has no sweep panel", supports: true}
+      morphometric-validation:
+        value: 82
+        rationale: "Dispersion Pearson r = 0.99999999, RMSE = 7.5e-5, nonlinear wavelength 11.00 µm versus 11.2 µm. The 8.7 µm rhabdom length is reported with a 0.287 gap, not zeroed. Specimen segmentation is computed but not yet the published comparison."
+        evidence:
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [183, 241], note: "dispersion goodness of fit", supports: true}
+          - {file: datasets/apis_mellifera_turing_wavelength_s0/apis_mellifera_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "pearson_r_dispersion and lambda_c_um", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-checked DOIs for Turing, Schnakenberg, Ribi, and Camazine. Specimen SHA-256 is pinned. OpenAlex returned 429; Crossref and Wikimedia were used instead."
+        evidence:
+          - {file: datasets/apis_mellifera_turing_wavelength_s0/paper_citations.bib, lines: [1, 68], note: "DOI records", supports: true}
+          - {file: datasets/apis_mellifera_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "OpenAlex 429 and collision check", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Dispersion, wavenumber, sweep, and ablation are marked and cited. The Lean file encodes the d = 20 threshold, the ablation, the 12-mode window, the comb gap, and the monotone sweep with no sorry."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3115_apis_mellifera_turing_wavelength_s0.lean, lines: [12, 49], note: "five theorems, zero sorry", supports: true}
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [739, 770], note: "self-test assertions", supports: true}
+      repro-package:
+        value: 88
+        rationale: "Seed 3115, --self-test, and a metrics JSON. Pass 1 does not yet write the published habitus GIF as the fitness target."
+        evidence:
+          - {file: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py, lines: [739, 783], note: "self_test entry point", supports: true}
+    remediation:
+      - "Publish the habitus composite. The raw lattice is not a specimen match even though its CV similarity is 91.4."
+      - "Put the γ sweep and the equal-diffusion σ_max on the comparison figure."
+      - "Segment the Severns photograph (circularity, aspect, coherency, orientation KS) and keep the 0.287 gap versus the 8.7 µm rhabdom explicit."
