@@ -1,0 +1,152 @@
+{
+  "scout": "scout-070",
+  "ground": "predictions",
+  "lens": "delphi",
+  "candidates": [
+    {
+      "id": "PRED-VIAB-VTX",
+      "title": "Delphi outcome prior for ZF-VTX-01 (zebrafish vertex-packing at p0*=3.813)",
+      "gap": "The 2026-10-26 resolution pass bounded ZF-VTX-01 as partially_resolved but no pk:BayesianAssessment exists for P(confirm | a tabulated EVL shape-index series): the problem-graph and MorphoSwarm cards for registered follow-ups are grey (viability.kind=not_scored), so the swarm cannot rank this closure against clock or Murray extraction on viability.",
+      "done": "A signed three-assessor audit YAML under morphoeval/audits/ naming ZF-VTX-01, with pooled bridge/outcome posterior and panel_range_percent for all three models; a matching morphoeval/kg/*registered-predictions*/*.trig bundle; and a machine-readable viability block keyed prediction_id=ZF-VTX-01 that docs/build_problem_graph_html.py can ingest without hand-edited probabilities.",
+      "tool_route": "Pattern morphoeval/build_rule30_bayesian_delphi.py: panel reads predictions/prediction_registry.json (quantitative_expectation band 3.76-3.87) + predictions/resolutions/zebrafish.json (missing_evidence line); emit morphoeval/audits/2026-10-27-registered-predictions-bayesian-delphi.yaml then python3 morphoeval/build_registered_predictions_bayesian_delphi.py (new sibling script, same rdflib/provenance contract); refresh graph via python3 docs/build_problem_graph_html.py --check-only on a viability sidecar morphoeval/audits/registered_predictions_viability.json.",
+      "deciding_data": "In repo: predictions/prediction_registry.json ZF-VTX-01 row, predictions/resolutions/zebrafish.json outcome_verdict partially_resolved, datasets/danio_rerio_vertex_packing poson_law p0*=3.813; public context only for prior elicitation (vertex-model literature), not for deciding biology.",
+      "prior_attempts": "2026-10-26 local resolution pass (predictions/resolutions/zebrafish.json): OpenAlex literature search returned no zebrafish shape-index transition table — bounded only, no Delphi panel. docs/open-problems.json registered_prediction_followups lists missing_evidence but viability.pooled=null.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "build_rule30_bayesian_delphi.py is the repo's run-as-is Bayesian Delphi emitter; a thin registered-predictions clone consumes only registry+resolution JSON already scored."},
+        "data_in_hand": {"score": 19, "why": "All hypothesis text, falsifier band, and resolution missing-data note are in-repo; assessors need no new wet-lab or fetch to state priors."},
+        "falsifiable_done": {"score": 15, "why": "Done = three assessor posteriors + pooled percent present in audit YAML/KG with prediction_id key; scorer checks file hashes and panel count without biology judgment."},
+        "compute_in_repo": {"score": 14, "why": "Panel elicitation + rdflib KG build matches Rule30 Delphi runtime (hours on repo stack)."},
+        "isolation": {"score": 10, "why": "Closable as new files under morphoeval/audits/, morphoeval/kg/, and one viability sidecar — zero edits to prediction_registry.json (hash-locked text)."},
+        "time_to_verdict": {"score": 8, "why": "One sitting: three model assessments + deterministic pooler, same cadence as Rule30 grand-prize panel."},
+        "not_blocked": {"score": 5, "why": "No prior BayesianAssessment for ZF-VTX-01 closure; resolution pass explicitly left outcome undecided, not refuted."}
+      }
+    },
+    {
+      "id": "PRED-VIAB-CLK-ZF",
+      "title": "Delphi bridge prior for ZF-CLK-01 proportional somite-length law",
+      "gap": "ZF-CLK-01 is partially_resolved with a registered quantitative test (S multiplier = T multiplier within 5 pp) but no viability prior on whether literature mining can supply paired her1-period + somite-length rows under controlled wavefront — nor on P(confirm | such a table exists).",
+      "done": "Two layered pk:BayesianAssessment nodes in the registered-predictions Delphi bundle: (H_bridge) P(one-sitting literature extraction yields ≥4 paired T,S perturbation rows) and (H_outcome) P(confirm | table) with decibans logged; pooled posteriors exported for prediction_id=ZF-CLK-01 in morphoeval/audits/registered_predictions_viability.json.",
+      "tool_route": "python3 morphoeval/build_registered_predictions_bayesian_delphi.py --predictions ZF-CLK-01 --inputs predictions/resolutions/zebrafish.json,predictions/prediction_registry.json; cross-check tallies via python3 predictions/score_resolutions.py --dry-run (read-only) to ensure registry outcome stays partially_resolved.",
+      "deciding_data": "In repo: ZF-CLK-01 quantitative_expectation and falsifier in prediction_registry.json; bound evidence cites doi:10.1371/journal.pbio.0050150 and doi:10.1371/journal.pbio.1001364 in resolutions/zebrafish.json — assessors use these as prior literature, not as the deciding paired series.",
+      "prior_attempts": "2026-10-26 resolution pass: OpenAlex somitogenesis search — framework bound, paired series NOT established (predictions/resolutions/zebrafish.json). META-RES-03 forecast exactly 4 partials was refuted (5 partials after ZF-HH-01); do not re-use that count as a prior.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "Delphi builder + problem-graph viability feed is the named lens; extraction itself is literature lens — bridge layer is still Delphi-native."},
+        "data_in_hand": {"score": 18, "why": "Registry row + resolution missing-data paragraph fully specify the hypothesis and gap; no external tabulation required to score bridge feasibility priors."},
+        "falsifiable_done": {"score": 14, "why": "Done checks numeric pooled posteriors and assessor count in audit artifact; bridge hypothesis is explicitly about extractability, checkable against a later literature-scout deliverable."},
+        "compute_in_repo": {"score": 14, "why": "Same stack as Rule30 Delphi; no imaging pipeline."},
+        "isolation": {"score": 10, "why": "New audit/KG/sidecar files only."},
+        "time_to_verdict": {"score": 7, "why": "Panel in one sitting; bridge vs outcome layering adds one review loop."},
+        "not_blocked": {"score": 4, "why": "Literature-only resolution attempted once and marked insufficient — bridge prior must treat that as evidence (lower bridge), not as a refuted biology outcome."}
+      }
+    },
+    {
+      "id": "PRED-VIAB-CLK-XT",
+      "title": "Delphi coupled prior for XT-CLK-01 cross-species clock replication",
+      "gap": "XT-CLK-01 explicitly cross-references ZF-CLK-01 but no joint viability assessment exists for P(both confirm) vs P(Xenopus diverges while zebrafish holds) — the problem graph lists both as partial grey nodes independently.",
+      "done": "A coupled two-hypothesis Delphi assessment in morphoeval/audits/ with documented correlation assumption; pooled marginals for XT-CLK-01 and conditional P(XT confirm | ZF confirm) published to registered_predictions_viability.json; problem-graph follow-up cards show non-grey badges for XT-CLK-01.",
+      "tool_route": "python3 morphoeval/build_registered_predictions_bayesian_delphi.py --predictions ZF-CLK-01,XT-CLK-01 --couple cross_species; inputs predictions/resolutions/xenopus.json + predictions/resolutions/zebrafish.json; validate JSON schema against morphoeval/vendor/delphi-2.0.ttl pk:BayesianAssessment.",
+      "deciding_data": "In repo: XT-CLK-01 basis cross-reference ZF-CLK-01 in prediction_registry.json; xenopus resolution notes hes wavefront bound but missing paired T,S (predictions/resolutions/xenopus.json).",
+      "prior_attempts": "2026-10-26 xenopus batch: partially_resolved mirroring ZF-CLK-01 as forecast; no Delphi. docs/open-problems.json registered_prediction_followups entry XT-CLK-01 — not_scored viability.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Coupled Delphi is supported by the Rule30 builder's multi-hypothesis YAML pattern; problem-graph ingestion is documented in docs/build_problem_graph_html.py."},
+        "data_in_hand": {"score": 17, "why": "Both partial resolution records and registry quantitative expectations are in-repo."},
+        "falsifiable_done": {"score": 14, "why": "Done requires published coupled posteriors with explicit prediction_ids — machine-checkable."},
+        "compute_in_repo": {"score": 13, "why": "Panel + KG only; coupled elicitation slightly more assessor time."},
+        "isolation": {"score": 10, "why": "New files only."},
+        "time_to_verdict": {"score": 6, "why": "Coupled panel likely needs two-pass assessor agreement."},
+        "not_blocked": {"score": 5, "why": "No prior coupled assessment recorded."}
+      }
+    },
+    {
+      "id": "PRED-VIAB-MUR",
+      "title": "Delphi outcome prior for DM-MUR-NEG-01 (Murray law vs Drosophila trachea)",
+      "gap": "Resolution bounded DM-MUR-NEG-01 using non-Drosophila insect morphometry (ants, doi:10.1371/journal.pcbi.1007853) but did not decide the registered falsifier (Murray exponent outside 2.8-3.2 on Drosophila diameters). No viability prior separates P(confirm negative | Dros table) from P(table extractable in one pass).",
+      "done": "Delphi assessments for DM-MUR-NEG-01 with explicit negative-mechanism_assignment class; pooled P(confirm) and P(bridge: diameter table obtainable) in audit YAML; viability.kind=delphi_bridge_posterior_percent for prediction_id=DM-MUR-NEG-01 in sidecar consumed by problem graph.",
+      "tool_route": "python3 morphoeval/build_registered_predictions_bayesian_delphi.py --predictions DM-MUR-NEG-01 --inputs predictions/resolutions/drosophila.json,predictions/prediction_registry.json; graph check python3 docs/build_problem_graph_html.py (self-check passes after sidecar mount).",
+      "deciding_data": "In repo: Murray band 2.8-3.2 and negative prediction text in registry; drosophila resolution lists missing tabulated Drosophila tracheal diameters and cites ant Murray violations as bound only.",
+      "prior_attempts": "2026-10-26 OpenAlex tracheal morphometry search in predictions/resolutions/drosophila.json — bounded, not decided. Leaderboard seed (morphoeval/problem_scout_100.py) scores resolvability 80/100 for diameter extraction — viability (truth odds) still absent.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "Negative prediction fits Delphi conjecture/bridge split used in Rule30; registry lens already scored outcome partial — Delphi completes prioritization."},
+        "data_in_hand": {"score": 17, "why": "Registry falsifier band and resolution gap statement are in-repo; assessors may cite named public morphometry DOIs as priors without building the table."},
+        "falsifiable_done": {"score": 15, "why": "Pooled posterior percent is the done artifact; biology closure remains a separate measure/literature task with its own falsifier."},
+        "compute_in_repo": {"score": 14, "why": "Panel hours only."},
+        "isolation": {"score": 10, "why": "New audit/KG/sidecar."},
+        "time_to_verdict": {"score": 8, "why": "Single-panel elicitation."},
+        "not_blocked": {"score": 5, "why": "Partial outcome is not refutation; ant literature bound does not block a Dros-specific Delphi prior."}
+      }
+    },
+    {
+      "id": "PRED-VIAB-HH",
+      "title": "Delphi bridge prior for ZF-HH-01 Shh gradient-shape closure",
+      "gap": "ZF-HH-01 was harder_than_predicted: lipidation confirmed but registered gradient-shape outcome (distal ptc expansion + reduced near-source peak upon lipidation loss) lacks any public paired domain measurements in the resolution record — and no Delphi prior on whether such measurements exist retrievably vs require new experiments (META-RES-04 says decidable in principle without wet lab).",
+      "done": "Bridge-focused pk:BayesianAssessment P(literature or in silico reanalysis yields paired wild-type vs lipidation-perturbed ptc1/ptc2 domain metrics for zebrafish) with pooled posterior; if pooled bridge <15%, problem graph marks follow-up as low_priority without wet-lab override unless a new preregistration appears.",
+      "tool_route": "python3 morphoeval/build_registered_predictions_bayesian_delphi.py --predictions ZF-HH-01 --layer bridge --inputs predictions/resolutions/zebrafish.json; optional literature dossier morphoeval/scout_literature.py --query 'zebrafish sonic hedgehog ptc domain lipidation' --dry-run to feed assessors (does not decide biology).",
+      "deciding_data": "In repo: UniProt Q92008 state in registry evidence_snapshot; resolutions/zebrafish.json cites doi:10.1039/C4SC01600A and doi:10.1002/bies.202100133 and names missing paired ptc domains.",
+      "prior_attempts": "2026-10-26 resolution upgraded row to partially_resolved (resolvability harder_than_predicted at conf 0.70). META-RES-02 refuted (9 fully decided not 10) partly because this row stayed partial.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Bridge viability is core Delphi lens; gradient measurement itself needs vision/measure lens (tool_fit near 0 there — reported separately in PRED-EXTRACT-HH)." },
+        "data_in_hand": {"score": 16, "why": "Missing-data statement and protein state sidecar in-repo; assessors use named DOIs, not new lab data."},
+        "falsifiable_done": {"score": 14, "why": "Bridge posterior threshold 15% matches docs/open-problems.json colour_rule classification — automatic band assignment."},
+        "compute_in_repo": {"score": 13, "why": "Panel + optional scout_literature dry-run."},
+        "isolation": {"score": 10, "why": "New Delphi artifacts only."},
+        "time_to_verdict": {"score": 7, "why": "One sitting with optional literature scout pass."},
+        "not_blocked": {"score": 5, "why": "No Delphi bridge score yet; partial biology is not a refuted route."}
+      }
+    },
+    {
+      "id": "PRED-VIAB-META-R2",
+      "title": "Delphi prior on round-2 registered-prediction resolvability (Mus musculus + partial closure)",
+      "gap": "Four meta_resolvability_predictions were scored 2026-10-26 (META-RES-02 and META-RES-03 refuted; 5 not 4 partials; 9 not 10 fully decided). organism_selection.runner_up Mus musculus is held for the next registration round with no Bayesian prior on whether adding MGI atlas coverage raises fully-decidable count ≥10 or reduces partials.",
+      "done": "Delphi assessment on hypothesis H_meta: 'Round-2 registry (current three organisms + Mus musculus, same 10-mechanism grid) has ≥10/14 fully decidable without new experiments' with pooled posterior and explicit condition on closing the five named partial series; audit YAML references prediction_registry.json meta_resolvability_predictions outcomes as evidence (decibans negative for RES-02/03).",
+      "tool_route": "python3 morphoeval/build_registered_predictions_bayesian_delphi.py --meta META-R2 --inputs predictions/prediction_registry.json; link nodes in morphoeval/kg math_of_biology graph via docs/build_problem_graph_html.py pred-meta node.",
+      "deciding_data": "In repo: full meta_resolvability_predictions block and scoring.tallies in prediction_registry.json; runner_up Mus musculus note in organism_selection.",
+      "prior_attempts": "META-RES-02/03 scored refuted 2026-10-26 via predictions/score_resolutions.py tallies — negative knowledge for the exact registered forecasts; round-2 prior must condition on ZF-HH-01 partial surprise.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "Meta-resolvability rows are already in the registry; Delphi builder can treat them as hypotheses like Rule30 bridge layers."},
+        "data_in_hand": {"score": 17, "why": "All meta outcomes and partial IDs are in-repo; Mus is named but not yet registered — prior elicitation only."},
+        "falsifiable_done": {"score": 13, "why": "Done is pooled posterior on H_meta before any round-2 registration edit; falsified later if new registry round scores tallies."},
+        "compute_in_repo": {"score": 13, "why": "Panel + KG; no new predictions registered in same task."},
+        "isolation": {"score": 10, "why": "Audit/KG only — registry text stays locked until a separate registration PR."},
+        "time_to_verdict": {"score": 6, "why": "Meta hypothesis requires assessors to read five partial gaps — longer brief."},
+        "not_blocked": {"score": 3, "why": "META-RES-02/03 refuted the naive ≥10 and =4 partial forecasts — re-proposing those exact claims as new is blocked; this candidate is a fresh round-2 prior, not a rerun."}
+      }
+    },
+    {
+      "id": "PRED-GRAPH-VIABILITY",
+      "title": "Wire all five partially_resolved prediction IDs into problem-graph viability (grey → scored)",
+      "gap": "docs/build_problem_graph_html.py colours MorphoSwarm OP nodes from viability.pooled but registered_prediction_followups items (ZF-HH-01, ZF-CLK-01, ZF-VTX-01, DM-MUR-NEG-01, XT-CLK-01) lack viability blocks — problem-graph.html shows them as partial science nodes without Delphi shading, violating the stated rule that grey means 'first task is Delphi-score'.",
+      "done": "morphoeval/audits/registered_predictions_viability.json lists exactly five keys matching prediction_id with viability.kind delphi_bridge_posterior_percent or delphi_outcome_posterior_percent, pooled float, panel_range_percent length 3; docs/build_problem_graph_html.py self-check passes when pointed at the sidecar (integration PR may follow; this scout task delivers the sidecar + KG source).",
+      "tool_route": "python3 morphoeval/build_registered_predictions_bayesian_delphi.py --all-partials; python3 docs/build_problem_graph_html.py --viability-sidecar morphoeval/audits/registered_predictions_viability.json --check-only; verify problem-graph PRED section in generated HTML references non-null pooled for each partial id.",
+      "deciding_data": "In repo: docs/open-problems.json registered_prediction_followups.items (5 ids); predictions/prediction_registry.json scoring.tallies.partially_resolved=5.",
+      "prior_attempts": "2026-10-26 graph build merged resolution evidence into morphoswarm.html cards but deliberately left viability null (docs/build_problem_graph_html.py comment lines 327-330). Rule30 viability exists only for OP-01..03 and bos (OP-11).",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Problem-graph + Bayesian Delphi is exactly this lens; build_problem_graph_html.py already validates delphi keys for OP nodes."},
+        "data_in_hand": {"score": 20, "why": "Identity of the five partial rows and their missing_evidence strings are entirely in-repo."},
+        "falsifiable_done": {"score": 15, "why": "Done = sidecar JSON schema with five keys and three assessor ranges each — lintable without opening HTML."},
+        "compute_in_repo": {"score": 14, "why": "Delphi panel for five related hypotheses can batch in one audit YAML."},
+        "isolation": {"score": 9, "why": "Sidecar + KG are new files; wiring build_problem_graph_html.py to read sidecar touches a tracked file — defer integration to a separate agent or document --check-only path only."},
+        "time_to_verdict": {"score": 8, "why": "Batch panel for five partials in one sitting."},
+        "not_blocked": {"score": 5, "why": "No prior viability sidecar exists for registered predictions."}
+      }
+    },
+    {
+      "id": "PRED-EXTRACT-VTX",
+      "title": "Tabulate zebrafish EVL shape-index series (ZF-VTX-01 quantitative closure)",
+      "gap": "The decisive shape-index time series for epiboly/EVL is still missing — the same gap named in predictions/resolutions/zebrafish.json.",
+      "done": "CSV with ≥10 timepoints of cell shape index p0 covering a putative jamming transition, transition estimate inside or outside 3.76-3.87, fed to predictions/resolutions/ as a new resolution batch JSON.",
+      "tool_route": "morphoeval/scout_literature.py + verify_image_fitness.py / manual image digitization on published epiboly micrographs — not Delphi.",
+      "deciding_data": "Not in repo; public epiboly imaging literature (named in registry test_source) one fetch/digitization away.",
+      "prior_attempts": "2026-10-26 OpenAlex search in zebrafish resolution pass — no tabulated series. morphoeval/problem_scout_100.py seed scores resolvability 82/100 for extraction — separate from viability.",
+      "factors": {
+        "tool_fit": {"score": 2, "why": "Delphi lens scores priors, not pixel/segmentation; vision or literature lens must extract the series (reported for negative knowledge)."},
+        "data_in_hand": {"score": 6, "why": "Law constant 3.813 in-repo; raw cell polygons are not."},
+        "falsifiable_done": {"score": 15, "why": "Registry band 3.76-3.87 gives a mechanical confirm/refute once series exists."},
+        "compute_in_repo": {"score": 10, "why": "Image digitization hours-scale on repo stack if sources permit."},
+        "isolation": {"score": 10, "why": "New CSV + resolution JSON only."},
+        "time_to_verdict": {"score": 5, "why": "Multi-hour curation, not one Delphi sitting."},
+        "not_blocked": {"score": 5, "why": "Extraction route not refuted — only attempted as literature search, not image measure."}
+      },
+      "lens_note": "Use scout-040 vision or scout-050 literature cell to pursue; scout-070 delivers the viability prior (PRED-VIAB-VTX) before spend."
+    }
+  ]
+}
