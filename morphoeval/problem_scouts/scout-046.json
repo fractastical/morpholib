@@ -1,0 +1,273 @@
+{
+  "scout": "scout-046",
+  "ground": "bioelectric",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "title": "Commit Layer-4 neighbor-embryo Ca²⁺ wave verdicts via batch catalog + laterality scoring",
+      "gap": "wave_laterality_analysis.py is written to close PARTIAL calcium-claims (Layer 4 neighbor waves / local neighbor response), but no wave_catalog.csv, wave_laterality.csv, or claims_tested_summary artifacts are checked into the repo—only Box-local paths in README and bigpixel docs.",
+      "done": "After a full run, analysis_results/wave_laterality.csv exists with one row per parsed video stem, and generate_tested_claims_summary.py emits a machine-readable summary where every Layer-4 neighbor-wave claim id is tagged TESTED with a non-empty verdict field (pass or fail), verifiable by line count vs claims_doc_parser output.",
+      "tool_route": "python3 wave-vector-analysis/batch_wave_catalog.py --root '<Box Calcium videos root>'; python3 wave-vector-analysis/parse_xy_coordinates.py --xlsx '<XY coordinates.xlsx>'; python3 wave-vector-analysis/wave_laterality_analysis.py; python3 wave-vector-analysis/generate_tested_claims_summary.py",
+      "deciding_data": "Not in repo: Levin-lab Box folder documented as 'Calcium videos' in wave-vector-analysis/README.md and wave-vector-analysis/bigpixel_illustration/BIGPIXEL_APPROACH.md (example WGD84 no-contact HTHT). Manual geometry: XY coordinates.xlsx (same docs).",
+      "prior_attempts": "wave_laterality_analysis.py module docstring (2026) states intent to close PARTIAL claims; no morphoeval audit records a completed catalog commit. open-problems.json has no OP id for this—unscored.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Named scripts batch_wave_catalog → wave_laterality_analysis → generate_tested_claims_summary implement the full spark-track→wave-events→verdict chain."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Deciding TIFF stacks and xy_ground_truth.csv are Box-external; only smoke subset spark_tracks_subset.csv lives in-repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done criterion is file existence plus enumerated TESTED claim ids—scorable without subjective figure review."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Batch dense-vector roll-up over ~39 videos is hours-scale on VM CPU once Box data is mounted; no wet lab."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Outputs can live entirely under morphoeval/runs/scout-046-* or analysis_results/ without editing tracked pipeline sources."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Needs one Box sync plus batch catalog pass—not a single-spark_tracks.csv sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No open-problems.json entry refutes this catalog+laterality route; distinct from refuted OP-07 ML neighbor-transfer blind test."
+        }
+      }
+    },
+    {
+      "title": "Test contact vs no-physical-contact attenuation of inter-embryo Ca²⁺ coupling (Hypothesis 2)",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md marks Hypothesis 2 untestable on the aggregated spark_tracks.csv because contact and separated-embryo conditions were never compared in one scored artifact, despite filenames encoding contact class (e.g. 'No physical contact' in WGD84).",
+      "done": "A JSON metrics file reports embryo B post-poke total area (or pixel count via analyze_pixel_waves.py) for contact vs non-contact cohorts with ratio R = noncontact/contact; verdict 'attenuated' iff R < 0.95 and two-sided Mann-Whitney p < 0.05 on per-video totals, else 'null'.",
+      "tool_route": "python3 wave-vector-analysis/wave-vector-tiff-parser.py '<contact_folder>' 0 --fps <fps> --csv scout046_contact_tracks.csv; repeat for non-contact folder; python3 wave-vector-analysis/spark_tracks_to_clusters.py scout046_contact_tracks.csv scout046_contact_clusters.csv; python3 wave-vector-analysis/analyze_experimental_hypotheses.py scout046_contact_tracks.csv --clusters-csv scout046_contact_clusters.csv --compare-csv2 scout046_noncontact_tracks.csv --label1 contact --label2 noncontact --output scout046_h2_comparison.png",
+      "deciding_data": "Not in repo: paired Box video folders (contact vs no physical contact) referenced in wave-vector-analysis/bigpixel_illustration/BIGPIXEL_APPROACH.md; Tung et al. 2024 Nat Commun (cited in wave-vector.md) is the literature anchor.",
+      "prior_attempts": "wave-vector-analysis/check_data_availability.py flags Hypothesis 2 can_test=False on single CSV; EXPERIMENTAL_HYPOTHESES.md §2 documents missing multi-condition data—route not refuted, only unattempted in-repo.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "compare_conditions / plot_condition_comparison in analyze_experimental_hypotheses.py exists specifically for contact vs non-contact."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Videos are named and cataloged externally but not vendored; one public fetch path is Box export, not a single DOI tarball."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Ratio plus p-value threshold yields a binary attenuated/null verdict checkable from JSON."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Two parser runs plus comparison plots fit in hours given TIFF access."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "All outputs can be new CSV/JSON/PNG paths under morphoeval/runs/scout-046-h2/."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Blocked on obtaining both condition folders before one scoring loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Distinct from OP-07 (refuted neighbor ML blind); this is mechanistic Ca²⁺ amplitude comparison, not orientation-confounded classifier."
+        }
+      }
+    },
+    {
+      "title": "Calibrate simulation gap-junction proxy (coupling_range_lengths) to measured inter-embryo onset lag",
+      "gap": "wave-vector-analysis/simulations/catalog.json transfer_boundary admits inter-embryo triggering is a Euclidean threshold, not Pietak/Cervera gap-junction physics; no repo record fits coupling_range_lengths to real neighbor onset_lag_s from wave_laterality metrics.",
+      "done": "For ≥10 head-head videos, median |simulated_onset_lag_s - observed_onset_lag_s| / observed_onset_lag_s ≤ 0.20 after calibrate_from_real_data.py + generate_simulated_data.py --compare-ab with coupling_range_lengths as the sole tuned parameter (bounds documented in sidecar JSON).",
+      "tool_route": "python3 wave-vector-analysis/simulations/calibrate_from_real_data.py <real_spark_tracks.csv> --clusters-csv <vector_clusters.csv> --output scout046_calibrated.json; python3 wave-vector-analysis/simulations/generate_simulated_data.py --config scout046_calibrated.json --compare-ab --output-lane-a scout046_sim_a.csv --output-lane-b scout046_sim_b.csv; python3 wave-vector-analysis/simulations/visualize_simulation.py scout046_sim_a.csv --real-csv <real_spark_tracks.csv> --compare --output scout046_sim_vs_real.png; compare onset_lag_s to wave-vector-analysis/wave_laterality_analysis.py output.",
+      "deciding_data": "In-repo smoke: wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv (kinematics only). Deciding series: full parsed spark_tracks + wave_laterality.csv from Box batch (external). Bioelectric context: docs/LEVIN_LATENT_SPACE_METHODS.md Claim 5 gap-junction / 5-HT coupling (Slots 081–082, Cervera 2021).",
+      "prior_attempts": "simulations/CALIBRATION_GUIDE.md documents workflow but no committed calibration JSON against Levin Xenopus injury-wave videos. Cervera audit (morphoeval/audits/2026-10-17-cervera-audit-v2.yaml) fixed planarian RD code, not Ca²⁺ wave delays.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "calibrate_from_real_data.py and generate_simulated_data.py --compare-ab are the named simulation tools in the spark→cluster chain extension."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "Subset CSV supports pipeline smoke; lag fit needs full Box-derived tracks and laterality table."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "20% median relative error on onset_lag_s is numeric and auditable from sidecars."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Parameter sweep over coupling_range_lengths is lightweight Python once tracks exist."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New JSON/CSV/PNG under morphoeval/runs/scout-046-calibration/ only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One calibration loop per video cohort once real tracks exist."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Catalog explicitly lists this heuristic as open; no prior refutation of calibration route."
+        }
+      }
+    },
+    {
+      "title": "Stratify posterior tail-poke / tail-tail null for neighbor Ca²⁺ waves (Hypothesis 5 completion)",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md lists Hypothesis 5 as partial: embryo B response to posterior damage in tail-tail orientation is not scored separately from pooled clusters (circular variance 0.97 already weakens directionality claims).",
+      "done": "CSV with columns (video_stem, orientation, poke_region, neighbor_has_wave, n_waves_neighbor) where neighbor_has_wave rate for (orientation=TTTT, poke=T) is at least 30 percentage points lower than (orientation=HTHT, poke=M) or a signed binomial test p<0.05 supports the null for TT/T.",
+      "tool_route": "python3 wave-vector-analysis/batch_wave_catalog.py --root '<Box root>'; python3 wave-vector-analysis/wave_laterality_analysis.py; filter rows by filename tokens oHTHT/oTTTT and pT/pM/pH per wave_laterality_analysis.py header; optional cross-check python3 wave-vector-analysis/analyze_experimental_hypotheses.py <tracks> --embryo-id B with ap_norm filters on poke frame.",
+      "deciding_data": "Box calcium videos with encoded orientation/poke tokens (documented in wave_laterality_analysis.py and generate_xy_dff_report.classify_condition). Not vendored in git.",
+      "prior_attempts": "EXPERIMENTAL_HYPOTHESES.md §5 partial status; generate_all_hypothesis_plots pooled embryo B metrics without orientation stratification—no refutation, incomplete analysis.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Laterality scorer plus filename geometry parsing is the intended spark→cluster→hypothesis stratification path."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "Metadata is in filenames on Box, not in repo CSV columns today."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Rate difference with binomial test yields a clear pass/fail on the stated null."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Reuses existing catalog outputs; scoring is pandas-level."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New filtered CSV/JSON only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Depends on batch_wave_catalog completion first."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not the same as OP-07 blind neighbor-transfer classifier route (refuted)."
+        }
+      }
+    },
+    {
+      "title": "Restore embryo_id/AP coverage so bioelectric-axis wave metrics are cohort-valid",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md reports only 46.1% valid embryo_id and ap_norm, breaking A vs B inter-embryo comparisons that underpin Levin/Tung long-range signaling claims in the latent-space bioelectric pillar.",
+      "done": "python3 wave-vector-analysis/check_data_availability.py on a re-parsed spark_tracks.csv reports can_test=True for hypotheses 3, 4, and 7 with measured embryo_id non-null fraction ≥ 0.90 on the same video set listed in detection_summary DATA_SOURCES_AND_ASSUMPTIONS.md.",
+      "tool_route": "python3 wave-vector-analysis/wave-vector-tiff-parser.py '<tiff_folder>' 0 --fps <fps> --csv scout046_reparse_tracks.csv; optional mask path via create_size_constrained_masks.py; python3 wave-vector-analysis/spark_tracks_to_clusters.py scout046_reparse_tracks.csv scout046_reparse_clusters.csv; python3 wave-vector-analysis/generate_detection_summary.py scout046_reparse_tracks.csv --output-dir scout046_qa/; python3 wave-vector-analysis/check_data_availability.py scout046_reparse_tracks.csv scout046_reparse_clusters.csv",
+      "deciding_data": "In-repo: wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv for regression; deciding full set on Levin Embryos TIFF base path in detection_summary_old_new_speed_v6/DATA_SOURCES_AND_ASSUMPTIONS.md (external Box).",
+      "prior_attempts": "Multiple detection_summary_old_new_speed_v* QA iterations documented under wave-vector-analysis/analysis_results/; HEAD_TAIL_ASSIGNMENT_LOGIC.md records ongoing head/tail fixes—coverage not yet closed.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Parser, clusterer, detection_summary QA, and check_data_availability are the exact named chain tools."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Smoke subset in-repo; full TIFF stacks external but path-stable in QA docs."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "90% embryo_id fill rate plus check_data_availability flags are automatically scorable."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Full reparse of many stacks may exceed one hour but stays batch Python."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Parser flags might be needed for fixes; deliverable CSV/QA dirs can still be new-only if parser unchanged."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Likely multiple parse/QA iterations unless masks already sufficient."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation that 90% coverage is impossible—only incomplete QA history."
+        }
+      }
+    },
+    {
+      "title": "Pre-register poke-position deconfound for mirror vs headward neighbor response (OP-08 wavepipe slice)",
+      "gap": "docs/open-problems.json OP-08 (node b3) states post-hoc mirror AUC 0.61–0.65 is exploratory and confounded with headward poke bias; spark-track spatial matching can separate hypotheses when poke AP position varies but no hash-locked preregistration ties pixel/spark features to that test.",
+      "done": "A preregistration JSON (repo predictions/ or morphoeval/runs/) hashed before parsing lists videos with poke ap_norm ≥ 0.55; outcome file reports median dist_from_poke_px on neighbor embryo for mirror-predicted vs headward-predicted loci with winner declared by lower median (± bootstrap CI); registered before spark_tracks regeneration on held-out video ids.",
+      "tool_route": "Preregister via repo blind-test contract; python3 wave-vector-analysis/wave-vector-tiff-parser.py per held-out folder; python3 wave-vector-analysis/spark_tracks_to_clusters.py; python3 wave-vector-analysis/generate_all_hypothesis_plots.py <tracks> --clusters-csv <clusters> --output-dir scout046_op08/ (spatial_matching_analysis.png metrics exported to JSON); python3 wave-vector-analysis/analyze_pixel_waves.py for pixel-count corroboration.",
+      "deciding_data": "Box calcium videos with mid/posterior pokes (pM/pT filename tokens). OP-08 cites PIXEL_BLIND_RESULTS.md / PIXEL_V2_BLIND_RESULTS.md (not in-repo paths on this snapshot—follow open-problems.json source field).",
+      "prior_attempts": "open-problems.json OP-08 status partial, attempted_by Multi-agent panel; OP-07 neighbor-transfer blind refuted (LOOO AUC 0.484)—do not reuse that ML feature route.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Spatial matching and pixel wave scripts implement the spark→cluster→plot metrics OP-08 needs, but not the full pixel-v2 classifier stack."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Held-out video list and TIFFs are external; preregistration can live in-repo."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Median distance comparison with preregistered video ids is checkable; requires disciplined hash lock."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Subset of videos with posterior pokes is small enough for one sitting once listed."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New prereg + output JSON/PNG only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One loop after prereg if video ids fixed."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "OP-08 exploratory pixel mirror work exists; wavepipe spatial route is adjacent but OP-07 ML neighbor prediction is refuted—partial overlap risks duplicate effort."
+        }
+      }
+    },
+    {
+      "title": "Planarian 2H0T bioelectric memory vs Xenopus inter-embryo Ca²⁺ wave kinematics (cross-modal gap)",
+      "gap": "Levin latent-space Claim 5 (planarian 2H0T gap-junction memory; datasets/planform/planform_bioelectric_series_v1.json; Pietak Slot 082) has no shared measurable with Xenopus GCaMP spark_tracks—wavepipe cannot validate voltage/attractor predictions from wave speeds alone.",
+      "done": "Not closable with wavepipe lens; a scorer marks this candidate CLOSED-OUT with tool_fit≤2 and points to planform_bioelectric.py self-test passing on S1–S9 holdouts (existing) as the deciding evidence domain.",
+      "tool_route": "Wavepipe (insufficient): python3 wave-vector-analysis/generate_all_hypothesis_plots.py — cannot read V_mem. Correct lens: python3 models/planform_bioelectric.py --self-test; python3 models/2017-pietak-bioelectric-morphogen-coupling.py --self-test; lean morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean",
+      "deciding_data": "In-repo: datasets/planform/planform_bioelectric_series_v1.json, datasets/planarian_hk_atpase_anterior/, datasets/bioelectric_morphogen_coupling/; Xenopus Ca²⁺: external Box per wave-vector-analysis README.",
+      "prior_attempts": "morphoeval/audits/2026-10-17-cervera-audit-v2.yaml and LEVIN_LATENT_SPACE_METHODS.md document Planarian/Xenopus bioelectric model audits; no audit links planform outcome frequencies to spark_tracks.csv.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "spark_tracks→hypothesis plots do not encode V_mem, 5-HT flux, or 2H0T morphology frequencies."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Planform bioelectric series and planarian reference datasets are already in-repo for the non-wavepipe lens."
+        },
+        "falsifiable_done": {
+          "score": 8,
+          "why": "Cross-modal done is definable only after a derived bridge metric exists—which wavepipe lacks."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Planform/Pietak self-tests run in minutes on VM."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Documenting CLOSED-OUT is a new scout JSON row only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate negative verdict once modalities are compared."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Negative knowledge: reporting non-fit prevents re-proposing the same cross-modal route as a wavepipe win."
+        }
+      }
+    }
+  ]
+}
