@@ -194,7 +194,7 @@ def cmd_dispatch(a) -> int:
             print(f"  [DRY-RUN] {x['id']} ground={x['ground']} lens={x['lens']} -> {x['deliverable']} | prompt={len(build_prompt(x)):,} chars")
             continue
         log = HERE / "cloud" / "dispatches" / f"problem-{x['id']}.json"
-        if log.exists():
+        if log.exists() and not a.force:
             print(f"  [SKIP] {x['id']} already dispatched (record {log.name})"); continue
         try:
             from cloud_orchestrator import _dispatch_via_cursor_sdk  # same transport as the loop fleet
@@ -229,7 +229,7 @@ def main() -> int:
     d = sub.add_parser("dispatch", help="Dispatch scout agents (cloud)")
     d.add_argument("--count", type=int, default=100); d.add_argument("--agents", default=None, help="e.g. 1-10,25")
     d.add_argument("--repo", default="fractastical/morpholib"); d.add_argument("--model", default=None)
-    d.add_argument("--dry-run", action="store_true")
+    d.add_argument("--dry-run", action="store_true"); d.add_argument("--force", action="store_true", help="Re-dispatch even if a dispatch record exists (stragglers)")
     a = ap.parse_args()
     return {"plan": cmd_plan, "prompt": cmd_prompt, "rank": cmd_rank, "dispatch": cmd_dispatch}.get(a.cmd, lambda _a: (ap.print_help(), 0)[1])(a)
 
