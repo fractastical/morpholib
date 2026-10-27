@@ -1,0 +1,35 @@
+{
+  "fix_id": "fix-009",
+  "candidate_rank": 58,
+  "candidate_id": "scout-042-c",
+  "status": "fixed",
+  "summary": "Verified that v2 declared the Cervera GIF at repo root while the committed asset is docs/media/cervera_levin_mafe_gj_block.gif, leaving the GIF in measure_outputs missing. Added audit v3 with the correct output path and script paths under models/, regenerated the measurement sidecar; missing is empty and the GIF is pinned with sha256 and 46 frames.",
+  "root_cause": "Audit YAML simulation.output and v2 fingerprint scope used cervera_levin_mafe_gj_block.gif at repository root, but the only committed animation is docs/media/cervera_levin_mafe_gj_block.gif (see README and 2026-10-17-cervera-audit v1 evidence). measure_outputs.py resolves paths from repo root and records absent files under missing without inventing hashes.",
+  "changed_files": [
+    "morphoeval/audits/2026-10-17-cervera-audit-v3.yaml",
+    "morphoeval/audits/2026-10-17-cervera-audit-v3.measurements.yaml"
+  ],
+  "evidence": [
+    "morphoeval/audits/2026-10-17-cervera-audit-v2.measurements.yaml missing entry: cervera_levin_mafe_gj_block.gif",
+    "docs/media/cervera_levin_mafe_gj_block.gif (1100325 bytes, 46 frames)",
+    "morphoeval/audits/2026-10-17-cervera-audit-v3.measurements.yaml outputs.cervera-levin-mafe[0]: sha256 e20cb7ea091faa372a0cef69656d020b48b141599f3584fe7951efa64447ac6c, frames 46",
+    "morphoeval/audits/2026-10-17-cervera-audit-v3.measurements.yaml missing: []",
+    "Command: python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-cervera-audit-v3.yaml"
+  ],
+  "validation": [
+    {
+      "name": "python3 -m compileall -q morphoeval/problem_fixers",
+      "argv": ["python3", "-m", "compileall", "-q", "morphoeval/problem_fixers"],
+      "exit_code": 0,
+      "output_summary": "No Python modules under problem_fixers; compileall exited 0."
+    },
+    {
+      "name": "measure_outputs v3 sidecar",
+      "argv": ["python3", "morphoeval/measure_outputs.py", "morphoeval/audits/2026-10-17-cervera-audit-v3.yaml"],
+      "exit_code": 0,
+      "output_summary": "1 output fingerprinted, 9 measurements, quick_gate 100/100 validated, no missing lines printed"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
