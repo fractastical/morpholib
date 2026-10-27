@@ -382,9 +382,10 @@ def main() -> int:
          "allowlist + trusted merge gate; never self-merges.",
          fixers["dispatched"], f'{fixers["landed"]} landed on main', pct(fixers["landed"], fixers["dispatched"]),
          "morphoeval/problem_fixers/results/*.json"),
-        ("Loop roles (12 canonical steps)", "Not separate dispatches: the scout/paper/source/"
-         "rules/script/output/audit/measure/build/publish/graph/remed roles each loop run "
-         "executes, counted from track_loop telemetry.",
+        ("12-Step Loop Agent (the roles)", "Not separate dispatches and not one model doing "
+         "everything: the loop is a 12-step protocol. One builder-agent writes (steps 1–6), a "
+         "DIFFERENT model judges (step 7, dual assessors), deterministic tools measure, "
+         "build and publish (8–11), and findings loop back (12). See the diagram in Section IV.",
          tele["steps"], f'{tele["runs"]} tracked runs · 106 executions per role', 100.0,
          "morphoeval/runs/telemetry.sqlite (steps)"),
         ("Orchestrator — Muse Wonder", "The session conductor: designs the fleets, writes the "
@@ -484,6 +485,33 @@ def main() -> int:
         f"<td class='num'>{r['avg_s']:.1f}s</td></tr>" for r in mq["step_models"][:8]
     )
 
+    # Small 12-step loop diagram (mirrors morphoeval/track_loop.py CANONICAL_STEPS
+    # default_actor values). The point it makes visually: step 7 is worn by a
+    # DIFFERENT hat — dual assessors — never by the builder who wrote steps 1-6.
+    loop_steps = [
+        (1, "scout", "human+scout", "human"), (2, "paper", "builder", "builder"),
+        (3, "source", "builder+tool", "mixed"), (4, "rules", "builder", "builder"),
+        (5, "script", "builder", "builder"), (6, "output", "tool", "tool"),
+        (7, "audit", "dual assessors ★", "assessor"), (8, "measure", "tool", "tool"),
+        (9, "build", "tool", "tool"), (10, "publish", "tool", "tool"),
+        (11, "graph", "tool", "tool"), (12, "remed", "builder+assessor", "mixed"),
+    ]
+
+    def step_box(num, slug, actor, who):
+        return (f'<div class="lstep who-{who}"><b>{num}. {slug}</b>'
+                f'<span>{actor}</span></div>')
+
+    row1 = '<span class="larr">→</span>'.join(step_box(*s) for s in loop_steps[:6])
+    row2 = '<span class="larr">←</span>'.join(step_box(*s) for s in reversed(loop_steps[6:]))
+    loop_diagram = (
+        f'<div class="loopdiag"><div class="lrow">{row1}</div>'
+        '<div class="ldown">↓ &nbsp;Tier B — judging &amp; publishing</div>'
+        f'<div class="lrow">{row2}</div>'
+        '<div class="lback">↩ step 12 (remed): fixes loop back to step 5 (script), then 6–11 re-run. '
+        '★ The auditor is a different model from the builder — that separation is the control '
+        'the red-flag detectors in Section VIII watch over.</div></div>'
+    )
+
     sev_badge = {
         "critical": '<span class="badge crit">CRITICAL</span>',
         "high": '<span class="badge high">HIGH</span>',
@@ -518,6 +546,15 @@ def main() -> int:
    border:1px solid #7a5c2e; vertical-align:middle; margin-right:6px; }}
  .fill {{ height:100%; }}
  .cell {{ text-align:center; }}
+ .loopdiag {{ border:1.5px solid #7a5c2e; background:#efe4c4; padding:10px 12px; margin:10px 0 14px; }}
+ .lrow {{ display:flex; align-items:stretch; gap:4px; flex-wrap:wrap; }}
+ .lstep {{ flex:1 1 90px; border:1.5px solid #7a5c2e; padding:4px 6px; font-size:12.5px; text-align:center; }}
+ .lstep b {{ display:block; font-size:13px; }} .lstep span {{ color:#5d4420; font-size:11.5px; }}
+ .who-builder {{ background:#e8d5a8; }} .who-assessor {{ background:#eeb9ac; border-color:#a33327; border-width:2.5px; }}
+ .who-tool {{ background:#cfe0b8; }} .who-human {{ background:#c8d4e8; }} .who-mixed {{ background:#e4cfe0; }}
+ .larr {{ align-self:center; font-weight:bold; color:#7a5c2e; }}
+ .ldown {{ text-align:right; color:#7a5c2e; font-size:12.5px; padding:3px 2px; }}
+ .lback {{ font-size:12.5px; color:#5d4420; padding-top:6px; }}
  .badge {{ font-size:11px; font-weight:bold; padding:2px 6px; border:1px solid #5d4420; }}
  .badge.crit {{ background:#a33327; color:#fff; }} .badge.high {{ background:#d98a4a; color:#fff; }}
  .badge.med {{ background:#e3cf6b; }} .badge.ok {{ background:#7ba05b; color:#fff; }}
@@ -554,7 +591,11 @@ repo record and are not counted. Regenerate: <code>python3 docs/build_fleet_dash
 <table><tr><th>Fix</th><th>Candidate</th><th>Rank</th><th>Policy</th><th>Agent-reported status</th></tr>
 {fixer_rows}</table>
 
-<h2>IV. Inside every loop — the 12 canonical roles (telemetry, {tele['runs']} runs)</h2>
+<h2>IV. The 12-Step Loop Agent — how one loop is applied (telemetry, {tele['runs']} runs)</h2>
+<p class="dim">One dispatch sends out one builder to run this protocol. The hats change as the
+loop proceeds: the builder writes, independent assessors judge, tools measure and publish.
+Execution counts per role are underneath the diagram.</p>
+{loop_diagram}
 <table><tr><th>Role</th><th>Tier</th><th>Executions</th><th>Share</th></tr>
 {role_rows}</table>
 
