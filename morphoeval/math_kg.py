@@ -915,8 +915,18 @@ def load_head_audits() -> dict[str, dict[str, Any]]:
             sid = sim["id"]
             scores = sim["scores"]
             overall = round(sum(d_item["weight"] * scores[d_item["id"]]["value"] for d_item in dims) / 100.0, 1)
-            sim_meas = (meas_doc.get("measurements") or {}).get(sid, [])
-            sim_prov = (meas_doc.get("provenance") or {}).get(sid, {})
+            # Measurements sidecars come in two shapes: the original
+            # {measurements: {sim_id: [...]}} map and the overnight-generator
+            # {simulation_id: ..., measurements: [...]} list. Accept both.
+            _meas = meas_doc.get("measurements") if isinstance(meas_doc, dict) else None
+            if isinstance(_meas, dict):
+                sim_meas = _meas.get(sid, [])
+            elif isinstance(_meas, list):
+                sim_meas = _meas if meas_doc.get("simulation_id") in (None, sid) else []
+            else:
+                sim_meas = []
+            _prov = meas_doc.get("provenance") if isinstance(meas_doc, dict) else None
+            sim_prov = _prov.get(sid, {}) if isinstance(_prov, dict) else {}
             sim_refs = [refs[r] for r in sim.get("source_refs", []) if r in refs]
             dois = [f"https://doi.org/{r['doi']}" for r in sim_refs if r.get("doi")]
 

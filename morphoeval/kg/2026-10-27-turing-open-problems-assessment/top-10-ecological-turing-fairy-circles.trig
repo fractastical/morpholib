@@ -1,0 +1,102 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature20801>,
+            <https://doi.org/10.1073/pnas.1522130113> .
+
+    <https://doi.org/10.1038/nature20801> dct:date "2017"^^xsd:gYear ;
+        dct:title "A theoretical foundation for multi-scale regular vegetation patterns" .
+
+    <https://doi.org/10.1073/pnas.1522130113> dct:date "2016"^^xsd:gYear ;
+        dct:title "Discovery of fairy circles in Australia supports self-organization theory" .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/turing-open-problem-top-10-ecological-turing-fairy-circles> a pk:Claim ;
+        rdfs:label "TOP-10 — Ecology-scale Turing: fairy circles as scale-dependent-feedback RD vs termite engineering" ;
+        dct:description "OPEN PROBLEM in Turing-pattern biology, sourced forward from Klausmeier 1999 -> Getzin 2016 -> Tarnita 2017. THE GAP: Namibian and Australian fairy circles are still contested between vegetation reaction-diffusion (scale-dependent feedback) and termite engineering; Tarnita 2017 shows the two are not exclusive. Pattern statistics alone (hexagonal order, pair correlation) have not settled it — the same lesson as TOP-01. DEFINITION OF DONE: A pre-registered comparison of a vegetation RD model and a termite-territory model against public aerial-imagery pair-correlation and Voronoi statistics with locked discrimination thresholds; reported either way. Rated on two separate axes: resolvability 51/100 (RESOLVABLE WITH WORK) by the deterministic Problem-Scout rubric (prices our tools, data in hand and a checkable definition-of-done, not truth odds), and a PROVISIONAL single-assessor viability posterior of 28.5% (prior 50%, net -4 dB) that the named route reaches a decisive verdict — not a multi-agent panel score. A belief under assessment, not a fact." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:context "tool_route: No ecological model or imagery in repo; new scripts and a public data fetch would be required. | deciding_data: Public aerial imagery / published point patterns (Getzin et al.). Nothing in repo. | prior_attempts: None in repo." ;
+        pk:derivedFromPaper <https://doi.org/10.1038/nature20801>,
+            <https://doi.org/10.1073/pnas.1522130113> ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-10-ecological-turing-fairy-circles-resolvability>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-10-ecological-turing-fairy-circles-viability> ;
+        pk:weightOfEvidence "0.285"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-10-ecological-turing-fairy-circles-resolvability> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-10 resolvability 51/100 — RESOLVABLE WITH WORK" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC): tool_fit (0-25): a named repo tool, run as-is, produces the deciding evidence; data_in_hand (0-20): deciding data already in repo, or one named public fetch away; falsifiable_done (0-15): an exact definition-of-done a scorer can check without taste; compute_in_repo (0-15): runs on the repo stack in hours, no wet lab / no new infrastructure; isolation (0-10): closable as new files only, zero-conflict with parallel agents; time_to_verdict (0-10): verdict reachable in one loop / one sitting; not_blocked (0-5): no recorded prior attempt already refuted this exact route. Score = sum of factor scores / 100; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 10/15: feasible compute once models exist",
+            "data_in_hand 5/20: all data external",
+            "falsifiable_done 10/15: locked thresholds are checkable but the mechanisms are not exclusive",
+            "isolation 10/10: new files only",
+            "not_blocked 5/5: no prior attempt",
+            "time_to_verdict 3/10: several loops",
+            "tool_fit 8/25: generic RD base only; no vegetation or termite model, no imagery tooling" ;
+        pk:hasScore "0.51"^^xsd:double ;
+        pk:hasVerdict "RESOLVABLE WITH WORK" .
+
+    <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-10-ecological-turing-fairy-circles-decisive-verdict> a pk:TestableHypothesis ;
+        rdfs:label "Pattern statistics from public imagery decisively favour one mechanism at the locked thresholds." ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-10-ecological-turing-fairy-circles-viability> ;
+        pk:hasPriorProbability "0.5"^^xsd:double ;
+        pk:hasResolvability "0.51"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-10-ecological-turing-fairy-circles-viability> a pk:BayesianAssessment ;
+        rdfs:label "TOP-10 viability 28.5% — provisional single-assessor Delphi" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:bayesFactor "0.3981"^^xsd:double ;
+        pk:calibrationMethod "Single-assessor provisional signed deciban ledger, prior 50% (predictions/round2_live_arguments.json discipline); NOT a multi-agent panel; a panel pass may supersede but not edit" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-10-ecological-turing-fairy-circles-decisive-verdict> ;
+        pk:evidenceAgainst "[-2 dB] Mechanisms are not mutually exclusive (Tarnita 2017), so pattern statistics are unlikely to be decisive — the TOP-01 lesson",
+            "[-4 dB] No repo data or model; everything must be built" ;
+        pk:evidenceFor "[+2 dB] Public imagery and standard point-pattern statistics exist" ;
+        pk:hasConfidence "0.5"^^xsd:double ;
+        pk:hasProbability "0.285"^^xsd:double ;
+        pk:hasVerdict "OUTSIDE_THE_REPO_AND_LIKELY_INDECISIVE" ;
+        pk:weightOfEvidenceDeciban "-4.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 Thinking High (single assessor, provisional)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Open problem: TOP-10 Ecology-scale Turing: fairy circles as scale-dependent-feedback RD vs termite engineering" ;
+        dct:created "2026-10-27T15:30:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/delphi/resource/claim/turing-open-problem-top-10-ecological-turing-fairy-circles> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RA3z187EzQXy4zopVZAmFg2sa_QymD1MKfzMxGzNqdNZM/template> .
+
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+

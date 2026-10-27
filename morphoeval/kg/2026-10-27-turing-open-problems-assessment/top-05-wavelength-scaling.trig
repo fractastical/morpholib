@@ -1,0 +1,113 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevLett.114.138101>,
+            <https://doi.org/10.1126/science.1130088> .
+
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The Chemical Basis of Morphogenesis" .
+
+    <https://doi.org/10.1103/PhysRevLett.114.138101> dct:date "2015"^^xsd:gYear ;
+        dct:title "Scaling and Regeneration of Self-Organized Patterns" .
+
+    <https://doi.org/10.1126/science.1130088> dct:date "2006"^^xsd:gYear ;
+        dct:title "WNT and DKK determine hair follicle spacing through a reaction-diffusion mechanism" .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/turing-open-problem-top-05-wavelength-scaling> a pk:Claim ;
+        rdfs:label "TOP-05 — Scaling: does biological pattern wavelength scale with body size across taxa, against Turing's intrinsic wavelength?" ;
+        dct:description "OPEN PROBLEM in Turing-pattern biology, sourced forward from Turing 1952 (intrinsic wavelength) -> Werner 2015 (scaling). THE GAP: Turing wavelength is set by kinetics and diffusion, not domain size, yet many biological patterns scale with the organism (planarian regeneration, Werner 2015; expansion-repression schemes). No cross-taxon regression of measured wavelength against body size exists. The repo's 976 *_turing_wavelength dataset folders look like such an asset but their empirical_series are alpha-template curves (x_control 0.5-5.0, r=0.999 fits), not measurements (scout-048 / scout-062 data-quality findings), so they cannot decide this. DEFINITION OF DONE: A pre-registered log-log regression of measured pattern wavelength on body size for >=10 taxa with real, DOI-cited measurements (hair-follicle spacing, fish stripe period, digit spacing, palatal ruga spacing), slope and CI locked before extraction; verdict = slope CI excludes 0 (scaling) or excludes 1 (intrinsic) or neither. Rated on two separate axes: resolvability 54/100 (RESOLVABLE WITH WORK) by the deterministic Problem-Scout rubric (prices our tools, data in hand and a checkable definition-of-done, not truth odds), and a PROVISIONAL single-assessor viability posterior of 16.6% (prior 50%, net -7 dB) that the named route reaches a decisive verdict — not a multi-agent panel score. A belief under assessment, not a fact." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:context "tool_route: scout_literature.py for measurements; a new extraction table under datasets/; registry row. The catalog templates must NOT be used as evidence. | deciding_data: Not usable in repo (template artefacts). Public literature extraction required. | prior_attempts: scout-048 BIO-TPL-DQ-01 and scout-062 established the catalog empirical curves are template artefacts; no scaling test attempted." ;
+        pk:derivedFromPaper <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevLett.114.138101>,
+            <https://doi.org/10.1126/science.1130088> ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-resolvability>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability> ;
+        pk:weightOfEvidence "0.166"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-resolvability> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-05 resolvability 54/100 — RESOLVABLE WITH WORK" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC): tool_fit (0-25): a named repo tool, run as-is, produces the deciding evidence; data_in_hand (0-20): deciding data already in repo, or one named public fetch away; falsifiable_done (0-15): an exact definition-of-done a scorer can check without taste; compute_in_repo (0-15): runs on the repo stack in hours, no wet lab / no new infrastructure; isolation (0-10): closable as new files only, zero-conflict with parallel agents; time_to_verdict (0-10): verdict reachable in one loop / one sitting; not_blocked (0-5): no recorded prior attempt already refuted this exact route. Score = sum of factor scores / 100; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 12/15: negligible compute",
+            "data_in_hand 4/20: the 976 catalog series are template curves, not data; everything must be extracted fresh",
+            "falsifiable_done 12/15: locked slope CI test is taste-free; wavelength definitions across taxa are not",
+            "isolation 9/10: new table + registry row",
+            "not_blocked 1/5: the obvious in-repo route is recorded as an artefact (scout-048/062)",
+            "time_to_verdict 4/10: literature extraction across >=10 taxa is days, not a loop",
+            "tool_fit 12/25: regression is trivial; the tool gap is a trustworthy measurement table" ;
+        pk:hasScore "0.54"^^xsd:double ;
+        pk:hasVerdict "RESOLVABLE WITH WORK" .
+
+    <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-05-wavelength-scaling-decisive-verdict> a pk:TestableHypothesis ;
+        rdfs:label "A >=10-taxon measured wavelength-vs-size table is assembled and the locked slope test returns a decisive class." ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability> ;
+        pk:hasPriorProbability "0.5"^^xsd:double ;
+        pk:hasResolvability "0.54"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability> a pk:BayesianAssessment ;
+        rdfs:label "TOP-05 viability 16.6% — provisional single-assessor Delphi" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:bayesFactor "0.1995"^^xsd:double ;
+        pk:calibrationMethod "Single-assessor provisional signed deciban ledger, prior 50% (predictions/round2_live_arguments.json discipline); NOT a multi-agent panel; a panel pass may supersede but not edit" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-05-wavelength-scaling-decisive-verdict> ;
+        pk:evidenceAgainst "[-1 dB] Growth-time and developmental-stage confounds",
+            "[-3 dB] Heterogeneous wavelength definitions across taxa make a single regression contestable",
+            "[-5 dB] The repo's apparent asset (976 series) is void: template curves, recorded as such" ;
+        pk:evidenceFor "[+2 dB] The question is sharp (slope 0 vs 1) and a few real measured systems exist (fish stripes across sizes, planarian scaling, follicle spacing)" ;
+        pk:hasConfidence "0.65"^^xsd:double ;
+        pk:hasProbability "0.166"^^xsd:double ;
+        pk:hasVerdict "DATA_ASSET_IS_AN_ARTEFACT" ;
+        pk:weightOfEvidenceDeciban "-7.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 Thinking High (single assessor, provisional)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Open problem: TOP-05 Scaling: does biological pattern wavelength scale with body size across taxa, against Turi" ;
+        dct:created "2026-10-27T15:30:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/delphi/resource/claim/turing-open-problem-top-05-wavelength-scaling> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RA3z187EzQXy4zopVZAmFg2sa_QymD1MKfzMxGzNqdNZM/template> .
+
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+

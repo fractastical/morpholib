@@ -1,0 +1,109 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1098/rsta.2020.0280> .
+
+    <https://doi.org/10.1006/bulm.1999.0131> dct:date "1999"^^xsd:gYear ;
+        dct:title "Reaction and diffusion on growing domains: scenarios for robust pattern formation" .
+
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+
+    <https://doi.org/10.1098/rsta.2020.0280> dct:date "2021"^^xsd:gYear ;
+        dct:title "Introduction to 'Recent progress and open frontiers in Turing's theory of morphogenesis'" .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/turing-open-problem-top-04-stripe-insertion-blind> a pk:Claim ;
+        rdfs:label "TOP-04 — Growing domains: an independent ontogenetic stripe-count series to test the insertion law blind" ;
+        dct:description "OPEN PROBLEM in Turing-pattern biology, sourced forward from Kondo-Asai 1995 -> Crampin-Gaffney-Maini 1999 -> Krause 2021. THE GAP: Classical Turing conditions are neither necessary nor sufficient on growing domains and wavelength selection under growth has no closed theory (Krause et al. 2021). Empirically, Kondo-Asai's Pomacanthus series remains nearly the only ontogenetic stripe-count dataset, and the repo's Kondo stripe table is calibrated on it (circularity recorded in scout-034/038; OP-06 growing-domain solver debt still open). DEFINITION OF DONE: A hash-locked prediction N_stripes(L) = round(L/lambda_c) with lambda_c fixed from one stage, scored on an independently sourced Pomacanthus (or other stripe-inserting fish) ontogenetic series of >=6 stages with body length metadata, each image SHA-256 pinned before counting; result reported either way. Rated on two separate axes: resolvability 66/100 (RESOLVABLE WITH WORK) by the deterministic Problem-Scout rubric (prices our tools, data in hand and a checkable definition-of-done, not truth odds), and a PROVISIONAL single-assessor viability posterior of 33.4% (prior 50%, net -3 dB) that the named route reaches a decisive verdict — not a multi-agent panel score. A belief under assessment, not a fact." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:context "tool_route: python3 morphoeval/scout_literature.py --taxon 'Pomacanthus semicirculatus' (Commons + OpenAlex); verify_image_fitness.py / the Y-junction skeleton detector for counting; predictions/ registry for the lock. | deciding_data: Not in repo. Needs public juvenile photographs with size metadata or a published series other than Kondo-Asai 1995 Fig. 1. | prior_attempts: scout-031 (Kondo ontogenetic series beyond one adult photo), scout-034/038 (circular calibration), scout-032 (Y-junction over-count) — all record the gap, none closed it." ;
+        pk:derivedFromPaper <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1098/rsta.2020.0280> ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-04-stripe-insertion-blind-resolvability>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-04-stripe-insertion-blind-viability> ;
+        pk:weightOfEvidence "0.334"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-04-stripe-insertion-blind-resolvability> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-04 resolvability 66/100 — RESOLVABLE WITH WORK" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC): tool_fit (0-25): a named repo tool, run as-is, produces the deciding evidence; data_in_hand (0-20): deciding data already in repo, or one named public fetch away; falsifiable_done (0-15): an exact definition-of-done a scorer can check without taste; compute_in_repo (0-15): runs on the repo stack in hours, no wet lab / no new infrastructure; isolation (0-10): closable as new files only, zero-conflict with parallel agents; time_to_verdict (0-10): verdict reachable in one loop / one sitting; not_blocked (0-5): no recorded prior attempt already refuted this exact route. Score = sum of factor scores / 100; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 12/15: counting is cheap; 2D growing-domain solver would be the expensive add-on",
+            "data_in_hand 8/20: no independent series in repo; juvenile images with sizes are scarce on Commons",
+            "falsifiable_done 13/15: integer stripe counts vs a locked formula are taste-free once images are pinned",
+            "isolation 9/10: new dataset folder + registry row",
+            "not_blocked 3/5: circularity of the current table is recorded; no refutation of an independent test",
+            "time_to_verdict 5/10: data hunt dominates; verdict in one loop only if a series is found",
+            "tool_fit 16/25: literature scout + CV counter exist; the counter over-counts adult junctions (scout-032)" ;
+        pk:hasScore "0.66"^^xsd:double ;
+        pk:hasVerdict "RESOLVABLE WITH WORK" .
+
+    <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-04-stripe-insertion-blind-decisive-verdict> a pk:TestableHypothesis ;
+        rdfs:label "An independent >=6-stage series with size metadata is found and the locked insertion-law prediction is scored decisively (all stages within +-1 stripe, or not)." ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-04-stripe-insertion-blind-viability> ;
+        pk:hasPriorProbability "0.5"^^xsd:double ;
+        pk:hasResolvability "0.66"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-04-stripe-insertion-blind-viability> a pk:BayesianAssessment ;
+        rdfs:label "TOP-04 viability 33.4% — provisional single-assessor Delphi" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:bayesFactor "0.5012"^^xsd:double ;
+        pk:calibrationMethod "Single-assessor provisional signed deciban ledger, prior 50% (predictions/round2_live_arguments.json discipline); NOT a multi-agent panel; a panel pass may supersede but not edit" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-04-stripe-insertion-blind-decisive-verdict> ;
+        pk:evidenceAgainst "[-1 dB] The existing detector over-counts on adult ROIs (scout-032/034)",
+            "[-2 dB] Commons juvenile photographs lack body-length metadata",
+            "[-4 dB] No independent ontogenetic series is known; the only published one calibrated the repo's own table" ;
+        pk:evidenceFor "[+2 dB] A stripe/junction detector already exists and only needs re-tuning for juveniles",
+            "[+2 dB] The insertion law is sharp: stripe count doubles when body length doubles, so +-1 tolerance is a real test" ;
+        pk:hasConfidence "0.6"^^xsd:double ;
+        pk:hasProbability "0.334"^^xsd:double ;
+        pk:hasVerdict "BLOCKED_ON_DATA_NOT_ON_TOOLS" ;
+        pk:weightOfEvidenceDeciban "-3.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 Thinking High (single assessor, provisional)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Open problem: TOP-04 Growing domains: an independent ontogenetic stripe-count series to test the insertion law " ;
+        dct:created "2026-10-27T15:30:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/delphi/resource/claim/turing-open-problem-top-04-stripe-insertion-blind> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RA3z187EzQXy4zopVZAmFg2sa_QymD1MKfzMxGzNqdNZM/template> .
+
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+

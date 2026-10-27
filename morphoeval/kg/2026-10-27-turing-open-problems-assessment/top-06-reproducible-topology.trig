@@ -1,0 +1,109 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cels.2015.12.001>,
+            <https://doi.org/10.1126/science.1226804>,
+            <https://doi.org/10.1126/science.1252960> .
+
+    <https://doi.org/10.1016/j.cels.2015.12.001> dct:date "2015"^^xsd:gYear ;
+        dct:title "Orientation of Turing-like Patterns by Morphogen Gradients and Tissue Anisotropies" .
+
+    <https://doi.org/10.1126/science.1226804> dct:date "2012"^^xsd:gYear ;
+        dct:title "Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism" .
+
+    <https://doi.org/10.1126/science.1252960> dct:date "2014"^^xsd:gYear ;
+        dct:title "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients" .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/turing-open-problem-top-06-reproducible-topology> a pk:Claim ;
+        rdfs:label "TOP-06 — Reproducible topology: why five digits every time when RD from noise gives defective labyrinths" ;
+        dct:description "OPEN PROBLEM in Turing-pattern biology, sourced forward from Sheth 2012 -> Raspopovic 2014 -> Green-Sharpe 2015. THE GAP: RD from random initial conditions yields labyrinths with defects; embryos give five digits almost every time. The Turing + positional-information hybrid (Hox dosage sets wavelength, FGF/Wnt gradients orient) explains cases, but there is no general, tested account of how prepattern and boundaries lock topology. DEFINITION OF DONE: A Bmp-Sox9-Wnt three-node RD on a growing fan-shaped limb-bud domain with published parameters and gradient modulation, pre-registered to produce exactly five rays in >=95% of 200 random-IC runs (and the Hox-dose polydactyly series of Sheth 2012 on dose reduction); scored as registered. Rated on two separate axes: resolvability 60/100 (RESOLVABLE WITH WORK) by the deterministic Problem-Scout rubric (prices our tools, data in hand and a checkable definition-of-done, not truth odds), and a PROVISIONAL single-assessor viability posterior of 28.5% (prior 50%, net -4 dB) that the named route reaches a decisive verdict — not a multi-agent panel score. A belief under assessment, not a fact." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:context "tool_route: New script (no BSW model exists in models/); 2D RD solver base from models/1952-turing-morpho.py; registry row for the 95% threshold. | deciding_data: Published parameters (Raspopovic 2014 SOM). No wet data. | prior_attempts: None in repo." ;
+        pk:derivedFromPaper <https://doi.org/10.1016/j.cels.2015.12.001>,
+            <https://doi.org/10.1126/science.1226804>,
+            <https://doi.org/10.1126/science.1252960> ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-06-reproducible-topology-resolvability>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-06-reproducible-topology-viability> ;
+        pk:weightOfEvidence "0.285"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-06-reproducible-topology-resolvability> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-06 resolvability 60/100 — RESOLVABLE WITH WORK" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC): tool_fit (0-25): a named repo tool, run as-is, produces the deciding evidence; data_in_hand (0-20): deciding data already in repo, or one named public fetch away; falsifiable_done (0-15): an exact definition-of-done a scorer can check without taste; compute_in_repo (0-15): runs on the repo stack in hours, no wet lab / no new infrastructure; isolation (0-10): closable as new files only, zero-conflict with parallel agents; time_to_verdict (0-10): verdict reachable in one loop / one sitting; not_blocked (0-5): no recorded prior attempt already refuted this exact route. Score = sum of factor scores / 100; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 11/15: 200 2D runs on a growing domain: hours",
+            "data_in_hand 9/20: parameters are published; validation target (five rays, polydactyly series) is qualitative",
+            "falsifiable_done 12/15: ray count over 200 runs is a number; domain shape and growth schedule are modelling choices",
+            "isolation 10/10: one new script",
+            "not_blocked 5/5: no prior attempt",
+            "time_to_verdict 4/10: model build + validation is more than one loop",
+            "tool_fit 9/25: only the generic 2D RD base exists; the three-node growing-fan model must be built" ;
+        pk:hasScore "0.6"^^xsd:double ;
+        pk:hasVerdict "RESOLVABLE WITH WORK" .
+
+    <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-06-reproducible-topology-decisive-verdict> a pk:TestableHypothesis ;
+        rdfs:label "A faithful BSW growing-domain model reproduces five rays in >=95% of random-IC runs and the Hox-dose polydactyly ordering." ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-06-reproducible-topology-viability> ;
+        pk:hasPriorProbability "0.5"^^xsd:double ;
+        pk:hasResolvability "0.6"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-06-reproducible-topology-viability> a pk:BayesianAssessment ;
+        rdfs:label "TOP-06 viability 28.5% — provisional single-assessor Delphi" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:bayesFactor "0.3981"^^xsd:double ;
+        pk:calibrationMethod "Single-assessor provisional signed deciban ledger, prior 50% (predictions/round2_live_arguments.json discipline); NOT a multi-agent panel; a panel pass may supersede but not edit" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-06-reproducible-topology-decisive-verdict> ;
+        pk:evidenceAgainst "[-1 dB] More than one loop before a verdict",
+            "[-3 dB] No BSW script exists; building and validating it precedes any test",
+            "[-3 dB] The 95% topological reproducibility criterion is stronger than what the source papers claimed; growth schedule and boundary choices can decide it either way" ;
+        pk:evidenceFor "[+1 dB] The repo has a validated 2D RD base and the Lean d_c machinery",
+            "[+2 dB] Equations and parameters are published and the original work reproduced digit patterns in silico" ;
+        pk:hasConfidence "0.55"^^xsd:double ;
+        pk:hasProbability "0.285"^^xsd:double ;
+        pk:hasVerdict "MODEL_MUST_BE_BUILT_FIRST" ;
+        pk:weightOfEvidenceDeciban "-4.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 Thinking High (single assessor, provisional)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Open problem: TOP-06 Reproducible topology: why five digits every time when RD from noise gives defective labyr" ;
+        dct:created "2026-10-27T15:30:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/delphi/resource/claim/turing-open-problem-top-06-reproducible-topology> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RA3z187EzQXy4zopVZAmFg2sa_QymD1MKfzMxGzNqdNZM/template> .
+
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+

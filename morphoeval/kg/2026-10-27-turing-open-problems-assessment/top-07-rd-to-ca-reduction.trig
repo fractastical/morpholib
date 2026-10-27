@@ -1,0 +1,110 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature22031>,
+            <https://doi.org/10.1073/pnas.0810311106>,
+            <https://doi.org/10.1098/rstb.1952.0012> .
+
+    <https://doi.org/10.1038/nature22031> dct:date "2017"^^xsd:gYear ;
+        dct:title "A living mesoscopic cellular automaton made of skin scales" .
+
+    <https://doi.org/10.1073/pnas.0810311106> dct:date "2009"^^xsd:gYear ;
+        dct:title "The neural origins of shell structure and pattern in aquatic mollusks" .
+
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The Chemical Basis of Morphogenesis" .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/turing-open-problem-top-07-rd-to-ca-reduction> a pk:Claim ;
+        rdfs:label "TOP-07 — When does continuous reaction-diffusion collapse to a discrete automaton? Meinhardt mantle PDE vs the Lean-proved Rule 30 gate" ;
+        dct:description "OPEN PROBLEM in Turing-pattern biology, sourced forward from Meinhardt 1995 -> Boettiger-Ermentrout-Oster 2009 -> Manukyan 2017. THE GAP: Ocellated lizard scales behave as a cellular automaton emerging from RD on a thick-skin lattice (Manukyan 2017), and the repo has Lean-proved that the Ermentrout-Oster neural mantle gate is bit-for-bit Rule 30 — but whether the repo's Meinhardt-Klingler Conus PDE, discretised at the mantle, induces a Rule 30-class local rule has never been measured. It is the bridge between the Rule 30 programme and the RD programme, and the RD-vs-neural shell-pattern debate is still molecularly unresolved. DEFINITION OF DONE: From a Meinhardt PDE kymograph at the mantle edge, extract the empirical 3-neighbourhood -> next-state transducer table (binary threshold pre-registered), report the fraction of transitions agreeing with Rule 30 vs Rule 90 vs best-fit rule, plus the 2D ANF-carry density and wall chirality already used to separate R30 from R90 (node r0); verdict thresholds locked before running. Rated on two separate axes: resolvability 78/100 (RESOLVE NOW) by the deterministic Problem-Scout rubric (prices our tools, data in hand and a checkable definition-of-done, not truth odds), and a PROVISIONAL single-assessor viability posterior of 50.0% (prior 50%, net +0 dB) that the named route reaches a decisive verdict — not a multi-agent panel score. A belief under assessment, not a fact." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:context "tool_route: models/1984-wolfram-conus-textile-rule30.py (Meinhardt-Klingler PDE + Rule 30 + kymograph); morphoeval/lean/ Ermentrout-Oster gate theorem; measure_outputs.py for ANF carry / chirality; registry row. | deciding_data: All in repo (PDE, CA, Lean gate, 2D observables). | prior_attempts: scout-003 (Rule30 <-> Ermentrout-Oster gate chain traceability); scout-034/038/039 (stochastic activator injection debt, OP-06b). None extracted the transducer table." ;
+        pk:derivedFromPaper <https://doi.org/10.1038/nature22031>,
+            <https://doi.org/10.1073/pnas.0810311106>,
+            <https://doi.org/10.1098/rstb.1952.0012> ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-07-rd-to-ca-reduction-resolvability>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-07-rd-to-ca-reduction-viability> ;
+        pk:weightOfEvidence "0.5"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-07-rd-to-ca-reduction-resolvability> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-07 resolvability 78/100 — RESOLVE NOW" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC): tool_fit (0-25): a named repo tool, run as-is, produces the deciding evidence; data_in_hand (0-20): deciding data already in repo, or one named public fetch away; falsifiable_done (0-15): an exact definition-of-done a scorer can check without taste; compute_in_repo (0-15): runs on the repo stack in hours, no wet lab / no new infrastructure; isolation (0-10): closable as new files only, zero-conflict with parallel agents; time_to_verdict (0-10): verdict reachable in one loop / one sitting; not_blocked (0-5): no recorded prior attempt already refuted this exact route. Score = sum of factor scores / 100; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 13/15: 1D PDE kymographs are seconds",
+            "data_in_hand 17/20: everything is generated in repo",
+            "falsifiable_done 12/15: rule-agreement fractions are numbers; the binarisation threshold is the taste risk, so it is pre-registered",
+            "isolation 9/10: new analysis script + registry row",
+            "not_blocked 3/5: OP-06b: the PDE only patterns with an unsourced stochastic injection, so the object reduced is not autonomous",
+            "time_to_verdict 6/10: one loop if the PDE is used as-is",
+            "tool_fit 18/25: PDE, CA, Lean gate and 2D observables all exist; only the transducer extraction is new" ;
+        pk:hasScore "0.78"^^xsd:double ;
+        pk:hasVerdict "RESOLVE NOW" .
+
+    <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-07-rd-to-ca-reduction-decisive-verdict> a pk:TestableHypothesis ;
+        rdfs:label "The extracted transducer table from the Meinhardt mantle PDE agrees with Rule 30 above the locked threshold on both 1D transitions and 2D ANF/chirality observables." ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-07-rd-to-ca-reduction-viability> ;
+        pk:hasPriorProbability "0.5"^^xsd:double ;
+        pk:hasResolvability "0.78"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-07-rd-to-ca-reduction-viability> a pk:BayesianAssessment ;
+        rdfs:label "TOP-07 viability 50.0% — provisional single-assessor Delphi" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:bayesFactor "1.0"^^xsd:double ;
+        pk:calibrationMethod "Single-assessor provisional signed deciban ledger, prior 50% (predictions/round2_live_arguments.json discipline); NOT a multi-agent panel; a panel pass may supersede but not edit" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-07-rd-to-ca-reduction-decisive-verdict> ;
+        pk:evidenceAgainst "[-1 dB] 1D chords cannot separate R30 from R90 (KS 0.2623 vs 0.2627, node r0); the 2D observables must carry the verdict",
+            "[-2 dB] Continuous -> binary thresholding can manufacture or destroy the rule match",
+            "[-3 dB] The Conus PDE patterns only with the unsourced stochastic injection (OP-06b): any reduction is of a non-autonomous object until that is fixed" ;
+        pk:evidenceFor "[+1 dB] Manukyan 2017 is a published template for RD -> CA reduction",
+            "[+2 dB] Transducer-table extraction from a kymograph is mechanical",
+            "[+3 dB] Both objects are in the repo and the gate = Rule 30 identity is Lean-proved" ;
+        pk:hasConfidence "0.6"^^xsd:double ;
+        pk:hasProbability "0.5"^^xsd:double ;
+        pk:hasVerdict "DECIDABLE_BUT_OBJECT_NOT_YET_AUTONOMOUS" ;
+        pk:weightOfEvidenceDeciban "0.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 Thinking High (single assessor, provisional)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Open problem: TOP-07 When does continuous reaction-diffusion collapse to a discrete automaton? Meinhardt mantle" ;
+        dct:created "2026-10-27T15:30:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/delphi/resource/claim/turing-open-problem-top-07-rd-to-ca-reduction> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RA3z187EzQXy4zopVZAmFg2sa_QymD1MKfzMxGzNqdNZM/template> .
+
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
