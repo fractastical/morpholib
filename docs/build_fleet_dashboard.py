@@ -145,6 +145,53 @@ def census() -> dict:
             "SELECT model, COUNT(*), AVG(duration_s) FROM steps WHERE model IS NOT NULL "
             "GROUP BY model").fetchall()
         con.close()
+
+        # Assessor identities stamped into audit YAMLs (the telemetry seats only
+        # cover the 106 tracked loops; most judging lives in the audit corpus).
+        def norm_model(name: str) -> str:
+            n = str(name).strip().lower().replace(" ", "-")
+            for suffix in ("-phase-a", "-thinking-high"):
+                if n.endswith(suffix):
+                    n = n[: -len(suffix)]
+            return n.replace("claude-sonnet-5.5-high", "claude-sonnet-5-5-high")
+
+        audit_assessors: collections.Counter = collections.Counter()
+        try:
+            import yaml as _yaml
+
+            def _walk(o):
+                if isinstance(o, dict):
+                    for k, v in o.items():
+                        kl = str(k).lower()
+                        if "assessor" in kl or "referee" in kl:
+                            if isinstance(v, dict) and v.get("id"):
+                                audit_assessors[norm_model(v["id"])] += 1
+                            elif isinstance(v, str):
+                                audit_assessors[norm_model(v)] += 1
+                        _walk(v)
+                elif isinstance(o, list):
+                    for v in o:
+                        _walk(v)
+
+            loader = getattr(_yaml, "CSafeLoader", _yaml.SafeLoader)
+            AUDITS_DIR = ROOT / "morphoeval" / "audits"
+            for f in AUDITS_DIR.glob("*.yaml"):
+                try:
+                    _walk(_yaml.load(f.read_text(errors="replace"), Loader=loader))
+                except Exception:
+                    continue
+            delphi = AUDITS_DIR / "2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml"
+            panel_models = []
+            if delphi.exists():
+                dd = _yaml.load(delphi.read_text(errors="replace"), Loader=loader)
+                models_reg = (dd.get("audit") or dd).get("models") or {}
+                panel_models = [norm_model(m) for m in models_reg]
+        except Exception:
+            panel_models = []
+        data["assessor_breakout"] = {
+            "audit_counts": dict(audit_assessors),
+            "delphi_panel": panel_models,
+        }
         merged: dict[str, list] = {}
         for name, n, avg_dur in step_models_raw:
             key = str(name).strip().lower().replace(" ", "-").replace("fable-5.1", "fable-5-1")
@@ -168,6 +215,7 @@ def census() -> dict:
         }
     else:
         data["model_quality"] = {"builders": [], "incidents": [], "assessors": {}, "step_models": []}
+        data["assessor_breakout"] = {"audit_counts": {}, "delphi_panel": []}
     data["telemetry"] = tele
     data["red_flags"] = detect_red_flags(data)
     return data
@@ -413,11 +461,24 @@ def main() -> int:
             f"carried a self-audit of {fmt(self_score)}, recalibrated to {fmt(recal)} by referee "
             f"<strong>{html.escape(str(referee))}</strong> — the reason auditing and building are kept on different models.</p>"
         )
+    ab = d.get("assessor_breakout", {"audit_counts": {}, "delphi_panel": []})
+    seat_counts = {"primary": dict(mq["assessors"].get("primary", [])),
+                   "second": dict(mq["assessors"].get("second", []))}
+    assessor_models = sorted(
+        set(ab["audit_counts"]) | set(seat_counts["primary"]) | set(seat_counts["second"])
+        | set(ab["delphi_panel"]),
+        key=lambda m: -ab["audit_counts"].get(m, 0),
+    )
     assessor_rows = ""
-    for seat in ("primary", "second"):
-        for model, n in mq["assessors"].get(seat, []):
-            assessor_rows += (f"<tr><td>{seat} assessor</td><td>{html.escape(str(model))}</td>"
-                              f"<td class='num'>{n}</td></tr>")
+    for model in assessor_models:
+        panels = "Rule30 Delphi panel" if model in ab["delphi_panel"] else ""
+        assessor_rows += (
+            f"<tr><td><strong>{html.escape(model)}</strong></td>"
+            f"<td class='num'>{ab['audit_counts'].get(model, 0)}</td>"
+            f"<td class='num'>{seat_counts['primary'].get(model, 0)}</td>"
+            f"<td class='num'>{seat_counts['second'].get(model, 0)}</td>"
+            f"<td>{html.escape(panels)}</td></tr>"
+        )
     step_model_rows = "\n".join(
         f"<tr><td>{html.escape(r['model'])}</td><td class='num'>{r['steps']}</td>"
         f"<td class='num'>{r['avg_s']:.1f}s</td></tr>" for r in mq["step_models"][:8]
@@ -501,7 +562,7 @@ repo record and are not counted. Regenerate: <code>python3 docs/build_fleet_dash
 <table><tr><th>Actor (as recorded)</th><th>Steps</th></tr>{actor_rows}</table>
 <table style="margin-top:10px"><tr><th>Model</th><th>Steps</th></tr>{model_rows}</table>
 
-<h2>VI. Plate IV — Model Leaderboard (builders, ranked by mean audit score)</h2>
+<h2>VI. Plate IVa — Builder Leaderboard (ranked by mean audit score)</h2>
 <p class="dim">Quality = the independent audit scores of the loops each model built
 (<code>math_models</code> joined to tracked runs), plus speed, token cost and integrity
 record. Small samples are marked — three loops do not make a ranking.</p>
@@ -511,8 +572,14 @@ record. Small samples are marked — three loops do not make a ranking.</p>
 {builder_rows}</table>
 {incident_note}
 
-<h2>VII. Assessors &amp; step-level model usage</h2>
-<table><tr><th>Assessor seat</th><th>Model</th><th>Runs judged</th></tr>
+<h2>VII. Plate IVb — Assessor Leaderboard (judges, broken out from builders)</h2>
+<p class="dim">Building and judging are different jobs and are ranked separately. Audit-YAML counts
+come from the <code>assessor.id</code> stamps in <code>morphoeval/audits/*.yaml</code>; telemetry
+seats cover only the 106 tracked loops. GPT-5.6 Sol's recorded footprint is small — chiefly the
+Cervera audits and a seat on the Rule30 Delphi panel — so any heavier assessing it did through
+chat sessions left no stamp and, by this dashboard's own rule, is not counted.</p>
+<table><tr><th>Assessor model</th><th>Audits judged (YAML)</th><th>Telemetry primary seat</th>
+<th>Telemetry second seat</th><th>Panels</th></tr>
 {assessor_rows}</table>
 <table style="margin-top:10px"><tr><th>Model (steps, name-normalised)</th><th>Steps executed</th><th>Avg step time</th></tr>
 {step_model_rows}</table>
