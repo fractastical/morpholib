@@ -1,0 +1,210 @@
+# MorphoEval audit — Cornus controversa Turing wavelength at 1.939 mm, Pass 2.
+# Supersedes the Pass 1 audit. Builder and assessor remain the same agent.
+
+audit:
+  id: 2026-10-27-cornus-controversa-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-cornus-controversa-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-cornus-controversa-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent round; second assessor not run)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Pass 2 working tree on top of 0c76d15d. PASS2_REMEDIATION is True.
+      The unbiased field is integrated on a 16-wavelength patch and a
+      separate midrib template is reported. No nanopub profile is present.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: 10.1007/BF00289234
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  xiang2006:
+    title: "Species level phylogeny of the genus Cornus (Cornaceae)"
+    authors: "Xiang QY, Thomas DT, Zhang W, Manchester SR, Murrell Z"
+    venue: "Taxon 55(1):9-30 (2006)"
+    doi: 10.2307/25065525
+  feng2011:
+    title: "Phylogeny-based developmental analyses illuminate evolution of inflorescence architectures in dogwoods"
+    authors: "Feng CM, Xiang QY, Franks RG"
+    venue: "New Phytologist 191:850-869 (2011)"
+    doi: 10.1111/j.1469-8137.2011.03716.x
+  vareed2006:
+    title: "Anthocyanins in Cornus alternifolia, Cornus controversa, Cornus kousa and Cornus florida fruits"
+    authors: "Vareed SK, Reddy MK, Schutzki RE, Nair MG"
+    venue: "Life Sciences 78:777-784 (2006)"
+    doi: 10.1016/j.lfs.2005.05.094
+
+simulations:
+  - id: delphi10000-cornus-controversa-turing-wavelength-s0
+    name: "Cornus controversa Turing wavenumber at 1.939 mm (Holocene, 0 Ma)"
+    organism: "Cornus controversa"
+    script: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py
+    output: docs/media/cornus_controversa_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/cornus_controversa_turing_wavelength_s0_growth.gif
+      - datasets/cornus_controversa_turing_wavelength_s0/cornus_controversa_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-cornus-controversa-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, gierer1972, kondo2010, xiang2006, feng2011, vareed2006]
+    summary: >-
+      Pass 2, superseding the Pass 1 audit (overall 82.7). The linear
+      critical wavelength remains 1.939 mm with Pearson r = 0.9999998 and
+      RMSE = 2.13e-4. The unbiased saturated wavelength is 2.216 mm on both
+      the 8-wavelength patch (Pass 1) and the 16-wavelength patch (Pass 2),
+      so the shift is not a coarse-bin artifact: the 16-wavelength box could
+      have peaked at 2.068 mm or 1.939 mm and peaked at 2.216 mm. A midrib
+      template of amplitude 0.004 at 1.939 mm entrains the field to 1.939 mm
+      and raises the horizontal-edge fraction from 0.286 to 0.934, against
+      0.433 on the crown photograph. The photograph has no scale bar.
+      Equal-diffusion ablation is unchanged (sigma_max -0.0615, std ratio
+      0.018). Weighted score 85.1/100. R4 and R5 remain open.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 critical wavenumber and the diffusion-driven instability conditions"
+        - "Schnakenberg 1979 two-species kinetics"
+        - "Xiang et al. 2006 place Cornus controversa in extant Cornus; this chronoseries is the Holocene tip only"
+        - "Public-domain Meise Botanic Garden photograph of C. controversa 'Variegata'"
+      reconstructed_in_script:
+        - "Slot-specific rates a=0.06, b=0.94 and diffusivities that pin the linear lambda_c to 1.939 mm"
+        - "Unbiased nonlinear wavelength 2.216 mm on a 16-wavelength patch, plus a separate entraining template"
+        - "Explicit statement that the crown frame has no scale bar"
+      transfer_boundary:
+        - "1.939 mm is the catalog detail scale for the linear law, not a length measured on the photograph"
+        - "The template shows that a weak midrib cue can override the nonlinear peak; it is not evidence that the leaf has that cue"
+      does_not_claim:
+        - "That the Variegata cream margin is a Turing pattern"
+        - "That pagoda tiers are chemical stripes"
+        - "That the saturated pattern selects 1.939 mm in the absence of a template"
+        - "A fossil predecessor inside this 1/1 chronoseries"
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The linear law is unchanged from Pass 1 and still matches
+          equations (1)–(6): lambda_c = 1.939000 mm, trace -0.120, det 1,
+          and eleven real modes with r = 0.9999998. Pass 2 does not retune
+          the kinetics to hide the nonlinear shift. The template is reported
+          as a separate forcing, not as a replacement for k_c.
+        evidence:
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [90, 172], note: "Jacobian, diffusivity solve, and sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [434, 505], note: "unbiased 16-wavelength field plus a separate entrainment run", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3155_cornus_controversa_turing_wavelength_s0.lean, lines: [10, 44], note: "integer witnesses for trace, determinant, wavelength, ablation, chronoseries", supports: true}
+      specimen-match:
+        value: 74
+        rationale: >-
+          The GIF is still 12 frames at 480x640 and the last frame is the
+          Meise crown (CV similarity 96.0). Pass 2 keeps that anchor and
+          states, in the metrics, that the frame cannot support a millimetre
+          reading. The generative picture remains a spot field, now with the
+          honest nonlinear wavelength 2.216 mm rather than a template-forced
+          stripe field presented as the organism. Horizontal-edge fraction
+          is 0.286 on that field and 0.433 on the crown. The +2 from Pass 1
+          is the resolution statement and the refusal to paint the template
+          over the selected pattern.
+        evidence:
+          - {file: docs/media/cornus_controversa_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "crown beside the unbiased field, dispersion, sweep, ablation", supports: true}
+          - {file: docs/media/cornus_controversa_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 480x640, CV 96.0", supports: true}
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [417, 432], note: "resolution_statement: no scale bar, mm_per_px is null", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          The Dv sweep is unchanged and still monotonic: 1.998 mm down to
+          1.881 mm as Dv/Dv* goes from 0.65 to 2.40, with the nominal point
+          at 1.939 mm. Pass 2 additionally runs the midrib template at
+          amplitude 0.004. It moves the saturated wavelength from 2.216 mm
+          to 1.939 mm and the horizontal-edge fraction from 0.286 to 0.934.
+          That is a large, directional response. It also shows the template
+          dominates, which is why it is not used as the primary field.
+        evidence:
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [318, 325], note: "Dv sweep", supports: true}
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [82, 83], note: "PASS2_BIAS = 0.004 is the template amplitude", supports: true}
+          - {file: datasets/cornus_controversa_turing_wavelength_s0/cornus_controversa_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "entrainment lambda 1.939 mm versus unbiased 2.216 mm", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Linear fit is unchanged: r = 0.9999998, RMSE = 2.13e-4, KS = 0.514
+          (p = 0.003) against a normal residual model that the truncation
+          error does not obey. Unbiased nonlinear wavelength is 2.216 mm on
+          the 16-wavelength patch, the same peak Pass 1 found on the
+          8-wavelength patch, against the linear reference 1.939 mm. The
+          larger box has a bin at 2.068 mm between those two values, and the
+          field did not use it. Ablation std ratio remains 0.018. Specimen
+          foreground 0.866 versus null 0.50, foliage 0.212 versus null 0.25,
+          coherency 0.363 versus the field orientation 0.286, horizontal-edge
+          fraction 0.433 versus 0.286. scale_bar_present is 0 against a
+          reference of 1. The KS miss and the 14 percent nonlinear shift
+          keep this under 90.
+        evidence:
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [236, 283], note: "Pearson, RMSE, KS on real-eigenvalue modes", supports: true}
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [381, 415], note: "crown segmentation", supports: true}
+          - {file: datasets/cornus_controversa_turing_wavelength_s0/cornus_controversa_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "pattern 2.216 mm, entrainment 1.939 mm, resolution_limit null mm_per_px", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Same Crossref-checked bibliography and the same pinned specimen
+          digest as Pass 1. The reference JSON states 0.001939 m and 0 Ma.
+          The scout manifest records why --slot 3155 could not be used.
+          Pass 2 does not add citations, and it does not need to: the new
+          numbers are measurements, not new sources.
+        evidence:
+          - {file: datasets/cornus_controversa_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "Crossref-checked BibTeX", supports: true}
+          - {file: datasets/cornus_controversa_turing_wavelength_s0/cornus_controversa_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale, age, claim boundary, specimen SHA-256", supports: true}
+          - {file: datasets/cornus_controversa_turing_wavelength_s0/scout_manifest.json, lines: [1, 30], note: "no slug collision; slot absent from the 100-slot campaign file", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Pass 1 mapping stands. Pass 2 adds run_core's split between the
+          unbiased integrator and the template integrator, and
+          resolution_statement() is the scale-bar claim. Lean witnesses are
+          still integer `decide` proofs of the scaled Jacobian, not a PDE
+          formalization.
+        evidence:
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [197, 224], note: "integrate() carries the optional template term", supports: true}
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [434, 505], note: "run_core writes pattern and entrainment separately", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-cornus-controversa-turing-wavelength-s0.yaml, lines: [1, 61], note: "laws point at the Lean theorems", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          --self-test still passes on the linear law, the sweep, and the
+          ablation. The default run now executes Pass 2 and rewrites the
+          PNG, the GIF, and the metrics JSON from seed 3155. The dependency
+          set is still the environment stack rather than a per-script lock.
+        evidence:
+          - {file: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py, lines: [803, 842], note: "self_test", supports: true}
+          - {file: datasets/cornus_controversa_turing_wavelength_s0/README.md, lines: [1, 31], note: "invocation and the 1.939 mm / 0 Ma statement", supports: true}
+    remediation:
+      - id: R1
+        item: "Resolved. The 2.216 mm peak survives on a 16-wavelength patch, which has a bin at 2.068 mm between 2.216 and 1.939. It is a nonlinear shift, not a coarse-bin accident."
+      - id: R2
+        item: "Resolved. Bias 0.004 is executed as a separate template. It entrains lambda to 1.939 mm and is not substituted for the unbiased field."
+      - id: R3
+        item: "Resolved. resolution_limit records scale_bar_present false and mm_per_px null."
+      - id: R4
+        item: "Open. No second assessor. This score is still the builder's own."
+      - id: R5
+        item: "Open. ~/.nanopub/profile.yml is absent, so the nanopubs are not signed."
