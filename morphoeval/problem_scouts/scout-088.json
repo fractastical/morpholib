@@ -1,0 +1,281 @@
+{
+  "scout": "scout-088",
+  "ground": "nanopub",
+  "lens": "registry",
+  "candidates": [
+    {
+      "id": "scout-088-bt-tur-neg-01",
+      "title": "Round-2 registry: Holstein static Murray RD fails body-scale patch count (align prod kg claim)",
+      "gap": "The negative cow-Turing verdict is published as prod nanopubs in morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/ and tabulated in datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, but it is not a registered, hash-locked prediction in predictions/prediction_registry.json (round 1 covered only Danio/Drosophila/Xenopus tropicalis).",
+      "done": "After pre-registering BT-TUR-NEG-01 in build_prediction_registry.py (before reading held-out metrics), predictions/resolutions/bos_taurus.json records outcome_verdict confirmed iff metrics.verdict.cow_flank_big_patches <= 5 AND metrics.verdict.closest_sim_big_patches >= 15 with single_wavelength_turing_matches_flank == false; score_resolutions.py exits 0 with BT-TUR-NEG-01 status scored.",
+      "tool_route": "python3 predictions/build_prediction_registry.py (add BT-TUR-NEG-01 row + resolvability block) → write predictions/resolutions/bos_taurus.json from datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json → python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json (verdict block), morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/published.json (prod URIs). Public context: Murray (1981) hypothesis; Jivanji et al. 2025 doi:10.1126/sciadv.adt5913 (KIT/MITF migration genetics).",
+      "prior_attempts": "Pass 8–9 loop and prod kg v7 published the negative morphology test (datasets/bos_taurus_turing_wavelength/README.md). docs/open-problems.json OP-11 (blinded independent re-score + migration-wave variant) is status refuted — that route is blocked; this candidate registers the already-measured static-Turing patch-count falsifier only, not another OP-11 re-score.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "build_prediction_registry.py + resolutions JSON + score_resolutions.py is the repo’s only scorer for blind predictions."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Decisive patch counts and verdict flags are already in bos_taurus_turing_wavelength_metrics.json beside the prod kg bundle."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done is four numeric/boolean fields from metrics.json with no rubric judgment."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Registry edit, one resolution file, and score_resolutions.py run in minutes on the cloud stack."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Resolution batch can be a new predictions/resolutions/bos_taurus.json, but round-2 registration must touch prediction_registry.json (shared contract)."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Verdict is readable from committed metrics without re-running the Murray script."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Static-Turing patch-count registration is not listed as refuted; OP-11 blind re-score is a different, blocked route."
+        }
+      }
+    },
+    {
+      "id": "scout-088-mm-yap-ens-01",
+      "title": "Round-2 registry: YAP 6-regime oscillation fraction — ensemble mean beats tuned logistic",
+      "gap": "morphoeval/kg/2026-10-19-yap-excitable-segmentation-audit-v3/ documents that pred_frac uses a hand-tuned logistic of I_eff (r=0.9976) while the 200-cell ensemble osc_mask is decorative; no registered prediction states whether np.mean(osc_mask) will match Hubaud (2017) regime labels within the same tolerance.",
+      "done": "Pre-register MM-YAP-ENS-01: quantitative expectation that Pearson r(pred, observed) using np.mean(osc_mask) is >= 0.90 across the six mechanical regimes in datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json. Confirmed if r >= 0.90 after running 2016-hubaud-yap-excitable-segmentation.py with ensemble fraction exported; refuted if r < 0.90. score_resolutions.py records outcome.",
+      "tool_route": "Extend predictions/build_prediction_registry.py (Mus musculus, clock_wavefront / yap_excitable_segmentation) → run python3 2016-hubaud-yap-excitable-segmentation.py --self-test and a small export script writing ensemble fractions to predictions/resolutions/mus_yap.json → python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: yap_excitable_segmentation_reference.json regime observed_period_min / regime tables; morphoeval/kg/2026-10-19-yap-excitable-segmentation-audit-v3/REPORT.md remediation L447-456. Public: Hubaud et al. 2017 doi:10.1016/j.cell.2017.08.043.",
+      "prior_attempts": "Pass 3 yap audit (91.8/100) closed v2 items but left ensemble/logistic mismatch as explicit remediation; not attempted as a registered prediction. prediction_registry.json lists Mus musculus only as runner_up for round 2.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Outcome is a registered correlation threshold scored through the resolutions + score_resolutions.py pipeline."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Six-regime observed fractions and periods are in the pinned reference JSON; script and kg audit cite exact code loci."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Single Pearson r threshold 0.90 against a fixed six-row table."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Requires one model run (~6 s self-test scale) plus registry/resolution writes, under an hour total."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "New resolution file possible; registry row addition touches shared predictions/ artefacts."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One script invocation and correlation check complete in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior resolution batch attempted this ensemble-vs-logistic registered test."
+        }
+      }
+    },
+    {
+      "id": "scout-088-lv-chv-01",
+      "title": "Levin Law 4 vs Chvykov (2021) smarticle enrichment ratio",
+      "gap": "Prod kg morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/ scores Law 4 at alpha=0 with model enrichment P(0.08)/P(1.25)=15.625 but admits Chvykov 2021 measured smarticle enrichment is never compared; no hash-locked prediction binds the generator nullspace to published data.",
+      "done": "Pre-register LV-CHV-01: measured ratio R_lit from Chvykov et al. 2021 P_ss at r_exit=0.08 mm divided by r_exit=1.25 mm (digitised from doi:10.1073/pnas.2018216118 figure panel) falls outside [0.5, 2.0] × 15.625 OR inside [0.8, 1.25] × 15.625. Partially_resolved if only bounds on R_lit are established without point estimate. score_resolutions.py tallies confirmed/refuted/partial.",
+      "tool_route": "predictions/build_prediction_registry.py (mechanism: collective_stigmergy or flux_canalization on datasets/levin_youtube_channel/) → literature tabulation into predictions/resolutions/levin_youtube.json → python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: models/2026-levin-channel-math-synthesis.py Law 4 outputs (REPORT.md measurement table L65-67); prod kg signed claim. Public: Chvykov et al. 2021 doi:10.1073/pnas.2018216118.",
+      "prior_attempts": "Levin YouTube math audits v1–v3 (prod supersession chain in published.json history); morphometric-validation 51/100 explicitly lists missing Chvykov comparison. No registered prediction yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Registry + resolutions + score_resolutions.py can score a pre-stated ratio band against a literature table."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Model ratio 15.625 is in-repo; deciding Chvykov points require one named public figure digitisation."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done is a numeric ratio band against a fixed model prediction 15.625."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Digitisation + registry scoring fits in hours without wet lab."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New predictions/resolutions/levin_youtube.json plus registry row; no kg trig edits required."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Depends on figure digitisation quality; usually one session if panel is unambiguous."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Fresh registration route; audits documented the gap but did not score a prediction."
+        }
+      }
+    },
+    {
+      "id": "scout-088-hs-mur-neg-01",
+      "title": "Human retinal Murray J01–J08 table is circular (kg vascular audit residue)",
+      "gap": "morphoeval/kg/2026-10-19-vascular-cube-law-branching-audit-v3/ reports RMSE 0.134° between Murray prediction and J01–J08, but the reference table carries murray_predicted_total_deg and lacks Zamir 1979 page pins — parallel to DM-MUR-NEG-01 for Drosophila trachea, not yet registered for Homo sapiens retinal junctions.",
+      "done": "Pre-register HS-MUR-NEG-01: after vendoring ≥8 independent junction angles from Zamir, Medeiros & Cunningham 1979 (or the N=19 segmented specimen junctions in the audit REPORT), Murray-law exponent fit on parent/daughter diameters yields RMSE > 1.0° vs measured angles OR exponent γ outside 2.8–3.2. Confirmed/refuted via predictions/resolutions/human_murray.json + score_resolutions.py.",
+      "tool_route": "predictions/build_prediction_registry.py (Homo sapiens branching_tree, datasets/vascular_cube_law_branching/) → tabulate junctions from public PDF or segmented JSON into predictions/resolutions/human_murray.json → python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json J01–J08; kg audit v3 REPORT.md L23-24 remediation. Public: Zamir et al. 1979 retinal bifurcation study (cited in audit, bib gap noted).",
+      "prior_attempts": "DM-MUR-NEG-01 partially_resolved 2026-10-26 for Drosophila (predictions/resolutions/drosophila.json) — same mechanism class, different tissue; human retinal route not attempted. Vascular kg v3 scored 89.2/100 without fixing circular table.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Same registry/scorer pattern as DM-MUR-NEG-01, applied to kg-flagged human junction data."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Circular table is in-repo; independent angles require one literature or segmentation fetch."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "RMSE > 1.0° or exponent outside 2.8–3.2 is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Fitting and registry scoring are lightweight once angles are tabulated."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New resolution JSON; registry extension only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Digitising eight junctions dominates wall time."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Distinct from DM-MUR-NEG-01 partial; no refuted human retinal registration on record."
+        }
+      }
+    },
+    {
+      "id": "scout-088-meta-res-05",
+      "title": "Round-2 meta-resolvability: kg-cited DOI extraction closes ≥2 partial predictions",
+      "gap": "META-RES-01..04 were scored 2026-10-26 with five partially_resolved rows (ZF-HH-01, ZF-CLK-01, ZF-VTX-01, DM-MUR-NEG-01, XT-CLK-01); docs/open-problems.json registered_prediction_followups names exact missing series, several tied to morphoeval/kg audit remediation DOIs, but no round-2 meta prediction forecasts how many flip to confirmed/refuted when those extractions land.",
+      "done": "Pre-register META-RES-05 before any new resolution work: prediction that ≥2 of the five partial IDs become confirmed or refuted (not partially_resolved) in the next resolutions batch that cites ≥1 morphoeval/kg/*/REPORT.md remediation DOI. Confirmed if tally ≥2; refuted if ≤1. score_resolutions.py meta_outcomes block extended for META-RES-05.",
+      "tool_route": "Extend predictions/build_prediction_registry.py meta_resolvability_predictions → add resolutions entries in predictions/resolutions/kg_followups.json → python3 predictions/score_resolutions.py (requires small scorer patch for META-RES-05 rule)",
+      "deciding_data": "In repo: predictions/prediction_registry.json scoring.tallies (partially_resolved: 5), docs/open-problems.json registered_prediction_followups, morphoeval/kg/**/REPORT.md remediation DOI lines.",
+      "prior_attempts": "META-RES-03 refuted (expected exactly 4 partials, observed 5 after ZF-HH-01 partial). Round-1 meta routes are scored — this is explicitly round-2, not a re-proposal of META-RES-01..04.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "Meta row is native to prediction_registry.json and score_resolutions.py, but needs one new meta_id rule."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Partial list and kg remediation pointers are already in open-problems.json and kg REPORTs."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Count of fully decided partials among a fixed five-ID set is objective."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Closing two partials may require literature extraction hours, still no wet lab."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Touches shared registry and score_resolutions.py meta_outcomes dict."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Depends on completing two extraction resolutions; unlikely in one sitting unless pre-digested."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Round-2 meta is new; round-1 meta outcomes are historical, not a refutation of this forecast."
+        }
+      }
+    },
+    {
+      "id": "scout-088-mm-clk-01",
+      "title": "Round-2 registry: mouse mPSM clock period vs Cooke–Zeeman law (Hubaud reference table)",
+      "gap": "prediction_registry.json runner_up Mus musculus is absent from round 1 despite yap/kg nanopubs and datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json listing intact_mpsm_clock_period_min 140 and regime observed_period_min 140–145.",
+      "done": "Pre-register MM-CLK-01: for regimes 3–5 in yap_excitable_segmentation_reference.json, |predicted_period_min − observed_period_min| ≤ 5 min for each row (pre-registered before opening reference JSON during scoring). Confirmed if all three pass; refuted if any fail. Record in predictions/resolutions/mus_clock.json; score_resolutions.py exits 0.",
+      "tool_route": "predictions/build_prediction_registry.py (Mus musculus, clock_wavefront) → predictions/resolutions/mus_clock.json from yap reference JSON regime table → python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json regimes 3–5; morphoeval/kg/2026-10-19-yap-excitable-segmentation-audit-v3/. Public: Hubaud 2017 doi:10.1016/j.cell.2017.08.043.",
+      "prior_attempts": "ZF-CLK-01 and XT-CLK-01 partially_resolved 2026-10-26 for paired period/somite series; mouse table is a simpler period-only check not yet registered.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Direct registry/resolution/scorer loop on tabulated periods."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Observed and predicted periods for three regimes are already in the yap reference JSON."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Three inequalities |Δ| ≤ 5 min are automatic."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Pure JSON comparison after registration."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "New mus_clock.json resolution; shared registry file updated."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate once registered (no external fetch)."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior MM-CLK-01 attempt in resolutions/."
+        }
+      }
+    },
+    {
+      "id": "scout-088-np-test-publish-coverage",
+      "title": "Prod nanopub coverage of audited kg bundles (197 prod vs 3055 unsigned)",
+      "gap": "morphoeval/kg holds 315 published.json manifests with 197 prod and 3055 published:null entries (~6% prod coverage); sign_morphoeval.py enforces test-before-prod, but there is no registered forecast of how many v3 supersession bundles will reach prod unchanged.",
+      "done": "N/A for registry lens — needs countable prod/test/null tallies from morphoeval/kg/**/published.json and sign_morphoeval.py --publish test, not a biological blind prediction.",
+      "tool_route": "Would be morphoeval/sign_morphoeval.py + build_morphoeval_kg.py batch counters (knowledge lens), not predictions/build_prediction_registry.py.",
+      "deciding_data": "In repo: morphoeval/kg/**/published.json (315 bundles); sign_morphoeval.py prod gate rules.",
+      "prior_attempts": "Cow v7 and Levin YouTube v3 reached prod (published.json history arrays); thousands of 2026-10-19 audit bundles remain published:null.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Publication coverage is an infrastructure tally, not a poson_law / protein-state outcome scorable via score_resolutions.py."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "All manifest states are in-repo."
+        },
+        "falsifiable_done": {
+          "score": 8,
+          "why": "A percent prod could be defined, but not through the prediction registry contract."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Counting and test-publish batches run locally."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Publishing touches signed trig assets and manifests, not new resolution files only."
+        },
+        "time_to_verdict": {
+          "score": 3,
+          "why": "Full test publish of 3000+ trig files is not one sitting."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "No refutation, but wrong lens — use scout with knowledge lens (build_morphoeval_kg + sign/verify)."
+        }
+      },
+      "wrong_lens": "knowledge (build_morphoeval_kg.py + sign_morphoeval.py + check_signed.mjs)"
+    }
+  ]
+}
