@@ -339,10 +339,18 @@ def main() -> int:
          "executes, counted from track_loop telemetry.",
          tele["steps"], f'{tele["runs"]} tracked runs · 106 executions per role', 100.0,
          "morphoeval/runs/telemetry.sqlite (steps)"),
+        ("Orchestrator — Muse Wonder", "The session conductor: designs the fleets, writes the "
+         "dispatchers, gates and this dashboard, verifies scout claims before acting on them, "
+         "and merges the PRs. Leaves no dispatch record — GitHub attests the account, not the "
+         "model — so this row is session-attested, a weaker evidence grade than every row above.",
+         "1 session", "16 PRs merged (#269–#288, incl. 10 fixer PRs) · issues #268/#283/#285 · "
+         "Plates III–V", 100.0, "github.com/fractastical/morpholib/pulls (merged)"),
     ]
     roster_rows = "\n".join(
         f"<tr><td><strong>{html.escape(name)}</strong><br><span class='dim'>{html.escape(desc)}</span></td>"
-        f"<td class='num'>{used:,}</td><td>{html.escape(done)}</td>"
+        f"<td class='num'>{used:,}</td><td>{html.escape(done)}</td>" if isinstance(used, int) else
+        f"<tr><td><strong>{html.escape(name)}</strong><br><span class='dim'>{html.escape(desc)}</span></td>"
+        f"<td class='num'>{html.escape(str(used))}</td><td>{html.escape(done)}</td>"
         f"<td>{bar(p)}<span class='dim'>{p:.0f}%</span></td>"
         f"<td><code>{html.escape(src)}</code></td></tr>"
         for name, desc, used, done, p, src in roster
