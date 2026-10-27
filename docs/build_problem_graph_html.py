@@ -218,16 +218,39 @@ def turing_graph_nodes(feed: dict, below_y: int) -> tuple[list[dict], list[dict]
                                  "single-assessor pass (each panel nanopub npx:supersedes its provisional one). The panel also caught a packet error on TOP-06 "
                                  "(a BSW growing-fan model does exist in models/), recorded as a correction, not patched.")})
         edges.append({"from": "tu0", "to": "tu-panel", "agent": "panel", "label": "blinded 3-provider panel", "probStatus": "structural"})
+    verdicts_path = Path(__file__).resolve().parent / "turing_top03_top07_verdicts.json"
+    verdicts_doc = json.loads(verdicts_path.read_text()) if verdicts_path.exists() else {}
     for i, p in enumerate(sorted(feed["problems"], key=_turing_res, reverse=True)):
         v = p["viability"]; pid = p["id"].lower(); pan = p.get("panel")
         np_entry = p.get("nanopub") or {}
         where = {None: "signed, unpublished", "test": "test registry", "prod": "live"}
+        node_status = "open"
+        verdict_extra = ""
+        if p["id"] == "TOP-03" and "TOP_03_fine_tuning_parameter_volume" in verdicts_doc:
+            v03 = verdicts_doc["TOP_03_fine_tuning_parameter_volume"]
+            node_status = "solved"
+            verdict_extra = (f" EXECUTED VERDICT ({verdicts_doc.get('generated', '2026-10-27')}, morphoeval/run_turing_top03_top07_verdicts.py): "
+                             f"{v03['verdict']} — 3-node Turing fraction {v03['three_node_turing_fraction_pct']}% vs 2-node {v03['two_node_turing_fraction_pct']}% "
+                             f"({v03['three_to_two_node_ratio_x']}× ratio across N={v03['n_lhs_samples_per_circuit']:,} LHS sets); 1% uncertainty retention "
+                             f"{v03['local_uncertainty_retention']['1pct']['turing_retention_pct']}% (vs 33.5% published), 5% retention "
+                             f"{v03['local_uncertainty_retention']['5pct']['turing_retention_pct']}% (vs 5.0% published).")
+        elif p["id"] == "TOP-07" and "TOP_07_meinhardt_pde_vs_rule30_transducer" in verdicts_doc:
+            v07 = verdicts_doc["TOP_07_meinhardt_pde_vs_rule30_transducer"]
+            t_dt1 = v07["transducer_comparisons"]["meinhardt_pde_stochastic_dt1"]
+            node_status = "refuted"
+            verdict_extra = (f" EXECUTED VERDICT ({verdicts_doc.get('generated', '2026-10-27')}, morphoeval/run_turing_top03_top07_verdicts.py): "
+                             f"{v07['verdict']} — {v07['structural_theorem']} Empirical Meinhardt PDE transducer best-fit rule = Rule {t_dt1['best_fit_eca_rule']} "
+                             f"({t_dt1['agree_best_rule_pct']}%), Rule 30 agreement = {t_dt1['agree_rule30_pct']}%, chiral split |P(1|110)-P(1|011)| = {t_dt1['chiral_asymmetry_110_vs_011']}.")
         if pan:
             po, rp = pan["pooled"], pan["resolvability_panel"]
             sub = f"res {rp['mean']:g} (panel) · viab {po['posterior_percent']:g}% pooled [{po['panel_range_percent'][0]:g}–{po['panel_range_percent'][1]:g}]"
         else:
             sub = f"resolvability {p['resolvability']} · viability {v['posterior_percent']}% (provisional)"
-        node = {"id": pid, "x": xs[i % 6], "y": y0 + 100 + (i // 6) * 88, "status": "open", "family": "Turing open problems",
+        if node_status == "solved":
+            sub = "CONFIRMED (6.4× 3-node/2-node; 35.6% @ 1% noise) · " + sub
+        elif node_status == "refuted":
+            sub = "REFUTED BY O(2) SYMMETRY (49.7% R30; achiral) · " + sub
+        node = {"id": pid, "x": xs[i % 6], "y": y0 + 100 + (i // 6) * 88, "status": node_status, "family": "Turing open problems",
                 "label": f"{p['id']} · {p['slug'].replace('-', ' ')}", "sub": sub,
                 "time": feed["snapshot"], "timeKind": "recorded", "source": feed["source"],
                 "detail": (f"{p['title']} ANCHOR: {p['anchor']}. GAP: {p['gap']} DONE: {p['done']} TOOL ROUTE: {p['tool_route']} "
@@ -237,7 +260,7 @@ def turing_graph_nodes(feed: dict, below_y: int) -> tuple[list[dict], list[dict]
                               f"pooled viability {po['posterior_percent']:g}% (net {po['net_db']:+g} dB; panel range {po['panel_range_percent'][0]:g}–{po['panel_range_percent'][1]:g}%). "
                               + " ".join(f"{a['label']}: res {a['resolvability']}, {a['posterior_percent']:g}% ({a['net_db']:+g} dB), {a['verdict']} — {a['note']}" for a in pan["assessors"].values())
                               + (f" PACKET CORRECTION: {pan['packet_correction']}" if pan.get("packet_correction") else "") if pan else "")
-                           + f" Prior attempts: {p['prior_attempts']}")}
+                           + f" Prior attempts: {p['prior_attempts']}" + verdict_extra)}
         nps = []
         if np_entry.get("nanopub"):
             nps.append({"label": f"{p['id']} provisional claim + 2 assessments ({where[np_entry.get('published')]})" + (" — superseded by panel" if pan and pan.get("nanopub", {}).get("nanopub") else ""), "uri": np_entry["nanopub"]})
