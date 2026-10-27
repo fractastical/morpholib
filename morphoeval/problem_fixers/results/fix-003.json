@@ -1,0 +1,52 @@
+{
+  "fix_id": "fix-003",
+  "candidate_rank": 3,
+  "candidate_id": "scout-010-c",
+  "status": "verified-no-change",
+  "summary": "OP-01..OP-03 bridge pooled posteriors already agree across docs/open-problems.json, docs/problem-graph.html DATA.DELPHI, and morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml panel_consensus bridge_pooled within scout tolerances. Added morphoeval/problem_scouts/verify_rule30_delphi_sync.py and tests/test_problem_fixer_delphi_sync.py so future drift fails loudly with offending OP ids.",
+  "root_cause": null,
+  "changed_files": [
+    "morphoeval/problem_scouts/verify_rule30_delphi_sync.py",
+    "tests/test_problem_fixer_delphi_sync.py"
+  ],
+  "evidence": [
+    "python3 morphoeval/problem_scouts/verify_rule30_delphi_sync.py: OP-01 yaml=11.518400 open-problems=11.52 graph=11.52; OP-02 yaml=2.032600 vs 2.033; OP-03 yaml=0.037300 vs 0.037",
+    "docs/open-problems.json viability.kind delphi_bridge_posterior_percent for OP-01..03",
+    "morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml audit.panel_consensus.problems.*.bridge_pooled.posterior_logodds_pooled",
+    "docs/problem-graph.html const DATA.DELPHI.p1/p2/p3.pooled.posterior extracted via regex"
+  ],
+  "validation": [
+    {
+      "name": "Delphi sync verifier",
+      "argv": ["python3", "morphoeval/problem_scouts/verify_rule30_delphi_sync.py"],
+      "exit_code": 0,
+      "output_summary": "OK: OP-01..OP-03 pooled posteriors agree within tolerance"
+    },
+    {
+      "name": "Delphi sync focused tests",
+      "argv": ["python3", "-m", "pytest", "tests/test_problem_fixer_delphi_sync.py", "-q"],
+      "exit_code": 0,
+      "output_summary": "3 passed in 0.15s"
+    },
+    {
+      "name": "Rule 30 Delphi builder (canonical regen)",
+      "argv": ["python3", "morphoeval/build_rule30_bayesian_delphi.py"],
+      "exit_code": 0,
+      "output_summary": "Completed after pip install scipy rdflib pyyaml; no committed audit drift retained (reverted float-only posterior tweak)"
+    },
+    {
+      "name": "Problem graph HTML builder",
+      "argv": ["python3", "docs/build_problem_graph_html.py", "--out", "/tmp/pg.html"],
+      "exit_code": 1,
+      "output_summary": "FileNotFoundError: problem-graph.canvas.tsx absent on cloud VM (committed docs/problem-graph.html used for DELPHI extraction)"
+    },
+    {
+      "name": "Syntax compileall",
+      "argv": ["python3", "-m", "compileall", "morphoeval/problem_scouts/verify_rule30_delphi_sync.py", "tests/test_problem_fixer_delphi_sync.py"],
+      "exit_code": 0,
+      "output_summary": "compile ok"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
