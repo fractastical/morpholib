@@ -1,0 +1,151 @@
+{
+  "scout": "scout-054",
+  "ground": "lean",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "id": "LEAN-VPTX-01",
+      "title": "Math-KG vertex-packing slots: replace JSON replay with Bi (2015) p0 phase dynamics",
+      "gap": "Thousands of `morphoeval/math_kg_loops/*-vertex-packing.yaml` entries cite Bi-style vertex laws, but paired Lean loops (e.g. `Loop_1563_danio_nigrofasciatus_vertex_packing.lean`) prove placeholder identities (`law2_balance p q = p + q - q`) and slot scripts such as `models/2009-quigley-danio-nigrofasciatus-vertex-packing.py` only correlate pinned `y_empirical` vs precomputed `y_simulated` in reference JSON — they never run a vertex unjamming simulation.",
+      "done": "Pre-register SHA-256 of `datasets/danio_nigrofasciatus_vertex_packing/danio_nigrofasciatus_vertex_packing_reference.json`. From a one-shot driver (new file under `morphoeval/runs/` only), call `run_p0_phase_sweep` from `models/2015-bi-vertex-glass-jamming.py` and align simulated `<q>(p0)` to the reference abscissa. PASS if Pearson r ≥ 0.90 and the simulated crossing nearest shape index 3.813 is within ±0.05 of the reference-labelled transition; FAIL otherwise with a CSV log. `python3 models/2009-quigley-danio-nigrofasciatus-vertex-packing.py --self-test` must still pass on unchanged JSON until the reference is formally superseded.",
+      "tool_route": "python3 models/2015-bi-vertex-glass-jamming.py --self-test; python3 models/2009-quigley-danio-nigrofasciatus-vertex-packing.py --self-test; python3 -c \"from importlib.util import spec_from_file_location, module_from_spec; from pathlib import Path; p=Path('models/2015-bi-vertex-glass-jamming.py'); m=module_from_spec(spec_from_file_location('bi', p)); spec.loader.exec_module(m); print(m.run_p0_phase_sweep(seed=2015)['pearson_r_mean_q'])\"",
+      "deciding_data": "In repo when datasets are present: `datasets/danio_nigrofasciatus_vertex_packing/danio_nigrofasciatus_vertex_packing_reference.json`, `datasets/bi_vertex_glass_jamming/` (Bi 2015 reference sweep table consumed by the flagship script). Canonical physics proofs live in `morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean`.",
+      "prior_attempts": "Pass-3 slot factory (`Loop_1563` + YAML) shipped stub Lean and correlation-only `--self-test`; no audit refutes a Bi-driven regeneration route. `docs/open-problems.json` ZF-VTX-01 names missing zebrafish shape-index series (vision/registry lens); this candidate is the Math-KG slot/script dynamical gap, not that registry item.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "`2015-bi-vertex-glass-jamming.py --self-test` already runs the 8-point p0 sweep and ablations; only a thin alignment driver is missing."},
+        "data_in_hand": {"score": 14, "why": "Reference JSON and Bi dataset paths are vendored on full checkout; cloud snapshots may omit LFS datasets."},
+        "falsifiable_done": {"score": 14, "why": "Numeric r threshold and ±0.05 crossing tolerance are machine-checkable."},
+        "compute_in_repo": {"score": 13, "why": "Bi self-test is minutes on CPU; sweep-only driver is seconds."},
+        "isolation": {"score": 9, "why": "Verdict can close in new files under `morphoeval/runs/` without editing slot Lean/YAML."},
+        "time_to_verdict": {"score": 8, "why": "One import + sweep + correlate loop after datasets are present."},
+        "not_blocked": {"score": 5, "why": "No recorded attempt refutes Bi-regeneration for slot JSON replay."}
+      }
+    },
+    {
+      "id": "LEAN-FLUX-02",
+      "title": "Math-KG flux-canalization slots: Mitchison canalization vs JSON replay",
+      "gap": "Flux-canalization slots (e.g. `Loop_1473_danio_nigrofasciatus_flux_canalization.lean` + `models/2008-quigley-danio-nigrofasciatus-flux-canalization.py`) repeat the same placeholder Lean (`law1_invariant = a*b`) while listing Mitchison-style reinforcement laws in YAML. The slot `--self-test` never integrates `dD/dt = α|J|^γ − βD` or measures vein conductance equilibria.",
+      "done": "With pinned `datasets/danio_nigrofasciatus_flux_canalization/*` SHA-256, run `models/1997-mitchison-canalization-auxin-flux.py --self-test` and export a conductance/flux time series at the slot's `phenomenon_size_m` scale tier. PASS if the simulated steady-state conductance curve correlates with reference `y_empirical` at r ≥ 0.85 OR a signed negative result JSON states max r achieved and which Lean law (2 or 3) fails monotonicity checks from the Mitchison run.",
+      "tool_route": "python3 models/1997-mitchison-canalization-auxin-flux.py --self-test; python3 models/2008-quigley-danio-nigrofasciatus-flux-canalization.py --self-test",
+      "deciding_data": "Repo: `datasets/danio_nigrofasciatus_flux_canalization/`, flagship `models/1997-mitchison-canalization-auxin-flux.py`, real Lean in `morphoeval/lean/loops/Loop_034_auxin_canalization_leaf_veins.lean`.",
+      "prior_attempts": "Slot factory created correlation-only paleo scripts; Mitchison flagship audited separately (Pass 3). No prior refutation of cross-wiring Mitchison output into slot references.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Mitchison script has 12-check `--self-test` and full canalization dynamics; slot script is the pinned target series."},
+        "data_in_hand": {"score": 13, "why": "Slot dataset paths are named in script headers; may be absent on partial checkouts."},
+        "falsifiable_done": {"score": 13, "why": "r ≥ 0.85 pass / structured fail JSON is objective."},
+        "compute_in_repo": {"score": 12, "why": "Mitchison self-test is sub-minute to few minutes per audit class."},
+        "isolation": {"score": 9, "why": "Comparison harness can live entirely in new run artefacts."},
+        "time_to_verdict": {"score": 7, "why": "One sitting once datasets load; scale mapping may need a documented rescaling constant."},
+        "not_blocked": {"score": 5, "why": "Route not previously attempted or refuted."}
+      }
+    },
+    {
+      "id": "LEAN-L4-03",
+      "title": "Levin Law 4 C4 breakdown magnitude: doc/KG 0.7618 vs Chvykov CTMC simulation",
+      "gap": "`morphoeval/math_kg_loops/levin-youtube-channel-math.yaml`, `docs/BIOLOGICAL_LAW_CRITERIA.md`, and KG TTL still record C4 breakdown slope +0.7618 at α=0.90, while `models/2026-levin-channel-math-synthesis.py --self-test` fixes exit rates and reports `c4_unconfounded_slope_alpha090` ≈ +0.1866 from the 24-state generator (`Loop_levin_youtube_channel_math.lean` Law 4).",
+      "done": "Run `python3 models/2026-levin-channel-math-synthesis.py --self-test --gamma 1.0 --n-states 24` and parse `morphoeval/runs/levin_youtube_channel_math_summary.json` (or stdout laws block). PASS only if `c4_unconfounded_slope_alpha090` is within ±0.02 of the value written in the summary AND no CLI flag in `--help` reproduces 0.7618±0.02; if 0.7618 remains unreachable after a documented α_bias∈[0,0.95] grid sweep exported to CSV, close as refuted doc bug with hash-pinned sweep attached.",
+      "tool_route": "python3 models/2026-levin-channel-math-synthesis.py --self-test; python3 models/2026-levin-channel-math-synthesis.py --gamma 1.0 --n-states 24 --no-figure",
+      "deciding_data": "In repo: synthesis script, `morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean`, audit `morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml` (claim_boundary Law 4).",
+      "prior_attempts": "Pass 3.1 referee (`claude-fable-5-1`) documented pk:evidenceAgainst for 0.7618; audit states no parameterisation reachable from CLI yields 0.7618 — treat re-search for 0.7618 as blocked, doc-alignment via measured sweep as open.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "Synthesis `--self-test` already computes the deciding slope; optional grid sweep uses the same `solve_stationary` kernel."},
+        "data_in_hand": {"score": 18, "why": "All inputs are synthetic constants inside the script; no external fetch."},
+        "falsifiable_done": {"score": 15, "why": "±0.02 on a named JSON field; unreachable 0.7618 is also a checkable negative."},
+        "compute_in_repo": {"score": 15, "why": "Self-test ~seconds; full α grid is trivial CTMC linear algebra."},
+        "isolation": {"score": 10, "why": "Sweep CSV and negative-result JSON can be new files only."},
+        "time_to_verdict": {"score": 9, "why": "Single self-test plus optional grid in one session."},
+        "not_blocked": {"score": 3, "why": "Finding 0.7618 via simulation is refuted in audit v3; doc correction route remains open."}
+      }
+    },
+    {
+      "id": "LEAN-L1-04",
+      "title": "Levin Law 1 TAME reach: PDE BVP curve vs Lean Hill theorem object",
+      "gap": "Audit v3 `transfer_boundary` records that Law 1's Python metric is the 100-cell diffusive BVP reach `L_PDE(G_gj)` while `Loop_levin_youtube_channel_math.lean` Theorem 1 formalises a Hill-form numerator in conductance — the fitted Hill half-saturation (≈2.26) lies outside the coded G_gj sweep and plateaus differently.",
+      "done": "From `python3 models/2026-levin-channel-math-synthesis.py --self-test --n-cells 100`, extract the 51-point `pde_reach_curve` and compute log-log slope of reach vs G_gj on G_gj ∈ [0.05, 2.0]. PASS if slope is within ±0.08 of 0.5 (continuum √(G/k) scaling documented in audit) AND the Hill curve fitted in-script has RMS residual to the PDE curve ≤ 3.1 cells; FAIL if slope or RMS exceeds thresholds, forcing either Lean restatement or Python metric change (record only, no taste).",
+      "tool_route": "python3 models/2026-levin-channel-math-synthesis.py --self-test --n-cells 100 --g-half 0.10",
+      "deciding_data": "In repo: `models/2026-levin-channel-math-synthesis.py`, `morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean`, audit v3 provenance block for Law 1.",
+      "prior_attempts": "Pass 3.1 closed the fake-scalar Law 1 metric but explicitly left the Lean/Python object mismatch on the transfer_boundary list; no sweep has been recorded that reconciles Hill vs BVP.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Script already sweeps 51 G_gj values and emits the PDE curve in the summary path used by self-test."},
+        "data_in_hand": {"score": 19, "why": "Pure in-repo synthetic BVP; no specimen."},
+        "falsifiable_done": {"score": 14, "why": "Slope band and RMS cutoff are numeric."},
+        "compute_in_repo": {"score": 15, "why": "Sub-minute linear solves."},
+        "isolation": {"score": 10, "why": "Analysis notebook/JSON under `morphoeval/runs/` suffices."},
+        "time_to_verdict": {"score": 8, "why": "One self-test run plus curve post-processing."},
+        "not_blocked": {"score": 5, "why": "Mismatch documented but not simulation-refuted."}
+      }
+    },
+    {
+      "id": "LEAN-L6-05",
+      "title": "Levin Law 6 GRN conditioning: KG 0.0020→0.9036 vs 3-node ODE self-test",
+      "gap": "`morphoeval/math_kg_loops/levin-youtube-channel-math.yaml` and `docs/bioelectricity/levin_youtube_kg.json` still quote CS-only US activation 0.0020→0.9036, while `models/2026-levin-channel-math-synthesis.py --self-test` integrates the documented 3-node ODE and reports ≈0.0015→1.0000 (`grn_3node_us_response_cs_only_pre/post` in summary JSON).",
+      "done": "Run `python3 models/2026-levin-channel-math-synthesis.py --self-test --eta 0.05 --n-genes 16` twice with `--seed 20261024`; assert bitwise-equal pre/post CS metrics. PASS if pre/post equal summary JSON values within 1e-4 and both differ from (0.0020, 0.9036) by >0.0005 absolute; optional `--eta` sweep on [0.02,0.08] logged to CSV shows no point reproduces (0.0020, 0.9036) pair simultaneously.",
+      "tool_route": "python3 models/2026-levin-channel-math-synthesis.py --self-test --eta 0.05 --seed 20261024",
+      "deciding_data": "In repo: synthesis script, summary JSON path in script header, Lean Law 6 in `Loop_levin_youtube_channel_math.lean`.",
+      "prior_attempts": "Pass 3.2 audit listed remediation to sync docs/YAML/KG with code; pk:evidenceAgainst cites the 0.0020/0.9036 strings. No evidence that the old pair is recoverable by simulation.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Deciding numbers are direct self-test outputs with CLI `--eta`/`--seed`."},
+        "data_in_hand": {"score": 20, "why": "Fully synthetic ODE; no external data."},
+        "falsifiable_done": {"score": 15, "why": "Fixed numeric tolerances on named summary keys."},
+        "compute_in_repo": {"score": 15, "why": "ODE integration seconds."},
+        "isolation": {"score": 10, "why": "Eta sweep artefact only."},
+        "time_to_verdict": {"score": 9, "why": "Immediate from self-test; sweep adds minutes."},
+        "not_blocked": {"score": 4, "why": "Recovering 0.0020→0.9036 is unlikely but not formally refuted by an eta sweep publication."}
+      }
+    },
+    {
+      "id": "LEAN-088-06",
+      "title": "Burak grid-cell Loop_088: replace tanh gain_map with simulate_burak_fiete_regime sweep",
+      "gap": "`models/2008-burak-grid-cell-hexagonal-attractor.py` builds a 10×10 `(l_shift, alpha_vel)` morphospace via `gain_map = gridness_base * tanh(1.6 * v_gain)` (L477–483) while `morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean` and `--self-test` validate dynamical regimes via `simulate_burak_fiete_regime`. Audit v3 lists remediation: run a coarse simulation grid and expose CLI sweeps.",
+      "done": "Without editing the flagship script, import and evaluate `simulate_burak_fiete_regime` on the same 10×10 `(l, alpha)` grid used for `gain_map`. PASS if median relative error |G_sim − G_formula|/max(G_formula,1e-6) ≤ 0.10 across cells with G_formula>0.05; FAIL if median error >0.25, proving the morphospace is not simulation-decidable and must stay labelled phenomenological in Math-KG.",
+      "tool_route": "python3 models/2008-burak-grid-cell-hexagonal-attractor.py --self-test",
+      "deciding_data": "In repo: Burak script, `morphoeval/lean/loops/Loop_088_grid_cell_hexagonal_attractor.lean`, audit evidenceAgainst on CLI-only `--self-test`/`--skip-gif`.",
+      "prior_attempts": "Pass 3 audit documented the formula-not-simulation morphospace (−5 parameter-expressivity); no simulation grid comparison has been committed.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "Simulator and formula live in the same module; self-test already calls `simulate_burak_fiete_regime` for regimes."},
+        "data_in_hand": {"score": 17, "why": "Reference tables inside Burak dataset JSON loaded by the script."},
+        "falsifiable_done": {"score": 13, "why": "Median relative error threshold is objective (pass or fail band)."},
+        "compute_in_repo": {"score": 11, "why": "100 full regime sims may take tens of minutes but stays CPU-only."},
+        "isolation": {"score": 10, "why": "Grid comparison CSV in `morphoeval/runs/` only."},
+        "time_to_verdict": {"score": 6, "why": "May exceed one sitting if 100 sims are slow; still one batch job."},
+        "not_blocked": {"score": 5, "why": "Comparison not previously run."}
+      }
+    },
+    {
+      "id": "LEAN-056-07",
+      "title": "Hannezo BARW Loop_056: quantify i_inf ∝ 1/R_a beyond duct-length ordering",
+      "gap": "Lean Theorem 3 in `Loop_056_branching_random_walk_annihilation.lean` proves homeostatic density scales inversely with annihilation radius R_a, but `models/2017-hannezo-branching-random-walk-annihilation.py --self-test` only checks duct-length ordering across R_a ∈ {1.75, 3.5, 7.0} and R_a=0 explosion — not that estimated i_inf from the 1D travelling-wave solver scales as 1/R_a within tolerance.",
+      "done": "After `python3 models/2017-hannezo-branching-random-walk-annihilation.py --self-test`, run `simulate_1d_barw_travelling_wave()` and `evaluate_organ_universality_and_perturbations` via import for R_a ∈ {1.75, 3.5, 7.0}. PASS if i_wake_mean ratios i(1.75)/i(3.5) and i(3.5)/i(7.0) are each within 15% of R_a ratio 3.5/1.75 and 7.0/3.5 respectively; FAIL otherwise. R_a=0 ablation must still satisfy existing self-test (`n_active_end ≥ 32`).",
+      "tool_route": "python3 models/2017-hannezo-branching-random-walk-annihilation.py --self-test",
+      "deciding_data": "In repo: `datasets/branching_random_walk_annihilation/branching_random_walk_annihilation_reference.json`, Hannezo script, Lean Loop_056.",
+      "prior_attempts": "Pass 3 added R_a perturbation ordering to self-test; audit did not require 1/R_a numeric fit. DM-MUR-NEG-01 in `docs/open-problems.json` targets Drosophila tracheal diameters (literature tabulation — registry lens, not this BARW route).",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Self-test already calls `evaluate_organ_universality_and_perturbations`; 1D wave exposes `i_homeostatic_theory`."},
+        "data_in_hand": {"score": 16, "why": "BARW reference JSON and specimen present in standard tree (`branching_random_walk_annihilation/` verified in cloud checkout)."},
+        "falsifiable_done": {"score": 14, "why": "15% ratio bands on named simulator outputs."},
+        "compute_in_repo": {"score": 14, "why": "Self-test ~minute-scale per audit class."},
+        "isolation": {"score": 10, "why": "Post-self-test analysis file only."},
+        "time_to_verdict": {"score": 8, "why": "Extends existing self-test outputs."},
+        "not_blocked": {"score": 5, "why": "1/R_a numeric witness not previously scored."}
+      }
+    },
+    {
+      "id": "LEAN-046-08",
+      "title": "Ventral furrow Loop_046: calibrate germband shell tension sweep to Lye 2015 recoil",
+      "gap": "`models/2012-he-drosophila-ventral-furrow.py` Pass 3 shell coupling (`sweep_ap_shell_parameters`) asserts monotone depth vs `ell_N` and >20% ablation at 150 µm, but measurement notes admit `N_GB` is not calibrated to Lye et al. (2015) germband-extension ablation recoil (open Pass 4 item in script L1368–1370). Lean `Loop_046` proves AP tension reduces modal depth algebraically.",
+      "done": "Digitise or import a two-point recoil table (Lye 2015 Fig. depth vs time after laser cut) into a new CSV under `morphoeval/runs/` with DOI. Sweep `ell_N` in [0,150] µm via `sweep_ap_shell_parameters` at WT depth 41 µm. PASS if ∃ ell_N* with simulated `tension_ablation_ratio` within ±0.15 of observed fractional recoil at matched timepoint; FAIL if no ell_N in grid fits within ±0.15 (negative calibration result).",
+      "tool_route": "python3 models/2012-he-drosophila-ventral-furrow.py --self-test; python3 -c \"from importlib.util import spec_from_file_location, module_from_spec; from pathlib import Path; p=Path('models/2012-he-drosophila-ventral-furrow.py'); m=module_from_spec(spec_from_file_location('vf', p)); spec.loader.exec_module(m); print(m.sweep_ap_shell_parameters(41.0))\"",
+      "deciding_data": "In repo: ventral furrow script + Lean Loop_046; external: Lye et al. (2015) Development — doi:10.1242/dev.113100 (figure digitisation one fetch).",
+      "prior_attempts": "Pass 3 added shell sweep and self-test thresholds; explicitly deferred Lye calibration. No prior simulation refutes ell_N identifiability.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "Sweep function exists and is exercised in `--self-test`; only empirical anchor missing."},
+        "data_in_hand": {"score": 10, "why": "Simulator in repo; deciding recoil numbers require one literature digitisation pass."},
+        "falsifiable_done": {"score": 13, "why": "±0.15 ratio match at a named timepoint is checkable once CSV exists."},
+        "compute_in_repo": {"score": 14, "why": "Shell sweep is lightweight vs full furrow integration."},
+        "isolation": {"score": 10, "why": "CSV + fit report as new files."},
+        "time_to_verdict": {"score": 5, "why": "Depends on figure digitisation quality."},
+        "not_blocked": {"score": 5, "why": "Open Pass 4 item, not refuted."}
+      }
+    }
+  ]
+}
