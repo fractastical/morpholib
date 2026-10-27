@@ -25,7 +25,7 @@ Usage:
   CURSOR_API_KEY=... python3 morphoeval/problem_scout_100.py dispatch --count 100
 """
 from __future__ import annotations
-import argparse, json
+import argparse, json, time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -186,21 +186,38 @@ def cmd_rank(_a) -> int:
     return 0
 
 def cmd_dispatch(a) -> int:
+    failures: list[tuple[str, str]] = []
     ag = agents()[: a.count] if not a.agents else [x for x in agents() if x["agent"] in
           {int(t) for part in a.agents.split(",") for t in (range(int(part.split("-")[0]), int(part.split("-")[1]) + 1) if "-" in part else [int(part)])}]
     for x in ag:
         if a.dry_run:
             print(f"  [DRY-RUN] {x['id']} ground={x['ground']} lens={x['lens']} -> {x['deliverable']} | prompt={len(build_prompt(x)):,} chars")
             continue
+        log = HERE / "cloud" / "dispatches" / f"problem-{x['id']}.json"
+        if log.exists():
+            print(f"  [SKIP] {x['id']} already dispatched (record {log.name})"); continue
         try:
             from cloud_orchestrator import _dispatch_via_cursor_sdk  # same transport as the loop fleet
         except Exception as exc:
             print(f"dispatch unavailable: {exc}"); return 1
-        rec = _dispatch_via_cursor_sdk(prompt=build_prompt(x), repo=a.repo, branch_name=x["branch"], model=a.model)
-        log = HERE / "cloud" / "dispatches" / f"problem-{x['id']}.json"
+        rec, last_exc = None, None
+        for attempt in range(1, 4):  # transient SDK Bridge timeouts: retry with backoff, never abort the wave
+            try:
+                rec = _dispatch_via_cursor_sdk(prompt=build_prompt(x), repo=a.repo, branch_name=x["branch"], model=a.model)
+                break
+            except Exception as exc:
+                last_exc = exc
+                print(f"  [RETRY {attempt}/3] {x['id']}: {str(exc)[:140]}")
+                time.sleep(10 * attempt)
+        if rec is None:
+            failures.append((x["id"], str(last_exc)[:200])); continue
         log.write_text(json.dumps({"kind": "problem_scout", **x, **rec}, indent=2) + "\n")
-        print(f"  [DISPATCHED] {x['id']} agent_id={rec.get('agent_id')}")
+        print(f"  [DISPATCHED] {x['id']} agent_id={rec.get('agent_id')}", flush=True)
+        time.sleep(3)  # stagger: the run of 2026-10-27 died on agent 13 without it
     if a.dry_run: print(f"Dry-run only: {len(ag)} agents armed. Live dispatch needs CURSOR_API_KEY (see cloud_orchestrator.py doctor).")
+    if failures:
+        print(f"FAILED ({len(failures)}): " + "; ".join(f"{i}: {e}" for i, e in failures))
+        return 1
     return 0
 
 def main() -> int:
