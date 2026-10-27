@@ -1,0 +1,63 @@
+sim_id: delphi10000-baculites-compressus-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 9.416e-05
+log10_size_m: -4.026
+size_human: 94 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Baculites compressus (94 µm, detail scale)
+geological_age_ma: 73.5
+geological_period: Late Cretaceous (Pierre Shale, Baculites compressus Zone)
+fossil_lineage_group: Cephalopod Fractal Suture Fossil Series
+chronoseries: Baculites 1/1
+predecessor:
+  taxon: Placenticeras meeki
+  age_ma: 80.6
+  chi: 1.5
+  lambda_c_um: 141.24
+successor:
+  taxon: Nipponites mirabilis
+  age_ma: 90.4
+  chi: 0.6600467289719626
+  lambda_c_um: 62.15
+  note: Turonian, geologically older; successor only in suture-geometry series order
+model_spec:
+  model: Schnakenberg (1979) spatial trimolecular system with Turing (1952) wavenumber k_c
+  a: 0.10
+  b: 0.90
+  diffusion_ratio: 9.2
+  lambda_c_um: 94.16
+  chi_baculites: 1.0
+  grid_probe_cells: 96
+  seed: 3131
+  inputs:
+    - datasets/baculites_compressus_turing_wavelength_s0/baculites_compressus_turing_wavelength_s0_reference.json
+    - datasets/baculites_compressus_turing_wavelength_s0/baculites_compressus_specimen.jpg
+    - datasets/baculites_compressus_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Turing dispersion determinant
+    formula: det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v g_u)
+    lean_decl: MathOfBiology.Loop_3131.kcSqNum
+    lean_theorem: MathOfBiology.Loop_3131.turing_wavenumber_positive
+    lean_locus: morphoeval/lean/loops/Loop_3131_baculites_compressus_turing_wavelength_s0.lean#L53-L63
+    variables: dv, fu, du, gv positive when the inhibitor is long-range
+    role: Sign of the critical-wavenumber numerator at the 94.16 µm detail scale
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py#L111-L118
+  - law_name: Critical intrinsic wavelength
+    formula: lambda_c = 2 pi / k_c, k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)
+    lean_decl: MathOfBiology.Loop_3131.lambdaBaculites
+    lean_theorem: MathOfBiology.Loop_3131.eight_wavelength_detail_window
+    lean_locus: morphoeval/lean/loops/Loop_3131_baculites_compressus_turing_wavelength_s0.lean#L46-L49
+    variables: lambda stored as 9416 hundredths of a micrometre
+    role: Pins Baculites compressus at 94.16 µm when chi = 1 and r = 9.2
+    source_citation: Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py#L99-L108
+  - law_name: Aperture readout along the suture series
+    formula: lambda_physical = chi * lambda_c, with chi_P = 3/2 > chi_B = 1 > chi_N = 6215/9416
+    lean_decl: MathOfBiology.Loop_3131.lambdaPlacenticeras
+    lean_theorem: MathOfBiology.Loop_3131.chronoseries_wavelength_order
+    lean_locus: morphoeval/lean/loops/Loop_3131_baculites_compressus_turing_wavelength_s0.lean#L34-L40
+    variables: chi is the only series parameter; a, b, and r stay fixed
+    role: What changes at 73.5 Ma versus Placenticeras meeki and Nipponites mirabilis
+    source_citation: Meinhardt and Klingler (1987) DOI:10.1016/S0022-5193(87)80101-7
+    code_locus: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py#L244-L265
