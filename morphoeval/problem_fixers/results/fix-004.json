@@ -1,0 +1,65 @@
+{
+  "fix_id": "fix-004",
+  "candidate_rank": 9,
+  "candidate_id": "LIB-DQ-LIMB-01",
+  "status": "needs-review",
+  "summary": "Verified via Crossref that scout territory.seed_doi 10.1126/science.472739 is the wrong Science article (Marwell 1979, careers in academia). Corrected seed_doi to Newman & Frisch (1979) primary DOI 10.1126/science.462174, recorded pass3_correction provenance, and refreshed in-dataset SHA-256 pins for scout_manifest.json.",
+  "root_cause": "Step-1 scout dossier transposed digits in territory.seed_doi (472739 vs 462174), likely conflating two August–September 1979 Science DOIs; reference JSON and BibTeX already held the correct Newman primary DOI.",
+  "changed_files": [
+    "datasets/limb_chondrogenesis_turing/scout_manifest.json",
+    "datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json",
+    "datasets/limb_chondrogenesis_turing/README.md"
+  ],
+  "evidence": [
+    "Before: datasets/limb_chondrogenesis_turing/scout_manifest.json territory.seed_doi = 10.1126/science.472739",
+    "After: territory.seed_doi = 10.1126/science.462174; pass3_correction documents fix-004",
+    "Crossref GET https://api.crossref.org/works/10.1126/science.462174 → title \"Dynamics of Skeletal Pattern Formation in Developing Chick Limb\", Newman, 1979-08-17",
+    "Crossref GET https://api.crossref.org/works/10.1126/science.472739 → title \"Geographic Constraints on Women's Careers in Academia\", Marwell, 1979-09-21",
+    "datasets/limb_chondrogenesis_turing/paper_citations.bib and limb_chondrogenesis_turing_reference.json metadata.sources[0].doi already 10.1126/science.462174",
+    "New scout_manifest SHA-256: 71ab73feedf8dbfd5009fe9cf32fa10e2007c32a76f54c26993c1e7ca3598453",
+    "New limb_chondrogenesis_turing_reference.json SHA-256: a5f79c8319f29eb58e160d628ae2c8bf3022e04fcf4865d559333bb0dddbba0c"
+  ],
+  "validation": [
+    {
+      "name": "DOI provenance consistency",
+      "argv": [
+        "python3",
+        "-c",
+        "import json,re,pathlib; m=json.load(open('datasets/limb_chondrogenesis_turing/scout_manifest.json')); r=json.load(open('datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json')); b=pathlib.Path('datasets/limb_chondrogenesis_turing/paper_citations.bib').read_text(); doi='10.1126/science.462174'; assert doi in b; print(m.get('seed_doi') or m.get('territory',{}).get('seed_doi') or 'see report', doi)"
+      ],
+      "exit_code": 0,
+      "output_summary": "10.1126/science.462174 10.1126/science.462174"
+    },
+    {
+      "name": "Embedded scout_manifest SHA-256 matches file",
+      "argv": [
+        "python3",
+        "-c",
+        "import hashlib, json; from pathlib import Path; sm=Path('datasets/limb_chondrogenesis_turing/scout_manifest.json'); ref=json.loads(Path('datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json').read_text()); assert ref['metadata']['scout_manifest']['sha256']==hashlib.sha256(sm.read_bytes()).hexdigest(); print('ok')"
+      ],
+      "exit_code": 0,
+      "output_summary": "ok"
+    },
+    {
+      "name": "compileall datasets/limb_chondrogenesis_turing",
+      "argv": ["python3", "-m", "compileall", "datasets/limb_chondrogenesis_turing", "-q"],
+      "exit_code": 0,
+      "output_summary": "no syntax errors"
+    }
+  ],
+  "blockers": [
+    {
+      "path": "models/1979-newman-limb-chondrogenesis-turing.py",
+      "reason": "EXPECTED_SHA256 still pins pre-fix digests for scout_manifest.json (7f3605aa…) and limb_chondrogenesis_turing_reference.json (c30d742b…); outside fix-004 path allowlist — follow-up PR must update pins or script verify_dataset_sha256() will fail."
+    },
+    {
+      "path": "morphoeval/cloud/campaign_100_slots.yaml",
+      "reason": "Campaign slot 012 seed_doi still 10.1126/science.472739; outside allowlist."
+    },
+    {
+      "path": "morphoeval/runs/campaign_100_loops_summary.json",
+      "reason": "Derived campaign summary still lists wrong seed_doi; outside allowlist."
+    }
+  ],
+  "external_publication_performed": false
+}
