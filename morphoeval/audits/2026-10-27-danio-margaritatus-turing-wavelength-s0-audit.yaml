@@ -1,0 +1,125 @@
+# Pass 1 — Danio margaritatus cellular Turing wavelength, slot 3162.
+# First scoring pass. Remediations R1–R4 are fixed in the same script and
+# re-scored in the v2 audit.
+audit:
+  id: 2026-10-27-danio-margaritatus-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second provider)"
+  domain: morphogenesis
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 23fb4b106f961ebb8b80abe7209257c902f834ad
+    note: "Pass 1 score of the slot 3162 script. R1–R4 are the gaps closed before the v2 re-score."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    doi: 10.1098/rstb.1952.0012
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu, Takahashi, Kanbe & Kondo"
+    doi: 10.1073/pnas.0808622106
+  patterson2014:
+    title: "Pigment cell interactions and differential xanthophore recruitment underlying zebrafish stripe reiteration and Danio pattern evolution"
+    authors: "Patterson, Bain & Parichy"
+    doi: 10.1038/ncomms6299
+  volkening2018:
+    title: "Iridophores as a source of robustness in zebrafish stripes and variability in Danio patterns"
+    authors: "Volkening & Sandstede"
+    doi: 10.1038/s41467-018-05629-z
+  conway2008:
+    title: "The Celestial Pearl danio is a miniature Danio (s.s.)"
+    authors: "Conway, Chen & Mayden"
+    doi: 10.11646/zootaxa.1686.1.1
+  quigley2004:
+    title: "Pigment pattern evolution by differential deployment of neural crest and post-embryonic melanophore lineages in Danio fishes"
+    authors: "Quigley et al."
+    doi: 10.1242/dev.01526
+simulations:
+  - id: delphi10000-danio-margaritatus-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at 13.39 µm in Danio margaritatus (Holocene, 0 Ma)"
+    organism: "Danio margaritatus (Celestial Pearl Danio)"
+    script: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py
+    output: docs/media/danio_margaritatus_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, nakamasu2009, patterson2014, volkening2018, conway2008, quigley2004]
+    summary: >-
+      Pass 1. Linear lambda_c is 13.39 µm by construction and the 1D PDE
+      growth-rate series matches the eigenvalue (Pearson r = 0.99999995,
+      RMSE = 5.5e-4 /s). Danio albolineatus is stable at this rung
+      (sigma_max = -0.080 /s). Danio nigrofasciatus selects 17.80 µm.
+      The adult photograph's pearl nearest-neighbour gap is 510 µm, so the
+      elementary mode is not resolved. First-pass gaps: the diffusion-ratio
+      sweep had to be checked at the anchor, the pearl hull had to be kept
+      on the blue flank, circularity had to be a polygon quotient rather than
+      a clipped raster, and the comparison figure had to separate the
+      nonlinear FFT peak (17.22 µm) from the linear law.
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: "Schnakenberg kinetics, Jacobian, and k_c formula are implemented and the 1D growth test matches the eigenvalue. Pass 1 still docks the nonlinear FFT peak (17.22 µm) sitting well above the linear 13.39 µm law, and gamma = 1/s is a time unit rather than a measured rate."
+        evidence:
+          - {file: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py, lines: [74, 110], note: "Jacobian and analytic sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py, lines: [231, 291], note: "Periodic 1D PDE growth versus the eigenvalue", supports: true}
+      specimen-match:
+        value: 72
+        rationale: "The CC BY-SA lateral photograph is shown beside a flank hull. Pass 1 hull selection still needed a blue-window gate so wood orange was not treated as pearls, and the GIF flank is a convex polygon rather than the body outline."
+        evidence:
+          - {file: docs/media/danio_margaritatus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, hull, and cellular field", supports: true}
+          - {file: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py, lines: [335, 396], note: "Flank pearl segmentation", supports: true}
+      parameter-expressivity:
+        value: 74
+        rationale: "Three chronospecies and a reaction knockout are present. Pass 1 requires the delta sweep to be monotone and to recover exactly 13.39 µm at delta = 40 before this dimension is credited in full."
+        evidence:
+          - {file: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py, lines: [302, 318], note: "D_v/D_u sweep at fixed D_u", supports: true}
+          - {file: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py, lines: [784, 805], note: "Self-test asserts monotonicity, stability, and ablation ratio", supports: true}
+      morphometric-validation:
+        value: 68
+        rationale: "Dispersion RMSE and Pearson r are real. Specimen NN spacing (510 µm), circularity, and a KS distance are computed, but the spatial holdout was not yet the flank-axis chord model, and the bootstrap interval was not on the figure."
+        evidence:
+          - {file: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py, lines: [688, 782], note: "measure_morphoeval values differ from their references", supports: true}
+      source-traceability:
+        value: 86
+        rationale: "DOIs for Turing, Nakamasu, Patterson, Volkening, Conway, and Quigley are in the bib file. The specimen is CC BY-SA 3.0 (Cisamarc) and SHA-256 pinned. OpenAlex scout record is in the dataset."
+        evidence:
+          - {file: datasets/danio_margaritatus_turing_wavelength_s0/paper_citations.bib, lines: [1, 89], note: "Cited DOIs", supports: true}
+          - {file: datasets/danio_margaritatus_turing_wavelength_s0/danio_margaritatus_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 1.339e-05 m and age 0 Ma", supports: true}
+      code-traceability:
+        value: 76
+        rationale: "The module docstring and the sweep comment restate k_c^2. Pass 1 does not yet pin every render choice to a paper section."
+        evidence:
+          - {file: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py, lines: [1, 40], note: "Governing system and chronoseries statement", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3162_danio_margaritatus_turing_wavelength_s0.lean, lines: [24, 52], note: "Four theorems, no sorry", supports: true}
+      repro-package:
+        value: 82
+        rationale: "Seed 3162, --self-test, and a pinned specimen digest. Pass 1 figure did not yet carry the bootstrap interval that the metrics JSON already stores."
+        evidence:
+          - {file: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py, lines: [784, 805], note: "Self-test gates", supports: true}
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: a reaction-diffusion system can be stable at k = 0 and unstable at a finite k_c."
+        - "Nakamasu et al. 2009: melanophore-xanthophore interactions have the short-range activation and long-range inhibition structure of a Turing system."
+        - "Quigley et al. 2004 and Patterson et al. 2014: Danio species differ in how stripes and spots are deployed."
+        - "Conway, Chen & Mayden 2008: the celestial pearl danio is a miniature Danio."
+      reconstructed_in_script:
+        - "Schnakenberg parameters that set lambda_c to 1.339e-05 m for margaritatus, stability for albolineatus, and 17.80 µm for nigrofasciatus."
+        - "0.018 m catalog length applied to the pearl-field major axis."
+      transfer_boundary:
+        - "The adult photograph samples at about 21 µm per pixel, so 13.39 µm is not a direct measurement on that image."
+        - "Predecessor and successor parameters are not fits to photographs of those species."
+      does_not_claim:
+        - "That adult pearl spacing equals 13.39 µm."
+        - "That the convex-hull animation is a copy of the photograph."
+    remediation:
+      - id: R1
+        item: "Keep the pearl hull on the blue flank (drop wood and plants) and report polygon circularity instead of a raster quotient clipped at 1."
+      - id: R2
+        item: "Diffusion-ratio sweep at fixed D_u must decrease lambda_c and equal 13.39 µm at delta = 40."
+      - id: R3
+        item: "Print the bootstrap 95% CI and the nonlinear FFT peak on the comparison figure, separate from the linear 13.39 µm law."
+      - id: R4
+        item: "Replace the axis-aligned ellipse occupancy model with the flank principal-axis chord model and report the odd-bin Pearson without forcing it above 0.98."
