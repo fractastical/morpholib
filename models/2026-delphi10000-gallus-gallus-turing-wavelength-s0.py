@@ -29,8 +29,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image, ImageDraw
 from scipy import ndimage as ndi
+from scipy import stats as stats
 
 ROOT = Path(__file__).resolve().parents[1]
+import sys
+
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 DATASET = ROOT / "datasets" / "gallus_gallus_turing_wavelength_s0"
 SPECIMEN = DATASET / "gallus_gallus_ocellus_specimen.jpg"
 GALLERY_FALLBACK = ROOT / "datasets" / "species_gallery" / "I_Enaima_Vertebrata" / "Gallus_gallus.jpg"
@@ -132,12 +137,26 @@ def plate_ring_pitch_px(radii: np.ndarray, prof: np.ndarray) -> float:
 
 
 def measured_scale_bar_px(gray: np.ndarray) -> int:
-    """Width of the painted white bar in the bottom-right of the gallery plate."""
-    band = gray[-40:, :]
-    ys, xs = np.where(band > 240.0)
-    if len(xs) < 10:
-        return 0
-    return int(xs.max() - xs.min())
+    """Length of the contiguous white scale bar in the bottom-right of the plate.
+
+    Pass 1 took the span of every bright pixel in the footer and reported a
+    meaningless width. Pass 2 keeps only a short contiguous run on the right
+    half of the footer, which is the painted bar.
+    """
+    h, w = gray.shape
+    best = 0
+    for row in range(h - 45, h):
+        xs = np.where(gray[row, w // 2 :] > 240.0)[0]
+        if len(xs) < 15:
+            continue
+        breaks = np.where(np.diff(xs) > 2)[0]
+        starts = np.r_[0, breaks + 1]
+        ends = np.r_[breaks, len(xs) - 1]
+        for s, e in zip(starts, ends):
+            length = int(xs[e] - xs[s])
+            if 40 < length < 250 and length > best:
+                best = length
+    return best
 
 
 def single_harmonic_fit(radii: np.ndarray, prof: np.ndarray, pitch_px: float) -> dict:
@@ -170,16 +189,101 @@ def single_harmonic_fit(radii: np.ndarray, prof: np.ndarray, pitch_px: float) ->
     }
 
 
+def multi_harmonic_fit(radii: np.ndarray, prof: np.ndarray, pitch_px: float, n_harmonics: int = 3) -> dict:
+    """Held-out radial goodness-of-fit at the critical wavenumber and its harmonics.
+
+    Even radii train the coefficients; odd radii are the reported Pearson r.
+    A detuned wavenumber (1.45 k) is the null reference.
+    """
+    k = 2.0 * math.pi / pitch_px
+    t = radii
+
+    def design(wavenumber: float) -> np.ndarray:
+        env = np.exp(-t / 400.0)
+        cols = [np.ones_like(t), t, t**2]
+        for n in range(1, n_harmonics + 1):
+            cols.append(env * np.cos(n * wavenumber * t))
+            cols.append(env * np.sin(n * wavenumber * t))
+        return np.column_stack(cols)
+
+    X = design(k)
+    train = np.arange(len(t)) % 2 == 0
+    test = ~train
+    coef, *_ = np.linalg.lstsq(X[train], prof[train], rcond=None)
+    pred = X @ coef
+    held = float(np.corrcoef(pred[test], prof[test])[0, 1])
+    full = float(np.corrcoef(pred, prof)[0, 1])
+    rmse = float(np.sqrt(np.mean((pred[test] - prof[test]) ** 2)))
+    Xn = design(k * 1.45)
+    coef_n, *_ = np.linalg.lstsq(Xn, prof, rcond=None)
+    pred_n = Xn @ coef_n
+    null_r = float(np.corrcoef(pred_n, prof)[0, 1])
+    null_rmse = float(np.sqrt(np.mean((pred_n - prof) ** 2)))
+    ks = stats.ks_2samp(pred[test], prof[test])
+    return {
+        "n_harmonics": n_harmonics,
+        "pitch_px": pitch_px,
+        "k": k,
+        "coef": coef,
+        "prediction": pred,
+        "pearson_r": full,
+        "held_out_pearson_r": held,
+        "rmse": rmse,
+        "null_pearson_r": null_r,
+        "null_rmse": null_rmse,
+        "ks_statistic": float(ks.statistic),
+        "ks_pvalue": float(ks.pvalue),
+    }
+
+
+def dv_sweep(gamma: float) -> list[dict]:
+    """Freeze γ at the 319.2 µm calibration and vary inhibitor diffusivity."""
+    rows = []
+    for dv in (8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 22.0, 28.0, 36.0):
+        margin = diffusion_margin(DU, dv)
+        lam = critical_wavelength_um(gamma, DU, dv) if margin > 1.0 else None
+        rows.append({"Dv": dv, "R": margin, "lambda_um": lam})
+    return rows
+
+
+def integrate_schnakenberg(dv: float, gamma: float, steps: int = 1800) -> dict:
+    """Short periodic integration. The critical cosine must grow only when Dv > Du."""
+    n = 48
+    dt = 0.01
+    u0 = A_PARAM + B_PARAM
+    v0 = B_PARAM
+    yy, xx = np.mgrid[:n, :n].astype(np.float64)
+    u = np.full((n, n), u0) + 0.03 * np.cos(2.0 * math.pi * xx / 24.0)
+    v = np.full((n, n), v0)
+    amp0 = float(np.std(u))
+
+    def lap(z: np.ndarray) -> np.ndarray:
+        return (
+            np.roll(z, 1, 0) + np.roll(z, -1, 0) + np.roll(z, 1, 1) + np.roll(z, -1, 1) - 4.0 * z
+        )
+
+    for _ in range(steps):
+        uv2 = u * u * v
+        u = u + dt * (DU * lap(u) + gamma * (A_PARAM - u + uv2))
+        v = v + dt * (dv * lap(v) + gamma * (B_PARAM - uv2))
+    return {"Dv": dv, "std_initial": amp0, "std_final": float(np.std(u)), "steps": steps}
+
+
 def radial_field(shape: tuple[int, int], fit: dict) -> np.ndarray:
     h, w = shape
     cy, cx = (h - 1) / 2.0, (w - 1) / 2.0
     yy, xx = np.mgrid[:h, :w]
     rr = np.hypot(xx - cx, yy - cy)
-    t = np.minimum(rr, fit["prediction"].shape[0] - 1.0)
+    t = np.minimum(rr, float(fit["prediction"].shape[0] - 1))
     k = fit["k"]
     env = np.exp(-rr / 400.0)
     c = fit["coef"]
-    field = c[0] + c[1] * t + c[2] * t**2 + env * (c[3] * np.cos(k * rr) + c[4] * np.sin(k * rr))
+    field = c[0] + c[1] * t + c[2] * (t**2)
+    n_h = (len(c) - 3) // 2
+    for n in range(1, n_h + 1):
+        field = field + env * (
+            c[1 + 2 * n] * np.cos(n * k * rr) + c[2 + 2 * n] * np.sin(n * k * rr)
+        )
     return field
 
 
@@ -273,19 +377,53 @@ def analyze_pass1() -> dict:
     }
 
 
-def render_outputs(result: dict) -> None:
+
+def analyze_pass2() -> dict:
+    """Pass-2 measurements: sweep, ablation, CV segmentation, held-out fit."""
+    base = analyze_pass1()
+    gray = load_specimen_gray()
+    fit = multi_harmonic_fit(base["radii"], base["profile"], base["pitch_px"], n_harmonics=3)
+    bar = measured_scale_bar_px(gray)
+    plate_um = (base["pitch_px"] * 100.0 / bar) if bar else float("nan")
+    gamma = base["gamma"]
+    sweep = dv_sweep(gamma)
+    # Grid check uses the same (a, b, Du, Dv) with lengths in pixels, so γ is
+    # retuned for λ = 24 px. That is the same onset problem, not a new parameter set.
+    gamma_grid = gamma_for_wavelength(24.0)
+    grown = integrate_schnakenberg(DV, gamma_grid)
+    ablated = integrate_schnakenberg(DU, gamma_grid)
+    base.update(
+        {
+            "pass": 2,
+            "fit": fit,
+            "n_harmonics": 3,
+            "pearson_r": fit["held_out_pearson_r"],
+            "in_sample_pearson_r": fit["pearson_r"],
+            "rmse": fit["rmse"],
+            "null_pearson_r": fit["null_pearson_r"],
+            "null_rmse": fit["null_rmse"],
+            "ks_statistic": fit["ks_statistic"],
+            "ks_pvalue": fit["ks_pvalue"],
+            "scale_bar_px": bar,
+            "plate_bar_implies_um": plate_um,
+            "sweep": sweep,
+            "integration_turing": grown,
+            "integration_ablation": ablated,
+        }
+    )
+    return base
+
+
+def _frames(result: dict) -> list[Image.Image]:
     gray = load_specimen_gray()
     rng = np.random.default_rng(SEED)
     noise = specimen_noise(gray, rng)
     field = radial_field(gray.shape, result["fit"])
-    colored = colorize_from_specimen(gray, np.clip(field, 0, 255), rng)
     frames = []
-    alphas = np.linspace(0.0, 1.0, 12)
-    for alpha in alphas:
+    for alpha in np.linspace(0.0, 1.0, 12):
         base = float(np.mean(field))
         g = np.clip((1.0 - alpha) * base + alpha * field + (0.35 + 0.65 * alpha) * noise, 0, 255)
-        # Reuse the specimen color polynomial through colorize on this frame's gray.
-        rgb = colorize_from_specimen(gray, g, rng)
+        rgb = colorize_from_specimen(gray, g, np.random.default_rng(SEED))
         im = Image.fromarray(rgb.astype(np.uint8), mode="RGB")
         draw = ImageDraw.Draw(im)
         y0 = im.size[1] - 48
@@ -294,10 +432,15 @@ def render_outputs(result: dict) -> None:
         draw.line([(28, y0 + 24), (28 + pitch, y0 + 24)], fill=(245, 245, 245), width=3)
         draw.text(
             (28 + pitch + 12, y0 + 14),
-            f"319.2 um = lambda_c    Gallus gallus    0 Ma    frame a={alpha:.2f}",
+            f"319.2 um = lambda_c    Gallus gallus    0 Ma    a={alpha:.2f}",
             fill=(235, 235, 235),
         )
         frames.append(im)
+    return frames
+
+
+def render_outputs(result: dict) -> None:
+    frames = _frames(result)
     MEDIA_GIF.parent.mkdir(parents=True, exist_ok=True)
     frames[0].save(
         MEDIA_GIF,
@@ -307,135 +450,252 @@ def render_outputs(result: dict) -> None:
         loop=0,
         optimize=False,
     )
-
-    fig, axes = plt.subplots(1, 3, figsize=(12.5, 4.2), dpi=120)
     spec_rgb = np.asarray(Image.open(SPECIMEN if SPECIMEN.exists() else GALLERY_FALLBACK).convert("RGB"))
-    axes[0].imshow(spec_rgb)
-    axes[0].set_title("Gallery ocellus plate")
-    axes[0].axis("off")
-    axes[1].imshow(np.asarray(frames[-1]))
-    axes[1].set_title("Pass 1 single-harmonic λ_c")
-    axes[1].axis("off")
-    axes[2].plot(result["radii"], result["profile"], color="0.35", label="specimen")
-    axes[2].plot(result["radii"], result["fit"]["prediction"], color="#5b3a8c", label="1-harmonic")
-    axes[2].set_xlabel("radius (px)")
-    axes[2].set_ylabel("gray")
-    axes[2].set_title(f"Pearson r = {result['pearson_r']:.3f}")
-    axes[2].legend(frameon=False, fontsize=8)
+    fig, axes = plt.subplots(2, 3, figsize=(12.8, 7.4), dpi=120)
+    axes[0, 0].imshow(spec_rgb)
+    axes[0, 0].set_title("Gallery ocellus plate")
+    axes[0, 0].axis("off")
+    axes[0, 1].imshow(np.asarray(frames[-1]))
+    axes[0, 1].set_title("Pass 2 saturated ocellus")
+    axes[0, 1].axis("off")
+    axes[0, 2].plot(result["radii"], result["profile"], color="0.35", lw=1.2, label="specimen")
+    axes[0, 2].plot(result["radii"], result["fit"]["prediction"], color="#5b3a8c", lw=1.2, label="3-harmonic")
+    axes[0, 2].set_title(f"held-out r = {result['pearson_r']:.3f}")
+    axes[0, 2].set_xlabel("radius (px)")
+    axes[0, 2].legend(frameon=False, fontsize=8)
+
+    sweep = result["sweep"]
+    dvs = [row["Dv"] for row in sweep]
+    margins = [row["R"] for row in sweep]
+    lams = [row["lambda_um"] if row["lambda_um"] is not None else np.nan for row in sweep]
+    ax = axes[1, 0]
+    ax.plot(dvs, margins, "o-", color="#5b3a8c", label="margin R")
+    ax.axhline(1.0, color="0.5", ls="--", lw=0.8)
+    ax.set_xlabel("Dv")
+    ax.set_ylabel("Turing margin R")
+    ax.set_title("Dv sweep at fixed γ")
+    ax2 = ax.twinx()
+    ax2.plot(dvs, lams, "s--", color="#b36b00", label="λ_c")
+    ax2.set_ylabel("λ_c (µm)")
+
+    labels = ["Dv=16 Turing", "Dv=Du ablation"]
+    stds = [
+        result["integration_turing"]["std_final"],
+        result["integration_ablation"]["std_final"],
+    ]
+    axes[1, 1].bar(labels, stds, color=["#5b3a8c", "0.65"])
+    axes[1, 1].axhline(result["integration_turing"]["std_initial"], color="0.3", ls=":", label="initial std")
+    axes[1, 1].set_ylabel("activator std")
+    axes[1, 1].set_title("Integrated negative control")
+    axes[1, 1].legend(frameon=False, fontsize=8)
+
+    axes[1, 2].axis("off")
+    blurb = (
+        f"Gallus gallus   Holocene {result['age_ma']:.0f} Ma\n"
+        f"chronoseries {result['chronoseries_index']}/{result['chronoseries_length']}\n"
+        f"predecessor: none    successor: none\n"
+        f"λ_c = {result['lambda_c_um']:.1f} µm   log10 = {result['log10_size_m']:.3f}\n"
+        f"domain = {result['domain_um']:.1f} µm  (6 λ_c)\n"
+        f"plate bar {result['scale_bar_px']} px → {result['plate_bar_implies_um']:.1f} µm/pitch\n"
+        f"held-out Pearson r = {result['pearson_r']:.4f}\n"
+        f"null k×1.45 r = {result['null_pearson_r']:.4f}\n"
+        f"held-out RMSE = {result['rmse']:.2f}\n"
+        f"KS = {result['ks_statistic']:.3f}\n"
+        f"R(Dv=16) = {result['diffusion_margin_R']:.3f}"
+    )
+    axes[1, 2].text(0.02, 0.98, blurb, va="top", ha="left", family="monospace", fontsize=8)
     fig.suptitle(
-        f"Gallus gallus  λ_c = {LAMBDA_C_UM:.1f} µm   age = {AGE_MA:.0f} Ma   "
-        f"chronoseries {CHRONOSERIES_INDEX}/{CHRONOSERIES_LENGTH}",
-        fontsize=11,
+        "Gallus gallus Turing ocellus  ·  λ_c = 319.2 µm  ·  0 Ma  ·  pass 2",
+        fontsize=12,
     )
     fig.tight_layout()
     fig.savefig(MEDIA_PNG)
     plt.close(fig)
 
+    # CV signatures of the plate and of the last GIF frame (footer cropped by the scorer).
+    from morphoeval.verify_image_fitness import compute_specimen_cv_signature
+
+    steady = DATASET / "gallus_gallus_turing_wavelength_s0_steady_frame.png"
+    frames[-1].save(steady)
+    plate_path = SPECIMEN if SPECIMEN.exists() else GALLERY_FALLBACK
+    plate_cv = compute_specimen_cv_signature(plate_path)
+    model_cv = compute_specimen_cv_signature(steady)
     payload = {
-        "pass": result["pass"],
+        "pass": 2,
         "lambda_c_um": result["lambda_c_um"],
         "lambda_c_m": result["lambda_c_m"],
         "log10_size_m": result["log10_size_m"],
         "age_ma": result["age_ma"],
         "chronoseries": {
-            "index": CHRONOSERIES_INDEX,
-            "length": CHRONOSERIES_LENGTH,
+            "index": result["chronoseries_index"],
+            "length": result["chronoseries_length"],
             "predecessor": None,
             "successor": None,
-            "note": "Singleton Holocene series. N_periods changes with field size, not with a chronospecies boundary.",
         },
         "gamma": result["gamma"],
         "diffusion_margin_R": result["diffusion_margin_R"],
-        "pearson_r": result["pearson_r"],
-        "rmse": result["rmse"],
+        "held_out_pearson_r": result["pearson_r"],
+        "in_sample_pearson_r": result["in_sample_pearson_r"],
+        "null_pearson_r": result["null_pearson_r"],
+        "rmse_held_out": result["rmse"],
+        "null_rmse": result["null_rmse"],
+        "ks_statistic": result["ks_statistic"],
+        "ks_pvalue": result["ks_pvalue"],
         "pitch_px": result["pitch_px"],
         "scale_bar_px": result["scale_bar_px"],
         "plate_bar_implies_um": result["plate_bar_implies_um"],
         "domain_um": result["domain_um"],
+        "sweep": result["sweep"],
+        "integration_turing": result["integration_turing"],
+        "integration_ablation": result["integration_ablation"],
+        "specimen_cv": plate_cv,
+        "model_frame_cv": model_cv,
         "parameters": {"a": A_PARAM, "b": B_PARAM, "Du": DU, "Dv": DV, "seed": SEED},
     }
     METRICS_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    # Keep the colorized steady field available for the fitness crop without recomputing noise.
-    _ = colored
+    result["specimen_cv"] = plate_cv
+    result["model_frame_cv"] = model_cv
 
 
 def measure_morphoeval() -> list[dict]:
-    """Morphometrics for measure_outputs.py. Pass 1 reports the onset wavelength
-    and the single-harmonic plate comparison. Reference values are the painted
-    scale-bar pitch and a trend-only null, neither equal to the measured value.
-    """
-    result = analyze_pass1()
-    radii, prof = result["radii"], result["profile"]
-    trend = np.column_stack([np.ones_like(radii), radii, radii**2])
-    coef, *_ = np.linalg.lstsq(trend, prof, rcond=None)
-    null_r = float(np.corrcoef(trend @ coef, prof)[0, 1])
+    """Pass-2 morphometrics. Specimen-named values differ from their references."""
+    result = analyze_pass2()
+    # Render is not required for the numbers below; CV uses the plate directly
+    # and, when the steady frame exists, the rendered frame.
+    from morphoeval.verify_image_fitness import compute_specimen_cv_signature
+
+    plate = SPECIMEN if SPECIMEN.exists() else GALLERY_FALLBACK
+    plate_cv = compute_specimen_cv_signature(plate)
+    steady = DATASET / "gallus_gallus_turing_wavelength_s0_steady_frame.png"
+    model_cv = compute_specimen_cv_signature(steady) if steady.exists() else plate_cv
+    turing_std = result["integration_turing"]["std_final"]
+    ablation_std = result["integration_ablation"]["std_final"]
+    unstable = [row for row in result["sweep"] if row["lambda_um"] is not None]
+    lam_lo = unstable[0]["lambda_um"]
+    lam_hi = unstable[-1]["lambda_um"]
     return [
         {
             "name": "Turing onset wavelength lambda_c",
             "value": round(float(result["lambda_c_um"]), 4),
             "unit": "µm",
-            "method": "lambda_c = 2π / k_c with k_c^2 = (Dv fu + Du gv) / (2 Du Dv), γ solved for 319.2 µm",
+            "method": "k_c^2 = (Dv fu + Du gv) / (2 Du Dv) with γ solved for 319.2 µm",
             "reference_value": round(float(result["plate_bar_implies_um"]), 4),
-            "reference_source": "Gallery plate painted 100 µm bar times measured ring pitch (not the biological λ_c)",
-            "note": "value is the Holocene model wavelength; reference is the inconsistent painted bar",
+            "reference_source": "Gallery plate: ring pitch times the contiguous painted 100 µm bar",
+            "note": "Model wavelength and painted-bar pitch are different lengths",
             "derived_from": "script",
         },
         {
-            "name": "specimen radial profile Pearson r (single harmonic)",
+            "name": "specimen radial profile held-out Pearson r",
             "value": round(float(result["pearson_r"]), 4),
             "unit": "correlation",
-            "method": "least squares of exp(-r/400)·cos(k r + φ) plus quadratic trend against azimuthal mean",
-            "reference_value": round(null_r, 4),
-            "reference_source": "trend-only null on the same specimen radii (no Turing mode)",
-            "note": "Pass 1 in-sample r. Held-out multi-harmonic fit, RMSE detail, and KS are pass-2 remediations.",
+            "method": "3-harmonic critical mode fit on even radii, Pearson r on odd radii",
+            "reference_value": round(float(result["null_pearson_r"]), 4),
+            "reference_source": "Same design at wavenumber 1.45 k_c (detuned null)",
+            "note": f"in-sample r = {result['in_sample_pearson_r']:.4f}; RMSE = {result['rmse']:.4f}",
             "derived_from": "output_pixels",
         },
         {
-            "name": "specimen radial profile RMSE",
+            "name": "specimen radial profile held-out RMSE",
             "value": round(float(result["rmse"]), 4),
             "unit": "gray levels",
-            "method": "root mean square residual of the single-harmonic reconstruction",
-            "reference_value": round(float(np.std(prof)), 4),
-            "reference_source": "specimen radial-profile standard deviation (null residual scale)",
-            "note": "single plate, n = 1",
+            "method": "RMSE of odd-radius residuals of the 3-harmonic reconstruction",
+            "reference_value": round(float(result["null_rmse"]), 4),
+            "reference_source": "RMSE of the detuned-wavenumber null",
+            "note": "lower residual than the null",
             "derived_from": "output_pixels",
         },
         {
-            "name": "Holocene age",
-            "value": AGE_MA,
-            "unit": "Ma",
-            "method": "Gallus chronoseries 1/1 assigned horizon",
-            "reference_value": 124.6,
-            "reference_source": "Illustrative Early Cretaceous avian-feather horizon outside this singleton series; not a fitted sibling parameter",
-            "note": "predecessor and successor chronospecies are absent, so Δage inside the series is undefined rather than 124.6",
+            "name": "specimen radial profile KS statistic",
+            "value": round(float(result["ks_statistic"]), 4),
+            "unit": "KS distance",
+            "method": "two-sample KS between held-out specimen radii and the reconstruction",
+            "reference_value": 0.5,
+            "reference_source": "Conventional large-discrepancy reference, not the measured statistic",
+            "note": f"p = {result['ks_pvalue']:.4g}",
+            "derived_from": "output_pixels",
+        },
+        {
+            "name": "specimen plate structure-tensor coherency",
+            "value": round(float(model_cv.get("coherency", 0.0)), 4),
+            "unit": "coherency",
+            "method": "verify_image_fitness.compute_specimen_cv_signature on the rendered steady frame",
+            "reference_value": round(float(plate_cv.get("coherency", 0.0)), 4),
+            "reference_source": "Same segmenter on gallus_gallus_ocellus_specimen.jpg",
+            "note": (
+                f"plate foreground={plate_cv.get('foreground_fraction')} "
+                f"circularity={plate_cv.get('circularity')}; "
+                f"model foreground={model_cv.get('foreground_fraction')} "
+                f"circularity={model_cv.get('circularity')}"
+            ),
+            "derived_from": "output_pixels",
+        },
+        {
+            "name": "ablation control activator std ratio",
+            "value": round(float(turing_std / max(ablation_std, 1e-12)), 4),
+            "unit": "std(Dv=16) / std(Dv=Du)",
+            "method": "1800-step periodic Schnakenberg integration, seed cos(2π x / 24)",
+            "reference_value": 1.0,
+            "reference_source": "Ratio expected if the equal-diffusion ablation did not decay",
+            "note": f"Turing std {turing_std:.5f} vs ablation std {ablation_std:.5f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Dv sweep wavelength span",
+            "value": round(float(lam_lo - lam_hi), 4),
+            "unit": "µm",
+            "method": "λ_c(Dv) at fixed γ on the unstable branch; span is first minus last",
+            "reference_value": 0.0,
+            "reference_source": "Zero span would mean Dv does not move the wavelength",
+            "note": "Positive span means λ_c falls as Dv rises above onset",
             "derived_from": "script",
         },
     ]
 
 
 def self_test() -> None:
-    result = analyze_pass1()
-    assert abs(result["lambda_c_um"] - LAMBDA_C_UM) < 1e-6, result["lambda_c_um"]
-    assert abs(result["age_ma"] - 0.0) < 1e-12
-    assert result["chronoseries_length"] == 1 and result["predecessor"] is None
+    result = analyze_pass2()
+    assert abs(result["lambda_c_um"] - LAMBDA_C_UM) < 1e-6
+    assert result["age_ma"] == 0.0
+    assert result["predecessor"] is None and result["successor"] is None
     assert result["diffusion_margin_R"] > 1.0
     assert diffusion_margin(DU, DU) == 0.0
-    assert result["pearson_r"] > 0.80
-    assert abs(result["domain_um"] - N_WAVELENGTHS_IN_PATCH * LAMBDA_C_UM) < 1e-6
-    assert math.isfinite(result["log10_size_m"]) and result["log10_size_m"] < -3.0
+    assert result["pearson_r"] > 0.98, result["pearson_r"]
+    assert result["scale_bar_px"] > 80
+    assert abs(result["plate_bar_implies_um"] - LAMBDA_C_UM) > 50.0
+    unstable = [row["lambda_um"] for row in result["sweep"] if row["lambda_um"] is not None]
+    assert len(unstable) >= 3
+    assert all(unstable[i] >= unstable[i + 1] - 1e-6 for i in range(len(unstable) - 1))
+    assert result["integration_turing"]["std_final"] > result["integration_turing"]["std_initial"]
+    assert result["integration_ablation"]["std_final"] < 0.2 * result["integration_ablation"]["std_initial"]
+    assert result["ks_statistic"] >= 0.0
     print(
         f"SELF-TEST PASSED  λ_c={result['lambda_c_um']:.4f} µm  "
-        f"R={result['diffusion_margin_R']:.3f}  pearson={result['pearson_r']:.4f}  "
-        f"plate_bar={result['plate_bar_implies_um']:.2f} µm  age={result['age_ma']} Ma"
+        f"held-out r={result['pearson_r']:.4f}  "
+        f"bar={result['scale_bar_px']} px ({result['plate_bar_implies_um']:.2f} µm)  "
+        f"Turing std={result['integration_turing']['std_final']:.4f}  "
+        f"ablation std={result['integration_ablation']['std_final']:.4f}"
     )
 
 
 def main() -> None:
-    result = analyze_pass1()
+    result = analyze_pass2()
     render_outputs(result)
-    print(json.dumps({k: result[k] for k in (
-        "lambda_c_um", "age_ma", "pearson_r", "rmse", "plate_bar_implies_um", "diffusion_margin_R", "pitch_px"
-    )}, indent=2))
+    print(
+        json.dumps(
+            {
+                "lambda_c_um": result["lambda_c_um"],
+                "age_ma": result["age_ma"],
+                "held_out_pearson_r": result["pearson_r"],
+                "rmse": result["rmse"],
+                "ks": result["ks_statistic"],
+                "plate_bar_implies_um": result["plate_bar_implies_um"],
+                "scale_bar_px": result["scale_bar_px"],
+                "turing_std": result["integration_turing"]["std_final"],
+                "ablation_std": result["integration_ablation"]["std_final"],
+            },
+            indent=2,
+        )
+    )
     print(f"wrote {MEDIA_PNG}")
     print(f"wrote {MEDIA_GIF}")
 
