@@ -1,0 +1,46 @@
+{
+  "kind": "problem_fixer",
+  "wave": "wave-1-integrity",
+  "dispatched_at": "2026-10-27T04:21:45Z",
+  "id": "fix-012",
+  "slug": "dm-dpp-lean-certificate",
+  "leaderboard_rank": 8,
+  "candidate_id": "scout-063-c",
+  "source": "scout-063.json",
+  "title": "Machine-check DM-DPP-01 precursor vs mature Dpp mobility factors (0.61 / 0.78)",
+  "merge_policy": "review",
+  "requires_lean": true,
+  "instructions": [
+    "Read the mature-chain and precursor lengths directly from sequences/sequence_links.json and encode the registered DM-DPP-01 arithmetic without changing the locked prediction registry.",
+    "Prove the stated mobility and length-scale factors within explicit tolerances in a standalone Lean file with zero sorry declarations.",
+    "If Lean is unavailable in the environment, create the file plus a Python cross-check and mark the fixer result blocked on kernel verification rather than claiming Lean success."
+  ],
+  "allowed_paths": [
+    "morphoeval/problem_fixers/**",
+    "morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean",
+    "tests/test_problem_fixer_dm_dpp.py"
+  ],
+  "validators": [
+    {
+      "name": "Lean kernel check",
+      "argv": [
+        "lean",
+        "morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean"
+      ]
+    },
+    {
+      "name": "No sorry term in Lean certificate",
+      "argv": [
+        "python3",
+        "-c",
+        "import re; from pathlib import Path; s=Path('morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean').read_text(); s=re.sub(r'--.*', '', s); assert not re.search(r'(?<![A-Za-z_])sorry(?:Ax)?(?![A-Za-z_])', s); print('no sorry term')"
+      ]
+    }
+  ],
+  "requested_branch": "morphoeval/fixer-fix-012-dm-dpp-lean-certificate",
+  "transport": "cursor_sdk",
+  "agent_id": "bc-a643f4d9-60a1-4acc-be4b-c46f2993fa4f",
+  "run_id": "run-3ac0d5c3-635a-4502-8bdb-9a71aa991ffa",
+  "requested_branch_name": "morphoeval/fixer-fix-012-dm-dpp-lean-certificate",
+  "status": "dispatched"
+}

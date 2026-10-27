@@ -1,0 +1,47 @@
+{
+  "kind": "problem_fixer",
+  "wave": "wave-1-integrity",
+  "dispatched_at": "2026-10-27T04:20:48Z",
+  "id": "fix-007",
+  "slug": "planarian-stale-specimen-pins",
+  "leaderboard_rank": 32,
+  "candidate_id": "LIB-MEAS-02",
+  "source": "scout-072.json",
+  "title": "Planarian HK-ATPase v2 sidecar still pins superseded specimen SHA-256 and morphology text",
+  "merge_policy": "review",
+  "instructions": [
+    "Reconcile the v2 sidecar, scout_manifest, and README with the live specimen bytes and dimensions. Regenerate measured values with repo tools; do not hand-type hashes or morphometrics.",
+    "Do not replace the specimen image in this task. If the live image itself is taxonomically wrong, report that separately as blocked rather than fetching a substitute.",
+    "Cite the live SHA-256 and dimensions in the fixer report and show which stale text was removed."
+  ],
+  "allowed_paths": [
+    "morphoeval/problem_fixers/**",
+    "datasets/planarian_hk_atpase_anterior/**",
+    "morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml",
+    "morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.measurements.yaml"
+  ],
+  "validators": [
+    {
+      "name": "Regenerate planarian measurements",
+      "argv": [
+        "python3",
+        "morphoeval/measure_outputs.py",
+        "morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml"
+      ]
+    },
+    {
+      "name": "Specimen digest is present in sidecar",
+      "argv": [
+        "python3",
+        "-c",
+        "import hashlib,pathlib; p=pathlib.Path('datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg'); d=hashlib.sha256(p.read_bytes()).hexdigest(); s=pathlib.Path('morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.measurements.yaml').read_text(); assert d in s, d; print(d)"
+      ]
+    }
+  ],
+  "requested_branch": "morphoeval/fixer-fix-007-planarian-stale-specimen-pins",
+  "transport": "cursor_sdk",
+  "agent_id": "bc-1633f78f-4e50-4fdf-a800-a20eafae33cc",
+  "run_id": "run-6ea21dad-e6fd-4c77-b4e1-64200034a05e",
+  "requested_branch_name": "morphoeval/fixer-fix-007-planarian-stale-specimen-pins",
+  "status": "dispatched"
+}

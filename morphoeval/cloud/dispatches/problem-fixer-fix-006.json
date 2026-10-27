@@ -1,0 +1,50 @@
+{
+  "kind": "problem_fixer",
+  "wave": "wave-1-integrity",
+  "dispatched_at": "2026-10-27T04:20:34Z",
+  "id": "fix-006",
+  "slug": "turing-audit-script-path",
+  "leaderboard_rank": 24,
+  "candidate_id": "scout-032-c",
+  "source": "scout-032.json",
+  "title": "Audit `script:` path silently drops six Turing reference measurements",
+  "merge_policy": "review",
+  "instructions": [
+    "Diagnose whether the correct repair is canonical audit script paths, a resolver in measure_outputs.py, or both; prefer the smallest repair that makes measurement complete without rewriting scientific scores.",
+    "Regenerate the affected measurement sidecars with the repo tool rather than hand-editing computed values.",
+    "Prove that the Pearson 1993 and Kondo reference rows are present and that missing/broken paths fail visibly rather than silently producing a partial four-row result."
+  ],
+  "allowed_paths": [
+    "morphoeval/problem_fixers/**",
+    "morphoeval/measure_outputs.py",
+    "morphoeval/audits/2026-10-19-turing-audit-v2.yaml",
+    "morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml",
+    "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml",
+    "morphoeval/audits/2026-10-26-flagship15-audit-v1.measurements.yaml",
+    "tests/test_problem_fixer_turing_measurements.py"
+  ],
+  "validators": [
+    {
+      "name": "Regenerate Turing measurements",
+      "argv": [
+        "python3",
+        "morphoeval/measure_outputs.py",
+        "morphoeval/audits/2026-10-19-turing-audit-v2.yaml"
+      ]
+    },
+    {
+      "name": "Measurement completeness check",
+      "argv": [
+        "python3",
+        "-c",
+        "import yaml; m=yaml.safe_load(open('morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml')); rows=m['measurements']['turing-gray-scott']; assert len(rows)>=10, len(rows); src=' '.join(str(x.get('reference_source','')) for x in rows); assert 'Pearson 1993' in src and 'Kondo' in src; print(len(rows))"
+      ]
+    }
+  ],
+  "requested_branch": "morphoeval/fixer-fix-006-turing-audit-script-path",
+  "transport": "cursor_sdk",
+  "agent_id": "bc-81a00a58-1341-4dc4-9b19-a81e598ba86c",
+  "run_id": "run-defd2d63-a209-41da-ba3e-d26f08d29e9b",
+  "requested_branch_name": "morphoeval/fixer-fix-006-turing-audit-script-path",
+  "status": "dispatched"
+}

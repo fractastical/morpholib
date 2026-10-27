@@ -1,0 +1,37 @@
+{
+  "kind": "problem_fixer",
+  "wave": "wave-1-integrity",
+  "dispatched_at": "2026-10-27T04:19:53Z",
+  "id": "fix-004",
+  "slug": "newman-limb-doi",
+  "leaderboard_rank": 9,
+  "candidate_id": "LIB-DQ-LIMB-01",
+  "source": "scout-078.json",
+  "title": "Newman 1979 limb dataset: scout_manifest seed DOI is a typo vs reference/bib",
+  "merge_policy": "review",
+  "instructions": [
+    "Verify the Newman & Frisch 1979 primary-source DOI against Crossref or the publisher record; do not assume the candidate's preferred DOI merely because two repo files agree.",
+    "Correct the erroneous provenance field at the narrowest source of truth and record both the old and corrected DOI plus title evidence in the fixer report.",
+    "Search for hashes or generated references inside the allowed dataset that pin the changed file; if a required update falls outside the allowlist, stop as blocked and name it."
+  ],
+  "allowed_paths": [
+    "morphoeval/problem_fixers/**",
+    "datasets/limb_chondrogenesis_turing/**"
+  ],
+  "validators": [
+    {
+      "name": "DOI provenance consistency",
+      "argv": [
+        "python3",
+        "-c",
+        "import json,re,pathlib; m=json.load(open('datasets/limb_chondrogenesis_turing/scout_manifest.json')); r=json.load(open('datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json')); b=pathlib.Path('datasets/limb_chondrogenesis_turing/paper_citations.bib').read_text(); doi='10.1126/science.462174'; assert doi in b; print(m.get('seed_doi') or m.get('territory',{}).get('seed_doi') or 'see report', doi)"
+      ]
+    }
+  ],
+  "requested_branch": "morphoeval/fixer-fix-004-newman-limb-doi",
+  "transport": "cursor_sdk",
+  "agent_id": "bc-b7aec5cb-7f01-4649-9958-73d5da816bbe",
+  "run_id": "run-cc576fe9-7f26-48a4-afd1-57e308b60bc7",
+  "requested_branch_name": "morphoeval/fixer-fix-004-newman-limb-doi",
+  "status": "dispatched"
+}

@@ -1,0 +1,48 @@
+{
+  "kind": "problem_fixer",
+  "wave": "wave-1-integrity",
+  "dispatched_at": "2026-10-27T04:21:20Z",
+  "id": "fix-010",
+  "slug": "planform-damaged-negative-ci-gate",
+  "leaderboard_rank": 69,
+  "candidate_id": "scout-079-c",
+  "source": "scout-079.json",
+  "title": "Planform damaged-negative fixtures not gated in MorphoEval CI",
+  "merge_policy": "auto",
+  "instructions": [
+    "Add a standard pytest gate that exercises all five damaged-negative fixtures and their expected error codes without mutating the committed fixtures.",
+    "Include a negative-control style test on temporary copies so a flipped expected_error_code is detected as a test failure by construction, while the normal suite remains green.",
+    "Do not modify GitHub workflow files in this task; making the test discoverable by the repo's standard pytest validation is the deliverable."
+  ],
+  "allowed_paths": [
+    "morphoeval/problem_fixers/**",
+    "tests/test_planform_damaged_negatives.py",
+    "models/planform_bioelectric.py"
+  ],
+  "validators": [
+    {
+      "name": "Planform model self-test",
+      "argv": [
+        "python3",
+        "models/planform_bioelectric.py",
+        "--self-test"
+      ]
+    },
+    {
+      "name": "Planform damaged-negative pytest gate",
+      "argv": [
+        "python3",
+        "-m",
+        "pytest",
+        "tests/test_planform_damaged_negatives.py",
+        "-q"
+      ]
+    }
+  ],
+  "requested_branch": "morphoeval/fixer-fix-010-planform-damaged-negative-ci-gate",
+  "transport": "cursor_sdk",
+  "agent_id": "bc-706836f9-98bb-42c3-84f9-4b83ef3346a1",
+  "run_id": "run-18e2cbb4-bec6-4bec-ba55-6b391b318fe9",
+  "requested_branch_name": "morphoeval/fixer-fix-010-planform-damaged-negative-ci-gate",
+  "status": "dispatched"
+}
