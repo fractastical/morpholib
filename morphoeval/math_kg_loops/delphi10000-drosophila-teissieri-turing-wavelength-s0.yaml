@@ -1,0 +1,90 @@
+sim_id: delphi10000-drosophila-teissieri-turing-wavelength-s0
+slot: 3209
+organism: Drosophila teissieri
+common_name: Afrotropical Highland Forest Fly (Multi-Spined Clasper Surstylus)
+phenomenon_size_m: 1.72e-6
+log10_size_m: -5.764
+size_human: "1.7 µm"
+scale_tier: 3_subcellular_um
+detail_variant: s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila teissieri (1.7 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora melanogaster Subgroup Radiation (0–12 Ma)"
+chronoseries: "Drosophila 38/41"
+predecessor_species: Drosophila takahashii
+predecessor_atlas_lambda_m: 9.76e-5
+successor_species: Drosophila virilis
+successor_atlas_floor_m: 2.72e-6
+math_family: Reaction-Diffusion & Turing Dispersion (I. Reaction-Diffusion & Stripe Splitting)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+parameters:
+  a: 0.13
+  b: 0.91
+  gamma_per_s: 1.15
+  diffusivity_ratio: 17.4
+  lambda_c_um: 1.72
+  domain_side_um: 20.64
+  n_wavelengths: 12
+  note: "Not the slot-2761 coefficients alpha=1.705, beta=0.316."
+equations:
+  - law_name: Homogeneous trace sign
+    formula: "trace(J) = f_u + g_v = 3/4 - 676/625 < 0"
+    lean_decl: MathOfBiology.Loop_3209.traceNumerator
+    lean_theorem: MathOfBiology.Loop_3209.homogeneous_trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3209_drosophila_teissieri_turing_wavelength_s0.lean#L17-L23
+    variables: "f_u = 3/4, g_v = -676/625 at a=0.13, b=0.91"
+    role: "Well-mixed Schnakenberg state is stable, so any instability is diffusion-driven."
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py#L59-L72
+  - law_name: Critical wavenumber
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 1.72 µm"
+    lean_decl: MathOfBiology.Loop_3209.driveNumerator
+    lean_theorem: MathOfBiology.Loop_3209.diffusion_drive_positive
+    lean_locus: morphoeval/lean/loops/Loop_3209_drosophila_teissieri_turing_wavelength_s0.lean#L27-L33
+    variables: "D_v/D_u = 17.4, drive numerator 261*125 - 676*4 > 0"
+    role: "Selects the 1.72 µm detail wavelength on the 20.64 µm patch."
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py#L74-L86
+  - law_name: Equal-diffusion failure
+    formula: "At D_u = D_v the drive equals the trace and is negative"
+    lean_decl: MathOfBiology.Loop_3209.traceNumerator
+    lean_theorem: MathOfBiology.Loop_3209.equal_diffusion_drive_negative
+    lean_locus: morphoeval/lean/loops/Loop_3209_drosophila_teissieri_turing_wavelength_s0.lean#L35-L37
+    variables: "r = 1"
+    role: "Negative control. Diffusion-driven stripes require unequal diffusivities."
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py#L197-L210
+  - law_name: Twelve-wavelength domain
+    formula: "L = 12 * 1.72 µm = 20.64 µm"
+    lean_decl: MathOfBiology.Loop_3209.domainHundredths
+    lean_theorem: MathOfBiology.Loop_3209.twelve_wavelength_domain
+    lean_locus: morphoeval/lean/loops/Loop_3209_drosophila_teissieri_turing_wavelength_s0.lean#L39-L43
+    variables: "12 * 172 = 2064 hundredths of a micrometre"
+    role: "Periodic patch sized to twelve formula wavelengths."
+    source_citation: "Turing 1952 mode count N = L / lambda_c"
+    code_locus: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py#L197-L205
+  - law_name: Predecessor wavenumber ratio
+    formula: "lambda_takahashii / lambda_teissieri = 97.6 / 1.72 > 50"
+    lean_decl: MathOfBiology.Loop_3209.predecessor_wavenumber_ratio_exceeds_fifty
+    lean_theorem: MathOfBiology.Loop_3209.predecessor_wavenumber_ratio_exceeds_fifty
+    lean_locus: morphoeval/lean/loops/Loop_3209_drosophila_teissieri_turing_wavelength_s0.lean#L45-L49
+    variables: "9760 > 50 * 172"
+    role: "Detail-scale wavenumber is more than 50 times the takahashii cell-tier stripe wavenumber. Both ages are 0 Ma."
+    source_citation: "Atlas slot 2811 versus this slot; not a copied parameter set"
+    code_locus: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py#L38-L40
+  - law_name: Successor floor longer
+    formula: "lambda_virilis_floor = 2.72 µm > 1.72 µm"
+    lean_decl: MathOfBiology.Loop_3209.successor_virilis_floor_longer
+    lean_theorem: MathOfBiology.Loop_3209.successor_virilis_floor_longer
+    lean_locus: morphoeval/lean/loops/Loop_3209_drosophila_teissieri_turing_wavelength_s0.lean#L51-L54
+    variables: "272 > 172 hundredths of a micrometre"
+    role: "Virilis atlas floor is longer than this detail wavelength. Not an ancestor-descendant claim."
+    source_citation: "Drosophila virilis atlas minimum 2.72e-6 m"
+    code_locus: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py#L39-L40

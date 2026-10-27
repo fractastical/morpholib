@@ -1,0 +1,187 @@
+audit:
+  id: 2026-10-27-drosophila-teissieri-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second provider on this pass)"
+    homepage: https://x.ai
+  domain: morphogenesis
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree. New slot files are not in this commit. publisher_orcid is the dct:creator already used on morphoeval/kg/2026-10-19-turing-audit. No ~/.nanopub/profile.yml, so these nanopubs are unsigned."
+references:
+  turing1952:
+    title: "Turing, A. M. (1952) The chemical basis of morphogenesis"
+    authors: "Turing, Alan M."
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Schnakenberg, J. (1979) Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  kondo2010:
+    title: "Kondo, S. and Miura, T. (2010) Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo, Shigeru; Miura, Takashi"
+    doi: 10.1126/science.1179047
+    year: 2010
+  crampin2001:
+    title: "Crampin, E. J. and Maini, P. K. (2001) Reaction-diffusion models for biological pattern formation"
+    authors: "Crampin, Edmund J.; Maini, Philip K."
+    doi: 10.4310/maa.2001.v8.n3.a3
+    year: 2001
+  tamura2003:
+    title: "Tamura, K. (2003) Temporal patterns of fruit fly (Drosophila) evolution revealed by mutation clocks"
+    authors: "Tamura, Koichiro"
+    doi: 10.1093/molbev/msg236
+    year: 2003
+  gbif5074619:
+    title: "GBIF Drosophila teissieri Tsacas, 1971 (taxon key 5074619)"
+    url: https://www.gbif.org/species/5074619
+    year: 1971
+simulations:
+  - id: delphi10000-drosophila-teissieri-turing-wavelength-s0
+    name: "Drosophila teissieri Turing wavelength at 1.7 µm (detail scale s0, Holocene 0 Ma)"
+    organism: "Drosophila teissieri"
+    script: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py
+    output: docs/media/drosophila_teissieri_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_teissieri_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, kondo2010, crampin2001, tamura2003, gbif5074619]
+    phenomenon_size_m: 1.72e-6
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    geological_period: "Holocene (Extant)"
+    summary: >-
+      Schnakenberg kinetics on a periodic 20.64 µm patch with diffusivities
+      solved so Turing's formula gives λ_c = 1.72 µm. Dispersion Pearson r =
+      0.9935 (RMSE 0.030 1/s) on the real-eigenvalue band. Equal-diffusion
+      and autocatalysis-ablation controls both decay. A six-point diffusivity
+      sweep is monotonic in the analytical wavelength (numerical Pearson r =
+      0.9995). The saturated sub-bin wavelength is 1.903 µm, 10.6% longer
+      than the formula wavelength: the growth-rate peak is not the determinant
+      minimizer, and that comparison is not yet a scored measurement (R1).
+      Specimen CV similarity of the 12-frame 800×600 GIF is 88.4. The KS
+      statistic (0.450) compares the raw activator to the micrograph, not the
+      rendered frame the fitness test sees (R2).
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 critical wavenumber and the unequal-diffusivity condition."
+        - "Schnakenberg 1979 reaction terms a - u + u^2 v and b - u^2 v."
+        - "Tsacas 1971 name Drosophila teissieri, confirmed at GBIF 5074619. Tamura 2003 dates the melanogaster-subgroup radiation."
+      reconstructed_in_script:
+        - "(a, b, gamma, Dv/Du) = (0.13, 0.91, 1.15, 17.4) so the formula wavelength is 1.72 µm."
+        - "Explicit Euler, linearised dispersion check, magnified inset on the vendored micrograph."
+      transfer_boundary:
+        - "1.72 µm is the campaign detail-scale assignment, not a published teissieri granule measurement."
+        - "Predecessor 97.6 µm and successor floor 2.72 µm are atlas contrasts at 0 Ma, not an ancestor-descendant series."
+      does_not_claim:
+        - "That a wet-lab paper measured 1.72 µm on D. teissieri."
+        - "That D. virilis descends from D. teissieri."
+        - "That DOI 10.1093/molbev/msx210 is about this species (Crossref: yeast de-novo genes)."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The script implements Schnakenberg kinetics and solves D_u from
+          Turing's wavenumber formula so λ_c = 1.72 µm. Homogeneous trace is
+          negative, det is positive, σ(0) < 0 and σ(k_c) > 0. The linearised
+          PDE recovers continuum σ(k) at Pearson r = 0.9935. The formula
+          wavelength and the growth-rate peak are not the same number; the
+          code pins the formula, which is the cited law, and the offset is
+          reported rather than tuned away.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [59, 98], note: "Jacobian and D_u solved from k_c^2 = (Dv fu + Du gv)/(2 Du Dv)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [111, 191], note: "Linearised dispersion vs continuum σ(k)", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          The 800×600 GIF keeps the vendored micrograph as the field and
+          grows a magnified 20.64 µm activator inset. Canonical CV similarity
+          against that micrograph is 88.4 (12 frames, 600 px). The gallery
+          frame is a 100 µm-bar micrograph, not a taxonomic photograph from
+          Commons (none was found), and the inset is a magnification because
+          1.72 µm is ~1.9 px on the 100 µm bar.
+        evidence:
+          - {file: docs/media/drosophila_teissieri_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 800x600 growth GIF, CV 88.4 vs specimen", supports: true}
+          - {file: docs/media/drosophila_teissieri_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, activator, last frame, dispersion, sweep, chronoseries", supports: true}
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [401, 431], note: "render_gif composites the magnified patch on the micrograph", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Holding D_u fixed and raising D_v/D_u from 12.2 to 32 lengthens the
+          analytical wavelength monotonically. The 1D numerical wavelength
+          tracks it at Pearson r = 0.9995. Equal diffusion and deletion of
+          the u^2 v term both kill the pattern, so the two signs the law
+          cares about are exercised, not only the forward parameter.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [270, 320], note: "diffusivity_sweep analytical vs numerical wavelengths", supports: true}
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [197, 268], note: "equal_diffusion and ablate_autocatalysis switches", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          Dispersion RMSE is 0.030 1/s and the determinant minimizer sits on
+          the formula k_c (relative error under 5% by the self-test, and in
+          practice far tighter). Otsu area, circularity, aspect and coherency
+          are measured on the specimen and compared with the activator mask;
+          none is a copy of its reference. The KS statistic is 0.450 against
+          a 0.05 reference because it contrasts the raw activator with the
+          micrograph rather than the rendered frame (R2). Saturated wavelength
+          1.903 µm versus formula 1.72 µm is recorded, not hidden (R1).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [593, 650], note: "measure_morphoeval Pearson, RMSE, specimen mask, controls", supports: true}
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [322, 389], note: "Otsu segmentation and ks_2samp", supports: true}
+      source-traceability:
+        value: 86
+        rationale: >-
+          Turing, Schnakenberg, Kondo & Miura, Crampin & Maini, and Tamura
+          DOIs were checked on Crossref. GBIF 5074619 is the taxon record.
+          The specimen SHA-256 is pinned. Commons had no CC bitmap; the
+          gallery fallback is stated. DOI 10.1093/molbev/msx210 is explicitly
+          rejected because Crossref resolves it to a yeast paper.
+        evidence:
+          - {file: datasets/drosophila_teissieri_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "BibTeX with Crossref-checked DOIs", supports: true}
+          - {file: datasets/drosophila_teissieri_turing_wavelength_s0/drosophila_teissieri_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 1.72e-6 m, age 0 Ma, specimen SHA-256", supports: true}
+          - {file: datasets/drosophila_teissieri_turing_wavelength_s0/README.md, lines: [1, 30], note: "States 1.7 µm and 0 Ma and the Commons miss", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Jacobian, wavenumber solve, dispersion, sweep and controls are
+          separate functions whose docstrings name the Turing or Schnakenberg
+          relation they implement. The module docstring states the periodic
+          boundary condition and the chronoseries contrast.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [1, 28], note: "Module docstring: law, kinetics, BCs, chronoseries", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3209_drosophila_teissieri_turing_wavelength_s0.lean, lines: [14, 62], note: "Trace sign, drive sign, 12-wavelength domain, predecessor and successor inequalities", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          --self-test checks the Turing inequalities, Pearson r > 0.98, both
+          negative controls, the longer-domain mode count, GIF frame count
+          and size, and non-circular specimen metrics. RNG seed 3209 and
+          SHA-256 pins are in the reference JSON. One self-test run completed
+          in about 7 s.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [710, 756], note: "self_test assertions and media checks", supports: true}
+          - {file: models/2026-delphi10000-drosophila-teissieri-turing-wavelength-s0.py, lines: [47, 57], note: "verify_dataset_pins SHA-256", supports: true}
+    remediation:
+      - id: R1
+        item: "Saturated sub-bin wavelength is 1.903 µm versus formula λ_c = 1.72 µm. Score the growth-rate peak explicitly and report how close the selected mode is to that peak, not only to the determinant minimizer."
+      - id: R2
+        item: "KS (0.450) compares the raw activator histogram to the micrograph. Add a KS between the rendered last GIF frame and the specimen, which is the image the fitness test scores."
+      - id: R3
+        item: "Single builder-assessor. Gallery micrograph is a fallback (no Commons bitmap), so specimen-match cannot rise to a verified species photograph."
+    needs:
+      - id: N1
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Compare saturated wavelength to the σ(k) peak and KS the rendered frame against the specimen."
+        status: open
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 2
+        age_days_a: 0
