@@ -1,0 +1,80 @@
+sim_id: delphi10000-drosophila-affinis-turing-wavelength-s0
+slot: 3174
+organism: Drosophila affinis
+common_name: Nearctic Woodland Obscura Fly (Distal Tarsomere Sex Comb)
+phenomenon_size_m: 2.444e-06
+log10_size_m: -5.612
+size_human: "2.4 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila affinis (2.4 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Sophophora obscura & willistoni Clade
+chronoseries_index: "3/41"
+predecessor: Drosophila berryi
+successor: Drosophila americana
+math_family: Turing Reaction-Diffusion Wavelength Selection
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+external_datasets:
+  - name: Wikimedia Commons File:Daff-fem.tif
+    url: https://commons.wikimedia.org/wiki/File:Daff-fem.tif
+    license: CC BY-SA 4.0
+  - name: FlyBase
+    url: https://flybase.org/
+    doi: 10.1093/genetics/iyad211
+model_spec:
+  sim_id: delphi10000-drosophila-affinis-turing-wavelength-s0
+  kinetics: Schnakenberg
+  seed: 3174
+  grid: [160, 120]
+  parameters:
+    a: 0.05
+    b: 1.0
+    diffusivity_ratio: 10.0
+    lambda_c_m: 2.444e-06
+    domain_wavelengths: [20, 15]
+    n_steps: 4500
+  inputs:
+    - datasets/drosophila_affinis_turing_wavelength_s0/drosophila_affinis_turing_wavelength_s0_reference.json
+    - datasets/drosophila_affinis_turing_wavelength_s0/drosophila_affinis_specimen.jpg
+    - datasets/drosophila_affinis_turing_wavelength_s0/scout_manifest.json
+    - datasets/drosophila_affinis_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Detail wavelength below the chronoseries neighbors
+    formula: "lambda_affinis = 2.444 µm < lambda_berryi = 98.43 µm and < lambda_americana = 138.7 µm"
+    variables: "lambda_affinis = 2444 nm; lambda_berryi = 98430 nm; lambda_americana = 138700 nm"
+    lean_decl: MathOfBiology.Loop_3174.lambdaDetailNm
+    lean_theorem: MathOfBiology.Loop_3174.detail_wavelength_below_chronospecies
+    lean_locus: morphoeval/lean/loops/Loop_3174_drosophila_affinis_turing_wavelength_s0.lean
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; slot scales for berryi (98.43 µm, 19 Ma) and americana (138.7 µm, 0 Ma)"
+    role: Chronoseries comparison at this scale and age
+  - law_name: Homogeneous Schnakenberg steady state is stable
+    formula: "trace(J) = f_u + g_v < 0 and det(J) = u0^2 > 0 at u0 = a + b"
+    variables: "a = 0.05; b = 1; f_u = 0.9048; g_v = -1.1025; trace = -0.1977; det = 1.1025"
+    lean_decl: MathOfBiology.Loop_3174.fu
+    lean_theorem: MathOfBiology.Loop_3174.homogeneous_steady_state_stable
+    lean_locus: morphoeval/lean/loops/Loop_3174_drosophila_affinis_turing_wavelength_s0.lean
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    role: Stability without diffusion, required before a diffusion-driven instability is meaningful
+  - law_name: Turing wavenumber at 2.444 µm
+    formula: "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv), lambda_c = 2 pi / k_c = 2.444 µm, with Dv/Du = 10"
+    variables: "Du = 0.05101 µm^2/time after fastest-mode calibration; Dv = 0.5101; ratio = 10"
+    lean_decl: MathOfBiology.Loop_3174.rdTrace
+    lean_theorem: MathOfBiology.Loop_3174.diffusion_driven_instability_at_detail_scale
+    lean_locus: morphoeval/lean/loops/Loop_3174_drosophila_affinis_turing_wavelength_s0.lean
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    role: Critical wavenumber selecting the detail-tier pigment spacing
+  - law_name: Equal-diffusivity ablation
+    formula: "Dv = Du implies Dv f_u + Du g_v < 0, so the Turing condition fails"
+    variables: "Du = Dv = 0.05101 µm^2/time; sigma_max = -0.099"
+    lean_decl: MathOfBiology.Loop_3174.rdTrace
+    lean_theorem: MathOfBiology.Loop_3174.equal_diffusivity_ablation_not_turing
+    lean_locus: morphoeval/lean/loops/Loop_3174_drosophila_affinis_turing_wavelength_s0.lean
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    role: Negative control
