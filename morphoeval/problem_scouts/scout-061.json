@@ -1,0 +1,151 @@
+{
+  "scout": "scout-061",
+  "ground": "predictions",
+  "lens": "literature",
+  "candidates": [
+    {
+      "id": "ZF-CLK-01-LIAO2016",
+      "title": "ZF-CLK-01: extract paired clock-period and somite-length ratios from Liao et al. (2016) Delta-Notch tempo paper",
+      "gap": "Registry row ZF-CLK-01 is partially_resolved: proportional S=u*T_clock is literature-supported, but no single public table lists measured period change and somite-length change under controlled wavefront speed to test the registered x0.80/x0.90/x1.10/x1.20 multipliers (±5 pp). Resolution pass OpenAlex surfacing (predictions/resolutions/zebrafish.json) did not extract numeric pairs.",
+      "done": "A new file predictions/literature_extractions/zf_clk_01_liao2016_pairs.json exists with ≥3 rows each having numeric T_period (min or rel. to control) and S_somite_length (µm or rel.), same perturbation/wavefront regime; computed S_ratio/T_ratio for each row lies within 5 percentage points of 1.0 (confirm ZF-CLK-01) or ≥2 rows violate it by >5 pp (refute), or file documents that the OA PDF lacks extractable paired numbers (keep partial).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Faster embryonic segmentation through elevated Delta-Notch signalling Liao Oates\" --taxon \"Danio rerio\" --out morphoeval/scouts/scout-061_zf_clk_liao_manifest.json && python3 morphoeval/scout_literature.py --query \"Setting the Tempo in Development zebrafish segmentation clock somite size\" --out morphoeval/scouts/scout-061_zf_clk_schier_manifest.json (follow OA URLs in manifests; manual or follow-up measure_outputs pass tabulates pairs into predictions/literature_extractions/).",
+      "deciding_data": "Not in repo. Named public sources: OpenAlex hit doi:10.1038/ncomms11861 (OA PDF https://www.nature.com/articles/ncomms11861.pdf); corroborating tempo paper doi:10.1371/journal.pbio.0050150 from the same query cluster. Registry law in datasets/danio_rerio_clock_wavefront/.",
+      "prior_attempts": "2026-10-26 orchestrator/local resolution pass (predictions/resolutions/zebrafish.json, ZF-CLK-01): OpenAlex bound the framework via doi:10.1371/journal.pbio.0050150 and doi:10.1371/journal.pbio.1001364 but stopped without paired T+S extraction. docs/open-problems.json registered_prediction_followups ZF-CLK-01 records the same gap. Route not refuted—only incomplete.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "scout_literature.py returns OA DOI/URL for the decisive primary paper; extraction is a bounded next step on that manifest."},
+        "data_in_hand": {"score": 14, "why": "Paired measurements are in an OA PDF one HTTP fetch away, not in repo."},
+        "falsifiable_done": {"score": 15, "why": "JSON rows with numeric ratios and a ±5 pp rule against registry multipliers."},
+        "compute_in_repo": {"score": 12, "why": "Scout CLI plus PDF table/figure digitization fits one sitting; no wet lab."},
+        "isolation": {"score": 10, "why": "New files under morphoeval/scouts/ and predictions/literature_extractions/ only."},
+        "time_to_verdict": {"score": 7, "why": "Verdict in one loop if the paper tabulates both readouts; otherwise same loop closes 'still partial'."},
+        "not_blocked": {"score": 5, "why": "Prior pass explicitly left extraction undone; no refutation of this DOI route."}
+      }
+    },
+    {
+      "id": "ZF-CLK-01-DEVCEL2012",
+      "title": "ZF-CLK-01 fallback: mine Dev Cell (2012) Notch/somite imaging paper for co-measured period and somite width",
+      "gap": "Same ZF-CLK-01 missing series; if ncomms11861 lacks clean pairs, the resolution pass did not try alternate primary imaging papers that report somite dimensions alongside clock dynamics.",
+      "done": "predictions/literature_extractions/zf_clk_01_devcel2012_pairs.json with the same ±5 pp ratio test as ZF-CLK-01-LIAO2016, sourced from doi:10.1016/j.devcel.2012.09.009 (or manifest documents absent columns).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Single-Cell-Resolution Imaging Impact Notch Signaling Somite Formation zebrafish\" --out morphoeval/scouts/scout-061_zf_clk_devcel_manifest.json",
+      "deciding_data": "Public: doi:10.1016/j.devcel.2012.09.009 surfaced in scout query \"somite size scales with segmentation clock period wavefront speed\" (OpenAlex). Not in repo.",
+      "prior_attempts": "Same 2026-10-26 zebrafish resolution batch; this DOI was not cited in evidence—only generic clock papers. Not blocked.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Literature scout locates the candidate primary; deciding numbers still require PDF extraction (measure lens assists)."},
+        "data_in_hand": {"score": 11, "why": "Paper is public but paywalled/Elsevier; OA status uncertain vs ncomms11861."},
+        "falsifiable_done": {"score": 15, "why": "Identical numeric done-criterion as sibling ZF-CLK-01 candidate."},
+        "compute_in_repo": {"score": 11, "why": "One scout run plus figure mining; hours-scale."},
+        "isolation": {"score": 10, "why": "New manifest + extraction JSON only."},
+        "time_to_verdict": {"score": 6, "why": "Second-source hunt may complete in one sitting but is contingent on figure quality."},
+        "not_blocked": {"score": 5, "why": "Untried alternate source."}
+      }
+    },
+    {
+      "id": "ZF-VTX-01-RHEOLOGY2019",
+      "title": "ZF-VTX-01: locate zebrafish epiboly/EVL rheology papers and CC specimen images for shape-index series",
+      "gap": "ZF-VTX-01 partial: vertex-model p0*=3.813 is in datasets/danio_rerio_vertex_packing/, but no zebrafish shape-index transition series exists in repo or resolution evidence (predictions/resolutions/zebrafish.json).",
+      "done": "morphoeval/scouts/scout-061_zf_vtx_manifest.json lists ≥1 OpenAlex paper with quantitative EVL/epiboly cell-shape or tissue-fluidization metrics AND ≥1 Wikimedia Commons bitmap of Danio rerio embryo/epiboly; plus predictions/literature_extractions/zf_vtx_01_shape_index.csv with ≥5 timepoints of shape index p=(P+sqrt(A))/(2*sqrt(A)) or author-reported equivalent, and stated p0 at jamming/unjamming within [3.76,3.87] (confirm) or outside 3.7–3.9 (refute) or CSV empty with reason (stay partial).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"zebrafish epiboly enveloping layer cell shape jamming tissue fluidization\" --taxon \"Danio rerio\" --out morphoeval/scouts/scout-061_zf_vtx_manifest.json",
+      "deciding_data": "Repo: law only (datasets/danio_rerio_vertex_packing/). Public: doi:10.15252/embj.2019102497, doi:10.1038/s41467-020-19356-x from scout dry-run; Commons specimens via --taxon Danio rerio.",
+      "prior_attempts": "2026-10-26 zebrafish resolution (ZF-VTX-01): OpenAlex search returned no zebrafish shape-index dataset; partial as forecast. Not refuted—wrong query specificity may have missed rheology papers above.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "scout_literature.py is the designed instrument for paper+Commons discovery; digitizing p from figures needs vision lens afterward."},
+        "data_in_hand": {"score": 13, "why": "Candidate OA papers and CC images are one scout invocation away; tabulated p series still absent."},
+        "falsifiable_done": {"score": 15, "why": "Band test against registered 3.76–3.87 transition."},
+        "compute_in_repo": {"score": 13, "why": "Scout + image digitization on repo stack; no new experiments."},
+        "isolation": {"score": 10, "why": "New scout manifest and extraction CSV only."},
+        "time_to_verdict": {"score": 7, "why": "Manifest in minutes; full p series may need one imaging pass."},
+        "not_blocked": {"score": 4, "why": "Prior route was under-specified, not refuted; partial success may still require vision subagent."}
+      }
+    },
+    {
+      "id": "DM-MUR-NEG-01-MORPHOMETRY",
+      "title": "DM-MUR-NEG-01: discover Drosophila tracheal lumen diameter primary sources for Murray exponent fit",
+      "gap": "DM-MUR-NEG-01 partial: Murray mis-assignment bound via insect comparators (doi:10.1371/journal.pcbi.1007853, doi:10.1186/s12915-021-01130-0) but no Drosophila parent/daughter diameter table to fit exponent against 2.8–3.2 (predictions/resolutions/drosophila.json).",
+      "done": "morphoeval/scouts/scout-061_dm_mur_manifest.json with ≥2 candidate DOIs whose titles/abstracts mention Drosophila tracheal tube size/lumen/branch; predictions/literature_extractions/dm_mur_neg_01_diameters.csv with ≥8 parent-daughter diameter triples (r0,r1,r2 in µm) from those sources; fitted Murray exponent outside [2.8,3.2] (confirm negative) or inside with RMSE documented (refute negative) or CSV/doc states no extractable Drosophila morphometry (partial).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Drosophila tracheal tube lumen diameter branch morphometry\" --taxon \"Drosophila melanogaster\" --out morphoeval/scouts/scout-061_dm_mur_manifest.json && python3 morphoeval/scout_literature.py --query \"Murray law tracheal branching insect Drosophila\" --out morphoeval/scouts/scout-061_dm_mur_murray_manifest.json",
+      "deciding_data": "Not in repo. Public insect/tracheal Murray context already cited in resolutions; Drosophila-specific morphometry must be literature-discovered (OpenAlex weak on this query—expect manual DOI follow-through from FlyBase-linked reviews).",
+      "prior_attempts": "2026-10-26 drosophila resolution batch: OpenAlex morphometry search failed to surface a diameter series; partial as forecast. docs/open-problems.json DM-MUR-NEG-01.",
+      "factors": {
+        "tool_fit": {"score": 16, "why": "Scout can query but OpenAlex dry-run returned off-topic hits; tool_fit capped until a FlyBase-anchored DOI seed is added to --query."},
+        "data_in_hand": {"score": 9, "why": "Morphometry likely buried in EM/development papers, not a single named table yet."},
+        "falsifiable_done": {"score": 15, "why": "Murray exponent band 2.8–3.2 on ≥8 branches."},
+        "compute_in_repo": {"score": 12, "why": "Literature discovery plus table extraction; no wet lab."},
+        "isolation": {"score": 10, "why": "New manifests and CSV only."},
+        "time_to_verdict": {"score": 5, "why": "May require multiple query iterations beyond one scout call."},
+        "not_blocked": {"score": 5, "why": "Extraction never attempted; bound-only route succeeded."}
+      }
+    },
+    {
+      "id": "ZF-HH-01-PTC-GRADIENT",
+      "title": "ZF-HH-01: find zebrafish-primary ptc1/ptc2 domain quantification under lipidation loss vs wild type",
+      "gap": "ZF-HH-01 partial: lipidation requirement confirmed (doi:10.1039/C4SC01600A, doi:10.1002/bies.202100133) but not the registered gradient-shape outcome (distal ptc expansion + reduced near-source peak under lipidation loss) in zebrafish tissue (predictions/resolutions/zebrafish.json; docs/open-problems.json).",
+      "done": "morphoeval/scouts/scout-061_zf_hh_manifest.json includes ≥1 zebrafish (Danio rerio) paper with HHAT/syu/shha lipidation perturbation AND ptc readout; predictions/literature_extractions/zf_hh_01_ptc_domains.json records wild-type vs perturbed proximal peak and distal domain width (µm or %AP) with source figure/table; confirms registered directions on both axes or documents absence (partial persists).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"zebrafish sonic hedgehog cholesterylation HHAT ptc expression domain\" --taxon \"Danio rerio\" --out morphoeval/scouts/scout-061_zf_hh_manifest.json && python3 morphoeval/scout_literature.py --query \"doi:10.1039/C4SC01600A zebrafish hedgehog\" --out morphoeval/scouts/scout-061_zf_hh_c4sc_manifest.json",
+      "deciding_data": "Repo: UniProt Q92008 in prediction_registry.json. Public: doi:10.1039/C4SC01600A (already in resolution evidence); scout adds zebrafish ptc-domain primary via OpenAlex.",
+      "prior_attempts": "2026-10-26 zebrafish resolution upgraded outcome to partially_resolved (harder_than_predicted at conf 0.70). META-RES-03 refuted partly because ZF-HH-01 joined partial set (5 partials not 4). FlyBase/wing-disc literature route irrelevant—wrong organism for registered test.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "Scout finds zebrafish-specific OA candidates; gradient quantification may need measure_outputs on extracted images."},
+        "data_in_hand": {"score": 10, "why": "C4SC paper exists but paired ptc metrics not yet extracted."},
+        "falsifiable_done": {"score": 14, "why": "Directional checks on peak and distal width are scorable if numbers exist."},
+        "compute_in_repo": {"score": 10, "why": "Literature-bound; extraction effort uncertain."},
+        "isolation": {"score": 9, "why": "New files only; registry remains locked."},
+        "time_to_verdict": {"score": 5, "why": "May remain partial if papers are qualitative only."},
+        "not_blocked": {"score": 5, "why": "Zebrafish ptc route untried after partial lipidation-only result."}
+      }
+    },
+    {
+      "id": "XT-CLK-01-XENOPUS",
+      "title": "XT-CLK-01: literature-discover Xenopus paired segmentation-clock period and somite-length measurements",
+      "gap": "XT-CLK-01 partial mirrors ZF-CLK-01: framework bound, missing paired T+S under controlled wavefront for x0.80–x1.20 test (predictions/resolutions/xenopus.json; tropicalis registry row cross-references ZF-CLK-01).",
+      "done": "morphoeval/scouts/scout-061_xt_clk_manifest.json with Xenopus somitogenesis primary DOIs; predictions/literature_extractions/xt_clk_01_pairs.json with same ±5 pp ratio criterion as ZF-CLK-01 on ≥2 Xenopus rows (laevis or tropicalis labeled per row).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Xenopus somitogenesis segmentation clock somite length period hes\" --taxon \"Xenopus\" --out morphoeval/scouts/scout-061_xt_clk_manifest.json",
+      "deciding_data": "Repo: datasets/xenopus_tropicalis_clock_wavefront/. Public: Xenbase-linked literature; scout surfaced doi:10.1016/s0092-8674(01)00437-8 (FGF somite boundary) among somitogenesis hits.",
+      "prior_attempts": "2026-10-26 xenopus resolution batch: OpenAlex bound hes wavefront architecture; no paired extraction. Not blocked.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "scout_literature.py targets Xenopus somitogenesis corpus; extraction is follow-on."},
+        "data_in_hand": {"score": 8, "why": "Xenopus paired series sparser than zebrafish in quick OpenAlex probes."},
+        "falsifiable_done": {"score": 15, "why": "Shared numeric done-criterion with ZF-CLK-01."},
+        "compute_in_repo": {"score": 11, "why": "Scout plus PDF mining on repo stack."},
+        "isolation": {"score": 10, "why": "New manifest and extraction JSON."},
+        "time_to_verdict": {"score": 5, "why": "Likely bounded-not-decided in one pass unless a lucky primary tabulates both."},
+        "not_blocked": {"score": 5, "why": "Resolution pass did not exhaust Xenopus primaries."}
+      }
+    },
+    {
+      "id": "XT-BMP-FULLLENGTH-ACCESSION",
+      "title": "Post XT-DQ-01: literature-resolve full-length Xenopus tropicalis BMP4 reviewed accession for future Turing rows",
+      "gap": "XT-DQ-01 confirmed Q28FI5 is a fragment (inrepo-quick.json), invalidating bmp4 protein-state conclusions until a full-length reviewed UniProt/Ensembl match is named; this is a prediction-registry data-quality follow-up, not a scored outcome row.",
+      "done": "morphoeval/scouts/scout-061_xt_bmp4_manifest.json lists ≥1 OpenAlex/UniProt-linked publication or database record naming a reviewed X. tropicalis BMP4 entry with precursor length ≥350 aa and mature TGF-beta domain ~110–130 aa (matching registry quantitative_expectation for XT-DQ-01), with accession ID and DOI recorded; or manifest documents no reviewed tropicalis BMP4 exists yet (stop condition for literature lens).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Xenopus tropicalis BMP4 precursor sequence UniProt bone morphogenetic protein 4\" --taxon \"Xenopus tropicalis\" --out morphoeval/scouts/scout-061_xt_bmp4_manifest.json",
+      "deciding_data": "In repo: sequences/sequence_links.json length mismatch (469 vs 69 aa). Public: Ensembl ENSXETG00000008620 named in registry; literature scout finds reviewed accession or primary sequencing paper.",
+      "prior_attempts": "XT-DQ-01 resolved fragment status 2026-10-26 without replacing the accession. UniProt REST in xenopus resolution fixed X. laevis shh, not bmp4. Route open.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Literature scout is the correct lens for findable database/publication accession fixes."},
+        "data_in_hand": {"score": 17, "why": "Ensembl 469 aa already in repo; missing piece is the matching reviewed UniProt DOI/paper."},
+        "falsifiable_done": {"score": 13, "why": "Checkable accession length thresholds from registry XT-DQ-01 expectation."},
+        "compute_in_repo": {"score": 14, "why": "Scout CLI plus UniProt page verification."},
+        "isolation": {"score": 10, "why": "Manifest only until a separate registry-sidecar update PR is approved."},
+        "time_to_verdict": {"score": 9, "why": "Often one scout loop if a reviewed entry exists."},
+        "not_blocked": {"score": 5, "why": "Replacement accession hunt not attempted."}
+      }
+    },
+    {
+      "id": "META-RES-02-ATLAS-ONLY-BLOCKED",
+      "title": "BLOCKED (do not re-propose): fully decide all 14 predictions via ZFIN/FlyBase/Xenbase atlas lookup alone",
+      "gap": "META-RES-02 predicted ≥10/14 fully resolvable without new experiments via named atlases/literature; scoring yielded 9 fully decided + 5 partial (prediction_registry.json scoring note), refuting META-RES-02.",
+      "done": "N/A — negative knowledge: any new scout must not claim atlas-only resolution for ZF-HH-01, ZF-CLK-01, ZF-VTX-01, DM-MUR-NEG-01, XT-CLK-01 without supplying the missing quantitative series named in docs/open-problems.json registered_prediction_followups.",
+      "tool_route": "Do not run. For documentation: compare predictions/resolutions/*.json outcomes against META-RES-02 falsifier.",
+      "deciding_data": "In repo: prediction_registry.json scoring tallies and resolutions batches.",
+      "prior_attempts": "2026-10-26 full resolution pass across zebrafish/drosophila/xenopus/inrepo-quick batches; META-RES-02 outcome refuted in registry.",
+      "factors": {
+        "tool_fit": {"score": 2, "why": "Atlas lookup without literature extraction was the refuted route; scout_literature must target quantitative primaries instead."},
+        "data_in_hand": {"score": 18, "why": "Refutation evidence already in repo resolutions."},
+        "falsifiable_done": {"score": 15, "why": "Tally 9 vs 10 fully decided is already scored."},
+        "compute_in_repo": {"score": 15, "why": "Already computed."},
+        "isolation": {"score": 10, "why": "No work product."},
+        "time_to_verdict": {"score": 10, "why": "Already closed."},
+        "not_blocked": {"score": 0, "why": "Exact route refuted 2026-10-26; re-proposing violates Problem-Scout negative-knowledge rule."}
+      }
+    }
+  ]
+}
