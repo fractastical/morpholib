@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.4 mm (0.002354 m, 6_organ_mm)
   Geological Horizon: Early Cretaceous (Yixian Fm, 124.6 Ma) (124.6 Ma)
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2038
 

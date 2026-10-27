@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0360_echinarachnius_parma_clock_wavefront.lean — Formal Verification for Slot #0360 (Echinarachnius parma)
   Cohort: III. Segmentation Clock & Wavefront
   Governing Mathematics: Phase Oscillator & Wavefront Kinematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0360
 

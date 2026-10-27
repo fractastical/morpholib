@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 3.9 µm (3.9e-06 m, 3_subcellular_um)
   Anatomical Structure: Diaphanous/Arp2/3 actin cap & metaphase pseudocleavage furrow compartment (Nuclear Cycle 12–13 Cortical Blastoderm (FBdv:00005293)) · BDGP cortical_syncytial_energid_packing_domain
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2271
 

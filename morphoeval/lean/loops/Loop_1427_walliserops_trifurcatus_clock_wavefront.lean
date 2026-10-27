@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 3.9 mm (0.003878 m, 6_organ_mm)
   Geological Horizon: Middle Devonian (Eifelian, 394 Ma) (394.0 Ma)
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1427
 

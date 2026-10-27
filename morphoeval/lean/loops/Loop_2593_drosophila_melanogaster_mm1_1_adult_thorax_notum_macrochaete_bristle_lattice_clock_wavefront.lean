@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 964 µm (0.0009636 m, 5_primordium_100um)
   Anatomical Structure: Stereotyped 11-macrochaete positions + ~200 Delta-Notch lateral-inhibition microchaete rows (Pupal & Adult Mesothoracic Notum Scutum (FBbt:00004260)) · FlyBase mesothoracic_notum_achaete_scute_SOP_map
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2593
 

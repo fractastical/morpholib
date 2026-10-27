@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.3 mm (0.001294 m, 6_organ_mm)
   Anatomical Structure: 10 metameric Btl/Bnl FGF tracheal placodes fused into bilateral dorsal trunks, visceral & ganglionic branches (Third-Instar Larval Whole-Body Tracheal System (FBbt:00002292)) · FlyBase tracheal_system_Metzger_Krasnow_branching_atlas
   Cohort: IV. Phyllotaxis, Auxin & Plant Mechanics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2604
 

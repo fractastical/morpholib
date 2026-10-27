@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 200 µm (0.0002004 m, 5_primordium_100um)
   Anatomical Structure: Segmentation clock somite / metamere unit in Drosophila ficusphila (Fig-Breeding Oriental Sophophora Fly)
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2823
 

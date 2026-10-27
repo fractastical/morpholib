@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0525_pleurodeles_waltl_vertex_packing.lean — Formal Verification for Slot #0525 (Pleurodeles waltl)
   Cohort: V. Vertex Models, Jamming & Active Nematics
   Governing Mathematics: Cellular Vertex Mechanics & Topological Jamming
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0525
 

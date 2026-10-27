@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 5.6 mm (0.005587 m, 6_organ_mm)
   Anatomical Structure: Visceral mesoderm Antp / Ubx+Dpp / abd-A+Wg 3 constrictions & Myo31DF left-right chiral gut looping (Stage 16 Embryonic & Larval Midgut Tube (FBbt:00005336)) · FlyCellAtlas midgut_enterocyte_visceral_muscle_atlas
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2659
 

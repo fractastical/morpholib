@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.2 mm (0.00219 m, 6_organ_mm)
   Anatomical Structure: 3 head + 3 thoracic (T1 legs, T2 wings+legs, T3 halteres+legs) + 8 abdominal Hox-specified tagmata (Adult Imago Whole-Body Bauplan (FBdv:00005369)) · FlyCellAtlas whole_adult_fly_100k_nuclei_reference
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2633
 

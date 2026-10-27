@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 509 µm (0.000509 m, 5_primordium_100um)
   Anatomical Structure: Whole-embryo 2D curved-surface active-hydrodynamic Myosin-II tensor & 4-vortex Stokes flow (Stage 7–9 In-Toto Embryonic Surface Ectoderm (FBdv:00005306)) · BDGP in_toto_SPIM_embryonic_velocity_streamlines
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2550
 

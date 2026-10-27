@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 5.4 µm (5.37e-06 m, 3_subcellular_um)
   Anatomical Structure: Apical epithelial cell vertex polygon in Drosophila bipectinata (Double-Comb Indomalayan Fly)
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2855
 

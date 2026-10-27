@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 117 µm (0.0001167 m, 5_primordium_100um)
   Anatomical Structure: Turing pigment stripe / ocellus wavelength in Drosophila persimilis (Pacific Coast Sister Obscura Fly)
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2891
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 84 µm (8.4e-05 m, 4_cellular_10um)
   Geological Horizon: Early Cambrian (Poleta Fm, 516 Ma) (516.0 Ma)
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1629
 

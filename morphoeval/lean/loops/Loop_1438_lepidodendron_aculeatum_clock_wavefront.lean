@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.7 mm (0.002706 m, 6_organ_mm)
   Geological Horizon: Late Carboniferous (Pennsylvanian, 310 Ma) (310.0 Ma)
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1438
 

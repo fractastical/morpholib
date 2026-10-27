@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 128 µm (0.000128 m, 5_primordium_100um)
   Anatomical Structure: 750 retinotopic neurocrystalline hex-columns × 10 layers (T4/T5 motion-detector Reichardt array) (Adult Optic Lobe Lamina & Medulla Neuropil (FBbt:00003728)) · FlyWire optic_lobe_medulla_T4_T5_ON_OFF_motion_columns
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2479
 

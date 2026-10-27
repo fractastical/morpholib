@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 42 nm (4.241e-08 m, 1_molecular_nm)
   Anatomical Structure: Neurexin-IV / Coracle / Kune-kune pleated septate junction paracellular barrier ladder (Stage 15–16 Tracheal & Hindgut Pleated Septate Junction (FBbt:00005115)) · FlyCellAtlas tracheal_epithelium_septate_barrier
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2168
 

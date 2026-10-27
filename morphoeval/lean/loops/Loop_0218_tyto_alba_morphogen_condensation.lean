@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0218_tyto_alba_morphogen_condensation.lean — Formal Verification for Slot #0218 (Tyto alba)
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
   Governing Mathematics: Positional Information & Condensation Mechanics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0218
 

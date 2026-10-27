@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 39 µm (3.942e-05 m, 4_cellular_10um)
   Anatomical Structure: Single odorant-receptor (Or/Ir) ORN axon convergence + uniglomerular PN + LN compartment (Adult Antennal Lobe 58-Glomerulus Neuropil (FBbt:00003629)) · FlyWire antennal_lobe_DA1_VA1v_DL5_glomerular_map
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2383
 

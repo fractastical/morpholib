@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 756 nm (7.565e-07 m, 2_macromolecular_100nm)
   Geological Horizon: Middle Miocene (Serravallian, 13.4 Ma) (13.4 Ma)
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1625
 

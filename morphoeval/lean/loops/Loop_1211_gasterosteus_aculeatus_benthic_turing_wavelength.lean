@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.2 mm (0.00225 m, 6_organ_mm)
   Geological Horizon: Holocene Post-Glacial Lake (Extant) (0.0 Ma)
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1211
 

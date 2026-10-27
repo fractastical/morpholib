@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 12 nm (1.224e-08 m, 1_molecular_nm)
   Geological Horizon: Middle Triassic (Muschelkalk, 240 Ma) (240.0 Ma)
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1991
 

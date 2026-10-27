@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 8.2 nm (8.242e-09 m, 1_molecular_nm)
   Anatomical Structure: Notch EGF11-12 – Delta DSL domain trans-endocytosis signaling complex (Stage 9 Neuroectoderm & Pupal Notum SOP Selection (FBdv:00005321)) · FlyBase SOP_proneural_cluster & Mindbomb_endocytic_punctum
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2130
 

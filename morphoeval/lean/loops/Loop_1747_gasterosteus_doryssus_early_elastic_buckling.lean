@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.2 cm (0.01247 m, 7_organism_cm)
   Geological Horizon: Late Miocene (Truckee Fm, 10.02 Ma) (10.02 Ma)
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1747
 

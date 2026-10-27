@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 57 µm (5.694e-05 m, 4_cellular_10um)
   Anatomical Structure: Buttonhead/Even-skipped interface lateral epithelial buckling & mechanical stress-absorption cleft (Stage 6–7 Head–Trunk Boundary Ectoderm (FBbt:00000018)) · BDGP cephalic_furrow_head_trunk_instability
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2413
 

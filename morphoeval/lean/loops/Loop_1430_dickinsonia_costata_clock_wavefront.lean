@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 4.4 mm (0.00442 m, 6_organ_mm)
   Geological Horizon: Late Ediacaran (White Sea, 558 Ma) (558.0 Ma)
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1430
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 25 µm (2.496e-05 m, 4_cellular_10um)
   Anatomical Structure: Blistered (DSRF) / Breathless FGF-guided subcellularseamless tube & branching filopodia (Third-Instar Larval Tracheal Terminal Cell (FBbt:00002325)) · FlyCellAtlas tracheal_terminal_cell_seamless_lumen
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2361
 

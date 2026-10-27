@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0788_streptomyces_coelicolor_elastic_buckling.lean — Formal Verification for Slot #0788 (Streptomyces coelicolor)
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
   Governing Mathematics: Elastic Bilayer Buckling & Differential Growth
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0788
 

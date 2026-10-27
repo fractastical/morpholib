@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 20 µm (1.979e-05 m, 4_cellular_10um)
   Geological Horizon: Late Miocene (Messinian, 6.2 Ma) (6.2 Ma)
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1267
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.9 µm (2.898e-06 m, 3_subcellular_um)
   Anatomical Structure: Medial-apical Rok / Spaghetti-squash (Myosin-II) pulsatile ratchet coalescence node (Stage 6 Gastrulation Presumptive Mesoderm (FBdv:00005302)) · BDGP snail_twist_mesoderm_apical_constriction_ratchet
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2262
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.4 mm (0.001432 m, 6_organ_mm)
   Geological Horizon: Terminal Ediacaran (Nama Group, 549 Ma) (549.0 Ma)
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1882
 

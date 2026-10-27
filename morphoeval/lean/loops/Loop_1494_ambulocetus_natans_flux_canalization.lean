@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 6.5 cm (0.0651 m, 7_organism_cm)
   Geological Horizon: Early Eocene (Lutetian, 47.5 Ma) (47.5 Ma)
   Cohort: IV. Phyllotaxis, Auxin & Plant Mechanics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1494
 

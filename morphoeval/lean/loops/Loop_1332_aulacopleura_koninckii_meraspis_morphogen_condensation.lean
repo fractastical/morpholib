@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 824 µm (0.000824 m, 5_primordium_100um)
   Geological Horizon: Silurian (Wenlock Epoch, 428.5 Ma) (428.5 Ma)
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1332
 

@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0439_latimeria_chalumnae_flux_canalization.lean — Formal Verification for Slot #0439 (Latimeria chalumnae)
   Cohort: IV. Phyllotaxis, Auxin & Plant Mechanics
   Governing Mathematics: Polar Transport Canalization & Phyllotactic Packing
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0439
 

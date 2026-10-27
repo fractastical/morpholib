@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 3.3 mm (0.003346 m, 6_organ_mm)
   Geological Horizon: Late Miocene (Truckee Fm, 9.99 Ma) (9.99 Ma)
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1389
 

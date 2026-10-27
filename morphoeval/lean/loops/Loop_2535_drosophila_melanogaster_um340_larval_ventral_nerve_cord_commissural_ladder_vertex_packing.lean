@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 330 µm (0.0003305 m, 5_primordium_100um)
   Anatomical Structure: Slit/Robo1-3 longitudinal axon tracts & Netrin/Frazzled anterior/posterior commissural rungs (Stage 16 & L1 Larval Ventral Nerve Cord (FBbt:00001146)) · VirtualFlyBrain larval_VNC_commissural_connectome
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2535
 

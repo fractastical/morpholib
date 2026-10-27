@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 54 µm (5.359e-05 m, 4_cellular_10um)
   Anatomical Structure: 18-cell wide Snail/Twist mesodermal plate folding into an internalized 58 µm epithelial tube (Stage 6–7 Gastrulating Embryo Ventral Midline (FBdv:00005303)) · BDGP ventral_furrow_apical_constriction_cross_section
   Cohort: IV. Phyllotaxis, Auxin & Plant Mechanics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2404
 

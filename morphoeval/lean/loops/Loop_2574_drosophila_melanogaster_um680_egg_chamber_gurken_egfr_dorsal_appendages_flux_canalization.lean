@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 628 µm (0.0006283 m, 5_primordium_100um)
   Anatomical Structure: Dorsal-anterior Gurken/TGF-alpha gradient + Broad/Rhomboid roof-and-floor respiratory tube morphogenesis (Stage 10B–14 Oocyte & Chorionic Dorsal Appendages (FBbt:00004905)) · FlyCellAtlas ovarian_follicle_dorsal_appendage_primordia
   Cohort: IV. Phyllotaxis, Auxin & Plant Mechanics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2574
 

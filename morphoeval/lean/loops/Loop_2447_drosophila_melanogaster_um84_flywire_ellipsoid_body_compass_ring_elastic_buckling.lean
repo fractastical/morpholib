@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 90 µm (8.971e-05 m, 4_cellular_10um)
   Anatomical Structure: 16-wedge E-PG / P-EN ring-attractor head-direction compass network in the central complex (Adult Central Complex Ellipsoid Body Torus (FBbt:00003678)) · FlyWire CX_ellipsoid_body_EPG_PEN_ring_attractor
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2447
 

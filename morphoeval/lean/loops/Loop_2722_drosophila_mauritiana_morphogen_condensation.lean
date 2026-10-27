@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 398 µm (0.0003984 m, 5_primordium_100um)
   Anatomical Structure: Morphogen gradient & pre-cartilage condensation zone in Drosophila mauritiana (Mauritius Endemic Fruit Fly)
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2722
 

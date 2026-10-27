@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.2 µm (1.159e-06 m, 3_subcellular_um)
   Anatomical Structure: Packed 50 nm microvillar Rhodopsin-1 optical waveguide rhabdomere stalk (Adult Ommatidium Trapezoidal R1–R8 Rhabdomeres (FBbt:00004224)) · VirtualFlyBrain retina_R1_R8_rhabdomere_trapezoid
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2242
 

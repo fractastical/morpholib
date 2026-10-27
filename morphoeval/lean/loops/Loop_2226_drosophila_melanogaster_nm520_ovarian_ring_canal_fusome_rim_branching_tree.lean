@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 530 nm (5.304e-07 m, 2_macromolecular_100nm)
   Anatomical Structure: Hts/Pav-KLP incomplete cytokinesis ring canal & branching spectrosome/fusome plug (Germarium Region 2a–2b 16-Cell Germline Cyst (FBbt:00004862)) · FlyCellAtlas germline_16_cell_cyst_fusome_tree
   Cohort: VI. Branching Morphogenesis & Vascular Networks
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2226
 

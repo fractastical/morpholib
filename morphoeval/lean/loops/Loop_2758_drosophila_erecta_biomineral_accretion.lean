@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.4 mm (0.001412 m, 6_organ_mm)
   Anatomical Structure: Biomineralized shell whorl / spicule / test in Drosophila erecta (Pandanus-Specialist West African Fly)
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2758
 

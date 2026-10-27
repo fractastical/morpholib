@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 6.7 µm (6.688e-06 m, 3_subcellular_um)
   Anatomical Structure: Apical epithelial cell vertex polygon in Drosophila teissieri (Afrotropical Highland Forest Fly)
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2765
 

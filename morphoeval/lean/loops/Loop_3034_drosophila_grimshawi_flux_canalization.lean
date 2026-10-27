@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.2 mm (0.001242 m, 6_organ_mm)
   Anatomical Structure: Auxin flux vein / phyllotactic primordium in Drosophila grimshawi (Hawaiian Picture-Winged Giant Fly)
   Cohort: IV. Phyllotaxis, Auxin & Plant Mechanics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_3034
 

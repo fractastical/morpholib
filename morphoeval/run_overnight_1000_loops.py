@@ -687,9 +687,10 @@ def execute_single_slot(spec: dict[str, Any]) -> dict[str, Any]:
     lean_path = ROOT / spec["lean_module"]
     lean_path.parent.mkdir(parents=True, exist_ok=True)
     lean_code = f"""/-
-  {spec['lean_module']} — Formal Verification for Slot #{slot:04d} ({organism})
+  {spec['lean_module']} — PLACEHOLDER Lean template for Slot #{slot:04d} ({organism})
   Cohort: {spec['cohort']}
   Governing Mathematics: {spec['math_family']}
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace {lean_ns}
 
@@ -793,7 +794,7 @@ if __name__ == "__main__":
             {
                 "law_name": c_info["law1_name"],
                 "formula": c_info["law1_formula"],
-                "lean_decl": f"{lean_ns}.law1_invariant",
+                "lean_decl": f"{lean_ns}.law1_invariant", "lean_verification": "placeholder_not_mechanism_proof",
                 "lean_theorem": f"{lean_ns}.law1_positive_scaling",
                 "lean_locus": f"{spec['lean_module']}#L9-L15",
                 "lean_code": "def law1_invariant (a b : Int) : Int := a * b\ntheorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb",
@@ -805,7 +806,7 @@ if __name__ == "__main__":
             {
                 "law_name": c_info["law2_name"],
                 "formula": c_info["law2_formula"],
-                "lean_decl": f"{lean_ns}.law2_balance",
+                "lean_decl": f"{lean_ns}.law2_balance", "lean_verification": "placeholder_not_mechanism_proof",
                 "lean_theorem": f"{lean_ns}.law2_exact_cancellation",
                 "lean_locus": f"{spec['lean_module']}#L17-L23",
                 "lean_code": "def law2_balance (p q : Int) : Int := p + q - q\ntheorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp [law2_balance]; omega",
@@ -817,7 +818,7 @@ if __name__ == "__main__":
             {
                 "law_name": c_info["law3_name"],
                 "formula": c_info["law3_formula"],
-                "lean_decl": f"{lean_ns}.law3_threshold_margin",
+                "lean_decl": f"{lean_ns}.law3_threshold_margin", "lean_verification": "placeholder_not_mechanism_proof",
                 "lean_theorem": f"{lean_ns}.law3_instability_criterion",
                 "lean_locus": f"{spec['lean_module']}#L25-L30",
                 "lean_code": f"def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs\ntheorem law3_instability_criterion : law3_threshold_margin {int_c} {int_a + int_b} > 0 := by decide",
@@ -962,7 +963,7 @@ if __name__ == "__main__":
         "pass2_audit_id": aid_v2,
         "pass2_score": p2_score,
         "lean_file": spec["lean_module"],
-        "lean_theorems_proved": 3,
+        "lean_theorems_proved": 0, "lean_template_lemmas": 3,  # placeholder template, not mechanism proofs (issue #268)
         "lean_sorrys": 0,
         "artifacts": [
             spec["script"],

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 73 µm (7.344e-05 m, 4_cellular_10um)
   Anatomical Structure: Contractile amnioserosa cell oscillations + supracellular actomyosin purse-string + zipping canthi (Stage 13–15 Dorsal Closure Epidermal Seam (FBdv:00005329)) · BDGP dorsal_closure_amnioserosa_purse_string_seam
   Cohort: VI. Branching Morphogenesis & Vascular Networks
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2426
 

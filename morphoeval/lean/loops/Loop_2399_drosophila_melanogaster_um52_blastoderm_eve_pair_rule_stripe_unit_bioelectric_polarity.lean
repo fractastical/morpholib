@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 61 µm (6.053e-05 m, 4_cellular_10um)
   Anatomical Structure: Single even-skipped (eve) / fushi tarazu (ftz) 3–4 nucleus pair-rule parasegmental stripe (Nuclear Cycle 14 Syncytial Blastoderm Trunk (FBdv:00005297)) · BDGP eve_7_stripe_enhancer_parasegment_register
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2399
 

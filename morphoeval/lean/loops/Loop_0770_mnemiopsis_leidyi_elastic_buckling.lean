@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0770_mnemiopsis_leidyi_elastic_buckling.lean — Formal Verification for Slot #0770 (Mnemiopsis leidyi)
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
   Governing Mathematics: Elastic Bilayer Buckling & Differential Growth
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0770
 

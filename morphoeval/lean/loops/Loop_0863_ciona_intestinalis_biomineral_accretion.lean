@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0863_ciona_intestinalis_biomineral_accretion.lean — Formal Verification for Slot #0863 (Ciona intestinalis)
   Cohort: VIII. Biomineralization, Shells & Spicules
   Governing Mathematics: Logarithmic Helicospiral Accretion & Biomineral Geometry
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0863
 

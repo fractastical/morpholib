@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 76 µm (7.644e-05 m, 4_cellular_10um)
   Anatomical Structure: Krüppel/Notch single tip-cell EGF-driven proliferation + convergent-extension renal tubule (Stage 13–16 Renal Malpighian Tubule Bud (FBbt:00002153)) · FlyCellAtlas malpighian_tubule_principal_stellate_cells
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2461
 

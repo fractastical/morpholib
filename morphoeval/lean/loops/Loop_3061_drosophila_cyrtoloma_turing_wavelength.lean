@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 208 µm (0.0002076 m, 5_primordium_100um)
   Anatomical Structure: Turing pigment stripe / ocellus wavelength in Drosophila cyrtoloma (Maui Giant Picture-Winged Fly)
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_3061
 

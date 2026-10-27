@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 20 µm (2.028e-05 m, 4_cellular_10um)
   Anatomical Structure: 2 central JAK/STAT polar cells + 4–6 Slbo/PVR/EGFR-guided outer migratory border cells (Stage 9 Ovarian Egg Chamber Anterior Follicle (FBdv:00005271)) · FlyCellAtlas ovarian_stage9_border_cell_cluster
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2351
 

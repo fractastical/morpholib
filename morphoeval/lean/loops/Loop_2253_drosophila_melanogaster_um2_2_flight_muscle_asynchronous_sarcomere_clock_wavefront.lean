@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.9 µm (1.927e-06 m, 3_subcellular_um)
   Anatomical Structure: Stretch-activated Projectin/Kettin–Flightin paracrystalline myofibrillar sarcomere (Adult Dorsal Longitudinal Indirect Flight Muscle (FBbt:00003604)) · FlyCellAtlas indirect_flight_muscle_DLM_sarcomere
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2253
 

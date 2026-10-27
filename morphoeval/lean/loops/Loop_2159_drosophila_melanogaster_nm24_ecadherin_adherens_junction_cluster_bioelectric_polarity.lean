@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 28 nm (2.794e-08 m, 1_molecular_nm)
   Anatomical Structure: Shotgun (DE-cadherin)–Armadillo–alpha-Catenin mechanosensitive nanocluster (Stage 7–8 Germband Epithelial Adherens Belt (FBbt:00000004)) · BDGP ectodermal_zonula_adherens & tension_sensor_belt
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2159
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 836 µm (0.0008364 m, 5_primordium_100um)
   Anatomical Structure: ~750 hexagonal ommatidia + dorsal-ventral equator chiral mirror-symmetry line across curved retina (Adult Compound Eye Hemispherical Facet Array (FBbt:00004508)) · VirtualFlyBrain adult_compound_eye_equator_map
   Cohort: VI. Branching Morphogenesis & Vascular Networks
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2586
 

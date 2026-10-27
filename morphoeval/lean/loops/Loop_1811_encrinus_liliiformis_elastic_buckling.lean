@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 3.4 µm (3.366e-06 m, 3_subcellular_um)
   Geological Horizon: Middle Triassic (Muschelkalk, 240 Ma) (240.0 Ma)
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1811
 
