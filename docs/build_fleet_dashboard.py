@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Build the agent-fleet dashboard: every agent type we have used, and how often.
+"""Build Aristotle's Lagoon — the agent-fleet dashboard as a natural-history catalogue.
+
+Every agent type we have used, and how often, exhibited after the 1913 Thompson
+museum edition in this repo: the 1848/1860 Admiralty chart of the Lagoon of
+Pyrrha is the chart of the collection, each agent type is represented by a
+species already held in the library (real specimen photographs from
+datasets/species_gallery/, not plots and not cartoons), and the fleet's
+numbers are the accession ledger. Pinned, not swimming.
 
 Sources (repo-recorded usage only — chat-session subagents leave no record here):
   - morphoeval/cloud/dispatches/*.json   cloud dispatch records
@@ -9,16 +16,21 @@ Sources (repo-recorded usage only — chat-session subagents leave no record her
   - morphoeval/runs/telemetry.sqlite     track_loop telemetry for the 12 canonical
       loop roles (steps/actor/model counts over tracked runs)
 
-Output: docs/fleet-dashboard.html (single file; the only linked asset is the
-canonical pipeline plate at docs/media/morphoeval_pipeline.png).
+Output: docs/fleet-dashboard.html. Linked assets: the canonical pipeline plate
+(docs/media/morphoeval_pipeline.png), the Thompson 1913 museum plates already in
+docs/media/, and the species portraits this script stages into
+docs/media/specimens/lagoon_*.jpg (downscaled copies of tracked library photos,
+so GitHub Pages — which serves docs/ only — can show them).
 
 Usage: python3 docs/build_fleet_dashboard.py
 """
 from __future__ import annotations
 
 import collections
+import glob
 import html
 import json
+import shutil
 import sqlite3
 from pathlib import Path
 
@@ -28,6 +40,178 @@ SCOUT_DIR = ROOT / "morphoeval" / "problem_scouts"
 FIXER_DIR = ROOT / "morphoeval" / "problem_fixers"
 TELEMETRY = ROOT / "morphoeval" / "runs" / "telemetry.sqlite"
 OUT = ROOT / "docs" / "fleet-dashboard.html"
+SPECIMEN_DIR = ROOT / "docs" / "media" / "specimens"
+GALLERY = "datasets/species_gallery"
+GH = "https://github.com/fractastical/morpholib/blob/main"
+ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII",
+         "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX"]
+
+# --- The lagoon: one library species per agent type -------------------------
+# Every image is a tracked specimen photograph from the library (never a plot,
+# never a drawing of a swimmer). The curator's note says why the species holds
+# that office; most tie back to Aristotle's own notes on the Lagoon of Pyrrha
+# (Thompson 1913, pp. 12-14).
+
+# slug -> (latin, common name, source image, curator's note)
+ROLE_SPECIES = {
+    "scout": ("Hydra vulgaris", "the Hydra", f"{GALLERY}/II_Anaima_Invertebrata/Hydra_vulgaris.jpg",
+              "Feels the water with a ring of tentacles before it commits. Tastes OpenAlex, Crossref "
+              "and Commons for a paper worth the work. The founding specimen of the collection "
+              "(Gierer & Meinhardt 1972, Slot 001)."),
+    "paper": ("Pomacanthus imperator", "the Emperor Angelfish", f"{GALLERY}/I_Enaima_Vertebrata/Pomacanthus_imperator.jpg",
+              "Reads its own stripes line by line as it grows. Extracts equations, state variables "
+              "and parameter regimes from the paper, stripe by stripe (Kondo & Asai 1995)."),
+    "source": ("Euplectella aspergillum", "the Glass Sponge", f"{GALLERY}/II_Anaima_Invertebrata/Euplectella_aspergillum.jpg",
+               "Aristotle compared the sponges of the landward and seaward faces of Cape Malia. "
+               "Filters the sea for real CC-licensed specimens and pins them by SHA-256."),
+    "rules": ("Strongylocentrotus purpuratus", "the Purple Sea Urchin", f"{GALLERY}/II_Anaima_Invertebrata/Strongylocentrotus_purpuratus.jpg",
+              "Five-part jaw — Aristotle's lantern — one exact structure; at Pyrrha the urchins 'come into "
+              "season in the winter time', which he noted as unusual. Pins published equations into "
+              "Lean-checked invariants."),
+    "script": ("Physarum polycephalum", "the Slime Mould", f"{GALLERY}/IV_Protista_Monera_Mycota/Physarum_polycephalum.jpg",
+               "Writes itself as a living network, thickening the tubes that work. Grows the "
+               "standalone model script with --self-test (Tero et al. 2010)."),
+    "output": ("Danio rerio", "the Zebrafish", f"{GALLERY}/I_Enaima_Vertebrata/Danio_rerio.jpg",
+               "Three pigment cell types negotiate every stripe in public. Renders the comparison "
+               "figure, animation and metrics where anyone may check them (Nakamasu et al. 2009)."),
+    "audit": ("Panthera pardus", "the Leopard", f"{GALLERY}/I_Enaima_Vertebrata/Panthera_pardus.jpg",
+              "Examined spot by spot — Murray showed spots become rings exactly where geometry "
+              "requires. Dual-assessor scoring of all 7 rubric dimensions; never the builder."),
+    "measure": ("Acanthostega gunnari", "the Eight-Fingered Fossil", f"{GALLERY}/I_Enaima_Vertebrata/Acanthostega_gunnari.jpg",
+                "Eight digits, counted one by one against the rock. Independently re-hashes and "
+                "measures every rendered output against specimen and literature."),
+    "build": ("Scleractinia", "the Reef Coral", "datasets/coral_calice_septa_insertion/scleractinian_coral_septa_specimen.jpg",
+              "Accretes a skeleton septum by septum until the colony is architecture. Compiles audit "
+              "and measurements into TriG nanopublications — claims with a skeleton."),
+    "publish": ("Conus textile", "the Textile Cone", "datasets/conus/conus_textile_shell.jpg",
+                "Prints its own signed pattern onto its shell, one row at a time. RSA-signs each "
+                "nanopublication and verifies it — the shell is the signature."),
+    "graph": ("Hydractinia symbiolongicarpus", "the Colonial Hydroid", f"{GALLERY}/II_Anaima_Invertebrata/Hydractinia_symbiolongicarpus.jpg",
+              "One animal, many mouths, joined by a stolon network. Records the signed trusty URIs "
+              "and ranks the whole colony by SPARQL."),
+    "remed": ("Schmidtea mediterranea", "the Planarian", f"{GALLERY}/II_Anaima_Invertebrata/Schmidtea_mediterranea.jpg",
+              "Re-grows the missing head, polarity and all. Closes every defect the audit flagged, "
+              "re-renders, re-measures, supersedes its own nanopubs. Pass 2 is regeneration, with paperwork."),
+}
+
+# Fleet-level agent types (the roster in Section I) get a species too.
+FLEET_SPECIES = {
+    "Loop builder (slot agent)": ("Nautilus pompilius", "the Chambered Nautilus",
+        f"{GALLERY}/II_Anaima_Invertebrata/Nautilus_pompilius.jpg",
+        "Builds its shell one sealed chamber at a time, each complete before the next is begun. "
+        "One slot agent builds one complete loop."),
+    "Problem scout": ("Murex pecten", "the Venus Comb Murex",
+        f"{GALLERY}/II_Anaima_Invertebrata/Murex_pecten.jpg",
+        "Aristotle recorded 'the big purple Murex shells at Cape Lectum'. A comb of a hundred spines; "
+        "the scouts comb a hundred ground × lens cells for what is missing."),
+    "Fixer": ("Metacrinus rotundus", "the Sea Lily",
+        f"{GALLERY}/II_Anaima_Invertebrata/Metacrinus_rotundus.jpg",
+        "A crinoid: loses arms readily and regrows them completely. Repairs one flagged candidate "
+        "in an isolated PR."),
+    "Orchestrator — Muse Wonder": ("Pecten maximus", "the Great Scallop",
+        f"{GALLERY}/II_Anaima_Invertebrata/Pecten_maximus.jpg",
+        "Up to two hundred eyes along the mantle edge, watching everything at once. Aristotle noted "
+        "the Pyrrha scallops were exterminated by drought and the dredge — a caution for any "
+        "conductor. Leaves no dispatch record, hence the weaker evidence grade."),
+}
+
+# Heuristic for the synthetic spiral placeholders that stand in for photographs
+# in part of datasets/species_gallery/ (the *_turing_wavelength scaffold species):
+# smooth gradient, ~2,000 distinct colours, a black label bar. Real photographs
+# and micrographs fall well outside this box.
+PLACEHOLDER_EDGE_VAR = (480.0, 620.0)
+PLACEHOLDER_MAX_COLOURS = 2600
+
+
+def is_placeholder_image(path: Path) -> bool | None:
+    """True if the image looks like a synthetic placeholder, None if undecidable."""
+    try:
+        import numpy as np
+        from PIL import Image, ImageFilter
+        im = Image.open(path)
+        grey = im.convert("L").resize((256, 256))
+        edge_var = float(np.asarray(grey.filter(ImageFilter.FIND_EDGES), dtype=float).var())
+        small = im.convert("RGB").resize((128, 128))
+        ncol = len(set(small.getdata()))
+        return PLACEHOLDER_EDGE_VAR[0] < edge_var < PLACEHOLDER_EDGE_VAR[1] and ncol < PLACEHOLDER_MAX_COLOURS
+    except Exception:
+        return None
+
+
+def gallery_placeholder_census() -> dict:
+    files = sorted((ROOT / GALLERY).glob("*/*.jpg"))
+    flagged = [f for f in files if is_placeholder_image(f)]
+    return {"total": len(files), "placeholders": len(flagged),
+            "examples": [f.stem.replace("_", " ") for f in flagged[:4]]}
+
+# Plates on deposit from the museum-illustrated Thompson (1913) edition.
+# accession, image (under docs/), title, source, label
+MUSEUM_PLATES = [
+    ("Accession 1913.1 — Plate II", "media/thompson_1913_fig2_lesbos_pyrrha_lagoon.png",
+     "Insula Nobilis et Amoena — Lesbos & the Lagoon of Pyrrha",
+     "Admiralty Chart No. 1665 (surveyed 1832–1849) with museum specimens",
+     "The chart of record for this collection. Port Kalloni, centre-left, is the ancient Lagoon of "
+     "Pyrrha where Aristotle made the first field notes in this catalogue, c. 345 BC: starfish a pest, "
+     "scallops dredged out, sea-urchins in season in winter, no octopus of either kind."),
+    ("Plate XVII", "media/verany_1851_argonauta_plate17.jpg", "Argonauta argo Linné",
+     "Vérany, Céphalopodes (1851), Pl. 17 — del. ex vivo",
+     "Exhibited with intent: an absence, carefully noted, is also a specimen."),
+    ("Fig. 10–15", "media/malpighi_1687_pulli_in_ovo_plate.jpg", "De pulli in ovo — the chick in the egg",
+     "Malpighi (1687), Tom. II, p. 56",
+     "Development drawn figure by figure, letter by letter. Every loop still files its evidence this way."),
+    ("Taf. III", "media/muller_1842_mustelus_placenta_taf3.jpg", "Mustelus laevis — the yolk-sac placenta",
+     "Johannes Müller (1842), Taf. III",
+     "Aristotle described it; for two thousand years it was thought an error, until Müller dissected it. "
+     "Patron specimen for trusting careful observation over received opinion."),
+    ("Pl. 3", "media/turpin_1837_urpflanze_plate.jpg", "Végétal type, idéal, appendiculé — the Urpflanze",
+     "Turpin (1837), after Goethe",
+     "Hung as a standing instruction: exhibit types, reserve judgement on descent until the morphology is in hand."),
+]
+
+# What each office leaves in the tree (counted at build time).
+STEP_ARTIFACTS = {
+    "scout": ("scout manifests", "datasets/*/scout_manifest.json"),
+    "paper": ("reference dossiers", "datasets/*/*_reference.json"),
+    "source": ("citation ledgers", "datasets/*/paper_citations.bib"),
+    "rules": ("Lean loop files", "morphoeval/lean/loops/*.lean"),
+    "script": ("model scripts", "models/*.py"),
+    "output": ("comparison figures", "docs/media/*_comparison.png"),
+    "audit": ("audits, all passes", "morphoeval/audits/*.yaml"),
+    "measure": ("measurement sidecars", "morphoeval/audits/*.measurements.yaml"),
+    "build": ("knowledge-graph reports", "morphoeval/kg/*/REPORT.md"),
+    "publish": ("signed TriG nanopublications", "morphoeval/kg/*/signed/*.trig"),
+    "graph": ("published graph bundles", "morphoeval/kg/*/published.json"),
+    "remed": ("telemetry run logs", "morphoeval/runs/*.md"),
+}
+
+
+def count(pattern: str) -> int:
+    return len(glob.glob(str(ROOT / pattern)))
+
+
+def stage_specimen(src_rel: str, name: str, max_w: int = 560) -> str:
+    """Copy a tracked library photo into docs/media/specimens/ (downscaled) and
+    return its docs-relative URL. Pages serves docs/ only, so datasets/ images
+    must be staged. Idempotent; skips when the staged copy is newer."""
+    src = ROOT / src_rel
+    SPECIMEN_DIR.mkdir(parents=True, exist_ok=True)
+    dst = SPECIMEN_DIR / f"lagoon_{name}.jpg"
+    rel = f"media/specimens/{dst.name}"
+    if not src.exists():
+        raise FileNotFoundError(f"specimen for {name!r} missing: {src_rel}")
+    if is_placeholder_image(src):
+        raise ValueError(f"specimen for {name!r} is a synthetic placeholder, not a photograph: {src_rel}")
+    if dst.exists() and dst.stat().st_mtime >= src.stat().st_mtime:
+        return rel
+    try:
+        from PIL import Image, ImageOps
+        im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+        if im.width > max_w:
+            im = im.resize((max_w, round(im.height * max_w / im.width)), Image.LANCZOS)
+        im.save(dst, "JPEG", quality=82, optimize=True)
+    except Exception:
+        shutil.copy2(src, dst)
+    return rel
 
 
 def load_jsons(pattern: str):
@@ -386,6 +570,19 @@ def detect_red_flags(d: dict) -> list[dict]:
                              "came from."),
             })
 
+    gal = gallery_placeholder_census()
+    if gal["total"] and gal["placeholders"]:
+        share = gal["placeholders"] / gal["total"]
+        flags.append({
+            "severity": "high" if share >= 0.25 else "medium", "status": "open",
+            "title": "Species gallery exhibits synthetic placeholders as specimens",
+            "detector": "smooth-gradient / low-colour image test over datasets/species_gallery/*/*.jpg",
+            "evidence": (f"{gal['placeholders']} of {gal['total']} gallery images ({share:.0%}) are generated "
+                         f"spiral placeholders, not photographs (e.g. {', '.join(gal['examples'])}); "
+                         "species_manifest.json records them with a SHA-256 like any specimen. This "
+                         "dashboard refuses to hang them; the manifest should label them."),
+        })
+
     fix1 = d["fixers"]["results"].get("fix-001")
     if fix1 and fix1.get("status") == "fixed":
         flags.append({
@@ -433,14 +630,23 @@ def main() -> int:
          "1 session", "16 PRs merged (#269–#288, incl. 10 fixer PRs) · issues #268/#283/#285 · "
          "Plates III–V", 100.0, "github.com/fractastical/morpholib/pulls (merged)"),
     ]
+    def portrait(name: str, key: str) -> str:
+        sp = FLEET_SPECIES.get(name)
+        if not sp:
+            return "<td></td>"
+        latin, common, img, why = sp
+        url = stage_specimen(img, key)
+        return (f'<td class="portrait"><img src="{url}" alt="{html.escape(latin)}" title="{html.escape(why)}">'
+                f'<i>{html.escape(latin)}</i><span class="dim">{html.escape(common)}</span></td>')
+
     roster_rows = "\n".join(
-        f"<tr><td><strong>{html.escape(name)}</strong><br><span class='dim'>{html.escape(desc)}</span></td>"
-        f"<td class='num'>{used:,}</td><td>{html.escape(done)}</td>" if isinstance(used, int) else
-        f"<tr><td><strong>{html.escape(name)}</strong><br><span class='dim'>{html.escape(desc)}</span></td>"
-        f"<td class='num'>{html.escape(str(used))}</td><td>{html.escape(done)}</td>"
+        f"<tr>{portrait(name, f'fleet_{i}')}"
+        f"<td><strong>{html.escape(name)}</strong><br><span class='dim'>{html.escape(desc)}</span></td>"
+        f"<td class='num'>{f'{used:,}' if isinstance(used, int) else html.escape(str(used))}</td>"
+        f"<td>{html.escape(done)}</td>"
         f"<td>{bar(p)}<span class='dim'>{p:.0f}%</span></td>"
         f"<td><code>{html.escape(src)}</code></td></tr>"
-        for name, desc, used, done, p, src in roster
+        for i, (name, desc, used, done, p, src) in enumerate(roster)
     )
 
     # Scout ground x lens matrix
@@ -465,11 +671,42 @@ def main() -> int:
             f"<td>{html.escape(str(status))}</td></tr>"
         )
 
-    role_rows = "\n".join(
-        f"<tr><td><strong>{html.escape(SIMPLE_ROLE_NAMES.get(slug, slug))}</strong></td>"
-        f"<td><code>{html.escape(slug)}</code></td><td>Tier {html.escape(str(tier))}</td>"
-        f"<td class='num'>{n}</td><td>{bar(pct(n, tele['steps']))}</td></tr>"
-        for slug, tier, n in tele["roles"]
+    # The Twelve Offices — one specimen card per loop role. Execution counts come
+    # from telemetry (same numbers the old role table carried); artifact counts
+    # are what that office has actually left in the tree.
+    role_exec = {slug: (tier, n) for slug, tier, n in tele["roles"]}
+    role_order = [s for s, *_ in tele["roles"]] or list(SIMPLE_ROLE_NAMES)
+    for s in SIMPLE_ROLE_NAMES:
+        if s not in role_order:
+            role_order.append(s)
+    max_art = max((count(g) for _, g in STEP_ARTIFACTS.values()), default=1) or 1
+    office_cards = ""
+    for i, slug in enumerate(role_order, 1):
+        latin, common, img, why = ROLE_SPECIES[slug]
+        tier, n = role_exec.get(slug, ("?", 0))
+        label, pattern = STEP_ARTIFACTS[slug]
+        n_art = count(pattern)
+        url = stage_specimen(img, slug)
+        office_cards += (
+            f'<article class="specimen" id="office-{slug}">'
+            f'<div class="frame"><img src="{url}" alt="{html.escape(latin)}" loading="lazy">'
+            f'<span class="plateno">Plate {ROMAN[i + 3]}</span></div>'
+            f'<div class="label"><p class="office">Office {i} · <code>{html.escape(slug)}</code> · Tier {html.escape(str(tier))}</p>'
+            f'<h3>{html.escape(SIMPLE_ROLE_NAMES.get(slug, slug))}</h3>'
+            f'<p class="latin"><i>{html.escape(latin)}</i> — {html.escape(common)}</p>'
+            f'<p class="why">{html.escape(why)}</p>'
+            f'<p class="tally"><b>{n:,}</b> executions in telemetry {bar(pct(n, tele["steps"]))}</p>'
+            f'<p class="tally"><b>{n_art:,}</b> {html.escape(label)} held '
+            f'<span class="ruler"><i style="width:{max(3, round(100 * n_art / max_art))}%"></i></span></p>'
+            f'</div></article>'
+        )
+
+    hero = MUSEUM_PLATES[0]
+    deposit_plates = "".join(
+        f'<figure class="plate-fig"><img src="{img}" alt="{html.escape(title)}" loading="lazy">'
+        f'<figcaption><span class="acc">{html.escape(acc)}</span><b>{html.escape(title)}</b>'
+        f'<i>{html.escape(src)}</i><p>{html.escape(label)}</p></figcaption></figure>'
+        for acc, img, title, src, label in MUSEUM_PLATES[1:]
     )
     actor_rows = "\n".join(
         f"<tr><td><strong>{html.escape(simple_actor_name(a))}</strong></td>"
@@ -604,11 +841,55 @@ def main() -> int:
  .card {{ border:1.5px solid #7a5c2e; background:#efe4c4; padding:10px 16px; min-width:150px; }}
  .card b {{ font-size:24px; display:block; }}
  code {{ font-size:12px; }}
+ /* museum furniture */
+ .museum {{ text-align:center; letter-spacing:.34em; font-size:11px; color:#6d5a38; text-transform:uppercase; margin:0 0 4px; }}
+ h1.lagoon {{ text-align:center; font-variant:normal; font-weight:normal; font-size:40px; letter-spacing:0; margin:4px 0 2px; }}
+ h1.lagoon i {{ color:#7a2e22; }}
+ .subtitle {{ text-align:center; font-style:italic; color:#6d5a38; margin:0 0 14px; }}
+ .curator {{ background:#efe4c4; border:1px solid #b39b5e; border-left:4px solid #8a6d2f; padding:10px 16px; font-size:14px; line-height:1.5; }}
+ figure.chart {{ margin:14px 0 6px; background:#faf5e6; border:1px solid #b39b5e; padding:10px; }}
+ figure.chart img {{ width:100%; display:block; border:1px solid #d8cbb0; }}
+ figcaption {{ padding:8px 4px 2px; font-size:13.5px; line-height:1.45; }}
+ figcaption .acc {{ display:block; text-align:right; font-variant:small-caps; color:#8a6d2f; letter-spacing:.12em; font-size:11px; }}
+ figcaption b {{ display:block; font-size:16px; }} figcaption i {{ color:#6d5a38; }} figcaption p {{ margin:5px 0 0; }}
+ td.portrait {{ width:92px; text-align:center; font-size:11px; line-height:1.25; padding:6px 4px; }}
+ td.portrait img {{ width:80px; height:80px; object-fit:cover; border:1px solid #7a5c2e; display:block; margin:0 auto 3px; filter:sepia(.25); }}
+ td.portrait i {{ display:block; }}
+ .offices {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(235px,1fr)); gap:14px; margin:12px 0 6px; }}
+ .specimen {{ background:#faf5e6; border:1px solid #b39b5e; display:flex; flex-direction:column; }}
+ .specimen .frame {{ position:relative; border-bottom:1px solid #b39b5e; }}
+ .specimen .frame img {{ width:100%; height:160px; object-fit:cover; display:block; filter:sepia(.25) contrast(.98); }}
+ .plateno {{ position:absolute; top:7px; right:8px; font-variant:small-caps; letter-spacing:.14em; font-size:10.5px; color:#8a6d2f; background:rgba(245,237,216,.9); padding:1px 6px; border:1px solid #b39b5e; }}
+ .specimen .label {{ padding:9px 12px 11px; font-size:12.5px; line-height:1.45; }}
+ .specimen .office {{ font-variant:small-caps; letter-spacing:.1em; font-size:11px; color:#8a6d2f; margin:0; }}
+ .specimen h3 {{ margin:2px 0 0; font-weight:normal; font-size:18px; }}
+ .specimen .latin {{ margin:0 0 5px; color:#6d5a38; }}
+ .specimen .why {{ margin:0 0 7px; }}
+ .specimen .tally {{ margin:2px 0; font-size:12px; color:#5d4420; }} .specimen .tally .bar {{ width:70px; }}
+ .ruler {{ display:inline-block; vertical-align:middle; width:70px; height:7px; background:repeating-linear-gradient(90deg,#efe4c4 0 6px,#ddd0b4 6px 7px); border:1px solid #b39b5e; margin-left:6px; }}
+ .ruler i {{ display:block; height:100%; background:#7a2e22; }}
+ .deposit {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }}
+ figure.plate-fig {{ margin:0; background:#faf5e6; border:1px solid #b39b5e; padding:10px; }}
+ figure.plate-fig img {{ width:100%; height:250px; object-fit:cover; object-position:top; display:block; border:1px solid #d8cbb0; }}
+ figure.plate-fig figcaption {{ font-size:12.5px; }} figure.plate-fig figcaption b {{ font-size:14px; }}
 </style></head><body><div class="plate">
-<h1>Plate III — Registry of the Agent Fleet</h1>
-<p class="dim">Every agent type used so far, counted from the records the repository itself keeps
-(cloud dispatch records, returned reports, and loop telemetry). Chat-session subagents leave no
-repo record and are not counted. Regenerate: <code>python3 docs/build_fleet_dashboard.py</code>.</p>
+<p class="museum">Museum of Morphogenesis · Project Delphi · Est. Oct. MMXXVI</p>
+<h1 class="lagoon">Aristotle's <i>Lagoon</i></h1>
+<p class="subtitle">Plate III — Registry of the Agent Fleet, exhibited as natural history —
+after D'Arcy Thompson, <a href="thompson_1913_aristotle_as_a_biologist.html">On Aristotle as a Biologist</a> (1913)</p>
+
+<div class="curator"><b>From the Curator.</b> Aristotle catalogued the Lagoon of Pyrrha by presence, absence,
+and what each creature's form is <i>for</i>. This plate does the same for the agent fleet. Every agent type
+is represented by a species already held in the library — a real specimen photograph, pinned and labelled,
+not a drawing set swimming — and every number is counted from the records the repository itself keeps
+(cloud dispatch records, returned reports, loop telemetry). Chat-session subagents leave no repo record and
+are not counted. When enough morphology has been captured to let forms transform into one another, in
+Thompson's manner, the Evolution Gallery at the foot of the page will open. Until then: no swimming.
+Regenerate: <code>python3 docs/build_fleet_dashboard.py</code>.</div>
+
+<figure class="chart"><img src="{hero[1]}" alt="{html.escape(hero[2])}">
+<figcaption><span class="acc">{html.escape(hero[0])}</span><b>{html.escape(hero[2])}</b>
+<i>{html.escape(hero[3])}</i><p>{html.escape(hero[4])}</p></figcaption></figure>
 
 <div class="totals">
  <div class="card"><b>{total_cloud:,}</b>cloud agents dispatched</div>
@@ -627,8 +908,9 @@ repo record and are not counted. Regenerate: <code>python3 docs/build_fleet_dash
 <strong>Fixer</strong> repairs them · <strong>Orchestrator</strong> conducts.</p>
 
 <h2>I. The Fleet Roster — types &amp; how often used</h2>
-<table><tr><th>Agent type</th><th>Used</th><th>Outcome</th><th>Completion</th><th>Records</th></tr>
+<table><tr><th>Specimen</th><th>Agent type</th><th>Used</th><th>Outcome</th><th>Completion</th><th>Records</th></tr>
 {roster_rows}</table>
+<p class="dim">The 12-step loop is not a single species: its twelve offices are each pinned separately in Section IV.</p>
 
 <h2>II. Problem-Scouts — hunting ground × tool lens ({scouts['returned']} of {scouts['dispatched']} returned)</h2>
 <table><tr><th>ground \\ lens</th>{head}<th>Σ</th></tr>
@@ -652,8 +934,10 @@ Execution counts per role are underneath the diagram.</p>
 assessors from different companies score step 7, and the footer tallies passes by company:
 the auditor was never the loop's own builder.</figcaption>
 </figure>
-<table><tr><th>Simple name</th><th>Role (slug)</th><th>Tier</th><th>Executions</th><th>Share</th></tr>
-{role_rows}</table>
+<h3 style="font-variant:small-caps;color:#5d4420;margin:18px 0 2px">The Twelve Offices — specimens of the loop</h3>
+<p class="dim">One library species per office. Execution counts are from telemetry ({tele['runs']} tracked runs);
+"held" counts are what that office has actually left in the tree, with the ruler scaled to the largest.</p>
+<div class="offices">{office_cards}</div>
 
 <h2>V. Who (or what) filled the roles — top actors &amp; models in telemetry</h2>
 <table><tr><th>Simple name</th><th>Actor (as recorded)</th><th>Steps</th></tr>{actor_rows}</table>
@@ -689,11 +973,27 @@ precedent.</p>
 {flag_rows}</table>
 
 <h2>IX. The unranked fleets — a recording gap</h2>
-<p>The 2,201 slot dispatches and the Cursor cloud fleets (100 scouts, 12 fixers) do not record
+<p>The {slots['n']:,} slot dispatches and the Cursor cloud fleets ({scouts['dispatched']} scouts, {fixers['dispatched']} fixers) do not record
 which model each agent ran, so they cannot be ranked yet — the leaderboard above covers only the
 106 telemetry-tracked loops. Fleet outcomes by completion are in Plate I; recording the model in
 every dispatch record (the fixer dispatcher already accepts <code>--model</code>) would make the
 next wave rankable end-to-end.</p>
+
+<h2>X. On Deposit — plates from the natural history museum</h2>
+<div class="deposit">{deposit_plates}</div>
+<p class="dim">Plates held in this repo at <code>docs/media/</code>, as catalogued in the
+<a href="thompson_1913_aristotle_as_a_biologist.html">museum-illustrated Thompson (1913) edition</a>.
+Species portraits above are tracked library photographs from <code>datasets/species_gallery/</code>
+(<a href="{GH}/datasets/species_gallery/SPECIES_ICONIC_ATLAS.md">iconic atlas</a>), staged into
+<code>docs/media/specimens/</code> at build time.</p>
+
+<h2>XI. The Evolution Gallery — in preparation</h2>
+<figure class="chart"><img src="media/thompson_transformations.gif" alt="Thompson coordinate transformations"
+ style="max-height:320px;object-fit:contain;background:#faf5e6">
+<figcaption><span class="acc">Not yet accessioned</span><b>On Growth and Form, ch. XVII — transformations</b>
+<i>Thompson (1917)</i><p>This room is roped off. Forms in this collection will be allowed to evolve into one
+another — by coordinate transformation, not by costume — when enough morphology has been captured to carry
+the deformation honestly. The specimens above are being pinned for precisely that day.</p></figcaption></figure>
 
 <p class="dim">* Slot-agent Lean/nanopub counts are as recorded at dispatch time; per issue #268 the
 overnight-slot Lean modules are placeholder templates, not mechanism proofs, so treat
