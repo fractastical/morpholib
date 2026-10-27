@@ -1,0 +1,322 @@
+{
+  "scout": "scout-076",
+  "ground": "library",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "id": "LIB-WV-01",
+      "title": "Gitignored frog_embryo_data_processed has no in-repo integrity manifest",
+      "gap": "morphoeval/runs/aristotelian_categories_index.json and wave-vector-tiff-parser.py pin dataset_dir to datasets/frog_embryo_data_processed, but .gitignore excludes that tree and the directory is absent on a fresh clone—unlike other Xenopus slots (e.g. datasets/xenopus_craniofacial_remap/scout_manifest.json + SHA-locked reference.json).",
+      "done": "datasets/frog_embryo_data_processed/README.md plus morphoeval-reference-2.0 manifest lists every expected mask/TIFF path with sha256; a smoke command wave-vector-tiff-parser.py <manifest_folder> 0 --fps 1.0 --csv /tmp/smoke.csv exits 0 when the tree is mounted and fails with an explicit missing-path error when it is not.",
+      "tool_route": "python3 wave-vector-analysis/diagnose_tiffs.py <manifest_folder>; python3 wave-vector-analysis/wave-vector-tiff-parser.py <manifest_folder> 0 --fps 1.0 --csv /tmp/smoke.csv; optional python3 wave-vector-analysis/generate_detection_summary.py /tmp/smoke.csv --output-dir /tmp/det_smoke",
+      "deciding_data": "In repo: .gitignore lines 65–66, aristotelian index dataset_dir, parser mask base path. Not in repo: actual processed masks (local/Box mount). Public anchor: Dietz et al. (2026) doi:10.1242/dev.199845.",
+      "prior_attempts": "Detection-summary reruns (analysis_results/detection_summary_old_new_speed_v3–v6/DATA_SOURCES_AND_ASSUMPTIONS.md) assume a local frog_embryo_data_processed tree; no morphoeval scout_manifest equivalent was recorded in docs/open-problems.json.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Parser and diagnose_tiffs are the named gate for whether the vendored tree is usable end-to-end."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Integrity metadata can live in-repo, but deciding TIFF/mask bytes are gitignored and off-clone."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Exit code plus manifest sha256 set is machine-checkable without expert taste."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Smoke parse of one folder is hours-scale once data is mounted; manifest authoring is minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as new files under datasets/frog_embryo_data_processed/ only (parallel agents need not edit pipeline code)."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One manifest + one-folder parser smoke yields pass/fail in a single sitting if data is present."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded prior attempt refuted an in-repo SHA manifest for this path."
+        }
+      },
+      "note_wrong_lens": "verify_image_fitness.py / vision lens scores specimen GIF similarity, not mask/TIFF integrity."
+    },
+    {
+      "id": "LIB-WV-02",
+      "title": "Hypothesis 2 (contact vs no-contact inter-embryo activity) blocked by missing multi-condition tracks in git",
+      "gap": "wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md marks 'Damaging embryo A at a distance… response in B lower than direct-contact' as untestable because it needs multiple condition CSVs; wave_laterality_analysis.py and render_pretty_wave_vectors.py encode contact=no-contact via WGD81–WGD86 in Box wave_catalog, but analysis_results/wave_catalog/ is gitignored and absent on clone.",
+      "done": "From wave_catalog/wave_laterality.csv joined to wave_catalog.csv contact labels, post-poke total Ca2+ area in embryo B (from spark_tracks.csv per video) yields a contact median strictly greater than no-contact median with bootstrap 95% CI non-overlapping, OR the opposite with the same CI rule (either outcome closes the claim).",
+      "tool_route": "python3 wave-vector-analysis/wave_laterality_analysis.py --catalog wave-vector-analysis/analysis_results/wave_catalog --catalog-csv wave-vector-analysis/analysis_results/wave_catalog/wave_catalog.csv; per-video python3 wave-vector-analysis/wave-vector-tiff-parser.py <tiff_dir> 0 --csv tracks_<id>.csv; python3 wave-vector-analysis/spark_tracks_to_clusters.py tracks_<id>.csv clusters_<id>.csv; python3 wave-vector-analysis/analyze_experimental_hypotheses.py tracks_<id>.csv --clusters-csv clusters_<id>.csv",
+      "deciding_data": "Not in repo: Box Calcium videos root (package_science_deliverables.py INPUT_PATHS), wave_catalog CSVs (.gitignore). In repo: EXPERIMENTAL_HYPOTHESES.md status row, simulations paired control via python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_head_head two_embryos_head_head with coupling_range_lengths toggled in scenario config as structural proxy only.",
+      "prior_attempts": "WGD no-contact showcase documented in render_pretty_wave_vectors.py; full quantitative contact stratification not exported to a committed CSV. Not refuted—blocked by missing vendored catalog.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Laterality roll-up plus spark_tracks→cluster→analyze_experimental_hypotheses is the documented hypothesis-2 chain."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "Deciding tables are defined but live only on Box/gitignored analysis_results paths."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Median-B activity by contact stratum with bootstrap CI is a numeric scorer rule."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Full catalog reparse is multi-hour; scoring existing wave_laterality.csv is minutes once catalog exists."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Verdict files can be new JSON/CSV under morphoeval/runs/ without editing tracked pipeline sources."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One sitting if wave_catalog is already built locally; longer if TIFF reparse required."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Exploratory WGD visuals exist; the specific contact-stratified hypothesis-2 statistic was not pre-registered as closed."
+        }
+      }
+    },
+    {
+      "id": "LIB-WV-03",
+      "title": "Excel XY ground truth not vendored—compare_xy head/tail QA is undefined on clone",
+      "gap": "XY coordinates.xlsx is documented only at external paths (XY_COORDINATES_DOCUMENTATION.md, package_science_deliverables.py); it is not under datasets/. COORDINATE_SYSTEM_WARNING.md documents Excel X exceeding TIFF width, so compare_xy_coordinates.py outputs (head_tail_comparison.md: 564 px mean head error) cannot be interpreted as parser accuracy without a vendored, transform-documented ground-truth CSV.",
+      "done": "Either (A) datasets/frog_embryo/xy_ground_truth.csv generated by parse_xy_coordinates.py exists in repo with sha256 in a reference manifest AND compare_xy_coordinates.py against a fresh spark_tracks.csv reports head_diff_px median ≤150 on ≥5 folder/video pairs after applying the documented transform, OR (B) a JSON report proves ≥80% of Excel rows fall outside TIFF bounds for their folder (refuting Excel-as-QA for the parser).",
+      "tool_route": "python3 wave-vector-analysis/parse_xy_coordinates.py --xlsx <path> --out datasets/frog_embryo/xy_ground_truth.csv; python3 wave-vector-analysis/compare_xy_coordinates.py <xlsx> spark_tracks.csv --output-dir /tmp/xy_cmp; python3 wave-vector-analysis/wave-vector-tiff-parser.py <folder> 0 --csv spark_tracks.csv",
+      "deciding_data": "In repo: COORDINATE_SYSTEM_WARNING.md, head_tail_comparison.md, compare_xy_coordinates.py. External: Box/Levin Embryos XY coordinates.xlsx (XY_COORDINATES_DOCUMENTATION.md).",
+      "prior_attempts": "head_tail_comparison.md (67 comparisons, 8 matched pairs) run with local spark_tracks; large diffs partly attributed to coordinate-system mismatch in COORDINATE_SYSTEM_WARNING.md—not a refutation of parser-only QA, but blocks Excel-as-blind-gold-standard.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "parse_xy + compare_xy + parser are the exact QA chain named in wave-vector README."
+        },
+        "data_in_hand": {
+          "score": 7,
+          "why": "Comparison reports exist in-repo; deciding xlsx/CSV ground truth is one named Box fetch away."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Median head_diff_px threshold on N pairs OR out-of-bounds fraction ≥80% is checkable."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Parse + compare on subset of folders is hours with TIFFs mounted."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New datasets/frog_embryo/*.csv and morphoeval/runs/*.json only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Transform hypothesis testable in one loop on a 5-folder subset."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Prior compare run produced ambiguous results due to coordinate mismatch; route not closed but not cleanly validated either."
+        }
+      }
+    },
+    {
+      "id": "LIB-WV-04",
+      "title": "Committed hypothesis plots drift from gitignored full spark_tracks contract",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md cites 309,603 track states and 79,902 clusters, but .gitignore excludes analysis_results/**/*.csv and only wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv remains; PNGs under analysis_results/ may not match any reproducible committed CSV hash.",
+      "done": "A morphoeval/runs/wave_tracks_manifest.json records sha256 and row_count for spark_tracks.csv and vector_clusters.csv produced by a documented rerun; row_count within 1% of manifest OR manifest explicitly updates the canonical count with linked detection_summary.md regeneration timestamp.",
+      "tool_route": "python3 wave-vector-analysis/wave-vector-tiff-parser.py <tiff_root>/<folder> 0 --fps 1.0 --csv spark_tracks.csv; python3 wave-vector-analysis/spark_tracks_to_clusters.py spark_tracks.csv vector_clusters.csv; python3 wave-vector-analysis/generate_all_hypothesis_plots.py spark_tracks.csv --clusters-csv vector_clusters.csv --output-dir wave-vector-analysis/analysis_results/hypothesis_rerun",
+      "deciding_data": "In repo: EXPERIMENTAL_HYPOTHESES.md metrics, spark_tracks_subset.csv smoke, gitignore rules. External: full TIFF corpus (Box).",
+      "prior_attempts": "Multiple detection_summary_old_new_speed_v* folders document parser iterations; no sha256-locked full CSV committed by design (.gitignore).",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Parser→cluster→generate_all_hypothesis_plots is the canonical plot regeneration chain."
+        },
+        "data_in_hand": {
+          "score": 5,
+          "why": "Only subset CSV in git; full tracks require external TIFF mount."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "sha256 + row_count parity is fully mechanical."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "Full-corpus rerun is multi-hour; manifest from existing local CSV is fast."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New manifest JSON under morphoeval/runs/ avoids editing tracked analysis PNGs."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Hash check is one sitting; full rerun may not be."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted reproducible manifest linkage."
+        }
+      }
+    },
+    {
+      "id": "LIB-WV-05",
+      "title": "Foundational xenopus-ca2-wave-vectors lacks morphoeval reference fitness package",
+      "gap": "verify_image_fitness.py maps slug xenopus-ca2-wave-vectors to generic datasets/species_gallery/I_Enaima_Vertebrata/Xenopus_laevis.jpg and docs/media/xenopus_ca2_wave_vectors_growth.gif—not Ca2+ imaging—and there is no datasets/*/scout_manifest.json or *_reference.json with empirical wave speeds unlike sibling datasets (e.g. datasets/xenopus_craniofacial_remap/).",
+      "done": "datasets/xenopus_ca2_wave_vectors/xenopus_ca2_wave_vectors_reference.json exists with empirical_series.mean_speed_px_per_s (p25/p50/p75) sourced from vector_clusters.csv on a named video subset OR explicit literature bounds from doi:10.1242/dev.199845; verify_image_fitness audit_tier is measured_overlay only if those values are recomputed from spark_tracks, not copied from index score 91.0.",
+      "tool_route": "python3 wave-vector-analysis/spark_tracks_to_clusters.py spark_tracks.csv vector_clusters.csv; python3 -c \"import pandas as pd; c=pd.read_csv('vector_clusters.csv'); print(c['mean_speed_px_per_s'].quantile([.25,.5,.75]))\"; python3 morphoeval/verify_image_fitness.py (after reference.json lists pinned inputs)",
+      "deciding_data": "In repo: morphoeval/runs/aristotelian_categories_index.json slug entry, verify_image_fitness FOUNDATIONAL_* maps. Public: Development doi:10.1242/dev.199845. Wave speeds require spark_tracks/vector_clusters (external TIFF parse).",
+      "prior_attempts": "MorphoEval KG claim morphoeval-xenopus-ca2-wave-vectors published; no SHA-locked wave kinematics reference in datasets/. Image fitness run absent from morphoeval/runs/image_fitness_and_provenance.json on this clone.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Cluster summaries supply poson_law 'AP Wave Propagation Speed' numbers; verify_image_fitness consumes reference.json when present."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "DOI and index metadata in-repo; kinematics need gitignored tracks or fresh parse."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Reference JSON must contain numeric quantiles with input_dataset_sha256 map checkable by audit script."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Quantiles from existing CSV are seconds; full parse is longer."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset directory files only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Single-cluster CSV quantile + reference write closes in one loop given tracks."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of a wave-speed reference.json route."
+        }
+      },
+      "note_wrong_lens": "Primary specimen photograph fitness is vision lens; wavepipe supplies the deciding kinematics series."
+    },
+    {
+      "id": "LIB-WV-06",
+      "title": "Embryo_id and ap_norm coverage (~46%) caps hypothesis plots tied to A/B identity",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md lists embryo_id valid for 142,770/309,603 (46.1%) and ap_norm likewise, blocking orientation-conditioned claims (hypotheses 3–5, 9–10) on the majority of rows until parser/mask geometry improves using frog_embryo_data_processed masks.",
+      "done": "On a preregistered folder list in morphoeval/runs/wave_coverage_prereg.json, regenerated spark_tracks.csv has ≥90% non-null embryo_id and ap_norm among rows with time_s>0, OR generate_detection_summary.py documents each failing folder with a named reason code in detection_warnings.log.",
+      "tool_route": "python3 wave-vector-analysis/wave-vector-tiff-parser.py <folder> 0 --fps 1.0 --csv tracks.csv; python3 wave-vector-analysis/generate_detection_summary.py tracks.csv --output-dir /tmp/cov_summary; python3 wave-vector-analysis/generate_all_hypothesis_plots.py tracks.csv --clusters-csv clusters.csv --output-dir /tmp/hyp",
+      "deciding_data": "In repo: EXPERIMENTAL_HYPOTHESES.md coverage table, HEAD_TAIL_ASSIGNMENT_LOGIC.md. External: per-folder TIFFs + optional datasets/frog_embryo_data_processed masks.",
+      "prior_attempts": "detection_summary_old_new_speed_v6 and earlier versions iterated speed/mask logic; coverage percentage not closed as a explicit done criterion in open-problems.json.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Parser writes embryo_id/ap_norm; detection summary quantifies failures—the named coverage loop."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "Coverage baseline documented; improvement requires same external TIFF/mask tree as LIB-WV-01."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Percent non-null on preregistered folder list is a straight column scan."
+        },
+        "compute_in_repo": {
+          "score": 9,
+          "why": "Reparse of preregistered folders (~10–30) is hours-scale."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Prereg JSON + run outputs as new files; parser code changes would conflict other agents."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Coverage metric available immediately after one batch parse."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation that 90% coverage is unreachable with current masks."
+        }
+      }
+    },
+    {
+      "id": "LIB-WV-07",
+      "title": "Landmark ΔF/F₀ corroboration tables gitignored—score_landmark_responses cannot run on clone",
+      "gap": "package_science_deliverables.py lists landmark_responses.csv and xy_ground_truth.csv as release artifacts derived from Box videos + XY xlsx, but they are under gitignored analysis_results/; score_landmark_responses.py defaults to missing inputs on CI.",
+      "done": "Either landmark_responses.csv is vendored (or a ≤500-row public sample with sha256 in datasets/frog_embryo/) AND score_landmark_responses.py reproduces identical corroboration_rate to ±0.01 when rerun, OR wave_laterality_analysis.py alone closes neighbor-wave claims without landmark path (explicit scope downgrade JSON).",
+      "tool_route": "python3 wave-vector-analysis/parse_xy_coordinates.py --xlsx <xlsx> --out analysis_results/xy_ground_truth.csv; python3 wave-vector-analysis/score_landmark_responses.py --xy analysis_results/xy_ground_truth.csv --catalog analysis_results/wave_catalog; python3 wave-vector-analysis/export_calcium_claims_to_pkg.py",
+      "deciding_data": "In repo: score_landmark_responses.py, package_science_deliverables.py TABLE_FILES. External: Box Calcium videos, XY coordinates.xlsx.",
+      "prior_attempts": "Claims PDF pipeline documented in package_science_deliverables.py; no committed landmark_responses.csv per .gitignore policy.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "score_landmark_responses is the named scorer for organ-landmark Ca2+ corroboration claims."
+        },
+        "data_in_hand": {
+          "score": 5,
+          "why": "Scripts and pipeline map in-repo; deciding CSVs external/gitignored."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "corroboration_rate equality within ±0.01 is numeric."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Recompute from Box is hours; hash check of vendored sample is minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Vendored sample CSV + manifest as new files only."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Depends on catalog/xy availability."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No refutation of landmark scoring—only absence from git."
+        }
+      }
+    },
+    {
+      "id": "LIB-WV-08",
+      "title": "Planform damaged JSON negatives are not Ca2+ wave-pipeline fixtures (wrong lens)",
+      "gap": "datasets/planform/damaged/manifest.json defines fail-closed Planform bioelectric series validator negatives (E_FREQ_SUM, E_SHA_MISMATCH, etc.); none exercise spark_tracks.csv schema or wave-vector-tiff-parser.py.",
+      "done": "N/A for wavepipe—close only if a parallel datasets/wave_vector/damaged/ manifest mirrors the planform pattern with injected spark_tracks.csv faults caught by a schema validator (out of scope for wavepipe-as-is).",
+      "tool_route": "Wavepipe cannot decide: would need new validator. Nearest existing: python3 wave-vector-analysis/simulations/generate_simulated_data.py --self-test for synthetic schema stress only.",
+      "deciding_data": "In repo: datasets/planform/damaged/*.json, planform_bioelectric.py --self-test path in datasets/planform/README.md.",
+      "prior_attempts": "Planform damaged negatives validated in planform README; no wave-track damaged analog recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Spark-track chain has no fail-closed self-test consumer for planform damaged files."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Planform damaged fixtures fully in-repo."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Expected error codes in planform manifest are exact, but for planform_bioelectric.py not wavepipe."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "planform_bioelectric.py --self-test runs quickly."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Already isolated under datasets/planform/damaged/."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Instant for planform validator; wave analog undefined."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Planform route not attempted on wave data."
+        }
+      },
+      "note_wrong_lens": "Remediation/measure lens via planform_bioelectric.py --self-test; wavepipe needs a parallel damaged spark_tracks fixture set."
+    }
+  ]
+}
