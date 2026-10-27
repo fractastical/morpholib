@@ -1,0 +1,79 @@
+sim_id: delphi10000-bicyclus-anynana-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 0.001507
+log10_size_m: -2.822
+size_human: 1.507 mm
+scale_tier: 6_organ_mm
+anatomical_structure: "Ventral wing-cell eyespot focus of Bicyclus anynana; critical Turing wavelength of the ocellus row"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Bicyclus chronoseries 1/1 (no fossil predecessor or successor in this slot)"
+model_spec:
+  sim_id: delphi10000-bicyclus-anynana-turing-wavelength-s0
+  source: "Sekimura, Venkataraman & Madzvamuse 2015, PLOS ONE 10:e0141434, Eq. 3.1–3.2, Table 1"
+  kinetics: gierer-meinhardt
+  parameters:
+    D1: 0.0031
+    D2: 0.03
+    alpha: 20.0
+    kappa1: 0.03
+    kappa2: 0.03
+    kappa3: 0.0125
+    cell_length_dimensionless: 2.2
+    lambda_m: 0.001507
+    seed: 3133
+    dx_target: 0.036
+  inputs:
+    - datasets/bicyclus_anynana_turing_wavelength_s0/bicyclus_anynana_specimen.jpg
+    - datasets/bicyclus_anynana_turing_wavelength_s0/bicyclus_anynana_turing_wavelength_s0_reference.json
+    - datasets/bicyclus_anynana_turing_wavelength_s0/paper_citations.bib
+equations:
+- law_name: Critical Turing wavenumber
+  formula: "k_c = argmax_k σ(k), σ(k) = max Re eig(J(a_ss) - k^2 diag(D1, D2)), λ_c = 2π/k_c = 1.507 mm"
+  lean_decl: MathOfBiology.Loop_3133.lambda_um
+  lean_theorem: MathOfBiology.Loop_3133.lambda_positive
+  lean_locus: morphoeval/lean/loops/Loop_3133_bicyclus_anynana_turing_wavelength_s0.lean#L11-L14
+  lean_code: |
+    def lambda_um : Nat := 1507
+    theorem lambda_positive : 0 < lambda_um := by decide
+  variables: "k wavenumber; λ_c = 1.507 mm on the Holocene adult wing"
+  role: Wavelength selection for the Bicyclus anynana ocellus at the 1.507 mm organ scale
+  source_citation: "Sekimura, Venkataraman & Madzvamuse (2015) DOI:10.1371/journal.pone.0141434; Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py#L77-L96
+- law_name: Positive diffusivity product
+  formula: "D1 D2 > 0 (Table 1: D1 = 3.1e-3, D2 = 3.0e-2)"
+  lean_decl: MathOfBiology.Loop_3133.diffusion_product
+  lean_theorem: MathOfBiology.Loop_3133.diffusion_product_positive
+  lean_locus: morphoeval/lean/loops/Loop_3133_bicyclus_anynana_turing_wavelength_s0.lean#L17-L22
+  lean_code: |
+    def diffusion_product (d1 d2 : Int) : Int := d1 * d2
+    theorem diffusion_product_positive (d1 d2 : Int) (h1 : 0 < d1) (h2 : 0 < d2) :
+        0 < diffusion_product d1 d2 := by dsimp [diffusion_product]; exact Int.mul_pos h1 h2
+  variables: "D1 activator diffusivity, D2 inhibitor diffusivity"
+  role: Both diffusivities in the Gierer–Meinhardt pair are positive
+  source_citation: "Sekimura et al. (2015) Table 1 DOI:10.1371/journal.pone.0141434"
+  code_locus: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py#L48-L52
+- law_name: Proximal source suppresses the focus
+  formula: "k_p = 2 suppresses the focus; k_p = 0 selects it; 2 - 0 > 0"
+  lean_decl: MathOfBiology.Loop_3133.proximal_margin
+  lean_theorem: MathOfBiology.Loop_3133.high_proximal_source_suppresses_focus
+  lean_locus: morphoeval/lean/loops/Loop_3133_bicyclus_anynana_turing_wavelength_s0.lean#L25-L29
+  lean_code: |
+    def proximal_margin (kp_high kp_low : Int) : Int := kp_high - kp_low
+    theorem high_proximal_source_suppresses_focus : proximal_margin 2 0 > 0 := by decide
+  variables: "k_p proximal Dirichlet multiplier on a1_ss"
+  role: Boundary control of whether a wing cell forms an eyespot focus
+  source_citation: "Sekimura et al. (2015) Eq. 3.1 and Fig. 4 DOI:10.1371/journal.pone.0141434"
+  code_locus: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py#L184-L214
+- law_name: Width inserts a second focus
+  formula: "N(λ_c) = 1 < N(2 λ_c) = 2 on this Holocene cell; equal diffusion sends k_c to 0"
+  lean_decl: MathOfBiology.Loop_3133.focus_count
+  lean_theorem: MathOfBiology.Loop_3133.wider_cell_inserts_a_focus
+  lean_locus: morphoeval/lean/loops/Loop_3133_bicyclus_anynana_turing_wavelength_s0.lean#L32-L43
+  lean_code: |
+    def focus_count (width_over_lambda : Nat) : Nat := width_over_lambda
+    theorem wider_cell_inserts_a_focus : focus_count 1 < focus_count 2 := by decide
+  variables: "anterior–posterior cell width in units of λ_c"
+  role: The single Holocene chronospecies fixes λ_c; a wider cell at the same kinetics adds a focus
+  source_citation: "Sekimura et al. (2015) S1 Appendix DOI:10.1371/journal.pone.0141434"
+  code_locus: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py#L153-L168

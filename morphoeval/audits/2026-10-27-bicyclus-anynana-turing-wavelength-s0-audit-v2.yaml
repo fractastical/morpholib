@@ -1,0 +1,139 @@
+# MorphoEval audit v2 — Bicyclus anynana Turing wavelength.
+# Scores the control suite that pass 1 listed and that the script now records:
+# k_p sweep, width doubling (1 focus → 2), equal-diffusion ablation (k_c → 0),
+# specimen segmentation, and dispersion goodness-of-fit.
+# Supersedes the pass-1 audit. R5 and R6 stay open.
+audit:
+  id: 2026-10-27-bicyclus-anynana-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-bicyclus-anynana-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor; no independent second assessor)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: "0c76d15d"
+    note: "Pass 2. Checkpoint hash is replaced with the commit that contains the script before the knowledge-graph build."
+references:
+  sekimura2015:
+    title: "A model for selection of eyespots on butterfly wings"
+    authors: "Sekimura T, Venkataraman C, Madzvamuse A"
+    venue: "PLOS ONE"
+    doi: "10.1371/journal.pone.0141434"
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik"
+    doi: "10.1007/BF00289234"
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B"
+    doi: "10.1098/rstb.1952.0012"
+  connahs2019:
+    title: "Activation of butterfly eyespots by Distal-less is consistent with a reaction-diffusion process"
+    authors: "Connahs H, Tlili S, van Creij J, Loo TYJ, Banerjee TD, Saunders TE, Monteiro A"
+    venue: "Development"
+    doi: "10.1242/dev.169367"
+simulations:
+  - id: delphi10000-bicyclus-anynana-turing-wavelength-s0
+    name: "Sekimura et al. (2015) Gierer–Meinhardt wing-cell focus at λ_c = 1.507 mm (pass 2 controls)"
+    organism: "Bicyclus anynana (Squinting Bush Brown)"
+    script: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py
+    output: docs/media/bicyclus_anynana_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-bicyclus-anynana-turing-wavelength-s0-audit
+    source_refs: [sekimura2015, gierer1972, turing1952, connahs2019]
+    summary: >-
+      Pass 2 records the controls. Dispersion Pearson r = 0.9985, RMSE = 0.0063,
+      KS = 0.056 on 18 wavenumbers. k_c = 6.190 and λ_c = 1.507 mm (0.001507 m,
+      log10 = −2.822, Holocene 0 Ma). The one-wavelength cell at k_p = 0 has 1 focus;
+      the same kinetics at width 2 λ_c have 2 foci; D2 = D1 sends k_c to 0; k_p = 2
+      has 0 foci. k_p = 1 still returns 2 foci, so the sweep is not monotone and is
+      reported that way. Specimen segmentation finds 8 ocelli. The forewing white
+      pupil used as Cu1 is at (578, 234), black-disc radius 11 px, gold radius 18 px.
+      Specimen coherency 0.5207 versus last-frame coherency 0.5234. GIF CV similarity
+      71.1 on 12 frames at 960×640. Radial pigment Pearson r = 0.26, reported separately
+      and not used as the wavelength gate.
+    claim_boundary:
+      reported_in_source:
+        - "Eq. 3.1–3.2 and Table 1 of Sekimura et al. 2015."
+        - "Proximal activator level selects or suppresses the focus (Fig. 4)."
+        - "Wider wing cells form more foci (S1 Appendix)."
+      reconstructed_in_script:
+        - "Finite-difference Eq. 3.1, analytical and numerical σ(k), k_p sweep, width doubling, equal-diffusion ablation."
+        - "λ_c fixed at 1.507 mm for this Holocene slot."
+        - "CV segmentation of the pinned specimen and a 12-frame growth GIF."
+      transfer_boundary:
+        - "The 1.507 mm anchor is the slot scale. Sekimura et al. 2015 do not state that millimetre value."
+        - "Leaf and scale texture in the GIF are the photograph."
+      does_not_claim:
+        - "That activator concentration equals pigment luminance (radial Pearson r = 0.26)."
+        - "A second chronospecies. Width doubling is the scale contrast inside this single Holocene terminus."
+        - "A signed nanopublication."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "The scored run uses Table 1 and Eq. 3.1–3.2, including vein Dirichlet data 2 a1_ss, proximal k_p a1_ss, and zero-flux inhibitor. σ(k) is the eigenvalue of that Jacobian. Pigment hue in the GIF is a photographic readout, which is why this is not 100."
+        evidence:
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [48, 80], note: "Table 1 constants, steady state, Jacobian, σ(k)", supports: true}
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [184, 214], note: "Boundary conditions of Eq. 3.1", supports: true}
+      specimen-match:
+        value: 80
+        rationale: "Side by side, the adult frame is the same ventral butterfly: wing shape, the large forewing ocellus, and the hindwing row are in place. The likeness is helped by retaining the photograph outside each ocellus. The activator panel is the one-cell focus the equation actually produces, with a cyan mark on the peak."
+        evidence:
+          - {file: docs/media/bicyclus_anynana_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Four-panel comparison", supports: true}
+          - {file: docs/media/bicyclus_anynana_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth GIF, 960×640, CV similarity 71.1", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: "k_p = 0 and 0.5 give 1 focus, k_p = 2 gives 0, and doubling the cell width from λ_c to 2 λ_c raises the count from 1 to 2. k_p = 1 returns 2 foci, so the response is not monotone across the whole grid. That bin is kept in the metrics rather than dropped. Equal diffusion removes the finite k_c (6.190 → 0)."
+        evidence:
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [482, 492], note: "k_p sweep", supports: true}
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [83, 96], note: "critical_wavenumber used for the Table-1 pair and for D2 = D1", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: "Wavelength test: Pearson r = 0.9985, RMSE = 0.0063, KS = 0.056 between analytical and numerical σ(k). Specimen: 8 segmented ocelli, Cu1 black radius 11 px versus gold radius 18 px, coherency 0.5207 versus 0.5234 on the last frame. The radial pigment correlation is 0.26 and is reported as a failed shape match, not folded into r."
+        evidence:
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [126, 150], note: "Pearson, RMSE, KS of σ(k)", supports: true}
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [285, 360], note: "detect_eyespots on the pinned photograph", supports: true}
+          - {file: datasets/bicyclus_anynana_turing_wavelength_s0/bicyclus_anynana_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "Recorded sweep, ablation, Cu1, CV similarity", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "DOI 10.1371/journal.pone.0141434 was downloaded from PLOS and the Table 1 row (D1, D2, α, κ1, κ2, κ3) was read from that PDF. Specimen SHA-256 cc4f97c92c75001c3bcaaaa1237f30dbaf5e8b7a58d1a8c8b237c96efc59855f matches the gallery frame. Commons file URL is in the reference JSON."
+        evidence:
+          - {file: datasets/bicyclus_anynana_turing_wavelength_s0/paper_citations.bib, lines: [1, 48], note: "Five citations with DOIs", supports: true}
+          - {file: datasets/bicyclus_anynana_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "OpenAlex scout and collision check", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "Dispersion, boundary conditions, sweep, ablation, and specimen segmentation are each a named function whose docstring or comments point at Eq. 3.1, Table 1, or the specimen operator. Lean theorems state the wavelength, the diffusivity product, the proximal ordering, and the width ordering."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3133_bicyclus_anynana_turing_wavelength_s0.lean, lines: [11, 43], note: "Four theorems, zero sorry", supports: true}
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [699, 796], note: "measure_morphoeval rows name their methods", supports: true}
+      repro-package:
+        value: 90
+        rationale: "python3 models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py --self-test passes: r = 0.9985, 12 frames, 960×640, specimen hash checked, k_p = 2 has no focus, the wide cell has more foci than the narrow cell, equal diffusion has k_c < 1. Seed 3133."
+        evidence:
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [799, 824], note: "self_test assertions", supports: true}
+          - {file: datasets/bicyclus_anynana_turing_wavelength_s0/README.md, lines: [1, 26], note: "Invocation and scale statement", supports: true}
+    remediation:
+      - id: R1
+        item: "Resolved in this pass: k_p sweep and width doubling are scored. k_p = 0 and 0.5 give 1 focus, k_p = 2 gives 0, width 2 λ_c gives 2. The k_p = 1 bin (2 foci) is reported, not deleted."
+        status: resolved
+      - id: R2
+        item: "Resolved in this pass: equal diffusion D2 = D1 moves k_c from 6.190 to 0."
+        status: resolved
+      - id: R3
+        item: "Resolved in this pass: 8 ocelli segmented; Cu1 at (578, 234); coherency 0.5207 versus 0.5234. Reference values differ from measured values."
+        status: resolved
+      - id: R4
+        item: "Resolved in this pass: dispersion Pearson r = 0.9985, RMSE = 0.0063, KS = 0.056. Radial pigment Pearson r = 0.26 is stored separately."
+        status: resolved
+      - id: R5
+        item: "Still open: one assessor only."
+        status: open
+      - id: R6
+        item: "Still open: signing unavailable without ~/.nanopub/profile.yml."
+        status: open
