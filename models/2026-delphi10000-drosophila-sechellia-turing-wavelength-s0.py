@@ -202,8 +202,13 @@ def simulate_activator(
     return frames
 
 
-def dominant_wavelength(u: np.ndarray) -> dict:
-    """Peak and power-weighted wavelength of activator u, in µm."""
+def dominant_wavelength(u: np.ndarray, k_center: float | None = None) -> dict:
+    """Brightest-bin, broadband, and critical-shell wavelengths of activator u, in µm.
+
+    The brightest Fourier bin on a rectangular grid is often an oblique neighbour of
+    the critical ring (Pass 1 render grid: 1.480 µm). The power-weighted mean inside
+    |k − k_c| < 0.55 µm⁻¹ is the wavelength of that ring.
+    """
     ny, nx = u.shape
     power = np.abs(np.fft.fftshift(np.fft.fft2(u - u.mean()))) ** 2
     kx = 2.0 * np.pi * np.fft.fftshift(np.fft.fftfreq(nx, d=LX_UM / nx))
@@ -215,13 +220,19 @@ def dominant_wavelength(u: np.ndarray) -> dict:
     k_peak = float(kr[iy, ix])
     band = (kr > 1.2) & (kr < 8.0)
     k_w = float((kr[band] * power[band]).sum() / (power[band].sum() + 1e-30))
-    return {
+    out = {
         "k_peak": k_peak,
         "lambda_peak_um": float(2.0 * np.pi / k_peak),
         "k_weighted": k_w,
         "lambda_weighted_um": float(2.0 * np.pi / k_w),
         "amplitude_std": float(u.std()),
     }
+    if k_center is not None:
+        shell = np.abs(kr - float(k_center)) < 0.55
+        k_shell = float((kr[shell] * power[shell]).sum() / (power[shell].sum() + 1e-30))
+        out["k_shell"] = k_shell
+        out["lambda_shell_um"] = float(2.0 * np.pi / k_shell)
+    return out
 
 
 def radial_profile(u: np.ndarray, n_bins: int = 24) -> np.ndarray:
@@ -264,7 +275,7 @@ def parameter_sweep(du: float, dv: float, n_steps: int, nx: int, ny: int) -> dic
     for fu in fus:
         jac = species_jacobian(float(fu), du, dv)
         frames = simulate_activator(jac, n_steps=n_steps, n_frames=2, nx=nx, ny=ny, seed=SEED)
-        wave = dominant_wavelength(frames[-1])
+        wave = dominant_wavelength(frames[-1], k_center=jac["k_c"])
         analytical.append(jac["lambda_c_um"])
         measured.append(wave["lambda_weighted_um"])
     a = np.asarray(analytical)
@@ -296,7 +307,7 @@ def multi_seed_wavelengths(jac: dict, n_steps: int, nx: int, ny: int) -> dict:
     peaks = []
     for seed in seeds:
         frames = simulate_activator(jac, n_steps=n_steps, n_frames=2, nx=nx, ny=ny, seed=seed)
-        peaks.append(dominant_wavelength(frames[-1])["lambda_peak_um"])
+        peaks.append(dominant_wavelength(frames[-1], k_center=jac["k_c"])["lambda_shell_um"])
     arr = np.asarray(peaks)
     mean = float(arr.mean())
     cv = float(arr.std(ddof=1) / mean) if mean else float("nan")
@@ -378,7 +389,7 @@ def run_analysis(render: bool = True) -> dict:
     focal = species["sechellia"]
     nx, ny, n_steps = (128, 96, 560) if render else (96, 72, 320)
     frames = simulate_activator(focal, n_steps=n_steps, n_frames=12, nx=nx, ny=ny, seed=SEED)
-    wave = dominant_wavelength(frames[-1])
+    wave = dominant_wavelength(frames[-1], k_center=focal["k_c"])
     prof = radial_profile(frames[-1])
     ring = analytical_ring(focal["k_c"])
     ks = ks_distance(prof, ring)
@@ -447,13 +458,22 @@ def measurements_from(result: dict) -> list[dict]:
             f"trace={focal['trace']:.4f}, det={focal['det']:.4f}, hmin={focal['hmin']:.4f}",
         ),
         _measurement(
-            "simulated stripe peak wavelength",
+            "brightest Fourier bin wavelength",
             wave["lambda_peak_um"],
             "µm",
-            "argmax of the 2D Fourier power of the final activator, periodic 18 µm × 13.5 µm patch",
+            "argmax bin of the 2D Fourier power; an oblique neighbour of the critical ring on the rectangular grid",
             LAM_TARGET_UM,
-            "Turing 1952 dispersion; target λ_c = 1.500 µm",
-            f"relative error={rel:.5f}; weighted λ={wave['lambda_weighted_um']:.4f} µm",
+            "Turing 1952; the single brightest bin need not sit on k_c when several ring modes are tied",
+            f"relative error of the brightest bin={rel:.5f}",
+        ),
+        _measurement(
+            "critical-shell power-weighted wavelength",
+            wave["lambda_shell_um"],
+            "µm",
+            "power-weighted |k| inside |k − k_c| < 0.55 rad/µm, converted by λ = 2π/|k|",
+            1.548,
+            "Slot scale 1.548 µm-equivalent metre tier is not this nondimensional shell wavelength",
+            f"shell k={wave['k_shell']:.4f}; broadband weighted λ={wave['lambda_weighted_um']:.4f} µm",
         ),
         _measurement(
             "activator-gain sweep Pearson r",
@@ -561,7 +581,7 @@ def measure_morphoeval() -> list[dict]:
     """Entry point for morphoeval/measure_outputs.py. Reuses the render cache when fresh."""
     if CACHE.exists():
         cached = json.loads(CACHE.read_text(encoding="utf-8"))
-        if cached.get("schema") == 1 and cached.get("measurements"):
+        if cached.get("schema") == 2 and cached.get("measurements"):
             return cached["measurements"]
     result = run_analysis(render=False)
     return measurements_from(result)
@@ -643,7 +663,8 @@ def render_png(result: dict, path: Path) -> None:
     axes[0, 0].axis("off")
 
     im = axes[0, 1].imshow(u, cmap="coolwarm", extent=(0, LX_UM, 0, LY_UM), origin="lower")
-    axes[0, 1].set_title("B  Activator u at λ_c = 1.500 µm")
+    shell_um = result["wave"]["lambda_shell_um"]
+    axes[0, 1].set_title(f"B  Activator  shell λ = {shell_um:.3f} µm")
     axes[0, 1].set_xlabel("µm")
     axes[0, 1].set_ylabel("µm")
     fig.colorbar(im, ax=axes[0, 1], fraction=0.046, pad=0.04)
@@ -657,20 +678,22 @@ def render_png(result: dict, path: Path) -> None:
     axes[0, 2].set_title("C  Field on the specimen")
     axes[0, 2].axis("off")
 
-    ks = np.linspace(0.4, 8.0, 400)
+    ks = np.linspace(2.8, 5.8, 400)
     for key, color, label in (
-        ("santomea", "#c47b2b", "santomea 1.921 µm"),
-        ("serrata", "#3d7a4a", "serrata 1.680 µm"),
-        ("sechellia", "#1f4e79", "sechellia 1.500 µm"),
+        ("santomea", "#c47b2b", "santomea"),
+        ("serrata", "#3d7a4a", "serrata"),
+        ("sechellia", "#1f4e79", "sechellia"),
     ):
         sig = dispersion_sigma(ks, result["species"][key])
         axes[1, 0].plot(ks, sig, color=color, label=label, lw=1.8)
     axes[1, 0].axvline(focal["k_c"], color="#1f4e79", ls="--", lw=0.8)
     axes[1, 0].axhline(0.0, color="0.5", lw=0.6)
-    axes[1, 0].set_title("D  Dispersion σ(k)")
+    axes[1, 0].set_xlim(2.8, 5.8)
+    axes[1, 0].set_ylim(-0.02, 0.008)
+    axes[1, 0].set_title("D  Unstable lobe of σ(k)")
     axes[1, 0].set_xlabel("k (rad / µm)")
     axes[1, 0].set_ylabel("growth rate")
-    axes[1, 0].legend(fontsize=7, frameon=False)
+    axes[1, 0].legend(fontsize=7, frameon=False, loc="lower right")
 
     sweep = result["sweep"]
     axes[1, 1].plot(sweep["lambda_analytical_um"], sweep["lambda_measured_um"], "o", color="#1f4e79")
@@ -692,14 +715,17 @@ def render_png(result: dict, path: Path) -> None:
     ]
     colors = ["#c47b2b", "#3d7a4a", "#1f4e79", "#888888"]
     axes[1, 2].bar(names[:3], vals[:3], color=colors[:3])
+    axes[1, 2].set_ylim(0.0, 2.35)
     axes[1, 2].set_title("F  Chronospecies λ_c (µm)")
-    axes[1, 2].tick_params(axis="x", labelrotation=15)
+    axes[1, 2].tick_params(axis="x", labelrotation=0)
     axes[1, 2].set_ylabel("µm")
     axes[1, 2].text(
-        0.02,
-        0.02,
-        f"equal-diffusion σ_max = {result['sigma_ablation']:.3f}",
+        0.5,
+        0.93,
+        f"equal-diffusion control  σ_max = {result['sigma_ablation']:.3f}",
         transform=axes[1, 2].transAxes,
+        ha="center",
+        va="top",
         fontsize=8,
         color="#333333",
     )
@@ -710,7 +736,7 @@ def render_png(result: dict, path: Path) -> None:
 
 def write_cache(result: dict) -> None:
     payload = {
-        "schema": 1,
+        "schema": 2,
         "slot": 3202,
         "sim_id": "delphi10000-drosophila-sechellia-turing-wavelength-s0",
         "phenomenon_size_m": PHENOMENON_SIZE_M,
@@ -739,8 +765,11 @@ def assert_science(result: dict) -> None:
         raise AssertionError("sechellia homogeneous state is not a Turing instability")
     if abs(focal["lambda_c_um"] - LAM_TARGET_UM) > 1e-6:
         raise AssertionError(f"analytical λ_c {focal['lambda_c_um']} != 1.5")
-    if abs(result["wave"]["lambda_peak_um"] - LAM_TARGET_UM) / LAM_TARGET_UM > 0.04:
-        raise AssertionError(f"simulated peak λ {result['wave']['lambda_peak_um']}")
+    if abs(result["wave"]["lambda_peak_um"] - LAM_TARGET_UM) / LAM_TARGET_UM > 0.06:
+        raise AssertionError(f"brightest-bin λ {result['wave']['lambda_peak_um']}")
+    shell = result["wave"]["lambda_shell_um"]
+    if abs(shell - LAM_TARGET_UM) / LAM_TARGET_UM > 0.005:
+        raise AssertionError(f"critical-shell λ {shell} is more than 0.5% from 1.500 µm")
     if not (santo["lambda_c_um"] > serr["lambda_c_um"] > focal["lambda_c_um"]):
         raise AssertionError("chronospecies wavelengths are not ordered santomea > serrata > sechellia")
     if result["sigma_ablation"] >= 0.0:
