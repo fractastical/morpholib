@@ -1,0 +1,54 @@
+sim_id: delphi10000-cavia-porcellus-turing-wavelength-s0
+organism: Cavia porcellus
+age_ma: 0.0
+scale_um: 126.7
+scale_m: 0.0001267
+math_family: Turing Reaction-Diffusion Wavelength Selection
+form: Stripes, Spots & Ocelli
+quantitative_law: Turing Wavenumber k_c
+equations:
+- law_name: Turing wavenumber from the Schnakenberg Jacobian
+  formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 126.7 um
+  lean_decl: MathOfBiology.Loop_3141.turingCross
+  lean_theorem: MathOfBiology.Loop_3141.activator_inhibitor_cross_positive
+  lean_locus: morphoeval/lean/loops/Loop_3141_cavia_porcellus_turing_wavelength_s0.lean
+  variables: D_u, D_v, f_u, g_v at the s0 steady state (a=0.08, b=1.15, D_v/D_u=40)
+  role: Selects the 126.7 µm pigment stripe / ocellus carrier on the Holocene primordium
+  source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012; Murray 1981 DOI:10.1016/0022-5193(81)90334-9; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0
+  code_locus: models/2026-delphi10000-cavia-porcellus-turing-wavelength-s0.py
+- law_name: Tenfold tier relation at fixed age 0 Ma
+  formula: lambda_pred = 10 lambda_s0 = 1267 um; lambda_s0 = 10 lambda_succ = 126.7 um
+  lean_decl: MathOfBiology.Loop_3141.lambdaS0Nm
+  lean_theorem: MathOfBiology.Loop_3141.pred_holds_ten_s0_waves
+  lean_locus: morphoeval/lean/loops/Loop_3141_cavia_porcellus_turing_wavelength_s0.lean
+  variables: lambda_s0 = 126700 nm, lambda_pred = 1267000 nm, lambda_succ = 12670 nm
+  role: States what changes versus the coarser and finer tiers when the chronoseries has only the Holocene node
+  source_citation: Slot 3141 scale ladder; Swift and Hohenberg 1977 DOI:10.1103/PhysRevA.15.319
+  code_locus: models/2026-delphi10000-cavia-porcellus-turing-wavelength-s0.py
+- law_name: Swift-Hohenberg amplitude equation at the critical wavenumber
+  formula: dA/dt = epsilon A - (k_c^2 + laplacian)^2 A - A^3
+  lean_decl: MathOfBiology.Loop_3141.lambdaSuccNm
+  lean_theorem: MathOfBiology.Loop_3141.s0_holds_ten_successor_waves
+  lean_locus: morphoeval/lean/loops/Loop_3141_cavia_porcellus_turing_wavelength_s0.lean
+  variables: epsilon = 0.25, k_c = 1 in wavelength units, spiral charge m = 2
+  role: Nonlinear stripe/spiral saturation whose linear spectrum peaks at k_c
+  source_citation: Swift and Hohenberg 1977 DOI:10.1103/PhysRevA.15.319; Cross and Hohenberg 1993 DOI:10.1103/RevModPhys.65.851
+  code_locus: models/2026-delphi10000-cavia-porcellus-turing-wavelength-s0.py
+model_spec:
+  model: Schnakenberg Jacobian wavelength scaled to 126.7 um, Swift-Hohenberg spiral at charge 2
+  lambda_um: 126.7
+  age_ma: 0.0
+  a: 0.08
+  b: 1.15
+  gamma: 1.0
+  diffusion_ratio: 40.0
+  epsilon: 0.25
+  spiral_charge: 2
+  grid_resolution: [128, 128]
+  steps: 480
+  dt: 0.1
+  seed: 3141
+  field_um: 1013.6
+  inputs:
+  - datasets/cavia_porcellus_turing_wavelength_s0/cavia_porcellus_turing_wavelength_s0_specimen.jpg
+  - datasets/cavia_porcellus_turing_wavelength_s0/cavia_porcellus_turing_wavelength_s0_reference.json
