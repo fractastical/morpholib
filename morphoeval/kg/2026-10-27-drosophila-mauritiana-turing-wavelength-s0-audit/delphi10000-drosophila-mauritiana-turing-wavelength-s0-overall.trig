@@ -1,0 +1,74 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-drosophila-mauritiana-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-mauritiana-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-mauritiana-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Drosophila mauritiana Turing wavelength at 1.6 µm (Pass 1, free branch) — MorphoEval overall 78.9/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1 judges the free (κ = 0) Schnakenberg branch at the assigned detail scale of 1.637 µm (log10 = -5.786), age 0 Ma. Analytical fastest-mode wavelength is 1.629 µm; the grid FFT peak is 1.562 µm. The pass-1 GIF is that spot field (official CV similarity 87.5 against the gallery ocellus). Side by side, spots are not the spiral illustration. The Dv/Du sweep is monotonic, and equal diffusion decays, but the animated endpoint does not yet show the assimilated ocellus. Weighted overall on rubric.yaml is 78.9. Overall 78.9/100 (faithfulness 75.6, reproducibility 86.8); rubric morphoeval 0.1.0; checkpoint commit 0c76d15d14afcec6c366e1b9274a6586a0de48fc; environment: . Dimension assessments: Model fidelity to source 86, Morphological realism / specimen match 66, Parameter expressivity 84, Morphometric validation 72, Source and data traceability 90, Code-to-model traceability 84, Reproducibility package 86. Output judged: datasets/drosophila_mauritiana_turing_wavelength_s0/pass1_free_field.gif: rendered output of models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py at 0c76d15d14afcec6c366e1b9274a6586a0de48fc, image/gif, 3018996 B, 640×480 px, 12 frames, artifact_sha256 a1d10f117b81c3fd9c0c4c44e38ad96a71c98b5e6d11b9c919e5d1d856db1b09 (sha256 a1d10f117b81c3fd9c0c4c44e38ad96a71c98b5e6d11b9c919e5d1d856db1b09), spec_fingerprint bd0352c8a7daa2adc4a69dc6bf727442d96608f6e6279c8f820e0a58060ad4e4. Dual provenance: spec_fingerprint: bd0352c8a7daa2adc4a69dc6bf727442d96608f6e6279c8f820e0a58060ad4e4; artifact_sha256: a1d10f117b81c3fd9c0c4c44e38ad96a71c98b5e6d11b9c919e5d1d856db1b09; input_dataset_sha256: {datasets/drosophila_mauritiana_turing_wavelength_s0/Drosophila_mauritiana.jpg=0c64a140705a3c42..., datasets/drosophila_mauritiana_turing_wavelength_s0/drosophila_mauritiana_turing_wavelength_s0_reference.json=837cc650677e6049...}. Claim boundary: reported_in_source: Turing 1952: two morphogens can be stable at k = 0 and unstable at a finite wavenumber. | Murray 1981: that wavenumber is the intrinsic pre-pattern wavelength and it moves with the diffusivity ratio. | Glassford et al. 2015: the posterior lobe is a recent novelty in the melanogaster subgroup, elaborated in mauritiana.; reconstructed_in_script: Schnakenberg a = 0.10, b = 0.90, D_v/D_u = 9.875, γ chosen so k_max sits on 1.637 µm. | Predecessor comparison uses the recorded kikkawai cellular wavelength 93.41 µm, not that slot's parameters.; transfer_boundary: The 1.637 µm target is this slot's assigned detail scale. Gompel 2005 and Glassford 2015 do not report that number.; does_not_claim: That the free spot field is a photograph of the genital arch. | That the gallery sepia spiral is a SEM.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "open need [morphometric_validation/morphometric-validation, pressure P=1.3]: Wavelength error is reported; Pearson, KS, and mask segmentation are not yet the scored endpoint.",
+            "open need [specimen_comparison/specimen-match, pressure P=1.9]: Animated endpoint is the free spot field; the ocellus is only in the still comparison.",
+            "remediation needed: Lock the growth GIF's final frames onto the assimilated ocellus (the nudged activator, not a paste of the photograph) and re-score CV similarity.",
+            "remediation needed: Report specimen-versus-simulation segmentation (foreground fraction and structure-tensor coherency) with values that differ from the specimen reference.",
+            "remediation needed: Score Pearson r, RMSE, and the KS statistic on the assimilated field in the measurement sidecar, and keep Pearson r above 0.98.",
+            "remediation needed: Treat the equal-diffusion ablation and the monotonic D_v/D_u sweep as scored evidence on the pass-2 figure, not only as internal asserts." ;
+        pk:hasScore "0.789"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (builder-assessor, single agent; second assessor not run)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://x.ai> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0022-5193(81)90334-9>,
+            <https://doi.org/10.1016/j.devcel.2015.08.005>,
+            <https://doi.org/10.1038/nature03235>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1126/science.1179047> .
+    <https://doi.org/10.1016/0022-5193(81)90334-9> dct:title "A pre-pattern formation mechanism for animal coat markings" .
+    <https://doi.org/10.1016/j.devcel.2015.08.005> dct:title "Co-option of an ancestral Hox-regulated network underlies a recently evolved morphological novelty" .
+    <https://doi.org/10.1038/nature03235> dct:title "Chance caught on the wing: cis-regulatory evolution and the origin of pigment patterns in Drosophila" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1126/science.1179047> dct:title "Reaction-diffusion model as a framework for understanding biological pattern formation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Drosophila mauritiana Turing wavelength at 1.6 µm (Pass 1, free branch) — MorphoEval overall 78.9/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:45:39Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-mauritiana-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-drosophila-mauritiana-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

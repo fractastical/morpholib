@@ -1,0 +1,83 @@
+sim_id: delphi10000-drosophila-mauritiana-turing-wavelength-s0
+slot: 3191
+organism: Drosophila mauritiana
+phenomenon_size_m: 1.637e-06
+log10_size_m: -5.786
+size_human: "1.6 µm"
+scale_tier: 3_subcellular_um
+detail_variant: s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila mauritiana (1.6 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora melanogaster Subgroup Radiation (0–12 Ma)"
+chronoseries: "Drosophila chronoseries 20/41"
+predecessor: Drosophila kikkawai
+successor: Drosophila melanogaster
+external_datasets:
+- name: FlyBase
+  url: https://flybase.org/
+  doi: 10.1093/genetics/iyad035
+- name: FlyWire
+  url: https://codex.flywire.ai/
+  doi: 10.1038/s41586-024-07558-y
+math_family: Reaction-Diffusion & Turing Dispersion (1. Chemical Turing / RD)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  model: Schnakenberg Turing wavelength at 1.637 µm
+  a: 0.1
+  b: 0.9
+  D_u_m2_s: 2.4e-14
+  D_v_over_D_u: 9.875
+  target_wavelength_m: 1.637e-06
+  seed: 3191
+  grid: [128, 96]
+  pixels_per_wavelength: 10
+  predecessor_wavelength_m: 9.341e-05
+  successor_inhibitor_factor: 1.22
+  compact_lobe_window_m: 3.84e-05
+  inputs:
+  - datasets/drosophila_mauritiana_turing_wavelength_s0/drosophila_mauritiana_turing_wavelength_s0_reference.json
+  - datasets/drosophila_mauritiana_turing_wavelength_s0/Drosophila_mauritiana.jpg
+equations:
+- law_name: Detail wavelength is positive
+  formula: "λ_detail = 1.637e-6 m > 0"
+  lean_decl: MathOfBiology.Loop_3191.lambdaDetailNm
+  lean_theorem: MathOfBiology.Loop_3191.detail_wavelength_positive
+  lean_locus: morphoeval/lean/loops/Loop_3191_drosophila_mauritiana_turing_wavelength_s0.lean#L12-L25
+  variables: "λ_detail = 1637 nm at geological age 0 Ma"
+  role: Anchors the 1.6 µm detail scale for the mauritiana spinose-lobe micro-pattern
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py#L97-L153
+- law_name: Detail wavenumber exceeds the kikkawai cellular stripe
+  formula: "λ_kikkawai / λ_detail > 50, with λ_kikkawai = 93.41 µm"
+  lean_decl: MathOfBiology.Loop_3191.lambdaKikkawaiNm
+  lean_theorem: MathOfBiology.Loop_3191.detail_wavenumber_exceeds_kikkawai
+  lean_locus: morphoeval/lean/loops/Loop_3191_drosophila_mauritiana_turing_wavelength_s0.lean#L27-L31
+  variables: "predecessor D. kikkawai cellular wavelength 93410 nm"
+  role: States what changes against the predecessor chronospecies at this scale
+  source_citation: "Murray (1981) DOI:10.1016/0022-5193(81)90334-9"
+  code_locus: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py#L212-L232
+- law_name: Compact lobe packs detail ridges
+  formula: "23 * 1637 nm < 38400 nm < 93410 nm"
+  lean_decl: MathOfBiology.Loop_3191.compactLobeWindowNm
+  lean_theorem: MathOfBiology.Loop_3191.compact_lobe_packs_detail_ridges
+  lean_locus: morphoeval/lean/loops/Loop_3191_drosophila_mauritiana_turing_wavelength_s0.lean#L33-L38
+  variables: "38.4 µm reconstructed compact-arch window"
+  role: Mode count on the mauritiana lobe versus a kikkawai wavelength that does not fit
+  source_citation: "Glassford et al. (2015) DOI:10.1016/j.devcel.2015.08.005"
+  code_locus: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py#L445-L528
+- law_name: Inhibitor diffuses farther than the activator
+  formula: "D_v / D_u = 9.875 > 1, and h = D_v f_u + D_u g_v > 0"
+  lean_decl: MathOfBiology.Loop_3191.diffusionContrastMilli
+  lean_theorem: MathOfBiology.Loop_3191.inhibitor_diffuses_farther
+  lean_locus: morphoeval/lean/loops/Loop_3191_drosophila_mauritiana_turing_wavelength_s0.lean#L40-L43
+  variables: "D_u = 2.40e-14 m²/s, D_v/D_u = 9.875"
+  role: Differential-diffusion condition for Turing wavenumber selection; equal diffusion is the ablation
+  source_citation: "Kondo and Miura (2010) DOI:10.1126/science.1179047"
+  code_locus: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py#L234-L246
