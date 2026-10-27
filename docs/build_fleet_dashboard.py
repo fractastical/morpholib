@@ -9,7 +9,8 @@ Sources (repo-recorded usage only — chat-session subagents leave no record her
   - morphoeval/runs/telemetry.sqlite     track_loop telemetry for the 12 canonical
       loop roles (steps/actor/model counts over tracked runs)
 
-Output: docs/fleet-dashboard.html (self-contained, no external assets).
+Output: docs/fleet-dashboard.html (single file; the only linked asset is the
+canonical pipeline plate at docs/media/morphoeval_pipeline.png).
 
 Usage: python3 docs/build_fleet_dashboard.py
 """
@@ -596,6 +597,14 @@ repo record and are not counted. Regenerate: <code>python3 docs/build_fleet_dash
 loop proceeds: the builder writes, independent assessors judge, tools measure and publish.
 Execution counts per role are underneath the diagram.</p>
 {loop_diagram}
+<figure style="margin:8px 0 14px">
+<img src="media/morphoeval_pipeline.png" alt="Canonical MorphoEval 12-step pipeline diagram"
+ style="width:100%;border:1.5px solid #7a5c2e;background:#fff">
+<figcaption class="dim">The canonical plate, small: <code>docs/media/morphoeval_pipeline.png</code>
+(drawn by <code>morphoeval/report/draw_pipeline.py</code>). Note its bottom row — two independent
+assessors from different companies score step 7, and the footer tallies passes by company:
+the auditor was never the loop's own builder.</figcaption>
+</figure>
 <table><tr><th>Role</th><th>Tier</th><th>Executions</th><th>Share</th></tr>
 {role_rows}</table>
 
