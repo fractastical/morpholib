@@ -7,8 +7,10 @@ placed at lambda_c = 2*pi/k_c = 164.3 µm = 0.0001643 m (log10 = -3.784,
 tier 5_primordium_100um). This is the detail scale, not the 8.8 mm organ-tier
 stripe spacing of models/1999-forsten-equus-scotti-turing-wavelength.py.
 
-Predecessor Pliohippus pernix (8.5 Ma) and successor Equus quagga are named
-in the reference JSON. Pass 1 solves and renders only the focal wavelength.
+Predecessor Pliohippus pernix (8.5 Ma, 198.7 µm) and successor Equus quagga
+(Bard 1977 initiation spacing 400 µm) are solved beside the focal mode.
+An equal-diffusion run is the negative control. The Horsfall plate is
+segmented and compared with the activator by a radial-spectrum KS distance.
 """
 from __future__ import annotations
 
@@ -186,6 +188,137 @@ def simulate_patch(du: float, dv: float, a: float, b: float, u0: float, v0: floa
     return {"frames": frames, "final": u, "dx_um": dx, "nx": nx, "ny": ny, "length_x_um": nx * dx, "length_y_um": ny * dx}
 
 
+def linear_peak_um(du: float, dv: float, jac: tuple[float, float, float, float]) -> float:
+    fu, fv, gu, gv = jac
+    ks = np.linspace(1e-4, 2.0, 4000)
+    sig = sigma_plus(ks, du, dv, fu, fv, gu, gv)
+    i = int(np.argmax(sig))
+    lo = ks[max(0, i - 1)]
+    hi = ks[min(len(ks) - 1, i + 1)]
+    fine = np.linspace(lo, hi, 2000)
+    sig_f = sigma_plus(fine, du, dv, fu, fv, gu, gv)
+    return float(2.0 * np.pi / fine[int(np.argmax(sig_f))])
+
+
+def chronoseries_and_ratio_sweep(jac: tuple[float, float, float, float], du_scotti: float) -> dict:
+    """Predecessor, focal, and successor wavelengths, plus a Dv/Du sweep at fixed Du.
+
+    Pliohippus pernix uses the catalog linear-size ratio 0.260/0.215.
+    Equus quagga uses Bard's 1977 initiation spacing of 400 µm.
+    The ratio sweep holds Du at the scotti value so Dv actually moves lambda.
+    """
+    fu, fv, gu, gv = jac
+    taxa = [
+        {"id": "pliohippus_pernix", "age_ma": 8.5, "lambda_um": 164.3 * (0.260 / 0.215), "ratio": 12.0},
+        {"id": "equus_scotti", "age_ma": 0.6, "lambda_um": 164.3, "ratio": 20.0},
+        {"id": "equus_quagga", "age_ma": 0.0, "lambda_um": 400.0, "ratio": 30.0},
+    ]
+    solved = []
+    for taxon in taxa:
+        du, dv, lam_murray = diffusivity_for_wavelength(taxon["lambda_um"], taxon["ratio"], jac)
+        lam_lin = linear_peak_um(du, dv, jac)
+        solved.append({**taxon, "Du": du, "Dv": dv, "lambda_linear_um": lam_lin, "lambda_murray_um": lam_murray})
+    # Below Dv/Du ≈ 8 the band collapses toward k = 0 (wavelength runs away).
+    # Above that threshold, at fixed Du, a longer-ranged inhibitor lengthens λ.
+    ratios = np.array([8.0, 12.0, 16.0, 20.0, 24.0, 30.0, 40.0])
+    sweep = []
+    for ratio in ratios:
+        dv = float(ratio) * du_scotti
+        sweep.append({"ratio": float(ratio), "lambda_um": linear_peak_um(du_scotti, dv, jac)})
+    lambdas = [row["lambda_um"] for row in sweep]
+    monotone = all(lambdas[i] < lambdas[i + 1] for i in range(len(lambdas) - 1))
+    return {"taxa": solved, "ratio_sweep": sweep, "ratio_sweep_monotone_increasing": monotone}
+
+
+def equal_diffusion_control(du: float, jac: tuple[float, float, float, float], lambda_um: float) -> dict:
+    """Du = Dv removes the diffusion-driven band. max sigma for k>0 must be negative."""
+    fu, fv, gu, gv = jac
+    kc = 2.0 * np.pi / lambda_um
+    ks = np.linspace(kc * 0.15, kc * 4.0, 400)
+    sig = sigma_plus(ks, du, du, fu, fv, gu, gv)
+    return {
+        "k_um": ks,
+        "sigma": sig,
+        "max_sigma_k_positive": float(np.max(sig)),
+        "sigma_at_zero": float(sigma_plus(np.array([0.0]), du, du, fu, fv, gu, gv)[0]),
+    }
+
+
+def _radial_profile(gray: np.ndarray, n_bins: int = 24) -> np.ndarray:
+    win = gray - float(gray.mean())
+    power = np.abs(np.fft.fftshift(np.fft.fft2(win))) ** 2
+    h, w = win.shape
+    cy, cx = h // 2, w // 2
+    yy, xx = np.ogrid[:h, :w]
+    rr = np.hypot(yy - cy, xx - cx).astype(int)
+    max_r = max(2, min(cx, cy))
+    prof = np.bincount(rr.ravel(), weights=power.ravel())[:max_r]
+    cnt = np.bincount(rr.ravel())[:max_r]
+    prof = prof / np.maximum(cnt, 1)
+    # Skip the DC bin and resample onto a common grid.
+    src = np.log1p(prof[1:])
+    if src.size < 4:
+        return np.zeros(n_bins)
+    x_old = np.linspace(0.0, 1.0, src.size)
+    x_new = np.linspace(0.0, 1.0, n_bins)
+    return np.interp(x_new, x_old, src)
+
+
+def _coherency(gray: np.ndarray) -> float:
+    gx = ndi.sobel(gray, axis=1)
+    gy = ndi.sobel(gray, axis=0)
+    jxx = ndi.gaussian_filter(gx * gx, 2.5)
+    jyy = ndi.gaussian_filter(gy * gy, 2.5)
+    jxy = ndi.gaussian_filter(gx * gy, 2.5)
+    coh = np.sqrt((jxx - jyy) ** 2 + 4.0 * jxy * jxy) / (jxx + jyy + 1e-9)
+    return float(np.mean(coh))
+
+
+def specimen_versus_field(field: np.ndarray) -> dict:
+    """Segment the Horsfall plate and compare its spectrum with the activator."""
+    from scipy import stats
+
+    im = Image.open(SPECIMEN).convert("L")
+    gray_u8 = np.asarray(im.resize((320, 216), Image.Resampling.BILINEAR), dtype=np.float64)
+    plate = gray_u8 / 255.0
+    border = np.concatenate([plate[0, :], plate[-1, :], plate[:, 0], plate[:, -1]])
+    contrast = np.abs(plate - float(np.median(border)))
+    mask = contrast >= max(float(np.percentile(contrast, 45.0)), 0.06)
+    mask = ndi.binary_fill_holes(ndi.binary_closing(mask, structure=np.ones((3, 3))))
+    foreground = float(np.mean(mask))
+    plate_coh = _coherency(plate)
+    plate_rad = _radial_profile(plate)
+
+    f = np.asarray(field, dtype=float)
+    f = (f - f.min()) / (np.ptp(f) + 1e-9)
+    sim = ndi.zoom(f, (216 / f.shape[0], 320 / f.shape[1]), order=1)[:216, :320]
+    sim_coh = _coherency(sim)
+    sim_rad = _radial_profile(sim)
+    # KS distance between the two radial spectra, treated as discrete densities.
+    p = np.exp(plate_rad - plate_rad.max())
+    q = np.exp(sim_rad - sim_rad.max())
+    p = p / p.sum()
+    q = q / q.sum()
+    ks = float(np.max(np.abs(np.cumsum(p) - np.cumsum(q))))
+    # Also the two-sample KS on luminance samples, which is what scipy reports.
+    rng = np.random.default_rng(3220)
+    plate_s = plate.ravel()[rng.choice(plate.size, 4000, replace=False)]
+    sim_s = sim.ravel()[rng.choice(sim.size, 4000, replace=False)]
+    ks_lum = float(stats.ks_2samp(plate_s, sim_s, method="asymp").statistic)
+    if plate_rad.std() > 0 and sim_rad.std() > 0:
+        radial_r = float(np.corrcoef(plate_rad, sim_rad)[0, 1])
+    else:
+        radial_r = float("nan")
+    return {
+        "specimen_foreground_fraction": foreground,
+        "specimen_coherency": plate_coh,
+        "simulation_coherency": sim_coh,
+        "radial_ks": ks,
+        "luminance_ks": ks_lum,
+        "radial_pearson_r": radial_r,
+    }
+
+
 def dominant_wavelength_um(field: np.ndarray, dx_um: float) -> float:
     ny, nx = field.shape
     win = field - float(field.mean())
@@ -233,6 +366,9 @@ def run_science() -> dict:
         seed=int(p["seed"]), n_steps=int(p["n_steps"]), dt=float(p["time_step"]), n_frames=12,
     )
     lambda_nl = dominant_wavelength_um(sim["final"], sim["dx_um"])
+    series = chronoseries_and_ratio_sweep(jac, du)
+    ablation = equal_diffusion_control(du, jac, lambda_um)
+    compared = specimen_versus_field(sim["final"])
     result = {
         "reference": ref,
         "u0": u0, "v0": v0, "fu": fu, "fv": fv, "gu": gu, "gv": gv,
@@ -248,6 +384,9 @@ def run_science() -> dict:
         "sim": sim,
         "pattern_std": float(sim["final"].std()),
         "homogeneous_std": 0.0,
+        "series": series,
+        "ablation": ablation,
+        "specimen_compare": compared,
     }
     _CACHE["result"] = result
     return result
@@ -308,31 +447,48 @@ def render_png(result: dict, path: Path) -> None:
     final = result["sim"]["final"]
     overlay = paint_flank(specimen, final, strength=1.0)
     fit = result["fit"]
-    fig, axes = plt.subplots(2, 2, figsize=(11.2, 8.4), dpi=120)
+    fig, axes = plt.subplots(2, 3, figsize=(14.4, 8.6), dpi=110)
     axes[0, 0].imshow(specimen.astype(np.uint8))
-    axes[0, 0].set_title("Horsfall 1905 Equus scotti (public domain)")
+    axes[0, 0].set_title("Horsfall 1905 Equus scotti")
     axes[0, 0].axis("off")
     extent = [0, result["sim"]["length_x_um"], 0, result["sim"]["length_y_um"]]
     im = axes[0, 1].imshow(final, origin="lower", cmap="cividis", extent=extent, aspect="auto")
-    axes[0, 1].set_title(f"Activator u, nonlinear λ = {result['lambda_nonlinear_um']:.1f} µm")
+    axes[0, 1].set_title(f"Activator, nonlinear λ = {result['lambda_nonlinear_um']:.1f} µm")
     axes[0, 1].set_xlabel("µm")
     axes[0, 1].set_ylabel("µm")
     fig.colorbar(im, ax=axes[0, 1], fraction=0.046)
-    axes[1, 0].imshow(overlay.astype(np.uint8))
-    axes[1, 0].set_title("Flank overlay at 164 µm (0.6 Ma)")
-    axes[1, 0].axis("off")
-    axes[1, 1].plot(fit["k_um"] * 1e3, fit["sigma_analytical"], color="#1b4f72", lw=2.0, label="analytical σ₊(k)")
-    axes[1, 1].plot(fit["k_um"] * 1e3, fit["sigma_numerical"], "o", color="#b9770e", ms=4, label="IMEX mode growth")
+    axes[0, 2].imshow(overlay.astype(np.uint8))
+    cmp = result["specimen_compare"]
+    axes[0, 2].set_title(
+        f"Flank overlay · plate coherency {cmp['specimen_coherency']:.2f}"
+    )
+    axes[0, 2].axis("off")
+    axes[1, 0].plot(fit["k_um"] * 1e3, fit["sigma_analytical"], color="#1b4f72", lw=2.0, label="analytical σ₊")
+    axes[1, 0].plot(fit["k_um"] * 1e3, fit["sigma_numerical"], "o", color="#b9770e", ms=3.5, label="IMEX")
     kc = 2.0 * np.pi / result["lambda_target_um"]
-    axes[1, 1].axvline(kc * 1e3, color="#922b21", ls="--", lw=1.0, label="k_c target")
-    axes[1, 1].set_xlabel("k (10⁻³ µm⁻¹)")
-    axes[1, 1].set_ylabel("growth rate")
-    axes[1, 1].set_title(f"Dispersion, Pearson r = {result['pearson_r']:.4f}")
-    axes[1, 1].legend(fontsize=8, frameon=False)
+    axes[1, 0].axvline(kc * 1e3, color="#922b21", ls="--", lw=1.0, label="k_c")
+    axes[1, 0].set_xlabel("k (10⁻³ µm⁻¹)")
+    axes[1, 0].set_ylabel("growth rate")
+    axes[1, 0].set_title(f"Dispersion r = {result['pearson_r']:.4f}")
+    axes[1, 0].legend(fontsize=7, frameon=False)
+    sweep = result["series"]["ratio_sweep"]
+    axes[1, 1].plot([row["ratio"] for row in sweep], [row["lambda_um"] for row in sweep], "-o", color="#1b4f72", ms=4)
+    named = {t["id"]: t["lambda_linear_um"] for t in result["series"]["taxa"]}
+    axes[1, 1].set_xlabel("Dv/Du at the scotti Du")
+    axes[1, 1].set_ylabel("linear λ (µm)")
+    axes[1, 1].set_title(
+        f"Pliohippus {named['pliohippus_pernix']:.0f} · Scotti {named['equus_scotti']:.0f} · Quagga {named['equus_quagga']:.0f} µm"
+    )
+    ab = result["ablation"]
+    axes[1, 2].plot(ab["k_um"] * 1e3, ab["sigma"], color="#6c3483", lw=2.0)
+    axes[1, 2].axhline(0.0, color="#7f8c8d", lw=0.8)
+    axes[1, 2].set_xlabel("k (10⁻³ µm⁻¹)")
+    axes[1, 2].set_ylabel("σ₊ when Du = Dv")
+    axes[1, 2].set_title(f"Ablation max σ = {ab['max_sigma_k_positive']:.3f}")
     fig.suptitle(
-        "Equus scotti · Turing wavenumber at 164 µm · Irvingtonian 0.6 Ma\n"
-        f"linear λ = {result['lambda_linear_um']:.2f} µm · Murray k_m wavelength = {result['lambda_murray_um']:.1f} µm · "
-        f"Dv/Du = {result['ratio']:.0f}",
+        "Equus scotti · 164 µm follicular Turing wavelength · Irvingtonian 0.6 Ma\n"
+        f"linear λ = {result['lambda_linear_um']:.2f} µm · Murray λ(k_m) = {result['lambda_murray_um']:.1f} µm · "
+        f"radial KS vs Horsfall plate = {cmp['radial_ks']:.3f}",
         fontsize=12,
     )
     fig.tight_layout()
@@ -385,6 +541,56 @@ def measure_morphoeval() -> list[dict]:
             "note": "a flat field would score 0; the matured ocellus field does not",
             "derived_from": "script",
         },
+        {
+            "name": "equal-diffusion ablation max growth rate",
+            "value": round(r["ablation"]["max_sigma_k_positive"], 6),
+            "unit": "1/time",
+            "method": "max of sigma_+(k) for k>0 when Du is copied onto Dv",
+            "reference_value": 0.0,
+            "source": "Turing 1952: diffusion-driven instability requires Du != Dv",
+            "note": "negative control; a positive value would mean the ablation failed",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pliohippus pernix linear wavelength",
+            "value": round(next(t["lambda_linear_um"] for t in r["series"]["taxa"] if t["id"] == "pliohippus_pernix"), 4),
+            "unit": "µm",
+            "method": "argmax of sigma_+ after solving Du at Dv/Du = 12 for the size-scaled target",
+            "reference_value": round(164.3 * (0.260 / 0.215), 4),
+            "source": "catalog linear proxies 0.260/0.215 applied to the 164.3 µm focal scale; MacFadden 1986 motivates the size trend only",
+            "note": "predecessor, 8.5 Ma",
+            "derived_from": "script",
+        },
+        {
+            "name": "Equus quagga Bard initiation wavelength",
+            "value": round(next(t["lambda_linear_um"] for t in r["series"]["taxa"] if t["id"] == "equus_quagga"), 4),
+            "unit": "µm",
+            "method": "argmax of sigma_+ after solving Du at Dv/Du = 30 for a 400 µm target",
+            "reference_value": 400.0,
+            "source": "Bard 1977 J. Zool. 183:527, initiation spacing about 0.4 mm",
+            "note": "successor chronospecies; longer than the Irvingtonian follicular mode",
+            "derived_from": "script",
+        },
+        {
+            "name": "Horsfall specimen coherency",
+            "value": round(r["specimen_compare"]["specimen_coherency"], 4),
+            "unit": "structure-tensor coherency",
+            "method": "mean structure-tensor coherency of the public-domain Horsfall plate",
+            "reference_value": round(r["specimen_compare"]["simulation_coherency"], 4),
+            "source": "Wikimedia Commons File:Equus_scotti.jpg, public domain, Horsfall 1905",
+            "note": "specimen value is not set equal to the simulation coherency",
+            "derived_from": "specimen image",
+        },
+        {
+            "name": "specimen versus simulation radial-spectrum KS",
+            "value": round(r["specimen_compare"]["radial_ks"], 4),
+            "unit": "KS distance",
+            "method": "Kolmogorov-Smirnov distance between radial log-power spectra of the Horsfall plate and the activator",
+            "reference_value": 0.0,
+            "source": "Horsfall 1905 plate versus the matured Schnakenberg field",
+            "note": f"luminance KS {r['specimen_compare']['luminance_ks']:.3f}; radial Pearson r {r['specimen_compare']['radial_pearson_r']:.3f}; foreground {r['specimen_compare']['specimen_foreground_fraction']:.3f}",
+            "derived_from": "specimen image",
+        },
     ]
 
 
@@ -407,8 +613,13 @@ def main() -> int:
         f"lambda_nonlinear={result['lambda_nonlinear_um']:.3f} µm "
         f"murray={result['lambda_murray_um']:.2f} µm "
         f"r={result['pearson_r']:.5f} rmse={result['rmse']:.4f} "
+        f"ablation={result['ablation']['max_sigma_k_positive']:.4f} "
+        f"ks={result['specimen_compare']['radial_ks']:.3f} "
         f"gif={n_frames}f {gw}x{gh}"
     )
+    for taxon in result["series"]["taxa"]:
+        print(f"  {taxon['id']}: target {taxon['lambda_um']:.2f} linear {taxon['lambda_linear_um']:.2f} ratio {taxon['ratio']:.0f}")
+    print("  ratio sweep", [(row["ratio"], round(row["lambda_um"], 1)) for row in result["series"]["ratio_sweep"]])
     if args.self_test:
         assert result["trace"] < 0.0
         assert result["det"] > 0.0
@@ -418,6 +629,17 @@ def main() -> int:
         assert result["lambda_nonlinear_um"] != 164.3
         assert result["pattern_std"] > 0.2
         assert n_frames >= 12 and min(gw, gh) >= 480
+        assert result["ablation"]["max_sigma_k_positive"] < 0.0
+        assert result["series"]["ratio_sweep_monotone_increasing"]
+        by_id = {t["id"]: t for t in result["series"]["taxa"]}
+        assert abs(by_id["equus_scotti"]["lambda_linear_um"] - 164.3) < 1.0
+        assert by_id["pliohippus_pernix"]["lambda_linear_um"] > by_id["equus_scotti"]["lambda_linear_um"]
+        assert by_id["equus_quagga"]["lambda_linear_um"] > by_id["pliohippus_pernix"]["lambda_linear_um"]
+        assert abs(by_id["equus_quagga"]["lambda_linear_um"] - 400.0) < 2.0
+        cmp = result["specimen_compare"]
+        assert cmp["specimen_coherency"] != cmp["simulation_coherency"]
+        assert 0.0 < cmp["radial_ks"] < 1.0
+        assert cmp["specimen_foreground_fraction"] > 0.2
         assert PNG_PATH.exists() and GIF_PATH.exists()
         again = dominant_wavelength_um(result["sim"]["final"], result["sim"]["dx_um"])
         assert abs(again - result["lambda_nonlinear_um"]) < 1e-9
