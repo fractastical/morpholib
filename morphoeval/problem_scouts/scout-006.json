@@ -1,0 +1,327 @@
+{
+  "scout": "scout-006",
+  "ground": "rule30",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "id": "R30-WV-01",
+      "title": "OP-02 empirical sentinel: center-column 1/2 density via spark-track activity metrics",
+      "gap": "OP-02 (docs/open-problems.json OP-02) has an exact crystal density proof but no diagonal-sample decorrelation bound; the repo never re-checked long-horizon center-column ones density with the same falsifiable activity ratios used for Xenopus Hypothesis 1 (spark_tracks -> analyze_calcium_activity).",
+      "done": "After pre-registering horizon T and tolerance eps in a new prereg JSON (no held-out bits touched before hash lock), a center-column-as-sparks CSV yields post-poke ones_fraction = sum(area)/T from analyze_experimental_hypotheses.analyze_calcium_activity such that |ones_fraction - 0.5| <= eps for T >= 100000 (PASS) OR the first t where cumulative density exits [0.5-eps, 0.5+eps] is written to a machine-readable verdict JSON (FAIL). eps = 0.01 is the default scorer threshold.",
+      "tool_route": "(1) New adapter only: morphoeval/adapters/rule30_center_column_to_spark_tracks.py --horizon 100000 --output morphoeval/adapters/fixtures/rule30_center_sparks.csv (reads OEIS bits in datasets/conus/conus_textile_reference.json and/or extends via models/1984-wolfram-conus-textile-rule30.py light-cone export). (2) python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/adapters/fixtures/rule30_center_sparks.csv morphoeval/adapters/fixtures/rule30_center_clusters.csv (3) python3 wave-vector-analysis/analyze_experimental_hypotheses.py morphoeval/adapters/fixtures/rule30_center_sparks.csv --clusters-csv morphoeval/adapters/fixtures/rule30_center_clusters.csv --analysis activity",
+      "deciding_data": "In repo: datasets/conus/conus_textile_reference.json (oeis_a051023_first_128). One local generate step: Rule 30 light-cone bits to T=100000 via models/1984-wolfram-conus-textile-rule30.py (no wet lab).",
+      "prior_attempts": "OP-02 tracked in docs/open-problems.json (Delphi pooled 2.03%, panel attempted); finite torus density in docs/RULE30_PRIZE_STATUS_AND_GAPS.md Theorem 35(1). No prior attempt used wave-vector-analysis on center-column bits.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Hypothesis activity path runs as-is once center bits are mapped to spark_tracks.csv schema; one small adapter is the only missing piece."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "128 center bits and full Rule 30 simulator are pinned in-repo; extending to T=1e5 is a single deterministic script run."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Verdict is a numeric inequality on ones_fraction vs 0.5 with fixed eps and T; no reviewer judgment."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Bit generation plus pandas aggregation completes in minutes on the cloud VM stack."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Closable as new files under morphoeval/adapters/ plus scout-owned fixtures; zero edits to tracked wave-vector or Rule30 scripts required."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sitting: adapter, cluster CSV, activity analysis, JSON verdict."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No audit or open-problems entry refutes this empirical density route for OP-02."
+        }
+      },
+      "alternate_lens": "OP-02 proof closure needs lean or simulation (Mahler decorrelation), not wavepipe alone."
+    },
+    {
+      "id": "R30-WV-02",
+      "title": "OP-01 empirical periodicity sentinel on center column via oscillatory-coherence pipeline",
+      "gap": "Prize 1 (OP-01) needs a global phase-spreading proof (P1.4 in docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md); exhaustive finite windows are done, but there is no automated long-horizon periodicity scan exported in spark_tracks.csv form for the center column c_t.",
+      "done": "Pre-registered: python3 wave-vector-analysis/analyze_experimental_hypotheses.py ... --analysis coherence on center-column sparks for T>=200000 returns max_autocorr_peak_period Pi_max; PASS for OP-01 sentinel if Pi_max > 500 or peak height < 0.2 (no strong period); FAIL if a single Pi <= 500 with peak height >= 0.2 is reported with (Pi, t0) in verdict JSON (counterexample candidate for Lean).",
+      "tool_route": "Same adapter as R30-WV-01 -> spark_tracks_to_clusters.py -> python3 wave-vector-analysis/analyze_experimental_hypotheses.py <sparks.csv> --clusters-csv <clusters.csv> --analysis coherence",
+      "deciding_data": "Generated Rule 30 center-column bitstream (see R30-WV-01); reference finite-window kills in docs/RULE30_PRIZE_STATUS_AND_GAPS.md (249500 pairs, Pi<=30).",
+      "prior_attempts": "OP-01 in docs/open-problems.json (panel + multi-agent); transparent-gate loophole documented in RULE30_PRIZE_STATUS_AND_GAPS.md; Lean MathOfBiology.lean covers local kernels only. No wavepipe periodicity scan on record.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "analyze_oscillatory_coherence is implemented and CLI-exposed; still needs the same one-file center-column adapter."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Simulator and short OEIS prefix in-repo; long horizon is generated locally."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done is discrete: reported (Pi, t0) or sub-threshold autocorr peak; scorer reads JSON numbers only."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Coherence on 2e5 one-dimensional events is lightweight vs TIFF parsing."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New adapter + output JSON only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Single loop after adapter exists; longer if T pushed to 1e6."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Empirical periodicity sentinel was not tried or refuted."
+        }
+      },
+      "alternate_lens": "Unconditional OP-01 proof requires lean lens on MathOfBiology.lean / global lemma, not wavepipe."
+    },
+    {
+      "id": "R30-WV-03",
+      "title": "Cross-model check: Xenopus Ca2+ bidirectional asymmetry vs Rule 30 damage-cone |v_L/v_R|",
+      "gap": "docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md and datasets/conus/README.md claim a four-regime defect-front taxonomy (Rule 30 v_R=+1, v_L≈-0.2604), but Xenopus inter-embryo Ca2+ waves (wave-vector-analysis) were never scored with the same cluster directionality metrics to test whether biological waves share that asymmetry ratio.",
+      "done": "Pre-registered on ground-truth-geometry videos only (OP-07 confound): from vector_clusters.csv, compute R = |mean_speed for clusters with mean_angle in (-135,-45)| / |mean_speed for clusters in (45,135)| on embryo A post-poke; compare to Rule 30 target ratio 0.2604 from conus_rule30_defect_fronts.csv row 'Boolean Jacobian Damage-Spreading'. PASS if R in [0.15, 0.45]; FAIL otherwise. Verdict file lists R, n_clusters, and source CSV hash.",
+      "tool_route": "python3 wave-vector-analysis/wave-vector-tiff-parser.py <ground_truth_tiff_dir> 0 --fps 1.0 --csv spark_tracks_gt.csv (or use wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv for smoke) -> python3 wave-vector-analysis/spark_tracks_to_clusters.py spark_tracks_gt.csv vector_clusters_gt.csv -> python3 wave-vector-analysis/analyze_experimental_hypotheses.py spark_tracks_gt.csv --clusters-csv vector_clusters_gt.csv --analysis directionality --embryo A; compare to python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only (emits damage-cone means) or full run writing conus_rule30_defect_fronts.csv at repo root.",
+      "deciding_data": "Smoke subset in repo: wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv. Full deciding set: embryo-blind ground-truth TIFF folders (not committed; named in OP-07). Rule 30 reference velocities generated by models/1984-wolfram-conus-textile-rule30.py.",
+      "prior_attempts": "OP-07 (docs/open-problems.json, status refuted): LOOO AUC 0.484; orientation confound 0.833 — using non-ground-truth geometry is a blocked route. OP-08 partial mirror/headward confound. No prior published comparison of Ca2+ asymmetry ratio to Rule 30 v_L/v_R.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Directionality analysis and cluster summarizer are named, existing CLI tools; Rule30 reference row comes from existing self-test."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Only a smoke spark_tracks subset is in-repo; full OP-07 ground-truth videos are an external fetch."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Ratio R against fixed interval [0.15, 0.45] is automatically scorable."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "TIFF parse dominates runtime but stays within hours for preregistered subset."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Outputs new CSV/JSON under morphoeval/adapters/; parser may write new CSV without modifying tracked sources."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Depends on TIFF availability; smoke subset gives a fast partial verdict."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Raw neighbour-prediction without geometry fix is refuted (OP-07); this route is allowed only with ground-truth-geometry prereg, not as a repeat of the blind LOOO test."
+        }
+      },
+      "alternate_lens": "Rule 30 exact v_L is a CA theorem; disproving biological analogy is measure/simulation, not wavepipe proof of CA."
+    },
+    {
+      "id": "R30-WV-04",
+      "title": "Calibrate directional spark simulation to Rule 30 mantle-lesion wake asymmetry (defect_fronts.csv row 3)",
+      "gap": "wave-vector-analysis/simulations/generate_simulated_data.py defaults to radial symmetric waves; docs/RULE30_PRIZE_CHATLOG.md Panel D documents asymmetric Rule 30 vs Meinhardt lesion wakes, but no spark_tracks simulation scenario is calibrated to those left/right wake speeds in conus_rule30_defect_fronts.csv.",
+      "done": "Pre-register target velocities v_L,v_R from conus_rule30_defect_fronts.csv 'Mantle-Lesion Wake' row. Run generate_simulated_data.py with radial=false and direction_deg lanes (config JSON) so that vector_clusters.csv mean |net_speed| left vs right differs by <=20% from CSV targets. PASS if relative error <=0.20 both sides; FAIL otherwise. Emit morphoeval/adapters/fixtures/r30_wake_calibration_verdict.json.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py (writes conus_rule30_defect_fronts.csv) -> build morphoeval/adapters/rule30_wake_wave_config.json from CSV -> python3 wave-vector-analysis/simulations/generate_simulated_data.py --config morphoeval/adapters/rule30_wake_wave_config.json --output morphoeval/adapters/fixtures/wake_sparks.csv -> python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/adapters/fixtures/wake_sparks.csv morphoeval/adapters/fixtures/wake_clusters.csv -> compare cluster net_speed quantiles to CSV (small scorer script in morphoeval/adapters/, new file).",
+      "deciding_data": "Generated conus_rule30_defect_fronts.csv from models/1984-wolfram-conus-textile-rule30.py; simulation stack in wave-vector-analysis/simulations/.",
+      "prior_attempts": "Conus audit morphoeval/kg/2026-10-18-conus-audit (87.3/100) validated morphometrics, not wavepipe calibration. simulations/catalog.json documents inter-embryo Ca2+ only. No prior wake-speed calibration attempt.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "generate_simulated_data.py, spark_tracks_to_clusters.py, and cluster speed fields run as-is; only config JSON and a tiny comparator script are new."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Rule30 wake metrics produced on demand from pinned script; no external download."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "20% relative error on two velocity numbers is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Simulation + cluster pass completes in minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "All new artifacts under morphoeval/adapters/fixtures/."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One loop after config draft."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route not previously attempted or refuted."
+        }
+      },
+      "alternate_lens": "Continuous Meinhardt wake physics is simulation lens (1984-wolfram-conus-textile-rule30.py PDE), not spark heuristics."
+    },
+    {
+      "id": "R30-WV-05",
+      "title": "White-tent chord CV: cluster-duration dispersion vs Conus specimen and Rule 30 geometric CV",
+      "gap": "datasets/conus/conus_textile_reference.json reports white_chord_cv=0.6403 (stjohn) vs Rule 30 theory CV≈0.7071 (README §White-Triangle law); no test applies vector_clusters duration_s dispersion to Rule-30-exported tent events in spark_tracks form.",
+      "done": "Adapter exports each Rule 30 white-tent apex as a short spark track along normalized shell axis; spark_tracks_to_clusters yields CV_duration = std(duration_s)/mean(duration_s). PASS if |CV_duration - 0.7071| <= 0.08 for pure Rule30 synthetic tents AND |CV_duration - 0.6403| <= 0.10 for specimen-derived tent proxy tracks (or documents which side fails).",
+      "tool_route": "morphoeval/adapters/rule30_white_tent_to_spark_tracks.py (new) using white-chord runs in conus_textile_reference.json -> spark_tracks_to_clusters.py -> python3 wave-vector-analysis/generate_all_hypothesis_plots.py (optional plots) with cluster CSV; scorer reads CV from clusters column stats.",
+      "deciding_data": "In repo: datasets/conus/conus_textile_reference.json (stjohn_white_chord_runs_px, white_chord_cv). Rule 30 synthetic tents from models/1984-wolfram-conus-textile-rule30.py metrics (res['r30_cv']).",
+      "prior_attempts": "morphoeval/kg/2026-10-18-conus-audit specimen-match axis scored chord KS/CV morphometrically, not via wavepipe. pass3_neural_clades_reference.json notes 1D chord KS indiscriminability — 2D chiral observables added elsewhere (vision/simulation lenses).",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "Cluster duration stats use existing spark_tracks_to_clusters output columns; tent-to-spark adapter is new."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Specimen chord runs and CV pinned in JSON; Rule30 CV from self-test."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "CV thresholds are numeric; failure mode identifies which reference missed."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Thousands of chord runs, not millions of TIFF frames."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Adapter + fixture CSVs only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single pass once adapter written."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Morphometric CV route exists but wavepipe chord-CV route is novel; 1D KS indiscriminability doc warns interpretation limits."
+        }
+      },
+      "alternate_lens": "2D chiral tent-wall discrimination is vision/simulation (datasets/conus/pass3_neural_clades_reference.json), not 1D cluster CV alone."
+    },
+    {
+      "id": "R30-WV-06",
+      "title": "Paired inter-embryo coupling vs isolation: PLV as a metaphor test for OP-01 depth-1 cylinder coupling",
+      "gap": "OP-01 gap text (RULE30_PRIZE_STATUS_AND_GAPS.md) states depth-1 right-cylinder coupling collapses sparse-pulse survival but has positive entropy; inter-embryo Ca2+ coupling in simulations is the only wavepipe-native A/B coupling control, yet --compare-ab scenarios were never scored with analyze_oscillatory_coherence PLV metrics against an isolated control.",
+      "done": "Pre-register seed=42. Run python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_coupled two_embryos_isolated_control --output morphoeval/adapters/fixtures/coupling_ab --duration 30 --seed 42; feed lane A/B CSVs through spark_tracks_to_clusters and analyze_experimental_hypotheses --analysis coherence; PASS if PLV(A,B) coupled - PLV(A,B) isolated >= 0.15; FAIL if delta < 0.05. Writes coupling_plv_verdict.json.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_coupled two_embryos_isolated_control --output morphoeval/adapters/fixtures/coupling_ab --seed 42 -> spark_tracks_to_clusters on both lanes -> analyze_experimental_hypotheses.py --analysis coherence on each lane (embryo filters A/B).",
+      "deciding_data": "Fully synthetic; scenarios defined in generate_simulated_data.py; catalog.json claim boundary in-repo.",
+      "prior_attempts": "OP-01 panel attempts (docs/open-problems.json) are mathematical, not simulation-PLV. wave-vector simulations/README documents scenarios but not PLV coupling test tied to Rule30.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Entire chain is existing CLIs with no adapter beyond output paths."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "100% in-repo synthetic data."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "PLV delta thresholds 0.15 / 0.05 are numeric."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Sub-minute simulation and analysis."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Only new files under morphoeval/adapters/fixtures/."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "One command chain, one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not attempted; does not claim to prove OP-01 — explicit metaphor/control only."
+        }
+      },
+      "alternate_lens": "OP-01 transparent-gate proof remains lean/simulation; PLV does not decide Prize 1."
+    },
+    {
+      "id": "OP-01-LEAN-BLOCKED",
+      "title": "OP-01 Prize 1: prove D1(t)=1 hits closed gates {c_t=1} (full transparent-gate closure)",
+      "gap": "docs/open-problems.json OP-01: defects arrive infinitely often but transparent-gate absorption on c_t=0 rows remains; depth-1 right cylinder has ~0.32 bits/step entropy so no finite local transducer closes all (Pi, t0).",
+      "done": "Lean-checked proof in morphoeval/lean/MathOfBiology.lean (0 sorry) for all t0, Pi, short-run words OR explicit counterexample word — same as OP-01 done field.",
+      "tool_route": "wave-vector-analysis pipeline cannot produce this evidence; closest repo tools: morphoeval/lean/MathOfBiology.lean + models/1984-wolfram-conus-textile-rule30.py exhaustive cylinders.",
+      "deciding_data": "Proof artifacts in morphoeval/lean/; computational census in docs/RULE30_PRIZE_STATUS_AND_GAPS.md.",
+      "prior_attempts": "docs/open-problems.json attempted_by: panel, unattributed; Delphi pooled 11.52%; P1.4 subgoal mean 31.9/100 in RULE30_BAYESIAN_DELPHI_ASSESSMENT.md.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "spark-track -> cluster -> hypothesis plots do not emit Lean certificates or global mixing invariants."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Census data and Lean stubs exist, but wavepipe does not consume them as proof."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "OP-01 done criterion is already exact (proof or counterexample word)."
+        },
+        "compute_in_repo": {
+          "score": 6,
+          "why": "Exhaustive search already ran to (500,500); full proof is not a wavepipe hour-scale task."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "N/A for wavepipe closure."
+        },
+        "time_to_verdict": {
+          "score": 1,
+          "why": "Not reachable in one wavepipe loop."
+        },
+        "not_blocked": {
+          "score": 1,
+          "why": "Many panel attempts; wavepipe route specifically unrouted, not refuted."
+        }
+      },
+      "alternate_lens": "lean lens (MathOfBiology.lean) or simulation lens (1984-wolfram-conus-textile-rule30.py cylinder sweeps)."
+    },
+    {
+      "id": "OP-03-BARRIER",
+      "title": "OP-03 Prize 3: fixed-seed Omega(T) RAM lower bound (barrier, not another ANF attempt)",
+      "gap": "docs/open-problems.json OP-03: multivariate deg=2T-1 is proved; fixed-seed uniform lower bound needs P vs EXP machinery; Delphi pooled 0.037%.",
+      "done": "Formal barrier or specified model where bound holds — per OP-03 done field.",
+      "tool_route": "wave-vector-analysis cannot decide; use lean or delphi scoring.",
+      "deciding_data": "Theorem 35(2) in docs/RULE30_PRIZE_STATUS_AND_GAPS.md; no spark imaging data.",
+      "prior_attempts": "Panel + unattributed in open-problems.json; explicit guidance to publish barrier not bound attempt.",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "why": "Ca2+ spark kinematics unrelated to Boolean circuit lower bounds."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "ANF degree data in docs only."
+        },
+        "falsifiable_done": {
+          "score": 11,
+          "why": "OP-03 done is formal but not wavepipe-scorable."
+        },
+        "compute_in_repo": {
+          "score": 5,
+          "why": "Not a wavepipe workload."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "N/A."
+        },
+        "time_to_verdict": {
+          "score": 1,
+          "why": "Open TCS problem."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "Delphi and docs direct workers away from another naive bound attempt; wavepipe is wrong tool."
+        }
+      },
+      "alternate_lens": "lean or delphi lens."
+    }
+  ]
+}
