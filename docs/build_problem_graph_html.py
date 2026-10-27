@@ -211,7 +211,7 @@ def prediction_graph_nodes(pred: dict) -> tuple[list[dict], list[dict]]:
             p["outcome"] == "partially_resolved" for p in plist) else "solved",
             "family": "Registered predictions", "label": org,
             "sub": f"{len(plist)} predictions · {sum(p['outcome'] == 'confirmed' for p in plist)} confirmed · "
-                   f"{sum(p['outcome'] == 'partially_resolved' for p in plist)} partial",
+                   f"{sum(p['outcome'] == 'partially_resolved' for p in plist)} partial · click to see them",
             "time": "2026-10-26", "timeKind": "recorded", "source": "predictions/prediction_registry.json",
             "detail": f"Registered prediction organism: {org} — selected for dataset depth, protein-catalog coverage, and a public mutant/literature test atlas. Click this node to list all of its predictions in the inspector; click any prediction in that list to read it in full."})
         edges.append({"from": "pred0", "to": oid, "agent": "wonder", "probStatus": "structural"})
@@ -271,7 +271,7 @@ def thompson_graph_nodes(thomp: dict) -> tuple[list[dict], list[dict]]:
               "source": "thompson/thompson_1917_claims.json",
               "detail": ("Every testable claim in On Growth and Form (1917), cited by chapter/pages/figures and "
                          "assessed: 9 DONE_REPO, 13 PARTIAL_REPO, 13 DONE_ELSEWHERE, 21 UNTESTED, "
-                         "3 NOT_TESTABLE_AS_STATED. Select a chapter node, then browse its claims in the "
+                         "3 NOT_TESTABLE_AS_STATED. Click this node to list all 59 claims in the inspector; click any claim there to read it. Browse also in the "
                          "Thompson claims browser below the graph.")}]
     edges = [{"from": "t1", "to": "t-claims", "agent": "wonder", "label": "59-claim registry", "probStatus": "structural"}]
     xs = [20, 255, 490, 735, 975, 1215]
@@ -548,7 +548,7 @@ a{color:var(--acc)}
 }
 </style></head><body><main>
 <h1>Problem graph — every problem attempted, including the branches that failed</h1>
-<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Upper-left corner triangle = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. Click a node to select it; <b>double-click a node with downstream nodes to collapse/expand everything below it</b> (categories act as folders), and double-click a leaf node to open its inspector — the Bayesian Delphi panel and Rule 30 prizes open the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
+<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Upper-left corner triangle = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. <b>Click any node to open its inspector right here</b> — hub/count nodes (registered predictions, Thompson claims) list every item behind the count in the inspector, and clicking an item there reads it in full; <b>double-click a node with downstream nodes to collapse/expand everything below it</b> (categories act as folders) — the Bayesian Delphi panel and Rule 30 prizes open the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
 
 <figure style="margin:12px 0"><img src="media/problem_graph_discovery.gif" alt="Animated tour of the discovery problem graph: problems build up lane by lane, outcomes are tallied (solved, partial, open, refuted-kept), then the camera zooms to the scored registered predictions" style="width:100%;height:auto;border:1px solid var(--line);border-radius:9px" loading="lazy"><figcaption class="small mut" style="margin-top:6px">The graph in ~11 seconds — build-up, outcome tally, the scored registered predictions, and finally the scientific claims shown definitively, positively or negatively (audit, infrastructure and agent-process points excluded from that roll). Still poster: <a href="media/problem_graph_discovery_poster.png">problem_graph_discovery_poster.png</a> · Regenerate: <code>python3 docs/media/make_problem_graph_animation.py</code> (numbers recomputed from this page's data).</figcaption></figure>
 
