@@ -1,0 +1,54 @@
+sim_id: delphi10000-euplectella-aspergillum-turing-wavelength-s0
+slot: 3224
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 3.43e-05
+log10_size_m: -4.465
+size_human: "34.3 µm"
+scale_tier: 4_cellular_10um
+detail_variant: s0
+anatomical_structure: "Turing wavelength of the Euplectella aspergillum skeletal lattice (cohort label: pigment stripe / ocellus), Holocene"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+chronoseries: "1/1"
+fossil_lineage_group: ""
+equations:
+- law_name: Schnakenberg Turing inequality at the 34.3 µm detail scale
+  formula: "h^2 > 4 D_u D_v det(J), h = D_v f_u + D_u g_v = 23, 529 > 120"
+  lean_decl: MathOfBiology.Loop_3224.lambdaDetail
+  lean_theorem: MathOfBiology.Loop_3224.schnakenberg_turing_inequality
+  lean_locus: morphoeval/lean/loops/Loop_3224_euplectella_aspergillum_turing_wavelength_s0.lean#L34-L35
+  lean_code: "theorem schnakenberg_turing_inequality : 23 * 23 > 4 * 30 := by decide"
+  variables: "D_u = 1, D_v = 30, f_u = 0.8, g_v = -1, det(J) = 1, λ_c = 3.43e-05 m"
+  role: "Wavelength selection is allowed only inside the Turing band. This (a, b, D_v) set is not the 51 µm sibling."
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012; kinetics evaluated at Aizenberg-scale λ for E. aspergillum"
+  code_locus: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py#L105-L135
+- law_name: Critical wavenumber k_c = 2π / λ_c
+  formula: "k_c = 183183 m^-1, |183183 * 343 - round(2π * 1e7)| = 84 < 343"
+  lean_decl: MathOfBiology.Loop_3224.kDetail
+  lean_theorem: MathOfBiology.Loop_3224.kc_rounds_two_pi_over_lambda
+  lean_locus: morphoeval/lean/loops/Loop_3224_euplectella_aspergillum_turing_wavelength_s0.lean#L29-L32
+  lean_code: "theorem kc_rounds_two_pi_over_lambda : Int.natAbs ((183183 : Int) * 343 - 62831853) < 343 := by decide"
+  variables: "λ_c = 343 × 10^-7 m = 3.43e-05 m; Holocene age 0 Ma"
+  role: "Pins the detail-scale wavenumber. Chronoseries 1/1 has no predecessor chronospecies."
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py#L137-L149
+- law_name: Equal-diffusion ablation has no Turing band
+  formula: "D_u = D_v = 1 ⇒ h = f_u + g_v = -0.2 < 0"
+  lean_decl: MathOfBiology.Loop_3224.lambdaCoarse
+  lean_theorem: MathOfBiology.Loop_3224.equal_diffusion_has_no_turing_band
+  lean_locus: morphoeval/lean/loops/Loop_3224_euplectella_aspergillum_turing_wavelength_s0.lean#L42-L43
+  lean_code: "theorem equal_diffusion_has_no_turing_band : (8 : Int) + (-10) < 0 := by decide"
+  variables: "10·h = 8 + (-10) at equal diffusion"
+  role: "Negative control. Pattern formation at this scale requires D_v/D_u = 30, not equal diffusion."
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py#L253-L266
+- law_name: Detail scale packs more wavelengths than the 51 µm comparison tier
+  formula: "1.48 < λ_51 / λ_34.3 < 1.49"
+  lean_decl: MathOfBiology.Loop_3224.lambdaDetail
+  lean_theorem: MathOfBiology.Loop_3224.detail_packs_more_wavelengths
+  lean_locus: morphoeval/lean/loops/Loop_3224_euplectella_aspergillum_turing_wavelength_s0.lean#L46-L48
+  lean_code: "theorem detail_packs_more_wavelengths : lambdaCoarse * 100 > lambdaDetail * 148 ∧ lambdaDetail * 149 > lambdaCoarse * 100 := by decide"
+  variables: "λ_detail = 343, λ_coarse = 510 in units of 10^-7 m"
+  role: "What changes at this scale versus the coarser cellular tier. Age stays 0 Ma (chronoseries 1/1)."
+  source_citation: "Aizenberg et al. (2005) DOI:10.1126/science.1112255"
+  code_locus: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py#L58-L64
