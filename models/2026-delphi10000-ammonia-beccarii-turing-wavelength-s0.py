@@ -374,11 +374,18 @@ def segment_specimen(rgb: np.ndarray) -> dict:
     um_per_px = (500.0 / bar_px) if bar_px >= 20 else None
     diameters = []
     area_diameters = []
+    rim_diameters = []
     if um_per_px is not None:
         for t in tests:
-            # Greatest-diameter proxy: the longer side of the test's bounding box.
+            # Halo-inclusive bounding box (gray > 0.08). This catches the bright rim.
             diameters.append(t["bbox_px"] * um_per_px)
             area_diameters.append(2.0 * math.sqrt(t["area_px"] / math.pi) * um_per_px)
+            # Rim-excluded core: only pixels well above the black background.
+            core = t["mask"] & (gray > 0.32)
+            if int(core.sum()) < 40:
+                continue
+            cys, cxs = np.where(core)
+            rim_diameters.append(float(max(cxs.max() - cxs.min() + 1, cys.max() - cys.min() + 1)) * um_per_px)
     shell = np.zeros(gray.shape, dtype=bool)
     for t in tests:
         shell |= t["mask"]
@@ -400,7 +407,9 @@ def segment_specimen(rgb: np.ndarray) -> dict:
         "um_per_px": um_per_px,
         "diameters_um": diameters,
         "area_equivalent_diameters_um": area_diameters,
+        "rim_excluded_diameters_um": rim_diameters,
         "mean_diameter_um": float(np.mean(diameters)) if diameters else None,
+        "mean_rim_excluded_diameter_um": float(np.mean(rim_diameters)) if rim_diameters else None,
         "diameter_cv": float(np.std(diameters) / np.mean(diameters)) if diameters else None,
         "foreground_fraction": float(np.mean(shell)),
         "mean_circularity": float(np.mean([t["circularity"] for t in tests])) if tests else None,
@@ -509,7 +518,8 @@ def render_comparison(base_rgb: np.ndarray, last_rgb: np.ndarray, field: np.ndar
 
 
 def build_metrics(field: np.ndarray, linear: dict, sweep: dict, controls: dict,
-                  seg: dict, band: tuple[float, float], gamma: float) -> dict:
+                  seg: dict, band: tuple[float, float], gamma: float,
+                  grid_convergence: dict) -> dict:
     lam_meas = dominant_wavelength_um(field)
     spacings = spot_spacings_um(field)
     if spacings.size >= 5:
@@ -558,12 +568,15 @@ def build_metrics(field: np.ndarray, linear: dict, sweep: dict, controls: dict,
             "test_inside_band": bool(band[0] <= DOMAIN_UM <= band[1]),
             "detail_inside_band": bool(band[0] <= LAMBDA_UM <= band[1]),
         },
+        "grid_convergence_um": grid_convergence,
         "specimen": {
             "n_tests": seg["n_tests"],
             "scale_bar_px": seg["scale_bar_px"],
             "um_per_px": seg["um_per_px"],
             "diameters_um": seg["diameters_um"],
             "mean_diameter_um": seg["mean_diameter_um"],
+            "mean_rim_excluded_diameter_um": seg.get("mean_rim_excluded_diameter_um"),
+            "rim_excluded_diameters_um": seg.get("rim_excluded_diameters_um"),
             "diameter_cv": seg["diameter_cv"],
             "foreground_fraction": seg["foreground_fraction"],
             "mean_circularity": seg["mean_circularity"],
@@ -588,6 +601,13 @@ def run_pipeline(self_test: bool = False) -> dict:
     field, _v, snaps = simulate_field(gamma, DV, N_GRID, N_STEPS, SEED, snapshots=N_FRAMES)
     sweep = wavelength_sweep(gamma, jac)
     controls = ablation_controls(gamma, jac)
+    u128, _, _ = simulate_field(gamma, DV, n=128, nsteps=5200, seed=SEED, snapshots=0)
+    i96 = sweep["factors"].index(1.0)
+    grid_convergence = {
+        "96": float(sweep["measured_um"][i96]),
+        "128": dominant_wavelength_um(u128),
+        "160": dominant_wavelength_um(field),
+    }
 
     rgb = np.asarray(Image.open(SPECIMEN).convert("RGB").resize(GIF_SIZE, Image.Resampling.BILINEAR), dtype=np.float64) / 255.0
     seg = segment_specimen(rgb)
@@ -599,7 +619,7 @@ def run_pipeline(self_test: bool = False) -> dict:
         width, height = gif.size
     render_comparison(rgb, last, field, sweep, band, gamma, jac, DV, COMPARISON_PNG)
 
-    metrics = build_metrics(field, linear, sweep, controls, seg, band, gamma)
+    metrics = build_metrics(field, linear, sweep, controls, seg, band, gamma, grid_convergence)
     metrics["gif"] = {"frames": n_frames, "width": width, "height": height, "path": str(GROWTH_GIF.relative_to(ROOT))}
     metrics["png"] = str(COMPARISON_PNG.relative_to(ROOT))
     # Drop non-serialisable leftovers (none expected). Diameters are lists of floats.
@@ -621,8 +641,10 @@ def run_pipeline(self_test: bool = False) -> dict:
         assert abs(metrics["saturated_wavelength_um"] - LAMBDA_UM) / LAMBDA_UM < 0.12, metrics["saturated_wavelength_um"]
         assert n_frames >= 10 and min(width, height) >= 480
         assert seg["n_tests"] >= 4, seg["n_tests"]
-        assert seg["mean_diameter_um"] is not None
-        assert abs(seg["mean_diameter_um"] - 600.0) > 1.0  # non-circular vs the caption
+        assert seg["mean_diameter_um"] is not None and seg["mean_rim_excluded_diameter_um"] is not None
+        assert abs(seg["mean_diameter_um"] - 600.0) > 1.0
+        assert abs(seg["mean_rim_excluded_diameter_um"] - seg["mean_diameter_um"]) > 1.0
+        assert all(abs(v - LAMBDA_UM) / LAMBDA_UM < 0.15 for v in grid_convergence.values()), grid_convergence
         print(
             f"[PASS] slot 3108 Ammonia beccarii λc=31.37 µm age=0 Ma "
             f"dispersion r={metrics['dispersion_pearson_r']:.4f} "
@@ -713,11 +735,31 @@ def measure_morphoeval() -> list[dict]:
             "name": "specimen segmented mean test diameter",
             "value": None if spec["mean_diameter_um"] is None else round(spec["mean_diameter_um"], 4),
             "unit": "µm",
-            "method": "equivalent circular diameter of each filled test on the resized plate, scaled by the detected 500 µm bar",
+            "method": "longer side of the gray>0.08 bounding box of each test, scaled by the detected 500 µm bar (includes the bright rim)",
             "reference_value": 600.0,
             "reference_source": "Hillewaert 2012 caption diameter ~600 µm",
-            "note": f"n={spec['n_tests']}; diameters={spec['diameters_um']}; CV={spec['diameter_cv']}",
+            "note": f"n={spec['n_tests']}; halo diameters={spec['diameters_um']}; CV={spec['diameter_cv']}",
             "derived_from": "output",
+        },
+        {
+            "name": "specimen rim-excluded test diameter",
+            "value": None if spec.get("mean_rim_excluded_diameter_um") is None else round(spec["mean_rim_excluded_diameter_um"], 4),
+            "unit": "µm",
+            "method": "longer side of the gray>0.32 core inside each segmented test, same 500 µm scale bar",
+            "reference_value": 600.0,
+            "reference_source": "Hillewaert 2012 caption diameter ~600 µm",
+            "note": f"cores={spec.get('rim_excluded_diameters_um')}; halo mean={spec['mean_diameter_um']}",
+            "derived_from": "output",
+        },
+        {
+            "name": "grid convergence FFT wavelength at 128",
+            "value": round(m["grid_convergence_um"]["128"], 4),
+            "unit": "µm",
+            "method": "radial FFT peak on a 128² face at the same γ as the 160² production run",
+            "reference_value": LAMBDA_UM,
+            "reference_source": "linear λ_c = 31.37 µm",
+            "note": f"also 96²={m['grid_convergence_um']['96']}, 160²={m['grid_convergence_um']['160']}",
+            "derived_from": "script",
         },
         {
             "name": "specimen structure-tensor coherency",
