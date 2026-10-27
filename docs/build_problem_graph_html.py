@@ -46,6 +46,20 @@ def validate(data: dict) -> list[str]:
             if e["to"] in data["DELPHI"] and abs(e["prob"] - data["DELPHI"][e["to"]]["pooled"]["posterior"]) > 0.6:
                 errs.append(f"edge {e['from']}->{e['to']}: prob {e['prob']} != Delphi pooled posterior "
                             f"{data['DELPHI'][e['to']]['pooled']['posterior']} for its target")
+        # Every action must RECORD its probability (Thompson-registry rule,
+        # 2026-10-26): either a scored prob recorded before the attempt, or an
+        # explicit status saying why there is none. A bare edge fails the build,
+        # so no future action can silently go unrecorded. Historical attempts
+        # completed before this rule are marked not_recorded_historical --
+        # their prior is never reconstructed after the fact.
+        st = e.get("probStatus")
+        if "prob" in e:
+            if st not in (None, "delphi_scored", "registered_prediction"):
+                errs.append(f"edge {e['from']}->{e['to']}: prob with inconsistent probStatus {st!r}")
+        elif st not in ("not_recorded_historical", "pending_delphi", "structural"):
+            errs.append(f"edge {e['from']}->{e['to']}: no probability recorded and no explicit "
+                        f"probStatus (got {st!r}) -- record a Delphi/registered prob before the "
+                        "attempt, or mark pending_delphi / not_recorded_historical / structural")
     for n in nodes:
         for np in n.get("nanopubs", []):
             uri = np.get("uri", "")
@@ -171,21 +185,22 @@ def prediction_graph_nodes(pred: dict) -> tuple[list[dict], list[dict]]:
     org_x = {"Danio rerio": 255, "Drosophila melanogaster": 610, "Xenopus tropicalis": 975}
     nodes = [{
         "id": "pred0", "x": 610, "y": 975, "status": "root", "family": "Registered predictions",
-        "label": "Registered predictions", "sub": "outcome + resolvability, registered 2026-10-26 before scoring",
+        "label": "Registered predictions", "sub": "14 predictions · click to see every prediction",
         "time": "2026-10-26", "timeKind": "recorded", "source": "predictions/prediction_registry.json",
         "detail": ("14 predictions for the 3 best-supported organisms (Danio, Drosophila, Xenopus), each with TWO "
                    "registered claims: an outcome prediction and a resolvability prediction (can current data decide "
-                   "it?). Scored 2026-10-26: 9 confirmed, 5 partially resolved, 0 refuted; meta-resolvability 2/4.")},
+                   "it?). Scored 2026-10-26: 9 confirmed, 5 partially resolved, 0 refuted; meta-resolvability 2/4. "
+                   "Click this node to list every prediction in the inspector; click a prediction in that list to read it in full.")},
         {"id": "pred-meta", "x": 1215, "y": 1075, "status": "partial", "family": "Registered predictions",
          "label": "Meta-resolvability 2/4", "sub": "solve-rate forecasts: 2 confirmed, 2 refuted",
          "time": "2026-10-26", "timeKind": "recorded", "source": "predictions/prediction_registry.json (META-RES-01..04)",
          "detail": "; ".join(f"{m['id']} [{m['outcome']}]: {m['prediction']}" for m in pred["meta"])},
     ]
-    edges = [{"from": "root", "to": "pred0", "agent": "wonder"},
-             {"from": "pred0", "to": "pred-meta", "agent": "wonder"},
-             {"from": "f4", "to": "pred-danio-x", "agent": "wonder", "label": "BMP evidence base"},
-             {"from": "b4", "to": "pred-danio-x", "agent": "wonder", "label": "zebrafish programme"},
-             {"from": "b2", "to": "pred-xenopus-x", "agent": "wonder", "label": "xenopus programme"}]
+    edges = [{"from": "root", "to": "pred0", "agent": "wonder", "probStatus": "structural"},
+             {"from": "pred0", "to": "pred-meta", "agent": "wonder", "probStatus": "structural"},
+             {"from": "f4", "to": "pred-danio-x", "agent": "wonder", "label": "BMP evidence base", "probStatus": "structural"},
+             {"from": "b4", "to": "pred-danio-x", "agent": "wonder", "label": "zebrafish programme", "probStatus": "structural"},
+             {"from": "b2", "to": "pred-xenopus-x", "agent": "wonder", "label": "xenopus programme", "probStatus": "structural"}]
     edges[2]["to"] = edges[3]["to"] = org_slug["Danio rerio"]; edges[4]["to"] = org_slug["Xenopus tropicalis"]
     by_org: dict[str, list[dict]] = {}
     for p in pred["predictions"]:
@@ -196,10 +211,10 @@ def prediction_graph_nodes(pred: dict) -> tuple[list[dict], list[dict]]:
             p["outcome"] == "partially_resolved" for p in plist) else "solved",
             "family": "Registered predictions", "label": org,
             "sub": f"{len(plist)} predictions · {sum(p['outcome'] == 'confirmed' for p in plist)} confirmed · "
-                   f"{sum(p['outcome'] == 'partially_resolved' for p in plist)} partial",
+                   f"{sum(p['outcome'] == 'partially_resolved' for p in plist)} partial · click to see them",
             "time": "2026-10-26", "timeKind": "recorded", "source": "predictions/prediction_registry.json",
-            "detail": f"Registered prediction organism: {org} — selected for dataset depth, protein-catalog coverage, and a public mutant/literature test atlas."})
-        edges.append({"from": "pred0", "to": oid, "agent": "wonder"})
+            "detail": f"Registered prediction organism: {org} — selected for dataset depth, protein-catalog coverage, and a public mutant/literature test atlas. Click this node to list all of its predictions in the inspector; click any prediction in that list to read it in full."})
+        edges.append({"from": "pred0", "to": oid, "agent": "wonder", "probStatus": "structural"})
         for i, p in enumerate(plist):
             nodes.append({
                 "id": p["id"], "x": org_x[org], "y": 1175 + i * 88,
@@ -211,7 +226,10 @@ def prediction_graph_nodes(pred: dict) -> tuple[list[dict], list[dict]]:
                 "detail": (f"OUTCOME: {p['prediction']} QUANTITATIVE: {p['quant']} "
                            f"RESOLVABILITY FORECAST: {p['res_category']} (conf {p['res_confidence']}, expected {p['expected_verdict']}). "
                            f"EVIDENCE: {p['evidence'] or '—'}")})
-            edges.append({"from": oid, "to": p["id"], "agent": "wonder"})
+            edges.append({"from": oid, "to": p["id"], "agent": "wonder",
+                          "prob": round(p["res_confidence"] * 100, 1),
+                          "probStatus": "registered_prediction",
+                          "probNote": "Registered resolvability confidence, predictions/prediction_registry.json (recorded 2026-10-26 before scoring)"})
     return nodes, edges
 
 
@@ -248,14 +266,14 @@ def thompson_graph_nodes(thomp: dict) -> tuple[list[dict], list[dict]]:
     for c in thomp["claims"]:
         chapters.setdefault(c["chapter_title"], []).append(c)
     nodes = [{"id": "t-claims", "x": 20, "y": 1705, "status": "partial", "family": "Thompson claims",
-              "label": "Thompson 1917 claims", "sub": "59 claims · double-click a chapter to browse its claims below",
+              "label": "Thompson 1917 claims", "sub": "59 claims · click to see every claim",
               "time": "1917 (claims) / registry 2026-10-26", "timeKind": "recorded",
               "source": "thompson/thompson_1917_claims.json",
               "detail": ("Every testable claim in On Growth and Form (1917), cited by chapter/pages/figures and "
                          "assessed: 9 DONE_REPO, 13 PARTIAL_REPO, 13 DONE_ELSEWHERE, 21 UNTESTED, "
-                         "3 NOT_TESTABLE_AS_STATED. Select a chapter node, then browse its claims in the "
+                         "3 NOT_TESTABLE_AS_STATED. Click this node to list all 59 claims in the inspector; click any claim there to read it. Browse also in the "
                          "Thompson claims browser below the graph.")}]
-    edges = [{"from": "t1", "to": "t-claims", "agent": "wonder", "label": "59-claim registry"}]
+    edges = [{"from": "t1", "to": "t-claims", "agent": "wonder", "label": "59-claim registry", "probStatus": "structural"}]
     xs = [20, 255, 490, 735, 975, 1215]
     for i, (title, cs) in enumerate(chapters.items()):
         cid = f"tch-{i}"
@@ -263,13 +281,13 @@ def thompson_graph_nodes(thomp: dict) -> tuple[list[dict], list[dict]]:
         status = "solved" if done == len(cs) else ("open" if done == 0 and all(c["status"] == "UNTESTED" for c in cs) else "partial")
         nodes.append({"id": cid, "x": xs[i % 6], "y": 1805 + (i // 6) * 88, "status": status,
                       "family": "Thompson claims", "label": f"Ch. {cs[0]['chapter'].split()[0]} · {len(cs)} claims",
-                      "sub": f"{title} — {done}/{len(cs)} done",
+                      "sub": f"{title} — {done}/{len(cs)} done · click to see the claims",
                       "time": "1917", "timeKind": "recorded", "source": "thompson/thompson_1917_claims.json",
                       "detail": (f"Chapter {cs[0]['chapter']} — {title}: {len(cs)} claims "
                                  f"({', '.join(sorted({c['status'] for c in cs}))}). "
-                                 "Its claims are listed in the Thompson claims browser below; "
-                                 "click the chapter filter there or a claim row for the full assessment.")})
-        edges.append({"from": "t-claims", "to": cid, "agent": "wonder"})
+                                 f"Click this node to list all {len(cs)} claim(s) in the inspector; "
+                                 "click any claim in that list for its full 1917 wording and assessment.")})
+        edges.append({"from": "t-claims", "to": cid, "agent": "wonder", "probStatus": "structural"})
     return nodes, edges
 
 
@@ -302,10 +320,31 @@ def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> No
                             "note": "Shade bands show the range of opinion. Green is reserved for >70% (light) and >80% (dark); a posterior in the teens is burnt orange. Panel range per problem is in viability.panel_range_percent."},
             "protocol": ["Pick one OP id; do not work two on the same branch without noting it.",
                          "Pre-register the attempt (hypotheses + scoring) before touching held-out data, following the repo's hash-locked blind-test contract.",
+                         "RECORD A PROBABILITY FOR EVERY ACTION before attempting it (edge prob 0-100 + probNote with method and date, Thompson-registry style); after the attempt, update the target node's status and never edit the recorded prob. The graph builder refuses edges with neither a prob nor an explicit probStatus.",
                          "Report negative results as results; pruned branches stay in the graph.",
                          "Close by updating the source documents and re-running docs/build_problem_graph_html.py, whose self-checks must pass."],
             "problems": problems}
     (out_dir / "open-problems.json").write_text(json.dumps(feed, indent=2) + "\n")
+
+    # Edge-probability ledger: every recorded action in the merged graph,
+    # with its probability or its explicit unrecorded status (never invented).
+    from collections import Counter
+    ledger = []
+    for e in data["EDGES"]:
+        tgt = by_id.get(e["to"], {})
+        ledger.append({"from": e["from"], "to": e["to"], "agent": e["agent"],
+                       "label": e.get("label"), "prob_percent": e.get("prob"),
+                       "prob_status": e.get("probStatus") or ("delphi_scored" if "prob" in e else None),
+                       "prob_note": e.get("probNote"), "target_status": tgt.get("status"),
+                       "target_label": tgt.get("label")})
+    counts = Counter(r["prob_status"] for r in ledger)
+    (out_dir / "edge-probabilities.json").write_text(json.dumps({
+        "name": "Edge-probability ledger — every recorded action in the problem graph",
+        "snapshot": "2026-10-26",
+        "rule": "Every action records a probability before it is attempted (prob + probNote), or carries an explicit probStatus. not_recorded_historical = attempt completed before this rule existed; its prior is never reconstructed. pending_delphi = route still open; Delphi-score it before further work. structural = navigation edge, not a solution attempt.",
+        "graph_url": "https://fractastical.github.io/morpholib/problem-graph.html",
+        "counts_by_status": dict(counts), "edges": ledger}, indent=2) + "\n")
+    print(f"wrote {out_dir / 'edge-probabilities.json'} ({len(ledger)} edges: {dict(counts)})")
 
     def badge(v):
         if v["kind"] == "not_scored":
@@ -403,7 +442,7 @@ def summary_cards(data: dict, pred: dict | None) -> str:
 <div class="card"><div class="small mut">Shown definitively</div><div class="stat" style="color:var(--green)">{len(solved)}</div><div class="small mut">status solved / proved in the graph</div></div>
 <div class="card"><div class="small mut">Definitively refuted</div><div class="stat" style="color:#C04848">{len(refuted)}</div><div class="small mut">pruned branches, kept not deleted · {rest} partial / open / registered</div></div>
 </div>
-<div class="card"><b>How to read “shown definitively”.</b> <span class="small">The core graph records no calibrated per-node confidence, so the {len(solved)} above is its <i>solved / proved</i> status bucket — proof-grade or hash-locked-score-grade resolution as documented per node — not a 90% posterior, and no such number is invented here.</span>{pred_html}</div>"""
+<div class="card"><b>How to read “shown definitively”.</b> <span class="small">The core graph records no calibrated per-node confidence, so the {len(solved)} above is its <i>solved / proved</i> status bucket — proof-grade or hash-locked-score-grade resolution as documented per node — not a 90% posterior, and no such number is invented here.</span>{pred_html}<p class="small" style="margin-top:8px"><b>Edge-probability coverage:</b> {sum(1 for e in attempts if 'prob' in e)} of {len(attempts)} recorded attempts carry a probability scored before the fact; {sum(1 for e in attempts if e.get('probStatus') == 'pending_delphi')} routes are <b>pending Delphi</b> (score before further work) and {sum(1 for e in attempts if e.get('probStatus') == 'not_recorded_historical')} are historical attempts completed before the 2026-10-26 recording rule — their priors were never recorded and are not reconstructed. Full ledger: <a href="edge-probabilities.json"><code>edge-probabilities.json</code></a>. From now on the builder <b>refuses</b> any edge with neither a recorded probability nor an explicit status.</p></div>"""
 
 
 def main() -> None:
@@ -486,6 +525,10 @@ button.on{background:var(--acc);color:#fff;border-color:var(--acc)}button:hover{
 #drawer{position:fixed;top:14px;right:14px;width:660px;max-width:calc(100vw - 28px);max-height:calc(100vh - 28px);overflow-y:auto;z-index:60;background:#fff;border:2px solid var(--acc);border-radius:10px;padding:16px;display:none;box-shadow:0 8px 30px rgba(0,0,0,.18)}
 .clickable{cursor:pointer;border:1px solid var(--line);border-radius:7px;padding:7px 9px;margin:5px 0;background:#fff}
 .clickable.sel{border-color:var(--acc);background:#f3f6ff}.bar{ display:inline-block;width:110px;height:8px;background:#eee;vertical-align:middle}.bar>i{display:block;height:8px}
+.agglist{max-height:430px;overflow-y:auto;padding-right:2px}.agglist .clickable{text-align:left;width:100%}
+#drawer .agglist{max-height:46vh}.agghead{font-size:12px;font-weight:700;color:var(--acc);margin:12px 0 2px;text-transform:uppercase}
+.agglist{max-height:430px;overflow-y:auto;padding-right:2px}.agglist .clickable{text-align:left;width:100%}
+#drawer .agglist{max-height:46vh}.agghead{font-size:12px;font-weight:700;color:var(--acc);margin:12px 0 2px;text-transform:uppercase}
 a{color:var(--acc)}
 .navrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
 #nodepicker{flex:1;min-width:200px;font:inherit;font-size:14px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
@@ -505,7 +548,7 @@ a{color:var(--acc)}
 }
 </style></head><body><main>
 <h1>Problem graph — every problem attempted, including the branches that failed</h1>
-<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Upper-left corner triangle = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. Click a node to select it; <b>double-click a node with downstream nodes to collapse/expand everything below it</b> (categories act as folders), and double-click a leaf node to open its inspector — the Bayesian Delphi panel and Rule 30 prizes open the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
+<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Upper-left corner triangle = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. <b>Click any node to open its inspector right here</b> — hub/count nodes (registered predictions, Thompson claims) list every item behind the count in the inspector, and clicking an item there reads it in full; <b>double-click a node with downstream nodes to collapse/expand everything below it</b> (categories act as folders) — the Bayesian Delphi panel and Rule 30 prizes open the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
 
 <figure style="margin:12px 0"><img src="media/problem_graph_discovery.gif" alt="Animated tour of the discovery problem graph: problems build up lane by lane, outcomes are tallied (solved, partial, open, refuted-kept), then the camera zooms to the scored registered predictions" style="width:100%;height:auto;border:1px solid var(--line);border-radius:9px" loading="lazy"><figcaption class="small mut" style="margin-top:6px">The graph in ~11 seconds — build-up, outcome tally, the scored registered predictions, and finally the scientific claims shown definitively, positively or negatively (audit, infrastructure and agent-process points excluded from that roll). Still poster: <a href="media/problem_graph_discovery_poster.png">problem_graph_discovery_poster.png</a> · Regenerate: <code>python3 docs/media/make_problem_graph_animation.py</code> (numbers recomputed from this page's data).</figcaption></figure>
 
@@ -649,12 +692,12 @@ function drawGraph(){
   p.setAttribute('marker-end',`url(#arr-${e.agent})`); vp.appendChild(p);
   if(e.prob!==undefined){ const t=document.createElementNS(NS,'text'); t.setAttribute('x',(x1+x2)/2+off+4); t.setAttribute('y',mid-3); t.setAttribute('font-size','9.5'); t.setAttribute('font-weight','700'); t.setAttribute('fill',probColor(e.prob)); t.textContent=e.prob+'%'; vp.appendChild(t); } });
  NODES.forEach(n=>{ if(HIDDEN.has(n.id)) return; const g=document.createElementNS(NS,'g'); g.style.cursor='pointer';
-  g.addEventListener('click',()=>{ if(suppressClick) return; S.sel=n.id;drawGraph();drawDetail(); if(typeof PRED!=='undefined' && PRED && PRED.predictions.some(p=>p.id===n.id)){ PS.sel=n.id; PS.org='all'; renderPred(); } if(typeof THOMP!=='undefined' && THOMP){ const ch=THOMP.chapters.find(c=>c.node===n.id); if(ch){ CS.chapter=ch.title; renderClaims(); $('claimpanel').scrollIntoView({behavior:'smooth', block:'center'}); } } if(window.innerWidth<=760) openDrawer(n.id); });
-  g.addEventListener('dblclick',()=>{ if((CHILDREN[n.id]||[]).length) toggleCollapse(n.id); else openDrawer(n.id); });
+  g.addEventListener('click',()=>{ if(suppressClick) return; S.sel=n.id; if(typeof PRED!=='undefined' && PRED && PRED.predictions.some(p=>p.id===n.id)){ PS.sel=n.id; PS.org='all'; renderPred(); } if(typeof THOMP!=='undefined' && THOMP){ const ch=THOMP.chapters.find(c=>c.node===n.id); if(ch){ CS.chapter=ch.title; } } focusAggregate(n); if(typeof THOMP!=='undefined' && THOMP) renderClaims(); drawGraph(); drawDetail(); openDrawer(n.id); });
+  g.addEventListener('dblclick',()=>{ if((CHILDREN[n.id]||[]).length){ toggleCollapse(n.id); closeDrawer(); } else openDrawer(n.id); });
   const prob=(n.id==='p1'||n.id==='p2'||n.id==='p3')?DELPHI[n.id].pooled.posterior:undefined;
   const fuzzy=n.timeKind==='probabilistic';
   const nDown=descendants(n.id).size, isCollapsed=COLLAPSED.has(n.id);
-  let h=`<title>${esc(n.label)} — click to select${nDown?`, double-click to ${isCollapsed?'expand':'collapse'} ${nDown} downstream nodes`:', double-click to inspect'}</title>`;
+  let h=`<title>${esc(n.label)} — click to inspect${nDown?`, double-click to ${isCollapsed?'expand':'collapse'} ${nDown} downstream nodes`:''}</title>`;
   if(isCollapsed) h+=`<rect x="${n.x-4}" y="${n.y-4}" width="${W+8}" height="${H+8}" rx="9" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="7 4"/>`;
   if(nDown) h+=`<path d="M ${n.x+W-14} ${n.y+2} L ${n.x+W-2} ${n.y+2} L ${n.x+W-2} ${n.y+14} Z" fill="${isCollapsed?'#fff':'#2563eb'}" stroke="#2563eb" stroke-width="1.2"><title>${isCollapsed?`collapsed — double-click to expand ${nDown} downstream nodes`:`double-click to collapse ${nDown} downstream nodes`}</title></path>`;
   if(isCollapsed) h+=`<text x="${n.x+W-6}" y="${n.y+H-8}" text-anchor="end" font-size="8" font-weight="700" fill="#2563eb">+${nDown} hidden</text>`;
@@ -673,11 +716,32 @@ function drawGraph(){
 }
 function npLive(uri){ return 'https://registry.knowledgepixels.com/np/' + uri.split('/').pop(); }
 function npLinks(n){ if(!n.nanopubs||!n.nanopubs.length) return ''; return `<hr style="border:none;border-top:1px solid var(--line)"><b class="small">Live nanopublications</b>` + n.nanopubs.map(np=>`<div class="row"><span class="small">🔗 <a href="${npLive(np.uri)}" target="_blank" rel="noreferrer">${esc(np.label)}</a> <span class="mut">· canonical: <a href="${np.uri}" target="_blank" rel="noreferrer">${esc(np.uri)}</a></span></span></div>`).join('') + `<p class="small mut">Live view = Knowledge Pixels registry (canonical morpholib w3id URIs currently 404 at w3id; registry view verified live).</p>`; }
-function edgesList(id){ return EDGES.filter(e=>e.from===id||e.to===id).map(e=>`<div class="row"><span class="sw" style="background:${ACOL[e.agent]}"></span><span class="small">${e.from===id?'→':'←'} ${esc(e.from===id?byId[e.to].label:byId[e.from].label)} — ${AGENTS[e.agent].name}${e.label?` (${esc(e.label)})`:''}</span>${e.prob!==undefined?probBadge(e.prob)+`<span class="small mut">Delphi path-success${e.probNote?` · ${esc(e.probNote)}`:''}</span>`:`<span class="badge" style="background:#888">NOT SCORED</span>`}</div>`).join('') || '<p class="small mut">No recorded edges.</p>'; }
+function edgesList(id){ return EDGES.filter(e=>e.from===id||e.to===id).map(e=>`<div class="row"><span class="sw" style="background:${ACOL[e.agent]}"></span><span class="small">${e.from===id?'→':'←'} ${esc(e.from===id?byId[e.to].label:byId[e.from].label)} — ${AGENTS[e.agent].name}${e.label?` (${esc(e.label)})`:''}</span>${e.prob!==undefined?probBadge(e.prob)+`<span class="small mut">${e.probStatus==='registered_prediction'?'Registered prediction confidence':'Delphi path-success'}${e.probNote?` · ${esc(e.probNote)}`:''}</span>`:e.probStatus==='pending_delphi'?`<span class="badge" style="background:#C06028">PENDING DELPHI — score before attempting</span>`:e.probStatus==='not_recorded_historical'?`<span class="badge" style="background:#888">PRIOR NOT RECORDED (historical)</span>`:e.probStatus==='structural'?`<span class="small mut">structural edge</span>`:`<span class="badge" style="background:#888">NOT SCORED</span>`}</div>`).join('') || '<p class="small mut">No recorded edges.</p>'; }
+/* ---- Aggregate nodes: many graph nodes only show a COUNT ("59 claims",
+   "5 predictions") because the items behind the count are not graph nodes.
+   These helpers resolve a node to the actual items it stands for, so
+   clicking the node can list them -- and clicking an item reads it in
+   full -- right in the inspector/detail card, not only in panels below. ---- */
+function nodeClaims(n){ if(typeof THOMP==='undefined'||!THOMP) return []; if(n.id==='t-claims') return THOMP.claims; const ch=THOMP.chapters.find(c=>c.node===n.id); return ch?THOMP.claims.filter(c=>c.chapter_title===ch.title):[]; }
+function nodePreds(n){ if(typeof PRED==='undefined'||!PRED) return []; if(n.id==='pred0') return PRED.predictions; const own=PRED.predictions.find(p=>p.id===n.id); if(own) return [own]; const childIds=new Set(EDGES.filter(e=>e.from===n.id).map(e=>e.to)); return PRED.predictions.filter(p=>childIds.has(p.id)); }
+function nodeMetas(n){ return (typeof PRED!=='undefined'&&PRED&&n.id==='pred-meta')?PRED.meta:[]; }
+function hasAggregate(n){ return nodeClaims(n).length>0||nodePreds(n).length>0||nodeMetas(n).length>0; }
+function focusAggregate(n){ const cs=nodeClaims(n); if(cs.length&&!cs.some(c=>c.id===CS.sel)) CS.sel=cs[0].id; const ps=nodePreds(n); if(ps.length&&!ps.some(p=>p.id===PS.sel)) PS.sel=ps[0].id; }
+function claimDetailHtml(c){ return `<div class="card" style="margin:6px 0;background:#f3f6ff"><b class="small">${c.id} — Ch. ${esc(c.chapter)} · ${esc(c.chapter_title)}</b> <span class="badge" style="background:${CCOL[c.status]}">${c.status}</span><p class="small"><b>Claim (1917, pp. ${esc(c.pages)}, Figs. ${esc(c.figures)}):</b> ${esc(c.claim)}</p><p class="small"><b>What remains / verdict:</b> ${esc(c.what_remains)}</p><p class="small"><b>Method that would settle it:</b> ${esc(c.method)}</p><p class="small"><b>Data needed:</b> ${esc(c.data_needed)} · <b>Effort:</b> ${esc(c.effort)} · <b>Priority:</b> ${esc(c.priority)} · <b>Type:</b> ${esc(c.type)}</p></div>`; }
+function predDetailHtml(p){ return `<div class="card" style="margin:6px 0;background:#f3f6ff"><b class="small">${p.id} · ${esc(p.organism)} — ${esc(p.mechanism)}</b> <span class="badge" style="background:${PCOL[p.outcome]||'#888'}">${PLAB[p.outcome]||p.outcome}</span><p class="small"><b>Outcome prediction:</b> ${esc(p.prediction)}</p><p class="small"><b>Quantitative expectation:</b> ${esc(p.quant)}</p><p class="small"><b>Resolvability forecast:</b> ${RCAT[p.res_category]||p.res_category} (confidence ${p.res_confidence}; expected verdict ${esc(p.expected_verdict)}) · <b>Falsifier:</b> ${esc(p.falsifier)}</p><p class="small"><b>Test source:</b> ${esc(p.test_source)}</p>${p.evidence?`<p class="small"><b>Resolution evidence:</b> ${esc(p.evidence)}</p>`:''}${p.resolvability_verdict?`<p class="small"><b>Resolvability verdict:</b> ${esc(p.resolvability_verdict)}</p>`:''}<p class="small mut">Datasets: ${p.datasets.map(esc).join(', ')}</p></div>`; }
+function aggHtml(n){ let h=''; const cs=nodeClaims(n);
+ if(cs.length){ const sel=cs.find(c=>c.id===CS.sel)||cs[0]; h+=`<div class="agghead">The ${cs.length} claim${cs.length>1?'s':''} behind this node — click one to read it in full</div>`+claimDetailHtml(sel)+`<div class="agglist">`+cs.map(c=>`<div class="clickable ${c.id===sel.id?'sel':''}" onclick="showClaim('${c.id}')"><b class="small">${c.id}</b> <span class="badge" style="background:${CCOL[c.status]}">${c.status}</span> <span class="small mut">Ch. ${esc(c.chapter)} · pp. ${esc(c.pages)} · Figs. ${esc(c.figures)} · ${esc(c.priority)}</span><br><span class="small">${esc(c.claim)}</span></div>`).join('')+`</div>`; }
+ const ps=nodePreds(n);
+ if(ps.length){ const sel=ps.find(p=>p.id===PS.sel)||ps[0]; h+=`<div class="agghead">The ${ps.length} prediction${ps.length>1?'s':''} behind this node — click one to read it in full</div>`+predDetailHtml(sel)+`<div class="agglist">`+ps.map(p=>`<div class="clickable ${p.id===sel.id?'sel':''}" onclick="showPredItem('${p.id}')"><b class="small">${p.id}</b> <span class="badge" style="background:${PCOL[p.outcome]||'#888'}">${PLAB[p.outcome]||p.outcome}</span> <span class="small mut">${esc(p.organism)} · ${esc(p.mechanism)}</span><br><span class="small">${esc(p.prediction)}</span></div>`).join('')+`</div>`; }
+ const ms=nodeMetas(n);
+ if(ms.length){ h+=`<div class="agghead">The ${ms.length} meta-resolvability forecasts behind this node</div>`+ms.map(m=>`<div class="clickable"><b class="small">${m.id}</b> <span class="badge" style="background:${PCOL[m.outcome]||'#888'}">${PLAB[m.outcome]||m.outcome}</span><br><span class="small">${esc(m.prediction)}</span></div>`).join(''); }
+ return h; }
+function showClaim(id){ const c=(typeof THOMP!=='undefined'&&THOMP)?THOMP.claims.find(x=>x.id===id):null; if(!c) return; CS.sel=id; CS.chapter=c.chapter_title; renderClaims(); drawDetail(); if($('drawer').style.display==='block') renderDrawer(); }
+function showPredItem(id){ const p=(typeof PRED!=='undefined'&&PRED)?PRED.predictions.find(x=>x.id===id):null; if(!p) return; PS.sel=id; PS.org='all'; renderPred(); drawDetail(); if($('drawer').style.display==='block') renderDrawer(); }
 function drawDetail(){ const n=byId[S.sel]; const nd=descendants(n.id).size; $('detail').innerHTML=`<div class="row"><b style="flex:1">${esc(n.label)}</b><span class="badge" style="background:${SCOL[n.status]}">${SLAB[n.status]}</span>${nd?`<button onclick="toggleCollapse('${n.id}')">${COLLAPSED.has(n.id)?'▶ Expand':'▼ Collapse'} downstream (${nd})</button>`:''}<button class="on" onclick="openDrawer('${n.id}')">Inspect</button></div>
-<p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}${n.timeKind==='probabilistic'?' (probabilistic — see timeline)':''}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p>${npLinks(n)}<hr style="border:none;border-top:1px solid var(--line)"><b class="small">Attempts into / out of this node, by agent</b>${edgesList(n.id)}`; }
+<p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}${n.timeKind==='probabilistic'?' (probabilistic — see timeline)':''}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p>${aggHtml(n)}${npLinks(n)}<hr style="border:none;border-top:1px solid var(--line)"><b class="small">Attempts into / out of this node, by agent</b>${edgesList(n.id)}`; }
 
-function openDrawer(id){ S.sel=id; if(id==='p1'||id==='p2'||id==='p3'){S.prize=id;S.prior=DELPHI[id].pooled.prior;S.agentIdx=3;S.subgoal=DELPHI[id].subgoals[3].id;} if(id==='r6'){S.prize='p1';S.prior=DELPHI.p1.pooled.prior;S.agentIdx=3;S.subgoal='P1.4';} drawGraph(); drawDetail(); renderDrawer(); $('drawer').style.display='block'; }
+function openDrawer(id){ S.sel=id; if(id==='p1'||id==='p2'||id==='p3'){S.prize=id;S.prior=DELPHI[id].pooled.prior;S.agentIdx=3;S.subgoal=DELPHI[id].subgoals[3].id;} if(id==='r6'){S.prize='p1';S.prior=DELPHI.p1.pooled.prior;S.agentIdx=3;S.subgoal='P1.4';} const n=byId[id]; if(n) focusAggregate(n); drawGraph(); drawDetail(); renderDrawer(); $('drawer').style.display='block'; }
 function closeDrawer(){ $('drawer').style.display='none'; }
 function setPrize(p){ S.prize=p; S.prior=DELPHI[p].pooled.prior; S.agentIdx=3; S.subgoal=DELPHI[p].subgoals[3].id; renderDrawer(); }
 function bar(v,c){ return `<span class="bar"><i style="width:${Math.max(0,Math.min(100,v))}%;background:${c}"></i></span>`; }
@@ -685,7 +749,7 @@ function bar(v,c){ return `<span class="bar"><i style="width:${Math.max(0,Math.m
 function renderDrawer(){
  const n=byId[S.sel]; const isD = n.id==='r6'||n.id==='p1'||n.id==='p2'||n.id==='p3';
  let h=`<div class="row"><div style="flex:1"><b>${isD?'Inspector — Bayesian Delphi panel':'Inspector — '+esc(n.label)}</b><div class="small mut">${isD?'Every number transcribed from docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md (2026-10-20). Click prizes, agents and subgoals.':esc(n.sub)}</div></div><span class="badge" style="background:${SCOL[n.status]}">${SLAB[n.status]}</span><button onclick="closeDrawer()">Close</button></div><hr style="border:none;border-top:1px solid var(--line)">`;
- if(!isD){ h+=`<p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p>${npLinks(n)}<b class="small">Attempts through this node</b>${edgesList(n.id)}<div class="card" style="background:#f3f6ff">Tip: double-click the Bayesian Delphi panel node (or Prize 1 / 2 / 3) for the deep per-agent, per-subgoal inspector.</div>`; $('drawer').innerHTML=h; return; }
+ if(!isD){ h+=`<p class="small"><b>Family:</b> ${esc(n.family)} · <b>Timing:</b> ${esc(n.time)}</p><p class="small">${esc(n.detail)}</p><p class="small mut">Source: ${esc(n.source)}</p>${aggHtml(n)}${npLinks(n)}<b class="small">Attempts through this node</b>${edgesList(n.id)}<div class="card" style="background:#f3f6ff">Tip: double-click the Bayesian Delphi panel node (or Prize 1 / 2 / 3) for the deep per-agent, per-subgoal inspector.</div>`; $('drawer').innerHTML=h; return; }
  const d=DELPHI[S.prize], rows=[...d.agents, d.pooled], row=rows[Math.min(S.agentIdx,rows.length-1)], sg=d.subgoals.find(s=>s.id===S.subgoal)||d.subgoals[0];
  const odds=(S.prior/100)/(1-S.prior/100)*d.pooled.bf, post=100*odds/(1+odds);
  h+=`<div class="row">${['p1','p2','p3'].map(p=>`<button class="${S.prize===p?'on':''}" onclick="setPrize('${p}')"><span class="badge" style="background:${probColor(DELPHI[p].pooled.posterior)}">&nbsp;</span> ${DELPHI[p].title} · ${DELPHI[p].pooled.posterior}%</button>`).join('')}</div>`;

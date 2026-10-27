@@ -1,0 +1,319 @@
+{
+  "scout": "scout-078",
+  "ground": "library",
+  "lens": "registry",
+  "candidates": [
+    {
+      "id": "LIB-DQ-LIMB-01",
+      "title": "Newman 1979 limb dataset: scout_manifest seed DOI is a typo vs reference/bib",
+      "gap": "`datasets/limb_chondrogenesis_turing/scout_manifest.json` pins `seed_doi` `10.1126/science.472739`, while `limb_chondrogenesis_turing_reference.json`, `paper_citations.bib`, and the slot README cite Newman & Frisch (1979) as `10.1126/science.462174`. Provenance consumers that trust `territory.seed_doi` therefore point at a non-primary DOI.",
+      "done": "Register a DATA-QUALITY prediction that the scout `seed_doi` does not equal the reference primary DOI; resolution `outcome_verdict` is `confirmed` iff the two strings differ and the reference/bib DOI appears in `paper_citations.bib`, with `predictions/resolutions/library-integrity.json` recording both DOIs verbatim.",
+      "tool_route": "Add row via `python3 predictions/build_prediction_registry.py` (new `LIB-DQ-LIMB-01` class `data_quality`); resolve in-repo by JSON diff of `datasets/limb_chondrogenesis_turing/scout_manifest.json` vs `limb_chondrogenesis_turing_reference.json`; score with `python3 predictions/score_resolutions.py` after writing `predictions/resolutions/library-integrity.json`.",
+      "deciding_data": "In repo: `datasets/limb_chondrogenesis_turing/{scout_manifest.json,limb_chondrogenesis_turing_reference.json,paper_citations.bib}`. Optional public check: Crossref REST for `10.1126/science.472739` vs `10.1126/science.462174`.",
+      "prior_attempts": "Pass 3 corrected garbled OpenAlex titles in `datasets/zebrafish_three_cell_stripes/scout_manifest.json` (documented in `pass3_correction`); no recorded fix for the Newman seed DOI typo. Not in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Identical workflow to scored `XT-DQ-01`: register, resolve from repo JSON, `score_resolutions.py`."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All deciding fields already live in the limb_chondrogenesis_turing dataset trio."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "String equality on two DOI fields plus bib membership is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Sub-second JSON parse; no wet lab or DB download."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as new prediction + resolution JSON only (zero-conflict)."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "One registration loop decides immediately after pre-register."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior registry row or audit refuted this exact DOI-pair route."
+        }
+      }
+    },
+    {
+      "id": "LIB-DQ-GMF-01",
+      "title": "Global morphogenetic flow: scout seed DOI mismatches the Streichan 2018 eLife bib entry",
+      "gap": "`datasets/global_morphogenetic_flow/scout_manifest.json` sets `seed_doi` `10.7554/eLife.35326`, but the first (landmark) entry in `paper_citations.bib` is Streichan et al. (2018) `10.7554/eLife.27454` with title matching `seed_landmark_paper`. Reference fitness for Slot 048 is split across two eLife DOIs.",
+      "done": "Pre-registered DATA-QUALITY prediction confirmed iff `seed_doi` ≠ primary bib DOI and the bib first-entry title contains \"Global morphogenetic flow\"; resolution JSON cites both DOIs and `score_resolutions.py` marks `confirmed` or `refuted` with no manual judgment.",
+      "tool_route": "`python3 predictions/build_prediction_registry.py` → `LIB-DQ-GMF-01`; resolve by parsing `datasets/global_morphogenetic_flow/scout_manifest.json` and `paper_citations.bib`; append to `predictions/resolutions/library-integrity.json`; `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: `datasets/global_morphogenetic_flow/scout_manifest.json`, `paper_citations.bib`. Public: eLife article pages for `35326` vs `27454` if disputing identity.",
+      "prior_attempts": "MorphoEval audits scored script fidelity to Streichan (2018) but did not register a scout/bib DOI parity prediction. Unlisted in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Same registry + resolution scorer pipeline as existing data_quality row `XT-DQ-01`."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Scout manifest and bib coexist in the dataset directory."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "DOI inequality + regex title check on bib entry zero."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Pure file parse."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New prediction/resolution files only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No refuted prior attempt on this DOI pair."
+        }
+      }
+    },
+    {
+      "id": "MM-BMP-01",
+      "title": "Mus musculus round-2: Bmp4 gradient models must use the ~120 aa TGF-β domain, not the 408 aa precursor",
+      "gap": "`predictions/prediction_registry.json` defers *Mus musculus* to the next registration round despite 10 `mus_musculus_*` template datasets and `sequences/sequence_links.json` already holding reviewed Bmp4 (Q3ULR1, 408 aa precursor, 120 aa TGF-β domain). No `MM-*` protein-state prediction is registered yet.",
+      "done": "Register `MM-BMP-01` mirroring `DM-DPP-01`: confirm iff `(120/408)^(1/3) ≈ 0.665` is the stated size prior and falsifier is evidence that uncleaved 408 aa Bmp4 is the extracellular signalling species; resolution `confirmed` when arithmetic matches `sequence_links.json` feature table.",
+      "tool_route": "`python3 predictions/build_prediction_registry.py` (add Mus musculus organism block + `MM-BMP-01`); resolve in `predictions/resolutions/mus.json` from `sequences/sequence_links.json` `mus_musculus`/`Bmp4` `protein_state`; `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: `sequences/sequence_links.json`, `datasets/mus_musculus_turing_wavelength/`, ten `datasets/mus_musculus_*` README slots.",
+      "prior_attempts": "`DM-DPP-01` confirmed in `predictions/resolutions/inrepo-quick.json` (2026-10-26). Registry `organism_selection.runner_up` names Mus musculus for round 2; no MM rows scored yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Direct extension of the existing registry builder and in-repo resolution batch pattern."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "UniProt state already materialized in `sequence_links.json`; no new fetch required to decide arithmetic."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Numeric ratio tolerance can be fixed in `quantitative_expectation` (e.g. ±0.01 on 0.665)."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Minutes to add builder rows + resolution JSON."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Touches shared `build_prediction_registry.py` unless round-2 rows are appended via a new sidecar script—prefer isolated resolution file first."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One loop once builder patch lands."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Mus musculus not part of the scored round-1 set; route not refuted."
+        }
+      }
+    },
+    {
+      "id": "MM-SHH-01",
+      "title": "Mus musculus round-2: Shh signalling species is the 174 aa dually lipidated N-product (Q62226)",
+      "gap": "Mouse Shh (Q62226) in `sequence_links.json` annotates N-palmitoyl Cys25 and cholesteryl Gly198 on a 174 aa N-product, but no registered prediction ties the `mus_musculus_morphogen_condensation` template to that tethered species (unlike scored `DM-HH-01` / `ZF-HH-01`).",
+      "done": "Register `MM-SHH-01` with directional expectation (short-range/tethered vs size prior on 174 aa); resolution `confirmed` if live or cached UniProt state in `sequence_links.json` lists both lipidations on the N-product chain 25–198; `refuted` if only full-length 437 aa chain is annotated as signalling.",
+      "tool_route": "`python3 predictions/build_prediction_registry.py` → `MM-SHH-01`; resolve from `sequences/sequence_links.json` (`mus_musculus`, `Shh`); file `predictions/resolutions/mus.json`; `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: `sequences/sequence_links.json` (Q62226 protein_state). Public cross-check: MGI / UniProt Q62226 if cache stale.",
+      "prior_attempts": "`DM-HH-01` and `ZF-HH-01` confirmed via registry resolutions (2026-10-26); `XT-SHH-01` confirmed via laevis reviewed entry. No MM row yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Registry + in-repo UniProt snapshot already used for HH family rows."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Full protein_state block present for mouse Shh in repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Outcome reduces to annotated chain lengths and lipidation site count ≥ 2 on N-product."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "JSON inspection only for v1 resolution."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Same builder coupling caveat as `MM-BMP-01`."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One registration/resolution pass."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior MM-SHH attempt recorded."
+        }
+      }
+    },
+    {
+      "id": "LIB-PLAN-DMG-01",
+      "title": "Planform bioelectric damaged negatives: validator must reject all five injected faults",
+      "gap": "`datasets/planform/damaged/manifest.json` documents five single-fault fixtures (`E_FREQ_SUM`, `E_NOTICE_MISSING`, `E_UNKNOWN_MORPHOLOGY`, `E_SHA_MISMATCH`, `E_UNKNOWN_MECHANISM_CLASS`) for fail-closed testing, but this harness is not covered by the prediction registry meta-resolvability set (which scored organism mechanism rows only).",
+      "done": "Register resolvability prediction: all five files yield exactly their `expected_error_code` under `planform_bioelectric.validate_fixture` and the golden `planform_bioelectric_series_v1.json` validates clean; resolution `confirmed` iff five-of-five codes match manifest and canonical fixture error list is empty.",
+      "tool_route": "Pre-register `LIB-PLAN-DMG-01`; resolve by running `python3 models/planform_bioelectric.py --validate datasets/planform/planform_bioelectric_series_v1.json` and per-file validate on `datasets/planform/damaged/*.json` (or `--self-test` log lines); record in `predictions/resolutions/library-integrity.json`; `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: `datasets/planform/damaged/manifest.json`, five damaged JSON files, `datasets/planform/planform_bioelectric_series_v1.json`, validator in `models/planform_bioelectric.py`.",
+      "prior_attempts": "`python3 models/planform_bioelectric.py --self-test` PASSED in cloud VM (2026-10-27) including damaged SHA checks; not yet encoded as a registry outcome. Related PlanformDB work in `docs/LEVIN_LATENT_SPACE_METHODS.md`.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Validator and self-test exist; registry/scorer wrap the existing pass/fail output."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Entire negative suite and manifest SHA256 pins are vendored."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Five boolean error-code equality checks plus zero errors on golden fixture."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Self-test ~seconds; no PlanformDB download required for damaged files."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Resolution JSON only; no fixture edits."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One self-test invocation after registration."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Self-test already passes—risk of `confirmed` without new information; not refuted."
+        }
+      }
+    },
+    {
+      "id": "LIB-SCOUT-BIB-11",
+      "title": "Scout/reference fitness: eleven flagship datasets have seed_doi absent from paper_citations.bib",
+      "gap": "Across 2,102 `scout_manifest.json` files, automated scan finds 11 dataset dirs whose `territory.seed_doi` does not appear in any `paper_citations.bib` DOI (including `limb_chondrogenesis_turing`, `global_morphogenetic_flow`, `tracheal_viscous_fingering`, `drosophila_wing_vertex_model`, etc.). No registry meta-prediction bounds this provenance drift rate.",
+      "done": "Pre-register `LIB-SCOUT-BIB-11`: outcome `confirmed` iff exactly 11 directories match the rule `seed_doi ∉ bib_dois` (normalized) on snapshot date; publish the sorted dir list in resolution evidence; scorer checks count and set equality against a hash-locked list committed at registration time.",
+      "tool_route": "Register with embedded hash of sorted dir list; resolve via one-shot repo script (e.g. `python3 -c` glob scan matching scout-078 methodology) writing `predictions/resolutions/library-integrity.json`; `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: all `datasets/*/scout_manifest.json` paired with co-located `paper_citations.bib` (2,102 manifests, 0 missing `seed_doi`).",
+      "prior_attempts": "Zebrafish three-cell stripe audit fixed garbled OpenAlex titles (`morphoeval/kg/2026-10-19-zebrafish-three-cell-stripes-audit-v3/REPORT.md`); no fleet-wide bib/seed parity registration. Not in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Registry can encode a counted meta integrity prediction; scorer consumes resolution tallies."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Full corpus in repo; scan is deterministic."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Exact integer count plus hash-locked directory set."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "~2k JSON reads, seconds on laptop/VM."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only scan; deliverable is resolution JSON."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One scan after pre-register; reruns only if datasets change."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior registered count for this rule."
+        }
+      }
+    },
+    {
+      "id": "LIB-PROT-FLY-00",
+      "title": "Protein-state sidecar coverage: zero of ten Drosophila template catalog dirs ship protein_states.json",
+      "gap": "Pilot sidecars exist only for `datasets/danio_rerio_turing_wavelength` and `datasets/danio_rerio_clock_wavefront` (`protein-state-sidecar-1.0-pilot`), while all ten `drosophila_melanogaster_*` mechanism templates (610 catalog refs) lack sidecars despite rich `sequence_links.json` entries for dpp/wg/hh used in round-1 predictions.",
+      "done": "Register resolvability forecast `LIB-PROT-FLY-00`: `confirmed` iff glob count of `datasets/drosophila_melanogaster_*/protein_states.json` equals 0 at registration snapshot; optional follow-on outcome prediction that sidecar generation would change D priors for dpp/wg/hh (defer to MM/DM-style rows).",
+      "tool_route": "`python3 predictions/build_prediction_registry.py` meta/data_quality row; resolve by filesystem glob + JSON schema check; `predictions/resolutions/library-integrity.json`; `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: ten `datasets/drosophila_melanogaster_*` directories, two danio pilot sidecars, `sequences/sequence_links.json`.",
+      "prior_attempts": "Round-1 registry used fly protein states from `sequence_links.json` directly (`DM-DPP-01`, `DM-HH-01`, `DM-WG-01` scored 2026-10-26) without sidecars—does not refute the coverage count prediction.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Registry suited to library meta predictions; biology already partially covered by DM-* rows."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Pure repo filesystem fact."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Integer glob count equals 0."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Trivial glob."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate after register."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Coverage gap not previously registered."
+        }
+      }
+    },
+    {
+      "id": "LIB-IMG-FOUND-01",
+      "title": "Foundational specimen map: wrong-taxa gallery fallbacks depress cv_sim below threshold",
+      "gap": "`morphoeval/verify_image_fitness.py` `FOUNDATIONAL_SPECIMENS` routes several slots (e.g. `eshghi-odonata-wing-cells`, `santella-wormguides-celegans`, `hoffmann-wing-venation`) to `datasets/species_gallery/.../Drosophila_melanogaster.jpg`, while audits note taxonomic mismatch; per-model `cv_sim_similarity` is not registered as a blind prediction.",
+      "done": "Pre-register for each listed slug: `cv_sim_similarity < 58.0` (repo threshold) when running `python3 morphoeval/verify_image_fitness.py` on the aristotelian index entry; resolution `confirmed` if all registered slugs fall below 58.0, `refuted` if any meets/exceeds 58.0; evidence CSV of slug/score in resolution JSON.",
+      "tool_route": "Register multi-slug prediction batch → run `python3 morphoeval/verify_image_fitness.py` (writes `morphoeval/runs/image_fitness_and_provenance.json` / index enrichments) → `predictions/resolutions/library-integrity.json` → `python3 predictions/score_resolutions.py`. Vision lens could rerun CV alone; registry owns the blind threshold claim.",
+      "deciding_data": "In repo: `morphoeval/verify_image_fitness.py`, `FOUNDATIONAL_SPECIMENS` map, `morphoeval/runs/aristotelian_categories_index.json`, gallery JPEGs. Compute: full verifier run (~hours for 3k models unless scoped to slug subset).",
+      "prior_attempts": "Audit KG notes Drosophila wing vertex model specimen is Mus musculus epithelium (`morphoeval/kg` transfer_boundary strings); no hash-locked registry outcome. `verify_image_fitness` vision lens not scored via registry yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "Registry can state threshold outcomes, but primary measurement is `verify_image_fitness.py` (vision/remediation lens shares work)."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Map and images in repo; per-slug scores require one verifier pass (subsettable)."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Fixed float threshold 58.0 on named slugs."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Full index run is heavy; slug-subset run is minutes–hours."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only verifier + new resolution file."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Depends on scoped verifier runtime."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not previously registered."
+        }
+      }
+    }
+  ]
+}
