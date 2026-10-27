@@ -40,6 +40,43 @@ def load_jsons(pattern: str):
     return out
 
 
+# Plain-English names for every hat in the fleet. The technical slug/record name
+# always travels next to the simple name so the two can never drift apart.
+SIMPLE_ROLE_NAMES = {
+    "scout": "Science scout",      # step 1: finds a paper worth reproducing
+    "paper": "Paper extractor",    # step 2: pulls the formal model out of it
+    "source": "Source curator",    # step 3: vendors + SHA-locks the records
+    "rules": "Rule pinner",        # step 4: prose -> exact rules
+    "script": "Script builder",    # step 5: writes the model program
+    "output": "Renderer",          # step 6: comparison figure/animation
+    "audit": "Assessor",           # step 7: independent judge (different model)
+    "measure": "Measurer",         # step 8: fingerprints the outputs
+    "build": "KG builder",         # step 9: emits the nanopublications
+    "publish": "Publisher",        # step 10: signs + publishes them
+    "graph": "Record keeper",      # step 11: public record & report
+    "remed": "Remediator",         # step 12: fixes what the Assessor found
+}
+
+
+def simple_actor_name(actor: str) -> str:
+    a = str(actor).lower()
+    if "assessor" in a:
+        return "Assessor"
+    if "measure_outputs" in a:
+        return "Measurer"
+    if "build_morphoeval_kg" in a:
+        return "KG builder"
+    if "sign_morphoeval" in a or "check_signed" in a:
+        return "Publisher"
+    if "scout" in a:
+        return "Science scout"
+    if "builder" in a:
+        return "Script builder"
+    if a.strip() == "tool":
+        return "Deterministic tool"
+    return "—"
+
+
 def bar(pct: float, color: str = "#7a5c2e") -> str:
     return (f'<div class="bar"><div class="fill" '
             f'style="width:{max(0.0, min(100.0, pct)):.1f}%;background:{color}"></div></div>')
@@ -371,15 +408,15 @@ def main() -> int:
         return 100.0 * a / b if b else 0.0
 
     roster = [
-        ("Loop-Builder (slot agent)", "One cloud agent per MorphoEval slot: writes the model "
+        ("Loop builder (slot agent)", "One cloud agent per MorphoEval slot: writes the model "
          "script, dataset, Lean module and nanopubs for one organism/mechanism loop.",
          slots["n"], f'{slots["completed"]} completed', pct(slots["completed"], slots["n"]),
          "morphoeval/cloud/dispatches/slot-*.json"),
-        ("Problem-Scout", "Hunts one hunting-ground x tool-lens cell for resolvable problems; "
+        ("Problem scout", "Hunts one hunting-ground x tool-lens cell for resolvable problems; "
          "returns candidates for the central resolvability ranker.",
          scouts["dispatched"], f'{scouts["returned"]} reports in tree · {scouts["candidates"]} candidates',
          pct(scouts["returned"], scouts["dispatched"]), "morphoeval/problem_scouts/scout-*.json"),
-        ("Problem-Fixer", "Repairs one leaderboard candidate in an isolated PR under a path "
+        ("Fixer", "Repairs one leaderboard candidate in an isolated PR under a path "
          "allowlist + trusted merge gate; never self-merges.",
          fixers["dispatched"], f'{fixers["landed"]} landed on main', pct(fixers["landed"], fixers["dispatched"]),
          "morphoeval/problem_fixers/results/*.json"),
@@ -429,12 +466,14 @@ def main() -> int:
         )
 
     role_rows = "\n".join(
-        f"<tr><td>{html.escape(slug)}</td><td>Tier {html.escape(str(tier))}</td>"
+        f"<tr><td><strong>{html.escape(SIMPLE_ROLE_NAMES.get(slug, slug))}</strong></td>"
+        f"<td><code>{html.escape(slug)}</code></td><td>Tier {html.escape(str(tier))}</td>"
         f"<td class='num'>{n}</td><td>{bar(pct(n, tele['steps']))}</td></tr>"
         for slug, tier, n in tele["roles"]
     )
     actor_rows = "\n".join(
-        f"<tr><td>{html.escape(str(a))}</td><td class='num'>{n}</td></tr>" for a, n in tele["actors"])
+        f"<tr><td><strong>{html.escape(simple_actor_name(a))}</strong></td>"
+        f"<td>{html.escape(str(a))}</td><td class='num'>{n}</td></tr>" for a, n in tele["actors"])
     model_rows = "\n".join(
         f"<tr><td>{html.escape(str(m))}</td><td class='num'>{n}</td></tr>" for m, n in tele["models"])
 
@@ -499,8 +538,8 @@ def main() -> int:
     ]
 
     def step_box(num, slug, actor, who):
-        return (f'<div class="lstep who-{who}"><b>{num}. {slug}</b>'
-                f'<span>{actor}</span></div>')
+        return (f'<div class="lstep who-{who}"><b>{num}. {SIMPLE_ROLE_NAMES.get(slug, slug)}</b>'
+                f'<span>{slug} · {actor}</span></div>')
 
     row1 = '<span class="larr">→</span>'.join(step_box(*s) for s in loop_steps[:6])
     row2 = '<span class="larr">←</span>'.join(step_box(*s) for s in reversed(loop_steps[6:]))
@@ -579,6 +618,14 @@ repo record and are not counted. Regenerate: <code>python3 docs/build_fleet_dash
  <div class="card"><b>{slots['nanopubs_signed']:,}</b>nanopubs signed by slot agents*</div>
 </div>
 
+<p class="dim"><strong>The names used on this plate:</strong>
+<strong>Loop builder</strong> builds one loop end-to-end · <strong>Science scout</strong> finds the paper ·
+<strong>Paper extractor</strong> · <strong>Source curator</strong> · <strong>Rule pinner</strong> ·
+<strong>Script builder</strong> · <strong>Renderer</strong> · <strong>Assessor</strong> judges (never the builder) ·
+<strong>Measurer</strong> · <strong>KG builder</strong> makes the nanopubs · <strong>Publisher</strong> signs them ·
+<strong>Record keeper</strong> · <strong>Remediator</strong> · <strong>Problem scout</strong> hunts problems ·
+<strong>Fixer</strong> repairs them · <strong>Orchestrator</strong> conducts.</p>
+
 <h2>I. The Fleet Roster — types &amp; how often used</h2>
 <table><tr><th>Agent type</th><th>Used</th><th>Outcome</th><th>Completion</th><th>Records</th></tr>
 {roster_rows}</table>
@@ -605,11 +652,11 @@ Execution counts per role are underneath the diagram.</p>
 assessors from different companies score step 7, and the footer tallies passes by company:
 the auditor was never the loop's own builder.</figcaption>
 </figure>
-<table><tr><th>Role</th><th>Tier</th><th>Executions</th><th>Share</th></tr>
+<table><tr><th>Simple name</th><th>Role (slug)</th><th>Tier</th><th>Executions</th><th>Share</th></tr>
 {role_rows}</table>
 
 <h2>V. Who (or what) filled the roles — top actors &amp; models in telemetry</h2>
-<table><tr><th>Actor (as recorded)</th><th>Steps</th></tr>{actor_rows}</table>
+<table><tr><th>Simple name</th><th>Actor (as recorded)</th><th>Steps</th></tr>{actor_rows}</table>
 <table style="margin-top:10px"><tr><th>Model</th><th>Steps</th></tr>{model_rows}</table>
 
 <h2>VI. Plate IVa — Builder Leaderboard (ranked by mean audit score)</h2>
