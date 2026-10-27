@@ -1,0 +1,280 @@
+{
+  "scout": "scout-031",
+  "ground": "turing",
+  "lens": "literature",
+  "candidates": [
+    {
+      "id": "TUR-LIT-YJ-GT",
+      "title": "Pomacanthus Y-junction ground truth: literature-backed junction counts for flagship Turing CV",
+      "gap": "`1952-turing-morpho.py` reports `poma_y_junctions=22` while Kondo & Asai (1995) show 2–3 Y-branch dislocations in the adult ROI; `datasets/turing/` has no annotated junction coordinates or figure-derived ground-truth count, only a single adult `pomacanthus_imperator_stripes_specimen.jpg`.",
+      "done": "`morphoeval/scout_literature.py` emits a dossier naming Kondo & Asai (1995) (`doi:10.1038/376765a0`) plus ≥2 CC-licensed *P. imperator* flank images; a new `datasets/turing/y_junction_ground_truth_reference.json` records SHA-256-pinned sources, manually traced junction count from the Nature figure panel, and ROI polygon; `1952-turing-morpho.py --self-test` passes only if the detector count lies in the published interval [2, 3] on that reference ROI or documents a single calibrated threshold constant pinned in the JSON.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Kondo Asai 1995 Pomacanthus Y branch dislocation stripe\" --taxon \"Pomacanthus imperator\" --out datasets/turing/scout_y_junction_manifest.json",
+      "deciding_data": "In repo: `datasets/turing/pomacanthus_imperator_stripes_specimen.jpg`, `datasets/turing/turing_reference.json` (Kondo block). Public: `doi:10.1038/376765a0`; Wikimedia Commons juvenile/adult angelfish (CC BY-SA 4.0) discoverable via the same CLI.",
+      "prior_attempts": "Flagship-15 Pass N+1 (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`) removed circular Kondo r from the self-test gate and disclosed Y-junction over-detection; `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` remediation still lists annotated Y-junction ground truth. No prior literature scout closed this.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "scout_literature.py OpenAlex + Commons is the named Step-1 tool for DOI + CC specimen discovery before pinning reference JSON."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "One adult specimen and Kondo DOI are already in `datasets/turing/`; missing piece is figure-derived counts and extra Commons life stages."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done is an integer junction count interval check plus SHA-256 fields, not subjective audit prose."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Literature scout runs in minutes on the cloud stack; follow-on CV uses existing numpy/skimage in flagship script."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as new files under `datasets/turing/` plus optional manifest without editing parallel agents' tracks."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One scout HTTP pass plus manual figure count yields a pass/fail self-test in a single sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded attempt refuted fetching Kondo/CC ground truth; only the automated detector was flagged."
+        }
+      }
+    },
+    {
+      "id": "TUR-LIT-LEE94",
+      "title": "Lee et al. (1994) experimental self-replicating spot imagery for Pearson Gray–Scott flagship",
+      "gap": "`datasets/turing/turing_reference.json` cites Lee et al. (1994) (`doi:10.1038/369215a0`) but stores no SHA-pinned experimental frames or digitized spot trajectories; `1952-turing-morpho.py` validates Pearson saddle-node/Hopf curves analytically and simulates Gray–Scott on a torus without comparing to the Nature experimental self-replicating spot kymograph.",
+      "done": "Scout dossier at `datasets/turing_lee1994/scout_manifest.json` lists the Lee 1994 work with OA URL; reference JSON pins ≥1 figure/table metric (e.g., replication period or spot count vs time) extracted from the paper; `--self-test` adds a check that the script's self-replicating regime metric matches the tabulated value within 10% relative error.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Lee McCormick Pearson Swinney 1994 self-replicating spots reaction diffusion\" --taxon \"Belousov-Zhabotinsky reaction\" --out datasets/turing_lee1994/scout_manifest.json",
+      "deciding_data": "Public: `doi:10.1038/369215a0` (Nature 369:215–218). In repo: Pearson (1993) parameters in `datasets/turing/turing_reference.json` and `models/1952-turing-morpho.py` regime catalog.",
+      "prior_attempts": "Pass N+1 regenerated the Gray–Scott GIF from the PDE renderer (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`) but did not attach Lee experimental imagery; no negative result on fetching Lee figures is recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Literature scout resolves the missing experimental source paper and OA figure location."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "DOI and Pearson cross-citation already in repo; experimental bitmaps/table still require one public fetch."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Relative error vs a single numeric column from Lee et al. is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Scout + digitization fits one MorphoEval loop hour budget; no wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset subdirectory only; flagship script change is downstream of scout manifest."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Verdict once one figure metric is pinned and self-test wired; scout pass is same-day."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route not attempted or refuted in audits or `docs/open-problems.json`."
+        }
+      }
+    },
+    {
+      "id": "TUR-LIT-CRAMPIN99",
+      "title": "Crampin–Gaffney–Maini (1999) growing-domain PDE specification for flagship 2D Turing debt",
+      "gap": "Flagship audit remediation requires a real 2D growing-domain stripe-insertion solver with L(t); `1952-turing-morpho.py` runs independent 1D Kondo stages while `1995-kondo-pomacanthus-stripe-insertion.py` implements advanced geometry but Crampin et al. (1999) (`doi:10.1006/bulm.1999.0131`) is cited only under `datasets/pomacanthus_stripe_insertion/`, not exported into `datasets/turing/` as the canonical L(t) reaction–diffusion source of truth for the montage flagship.",
+      "done": "Scout query returns Crampin 1999 as top hit with DOI; new `datasets/turing/crampin1999_growing_domain_reference.json` quotes the domain growth law and RD coupling equations (section/equation numbers) transcribed from the OA PDF; acceptance test: JSON fields hash-locked and cross-linked from `datasets/turing/turing_reference.json` metadata.sources.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Crampin Gaffney Maini 1999 reaction diffusion growing domains robust pattern formation\" --taxon \"Pomacanthus\" --out datasets/turing/scout_crampin1999_manifest.json",
+      "deciding_data": "Public: `doi:10.1006/bulm.1999.0131` (already in `datasets/pomacanthus_stripe_insertion/paper_citations.bib`). In repo: Kondo canonical parameters in `datasets/pomacanthus_stripe_insertion/pomacanthus_stripe_insertion_reference.json`.",
+      "prior_attempts": "`docs/open-problems.json` OP-06 marked structural debt solved after Pass N+1, but `morphoeval/runs/2026-10-26-flagship15-loop-passN.md` still lists \"2D growing-domain Turing solver\" open for `1952-turing-morpho.py`; no scout manifest pins Crampin text into `datasets/turing/`.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Literature scout fetches the governing-equation source; implementation belongs to simulation lens afterward."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "DOI and bib entry already in repo under pomacanthus dataset; missing typed equation block in turing flagship package."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done is verifiable JSON transcription with DOI + equation IDs, checkable by string/hash equality."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Pure literature HTTP + transcription; no PDE solve required for scout closure."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New reference JSON/manifest files only at scout stage."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single paper transcription completes the literature-scout loop."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Partial implementation exists in `1995-kondo-pomacanthus-stripe-insertion.py`; route not refuted, but not greenfield."
+        }
+      }
+    },
+    {
+      "id": "TUR-LIT-MEIN87",
+      "title": "Meinhardt & Klingler (1987) published Conus PDE constants vs stochastic stabilizers in flagship Conus script",
+      "gap": "`models/1984-wolfram-conus-textile-rule30.py` discloses stochastic activator injection (p=0.18) and clipping as non-autonomous stabilizers; flagship audit remediation lists \"Autonomous Meinhardt parameterisation without stochastic injection/clipping\"; the repo lacks a SHA-pinned transcription of Meinhardt & Klingler (1987, J. Theor. Biol. 126:63–89, Eq. 5) rate constants separate from the 1995 shell-book reprint.",
+      "done": "Scout dossier identifies Meinhardt (1987) with resolvable DOI/OA PDF; `datasets/conus_textile/meinhardt1987_reference.json` lists every rate in Eq. 5 with units and figure references; closure when `--self-test` on the Conus script can run a branch flagged `use_literature_parameters_only=true` that reproduces Fig. 12 kymograph morphology without stochastic injection (KS distance to specimen chord CV documented in JSON threshold).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Meinhardt Klingler 1987 model pattern formation mollusc shell Eq 5\" --taxon \"Conus textile\" --out datasets/conus_textile/scout_meinhardt1987_manifest.json",
+      "deciding_data": "Public: Meinhardt & Klingler (1987) J. Theor. Biol. 126:63–89; Meinhardt (1995) Springer shell book (secondary). In repo: Wikimedia Conus textile photos via `--download` path in `1984-wolfram-conus-textile-rule30.py`.",
+      "prior_attempts": "Pass N+1 fixed blank Meinhardt kymograph normalization but kept stochastic injection documented (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`); no literature table pinned. OP-06 closed at graph level while Conus remediation item remains in flagship audit.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "scout_literature resolves the primary-text parameter table; parameter wiring is simulation lens."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Conus specimen images and PDE code exist; missing piece is authoritative 1987 numeric constants."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done combines pinned constants plus a boolean self-test path excluding stochastic injection."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Literature scout is fast; full autonomous PDE may need longer Conus `--self-test` runtime."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New dataset JSON under `datasets/conus_textile/`; Conus script edit is a later isolated PR."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Scout closes quickly; proving autonomy may exceed one sitting once simulation runs."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Disclosed limitation, not a refuted fetch route."
+        }
+      }
+    },
+    {
+      "id": "TUR-LIT-KONDO-ONT",
+      "title": "Kondo ontogenetic stripe-count vs body-length series beyond single adult Commons photo",
+      "gap": "`datasets/turing/` pins one adult *P. imperator* and one *O. meleagris* photo but not the Kondo & Asai (1995) ontogenetic series (L_body 2→12 cm, N_stripes 3→19) as independent CC images or figure digitization; flagship 1D PDE stripe scaling is calibration-consistency only (`kondo_corr_r` noted circular in Pass N+1).",
+      "done": "Scout returns ≥3 Commons *P. semicirculatus*/*P. imperator* juveniles at distinct sizes plus Kondo 1995 OA figure URL; reference JSON tabulates (L_cm, N_stripes) pairs transcribed from Fig. 1; acceptance: Pearson r between measured ridge counts on pinned photos and tabulated series exceeds 0.85 or documents failure in JSON.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Kondo Asai 1995 Pomacanthus stripe insertion ontogeny body length\" --taxon \"Pomacanthus semicirculatus\" --out datasets/turing/scout_kondo_ontogeny_manifest.json",
+      "deciding_data": "Public: `doi:10.1038/376765a0`; Commons juvenile already used in `datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg` (SHA-256 pinned). In repo: Kondo numeric series in `datasets/turing/turing_reference.json`.",
+      "prior_attempts": "Slot-004 loop (`datasets/pomacanthus_stripe_insertion/README.md` Pass 3) added curvilinear and agent coupling but did not merge ontogeny photos into flagship `datasets/turing/`; Pass N+1 flagged circular 1D validation on flagship script.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Ontogeny problem is literally missing CC specimen images and citable figure URLs—core scout_literature output."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "One juvenile specimen and numeric series exist; full ontogeny grid still requires Commons/OpenAlex fetch."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Correlation threshold on counted stripes vs tabulated L is numeric."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Image fetch + ridge counting uses existing flagship segmentation stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New manifest/reference files under `datasets/turing/`."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Scout plus one segmentation pass on 3–5 images fits one loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not refuted; complementary to existing pomacanthus_stripe_insertion dataset."
+        }
+      }
+    },
+    {
+      "id": "TUR-LIT-MORT16-OP11",
+      "title": "Mort et al. (2016) melanocyte colonisation parameters for OP-11 migration-wave control (not static Turing)",
+      "gap": "`docs/open-problems.json` OP-11 asks for a neural-crest migration-wave colonisation variant; `datasets/bos_taurus_turing_wavelength/README.md` cites Mort et al. (2016) (`doi:10.1038/ncomms10288`) qualitatively but pins no migration/proliferation parameters or supplemental figure series for the growing-domain control—only coat-masked adult photos.",
+      "done": "Scout dossier lists Mort 2016 with OA link; reference extension records at least three numeric rates (e.g., migration speed, proliferation rate, carrying density) quoted from the paper/supplement; Eden/migration-wave control in the cow script reads them and `--self-test` asserts documented parity within 5% to literature values.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Mort Baker Jackson 2016 melanocyte migration proliferation coat pattern ncomms10288\" --taxon \"Mus musculus melanocyte\" --out datasets/bos_taurus_turing_wavelength/scout_mort2016_manifest.json",
+      "deciding_data": "Public: `doi:10.1038/ncomms10288`; Holstein genetics follow-ups already in `datasets/bos_taurus_turing_wavelength/paper_citations.bib`. In repo: 10 SHA-pinned Holstein specimens and Pass 8 metrics JSON.",
+      "prior_attempts": "OP-11 status `refuted` for the headline static-Turing claim after Pass 8–9 (`datasets/bos_taurus_turing_wavelength/README.md`); Fable audits 54.4/57.7 predate Pass 8 scale; migration-wave variant explicitly not yet run. Static single-wavelength Turing route is blocked—this candidate is Mort-parameter colonisation only.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Literature scout extracts Mort parameters; scoring the variant uses existing cow script + audits (simulation/measure lenses)."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Cow dataset and Mort DOI in bib; numeric colonisation table not yet transcribed."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Parameter parity checks and pre-registered Wilcoxon on patch stats are specified in OP-11/README."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Migration-wave reruns are heavier than scout alone but fit repo stack hours."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Scout manifest + reference extension in existing bos dataset dir."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Literature scout is one sitting; full OP-11 closure needs simulation pass."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Static Turing mechanism refuted; this route is explicitly the named migration-wave follow-up, not a re-proposal of Murray RD."
+        }
+      }
+    },
+    {
+      "id": "TUR-LIT-2D-IMPL",
+      "title": "Implement flagship 2D growing-domain Gray–Scott/Kondo solver (literature cannot close alone)",
+      "gap": "Structural code debt: merge 1D Kondo growing-domain stages in `1952-turing-morpho.py` into a coupled 2D solver with L(t), as flagged in `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` remediation.",
+      "done": "N/A for literature lens alone; simulation lens done criterion would be `--self-test` failing on current main and passing after 2D L(t) integration reproduces Kondo N_stripes∝L slope within 5% of `datasets/turing/turing_reference.json`.",
+      "tool_route": "python3 morphoeval/scout_literature.py --list-existing  (confirms DOIs already modeled); implementation requires `models/1952-turing-morpho.py --self-test` sweeps — use simulation lens, not literature.",
+      "deciding_data": "In repo: Gray–Scott and 1D Kondo code in `models/1952-turing-morpho.py`; extended 2D polar solver in `models/1995-kondo-pomacanthus-stripe-insertion.py`.",
+      "prior_attempts": "OP-06 marked solved in `docs/open-problems.json` while Pass N+1 honest re-score still lists item open; partial 2D work in pomacanthus slot script only.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "scout_literature cannot implement or numerically integrate the PDE; simulation lens required."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Equations and parameters largely already in repo datasets."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Self-test slope check is clear once a 2D solver exists."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "2D IMEX solves may exceed one-hour scout budget."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Touching flagship montage script conflicts with parallel flagship work unless branched carefully."
+        },
+        "time_to_verdict": {
+          "score": 3,
+          "why": "Multi-iteration numerical work, not one literature fetch."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Not refuted, but partially attempted in sibling Kondo script."
+        }
+      }
+    }
+  ]
+}
