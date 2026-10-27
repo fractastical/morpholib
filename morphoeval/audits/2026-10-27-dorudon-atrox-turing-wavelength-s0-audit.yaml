@@ -1,0 +1,168 @@
+# MorphoEval audit — Dorudon atrox Turing wavelength, 253 µm, 37.0 Ma. Pass 1.
+#
+# Builder and assessor are the same agent (Grok 4.7). This is not a dual-assessor
+# consensus. Pass 1 ran `python3 models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py --pass 1`
+# after `--self-test`. The self-test already checks the plate Pearson fit; the pass-1
+# figure and pass1_metrics.json do not. That gap is the remediation list below.
+
+audit:
+  id: 2026-10-27-dorudon-atrox-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder and assessor, single-agent cloud loop; no second assessor)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Loop files are new on this branch and are not in commit 0c76d15d.
+      Scores describe the pass-1 run only.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    year: 1981
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    year: 1995
+    venue: "Nature 376:765-768 (1995)"
+    doi: 10.1038/376765a0
+  gingerich1990:
+    title: "Hind limbs of Eocene Basilosaurus: evidence of feet in whales"
+    authors: "Gingerich PD, Smith BH, Simons EL"
+    year: 1990
+    venue: "Science 249:154-157 (1990)"
+    doi: 10.1126/science.249.4965.154
+  uhen2007:
+    title: "Evolution of marine mammals: back to the sea after 300 million years"
+    authors: "Uhen MD"
+    year: 2007
+    venue: "The Anatomical Record 290:514-522 (2007)"
+    doi: 10.1002/ar.20545
+
+simulations:
+  - id: delphi10000-dorudon-atrox-turing-wavelength-s0
+    name: "Dorudon atrox Turing wavelength at 253 µm, Priabonian 37.0 Ma (pass 1)"
+    organism: "Dorudon atrox"
+    script: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py
+    output: datasets/dorudon_atrox_turing_wavelength_s0/pass1_comparison.png
+    status: evaluated
+    source_refs: [turing1952, murray1981, kondo1995, gingerich1990, uhen2007]
+    summary: >-
+      Pass 1 implements Schnakenberg kinetics with Du and Dv solved so
+      lambda_c = 253 µm exactly (trace -0.330, det 1.002, Turing margin 704,
+      sigma_max 0.093, equal-diffusion sigma_max -0.165). The pass-1 figure
+      is the gallery plate, a linear J0 growth frame, and the nonlinear field.
+      It does not yet show the diffusion-ratio sweep, the equal-diffusion
+      field, or the plate radial overlay. Weighted overall 76.3.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 critical wavenumber and the requirement that the inhibitor diffuse farther than the activator"
+        - "Murray 1981 coat pre-pattern hypothesis"
+        - "Dorudon atrox is a Priabonian basilosaurid with a vestigial hindlimb"
+      reconstructed_in_script:
+        - "a=0.164, b=0.837, Dv/Du=15.970 so that lambda_c = 253 µm"
+        - "Hindlimb domain scenario of 8, 3, and 0 critical wavelengths"
+      transfer_boundary:
+        - "Pigment Turing patterns from fish and a theoretical coat model are transferred to an animal with no preserved skin"
+      does_not_claim:
+        - "That Dorudon skin bore this ocellus"
+        - "That the 8/3/0 counts are measured embryonic bud lengths"
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          steady_state, jacobian, diffusion_coefficients, critical_wavenumber
+          and growth_rate implement the Schnakenberg Jacobian and
+          k_c^2 = sqrt(det/(Du Dv)). analytic_checks asserts lambda_c = 253 µm,
+          trace < 0, det > 0, a positive Turing margin, and a negative
+          equal-diffusion growth rate. Seven Lean theorems with zero sorry
+          cover the integer image of that margin and the 8 > 3 > 0 domain
+          order. The pass-1 renderer is only the linear radial mode; the
+          nonlinear integrator is run but not used as the scored pattern.
+        evidence:
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [105, 171], note: "steady state, Jacobian, Du/Dv solved for 253 µm, growth rate, Turing margin", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3171_dorudon_atrox_turing_wavelength_s0.lean, lines: [41, 61], note: "seven decide theorems, zero sorry, no imports", supports: true}
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [370, 398], note: "pass-1 figure does not display the dispersion relation it computes", supports: false}
+      specimen-match:
+        value: 78
+        rationale: >-
+          The pass-1 GIF is a 12-frame 640×480 growth of J0(k r) in the plate's
+          lavender chromaticity. Computer-vision similarity of the last frame
+          to the gallery plate was 85.8, and 85.5 against the Wadi El-Hitan
+          fossil photograph. The comparison figure places the plate beside the
+          last frame, but there is no radial-profile overlay, so the match is
+          visual rather than a reported residual. The plate is not fossil skin.
+        evidence:
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/pass1_comparison.png, lines: [0, 0], note: "pass-1 side-by-side of plate, linear mode, and nonlinear u", supports: true}
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/pass1_growth.gif, lines: [0, 0], note: "12 frames, 640×480", supports: true}
+      parameter-expressivity:
+        value: 52
+        rationale: >-
+          a, b, and Dv/Du are named constants and the chronoseries states
+          8, 3, 0 modes, but the pass-1 figure does not vary any of them.
+          A reader cannot see lambda or sigma_max move. The sweep function
+          exists later in the file and was not the pass-1 pipeline.
+        evidence:
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [174, 193], note: "chronoseries table only, three fixed mode counts", supports: true}
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [370, 398], note: "pass-1 render has no ratio axis", supports: false}
+      morphometric-validation:
+        value: 64
+        rationale: >-
+          Pass-1 metrics record lambda_c = 253 µm, sigma_max = 0.093,
+          equal-diffusion sigma_max = -0.165, and the three domain lengths
+          (2024, 759, 0 µm). They do not record a Pearson r, RMSE, or KS
+          against the plate. The plate's 100 µm bar is not measured in this pass.
+        evidence:
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/pass1_metrics.json, lines: [1, 80], note: "pass-1 law block: lambda, margin, sigma, chronoseries", supports: true}
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [705, 712], note: "pipeline_v1 writes baseline measurements only", supports: false}
+      source-traceability:
+        value: 86
+        rationale: >-
+          Turing 1952, Murray 1981, Kondo & Asai 1995, Gingerich et al. 1990,
+          and Uhen 2007 are in paper_citations.bib with DOIs checked on OpenAlex.
+          Uhen 2004, the Dorudon osteology monograph, has a Deep Blue URL and no DOI.
+          The pattern plate and the CC BY-SA 3.0 Wadi El-Hitan photograph are
+          SHA-256 pinned in the reference JSON.
+        evidence:
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/paper_citations.bib, lines: [1, 104], note: "nine works, eight with DOIs", supports: true}
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/dorudon_atrox_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 253 µm and age 37.0 Ma recorded with both image digests", supports: true}
+      code-traceability:
+        value: 80
+        rationale: >-
+          The module docstring writes the PDE, the Jacobian, k_c, and the
+          8 → 3 → 0 domain story, and names the functions that implement each.
+          There is no line-by-line map onto equation numbers in Turing 1952.
+        evidence:
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [1, 68], note: "docstring equations, chronoseries, claim boundary", supports: true}
+      repro-package:
+        value: 82
+        rationale: >-
+          --self-test checks the dispersion identities, a 48² smoke integration,
+          and the plate fit, and it passed. Seed 3171 is fixed. Pass 1 itself
+          is --pass 1. Dependencies are the repo scientific stack (numpy, scipy,
+          Pillow, matplotlib); this script does not pin its own lockfile.
+        evidence:
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [640, 697], note: "analytic_checks, gof_checks, self_test", supports: true}
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [750, 763], note: "--self-test and --pass 1/2 entry point", supports: true}
+    remediation:
+      - "Hold Du fixed and sweep Dv/Du across the critical ratio; show lambda and sigma_max moving, including a ratio that is stable."
+      - "Render the equal-diffusion integration beside the slot run so the ablation is a field, not only a signed growth rate."
+      - "Fit the plate azimuthal luminance at k corresponding to 253 µm and report Pearson r, RMSE, and KS, with the polynomial-only fit as the baseline."
+      - "Put the 8 → 3 → 0 hindlimb mode counts on the comparison figure."
+      - "Re-score specimen match against both the pattern plate and the Wadi El-Hitan fossil after that figure exists."
