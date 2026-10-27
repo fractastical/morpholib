@@ -1,0 +1,311 @@
+{
+  "scout": "scout-038",
+  "ground": "turing",
+  "lens": "registry",
+  "candidates": [
+    {
+      "title": "Hash-locked Turing (1952) dispersion parity as a registered in-repo prediction",
+      "gap": "The flagship `models/1952-turing-morpho.py` self-test asserts parity with `datasets/turing/turing_reference.json`, but no row in `predictions/prediction_registry.json` blind-locks those constants; audit scores (85.5) therefore rest on builder verification, not the registry contract.",
+      "done": "After pre-registration (new `TUR-REF-01` row + resolution batch), `predictions/score_resolutions.py` exits 0 with `TUR-REF-01` outcome `confirmed` iff `python3 models/1952-turing-morpho.py --self-test` reports PASS and every checked scalar matches `turing_reference.json` within 1e-6 (d_c, k_c, lambda_c, ring mode s*=4).",
+      "tool_route": "Extend `predictions/build_prediction_registry.py` with `TUR-REF-01` (class `law_invariant_model`, resolvability `current_datasets_only`); add `predictions/resolutions/turing-flagship.json` with `outcome_verdict`; run `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: `datasets/turing/turing_reference.json` (SHA pinned in script `PINNED_SHA256`), `models/1952-turing-morpho.py --self-test` stdout.",
+      "prior_attempts": "MorphoEval audit `2026-10-19-turing-audit-v2` verified parity in prose; Pass N+1 (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`) re-scored the flagship but did not register a blind prediction. `docs/open-problems.json` OP-06 marks flagship debt solved without a registry row.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "`build_prediction_registry.py`, `resolutions/*.json`, and `score_resolutions.py` are the exact closure path; only a new prediction id and resolution file are missing."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Reference JSON and pinned specimen hashes already live under `datasets/turing/`; no external fetch."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Pass/fail is numeric self-test parity with explicit tolerances, not referee taste."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Self-test completes in minutes on the repo stack; registry rebuild/score is seconds."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Can close as new files under `predictions/` plus one scout JSON; no edits to `models/1952-turing-morpho.py` required to score the current baseline."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "One registration loop plus a single `--self-test` run decides the row."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior registry resolution attempted this parity row; audits are complementary, not duplicate resolutions."
+        }
+      }
+    },
+    {
+      "title": "Pre-register Pomacanthus Y-junction over-detection as a negative segmentation prediction",
+      "gap": "Pass N+1 disclosed ~22 automated Y-junctions vs 2–3 in Kondo & Asai (1995) for the adult ROI, but removed the count from the self-test gate; there is no hash-locked, scorable claim about whether the detector is usable for validation.",
+      "done": "Registered `TUR-YBR-01` resolves `confirmed` if, on the SHA-256-locked `pomacanthus_imperator_stripes_specimen.jpg` and fixed ROI from `turing_reference.json`, the current detector returns a junction count in [2, 4]; `refuted` if count >= 8 (pre-registered threshold matching the disclosed ~7–10× over-detection band).",
+      "tool_route": "`predictions/build_prediction_registry.py` add `TUR-YBR-01`; resolution via `python3 models/1952-turing-morpho.py --self-test` biological-specimen block (or a one-line extractor calling `segment_biological_turing_specimens`); file `predictions/resolutions/turing-flagship.json`; `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: `datasets/turing/pomacanthus_imperator_stripes_specimen.jpg`, ROI `roi_box_xyxy`, published reference counts in `datasets/turing/turing_reference.json` (`kondo_asai_1995_pomacanthus_growth` Y-branch fields).",
+      "prior_attempts": "Flagship15 Pass N+1 (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`) measured 22 vs 2–3 and explicitly stopped gating on it; `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` lists 2D growing-domain work as still open, not Y-junction calibration.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Outcome is a single integer from the existing segmentation path; registry + resolution JSON is the scorer."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Specimen and ROI are vendored and hash-pinned; Kondo stage counts are tabulated in-repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Integer junction count against a pre-declared interval; no morphometric judgment."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Segmentation runs in seconds; registry scoring is trivial."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Scoring the current detector needs no script edits; fixing the detector is a separate loop."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One script invocation after registration; likely refutes on current code (fast negative)."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Disclosure is audit-level only; no `predictions/resolutions` row exists yet."
+        }
+      }
+    },
+    {
+      "title": "Break circular Kondo stripe-count calibration (independent λ vs domain sizing)",
+      "gap": "`simulate_kondo_asai_growing_domain_stripes` sets `cells_per_mm` from the same intrinsic λ used to compare against Kondo's table, so `kondo_corr_r≈0.998` is a calibration consistency check, not independent validation (`morphoeval/audits/2026-10-19-turing-audit-v2`, flagship15 audit boundary).",
+      "done": "Registered `TUR-KON-01`: using literature-fixed λ=3.8 mm only (never specimen spacing px→mm) to size domains, Pearson r between simulated stage stripe counts and `kondo_asai_1995_pomacanthus_growth.stages[].n_stripes` is < 0.85 (prediction `confirm` on failure of independence) OR ≥ 0.95 (refute the negative). Verdict read from a pre-registered CSV emitted by the resolver script.",
+      "tool_route": "`predictions/build_prediction_registry.py` add `TUR-KON-01`; resolver writes `predictions/resolutions/turing-flagship.json` after running decoupled sizing (new thin helper acceptable under `predictions/`); `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: `datasets/turing/turing_reference.json` stage table; simulator in `models/1952-turing-morpho.py` (lines ~675–704). Public anchor: Kondo & Asai (1995) doi:10.1038/376765a0 λ≈3.8 mm (already cited in reference JSON).",
+      "prior_attempts": "Audit v2 recorded r=0.9981; Pass N+1 removed r from the validation gate but did not decouple calibration; dedicated growing-domain model `models/1995-kondo-pomacanthus-stripe-insertion.py` exists with Crampin et al. (1999) citation but is not wired into the registry loop.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Registry can score a numeric r threshold once a resolver emits evidence; requires a small decoupling harness beyond bare `score_resolutions.py`."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Stage counts and λ are in `turing_reference.json`; no new specimen fetch."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Pearson r against a fixed table with pre-registered cutoffs is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "1D PDE loops over six stages finish in minutes; many seeds may be needed for stability."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Resolver can live entirely under `predictions/` without touching flagship scripts if it imports functions."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One sitting if deterministic seed fixed; borderline if multi-seed envelope is pre-registered."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Circularity is documented but never registered as a falsifiable prediction; not the refuted OP-11 cow route."
+        }
+      }
+    },
+    {
+      "title": "Autonomous Meinhardt (no stochastic injection) extinction as a Conus flagship prediction",
+      "gap": "`models/1984-wolfram-conus-textile-rule30.py` discloses unsourced activator injection (p=0.18) and clipping; flagship15 audit still lists autonomous Meinhardt parameterisation as structural debt (`does_not_claim` in `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml`).",
+      "done": "Registered `TUR-MEIN-01` resolves `confirmed` if integrating Meinhardt–Klingler at published parameters WITHOUT injection yields peak activator variance < 0.01 after 2000 steps (pattern extinction); `refuted` if variance ≥ 0.05 sustained pattern. Evidence: resolver log + optional CSV from a `--no-injection` probe (pre-registered before running held-out Conus specimen segmentation).",
+      "tool_route": "`predictions/build_prediction_registry.py` add `TUR-MEIN-01` (`current_datasets_only` if probe is coded beside resolver); `predictions/resolutions/turing-flagship.json`; `python3 predictions/score_resolutions.py`. Held-out Conus JPEGs stay blind until after registration (hash list in `datasets/conus/conus_textile_reference.json`).",
+      "deciding_data": "In repo: Meinhardt integrator in `models/1984-wolfram-conus-textile-rule30.py` (docstring lines 42–46); reference parameters in `datasets/conus/conus_textile_reference.json`.",
+      "prior_attempts": "Pass N+1 Conus remediation (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`) fixed kymograph normalization and disclosed injection but kept injection; OP-06 marked solved without an autonomous-Meinhardt registry test.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Registry fits the extinction yes/no outcome, but scoring needs a pre-registered injection-free code path not present as a CLI flag today."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Equations and reference JSON are in-repo; specimen hashes pinned for post-hoc segmentation checks only."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Variance threshold after fixed step count is objective once injection is disabled by registration."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "PDE probe is fast, but full Conus `--self-test-only` is ~5 min per flagship15 notes."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Ideal path: new probe under `predictions/` importing integrator; changing the flagship script is avoidable for the baseline refutation."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Likely one PDE run, but wiring `--no-injection` may spill past a single sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior registry row tests injection-free Meinhardt; audits only disclose the limitation."
+        }
+      }
+    },
+    {
+      "title": "Dedicated Kondo insertion script vs flagship 1D stripe table (cross-model registry test)",
+      "gap": "Two implementations coexist: minimal 1D counts in `models/1952-turing-morpho.py` and a Crampin-growing-domain-capable `models/1995-kondo-pomacanthus-stripe-insertion.py`, but no registered prediction states whether their stage-wise stripe counts agree on the shared SHA-locked reference table.",
+      "done": "Registered `TUR-DUAL-01`: for each of the six `kondo_asai_1995_pomacanthus_growth.stages`, |N_flagship − N_kondo_script| ≤ 1 for all stages (confirm agreement) OR any stage differs by ≥ 3 (refute agreement). Resolver runs both `--self-test` suites and extracts published stage metrics from their outputs/CSVs.",
+      "tool_route": "`predictions/build_prediction_registry.py` add `TUR-DUAL-01`; resolver shells `python3 models/1952-turing-morpho.py --self-test` and `python3 models/1995-kondo-pomacanthus-stripe-insertion.py --self-test`, parses counts; `predictions/resolutions/turing-flagship.json`; `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: shared table in `datasets/turing/turing_reference.json`; both model scripts and their self-tests.",
+      "prior_attempts": "Turing audit v2 scored only the flagship; Kondo loop script has Lean theorems but no prediction-registry linkage; growing-domain 2D debt remains open in flagship15 audit.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Both models already expose deterministic `--self-test`; registry resolution is a structured diff on integers."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All stage heights and target stripe counts are vendored in `turing_reference.json`."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Per-stage integer deltas with a fixed tolerance band."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Two self-tests; Kondo script self-test may be heavier than flagship but stays sub-hour."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Purely read-only comparison; no edits to either flagship script required to score disagreement."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Two commands plus JSON write; likely one sitting unless Kondo self-test runtime spikes."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Cross-model comparison has not been registered or resolved elsewhere."
+        }
+      }
+    },
+    {
+      "title": "Sick WNT/DKK Turing threshold d_c as a registry row (Meinhardt RD flagship satellite)",
+      "gap": "`models/2002-sick-wnt-dkk-hair-follicle.py` implements saturating Gierer–Meinhardt WNT/DKK with analytical d_c=(3+2√2) and documents it in MorphoEval audits, but the prediction registry round-1 covered only Danio/Drosophila/Xenopus organism sidecars—not this in-repo Turing–Meinhardt demo.",
+      "done": "Registered `TUR-WNT-01` resolves `confirmed` if `--self-test` reports PASS and extracted d_c satisfies |d_c − (3+2√2)| < 1e-4 while equal-diffusion control has max Re σ ≤ 0 and canonical d=5.8284 run has max Re σ > 0, matching audit `2026-10-19-wnt-dkk-hair-follicle-audit-v3`.",
+      "tool_route": "`predictions/build_prediction_registry.py` add `TUR-WNT-01` (`current_datasets_only`); `predictions/resolutions/turing-meinhardt.json`; `python3 models/2002-sick-wnt-dkk-hair-follicle.py --self-test`; `python3 predictions/score_resolutions.py`.",
+      "deciding_data": "In repo: script self-test; optional cross-check `datasets/wnt_dkk_hair_follicle/` reference if cited in self-test output.",
+      "prior_attempts": "MorphoEval audits v2/v3 scored the model (~55→higher in loop) but never added a registry prediction; unrelated to scored ZF-TUR BMP/Chordin rows.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Identical workflow to DM-DPP-01: self-test numbers → resolution JSON → `score_resolutions.py`."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "All deciding numbers are emitted by the existing 12-check self-test."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Floating-point inequalities on d_c and σ are fully automatic."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Hair-follicle self-test runs in minutes on repo dependencies."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New prediction/resolution files only; script already stable."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single self-test invocation after registration."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior registry entry covers Sick d_c; audits are not resolutions."
+        }
+      }
+    },
+    {
+      "title": "Cow (Holstein) coat Turing mechanism ID from static/growing RD stats alone — do not re-register",
+      "gap": "OP-11 sought blind re-score and migration-wave colonisation variants after Pass 8 scale-matching; published assessment rejects static Turing and finds growing RD statistically indistinguishable from Eden colonisation (p≈0.91) on held-out n=9 (`datasets/bos_taurus_turing_wavelength/README.md`, audit v7).",
+      "done": "Any new registry prediction claiming adult coat morphology alone can distinguish growing-domain Gray–Scott from colonisation alternatives resolves `refuted` if replication on the same hash-locked masks reproduces p≥0.05; do not treat builder-scored Pass 9 as sufficient without a fresh blind resolution file.",
+      "tool_route": "NOT recommended for registry round-2: would need `predictions/build_prediction_registry.py` + new resolution, but the evidentiary route is blocked. Alternative lens: MorphoEval audit / image-fitness re-score (`morphoeval/verify_image_fitness.py`), not outcome biology registry.",
+      "deciding_data": "In repo: `datasets/bos_taurus_turing_wavelength/`, audits `morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml`; `docs/open-problems.json` OP-11 status `refuted`.",
+      "prior_attempts": "Fable blind audits (54.4, 57.7) predate Pass 8 pipeline; human/panel follow-up recorded OP-11 refuted; second-assessor audits document missing dilution citation and Eden proxy limitations.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Registry can encode the negative, but `score_resolutions.py` cannot supply new blind audit scores—only ratify a resolution JSON someone else writes; mechanism ID needs audit lens."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Cow masks and pass-8 statistics are vendored, yet decisive power remains limited (n=9 held-out)."
+        },
+        "falsifiable_done": {
+          "score": 11,
+          "why": "p-value threshold is objective, but model-variant definitions (Eden vs migration-wave) must be pre-registered to avoid taste."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Full cow pipeline ~100s per audit notes, feasible in-repo."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Re-runs touch large existing `models/1981-murray-bos-taurus-turing-wavelength.py` assets—poor fit for zero-conflict parallel work."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Independent blind audit (R11) is human/agent gated, not one registry sitting."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "OP-11 explicitly refuted the proposed follow-up route; re-proposing the same coat-stats mechanism ID violates negative knowledge."
+        }
+      }
+    },
+    {
+      "title": "Real 2D growing-domain stripe insertion for flagship Turing — not registry-decidable",
+      "gap": "Flagship15 audit and `docs/open-problems.json` OP-06 still name a true 2D L(t) stripe-insertion solver versus independent 1D stages in `models/1952-turing-morpho.py`; `models/1995-kondo-pomacanthus-stripe-insertion.py` partially addresses growing domains but is separate from the 1952 flagship claim boundary.",
+      "done": "N/A for registry lens: closure is engineering (`--self-test` fails before fix, passes after) with MorphoEval re-audit, not a literature/outcome prediction row.",
+      "tool_route": "Use simulation/audit lens (new solver module + `morphoeval/validate_loop_isolation.py`), not `predictions/score_resolutions.py`. Optional future registry row only AFTER a hash-locked numerical benchmark (e.g., 2D vs 1D stripe count RMSE on `turing_reference.json`) is pre-registered.",
+      "deciding_data": "In repo: audit boundaries in `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml`; Crampin et al. (1999) doi:10.1006/bulm.1999.0131 cited in Kondo script header.",
+      "prior_attempts": "OP-06 marked solved by multi-agent panel without a merged 2D flagship solver; Pass N+1 Turing remediation did not implement 2D L(t) (still listed under Still open in flagship15 run note).",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Registry scores registered biological/numeric claims, not whether a PDE solver feature exists; needs audit/simulation lens."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Reference ontogeny table and 1D baseline exist, but no gold 2D ground-truth field is vendored."
+        },
+        "falsifiable_done": {
+          "score": 8,
+          "why": "Self-test pass/fail can be crisp after implementation, but that is not a blind prediction today."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "2D growing RD on repo stack is hours of implementation plus runtime, not scoring alone."
+        },
+        "isolation": {
+          "score": 5,
+          "why": "Requires substantive edits to flagship or a large new script—conflicts with parallel zero-touch agents."
+        },
+        "time_to_verdict": {
+          "score": 3,
+          "why": "Multi-iteration engineering, not one registry loop."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "OP-06 'solved' label conflicts with audit 'does_not_claim'; route is confused but not formally refuted like OP-11."
+        }
+      }
+    }
+  ]
+}
