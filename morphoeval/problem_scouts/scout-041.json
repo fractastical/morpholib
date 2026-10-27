@@ -1,0 +1,351 @@
+{
+  "scout": "scout-041",
+  "ground": "bioelectric",
+  "lens": "literature",
+  "candidates": [
+    {
+      "title": "Cervera–Levin–Mafe 2021/2020 open-access full-text pins for equation-level audit",
+      "gap": "The Cervera re-score (`morphoeval/audits/2026-10-17-cervera-audit-v2.yaml`) records that the full 2021 BioSystems and 2020 Bioelectrochemistry model papers were not accessible, so reaction–diffusion equation numbering and parameter provenance in `models/2021-Cervera–Levin–Mafe.py` remain unverified beyond header comments.",
+      "done": "A scout dossier JSON (stdout or `datasets/planform/scout_cervera_sources.json`) lists both seed DOIs `10.1016/j.biosystems.2021.104511` and `10.1016/j.bioelechem.2019.107410` with `is_oa: true` and a non-empty `oa_url` for each in `candidate_papers_openalex`, verifiable by `jq` without manual PDF reading.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Morphology changes induced by intercellular gap junctional communication Cervera Levin Mafe BioSystems 2021\" --taxon \"planarian\" --dry-run | tee /tmp/cervera_scout.json; python3 morphoeval/scout_literature.py --query \"Bioelectrical model head-tail planarian gap junction Cervera Bioelectrochemistry 2020\" --taxon \"planarian\" --dry-run",
+      "deciding_data": "In repo: DOIs and scope boundary in `models/2021-Cervera–Levin–Mafe.py` L6–12; audit gap in `morphoeval/audits/2026-10-17-cervera-audit-v2.yaml` (source-traceability). Public: OpenAlex works API via scout_literature.",
+      "prior_attempts": [
+        {
+          "who": "gpt-5.6-sol (MorphoEval Cervera audit v2)",
+          "what": "Re-scored remediation at 55.6/100; explicitly left equation-level fidelity unverified because full 2021/2020 articles were unavailable (`2026-10-17-cervera-audit-v2.yaml` source-traceability rationale)."
+        }
+      ],
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "scout_literature OpenAlex queries return OA URLs for the two pinned DOIs already named in the model header."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Target DOIs and audit citation are in-repo; only HTTP metadata fetch is external."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Scorer checks JSON fields `is_oa` and `oa_url` for both DOIs programmatically."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Two scout CLI calls complete in minutes on the cloud VM stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dossier file only; no edits to existing Cervera or Planform fixtures required."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single sitting: run scout, grep DOIs in JSON output."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted literature retrieval for these DOIs; audit blocked on access, not on negative search."
+        }
+      }
+    },
+    {
+      "title": "Planform S9 (Nogi 2009 praziquantel) sample counts vs PLoS NTD primary tables",
+      "gap": "Series S9 in `datasets/planform/planform_bioelectric_series_v1.json` flags `placeholder_sample_count` on nearly all praziquantel rows (PlanformDB `ResultSet.Num` ∈ {0,1}); calibrating the depolarization pole link needs authoritative n per dose/window from Nogi et al. 2009 (`doi:10.1371/journal.pntd.0000464`).",
+      "done": "Scout output includes OpenAlex hit with `doi` exactly `10.1371/journal.pntd.0000464`, `is_oa: true`, and non-null `oa_url`; a follow-up human/agent table extract records ≥3 (dose or exposure-window, n, double-head %) tuples matching S9 axes documented in `datasets/planform/README.md` S9 row, stored as a new JSON sidecar referenced in scout notes (count ≥3 tuples).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"voltage-operated calcium channel beta subunits planarian praziquantel Nogi\" --taxon \"Dugesia japonica\" --out datasets/planform/scout_nogi2009_s9.json",
+      "deciding_data": "In repo: S9 flags and publication pin in `models/planform_bioelectric.py` PUBLICATIONS[25] and `planform_bioelectric_series_v1.json`. Public: PLoS Neglected Tropical Diseases `10.1371/journal.pntd.0000464` (OA PDF via scout `oa_url`).",
+      "prior_attempts": [
+        {
+          "who": "planform_bioelectric.py self-test (builder agents)",
+          "what": "Accepts placeholder sample counts as flagged metadata but does not replace them from literature (`--self-test` expects placeholder flags, not resolved n)."
+        }
+      ],
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "scout_literature reliably surfaces the Nogi 2009 DOI (verified 2026-10-27 run); table digitization uses the returned OA PDF URL."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Fixture and DOI are in-repo; PDF fetch is one public URL from scout output."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done checks DOI in scout JSON plus ≥3 typed tuples in a sidecar JSON schema."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Scout minutes; PDF table extraction is hours-scale manual/OCR, still no wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout manifest and optional sidecar under `datasets/planform/` without modifying `planform_bioelectric_series_v1.json` until validated."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Scout verdict is one loop; full tuple extract may need a second pass."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of Nogi 2009 as the S9 literature anchor."
+        }
+      }
+    },
+    {
+      "title": "Durant 2019 early post-amputation bioelectric window — PlanformDB record linkage",
+      "gap": "`datasets/planform/rusty_matter_source_dynamics_targets.json` defines `ap_transient_memory` checkpoints (3 hpa, 6 hpa, washout) sourced to Durant 2019 (`durant_2019_bpj`, cited as `doi:10.1016/j.bpj.2019.01.029`) but lists `planformdb_record_ids: []`, so transient-depolarization outcomes are synthetic-only in `rusty_matter_planarian_traces.json`.",
+      "done": "Scout dossier confirms OpenAlex entry for `10.1016/j.bpj.2019.01.029` with `is_oa: true`; a written gap report states either (a) ≥1 PlanformDB experiment id in `planform_bioelectric_series_v1.json` maps to Durant 2019 timing manipulations, or (b) explicit negative: no curated Planform rows — requiring a literature-only frequency table — with DOI and figure/table reference in the report JSON field `planformdb_record_ids_found`.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Long-term stochastic editing regenerative anatomy bioelectric gradients Durant Biophysical Journal 2019\" --taxon \"Schmidtea mediterranea\" --dry-run; python3 -c \"import json; d=json.load(open('datasets/planform/planform_bioelectric_series_v1.json')); print([r.get('experiment_id') for r in d.get('records',[]) if 'durant' in str(r).lower()][:20])\"",
+      "deciding_data": "In repo: `rusty_matter_source_dynamics_targets.json` target `ap_transient_memory`; Durant 2017/2019 citations in `models/2017-pietak-bioelectric-morphogen-coupling.py`. Public: Biophys. J. 2019 `10.1016/j.bpj.2019.01.029`.",
+      "prior_attempts": [
+        {
+          "who": "claude-fable-5-1 / gemini (Pass 3 Pietak slot 082)",
+          "what": "Implemented cryptic 2H0T memory phenotypes against Durant 2017 Biophys. J. 112:2231-2243 in simulation; did not attach Durant 2019 timing frequencies to PlanformDB ids (`2026-10-19-planarian-hk-atpase-anterior-audit-v2` cites Durant 2017 memory, not 2019 window tables)."
+        }
+      ],
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Literature scout locates the 2019 paper; repo grep resolves whether Planform already encodes those experiments."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Synthetic traces and source-target fixture already in-repo; paper is one OA fetch away."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Binary outcome: non-empty vs empty `planformdb_record_ids_found` with mandatory DOI citation."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Scout plus JSON grep only; no new infrastructure."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Report/scout files only until linkage is proven."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Scout is fast; reconciling Durant 2019 vs Planform S4/S5 may need careful figure matching."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Partial overlap with Pietak/Durant 2017 modeling; 2019 Planform linkage not previously closed."
+        }
+      }
+    },
+    {
+      "title": "Campaign slot 083 — Werner PRL scale-invariant planarian patterning (pre-loop literature scout)",
+      "gap": "MorphoEval campaign slot 83 (`morphoeval/cloud/campaign_100_slots.yaml`) specifies Werner et al. 2015 PRL (`10.1103/PhysRevLett.114.138101`) and `2016-werner-planarian-allometric-rescaling.py`, but no such script or `datasets/planarian_allometric_rescaling/` directory exists in the repo (only unrelated Werner *Drosophila* models).",
+      "done": "`python3 morphoeval/scout_literature.py --slot 83 --out datasets/planarian_allometric_rescaling/scout_manifest.json` exits 0; manifest has `territory.seed_doi` = `10.1103/PhysRevLett.114.138101`, `uniqueness_check.collision_detected` = false, and ≥1 Wikimedia specimen with license containing `CC` for taxon `Schmidtea mediterranea`.",
+      "tool_route": "python3 morphoeval/scout_literature.py --slot 83 --out datasets/planarian_allometric_rescaling/scout_manifest.json",
+      "deciding_data": "In repo: full slot metadata in `morphoeval/cloud/campaign_100_slots.yaml` slot 83. Public: PRL DOI and OpenAlex/Wikimedia responses from scout_literature.",
+      "prior_attempts": [
+        {
+          "who": "MorphoEval 100-slot campaign (documented)",
+          "what": "Slot 083 registered with seed DOI and proposed paths; no closed-loop run artifact under `morphoeval/runs/` for planarian allometric rescaling."
+        }
+      ],
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "`--slot 83` injects seed DOI and collision check; scout is the mandated Step 1 tool for new loops."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Campaign seed and exclusion scan are entirely in-repo; network only for OpenAlex/Commons."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Manifest fields are machine-checkable (seed_doi, collision_detected, specimen license string)."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Sub-minute scout run on cloud agent image."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset directory and manifest only (zero-conflict with parallel agents)."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One command produces the deciding manifest."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of Werner PRL planarian scaling route in audits or `docs/open-problems.json`."
+        }
+      }
+    },
+    {
+      "title": "Campaign slot 082 — Pai 2015 Xenopus HCN2 brain ventricle scaling (missing model scout)",
+      "gap": "Campaign slot 82 targets Pai et al. 2015 J. Neurosci. (`10.1523/JNEUROSCI.1877-14.2015`) and `2015-pai-bioelectric-brain-teratogenesis.py`, but the repository implements Pietak & Levin 2017 electrodiffusion at the same slot id in `datasets/bioelectric_morphogen_coupling/` (`slot: 82` in reference JSON) and has no `2015-pai-bioelectric-brain-teratogenesis.py`.",
+      "done": "Scout run with `--slot 82` produces JSON where `territory.seed_doi` = `10.1523/JNEUROSCI.1877-14.2015` and `uniqueness_check.collision_detected` is false for `proposed_script` `2015-pai-bioelectric-brain-teratogenesis.py`; plus either OpenAlex hit with that exact DOI or a documented `candidate_papers_openalex` miss list and fallback Crossref/manual DOI resolution note in `scout_notes` (string non-empty).",
+      "tool_route": "python3 morphoeval/scout_literature.py --slot 82 --dry-run; python3 morphoeval/scout_literature.py --query \"Endogenous gradients of resting potential instructively pattern embryonic neural tissue Pai J Neurosci 2015\" --taxon \"Xenopus laevis\" --out datasets/bioelectric_brain_teratogenesis/scout_manifest.json",
+      "deciding_data": "In repo: slot 82 definition in `morphoeval/cloud/campaign_100_slots.yaml`; slot collision evidence in `datasets/bioelectric_morphogen_coupling/bioelectric_morphogen_coupling_reference.json`. Public: J Neurosci DOI above.",
+      "prior_attempts": [
+        {
+          "who": "Pass 3 bioelectric builders (Levin latent space suite)",
+          "what": "Delivered Pietak 2017 planarian electrodiffusion at high MorphoEval score instead of Pai 2015 Xenopus brain teratogenesis (`docs/LEVIN_LATENT_SPACE_METHODS.md` Claim 5–6 inventory lists Pietak/Pezzulo/Vandenberg, not Pai 2015)."
+        }
+      ],
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "scout_literature supplies seed metadata and OA discovery; OpenAlex ranking for Pai title is noisy and may need second query (observed 2026-10-27)."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Seed DOI and campaign collision rules are in-repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Checks seed_doi, collision flag, and DOI hit or explicit miss documentation."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Scout-only step before any PDE implementation."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New `datasets/bioelectric_brain_teratogenesis/` path avoids touching Pietak dataset files."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One to two scout queries in a sitting."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Slot 82 number already consumed by Pietak implementation — organizational conflict, not literature refutation."
+        }
+      }
+    },
+    {
+      "title": "CC-licensed double-head (2H0T) planarian specimen image for Cervera specimen-match",
+      "gap": "Cervera audit v2 specimen-match: only wild-type `Smediterranea.jpg` is measured; no treated double-head photograph is compared (`2026-10-17-cervera-audit-v2.yaml` model-data rationale). Planform silhouettes #2 exist mathematically but lack a matching CC specimen photo in `datasets/planform/`.",
+      "done": "Wikimedia leg of scout output (any query among `double head planarian`, `two headed Schmidtea`, `Dugesia japonica regeneration`) yields ≥1 `candidate_specimens_wikimedia` entry with `license` matching /CC/ and `url` ending in `.jpg` or `.png`; if zero hits, done requires JSON field `wikimedia_negative_search: true` and three query strings recorded (negative knowledge counts).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"planarian double head regeneration octanol\" --taxon \"Schmidtea mediterranea\" --dry-run; python3 morphoeval/scout_literature.py --query \"two headed flatworm planarian\" --taxon \"Dugesia japonica\" --dry-run",
+      "deciding_data": "In repo: audit gap and WT photo pin in `2021-Cervera–Levin–Mafe.py` SHA-256 block; Planform phenotype #2 in `datasets/planform/planform_canonical_silhouettes_v1.json`. Public: Wikimedia Commons API via scout_literature.",
+      "prior_attempts": [
+        {
+          "who": "gpt-5.6-sol Cervera audit v2",
+          "what": "Recorded silhouette IoU on Planform cartoons only; flagged absence of treated-specimen comparison."
+        }
+      ],
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "scout_literature Wikimedia search is the designated specimen lens; initial double-head query returned zero hits (2026-10-27), so negative search is a valid outcome."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "WT specimen already vendored; treated photo must be discovered externally."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Either licensed URL present or documented negative search with query list."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "API-only; no wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New cached image file under a new datasets path only after license check."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Two scout calls determine hit vs documented miss."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt claimed a CC 2H0T photo was already in-repo."
+        }
+      }
+    },
+    {
+      "title": "Levin YouTube Law 2 — resolve Cervera vs Bioelectrochemistry bibliography DOIs",
+      "gap": "`morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v2.yaml` scores source-traceability down because Law 2 names 'Cervera, Levin & Mafe (2021) Bioelectrochemistry' with no DOI in `datasets/levin_youtube_channel/paper_citations.bib`, while the repo's actual Cervera pair is BioSystems 2021 + Bioelectrochemistry 2020 (`10.1016/j.biosystems.2021.104511`, `10.1016/j.bioelechem.2019.107410`).",
+      "done": "Scout-produced bibliography patch list JSON contains exactly two objects `{\"doi\": ..., \"venue\": ..., \"year\": ...}` matching the two DOIs above with OpenAlex `title` strings; scorer verifies both DOIs appear and neither is labeled Bioelectrochemistry 2021.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Morphology changes induced by intercellular gap junctional communication BioSystems 2021 Cervera\" --taxon \"planarian\" --dry-run; python3 morphoeval/scout_literature.py --query \"Bioelectrical model head tail planarian gap junction 107410 Cervera\" --taxon \"planarian\" --dry-run",
+      "deciding_data": "In repo: audit defect list L438–439; correct DOIs in `models/2021-Cervera–Levin–Mafe.py`. Public: OpenAlex metadata.",
+      "prior_attempts": [
+        {
+          "who": "gpt-5.6-sol (Levin YouTube channel math audit v2)",
+          "what": "Documented missing DOIs for Cervera/Hoel sources; remediation asks for resolvable identifiers, not yet applied to bib (`2026-10-24-levin-youtube-channel-math-audit-v2.yaml`)."
+        }
+      ],
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "scout_literature is the correct lens to fetch canonical titles/venues for known DOIs."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Correct DOIs already in Cervera model; bib error is in-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Two-DOI JSON equality check is taste-free."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Minutes of API calls."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Scout notes or new bib fragment file without editing scored audit YAML."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audit requested fix; no refutation of DOI pair."
+        }
+      }
+    },
+    {
+      "title": "Map Cervera 2021 numbered RD equations to repo analogue (wrong lens — not literature-only)",
+      "gap": "Cervera audit code-traceability: the 1D reaction–diffusion solver in `2021-Cervera–Levin–Mafe.py` cannot be traced to numbered equations in the source papers; finding PDF URLs alone does not close the mapping.",
+      "done": "N/A for literature lens — would require line-by-line equation match score ≥90% between paper equation list and code `f1/f2/f3` routines, checked by a builder agent.",
+      "tool_route": "Not scout_literature alone; would need manual PDF read or `morphoeval/measure_outputs.py` plus model edit loop after OA PDF retrieval.",
+      "deciding_data": "In repo: `models/2021-Cervera–Levin–Mafe.py`; papers `10.1016/j.biosystems.2021.104511`, `10.1016/j.bioelechem.2019.107410`.",
+      "prior_attempts": [
+        {
+          "who": "gpt-5.6-sol Cervera audit v2",
+          "what": "Explicitly left equation-level fidelity unverified; remediated qualitative analogue labeling only."
+        }
+      ],
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Literature scout can fetch OA links but cannot score equation-to-code alignment; needs builder/referee lens."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Code and DOIs in-repo; PDFs are public once located."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Equation mapping rubric is objective but not producible from OpenAlex JSON alone."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Human/agent PDF tracing exceeds one scout call."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Would require editing the flagship Cervera script — conflicts with parallel zero-touch policy."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Multi-loop model audit, not one sitting."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "Audit already attempted this route partially; full equation trace remains open."
+        }
+      }
+    }
+  ]
+}
