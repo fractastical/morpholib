@@ -1,0 +1,126 @@
+{
+  "scout": "scout-051",
+  "ground": "lean",
+  "lens": "literature",
+  "candidates": [
+    {
+      "title": "Globorotalia praefohsi scale-paleo loops: resolve slot-encoded 10.1017/pal.* DOIs to real Norris/Malmgren primary literature",
+      "gap": "Nine `norris-globorotalia-praefohsi-*` math_kg_loops and matching `Loop_1535`/`Loop_1985`-class Lean files cite `source_citation` DOIs of the form `10.1017/pal.1999.1535` where the numeric suffix matches the MorphoEval loop id (1535), not a Crossref-resolvable Cambridge Palaeontology article; `morphoeval/scale_and_paleo_catalog.py` only stores the prefix `10.1017/pal` plus author/year metadata.",
+      "done": "A machine-readable dossier (new file under `morphoeval/problem_scouts/resolutions/` or appended scout manifest) listing every distinct `10.1017/pal.*` / `10.1017/paleo.*` DOI in `morphoeval/math_kg_loops/norris-globorotalia-praefohsi-*.yaml`, each marked `resolved` (OpenAlex/Crossref title+author+year match within ±2 years of catalog author/year) or `unresolvable`, with ≥1 replacement DOI per chronospecies for morphometric/evolution content (Norris 1990s Globorotalia lineage work; Malmgren 1983 punctuated evolution).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Norris Globorotalia morphologic evolution Miocene foraminifera\" --taxon \"Globorotalia praefohsi\" --out morphoeval/problem_scouts/dossiers/norris-globorotalia-praefohsi-scout.json --dry-run (inspect OpenAlex hits); repeat with `--query \"Malmgren Globorotalia fohsi punctuated evolution\" --taxon \"Globorotalia fohsi\"`; inputs: `morphoeval/math_kg_loops/norris-globorotalia-praefohsi-flux-canalization.yaml`, `morphoeval/runs/species_multiscale_registry.json` (Globorotalia entries).",
+      "deciding_data": "In repo: YAML citations and `species_multiscale_registry.json`; public fetch: OpenAlex works API (via scout_literature), Malmgren (1983) Evolution 37:378-394 (DOI 10.1111/j.1558-5646.1983.tb00255.x) as named off-repo anchor.",
+      "prior_attempts": "docs/BIOLOGICAL_LAW_CRITERIA.md violation V5 documents offline DOI hallucinations remediated for `datasets/levin_youtube_channel/` only; scale-paleo mass generation (`morphoeval/run_overnight_1000_loops.py`, `campaign_2100_scale_paleo_summary.json`) propagated the same offline pattern into ~3k math_kg_loops without a Crossref pass. Not listed in docs/open-problems.json.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "scout_literature queries OpenAlex and emits structured paper records matching the rubric's missing-DOI decision." },
+        "data_in_hand": { "score": 18, "why": "All bogus DOIs and author/year seeds are already in repo YAML/registry; only API fetch is external." },
+        "falsifiable_done": { "score": 14, "why": "Each DOI gets a binary resolved/unresolvable flag plus mandatory replacement DOI or explicit none-found." },
+        "compute_in_repo": { "score": 14, "why": "Dozen HTTP queries and JSON merge; no Lean rebuild required for the verdict." },
+        "isolation": { "score": 10, "why": "New dossier files only; no edits to existing math_kg_loops or lean loops." },
+        "time_to_verdict": { "score": 9, "why": "One scout sitting covers Norris+Malmgren exemplar family." },
+        "not_blocked": { "score": 5, "why": "V5 remediation targeted Levin YouTube bib only; no recorded refutation of OpenAlex resolution for paleo loops." }
+      }
+    },
+    {
+      "title": "Eldredgeops rana schizochroal-eye loops: replace 10.1017/paleo.{year}.{loop} stubs with Campbell/Eldredge eye-count primary sources",
+      "gap": "`eldredge-eldredgeops-rana-18file-flux-canalization.yaml` (Loop_1515) assigns auxin canalization PDEs to a Devonian trilobite and cites `Eldredge (1975) DOI:10.1017/paleo.1975.1515`; the Lean proof is the generic Int stub `law1_invariant (a b) := a * b`, while the catalog lists Eldredge 1972 and prefix `10.1017/paleo` (`scale_and_paleo_catalog.py`).",
+      "done": "Scout dossier naming ≥2 peer-reviewed sources that quantify 17-file vs 18-file schizochroal lenses (or punctuated eye evolution) for Phacops/Eldredgeops, each with resolvable DOI and figure/table reference; boolean `stated_pde_present` false for `dD_ij/dt = alpha_f |J|^gamma` in those sources; ≥1 Wikimedia or BHL-linked specimen image for `Eldredgeops rana` in the dossier `candidate_specimens_wikimedia` array.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Eldredge Phacops rana schizochroal eye lens files punctuated equilibrium\" --taxon \"Eldredgeops rana\" --out morphoeval/problem_scouts/dossiers/eldredgeops-rana-eye-scout.json; input loci: `morphoeval/math_kg_loops/eldredge-eldredgeops-rana-18file-flux-canalization.yaml`, `morphoeval/lean/loops/Loop_1515_eldredgeops_rana_18file_flux_canalization.lean`.",
+      "deciding_data": "In repo: math_kg YAML + Lean stub; public: OpenAlex hit e.g. Campbell (1975) trilobite eye functional anatomy (DOI 10.5962/p.361044 via OpenAlex), Eldredge & Gould punctuated equilibria corpus (Crossref/OpenAlex).",
+      "prior_attempts": "No MorphoEval audit of Eldredgeops loops in `morphoeval/kg/`; mass loop factory only. V5 pattern is analogous but not applied to this taxon.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Literature scout is the designated fix for wrong/offline paleo DOIs and missing specimen provenance." },
+        "data_in_hand": { "score": 16, "why": "Loop metadata in repo; primary papers and Commons images are one API call away." },
+        "falsifiable_done": { "score": 13, "why": "Scorer checks dossier for ≥2 DOIs, explicit PDE-absence flag, and ≥1 specimen URL." },
+        "compute_in_repo": { "score": 14, "why": "Single scout run plus JSON validation." },
+        "isolation": { "score": 10, "why": "Output confined to new scout JSON under problem_scouts/." },
+        "time_to_verdict": { "score": 9, "why": "Trilobite eye literature is narrow; one query batch suffices." },
+        "not_blocked": { "score": 5, "why": "No prior agent dossier refuting Eldredgeops citation repair route." }
+      }
+    },
+    {
+      "title": "Cetacean transition slots (Ambulocetus Loop_1494): literature route from plant auxin template to Thewissen/Uhen limb morphometrics + fossil specimen images",
+      "gap": "`Loop_1494_ambulocetus_natans_flux_canalization.lean` and homologous whale-series loops reuse Cohort IV phyllotaxis law text (`dD_ij/dt`, Lockhart turgor) with Int toy proofs; anatomical_structure strings describe auxin veins on an Eocene cetacean (`morphoeval/lean/loops/Loop_1494_*.lean` header vs `scale_and_paleo_catalog.py` Ambulocetus entry).",
+      "done": "Scout manifest with ≥3 OpenAlex works on Ambulocetus/whale hindlimb reduction (Thewissen, Uhen, Gingerich lineage) containing explicit morphometric or 3D measurement claims, plus ≥2 CC-licensed fossil specimen images from Wikimedia (`candidate_specimens_wikimedia` non-empty); manifest includes `mechanism_mismatch`: true when top papers lack auxin/phyllotaxis PDEs.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Thewissen Ambulocetus natans limb morphology Eocene whale\" --taxon \"Ambulocetus natans\" --out morphoeval/problem_scouts/dossiers/ambulocetus-natans-scout.json; retry with `--no-network` only if HTTP 429, after backoff; inputs: Loop_1494 lean/math_kg pairing under `morphoeval/math_kg_loops/*ambulocetus*` if present else lean file alone.",
+      "deciding_data": "In repo: Loop_1494 lean header and campaign whale rows in `species_multiscale_registry.json`; public: OpenAlex + Wikimedia Commons (verified 2026-10-27 run returned CC BY-SA Ambulocetus mount photos).",
+      "prior_attempts": "docs/open-problems.json OP-04 discusses deep-time prediction, not cetacean loop templates; no recorded literature scout for Ambulocetus loops.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Scout resolves both governing-equation sources and specimen images—the missing pieces for KG traceability." },
+        "data_in_hand": { "score": 17, "why": "Whale transition literature and Commons mounts are public; repo holds only mismatched templates." },
+        "falsifiable_done": { "score": 13, "why": "Manifest fields are countable (paper count, image count, mechanism_mismatch boolean)." },
+        "compute_in_repo": { "score": 13, "why": "Network scout only; may need retry on OpenAlex 429." },
+        "isolation": { "score": 10, "why": "New dossier file; no changes to 1494-series lean stubs." },
+        "time_to_verdict": { "score": 8, "why": "One sitting unless rate-limited." },
+        "not_blocked": { "score": 5, "why": "Route not previously executed or refuted." }
+      }
+    },
+    {
+      "title": "Norris Globorotalia praefohsi model scripts: bootstrap missing `datasets/globorotalia_praefohsi_*` via literature scout before Lean/math_kg can be audited",
+      "gap": "Ten `models/199*-norris-globorotalia-praefohsi-*.py` scripts SHA-pin files under `datasets/globorotalia_praefohsi_<mechanism>/` (reference JSON, specimen JPG, scout_manifest, paper_citations.bib) but those dataset directories are absent from the checkout, so `--self-test` fails and math_kg claims cannot be source-traced.",
+      "done": "`python3 models/1999-norris-globorotalia-praefohsi-flux-canalization.py --self-test` passes after a loop agent materializes datasets from scout output; literature-only milestone for this scout: scout_manifest.json under the expected dataset path listing ≥1 Norris/Malmgren paper with OA URL or DOI and ≥1 foraminifer specimen image, with SHA-256 recorded for manifest file only.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Globorotalia praefohsi morphometrics Miocene planktonic foraminifera\" --taxon \"Globorotalia praefohsi\" --out datasets/globorotalia_praefohsi_flux_canalization/scout_manifest.json (requires follow-on loop to add reference JSON—not this scout's lens alone); inputs: `models/1999-norris-globorotalia-praefohsi-flux-canalization.py` EXPECTED_SHA256 block.",
+      "deciding_data": "In repo: model script hashes and sim_id; missing on disk: entire `datasets/globorotalia_praefohsi_*` trees; public: OpenAlex/IODP proceedings and micropaleontology journals.",
+      "prior_attempts": "campaign_2100_scale_paleo_summary.json registers high pass scores for other taxa but does not show completed Norris dataset materialization; no open-problems.json entry.",
+      "factors": {
+        "tool_fit": { "score": 18, "why": "Scout supplies papers and specimen images but not the full reference JSON series without a downstream loop." },
+        "data_in_hand": { "score": 10, "why": "Scripts and YAML exist; empirical series and pinned bib are missing from repo." },
+        "falsifiable_done": { "score": 12, "why": "Partial done: manifest exists with DOI+image; full done adds `--self-test` green." },
+        "compute_in_repo": { "score": 12, "why": "Scout hour; dataset build is additional work outside literature lens." },
+        "isolation": { "score": 9, "why": "New dataset dirs conflict with cloud zero-touch rules unless uniquely prefixed." },
+        "time_to_verdict": { "score": 7, "why": "Literature partial verdict one loop; full repro needs second loop." },
+        "not_blocked": { "score": 4, "why": "No refutation; partial attempts in mass campaign without datasets." }
+      }
+    },
+    {
+      "title": "Honda dichotomous tree (Slot 051): online DOI re-verification for Pass 3 solar-tier bibliography",
+      "gap": "`datasets/dichotomous_tree_branching/README.md` states Pass 3 solar citations (Campbell & Norman 1998, Cooper 1969, Monsi & Saeki 1953) were not re-verified online; math_kg Law 4–5 lean proofs are correct discrete analogues but source-traceability for Pass 3 radiative tier spacing remains offline.",
+      "done": "Updated scout dossier (or addendum JSON) where each of the three Pass 3 DOIs appears in OpenAlex/Crossref with title match score ≥0.8 fuzzy normalized string match vs `solar_citations_pass3.bib`, recorded in `candidate_papers_openalex` with matching `doi` field; `collision_detected` false against `scout_literature.py --list-existing`.",
+      "tool_route": "python3 morphoeval/scout_literature.py --slot 51 --out datasets/dichotomous_tree_branching/solar_pass3_doi_verify.json --dry-run; manual cross-check against `datasets/dichotomous_tree_branching/solar_citations_pass3.bib`; inputs: `morphoeval/math_kg_loops/honda-dichotomous-tree-branching.yaml` Pass 3 laws.",
+      "deciding_data": "In repo: dichotomous_tree_branching dataset, Loop_051 lean, honda math_kg; public: DOIs 10.1007/978-1-4612-1626-1, 10.1016/0038-092X(69)90047-4, 10.1093/aob/mci052.",
+      "prior_attempts": "morphoeval/kg/2026-10-19 ripping-leaf audit documents offline DOI transcription risk; dichotomous Pass 3 README acknowledges same gap; not remediated via scout rerun.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Slot 51 is native to scout_literature campaign manifest; verifies bibliographic claims." },
+        "data_in_hand": { "score": 19, "why": "Bib file and seed DOIs already in repo dataset." },
+        "falsifiable_done": { "score": 14, "why": "Per-DOI pass/fail table derived automatically from scout output vs bib." },
+        "compute_in_repo": { "score": 15, "why": "Minutes of HTTP queries." },
+        "isolation": { "score": 8, "why": "Prefer new verify JSON beside dataset rather than overwriting scout_manifest.json." },
+        "time_to_verdict": { "score": 10, "why": "Three DOIs, one slot invocation." },
+        "not_blocked": { "score": 5, "why": "Acknowledged gap; no refutation of online verification approach." }
+      }
+    },
+    {
+      "title": "Noor Drosophila persimilis nine-mechanism loops: disambiguate hybrid-speciation bibliography from auxin plant template",
+      "gap": "`noor-drosophila-persimilis-flux-canalization.yaml` (slot 2894) labels D. persimilis anatomy as auxin flux / phyllotactic primordium and cites `Noor (2001–2004) DOI:10.1073/pnas.98.21.12084` with inconsistent publication years across sibling YAMLs; Lean remains Int stub (`law1_invariant := a * b`).",
+      "done": "Scout dossier listing the canonical Noor & Orr hybrid speciation PNAS papers (2000 Reinforcement, 2001 speciation genetics) with single authoritative DOI per topic, plus explicit `plant_mechanism_applicable`: false when OpenAlex abstract lacks auxin transport equations; optional FlyBase/Commons specimen omitted if OpenAlex suffices for bibliography fix.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Noor Orr Drosophila persimilis hybrid speciation reinforcement\" --taxon \"Drosophila persimilis\" --out morphoeval/problem_scouts/dossiers/noor-drosophila-persimilis-scout.json; grep inputs: `morphoeval/math_kg_loops/noor-drosophila-persimilis-*.yaml`.",
+      "deciding_data": "In repo: nine noor math_kg_loops; public: PNAS 10.1073/pnas.98.21.12084 and related Noor publications via OpenAlex.",
+      "prior_attempts": "V5 covers Levin YouTube bib hallucinations, not Drosophila mass loops; FlyBase DOIs in YAML are infrastructure refs, not Noor primary sources.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Bibliographic confusion is exactly what scout_literature + OpenAlex resolves." },
+        "data_in_hand": { "score": 17, "why": "Wrong citations already enumerated in repo YAML." },
+        "falsifiable_done": { "score": 13, "why": "Done when each mechanism YAML's cited DOI maps to one verified work or is flagged inconsistent." },
+        "compute_in_repo": { "score": 14, "why": "One query plus YAML crosswalk script." },
+        "isolation": { "score": 10, "why": "Dossier-only deliverable." },
+        "time_to_verdict": { "score": 9, "why": "Noor Drosophila literature is well indexed." },
+        "not_blocked": { "score": 5, "why": "No prior refutation of this disambiguation task." }
+      }
+    },
+    {
+      "title": "Mass-generated Int-stub Lean (`law1_invariant a*b`): replace PDE labels with literature-backed equation targets (not provable by scout alone)",
+      "gap": "Thousands of `morphoeval/lean/loops/Loop_*_*_flux_canalization.lean` files prove `0 < a*b` while YAML `formula` fields state canalization ODEs; closing the formalization gap requires mechanism-specific theorems (cf. gold standard `Loop_093_convergent_extension_intercalation.lean` tied to Zajac/Bertet papers).",
+      "done": "For a scorer without taste: NOT achievable by literature lens alone—requires Lean refactor. Literature sub-done: for any chosen loop id, scout dossier must list ≥1 paper containing the stated ODE symbolically; if none found, record `equation_not_in_literature`: true.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"<mechanism keywords from YAML formula>\" --taxon \"<organism>\" --dry-run; compare to `morphoeval/math_kg_loops/zhang-sinosauropteryx-prima-flux-canalization.yaml` negative control (stub) vs `zajac-convergent-extension-intercalation.yaml` positive control.",
+      "deciding_data": "In repo: ~3000 stub loops; public: domain papers via OpenAlex.",
+      "prior_attempts": "2026-10-24 levin-youtube-channel-math audit v2 documents ground-`decide` Lean as unfaithful (V4); remediation requested universal quantifiers—parallel issue for mass stubs but no bulk fix attempted.",
+      "factors": {
+        "tool_fit": { "score": 8, "why": "Scout can only locate papers; cannot emit Lean proofs—needs `verify_integrity.py`/Lean agent lens." },
+        "data_in_hand": { "score": 12, "why": "Stub list is in repo; papers are external." },
+        "falsifiable_done": { "score": 11, "why": "Sub-done (paper contains equation) is checkable; full Lean done is not." },
+        "compute_in_repo": { "score": 6, "why": "Per-loop scout is cheap; fleet-wide is hours." },
+        "isolation": { "score": 7, "why": "Dossiers isolate; fixing lean touches tracked files." },
+        "time_to_verdict": { "score": 5, "why": "Per-loop yes; fleet no." },
+        "not_blocked": { "score": 3, "why": "V4 documents failure mode of ground-decide proofs; partial parallel for stubs." }
+      }
+    }
+  ]
+}
