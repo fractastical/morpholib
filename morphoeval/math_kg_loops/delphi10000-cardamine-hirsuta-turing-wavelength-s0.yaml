@@ -1,0 +1,58 @@
+sim_id: delphi10000-cardamine-hirsuta-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 0.0001541
+log10_size_m: -3.812
+size_human: 154 µm
+scale_tier: 5_primordium_100um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Cardamine hirsuta (Holocene extant, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+chronoseries: Cardamine 1/1
+model_spec:
+  model: >-
+    Schnakenberg (1979) kinetics on a Neumann patch, with the Turing wavenumber
+    k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v) calibrated so lambda_c = 154.1 µm.
+    Slot-specific coefficients a=0.10, b=0.90, D_u=0.04, D_v=0.42.
+  a: 0.10
+  b: 0.90
+  D_u: 0.04
+  D_v: 0.42
+  grid_n: 128
+  pixels_per_classical_wavelength: 16
+  dt: 0.008
+  n_steps: 10000
+  seed: 3140
+  inputs:
+    - datasets/cardamine_hirsuta_turing_wavelength_s0/cardamine_hirsuta_turing_wavelength_s0_reference.json
+    - datasets/cardamine_hirsuta_turing_wavelength_s0/cardamine_hirsuta_specimen.jpg
+    - datasets/cardamine_hirsuta_turing_wavelength_s0/scout_manifest.json
+    - datasets/cardamine_hirsuta_turing_wavelength_s0/paper_citations.bib
+    - datasets/cardamine_hirsuta_turing_wavelength_s0/README.md
+equations:
+  - law_name: Turing dispersion determinant and critical wavenumber
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v) = 185/21 at a=0.10, b=0.90, D_u=0.04, D_v=0.42"
+    lean_decl: MathOfBiology.Loop_3140.kc_sq_cross_multiply
+    lean_theorem: MathOfBiology.Loop_3140.kc_sq_cross_multiply
+    lean_locus: morphoeval/lean/loops/Loop_3140_cardamine_hirsuta_turing_wavelength_s0.lean
+    variables: "u activator, v inhibitor, D_u, D_v diffusivities, f_u and g_v Jacobian entries at (u0, v0) = (1, 0.9)"
+    role: Selects the 154.1 µm classical wavelength on the Cardamine detail patch
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py
+  - law_name: Diffusion-driven instability inequality
+    formula: "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det(J), with trace(J) < 0 and det(J) > 0"
+    lean_decl: MathOfBiology.Loop_3140.turing_inequality_squared
+    lean_theorem: MathOfBiology.Loop_3140.turing_inequality_squared
+    lean_locus: morphoeval/lean/loops/Loop_3140_cardamine_hirsuta_turing_wavelength_s0.lean
+    variables: "trace = -0.2, det = 1, margin 87616 > 67200 in units of 1e-6"
+    role: The homogeneous leaflet state is stable until diffusion is added; equal diffusivities are the ablation
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py
+  - law_name: Detail-domain mode count versus a cell-scale cutoff
+    formula: "N = 128/16 = 8 on the detail patch; a 16 µm cell satisfies L < 154 µm so the mode is cut off. Chronoseries gap = 1 - 1 = 0 at 0 Ma."
+    lean_decl: MathOfBiology.Loop_3140.detail_domain_holds_eight_wavelengths
+    lean_theorem: MathOfBiology.Loop_3140.holocene_terminal_chronoseries
+    lean_locus: morphoeval/lean/loops/Loop_3140_cardamine_hirsuta_turing_wavelength_s0.lean
+    variables: "N mode count, L_detail = 1.233 mm, L_cell = 16 µm, age = 0 Ma, series index = series length = 1"
+    role: States what changes at 154 µm and 0 Ma relative to a cell-scale predecessor domain and the absent chronospecies
+    source_citation: "Kierzkowski et al. 2019 DOI:10.1016/j.cell.2019.05.011; Vlad et al. 2014 DOI:10.1126/science.1248384"
+    code_locus: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py
