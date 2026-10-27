@@ -1,0 +1,311 @@
+{
+  "scout": "scout-056",
+  "ground": "lean",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "title": "Ground Keller Xenopus clock-wavefront Law 1 (S = u_wf · T_clock) on Ca²⁺ wave kinematics",
+      "gap": "`morphoeval/math_kg_loops/keller-xenopus-tropicalis-clock-wavefront.yaml` and `Loop_0321_xenopus_tropicalis_clock_wavefront.lean` advertise Cooke-style segment length scaling S = u_wf · T_clock, but Lean only proves `Int.mul_pos` on a stub `law1_invariant := a * b`; no paired estimates of propagation speed, inter-event period, and spatial wavelength exist for the cohort-IX Ca²⁺ imaging slug `xenopus-ca2-wave-vectors`.",
+      "done": "A machine-readable JSON (e.g. `morphoeval/scratch/scout-056-xt-clock-ca-wavelength.json`) reports per-embryo: (i) `mean_speed_px_per_s` from `vector_clusters.csv`, (ii) `mean_isi_s` from `analyze_oscillatory_coherence`, (iii) AP spatial wavelength λ_AP from consecutive cluster centroids along `ap_norm`; verdict PASS if Pearson r(λ_AP, mean_speed × mean_isi) ≥ 0.6 with n ≥ 30 clusters per embryo and median relative residual |λ − u·T|/(u·T) ≤ 0.25, else FAIL.",
+      "tool_route": "python3 wave-vector-analysis/wave-vector-tiff-parser.py <tiff_dir> 0 --fps 1.0 --csv morphoeval/scratch/scout-056_spark_tracks.csv && python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scratch/scout-056_spark_tracks.csv morphoeval/scratch/scout-056_vector_clusters.csv && python3 wave-vector-analysis/analyze_experimental_hypotheses.py morphoeval/scratch/scout-056_spark_tracks.csv --clusters-csv morphoeval/scratch/scout-056_vector_clusters.csv && python3 wave-vector-analysis/generate_all_hypothesis_plots.py morphoeval/scratch/scout-056_spark_tracks.csv --clusters-csv morphoeval/scratch/scout-056_vector_clusters.csv --output-dir morphoeval/scratch/scout-056_plots/",
+      "deciding_data": "Smoke subset in-repo: `wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv`; full decisive run needs external TIFF tree referenced as `datasets/frog_embryo_data_processed` in `morphoeval/visualize_aristotelian_categories.py` (not present in this checkout).",
+      "prior_attempts": "`Loop_021_clock_and_wavefront.lean` already machine-checks Cooke–Zeeman S = v·T_c for somitogenesis; Keller slot #0321 expansion templates were never empirically pinned to Ca imaging. `docs/open-problems.json` registered_prediction_followups XT-CLK-01 names missing somite-period paired data, not Ca waves.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Named parser → cluster → `analyze_experimental_hypotheses` chain directly emits speed, ISI, and AP summaries needed for S ≈ u·T."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Subset CSV supports pipeline smoke tests; decisive multi-embryo tracks require fetching the frog TIFF dataset off-repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Fixed numeric thresholds on r, n, and relative residual are checkable from JSON without reviewer judgment."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Parser + clustering on hundreds of frames fits in hours on the repo Python stack once TIFFs are mounted."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Outputs confined to new files under `morphoeval/scratch/` and optional scout JSON; no edits to Lean or math_kg YAML."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One parser rerun plus clustering and coherence analysis yields PASS/FAIL in a single agent loop if data are local."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No audit or open-problem record refutes testing Ca wavelength against u·T; XT-CLK-01 is somite-specific, not this proxy route."
+        }
+      }
+    },
+    {
+      "title": "Test Kuramoto-style inter-embryo synchronization claimed by Keller clock-wavefront Law 2",
+      "gap": "Math-KG Law 2 (`d(Δφ)/dt = -(K_c − ω_τ) sin(Δφ)`) maps to `law2_balance p q := p + q − q` with theorem `law2_exact_cancellation`; there is no measurement of phase-locking between embryos A and B despite `analyze_oscillatory_coherence` already computing PLV and zero-lag cross-correlation on `spark_tracks.csv`.",
+      "done": "JSON records `plv_ab` and `xcorr_zero_lag` from `analyze_oscillatory_coherence`; PASS if both exceed pre-registered cutoffs (e.g. PLV ≥ 0.35 and |xcorr| ≥ 0.25) on post-poke windows for head–head orientations, else FAIL (including PLV ≈ 0 refuting effective coupling).",
+      "tool_route": "python3 wave-vector-analysis/analyze_experimental_hypotheses.py wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv --clusters-csv morphoeval/scratch/scout-056_vector_clusters.csv (after clustering subset) ; for full data replace paths with parser output as above.",
+      "deciding_data": "In-repo: `wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv`; inter-embryo labels require `embryo_id` column populated (46% on full historical export per `EXPERIMENTAL_HYPOTHESES.md`).",
+      "prior_attempts": "No prior attempt logged in `docs/open-problems.json` for PLV on Xenopus Ca boxes; OP-07 blind neighbour transfer (refuted) used different features and hash-locked embryo-blind protocol, not PLV on raw sparks.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "`analyze_oscillatory_coherence` is already implemented in the hypothesis analysis script and returns PLV metrics."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Subset CSV exists but many rows lack `embryo_id`, weakening A/B pairing unless full parser rerun."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Thresholded PLV and cross-correlation are scalar pass/fail gates."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Coherence analysis is minutes on subset CSV, hours on full tracks."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only on existing CSVs; writes only new JSON under `morphoeval/scratch/`."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single script invocation returns decisive PLV once clustered tracks exist."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "OP-07 refuted orientation/neighbour ML transfer but did not test or refute PLV coherence specifically."
+        }
+      }
+    },
+    {
+      "title": "Flux-canalization anisotropy after poke (Keller Xenopus flux Law 1 proxy on Ca²⁺ vector flux)",
+      "gap": "`Loop_0421_xenopus_tropicalis_flux_canalization.lean` and its YAML describe conductance reinforcement dD_ij/dt ∝ |J_ij|^γ, but no Ca²⁺ imaging statistic measures whether vector flux |J| concentrates into preferred directions post-injury (canalization) versus isotropic pre-poke noise.",
+      "done": "Compute flux anisotropy A = |Σ v| / Σ|v| over cluster mean vectors in pre-poke (t<0) vs post-poke (t>0) windows; PASS if median(A_post/A_pre) ≥ 1.20 across ≥3 independent video folders with bootstrap 95% CI excluding 1.0, else FAIL.",
+      "tool_route": "python3 wave-vector-analysis/spark_tracks_to_clusters.py <spark_tracks.csv> morphoeval/scratch/scout-056_vector_clusters.csv && python3 wave-vector-analysis/analyze_experimental_hypotheses.py <spark_tracks.csv> --clusters-csv morphoeval/scratch/scout-056_vector_clusters.csv (uses `analyze_wave_directionality`) && python3 wave-vector-analysis/generate_all_hypothesis_plots.py <spark_tracks.csv> --clusters-csv morphoeval/scratch/scout-056_vector_clusters.csv --output-dir morphoeval/scratch/scout-056_flux_plots/",
+      "deciding_data": "Historical full export described in `wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md` (309k track states); in-repo smoke CSV for pipeline validation only.",
+      "prior_attempts": "MorphoEval flux-canalization expansion slots (#0421) never linked to `wave-vector-analysis`; no refutation in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Cluster mean angles/speeds from `spark_tracks_to_clusters` + directionality analysis operationalize |J| anisotropy without new detectors."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Decisive multi-condition pre/post statistics need full spark_tracks rebuild from TIFFs not shipped in repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Ratio threshold with bootstrap CI exclusion of unity is objectively scorable."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Cluster aggregation and directionality plots scale to existing analysis_results runtime."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New scratch outputs only; Lean loop files untouched."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One clustering pass plus directionality summary suffices if CSV is already materialized."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded prior test of canalization metrics on this Ca dataset."
+        }
+      }
+    },
+    {
+      "title": "Doppler phase-gradient speed ratio (Keller clock-wavefront Law 3) along AP axis",
+      "gap": "YAML Law 3 states ω_ant/ω_post = 1 + u_wf|∇φ|/ω_0, but Lean only proves `law3_threshold_margin 80 18 > 0`; cluster speeds along anterior vs posterior `ap_norm` bins are unused to falsify or support the predicted speed ratio.",
+      "done": "Split post-poke clusters with valid `ap_norm` into anterior (ap_norm ≤ 0.33) and posterior (ap_norm ≥ 0.67) bins; let R = mean_speed_anterior/mean_speed_posterior; PASS if |R − (1 + c)| ≤ 0.25 for pre-registered c derived from mean |Δap_norm|/Δt between bins, else FAIL if R is outside [0.75, 1.25] (null band).",
+      "tool_route": "python3 wave-vector-analysis/spark_tracks_to_clusters.py <spark_tracks.csv> morphoeval/scratch/scout-056_vector_clusters.csv && python3 wave-vector-analysis/generate_all_hypothesis_plots.py <spark_tracks.csv> --clusters-csv morphoeval/scratch/scout-056_vector_clusters.csv --output-dir morphoeval/scratch/scout-056_doppler_plots/ (uses `hypothesis_ap_position_analysis` and speed vs time plots).",
+      "deciding_data": "Requires `ap_norm` and `mean_speed_px_per_s` in cluster CSV (~46% AP coverage on historical export); subset CSV mostly lacks ap_norm filled.",
+      "prior_attempts": "None in open-problems or audits; integrity check flags Law 3 Lean as ground_arithmetic only (`verify_integrity.py --loop-yaml keller-xenopus-tropicalis-clock-wavefront.yaml`).",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Hypothesis plot pipeline already stratifies activity and speed by AP position from cluster summaries."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "AP-normalized fields sparse in smoke subset; full parser + head/tail assignment required."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Speed ratio must land in declared pass or null band."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Bin-wise means on clusters are lightweight once tracks exist."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Scratch JSON/plots only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single clustering + AP plot pass yields R."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior Doppler-ratio test recorded for Xenopus Ca waves."
+        }
+      }
+    },
+    {
+      "title": "Simulated clock-wavefront ground truth: R²(speed·period, wavelength) before touching held-out TIFFs",
+      "gap": "Lean formalization gap for expansion slots is partly epistemic—`verify_integrity.py` Rule 3 rejects vacuous `ground_arithmetic` theorems—yet there is no hash-locked synthetic CSV where S = v·T is true by construction to validate the wave pipe can recover Cooke scaling before real data unblinding.",
+      "done": "After pre-registering scenario parameters, run simulation where `WaveConfig.speed_px_per_s` and inter-burst period are independently swept; PASS if regression of cluster spatial wavelength on speed×period has R² ≥ 0.98 and slope within [0.85, 1.15], else FAIL.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --scenario two_embryos_head_head --output morphoeval/scratch/scout-056_sim_tracks.csv --duration 30.0 && python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scratch/scout-056_sim_tracks.csv morphoeval/scratch/scout-056_sim_clusters.csv && python3 wave-vector-analysis/simulations/visualize_simulation.py morphoeval/scratch/scout-056_sim_tracks.csv --output morphoeval/scratch/scout-056_sim_plot.png",
+      "deciding_data": "Fully in-repo: simulation generator and `wave-vector-analysis/simulations/catalog.json` scenarios; no external fetch.",
+      "prior_attempts": "Simulations documented in `wave-vector-analysis/simulations/QUICK_START.md` for hypothesis testing but not tied to Math-KG clock-wavefront closure or XT-CLK-01 registry.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Generator emits `spark_tracks.csv`-compatible rows and downstream cluster/hypothesis tools run unchanged."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "No TIFF or wet-lab dependency; synthetic data generated locally."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "R² and slope band are automatic regression checks."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "30 s simulated duration at 1 fps completes in minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "All artifacts under `morphoeval/scratch/`; zero Lean/YAML edits."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "One simulation + cluster pass closes in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior negative result on simulated Cooke scaling via wave pipe."
+        }
+      }
+    },
+    {
+      "title": "AP-axis head/tail error blocking bioelectric-polarity Lean claims (compare parser vs manual XY)",
+      "gap": "Keller Xenopus bioelectric-polarity Math-KG (`Loop_0921`) and wave hypotheses using `ap_norm` assume a consistent head–tail axis, but manual Excel annotations can lie outside TIFF bounds (`wave-vector-analysis` docs reference coordinate mismatch) and only ~46% of track states carry valid `embryo_id`/AP fields on the historical export.",
+      "done": "Run `compare_xy_coordinates.py` on `XY coordinates.xlsx` vs parser head/tail; PASS if median head and tail RMSE ≤ 50 px for ≥80% of videos after documented transform, else FAIL with per-video RMSE table (blocks downstream polarity-law measurements either way).",
+      "tool_route": "python3 wave-vector-analysis/compare_xy_coordinates.py /path/to/XY\\ coordinates.xlsx morphoeval/scratch/scout-056_spark_tracks.csv --output morphoeval/scratch/scout-056_xy_compare.json && python3 wave-vector-analysis/generate_detection_summary.py morphoeval/scratch/scout-056_spark_tracks.csv --output-dir morphoeval/scratch/scout-056_detection/",
+      "deciding_data": "Parser output from TIFF tree (external); Excel ground truth not in repo—typical lab path `XY coordinates.xlsx` cited in `compare_xy_coordinates.py` docstring.",
+      "prior_attempts": "Coordinate warning noted in simulation catalog; no closed ticket in `docs/open-problems.json`. OP-07 implicated orientation confounds in blind ML, not manual XY RMSE.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "`compare_xy_coordinates.py` plus detection summary directly quantify the AP axis input to all polarity-sensitive wave analyses."
+        },
+        "data_in_hand": {
+          "score": 7,
+          "why": "Excel manual annotations and full TIFF set are external to this checkout."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "RMSE percentiles against fixed 50 px gate are mechanical."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Comparison is fast once both CSV and Excel are available."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Reports under `morphoeval/scratch/` only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Single compare run after one parser pass."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior RMSE gate recorded as refuted; issue remains open documentation-only."
+        }
+      }
+    },
+    {
+      "title": "XT-CLK-01 somite clock–wavefront proportionality (registered prediction) — lens mismatch report",
+      "gap": "`predictions/build_prediction_registry.py` prediction XT-CLK-01 requires paired Xenopus somite length and segmentation-clock period under controlled wavefront speed; `datasets/xenopus_tropicalis_clock_wavefront` poson law S = u·T_clock is not linked to Ca²⁺ spark tracks, and Keller Lean slot #0321 remains a stub (`law1_invariant := a * b`).",
+      "done": "N/A for wavepipe lens: decisive test needs tabulated somite lengths and her-period manipulations within ±5 points of proportional multipliers (per registry falsifier)—not recoverable from `spark_tracks.csv` columns alone.",
+      "tool_route": "Not resolved by wavepipe; closest repo tools would be segmentation atlases or `2010-keller-xenopus-tropicalis-clock-wavefront.py` once authored—outside spark-track → cluster → hypothesis chain.",
+      "deciding_data": "Named public: Xenbase somitogenesis / hes-period literature cited in `docs/open-problems.json` registered_prediction_followups XT-CLK-01; not in Ca imaging CSV schema.",
+      "prior_attempts": "`docs/open-problems.json` lists XT-CLK-01 as partially resolved awaiting paired period+somite series; no wave-vector parser attempt logged.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Wave pipe lacks somite length or clock-period columns; would need embryology imaging or morphometry lens."
+        },
+        "data_in_hand": {
+          "score": 3,
+          "why": "Dataset folder exists in registry metadata but somite measurements are not in spark tracks."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Registry already states quantitative ±5 point falsifier once data exist."
+        },
+        "compute_in_repo": {
+          "score": 4,
+          "why": "Would require new measurements, not recomputation of existing Ca CSVs."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "A scout note file does not conflict with parallel agents."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Cannot reach XT-CLK-01 verdict in one wavepipe loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Prediction explicitly open; route not refuted, merely wrong lens."
+        }
+      }
+    },
+    {
+      "title": "Missing Keller Xenopus model scripts referenced by math_kg_loops (code_locus ghost files)",
+      "gap": "All ten `keller-xenopus-tropicalis-*.yaml` files cite `20XX-keller-xenopus-tropicalis-*.py` paths that `morphoeval/verify_integrity.py --loop-yaml` reports as missing; Lean loops #0121–#1021 mirror placeholder `a*b` proofs, so Math-KG traceability fails mechanical Rule 2 before any biology is tested.",
+      "done": "Wavepipe cannot create those model scripts; closure requires either new Python model entrypoints or retargeting YAML `code_locus` to an existing executable—verifiable by `python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/keller-xenopus-tropicalis-clock-wavefront.yaml` exiting 0 violations.",
+      "tool_route": "Diagnostic only for wavepipe: `python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/keller-xenopus-tropicalis-<mechanism>.yaml`. Empirical bridge for clock-wavefront mechanism still uses wave-vector parser chain once scripts exist or YAML is repointed to `wave-vector-analysis/*`.",
+      "deciding_data": "In-repo: YAML + Lean stubs; missing `models/` or root-level Keller scripts confirmed by integrity CLI on 2026-10-27.",
+      "prior_attempts": "2026-10-24 Levin YouTube integrity incident (`verify_integrity.py` header) established Rule 2/3 enforcement; Keller Xenopus expansion slots inherit template pattern from campaign_500/1000 summaries without Ca-specific audits.",
+      "factors": {
+        "tool_fit": {
+          "score": 4,
+          "why": "Wave pipe measures Ca dynamics but does not author missing `2010-keller-*.py` model files—model-factory or Lean-repair lens required."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "YAML/Lean paths and integrity violations are already in-repo and reproducible."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Integrity CLI violation count is an objective gate."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Integrity scan finishes in seconds."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Scout documents gap; fixing scripts would be a separate branch anyway."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Immediate FAIL from integrity CLI today."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Gap is documented by tooling, not previously closed."
+        }
+      }
+    }
+  ]
+}
