@@ -1,0 +1,128 @@
+# Pass 2 — closes the four Pass-1 remediation items on the same 3.125 µm law.
+# Supersedes 2026-10-27-aulacopleura-koninckii-meraspis-turing-wavelength-s0-audit.
+audit:
+  id: 2026-10-27-aulacopleura-koninckii-meraspis-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-aulacopleura-koninckii-meraspis-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-aulacopleura-koninckii-meraspis-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  domain: morphogenesis
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 working tree. Same parent commit as Pass 1; new paths are this loop's files."
+references:
+  fusco2004:
+    title: "Exploring Developmental Modes in a Fossil Arthropod: Growth and Trunk Segmentation of the Trilobite Aulacopleura konincki"
+    authors: "Fusco, Hughes, Webster, Minelli"
+    doi: 10.1086/381042
+  hughes1995:
+    title: "Growth and variation in the Silurian proetide trilobite Aulacopleura konincki and its implications for trilobite palaeobiology"
+    authors: "Hughes, Chapman"
+    doi: 10.1111/j.1502-3931.1995.tb01824.x
+  hughes2006:
+    title: "The ontogeny of trilobite segmentation: a comparative approach"
+    authors: "Hughes, Minelli, Fusco"
+    doi: 10.1666/06017.1
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg"
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray"
+    doi: 10.1016/0022-5193(81)90334-9
+simulations:
+  - id: delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0
+    name: "Schnakenberg critical wavelength at 3.125 µm for Aulacopleura koninckii meraspis (Pass 2)"
+    organism: "Aulacopleura koninckii meraspis (12 thoracic segments, Wenlock, 428.5 Ma)"
+    script: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py
+    output: docs/media/aulacopleura_koninckii_meraspis_turing_wavelength_s0_comparison.png
+    also:
+      - docs/media/aulacopleura_koninckii_meraspis_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-aulacopleura-koninckii-meraspis-turing-wavelength-s0-audit
+    source_refs: [fusco2004, hughes1995, hughes2006, turing1952, schnakenberg1979, murray1981]
+    summary: >-
+      Pass 2 keeps the Pass-1 law (λ_c = 3.125 µm, r = 0.99937, equal-diffusion
+      σ_max = -0.458 /s, sweep 3.146–3.993 µm) and adds a 48×36 pleural patch
+      whose dominant wavelength is 3.125 µm (k_dom/k_c = 1.000), distinct from
+      the 1D fastest mode at 3.146 µm. The comparison figure now draws the
+      specimen contour, prints KS = 0.067, and states the holaspis18 copy
+      ratio 1.50 at fixed k_c. GIF is 720×560 and 16 frames; last-frame CV
+      similarity to the Commons photograph is 95.7. Counted furrows remain 11
+      against the assigned 12.
+    claim_boundary:
+      reported_in_source:
+        - "Meraspid Aulacopleura adds thoracic segments; holaspid number varies (Fusco et al. 2004; Hughes & Chapman 1995)."
+        - "Turing 1952 selects an intrinsic chemical wavelength; Schnakenberg 1979 supplies the two-species kinetics."
+      reconstructed_in_script:
+        - "a=0.0625, b=0.875, D_u=2e-12 m^2/s, D_v/D_u = 1.02 × r_crit, and γ are solved so λ_c = 3.125 µm."
+        - "The 2D patch is a periodic epithelial rectangle seeded with a transverse lira plus mediolateral noise."
+        - "The M12 to holaspis18 change at this scale is the segment surplus 6 at fixed k_c (copy ratio 1.5)."
+      transfer_boundary:
+        - "Murray 1981 is used only as the scale argument that domain length, not k_c, changes the number of hosted wavelengths."
+      does_not_claim:
+        - "That 3.125 µm was measured on the photograph."
+        - "That the dorsal photograph is a verified degree-12 meraspis (counted furrows are 11)."
+        - "That a Turing mechanism operated in the Silurian animal."
+        - "That a second, independent assessor scored this audit."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Pass 1's Schnakenberg PDE and k_c formula remain, with r=0.99937 on the discrete dispersion band. Pass 2 adds the 2D patch: mediolateral noise does not shift the dominant anteroposterior wavenumber off k_c (ratio 1.000). Parameters are still a reconstruction that hits the assigned wavelength, not a measured trilobite kinetic set."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [98, 127], note: "γ solved from the k_c formula", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [180, 235], note: "1D eigenmode goodness-of-fit", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [269, 302], note: "2D pleural patch and dominant ky", supports: true}
+      specimen-match:
+        value: 84
+        rationale: "The comparison figure now overlays the border-contrast contour on the Commons photograph, and the GIF (16 frames, 720×560) still ends on that photograph (CV 95.7). The 2D field is a short-wavelength lira texture in the same ochre family, not a pixel copy of the exoskeleton. Furrow count 11 is shown against the assigned 12 rather than edited to match."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [640, 671], note: "segmentation contour drawn on the specimen panel", supports: true}
+          - {file: docs/media/aulacopleura_koninckii_meraspis_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "contour, 2D patch, dispersion, sweep", supports: true}
+          - {file: docs/media/aulacopleura_koninckii_meraspis_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "16-frame growth ending on the specimen", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "The diffusion-ratio sweep still moves λ_max from 3.146 µm to 3.993 µm, and equal diffusion remains stable (σ_max=-0.458/s). The 2D noise seed is an extra control: the transverse mode survives. a and b stay fixed."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [237, 261], note: "sweep and equal-diffusion ablation", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [701, 712], note: "sweep panel states the 18/12 copy ratio", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: "Pass-1 statistics stand (r=0.99937 vs 1, RMSE=0.0271 vs 0, KS=0.067 vs 0.05, furrows 11 vs 12, circularity 0.191 vs 1, coherency 0.613 vs 0.5). The 2D dominant wavelength is 3.125 µm against the 1D fastest-mode reference 3.146 µm, so the new metric is not self-referential. KS is printed on the figure."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [432, 536], note: "measurement table including the 2D wavelength", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [695, 698], note: "KS annotated on the dispersion panel", supports: true}
+          - {file: datasets/aulacopleura_koninckii_meraspis_turing_wavelength_s0/metrics.json, lines: [0, 0], note: "numeric bundle from the Pass-2 run", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Unchanged from Pass 1. DOIs resolved via doi.org on 2026-10-27. Specimen SHA-256 is the Commons original. OpenAlex and Crossref were rate-limited (HTTP 429)."
+        evidence:
+          - {file: datasets/aulacopleura_koninckii_meraspis_turing_wavelength_s0/paper_citations.bib, lines: [1, 68], note: "bibliography", supports: true}
+          - {file: datasets/aulacopleura_koninckii_meraspis_turing_wavelength_s0/aulacopleura_koninckii_meraspis_turing_wavelength_s0_reference.json, lines: [48, 80], note: "specimen licence and SHA-256", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Docstring equations plus the 2D patch docstring map the new panel to the same k_c. The discrete-versus-continuous distinction remains explicit in the probe."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [1, 40], note: "governing equations", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [269, 276], note: "2D patch states what it tests", supports: true}
+      repro-package:
+        value: 88
+        rationale: "Self-test now also rejects a 2D wavenumber ratio outside [0.7, 1.35]. Seed, SHA pin, and the README invocation are unchanged. GIF gate is 16 frames at 720×560."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-meraspis-turing-wavelength-s0.py, lines: [761, 805], note: "self-test including the 2D ratio gate", supports: true}
+          - {file: datasets/aulacopleura_koninckii_meraspis_turing_wavelength_s0/README.md, lines: [14, 28], note: "how to reproduce", supports: true}
+    remediation:
+      - "Still one assessor. A second model has not scored these dimensions."
+      - "The Commons photograph has no scale bar, so λ_c = 3.125 µm is not an image measurement."
+      - "Counted axial furrows are 11, not the assigned meraspid degree 12. The dorsal photo is not demonstrated to be an M12 individual."
+      - "The dispersion fit uses the discrete Laplacian symbol on one grid. A continuum-limit refinement study is not included."
