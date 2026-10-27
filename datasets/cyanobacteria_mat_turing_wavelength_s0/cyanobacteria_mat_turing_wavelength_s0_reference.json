@@ -1,0 +1,76 @@
+{
+  "slot": 3158,
+  "sim_id": "delphi10000-cyanobacteria-mat-turing-wavelength-s0",
+  "organism": "Cyanobacteria mat",
+  "common_name": "Stromatolite Mat",
+  "lineage": "",
+  "geological_age_ma": 0.0,
+  "geological_period": "Holocene (Extant)",
+  "chronoseries": {
+    "index": 1,
+    "length": 1,
+    "predecessor": null,
+    "successor": null,
+    "note": "Sole node. No earlier or later chronospecies. The scale contrast is with centimetre-scale stromatolite cones of the same living mat, not with another species."
+  },
+  "scale": {
+    "label": "64 µm",
+    "metres": 6.419e-05,
+    "micrometres": 64.19,
+    "log10_m": -4.193,
+    "tier": "4_cellular_10um",
+    "variant": "detail",
+    "meaning": "Turing pigment stripe / ocellus wavelength"
+  },
+  "equations": {
+    "kinetics": "Schnakenberg: f = a - u + u^2 v, g = b - u^2 v",
+    "pde": "du/dt = Du laplacian(u) + f; dv/dt = Dv laplacian(v) + g",
+    "steady_state": "u_s = a + b, v_s = b / (a + b)^2",
+    "dispersion": "sigma(k) = 0.5 * (tr(k) + sqrt(tr(k)^2 - 4 det(k)))",
+    "onset_wavenumber": "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv)",
+    "selected_wavenumber": "k_star = argmax sigma(k), placed near 2 pi / lambda by the diffusivities, then shifted by the finite-amplitude factor 1.08 so the saturated field locks to the domain mode at 64.19 µm"
+  },
+  "boundary_conditions": "periodic square of side 8 * 6.419e-5 m",
+  "parameters": {
+    "a": 0.11,
+    "b": 0.83,
+    "D_v_over_D_u": 16,
+    "finite_amplitude_D_scale": 1.08,
+    "seed": 3158,
+    "D_u_m2_per_time": 2.7475935131668184e-11,
+    "D_v_m2_per_time": 4.3961496210669095e-10
+  },
+  "state_variables": ["u activator (pigment / microcolony density proxy)", "v inhibitor"],
+  "empirical_claims": [
+    "Turing 1952: a chemical system with diffusion can select a finite wavenumber.",
+    "Schnakenberg 1979: the two-species kinetics used here.",
+    "Petroff et al. 2010: living and ancient conical stromatolites have a centimetre-scale spacing set by diffusion and phototaxis. That spacing is not this slot's wavelength.",
+    "Shepard and Sumner 2010: gliding cyanobacterial filaments produce reticulate mats at a much larger scale than 64 µm.",
+    "Polerecky et al. 2009: pigments in microbial mats are spatially structured and can be mapped spectrally. This script does not reproduce their instrument."
+  ],
+  "specimen": {
+    "file": "cyanobacteria_mat_holocene_culture_plate.jpg",
+    "sha256": "858930a5ad520ee46fa0270c232d2062e6aa15ba9307b6f74d3a6b63439fff8b",
+    "source": "datasets/species_gallery/IV_Protista_Monera_Mycota/Cyanobacteria_mat.jpg",
+    "note": "Canonical gallery photograph of an extant cyanobacterial culture plate. Not a 64 µm micrograph. Paleoarchean CC-BY stromatolite photographs were rejected for age."
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing dispersion relation and the existence of a selected wavenumber",
+      "Schnakenberg kinetics",
+      "Centimetre-scale conical stromatolite spacing (Petroff 2010)",
+      "Reticulate mats from undirected filament motility (Shepard and Sumner 2010)"
+    ],
+    "reconstructed_in_script": [
+      "Diffusivities that place the saturated dominant Fourier mode at 64.19 µm",
+      "Equal-diffusion ablation, diffusivity sweep, eigenvector dispersion probe",
+      "Display transfer that paints activator peaks as beige colonies on an illuminated agar ground so the animation can be compared with the plate photograph"
+    ],
+    "does_not_claim": [
+      "That a published paper measured a 64.19 µm pigment wavelength in this mat",
+      "That the culture-plate photograph is a 64 µm field",
+      "That Petroff's cone equation is being solved",
+      "That colony-size distributions match (they do not; KS ≈ 0.45)"
+    ]
+  }
+}
