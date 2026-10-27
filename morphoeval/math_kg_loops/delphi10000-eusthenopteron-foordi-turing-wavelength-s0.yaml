@@ -1,0 +1,63 @@
+sim_id: delphi10000-eusthenopteron-foordi-turing-wavelength-s0
+slot: 3225
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 0.0001042
+log10_size_m: -3.982
+size_human: 104 µm
+scale_tier: 5_primordium_100um
+detail_variant: s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Eusthenopteron foordi (104 µm, detail scale)
+geological_age_ma: 379.0
+geological_period: Late Devonian (Frasnian, 379 Ma)
+chronoseries: 1/1
+fossil_lineage_group: Tetrapod Fin-to-Limb Fossil Transition
+model_spec:
+  model: Schnakenberg (1979) kinetics with Turing (1952) wavenumber k_c fixed at 2π per 104.2 µm
+  a: 0.1
+  b: 0.9
+  Dv_over_Du: 12.0
+  grid: [128, 80]
+  domain_wavelengths: [12.0, 7.5]
+  steps: 1400
+  dt: 0.04
+  seed: 3225
+  inputs:
+    - datasets/eusthenopteron_foordi_turing_wavelength_s0/eusthenopteron_foordi_specimen.jpg
+    - datasets/eusthenopteron_foordi_turing_wavelength_s0/eusthenopteron_foordi_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Turing dispersion margin
+    formula: D_v f_u + D_u g_v > 0 and (D_v f_u + D_u g_v)^2 > 4 D_u D_v det J
+    lean_decl: MathOfBiology.Loop_3225.turingMargin
+    lean_theorem: MathOfBiology.Loop_3225.detail_scale_diffusion_margin
+    lean_locus: morphoeval/lean/loops/Loop_3225_eusthenopteron_foordi_turing_wavelength_s0.lean#L12-L16
+    variables: f_u=0.8, g_v=-1, D_u : D_v = 1 : 12 at the 104.2 µm length unit
+    role: Necessary diffusion-driven instability condition at this detail scale
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py#L62-L78
+  - law_name: Critical wavenumber
+    formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 104.2 µm
+    lean_decl: MathOfBiology.Loop_3225.wavelengths
+    lean_theorem: MathOfBiology.Loop_3225.eusthenopteron_body_holds_detail_waves
+    lean_locus: morphoeval/lean/loops/Loop_3225_eusthenopteron_foordi_turing_wavelength_s0.lean#L19-L24
+    variables: length unit identified with lambda_c so k_c = 2π per unit
+    role: Quantitative law for slot 3225; realized FFT peak is 102.0 µm
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py#L14-L16
+  - law_name: Successor mode-count increment at fixed k_c
+    formula: Delta N = (L_successor - L_this) / lambda_c
+    lean_decl: MathOfBiology.Loop_3225.wavelengths
+    lean_theorem: MathOfBiology.Loop_3225.successor_packs_more_detail_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3225_eusthenopteron_foordi_turing_wavelength_s0.lean#L27-L31
+    variables: L_this = 0.140 m, L_Panderichthys = 0.165 m, lambda = 104.2 µm, Delta N ≈ 240
+    role: What changes at 104 µm versus the morphological successor; Eusthenopteron chronoseries is 1/1
+    source_citation: Andrews and Westoll 1970 DOI:10.1017/S008045680001471X
+    code_locus: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py#L574-L610
+  - law_name: Organ-tier repeat count is not this wavenumber
+    formula: N_organ = 5700 µm / 104 µm = 54
+    lean_decl: MathOfBiology.Loop_3225.wavelengths
+    lean_theorem: MathOfBiology.Loop_3225.organ_tier_counts_many_detail_waves
+    lean_locus: morphoeval/lean/loops/Loop_3225_eusthenopteron_foordi_turing_wavelength_s0.lean#L34-L37
+    variables: sibling slot wavelength 5.7 mm versus this 104 µm fundamental
+    role: Keeps the detail-scale parameter set distinct from the organ-scale sibling
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py#L574-L610
