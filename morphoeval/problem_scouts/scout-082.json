@@ -1,0 +1,151 @@
+{
+  "scout": "scout-082",
+  "ground": "nanopub",
+  "lens": "measure",
+  "candidates": [
+    {
+      "id": "NP-082-01",
+      "title": "Holstein Pass-9 prod nanopubs ship without a morphometric sidecar",
+      "gap": "morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/ has ten production nanopubs (published.json) but no morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.measurements.yaml, so build_morphoeval_kg.py merged audit[\"_measurements\"]=null and the v7 REPORT has no morphology snapshot table despite morphometric-validation=85 and a published negative verdict quoting held-out distances (3.29 vs 3.43, Wilcoxon p=0.91).",
+      "done": "Running measure_outputs on the v7 audit YAML produces a sidecar whose held-out RD-growing-het mean, Eden mean, and paired-test p-value match datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json and the audit summary within 0.02 absolute on each scalar; quick_gate.total is recorded in the sidecar.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml  (then diff key fields against morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v5.measurements.yaml and the v7 audit summary block)",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml, models/1981-murray-bos-taurus-turing-wavelength.py, datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/published.json.",
+      "prior_attempts": "Pass 5–6 sidecars exist (v5.measurements.yaml); OP-11 (docs/open-problems.json) tracks blinded independent re-score (R11) via referee audits 54.4/57.7 — not a substitute for sidecar generation. No prior attempt recorded that measure_outputs cannot reproduce the Pass-8+ metrics JSON.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "measure_outputs.py implements murray-bos-taurus-turing-wavelength / dataset JSON path and writes the canonical sidecar build_morphoeval_kg expects."},
+        "data_in_hand": {"score": 20, "why": "All renders, masks, metrics JSON, and the v7 audit YAML are committed; no external fetch."},
+        "falsifiable_done": {"score": 15, "why": "Numeric equality tolerances on three published verdict scalars plus presence of quick_gate block."},
+        "compute_in_repo": {"score": 12, "why": "Cow pipeline self-test/full run is ~100s per audit docs; fits one sitting but not trivial."},
+        "isolation": {"score": 10, "why": "Verdict is a new sidecar/report JSON under morphoeval/runs/ without editing tracked audits or KG."},
+        "time_to_verdict": {"score": 8, "why": "One measure_outputs invocation plus JSON diff."},
+        "not_blocked": {"score": 5, "why": "Missing sidecar is acknowledged; R11 targets referee scoring, not this mechanical gap."}
+      }
+    },
+    {
+      "id": "NP-082-02",
+      "title": "Production Cervera v1 KG predates any measurements sidecar",
+      "gap": "morphoeval/kg/2026-10-17-cervera-audit/ nanopubs are on production (eight manifests) but only morphoeval/audits/2026-10-17-cervera-audit-v2.measurements.yaml exists — the v1 audit YAML has no sidecar, so immutable prod morphometric-validation triples were minted without measure_outputs fingerprints or PropertyValue evidence from a sidecar.",
+      "done": "measure_outputs on morphoeval/audits/2026-10-17-cervera-audit.yaml (simulation cervera-levin-mafe) yields measurements; a tabular diff reports max |v1_nanopub_literal − remeasured_value| across every numeric PropertyValue in morphoeval/kg/2026-10-17-cervera-audit/signed/*morphometric-validation*.trig (or states 'no numeric evidence triples' if absent).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-cervera-audit.yaml ; python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-cervera-audit-v2.yaml (compare sidecars); optional rdflib parse of signed trig for schema:value literals",
+      "deciding_data": "In repo: models/2021-Cervera–Levin–Mafe.py (cervera-levin-mafe sim id), both audit YAMLs, v2 sidecar, morphoeval/kg/2026-10-17-cervera-audit/signed/*.trig.",
+      "prior_attempts": "Early morphology campaign (2026-10-17) predates mandatory sidecars; v2 audit added measurements later. No recorded refutation of measure_cervera() on current script.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "measure_outputs.measure_cervera is a named code path for this simulation id."},
+        "data_in_hand": {"score": 19, "why": "Script, datasets/planform/* inputs, and signed prod trig are in-tree."},
+        "falsifiable_done": {"score": 14, "why": "Max absolute delta over listed literals or explicit empty-evidence flag."},
+        "compute_in_repo": {"score": 13, "why": "Cervera render/self-test is minutes on cloud VM stack."},
+        "isolation": {"score": 10, "why": "Analysis output can live in a new morphoeval/runs/*.json only."},
+        "time_to_verdict": {"score": 7, "why": "Two measure runs plus trig parse."},
+        "not_blocked": {"score": 5, "why": "Historical gap, not previously closed by remeasurement."}
+      }
+    },
+    {
+      "id": "NP-082-03",
+      "title": "Levin KG verified_measurements stale vs authoritative v3 referee sidecar",
+      "gap": "docs/bioelectricity/levin_youtube_kg.json embeds verified_measurements copied from an older Pass 3 sidecar with builder-rewritten m4/m5 entries (morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md remediation); the authoritative copy is morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.measurements.yaml (header lines 8–10), while production supersession chain still includes v1 nanopubs tied to the 93.8 self-audit sidecar.",
+      "done": "SHA-256 of canonical JSON (sorted meas names with value and reference_value) from v3 sidecar matches a fresh measure_outputs re-run on v3 audit YAML after models/2026-levin-channel-math-synthesis.py --self-test at pinned script hash 38fcb818…; separately, count of (name,value) pairs in levin_youtube_kg.json verified_measurements that differ from the sidecar is zero once regenerated or is reported as a numbered mismatch list.",
+      "tool_route": "python3 models/2026-levin-channel-math-synthesis.py --self-test ; python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml ; python3 -c \"compare sidecar vs docs/bioelectricity/levin_youtube_kg.json verified_measurements\"",
+      "deciding_data": "In repo: v3 sidecar, v3 audit YAML, levin_youtube_kg.json, morphoeval/runs/levin_youtube_channel_math_summary.json; public nanopub URIs in morphoeval/runs/model_integrity_ledger.jsonl for v1 prod claims.",
+      "prior_attempts": "model_integrity_ledger incident 2026-10-24-gemini-4-argon-self-audit-and-tautology-incident (Fable v2 referee 93.8→26.4); v3 Pass 3.2 referee audit closed record/code drift but KG JSON generator not committed. Re-measuring v3 is not refuted; regenerating KG is knowledge-lens work.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Sidecar authority and remeasurement are measure_outputs + script outputs; KG regen itself is out of lens."},
+        "data_in_hand": {"score": 20, "why": "All inputs pinned with SHA-256 in the v3 sidecar provenance block."},
+        "falsifiable_done": {"score": 15, "why": "Hash equality or enumerated mismatch count."},
+        "compute_in_repo": {"score": 14, "why": "Levin --self-test completes in seconds."},
+        "isolation": {"score": 9, "why": "Hash report can be new-file-only; fixing kg.json would conflict (remediation agent)."},
+        "time_to_verdict": {"score": 8, "why": "Single script run plus sidecar diff."},
+        "not_blocked": {"score": 4, "why": "Partial fix in v3 sidecar; stale KG embed explicitly documented, not denied."}
+      }
+    },
+    {
+      "id": "NP-082-04",
+      "title": "Superseded prod Levin v1 sidecar tautologies vs v3 referee measurements",
+      "gap": "Immutable production nanopubs from morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit/ were built from morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.measurements.yaml where many laws set reference_value equal to value with Lean-only reference_source (ledger V3); later v2/v3 sidecars supersede scientifically but the network still exposes v1 morphometric evidence unless npx:supersedes consumers re-resolve.",
+      "done": "Automated report lists every measurement in v1 sidecar where value==reference_value and derived_from=script, and for each name that persists in v3 sidecar reports |v1_value − v3_value| with max delta; done when the report file exists and max delta > 0 for at least one law metric (proving stale prod evidence) or all deltas documented as zero.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit.yaml ; python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml ; YAML parse diff (no manual scoring)",
+      "deciding_data": "In repo: three levin audit YAMLs and sidecars; morphoeval/kg/*/published.json supersession history on v3 bundle.",
+      "prior_attempts": "Fable v2 referee and integrity ledger V1–V6 documented inflation; v3 sidecar explicitly replaces builder counts. Re-running measure_outputs on v1 to quantify stale literals is not previously recorded as failed.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "Both endpoints are standard measure_outputs audit inputs for the same sim id."},
+        "data_in_hand": {"score": 20, "why": "All sidecars committed."},
+        "falsifiable_done": {"score": 15, "why": "Deterministic diff tables with named measurements."},
+        "compute_in_repo": {"score": 14, "why": "Levin synthesis self-test only."},
+        "isolation": {"score": 10, "why": "Report-only artifact."},
+        "time_to_verdict": {"score": 8, "why": "Two quick measure runs plus parse."},
+        "not_blocked": {"score": 5, "why": "Quantifying prod stale evidence is distinct from re-publishing (knowledge lens)."}
+      }
+    },
+    {
+      "id": "NP-082-05",
+      "title": "Unsigned KG bundles: morphometric quick_gate readiness census",
+      "gap": "Only 17 of 316 morphoeval/kg/* directories have any production nanopub entries (~197 prod trig files); 298 remain signed-only, while 4315 audit sidecars exist in morphoeval/audits/ but there is no mechanical filter for which unsigned bundles already have measure_outputs quick_gate ≥80 and ≥2 external reference_value fields ready to merge into morphometric-validation evidence.",
+      "done": "A JSON manifest lists every morphoeval/kg/<audit-id>/ where morphoeval/audits/<audit-id>.yaml exists and measure_outputs --quick-gate returns quick_gate.total and result_quality; done when manifest row count equals the number of kg dirs with matching audit YAML and each row includes total, result_quality, and boolean has_sidecar.",
+      "tool_route": "for d in morphoeval/kg/*/; do python3 morphoeval/measure_outputs.py morphoeval/audits/$(basename $d).yaml --quick-gate; done (batch script writing morphoeval/runs/kg_quick_gate_census.json)",
+      "deciding_data": "In repo: morphoeval/kg/*/published.json, morphoeval/audits/*.yaml, existing *.measurements.yaml sidecars.",
+      "prior_attempts": "visualize_kg_overview.py counts audit dirs and npx:supersedes but not quick_gate; sign_morphoeval.py gates prod on test publish, not morphometric completeness. No prior refutation of batch --quick-gate.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "compute_quick_gate is exported inside measure_outputs.py CLI via --quick-gate flag."},
+        "data_in_hand": {"score": 18, "why": "All inputs local; some audits may reference missing media (integrity failures) and must be flagged, not skipped silently."},
+        "falsifiable_done": {"score": 15, "why": "Manifest row count and per-audit quick_gate.total integers."},
+        "compute_in_repo": {"score": 8, "why": "Hundreds of audits — wall time hours if run serially; still no wet lab."},
+        "isolation": {"score": 10, "why": "Single new census JSON under morphoeval/runs/."},
+        "time_to_verdict": {"score": 5, "why": "Full grid exceeds one sitting unless sampled; partial census still meets done if scope documented."},
+        "not_blocked": {"score": 5, "why": "No prior batch census on record."}
+      }
+    },
+    {
+      "id": "NP-082-06",
+      "title": "Prod morphometric-validation trig literals vs remeasured sidecar (spot-check contract)",
+      "gap": "For KG bundles with both morphoeval/audits/<id>.measurements.yaml and morphoeval/kg/<id>/signed/*morphometric-validation*.trig on production, there is no routine check that schema:PropertyValue literals merged at sign time still match a fresh measure_outputs run (plain-decimal lexical drift and post-audit script edits are called out in sign_morphoeval.py).",
+      "done": "For a fixed spot-check set of five prod bundles that have sidecars (e.g. bos v5, levin v3, 2026-10-19-turing-audit-v2), max absolute error between each sidecar measurement value and the nearest numeric literal in the corresponding signed morphometric-validation trig is ≤1e-4 or the violating meas_id is listed.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/<audit-id>.yaml ; rdflib parse morphoeval/kg/<audit-id>/signed/*morphometric-validation*.trig ; compare (new morphoeval/runs/np_trig_sidecar_spotcheck.json)",
+      "deciding_data": "In repo: paired sidecars and signed/ for chosen prod bundles listed in morphoeval/kg/*/published.json with \"published\": \"prod\".",
+      "prior_attempts": "sign_morphoeval.py documents plain_doubles fixup; check_signed.mjs verifies signatures, not numeric drift. No automated sidecar↔trig numeric diff in repo.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "measure_outputs supplies reference numbers; trig parse is small glue outside the lens but deciding evidence is remeasurement."},
+        "data_in_hand": {"score": 17, "why": "Prod sample and sidecars in repo; full 17-prod-dir sweep optional extension."},
+        "falsifiable_done": {"score": 14, "why": "Per-measurement max error threshold or explicit violation list."},
+        "compute_in_repo": {"score": 11, "why": "Five spot checks feasible; full prod set heavier."},
+        "isolation": {"score": 10, "why": "Spot-check JSON only."},
+        "time_to_verdict": {"score": 7, "why": "Five audits in one sitting if sims are fast."},
+        "not_blocked": {"score": 5, "why": "No recorded prior spot-check failure."}
+      }
+    },
+    {
+      "id": "NP-082-07",
+      "title": "Rule30 Delphi KG bundle: no morphometric sidecar (lens mismatch)",
+      "gap": "morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/ exists with published.json but morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml is a Delphi posterior assessment (problems[], conjecture_assessments) with no simulations[] block, so measure_outputs cannot attach morphometric PropertyValue evidence to those nanopubs.",
+      "done": "N/A for measure lens — document that measure_outputs exits without measurements and quick_gate.total=0 when run on this YAML; delphi/problem-graph lens must score viability instead.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml (expected: empty measurements, quick_gate incomplete)",
+      "deciding_data": "In repo: Delphi audit YAML and morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/published.json.",
+      "prior_attempts": "OP-01–03 (docs/open-problems.json) cover Rule30 prizes; nanopub bundle publishes Delphi assessments, not morphology sims. measure_outputs route refuted by schema, not by experiment.",
+      "factors": {
+        "tool_fit": {"score": 2, "why": "No simulation outputs to measure; tool runs but cannot decide the Delphi gap."},
+        "data_in_hand": {"score": 16, "why": "Audit and KG manifest present."},
+        "falsifiable_done": {"score": 12, "why": "Can falsify 'measurements non-empty' expectation only."},
+        "compute_in_repo": {"score": 15, "why": "Instant YAML parse."},
+        "isolation": {"score": 10, "why": "Negative result is a one-line log."},
+        "time_to_verdict": {"score": 10, "why": "Immediate."},
+        "not_blocked": {"score": 5, "why": "Negative knowledge: wrong lens, use delphi scout cell (scout-010 etc.)."}
+      }
+    },
+    {
+      "id": "NP-082-08",
+      "title": "Bos Turing published verdict numbers vs Pass-5 sidecar scale-mismatch era",
+      "gap": "Before Pass-8 coat-domain scale matching, morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v5.measurements.yaml recorded Eden held-out distance 3.19 vs reference 3.60 (reference_source: this run); v7 audit narrative cites 3.29 vs 3.43 and p=0.91 on prod without a v7 sidecar, so readers cannot tell from KG residue alone whether prod nanopubs embed pre- or post-Pass-8 morphometrics.",
+      "done": "Re-run measure_outputs at v7 checkpoint commit (2e5574cb per audit YAML) and confirm Eden/RD held-out means and Wilcoxon p match v7 summary strings within tolerance; explicitly flag if v5 sidecar numbers differ, proving supersession changed morphometrics without a v7 sidecar on network.",
+      "tool_route": "git checkout 2e5574cb673de7d817650ef02de8f6b9e9e9394f -- models/1981-murray-bos-taurus-turing-wavelength.py datasets/bos_taurus_turing_wavelength/ ; python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml",
+      "deciding_data": "In repo: v5 sidecar, v7 audit YAML, datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json, OP-11 source docs.",
+      "prior_attempts": "OP-11 status refuted for blinded re-score as hypothesis test; mechanical reconciliation of cited 3.29/3.43/p=0.91 to metrics JSON is not listed as attempted. Fable blinded audits predate Pass-8 pipeline.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Same bos sim measurement path as NP-082-01 with explicit checkpoint pin."},
+        "data_in_hand": {"score": 19, "why": "Metrics JSON and masks vendored."},
+        "falsifiable_done": {"score": 15, "why": "Three-number match plus binary v5≠v7 comparison."},
+        "compute_in_repo": {"score": 11, "why": "~100s pipeline; optional git checkout step."},
+        "isolation": {"score": 8, "why": "Checkout touches tracked files unless run in worktree."},
+        "time_to_verdict": {"score": 7, "why": "One pipeline run after checkout."},
+        "not_blocked": {"score": 4, "why": "OP-11 overlaps narratively but does not refute numeric reconciliation."}
+      }
+    }
+  ]
+}
