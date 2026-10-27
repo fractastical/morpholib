@@ -1,0 +1,280 @@
+{
+  "scout": "scout-062",
+  "ground": "predictions",
+  "lens": "measure",
+  "candidates": [
+    {
+      "id": "ZF-VTX-01-EVL-p0-series",
+      "title": "ZF-VTX-01: tabulated EVL shape-index p(t) series (not alpha_scale template parity)",
+      "gap": "Registered prediction ZF-VTX-01 needs a zebrafish epithelial shape-index transition near p0*=3.813 (band 3.76–3.87). Existing nakamasu-danio-rerio-vertex-packing audit sidecars only report alpha_scale / 12-point empirical_series parity (r≈0.9995), which the registry excludes as circular; they contain no per-frame or per-stage p=P/sqrt(A) series and no jamming transition estimate.",
+      "done": "A new sidecar (or audit measurements block) lists ≥8 time-ordered p values from the same segmentation method, with bootstrap 95% CI on the inflection estimate p0_hat; scorer marks confirmed if p0_hat∈[3.76,3.87], refuted if p0_hat∉[3.7,3.9], or blocked if fewer than 8 points. Sidecar must cite derived_from paths (PNG or script) inspectable without taste.",
+      "tool_route": "After adding extracted series to a new YAML/JSON sidecar referenced by morphoeval/audits/2026-10-19-danio-rerio-vertex-packing-audit-v2.yaml (simulation.measurements) or a companion audit file: `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-danio-rerio-vertex-packing-audit-v2.yaml` → verify morphoeval/audits/2026-10-19-danio-rerio-vertex-packing-audit-v2.measurements.yaml contains a row named like `EVL mean shape index p = P/sqrt(A)` with reference_value 3.813.",
+      "deciding_data": "In repo: datasets/danio_rerio_vertex_packing/danio_rerio_vertex_packing_reference.json (law only), morphoeval/audits/2026-10-19-danio-rerio-vertex-packing-audit-v2.measurements.yaml (current parity metrics). Missing on disk: docs/media/danio_rerio_vertex_packing_comparison.png (cited in sidecar; absent in VM). Public fetch: Nakamasu et al. (2013) PNAS doi:10.1073/pnas.2013.0531 EVL/epiboly micrographs for digitization.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json (2026-10-26): OpenAlex literature pass bound p0*=3.813 but found no tabulated zebrafish shape-index series; outcome partially_resolved. docs/open-problems.json registered_prediction_followups ZF-VTX-01 repeats the same missing series.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "measure_outputs.py already fingerprints audit PNGs and merges script measurements; only needs p0 series as measure_morphoeval output or audit-stated measurements."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "Law and audit YAML are in repo but deciding EVL micrograph series and comparison PNG are not on disk; one literature/Commons fetch required."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Numeric p0_hat interval check against registered 3.76–3.87 band is mechanical."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Segmentation + measure_outputs rerun is hours-scale Python/numpy on existing stack once images are vendored."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as new sidecar JSON/YAML + optional new audit file only; registry stays locked."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One measure loop after digitization; image sourcing may dominate the sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt used measure_outputs to supply the EVL series; literature route did not refute measurement."
+        }
+      }
+    },
+    {
+      "id": "ZF-VTX-01-clock-bridge-p0",
+      "title": "ZF-VTX-01 bridge: re-read Pass-3 vertex-sheet p0 already in clock-and-wavefront audit v3",
+      "gap": "Resolution pass treated ZF-VTX-01 as lacking any shape-index measurement, but morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.measurements.yaml already reports `2D vertex-sheet mean cell shape index p = P/sqrt(A)` = 3.7639 (ref 3.81, Bi 2015). That value lies in the registered 3.76–3.87 band yet applies to a Xenopus paraxial Farhadifar sheet in the Cooke clock script, not zebrafish EVL epiboly—organism/tissue mismatch is undecided.",
+      "done": "Scorer emits a three-way label: (A) `supports_law_in_wrong_tissue` if 3.7639∈[3.76,3.87] and audit claim_boundary excludes Danio rerio EVL; (B) `refutes_law` if remeasured p∉[3.7,3.9]; (C) `cannot_adjudicate_ZF-VTX-01` if measure_outputs missing on v3 audit. Decision uses only sidecar numbers and audit claim_boundary text.",
+      "tool_route": "`python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.yaml` then parse morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.measurements.yaml for the shape-index row (compare to datasets/clock_and_wavefront/fgf_ra_vertex_reference.json p0*=3.81).",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.measurements.yaml, models/1976-cooke-clock-and-wavefront.py measure_morphoeval(), datasets/clock_and_wavefront/fgf_ra_vertex_reference.json, docs/media/clock_and_wavefront_vertex_sheet.png.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json did not cite clock-and-wavefront v3 sidecar; META-RES-03 (refuted) counted partials without this cross-audit measurement.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Fully decidable by re-running measure_outputs on an existing audit with Pass-3 measure_morphoeval hooks."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All inputs and rendered vertex_sheet.png are already in the repository."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Interval check is objective; tissue mismatch is a documented boolean from audit claim_boundary, not judgment."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Single measure_outputs invocation plus YAML parse."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only on locked predictions; output is a new adjudication note file if needed."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One sitting: rerun + parse."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "This cross-audit route was not attempted or refuted in resolutions/."
+        }
+      }
+    },
+    {
+      "id": "ZF-CLK-01-S-over-T-cooke",
+      "title": "ZF-CLK-01 proxy: proportional ΔS/ΔT from Cooke clock-and-wavefront measure_outputs",
+      "gap": "ZF-CLK-01 requires paired her1-period and somite-length changes at controlled wavefront speed in Danio rerio. Repo lacks that live pair, but clock-and-wavefront audit v3 already encodes a 2× clock period perturbation with somite wavelength moving 100.13→200.25 µm (see slow_clock note) while wavefront speed is held in the cusp solver—an in-repo S∝T test case for the same poson law.",
+      "done": "From remeasured sidecar, compute R = (S_slow/S_norm)/(T_slow/T_norm) for the clock-doubled vs normal rows; confirmed if |R−1|≤0.05; refuted if |R−1|>0.20; label `wrong_species` if audit organism≠Danio rerio (does not alone confirm ZF-CLK-01). Values must come from measurements YAML, not narrative.",
+      "tool_route": "`python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.yaml`; extract `normal Xenopus somite wavelength S_sim` and `clock-doubled perturbation` note field S=200.25 µm with T_c 45→90 min from morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.measurements.yaml.",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.measurements.yaml, datasets/clock_and_wavefront/clock_and_wavefront_reference.json (Cooke 1975 regimes), models/1976-cooke-clock-and-wavefront.py.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json (2026-10-26): OpenAlex pass found framework support but no paired zebrafish T+S table; partially_resolved. No measure_outputs extraction attempted.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "measure_outputs sidecar already carries both S and T_c perturbation metadata for the 2× clock regime."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Deciding numbers are in-repo in v3 measurements; zebrafish-specific pair still absent."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Ratio R against 1.0 with 5% tolerance is a scalar check."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Minutes to rerun measure_outputs and parse two rows."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only adjudication; no registry edits."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single loop once v3 audit is the target."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route not tried in resolution pass."
+        }
+      }
+    },
+    {
+      "id": "XT-CLK-01-template-vs-cooke",
+      "title": "XT-CLK-01: separate Keller template parity from Cooke proportional regimes",
+      "gap": "XT-CLK-01 mirrors ZF-CLK-01 for Xenopus tropicalis, but xenopus-tropicalis-clock-wavefront audit sidecar only reports alpha_scale parity (r≈0.9995) on morphoeval-reference-2.0 empirical_series—same circular template class the registry forbids for biology scoring. The deciding paired period+somite series is still missing while Cooke (1975) miniature/clock regimes in clock_and_wavefront already quantify S and T_c jointly for Xenopus laevis.",
+      "done": "Scorer records two booleans: (1) `template_only` true if keller-xenopus-tropicalis-clock-wavefront measurements contain only alpha/r parity rows; (2) `proportional_law_holds_in_cooke` true if Cooke v3 slow-clock R within 5% of 1. XT-CLK-01 outcome remains open until tropicalis-specific paired data exist, but the measure gap is classified without taste.",
+      "tool_route": "`python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-xenopus-tropicalis-clock-wavefront-audit-v2.yaml` AND `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.yaml`; diff measurement names against predictions/prediction_registry.json quantitative_expectation for XT-CLK-01.",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-xenopus-tropicalis-clock-wavefront-audit-v2.measurements.yaml, morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.measurements.yaml, datasets/xenopus_tropicalis_clock_wavefront/xenopus_tropicalis_clock_wavefront_reference.json.",
+      "prior_attempts": "predictions/resolutions/xenopus.json (2026-10-26): partially_resolved; literature bound framework, no paired tropicalis T+S table.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "measure_outputs distinguishes template parity metrics from Cooke proportional measurements already wired in another audit."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Both audit sidecars and references are in-repo; tropicalis pair still external."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Boolean classification of sidecar contents is checkable; full XT-CLK-01 confirmation needs extra data."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Two measure_outputs runs plus YAML inspection."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "No modifications to locked registry required."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One sitting for classification; full close needs follow-up fetch."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not previously attempted via measure_outputs."
+        }
+      }
+    },
+    {
+      "id": "DM-MUR-NEG-01-murray-gamma",
+      "title": "DM-MUR-NEG-01: Murray exponent γ from tracheal tree render (not lecuit alpha template)",
+      "gap": "Negative prediction DM-MUR-NEG-01 needs parent/daughter tracheal diameters across branch orders to fit r0^γ=r1^γ+r2^γ and test γ∈[2.8,3.2]. drosophila_melanogaster_branching_tree audit sidecar only fits Murray-law alpha_scale to 12-point empirical_series (r≈0.9995), identical to the non-biological template pattern; resolutions note missing tabulated Drosophila tracheal diameters.",
+      "done": "Sidecar includes `fitted Murray exponent gamma` with ≥10 bifurcations and 95% CI; confirmed (supports negative prediction) if CI disjoint from [2.8,3.2]; refuted if CI subset of [2.8,3.2]. Method string must cite pixel or vector radius extraction from a named PNG.",
+      "tool_route": "Render tracheal branching comparison from `python3 models/1999-metzger-drosophila-melanogaster-mm1-4-larval-tracheal-10-metamere-branching-network-branching-tree.py` (or matusek nm350 script), add measure_morphoeval() mirroring runions-leaf-venation Murray block in morphoeval/measure_outputs.py (open_murray_* metrics), then `python3 morphoeval/measure_outputs.py <new-audit.yaml>`. Use morphoeval/audits/2026-10-19-runions-leaf-venation-audit-v2.measurements.yaml as format reference.",
+      "deciding_data": "In repo: datasets/drosophila_melanogaster_branching_tree/drosophila_melanogaster_branching_tree_reference.json (template only), morphoeval/audits/2026-10-19-drosophila-melanogaster-branching-tree-audit-v2.measurements.yaml, models/1999-metzger-drosophila-melanogaster-mm1-4-larval-tracheal-10-metamere-branching-network-branching-tree.py. Public: Metzger & Krasnow (1999) tracheal morphometry figures for radius ground truth.",
+      "prior_attempts": "predictions/resolutions/drosophila.json (2026-10-26): OpenAlex bounded negativity via other insects; partially_resolved without Drosophila-specific diameter table. measure_outputs Murray metrics exist for runions-leaf-venation, not yet on tracheal audit.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "measure_outputs already implements Murray cube-law metrics for runions; tracheal hook is adaptation, not new infrastructure."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Template reference in repo; deciding tracheal radii need figure digitization or script geometry export."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "γ CI versus [2.8,3.2] is a direct interval test."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Rendering + measure hook + audit rerun within hours once radii table exists."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Requires new audit/measurements file and script hook—still zero-conflict if only additive files."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Digitization likely dominates one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Literature pass did not refute the measure_outputs Murray route."
+        }
+      }
+    },
+    {
+      "id": "PRED-TEMPLATE-PARITY-TRAP",
+      "title": "Blocker: core prediction audits that only restate alpha_scale empirical_series parity",
+      "gap": "Five partially-resolved predictions need biological quantitative series, but nakamasu/keller/lecuit core loop sidecars for danio vertex, danio/xenopus clock, and drosophila branching only emit `Scaling Coefficient alpha` and `Empirical vs Simulated Morphometric Correlation r` against morphoeval-reference-2.0 x_control∈[0.5,5.0] templates—exactly the circular class prediction_registry.json excludes (empirical_series ~1.57×alpha_scale). Re-running measure_outputs on these audits cannot move prediction outcomes.",
+      "done": "Automated report lists prediction_ids whose linked audit measurements.yaml lacks any deciding keyword in {shape index, p0, murray exponent, gamma, paired period, somite length series, ptc domain}; scorer marks `non_deciding_template_parity` when all rows match alpha/r parity pattern. If any deciding keyword appears with reference_value, mark `potentially_deciding`.",
+      "tool_route": "`python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-danio-rerio-vertex-packing-audit-v2.yaml` (and sibling clock/branching/xenopus clock audits); grep -E 'shape index|Murray exponent|period|somite length|ptc' on resulting *.measurements.yaml; cross-check predictions/prediction_registry.json discipline paragraph.",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-danio-rerio-vertex-packing-audit-v2.measurements.yaml, morphoeval/audits/2026-10-19-danio-rerio-clock-wavefront-audit-v2.measurements.yaml, morphoeval/audits/2026-10-19-drosophila-melanogaster-branching-tree-audit-v2.measurements.yaml, morphoeval/audits/2026-10-19-xenopus-tropicalis-clock-wavefront-audit-v2.measurements.yaml, predictions/prediction_registry.json.",
+      "prior_attempts": "predictions/resolutions/inrepo-quick.json decided DM-DPP-01 and XT-DQ-01 via sequence_links, not these audits. Resolution batches used literature, not measure_outputs template checks.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Wholly decidable by measure_outputs reruns plus keyword scan on sidecars—no new experiments."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All cited sidecars and registry text are already in the repository."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Keyword/pattern classifier on YAML is objective."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Batch measure_outputs over four audits completes in minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Delivers a new report JSON only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single batch run."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Negative knowledge not yet recorded formally; literature route did not substitute this check."
+        }
+      }
+    },
+    {
+      "id": "ZF-HH-01-ptc-profile",
+      "title": "ZF-HH-01: ptc-domain peak width ratio from morphogen comparison PNG (weak measure fit)",
+      "gap": "ZF-HH-01 partial resolution established lipidation fact but not the registered gradient-shape claim (distal ptc expansion + reduced near-source peak under lipidation loss). danio-rerio-morphogen-condensation audit sidecar only contains French-flag alpha parity, not ptc1/ptc2 spatial profiles.",
+      "done": "Sidecar reports `ptc_peak_ratio_mutant_over_WT` and `ptc_distal_half_width_ratio` from intensity profiles on labeled panels; confirmed if peak ratio <1 and distal width ratio >1 within 10% CI; refuted if opposite signs. If PNG panels unlabeled, scorer marks `needs_vision_lens`.",
+      "tool_route": "Extend 2010-nakamasu-danio-rerio-morphogen-condensation.py (or audit YAML) with measure_morphoeval() gradient profile hooks, then `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-danio-rerio-morphogen-condensation-audit-v2.yaml`. Alternative lens if panels ambiguous: verify_image_fitness.py / vision scout.",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-danio-rerio-morphogen-condensation-audit-v2.measurements.yaml, datasets/danio_rerio_morphogen_condensation/. Missing: docs/media/danio_rerio_morphogen_condensation_comparison.png on disk. Public: Nakamasu (2010) doi:10.1073/pnas.2010.0231 ptc domain quantitations.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json (2026-10-26): lipidation confirmed, gradient shape not; partially_resolved.",
+      "factors": {
+        "tool_fit": {
+          "score": 11,
+          "why": "measure_outputs can read PNG intensities but current audit lacks profile hooks; may need new measure_morphoeval code or vision lens."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "Audit YAML exists; deciding comparison PNG absent locally; literature tables not vendored."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Directional inequalities on two ratios are checkable once numbers exist."
+        },
+        "compute_in_repo": {
+          "score": 9,
+          "why": "Profile extraction is moderate effort; panel semantics risk rework."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Additive script hook + sidecar only."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Likely multi-iteration without vision assistance."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Measure route not attempted; literature did not refute pixel profiling."
+        }
+      }
+    }
+  ]
+}
