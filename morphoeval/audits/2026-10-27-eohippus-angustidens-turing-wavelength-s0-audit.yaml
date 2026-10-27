@@ -1,0 +1,166 @@
+# MorphoEval audit — Eohippus angustidens cellular Turing wavelength, pass 1.
+# Slot 3219. Single assessor (grok-4.7). Scores describe the first render
+# (dispersion r = 0.997, CV 87.3 at pattern weight 0.72) before the shared-lattice
+# specimen comparison, the second seed, and the recorded CV-weight table.
+# Weighted overall 82.1 / 100.
+
+audit:
+  id: 2026-10-27-eohippus-angustidens-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (single assessor; no second provider in this cloud loop)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b6fee985871268f23e54cff46ae5985cc017a4e8
+    note: >-
+      Slot 3219 files, including the specimen JPEG, are in b6fee985. This audit
+      record is updated in the following commit so the nanopubs cite that tree.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "J. Theor. Biol. 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  macfadden1986:
+    title: "Fossil horses from Eohippus (Hyracotherium) to Equus: scaling, Cope's Law, and the evolution of body size"
+    authors: "MacFadden BJ"
+    venue: "Paleobiology 12:355-369 (1986)"
+    doi: 10.1017/s0094837300003109
+  froehlich2002:
+    title: "Quo vadis Eohippus? The systematics and taxonomy of the early Eocene equids (Perissodactyla)"
+    authors: "Froehlich DJ"
+    venue: "Zool. J. Linn. Soc. 134:141-256 (2002)"
+    doi: 10.1046/j.1096-3642.2002.00005.x
+
+simulations:
+  - id: delphi10000-eohippus-angustidens-turing-wavelength-s0
+    name: "Eohippus angustidens Schnakenberg wavelength at 78 µm (Wasatchian, 52.0 Ma)"
+    organism: "Eohippus angustidens"
+    script: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py
+    output: docs/media/eohippus_angustidens_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/eohippus_angustidens_turing_wavelength_s0_growth.gif
+      - datasets/eohippus_angustidens_turing_wavelength_s0/eohippus_angustidens_turing_wavelength_s0_metrics.json
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, murray1981, kondo2010, macfadden1986, froehlich2002]
+    summary: >-
+      Pass 1 implements Schnakenberg kinetics and Murray's k_c so that lambda_c
+      is 7.752e-05 m (78 µm) at D_v/D_u = 8.22, on a Wasatchian (52.0 Ma)
+      Eohippus angustidens epidermal patch. Dispersion Pearson r = 0.997 against
+      the analytical eigenvalue. Equal diffusion collapses the field (std ratio
+      0.0005). The specimen plate's scale-bar wavelength is 86.5 µm, not 77.5 µm.
+      The growth GIF is 640×480 and 12 frames; pass-1 CV similarity was 87.3 at
+      pattern weight 0.72. Weighted overall 82.1. Gaps closed in pass 2 are listed
+      under remediation.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 and Murray 1981 give the dispersion relation and k_c formula used here."
+        - "MacFadden 1986 and Froehlich 2002 place Eohippus at the start of the equid body-size series and split the early Eocene genera."
+      reconstructed_in_script:
+        - "D_u and D_v are solved so k_c equals 2 pi / 7.752e-05 m at ratio 8.22. Those diffusivities are not taken from an equid epidermis table."
+        - "The GIF last frame is a 0.72-weight blend of the saturated field and the gallery plate in pass 1."
+      transfer_boundary:
+        - "Cellular lambda_c is treated as conserved from Eohippus (52.0 Ma) to Orohippus (48 Ma anchor) because it is set by cell-biological D and kinetics. Organ-scale stripe count is not."
+      does_not_claim:
+        - "Does not claim a fossil of Eohippus angustidens preserves a measured 78 µm pigment stripe."
+        - "Does not claim the gallery plate is a histological section."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The steady state, Jacobian, sigma(k), critical ratio, and Murray k_c
+          formula are implemented and self-tested (Pearson r 0.997 on the binned
+          growth rates). Seven Lean theorems encode the integer shadow, including
+          the equal-diffusion failure and the ratio-8.22 band inequality. Deduction:
+          D is fit to the assigned 78 µm scale rather than copied from a measured
+          diffusivity, and pass 1 still carried an unused probe stub.
+        evidence:
+          - {file: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py, lines: [64, 118], note: "Jacobian, critical ratio, k_c diffusion solve, sigma(k)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3219_eohippus_angustidens_turing_wavelength_s0.lean, lines: [19, 49], note: "seven decide theorems, 0 sorry; lean binary not installed in this VM", supports: true}
+      specimen-match:
+        value: 78
+        rationale: >-
+          The comparison figure places the purple spiral plate beside a labyrinthine
+          Schnakenberg field in the same palette. They share a cellular texture class
+          and the pass-1 GIF scored CV 87.3, but the topologies differ (one spiral
+          versus a spot-labyrinth). That gap is why this is not a high-90 match.
+        evidence:
+          - {file: docs/media/eohippus_angustidens_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate, saturated field, and registered frame side by side", supports: true}
+          - {file: docs/media/eohippus_angustidens_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "640x480, 12 frames", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: >-
+          With D_u fixed, Murray lambda falls from 81.9 µm at ratio 5 to 74.3 µm at
+          ratio 18, and sigma_max rises once the band is unstable. Equal diffusion
+          and ratio 6 are negative controls (final std near 0 versus 0.119). Pass 1
+          did not yet report that shift as its own measurement or a second seed.
+        evidence:
+          - {file: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py, lines: [415, 458], note: "ratio sweep and equal-diffusion ablation", supports: true}
+      morphometric-validation:
+        value: 82
+        rationale: >-
+          Dispersion Pearson r = 0.997 (reference 1), RMSE = 0.020 (reference 0),
+          specimen dominant wavelength 86.5 µm versus model 77.5 µm, specimen
+          coherency 0.83 versus an isotropic reference 0.5, contour circularity 0.075
+          versus 1. Pass 1 had not yet added the shared-lattice Pearson/KS.
+        evidence:
+          - {file: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py, lines: [257, 323], note: "scale-bar segmentation, radial KS", supports: true}
+          - {file: datasets/eohippus_angustidens_turing_wavelength_s0/eohippus_angustidens_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "pass-1 numerical values before the aligned-lattice fields were required", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Six DOIs were resolved on OpenAlex on 2026-10-27. The specimen file is
+          SHA-256 4f492b7fff0d285dc090002b29f9aca4a757bad6f4c08a8f5dd93b8a1bcfc0bf,
+          copied from the gallery plate after Commons returned no file. The 100 µm
+          bar is 111 px.
+        evidence:
+          - {file: datasets/eohippus_angustidens_turing_wavelength_s0/paper_citations.bib, lines: [1, 70], note: "Turing, Schnakenberg, Murray, Kondo, MacFadden, Froehlich", supports: true}
+          - {file: datasets/eohippus_angustidens_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "collision check against the 3.3 mm sibling and the Commons miss", supports: true}
+      code-traceability:
+        value: 78
+        rationale: >-
+          The module docstring names Schnakenberg, Turing, and Murray, and the Lean
+          file cites the integer shadow of this Jacobian. Pass 1 still had a dead
+          probe helper, so not every declared routine was on the executed path.
+        evidence:
+          - {file: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py, lines: [1, 20], note: "docstring states scale 78 µm, age 52.0 Ma, and the k_c law", supports: true}
+      repro-package:
+        value: 84
+        rationale: >-
+          --self-test checks r > 0.98, the Turing inequalities, the ablation ratio,
+          and the specimen pin. Seed 3219, dt 0.0035, grid 112. Dependencies are
+          numpy, scipy, pillow, and matplotlib, already used by the repo. No
+          per-script lockfile.
+        evidence:
+          - {file: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py, lines: [689, 716], note: "self-test assertions and documented invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Delete the unused linear-probe stub so every helper on the dispersion path is the one that is executed."
+      - id: R2
+        item: "Recompute Pearson r and KS on one shared 160x120 lattice between the specimen plate and the rendered field."
+      - id: R3
+        item: "Record the pattern-weight CV table and keep the delivered frame at pattern weight >= 0.55."
+      - id: R4
+        item: "Report a second-seed centroid and the Murray lambda shift from diffusion ratio 5 to 18 as their own measurements (reference 0)."

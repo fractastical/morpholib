@@ -1,0 +1,60 @@
+sim_id: delphi10000-eohippus-angustidens-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 7.752e-05
+log10_size_m: -4.111
+size_human: 78 µm
+scale_tier: 4_cellular_10um
+detail_variant: s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Eohippus angustidens (78 µm, detail scale)
+geological_age_ma: 52.0
+geological_period: Early Eocene (Wasatchian, 52.0 Ma)
+fossil_lineage_group: Equid Autopod & Dental Chronospecies
+chronoseries_index: 1
+chronoseries_length: 1
+model_spec:
+  sim_id: delphi10000-eohippus-angustidens-turing-wavelength-s0
+  kinetics: schnakenberg1979
+  diffusion_ratio: 8.22
+  lambda_c_m: 7.752e-05
+  inputs:
+    - datasets/eohippus_angustidens_turing_wavelength_s0/eohippus_angustidens_turing_wavelength_s0_reference.json
+    - datasets/eohippus_angustidens_turing_wavelength_s0/eohippus_angustidens_specimen.jpg
+    - datasets/eohippus_angustidens_turing_wavelength_s0/paper_citations.bib
+    - datasets/eohippus_angustidens_turing_wavelength_s0/scout_manifest.json
+equations:
+  - law_name: Kinetic trace and determinant at the Schnakenberg steady state
+    formula: trace(J) = f_u + g_v < 0 and det(J) = f_u g_v - f_v g_u > 0 at (a, b) = (0.062, 0.940)
+    lean_decl: MathOfBiology.Loop_3219.detJ
+    lean_theorem: MathOfBiology.Loop_3219.trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3219_eohippus_angustidens_turing_wavelength_s0.lean#L19-L24
+    variables: f_u, g_v scaled by 1e6 from the Jacobian of du/dt = a - u + u^2 v, dv/dt = b - u^2 v
+    role: Homogeneous state of the 78 µm Eohippus patch is stable in the absence of diffusion
+    source_citation: Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0; Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py#L64-L84
+  - law_name: Turing wavenumber at diffusion ratio 8.22
+    formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), with D_v/D_u = 822/100, and (r f_u + g_v)^2 > 4 r det(J)
+    lean_decl: MathOfBiology.Loop_3219.fu
+    lean_theorem: MathOfBiology.Loop_3219.differential_diffusion_selects_a_band
+    lean_locus: morphoeval/lean/loops/Loop_3219_eohippus_angustidens_turing_wavelength_s0.lean#L32-L34
+    variables: r = 8.22 is this slot's ratio; lambda_c = 7.752e-05 m is the target, not the 3.3 mm organ-tier sibling
+    role: Selects the cellular-detail pigment wavelength (78 µm, about 6.5 keratinocyte diameters)
+    source_citation: Murray 1981 DOI:10.1016/0022-5193(81)90334-9
+    code_locus: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py#L99-L118
+  - law_name: Equal diffusion does not select a band
+    formula: (f_u + g_v)^2 < 4 det(J) when D_v = D_u
+    lean_decl: MathOfBiology.Loop_3219.detJ
+    lean_theorem: MathOfBiology.Loop_3219.equal_diffusion_is_stable
+    lean_locus: morphoeval/lean/loops/Loop_3219_eohippus_angustidens_turing_wavelength_s0.lean#L27-L29
+    variables: same Jacobian as the patterned run; only the diffusion ratio changes
+    role: Negative control for the 78 µm pattern
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py#L455-L458
+  - law_name: Detail wavenumber versus the organ-scale sibling and the Bridgerian successor
+    formula: 42 < 0.003298 / 7.752e-05 < 43, and 52.0 Ma precedes the 48 Ma Orohippus anchor
+    lean_decl: MathOfBiology.Loop_3219.detail_wavenumber_exceeds_organ_scale
+    lean_theorem: MathOfBiology.Loop_3219.wasatchian_precedes_bridgerian_successor
+    lean_locus: morphoeval/lean/loops/Loop_3219_eohippus_angustidens_turing_wavelength_s0.lean#L42-L49
+    variables: organ sibling lambda = 0.003298 m; successor anchor = Orohippus at 48 Ma; this chronoseries is stage 1 of 1
+    role: States what is conserved (cellular lambda_c) and what is not (organ stripe count, body size) at 52 Ma
+    source_citation: MacFadden 1986 DOI:10.1017/s0094837300003109; Froehlich 2002 DOI:10.1046/j.1096-3642.2002.00005.x
+    code_locus: models/2026-delphi10000-eohippus-angustidens-turing-wavelength-s0.py#L1-L20
