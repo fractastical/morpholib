@@ -1,0 +1,79 @@
+sim_id: delphi10000-bos-taurus-turing-wavelength-s0
+organism: Bos taurus
+age_ma: 0
+scale_m: 3.137e-06
+scale_human: 3.1 µm
+log10_scale_m: -5.503
+tier_id: 3_subcellular_um
+math_family: Reaction-Diffusion & Turing Dispersion
+model_spec:
+  kinetics: gierer-meinhardt-1972
+  mu_u: 0.85
+  mu_v: 1.4
+  rho_u: 0.62
+  rho_v: 0.48
+  diffusion_ratio: 14.5
+  lambda_m: 3.137e-06
+  age_ma: 0
+  grid_n: 128
+  seed: 3135
+  inputs:
+    - datasets/bos_taurus_turing_wavelength_s0/bos_taurus_turing_wavelength_s0_specimen.jpg
+    - datasets/bos_taurus_turing_wavelength_s0/bos_taurus_turing_wavelength_s0_reference.json
+equations:
+- law_name: Homogeneous-state trace sign
+  formula: tr(J) = mu_u - mu_v < 0
+  lean_decl: MathOfBiology.Loop_3135.traceJ
+  lean_theorem: MathOfBiology.Loop_3135.holocene_detail_trace_negative
+  lean_locus: morphoeval/lean/loops/Loop_3135_bos_taurus_turing_wavelength_s0.lean#L16-L21
+  lean_code: 'def traceJ (a b : Int) : Int := a - b
+
+    theorem holocene_detail_trace_negative : traceJ muU muV < 0 := by decide'
+  variables: 'mu_u = 0.85, mu_v = 1.40 (stored as 85 and 140 in 10^-2 units)'
+  role: Diffusionless stability of the Gierer–Meinhardt steady state at the 3.137 µm detail scale
+  source_citation: 'Gierer & Meinhardt (1972) DOI:10.1007/BF00289234'
+  code_locus: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py
+- law_name: Inhibitor-range cross term
+  formula: D_v * f_u + D_u * g_v > 0 with D_v/D_u = 14.5
+  lean_decl: MathOfBiology.Loop_3135.crossNumerator
+  lean_theorem: MathOfBiology.Loop_3135.inhibitor_range_cross_positive
+  lean_locus: morphoeval/lean/loops/Loop_3135_bos_taurus_turing_wavelength_s0.lean#L23-L28
+  lean_code: 'def crossNumerator : Int := 145 * muU - 10 * muV
+
+    theorem inhibitor_range_cross_positive : crossNumerator > 0 := by decide'
+  variables: 'D_v:D_u = 145:10, mu_u = 85, mu_v = 140 in fixed-point units'
+  role: Necessary cross-term for a Turing band at this diffusion ratio
+  source_citation: 'Turing (1952) DOI:10.1098/rstb.1952.0012'
+  code_locus: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py
+- law_name: Detail wavelength inside tier 3
+  formula: 1 µm < lambda_c = 3.137 µm < 10 µm
+  lean_decl: MathOfBiology.Loop_3135.lambdaNm
+  lean_theorem: MathOfBiology.Loop_3135.wavelength_inside_tier3
+  lean_locus: morphoeval/lean/loops/Loop_3135_bos_taurus_turing_wavelength_s0.lean#L30-L35
+  lean_code: 'def lambdaNm : Int := 3137
+
+    theorem wavelength_inside_tier3 : 1000 < lambdaNm ∧ lambdaNm < 10000 := by decide'
+  variables: 'lambda_c = 3137 nm = 3.137e-6 m, log10 = -5.503, age = 0 Ma'
+  role: Places the selected wavelength in tier 3/8 (subcellular detail)
+  source_citation: 'Kondo & Miura (2010) DOI:10.1126/science.1179047'
+  code_locus: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py
+- law_name: Predecessor melanosome below lambda_c
+  formula: L_melanosome = 500 nm < lambda_c
+  lean_decl: MathOfBiology.Loop_3135.lambdaNm
+  lean_theorem: MathOfBiology.Loop_3135.predecessor_melanosome_below_wavelength
+  lean_locus: morphoeval/lean/loops/Loop_3135_bos_taurus_turing_wavelength_s0.lean#L37-L40
+  lean_code: 'theorem predecessor_melanosome_below_wavelength : 500 < lambdaNm := by decide'
+  variables: 'predecessor length 500 nm; chronoseries predecessor is absent (series 1/1)'
+  role: A stage-IV melanosome cannot hold one critical wavelength
+  source_citation: 'Wasmeier et al. (2008) DOI:10.1242/jcs.040667'
+  code_locus: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py
+- law_name: Successor soma admits repeated wavelengths
+  formula: floor(20 µm / 3.137 µm) >= 6
+  lean_decl: MathOfBiology.Loop_3135.lambdaNm
+  lean_theorem: MathOfBiology.Loop_3135.successor_cell_admits_multiple_wavelengths
+  lean_locus: morphoeval/lean/loops/Loop_3135_bos_taurus_turing_wavelength_s0.lean#L42-L45
+  lean_code: 'theorem successor_cell_admits_multiple_wavelengths : 20000 / lambdaNm >= 6 := by decide'
+  variables: 'successor length 20 µm; ageMa = 0'
+  role: Mode count, not k_c, is what changes from this scale to the next
+  source_citation: 'Gierer & Meinhardt (1972) DOI:10.1007/BF00289234'
+  code_locus: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py
