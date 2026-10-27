@@ -1,0 +1,199 @@
+# MorphoEval audit — Dorudon atrox Turing wavelength, 253 µm, 37.0 Ma. Pass 2.
+#
+# Supersedes 2026-10-27-dorudon-atrox-turing-wavelength-s0-audit.
+# Same agent as pass 1 (Grok 4.7). Not a second-assessor consensus.
+# Default command is pass 2:
+#   python3 models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py
+
+audit:
+  id: 2026-10-27-dorudon-atrox-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-dorudon-atrox-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-dorudon-atrox-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder and assessor, single-agent cloud loop; no second assessor)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Loop files are new on this branch and are not in commit 0c76d15d.
+      Pass 2 re-ran the default pipeline after the sweep was changed to hold
+      Du fixed.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    year: 1981
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    year: 1995
+    venue: "Nature 376:765-768 (1995)"
+    doi: 10.1038/376765a0
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    year: 2009
+    venue: "PNAS 106:8429-8434 (2009)"
+    doi: 10.1073/pnas.0808622106
+  gingerich1990:
+    title: "Hind limbs of Eocene Basilosaurus: evidence of feet in whales"
+    authors: "Gingerich PD, Smith BH, Simons EL"
+    year: 1990
+    venue: "Science 249:154-157 (1990)"
+    doi: 10.1126/science.249.4965.154
+  uhen2007:
+    title: "Evolution of marine mammals: back to the sea after 300 million years"
+    authors: "Uhen MD"
+    year: 2007
+    venue: "The Anatomical Record 290:514-522 (2007)"
+    doi: 10.1002/ar.20545
+  uhen2004:
+    title: "Form, function, and anatomy of Dorudon atrox (Mammalia, Cetacea)"
+    authors: "Uhen MD"
+    year: 2004
+    venue: "University of Michigan Papers on Paleontology 34 (2004)"
+    url: https://deepblue.lib.umich.edu/handle/2027.42/41255
+
+simulations:
+  - id: delphi10000-dorudon-atrox-turing-wavelength-s0
+    name: "Dorudon atrox Turing wavelength at 253 µm, Priabonian 37.0 Ma (pass 2)"
+    organism: "Dorudon atrox"
+    script: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py
+    output: docs/media/dorudon_atrox_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-dorudon-atrox-turing-wavelength-s0-audit
+    source_refs: [turing1952, murray1981, kondo1995, nakamasu2009, gingerich1990, uhen2007, uhen2004]
+    summary: >-
+      Pass 2 closes the pass-1 gaps. With Du held at 406.13 µm², raising
+      Dv/Du from 8 to 32 moves the fastest wavelength from 215.4 µm to 290.0 µm
+      and sigma_max from -0.135 to 0.254. The critical ratio 11.657 sits at
+      sigma ≈ 0. The slot ratio 15.970 has onset lambda_c = 253 µm exactly and
+      fastest-mode lambda 251.3 µm. Plate azimuthal fit at that fixed k:
+      Pearson r = 0.9918 against a polynomial-only baseline of 0.8198,
+      RMSE 0.0154, KS 0.09. Equal-diffusion std(u) fell to 3.4e-13 while the
+      slot run finished at std(u) = 0.066. Weighted overall 87.6.
+      The GIF last frame scores 91.1 against the pattern plate and 79.6
+      against the Wadi El-Hitan fossil.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 critical wavenumber"
+        - "Murray 1981 coat pre-pattern"
+        - "Kondo & Asai 1995 and Nakamasu et al. 2009 pigment-cell waves"
+        - "Dorudon atrox as a Priabonian basilosaurid with a vestigial hindlimb (Uhen 2004, 2007; Gingerich et al. 1990)"
+      reconstructed_in_script:
+        - "Schnakenberg parameters solved for lambda_c = 253 µm"
+        - "Radial fit: degree-5 vignette plus J0(k), J0(2k), J0(3k) with k fixed by the 111 px = 100 µm bar"
+        - "Domain scenario 8 → 3 → 0 wavelengths at 47 Ma, 37.0 Ma, and 0 Ma"
+      transfer_boundary:
+        - "No Dorudon integument is known. The gallery plate is an ocellus with a 100 µm bar, not a thin section."
+      does_not_claim:
+        - "That the fossil skeleton is a Turing pattern"
+        - "That the plate's secondary peak at 93.2 µm is the animal's wavelength"
+        - "That 8, 3, and 0 are measured bud lengths"
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The PDE, Jacobian, onset formula, and equal-diffusion control match
+          Turing's conditions and are asserted in self_test. Lean checks the
+          integer margin, the equal-diffusion margin, and 3×253 = 759,
+          8×253 = 2024. Above onset the fastest mode (251.3 µm) is not identical
+          to the onset wavenumber (253 µm); both are reported. The periodic
+          nonlinear field becomes spots; the ocellus is the radial eigenmode,
+          which the periodic square does not preserve.
+        evidence:
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [105, 231], note: "Jacobian, k_c, explicit-Euler Schnakenberg", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3171_dorudon_atrox_turing_wavelength_s0.lean, lines: [41, 61], note: "seven theorems, zero sorry", supports: true}
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [199, 231], note: "periodic square produces spots rather than a single radial ocellus", supports: false}
+      specimen-match:
+        value: 84
+        rationale: >-
+          The pass-2 comparison places the gallery plate next to the fitted
+          radial mode. Last-frame CV similarity is 91.1 versus that plate
+          (12 frames, 640×480) and 79.6 versus the Wadi El-Hitan skeleton.
+          Pearson r of the azimuthal means is 0.9918. Deduction: the nonlinear
+          panel is a spot field, the vignette polynomial is phenomenological,
+          and neither image is preserved Dorudon skin.
+        evidence:
+          - {file: docs/media/dorudon_atrox_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate, fitted mode, nonlinear u, radial overlay, sweep, 8-3-0 bars", supports: true}
+          - {file: docs/media/dorudon_atrox_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640×480 growth of the fitted mode", supports: true}
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/dorudon_atrox_fossil_context.png, lines: [0, 0], note: "fossil photograph kept as anatomical context, not as the pattern target", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Holding Du fixed, Dv/Du = 8, 11.657, 13.5, 15.970, 22, 32 moves
+          lambda(k at sigma_max) through 215.4, 235.6, 243.2, 251.3, 269.3, 290.0 µm
+          and sigma_max through -0.135, ~0, 0.045, 0.093, 0.174, 0.254.
+          Both series are monotonic in the direction the dispersion relation
+          predicts. a and b are not swept. The hindlimb mode count is a
+          separate axis (8, 3, 0) and is drawn.
+        evidence:
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [401, 428], note: "diffusion_sweep holds Du and varies Dv/Du", supports: true}
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/pass2_metrics.json, lines: [41, 100], note: "six-ratio table with lambda, sigma_max, and margin", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Plate fit at k fixed by lambda = 253 µm and the measured 111 px
+          scale bar: Pearson r = 0.991801 versus 0.819761 with the Bessel
+          terms removed, RMSE = 0.015432, KS = 0.09, residual CV = 0.027.
+          Foreground fraction of the plate mask is 0.3858 against a 0.5
+          reference. The secondary radial peak is 93.24 µm against the model
+          wavelength 253 µm; those are different numbers on purpose.
+          Equal-diffusion std(u) = 3.4e-13 versus slot std(u) = 0.066.
+        evidence:
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [271, 316], note: "fit_plate_critical_mode: Pearson, RMSE, KS, residual CV", supports: true}
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [576, 631], note: "extra_measurements writes non-equal specimen references", supports: true}
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/pass2_metrics.json, lines: [204, 243], note: "recorded r, RMSE, foreground fraction, 93.24 µm vs 253 µm", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          DOIs for Turing, Murray, Kondo & Asai, Nakamasu, Gingerich, and
+          Uhen 2007 were resolved on OpenAlex. Uhen 2004 is cited by Deep Blue
+          URL because the monograph has no DOI. Both images carry SHA-256
+          digests. The fossil license is CC BY-SA 3.0 with the Commons URL.
+        evidence:
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/paper_citations.bib, lines: [1, 104], note: "bibliography including Uhen 2004 URL", supports: true}
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "OpenAlex hits, Commons fossil, collision check false", supports: true}
+          - {file: datasets/dorudon_atrox_turing_wavelength_s0/dorudon_atrox_turing_wavelength_s0_reference.json, lines: [70, 95], note: "SHA-256 of plate and fossil", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          Docstring equations match steady_state, jacobian,
+          diffusion_coefficients, and the chronoseries. The math-kg yaml
+          points at those functions and at the Lean declarations. The vignette
+          polynomial is a fit, not an equation in Turing 1952, and is labelled
+          as such in fit_plate_critical_mode.
+        evidence:
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [1, 68], note: "docstring maps each formula to the implementation", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-dorudon-atrox-turing-wavelength-s0.yaml, lines: [1, 62], note: "four laws with code_locus and lean_locus", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          --self-test passed after the sweep change (lambda identity, both
+          growth rates, Pearson r > 0.98, monotonic sweep inside pipeline_v2).
+          Seed 3171. Default invocation writes the GIF, the comparison PNG,
+          and pass2_metrics.json. No per-script lockfile beyond the repo
+          requirements.txt stack used for this run (numpy, scipy, Pillow, matplotlib).
+        evidence:
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [683, 697], note: "self_test prints lambda, margin, sigma, Pearson r", supports: true}
+          - {file: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py, lines: [715, 763], note: "pipeline_v2 assertions and the default CLI", supports: true}
+    remediation:
+      - "A second assessor from another provider has not scored this script."
+      - "a and b are fixed; only Dv/Du and the domain mode count were exercised."
+      - "The 8/3/0 hindlimb counts remain a scenario. They are not measured Dorudon bud lengths."
