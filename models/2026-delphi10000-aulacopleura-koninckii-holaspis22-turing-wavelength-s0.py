@@ -43,6 +43,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 from scipy.signal import find_peaks
+from scipy.stats import ks_2samp
 
 ROOT = Path(__file__).resolve().parent.parent
 DATASET = ROOT / "datasets" / "aulacopleura_koninckii_holaspis22_turing_wavelength_s0"
@@ -216,6 +217,47 @@ def negative_control(jac: dict[str, float], du: float) -> dict[str, float]:
     return {"std_initial": std0, "std_final": std1, "amplitude_ratio": std1 / std0}
 
 
+def diffusivity_sweep(jac: dict[str, float], du: float, dx_m: float) -> dict:
+    """Hold D_u fixed and vary r = D_v/D_u above onset.
+
+    Because g_v < 0, k_c^2 = f_u/(2 D_u) + g_v/(2 D_v) rises toward f_u/(2 D_u)
+    as D_v grows, so lambda_c shortens. The shortening is monotone for this Jacobian.
+    A claim that lambda lengthens with r would be false at fixed D_u.
+    """
+    ratios = [8.0, 12.0, 16.0, 20.0, 28.0, 40.0, 60.0]
+    rows = []
+    for r in ratios:
+        dv = r * du
+        k2 = critical_k2(jac["f_u"], jac["g_v"], du, dv)
+        lam_um = (2.0 * np.pi / np.sqrt(k2)) * dx_m * 1e6
+        sig = growth_rate(k2, jac, du, dv)
+        rows.append({"r": r, "lambda_um": float(lam_um), "sigma_peak": float(sig), "k2": float(k2)})
+    lams = [row["lambda_um"] for row in rows]
+    sigs = [row["sigma_peak"] for row in rows]
+    return {
+        "rows": rows,
+        "lambda_monotone_decreasing": bool(all(lams[i] > lams[i + 1] for i in range(len(lams) - 1))),
+        "sigma_monotone_increasing": bool(all(sigs[i] < sigs[i + 1] for i in range(len(sigs) - 1))),
+        "lambda_um_at_r8": lams[0],
+        "lambda_um_at_r60": lams[-1],
+    }
+
+
+def quadratic_ablation(jac: dict[str, float], du: float, dv: float) -> dict[str, float]:
+    """Remove the u^2 v cross-coupling. Each species then decays linearly to its source."""
+    rng = np.random.default_rng(SEED + 1)
+    h = w = 48
+    u = jac["u0"] + 0.05 * rng.standard_normal((h, w))
+    v = jac["v0"] + 0.05 * rng.standard_normal((h, w))
+    std0 = float(u.std())
+    dt = 0.004
+    for _ in range(800):
+        u = u + dt * (A_PROD - u + du * _laplacian(u))
+        v = v + dt * (B_PROD - v + dv * _laplacian(v))
+    std1 = float(u.std())
+    return {"std_initial": std0, "std_final": std1, "amplitude_ratio": float(std1 / max(std0, 1e-12))}
+
+
 def simulate_cuticle(jac: dict[str, float], du: float, dv: float, n_frames: int = N_GIF_FRAMES) -> dict:
     """Integrate the patterned state used to tile the ocular field."""
     rng = np.random.default_rng(SEED)
@@ -291,6 +333,8 @@ def run_analysis() -> dict:
     lambda_m = lam_px * diff["dx_m"]
     disp = dispersion_validation(jac, diff["D_u"], diff["D_v"])
     ctrl = negative_control(jac, diff["D_u"])
+    sweep = diffusivity_sweep(jac, diff["D_u"], diff["dx_m"])
+    ablation = quadratic_ablation(jac, diff["D_u"], diff["D_v"])
     field = simulate_cuticle(jac, diff["D_u"], diff["D_v"])
     chrono = chronoseries_delta()
     with Image.open(SPECIMEN) as im:
@@ -309,6 +353,8 @@ def run_analysis() -> dict:
         "rmse": disp["rmse"],
         "dispersion": disp,
         "control": ctrl,
+        "sweep": sweep,
+        "ablation": ablation,
         "field_frames": field["frames"],
         "field_std": field["std_final"],
         "chronoseries": chrono,
@@ -391,6 +437,58 @@ def write_gif(frames: list[Image.Image], path: Path) -> None:
     )
 
 
+def _orientation_and_radial(gray: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """12-bin Sobel orientation histogram and 24-bin radial FFT, matching the fitness crops."""
+    gx = ndi.sobel(gray, axis=1)
+    gy = ndi.sobel(gray, axis=0)
+    mag = np.hypot(gx, gy) + 1e-9
+    ang = (np.arctan2(gy, gx) + np.pi) % np.pi
+    ori, _ = np.histogram(ang, bins=12, range=(0.0, np.pi), weights=mag)
+    ori = ori / (np.sum(ori) + 1e-9)
+    win = (gray - np.mean(gray)) / (np.std(gray) + 1e-6)
+    power = np.abs(np.fft.fftshift(np.fft.fft2(win))) ** 2
+    cy, cx = win.shape[0] // 2, win.shape[1] // 2
+    yy, xx = np.ogrid[: win.shape[0], : win.shape[1]]
+    rr = np.hypot(xx - cx, yy - cy).astype(int)
+    radial = np.bincount(rr.ravel(), weights=power.ravel())[:32] / np.maximum(1, np.bincount(rr.ravel())[:32])
+    band = np.log1p(radial[1:25])
+    band = band / (np.linalg.norm(band) + 1e-9)
+    return ori, ang.ravel(), mag.ravel(), band
+
+
+def spectral_comparison(gif_path: Path) -> dict[str, float]:
+    """KS and histogram distances between the specimen and the GIF's last frame."""
+    with Image.open(SPECIMEN) as sp_im:
+        sp_rgb = np.asarray(sp_im.convert("RGB").resize((240, 180), Image.Resampling.BILINEAR), dtype=np.float64) / 255.0
+    with Image.open(gif_path) as sm_im:
+        sm_im.seek(max(0, sm_im.n_frames - 1))
+        sm_rgb = np.asarray(sm_im.convert("RGB").resize((240, 180), Image.Resampling.BILINEAR), dtype=np.float64) / 255.0
+    gray_sp = (
+        0.299 * sp_rgb[14:166, 14:226, 0] + 0.587 * sp_rgb[14:166, 14:226, 1] + 0.114 * sp_rgb[14:166, 14:226, 2]
+    )
+    gray_sm = (
+        0.299 * sm_rgb[22:158, 14:226, 0] + 0.587 * sm_rgb[22:158, 14:226, 1] + 0.114 * sm_rgb[22:158, 14:226, 2]
+    )
+    sp_ori, sp_ang, sp_mag, sp_fft = _orientation_and_radial(gray_sp)
+    sm_ori, sm_ang, sm_mag, sm_fft = _orientation_and_radial(gray_sm)
+    rng = np.random.default_rng(SEED)
+    sp_p = sp_mag / np.sum(sp_mag)
+    sm_p = sm_mag / np.sum(sm_mag)
+    sp_draw = sp_ang[rng.choice(sp_ang.size, size=4000, p=sp_p)]
+    sm_draw = sm_ang[rng.choice(sm_ang.size, size=4000, p=sm_p)]
+    ks = ks_2samp(sp_draw, sm_draw)
+    ori_l1 = float(0.5 * np.sum(np.abs(sp_ori - sm_ori)))
+    fft_cos = float(np.clip(np.dot(sp_fft, sm_fft), 0.0, 1.0))
+    return {
+        "ks_statistic": float(ks.statistic),
+        "ks_pvalue": float(ks.pvalue),
+        "orientation_l1": ori_l1,
+        "radial_fft_cosine": fft_cos,
+        "specimen_orientation": [float(v) for v in sp_ori],
+        "simulation_orientation": [float(v) for v in sm_ori],
+    }
+
+
 def write_comparison_png(res: dict, gif_path: Path, path: Path) -> None:
     specimen = res["specimen_rgb"].astype(np.uint8)
     with Image.open(gif_path) as im:
@@ -398,13 +496,24 @@ def write_comparison_png(res: dict, gif_path: Path, path: Path) -> None:
         last = np.asarray(im.convert("RGB"))
     disp = res["dispersion"]
     chrono = res["chronoseries"]
-    fig, axes = plt.subplots(2, 2, figsize=(11.2, 8.4), dpi=120)
+    sweep = res["sweep"]
+    spectra = res.get("spectra") or spectral_comparison(gif_path)
+    fig, axes = plt.subplots(2, 3, figsize=(14.2, 8.2), dpi=110)
     axes[0, 0].imshow(specimen)
     axes[0, 0].set_title("Specimen · holaspis22 · 428.1 Ma")
     axes[0, 0].axis("off")
     axes[0, 1].imshow(last)
     axes[0, 1].set_title("Adult frame · 22 segments + ocular Turing field")
     axes[0, 1].axis("off")
+    rs = [row["r"] for row in sweep["rows"]]
+    lams = [row["lambda_um"] for row in sweep["rows"]]
+    axes[0, 2].plot(rs, lams, "o-", color="#9a3412")
+    axes[0, 2].axhline(15.14, color="#444444", lw=0.8, ls="--")
+    axes[0, 2].set_xlabel("r = D_v / D_u  (D_u fixed)")
+    axes[0, 2].set_ylabel("analytical λ_c (µm)")
+    axes[0, 2].set_title(
+        f"Sweep: λ falls {sweep['lambda_um_at_r8']:.2f}→{sweep['lambda_um_at_r60']:.2f} µm"
+    )
     x = np.asarray(disp["sigma_analytical"], dtype=float)
     y = np.asarray(disp["sigma_numerical"], dtype=float)
     axes[1, 0].plot(x, y, "o", color="#9a3412", label="modes")
@@ -412,29 +521,38 @@ def write_comparison_png(res: dict, gif_path: Path, path: Path) -> None:
     axes[1, 0].plot(lim, lim, color="#444444", lw=1, label="identity")
     axes[1, 0].set_xlim(lim)
     axes[1, 0].set_ylim(lim)
-    axes[1, 0].set_xlabel("analytical σ(k) (discrete Laplacian)")
+    axes[1, 0].set_xlabel("analytical σ(k)")
     axes[1, 0].set_ylabel("numerical σ(k)")
-    axes[1, 0].set_title(f"Dispersion fit  r = {res['pearson_r']:.4f}   RMSE = {res['rmse']:.4f}")
+    axes[1, 0].set_title(f"Pearson r = {res['pearson_r']:.4f}    RMSE = {res['rmse']:.4f}")
     axes[1, 0].legend(frameon=False, fontsize=8)
     stages = np.arange(0, 23)
-    # Shared early length 1. Meraspid Dyar until each morphotype's release stage, then holaspid Dyar.
+
     def growth(n_release: int) -> np.ndarray:
         length = np.ones_like(stages, dtype=float)
         for s in range(1, len(stages)):
             ratio = DYAR_MERASPID if s <= n_release else DYAR_HOLASPID
             length[s] = length[s - 1] * ratio
         return length
-    axes[1, 1].plot(stages, growth(N_PREDECESSOR), color="#0369a1", label="t18 entry at s18 (428.3 Ma)")
-    axes[1, 1].plot(stages, growth(N_THORACIC), color="#9a3412", label="t22 entry at s22 (428.1 Ma)")
+
+    axes[1, 1].plot(stages, growth(N_PREDECESSOR), color="#0369a1", label="t18 (428.3 Ma)")
+    axes[1, 1].plot(stages, growth(N_THORACIC), color="#9a3412", label="t22 (428.1 Ma)")
     axes[1, 1].axvline(18, color="#0369a1", ls="--", lw=0.8)
     axes[1, 1].axvline(22, color="#9a3412", ls="--", lw=0.8)
     axes[1, 1].set_xlabel("post-protaspid stage")
     axes[1, 1].set_ylabel("relative sagittal length")
     axes[1, 1].set_title(
-        f"λ_c = 15 µm held fixed · size ratio {chrono['size_ratio_t22_over_t18']:.3f} · "
-        f"tiles/tergite ×{chrono['wavelengths_per_tergite_ratio']:.3f}"
+        f"tiles/tergite ×{chrono['wavelengths_per_tergite_ratio']:.3f} at 15 µm"
     )
     axes[1, 1].legend(frameon=False, fontsize=8)
+    bins = np.arange(12)
+    axes[1, 2].plot(bins, spectra["specimen_orientation"], color="#0369a1", label="specimen")
+    axes[1, 2].plot(bins, spectra["simulation_orientation"], color="#9a3412", label="GIF last frame")
+    axes[1, 2].set_xlabel("Sobel orientation bin (0–π)")
+    axes[1, 2].set_ylabel("weighted mass")
+    axes[1, 2].set_title(
+        f"KS = {spectra['ks_statistic']:.3f}    FFT cos = {spectra['radial_fft_cosine']:.3f}"
+    )
+    axes[1, 2].legend(frameon=False, fontsize=8)
     fig.suptitle(
         "Aulacopleura koninckii holaspis22 · Turing k_c at 15 µm · Wenlock 428.1 Ma",
         fontsize=12,
@@ -475,6 +593,8 @@ def render_outputs() -> dict:
     frames = build_growth_frames(res["specimen_rgb"], res["field_frames"])
     write_gif(frames, OUT_GIF)
     gif_score = score_gif(OUT_GIF)
+    spectra = spectral_comparison(OUT_GIF)
+    res["spectra"] = spectra
     write_comparison_png(res, OUT_GIF, OUT_PNG)
     payload = {
         "pearson_r": res["pearson_r"],
@@ -486,6 +606,14 @@ def render_outputs() -> dict:
         "geological_age_ma": AGE_MA,
         "n_thoracic": N_THORACIC,
         "control_amplitude_ratio": res["control"]["amplitude_ratio"],
+        "ablation_amplitude_ratio": res["ablation"]["amplitude_ratio"],
+        "sweep": res["sweep"],
+        "spectra": {
+            "ks_statistic": spectra["ks_statistic"],
+            "ks_pvalue": spectra["ks_pvalue"],
+            "orientation_l1": spectra["orientation_l1"],
+            "radial_fft_cosine": spectra["radial_fft_cosine"],
+        },
         "field_std": res["field_std"],
         "chronoseries": res["chronoseries"],
         "rings": res["rings"],
@@ -505,6 +633,9 @@ def measure_morphoeval() -> list[dict]:
     chrono = res["chronoseries"]
     rings = res["rings"]
     ctrl = res["control"]
+    sweep = res["sweep"]
+    ablation = res["ablation"]
+    spectra = spectral_comparison(OUT_GIF) if OUT_GIF.exists() else None
     rows = [
         {
             "name": "Pearson r of numerical vs analytical discrete dispersion growth rates",
@@ -566,7 +697,44 @@ def measure_morphoeval() -> list[dict]:
             "note": f"period {rings['period_px']:.0f} px over {rings['field_span_px']:.0f} px; peak count {rings['peak_count']:.0f}",
             "derived_from": "output_pixels",
         },
+        {
+            "name": "analytical lambda_c at diffusivity ratio 60 versus ratio 8",
+            "value": round(float(sweep["lambda_um_at_r60"]), 4),
+            "unit": "µm",
+            "method": "k_c^2 = (D_v f_u + D_u g_v)/(2 D_u D_v) with D_u fixed and r = D_v/D_u in {8,12,16,20,28,40,60}",
+            "reference_value": round(float(sweep["lambda_um_at_r8"]), 4),
+            "source": "Turing 1952 dispersion peak; g_v < 0 so lambda shortens as D_v grows",
+            "note": f"monotone decreasing = {sweep['lambda_monotone_decreasing']}; peak growth rate monotone increasing = {sweep['sigma_monotone_increasing']}",
+            "derived_from": "script",
+        },
+        {
+            "name": "quadratic-coupling ablation amplitude ratio",
+            "value": round(float(ablation["amplitude_ratio"]), 5),
+            "unit": "std_final / std_initial",
+            "method": "u^2 v cross-term removed; each morphogen decays as source minus concentration plus its own diffusion",
+            "reference_value": round(float(ctrl["amplitude_ratio"]), 5),
+            "source": "ablation against the equal-diffusivity control, which still contains the quadratic coupling",
+            "note": f"ablation final std {ablation['std_final']:.5f}; equal-diffusion control ratio {ctrl['amplitude_ratio']:.5f}",
+            "derived_from": "script",
+        },
     ]
+    if spectra is not None:
+        rows.append(
+            {
+                "name": "specimen image versus GIF Sobel-orientation KS statistic",
+                "value": round(float(spectra["ks_statistic"]), 5),
+                "unit": "KS distance",
+                "method": "two-sample KS on 4000 magnitude-weighted Sobel angles from the fitness-test crops (12-bin histogram also stored)",
+                "reference_value": 0.0,
+                "source": "pinned holaspis22 photograph versus the last frame of the growth GIF",
+                "note": (
+                    f"orientation L1 = {spectra['orientation_l1']:.4f}; "
+                    f"24-bin radial FFT cosine = {spectra['radial_fft_cosine']:.4f}; "
+                    f"KS p = {spectra['ks_pvalue']:.3g}"
+                ),
+                "derived_from": "output_pixels",
+            }
+        )
     return rows
 
 
@@ -577,6 +745,10 @@ def self_test() -> dict:
     assert res["geological_age_ma"] == 428.1
     assert res["n_thoracic"] == 22
     assert res["control"]["amplitude_ratio"] < 0.25, res["control"]
+    assert res["ablation"]["amplitude_ratio"] < 0.25, res["ablation"]
+    assert res["sweep"]["lambda_monotone_decreasing"]
+    assert res["sweep"]["sigma_monotone_increasing"]
+    assert res["sweep"]["lambda_um_at_r60"] < res["sweep"]["lambda_um_at_r8"]
     chrono = res["chronoseries"]
     assert chrono["size_ratio_t22_over_t18"] > chrono["segment_count_ratio"]
     assert chrono["wavelengths_per_tergite_ratio"] > 1.0
@@ -595,6 +767,9 @@ def main() -> int:
             f"r={res['pearson_r']:.5f} RMSE={res['rmse']:.5f} "
             f"lambda={res['lambda_c_m']:.6e} m age={res['geological_age_ma']} Ma "
             f"control_ratio={res['control']['amplitude_ratio']:.4f} "
+            f"ablation_ratio={res['ablation']['amplitude_ratio']:.4f} "
+            f"lambda_r8={res['sweep']['lambda_um_at_r8']:.3f} "
+            f"lambda_r60={res['sweep']['lambda_um_at_r60']:.3f} "
             f"rings={res['rings']['ring_count']:.2f}"
         )
         return 0
