@@ -1,0 +1,327 @@
+{
+  "scout": "scout-064",
+  "ground": "predictions",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "id": "ZF-CLK-01-SIM-TAILBUD",
+      "prediction_id": "ZF-CLK-01",
+      "title": "Zebrafish clock–wavefront S∝T: paired (period, somite length) series from tailbud clock-arrest sweeps",
+      "gap": "predictions/resolutions/zebrafish.json records ZF-CLK-01 as partially_resolved because no tabulated in-vivo pairs (measured T change + measured S change at controlled wavefront speed) exist to test the registered x0.80/x0.90/x1.10/x1.20 multipliers within 5 percentage points.",
+      "done": "A new JSON artifact morphoeval/scout_runs/scout-064-zf-clk-tailbud-sweep.json lists ≥4 rows with fixed elongation speed (same sim_elongation_speed across rows) and clock periods T∈{0.8,0.9,1.0,1.1,1.2}×T_WT; each row has somite_length_um from solve_segmentation_clock_arrest. Pass iff max_i | (S_i/S_WT) − (T_i/T_WT) | ≤ 0.05.",
+      "tool_route": "python3 models/2022-tailbud-neuromesodermal-jamming.py --self-test; then a one-shot driver (new file under morphoeval/scout_runs/) calling solve_segmentation_clock_arrest(ap, sim_elongation_speed) while sweeping --clock-period (default T_CLOCK_MIN=25.0 min) at fixed --phi-ecs-mpz/--phi-ecs-apsm WT presets from the self-test block.",
+      "deciding_data": "In-repo: models/2022-tailbud-neuromesodermal-jamming.py Pass-3 clock arrest (checks 10–11 in --self-test) and datasets referenced by that script's SHA-256 pins. Biological ground truth for the registered multipliers remains published zebrafish somitogenesis literature (not in repo as a single table).",
+      "prior_attempts": "predictions/resolutions/zebrafish.json (2026-10-26 OpenAlex literature pass): bound the proportional architecture but did not extract paired T+S; no prior simulation sweep artifact registered for ZF-CLK-01.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Tailbud jamming script already asserts S=(v+u)·T in --self-test and exposes --clock-period for deterministic sweeps."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "WT PSM/jamming reference landmarks and clock constants ship with the model; only the paired biology table is external."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done is a numeric max deviation on emitted JSON rows with no scorer discretion."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Self-test plus a small parameter grid finishes in minutes on the repo Python stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as new files under morphoeval/scout_runs/ only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sweep loop after a green --self-test yields the deciding JSON in a single sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Resolution pass did not attempt this simulation export route."
+        }
+      }
+    },
+    {
+      "id": "ZF-CLK-01-SIM-RIEDEL",
+      "prediction_id": "ZF-CLK-01",
+      "title": "Zebrafish S∝T: DAPT clock-period lengthening vs emergent somite spacing in the Riedel–Kruse lattice",
+      "gap": "Same missing paired quantitative series as ZF-CLK-01; the resolution batch cited Herrgen et al. (2010) period lengthening qualitatively but exported no (T,S) pairs at fixed wavefront speed.",
+      "done": "From simulate_delayed_kuramoto_psm_lattice WT vs continuous-DAPT (s_in=0,s_out=22) runs, write morphoeval/scout_runs/scout-064-zf-clk-riedel-dapt.json with fields mean_segmentation_period_min_WT, mean_segmentation_period_min_DAPT, specimen_mean_spacing_px from segment_zebrafish_psm_specimen(), and ratio_obs = (period_DAPT/period_WT). Pass iff ratio_obs∈[0.8,1.25] AND the model's implied spacing ratio (spacing∝period at fixed advection) matches ratio_obs within 5pp when spacing is taken from bilateral_mean_spacing_px rescaled by 1/ratio_obs.",
+      "tool_route": "python3 models/2006-riedel-delta-notch-phase-synchrony.py --self-test (uses built-in DAPT vs WT period check); extend with a tiny morphoeval/scout_runs/scout-064_riedel_clk_export.py calling simulate_delayed_kuramoto_psm_lattice(...) and segment_zebrafish_psm_specimen().",
+      "deciding_data": "In-repo: datasets/delta_notch_phase_synchrony/zebrafish_psm_synchrony_specimen.jpg plus Riedel-Kruse regime tables embedded in the model reference JSON; DAPT kinetics are model parameters, not wet-lab remeasured.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json partial for ZF-CLK-01; 2006-riedel model audited for ALD/PRP (morphoeval kg) but not wired to the registered prediction multipliers.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "--self-test already compares DAPT vs WT mean_segmentation_period_min; lattice advection fixes effective wavefront speed."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Specimen somite spacing and DAPT regime observations are pinned in the model dataset."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Ratio bands are numeric; spacing linkage assumes fixed advection (stated in the artifact header)."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Single-seed lattice runs plus segmentation are sub-hour."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New morphoeval/scout_runs JSON + optional driver only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One WT + one DAPT simulation after self-test."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of exporting Riedel (T,S) pairs for ZF-CLK-01."
+        }
+      }
+    },
+    {
+      "id": "XT-CLK-01-SIM-LAUSCHKE",
+      "prediction_id": "XT-CLK-01",
+      "title": "Xenopus clock–wavefront replication: proportional segment scaling under T_osc sweeps in ex-vivo mPSM model",
+      "gap": "predictions/resolutions/xenopus.json mirrors ZF-CLK-01: framework bound, but no Xenopus paired period+somite-length series under controlled wavefront speed.",
+      "done": "Using models/2014-lauschke-ex-vivo-scaling-mPSM.py, sweep central_clock_period_T_osc_min over {0.8,0.9,1.0,1.1,1.2}×140 with tau_lambda=T_osc/4; emit morphoeval/scout_runs/scout-064-xt-clk-lauschke-sweep.json with segment_widths_um means. Pass iff emergent alpha drift ≤0.02 across the sweep AND each S_mean scales with T within 5pp relative to the T=1.0 row (cross-species template test for XT-CLK-01, pre-registered before any Xenopus literature digitization).",
+      "tool_route": "python3 models/2014-lauschke-ex-vivo-scaling-mPSM.py --self-test; call evaluate_adaptation_sweep() / simulate_wavelength_adaptation() from a new morphoeval/scout_runs/scout-064_lauschke_tosc_sweep.py with overridden T_osc.",
+      "deciding_data": "In-repo: datasets/ex_vivo_scaling_mPSM/ex_vivo_scaling_mPSM_reference.json (Lauschke 2013 Nature scaling laws). Xenopus tropicalis somite measurements remain external (Xenbase/literature) for final biology scoring.",
+      "prior_attempts": "predictions/resolutions/xenopus.json (2026-10-26): OpenAlex pass bound applicability; no simulation-based proportional-scaling export.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Lauschke model implements S_n=α·R(t_n) with explicit T_osc and adaptation sweeps."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Mouse mPSM reference parameters in-repo; Xenopus numbers still external for confirmatory merge."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Alpha drift and proportional scaling are numeric thresholds on emitted JSON."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Eight-cycle explant simulations across five periods fit in one session."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout_runs driver + JSON only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Requires a short custom sweep script beyond --self-test alone."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt logged for Lauschke sweeps tied to XT-CLK-01."
+        }
+      }
+    },
+    {
+      "id": "ZF-VTX-01-SIM-VERTEX-GLASS",
+      "prediction_id": "ZF-VTX-01",
+      "title": "Vertex-packing p0*=3.813: locate G→0 transition in Bi (2015) vertex-glass sweep as quantitative surrogate series",
+      "gap": "predictions/resolutions/zebrafish.json: invariant 3.813 known, but no zebrafish EVL/epiboly measured shape-index transition series in repo or as a public table.",
+      "done": "Run run_p0_phase_sweep() and spv_fire_minimize() from models/2015-bi-vertex-glass-jamming.py; write morphoeval/scout_runs/scout-064-zf-vtx-p0-sweep.json listing (p0, mean_q, delta_e_T1, shear_modulus_G) for the eight reference p0 points in datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json. Pass iff linear interpolation finds p0_crit with G crossing 0 inside [3.76,3.87] AND |p0_crit−3.813|≤0.05.",
+      "tool_route": "python3 models/2015-bi-vertex-glass-jamming.py --self-test; python3 -c \"from models import ...\" or morphoeval/scout_runs/scout-064_vertex_p0_export.py invoking run_p0_phase_sweep(seed=2015).",
+      "deciding_data": "In-repo: datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json phase_sweep_reference_bi_2015; zebrafish EVL measurements still absent (future vision-segmentation task on published epiboly images).",
+      "prior_attempts": "predictions/resolutions/zebrafish.json (2026-10-26): literature search found no zebrafish shape-index dataset; simulation surrogate not yet exported.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Vertex-glass model ships run_p0_phase_sweep and self-test pins at P0_STAR=3.813."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Full p0 phase series and specimen segmentation inputs are committed under datasets/vertex_glass_jamming/."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "p0_crit band check is a deterministic interpolation on emitted metrics."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "FIRE minimization sweep across eight p0 values is moderate CPU but hours-scale on one VM."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New JSON under morphoeval/scout_runs/ only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Self-test is fast; full sweep export may need one unattended run."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Surrogate simulation route not previously attempted for ZF-VTX-01."
+        }
+      }
+    },
+    {
+      "id": "ZF-VTX-01-SIM-TAILBUD-PHI",
+      "prediction_id": "ZF-VTX-01",
+      "title": "Bridge EVL jamming claim: map tailbud φ_ecs jamming crossover to registered p0* band",
+      "gap": "Partial resolution lacks any zebrafish epithelial shape-index time series; tailbud model outputs φ_ecs and x_jam but not p0.",
+      "done": "From models/2022-tailbud-neuromesodermal-jamming.py --self-test output fields x_jam_um and regional phi_ecs_emp, produce morphoeval/scout_runs/scout-064-zf-vtx-phi-bridge.json proposing a monotone calibration φ→p0 using the vertex-glass reference sweep as anchor. Pass iff calibrated p0 at the jamming front falls in [3.76,3.87] when φ is taken from the MPZ→A-PSM step across x_jam (calibration coefficients fixed before reading any EVL image data).",
+      "tool_route": "python3 models/2022-tailbud-neuromesodermal-jamming.py --self-test; combine with datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json via a new morphoeval/scout_runs/scout-064_phi_to_p0_bridge.py (no edits to held-out EVL micrographs).",
+      "deciding_data": "In-repo: Mongera (2018) tailbud reference embedded in 2022-tailbud model plus vertex-glass jamming series; EVL epiboly micrographs not committed for this prediction.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json partial; morphoeval/problem_scouts/leaderboard.json lists ZF-VTX-01 with vision-forward tool_fit—simulation bridge not scored yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "Both models run as-is, but φ→p0 mapping requires a new pre-registered calibration file."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "Tailbud and vertex-glass references in-repo; EVL shape-index series still missing."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Done hinges on stated calibration locked before EVL data—scorer verifies coefficient hash + band check."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Two self-tests plus deterministic JSON merge."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout_runs artifacts only."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Requires calibration design step before the numeric pass/fail."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Leaderboard already tracks ZF-VTX-01; simulation bridge is additive, not previously refuted."
+        }
+      }
+    },
+    {
+      "id": "DM-MUR-NEG-01-SIM-MURRAY-SWEEP",
+      "prediction_id": "DM-MUR-NEG-01",
+      "title": "Murray-law discriminator: fit branching exponent on FGF-like vs Murray-optimal synthetic trees",
+      "gap": "predictions/resolutions/drosophila.json: negative prediction bounded using general insect tracheal literature, but no Drosophila parent/daughter diameter table to fit exponent against the registered [2.8,3.2] band.",
+      "done": "Generate two in-silico bifurcation trees in-repo: (A) models/1976-honda-dichotomous-tree-branching.py grow_honda_1971_3d_tree with delta_pipe=3.0 (Murray cube law); (B) same with delta_pipe≠3 or a tip-splitting tree from models/2008-metzger-lung-stereotyped-branching.py without Murray radius assignment. Export parent/child radii to morphoeval/scout_runs/scout-064-dm-mur-synthetic.csv. Pass iff OLS exponent for tree B lies outside [2.8,3.2] with 95% CI not containing 3.0 while tree A CI contains 3.0—demonstrating the registered test would decide given tabulated diameters.",
+      "tool_route": "python3 models/1976-honda-dichotomous-tree-branching.py --self-test; python3 models/2008-metzger-lung-stereotyped-branching.py --self-test; morphoeval/scout_runs/scout-064_murray_fit_synthetic.py fits r_parent^γ=Σ r_child^γ across branch orders.",
+      "deciding_data": "Synthetic radii in-repo from model outputs; real Drosophila tracheal morphometry still external (PubMed/OpenAlex sources cited in resolutions/drosophila.json).",
+      "prior_attempts": "predictions/resolutions/drosophila.json (2026-10-26): literature bound only; no diameter extraction or simulation discriminator artifact.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Honda and Metzger scripts expose Murray-governed radii and pass self-tests; fits exponent without wet lab."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Deciding evidence for DM-MUR-NEG-01 biology remains missing; only synthetic stand-ins in-repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "CI band exclusion for tree B and inclusion for tree A is machine-checkable on CSV."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Tree generation and OLS fit are lightweight relative to full Metzger lung PDE."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout_runs CSV/JSON only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One sitting after both self-tests pass."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Synthetic Murray discriminator not previously attempted for this prediction."
+        }
+      }
+    },
+    {
+      "id": "ZF-HH-01-SIM-GRADIENT-ABLATION",
+      "prediction_id": "ZF-HH-01",
+      "title": "Shh lipidation gradient shape (ptc domain expansion + peak reduction): simulation gap audit",
+      "gap": "predictions/resolutions/zebrafish.json: lipidation fact confirmed, but paired ptc1/ptc2 domain measurements for lipidation-perturbed vs wild-type zebrafish Shh are missing—the registered quantitative gradient-shape claim.",
+      "done": "N/A for simulation lens until a repo morphogen script exposes a tethered-diffusion coefficient sweep producing peak×width tradeoff. Scorer records BLOCKED_FOR_SIMULATION unless a new ablation flag (e.g., D_eff multiplier 0.2–1.0) exists and morphoeval/scout_runs/scout-064-zf-hh-gradient-sweep.json shows distal domain width increasing ≥15% while peak decreases ≥15% under lipidation-off vs on—matching ZF-HH-01 direction.",
+      "tool_route": "No existing --self-test model in repo implements Shh dual-lipidation tethering ablation (2014-soroldoni danio morphogen-condensation slots are empirical-series correlators only). Closest partial: python3 models/2012-baker-fgf-wnt-bistable-wavefront.py --self-test for unrelated morphogen front sharpening. Recommended lens: literature (scout_literature.py) or vision on published ptc in situ panels.",
+      "deciding_data": "Protein state in datasets/danio_rerio_turing_wavelength/protein_states.json (in-repo); deciding ptc domain geometry requires external zebrafish neural tube/otic assay figures or new segmentation (not in repo).",
+      "prior_attempts": "predictions/resolutions/zebrafish.json (2026-10-26): OpenAlex pass confirmed lipidation requirement (doi:10.1039/C4SC01600A) but not gradient-shape pairs; harder_than_predicted partial.",
+      "factors": {
+        "tool_fit": {
+          "score": 4,
+          "why": "No runnable Shh lipidation ablation sweep in model scripts; thin empirical-series wrappers cannot decide gradient shape."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "UniProt/sidecar lipidation state in-repo; ptc domain quant series absent."
+        },
+        "falsifiable_done": {
+          "score": 11,
+          "why": "Directional peak/width thresholds are specifiable once a model exists."
+        },
+        "compute_in_repo": {
+          "score": 5,
+          "why": "Would require new PDE/tether implementation—not present."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Would still close as new scout_runs + model patch, but patch violates this scout's one-file deliverable."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Blocked until a morphogen simulation with ablation lands."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Simulation route not attempted (literature partial only)."
+        }
+      }
+    },
+    {
+      "id": "DM-DPP-01-SIM-LENGTH-SCALE",
+      "prediction_id": "DM-DPP-01",
+      "title": "DM-DPP-01 quantitative follow-up: mature vs precursor Dpp length-scale ratio in 1D RD morphogen solver",
+      "gap": "Registry confirmed species annotation in-repo; no registered simulation artifact quantifies the ~22% sqrt(D/k) length-scale underestimate when using 588 aa precursor diffusion instead of 132 aa mature chain (size prior (132/588)^(1/3)=0.61).",
+      "done": "Using models/1952-turing-morpho.py 1D activator–inhibitor solver (or a new morphoeval/scout_runs/scout-064_dpp_mw_sweep.py wrapper), sweep D_act by factor (132/588)^(1/3) holding k fixed; write JSON with lambda_high/lambda_low. Pass iff ratio equals 0.780±0.02 matching prediction_registry DM-DPP-01 quantitative_expectation.",
+      "tool_route": "python3 models/1952-turing-morpho.py --self-test; one-dimensional wavelength extraction after scaling diffusion coefficient per MW^(-1/3) prior from sequences/sequence_links.json drosophila_melanogaster dpp.",
+      "deciding_data": "In-repo: UniProt P07713 chain annotation already used in predictions/resolutions/inrepo-quick.json; Turing solver parameters in 1952-turing-morpho.py.",
+      "prior_attempts": "predictions/resolutions/inrepo-quick.json confirmed annotation arithmetically; no simulation sweep logged.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "1952 Turing script has self-test and 1D RD mode suitable for sqrt(D/k) scaling checks."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Mature vs precursor lengths and confirmation evidence already in repo sidecars."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Fixed numeric ratio 0.780±0.02 on emitted wavelengths."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Short 1D sweeps after self-test."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout_runs JSON only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single sitting once wrapper written."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Simulation quantification not previously attempted for DM-DPP-01."
+        }
+      }
+    }
+  ]
+}
