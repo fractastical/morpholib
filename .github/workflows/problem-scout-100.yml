@@ -50,7 +50,7 @@ jobs:
           if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS+=("--dry-run"); fi
           python3 morphoeval/problem_scout_100.py "${ARGS[@]}"
       - name: Commit dispatch records
-        if: ${{ inputs.dry_run != true }}
+        if: ${{ always() && inputs.dry_run != true }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
