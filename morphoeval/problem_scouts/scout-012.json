@@ -1,0 +1,311 @@
+{
+  "scout": "scout-012",
+  "ground": "thompson",
+  "lens": "measure",
+  "candidates": [
+    {
+      "title": "Thompson Scarus audit: rendered evidence missing from checkout breaks the measure gate",
+      "gap": "morphoeval/audits/2026-10-17-thompson-audit.yaml pins thompson_scarus_pomacanthus.png, thompson_scarus_pomacanthus_outlines.png, and thompson_outline_metrics.csv as morphometric evidence, but a clean clone (including this cloud VM) often lacks those bytes; verify_integrity.py then reports missing evidence files and measure_outputs.py cannot re-derive IoU or landmark fits.",
+      "done": "After running thompson/1917-thompson-scarus-pomacanthus.py at the audit checkpoint commit with photograph cache available, python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-thompson-audit.yaml exits 0 with missing: [] and at least 20 thompson-scarus-pomacanthus measurements; python3 morphoeval/verify_integrity.py --audit morphoeval/audits/2026-10-17-thompson-audit.yaml exits 0.",
+      "tool_route": "python3 thompson/1917-thompson-scarus-pomacanthus.py --no-scan (or full render at commit 232e8f8); python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-thompson-audit.yaml; python3 morphoeval/verify_integrity.py --audit morphoeval/audits/2026-10-17-thompson-audit.yaml",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-17-thompson-audit.yaml, morphoeval/audits/2026-10-17-thompson-audit.measurements.yaml (reference sidecar), datasets/thompson/trimmed_tps_Claverie2014.csv, thompson/1917-thompson-scarus-pomacanthus.py; Wikimedia Commons photographs SHA-256-pinned in script (may require .thompson_cache/ fetch).",
+      "prior_attempts": "Claude Fable 5.1 (2026-10-17) scored audit 76.6/100 assuming outputs at commit 232e8f8; no automated CI step currently fails when PNG/CSV outputs are absent from the tree.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "measure_outputs.py and verify_integrity.py are the named audit measurement and evidence-existence gates and run directly on the Thompson audit YAML."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Landmark table and audit metadata are vendored; only the two Commons photos may need a one-time cache fetch already supported by the script."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Pass/fail is exit codes plus missing: [] and a minimum measurement count, with no subjective rubric."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Single-script re-render plus measure_outputs is minutes on CPU once photos are cached."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Verdict can be recorded in new scout artifacts; optional output regeneration stays untracked or uses new pin files without editing main."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One command chain in a single agent loop once dependencies (Pillow) and cache are present."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted the measure route; the gap is environmental absence of rendered files, not a failed hypothesis."
+        }
+      }
+    },
+    {
+      "title": "Dual-rasterizer silhouette IoU contract (900px vs 1000px) for the Scarus→Pomacanthus negative result",
+      "gap": "docs/THOMPSON_METHODS.md states the sidecar must independently re-rasterize silhouettes (matplotlib Path on 900×900 vs skimage on 1000×1000) with |ΔIoU|≤10⁻⁴, but nothing in CI re-runs that check after Python/scikit-image upgrades or sidecar edits.",
+      "done": "Fresh measure_outputs.py run reports, for each of similarity/affine/moebius/coaxial/tps silhouette IoU rows, |value − reference_value| ≤ 1e-4 where reference_value is the script rasterizer; additionally similarity IoU value equals thompson_silhouette_area_summary.json unwarped_iou within 0.001.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-thompson-audit.yaml; compare outputs.measurements.thompson-scarus-pomacanthus IoU rows to committed sidecar and thompson/thompson_silhouette_area_summary.json",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-17-thompson-audit.measurements.yaml, thompson_silhouette_area_summary.json, thompson_rigor_stress_tests.json (unwarped_iou 0.662).",
+      "prior_attempts": "2026-10-17 audit narrative and sidecar already record agreement to 0.0001; no continuous regression test enforces it.",
+      "factors": {
+        "tool_fit": {
+          "score": 25,
+          "why": "The independent IoU re-rasterization is implemented inside measure_thompson_outlines in measure_outputs.py exactly for this audit sim id."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Committed sidecar and summary JSON already hold the reference IoU triple; re-measure needs only rendered outlines on disk."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Numeric tolerance checks on five deformation families are machine-scorable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Dominated by outline render + point-in-polygon on 900² grid, sub-hour."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Scoring script can live in a new file; updating the sidecar touches a tracked file unless verdict-only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single measure_outputs invocation once outputs exist."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route is the established anti-cheat design, not a superseded hypothesis test."
+        }
+      }
+    },
+    {
+      "title": "Claim T1917-047 (Chaetodon intra-family coaxial circles) vs sidecar median explained variance",
+      "gap": "THOMPSON_1917_CLAIM_INVENTORY.md marks T1917-047 DONE_REPO with median ~35% explained share for Scarus→Chaetodon pairs, but the inventory is not mechanically tied to the 2026-10-17 measurements sidecar or to thompson/thompson_1917_claims.json on every commit.",
+      "done": "measure_outputs.py remeasured field 'Scarus -> Chaetodon spp., median explained by oblique coaxial circles' lies within 0.05 percentage points of morphoeval/audits/2026-10-17-thompson-audit.measurements.yaml and within 0.1 pp of the numeric verdict stored for T1917-047 in thompson/thompson_1917_claims.json.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-thompson-audit.yaml; python3 -c \"import json,yaml; ...\" (or a new zero-conflict diff script) comparing Chaetodon median percent across sidecar, claims JSON, and claim inventory",
+      "deciding_data": "In repo: thompson/thompson_1917_claims.json, docs/THOMPSON_1917_CLAIM_INVENTORY.md, datasets/thompson/trimmed_tps_Claverie2014.csv.",
+      "prior_attempts": "Claude Fable 2026-10-17 audit embedded the 35.12% median in the sidecar; build_1917_claim_inventory.py generated the inventory row separately.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "measure_thompson_fish() explicitly computes the Chaetodon median explained-share statistic named in the claim."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All landmark and claim-registry inputs are already vendored in the repository."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Tolerance on a single scalar median percent is objectively checkable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Landmark-only fit over 791 species completes in seconds without wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Pure re-measurement and a new diff report file; no edits to claims registry required for the verdict."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "One measure_outputs run plus JSON/YAML parse."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Claim marked DONE_REPO but cross-artifact drift was never refuted as impossible."
+        }
+      }
+    },
+    {
+      "title": "Portfolio residue figures (Leporidae, Vespinae): byte fingerprints vs published clade metrics",
+      "gap": "docs/portfolio/fig_leporidae_skulls.png and fig_vespinae_wings.png encode headline numbers (51.1% T7 share, 0/3 and 0/7 hypotheses, LOO ratios) but no MorphoEval audit lists these PNGs, so measure_outputs.py never fingerprints them and figure regeneration cannot be detected against thompson/portfolio/results/*.json.",
+      "done": "A new zero-conflict audit YAML (new file only) lists each portfolio figure as a simulation output; measure_outputs.py records sha256/width/height; a new pin manifest records expected hashes; pass requires hashes match committed PNGs AND thompson/portfolio/results/leporidae_skulls.json variance.thompson7_all and vespinae_wings.json variance.thompson7 equal docs/portfolio/*.md table values within 1e-4 relative.",
+      "tool_route": "Create morphoeval/audits/2026-10-27-thompson-portfolio-figures-audit.yaml (new); python3 morphoeval/measure_outputs.py <that-audit>; cross-check JSON fields cited in docs/portfolio/leporidae_skulls.md and vespinae_wings.md",
+      "deciding_data": "In repo: docs/portfolio/fig_*.png, thompson/portfolio/results/leporidae_skulls.json, thompson/portfolio/results/vespinae_wings.json, docs/portfolio/leporidae_skulls.md, docs/portfolio/vespinae_wings.md.",
+      "prior_attempts": "thompson/portfolio/summarise_portfolio.py syncs JSON→PORTFOLIO_STATUS.md but does not hash figures; OP-10 (open-problems.json) notes Leporidae 0/3 and Vespinae 0/7 pre-venation failures with partial venation follow-up (7/8 D hypotheses).",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "measure_outputs.py fingerprints cited PNGs once a new audit YAML exists; JSON-vs-markdown numeric check is a short script, not built into measure_outputs today."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Figures, JSON results, and markdown tables are all already in the repository."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "SHA-256 equality and floating-point equality on published scalars are objective, though figure text OCR is out of scope."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Hashing PNGs and parsing JSON is seconds; no external download."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Designed as new audit + pin files only per cloud zero-conflict rules."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One loop if the new audit template is copied from an existing morphology audit."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Vespinae venation mechanics (7/8) addressed phylogeny/mechanics but did not add figure fingerprinting; route not refuted."
+        }
+      }
+    },
+    {
+      "title": "Vespinae venation D3: perimeter vs interior Thompson-7 shares independently locked to results JSON",
+      "gap": "docs/portfolio/vespinae_venation_mechanics.md claims perimeter 11-LM Thompson-7 share 65.82% and interior 8-LM share −0.37% (W7 failure mechanism); these partition statistics are easy to mis-copy into markdown or figures because they are not exported through measure_outputs.py or any audit sidecar.",
+      "done": "Re-running thompson/portfolio/groups/vespinae_venation_mechanics.py (or reading thompson/portfolio/results/vespinae_venation_mechanics.json) reproduces t7_variance_share_perimeter_11lm and t7_variance_share_interior_8lm within 1e-4 of the markdown table; optional: new audit sidecar fingerprints docs/portfolio/fig_vespinae_venation_mechanics.png.",
+      "tool_route": "python3 thompson/portfolio/groups/vespinae_venation_mechanics.py (if idempotent) OR json load thompson/portfolio/results/vespinae_venation_mechanics.json; python3 morphoeval/measure_outputs.py on a new portfolio-figure audit for the PNG hash",
+      "deciding_data": "In repo: thompson/portfolio/results/vespinae_venation_mechanics.json, thompson/portfolio/groups/vespinae_venation_mechanics_hypotheses.json (commit 838a7fe1), docs/portfolio/vespinae_venation_mechanics.md.",
+      "prior_attempts": "Scored 2026-10-24; D1–D3 supported, D4 failed (+3.8 pp not +12 pp for B_ven7); original vespinae_wings.py 0/7 preserved per Rule 2.",
+      "factors": {
+        "tool_fit": {
+          "score": 12,
+          "why": "measure_outputs only fingerprints the figure; the deciding perimeter/interior shares come from the portfolio scorer JSON, not from measure_outputs alone."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Full numeric partition lives in committed results JSON from the preregistered run."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Two named JSON fields compared to markdown with fixed tolerance."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Re-read JSON is instant; full regroup re-run is minutes on 1,027 wings."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Verification report as new files only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "JSON-vs-markdown check is one sitting; regroup optional."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "D4 venation7 gain route failed pre-registration; perimeter/interior split (D3) already supported—re-measure confirms, does not reopen D4."
+        }
+      }
+    },
+    {
+      "title": "Leporidae cranial LS1–LS3: JSON metrics vs portfolio markdown and inner/outer residual paradox",
+      "gap": "docs/portfolio/leporidae_skulls.md reports 0/3 hypotheses (T7 share 51.08% vs 55% threshold, LOO ratios 0.89/0.96) and inner unexplained fraction 67.8% exceeding outer 48.8%; thompson/portfolio/results/leporidae_skulls.json holds the authoritative floats but is not cross-checked by measure_outputs or verify_integrity.",
+      "done": "Automated diff: every scalar quoted in leporidae_skulls.md hypothesis table matches leporidae_skulls.json within 1e-4; landmark_residuals.inner_exceeds_outer is true with inner 0.6778 and outer 0.4876 ±0.001; measure_outputs fingerprints docs/portfolio/fig_leporidae_skulls.png if listed in a new portfolio audit.",
+      "tool_route": "Parse thompson/portfolio/results/leporidae_skulls.json vs docs/portfolio/leporidae_skulls.md; python3 morphoeval/measure_outputs.py on new portfolio-figure audit YAML",
+      "deciding_data": "In repo: thompson/portfolio/results/leporidae_skulls.json, thompson/portfolio/groups/leporidae_skulls_hypotheses.json, docs/portfolio/leporidae_skulls.md, Zenodo 7615230 landmarks cached under .thompson_cache/ for full re-run if needed.",
+      "prior_attempts": "Scored 2026-10-23 via run_all_scouted_clades.py; OP-10 lists mammals Leporidae as 0/3 failed clade; no MorphoEval measurement sidecar exists for this clade study.",
+      "factors": {
+        "tool_fit": {
+          "score": 11,
+          "why": "Hypothesis metrics require portfolio JSON or re-running leporidae_skulls.py; measure_outputs contributes only PNG fingerprinting."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "JSON results and preregistration manifest are in-repo; landmark cache may already exist locally."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Table-driven numeric diff and boolean inner_exceeds_outer are objective."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "JSON diff is trivial; full 74-LM GM re-run is heavier but still hours not weeks."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New verifier script and optional audit YAML only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "JSON-vs-markdown in one sitting; full re-run optional second loop."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "LS1–LS3 hypotheses were tested and failed; re-measure confirms failure rather than proposing a new LS1 pass without new anatomy/view."
+        }
+      }
+    },
+    {
+      "title": "Deep-horizon P3 portfolio simulations vs Burns/Ronco realised ratios (measure lens insufficient)",
+      "gap": "docs/THOMPSON_DATASET_PORTFOLIO.md pre-registered P3 intervals for characiforms (~0.43 ratio, ~82% coverage) and Ronco cichlids (~0.77, ~68%); realised burns_sidlauskas2019 scored 0.63/94% and ronco 0.36/100% (P3 ✗). Whether the simulation itself is wrong vs landmark calibration is unsettled, but the deciding evidence is locked prediction scores, not rendered audit outputs.",
+      "done": "Re-running thompson/portfolio/score_locked_predictions.py for burns_sidlauskas2019_characiformes and ronco2021_tanganyika_cichlids reproduces far.ratio_consensus and far.coverage95 within 1e-3 of thompson/portfolio/results/*.json and portfolio markdown P3 verdict rows.",
+      "tool_route": "python3 thompson/portfolio/score_locked_predictions.py --source burns_sidlauskas2019_characiformes; python3 thompson/portfolio/score_locked_predictions.py --source ronco2021_tanganyika_cichlids; compare to docs/portfolio/burns_sidlauskas2019_characiformes.md and ronco2021_tanganyika_cichlids.md",
+      "deciding_data": "In repo: thompson_blind_predictions_registered.json (commit dac08493), thompson/portfolio/results/burns_sidlauskas2019_characiformes.json, thompson/portfolio/results/ronco2021_tanganyika_cichlids.json; OP-04 open-problems.json node t5 (>50 Myr horizon).",
+      "prior_attempts": "Claude Fable scored fish portfolio 2026-10-22–23; FishShapes anchor simulation in THOMPSON_DATASET_PORTFOLIO.md; characiformes GM study (55.5% T7) separate from trait P3 test.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "measure_outputs.py does not ingest prediction-engine CSVs; score_locked_predictions.py is the deciding tool (prediction/score lens, not measure)."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Locked predictions and scored JSON outcomes already committed; Dryad caches may exist under .thompson_cache/."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "P3 pass/fail is registered interval membership for ratio and coverage pairs."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Re-score is batch Python over matched species lists, typically under an hour."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Re-score writes results JSON only if agent policy allows; verification can be read-only diff."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Two scorer invocations plus diff, possibly long if cache missing."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "P3 failures recorded but simulation falsification (OP-04) remains open—not the same as refuting re-measurement."
+        }
+      }
+    },
+    {
+      "title": "FishShapes blind-test horizon table vs thompson_blind_test_results.json (score lens, not measure)",
+      "gap": "docs/THOMPSON_BLIND_TEST_RESULTS.md and docs/portfolio/fishshapes_v1.md publish tau-bin medians (e.g. 50–80 Myr BDmax ratio 0.52, coverage 65%) that ground the ~50 Myr horizon narrative; measure_outputs.py never touches thompson_blind_test_results.json or outreach_fig10_blind_test_fishshapes.png fingerprints in an audit.",
+      "done": "python3 thompson/score_blind_predictions.py reproduces every tau-bin median |error| and 95% coverage in THOMPSON_BLIND_TEST_RESULTS.md within 1e-4; optional measure_outputs fingerprint of docs/outreach_fig10_blind_test_fishshapes.png matches a pinned sha256 in a new sidecar.",
+      "tool_route": "python3 thompson/score_blind_predictions.py (hash-locked manifest); python3 morphoeval/measure_outputs.py on a new audit listing outreach_fig10_blind_test_fishshapes.png",
+      "deciding_data": "In repo: thompson/thompson_blind_predictions_registered.json, thompson_blind_test_results.json, docs/THOMPSON_BLIND_PREREGISTRATION.md; FishShapes v1 md5 documented in THOMPSON_BLIND_TEST_RESULTS.md.",
+      "prior_attempts": "Scored 2026-10-22; H4/H5 failed as pre-registered but deep-horizon skill vs consensus documented post hoc; OP-04 tracks >50 Myr engine limits.",
+      "factors": {
+        "tool_fit": {
+          "score": 4,
+          "why": "Deciding bin medians come from score_blind_predictions.py; measure_outputs can only fingerprint the outreach PNG if wired into a new audit."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Registered predictions and full per-species results JSON are in-repo; FishShapes CSV may require cache download."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Bin table equality against JSON aggregates is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 9,
+          "why": "Re-score over 5,180 species is moderate CPU; needs FishShapes file present."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Read-only re-score diff or new audit sidecar files only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Depends on FishShapes cache availability; otherwise one fetch away."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Blind protocol hashes verified at original run; re-measure confirms rather than re-opening preregistration."
+        }
+      }
+    }
+  ]
+}
