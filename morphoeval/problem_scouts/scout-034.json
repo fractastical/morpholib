@@ -1,0 +1,319 @@
+{
+  "scout": "scout-034",
+  "ground": "turing",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "id": "TUR-GROW-2D-01",
+      "title": "Flagship Turing: replace independent 1D growth stages with a continuous 2D L(t) stripe-insertion solver",
+      "gap": "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml lists remediation 'Real 2D growing-domain stripe-insertion solver with L(t) (currently independent 1D stages)'; models/1952-turing-morpho.py simulate_kondo_asai_growing_domain_stripes() restarts a fresh 1D domain per ontogenetic flank height rather than advancing a coupled 2D field while L(t) grows (claim_boundary does_not_claim in the same audit).",
+      "done": "A new self-test gate (or companion check invoked before merge) fails on origin/main and passes only when stripe counts N(L) from one continuous 2D growing-domain integration match datasets/turing/turing_reference.json kondo_asai_1995_pomacanthus_growth stages with max absolute error <= 1 stripe at all six stages and Pearson r >= 0.98 on the length series; scorer verifies via `python3 models/1952-turing-morpho.py --self-test` exit 0 with the new check printed PASS.",
+      "tool_route": "Baseline: `python3 models/1952-turing-morpho.py --self-test` (~25 s). Comparator ablation (no code change): `python3 -c \"from models import importlib; ...\"` importing simulate_kondo_asai_growing_domain_stripes vs tables in datasets/turing/turing_reference.json; target implementation extends 1952-turing-morpho.py Gray-Scott/GM 2D solver patterned after models/1995-kondo-pomacanthus-stripe-insertion.py growing kymograph helpers, then re-run `--self-test`.",
+      "deciding_data": "In repo: datasets/turing/turing_reference.json (six Pomacanthus stages with n_stripes, flank_height_mm, body_length_cm); cross-check models/1995-kondo-pomacanthus-stripe-insertion.py --self-test growing-domain outputs (P. semicirculatus doubling + 2D imperator unzipping).",
+      "prior_attempts": "Flagship-15 Pass N+1 (morphoeval/runs/2026-10-26-flagship15-loop-passN.md) honestly re-scored Turing to 68.8/100 and left 2D growing domain open; docs/open-problems.json OP-06 marks the bundle 'solved' but the same pass doc still lists this sub-item under 'Still open (structural)'. Dedicated Kondo slot script (2026-10-19-pomacanthus-stripe-insertion-audit-v2) closed its own growing-domain claims but did not retrofit the flagship montage script.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Verdict is `--self-test`-gated on 1952-turing-morpho.py, but the deciding 2D solver does not exist yet—only ablation against the Kondo script and JSON tables is runnable today."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Ontogenetic stripe-count series and SHA-pinned specimens are vendored under datasets/turing/."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Numeric max stripe error and r thresholds on six published stages are machine-checkable without aesthetic judgment."
+        },
+        "compute_in_repo": {
+          "score": 9,
+          "why": "2D growing-domain Gray-Scott/GM at montage resolution fits hours on the repo stack, but multiple grid sizes will be needed for stability."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Closing requires editing the flagship script and possibly new morphoeval audit YAML—not new-files-only unless implemented as a sidecar module imported by the flagship."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Likely more than one agent sitting once the 2D integrator and gate land; ablation-only partial verdict is same-day."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No audit records a failed 2D growing-domain attempt on the flagship—only an explicit open remediation line."
+        }
+      }
+    },
+    {
+      "id": "TUR-PEAR-12-01",
+      "title": "Pearson (1993) α–μ morphospace: simulate and classify all 12 reference (F,k) classes, not just four showcase regimes",
+      "gap": "datasets/turing/turing_reference.json pearson_1993_12_classes lists all twelve Pearson Science 261 morphology labels (alpha through mu), but models/1952-turing-morpho.py PEARSON_REGIMES instantiates only four patterned regimes plus an equal-diffusion control; self_test() gates sharp spectral rings solely on mitosis_spots, soliton_spots, stripes_worms, and coral_labyrinth (lines ~1342–1371).",
+      "done": "For each of the 12 JSON class entries, run Gray-Scott at pinned (F,k) with existing CLI overrides (`--F`, `--k`, `--N 160`, `--steps 4500`, `--seed 1952`), classify via existing spectral morphometrics (ring_sharpness, k_star_cycles, std_v, n_components), and require >= 10/12 matches between predicted morphology bucket {spots, stripes, labyrinth, homogeneous, chaotic} and the JSON morphology field; emit a CSV under morphoeval/runs/ and PASS/FAIL line in an extended `--self-test`.",
+      "tool_route": "Sweep loop (no new solver): `for row in turing_reference.json classes; do python3 models/1952-turing-morpho.py --no-show --skip-gif --F <F> --k <k> --output-csv morphoeval/runs/pearson12_<class_id>.csv; done` then aggregate with existing turing_pearson_metrics.csv schema; gate lives in `--self-test` after implementation.",
+      "deciding_data": "In repo: datasets/turing/turing_reference.json pearson_1993_12_classes; Pearson JE (1993) doi:10.1126/science.261.5118.189 figures (public, already cited).",
+      "prior_attempts": "2026-10-19-turing-audit-v2 notes all 12 classes on the bifurcation diagram figure, but the closed-loop self-test never automated morphology agreement for classes alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa, lambda, mu individually—only four simulated regimes are regression-gated.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Existing simulate_gray_scott + CLI F/k overrides + CSV morphometrics decide the 12-way table without wet lab."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All twelve (F,k) points and morphology strings are pinned in datasets/turing/turing_reference.json."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Threshold is a counted 10/12 morphology matches from printed metrics—no manual figure grading."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Twelve runs at N=160/steps=4500 are ~5–15 minutes total on a single core (one self-test today ~25 s)."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Can ship as a new morphoeval/runs/pearson_12class_sweep.json plus optional self-test hook without touching parallel agents' files."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One sweep sitting once a thin aggregator script exists; partial counts visible after first loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt recorded a refutation of the 12-class automated sweep—only diagram-level coverage."
+        }
+      }
+    },
+    {
+      "id": "TUR-KONDO-INDEP-01",
+      "title": "Break the circular Kondo stripe-count calibration: intrinsic wavelength ablation with frozen peak counter",
+      "gap": "Pass N+1 removed Pearson r on 1D PDE stripe counts from the self-test gate because intrinsic_lambda_mm=3.8 mm simultaneously sets domain discretization and the biological spacing target (self_test docstring lines ~1374–1379; flagship15 audit notes 'calibration consistency, not independent validation').",
+      "done": "Pre-register a hold-out stage (e.g. adult_12cm, n_stripes=19) and an ablation grid intrinsic_lambda_mm in {3.04, 3.42, 3.8, 4.18, 4.56} with peak-detection thresholds held fixed; PASS if at least three grid points keep hold-out error <= 2 stripes and training-stage RMSE <= 1.5 stripes; FAIL if only lambda=3.8 works (confirming circularity). Scorer reads a JSON summary morphoeval/runs/turing_kondo_lambda_ablation.json.",
+      "tool_route": "`python3 -c \"from importlib.machinery import SourceFileLoader as L; m=L('t','models/1952-turing-morpho.py').load_module(); ... simulate_kondo_asai_growing_domain_stripes(..., intrinsic_lambda_mm=...)\"` across the grid; compare to datasets/turing/turing_reference.json stages; optional future `--lambda-mm` CLI on the flagship.",
+      "deciding_data": "In repo: kondo_asai_1995_pomacanthus_growth stages in datasets/turing/turing_reference.json; function simulate_kondo_asai_growing_domain_stripes in models/1952-turing-morpho.py.",
+      "prior_attempts": "Flagship-15 Pass N+1 (Sonnet/Gemini panel) explicitly delisted Kondo r as a validation gate rather than fixing independence—negative knowledge that re-gating r alone is blocked; this ablation route is the recorded alternative.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Pure simulation sweep over an exported function; no new PDE physics required to falsify circularity."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Stage table and lambda default are already in turing_reference.json."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Hold-out stripe error and RMSE thresholds are numeric; outcome is pass or fail either way."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Five lambda values × six stages × 7000 Euler steps each completes in minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Results file only under morphoeval/runs/; no tracked-file edits required to run the ablation."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single sitting once the import wrapper is written (~30 lines)."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Re-gating raw r>0.95 is refuted; this lambda-sweep route is explicitly the undisclosed alternative."
+        }
+      }
+    },
+    {
+      "id": "TUR-YJUNC-SWEEP-01",
+      "title": "Pomacanthus Y-junction detector: sweep skeleton parameters to match published stage counts, not adult ROI over-count",
+      "gap": "segment_biological_turing_specimens reports ~22 Y-junctions on the adult ROI vs 2–3 in Kondo & Asai (1995) for comparable views; turing_reference.json stages carry per-stage y_branch_count (0–4) that the detector never compares against, and flagship15 remediation asks for annotated Y-junction ground truth on photographs.",
+      "done": "Sweep minimum junction separation in {22, 28, 32, 40, 48} px and band threshold multiplier in {0.18, 0.22, 0.26} on the pinned pomacanthus_imperator_stripes_specimen.jpg ROI; minimize sum over six ontogenetic stages of |detected(stage) - y_branch_count| using staged ROI scaling from flank_height_mm (linear vertical crop model documented in the summary JSON); PASS if best MAE <= 1.0 and adult_9_5cm error <= 1; publish morphoeval/runs/turing_yjunction_sweep.json.",
+      "tool_route": "Simulation-side: import _thin_binary_ridges and segment_biological_turing_specimens from models/1952-turing-morpho.py via SourceFileLoader, monkeypatch separation/threshold kwargs (requires small refactor or forked helper in a new morphoeval/turing_yjunction_sweep.py), then `python3 morphoeval/turing_yjunction_sweep.py --self-test`. Photo pixel ground truth for new annotations would need the vision lens (verify_image_fitness.py / manual masks)—not required if stage table y_branch_count is the scorer target.",
+      "deciding_data": "In repo: datasets/turing/pomacanthus_imperator_stripes_specimen.jpg (SHA pinned), turing_reference.json stage y_branch_count fields; literature counts Kondo & Asai (1995) doi:10.1038/376765a0.",
+      "prior_attempts": "Pass N+1 disclosed over-detection and removed Y-junction range from self-test gates (2026-10-26-flagship15-audit-v1.yaml); no parameter sweep against stage table is recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "Decided by re-running segmentation code with sweeps, but today’s function lacks CLI knobs—needs a thin wrapper (still simulation/CV hybrid)."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Photo and numeric stage targets exist; per-stage ROI geometry is inferred, not independently annotated pixels."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "MAE against six integers is objective once stage-to-ROI mapping is fixed in the prereg JSON."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "15–45 segmentation passes on one JPEG finish in seconds."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New sweep script + JSON under morphoeval/runs only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Grid search completes in one sitting after wrapper lands."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior sweep against y_branch_count is logged—only disclosure of over-count."
+        }
+      }
+    },
+    {
+      "id": "TUR-CONUS-MEIN-01",
+      "title": "Conus Meinhardt mantle PDE: ablate stochastic activator injection and see if self-test metrics survive",
+      "gap": "models/1984-wolfram-conus-textile-rule30.py documents stochastic activator injection (p=0.18) as a numerical stabiliser outside Meinhardt & Klingler's autonomous parameterisation (header lines ~43–46); morphoeval/runs/2026-10-26-flagship15-loop-passN.md lists 'autonomous Meinhardt parameterisation' as still-open structural debt alongside Turing growing domain.",
+      "done": "Ablation grid activator injection probability p in {0.0, 0.09, 0.18} with all other defaults fixed; for each p run `python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only --no-gif --no-photos` and record exit code plus asserted CV band, chord-length KS, and specimen IoU thresholds already in the self-test; PASS (autonomy supported) only if p=0.0 run exits 0; FAIL (injection necessary) if p=0.0 exits non-zero while p=0.18 exits 0—scorer compares three exit codes and printed metric lines.",
+      "tool_route": "Named tool: models/1984-wolfram-conus-textile-rule30.py --self-test-only; requires exposing p as CLI or env (today hard-coded)—ablation agent adds `--activator-injection-p` without changing default behaviour, then sweep.",
+      "deciding_data": "In repo: datasets/conus/ reference masks and metrics consumed by the Conus self-test; Meinhardt & Klingler (1987) doi parameters cited in script header.",
+      "prior_attempts": "Flagship-15 Conus remediation (Pass N+1) recalibrated Raup T and kymograph normalization but kept injection disclosure; no recorded ablation showing p=0 passes self-test.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "Decided entirely by the Conus `--self-test-only` suite once p is exposed—simulation ablation, not Lean."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Vendored Conus specimen segmentation and pinned CSV references ship with the script."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Three exit codes plus existing numeric assert bands are checker-friendly."
+        },
+        "compute_in_repo": {
+          "score": 6,
+          "why": "Each full self-test ~4–5 minutes per pass N+1 notes; triple ablation ~15+ minutes."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Requires a one-line CLI hook in the Conus flagship—conflicts with strict new-files-only unless orchestrator grants a Conus branch."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Dominated by long self-test runtime; still feasible in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Injection ablation is listed as open structural debt, not a refuted route."
+        }
+      }
+    },
+    {
+      "id": "TUR-KIN-DUAL-01",
+      "title": "Dual Kondo implementations: quantify stripe-count disagreement between flagship cubic 1D PDE and piecewise-linear GM Kondo script",
+      "gap": "models/1952-turing-morpho.py uses cubic activator 1D kinetics (a,b,c,d)= (1,-1.5,1.25,-1.5) for Kondo law checks, while models/1995-kondo-pomacanthus-stripe-insertion.py implements Kondo-Asai (1995) piecewise-linear saturating GM with D_A,D_I from the paper; both claim the same ontogenetic stripe insertion phenomenon without a cross-model equivalence test.",
+      "done": "On the shared six-stage flank_height_mm vector from datasets/turing/turing_reference.json, compute predicted stripe counts from both simulators with default seeds; PASS equivalence if max |N_flagship - N_kondo| <= 1 and Pearson r >= 0.99 between predicted vectors; FAIL if max difference >= 3 stripes (documents incompatible kinetics). Scorer reads paired arrays printed by `python3 morphoeval/turing_dual_kondo_compare.py --self-test` (new sidecar) or a one-shot import script.",
+      "tool_route": "`python3 models/1952-turing-morpho.py --self-test` (extract kondo_pred_stripes from bio block) AND `python3 models/1995-kondo-pomacanthus-stripe-insertion.py --self-test` (semicirculatus doubling vector); compare via `python3 -c` importing simulate_kondo_asai_growing_domain_stripes and the Kondo script's 1D growing-domain helper.",
+      "deciding_data": "In repo: shared stage heights in datasets/turing/turing_reference.json and datasets/pomacanthus_stripe_insertion/pomacanthus_stripe_insertion_reference.json (P. semicirculatus doubling table).",
+      "prior_attempts": "2026-10-19-turing-audit-v2 and 2026-10-19-pomacanthus-stripe-insertion-audit-v2 scored each script independently; no cross-diff is recorded in morphoeval audits.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Both simulators and `--self-test` hooks exist today; comparison is a deterministic import-and-run."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Stage tables and both simulators live in-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Max stripe delta and r on six integers are fully objective."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Two short PDE integrations plus Kondo self-test (~1–2 min total)."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Sidecar compare script + JSON only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One-shot compare completes in minutes."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior cross-model equivalence attempt logged."
+        }
+      }
+    },
+    {
+      "id": "TUR-OSTR-LAMBDA-01",
+      "title": "Ostracion meleagris spot spacing: ablate Gray-Scott regime and grid size until Delaunay NN spacing matches specimen",
+      "gap": "Flagship segments 121 boxfish spots (self_test bio_ok) but never asserts that nearest-neighbor spacing in pixels matches the simulated soliton_spots wavelength_grid_cells converted via ROI scale; Pearson soliton regime (F=0.030,k=0.062) is tuned for spectral sharpness, not Ostracion morphometrics.",
+      "done": "For regimes {soliton_spots, mitosis_spots} and N in {128,160,192}, run simulate_gray_scott + existing Ostracion Delaunay NN mean from segment_biological_turing_specimens; PASS if min relative error |lambda_sim - lambda_spec|/lambda_spec <= 0.15 for some (regime,N) pair; FAIL if all pairs exceed 0.25. Output morphoeval/runs/turing_ostracion_lambda_ablation.json.",
+      "tool_route": "`python3 models/1952-turing-morpho.py --self-test` (read ost spacing + soliton metrics) plus explicit sweep: `python3 models/1952-turing-morpho.py --no-show --skip-gif --F 0.030 --k 0.062 --N 192 --steps 4500 --output-csv morphoeval/runs/ostracion_sweep.csv`; aggregate NN spacing from segment_biological_turing_specimens via import.",
+      "deciding_data": "In repo: datasets/turing/ostracion_meleagris_spots_specimen.jpg and ROI in turing_reference.json; Gray-Scott metrics CSV schema from flagship.",
+      "prior_attempts": "2026-10-19-turing-audit-v2 cites 121 spots segmented but no wavelength–spacing closure test; Pass N+1 lowered specimen-match score without adding NN-spacing ablation.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Uses existing Gray-Scott simulator and Delaunay code paths with CLI sweeps."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Specimen photo and ROI pinned under datasets/turing/."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Relative error threshold on mean NN spacing is numeric; mapping px→grid cells must be fixed in prereg."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Six PDE runs at moderate N finish within an hour."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Runs and JSON only under morphoeval/runs/."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Sweep + aggregate in one session."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded NN-spacing ablation refutation."
+        }
+      }
+    },
+    {
+      "id": "TUR-BLOCK-RGATE-01",
+      "title": "[BLOCKED] Restore self-test gate requiring Pomacanthus 1D PDE Pearson r > 0.95 as independent validation",
+      "gap": "Historical audits treated high r as specimen validation; Pass N+1 proved circular calibration (intrinsic_lambda_mm ties domain scale to stripe count).",
+      "done": "N/A — route refuted.",
+      "tool_route": "Do not re-run; see TUR-KONDO-INDEP-01 lambda ablation instead. Lens note: registry lens handles blind hash-locked retractions.",
+      "deciding_data": "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml claim_boundary; self_test docstring in models/1952-turing-morpho.py.",
+      "prior_attempts": "Flagship-15 Pass N+1 (Multi-agent panel + Sonnet on Turing) removed the r gate after scoring specimen-match down; attempting to restore without breaking circularity would repeat a refuted path.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "`--self-test` can print r but it no longer decides truth—simulation lens cannot resurrect a refuted validation contract."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Data unchanged; the failure mode is logical, not missing inputs."
+        },
+        "falsifiable_done": {
+          "score": 8,
+          "why": "Gate is checkable but scientifically meaningless under disclosed circularity."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Trivial to compute r."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "N/A blocked."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Instant—and already resolved negatively."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "Explicitly refuted in Pass N+1; negative knowledge entry only."
+        }
+      }
+    }
+  ]
+}
