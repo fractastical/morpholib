@@ -1,0 +1,311 @@
+{
+  "scout": "scout-016",
+  "ground": "thompson",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "title": "OP-10 sentinel: wavepipe must separate global inter-embryo coupling from isolated control before hornet perimeter/interior analogies",
+      "gap": "Vespinae venation mechanics (D3) showed a perimeter vs interior split in static landmarks; docs/THOMPSON_METHODS.md still records that wave-vector-analysis was never wired into Thompson portfolio tests. There is no hash-locked proof that the spark-track → cluster → summary chain detects the same global-vs-local contrast on synthetic data where ground truth is known.",
+      "done": "After a pre-registered run, `morphoeval/scout016_paired_summary.json` (from generate_paired_ab) shows `lane_a_embryos_recruited` includes embryo B for scenario `two_embryos_coupled` but not for `two_embryos_isolated_control`, and embryo-B row count in `morphoeval/scout016_paired_lane_a.csv` is at least 2× the isolated lane-B count at matched seed/duration; scorer checks JSON fields without manual plotting.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_coupled two_embryos_isolated_control --output morphoeval/scout016_paired.csv --seed 42 --duration 30 --fps 1.0 && python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scout016_paired_lane_a.csv morphoeval/scout016_paired_clusters_a.csv && python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scout016_paired_lane_b.csv morphoeval/scout016_paired_clusters_b.csv",
+      "deciding_data": "In repo: wave-vector-analysis/simulations/generate_simulated_data.py scenarios `two_embryos_coupled` and `two_embryos_isolated_control`; wave-vector-analysis/simulations/catalog.json claim boundary. No external fetch.",
+      "prior_attempts": "Vespinae D1–D8 (2026-10-24) repaired phylogeny/mechanics on landmarks only. OP-10 (open-problems.json) partial — Fable portfolio autopsy; no recorded wavepipe paired-AB sentinel. Re-proposing OpenTree-only W1–W7 is refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "generate_simulated_data.py --compare-ab plus spark_tracks_to_clusters.py run as-is and emit the deciding counts."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Scenarios and RNG-locked simulator live entirely in the repository."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Verdict is numeric JSON and CSV row counts with fixed scenario names and seed 42."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "30 s simulated duration at 1 fps completes in minutes on the repo Python stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "All outputs under new morphoeval/scout016_* paths; no edits to thompson/portfolio results."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single command chain yields pass/fail in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt registered this simulation sentinel for OP-10."
+        }
+      }
+    },
+    {
+      "title": "Vespinae D3 perimeter–interior seesaw: test AP-bin Ca²⁺ directionality coherence on Xenopus sparks",
+      "gap": "Portfolio D3 verified Thompson-7 explains 65.8% of hornet wing perimeter variance but ~0% on interior junction landmarks; OP-10 asks why Thompson-7 fails in concentrated clades. No amphibian bioelectric analogue asks whether Ca²⁺ wave clusters are more directionally coherent (lower circular variance) at anterior/posterior poles than in mid-body interior bands—the dynamic counterpart to perimeter vs interior static geometry.",
+      "done": "Pre-registered JSON reports circular_variance from analyze_wave_directionality on post-poke clusters with mean ap_norm in [0, 0.25] ∪ [0.75, 1] vs [0.35, 0.65]; peripheral CV is at least 30% lower than interior CV (one-sided) or the inequality fails, ruling in/out the D3 analogy for Ca²⁺.",
+      "tool_route": "python3 wave-vector-analysis/wave-vector-tiff-parser.py /path/to/Levin/Embryos/folder 0 --fps 1.0 --csv morphoeval/scout016_spark_tracks.csv && python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scout016_spark_tracks.csv morphoeval/scout016_vector_clusters.csv && python3 wave-vector-analysis/generate_all_hypothesis_plots.py morphoeval/scout016_spark_tracks.csv --clusters-csv morphoeval/scout016_vector_clusters.csv --output-dir morphoeval/scout016_hypothesis_plots/ (plus a small new scorer script reading clusters + ap_norm bins)",
+      "deciding_data": "In repo: wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv (~57k states) for smoke scoring; wave-vector-analysis/analysis_results/hypothesis_ap_position_analysis.png proves AP plotting exists. Full deciding set: Levin Embryos TIFF tree documented in wave-vector-analysis/analysis_results/detection_summary_old_new_speed_v6/DATA_SOURCES_AND_ASSUMPTIONS.md (74 videos, external path).",
+      "prior_attempts": "vespinae_venation_mechanics.py D3 passed on landmarks (2026-10-24). why_wings.py C4 placed hornet ends/middle residual ratio inside P-drift band but did not use Ca²⁺. No wavepipe AP-bin directionality test recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Parser, clusterer, and analyze_wave_directionality cover the chain; AP-bin aggregation needs one isolated helper file."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Subset CSV supports pipeline smoke; full 74-video verdict needs the named external TIFF tree."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Two numeric circular_variance values and a fixed 30% margin."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Hours to re-parse TIFFs if mounted; minutes on committed subset."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New morphoeval/scout016_* outputs only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Subset verdict one sitting; full TIFF batch may exceed one loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "D3 analog on Ca²⁺ AP bins not previously scored."
+        }
+      }
+    },
+    {
+      "title": "Combes–Daniel D6 canalization analog: peripheral vs interior spark-area CV in Xenopus",
+      "gap": "vespinae_venation_mechanics D6 showed interior submarginal cell area CV 15.45× the leading-edge spar CV across hornet wings. Portfolio residue (OP-10) lacks any test whether Xenopus Ca²⁺ event sizes are canalized at the embryonic periphery (poles) versus flexible in the mid-body—despite Tung et al. 2024 inter-embryo injury waves being the cited biological anchor of wave-vector-analysis.",
+      "done": "JSON lists per-bin coefficient of variation of spark `area` for ap_norm pole bins [0,0.2]∪[0.8,1] vs mid bin [0.35,0.65] on post-poke tracks; pre-registered pass if mid/pole CV ratio ≥ 2.5 (matching D6’s registered 2.5× threshold), fail otherwise.",
+      "tool_route": "python3 wave-vector-analysis/wave-vector-tiff-parser.py /path/to/Levin/Embryos/folder 0 --fps 1.0 --csv morphoeval/scout016_spark_tracks.csv && python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scout016_spark_tracks.csv morphoeval/scout016_vector_clusters.csv && python3 wave-vector-analysis/analyze_experimental_hypotheses.py morphoeval/scout016_spark_tracks.csv --clusters-csv morphoeval/scout016_vector_clusters.csv --analysis activity (post-poke pole vs mid CV ratio written by a new morphoeval/scout016_d6_cv_scorer.py using pandas groupby ap_norm on time_s>0 rows)",
+      "deciding_data": "In repo: spark_tracks_subset.csv with `area` and partial `ap_norm`; docs/portfolio/vespinae_venation_mechanics.md records realized D6 ratio 15.45. Full video set: same Levin Embryos TIFF path as detection summary v6.",
+      "prior_attempts": "D6 scored ✓ on hornet wings (2026-10-24). No Ca²⁺ CV-by-AP-bin test in open-problems.json or portfolio docs.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "Metrics come from spark_tracks columns via existing analyze_experimental_hypotheses helpers; export may need a thin wrapper."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Subset CSV usable; full ap_norm coverage requires re-parse of external TIFFs."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Single ratio compared to fixed 2.5× threshold from D6 preregistration."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Pandas aggregation over existing CSVs, hours if re-parsing TIFFs."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New morphoeval/scout016_* metrics only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Ratio computable in one sitting once tracks CSV exists."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of this Ca²⁺ canalization route."
+        }
+      }
+    },
+    {
+      "title": "OP-08 Pixel v2: stratify neighbor-wave evidence by poke AP (pH vs pT) using wave_laterality",
+      "gap": "open-problems.json OP-08 states post-unblinding mirror signal (AUC 0.61–0.65) is exploratory and confounded with headward direction because pokes were at the tail. Thompson/bioelectric outreach ties Xenopus craniofacial remapping to Ca²⁺ waves, but there is no registered test where poke position separates mirror-image vs headward neighbor predictions.",
+      "done": "Pre-registered table from wave_laterality.csv: among videos with orientation HTHT, `neighbor_has_wave` rate for pH pokes exceeds pT by ≥15 percentage points (Wilcoxon p < 0.05 on per-video neighbor wave speeds) OR the stratified difference is null, closing the confound either way.",
+      "tool_route": "python3 wave-vector-analysis/batch_wave_catalog.py --root /path/to/Levin/Embryos --out morphoeval/scout016_wave_catalog && python3 wave-vector-analysis/wave_laterality_analysis.py --catalog morphoeval/scout016_wave_catalog/wave_catalog.csv --out-dir morphoeval/scout016_wave_catalog",
+      "deciding_data": "In repo: wave-vector-analysis/wave_laterality_analysis.py documents filename encodings (oHTHT, pT/pM/pH). Deciding wave_events.csv per video lives under a rebuilt catalog (external TIFF tree; not committed). Reference: docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md links bioelectric morphospace to Xenopus waves.",
+      "prior_attempts": "OP-08 partial (multi-agent panel). PIXEL_BLIND_RESULTS.md / PIXEL_V2_BLIND_RESULTS.md exploratory mirror signal; no wave_laterality stratification by poke AP recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "batch_wave_catalog.py and wave_laterality_analysis.py implement the full rollup → verdict chain."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Scripts and naming convention in-repo; TIFF catalog must be rebuilt from external Levin path."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Fixed 15pp margin and pH vs pT strata on neighbor_has_wave."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Batch catalog over 74 videos is hours on mounted TIFFs, no wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Outputs confined to morphoeval/scout016_wave_catalog/."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Depends on TIFF availability; analysis itself is one batch pass."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Pixel v2 poke-stratified wave test not executed; exploratory mirror AUC is not this route."
+        }
+      }
+    },
+    {
+      "title": "why_wings hornet C2 failure analog: stimulated vs neighbor principal wave-axis misalignment",
+      "gap": "why_wings.md scored hornet C2 ✗ (80.1° between d_max and p_max; divergence not aligned with within-unit P). For Hymenoptera wings this is static GM; the portfolio does not ask whether Xenopus inter-embryo Ca²⁺ propagation axes are similarly misaligned between stimulated and neighbor embryos— a dynamic test of “off-channel” lineage-specific change vs developmental ridge.",
+      "done": "From wave_laterality.csv on HTHT videos, median angle between stimulated-embryo principal wave axis and neighbor first-wave direction exceeds 60° for at least 50% of videos (pre-reg) OR fails, matching/quashing the hornet C2 qualitative finding.",
+      "tool_route": "python3 wave-vector-analysis/wave_laterality_analysis.py --catalog morphoeval/scout016_wave_catalog/wave_catalog.csv --out-dir morphoeval/scout016_wave_catalog (after batch_wave_catalog.py as in OP-08 candidate)",
+      "deciding_data": "In repo: why_wings.json results (angle 80.1°, random 5th pct 69.9°). Wave metrics require rebuilt catalog from Levin Embryos TIFFs (same as wave_laterality docstring).",
+      "prior_attempts": "why_wings.py C2 hornets ✗, bees ✓ (2026-10-22). D7–D8 adjusted bee P_genus but did not use Ca²⁺ axes. No wavepipe axis-misalignment score recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "wave_laterality_analysis.py already computes axis splits and bidirectionality; angle export is a read of its CSV."
+        },
+        "data_in_hand": {
+          "score": 7,
+          "why": "Hornet GM outcomes in-repo; Xenopus wave_events require external TIFF catalog rebuild."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Median angle threshold 60° and 50% video fraction are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Batch laterality only; no new infrastructure."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Uses morphoeval/scout016_wave_catalog outputs only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Blocked on TIFF catalog build time."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Dynamic C2 analog not previously attempted."
+        }
+      }
+    },
+    {
+      "title": "T1917-012 cleavage bipolar field: score bidirectional_stim on mid-poke Xenopus waves",
+      "gap": "THOMPSON_1917_CLAIM_INVENTORY.md T1917-012 (cleavage planes vs bipolar field) is UNTESTED and explicitly notes embryo-blind/ wave-vector-analysis are “not cleavage-geometry tests.” wave_laterality_analysis.py already defines bidirectional_stim for stimulated embryos but never linked results to this 1917 claim row.",
+      "done": "Pre-registered JSON: among catalog videos with poke code pM, fraction with bidirectional_stim=True ≥ 0.70 (per script’s opposing-lobe threshold) or documented failure; updates claim inventory evidence field without re-scoring the mechanistic spindle claim.",
+      "tool_route": "python3 wave-vector-analysis/batch_wave_catalog.py --root /path/to/Levin/Embryos --out morphoeval/scout016_t1917_012_catalog && python3 wave-vector-analysis/wave_laterality_analysis.py --catalog morphoeval/scout016_t1917_012_catalog/wave_catalog.csv --out-dir morphoeval/scout016_t1917_012_catalog",
+      "deciding_data": "In repo: T1917-012 row in docs/THOMPSON_1917_CLAIM_INVENTORY.md; wave_laterality bidirectional threshold constants in wave-vector-analysis/wave_laterality_analysis.py. External: Levin Embryos TIFFs for pM-labeled videos.",
+      "prior_attempts": "Claim inventory cites unrelated pipelines only; no bidirectional_stim aggregate published to T1917-012.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "bidirectional_stim is computed inside wave_laterality_analysis.py today."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Claim text and scorer code in-repo; video catalog external."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Single fraction vs 0.70 on pM-filtered rows."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Catalog batch hours on mounted data."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New morphoeval/scout016_t1917_012_catalog/ only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One batch after TIFF access."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Documentation gap only; route not refuted."
+        }
+      }
+    },
+    {
+      "title": "Leporidae LS2 phylogenetic LOO failure: not decidable by wavepipe (lens handoff)",
+      "gap": "docs/portfolio/leporidae_skulls.md reports 0/3 hypotheses: LOO full/consensus ratio 0.89 (p=0.28) on Matthee_Tree.nex despite λ≈1. OP-10 groups this with Vespinae pre-venation failures but offers no Ca²⁺ or wave mechanism—this is static 74-LM cranial GM on Zenodo 7615230, not injury-wave time series.",
+      "done": "Scorer confirms no spark_tracks.csv column or wave-vector metric maps to Procrustes LOO on leporid crania; closure requires thompson/portfolio re-score with cranial modules (Sherratt & Kraatz 2023 integration paper), not wavepipe.",
+      "tool_route": "N/A for wavepipe; deciding negative: python3 thompson/portfolio/groups/leporidae_skulls.py (re-run only after new module prereg) — wavepipe commands cannot change LS2.",
+      "deciding_data": "In repo: thompson/portfolio/results/leporidae_skulls.json, docs/portfolio/leporidae_skulls.md, thompson/portfolio/groups/leporidae_skulls_hypotheses.json.",
+      "prior_attempts": "leporidae_skulls.py scored LS1–LS3 all ✗ (2026-10-23). OP-10 partial (Fable). Re-running LS2 without new landmarks/modules repeats a failed primary hypothesis.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Wave-vector pipeline has no landmark phylogenetic LOO path; thompson/portfolio lens required."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Leporidae landmarks and tree already cached in .thompson_cache/."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Clear handoff: LS2 metrics unchanged by any wavepipe command."
+        },
+        "compute_in_repo": {
+          "score": 5,
+          "why": "Wavepipe irrelevant; GM re-score is separate thompson job."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Reporting-only candidate; no file conflicts."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate negative verdict on lens fit."
+        },
+        "not_blocked": {
+          "score": 1,
+          "why": "LS2 global phylogenetic route already failed; module-based retry is a different thompson route, not wavepipe."
+        }
+      }
+    },
+    {
+      "title": "Blocked: OP-07 Xenopus neighbour-transfer wave features after geometry ground-truth",
+      "gap": "open-problems.json OP-07 (status refuted) asked whether any wave-feature signal survives once orientation confound is removed; headline LOOO AUC 0.484 with orientation at 0.833. Thompson/bioelectric blind tests must not re-propose the same v1 feature set without a new pre-registration.",
+      "done": "No new wavepipe run claims positive neighbour classification without a v2 hash-locked prereg; if attempted, must use only ground-truth-geometry videos and report AUC per embryo-blind contract—expected null per OP-07 status.",
+      "tool_route": "BLOCKED — prior route: wave-vector features + LOOO in embryo-blind (see embryo-blind/README.md, XENOPUS_BLIND_RESULTS.md). Do not rerun without new prereg file.",
+      "deciding_data": "In repo: OP-07 entry in docs/open-problems.json; blind result docs under embryo-blind/ (zebrafish parallel exists; Xenopus cited in OP-07 source).",
+      "prior_attempts": "Multi-agent panel refuted OP-07 (2026-10-26 snapshot). Orientation-confounded subset AUC 0.802 flagged suspect.",
+      "factors": {
+        "tool_fit": {
+          "score": 8,
+          "why": "Wavepipe can extract features, but the registered v1 decision route is closed as refuted."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "Blind protocols documented; full ground-truth video list not fully in git."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Hash-locked AUC threshold from embryo-blind contract."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Feature extraction hours if videos mounted."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Negative-knowledge record only."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Verdict already recorded as refuted unless new prereg."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "OP-07 explicitly refuted; same v1 route must not be re-proposed as new."
+        }
+      }
+    }
+  ]
+}
