@@ -1,0 +1,319 @@
+{
+  "scout": "scout-085",
+  "ground": "nanopub",
+  "lens": "vision",
+  "candidates": [
+    {
+      "id": "NP-VIS-001",
+      "title": "Prod Levin specimen-match 92/100 vs held-image CV (superseded v1 nanopub chain)",
+      "gap": "Production specimen-match nanopubs in morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit/ still assert pk:hasScore 0.92, but the signed assessment describes a 374-video JSON metadata catalog as the 'specimen' while models/2026-levin-channel-math-synthesis.py never loads any image; no cv_sim_similarity was attached at sign time.",
+      "done": "Pre-registered one-shot report records max compute_sim_vs_specimen_cv_similarity between docs/media/levin_youtube_channel_math_synthesis.png and every datasets/**/**specimen*.{jpg,png} plus docs/media/specimens/*; max cv_sim_similarity < 58.0 and passes_image_threshold false for all pairs (scorer checks numeric threshold only).",
+      "tool_route": "python3 -c \"from pathlib import Path; from morphoeval.verify_image_fitness import ROOT, compute_specimen_cv_signature, compute_sim_vs_specimen_cv_similarity; sim=ROOT/'docs/media/levin_youtube_channel_math_synthesis.png'; ...\" (same functions as python3 morphoeval/verify_image_fitness.py)",
+      "deciding_data": "In repo: docs/media/levin_youtube_channel_math_synthesis.png, morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit/levin-youtube-channel-math-specimen-match.trig (pk:hasScore 0.92), morphoeval/runs/model_integrity_ledger.jsonl incident 2026-10-24-gemini-4-argon-self-audit-and-tautology-incident.",
+      "prior_attempts": "Gemini v1 self-audit awarded specimen-match 92 (prod published); Claude Fable v2 referee scored 10/100 with evidence that metadata is not a specimen (morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v2/REPORT.md); v3 Pass 3.2 held 24/100. Treating the catalog as a biological specimen is refuted — this candidate uses only pixel CV, not catalog semantics.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "verify_image_fitness CV helpers segment PNG output vs held specimen photos without repo edits."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Levin synthesis PNG and hundreds of pinned specimen paths already live under datasets/ and docs/media/specimens/."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done is a single inequality on max cv_sim_similarity against the script's 58.0 gate."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Pairwise CV over specimen globs finishes in minutes on requirements.txt stack (PIL/scipy/numpy)."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as a new JSON sidecar under morphoeval/runs/; no changes to signed prod nanopubs."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One Python invocation plus grep of pk:hasScore yields pass/fail in one sitting."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Manual referee refuted the 92 narrative but an automated CV max-score certificate for the prod URI chain is not on record."
+        }
+      }
+    },
+    {
+      "id": "NP-VIS-002",
+      "title": "Prod KG specimen-match scores vs verify_image_fitness cv_sim divergence ledger",
+      "gap": "Several production-published specimen-match nanopubs disagree with morphoeval/runs/aristotelian_categories_index.json cv_sim_similarity by more than 15 points (e.g. raup-shell-coiling KG 45 vs CV 87.1, planform-morphology-animation 60 vs 90.0, santella-wormguides-celegans 62 vs 89.8, cervera-levin-mafe 42 vs 59.2); math_of_biology.trig carries LLM specimen beliefs without the CV sidecar.",
+      "done": "Machine-readable ledger lists every morphoeval/kg/*/published.json with published prod and a matching *-specimen-match.trig where |100*pk:hasScore − cv_sim_similarity| > 15.0; each row includes audit_id, slug, pk_hasScore_percent, cv_sim_similarity, delta, and SHA-256 of the index row used.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py && python3 -c \"parse pk:hasScore from morphoeval/kg/*/*-specimen-match.trig, join to morphoeval/runs/aristotelian_categories_index.json cv_sim_similarity by slug/sim_id\"",
+      "deciding_data": "In repo: morphoeval/kg/**/published.json (17 prod bundles at scout time), morphoeval/runs/aristotelian_categories_index.json after verify_image_fitness refresh, specimen-match *.trig assertions.",
+      "prior_attempts": "Individual referee audits recalibrated single models (Levin, Cervera v2); no repo-wide automated reconciliation of nanopub specimen dimension vs CV index has been committed.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "verify_image_fitness.py is the canonical cv_sim producer; trig scores are deterministic parses."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "All inputs are already versioned under morphoeval/kg/ and morphoeval/runs/."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done is a finite table with explicit 15-point delta rule and hashes; empty table would also be a valid outcome if rescored."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Full index CV pass is heavy but bounded; ledger join is seconds once index exists."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New ledger JSON only; superseding nanopubs remain a separate sign_morphoeval action."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "First full verify_image_fitness run may take tens of minutes; verdict still one loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted the CV-vs-pk:hasScore comparison route itself."
+        }
+      }
+    },
+    {
+      "id": "NP-VIS-003",
+      "title": "Odonata wing models: Drosophila gallery photo mis-specimen inflates KG-adjacent CV pass",
+      "gap": "morphoeval/verify_image_fitness.py FOUNDATIONAL_SPECIMENS and index rows for hoffmann-wing-venation and eshghi-odonata-wing-cells point at datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg while taxon labels name Odonata/Arigomphus; cv_sim_similarity ≈79.4 still passes the 70/58 thresholds, so KG faithfulness claims are not guarded against wrong-taxon photos.",
+      "done": "Pre-registered A/B: cv_sim_similarity for docs/media/odonata_wing_cells_deep_time.gif vs (A) current Drosophila gallery JPEG and (B) one extant odonata wing plate from Zenodo 10.5281/zenodo.19899648 (Eshghi et al. supplementary image named in datasets/odonata/eshghi2026_odonata_wing_cells.csv image_name column); record |cv_B − cv_A| and whether only one arm passes_image_threshold.",
+      "tool_route": "python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature, compute_sim_vs_specimen_cv_similarity; ...\" with sim_path=docs/media/odonata_wing_cells_deep_time.gif and spec_path alternates",
+      "deciding_data": "In repo: Drosophila gallery JPEG, odonata CSV image_name keys, simulation GIF. Public fetch: https://doi.org/10.5281/zenodo.19899648 (single wing PNG, CC BY 4.0).",
+      "prior_attempts": "datasets/odonata/README.md documents that fossil wing PNGs are not vendored; no audit has run verify_image_fitness with a taxon-correct wing micrograph for these slugs.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Specimen segmentation and sim-vs-spec CV are exactly verify_image_fitness primitives."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Simulation GIF and wrong specimen are local; correct wing needs one named Zenodo download."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done compares two numeric cv_sim values and threshold flags — no visual judgment."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Two CV comparisons plus optional Zenodo fetch fits in one session."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Report-only; fixing FOUNDATIONAL_SPECIMENS would be a follow-up PR."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Download one PNG, run two CV pairs, compare."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Wrong-gallery issue is documented in index but not CV-quantified against odonata source imagery."
+        }
+      }
+    },
+    {
+      "id": "NP-VIS-004",
+      "title": "Cervera prod nanopub: silhouette CV pass vs cartoon specimen-match 42/100",
+      "gap": "Production cervera-levin-mafe specimen-match nanopub (pk:hasScore 0.42, morphoeval/kg/2026-10-17-cervera-audit-v2/) states cartoons do not generate head form, yet aristotelian index shows cv_sim_similarity 59.2 and passes_image_threshold true against docs/media/specimens/cervera-levin-mafe.jpg — KG publishes both low LLM specimen score and mid CV without explaining the gap.",
+      "done": "Segment specimen photo and the last frame of docs/media/cervera_levin_mafe_gj_block.gif with compute_specimen_cv_signature; report foreground_area_fraction delta ≤ 0.05 AND cv_sim_similarity ≥ 58 while pk:hasScore ≤ 0.45, proving CV and rubric specimen-match measure different things, or fail if deltas exceed bounds.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (refresh index) plus python3 -c \"compute_specimen_cv_signature on docs/media/specimens/cervera-levin-mafe.jpg and GIF terminus; read pk:hasScore from morphoeval/kg/2026-10-17-cervera-audit-v2/cervera-levin-mafe-specimen-match.trig\"",
+      "deciding_data": "In repo: docs/media/specimens/cervera-levin-mafe.jpg, docs/media/cervera_levin_mafe_gj_block.gif, prod published.json, specimen-match.trig, index slug cervera-levin-mafe.",
+      "prior_attempts": "GPT-5.6 Sol v2 audit scored specimen-match 42 with explicit cartoon limitation (REPORT.md); no follow-up tied CV metrics to that nanopub bundle.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Same CV pipeline already scores this slug in the index; extra signature compare is built-in API."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Specimen JPG, GIF, and prod trig scores are committed."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Joint inequality on pk_hasScore, cv_sim, and foreground fraction is checkable but needs three fields aligned."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Single-model CV extraction is fast."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Analysis artefact only; superseding cervera nanopub remains separate."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One GIF frame + one photo + trig parse."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "CV-vs-LLM split for this prod bundle is not recorded."
+        }
+      }
+    },
+    {
+      "id": "NP-VIS-005",
+      "title": "Holstein coat prod v7: CV patch statistics vs RD/Eden simulation panels",
+      "gap": "Production morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/ specimen-match pk:hasScore 0.60 notes RD ovals vs Eden jagged networks vs real patch placement, but no verify_image_fitness dominant_wavelength_px / foreground segmentation table compares masked coat specimens to simulation frames in the published bundle.",
+      "done": "On datasets/bos_taurus_turing_wavelength/ coat-masked specimen montage and the RD vs Eden panels named in murray-bos-taurus-turing-wavelength-specimen-match.trig evidence, compute_specimen_cv_signature yields dominant_wavelength_px; RD panel median wavelength within ±20% of specimen median AND Eden panel median outside ±20% (or vice versa) — binary mechanism discriminator aligned to the published negative verdict.",
+      "tool_route": "python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; apply to each exported PNG frame listed in datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_full_animation.gif panels / static montage\"",
+      "deciding_data": "In repo: datasets/bos_taurus_turing_wavelength/, morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/ signed specimen-match.trig, models/1981-murray-bos-taurus-turing-wavelength.py outputs referenced in REPORT.md.",
+      "prior_attempts": "Pass 9 builder and Muse Wonder v7 audit published TESTED NEGATIVE on morphometrics (Wilcoxon p=0.91); OP-11 in docs/open-problems.json tracks independent re-score but not CV wavelength panel tests on the prod nanopub residue.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Radial-FFT wavelength and mask segmentation come from verify_image_fitness CV core."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Coat-masked assets and prod KG bundle are in repo; may need extracting GIF frames once."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "±20% median wavelength rule between specimen and model panels is numeric."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Multi-frame GIF decode plus per-panel CV stays under an hour."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New analysis JSON; does not edit v7 signed trig."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Frame extraction adds steps beyond a single pair compare."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Morphometric null already published; CV wavelength discriminator is additive, not refuted, but overlaps OP-11 re-score scope."
+        }
+      }
+    },
+    {
+      "id": "NP-VIS-006",
+      "title": "Pomacanthus stripe prod audit: P. imperator label vs P. semicirculatus specimen segmentation",
+      "gap": "Signed kondo-pomacanthus-stripe-insertion specimen-match (pk:hasScore 0.91) segments datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg while index species field reads Pomacanthus imperator; KG math_of_biology claims imperator Y-branch behaviour — taxon mismatch risk for nanopub faithfulness is unmeasured.",
+      "done": "compute_specimen_cv_signature on the pinned semicirculatus JPEG vs docs/media/pomacanthus_stripe_insertion_growth.gif gives cv_sim_similarity S0; after pre-registering a second held photo of P. imperator flank (Wikimedia/File:Pomacanthus imperator or paper figure fetch doi:10.1038/376765a0), cv_sim S1; |S0 − S1| > 5.0 points OR stripe-count from segmentation differs by ≥1 between photos with same gif comparison.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (slug pomacanthus-stripe-insertion) plus second compute_sim_vs_specimen_cv_similarity call with alternate specimen path in preregistered harness",
+      "deciding_data": "In repo: pomacanthus_semicirculatus_specimen.jpg, simulation GIF, audit-v2 specimen-match.trig. Public: Pomacanthus imperator reference photo (named DOI 10.1038/376765a0 figure or Commons).",
+      "prior_attempts": "Gemini Pass 2 audit v2 scored specimen-match 91 using semicirculatus segmentation (REPORT.md); v2 published.json shows published null (signed test only) — taxon cross-check not attempted.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Stripe/wavelength CV and sim match are native verify_image_fitness outputs for this slug."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "Primary specimen and gif local; imperator comparison photo requires one fetch."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "5-point cv delta or ±1 stripe-count rule is objective once segmentation script is fixed."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Two-specimen compare plus optional stripe peak count on 1D profile."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Harness output only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Needs sourcing imperator photo then two CV runs."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior CV taxon cross-test on record."
+        }
+      }
+    },
+    {
+      "id": "NP-VIS-007",
+      "title": "Planarian HK-ATPase ocelli: pinned specimen CV vs published reference 0.065 x/L",
+      "gap": "math_of_biology.trig remediation notes superseded Wikimedia provenance and magic length_px/1478.0 scaling for ocelli; beane-planarian-hk-atpase-anterior audit-v2 nanopub asserts pk:hasScore 0.89 specimen-match with ocelli at mean x/L=0.0528 vs reference 0.065 — verify_image_fitness does not yet certify that re-segmentation on the SHA-pinned schmidtea_mediterranea_specimen.jpg reproduces the script measurement.",
+      "done": "Re-run segment_planarian_specimen logic via compute_specimen_cv_signature + documented ocelli peak finder (2011-beane-planarian-hk-atpase-anterior.py segment_planarian_specimen) on datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg; |mean_xL − 0.0528| ≤ 0.003 AND |mean_xL − 0.065| > 0.005 OR fail, settling whether KG reference 0.065 is obsolete.",
+      "tool_route": "python3 models/2011-beane-planarian-hk-atpase-anterior.py --self-test (ocelli check) cross-read with python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; ...\" on the pinned JPEG",
+      "deciding_data": "In repo: schmidtea_mediterranea_specimen.jpg (SHA in audit REPORT), morphoeval/kg/2026-10-19-planarian-hk-atpase-anterior-audit-v2/beane-planarian-hk-atpase-anterior-specimen-match.trig, math_of_biology.trig remediation text.",
+      "prior_attempts": "Pass 2 audit raised specimen-match to 89 with automated ocelli; Pass 3 math-KG flagged superseded image provenance — CV consistency check not closed.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Specimen segmentation is shared between model self-test and verify_image_fitness signatures; combined read decides."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Pinned micrograph and trig scores already in repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "x/L tolerances are numeric though ocelli peak detection must match script version."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Self-test plus one CV signature is minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Report-only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single specimen, one script run."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Ocelli numbers exist in audit but superseded-image remediation explicitly remains open."
+        }
+      }
+    },
+    {
+      "id": "NP-VIS-BLOCKED-001",
+      "title": "Attach cv_sim to every build_morphoeval_kg specimen assessment before sign_morphoeval",
+      "gap": "sign_morphoeval.py signs LLM pk:hasScore literals with no verify_image_fitness cross-check, leaving thousands of audited bundles without automated specimen CV gates.",
+      "done": "N/A for vision lens — requires build_morphoeval_kg.py / sign_morphoeval.py pipeline change to embed cv_sim_similarity triples in unsigned trig.",
+      "tool_route": "Blocked for scout-085; knowledge lens (build_morphoeval_kg.py + sign_morphoeval.py) must wire verify_image_fitness output at build time.",
+      "deciding_data": "morphoeval/sign_morphoeval.py, morphoeval/build_morphoeval_kg.py, morphoeval/kg/ (315 published.json manifests vs ~315 REPORT audits).",
+      "prior_attempts": "Levin prod incident shows manual specimen scores can reach prod without CV; integrity ledger documents failure mode — automated gate not implemented.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "verify_image_fitness does not run inside sign_morphoeval today; integration is a different lens."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "CV index and kg dirs exist but hooking them needs code changes."
+        },
+        "falsifiable_done": {
+          "score": 10,
+          "why": "Could be done once pipeline emits cv_sim in trig, but not with vision-only as-is."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "Full re-sign sweep is hours and touches tracked build scripts."
+        },
+        "isolation": {
+          "score": 2,
+          "why": "Violates zero-conflict one-file scout rule if attempted here."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Requires multi-file pipeline work, not one CV sitting."
+        },
+        "not_blocked": {
+          "score": 1,
+          "why": "Manual specimen inflation route is refuted by Levin ledger; pipeline fix still worth doing under knowledge lens."
+        }
+      }
+    }
+  ]
+}
