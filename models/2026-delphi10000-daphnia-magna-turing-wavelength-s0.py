@@ -66,8 +66,8 @@ SEED = 3165
 DISC_NUMERATOR = 5350516939
 MARGIN_NUMERATOR = 22679272279285929721
 
-# Pass 1 fits every probed mode. Pass 2 holds out the odd-indexed modes.
-HOLDOUT_ODD_MODES = False
+# Pass 2 withholds the odd-indexed modes of the scored band.
+HOLDOUT_ODD_MODES = True
 
 
 def verify_inputs() -> None:
@@ -493,8 +493,9 @@ def render_png(specimen: dict, evolved: dict, linear: dict, sweep: dict, ablatio
         f"reticulum {specimen['reticulation_wavelength_um']:.1f} µm"
     )
     im = axes[0, 2].imshow(evolved["final_u"], cmap="copper", interpolation="nearest")
+    coarsening = evolved["lambda_dominant_um"] / 2.736
     axes[0, 2].set_title(
-        f"Saturated activator\nu std={evolved['final_std']:.2f}, λ≈{evolved['lambda_dominant_um']:.2f} µm"
+        f"Saturated activator\nu λ≈{evolved['lambda_dominant_um']:.2f} µm, coarsening ×{coarsening:.2f}"
     )
     fig.colorbar(im, ax=axes[0, 2], fraction=0.046, pad=0.04)
     ks = np.linspace(0.0, 9.0, 180)
@@ -565,6 +566,13 @@ def assemble_measurements(specimen: dict, field: dict, linear: dict, evolved: di
             "method": "Radial Fourier peak of the saturated activator, scaled so analytical λ_c is 2.736 µm",
         },
         {
+            "name": "nonlinear_coarsening_ratio",
+            "value": round(evolved["lambda_dominant_um"] / 2.736, 4),
+            "unit": "1",
+            "reference_value": 1.0,
+            "method": "Saturated wavelength divided by the analytical 2.736 µm. A ratio of 1 would mean no nonlinear shift.",
+        },
+        {
             "name": "specimen_foreground_fraction",
             "value": round(specimen["foreground_fraction"], 4),
             "unit": "1",
@@ -576,7 +584,7 @@ def assemble_measurements(specimen: dict, field: dict, linear: dict, evolved: di
             "value": round(specimen["circularity"], 4),
             "unit": "1",
             "reference_value": 1.0,
-            "method": "4πA/P² of the SEM Otsu mask; a circle would be 1",
+            "method": "4πA/P² of the opened SEM mask. Far below 1 because the perimeter follows the antennule and carapace folds; the aspect ratio is the shape number.",
         },
         {
             "name": "specimen_aspect_ratio",
