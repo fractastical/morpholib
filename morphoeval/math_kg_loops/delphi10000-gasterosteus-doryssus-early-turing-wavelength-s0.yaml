@@ -1,0 +1,48 @@
+sim_id: delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 3.286e-05
+log10_size_m: -4.483
+size_human: 33 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Gasterosteus doryssus_early
+  (Late Miocene, Truckee Fm, 10.02 Ma), cellular-detail rung
+geological_age_ma: 10.02
+geological_period: Late Miocene (Truckee Fm, 10.02 Ma)
+fossil_lineage_group: Gasterosteus Pelvic Reduction Chronospecies
+equations:
+- law_name: Schnakenberg Jacobian trace-determinant stability
+  formula: trace(J) = f_u + g_v < 0 and det(J) = f_u g_v - f_v g_u > 0 at (u0, v0)
+  lean_decl: MathOfBiology.Loop_3229.traceJac
+  lean_theorem: MathOfBiology.Loop_3229.jacobian_is_stable_without_diffusion
+  lean_locus: morphoeval/lean/loops/Loop_3229_gasterosteus_doryssus_early_turing_wavelength_s0.lean#L26-L51
+  variables: a=0.062, b=0.948, trace scaled by 1e4 equals -1429, det scaled equals 10201
+  role: Homogeneous steady state of the 32.86 µm dermal patch is stable when diffusion is equal
+  source_citation: Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0; Turing (1952) DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py#L104-L124
+- law_name: Turing wavenumber of maximum growth
+  formula: k_c = argmax sigma(k), sigma(k) = largest real eigenvalue of J - k^2 diag(D_u, D_v)
+  lean_decl: MathOfBiology.Loop_3229.lambdaEarly
+  lean_theorem: MathOfBiology.Loop_3229.successor_lengthens_cellular_wavelength
+  lean_locus: morphoeval/lean/loops/Loop_3229_gasterosteus_doryssus_early_turing_wavelength_s0.lean#L10-L35
+  variables: D_u=8.204081632653061 µm^2, D_v/D_u=12.276923076923076, lambda_c=32.86 µm, successor 41.50 µm
+  role: Selects the cellular wavelength at 10.02 Ma and the lengthening into doryssus_mid
+  source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012; Hunt, Bell & Travis (2008) DOI:10.1111/j.1558-5646.2007.00310.x
+  code_locus: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py#L115-L140
+- law_name: Long-range inhibition
+  formula: D_v > D_u on the early chronospecies; equal diffusion is not Turing-unstable
+  lean_decl: MathOfBiology.Loop_3229.dvMilli
+  lean_theorem: MathOfBiology.Loop_3229.inhibitor_diffuses_farther_than_activator
+  lean_locus: morphoeval/lean/loops/Loop_3229_gasterosteus_doryssus_early_turing_wavelength_s0.lean#L30-L55
+  variables: du_milli=8204, dv_milli=100721
+  role: Inhibitor range that permits a 32.86 µm mode on the 280 µm patch
+  source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py#L291-L307
+- law_name: Patch mode count versus the gallery band
+  formula: 8 lambda_c < L < 9 lambda_c and lambda_c < specimen_band < 3 lambda_c
+  lean_decl: MathOfBiology.Loop_3229.patchSide
+  lean_theorem: MathOfBiology.Loop_3229.patch_holds_eight_to_nine_critical_wavelengths
+  lean_locus: morphoeval/lean/loops/Loop_3229_gasterosteus_doryssus_early_turing_wavelength_s0.lean#L23-L47
+  variables: L=280.00 µm, lambda_c=32.86 µm, specimen high-pass band 81.08 µm
+  role: The 10.02 Ma patch holds eight to nine critical wavelengths; the photograph's visible band is not lambda_c
+  source_citation: Bell, Travis & Blouw (2006) DOI:10.1666/05026.1
+  code_locus: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py#L309-L373
