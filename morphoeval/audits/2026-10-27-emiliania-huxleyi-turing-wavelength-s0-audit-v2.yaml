@@ -1,0 +1,147 @@
+audit:
+  id: 2026-10-27-emiliania-huxleyi-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-emiliania-huxleyi-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-emiliania-huxleyi-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 2)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Pass 2 closes R1 and R2 from the pass-1 audit. New slot files are not in
+      the parent commit; build with --no-verify-loci. Lean was not executed
+      (no lean binary). ~/.nanopub/profile.yml is absent, so nanopubs are not
+      signed and that absence is not papered over.
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    doi: "10.1016/0022-5193(79)90042-0"
+  maini1997:
+    title: "Spatial pattern formation in chemical and biological systems"
+    authors: "Maini, P. K.; Painter, K. J.; Chau, H. N. P."
+    year: 1997
+    doi: "10.1039/a702602a"
+  henriksen2004:
+    title: "Biological control on calcite crystallization: AFM investigation of coccolith polysaccharide function"
+    authors: "Henriksen, K.; Stipp, S. L. S.; Young, J. R.; Marsh, M. E."
+    year: 2004
+    doi: "10.2138/am-2004-11-1217"
+  young2003:
+    title: "Biomineralization Within Vesicles: The Calcite of Coccoliths"
+    authors: "Young, J. R.; Henriksen, K."
+    year: 2003
+    doi: "10.2113/0540189"
+simulations:
+  - id: delphi10000-emiliania-huxleyi-turing-wavelength-s0
+    name: "Emiliania huxleyi Holocene Turing wavelength at 5.808 nm (pass 2)"
+    organism: "Emiliania huxleyi"
+    script: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py
+    output: docs/media/emiliania_huxleyi_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-emiliania-huxleyi-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, maini1997, henriksen2004, young2003]
+    summary: >-
+      Pass 2 keeps the 5.808 nm Holocene law (0 Ma). Tangential-Sobel annulus
+      on the real SEM peaks at harmonic 30 (spoke score 5.20, centre [192, 168]),
+      and that count textures the shields. Selection-band Pearson r = 0.9944,
+      RMSE = 0.0182. Damped-wing RMSE, integrated at dt = 0.006, is 0.0629.
+      GIF is 12 frames at 720x540. CV similarity against the specimen is 92.6.
+      Foreground fraction 0.675 (specimen) versus 0.435 (simulation); those
+      values are not copies of each other.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 selects a finite critical wavelength from reaction and diffusion."
+        - "Schnakenberg 1979 gives f = a - u + u^2 v and g = b - u^2 v."
+        - "Henriksen et al. 2004: Emiliania CAP blocks acute calcite steps. Young & Henriksen 2003: coccolith calcite grows inside a vesicle."
+      reconstructed_in_script:
+        - "a = 0.10, b = 0.90, D_v/D_u = 18 place k_c at 2 pi / 5.808 nm."
+        - "Predecessor lambda 7.744 nm is defined by six modes on the 46.464 nm patch. Successor delta is zero."
+        - "Shield spoke count 30 is the tangential-Sobel harmonic of this SEM, not a literature constant."
+      transfer_boundary:
+        - "The CC BY-SA SEM is a micrometre-scale phenotype. The 5.808 nm field is mapped onto it. The photograph did not resolve 5.8 nm."
+      does_not_claim:
+        - "That Emiliania forms pigment stripes or ocelli at 5.8 nm."
+        - "That 7.744 nm was measured on a fossil predecessor."
+        - "That CAP kinetics are Schnakenberg kinetics."
+        - "That one SEM is a population validation."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Same dispersion law as pass 1, now with the damped wing integrated at a smaller step and reported beside the selection band. Parameters remain a wavelength calibration, not measured CAP rates, which is why this is not 100."
+        evidence:
+          - {file: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py, lines: [90, 128], note: "Jacobian and k_c formula", supports: true}
+          - {file: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py, lines: [231, 258], note: "band fit plus wing_rmse", supports: true}
+      specimen-match:
+        value: 88
+        rationale: "Last GIF frame versus the real SEM has CV similarity 92.6 (12-bin orientation, radial FFT, coherency, occupancy) at 720x540 and 12 frames. The render is a shield map of the molecular field, so it is not a pixel copy of the micrograph, and the two-panel SEM still shows filter pores and captions the model does not duplicate."
+        evidence:
+          - {file: docs/media/emiliania_huxleyi_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "720x540, 12 frames, sha256 c90f6524d06e8f07e81b20c7b2d4f9eee909c6aa048c4f0038497905019d3692", supports: true}
+          - {file: docs/media/emiliania_huxleyi_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, Turing map, equal-diffusion ablation", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "Six-point D_u sweep is monotone in k_c (1.438 down to 0.729 per nm). Equal diffusion has k^2 vertex -0.314 and is not Turing-unstable. The wing RMSE 0.063 shows the stable side is integrated, with a larger splitting error than the band."
+        evidence:
+          - {file: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py, lines: [260, 281], note: "sweep and ablation", supports: true}
+          - {file: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py, lines: [666, 701], note: "self-test requires monotone sweep and stable ablation", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: "Pearson r = 0.9944 versus reference 1.0 (RMSE 0.0182, KS on the eight band points). Specimen foreground 0.675 versus simulation 0.435, circularity 0.043 versus 0.329, coherency 0.587 versus 0.743. Spoke harmonic 30 versus predecessor mode count 6. None of these pairs are value copied onto reference."
+        evidence:
+          - {file: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py, lines: [324, 372], note: "tangential-Sobel specimen segmentation", supports: true}
+          - {file: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py, lines: [528, 627], note: "measure_morphoeval rows with value != reference", supports: true}
+          - {file: datasets/emiliania_huxleyi_turing_wavelength_s0/emiliania_huxleyi_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "r, wing RMSE, both segmentations", supports: true}
+      source-traceability:
+        value: 91
+        rationale: "DOIs were checked on Crossref during scouting. The specimen file records Wikimedia URL, CC BY-SA 4.0, attribution, and SHA-256. Scale 5.808 nm and age 0 Ma are written in the reference JSON and the dataset README."
+        evidence:
+          - {file: datasets/emiliania_huxleyi_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "bibliography", supports: true}
+          - {file: datasets/emiliania_huxleyi_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "slot 3217 scout, collision false", supports: true}
+          - {file: datasets/emiliania_huxleyi_turing_wavelength_s0/README.md, lines: [1, 30], note: "states 5.8 nm and 0 Ma", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Each modelling step in the script points at the wavenumber formula, the chronoseries identities, or the SEM segmentation. The Lean module proves the same picometre identities with no sorry. It was not executed here."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3217_emiliania_huxleyi_turing_wavelength_s0.lean, lines: [14, 59], note: "six theorems, zero sorry", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-emiliania-huxleyi-turing-wavelength-s0.yaml, lines: [1, 40], note: "law registration", supports: true}
+      repro-package:
+        value: 90
+        rationale: "Deterministic seed, pinned dt and grid, --self-test gate on r > 0.98, and regenerated GIF/PNG hashes recorded in this audit. Signing keys are not on this machine."
+        evidence:
+          - {file: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py, lines: [68, 88], note: "slot constants including seed, grid, dt", supports: true}
+          - {file: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py, lines: [703, 716], note: "CLI --self-test and render entry", supports: true}
+    remediation:
+      - id: R1
+        item: "Closed. Tangential-Sobel annulus returns harmonic 30, spoke score 5.20, centre [192, 168], and that harmonic sets the shield."
+      - id: R2
+        item: "Closed. wing_rmse = 0.0629 at dt = 0.006, stored beside the selection-band RMSE 0.0182. The wing error is still larger than the band error; it is reported rather than hidden."
+    needs:
+      - id: R1
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Tangential-Sobel spoke count on the real coccolith."
+        status: resolved
+        novelty_n: 0.6
+        contradiction_c: 0.2
+        depth_d: 1.0
+        age_days_a: 0
+      - id: R2
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Separate damped-wing RMSE at a smaller dt."
+        status: resolved
+        novelty_n: 0.4
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
