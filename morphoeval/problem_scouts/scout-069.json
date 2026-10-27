@@ -1,0 +1,319 @@
+{
+  "scout": "scout-069",
+  "ground": "predictions",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "id": "ZF-CLK-01",
+      "title": "Zebrafish S∝T_clock: Pass-4 remediation exports literature-pinned paired period–somite table",
+      "gap": "ZF-CLK-01 is partially_resolved because no single source tabulates paired segmentation-clock period T and somite length S under controlled wavefront speed; resolutions/zebrafish.json names this explicitly and the registry quantitative_expectation (×0.80–×1.20 within 5 pp) is untestable without the series.",
+      "done": "A new SHA-256-pinned JSON under predictions/evidence/ (or datasets/clock_and_wavefront/) lists ≥3 literature rows each with DOI, figure/table pin, measured T, measured S, wavefront-control note, and derived slope d(log S)/d(log T); a scorer confirms |slope−1|≤0.05 after size correction OR documents refutation; a new predictions/resolutions/*.json row cites the file hash and upgrades ZF-CLK-01 from partially_resolved to confirmed or refuted.",
+      "tool_route": "12-step MorphoEval loop on flagship clock scripts: (1) builder closes morphoeval/cloud/dispatches/slot-021.json pass3_remediation_open items L1141-1149 and L883-976 in 1976-cooke-clock-and-wavefront.py by vendoring digitised Dubrulle et al. 2001 / Herrgen et al. 2010 somite-size ratios into datasets/clock_and_wavefront/literature_somite_period_pairs.json; (2) parallel Pass-4 on 2003-lewis-her1-her7-delayed-oscillator.py per morphoeval/audits/2026-10-19-her1-her7-delayed-oscillator-audit-v3.yaml remediation L291-295 and L1350-1454 so lattice periods drive somite ribbon spacing; (3) python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v4.yaml; (4) python3 morphoeval/build_morphoeval_kg.py … --conform; (5) python3 morphoeval/track_loop.py init --run-id predictions-zf-clk-01-pass4.",
+      "deciding_data": "In repo: datasets/danio_rerio_clock_wavefront/protein_states.json, predictions/prediction_registry.json (ZF-CLK-01 row), resolutions/zebrafish.json; one public fetch: Dubrulle et al. 2001 Development (bead somite sizing), Herrgen et al. 2010 Nature (period manipulations), Giudicelli et al. 2007 cited in her1 audit.",
+      "prior_attempts": "2026-10-26 local resolution pass (predictions/resolutions/zebrafish.json): OpenAlex literature bound the proportional architecture but did not extract a paired table; META-RES-03 forecast partial_only and was refuted only because ZF-HH-01 also landed partial (5 not 4).",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Named Pass-3→4 loop artifacts (1976-cooke-clock-and-wavefront.py, measure_outputs.py, build_morphoeval_kg.py, track_loop.py) already govern clock morphometrics; remediation items are line-pinned in slot-021.json."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "Law and sensitivity live in-repo; decisive paired numbers require page-pinned digitisation from named DOIs, not a single bundled CSV."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done is a hashed JSON table plus slope threshold against the registered ±5 pp multiplier band."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Digitisation + one audit re-score + self-tests fit in hours on the existing Python stack."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Closes with mostly new evidence/resolution files, but Pass-4 still touches flagship scripts and a new audit YAML (parallel agents must not share those paths)."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One remediation loop can produce the sidecar; registry outcome update is a second commit via score_resolutions."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "OpenAlex-only resolution was explicitly insufficient; no prior attempt refuted the digitisation+Pass-4 route."
+        }
+      }
+    },
+    {
+      "id": "XT-CLK-01",
+      "title": "Xenopus clock-wavefront replication: non-circular somite-organoid tempo + shared paired-series sidecar",
+      "gap": "XT-CLK-01 mirrors ZF-CLK-01: resolutions/xenopus.json records missing paired Xenopus period and somite-length measurements under controlled wavefront; cross-species test of the same multipliers cannot reuse zebrafish-only tables.",
+      "done": "predictions/evidence/xt-clk-01_paired_ts.json (or datasets/human_somite_organoid_clock/xenopus_literature_pairs.json) contains ≥2 Xenopus rows with DOI pins and the same slope criterion as ZF-CLK-01; 2019-diaza-human-somite-organoid-clock.py measure_morphoeval() no longer overrides human tempo with observed-period constants (audit v3 remediation L296-303 closed); resolution batch row upgrades XT-CLK-01 outcome.",
+      "tool_route": "Pass-4 on 2019-diaza-human-somite-organoid-clock.py following morphoeval/audits/2026-10-19-human-somite-organoid-clock-audit-v3.yaml remediation L296-316; export somite-size vs period from Notch-lattice output; reuse clock Pass-4 literature JSON where species match; python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-human-somite-organoid-clock-audit-v4.yaml; sign_morphoeval.py test registry optional.",
+      "deciding_data": "In repo: datasets/xenopus_tropicalis_clock_wavefront/, resolutions/xenopus.json; public: Xenbase-linked somitogenesis papers surfaced in XT-CLK-01 resolution (hes clock wavefront framework).",
+      "prior_attempts": "2026-10-26 xenopus resolution batch: bound architecture, no paired series; diaza script Pass-3 left circular tempo mapping open (slot human-somite audit v3).",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "MorphoEval loop already scored diaza organoid clock through Pass-3 with explicit open remediation tied to S∝T honesty."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Xenopus dataset sidecar in repo; decisive pairs need literature digitisation similar to ZF-CLK-01."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Same slope/multiplier contract as ZF-CLK-01 with species-specific JSON and non-circular model RMSE reported in audit v4."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Organoid script self-test ~14 s; full Pass-4 + digitisation remains same-day compute."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Evidence JSON isolates cleanly; fixing circular tempo requires editing the diaza flagship script."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Likely two loop passes (model honesty, then literature sidecar) before registry scoring."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Prior pass only bounded; tempo-circular remediation route not attempted."
+        }
+      }
+    },
+    {
+      "id": "ZF-VTX-01",
+      "title": "Zebrafish vertex-packing p0*=3.813: Bi jamming Pass-4 + zebrafish EVL shape-index time series",
+      "gap": "ZF-VTX-01 lacks a zebrafish epithelial shape-index transition series in 3.76–3.87; resolutions/zebrafish.json states OpenAlex found no tabulated EVL/epiboly p0 trajectory; danio_rerio_vertex_packing_reference.json empirical_series is model-calibration scaffolding, not tissue data.",
+      "done": "predictions/evidence/zf-vtx-01_evl_shape_index.json lists ≥8 epiboly stages with measured ⟨p⟩ or shape index, SEM/CI, and source image DOI; transition estimate p0* falls inside or outside [3.76,3.87] per registry falsifier; optional link to 2015-bi-vertex-glass-jamming.py measure_morphoeval() shape-index row with external reference_value replaced from the sidecar.",
+      "tool_route": "Pass-4 on 2015-bi-vertex-glass-jamming.py closing morphoeval/audits/2026-10-19-vertex-glass-jamming-audit-v3.yaml remediation L289-298 (pin JSONs, digitise Bi 2016 boundaries) plus new branch: vendor CC-licensed zebrafish EVL/epiboly micrograph sequence (audit asks to relabel specimen or vendor tissue-specific image L305-309); segment with verify_image_fitness.py / manual polygon pipeline; python3 morphoeval/measure_outputs.py on new audit v4; emit predictions sidecar only for registry follow-up.",
+      "deciding_data": "In repo: datasets/danio_rerio_vertex_packing/ poson_law 3.813; public: published zebrafish epiboly/EVL imaging (Bi 2015, 2016 SPV cited in clock/bi audits) and vertex-model literature value 3.813.",
+      "prior_attempts": "2026-10-26 zebrafish resolution: partial_only as forecast; no image digitisation pass attempted.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Remediation lens fits Bi jamming loop (slot vertex-glass) and measure_outputs morphometric-validation; pure literature mining without segmentation is the literature lens."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Images exist in literature but are not yet vendored or segmented in-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Interval test [3.76,3.87] against a hashed time series is mechanical."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Bi script self-test ~61 s; segmentation batch on static micrographs is CPU-only."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Sidecar + new audit/measurements YAML can isolate; flagship bi script edits conflict with other loop agents."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One sitting if images are pre-selected; longer if specimen licensing search is needed."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Literature-only OpenAlex route already failed to decide; segmentation+digitisation not tried."
+        }
+      }
+    },
+    {
+      "id": "DM-MUR-NEG-01",
+      "title": "Drosophila tracheal Murray exponent: Metzger branching-tree Pass-4 with literature junction radii",
+      "gap": "DM-MUR-NEG-01 needs tabulated Drosophila tracheal parent/daughter diameters across branch orders to fit Murray exponent against registered band 2.8–3.2; resolutions/drosophila.json only bounds via other insects, not D. melanogaster morphometry.",
+      "done": "predictions/evidence/dm-mur-neg-01_tracheal_diameters.json holds ≥10 junctions (r0,r1,r2 in µm) with DOI/figure pins; fitted exponent γ with bootstrap 95% CI; CI entirely outside [2.8,3.2] confirms negative prediction, inside refutes; Murray 1959 loop or Metzger 1999 script measure_morphoeval() references the external table not scaffold empirical_series.",
+      "tool_route": "Pass-4 on models/1999-metzger-drosophila-melanogaster-mm1-4-larval-tracheal-10-metamere-branching-network-branching-tree.py (datasets/drosophila_melanogaster_branching_tree poson_law Murray) and/or 1959-murray-vascular-cube-law-branching.py slot-052 pass3_remediation_open (vendor page-pinned junctions, not circular Zamir table); python3 morphoeval/measure_outputs.py; optional cross-check Ghabrial 2006 tracheal imagery for lumen radii; new resolution JSON row.",
+      "deciding_data": "In repo: datasets/drosophila_melanogaster_branching_tree/; public: Metzger et al. 2008 tracheal development, Ghabrial et al. 2006 (FlyBase-linked), Murray-law reviews cited in resolution.",
+      "prior_attempts": "2026-10-26 drosophila resolution: OpenAlex insect Murray non-optimality bounds only; DM-MUR-NEG-01 partial as predicted.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Murray branching-tree scripts and measure_outputs already implement exponent fitting; remediation closes morphometric-validation circularity flagged in slot-052/059 audits."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Fly tracheal micrographs and papers exist publicly; no digitised diameter table in repo yet."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Exponent CI vs [2.8,3.2] is a binary registry outcome."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Fit on ≤20 junctions is instant once digitised."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Evidence JSON + new resolution file can land zero-conflict; Murray script edits are optional if sidecar alone decides."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Digitisation-dominated; one loop if papers are chosen upfront."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior Drosophila-specific diameter extraction attempt recorded."
+        }
+      }
+    },
+    {
+      "id": "ZF-HH-01",
+      "title": "Zebrafish Shh lipidation gradient shape: stand up morphogen Pass-1 loop with ptc-domain morphometrics",
+      "gap": "ZF-HH-01 confirmed lipidation requirement but not the registered gradient-shape claim (distal ptc expansion + reduced near-source peak upon lipidation loss); resolutions/zebrafish.json lists missing paired ptc1/ptc2 domain measurements in zebrafish tissue.",
+      "done": "predictions/evidence/zf-hh-01_ptc_domains.json contains WT vs lipidation-perturbed rows with peak intensity, domain length in µm, and distal boundary position from named assays; directional sign matches registry for confirm, opposite for refute; danio morphogen flagship has morphoeval audit v2 with measure_morphoeval() rows pointing at the sidecar references (not UniProt alone).",
+      "tool_route": "New MorphoEval loop slot targeting danio_rerio morphogen condensation (2010-nakamasu-danio-rerio-morphogen-condensation.py or successor): Pass-1 audit → Pass-2 remediation adds literature-anchored ptc metrics to measure_morphoeval(); python3 morphoeval/measure_outputs.py; build_morphoeval_kg.py; literature digitisation may precede in parallel (literature lens) but closure requires this loop.",
+      "deciding_data": "In repo: UniProt Q92008 in prediction_registry evidence_snapshot, datasets/danio_rerio_morphogen_condensation/; public: doi:10.1039/C4SC01600A, ZFIN shha (syu), ptc expression-domain papers cited in resolution.",
+      "prior_attempts": "2026-10-26 resolution: lipidation functional evidence extracted; gradient-shape claim explicitly NOT established; harder_than_predicted vs conf 0.70.",
+      "factors": {
+        "tool_fit": {
+          "score": 14,
+          "why": "Remediation loop applies once a morphogen script exposes measure_morphoeval(); current danio morphogen audit is a stub (no Pass-3 remediation list)."
+        },
+        "data_in_hand": {
+          "score": 7,
+          "why": "Protein state in-repo; quantitative ptc domains only in scattered literature figures."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Directional peak/range inequalities are checkable from a table, though some assay normalization remains explicit in JSON."
+        },
+        "compute_in_repo": {
+          "score": 9,
+          "why": "Low compute; cost is audit authorship and figure digitisation."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Evidence sidecar + new audit files can isolate; nakamasu script upgrade may conflict."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Requires inaugural Pass-1→2 loop on a stub audit before prediction closure."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior ptc-domain digitisation pass; OpenAlex route stopped at partial."
+        }
+      }
+    },
+    {
+      "id": "PRED-SCAFFOLD-EMPIRICAL",
+      "title": "Danio poson-law reference JSONs: remediate circular empirical_series before reusing in prediction scoring",
+      "gap": "datasets/danio_rerio_clock_wavefront/ and danio_rerio_vertex_packing/ reference JSONs carry high-r scaffold empirical_series unrelated to the biological series missing for ZF-CLK-01 and ZF-VTX-01; conflates model calibration with empirical validation in multi-scale nakamasu audits (95.6/100 stubs).",
+      "done": "Pass-2 remediation on 2011-nakamasu-danio-rerio-clock-wavefront.py and 2013-nakamasu-danio-rerio-vertex-packing.py either (a) replaces empirical_series with literature-pinned biology or (b) renames fields to model_calibration_series with README disclosure; measure_outputs.py on danio audits shows morphometric-validation references not self-correlated; scout_manifest records prediction_registry cross-links.",
+      "tool_route": "Dual-agent audit refresh: morphoeval/audits/2026-10-19-danio-rerio-clock-wavefront-audit-v3.yaml (new) with remediation items; python3 morphoeval/measure_outputs.py; build_morphoeval_kg.py --check; no change to locked prediction_registry text.",
+      "deciding_data": "In repo: all ten danio_rerio_* dataset folders, predictions/prediction_registry.json organism evidence_snapshot.",
+      "prior_attempts": "Prediction registry 2026-10-26 scoring used resolutions/, not nakamasu empirical_series; gap unaddressed in audits.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "Pure MorphoEval audit/remediation/measure_outputs workflow; does not alone decide biology predictions without literature sidecars."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Mislabeled series already in-repo; fix is disclosure or replacement using same public sources as partial predictions."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done is schema/field rename plus audit score re-derived with external references or explicit model-only labels."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Stub scripts, quick remeasure."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Touches shared dataset JSON patterns used by many danio slots."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One audit pass per mechanism if scope limited to clock+vertex."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Integrity issue not previously attempted."
+        }
+      }
+    },
+    {
+      "id": "PRED-RES-BATCH-V2",
+      "title": "Partial-prediction closure batch: evidence sidecars + new resolutions file (registry text stays locked)",
+      "gap": "Five predictions remain partially_resolved; META-RES-03 refuted because count is 5 not 4; docs/open-problems.json registered_prediction_followups lists exact missing series; no second resolutions batch exists after 2026-10-26.",
+      "done": "New predictions/resolutions/partial-quantitative-pass.json (unique batch name) contains one resolution per still-partial ID with evidence field = SHA-256 of matching predictions/evidence/*.json; python3 predictions/score_resolutions.py run only after human review updates registry outcomes; git diff on prediction_registry.json shows only status/outcome/resolvability fields changed.",
+      "tool_route": "After any single Pass-4 above lands evidence: python3 predictions/score_resolutions.py (registry lens tool, invoked post-remediation); morphoeval/build_morphoeval_kg.py to nanopublish evidence hashes optional; track_loop.py records loop telemetry for the remediation sprint.",
+      "deciding_data": "In repo: predictions/resolutions/*.json (four batches), prediction_registry.json scoring note; evidence sidecars produced by sibling remediation loops.",
+      "prior_attempts": "2026-10-26 four resolution batches closed 9/14 fully; five partial by design; score_resolutions.py already ran once.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "Remediation loop produces inputs; score_resolutions.py is registry lens but is the mandated merge step after evidence exists."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Registry and resolutions in-repo; decisive series still absent until sibling remediations finish."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Each row outcome must flip from partially_resolved per sidecar hash and pre-registered criteria."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "score_resolutions is seconds; blocked on evidence not CPU."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New resolutions JSON only if registry edit deferred or isolated branch."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Batch merge is quick; blocked on upstream quantitative work."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Re-running score_resolutions without new evidence would not change outcomes; partial route blocked until sidecars land."
+        }
+      }
+    },
+    {
+      "id": "CLOCK-PIN-HASH",
+      "title": "Clock-and-wavefront reference integrity: SHA-256 pin JSON used by measure_morphoeval (supports all clock partials)",
+      "gap": "1976-cooke-clock-and-wavefront.py Pass-3 audit flags fgf_ra_vertex_reference.json and clock_and_wavefront_reference.json as unpinned (L125-132, L258-260), so reference values feeding somite-length morphometrics can drift silently during prediction follow-up work.",
+      "done": "EXPECTED_SHA256 in 1976-cooke-clock-and-wavefront.py includes both JSON digests; verify_dataset_integrity fails closed on mismatch; morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v4.yaml records pins in source-traceability evidence; self-test passes.",
+      "tool_route": "Single remediation item from slot-021 pass3_remediation_open L125-132; python3 1976-cooke-clock-and-wavefront.py --self-test; python3 morphoeval/measure_outputs.py on v4 audit; no prediction registry edit.",
+      "deciding_data": "In repo: datasets/clock_and_wavefront/*.json, slot-021 dispatch.",
+      "prior_attempts": "Pass-3 closed front-velocity and vertex-sheet items but left pinning open.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Exact one-item MorphoEval Pass-4 closure already specified in dispatch JSON."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Files and hashes entirely in-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Tamper test: change one float in JSON → integrity check fails."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Minutes including self-test."
+        },
+        "isolation": {
+          "score": 5,
+          "why": "Must edit flagship clock script EXPECTED_SHA256 map."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single-sitting micro-remediation."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not attempted in Pass-3."
+        }
+      }
+    }
+  ]
+}
