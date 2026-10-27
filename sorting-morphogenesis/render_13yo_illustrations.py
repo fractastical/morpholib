@@ -722,19 +722,26 @@ def render_fig7_final_scoreboard():
 
 def render_fig8_ai_vs_human_authorship_heatmap():
     """
-    Illustrated Guide 8 (Methods Section): Heatmap of Human vs. AI-Agent Contribution
-    Across All 9 Sections of the Article and 5 Workflow Dimensions.
+    Illustrated Guide 8 (Appendix of the Substack article): Heatmap of Human vs.
+    AI-Agent Contribution Across All 12 Sections of the Article and 5 Workflow
+    Dimensions.
 
     The summary percentages printed on the figure (and quoted in the Substack article)
     are COMPUTED from `ai_matrix` below (unweighted mean across sections), so the
     figure can never disagree with its own cells. Run this function to print them.
+
+    Rows follow the museum order of `docs/SUBSTACK_LEVIN_LATENT_SPACE_ARTICLE.md`.
+    Rows 9–12 were added when the article grew: the Curator’s Reply (Nathan Sweet)
+    was split out of the old "D vs. D+P & Conclusion" row, and the Annex (human
+    draft of ~5,000 characters pasted into the agent, then copy-edited), the Exit /
+    Reading Room, and the `++` footnote + Problem Graph plate each got their own row.
     """
-    fig, axes = plt.subplots(1, 2, figsize=(14.4, 6.8), dpi=160, facecolor="#0b1325", gridspec_kw={"width_ratios": [1.55, 1.0]})
-    fig.subplots_adjust(wspace=0.22, left=0.215, right=0.97, top=0.81, bottom=0.15)
+    fig, axes = plt.subplots(1, 2, figsize=(14.4, 8.4), dpi=160, facecolor="#0b1325", gridspec_kw={"width_ratios": [1.55, 1.0]})
+    fig.subplots_adjust(wspace=0.22, left=0.235, right=0.97, top=0.845, bottom=0.125)
 
     fig.suptitle(
         "Methods Transparency: Heatmap of AI-Agent vs. Human Authorship Across This Article",
-        color="#f8fafc", fontsize=14.2, fontweight="bold", y=0.955
+        color="#f8fafc", fontsize=14.2, fontweight="bold", y=0.965
     )
 
     sections = [
@@ -744,9 +751,12 @@ def render_fig8_ai_vs_human_authorship_heatmap():
         "4. Claim 3: C=2 Anti-Clustering Wave",
         "5. Claim 4: 10,303 Fishes & Blind Test",
         "6. Claims 5–7: Planaria, Frogs & Biobots",
-        "7. Final Scoreboard & 3-Pillar Rubric",
-        "8. Methods: Neuro→Bio→MorphoEval (AEL)",
-        "9. D vs. D+P, Foresight & Conclusion",
+        "7. Scoreboard Room & 3-Pillar Rubric",
+        "8. Conservation Lab: Neuro→Bio→MorphoEval",
+        "9. Curator’s Reply: D vs. D+P & Foresight",
+        "10. Annex: Dualism, Within/Without, AI Stack",
+        "11. Exit: Thompson 1913, Aristotle & Verdict",
+        "12. Footnotes, the ++ & Problem Graph",
     ]
     dims = [
         "Hypothesis &\nDirection\n(% AI)",
@@ -764,25 +774,33 @@ def render_fig8_ai_vs_human_authorship_heatmap():
         [ 20,  70,  92,  94,  88],  # 4. Claim 3 (C=2 Anti-Clustering)
         [ 15,  65,  88,  90,  85],  # 5. Claim 4 (10,303 Fishes, PI drove 17-dot & box tests!)
         [ 35,  78,  94,  95,  92],  # 6. Claims 5-7 (Bioelectric & Xenobot Pass 3 PDEs)
-        [ 20,  60,  70,  60,  80],  # 7. Final Scoreboard (PI chose 3-pillar weights & D/P split; AI tallied)
-        [ 15,  62,  85,  88,  90],  # 8. Methods (NeuroEval -> BioEval -> MorphoEval)
-        [ 10,  45,  75,  80,  82],  # 9. D vs D+P, Foresight reflection, Thompson 1913 / Aristotle psyche & Conclusion
+        [ 20,  60,  70,  60,  80],  # 7. Scoreboard Room (PI chose 3-pillar weights & D/P split; AI tallied)
+        [ 15,  62,  85,  88,  90],  # 8. Conservation Lab / Methods (NeuroEval -> BioEval -> MorphoEval)
+        [ 15,  58,  90,  92,  88],  # 9. Curator's Reply (Sweet critique chosen & Foresight paragraph by PI; walkthrough drafted by AI from locked audit files)
+        [ 10,  25,  40,  30,  60],  # 10. Annex (PI pasted ~5k-char draft + Deep Platonic AI Stack; AI copy-edited, added links/refs, drafted the override arithmetic paragraph)
+        [ 10,  40,  75,  80,  82],  # 11. Exit / Reading Room (Hellenic Tantra, Thompson 1913 / Aristotle psyche & conclusion by PI; scoreboard bullets by AI)
+        [ 15,  72,  90,  60,  80],  # 12. Footnotes, the ++ & Problem Graph (PI: "81.6++%" idea + GIF; AI drafted footnote 3, built animation)
     ], dtype=float)
     assert ai_matrix.shape == (len(sections), len(dims))
 
     # Summary statistics derived from the matrix itself (unweighted mean over sections).
+    technical_rows = [1, 2, 3, 4, 5, 7, 8]  # Claims 1-7, Conservation Lab, Curator's Reply
     hyp_ai = float(ai_matrix[:, 0].mean())
     prose_ai = float(ai_matrix[:, 1].mean())
     tech_ai = float(ai_matrix[:, 2:5].mean())
+    tech_ai_technical = float(ai_matrix[technical_rows, 2:5].mean())
     summary = {
+        "n_sections": len(sections),
         "hypothesis_ai_pct": round(hyp_ai, 1),
         "hypothesis_human_pct": round(100 - hyp_ai, 1),
         "prose_ai_pct": round(prose_ai, 1),
         "prose_human_pct": round(100 - prose_ai, 1),
         "code_proof_audit_ai_pct": round(tech_ai, 1),
         "code_proof_audit_human_pct": round(100 - tech_ai, 1),
-        "prose_ai_range_sections_2_to_8": (int(ai_matrix[1:8, 1].min()), int(ai_matrix[1:8, 1].max())),
-        "tech_ai_range_technical_sections": (int(ai_matrix[[1, 2, 3, 4, 5, 7], 2:5].min()), int(ai_matrix[[1, 2, 3, 4, 5, 7], 2:5].max())),
+        "code_proof_audit_ai_pct_technical_sections_only": round(tech_ai_technical, 1),
+        "prose_ai_range_technical_sections": (int(ai_matrix[technical_rows, 1].min()), int(ai_matrix[technical_rows, 1].max())),
+        "tech_ai_range_technical_sections": (int(ai_matrix[technical_rows, 2:5].min()), int(ai_matrix[technical_rows, 2:5].max())),
+        "prose_human_pct_by_section": {i + 1: int(100 - ai_matrix[i, 1]) for i in range(len(sections))},
         "sections_ge_85pct_human_direction": [i + 1 for i in range(len(sections)) if ai_matrix[i, 0] <= 15],
     }
     print("AI-vs-human authorship summary (computed from ai_matrix):")
@@ -790,7 +808,7 @@ def render_fig8_ai_vs_human_authorship_heatmap():
         print(f"  {k}: {v}")
 
     fig.text(
-        0.5, 0.90,
+        0.5, 0.92,
         f"Overall Article Text Breakdown (unweighted mean of {len(sections)} sections): {100 - prose_ai:.1f}% Direct Human Writing & Edits (Joel Dietz) · "
         f"{prose_ai:.1f}% AI-Assisted Synthesis & Technical Drafting  |  Code / Proofs / Audits: {tech_ai:.1f}% AI Agents",
         color="#93c5fd", fontsize=8.6, fontweight="bold", ha="center"
