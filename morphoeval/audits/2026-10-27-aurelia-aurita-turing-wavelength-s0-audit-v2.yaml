@@ -1,0 +1,200 @@
+# MorphoEval audit — Aurelia aurita 201 µm Turing ocellus wavelength, pass 2
+#
+# Supersedes 2026-10-27-aurelia-aurita-turing-wavelength-s0-audit (overall 82.2).
+# Single assessor remains grok-4.7. Weighted mean of the scores below is 85.0.
+# R1, R2, and R3 from pass 1 are addressed in the script and the new figure.
+# R4 (second assessor) and R5 (no histological 201 µm measurement) stay open.
+
+audit:
+  id: 2026-10-27-aurelia-aurita-turing-wavelength-s0-audit-v2
+  supersedes: 2026-10-27-aurelia-aurita-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-aurelia-aurita-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent pass 2)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Working-tree pass 2. Commit 0c76d15d is the branch base and does not
+      contain these files. Origin of this checkout is not github.com/fractastical/morpholib,
+      so build_morphoeval_kg.py does not verify blob URLs.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  nakanishi2009:
+    title: "Development of the rhopalial nervous system in Aurelia sp.1 (Cnidaria, Scyphozoa)"
+    authors: "Nakanishi N, Hartenstein V, Jacobs DK"
+    venue: "Development Genes and Evolution 219:301-317 (2009)"
+    doi: 10.1007/s00427-009-0291-y
+  helm2018:
+    title: "Evolution and development of scyphozoan jellyfish"
+    authors: "Helm RR"
+    venue: "Biological Reviews 93:1228-1250 (2018)"
+    doi: 10.1111/brv.12393
+  thoma2015:
+    title: "Aurelia aurita in a museum in Karlsruhe"
+    authors: "Thoma M"
+    venue: "Wikimedia Commons File:Aurelia-aurita-3.jpg (2015), CC0"
+    url: https://commons.wikimedia.org/wiki/File:Aurelia-aurita-3.jpg
+
+simulations:
+  - id: delphi10000-aurelia-aurita-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at the Aurelia aurita 201 µm ocellus scale"
+    organism: "Aurelia aurita (moon jellyfish), Holocene, 0 Ma"
+    script: models/2026-delphi10000-aurelia-aurita-turing-wavelength-s0.py
+    output: docs/media/aurelia_aurita_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/aurelia_aurita_turing_wavelength_s0_growth.gif
+      - datasets/aurelia_aurita_turing_wavelength_s0/aurelia_aurita_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-aurelia-aurita-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, nakanishi2009, helm2018, thoma2015]
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: a reaction-diffusion system can select a finite wavelength."
+        - "Schnakenberg 1979: the two-species kinetics implemented here."
+        - "Nakanishi, Hartenstein & Jacobs 2009: Aurelia rhopalia develop a pigment-cup ocellus."
+        - "Helm 2018: a scyphozoan medusa has eight rhopalia."
+        - "Thoma 2015 CC0 photograph of living Aurelia aurita."
+      reconstructed_in_script:
+        - "a=0.10, b=0.90, Du=1, Dv=20, gamma=1, chosen so lambda_c equals 0.0002006 m."
+        - "Spectral integration, dispersion fit (Pearson r = 0.9999), Dv sweep (r = 0.9978), equal-diffusion ablation drawn on the patterned colour scale."
+        - "Bell-body circularity after an 8 px distance threshold, and an angular lobe count on the clipped oral bell."
+      transfer_boundary:
+        - "201 µm is the assigned detail scale (0.0002006 m, log10 = -3.698), not a length measured on the photograph or in the cited papers."
+      does_not_claim:
+        - "That eight rhopalia equal the bell circumference divided by 201 µm."
+        - "That the Karlsruhe photograph resolves the ocellus wavelength."
+        - "That the lobe counter recovered four gonads. It returned 1."
+    summary: >-
+      Pass 2 keeps the Holocene 201 µm Schnakenberg node (chronoseries 1/1,
+      age 0 Ma). Dispersion Pearson r = 0.9999, RMSE = 0.017, KS = 0.167.
+      Patch FFT wavelength is 0.0002027 m against the assigned 0.0002006 m.
+      The equal-diffusion field (std 3e-5, sigma_max = -0.102) is drawn on
+      the patterned colour scale and is blank. Bell-body circularity is 0.462
+      against 1. The oral-bell lobe counter returned 1 against four gonads;
+      that miss is reported and not repaired by editing the reference.
+      Computer-vision similarity of the 12-frame 720×540 GIF to the photograph
+      is 96.0, with the last frame 90 percent photograph and 10 percent activator.
+      Overall 85.0.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Schnakenberg kinetics, steady state, Jacobian, and sigma(k) are
+          the published objects. k_c = (det/(Du Dv))^1/4 is the band centre;
+          the PDE argmax of sigma is 0.485 against k_c = 0.473 and the gap is
+          kept. a, b, Du, Dv, gamma are a calibration to 0.0002006 m, not a
+          table copied from Schnakenberg or from the sibling Aurelia stub.
+          Lean checks the scaled discriminant, the equal-diffusion failure,
+          the 201 µm rounding identity, and the separation of eight rhopalia
+          from the tier label. No sorry.
+        evidence:
+          - {file: models/2026-delphi10000-aurelia-aurita-turing-wavelength-s0.py, lines: [69, 111], note: "Jacobian, discriminant, sigma(k)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3129_aurelia_aurita_turing_wavelength_s0.lean, lines: [22, 56], note: "six theorems, zero sorry, including equal diffusion and the 201 label", supports: true}
+      specimen-match:
+        value: 76
+        rationale: >-
+          The left panel is the CC0 Karlsruhe medusa. The middle panel is a
+          spot field on a 602 µm patch with a 201 µm bar, which is the ocellus
+          motif and not a picture of that medusa. The right panel is now blank
+          on the shared colour scale, so the ablation no longer looks like a
+          stripe. The GIF ends on a frame that is 90 percent the photograph,
+          which is why the vision score is high and why this dimension does
+          not go higher.
+        evidence:
+          - {file: docs/media/aurelia_aurita_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "blank control panel, spot field, dispersion, sweep", supports: true}
+          - {file: models/2026-delphi10000-aurelia-aurita-turing-wavelength-s0.py, lines: [474, 478], note: "control imshow uses the patterned field vmin and vmax", supports: true}
+          - {file: datasets/aurelia_aurita_turing_wavelength_s0/pass1_comparison.png, lines: [0, 0], note: "pass 1 control panel, kept so the fix can be seen", supports: false}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Dv from 12 to 48 moves the predicted wavelength from 177 µm to 250 µm.
+          The FFT peak follows it (Pearson r = 0.9978); the Dv=48 point is
+          slightly short of the curve. Du = Dv = 1 gives sigma_max = -0.102
+          and std = 3e-5, and the figure shows that field as blank. gamma is
+          not swept. This is the within-node comparison: the chronoseries has
+          no other age.
+        evidence:
+          - {file: models/2026-delphi10000-aurelia-aurita-turing-wavelength-s0.py, lines: [284, 321], note: "Dv sweep and equal-diffusion control", supports: true}
+          - {file: datasets/aurelia_aurita_turing_wavelength_s0/aurelia_aurita_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "sweep rows, control std, pass = 2", supports: true}
+      morphometric-validation:
+        value: 85
+        rationale: >-
+          Dispersion: Pearson r = 0.9999, RMSE = 0.017, KS = 0.167 (reference
+          0). Wavelength from the patch FFT is 0.0002027 m against 0.0002006 m.
+          Sweep Pearson r = 0.9978. Bell-body circularity is 0.462 against a
+          circle at 1, up from the pass-1 ragged mask at 0.328, and still not
+          a circle because the central animal is a side view. Foreground
+          fraction 0.437 and coherency 0.345 are measured on the photograph;
+          the spot field coherency is 0.849. The angular lobe counter on the
+          clipped oral bell returned 1 against four gonads. That failure is
+          left in the table.
+        evidence:
+          - {file: models/2026-delphi10000-aurelia-aurita-turing-wavelength-s0.py, lines: [128, 149], note: "eigenvector-seeded growth versus analytical sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-aurelia-aurita-turing-wavelength-s0.py, lines: [323, 407], note: "8 px distance-threshold body and angular lobe count", supports: true}
+          - {file: datasets/aurelia_aurita_turing_wavelength_s0/aurelia_aurita_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "r=0.9999, circularity=0.4622, lobes=1, wavelength=0.0002027 m", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Turing 1952, Schnakenberg 1979, Nakanishi 2009, and Helm 2018 are
+          cited with DOIs. The specimen file is Martin Thoma's CC0 photograph,
+          SHA-256 f4f54dc98dc4d9b364c41744f74c8a6d97b9d4f1fdde43d396bb40a48cb6a31f,
+          checked in self-test. The reference JSON states that no consulted
+          paper measures 201 µm.
+        evidence:
+          - {file: datasets/aurelia_aurita_turing_wavelength_s0/paper_citations.bib, lines: [1, 72], note: "five citations including the CC0 photograph", supports: true}
+          - {file: models/2026-delphi10000-aurelia-aurita-turing-wavelength-s0.py, lines: [712, 716], note: "SHA-256 pin checked at runtime", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          The docstring writes the PDE, the Jacobian numbers, k_c, and the
+          0.0002006 m calibration. Pass 2 comments mark the shared colour
+          scale and the tentacle threshold as the remedies for pass 1.
+          Lean theorem names match the discriminant. There is still no
+          equation number from a page of Schnakenberg 1979.
+        evidence:
+          - {file: models/2026-delphi10000-aurelia-aurita-turing-wavelength-s0.py, lines: [1, 28], note: "docstring equations, scale, and the eight-rhopalia caveat", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-aurelia-aurita-turing-wavelength-s0.yaml, lines: [12, 61], note: "four laws with Lean loci", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          Seed 3129. --self-test passes (r = 0.9999) and the full script
+          rewrites the PNG, the 12-frame 720×540 GIF, and the metrics JSON.
+          Pass-1 pixels are kept beside the new figure. Dependencies are the
+          repo scientific stack. One agent scored both passes.
+        evidence:
+          - {file: models/2026-delphi10000-aurelia-aurita-turing-wavelength-s0.py, lines: [712, 760], note: "self_test threshold r > 0.98 and main", supports: true}
+          - {file: datasets/aurelia_aurita_turing_wavelength_s0/README.md, lines: [1, 43], note: "201 µm and 0 Ma stated, with the run commands", supports: true}
+    remediation:
+      - id: R1
+        item: "Addressed in pass 2. The equal-diffusion panel uses the patterned vmin/vmax. The panel is blank and the title still records std 0.0000."
+        status: resolved
+      - id: R2
+        item: "Addressed in pass 2. Bell-body circularity is 0.462 after an 8 px distance threshold, against 0.328 for the pass-1 mask. It is still not a circle."
+        status: resolved
+      - id: R3
+        item: "Addressed in pass 2. The lobe reference is 4 gonads. The counter returned 1. The mismatch is stored, not edited away."
+        status: resolved
+      - id: R4
+        item: "Still open. A second assessor from another provider has not scored this script."
+        status: open
+      - id: R5
+        item: "Still open, and it should stay open. No histological measurement of a 201 µm Aurelia pigment wavelength was found. The length remains the assigned detail scale."
+        status: open
