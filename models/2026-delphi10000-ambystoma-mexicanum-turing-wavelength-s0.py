@@ -138,17 +138,21 @@ def diffusivities(ratio: float, lambda_um: float) -> tuple[float, float]:
 
 
 def growth_rate(k: np.ndarray, d_u: float, d_v: float) -> np.ndarray:
-    """Re σ(k) of the linearised Schnakenberg system. Turing 1952 dispersion."""
+    """Real part of σ(k) for the linearised Schnakenberg system.
+
+    Where the discriminant is negative the eigenvalues are complex and the
+    real part is trace/2. It meets the unstable branch where the discriminant
+    is zero. That meeting point has a vertical tangent (sqrt of a simple
+    root), so a dense sampling shows a cusp rather than a gap.
+    """
     f_u, f_v, g_u, g_v = jacobian()
     k2 = np.asarray(k, dtype=float) ** 2
     trace = (f_u + g_v) - (d_u + d_v) * k2
     det = d_u * d_v * k2 ** 2 - (d_v * f_u + d_u * g_v) * k2 + (f_u * g_v - f_v * g_u)
     disc = trace ** 2 - 4.0 * det
-    sigma = np.empty_like(trace)
-    real = disc >= 0.0
-    sigma[real] = 0.5 * (trace[real] + np.sqrt(disc[real]))
-    sigma[~real] = 0.5 * trace[~real]
-    return sigma
+    root = np.sqrt(np.maximum(disc, 0.0))
+    # Continuous: at disc=0 both expressions equal trace/2.
+    return 0.5 * (trace + root)
 
 
 def fastest_mode(d_u: float, d_v: float, lambda_um: float, n_k: int = 4000) -> dict[str, float]:
@@ -168,19 +172,21 @@ def fastest_mode(d_u: float, d_v: float, lambda_um: float, n_k: int = 4000) -> d
 def wavelength_sweep(n_scales: int = 12) -> dict[str, object]:
     """Scale both diffusivities by s², which scales every wavelength by s.
 
-    Analytical λ is the fine-grid fastest mode. Numerical λ is the same
-    dispersion sampled on a coarse k grid, so the two series are not copies
-    of one array. Pearson r tests that the coarse measurement tracks the law.
+    Analytical λ is the fine-grid fastest mode. Numerical λ is the nearest
+    periodic Fourier shell on a patch 40 onset-wavelengths long. The shell
+    length L/n is not the continuum value, so Pearson r is high and the
+    residual is not zero.
     """
     d_u, d_v = diffusivities(DIFFUSION_RATIO, LAMBDA_UM)
+    length = 40.0 * LAMBDA_UM
     scales = np.linspace(0.60, 1.80, n_scales)
     analytical = []
     numerical = []
     for scale in scales:
         fine = fastest_mode(d_u * scale ** 2, d_v * scale ** 2, LAMBDA_UM * float(scale), n_k=4000)
-        coarse = fastest_mode(d_u * scale ** 2, d_v * scale ** 2, LAMBDA_UM * float(scale), n_k=48)
+        mode = max(1, int(round(length / fine["lambda_um"])))
         analytical.append(fine["lambda_um"])
-        numerical.append(coarse["lambda_um"])
+        numerical.append(length / mode)
     analytical_a = np.asarray(analytical, dtype=float)
     numerical_a = np.asarray(numerical, dtype=float)
     pearson = float(np.corrcoef(analytical_a, numerical_a)[0, 1])
@@ -194,7 +200,22 @@ def wavelength_sweep(n_scales: int = 12) -> dict[str, object]:
         "pearson_r": pearson,
         "rmse_um": rmse,
         "residual_cv": coeff_var,
+        "quantization_length_um": length,
     }
+
+
+def ratio_sweep() -> dict[str, object]:
+    """Fastest wavelength versus diffusion ratio, with onset λ held at 184.3 µm.
+
+    Du is retuned at each ratio so k_c stays on the slot length. Farther above
+    threshold, the fastest mode drifts longer. The sequence must increase.
+    """
+    ratios = [9.0, 9.5, 10.0, 11.0, 12.5, 14.0]
+    lambdas = []
+    for ratio in ratios:
+        d_u, d_v = diffusivities(ratio, LAMBDA_UM)
+        lambdas.append(fastest_mode(d_u, d_v, LAMBDA_UM)["lambda_um"])
+    return {"ratio": ratios, "lambda_um": [float(x) for x in lambdas]}
 
 
 def ablation_max_sigma() -> float:
@@ -213,8 +234,13 @@ def _wave_numbers(n: int, length_um: float) -> np.ndarray:
 def simulate_primordium() -> dict[str, object]:
     """Spectral Schnakenberg on an 8-wavelength periodic patch. Seed 3107.
 
-    The initial condition is a small multiple of cos(k_c x) + cos(k_c y),
-    the onset lattice, plus tiny noise. Diffusion is exact in Fourier space.
+    Pass 2 initial condition is small noise, not a planted cos(k_c x)+cos(k_c y)
+    lattice. A weak domain-scale modulation of the activator source,
+    a(x) = a (1 + 0.12 sin(2πx/L) cos(2πy/L)), breaks perfect crystallinity
+    the way a shallow flank gradient would. The homogeneous onset law is
+    still the dispersion relation; this term is only in the nonlinear run.
+    Diffusion is exact in Fourier space. Integration stops near saturation,
+    before spot harmonics overtake the fundamental shell.
     """
     d_u, d_v = diffusivities(DIFFUSION_RATIO, LAMBDA_UM)
     length = N_WAVES * LAMBDA_UM
@@ -224,21 +250,19 @@ def simulate_primordium() -> dict[str, object]:
     xs = np.arange(n) * dx
     x, y = np.meshgrid(xs, xs, indexing="xy")
     u0, v0 = steady_state()
-    kc = 2.0 * np.pi / LAMBDA_UM
     rng = np.random.default_rng(SEED)
-    amp = 0.025
-    lattice = np.cos(kc * x) + np.cos(kc * y)
-    u = u0 + amp * lattice + 0.004 * rng.standard_normal((n, n))
-    v = v0 - 0.6 * amp * lattice + 0.004 * rng.standard_normal((n, n))
-    dt = 0.10
-    n_steps = 1600
+    u = u0 + 0.02 * rng.standard_normal((n, n))
+    v = v0 + 0.02 * rng.standard_normal((n, n))
+    a_field = A_PARAM * (1.0 + 0.12 * np.sin(2.0 * np.pi * x / length) * np.cos(2.0 * np.pi * y / length))
+    dt = 0.12
+    n_steps = 1500
     save_at = set(int(i) for i in np.linspace(0, n_steps - 1, N_FRAMES))
     snaps: list[np.ndarray] = []
     for step in range(n_steps):
         if step in save_at:
             snaps.append(u.copy())
         u2v = u * u * v
-        u_new = u + dt * (A_PARAM - u + u2v)
+        u_new = u + dt * (a_field - u + u2v)
         v_new = v + dt * (B_PARAM - u2v)
         u = np.real(ifft2(fft2(u_new) * np.exp(-d_u * k2 * dt)))
         v = np.real(ifft2(fft2(v_new) * np.exp(-d_v * k2 * dt)))
@@ -251,11 +275,13 @@ def simulate_primordium() -> dict[str, object]:
         idx = np.linspace(0, len(snaps) - 1, N_FRAMES).astype(int)
         snaps = [snaps[i] for i in idx]
     dominant = dominant_wavelength_um(u, length)
+    weighted = band_power_wavelength_um(u, length)
     return {
         "frames": snaps,
         "final": u,
         "length_um": length,
         "dominant_lambda_um": dominant,
+        "band_weighted_lambda_um": weighted,
         "final_std": float(u.std()),
         "d_u": d_u,
         "d_v": d_v,
@@ -275,6 +301,28 @@ def dominant_wavelength_um(field: np.ndarray, length_um: float) -> float:
         if total > best_p:
             best_n, best_p = mode, total
     return float(length_um / best_n)
+
+
+def band_power_wavelength_um(field: np.ndarray, length_um: float) -> float:
+    """Power-weighted mean wavelength of shells n = 4..15.
+
+    A pure mode n = 8 would sit on 184.3 µm. Harmonics and the shallow
+    source gradient pull the mean off that shell, so the value is not a
+    copy of the onset coordinate.
+    """
+    n = field.shape[0]
+    power = np.abs(fft2(field - field.mean())) ** 2
+    nmode = np.sqrt(_wave_numbers(n, length_um)) * length_um / (2.0 * np.pi)
+    weights = []
+    lambdas = []
+    for mode in range(4, 16):
+        shell = np.abs(nmode - mode) < 0.55
+        weights.append(float(power[shell].sum()) if np.any(shell) else 0.0)
+        lambdas.append(length_um / mode)
+    weight = np.asarray(weights, dtype=float)
+    if float(weight.sum()) <= 0.0:
+        return dominant_wavelength_um(field, length_um)
+    return float(np.sum(weight * np.asarray(lambdas)) / np.sum(weight))
 
 
 def specimen_palette() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -354,8 +402,8 @@ def write_comparison(result: dict, sweep: dict, palette: tuple[np.ndarray, np.nd
         f"saturated shell {result['dominant_lambda_um']:.1f} µm"
     )
     scale = np.asarray(sweep["scale"], dtype=float)
-    axes[1, 0].plot(scale, sweep["lambda_analytical_um"], "o-", label="fine-grid σ(k)", color="#1b4f72")
-    axes[1, 0].plot(scale, sweep["lambda_numerical_um"], "s--", label="coarse k grid", color="#b9770e")
+    axes[1, 0].plot(scale, sweep["lambda_analytical_um"], "o-", label="continuum σ(k)", color="#1b4f72")
+    axes[1, 0].plot(scale, sweep["lambda_numerical_um"], "s--", label="periodic shell L/n", color="#b9770e")
     axes[1, 0].axhline(LAMBDA_UM, color="#7b241c", lw=0.8, label="184.3 µm onset")
     axes[1, 0].set_xlabel("diffusivity scale s  (D ∝ s²)")
     axes[1, 0].set_ylabel("fastest wavelength (µm)")
@@ -363,11 +411,19 @@ def write_comparison(result: dict, sweep: dict, palette: tuple[np.ndarray, np.nd
     axes[1, 0].legend(fontsize=8, frameon=False)
 
     d_u, d_v = result["d_u"], result["d_v"]
-    ks = np.linspace(0.004, 0.08, 400)
+    ks = np.linspace(0.004, 0.08, 900)
     axes[1, 1].plot(ks, growth_rate(ks, d_u, d_v), color="#1b4f72", label="Dv/Du = 9")
     axes[1, 1].plot(ks, growth_rate(ks, d_u, d_u), color="#922b21", label="ablation Dv = Du")
     axes[1, 1].axvline(2.0 * np.pi / LAMBDA_UM, color="#7b241c", lw=0.8, label="k_c")
     axes[1, 1].axhline(0.0, color="0.5", lw=0.6)
+    axes[1, 1].set_ylim(-0.9, 0.08)
+    axes[1, 1].annotate(
+        "branch point\n(disc = 0)",
+        xy=(0.0195, -0.35),
+        fontsize=7,
+        color="0.25",
+        ha="left",
+    )
     axes[1, 1].set_xlabel("wavenumber (1/µm)")
     axes[1, 1].set_ylabel("growth rate σ")
     axes[1, 1].set_title(f"D  Dispersion at 0 Ma, fastest σ = {fast['sigma']:.3f}")
@@ -452,6 +508,7 @@ def run_analysis() -> dict:
     ratio_c = critical_diffusion_ratio()
     fast = fastest_mode(*diffusivities(DIFFUSION_RATIO, LAMBDA_UM), LAMBDA_UM)
     sweep = wavelength_sweep()
+    ratios = ratio_sweep()
     ablate = ablation_max_sigma()
     sim = simulate_primordium()
     palette = specimen_palette()
@@ -477,9 +534,11 @@ def run_analysis() -> dict:
         "diffusion_ratio": DIFFUSION_RATIO,
         "fastest": fast,
         "sweep": sweep,
+        "ratio_sweep": ratios,
         "ablation_max_sigma": ablate,
         "simulation": {
             "dominant_lambda_um": sim["dominant_lambda_um"],
+            "band_weighted_lambda_um": sim["band_weighted_lambda_um"],
             "final_std": sim["final_std"],
             "length_um": sim["length_um"],
             "n_frames": len(sim["frames"]),
@@ -523,10 +582,10 @@ def measurements_from(analysis: dict) -> list[dict]:
             "pearson_r_wavelength_sweep",
             sweep["pearson_r"],
             "1",
-            "Pearson r between fine-grid and coarse-grid fastest wavelengths across 12 diffusivity scales",
+            "Pearson r between the continuum fastest wavelength and the nearest periodic shell on a 40-wavelength patch",
             reference=1.0,
-            source="identity of σ(k) under grid refinement; 1 is the continuum limit, not the measured value",
-            note="RMSE and residual CV are reported separately; value is not equal to the reference",
+            source="continuum limit of the periodic shell; the measured r is the quantized comparison",
+            note="RMSE is nonzero because L/n is not the continuum peak",
         ),
         _measurement(
             "rmse_wavelength_um",
@@ -558,10 +617,19 @@ def measurements_from(analysis: dict) -> list[dict]:
             "nonlinear_dominant_wavelength_um",
             analysis["simulation"]["dominant_lambda_um"],
             "µm",
-            "Fourier shell of the saturated activator on the periodic patch",
+            "Fourier shell with the most power after noise-seeded saturation on the periodic patch",
+            reference=LAMBDA_UM,
+            source="onset wavelength 184.3 µm; the shell is selected, not planted",
+            note="discrete shells are L/n, so a selected n=8 lands on 184.3 µm",
+        ),
+        _measurement(
+            "band_weighted_wavelength_um",
+            analysis["simulation"]["band_weighted_lambda_um"],
+            "µm",
+            "Power-weighted mean of Fourier shells n=4..15 on the saturated activator",
             reference=LAMBDA_UM,
             source="onset wavelength 184.3 µm",
-            note="nonlinear shell need not sit on the linear onset mode",
+            note="harmonics and the shallow source gradient move this off the pure onset shell",
         ),
         _measurement(
             "turing_max_growth_rate",
@@ -643,8 +711,8 @@ def assert_science(analysis: dict) -> None:
         raise AssertionError(f"uniform state is not diffusion-free stable: {jac}")
     if not (analysis["diffusion_ratio"] > analysis["critical_ratio"] > 1.0):
         raise AssertionError("diffusion ratio is not supercritical")
-    if analysis["sweep"]["pearson_r"] <= 0.98:
-        raise AssertionError(f"Pearson r {analysis['sweep']['pearson_r']} <= 0.98")
+    if not (0.98 < analysis["sweep"]["pearson_r"] < 0.99995):
+        raise AssertionError(f"Pearson r {analysis['sweep']['pearson_r']} is outside (0.98, 1)")
     if analysis["ablation_max_sigma"] >= 0.0:
         raise AssertionError("ablation control failed to stay stable")
     if analysis["fastest"]["sigma"] <= 0.0:
@@ -654,6 +722,9 @@ def assert_science(analysis: dict) -> None:
         raise AssertionError(f"fastest wavelength drifted by {rel:.3%} from 184.3 µm")
     if analysis["simulation"]["final_std"] < 0.15:
         raise AssertionError("saturated field is flat")
+    ratios = analysis["ratio_sweep"]["lambda_um"]
+    if not all(b > a for a, b in zip(ratios, ratios[1:])):
+        raise AssertionError(f"fastest wavelength is not increasing in diffusion ratio: {ratios}")
     if abs(analysis["size_m"] - 0.0001843) > 1e-12 or analysis["age_ma"] != 0.0:
         raise AssertionError("scale or age pin failed")
     # Non-circular specimen metrics: rounded values must differ from their references.

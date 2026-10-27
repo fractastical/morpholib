@@ -48,51 +48,71 @@
       336.947135019811
     ],
     "lambda_numerical_um": [
-      110.69776357827475,
-      130.82462968341562,
-      150.9514957885565,
-      171.07836189369738,
-      191.20522799883824,
-      211.33209410397913,
-      231.45896020912,
-      251.58582631426086,
-      271.7126924194017,
-      291.8395585245426,
-      311.96642462968344,
-      332.0932907348243
+      111.6969696969697,
+      131.64285714285714,
+      153.58333333333334,
+      175.52380952380952,
+      194.0,
+      216.8235294117647,
+      237.80645161290323,
+      254.20689655172413,
+      273.037037037037,
+      294.88,
+      320.5217391304348,
+      335.09090909090907
     ],
-    "pearson_r": 1.0,
-    "rmse_um": 3.3914983973945274,
-    "residual_cv": 0.0045207322132422775
+    "pearson_r": 0.9995952409015261,
+    "rmse_um": 2.023564165427683,
+    "residual_cv": 0.008928004155275246,
+    "quantization_length_um": 7372.0
+  },
+  "ratio_sweep": {
+    "ratio": [
+      9.0,
+      9.5,
+      10.0,
+      11.0,
+      12.5,
+      14.0
+    ],
+    "lambda_um": [
+      187.1928527887839,
+      190.22214479287652,
+      193.20663756832215,
+      198.54681375520266,
+      205.65201741168593,
+      212.06033664220976
+    ]
   },
   "ablation_max_sigma": -0.10000296353539165,
   "simulation": {
     "dominant_lambda_um": 184.3,
-    "final_std": 0.32491433936150693,
+    "band_weighted_lambda_um": 176.472310961005,
+    "final_std": 0.3692306563343594,
     "length_um": 1474.4,
     "n_frames": 12
   },
   "specimen_dark_area_fraction": 0.37971665111148245,
-  "model_spot_area_fraction": 0.3284522975669711,
+  "model_spot_area_fraction": 0.3141263694873591,
   "specimen_coherency": 0.4852518551774288,
-  "model_coherency": 0.915173231588808,
-  "ks_statistic": 0.271,
-  "ks_pvalue": 1.3431992175481927e-129,
-  "radial_spectrum_pearson_r": 0.8327467738283488,
+  "model_coherency": 0.9042732005691058,
+  "ks_statistic": 0.302,
+  "ks_pvalue": 2.4179601062653135e-161,
+  "radial_spectrum_pearson_r": 0.9101028821337248,
   "measurements": [
     {
       "name": "pearson_r_wavelength_sweep",
-      "value": 1.0,
+      "value": 0.999595,
       "unit": "1",
-      "method": "Pearson r between fine-grid and coarse-grid fastest wavelengths across 12 diffusivity scales",
+      "method": "Pearson r between the continuum fastest wavelength and the nearest periodic shell on a 40-wavelength patch",
       "derived_from": "script",
       "reference_value": 1.0,
-      "reference_source": "identity of \u03c3(k) under grid refinement; 1 is the continuum limit, not the measured value",
-      "note": "RMSE and residual CV are reported separately; value is not equal to the reference"
+      "reference_source": "continuum limit of the periodic shell; the measured r is the quantized comparison",
+      "note": "RMSE is nonzero because L/n is not the continuum peak"
     },
     {
       "name": "rmse_wavelength_um",
-      "value": 3.391498,
+      "value": 2.023564,
       "unit": "\u00b5m",
       "method": "RMSE of coarse-grid \u03bb against the fine-grid dispersion peak",
       "derived_from": "script",
@@ -102,7 +122,7 @@
     },
     {
       "name": "residual_cv_wavelength_sweep",
-      "value": 0.004521,
+      "value": 0.008928,
       "unit": "1",
       "method": "CV of (\u03bb_coarse \u2212 \u03bb_fine) relative to mean |\u03bb_fine|",
       "derived_from": "script",
@@ -123,11 +143,21 @@
       "name": "nonlinear_dominant_wavelength_um",
       "value": 184.3,
       "unit": "\u00b5m",
-      "method": "Fourier shell of the saturated activator on the periodic patch",
+      "method": "Fourier shell with the most power after noise-seeded saturation on the periodic patch",
+      "derived_from": "script",
+      "reference_value": 184.3,
+      "reference_source": "onset wavelength 184.3 \u00b5m; the shell is selected, not planted",
+      "note": "discrete shells are L/n, so a selected n=8 lands on 184.3 \u00b5m"
+    },
+    {
+      "name": "band_weighted_wavelength_um",
+      "value": 176.472311,
+      "unit": "\u00b5m",
+      "method": "Power-weighted mean of Fourier shells n=4..15 on the saturated activator",
       "derived_from": "script",
       "reference_value": 184.3,
       "reference_source": "onset wavelength 184.3 \u00b5m",
-      "note": "nonlinear shell need not sit on the linear onset mode"
+      "note": "harmonics and the shallow source gradient move this off the pure onset shell"
     },
     {
       "name": "turing_max_growth_rate",
@@ -155,13 +185,13 @@
       "unit": "1",
       "method": "quantile segmentation of dark melanophore pixels inside the micrograph field stop",
       "derived_from": "script",
-      "reference_value": 0.328452,
+      "reference_value": 0.314126,
       "reference_source": "model spot fraction on the rendered activator, a different image",
       "note": "specimen segmentation; value is not the model fraction"
     },
     {
       "name": "model_spot_area_fraction",
-      "value": 0.328452,
+      "value": 0.314126,
       "unit": "1",
       "method": "same dark-phase quantile applied to the rendered simulation, not to the photograph",
       "derived_from": "script",
@@ -175,23 +205,23 @@
       "unit": "1",
       "method": "mean structure-tensor coherency of the chromatophore micrograph",
       "derived_from": "script",
-      "reference_value": 0.915173,
+      "reference_value": 0.904273,
       "reference_source": "coherency of the rendered simulation",
       "note": "specimen texture versus model texture"
     },
     {
       "name": "ks_statistic_luminance",
-      "value": 0.271,
+      "value": 0.302,
       "unit": "1",
       "method": "two-sample KS statistic of field-stop luminance, specimen versus simulation; p-value stored in metrics",
       "derived_from": "script",
       "reference_value": 0.0,
       "reference_source": "KS = 0 would mean identical luminance distributions",
-      "note": "ks p=1.343e-129"
+      "note": "ks p=2.418e-161"
     },
     {
       "name": "radial_spectrum_pearson_r",
-      "value": 0.832747,
+      "value": 0.910103,
       "unit": "1",
       "method": "Pearson r of 22-bin log radial FFT profiles, specimen micrograph versus rendered field",
       "derived_from": "script",
