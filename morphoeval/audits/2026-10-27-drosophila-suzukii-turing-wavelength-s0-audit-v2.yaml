@@ -1,0 +1,197 @@
+# Pass 2 — Drosophila suzukii Turing onset wavelength at 2.046 µm, slot 3207.
+# Closes the Pass 1 estimator, color-scale, ablation, segmentation, and stripe-seed items.
+audit:
+  id: 2026-10-27-drosophila-suzukii-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-drosophila-suzukii-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent, builder-assessor; no second provider on this run)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 2 working tree. Slot-3207 files land in this PR; parent commit does not yet contain them."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  gompel2005:
+    title: "Chance caught on the wing: cis-regulatory evolution and the origin of pigment patterns in Drosophila"
+    authors: "Gompel N, Prud'homme B, Wittkopp PJ, Kassner VA, Carroll SB"
+    venue: "Nature 433:481-487 (2005)"
+    doi: 10.1038/nature03235
+    year: 2005
+  prudhomme2006:
+    title: "Repeated morphological evolution through cis-regulatory changes in a pleiotropic gene"
+    authors: "Prud'homme B, Gompel N, Rokas A, Kassner VA, Williams TM, Yeh SD, True JR, Carroll SB"
+    venue: "Nature 440:1050-1053 (2006)"
+    doi: 10.1038/nature04597
+    year: 2006
+  atallah2014:
+    title: "The making of a pest: the evolution of a fruit-penetrating ovipositor in Drosophila suzukii and related species"
+    authors: "Atallah J, Teixeira L, Salazar R, Zaragoza G, Kopp A"
+    venue: "Proceedings of the Royal Society B 281:20132840 (2014)"
+    doi: 10.1098/rspb.2013.2840
+    year: 2014
+  koshikawa2020:
+    title: "Evolution of wing pigmentation in Drosophila: diversity, physiological regulation, and cis-regulatory evolution"
+    authors: "Koshikawa S"
+    venue: "Development, Growth & Differentiation 62:269-278 (2020)"
+    doi: 10.1111/dgd.12661
+    year: 2020
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+    year: 2010
+simulations:
+  - id: delphi10000-drosophila-suzukii-turing-wavelength-s0
+    name: "Drosophila suzukii Turing onset wavelength at 2.046 µm (0 Ma, detail scale)"
+    organism: "Drosophila suzukii"
+    script: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py
+    output: docs/media/drosophila_suzukii_turing_wavelength_s0_comparison.png
+    supersedes_audit_id: 2026-10-27-drosophila-suzukii-turing-wavelength-s0-audit
+    phenomenon_size_m: 2.046e-06
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    geological_period: "Holocene (Extant)"
+    fossil_lineage_group: "Sophophora suzukii–biarmipes Wing-Spot Clade"
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, gompel2005, prudhomme2006, atallah2014, koshikawa2020, kondo2010]
+    summary: >-
+      Pass 2. Eigenvector-initialized mode growth matches analytical sigma(k)
+      with Pearson r = 0.9999999995 and RMSE = 4.16e-4 on the real-eigenvalue
+      band. Diffusivity sweep r = 0.997 and is monotonic. Equal-diffusion and
+      subobscura std(u) are 1e-15, drawn flat on the focal color scale.
+      A stripe seed on the 24.552 µm window locks to spacing 2.046 µm (CV 0.056).
+      The noise-seeded field remains a labyrinth (CV 0.37, KS 0.63). Specimen
+      Otsu metrics differ from their priors. lambda_c = 2.046e-6 m, age 0 Ma.
+      Fastest-growing wavelength is 2.116 µm, slightly longer than onset, as
+      expected just above threshold (margin > 1 at diffusion ratio 12.6).
+    claim_boundary:
+      reported_in_source:
+        - "Male D. suzukii has an apical wing spot; the female has a serrated ovipositor (Atallah 2014)."
+        - "Spot presence in the suzukii–biarmipes clade is a yellow cis-regulatory gain (Gompel 2005; Prud'homme 2006; Koshikawa 2020)."
+        - "A two-species reaction-diffusion system selects a finite onset wavenumber k_c (Turing 1952)."
+      reconstructed_in_script:
+        - "Schnakenberg a=0.037, b=1.284, D_v/D_u=12.6, D_u solved so the onset wavelength is 2.046 µm."
+        - "Subobscura uses a=0.52, b=0.18 so f_u = -17/35 and the Turing band is absent."
+        - "Takahashii keeps the kinetics and multiplies both diffusivities by 1.44, so lambda_c = 2.4552 µm (10 waves in the same window instead of 12)."
+        - "The periodic window quantizes a stripe seed onto lambda_c = 2.046 µm even though the fastest linear wavelength is 2.116 µm."
+      transfer_boundary:
+        - "2.046 µm is the campaign detail-scale assignment, not a measured granule spacing."
+        - "The McEvey plate (960×640, 1 mm bar) anchors the animal. It does not resolve the carrier."
+      does_not_claim:
+        - "That yellow or ebony kinetics are Schnakenberg reactions, or that D_u and D_v were measured."
+        - "That D. takahashii's pigment wavelength has been measured at 2.455 µm."
+        - "That subobscura → suzukii → takahashii is a fossil ancestor chain. All three are Holocene (0 Ma); the order is the comparative chronoseries."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          The script implements Schnakenberg kinetics, the onset formula
+          k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), and sigma(k) from the
+          reaction-diffusion matrix. D_u is solved so lambda_c = 2.046 µm exactly
+          (self-test tolerance 1e-9). Numerical sigma now follows the least-stable
+          eigenvector, which is the comparison the linear law requires. The rates
+          themselves are calibrated, not taken from a yellow/ebony measurement,
+          so this is not a 95.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [88, 114], note: "onset_kc2 and growth_rate sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [141, 183], note: "eigenvector-initialized numerical sigma", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3207_drosophila_suzukii_turing_wavelength_s0.lean, lines: [28, 60], note: "trace, determinant, twelve vs ten ocelli, subobscura f_u", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          The plate (male wing spot, female ovipositor, 1 mm bar) sits beside the
+          suzukii labyrinth, a flat subobscura field on the same color scale, and
+          a longer-wavelength takahashii field. The null is visibly flat rather
+          than a stretched roundoff pattern. The GIF is 12 frames at 960×640 and
+          ends on the adult plate, so the fitness comparison sees the animal;
+          the carrier itself is a microstructure, not a second portrait of the fly.
+        evidence:
+          - {file: docs/media/drosophila_suzukii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "shared color scale; subobscura flat; takahashii longer waves", supports: true}
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [386, 400], note: "vmin/vmax taken from the suzukii field and reused", supports: true}
+          - {file: docs/media/drosophila_suzukii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 960×640", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Scaling both diffusivities by s moves wavelength as sqrt(s). Six scales
+          from 0.81 to 1.96 give sweep Pearson r = 0.997 against the fastest PDE
+          mode, and the analytical curve is strictly increasing. Takahashii is the
+          s = 1.44 point (lambda_c 2.4552 µm). Subobscura removes the band by
+          f_u < 0 without touching D_u. Equal diffusion is a separate off-switch.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [226, 259], note: "wavelength_sweep scales and monotonic flag", supports: true}
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [569, 592], note: "self-test requires monotonic sweep and successor wavelength longer than focal", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Dispersion Pearson r = 0.9999999995, RMSE = 4.16e-4 per time unit
+          (reference for r is the null of 0, not a copy of the result). Stripe-seed
+          mean spacing is 2.046 µm with CV 0.056, against the fastest-growing
+          wavelength 2.116 µm, so the value is not the reference. Labyrinth CV
+          stays 0.37 and KS stays 0.63; that gap is reported, not tuned away.
+          Specimen foreground 0.203 vs prior 0.40, melanin 0.028 vs 0.10,
+          left-minus-right darkness -5.28 vs 0, abdominal troughs 7 vs 6,
+          coherency 0.375 vs 0.50. Ablation std ratio is about 1e-15 versus a
+          reference of 1.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [594, 687], note: "measure_morphoeval rows with value != reference", supports: true}
+          - {file: datasets/drosophila_suzukii_turing_wavelength_s0/drosophila_suzukii_turing_wavelength_s0_metrics.json, lines: [1, 80], note: "pearson_r, rmse, stripe_seed spacing, specimen block", supports: true}
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [323, 372], note: "segment_specimen Otsu, melanin, abdominal troughs, coherency", supports: true}
+      source-traceability:
+        value: 91
+        rationale: >-
+          Seven DOIs were confirmed on OpenAlex during scouting and written to
+          paper_citations.bib. The reference JSON states scale 2.046e-6 m and age
+          0 Ma, pins the specimen SHA-256, and separates empirical claims from
+          calibrated parameters. Scout manifest holds the OpenAlex and Wikimedia
+          hits. The gallery fallback is the McEvey plate already used as the species image.
+        evidence:
+          - {file: datasets/drosophila_suzukii_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "DOI bib entries", supports: true}
+          - {file: datasets/drosophila_suzukii_turing_wavelength_s0/README.md, lines: [1, 25], note: "scale 2.0 µm and age 0 Ma stated", supports: true}
+          - {file: datasets/drosophila_suzukii_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "OpenAlex and Wikimedia scout", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          onset_kc2, growth_rate, the eigenvector initializer, and the chronoseries
+          constants are the same objects the Lean file proves as sign facts
+          (trace < 0, det > 0, 12 vs 10 ocelli, f_u numerator -17). The math-kg
+          yaml points at those declarations. Comments name Turing 1952 and
+          Schnakenberg 1979 at the formula, not only in the module docstring.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [88, 104], note: "onset formula comment cites Turing 1952 and Murray 1981", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3207_drosophila_suzukii_turing_wavelength_s0.lean, lines: [1, 62], note: "namespace MathOfBiology.Loop_3207, eight theorems, zero sorry", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          python3 models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py --self-test
+          checks lambda_c, both null controls, Pearson r > 0.98, and the monotonic
+          sweep. The full command rewrites the PNG, the 12-frame GIF, and the metrics
+          JSON from seed 3207. Specimen SHA-256 is checked before any integration.
+          No extra packages beyond the repo scientific stack.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [569, 592], note: "assert_physics including Pearson r > 0.98", supports: true}
+          - {file: models/2026-delphi10000-drosophila-suzukii-turing-wavelength-s0.py, lines: [468, 476], note: "verify_specimen SHA-256 pin", supports: true}
+    remediation:
+      - "Still one assessor. A second provider has not scored this audit."
+      - "Still one plate. Abdominal trough count 7 versus a tergite prior of 6 is an ROI method on n = 1, not a population."
+      - "The McEvey plate does not resolve 2.046 µm. Organism-level Otsu numbers are not a carrier measurement."
+      - "Noise-seeded labyrinth spacing KS remains 0.63. The stripe seed shows the onset mode is selectable; it does not make the nonlinear labyrinth periodic."
+      - "D_u, D_v and the takahashii factor 1.44 are calibrated hypotheses, not measured diffusivities."

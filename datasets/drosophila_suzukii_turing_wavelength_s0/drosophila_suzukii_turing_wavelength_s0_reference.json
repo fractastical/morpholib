@@ -1,0 +1,111 @@
+{
+  "sim_id": "delphi10000-drosophila-suzukii-turing-wavelength-s0",
+  "slot": 3207,
+  "organism": "Drosophila suzukii",
+  "common_name": "Spotted-wing drosophila",
+  "scale_m": 2.046e-06,
+  "scale_um": 2.046,
+  "scale_human": "2.0 µm",
+  "log10_size_m": -5.689,
+  "scale_tier": "3_subcellular_um",
+  "detail_variant": "s0",
+  "geological_age_ma": 0.0,
+  "geological_period": "Holocene (Extant)",
+  "lineage": "Sophophora suzukii–biarmipes Wing-Spot Clade",
+  "chronoseries": {
+    "index": "36/41",
+    "order_note": "Comparative extant series, not a stratigraphic succession. All three species are Holocene (0 Ma).",
+    "predecessor": "Drosophila subobscura",
+    "focal": "Drosophila suzukii",
+    "successor": "Drosophila takahashii"
+  },
+  "law": "Turing wavenumber k_c",
+  "form": "Stripes, Spots & Ocelli",
+  "cohort": "1. Chemical Turing / RD",
+  "equations": {
+    "kinetics": "Schnakenberg (1979): f = a - u + u^2 v, g = b - u^2 v",
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u0 v0, f_v = u0^2, g_u = -2 u0 v0, g_v = -u0^2",
+    "onset_wavenumber": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)",
+    "wavelength": "lambda_c = 2 pi / k_c",
+    "growth_rate": "sigma(k) = 0.5 * (tr(M) + sqrt(tr(M)^2 - 4 det(M))), M = J - k^2 D",
+    "turing_conditions": [
+      "tr(J) < 0",
+      "det(J) > 0",
+      "D_v f_u + D_u g_v > 0",
+      "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det(J)"
+    ]
+  },
+  "parameters": {
+    "focal_suzukii": {
+      "a": 0.037,
+      "b": 1.284,
+      "diffusion_ratio_Dv_over_Du": 12.6,
+      "Du_um2_per_tu": 0.042705105608114184,
+      "Dv_um2_per_tu": 0.5380843306622387,
+      "lambda_c_um": 2.046,
+      "note": "D_u is solved so the onset wavelength equals the assigned 2.046 µm detail scale. These are not measured yellow/ebony diffusivities."
+    },
+    "predecessor_subobscura": {
+      "a": 0.52,
+      "b": 0.18,
+      "fu_sign": "negative",
+      "same_diffusivities_as_focal": true,
+      "interpretation": "Obscura-group cuticle at this scale stays below activator autocatalysis, so no 2.046 µm carrier is selected."
+    },
+    "successor_takahashii": {
+      "kinetics": "same a, b as suzukii",
+      "diffusivity_scale": 1.44,
+      "lambda_c_um": 2.4552,
+      "interpretation": "Same 24.552 µm window holds 10 onset wavelengths instead of 12. Hypothesis: weaker cortical tethering where the suzukii/biarmipes spot enhancer is absent."
+    },
+    "ablation_equal_diffusion": {
+      "Du_equals_Dv": true,
+      "expectation": "D_v f_u + D_u g_v < 0, Turing band absent, activator variance collapses."
+    }
+  },
+  "what_changes_at_this_scale": {
+    "versus_predecessor": "f_u changes from negative (subobscura, no real positive sigma) to positive (suzukii), which is what lets k_c select a 2.046 µm carrier. The 98 µm sibling slot is about the whole wing-spot domain; this slot is the carrier inside melanized cuticle.",
+    "versus_successor": "Onset wavelength lengthens from 2.046 µm to 2.4552 µm (diffusivities × 1.44). Ocellus count in a 24.552 µm transect drops from 12 to 10.",
+    "age": "0 Ma for the focal species. Predecessor and successor are also extant; nothing in this slot is a fossil time series."
+  },
+  "empirical_claims": [
+    {
+      "claim": "Male D. suzukii carries an apical dark wing spot; the female has a serrated, fruit-penetrating ovipositor.",
+      "source": "Atallah et al. 2014",
+      "doi": "10.1098/rspb.2013.2840"
+    },
+    {
+      "claim": "The male wing spot of the suzukii–biarmipes clade is gained by a cis-regulatory change at yellow, not by a new pigment gene.",
+      "source": "Gompel et al. 2005; Prud'homme et al. 2006",
+      "doi": "10.1038/nature03235"
+    },
+    {
+      "claim": "Wing-pigment diversity across Drosophila, including spot presence and absence among suzukii, biarmipes and related subgroups, is reviewed as cis-regulatory evolution.",
+      "source": "Koshikawa 2020",
+      "doi": "10.1111/dgd.12661"
+    },
+    {
+      "claim": "A two-morphogen system can be stable without diffusion and unstable at a finite wavenumber k_c.",
+      "source": "Turing 1952",
+      "doi": "10.1098/rstb.1952.0012"
+    }
+  ],
+  "not_empirical": [
+    "No published measurement fixes the suzukii cuticle carrier at exactly 2.046 µm. That value is the campaign detail-scale assignment, used here as lambda_c.",
+    "D_u and D_v are calibrated to that assignment at diffusion ratio 12.6. They are not biochemical rates.",
+    "The takahashii 20% wavelength increase is a comparative hypothesis, not a measured granule spacing."
+  ],
+  "specimen": {
+    "file": "drosophila_suzukii_specimen.jpg",
+    "sha256": "a4180479fce43c903b6de6d9dc2378a33dbdbc5b6ac6cdcffaf370b4afa66627",
+    "source_copy": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_suzukii.jpg",
+    "photographer": "Shane F. McEvey, 2017",
+    "content": "Male (apical wing spot) and female (serrated ovipositor, banded abdomen), lateral view, 1 mm scale bar",
+    "license": "CC-licensed museum plate vendored from the project species gallery (fallback path specified for this loop). Additional CC BY 4.0 candidates were returned by Wikimedia Commons during scouting and are listed in scout_manifest.json.",
+    "pixel_size": [960, 640]
+  },
+  "boundary_conditions": "Periodic on a 24.552 µm × 16.368 µm cuticle window (12 × 8 focal onset wavelengths). The window is a detail crop, not the whole wing.",
+  "state_variables": ["u activator (melanin-precursor carrier)", "v inhibitor"],
+  "seed": 3207
+}
