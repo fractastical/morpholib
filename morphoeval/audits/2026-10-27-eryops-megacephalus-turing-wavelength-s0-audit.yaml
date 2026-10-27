@@ -1,0 +1,205 @@
+# Pass 1 — Eryops megacephalus, 127 µm Turing wavelength, 295 Ma.
+# The full-frame composite (cv_sim_similarity 94.4) still painted the gallery wall.
+# Bone-masked remediation, KS/RMSE, and the control panel are scored in audit-v2.
+
+audit:
+  id: 2026-10-27-eryops-megacephalus-turing-wavelength-s0-audit
+  supersedes_audit_id: null
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (primary assessor, loop 3222)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 1 of loop 2026-10-27-eryops-megacephalus-turing-wavelength-s0-loop.
+      Checkpoint is the pre-loop HEAD; evidence files are introduced by this loop's commit.
+      Nanopub signing was not available (~/.nanopub/profile.yml absent).
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. Lond. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  witzmann2010:
+    title: "Sculpture and vascularization of dermal bones, and the implications for the physiology of basal tetrapods"
+    authors: "Witzmann, F.; Scholz, H.; Müller, J.; Kardjilov, N."
+    venue: "Zool. J. Linn. Soc. 160:302-340 (2010)"
+    doi: 10.1111/j.1096-3642.2009.00599.x
+  pawley2006:
+    title: "The appendicular skeleton of Eryops megacephalus Cope, 1877 (Temnospondyli: Eryopoidea) from the Lower Permian of North America"
+    authors: "Pawley, K.; Warren, A."
+    venue: "J. Paleontol. 80:561-580 (2006)"
+    doi: "10.1666/0022-3360(2006)80[561:tasoem]2.0.co;2"
+  specimen_amnh:
+    title: "Eryops megacephalus skeleton at the American Museum of Natural History"
+    authors: "Vicpeters"
+    venue: "Wikimedia Commons (2025-05-14), CC BY 4.0"
+    url: https://commons.wikimedia.org/wiki/File:Eryops_megacephalus_skeleton_at_American_Museum_of_Natural_History.jpg
+
+simulations:
+  - id: delphi10000-eryops-megacephalus-turing-wavelength-s0
+    name: "Eryops megacephalus Schnakenberg Turing wavelength at 127 µm (Cisuralian, 295 Ma)"
+    organism: "Eryops megacephalus"
+    script: models/2026-delphi10000-eryops-megacephalus-turing-wavelength-s0.py
+    output: docs/media/eryops_megacephalus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/eryops_megacephalus_turing_wavelength_s0_growth.gif
+    status: evaluated
+    provenance:
+      spec_fingerprint: 51cd1fdffca7c86caa7bb398d56aaa419b30f1491ad7e8b4fe11b7153e0b9b21
+      artifact_sha256: d39dec86b338897995a18611862cadc4735a89af83918444aa57064f98033d30
+      input_dataset_sha256:
+        eryops_megacephalus_amnh_specimen.jpg: 11fc4e4eec64d5f1cd5cc143b6ac1832f8ea67ac18f4d0a5ee25c2af919f0b66
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: reaction-diffusion instabilities select a finite critical wavenumber k_c."
+        - "Schnakenberg 1979: the quadratic two-species system used as the kinetics."
+        - "Pawley and Warren 2006: Eryops megacephalus Cope, 1877 is an Early Permian eryopoid; this slot uses 295 Ma."
+        - "Witzmann et al. 2010: basal tetrapod dermal bone carries sculptured ornament."
+      reconstructed_in_script:
+        - "Jacobian, k_c, and an explicit Euler Schnakenberg integrator on a 96x96 periodic patch with lambda_c fixed at 127 µm."
+        - "Pass-1 full-frame composite of that field onto the AMNH photograph (cv_sim_similarity 94.4)."
+      transfer_boundary:
+        - "127 µm is the assigned primordium wavelength. The museum photograph cannot resolve it."
+        - "8184 = 64*127+56 compares this wavelength to the 8.184 mm organ-scale pit, which is a different slot."
+      does_not_claim:
+        - "That 127 µm pits were counted on the AMNH mount."
+        - "A later Eryops chronospecies. The series length is 1."
+        - "That the Pass-1 full-frame composite is the anatomical placement of the pigment."
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - witzmann2010
+      - pawley2006
+      - specimen_amnh
+    summary: >-
+      Pass 1 overall 84.3/100. The Schnakenberg critical-wavenumber law is in the
+      script and the dispersion correlation on modes m=2..16 is r=0.99999998,
+      but the published composite still modulates the gallery wall (unmasked
+      cv_sim_similarity 94.4) and the audit does not yet credit the bone mask,
+      the KS/RMSE report, or the negative controls as closed remediation.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          steady_state, jacobian, and scale_diffusivities implement
+          k_c^2 = gamma (D_v f_u + D_u g_v) / (2 D_u D_v) with a=0.085, b=1.22,
+          and a pixel scale that makes lambda_c = 12 px = 127 µm. Trace is negative
+          and the reference drive h is positive. The explicit Euler scheme is a
+          reconstruction, not a line-by-line copy of Schnakenberg 1979.
+        evidence:
+          - {file: models/2026-delphi10000-eryops-megacephalus-turing-wavelength-s0.py, lines: [112, 176], note: "Homogeneous state, Jacobian, and diffusivity scaling onto 127 µm", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3222_eryops_megacephalus_turing_wavelength_s0.lean, lines: [36, 51], note: "Trace-negative and drive-positive theorems, 0 sorry", supports: true}
+      specimen-match:
+        value: 78
+        rationale: >-
+          The CC BY 4.0 AMNH mount is the specimen (SHA-256 pinned). Pass 1
+          composites the ocellus field over the whole frame, including the
+          gallery wall and labels. Unmasked cv_sim_similarity is 94.4, but the
+          placement is not anatomically restricted to bone. That is the main
+          Pass-1 specimen gap.
+        evidence:
+          - {file: models/2026-delphi10000-eryops-megacephalus-turing-wavelength-s0.py, lines: [459, 490], note: "composite_frame with mask=None is the Pass-1 full-frame path", supports: true}
+          - {file: docs/media/eryops_megacephalus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 720x540 animation; Pass-1 unmasked CV was 94.4 before the bone mask replaced the published GIF", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          D_v/D_u from 20 to 80 shortens the reference wavelength monotonically
+          (4.013 to 3.859 reference px). Alpha grows across the 12 frames.
+          The equal-diffusion and autocatalysis runs exist, but Pass 1 does not
+          yet treat them as a closed control panel.
+        evidence:
+          - {file: models/2026-delphi10000-eryops-megacephalus-turing-wavelength-s0.py, lines: [356, 379], note: "Diffusion-ratio sweep", supports: true}
+          - {file: models/2026-delphi10000-eryops-megacephalus-turing-wavelength-s0.py, lines: [211, 286], note: "equal_diffusion and autocatalysis switches on the same integrator", supports: true}
+      morphometric-validation:
+        value: 80
+        rationale: >-
+          Dispersion Pearson r on modes m=2..16 is 0.99999998 with RMSE 1.14e-4.
+          Pass 1 records that fit but does not yet score the KS statistic
+          (0.0667) or the non-circular specimen measurements (bone fraction
+          0.3208 vs null 0.5; aspect 1.3358 vs null 1) as closed validation.
+          The nonlinear FFT peak landing on exactly 127 µm is the design mode,
+          not an independent histological measurement.
+        evidence:
+          - {file: models/2026-delphi10000-eryops-megacephalus-turing-wavelength-s0.py, lines: [288, 353], note: "Mode-wise Euler growth versus the discrete symbol", supports: true}
+          - {file: models/2026-delphi10000-eryops-megacephalus-turing-wavelength-s0.py, lines: [725, 812], note: "measure_morphoeval entries; Pass 1 does not take full credit for them", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Scout manifest, reference JSON, BibTeX, and the CC BY 4.0 AMNH file
+          with SHA-256 11fc4e4eec64d5f1cd5cc143b6ac1832f8ea67ac18f4d0a5ee25c2af919f0b66.
+          OpenAlex keyword search returned no papers; DOIs were resolved by
+          identifier lookup. Scale 127 µm and age 295 Ma are stated in the reference.
+        evidence:
+          - {file: datasets/eryops_megacephalus_turing_wavelength_s0/eryops_megacephalus_turing_wavelength_s0_reference.json, lines: [1, 80], note: "Scale, age, equations, parameters, specimen pin", supports: true}
+          - {file: datasets/eryops_megacephalus_turing_wavelength_s0/paper_citations.bib, lines: [1, 70], note: "Turing, Schnakenberg, Witzmann, Pawley, specimen", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Module docstring maps the Jacobian and k_c to Turing 1952 and
+          Schnakenberg 1979. The math-KG loop file points at the same Lean
+          declarations. Pass 1 does not yet tie every control panel to a scored claim.
+        evidence:
+          - {file: models/2026-delphi10000-eryops-megacephalus-turing-wavelength-s0.py, lines: [1, 55], note: "Docstring states 127 µm, 295 Ma, and the 64*127+56 identity", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-eryops-megacephalus-turing-wavelength-s0.yaml, lines: [1, 34], note: "Three laws with Lean and code loci", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          --self-test checks the wavelength, the dispersion correlation above 0.98,
+          control decay, GIF size, and the specimen hash. Seed is 3222.
+          Pass 1 still owes a measurements sidecar and a knowledge-graph build.
+        evidence:
+          - {file: models/2026-delphi10000-eryops-megacephalus-turing-wavelength-s0.py, lines: [815, 869], note: "Deterministic self-test", supports: true}
+          - {file: docs/media/eryops_megacephalus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Comparison figure path reserved for the Pass-2 control panel", supports: true}
+    remediation:
+      - "Restrict the ocellus modulation to the eroded Otsu bone mask so the gallery wall is not painted."
+      - "Report the KS statistic and RMSE of sigma(k) next to the Pearson correlation, and keep value != reference on the specimen metrics."
+      - "Put the equal-diffusion and no-autocatalysis trajectories on the comparison figure."
+      - "Write the measurements sidecar and rebuild the knowledge graph from this audit."
+    needs:
+      - id: bone-mask
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Restrict the 127 µm ocellus field to the eroded Otsu bone mask of the AMNH mount."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0.2
+        depth_d: 1
+        age_days_a: 0
+      - id: dispersion-ks
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Publish KS and RMSE for sigma(k) and non-circular specimen metrics."
+        status: open
+        novelty_n: 0.3
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: controls
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Show equal diffusion and autocatalysis ablation beside the diffusion-ratio sweep."
+        status: open
+        novelty_n: 0.3
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
