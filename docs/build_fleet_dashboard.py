@@ -117,7 +117,57 @@ def census() -> dict:
         ).fetchall()
         tele["first"], tele["last"] = con.execute(
             "SELECT MIN(created_at), MAX(created_at) FROM runs").fetchone()
+
+        # --- Plate IV: per-model quality, joined from runs + math_models ---
+        builders = con.execute(
+            "SELECT r.builder_model, COUNT(*), AVG(m.overall_score), AVG(m.model_fidelity_score), "
+            "AVG(m.morphometric_score), AVG(m.specimen_match_score), AVG(r.steps_completed), "
+            "AVG(r.wall_time_s), AVG(r.total_llm_tokens) "
+            "FROM runs r LEFT JOIN math_models m ON m.sim_id = r.target_simulation "
+            "WHERE r.builder_model IS NOT NULL GROUP BY r.builder_model "
+            "ORDER BY AVG(m.overall_score) DESC"
+        ).fetchall()
+        violations = dict(con.execute(
+            "SELECT offending_model, COUNT(*) FROM model_integrity_violations "
+            "GROUP BY offending_model").fetchall())
+        incidents = con.execute(
+            "SELECT offending_model, detecting_referee_model, superseded_self_score, "
+            "referee_recalibrated_score FROM model_integrity_incidents").fetchall()
+        assessors = {
+            "primary": con.execute(
+                "SELECT primary_assessor, COUNT(*) FROM runs WHERE primary_assessor IS NOT NULL "
+                "GROUP BY primary_assessor ORDER BY COUNT(*) DESC").fetchall(),
+            "second": con.execute(
+                "SELECT second_assessor, COUNT(*) FROM runs WHERE second_assessor IS NOT NULL "
+                "GROUP BY second_assessor ORDER BY COUNT(*) DESC").fetchall(),
+        }
+        step_models_raw = con.execute(
+            "SELECT model, COUNT(*), AVG(duration_s) FROM steps WHERE model IS NOT NULL "
+            "GROUP BY model").fetchall()
         con.close()
+        merged: dict[str, list] = {}
+        for name, n, avg_dur in step_models_raw:
+            key = str(name).strip().lower().replace(" ", "-").replace("fable-5.1", "fable-5-1")
+            if key in merged:
+                pn, pd = merged[key]
+                merged[key] = [pn + n, (pd * pn + (avg_dur or 0) * n) / (pn + n)]
+            else:
+                merged[key] = [n, avg_dur or 0]
+        data["model_quality"] = {
+            "builders": [
+                {"model": b[0], "loops": b[1], "overall": b[2], "fidelity": b[3],
+                 "morphometric": b[4], "specimen": b[5], "steps_completed": b[6],
+                 "wall_s": b[7], "tokens": b[8], "violations": violations.get(b[0], 0)}
+                for b in builders
+            ],
+            "incidents": incidents,
+            "assessors": assessors,
+            "step_models": sorted(
+                ({"model": k, "steps": v[0], "avg_s": v[1]} for k, v in merged.items()),
+                key=lambda r: -r["steps"]),
+        }
+    else:
+        data["model_quality"] = {"builders": [], "incidents": [], "assessors": {}, "step_models": []}
     data["telemetry"] = tele
     return data
 
@@ -189,6 +239,41 @@ def main() -> int:
     model_rows = "\n".join(
         f"<tr><td>{html.escape(str(m))}</td><td class='num'>{n}</td></tr>" for m, n in tele["models"])
 
+    mq = d.get("model_quality", {"builders": [], "incidents": [], "assessors": {}, "step_models": []})
+
+    def fmt(x, digits=1):
+        return f"{x:.{digits}f}" if isinstance(x, (int, float)) else "—"
+
+    builder_rows = ""
+    for i, b in enumerate(mq["builders"], 1):
+        evidence = "solid" if b["loops"] >= 30 else ("thin — indicative only" if b["loops"] >= 5 else "anecdotal — do not rank on this")
+        wall_min = f"{b['wall_s'] / 60:.1f} min" if b["wall_s"] else "—"
+        tokens = f"{b['tokens']:,.0f}" if b["tokens"] else "—"
+        builder_rows += (
+            f"<tr><td>{i}</td><td><strong>{html.escape(str(b['model']))}</strong></td>"
+            f"<td class='num'>{b['loops']}</td><td class='num'>{fmt(b['overall'])}</td>"
+            f"<td class='num'>{fmt(b['fidelity'])}</td><td class='num'>{fmt(b['morphometric'])}</td>"
+            f"<td class='num'>{fmt(b['specimen'])}</td><td class='num'>{fmt(b['steps_completed'])}/12</td>"
+            f"<td class='num'>{wall_min}</td><td class='num'>{tokens}</td>"
+            f"<td class='num'>{b['violations']}</td><td class='dim'>{evidence}</td></tr>"
+        )
+    incident_note = ""
+    for off, referee, self_score, recal in mq["incidents"]:
+        incident_note += (
+            f'<p class="dim">Recorded integrity incident: loops built by <strong>{html.escape(str(off))}</strong> '
+            f"carried a self-audit of {fmt(self_score)}, recalibrated to {fmt(recal)} by referee "
+            f"<strong>{html.escape(str(referee))}</strong> — the reason auditing and building are kept on different models.</p>"
+        )
+    assessor_rows = ""
+    for seat in ("primary", "second"):
+        for model, n in mq["assessors"].get(seat, []):
+            assessor_rows += (f"<tr><td>{seat} assessor</td><td>{html.escape(str(model))}</td>"
+                              f"<td class='num'>{n}</td></tr>")
+    step_model_rows = "\n".join(
+        f"<tr><td>{html.escape(r['model'])}</td><td class='num'>{r['steps']}</td>"
+        f"<td class='num'>{r['avg_s']:.1f}s</td></tr>" for r in mq["step_models"][:8]
+    )
+
     page = f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <title>Fleet Registry — Agent Types &amp; Usage</title>
@@ -245,6 +330,29 @@ repo record and are not counted. Regenerate: <code>python3 docs/build_fleet_dash
 <h2>V. Who (or what) filled the roles — top actors &amp; models in telemetry</h2>
 <table><tr><th>Actor (as recorded)</th><th>Steps</th></tr>{actor_rows}</table>
 <table style="margin-top:10px"><tr><th>Model</th><th>Steps</th></tr>{model_rows}</table>
+
+<h2>VI. Plate IV — Model Leaderboard (builders, ranked by mean audit score)</h2>
+<p class="dim">Quality = the independent audit scores of the loops each model built
+(<code>math_models</code> joined to tracked runs), plus speed, token cost and integrity
+record. Small samples are marked — three loops do not make a ranking.</p>
+<table><tr><th>#</th><th>Model</th><th>Loops built</th><th>Overall</th><th>Fidelity</th>
+<th>Morphometric</th><th>Specimen</th><th>Steps done</th><th>Wall / loop</th><th>Tokens / loop</th>
+<th>Integrity violations</th><th>Evidence</th></tr>
+{builder_rows}</table>
+{incident_note}
+
+<h2>VII. Assessors &amp; step-level model usage</h2>
+<table><tr><th>Assessor seat</th><th>Model</th><th>Runs judged</th></tr>
+{assessor_rows}</table>
+<table style="margin-top:10px"><tr><th>Model (steps, name-normalised)</th><th>Steps executed</th><th>Avg step time</th></tr>
+{step_model_rows}</table>
+
+<h2>VIII. The unranked fleets — a recording gap</h2>
+<p>The 2,201 slot dispatches and the Cursor cloud fleets (100 scouts, 12 fixers) do not record
+which model each agent ran, so they cannot be ranked yet — the leaderboard above covers only the
+106 telemetry-tracked loops. Fleet outcomes by completion are in Plate I; recording the model in
+every dispatch record (the fixer dispatcher already accepts <code>--model</code>) would make the
+next wave rankable end-to-end.</p>
 
 <p class="dim">* Slot-agent Lean/nanopub counts are as recorded at dispatch time; per issue #268 the
 overnight-slot Lean modules are placeholder templates, not mechanism proofs, so treat
