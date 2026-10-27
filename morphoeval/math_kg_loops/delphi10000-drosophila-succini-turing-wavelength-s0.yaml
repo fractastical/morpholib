@@ -1,0 +1,81 @@
+sim_id: delphi10000-drosophila-succini-turing-wavelength-s0
+slot: 3172
+organism: Drosophila succini
+common_name: Eocene Baltic Amber Stem Drosophilid (44 Ma Lutetian Amber Inclusion)
+phenomenon_size_m: 2.759e-06
+log10_size_m: -5.559
+size_human: "2.8 µm"
+scale_tier: 3_subcellular_um
+scale_variant: s0_detail
+anatomical_structure: >-
+  Turing pigment stripe / ocellus wavelength in Drosophila succini at the
+  2.8 µm detail scale (ommochrome micro-spot spacing), not the 114 µm primordium slot.
+geological_age_ma: 44.0
+geological_period: Middle Eocene (Lutetian Baltic Amber)
+fossil_lineage_group: "Cenozoic Amber Drosophilid Chronospecies (44 Ma Eocene → 0 Ma)"
+chronoseries_index: "1/41"
+predecessor:
+  name: pre-Baltic acalyptrate stem
+  named_chronospecies: false
+  diffusion_ratio: 8.40
+  pattern: absent
+  note: r_stem < r_onset ≈ 10.77, so σ(k) < 0 at the 2.8 µm scale.
+successor:
+  species: Drosophila berryi
+  geological_age_ma: 19.0
+  geological_period: Early Miocene (Burdigalian Dominican Amber)
+  lambda_m: 2.382e-06
+  transfer: >-
+    λ_berryi = 2.759e-06 * (98.43 µm / 114 µm). Same Schnakenberg kinetics and
+    diffusion ratio r = 18.72; both diffusivities scale by (λ_berryi/λ_succini)².
+math_family: Turing reaction-diffusion wavelength selection
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+parameters:
+  kinetics: Schnakenberg 1979
+  a: 0.062
+  b: 1.180
+  r_succini: 18.72
+  r_stem: 8.40
+  r_ablation: 1.0
+  length_unit_m: 2.759e-06
+equations:
+  - law_name: Schnakenberg activator-substrate kinetics
+    formula: "du/dt = D_u ∇²u + a - u + u²v ; dv/dt = D_v ∇²v + b - u²v"
+    lean_decl: MathOfBiology.Loop_3172.rSucciniX100
+    lean_theorem: MathOfBiology.Loop_3172.succini_ratio_above_onset
+    lean_locus: morphoeval/lean/loops/Loop_3172_drosophila_succini_turing_wavelength_s0.lean
+    variables: "a = 0.062, b = 1.180, u0 = a + b, v0 = b/u0^2, r = Dv/Du"
+    lean_code: "theorem succini_ratio_above_onset : rOnsetX100 < rSucciniX100 := by decide"
+    role: Reaction terms whose Jacobian sets the Turing threshold at this scale.
+    source_citation: "Schnakenberg 1979, 10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py
+  - law_name: Critical wavenumber k_c
+    formula: "k_c = argmax_k σ(k),  σ(k) = larger eigenvalue of J - k² diag(D_u, D_v); λ_c = 2π/k_c"
+    lean_decl: MathOfBiology.Loop_3172.lambdaSucciniNm
+    lean_theorem: MathOfBiology.Loop_3172.berryi_detail_wavelength_shorter
+    lean_locus: morphoeval/lean/loops/Loop_3172_drosophila_succini_turing_wavelength_s0.lean
+    variables: "k_c = argmax sigma(k); lambda_c = 2*pi/k_c; target lambda = 2.759e-06 m"
+    lean_code: "theorem berryi_detail_wavelength_shorter : lambdaBerryiNm < lambdaSucciniNm := by decide"
+    role: >-
+      D_u is solved so λ_c = 2.759 µm at r = 18.72. Textbook k_h² =
+      (D_v f_u + D_u g_v)/(2 D_u D_v) is reported alongside k_c; above onset they differ.
+    source_citation: "Turing 1952, 10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py
+  - law_name: Chronoseries threshold and mode count
+    formula: "pattern exists iff r > r_onset; N = L / λ_c"
+    lean_decl: MathOfBiology.Loop_3172.modeCount
+    lean_theorem: MathOfBiology.Loop_3172.mode_count_increases_when_domain_doubles
+    lean_locus: morphoeval/lean/loops/Loop_3172_drosophila_succini_turing_wavelength_s0.lean
+    variables: "r_stem = 8.40, r_onset = 10.77, r_succini = 18.72, N = L/lambda"
+    lean_code: "theorem mode_count_increases_when_domain_doubles : modeCount 8000 lambdaSucciniNm < modeCount 16000 lambdaSucciniNm := by decide"
+    role: >-
+      At 44 Ma r rises from 8.40 to 18.72 and the mode appears. By 19 Ma λ shortens
+      to 2.382 µm at fixed r.
+    source_citation: "Hennig 1965, 10.5281/zenodo.10748923; Grimaldi 1987, 10.5281/zenodo.10747237"
+    code_locus: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py
