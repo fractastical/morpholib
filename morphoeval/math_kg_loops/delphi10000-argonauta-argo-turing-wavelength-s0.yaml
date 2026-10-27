@@ -1,0 +1,54 @@
+sim_id: delphi10000-argonauta-argo-turing-wavelength-s0
+slot: 3121
+math_family: Turing Reaction-Diffusion Wavelength Selection
+cohort: "1. Chemical Turing / RD"
+form: Stripes, Spots & Ocelli
+quantitative_law: Turing Wavenumber k_c
+organism: Argonauta argo
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Argonauta argo (Holocene, 95 µm detail)
+phenomenon_size_m: 9.48e-05
+log10_size_m: -4.023
+size_human: 95 µm
+scale_tier: 4_cellular_10um
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+chronoseries: "Argonauta 1/1 — no predecessor and no successor node"
+model_spec:
+  model: "Schnakenberg critical-mode reduction of Turing wavelength selection for one Argonauta argo ocellus"
+  a: 0.10
+  b: 0.90
+  gamma: 1.0
+  Du: 1.0
+  Dv: 18.0
+  seed: 3121
+  phenomenon_size_m: 9.48e-05
+  geological_age_ma: 0.0
+  inputs:
+    - datasets/argonauta_argo_turing_wavelength_s0/argonauta_argo_turing_wavelength_s0_specimen.jpg
+    - datasets/argonauta_argo_turing_wavelength_s0/argonauta_argo_shell_cc0.jpg
+    - datasets/argonauta_argo_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Schnakenberg steady-state trace
+    formula: "trace(J) = gamma ((-1 + 2 b/(a+b)) - (a+b)^2) < 0"
+    lean_decl: MathOfBiology.Loop_3121.traceScaled
+    lean_theorem: MathOfBiology.Loop_3121.steadyStateTraceNegative
+    lean_locus: morphoeval/lean/loops/Loop_3121_argonauta_argo_turing_wavelength_s0.lean
+    variables: "a=0.10, b=0.90, gamma=1; trace scaled by 100 equals -20"
+    role: "Diffusion-free stability at the Holocene 95 µm ocellus steady state"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Gierer & Meinhardt 1972 DOI:10.1007/BF00289234"
+  - law_name: Turing wavenumber inequality
+    formula: "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det(J)"
+    lean_decl: MathOfBiology.Loop_3121.turingLhs
+    lean_theorem: MathOfBiology.Loop_3121.turingWavenumberUnstable
+    lean_locus: morphoeval/lean/loops/Loop_3121_argonauta_argo_turing_wavelength_s0.lean
+    variables: "D_u=1, D_v=18, f_u=0.80, g_v=-1, det=1"
+    role: "Selects a finite k_c for the Argonauta pigment ocellus and excludes the equal-diffusion ablation"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  - law_name: Critical wavelength and Holocene tier scale
+    formula: "lambda_c = 2 pi / k_c, with k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); tier size 9.48e-05 m at 0 Ma"
+    lean_decl: MathOfBiology.Loop_3121.tierScaleTenthUm
+    lean_theorem: MathOfBiology.Loop_3121.holoceneDetailScaleExtant
+    lean_locus: morphoeval/lean/loops/Loop_3121_argonauta_argo_turing_wavelength_s0.lean
+    variables: "tier scale 948 tenths of a micrometre; holoceneAgeMa = 0; chronoseries length 1"
+    role: "Pins this node to 95 µm and age 0 Ma, with no predecessor delta"
+    source_citation: "Finn & Norman 2010 DOI:10.1098/rspb.2010.0155 (organism); Turing 1952 (wavelength law)"
