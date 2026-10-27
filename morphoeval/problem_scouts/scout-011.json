@@ -1,0 +1,331 @@
+{
+  "scout": "scout-011",
+  "ground": "thompson",
+  "lens": "literature",
+  "candidates": [
+    {
+      "title": "Eoplatax papilio: locate a peer-reviewed BDmax/SL ratio for the sharpest Monte Bolca falsification case",
+      "gap": "The registered Monte Bolca test lists *Eoplatax papilio* with BDmax/SL ~0.80–1.05 from Commons photographs because Blot (1969) is not online; the stem Ephippidae prediction at 50 Ma (0.67 [0.57–0.77]) is outside that interval, but the deciding evidence is still photograph-derived rather than a citable measurement table.",
+      "done": "`datasets/thompson_bolca_eoplatax/scout_manifest.json` (from scout_literature) contains either (a) ≥1 OpenAlex/Crossref hit with open-access full text and a tabulated SL and maximum body depth (or SL/depth ratio) for *Eoplatax papilio* or a synonym, with DOI recorded, or (b) a dated query log showing zero such hits after `--query \"Eoplatax papilio Monte Bolca body depth\"` and `--taxon \"Eoplatax papilio\"` with ≥4 Commons specimen URLs, explicitly closing the literature route.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Eoplatax papilio Monte Bolca Ephippidae body depth measurements\" --taxon \"Eoplatax papilio\" --out datasets/thompson_bolca_eoplatax/scout_manifest.json",
+      "deciding_data": "In repo: predicted intervals in docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md §5c–§6; Commons URLs already cited there. Public fetch: OpenAlex works API + Wikimedia Commons (scout_literature); candidate review papers include Carnevale/Bannikov Bolca monographs (e.g. doi:10.3140/bull.geosci.1577) for cross-check.",
+      "prior_attempts": "Claude Fable built the Monte Bolca table (THOMPSON_PHYLOGENETIC_PREDICTIONS.md §6): 6/16 direction, 4/10 BD inside 95%; Eoplatax explicitly flagged as photo estimate. OP-04 (open-problems.json) notes deep-horizon collapse but not this taxon-specific measurement gap. No prior scout manifest dedicated to Eoplatax literature.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "scout_literature.py queries OpenAlex and Commons as-is; the missing piece is exactly a findable paper or confirmed absence."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Predictions and CC specimen photos are already in-repo; one literature pass completes the evidence chain."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Scorer checks manifest JSON for a DOI+ratio field or an explicit empty-result record with query timestamp."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Single CLI call plus optional human PDF skim; no new infrastructure."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New files only under datasets/thompson_bolca_eoplatax/ and morphoeval/problem_scouts/."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Verdict in one scout run once a human confirms whether a hit contains numeric ratios."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded attempt already refuted the literature-search route for Eoplatax ratios."
+        }
+      }
+    },
+    {
+      "title": "Leporidae 0/3 residue: fetch integration-module definitions from Sherratt & Kraatz (2023) companion paper",
+      "gap": "Portfolio leporidae_skulls scored 0/3 (51.1% T7 share, LOO ratio 0.89, p=0.28) while OP-10 asks why Thompson-7 failed in concentrated clades; LS1 reasoning cites Kraatz facial tilt but the run used a single 74-LM lateral projection with no literature-backed rostrum/basicranium partition analogous to the Vespinae perimeter/interior split.",
+      "done": "Scout manifest lists doi:10.1093/evolut/qpad020 (Multilevel analysis of integration and disparity in the mammalian skull) as OA with a downloadable supplement or data package naming ≥2 cranial modules/subsets applicable to lagomorphs; a follow-up prereg JSON (new file) cites those module landmark indices before any re-score.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Sherratt Kraatz multilevel integration mammalian skull lagomorph\" --taxon \"Lagomorpha skull\" --out datasets/leporidae_integration/scout_manifest.json",
+      "deciding_data": "In repo: Zenodo 7615230 landmarks (.thompson_cache/leporidae2023/), Matthee_Tree.nex, docs/portfolio/leporidae_skulls.md. Public: OpenAlex hit doi:10.1093/evolut/qpad020 (Evolution 2023, OA PDF via scout run 2026-10-27).",
+      "prior_attempts": "thompson/portfolio/groups/leporidae_skulls.py scored LS1–LS3 (2026-10-23); 0/3 supported. Vespinae venation mechanics (D3, 7/8) showed module partitioning fixes interpretation but Leporidae was not retried. OP-10 partial (Fable). Retesting the same global LS1–LS3 without new module definitions is not a new route.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Literature scout resolves whether module definitions exist in OA supplements; execution of GM re-score needs thompson/portfolio (different lens)."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Landmarks and tree already cached; companion paper is one named OpenAlex fetch away."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Done when manifest records DOI plus yes/no on module landmark tables in supplement."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Scout hours; optional supplement download fits repo stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset scout dir and prereg only; no edits to existing portfolio results."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sitting for literature; re-score is a separate loop."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Global Thompson-7 leporidae hypotheses failed, but module literature route not previously executed."
+        }
+      }
+    },
+    {
+      "title": "Vespinae pooled castes: locate caste-stratified forewing morphometrics in Perrard et al. (2012)",
+      "gap": "vespinae_wings.md caveats state species means pool castes, sexes, and localities; W3–W5 null on OpenTree may partly reflect caste mixing rather than biology, yet an OA caste dimorphism paper exists that the portfolio never ingested.",
+      "done": "Scout manifest for doi:10.1111/j.1420-9101.2012.02527.x records whether supplementary material contains specimen-level or caste-labeled wing shape data compatible with the 19-LM scheme (or documents that only aggregate test statistics exist).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Perrard caste dimorphism hornet forewing geometric morphometrics\" --taxon \"Vespa crabro\" --out datasets/vespinae_caste/scout_manifest.json",
+      "deciding_data": "In repo: Perrard et al. 2014 wing dataset (1,027 wings) in thompson portfolio cache; docs/portfolio/vespinae_wings.md. Public: OpenAlex returns Perrard et al. 2012 JEB doi:10.1111/j.1420-9101.2012.02527.x (OA PDF, scout-verified).",
+      "prior_attempts": "W1–W7 all failed on OpenTree (2026-10-22). D1–D8 (2026-10-24) fixed phylogeny and mechanics but did not stratify castes. Re-running W1–W7 on OpenTree alone is refuted/blocked.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "OpenAlex leg of scout_literature already surfaces the exact DOI; gap is supplementary data discovery."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Primary 2014 dataset in-repo; 2012 paper is one OA fetch for caste labels."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Binary: supplement contains usable caste-level coordinates or manifest says no."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Literature scout plus PDF/supplement inspection only."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout manifest and optional new prereg file; leaves W/D results untouched."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single scout + supplement check determines go/no-go."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Caste stratification was noted as caveat but not literature-scouted."
+        }
+      }
+    },
+    {
+      "title": "Pre-register B_dip7: scout Combes & Daniel (2003) for tabulated vein flexural data supporting antiparallel dipole modes",
+      "gap": "vespinae_venation_mechanics D4 failed for a priori B_ven7 (+3.8 pts); post-hoc B_dip7 reached 64.2% but was not pre-registered; Combes & Daniel 2003 is cited for flexural anisotropy yet no repo manifest confirms whether their stiffness/cell-area measurements are openly tabulated for anchoring dipole modes before a registered re-test.",
+      "done": "Scout manifest under datasets/vespinae_combes2003/ lists the Combes & Daniel 2003 J. Exp. Biol. 206:2979-2997 DOI (from OpenAlex top relevant hit) with OA status and whether tables/figures provide species-level spar vs submarginal cell metrics usable as numeric priors for B_dip7 preregistration.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Combes Daniel hornet wing flexural stiffness submarginal cell\" --taxon \"Vespa mandarinia wing\" --out datasets/vespinae_combes2003/scout_manifest.json",
+      "deciding_data": "In repo: D6 already uses CV ratios from portfolio wings (docs/portfolio/vespinae_venation_mechanics.md). Public: Combes & Daniel 2003 J. Exp. Biol. 206:2979-2997 (portfolio citation); Perrard et al. 2014 J. Evol. Biol. 27:2665-2675 (secondary).",
+      "prior_attempts": "D4 pre-registered B_ven7 failed (2026-10-24). B_dip7 analysis appears only in post-run interpretation (+25.4 pts), not in vespinae_venation_mechanics_hypotheses.json. Re-proposing isotropic B_ven7 alone without new literature priors repeats a refuted primary hypothesis.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Scout finds the governing paper and OA tables; fitting dipole modes still needs thompson/portfolio code."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Wing landmarks in-repo; Combes numeric tables require literature fetch."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Manifest must state yes/no on extractable numeric stiffness/cell tables."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Scout + table extraction in hours."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout dir and future prereg only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Literature verdict one sitting; prereg is follow-on."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "D4 refuted B_ven7 route; this problem targets Combes literature for a different basis, not yet scouted."
+        }
+      }
+    },
+    {
+      "title": "OP-05 within-species bee P-matrix: scout Apis mellifera subspecies wing landmark datasets",
+      "gap": "open-problems.json OP-05 states why-wings needs within-species bee P while hornets have within-species P; bee_wings uses tribe-level units and D7/D8 only partially cleaned genus-level covariance from excel fossils, leaving no literature-vetted within-species replicate wing GM set for Anthophila.",
+      "done": "Scout manifest lists ≥1 OA paper (e.g. doi:10.1051/apido:2008037 or doi:10.1051/apido:2008028 from OpenAlex) whose methods section confirms ≥3 landmarks measured on ≥20 individuals within a single Apis mellifera subspecies or within one non-Apis bee species, with downloadable coordinates or a linked Zenodo/Dryad package URL recorded.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Apis mellifera forewing geometric morphometrics landmarks within subspecies\" --taxon \"Apis mellifera wing\" --out datasets/bee_within_species_p/scout_manifest.json",
+      "deciding_data": "In repo: bee_fossil_s001/s002 xlsx (373 wings, 7 genera) per vespinae_venation_mechanics D7. Public: OpenAlex returns Tofilski 2008 doi:10.1051/apido:2008037 and Francoy 2008 doi:10.1051/apido:2008028 (OA PDFs, scout-verified 2026-10-27).",
+      "prior_attempts": "why_wings.py scored C1–C8 (5/13, 2026-10-22). D7/D8 (2026-10-24) used genus-pooled bee wings; OP-05 remains partial (Fable). Houle et al. 2017 covers Drosophilidae, not Anthophila within-species P.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Finding the missing within-species dataset is exactly OpenAlex + Commons scouting."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Tribe-level bee data in-repo; deciding within-species series is external OA fetch."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Manifest fields: species, n individuals, landmark count, data URL present or absent."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Scout and optional dataset download only."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New files under datasets/bee_within_species_p/."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One scout loop plus supplement link check."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "OP-05 explicitly open; no manifest yet for Anthophila within-species GM sources."
+        }
+      }
+    },
+    {
+      "title": "T1917-056 Eohippus→Equus: confirm Dryad horse skull GM package before Thompson Ch. XVII loop",
+      "gap": "Claim inventory T1917-056 (horse skull transformation) is UNTESTED; thompson_1917_dataset_audit.json lists doi:10.5061/dryad.crjdfn3g3 but T1917-055 rabbit/ungulate row was UNPROBED (Dryad 429); portfolio residue on Leporidae does not substitute for the iconic equid series Thompson figured.",
+      "done": "Scout manifest records OpenAlex/Dryad confirmation that doi:10.5061/dryad.crjdfn3g3 contains ≥5 equid cranial landmark configurations spanning fossil and extant taxa, with file manifest SHA-256 logged, OR documents top alternative DOI if Dryad search supersedes crjdfn3g3.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Phylogenetic analyses horses skull shape evolution geometric morphometrics Dryad\" --taxon \"Equus skull\" --out datasets/thompson_t1917_056_horse/scout_manifest.json",
+      "deciding_data": "In repo: thompson/thompson_1917_dataset_audit.json (T1917-056 entry). Public: Dryad doi:10.5061/dryad.crjdfn3g3; OpenAlex 2026 Wisniewski & Slater doi:10.1017/pab.2026.10096 (OA PDF candidate).",
+      "prior_attempts": "thompson/scout_1917_datasets.py Dryad probe found crjdfn3g3 at scout time. No thompson/portfolio horse clade score. Leporidae 0/3 does not test T1917-056.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "scout_literature OpenAlex leg validates the public dataset DOI named in the audit."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Dryad package not yet in .thompson_cache; audit metadata only in-repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Manifest lists taxon count, landmark count, and download URL or explicit miss."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Scout plus Dryad API fetch fits existing thompson scout patterns."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset dir; links to claim T1917-056 without editing portfolio tables."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Dataset existence check in one loop; Thompson fit is later."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "UNTESTED claim; no refutation of crjdfn3g3 suitability."
+        }
+      }
+    },
+    {
+      "title": "Monte Bolca stem placement: literature map for incertae-sedis families biasing >50 Myr predictions",
+      "gap": "THOMPSON_PHYLOGENETIC_PREDICTIONS.md §6 lists structural limit (ii): several Bolca taxa (*Bellwoodilabrus*, *Ruffoichthys*, *Eoleiognathus*) are stem or unresolved; without published placement DOIs the 6/16 'closer than living mean' tally cannot be reprised with placement-aware nulls.",
+      "done": "Scout manifest enumerates ≥1 OA systematic paper per contested family (Labridae *Bellwoodilabrus*, Siganidae *Ruffoichthys*, Leiognathidae *Eoleiognathus*) assigning stem vs crown placement relative to sampled training families, each with DOI and quoted clade statement, or marks family as 'placement unresolved in literature' with search date.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Bellwoodilabrus Monte Bolca Labridae phylogeny\" --taxon \"Monte Bolca fish fossil\" --out datasets/thompson_bolca_placement/scout_manifest.json ; python3 morphoeval/scout_literature.py --query \"Ruffoichthys Siganidae stem Monte Bolca\" --taxon \"Ruffoichthys\" --out datasets/thompson_bolca_placement/ruffoichthys_manifest.json",
+      "deciding_data": "In repo: Bolca ratio table and Bannikov/Tyler citations in THOMPSON_PHYLOGENETIC_PREDICTIONS.md. Public: Bannikov Geodiversitas papers (e.g. doi:10.3140/bull.geosci.1577 via OpenAlex Bolca search); Tyler & Bannikov 1997 Smithsonian Contrib. 84 for Siganidae.",
+      "prior_attempts": "Monte Bolca test scored 6/16 metrics vs stasis null (docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md). FishShapes blind H4 failed on wording but confirmed >50 Myr degradation (THOMPSON_BLIND_TEST_RESULTS.md). OP-04 partial on engine horizon. No placement manifest in repo.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Placement uncertainty is resolved by findable systematic papers, which scout_literature targets."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "Fossil ratios partially in-repo; placement claims require literature fetch."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Each family row in manifest must cite DOI + stem/crown label or 'unresolved'."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Two scout queries and PDF abstract reads."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New manifests only; does not rewrite registered predictions."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "May need two query passes for three families."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Placement-aware null not previously literature-scouted."
+        }
+      }
+    },
+    {
+      "title": "Matthee lagomorph tree completeness: find time-calibrated phylogeny covering all 23 Sherratt species",
+      "gap": "leporidae_skulls matched only 18/23 species on Matthee_Tree.nex; LS2 tree signal test may be underpowered or mis-horizoned because five species lack branch lengths, and mammals portfolio predicted ~51 Myr horizon (THOMPSON_DATASET_PORTFOLIO.md) without verifying deep lagomorph divergence literature.",
+      "done": "Scout manifest identifies ≥1 OA lagomorph phylogeny paper or Zenodo tree file post-2020 that includes all 23 Sherratt taxon names (or documents maximum overlap count <23 with missing names listed).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Matthee lagomorph phylogeny time calibrated Leporidae\" --taxon \"Lepus europaeus\" --out datasets/leporidae_phylogeny/scout_manifest.json",
+      "deciding_data": "In repo: Matthee_Tree.nex and Zenodo 7615230 mapping (.thompson_cache/leporidae2023/). Public: Sherratt & Kraatz 2023 Evolution doi:10.1093/evolut/qpac020 (dataset paper); Matthee et al. lagomorph trees via OpenAlex search.",
+      "prior_attempts": "leporidae_skulls 0/3 (2026-10-23). OP-10 portfolio residue partial. Replacing tree without literature-discovered Newick repeats failed LS2 unless preregistered.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Scout finds published trees/supplements; merging taxa requires thompson portfolio tooling."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Partial tree and landmarks already cached; gap is named public phylogeny fetch."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Manifest reports matched species count out of 23 against a fixed name list from File_IDs.csv."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Scout plus Newick download and name intersection script."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout output and optional new tree file path."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Species overlap computable in one sitting after manifest."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "LS2 failed on current tree but expanded-tree literature route not attempted."
+        }
+      }
+    }
+  ],
+  "blocked_routes": [
+    {
+      "route": "Re-run vespinae_wings W1–W7 on OpenTree polytomy expecting phylogenetic signal",
+      "reason": "0/7 failed 2026-10-22; D1–D8 showed polytomy caused WN model selection—resolved tree route already executed and scored 7/8."
+    },
+    {
+      "route": "Re-register global Thompson-7 leporidae LS1–LS3 without new landmarks/modules/tree",
+      "reason": "0/3 failed 2026-10-23 with documented metrics; repeating same hypotheses is not a new problem."
+    }
+  ],
+  "lens_limits": [
+    {
+      "problem": "Beat FishShapes clade-prior baseline beyond 50 Myr (OP-04)",
+      "better_lens": "morphoeval Delphi scoring + thompson/run_phylogenetic_prediction_engine.py hold-out bins—not literature scout."
+    },
+    {
+      "problem": "Execute B_dip7 venation re-score after literature anchor",
+      "better_lens": "thompson/portfolio/groups/vespinae_venation_mechanics.py fork with prereg JSON—scout only supplies Combes/Perrard DOIs."
+    }
+  ]
+}
