@@ -1,0 +1,54 @@
+sim_id: delphi10000-acropora-millepora-turing-wavelength-s0
+slot: 3104
+organism: Acropora millepora
+age_ma: 0.0
+scale_m: 0.0003852
+scale_um: 385.2
+tier_id: 5_primordium_100um
+math_family: Turing reaction-diffusion wavelength selection
+equations:
+- law_name: Selected Turing wavenumber
+  formula: 'k_c = argmax_{k>0} sigma(k),  lambda_c = 2*pi/k_c = 385.2 um'
+  lean_decl: MathOfBiology.Loop_3104.lambdaCDeciUm
+  lean_theorem: MathOfBiology.Loop_3104.domain_fits_fundamental_mode
+  lean_locus: morphoeval/lean/loops/Loop_3104_acropora_millepora_turing_wavelength_s0.lean#L32-L34
+  variables: 'sigma(k) is the larger eigenvalue of J - k^2 D for Schnakenberg kinetics a=0.12, b=0.78'
+  role: Fastest-growing pigment wavelength on the Holocene coenenchyme patch
+  source_citation: 'Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0'
+- law_name: Inhibitor range above onset
+  formula: 'D_v/D_u = 15.75 > r_onset ≈ 8.08 > 1 (equal-diffusion ablation)'
+  lean_decl: MathOfBiology.Loop_3104.diffRatioHundredths
+  lean_theorem: MathOfBiology.Loop_3104.inhibitor_exceeds_onset_and_ablation_does_not
+  lean_locus: morphoeval/lean/loops/Loop_3104_acropora_millepora_turing_wavelength_s0.lean#L36-L39
+  variables: 'r_onset is the larger root of (r f_u + g_v)^2 = 4 r det(J)'
+  role: Long-range inhibition required for stripes, spots and ocelli; equal diffusion is stable
+  source_citation: 'Gierer and Meinhardt 1972 DOI:10.1007/bf00289234'
+- law_name: Holocene terminal chronoseries node
+  formula: 'series_length = 1 and age_Ma = 0; no in-series predecessor or successor'
+  lean_decl: MathOfBiology.Loop_3104.seriesLength
+  lean_theorem: MathOfBiology.Loop_3104.holocene_is_terminal_singleton
+  lean_locus: morphoeval/lean/loops/Loop_3104_acropora_millepora_turing_wavelength_s0.lean#L41-L43
+  variables: 'age is Ma before present; the Eocene Acropora record is out of series'
+  role: Nothing in this chronoseries shifts lambda_c; the wavelength is stationary at 0 Ma
+  source_citation: 'Wallace and Rosen 2006 DOI:10.1098/rspb.2005.3307'
+- law_name: Primordium-tier membership
+  formula: '100 um <= 385.2 um <= 1000 um'
+  lean_decl: MathOfBiology.Loop_3104.lambdaCDeciUm
+  lean_theorem: MathOfBiology.Loop_3104.primordium_tier_contains_wavelength
+  lean_locus: morphoeval/lean/loops/Loop_3104_acropora_millepora_turing_wavelength_s0.lean#L46-L48
+  variables: 'length compared in tenths of a micrometre'
+  role: Places the ocellus wavelength in tier 5 of 8, detail variant
+  source_citation: 'Dove, Hoegh-Guldberg and Ranganathan 2001 DOI:10.1007/pl00006956'
+model_spec:
+  kinetics: schnakenberg
+  a: 0.12
+  b: 0.78
+  diffusivity_ratio: 15.75
+  lambda_um: 385.2
+  age_ma: 0
+  seed: 3104
+  grid: 128
+  inputs:
+  - datasets/acropora_millepora_turing_wavelength_s0/acropora_millepora_gbr_lundgren2013.jpg
+  - datasets/acropora_millepora_turing_wavelength_s0/acropora_millepora_turing_wavelength_s0_reference.json
+  - datasets/acropora_millepora_turing_wavelength_s0/paper_citations.bib
