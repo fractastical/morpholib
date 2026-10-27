@@ -1,0 +1,319 @@
+{
+  "scout": "scout-073",
+  "ground": "library",
+  "lens": "lean",
+  "candidates": [
+    {
+      "id": "LIB-PLAN-FREQ-01",
+      "title": "Machine-check PlanformDB morphology-frequency simplex law (E_FREQ_SUM)",
+      "gap": "`models/planform_bioelectric.py` rejects records when resultant-morphology frequencies leave the unit simplex (`FREQ_SUM_TOL = 0.015`, error `E_FREQ_SUM`), and `datasets/planform/damaged/planform-bioelectric-series-v1.bad_frequency_sum.json` is the negative witness — but no Lean 4 loop certifies the discrete/rational frequency invariant that the Python validator implements.",
+      "done": "A new 0-sorry Lean file (e.g. `morphoeval/lean/loops/Loop_planform_bioelectric_frequency_simplex.lean`) proves the centi-scale frequency-sum lemmas used by the validator, and `python3 models/planform_bioelectric.py --self-test` still passes with the damaged manifest expecting `E_FREQ_SUM` on the bad fixture.",
+      "tool_route": "Author `Loop_planform_bioelectric_frequency_simplex.lean` mirroring `validate_fixture` frequency rules; verify with `lean morphoeval/lean/loops/Loop_planform_bioelectric_frequency_simplex.lean`; regression gate `python3 models/planform_bioelectric.py --self-test`.",
+      "deciding_data": "In repo: `datasets/planform/planform_bioelectric_series_v1.json`, `datasets/planform/damaged/manifest.json`, and the five damaged negatives under `datasets/planform/damaged/`.",
+      "prior_attempts": "MesmerPrism/rusty-matter vendored parity and the 2026-10-18 `planform_bioelectric.py` self-test (validator + damaged negatives) are recorded in `datasets/planform/README.md`; GPT 5.6 Sol Pass 1/2 Cervera audits drove the extractor but did not add a Lean frequency certificate. No entry in `docs/open-problems.json` refutes a Lean simplex route.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Lean loop plus existing `--self-test` is the named closure path; Python already emits the deciding pass/fail."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Good and bad fixtures plus pinned SHA-256 damaged manifest are already vendored."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "`lean … exit 0` with zero `sorry` and `--self-test` exit 0 are objective."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Pure-Lean arithmetic on Int/Nat; self-test finishes in seconds on the cloud image."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as one new `.lean` file (and optional docstring cross-link) without touching tracked datasets."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One remediation loop: write lemmas, run lean + self-test."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded attempt refuted formalizing E_FREQ_SUM; only Python validation exists today."
+        }
+      }
+    },
+    {
+      "id": "LIB-PLAN-MCKAY-02",
+      "title": "Close McKay IR gap for the four remaining Planform skeletal isomer pairs",
+      "gap": "`morphoeval/lean/loops/Loop_wolfram_planform_multiway.lean` Theorem 2 proves first-Zagreb separation for star-vs-path isomers (`#3` vs `#119`, `#12` vs `#128`, `#77` vs `#283`) but explicitly leaves four PlanformDB pairs (`#112` vs `#119`, `#116` vs `#282`, `#113` vs `#286`, `#229` spider vs path) to vertex-color or spider-degree invariants not yet machine-checked.",
+      "done": "Either (A) `lean morphoeval/lean/loops/Loop_wolfram_planform_multiway.lean` (or a sibling loop) gains 0-sorry theorems separating all seven advertised pairs using degree-sequence or Zagreb lemmas tied to morphology IDs in `datasets/planform/planform_canonical_silhouettes_v1.json`, or (B) a checkable counterexample documents one pair that shares the same first-Zagreb invariant with a named morphology ID.",
+      "tool_route": "Extend `Loop_wolfram_planform_multiway.lean` with spider/path degree lemmas; verify `lean morphoeval/lean/loops/Loop_wolfram_planform_multiway.lean`; cross-check morphology IDs against `datasets/planform/README.md` and `planform_canonical_silhouettes_v1.json`.",
+      "deciding_data": "In repo: `Loop_wolfram_planform_multiway.lean`, `datasets/planform/planform_canonical_silhouettes_v1.json`, PlanformDB-derived morphology table in `datasets/planform/README.md`.",
+      "prior_attempts": "Wolfram hypergraph / McKay IR work is recorded in the loop header (Assar 2026 engine); no audit refutes the four outstanding pairs — the gap is stated in-file. Not in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Existing 0-sorry loop is the vehicle; verdict is kernel-checked theorems or an explicit counterexample lemma."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Silhouette JSON and morphology IDs are pinned in-repo; no external fetch required."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done when lean exit 0 covers all four pairs or a named ID counterexample is proved."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Combinatorial Nat proofs only; may need more than one sitting for spider cases."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Prefer a new sibling `.lean` file to avoid merge conflicts with parallel Wolfram work."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Spider/vertex-color cases may exceed one loop iteration."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation; the file itself lists the open four pairs."
+        }
+      }
+    },
+    {
+      "id": "LIB-PLAN-LEAN-03",
+      "title": "0-sorry Lean loop for the pinned Planform bioelectric dataset law chain",
+      "gap": "The library ships byte-pinned Planform fixtures (`planform_bioelectric_series_v1.json`, SHA-256 `b3fe2ef5…`) and `models/planform_bioelectric.py` validation, but unlike flagship slots there is no dedicated `Loop_*planform*bioelectric*.lean` linking dataset integrity rules to Cervera pole-identity lemmas — only `Loop_wolfram_planform_multiway.lean` (graph rewriting) and generic bioelectric loops (`Loop_082`, `Loop_084`).",
+      "done": "A new 0-sorry loop file references the pinned DB digest constant, states the nine-series census invariants checked in `self_test` (e.g. S9 dose monotone `[0.0,…,1.0]`), and `lean` exit 0; optional cross-check that `python3 models/planform_bioelectric.py --self-test` still passes.",
+      "tool_route": "Add `morphoeval/lean/loops/Loop_planform_bioelectric_series_v1.lean`; verify with `lean` on that file; gate with `python3 models/planform_bioelectric.py --self-test`.",
+      "deciding_data": "In repo: `datasets/planform/planform_bioelectric_series_v1.json`, `datasets/planform/planformDB.sha256`, `models/planform_bioelectric.py` (`CENSUS` expectations).",
+      "prior_attempts": "Cervera / Planform MorphoEval audits (Fable Pass 1–2, GPT Sol) fixed extractor bugs per `docs/LEVIN_LATENT_SPACE_METHODS.md` but did not publish a dataset Lean loop. OP-06 flagship debt is marked solved and is unrelated.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Lean 0-sorry loop is the missing artifact; Python self-test supplies regression oracle."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Fixture and census tables are fully in-repo and pinned."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Lean exit 0 plus unchanged self-test is checkable; encoding full census may need staged theorems."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Mostly discrete arithmetic on recorded frequencies and counts."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Single new loop file under `morphoeval/lean/loops/`."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Census encoding for 63 records may take multiple passes."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of a Planform-series Lean loop."
+        }
+      }
+    },
+    {
+      "id": "LIB-VIF-RUBRIC-04",
+      "title": "Lean certificate that verify_image_fitness audit weights form a [0,100] convex combination",
+      "gap": "`morphoeval/verify_image_fitness.py` computes `overall = sum(score_k * weight_k)` from `RUBRIC_WEIGHTS` (0.20+0.25+…+0.10) when enriching `aristotelian_categories_index.json`, but there is no machine-checked proof that weights sum to 1 or that integer subscores in [0,100] imply overall ∈ [0,100] — a library integrity gap between CV fitness and audit scores.",
+      "done": "0-sorry Lean file proving `RUBRIC_WEIGHTS` sum to 1 (via fixed rational/centi-scaling) and a bound theorem for weighted scores; `python3 morphoeval/verify_image_fitness.py` run completes and documents the loop path in its header.",
+      "tool_route": "Add `morphoeval/lean/loops/Loop_verify_image_fitness_rubric.lean`; `lean morphoeval/lean/loops/Loop_verify_image_fitness_rubric.lean`; smoke `python3 morphoeval/verify_image_fitness.py` (writes `morphoeval/runs/image_fitness_and_provenance.json`).",
+      "deciding_data": "In repo: constants in `morphoeval/verify_image_fitness.py` lines 53–61; optional spot-check against `morphoeval/runs/aristotelian_categories_index.json`.",
+      "prior_attempts": "Overnight loop fleet records `lean_sorrys: 0` on many slots but not this rubric law; no `docs/open-problems.json` entry. Wrong-specimen gallery mappings (below) are a separate issue.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Pure Lean arithmetic exactly matches the lens; verify script is the consumer."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All weights are hard-coded in the verifier source."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Kernel check of normalization + bound theorems is taste-free."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Minutes of Lean + a few-minute verifier run."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "One new `.lean` file; optional one-line docstring cite."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single-sitting Lean proof likely."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation."
+        }
+      }
+    },
+    {
+      "id": "LIB-SCOUT-LEAN-05",
+      "title": "Repair seven scout_manifest → Lean loop broken pointers",
+      "gap": "2100 `datasets/*/scout_manifest.json` dossiers declare `territory.proposed_lean_module`, but seven dataset dirs point to missing files: `lung_stereotyped_branching_modes` → `Loop_053_lung_stereotyped_branching.lean`, `epithelial_buckling_crypt_villus` → `Loop_063_intestinal_villi_buckling.lean`, `cellular_potts_cell_sorting` → `Loop_042_glazier_graner_potts.lean`, `cortical_gyrification_folding` → `Loop_061_cortical_gyrification_buckling.lean`, `auxin_pin1_phyllotaxis` → `Loop_032_auxin_pin1_meristem.lean`, `drosophila_wing_vertex_model` → `Loop_042` path variant, `fgf8_wavefront_somitogenesis` — breaking reference-fitness between library metadata and the Lean fleet.",
+      "done": "For each of the seven slugs, either the referenced `.lean` file exists and `lean <path>` exits 0 with zero `sorry`, or the manifest path is corrected to the actual loop filename; a scorer script returns an empty missing-module list.",
+      "tool_route": "Inventory via JSON parse of all `scout_manifest.json`; for each gap either add `morphoeval/lean/loops/Loop_*.lean` (0-sorry) or fix manifest in a non–zero-conflict remediation PR; verify with `lean` per file.",
+      "deciding_data": "In repo: the seven `datasets/<slug>/scout_manifest.json` files and `morphoeval/lean/loops/` directory listing.",
+      "prior_attempts": "Overnight loop generators hash `scout_manifest.json` in `run_overnight_*.py` but do not assert target Lean files exist. No open-problems entry; not previously refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Lean 0-sorry files (or manifest fixes validated by `lean`) directly close the integrity gap."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Broken paths enumerated from current checkout without external data."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Empty missing-module list plus lean exit 0 per path is objective."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Seven loops may be substantial if biology lemmas are required, not just stubs."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Manifest fixes conflict with zero-conflict policy; prefer new Lean files only in swarm runs."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Seven modules likely exceed one sitting unless stubs are acceptable."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Fresh gap surfaced by inventory; no refuted route recorded."
+        }
+      }
+    },
+    {
+      "id": "LIB-SCOUT-FITNESS-06",
+      "title": "Formalize scout_manifest reference-fitness (per-file SHA-256) for 2101 dossiers",
+      "gap": "Only `datasets/causal_emergence/scout_manifest.json` uses the `files{path,sha256}` reference-fitness schema; the other 2101 dossiers (`morphoeval-scout-dossier-1.0`) lack pinned digests for `*_reference.json` and specimens, so library integrity cannot be machine-checked from the manifest alone (overnight scripts hash `scout_manifest.json` as a blob only).",
+      "done": "Either (Lean route) a 0-sorry loop proving digest-closure lemmas for a pilot cohort with embedded SHA-256 constants matching on-disk files, plus a Python checker exit 0 on that cohort; or (alternative lens) uniform `files{}` blocks — scorer accepts pilot of ≥10 datasets with manifest bytes matching `sha256sum`.",
+      "tool_route": "Lean: `Loop_scout_manifest_reference_fitness.lean` with pinned hashes for pilot dirs; verify `lean …`; Python: `sha256sum -c` style script over manifest entries (remediation lens if manifests must be edited). Primary scout proposal: new Lean file + read-only hash checker script in a new file.",
+      "deciding_data": "In repo: `datasets/causal_emergence/scout_manifest.json` (template), `datasets/*/scout_manifest.json` population; exemplar pins in audit `.measurements.yaml` files under `morphoeval/audits/`.",
+      "prior_attempts": "Per-dataset audits pin digests in measurements sidecars (e.g. yap_excitable_segmentation v2/v3) but there is no fleet-wide manifest schema. Not in `docs/open-problems.json`. Lean formalization not attempted.",
+      "factors": {
+        "tool_fit": {
+          "score": 12,
+          "why": "Lean can certify hash-equality lemmas for embedded constants; fleet rollout still needs a measure/remediation checker."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Template plus thousands of dossiers and audit pins exist; full fleet hash embed is large."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Pilot cohort with matching sha256sum is objective; full 2101 is a staged done."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Hashing all dataset files is hours but feasible; Lean pilot is fast."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Pilot Lean + checker can be new files; manifest backfill conflicts unless automated in dedicated PRs."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Fleet-wide backfill exceeds one loop; pilot is one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Schema split is documented by inventory; route not refuted."
+        }
+      }
+    },
+    {
+      "id": "LIB-PLAN-NEG-07",
+      "title": "Expand Planform validator negative suite beyond five damaged codes",
+      "gap": "`validate_fixture` emits ~20 distinct `E_*` codes (schema, anchors, flags, record shape, etc.) but `datasets/planform/damaged/manifest.json` exercises only five (`E_FREQ_SUM`, `E_NOTICE_MISSING`, `E_UNKNOWN_MORPHOLOGY`, `E_SHA_MISMATCH`, `E_UNKNOWN_MECHANISM_CLASS`); library integrity lacks Lean-backed or property-test proof that each production error code is reachable and fail-closed.",
+      "done": "For every `E_*` code used in `validate_fixture`, a damaged JSON (or generative test vector) triggers that code and no others as sole primary code; `python3 models/planform_bioelectric.py --self-test` extended to count covered codes = full set; optional Lean lemma that the five existing negatives are pairwise distinct codes.",
+      "tool_route": "Primary: extend `make_damaged` / `datasets/planform/damaged/` and self-test in `planform_bioelectric.py`; Lean supplement: `Loop_planform_validator_error_codes.lean` proving distinctness of the five baseline codes; verify `lean …` + `--self-test`.",
+      "deciding_data": "In repo: `models/planform_bioelectric.py` (`validate_fixture`, `make_damaged`), current `datasets/planform/damaged/*`.",
+      "prior_attempts": "Five negatives shipped with 2026-10-18 extractor README; no expansion recorded. Not refuted — explicitly scoped as minimal fail-closed fixtures.",
+      "factors": {
+        "tool_fit": {
+          "score": 14,
+          "why": "Lean can prove code distinctness; full coverage still relies on Python self-test as primary oracle."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Validator source and damaged fixtures are in-repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Coverage table `code -> damaged file` with self-test exit 0 is checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Generating ~15 more JSON mutants is quick."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Adding damaged JSONs touches tracked dataset files unless new-only names are added under `damaged/`."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Achievable in one sitting for Python; Lean distinctness is quick, full 20-code proofs optional."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Minimal five-code suite was intentional, not a refutation of expansion."
+        }
+      }
+    },
+    {
+      "id": "LIB-VIF-SPECIMEN-08",
+      "title": "FOUNDATIONAL_SPECIMENS cross-taxa placeholders (Lean cannot decide taxon match)",
+      "gap": "`morphoeval/verify_image_fitness.py` maps several foundational slugs to non-matching `species_gallery` JPEGs (e.g. `santella-wormguides-celegans` → `Drosophila_melanogaster.jpg`, `eshghi-odonata-wing-cells` → same, `petroff-stromatolite` → `Bacillus_subtilis.jpg`), so library specimen integrity is knowingly wrong at the path level despite Lean proofs on the model slot.",
+      "done": "N/A for Lean lens — correct slug→specimen paths with SHA-256 pins and `verify_image_fitness` re-run showing improved `cv_sim_similarity` for those slugs.",
+      "tool_route": "Use vision lens: `python3 morphoeval/verify_image_fitness.py` after replacing `FOUNDATIONAL_SPECIMENS` entries; measure lens for SHA-256 pins in dataset README.",
+      "deciding_data": "In repo: `FOUNDATIONAL_SPECIMENS` dict in `verify_image_fitness.py`; `datasets/species_gallery/species_manifest.json` for candidate replacements (may need Wikimedia fetch for true taxa).",
+      "prior_attempts": "Gallery placeholders documented implicitly in code comments/structure; expansion slots rely on template waves per verifier logic. No Delphi open problem; not attempted as a formal fix.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Taxon correctness is image/provenance, not a theorem — Lean loop files cannot decide it."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Mis-mappings are explicit in source; some true specimens may need Commons fetch."
+        },
+        "falsifiable_done": {
+          "score": 11,
+          "why": "Done is path+hash match to named species, checkable without taste."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Verifier rerun is cheap; sourcing images may need network."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Fixing tracked `verify_image_fitness.py` violates zero-conflict unless deferred."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Small slug set; asset hunt dominates."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Known placeholders; no refutation of replacement route."
+        }
+      }
+    }
+  ]
+}
