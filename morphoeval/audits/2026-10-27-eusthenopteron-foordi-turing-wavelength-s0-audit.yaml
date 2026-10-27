@@ -1,0 +1,107 @@
+# Pass 1 — Eusthenopteron foordi, 104 µm Turing wavenumber, Frasnian 379 Ma.
+# Single builder-assessor. Overall is the rubric weighted mean (see group_scores).
+# Pass 1 credits the core solver and the fossil render, and withholds full credit
+# until the sweep, ablation, body segmentation, and dispersion GOF are re-scored.
+audit:
+  id: 2026-10-27-eusthenopteron-foordi-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree. New slot files are not on this commit; signing profile is absent."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    doi: 10.1016/0022-5193(79)90042-0
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo, S. and Asai, R."
+    doi: 10.1038/376765a0
+  andrews1970:
+    title: "The postcranial skeleton of Eusthenopteron foordi Whiteaves"
+    authors: "Andrews, S. M. and Westoll, T. S."
+    doi: 10.1017/S008045680001471X
+simulations:
+  - id: delphi10000-eusthenopteron-foordi-turing-wavelength-s0
+    name: "Turing k_c at 104 µm on Eusthenopteron foordi (Frasnian, 379 Ma)"
+    organism: "Eusthenopteron foordi"
+    script: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py
+    output: docs/media/eusthenopteron_foordi_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, kondo1995, andrews1970]
+    summary: >
+      Schnakenberg kinetics with the Turing wavenumber set so λ_c = 104.2 µm.
+      Pass 1 confirms the integrator runs, the Brussels mount is the display
+      domain, and the realized wavelength is 102.0 µm. Sweep monotonicity,
+      ablation stds, mask morphometrics, and the dispersion residual are
+      listed as remediation rather than fully credited.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 critical wavenumber"
+        - "Schnakenberg 1979 kinetics"
+        - "Kondo and Asai 1995 dermal pigment waves on living fish"
+        - "Andrews and Westoll 1970 osteology of Eusthenopteron foordi"
+      reconstructed_in_script:
+        - "Dv/Du = 12 chosen so formula k_c = 2π per 104.2 µm"
+        - "Fourier integration on a 12 by 7.5 wavelength patch"
+      transfer_boundary:
+        - "Teleost chromatophore RD applied to a 379 Ma tristichopterid dermis"
+        - "104.2 µm is the assigned detail scale, not a histological count on this fossil"
+      does_not_claim:
+        - "Preserved chromatophore color on the Brussels mount"
+        - "A calibrated micrometre scale bar in the photograph"
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "The Fourier step is the Schnakenberg reaction plus diffusion, and k_c is the standard onset formula. Pass 1 does not yet treat the dispersion residual as a completed fidelity test."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [12, 20], note: "Documented k_c and Schnakenberg PDE", supports: true}
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [101, 108], note: "schnakenberg_step", supports: true}
+      specimen-match:
+        value: 76
+        rationale: "The comparison figure places the real Brussels mount beside the segmented body. Pass 1 does not yet credit the ocellus tint as a specimen match, because fossil color is not preserved."
+        evidence:
+          - {file: docs/media/eusthenopteron_foordi_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Side-by-side mount, mask, and field", supports: true}
+          - {file: docs/media/eusthenopteron_foordi_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "10-frame growth GIF, 974×480", supports: true}
+      parameter-expressivity:
+        value: 74
+        rationale: "Dv/Du is the morphospace parameter, but Pass 1 does not yet accept the sweep: the ratio-10 run is barely patterned (std 0.08) and λ is not strictly monotone."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [271, 294], note: "parameter_sweep over Dv/Du", supports: true}
+      morphometric-validation:
+        value: 80
+        rationale: "A wavelength is reported (102.0 µm versus formula 104.2 µm). Pass 1 still requires the Pearson/RMSE dispersion table, the KS orientation test, and the mask aspect to be the scored comparison."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [161, 176], note: "dominant_frequency", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Turing, Schnakenberg, Kondo & Asai, and Andrews & Westoll are cited by DOI. The specimen file is SHA-256 pinned and CC BY-SA 3.0."
+        evidence:
+          - {file: datasets/eusthenopteron_foordi_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "DOI bibliography", supports: true}
+          - {file: datasets/eusthenopteron_foordi_turing_wavelength_s0/eusthenopteron_foordi_turing_wavelength_s0_reference.json, lines: [55, 66], note: "Specimen SHA-256 and Wikimedia source", supports: true}
+      code-traceability:
+        value: 82
+        rationale: "The module docstring states the PDE and the wavenumber formula that schnakenberg_step implements. Pass 1 does not yet trace the dispersion harness line by line."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [62, 78], note: "Jacobian and rescaled diffusivities", supports: true}
+      repro-package:
+        value: 84
+        rationale: "Seed 3225, --self-test, and a pinned specimen hash. Pass 1 does not yet treat the control and ablation paths as part of the reproducibility gate."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [631, 658], note: "--self-test assertions", supports: true}
+    remediation:
+      - "Parameter-regime sweep: re-score Dv/Du against realized wavelength, including the near-threshold ratio and the non-monotone step."
+      - "Negative control and ablation: report equal-diffusion std and autocatalysis-ablated std beside the patterned std."
+      - "Real specimen CV segmentation: score the body mask (aspect, circularity) against the gallery reconstruction and record the orientation KS."
+      - "Goodness-of-fit: Pearson r, RMSE on σ(k), and the KS/CV specimen comparison must be the morphometric evidence, with value ≠ reference."

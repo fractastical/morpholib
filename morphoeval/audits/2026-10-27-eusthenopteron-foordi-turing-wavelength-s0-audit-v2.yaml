@@ -1,0 +1,119 @@
+# Pass 2 — closes the four Pass-1 remediation items for slot 3225.
+# Supersedes 2026-10-27-eusthenopteron-foordi-turing-wavelength-s0-audit.
+# Weighted mean uses rubric.yaml weights (20/25/10/15/10/8/12).
+audit:
+  id: 2026-10-27-eusthenopteron-foordi-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-eusthenopteron-foordi-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 working tree. Nanopub signing was not run: ~/.nanopub/profile.yml is absent."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    doi: 10.1016/0022-5193(79)90042-0
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo, S. and Asai, R."
+    doi: 10.1038/376765a0
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu, A. et al."
+    doi: 10.1073/pnas.0808622106
+  andrews1970:
+    title: "The postcranial skeleton of Eusthenopteron foordi Whiteaves"
+    authors: "Andrews, S. M. and Westoll, T. S."
+    doi: 10.1017/S008045680001471X
+simulations:
+  - id: delphi10000-eusthenopteron-foordi-turing-wavelength-s0
+    name: "Turing k_c at 104 µm on Eusthenopteron foordi, with sweep, ablation, and specimen GOF"
+    organism: "Eusthenopteron foordi"
+    script: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py
+    output: docs/media/eusthenopteron_foordi_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, kondo1995, nakamasu2009, andrews1970]
+    supersedes_audit_id: 2026-10-27-eusthenopteron-foordi-turing-wavelength-s0-audit
+    summary: >
+      Pass 2 keeps the same Schnakenberg system (a=0.1, b=0.9, Dv/Du=12, λ_formula=104.2 µm,
+      age 379 Ma, chronoseries 1/1). Dispersion Pearson r=0.9999998, RMSE=0.00261 on the
+      real-eigenvalue band. Realized wavelength 102.01 µm. Equal-diffusion std=1.69e-6 versus
+      pattern std=0.483. Autocatalysis ablation std is numerically zero. Dv/Du sweep Spearman
+      r=0.90 (not strictly monotone: 111.57, 110.65, 111.84 µm at ratios 12, 16, 22). Fossil
+      mask aspect 3.62 versus gallery reconstruction 3.91. Orientation KS=0.024. GIF is 10
+      frames at 974×480. Signing was unavailable.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 critical wavenumber and diffusion-driven instability"
+        - "Schnakenberg 1979 two-species kinetics"
+        - "Kondo and Asai 1995 and Nakamasu et al. 2009 pigment-cell RD on living fish"
+        - "Andrews and Westoll 1970 skeleton of Eusthenopteron foordi"
+      reconstructed_in_script:
+        - "Parameters chosen so formula k_c equals 2π per 104.2 µm"
+        - "Dispersion comparison, Dv/Du sweep, equal-diffusion control, autocatalysis ablation"
+        - "Body mask from the Brussels photograph used as the display domain"
+      transfer_boundary:
+        - "Living-teleost chromatophore RD transferred onto a Frasnian tristichopterid"
+        - "104.2 µm is the assigned primordium-tier detail scale"
+      does_not_claim:
+        - "That orange ocelli are preserved on the fossil"
+        - "That the photograph has a micrometre scale bar"
+        - "That the successor mode-count uses a newly measured body length rather than the registry lengths 0.140 m and 0.165 m"
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "schnakenberg_step is the documented PDE. On k from 3.8 to 11.2, numerical σ matches the analytic eigenvalue with Pearson r=0.9999998 and RMSE=0.00261. Complex-eigenvalue wavenumbers are excluded and said so."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [101, 108], note: "Reaction-diffusion step", supports: true}
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [179, 210], note: "dispersion_curves Pearson and RMSE", supports: true}
+      specimen-match:
+        value: 82
+        rationale: "The GIF grows copper ocelli inside the segmented fossil body, from a bare mount to a spotted flank, while the slab and blue wall stay put. The spots are a visualization of the field, not recovered pigment, so the score stays below the CV similarity of the composite."
+        evidence:
+          - {file: docs/media/eusthenopteron_foordi_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "10 frames, 974×480, ocelli on the body", supports: true}
+          - {file: docs/media/eusthenopteron_foordi_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Mount, mask, composite, field, dispersion, sweep", supports: true}
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [296, 309], note: "segment_body on the Brussels photograph", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: "Raising Dv/Du from 10 to 30 lengthens the centroid wavelength from 109.5 to 114.3 µm (Spearman 0.90) and raises pattern std at every step (0.082, 0.372, 0.665, 0.862, 1.042). The wavelength series is not strictly monotone (110.65 µm at ratio 16 sits below 111.57 µm at ratio 12)."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [271, 294], note: "parameter_sweep", supports: true}
+          - {file: datasets/eusthenopteron_foordi_turing_wavelength_s0/metrics.json, lines: [0, 0], note: "Sweep rows and Spearman r", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Pearson r=0.9999998 and RMSE=0.00261 versus the analytic curve (reference 1 and 0, so the values are not copies). Realized λ=102.01 µm versus formula 104.2 µm. Fossil aspect 3.620 versus gallery 3.906. Orientation KS=0.024 versus 0. Equal-diffusion and ablation stds are orders of magnitude below the patterned field."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [447, 522], note: "build_measurements, value != reference", supports: true}
+          - {file: datasets/eusthenopteron_foordi_turing_wavelength_s0/metrics.json, lines: [0, 0], note: "metrics.json measurement list", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Five DOIs, a SHA-256 pinned CC BY-SA 3.0 photograph, and an explicit transfer boundary. The 104 µm scale and 379 Ma age are stated in the reference JSON."
+        evidence:
+          - {file: datasets/eusthenopteron_foordi_turing_wavelength_s0/paper_citations.bib, lines: [1, 55], note: "Bibliography", supports: true}
+          - {file: datasets/eusthenopteron_foordi_turing_wavelength_s0/README.md, lines: [1, 20], note: "104 µm and 379 Ma stated", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Docstring equations, Jacobian, k_c rescaling, dispersion harness, sweep, and both controls are separate functions with line-stable names."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [62, 78], note: "Jacobian and k_c rescaling", supports: true}
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [135, 159], note: "Equal-diffusion control and autocatalysis ablation", supports: true}
+      repro-package:
+        value: 88
+        rationale: "--self-test checks r>0.98, both controls, wavelength tolerance, GIF frame count and size, age 379, and size 0.0001042 m. Seed is 3225. No nanopub profile was available to sign."
+        evidence:
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [646, 656], note: "self-test assertions", supports: true}
+          - {file: models/2026-delphi10000-eusthenopteron-foordi-turing-wavelength-s0.py, lines: [81, 91], note: "SHA-256 check of the specimen against the reference JSON", supports: true}
+    remediation:
+      - "Still one fossil photograph and one builder-assessor. A second assessor and a scale-barred specimen would be the next gain."
+      - "Dv/Du wavelength sweep is rank-correlated (Spearman 0.90) but not strictly monotone; the ratio-10 run is only weakly patterned."
