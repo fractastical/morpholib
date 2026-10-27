@@ -1,0 +1,151 @@
+{
+  "scout": "scout-084",
+  "ground": "nanopub",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "id": "NP-S084-01",
+      "title": "Prod Levin-YouTube v3 nanopub: wire Law 4 (Chvykov) to published smarticle enrichment data",
+      "gap": "The prod-superseding bundle morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/ (overall 63.5/100 in REPORT.md) still scores specimen-match 24/100 because no law compares model output to a measurement from any cited paper; remediation explicitly names Chvykov et al. (2021) measured P_ss vs rattling enrichment as the first empirical overlay target.",
+      "done": "A committed JSON under datasets/levin_youtube_channel/ (or datasets/sorting-morphogenesis/) lists >=8 (r_exit, P_ss) pairs transcribed from Chvykov 2021 with DOI 10.1038/s41567-021-01417-7; `python3 models/2026-levin-channel-math-synthesis.py --self-test` (or a new check invoked by it) reports Pearson r between the script's Law-4 sweep and those tabulated points with |r| >= 0.85 OR documents |r| < 0.85 as a negative result in a new morphoeval/runs/*.json; the check is deterministic (fixed seed) and fails if the external table is missing.",
+      "tool_route": "models/2026-levin-channel-math-synthesis.py --self-test [--gamma 2 --n-states 12]; optional ablation `python3 sorting-morphogenesis/sorting_morphogenesis.py --self-test` to cross-check rattling statistics against the same table.",
+      "deciding_data": "In repo: models/2026-levin-channel-math-synthesis.py, morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/signed/*.trig, sorting-morphogenesis/figures/quantifying_emergence_ce2_metrics.json (CE2 only). Missing piece: Chvykov 2021 smarticle P_ss vs rattling series (public DOI above; not yet tabulated in repo).",
+      "prior_attempts": "v1 self-score 93.8/100 (Gemini, morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit/, prod-published) refuted by v2 referee 26.4/100 (Fable, audit-v2); v3 referee 63.5/100 (2026-10-25) closed doc/YAML parity but left empirical overlay open (REPORT.md remediation bullet). Not blocked: no prior run has compared Law 4 to Chvykov figure data in this repo.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Existing --self-test on the scored script is the intended gate; sweeps over gamma/n-states already exist." },
+        "data_in_hand": { "score": 11, "why": "Script and signed trig are local; deciding Chvykov table requires one literature transcription, not wet lab." },
+        "falsifiable_done": { "score": 14, "why": "Pass/fail is numeric r vs threshold with archived JSON output." },
+        "compute_in_repo": { "score": 13, "why": "Sub-minute self-test invocations on the cloud Python stack." },
+        "isolation": { "score": 9, "why": "Closes with new dataset JSON + script self-test checks; KG republication is a separate knowledge-lens step." },
+        "time_to_verdict": { "score": 7, "why": "One loop once the Chvykov table is committed." },
+        "not_blocked": { "score": 4, "why": "Empirical overlay never attempted; v2/v3 negative knowledge targets tautology, not this route." }
+      }
+    },
+    {
+      "id": "NP-S084-02",
+      "title": "Levin synthesis --law flag must ablate compute, not only filter the printed table",
+      "gap": "Published v3 repro-package score (90/100) documents that `--law 2,4` still executes all eight solvers and renders all figure panels while filtering only the JSON table (morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md, reproduced 2026-10-25), so the prod nanopub's expressivity/repro claims overstate selective execution.",
+      "done": "`python3 models/2026-levin-channel-math-synthesis.py --self-test --law 2,4` exits 0, wall time is <= 55% of the full `--self-test` wall time on the same machine, and the canonical summary JSON contains exactly the requested law keys (no other top-level law blocks). A self-test assertion enforces this and fails on current HEAD until fixed.",
+      "tool_route": "python3 models/2026-levin-channel-math-synthesis.py --self-test --law 2,4; compare against python3 models/2026-levin-channel-math-synthesis.py --self-test (timing + JSON key set diff).",
+      "deciding_data": "In repo: models/2026-levin-channel-math-synthesis.py CLI (L917-L935 per v3 REPORT), morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/published.json (prod).",
+      "prior_attempts": "Pass 3.1 listed partial closure ('--delta-v-mv 0 passes'); v3 referee explicitly left `--law` open (-3 repro-package). No agent has merged a compute-skipping --law implementation.",
+      "factors": {
+        "tool_fit": { "score": 24, "why": "Pure simulation CLI ablation verifiable via --self-test and timing." },
+        "data_in_hand": { "score": 18, "why": "All inputs and the failing behavior are on current HEAD." },
+        "falsifiable_done": { "score": 15, "why": "Automated timing ratio + JSON key-set equality." },
+        "compute_in_repo": { "score": 14, "why": "Two self-test runs, seconds each." },
+        "isolation": { "score": 8, "why": "Requires editing the flagship Levin script (conflicts with parallel model work unless coordinated)." },
+        "time_to_verdict": { "score": 9, "why": "Single sitting once the assertion is added." },
+        "not_blocked": { "score": 5, "why": "Open remediation item; not refuted." }
+      }
+    },
+    {
+      "id": "NP-S084-03",
+      "title": "Ibrahim vascular-angiogenesis prod KG: k_t gain sweep must come from simulation, not Hill templates",
+      "gap": "The prod-published audit morphoeval/kg/2026-10-19-vascular-angiogenesis-notch-audit-v3/ (overall 87.7/100) documents that evaluate_notch_gain_sweep simulates only k_t=0 and fills k_t>0 with closed-form hill_rec/hill_alt templates (L1337-L1349), so parameter-expressivity/morphometric measurement 7 (Pearson r=0.998) is prescribed rather than emergent.",
+      "done": "After refactor, `python3 models/2021-ibrahim-vascular-angiogenesis-notch.py --self-test` Suite 4 (or successor) compares each k_t in the published sweep grid to simulate_vessel_notch_sprouting output with max abs error < 1e-4 on the reported tip-fraction metric; if the emergent curve cannot match the benchmark band, the suite exits non-zero and writes morphoeval/runs/ibrahim_kt_sweep_negative.json stating the best achievable r. Passing requires template branch removed or unreachable.",
+      "tool_route": "python3 models/2021-ibrahim-vascular-angiogenesis-notch.py --self-test; targeted rerun with --kt <values> from CLI (L2345-L2376).",
+      "deciding_data": "In repo: models/2021-ibrahim-vascular-angiogenesis-notch.py, datasets/vascular_angiogenesis_notch/*, morphoeval/kg/2026-10-19-vascular-angiogenesis-notch-audit-v3/signed/*.trig (prod).",
+      "prior_attempts": "v3 Fable audit (2026-10-19) flagged the template sweep; remediation item at REPORT.md L33-L34 not closed. v2 score 93.8 superseded downward for other reasons, not because templates were fixed.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Ten-suite --self-test already gates this script; sweep/ablation is the named fix." },
+        "data_in_hand": { "score": 17, "why": "Full model, references, and signed assessments are local." },
+        "falsifiable_done": { "score": 14, "why": "Numeric per-k_t error budget enforced in self-test." },
+        "compute_in_repo": { "score": 12, "why": "Self-test ~1.6s today but full-grid resimulation may take minutes." },
+        "isolation": { "score": 7, "why": "Touches a prod-scored flagship script (merge conflict risk)." },
+        "time_to_verdict": { "score": 6, "why": "One remediation loop plus self-test, possibly longer if grid is wide." },
+        "not_blocked": { "score": 5, "why": "Documented open defect; no negative result on emergent-fit attempt yet." }
+      }
+    },
+    {
+      "id": "NP-S084-04",
+      "title": "Ibrahim vascular prod KG: ablate regime-specific hard-coded Dll4/VEGF/DAPT branches",
+      "gap": "Same v3 prod bundle documents regime-specific hard-coded branches (Dll4+/- mask forcing 75% tips, high-VEGF sinusoid, mosaic n_target, DAPT overwrite at L313-L380) so benchmark regimes are steered rather than emergent, undermining the faithful verdict encoded in signed trig.",
+      "done": "A single parameterised code path (dosage/VEGF/mosaic/k_t flags only) reproduces all six benchmark regimes within published tolerance bands recorded in datasets/vascular_angiogenesis_notch/hemodynamic_pruning_av_specification_reference.json; `python3 models/2021-ibrahim-vascular-angiogenesis-notch.py --self-test` passes without any `if regime ==` blocks that inject masks or overwrite state (enforced by a grep-based integrity check added to the self-test suite). If any regime falls outside band, self-test fails with a JSON diff of expected vs simulated metrics.",
+      "tool_route": "python3 models/2021-ibrahim-vascular-angiogenesis-notch.py --self-test; CLI ablations --dll4-dosage, --vegf, --flt1-decoy, --kt per L2345-L2376.",
+      "deciding_data": "In repo: script, hemodynamic reference JSON, v3 signed parameter-expressivity and model-fidelity nanopubs.",
+      "prior_attempts": "v3 Fable audit remediation L34-L35; not attempted. Earlier v2 pass did not penalise branches.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Decided by running regimes and ablations through existing self-test metrics." },
+        "data_in_hand": { "score": 16, "why": "Benchmark bands and specimen segmentation already pinned locally." },
+        "falsifiable_done": { "score": 12, "why": "Band checks are numeric but tolerances are multi-metric (some qualitative bands)." },
+        "compute_in_repo": { "score": 11, "why": "Multiple regimes + hemodynamics; still hours-scale on one VM." },
+        "isolation": { "score": 6, "why": "Large invasive edit to a prod-scored script." },
+        "time_to_verdict": { "score": 5, "why": "Likely multi-iteration tuning before self-test green." },
+        "not_blocked": { "score": 5, "why": "No prior refutation of unified-parameter route." }
+      }
+    },
+    {
+      "id": "NP-S084-05",
+      "title": "Holstein Turing prod KG (v7): neural-crest migration-wave colonisation control vs Eden",
+      "gap": "Prod-negative bundle morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/ reports RD-growing vs minimal Eden melanoblast colonisation are indistinguishable on held-out coat masks (Wilcoxon p=0.91); remediation R9 asks for a migration-wave (neural-crest front) variant whose white patches invade from edges like real Holstein patterning. docs/open-problems.json OP-11 ties the same gap to an independent re-score plus this variant.",
+      "done": "Implement migration-wave control in models/1981-murray-bos-taurus-turing-wavelength.py with `--self-test` green; a new morphoeval/runs/bos_migration_wave_vs_eden.json records held-out distance-v2 for {RD-growing-het, Eden, migration-wave} on the same 9 cows with paired Wilcoxon p and bootstrap CI; done if either (a) migration-wave beats Eden on >=5/9 held-out specimens at lower mean distance-v2, or (b) all three remain indistinguishable with p>0.05 (negative result logged). Static Turing rejection (distance ~6.46) must remain unchanged.",
+      "tool_route": "python3 models/1981-murray-bos-taurus-turing-wavelength.py --self-test; full coat pipeline per datasets/bos_taurus_turing_wavelength/README.md (Pass 8+ statistics).",
+      "deciding_data": "In repo: 10 coat-masked specimens datasets/bos_taurus_turing_wavelength/, script, v7 signed claim/overall trig (prod).",
+      "prior_attempts": "OP-11: Fable blind audits 54.4/57.7 pre-Pass-8; human PI and panel recorded; status 'refuted' for the positive Turing claim, not for R9 variant. Pass 9 v7 published the Eden null; migration-wave not implemented.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Existing script already simulates Eden/RD with sweeps and self-test." },
+        "data_in_hand": { "score": 18, "why": "All coat masks and held-out split already in repo." },
+        "falsifiable_done": { "score": 13, "why": "Wilcoxon + win-count criteria are checkable though n=9 limits power." },
+        "compute_in_repo": { "score": 10, "why": "README cites ~100s full pipeline; migration-wave adds grid search." },
+        "isolation": { "score": 9, "why": "Can land as new control function + JSON under morphoeval/runs/ with minimal KG touch." },
+        "time_to_verdict": { "score": 6, "why": "One long run plus statistics; tuning founder law may iterate." },
+        "not_blocked": { "score": 3, "why": "OP-11 partially attempted re-scores; Eden null published but R9 route still open." }
+      }
+    },
+    {
+      "id": "NP-S084-06",
+      "title": "Holstein v7 prod KG: leave-one-out ablation of Eden founder density calibrated on cow 01",
+      "gap": "v7 REPORT.md notes Eden founder density was selected on cow 01 while held-out comparison uses 9 other specimens, risking optimistic colonisation fit relative to the prod morphometric-validation score (85/100).",
+      "done": "A sweep over founder_fraction (>=11 values in [0.0005, 0.01]) with leave-one-specimen-out calibration produces morphoeval/runs/bos_eden_founder_loo.json; done if the published Wilcoxon p=0.91 conclusion (RD vs Eden indistinguishable) holds for every LOO calibration (p>0.05) OR if any LOO choice yields p<=0.05, that JSON documents the refuting calibration (negative knowledge). All sweeps invoked via script API from a `--self-test` hook or dedicated `--sweep-founder-loo` flag.",
+      "tool_route": "python3 models/1981-murray-bos-taurus-turing-wavelength.py --self-test; simulate_melanoblast(..., founder_fraction=...) grid (L291-L314).",
+      "deciding_data": "In repo: script simulate_melanoblast, held-out specimen list in metrics JSON, v7 signed morphometric-validation trig.",
+      "prior_attempts": "Pass 8 scale-matched pipeline documented the cow-01 calibration issue; no LOO sweep recorded in morphoeval/runs/.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Parameter sweep on existing Eden simulator decides leakage question." },
+        "data_in_hand": { "score": 17, "why": "Specimens and current founder_fraction default are local." },
+        "falsifiable_done": { "score": 14, "why": "LOO grid + Wilcoxon restatement is machine-checkable." },
+        "compute_in_repo": { "score": 11, "why": "11x9x12-seed grid is heavy but finite on one VM." },
+        "isolation": { "score": 10, "why": "New runs JSON only; no KG edit required for verdict." },
+        "time_to_verdict": { "score": 5, "why": "Sweep runtime may exceed one sitting." },
+        "not_blocked": { "score": 5, "why": "Not previously run." }
+      }
+    },
+    {
+      "id": "NP-S084-07",
+      "title": "Signed-but-unpublished Pezzulo v2 KG: HEAD must match spec_fingerprint before test/prod publish",
+      "gap": "morphoeval/kg/2026-10-19-bioelectric-target-morphology-memory-audit-v2/ has signed trig (overall 91.5/100 in REPORT.md) but published.json entries are all null; math_of_biology.trig already advertises the v2 claim while prod registry lacks test coverage. Slot-084 loop pass2_score 91.6 depends on models/2015-pezzulo-bioelectric-target-morphology-memory.py --self-test.",
+      "done": "`python3 models/2015-pezzulo-bioelectric-target-morphology-memory.py --self-test` exits 0 on HEAD and prints spec_fingerprint equal to pk:context in pezzulo-bioelectric-target-morphology-memory-claim.trig; then `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-bioelectric-target-morphology-memory-audit-v2 --publish test` succeeds (knowledge lens step) only after simulation gate passes.",
+      "tool_route": "python3 models/2015-pezzulo-bioelectric-target-morphology-memory.py --self-test; morphoeval/sign_morphoeval.py (publish after gate).",
+      "deciding_data": "In repo: models/2015-pezzulo-bioelectric-target-morphology-memory.py, datasets/bioelectric_target_morphology_memory/, signed v2 trig, morphoeval/cloud/dispatches/slot-084.json.",
+      "prior_attempts": "Pass 1 59.6 -> Pass 2 91.6 (+32) per slot-084 dispatch; v1 audit superseded; neither v1 nor v2 test-published per published.json.",
+      "factors": {
+        "tool_fit": { "score": 19, "why": "Simulation --self-test is the mechanical gate; signing is separate." },
+        "data_in_hand": { "score": 19, "why": "All datasets and signed bundle already in repo." },
+        "falsifiable_done": { "score": 15, "why": "Exit code 0 + fingerprint string equality." },
+        "compute_in_repo": { "score": 14, "why": "Self-test seconds; sign step needs nanopub profile." },
+        "isolation": { "score": 9, "why": "Verdict needs only run logs unless publish is attempted." },
+        "time_to_verdict": { "score": 8, "why": "One self-test invocation." },
+        "not_blocked": { "score": 4, "why": "Publish blocked on credentials/registry, not on prior negative self-test." }
+      }
+    },
+    {
+      "id": "NP-S084-08",
+      "title": "Stale prod Levin v1 (93.8) URIs vs current 8-law script semantics",
+      "gap": "morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit/published.json still lists prod-published nanopubs at 93.8/100 for the superseded 6-law narrative, while v3 prod chain supersedes content; re-running today's script cannot retroactively change registry bytes consumers may cite.",
+      "done": "N/A for simulation lens alone — requires morphoeval/sign_morphoeval.py superseding republication and registry deprecation tracking, not a model sweep.",
+      "tool_route": "python3 models/2026-levin-channel-math-synthesis.py --self-test (shows current code health only); resolving stale URIs: morphoeval/sign_morphoeval.py + build_morphoeval_kg.py --supersede (knowledge lens).",
+      "deciding_data": "In repo: v1/v2/v3 published.json history chains under morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit*/.",
+      "prior_attempts": "verify_integrity.py documents gemini self-audit -> fable referee incident; v3 prod published 2026-10-25 with history entries.",
+      "factors": {
+        "tool_fit": { "score": 3, "why": "Self-test validates code, not which prod URI is canonical." },
+        "data_in_hand": { "score": 14, "why": "Manifest history is fully local." },
+        "falsifiable_done": { "score": 10, "why": "Done is registry state, not simulation output." },
+        "compute_in_repo": { "score": 8, "why": "Signing/publish is repo-local but needs keys." },
+        "isolation": { "score": 5, "why": "KG/sign edits conflict with parallel nanopub agents." },
+        "time_to_verdict": { "score": 4, "why": "Human/registry step." },
+        "not_blocked": { "score": 2, "why": "Partially addressed by v3 supersession; v1 prod URIs may still resolve." }
+      }
+    }
+  ]
+}
