@@ -1,0 +1,253 @@
+{
+  "assessor_id": "claude-fable-5-1",
+  "assessor_label": "Claude Fable 5.1 Thinking High (Anthropic) — fresh context, independent of the provisional scoring",
+  "date": "2026-10-27",
+  "exposure_disclosure": "None of the listed contaminating files were opened. One filename-only grep hit (rg -l for 'cahn.hilliard') listed morphoeval/build_turing_open_problems.py among matching paths; its contents were not read and no score was seen. Repo inspection was limited to models/, datasets/ READMEs/reference JSON keys, morphoeval/scout_literature.py, measure_outputs.py, lean/, predictions/ registry header, and wave-vector-analysis test CSVs.",
+  "problems": [
+    {
+      "id": "TOP-01",
+      "factors": {
+        "tool_fit": {"score": 15, "why": "models/1981-murray-bos-taurus-turing-wavelength.py has RD + Eden generators, coat masks and a paired harness as-is; Cahn-Hilliard (adaptable from 2002-sumper diatom phase-sep) and buckling (1975-richman) need adapting; the discriminator/classifier itself is new code."},
+        "data_in_hand": {"score": 18, "why": "10 SHA-pinned Holstein specimens in datasets/bos_taurus_turing_wavelength (1 + 9 extra_specimens); synthetic ground truth is generated in-run."},
+        "falsifiable_done": {"score": 12, "why": "Locked held-out accuracy + confusion matrix is taste-free; 'definite class for the Holstein set' needs a pre-registered posterior/margin criterion or it becomes arguable."},
+        "compute_in_repo": {"score": 12, "why": "Four 2D generators x ~100 seeds, Minkowski/PSD features and a numpy LDA/kNN run in hours on the numpy/scipy stack; no wet lab."},
+        "isolation": {"score": 7, "why": "New script + new result files; the predictions/ registry row touches a shared CSV/JSON that parallel agents also append to."},
+        "time_to_verdict": {"score": 7, "why": "One long sitting: generator adaptation, feature pipeline, training, blind application."},
+        "not_blocked": {"score": 3, "why": "OP-11 found RD-vs-Eden indistinguishable on these masks (p=0.91); not the same multi-feature route, but a recorded negative on the Holstein leg."}
+      },
+      "evidence_for": [
+        {"db": 4, "text": "Synthetic ground truth is generated in-run, so the registered held-out accuracy is measurable with no external dependency."},
+        {"db": 3, "text": "Three of four generators (RD, Eden, phase separation, buckling) already exist in some form in models/; only adaptation, not invention, is needed."},
+        {"db": 2, "text": "Candidate features (radial PSD shape, Minkowski functionals, junction statistics) are standard and implementable in numpy/scipy in-repo."}
+      ],
+      "evidence_against": [
+        {"db": -3, "text": "OP-11 p=0.91 on the same masks suggests RD vs Eden is near-indistinguishable at photo resolution, so the Holstein leg may land in an indeterminate region."},
+        {"db": -2, "text": "Synthetic-to-photograph domain shift (mask resolution, body curvature, Otsu/colour segmentation artefacts) can dominate the features; a scorer may dispute whether the Holstein class reflects mechanism."},
+        {"db": -2, "text": "'Returns a definite class' is a second, taste-prone clause; unless a margin is locked, an ambiguous posterior yields a contested rather than decisive outcome."}
+      ],
+      "confidence": 0.6,
+      "verdict": "SYNTHETIC_LEG_DECISIVE_HOLSTEIN_FRAGILE",
+      "note": "Crux: the synthetic confusion matrix is cheap and decisive; the blind Holstein application is where the hypothesis will be fought over. Packet says CH/buckling generators 'must be written fresh' but non-template phase-separation (2002-sumper) and buckling (1975-richman) scripts exist to adapt."
+    },
+    {
+      "id": "TOP-02",
+      "factors": {
+        "tool_fit": {"score": 8, "why": "scout_literature.py --query is only an OpenAlex search; the 1952 dispersion/d_c = 3.9271 is for the Gray-Scott Jacobian and does not transfer to WNT/DKK, Nodal/Lefty etc. kinetics, so the classifying computation is not a run-as-is tool."},
+        "data_in_hand": {"score": 12, "why": "Public literature; Nodal/Lefty (Mueller 2012) and GDF5/NOG (Grall 2024) are known; others need targeted FRAP/FCS lookups and may be unmeasured (which the packet counts as a finding)."},
+        "falsifiable_done": {"score": 9, "why": "Pre-registered class counts are checkable, but assigning 'two-node-feasible' needs a kinetics-specific threshold; 'bounded D' and class boundaries carry taste."},
+        "compute_in_repo": {"score": 13, "why": "Dispersion evaluation is trivial; the effort is reading, not compute."},
+        "isolation": {"score": 8, "why": "New table under datasets/ plus one registry row in a shared file."},
+        "time_to_verdict": {"score": 6, "why": ">=6 systems with DOI-cited D values is one long literature sitting; feasible but easily spills over."},
+        "not_blocked": {"score": 5, "why": "No prior repo attempt at a census; scout-063 ZF-TUR-01 is a related negative, not a refutation of this route."}
+      },
+      "evidence_for": [
+        {"db": 3, "text": "Nodal/Lefty D values are measured (Mueller 2012: ~0.7 vs ~18 um^2/s), giving at least one clean two-node-feasible row."},
+        {"db": 2, "text": "GDF5/NOG (Grall 2024) is a published no-differential-diffusion case, populating the 'needs immobile third node' class."},
+        {"db": 3, "text": "The 'D unmeasured' class is trivially populated (WNT/DKK in skin, EDAR/WNT/BMP ridges), so the >=6-row and three-class coverage conditions are easy to meet."}
+      ],
+      "evidence_against": [
+        {"db": -3, "text": "Two-node feasibility depends on the kinetic Jacobian, not just the D ratio; using the Gray-Scott d_c as a universal gate makes class assignments disputable."},
+        {"db": -2, "text": "The three classes are not mutually exclusive once network topology is considered (Marcon 2016), so a scorer can contest the pre-registered counts."},
+        {"db": -1, "text": "Extracellular D estimates differ 10-100x between FRAP, FCS and modelling fits for the same morphogen, so single rows can flip class."}
+      ],
+      "confidence": 0.55,
+      "verdict": "CENSUS_REACHABLE_CLASSES_DISPUTABLE",
+      "note": "Crux: the table will be assembled, but 'two-node-feasible' needs a per-system Jacobian or a stated generic bound; the packet's reliance on the GS d_c is the weak link."
+    },
+    {
+      "id": "TOP-03",
+      "factors": {
+        "tool_fit": {"score": 10, "why": "1952-turing-morpho.py supplies Jacobian/dispersion and Lean d_c for Gray-Scott only; the Latin-hypercube sweep over Tica's two- and three-node kinetics is a new script."},
+        "data_in_hand": {"score": 14, "why": "Published fractions and bounds (Tica 2024 Fig. 2A / Table S5; Scholes 2019) are one SI fetch away; no biological data."},
+        "falsifiable_done": {"score": 14, "why": "Within one order of magnitude and >=10x ordering is a crisp numeric gate."},
+        "compute_in_repo": {"score": 12, "why": "Vectorised linear stability over ~1e7 LHS samples is hours in numpy; fractions as small as 3.5e-6 need that sample size."},
+        "isolation": {"score": 8, "why": "New sweep script under morphoeval/ or models/ plus a shared-registry row."},
+        "time_to_verdict": {"score": 8, "why": "One sitting if the SI equations are adopted directly."},
+        "not_blocked": {"score": 5, "why": "scout-034's Pearson (F,k) sweep is a different target; nothing recorded on parameter volume."}
+      },
+      "evidence_for": [
+        {"db": 4, "text": "Pure linear-stability computation with no data dependency; result is deterministic given equations, bounds and sampler."},
+        {"db": 3, "text": "The one-order-of-magnitude / >=10x gate is numeric and leaves no room for interpretation."},
+        {"db": 2, "text": "LHS sampling is embarrassingly parallel and fits the repo's numpy stack."}
+      ],
+      "evidence_against": [
+        {"db": -3, "text": "The packet's 'repo two-node kinetics' (Gray-Scott) are not Tica's two-node circuit; a mismatch would be ambiguous between non-reproduction and different kinetics unless the published equations are used verbatim."},
+        {"db": -2, "text": "Turing fractions are highly sensitive to bounds and log-vs-linear sampling; small convention differences shift fractions by orders of magnitude."},
+        {"db": -1, "text": "Depends on parsing Tica 2024 SI (Table S5) correctly; a transcription error silently changes the verdict."}
+      ],
+      "confidence": 0.65,
+      "verdict": "DECISIVE_IF_PUBLISHED_KINETICS_ADOPTED",
+      "note": "Crux: adopt Tica's exact ODEs and bounds, not the repo's Gray-Scott; otherwise the ratio test is a comparison of different models. The done should specify log-uniform sampling as in the paper."
+    },
+    {
+      "id": "TOP-04",
+      "factors": {
+        "tool_fit": {"score": 8, "why": "scout_literature.py --taxon is a 5-hit Wikimedia Commons search; ridge/Y-junction counting exists (morphoeval/verify_image_fitness.py, 1995-kondo script), but no tool finds a sized ontogenetic series."},
+        "data_in_hand": {"score": 4, "why": "Not in repo (one Commons juvenile photo without length metadata); no named public series other than Kondo-Asai 1995 Fig. 1 is identified."},
+        "falsifiable_done": {"score": 11, "why": "All stages within +-1 stripe is crisp; stripe counting on curvilinear juveniles has recorded over-count taste (scout-032)."},
+        "compute_in_repo": {"score": 12, "why": "Counting and the L/lambda_c prediction are trivial compute; the cost is acquisition, not infrastructure."},
+        "isolation": {"score": 8, "why": "New datasets/ folder with SHA-pinned images plus a registry row."},
+        "time_to_verdict": {"score": 4, "why": "Finding >=6 stages with body length is an open-ended hunt; not reliably one sitting."},
+        "not_blocked": {"score": 2, "why": "scout-031 already searched for a Kondo ontogenetic series and found only one adult photo; scout-032 flagged counter over-count."}
+      },
+      "evidence_for": [
+        {"db": 2, "text": "If a sized series exists, the locked N = round(L/lambda_c) test is immediately decisive."},
+        {"db": 1, "text": "Aquarium-trade and FishBase juvenile records sometimes attach body length in cm, giving a plausible, if thin, source."}
+      ],
+      "evidence_against": [
+        {"db": -4, "text": "Public juvenile angelfish photographs almost never carry body-length metadata; the >=6-stage requirement with size is the binding constraint."},
+        {"db": -3, "text": "scout-031 already attempted the series search and recorded failure beyond a single photo."},
+        {"db": -2, "text": "Stripe counting on C-shaped curvilinear juveniles is taste-laden (scout-032 over-count), weakening the +-1 gate."},
+        {"db": -1, "text": "Conjunctive hypothesis: both acquisition and scoring must succeed."}
+      ],
+      "confidence": 0.65,
+      "verdict": "DATA_ACQUISITION_BLOCKS_VERDICT",
+      "note": "Crux: the series does not exist in any named public place; without it the route stalls before scoring. The packet omits the existing models/1995-kondo-pomacanthus-stripe-insertion.py and its polar-sector solver, which would be the natural prediction engine."
+    },
+    {
+      "id": "TOP-05",
+      "factors": {
+        "tool_fit": {"score": 5, "why": "scout_literature.py only surfaces papers; no extraction tool; the regression is trivial but the deciding step (measured wavelengths) has no repo tool."},
+        "data_in_hand": {"score": 6, "why": "Catalog *_turing_wavelength empirical_series are template artefacts and excluded; >=10 taxa of DOI-cited wavelength + body size must be extracted by hand from heterogeneous sources."},
+        "falsifiable_done": {"score": 10, "why": "Slope CI vs 0 / vs 1 / neither is crisp, but mixing follicle spacing, stripe period, digit spacing and rugae into one 'wavelength' is a design choice a scorer can reject."},
+        "compute_in_repo": {"score": 14, "why": "Log-log regression is seconds."},
+        "isolation": {"score": 9, "why": "New extraction table under datasets/ and a new script."},
+        "time_to_verdict": {"score": 5, "why": "Ten taxa with both measurements and DOIs is a multi-hour to multi-day extraction."},
+        "not_blocked": {"score": 5, "why": "scout-048/062 discredited the template curves but no scaling test has been tried."}
+      },
+      "evidence_for": [
+        {"db": 3, "text": "Once the table exists the locked slope test returns one of three pre-defined classes, so the statistical step is decisive by construction."},
+        {"db": 2, "text": "Some measurements are readily citable (Kondo-Asai angelfish stripe period, mouse/human hair follicle spacing, mouse digit spacing)."}
+      ],
+      "evidence_against": [
+        {"db": -3, "text": "Pooling different pattern types across taxa makes the slope uninterpretable; a scorer can reject 'neither' or 'scaling' as an artefact of heterogeneity."},
+        {"db": -3, "text": "Turing's intrinsic-wavelength claim is about a fixed system; an interspecies regression conflates ontogenetic scaling with evolutionary retuning of kinetics, so the test does not isolate the gap."},
+        {"db": -2, "text": ">=10 taxa with both DOI-cited wavelength and body size is a heavy extraction with no tooling."}
+      ],
+      "confidence": 0.5,
+      "verdict": "TABLE_HEAVY_DESIGN_CONTESTABLE",
+      "note": "Crux: the regression is cheap but the inferential design (cross-taxon, mixed pattern types) does not cleanly test Turing's intrinsic wavelength; restricting to one pattern type (e.g. fish stripe period) would sharpen it at the cost of taxon count."
+    },
+    {
+      "id": "TOP-06",
+      "factors": {
+        "tool_fit": {"score": 17, "why": "Packet is wrong that no BSW model exists: models/2014-raspopovic-bmp-sox9-wnt-digits.py runs the 3-node network on a growing polar-fan FEM mesh with AER-FGF wavelength modulation, noise ICs and ray counts; models/2012-sheth-hox-turing-polydactyly.py gives the Hox-dose series. A 200-random-IC wrapper and five-ray counter is still new."},
+        "data_in_hand": {"score": 17, "why": "Published parameters already encoded in the scripts and datasets/bmp_sox9_wnt_digits reference JSON; no wet data."},
+        "falsifiable_done": {"score": 13, "why": "Exactly five rays in >=95% of 200 runs and Hox-dose ordering are numeric gates; a pre-registered ray-counting rule is needed."},
+        "compute_in_repo": {"score": 11, "why": "200 FEM growing-domain runs are hours on the repo stack; feasible but not trivial."},
+        "isolation": {"score": 9, "why": "New wrapper script importing or re-implementing existing functions; new output files."},
+        "time_to_verdict": {"score": 7, "why": "One long sitting once the wrapper runs."},
+        "not_blocked": {"score": 5, "why": "No prior repo attempt at the reproducibility fraction."}
+      },
+      "evidence_for": [
+        {"db": 4, "text": "A growing-domain BSW solver with gradient modulation and digit-ray counting already exists in models/, so the deciding simulation is mostly a loop over seeds."},
+        {"db": 3, "text": "Pure simulation with a sharp numeric threshold; either >=95% or not is observable regardless of outcome."},
+        {"db": 2, "text": "The Sheth Hox-dose wavelength law is already implemented, making the polydactyly ordering clause cheap to score."}
+      ],
+      "evidence_against": [
+        {"db": -3, "text": "The existing script's F->D wavelength mapping is an admitted modelling choice, not Raspopovic's equations; a failed 95% could be attributed to model unfaithfulness rather than refuting the hypothesis."},
+        {"db": -1, "text": "Ray counting at the distal arc (what counts as a ray vs a branch) needs a locked rule; otherwise the fraction is contestable."},
+        {"db": -1, "text": "200 FEM runs may exceed a single loop's wall clock on a laptop."}
+      ],
+      "confidence": 0.65,
+      "verdict": "DECISIVE_SIM_FAITHFULNESS_CONTESTED",
+      "note": "Crux: the packet's tool_route is out of date; BSW + Hox-dose scripts exist. Likely outcome is failure of the 95% gate (RD from noise rarely locks topology), which is still decisive provided the model is accepted as faithful."
+    },
+    {
+      "id": "TOP-07",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "models/1984-wolfram-conus-textile-rule30.py has run_meinhardt_conus (PDE kymograph), Rule 30/Rule 90 steps, the Ermentrout-Oster gate and compute_2d_chiral_and_anf_observables; only the 3-neighbourhood transducer-table extraction is new."},
+        "data_in_hand": {"score": 19, "why": "Everything is in repo (PDE, CA, Lean gate in morphoeval/lean/MathOfBiology.lean, 2D observables)."},
+        "falsifiable_done": {"score": 11, "why": "Agreement fractions above a locked threshold are crisp, but the coarse-graining (PDE steps per CA tick, cell width, threshold) is not fixed by the done and drives the result."},
+        "compute_in_repo": {"score": 15, "why": "Minutes of numpy."},
+        "isolation": {"score": 8, "why": "New script importing from a 12.8k-line module; must avoid its top-level side effects but no shared file edits are required."},
+        "time_to_verdict": {"score": 9, "why": "One short sitting."},
+        "not_blocked": {"score": 4, "why": "No transducer table extracted before; the script already reports chirality_meinhardt = 0.0000 vs Rule 30 -0.4973, a partial prior negative on the 2D clause but not a refutation of the route."}
+      },
+      "evidence_for": [
+        {"db": 5, "text": "All inputs and observables are in repo and deterministic; the test can run end to end today."},
+        {"db": 3, "text": "The 2D chirality observable is already computed (Meinhardt 0.0000 vs R30 -0.4973), so half of the hypothesis is effectively already decided negative."},
+        {"db": 2, "text": "The empirical 8-row transducer table is a few dozen lines of code over an existing kymograph."}
+      ],
+      "evidence_against": [
+        {"db": -3, "text": "The 1D agreement fraction is sensitive to sampling interval and threshold; without locking the coarse-graining a scorer can argue any rule could be fit or missed."},
+        {"db": -1, "text": "The Meinhardt PDE is left-right symmetric so it cannot induce the chiral Rule 30; the test is nearly foregone, inviting a 'trivially negative' objection."}
+      ],
+      "confidence": 0.75,
+      "verdict": "DECISIVE_LIKELY_NEGATIVE_IN_REPO",
+      "note": "Crux: a symmetric PDE should map to a symmetric (Rule 90-like or additive) rule, so expect a decisive negative on Rule 30; lock the coarse-graining scale and threshold in the registry before running."
+    },
+    {
+      "id": "TOP-08",
+      "factors": {
+        "tool_fit": {"score": 0, "why": "No repo tool can build or assay a eukaryotic synthetic circuit; the modelling satellite is not the deciding evidence."},
+        "data_in_hand": {"score": 0, "why": "Deciding data is wet-lab output not obtainable here."},
+        "falsifiable_done": {"score": 3, "why": "The wet-lab done is exact, but no scorer in this repo can check it."},
+        "compute_in_repo": {"score": 1, "why": "Requires a wet lab; only a regime map of the Sekine model runs here and it does not decide the problem."},
+        "isolation": {"score": 5, "why": "A satellite regime-map script would be new files only, but it is not the deliverable."},
+        "time_to_verdict": {"score": 0, "why": "No verdict reachable in this repo on any timescale."},
+        "not_blocked": {"score": 5, "why": "No prior repo attempt."}
+      },
+      "evidence_for": [
+        {"db": 1, "text": "A Turing-vs-solitary regime map of the Sekine competitive-inhibition model is computable in-repo as a satellite."}
+      ],
+      "evidence_against": [
+        {"db": -5, "text": "The definition of done is a wet-lab construct with biological replicates; the repo has no wet capability."},
+        {"db": -4, "text": "The packet itself states the deciding data is not obtainable here."},
+        {"db": -2, "text": "The hypothesis asserts the repo decides a question that is settled only by experiment."}
+      ],
+      "confidence": 0.95,
+      "verdict": "OUT_OF_SCOPE_WET_LAB",
+      "note": "Crux: scope. Keep as a tracked external problem; the only in-repo contribution is a modelling regime map, which should be registered as a separate, non-deciding satellite."
+    },
+    {
+      "id": "TOP-09",
+      "factors": {
+        "tool_fit": {"score": 9, "why": "wave-vector-analysis/ provides the spark_tracks schema and embryo_units.py; no spectral or surrogate tool exists, so the deciding script is new."},
+        "data_in_hand": {"score": 16, "why": "test_data/spark_tracks_qc_folder31.csv (453 frames, embryos A/B) and _folder33.csv (371 frames, embryo A) are in repo at 1 fps with x,y,t per event."},
+        "falsifiable_done": {"score": 11, "why": "Per-embryo surrogate test at a locked false-positive rate is crisp; 'fit the driven-front line' and 'secondary ridge' detection need pre-specified estimators."},
+        "compute_in_repo": {"score": 14, "why": "Binned (x,t) event field, 2D FFT and ~1000 phase-randomised surrogates run in minutes."},
+        "isolation": {"score": 9, "why": "New spectral script and output files; registry row is the only shared touch."},
+        "time_to_verdict": {"score": 8, "why": "One sitting."},
+        "not_blocked": {"score": 3, "why": "scout-036 proposed but never ran spectra; OP-07/08 found orientation, not wave features, carried signal — a related negative."}
+      },
+      "evidence_for": [
+        {"db": 4, "text": "Data is in repo and the surrogate test is self-contained, so a per-embryo present/absent call at the locked rate is procedurally guaranteed."},
+        {"db": 2, "text": "Phase-randomised surrogates give a calibrated null regardless of the data's idiosyncrasies."}
+      ],
+      "evidence_against": [
+        {"db": -3, "text": "Sparse point events (~3-5k per recording) at 1 fps give a poorly resolved (k, omega) surface with Nyquist 0.5 Hz; an 'absent' call is largely a power statement, which a scorer may deem non-decisive."},
+        {"db": -2, "text": "Only ~3 embryo recordings are in repo, so the pooled verdict rests on very few units."},
+        {"db": -2, "text": "Poke-triggered fronts are broadband and single-shot; separating a Turing-Hopf ridge from front harmonics and coordinate-system artefacts (COORDINATE_SYSTEM_WARNING.md) is ambiguous."},
+        {"db": -1, "text": "Prior blind tests (OP-07/08) found no wave-feature signal, lowering the chance of a positive and raising the chance of an under-powered negative."}
+      ],
+      "confidence": 0.55,
+      "verdict": "PROCEDURALLY_DECISIVE_UNDERPOWERED",
+      "note": "Crux: the test will return a number, but with ~3 embryos and 1 fps sparse events the 'absent' outcome is weak evidence; pre-register a power analysis on synthetic Turing-Hopf fields so a negative is interpretable."
+    },
+    {
+      "id": "TOP-10",
+      "factors": {
+        "tool_fit": {"score": 4, "why": "No vegetation RD (Klausmeier) or termite-territory model in repo; 2015-ocko-termite-mound script is about convection, not territories; only the generic 2D RD solver base is reusable."},
+        "data_in_hand": {"score": 7, "why": "Published pair-correlation/Voronoi statistics (Getzin 2016) are one fetch away; georeferenced aerial imagery is not a single named public fetch."},
+        "falsifiable_done": {"score": 9, "why": "Locked thresholds are crisp, but the gap itself notes pattern statistics have not separated the mechanisms, so the gate may be structurally non-discriminating."},
+        "compute_in_repo": {"score": 11, "why": "Both models are simple PDE/agent simulations that run in hours once written."},
+        "isolation": {"score": 9, "why": "All new scripts and data folders."},
+        "time_to_verdict": {"score": 4, "why": "Two new models plus data acquisition is more than one sitting."},
+        "not_blocked": {"score": 5, "why": "No prior repo attempt."}
+      },
+      "evidence_for": [
+        {"db": 2, "text": "Both a scale-dependent-feedback vegetation model and a Voronoi territory model are small to implement."},
+        {"db": 2, "text": "Getzin et al. publish pair-correlation and Voronoi statistics numerically, reducing imagery dependence."}
+      ],
+      "evidence_against": [
+        {"db": -4, "text": "Tarnita 2017 shows both mechanisms (and their combination) yield the same hexagonal statistics; pattern statistics alone cannot decisively favour one, so the hypothesis is likely undecidable at any threshold."},
+        {"db": -3, "text": "Public georeferenced aerial imagery suitable for point extraction is not one named fetch and may have licensing limits."},
+        {"db": -2, "text": "Nothing exists in repo; two models plus a data pipeline is a multi-day build before the first verdict."}
+      ],
+      "confidence": 0.65,
+      "verdict": "STATISTICS_NON_DISCRIMINATING",
+      "note": "Crux: the packet's own gap statement undermines the done — static spatial statistics do not separate RD from termite engineering; a decisive test would need dynamics (e.g. rainfall-response or gap-recovery series), which are not in scope here."
+    }
+  ]
+}

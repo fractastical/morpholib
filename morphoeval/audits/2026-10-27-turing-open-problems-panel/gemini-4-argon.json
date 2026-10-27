@@ -1,0 +1,540 @@
+{
+  "assessor_id": "gemini-4-argon",
+  "assessor_label": "Gemini 4 Argon Medium (Google)",
+  "date": "2026-10-27",
+  "exposure_disclosure": "none",
+  "problems": [
+    {
+      "id": "TOP-01",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "models/1981-murray-bos-taurus-turing-wavelength.py and models/1952-turing-morpho.py provide RD and Eden generators plus Holstein mask handling, but Cahn-Hilliard and elastic buckling solvers must be written fresh."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "The 10 Holstein coat masks and reference fixtures are already pinned in datasets/bos_taurus_turing_wavelength/ and synthetic ground truth is generated in-run."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Pre-registered held-out accuracy threshold on four-class synthetic data and blind application to 10 Holstein masks is strictly checkable once feature set and hyperparameters are hash-locked."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "2D PDE sweeps for RD, Eden, Cahn-Hilliard, and Swift-Hohenberg/Foppl-von Karman buckling on ~160x120 grids run in minutes on NumPy/SciPy."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Can be implemented entirely as a new benchmark script, prediction registry entry, and output artifact without touching existing tracked files."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Building and validating two new physical generators plus multi-feature extraction and cross-validation takes a focused multi-hour loop."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "OP-11 already showed growing RD and Eden colonisation are indistinguishable on basic patch statistics (p=0.91), narrowing the feature space that could separate them."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 3.5,
+          "text": "Cahn-Hilliard coarsening (power-law structure factor k^4 tail), elastic buckling (narrow spectral ring with rigid defect lattice), and RD/Eden have distinct spectral and Minkowski signatures on synthetic domains."
+        },
+        {
+          "db": 2.0,
+          "text": "All 10 Holstein ROI masks and the paired evaluation harness in models/1981-murray-bos-taurus-turing-wavelength.py are already in-repo and SHA-256 verified."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -3.0,
+          "text": "OP-11 demonstrated that growing-domain RD and stochastic Eden colonisation converge on adult patch morphology (Wilcoxon p=0.91), making 4-way synthetic accuracy hard to maintain when thresholded to binary coat masks."
+        },
+        {
+          "db": -1.5,
+          "text": "Small sample size per specimen (a handful of body-scale patches per cow flank) produces high variance in Minkowski functionals and defect counts on the empirical test set."
+        }
+      ],
+      "confidence": 0.78,
+      "verdict": "SYNTHETIC_SEPARABLE_EMPIRICAL_AMBIGUOUS",
+      "note": "The crux is whether higher-order morphological statistics (Minkowski functionals, chord-length distributions, or boundary curvature spectra) can break the OP-11 degeneracy between growing-domain RD and Eden colonisation after binary Otsu thresholding. The packet understates how severely the low patch count per Holstein flank limits spectral and defect-based features on the empirical specimens."
+    },
+    {
+      "id": "TOP-02",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "models/1952-turing-morpho.py already implements the exact 2-node Jacobian dispersion relation and d_c threshold, and morphoeval/scout_literature.py automates literature queries."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Nodal/Lefty FRAP/FCS diffusivities (Mueller 2012) and GDF5/NOG parameters (Grall 2024) are known in literature; the remaining systems require structured literature extraction."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Three mutually exclusive classes (two-node-feasible, needs immobile third node, D unmeasured) with pre-registered counts across >=6 systems give an unambiguous score."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Evaluating analytic dispersion inequalities and critical diffusion ratios across a table of <10 systems takes milliseconds in Python."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Self-contained as a new literature table, dispersion verifier script, and prediction registry file."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Reachable in a single sitting via targeted literature lookup and algebraic verification."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt in the repo has assembled or tested the cross-system diffusivity ratio census."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 4.0,
+          "text": "Published literature already anchors all three target classes: zebrafish Nodal/Lefty has measured D_Lefty/D_Nodal ~ 15-20 (Mueller et al. 2012, class 1), Bmp-Sox9-Wnt and GDF5/NOG rely on cell-autonomous Sox9/pSmad nodes (Raspopovic 2014, Grall 2024, class 2), and mammalian WNT/DKK lacks paired in vivo extracellular FCS/FRAP values (class 3)."
+        },
+        {
+          "db": 3.0,
+          "text": "The algebraic dispersion criterion in models/1952-turing-morpho.py is already Lean-verified and requires zero PDE integration noise."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -1.5,
+          "text": "Pre-registering exact class counts before literature extraction carries a modest risk of missing the exact integer split if an obscure FRAP paper exists for FGF/Shh or EDAR/BMP."
+        }
+      ],
+      "confidence": 0.88,
+      "verdict": "HIGHLY_TRACTABLE_DECISIVE",
+      "note": "The crux is distinguishing truly unmeasured in vivo diffusivities from indirect effective range estimates, since all three classification buckets are already guaranteed to be populated by Nodal/Lefty, Bmp-Sox9-Wnt, and WNT/DKK. Note that d_c = 3.9271 is specific to Turing's 1952 numerical Jacobian example, whereas each biological system has its own kinetic Jacobian bounds on D_inh/D_act."
+    },
+    {
+      "id": "TOP-03",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "models/1952-turing-morpho.py has the 2-node Jacobian/dispersion machinery, needing only a vectorized 3x3 Routh-Hurwitz dispersion extension and Latin-hypercube sampler."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Purely mathematical/computational replication against published numbers and parameter bounds in Scholes et al. (2019) and Tica et al. (2024)."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Reproducing the >=10x three-node over two-node parameter-volume ratio within one order of magnitude and scoring local 1%/5% retention fractions is completely deterministic."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Vectorized NumPy eigenvalue sweeps over 10^6 Latin-hypercube samples evaluate in under a minute on CPU without solving PDEs."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as a standalone sweep script and JSON summary with zero edits to existing files."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Fast linear-stability algebra allows full execution and verification in a single loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt in the repo has run the 2-node vs 3-node Latin-hypercube robustness volume comparison."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 4.5,
+          "text": "Linear stability across k-modes is governed by exact polynomial Routh-Hurwitz criteria, and relaxing the differential-diffusion constraint via a third immobile node provably expands the Turing cone by >10x (Marcon 2016, Scholes 2019, Tica 2024)."
+        },
+        {
+          "db": 3.0,
+          "text": "The one-order-of-magnitude tolerance (>=10x vs published ~63x ratio between 0.022% and 0.00035%) absorbs minor differences in steady-state solver tolerances."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -1.5,
+          "text": "Absolute Turing fractions around 3.5e-6 require >=5e6 Latin-hypercube samples and matching Hill-function parameterization (non-competitive vs competitive inhibition in Tica 2024 Table S5) to avoid Monte Carlo under-sampling."
+        }
+      ],
+      "confidence": 0.92,
+      "verdict": "IMMEDIATE_COMPUTATIONAL_WIN",
+      "note": "This is the cleanest computational replication in the packet because it requires only vectorized Jacobian eigenvalue algebra and published parameter bounds. The packet should explicitly note that finding non-trivial positive steady states for Hill kinetics at each Latin-hypercube sample is part of the Scholes/Tica denominator definition."
+    },
+    {
+      "id": "TOP-04",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "models/1952-turing-morpho.py already implements Pomacanthus stripe ridge segmentation, wavelength estimation, and Y-junction skeleton counting."
+        },
+        "data_in_hand": {
+          "score": 5,
+          "why": "The repo holds only a single adult Pomacanthus imperator photograph, and Wikimedia Commons / iNaturalist rarely provide >=6 calibrated body-length stages for Pomacanthus outside Kondo & Asai (1995)."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Testing N_stripes(L) = round(L/lambda_c) within +-1 stripe across >=6 SHA-256-pinned stages with body-length metadata is crisp and taste-free."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Once images and lengths are in hand, 1D/2D ridge segmentation and stripe counting take seconds."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Can be packaged in a new dataset subfolder and test script without touching existing tracked files."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Hunting for >=6 open-access developmental stage photos with verified standard-length (SL/TL) metadata in mm/cm is likely to stall at the data-sourcing gate."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "Prior attempts scout-031, scout-032, and scout-034/038 already hit the missing-ontogenetic-series wall and noted Y-junction over-counting on curved juvenile stripes."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 2.0,
+          "text": "Image segmentation and stripe-ridge wavelength extraction are already implemented and tested in models/1952-turing-morpho.py."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -4.5,
+          "text": "Prior scout rounds (scout-031) already failed to locate an open-access >=6-stage Pomacanthus ontogenetic series with calibrated body lengths independent of Kondo & Asai (1995)."
+        },
+        {
+          "db": -2.5,
+          "text": "Juvenile Pomacanthus semicirculatus and P. imperator display concentric curved C-stripes before adult parallelization, causing 1D AP ridge projections and Y-junction skeleton detectors (scout-032) to miscount."
+        }
+      ],
+      "confidence": 0.82,
+      "verdict": "DATA_STARVED_HIGH_RISK",
+      "note": "The crux is data availability: wildlife photographs on Wikimedia Commons and iNaturalist almost never include ruler scale bars or standard lengths across six juvenile-to-adult stages. Switching the taxon to zebrafish (Danio rerio SL vs interstripe count in Parichy's staging series) or archival museum fish plates with scale bars is much more realistic than sourcing Pomacanthus from Commons."
+    },
+    {
+      "id": "TOP-05",
+      "factors": {
+        "tool_fit": {
+          "score": 15,
+          "why": "morphoeval/scout_literature.py assists with paper discovery, but data extraction and orthogonal/OLS log-log regression must be newly scripted and curated."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "In-repo *_turing_wavelength curves are unusable template artefacts, so >=10 taxon measurements must be extracted manually from published papers."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Pre-registered log-log slope confidence interval excluding 0, excluding 1, or neither across >=10 DOI-cited taxa is clear, though pooling heterogeneous organs introduces framing sensitivity."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Log-log OLS/bootstrap regression on a 10-to-20 row table is instantaneous in SciPy."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Easily isolated as a new curated CSV/JSON table under datasets/ and a standalone analysis script."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Verifying real micrometer/millimeter spacing and developmental stage body length across >=10 primary papers takes careful curation in one sitting."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Prior scouts (scout-048, scout-062) invalidated the synthetic catalog templates, leaving the real literature regression unattempted."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 3.0,
+          "text": "Primary morphometric measurements of periodic spacing and embryonic/adult domain size exist in open literature for mouse hair follicles (Sick 2006), palatal rugae (Economou 2012), mouse digits (Sheth 2012), Pomacanthus stripes (Kondo 1995), zebrafish stripes, and avian feather buds."
+        },
+        {
+          "db": 1.5,
+          "text": "The trichotomous verdict rule (CI excludes 0, excludes 1, or neither) guarantees a well-defined statistical outcome once >=10 rows are compiled."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -2.5,
+          "text": "Pooling heterogeneous anatomical structures (embryonic limb buds, adult fish skin, palatal shelves) across clades mixes embryonic domain size at patterning onset with adult body size, inflating residual variance so the 95% CI on N~10 may span both 0 and 1."
+        }
+      ],
+      "confidence": 0.76,
+      "verdict": "FEASIBLE_LITERATURE_META_ANALYSIS",
+      "note": "The crux is normalizing body size to the exact embryonic stage when the pattern is laid down rather than adult size; otherwise an embryonic mouse hair follicle and an adult angelfish stripe lie on incomparable size axes. The packet rightly forbids the 976 catalog template folders but should specify that length L must be measured at the developmental stage of pattern initiation."
+    },
+    {
+      "id": "TOP-06",
+      "factors": {
+        "tool_fit": {
+          "score": 11,
+          "why": "No Bmp-Sox9-Wnt model or 2D growing fan-shaped domain solver exists in models/; models/1952-turing-morpho.py only provides uniform-grid 2-species Gray-Scott."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Equations and dimensionless parameter sets are published in Raspopovic et al. (2014) and Sheth et al. (2012), requiring no wet-lab data."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Producing exactly 5 radial Sox9 rays in >=95% of 200 random-IC runs plus monotonic Hox-dose polydactyly ordering is quantitatively crisp."
+        },
+        "compute_in_repo": {
+          "score": 9,
+          "why": "Integrating 200 stiff 3-species PDE runs on a 2D deforming/growing limb-bud domain in pure Python/NumPy is computationally heavy and sensitive to boundary discretization."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Can be written as a new standalone model script and registry entry without modifying tracked files."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Implementing moving-boundary 2D dilution/advection, distal FGF gradient coupling, and running a 200-run Monte Carlo ensemble is hard to finish cleanly in one loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt in the repo has implemented the BSW limb-bud model."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 2.0,
+          "text": "The pre-registered hypothesis is falsifiable either way: if the 200-run ensemble reaches <95% five-digit locking (e.g. 60%), that negative result still scores the registered threshold."
+        },
+        {
+          "db": 1.5,
+          "text": "Distal FGF wavelength modulation and anisotropic domain elongation are known theoretically to align stripes radially (Green & Sharpe 2015)."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -3.5,
+          "text": "Raspopovic et al. (2014) relied on UJM/COMSOL finite-element meshes reconstructed from optical projection tomography of real limb buds; simplified finite-difference fan approximations routinely suffer boundary-induced bifurcations or 4/6-digit defects in >5% of random-IC runs."
+        },
+        {
+          "db": -2.0,
+          "text": "Running 200 full 2D growing-domain PDE integrations plus Hox-dosage sweeps in pure NumPy risks hitting single-session compute and numerical-stability limits."
+        }
+      ],
+      "confidence": 0.74,
+      "verdict": "SOLVER_HEAVY_LIKELY_REFUTATION",
+      "note": "The crux is that achieving >=95% topological locking of exactly 5 rays from unseeded random initial conditions on a finite-difference fan grid is notoriously sensitive to boundary no-flux discretization and growth rate schedules. Even if the script finishes, the hypothesis as stated (>=95% five-ray success) will very likely be refuted unless pre-existing AP polarity (Shh/Gli3 gradient) is also included."
+    },
+    {
+      "id": "TOP-07",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "models/1984-wolfram-conus-textile-rule30.py already contains the Meinhardt-Klingler PDE kymograph generator, Rule 30/90 comparators, and morphoeval/lean/ has the Ermentrout-Oster gate proof."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All PDE solvers, CA comparators, Lean theorems, and Conus reference fixtures are already present in the repository."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Extracting the 8-state 3-neighborhood empirical transducer table and scoring transition agreement plus 2D ANF-carry and wall chirality against locked thresholds is completely objective."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "1D mantle-edge PDE integration and kymograph coarse-graining run in a few seconds on CPU."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as a new transducer extraction script and prediction registry entry without editing existing files."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Can be executed and verified in a single short session using existing functions."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "No prior attempt extracted the empirical transducer table, though scout-034/038/039 noted the PDE uses stochastic activator injection to prevent extinction."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 4.5,
+          "text": "Every required component (Meinhardt-Klingler PDE, Rule 30/Rule 90 truth tables, ANF carry density, and wall chirality metrics) is already implemented and verified in models/1984-wolfram-conus-textile-rule30.py and morphoeval/measure_outputs.py."
+        },
+        {
+          "db": 3.5,
+          "text": "Coarse-graining the space-time kymograph into a 2^3 -> {0,1} empirical transition table is guaranteed to yield a decisive quantitative comparison against both Rule 30 and symmetric Rule 90."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -2.0,
+          "text": "Because the Meinhardt-Klingler PDE is spatially reflection-symmetric (unlike Rule 30's asymmetric left-XOR gate) and relies on stochastic activator injection (p=0.18), the extracted transducer will likely align closer to symmetric Rule 90/18/22 than chiral Rule 30, refuting the directional hypothesis."
+        }
+      ],
+      "confidence": 0.91,
+      "verdict": "HIGHLY_TRACTABLE_EXPECTED_NEGATIVE",
+      "note": "The crux is fundamental symmetry: Meinhardt-Klingler's 1D diffusion operator d^2/dx^2 is reflection-symmetric (left-right invariant), whereas Rule 30 breaks left-right symmetry via a_{i-1} XOR (a_i OR a_{i+1}). Thus the transducer test will reach a fast, decisive verdict—almost certainly proving that isotropic Meinhardt PDE reduces to a symmetric elementary CA class (like Rule 90/18) rather than chiral Rule 30 unless oblique wave travel or asymmetric coupling is present."
+    },
+    {
+      "id": "TOP-08",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "The repository has no wet-lab mammalian cell culture or microscopy capability; it can only run a computational regime map of Sekine et al.'s competitive-inhibition ODE/PDE."
+        },
+        "data_in_hand": {
+          "score": 2,
+          "why": "Deciding evidence requires new biological replicate measurements from engineered eukaryotic cells, which do not exist in the repo or public databases."
+        },
+        "falsifiable_done": {
+          "score": 8,
+          "why": "Wavelength reproducibility across >=3 biological replicates is well-defined for a wet lab, but unreachable as a repo definition-of-done."
+        },
+        "compute_in_repo": {
+          "score": 0,
+          "why": "Explicitly requires wet-lab synthetic biology infrastructure outside the computational stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "A theoretical regime-map note can be written as a new file without conflict, though it cannot close the experimental done criterion."
+        },
+        "time_to_verdict": {
+          "score": 0,
+          "why": "Cannot reach a decisive verdict on the stated wet-lab problem within any software loop."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "No prior repo attempt, but structurally blocked by the absence of wet-lab execution."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 0.5,
+          "text": "A computational bifurcation map of Sekine et al. (2018) vs Tica et al. (2024) can delineate where solitary pulses transition to periodic Turing stripes in parameter space."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -5.0,
+          "text": "The stated definition of done requires wet-lab engineering of eukaryotic cells across >=3 biological replicates, which is impossible in a pure software repository."
+        },
+        {
+          "db": -5.0,
+          "text": "The packet's own tool_route and deciding_data explicitly state 'None adequate: no wet lab' and 'Not obtainable here'."
+        }
+      ],
+      "confidence": 0.98,
+      "verdict": "WET_LAB_BLOCKED_OUT_OF_SCOPE",
+      "note": "This problem serves as the negative control calibration anchor for the panel: its definition of done explicitly requires wet-lab eukaryotic synthetic biology across >=3 replicates. Only if the problem were reframed purely around the theoretical Turing-vs-solitary bifurcation boundary of the Sekine (2018) competitive-inhibition PDE could this repository close it."
+    },
+    {
+      "id": "TOP-09",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "wave-vector-analysis/ and embryo_units.py parse and normalize spark_tracks CSVs, requiring only a new 2D (k, omega) spectral/Lomb-Scargle surrogate test script."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Multiple spark_tracks CSVs (test_data/spark_tracks_qc_folder31.csv, _folder33.csv, and analysis_results/ CSVs) with (time_s, ap_norm, x, y) are already in the repository."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Fitting the driven-front line omega = v*k and testing for a secondary Turing-Hopf dispersion ridge against phase-randomized surrogates at a locked false-positive rate gives a definite verdict."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Space-time FFT or gridded kymograph spectral estimation with 1,000 phase-randomized surrogates per embryo runs in seconds on NumPy/SciPy."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Can be written as a standalone spectral analysis script reading existing read-only CSVs in wave-vector-analysis/."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Gridding point-process spark tracks onto (ap_norm, time_s) and running the surrogate test takes a single focused session."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Scout-036 proposed spectral gates that were never executed; OP-07/08 coordinate caveats apply to raw pixel XY but ap_norm is already normalized per embryo."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 4.0,
+          "text": "The in-repo spark_tracks CSVs already contain thousands of timestamped events with normalized anterior-posterior coordinates (ap_norm) and frame_idx, enabling immediate space-time power spectrum estimation."
+        },
+        {
+          "db": 2.5,
+          "text": "A phase-randomized or time-shuffled surrogate null test at a locked alpha rate is guaranteed to return a decisive present/absent verdict per embryo."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -2.0,
+          "text": "Spark tracks are sparse point events rather than continuous fluorescence fields, so binning onto a (k, omega) grid introduces shot-noise floors and aliasing that could mask weak secondary ridges."
+        },
+        {
+          "db": -1.0,
+          "text": "Mask/coordinate mismatches noted in detection_summary_mask_reasoning_v6 require filtering to high-QC embryos before pooling."
+        }
+      ],
+      "confidence": 0.85,
+      "verdict": "READY_IN_REPO_SPECTRAL_TEST",
+      "note": "The crux is converting sparse, tracked Ca2+ spark centroids into a well-conditioned space-time density field along ap_norm without introducing binning artifacts before computing S(k, omega). Note that COORDINATE_SYSTEM_WARNING.md is cited in the packet and AGENTS.md, though that file path is not currently present in wave-vector-analysis/ (the relevant caveats live in head_tail_comparison.csv and mask_tiff_mismatch_cases.csv)."
+    },
+    {
+      "id": "TOP-10",
+      "factors": {
+        "tool_fit": {
+          "score": 8,
+          "why": "Neither a Klausmeier/Rietkerk scale-dependent vegetation PDE nor a termite territory spatial point-process generator exists in the repository."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "No aerial imagery or fairy-circle coordinate datasets are in the repo, though Getzin et al. (2016/2021) point-pattern supplements are publicly downloadable."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Locked discrimination thresholds on pair-correlation g(r) and Voronoi hexagonal order Z_6 give a clear rule, even if both models fall in the indecisive zone."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "2D point-pattern Voronoi tessellations (scipy.spatial.Voronoi), pair-correlation functions, and 2D vegetation PDE runs fit easily on the repo stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Completely isolatable as a new ecological script and dataset folder."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Fetching external dryland point sets and building two new spatial models from scratch takes substantial effort."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "No prior repo attempt, but Tarnita et al. (2017) already showed that termite foraging and scale-dependent vegetation feedback produce nearly identical hexagonal Voronoi and g(r) statistics."
+        }
+      },
+      "evidence_for": [
+        {
+          "db": 1.5,
+          "text": "Getzin et al.'s Namibian and Australian fairy-circle point coordinates and drone ortho-mosaics are publicly archived on Dryad/Figshare, and SciPy's Voronoi/KDTree routines can compute g(r) and hexagonal order quickly."
+        }
+      ],
+      "evidence_against": [
+        {
+          "db": -4.0,
+          "text": "Tarnita et al. (2017, Nature) explicitly demonstrated that intraspecific termite colony competition and scale-dependent water-biomass Turing feedback generate indistinguishable hexagonal Voronoi distributions and pair-correlation peaks at the macro-circle scale."
+        },
+        {
+          "db": -2.0,
+          "text": "Without multi-scale small-scale vegetation clump data between the circles or soil-moisture time series, aerial circle centroids alone are known to be equifinal."
+        }
+      ],
+      "confidence": 0.84,
+      "verdict": "EQUIFINAL_STATISTICS_UNLIKELY_DECISIVE",
+      "note": "The crux—explicitly proved by Tarnita et al. (2017)—is that macro-scale fairy-circle centroids from both termite territory competition and scale-dependent water-vegetation feedback converge to the same hexagonal packing limit (6 neighbors, identical g(r) first peak). Only multi-scale sub-meter vegetation patterning between circles or temporal birth-death trajectories can separate the two mechanisms."
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+# MorphoEval — Human Expert Validation loop (Tier C / Step 13) configuration.
+#
+# The 12-step loop (track_loop.py) is fully automated: Tier A builds a
+# reproduction, Tier B audits it with dual *AI* assessors. Nothing in it is
+# ever seen by a human domain expert. This file configures the missing loop:
+#
+#   13. human  Find human experts for a finding, invite them (recorded, never
+#              auto-sent), track every response, and record a verdict — or a
+#              terminal non-validation — with the elapsed time for each.
+#
+# Headline metric: time_to_validate_or_not_hours
+#   queued_at -> consensus verdict (validated / partially_validated /
+#   refuted / unable_to_assess) OR -> closed_without_validation
+#   (expired / declined_all / no_expert_found / withdrawn), whichever is first.
+# A finding that nobody ever validates must still close, with a duration —
+# silence is a measured outcome, not an invisible one.
+#
+# Used by morphoeval/human_validation.py. Per-finding state lives in
+# morphoeval/validations/<finding>-human-validation.json (one new file per
+# finding, zero-conflict like audits/ and runs/).
+
+id: morphoeval-human-validation
+version: 1.0.0
+
+# How many independent, conflict-free human verdicts close a finding.
+quorum: 2
+
+sla:
+  # Days from queued_at to finish expert search and send first invitations.
+  search_days: 7
+  # Days from an invitation for that expert to respond (accept/decline).
+  response_days: 7
+  # Days from queued_at to a consensus verdict before the request is overdue.
+  review_days: 21
+  # Days after which an unanswered invitation is recorded no_response.
+  no_response_days: 14
+
+verdicts:
+  - validated            # finding is correct / faithful, as claimed
+  - partially_validated  # core claim holds, stated caveats are wrong/incomplete
+  - refuted              # finding does not hold
+  - unable_to_assess     # expert responded but cannot judge (wrong sub-field, insufficient artifacts)
+
+# Terminal states that close a finding WITHOUT validation. Each still
+# produces time_to_validate_or_not_hours.
+non_validation_outcomes:
+  - expired          # SLA passed with no consensus verdict
+  - declined_all     # every invited expert declined
+  - no_expert_found  # expert search returned no eligible, conflict-free expert
+  - withdrawn        # finding withdrawn before a verdict
+
+# Conflict-of-interest rules. Anyone flagged is listed (for transparency)
+# but is ineligible to serve as a validating expert for that finding.
+conflict_of_interest:
+  exclude_source_authors: true        # authors of the seed/source paper
+  exclude_same_institution: true      # same institution as a source author
+  exclude_loop_authors: true          # whoever built/audited this loop (incl. AI-loop operators)
+  require_coi_declaration: true       # expert must declare COI on accepting
+
+eligibility:
+  # The pool is authors of the top-cited title/abstract matches, so appearing
+  # even once is a strong on-topic signal (min 2 wrongly excluded exactly the
+  # foundational authors). Recency is likewise sample-biased — a 2007 classic
+  # in the sample does not mean its author retired — so the window is wide
+  # and the human shortlist makes the final call.
+  min_works_in_area: 1
+  active_within_years: 30
+  # relevance_score = 3*works_in_area + log10(1+cited_by) + recency bonus
+  # (see human_validation.rank_candidates). Ranking only — a human makes
+  # the final shortlist; this tool never contacts anyone.
+
+# Expertise routing: finding keywords -> expert search query.
+# First matching route wins; `default` is the fallback. Queries are run
+# against OpenAlex works, and authors of matching works are the candidate
+# pool (source-paper authors are then COI-excluded, which is exactly why
+# the pool must come from the wider literature, not just the seed paper).
+expertise_routes:
+  - match: [zebrafish, danio]
+    expertise: zebrafish developmental biology / morphogenesis
+    query: "zebrafish Danio rerio embryonic morphogenesis development"
+  - match: [drosophila, fly]
+    expertise: Drosophila developmental genetics / morphogenesis
+    query: "Drosophila melanogaster embryonic morphogenesis development"
+  - match: [xenopus, frog]
+    expertise: Xenopus developmental biology
+    query: "Xenopus laevis embryonic development morphogenesis"
+  - match: [planarian, schmidtea]
+    expertise: planarian regeneration biology
+    query: "planarian Schmidtea mediterranea regeneration morphogenesis"
+  - match: [shell, mollusc, mollusk, ammonite, nautilus, gastropod]
+    expertise: molluscan shell morphogenesis / paleobiology
+    query: "mollusc shell morphogenesis Raup ammonite paleobiology"
+  - match: [fossil, paleo, trilobite, ammonoid]
+    expertise: paleobiology / fossil morphometrics
+    query: "fossil morphometrics paleobiology evolutionary morphology"
+  - match: [turing, reaction-diffusion, pattern]
+    expertise: reaction-diffusion / biological pattern formation
+    query: "reaction diffusion Turing pattern formation morphogenesis"
+  - match: [segmentation, somitogenesis, clock]
+    expertise: vertebrate segmentation / somitogenesis
+    query: "somitogenesis segmentation clock vertebrate embryo"
+  - match: [fung, neurospora, hyph]
+    expertise: fungal morphogenesis / hyphal growth
+    query: "Neurospora crassa fungal hyphal morphogenesis growth"
+  - match: [plant, arabidopsis, leaf, meristem]
+    expertise: plant development / phyllotaxis
+    query: "plant meristem phyllotaxis leaf morphogenesis development"
+  - id: default
+    expertise: mathematical biology / morphogenesis (general)
+    query: "mathematical morphogenesis biological pattern formation morphometrics"
+
+# What an expert is asked to judge — mirrors rubric.yaml dimensions, in
+# human terms. Sent (by a human) with the invitation; never auto-sent.
+review_questions:
+  - Does the simulation implement the cited source model as published?
+  - Does the rendered output match real specimens of this organism?
+  - Are the quantitative morphometrics and comparisons biologically sound?
+  - Would you sign your name to this finding being correct as claimed?

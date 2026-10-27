@@ -1,0 +1,212 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/turing-open-problem-top-05-wavelength-scaling> a pk:Claim ;
+        rdfs:label "TOP-05 — Scaling: does biological pattern wavelength scale with body size across taxa, against Turing's intrinsic wavelength?" ;
+        dct:description "OPEN PROBLEM in Turing-pattern biology, sourced forward from Turing 1952 (intrinsic wavelength) -> Werner 2015 (scaling). THE GAP: Turing wavelength is set by kinetics and diffusion, not domain size, yet many biological patterns scale with the organism (planarian regeneration, Werner 2015; expansion-repression schemes). No cross-taxon regression of measured wavelength against body size exists. The repo's 976 *_turing_wavelength dataset folders look like such an asset but their empirical_series are alpha-template curves (x_control 0.5-5.0, r=0.999 fits), not measurements (scout-048 / scout-062 data-quality findings), so they cannot decide this. DEFINITION OF DONE: A pre-registered log-log regression of measured pattern wavelength on body size for >=10 taxa with real, DOI-cited measurements (hair-follicle spacing, fish stripe period, digit spacing, palatal ruga spacing), slope and CI locked before extraction; verdict = slope CI excludes 0 (scaling) or excludes 1 (intrinsic) or neither. THREE-PROVIDER DELPHI PANEL (2026-10-27; supersedes the provisional single-assessor pass): resolvability panel mean 60.7/100 (range 53-75; RESOLVABLE WITH WORK) by the deterministic Problem-Scout rubric, and pooled viability posterior 39.62% (prior 50%, pooled net -1.83 dB, panel range 26.19-61.31%) that the named route reaches a decisive verdict. Assessors were blinded to the provisional scores and to each other. A belief under assessment, not a fact." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:context "tool_route: scout_literature.py for measurements; a new extraction table under datasets/; registry row. The catalog templates must NOT be used as evidence. | deciding_data: Not usable in repo (template artefacts). Public literature extraction required. | prior_attempts: scout-048 BIO-TPL-DQ-01 and scout-062 established the catalog empirical curves are template artefacts; no scaling test attempted." ;
+        pk:derivedFromPaper <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevLett.114.138101>,
+            <https://doi.org/10.1126/science.1130088> ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-resolvability-claude-fable-5-1>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-resolvability-gemini-4-argon>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-resolvability-gpt-5.6-sol>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-claude-fable-5-1>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-gemini-4-argon>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-gpt-5.6-sol>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-panel-pooled> ;
+        pk:weightOfEvidence "0.3962"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/agent/turing-open-problems-panel-2026-10-27> a prov:SoftwareAgent ;
+        rdfs:label "Three-provider Bayesian Delphi panel (OpenAI, Google, Anthropic), blinded, pooled in log-odds" .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-resolvability-claude-fable-5-1> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-05 resolvability 54/100 — Claude Fable 5.1 Thinking High (fresh context)" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC); total recomputed from factor scores by the aggregator; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 14/15: Log-log regression is seconds.",
+            "data_in_hand 6/20: Catalog *_turing_wavelength empirical_series are template artefacts and excluded; >=10 taxa of DOI-cited wavelength + body size must be extracted by hand from heterogeneous sources.",
+            "falsifiable_done 10/15: Slope CI vs 0 / vs 1 / neither is crisp, but mixing follicle spacing, stripe period, digit spacing and rugae into one 'wavelength' is a design choice a scorer can reject.",
+            "isolation 9/10: New extraction table under datasets/ and a new script.",
+            "not_blocked 5/5: scout-048/062 discredited the template curves but no scaling test has been tried.",
+            "time_to_verdict 5/10: Ten taxa with both measurements and DOIs is a multi-hour to multi-day extraction.",
+            "tool_fit 5/25: scout_literature.py only surfaces papers; no extraction tool; the regression is trivial but the deciding step (measured wavelengths) has no repo tool." ;
+        pk:hasScore "0.54"^^xsd:double ;
+        pk:hasVerdict "RESOLVABLE WITH WORK" .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-resolvability-gemini-4-argon> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-05 resolvability 75/100 — Gemini 4 Argon Medium" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC); total recomputed from factor scores by the aggregator; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 15/15: Log-log OLS/bootstrap regression on a 10-to-20 row table is instantaneous in SciPy.",
+            "data_in_hand 11/20: In-repo *_turing_wavelength curves are unusable template artefacts, so >=10 taxon measurements must be extracted manually from published papers.",
+            "falsifiable_done 13/15: Pre-registered log-log slope confidence interval excluding 0, excluding 1, or neither across >=10 DOI-cited taxa is clear, though pooling heterogeneous organs introduces framing sensitivity.",
+            "isolation 10/10: Easily isolated as a new curated CSV/JSON table under datasets/ and a standalone analysis script.",
+            "not_blocked 4/5: Prior scouts (scout-048, scout-062) invalidated the synthetic catalog templates, leaving the real literature regression unattempted.",
+            "time_to_verdict 7/10: Verifying real micrometer/millimeter spacing and developmental stage body length across >=10 primary papers takes careful curation in one sitting.",
+            "tool_fit 15/25: morphoeval/scout_literature.py assists with paper discovery, but data extraction and orthogonal/OLS log-log regression must be newly scripted and curated." ;
+        pk:hasScore "0.75"^^xsd:double ;
+        pk:hasVerdict "RESOLVE NOW" .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-resolvability-gpt-5.6-sol> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-05 resolvability 53/100 — GPT 5.6 Sol Medium" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC); total recomputed from factor scores by the aggregator; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/gpt-5.6-sol> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 15/15: The regression itself is trivial on the repository stack.",
+            "data_in_hand 8/20: The repo templates are unusable and ten comparable taxon-level measurements require multi-paper extraction.",
+            "falsifiable_done 8/15: A slope and CI are checkable, but the stated verdict mapping is logically incorrect and nonexclusive.",
+            "isolation 10/10: A new DOI-backed table and analysis can be produced without touching shared code.",
+            "not_blocked 3/5: No real-data regression was attempted, but prior work established that the apparent in-repo dataset is invalid.",
+            "time_to_verdict 3/10: Standardizing body size and wavelength across ten disparate taxa is not a one-loop task.",
+            "tool_fit 6/25: Only generic literature scouting exists; extraction, harmonization, and regression must be built." ;
+        pk:hasScore "0.53"^^xsd:double ;
+        pk:hasVerdict "RESOLVABLE WITH WORK" .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-claude-fable-5-1> a pk:BayesianAssessment ;
+        rdfs:label "TOP-05 viability 33.39% — Claude Fable 5.1 Thinking High (fresh context)" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:bayesFactor "0.5012"^^xsd:double ;
+        pk:calibrationMethod "Blinded signed deciban ledger, prior 50%, |item| <= 5 dB, |net| <= 12 dB (panel INSTRUCTIONS.md)" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-05-wavelength-scaling-decisive-verdict> ;
+        pk:evidenceAgainst "[-2 dB] >=10 taxa with both DOI-cited wavelength and body size is a heavy extraction with no tooling.",
+            "[-3 dB] Pooling different pattern types across taxa makes the slope uninterpretable; a scorer can reject 'neither' or 'scaling' as an artefact of heterogeneity.",
+            "[-3 dB] Turing's intrinsic-wavelength claim is about a fixed system; an interspecies regression conflates ontogenetic scaling with evolutionary retuning of kinetics, so the test does not isolate the gap." ;
+        pk:evidenceFor "[+2 dB] Some measurements are readily citable (Kondo-Asai angelfish stripe period, mouse/human hair follicle spacing, mouse digit spacing).",
+            "[+3 dB] Once the table exists the locked slope test returns one of three pre-defined classes, so the statistical step is decisive by construction." ;
+        pk:hasConfidence "0.5"^^xsd:double ;
+        pk:hasProbability "0.3339"^^xsd:double ;
+        pk:hasVerdict "TABLE_HEAVY_DESIGN_CONTESTABLE" ;
+        pk:weightOfEvidenceDeciban "-3.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-gemini-4-argon> a pk:BayesianAssessment ;
+        rdfs:label "TOP-05 viability 61.31% — Gemini 4 Argon Medium" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        pk:bayesFactor "1.5849"^^xsd:double ;
+        pk:calibrationMethod "Blinded signed deciban ledger, prior 50%, |item| <= 5 dB, |net| <= 12 dB (panel INSTRUCTIONS.md)" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-05-wavelength-scaling-decisive-verdict> ;
+        pk:evidenceAgainst "[-2.5 dB] Pooling heterogeneous anatomical structures (embryonic limb buds, adult fish skin, palatal shelves) across clades mixes embryonic domain size at patterning onset with adult body size, inflating residual variance so the 95% CI on N~10 may span both 0 and 1." ;
+        pk:evidenceFor "[+1.5 dB] The trichotomous verdict rule (CI excludes 0, excludes 1, or neither) guarantees a well-defined statistical outcome once >=10 rows are compiled.",
+            "[+3 dB] Primary morphometric measurements of periodic spacing and embryonic/adult domain size exist in open literature for mouse hair follicles (Sick 2006), palatal rugae (Economou 2012), mouse digits (Sheth 2012), Pomacanthus stripes (Kondo 1995), zebrafish stripes, and avian feather buds." ;
+        pk:hasConfidence "0.76"^^xsd:double ;
+        pk:hasProbability "0.6131"^^xsd:double ;
+        pk:hasVerdict "FEASIBLE_LITERATURE_META_ANALYSIS" ;
+        pk:weightOfEvidenceDeciban "2.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-gpt-5.6-sol> a pk:BayesianAssessment ;
+        rdfs:label "TOP-05 viability 26.19% — GPT 5.6 Sol Medium" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/gpt-5.6-sol> ;
+        pk:bayesFactor "0.3548"^^xsd:double ;
+        pk:calibrationMethod "Blinded signed deciban ledger, prior 50%, |item| <= 5 dB, |net| <= 12 dB (panel INSTRUCTIONS.md)" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-05-wavelength-scaling-decisive-verdict> ;
+        pk:evidenceAgainst "[-2 dB] The only large in-repo resource is known to be templated rather than empirical, leaving substantial manual extraction.",
+            "[-2.5 dB] The done criterion reverses the interpretations: intrinsic wavelength predicts slope zero, while proportional scaling predicts slope one; the proposed CI tests can also overlap.",
+            "[-3 dB] Wavelength and body-size measurements across organs and taxa are heterogeneous and may not define a common scaling relation." ;
+        pk:evidenceFor "[+1 dB] Once a defensible table exists, a locked log-log regression gives a reproducible numerical result.",
+            "[+2 dB] The literature names several systems likely to report spacing and organism dimensions." ;
+        pk:hasConfidence "0.9"^^xsd:double ;
+        pk:hasProbability "0.2619"^^xsd:double ;
+        pk:hasVerdict "UNLIKELY_DECISIVE" ;
+        pk:weightOfEvidenceDeciban "-4.5"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-panel-pooled> a pk:BayesianAssessment ;
+        rdfs:label "TOP-05 pooled viability 39.62% (3-provider panel, range 26.19-61.31%)" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/agent/turing-open-problems-panel-2026-10-27> ;
+        pk:bayesFactor "0.6561"^^xsd:double ;
+        pk:calibrationMethod "log-odds mean across 3 assessors (equal priors 50%, so pooled net dB = mean net dB)" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-05-wavelength-scaling-decisive-verdict> ;
+        pk:hasProbability "0.3962"^^xsd:double ;
+        pk:hasVerdict "POOLED_POSSIBLE_PATHWAY" ;
+        pk:weightOfEvidenceDeciban "-1.83"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 Thinking High (fresh context) (Anthropic)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+
+    <https://w3id.org/delphi/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon Medium (Google)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+
+    <https://w3id.org/delphi/resource/model/gpt-5.6-sol> a pk:Model ;
+        rdfs:label "GPT 5.6 Sol Medium (OpenAI)" ;
+        dct:identifier "gpt-5.6-sol" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+
+    <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-05-wavelength-scaling-decisive-verdict> a pk:TestableHypothesis ;
+        rdfs:label "A >=10-taxon measured wavelength-vs-size table is assembled and the locked slope test returns a decisive class." ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-claude-fable-5-1>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-gemini-4-argon>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-gpt-5.6-sol>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-05-wavelength-scaling-viability-panel-pooled> ;
+        pk:hasPriorProbability "0.5"^^xsd:double ;
+        pk:hasResolvability "0.607"^^xsd:double .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Open problem (3-provider panel): TOP-05 Scaling: does biological pattern wavelength scale with body size across taxa, ag" ;
+        dct:created "2026-10-27T19:40:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/delphi/resource/claim/turing-open-problem-top-05-wavelength-scaling> ;
+        npx:supersedes <https://w3id.org/np/RAdbLEbSoRPP9MHYUNjuiAP2IiQMaC51ju88q0wL7EijY> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RA3z187EzQXy4zopVZAmFg2sa_QymD1MKfzMxGzNqdNZM/template> .
+
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/agent/turing-open-problems-panel-2026-10-27>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1>,
+            <https://w3id.org/delphi/resource/model/gemini-4-argon>,
+            <https://w3id.org/delphi/resource/model/gpt-5.6-sol> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevLett.114.138101>,
+            <https://doi.org/10.1126/science.1130088> .
+
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The Chemical Basis of Morphogenesis" .
+
+    <https://doi.org/10.1103/PhysRevLett.114.138101> dct:date "2015"^^xsd:gYear ;
+        dct:title "Scaling and Regeneration of Self-Organized Patterns" .
+
+    <https://doi.org/10.1126/science.1130088> dct:date "2006"^^xsd:gYear ;
+        dct:title "WNT and DKK determine hair follicle spacing through a reaction-diffusion mechanism" .
+}
+

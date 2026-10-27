@@ -1,0 +1,95 @@
+# MorphoEval — Scientist Promotion loop (Tier C, companion to human_validation.yaml).
+#
+# Problem: the repo produces thousands of AI-audited findings. Scientists will
+# not read audit YAMLs, will not open a 60 KB validation JSON, and will ignore
+# anything promoted as a "result" before a human has validated it. Burning
+# expert attention on weak findings destroys the channel for strong ones.
+#
+# So promotion is fail-closed and two-track:
+#
+#   promote_as_result     Only for findings a human expert has already
+#                         validated (human_validation consensus) AND that pass
+#                         the evidence gate. Wording: "here is a result, use it."
+#   promote_for_scrutiny  For interesting-but-unvalidated findings. Wording is
+#                         NOT a claim — it is a specific, cheap question:
+#                         "you can kill this in 15 minutes; here's the figure,
+#                         the 3 numbers, and exactly what answer kills it."
+#                         This is the version scientists actually act on.
+#   hold_do_not_promote   Everything else. The brief lists what is missing.
+#                         Holding is the default, not a failure.
+#
+# Care score (0-100) ranks the queue; the gates decide the track. A high care
+# score can NEVER override a gate (no hype path).
+
+id: morphoeval-promotion
+version: 1.0.0
+
+gates:
+  promote_as_result:
+    human_consensus_in: [validated, partially_validated]  # from human_validation.py
+    min_overall_score: 70
+    min_image_fitness: 70
+    requires: [script, comparison_figure]
+  promote_for_scrutiny:
+    min_care_score: 45
+    min_overall_score: 50
+    requires: [script, comparison_figure, named_law_or_equation, falsifier]
+    # an expert must exist to ask — never promote into the void
+    min_eligible_experts: 1
+
+# Care score: would a working scientist stop scrolling for this?
+# Weights sum to 100. Every subscore is computed from artifacts in the repo
+# (promote_findings.py); nothing is self-declared.
+care_score:
+  audience_demand:        # 25 — is there a live community who works on this?
+    weight: 25
+    signals: [eligible_experts_found, expert_field_citations, community_organism]
+  evidence_strength:      # 25 — audit overall, image fitness, fit r/RMSE, Lean
+    weight: 25
+    signals: [overall_score, image_fitness, pearson_r, lean_verified]
+  specificity:            # 20 — named law, pinned parameters, a number that can be wrong
+    weight: 20
+    signals: [named_law_or_equation, parameter_count, empirical_series, phenomenon_size_m]
+  actionability:          # 20 — can they DO something in <1 sitting?
+    weight: 20
+    signals: [runnable_script, comparison_figure, animation, dataset_vendored, replication_command]
+  community_relevance:    # 10 — model/community organisms scientists already gather around
+    weight: 10
+    organisms:
+      Drosophila melanogaster: 10
+      Danio rerio: 10
+      Xenopus laevis: 9
+      Mus musculus: 9
+      Homo sapiens: 9
+      Arabidopsis thaliana: 9
+      Caenorhabditis elegans: 9
+      Schmidtea mediterranea: 8
+      Drosophila guttifera: 8
+      Neurospora crassa: 7
+      Saccharomyces cerevisiae: 8
+      Hydra vulgaris: 7
+      Nematostella vectensis: 7
+
+# The ask, tiered by cost. Every brief leads with the cheapest one.
+# Scientists act on small, specific, credit-bearing asks — not on "validate this".
+ask_tiers:
+  - id: two_minute
+    label: "2-minute triage"
+    ask: "Care / don't care / kill it — one word. All three are useful, all three are recorded."
+    care_response_values: [care, dont_care, kill_it, wrong_expert]
+  - id: fifteen_minute
+    label: "15-minute verdict"
+    ask: "Answer the one falsifier question on the brief (validated / partially / refuted / unable to assess)."
+  - id: one_sitting
+    label: "One-sitting replication"
+    ask: "Run the exact replication command on the brief and report whether the figure reproduces."
+
+# Where a brief may go. This tool NEVER sends anything; a human records
+# each send with promote_findings.py track, which starts the clock.
+channels: [direct_expert_invitation, community_list_or_forum, preprint, conference_or_seminar, collaborator_introduction]
+
+# Promotion funnel — every stage timestamped per finding (promotions/<id>-promotion.json).
+# Headline promotion metrics (report): care_rate, time_to_first_care_hours,
+# scrutiny_conversion (care -> 15-min verdict), time_to_validate_or_not_hours
+# (joined from human_validation.py).
+funnel: [brief_ready, sent, care_response, accepted_review, verdict]

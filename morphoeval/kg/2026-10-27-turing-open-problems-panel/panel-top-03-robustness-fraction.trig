@@ -1,0 +1,217 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/turing-open-problem-top-03-robustness-fraction> a pk:Claim ;
+        rdfs:label "TOP-03 — The fine-tuning objection: replicate the two-node vs three-node Turing parameter-volume ratio and the 1%-uncertainty retention claim" ;
+        dct:description "OPEN PROBLEM in Turing-pattern biology, sourced forward from Murray 1982 -> Scholes 2019 -> Tica 2024. THE GAP: Turing instability is topologically common but occupies tiny parameter volumes: 0.00035% of sampled space for the classical two-node circuit vs 0.022% for the best three-node topology (Tica et al. 2024, Latin-hypercube linear stability), with 33% retention under 1% parameter uncertainty around a Turing I point. These numbers decide whether the fine-tuning objection to biological Turing systems stands; they have not been independently reproduced. DEFINITION OF DONE: A pre-registered Latin-hypercube linear-stability sweep on the repo's two-node kinetics and a three-node immobile-node topology within published parameter bounds, reporting both Turing fractions and the 1%/5% local-retention fractions; verdict = within one order of magnitude of the published ratio (>=10x three-node over two-node) or not. THREE-PROVIDER DELPHI PANEL (2026-10-27; supersedes the provisional single-assessor pass): resolvability panel mean 78.7/100 (range 71-93; RESOLVE NOW) by the deterministic Problem-Scout rubric, and pooled viability posterior 69.95% (prior 50%, pooled net +3.67 dB, panel range 61.31-79.92%) that the named route reaches a decisive verdict. Assessors were blinded to the provisional scores and to each other. A belief under assessment, not a fact." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:context "tool_route: models/1952-turing-morpho.py (Jacobian / dispersion code, Pearson Saddle-Node & Hopf curves, Lean d_c); new sweep script under morphoeval/ or models/; registry row for the ratio before running. | deciding_data: Published fractions (Tica 2024 Fig. 2A, Table S5 bounds; Scholes 2019 atlas) — no biological data needed. | prior_attempts: scout-034 proposed a 12-class Pearson (F,k) sweep, not a robustness fraction; nothing recorded on parameter volume." ;
+        pk:derivedFromPaper <https://doi.org/10.1016/j.cels.2019.07.007>,
+            <https://doi.org/10.1016/j.cels.2024.11.002>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevE.84.011112>,
+            <https://doi.org/10.7554/eLife.14022> ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-resolvability-claude-fable-5-1>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-resolvability-gemini-4-argon>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-resolvability-gpt-5.6-sol>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-claude-fable-5-1>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-gemini-4-argon>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-gpt-5.6-sol>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-panel-pooled> ;
+        pk:weightOfEvidence "0.6995"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/agent/turing-open-problems-panel-2026-10-27> a prov:SoftwareAgent ;
+        rdfs:label "Three-provider Bayesian Delphi panel (OpenAI, Google, Anthropic), blinded, pooled in log-odds" .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-resolvability-claude-fable-5-1> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-03 resolvability 71/100 — Claude Fable 5.1 Thinking High (fresh context)" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC); total recomputed from factor scores by the aggregator; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 12/15: Vectorised linear stability over ~1e7 LHS samples is hours in numpy; fractions as small as 3.5e-6 need that sample size.",
+            "data_in_hand 14/20: Published fractions and bounds (Tica 2024 Fig. 2A / Table S5; Scholes 2019) are one SI fetch away; no biological data.",
+            "falsifiable_done 14/15: Within one order of magnitude and >=10x ordering is a crisp numeric gate.",
+            "isolation 8/10: New sweep script under morphoeval/ or models/ plus a shared-registry row.",
+            "not_blocked 5/5: scout-034's Pearson (F,k) sweep is a different target; nothing recorded on parameter volume.",
+            "time_to_verdict 8/10: One sitting if the SI equations are adopted directly.",
+            "tool_fit 10/25: 1952-turing-morpho.py supplies Jacobian/dispersion and Lean d_c for Gray-Scott only; the Latin-hypercube sweep over Tica's two- and three-node kinetics is a new script." ;
+        pk:hasScore "0.71"^^xsd:double ;
+        pk:hasVerdict "RESOLVE NOW" .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-resolvability-gemini-4-argon> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-03 resolvability 93/100 — Gemini 4 Argon Medium" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC); total recomputed from factor scores by the aggregator; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 15/15: Vectorized NumPy eigenvalue sweeps over 10^6 Latin-hypercube samples evaluate in under a minute on CPU without solving PDEs.",
+            "data_in_hand 19/20: Purely mathematical/computational replication against published numbers and parameter bounds in Scholes et al. (2019) and Tica et al. (2024).",
+            "falsifiable_done 15/15: Reproducing the >=10x three-node over two-node parameter-volume ratio within one order of magnitude and scoring local 1%/5% retention fractions is completely deterministic.",
+            "isolation 10/10: Closable as a standalone sweep script and JSON summary with zero edits to existing files.",
+            "not_blocked 5/5: No prior attempt in the repo has run the 2-node vs 3-node Latin-hypercube robustness volume comparison.",
+            "time_to_verdict 9/10: Fast linear-stability algebra allows full execution and verification in a single loop.",
+            "tool_fit 20/25: models/1952-turing-morpho.py has the 2-node Jacobian/dispersion machinery, needing only a vectorized 3x3 Routh-Hurwitz dispersion extension and Latin-hypercube sampler." ;
+        pk:hasScore "0.93"^^xsd:double ;
+        pk:hasVerdict "RESOLVE NOW" .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-resolvability-gpt-5.6-sol> a pk:LLMClaimAssessment ;
+        rdfs:label "TOP-03 resolvability 72/100 — GPT 5.6 Sol Medium" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Deterministic Problem-Scout rubric (morphoeval/problem_scout_100.py RUBRIC); total recomputed from factor scores by the aggregator; an uncalibrated rubric score, not a probability." ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/gpt-5.6-sol> ;
+        pk:assessmentType "problem-scout/1.0/resolvability" ;
+        pk:evidenceFor "compute_in_repo 13/15: Linear-stability Latin-hypercube sweeps should run in hours on the existing stack.",
+            "data_in_hand 13/20: Published fractions and parameter bounds are cited but apparently require supplementary-material extraction.",
+            "falsifiable_done 14/15: The ratio, ordering, and local-retention tolerances give objective pass/fail outputs.",
+            "isolation 10/10: A new sweep script and result files are naturally zero-conflict.",
+            "not_blocked 5/5: No recorded attempt tested parameter-volume robustness.",
+            "time_to_verdict 7/10: One computational loop is plausible after bounds and topology are faithfully encoded.",
+            "tool_fit 10/25: Two-node Jacobian and dispersion routines exist, while the three-node topology and sampler are new." ;
+        pk:hasScore "0.72"^^xsd:double ;
+        pk:hasVerdict "RESOLVE NOW" .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-claude-fable-5-1> a pk:BayesianAssessment ;
+        rdfs:label "TOP-03 viability 66.61% — Claude Fable 5.1 Thinking High (fresh context)" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:bayesFactor "1.9953"^^xsd:double ;
+        pk:calibrationMethod "Blinded signed deciban ledger, prior 50%, |item| <= 5 dB, |net| <= 12 dB (panel INSTRUCTIONS.md)" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-03-robustness-fraction-decisive-verdict> ;
+        pk:evidenceAgainst "[-1 dB] Depends on parsing Tica 2024 SI (Table S5) correctly; a transcription error silently changes the verdict.",
+            "[-2 dB] Turing fractions are highly sensitive to bounds and log-vs-linear sampling; small convention differences shift fractions by orders of magnitude.",
+            "[-3 dB] The packet's 'repo two-node kinetics' (Gray-Scott) are not Tica's two-node circuit; a mismatch would be ambiguous between non-reproduction and different kinetics unless the published equations are used verbatim." ;
+        pk:evidenceFor "[+2 dB] LHS sampling is embarrassingly parallel and fits the repo's numpy stack.",
+            "[+3 dB] The one-order-of-magnitude / >=10x gate is numeric and leaves no room for interpretation.",
+            "[+4 dB] Pure linear-stability computation with no data dependency; result is deterministic given equations, bounds and sampler." ;
+        pk:hasConfidence "0.65"^^xsd:double ;
+        pk:hasProbability "0.6661"^^xsd:double ;
+        pk:hasVerdict "DECISIVE_IF_PUBLISHED_KINETICS_ADOPTED" ;
+        pk:weightOfEvidenceDeciban "3.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-gemini-4-argon> a pk:BayesianAssessment ;
+        rdfs:label "TOP-03 viability 79.92% — Gemini 4 Argon Medium" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        pk:bayesFactor "3.9811"^^xsd:double ;
+        pk:calibrationMethod "Blinded signed deciban ledger, prior 50%, |item| <= 5 dB, |net| <= 12 dB (panel INSTRUCTIONS.md)" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-03-robustness-fraction-decisive-verdict> ;
+        pk:evidenceAgainst "[-1.5 dB] Absolute Turing fractions around 3.5e-6 require >=5e6 Latin-hypercube samples and matching Hill-function parameterization (non-competitive vs competitive inhibition in Tica 2024 Table S5) to avoid Monte Carlo under-sampling." ;
+        pk:evidenceFor "[+3 dB] The one-order-of-magnitude tolerance (>=10x vs published ~63x ratio between 0.022% and 0.00035%) absorbs minor differences in steady-state solver tolerances.",
+            "[+4.5 dB] Linear stability across k-modes is governed by exact polynomial Routh-Hurwitz criteria, and relaxing the differential-diffusion constraint via a third immobile node provably expands the Turing cone by >10x (Marcon 2016, Scholes 2019, Tica 2024)." ;
+        pk:hasConfidence "0.92"^^xsd:double ;
+        pk:hasProbability "0.7992"^^xsd:double ;
+        pk:hasVerdict "IMMEDIATE_COMPUTATIONAL_WIN" ;
+        pk:weightOfEvidenceDeciban "6.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-gpt-5.6-sol> a pk:BayesianAssessment ;
+        rdfs:label "TOP-03 viability 61.31% — GPT 5.6 Sol Medium" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/model/gpt-5.6-sol> ;
+        pk:bayesFactor "1.5849"^^xsd:double ;
+        pk:calibrationMethod "Blinded signed deciban ledger, prior 50%, |item| <= 5 dB, |net| <= 12 dB (panel INSTRUCTIONS.md)" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-03-robustness-fraction-decisive-verdict> ;
+        pk:evidenceAgainst "[-0.5 dB] The local 1% and 5% uncertainty protocol still needs precise reconstruction from the source.",
+            "[-2 dB] Parameter-volume fractions are highly sensitive to sampling measure, bounds, and exact three-node topology." ;
+        pk:evidenceFor "[+1.5 dB] The repository already provides validated two-node Jacobian and dispersion components.",
+            "[+3 dB] This is a fully computational linear-stability replication with explicit published target numbers." ;
+        pk:hasConfidence "0.74"^^xsd:double ;
+        pk:hasProbability "0.6131"^^xsd:double ;
+        pk:hasVerdict "LIKELY_DECISIVE" ;
+        pk:weightOfEvidenceDeciban "2.0"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-panel-pooled> a pk:BayesianAssessment ;
+        rdfs:label "TOP-03 pooled viability 69.95% (3-provider panel, range 61.31-79.92%)" ;
+        prov:wasAttributedTo <https://w3id.org/delphi/resource/agent/turing-open-problems-panel-2026-10-27> ;
+        pk:bayesFactor "2.3281"^^xsd:double ;
+        pk:calibrationMethod "log-odds mean across 3 assessors (equal priors 50%, so pooled net dB = mean net dB)" ;
+        pk:evaluatesHypothesis <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-03-robustness-fraction-decisive-verdict> ;
+        pk:hasProbability "0.6995"^^xsd:double ;
+        pk:hasVerdict "POOLED_POSSIBLE_PATHWAY" ;
+        pk:weightOfEvidenceDeciban "3.67"^^xsd:double .
+
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 Thinking High (fresh context) (Anthropic)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+
+    <https://w3id.org/delphi/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon Medium (Google)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+
+    <https://w3id.org/delphi/resource/model/gpt-5.6-sol> a pk:Model ;
+        rdfs:label "GPT 5.6 Sol Medium (OpenAI)" ;
+        dct:identifier "gpt-5.6-sol" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+
+    <https://w3id.org/delphi/resource/hypothesis/turing-open-problem-top-03-robustness-fraction-decisive-verdict> a pk:TestableHypothesis ;
+        rdfs:label "The repo's sweep reproduces the published two-node vs three-node Turing-fraction ratio within one order of magnitude and the >=10x ordering, with the pre-registered numbers scored." ;
+        pk:hasAssessment <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-claude-fable-5-1>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-gemini-4-argon>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-gpt-5.6-sol>,
+            <https://w3id.org/delphi/resource/assessment/turing-open-problem-top-03-robustness-fraction-viability-panel-pooled> ;
+        pk:hasPriorProbability "0.5"^^xsd:double ;
+        pk:hasResolvability "0.787"^^xsd:double .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Open problem (3-provider panel): TOP-03 The fine-tuning objection: replicate the two-node vs three-node Turing parameter" ;
+        dct:created "2026-10-27T19:40:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/delphi/resource/claim/turing-open-problem-top-03-robustness-fraction> ;
+        npx:supersedes <https://w3id.org/np/RAmgDJPb9iubma_LDSitGPMIp7tbIPmLMbnmeFAT9OtAs> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/main/docs/TURING_OPEN_PROBLEMS.md> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RA3z187EzQXy4zopVZAmFg2sa_QymD1MKfzMxGzNqdNZM/template> .
+
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/agent/turing-open-problems-panel-2026-10-27>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1>,
+            <https://w3id.org/delphi/resource/model/gemini-4-argon>,
+            <https://w3id.org/delphi/resource/model/gpt-5.6-sol> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cels.2019.07.007>,
+            <https://doi.org/10.1016/j.cels.2024.11.002>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevE.84.011112>,
+            <https://doi.org/10.7554/eLife.14022> .
+
+    <https://doi.org/10.1016/j.cels.2019.07.007> dct:date "2019"^^xsd:gYear ;
+        dct:title "A Comprehensive Network Atlas Reveals That Turing Patterns Are Common but Not Robust" .
+
+    <https://doi.org/10.1016/j.cels.2024.11.002> dct:date "2024"^^xsd:gYear ;
+        dct:title "A three-node Turing gene circuit forms periodic spatial patterns in bacteria" .
+
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The Chemical Basis of Morphogenesis" .
+
+    <https://doi.org/10.1103/PhysRevE.84.011112> dct:date "2011"^^xsd:gYear ;
+        dct:title "Fluctuation-driven Turing patterns" .
+
+    <https://doi.org/10.7554/eLife.14022> dct:date "2016"^^xsd:gYear ;
+        dct:title "High-throughput mathematical analysis identifies Turing networks for patterning with equally diffusing signals" .
+}
+

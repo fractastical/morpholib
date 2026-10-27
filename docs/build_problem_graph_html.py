@@ -27,9 +27,12 @@ def extract_literal(src: str, name: str) -> str:
             if depth == 0: return src[i:j + 1]
     raise ValueError(name)
 
-def validate(data: dict) -> list[str]:
+def validate(data: dict, ops: bool = True) -> list[str]:
     """Self-checks so the generator 'knows what it's doing': it refuses to
-    emit a page from incoherent data instead of deploying silent nonsense."""
+    emit a page from incoherent data instead of deploying silent nonsense.
+    `ops=False` skips the MorphoSwarm OP -> node check for the core canvas pass,
+    because OP-12.. point at nodes injected later from docs/turing-open-problems.json;
+    the final merged pass always runs with ops=True."""
     errs: list[str] = []
     nodes, edges, agents = data["NODES"], data["EDGES"], data["AGENTS"]
     ids = [n["id"] for n in nodes]
@@ -81,7 +84,7 @@ def validate(data: dict) -> list[str]:
                 errs.append(f"{pid}/{row['agent']}: posterior {row['posterior']} != prior x BF = {posterior:.2f}")
             if abs((row["forDb"] + row["againstDb"]) - row["netDb"]) > 0.51:
                 errs.append(f"{pid}/{row['agent']}: forDb + againstDb != netDb")
-    for op in OPEN_PROBLEMS:
+    for op in OPEN_PROBLEMS if ops else []:
         if op["node"] not in ids:
             errs.append(f"{op['id']}: references missing graph node {op['node']}")
         if op["delphi"] is not None and op["delphi"] not in data["DELPHI"]:
@@ -126,6 +129,135 @@ OPEN_PROBLEMS = [
      "gap": "45/90 registered multi-clade hypotheses held; the failures are concentrated and unexplained — is it landmark scheme, tree quality, or a real limit of global grids in those clades?",
      "done": "A per-clade failure autopsy in the style of the why-wings decomposition, with at least one failure converted into a correct, pre-registered prediction."},
 ]
+
+
+def load_turing_problems() -> dict | None:
+    """Turing open problems sourced forward from 1952 (docs/turing-open-problems.json,
+    written by morphoeval/build_turing_open_problems.py). Each carries a deterministic
+    resolvability score and a PROVISIONAL single-assessor viability posterior; the
+    trusty URIs of their signed nanopubs are read from the KG manifest, never typed."""
+    p = Path(__file__).resolve().parent / "turing-open-problems.json"
+    if not p.exists():
+        print("WARNING: docs/turing-open-problems.json not found — building without the Turing open-problems band")
+        return None
+    feed = json.loads(p.read_text())
+    manifest_path = Path(__file__).resolve().parent.parent / feed["kg_dir"] / "published.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    for prob in feed["problems"]:
+        prob["nanopub"] = manifest.get(prob["trig"], {})
+    # Three-provider Delphi panel (docs/turing-open-problems-panel.json, from
+    # morphoeval/build_turing_panel_delphi.py) supersedes the provisional viabilities
+    # when present; the provisional numbers stay recorded, never overwritten.
+    pp = p.with_name("turing-open-problems-panel.json")
+    if pp.exists():
+        panel = json.loads(pp.read_text())
+        pm_path = Path(__file__).resolve().parent.parent / panel["kg_dir"] / "published.json"
+        pm = json.loads(pm_path.read_text()) if pm_path.exists() else {}
+        by_id = {q["id"]: q for q in panel["problems"]}
+        for prob in feed["problems"]:
+            q = by_id.get(prob["id"])
+            if q:
+                prob["panel"] = {**q, "nanopub": pm.get(q["trig"], {})}
+        feed["panel_meta"] = {k: panel[k] for k in ("snapshot", "source", "assessors", "prior_percent", "kg_dir")}
+    return feed
+
+
+def _turing_res(p: dict) -> float:
+    """Resolvability used for ranking / OP membership: panel mean when the panel exists, else provisional."""
+    return p["panel"]["resolvability_panel"]["mean"] if p.get("panel") else p["resolvability"]
+
+
+TURING = load_turing_problems()
+# OP-12.. : the RESOLVE NOW band (resolvability >= feed threshold) enters the swarm queue.
+# Derived from the feed so the queue cannot drift from the assessment. Viability is the
+# 3-provider pooled posterior when the panel has run, else the provisional single-assessor
+# posterior labelled as such (never shown as a panel score).
+if TURING:
+    for _i, _p in enumerate(sorted((q for q in TURING["problems"] if _turing_res(q) >= TURING["op_threshold_resolvability"]),
+                                   key=lambda q: -_turing_res(q))):
+        _entry = {"id": f"OP-{12 + _i}", "node": _p["id"].lower(), "delphi": None,
+                  "title": f"{_p['id']} · {_p['title']}", "gap": _p["gap"], "done": _p["done"],
+                  "provisional": {"posterior": _p["viability"]["posterior_percent"], "assessor": TURING["assessor"],
+                                  "prior": TURING["prior_percent"], "net_db": _p["viability"]["net_db"],
+                                  "resolvability": _p["resolvability"], "band": _p["band"]}}
+        if _p.get("panel"):
+            _entry["panel"] = _p["panel"]
+        OPEN_PROBLEMS.append(_entry)
+
+
+def turing_graph_nodes(feed: dict, below_y: int) -> tuple[list[dict], list[dict]]:
+    """Inject the Turing open problems as a band: hub -> ten problem nodes, each
+    carrying its resolvability, provisional viability and signed nanopub. Edges from
+    the hub record the provisional posterior as the pre-attempt probability
+    (probStatus provisional_scored, as LA-06), so every later attempt starts from a
+    recorded number. The hub hangs off the two existing Turing results (f3, f5)."""
+    y0 = below_y + 120
+    xs = [20, 255, 490, 735, 975, 1215]
+    n = len(feed["problems"])
+    hub = {"id": "tu0", "x": 610, "y": y0, "status": "open", "family": "Turing open problems",
+           "label": "Turing open problems (1952 →)", "sub": f"{n} field problems · rated on 2 axes · click to see them",
+           "time": feed["snapshot"], "timeKind": "recorded", "source": feed["source"],
+           "detail": ("Problem sourcing run OUTWARD from one historical model: what does the field itself still call open "
+                      "about Turing patterns in biology (Krause–Gaffney–Maini–Klika 2021 theme issue; Landge 2020; Brückner 2026)? "
+                      f"Each of the {n} problems is priced on the repo's two separate axes — resolvability 0-100 by the deterministic "
+                      "Problem-Scout rubric (our tools, data in hand, taste-free done) and a PROVISIONAL single-assessor Delphi "
+                      f"viability posterior (prior {feed['prior_percent']:g}%, deciban ledger; NOT a panel). Those with resolvability >= "
+                      f"{feed['op_threshold_resolvability']} are OP-12.. in the MorphoSwarm queue. Full report: docs/TURING_OPEN_PROBLEMS.md.")}
+    nodes = [hub]
+    edges = [{"from": "f3", "to": "tu0", "agent": "fable", "label": "forward from the Turing flagship debt", "probStatus": "structural"},
+             {"from": "f5", "to": "tu0", "agent": "fable", "label": "generalise the cow null", "probStatus": "structural"}]
+    pmeta = feed.get("panel_meta")
+    if pmeta:  # the panel is its own node, as the Rule 30 Delphi panel (r6) is
+        where_p = {None: "signed, unpublished", "test": "test registry", "prod": "live"}
+        nodes.append({"id": "tu-panel", "x": 975, "y": y0, "status": "solved", "family": "Turing open problems",
+                      "label": "3-provider Delphi panel", "sub": "GPT 5.6 Sol · Gemini 4 Argon · Claude Fable 5.1 — blinded, pooled in log-odds",
+                      "time": pmeta["snapshot"], "timeKind": "recorded", "source": pmeta["source"],
+                      "detail": ("Three independent assessors from three providers (" + ", ".join(f"{a['label']} ({a['provider']})" for a in pmeta["assessors"].values()) +
+                                 ") scored the same blinded packet in parallel on both axes; resolvability totals recomputed from their factor scores, "
+                                 f"viability pooled in log-odds from prior {pmeta['prior_percent']:g}%. The spread is part of the result. Supersedes the provisional "
+                                 "single-assessor pass (each panel nanopub npx:supersedes its provisional one). The panel also caught a packet error on TOP-06 "
+                                 "(a BSW growing-fan model does exist in models/), recorded as a correction, not patched.")})
+        edges.append({"from": "tu0", "to": "tu-panel", "agent": "panel", "label": "blinded 3-provider panel", "probStatus": "structural"})
+    for i, p in enumerate(sorted(feed["problems"], key=_turing_res, reverse=True)):
+        v = p["viability"]; pid = p["id"].lower(); pan = p.get("panel")
+        np_entry = p.get("nanopub") or {}
+        where = {None: "signed, unpublished", "test": "test registry", "prod": "live"}
+        if pan:
+            po, rp = pan["pooled"], pan["resolvability_panel"]
+            sub = f"res {rp['mean']:g} (panel) · viab {po['posterior_percent']:g}% pooled [{po['panel_range_percent'][0]:g}–{po['panel_range_percent'][1]:g}]"
+        else:
+            sub = f"resolvability {p['resolvability']} · viability {v['posterior_percent']}% (provisional)"
+        node = {"id": pid, "x": xs[i % 6], "y": y0 + 100 + (i // 6) * 88, "status": "open", "family": "Turing open problems",
+                "label": f"{p['id']} · {p['slug'].replace('-', ' ')}", "sub": sub,
+                "time": feed["snapshot"], "timeKind": "recorded", "source": feed["source"],
+                "detail": (f"{p['title']} ANCHOR: {p['anchor']}. GAP: {p['gap']} DONE: {p['done']} TOOL ROUTE: {p['tool_route']} "
+                           f"PROVISIONAL (single assessor, {feed['snapshot']}): resolvability {p['resolvability']}/100 ({p['band']}); viability "
+                           f"{v['posterior_percent']}% (prior {feed['prior_percent']:g}%, net {v['net_db']:+g} dB; verdict {v['verdict']}). "
+                           + (f"PANEL ({pan['pooled']['method']}): resolvability mean {rp['mean']:g} (range {rp['range'][0]}–{rp['range'][1]}; {rp['band']}); "
+                              f"pooled viability {po['posterior_percent']:g}% (net {po['net_db']:+g} dB; panel range {po['panel_range_percent'][0]:g}–{po['panel_range_percent'][1]:g}%). "
+                              + " ".join(f"{a['label']}: res {a['resolvability']}, {a['posterior_percent']:g}% ({a['net_db']:+g} dB), {a['verdict']} — {a['note']}" for a in pan["assessors"].values())
+                              + (f" PACKET CORRECTION: {pan['packet_correction']}" if pan.get("packet_correction") else "") if pan else "")
+                           + f" Prior attempts: {p['prior_attempts']}")}
+        nps = []
+        if np_entry.get("nanopub"):
+            nps.append({"label": f"{p['id']} provisional claim + 2 assessments ({where[np_entry.get('published')]})" + (" — superseded by panel" if pan and pan.get("nanopub", {}).get("nanopub") else ""), "uri": np_entry["nanopub"]})
+        if pan and pan.get("nanopub", {}).get("nanopub"):
+            nps.insert(0, {"label": f"{p['id']} 3-provider panel: pooled + 3 viability + 3 resolvability assessments ({where[pan['nanopub'].get('published')]})", "uri": pan["nanopub"]["nanopub"]})
+        if nps:
+            node["nanopubs"] = nps
+        nodes.append(node)
+        edges.append({"from": "tu0", "to": pid, "agent": "fable", "prob": v["posterior_percent"], "probStatus": "provisional_scored",
+                      "probNote": (f"Single-assessor provisional Delphi posterior ({feed['assessor']}), prior {feed['prior_percent']:g}% "
+                                   f"net {v['net_db']:+g} dB, recorded {feed['snapshot']} BEFORE any attempt — NOT a panel score. "
+                                   f"Resolvability {p['resolvability']}/100 by the Problem-Scout rubric is a separate axis.")})
+        if pan:
+            edges.append({"from": "tu-panel", "to": pid, "agent": "panel", "prob": round(po["posterior_percent"], 1), "probStatus": "delphi_scored",
+                          "probNote": (f"3-provider pooled Delphi posterior (log-odds mean; GPT 5.6 Sol {pan['assessors']['gpt-5.6-sol']['posterior_percent']:g}%, "
+                                       f"Gemini 4 Argon {pan['assessors']['gemini-4-argon']['posterior_percent']:g}%, Claude Fable 5.1 {pan['assessors']['claude-fable-5-1']['posterior_percent']:g}%), "
+                                       f"prior {pmeta['prior_percent']:g}%, net {po['net_db']:+g} dB, recorded {pmeta['snapshot']} before any attempt; supersedes the provisional edge. "
+                                       f"Panel resolvability mean {rp['mean']:g}/100 is the separate axis.")})
+    return nodes, edges
+
 
 def load_predictions() -> dict | None:
     """Registered outcome+resolvability predictions (predictions/), with the
@@ -301,7 +433,30 @@ def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> No
                  "source": node["source"], "attempted_by_agent_ids": attempted,
                  "attempted_by": [data["AGENTS"][a]["name"] for a in attempted],
                  "graph_url": f"https://fractastical.github.io/morpholib/problem-graph.html#{op['node']}"}
-        if op["delphi"]:
+        if op.get("panel"):
+            pan = op["panel"]; po = pan["pooled"]; rp = pan["resolvability_panel"]; pv = op["provisional"]
+            entry["attempted_by_agent_ids"] = sorted(set(attempted) | {"panel", "gpt", "gemini", "fable"})
+            entry["attempted_by"] = [data["AGENTS"][a]["name"] for a in entry["attempted_by_agent_ids"]]
+            entry["resolvability"] = {"score": rp["mean"], "band": rp["band"], "panel_range": rp["range"], "provisional_score": pv["resolvability"],
+                                      "rubric": "morphoeval/problem_scout_100.py RUBRIC (deterministic; prices tools, data, done — not truth odds); panel mean of 3 blinded assessors"}
+            entry["viability"] = {"kind": "delphi_panel_posterior_percent", "pooled": po["posterior_percent"],
+                                  "panel_range_percent": po["panel_range_percent"], "prior_percent": po["prior_percent"], "net_db": po["net_db"],
+                                  "assessors": {a: {"label": v["label"], "provider": v["provider"], "posterior_percent": v["posterior_percent"], "verdict": v["verdict"]} for a, v in pan["assessors"].items()},
+                                  "provisional_posterior_percent": pv["posterior"],
+                                  "classification": po["classification"],
+                                  "note": ("Three-provider blinded Delphi panel (GPT 5.6 Sol / Gemini 4 Argon / Claude Fable 5.1), pooled in log-odds; supersedes the provisional "
+                                           "single-assessor posterior (kept for the record). Ledger: morphoeval/audits/2026-10-27-turing-open-problems-panel.yaml. Same colour rule as other Delphi posteriors.")}
+            if pan.get("packet_correction"):
+                entry["packet_correction"] = pan["packet_correction"]
+        elif op.get("provisional"):
+            pv = op["provisional"]
+            entry["resolvability"] = {"score": pv["resolvability"], "band": pv["band"], "rubric": "morphoeval/problem_scout_100.py RUBRIC (deterministic; prices tools, data, done — not truth odds)"}
+            entry["viability"] = {"kind": "provisional_single_assessor_posterior_percent", "pooled": pv["posterior"],
+                                  "assessor": pv["assessor"], "prior_percent": pv["prior"], "net_db": pv["net_db"],
+                                  "classification": "possible_pathway" if pv["posterior"] >= 15 else "below_15_percent",
+                                  "note": ("PROVISIONAL: one assessor, prior 50%, deciban ledger in morphoeval/audits/2026-10-27-turing-open-problems-assessment.yaml. "
+                                           "Not a panel score; a Fable/GPT/Gemini panel pass may supersede it. Same colour rule as Delphi posteriors.")}
+        elif op["delphi"]:
             prize = data["DELPHI"][op["delphi"]]
             entry["viability"] = {"kind": "delphi_bridge_posterior_percent", "pooled": prize["pooled"]["posterior"],
                                   "panel_range_percent": [r["posterior"] for r in prize["agents"]],
@@ -353,13 +508,27 @@ def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> No
         p = v["pooled"]  # same shade scale as the problem graph's probColor: green only >70%
         col = "#0B6E3F" if p >= 80 else "#69B86F" if p >= 70 else "#C9A227" if p >= 50 else "#D98E2B" if p >= 30 else "#C45A24" if p >= 15 else "#B03A2E" if p >= 5 else "#7E1F2B"
         cls = "STRONG" if p >= 80 else "PLAUSIBLE" if p >= 70 else "POSSIBLE BUT WEAK" if v["classification"] == "possible_pathway" else "LOW PROBABILITY"
-        return f'<span class="badge" style="background:{col}">{v["pooled"]}% · {cls}</span>'
+        prov = " · PROVISIONAL (1 assessor)" if v["kind"].startswith("provisional") else ""
+        return f'<span class="badge" style="background:{col}">{v["pooled"]}% · {cls}{prov}</span>'
     cards = []
     for p in problems:
         rng = ""
-        if p["viability"]["kind"] != "not_scored":
+        if p["viability"]["kind"] == "delphi_bridge_posterior_percent":
             vals = p["viability"]["panel_range_percent"]
             rng = f'<p class="small mut">Panel range: {min(vals)}% – {max(vals)}% (individual agents can sit in a different shade band from the pooled value — the spread is the range of opinion)</p>'
+        elif p["viability"]["kind"] == "delphi_panel_posterior_percent":
+            vals = p["viability"]["panel_range_percent"]; r = p["resolvability"]
+            per = " · ".join(f'{a["label"].split(" (")[0]} {a["posterior_percent"]:g}%' for a in p["viability"]["assessors"].values())
+            rng = (f'<p class="small mut">Resolvability <b>{r["score"]:g}/100 · {r["band"]}</b> (panel mean of 3, range {r["panel_range"][0]}–{r["panel_range"][1]}; provisional was {r["provisional_score"]}) · '
+                   f'Panel range: {min(vals):g}% – {max(vals):g}% ({per}); provisional single-assessor posterior was {p["viability"]["provisional_posterior_percent"]}%, now superseded. '
+                   f'Full ledger: <a href="TURING_OPEN_PROBLEMS.md">TURING_OPEN_PROBLEMS.md</a></p>'
+                   + (f'<p class="small" style="color:#B03A2E"><b>Packet correction (found by the panel):</b> {p["packet_correction"]}</p>' if p.get("packet_correction") else ""))
+        elif p["viability"]["kind"].startswith("provisional"):
+            r = p["resolvability"]
+            rng = (f'<p class="small mut">Resolvability <b>{r["score"]}/100 · {r["band"]}</b> (deterministic rubric, separate axis) · '
+                   f'viability is a single-assessor provisional posterior ({p["viability"]["assessor"]}; prior {p["viability"]["prior_percent"]:g}%, '
+                   f'net {p["viability"]["net_db"]:+g} dB) — not a panel; Delphi-panel it before quoting it as one. '
+                   f'Full ledger: <a href="TURING_OPEN_PROBLEMS.md">TURING_OPEN_PROBLEMS.md</a></p>')
         cards.append(f"""<div class="card" id="{p['id']}"><div class="row"><b>{p['id']} · {p['title']}</b>{badge(p['viability'])}</div>
 <p class="small"><b>The gap:</b> {p['gap']}</p><p class="small"><b>Definition of done:</b> {p['done']}</p>{rng}
 <p class="small mut">Attempted so far by: {', '.join(p['attempted_by']) or 'no recorded attempt'} · Source: {p['source']} · <a href="{p['graph_url']}">graph node</a></p></div>""")
@@ -481,7 +650,7 @@ def main() -> None:
     if out.returncode != 0:
         sys.exit(out.stderr)
     data = json.loads(out.stdout)
-    errs = validate(data)
+    errs = validate(data, ops=False)  # OP -> node check runs on the final merged graph below
     if errs:
         sys.exit("REFUSING TO BUILD — data failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
     print(f"self-checks passed: {len(data['NODES'])} nodes, {len(data['EDGES'])} edges, "
@@ -492,7 +661,7 @@ def main() -> None:
         data["AGENTS"]["wonder"] = {"name": "Muse Wonder", "role": "Protein-state pilot, prediction registry, resolution scoring (this branch of work)"}
         n0, e0 = prediction_graph_nodes(pred)
         data["NODES"] += n0; data["EDGES"] += e0
-        errs = validate(data)
+        errs = validate(data, ops=False)
         if errs:
             sys.exit("REFUSING TO BUILD — merged graph (with predictions) failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
         print(f"integrated predictions into graph: +{len(n0)} nodes, +{len(e0)} edges (hub -> 3 organisms -> {len(pred['predictions'])} predictions + meta)")
@@ -501,10 +670,18 @@ def main() -> None:
         data["AGENTS"].setdefault("wonder", {"name": "Muse Wonder", "role": "Protein-state pilot, prediction registry, claims browsing (this branch of work)"})
         tn, te = thompson_graph_nodes(thomp)
         data["NODES"] += tn; data["EDGES"] += te
-        errs = validate(data)
+        errs = validate(data, ops=False)
         if errs:
             sys.exit("REFUSING TO BUILD — merged graph (with Thompson claims) failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
         print(f"integrated Thompson claims into graph: +{len(tn)} nodes (hub + {len(tn) - 1} chapter categories), {thomp['n']} claims browsable")
+    if TURING:
+        un, ue = turing_graph_nodes(TURING, max(n["y"] for n in data["NODES"]))
+        data["NODES"] += un; data["EDGES"] += ue
+        print(f"integrated Turing open problems into graph: +{len(un)} nodes (hub + {len(un) - 1} problems), "
+              f"+{len(ue)} edges, {sum(1 for n in un if n.get('nanopubs'))} with signed nanopubs")
+    errs = validate(data, ops=True)  # final merged graph: every OP must point at a real node
+    if errs:
+        sys.exit("REFUSING TO BUILD — merged graph failed self-checks:\n" + "\n".join(f" - {e}" for e in errs))
     html = TEMPLATE.replace("/*__SUMMARY__*/", summary_html)
     html = html.replace("/*__DATA__*/", "const DATA = " + json.dumps(data) + ";")
     html = html.replace("/*__PRED__*/", "const PRED = " + json.dumps(pred) + ";")
