@@ -1,0 +1,47 @@
+sim_id: delphi10000-gekko-gecko-turing-wavelength-s0
+organism: Gekko gecko
+age_ma: 0
+scale_um: 242
+math_family: Reaction-Diffusion & Turing Dispersion
+model_spec:
+  sim_id: delphi10000-gekko-gecko-turing-wavelength-s0
+  seed: 3235
+  lambda_um: 242.0
+  age_ma: 0.0
+  a: 0.137
+  b: 0.863
+  ratio_margin: 1.35
+  domain_wavelengths: [8.0, 6.0]
+  grid: [128, 96]
+  inputs:
+    - datasets/gekko_gecko_turing_wavelength_s0/Gekko_gecko_dorsum_cc-by-sa.jpg
+    - datasets/gekko_gecko_turing_wavelength_s0/Gekko_gecko_full_cc-by-sa.jpg
+    - datasets/gekko_gecko_turing_wavelength_s0/gekko_gecko_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Turing growth-rate maximizer
+    formula: "k_c = argmax_k sigma(k), sigma from det(sigma I - (J - k^2 D)) = 0, lambda_c = 2 pi / k_c = 242 um"
+    lean_decl: MathOfBiology.Loop_3235.lambdaUm
+    lean_theorem: MathOfBiology.Loop_3235.detail_wavelength_exceeds_tier_center
+    lean_locus: morphoeval/lean/loops/Loop_3235_gekko_gecko_turing_wavelength_s0.lean#L12-L35
+    variables: "u, v activator and inhibitor; D_u, D_v diffusivities; k wavenumber"
+    role: Selects the 242 um ocellus wavelength on the Holocene Tokay primordium
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+    code_locus: models/2026-delphi10000-gekko-gecko-turing-wavelength-s0.py#L119-L185
+  - law_name: Onset wavenumber shortcut
+    formula: "k_onset^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); equals k_c only on the Turing threshold"
+    lean_decl: MathOfBiology.Loop_3235.ratioMarginPpt
+    lean_theorem: MathOfBiology.Loop_3235.supercritical_margin
+    lean_locus: morphoeval/lean/loops/Loop_3235_gekko_gecko_turing_wavelength_s0.lean#L21-L54
+    variables: "f_u, g_v Jacobian entries; diffusion ratio r = D_v/D_u"
+    role: Records that the operating ratio is supercritical (1350 > 1000 parts per thousand)
+    source_citation: "Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+    code_locus: models/2026-delphi10000-gekko-gecko-turing-wavelength-s0.py#L150-L195
+  - law_name: Mode-count drop versus the 100 um tier center
+    formula: "N(lambda) proportional to 1/lambda^2; (100/242)^2 < 1/5"
+    lean_decl: MathOfBiology.Loop_3235.tierCenterUm
+    lean_theorem: MathOfBiology.Loop_3235.mode_count_falls_versus_tier_center
+    lean_locus: morphoeval/lean/loops/Loop_3235_gekko_gecko_turing_wavelength_s0.lean#L42-L50
+    variables: "lambda_um = 242, tier_center_um = 100, age_ma = 0"
+    role: States what changes at this scale versus the tier center, on a chronoseries with no other node
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-gekko-gecko-turing-wavelength-s0.py#L70-L84
