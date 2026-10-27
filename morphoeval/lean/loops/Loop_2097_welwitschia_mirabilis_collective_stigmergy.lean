@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.42 m (1.423 m, 8_colonial_m)
   Geological Horizon: Holocene (Extant) (0.0 Ma)
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2097
 

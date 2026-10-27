@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 8.1 cm (0.08148 m, 7_organism_cm)
   Geological Horizon: Middle Eocene (Lutetian, 46.0 Ma) (46.0 Ma)
   Cohort: VI. Branching Morphogenesis & Vascular Networks
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1675
 

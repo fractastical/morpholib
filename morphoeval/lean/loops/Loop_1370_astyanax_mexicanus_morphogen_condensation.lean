@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 109 µm (0.0001088 m, 5_primordium_100um)
   Geological Horizon: Holocene Cave Morph (Extant) (0.0 Ma)
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1370
 

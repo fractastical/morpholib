@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 16 µm (1.562e-05 m, 4_cellular_10um)
   Anatomical Structure: Single-cell distal vertex Multiple-wing-hairs / Shavenbaby F-actin prehair cone (32 h APF Pupal Wing Blade Hexagonal Cell (FBbt:00004729)) · FlyBase pupal_wing_distal_trichome_array
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2318
 

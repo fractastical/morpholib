@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 608 nm (6.084e-07 m, 2_macromolecular_100nm)
   Anatomical Structure: Centrosomin (Cnn) / Polo pericentriolar scaffold & astral microtubule exclusion zone (Nuclear Cycle 10–13 Cortical Syncytial Division (FBdv:00005292)) · BDGP syncytial_mitotic_wave_centrosome_lattice
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2231
 

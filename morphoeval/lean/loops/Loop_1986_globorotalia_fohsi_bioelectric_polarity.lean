@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 312 nm (3.125e-07 m, 2_macromolecular_100nm)
   Geological Horizon: Middle Miocene (Serravallian, 12.7 Ma) (12.7 Ma)
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1986
 

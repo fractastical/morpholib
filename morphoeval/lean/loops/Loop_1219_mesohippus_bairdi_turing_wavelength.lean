@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 5.0 mm (0.00505 m, 6_organ_mm)
   Geological Horizon: Late Eocene (Chadronian, 35.0 Ma) (35.0 Ma)
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1219
 

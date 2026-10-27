@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 390 µm (0.00039 m, 5_primordium_100um)
   Anatomical Structure: 500×180 µm prolate-spheroid blastoderm with 4 gap domains (hb, Kr, kni, gt), 7 pair-rule & 14 En stripes (Stage 5 Cellular Blastoderm Whole Egg Shell (FBdv:00005297)) · BDGP Virtual_Embryo_6000_cell_3D_gene_expression_atlas
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2551
 

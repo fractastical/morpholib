@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 564 µm (0.0005638 m, 5_primordium_100um)
   Anatomical Structure: Complete 139,255-neuron, 54.5-million-synapse, 8,453-cell-type whole-brain wiring diagram & 78 neuropils (Adult Female Whole Brain Synaptic Connectome (FBbt:00003624)) · FlyWire v783_whole_brain_connectome_graph
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2565
 

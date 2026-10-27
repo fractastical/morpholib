@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 116 µm (0.0001159 m, 5_primordium_100um)
   Anatomical Structure: Ultrabithorax (Ubx)-repressed hindwing capitellum & 335 strain-sensing campaniform sensilla rows (Adult Metathoracic Haltere Gyroscopic Organ (FBbt:00004501)) · FlyBase metathoracic_haltere_Ubx_chromatin_target
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2492
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.05 m (1.051 m, 8_colonial_m)
   Anatomical Structure: Optomotor wind-sensing + Or42b/Or92a apple-cider-vinegar plume intermittency cast-and-surge flight field (Turbulent Plume Anemotactic Flight Trajectory (FBbt:00003629)) · FlyWire olfactory_LH_MB_CX_navigation_pathway
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2693
 

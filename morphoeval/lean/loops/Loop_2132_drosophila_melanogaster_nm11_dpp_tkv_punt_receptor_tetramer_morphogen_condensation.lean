@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 9.1 nm (9.108e-09 m, 1_molecular_nm)
   Anatomical Structure: Decapentaplegic (Dpp)–Scw heterodimer bound to Thickveins–Punt BMP receptor tetramer (Third-Instar Wing Imaginal Disc Pouch (FBbt:00005012)) · FlyCellAtlas wing_disc_pouch_pMad_gradient_zone
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2132
 

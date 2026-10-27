@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 3.3 nm (3.276e-09 m, 1_molecular_nm)
   Anatomical Structure: Bicoid homeodomain–hunchback P2 enhancer cooperative DNA binding site (Nuclear Cycle 11–14 Syncytial Blastoderm (FBdv:00005295)) · BDGP blastoderm_anterior_cap & Bcd_ChIP_nexus_cluster
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2111
 

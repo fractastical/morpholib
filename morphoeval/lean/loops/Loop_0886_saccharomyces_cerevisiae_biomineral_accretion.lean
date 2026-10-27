@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0886_saccharomyces_cerevisiae_biomineral_accretion.lean — Formal Verification for Slot #0886 (Saccharomyces cerevisiae)
   Cohort: VIII. Biomineralization, Shells & Spicules
   Governing Mathematics: Logarithmic Helicospiral Accretion & Biomineral Geometry
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0886
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 107 µm (0.0001071 m, 5_primordium_100um)
   Anatomical Structure: Bilateral Tinman/Seven-up 52-cardioblast rows zipping into a pulsatile luminal heart tube (Stage 16 Embryonic & Adult Dorsal Vessel Heart (FBbt:00003154)) · FlyCellAtlas cardiac_tinman_ostia_cardioblast_tube
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2459
 

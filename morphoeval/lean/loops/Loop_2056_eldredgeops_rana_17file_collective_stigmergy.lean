@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 803 µm (0.0008032 m, 5_primordium_100um)
   Geological Horizon: Middle Devonian (Tioughniogan, 384 Ma) (384.0 Ma)
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2056
 

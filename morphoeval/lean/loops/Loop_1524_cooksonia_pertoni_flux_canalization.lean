@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 454 µm (0.0004545 m, 5_primordium_100um)
   Geological Horizon: Late Silurian (Wenlock-Ludlow, 425 Ma) (425.0 Ma)
   Cohort: IV. Phyllotaxis, Auxin & Plant Mechanics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1524
 

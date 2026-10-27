@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.6 mm (0.001605 m, 6_organ_mm)
   Anatomical Structure: Biomineralized shell whorl / spicule / test in Drosophila persimilis (Pacific Coast Sister Obscura Fly)
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2898
 

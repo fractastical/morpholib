@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 63 µm (6.305e-05 m, 4_cellular_10um)
   Geological Horizon: Holocene (Extant) (0.0 Ma)
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1564
 

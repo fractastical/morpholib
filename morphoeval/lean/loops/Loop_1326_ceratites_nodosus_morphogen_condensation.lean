@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 4.9 mm (0.004896 m, 6_organ_mm)
   Geological Horizon: Middle Triassic (Ladinian, 240 Ma) (240.0 Ma)
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1326
 

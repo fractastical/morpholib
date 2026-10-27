@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 144 µm (0.0001445 m, 5_primordium_100um)
   Anatomical Structure: Propagating Hedgehog/Dpp morphogenetic furrow wave & Atonal R8 lateral-inhibition lattice (Third-Instar Eye-Antennal Imaginal Disc (FBbt:00001769)) · FlyCellAtlas eye_disc_morphogenetic_furrow_atonal_wave
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2503
 

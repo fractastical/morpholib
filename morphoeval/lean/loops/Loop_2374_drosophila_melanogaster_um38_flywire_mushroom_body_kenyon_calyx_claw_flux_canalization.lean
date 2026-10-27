@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 35 µm (3.511e-05 m, 4_cellular_10um)
   Anatomical Structure: Kenyon cell dendritic claw wrapping a single cholinergic projection neuron (PN) bouton (Adult Brain Mushroom Body Calyx Microglomerulus (FBbt:00003686)) · FlyWire MB_calyx_PN_KC_APL_microglomerulus
   Cohort: IV. Phyllotaxis, Auxin & Plant Mechanics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2374
 

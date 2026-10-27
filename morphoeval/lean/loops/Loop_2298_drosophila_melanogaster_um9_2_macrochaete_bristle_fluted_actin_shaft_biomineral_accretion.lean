@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 10 µm (1.027e-05 m, 4_cellular_10um)
   Anatomical Structure: Singed/Forked cross-linked 11-flute cortical F-actin bundle & chitinous bristle shaft (32–44 h APF Pupal Notum Mechanosensory Bristle (FBbt:00005168)) · FlyBase thoracic_macrochaete_shaft_actin_ribs
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2298
 

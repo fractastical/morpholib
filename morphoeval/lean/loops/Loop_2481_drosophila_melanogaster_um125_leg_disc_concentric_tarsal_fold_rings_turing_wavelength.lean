@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 98 µm (9.75e-05 m, 4_cellular_10um)
   Anatomical Structure: Distal-less / Dachshund / Rotund concentric rings & Notch-activated apoptotic myosin joint folds (Late Third-Instar & Prepupa Leg Imaginal Disc (FBbt:00001780)) · FlyCellAtlas leg_imaginal_disc_tarsal_joint_rings
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2481
 

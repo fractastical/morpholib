@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 142 µm (0.0001417 m, 5_primordium_100um)
   Geological Horizon: Late Miocene (Truckee Fm, 10.02 Ma) (10.02 Ma)
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1567
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 804 µm (0.0008035 m, 5_primordium_100um)
   Geological Horizon: Middle Devonian (Cazenovian, 387 Ma) (387.0 Ma)
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2055
 

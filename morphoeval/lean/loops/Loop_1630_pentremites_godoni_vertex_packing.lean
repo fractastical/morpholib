@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 49 µm (4.905e-05 m, 4_cellular_10um)
   Geological Horizon: Mississippian (Chesterian, 330 Ma) (330.0 Ma)
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1630
 

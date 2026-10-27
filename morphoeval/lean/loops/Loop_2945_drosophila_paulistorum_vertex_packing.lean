@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 5.7 µm (5.693e-06 m, 3_subcellular_um)
   Anatomical Structure: Apical epithelial cell vertex polygon in Drosophila paulistorum (Amazonian Incipient Semispecies Ring Complex Fly)
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2945
 

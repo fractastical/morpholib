@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 366 µm (0.0003662 m, 5_primordium_100um)
   Geological Horizon: Silurian (Wenlock Epoch, 428.5 Ma) (428.5 Ma)
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1422
 

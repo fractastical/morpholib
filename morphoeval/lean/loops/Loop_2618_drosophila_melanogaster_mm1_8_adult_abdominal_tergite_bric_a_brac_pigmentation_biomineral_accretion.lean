@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.0 mm (0.002009 m, 6_organ_mm)
   Anatomical Structure: Abd-B / Doublesex / Bric-a-brac (bab1/bab2) regulated Yellow/Ebony/Tan melanic stripe & male A5–A6 blackening (Adult Abdominal Tergites A1–A7 Cuticle (FBbt:00004628)) · FlyBase abdominal_tergite_melanin_regulatory_network
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2618
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.9 cm (0.02866 m, 7_organism_cm)
   Geological Horizon: Late Ediacaran (Newfoundland, 565 Ma) (565.0 Ma)
   Cohort: VI. Branching Morphogenesis & Vascular Networks
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1701
 

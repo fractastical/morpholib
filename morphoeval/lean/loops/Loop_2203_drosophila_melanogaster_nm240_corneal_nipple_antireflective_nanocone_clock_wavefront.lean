@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 210 nm (2.102e-07 m, 2_macromolecular_100nm)
   Anatomical Structure: Retinin–wax corneal nipple nanocone hexagonal anti-reflective array (240 nm pitch) (Adult Compound Eye Corneal Lens Surface (FBbt:00004514)) · FlyBase ommatidial_corneal_lens_nanostructure
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2203
 

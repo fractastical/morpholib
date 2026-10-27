@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 24 µm (2.421e-05 m, 4_cellular_10um)
   Geological Horizon: Middle Miocene (Serravallian, 13.4 Ma) (13.4 Ma)
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1445
 

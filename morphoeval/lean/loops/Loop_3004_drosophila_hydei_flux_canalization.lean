@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 732 µm (0.0007324 m, 5_primordium_100um)
   Anatomical Structure: Auxin flux vein / phyllotactic primordium in Drosophila hydei (Giant-Sperm Repleta Fly)
   Cohort: IV. Phyllotaxis, Auxin & Plant Mechanics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_3004
 

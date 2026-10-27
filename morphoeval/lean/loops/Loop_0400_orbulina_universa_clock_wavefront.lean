@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0400_orbulina_universa_clock_wavefront.lean — Formal Verification for Slot #0400 (Orbulina universa)
   Cohort: III. Segmentation Clock & Wavefront
   Governing Mathematics: Phase Oscillator & Wavefront Kinematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0400
 

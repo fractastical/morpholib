@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 93 µm (9.341e-05 m, 4_cellular_10um)
   Anatomical Structure: Turing pigment stripe / ocellus wavelength in Drosophila kikkawai (Circumtropical Montium Fly)
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2871
 

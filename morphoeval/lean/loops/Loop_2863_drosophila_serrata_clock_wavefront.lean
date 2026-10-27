@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 184 µm (0.0001845 m, 5_primordium_100um)
   Anatomical Structure: Segmentation clock somite / metamere unit in Drosophila serrata (Australasian Montium-Subgroup Fly)
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2863
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 61 µm (6.084e-05 m, 4_cellular_10um)
   Anatomical Structure: Forkhead/Scr-specified ~100-cell circular placode with eccentric dorsal-posterior invagination pit (Stage 11 Ventral Parasegment 2 Ectodermal Placode (FBbt:00000129)) · BDGP salivary_gland_placode_radial_myosin_corral
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2431
 

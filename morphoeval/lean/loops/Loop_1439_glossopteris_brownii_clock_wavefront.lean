@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 4.1 mm (0.004092 m, 6_organ_mm)
   Geological Horizon: Late Permian (Gondwana, 260 Ma) (260.0 Ma)
   Cohort: III. Segmentation Clock & Wavefront
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1439
 

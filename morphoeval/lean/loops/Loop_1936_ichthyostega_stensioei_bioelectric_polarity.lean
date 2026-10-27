@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 110 µm (0.0001104 m, 5_primordium_100um)
   Geological Horizon: Late Devonian (Famennian, 363 Ma) (363.0 Ma)
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1936
 

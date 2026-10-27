@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.5 mm (0.001496 m, 6_organ_mm)
   Anatomical Structure: Biomineralized shell whorl / spicule / test in Drosophila deflecta (Water-Lily Quinaria-Group Fly)
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_3028
 

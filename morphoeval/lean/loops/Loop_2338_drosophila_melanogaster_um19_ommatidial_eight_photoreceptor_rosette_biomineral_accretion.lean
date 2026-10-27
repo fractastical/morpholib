@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 21 µm (2.12e-05 m, 4_cellular_10um)
   Anatomical Structure: R8 founder + R2/R5, R3/R4, R1/R6, R7 photoreceptors + 4 Semper cone cells + 2 primary pigment cells (Third-Instar & 40 h APF Retinal Ommatidial Precluster (FBbt:00004510)) · FlyCellAtlas retinal_ommatidial_19_cell_unit
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2338
 

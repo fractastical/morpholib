@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 4.0 mm (0.003984 m, 6_organ_mm)
   Anatomical Structure: Collective swarm / biofilm / colonial array in Drosophila mauritiana (Mauritius Endemic Fruit Fly)
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2730
 

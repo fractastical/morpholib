@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 253 µm (0.0002527 m, 5_primordium_100um)
   Anatomical Structure: Synthesis–diffusion–degradation (SDD) Bicoid exponential morphogen gradient (lambda = 100–260 µm) (Nuclear Cycle 14 Syncytial Blastoderm AP Axis (FBdv:00005297)) · BDGP bicoid_hunchback_caudal_AP_positional_information
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2525
 

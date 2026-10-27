@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 514 µm (0.0005138 m, 5_primordium_100um)
   Anatomical Structure: Elastic bilayer fold / wrinkle / suture wavelength in Drosophila kikkawai (Circumtropical Montium Fly)
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2877
 

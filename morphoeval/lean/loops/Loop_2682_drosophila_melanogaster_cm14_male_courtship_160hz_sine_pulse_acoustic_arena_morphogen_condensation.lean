@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 11.6 cm (0.1159 m, 7_organism_cm)
   Anatomical Structure: Fruitless/Doublesex P1->pIP10->TN1 circuit driving 160 Hz sine song & 35 ms inter-pulse interval wave train (Unilateral Wing-Extension Courtship Arena (FBbt:00003624)) · FlyWire courtship_P1_pIP10_vPR6_descending_circuit
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2682
 

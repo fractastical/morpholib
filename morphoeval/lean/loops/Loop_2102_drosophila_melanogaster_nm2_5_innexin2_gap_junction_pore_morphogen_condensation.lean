@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.1 nm (2.07e-09 m, 1_molecular_nm)
   Anatomical Structure: Innexin-2 / Ogre octameric gap-junction hemichannel pore & V_mem gate (Stage 5–10 Epithelial & Oocyte Soma–Germline (FBdv:00005318)) · FlyCellAtlas follicle_epithelium & germline_cyst_innexin2
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2102
 

@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0181_neurospora_crassa_turing_wavelength.lean — Formal Verification for Slot #0181 (Neurospora crassa)
   Cohort: I. Reaction-Diffusion & Stripe Splitting
   Governing Mathematics: Reaction-Diffusion & Turing Dispersion
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0181
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 240 µm (0.0002404 m, 5_primordium_100um)
   Geological Horizon: Pliocene-Holocene (5.3–0 Ma) (0.0 Ma)
   Cohort: VI. Branching Morphogenesis & Vascular Networks
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1718
 

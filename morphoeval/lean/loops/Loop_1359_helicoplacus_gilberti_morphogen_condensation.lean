@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 6.0 mm (0.006048 m, 6_organ_mm)
   Geological Horizon: Early Cambrian (Poleta Fm, 516 Ma) (516.0 Ma)
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1359
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 69 nm (6.942e-08 m, 2_macromolecular_100nm)
   Anatomical Structure: Bruchpilot (ELKS/CAST) T-bar active-zone pedestal & tethered 40 nm synaptic vesicles (Larval NMJ & Adult FlyWire Presynaptic Active Zone (FBbt:00005146)) · FlyWire presynaptic_T_bar_ribbon & Cacophony_Ca_channel_ring
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2177
 

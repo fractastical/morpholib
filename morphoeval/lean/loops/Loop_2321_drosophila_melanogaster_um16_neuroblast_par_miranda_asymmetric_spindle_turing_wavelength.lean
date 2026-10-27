@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 12 µm (1.248e-05 m, 4_cellular_10um)
   Anatomical Structure: Apical Bazooka/Par6/aPKC – basal Miranda/Prospero/Numb crescent & asymmetric GMC spindle (Stage 10 Embryonic & Larval Type-I Neuroblast (FBbt:00005147)) · FlyCellAtlas central_brain_type_I_neuroblast_lineage
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2321
 

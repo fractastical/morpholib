@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 21 nm (2.095e-08 m, 1_molecular_nm)
   Anatomical Structure: Frizzled–Flamingo–Van Gogh–Dishevelled asymmetric apical junctional PCP complex (24–30 h APF Pupal Wing Planar Cell Polarity (FBdv:00005380)) · FlyBase pupal_wing_proximal_distal_PCP_junction
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2149
 

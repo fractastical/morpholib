@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0805_giraffa_camelopardalis_biomineral_accretion.lean — Formal Verification for Slot #0805 (Giraffa camelopardalis)
   Cohort: VIII. Biomineralization, Shells & Spicules
   Governing Mathematics: Logarithmic Helicospiral Accretion & Biomineral Geometry
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0805
 

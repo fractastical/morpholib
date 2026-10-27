@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.2 cm (0.01166 m, 7_organism_cm)
   Anatomical Structure: Attached leading-edge vortex (LEV), rotational Kramer circulation & wake-capture vortex dipole (Free-Flight 218 Hz Wingbeat Aerodynamic Field (FBbt:00004729)) · FlyBase flight_aerodynamics_Robofly_Dickinson_wake
   Cohort: V. Vertex Models, Jamming & Active Nematics
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2665
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 3.7 cm (0.03728 m, 7_organism_cm)
   Geological Horizon: Late Devonian (Frasnian, 375 Ma) (375.0 Ma)
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1304
 

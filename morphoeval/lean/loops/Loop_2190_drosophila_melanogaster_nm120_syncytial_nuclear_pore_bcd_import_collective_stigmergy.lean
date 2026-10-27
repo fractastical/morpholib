@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 145 nm (1.454e-07 m, 2_macromolecular_100nm)
   Anatomical Structure: Nuclear pore complex Nup107-160 octameric ring & Bicoid/Dorsal nuclear import gate (Nuclear Cycle 13–14 Syncytial Blastoderm Cortex (FBdv:00005294)) · BDGP syncytial_blastoderm_nuclear_envelope_array
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2190
 

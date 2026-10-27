@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.5 cm (0.01496 m, 7_organism_cm)
   Geological Horizon: Middle Triassic (Ladinian, 240 Ma) (240.0 Ma)
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1866
 

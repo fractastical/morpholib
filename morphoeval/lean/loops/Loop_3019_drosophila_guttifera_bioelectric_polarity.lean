@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.0 µm (2.046e-06 m, 3_subcellular_um)
   Anatomical Structure: Gap-junction bioelectric domain & ion-channel patch in Drosophila guttifera (Polka-Dotted 16-Spot Wing Fly)
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_3019
 

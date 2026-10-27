@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 395 µm (0.0003947 m, 5_primordium_100um)
   Anatomical Structure: Morphogen gradient & pre-cartilage condensation zone in Drosophila sechellia (Seychelles Morinda-Specialist Fly)
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2712
 

@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_0760_echinarachnius_parma_elastic_buckling.lean — Formal Verification for Slot #0760 (Echinarachnius parma)
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
   Governing Mathematics: Elastic Bilayer Buckling & Differential Growth
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_0760
 

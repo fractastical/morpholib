@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 203 nm (2.029e-07 m, 2_macromolecular_100nm)
   Anatomical Structure: Helicoidal Bouligand alpha-chitin microfibril–Knickkopf lamella pitch (48–72 h APF Pupal Cuticle Chitin-Protein Deposition (FBbt:00004970)) · FlyCellAtlas epidermal_chitin_synthase_kkv_layer
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2197
 

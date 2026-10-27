@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 1.0 µm (1.046e-06 m, 3_subcellular_um)
   Geological Horizon: Early Cretaceous (Yixian Fm, 124.6 Ma) (124.6 Ma)
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1948
 

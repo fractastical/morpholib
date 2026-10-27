@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 2.7 mm (0.002666 m, 6_organ_mm)
   Anatomical Structure: L1–L5 longitudinal veins (Egfr/Rhomboid/Dpp proveins) + anterior/posterior crossveins (ACV/PCV Sog/Bmp) (Adult Wing Blade Cuticular Venation (FBbt:00004729)) · FlyBase wing_venation_L1_L5_ACV_PCV_morphometrics
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2630
 

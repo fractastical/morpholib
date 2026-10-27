@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 151 µm (0.0001512 m, 5_primordium_100um)
   Geological Horizon: Early Eocene (Ypresian, 51.5 Ma) (51.5 Ma)
   Cohort: IX. Bioelectric Regeneration & Neural Maps
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1926
 

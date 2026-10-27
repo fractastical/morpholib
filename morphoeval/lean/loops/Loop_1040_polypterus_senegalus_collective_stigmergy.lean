@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_1040_polypterus_senegalus_collective_stigmergy.lean — Formal Verification for Slot #1040 (Polypterus senegalus)
   Cohort: X. Collective Migration, Biofilms & Eusocial Nests
   Governing Mathematics: Keller-Segel Chemotaxis & Stigmergic Self-Organization
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1040
 

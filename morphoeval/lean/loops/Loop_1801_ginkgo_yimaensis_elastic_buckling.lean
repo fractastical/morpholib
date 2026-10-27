@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 8.0 mm (0.007999 m, 6_organ_mm)
   Geological Horizon: Middle Jurassic (Yima Fm, 170 Ma) (170.0 Ma)
   Cohort: VII. Mechanical Folding, Wrinkling & Buckling
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1801
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 357 nm (3.57e-07 m, 2_macromolecular_100nm)
   Anatomical Structure: Circumferential F-actin ring & chitinous taenidial supracellular ridge period (Stage 16 Embryonic & Larval Tracheal Dorsal Trunk (FBbt:00002298)) · FlyBase tracheal_luminal_taenidia_formins_DAAM
   Cohort: VI. Branching Morphogenesis & Vascular Networks
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2216
 

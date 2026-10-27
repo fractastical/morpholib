@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 212 µm (0.0002116 m, 5_primordium_100um)
   Geological Horizon: Holocene Cave Morph (Extant) (0.0 Ma)
   Cohort: VI. Branching Morphogenesis & Vascular Networks
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1730
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 5.3 µm (5.304e-06 m, 3_subcellular_um)
   Anatomical Structure: Slam/Nullo/Myosin-II hexagonal furrow-canal actomyosin network (~6,000 cells) (Nuclear Cycle 14a Cellularizing Blastoderm (FBdv:00005296)) · BDGP cycle14_cellularization_hexagonal_mesh
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2281
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 215 µm (0.0002148 m, 5_primordium_100um)
   Geological Horizon: Middle Miocene (Serravallian, 12.7 Ma) (12.7 Ma)
   Cohort: VIII. Biomineralization, Shells & Spicules
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1896
 

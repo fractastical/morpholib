@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 3.5 mm (0.003532 m, 6_organ_mm)
   Geological Horizon: Mississippian (Chesterian, 330 Ma) (330.0 Ma)
   Cohort: II. Limb Bud, Skeletal & Cranial Morphogenesis
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1360
 

@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 8.6 µm (8.58e-06 m, 3_subcellular_um)
   Anatomical Structure: Apical adherens polygon (p_0 = 3.72–3.85) under Dachs/Myosin-II cortical tension (Late Third-Instar Wing Imaginal Disc Pouch (FBbt:00005012)) · FlyCellAtlas wing_pouch_columnar_epithelium_vertex
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_2301
 

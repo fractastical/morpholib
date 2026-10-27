@@ -2,6 +2,7 @@
   morphoeval/lean/loops/Loop_1000_orbulina_universa_bioelectric_polarity.lean — Formal Verification for Slot #1000 (Orbulina universa)
   Cohort: IX. Bioelectric Regeneration & Neural Maps
   Governing Mathematics: Bioelectric Gap-Junction Bistability & Polarity
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1000
 

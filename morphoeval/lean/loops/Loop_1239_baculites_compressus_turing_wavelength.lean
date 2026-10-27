@@ -3,6 +3,7 @@
   Characteristic Phenomenon Scale: 4.3 mm (0.004268 m, 6_organ_mm)
   Geological Horizon: Late Cretaceous (Pierre Shale, 73.5 Ma) (73.5 Ma)
   Cohort: I. Reaction-Diffusion & Stripe Splitting
+  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
 -/
 namespace MathOfBiology.Loop_1239
 
