@@ -1,0 +1,141 @@
+# Pass 2 — closes the Pass 1 remediation list.
+# Supersedes 2026-10-27-bauhinia-variegata-turing-wavelength-s0-audit.
+# Rubric weighted mean is 87.3.
+audit:
+  id: 2026-10-27-bauhinia-variegata-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-bauhinia-variegata-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-bauhinia-variegata-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 1be9d1632617bfa381920e55b36a9ded7b0ab958
+    note: "Pass 2. Evidence paths are in this commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: "10.1016/0022-5193(79)90042-0"
+    year: 1979
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: "10.1007/BF00289234"
+    year: 1972
+  maini1997:
+    title: "Spatial pattern formation in chemical and biological systems"
+    authors: "Maini PK, Painter KJ, Chau HNP"
+    venue: "Journal of the Chemical Society, Faraday Transactions 93:3601-3610 (1997)"
+    doi: "10.1039/a702602a"
+    year: 1997
+  kondo2010:
+    title: "Reaction-Diffusion Model as a Framework for Understanding Biological Pattern Formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: "10.1126/science.1179047"
+    year: 2010
+  armon2011:
+    title: "Geometry and Mechanics in the Opening of Chiral Seed Pods"
+    authors: "Armon S, Efrati E, Kupferman R, Sharon E"
+    venue: "Science 333:1726-1730 (2011)"
+    doi: "10.1126/science.1203874"
+    year: 2011
+simulations:
+  - id: delphi10000-bauhinia-variegata-turing-wavelength-s0
+    name: "Bauhinia variegata Turing wavenumber at 69.12 µm (Pass 2)"
+    organism: "Bauhinia variegata (Orchid Tree Pod), Holocene extant, 0 Ma"
+    script: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py
+    output: docs/media/bauhinia_variegata_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/bauhinia_variegata_turing_wavelength_s0_growth.gif
+      - datasets/bauhinia_variegata_turing_wavelength_s0/bauhinia_variegata_turing_wavelength_s0_metrics.json
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, gierer1972, maini1997, kondo2010, armon2011]
+    summary: >-
+      Pass 2 keeps the same species, the same age (0 Ma), and the same assigned
+      scale (69.12 µm = 6.912e-05 m, log10 = -4.160). Diffusivity scaling now
+      sets lambda in proportion to sqrt(D): 34.56, 48.88, 69.12, 97.75, 138.24 µm.
+      The adult GIF frame blends the activator inset into the photograph and
+      shares one palette, so full-frame Pearson r is 0.9935 (RMSE 8.75 gray
+      levels). The valve-only KS is 0.035; the full-frame KS of 0.745 is the
+      paper-white shift from GIF quantisation, reported separately. The 1 cm bar
+      is 37 px, so 69.12 µm is 0.256 px. Equal diffusion remains stable
+      (sigma_max = -0.1). The saturated radial peak is 76.16 µm, about 10 percent
+      longer than the linear wavelength; that gap is reported rather than tuned away.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) gives k_c and the requirement that the inhibitor diffuse faster. Schnakenberg (1979) gives the kinetics. Maini, Painter & Chau (1997) and Kondo & Miura (2010) review spatial wavelength selection."
+        - "Armon et al. (2011) is the centimetre-scale shell law for this species. Along 1 cm the 69.12 µm mode repeats 144 times and a 145th does not fit. Both are present at 0 Ma. This chronoseries has no earlier point."
+      reconstructed_in_script:
+        - "D_u = 44.827 µm²/time and D_v = 16.9 D_u place the linear wavelength at 69.12 µm. A pure-mode integration gives sigma = 0.193 against the analytic 0.188. The saturated radial peak is 76.16 µm."
+        - "The adult frame is the MHNT photograph with a 42 percent blend of the activator in a corner inset. Full-frame Pearson r = 0.9935, valve RMSE = 2.42 gray levels, valve KS = 0.035."
+      transfer_boundary:
+        - "The silhouette, seeds, and 1 cm bar are measured on the scan. The PDE does not grow the legume. The scan cannot show a 0.26 px wavelength, so the cellular field is the inset, not a texture painted across the valve at the wrong scale."
+      does_not_claim:
+        - "Does not claim Bauhinia pericarp was measured at 69.12 µm in any cited paper."
+        - "Does not claim the 10 percent nonlinear shift (76.16 versus 69.12 µm) has been removed."
+        - "Does not claim the full-frame KS of 0.745 is a valve mismatch. It is the GIF palette moving the paper white."
+        - "Does not claim a second assessor or a signed nanopublication. No ~/.nanopub/profile.yml is present."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "k_c, the Jacobian, and the equal-diffusion null match the cited dispersion relation. Numeric sigma(k_c) is 0.193 against 0.188. The kinetics remain a transfer: no Bauhinia morphogen pair is in the sources."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [129, 145], note: "k_c and sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [207, 234], note: "single-mode numerical growth rate", supports: true}
+          - {file: datasets/bauhinia_variegata_turing_wavelength_s0/bauhinia_variegata_turing_wavelength_s0_metrics.json, lines: [17, 21], note: "sigma_analytic 0.1879, sigma_numeric 0.1928, ablation -0.1", supports: true}
+      specimen-match:
+        value: 86
+        rationale: "Twelve-frame GIF, 960×623. The last frame is the MHNT pod; the inset shows the 69.12 µm spot field. Computer-vision similarity against the photograph is 96.0. The pod outline is the photograph, which is the right comparison at a scale the scan cannot resolve."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [350, 400], note: "growth GIF, blended adult inset, shared palette", supports: true}
+          - {file: docs/media/bauhinia_variegata_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 960×623, last frame matches the pod photograph", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Scaling both diffusivities by 0.25, 0.5, 1, 2, and 4 moves lambda through 34.56, 48.88, 69.12, 97.75, and 138.24 µm. The factor-of-four step doubles lambda, as sqrt(D) requires. The equal-diffusion curve on the comparison figure stays negative."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [237, 256], note: "diffusivity-scale sweep", supports: true}
+          - {file: datasets/bauhinia_variegata_turing_wavelength_s0/wavelength_sweep.csv, lines: [1, 6], note: "five scales, lambda doubling from scale 1 to scale 4", supports: true}
+          - {file: docs/media/bauhinia_variegata_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "panel D dispersion plus lambda-versus-scale inset", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Full-frame Pearson r = 0.9935, RMSE = 8.75 gray levels, valve KS = 0.035, valve Pearson r = 0.999. Foreground fraction 0.2855 versus 0.2726 and circularity 0.0878 versus 0.0960 are not copies of the reference. The radial peak at 76.16 µm is left 10 percent off the linear 69.12 µm. The 1 cm bar is 37 px (0.256 px per wavelength)."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [258, 324], note: "valve segmentation and scale-bar measurement at threshold 165", supports: true}
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [477, 514], note: "Pearson, RMSE, full-frame KS, and valve KS", supports: true}
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [637, 760], note: "measure_morphoeval metrics with value distinct from reference", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "OpenAlex metadata for Turing 1952, Schnakenberg 1979, Gierer & Meinhardt 1972, Maini et al. 1997, Kondo & Miura 2010, and Armon et al. 2011. Specimen SHA-256 300694d305567ca5b259ab023ea8e40a734061a3f55b78de1a23d30cbd2ffd3a, CC BY-SA 3.0."
+        evidence:
+          - {file: datasets/bauhinia_variegata_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "slot 3132 scout, collision check negative", supports: true}
+          - {file: datasets/bauhinia_variegata_turing_wavelength_s0/paper_citations.bib, lines: [1, 70], note: "bibliography with DOIs", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Docstring equations match steady_state, jacobian, critical_wavenumber, and growth_rate. Lean theorems law1–law4 pin the ratio margin, the gauge cancellation, the 144-wavelength count, and age 0 Ma."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [25, 36], note: "documented PDE and boundary condition", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3132_bauhinia_variegata_turing_wavelength_s0.lean, lines: [18, 52], note: "four theorems, no sorry", supports: true}
+      repro-package:
+        value: 86
+        rationale: "python3 invocation, seed 3132, --self-test covering the wavelength identity, the sqrt(D) sweep, the ablation, and Pearson r > 0.98 when the GIF exists. Deterministic on this machine. Nanopub signing is unavailable."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [767, 820], note: "self-test assertions", supports: true}
+          - {file: datasets/bauhinia_variegata_turing_wavelength_s0/README.md, lines: [18, 32], note: "documented commands", supports: true}
+    remediation:
+      - "The saturated radial wavelength is 76.16 µm rather than the linear 69.12 µm. A weakly nonlinear amplitude equation could account for the shift; it is not fitted away."
+      - "Full-frame KS remains 0.745 because the GIF palette moves the paper white. A lossless frame store would separate that artifact from the valve. The required product is a GIF."
+      - "No blinded second assessor has scored this audit."
