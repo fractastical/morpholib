@@ -1,0 +1,133 @@
+{
+  "scout": "scout-059",
+  "ground": "lean",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "id": "LEV-KG-GEN-01",
+      "title": "Levin YouTube channel: auto-generate docs/bioelectricity/levin_youtube_kg.json from audited sources",
+      "gap": "Pass 3 audit v3 remediation item 1 is still open: docs/bioelectricity/levin_youtube_kg.json is hand-maintained; 7/8 code_locus entries (L347-L580) lag morphoeval/math_kg_loops/levin-youtube-channel-math.yaml by one script revision; verified_measurements can diverge from the referee sidecar; no committed generator ties the payload to morphoeval/runs/levin_youtube_channel_math_summary.json.",
+      "done": "A committed generator script (new file under morphoeval/ or docs/bioelectricity/) rebuilds levin_youtube_kg.json from the summary JSON + math-KG YAML + morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.measurements.yaml; regenerated JSON has all 8 code_locus ranges byte-equal to the YAML; python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/levin-youtube-channel-math.yaml exits 0; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml --conform exits 0.",
+      "tool_route": "12-step MorphoEval loop on run_id 2026-10-24-levin-youtube-channel-math-loop (Step 12): add generator, regenerate JSON, supersede audit to v4 if needed; python3 models/2026-levin-channel-math-synthesis.py --self-test; python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml --supersede-from morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3 --no-resolve-heads --conform; python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/levin-youtube-channel-math.yaml",
+      "deciding_data": "In repo: morphoeval/math_kg_loops/levin-youtube-channel-math.yaml, morphoeval/runs/levin_youtube_channel_math_summary.json, morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml and .measurements.yaml, docs/bioelectricity/levin_youtube_kg.json (stale target).",
+      "prior_attempts": "gemini-4-argon self-audit (93.8) refuted to claude-fable-5-1 v2 (26.4) per morphoeval/runs/model_integrity_ledger.jsonl incident 2026-10-24; Pass 3.1–3.2 closed YAML loci and 8-law suite but left KG payload manual (morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md remediation §1). Not in docs/open-problems.json.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Pass-2 loop tools (measure_outputs, build_morphoeval_kg, verify_integrity) mechanically decide locus parity and KG conformance."},
+        "data_in_hand": {"score": 18, "why": "All inputs are committed; no external fetch required beyond optional Crossref already done in v3."},
+        "falsifiable_done": {"score": 15, "why": "Exit codes and byte equality of code_locus blocks are checkable without judgment."},
+        "compute_in_repo": {"score": 14, "why": "Generator + one --self-test + KG build completes in minutes on the cloud stack."},
+        "isolation": {"score": 7, "why": "Touches shared Levin flagship files; best run as a dedicated loop branch, not parallel with other Levin edits."},
+        "time_to_verdict": {"score": 8, "why": "Single focused Step-12 pass if scope is generator+loci only."},
+        "not_blocked": {"score": 4, "why": "v2's hand-JSON route was flagged as cheating; v3 explicitly re-opened this item—exact generator route not yet attempted."}
+      }
+    },
+    {
+      "id": "LEV-L1-ALIGN-01",
+      "title": "Levin Law 1: align Lean theorem with the BVP reach law the script scores",
+      "gap": "Audit v3 remediation item 2: models/2026-levin-channel-math-synthesis.py L177–233 implements a discrete diffusion-leak BVP reach curve, but morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean Law 1 formalises a Hill numerator; measurements note half-saturation G_eff=2.26 sits outside the G sweep and BVP grows as G^0.48 without a plateau.",
+      "done": "Either (A) Loop_levin_youtube_channel_math.lean Law 1 states monotone bounded reach properties of the discrete BVP operator (reach=1 at G=0, monotone in G, bounded by N) and the Hill fit is labelled rejected/approximate in script+YAML, or (B) the audit/scoring axis is switched to the Hill form with BVP demoted; in both cases python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/levin-youtube-channel-math.yaml passes, lean morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean exits 0 with 0 sorry, and morphoeval/audits/*-levin-youtube-channel-math-audit-v3.yaml remediation item 2 is absent from the superseding audit.",
+      "tool_route": "Step 12 on 2026-10-24-levin-youtube-channel-math-loop: edit Loop_levin_youtube_channel_math.lean + levin-youtube-channel-math.yaml lean_code/loci + script Law 1 panel/assertions; python3 models/2026-levin-channel-math-synthesis.py --self-test; lean morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean; python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml; write superseding audit v4.",
+      "deciding_data": "In repo: models/2026-levin-channel-math-synthesis.py, Loop_levin_youtube_channel_math.lean, morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.measurements.yaml (Law 1 BVP vs Hill rows).",
+      "prior_attempts": "Pass 3 reduced 25-law tautology suite to 8 laws and passed verify_integrity on YAML snippets, but explicitly deferred Law-1 semantic choice (v3 remediation §2). v2's demand to replace all literals was partially absorbed, not this BVP/Hill fork.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Remediation loop Step 4/12 plus verify_integrity and lean CLI decide alignment."},
+        "data_in_hand": {"score": 17, "why": "BVP curve and sidecar measurements already in repo."},
+        "falsifiable_done": {"score": 13, "why": "Choice (A) vs (B) requires a documented audit decision, but sorry-free lean + integrity pass are mechanical."},
+        "compute_in_repo": {"score": 13, "why": "Lean proofs for monotonicity may take more than trivial decide, but still hours not days."},
+        "isolation": {"score": 6, "why": "Same flagship bundle as other Levin agents."},
+        "time_to_verdict": {"score": 6, "why": "Likely one loop if option (A) with simplified Lean; option (B) may need figure rework."},
+        "not_blocked": {"score": 5, "why": "No prior attempt recorded for the explicit BVP-vs-Hill fork in v3 remediation."}
+      }
+    },
+    {
+      "id": "LEV-CLI-LAW-01",
+      "title": "Levin synthesis script: make --law skip excluded solvers and panels",
+      "gap": "Pass 3 audit v3 repro-package evidence marks models/2026-levin-channel-math-synthesis.py L834–836 false: --law filters laws_table after all solvers have run, so isolated law execution and cheap CI are impossible; remediation item 4 requests skipping solvers/panels and recording git_commit parent semantics.",
+      "done": "python3 models/2026-levin-channel-math-synthesis.py --law 3 --self-test completes without executing other laws' solvers (wall time drops measurably vs full suite on the same machine); summary JSON records which laws ran; morphoeval/audits superseding v3 closes the L834–836 remediation bullet.",
+      "tool_route": "Step 12 remediation on levin-youtube-channel-math loop: patch models/2026-levin-channel-math-synthesis.py; python3 models/2026-levin-channel-math-synthesis.py --law 3 --self-test; python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml; optional track_loop.py summary for run_id 2026-10-24-levin-youtube-channel-math-loop.",
+      "deciding_data": "In repo: models/2026-levin-channel-math-synthesis.py, morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml (repro-package locus).",
+      "prior_attempts": "Pass 3.1 noted partial closure (--delta-v-mv 0 passes) but left --law broken; unchanged through v3 HEAD per audit narrative.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "Pure Step-5/12 script remediation checked by --self-test timing and audit diff."},
+        "data_in_hand": {"score": 19, "why": "Single script and existing audit YAML."},
+        "falsifiable_done": {"score": 14, "why": "Timing or logging of skipped law IDs is objectively verifiable."},
+        "compute_in_repo": {"score": 15, "why": "Sub-hour Python change."},
+        "isolation": {"score": 7, "why": "Shared Levin script."},
+        "time_to_verdict": {"score": 9, "why": "One sitting."},
+        "not_blocked": {"score": 5, "why": "Not previously attempted."}
+      }
+    },
+    {
+      "id": "WING-L3-LEAN-01",
+      "title": "Wing disc Law 3 Lean: replace hand-picked fold-depth integers with parametric hierarchy from the script",
+      "gap": "Pass 3 audit v3 code-traceability (score 90) deducts that morphoeval/lean/loops/Loop_049_wing_disc_dome_folding.lean L116–149 proves depth10_jak_stat_overgrowth=252 > … > 0 via decide on constants matching the Python reference table, not a theorem over the hh_fold_depth10 indicator parameters used in 2020-tozluoglu-wing-disc-dome-folding.py; math_kg YAML embeds the same constant ordering (tozluoglu-wing-disc-dome-folding.yaml L77–93).",
+      "done": "Loop_049 Law 3 theorem is universally quantified over (mu_bm_active, diff_growth_active, local_remodel_active, jak_stat_boost) with conclusion matching hh_fold_depth10 monotonicity whenever indicators increase; math_kg lean_code updated; python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/tozluoglu-wing-disc-dome-folding.yaml reports 0 violations; lean morphoeval/lean/loops/Loop_049_wing_disc_dome_folding.lean exit 0; 2020-tozluoglu-wing-disc-dome-folding.py --self-test still 10/10.",
+      "tool_route": "Step 12 on 2026-10-19-wing-disc-dome-folding-loop-pass4: edit Loop_049 + tozluoglu-wing-disc-dome-folding.yaml; python3 2020-tozluoglu-wing-disc-dome-folding.py --self-test; lean morphoeval/lean/loops/Loop_049_wing_disc_dome_folding.lean; python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/tozluoglu-wing-disc-dome-folding.yaml; measure_outputs + build_morphoeval_kg on superseding audit.",
+      "deciding_data": "In repo: Loop_049_wing_disc_dome_folding.lean, tozluoglu-wing-disc-dome-folding.yaml, 2020-tozluoglu-wing-disc-dome-folding.py, morphoeval/audits/2026-10-19-wing-disc-dome-folding-audit-v3.yaml (traceability rationale L255–265).",
+      "prior_attempts": "Pass 3 added Law 4 Lean and closed lumen coupling; did not rewrite Law 3 constant decides (v3 audit deduction only, not remediation list).",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "Standard loop Step 4/12 + verify_integrity + lean."},
+        "data_in_hand": {"score": 18, "why": "All symbols and reference depths already in script/JSON."},
+        "falsifiable_done": {"score": 14, "why": "verify_integrity structural classification + self-test pass/fail."},
+        "compute_in_repo": {"score": 12, "why": "Lean monotonicity proof over integers is moderate but local."},
+        "isolation": {"score": 8, "why": "Wing-disc loop is file-bounded; low collision with other scouts."},
+        "time_to_verdict": {"score": 7, "why": "One remediation pass if Law 3 only."},
+        "not_blocked": {"score": 5, "why": "No recorded refutation of parametric Law 3 route."}
+      }
+    },
+    {
+      "id": "ZHANG-MKG-RULE3-01",
+      "title": "Zhang sorting morphogenesis: fix math_kg lean_code snippets to match structural Loop theorems",
+      "gap": "morphoeval/math_kg_loops/zhang-sorting-morphogenesis.yaml fails verify_integrity Rule 3 on 4/6 laws: lean_code blocks are ground decide examples (e.g. insertion_freeze_reset… := by decide) while morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean contains quantified structural theorems; audit v2 scored 94.1 with no remediation section but code-traceability cites the Lean file, not YAML integrity.",
+      "done": "python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/zhang-sorting-morphogenesis.yaml exits 0 (all equations structural per Rule 3, loci contain lean_decl/lean_theorem); no change required to theorem statements in Loop_zhang_sorting_morphogenesis.lean beyond optional comment sync; sorting-morphogenesis audit superseded or addendum notes Rule 3 closure.",
+      "tool_route": "Focused Step 12 (math-KG-only) on zhang-sorting run: update zhang-sorting-morphogenesis.yaml lean_code fields to mirror actual theorem signatures from Loop_zhang_sorting_morphogenesis.lean; python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/zhang-sorting-morphogenesis.yaml; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-22-zhang-sorting-morphogenesis-audit-v2.yaml --conform.",
+      "deciding_data": "In repo: Loop_zhang_sorting_morphogenesis.lean, zhang-sorting-morphogenesis.yaml, morphoeval/audits/2026-10-22-zhang-sorting-morphogenesis-audit-v2.yaml.",
+      "prior_attempts": "Pass 2 audit praised 6 theorems at 0 sorry; integrity gate added later (verify_integrity.py post–Levin incident) and was not backfilled for Zhang.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "verify_integrity --loop-yaml is the exact deciding tool."},
+        "data_in_hand": {"score": 20, "why": "Lean source of truth already in repo."},
+        "falsifiable_done": {"score": 15, "why": "Binary pass/fail on integrity script."},
+        "compute_in_repo": {"score": 15, "why": "YAML edits only, minutes."},
+        "isolation": {"score": 9, "why": "Mostly YAML; optional new audit sidecar."},
+        "time_to_verdict": {"score": 9, "why": "One sitting."},
+        "not_blocked": {"score": 5, "why": "New check, not previously attempted."}
+      }
+    },
+    {
+      "id": "SLOT658-MURRAY-LEAN-01",
+      "title": "Turritella branching-tree slot #658: replace template a×b Lean with Murray r³ laws",
+      "gap": "morphoeval/lean/loops/Loop_0658_turritella_communis_branching_tree.lean and raup-turritella-communis-branching-tree.yaml advertise Murray r_parent³=r_d₁³+r_d₂³ but implement law1_invariant a*b, law2_balance p+q-q, and law3_threshold_margin 60>19 via decide; verify_integrity fails (ground_arithmetic + missing script path for code_locus). Cloud dispatch slot-0658 marks Pass 2 at 94.9 with lean_sorrys 0, masking the semantic gap.",
+      "done": "Loop_0658 proves at least three structural statements faithful to Murray branching (cubic sum, symmetric 2^(-1/3) ratio identity in integers or rationals embedded as Int, cosine law inequality with hypotheses); raup-turritella-communis-branching-tree.yaml lean_code and code_locus point to an existing 1971-raup-turritella-communis-branching-tree.py (vendored if absent); python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/raup-turritella-communis-branching-tree.yaml exits 0; lean Loop_0658 exit 0.",
+      "tool_route": "Full 12-step loop on run_id 2026-10-19-turritella-communis-branching-tree-loop (Pass 3 / Step 12): Step 4 rewrite Loop_0658 + yaml; Step 5 ensure script at repo root; python3 1971-raup-turritella-communis-branching-tree.py --self-test; measure_outputs on new audit-v3; verify_integrity --loop-yaml.",
+      "deciding_data": "In repo: Loop_0658 lean file, raup-turritella-communis-branching-tree.yaml, morphoeval/cloud/dispatches/slot-0658.json, datasets/turritella_communis_branching_tree/; script may need restore from loop artifacts.",
+      "prior_attempts": "Pass 2 closed slot at 94.9 without verify_integrity Rule 3 (gate post-dates dispatch); expansion cohort pattern repeats across ~3000 math_kg_loops with the same law1_positive_scaling template.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "Loop Step 4/12 + verify_integrity decide, but may need script restore."},
+        "data_in_hand": {"score": 14, "why": "Dataset and lean stub in repo; root script missing from current checkout."},
+        "falsifiable_done": {"score": 14, "why": "Integrity script + lean compiler."},
+        "compute_in_repo": {"score": 11, "why": "Real Murray Lean proofs plus script path fix."},
+        "isolation": {"score": 9, "why": "Slot-scoped files; template fix pattern reusable but this done is slot-local."},
+        "time_to_verdict": {"score": 6, "why": "One loop if script exists; longer if script must be reconstructed."},
+        "not_blocked": {"score": 3, "why": "Pass 2 claimed success with placeholder lean; repeating template-only route would be refuted—must change semantics."}
+      }
+    },
+    {
+      "id": "EXP-R3-COHORT-01",
+      "title": "Expansion math_kg cohort: bulk Rule-3 structural Lean mismatch (3069/3105 YAML files)",
+      "gap": "verify_integrity.check_math_kg_loop_yaml classifies most expansion morphoeval/math_kg_loops/*.yaml lean_code as ground_arithmetic (shared law1_invariant a*b template); only 36 YAML files pass today. This is not closable in one slot loop—it needs orchestrated cohort remediation or a generator retargeting Step 4.",
+      "done": "NOT PROPOSED AS A SINGLE PASS—done would be: a published manifest listing sim_ids still failing Rule 3 after a batch job, with count strictly below 3069; until then this entry documents negative scope for the remediation lens.",
+      "tool_route": "Would require morphoeval/cloud_orchestrator.py batch re-dispatch or a new cohort script—not the standard 12-step single-slot loop. Best lens: lean (Step 4 formalization) or delphi prioritisation.",
+      "deciding_data": "In repo: morphoeval/math_kg_loops/*.yaml (3105 files), morphoeval/verify_integrity.py Rule 3; sample failing file raup-turritella-communis-branching-tree.yaml.",
+      "prior_attempts": "Expansion slots 101–1100 automated with template Lean per morphoeval/verify_image_fitness.py expansion_template tier; no cohort-wide integrity backfill recorded.",
+      "factors": {
+        "tool_fit": {"score": 4, "why": "Single-slot remediation loop cannot decide 3069 files; needs batch orchestrator."},
+        "data_in_hand": {"score": 16, "why": "All YAML paths local; deciding evidence is a count from verify_integrity."},
+        "falsifiable_done": {"score": 12, "why": "Failure count is objective, but no one-pass done exists."},
+        "compute_in_repo": {"score": 5, "why": "Full rescan ~9s; fixing thousands of loops is not hours."},
+        "isolation": {"score": 3, "why": "Cohort edit collides with all parallel slot agents."},
+        "time_to_verdict": {"score": 2, "why": "Not one sitting."},
+        "not_blocked": {"score": 2, "why": "Template route is implicitly refuted by integrity gate intent; bulk retry without semantic change would fail."}
+      }
+    }
+  ]
+}
