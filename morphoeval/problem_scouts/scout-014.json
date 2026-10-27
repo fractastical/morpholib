@@ -1,0 +1,322 @@
+{
+  "scout": "scout-014",
+  "ground": "thompson",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "id": "TSIM-LEP-01",
+      "title": "Leporidae 0/3: symmetric-component view ablation (XZ vs XY vs fused 3D)",
+      "gap": "All three pre-registered Leporidae hypotheses failed on a single 74-LM lateral projection (T7 share 51.1%, LOO ratio 0.89, LS3 intraspecific misalignment). Sherratt & Kraatz supply separate symmetric XZ and XY components; the scorer never swept which 2D view carries Thompson-7 signal versus dorsal noise.",
+      "done": "A hash-locked JSON lists T7 variance share, LOO full-vs-consensus ratio, and LS3 cos-theta for each of exactly three projections (XZ-only, XY-only, variance-weighted 3D→2D). Done passes if at least one projection changes the verdict on LS1 or LS2 versus the published lateral run, or if all three fail the same thresholds (confirming a real clade limit, not a projection artefact).",
+      "tool_route": "New isolated driver `thompson/portfolio/ablations/leporidae_view_sweep.py` importing `thompson/run_phylogenetic_prediction_engine.py` GPA/T7 helpers (same contract as `run_all_scouted_clades.py`); `python3 thompson/portfolio/ablations/leporidae_view_sweep.py --self-test` on synthetic 74-point ellipses, then `python3 thompson/portfolio/ablations/leporidae_view_sweep.py --hypotheses thompson/portfolio/groups/leporidae_skulls_hypotheses.json`.",
+      "deciding_data": "In repo after `python3 thompson/portfolio/fetch_inputs.py` (Zenodo 7615230 symmetric coords + `Matthee_Tree.nex`; scored metrics in `thompson/portfolio/results/leporidae_skulls.json`).",
+      "prior_attempts": "Portfolio scored 2026-10-23 (`docs/portfolio/leporidae_skulls.md`): 0/3 hypotheses, Brier 0.588. OP-10 (partial, Fable) lists Leporidae as portfolio residue without a view ablation.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Extends existing engine + clade runner; only missing piece is a new ablation script with --self-test, matching the simulation lens."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Landmarks, tree, and baseline JSON already in repo; fetch_inputs is one command."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Three fixed projections with numeric thresholds copied from locked LS1–LS3 statements."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "317 specimens × 18 tree tips × 3 views fits in minutes on the portfolio stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as new files under `thompson/portfolio/ablations/` only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One ablation sweep plus comparison to stored `leporidae_skulls.json`."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt swept symmetric-component views; only the single lateral scoring run exists."
+        }
+      }
+    },
+    {
+      "id": "TSIM-VES-02",
+      "title": "Hornet wing C3 failure: Brownian rate-matrix ablation sweep (P vs T7-subspace vs OU)",
+      "gap": "why_wings scored C3 ✗ for hornets (observed T7 share 0.389 below the central 90% of 2000 P-proportional BM sims). C5 also ✗ (within-P more Thompsonian than divergence). It is unknown whether the null is wrong because rate matrix must be diagonal, T7-restricted, or OU-damped rather than full P.",
+      "done": "Pre-register ≥4 rate-matrix ablations before sims. Done when a JSON reports, for each ablation, the 5th/50th/95th percentile of simulated T7 share and a boolean `obs_in_90pct` for the fixed seed 20261022; pass if any ablation places 0.389 inside the band, or all fail (sharpening the anti-drift conclusion).",
+      "tool_route": "`python3 thompson/portfolio/groups/why_wings.py` extended with CLI `--rate-ablation {fullP,diagP,t7subspace,ou}` and `--n-sim 10000`; sanity via `python3 thompson/1917-thompson.py --self-test` on the shared deformation primitives. Inputs: resolved `datasets/thompson/vespinae/perrard2013_resolved_subtree.json` (post-D1) or OpenTree for contrast only if pre-registered.",
+      "deciding_data": "Hornet wings in `.thompson_cache/antscan/vespinae_1025_*.tab`; trees in `datasets/thompson/vespinae/`; realised C3 in `docs/portfolio/why_wings.md`.",
+      "prior_attempts": "why_wings.py (2026-10-22): C3/C5 hornets ✗, C4 ✓. vespinae_venation_mechanics D7/D8 adjusted bee P but did not re-sweep hornet BM ablations.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Existing 2000-sim BM core in why_wings.py; ablation is a parameter sweep on that model, not new wet lab."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "1,027 wings and both trees already vendored; no new download required."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Percentile band + boolean membership against a single observed T7 share."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "10k sims × 4 ablations × 30 tips is hours-scale but feasible on CI hardware."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Prefer new `why_wings_ablations.py` wrapper to avoid editing locked group scripts in parallel runs."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Multiple 10k sim batches may exceed one sitting unless n-sim capped at 2000 per ablation."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Single full-P BM null was run; alternative rate matrices were hypothesised post hoc but not executed."
+        }
+      }
+    },
+    {
+      "id": "TSIM-VES-03",
+      "title": "Vespinae D4: blind truss-mode enumeration sweep (a-priori k modes from M0 only)",
+      "gap": "Pre-registered D4 required ≥+12 percentage points over Thompson-7 (38.8%) using consensus-only B_ven7; realised +3.8 pts (42.6%) with five interior landmarks still negative R². Post-hoc B_dip7 reached 64.2% but used interspecific dipole directions—violating the a-priori contract.",
+      "done": "Before loading species means D, enumerate k=4..10 normal modes of the locked Hookean truss K_truss(M0) (pinned perimeter per D4 registration). Done passes if some k≤7 achieves ≥50.8% total variance share and zero negative-R² landmarks on the interior 8 LMs; otherwise document the best blind k and fail D4 honestly again.",
+      "tool_route": "`python3 thompson/portfolio/groups/vespinae_venation_mechanics.py` truss builder (VEIN_EDGES_0) wrapped by new `thompson/portfolio/ablations/vespinae_truss_mode_sweep.py --k-min 4 --k-max 10 --self-test` (synthetic triangle truss).",
+      "deciding_data": "Same hornet landmark tables as D1–D8; registration in `thompson/portfolio/groups/vespinae_venation_mechanics_hypotheses.json`; outcomes in `docs/portfolio/vespinae_venation_mechanics.md`.",
+      "prior_attempts": "D4 ✗ (2026-10-24). Post-hoc B_dip7 (+25.4 pts) is explicitly not D4 and must not be re-proposed as a-priori success.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Mechanics simulation already implemented; missing piece is automated k-sweep without peeking at D."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Wings, consensus M0, and truss topology are in-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Numeric variance-share floor (50.8%) and count of negative-R² interior landmarks."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Small eigenproblems on 19 landmarks repeat in seconds per k."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New ablation file only; leaves D1–D8 JSON untouched."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single sweep run after --self-test."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "D4 route with B_ven7 was tried; blind k-sweep of truss modes was not, but dipole post-hoc partially overlaps intent—score lowered."
+        }
+      }
+    },
+    {
+      "id": "TSIM-FISH-04",
+      "title": "OP-04 deep horizon: evolutionary-process ablation on Ronco cichlid locked P3",
+      "gap": "Registered P3_deep_horizon (60% prior) failed on Ronco Tanganyika cichlids (realised BDmax ratio 0.357 vs simulated pass band [0.56, 0.98]) despite 100% 95% coverage beyond 50 Myr—suggesting the scoring null (clade consensus) not the shape engine is miscalibrated. OP-04 asks whether OU/EB/stem priors beat consensus beyond ~50 Myr.",
+      "done": "Pre-register a matrix of {BM, Pagel-λ, OU, EB} fits on the Ronco body-shape landmarks for held-out pairs with τ>50 Myr. Done if any process yields median Procrustes RMS ratio vs consensus <0.95 with paired Wilcoxon p<0.05 on BDmax_over_SL, or a signed JSON proves all four processes fail that threshold (sharper deep-horizon null).",
+      "tool_route": "`python3 thompson/portfolio/score_locked_predictions.py --source ronco2021_tanganyika_cichlids` for baseline; new `thompson/portfolio/ablations/deep_horizon_process_sweep.py` calling `run_phylogenetic_prediction_engine.py` model-fit loop; gate with `python3 thompson/1917-thompson-four-families-atlas.py --self-test`.",
+      "deciding_data": "`.thompson_cache/ronco2021/06_landmark_data_body_shape.tps` (sha256 locked in `docs/portfolio/ronco2021_tanganyika_cichlids.md`); fish training tree via existing engine cache.",
+      "prior_attempts": "OP-04 partial (Fable). Ronco P3 ✗ 2026-10-23. Characiformes locked fish tests mostly ✓ but P3-class deep claims not re-run with process ablation.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Engine already fits BM/λ/OU/EB; ablation is a sweep over existing simulators, not new infrastructure."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Ronco TPS and results JSON in repo; Rabosky/fish tree cached for engine."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Clear ratio+p threshold, but trait choice (BDmax vs HL) must be fixed in preregistration to avoid cherry-picking."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "154 deep-horizon species × 4 processes × LOO is tens of minutes to a few hours."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New ablation script + JSON output only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Likely one long run plus preregistration step."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "P3 scored under default engine settings only; systematic OU/EB sweep on Ronco not recorded."
+        }
+      }
+    },
+    {
+      "id": "TSIM-FISH-05",
+      "title": "~50 Myr logistic horizon: landmark-module ablation on 4,334 dated pairs",
+      "gap": "Independent recoveries place phylogenetic predictability collapse near 45–50 Myr (four-families atlas Panel D; engine LOO table). `run_rigor_stress_tests.py` ablates 9-head vs 10-trunk vs 600-pt silhouettes for 1917 pairs but not whether fin-amputated 17-LM subsets shift the logistic inflection t* on the full Rabosky-calibrated pair sample.",
+      "done": "Re-estimate logistic inflection t* (Myr) with 1,000 bootstrap resamples for landmark sets {17-LM full, 10 outer trunk, 9 head-only, 7-T7 linear subspace}. Done if bootstrap 95% CIs for t* either all overlap within 5 Myr (module-invariant horizon) or any pair differs by >10 Myr (module drives horizon artefact).",
+      "tool_route": "`python3 thompson/run_rigor_stress_tests.py` (subset fitting helpers) + `python3 thompson/1917-thompson-four-families-atlas.py --self-test`; new `thompson/portfolio/ablations/horizon_landmark_ablation.py` emitting t* JSON.",
+      "deciding_data": "`datasets/thompson/trimmed_tps_Claverie2014.csv` (sha256 pinned in atlas); `.thompson_cache/actinopt_12k_treePL.tre.xz`.",
+      "prior_attempts": "Atlas + rigor stress tests (repo 2026) established t* and node-disjoint control; fin/head horizon shift not ablated on full pair grid.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Atlas --self-test plus rigor ablation code already encode the landmark partitions; sweep is compositional."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Dryad CSV and Rabosky tree are vendored with sha256 checks in atlas."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Bootstrap CI overlap rules on a scalar t* are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "4,334 pairs × 4 landmark sets × bootstrap may reach multi-hour runtime."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New ablation driver only."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Heavy pair loop unlikely to finish in one sitting without subsampling pre-registration."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded landmark-module horizon ablation on the full dated pair set."
+        }
+      }
+    },
+    {
+      "id": "TSIM-LEP-06",
+      "title": "Leporidae LS3: within-species P-drift simulation (mammalian analog of hornet C3/C5)",
+      "gap": "LS3 failed (var_t7_within 39.6%, |cos θ|_T7 0.43). Hornet portfolio residue was partially explained by why_wings P-drift sims; Leporidae never received an equivalent BM-on-tree simulation with rate ∝ pooled intraspecific cranial P.",
+      "done": "With seed fixed and n≥2000 sims on Matthee_Tree.nex, report 90% central band for (i) T7 share of trace(P) vs among-species T7 share and (ii) |cos θ| between intraspecific and interspecific T7 directions. Done passes LS3 simulation arm if observed (0.396, 0.429) lies inside both bands; fails if outside (supporting separate ontogenetic channel).",
+      "tool_route": "Template `thompson/portfolio/groups/why_wings.py` BM loop → new `thompson/portfolio/ablations/leporidae_p_drift_sim.py --n-sim 2000 --self-test`; validate deformation stack via `python3 thompson/1917-thompson.py --self-test`.",
+      "deciding_data": "Zenodo 7615230 specimen-level coords (317 skulls); tree and LS3 numbers in `thompson/portfolio/results/leporidae_skulls.json`.",
+      "prior_attempts": "leporidae_skulls 0/3 (2026-10-23). OP-10 notes failure autopsy incomplete. why_wings P-drift only covers Hymenoptera wings.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Copy-paste simulation pattern from why_wings with new data loader—squarely simulation lens."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Cranial landmarks and tree already used in portfolio scoring."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Two simulated bands vs two observed scalars."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "2000 sims on 18-tip tree is lightweight."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New ablation file under portfolio/ablations/."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One simulation batch after self-test."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No Leporidae P-drift simulation in the record."
+        }
+      }
+    },
+    {
+      "id": "TSIM-VES-BLOCKED",
+      "title": "Re-run pre-venation Vespinae W1–W7 on OpenTree polytomy only (expect 0/7)",
+      "gap": "Original hornet portfolio registered W1–W7 on OpenTree; all failed. Resolved-tree fix is now D1–D5, not a re-test of W3 on the polytomy.",
+      "done": "N/A — route blocked.",
+      "tool_route": "`python3 thompson/portfolio/groups/vespinae_wings.py` (unchanged OpenTree workflow).",
+      "deciding_data": "`docs/portfolio/vespinae_wings.md`; `thompson/portfolio/results/vespinae_wings.json`.",
+      "prior_attempts": "2026-10-22: 0/7 W hypotheses ✗; docs note polytomy as root cause; D1–D8 (2026-10-24) supersede phylogeny claims.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Script runs as-is but cannot produce new knowledge."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Complete."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Hypotheses are locked but already scored."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Trivial rerun."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Would only rewrite existing docs—disallowed."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "Exact route refuted and superseded by Perrard-tree D hypotheses; do not re-propose."
+        }
+      },
+      "blocked": true,
+      "alternate_lens": "measure_outputs.py / portfolio re-score lens if W metrics must be recomputed on resolved tree without duplicating D1–D5."
+    },
+    {
+      "id": "TSIM-OP05-NODATA",
+      "title": "Within-species bee P-matrix for exact hornet/bee C2 comparison (OP-05)",
+      "gap": "OP-05 requires replicate within-species bee wings; only within-tribe P exists, weakening bee C2/C3 simulation interpretability.",
+      "done": "Obtain within-species replicate dataset and rerun C1–C8 unchanged.",
+      "tool_route": "Would use `why_wings.py` after new data ingest—not runnable today.",
+      "deciding_data": "Not in repo; no single named public table of ≥5 wings per species across tribes (OP-05).",
+      "prior_attempts": "OP-05 partial (Fable); D7/D8 used within-genus bee subsets as partial proxy.",
+      "factors": {
+        "tool_fit": {
+          "score": 8,
+          "why": "Simulation code exists but cannot run without new primary data."
+        },
+        "data_in_hand": {
+          "score": 3,
+          "why": "Missing within-species bee replicates."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "C1–C8 criteria are already hash-locked."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Would be fast once data exist."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New loader file possible."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Blocked on data acquisition."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "Partial proxy tried; true OP-05 route not satisfied."
+        }
+      },
+      "alternate_lens": "literature (scout_literature.py) to locate a publishable within-species bee wing dataset before simulation."
+    }
+  ]
+}
