@@ -1,0 +1,53 @@
+{
+  "fix_id": "fix-012",
+  "candidate_rank": 8,
+  "candidate_id": "scout-063-c",
+  "status": "fixed",
+  "summary": "Added a zero-axiom Lean 4 loop proving DM-DPP-01 chain lengths (132 aa mature, 588 aa precursor) and integer-bracketed mobility ratio (132/588)^(1/3) between 607/1000 and 608/1000 (nominal 0.61 below 610/1000) plus length-scale factor (132/588)^(1/6) between 779/1000 and 780/1000, sourced from sequences/sequence_links.json P07713 annotations. Python tests cross-check JSON and the same inequalities.",
+  "root_cause": "DM-DPP-01 was confirmed in predictions/resolutions/inrepo-quick.json by hand arithmetic only; the repo had no machine-checked Lean certificate tying prediction_id to the registered rational mobility factors.",
+  "changed_files": [
+    "morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean",
+    "tests/test_problem_fixer_dm_dpp.py"
+  ],
+  "evidence": [
+    "sequences/sequence_links.json drosophila_melanogaster dpp: precursor_length_aa=588, chain 457-588 length_aa=132, UniProt P07713",
+    "predictions/prediction_registry.json DM-DPP-01 quantitative_expectation: D_precursor/D_mature = (132/588)^(1/3) ≈ 0.61, length scale ≈ 0.78",
+    "predictions/resolutions/inrepo-quick.json DM-DPP-01 outcome confirmed 2026-10-26",
+    "Integer checks: 588*607^3 < 132*1000^3, 132*1000^3 < 588*608^3, 132*1000^3 < 588*610^3, 588*779^6 < 132*1000^6, 132*1000^6 ≤ 588*780^6"
+  ],
+  "validation": [
+    {
+      "name": "Lean kernel check",
+      "argv": [
+        "lean",
+        "morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean"
+      ],
+      "exit_code": 0,
+      "output_summary": "exit 0, no errors (Lean 4.35.0 via elan stable)"
+    },
+    {
+      "name": "No sorry term in Lean certificate",
+      "argv": [
+        "python3",
+        "-c",
+        "import re; from pathlib import Path; s=Path('morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean').read_text(); s=re.sub(r'--.*', '', s); assert not re.search(r'(?<![A-Za-z_])sorry(?:Ax)?(?![A-Za-z_])', s); print('no sorry term')"
+      ],
+      "exit_code": 0,
+      "output_summary": "no sorry term"
+    },
+    {
+      "name": "pytest DM-DPP-01 fixer tests",
+      "argv": [
+        "python3",
+        "-m",
+        "pytest",
+        "tests/test_problem_fixer_dm_dpp.py",
+        "-q"
+      ],
+      "exit_code": 0,
+      "output_summary": "4 passed"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
