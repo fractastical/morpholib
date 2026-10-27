@@ -1,0 +1,57 @@
+sim_id: delphi10000-acetabularia-acetabulum-turing-wavelength-s0
+organism: Acetabularia acetabulum
+age_Ma: 0.0
+scale_m: 2.528e-5
+scale_label: "25.28 µm detail (tier 4_cellular_10um, log10=-4.597)"
+math_family: Turing reaction-diffusion wavenumber
+equations:
+  - law_name: Homogeneous stability (trace)
+    formula: "f_u + g_v < 0 at the Brusselator steady state (A, B/A)"
+    lean_decl: MathOfBiology.Loop_3103.trace_c
+    lean_theorem: MathOfBiology.Loop_3103.homogeneous_state_stable
+    lean_locus: morphoeval/lean/loops/Loop_3103_acetabularia_acetabulum_turing_wavelength_s0.lean#L16-L20
+    variables: "f_u = B-1, g_v = -A^2, A=2, B=2.9"
+    role: The unpatterned apex (the developmental predecessor of this scale) is linearly stable.
+    source_citation: "Turing 1952 doi:10.1098/rstb.1952.0012; Brusselator steady state as used by Holloway & Harrison 2007 doi:10.1093/aob/mcm295"
+    code_locus: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py#L96-L110
+  - law_name: Turing wavenumber k_c
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c"
+    lean_decl: MathOfBiology.Loop_3103.cross_term_nominal
+    lean_theorem: MathOfBiology.Loop_3103.turing_discriminant_nominal
+    lean_locus: morphoeval/lean/loops/Loop_3103_acetabularia_acetabulum_turing_wavelength_s0.lean#L22-L34
+    variables: "D_u = 10.20 µm^2/s, D_v = 122.4 µm^2/s, onset lambda = 22.67 µm, fastest mode = 25.43 µm"
+    role: Wavelength selection at the 25.28 µm detail scale of the cap wall.
+    source_citation: "Turing 1952 doi:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py#L112-L132
+  - law_name: Equal-diffusion ablation
+    formula: "D_u = D_v implies D_v f_u + D_u g_v < 0, so det(k) stays positive"
+    lean_decl: MathOfBiology.Loop_3103.cross_term_equal_diffusion
+    lean_theorem: MathOfBiology.Loop_3103.ablation_equal_diffusion_no_turing_band
+    lean_locus: morphoeval/lean/loops/Loop_3103_acetabularia_acetabulum_turing_wavelength_s0.lean#L36-L40
+    variables: "D_u = D_v = 10.20 µm^2/s"
+    role: Negative control. Noise decays. No pigment ridges.
+    source_citation: "Turing 1952 doi:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py#L381-L386
+  - law_name: Mode count on the detail patch
+    formula: "N = L / lambda_c = 8 on a 202.24 µm patch; 11 tiles give 88 ridges on a cap of radius 354 µm"
+    lean_decl: MathOfBiology.Loop_3103.mode_count
+    lean_theorem: MathOfBiology.Loop_3103.eight_ridges_on_detail_patch
+    lean_locus: morphoeval/lean/loops/Loop_3103_acetabularia_acetabulum_turing_wavelength_s0.lean#L49-L53
+    variables: "L = 8 * 25.28 µm, age = 0 Ma, no successor chronospecies"
+    role: What changes at this scale versus the unpatterned tip, and what does not change in a later chronospecies (there is none).
+    source_citation: "Dumais & Harrison 2000 doi:10.1098/rstb.2000.0565"
+    code_locus: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py#L79-L93
+model_spec:
+  model: "Brusselator reaction-diffusion on the Acetabularia cap wall, hoop-biased inhibitor diffusion, lambda targeted at 25.28 µm"
+  A: 2.0
+  B: 2.9
+  Du_um2_s: 10.20
+  Dv_hoop_um2_s: 122.4
+  axial_over_hoop_v: 0.45
+  grid_n: 80
+  n_waves: 8
+  n_tiles: 11
+  seed: 3103
+  inputs:
+    - datasets/acetabularia_acetabulum_turing_wavelength_s0/acetabularia_acetabulum_wikimedia_cc0.jpg
+    - datasets/acetabularia_acetabulum_turing_wavelength_s0/acetabularia_acetabulum_turing_wavelength_s0_reference.json

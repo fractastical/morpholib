@@ -1,0 +1,154 @@
+audit:
+  id: 2026-10-27-acetabularia-acetabulum-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-acetabularia-acetabulum-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-acetabularia-acetabulum-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor; second assessor not run)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: PENDING_COMMIT
+    environment:
+      python: "3.12.3"
+      note: "Pass 2 on the same VM. Nanopub profile absent, so the KG is unsigned."
+    note: "Pass 2 adds the anisotropy sweep and seeded cap grain. CV against the CC0 photograph is 87.3. Second assessor still open."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "A. M. Turing"
+    year: 1952
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+    url: "https://doi.org/10.1098/rstb.1952.0012"
+  dumais2000:
+    title: "Whorl morphogenesis in the dasycladalean algae: the pattern formation viewpoint"
+    authors: "J. Dumais and L. G. Harrison"
+    year: 2000
+    venue: "Phil. Trans. R. Soc. B 355:281-305 (2000)"
+    doi: "10.1098/rstb.2000.0565"
+    url: "https://doi.org/10.1098/rstb.2000.0565"
+  harrison1988jtb:
+    title: "Coupling between reaction-diffusion prepattern and expressed morphogenesis, applied to desmids and dasyclads"
+    authors: "L. G. Harrison and M. Kolar"
+    year: 1988
+    venue: "J. Theor. Biol. (1988)"
+    doi: "10.1016/s0022-5193(88)80213-3"
+    url: "https://doi.org/10.1016/s0022-5193(88)80213-3"
+  holloway2007:
+    title: "Pattern selection in plants: coupling chemical dynamics to surface growth in three dimensions"
+    authors: "D. M. Holloway and L. G. Harrison"
+    year: 2007
+    venue: "Annals of Botany (2007)"
+    doi: "10.1093/aob/mcm295"
+    url: "https://doi.org/10.1093/aob/mcm295"
+simulations:
+  - id: delphi10000-acetabularia-acetabulum-turing-wavelength-s0
+    name: "Acetabularia acetabulum Turing wavelength at 25.28 µm (Holocene, detail scale)"
+    organism: "Acetabularia acetabulum"
+    script: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py
+    output: docs/media/acetabularia_acetabulum_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-acetabularia-acetabulum-turing-wavelength-s0-audit
+    source_refs: [turing1952, dumais2000, harrison1988jtb, holloway2007]
+    summary: >-
+      Pass 2. Same Brusselator and tier length (25.28 µm, 2.528e-5 m, 0 Ma).
+      Inhibitor D_axial/D_hoop swept over {0.35, 0.45, 0.70, 1.00, 1.60}: hoop mode
+      wins at 0.45 (|mode| 8 vs 1) and the axial mode wins at 1.60 (|mode| 8 vs 1).
+      Seeded grain drops rendered coherency from 0.87 to 0.54, beside the CC0 cap at 0.62.
+      GIF CV similarity 87.3 (12 frames, 640x480). Dispersion Pearson r = 0.9996,
+      wavelength-sweep Pearson r = 0.99999, RMSE 0.23 µm. Ablation ratio 0.097.
+      Orientation KS = 0.191. Saturated peak 25.08 µm versus tier 25.28 µm.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability and the critical wavenumber."
+        - "Dumais & Harrison 2000: reaction-diffusion is the favoured whorl mechanism in Acetabularia."
+        - "Holloway & Harrison 2007: Brusselator kinetics on a plant surface can make whorls."
+      reconstructed_in_script:
+        - "Diffusivities placing the fastest mode at 25.43 µm, next to the 25.28 µm tier length."
+        - "Axial/hoop sweep showing the ridge axis flips as the ratio crosses 1."
+        - "Seeded grain on the face-on cap, not a copy of the photograph."
+      transfer_boundary:
+        - "25.28 µm is the slot's tier length. The papers discuss whorl spacing without publishing this number."
+        - "The model disk (radius 354 µm) is the geometry implied by 88 ridges at that wavelength, not a traced outline of the adult CC0 cap."
+      does_not_claim:
+        - "Pixel identity with the CC0 photograph or the gallery plate."
+        - "A measured value for the axial/hoop diffusivity ratio."
+        - "A second chronospecies, or any reuse of sibling slot 192's template constants."
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: "Pass 2 keeps the published Brusselator and the Turing wavenumber, and now shows that the reconstructed anisotropy is the term that chooses the axis. The diffusivities remain a reconstruction aimed at the tier length, which is why this is not a higher score."
+        evidence:
+          - {file: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py, lines: [118, 140], note: "k_c and sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py, lines: [357, 379], note: "anisotropy sweep over five ratios", supports: true}
+      specimen-match:
+        value: 88
+        rationale: "After seeded grain, the 12-frame 640x480 GIF scores CV 87.3 against the CC0 cap (Sobel orientation, radial FFT, structure-tensor coherency, occupancy). Rendered coherency is 0.54 and the specimen is 0.62. The adult photo's sand and neighbouring caps are still absent, so this is not a registered overlay."
+        evidence:
+          - {file: docs/media/acetabularia_acetabulum_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "CV 87.3, 12 frames, 640x480", supports: true}
+          - {file: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py, lines: [428, 435], note: "seeded grain, not copied pixels", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Wavelength tracks diffusivity (r = 0.99999 across five scales). The anisotropy sweep is monotonic in the intended sense: ratios below 1 are hoop-dominated and 1.60 is axially dominated. Equal diffusion decays. The face-on GIF shows the nominal ratio only."
+        evidence:
+          - {file: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py, lines: [318, 379], note: "wavelength sweep and anisotropy sweep", supports: true}
+          - {file: docs/media/acetabularia_acetabulum_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "dispersion panel and anisotropy panel", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: "Dispersion Pearson r = 0.9996 with RMSE 0.016 /s (numeric slopes are not a copy of the analytic curve). Wavelength-sweep RMSE is 0.23 µm. Orientation KS against the CC0 cap is 0.191. Ablation ratio is 0.097 against a null of 1. Saturated peak 25.08 µm against tier reference 25.28 µm."
+        evidence:
+          - {file: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py, lines: [619, 700], note: "measure_morphoeval rows, each value differs from its reference", supports: true}
+          - {file: datasets/acetabularia_acetabulum_turing_wavelength_s0/acetabularia_acetabulum_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "dispersion, sweep, KS, ablation, anisotropy rows", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Unchanged DOIs, now also pointing at the v2 claim boundary. Specimen SHA-256 and CC0/CC BY creators are in the reference JSON and README."
+        evidence:
+          - {file: datasets/acetabularia_acetabulum_turing_wavelength_s0/README.md, lines: [1, 30], note: "scale, age, DOIs, specimen credits", supports: true}
+          - {file: datasets/acetabularia_acetabulum_turing_wavelength_s0/paper_citations.bib, lines: [1, 48], note: "BibTeX with Crossref-checked DOIs", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "Pass 2 anisotropy sweep and grain are commented at the functions that implement them, and the docstring still carries the PDE and the chronoseries statement. The polar sampler remains a rendering choice."
+        evidence:
+          - {file: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py, lines: [357, 379], note: "anisotropy_sweep docstring states the axis handoff", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3103_acetabularia_acetabulum_turing_wavelength_s0.lean, lines: [14, 53], note: "six theorems, zero sorry, integer encoding of the nominal Jacobian", supports: true}
+      repro-package:
+        value: 90
+        rationale: "--self-test now also checks that ratio 1.6 flips the dominant axis. Seed, paths and the metrics JSON are stable across the pass-2 rerun."
+        evidence:
+          - {file: models/2026-delphi10000-acetabularia-acetabulum-turing-wavelength-s0.py, lines: [705, 753], note: "self-test includes the axis flip and Pearson gates", supports: true}
+    remediation:
+      - "A second assessor from another provider has not scored these dimensions."
+      - "The 354 µm model cap is not a landmark registration of the adult CC0 photograph."
+      - "The axial/hoop ratio is bounded by the sweep but was not measured on a cell."
+    needs:
+      - id: N-aniso
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Sweep D_axial/D_hoop and record which Fourier axis wins."
+        status: resolved
+        novelty_n: 0.6
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N-grain
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Bring rendered structure-tensor coherency toward the CC0 cap without copying its pixels."
+        status: resolved
+        novelty_n: 0.4
+        contradiction_c: 0.2
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N-second
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "Independent second assessor has not reviewed the pass-2 scores."
+        status: open
+        novelty_n: 0.3
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
