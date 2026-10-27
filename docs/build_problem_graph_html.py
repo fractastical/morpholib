@@ -157,6 +157,8 @@ PRED_NODE_LABELS = {  # short graph labels; full text lives in the registry/pane
     "XT-DQ-01": "BMP4 accession is a fragment", "XT-CLK-01": "Xenopus somite ∝ period",
 }
 OUTCOME_STATUS = {"confirmed": "solved", "partially_resolved": "partial", "refuted": "refuted"}
+RES_SHORT = {"current_datasets_only": "in-repo", "current_plus_public_sources": "repo+public",
+             "partial_only": "partial only"}  # node subs only; full category lives in the panel/detail
 
 
 def prediction_graph_nodes(pred: dict) -> tuple[list[dict], list[dict]]:
@@ -203,7 +205,7 @@ def prediction_graph_nodes(pred: dict) -> tuple[list[dict], list[dict]]:
                 "id": p["id"], "x": org_x[org], "y": 1175 + i * 88,
                 "status": OUTCOME_STATUS.get(p["outcome"], "registered"),
                 "family": "Registered predictions", "label": p["id"],
-                "sub": f"{PRED_NODE_LABELS.get(p['id'], p['mechanism'])} · {p['outcome']} · {p['res_category']} (conf {p['res_confidence']})",
+                "sub": f"{PRED_NODE_LABELS.get(p['id'], p['mechanism'])} · {p['outcome']} · {RES_SHORT.get(p['res_category'], p['res_category'])} (conf {p['res_confidence']})",
                 "time": "2026-10-26", "timeKind": "recorded",
                 "source": "predictions/prediction_registry.json + predictions/resolutions/",
                 "detail": (f"OUTCOME: {p['prediction']} QUANTITATIVE: {p['quant']} "
@@ -261,7 +263,7 @@ def thompson_graph_nodes(thomp: dict) -> tuple[list[dict], list[dict]]:
         status = "solved" if done == len(cs) else ("open" if done == 0 and all(c["status"] == "UNTESTED" for c in cs) else "partial")
         nodes.append({"id": cid, "x": xs[i % 6], "y": 1805 + (i // 6) * 88, "status": status,
                       "family": "Thompson claims", "label": f"Ch. {cs[0]['chapter'].split()[0]} · {len(cs)} claims",
-                      "sub": f"{title} — {done}/{len(cs)} done · click to browse below",
+                      "sub": f"{title} — {done}/{len(cs)} done",
                       "time": "1917", "timeKind": "recorded", "source": "thompson/thompson_1917_claims.json",
                       "detail": (f"Chapter {cs[0]['chapter']} — {title}: {len(cs)} claims "
                                  f"({', '.join(sorted({c['status'] for c in cs}))}). "
@@ -286,7 +288,7 @@ def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> No
             entry["viability"] = {"kind": "delphi_bridge_posterior_percent", "pooled": prize["pooled"]["posterior"],
                                   "panel_range_percent": [r["posterior"] for r in prize["agents"]],
                                   "classification": "possible_pathway" if prize["pooled"]["posterior"] >= 15 else "below_15_percent",
-                                  "note": "Green/possible uses the >=15% visual threshold on the pooled posterior; individual agents may differ (see panel_range_percent)."}
+                                  "note": "Classification 'possible_pathway' is >=15% on the pooled posterior, but colour is stricter: green only >70% (light) / >80% (dark), teens are burnt orange. Individual agents may differ (see panel_range_percent)."}
         else:
             entry["viability"] = {"kind": "not_scored", "pooled": None,
                                   "classification": "not_scored",
@@ -295,7 +297,9 @@ def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> No
     feed = {"name": "MorphoSwarm — open problems work queue", "snapshot": "2026-10-26",
             "source_repo": "https://github.com/fractastical/morpholib",
             "graph_url": "https://fractastical.github.io/morpholib/problem-graph.html",
-            "colour_rule": {"green_possible_pathway": "pooled Delphi bridge posterior >= 15%", "dark_orange": "pooled Delphi bridge posterior < 15%", "grey": "not scored"},
+            "colour_rule": {"possible_pathway": "pooled Delphi bridge posterior >= 15% (classification only — NOT green)", "low_probability": "pooled Delphi bridge posterior < 15%", "grey": "not scored",
+                            "shade_bands_percent": {">80_dark_green": "#0B6E3F", "70-80_light_green": "#69B86F", "50-70": "#C9A227", "30-50": "#D98E2B", "15-30": "#C45A24", "5-15": "#B03A2E", "<5": "#7E1F2B"},
+                            "note": "Shade bands show the range of opinion. Green is reserved for >70% (light) and >80% (dark); a posterior in the teens is burnt orange. Panel range per problem is in viability.panel_range_percent."},
             "protocol": ["Pick one OP id; do not work two on the same branch without noting it.",
                          "Pre-register the attempt (hypotheses + scoring) before touching held-out data, following the repo's hash-locked blind-test contract.",
                          "Report negative results as results; pruned branches stay in the graph.",
@@ -307,14 +311,16 @@ def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> No
         if v["kind"] == "not_scored":
             return '<span class="badge" style="background:#888">NOT SCORED — Delphi-score first</span>'
         cls = "POSSIBLE PATHWAY" if v["classification"] == "possible_pathway" else "&lt;15% · LOW PROBABILITY"
-        col = "#1F8A65" if v["classification"] == "possible_pathway" else "#C06028"
+        p = v["pooled"]  # same shade scale as the problem graph's probColor: green only >70%
+        col = "#0B6E3F" if p >= 80 else "#69B86F" if p >= 70 else "#C9A227" if p >= 50 else "#D98E2B" if p >= 30 else "#C45A24" if p >= 15 else "#B03A2E" if p >= 5 else "#7E1F2B"
+        cls = "STRONG" if p >= 80 else "PLAUSIBLE" if p >= 70 else "POSSIBLE BUT WEAK" if v["classification"] == "possible_pathway" else "LOW PROBABILITY"
         return f'<span class="badge" style="background:{col}">{v["pooled"]}% · {cls}</span>'
     cards = []
     for p in problems:
         rng = ""
         if p["viability"]["kind"] != "not_scored":
             vals = p["viability"]["panel_range_percent"]
-            rng = f'<p class="small mut">Panel range: {min(vals)}% – {max(vals)}% (individual agents can cross the 15% line even when the pooled value does not)</p>'
+            rng = f'<p class="small mut">Panel range: {min(vals)}% – {max(vals)}% (individual agents can sit in a different shade band from the pooled value — the spread is the range of opinion)</p>'
         cards.append(f"""<div class="card" id="{p['id']}"><div class="row"><b>{p['id']} · {p['title']}</b>{badge(p['viability'])}</div>
 <p class="small"><b>The gap:</b> {p['gap']}</p><p class="small"><b>Definition of done:</b> {p['done']}</p>{rng}
 <p class="small mut">Attempted so far by: {', '.join(p['attempted_by']) or 'no recorded attempt'} · Source: {p['source']} · <a href="{p['graph_url']}">graph node</a></p></div>""")
@@ -345,7 +351,7 @@ def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> No
 MORPHOSWARM_TEMPLATE = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MorphoSwarm — Open Problems · Project Delphi</title>
-<meta name="description" content="Swarm-facing work queue of genuinely open problems from Project Delphi, with Delphi viability colour coding (green >=15%, dark orange <15%) and a machine-readable feed.">
+<meta name="description" content="Swarm-facing work queue of genuinely open problems from Project Delphi, with Delphi viability colour coding (amber-to-red below 70%; light green only over 70%, dark green over 80%) and a machine-readable feed.">
 <style>
 :root{--bg:#f7f7f5;--panel:#fff;--ink:#1c1c1e;--mut:#5c5c60;--line:#d8d8d3;--acc:#2563eb}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
@@ -354,7 +360,7 @@ main{max-width:1000px;margin:0 auto;padding:18px}h1{font-size:24px}.card{backgro
 .small{font-size:12.5px;line-height:1.45}.mut{color:var(--mut)}a{color:var(--acc)}code{background:#eee;padding:1px 5px;border-radius:4px}
 </style></head><body><main>
 <h1>MorphoSwarm — open problems</h1>
-<p class="small">The swarm-facing work queue for <a href="https://fractastical.github.io/morpholib/problem-graph.html">Project Delphi's problem graph</a>: every problem that is genuinely still open, what exactly blocks it, what counts as closing it, and who has already attempted it. Colour rule, same as the graph: <span class="badge" style="background:#1F8A65">&ge;15% · POSSIBLE PATHWAY</span> <span class="badge" style="background:#C06028">&lt;15% · LOW PROBABILITY</span> <span class="badge" style="background:#888">NOT SCORED</span> — 15% is a visual threshold, not a Delphi source field.</p>
+<p class="small">The swarm-facing work queue for <a href="https://fractastical.github.io/morpholib/problem-graph.html">Project Delphi's problem graph</a>: every problem that is genuinely still open, what exactly blocks it, what counts as closing it, and who has already attempted it. Colour rule, same as the graph — shade bands show the range of opinion, and green is reserved for high posteriors: <span class="badge" style="background:#0B6E3F">&gt;80% · STRONG</span> <span class="badge" style="background:#69B86F">70–80% · PLAUSIBLE</span> <span class="badge" style="background:#C9A227">50–70% · MIXED</span> <span class="badge" style="background:#D98E2B">30–50%</span> <span class="badge" style="background:#C45A24">&ge;15% · POSSIBLE BUT WEAK</span> <span class="badge" style="background:#B03A2E">5–15%</span> <span class="badge" style="background:#7E1F2B">&lt;5% · LOW</span> <span class="badge" style="background:#888">NOT SCORED</span> — a posterior in the teens is burnt orange, not green; the &ge;15% “possible pathway” classification is recorded in the feed, not painted green.</p>
 <div class="card"><b>Swarm protocol</b><ol class="small">
 <li>Pick one OP id. Machine-readable feed: <a href="open-problems.json"><code>open-problems.json</code></a> (this page, as data, for agents).</li>
 <li>Pre-register the attempt before touching held-out data — the repo's contract is hash-locked predictions, scorer refuses on mismatch.</li>
@@ -450,7 +456,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Problem Graph — Project Delphi</title>
-<meta name="description" content="Every problem attempted in Project Delphi, with branching paths, probabilistic timestamps, per-agent edge colours, and a double-click Bayesian Delphi inspector. Green = posterior >=15% (possible pathway), dark orange = <15%.">
+<meta name="description" content="Every problem attempted in Project Delphi, with branching paths, probabilistic timestamps, per-agent edge colours, and a double-click Bayesian Delphi inspector. Posterior shades run amber to red below 70%; light green only over 70%, dark green over 80%.">
 <style>
 :root{--bg:#f7f7f5;--panel:#fff;--ink:#1c1c1e;--mut:#5c5c60;--line:#d8d8d3;--acc:#2563eb;--green:#1F8A65;--orange:#C06028}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
@@ -470,7 +476,9 @@ button.on{background:var(--acc);color:#fff;border-color:var(--acc)}button:hover{
 .predgrid{display:grid;grid-template-columns:minmax(300px,44%) 1fr;gap:12px}@media(max-width:900px){.predgrid{grid-template-columns:1fr}}
 .prow{cursor:pointer;border:1px solid var(--line);border-radius:7px;padding:7px 9px;margin:5px 0;background:#fff}
 .prow:hover{border-color:var(--acc)}.prow.sel{border-color:var(--acc);background:#f3f6ff}
-.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot{display:inline-block;width:10px;height:10px;clip-path:polygon(0 0,100% 0,0 100%);margin-right:6px;vertical-align:middle}
+.tri{display:inline-block;width:11px;height:11px;clip-path:polygon(0 0,100% 0,0 100%);margin-right:4px;vertical-align:middle}
+.pchip{display:inline-block;color:#fff;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:3px;margin-right:2px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}@media(max-width:900px){.grid3{grid-template-columns:1fr}}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}@media(max-width:900px){.grid4{grid-template-columns:repeat(2,1fr)}}
@@ -497,7 +505,7 @@ a{color:var(--acc)}
 }
 </style></head><body><main>
 <h1>Problem graph — every problem attempted, including the branches that failed</h1>
-<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Node dot = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. Click a node to select it; <b>double-click a node with downstream nodes to collapse/expand everything below it</b> (categories act as folders), and double-click a leaf node to open its inspector — the Bayesian Delphi panel and Rule 30 prizes open the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
+<p class="mut">Source: the <a href="https://github.com/fractastical/morpholib">morpholib</a> repo itself (chatlogs, audits, pre-registrations, Delphi assessment, portfolio status), snapshot 2026-10-26. Upper-left corner triangle = outcome. <b>Edge colour = the agent that attempted that step.</b> Dashed / fuzzy nodes have <b>probabilistic, not recorded</b> timing — most importantly the “≈15 h into Rule 30” reckoning. Click a node to select it; <b>double-click a node with downstream nodes to collapse/expand everything below it</b> (categories act as folders), and double-click a leaf node to open its inspector — the Bayesian Delphi panel and Rule 30 prizes open the full per-agent, per-subgoal Delphi ledger. <b>Agents looking for work: <a href="morphoswarm.html">MorphoSwarm — open problems</a></b> (<a href="open-problems.json">JSON feed</a>).</p>
 
 /*__SUMMARY__*/
 
@@ -515,14 +523,15 @@ a{color:var(--acc)}
 <button class="zlab" onclick="fitView()" title="Fit whole graph in view (F key)">Fit</button>
 <button class="zlab" onclick="resetView()" title="Reset to 100% (0 key)">Reset</button>
 </div></div>
-<p class="mut small" style="margin:4px 0 0">Zoom &amp; pan: mouse-wheel over the graph zooms to the cursor · drag to pan · pinch on touch screens · <b>+</b>/<b>−</b> keys zoom, <b>F</b> fits, <b>0</b> resets · double-click empty graph space zooms in. <b>Collapse / expand: double-click any node that has downstream nodes to hide or reveal everything downstream of it</b> — category nodes (the project root, organism hubs, Thompson chapter hubs) therefore work as folders; a collapsed node shows <b>▶ +N hidden</b>. Leaf nodes still double-click to their inspector, and every node's detail card has Collapse/Expand and Inspect buttons. <b>On phones:</b> the List view is the primary navigation (tap any problem to inspect); in Graph view a single tap on a node opens its inspector full-screen.</p>
+<p class="mut small" style="margin:4px 0 0">Zoom &amp; pan: mouse-wheel over the graph zooms to the cursor · drag to pan · pinch on touch screens · <b>+</b>/<b>−</b> keys zoom, <b>F</b> fits, <b>0</b> resets · double-click empty graph space zooms in. <b>Collapse / expand: double-click any node that has downstream nodes to hide or reveal everything downstream of it</b> — category nodes (the project root, organism hubs, Thompson chapter hubs) therefore work as folders; a collapsed node (hollow blue top-right corner triangle, dashed outline) shows <b>+N hidden</b>. Leaf nodes still double-click to their inspector, and every node's detail card has Collapse/Expand and Inspect buttons. <b>On phones:</b> the List view is the primary navigation (tap any problem to inspect); in Graph view a single tap on a node opens its inspector full-screen.</p>
 <div class="row" style="margin:6px 0"><button onclick="expandAll()">Expand all</button><button onclick="collapseCategories()">Collapse to categories</button><span class="small mut">Categories = the root's direct children, the prediction organism hubs, and the Thompson claims hub — double-click any of them (or Expand all) to drill back in.</span></div>
 <div class="row small" style="margin:8px 0">
-<span><i class="badge" style="background:var(--green)">&nbsp;</i> solved / proved</span><span><i class="badge" style="background:#F0A040">&nbsp;</i> partial</span><span><i class="badge" style="background:#C04848">&nbsp;</i> still open / refuted</span><span><i class="badge" style="background:#2E79B5">&nbsp;</i> registered, unscored</span>
+<span><i class="tri" style="background:#178A5F"></i>solved / proved</span><span><i class="tri" style="background:#E79A28"></i>partial</span><span><i class="tri" style="background:#D64545"></i>still open</span><span><i class="tri" style="background:#7E2A3A"></i>refuted / pruned</span><span><i class="tri" style="background:#3E7FB8"></i>registered, unscored</span><span><i class="tri" style="background:#4B3FA0"></i>umbrella</span>
 <span>–– dashed halo = probabilistic timestamp</span>
-<span><i class="badge" style="background:var(--green)">&nbsp;</i> <b>green border/badge = possible pathway (posterior ≥15%)</b></span>
-<span><i class="badge" style="background:var(--orange)">&nbsp;</i> <b>dark orange = probability &lt;15% success</b> — all 3 pooled Delphi prizes currently sit here (15% is a visual threshold, not a Delphi source field)</span>
-<span><b>Edge % = Delphi path-success posterior</b> (pooled panel, where a panel has scored that route; green ≥15%, dark orange &lt;15%) — edges with no panel show <span class="badge" style="background:#888">NOT SCORED</span> in the inspector, never an invented number</span></div>
+<span><b>Upper-left corner triangle = outcome</b> (colour above; a triangle, not a dot, so it never sits on top of the title text)</span>
+<span><b>Delphi posterior shades (range of opinion, not just pass/fail):</b> <span class="pchip" style="background:#0B6E3F">&gt;80% · dark green</span><span class="pchip" style="background:#69B86F">70–80% · light green</span><span class="pchip" style="background:#C9A227">50–70%</span><span class="pchip" style="background:#D98E2B">30–50%</span><span class="pchip" style="background:#C45A24">15–30%</span><span class="pchip" style="background:#B03A2E">5–15%</span><span class="pchip" style="background:#7E1F2B">&lt;5%</span> — <b>green is reserved for &gt;70%</b>: a posterior in the teens is weak (burnt orange), not a green light; 15% survives only as the recorded “possible pathway” classification, not as a colour</span>
+<span><b>Prize-node bottom strip = the 3 per-agent posteriors side by side</b>, each shaded on the same scale — the spread between segments is the panel's range of opinion; the border/“bridge” label is the pooled value</span>
+<span><b>Edge % = Delphi path-success posterior</b> (pooled panel, where a panel has scored that route, shaded on the same scale) — edges with no panel show <span class="badge" style="background:#888">NOT SCORED</span> in the inspector, never an invented number</span></div>
 
 <h2>Registered predictions — outcome <i>and</i> resolvability, scored</h2>
 <div class="card" id="predpanel"></div>
@@ -552,7 +561,7 @@ a{color:var(--acc)}
 <div class="grid3">
 <div class="card"><b>Closed</b><p class="small">Thompson outline paradox and its ~50 Myr horizon; Rule 30 off-centre theory (lim P<sub>k</sub> = ∞, k&#8325; = 87,867, crystal density, ANF degree); Zhang sorting replication; KG / nanopub infrastructure.</p></div>
 <div class="card"><b>Honestly negative</b><p class="small">Box-stretch shortcut, Xenopus neighbour prediction (AUC 0.484), pixel Task B, causal emergence as a practical tool, the overnight Rule 30 loop (true lemmas, wrong boundary object), the BMP pair-equivalence claim (Compara: bmp2b→bmp2 not bmp4, chd→chrd not nog; size prior 0.759 vs 1.283), and the Holstein Turing claim (static RD rejected 6.46 vs ~3.3; growing RD vs melanoblast colonisation indistinguishable, p=0.91 — claim + assessment published as production nanopublications) — kept as pruned branches, not deleted.</p></div>
-<div class="card"><b>Still open</b><p class="small">All three Wolfram prizes (Delphi bridge: 11.5% / 2.0% / 0.04%, all dark orange under the 15% rule — though GPT alone rates Prize 1 at 21.8%, green), diagonal-sample decorrelation, fixed-seed complexity transfer, within-species bee P-matrix, growing-domain Turing, autonomous Meinhardt.</p></div></div>
+<div class="card"><b>Still open</b><p class="small">All three Wolfram prizes (Delphi bridge: 11.5% / 2.0% / 0.04%, all in the red/orange bands — even the most optimistic single agent, GPT on Prize 1 at 21.8%, sits far below the 70% green line), diagonal-sample decorrelation, fixed-seed complexity transfer, within-species bee P-matrix, growing-domain Turing, autonomous Meinhardt.</p></div></div>
 <p class="mut small">Attribution honesty note: early Rule 30 turns and several pipeline edges are not attributed to a named model anywhere in the repo, so they use the grey “unattributed” colour instead of a guessed agent. Named attributions come from THOMPSON_METHODS.md §1.13, the Delphi panel list, the flagship Pass N+1 referee split, and the causal-emergence guide. Generated by <code>docs/build_problem_graph_html.py</code> from the repo snapshot; underlying claims live in the linked repo documents.</p>
 </main>
 
@@ -562,13 +571,14 @@ a{color:var(--acc)}
 /*__DATA__*/
 const {AGENTS, NODES, EDGES, DELPHI, CONCORDANCE} = DATA;
 const ACOL = {human:'#E8C030', fable:'#7B64B8', gemini:'#2E79B5', gpt:'#1F8A65', sonnet:'#C85898', grok:'#F0A040', wainwright:'#2A9A8A', panel:'#5A6CC0', unattributed:'#8888A8', wonder:'#0E7C7B'};
-const SCOL = {solved:'#1F8A65', partial:'#F0A040', open:'#C04848', refuted:'#C04848', registered:'#2E79B5', root:'#2563eb'};
+const SCOL = {solved:'#178A5F', partial:'#E79A28', open:'#D64545', refuted:'#7E2A3A', registered:'#3E7FB8', root:'#4B3FA0'};
 const SLAB = {solved:'solved / proved', partial:'partial', open:'OPEN', refuted:'refuted / pruned', registered:'registered, unscored', root:'umbrella'};
-const W=150,H=62, byId={}; NODES.forEach(n=>byId[n.id]=n);
+const W=150,H=76, byId={}; NODES.forEach(n=>byId[n.id]=n);
 const S = {agent:'all', sel:'r5', prize:'p1', agentIdx:3, subgoal:'P1.4', prior:7.07};
 const $=id=>document.getElementById(id);
-const probColor=p=>p>=15?'#1F8A65':'#C06028';
-const probBadge=p=>`<span class="badge" style="background:${probColor(p)}">${p}% · ${p>=15?'POSSIBLE PATHWAY':'<15% · LOW PROBABILITY'}</span>`;
+const probColor=p=>p>=80?'#0B6E3F':p>=70?'#69B86F':p>=50?'#C9A227':p>=30?'#D98E2B':p>=15?'#C45A24':p>=5?'#B03A2E':'#7E1F2B'; // green is earned, not default: light green only >70%, dark green >80%; below that amber -> red
+const probLabel=p=>p>=80?'STRONG':p>=70?'PLAUSIBLE':p>=50?'MIXED':p>=15?'WEAK':'LOW';
+const probBadge=p=>`<span class="badge" style="background:${probColor(p)}">${p}% · ${probLabel(p)}</span>`;
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
 function agentButtons(){ $('agentbtns').innerHTML = `<button class="${S.agent==='all'?'on':''}" onclick="setAgent('all')">All agents</button>` + Object.keys(AGENTS).map(a=>`<button class="${S.agent===a?'on':''}" onclick="setAgent('${a}')"><span class="sw" style="background:${ACOL[a]}"></span>${AGENTS[a].name}</button>`).join('');
@@ -644,17 +654,19 @@ function drawGraph(){
   const nDown=descendants(n.id).size, isCollapsed=COLLAPSED.has(n.id);
   let h=`<title>${esc(n.label)} — click to select${nDown?`, double-click to ${isCollapsed?'expand':'collapse'} ${nDown} downstream nodes`:', double-click to inspect'}</title>`;
   if(isCollapsed) h+=`<rect x="${n.x-4}" y="${n.y-4}" width="${W+8}" height="${H+8}" rx="9" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="7 4"/>`;
-  if(nDown) h+=`<text x="${n.x+W-6}" y="${n.y+13}" text-anchor="end" font-size="10" font-weight="700" fill="#2563eb">${isCollapsed?`▶ +${nDown} hidden`:'▼'}</text>`;
+  if(nDown) h+=`<path d="M ${n.x+W-14} ${n.y+2} L ${n.x+W-2} ${n.y+2} L ${n.x+W-2} ${n.y+14} Z" fill="${isCollapsed?'#fff':'#2563eb'}" stroke="#2563eb" stroke-width="1.2"><title>${isCollapsed?`collapsed — double-click to expand ${nDown} downstream nodes`:`double-click to collapse ${nDown} downstream nodes`}</title></path>`;
+  if(isCollapsed) h+=`<text x="${n.x+W-6}" y="${n.y+H-8}" text-anchor="end" font-size="8" font-weight="700" fill="#2563eb">+${nDown} hidden</text>`;
   if(fuzzy)h+=`<rect x="${n.x-4}" y="${n.y-4}" width="${W+8}" height="${H+8}" rx="9" fill="none" stroke="#999" stroke-dasharray="2 5" opacity=".6"/>`;
   h+=`<rect x="${n.x}" y="${n.y}" width="${W}" height="${H}" rx="7" fill="${n.status==='root'?'#eef2ff':'#fff'}" stroke="${prob!==undefined?probColor(prob):(n.id===S.sel?'#2563eb':'#bbb')}" stroke-width="${prob!==undefined?3:(n.id===S.sel?2.5:1.2)}" ${fuzzy?'stroke-dasharray="6 4"':''}/>`;
-  h+=`<circle cx="${n.x+10}" cy="${n.y+10}" r="4" fill="${SCOL[n.status]}"/>`;
-  if(prob!==undefined)h+=`<rect x="${n.x}" y="${n.y+H-5}" width="${W}" height="5" fill="${probColor(prob)}"/><text x="${n.x+18}" y="${n.y+14}" font-size="9" font-weight="700" fill="${probColor(prob)}">bridge ${prob}%</text>`;
+  h+=`<path d="M ${n.x+2} ${n.y+2} L ${n.x+14} ${n.y+2} L ${n.x+2} ${n.y+14} Z" fill="${SCOL[n.status]}" stroke="#fff" stroke-width="1"><title>status: ${SLAB[n.status]}</title></path>`;
+  if(prob!==undefined){ const ag=DELPHI[n.id].agents; h+=ag.map((r,i)=>`<rect x="${n.x+i*W/3}" y="${n.y+H-12}" width="${W/3}" height="12" fill="${probColor(r.posterior)}"><title>${esc(r.agent)}: ${r.posterior}%</title></rect>`).join('')+`<text x="${n.x+W/2}" y="${n.y+H-3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">bridge ${prob}% pooled</text>`; }
   if(n.id==='r6')h+=`<rect x="${n.x}" y="${n.y+H-5}" width="${W/3}" height="5" fill="${probColor(DELPHI.p1.pooled.posterior)}"/><rect x="${n.x+W/3}" y="${n.y+H-5}" width="${W/3}" height="5" fill="${probColor(DELPHI.p2.pooled.posterior)}"/><rect x="${n.x+2*W/3}" y="${n.y+H-5}" width="${W/3}" height="5" fill="${probColor(DELPHI.p3.pooled.posterior)}"/>`;
-  h+=`<text x="${n.x+W/2}" y="${n.y+20}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1c1c1e">${esc(n.label)}</text>`;
+  const labFs=n.label.length>23?9.6:(n.label.length>19?10.4:11.5);
+  h+=`<text x="${n.x+W/2}" y="${n.y+19}" text-anchor="middle" font-size="${labFs}" font-weight="700" fill="#1c1c1e">${esc(n.label)}</text>`;
   if(n.nanopubs&&n.nanopubs.length)h+=`<text x="${n.x+6}" y="${n.y+H-8}" font-size="8" font-weight="700" fill="#2563eb">🔗 ${n.nanopubs.length} live nanopub${n.nanopubs.length>1?'s':''}</text>`;
   if(fuzzy)h+=`<text x="${n.x+W-8}" y="${n.y+14}" text-anchor="end" font-size="9" font-weight="700" fill="#888">~prob.</text>`;
-  if(n.id==='r6'||prob!==undefined)h+=`<text x="${n.x+W-8}" y="${n.y+H-9}" text-anchor="end" font-size="8" font-weight="700" fill="#2563eb">DOUBLE-CLICK TO INSPECT</text>`;
-  h+=`<foreignObject x="${n.x+6}" y="${n.y+24}" width="${W-12}" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:9.5px;line-height:1.25;color:#5c5c60;text-align:center;font-family:inherit">${esc(n.sub)}</div></foreignObject>`;
+  if(n.id==='r6')h+=`<text x="${n.x+W-8}" y="${n.y+H-9}" text-anchor="end" font-size="8" font-weight="700" fill="#2563eb">DOUBLE-CLICK TO INSPECT</text>`;
+  h+=`<foreignObject x="${n.x+6}" y="${n.y+23}" width="${W-12}" height="44"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:9px;line-height:1.2;color:#5c5c60;text-align:center;font-family:inherit">${esc(n.sub)}</div></foreignObject>`;
   g.innerHTML=h; vp.appendChild(g); });
 }
 function npLive(uri){ return 'https://registry.knowledgepixels.com/np/' + uri.split('/').pop(); }
@@ -676,27 +688,27 @@ function renderDrawer(){
  const odds=(S.prior/100)/(1-S.prior/100)*d.pooled.bf, post=100*odds/(1+odds);
  h+=`<div class="row">${['p1','p2','p3'].map(p=>`<button class="${S.prize===p?'on':''}" onclick="setPrize('${p}')"><span class="badge" style="background:${probColor(DELPHI[p].pooled.posterior)}">&nbsp;</span> ${DELPHI[p].title} · ${DELPHI[p].pooled.posterior}%</button>`).join('')}</div>`;
  h+=`<p class="small mut">${esc(d.statement)}</p>`;
- h+=`<div class="row"><span>${probBadge(20)}</span><span class="small">green = posterior ≥15% — a pathway that still looks possible</span><span>${probBadge(5)}</span><span class="small">dark orange = &lt;15% success. 15% is a visual threshold, not a Delphi source field.</span></div>`;
+ h+=`<div class="row"><span class="small"><b>Posterior shade scale:</b></span>${[85,75,60,40,20,3].map(v=>probBadge(v)).join('')}<span class="small">Green is earned: light green only &gt;70%, dark green &gt;80%. Below 70% the shade runs yellow → amber → burnt orange → deep red — a posterior in the teens is WEAK, not green. Per-agent rows below show the full range of opinion behind each pooled shade.</span></div>`;
  h+=`<div class="grid4"><div class="card"><div class="small mut">Proved now</div><div class="stat">0.00%</div><div class="small mut">All 3 prizes open</div></div><div class="card"><div class="small mut">Conjecture truth</div><div class="stat">${d.conjectureTruth}%</div><div class="small mut">Is it true at all?</div></div><div class="card"><div class="small mut">Subgoal coverage</div><div class="stat">${d.subgoalTotal.panel}/100</div><div class="small mut">Weighted rubric</div></div><div class="card"><div class="small mut">Bridge posterior</div><div class="stat" style="color:${probColor(d.pooled.posterior)}">${d.pooled.posterior}%</div>${probBadge(d.pooled.posterior)}<div class="small mut">Closable with current machinery?</div></div></div>`;
  h+=`<div class="card" style="border-color:#E8C030"><b>Do not conflate these.</b> <span class="small">A 99.98% conjecture-truth score is not a proof, and subgoal coverage is not a fraction of the way to a referee-accepted proof. The bridge posterior answers the third, separate question.</span></div>`;
  h+=`<h2>Per-agent bridge ledger — click an agent</h2>`;
  rows.forEach((r,i)=>{ const col=r.agent.includes('Fable')?ACOL.fable:r.agent.includes('GPT')?ACOL.gpt:r.agent.includes('Gemini')?ACOL.gemini:ACOL.panel;
   h+=`<div class="clickable ${i===S.agentIdx?'sel':''}" onclick="S.agentIdx=${i};renderDrawer()"><div class="row"><span class="badge" style="background:${col}">&nbsp;</span><b class="small" style="flex:1">${r.agent}</b><span class="small">${r.prior}% → <b style="color:${probColor(r.posterior)}">${r.posterior}%</b></span>${probBadge(r.posterior)}<span class="small mut">net ${r.netDb>0?'+':''}${r.netDb} dB · BF ${r.bf}</span></div></div>`; });
- h+=`<div class="card"><b class="small">${row.agent} — selected</b><p class="small">Prior ${row.prior}% · for ${row.forDb} dB · against ${row.againstDb} dB · net ${row.netDb>0?'+':''}${row.netDb} dB (BF ${row.bf}) → posterior <b style="color:${probColor(row.posterior)}">${row.posterior}%</b> · confidence ${row.confidence}</p><p class="small mut">Verdict: ${esc(row.verdict)}</p><p class="small mut">Disagreement is data: on Prize 1 the agents span 5.58–21.82% (3.9×) while agreeing exactly on Prize 2's net −4.0 dB. Only GPT rates Prize 1 green (≥15%).</p></div>`;
+ h+=`<div class="card"><b class="small">${row.agent} — selected</b><p class="small">Prior ${row.prior}% · for ${row.forDb} dB · against ${row.againstDb} dB · net ${row.netDb>0?'+':''}${row.netDb} dB (BF ${row.bf}) → posterior <b style="color:${probColor(row.posterior)}">${row.posterior}%</b> · confidence ${row.confidence}</p><p class="small mut">Verdict: ${esc(row.verdict)}</p><p class="small mut">Disagreement is data: on Prize 1 the agents span 5.58–21.82% (3.9×) while agreeing exactly on Prize 2's net −4.0 dB. Only GPT rates Prize 1 above 15% at all (21.8% — burnt orange on the shade scale, nowhere near the 70% green line).</p></div>`;
  h+=`<h2>Subgoals — click to inspect</h2>`;
  d.subgoals.forEach(s=>{ h+=`<div class="clickable ${s.id===sg.id?'sel':''}" onclick="S.subgoal='${s.id}';renderDrawer()"><div class="row"><b class="small">${s.id}</b><span class="small" style="flex:1">${esc(s.label)}</span><span class="small mut">w=${s.weight}% · panel ${s.panel}</span></div></div>`; });
  h+=`<div class="card"><b class="small">${sg.id} · weight ${sg.weight}% · ${esc(sg.tier)}</b><p class="small">${esc(sg.label)}</p>` +
    [['Claude Fable 5.1',sg.fable,ACOL.fable],['GPT 5.6 Sol',sg.gpt,ACOL.gpt],['Gemini 4 Argon',sg.gemini,ACOL.gemini],['Panel mean',sg.panel,ACOL.panel]].map(([nm,v,c])=>`<div class="row"><span class="small" style="width:130px">${nm}</span>${bar(v,c)}<b class="small">${v}/100</b></div>`).join('') +
    `<p class="small mut">Agent spread: ${Math.max(sg.fable,sg.gpt,sg.gemini)-Math.min(sg.fable,sg.gpt,sg.gemini)} pts. The highest-weight subgoal is usually the open one.</p></div>`;
  h+=`<div class="grid2"><div><h3>Evidence for (+${d.pooled.forDb} dB pooled)</h3>${d.evidenceFor.map(e=>`<div class="row"><span style="display:inline-block;height:8px;width:${Math.min(70,Math.abs(e.db)*10)}px;background:#1F8A65"></span><span class="small">+${e.db} dB · ${esc(e.text)}</span></div>`).join('')}</div><div><h3>Obstructions (${d.pooled.againstDb} dB pooled)</h3>${d.evidenceAgainst.map(e=>`<div class="row"><span style="display:inline-block;height:8px;width:${Math.min(70,Math.abs(e.db)*10)}px;background:#C06028"></span><span class="small">${e.db} dB · ${esc(e.text)}</span></div>`).join('')}</div></div>`;
- h+=`<h2>Prior sensitivity — try it</h2><p class="small mut">Posterior = prior odds × BF (${d.pooled.bf}) for ${esc(d.title)}.</p><div class="row"><button onclick="adjPrior(-5)">−5 pts</button><button onclick="adjPrior(-1)">−1</button><b style="color:${probColor(post)}">Prior ${S.prior}% → posterior ${post.toFixed(2)}%</b>${probBadge(+post.toFixed(2))}<button onclick="adjPrior(1)">+1</button><button onclick="adjPrior(5)">+5 pts</button><button onclick="S.prior=${d.pooled.prior};renderDrawer()">Reset to pooled prior</button></div><p class="small mut">Watch the badge flip green only once the posterior crosses 15%: Prize 1 needs a prior ≳9.4%, Prize 2 ≳30.7%, Prize 3 ≳82.7% — no plausible prior rescues Prize 3 on this evidence.</p>`;
+ h+=`<h2>Prior sensitivity — try it</h2><p class="small mut">Posterior = prior odds × BF (${d.pooled.bf}) for ${esc(d.title)}.</p><div class="row"><button onclick="adjPrior(-5)">−5 pts</button><button onclick="adjPrior(-1)">−1</button><b style="color:${probColor(post)}">Prior ${S.prior}% → posterior ${post.toFixed(2)}%</b>${probBadge(+post.toFixed(2))}<button onclick="adjPrior(1)">+1</button><button onclick="adjPrior(5)">+5 pts</button><button onclick="S.prior=${d.pooled.prior};renderDrawer()">Reset to pooled prior</button></div><p class="small mut">Watch the shade: it stays yellow/amber/red until the posterior crosses 70% (light green) and only turns dark green over 80%. For reference, merely reaching the old 15% “possible” line needs a prior ≳9.4% (Prize 1), ≳30.7% (Prize 2), ≳82.7% (Prize 3) — no plausible prior rescues Prize 3 on this evidence, and none of the three gets near green.</p>`;
  h+=`<h2>Inter-agent concordance (all 15 subgoals)</h2>` + CONCORDANCE.map(c=>`<div class="row"><b class="small" style="width:150px">${c.pair}</b><span class="small">Spearman ρ ${c.spearman} · Kendall τ ${c.kendall} · Pearson r ${c.pearson} · mean |dev| ${c.mad} pts</span></div>`).join('') + `<p class="small mut">Source: docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md §§1–3 · Project Delphi 2.0 · resolvability P1 0.85 · P2 0.65 · P3 0.25.</p>`;
  $('drawer').innerHTML=h;
 }
 function adjPrior(d){ S.prior=Math.max(0.1,Math.min(90,+(S.prior+d).toFixed(2))); renderDrawer(); }
 /* ---- Registered predictions panel (data injected from the registry) ---- */
 /*__PRED__*/
-const PCOL = {confirmed:'#1F8A65', partially_resolved:'#F0A040', refuted:'#C04848', registered_untested:'#2E79B5', confirmed_meta:'#1F8A65'};
+const PCOL = {confirmed:'#178A5F', partially_resolved:'#E79A28', refuted:'#7E2A3A', registered_untested:'#3E7FB8', confirmed_meta:'#178A5F'};
 const PLAB = {confirmed:'CONFIRMED', partially_resolved:'PARTIALLY RESOLVED', refuted:'REFUTED', registered_untested:'REGISTERED, UNSCORED'};
 const RCAT = {current_datasets_only:'solvable in-repo alone', current_plus_public_sources:'solvable in-repo + public sources', partial_only:'partially solvable only'};
 const PS = {org:'all', sel:null};
