@@ -1,0 +1,185 @@
+# MorphoEval audit — Danio aesculapii cellular Turing wavelength, loop 3160, pass 1.
+# Single assessor (grok-4.7). Weighted overall 85.3.
+# Scale 2.08e-05 m (21 µm nominal, log10=-4.682), age 0 Ma.
+
+audit:
+  id: 2026-10-27-danio-aesculapii-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent pass 1)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    note: "Loop 3160 files are new on this branch. Commit hash omitted until the loop commit exists, so locus checks are not pointed at a parent that lacks the files."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    venue: "PNAS 106:8429-8434 (2009)"
+    doi: 10.1073/pnas.0808622106
+  yamanaka2014:
+    title: "In vitro analysis suggests that difference in cell movement during direct interaction can generate various pigment patterns in vivo"
+    authors: "Yamanaka H, Kondo S"
+    venue: "PNAS 111:1867-1872 (2014)"
+    doi: 10.1073/pnas.1315416111
+  kullander2009:
+    title: "Danio aesculapii, a new species of danio from south-western Myanmar (Teleostei: Cyprinidae)"
+    authors: "Kullander SO, Fang F"
+    venue: "Zootaxa 2164:41-48 (2009)"
+    doi: 10.11646/zootaxa.2164.1.4
+  spiewak2018:
+    title: "Evolution of endothelin signaling and diversification of adult pigment pattern in Danio fishes"
+    authors: "Spiewak JE et al."
+    venue: "PLOS Genetics 14:e1007538 (2018)"
+    doi: 10.1371/journal.pgen.1007538
+  parichy2015:
+    title: "Advancing biology through a deeper understanding of zebrafish ecology and evolution"
+    authors: "Parichy DM"
+    venue: "eLife 4:e05635 (2015)"
+    doi: 10.7554/eLife.05635
+
+simulations:
+  - id: delphi10000-danio-aesculapii-turing-wavelength-s0
+    name: "Danio aesculapii cellular Turing wavenumber at 21 µm (Holocene, 0 Ma)"
+    organism: "Danio aesculapii"
+    script: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py
+    output: docs/media/danio_aesculapii_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/danio_aesculapii_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, nakamasu2009, yamanaka2014, kullander2009, spiewak2018, parichy2015]
+    model_spec:
+      model: "Schnakenberg Turing system, R=28, lambda_c=2.08e-05 m, successor R=1.20"
+      A: 0.14
+      B: 0.98
+      diffusion_ratio: 28.0
+      successor_ratio: 1.2
+      lambda_m: 2.08e-05
+      seed: 3160
+      inputs:
+        - datasets/danio_aesculapii_turing_wavelength_s0/danio_aesculapii_specimen.png
+        - datasets/danio_aesculapii_turing_wavelength_s0/danio_aesculapii_parichy2015_plate.jpg
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 critical-wavenumber formula and dispersion relation"
+        - "Nakamasu 2009 and Yamanaka & Kondo 2014 melanophore-xanthophore contact interactions"
+        - "Kullander & Fang 2009 vertical bars; Spiewak et al. 2018 endothelin-linked Danio pattern diversification"
+      reconstructed_in_script:
+        - "Schnakenberg A=0.14, B=0.98, R=28 chosen so λ_c = 2.08e-05 m"
+        - "Dorsal anisotropy versus ventral isotropy as the vertical-bar transition"
+        - "Successor inhibitor collapse to R=1.20 at the same activator diffusivity"
+      transfer_boundary:
+        - "The whole-animal GIF maps the 249.6 µm cellular field onto the photographed silhouette so orientation can be scored. It is not a claim that adult bars are 20.8 µm apart."
+      does_not_claim:
+        - "That a paper measured 21.0 µm on D. aesculapii"
+        - "That the render is a pixel copy of the photograph"
+        - "Parameters copied from the 1.009 mm organ-scale sibling"
+    summary: >-
+      Pass 1. Anisotropic Schnakenberg system at λ_c = 2.08e-05 m (nominal 21 µm,
+      log10 = -4.682), Holocene 0 Ma, chronoseries 1/5, successor D. albolineatus.
+      Trace -0.5044, det 1.2544, R=28 above R_c=1.6725, equal-diffusion and
+      successor (R=1.20) controls have negative diffusion-weighted trace and
+      σ(k_c)<0. Dorsal field selects vertical bars at 16 px = 20.8 µm; ventral
+      field breaks them into spots. Linear-regime Pearson r of log|û(k_c)| vs t
+      is >0.999 with log-RMSE 0.025. Specimen body circularity 0.262 (reference
+      circle 1), aspect 4.18, KS luminance 0.147. GIF 12 frames, 1437×480,
+      cv_sim_similarity 93.2 against the CC BY-SA photograph. Weighted overall 85.3.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The script implements the Turing dispersion eigenvalue, the classical
+          k_c formula, and Schnakenberg kinetics, and the Lean module checks the
+          scaled trace, determinant, aesculapii threshold, successor sign change,
+          and discriminant with zero sorry. Deduction: the rate constants are a
+          reconstruction that pins λ_c to the assigned 20.8 µm scale, not a
+          parameter table measured on D. aesculapii, and argmax σ sits at a
+          longer wave than formula k_c (both are drawn).
+        evidence:
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [96, 168], note: "steady state, Jacobian, k_c, sigma(k), integer ledger", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3160_danio_aesculapii_turing_wavelength_s0.lean, lines: [10, 51], note: "six decidable theorems, no sorry", supports: true}
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [63, 78], note: "λ_c = 2.08e-05 m and R=28 are assigned, not fitted to a published aesculapii table", supports: false}
+      specimen-match:
+        value: 82
+        rationale: >-
+          The last GIF frame keeps the photographed outline, eye, and dorsal
+          iridophore row and lays vertical bars across the flank. Computer-vision
+          similarity against the Andrew Bogott photograph is 93.2. Deduction: the
+          bars are the magnified cellular field, so their count is not the adult
+          bar count, and the reflection cut clips the tail tip.
+        evidence:
+          - {file: docs/media/danio_aesculapii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame animation, 1437×480, last frame scored", supports: true}
+          - {file: docs/media/danio_aesculapii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, silhouette composite, and absolute difference", supports: true}
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [384, 410], note: "composite keeps background, eye, and bright iridophores; body receives the field", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          With λ_c held fixed, σ(k_c) rises across the diffusion-ratio sweep
+          R = 8, 12, 18, 28, 44 (negative at R=8, positive and increasing after
+          the threshold). Switching dorsal anisotropy for ventral isotropy
+          changes bars into spots. The sweep is tabulated in the run, not drawn
+          as its own panel.
+        evidence:
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [286, 324], note: "ratio sweep and equal-diffusion / successor ablations", supports: true}
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [733, 739], note: "self-test asserts successor and equal-diffusion σ<0 and a monotonic sweep", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          Body circularity 0.262 versus a circle at 1, aspect 4.18 versus 1,
+          luminance CV versus a flat field at 0, KS statistic 0.147 between
+          render and specimen, stripe spacing 16 px versus the 20.8 µm anchor
+          (different units, so not a self-comparison), and Pearson r > 0.999
+          versus a null of 0. A second CC BY plate is segmented separately.
+          n=2 images.
+        evidence:
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [333, 381], note: "silhouette segmentation, circularity, aspect, luminance CV", supports: true}
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [622, 701], note: "measure_morphoeval records value and an independent reference", supports: true}
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [242, 284], note: "linear-regime Pearson r and log-RMSE against σ(k_c)", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          DOIs for Turing 1952, Nakamasu 2009, Yamanaka & Kondo 2014, Kullander
+          & Fang 2009, Spiewak et al. 2018, Podobnik et al. 2020, Parichy 2015,
+          and Irion & Nüsslein-Volhard 2019 are in the BibTeX. Both images are
+          CC-licensed Wikimedia files with authors and SHA-256 pins checked at
+          runtime. The synthetic species-gallery spiral was rejected.
+        evidence:
+          - {file: datasets/danio_aesculapii_turing_wavelength_s0/paper_citations.bib, lines: [1, 70], note: "DOIs for the Turing, cell-interaction, species, and Danio-evolution papers", supports: true}
+          - {file: datasets/danio_aesculapii_turing_wavelength_s0/danio_aesculapii_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 2.08e-05 m, age 0 Ma, specimen digests", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          Each modelling step is a named function cited from the module
+          docstring, and the Lean declarations name the same scaled integers
+          the self-test checks. The offset between formula k_c and argmax σ is
+          drawn and not yet a measurement row.
+        evidence:
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [1, 48], note: "docstring states the equations, the 21 µm scale, the 0 Ma age, and the successor contrast", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-danio-aesculapii-turing-wavelength-s0.yaml, lines: [1, 40], note: "three laws point at the Lean theorems and the script", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          Seed 3160, spectral diffusion, --self-test passes (Pearson r>0.98,
+          both controls negative, sweep monotonic, SHA-256 pins). The default
+          invocation writes the PNG and the 12-frame GIF. Deduction: --self-test
+          does not itself open the GIF, so the frame-count and 480 px gates are
+          enforced only on the render path.
+        evidence:
+          - {file: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py, lines: [715, 742], note: "pass-1 self_test physics assertions; GIF open is R2, scored in the v2 audit", supports: true}
+          - {file: datasets/danio_aesculapii_turing_wavelength_s0/README.md, lines: [18, 27], note: "documented invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Emit formula k_c minus argmax σ as a measurement and assert its sign in --self-test. The figure already draws both lines."
+      - id: R2
+        item: "Make --self-test open the GIF and assert n_frames >= 10 and min(width, height) >= 480, the same gates the render path already checks."
