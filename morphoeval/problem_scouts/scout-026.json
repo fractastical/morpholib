@@ -1,0 +1,367 @@
+{
+  "scout": "scout-026",
+  "ground": "wavevector",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "title": "Gate AP- and tail-conditioned hypothesis plots on manual-vs-auto head/tail agreement",
+      "gap": "Hypotheses 5, 7, and 10 and all ap_norm filters assume parser head/tail and poke geometry, but compare_xy_coordinates on 67 manual pairs shows median head error 665 px and tail error 1474 px with only 8 matched pairs; EXPERIMENTAL_HYPOTHESES.md still marks several claims testable without a numeric pass/fail gate tying cluster summaries to geometry QA.",
+      "done": "A machine-readable report (JSON or CSV) exists at morphoeval/scout_runs/scout-026-headtail-gate.json listing every folder/video in the detection summary with boolean pass where both head and tail manual–detected distances are below 200 px (or manual missing is flagged separately), plus aggregate fractions; scorer passes if the file parses and every video used in generate_all_hypothesis_plots.py is tagged pass/fail (no untagged rows).",
+      "tool_route": "wave-vector-analysis/compare_xy_coordinates.py on XY coordinates.xlsx vs wave-vector-analysis/analysis_results/detection_summary/detection_summary.md outputs; cross-check with wave-vector-analysis/generate_detection_summary.py on spark_tracks.csv when TIFF root is available; downstream gate documented by re-running python3 wave-vector-analysis/generate_all_hypothesis_plots.py <spark_tracks.csv> --clusters-csv <vector_clusters.csv> --output-dir morphoeval/scout_runs/scout-026-hypothesis-plots/ only for pass-tagged videos.",
+      "deciding_data": "In repo: wave-vector-analysis/analysis_results/head_tail_comparison.md, wave-vector-analysis/analysis_results/detection_summary/detection_summary.md, wave-vector-analysis/TAIL_LABELING.md. External (named): Levin Embryos XY coordinates.xlsx path recorded in wave-vector-analysis/analysis_results/detection_summary_old_new_speed_v6/DATA_SOURCES_AND_ASSUMPTIONS.md.",
+      "prior_attempts": "head_tail_comparison.md documents the 2026 manual–auto comparison; wave-vector-analysis/HEAD_TAIL_ASSIGNMENT_LOGIC.md lists known failure modes; no recorded closure in docs/open-problems.json. OP-07 blind neighbour transfer (refuted) used different features but noted orientation/geometry confounds.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "weight": 25,
+          "why": "compare_xy_coordinates.py and generate_detection_summary.py are named entrypoints that emit the deciding distance table without new pipeline code."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "weight": 20,
+          "why": "Comparison report and detection summary are in-repo; full Excel and TIFF stacks are one named local fetch away per DATA_SOURCES_AND_ASSUMPTIONS.md."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "weight": 15,
+          "why": "Done is a parsed JSON/CSV with per-video pass flags and a 200 px threshold—scorable without judgment."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "weight": 15,
+          "why": "Compare and summary steps are pandas/plotting on existing CSVs; hours-scale if spark_tracks path is mounted."
+        },
+        "isolation": {
+          "score": 9,
+          "weight": 10,
+          "why": "Can close as new files under morphoeval/scout_runs/ without editing tracked pipeline scripts."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "weight": 10,
+          "why": "One compare_xy run plus JSON aggregation yields a verdict in a single sitting when data paths are set."
+        },
+        "not_blocked": {
+          "score": 4,
+          "weight": 5,
+          "why": "No prior attempt recorded a refuted 200 px gate; OP-07 refutation targeted ML blind scoring, not this QA route."
+        }
+      }
+    },
+    {
+      "title": "Zoom-aware μm/s speed plausibility vs embedded literature bands",
+      "gap": "FR-004 and SPEED_COMPARISON.md require per-run zoom/um_per_px before comparing to LITERATURE_BENCHMARKS (roughly 10–3200 μm/s by scenario), but aggregate hypothesis plots still report px/s (e.g. 3.7 px/s in embryo B) without a repo-checked in-band fraction per orientation/poke class.",
+      "done": "wave-vector-analysis/literature_benchmarks.py (or compare_run_to_literature) writes morphoeval/scout_runs/scout-026-literature_comparison.json where each run_id has median speed_um_s and a boolean in_band for at least one benchmark id; scorer passes if ≥90% of runs with valid dCalibration also have non-null in_band fields and the JSON validates against the module’s output schema.",
+      "tool_route": "python3 wave-vector-analysis/literature_benchmarks.py via compare_run_to_literature(spark_tracks_path=..., output_path=morphoeval/scout_runs/scout-026-literature_comparison.json, embryo_length_um=1000.0, tiff_metadata_path=...) after spark_tracks from python3 wave-vector-analysis/wave-vector-tiff-parser.py <tiff_folder> 0 --fps 1.0 --csv run/spark_tracks.csv; optional cluster pass python3 wave-vector-analysis/spark_tracks_to_clusters.py run/spark_tracks.csv run/vector_clusters.csv for cluster-level speeds.",
+      "deciding_data": "In repo: wave-vector-analysis/literature_benchmarks.py (LITERATURE_BENCHMARKS), wave-vector-analysis/embryo_units.py, wave-vector-analysis/SPEED_COMPARISON.md; calibration metadata pattern in wave-vector-analysis/analysis_results/detection_summary_old_new_speed_v6/DATA_SOURCES_AND_ASSUMPTIONS.md (74/74 TIFFs with dCalibration).",
+      "prior_attempts": "FEATURE_REQUESTS_HIGH_PRIORITY.md FR-004 open; detection_summary_old_new_speed_v6 documents TIFF calibration coverage but does not emit literature_comparison.json.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "weight": 25,
+          "why": "literature_benchmarks.compare_run_to_literature is the named as-is tool for the deciding JSON artifact."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "weight": 20,
+          "why": "Benchmark table and docs are in-repo; deciding speeds need spark_tracks.csv from TIFF folders not vendored in git."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "weight": 15,
+          "why": "Per-run in_band booleans and ≥90% coverage rule are mechanically checkable."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "weight": 15,
+          "why": "Parser plus compare_run_to_literature on tens of videos fits hours on the repo Python stack."
+        },
+        "isolation": {
+          "score": 10,
+          "weight": 10,
+          "why": "Outputs only under morphoeval/scout_runs/; no edits to wave-vector-analysis/*.py required."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "weight": 10,
+          "why": "Single-folder smoke plus batch JSON completes in one loop; full 74-video batch may spill past one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "weight": 5,
+          "why": "No open-problems.json entry refutes the literature_comparison.json route."
+        }
+      }
+    },
+    {
+      "title": "Reconcile Hypothesis-1 post/pre activity ratio: area sum vs pixel count",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md reports a 128529× post/pre area ratio for Hypothesis 1 while generate_all_hypothesis_plots.py’s detailed panel counts unique track_id pixels; PIXEL_WAVE_ANALYSIS.md states area and pixel metrics can diverge, but no locked side-by-side verdict exists in repo artifacts.",
+      "done": "Two numeric post/pre ratios R_area and R_pixel are written to morphoeval/scout_runs/scout-026-h1-ratio.json on the same spark_tracks.csv (R_area from analyze_calcium_activity area sums, R_pixel from analyze_pixel_waves.py pixel counts or generate_all_hypothesis_plots pixel panel); scorer passes if abs(log10(R_area)-log10(R_pixel)) < 1.0 OR the JSON documents R_area > 1e4 with R_pixel < 100 and flags baseline_area_unreliable=true.",
+      "tool_route": "python3 wave-vector-analysis/analyze_pixel_waves.py spark_tracks.csv --output-dir morphoeval/scout_runs/scout-026-pixel/ ; python3 wave-vector-analysis/generate_all_hypothesis_plots.py spark_tracks.csv --clusters-csv vector_clusters.csv --output-dir morphoeval/scout_runs/scout-026-hypothesis-plots/ ; extract R_area via python3 -c importing analyze_experimental_hypotheses.analyze_calcium_activity.",
+      "deciding_data": "In repo: wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md (128529× claim), wave-vector-analysis/analysis_results/hypothesis1_activity*.png; spark_tracks.csv referenced but not committed (same path assumptions as README).",
+      "prior_attempts": "Hypothesis plots generated per EXPERIMENTAL_HYPOTHESES.md; no recorded refutation of pixel-vs-area reconciliation.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "weight": 25,
+          "why": "analyze_pixel_waves.py and generate_all_hypothesis_plots.py directly implement the two metrics on spark_tracks.csv."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "weight": 20,
+          "why": "Methods and example plots in-repo; deciding CSV must be supplied from prior parser output or TIFF re-parse."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "weight": 15,
+          "why": "Done is a JSON with two ratios and a log10 difference threshold or explicit unreliable flag."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "weight": 15,
+          "why": "Minutes on an existing spark_tracks.csv once available."
+        },
+        "isolation": {
+          "score": 10,
+          "weight": 10,
+          "why": "New JSON and plot output dirs only under morphoeval/scout_runs/."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "weight": 10,
+          "why": "Single CSV in, one script pair out, same sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "weight": 5,
+          "why": "No prior negative result on this specific ratio gate."
+        }
+      }
+    },
+    {
+      "title": "Close the simulation calibration loop against real vector_clusters",
+      "gap": "simulations/README.md describes calibrate_from_real_data.py → generate_simulated_data.py → downstream analysis, but there is no checked-in acceptance test that simulated cluster speed/duration distributions match real vector_clusters.csv within stated tolerances after calibration.",
+      "done": "morphoeval/scout_runs/scout-026-sim-calibration.json records KS statistics (or fixed ±20% bounds) for mean_speed_px_per_s and duration_s between real vector_clusters.csv and sim vector_clusters.csv; scorer passes if both metrics satisfy p>0.05 (KS) or relative error <0.2 on medians.",
+      "tool_route": "python3 wave-vector-analysis/simulations/calibrate_from_real_data.py spark_tracks.csv --clusters-csv vector_clusters.csv --output morphoeval/scout_runs/scout-026-calibrated_config.json ; python3 wave-vector-analysis/simulations/generate_simulated_data.py --config morphoeval/scout_runs/scout-026-calibrated_config.json --output morphoeval/scout_runs/scout-026-sim_spark_tracks.csv --duration 30.0 ; python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scout_runs/scout-026-sim_spark_tracks.csv morphoeval/scout_runs/scout-026-sim_vector_clusters.csv ; compare with scipy.stats.ks_2samp in a small morphoeval/scout_runs/scout-026-sim-compare.py (new file allowed).",
+      "deciding_data": "In repo: wave-vector-analysis/simulations/calibrate_from_real_data.py, generate_simulated_data.py, spark_tracks_to_clusters.py, simulations/CALIBRATION_GUIDE.md; real CSVs external to git.",
+      "prior_attempts": "Simulation framework documented in wave-vector-analysis/simulations/README.md; no morphoeval audit closes calibration fidelity.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "weight": 25,
+          "why": "Entire chain uses existing parser/cluster scripts plus calibrate/generate simulators—only comparison wrapper is new."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "weight": 20,
+          "why": "Simulators and guides in-repo; real spark_tracks/vector_clusters must be mounted from lab storage."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "weight": 15,
+          "why": "KS p-values or ±20% median bounds are objective."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "weight": 15,
+          "why": "30 s simulated duration and one calibration pass are hours-scale at most."
+        },
+        "isolation": {
+          "score": 10,
+          "weight": 10,
+          "why": "All artifacts under morphoeval/scout_runs/ and optional new compare script."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "weight": 10,
+          "why": "One calibration + one sim run yields KS verdict same day."
+        },
+        "not_blocked": {
+          "score": 5,
+          "weight": 5,
+          "why": "No recorded failed KS gate for this calibration path."
+        }
+      }
+    },
+    {
+      "title": "Tail–tail posterior poke: neighbor wave rate from wave_laterality catalog",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md Hypothesis 5 (posterior poke, tail–tail, weak/no neighbor wave) is PARTIAL with n=2 comment; wave_laterality_analysis.py can score neighbor_has_wave per video using filename orientation (oTTHT etc.) and poke token (pT/pM/pH) but no aggregated CSV verdict is checked into the repo.",
+      "done": "python3 wave-vector-analysis/wave_laterality_analysis.py produces or updates wave_laterality.csv filtered to orientation matching tail–tail and poke tail; morphoeval/scout_runs/scout-026-h5-tailtail.json reports count, neighbor_has_wave rate, and 95% Wilson interval; scorer passes if n≥5 videos in stratum or, if n<5, JSON records n and sets insufficient_power=true (still a valid negative-power verdict).",
+      "tool_route": "python3 wave-vector-analysis/batch_wave_catalog.py --root <Calcium_videos_root> (builds per-video waves/wave_events.csv with orientation tags) then python3 wave-vector-analysis/wave_laterality_analysis.py --catalog-dir <out> --out-csv morphoeval/scout_runs/scout-026-wave_laterality.csv ; optional spark-track cross-check: parser → clusters → generate_all_hypothesis_plots posterior_poke_effect.png for same stratum.",
+      "deciding_data": "In repo: wave-vector-analysis/wave_laterality_analysis.py docstring (filename oHTHT/pT encoding), wave-vector-analysis/batch_wave_catalog.py parse_meta(); wave catalog CSV not vendored. Literature/context: EXPERIMENTAL_HYPOTHESES.md Hypothesis 5 row.",
+      "prior_attempts": "Claims pipeline README lists wave_laterality as scoring partial Layer-4 claims; no numeric tail–tail posterior aggregate in git.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "weight": 25,
+          "why": "wave_laterality_analysis.py is the named scorer on wave_events.csv with orientation/poke parsed from filenames."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "weight": 20,
+          "why": "Scripts and claim text in-repo; deciding wave_events require Calcium video tree (Box path in README)."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "weight": 15,
+          "why": "neighbor_has_wave rate with n and Wilson interval or explicit insufficient_power flag."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "weight": 15,
+          "why": "batch_wave_catalog over full video set is heavy but fits repo stack in hours."
+        },
+        "isolation": {
+          "score": 9,
+          "weight": 10,
+          "why": "Outputs under morphoeval/scout_runs/; catalog build writes outside morphoeval unless redirected."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "weight": 10,
+          "why": "Full catalog batch may exceed one sitting; stratum JSON is quick once catalog exists."
+        },
+        "not_blocked": {
+          "score": 5,
+          "weight": 5,
+          "why": "Hypothesis marked partial, not refuted."
+        }
+      }
+    },
+    {
+      "title": "Quantify geometry confound for neighbor waves: PCA vs XY ground-truth laterality",
+      "gap": "docs/open-problems.json OP-07 states blind neighbour-transfer signal tracked orientation (AUC 0.833) not wave features; wave_laterality_analysis.py falls back to PCA embryo split when xy_ground_truth.csv is absent, but the delta in neighbor_has_wave between modes is not recorded—blocking evidence on whether wavepipe neighbor metrics survive ground-truth geometry.",
+      "done": "For every video with both modes runnable, morphoeval/scout_runs/scout-026-laterality-delta.csv lists neighbor_has_wave_pca, neighbor_has_wave_gt, and delta; scorer passes if mean absolute delta is reported and either (a) mean |delta| < 0.05 or (b) |delta| > 0.15 on ≥30% of videos, with no manual curation.",
+      "tool_route": "python3 wave-vector-analysis/parse_xy_coordinates.py --xlsx <XY coordinates.xlsx> --out wave-vector-analysis/analysis_results/xy_ground_truth.csv ; run python3 wave-vector-analysis/wave_laterality_analysis.py twice on the same catalog (with and without xy file on PATH) writing morphoeval/scout_runs/scout-026-lat_pca.csv and scout-026-lat_gt.csv ; diff columns in a new morphoeval/scout_runs/scout-026-laterality-delta.csv.",
+      "deciding_data": "In repo: wave-vector-analysis/README.md Calcium Claims Validation section, docs/open-problems.json OP-07; xy_ground_truth.csv not committed; Excel path named in detection_summary DATA_SOURCES.",
+      "prior_attempts": "OP-07 status refuted for headline LOOO blind neighbour model (embryo-blind/README.md cited in open-problems); this route is diagnostic on wave_laterality metrics, not a re-proposal of the refuted LOOO scorer.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "weight": 25,
+          "why": "wave_laterality_analysis.py explicitly supports GT vs PCA modes—wavepipe chain through catalog roll-up, not blind ML."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "weight": 20,
+          "why": "OP-07 context and scripts in-repo; XY Excel + wave catalog off-repo."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "weight": 15,
+          "why": "Per-video delta CSV with mean |delta| thresholds is objective."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "weight": 15,
+          "why": "Two laterality passes and a diff are hours-scale given catalog."
+        },
+        "isolation": {
+          "score": 9,
+          "weight": 10,
+          "why": "New CSVs under morphoeval/scout_runs/ only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "weight": 10,
+          "why": "Verdict after catalog exists; duplicate laterality runs are fast."
+        },
+        "not_blocked": {
+          "score": 3,
+          "weight": 5,
+          "why": "OP-07 refuted a related blind route; must not reuse LOOO neighbour-transfer scorer—this delta table is distinct but thematically adjacent."
+        }
+      }
+    },
+    {
+      "title": "Separate mirror vs headward neighbor cues using poke×orientation strata in cluster summaries",
+      "gap": "OP-08 notes post-unblinding HTHT mirror AUC 0.61–0.65 confounded with headward poke-at-tail; spark_tracks→vector_clusters→hypothesis directionality plots currently pool orientations, so mirror-symmetric predictions are not separable in checked-in outputs.",
+      "done": "For each orientation in {HTHT, HTTH, TTHH} and poke in {H,M,T}, morphoeval/scout_runs/scout-026-orient-strata.json lists median mean_angle_deg in embryo B and circular variance from vector_clusters.csv merged with batch_wave_catalog parse_meta orientation; scorer passes if HTHT/pT and HTHT/pH strata both exist with n_clusters≥100 each and |median_angle(HTHT,pT)-median_angle(HTHT,pH)| > 30° or JSON states confound_persists=true with both medians within 30°.",
+      "tool_route": "Per video: python3 wave-vector-analysis/wave-vector-tiff-parser.py <folder> 0 --fps 1.0 --csv morphoeval/scout_runs/scout-026-tracks/<video>.csv ; python3 wave-vector-analysis/spark_tracks_to_clusters.py ... ; aggregate with python3 wave-vector-analysis/batch_wave_catalog.py parse_meta logic or merge on video stem; direction stats via python3 wave-vector-analysis/analyze_experimental_hypotheses.py analyze_wave_directionality(..., embryo_id='B') ; plots optional via generate_all_hypothesis_plots.py.",
+      "deciding_data": "In repo: docs/open-problems.json OP-08, wave-vector-analysis/batch_wave_catalog.py parse_meta(), EXPERIMENTAL_HYPOTHESES.md directionality rows; pre-registration for held-out blind scoring remains outside wavepipe (hash-locked contract not in this repo snapshot).",
+      "prior_attempts": "OP-08 partial—PIXEL_V2_BLIND_RESULTS.md referenced but not in workspace; exploratory mirror AUC noted, registered separation test not closed.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "weight": 25,
+          "why": "Cluster directionality tools exist but orientation must be merged from catalog metadata—extra join step, not a single CLI today."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "weight": 20,
+          "why": "OP-08 text and parsers in-repo; multi-video parsed clusters not vendored."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "weight": 15,
+          "why": "30° median-angle separation or explicit confound_persists boolean between poke strata."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "weight": 15,
+          "why": "Requires batch parser passes across orientation/poke cells—hours to a day."
+        },
+        "isolation": {
+          "score": 8,
+          "weight": 10,
+          "why": "Strata JSON and per-video CSVs under morphoeval/scout_runs/; merge script can be new file."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "weight": 10,
+          "why": "Multi-video batch likely beyond one sitting without existing catalog."
+        },
+        "not_blocked": {
+          "score": 4,
+          "weight": 5,
+          "why": "OP-08 exploratory mirror result is not a refutation of cluster-angle stratification, but registered pixel-v2 blind path is still open—do not duplicate that scorer here."
+        }
+      }
+    },
+    {
+      "title": "Zebrafish 24 hpf composition blind (embryo-blind) — out of wavepipe lens",
+      "gap": "embryo-blind/zebrafish-blind/ZEBRAFISH_BLIND_RESULTS.md shows registered composition hypotheses Z1–Z4 failed versus baselines; this territory is listed for scout-026 but the spark-track→cluster→hypothesis-plot chain does not ingest Zebrafhub cell-type compositions.",
+      "done": "N/A for wavepipe—scorer should mark tool_fit near zero; a closing verdict would require rerunning the registered zebrafish blind scorer on zebrafish_blind_results.json, not wave-vector scripts.",
+      "tool_route": "Not wavepipe. Nearest repo artifacts: embryo-blind/zebrafish-blind/zebrafish_blind_results.json and ZEBRAFISH_BLIND_PREREGISTRATION.md (referenced in results doc). Wavepipe analog would wrongly be python3 wave-vector-analysis/generate_all_hypothesis_plots.py on unrelated CSVs—do not use.",
+      "deciding_data": "In repo: embryo-blind/zebrafish-blind/ZEBRAFISH_BLIND_RESULTS.md, zebrafish_blind_results.json; prereg manifest commit 6bad19d33c1c cited in results header.",
+      "prior_attempts": "Z1–Z4 scored not supported per ZEBRAFISH_BLIND_RESULTS.md (2026-10-26 nanopub in nanopubs/zebrafish_blind/).",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "weight": 25,
+          "why": "No spark_tracks or vector_clusters path applies; needs zebrafish composition / FishShapes blind lens."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "weight": 20,
+          "why": "Blind outcome JSON and writeup are already in-repo."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "weight": 15,
+          "why": "Original blind contract already has checkable Z1–Z4 thresholds—closed as negative."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "weight": 15,
+          "why": "Re-scoring is lightweight but not wavepipe."
+        },
+        "isolation": {
+          "score": 10,
+          "weight": 10,
+          "why": "Reporting only—no code changes required."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "weight": 10,
+          "why": "Results already published in markdown/json."
+        },
+        "not_blocked": {
+          "score": 1,
+          "weight": 5,
+          "why": "Primary hypotheses already refuted/not supported; only follow-up prereg would be new work under a different lens."
+        }
+      }
+    }
+  ]
+}
