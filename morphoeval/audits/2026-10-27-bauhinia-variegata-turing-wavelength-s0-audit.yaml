@@ -1,0 +1,120 @@
+# Pass 1 — Bauhinia variegata Turing wavelength, slot 3132.
+# Scores the first integration, before the diffusivity-scale sweep, the blended
+# inset, and the valve-masked KS. Overall is the rubric weighted mean (~78.9).
+audit:
+  id: 2026-10-27-bauhinia-variegata-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1. Checkpoint hash is updated to the commit that contains these files before the knowledge-graph build."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: "10.1016/0022-5193(79)90042-0"
+    year: 1979
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: "10.1007/BF00289234"
+    year: 1972
+  kondo2010:
+    title: "Reaction-Diffusion Model as a Framework for Understanding Biological Pattern Formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: "10.1126/science.1179047"
+    year: 2010
+  armon2011:
+    title: "Geometry and Mechanics in the Opening of Chiral Seed Pods"
+    authors: "Armon S, Efrati E, Kupferman R, Sharon E"
+    venue: "Science 333:1726-1730 (2011)"
+    doi: "10.1126/science.1203874"
+    year: 2011
+simulations:
+  - id: delphi10000-bauhinia-variegata-turing-wavelength-s0
+    name: "Bauhinia variegata Turing wavenumber at 69.12 µm (Pass 1)"
+    organism: "Bauhinia variegata (Orchid Tree Pod), Holocene extant, 0 Ma"
+    script: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py
+    output: docs/media/bauhinia_variegata_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, gierer1972, kondo2010, armon2011]
+    summary: >-
+      Pass 1 implements Schnakenberg kinetics and the Turing wavenumber on a
+      periodic patch sized so the linear wavelength is 69.12 µm (6.912e-05 m,
+      log10 = -4.160), age 0 Ma. The equal-diffusion control is stable
+      (sigma_max = -0.1) and a single-mode integration recovers sigma(k_c)
+      (0.193 versus 0.188). The first adult frame pasted an opaque inset over
+      the photograph and the grayscale Pearson r was 0.9776. The diffusion-ratio
+      sweep barely moved lambda. The 1 cm bar was not yet measured, so the
+      sampling limit was missing. Those three gaps are the remediation list.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) selects a finite wavenumber when inhibitor diffusion is fast enough. Schnakenberg (1979) supplies the trimolecular kinetics. Kondo & Miura (2010) review wavelength selection by reaction and diffusion rates."
+        - "Armon et al. (2011) measured centimetre-scale helical opening of Bauhinia variegata valves. That is a different law."
+      reconstructed_in_script:
+        - "D_u and D_v are chosen so the linear k_c equals 2π/69.12 µm. The 69.12 µm length is the assigned detail scale of this slot, not a counted spacing on the pericarp."
+      transfer_boundary:
+        - "The photograph is a centimetre-scale herbarium scan (CC BY-SA 3.0, Roger Culos). It shows the valve envelope. It does not resolve 69.12 µm."
+      does_not_claim:
+        - "Does not claim a published 69.12 µm pigment measurement for Bauhinia variegata."
+        - "Does not claim the reaction-diffusion field generates the pod silhouette or the seed positions."
+        - "Does not reuse Armon et al. curvature parameters."
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: "The Jacobian, k_c formula, and equal-diffusion control match Turing (1952) and the Schnakenberg steady state. The chemistry is transferred onto a pod epidermis that has no measured activator-inhibitor pair."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [95, 144], note: "Jacobian, discriminant root, k_c, and growth rate", supports: true}
+      specimen-match:
+        value: 78
+        rationale: "The growth GIF already shows the MHNT pod, but the first adult frame replaced the corner with an opaque activator tile. Grayscale Pearson r against the photograph was 0.9776."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [350, 400], note: "growth GIF; Pass 1 used an opaque inset", supports: true}
+      parameter-expressivity:
+        value: 68
+        rationale: "Varying D_v/D_u above the discriminant root changes lambda by only a few micrometres, because k_c^2 approaches f_u/(2 D_u). That sweep does not demonstrate wavelength control."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [237, 256], note: "wavelength sweep; Pass 1 varied the ratio, which is the wrong knob", supports: true}
+      morphometric-validation:
+        value: 72
+        rationale: "Linear sigma matches a single-mode integration to about 3 percent, and the ablation is negative. Full-frame Pearson r = 0.9776 misses the 0.98 gate. The scale bar was not measured, so the sampling limit was NaN. Full-frame KS was not separated from the valve."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [207, 234], note: "single-mode growth-rate check", supports: true}
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [477, 514], note: "goodness-of-fit; Pass 1 reported only the full frame", supports: true}
+      source-traceability:
+        value: 88
+        rationale: "Seed DOI 10.1098/rstb.1952.0012 and the Schnakenberg, Gierer-Meinhardt, Kondo-Miura, and Armon papers are in the bibliography. The specimen is SHA-256 pinned and CC BY-SA 3.0."
+        evidence:
+          - {file: datasets/bauhinia_variegata_turing_wavelength_s0/paper_citations.bib, lines: [1, 20], note: "Turing 1952 and Schnakenberg 1979 entries", supports: true}
+          - {file: datasets/bauhinia_variegata_turing_wavelength_s0/bauhinia_variegata_turing_wavelength_s0_reference.json, lines: [80, 95], note: "specimen SHA-256 and Commons source", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "The module docstring writes the PDE, the steady state, and the wavenumber formula next to the functions that implement them. The first sweep was not yet tied to the length-setting parameter."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [25, 36], note: "equation block in the module docstring", supports: true}
+      repro-package:
+        value: 82
+        rationale: "Seed 3132, --self-test, and a direct python invocation. Pass 1 self-test did not yet assert Pearson r > 0.98 on a rendered GIF."
+        evidence:
+          - {file: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py, lines: [767, 820], note: "self-test", supports: true}
+          - {file: datasets/bauhinia_variegata_turing_wavelength_s0/README.md, lines: [1, 30], note: "scale 69.12 µm and age 0 Ma, with the run command", supports: true}
+    remediation:
+      - "Replace the diffusion-ratio sweep with a diffusivity-scale sweep. Lambda must move as sqrt(D), which is the parameter that sets the wavelength."
+      - "Blend the adult inset into the photograph and quantise the GIF from the adult frame's palette so full-frame Pearson r exceeds 0.98."
+      - "Measure the printed 1 cm bar and report 69.12 µm in pixels. Segment the valve and report a valve-masked KS separate from the paper-white KS."
+      - "Keep the equal-diffusion ablation, and put its dispersion curve on the comparison figure next to the unstable band."
