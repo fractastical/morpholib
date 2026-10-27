@@ -1,0 +1,59 @@
+sim_id: delphi10000-acanthometra-pellucida-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+organism: Acanthometra pellucida
+scale_nm: 206.0
+age_ma: 0.0
+age_label: Holocene (Extant)
+chronoseries: {index: 1, length: 1}
+model_spec:
+  model: Schnakenberg activator-inhibitor, critical wavenumber k_c, length unit fixed so lambda_c(gamma=10, d=18) = 206 nm
+  a: 0.14
+  b: 0.76
+  gamma_ref: 10.0
+  Du: 1.0
+  d_ratio: 18.0
+  domain_nd: 48.0
+  grid_resolution: [96, 96]
+  seed: 3101
+  gamma_sweep: [4.0, 7.0, 10.0, 14.0, 19.0, 26.0]
+  boundary_conditions: periodic cortical patch; capsule disk mask on the drawing
+  inputs:
+    - datasets/acanthometra_pellucida_turing_wavelength_s0/acanthometra_pellucida_specimen.jpg
+    - datasets/acanthometra_pellucida_turing_wavelength_s0/acanthometra_pellucida_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Diffusion-weighted Turing trace
+    formula: Dv*f_u + Du*g_v, with f_u/gamma = 31/45 and g_v/gamma = -81/100 at (a,b)=(0.14,0.76)
+    lean_decl: MathOfBiology.Loop_3101.weightedTrace
+    lean_theorem: MathOfBiology.Loop_3101.reference_inhibitor_diffusion_is_unstable
+    lean_locus: morphoeval/lean/loops/Loop_3101_acanthometra_pellucida_turing_wavelength_s0.lean#L15-L19
+    variables: Du, Dv positive diffusion coefficients; reference Dv/Du = 18
+    role: Sign test for a real critical wavenumber at the 206 nm detail scale
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012; Gierer and Meinhardt 1972 DOI:10.1007/BF00289234
+    code_locus: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py#L75-L98
+  - law_name: Equal-diffusion ablation
+    formula: weighted trace at Du = Dv is negative, so k_c^2 is not positive
+    lean_decl: MathOfBiology.Loop_3101.weightedTrace
+    lean_theorem: MathOfBiology.Loop_3101.equal_diffusion_ablation_is_stable
+    lean_locus: morphoeval/lean/loops/Loop_3101_acanthometra_pellucida_turing_wavelength_s0.lean#L21-L23
+    variables: Du = Dv = 1 in the cleared integer trace
+    role: Negative control for Turing wavelength selection
+    source_citation: Murray 1981 DOI:10.1016/0022-5193(81)90334-9
+    code_locus: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py#L250-L258
+  - law_name: Inhibitor diffusion raises the trace
+    formula: weightedTrace(1, 8) < weightedTrace(1, 18)
+    lean_decl: MathOfBiology.Loop_3101.weightedTrace
+    lean_theorem: MathOfBiology.Loop_3101.wavenumber_numerator_increases_with_inhibitor_diffusion
+    lean_locus: morphoeval/lean/loops/Loop_3101_acanthometra_pellucida_turing_wavelength_s0.lean#L25-L27
+    variables: inhibitor diffusion ratio 8 versus the reference ratio 18
+    role: Monotone dependence of the k_c numerator on Dv
+    source_citation: Murray 1981 DOI:10.1016/0022-5193(81)90334-9
+    code_locus: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py#L75-L80
+  - law_name: Detail scale packs more waves than a coarser octave
+    formula: floor(1339/206) > floor(1339/412)
+    lean_decl: MathOfBiology.Loop_3101.stripeCount
+    lean_theorem: MathOfBiology.Loop_3101.detail_scale_packs_more_stripes_than_coarser_octave
+    lean_locus: morphoeval/lean/loops/Loop_3101_acanthometra_pellucida_turing_wavelength_s0.lean#L29-L33
+    variables: patch 1339 nm; this scale 206 nm; successor octave 412 nm; age 0 Ma; chronoseries 1/1
+    role: What changes at 206 nm versus the neighbouring coarser scale. No fossil chronospecies is in this series.
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py#L100-L101
