@@ -1,0 +1,319 @@
+{
+  "scout": "scout-072",
+  "ground": "library",
+  "lens": "measure",
+  "candidates": [
+    {
+      "id": "LIB-MEAS-01",
+      "title": "Corpus-wide audit sidecar drift: pinned outputs and dataset digests vs live tree",
+      "gap": "4,315 committed `*.measurements.yaml` sidecars record `outputs[].sha256` and `provenance.input_dataset_sha256`, but there is no closed-loop check that those pins still match `docs/media/` artifacts and `datasets/` files on a fresh checkout. A 2026-10-27 scan of all sidecars found 381 output paths missing on disk across 308 audit ids, 38 live artifact SHA-256 mismatches, and 117 live input-dataset digest mismatches across 91 audit ids (including flagship early audits whose sidecars reference root-level GIF/PNG names that are absent from `docs/media/`).",
+      "done": "A batch report (new JSON under `morphoeval/runs/`, not committed sidecars) lists every audit id where either (a) `python3 morphoeval/measure_outputs.py <audit.yaml>` prints a non-empty `missing` list, or (b) recomputed `input_dataset_sha256` differs from the committed sidecar for any keyed path. Done when the report exists and its totals are reproducible from the commands below (same counts on re-run).",
+      "tool_route": "for f in morphoeval/audits/*.yaml; do python3 morphoeval/measure_outputs.py \"$f\"; done — diff stdout `missing` lines and regenerated `*.measurements.yaml` `provenance` blocks against the committed sidecar beside each audit.",
+      "deciding_data": "In repo: `morphoeval/audits/*.yaml`, `morphoeval/audits/*.measurements.yaml`, `docs/media/*`, `datasets/**` referenced in sidecar provenance.",
+      "prior_attempts": "Individual KG `REPORT.md` files cite `artifact_sha256` for published bundles, but no swarm task closes a corpus-wide stale-sidecar inventory; not listed in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "`measure_outputs.py` is the authoritative regenerator of sidecar fingerprints and explicitly emits `missing` rather than inventing hashes."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All audits, sidecars, datasets, and media paths are already in the repository; no external fetch required."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Verdict is a finite list of audit ids and paths with boolean pass/fail per audit, checkable by diffing digests."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Thousands of audit YAMLs make a full batch CPU-heavy but embarrassingly parallel and bounded to hours on the cloud VM stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only measurement pass; closure is a new report file without editing tracked audits."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Full corpus pass may exceed one sitting; a stratified 200-audit sample already yields a decisive non-zero drift signal."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted re-measurement as a drift detector; gap is execution, not methodology."
+        }
+      }
+    },
+    {
+      "id": "LIB-MEAS-02",
+      "title": "Planarian HK-ATPase v2 sidecar still pins superseded specimen SHA-256 and morphology text",
+      "gap": "`morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.measurements.yaml` pins `schmidtea_mediterranea_specimen.jpg` to digest `466029cc0561067890bb0f69d224d8f799745eeb67a0699246107611737fb546` and claim-boundary text `length=1478 px`, while the live specimen file hashes to `0dde9f5e83a87dd9bdc3627e19ebc891cb4f8e99cf632fe637bccf082abfb990` at 720×500 px (re-pinned in `2011-beane-planarian-hk-atpase-anterior.py` per Pass 3 KG `evidenceAgainst`). `datasets/planarian_hk_atpase_anterior/scout_manifest.json` and README still describe the pre-swap Wikimedia 1493×564 asset.",
+      "done": "Re-running `measure_outputs.py` on the planarian HK audit YAML produces `provenance.input_dataset_sha256` for the specimen path equal to `0dde9f5e…` (live `sha256sum`), and any specimen-derived morphometrics in the regenerated sidecar differ from the v2 sidecar where they depended on the old segmentation geometry; verdict recorded as pass/fail on digest equality alone.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml && sha256sum datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg",
+      "deciding_data": "In repo: `datasets/planarian_hk_atpase_anterior/`, v2 sidecar, Pass 3 assessment in `morphoeval/kg/math_of_biology.ttl` (`pk:evidenceAgainst` on specimen swap).",
+      "prior_attempts": "Pass 3 MorphoEval loop (Gemini Argon et al.) scored the script after re-pinning and documented scout_manifest staleness; the v2 `.measurements.yaml` was not superseded to match live pins.",
+      "factors": {
+        "tool_fit": {
+          "score": 25,
+          "why": "Sidecar provenance digests and output fingerprints are exactly what `measure_outputs.py` recomputes from disk."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Specimen, sidecar, audit YAML, and KG remediation text are all committed."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Single-string equality check on SHA-256 for one dataset path."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "One audit regeneration completes in seconds once comparison PNG exists."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Diagnosis is read-only re-measurement plus an optional new report; no need to edit datasets on the scout branch."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Digest mismatch is visible immediately without re-rendering if only provenance is compared."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Pass 3 already flagged the swap; route is not refuted, but partial remediation means duplicate work risk."
+        }
+      }
+    },
+    {
+      "id": "LIB-MEAS-03",
+      "title": "Pavement-cell lobeyness: committed sidecar reference (L=1.506) vs live CV segmentation",
+      "gap": "The v2 sidecar claim boundary documents automated SEM segmentation mean lobeyness `L = 1.506` (`morphoeval/audits/2026-10-19-pavement-cell-lobing-audit-v2.measurements.yaml`). Pass 3 audit remediation (`morphoeval/kg/math_of_biology.ttl`, `evidenceAgainst` on `2017-runions-pavement-cell-lobing.py`) reports the same code now yields `L = 1.316` in the current environment with unchanged segmentation parameters, implying environment-dependent reference fitness without an updated sidecar.",
+      "done": "After ensuring `docs/media/pavement_cell_lobing_comparison.png` exists, regenerated measurements from `measure_outputs.py` include the specimen lobeyness statistic; done when the new `value` is printed and classified as agreeing with 1.506, agreeing with 1.316, or differing from both (±0.05 tolerance), updating the stale-reference verdict.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-pavement-cell-lobing-audit-v2.yaml (and v3 YAML if present); compare `measurements` entries whose name contains `lobeyness` or `L` to sidecar lines 29–31.",
+      "deciding_data": "In repo: `datasets/pavement_cell_lobing/arabidopsis_pavement_cell_specimen.jpg`, v2/v3 audit sidecars, KG evidenceAgainst locus.",
+      "prior_attempts": "Pass 3 audit v3 documented drift and requested requirements pinning; not closed with a regenerated `.measurements.yaml` parity check.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Dynamic loop measurements come from the slot script via `measure_outputs.py`, but the tool returns zero measurements when the comparison PNG is absent (observed on cloud VM)."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Specimen JPG and audit artifacts are in-repo; rendering the comparison PNG may require running the slot script once."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Numeric equality within a declared tolerance on one named measurement field."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Segmentation re-run is lightweight relative to full-slot simulation sweeps."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Re-measurement only; remediation of scipy/skimage pins would be a separate agent."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One audit loop once media exists."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Prior pass identified the drift; the measure-only verdict route remains open."
+        }
+      }
+    },
+    {
+      "id": "LIB-MEAS-04",
+      "title": "Self-referential morphometric anchors inflating quick_gate baseline scores",
+      "gap": "`measure_outputs.py` `compute_quick_gate` awards baseline credit whenever `reference_value` is non-null, without checking external provenance. A parse of all 4,315 sidecars found 1,089 measurements with `value == reference_value` (exact float match). Audits already flag exemplars (e.g. tracheal viscous fingering v3: `*_obs` columns in `tracheal_viscous_fingering_reference.json` fitted to model outputs; Levin YouTube v2: 23/25 laws with `reference_value == value` by construction), but there is no machine-readable census tying sidecar measurements back to independent literature or specimen digests.",
+      "done": "A report enumerates, per audit id, counts of measurements with `|value - reference_value| < 1e-6` whose `reference_source` lacks allowlisted tokens (`self-consistency`, `parity`, `script`, `generated`). For tracheal v3, done additionally requires re-run measurements for Pearson-r laws show `reference_source` citing Nelson 2017 figure coordinates OR the count of exact-match refs sourced only from `*_obs` JSON columns is zero.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-tracheal-viscous-fingering-audit-v3.yaml; plus offline parse of all `morphoeval/audits/*.measurements.yaml` measurement blocks (no LLM).",
+      "deciding_data": "In repo: sidecars, `datasets/tracheal_viscous_fingering/tracheal_viscous_fingering_reference.json`, audit v3 YAML remediation bullets; Levin audit v2 sidecar comment header.",
+      "prior_attempts": "Tracheal v3 and Levin v2/v3 referee passes documented self-referential refs in prose; no automated scorer output committed.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Sidecars are generated by `measure_outputs.py`; re-run refreshes values while YAML parse supplies the census without code changes."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All sidecars and reference JSONs are local."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Integer counts per audit with a published allowlist for `reference_source`."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "YAML parse is minutes; selective audit re-runs are seconds each."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Analysis outputs a new JSON report only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Census completes in one sitting; tracheal slot is a single exemplar re-measure."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audits requested relabelling but did not refute counting exact-match refs."
+        }
+      }
+    },
+    {
+      "id": "LIB-MEAS-05",
+      "title": "Scout dossier reference fitness: Wikimedia scout_manifest vs SHA-pinned specimen photographs",
+      "gap": "2,102 dataset folders ship `scout_manifest.json` dossiers (`candidate_specimens_wikimedia` with URL, width, height) from `morphoeval/scout_literature.py`, but downstream audits pin a single `*specimen*.jpg` whose bytes need not match the scouted asset. Planarian HK is the documented failure mode: scout dossier still describes Commons candidates up to 3000×1727 while the pinned photograph is 720×500 with a different SHA-256 than the v2 sidecar records; README prose still cites 1493×564 and digest `466029cc…`.",
+      "done": "For the planarian HK exemplar, `measure_outputs.py` recomputed `input_dataset_sha256` and PIL fingerprint dimensions for `schmidtea_mediterranea_specimen.jpg` are written beside parsed `scout_manifest.json` dimensions; done when a rule flags `manifest_candidate_dims != fingerprint_dims` AND `sha256(manifest-selected URL)` is not equal to pinned file unless an override record exists in the reference JSON.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml — inspect `provenance` and `outputs` fingerprint width/height; compare to `datasets/planarian_hk_atpase_anterior/scout_manifest.json` and `planarian_hk_atpase_anterior_reference.json` locks.",
+      "deciding_data": "In repo: `datasets/*/scout_manifest.json`, pinned specimen JPEGs, matching audit sidecars; literature lens fetched URLs are not required for the planarian case because mismatch is already internal.",
+      "prior_attempts": "Pass 3 planarian audit `evidenceAgainst` noted scout_manifest stale after specimen swap; no batch scout-vs-pin fitness table.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "`measure_outputs.py` fingerprints pinned files and records pixel sizes; it does not fetch Wikimedia URLs (dimension mismatch still decidable)."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Manifests and specimens are local; verifying URL bytes would need `scout_literature` (different lens)."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Boolean matrix per dataset: (sha256 pin equals live file) AND (manifest dimensions equal fingerprint dimensions)."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Batch over 2k manifests is hash/dimension only—hours if naively repeated, minutes with sampling."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Fitness report is a new file; fixing manifests/specimens is out of scope for the scout."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Exemplar planarian slot gives an immediate fail; full grid needs sampling strategy."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Documented on planarian slot only; route not refuted."
+        }
+      }
+    },
+    {
+      "id": "LIB-MEAS-06",
+      "title": "Planform canonical silhouette JSON vs Planform/Cervera re-measured morphometrics",
+      "gap": "`datasets/planform/planform_canonical_silhouettes_v1.json` (SHA-256 `cac26e64…`, exported from `2013-lobo-planform-morphology.py`) encodes morphology silhouettes, organ landmarks, and pairwise IoU anchors for canonical PlanformDB phenotypes. `measure_outputs.py` implements `measure_planform_v2` / `measure_cervera` against these fixtures, but early morphology audit sidecars reference missing root-level GIF/PNG outputs, so it is unknown whether current re-measurements still match the JSON anchors after `planformDB.sha256` pinning and bioelectric series v1 (`b3fe2ef5…`) landed.",
+      "done": "Re-run `measure_outputs.py` on a Planform or Cervera audit YAML whose `source_refs` include `datasets/planform/planform_canonical_silhouettes_v1.json`; done when each measurement whose `reference_source` cites PlanformDB encoded radii or silhouette IoU has `|value - reference_value|` below the tolerance printed in the sidecar (or a new report lists violations).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-13-morphology-audit.yaml (and Cervera audit YAMLs referencing `planform_canonical_silhouettes_v1.json` in KG context blocks)",
+      "deciding_data": "In repo: `datasets/planform/planform_canonical_silhouettes_v1.json`, `datasets/planform/planformDB.sha256`, `datasets/planform/planform_bioelectric_series_v1.json`, Planform audit sidecars.",
+      "prior_attempts": "`datasets/planform/README.md` documents export and SHA pins; `planform_bioelectric.py --self-test` checks series parity with rusty-matter but not GIF morphometrics against silhouette JSON via `measure_outputs`.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Dedicated Planform measurement hooks live in `measure_outputs.py` with explicit PlanformDB reference sources."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Silhouette JSON, DB digest, and audits are committed (media may need regeneration)."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Per-measurement numeric delta against JSON-encoded reference with fixed tolerance."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Planform measurement re-renders animations—moderate cost but bounded."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Verification pass only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One flagship Planform audit re-measure suffices for an initial verdict."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of silhouette JSON replay via `measure_outputs`."
+        }
+      }
+    },
+    {
+      "id": "LIB-MEAS-07",
+      "title": "species_gallery manifest SHA-256 pins vs live dataset specimen files (wrong lens for measure_outputs)",
+      "gap": "`datasets/species_gallery/species_manifest.json` records `sha256` digests for 143 `dataset_specimen_path` entries, but a live check found only 1/143 matches (142 paths hash differently or are missing). `verify_image_fitness.py` resolves specimens via this manifest for the Aristotelian index, so stale digests break specimen-match scoring—not decidable by re-measuring audit render outputs alone.",
+      "done": "N/A under the measure lens; closure belongs to `verify_image_fitness.py` emitting zero `sha256_mismatch` rows for manifest entries with existing files.",
+      "tool_route": "Would require: python3 morphoeval/verify_image_fitness.py (full index) — NOT `measure_outputs.py`. Measure lens can only hash individual audit `source_refs` opportunistically.",
+      "deciding_data": "In repo: `datasets/species_gallery/species_manifest.json` and per-slot `datasets/*/*specimen*.jpg`; 142/143 digest mismatches observed 2026-10-27.",
+      "prior_attempts": "Not in `docs/open-problems.json`; image fitness tier audit in `verify_image_fitness.py` docstring implies ongoing specimen QA but no manifest regeneration task.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "`measure_outputs.py` does not read `species_manifest.json`; only incidental if a specimen path appears in an audit provenance block."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Manifest and specimen files are local."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Exact SHA-256 equality per manifest row is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Hashing 143 JPEGs is trivial."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Could be a new verifier report without touching models."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single Python loop over manifest entries."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation; wrong tool assignment is the blocker."
+        }
+      }
+    },
+    {
+      "id": "LIB-MEAS-08",
+      "title": "Planform bioelectric damaged JSON negatives: validator fail-closed contract (simulation lens, not measure)",
+      "gap": "`datasets/planform/damaged/manifest.json` defines five single-fault fixtures (`E_FREQ_SUM`, `E_NOTICE_MISSING`, etc.) that must be rejected by the PlanformDB-derived series validator; acceptance of any damaged file indicates a broken consumer. This is integrity of library fixtures, but validation lives in `planform_bioelectric.py`, not in output re-measurement.",
+      "done": "Under measure lens: not closable. Under simulation lens: `python3 models/planform_bioelectric.py --self-test` exits 0 and rejects each damaged file with the expected error code from `manifest.json`.",
+      "tool_route": "Correct lens: `python3 models/planform_bioelectric.py --self-test` with `datasets/planform/planform_bioelectric_series_v1.json` and `datasets/planform/damaged/*`. `measure_outputs.py` has no handler for these JSON fixtures.",
+      "deciding_data": "In repo: `datasets/planform/damaged/`, `datasets/planform/planform_bioelectric_series_v1.json`, README § damaged negatives.",
+      "prior_attempts": "Documented in `datasets/planform/README.md`; exercised by extractor self-test, not by MorphoEval audit sidecars.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "No audit output or rendered media exists for damaged JSON; `measure_outputs.py` only fingerprints cited evidence files."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Fixtures and manifest are committed."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Self-test exit code and per-file expected error codes are exact."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Seconds-long self-test."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only validation pass."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single command."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route via `planform_bioelectric.py` is established; measure lens cannot claim it."
+        }
+      }
+    }
+  ]
+}
