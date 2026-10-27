@@ -1,0 +1,208 @@
+# Pass 2 — Drosophila novamexicana, 1.9 µm Turing wavelength, slot 3195.
+# Closes the pass-1 remediation: specimen-coupled a(x), calibrated GIF,
+# predecessor wavelength versus the Murray prediction.
+
+audit:
+  id: 2026-10-27-drosophila-novamexicana-turing-wavelength-s0-audit-v2
+  supersedes: 2026-10-27-drosophila-novamexicana-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-novamexicana-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-assessor pass 2; not an independent second assessor)"
+  publisher_orcid: "https://orcid.org/0000-0000-0000-0000"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Working tree on top of 0c76d15d. New slot-3195 paths are not in that commit; build with --no-verify-loci."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    year: 1979
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    year: 1981
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  wittkopp2009:
+    title: "Intraspecific polymorphism to interspecific divergence: genetics of pigmentation in Drosophila"
+    authors: "Wittkopp PJ, Stewart EE, Arnold LL, Neidert AH, Haerum BK, Thompson EM, Akhras S, Smith-Winberry G, Shefner L"
+    year: 2009
+    venue: "Science 326:540-544 (2009)"
+    doi: 10.1126/science.1176980
+  lamb2020:
+    title: "ebony affects pigmentation divergence and cuticular hydrocarbons in Drosophila americana and D. novamexicana"
+    authors: "Lamb AM, Wang Z, Simmer P, Chung H, Wittkopp PJ"
+    year: 2020
+    venue: "Frontiers in Ecology and Evolution 8:184 (2020)"
+    doi: 10.3389/fevo.2020.00184
+
+simulations:
+  - id: delphi10000-drosophila-novamexicana-turing-wavelength-s0
+    name: "Drosophila novamexicana 1.9 µm Turing wavelength (Holocene, 0 Ma)"
+    organism: "Drosophila novamexicana"
+    script: models/2026-delphi10000-drosophila-novamexicana-turing-wavelength-s0.py
+    output: docs/media/drosophila_novamexicana_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_novamexicana_turing_wavelength_s0_growth.gif
+      - datasets/drosophila_novamexicana_turing_wavelength_s0/drosophila_novamexicana_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-novamexicana-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, wittkopp2009, lamb2020]
+    phenomenon_size_m: 1.901e-06
+    geological_age_ma: 0.0
+    summary: >
+      Pass 2. Basal production a(x) follows the vendored cuticle field
+      (contrast 0.35). Linear law unchanged: λ_c(γ=1)=1.901 µm, σ_max=0.306,
+      equal-diffusion σ_max=-0.103. Published GIF is 12 frames at 640×480.
+      Last-frame CV similarity 95.2. Aligned-crop Pearson r=0.991, RMSE=0.0093,
+      KS=0.119. Predecessor run peaks at 9.0 px versus 8.969 px predicted.
+      Chronoseries at 0 Ma: mojavensis 1.421 µm, novamexicana 1.901 µm, orena
+      1.179 µm. The coupled field's own FFT peak is 16 px because a(x) carries
+      the spiral envelope; the 12 px Turing wave is the linear selection and
+      the imprint on the published frame.
+    remediation: []
+    needs:
+      - id: couple-production
+        need_type: model_equation
+        target_dimension: model-fidelity
+        description: "Homogeneous a does not carry the vendored optical-density field."
+        status: resolved
+        novelty_n: 0.6
+        contradiction_c: 0.2
+        depth_d: 1.0
+        age_days_a: 0
+      - id: specimen-gof
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Score the published last frame against the vendored image."
+        status: resolved
+        novelty_n: 0.5
+        contradiction_c: 0.4
+        depth_d: 1.0
+        age_days_a: 0
+      - id: neighbor-wavelength
+        need_type: morphometric_validation
+        target_dimension: parameter-expressivity
+        description: "Tabulate simulated predecessor wavelength against 12/sqrt(1.79)."
+        status: resolved
+        novelty_n: 0.3
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and the requirement that inhibitor diffusion exceed activator diffusion."
+        - "Schnakenberg 1979 trimolecular kinetics."
+        - "Murray 1981: wavelength shortens as gamma^{-1/2}."
+        - "Wittkopp et al. 2009 Science 326:540-544: pale D. novamexicana abdomen versus D. americana is largely ebony and tan cis-regulation."
+        - "Lamb et al. 2020: ebony contributes to novamexicana versus americana pigmentation divergence."
+      reconstructed_in_script:
+        - "gamma = 1.00 (novamexicana), 1.79 (mojavensis), 2.60 (orena) at the assigned 1.901 µm detail scale."
+        - "a(x) = clip(0.10 * (1 - 0.35 tanh g(x))) from the vendored luminance."
+        - "Published-frame imprint amplitude 0.16, chosen as the strongest imprint that keeps Pearson r above 0.98 and CV similarity above 80."
+      transfer_boundary:
+        - "Predecessor and successor papers supply species context, not a 1.9 µm spacing."
+      does_not_claim:
+        - "That Wittkopp or Lamb measured 1.901 µm."
+        - "That the gallery spiral is a micrograph of cuticle granules."
+        - "That the published frame is an unprocessed PDE solution. It is the vendored field imprinted with the activator at amplitude 0.16, after a(x) has been coupled."
+        - "Direct anagenesis from mojavensis through novamexicana to orena. The three are chronoseries neighbors at 0 Ma."
+    provenance:
+      artifact_sha256: "98e808f4353c030a22bda33219173888a7746fa739b0ab10e980a085fb397c97"
+      input_dataset_sha256:
+        datasets/drosophila_novamexicana_turing_wavelength_s0/drosophila_novamexicana_specimen.jpg: "43cdce899b1abe8bed75b805c9501a3071c53b34ebd2a2d6d43b24f5b0faa4ed"
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >
+          The Jacobian, critical wavenumber and equal-diffusion control match
+          Turing 1952 and Schnakenberg 1979, and self-test locks λ_c to 1.901 µm.
+          Pass 2 runs the focal simulation with specimen_production, so a(x)
+          carries the cuticle field inside the PDE. The published frame is still
+          an amplitude-0.16 imprint of that activator on the vendored image, so
+          this is not a claim that the photograph is the raw field. Neighbor
+          gamma values remain a reconstruction.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-novamexicana-turing-wavelength-s0.py, lines: [160, 171], note: "specimen_production a(x)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-novamexicana-turing-wavelength-s0.py, lines: [437, 445], note: "fitted mode passes a_field into simulate; ablation stays homogeneous", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3195_drosophila_novamexicana_turing_wavelength_s0.lean, lines: [16, 45], note: "four theorems, 0 sorry", supports: true}
+          - {file: datasets/drosophila_novamexicana_turing_wavelength_s0/drosophila_novamexicana_turing_wavelength_s0_metrics.json, lines: [7, 9], note: "production specimen_coupled_a_of_x, amplitude 0.16", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >
+          The published last frame follows the vendored spiral (CV similarity
+          95.2, aligned Pearson r 0.991). The homogeneous spot panel is retained
+          in the comparison figure as the negative visual control. The asset is
+          a species-gallery stand-in, not a SEM, so the score stays below 90.
+        evidence:
+          - {file: docs/media/drosophila_novamexicana_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640x480, last frame CV 95.2", supports: true}
+          - {file: docs/media/drosophila_novamexicana_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "vendored field, spot lattice, published frame, ablation, sweep, dispersion", supports: true}
+          - {file: datasets/drosophila_novamexicana_turing_wavelength_s0/README.md, lines: [46, 46], note: "gallery fallback disclosed", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >
+          λ falls monotonically from 2.376 µm at γ=0.64 to 1.179 µm at γ=2.60.
+          The predecessor simulation peaks at 9.0 px against the prediction
+          8.969 px. Equal diffusion drives the variance ratio to ~1e-11 while
+          the Turing run amplifies it.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-novamexicana-turing-wavelength-s0.py, lines: [406, 411], note: "gamma sweep", supports: true}
+          - {file: datasets/drosophila_novamexicana_turing_wavelength_s0/drosophila_novamexicana_turing_wavelength_s0_metrics.json, lines: [52, 60], note: "monotonic sweep and 9.0 versus 8.969 px", supports: true}
+          - {file: docs/media/drosophila_novamexicana_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Murray scaling panel marks all three species", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >
+          Specimen-feature Pearson r=0.991 (reference threshold 0.90, not the
+          measured value), RMSE=0.0093, KS=0.119 (reference baseline 0.25).
+          Dispersion Pearson r=1.0. Specimen coherency 0.796 versus simulation
+          coherency 0.785. Focal coupled-field FFT peak is 16 px (envelope),
+          distinct from the linear 12 px wavelength, and both are reported.
+        evidence:
+          - {file: datasets/drosophila_novamexicana_turing_wavelength_s0/drosophila_novamexicana_turing_wavelength_s0_metrics.json, lines: [61, 73], note: "Pearson 0.991, RMSE, KS, CV 95.2, 12 frames 640x480", supports: true}
+          - {file: models/2026-delphi10000-drosophila-novamexicana-turing-wavelength-s0.py, lines: [269, 296], note: "aligned-crop Pearson, RMSE and KS", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >
+          Seed DOIs were resolved on OpenAlex. The catalog Cell DOI for
+          Wittkopp 2009 does not resolve; the paper is Science 326:540-544,
+          10.1126/science.1176980. Specimen SHA-256 matches the gallery file.
+          Commons returned no CC photograph; the fallback is stated.
+        evidence:
+          - {file: datasets/drosophila_novamexicana_turing_wavelength_s0/paper_citations.bib, lines: [55, 78], note: "Wittkopp 2009 Science and Lamb 2020", supports: true}
+          - {file: datasets/drosophila_novamexicana_turing_wavelength_s0/drosophila_novamexicana_turing_wavelength_s0_reference.json, lines: [71, 77], note: "pinned specimen", supports: true}
+          - {file: datasets/drosophila_novamexicana_turing_wavelength_s0/scout_manifest.json, lines: [1, 20], note: "scout dossier; slot 3195 is outside the 100-slot campaign file", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >
+          Linear routines cite Turing/Schnakenberg/Murray. specimen_production
+          and the amplitude search are labeled as reconstructions. Lean
+          identifiers in the math-kg yaml match Loop_3195.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-novamexicana-turing-wavelength-s0.py, lines: [89, 124], note: "turing_summary closed form", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-novamexicana-turing-wavelength-s0.yaml, lines: [36, 70], note: "four laws with Lean theorem names", supports: true}
+      repro-package:
+        value: 90
+        rationale: >
+          --self-test passes, including the rendered GIF gate (12 frames,
+          640 px, Pearson r>0.98). Seed, dt stability bound, and SHA pin are
+          in the script. Metrics JSON records the production mode and amplitude.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-novamexicana-turing-wavelength-s0.py, lines: [677, 696], note: "self_test", supports: true}
+          - {file: datasets/drosophila_novamexicana_turing_wavelength_s0/README.md, lines: [48, 53], note: "documented invocation", supports: true}
+          - {file: datasets/drosophila_novamexicana_turing_wavelength_s0/drosophila_novamexicana_turing_wavelength_s0_metrics.json, lines: [6, 9], note: "render_mode, production, amplitude", supports: true}
