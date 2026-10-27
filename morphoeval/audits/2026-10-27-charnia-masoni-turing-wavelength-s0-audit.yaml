@@ -1,0 +1,141 @@
+# Pass 1 of loop 3145. Scores the first render, before the portrait chevron
+# retarget and the like-with-like wavelength sweep. The committed script and
+# the measurement sidecar are the post-fix versions; this file keeps the
+# pre-fix judgement. See the superseding audit for the committed artifacts.
+audit:
+  id: 2026-10-27-charnia-masoni-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent, primary assessor, pass 1)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 96a891cfffcbf7fb81617c1df76c424d1d7359a5
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+      scipy: "1.18.1"
+    note: >-
+      Pass-1 pixels were a 720×540 disk of near-horizontal stripes at a
+      chevron angle pegged at 85°, CV 83.9, with a wavelength sweep that
+      compared the determinant-critical λ to the σ-peak (RMSE 34.5 µm).
+      Those three defects are fixed in the committed tree; this record
+      does not rescore them.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  ford1958:
+    title: "Pre-Cambrian fossils from Charnwood Forest"
+    authors: "Ford TD"
+    venue: "Proc. Yorkshire Geol. Soc. 31:211-217 (1958)"
+    doi: 10.1144/pygs.31.3.211
+  dunn2021:
+    title: "The developmental biology of Charnia and the eumetazoan affinity of the Ediacaran rangeomorphs"
+    authors: "Dunn FS, Liu AG, Grazhdankin DV, Vixseboxse P, Flannery-Sutherland J, Green E, Harris S, Wilby PR, Donoghue PCJ"
+    venue: "Science Advances 7:eabe0291 (2021)"
+    doi: 10.1126/sciadv.abe0291
+  brasier2012:
+    title: "The architecture of Ediacaran Fronds"
+    authors: "Brasier MD, Antcliffe JB, Liu AG"
+    venue: "Palaeontology 55:1105-1124 (2012)"
+    doi: 10.1111/j.1475-4983.2012.01164.x
+
+simulations:
+  - id: delphi10000-charnia-masoni-turing-wavelength-s0
+    name: "Charnia masoni apical Turing wavelength at 140 µm (565 Ma), pass 1"
+    organism: "Charnia masoni"
+    domain: morphogenesis
+    script: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+    output: docs/media/charnia_masoni_turing_wavelength_s0_comparison.png
+    status: evaluated
+    summary: >-
+      Pass 1 of the 140 µm Charnia masoni apical Turing model. The dispersion
+      law already matched (Pearson r 0.998) but the render was a landscape disk
+      at 85° (CV 83.9) and the wavelength sweep mixed k_c with the fastest mode
+      (RMSE 34.5 µm). Those three items are the remediation list.
+    source_refs: [turing1952, schnakenberg1979, ford1958, dunn2021, brasier2012]
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and Schnakenberg 1979 kinetics."
+        - "Charnia is a glide-reflected rangeomorph with apical growth (Brasier, Antcliffe and Liu 2012; Dunn et al. 2021); Ford 1958 named it from Charnwood Forest."
+      reconstructed_in_script:
+        - "Schnakenberg parameters (0.14, 0.93, 0.062, 1.35) with the determinant-critical wavelength scaled to 0.0001404 m."
+      transfer_boundary:
+        - "140 µm is the assigned detail tier, not a length measured on the fossil."
+      does_not_claim:
+        - "Pass 1 does not claim the landscape disk resembles the cast."
+    remediation:
+      - "Replace the 720×540 disk at 85° with a portrait chevron whose angle sits at the CV maximum (58° on the probe grid), not on the edge of the search."
+      - "Sweep the fastest-mode wavelength against itself. The pass-1 sweep mixed the determinant-critical k_c with argmax σ and reported RMSE 34.5 µm."
+      - "Draw the equal-diffusion control as a panel. Pass 1 showed it only as a decaying curve."
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: "Eqs. 1–7 are the Schnakenberg Turing law and the Euler probe already tracked analytic σ (r = 0.998). The pass-1 sweep then compared that σ-peak with a different wavenumber, so the wavelength test was not yet the law it named."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [83, 142]
+            supports: true
+            note: "Jacobian and analytic σ(k) were already the published formulae."
+      specimen-match:
+        value: 72
+        rationale: "CV against the Tübingen cast was 83.9, but the frame was a circle of near-horizontal stripes with a midline seam. It did not read as a rangeomorph frond."
+        evidence:
+          - file: docs/media/charnia_masoni_turing_wavelength_s0_comparison.png
+            lines: [0, 0]
+            supports: true
+            note: "Committed PNG is the later portrait render; pass-1 pixels were replaced."
+      parameter-expressivity:
+        value: 74
+        rationale: "The chevron-angle search minimised an orientation L1 that kept falling through 85°, so the operating point sat on the boundary. Argmax-bin versus angle correlated only at 0.58."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [365, 399]
+            supports: true
+            note: "Vertical-fraction sweep was added with the fix; pass 1 used histogram argmax."
+      morphometric-validation:
+        value: 76
+        rationale: "Dispersion RMSE was already 0.020. The wavelength sweep RMSE of 34.5 µm was an apples-to-oranges gap, not a measured biological residual, and no KS against the cast had been interpreted."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [144, 191]
+            supports: true
+            note: "Euler versus analytic σ on 12 wavenumbers."
+      source-traceability:
+        value: 90
+        rationale: "Ford, Dunn, Brasier, Turing and Schnakenberg DOIs were checked on Crossref, and the cast's CC BY-SA 3.0 attribution (Ghedoghedo, Tübingen, 2013) was already pinned."
+        evidence:
+          - file: datasets/charnia_masoni_turing_wavelength_s0/paper_citations.bib
+            lines: [1, 40]
+            supports: true
+            note: "BibTeX entries for the law and the taxon."
+      code-traceability:
+        value: 84
+        rationale: "Equation numbers in the module docstring match the functions, and the Lean integers are checked at runtime. The pass-1 figure did not yet label which wavenumber it was plotting."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [413, 423]
+            supports: true
+            note: "lean_integers_agree locks f_u = 7383/10000 and g_v = -11449/10000."
+      repro-package:
+        value: 86
+        rationale: "Seed 3145, --self-test, and SHA-256 pins for the cast, README and bibliography. Pass 1 had not yet frozen the portrait canvas size."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [67, 81]
+            supports: true
+            note: "verify_pinned checks the three dataset digests and the 140.4 µm / 565 Ma constants."
