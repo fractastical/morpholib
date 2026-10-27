@@ -1,0 +1,133 @@
+{
+  "scout": "scout-098",
+  "ground": "scaling",
+  "lens": "registry",
+  "candidates": [
+    {
+      "id": "ODON-CELL-STASIS-01",
+      "title": "Odonata fossil wing vein cell length stasis across ~150 Myr (Hoffmann inhibition-length constant)",
+      "gap": "The Eshghi et al. (2026) audit in morphoeval/kg/2026-10-14-odonata-audit already measured median cell length 0.78–0.99 mm across a 6× wing-length range and 150 Myr of PBDB ages, but no row exists in predictions/prediction_registry.json with a hash-locked quantitative falsifier tied to datasets/odonata/.",
+      "done": "A pre-registered prediction (registered before scoring) states: for fossil wings in datasets/odonata/eshghi2026_odonata_wing_cells.csv with age_ma from fossil_taxa_pbdb_ages.csv, the OLS slope of cell_len_median_mm versus age_ma lies in [-0.003, +0.003] mm/Ma (approximate stasis band). Outcome is confirmed if the fitted slope falls inside that band, refuted if outside. predictions/resolutions/odonata-scaling.json records outcome_verdict and resolvability_verdict; python3 predictions/score_resolutions.py exits 0 after Round-2 registry merge.",
+      "tool_route": "Add prediction ODON-CELL-STASIS-01 via a new zero-conflict builder (e.g. predictions/register_scaling_round2.py) that appends to prediction_registry.json; compute slope with python3 2026-eshghi-odonata-wing-cells.py --export-fossil-age-slope or a one-off script in predictions/; write predictions/resolutions/odonata-scaling.json; python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: datasets/odonata/eshghi2026_odonata_wing_cells.csv, datasets/odonata/fossil_taxa_pbdb_ages.csv, datasets/odonata/fossil_wing_resegmentation.csv; public DOI 10.5281/zenodo.19899648 (already ingested).",
+      "prior_attempts": "MorphoEval audit 2026-10-14-odonata-audit (76/100) reported stasis descriptively; docs/open-problems.json has no entry; prediction registry Round 1 (2026-10-26) scoped only Danio/Drosophila melanogaster/Xenopus.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "Round-2 registry row plus resolutions JSON and score_resolutions.py is the repo’s standard blind scoring path."},
+        "data_in_hand": {"score": 19, "why": "All fossil wing morphometrics and PBDB midpoints are already vendored under datasets/odonata/."},
+        "falsifiable_done": {"score": 15, "why": "Slope inside or outside a fixed mm/Ma band is machine-checkable with no expert judgement."},
+        "compute_in_repo": {"score": 14, "why": "CSV regression and registry scoring finish in minutes on the cloud stack."},
+        "isolation": {"score": 9, "why": "Closable as new files under predictions/ only if registry merge uses a new builder script, not edits to tracked Round-1 rows."},
+        "time_to_verdict": {"score": 8, "why": "One sitting: register, run slope, write resolution, score."},
+        "not_blocked": {"score": 5, "why": "No prior registered prediction or refuted route on this exact Odonata slope claim."}
+      }
+    },
+    {
+      "id": "DS-CLK-NEG-FOSSIL-01",
+      "title": "Fossil amber Drosophila succini & berryi: clock_wavefront law fails like melanogaster (negative mechanism assignment)",
+      "gap": "Round 1 confirmed DM-CLK-NEG-01 for Drosophila melanogaster blastoderm, but the 20 datasets for Middle Eocene D. succini (44 Ma) and Early Miocene D. berryi (19 Ma) in datasets/drosophila_succini_clock_wavefront/ and datasets/drosophila_berryi_clock_wavefront/ still carry poson_law Somite Length S = u·T_clock with geological_age_ma set — no fossil chronospecies negative rows were registered or scored.",
+      "done": "Two registered negative predictions DS-CLK-NEG-01 (succini) and DS-CLK-NEG-02 (berryi) mirror DM-CLK-NEG-01 falsifier text. Both resolve confirmed in predictions/resolutions/fossil-amber-drosophila.json citing long-germ/pair-rule literature (same route as DM-CLK-NEG-01). score_resolutions.py marks both scored with outcome confirmed.",
+      "tool_route": "predictions/register_scaling_round2.py adds DS-CLK-NEG-01/02 from datasets/drosophila_{succini,berryi}_clock_wavefront/*_reference.json; literature pass via FlyBase/OpenAlex as in predictions/resolutions/drosophila.json DM-CLK-NEG-01; python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: 20 amber chronospecies scout_manifest.json files with geological_age_ma 44.0 and 19.0; FlyBase and Drosophila segmentation literature (same sources as DM-CLK-NEG-01).",
+      "prior_attempts": "DM-CLK-NEG-01 confirmed 2026-10-26 (predictions/resolutions/drosophila.json); morphoeval/scale_and_paleo_catalog.py lists succini/berryi in Cenozoic Amber Drosophilid Chronospecies but registry Round 1 excluded fossils by organism_selection criterion.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Direct extension of the proven DM-CLK-NEG-01 resolution template to named fossil dataset dirs."},
+        "data_in_hand": {"score": 17, "why": "Fossil metadata and law assignments are in repo; biology evidence is public literature already used for melanogaster."},
+        "falsifiable_done": {"score": 15, "why": "Same explicit falsifier as DM-CLK-NEG-01 (demonstrate a sequential clock wavefront in blastoderm)."},
+        "compute_in_repo": {"score": 14, "why": "Literature-bound negative scoring, no new experiments."},
+        "isolation": {"score": 9, "why": "New predictions/resolutions files plus a new register script; no modification of scored Round-1 prediction text."},
+        "time_to_verdict": {"score": 8, "why": "Replicate DM-CLK-NEG-01 resolution pass for two IDs in one loop."},
+        "not_blocked": {"score": 5, "why": "Fossil-specific IDs were never registered; DM-CLK-NEG-01 refuted the law for melanogaster only, not these rows."}
+      }
+    },
+    {
+      "id": "DS-BMIN-NEG-01",
+      "title": "Amber Drosophila biomineral_accretion (Raup shell law) is a mis-assignment for wingless holometabolous flies",
+      "gap": "datasets/drosophila_succini_biomineral_accretion/ assigns poson_law Raup (W,D,S) / Gyroid at phenomenon_size_m ≈ 1.57 mm with geological_age_ma 44.0, but amber drosophilids have no coiled shell or accretion morphology; Round 1 never registered a negative mechanism assignment for fossil Raup slots.",
+      "done": "Registered negative DS-BMIN-NEG-01: no published Baltic/Dominican amber Drosophila inclusion documents a calcareous coiled shell or TPMS biomineral whorl at the assigned scale. Outcome confirmed unless a cited specimen paper reports such structure. Resolution in predictions/resolutions/fossil-amber-drosophila.json; score_resolutions.py scored.",
+      "tool_route": "Register via predictions/register_scaling_round2.py referencing datasets/drosophila_succini_biomineral_accretion/drosophila_succini_biomineral_accretion_reference.json; PBDB taxon page + amber inclusion literature search; write resolution; python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: succini/berryi biomineral_accretion reference.json and scout_manifest geological_age_ma; public PBDB Drosophila succini and Hennig/Baltic amber faunal papers (DOI in scout_manifest seed_doi).",
+      "prior_attempts": "DM-DPP-01 and related Round 1 rows covered melanogaster protein-state positives only; no negative Raup-on-insect fossil audit in docs/open-problems.json.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Negative mechanism assignment fits registry discipline identically to DM-CLK-NEG-01."},
+        "data_in_hand": {"score": 16, "why": "Law assignment and scales in repo; decisive evidence is published amber descriptions (named DOIs in manifests)."},
+        "falsifiable_done": {"score": 14, "why": "Confirmed if no shell structure in cited literature; refuted if a primary source reports accretion morphology."},
+        "compute_in_repo": {"score": 13, "why": "Literature and metadata pass only."},
+        "isolation": {"score": 9, "why": "New registry/resolution files only."},
+        "time_to_verdict": {"score": 7, "why": "Single literature pass per species once IDs are registered."},
+        "not_blocked": {"score": 5, "why": "No prior registered attempt on succini Raup assignment."}
+      }
+    },
+    {
+      "id": "MB-EPL-REFUTE-01",
+      "title": "Monte Bolca Eoplatax papilio BDmax/SL falsifies shallow 50 Ma ephippid stem prediction (registered refutation)",
+      "gap": "KEY_DISCOVERIES §1.11 documents that the phylogenetic engine predicts Ephippidae at 50 Ma with BDmax/SL ≈ 0.67 [0.57, 0.77] while datasets/thompson/monte_bolca_fossil_ratios.json places Eoplatax_papilio at [0.80, 1.05] — a sharp falsification — but this is narrative only, not a blind prediction_registry outcome scorable by score_resolutions.py.",
+      "done": "Pre-registered prediction EPL-50MA-DEEP-01: published/photo-derived BDmax/SL for Eoplatax_papilio exceeds the engine’s 50 Ma upper bound 0.77. Outcome confirmed if monte_bolca_fossil_ratios.json lower bound 0.80 > 0.77; refuted only if a peer-reviewed ratio lands entirely below 0.77. Recorded in predictions/resolutions/thompson-deep-horizon.json; score_resolutions.py scored.",
+      "tool_route": "Register EPL-50MA-DEEP-01 in predictions/register_scaling_round2.py before any engine re-run; read datasets/thompson/monte_bolca_fossil_ratios.json; optional cross-check thompson/run_phylogenetic_prediction_engine.py export for Ephippidae node at 50 Ma; python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: datasets/thompson/monte_bolca_fossil_ratios.json (Eoplatax_papilio entry); thompson_phylogenetic_prediction_engine.json for predicted intervals; Wikimedia specimen citations embedded in JSON note.",
+      "prior_attempts": "Monte Bolca null overall 6/16 in KEY_DISCOVERIES; Fable attempted OP-04 deep horizon (docs/open-problems.json partial); FishShapes blind H4 refuted the mis-phrased ‘no better than consensus’ route — do not re-register that exact H4 wording.",
+      "factors": {
+        "tool_fit": {"score": 17, "why": "Registry can score the fossil-ratio vs bound claim; engine re-simulation is optional and Thompson-lens work."},
+        "data_in_hand": {"score": 18, "why": "Fossil ratio band and engine interval both live in repo JSON."},
+        "falsifiable_done": {"score": 14, "why": "Compare numeric lower bound 0.80 against fixed threshold 0.77."},
+        "compute_in_repo": {"score": 12, "why": "JSON comparison is instant; engine rerun is heavier but not required for done."},
+        "isolation": {"score": 9, "why": "New prediction and resolution files only."},
+        "time_to_verdict": {"score": 6, "why": "Decisive comparison is one JSON read once registered."},
+        "not_blocked": {"score": 4, "why": "OP-04 partially explored deep horizon but this exact Eoplatax registered refutation route was not scored."}
+      }
+    },
+    {
+      "id": "AMBER-PHENOM-SIZE-01",
+      "title": "Cenozoic amber chronospecies: phenomenon_size_m for a fixed law does not drift with geological_age_ma",
+      "gap": "morphoeval/scale_and_paleo_catalog.py and scout manifests attach geological_age_ma (44, 19, 0 Ma) alongside phenomenon_size_m per mechanism, but there is no registered claim testing whether deep-time labels incorrectly imply allometric drift in assigned primordium scales across succini → berryi → melanogaster.",
+      "done": "For mechanism clock_wavefront, register prediction AMBER-SCALE-CLK-01: Spearman correlation between geological_age_ma and phenomenon_size_m across {succini, berryi, melanogaster} reference.json files has |ρ| ≤ 0.5 (n=3 chronospecies). Confirmed if |ρ| ≤ 0.5; refuted if |ρ| > 0.5 with monotonic age ordering. Scored via predictions/resolutions/amber-scale.json and score_resolutions.py.",
+      "tool_route": "Python one-liner or predictions/amber_phenomenon_scale_check.py reading datasets/drosophila_{succini,berryi,melanogaster}_clock_wavefront/*_reference.json phenomenon_scale.phenomenon_size_m and scout_manifest geological_age_ma; register AMBER-SCALE-CLK-01; python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: six reference.json + scout_manifest pairs for clock_wavefront across succini, berryi, melanogaster (melanogaster geological_age_ma 0).",
+      "prior_attempts": "scale_and_paleo_catalog.py compute_phenomenon_scale_for_entry documents fields; no registry row; alpha_scale/empirical_series circularity noted in prediction_registry discipline but not tested across amber ages.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "Pure registry + JSON measurement fits lens; correlation is the scored object."},
+        "data_in_hand": {"score": 20, "why": "All sizes and ages already in tracked dataset reference files."},
+        "falsifiable_done": {"score": 13, "why": "Fixed |ρ| threshold on three points is checkable but statistically weak (explicit n=3 in registration)."},
+        "compute_in_repo": {"score": 15, "why": "Trivial JSON scrape and correlation."},
+        "isolation": {"score": 10, "why": "Only new scripts under predictions/ and resolution JSON."},
+        "time_to_verdict": {"score": 9, "why": "Minutes once prediction is registered."},
+        "not_blocked": {"score": 5, "why": "No prior registered correlation test on amber phenomenon_size_m."}
+      }
+    },
+    {
+      "id": "OP-04-GLS-ROOT-01",
+      "title": "Deep-horizon (>50 Myr) BDmax/SL error vs GLS root state — re-register after FishShapes H4 wording failure",
+      "gap": "OP-04 (docs/open-problems.json partial) asks what carries signal beyond ~50 Myr; FishShapes blind H4 was refuted because ‘beat consensus’ was the wrong null — KEY_DISCOVERIES states the correct null is GLS clade root (~0.28) not reef consensus (0.41). That corrected claim is not in prediction_registry.json for score_resolutions scoring.",
+      "done": "Register DEEP-H4-GLS-01: for hold-out pairs with τ ≥ 50 Myr in thompson_blind_test_results.json, median |error| ratio versus GLS root-state BDmax/SL is ≤ 0.55 (matching documented ~0.52). Confirmed if ratio ≤ 0.55 on the pre-registered JSON snapshot hash; refuted if > 0.55. Scored in predictions/resolutions/thompson-deep-horizon.json.",
+      "tool_route": "Hash-lock thompson_blind_test_results.json at registration; predictions/register_scaling_round2.py; compute ratio from existing JSON fields; python3 predictions/score_resolutions.py. Full engine refresh would use thompson/run_phylogenetic_prediction_engine.py (Thompson lens).",
+      "deciding_data": "In repo: thompson_blind_test_results.json, docs/THOMPSON_BLIND_TEST_RESULTS.md; datasets/thompson/monte_bolca_fossil_ratios.json for fossil-facing checks.",
+      "prior_attempts": "FishShapes blind test 2026 refuted original H4 consensus wording (docs/THOMPSON_BLIND_TEST_RESULTS.md); OP-04 marked partial; route ‘no better than consensus beyond 50 Myr’ is blocked and must not be re-proposed.",
+      "factors": {
+        "tool_fit": {"score": 16, "why": "Registry can score the re-phrased numeric ratio if blind JSON is hash-locked; engine work is separate."},
+        "data_in_hand": {"score": 17, "why": "Blind test outcomes already serialized in repo."},
+        "falsifiable_done": {"score": 13, "why": "Fixed ratio threshold on documented blind-test tallies."},
+        "compute_in_repo": {"score": 11, "why": "JSON aggregation only unless engine is re-run."},
+        "isolation": {"score": 9, "why": "New registration/resolution files; must not edit FishShapes preregistration nanopubs."},
+        "time_to_verdict": {"score": 5, "why": "Scoring is fast; agreeing on hash-locked snapshot adds process overhead."},
+        "not_blocked": {"score": 2, "why": "Partial OP-04 and refuted H4 consensus wording overlap — only the GLS-root rephrase is open."}
+      }
+    },
+    {
+      "id": "FOSSIL-TIER-SLOT-GAP",
+      "title": "90-taxon paleo catalog slots #1201–2100: mechanism audits vs scale tier coverage",
+      "gap": "NINETY_NOVEL_AND_FOSSIL_TAXA in morphoeval/scale_and_paleo_catalog.py defines base_size_m and geological_age_ma for 90 chronospecies, but most lack datasets/<genus>_<species>_* directories (only drosophila succini/berryi amber sets exist with full geological_age_ma in scout_manifest.json); there is no registered forecast of how many will pass tier-appropriate phenomenon_size_m audits when built.",
+      "done": "Not closable by prediction registry alone — needs measure_outputs.py + audit YAML generation (remediation/measure lens). Reported here with tool_fit ≈ 0 for registry.",
+      "tool_route": "Wrong lens: morphoeval/measure_outputs.py + Pass-1 audits on new dataset dirs; optionally delphi lens for portfolio scoring. Registry could only host a meta-resolvability forecast after ≥10 fossil dataset dirs exist.",
+      "deciding_data": "morphoeval/scale_and_paleo_catalog.py (in repo); missing per-taxon dataset dirs for Knightia, Globorotalia, etc.",
+      "prior_attempts": "species_gallery/species_manifest.json lists geological_age_ma for catalog taxa; wave of 2026-10-22 drosophila fossil scouts partially filled amber lineage only.",
+      "factors": {
+        "tool_fit": {"score": 3, "why": "Registry scores biological/law claims, not bulk audit completion forecasts without pre-registered per-taxon predictions."},
+        "data_in_hand": {"score": 8, "why": "Catalog tuples exist; most lack mechanism dataset reference.json files."},
+        "falsifiable_done": {"score": 5, "why": "Could become a count forecast (e.g. ≥70/90 tier match) but today lacks registered per-taxon falsifiers."},
+        "compute_in_repo": {"score": 6, "why": "Building 80+ dataset dirs exceeds one sitting."},
+        "isolation": {"score": 4, "why": "Would touch many dataset paths, conflicting with zero-conflict fleet rules."},
+        "time_to_verdict": {"score": 2, "why": "Multi-loop remediation, not one registry score."},
+        "not_blocked": {"score": 5, "why": "No prior registry attempt on the 90-taxon tier gap."}
+      }
+    }
+  ]
+}
