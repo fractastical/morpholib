@@ -1,0 +1,143 @@
+{
+  "scout": "scout-033",
+  "ground": "turing",
+  "lens": "lean",
+  "candidates": [
+    {
+      "title": "Turing (1952) N=20 ring: machine-check dominant discrete mode s*=4",
+      "gap": "models/1952-turing-morpho.py and datasets/turing/turing_reference.json pin dominant_mode_s=4 and list per-mode Re(sigma), but no Lean loop certifies that mode s=4 maximizes linear growth on the discrete ring q_s=4 sin^2(pi s/20) at the flagship Jacobian (a,b,c,d,D_X,D_Y). MathOfBiology.lean proves continuous det(J(q)) thresholds only.",
+      "done": "New 0-sorry Lean file (e.g. morphoeval/lean/loops/Loop_1952_turing_ring_dominant_mode.lean) proves for 10000-scaled integer parameters matching turing_reference.json that Re(sigma(q_s)) is strictly maximized at s=4 among s in {0,...,10}; `lean` on that file exits 0.",
+      "tool_route": "lean morphoeval/lean/loops/Loop_1952_turing_ring_dominant_mode.lean; cross-check constants against python3 models/1952-turing-morpho.py --self-test (Turing Sec. 8-9 JSON parity gate)",
+      "deciding_data": "In repo: datasets/turing/turing_reference.json (ring_of_20_cells.mode_growth_rates, jacobian_parameters); models/1952-turing-morpho.py compute_turing_1952_dispersion_and_ring",
+      "prior_attempts": "morphoeval/audits/2026-10-19-turing-audit-v2.yaml cites MathOfBiology.lean Section 5 theorems but not ring-mode dominance; morphoeval/runs/2026-10-26-flagship15-loop-passN.md re-scored dispersion without adding ring Lean.",
+      "factors": {
+        "tool_fit": { "score": 23, "weight": 25, "why": "Pure Lean 4 `decide`/omega on finitely many modes s=0..10, same stack as Loop_007." },
+        "data_in_hand": { "score": 20, "weight": 20, "why": "All numeric targets already in turing_reference.json and self-test parity lines." },
+        "falsifiable_done": { "score": 15, "weight": 15, "why": "Exit code 0 on one named .lean file is the entire verdict." },
+        "compute_in_repo": { "score": 15, "weight": 15, "why": "Kernel check completes in seconds; no PDE integration required." },
+        "isolation": { "score": 10, "weight": 10, "why": "Single new loop file under morphoeval/lean/loops/; no edits to flagship script." },
+        "time_to_verdict": { "score": 9, "weight": 10, "why": "One loop authoring pass plus `lean` invocation." },
+        "not_blocked": { "score": 5, "weight": 5, "why": "No prior attempt refuted discrete-mode dominance at these pinned parameters." }
+      }
+    },
+    {
+      "title": "Close turing-wavelength Lean stub gap for flagship zebrafish slot 1181 (pilot)",
+      "gap": "morphoeval/math_kg_loops/volkening-danio-rerio-mm32-adult-caudal-fin-flank-stripes-turing-wavelength.yaml and Loop_1181_* claim Turing dispersion laws, but the loop proves Int.mul_pos on law1_invariant a*b and decide on arbitrary margins (90-19>0), not det(J-k^2 D) or k_c^2 from the cited script.",
+      "done": "Replace Loop_1181 with theorems structurally matching MathOfBiology.turing_fourier_det / equal-diffusion barrier (as in Loop_007 pattern); morphoeval/verify_integrity.py classifies all three theorems as structural (not ground_arithmetic) for that YAML sim_id.",
+      "tool_route": "lean morphoeval/lean/loops/Loop_1181_danio_rerio_mm32_adult_caudal_fin_flank_stripes_turing_wavelength.lean; python3 morphoeval/verify_integrity.py --loop-yaml (volkening-danio-rerio-mm32-adult-caudal-fin-flank-stripes-turing-wavelength.yaml)",
+      "deciding_data": "In repo: morphoeval/lean/MathOfBiology.lean L563-L640; models/2015-volkening-danio-rerio-mm32-adult-caudal-fin-flank-stripes-turing-wavelength.py L31-L48; existing stub loop file",
+      "prior_attempts": "morphoeval/runs/model_integrity_ledger.jsonl documents tautology class for Levin YouTube stubs (law1_invariant pattern); overnight Drosophila batch generated 300+ matching turing_wavelength stubs (run_overnight_drosophila_1000.py) without per-species dispersion proofs.",
+      "factors": {
+        "tool_fit": { "score": 22, "weight": 25, "why": "Lean + existing verify_integrity Rule 3 gate are named repo tools." },
+        "data_in_hand": { "score": 18, "weight": 20, "why": "Jacobian scalings live in MathOfBiology and Volkening script; no external fetch." },
+        "falsifiable_done": { "score": 14, "weight": 15, "why": "verify_integrity structural vs ground_arithmetic classification is mechanical." },
+        "compute_in_repo": { "score": 15, "weight": 15, "why": "Minutes for one pilot slot; batch replication is separate." },
+        "isolation": { "score": 8, "weight": 10, "why": "Pilot can be one new loop file, but full cohort fix touches 300+ files (out of scope for zero-conflict if batch)." },
+        "time_to_verdict": { "score": 8, "weight": 10, "why": "Single-slot pilot reachable in one sitting; cohort is not." },
+        "not_blocked": { "score": 4, "weight": 5, "why": "Stub pattern known but not refuted as unfixable—integrity incident was on different domain." }
+      }
+    },
+    {
+      "title": "Pearson (1993) Gray-Scott: Lean certificate for Hopf trace annihilation on F_Hopf(k)",
+      "gap": "models/1952-turing-morpho.py --self-test gates max |tr(J_0)|<1e-12 on sampled F_Hopf(k) pairs numerically; MathOfBiology.pearson_steady_trace only proves tr=0 when v_sq=k with abstract F,k, not along Pearson's closed-form F_Hopf(k) curve from datasets/turing/turing_reference.json.",
+      "done": "0-sorry theorem in a new loop (or MathOfBiology extension) showing for integer-scaled (F,k) on a fixed rational grid covering the self-test sample, pearson_steady_trace F k (F+k) k = 0; Python self-test Hopf gate still passes unchanged.",
+      "tool_route": "lean morphoeval/lean/loops/Loop_1952_pearson_hopf_trace.lean; python3 models/1952-turing-morpho.py --self-test (Hopf curve subsection)",
+      "deciding_data": "In repo: datasets/turing/turing_reference.json pearson_1993_physical_setup.hopf_formula; models/1952-turing-morpho.py bifurcation F_hopf/k_hopf arrays",
+      "prior_attempts": "morphoeval/audits/2026-10-19-turing-audit-v2.yaml credited MathOfBiology Law 4 for SN discriminant, not full Hopf locus; no recorded Lean refutation of Hopf trace identity.",
+      "factors": {
+        "tool_fit": { "score": 20, "weight": 25, "why": "Lean proves algebraic identity; Python only regression-checks." },
+        "data_in_hand": { "score": 19, "weight": 20, "why": "Hopf formula string and samples already in repo JSON/script." },
+        "falsifiable_done": { "score": 13, "weight": 15, "why": "Either Lean compiles with covering grid or counterexample (F,k) found by decide failure." },
+        "compute_in_repo": { "score": 14, "weight": 15, "why": "Grid size bounded by self-test sample count (~ tens of points)." },
+        "isolation": { "score": 10, "weight": 10, "why": "New loop file only; optional MathOfBiology edit avoidable." },
+        "time_to_verdict": { "score": 7, "weight": 10, "why": "May need rational rewriting of sqrt(k) terms—could spill past one loop if grid is large." },
+        "not_blocked": { "score": 5, "weight": 5, "why": "Numeric Hopf gate passes; symbolic route not previously closed or refuted." }
+      }
+    },
+    {
+      "title": "Kondo ontogeny table: Lean arithmetic consistency N_stripes vs L/lambda_c",
+      "gap": "300+ turing_wavelength loops cite N_stripes(L)=round(L/lambda_c) but prove unrelated decide inequalities; datasets/turing/turing_reference.json lists six ontogeny stages with (body_length_cm, n_stripes, inter_stripe_spacing_mm) never machine-checked as a coherent counting law.",
+      "done": "Theorem block proving for each JSON stage row, n_stripes is within 1 of round(flank_height_mm / 3.80) using only integer mm/cm conversions pinned in JSON (no PDE); 0 sorrys.",
+      "tool_route": "lean morphoeval/lean/loops/Loop_1952_kondo_ontogeny_table.lean; optional python3 -c json load sanity on datasets/turing/turing_reference.json",
+      "deciding_data": "In repo: datasets/turing/turing_reference.json kondo_asai_1995_pomacanthus_growth.stages; contrast with real dispersion in morphoeval/lean/loops/Loop_004_pomacanthus_stripe_insertion.lean",
+      "prior_attempts": "Loop_004 proves doubling combinatorics for semicirculatus vs imperator unzipping but not the flagship JSON ontogeny table; 1952-turing-morpho.py uses 1D PDE counts not formally linked to JSON stages.",
+      "factors": {
+        "tool_fit": { "score": 21, "weight": 25, "why": "Pure integer arithmetic on six fixed rows—ideal Lean decide workload." },
+        "data_in_hand": { "score": 20, "weight": 20, "why": "Stage table entirely in turing_reference.json." },
+        "falsifiable_done": { "score": 15, "weight": 15, "why": "Six row-wise inequalities; any mismatch fails compilation or explicit counterexample lemma." },
+        "compute_in_repo": { "score": 15, "weight": 15, "why": "Trivial compute." },
+        "isolation": { "score": 10, "weight": 10, "why": "New loop file only." },
+        "time_to_verdict": { "score": 10, "weight": 10, "why": "Single sitting." },
+        "not_blocked": { "score": 5, "weight": 5, "why": "Table consistency not previously attempted or refuted." }
+      }
+    },
+    {
+      "title": "Flagship Loop_1952_turing_gray_scott: wire MathOfBiology laws into dedicated 0-sorry loop",
+      "gap": "Turing flagship audit (morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml id turing-gray-scott) references MathOfBiology.lean Section 5, but there is no morphoeval/lean/loops/Loop_*1952* or math_kg_loops/turing-gray-scott.yaml pairing script lines to lean_locus the way Slot 007 does—KG traceability gap vs other flagships.",
+      "done": "New morphoeval/lean/loops/Loop_1952_turing_gray_scott.lean re-exporting or duplicating the four turing-gray-scott-* theorems with file-local names; lean on file exits 0; optional new morphoeval/math_kg_loops/turing-gray-scott.yaml with code_locus to models/1952-turing-morpho.py L163-L244.",
+      "tool_route": "lean morphoeval/lean/loops/Loop_1952_turing_gray_scott.lean; lean morphoeval/lean/MathOfBiology.lean",
+      "deciding_data": "In repo: morphoeval/lean/MathOfBiology.lean L563-L640; morphoeval/audits/2026-10-19-turing-audit-v2.yaml Lean evidence block",
+      "prior_attempts": "2026-10-19-turing-audit-v2 dual-agent pass added Section 5 theorems to MathOfBiology; no dedicated flagship loop file yet.",
+      "factors": {
+        "tool_fit": { "score": 24, "weight": 25, "why": "Theorems already exist; loop file is mostly port + `lean`." },
+        "data_in_hand": { "score": 20, "weight": 20, "why": "All content in MathOfBiology.lean today." },
+        "falsifiable_done": { "score": 15, "weight": 15, "why": "0-sorry lean on named loop file." },
+        "compute_in_repo": { "score": 15, "weight": 15, "why": "Seconds." },
+        "isolation": { "score": 9, "weight": 10, "why": "New loop (+ optional new YAML) only if YAML omitted; YAML adds second file." },
+        "time_to_verdict": { "score": 10, "weight": 10, "why": "Copy/port task." },
+        "not_blocked": { "score": 5, "weight": 5, "why": "Not attempted." }
+      }
+    },
+    {
+      "title": "2D growing-domain Turing solver for flagship Pomacanthus GIF (NOT Lean-decidable)",
+      "gap": "morphoeval/runs/2026-10-26-flagship15-loop-passN.md and flagship audit claim_boundary explicitly list missing Real 2D growing-domain stripe-insertion with L(t); models/1952-turing-morpho.py only chains independent 1D stages (simulate_kondo_asai_growing_domain_stripes). docs/open-problems.json OP-06 marks remediation solved but Pass N+1 still lists this debt.",
+      "done": "N/A for Lean lens—would be python3 models/1952-turing-morpho.py --self-test new gate: 2D Gray-Scott or Kondo-Asai on expanding grid reproduces monotonic stripe count vs domain area within tolerance.",
+      "tool_route": "Lean lens cannot close; use python3 models/1952-turing-morpho.py --self-test and/or extend models/1995-kondo-pomacanthus-stripe-insertion.py 2D solver (numerics/PDE lens).",
+      "deciding_data": "In repo: models/1952-turing-morpho.py; morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml transfer_boundary; reference 2D patterns in datasets/turing/",
+      "prior_attempts": "OP-06 attempted by panel/gemini/gpt/sonnet (self-tests added, score fell to 68.8); growing-domain 2D explicitly still open in passN.md; 1995-kondo script has curvilinear/growing solvers but not wired into 1952 flagship.",
+      "factors": {
+        "tool_fit": { "score": 2, "weight": 25, "why": "Requires time-stepped PDE simulation, not a 0-sorry Lean contract." },
+        "data_in_hand": { "score": 16, "weight": 20, "why": "Specimens and JSON in repo; 2D ground truth sparse." },
+        "falsifiable_done": { "score": 12, "weight": 15, "why": "Self-test numeric gate would be objective once written— but not via Lean." },
+        "compute_in_repo": { "score": 8, "weight": 15, "why": "2D growing GS at flagship N=160 scale is hours-tuned, not minutes." },
+        "isolation": { "score": 3, "weight": 10, "why": "Touching 1952-turing-morpho.py conflicts with parallel flagship agents." },
+        "time_to_verdict": { "score": 2, "weight": 10, "why": "Multi-iteration PDE tuning." },
+        "not_blocked": { "score": 2, "weight": 5, "why": "OP-06 closed self-test debt but 2D route not refuted—still open engineering." }
+      }
+    },
+    {
+      "title": "Autonomous Meinhardt shell parameters (Conus flagship) — partial Lean, mostly calibration",
+      "gap": "Pass N+1 still lists autonomous Meinhardt parameterisation; models/1984-wolfram-conus-textile-rule30.py run_meinhardt_conus uses hand-tuned rates and stochastic activator injection; MathOfBiology only proves meinhardt_basal_quiescence, not Turing band or literature-fixed (rho,kappa) dispersion matching specimen IoU.",
+      "done": "For Lean slice: prove at integer-scaled parameters read from script header/self-test constants, Meinhardt linearisation det>0 at k=0 and det(J(q))<0 at a pinned q (as Loop_004 kondo_det pattern). Full 'autonomous' closure needs Python fit to datasets/conus* without manual overrides—outside pure Lean.",
+      "tool_route": "lean morphoeval/lean/loops/Loop_1984_meinhardt_conus_dispersion.lean (new); python3 models/1984-wolfram-conus-textile-rule30.py --self-test (Meinhardt subsection, ~5 min) for numerical cross-check",
+      "deciding_data": "In repo: models/1984-wolfram-conus-textile-rule30.py; morphoeval/lean/MathOfBiology.lean MeinhardtKlingler section; morphoeval/runs/2026-10-26-flagship15-loop-passN.md Conus bullet",
+      "prior_attempts": "Pass N+1 panel recalibrated Raup T and disclosed stochastic injection; Meinhardt autonomy not closed; Wolfram/Meinhardt Lean limited to basal quiescence and Rule30 gate.",
+      "factors": {
+        "tool_fit": { "score": 12, "weight": 25, "why": "Lean can certify linear dispersion at fixed params; autonomy/fit is Python optimization." },
+        "data_in_hand": { "score": 14, "weight": 20, "why": "Conus script constants in-repo; specimen segmentation still weak per audit." },
+        "falsifiable_done": { "score": 10, "weight": 15, "why": "Lean part is checkable; 'autonomous' end state needs self-test IoU gate debated by referees." },
+        "compute_in_repo": { "score": 7, "weight": 15, "why": "Conus --self-test ~5 min; parameter search longer." },
+        "isolation": { "score": 6, "weight": 10, "why": "New Lean loop isolated; Python autonomy touches 1984-wolfram-conus-textile-rule30.py." },
+        "time_to_verdict": { "score": 5, "weight": 10, "why": "Lean slice one sitting; full autonomy multi-loop." },
+        "not_blocked": { "score": 4, "weight": 5, "why": "Not refuted; partially deferred in OP-06." }
+      }
+    },
+    {
+      "title": "Holstein cow static Turing (OP-11) — Lean cannot adjudicate; route refuted for static RD",
+      "gap": "docs/open-problems.json OP-11 status refuted for static Turing on Bos taurus; morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml published negative verdict. Delphi pooled 39.3% still flags migration-wave variant, but that is morphometric/PDF inference not Lean.",
+      "done": "N/A Lean—would be blinded re-score (R11) or new colonisation PDE variant per OP-11 done field.",
+      "tool_route": "Use morphoeval audit pipeline + python3 models/1981-murray-bos-taurus-turing-wavelength.py (growing-domain variant); Lean lens: at most prove linear instability lemmas for published Murray kinetics unrelated to coat match.",
+      "deciding_data": "In repo: datasets/bos_taurus_turing_wavelength/; morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/published.json",
+      "prior_attempts": "OP-11: Fable blind audits 54.4/57.7, human PI, panel; static Turing refuted; re-score route not blocked but not Lean.",
+      "factors": {
+        "tool_fit": { "score": 3, "weight": 25, "why": "Biological verdict is morphometric; Lean cannot score coat vs Eden control." },
+        "data_in_hand": { "score": 17, "weight": 20, "why": "Held-out coat masks and audit v7 in repo." },
+        "falsifiable_done": { "score": 11, "weight": 15, "why": "R11 audit score is objective but not Lean-kernel." },
+        "compute_in_repo": { "score": 10, "weight": 15, "why": "Murray script runs on repo stack." },
+        "isolation": { "score": 5, "weight": 10, "why": "New audit YAML possible; cow scripts are shared flagship territory." },
+        "time_to_verdict": { "score": 3, "weight": 10, "why": "Blinded referee pass exceeds one Lean sitting." },
+        "not_blocked": { "score": 1, "weight": 5, "why": "Static Turing Lean-route effectively refuted; migration variant unproven but not Lean-first." }
+      }
+    }
+  ]
+}
