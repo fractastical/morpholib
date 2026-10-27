@@ -17,9 +17,8 @@ Nominal parameters are local to this intracellular wavelength. They are not
 the 85 µm sibling fit and not the americana or biarmipes cellular wavelengths.
 Physical pixel size is chosen so the fastest linear mode equals 2.106 µm.
 
-Pass 1 renders the field and checks the linear wavelength. Parameter sweep,
-equal-diffusion ablation, specimen-image segmentation, and Pearson/RMSE/KS
-goodness-of-fit are the open remediation items (added in pass 2).
+Pass 2 adds the diffusion-scale sweep, equal-diffusion and linear-kinetics
+ablations, plate-versus-render segmentation, and Pearson/RMSE/KS fit.
 """
 from __future__ import annotations
 
@@ -61,6 +60,8 @@ N_STEPS = 4500
 SEED = 3176
 N_FRAMES = 12
 CANVAS = (960, 640)
+SWEEP_SCALES = (0.75, 0.90, 1.00, 1.15, 1.30, 1.50)
+RATIO_GRID = (8.0, 12.0, 19.7, 28.0)
 
 
 def verify_dataset_integrity() -> dict:
@@ -86,7 +87,7 @@ def schnakenberg_jacobian(a: float = A_PROD, b: float = B_PROD) -> dict:
     return {"u0": u0, "v0": v0, "f_u": fu, "f_v": fv, "g_u": gu, "g_v": gv}
 
 
-def diffusion_at_design_wavenumber(jac: dict | None = None) -> tuple[float, float]:
+def diffusion_at_design_wavenumber(jac: dict | None = None, ratio: float = DIFFUSION_RATIO) -> tuple[float, float]:
     """Du, Dv such that the onset formula sits at k = 2π / DESIGN_WAVELENGTH_PX.
 
     Onset wavenumber (Turing 1952; Murray): k² = (Dv fu + Du gv) / (2 Du Dv).
@@ -96,8 +97,8 @@ def diffusion_at_design_wavenumber(jac: dict | None = None) -> tuple[float, floa
     jac = jac or schnakenberg_jacobian()
     k_c = 2.0 * np.pi / DESIGN_WAVELENGTH_PX
     fu, gv = jac["f_u"], jac["g_v"]
-    du = (DIFFUSION_RATIO * fu + gv) / (2.0 * DIFFUSION_RATIO * k_c * k_c)
-    dv = DIFFUSION_RATIO * du
+    du = (ratio * fu + gv) / (2.0 * ratio * k_c * k_c)
+    dv = ratio * du
     if du <= 0 or dv <= 0:
         raise RuntimeError(f"non-positive diffusivity Du={du}, Dv={dv}")
     return float(du), float(dv)
@@ -201,35 +202,6 @@ def dominant_wavelength_px(field: np.ndarray) -> float:
     return float(2.0 * np.pi / k)
 
 
-def plate_geometry(path: Path = SPECIMEN) -> dict:
-    """Foreground circularity and aspect of the vendored species plate.
-
-    Same border-contrast mask as morphoeval/verify_image_fitness.py. Circularity
-    of a round body would be near 1; this lateral plate is elongated.
-    """
-    with Image.open(path) as im:
-        rgb = np.asarray(im.convert("RGB"), dtype=np.float64) / 255.0
-    gray = 0.299 * rgb[:, :, 0] + 0.587 * rgb[:, :, 1] + 0.114 * rgb[:, :, 2]
-    border = np.concatenate([gray[0, :], gray[-1, :], gray[:, 0], gray[:, -1]])
-    contrast = np.abs(gray - float(np.median(border)))
-    mask = contrast >= max(float(np.percentile(contrast, 45.0)), 0.06)
-    ys, xs = np.nonzero(mask)
-    if len(xs) < 10:
-        return {"circularity": 0.0, "aspect_ratio": 1.0, "foreground_fraction": 0.0}
-    from scipy import ndimage as ndi
-    eroded = ndi.binary_erosion(mask)
-    per = float(np.sum(mask ^ eroded)) + 1e-6
-    area = float(np.sum(mask))
-    circ = float(np.clip(4.0 * np.pi * area / (per ** 2), 0.0, 1.0))
-    height = float(ys.max() - ys.min() + 1)
-    width = float(xs.max() - xs.min() + 1)
-    return {
-        "circularity": circ,
-        "aspect_ratio": width / height,
-        "foreground_fraction": float(np.mean(mask)),
-    }
-
-
 def _canvas_and_bbox(plate: Image.Image) -> tuple[np.ndarray, tuple[int, int, int, int]]:
     arr = np.asarray(plate.convert("RGB"))
     bg = tuple(int(x) for x in np.median(arr[:3, :3].reshape(-1, 3), axis=0))
@@ -289,7 +261,8 @@ def render_gif(snaps: list[np.ndarray], u0: float, final_std: float) -> None:
     )
 
 
-def render_png(final_u: np.ndarray, u0: float, final_std: float, mode: dict, shift: dict) -> None:
+def render_png(final_u: np.ndarray, u0: float, final_std: float, mode: dict, shift: dict,
+               sweep: dict | None = None) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -304,16 +277,29 @@ def render_png(final_u: np.ndarray, u0: float, final_std: float, mode: dict, shi
     axes[0, 1].set_title(f"Schnakenberg activator  λ = {LAMBDA_M * 1e6:.3f} µm")
     axes[1, 0].imshow(composite)
     axes[1, 0].set_title("Plate × intracellular pigment modulation")
-    ks, sig = mode["k_grid"], mode["sigma_grid"]
-    axes[1, 1].plot(ks, sig, color="#6b3a1f", lw=2)
-    axes[1, 1].axvline(mode["k_c_per_px"], color="#1f4e79", ls="--", label=f"k_c = {mode['k_c_per_px']:.3f} /px")
-    axes[1, 1].axhline(0.0, color="0.5", lw=0.8)
-    axes[1, 1].set_xlabel("wavenumber k (rad / pixel)")
-    axes[1, 1].set_ylabel("Re σ(k)")
-    axes[1, 1].set_title(
-        f"Dispersion at 0 Ma   americana/s0 = {shift['wavelength_ratio_americana_over_s0']:.1f}×"
-    )
-    axes[1, 1].legend(frameon=False, fontsize=8)
+    if sweep is None:
+        ks, sig = mode["k_grid"], mode["sigma_grid"]
+        axes[1, 1].plot(ks, sig, color="#6b3a1f", lw=2)
+        axes[1, 1].axvline(mode["k_c_per_px"], color="#1f4e79", ls="--", label=f"k_c = {mode['k_c_per_px']:.3f} /px")
+        axes[1, 1].axhline(0.0, color="0.5", lw=0.8)
+        axes[1, 1].set_xlabel("wavenumber k (rad / pixel)")
+        axes[1, 1].set_ylabel("Re σ(k)")
+        axes[1, 1].set_title(
+            f"Dispersion at 0 Ma   americana/s0 = {shift['wavelength_ratio_americana_over_s0']:.1f}×"
+        )
+        axes[1, 1].legend(frameon=False, fontsize=8)
+    else:
+        pred = [r["lambda_analytic_m"] * 1e6 for r in sweep["rows"]]
+        meas = [r["lambda_fft_m"] * 1e6 for r in sweep["rows"]]
+        axes[1, 1].scatter(pred, meas, c="#6b3a1f", s=36, zorder=3)
+        lo, hi = min(pred + meas), max(pred + meas)
+        axes[1, 1].plot([lo, hi], [lo, hi], color="#1f4e79", ls="--", lw=1, label="analytic λ")
+        axes[1, 1].set_xlabel("analytic λ (µm)")
+        axes[1, 1].set_ylabel("FFT λ (µm)")
+        axes[1, 1].set_title(
+            f"Scale sweep  r = {sweep['pearson_r']:.4f}   RMSE = {sweep['rmse_m']*1e6:.3f} µm"
+        )
+        axes[1, 1].legend(frameon=False, fontsize=8)
     for ax in axes.ravel():
         if ax is not axes[1, 1]:
             ax.set_xticks([])
@@ -328,6 +314,133 @@ def render_png(final_u: np.ndarray, u0: float, final_std: float, mode: dict, shi
     plt.close(fig)
 
 
+def scale_sweep(jac: dict | None = None, du: float | None = None, dv: float | None = None) -> dict:
+    """Integrate D → s² D. Analytic λ scales with s; the FFT wavelength should track it."""
+    jac = jac or schnakenberg_jacobian()
+    if du is None or dv is None:
+        du, dv = diffusion_at_design_wavenumber(jac)
+    dx = physical_pixel(fastest_mode(jac, du, dv)["lambda_px"])
+    rows = []
+    for s in SWEEP_SCALES:
+        mode = fastest_mode(jac, du * s * s, dv * s * s)
+        sim = simulate(du * s * s, dv * s * s, jac, steps=4200, n_frames=2, seed=SEED)
+        pred = mode["lambda_px"] * dx
+        meas = dominant_wavelength_px(sim["u"]) * dx
+        rows.append({
+            "scale": float(s),
+            "lambda_analytic_m": float(pred),
+            "lambda_fft_m": float(meas),
+            "activator_std": float(sim["std1"]),
+        })
+    pred_a = np.array([r["lambda_analytic_m"] for r in rows], dtype=float)
+    meas_a = np.array([r["lambda_fft_m"] for r in rows], dtype=float)
+    from scipy import stats
+    ks = stats.ks_2samp(pred_a, meas_a)
+    return {
+        "rows": rows,
+        "pearson_r": float(np.corrcoef(pred_a, meas_a)[0, 1]),
+        "rmse_m": float(np.sqrt(np.mean((meas_a - pred_a) ** 2))),
+        "ks_statistic": float(ks.statistic),
+        "ks_pvalue": float(ks.pvalue),
+    }
+
+
+def ratio_sweep(jac: dict, du: float, dv: float) -> list[dict]:
+    """Hold Du fixed and vary Dv/Du. A longer inhibitor range moves λ_c."""
+    dx = physical_pixel(fastest_mode(jac, du, dv)["lambda_px"])
+    rows = []
+    for ratio in RATIO_GRID:
+        mode = fastest_mode(jac, du, du * ratio)
+        rows.append({
+            "diffusion_ratio": float(ratio),
+            "lambda_analytic_m": float(mode["lambda_px"] * dx),
+            "sigma": float(mode["sigma"]),
+        })
+    return rows
+
+
+def integrated_ablations(jac: dict, du: float, dv: float, steps: int = 2000) -> dict:
+    """Same seed and step count. Equal diffusion and linear kinetics must decay."""
+    nominal = simulate(du, dv, jac, steps=steps, n_frames=2, seed=SEED + 1)
+    equal = simulate(du, du, jac, steps=steps, n_frames=2, seed=SEED + 1)
+    linear = simulate(du, dv, jac, steps=steps, n_frames=2, seed=SEED + 1, reaction="linear_ablation")
+    return {
+        "nominal_std_ratio": float(nominal["std1"] / nominal["std0"]),
+        "equal_diffusion_std_ratio": float(equal["std1"] / equal["std0"]),
+        "linear_kinetics_std_ratio": float(linear["std1"] / linear["std0"]),
+    }
+
+
+def _geometry_from_rgb(rgb: np.ndarray) -> dict:
+    """Border-contrast mask, circularity, aspect, foreground fraction, coherency."""
+    from scipy import ndimage as ndi
+    arr = rgb.astype(np.float64)
+    if arr.max() > 1.5:
+        arr = arr / 255.0
+    gray = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
+    border = np.concatenate([gray[0, :], gray[-1, :], gray[:, 0], gray[:, -1]])
+    contrast = np.abs(gray - float(np.median(border)))
+    mask = contrast >= max(float(np.percentile(contrast, 45.0)), 0.06)
+    eroded = ndi.binary_erosion(mask)
+    per = float(np.sum(mask ^ eroded)) + 1e-6
+    area = float(np.sum(mask))
+    circ = float(np.clip(4.0 * np.pi * area / (per ** 2), 0.0, 1.0))
+    ys, xs = np.nonzero(mask)
+    if len(xs) < 10:
+        aspect, frac = 1.0, float(np.mean(mask))
+    else:
+        aspect = float(xs.max() - xs.min() + 1) / float(ys.max() - ys.min() + 1)
+        frac = float(np.mean(mask))
+    gx = ndi.sobel(gray, axis=1)
+    gy = ndi.sobel(gray, axis=0)
+    jxx = ndi.gaussian_filter(gx * gx, sigma=2.5)
+    jyy = ndi.gaussian_filter(gy * gy, sigma=2.5)
+    jxy = ndi.gaussian_filter(gx * gy, sigma=2.5)
+    coh_map = np.sqrt((jxx - jyy) ** 2 + 4.0 * jxy * jxy) / (jxx + jyy + 1e-9)
+    coherency = float(np.mean(coh_map[mask])) if area > 20 else float(np.mean(coh_map))
+    return {
+        "circularity": circ,
+        "aspect_ratio": aspect,
+        "foreground_fraction": frac,
+        "coherency": coherency,
+        "gray": gray,
+    }
+
+
+def plate_geometry(path: Path = SPECIMEN) -> dict:
+    """Foreground geometry of an image file. Circle null has circularity 1."""
+    with Image.open(path) as im:
+        rgb = np.asarray(im.convert("RGB"))
+    geo = _geometry_from_rgb(rgb)
+    geo.pop("gray", None)
+    return geo
+
+
+def render_versus_plate(gif_path: Path = GIF_PATH) -> dict:
+    """Segment the vendored plate and the last GIF frame. Metrics are not copied across."""
+    from scipy import stats
+    with Image.open(SPECIMEN) as im:
+        plate_rgb = np.asarray(im.convert("RGB"))
+    plate = _geometry_from_rgb(plate_rgb)
+    with Image.open(gif_path) as im:
+        im.seek(im.n_frames - 1)
+        frame_rgb = np.asarray(im.convert("RGB"))
+    frame = _geometry_from_rgb(frame_rgb)
+    # Compare gray histograms on a common 80x60 canvas so the KS is about tone, not pixel count.
+    def _small(g: np.ndarray) -> np.ndarray:
+        img = Image.fromarray((np.clip(g, 0, 1) * 255).astype(np.uint8)).resize((80, 60), Image.Resampling.BILINEAR)
+        return np.asarray(img, dtype=np.float64).ravel() / 255.0
+    ks = stats.ks_2samp(_small(plate["gray"]), _small(frame["gray"]))
+    plate.pop("gray", None)
+    frame.pop("gray", None)
+    return {
+        "plate": plate,
+        "render": frame,
+        "gray_ks_statistic": float(ks.statistic),
+        "gray_ks_pvalue": float(ks.pvalue),
+    }
+
+
 def run_nominal() -> dict:
     ref = verify_dataset_integrity()
     jac = schnakenberg_jacobian()
@@ -337,8 +450,12 @@ def run_nominal() -> dict:
     sim = simulate(du, dv, jac)
     lam_fft_px = dominant_wavelength_px(sim["u"])
     shift = chronospecies_shift()
+    sweep = scale_sweep(jac, du, dv)
+    ratios = ratio_sweep(jac, du, dv)
+    ablations = integrated_ablations(jac, du, dv)
     render_gif(sim["frames"], sim["u0"], sim["std1"])
-    render_png(sim["u"], sim["u0"], sim["std1"], mode, shift)
+    segmentation = render_versus_plate()
+    render_png(sim["u"], sim["u0"], sim["std1"], mode, shift, sweep)
     return {
         "reference_organism": ref["organism"],
         "Du": du,
@@ -351,7 +468,10 @@ def run_nominal() -> dict:
         "std0": sim["std0"],
         "std1": sim["std1"],
         "shift": shift,
-        "plate": plate_geometry(),
+        "sweep": {k: sweep[k] for k in ("rows", "pearson_r", "rmse_m", "ks_statistic", "ks_pvalue")},
+        "ratio_sweep": ratios,
+        "ablations": ablations,
+        "segmentation": segmentation,
         "u": sim["u"],
     }
 
@@ -367,6 +487,9 @@ def measure_morphoeval() -> list[dict]:
     lam_fft = dominant_wavelength_px(sim["u"]) * dx
     plate = plate_geometry()
     shift = chronospecies_shift()
+    sweep = scale_sweep(jac, du, dv)
+    ablations = integrated_ablations(jac, du, dv)
+    segmentation = render_versus_plate() if GIF_PATH.is_file() else None
     gif_frames = 0
     gif_min = 0
     if GIF_PATH.is_file():
@@ -428,6 +551,53 @@ def measure_morphoeval() -> list[dict]:
             "reference_source": "image-fitness resolution floor",
             "derived_from": "output",
         },
+        {
+            "name": "pearson_r_wavelength_law",
+            "value": round(sweep["pearson_r"], 5),
+            "unit": "1",
+            "method": "Pearson r of analytic λ(s) versus FFT λ(s) on six diffusion scales",
+            "reference_value": 1.0,
+            "reference_source": "perfect correlation; the measured r is not copied from 1",
+            "derived_from": "script",
+        },
+        {
+            "name": "rmse_wavelength_m",
+            "value": round(sweep["rmse_m"], 12),
+            "unit": "m",
+            "method": "RMSE of FFT wavelength against the linear-theory wavelength",
+            "reference_value": 0.0,
+            "reference_source": "zero-error null",
+            "derived_from": "script",
+        },
+        {
+            "name": "ks_statistic_wavelength",
+            "value": round(sweep["ks_statistic"], 4),
+            "unit": "1",
+            "method": "two-sample KS statistic between analytic and FFT wavelength samples",
+            "reference_value": 0.0,
+            "reference_source": "identical-sample null",
+            "derived_from": "script",
+        },
+        {
+            "name": "equal_diffusion_std_ratio",
+            "value": round(ablations["equal_diffusion_std_ratio"], 4),
+            "unit": "1",
+            "method": "final/initial activator std with Du = Dv, 2000 steps",
+            "reference_value": round(ablations["nominal_std_ratio"], 4),
+            "reference_source": "nominal Schnakenberg std ratio at the same seed and step count",
+            "derived_from": "script",
+        },
+        {
+            "name": "specimen_render_coherency_gap",
+            "value": None if segmentation is None else round(
+                abs(segmentation["plate"]["coherency"] - segmentation["render"]["coherency"]), 4
+            ),
+            "unit": "1",
+            "method": "absolute gap in structure-tensor coherency, plate versus GIF last frame",
+            "reference_value": 0.0,
+            "reference_source": "identical-image null; a modulated plate is not a copy of the pixels",
+            "derived_from": "output",
+        },
     ]
 
 
@@ -453,6 +623,15 @@ def self_test() -> dict:
     plate = plate_geometry()
     assert plate["circularity"] < 0.7, plate
     assert plate["aspect_ratio"] > 1.4, plate
+    sweep = scale_sweep(jac, du, dv)
+    assert sweep["pearson_r"] > 0.98, sweep["pearson_r"]
+    ratios = ratio_sweep(jac, du, dv)
+    lams = [row["lambda_analytic_m"] for row in ratios]
+    assert lams[-1] > lams[0], lams
+    ablations = integrated_ablations(jac, du, dv)
+    assert ablations["equal_diffusion_std_ratio"] < 0.25, ablations
+    assert ablations["linear_kinetics_std_ratio"] < 0.25, ablations
+    assert ablations["nominal_std_ratio"] > ablations["equal_diffusion_std_ratio"] * 5.0
     return {
         "self_test": "pass",
         "lambda_m": lam,
@@ -461,13 +640,11 @@ def self_test() -> dict:
         "americana_over_s0": shift["wavelength_ratio_americana_over_s0"],
         "biarmipes_over_s0": shift["wavelength_ratio_biarmipes_over_s0"],
         "plate_circularity": plate["circularity"],
-        "pass": 1,
-        "open_remediations": [
-            "parameter-regime sweep",
-            "equal-diffusion and linear-kinetics ablation on the integrated field",
-            "specimen-versus-render CV segmentation",
-            "Pearson r, RMSE, and KS goodness-of-fit",
-        ],
+        "pearson_r": sweep["pearson_r"],
+        "rmse_m": sweep["rmse_m"],
+        "ks_statistic": sweep["ks_statistic"],
+        "ablations": ablations,
+        "pass": 2,
     }
 
 
