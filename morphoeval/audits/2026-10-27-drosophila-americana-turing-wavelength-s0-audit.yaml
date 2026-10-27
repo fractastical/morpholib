@@ -1,0 +1,124 @@
+audit:
+  id: 2026-10-27-drosophila-americana-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (single builder-assessor; no second provider in this pass)"
+    homepage: https://x.ai/
+  domain: morphogenesis
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 1 working tree. New slot files are not in commit 0c76d15d. publisher_orcid is the dct:creator already used on this repo's MorphoEval nanopubs; this pass does not sign."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    doi: 10.1098/rstb.1952.0012
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer, A. and Meinhardt, H."
+    doi: 10.1007/BF00289234
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    doi: 10.1016/0022-5193(81)90334-9
+  wittkopp2009:
+    title: "Intraspecific polymorphism to interspecific divergence: genetics of pigmentation in Drosophila"
+    authors: "Wittkopp, P. J. et al."
+    doi: 10.1126/science.1176980
+  clark2007:
+    title: "Evolution of genes and genomes on the Drosophila phylogeny"
+    authors: "Drosophila 12 Genomes Consortium"
+    doi: 10.1038/nature06341
+  ogrady2018:
+    title: "Phylogeny of the genus Drosophila"
+    authors: "O'Grady, P. M. and DeSalle, R."
+    doi: 10.1534/genetics.117.300583
+simulations:
+  - id: delphi10000-drosophila-americana-turing-wavelength-s0
+    name: "Drosophila americana detail-scale Turing wavelength (2.117 µm, 0 Ma)"
+    organism: "Drosophila americana"
+    script: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py
+    output: docs/media/drosophila_americana_turing_wavelength_s0_comparison.png
+    phenomenon_size_m: 2.117e-6
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    status: evaluated
+    source_refs: [turing1952, gierer1972, murray1981, wittkopp2009, clark2007, ogrady2018]
+    summary: >-
+      Pass 1. Schnakenberg activator-inhibitor at diffusion ratio r = 10, with the
+      Turing onset wavenumber k_c and the maximum-growth wavelength k_sigma calibrated
+      so the expressed scale is 2.117 µm (2.1 µm, log10 = -5.674) at 0 Ma.
+      D_u sweep Pearson r = 0.989 against lambda(k_sigma), RMSE 0.41 px.
+      Equal-diffusion ablation amplitude ratio is ~0. Detail-scale wavelengths
+      are 1.958 µm (affinis), 2.117 µm (americana), 1.900 µm (ananassae), buffered
+      by body-length exponent 0.35 relative to the 96/139/85 µm primordium siblings.
+      Species-card CV similarity of the growth GIF is 79.0 (12 frames, 640×520).
+      Orientation KS on 12 histogram bins is 0.5 and is not yet a pixel-sample test.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 and Murray 1981: critical wavenumber k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v) for a two-species reaction-diffusion system."
+        - "Wittkopp et al. 2009: abdominal pigmentation divergence between D. americana and D. novamexicana is genetic and largely cis-regulatory, at body-color scale."
+        - "Clark et al. 2007 and O'Grady & DeSalle 2018: D. ananassae is in the sequenced Sophophora genomes; D. americana sits in the virilis radiation."
+      reconstructed_in_script:
+        - "Schnakenberg kinetics f = a - u + u^2 v, g = b - u^2 v with a = 0.1, b = 0.9, r = 10, integrated by a Fourier semi-implicit step."
+        - "Detail-scale wavelengths lambda_i = 2.117e-6 * (L_i / L_americana)^0.35 for affinis, americana, and ananassae."
+        - "Physical ruler that sets lambda(k_sigma) = 2.117 µm on the americana anchor."
+      transfer_boundary:
+        - "The 2.117 µm figure is the assigned detail-scale slot, identified here with the expressed ocellar-pigment wavelength. Wittkopp 2009 does not report that length."
+        - "Predecessor and successor are campaign chronoseries neighbors at 0 Ma, not a fossil ancestor-descendant series."
+      does_not_claim:
+        - "Does not claim the repository species card is a micrograph of the ocellus. It is a brown pigment card with a 100 µm scale bar."
+        - "Does not claim the X–4 fusion or red/brown puparium is a term in the reaction-diffusion equations."
+        - "Does not claim the catalog DOI 10.1016/j.cell.2009.09.044, which Crossref returns as 404."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "onset_kc2 and sigma_plus implement the published critical-wavenumber formula and the larger Jacobian eigenvalue. Kinetics are the cubic activator-inhibitor form. r = 10 is a reconstruction chosen so k_sigma stays near k_c, not a value tabulated by Turing or Wittkopp."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py, lines: [80, 134], note: "Jacobian, k_c^2, discriminant, and sigma_plus peak", supports: true}
+          - {file: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py, lines: [147, 203], note: "Fourier semi-implicit Schnakenberg step using the continuum -k^2 symbol", supports: true}
+      parameter-expressivity:
+        value: 82
+        rationale: "Five D_u scales move the measured wavelength with Pearson r = 0.989. Equal diffusion collapses the amplitude. The chronoseries is a D_u rescaling at fixed r. There is not yet a near-onset bracket showing k_sigma approach k_c, and (a, b) are not swept."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py, lines: [64, 65], note: "SWEEP_SCALES = (0.64, 0.81, 1.00, 1.21, 1.44)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py, lines: [264, 317], note: "wavelength_sweep and equal-diffusion ablation", supports: true}
+      specimen-match:
+        value: 76
+        rationale: "The growth GIF last frame scores CV similarity 79.0 against the species card (12 frames, 640×520, frame difference 0.12). The card is a spiral pigment image, not an ocellar micrograph, and the simulation is a stripe field, so the match is textural rather than anatomical. The GIF caption uses λ and µm, which the default bitmap font does not draw. Orientation KS on 12 bins is 0.5."
+        evidence:
+          - {file: docs/media/drosophila_americana_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth GIF, 640×520", supports: true}
+          - {file: docs/media/drosophila_americana_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Species card beside the developed field, dispersion, and sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py, lines: [397, 425], note: "render_gif caption and brown colormap", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: "Pearson r = 0.989 and RMSE = 0.41 px against lambda(k_sigma). Ablation amplitude ratio is about 0. The detail-scale americana/affinis ratio is below the primordium-scale sibling ratio. The orientation KS is reported but is computed on histogram bins rather than pixel samples, so it is a weak distributional test. n = 1 species card."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py, lines: [205, 229], note: "dominant_wavelength_px radial FFT with parabolic refinement", supports: true}
+          - {file: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py, lines: [354, 381], note: "Otsu segment, coherency, and ks_2samp on orientation histograms", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-verified DOIs for Turing, Gierer & Meinhardt, Murray, Wittkopp 2009, Clark 2007, and O'Grady & DeSalle 2018. The species card SHA-256 is pinned. The catalog Cell DOI is recorded as a 404 rather than cited. Commons had no D. americana photograph."
+        evidence:
+          - {file: datasets/drosophila_americana_turing_wavelength_s0/paper_citations.bib, lines: [1, 69], note: "Verified bibliographic records", supports: true}
+          - {file: datasets/drosophila_americana_turing_wavelength_s0/drosophila_americana_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 2.117e-6 m, age 0 Ma, specimen SHA-256", supports: true}
+      code-traceability:
+        value: 85
+        rationale: "k_c, the Jacobian, and the chronoseries formula are named in the module docstring and in the Lean proofs (six theorems, no sorry). Self-test checks the Lean nanometre integers 2117, 1958, and 1900. The Fourier scheme is commented as matching the dispersion operator."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3175_drosophila_americana_turing_wavelength_s0.lean, lines: [16, 48], note: "Six theorems: order, stripe count, buffer inequalities, discriminant sign", supports: true}
+          - {file: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py, lines: [1, 28], note: "Module docstring states k_c, the 2.117 µm scale, and 0 Ma", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Seed 3175, --self-test, and a deterministic Fourier step. Self-test passed (r = 0.989, ablation ratio ~ 0). Dependencies are the repo scientific stack (numpy, scipy, pillow, matplotlib). No second-assessor rerun and no pinned container."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py, lines: [614, 642], note: "self_test assertions including Pearson r > 0.98 and the Lean integers", supports: true}
+    remediation:
+      - "R1: GIF caption uses λ and µm, which the default PIL font does not draw. Replace with ASCII."
+      - "R2: Orientation KS is ks_2samp on 12 histogram bins (statistic 0.5). Recompute on pixel orientation samples and report that distance."
+      - "R3: Add a near-onset run (r closer to r_c ≈ 8.57) showing the fractional gap (lambda_sigma - lambda_c) / lambda_c shrinks relative to r = 10."
+      - "R4: Single species card and a single assessor. The card is not an ocellar micrograph; do not treat a higher score as anatomical validation."

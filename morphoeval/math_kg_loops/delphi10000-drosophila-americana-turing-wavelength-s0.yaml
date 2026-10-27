@@ -1,0 +1,63 @@
+sim_id: delphi10000-drosophila-americana-turing-wavelength-s0
+slot: 3175
+organism: Drosophila americana
+phenomenon_size_m: 2.117e-6
+log10_size_m: -5.674
+size_human: "2.1 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila americana (North American Riparian Willow Fly), detail scale
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Subgenus Drosophila virilis–repleta–guttifera Radiation"
+predecessor: Drosophila affinis
+successor: Drosophila ananassae
+chronoseries: "Drosophila chronoseries 4/41"
+math_family: Reaction-Diffusion & Turing Dispersion (I. Reaction-Diffusion & Stripe Splitting)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  model: "Schnakenberg activator-inhibitor with Turing onset wavenumber k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); expressed wavelength is the maximum-growth mode k_sigma at r = 10"
+  a: 0.1
+  b: 0.9
+  diffusion_ratio_r: 10.0
+  expressed_wavelength_m: 2.117e-6
+  buffering_exponent_beta: 0.35
+  grid_n: 96
+  seed: 3175
+  inputs:
+    - datasets/drosophila_americana_turing_wavelength_s0/drosophila_americana_turing_wavelength_s0_reference.json
+    - datasets/drosophila_americana_turing_wavelength_s0/Drosophila_americana_specimen.jpg
+    - datasets/drosophila_americana_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Turing onset wavenumber
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c"
+    lean_decl: MathOfBiology.Loop_3175.turing_discriminant_survives_at_r10_and_fails_at_equal_diffusion
+    lean_theorem: MathOfBiology.Loop_3175.turing_discriminant_survives_at_r10_and_fails_at_equal_diffusion
+    lean_locus: morphoeval/lean/loops/Loop_3175_drosophila_americana_turing_wavelength_s0.lean#L44-L48
+    variables: "f_u = 4/5 for the Schnakenberg steady state at a = 0.1, b = 0.9; r = D_v/D_u"
+    role: "Critical wavenumber of the 2.117 µm ocellar-pigment pattern; equal diffusion r = 1 is below onset"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+    code_locus: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py#L92-L100
+  - law_name: Buffered detail-scale chronoseries
+    formula: "lambda_i = 2.117e-6 * (L_i / L_americana)^0.35"
+    lean_decl: MathOfBiology.Loop_3175.detail_wavelength_chronoseries_order
+    lean_theorem: MathOfBiology.Loop_3175.detail_ratio_buffered_against_affinis
+    lean_locus: morphoeval/lean/loops/Loop_3175_drosophila_americana_turing_wavelength_s0.lean#L21-L36
+    variables: "2117 nm americana, 1958 nm affinis, 1900 nm ananassae, versus primordium lengths 138700, 95940, 84620 nm"
+    role: "What changes at 2.1 µm and 0 Ma relative to the predecessor and successor: the wavelength ratio collapses toward 1 compared with the primordium-scale sibling slots"
+    source_citation: "Wittkopp et al. 2009 DOI:10.1126/science.1176980; O'Grady and DeSalle 2018 DOI:10.1534/genetics.117.300583"
+    code_locus: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py#L227-L258
+  - law_name: Stripe count on a fixed ocellar window
+    formula: "N = floor(80000 nm / lambda_nm)"
+    lean_decl: MathOfBiology.Loop_3175.stripeCount
+    lean_theorem: MathOfBiology.Loop_3175.successor_packs_more_detail_stripes
+    lean_locus: morphoeval/lean/loops/Loop_3175_drosophila_americana_turing_wavelength_s0.lean#L14-L30
+    variables: "80 µm window; N_ananassae = 42, N_affinis = 40, N_americana = 37"
+    role: "Shorter successor wavelength packs more detail-scale stripes into the same ocellar field"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-americana-turing-wavelength-s0.py#L237-L258
