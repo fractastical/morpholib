@@ -1,0 +1,153 @@
+{
+  "scout": "scout-077",
+  "ground": "library",
+  "lens": "knowledge",
+  "candidates": [
+    {
+      "id": "LIB-KG-FLAGSHIP15-01",
+      "title": "Flagship-15 re-score audit has no signed MorphoEval KG (taxon IRI build failure)",
+      "gap": "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml records post-remediation pk:hasScore values for all 15 montage flagships—including datasets/planform-linked lobo-planform-morphology (overall 77.7) and cervera-levin-mafe (56.5)—but morphoeval/kg/2026-10-26-flagship15-audit-v1/ was never created because build_morphoeval_kg.py aborts on an invalid taxon URI (scarus-->-pomacanthus from the species-scale ladder).",
+      "done": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --no-verify-loci --conform exits 0; morphoeval/kg/2026-10-26-flagship15-audit-v1/signed/ contains one verified *.trig per simulation plus overall; node morphoeval/check_signed.mjs passes on that directory.",
+      "tool_route": "Fix sp_slug sanitisation in morphoeval/build_morphoeval_kg.py (documented in morphoeval/runs/2026-10-26-flagship15-loop-passN.md §KG nanopubs), then: python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --no-verify-loci --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-26-flagship15-audit-v1; node morphoeval/check_signed.mjs morphoeval/kg/2026-10-26-flagship15-audit-v1/signed/*.trig",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml, morphoeval/runs/2026-10-26-flagship15-loop-passN.md, datasets/planform/* for Planform/Cervera context. No external fetch required for the build once the URI bug is fixed.",
+      "prior_attempts": "Flagship-15 Pass N+1 loop (2026-10-26) completed remediation and blind re-score; KG build attempted same day and blocked at rdflib serialisation (morphoeval/runs/2026-10-26-flagship15-loop-passN.md §KG nanopubs). Signing explicitly not attempted.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "build_morphoeval_kg.py + sign_morphoeval.py + check_signed.mjs are the exact closure path; only a small builder fix is prerequisite."},
+        "data_in_hand": {"score": 20, "why": "Final audit YAML and rubric evidence are committed; Planform fixtures are pinned under datasets/planform/."},
+        "falsifiable_done": {"score": 15, "why": "Exit code 0 on --conform, file count in signed/, and WASM signature check are objective."},
+        "compute_in_repo": {"score": 13, "why": "KG build+sign for ~16 simulations is minutes on the cloud Python stack once URI sanitisation lands."},
+        "isolation": {"score": 8, "why": "Builder fix touches an existing file (parallel agents conflict); KG output is new directory only."},
+        "time_to_verdict": {"score": 8, "why": "One remediation commit plus one build/sign loop yields a verdict in a single sitting."},
+        "not_blocked": {"score": 5, "why": "Route was blocked by a diagnosed bug, not refuted; no contrary nanopub chain exists for this audit id."}
+      }
+    },
+    {
+      "id": "LIB-KG-CERVERA-SUPERSEDE-02",
+      "title": "Production Cervera/Planform MorphoEval claims are stale vs Flagship-15 and bioelectric fixture layer",
+      "gap": "morphoeval/kg/2026-10-17-cervera-audit-v2/published.json shows all nine nanopubs published:prod with weightOfEvidence from audit v2 (~55.6 overall), while Flagship-15 re-scored cervera-levin-mafe at 56.5 and lobo-planform at 77.7 with new evidence lines, and datasets/planform/planform_bioelectric_series_v1.json (63 PlanformDB rows) is not referenced in those prod assertions. The network therefore ranks an superseded simulation audit and omits the L1 empirical fixture.",
+      "done": "A superseding KG build (--supersede-from morphoeval/kg/2026-10-17-cervera-audit-v2 or --supersede on a new audit that embeds input_dataset_sha256 for planform_bioelectric_series_v1.json) produces signed trig files whose claim context includes the fixture hash and whose overall pk:hasScore matches Flagship-15 cervera overall; published.json records npx:supersedes links to the nine existing https://w3id.org/np/RA… URIs.",
+      "tool_route": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --supersede-from morphoeval/kg/2026-10-17-cervera-audit-v2 --no-verify-loci --conform (after LIB-KG-FLAGSHIP15-01 builder fix); python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-26-flagship15-audit-v1; optional: python3 morphoeval/sign_morphoeval.py … --publish test",
+      "deciding_data": "In repo: morphoeval/kg/2026-10-17-cervera-audit-v2/published.json, morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml (sim ids cervera-levin-mafe, lobo-planform-morphology), datasets/planform/planform_bioelectric_series_v1.json + planformDB.sha256.",
+      "prior_attempts": "Cervera v2 signed and prod-published 2026-10-17. Flagship-15 loop lowered honest scores but did not supersede prod URIs. planform_bioelectric.py documents WP2–WP4 calibration but no MorphoEval KG audit id references the series fixture.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Supersession is a first-class build_morphoeval_kg.py + sign_morphoeval.py workflow with manifest-tracked npx:supersedes."},
+        "data_in_hand": {"score": 19, "why": "Both audit generations and the Planform series fixture SHA are already vendored."},
+        "falsifiable_done": {"score": 14, "why": "Scorer can diff pk:hasScore in new signed trig vs Flagship-15 YAML overall fields and verify supersedes triples against published.json URIs."},
+        "compute_in_repo": {"score": 12, "why": "Depends on flagship KG build; Nanopub Query head check may need network for prod supersede."},
+        "isolation": {"score": 7, "why": "Supersede touches version-chain semantics; builder fix may modify tracked builder code."},
+        "time_to_verdict": {"score": 7, "why": "Two-step dependency on flagship KG build; otherwise one sign loop."},
+        "not_blocked": {"score": 4, "why": "Supersede route not previously attempted; prod chain is live so mistaken publish would be costly—not refuted, but high-stakes."}
+      }
+    },
+    {
+      "id": "LIB-KG-FOUNDATIONAL-V2-03",
+      "title": "Foundational-canonical Pass-2 audit (Planform + Cervera) never minted as nanopubs",
+      "gap": "morphoeval/audits/2026-10-21-foundational-canonical-audit-v2.yaml scores planform-morphology-animation and cervera-levin-mafe (among four pillars) but no morphoeval/kg/2026-10-21-foundational-canonical-audit-v2/ directory exists—unlike per-slot Pass-3 audits. Claims in that YAML are therefore unsigned and unranked in the Project Delphi graph despite referencing datasets/planform/planform_canonical_silhouettes_v1.json.",
+      "done": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-21-foundational-canonical-audit-v2.yaml --conform exits 0; morphoeval/kg/2026-10-21-foundational-canonical-audit-v2/signed/ has ≥8 *.trig (four sims × claim+dimensions+overall pattern) and check_signed passes.",
+      "tool_route": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-21-foundational-canonical-audit-v2.yaml --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-21-foundational-canonical-audit-v2; node morphoeval/check_signed.mjs morphoeval/kg/2026-10-21-foundational-canonical-audit-v2/signed/*.trig",
+      "deciding_data": "In repo: audit YAML, datasets/planform/planform_canonical_silhouettes_v1.json, models/2013-lobo-planform-morphology.py and models/2021-Cervera–Levin–Mafe.py checkpoint pins in audit context.",
+      "prior_attempts": "Pass N+1 flagged Thompson entry in this audit as misleading and marked not-evaluated (morphoeval/runs/2026-10-26-flagship15-loop-passN.md); no record of build_morphoeval_kg.py ever run on this audit id.",
+      "factors": {
+        "tool_fit": {"score": 25, "why": "Standard audit→KG→sign pipeline with no known serialisation blockers for this YAML."},
+        "data_in_hand": {"score": 20, "why": "Complete audit file and Planform dataset pins are local."},
+        "falsifiable_done": {"score": 15, "why": "Directory existence, trig count, and signature verification are mechanical."},
+        "compute_in_repo": {"score": 14, "why": "Four simulations only—lightweight KG build."},
+        "isolation": {"score": 10, "why": "Closable as new morphoeval/kg/* tree only if builder is untouched."},
+        "time_to_verdict": {"score": 9, "why": "Single build/sign command pair after branch checkout."},
+        "not_blocked": {"score": 5, "why": "No prior failed sign or publish attempt recorded for this audit id."}
+      }
+    },
+    {
+      "id": "LIB-KG-RULE30-DELPHI-UNSIGNED-04",
+      "title": "Rule30 Bayesian Delphi assessment graph exists only as unsigned TriG",
+      "gap": "morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/ contains rule30_grand_prizes_delphi.trig with pk:Claim nodes for OP-01..03 bridge posteriors but no signed/ subdirectory, no published.json, and no https://w3id.org/np/RA… URIs—so Delphi viability scores in docs/open-problems.json are not anchored as signed nanopubs.",
+      "done": "python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi creates signed/*.trig + published.json; node morphoeval/check_signed.mjs verifies; at least one manifest entry has non-null nanopub IRI.",
+      "tool_route": "python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi; node morphoeval/check_signed.mjs morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/signed/rule30_grand_prizes_delphi.trig",
+      "deciding_data": "In repo: morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/rule30_grand_prizes_delphi.trig; cross-check labels against docs/open-problems.json OP-01..03 pooled posteriors.",
+      "prior_attempts": "Graph authored 2026-10-20; grep shows this is the sole morphoeval/kg/* directory with *.trig but zero signed/ content. Not listed as refuted in open-problems.json.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "sign_morphoeval.py + check_signed.mjs directly close unsigned TriG; no rebuild required if TriG already conforms."},
+        "data_in_hand": {"score": 18, "why": "TriG and open-problems.json OP records are both in-repo (Rule30 territory bleeds into library via morphoeval/kg)."},
+        "falsifiable_done": {"score": 15, "why": "signed/ presence and checker exit code are binary."},
+        "compute_in_repo": {"score": 15, "why": "Single-file sign operation; needs ~/.nanopub/profile.yml on the runner."},
+        "isolation": {"score": 10, "why": "Only new signed/ and published.json under existing kg dir."},
+        "time_to_verdict": {"score": 10, "why": "Sub-minute if profile keys exist."},
+        "not_blocked": {"score": 5, "why": "No documented failed sign attempt for this bundle."}
+      },
+      "note": "Primary territory is rule30 ground; included because the unsigned artifact lives under morphoeval/kg beside dataset-linked audits."
+    },
+    {
+      "id": "LIB-KG-PASS3-NETWORK-05",
+      "title": "298 Pass-3 MorphoEval nanopub bundles are signed locally but unpublished (published:null)",
+      "gap": "Across morphoeval/kg/*/published.json, 298 audit bundles have trustworthy URIs in manifest entries with \"published\": null—Pass-3 dataset-linked assessments (e.g. morphoeval/kg/2026-10-19-vertex-glass-jamming-audit-v3/) are therefore unranked on the public nanopub network despite signed evidence about library fixtures (datasets/*/scout_manifest.json, reference JSON SHA pins).",
+      "done": "For a named pilot bundle (e.g. morphoeval/kg/2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v3/), python3 morphoeval/sign_morphoeval.py … --publish test yields published.json with every entry \"published\": \"test\" and registry POST succeeds; node morphoeval/check_signed.mjs still passes.",
+      "tool_route": "python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v3 --publish test; node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v3/signed/*.trig",
+      "deciding_data": "In repo: signed trig trees under morphoeval/kg/; deciding network state is the test registry response (nanopub test server). Pilot ties to datasets/kidney_ureteric_bud_gdnf_ret/ with doi_verified_offline flags in reference JSON.",
+      "prior_attempts": "MorphoEval cloud dispatches routinely record pass3_nanopubs_signed and pass3_nanopubs_verified with pass3_phase_b_status audit_signed_unpublished (e.g. morphoeval/cloud/dispatches/slot-077.json is unrelated numerically but same pattern across slots). Prod publish intentionally deferred.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "sign_morphoeval.py --publish test is the designed publish path for already-built trig."},
+        "data_in_hand": {"score": 17, "why": "Signed artifacts and manifests are local; registry is one named public endpoint."},
+        "falsifiable_done": {"score": 13, "why": "published.json flips null→test for all keys; registry GET of one RA URI is checkable."},
+        "compute_in_repo": {"score": 11, "why": "Network egress and nanopub profile required; batch of 10 trig per audit is small."},
+        "isolation": {"score": 9, "why": "Updates published.json in existing kg dir—minor conflict risk vs parallel publish agents."},
+        "time_to_verdict": {"score": 8, "why": "One audit bundle per sitting; 298 total is a queue not one verdict."},
+        "not_blocked": {"score": 5, "why": "Deferral is policy, not a refutation of test publish."}
+      }
+    },
+    {
+      "id": "LIB-KG-PLANFORM-VALIDATOR-06",
+      "title": "Planform bioelectric L1 fixture integrity is not attested as a signed knowledge claim",
+      "gap": "datasets/planform/planform_bioelectric_series_v1.json and datasets/planform/damaged/manifest.json define fail-closed validator codes (E_FREQ_SUM, E_NOTICE_MISSING, etc.), and planform_bioelectric.py --self-test exercises them, but no MorphoEval pk:Claim nanopub records that the SHA-pinned fixture matches planformDB.sha256 and that all five damaged negatives are rejected—leaving empirical frequency rows unranked in the KG separate from simulation audits.",
+      "done": "A minimal morphoeval audit YAML (new file) cites planform_bioelectric.py --self-test stdout (all damaged cases fail with expected E_* codes) and input SHA b3fe2ef5…; build_morphoeval_kg.py --conform emits ≥1 signed claim trig referencing prov:wasDerivedFrom the fixture; check_signed passes.",
+      "tool_route": "Author morphoeval/audits/2026-10-27-planform-bioelectric-fixture-audit-v1.yaml (dataset-integrity claim only); python3 models/planform_bioelectric.py --self-test; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-27-planform-bioelectric-fixture-audit-v1.yaml --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-27-planform-bioelectric-fixture-audit-v1",
+      "deciding_data": "In repo: datasets/planform/*, datasets/planform/damaged/*, planformDB.sha256; optional external: PlanformDB 2.5.0.edb at https://lobolab.umbc.edu/planform/ for regeneration leg of --self-test (skipped if DB absent).",
+      "prior_attempts": "planform_bioelectric.py documents series S1–S9 and damaged negatives (README datasets/planform/README.md); nanopubs/planform_to_nanopubs.py can mint per-row outcome nanopubs but is a different toolchain and was not run in-repo (no nanopubs/planform*/ output). Use literature/knowledge lens split: row-level PlanformDB nanopubs → planform_to_nanopubs.py (nanopub ground), aggregate fixture integrity → build_morphoeval_kg.py.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "KG builder can encode dataset self-test evidence; per-row Planform outcomes need planform_to_nanopubs.py instead (tool_fit ~5 for those)."},
+        "data_in_hand": {"score": 19, "why": "Fixture, damaged negatives, and manifest SHAs are vendored; DB pin documented."},
+        "falsifiable_done": {"score": 14, "why": "Self-test exit code 0 plus claim trig referencing fixture SHA and each E_* code is machine-checkable."},
+        "compute_in_repo": {"score": 13, "why": "Validate-only self-test runs without DB; full regen needs local .edb."},
+        "isolation": {"score": 9, "why": "Requires new audit YAML + kg dir (standard loop), not scout-file-only."},
+        "time_to_verdict": {"score": 7, "why": "Audit authoring plus one KG loop."},
+        "not_blocked": {"score": 5, "why": "No prior KG attempt for fixture integrity claim."}
+      }
+    },
+    {
+      "id": "LIB-KG-EXPANSION-UNRANKED-07",
+      "title": "1000 expansion-template library slots have rank_score in verify_image_fitness but no MorphoEval pk:hasScore claims",
+      "gap": "morphoeval/runs/image_fitness_and_provenance.json reports 1000 models with audit_tier expansion_template (rank_score ~58–61, image_fitness_status Suppressed <70); morphoeval/runs/aristotelian_categories_index.json encodes rank_score per slot but morphoeval/kg/math_of_biology.* links only ~86 pass3_audited simulations—expansion stubs are unranked in the knowledge graph.",
+      "done": "Pilot: build_morphoeval_kg.py from a batch audit YAML covering 10 expansion slots (101–110) with overall scores copied from aristotelian index rank_score/audit_tier metadata produces 10 signed claim nanopubs whose pk:context includes audit_tier=expansion_template; published.json exists; OR aggregate single claim trig citing image_fitness_and_provenance.json tier_counts with SHA pin.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (regenerates index enrichment); generate morphoeval/audits/2026-10-27-expansion-template-batch-audit-v1.yaml from aristotelian_categories_index.json slots 101–110; python3 morphoeval/build_morphoeval_kg.py … --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-27-expansion-template-batch-audit-v1",
+      "deciding_data": "In repo: morphoeval/runs/aristotelian_categories_index.json, morphoeval/runs/image_fitness_and_provenance.json, datasets/*/scout_manifest.json for expansion dataset dirs.",
+      "prior_attempts": "verify_image_fitness.py explicitly tiers slots >100 as expansion_template; problem_scout_100 LEADERBOARD scores OP simulation work, not KG publication of stub tier. No refutation of publishing negative/stub tier claims.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "KG pipeline fits once batch audit YAML exists; index→audit generator is extra glue not in repo as-is."},
+        "data_in_hand": {"score": 18, "why": "All rank_score and tier fields already computed in-repo."},
+        "falsifiable_done": {"score": 12, "why": "Pilot of 10 claims is checkable; full 1000 is a scale milestone not one done criterion."},
+        "compute_in_repo": {"score": 10, "why": "verify_image_fitness over 3116 models is heavy; batch KG build moderate."},
+        "isolation": {"score": 10, "why": "New audit + kg dirs only for pilot."},
+        "time_to_verdict": {"score": 5, "why": "Pilot 10-slot publish is one sitting; full library coverage is multi-loop."},
+        "not_blocked": {"score": 5, "why": "No prior attempt to mint expansion-tier nanopubs."}
+      },
+      "note": "Honest specimen-measurement closure for expansion slots remains vision lens (verify_image_fitness segmentation); this candidate only ranks stub tier in KG."
+    },
+    {
+      "id": "LIB-KG-DOI-OFFLINE-08",
+      "title": "Dataset reference JSONs flag doi_verified_offline:false but source-traceability nanopubs are not superseded with resolution evidence",
+      "gap": "At least 12 datasets/*/…_reference.json files (e.g. datasets/kidney_ureteric_bud_gdnf_ret/, datasets/sponge_spicule_hexactin/, datasets/tracheal_viscous_fingering/) mark Pass-3 DOIs doi_verified_offline:false; corresponding Pass-3 source-traceability assessments in signed-but-unpublished kg bundles still carry offline deductions, so the graph ranks unverified bibliographic claims.",
+      "done": "For one named dataset audit (kidney ureteric bud v3), after Crossref resolves each flagged DOI, a superseding build updates source-traceability pk:hasEvidence with HTTP status or bibliographic match and flips audit evidence text to cite verification date; new signed source-traceability.trig supersedes the v3 URI; manifest records supersedes edge.",
+      "tool_route": "Crossref API fetch per DOI in datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_bud_gdnf_ret_reference.json; patch morphoeval/audits/2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v3.yaml evidence; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v3.yaml --supersede --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v3",
+      "deciding_data": "In repo: reference JSON + pass3 audit YAML + existing signed trig; named public: https://api.crossref.org/works/{doi} per flagged entry.",
+      "prior_attempts": "Pass-3 READMEs document offline DOI transcription (e.g. datasets/kidney_ureteric_bud_gdnf_ret/README.md); slot dispatches list verify DOIs when online as open follow-up—not closed in KG.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "Superseding source-traceability assessments is core build_morphoeval_kg.py; DOI lookup itself is outside the KG tool (literature lens assists)."},
+        "data_in_hand": {"score": 16, "why": "Flags and audits local; Crossref is one-hop public fetch per DOI."},
+        "falsifiable_done": {"score": 14, "why": "Each DOI gets resolved true/false with stored response snippet in evidence note; supersedes link checkable."},
+        "compute_in_repo": {"score": 12, "why": "Tens of DOIs plus one KG rebuild—hours not wet lab."},
+        "isolation": {"score": 8, "why": "Editing existing audit YAML conflicts with zero-conflict orchestrator unless new superseding audit file."},
+        "time_to_verdict": {"score": 6, "why": "One dataset bundle per loop; 12+ datasets queued."},
+        "not_blocked": {"score": 4, "why": "Offline flag is explicit debt, not a refutation of online verification route."}
+      }
+    }
+  ]
+}
