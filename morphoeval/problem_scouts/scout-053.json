@@ -1,0 +1,311 @@
+{
+  "scout": "scout-053",
+  "ground": "lean",
+  "lens": "lean",
+  "candidates": [
+    {
+      "title": "Lift expansion-template flux-canalization Lean off the Int.mul_pos stub (pilot Loop_1531 / Zhou ginkgo)",
+      "gap": "`run_overnight_1000_loops.py` emits `law1_invariant := a * b` while `morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml` declares `dD_ij/dt = alpha_f |J_ij|^gamma - beta_d D_ij` and steady-state `D_ij^* = (alpha_f/beta_d)|J_ij|^gamma`; the linked Lean file proves only `Int.mul_pos`, so KG claims are kernel-checked but not mechanism-checked.",
+      "done": "For sim_id `zhou-ginkgo-yimaensis-flux-canalization`: (1) `lean morphoeval/lean/loops/Loop_1531_ginkgo_yimaensis_flux_canalization.lean` exits 0 with zero `sorry`; (2) `python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml` exits 0; (3) the Lean module defines at least one conductance/flux symbol from the YAML `formula` (e.g. `alpha_f`, `beta_d`, or `D_star`) and a theorem whose statement uses that def—not `a * b`.",
+      "tool_route": "`python3 morphoeval/validate_loop_isolation.py --lean-file morphoeval/lean/loops/Loop_1531_ginkgo_yimaensis_flux_canalization.lean --math-spec morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml --skip-git-diff`; `python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml`; `lean morphoeval/lean/loops/Loop_1531_ginkgo_yimaensis_flux_canalization.lean`",
+      "deciding_data": "In repo: `morphoeval/lean/loops/Loop_1531_ginkgo_yimaensis_flux_canalization.lean`, `morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml`, `models/2012-zhou-ginkgo-yimaensis-flux-canalization.py`, `datasets/ginkgo_yimaensis_flux_canalization/ginkgo_yimaensis_flux_canalization_reference.json`. Public: Zhou (2012) DOI:10.1098/rstb.2012.1531 (cited in YAML).",
+      "prior_attempts": "Overnight scaler (`morphoeval/run_overnight_1000_loops.py` L685–719) mass-installed the stub on ~3000 slots (`audit_tier: expansion_template` in `morphoeval/runs/aristotelian_categories_index.json`). Referee incident `2026-10-24-gemini-4-argon-self-audit-and-tautology-incident` (`morphoeval/runs/model_integrity_ledger.jsonl`) penalized tautological Lean scoring but did not replace this template.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "`validate_loop_isolation.verify_lean_file`, `verify_integrity.check_math_kg_loop_yaml`, and `lean` jointly decide 0-sorry + structural gate on the pilot pair."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Pilot loop YAML, Lean, Python script, and hashed dataset JSON already exist in-repo; only literature is an external DOI already wired in YAML."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Exit codes plus a grep for forbidden stub token `law1_invariant (a b : Int) : Int := a * b` absent and conductance symbols present."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Single-file Lean proof + YAML sync; kernel check seconds per file, no wet lab."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Closes on one `Loop_1531_*.lean` plus matching `math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml` under zero-conflict loop rules."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One loop iteration: edit Lean/YAML, run two Python gates and `lean`."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "No ledger entry refutes mechanism-faithful Lean for this sim_id; only the stub generator is documented."
+        }
+      }
+    },
+    {
+      "title": "Repair law3 `ground_arithmetic` violations across math_kg_loops (structural threshold theorems)",
+      "gap": "`verify_integrity.classify_lean_theorem_signature` flags ~3072 equations whose embedded `lean_code` uses constant `theorem law3_instability_criterion : law3_threshold_margin 72 17 > 0 := by decide` (no bound parameters in the conclusion), failing Rule 3 despite passing 0-sorry kernel checks.",
+      "done": "After fix, `python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml` reports zero `ground_arithmetic` violations; optional batch: `python3 -c \"from pathlib import Path; from morphoeval.verify_integrity import check_math_kg_loop_yaml; import sys; errs=[e for p in Path('morphoeval/math_kg_loops').glob('*.yaml') for e in check_math_kg_loop_yaml(p) if 'ground_arithmetic' in e]; sys.exit(0 if not errs else 1)\"` exits 0.",
+      "tool_route": "`python3 morphoeval/verify_integrity.py --loop-yaml <target>`; pattern lift from flagship `morphoeval/lean/loops/Loop_066_venus_flytrap_snap_buckling.lean` (parameterized theorems); `lean` on edited loop files.",
+      "deciding_data": "In repo: all `morphoeval/math_kg_loops/*.yaml` `lean_code` blocks and paired `morphoeval/lean/loops/Loop_*.lean`; reference pattern `morphoeval/verify_integrity.py` L170–187.",
+      "prior_attempts": "Rule 3 added post–2026-10-24 tautology incident (`morphoeval/verify_integrity.py` header); overnight generator still emits ground-arithmetic law3 (`run_overnight_1000_loops.py` L715–717). No batch repair recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "`verify_integrity.py` is the named scorer and already classifies each embedded theorem."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All failing signatures are in tracked YAML/Lean; no external fetch."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Batch script exit 0 iff zero `ground_arithmetic` strings in verifier output."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Full-fleet YAML sync is large (~3000 files) but each proof is small Int arithmetic; hours if batched, not days."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Per-loop zero-conflict allows one slot at a time; whole-fleet fix requires orchestration across parallel agents."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Single-loop pilot verdict is one sitting; fleet-wide is multi-PR."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Integrity gate explicitly requests structural theorems; no prior refutation of the repair pattern."
+        }
+      }
+    },
+    {
+      "title": "Port MathOfBiology Turing dispersion into Loop_0131 danio rerio turing-wavelength Lean",
+      "gap": "`Loop_0131_danio_rerio_turing_wavelength.lean` comments cite Turing dispersion determinants but prove `law1_invariant := a * b`; `morphoeval/lean/MathOfBiology.lean` §5 already has `turing_fourier_det` / `turing_differential_diffusion_instability` matching `models/1952-turing-morpho.py`, unused by slot 0131.",
+      "done": "Loop_0131 Lean exports theorems structurally equivalent to `MathOfBiology.turing_fourier_det` (same determinant polynomial in `a,b,c,d,DX,DY,q`); `python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/<danio-rerio-turing-wavelength-sim>.yaml` exits 0; `lean morphoeval/lean/loops/Loop_0131_danio_rerio_turing_wavelength.lean` exit 0.",
+      "tool_route": "Copy/adapt proofs from `morphoeval/lean/MathOfBiology.lean` L601–618 into isolated `Loop_0131_*.lean`; `python3 morphoeval/verify_integrity.py --loop-yaml …`; `lean …`",
+      "deciding_data": "In repo: `morphoeval/lean/MathOfBiology.lean`, `morphoeval/lean/loops/Loop_0131_danio_rerio_turing_wavelength.lean`, `morphoeval/lean/loops/Loop_008_palate_ruguga_turing.lean` (flagship RD pattern), `models/1952-turing-morpho.py`.",
+      "prior_attempts": "`morphoeval/audits/2026-10-19-turing-audit.yaml` L211 requested formalizing dispersion in `MathOfBiology.lean` §5 (done in core file) but per-slot Loop_0131+ overnight expansion still stubs (`run_overnight_scale_zebrafish_paleo_1000.py` same template).",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Lean 0-sorry files plus `verify_integrity` are the contract gates named in loop validation."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Source theorems and a flagship palate Turing loop already exist in-repo as copy templates."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Kernel exit 0 and verifier passes; optional check that `turing_fourier_det` identifier (or same polynomial) appears in Loop_0131."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Proof port from existing Mathlib-free Int scripts; minutes of Lean checking."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "One loop Lean file + its YAML per PR."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single-slot port is one agent loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audit gap explicitly points at this formalization; stub route not refuted, only deferred."
+        }
+      }
+    },
+    {
+      "title": "Align math_kg_loops code_locus paths with actual models/ script filenames (Young Gephyrocapsa pilot)",
+      "gap": "`young-gephyrocapsa-oceanica-turing-wavelength.yaml` points `code_locus` at `1999-young-gephyrocapsa-oceanica-turing-wavelength.py`, which is absent; `verify_integrity` reports Missing code_locus file (4 violations on that YAML alone).",
+      "done": "`python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/young-gephyrocapsa-oceanica-turing-wavelength.yaml` exits 0 with no Missing code_locus / lean_locus errors.",
+      "tool_route": "`python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/young-gephyrocapsa-oceanica-turing-wavelength.yaml`; fix YAML `code_locus` to the existing `models/<year>-young-gephyrocapsa-oceanica-turing-wavelength.py` or add the missing script if the hash-locked dataset exists.",
+      "deciding_data": "In repo: failing YAML, `Glob models/*young-gephyrocapsa*` listing; overnight dispatch manifests under `morphoeval/cloud/dispatches/` for intended script year.",
+      "prior_attempts": "Overnight batch generators set `code_locus` from template year without verifying file existence (~3017 missing-input/locus failures in repo-wide scan). Not listed in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "`verify_integrity.check_math_kg_loop_yaml` mechanically resolves loci."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "YAML and most model scripts exist; gap is path consistency, not missing literature."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Single-command verifier exit code on the pilot YAML."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Path fix or one new script + self-test only."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "One YAML (+ optional one models/ file) per PR."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Minutes once correct script name is identified."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt claimed loci were intentionally broken."
+        }
+      }
+    },
+    {
+      "title": "OP-01 Prize 1 — Lean closure for Rule 30 defect hitting a closed gate {c_t=1}",
+      "gap": "`docs/open-problems.json` OP-01: defects `D1(t)=1` recur but no proof (or counterexample word) that some defect lands on `{c_t=1}`; local transducer entropy ~0.32 bits/step leaves a global mixing invariant open. `morphoeval/lean/MathOfBiology.lean` already proves many Rule 30 gate laws but not this prize gate.",
+      "done": "Either (A) a new zero-sorry Lean theorem in an isolated loop file implying ∀t₀, short-run words, ∃t≥t₀ with `D1(t)=1` and `c_t=true`, checked by `lean`; or (B) a published counterexample word with machine-checkable simulation from `models/1984-wolfram-conus-textile-rule30.py --self-test` output matching the word.",
+      "tool_route": "Extend isolated Lean (new `morphoeval/lean/loops/Loop_*_rule30_prize1_gate.lean` only—core file forbidden for loops) OR `python3 models/1984-wolfram-conus-textile-rule30.py` search harness; cross-check with existing `MathOfBiology.rule30_*` lemmas.",
+      "deciding_data": "In repo: `docs/open-problems.json` OP-01, `morphoeval/lean/MathOfBiology.lean` Rule 30 section, `models/1984-wolfram-conus-textile-rule30.py`. Public: Wolfram Rule 30 literature cited in that script.",
+      "prior_attempts": "`docs/open-problems.json` lists `attempted_by`: Multi-agent panel, unattributed; Delphi pooled 11.52% (<15% green). No Lean proof or counterexample recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Lean lens can decide only if a finite-state/word certificate is found; full mixing proof may exceed core-Lean overnight template."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Rule 30 formal infrastructure and Python simulator already in repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "OP-01 already states proof or counterexample word as dual success."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Counterexample search via existing script is in-hours; full proof may not be."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New loop Lean file only (MathOfBiology is forbidden shared mutation for cloud loops)."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Counterexample might land in one sitting; proof likely needs many iterations."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Panel attempts documented; route not refuted but low Delphi posterior signals difficulty."
+        }
+      }
+    },
+    {
+      "title": "Mechanical semantic gate: YAML `formula` tokens must appear in paired Lean defs",
+      "gap": "Rule 3 in `verify_integrity.py` blocks vacuous parameters but not semantic mismatch—stub `a*b` passes while `formula` mentions `alpha_f`, `D_ij`, `k_c`, etc.; this gap enabled 3000 expansion-template loops to claim verified laws.",
+      "done": "New checker `morphoeval/check_lean_formula_alignment.py` exits 0 on `forterre-venus-flytrap-snap-buckling.yaml` and exits 1 on `zhou-ginkgo-yimaensis-flux-canalization.yaml` until Lift candidate #1 fixes the pilot; document usage in checker `--help`.",
+      "tool_route": "Add `morphoeval/check_lean_formula_alignment.py` (new file); run `python3 morphoeval/check_lean_formula_alignment.py morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml` and `…/forterre-venus-flytrap-snap-buckling.yaml`.",
+      "deciding_data": "In repo: all `morphoeval/math_kg_loops/*.yaml` `formula` + `lean_code` fields; negative control stub documented in `run_overnight_1000_loops.py`.",
+      "prior_attempts": "2026-10-24 integrity incident added structural quantifier gate, not formula token gate (`model_integrity_ledger.jsonl`).",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Extends existing integrity stack; decides via script exit code on YAML inputs."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All inputs are tracked YAML/Lean text."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Pass/fail on two named YAMLs with opposite expected exit codes."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Pure Python string/token scan over YAML."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Single new file under `morphoeval/`; no edits to shared forbidden paths."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One sitting to implement and run on pilot pair."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Complements, not duplicates, Rule 3; no refutation on record."
+        }
+      }
+    },
+    {
+      "title": "Cow Turing OP-11 follow-up — Lean linkage for static RD rejection (not a stub score)",
+      "gap": "`docs/open-problems.json` OP-11 questions independent re-score of Pass 8+ Bos taurus Turing; associated scale loops use stub Lean while empirical verdict lives in audits/KG—no machine-checked lemma tying simulated Eden colonisation p=0.91 to a formal statistic.",
+      "done": "Pre-register (per OP protocol) then deliver either a zero-sorry Lean theorem in an isolated bos-taurus loop file bounding a declared test statistic under the null, OR a documented impossibility lemma showing the audit’s scalar p-value is not expressible in core Lean without import—either outcome closes the formal gap.",
+      "tool_route": "Lean loop file + `python3 morphoeval/verify_integrity.py --audit morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml`; simulation cross-check `python3 models/*bos*taurus*turing* --self-test` if present.",
+      "deciding_data": "In repo: `morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml`, `datasets/bos_taurus_turing_wavelength/README.md`, OP-11 entry. Held-out coat masks per blind protocol require pre-registration before unblinding.",
+      "prior_attempts": "OP-11 status `refuted` empirically; Fable/human/panel re-scores noted; Delphi 39.3% possible pathway. Lean formalization of the rejection not attempted.",
+      "factors": {
+        "tool_fit": {
+          "score": 8,
+          "why": "Lean can formalize arithmetic inequalities but not replace blinded empirical re-score without simulation lens."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Audit YAML and datasets in repo; blind held-out requires pre-reg."
+        },
+        "falsifiable_done": {
+          "score": 11,
+          "why": "Clear binary: proved bound vs impossibility note, both machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Depends on mapping p=0.91 to a finite proof goal—may need stats/simulation co-lens."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "New loop Lean + optional audit sidecar under loop isolation."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Pre-registration + proof or impossibility likely spans multiple loops."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Empirical claim refuted, but formal Lean route not tried; use stats/simulation scout for replication."
+        }
+      }
+    },
+    {
+      "title": "OP-05 within-species bee P-matrix (outside Lean 0-sorry contract)",
+      "gap": "Missing within-species bee wing landmark dataset blocks causal wing comparison; no Lean loop or math_kg entry can close this without new morphometric data.",
+      "done": "N/A for Lean lens—dataset exists with replicates run through C1–C8 unchanged (per OP-05).",
+      "tool_route": "Morphometrics / portfolio pipeline (`docs/portfolio/bee_wings.md`), not `lean` or `verify_integrity`.",
+      "deciding_data": "Not in repo; requires new specimen collection or public landmark deposit.",
+      "prior_attempts": "Claude Fable 5.1 Thinking High (`docs/open-problems.json` OP-05); status partial.",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "why": "Lean loop files cannot ingest wet-lab wing landmarks; morphometrics scout lens required."
+        },
+        "data_in_hand": {
+          "score": 2,
+          "why": "Bee P within-species absent by definition of OP-05."
+        },
+        "falsifiable_done": {
+          "score": 10,
+          "why": "OP-05 states exact pipeline outcome, but Lean tools cannot score it."
+        },
+        "compute_in_repo": {
+          "score": 3,
+          "why": "Needs new data, not proof engineering."
+        },
+        "isolation": {
+          "score": 5,
+          "why": "Would be new dataset files, not Lean loops."
+        },
+        "time_to_verdict": {
+          "score": 1,
+          "why": "Blocked on data acquisition."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "Partial prior work; not refuted, simply out of lens."
+        }
+      }
+    }
+  ]
+}
