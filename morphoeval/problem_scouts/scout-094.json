@@ -1,0 +1,133 @@
+{
+  "scout": "scout-094",
+  "ground": "scaling",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "id": "SC094-01",
+      "title": "Fossil chronospecies expansion: materialize datasets so paleo model --self-tests actually run",
+      "gap": "Slots #1201–#2100 generated stub scripts (Pearson r>0.98 against reference JSON) for 90×10 taxa in morphoeval/scale_and_paleo_catalog.py, but most matching datasets/ trees were never committed—only species_gallery JPEGs exist (e.g. Gasterosteus doryssus_*, Tiktaalik, Globorotalia, Aulacopleura). Running python3 models/2009-bell-gasterosteus-doryssus-early-bioelectric-polarity.py --self-test fails immediately with FileNotFoundError on the dataset directory.",
+      "done": "morphoeval/runs/fossil_chronospecies_selftest_matrix.json lists every campaign_2100 script with exit code; pass_rate = (# exit 0) / (# slots with geological_age_ma > 0) is >= 0.95, or the JSON enumerates every remaining failure with missing path.",
+      "tool_route": "python3 morphoeval/run_overnight_scale_zebrafish_paleo_1000.py (generator spec) + batch: rg -l 'geological_age_ma' models/*.py | xargs -P8 -I{} python3 {} --self-test; aggregate via morphoeval/validate_loop_isolation.py pattern.",
+      "deciding_data": "In repo: morphoeval/runs/campaign_2100_scale_paleo_summary.json, morphoeval/scale_and_paleo_catalog.py NINETY_NOVEL_AND_FOSSIL_TAXA, datasets/species_gallery/** specimen plates. Not vendored: per-slot reference JSON under datasets/<taxon>_<cohort>/.",
+      "prior_attempts": "run_overnight_scale_zebrafish_paleo_1000.py logged Pass-2 scores in campaign_2100_scale_paleo_summary.json (2026-10-21 expansion); no repo-wide self-test gate on dataset presence was recorded.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "Verdict is exit code of existing model --self-test invocations—no new wet lab."},
+        "data_in_hand": {"score": 18, "why": "Campaign index and catalog taxa are committed; missing pieces are named paths, not mystery fetch."},
+        "falsifiable_done": {"score": 15, "why": "Pass rate and per-script exit code are machine-checkable."},
+        "compute_in_repo": {"score": 12, "why": "~900 lightweight stub runs, hours on 8 workers when datasets exist."},
+        "isolation": {"score": 10, "why": "Closes as new report JSON plus new dataset files only."},
+        "time_to_verdict": {"score": 9, "why": "One batch self-test sweep yields the matrix."},
+        "not_blocked": {"score": 5, "why": "No prior record refuting a batch self-test materialization gate."}
+      }
+    },
+    {
+      "id": "SC094-02",
+      "title": "Odonata 150 Myr wing allometry: sweep Hoffmann venation inhibition length vs Eshghi N∝L^b",
+      "gap": "2026-eshghi-odonata-wing-cells.py documents fossil N∝L^1.78 and extant N∝L^1.45 with conserved median cell length (~0.78–0.99 mm), but morphoeval/kg/2026-10-14-odonata-audit scored this as a data comparison—not a simulation sweep of 2018-hoffmann-wing-venation.py inhibition/Lloyd parameters to test strict vs relaxed constant cell-size scaling across geological_age_ma.",
+      "done": "morphoeval/runs/odonata_hoffmann_inhibition_sweep.json reports best-fit inhibition scale ell* minimizing combined fossil+extant RMSE on log N vs log L; strict constant ell* is falsified if a two-parameter model (ell0 + ell1·log L) lowers AIC by >= 10 without worsening extant hold-out RMSE by >5%.",
+      "tool_route": "python3 models/2026-eshghi-odonata-wing-cells.py --self-test; python3 models/2018-hoffmann-wing-venation.py --self-test; sweep model_wing / Lloyd iterations or target domain count on cached Hoffmann wing (downsample 2) and re-fit log-log slopes against datasets/odonata/eshghi2026_odonata_wing_cells.csv.",
+      "deciding_data": "In repo: datasets/odonata/eshghi2026_odonata_wing_cells.csv, fossil_taxa_pbdb_ages.csv, fossil_wing_resegmentation.csv; Zenodo archive optional (--no-download uses tables).",
+      "prior_attempts": "MorphoEval odonata audit (2026-10-14, overall 76/100) concluded inhibition length is approximately, not strictly, conserved; no parameter sweep was filed.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "Decided by running/sweeping two existing simulation scripts, not new statistics alone."},
+        "data_in_hand": {"score": 19, "why": "463-wing table and PBDB ages are vendored under datasets/odonata/."},
+        "falsifiable_done": {"score": 14, "why": "AIC/RMSE thresholds are numeric; scorer reads one JSON."},
+        "compute_in_repo": {"score": 11, "why": "Grid over Lloyd/inhibition settings on one cached wing plus CSV regressions—hours, not HPC."},
+        "isolation": {"score": 10, "why": "New sweep driver + JSON under morphoeval/runs/ only."},
+        "time_to_verdict": {"score": 7, "why": "Single sitting if sweep grid stays coarse (~20–50 points)."},
+        "not_blocked": {"score": 4, "why": "Audit answered descriptive conservation but not this sweep route."}
+      }
+    },
+    {
+      "id": "SC094-03",
+      "title": "Echinoderm symmetry series: Meinhardt R_ring–lambda_c sweep vs triradial→pentaradial fossil catalog",
+      "gap": "scale_and_paleo_catalog.py lists Helicoplacus gilberti (516 Ma, triradial stem) through Strongylocentrotus purpuratus (Holocene, pentaradial) in 'Echinoderm Symmetry Evolution Series', but 2005-meinhardt-echinoderm-pentaradial-symmetry.py --self-test only checks m=4 at R=60 µm and m=5 at default R=75 µm—never maps catalog base_size_m (0.032 m vs 85 µm larval) to hydrocoel ring radius to ask whether m*=3 is selected at Cambrian body size.",
+      "done": "morphoeval/runs/echinoderm_mode_selection_sweep.json gives selected integer m* = round(2πR/λ_c) for R_ring sampled from catalog base_size_m (Helicoplacus, Encrinus, Strongylocentrotus) at fixed DEFAULT_LAMBDA_C_UM; PASS if Helicoplacus tier maps to m*∈{3,4} and crown urchin tier maps to m*=5, else FAIL with grid counterexample.",
+      "tool_route": "python3 models/2005-meinhardt-echinoderm-pentaradial-symmetry.py --self-test; sweep python3 models/2005-meinhardt-echinoderm-pentaradial-symmetry.py --R-ring-um <grid> --lambda-c-um 94.24777960769379 calling simulate_hydrocoel_ring_pde / dispersion helper exported in-script.",
+      "deciding_data": "In repo: datasets/echinoderm_pentaradial_symmetry/, morphoeval/scale_and_paleo_catalog.py lineage 13 tuples (base_size_m, age_ma).",
+      "prior_attempts": "Pass 3 Meinhardt remediation (2026) added OPR and Nodal sweeps; fossil-series mapping to R_ring was not attempted.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "CLI exposes --R-ring-um/--lambda-c-um; self-test already encodes mode logic."},
+        "data_in_hand": {"score": 17, "why": "Reference JSON + catalog sizes in repo; no external fetch."},
+        "falsifiable_done": {"score": 13, "why": "Integer m* match/mismatch is automatic from sweep JSON."},
+        "compute_in_repo": {"score": 14, "why": "PDE ring solves on µm grids—minutes per point."},
+        "isolation": {"score": 10, "why": "New sweep JSON only; model already supports flags."},
+        "time_to_verdict": {"score": 8, "why": "One grid (~30 R values) finishes in one loop."},
+        "not_blocked": {"score": 5, "why": "No recorded refutation of catalog-to-R_ring mapping test."}
+      }
+    },
+    {
+      "id": "SC094-04",
+      "title": "Cephalopod suture chronoseries: Raup W–D–T sweep monotonicity vs geological_age_ma",
+      "gap": "Catalog lineage 'Cephalopod Fractal Suture Fossil Series' cites increasing fractal suture dimension D_f from Goniatites (333 Ma) to Placenticeras (75 Ma), but Raup coiling parameters (datasets/raup/variables.json) were remediated for T= dz_c/dr_c (2026-10-17) and only checked against illustrative panels—no sweep ties spire/width metrics from raup_shell() to the eight catalog ages/base_size_m ordering.",
+      "done": "morphoeval/runs/raup_cephalopod_chrono_sweep.json assigns each of the eight taxa an illustrative (W,D,T) from variables.json or a documented grid point; Spearman(spire/width, age_ma) must be >= 0.7 with p<0.05 OR file lists the first age-inversion pair (younger taxon lower spire metric than older).",
+      "tool_route": "python3 models/create_raup_animations.py --self-test-only; python3 models/1966-raup.py --self-test; python3 morphoeval/issue1_model_vs_reference.py (Raup spire/width sweep section); compute spire/width from raup_shell() across W,T grids at fixed D per taxon size prior.",
+      "deciding_data": "In repo: datasets/raup/variables.json, datasets/raup/raup_coiled_shells_specimen.jpg; catalog tuples with age_ma and base_size_m for Orthoceras→Nautilus series.",
+      "prior_attempts": "Raup T-definition bug refuted and fixed (variables.json revision_2026_10_17); issue1_model_vs_reference.py validates qualitative spire ranking on six panels, not ammonoid chronology.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Raup renderer + self-test recovery of W,D,T are the deciding engine."},
+        "data_in_hand": {"score": 16, "why": "Raup JSON and catalog ages committed; taxon W,D,T are illustrative, not measured fits."},
+        "falsifiable_done": {"score": 14, "why": "Spearman threshold or explicit inversion pair."},
+        "compute_in_repo": {"score": 13, "why": "8 taxa × modest W,T grid on numpy meshes—under an hour."},
+        "isolation": {"score": 10, "why": "New JSON under morphoeval/runs/; reuse existing Raup modules."},
+        "time_to_verdict": {"score": 7, "why": "One sweep + correlation in one sitting."},
+        "not_blocked": {"score": 4, "why": "Prior work fixed T semantics but did not test cephalopod chronoseries ordering."}
+      }
+    },
+    {
+      "id": "SC094-05",
+      "title": "Globorotalia foramin chronospecies: cohort phenomenon_size_m must bracket catalog test radius",
+      "gap": "NINETY_NOVEL_AND_FOSSIL_TAXA lists Globorotalia praefohsi→tumida base_size_m rising 0.00034→0.00068 m, but campaign_2100 entries for 'Globorotalia Spire & Keel Chronospecies' assign phenomenon_size_m per COHORT_SCALE_MULTIPLIER with minima as low as ~2.4×10⁻⁷ m (100× below catalog) while maxima per species do increase with younger ages.",
+      "done": "morphoeval/runs/globorotalia_scale_coherence.json: for each of four species, max cohort phenomenon_size_m across 10 mechanisms lies in [0.5×, 2.0×] catalog base_size_m AND species maxima strictly increase as age_ma decreases (tumida > plesiotumida > fohsi > praefohsi); any violation is a numbered FAIL row.",
+      "tool_route": "python3 -c parse morphoeval/runs/campaign_2100_scale_paleo_summary.json filtered by fossil_lineage_group; cross-check morphoeval/scale_and_paleo_catalog.py; optional python3 models/*globorotalia*-*-biomineral-accretion.py --self-test once datasets materialized (SC094-01).",
+      "deciding_data": "In repo: campaign_2100_scale_paleo_summary.json (40 Globorotalia rows), scale_and_paleo_catalog.py tuples; species_gallery Globorotalia_*.jpg only.",
+      "prior_attempts": "run_overnight_scale_zebrafish_paleo_1000.py documents COHORT_SCALE_MULTIPLIER jitter; no coherence audit against base_size_m was recorded.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "Primary check is deterministic parse; self-tests confirm phenomenon_size_m once references exist."},
+        "data_in_hand": {"score": 20, "why": "All deciding fields already in committed JSON/catalog."},
+        "falsifiable_done": {"score": 15, "why": "Ratio and monotonicity inequalities are exact."},
+        "compute_in_repo": {"score": 15, "why": "Seconds of Python JSON parsing."},
+        "isolation": {"score": 10, "why": "Report-only unless catalog constants adjusted in a follow-up PR."},
+        "time_to_verdict": {"score": 9, "why": "Immediate after one script run."},
+        "not_blocked": {"score": 5, "why": "No prior refutation of this coherence test."}
+      }
+    },
+    {
+      "id": "SC094-06",
+      "title": "Vertebrate segmentation clock allometry: ablate lam_sp scaling in Diaza 2019 model",
+      "gap": "models/2019-diaza-human-somite-organoid-clock.py evaluate_vertebrate_clock_allometry() rescales delays per species via lam_sp heuristics and self-test asserts model_vs_empirical_r>0.995, but no ablation shows cross-species size allometry requires that scaling (vs a single-parameter misfit).",
+      "done": "With lam_sp≡1.0 ablation wired (CLI flag or forked call), model_vs_empirical_rmse_min exceeds the baseline by >=15 min for at least two species pairs OR ablation JSON shows model_vs_empirical_r drop below 0.98; otherwise scaling is falsified as necessary.",
+      "tool_route": "python3 models/2019-diaza-human-somite-organoid-clock.py --self-test (baseline); re-call evaluate_vertebrate_clock_allometry() under ablation inside a new morphoeval/runs/diaza_allometry_ablation.json driver.",
+      "deciding_data": "In repo: Diaza reference JSON under datasets/ (hashed in script verify_dataset_integrity); six-species table embedded in reference.",
+      "prior_attempts": "Pass 3–4 Diaza audits scored allometry fit; ablation of lam_sp not logged in open-problems.json.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Ablation is a parameter toggle on an existing DDE simulation + self-test metrics."},
+        "data_in_hand": {"score": 16, "why": "Six-species periods vendored in reference JSON."},
+        "falsifiable_done": {"score": 14, "why": "RMSE and r thresholds are numeric."},
+        "compute_in_repo": {"score": 14, "why": "Six short DDE integrations per ablation—minutes."},
+        "isolation": {"score": 9, "why": "Prefer new driver JSON; optional one-line CLI flag in model."},
+        "time_to_verdict": {"score": 8, "why": "Baseline + ablation fits one sitting."},
+        "not_blocked": {"score": 5, "why": "Ablation route not previously refuted."}
+      }
+    },
+    {
+      "id": "SC094-07",
+      "title": "OP-04 deep-horizon fish proportions (Thompson engine)—not decidable by model sweep alone",
+      "gap": "docs/open-problems.json OP-04: prediction engine collapses to clade prior beyond ~50 Myr; Monte Bolca test null (6/16). datasets/thompson/monte_bolca_fossil_ratios.json holds ~50 Ma body proportions, but thompson/run_phylogenetic_prediction_engine.py is a portfolio scorer—not a --self-test morphodynamics model with sweeps.",
+      "done": "N/A for simulation lens; a registry/pre-registered blind score vs clade prior (OP-04 done criterion) requires prediction registry lens.",
+      "tool_route": "Wrong lens here. Closest simulation adjacency: none decisive. Use registry lens: predictions/prediction_registry.json + thompson/run_phylogenetic_prediction_engine.py with hash-locked prereg; measure lens for monte_bolca ratios.",
+      "deciding_data": "In repo: datasets/thompson/monte_bolca_fossil_ratios.json; OP-04 in docs/open-problems.json.",
+      "prior_attempts": "Claude Fable 5.1 Thinking High (OP-04 attempted_by); Monte Bolca null vs stasis recorded in KEY_DISCOVERIES / THOMPSON_PHYLOGENETIC_PREDICTIONS.md.",
+      "factors": {
+        "tool_fit": {"score": 4, "why": "No existing model script sweep produces the deep-horizon posterior; engine is statistical, not RD/clock simulation."},
+        "data_in_hand": {"score": 12, "why": "Fossil ratios and fishshape landmarks largely in repo."},
+        "falsifiable_done": {"score": 12, "why": "OP-04 already states a blind beat-clade-prior criterion—just not reachable via simulation self-test."},
+        "compute_in_repo": {"score": 8, "why": "Engine reruns are cheap but not simulation sweeps."},
+        "isolation": {"score": 9, "why": "Preregistration files can be isolated."},
+        "time_to_verdict": {"score": 3, "why": "Needs Delphi/prereg workflow, not one model loop."},
+        "not_blocked": {"score": 3, "why": "Partial attempts exist; exact simulation-sweep route unused, not refuted."}
+      }
+    }
+  ]
+}
