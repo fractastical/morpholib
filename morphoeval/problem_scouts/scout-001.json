@@ -1,0 +1,273 @@
+{
+  "scout": "scout-001",
+  "ground": "rule30",
+  "lens": "literature",
+  "candidates": [
+    {
+      "title": "Pass-3 multi-clade specimen manifest (Oliva porphyria + Cymbiola innexa)",
+      "gap": "datasets/conus/pass3_neural_clades_reference.json defines Wolfram Class II/IV molluscan benchmarks (Oliva porphyria Rule 90, Cymbiola innexa Rule 54/110) and 2D chirality/ANF-carry observables to break 1D white-chord KS indistinguishability, but morphometric validation is pinned to only two Conus textile Wikimedia photos in datasets/conus/conus_textile_reference.json.",
+      "done": "A scout_manifest.json (schema morphoeval-scout-dossier-1.0) listing ≥2 CC-licensed dorsal shell bitmaps per benchmark species with OpenAlex/Wikimedia URLs, licenses, and SHA-256 digests; JSON parses and every species named in pass3_neural_clades_reference.json molluscan_clade_benchmarks has ≥1 specimen entry.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Oliva porphyria shell pigmentation\" --taxon \"Oliva porphyria\" --out datasets/conus/scout_manifest_oliva.json; python3 morphoeval/scout_literature.py --query \"Cymbiola innexa shell pattern mollusc\" --taxon \"Cymbiola innexa\" --out datasets/conus/scout_manifest_cymbiola.json; merge candidate_specimens_wikimedia entries into a single pass3_specimens_manifest.json under datasets/conus/ (new files only).",
+      "deciding_data": "In repo: pass3_neural_clades_reference.json, conus_textile_reference.json (Conus only). Public fetch: Wikimedia Commons (scout probe 2026-10-27 returned 4 Oliva porphyria and 3 Cymbiola innexa CC bitmaps).",
+      "prior_attempts": "2026-10-18-conus-audit (specimen-match 84/100) scored two Conus textile images only; RULE30_PRIZE_CHATLOG notes 1D KS indistinguishability between Rule 30 and Rule 90 and proposes 2D observables but no third-species image pipeline. OP-01–03 untouched.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "scout_literature.py emits specimen URLs/licenses/ dimensions as-is via search_wikimedia_specimens; no custom crawler needed."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Benchmark species list is in-repo; Commons images are one HTTP call per taxon away and already returned hits in dry-run."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Scorer can count manifest entries per pass3 clade key and verify SHA-256 fields without judgment."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Manifest generation is minutes of network I/O plus hash of downloaded thumbs; fits 1984-wolfram-conus-textile-rule30.py --download pattern."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as new JSON under datasets/conus/ and morphoeval/problem_scouts/ without editing tracked audit YAML."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One scout_literature loop per taxon yields accept/reject on specimen availability immediately."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of a Commons-backed pass3 specimen manifest; distinct from Conus-only audit scope."
+        }
+      }
+    },
+    {
+      "title": "Boettiger–Ermentrout–Oster (2009) neural mantle parameters not in MorphoEval DOI exclusion set",
+      "gap": "pass3_neural_clades_reference.json and 1984-wolfram-conus-textile-rule30.py cite Boettiger, Ermentrout & Oster (2009, doi:10.1073/pnas.0810311106) for asymmetric mantle synaptic weights and Rule-30 isomorphism, but morphoeval/scout_literature.py --list-existing shows that DOI absent from audit-derived exclusion list and the 2026-10-18-conus-audit.yaml references stop at Jen/Meinhardt/Raup.",
+      "done": "scout_manifest.json with candidate_papers_openalex containing Boettiger 2009 at cited_by_count≥50, is_oa=true, oa_url non-null, and a extracted_parameters block (JSON) listing every numeric mantle weight/threshold printed in the PNAS PDF table or figure caption; if the PDF has no numeric table, done=false with manifest field missing_numeric_tables: true.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Boettiger Ermentrout Oster neural origins shell structure mollusk\" --dry-run; then --out datasets/conus/scout_manifest_boettiger2009.json; human or follow-up agent parses oa_url PDF once manifest confirms OA landing page.",
+      "deciding_data": "In repo: pass3 discrete_boolean_limit_weights (w_left=2, theta_fire=1, etc.) as provisional. Public: OpenAlex work doi:10.1073/pnas.0810311106 (not yet in repo DOI set as of scout --list-existing 2026-10-27).",
+      "prior_attempts": "Script already implements Ermentrout/Boettiger neural mantle simulation (self-test chirality assertions); audit did not trace PNAS parameter provenance to primary tables.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "OpenAlex leg of scout_literature reliably surfaces PNAS 2009 on targeted query; paper discovery is automated, PDF table scrape is manual follow-up."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "DOI and expected parameter names are in-repo; full numeric grounding requires one OA PDF fetch off manifest oa_url."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Boolean check: manifest either lists ≥3 numeric parameters with page numbers or explicitly flags missing_numeric_tables."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Scout CLI completes in seconds; PDF text extraction is sub-hour with stdlib plus downloaded PDF."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New datasets/conus/scout_manifest_boettiger2009.json only; no audit YAML edits required for scout pass."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "OpenAlex hit/miss decides same sitting; parameter extraction may need a second pass if figures are raster-only."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt recorded as refuting PNAS parameter recovery; gap is documentation not contradiction."
+        }
+      }
+    },
+    {
+      "title": "Rowland (2006) and Rule-30 follow-up literature map for center-column density (OP-02)",
+      "gap": "OP-02 (docs/open-problems.json) needs a diagonal-sample discrepancy bound along j=floor(S/2); RULE30_BAYESIAN_DELPHI_ASSESSMENT.md lists obstruction 'no exponential-sum/Weyl bound' but does not catalog whether Rowland, Wolfram 1986, or later CA papers already claim such a bound or a counterexample route.",
+      "done": "literature_map.json under morphoeval/problem_scouts/ with ≥1 OpenAlex hit for doi:10.25088/complexsystems.16.3.239 (Rowland 2006) plus ≥3 additional Rule-30-specific works from scout query 'Rowland local nested structure Rule 30 cellular automaton'; each entry has doi, title, and boolean fields claims_center_density_bound and claims_center_aperiodicity_proof set by keyword scan of titles/abstracts in manifest; if any paper claims_center_density_bound=true, OP-02 literature route is BLOCKED and recorded.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Rowland local nested structure Rule 30 cellular automaton\" --out morphoeval/problem_scouts/literature_map_op02_rowland.json --dry-run then --out; python3 morphoeval/scout_literature.py --query \"Erica Jen aperiodicity one-dimensional cellular automata\" --out morphoeval/problem_scouts/literature_map_op02_jen_followups.json.",
+      "deciding_data": "In repo: OP-02 gap text, RULE30_PRIZE_STATUS_AND_GAPS.md Problem 2 section. Public: OpenAlex (dry-run 2026-10-27 returned Rowland 2006 Complex Systems doi:10.25088/complexsystems.16.3.239 among top hits).",
+      "prior_attempts": "Multi-agent Delphi panel (OP-02 pooled bridge 2.03%); no literature registry file in repo; finite torus equidistribution (Tier B) is computational not citation closure.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "scout_literature search_openalex is the intended discovery tool for this missing citation map."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Seed DOIs and OP-02 statement are in-repo; OpenAlex metadata is one command away."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Machine-readable booleans on fixed DOI list are checkable without mathematical taste."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Pure HTTP JSON queries, no simulation."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New JSON only under morphoeval/problem_scouts/."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single scout invocation per query completes in one loop."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "If literature already claimed a proof, route becomes negative knowledge not greenfield; not_blocked lowered slightly pending map."
+        }
+      }
+    },
+    {
+      "title": "Waddington–Cowe (1969) mollusc CA simulation baseline vs modern Rule-30 metrics",
+      "gap": "pass3 cites Waddington & Cowe (1969, doi:10.1016/S0022-5193(69)80060-3) as the first computer simulation of molluscan pigmentation, but datasets/conus/paper_citations.bib and the conus audit omit it; no scout dossier confirms OA PDF availability or published quantitative pattern statistics to compare against white-chord CV/chirality metrics.",
+      "done": "scout_manifest with candidate_papers_openalex entry matching doi:10.1016/S0022-5193(69)80060-3 (or explicit not_found_in_openalex) and is_oa/oa_url recorded; if OA, supplementary file lists whether the PDF contains a printed run-length histogram or chord-length table (yes/no plus page).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Waddington Cowe molluscan pigmentation computer simulation 1969\" --out datasets/conus/scout_manifest_waddington1969.json",
+      "deciding_data": "In repo: pass3 primary_papers id waddington1969 with DOI. Public: OpenAlex/Crossref-linked works (DOI not in scout --list-existing 2026-10-27).",
+      "prior_attempts": "pass3 reference JSON added in 2026 chatlog tranche; no quantitative back-test against 1984-wolfram-conus-textile-rule30.py metrics recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "OpenAlex query path is exactly scout_literature; historical JTB paper is findable by DOI search string."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "DOI anchored in pass3; OA status unknown until scout run."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Presence of DOI hit and yes/no quantitative table flag is objective."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Minutes for API plus optional PDF skim."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New manifest JSON under datasets/conus/."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "OpenAlex response decides findability same session."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No documented failed attempt to locate Waddington 1969 via scout."
+        }
+      }
+    },
+    {
+      "title": "Tent-wall slope asymmetry A_wall: expand CC Conus/Oliva specimen set for biological discriminator",
+      "gap": "RULE30_PRIZE_CHATLOG proposes measuring left-vs-right white-tent slope asymmetry to separate Rule 30 (asymmetric CA erosion) from symmetric Meinhardt PDE; current specimen metrics use one OSU Conus segmentation (chirality DeltaC +0.0206) with no literature-backed multi-specimen panel.",
+      "done": "Combined scout dossier with ≥5 CC-licensed mollusk dorsal images (taxon query 'Conus textile' and 'Oliva porphyria') each with width≥800px in candidate_specimens_wikimedia; downstream script (new file) computes A_wall on downloaded images and writes CSV with columns species, A_wall, license; done when CSV has ≥5 rows and at least one species differs from Conus textile reference SHA dfcb500d….",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Conus textile shell pattern formation mollusc\" --taxon \"Conus textile\" --out datasets/conus/scout_manifest_conus_extra.json; python3 morphoeval/scout_literature.py --taxon \"Oliva porphyria\" --query \"Oliva porphyria shell\" --out datasets/conus/scout_manifest_oliva_extra.json; feed URLs into new datasets/conus/scout_slope_asymmetry_batch.py (isolated helper, not modifying 1984-wolfram-conus-textile-rule30.py).",
+      "deciding_data": "In repo: tent-wall asymmetry definition in 1984-wolfram-conus-textile-rule30.py (~line 9653), conus_textile_reference.json metrics. Public: Wikimedia Commons specimens (scout dry-run: multiple Conus/Oliva hits).",
+      "prior_attempts": "Conus audit specimen-match 84/100 used n=2 photos; chatlog flagged symmetric PDE vs asymmetric CA but no multi-specimen literature panel.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Literature scout supplies the missing CC image URLs/licenses; metric code already exists in main script for one specimen."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "One pinned specimen in-repo; Commons provides expansion set via same tool."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "CSV row count and SHA distinctness from reference JSON are mechanical checks."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Image download plus segmentation on ≤10 photos is hours on repo stack (Pillow/numpy)."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Requires new batch script file in addition to scout manifests; still zero edits to tracked conus reference JSON if outputs are new paths."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Scout pass is instant; segmentation batch may exceed one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not listed as refuted in open-problems.json; orthogonal to OP-01–03 prize proofs."
+        }
+      }
+    },
+    {
+      "title": "OP-01 transparent-gate loophole (short runs 1≤a_i≤7) — literature lens insufficient",
+      "gap": "docs/open-problems.json OP-01: prove D1(t)=1 hits closed gates {c_t=1} for all short-run words; missing piece is a global phase-spreading invariant, not a citable dataset.",
+      "done": "N/A for literature lens; closure requires Lean-checked proof or explicit counterexample word per OP-01 done string.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Rule 30 center column periodicity proof\" (expected: no paper claiming full OP-01 proof); record negative result in literature_map only. Actionable work belongs to morphoeval/lean/MathOfBiology.lean and models/1984-wolfram-conus-textile-rule30.py exhaustive engines, not scout_literature.",
+      "deciding_data": "In repo: OP-01, RULE30_PRIZE_STATUS_AND_GAPS.md Tier C, Delphi P1.4 bridge 11.52%. Public literature does not supply the missing global invariant.",
+      "prior_attempts": "Multi-agent panel and unattributed attempts per open-problems.json; 249500 pairs (t0,Pi)<(500,500) exhausted; depth-1 right cylinder entropy ~0.32 bits/step documented as obstruction in STATUS_AND_GAPS.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "scout_literature can only catalog prior papers, not produce the missing global lemma; proof/Lean lens required."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Extensive in-repo computations exist, but no external paper closes the gap."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "OP-01 done criterion is fully formal (proof or counterexample word)."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Further finite exhaustions are computable but do not match literature lens and are not the registered gap."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Proof work touches lean module and prize docs; not a new-file-only literature closure."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Literature search cannot reach OP-01 verdict in one loop."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "Route 'just run more finite windows' is effectively refuted as horizontal progress in RULE30_PRIZE_CHATLOG; global invariant remains open."
+        }
+      }
+    },
+    {
+      "title": "OP-03 fixed-seed Ω(T) lower bound — cite barrier/complexity literature, not a missing PDF",
+      "gap": "OP-03 asks for uniform RAM/Turing Ω(T) for fixed seed x_j=δ_{j,0}; repo proves multivariate deg(c_T)=2T−1 (Theorem 35(2)) but Delphi posterior 0.04% says work should be barrier results, not another degree bound attempt.",
+      "done": "For literature lens: manifest listing OpenAlex works on 'cellular automaton center column computational complexity' with doi present and boolean reproduces_repo_degree_bound (true if abstract mentions algebraic degree 2T−1); done when manifest states whether any paper claims fixed-input Ω(T) proof (yes/no). Mathematical done per OP-03 remains barrier formalization.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Rule 30 computational complexity center cell lower bound\" --out morphoeval/problem_scouts/literature_map_op03_complexity.json",
+      "deciding_data": "In repo: OP-03, RULE30_PRIZE_STATUS_AND_GAPS Problem 3, Theorem 35(2) in lean/script. Public: theoretical CS literature via OpenAlex.",
+      "prior_attempts": "Multi-agent panel; OP-03 pooled bridge 0.037%; open-problems.json notes P-vs-EXP-type machinery needed.",
+      "factors": {
+        "tool_fit": {
+          "score": 8,
+          "why": "Scout can locate citation landscape but cannot supply barrier theorem; complexity-theory/proof lens needed for OP-03 proper."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Degree bound evidence is in-repo; external papers are supplementary bibliography."
+        },
+        "falsifiable_done": {
+          "score": 11,
+          "why": "Manifest yes/no on claimed fixed-input lower bound is checkable; full OP-03 remains hard."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "OpenAlex-only pass is trivial compute."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Literature map JSON is isolated from lean sources."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One scout query likely settles 'does literature already claim OP-03 solved?'."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Panel recorded OP-03 as near-zero bridge; repeating multivariate degree bound route is blocked; literature map is negative-knowledge not solution."
+        }
+      }
+    }
+  ]
+}
