@@ -1,0 +1,337 @@
+{
+  "scout": "scout-003",
+  "ground": "rule30",
+  "lens": "lean",
+  "candidates": [
+    {
+      "id": "R30-LEAN-001",
+      "op_ref": "OP-01",
+      "subgoal_ref": "P1.5",
+      "title": "Kernel-check Depth-1 transparent-gate identities (Monotone Latch + Fibonacci Reset)",
+      "gap": "Theorem 10(2) in models/1984-wolfram-conus-textile-rule30.py asserts four pure center-column self-consistency laws on g_k = c_{k+1} ⊕ c_k ⊕ d_{k-1}(k), including Identity II (Monotone Latch: g_k ∧ ¬c_{k+1} ∧ ¬g_{k+1} = 0) and Identity III (Fibonacci Reset: g_k ∧ c_{k+1} ∧ g_{k+1} = 0). These are checked on the simulated unit-seed cone but are not present as 0-sorry theorems in morphoeval/lean/ (Delphi P1.5 mean score 45.7/100).",
+      "done": "A new morphoeval/lean/loops/Loop_*_rule30_depth1_transparent_gate.lean file defines g(c_k,c_{k+1},d_{k-1}) and proves Identities I–III as ∀ Bool theorems; `lean morphoeval/lean/loops/Loop_*_rule30_depth1_transparent_gate.lean` exits 0 with zero `sorry`, and `python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only` still reports identity_1_2_3_errors == 0.",
+      "tool_route": "Author Loop file (0-sorry contract) + `lean morphoeval/lean/loops/Loop_<slot>_rule30_depth1_transparent_gate.lean`; cross-check via `python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only` (verify_diagonal_ivp_and_boundary_memory_erasure).",
+      "deciding_data": "In repo: docs/RULE30_PRIZE_STATUS_AND_GAPS.md §Problem 1; models/1984-wolfram-conus-textile-rule30.py L1040–1087; morphoeval/lean/MathOfBiology.lean (adjacent Laws 2n–2t, no Identity II–III).",
+      "prior_attempts": "Multi-agent Delphi panel (morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml): Depth-1 Right Cylinder credited for collapsing sparse-pulse survival windows but P1.5 Lean coverage scored 35–52; no prior attempt refuted formalizing these three Boolean identities in Lean.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Pure 3–4 variable Bool case splits match existing rule30_* proof style in MathOfBiology.lean."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Exact identity formulas and Python verifier already pin the target theorems in-repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Scorer checks lean exit code 0, grep shows zero `sorry`, and self-test identity error count is 0."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Sub-second Lean kernel check plus ~minutes for full Rule 30 --self-test-only on VM stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as one new Loop_*.lean under morphoeval/lean/loops/ with no edits to tracked shared files."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single sitting: encode identities and decide 8–16 case splits per theorem."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "P1.4 global clash remains open, but nobody has refuted this local Lean formalization route."
+        }
+      }
+    },
+    {
+      "id": "R30-LEAN-002",
+      "op_ref": "OP-01",
+      "subgoal_ref": "P1.4",
+      "title": "Lean closure of short-run forbidden zero-gate subwords (Theorem 44(3) fragment)",
+      "gap": "docs/RULE30_PRIZE_STATUS_AND_GAPS.md states short 1-runs a ∈ {2,5,6} are eliminated via forbidden zero-gate subwords (`100` for (1²0)^k, `11`/`101` for (1⁵0)^k, etc.), implemented in Python verification, but morphoeval/lean/MathOfBiology.lean only covers adjacent 2-step exit bits (Laws 2q)—not the full 3–5 bit subword ban list tied to OP-01’s 1≤a_i≤7 transparent-gate loophole.",
+      "done": "New Loop file proves each listed forbidden pattern as a theorem of the form: if c_t…c_{t+L} matches the subword then the corresponding transparent-gate tuple (g_t,…) cannot satisfy Monotone Latch ∧ Fibonacci Reset (or yields immediate Opaque Mirror clash c∧D1=1). Lean exit 0, 0 sorry; Python short-run lock-in self-test counters remain 0.",
+      "tool_route": "`lean morphoeval/lean/loops/Loop_<slot>_rule30_shortrun_forbidden_subwords.lean` referencing `rule30`, `rule30_center_to_left_opaque_mirror`, and new latch/reset defs; confirm with targeted pytest/self-test hook in 1984-wolfram-conus-textile-rule30.py if present.",
+      "deciding_data": "In repo: docs/RULE30_PRIZE_STATUS_AND_GAPS.md Tier A bullet on Theorem 44(3); docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md; models/1984-wolfram-conus-textile-rule30.py short-run verification functions (~L2770–2830).",
+      "prior_attempts": "Delphi P1.4 pooled bridge 11.52% (docs/open-problems.json OP-01); panel evidence_against notes positive Depth-1 entropy (~0.32 bits/step) blocks fixed-depth local windows—this candidate does not claim global closure, only kernel-checks already-cited finite subword laws.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Each forbidden subword is a finite Bool word constraint; Lean already uses `decide` on similar rule30 tuples."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Subword list and Python verification outputs are documented in RULE30 status/gap docs."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done when N named subword theorems compile with 0 sorry and match Python zero-error counters."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Lean case explosions are small (≤32 states per subword); Python self-test is bounded."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New Loop file only; no MathOfBiology.lean mutation required for scout closure."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One loop iteration per subword family; may need 2–3 theorems for a∈{2,5,6}."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Global phase-spreading (P1.4) is still open, but finite subword formalization has not been refuted."
+        }
+      }
+    },
+    {
+      "id": "R30-LEAN-003",
+      "op_ref": "OP-01",
+      "subgoal_ref": "P1.4",
+      "title": "Global Horizon Clash (D1 supported only on {c_t=0}) — not Lean-decidable",
+      "gap": "docs/open-problems.json OP-01: defects D1(t)=1 are proved infinitely often, but not proved to hit closed gates {c_t=1}; STATUS doc says closing Prize 1 needs a global phase-spreading invariant because Depth-1 Right Cylinder has positive topological entropy (~0.32 bits/step).",
+      "done": "N/A for Lean lens — would require a new unconditional ∀t,Π theorem or an explicit counterexample word; neither is a finite Bool kernel.",
+      "tool_route": "Report only: full OP-01 needs simulation/exhaustion lens (`python3 models/1984-wolfram-conus-textile-rule30.py` census) or new analytic mixing theory, not 0-sorry Loop files.",
+      "deciding_data": "docs/open-problems.json OP-01; docs/RULE30_PRIZE_STATUS_AND_GAPS.md §Exact Remaining Gap; morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml P1.4 evidence_against.",
+      "prior_attempts": "Multi-agent panel + Delphi bridge 11.52%; explicit obstruction: positive Depth-1 entropy and transparent-gate absorption at c_t=0 (audit evidence_against −4.0 dB and −4.5 dB).",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "why": "Claim quantifies over all periods and transients; no finite rule30 case split closes it."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Gap statement and obstruction analysis are fully documented in-repo."
+        },
+        "falsifiable_done": {
+          "score": 8,
+          "why": "Prize-level done is clear (proof or counterexample word) but not Lean-checkable as stated."
+        },
+        "compute_in_repo": {
+          "score": 5,
+          "why": "Finite censuses exist but do not constitute ∀t0,Π proof."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Any progress would likely touch shared Rule30 docs—poor fit for zero-conflict loop."
+        },
+        "time_to_verdict": {
+          "score": 1,
+          "why": "Open research problem; not one-sitting Lean."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "Delphi panel already recorded that fixed-depth Lean/local routes cannot settle P1.4."
+        }
+      },
+      "alternate_lens": "simulation-exhaustion + Python self-test census; possibly Mathlib ergodic theory for entropy lower bounds."
+    },
+    {
+      "id": "R30-LEAN-004",
+      "op_ref": "OP-02",
+      "subgoal_ref": "P2.2",
+      "title": "Machine-check half-period anti-symmetry ⇒ exact 1/2 crystal density on dyadic periods",
+      "gap": "Theorem 35(1) proves exact 1/2 density for characteristic crystals A_S at doubling/post-doubling horizons; the algebraic kernel (top-octave Mahler delta ⇔ half-period anti-symmetry A(j+P/2)=1⊕A(j)) is not fully encoded in Lean—only scattered rule30 antiperiodic lemmas exist (e.g. rule30_antiperiodic_complement_pair_sum).",
+      "done": "Loop file defines Fin (2^n) period word A and proves: if ∀ j, A(j+P/2)=¬A(j) then (count ones)/P = 1/2 as a Nat/Fin theorem; plus one corollary instantiating the documented top-octave delta pattern for n≤4. `lean …` exit 0, 0 sorry.",
+      "tool_route": "`lean morphoeval/lean/loops/Loop_<slot>_rule30_crystal_halfperiod_density.lean` using Fin and `decide` for n≤4; optional `#eval` bitstrings exported from models/1984-wolfram-conus-textile-rule30.py doubling table.",
+      "deciding_data": "In repo: docs/RULE30_PRIZE_STATUS_AND_GAPS.md Problem 2 §What Is Proved; docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md P2.2; morphoeval/lean/MathOfBiology.lean rule30_antiperiodic_complement_pair_sum.",
+      "prior_attempts": "OP-02 Delphi bridge 2.03%; P2.2 subgoal scored 70/100—crystal density proved, diagonal transfer (P2.4) not; no refutation of formalizing P2.2 in Lean.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Counting on Fin 2^n is standard Lean core; ties to existing antiperiodic Bool lemma."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Exact iff condition and 17/17 doubling horizon census cited in STATUS doc."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Theorem statement is a pure equality of Nat counts checkable by kernel."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Fin 16/32 decide proofs are fast; larger n may need staged lemmas."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New Loop file only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Core counting lemma is one sitting; full n-parameter induction may take a second loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No audit marks crystal half-period density formalization as failed."
+        }
+      }
+    },
+    {
+      "id": "R30-LEAN-005",
+      "op_ref": "OP-02",
+      "subgoal_ref": "P2.4",
+      "title": "Diagonal-sample decorrelation along j=⌊S/2⌋ — not Lean-decidable as stated",
+      "gap": "docs/open-problems.json OP-02: exact 1/2 crystal density does not imply center-column diagonal sample c_S=A_S(⌊S/2⌋) has density 1/2; needs Weyl/exponential-sum or Bi-Mahler discrepancy bounds along the moving index.",
+      "done": "Publish a discrepancy bound theorem (or refutation) in analysis/NT—not a 0-sorry finite Bool loop unless dramatically weakened to a finite S regression.",
+      "tool_route": "Lean lens insufficient; numeric lens: export diagonal samples from Python + statistical test; analytic lens: Mathlib exponential sums.",
+      "deciding_data": "docs/open-problems.json OP-02; docs/RULE30_PRIZE_STATUS_AND_GAPS.md Problem 2 §Exact Remaining Gap; Delphi P2.4 mean 6.3/100.",
+      "prior_attempts": "Multi-agent panel; pooled bridge 2.033%; no successful bound in repo audits.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Asymptotic equidistribution is not a rule30 local gate identity."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Diagonal sampling formula and finite torus numerics (0.499837) are in STATUS/Delphi docs."
+        },
+        "falsifiable_done": {
+          "score": 9,
+          "why": "OP-02 done criterion is clear but requires analytic inequality, not lean exit 0 alone."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Finite-scale numerics run in Python; proof-grade bound likely needs external Mathlib setup."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Could add numeric CSV + Loop only for finite S regression—a weakened proxy."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Full OP-02 is open; Lean cannot deliver prize-level verdict quickly."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Not refuted, but Delphi assigns ~2% bridge—expect low payoff for Lean-only attempt."
+        }
+      },
+      "alternate_lens": "Python numeric/discrepancy + Mathlib analysis; not 0-sorry elementary Loop files."
+    },
+    {
+      "id": "R30-LEAN-006",
+      "op_ref": "OP-03",
+      "subgoal_ref": "P3.1",
+      "title": "Kernel-check multivariate ANF degree 2T−1 and unique top monomial for center cell",
+      "gap": "Theorem 35(2) in Python proves deg(c_T)=2T−1 over F₂[x_{−T},…,x_{+T}] with sensitivity on all variables; morphoeval/lean/MathOfBiology.lean has rule30 ANF equivalence but no inductive degree/sensitivity theorems—OP-03’s fixed-seed uniform RAM lower bound is explicitly separated in STATUS doc.",
+      "done": "Loop file (or MathOfBiology extension if policy allows) defines c_T as composition of rule30 on the light-cone, proves degree 2T−1 and identifies the unique degree-(2T−1) monomial for T=1..6 via recursive Bool polynomial ring on Fin (2T+1); lean exit 0, 0 sorry; matches Python ANF table for those T.",
+      "tool_route": "`lean morphoeval/lean/loops/Loop_<slot>_rule30_center_anf_degree.lean`; verify against `python3 models/1984-wolfram-conus-textile-rule30.py` ANF/degree self-test for T≤6.",
+      "deciding_data": "In repo: docs/RULE30_PRIZE_STATUS_AND_GAPS.md Problem 3; docs/open-problems.json OP-03 (barrier framing); models/1984-wolfram-conus-textile-rule30.py Theorem 35 verification block (~L6522+).",
+      "prior_attempts": "OP-03 Delphi bridge 0.037%; panel recommends barrier result not another Ω(T) attempt; multivariate degree proof is Tier A solved in prose/Python but P1.5-style Lean gap remains for P3 structural subgoal.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "Fixed T≤6 ANF is finite and mirrors existing `cases`/`decide` style; general T needs inductive infrastructure."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Exact degree formula and monomial named in STATUS and Python verifier."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done = degree and monomial match table for each T in [1,6] with 0 sorry."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Exponential in T for naive decide; T≤6 is practical on VM."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Prefer new Loop file over editing MathOfBiology.lean per cloud isolation rules."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "T≤6 likely one sitting; full ∀T induction is multi-loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Does not touch refuted fixed-seed Ω(T) route; strengthens P3 multivariate subgoal only."
+        }
+      }
+    },
+    {
+      "id": "R30-LEAN-007",
+      "op_ref": "OP-01",
+      "subgoal_ref": "P1.1",
+      "title": "Kogge–Stone carry-propagate vanishing for P=8 (Jen barrier synchronized regime)",
+      "gap": "docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md Theorem 1 proves diagonal cycle-transfer via Kogge–Stone doubling; Lean has jen_diagonal_step and jen_1990_barrier_shielding for one step but not the finite P=2^m proof that Π_{t} p_0(t)=0 ⇒ p_m=0 and c_k=g_m (synchronized regime).",
+      "done": "Loop file models g0,p0 ∈ Bool^8 as Fin 8 → Bool, defines one Kogge–Stone doubling step, proves: if c_{k-1} ≠ 0^8 then after 3 doublings p_3=0^8; lean exit 0, 0 sorry; Python Kogge–Stone self-test unchanged at 0 errors for P=8.",
+      "tool_route": "`lean morphoeval/lean/loops/Loop_<slot>_rule30_kogge_stone_p8.lean` + `python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only` (Kogge–Stone section in DEFECT_FRONTS doc).",
+      "deciding_data": "In repo: docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md §Theorem 1; morphoeval/lean/MathOfBiology.lean jen_diagonal_step; morphoeval/math_kg_loops/wolfram-conus-textile-rule30.yaml Jen law pins.",
+      "prior_attempts": "Theorem 1 proved in Python (1.2s Kogge–Stone traversal cited); no Lean formalization attempt recorded in audits; not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "P=8 is finite; doubling step is Bool algebra suitable for decide/tactics."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Exact g,p recurrence and dichotomy statement in DEFECT_FRONTS markdown."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Done when p_3 vanishes theorem compiles for non-zero barrier hypothesis encoded as Fin 8."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Brute-force over 2^8 barriers may be needed unless structured proof found."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New Loop file only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "P=8 only; general m induction is harder second step."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Complements rather than repeats refuted global P1.4 Lean routes."
+        }
+      }
+    },
+    {
+      "id": "R30-LEAN-008",
+      "op_ref": null,
+      "subgoal_ref": "Conus audit",
+      "title": "Conus textile Rule30↔Ermentrout–Oster gate chain in standalone Loop (kymograph traceability)",
+      "gap": "morphoeval/kg/2026-10-19-conus-second-assessor-audit documents model-fidelity for wolfram-conus-textile-rule30; MathOfBiology.lean already proves ermentrout_oster_neural_gate_eq_rule30, but there is no dedicated Loop_*_wolfram_conus_textile_rule30.lean mirroring the 5-law math_kg_loops/wolfram-conus-textile-rule30.yaml registry (campaign pattern used by other flagships).",
+      "done": "Create morphoeval/lean/loops/Loop_<slot>_wolfram_conus_textile_rule30.lean importing or copying the five Bool theorems (rule30 ANF, Jen inverse, Meinhardt basal quiescence, Ermentrout gate, rule90 vs rule30 chirality); lean exit 0, 0 sorry; morphoeval/math_kg_loops/wolfram-conus-textile-rule30.yaml lean_locus fields updated in a separate builder PR if needed.",
+      "tool_route": "`lean morphoeval/lean/loops/Loop_<slot>_wolfram_conus_textile_rule30.lean`; audit cross-check morphoeval/math_kg_loops/wolfram-conus-textile-rule30.yaml; specimen/kymograph assets docs/media/conus_rule30_kymograph_defect_fronts.png as biological context only.",
+      "deciding_data": "In repo: morphoeval/math_kg_loops/wolfram-conus-textile-rule30.yaml; morphoeval/lean/MathOfBiology.lean Laws 1–5; datasets/conus/conus_textile_reference.json; conus_rule30_defect_fronts.csv.",
+      "prior_attempts": "MorphoEval conus audits 2026-10-18/19 (scores ~87.3 overall); Lean laws live in shared MathOfBiology.lean—no refutation of splitting into per-sim Loop file.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Theorems already proved; task is packaging into 0-sorry Loop module per MorphoEval loop contract."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All five laws and lean_code snippets are in math_kg YAML and MathOfBiology.lean."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "lean exit 0 on named Loop file with theorem count ≥5 and zero sorry."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Copy-and-check only; sub-second Lean."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New Loop file satisfies cloud zero-conflict policy."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Mechanical extraction from existing kernel-checked proofs."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Hygiene/organizational gap; no prior failed attempt."
+        }
+      }
+    }
+  ]
+}
