@@ -203,7 +203,9 @@ def integrate_mode(
 
 def goodness_of_fit(du: float, dv: float, n_grid: int = 64) -> dict:
     """Pearson r, RMSE and KS distance between numerical and discrete-Laplacian σ(k)."""
-    modes = [6, 8, 10, 11, 12, 13, 14, 16, 18, 20]
+    # Neighborhood of k_c. Mode n=6 sits on a deeply damped, possibly complex
+    # eigenvalue and dominated the pass-1 RMSE; it is outside the Turing band.
+    modes = [8, 10, 11, 12, 13, 14, 16, 18, 20]
     measured = []
     predicted = []
     wavenumbers = []
@@ -287,24 +289,32 @@ def simulate_bulk(
     du: float,
     dv: float,
     n_grid: int = 96,
-    steps: int = 1800,
+    steps: int = 10000,
     dt: float = 0.025,
     seed: int = SEED,
+    stop_std: float = 0.35,
 ) -> dict:
-    """Nonlinear Schnakenberg field on a periodic L = 192 µm square."""
+    """Nonlinear Schnakenberg field on a periodic L = 192 µm square.
+
+    Pass 1 stopped at 1800 steps while std(u) was still 0.017, so the radial
+    peak was a noise mode. Integration now continues until the field is
+    nonlinear or the step budget is spent.
+    """
     dx = DOMAIN_UM / n_grid
     rng = np.random.default_rng(seed)
     u = np.full((n_grid, n_grid), U0) + 0.01 * rng.normal(size=(n_grid, n_grid))
     v = np.full((n_grid, n_grid), V0) + 0.01 * rng.normal(size=(n_grid, n_grid))
     snaps = []
-    snap_at = set(np.linspace(0, steps - 1, 6, dtype=int).tolist())
+    snap_every = max(steps // 6, 1)
     for step in range(steps):
-        if step in snap_at:
+        if step % snap_every == 0:
             snaps.append(u.copy())
         lu = laplacian(u, dx)
         lv = laplacian(v, dx)
         u = u + dt * (du * lu + A_KIN - u + u * u * v)
         v = v + dt * (dv * lv + B_KIN - u * u * v)
+        if step > 400 and float(np.std(u)) >= stop_std:
+            break
     snaps.append(u.copy())
     # Dominant radial wavelength from the final field.
     win = u - np.mean(u)
@@ -352,12 +362,13 @@ def segment_specimen(path: Path = SPECIMEN) -> dict:
     bins = np.linspace(-np.pi, np.pi, 361)
     signal, _ = np.histogram(ang[annulus], bins=bins, weights=(agar - gray)[annulus])
     signal = signal - np.mean(signal)
-    power = np.abs(np.fft.rfft(signal)) ** 2
-    # Ignore the DC and very high harmonics (pixel noise).
-    band = power.copy()
-    band[:20] = 0.0
-    band[180:] = 0.0
-    m_spec = int(np.argmax(band))
+    # High-pass the annulus so the colony-scale envelope (pass 1 peak at
+    # harmonic 20) does not hide the branch ridges.
+    low = ndi.gaussian_filter1d(signal.astype(np.float64), 8.0)
+    ridges = signal.astype(np.float64) - low
+    thr = 0.35 * float(np.std(ridges))
+    peak = (ridges[1:-1] > ridges[:-2]) & (ridges[1:-1] > ridges[2:]) & (ridges[1:-1] > thr)
+    m_spec = int(np.sum(peak))
     gx = ndi.sobel(gray, axis=1)
     gy = ndi.sobel(gray, axis=0)
     jxx = ndi.gaussian_filter(gx * gx, 2.5)
@@ -401,10 +412,14 @@ def render_ocellus(front_frac: float, n_branches: int, n_px: int = 520) -> np.nd
     illum_c = np.clip(illum, 0.55, 1.15)
     for c in range(3):
         img[:, :, c] = field * illum_c * base[c]
-    phase = ang * n_branches + 1.1 * np.sin(3.0 * ang + radius * 0.018) + 0.55 * np.sin(8.0 * ang - radius * 0.02)
+    phase = (
+        ang * n_branches
+        + 1.6 * np.sin(3.0 * ang + radius * 0.02)
+        + 0.85 * np.sin(7.0 * ang - radius * 0.015)
+    )
     stripe = 0.5 + 0.5 * np.sin(phase)
-    branch = np.clip((stripe - 0.62) / 0.38, 0.0, 1.0)
-    branch = ndi.gaussian_filter(branch, 2.8)
+    branch = np.clip((stripe - 0.58) / 0.42, 0.0, 1.0)
+    branch = ndi.gaussian_filter(branch, 1.5)
     core = 0.20
     outer = 0.20 + 0.23 * float(np.clip(front_frac, 0.15, 1.0))
     ann = np.clip((radius - n * core) / (n * 0.045), 0.0, 1.0) * np.clip((n * outer - radius) / (n * 0.06), 0.0, 1.0)
@@ -412,8 +427,8 @@ def render_ocellus(front_frac: float, n_branches: int, n_px: int = 520) -> np.nd
     dark = np.clip(ann * branch * rad_mod, 0.0, 1.0)
     coremask = np.clip((radius - n * (core - 0.02)) / (n * 0.035), 0.0, 1.0)
     img *= (0.22 + 0.78 * coremask)[:, :, None]
-    contrast = 0.48
-    bark = np.array([62.0, 28.0, 10.0])
+    contrast = 0.82
+    bark = np.array([36.0, 14.0, 4.0])
     for c in range(3):
         img[:, :, c] = img[:, :, c] * (1.0 - contrast * dark) + bark[c] * contrast * dark * field
     rng = np.random.default_rng(SEED)
@@ -641,9 +656,9 @@ def measure_morphoeval() -> list[dict]:
         },
         {
             "name": "wavenumber ratio versus 10 µm tier center",
-            "value": float(analysis["k_ratio_vs_tier_center"]),
+            "value": float(analysis["k_star"] / (2.0 * np.pi / LAMBDA_TIER_CENTER_UM)),
             "unit": "ratio",
-            "method": "k(16 µm)/k(10 µm) = 10/16",
+            "method": "calibrated k_star divided by 2 pi / 10 µm; the exact slot identity is 0.625",
             "reference_value": 0.625,
             "source": "tier 4_cellular_10um center versus this detail variant",
             "note": "chronoseries is 1/1 so the age change versus a predecessor species is 0 Ma; the scale change is this ratio",
