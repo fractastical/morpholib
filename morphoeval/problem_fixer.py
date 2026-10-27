@@ -61,6 +61,15 @@ GLOBAL_FORBIDDEN = [
 
 VALID_RESULT_STATUSES = {"fixed", "verified-no-change", "blocked", "needs-review"}
 
+# Repo tools legitimately rewrite these runtime artifacts as a side effect of
+# running (telemetry DB / event log). A validator touching them is not evidence
+# that a regenerated artifact was left uncommitted, so the dirty-tree check
+# ignores them.
+VALIDATOR_SIDE_EFFECT_PATHS = {
+    "morphoeval/runs/telemetry.sqlite",
+    "morphoeval/runs/telemetry_events.jsonl",
+}
+
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -342,6 +351,20 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _status_lines(repo: Path) -> set[str]:
+    """Working-tree paths from `git status --porcelain` (rename targets kept)."""
+    proc = _git(repo, "status", "--porcelain")
+    if proc.returncode != 0:
+        return set()
+    paths: set[str] = set()
+    for line in proc.stdout.splitlines():
+        entry = line[3:].strip()
+        if " -> " in entry:
+            entry = entry.split(" -> ", 1)[1]
+        paths.add(entry.strip('"'))
+    return paths
+
+
 def changed_files(repo: Path, base: str, head: str) -> list[tuple[str, str]]:
     proc = _git(repo, "diff", "--name-status", "--find-renames", f"{base}...{head}")
     if proc.returncode != 0:
@@ -451,15 +474,20 @@ def guard_task(
     if status == "verified-no-change" and not non_reporting:
         errors.append("verified-no-change requires a new verifier/test or other durable evidence file")
     if run_validator_checks and status in {"fixed", "verified-no-change"}:
+        pre_status = _status_lines(repo)
         validator_results = run_validators(repo, task)
         for validator in validator_results:
             if validator["exit_code"] != 0:
                 errors.append(f"validator failed ({validator['name']}): exit {validator['exit_code']}")
-        status_proc = _git(repo, "status", "--porcelain")
-        if status_proc.returncode == 0 and status_proc.stdout.strip():
+        dirty = [
+            path
+            for path in _status_lines(repo) - pre_status
+            if path not in VALIDATOR_SIDE_EFFECT_PATHS
+        ]
+        if dirty:
             errors.append(
                 "validators modified the working tree; regenerated artifacts must be committed in the PR: "
-                + ", ".join(line[3:] for line in status_proc.stdout.splitlines()[:10])
+                + ", ".join(sorted(dirty)[:10])
             )
     elif status in {"blocked", "needs-review"}:
         warnings.append(f"agent reported {status}; validators were not used as a merge gate")
