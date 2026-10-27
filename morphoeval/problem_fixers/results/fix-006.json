@@ -1,0 +1,50 @@
+{
+  "fix_id": "fix-006",
+  "candidate_rank": 24,
+  "candidate_id": "scout-032-c",
+  "status": "fixed",
+  "summary": "Turing audits pointed script: at repo-root 1952-turing-morpho.py while the entrypoint lives at models/1952-turing-morpho.py; measure_turing() skipped script import when the path was missing, yielding only four GIF pixel rows with no Pearson/Kondo reference sources. Canonical audit script paths were corrected, measure_outputs gained resolve_script_path() (legacy basename → models/) plus an explicit skipped row when the script is still missing, and turing-gray-scott measurement now falls back to extra_outputs GIFs when the declared PNG output is absent. Sidecars were regenerated with measure_outputs.py.",
+  "root_cause": "Audits used script: 1952-turing-morpho.py at repo root (file absent); measure_turing() gated Pearson/Turing-1952/specimen rows on turing_script.exists() without surfacing failure. The v2 audit primary output is a missing PNG, so GIF morphometrics also dropped unless extra_outputs was consulted.",
+  "changed_files": [
+    "morphoeval/measure_outputs.py",
+    "morphoeval/audits/2026-10-19-turing-audit-v2.yaml",
+    "morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml",
+    "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml",
+    "morphoeval/audits/2026-10-26-flagship15-audit-v1.measurements.yaml",
+    "tests/test_problem_fixer_turing_measurements.py"
+  ],
+  "evidence": [
+    "Repro before fix: measure_turing(gif, script=ROOT/'1952-turing-morpho.py') → 4 rows; models path → 10 rows",
+    "models/1952-turing-morpho.py is the sole checked-in Turing script (no root copy)",
+    "Regenerated morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml: 10 turing-gray-scott rows with reference_source containing 'Pearson 1993' and 'Kondo'",
+    "tests/test_problem_fixer_turing_measurements.py: missing script yields 5 rows with explicit skipped note"
+  ],
+  "validation": [
+    {
+      "name": "Regenerate Turing measurements",
+      "argv": ["python3", "morphoeval/measure_outputs.py", "morphoeval/audits/2026-10-19-turing-audit-v2.yaml"],
+      "exit_code": 0,
+      "output_summary": "turing-gray-scott: 10 measurement(s), quick_gate=95/100 (validated)"
+    },
+    {
+      "name": "Measurement completeness check",
+      "argv": ["python3", "-c", "import yaml; ... assert len(rows)>=10; Pearson 1993 and Kondo in reference_source"],
+      "exit_code": 0,
+      "output_summary": "10"
+    },
+    {
+      "name": "pytest fix-006 regression",
+      "argv": ["python3", "-m", "pytest", "tests/test_problem_fixer_turing_measurements.py", "-q"],
+      "exit_code": 0,
+      "output_summary": "4 passed"
+    },
+    {
+      "name": "compileall touched modules",
+      "argv": ["python3", "-m", "compileall", "morphoeval/measure_outputs.py", "tests/test_problem_fixer_turing_measurements.py", "-q"],
+      "exit_code": 0,
+      "output_summary": "ok"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
