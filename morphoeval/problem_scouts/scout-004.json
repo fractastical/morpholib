@@ -1,0 +1,384 @@
+{
+  "scout": "scout-004",
+  "ground": "rule30",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "id": "R30-SIM-001",
+      "op_ids": ["OP-01"],
+      "title": "Depth-1 right-cylinder search for transparent-gate-only D_1(t) support (Prize 1 phase-alignment clash)",
+      "gap": "Delphi P1.4 and docs/RULE30_PRIZE_STATUS_AND_GAPS.md leave open whether depth-1 defects D_1(t):=l_1(t+Pi) xor l_1(t) can remain supported only on transparent gates {t>=t_0: c_t=0}; exhaustive refutation exists only for bounded (t_0,Pi) boxes and specific word families, not a stochastic census under Monotone Latch + Fibonacci Reset.",
+      "done": "A JSON artifact reports either (A) one explicit (t_0, Pi, transient bits, periodic word w) satisfying depth-1 cylinder laws for 10*Pi post-onset steps with every D_1(t)=1 occurring only when c_t=0, or (B) zero survivors after >=20000 independent draws with Pi in [8,160], t_0 in [0,60], each run logged with max transparent-only streak length.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only (baseline verify_rule60_residual_and_latch_reset_laws + verify_biological_oliva_conus_ballot_greens_function_and_pure_left_cone_opaque_mirror_laws must pass); then a new zero-conflict driver morphoeval/sweeps/rule30_depth1_transparent_gate_search.py importing rule30_step_boolean, verify_rule60 logic, and the bit-parallel SWAR automaton pattern from verify_left_cone_1run_alternating_profile_defect_linearization_and_dyadic_horizon_clash_laws (lines ~8839-8879 in models/1984-wolfram-conus-textile-rule30.py).",
+      "deciding_data": "In-repo: unit-seed light-cone from run_eca(30,...) inside models/1984-wolfram-conus-textile-rule30.py; no external fetch.",
+      "prior_attempts": "docs/open-problems.json OP-01 (panel + unattributed): pooled bridge 11.52%; morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml P1.4 scores 20-46/100 and records depth-1 survival <=19 steps on exhaustive Pi<=28 and 20000 random Pi<=120 tests, but not a dedicated transparent-gate-only counterexample search. Route 'fixed-depth local window closes Prize 1' is refuted (positive depth-1 entropy ~0.32 bits/step) — do not re-propose.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "max": 25,
+          "why": "Depth-1 latch/reset simulation and SWAR refutation kernels already live in the Rule30 model; only a thin sweep wrapper is missing."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "max": 20,
+          "why": "All inputs are generated from the pinned single-seed ECA inside the repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "max": 15,
+          "why": "Done is a survivor bit plus counts, machine-checkable without expert judgment."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "max": 15,
+          "why": "20000 random pairs is minutes on SWAR; full --self-test-only baseline is ~10 min on cloud VM (verified this run)."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "Closes as new sweep script + JSON under morphoeval/sweeps/ with zero edits to tracked Rule30 sources."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "max": 10,
+          "why": "One sweep loop plus self-test gate yields accept/reject in a single sitting."
+        },
+        "not_blocked": {
+          "score": 4,
+          "max": 5,
+          "why": "Prior work bounded post-period survival but did not publish this explicit transparent-gate alignment search as a named negative result."
+        }
+      }
+    },
+    {
+      "id": "R30-SIM-002",
+      "op_ids": ["OP-01"],
+      "title": "Extend direct Period-Pi defect clash c_t & D_1(t) exhaustion from [0,200)^2 to [0,500)^2",
+      "gap": "Theorem 47(3) in models/1984-wolfram-conus-textile-rule30.py verifies 39,606 non-zero pairs in [0,200)x[1,200) while Theorem 44(4) already refuted 248,984/248,984 non-zero pairs in [0,500)^2 via Pure Left-Cone Opaque Mirror alone; the direct defect-clash route is not unified to the same 500x500 box, leaving an empirical gap between 200 and 500 on the stronger D_1 predicate.",
+      "done": "Output JSON has keys tested_pairs=249500, survivors=0, max_post_mismatch_steps<=35 for every non-zero (t_0,Pi) in [0,500)x[1,500) under the direct c_t & D_1(t) test (matching verify_inward_defect_wavefront_hit_time_and_two_band_1run_tunneling_laws semantics).",
+      "tool_route": "python3 -c \"import importlib.util, pathlib; p=pathlib.Path('models/1984-wolfram-conus-textile-rule30.py'); ... verify_inward_defect_wavefront_hit_time_and_two_band_1run_tunneling_laws()\" with Pi_max/t0_max patched in a new morphoeval/sweeps/rule30_direct_defect_clash_500.py (copy the inner loop from lines ~9163-9200); gate with python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only.",
+      "deciding_data": "In-repo unit-seed Rule 30 cone; deciding evidence is the sweep JSON only.",
+      "prior_attempts": "Self-test already reports 500x500 pure-left kills=248984/248984 and survivors=0 (2026-10-27 cloud run); direct D_1 clash only certified to 200. Re-proposing 'pure left mirror alone closes Prize 1' is blocked — audit marks it insufficient on 0^Pi and sparse pulses.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "max": 25,
+          "why": "The direct clash loop is copy-paste from an existing verify_* function; no new mathematics required."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "max": 20,
+          "why": "249500 pairs are synthesized in-process from Rule 30 dynamics."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "max": 15,
+          "why": "survivors==0 and max steps are exact integers."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "max": 15,
+          "why": "249k bit-parallel checks are feasible in tens of minutes; dominated by ~10 min self-test if run sequentially."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "New sweep file only; no modification to models/1984-wolfram-conus-textile-rule30.py."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "max": 10,
+          "why": "Single extended loop run after self-test passes."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "This specific 200→500 direct-clash extension is not recorded as completed in docs/open-problems.json."
+        }
+      }
+    },
+    {
+      "id": "R30-SIM-003",
+      "op_ids": ["OP-01"],
+      "title": "Short-run completion sweep for 1-run lengths a_i in {3,4,7} under depth-1 cylinder laws",
+      "gap": "docs/RULE30_PRIZE_STATUS_AND_GAPS.md states forbidden zero-gate subwords closed a in {2,5,6} (Theorem 44(3)) while multi-run words with all a_i<=8 except {5,6} remain the transparent-gate battleground; lengths 3,4,7 are not listed among the eliminated infinite families (which require a_i>=8 or special traps).",
+      "done": "For every primitive necklace of period Pi in [2,30] whose maximal 1-run length is in {3,4,7} and satisfies depth-1 cylinder admissibility, simulation reports survivors=0 and max_exterior_steps<=55, OR lists the first counterexample word with its survival length.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only; morphoeval/sweeps/rule30_short_run_347_necklace_census.py calling verify_short_run_trap_automaton_and_bimahler_rim_strict_laws() and verify_biological_oliva_conus_ballot_greens_function_and_pure_left_cone_opaque_mirror_laws() patterns, filtering necklaces by run-length metadata (reuse enumeration approach from verify_dual_infinite_families_and_general_necklace_extinction).",
+      "deciding_data": "In-repo enumeration; necklace counts are bounded by the existing Pi<=30 census scale (74,248,449 primitive necklaces total, subset filter reduces workload).",
+      "prior_attempts": "OP-01 panel eliminated Pi<=30 at t_0=Pi-1 with 0 survivors globally; this candidate targets the unresolved short-run length subclass {3,4,7} called out in STATUS gap text, not a repeat of the full 74M run.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "max": 25,
+          "why": "Necklace extinction machinery exists through Pi=30 in self-test; missing piece is filtered census for run-length {3,4,7}."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "max": 20,
+          "why": "All words generated in-repo; subset may still require hours but no external data."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "max": 15,
+          "why": "Counterexample is a concrete binary word string plus step count."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "max": 15,
+          "why": "Filtered subset of 74M necklaces may still take multi-hour CPU though within repo stack."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "New sweep script + JSON only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "max": 10,
+          "why": "Verdict may need one long batch job rather than a single quick loop."
+        },
+        "not_blocked": {
+          "score": 4,
+          "max": 5,
+          "why": "Global Pi<=30 exhaustion does not subsume this run-length-filtered claim documented as still open."
+        }
+      }
+    },
+    {
+      "id": "R30-SIM-004",
+      "op_ids": ["OP-02"],
+      "title": "Empirical diagonal-sample discrepancy vs crystal half-density for S<=8192 (Prize 2 decorrelation probe)",
+      "gap": "OP-02 / Delphi P2.4: exact 1/2 density on characteristic crystals A_S does not prove the diagonal sample c_S=A_S(floor(S/2)) equidistributes; no discrepancy bound exists, only finite torus plateaus (|rho-1/2|<2.2e-4 at r=15) and 22/41 crystals with exact half-density in S=1..41.",
+      "done": "CSV/JSON reports sup_{1<=S<=S_max} | (1/S) sum_{t=0}^{S-1} c_t - 1/2 | and, per S, records m_max(S) from verify_grand_prize_synthesis_density_and_complexity_bounds(); pass if sup deviation < 0.002 for S_max=8192 OR first S where deviation >= 0.01 is printed with S and m_max(S).",
+      "tool_route": "python3 -c \"from models import ...\" via morphoeval/sweeps/rule30_diagonal_density_discrepancy.py calling rule30_prize_diagnostics(steps=8192) and verify_grand_prize_synthesis_density_and_complexity_bounds(); validate python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only.",
+      "deciding_data": "In-repo: OEIS A051023 center column from run_eca(30,...); datasets/conus/conus_textile_reference.json is not required for this arithmetic probe.",
+      "prior_attempts": "docs/open-problems.json OP-02 pooled bridge 2.03%; self-test reports center density c_1024=0.4785 and half-density=22/41 crystals — empirical but not a decorrelation proof. Route 'extrapolate crystal 1/2 to diagonal without new bound' is blocked as insufficient for the prize.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "max": 25,
+          "why": "rule30_prize_diagnostics and grand-prize synthesis already compute densities and Mahler degrees."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "max": 20,
+          "why": "Pure simulation from unit seed."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "max": 15,
+          "why": "Threshold on sup deviation is numeric; finding S with deviation>=0.01 falsifies the empirical conjecture."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "max": 15,
+          "why": "8192-step cone is seconds; crystal table to S=41 is already sub-second inside self-test."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "New sweep artifact only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "max": 10,
+          "why": "One diagnostic call completes in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "No prior artifact records this joint (running density, m_max) series to S=8192."
+        }
+      }
+    },
+    {
+      "id": "R30-SIM-005",
+      "op_ids": ["OP-02"],
+      "title": "Extend locked 2-adic projective tower equidistribution from r=15 to r=18 (diagonal torus stress test)",
+      "gap": "verify_2adic_projective_tower_and_pi25_closure() certifies |rho_torus(r)-1/2|<2.2e-4 for r=12..15 (K<65536); P2.3 subgoal stops at r=15 while Prize 2 needs asymptotic diagonal behavior as S grows (~2^r scaling).",
+      "done": "JSON lists r in {16,17,18} with ones_count/denominator and |rho-0.5|; pass if all three r satisfy |rho-0.5|<=0.001, fail if any exceeds 0.002 (hard fail threshold pre-registered).",
+      "tool_route": "morphoeval/sweeps/rule30_projective_tower_r16_18.py importing verify_2adic_projective_tower_and_pi25_closure tower loop (lines ~4582-4605 in models/1984-wolfram-conus-textile-rule30.py); gate python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only.",
+      "deciding_data": "In-repo A_mat / alpha_mat construction from unit-seed grid in verify_2adic_projective_tower_and_pi25_closure.",
+      "prior_attempts": "Delphi P2.3 Tier B verification at r=15; extension beyond r=15 not listed in open-problems.json as done. Cannot close OP-02 alone — simulation only stress-tests equidistribution hypothesis.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "max": 25,
+          "why": "Tower code is explicit; extension is parameter change on existing nested loops."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "max": 20,
+          "why": "Generated from in-repo ECA grid."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "max": 15,
+          "why": "Fixed rho thresholds pre-registered."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "max": 15,
+          "why": "r=18 implies up to 2^19 diagonals — heavy but still numpy in-process (estimate tens of minutes)."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "New sweep file only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "max": 10,
+          "why": "May require one long run for r=18."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "No recorded r=16..18 tower census in audits."
+        }
+      }
+    },
+    {
+      "id": "R30-SIM-006",
+      "op_ids": ["OP-01"],
+      "title": "9-row horizon sandwich validation at all 16 Kogge–Stone k_5 leaf diagonals",
+      "gap": "Theorem 46 verifies the 9-row Universal Horizon Sandwich Cascade only at k_r in {3,8,29,400}; k_5 leaves span [87867,894235] on the P=16 plateau (verify_koggestone_p16_barrier_tree) without per-leaf sandwich simulation in self-test output.",
+      "done": "For each of the 16 leaf paths in verify_koggestone_p16_barrier_tree()['leaves'], simulated B_k rows satisfy B_{k-1}^{(per)}==0^infty, B_{k+1}^{(per)}==1^infinity on rows tested, and half-period anti-symmetry D_k(m+2^{r-1}) xor D_k(m)==1 for m>=M_* with 0 errors per leaf, OR first failing (path,k,m) triple is logged.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only (confirms k5_min=87867, k5_max=894235, n_odd_p32_leaves=16); morphoeval/sweeps/rule30_k5_horizon_sandwich_leaves.py imports verify_koggestone_p16_barrier_tree() and verify_universal_horizon_sandwich_9row_cascade_and_boundary_prefix_transmission_laws() sub-diagonal builders.",
+      "deciding_data": "In-repo: leaf table from verify_koggestone_p16_barrier_tree; diagonal dynamics from unit-seed or algebraic T_16 branches.",
+      "prior_attempts": "docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md Theorem 3 exhaustively traverses the P=16 tree; Theorem 46 finite verification at k<=400. Per-leaf k_5 sandwich checks not archived as a named result.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "max": 25,
+          "why": "Both k_5 leaf enumeration and sandwich identities are implemented; glue script needed to run sandwich at each leaf k."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "max": 20,
+          "why": "Leaf paths and cycles are computed in-repo; large k indices are symbolic but simulation uses periodic cycles not full 87867-row grids."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "max": 15,
+          "why": "Per-leaf error counts must be zero or a concrete (path,k,m) failure is emitted."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "max": 15,
+          "why": "16 algebraic branches on period-16/32 cycles — seconds to minutes per leaf."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "New sweep JSON only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "max": 10,
+          "why": "16 leaves fit one batch after self-test."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "Not previously recorded as a completed check."
+        }
+      }
+    },
+    {
+      "id": "R30-SIM-007",
+      "op_ids": ["OP-03"],
+      "title": "Fixed-seed center-bit c_T runtime scaling vs multivariate ANF degree (Prize 3 barrier probe)",
+      "gap": "OP-03: multivariate deg(c_T)=2T-1 is proved (Theorem 35(2)) but Wolfram's prize asks for Omega(T) time from the unit seed given only log T bits; specialization collapses the ANF and simulation cannot separate P from EXP.",
+      "done": "Not closable by simulation alone: report documents that measuring wall-clock for c_T from delta seed is Theta(T) trivially and does not imply the prize lower bound; any claim of Omega(T) from timing data is marked INVALID unless multivariate sensitivity experiment on random initial rows is pre-registered separately.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only (verify_grand_prize_synthesis_density_and_complexity_bounds ANF block); optional timing ablation via morphoeval/sweeps/rule30_fixed_seed_timing_null.py calling run_eca(30,...) — explicitly labeled null/baseline only.",
+      "deciding_data": "In-repo ECA; external complexity theory not applicable.",
+      "prior_attempts": "docs/open-problems.json OP-03 pooled bridge 0.037%; Delphi directs work toward barrier/relativization not another multivariate degree attempt. Re-proposing multivariate ANF degree as Prize 3 progress is blocked.",
+      "alternate_lens": "Lean 4 / proof formalization (morphoeval/lean/MathOfBiology.lean) or uniform complexity theory — not simulation.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "max": 25,
+          "why": "Self-test certifies ANF degree but fixed-seed runtime experiments are structurally incapable of deciding the prize."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "max": 20,
+          "why": "Simulation data exist yet measure the wrong complexity model."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "max": 15,
+          "why": "Null outcome (timing Theta(T)) is objectively checkable but does not advance OP-03."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "max": 15,
+          "why": "Trivial ECA runs."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "Documentation-only sweep artifact."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "max": 10,
+          "why": "Immediate null verdict."
+        },
+        "not_blocked": {
+          "score": 1,
+          "max": 5,
+          "why": "Listed to record negative knowledge; prize route via simulation is effectively refuted by theory literature cited in STATUS doc."
+        }
+      }
+    },
+    {
+      "id": "R30-SIM-008",
+      "op_ids": [],
+      "title": "Conus cross-model ablation: Rule 30 left damage front v_L vs Meinhardt lesion wake slope",
+      "gap": "docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md unifies Rule 30 ballistic fronts with Meinhardt–Klingler PDE recovery; self-test prints damage cone v_L=-0.2604±0.1024 and tent erosion rates but no pre-registered pass/fail coupling metric between CA and PDE kymographs (Conus textile biological anchor in scout territory).",
+      "done": "JSON from simulate_cross_model_kymograph_fronts() reports normalized slopes s_R30, s_PDE, s_sorting; pass if |s_R30 - s_PDE| / max(|s_PDE|,1e-6) <= 0.35 OR fail with measured ratio; includes pinned-defect vs PDE ablation flags from simulate_pinned_mantle_defect_wakes.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only (exercises compute_damage_cone_ensemble, simulate_cross_model_kymograph_fronts, simulate_pinned_mantle_defect_wakes); morphoeval/sweeps/conus_rule30_pde_front_ablation.py re-calls those functions with seed sweep [17,42,99].",
+      "deciding_data": "In-repo: datasets/conus/conus_textile_reference.json (morphometrics pins) and vendored specimen masks referenced in self-test morphometrics line.",
+      "prior_attempts": "morphoeval/kg/2026-10-19-conus-second-assessor-audit parameter-expressivity 18/100 noted no CLI morphospace sweeps; cross-model kymograph exists in self-test but ablation metric not scored. Not an OP-01..03 item — Conus/Rule30 asset territory per scout cell brief.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "max": 25,
+          "why": "Functions exist in the model script; ablation is re-invocation with seed sweep, not new physics."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "max": 20,
+          "why": "Reference JSON and masks in-repo; no new specimen fetch required for slope ratio test."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "max": 15,
+          "why": "Ratio threshold on three published slope numbers."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "max": 15,
+          "why": "Three seeds × self-test PDE path ~minutes atop ~10 min self-test."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "New sweep JSON under morphoeval/sweeps/."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "max": 10,
+          "why": "One ablation batch after self-test."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "Audit flagged missing sweeps; no prior negative result for this ratio."
+        }
+      }
+    }
+  ]
+}
