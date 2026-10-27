@@ -642,7 +642,7 @@ def measure_morphoeval() -> list[dict]:
             "note": f"contour circularity {specimen['circularity']:.4f} (far from a round blob)",
         },
         {
-            "name": "dispersion-curve Pearson r of analytical sigma(k) vs RK4 growth",
+            "name": "dispersion-curve Pearson r of analytical sigma(k) vs numerical eigenvalues",
             "value": round(float(gof["pearson_r"]), 6),
             "unit": "Pearson r",
             "method": "28 wavenumbers, closed-form quadratic versus numpy.linalg.eigvals of the Fourier-mode Jacobian",
@@ -652,7 +652,7 @@ def measure_morphoeval() -> list[dict]:
             "note": f"RMSE = {gof['rmse']:.6f}; KS statistic between the two sigma samples = {gof['ks_statistic']:.4f}",
         },
         {
-            "name": "dispersion RMSE between analytical and RK4 growth rates",
+            "name": "dispersion RMSE between analytical and numerical eigenvalue growth rates",
             "value": round(float(gof["rmse"]), 6),
             "unit": "1/time",
             "method": "root mean square of sigma_closed_form(k) - sigma_eigvals(k) on k in [0.01, 0.12] µm^-1",
