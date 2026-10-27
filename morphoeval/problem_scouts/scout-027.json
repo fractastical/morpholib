@@ -1,0 +1,155 @@
+{
+  "scout": "scout-027",
+  "ground": "wavevector",
+  "lens": "knowledge",
+  "candidates": [
+    {
+      "id": "WV-KG-01",
+      "title": "Materialize the dangling morphoeval-xenopus-ca2-wave-vectors Claim IRI",
+      "gap": "morphoeval/runs/species_multiscale_registry.json and morphoeval/kg/math_of_biology.ttl link pk:sameSpeciesClaim to https://w3id.org/delphi/resource/claim/morphoeval-xenopus-ca2-wave-vectors, but no pk:Claim node, no morphoeval/audits/*wave* audit, no morphoeval/kg/<audit-id>/signed/, and no published.json — the 91.0 Aristotelian score is registry metadata only.",
+      "done": "grep on morphoeval/kg/<new-audit-id>/signed/*.trig finds a pk:Claim with dct:subject or skos:related linking wave-vector-analysis; morphoeval/kg/<new-audit-id>/published.json lists ≥1 https://w3id.org/np/RA… URI; node morphoeval/check_signed.mjs exits 0 on all signed trigs; the claim IRI resolves to triples (not an empty subject).",
+      "tool_route": "Author morphoeval/audits/2026-10-27-xenopus-ca2-wave-vectors-audit.yaml (simulation id xenopus-ca2-wave-vectors, scripts wave-vector-analysis/wave-vector-tiff-parser.py + spark_tracks_to_clusters.py, reference doi:10.1242/dev.199845 per morphoeval/verify_image_fitness.py) → python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-27-xenopus-ca2-wave-vectors-audit.yaml --check --conform → python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-27-xenopus-ca2-wave-vectors-audit → node morphoeval/check_signed.mjs morphoeval/kg/2026-10-27-xenopus-ca2-wave-vectors-audit/signed/*.trig",
+      "deciding_data": "In repo: wave-vector-analysis/README.md, wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md, wave-vector-analysis/analysis_results/*.png, morphoeval/verify_image_fitness.py FOUNDATIONAL_DOIS entry; full spark_tracks.csv not vendored (audit cites committed analysis artifacts + subset under analysis_results/detection_summary_npz_smoke/).",
+      "prior_attempts": "Species registry and explorer index scored xenopus-ca2-wave-vectors at 91.0 (morphoeval/runs/aristotelian_categories_index.json) without a MorphoEval audit pass; craniofacial remap audit v3 only references the IRI as a related claim.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "build_morphoeval_kg.py + sign_morphoeval.py + check_signed.mjs are the repo publish gate; no new prover." },
+        "data_in_hand": { "score": 14, "why": "Hypothesis metrics and QA plots in-repo; primary TIFF stacks and full CSV contract live outside git." },
+        "falsifiable_done": { "score": 15, "why": "Signed RA URI, checker exit 0, and non-empty Claim resource are machine-checkable." },
+        "compute_in_repo": { "score": 13, "why": "KG build/sign is minutes; optional parser re-run on subset is hours if wired as evidence." },
+        "isolation": { "score": 10, "why": "New audit YAML + new kg directory only." },
+        "time_to_verdict": { "score": 8, "why": "One loop after audit YAML is drafted." },
+        "not_blocked": { "score": 5, "why": "No prior signed publish attempt recorded for this IRI." }
+      }
+    },
+    {
+      "id": "WV-KG-02",
+      "title": "Publish OP-07 v1 Xenopus neighbour-transfer verdict as a signed negative MorphoEval claim",
+      "gap": "docs/open-problems.json OP-07 records LOOO AUC 0.484 (wave features), orientation-only AUC 0.833, and status refuted, but unlike Holstein Turing (morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/published.json) there is no Project Delphi pk:Claim + pk:LLMClaimAssessment nanopub chain; graph node b2 is grey NOT SCORED for Delphi viability.",
+      "done": "Signed overall + claim trigs under morphoeval/kg/2026-10-27-xenopus-neighbour-blind-v1-audit/signed/ with dct:description stating TESTED NEGATIVE and pk:hasScore or pk:weightOfEvidence matching the registered LOOO AUC 0.484; published.json has test or prod URI; docs/open-problems.json OP-07 may cite that published.json path (optional follow-up).",
+      "tool_route": "New audit morphoeval/audits/2026-10-27-xenopus-neighbour-blind-v1-audit.yaml encoding metrics from docs/open-problems.json + docs/morphoswarm.html (sources embryo-blind/README.md · XENOPUS_BLIND_RESULTS.md — not in repo) → python3 morphoeval/build_morphoeval_kg.py … --check --conform → python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-27-xenopus-neighbour-blind-v1-audit [--publish test]",
+      "deciding_data": "Partially in repo: docs/open-problems.json, docs/morphoswarm.html, docs/problem-graph.html narrative; missing from origin/main: embryo-blind/README.md, XENOPUS_BLIND_RESULTS.md, hash-locked scorer outputs (panel cited only).",
+      "prior_attempts": "Multi-agent panel (docs/open-problems.json attempted_by); OP-07 status refuted — v1 neighbour-transfer route must not be re-proposed as success.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Negative verdict publication matches bos-taurus pattern via build_morphoeval_kg + sign." },
+        "data_in_hand": { "score": 11, "why": "Headline AUCs in open-problems; primary blind artifacts absent from git." },
+        "falsifiable_done": { "score": 14, "why": "Signed RDF must embed numeric AUC 0.484 and explicit NEGATIVE verdict string." },
+        "compute_in_repo": { "score": 15, "why": "YAML + KG + sign only if metrics are transcribed from docs." },
+        "isolation": { "score": 10, "why": "New audit + kg dir." },
+        "time_to_verdict": { "score": 7, "why": "Blocked on locating or re-ingesting XENOPUS_BLIND_RESULTS if doc transcription is insufficient." },
+        "not_blocked": { "score": 4, "why": "Scientific route refuted; KG publication of that refutation is not blocked." }
+      }
+    },
+    {
+      "id": "WV-DELPHI-07",
+      "title": "OP-07: pre-register pooled Delphi bridge posterior for ground-truth-geometry v2",
+      "gap": "docs/morphoswarm.html and docs/open-problems.json mark OP-07 viability kind not_scored — no pk:BayesianAssessment or pooled bridge posterior before the mandated v2 hash-locked blind test (ground-truth geometry only).",
+      "done": "morphoeval/audits/2026-10-27-op-07-xenopus-neighbour-delphi.yaml exists; morphoeval/kg/2026-10-27-op-07-xenopus-neighbour-delphi/signed/*.trig verifies; published.json lists test URI; pk:hasProbability for bridge event wave-feature AUC > 0.55 after geometry fix is present and matches YAML within 0.001.",
+      "tool_route": "Model morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml structure → new OP-07 YAML → python3 morphoeval/build_rule30_bayesian_delphi.py --audit morphoeval/audits/2026-10-27-op-07-xenopus-neighbour-delphi.yaml (extend builder if needed) OR hand-built TRIG + python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-27-op-07-xenopus-neighbour-delphi → node morphoeval/check_signed.mjs …",
+      "deciding_data": "In repo: OP-07 gap/done text, v1 AUC 0.484 / orientation 0.833; v2 contract described in open-problems done field; v2 scorer not present on origin/main.",
+      "prior_attempts": "Panel ran v1 blind test (refuted); Delphi scoring explicitly deferred (morphoswarm NOT SCORED badge).",
+      "factors": {
+        "tool_fit": { "score": 18, "why": "Delphi YAML + sign path exists for Rule 30; OP-07 needs a small builder extension or parallel audit file." },
+        "data_in_hand": { "score": 16, "why": "All inputs are documented priors and v1 outcomes; no new wet lab." },
+        "falsifiable_done": { "score": 13, "why": "Posterior literals vs YAML; requires panel rubric fixed before unblinding v2." },
+        "compute_in_repo": { "score": 14, "why": "Panel scoring + TRIG generation in one sitting." },
+        "isolation": { "score": 9, "why": "New audit + kg; builder tweak is shared surface." },
+        "time_to_verdict": { "score": 7, "why": "Depends on multi-agent Delphi pass completing." },
+        "not_blocked": { "score": 5, "why": "Delphi-first route for OP-07 never executed." }
+      }
+    },
+    {
+      "id": "WV-DELPHI-08",
+      "title": "OP-08: rank exploratory HTHT mirror AUC (0.61–0.65) before pixel-v2 preregistration",
+      "gap": "docs/open-problems.json OP-08: post-unblinding mirror neighbour signal AUC 0.61–0.65 is exploratory and confounded with headward poke direction; viability not_scored — no signed pk:BayesianAssessment separating mirror vs headward hypotheses.",
+      "done": "Signed Delphi nanopub(s) under morphoeval/kg/2026-10-27-op-08-pixel-mirror-delphi/ with documented pooled P(mirror|confound-controlled) and per-agent range; published.json test entry; problem-graph node b3 can reference URI after docs/build_problem_graph_html.py merge.",
+      "tool_route": "Author morphoeval/audits/2026-10-27-op-08-pixel-mirror-delphi.yaml (cite PIXEL_BLIND_RESULTS.md · PIXEL_V2_BLIND_RESULTS.md — not on origin/main) → build_rule30_bayesian_delphi.py or Project Delphi 2.0 TRIG builder → sign_morphoeval.py → check_signed.mjs",
+      "deciding_data": "Partially in repo: OP-08 gap in docs/open-problems.json; wave-vector-analysis/PIXEL_WAVE_ANALYSIS.md and analyze_pixel_waves.py describe metrics; blind result markdown absent from git.",
+      "prior_attempts": "Multi-agent panel exploratory post-unblinding (partial status); no registered pixel-v2 prereg on main.",
+      "factors": {
+        "tool_fit": { "score": 17, "why": "Knowledge lens ranks claims; executing pixel-v2 test is a different scout (blind scorer)." },
+        "data_in_hand": { "score": 12, "why": "AUC band documented in JSON; primary blind files missing from repo." },
+        "falsifiable_done": { "score": 12, "why": "Delphi posterior + signed URI; does not by itself close OP-08 experimental done." },
+        "compute_in_repo": { "score": 14, "why": "Delphi + sign only." },
+        "isolation": { "score": 9, "why": "New audit/kg directory." },
+        "time_to_verdict": { "score": 6, "why": "Panel Delphi then sign; v2 prereg still required afterward." },
+        "not_blocked": { "score": 5, "why": "Delphi scoring not attempted for OP-08." }
+      }
+    },
+    {
+      "id": "WV-KG-03",
+      "title": "Sign and verify verbatim Calcium claims.docx table as Project Delphi assessments",
+      "gap": "wave-vector-analysis/export_calcium_claims_to_pkg.py emits morphopkg/spc/1.0 TriG (ex:Assertion) to analysis_results/calcium_claims.pkg.trig, but DEFAULT_DOCX points outside the repo, wave_catalog/wave_laterality.csv is not committed, and outputs are unsigned — not in the same signed pk:Claim graph as MorphoEval simulations.",
+      "done": "Calcium claims.docx vendored under wave-vector-analysis/data/ or datasets/; python3 wave-vector-analysis/export_calcium_claims_to_pkg.py produces calcium_claims.pkg.trig; either (A) morphoeval audit YAML maps each claim to pk:LLMClaimAssessment + sign_morphoeval, or (B) nanopubs/np_utils.py signs each nanopub and check_signed.mjs passes; ≥19 claim URIs in published manifest.",
+      "tool_route": "Vendor docx + regenerate wave_laterality.csv via wave-vector-analysis/wave_laterality_analysis.py on catalog → export_calcium_claims_to_pkg.py → migrate to morphoeval/build_morphoeval_kg.py audit OR sign via morphoeval/sign_morphoeval.py after TRIG reshape",
+      "deciding_data": "Not in repo: Box path in wave-vector-analysis/claims_doc_parser.py DEFAULT_DOCX; wave-vector-analysis/package_science_deliverables.py lists expected CSV/TRIG outputs.",
+      "prior_attempts": "export_calcium_claims_to_pkg.py and package_science_deliverables.py exist; no signed calcium_claims.pkg.trig in tree.",
+      "factors": {
+        "tool_fit": { "score": 16, "why": "End state needs Project Delphi conformance; export script alone is wrong shape for sign_morphoeval without migration." },
+        "data_in_hand": { "score": 6, "why": "Claims docx and laterality CSV are external to git." },
+        "falsifiable_done": { "score": 14, "why": "Count of signed claims and checker exit 0." },
+        "compute_in_repo": { "score": 11, "why": "Laterality recompute may need TIFF catalog hours if not cached." },
+        "isolation": { "score": 8, "why": "New data/ + kg dirs; docx vendoring is a large binary add." },
+        "time_to_verdict": { "score": 5, "why": "Blocked until docx and catalog CSV are vendored or fetched." },
+        "not_blocked": { "score": 4, "why": "Route not refuted; never signed." }
+      },
+      "alternate_lens": "measure_outputs / wave-vector batch catalog scout to regenerate wave_laterality.csv before knowledge publish."
+    },
+    {
+      "id": "WV-KG-04",
+      "title": "Encode EXPERIMENTAL_HYPOTHESES.md numeric verdicts as rubric-scored pipeline audit",
+      "gap": "wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md lists testable Ca²⁺ claims with numeric results (e.g. activity ratio 128529×, mean speeds 3.08 / 3.70 px/s, spatial matching median 464.6 px) but these are markdown-only — not pk:hasAssessment nodes with commit-pinned evidence links to generate_all_hypothesis_plots.py outputs.",
+      "done": "morphoeval/audits/2026-10-27-wave-vector-hypotheses-audit.yaml references wave-vector-analysis/generate_all_hypothesis_plots.py and pins measurements in .measurements.yaml; build_morphoeval_kg --conform emits one claim + dimension assessments per tested hypothesis row; signed overall.trig includes pk:hasEvidence prov:wasDerivedFrom links to wave-vector-analysis/analysis_results/hypothesis*.png.",
+      "tool_route": "python3 wave-vector-analysis/generate_all_hypothesis_plots.py wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv --clusters-csv <generated> --output-dir /tmp/wv-hyp-smoke → author audit YAML with measurements → python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-27-wave-vector-hypotheses-audit.yaml --check --conform → sign_morphoeval.py",
+      "deciding_data": "In repo: EXPERIMENTAL_HYPOTHESES.md tables, analysis_results/hypothesis*.png, spark_tracks_subset.csv smoke; full 309k-row contract referenced in doc not committed.",
+      "prior_attempts": "Hypothesis plots generated (paths in EXPERIMENTAL_HYPOTHESES.md); no MorphoEval audit id for wave-vector hypotheses.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Standard MorphoEval audit + KG builder on analysis scripts and pinned plot artifacts." },
+        "data_in_hand": { "score": 15, "why": "Smoke CSV + plots suffice for audit structure; full-scale re-score optional." },
+        "falsifiable_done": { "score": 14, "why": "Each hypothesis row maps to a measurement id and PNG hash in audit YAML." },
+        "compute_in_repo": { "score": 12, "why": "Smoke replot minutes; full CSV replay hours if data restored." },
+        "isolation": { "score": 10, "why": "New audit + kg only." },
+        "time_to_verdict": { "score": 8, "why": "One loop on smoke subset." },
+        "not_blocked": { "score": 5, "why": "No prior signed hypothesis-level assessments." }
+      }
+    },
+    {
+      "id": "WV-BLOCKED-07",
+      "title": "Re-propose v1 Xenopus LOOO neighbour-transfer (AUC 0.484) as a new positive pathway",
+      "gap": "docs/open-problems.json OP-07 status refuted: orientation confound explains signal; v1 headline route is closed pending ground-truth-geometry v2 only.",
+      "done": "N/A — route blocked for re-proposal as new.",
+      "tool_route": "Would repeat undocumented v1 scorer on non-ground-truth geometry — explicitly excluded by OP-07 done field.",
+      "deciding_data": "docs/open-problems.json OP-07; docs/problem-graph.html honestly-negative list.",
+      "prior_attempts": "Multi-agent panel v1 blind test; orientation AUC 0.833 vs wave-feature 0.484.",
+      "factors": {
+        "tool_fit": { "score": 3, "why": "KG can record the refutation, not revive v1 as an open claim." },
+        "data_in_hand": { "score": 8, "why": "Metrics known from docs only." },
+        "falsifiable_done": { "score": 10, "why": "Already falsified." },
+        "compute_in_repo": { "score": 5, "why": "N/A." },
+        "isolation": { "score": 5, "why": "N/A." },
+        "time_to_verdict": { "score": 10, "why": "Immediate: already refuted." },
+        "not_blocked": { "score": 0, "why": "Exact v1 route refuted; negative knowledge — do not re-propose." }
+      },
+      "blocked": true,
+      "alternate_lens": "blind-test / simulation scout for OP-07 v2 prereg + hash-locked scorer (not build_morphoeval_kg alone)."
+    },
+    {
+      "id": "WV-LENS-WET",
+      "title": "OP-07 v2 ground-truth-geometry blind scorer implementation",
+      "gap": "OP-07 done requires v2 pre-registration and hash-locked scoring on ground-truth-geometry videos only; no score_xenopus_blind.py or embryo-blind/ tree on origin/main beyond zebrafish-blind results.",
+      "done": "Hash-locked prereg JSON + scorer --unblind exits 0 with manifest verification; outcome JSON records LOOO AUC for wave vs orientation ablation.",
+      "tool_route": "New embryo-blind/xenopus-blind/ scripts modeled on thompson/score_blind_predictions.py and embryo-blind/zebrafish-blind/ — not build_morphoeval_kg.py.",
+      "deciding_data": "Not in repo: XENOPUS_BLIND_* docs cited by open-problems; wave-vector feature CSVs on private storage.",
+      "prior_attempts": "v1 refuted; v2 not started on main.",
+      "factors": {
+        "tool_fit": { "score": 2, "why": "Knowledge lens signs outcomes; building the scorer is blind-test engineering." },
+        "data_in_hand": { "score": 4, "why": "Held-out videos and v1 artifacts absent from git." },
+        "falsifiable_done": { "score": 15, "why": "OP-07 done field is explicit." },
+        "compute_in_repo": { "score": 8, "why": "Feasible once data vendored." },
+        "isolation": { "score": 7, "why": "New embryo-blind subtree." },
+        "time_to_verdict": { "score": 3, "why": "Multi-step: prereg, run, then KG publish." },
+        "not_blocked": { "score": 3, "why": "v2 route open but distinct from v1 refutation." }
+      },
+      "alternate_lens": "simulation / blind-test scout; follow with scout-027-style sign_morphoeval after outcome JSON exists."
+    }
+  ]
+}
