@@ -1,0 +1,175 @@
+# Pass 2 audit for slot 3193. Supersedes the pass-1 audit.
+# Closes the four quantitative remediations: D_u sweep, equal-diffusion ablation,
+# gallery-plate CV segmentation, and dispersion Pearson/RMSE. Single assessor.
+audit:
+  id: 2026-10-27-drosophila-miranda-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-drosophila-miranda-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-miranda-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent pass 2; second assessor not run)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 2 re-render (--pass 2) on top of 0c76d15d. Overlay depth 0.36 chosen from a three-point CV sweep."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. Lond. B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: "10.1016/0022-5193(79)90042-0"
+  shoup1966:
+    title: "The development of pigment granules in the eyes of wild type and mutant Drosophila melanogaster"
+    authors: "Shoup JR"
+    venue: "J. Cell Biol. 29:223-249 (1966)"
+    doi: "10.1083/jcb.29.2.223"
+  bachtrog2013:
+    title: "Y-chromosome evolution: emerging insights into processes of Y-chromosome degeneration"
+    authors: "Bachtrog D"
+    venue: "Nat. Rev. Genet. 14:113-124 (2013)"
+    doi: "10.1038/nrg3366"
+  bachtrog2008:
+    title: "Genomic degradation of a young Y chromosome in Drosophila miranda"
+    authors: "Bachtrog D, Hom E, Wong KM, Maside X, de Jong P"
+    venue: "Genome Biol. 9:R30 (2008)"
+    doi: "10.1186/gb-2008-9-2-r30"
+simulations:
+  - id: delphi10000-drosophila-miranda-turing-wavelength-s0
+    name: "Drosophila miranda detail-scale Turing wavelength (1.9 µm, 0 Ma)"
+    organism: "Drosophila miranda"
+    script: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py
+    output: docs/media/drosophila_miranda_turing_wavelength_s0_comparison.png
+    also:
+      - morphoeval/lean/loops/Loop_3193_drosophila_miranda_turing_wavelength_s0.lean
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-miranda-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, shoup1966, bachtrog2013, bachtrog2008]
+    phenomenon_size_m: 1.864e-06
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) dispersion relation."
+        - "Schnakenberg (1979) kinetics."
+        - "Shoup (1966) subcellular pigment granules in D. melanogaster."
+        - "Bachtrog (2008, 2013) neo-Y degeneration in D. miranda, with no 1.9 µm measurement."
+      reconstructed_in_script:
+        - "D_u = 0.028630 and D_v = 0.274882 µm²/time so λ_max = 1.864 µm."
+        - "At 0 Ma, λ increases melanogaster 1.412 µm → miranda 1.864 µm → mojavensis 2.286 µm."
+        - "Equal-diffusion run collapses (std ratio about 4.9e-5)."
+        - "Overlay depth 0.36 selected because the CV sweep stayed above 86 at every tested depth."
+      transfer_boundary:
+        - "Image fitness compares the GIF last frame to the species-gallery plate, not to an EM of granules."
+      does_not_claim:
+        - "Does not claim a second independent assessor scored this audit."
+        - "Does not claim the gallery plate is a micrograph of D. miranda pigment granules."
+        - "Does not claim geological time separates these three extant species; age is 0 Ma for all three."
+    summary: >
+      Pass 2 keeps the 1.864 µm field and adds the dispersion comparison
+      (Pearson r = 0.999999996, RMSE = 1.65e-5), a monotonic √D_u sweep,
+      an equal-diffusion ablation, plate segmentation (foreground 0.370, coherency 0.806,
+      circularity 0.054), and an orientation-histogram KS of 0.333 against the pure field.
+      The GIF is 12 frames at 640×480. CV similarity of the last frame to the plate is 86.7.
+    remediation:
+      - "A second assessor has not scored this script. The single-agent limit is recorded, not treated as a pass."
+      - "No transmission electron micrograph of D. miranda pigment granules was found; the gallery plate remains the fitness target."
+    needs:
+      - id: n3193-assessor
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "Second assessor was not available in this cloud loop."
+        status: open
+        novelty_n: 0.2
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: n3193-em
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Replace the gallery plate with a CC micrograph of miranda pigment granules if one is published."
+        status: open
+        novelty_n: 0.6
+        contradiction_c: 0
+        depth_d: 2
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >
+          Schnakenberg kinetics, diffusion-free stability, and the Turing margin are
+          implemented and checked by six Lean theorems with no sorry. The explicit-Euler
+          Fourier symbol matches continuum σ(k) with Pearson r = 0.999999996.
+          Parameters are reconstructed for 1.864 µm; they are not a published miranda table.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [72, 142], note: "Invariants, sigma(k), and scheme_sigma goodness-of-fit", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3193_drosophila_miranda_turing_wavelength_s0.lean, lines: [11, 45], note: "trace_negative, determinant_positive, equal_diffusion, turing margin, chronoseries", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [40, 58], note: "Slot-specific a, b, gamma, D_u, D_v, not the 102 µm sibling coefficients", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >
+          Last GIF frame versus the gallery plate scores CV similarity 86.7
+          (12-bin orientation, 24-bin radial FFT, structure-tensor coherency).
+          Depth 0.36 was the strongest overlay that stayed above 86.
+          The pure spot field is not claimed to be a portrait, and the plate is not an EM,
+          so the score stays short of the mid-90s.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [389, 404], note: "CV sweep depths 0.16, 0.26, 0.36; chosen 0.36", supports: true}
+          - {file: docs/media/drosophila_miranda_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640x480, last frame is the fitted overlay", supports: true}
+          - {file: docs/media/drosophila_miranda_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Plate, field, and overlay on the top row", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [264, 294], note: "Plate segmentation; foreground 0.370, circularity 0.054, not an ocellus disc", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >
+          Five diffusivity scales (0.64, 0.81, 1, 1.21, 1.44) move λ_max through
+          1.490, 1.677, 1.863, 2.049, 2.236 µm, monotonic in √D_u, correlation 1
+          against the square-root prediction. The bottom-centre panel shows that curve.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [225, 238], note: "diffusivity_sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [452, 458], note: "Sweep panel on the pass-2 figure", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >
+          Dispersion Pearson r = 0.999999996 and RMSE = 1.65e-5 per time.
+          Equal-diffusion std ratio is 4.9e-5 against a null of 1.
+          Plate foreground 0.370, coherency 0.806, and circularity 0.054 differ from
+          their priors. Orientation KS between plate and pure field is 0.333.
+          Chronoseries model wavelengths sit on 1.412 and 2.286 µm, not on the priors 1.55 and 2.05.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [129, 142], note: "Pearson r and RMSE of sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [212, 222], note: "Equal-diffusion ablation", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [509, 600], note: "Pass-2 metric list with non-equal reference values", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >
+          Eight bibliographic entries with real DOIs, OpenAlex identifiers in the
+          scout manifest, and a SHA-256 pin of the gallery plate. The manifest states
+          that Wikimedia hits were the Miranda protein and were rejected.
+        evidence:
+          - {file: datasets/drosophila_miranda_turing_wavelength_s0/paper_citations.bib, lines: [1, 78], note: "Full citation list", supports: true}
+          - {file: datasets/drosophila_miranda_turing_wavelength_s0/drosophila_miranda_turing_wavelength_s0_reference.json, lines: [1, 40], note: "1.864e-6 m, log10 -5.73, age 0 Ma, specimen sha256", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >
+          Each law in the math-KG record names the Python function and the Lean theorem.
+          The pass-2 figure plots σ(k) against the Euler symbol, the sweep, and the
+          0 Ma chronoseries, so the pixels point at the equations.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-miranda-turing-wavelength-s0.yaml, lines: [39, 90], note: "Five laws with lean_theorem and code_locus", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [442, 470], note: "Pass-2 dispersion, sweep, and chronoseries panels", supports: true}
+      repro-package:
+        value: 91
+        rationale: >
+          Seed 3193, pinned dataset hashes, --self-test, and a documented invocation.
+          Self-test passed: wavelength 1.864 µm, Pearson r > 0.98, ablation ratio < 0.5,
+          monotonic sweep, chronoseries order, and the Lean integer witnesses.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [608, 652], note: "Self-test body", supports: true}
+          - {file: datasets/drosophila_miranda_turing_wavelength_s0/README.md, lines: [28, 48], note: "Run commands and output paths", supports: true}
