@@ -1,0 +1,144 @@
+{
+  "scout": "scout-095",
+  "ground": "scaling",
+  "lens": "vision",
+  "candidates": [
+    {
+      "title": "Fossil-slot phenomenon_size_m decoupled from scale_and_paleo_catalog base_size_m",
+      "gap": "Slots #1201–#2100 with geological_age_ma>0 store phenomenon_size_m from compute_phenomenon_scale_for_entry (genus adult size × cohort multiplier × slot jitter), not the base_size_m tuple field in NINETY_NOVEL_AND_FOSSIL_TAXA; e.g. Knightia eocaena is catalogued at 0.095 m but index slot 1205 reports ~0.00384 m (~586/650 fossil slots off by >50%).",
+      "done": "A machine-readable report lists every index entry with geological_age_ma>0 where |phenomenon_size_m / catalog_base_size_m − 1| > 0.05, with count = 0 after remediation OR an explicit signed waiver per slot; the report also includes Spearman ρ between catalog_base_size_m and verify_image_fitness CV relative size proxy (sqrt(mask area) in normalized 160×120 segmentation) across the 65 fossil species_gallery rows, with ρ and p-value printed.",
+      "tool_route": "python3 -c \"import json; from morphoeval.scale_and_paleo_catalog import NINETY_NOVEL_AND_FOSSIL_TAXA; …\" on morphoeval/runs/aristotelian_categories_index.json; python3 morphoeval/verify_image_fitness.py (imports compute_specimen_cv_signature) on each datasets/species_gallery/** path keyed by datasets/species_gallery/species_manifest.json characteristic_size_m.",
+      "deciding_data": "In repo: morphoeval/scale_and_paleo_catalog.py, morphoeval/runs/aristotelian_categories_index.json, datasets/species_gallery/species_manifest.json, pinned gallery JPEGs.",
+      "prior_attempts": "docs/open-problems.json has no entry for catalog↔index scale reconciliation; campaign_2100_scale_paleo_summary.json embeds correct base sizes but the live index does not inherit them. No recorded refutation of this audit route.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "verify_image_fitness segmentation supplies relative size ordering; catalog/index diff is pure JSON but CV is the independent photographic check."},
+        "data_in_hand": {"score": 20, "why": "All three JSON sources and 65 fossil gallery images are already vendored."},
+        "falsifiable_done": {"score": 15, "why": "Threshold on relative error 5% and printed Spearman ρ are numeric pass/fail."},
+        "compute_in_repo": {"score": 15, "why": "Full index scan + 65 CV signatures completes in minutes on the repo stack."},
+        "isolation": {"score": 10, "why": "Closable as new JSON/CSV under morphoeval/runs/ without editing tracked models."},
+        "time_to_verdict": {"score": 8, "why": "One script invocation plus verify import loop yields the report in one sitting."},
+        "not_blocked": {"score": 5, "why": "No prior attempt in open-problems.json or audits refuted this reconciliation."}
+      }
+    },
+    {
+      "title": "Green River actinopterygian standard-length ordering (Knightia vs Diplomystus)",
+      "gap": "Actinopterygian Axial Fossil Series assigns Knightia eocaena characteristic_size_m=0.095 and Diplomystus dentatus=0.180 (51.5 Ma) but no held specimen photograph was measured to confirm Diplomystus is longer/deeper at the same outcrop age.",
+      "done": "Using the same Otsu/Lab segmentation pipeline as morphoeval/verify_image_fitness.compute_specimen_cv_signature on datasets/species_gallery/I_Enaima_Vertebrata/Knightia_eocaena.jpg and Diplomystus_dentatus.jpg, the axis-aligned bounding box major-axis length ratio L_Diplomystus/L_Knightia ≥ 1.15 (equivalently log10 ratio ≥ 0.06) or the hypothesis is rejected at that threshold.",
+      "tool_route": "python3 -c \"from pathlib import Path; from morphoeval.verify_image_fitness import compute_specimen_cv_signature; …\" with mask bbox major-axis extraction on the two gallery paths (pre-register threshold before opening other Green River taxa).",
+      "deciding_data": "In repo: datasets/species_gallery/I_Enaima_Vertebrata/Knightia_eocaena.jpg, Diplomystus_dentatus.jpg; catalog sizes in morphoeval/scale_and_paleo_catalog.py and species_manifest.json.",
+      "prior_attempts": "datasets/thompson/monte_bolca_fossil_ratios.json and OP-04 (docs/open-problems.json) test deep-horizon fish proportions from literature, not Green River gallery segmentation; no prior CV bbox comparison recorded.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Decided entirely by reusing verify_image_fitness specimen segmentation on two named JPEGs."},
+        "data_in_hand": {"score": 20, "why": "Both gallery fossils are pinned in-repo with SHA in species_manifest."},
+        "falsifiable_done": {"score": 14, "why": "Single numeric ratio threshold against two fixed files."},
+        "compute_in_repo": {"score": 15, "why": "Sub-second CV run per image."},
+        "isolation": {"score": 10, "why": "Output can be a new morphoeval/runs/*.json verdict only."},
+        "time_to_verdict": {"score": 10, "why": "Two-image test completes in one loop."},
+        "not_blocked": {"score": 5, "why": "Not attempted or refuted elsewhere."}
+      }
+    },
+    {
+      "title": "Ginkgoales chronospecies leaf dissection vs CV circularity across geological_age_ma",
+      "gap": "Ginkgoales Leaf Dissection Chronospecies lineage (170→0 Ma) claims progressive lobe coalescence (Royer 2003; crane 2013) but repository metadata never tested whether pinned leaf gallery photos show increasing segmentation circularity toward the extant fan leaf.",
+      "done": "For Ginkgo yimaensis, G. apodes, G. adiantoides, G. biloba gallery paths in species_manifest.json, Spearman ρ(geological_age_ma, circularity from compute_specimen_cv_signature) ≤ −0.6 (older, more dissected leaves → lower circularity) or the chronospecies CV trend is rejected at that cutoff (n=4).",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (import compute_specimen_cv_signature) on datasets/species_gallery/III_Phyta_Embryophyta/Ginkgo_{yimaensis,apodes,adiantoides,biloba}.jpg; emit ρ in a new morphoeval/runs/scout-095-ginkgo_circularity.json.",
+      "deciding_data": "In repo: four Ginkgo gallery JPEGs with geological_age_ma and characteristic_size_m in species_manifest.json.",
+      "prior_attempts": "morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-*.yaml records phenomenon_size_m but no specimen circularity series; open-problems.json silent.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "circularity is already emitted by verify_image_fitness CV signature."},
+        "data_in_hand": {"score": 20, "why": "All four chronospecies photos and ages are vendored."},
+        "falsifiable_done": {"score": 13, "why": "Fixed Spearman cutoff though n=4 limits power."},
+        "compute_in_repo": {"score": 15, "why": "Four CV calls only."},
+        "isolation": {"score": 10, "why": "New sidecar JSON only."},
+        "time_to_verdict": {"score": 9, "why": "One sitting including pre-registration hash."},
+        "not_blocked": {"score": 5, "why": "No recorded prior CV chronospecies test."}
+      }
+    },
+    {
+      "title": "Gasterosteus doryssus Miocene chronospecies shrinkage on pinned specimen photos",
+      "gap": "Gasterosteus Pelvic Reduction Chronospecies lists monotonic base_size_m decline 0.052→0.049→0.047 m across doryssus_early/mid/late (10.02–9.99 Ma) without photographic verification that the three Truckee Fm gallery images reflect decreasing body length.",
+      "done": "BBox major-axis lengths from compute_specimen_cv_signature masks on Gasterosteus_doryssus_{early,mid,late}.jpg satisfy L_early > L_mid > L_late (strict inequality) or the monotonic Miocene shrinkage claim is rejected.",
+      "tool_route": "python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature\" on the three datasets/species_gallery/I_Enaima_Vertebrata/Gasterosteus_doryssus_*.jpg paths named in species_manifest.json.",
+      "deciding_data": "In repo: three stickleback chronospecies gallery images and characteristic_size_m in species_manifest.json / scale_and_paleo_catalog.py.",
+      "prior_attempts": "Bell (2006) pelvic-reduction chronospecies cited in catalog; no morphoeval audit measured gallery bbox lengths.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Same CV mask geometry as verify_image_fitness; three fixed inputs."},
+        "data_in_hand": {"score": 20, "why": "Gallery triplet present in-repo."},
+        "falsifiable_done": {"score": 14, "why": "Strict ordinal inequality on three numbers."},
+        "compute_in_repo": {"score": 15, "why": "Trivial runtime."},
+        "isolation": {"score": 10, "why": "New verdict file only."},
+        "time_to_verdict": {"score": 9, "why": "Three-image loop."},
+        "not_blocked": {"score": 5, "why": "Fresh route."}
+      }
+    },
+    {
+      "title": "Fossil campaign per-taxa dataset specimen JPG absence (650/650 missing paths)",
+      "gap": "Every geological_age_ma>0 slot points at datasets/<taxon>_*/…_specimen.jpg paths that do not exist on disk (650/650); morphoeval/verify_image_fitness.py silently falls back to species_gallery, so ImgFit scores do not prove per-slot dataset provenance.",
+      "done": "After running python3 morphoeval/verify_image_fitness.py, a new morphoeval/runs/fossil_specimen_path_audit.json lists each fossil slot with {specimen_rel, exists, resolved_gallery_fallback}; pass requires exists=true for ≥90% of fossil slots OR documented fallback with matching genus+species manifest row for the remainder.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py; post-process morphoeval/runs/aristotelian_categories_index.json + filesystem exists() checks (same resolution rules as verify_image_fitness main lines 561–566).",
+      "deciding_data": "In repo: aristotelian_categories_index.json, species_manifest.json, datasets/species_gallery/; missing dataset dirs under datasets/*_turing_wavelength/ etc.",
+      "prior_attempts": "morphoeval/runs/image_fitness_and_provenance.json tier_counts show 2000 multiscale_verified entries but do not flag missing specimen_rel; library ground (scout library lens) not yet filed as open-problems.json entry.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "verify_image_fitness is the authoritative resolver and writer of specimen_rel fallbacks."},
+        "data_in_hand": {"score": 20, "why": "Index and gallery manifest fully local."},
+        "falsifiable_done": {"score": 15, "why": "Percent exists() on fossil slots is countable without taste."},
+        "compute_in_repo": {"score": 14, "why": "verify_image_fitness full pass ~minutes for 3116 models."},
+        "isolation": {"score": 9, "why": "Audit JSON is new-file; fixing specimens would touch datasets (out of scout scope)."},
+        "time_to_verdict": {"score": 8, "why": "One verify run plus exists scan."},
+        "not_blocked": {"score": 4, "why": "Not refuted but partially overlaps library-integrity scouts."}
+      }
+    },
+    {
+      "title": "Shared fossil-lineage growth GIF vs per-chronospecies specimen discrimination",
+      "gap": "upgrade_zebrafish_and_fossil_gifs.FOSSIL_LINEAGE_GIFS maps one docs/media/fossil_lin*.gif per lineage while slots #1201–#2100 hold 6–8 chronospecies each; measured cv_sim_similarity raw spread within lineages is only ~0.4–2.5 points, so ImgFit may not distinguish chronospecies scaling claims.",
+      "done": "For Gasterosteus Pelvic Reduction Chronospecies (4 unique gallery specimens, one shared GIF), at least 4 of the 6 pairwise |cv_sim_i − cv_sim_j| values from compute_sim_vs_specimen_cv_similarity exceed 3.0; if fewer than 4 pairs exceed 3.0, record a negative verdict that lineage-shared GIFs cannot resolve chronospecies-level scaling.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (compute_sim_vs_specimen_cv_similarity + resolve_multiscale_custom_gif from morphoeval/upgrade_zebrafish_and_fossil_gifs.py) on the four Gasterosteus gallery paths and docs/media/fossil_lin03_gasterosteus_doryssus_growth.gif.",
+      "deciding_data": "In repo: four Gasterosteus gallery JPEGs, shared GIF, aristotelian index cv_sim fields.",
+      "prior_attempts": "upgrade_zebrafish_and_fossil_gifs.py documents CV≥58 gate for GIF generation but does not test chronospecies separability; no open-problems.json block.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Direct sim-vs-specimen CV metric from verify_image_fitness."},
+        "data_in_hand": {"score": 20, "why": "GIF and galleries vendored."},
+        "falsifiable_done": {"score": 12, "why": "Pairwise threshold count is checkable though interpretive cutoff 3.0 is fixed."},
+        "compute_in_repo": {"score": 13, "why": "Four CV sim calls plus GIF frame read."},
+        "isolation": {"score": 10, "why": "Verdict JSON only."},
+        "time_to_verdict": {"score": 7, "why": "Single lineage pilot."},
+        "not_blocked": {"score": 5, "why": "Fresh discrimination test."}
+      }
+    },
+    {
+      "title": "OP-04 deep-horizon bridge: Green River fossil BD/SL proxy vs Monte Bolca literature ratios",
+      "gap": "OP-04 (docs/open-problems.json) notes Thompson prediction collapse beyond ~50 Myr and Monte Bolca null tests using literature BDmax_over_SL; Knightia eocaena (51.5 Ma) gallery photo is in-repo but never segmented to compare against datasets/thompson/monte_bolca_fossil_ratios.json entries.",
+      "done": "Pre-registered: segmented width/length ratio from Knightia gallery CV mask lies within ±20% of at least one Monte Bolca family ratio BDmax_over_SL documented in monte_bolca_fossil_ratios.json, OR a signed null that the proxy exceeds all listed ranges (either outcome closes the bridge test).",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (compute_specimen_cv_signature + bbox aspect on datasets/species_gallery/I_Enaima_Vertebrata/Knightia_eocaena.jpg) compared to datasets/thompson/monte_bolca_fossil_ratios.json (no held-out fish beyond Knightia until preregistration hash is filed).",
+      "deciding_data": "In repo: Knightia gallery, monte_bolca_fossil_ratios.json; OP-04 context in docs/open-problems.json.",
+      "prior_attempts": "Claude Fable 5.1 (OP-04 attempted_by) ran phylogenetic engine nulls on landmark ratios, not Green River CV segmentation; route not refuted.",
+      "factors": {
+        "tool_fit": {"score": 17, "why": "CV bbox aspect is a coarse BD/SL proxy—decidable but weaker than landmark morphometrics (measure_outputs lens)."},
+        "data_in_hand": {"score": 18, "why": "Knightia photo and Monte Bolca JSON local; clupeomorph correspondence is interpretive."},
+        "falsifiable_done": {"score": 12, "why": "±20% band against named JSON ratios is checkable."},
+        "compute_in_repo": {"score": 12, "why": "One photo plus JSON parse."},
+        "isolation": {"score": 10, "why": "New prereg + result JSON."},
+        "time_to_verdict": {"score": 6, "why": "Requires pre-registration step before extra taxa."},
+        "not_blocked": {"score": 3, "why": "Related to partial OP-04 but not this CV bridge."}
+      }
+    },
+    {
+      "title": "Zebrafish Zebrahub nm-tier phenomenon_size_m not anchored to specimen photographs",
+      "gap": "DANIO_SCALE_RUNGS base_size_m spans 4.2 nm–0.42 m (slots #1101–#1200) but canonical specimens are whole-fish or tissue photos; verify_image_fitness cannot measure ion-channel or connexin pore sizes from JPEGs.",
+      "done": "Not closable with vision alone; closure would require external Zebrahub EM metadata or simulation self-tests naming rung 0–2 structures.",
+      "tool_route": "N/A for verify_image_fitness.py; would need morphoeval/run_overnight_scale_zebrafish_paleo_1000.py --self-test or Zebrahub fetch (simulation / literature lens).",
+      "deciding_data": "Catalog in morphoeval/scale_and_paleo_catalog.py; Zebrahub URLs named but nm imagery not vendored.",
+      "prior_attempts": "morphoeval/run_overnight_scale_zebrafish_paleo_1000.py built campaign slots; no CV validation of nm rungs recorded.",
+      "factors": {
+        "tool_fit": {"score": 2, "why": "Specimen CV operates at 160×120 organism photos, not nm structures."},
+        "data_in_hand": {"score": 6, "why": "Only macro photos in-repo; nm deciding images absent."},
+        "falsifiable_done": {"score": 8, "why": "Could state impossibility proof via pixel pitch vs claimed size."},
+        "compute_in_repo": {"score": 10, "why": "Impossibility argument is quick once pixel scale documented."},
+        "isolation": {"score": 10, "why": "Documentation-only finding."},
+        "time_to_verdict": {"score": 5, "why": "One-page bound argument."},
+        "not_blocked": {"score": 5, "why": "Not previously recorded."}
+      },
+      "lens_note": "Use simulation or literature scout lens for nm Zebrahub rungs; vision lens reports negative tool_fit by design."
+    }
+  ]
+}
