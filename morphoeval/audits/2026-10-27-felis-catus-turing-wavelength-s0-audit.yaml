@@ -1,0 +1,137 @@
+# MorphoEval audit — Felis catus Turing wavelength, 436 µm, Holocene 0 Ma.
+# Pass 1. The solver, specimen registration, and wavelength check are in place.
+# The four biological-validation gaps below are the pass-2 remediation list.
+audit:
+  id: 2026-10-27-felis-catus-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree. Checkpoint is the branch base; loop files are not in that commit yet."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Philosophical Transactions of the Royal Society B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology"
+    doi: "10.1016/0022-5193(79)90042-0"
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    venue: "Journal of Theoretical Biology"
+    doi: "10.1016/0022-5193(81)90334-9"
+  kaelin2012:
+    title: "Specifying and Sustaining Pigmentation Patterns in Domestic and Wild Cats"
+    authors: "Kaelin, C. B. et al."
+    venue: "Science"
+    doi: "10.1126/science.1220893"
+  kaelin2021:
+    title: "Developmental genetics of color pattern establishment in cats"
+    authors: "Kaelin, C. B.; McGowan, K. A.; Barsh, G. S."
+    venue: "Nature Communications"
+    doi: "10.1038/s41467-021-25348-2"
+simulations:
+  - id: delphi10000-felis-catus-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at 436 µm on Holocene Felis catus (pass 1)"
+    organism: "Felis catus (domestic cat)"
+    script: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py
+    output: docs/media/felis_catus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/felis_catus_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, murray1981, kaelin2012, kaelin2021]
+    summary: >-
+      Nominal Holocene point (a=0.073, b=1.186, Du=0.031, Dv=1.742, gamma=6)
+      selects k*=6.135 with simulated dominant wavelength 431.3 µm against the
+      436 µm slot scale (about 1.1 percent). Equal diffusion is linearly stable.
+      An 80 µm cellular predecessor cannot fit one wave (fundamental growth rate
+      about -29). A 4360 µm successor flank holds ten wavelengths of the same k*;
+      there is no second Felis chronospecies (series 1/1, age 0 Ma). The rendered
+      patch is an isotropic spot lattice, not the mackerel stripes of the
+      photographed tabby. Pass 1 does not yet sweep Dv, simulate an ablation,
+      report specimen-segmentation statistics, or give Pearson/RMSE/KS for the
+      dispersion relation.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: a homogeneous RD system can be unstable at a finite wavenumber."
+        - "Murray 1981: coat markings can be a chemical pre-pattern whose repeat count tracks domain size over wavelength."
+        - "Kaelin 2012: Taqpep sets a periodic pre-pattern in fetal cat skin; Edn3 implements pigment."
+        - "Kaelin 2021: a Dkk4 pre-pattern precedes visible stripes in fetal domestic-cat epidermis."
+      reconstructed_in_script:
+        - "Schnakenberg kinetics as a minimal two-species realisation of k* selection, calibrated so lambda(k*) = 436 µm."
+        - "Spectral operator-split integration on a periodic 5-wave patch."
+        - "Registration of that patch onto a CC BY-SA photograph of an adult tabby."
+      transfer_boundary:
+        - "Schnakenberg (a, b, Du, Dv, gamma) are not measured Dkk4 or Wnt rate constants."
+        - "The photograph is the expanded Holocene phenotype, not a 436 µm micrograph."
+      does_not_claim:
+        - "That 436 µm was measured by Kaelin, Murray, or Turing."
+        - "That this isotropic spot lattice is the mackerel-tabby pattern of the photographed cat."
+        - "A predecessor Felis chronospecies. The series is 1/1 at 0 Ma."
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: "growth_rate implements the leading eigenvalue of J - k^2 D and fastest_mode selects k*. Kinetics are Schnakenberg, which is a standard realisation of Turing's law, not the Dkk4 circuit Kaelin identified. Nominal point only."
+        evidence:
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [89, 105], note: "growth_rate and fastest_mode", supports: true}
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [137, 179], note: "spectral Schnakenberg update", supports: true}
+      specimen-match:
+        value: 74
+        rationale: "The GIF's last frame is the Holocene tabby with a light pigment modulation, so it resembles the CC BY-SA photograph. The quantitative panel is a spot lattice on a black field; this cat's coat is broken mackerel striping. Scale transfer from 436 µm to the whole-animal photo is stated, not hidden."
+        evidence:
+          - {file: docs/media/felis_catus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, 431 µm patch, registration, dispersion curve", supports: true}
+          - {file: docs/media/felis_catus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640x480, unpatterned dermis to adult coat", supports: true}
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [234, 247], note: "compose_phenotype multiplies activator only inside the body mask", supports: true}
+      parameter-expressivity:
+        value: 58
+        rationale: "Du, Dv, a, b, and gamma are named constants and the equal-diffusion control is shown analytically to be stable, but no sweep yet demonstrates that Dv moves lambda monotonically."
+        evidence:
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [52, 66], note: "nominal Holocene constants, distinct from the sibling Bard slot", supports: true}
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [349, 366], note: "self-test locks one point and the analytic equal-diffusion sign", supports: true}
+      morphometric-validation:
+        value: 64
+        rationale: "Dominant wavelength 431.3 µm is measured on the field and compared with the 436 µm slot scale. Cellular-predecessor growth rate is negative. Pearson r, RMSE, KS, and specimen segmentation statistics are not yet reported, so this score stays below the pass-2 bar."
+        evidence:
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [182, 201], note: "radial-FFT wavelength in micrometres", supports: true}
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [369, 404], note: "measure_morphoeval returns wavelength, sigma*, and predecessor sigma with references that differ from the values", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-checked DOIs for Turing 1952, Schnakenberg 1979, Murray 1981, Kaelin 2012, and Kaelin 2021. Specimen is Von.grzanka 2010, CC BY-SA 3.0, SHA-256 pinned. The 436 µm scale is identified as the slot assignment, not as a number from those papers."
+        evidence:
+          - {file: datasets/felis_catus_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "six Crossref-checked citations", supports: true}
+          - {file: datasets/felis_catus_turing_wavelength_s0/felis_catus_turing_wavelength_s0_reference.json, lines: [1, 80], note: "scale 436 µm, age 0 Ma, specimen SHA-256", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "The dispersion relation, steady state, and calibration sentence are in the module docstring and in growth_rate. Pass-1 figure panels are titled with the same lambda and age. Murray section numbers are not pinned line by line."
+        evidence:
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [1, 36], note: "docstring states the law, the 436 µm calibration, and the claim boundary", supports: true}
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [89, 97], note: "growth_rate cites the Turing dispersion relation in code", supports: true}
+      repro-package:
+        value: 84
+        rationale: "Deterministic seed 3226, --self-test, and a direct python invocation. Dependencies are the repo scientific stack (numpy, scipy, matplotlib, pillow) and are not re-pinned in a private requirements file. Pass-1 self-test does not yet assert Pearson r."
+        evidence:
+          - {file: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py, lines: [349, 366], note: "--self-test checks sigma*, equal diffusion, wavelength within 8 percent, predecessor stability", supports: true}
+          - {file: datasets/felis_catus_turing_wavelength_s0/README.md, lines: [28, 40], note: "documented invocation and the 436 µm / 0 Ma statement", supports: true}
+    remediation:
+      - id: R-sweep
+        item: "Sweep inhibitor diffusion Dv and report k* and lambda at each value. Pass 1 only evaluates the nominal point."
+      - id: R-ablation
+        item: "Simulate the equal-diffusion negative control and an ablation that removes the u^2 v term. Pass 1 only checks the analytic sign of sigma."
+      - id: R-segment
+        item: "Report specimen CV segmentation metrics (foreground fraction, circularity, structure-tensor coherency, aspect) measured on the real photograph, with references that are not copies of the values."
+      - id: R-gof
+        item: "Goodness of fit of the dispersion relation: Pearson r, RMSE, and a KS statistic between analytic sigma(k) and a numerical linear integration. Require Pearson r > 0.98."
+      - id: R-stripes
+        item: "The isotropic patch is a spot lattice. The photographed cat is a broken mackerel tabby. Either bias the pattern toward stripes or keep the spot reading explicit."
+      - id: R-assessor
+        item: "Single builder-assessor. No independent second assessor."
