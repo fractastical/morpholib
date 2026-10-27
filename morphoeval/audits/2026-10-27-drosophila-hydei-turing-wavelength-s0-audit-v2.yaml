@@ -1,0 +1,201 @@
+# MorphoEval audit — Drosophila hydei detail-scale Turing wavelength, loop 3189, pass 2.
+# Closes pass-1 items R1 (oscillatory-mode envelope), R2 (GIF CV measurement),
+# and R3 (asymptotic KS). Same single assessor. Nanopub profile is absent.
+
+audit:
+  id: 2026-10-27-drosophila-hydei-turing-wavelength-s0-audit-v2
+  supersedes_audit_id: 2026-10-27-drosophila-hydei-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a4df1e95
+    note: "Pass 2 of loop 3189 after envelope fit, in-measurement CV, and asymptotic KS."
+  environment:
+    python: "3.12.3"
+    numpy: "2.5.4"
+    scipy: "1.18.1"
+    matplotlib: "3.11.2"
+    Pillow: "13.0.0"
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237(641):37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81(3):389-400 (1979)"
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    year: 1972
+    doi: 10.1007/BF00289234
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329(5999):1616-1620 (2010)"
+    year: 2010
+    doi: 10.1126/science.1179047
+  pitnick1995:
+    title: "How long is a giant sperm?"
+    authors: "Pitnick S, Spicer GS, Markow TA"
+    venue: "Nature 375(6527):109 (1995)"
+    year: 1995
+    doi: 10.1038/375109a0
+  pitnick1995pnas:
+    title: "Delayed male maturity is a cost of producing large sperm in Drosophila"
+    authors: "Pitnick S, Markow TA, Spicer GS"
+    venue: "Proceedings of the National Academy of Sciences 92(23):10614-10618 (1995)"
+    year: 1995
+    doi: 10.1073/pnas.92.23.10614
+  gompel2005:
+    title: "Chance caught on the wing: cis-regulatory evolution and the origin of pigment patterns in Drosophila"
+    authors: "Gompel N, Prud'homme B, Wittkopp PJ, Kassner VA, Carroll SB"
+    venue: "Nature 433(7025):481-487 (2005)"
+    year: 2005
+    doi: 10.1038/nature03235
+    role: "counter-evidence that Drosophila pigment patterns have a demonstrated cis-regulatory mechanism"
+
+simulations:
+  - id: delphi10000-drosophila-hydei-turing-wavelength-s0
+    name: "Drosophila hydei 2.3 µm Turing wavenumber (Holocene, 0 Ma)"
+    organism: "Drosophila hydei"
+    script: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py
+    output: docs/media/drosophila_hydei_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_hydei_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-hydei-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, gierer1972, kondo2010, pitnick1995, pitnick1995pnas, gompel2005]
+    summary: >-
+      Pass 2 of the 2.344 µm (2.344e-06 m, log10=-5.630) Schnakenberg-Turing
+      patch for Drosophila hydei at geological age 0 Ma. Dispersion goodness-of-fit
+      including the oscillatory mode: Pearson r=0.9985, RMSE=0.0187, KS=0.125.
+      Equal-diffusion σ_max=-0.1025. γ-sweep wavelengths 4.688, 2.344, 1.172,
+      0.781 µm, and the γ=4 FFT ratio is 0.5. Specimen foreground 0.5504 versus
+      simulation occupancy 0.5, circularity 0.0615 versus 0.785, coherency 0.679
+      versus 0.25. GIF CV similarity 96.0 on 12 frames at 720×540. Predecessor
+      D. heteroneura 175.4 µm (ratio 74.83), primordium slot exactly 50×,
+      successor D. kikkawai 93.41 µm. Weighted score 87.5/100.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability at a critical wavenumber."
+        - "Schnakenberg 1979: the two-species kinetics used here."
+        - "Pitnick, Spicer and Markow 1995: giant Drosophila sperm; the PNAS abstract says some species exceed ten male body lengths."
+        - "Gompel et al. 2005: a Drosophila pigment spot with a cis-regulatory origin."
+      reconstructed_in_script:
+        - "Length unit chosen so λ_c(γ=1)=2.344 µm, with λ scaling as γ^(-1/2)."
+        - "Chronoseries ratios against 175.4 µm, 117.2 µm and 93.41 µm at geological age 0 Ma."
+        - "Hilbert-envelope estimate of Re(σ) on the oscillatory Fourier mode."
+      transfer_boundary:
+        - "The cohort law is applied at the assigned detail scale. It is not a parameter estimate from a hydei cuticle micrograph."
+      does_not_claim:
+        - "That a 2.3 µm Turing instability has been measured in D. hydei."
+        - "That the whole-animal photograph resolves that wavelength."
+        - "That the campaign epithet of a 58 mm sperm was re-measured in this loop."
+        - "That cis-regulatory pigment control is absent."
+        - "A signed nanopublication. No ~/.nanopub/profile.yml is present."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Schnakenberg steady state, Jacobian, continuous dispersion, and the
+          discrete five-point dispersion used by the solver are implemented and
+          self-tested (trace=-0.2, det=1). Oscillatory modes now contribute
+          Re(σ) via the Hilbert envelope instead of being dropped. Lean proves
+          the scaled inequalities and the chronoseries bounds with zero sorry.
+          The kinetics remain a reconstruction at the slot scale, not a
+          hydei-specific published parameter set.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [87, 129], note: "jacobian, σ(k), k_c", supports: true}
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [300, 337], note: "envelope fit of Re(σ) for a negative discriminant", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3189_drosophila_hydei_turing_wavelength_s0.lean, lines: [25, 54], note: "trace, determinant, diffusion inequality, ablation, 50× and neighbour bounds", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >-
+          Twelve-frame 720×540 GIF. The last frame is the CC BY 3.0 photograph
+          with a 0.16-weight pigment window on the in-focus animal, and the
+          orientation / radial-FFT / coherency score against that photograph is
+          96.0. The comparison PNG shows the animal, the 9.376 µm patch, and the
+          log-wavelength chronoseries. The photograph still does not resolve a
+          2.3 µm stripe, which caps this dimension.
+        evidence:
+          - {file: docs/media/drosophila_hydei_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720×540, last frame specimen-textured", supports: true}
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [492, 518], note: "render_gif composite", supports: true}
+          - {file: docs/media/drosophila_hydei_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "side-by-side specimen, patch, dispersion, chronoseries, sweep, ablation", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          λ(γ) = 2.344/sqrt(γ) µm is monotonic on {0.25, 1, 4, 9} and the γ=4
+          PDE returns FFT wavelength 1.172 µm (ratio 0.5, reference null 0.25).
+          Setting D_u=D_v removes the Turing band (σ_max=-0.1025). a and b stay
+          at the Schnakenberg values that give det=1.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [349, 386], note: "analytical sweep plus numerical γ=4 wavelength", supports: true}
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [388, 406], note: "equal-diffusion negative control", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Pearson r=0.9985 (reference threshold 0.98), RMSE=0.0187 (reference
+          ceiling 0.05), KS=0.125 (reference 0). Specimen segmentation is not
+          copied from the model: foreground 0.5504 vs 0.5, circularity 0.0615 vs
+          0.785, coherency 0.679 vs 0.25. Stripe wavelength FFT is 2.344 µm
+          against the display label 2.3 µm. Wavenumber ratio versus D. heteroneura
+          is 74.83 against the Lean lower bound 74. GIF CV 96.0 against the gate 58.
+          No measurement has value equal to its reference.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [241, 296], note: "mode growth, envelope branch, asymptotic KS", supports: true}
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [602, 731], note: "measure_morphoeval rows, including specimen_gif_cv_similarity", supports: true}
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [409, 446], note: "specimen mask: foreground, circularity, aspect, coherency", supports: true}
+      source-traceability:
+        value: 91
+        rationale: >-
+          Seven DOIs in paper_citations.bib were resolved on OpenAlex during
+          scouting. The specimen file hash is
+          483d25650491bb683516b121a95022e8dde199389da0aa3a098a5ea0083e80c3,
+          licence CC BY 3.0, source URL recorded. Slot 3189 is not in
+          campaign_100_slots.yaml; the scout used a direct query and did not
+          collide with the 117.2 µm sibling slot 3001.
+        evidence:
+          - {file: datasets/drosophila_hydei_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "DOI bibliography", supports: true}
+          - {file: datasets/drosophila_hydei_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "uniqueness check and selected Wikimedia file", supports: true}
+          - {file: datasets/drosophila_hydei_turing_wavelength_s0/README.md, lines: [1, 36], note: "2.3 µm, 0 Ma, and the chronoseries table", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Each modelling step in the docstring points at a function: jacobian,
+          dispersion, critical wavenumber, gamma sweep, ablation, specimen
+          segmentation, and the GIF composite. The math-kg YAML repeats those
+          laws with Lean loci. Turing 1952 is cited as the instability theorem,
+          not as a line-by-line transcription of his ring-of-cells examples.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [1, 36], note: "docstring maps the PDE onto this slot", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-hydei-turing-wavelength-s0.yaml, lines: [40, 79], note: "equation records with code and Lean loci", supports: true}
+      repro-package:
+        value: 89
+        rationale: >-
+          --self-test checks the Jacobian integers, Pearson r>0.98, ablation
+          sign, monotonic sweep, and non-equal metric references. Dataset SHA-256
+          pins are verified at runtime. Seed, dt, grid, and t_end live in the
+          reference JSON. Environment versions are in this audit.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [72, 85], note: "SHA-256 pin check", supports: true}
+          - {file: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py, lines: [734, 782], note: "self_test gate", supports: true}
+    remediation:
+      - "Residual, not a pass-1 item: no independent second assessor scored this script."
+      - "Residual, not a pass-1 item: the specimen is a whole-animal photograph and does not resolve 2.3 µm."
+      - "Residual, not a pass-1 item: ~/.nanopub/profile.yml is absent, so the nanopubs are unsigned."
