@@ -1,0 +1,167 @@
+# Pass 1 audit — Dickinsonia costata cellular Turing wavelength (slot 3167).
+# Baseline: one diffusivity, spot field, fossil shown beside it but not fitted.
+audit:
+  id: 2026-10-27-dickinsonia-costata-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 1 working tree on top of origin/main. New slot files are not in that commit yet."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: 10.1016/0022-5193(79)90042-0
+  bobrovskiy2018:
+    title: "Ancient steroids establish the Ediacaran fossil Dickinsonia as one of the earliest animals"
+    authors: "Bobrovskiy, I. et al."
+    venue: "Science"
+    doi: 10.1126/science.aat7228
+  evans2017:
+    title: "Highly regulated growth and development of the Ediacara macrofossil Dickinsonia costata"
+    authors: "Evans, S. D., Droser, M. L., Gehling, J. G."
+    venue: "PLOS ONE"
+    doi: 10.1371/journal.pone.0176874
+  evans2021:
+    title: "Ediacara growing pains: modular addition and development in Dickinsonia costata"
+    authors: "Evans, S. D., Gehling, J. G., Erwin, D. H., Droser, M. L."
+    venue: "Paleobiology"
+    doi: 10.1017/pab.2021.31
+  hoekzema2017:
+    title: "Quantitative study of developmental biology confirms Dickinsonia as a metazoan"
+    authors: "Hoekzema, R. S., Brasier, M. D., Dunn, F. S., Liu, A. G."
+    venue: "Proc. R. Soc. B"
+    doi: 10.1098/rspb.2017.1348
+simulations:
+  - id: delphi10000-dickinsonia-costata-turing-wavelength-s0
+    name: "Dickinsonia costata cellular Turing wavelength, 56 µm, White Sea 558 Ma (Pass 1)"
+    organism: "Dickinsonia costata"
+    domain: morphogenesis
+    script: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py
+    output: docs/media/dickinsonia_costata_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, bobrovskiy2018, evans2017, evans2021, hoekzema2017]
+    summary: >-
+      Pass 1 runs Schnakenberg kinetics at Du=0.05, Dv=0.55 on a periodic septal
+      patch and anchors the measured spectral peak at 5.564e-5 m (55.64 µm, the
+      56 µm cellular tier). k_c=2.587, linear fastest k_m=2.467, measured k=2.558
+      (ratio 1.037). The animation is a 12-frame spot field at 720x540, not the
+      fossil. No diffusivity sweep, no equal-diffusion control, and no specimen
+      ellipse are in the Pass 1 metrics.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and critical wavenumber."
+        - "Schnakenberg 1979 two-species kinetics."
+        - "Bobrovskiy et al. 2018: White Sea Dickinsonia preserves cholesteroids; age 558 Ma."
+        - "Evans et al. 2017 and 2021: ovoid outline and posterior module addition."
+      reconstructed_in_script:
+        - "Nondimensional Du, Dv, a, b for a 56 µm pitch, distinct from the 2.2 mm sibling."
+        - "Spectral integration and a single-run wavenumber measurement."
+      transfer_boundary:
+        - "56 µm is this slot's cellular-tier assignment, not a length Bobrovskiy or Evans measured on the fossil."
+        - "Evans' morphometrics are mostly South Australian; the age pin is the White Sea horizon."
+      does_not_claim:
+        - "That the centimetre-scale modules in the photograph are 56 µm apart."
+        - "That the Pass 1 spot lattice is a fitted rendering of this specimen."
+    needs:
+      - id: R1
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Render the growth GIF so the terminal frame is the real fossil and overlay a segmented ellipse on the comparison figure."
+        status: open
+        novelty_n: 0.8
+        contradiction_c: 0.2
+        depth_d: 1.0
+        age_days_a: 0
+      - id: R2
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Deliver the diffusivity-factor sweep and the Pearson correlation of measured versus linear wavenumbers."
+        status: open
+        novelty_n: 0.6
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+      - id: R3
+        need_type: parameter_sweep
+        target_dimension: model-fidelity
+        description: "Report the equal-diffusion ablation on the same grid (noise must decay)."
+        status: open
+        novelty_n: 0.5
+        contradiction_c: 0.0
+        depth_d: 0.8
+        age_days_a: 0
+      - id: R4
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Add RMSE, KS, and CV for the wavenumber sweep, plus specimen aspect, circularity, coherency, and ridge spacing with references that are not the measured values."
+        status: open
+        novelty_n: 0.7
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+    remediation:
+      - id: R1
+        item: "Terminal GIF frame is a spot field. Fit the animation to the CC BY 2.5 fossil and draw the specimen ellipse."
+      - id: R2
+        item: "Pass 1 metrics omit the sqrt(D) sweep and its Pearson r."
+      - id: R3
+        item: "No equal-diffusion negative control in the Pass 1 artifact."
+      - id: R4
+        item: "No KS/RMSE/CV and no real-specimen contour metrics yet."
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: "sigma(k), k_c, and the spectral Schnakenberg step match Turing 1952 and Schnakenberg 1979. The Pass 1 artifact exercises only the reference diffusivity, so the dispersion law is checked at one point (k_meas/k_m = 1.037)."
+        evidence:
+          - {file: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py, lines: [83, 100], note: "sigma_of_k and critical_wavenumber", supports: true}
+          - {file: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py, lines: [133, 168], note: "spectral Schnakenberg integrator", supports: true}
+      specimen-match:
+        value: 52
+        rationale: "The comparison figure places the Verisimilus fossil beside the field, and they do not match: the fossil is an oval of parallel modules and the field is a spot lattice. Coarse CV similarity of the Pass 1 GIF is 83.4, which overstates the visual resemblance."
+        evidence:
+          - {file: docs/media/dickinsonia_costata_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "fossil beside unfitted spot field", supports: true}
+          - {file: docs/media/dickinsonia_costata_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 720x540 spot animation", supports: true}
+      parameter-expressivity:
+        value: 55
+        rationale: "a, b, Du, Dv and the sweep list are defined, but --pass-id 1 does not run the sweep or the ablation, so the delivered figure has a single point."
+        evidence:
+          - {file: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py, lines: [414, 430], note: "Pass 1 panel states that the sweep is not in this artifact", supports: true}
+          - {file: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py, lines: [46, 58], note: "cellular-tier parameter block, distinct from the 2.2 mm sibling", supports: true}
+      morphometric-validation:
+        value: 55
+        rationale: "Selected wavelength 55.64 µm is reported against the 2210 µm organ-tier pitch, and age 558 Ma against 635 Ma. Both differ from their references. Pearson, RMSE, KS, and specimen-contour metrics are absent."
+        evidence:
+          - {file: datasets/dickinsonia_costata_turing_wavelength_s0/dickinsonia_costata_turing_wavelength_s0_metrics.json, lines: [13, 32], note: "Pass 1 measurements: wavelength and age only", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "BibTeX DOIs for Turing, Schnakenberg, Bobrovskiy, Evans 2017, Evans 2021, and Hoekzema. Specimen SHA-256 and CC BY 2.5 Commons URL are pinned."
+        evidence:
+          - {file: datasets/dickinsonia_costata_turing_wavelength_s0/paper_citations.bib, lines: [1, 65], note: "six DOIs", supports: true}
+          - {file: datasets/dickinsonia_costata_turing_wavelength_s0/dickinsonia_costata_turing_wavelength_s0_reference.json, lines: [1, 20], note: "scale 5.564e-5 m and age 558 Ma", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Dispersion, integrator, and render functions are separated and named against the source laws. Pass 1 does not yet call the sweep from the canonical artifact."
+        evidence:
+          - {file: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py, lines: [1, 28], note: "module docstring states 56 µm, 558 Ma, and the 39-pitch septal count", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3167_dickinsonia_costata_turing_wavelength_s0.lean, lines: [15, 53], note: "six theorems, no sorry", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Seed 3167, pinned specimen digest, and --pass-id 1 reproduce the baseline. --self-test is the Pass 2 gate and is not what this artifact ran."
+        evidence:
+          - {file: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py, lines: [663, 690], note: "self-test asserts Pearson, wavelength, ablation, and GIF size", supports: true}
+          - {file: datasets/dickinsonia_costata_turing_wavelength_s0/README.md, lines: [1, 20], note: "invocation for pass 1 and self-test", supports: true}
