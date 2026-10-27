@@ -732,9 +732,47 @@ def _fast_yaml_load(text: str) -> Any:
 
 _DYNAMIC_MATH_LAWS_CACHE: dict[str, dict[str, Any]] | None = None
 
+# ---------------------------------------------------------------------------
+# Lean template gate (2026-10-27): the overnight loop generators stamp every
+# loop with the same three placeholder Lean declarations —
+#   law1_invariant a b := a * b            (proved by Int.mul_pos)
+#   law2_balance p q := p + q - q          (proved by omega)
+#   law3_threshold_margin ... > 0          (proved by `decide` on numerals)
+# These are valid Lean but prove arithmetic trivia, NOT the governing law
+# (Turing dispersion, Murray r^3, clock-wavefront, ...) named in the spec's
+# `law_name`/`formula`. Registering them made the KG assert ~30k false
+# "formalized by Lean theorem" claims (9,800+ specs) and clogged every build.
+# Gate: template equations never enter the KG. A loop re-enters only when it
+# carries a substantive, law-specific Lean formalization.
+TEMPLATE_LEAN_DECL_SUFFIXES = (".law1_invariant", ".law2_balance", ".law3_threshold_margin")
+TEMPLATE_LEAN_CODE_MARKERS = (
+    "def law1_invariant (a b : Int) : Int := a * b",
+    "def law2_balance (p q : Int) : Int := p + q - q",
+    "def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs",
+)
+
+
+def is_template_lean_equation(eq: Any) -> bool:
+    """True iff an equation spec points at the placeholder Lean template."""
+    if not isinstance(eq, dict):
+        return False
+    if eq.get("formalization_status") == "template_placeholder_not_a_proof":
+        return True
+    for field in ("lean_decl", "lean_theorem"):
+        val = str(eq.get(field, ""))
+        if any(val.endswith(sfx) for sfx in TEMPLATE_LEAN_DECL_SUFFIXES):
+            return True
+    code = str(eq.get("lean_code", ""))
+    return any(marker in code for marker in TEMPLATE_LEAN_CODE_MARKERS)
+
 
 def load_dynamic_math_laws_registry() -> dict[str, dict[str, Any]]:
-    """Merge the base `MATH_LAWS_REGISTRY` with any isolated per-loop YAML specs in `morphoeval/math_kg_loops/*.yaml`."""
+    """Merge the base `MATH_LAWS_REGISTRY` with any isolated per-loop YAML specs in `morphoeval/math_kg_loops/*.yaml`.
+
+    Template-placeholder Lean equations (see `is_template_lean_equation`) are
+    filtered out; specs left with no substantive equation are not registered
+    at all, so the KG stops asserting laws that were never formalized.
+    """
     global _DYNAMIC_MATH_LAWS_CACHE
     if _DYNAMIC_MATH_LAWS_CACHE is not None:
         return _DYNAMIC_MATH_LAWS_CACHE
@@ -744,9 +782,12 @@ def load_dynamic_math_laws_registry() -> dict[str, dict[str, Any]]:
             try:
                 doc = _fast_yaml_load(yf.read_text(encoding="utf-8")) or {}
                 sid = doc.get("sim_id") or yf.stem
+                equations = [e for e in doc.get("equations", []) if not is_template_lean_equation(e)]
+                if not equations:
+                    continue
                 merged[sid] = {
                     "math_family": doc.get("math_family", "Mathematical Morphogenesis Model"),
-                    "equations": doc.get("equations", []),
+                    "equations": equations,
                 }
             except Exception:
                 continue
