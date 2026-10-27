@@ -1,0 +1,44 @@
+{
+  "fix_id": "fix-005",
+  "candidate_rank": 10,
+  "candidate_id": "LIB-DQ-GMF-01",
+  "status": "fixed",
+  "summary": "Corrected datasets/global_morphogenetic_flow/scout_manifest.json territory.seed_doi from invalid 10.7554/eLife.35326 to Crossref-verified Streichan et al. (2018) landmark DOI 10.7554/eLife.27454, aligning scout provenance with paper_citations.bib and global_morphogenetic_flow_reference.json. Preserved the erroneous value as seed_doi_superseded with a top-level seed_doi_correction note.",
+  "root_cause": "Scout dossier seed_doi was set to 10.7554/eLife.35326, which does not resolve (Crossref API 'Resource not found', doi.org HTTP 404). The dataset's canonical bibliography and reference JSON already used 10.7554/eLife.27454 for the title 'Global morphogenetic flow is accurately predicted by the spatial distribution of myosin motors' (Streichan et al., eLife 2018). The 35326 value is not a distinct citing publication—likely a scout transposition/typo—not a second eLife article.",
+  "changed_files": [
+    "datasets/global_morphogenetic_flow/scout_manifest.json"
+  ],
+  "evidence": [
+    "datasets/global_morphogenetic_flow/scout_manifest.json territory.seed_doi (before): 10.7554/eLife.35326",
+    "datasets/global_morphogenetic_flow/paper_citations.bib first entry doi: 10.7554/eLife.27454",
+    "datasets/global_morphogenetic_flow/global_morphogenetic_flow_reference.json sources[0].doi: 10.7554/eLife.27454",
+    "Crossref GET https://api.crossref.org/works/10.7554/eLife.27454 → title contains 'Global morphogenetic flow', DOI 10.7554/elife.27454",
+    "Crossref GET https://api.crossref.org/works/10.7554/eLife.35326 → 'Resource not found'",
+    "curl -sI https://doi.org/10.7554/eLife.35326 → HTTP 404"
+  ],
+  "validation": [
+    {
+      "name": "GMF DOI consistency",
+      "argv": [
+        "python3",
+        "-c",
+        "import json,pathlib; m=json.load(open('datasets/global_morphogenetic_flow/scout_manifest.json')); b=pathlib.Path('datasets/global_morphogenetic_flow/paper_citations.bib').read_text(); assert '10.7554/eLife.27454' in b; print(m)"
+      ],
+      "exit_code": 0,
+      "output_summary": "Printed territory.seed_doi: 10.7554/eLife.27454"
+    },
+    {
+      "name": "scout_manifest JSON parse",
+      "argv": [
+        "python3",
+        "-m",
+        "json.tool",
+        "datasets/global_morphogenetic_flow/scout_manifest.json"
+      ],
+      "exit_code": 0,
+      "output_summary": "Valid JSON after edit"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
