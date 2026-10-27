@@ -54,7 +54,7 @@ def validate(data: dict) -> list[str]:
         # their prior is never reconstructed after the fact.
         st = e.get("probStatus")
         if "prob" in e:
-            if st not in (None, "delphi_scored", "registered_prediction"):
+            if st not in (None, "delphi_scored", "provisional_scored", "registered_prediction"):
                 errs.append(f"edge {e['from']}->{e['to']}: prob with inconsistent probStatus {st!r}")
         elif st not in ("not_recorded_historical", "pending_delphi", "structural"):
             errs.append(f"edge {e['from']}->{e['to']}: no probability recorded and no explicit "
