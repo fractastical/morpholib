@@ -1,0 +1,49 @@
+sim_id: delphi10000-bacillus-subtilis-turing-wavelength-s0
+slot: 3130
+organism: Bacillus subtilis
+age_ma: 0.0
+scale_um: 16.0
+math_family: Reaction-Diffusion & Turing Dispersion
+model_spec:
+  model: Schnakenberg activator-inhibitor with sigma_plus(k) calibrated to lambda = 16 um
+  a: 0.084
+  b: 0.916
+  diffusion_ratio: 9.2
+  domain_um: 192
+  lambda_um: 16
+  tier_center_um: 10
+  age_ma: 0
+  chronoseries: "1/1"
+  grid_resolution: [96, 96]
+  seed: 3130
+  inputs:
+    - datasets/bacillus_subtilis_turing_wavelength_s0/bacillus_subtilis_ocellus_specimen.jpg
+    - datasets/bacillus_subtilis_turing_wavelength_s0/bacillus_subtilis_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Schnakenberg trace is negative without diffusion
+    formula: "f_u + g_v = 0.832 - 1 < 0"
+    lean_decl: MathOfBiology.Loop_3130.trace_negative
+    lean_theorem: MathOfBiology.Loop_3130.trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3130_bacillus_subtilis_turing_wavelength_s0.lean#L8-L10
+    variables: "f_u = 832/1000, g_v = -1 at (u0, v0) = (1, 0.916)"
+    role: Homogeneous stability on the 16 µm Bacillus subtilis detail scale
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-bacillus-subtilis-turing-wavelength-s0.py#L90-L96
+  - law_name: Critical wavenumber versus the 10 µm tier center
+    formula: "k_16 / k_10 = 10/16 = 0.625 and D_16/D_10 = (16/10)^2"
+    lean_decl: MathOfBiology.Loop_3130.wavenumber_ratio_versus_tier_center
+    lean_theorem: MathOfBiology.Loop_3130.diffusion_rescales_with_wavelength_squared
+    lean_locus: morphoeval/lean/loops/Loop_3130_bacillus_subtilis_turing_wavelength_s0.lean#L16-L22
+    variables: "lambda_detail = 16 um, lambda_tier = 10 um, age delta = 0 Ma"
+    role: Scale change at chronoseries node 1/1 (no fossil predecessor)
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-bacillus-subtilis-turing-wavelength-s0.py#L67-L74
+  - law_name: Diffusion ratio above the Turing threshold
+    formula: "(r f_u + g_v)^2 > 4 r det J at r = 9.2, and the inequality fails at r = 1"
+    lean_decl: MathOfBiology.Loop_3130.ratio_9200_exceeds_turing_threshold
+    lean_theorem: MathOfBiology.Loop_3130.ratio_1000_fails_turing_threshold
+    lean_locus: morphoeval/lean/loops/Loop_3130_bacillus_subtilis_turing_wavelength_s0.lean#L24-L32
+    variables: "r_operating = 9.2, r_critical ≈ 8.00, r_ablation = 1"
+    role: Wavelength selection requires inhibitor diffusion faster than activator diffusion
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Kawasaki et al. 1997 DOI:10.1006/jtbi.1997.0462"
+    code_locus: models/2026-delphi10000-bacillus-subtilis-turing-wavelength-s0.py#L98-L116
