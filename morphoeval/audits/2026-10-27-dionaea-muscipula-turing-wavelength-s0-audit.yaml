@@ -1,0 +1,129 @@
+# MorphoEval audit — Dionaea muscipula Turing wavelength, slot 3169, pass 1.
+# Emit 1 writes the unfitted activator field. Specimen CV against that GIF is 73.0.
+# The only morphometric is λ = 24 µm compared with the same 24 µm, which is self-referential.
+# Overall is the rubric weighted mean (see build_morphoeval_kg.py). Single assessor.
+audit:
+  id: 2026-10-27-dionaea-muscipula-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d71d2f0b1c64d11b069392db32c90726b8fa5d72
+    note: "Pass-1 evaluation of --emit 1. The GIF bytes hashed in the pass-1 measurement sidecar were replaced by the pass-2 render in this same commit; the sidecar keeps the pass-1 hashes."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo, S. and Miura, T."
+    venue: "Science"
+    doi: "10.1126/science.1179047"
+  forterre2005:
+    title: "How the Venus flytrap snaps"
+    authors: "Forterre, Y., Skotheim, J. M., Dumais, J. and Mahadevan, L."
+    venue: "Nature"
+    doi: "10.1038/nature03185"
+simulations:
+  - id: delphi10000-dionaea-muscipula-turing-wavelength-s0
+    name: "Dionaea muscipula Turing wavenumber at 24 µm (pass 1, unfitted field)"
+    organism: "Dionaea muscipula"
+    domain: morphogenesis
+    script: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py
+    output: docs/media/dionaea_muscipula_turing_wavelength_s0_growth.gif
+    also:
+      - docs/media/dionaea_muscipula_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, kondo2010, forterre2005]
+    summary: >-
+      Pass 1 runs Schnakenberg kinetics on a 192 µm by 144 µm adaxial patch
+      with Du and Dv chosen so the linear wavelength is 24 µm, and writes a
+      full-bleed red activator GIF (12 frames, 640×480). Computer-vision
+      similarity of that GIF to the CC BY-SA trap photograph is 73.0.
+      The saturated Fourier wavelength on the patch is 26.63 µm. No diffusivity
+      sweep, no equal-diffusion ablation, and no specimen-versus-render
+      segmentation are in the emitted metrics. The only saved comparison is
+      λ = 24 µm against λ = 24 µm.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: a linear reaction-diffusion system selects a finite critical wavenumber k_c."
+        - "Schnakenberg 1979: the two-species kinetics du/dt = a − u + u²v, dv/dt = b − u²v."
+        - "Forterre et al. 2005: the Dionaea lobe snaps by curvature inversion. That is context, not this wavelength law."
+      reconstructed_in_script:
+        - "Jacobian at (a, b) = (0.10, 0.90) and diffusivities that place λ_c at the assigned 24 µm."
+        - "Semi-implicit Fourier integration of the nonlinear PDE on the 192 µm patch (--emit 1)."
+      transfer_boundary:
+        - "24 µm is the slot scale (tier 4_cellular_10um, detail), not a new measurement of gland spacing."
+        - "Age is 0 Ma, Holocene extant, chronoseries 1/1."
+      does_not_claim:
+        - "That the pass-1 GIF is a pixel fit to the trap photograph."
+        - "That a second assessor scored this audit."
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: "Emit 1 integrates the Schnakenberg PDE whose linearisation is the Turing dispersion relation, with Du and Dv set so λ_c = 24 µm. The numeric σ(k) check is in the file but is not part of the pass-1 output."
+        evidence:
+          - {file: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py, lines: [115, 158], note: "jacobian() and sigma_analytic()", supports: true}
+          - {file: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py, lines: [264, 309], note: "simulate_patch Fourier step", supports: true}
+      specimen-match:
+        value: 46
+        rationale: "The pass-1 GIF is a red spot field. CV similarity to the trap photograph is 73.0 because both are red and filled, but the lobes, midrib and marginal cilia are absent."
+        evidence:
+          - {file: docs/media/dionaea_muscipula_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "pass-1 field GIF, CV 73.0", supports: true}
+          - {file: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py, lines: [472, 489], note: "_field_to_frame has no specimen scaffold", supports: true}
+      parameter-expressivity:
+        value: 40
+        rationale: "a, b and Dv/Du are fixed constants. Emit 1 does not vary them, so the figure cannot show that wavelength tracks the diffusivity scale."
+        evidence:
+          - {file: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py, lines: [816, 843], note: "emit_pass1 calls one simulate_patch and does not sweep", supports: true}
+      morphometric-validation:
+        value: 34
+        rationale: "The only measurement is the analytic wavelength 24.0 µm against the reference 24.0 µm. That comparison is true by construction and carries no specimen residual, RMSE, or KS statistic."
+        evidence:
+          - {file: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py, lines: [593, 606], note: "measurements_pass1 self-referential λ", supports: true}
+          - {file: datasets/dionaea_muscipula_turing_wavelength_s0/metrics.json, lines: [0, 0], note: "emit 1 metrics, value == reference", supports: true}
+      source-traceability:
+        value: 86
+        rationale: "Crossref-verified DOIs for Turing, Schnakenberg, Kondo & Miura, and Forterre are in the bib file. The trap photograph is the Wikimedia Commons file under CC BY-SA 2.5, SHA-256 pinned."
+        evidence:
+          - {file: datasets/dionaea_muscipula_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing 1952 and Schnakenberg 1979 entries", supports: true}
+          - {file: datasets/dionaea_muscipula_turing_wavelength_s0/README.md, lines: [1, 20], note: "states 24 µm and 0 Ma", supports: true}
+      code-traceability:
+        value: 70
+        rationale: "The module docstring writes the PDE, the steady state and the dispersion formula, and sigma_analytic implements that formula. Pass 1 does not yet point a plotted numeric curve back at the formula."
+        evidence:
+          - {file: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py, lines: [1, 48], note: "docstring equations", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3169_dionaea_muscipula_turing_wavelength_s0.lean, lines: [15, 32], note: "integer margin and trace theorems", supports: true}
+      repro-package:
+        value: 78
+        rationale: "--self-test checks λ_c, the sign of the Turing margin, and the pinned SHA-256 inputs. Seed 3169. Emit 1 itself does not re-check the dispersion Pearson statistic."
+        evidence:
+          - {file: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py, lines: [927, 966], note: "self_test", supports: true}
+          - {file: datasets/dionaea_muscipula_turing_wavelength_s0/dionaea_muscipula_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 24 µm, age 0 Ma, parameter block", supports: true}
+    remediation:
+      - id: R1
+        item: "Add a diffusivity-scale sweep and show that the PDE wavelength tracks 24*sqrt(s)."
+      - id: R2
+        item: "Add the equal-diffusion ablation (Dv = Du) as a negative control with σ_max < 0."
+      - id: R3
+        item: "Segment the real specimen and the render (foreground, coherency, circularity, KS). Values must not be copies of the references."
+      - id: R4
+        item: "Report Pearson r and RMSE for σ_PDE(k) against σ_analytic(k), and keep r > 0.98."
+      - id: R5
+        item: "Rebuild the GIF so the last frame carries the trap's cilia and lobe geometry; pass-1 CV is 73.0 and image fitness stays under 70 at these audit subscores."
+      - id: R6
+        item: "No second assessor. Left open: this loop is one agent."
