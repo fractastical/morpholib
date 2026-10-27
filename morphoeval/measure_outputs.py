@@ -39,6 +39,28 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 
 
+def resolve_script_path(script: str | Path | None) -> Path | None:
+    """Resolve audit ``script`` paths relative to repo ROOT.
+
+    Legacy audits used bare basenames (e.g. ``1952-turing-morpho.py``) before
+    scripts moved under ``models/``; when the direct path is missing, try
+    ``models/<basename>``.
+    """
+    if script is None:
+        return None
+    p = Path(script)
+    if p.is_absolute():
+        return p
+    direct = ROOT / p
+    if direct.exists():
+        return direct
+    if p.parent == Path("."):
+        under_models = ROOT / "models" / p.name
+        if under_models.exists():
+            return under_models
+    return direct
+
+
 # --------------------------------------------------------------------------- #
 # 1. fingerprints (dual semantic spec_fingerprint vs byte artifact_sha256)
 # --------------------------------------------------------------------------- #
@@ -853,76 +875,106 @@ def measure_turing(gif: Path, N: int = 200, script: Path | None = None) -> list:
               note="≈0 means the GIF shows a frozen pattern"),
         ])
 
-    turing_script = script if script is not None else (ROOT / "1952-turing-morpho.py")
-    if turing_script.exists():
-        import importlib.util
-        import tempfile
-        spec = importlib.util.spec_from_file_location("turing_pearson_v1", turing_script)
-        mod = importlib.util.module_from_spec(spec)
-        sys.modules[spec.name] = mod
-        spec.loader.exec_module(mod)
-        if hasattr(mod, "run_pearson_morphospace_analysis"):
-            with tempfile.TemporaryDirectory() as td:
-                res = mod.run_pearson_morphospace_analysis(
-                    output_png=Path(td) / "fig.png",
-                    output_csv=Path(td) / "metrics.csv",
-                    N=160,
-                    steps=4000,
-                    show=False,
-                )
-            by_id = res["by_id"]
-            coral = by_id["coral_labyrinth"]
-            spots = by_id["mitosis_spots"]
-            ctrl = by_id["equal_diffusion_control"]
-            out.extend([
-                M("Pearson coral labyrinth (F=0.054, k=0.0616) spectral ring wavenumber k*",
-                  float(coral["k_star_cycles"]), "cycles / domain",
-                  "sub-bin parabolic peak of 2D radial PSD P(k) on N=160x160 grid",
-                  reference=">0 (Turing band-pass ring)",
-                  source="Pearson 1993 Science 261:189 Pattern κ (inside Saddle-Node)",
-                  note=f"λ* = {coral['wavelength_grid_cells']:.2f} grid cells (analytical λ_c = {coral.get('lambda_c_analytical', float('nan')):.2f}), ring sharpness = {coral['ring_sharpness']:.1f}",
-                  derived_from="script"),
-                M("Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth",
-                  int(spots["n_components"]), "count",
-                  "connected high-activator components in self-replicating spot regime",
-                  reference=int(coral["n_components"]),
-                  source="Pearson 1993 Science 261:189 Pattern λ vs Pattern κ",
-                  note="spots remain disconnected whereas coral labyrinth percolates",
-                  derived_from="script"),
-                M("steady-state equal-diffusion negative control (Du=Dv=0.20) spectral wavenumber k*",
-                  float(ctrl["k_star_cycles"]), "cycles / domain",
-                  "dominant wavenumber when differential diffusivity is removed around nontrivial steady state (U_*, V_*)",
-                  reference=0.0,
-                  source="Turing 1952 Phil. Trans. R. Soc. B 237:37 (diffusion-driven instability requires Du != Dv)",
-                  note=f"spatial σ_V = {ctrl['std_v']:.2e}, ring sharpness = {ctrl['ring_sharpness']:.1f}",
-                  derived_from="script"),
-            ])
-            if "turing_1952" in res and "bio_specimens" in res:
-                t52 = res["turing_1952"]
-                bio = res["bio_specimens"]
-                out.extend([
-                    M("Turing (1952) Sec. 8-9 analytical critical wavelength λ_c = 2π/k_c",
-                      round(float(t52["lambda_c"]), 3), "cells",
-                      "2*pi / sqrt((d*D_X + a*D_Y) / (2*D_X*D_Y)) on 2-morphogen activator-inhibitor system",
-                      reference=5.62,
-                      source="Turing 1952 Phil. Trans. R. Soc. B 237:37 Sec. 8-9",
-                      note=f"d = {t52['diffusivity_ratio_d']:.2f} > d_c = {t52['critical_diffusivity_ratio_dc']:.3f}, N=20 ring dominant mode s* = {t52['measured_ring_mode']}",
-                      derived_from="script"),
-                    M("Pomacanthus imperator segmented skin stripe wavelength",
-                      round(float(bio["poma_mean_spacing_px"]), 2), "px",
-                      "mean dorsoventral inter-stripe peak spacing on SHA-256-locked specimen ROI",
-                      reference="8–16 px (CV < 0.35)",
-                      source="Kondo & Asai 1995 Nature 376:765-768",
-                      note=f"CV = {bio['poma_spacing_cv']:.3f}, topological Y-branch junctions = {bio['poma_y_junctions']}, ontogenetic r = {bio['kondo_corr_r']:.4f}",
-                      derived_from="script"),
-                    M("Ostracion meleagris segmented Turing spots (DoG + Delaunay)",
-                      int(bio["ost_n_spots"]), "spots",
-                      "Difference-of-Gaussians segmented spots on SHA-256-locked boxfish specimen ROI",
-                      reference=">=15 hexagonal spots",
-                      source="Turing 1952 / Pearson 1993 spot lattice",
-                      note=f"mean Delaunay nearest-neighbor spacing = {bio['ost_spot_spacing_px']:.2f} px (CV = {bio['ost_spot_spacing_cv']:.3f})",
-                      derived_from="script"),
-                ])
+    turing_script = (
+        resolve_script_path(script)
+        if script is not None
+        else resolve_script_path("models/1952-turing-morpho.py")
+    )
+    if not turing_script.exists():
+        out.append(
+            M(
+                "script-backed Turing/Pearson/specimen measurements",
+                None,
+                None,
+                "import Turing script and run run_pearson_morphospace_analysis",
+                note=(
+                    f"skipped: script not found at {turing_script.relative_to(ROOT)} "
+                    f"(only {len(out)} GIF pixel metric(s) above; expected >=6 script rows "
+                    "with Pearson 1993 and Kondo reference sources when the script resolves)"
+                ),
+                derived_from="script",
+            )
+        )
+        return out
+    import importlib.util
+    import tempfile
+    spec = importlib.util.spec_from_file_location("turing_pearson_v1", turing_script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    if not hasattr(mod, "run_pearson_morphospace_analysis"):
+        out.append(
+            M(
+                "script-backed Turing/Pearson/specimen measurements",
+                None,
+                None,
+                "import Turing script and run run_pearson_morphospace_analysis",
+                note=f"skipped: {turing_script.name} has no run_pearson_morphospace_analysis",
+                derived_from="script",
+            )
+        )
+        return out
+    with tempfile.TemporaryDirectory() as td:
+        res = mod.run_pearson_morphospace_analysis(
+            output_png=Path(td) / "fig.png",
+            output_csv=Path(td) / "metrics.csv",
+            N=160,
+            steps=4000,
+            show=False,
+        )
+    by_id = res["by_id"]
+    coral = by_id["coral_labyrinth"]
+    spots = by_id["mitosis_spots"]
+    ctrl = by_id["equal_diffusion_control"]
+    out.extend([
+        M("Pearson coral labyrinth (F=0.054, k=0.0616) spectral ring wavenumber k*",
+          float(coral["k_star_cycles"]), "cycles / domain",
+          "sub-bin parabolic peak of 2D radial PSD P(k) on N=160x160 grid",
+          reference=">0 (Turing band-pass ring)",
+          source="Pearson 1993 Science 261:189 Pattern κ (inside Saddle-Node)",
+          note=f"λ* = {coral['wavelength_grid_cells']:.2f} grid cells (analytical λ_c = {coral.get('lambda_c_analytical', float('nan')):.2f}), ring sharpness = {coral['ring_sharpness']:.1f}",
+          derived_from="script"),
+        M("Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth",
+          int(spots["n_components"]), "count",
+          "connected high-activator components in self-replicating spot regime",
+          reference=int(coral["n_components"]),
+          source="Pearson 1993 Science 261:189 Pattern λ vs Pattern κ",
+          note="spots remain disconnected whereas coral labyrinth percolates",
+          derived_from="script"),
+        M("steady-state equal-diffusion negative control (Du=Dv=0.20) spectral wavenumber k*",
+          float(ctrl["k_star_cycles"]), "cycles / domain",
+          "dominant wavenumber when differential diffusivity is removed around nontrivial steady state (U_*, V_*)",
+          reference=0.0,
+          source="Turing 1952 Phil. Trans. R. Soc. B 237:37 (diffusion-driven instability requires Du != Dv)",
+          note=f"spatial σ_V = {ctrl['std_v']:.2e}, ring sharpness = {ctrl['ring_sharpness']:.1f}",
+          derived_from="script"),
+    ])
+    if "turing_1952" in res and "bio_specimens" in res:
+        t52 = res["turing_1952"]
+        bio = res["bio_specimens"]
+        out.extend([
+            M("Turing (1952) Sec. 8-9 analytical critical wavelength λ_c = 2π/k_c",
+              round(float(t52["lambda_c"]), 3), "cells",
+              "2*pi / sqrt((d*D_X + a*D_Y) / (2*D_X*D_Y)) on 2-morphogen activator-inhibitor system",
+              reference=5.62,
+              source="Turing 1952 Phil. Trans. R. Soc. B 237:37 Sec. 8-9",
+              note=f"d = {t52['diffusivity_ratio_d']:.2f} > d_c = {t52['critical_diffusivity_ratio_dc']:.3f}, N=20 ring dominant mode s* = {t52['measured_ring_mode']}",
+              derived_from="script"),
+            M("Pomacanthus imperator segmented skin stripe wavelength",
+              round(float(bio["poma_mean_spacing_px"]), 2), "px",
+              "mean dorsoventral inter-stripe peak spacing on SHA-256-locked specimen ROI",
+              reference="8–16 px (CV < 0.35)",
+              source="Kondo & Asai 1995 Nature 376:765-768",
+              note=f"CV = {bio['poma_spacing_cv']:.3f}, topological Y-branch junctions = {bio['poma_y_junctions']}, ontogenetic r = {bio['kondo_corr_r']:.4f}",
+              derived_from="script"),
+            M("Ostracion meleagris segmented Turing spots (DoG + Delaunay)",
+              int(bio["ost_n_spots"]), "spots",
+              "Difference-of-Gaussians segmented spots on SHA-256-locked boxfish specimen ROI",
+              reference=">=15 hexagonal spots",
+              source="Turing 1952 / Pearson 1993 spot lattice",
+              note=f"mean Delaunay nearest-neighbor spacing = {bio['ost_spot_spacing_px']:.2f} px (CV = {bio['ost_spot_spacing_cv']:.3f})",
+              derived_from="script"),
+        ])
     return out
 
 
@@ -1598,7 +1650,17 @@ def main():
             elif sid == "raup-shell-coiling":
                 out["measurements"][sid] = measure_raup(ROOT / sim["script"], ROOT / "datasets/raup/variables.json")
             elif sid == "turing-gray-scott":
-                out["measurements"][sid] = measure_turing(ROOT / sim.get("output", "turing_patterns.gif"), script=ROOT / sim["script"])
+                gif_path = ROOT / sim.get("output", "turing_patterns.gif")
+                if not gif_path.exists() or gif_path.suffix.lower() not in {".gif", ".webp"}:
+                    for extra in sim.get("extra_outputs") or []:
+                        candidate = ROOT / extra
+                        if candidate.exists() and candidate.suffix.lower() in {".gif", ".webp"}:
+                            gif_path = candidate
+                            break
+                out["measurements"][sid] = measure_turing(
+                    gif_path,
+                    script=resolve_script_path(sim["script"]),
+                )
             elif sid == "bressloff-v1-form-constants":
                 out["measurements"][sid] = measure_bressloff(ROOT / sim["script"])
             elif sid == "hoffmann-wing-venation":
