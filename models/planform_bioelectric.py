@@ -941,6 +941,34 @@ def error_codes(errs: Iterable[str]) -> List[str]:
     return sorted({e.split(":", 1)[0] for e in errs})
 
 
+def check_damaged_negative_item(damaged_dir: Path, item: Dict[str, Any]) -> List[str]:
+    """Validate one damaged-negative manifest entry; return failure messages."""
+    failures: List[str] = []
+    p = damaged_dir / item["file"]
+    if not p.is_file():
+        return [f"damaged/{item['file']} missing"]
+    codes = error_codes(validate_fixture(json.loads(p.read_text(encoding="utf-8"))))
+    expected = item["expected_error_code"]
+    if expected not in codes:
+        failures.append(f"damaged/{item['file']} -> {codes} (expected {expected!r})")
+    digest = item.get("sha256")
+    if digest is not None and sha256_of_file(p) != digest:
+        failures.append(f"damaged/{item['file']} sha256 does not match manifest")
+    return failures
+
+
+def check_all_damaged_negatives(damaged_dir: Path) -> List[str]:
+    """Run damaged-negative manifest checks; return all failure messages."""
+    mpath = damaged_dir / "manifest.json"
+    if not mpath.is_file():
+        return [f"{mpath} missing"]
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    failures: List[str] = []
+    for item in manifest.get("files", []):
+        failures.extend(check_damaged_negative_item(damaged_dir, item))
+    return failures
+
+
 # --------------------------------------------------------------------------
 # Damaged negatives
 # --------------------------------------------------------------------------
@@ -1142,13 +1170,22 @@ def self_test(fixture_path: Path, damaged_dir: Path, db_cli: Optional[str]) -> i
     if mpath.is_file():
         manifest = json.loads(mpath.read_text(encoding="utf-8"))
         for item in manifest["files"]:
-            p = damaged_dir / item["file"]
-            if not p.is_file():
-                check(False, f"damaged/{item['file']} missing")
-                continue
-            codes = error_codes(validate_fixture(json.loads(p.read_text(encoding="utf-8"))))
-            check(item["expected_error_code"] in codes, f"damaged/{item['file']} -> {codes}")
-            check(sha256_of_file(p) == item["sha256"], f"damaged/{item['file']} sha256 matches manifest")
+            item_fails = check_damaged_negative_item(damaged_dir, item)
+            if item_fails:
+                for msg in item_fails:
+                    if "sha256 does not match" in msg:
+                        check(False, msg.replace(" does not match manifest", " sha256 matches manifest"))
+                    elif " -> " in msg and "(expected" in msg:
+                        file_part, rest = msg.split(" -> ", 1)
+                        codes_part = rest.split(" (expected", 1)[0]
+                        check(False, f"{file_part} -> {codes_part}")
+                    else:
+                        check(False, msg)
+            else:
+                p = damaged_dir / item["file"]
+                codes = error_codes(validate_fixture(json.loads(p.read_text(encoding="utf-8"))))
+                check(True, f"damaged/{item['file']} -> {codes}")
+                check(True, f"damaged/{item['file']} sha256 matches manifest")
     else:
         check(False, f"{mpath} missing")
 

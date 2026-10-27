@@ -1,0 +1,34 @@
+{
+  "fix_id": "fix-010",
+  "candidate_rank": 69,
+  "candidate_id": "scout-079-c",
+  "status": "fixed",
+  "summary": "Added pytest gate tests/test_planform_damaged_negatives.py that exercises all five vendored damaged-negative fixtures via shared check helpers exported from models/planform_bioelectric.py. Standard pytest discovery now fails closed on manifest/code drift without mutating committed fixtures; temp-copy negative controls verify flipped expectations and corrupted payloads are detected.",
+  "root_cause": "Damaged-negative validation lived only in models/planform_bioelectric.py --self-test; the repo's documented cloud validation path (compileall + pytest) had no test module targeting datasets/planform/damaged/manifest.json, so CI could pass while the fail-closed contract was unwired.",
+  "changed_files": [
+    "models/planform_bioelectric.py",
+    "tests/test_planform_damaged_negatives.py"
+  ],
+  "evidence": [
+    "datasets/planform/damaged/manifest.json lists five files with expected_error_code E_FREQ_SUM, E_NOTICE_MISSING, E_UNKNOWN_MORPHOLOGY, E_SHA_MISMATCH, E_UNKNOWN_MECHANISM_CLASS",
+    "models/planform_bioelectric.py check_damaged_negative_item / check_all_damaged_negatives centralize manifest checks used by self_test and pytest",
+    "python3 models/planform_bioelectric.py --self-test exit 0 with all five damaged ok lines",
+    "python3 -m pytest tests/test_planform_damaged_negatives.py -q exit 0 (9 passed)"
+  ],
+  "validation": [
+    {
+      "name": "Planform model self-test",
+      "argv": ["python3", "models/planform_bioelectric.py", "--self-test"],
+      "exit_code": 0,
+      "output_summary": "[planform_bioelectric] self-test PASSED; five damaged negatives ok; regeneration skipped (no pinned DB)"
+    },
+    {
+      "name": "Planform damaged-negative pytest gate",
+      "argv": ["python3", "-m", "pytest", "tests/test_planform_damaged_negatives.py", "-q"],
+      "exit_code": 0,
+      "output_summary": "9 passed in 0.04s"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
