@@ -1,0 +1,319 @@
+{
+  "scout": "scout-055",
+  "ground": "lean",
+  "lens": "vision",
+  "candidates": [
+    {
+      "id": "LEAN-CV-MITCHISON-ANGLE",
+      "title": "Mitchison canalization: Lean-verified hex solver vs cleared-leaf secondary-vein orientation",
+      "gap": "Pass 3 audit (`morphoeval/kg/2026-10-19-auxin-canalization-leaf-veins-audit-v3/REPORT.md`) records machine-checked Laws 4/4b in `Loop_034_auxin_canalization_leaf_veins.lean` while the solved growing-lamina network yields secondary strand angles 26.8±14.2° vs the segmented specimen 52.9° and β₁=0 closed loops vs 1843 areoles; yet `morphoeval/runs/aristotelian_categories_index.json` still marks slot #034 `passes_image_threshold: true` with `cv_sim_similarity: 88.9`, so the Math-KG Lean contract is not gated by an independent specimen-orientation test.",
+      "done": "After pre-registering ROI bounds matching `1997-mitchison-canalization-auxin-flux.py` segment_leaf_venation_specimen, run `verify_image_fitness.py` and require: (1) for slot 34, specimen `structure_tensor_coherency` ≥ 0.40 on `datasets/auxin_canalization_leaf_veins/leaf_venation_canalization_specimen.jpg`; (2) the absolute difference between specimen dominant-orientation bin (0–180° from the same structure tensor) and the simulation GIF orientation bin exceeds 15° OR `cv_sim_similarity` is recomputed below 58 when orientation is included in the feature vector—either outcome closes the gap as pass or documented false pass.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py && python3 -c \"import json; from pathlib import Path; e=[x for x in json.loads(Path('morphoeval/runs/aristotelian_categories_index.json').read_text()) if x.get('slot')==34][0]; print(e['cv_signature'], e['cv_sim_similarity'])\"",
+      "deciding_data": "In repo: `datasets/auxin_canalization_leaf_veins/leaf_venation_canalization_specimen.jpg`, `docs/media/auxin_canalization_leaf_veins_growth.gif`, `morphoeval/math_kg_loops/mitchison-canalization-auxin-flux.yaml`, audit v3 REPORT.",
+      "prior_attempts": "Pass 3 builder closed the hex lattice solver and added Lean theorems; Fable audit v3 scored strand-angle failure but did not run verify_image_fitness as an independent orientation gate. Not listed in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "verify_image_fitness already emits coherency and cv_sim for slot 34; orientation bins are derivable from the same structure-tensor code path without editing tracked files."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Pinned cleared-leaf specimen and growth GIF are vendored under datasets/ and docs/media/."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "15° orientation delta and coherency floor are numeric thresholds checkable from JSON output."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Full index verifier run is batch but completes on the cloud stack in well under an hour."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Verdict is a read-only audit report in new files under morphoeval/runs/ or problem_scouts/."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One verifier invocation plus jq filter yields slot-34 fields in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior record refutes using verify_image_fitness orientation as a Lean–specimen gate for Mitchison."
+        }
+      }
+    },
+    {
+      "id": "LEAN-CV-NAKAMASU-MODE",
+      "title": "Nakamasu stripe insertion: link Lean Theorem 4 mode band to specimen periodicity",
+      "gap": "`Loop_007_zebrafish_three_cell_stripes.lean` Theorem 4 (`nakamasu_growing_domain_stripe_insertion`) proves discrete Neumann modes n∈[7,15] on an adult flank L=9.2 but the Math-KG YAML has no empirical bridge from `mode_in_turing_band` to the segmented specimen inter-stripe spacing (23.67 px, N=4 dark stripes, coherency/anisotropy in audit v3); verify_image_fitness stores only normalized `wavelength_norm` (0.5) and coherency 0.683 for slot #007 without checking consistency with λ_c=1.8423 model units.",
+      "done": "Pre-register flank ROI [220,125,460,265] from audit v2. Pass if `compute_specimen_cv_signature` on full-res `datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg` yields `coherency ≥ 0.65` AND inferred stripe count from radial-FFT peak spacing is 4±1 AND `dominant_wavelength_px` is within 30% of 23.67; fail if any condition fails (documenting Lean–biology disconnect).",
+      "tool_route": "python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; from pathlib import Path; print(compute_specimen_cv_signature(Path('datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg')))\" && python3 morphoeval/verify_image_fitness.py (filter slot 7 from morphoeval/runs/aristotelian_categories_index.json).",
+      "deciding_data": "In repo: danio_rerio_specimen.jpg, zebrafish_three_cell_stripes_reference.json, Loop_007 lean + nakamasu-zebrafish-three-cell-stripes.yaml.",
+      "prior_attempts": "Pass 3 hybrid iridophore loop added Lean Theorems 5–6 and specimen segmentation in the model script; audit v3 notes dilution theorem only at r=0.1—no verify_image_fitness cross-check to Theorem 4.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Specimen CV signature and index enrichment are native to verify_image_fitness; stripe count needs a one-off FFT read of existing outputs."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All images, reference JSON, and Lean loci are already in the repository."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Count 4±1, wavelength ±30%, and coherency floor are automatic checks."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Single-specimen signature is seconds; full verifier optional."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Analysis writes only new scout/resolution JSON."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Specimen signature plus index row for slot 7 suffices in one loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No open-problems entry refutes this CV–Lean linkage route."
+        }
+      }
+    },
+    {
+      "id": "LEAN-CV-EXPANSION-TEMPLATE",
+      "title": "Expansion-slot Math-KG: trivial Lean theorems vs verify_image_fitness template-wave tier",
+      "gap": "Slots #0101–#1100 carry 0-sorry Lean loops that are often tautologies (e.g. `Loop_1498_sinosauropteryx_prima_flux_canalization.lean` `law2_exact_cancellation`: p+q-q=p) while `verify_image_fitness.py` labels them `expansion_template` with synthetic cv_sim or, for multiscale fossils, `multiscale_verified` with inflated scores; there is no batch test that placeholder Lean maps predict suppressed image fitness (<70 or cv_sim<58) on held specimen photos.",
+      "done": "Run verify_image_fitness and produce a table: for every entry with `audit_tier==expansion_template`, assert `passes_image_threshold==false` AND `cv_sim_similarity<58`; for a pre-registered sample of 20 expansion slots, assert Lean locus contains `law2_exact_cancellation` or equivalent tautology iff image_fitness_status contains 'Template Wave Un-fitted'. Report any counterexample row.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py && python3 -c \"import json; from pathlib import Path; rows=[e for e in json.loads(Path('morphoeval/runs/aristotelian_categories_index.json').read_text()) if e.get('audit_tier')=='expansion_template']; print(len(rows), sum(1 for r in rows if not r.get('passes_image_threshold')))\"",
+      "deciding_data": "In repo: morphoeval/lean/loops/Loop_1498_*.lean, morphoeval/math_kg_loops/zhang-sinosauropteryx-prima-flux-canalization.yaml, aristotelian_categories_index.json post-run.",
+      "prior_attempts": "verify_image_fitness author documented expansion_template tier in script header; no fleet-wide Lean–CV correlation audit yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "verify_image_fitness defines the expansion_template tier and cv_sim gate exactly for this question."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Index and ~1000 expansion loops/YAMLs are in-repo; no external fetch."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Boolean tier flags and cv_sim<58 are machine-checkable on every row."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Full 1116-model verifier pass is heavy but feasible in hours on the cloud VM."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Output is a new JSON/CSV report only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Full index pass may exceed one sitting unless subsampled."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route is diagnostic, not previously refuted."
+        }
+      }
+    },
+    {
+      "id": "LEAN-CV-POMACANTHUS-N0",
+      "title": "Kondo Pomacanthus Theorem 3 (N₀=3 cascade) vs juvenile specimen primary stripe count",
+      "gap": "Lean Theorem 3 in `Loop_004_pomacanthus_stripe_insertion.lean` fixes juvenile `semicirculatus_stripes 3 1 = 3` but Pass 2 audit remediation still lists open curvilinear-body work; there is no verify_image_fitness check that CV periodicity on `pomacanthus_semicirculatus_specimen.jpg` detects three primary flank bands (script segmentation reports many mid-trough spacings, n=105).",
+      "done": "On the vendored juvenile specimen, `compute_specimen_cv_signature` plus radial-FFT peak counting in the flank ROI used by `segment_pomacanthus_specimen` must yield primary band count 3±1; otherwise record Lean Theorem 3 as biologically unsupported at the photograph scale.",
+      "tool_route": "python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; from pathlib import Path; print(compute_specimen_cv_signature(Path('datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg')))\" && python3 morphoeval/verify_image_fitness.py (slot 4 / kondo-pomacanthus-stripe-insertion entry).",
+      "deciding_data": "In repo: pomacanthus_semicirculatus_specimen.jpg, Loop_004, kondo-pomacanthus-stripe-insertion.yaml, pass 2 audit REPORT.",
+      "prior_attempts": "Pass 2 closed script-level CV segmentation (91 specimen-match); curvilinear remediation remains open—CV stripe-count gate not done via verify_image_fitness.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "verify_image_fitness gives wavelength/coherency but not DoG bandpass peak count; model script segmentation is richer—vision lens partially fits."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Specimen and Lean files are vendored."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Primary band count 3±1 is checkable though ROI must be pre-registered to match script."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Minutes per specimen."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New report file only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "May need ROI harmonization between verifier resize (160×120) and script ROI."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Distinct from closed Pass 2 script audit route."
+        }
+      }
+    },
+    {
+      "id": "LEAN-CV-YAP-SOMITE",
+      "title": "Hubaud YAP segmentation clock: Lean FHN laws vs mouse PSM somite wavelength in specimen photo",
+      "gap": "`Loop_027_yap_excitable_segmentation.lean` machine-checks FitzHugh–Nagumo nullcline/Hopf algebra but not somite spacing; Pass 3 audit ties simulated spacing 101.7 µm to Cooke–Zeeman while `datasets/yap_excitable_segmentation/mouse_psm_somites_specimen.jpg` is not cross-walked through verify_image_fitness periodicity metrics.",
+      "done": "Pre-register pixel–micron scale from yap_excitable_segmentation_reference.json. Pass if verify_image_fitness specimen `dominant_wavelength_px` converted to µm is within 25% of 101.7 and slot #27 `cv_sim_similarity ≥ 58`; fail otherwise.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py && python3 -c \"import json; from pathlib import Path; e=[x for x in json.loads(Path('morphoeval/runs/aristotelian_categories_index.json').read_text()) if x.get('slot')==27][0]; print(e.get('cv_signature'), e.get('cv_sim_similarity'))\"",
+      "deciding_data": "In repo: mouse_psm_somites_specimen.jpg, reference JSON, Loop_027, hubaud-yap math_kg yaml.",
+      "prior_attempts": "Pass 3 yap loop closed FGF–clock coupling; no Lean theorem for specimen wavelength—CV bridge unused.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "verify_image_fitness exports wavelength_norm and cv_sim for slot 27; micron calibration uses existing reference JSON."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Specimen and metadata in repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "25% wavelength tolerance and cv_sim floor are numeric."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Standard verifier runtime."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only scoring artifact."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single-slot extraction after verifier run."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not refuted in open-problems.json."
+        }
+      }
+    },
+    {
+      "id": "ZF-VTX-01-CV",
+      "title": "ZF-VTX-01: Lean-cited p₀*=3.813 vs epithelial shape index from images (not whole-fish photos)",
+      "gap": "`morphoeval/math_kg_loops/nakamasu-danio-rerio-vertex-packing.yaml` and `Loop_0531_danio_rerio_vertex_packing.lean` cite jamming p₀*=3.813 but theorems are placeholder positivity/cancellation; `docs/open-problems.json` registered follow-up ZF-VTX-01 asks for EVL/epiboly shape-index series—verify_image_fitness on species_gallery whole-fish JPEGs cannot measure cell shape index, so the Lean KG claim lacks a vision-decidable specimen route.",
+      "done": "Either (A) with a named public epiboly micrograph URL pre-registered in predictions/resolutions/zebrafish.json, verify_image_fitness `compute_specimen_cv_signature` on that download shows coherency spike when shape index crosses 3.76–3.87, or (B) document failure: whole-body danio rerio gallery images cannot yield shape index and Lean loop 0531 remains non-falsifiable by vision.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (negative control on datasets/species_gallery/I_Enaima_Vertebrata/Danio_rerio.jpg); for (A) add fetch step then compute_specimen_cv_signature on saved path.",
+      "deciding_data": "Partially in repo (Loop_0531, yaml); missing epiboly time series per ZF-VTX-01—public zebrafish epiboly stills (e.g. published EVL figures) named in prediction registry.",
+      "prior_attempts": "Leaderboard seeds ZF-VTX-01 at 82/100 resolvability for measure/vision fleet; no hash-locked CV attempt recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 12,
+          "why": "Vision lens fits published epithelial micrographs but not current species_gallery whole-fish assets."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Deciding epiboly series not tabulated in repo; one public fetch away."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Shape-index band 3.76–3.87 is explicit in registry text."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "CV on downloaded stills is lightweight once fetched."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New resolution JSON under predictions/resolutions/."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Depends on sourcing and pre-registering the micrograph series."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Registry explicitly lists missing data; route not refuted."
+        }
+      }
+    },
+    {
+      "id": "OP-11-CV-NEG",
+      "title": "Holstein coat Turing: Lean dispersion math vs specimen patch-scale CV (negative mechanism check)",
+      "gap": "OP-11 in docs/open-problems.json records a tested-negative Turing verdict with coat-masked morphometrics; Lean in the Murray/bos-taurus loop proves linear Turing band algebra, but verify_image_fitness was not used as an independent patch-scale wavelength test on held Holstein specimens.",
+      "done": "On the 10 pinned coat-masked specimens in datasets/bos_taurus_turing_wavelength/, verify_image_fitness `dominant_wavelength_px` distribution must imply patch count far below Turing field prediction (~125 spots at λ_c=10.26 px per audit v7)—e.g. median dominant wavelength at least 2× larger than Turing λ_c OR cv_sim between simulation GIF and any specimen <58, confirming negative visual fit without re-opening mechanism claims.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (read slot for bos_taurus_turing_wavelength from index) && batch compute_specimen_cv_signature on datasets/bos_taurus_turing_wavelength/*specimen*.jpg",
+      "deciding_data": "In repo: bos_taurus dataset, audit v7 REPORT, open-problems OP-11 status refuted for Turing mechanism.",
+      "prior_attempts": "OP-11 refuted for RD/Eden mechanism equivalence; blinded Fable re-scores predated Pass 8 pipeline—using verify_image_fitness as independent CV negative check is not blocked but must not re-propose RD victory.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "verify_image_fitness dominant_wavelength and cv_sim directly address patch-scale visual mismatch."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Ten pinned specimens and audit constants in repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Ratio tests against documented λ_c=10.26 px and cv_sim<58 are numeric."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Batch CV on 10 images plus index lookup is quick."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Commentary-only resolution file; does not edit models."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One batch pass suffices."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "OP-11 mechanism route refuted; CV negative corroboration only—must not contradict published verdict."
+        }
+      }
+    },
+    {
+      "id": "LEAN-CV-LEVIN-YT",
+      "title": "Levin YouTube channel math synthesis: 0-sorry Lean without any specimen photograph",
+      "gap": "Loop_levin_youtube_channel_math.lean compiles with 0 sorry but audit v3 scores specimen-match 24/100 because no biological image is loaded; Math-KG yaml still lists T2-validated laws—vision lens cannot decide any claim.",
+      "done": "N/A for vision—document that verify_image_fitness has no specimen_rel for levin-youtube-channel-math and tool_fit≈0; closure requires simulation or measure lens wiring a published figure (Cervera 2020, Chvykov 2021, etc.) per audit remediation.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (confirm absence of index entry specimen) — use morphoeval/measure_outputs.py or model integration for any future test.",
+      "deciding_data": "In repo: Loop_levin_youtube_channel_math.lean, levin-youtube-channel-math.yaml, audit v3 REPORT; no specimen asset.",
+      "prior_attempts": "Pass 3.2 raised score to 63.5 but left specimen-match unchanged; v2 25-law rewrite previously refuted self-referential metrics.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "verify_image_fitness requires a specimen image; synthesis module has none—simulation/measure lens required."
+        },
+        "data_in_hand": {
+          "score": 4,
+          "why": "Only metadata catalog in repo, not quantitative specimen photographs."
+        },
+        "falsifiable_done": {
+          "score": 8,
+          "why": "Absence of specimen in index is checkable but does not validate biology."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Trivial index grep."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Documentation-only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Immediate negative result for vision lens."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Prior audits refuted self-score routes; figure-overlay path not yet attempted."
+        }
+      }
+    }
+  ]
+}
