@@ -1,0 +1,57 @@
+sim_id: delphi10000-brassica-oleracea-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 0.000172
+log10_size_m: -3.764
+size_human: 172 µm
+scale_tier: 5_primordium_100um
+anatomical_structure: Turing spot / primordium wavelength in Brassica oleracea
+  (Holocene extant, detail variant of the 100 µm primordium tier)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: ""
+chronoseries: "1/1"
+model_spec:
+  model: Schnakenberg 1979 kinetics with Turing 1952 wavenumber selection
+  a: 0.10
+  b: 0.90
+  Du: 0.50
+  Dv: 51.75227218593412
+  lambda_um: 172.0
+  grid_hw: [234, 312]
+  steps: 640
+  dt: 0.04
+  seed: 3137
+  inputs:
+    - datasets/brassica_oleracea_turing_wavelength_s0/brassica_oleracea_turing_wavelength_s0_specimen.jpg
+    - datasets/brassica_oleracea_turing_wavelength_s0/brassica_oleracea_turing_wavelength_s0_reference.json
+    - datasets/brassica_oleracea_turing_wavelength_s0/paper_citations.bib
+    - datasets/brassica_oleracea_turing_wavelength_s0/scout_manifest.json
+    - datasets/brassica_oleracea_turing_wavelength_s0/README.md
+equations:
+  - law_name: Turing dispersion growth rate
+    formula: sigma(k) = 1/2 (tr + sqrt(tr^2 - 4 det)); tr = f_u + g_v - k^2 (D_u + D_v); det = (f_u g_v - f_v g_u) - k^2 (D_v f_u + D_u g_v) + D_u D_v k^4
+    lean_decl: MathOfBiology.Loop_3137.detail_patch_holds_24_waves
+    lean_theorem: MathOfBiology.Loop_3137.detail_patch_holds_24_waves
+    lean_locus: morphoeval/lean/loops/Loop_3137_brassica_oleracea_turing_wavelength_s0.lean#L17-L19
+    variables: k, D_u, D_v, Jacobian entries at the Schnakenberg steady state
+    role: Selected wavenumber at 172 µm on a 4128 µm patch (24 waves)
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py#L112-L130
+  - law_name: Nominal-tier versus detail-variant peak count
+    formula: N = floor(4128 µm / lambda); N(100 µm) = 41 > N(172 µm) = 24
+    lean_decl: MathOfBiology.Loop_3137.nominal_tier_packs_more_peaks
+    lean_theorem: MathOfBiology.Loop_3137.nominal_tier_packs_more_peaks
+    lean_locus: morphoeval/lean/loops/Loop_3137_brassica_oleracea_turing_wavelength_s0.lean#L22-L24
+    variables: patch length 4128 µm, lambda_detail 172 µm, lambda_nominal 100 µm
+    role: What changes relative to the nominal primordium tier (same chronospecies, coarser scale)
+    source_citation: Slot scale definition; wavelength law as in Turing 1952
+    code_locus: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py#L77-L86
+  - law_name: Cell-scale successor is outside the selected wave
+    formula: lambda_detail / lambda_cell = 172/15 = 11; sigma(k_15µm) < 0
+    lean_decl: MathOfBiology.Loop_3137.cell_successor_is_not_the_selected_wave
+    lean_theorem: MathOfBiology.Loop_3137.cell_successor_is_not_the_selected_wave
+    lean_locus: morphoeval/lean/loops/Loop_3137_brassica_oleracea_turing_wavelength_s0.lean#L27-L29
+    variables: lambda_cell = 15 µm
+    role: Successor scale on the same extant body is stable under the 172 µm diffusivities
+    source_citation: Turing 1952 dispersion; cell length is the tier boundary used by this slot, not a new empirical fit
+    code_locus: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py#L146-L149

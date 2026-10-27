@@ -1,0 +1,99 @@
+{
+  "slot": 3137,
+  "sim_id": "delphi10000-brassica-oleracea-turing-wavelength-s0",
+  "organism": "Brassica oleracea",
+  "common_name": "Romanesco cauliflower",
+  "variety": "botrytis (Romanesco curd)",
+  "lineage": "",
+  "chronoseries": "1/1",
+  "geological_age_ma": 0.0,
+  "geological_period": "Holocene (Extant)",
+  "scale_m": 0.000172,
+  "scale_um": 172.0,
+  "log10_size_m": -3.764,
+  "scale_tier": "5_primordium_100um",
+  "scale_variant": "detail",
+  "cohort": "1. Chemical Turing / RD",
+  "form": "Stripes, Spots & Ocelli",
+  "quantitative_law": "Turing wavenumber k_c",
+  "script": "models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py",
+  "lean": "morphoeval/lean/loops/Loop_3137_brassica_oleracea_turing_wavelength_s0.lean",
+  "equations": {
+    "kinetics": "du/dt = a - u + u^2 v + Du lap u; dv/dt = b - u^2 v + Dv lap v",
+    "steady_state": "u0 = a + b; v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u0 v0; f_v = u0^2; g_u = -2 u0 v0; g_v = -u0^2",
+    "dispersion": "sigma(k) = 0.5 * (tr + sqrt(tr^2 - 4 det)); tr = f_u + g_v - k^2 (Du + Dv); det = (f_u g_v - f_v g_u) - k^2 (Dv f_u + Du g_v) + Du Dv k^4",
+    "selected_wavenumber": "k_c = argmax sigma(k); lambda = 2 pi / k_c"
+  },
+  "parameters": {
+    "a": 0.10,
+    "b": 0.90,
+    "Du": 0.50,
+    "Dv": 51.75227218593412,
+    "lambda_px": 13.0,
+    "dx_um": 13.23076923076923,
+    "grid": [234, 312],
+    "n_waves": 24,
+    "patch_um": 4128.0,
+    "steps": 640,
+    "dt": 0.04,
+    "seed": 3137,
+    "nominal_tier_um": 100.0,
+    "cell_successor_um": 15.0
+  },
+  "scale_contrast": {
+    "detail_172_um_sigma": 0.55124,
+    "nominal_100_um_sigma": 0.40603,
+    "cell_15_um_sigma": -14.55853,
+    "peaks_on_4128_um_patch_at_172": 24,
+    "peaks_on_4128_um_patch_at_100": 41,
+    "cells_per_selected_wave": 11
+  },
+  "empirical_results_this_run": {
+    "modal_pearson_r": 0.9999999522,
+    "modal_rmse": 0.00359944,
+    "modal_ks": 0.16666667,
+    "nonlinear_sweep_pearson_r": 0.82658472,
+    "full_field_wavelength_um": 166.44022,
+    "cv_sim_similarity": 88.4,
+    "ablation_std": 0.00050789,
+    "pattern_std": 1.58578398,
+    "specimen_circularity": 0.58305904,
+    "specimen_foreground_fraction": 0.39892883
+  },
+  "specimen": {
+    "filename": "brassica_oleracea_turing_wavelength_s0_specimen.jpg",
+    "sha256": "7306e7e95f1cbeccb6d0c1fbc7e9e210033186b5eecce65421c0ce867b4f03cd",
+    "width": 1280,
+    "height": 1024,
+    "source": "datasets/species_gallery/III_Phyta_Embryophyta/Brassica_oleracea.jpg",
+    "upstream_file": "File:Romanesco broccoli (Brassica oleracea).jpg",
+    "upstream_url": "https://commons.wikimedia.org/wiki/File:Romanesco_broccoli_(Brassica_oleracea).jpg",
+    "license": "CC BY-SA 4.0",
+    "author": "Ivar Leidus",
+    "note": "Gallery copy used as the canonical specimen. The file is a macro curd, not a 172 µm micrograph. SHA-256 differs from datasets/roman_esco_fractal_inflorescence/romanesco_brassica_oleracea_specimen.jpg."
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing 1952 dispersion relation for two reacting and diffusing morphogens",
+      "Schnakenberg 1979 two-species reaction with a quadratic autocatalytic term",
+      "Azpeitia et al. 2021: Romanesco cones arise when a floral identity network reiterates with an accelerating plastochron",
+      "Duclos and Björkman 2008: Brassica oleracea curds are proliferating inflorescence meristems"
+    ],
+    "reconstructed_in_script": [
+      "Jacobian and sigma(k) for a=0.10, b=0.90",
+      "Dv chosen so the fastest mode is 172 µm on a 4128 µm patch",
+      "Modal growth-rate goodness of fit, equal-diffusion ablation, Dv sweep, excess-green segmentation of the gallery photograph"
+    ],
+    "transfer_boundary": [
+      "172 µm is the MorphoEval detail-tier length for this slot, not a spacing printed by Azpeitia or Duclos",
+      "Spot peaks are a phenomenological stand-in for primordium initials, not a measured Brassica morphogen pair",
+      "Image fitness compares the animated field to a macro photograph"
+    ],
+    "does_not_claim": [
+      "That Romanesco pigment ocelli were fitted chemically to Schnakenberg parameters",
+      "That the studio photograph resolves 172 µm",
+      "That this mechanism replaces the Azpeitia floral-network account"
+    ]
+  }
+}
