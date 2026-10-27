@@ -1,0 +1,280 @@
+{
+  "scout": "scout-022",
+  "ground": "wavevector",
+  "lens": "measure",
+  "candidates": [
+    {
+      "id": "WV-022-01",
+      "title": "Xenopus Ca2+ wave-vector slot: add MorphoEval morphometric-validation sidecar",
+      "gap": "The Math-KG claim morphoeval-xenopus-ca2-wave-vectors (species registry p2≈91, upstream wave-vector-analysis/) has docs/media/xenopus_ca2_wave_vectors_growth.gif and committed hypothesis plots under wave-vector-analysis/analysis_results/, but no morphoeval/audits/*xenopus*ca2* audit YAML and therefore no *.measurements.yaml from measure_outputs.py; verify_image_fitness.py still tiers the slot as expansion_template (template wave not pixel-fitted to the specimen).",
+      "done": "A new audit lists those rendered outputs as evidence; running `python3 morphoeval/measure_outputs.py <audit>.yaml` writes `<audit>.measurements.yaml` with non-empty `outputs` sha256 entries for the growth GIF and at least three hypothesis PNGs, plus ≥3 numeric `measurements` rows carrying explicit `reference_value` fields (not self-referential), and `missing` is empty for every cited path.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/<new-xenopus-ca2-wave-vectors-audit>.yaml  # audit simulations[].output / evidence[].file -> wave-vector-analysis/analysis_results/hypothesis1_activity.png, docs/media/xenopus_ca2_wave_vectors_growth.gif, etc.",
+      "deciding_data": "In repo: docs/media/xenopus_ca2_wave_vectors_growth.gif, wave-vector-analysis/analysis_results/hypothesis*.png (10 files), wave-vector-analysis/literature_benchmarks.py (LITERATURE_BENCHMARKS reference bands). Not in repo: full spark_tracks.csv / raw TIFF stacks (see README datasets/frog_embryo_data_processed/ masks-only).",
+      "prior_attempts": "No morphoeval audit under morphoeval/audits/ names xenopus-ca2 or ca2-wave (grep 2026-10-27). verify_image_fitness.py documents unfitted expansion_template status for xenopus-ca2-wave-vectors. Related Xenopus tropicalis clock/Turing slots already have v2 audits with .measurements.yaml (2026-10-19-xenopus-tropicalis-*).",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "measure_outputs.py is the repo’s standard post-audit morphometric sidecar generator (fingerprints + reference-backed measurements)."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Committed GIF/PNG evidence exists; literature reference table is vendored in literature_benchmarks.py."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Sidecar file either exists with sha256+reference_value rows or does not; no subjective rubric."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Single measure_outputs pass over PNG/GIF artifacts completes in minutes on the cloud VM stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as new audit YAML + generated .measurements.yaml only (parallel-agent safe)."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One audit authoring loop plus one measure_outputs invocation."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded attempt refuted this specific sidecar route for the Ca2+ wave-vector slot."
+        }
+      }
+    },
+    {
+      "id": "WV-022-02",
+      "title": "Signaling animation GIFs: detect frozen-pattern failure (Turing-audit parity test)",
+      "gap": "wave-vector-analysis/analysis_results/signaling_animation.gif and signaling_animation_aligned.gif are primary communication artifacts, but unlike the Turing flagship they have never been scored with the deterministic 'fraction of pattern pixels changed, first→last frame' XOR test that flagged frozen GIFs in morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml (value 0.0, reference '>0 for an evolving simulation').",
+      "done": "An audit cites both GIFs; measure_outputs (or the same XOR-on-frames logic used in measure_turing) reports `fraction_changed` for each file; done passes iff both values are >0.05 OR the audit documents an explicit negative-control expectation of ≤0.05 with reference_value set accordingly.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/<wave-signaling-gif-audit>.yaml  # evidence files: wave-vector-analysis/analysis_results/signaling_animation.gif, signaling_animation_aligned.gif",
+      "deciding_data": "In repo: signaling_animation.gif (2.6 MB), signaling_animation_aligned.gif (1.6 MB), signaling_animation_test.gif. Reference procedure: morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml lines 48–54.",
+      "prior_attempts": "Turing morpho Pass 2 used this exact frozen-GIF detector; no equivalent measurement block exists for Ca2+ signaling GIFs (no matching *.measurements.yaml entries).",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "measure_outputs already implements multi-frame GIF fingerprinting and pattern-change metrics for audited simulations."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Both production GIFs are committed under analysis_results/."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Single scalar fraction_changed per GIF compared to a numeric threshold."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Pillow/scipy frame XOR on ~3 MB GIFs is seconds-scale."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit + sidecar only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "One measure_outputs run after audit stub."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of this GIF-evolution check for the wave pipeline."
+        }
+      }
+    },
+    {
+      "id": "WV-022-03",
+      "title": "Paper headline activity ratio (128,529×) vs recomputed spark_tracks metrics",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md and wave-vector-analysis/paper_findings.tex cite a post/pre activity ratio of 128,529× and peak activity 25,931 px² at 8237 s, but those numbers are not tied to a pinned CSV sha256 or to a morphoeval measurements sidecar; the only spark_tracks file in the public repo is the smoke subset wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv (~57k rows), not the 309k-row dataset the doc table describes.",
+      "done": "Audit embeds measurements recomputed from a named spark_tracks CSV (subset at minimum) for post/pre total area ratio and peak area time; measure_outputs sidecar reports relative error |recomputed−documented|/documented ≤0.01 for ratio OR explicitly records FAIL with both values, closing whether the headline survives the vendored subset.",
+      "tool_route": "python3 wave-vector-analysis/analyze_experimental_hypotheses.py <tracks.csv> --clusters-csv <clusters.csv>  # derive metrics; encode as audit measurements; then python3 morphoeval/measure_outputs.py morphoeval/audits/<hypothesis-claim-audit>.yaml",
+      "deciding_data": "In repo: EXPERIMENTAL_HYPOTHESES.md (128,529× claim), spark_tracks_subset.csv, committed hypothesis PNGs. Missing for full claim: root spark_tracks.csv / vector_clusters.csv at paper scale (not committed).",
+      "prior_attempts": "thompson/thompson_1917_claims.json notes embryo-blind/ and wave-vector-analysis/ are unrelated to Thompson cleavage tests; no MorphoEval measurement pass on the 128,529× figure.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Closure path is re-derive numbers then freeze them in an audit sidecar via measure_outputs."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Subset CSV exists but may not reproduce paper-scale headline; full tracks absent from repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "1% relative error gate on ratio and on peak-area time is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Pandas aggregation on subset CSV is hour-scale at worst on cloud hardware."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit/measurements files only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One recompute + one measure_outputs pass; full dataset would extend wall time."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior sidecar attempted this reconciliation."
+        }
+      }
+    },
+    {
+      "id": "WV-022-04",
+      "title": "Literature μm/s speed bands: commit within_range verdicts to measurements YAML",
+      "gap": "wave-vector-analysis/literature_benchmarks.py and SPEED_COMPARISON.md define ten literature speed bands (μm/s) and a run_comparison() writer, but no committed analysis_results/literature_comparison.json and no morphoeval measurement rows with reference_value=min/max bands; pipeline speeds remain mostly px/s unless a sidecar records μm/s with within_range flags.",
+      "done": "For each benchmark id in LITERATURE_BENCHMARKS, the audit sidecar contains a measurement row with reference_value equal to the literature [min,max] band and measured value our_speed_um_s (or em/s equivalent); done when ≥5 scenarios have non-null measurements and each row’s within_range boolean is present and matches recomputation from the cited CSV.",
+      "tool_route": "python3 -c \"from wave_vector_analysis.literature_benchmarks import run_comparison\"  # or CLI module path: python3 wave-vector-analysis/literature_benchmarks.py <args per module __main__>; embed JSON output as audit measurements; python3 morphoeval/measure_outputs.py morphoeval/audits/<literature-speed-audit>.yaml",
+      "deciding_data": "In repo: literature_benchmarks.py (LITERATURE_BENCHMARKS table), embryo_units.py, spark_tracks_subset.csv (speed column). External: original figure digitization sources referenced in module docstring (μm/s ranges already embedded).",
+      "prior_attempts": "SPEED_COMPARISON.md (2026) documents the comparison protocol but no morphoeval audit v1/v2 chain references literature_comparison.json.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "measure_outputs validates reference_value-bearing speed rows once encoded in an audit."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Reference bands are in-repo; per-run μm/px calibration for subset may be incomplete without TIFF metadata."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Per-scenario within_range true/false against fixed numeric bands."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "CSV stats + JSON write is lightweight Python."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New comparison JSON + audit sidecar only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "May need per-video calibration pass before all ten benchmarks are scorable."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No refuted measurement route for literature bands."
+        }
+      }
+    },
+    {
+      "id": "WV-022-05",
+      "title": "Manual Excel head/tail vs parser: RMSE gate for geometry-trusted videos",
+      "gap": "wave-vector-analysis/analysis_results/head_tail_comparison.md shows only 8/67 manual/detected matched pairs with median head offset 665 px and tail offset 1474 px; docs/open-problems.json OP-07 flags orientation/geometry confounds for Xenopus neighbour blind tests, but there is no measure_outputs sidecar quantifying which videos pass a pre-registered RMSE_px threshold on detection_summary PNG overlays.",
+      "done": "Audit cites detection_summary PNGs plus compare_xy_coordinates.py output; sidecar lists head_rmse_px and tail_rmse_px per matched pair with reference_value = declared acceptance threshold T (e.g. 100 px); done when the set of videos with both RMSE < T is enumerated and sha256-pinned (empty set is a valid negative result).",
+      "tool_route": "pip install openpyxl  # if Excel available locally; python3 wave-vector-analysis/compare_xy_coordinates.py /path/to/XY\\ coordinates.xlsx spark_tracks.csv --output-json morphoeval/scratch/head_tail_compare.json; python3 morphoeval/measure_outputs.py morphoeval/audits/<head-tail-rmse-audit>.yaml",
+      "deciding_data": "In repo: head_tail_comparison.md, wave-vector-analysis/analysis_results/detection_summary/detection_summary.md, detection PNGs under analysis_results/detection_summary_*/. Not in repo: Levin lab XY coordinates.xlsx (paths in DATA_SOURCES_AND_ASSUMPTIONS.md point to /Users/jdietz/Documents/Levin/Embryos/).",
+      "prior_attempts": "OP-07 (docs/open-problems.json) refuted headline neighbour-transfer blind test (LOOO AUC 0.484; orientation AUC 0.833); AGENTS.md COORDINATE_SYSTEM_WARNING notes Excel/TIFF frame mismatch risk.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "measure_outputs can pin overlay PNG hashes and RMSE rows once compare_xy produces numeric output."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Comparison markdown exists but primary Excel ground truth is outside the repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Thresholded RMSE_px per video is objective."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Requires openpyxl + optional external Excel fetch."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New JSON + audit sidecar; Excel path is operator-supplied."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Blocked until XY coordinates.xlsx is mounted at a known path."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "OP-07 refuted the blind headline but not this RMSE enumeration route; geometry confound remains open."
+        }
+      }
+    },
+    {
+      "id": "WV-022-06",
+      "title": "Zebrafish composition blind: pin outcome PNG hash and Z1–Z4 scalars in measurements sidecar",
+      "gap": "embryo-blind/zebrafish-blind/zebrafish_blind_results.json and .png record failed Z1–Z4 hypotheses (e.g. Z1 TVD 0.661 vs baselines 0.621/0.757), and a 2026-10-26 outcome nanopub references score_zebrafish_blind.py, but the preregistration markdown, sealed predictions, and scorer script are not in the public tree—only results artifacts remain without morphoeval/audits/*zebrafish-blind*.measurements.yaml.",
+      "done": "Audit cites zebrafish_blind_results.png and .json; measure_outputs sidecar sha256 matches committed bytes and includes four measurements (Z1 TVD primary, Z2 frac_within_factor2, Z3 emergent_mass, Z4 coverage) whose values equal the JSON fields within 1e-9; if scorer script is restored, recomputed metrics must match sidecar.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/<zebrafish-blind-outcome-audit>.yaml  # outputs: embryo-blind/zebrafish-blind/zebrafish_blind_results.png; measurements parsed from embryo-blind/zebrafish-blind/zebrafish_blind_results.json",
+      "deciding_data": "In repo: embryo-blind/zebrafish-blind/zebrafish_blind_results.{json,png,md}. Not in repo (referenced by nanopubs/zebrafish_blind_outcome_nanopub.py): ZEBRAFISH_BLIND_PREREGISTRATION.md, score_zebrafish_blind.py, sealed prediction files.",
+      "prior_attempts": "ZEBRAFISH_BLIND_RESULTS.md records hash-verified --unblind scoring (manifest commit 6bad19d); nanopub np_zebrafish-blind-test-outcome-2026-10-26 published. No measure_outputs sidecar yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "measure_outputs can fingerprint the results figure and echo JSON scalars as reference-backed measurements."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Outcome JSON/PNG committed; full rescoring inputs absent from repo snapshot."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Hash equality and numeric JSON equality are checkable; rescoring needs missing script."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Sidecar generation from static JSON is trivial."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit/measurements only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Immediate for hash/json pin; full rescoring blocked on missing prereg bundle."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Outcome already scored once; route is integrity pinning, not re-opening blind labels."
+        }
+      }
+    },
+    {
+      "id": "WV-022-07",
+      "title": "OP-07/OP-08 blind confounds: orientation/mirror AUC (NOT decidable by measure_outputs alone)",
+      "gap": "docs/open-problems.json OP-07 (refuted) reports neighbour-transfer LOOO AUC 0.484 vs orientation AUC 0.833; OP-08 (partial) reports exploratory HTHT mirror AUC 0.61–0.65 confounded with headward poke direction. The deciding evidence is hash-locked LOOO/Mirror AUC from preregistered feature matrices, but XENOPUS_BLIND_RESULTS.md, PIXEL_BLIND_RESULTS.md, and scorer scripts are not present in the public embryo-blind/ tree (only zebrafish-blind outcomes are vendored).",
+      "done": "N/A for this lens—would require registry/score_blind_predictions or wave-vector blind scorer outputs, not GIF/PNG remeasurement.",
+      "tool_route": "Wrong lens: use morphoeval/registry (prediction registry + hash-locked scorer) or wave-vector-analysis blind feature export; measure_outputs.py cannot compute LOOO AUC from artifacts absent in repo.",
+      "deciding_data": "Not in repo: embryo-blind Xenopus/pixel blind bundles cited in docs/open-problems.json sources. In repo: OP-07 status refuted, OP-08 partial (docs/open-problems.json).",
+      "prior_attempts": "OP-07 marked refuted after multi-agent panel (embryo-blind/README.md · XENOPUS_BLIND_RESULTS.md per open-problems). OP-08 exploratory mirror signal flagged confounded (PIXEL_BLIND_RESULTS.md · PIXEL_V2_BLIND_RESULTS.md). Re-proposing headline neighbour-transfer without geometry gate is blocked negative knowledge.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "LOOO/mirror AUC needs preregistered scorer, not morphometric remeasurement of plots."
+        },
+        "data_in_hand": {
+          "score": 2,
+          "why": "Primary blind artifacts and scripts are missing from the public checkout."
+        },
+        "falsifiable_done": {
+          "score": 10,
+          "why": "Hash-locked contract is objective once data exists."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "Scoring is cheap if sealed matrices were vendored."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Would require importing blind bundles as new files only."
+        },
+        "time_to_verdict": {
+          "score": 3,
+          "why": "Blocked on restoring prereg/scorer inputs."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "OP-07 exact headline route refuted; mirror v2 still needs OP-08 prereg separation, not remeasurement."
+        }
+      }
+    }
+  ]
+}
