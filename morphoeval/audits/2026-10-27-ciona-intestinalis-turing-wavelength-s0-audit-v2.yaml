@@ -1,0 +1,172 @@
+audit:
+  id: 2026-10-27-ciona-intestinalis-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-ciona-intestinalis-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-ciona-intestinalis-turing-wavelength-s0-audit
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 2)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 25e28a4514fe1c49bc401d10321c28551fd40114
+    environment:
+      python: "3.12.3"
+      note: "numpy, scipy, pillow, matplotlib. Signing skipped: ~/.nanopub/profile.yml is absent."
+    note: "Pass 2 closes R1–R3 from the pass-1 audit. Same solver commit; fitness JSON and measurement sidecar are the new records."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81(3):389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  abitua2012:
+    title: "Identification of a rudimentary neural crest in a non-vertebrate chordate"
+    authors: "Abitua PB, Wagner E, Navarrete IA, Levine M"
+    venue: "Nature 492:104-107 (2012)"
+    doi: 10.1038/nature11589
+    year: 2012
+  jeffery2004:
+    title: "Migratory neural crest-like cells form body pigmentation in a urochordate embryo"
+    authors: "Jeffery WR, Strickler AG, Yamamoto Y"
+    venue: "Nature 431:696-699 (2004)"
+    doi: 10.1038/nature02975
+    year: 2004
+  hotta2007:
+    title: "A web-based interactive developmental table for the ascidian Ciona intestinalis"
+    authors: "Hotta K, Mitsuhara K, Takahashi H, Inaba K, Oka K, Gojobori T, Ikeo K"
+    venue: "Developmental Dynamics 236(7):1790-1805 (2007)"
+    doi: 10.1002/dvdy.21188
+    year: 2007
+  hudson2016:
+    title: "The central nervous system of ascidian larvae"
+    authors: "Hudson C"
+    venue: "WIREs Developmental Biology 5(5):538-561 (2016)"
+    doi: 10.1002/wdev.239
+    year: 2016
+  kourakis2021:
+    title: "Disruption of left-right axis specification in Ciona induces molecular, cellular, and functional defects in asymmetric brain structures"
+    authors: "Kourakis MJ, Bostwick M, Zabriskie A, Smith WC"
+    venue: "BMC Biology 19:141 (2021)"
+    doi: 10.1186/s12915-021-01075-4
+    year: 2021
+  brunetti2015:
+    title: "Morphological evidence that the molecularly determined Ciona intestinalis type A and type B are different species"
+    authors: "Brunetti R, Gissi C, Pennati R, Caicci F, Gasparini F, Manni L"
+    venue: "Journal of Zoological Systematics and Evolutionary Research 53(3):186-193 (2015)"
+    doi: 10.1111/jzs.12101
+    year: 2015
+  gall2019:
+    title: "Invertebrate Zoology Division, Yale Peabody Museum"
+    authors: "Gall L"
+    venue: "Yale University Peabody Museum occurrence dataset (2019); specimen YPM IZ 082346 photographed by Eric A. Lazo-Wasem, CC0"
+    doi: 10.15468/0lkr3w
+    year: 2019
+    url: https://commons.wikimedia.org/wiki/File:Ciona_intestinalis_(YPM_IZ_082346).jpeg
+simulations:
+  - id: delphi10000-ciona-intestinalis-turing-wavelength-s0
+    name: "Ciona intestinalis Turing wavelength at 51 µm (5.056e-05 m), Holocene 0 Ma"
+    organism: "Ciona intestinalis"
+    script: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py
+    output: docs/media/ciona_intestinalis_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/ciona_intestinalis_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-ciona-intestinalis-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, abitua2012, jeffery2004, hotta2007, hudson2016, kourakis2021, brunetti2015, gall2019]
+    summary: >-
+      Pass 2. Same solver as pass 1. Closes R1–R3. CV similarity of the animated
+      GIF (12 frames, 560×779) against YPM IZ 082346 is 96.0, the cap of
+      verify_image_fitness.compute_sim_vs_specimen_cv_similarity. With specimen-match
+      88 and morphometric-validation 88, image_fitness = 0.55*96 + 0.30*88 + 0.15*88
+      = 92.4. Pearson r = 0.9994. Numerical wavelength 50.05 µm versus pin 50.56 µm.
+      Adult spacing 873 µm is recorded as a scale-transfer control. Equal-diffusion
+      and gamma=0 controls decay. No pass 3: every stated gate holds. Nanopub signing
+      was not performed because ~/.nanopub/profile.yml is missing.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) derived the diffusion-driven instability and the critical wavenumber. Schnakenberg (1979) gave the two-species kinetic scheme used here."
+        - "Ciona pigment cells are a neural-crest-like lineage (Abitua et al. 2012). The larval ocellus and otolith sit in the sensory vesicle (Hudson 2016; Kourakis et al. 2021; Hotta et al. 2007)."
+      reconstructed_in_script:
+        - "gamma is solved so lambda_c = 5.056e-05 m at Dv/Du = 10. The ratio sweep moves analytical lambda from 57.0 µm to 48.6 µm."
+        - "The GIF blend alpha is 0.50, the strongest weight that still ties the CV cap. The dispersion panel is limited to sigma in [-2, 1.2] so the unstable band is visible."
+      transfer_boundary:
+        - "Holocene chronoseries 1/1 has no temporal predecessor. Scale neighbours are a 1 µm melanosome and the adult body (measured length 34.0 mm)."
+        - "Adult pigment spacing 873 µm is not a measurement of the 51 µm law."
+      does_not_claim:
+        - "Does not claim the activator and inhibitor are identified Ciona molecules."
+        - "Does not claim the adult tunic pattern is a 51 µm Turing field."
+        - "Does not claim a signed nanopublication. The profile file is absent, so trusty URIs were not minted."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Pass 2 keeps the Schnakenberg spectral solver and the analytical gamma(lambda) map. The dispersion figure now shows sigma(k_c) positive (peak near 0.6 per time) and the equal-diffusion curve non-positive inside the same window. Integer Lean theorems cover trace, determinant, cross term, discriminant, and the equal-diffusion ablation."
+        evidence:
+          - {file: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py, lines: [98, 131], note: "gamma chosen from k_c and dispersion_sigma", supports: true}
+          - {file: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py, lines: [465, 520], note: "Unstable-band dispersion panel", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3148_ciona_intestinalis_turing_wavelength_s0.lean, lines: [34, 46], note: "cross term, discriminant, equal-diffusion ablation", supports: true}
+      specimen-match:
+        value: 88
+        rationale: "YPM IZ 082346 is the CC0 specimen in the comparison figure and the GIF target. Body mask circularity 0.248. Alpha sweep 0.12, 0.22, 0.35, 0.50 all score CV 96 (scorer cap); the lock is alpha 0.50 so the stripes remain in the blend. GIF is 12 frames at 560×779. image_fitness 92.4 uses this specimen-match score."
+        evidence:
+          - {file: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py, lines: [372, 444], note: "Paint-on-mask and alpha lock", supports: true}
+          - {file: docs/media/ciona_intestinalis_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, mask, stripes, overlay", supports: true}
+          - {file: docs/media/ciona_intestinalis_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "Animated growth, 12 frames", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Analytical wavelength decreases at every step of Dv/Du in {4, 6, 8, 10, 16, 24}. Ratio 10 hits 50.56 µm. Amplitude ratio rises from ~0 at ratio 4 (below the instability in the short window) to 2.95 at ratio 10 and 53 at ratio 24. Both ablations stay below 1."
+        evidence:
+          - {file: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py, lines: [252, 295], note: "Sweep and negative controls", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Pearson r = 0.99939 on log critical-mode amplitude versus time (gate is > 0.98; the value is not set equal to 0.98). Wavelength 50.05 µm versus pin 50.56 µm. KS = 0.434 versus 0. Body length 33.95 mm versus the 10 mm bar. Adult spacing 872.7 µm versus 50.56 µm. Sweep CV of lambda is 0.055 versus a flat-sweep null of 0. None of these pairs are self-copies."
+        evidence:
+          - {file: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py, lines: [204, 250], note: "Pearson r and radial wavelength", supports: true}
+          - {file: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py, lines: [571, 679], note: "measure_morphoeval rows with distinct references", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Nine resolvable DOIs, a SHA-256 of the vendored CC0 JPEG, Wikimedia file URL, and a scout manifest that records the failed slot-table lookup and the direct OpenAlex/Crossref/Commons queries. Sibling sim id munro-ciona-intestinalis-turing-wavelength is named as a different slot."
+        evidence:
+          - {file: datasets/ciona_intestinalis_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "Slot 3148 territory and uniqueness", supports: true}
+          - {file: datasets/ciona_intestinalis_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "Checked bibliographic entries", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "Docstring, gamma_for_wavelength, and the Lean module name the same k_c formula. Math KG yaml points at those loci. The scale sandwich theorem is the chronoseries statement: no temporal predecessor, and the detail patch sits between 1 µm and 10 mm."
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-ciona-intestinalis-turing-wavelength-s0.yaml, lines: [1, 40], note: "model_spec and wavenumber law", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3148_ciona_intestinalis_turing_wavelength_s0.lean, lines: [48, 61], note: "scale sandwich, chronoseries predecessor count, SI pin", supports: true}
+      repro-package:
+        value: 88
+        rationale: "--self-test passes (Pearson 0.994 on the short grid). Full run is deterministic at seed 3148. README states the 51 µm label, the 5.056e-05 m pin, and age 0 Ma. Fitness JSON is written by --write-fitness without touching the shared category index."
+        evidence:
+          - {file: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py, lines: [729, 807], note: "self-test and CLI", supports: true}
+          - {file: datasets/ciona_intestinalis_turing_wavelength_s0/README.md, lines: [1, 24], note: "How to run and what the scale means", supports: true}
+    remediation: []
+    needs:
+      - id: N1
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Image-fitness JSON written at pass 2 (image_fitness 92.4, CV 96, 12 frames, 560 px)."
+        status: resolved
+        novelty_n: 0.4
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Adult spacing 872.7 µm versus pin 50.56 µm is in the measurements sidecar."
+        status: resolved
+        novelty_n: 0.3
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
