@@ -1,0 +1,145 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "slot": 3170,
+  "sim_id": "delphi10000-diplomystus-dentatus-turing-wavelength-s0",
+  "organism": {
+    "scientific_name": "Diplomystus dentatus",
+    "common_name": "Green River Eocene Armored Herring Fossil",
+    "aristotelian_taxonomy": "I. Enaima (Vertebrata) -> Pisces (Ichthyes) -> Diplomystus",
+    "authority": "Cope, 1877"
+  },
+  "phenomenon_scale": {
+    "structure": "Turing pigment stripe / ocellus wavelength in Diplomystus dentatus",
+    "phenomenon_size_m": 0.0001843,
+    "phenomenon_size_um": 184.3,
+    "log10_size_m": -3.734,
+    "scale_tier": "5_primordium_100um",
+    "scale_variant": "detail",
+    "tier_index": "5/8"
+  },
+  "paleobiology": {
+    "geological_period": "Early Eocene (Ypresian, 51.5 Ma)",
+    "geological_age_ma": 51.5,
+    "fossil_lineage_group": "Actinopterygian Axial Fossil Series",
+    "chronoseries": "Diplomystus 1/1",
+    "chronospecies_index": "1/1",
+    "locality": "Fossil Butte Member, Green River Formation, Fossil Lake, Wyoming",
+    "age_note": "51.5 Ma is the catalogued Ypresian datum for this chronoseries. Smith, Carroll & Singer (2008, 10.1130/B26073.1) reconstruct the Eocene Green River lake system; this script does not re-date the beds."
+  },
+  "scale_contrast": {
+    "predecessor": {
+      "what": "chromatophore cell diameter, below this tier",
+      "length_um": 20.0,
+      "change": "20 \u00b5m < \u03bb_c/2 (92.15 \u00b5m), so a single chromatophore cannot host the unstable half-wave. The homogeneous state is the only admissible mode."
+    },
+    "this_scale": {
+      "length_um": 184.3,
+      "change": "Onset wavenumber k_c selected by the Schnakenberg Jacobian at D_v/D_u = 9.17. The flank expresses ocelli at \u03bb_c."
+    },
+    "successor": {
+      "what": "organ-tier wavelength, same chronospecies, sibling slot grande-diplomystus-dentatus-turing-wavelength",
+      "length_m": 0.00756,
+      "length_um": 7560.0,
+      "change": "\u03bb_organ/\u03bb_detail = 7560/184.3 > 41. The same kinetics would need diffusivities larger by that ratio squared (~1683\u00d7) to select 7.56 mm bars instead of 184.3 \u00b5m ocelli. Grande (1982) dorsal scutes, usually 22\u201336, sit at this coarser serial scale. There is no second Diplomystus chronospecies in the 1/1 series."
+    }
+  },
+  "governing_model": {
+    "kinetics": "Schnakenberg",
+    "equations": {
+      "activator": "du/dt = a - u + u^2 v + D_u laplacian(u)",
+      "inhibitor": "dv/dt = b - u^2 v + D_v laplacian(v)",
+      "fixed_point": "u* = a + b; v* = b / (a + b)^2",
+      "jacobian": "f_u = -1 + 2 b / u*; f_v = u*^2; g_u = -2 b / u*; g_v = -u*^2",
+      "wavenumber": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)",
+      "wavelength": "lambda_c = 2 pi / k_c"
+    },
+    "boundary_conditions": "No-flux (Neumann) on a rectangular interior flank patch. The dispersion self-test uses a periodic line so Fourier modes are eigenfunctions of the discrete Laplacian.",
+    "state_variables": [
+      "u activator (dimensionless)",
+      "v inhibitor (dimensionless)"
+    ],
+    "parameters": {
+      "a": 0.128,
+      "b": 0.764,
+      "diffusivity_ratio_Dv_over_Du": 9.17,
+      "lambda_c_m": 0.0001843,
+      "note": "a, b, and the ratio are specific to slot 3170. D_u is solved from the k_c formula so lambda_c equals 184.3 \u00b5m. They are not the 7.56 mm sibling parameters."
+    }
+  },
+  "empirical_claims": [
+    {
+      "id": "grande_scutes",
+      "source": "grande1982",
+      "claim": "Diplomystus dentatus is the type species; dorsal scutes usually number 22-36; maximum total length about 65 cm; Fossil Butte Member, late Early Eocene, freshwater.",
+      "used_as": "Organ-scale serial anatomy and locality. Not a measurement of the 184.3 \u00b5m wave."
+    },
+    {
+      "id": "grande_clupeomorph",
+      "source": "grande1982",
+      "claim": "Diplomystus is an ellimmichthyid, sister to Clupeiformes; Knightia is the Green River clupeoid removed from Diplomystus.",
+      "used_as": "Taxonomic placement in the actinopterygian series."
+    },
+    {
+      "id": "turing_kc",
+      "source": "turing1952",
+      "claim": "A two-species reaction-diffusion system can be stable without diffusion and unstable at a finite wavenumber k_c.",
+      "used_as": "Governing law."
+    },
+    {
+      "id": "schnakenberg_kinetics",
+      "source": "schnakenberg1979",
+      "claim": "The cubic activator-inhibitor system du/dt = a - u + u^2 v, dv/dt = b - u^2 v.",
+      "used_as": "Kinetics. Rates were not measured on Diplomystus tissue."
+    },
+    {
+      "id": "kondo_fish_skin",
+      "source": "kondo1995",
+      "claim": "Pomacanthus skin stripes behave as a reaction-diffusion wave.",
+      "used_as": "Empirical precedent that teleost integument selects a Turing wavelength. Not a Diplomystus measurement."
+    },
+    {
+      "id": "nakamasu_pigment",
+      "source": "nakamasu2009",
+      "claim": "Zebrafish melanophore-xanthophore interactions generate Turing patterns.",
+      "used_as": "Cell-interaction precedent for a pigment wavelength. Transferred, not fitted to fossil pixels."
+    },
+    {
+      "id": "murray_domain",
+      "source": "murray1981",
+      "claim": "The number of pattern elements scales with domain size over the intrinsic wavelength.",
+      "used_as": "Why 184.3 \u00b5m and 7.56 mm are different modes of one kinetic family."
+    },
+    {
+      "id": "smith_green_river",
+      "source": "smith2008",
+      "claim": "Radioisotopic and stratigraphic reconstruction of the Eocene Green River lake system.",
+      "used_as": "Framework citation for the Fossil Lake horizon. The loop age remains 51.5 Ma."
+    },
+    {
+      "id": "descouens_specimen",
+      "source": "wikimedia_cc_by_sa_4.0",
+      "claim": "Laterally preserved Diplomystus dentatus from Fossil Lake, caption size 48 cm.",
+      "used_as": "Canonical specimen photograph and the length calibration for flank spacing."
+    }
+  ],
+  "specimen": {
+    "filename": "diplomystus_dentatus_specimen.jpg",
+    "sha256": "f423421a2d13eaa09b402733f213692dd92b29585ac6396aecb518dba6909140",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "creator": "Didier Descouens",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Diplomystus_dentatus_Green_River_Formation_Wyoming.jpg",
+    "direct_url": "https://upload.wikimedia.org/wikipedia/commons/3/37/Diplomystus_dentatus_Green_River_Formation_Wyoming.jpg",
+    "locality": "Fossil Lake, Wyoming, USA",
+    "caption_size_m": 0.48,
+    "caption_stage": "Eocene"
+  },
+  "input_sha256": {
+    "scout_manifest.json": "a89dba7e88074788d642d30ea2b38d340e321ce2b5b3af0cc2c8b4d62dc34408",
+    "paper_citations.bib": "c496a23d4845e2df35a8a1bef4d308a6cf15a0c9e791350f459992558a5e6641",
+    "README.md": "b9b7083e117e26411b5f15f3c7fece6d175a39d5bf6e079ca168dd193c361978",
+    "diplomystus_dentatus_specimen.jpg": "f423421a2d13eaa09b402733f213692dd92b29585ac6396aecb518dba6909140"
+  },
+  "script": "models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py",
+  "lean": "morphoeval/lean/loops/Loop_3170_diplomystus_dentatus_turing_wavelength_s0.lean"
+}

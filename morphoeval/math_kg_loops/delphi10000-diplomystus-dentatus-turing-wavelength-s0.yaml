@@ -1,0 +1,67 @@
+sim_id: delphi10000-diplomystus-dentatus-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 0.0001843
+log10_size_m: -3.734
+size_human: 184.3 µm
+scale_tier: 5_primordium_100um
+scale_variant: detail
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Diplomystus dentatus (Early Eocene, Ypresian, 51.5 Ma)
+geological_age_ma: 51.5
+geological_period: Early Eocene (Ypresian, 51.5 Ma)
+fossil_lineage_group: Actinopterygian Axial Fossil Series
+chronoseries: Diplomystus 1/1
+model_spec:
+  kinetics: Schnakenberg
+  a: 0.128
+  b: 0.764
+  diffusivity_ratio: 9.17
+  boundary_conditions: Neumann flank patch; periodic line for the discrete dispersion test
+  lambda_c_m: 0.0001843
+  successor_lambda_m: 0.00756
+  predecessor_length_m: 0.00002
+equations:
+- law_name: Onset wavenumber
+  formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v),  lambda_c = 2 pi / k_c
+  lean_decl: MathOfBiology.Loop_3170.lambdaDetailUmX10
+  lean_theorem: MathOfBiology.Loop_3170.detail_wavelength_shorter_than_organ_successor
+  lean_locus: morphoeval/lean/loops/Loop_3170_diplomystus_dentatus_turing_wavelength_s0.lean#L13-L24
+  variables: D_u and D_v solved so lambda_c = 184.3 µm at D_v/D_u = 9.17
+  role: Detail-tier wavelength. Shorter than the 7.56 mm organ-tier successor of the same chronospecies.
+  source_citation: Turing (1952) 10.1098/rstb.1952.0012; Schnakenberg (1979) 10.1016/0022-5193(79)90042-0
+  code_locus: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py#L62-L82
+- law_name: Wavenumber ratio against the organ-tier successor
+  formula: k_detail / k_organ = lambda_organ / lambda_detail > 41
+  lean_decl: MathOfBiology.Loop_3170.lambdaOrganUmX10
+  lean_theorem: MathOfBiology.Loop_3170.detail_wavenumber_exceeds_organ_successor_fortyfold
+  lean_locus: morphoeval/lean/loops/Loop_3170_diplomystus_dentatus_turing_wavelength_s0.lean#L27-L29
+  variables: lambda_organ = 7.56 mm, lambda_detail = 184.3 µm
+  role: What changes at this scale versus the 7.56 mm sibling, not versus another chronospecies (series is 1/1).
+  source_citation: Murray (1981) 10.1016/0022-5193(81)90334-9
+  code_locus: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py#L66-L67
+- law_name: Diffusivity-ratio threshold
+  formula: (D_v/D_u) f_u + g_v > 0
+  lean_decl: MathOfBiology.Loop_3170.diffusivityRatioX100
+  lean_theorem: MathOfBiology.Loop_3170.diffusivity_ratio_clears_turing_threshold
+  lean_locus: morphoeval/lean/loops/Loop_3170_diplomystus_dentatus_turing_wavelength_s0.lean#L32-L34
+  variables: ratio 9.17, f_u ≈ 0.713, g_v ≈ -0.796
+  role: Inhibitor must diffuse fast enough for a finite-k instability.
+  source_citation: Turing (1952) 10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py#L74-L81
+- law_name: Sub-wavelength predecessor
+  formula: 2 * L_cell < lambda_c
+  lean_decl: MathOfBiology.Loop_3170.chromatophoreUmX10
+  lean_theorem: MathOfBiology.Loop_3170.chromatophore_predecessor_is_shorter_than_half_wavelength
+  lean_locus: morphoeval/lean/loops/Loop_3170_diplomystus_dentatus_turing_wavelength_s0.lean#L37-L39
+  variables: L_cell = 20 µm, lambda_c = 184.3 µm
+  role: A chromatophore-sized predecessor domain cannot hold a half-wave of this mode.
+  source_citation: Murray (1981) 10.1016/0022-5193(81)90334-9
+  code_locus: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py#L294-L297
+- law_name: Flank window mode count
+  formula: N = L / lambda_c = 16 and L < lambda_organ
+  lean_decl: MathOfBiology.Loop_3170.flankWindowUmX10
+  lean_theorem: MathOfBiology.Loop_3170.flank_window_holds_sixteen_detail_waves_and_no_organ_wave
+  lean_locus: morphoeval/lean/loops/Loop_3170_diplomystus_dentatus_turing_wavelength_s0.lean#L42-L44
+  variables: L = 2.9488 mm
+  role: The detail window fits sixteen onset waves and zero organ-tier waves.
+  source_citation: Turing (1952) 10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py#L194-L210
