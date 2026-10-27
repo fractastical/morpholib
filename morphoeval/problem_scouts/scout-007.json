@@ -1,0 +1,127 @@
+{
+  "scout": "scout-007",
+  "ground": "rule30",
+  "lens": "knowledge",
+  "candidates": [
+    {
+      "title": "Cryptographically publish Rule 30 Grand Prizes Bayesian Delphi assessments (OP-01..03 viability source)",
+      "gap": "Pooled bridge posteriors for Wolfram Prizes 1–3 (11.52%, 2.033%, 0.037%) and per-agent subgoal scores live only in docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md, docs/open-problems.json, and an unsigned RDF file morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/rule30_grand_prizes_delphi.trig — no signed/, no published.json, and no production/test registry URIs for graph self-checks.",
+      "done": "morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/signed/rule30_grand_prizes_delphi.trig exists; node morphoeval/check_signed.mjs passes; published.json lists the trusty https://w3id.org/np/RA… URI with published=test (or prod after human yes); fetched assertion graph contains pk:BayesianAssessment nodes for problem-1-center-aperiodicity-bridge-* with pk:hasProbability matching open-problems.json pooled values within 0.001.",
+      "tool_route": "python3 morphoeval/build_rule30_bayesian_delphi.py (regenerate from morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml) → python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi → python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi --publish test → node morphoeval/check_signed.mjs morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/signed/*.trig",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml, morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/rule30_grand_prizes_delphi.trig, docs/open-problems.json OP-01..03 viability fields.",
+      "prior_attempts": "Multi-agent Delphi panel (Oct 2026) produced YAML + TTL/TRIG + markdown (docs/RULE30_PRIZE_CHATLOG.md turns 67–84); KG generation succeeded but signing/publish step was never completed (contrast morphoeval/kg/2026-10-18-conus-audit/published.json with prod entries).",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "build_rule30_bayesian_delphi.py + sign_morphoeval.py + check_signed.mjs are the established publish gate; no new prover needed." },
+        "data_in_hand": { "score": 20, "why": "Audit YAML and TRIG already in repo; posteriors are pre-computed." },
+        "falsifiable_done": { "score": 15, "why": "Binary checks: signed files exist, checker exit 0, manifest URIs, RDF literals match JSON posteriors." },
+        "compute_in_repo": { "score": 14, "why": "Regenerate + sign completes in minutes on VM Python stack (rdflib/nanopub profile required)." },
+        "isolation": { "score": 9, "why": "Can add signed/ + published.json under existing kg dir without editing tracked audits if inputs unchanged." },
+        "time_to_verdict": { "score": 9, "why": "One agent loop: rebuild, sign, verify signatures." },
+        "not_blocked": { "score": 5, "why": "No prior record of failed sign on this TRIG; no STAGED template placeholders in file." }
+      }
+    },
+    {
+      "title": "Supersede production Conus Rule 30 MorphoEval 87.3/100 with Pass N+1 honest 72.9/100",
+      "gap": "Production nanopubs under morphoeval/kg/2026-10-18-conus-audit/published.json still assert overall 87.3/100 (checkpoint fb234bc), while morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml scores conus-textile-rule30 at 72.9 after remediation (morphoeval/runs/2026-10-26-flagship15-loop-passN.md); no superseding signed MorphoEval KG was emitted because full flagship15 build failed on taxon URI sanitisation.",
+      "done": "New morphoeval/kg/<conus-passN1-audit-id>/signed/wolfram-conus-textile-rule30-overall.trig verifies with check_signed.mjs; published.json records prod/test URI; npx:supersedes links the new overall nanopub to https://w3id.org/np/RACS7k6nr8UJVeKgaT0a2-7NLPISBz3SRaH6qPEcVSVGg; pk:hasScore or pk:hasProbability in assertion equals 0.729 ±0.001.",
+      "tool_route": "Add new audit YAML morphoeval/audits/2026-10-26-conus-textile-rule30-passN1-audit.yaml (extract conus-textile-rule30 block from morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml, pin current HEAD commit) → python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-conus-textile-rule30-passN1-audit.yaml --check --conform --no-resolve-heads --supersede-from morphoeval/kg/2026-10-18-conus-audit → python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-26-conus-textile-rule30-passN1-audit → node morphoeval/check_signed.mjs …/signed/*.trig",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml (conus entry), morphoeval/kg/2026-10-18-conus-audit/published.json, models/1984-wolfram-conus-textile-rule30.py at HEAD.",
+      "prior_attempts": "Flagship Pass N+1 (Oct 2026) re-scored Conus to 72.9 and documented KG blockage in morphoeval/runs/2026-10-26-flagship15-loop-passN.md §KG nanopubs; primary 2026-10-18 audit remains the published head.",
+      "factors": {
+        "tool_fit": { "score": 24, "why": "build_morphoeval_kg.py --supersede-from + sign_morphoeval.py is the standard re-score publish path used across MorphoEval loops." },
+        "data_in_hand": { "score": 19, "why": "Scores and rationale already in flagship15 audit YAML; script and metrics CSV in repo." },
+        "falsifiable_done": { "score": 15, "why": "Supersession triple + numeric 72.9 in signed RDF vs stale 87.3 on prior URI." },
+        "compute_in_repo": { "score": 13, "why": "KG build/sign only; avoids 5 min --self-test prize checks unless explicitly wired." },
+        "isolation": { "score": 10, "why": "Conus-only audit YAML + new kg dir avoids flagship15 Thompson taxon bug and zero-conflict with parallel agents." },
+        "time_to_verdict": { "score": 8, "why": "Single loop once isolated audit file exists." },
+        "not_blocked": { "score": 4, "why": "Full flagship15 KG route blocked on sp_slug; this route deliberately bypasses that failure mode." }
+      }
+    },
+    {
+      "title": "Publish blind second-assessor Conus Rule 30 nanopubs (signed locally, never registry-published)",
+      "gap": "morphoeval/kg/2026-10-19-conus-second-assessor-audit/signed/*.trig exists with overall 50.5/100, but morphoeval/kg/2026-10-19-conus-second-assessor-audit/published.json marks every entry published:null — so the dual-assessor fork (87.3 prod vs 50.5 blind) has no ranked, fetchable head on the nanopub network.",
+      "done": "published.json for 2026-10-19-conus-second-assessor-audit lists published:test for all eight wolfram-conus-textile-rule30-*.trig files; check_signed.mjs still passes; optional npx:supersedes or pk:evidenceAgainst links document disagreement with 2026-10-18 primary without overwriting prod until a superseding Pass N+1 audit.",
+      "tool_route": "python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-conus-second-assessor-audit --publish test (re-sign if inputs drifted) → node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-conus-second-assessor-audit/signed/*.trig",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml, morphoeval/kg/2026-10-19-conus-second-assessor-audit/signed/, morphoeval/kg/2026-10-19-conus-second-assessor-audit/REPORT.md.",
+      "prior_attempts": "Blinded Gemini second-assessor pass (Oct 2026) built and signed locally per morphoeval/kg/2026-10-19-conus-second-assessor-audit/REPORT.md; publish step skipped (published:null).",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "sign_morphoeval.py --publish test is exactly for moving signed trigs to registry-visible state." },
+        "data_in_hand": { "score": 20, "why": "Signed artifacts already present; no new scoring pass required." },
+        "falsifiable_done": { "score": 14, "why": "Manifest published:test fields and registry fetch of RA… URIs." },
+        "compute_in_repo": { "score": 15, "why": "Minutes; requires ~/.nanopub/profile.yml only." },
+        "isolation": { "score": 9, "why": "Updates only second-assessor kg manifest unless operator chooses prod." },
+        "time_to_verdict": { "score": 10, "why": "One signing/publish command batch." },
+        "not_blocked": { "score": 5, "why": "No record of registry rejection for these URIs; test publish is the intended first gate." }
+      }
+    },
+    {
+      "title": "Attach trustworthy nanopub URIs to problem-graph nodes p1/p2/p3 for OP-01..03 bridge posteriors",
+      "gap": "docs/build_problem_graph_html.py validates that any node nanopubs use https://w3id.org/np/RA… URIs, but Rule 30 prize nodes p1–p3 still cite viability only via markdown (docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md) in docs/open-problems.json — unlike OP-11 (bos) which names morphoeval/kg/…/published.json.",
+      "done": "After Delphi KG publish, problem-graph canvas (or generated docs/open-problems.json extension) includes nanopubs arrays on p1/p2/p3 with labels and URIs from morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/published.json; python3 docs/build_problem_graph_html.py self-checks pass and pooled percentages in OPEN_PROBLEMS match signed pk:hasProbability within 0.15 pp.",
+      "tool_route": "Depends on candidate 1 publish → read published.json → update graph source (canvas or builder merge) → python3 docs/build_problem_graph_html.py --out docs/problem-graph.html (self-check exit 0). Signing/verification lens: sign_morphoeval.py output is the URI source of truth.",
+      "deciding_data": "In repo: docs/open-problems.json, docs/build_problem_graph_html.py DELPHI block; post-publish: morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/published.json.",
+      "prior_attempts": "Oct 2026 Delphi panel populated markdown + JSON viability without nanopub linkage; graph HTML notes w3id 404 but registry live view pattern already used for Thompson/cow nodes.",
+      "factors": {
+        "tool_fit": { "score": 18, "why": "Knowledge lens supplies signed URIs; graph wiring is mostly metadata merge once publish exists." },
+        "data_in_hand": { "score": 17, "why": "Delphi numbers and TRIG in repo; URIs appear only after sign step." },
+        "falsifiable_done": { "score": 13, "why": "build_problem_graph_html.py validate() + URI pattern checks." },
+        "compute_in_repo": { "score": 14, "why": "Script regen under a minute." },
+        "isolation": { "score": 6, "why": "Touching canvas/build_problem_graph_html.py may conflict with parallel doc agents unless deferred to a dedicated branch." },
+        "time_to_verdict": { "score": 7, "why": "Two-step: publish then regen graph." },
+        "not_blocked": { "score": 5, "why": "Not previously attempted as linked nanopubs for p1–p3." }
+      }
+    },
+    {
+      "title": "Split monolithic rule30_grand_prizes_delphi.trig into per-prize signable nanopubs for granular OP linkage",
+      "gap": "sign_morphoeval.py signs each *.trig in a kg directory separately; the Rule 30 Delphi output is one combined rule30_grand_prizes_delphi.trig bundling all three prizes and three assessors — unsuitable for per-OP nanopub labels and partial supersession when only P1.4 bridge scores update.",
+      "done": "morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/ contains at least three unsigned trigs (e.g. rule30-prize-1-bridge-assessments.trig) each passing build_rule30_bayesian_delphi.py --conform or rdflib parse; sign_morphoeval produces distinct RA… URIs; published.json has one entry per prize bridge assessment cluster.",
+      "tool_route": "Extend morphoeval/build_rule30_bayesian_delphi.py emit loop (or add morphoeval/split_rule30_delphi_nanopubs.py) → python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi → node morphoeval/check_signed.mjs …",
+      "deciding_data": "In repo: current monolithic TRIG/TTL; audit YAML problem ids problem-1-center-aperiodicity, problem-2-equidistribution, problem-3-computational-irreducibility.",
+      "prior_attempts": "Initial Oct 2026 build chose single-graph export for 324 triples (docs/RULE30_PRIZE_CHATLOG.md); MorphoEval audits use per-dimension trigs as precedent.",
+      "factors": {
+        "tool_fit": { "score": 16, "why": "Requires small emitter change; signing/verify tools unchanged." },
+        "data_in_hand": { "score": 18, "why": "All triples already materialised in repo TRIG." },
+        "falsifiable_done": { "score": 12, "why": "File count ≥3, distinct URIs, each subgraph contains exactly one prize id." },
+        "compute_in_repo": { "score": 13, "why": "Split + sign in one sitting." },
+        "isolation": { "score": 7, "why": "New splitter script + kg files; modifying build_rule30_bayesian_delphi.py is shared surface." },
+        "time_to_verdict": { "score": 7, "why": "Implementation + sign loop." },
+        "not_blocked": { "score": 5, "why": "Monolithic publish remains valid; split is an refinement not a refuted route." }
+      }
+    },
+    {
+      "title": "Pressure-rank open Conus/Rule30 MorphoEval remediations via explicit needs and --list-needs",
+      "gap": "Conus audits list free-text remediation bullets (fixture segmentation, --full-prize-proofs gate, autonomous Meinhardt) but no structured needs[] with pressure P = 2n+c+0.5d+0.2ln(1+a); build_morphoeval_kg.py --list-needs therefore cannot rank Rule30/Conus debt against the 71-need corpus cited in docs/RULE30_PRIZE_CHATLOG.md.",
+      "done": "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml (conus entry) or a Conus-only audit includes needs[] entries; python3 morphoeval/build_morphoeval_kg.py --list-needs stdout contains those ids sorted by pressure; rebuilt KG emits pk:evidenceAgainst triples for each open need.",
+      "tool_route": "Add needs to audit YAML → python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<audit>.yaml --check → python3 morphoeval/build_morphoeval_kg.py --list-needs | rg conus-textile-rule30",
+      "deciding_data": "In repo: morphoeval/runs/2026-10-26-flagship15-loop-passN.md §Still open, morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml remediation for conus-textile-rule30.",
+      "prior_attempts": "needs schema landed in morphoeval/schema.yaml per RULE30_PRIZE_CHATLOG.md; Conus/Rule30 audits not yet migrated to explicit needs.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "--list-needs and KG build emit ranked pk:evidenceAgainst from audit YAML as-is." },
+        "data_in_hand": { "score": 16, "why": "Remediation text exists; needs metadata must be authored once." },
+        "falsifiable_done": { "score": 14, "why": "grep-able list-needs output with expected pressure ordering." },
+        "compute_in_repo": { "score": 15, "why": "Instant YAML + list command." },
+        "isolation": { "score": 8, "why": "Can use new Conus-only audit file to avoid flagship15 shared edits." },
+        "time_to_verdict": { "score": 9, "why": "Single edit + list-needs verification." },
+        "not_blocked": { "score": 5, "why": "Feature exists; Conus migration not attempted." }
+      }
+    },
+    {
+      "title": "OP-01 Prize 1 transparent-gate closure (short runs 1≤a_i≤7) — mathematical proof, not KG resolvable",
+      "gap": "docs/open-problems.json OP-01: D1(t)=1 infinitely often but not proved to hit {c_t=1}; Delphi pooled bridge 11.52% (P1.4 subgoal 31.9/100). This is a Lean/global-mixing gap per docs/RULE30_PRIZE_STATUS_AND_GAPS.md, not an unsigned claim.",
+      "done": "Lean-checked lemma or explicit counterexample word — see OP-01 done field in docs/open-problems.json (not nanopub publication).",
+      "tool_route": "Not decidable by build_morphoeval_kg.py/sign alone; would use morphoeval/lean/MathOfBiology.lean + 1984-wolfram-conus-textile-rule30.py exhaustive checks for counterexamples. KG lens can only publish revised Delphi scores after a proof attempt.",
+      "deciding_data": "In repo: docs/RULE30_PRIZE_STATUS_AND_GAPS.md Tier C gap, morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml subgoal P1.4 scores.",
+      "prior_attempts": "Multi-agent panel assessed bridge posteriors; depth-1 right cylinder entropy ~0.32 bits/step noted as obstruction; pure left-cone opaque mirror alone refuted as sufficient on sparse pulse trains (STATUS doc §Problem 1). Re-proposing left-cone-only elimination as complete Prize 1 proof is blocked negative knowledge.",
+      "factors": {
+        "tool_fit": { "score": 2, "why": "KG tools record assessments; they do not produce the missing global phase-spreading invariant." },
+        "data_in_hand": { "score": 12, "why": "Evidence and Delphi YAML in repo, but proof object absent." },
+        "falsifiable_done": { "score": 15, "why": "OP-01 done criterion is crisp — but outcome is math, not signature check." },
+        "compute_in_repo": { "score": 5, "why": "Counterexample search finite slices possible; proof likely not hours-scale." },
+        "isolation": { "score": 3, "why": "Proof work touches Lean/script core, not new JSON only." },
+        "time_to_verdict": { "score": 1, "why": "Not one-sitting for proof; KG publish of updated posterior is quick but does not close OP-01." },
+        "not_blocked": { "score": 1, "why": "Prior audits document insufficient local-window routes; repeating them as 'new' KG tasks is blocked." }
+      },
+      "lens_redirect": "Lean 4 / exhaustive Rule30 script scout (morphoeval/lean + 1984-wolfram-conus-textile-rule30.py --self-test prize gates)"
+    }
+  ]
+}
