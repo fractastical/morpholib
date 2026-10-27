@@ -1,0 +1,321 @@
+{
+  "scout": "scout-068",
+  "ground": "predictions",
+  "lens": "registry",
+  "candidates": [
+    {
+      "id": "ZF-VTX-01-SERIES",
+      "title": "Close ZF-VTX-01: tabulated zebrafish EVL shape-index series vs p0*=3.813",
+      "gap": "Registry row ZF-VTX-01 is partially_resolved: the vertex-packing invariant (3.813) is in-repo but no zebrafish epithelial shape-index time series exists in predictions/resolutions/ or as a cited table; OpenAlex pass on 2026-10-26 found no ready EVL/epiboly jamming dataset.",
+      "done": "A new predictions/resolutions/zebrafish.json entry (or sibling batch file merged before scoring) sets ZF-VTX-01 outcome_verdict to confirmed or refuted: measured transition p0* lies in [3.76, 3.87] (confirm) or outside [3.7, 3.9] / no transition (refute); python3 predictions/score_resolutions.py exits 0 and registry outcome is no longer partially_resolved.",
+      "tool_route": "Pre-register extraction protocol (DOIs + ROI rules) in a new predictions/resolutions/extractions/zebrafish_vtx_shape_index.json (new file only); append resolution block to predictions/resolutions/zebrafish.json with prediction_id ZF-VTX-01, outcome_verdict, evidence citing the tabulated CSV; run python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: datasets/danio_rerio_vertex_packing poson_law and prediction_registry.json quantitative band. Public: published zebrafish epiboly/EVL cell-polygon images (e.g. Bi et al. 2015 / Park et al. 2015 vertex-glass papers cited by models/2015-bi-vertex-glass-jamming.py); not yet tabulated for Danio rerio in resolutions/.",
+      "prior_attempts": "2026-10-26 local resolution pass (predictions/resolutions/zebrafish.json): bounded only, left partially_resolved as forecast. docs/open-problems.json registered_prediction_followups mirrors the same missing series. No prior attempt refuted image-extraction as a route.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Verdict is produced only by resolutions JSON + score_resolutions.py once a numeric series is attached."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Law and falsifier band are in-repo; deciding numbers require one literature/image extraction pass, not new experiments."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Transition inside/outside the registered 3.76–3.87 band is a numeric interval check."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Polygon/shape-index tabulation from published figures is hours of CV + JSON, on the existing Python stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as new files under predictions/resolutions/ only until an orchestrator merges scores."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One sitting if images are available; segmentation QC may spill to a second pass."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Partial status explicitly awaits this series; no recorded refutation of the extraction route."
+        }
+      },
+      "lens_note": "Raw segmentation without registry update is the vision lens; this candidate is the registry closure step."
+    },
+    {
+      "id": "DM-MUR-NEG-01-SERIES",
+      "title": "Close DM-MUR-NEG-01: Drosophila tracheal Murray exponent vs 2.8–3.2 band",
+      "gap": "DM-MUR-NEG-01 is partially_resolved: Murray mis-assignment is bounded by generic insect literature but no Drosophila parent/daughter diameter table was extracted to test exponent 3.0 ± 0.2.",
+      "done": "Resolution record lists ≥8 tracheal branch triples (r0,r1,r2) with DOI/figure provenance; fitted Murray exponent outside [2.8,3.2] with CI → confirmed (negative prediction upheld) or inside band with small residuals → refuted; score_resolutions.py sets outcome confirmed/refuted (not partially_resolved).",
+      "tool_route": "Pre-register row-extraction rules; write predictions/resolutions/extractions/drosophila_tracheal_murray.csv + update predictions/resolutions/drosophila.json for DM-MUR-NEG-01; python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: datasets/drosophila_melanogaster_branching_tree poson_law. Public: Drosophila tracheal morphometry / Branchless literature (OpenAlex pass 2026-10-26 cited PLoS Comp Bio 10.1371/journal.pcbi.1007853 for ants only, not Drosophila diameters).",
+      "prior_attempts": "2026-10-26 predictions/resolutions/drosophila.json: partial_only as predicted (conf 0.45). META-RES-03 forecast four partials without ZF-HH-01; actual partial count is five (meta refuted), not a refutation of Murray extraction.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Exponent test is scored through resolutions + score_resolutions.py, same contract as round 1."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Morphometry exists in scattered EM/histology papers but is not one named table in repo yet."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Registered falsifier is exponent in [2.8,3.2] vs outside with stated residual rule."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Literature digitization + log-log fit is standard scipy/numpy work, hours not weeks."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New extraction + resolution JSON files only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Single extraction pass likely sufficient if one primary morphometry paper is found."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Resolution notes mark missing tabulation, not impossibility."
+        }
+      }
+    },
+    {
+      "id": "ZF-CLK-01-PAIRED-TS",
+      "title": "Close ZF-CLK-01: paired segmentation-clock period and somite-length multipliers",
+      "gap": "ZF-CLK-01 needs paired (T_clock change, S change) with wavefront speed controlled to test S multiplier = T multiplier within 5 percentage points for ±10/20% period shifts; 2026-10-26 pass established framework only (doi:10.1371/journal.pbio.0050150) without a single tabulated paired series.",
+      "done": "Extraction JSON lists ≥3 perturbation conditions with measured period ratio and somite-length ratio (size-corrected); for each, |S_ratio − T_ratio| ≤ 0.05 → supports confirm; opposite sign or <50% of proportional change on any verified condition → refute; score_resolutions.py moves outcome off partially_resolved.",
+      "tool_route": "Pre-register paper list (must include temperature/period manipulations e.g. doi:10.1038/nature07020, her1/her7 perturbations); predictions/resolutions/extractions/zebrafish_clock_somite_pairs.json; update predictions/resolutions/zebrafish.json; python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: datasets/danio_rerio_clock_wavefront poson_law and worked_sensitivity. Public: zebrafish somitogenesis clock literature (ZFIN-linked); Hubaud/YAP mouse dataset in repo is not registered for ZF-CLK-01 and must not be substituted without a new registered cross-species row.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json 2026-10-26: partially_resolved, as_predicted at conf 0.55. docs/open-problems.json registered_prediction_followups item ZF-CLK-01 duplicates the gap.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Registry scorer decides once paired ratios are recorded in resolutions; no other tool owns the verdict."
+        },
+        "data_in_hand": {
+          "score": 7,
+          "why": "Evidence is piecemeal across papers; Gomez 2008 and clock reviews are named public fetches, not in-repo tables."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Registered multipliers and 5-point tolerance are explicit arithmetic checks."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Multi-paper extraction and harmonization may exceed one hour but stays offline computation."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New extraction artifacts + resolution JSON only."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Literature harmonization often needs more than one sitting unless one paper reports all pairs."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Partial outcome explicitly invites this route; not refuted."
+        }
+      }
+    },
+    {
+      "id": "XT-CLK-01-PAIRED-TS",
+      "title": "Close XT-CLK-01: Xenopus paired clock-period / somite-length replication of ZF-CLK-01",
+      "gap": "XT-CLK-01 partially_resolved with the same paired-series gap as ZF-CLK-01; Xenbase/somitogenesis literature bound the framework but did not supply multiplier tests within 5 points.",
+      "done": "Same done-criteria as ZF-CLK-01 applied to Xenopus tropicalis/laevis sources declared in extraction JSON; resolutions/xenopus.json XT-CLK-01 outcome becomes confirmed or refuted; score_resolutions.py tallies fully_decided += 1.",
+      "tool_route": "Pre-register Xenopus paper set; predictions/resolutions/extractions/xenopus_clock_somite_pairs.json; update predictions/resolutions/xenopus.json; python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: datasets/xenopus_tropicalis_clock_wavefront. Public: Xenbase somitogenesis / hes clock studies (OpenAlex pass 2026-10-26). Cross-reference ZF-CLK-01 extraction if both use temperature shifts.",
+      "prior_attempts": "predictions/resolutions/xenopus.json 2026-10-26: partially_resolved, conf 0.50 as forecast. XT-SHH-01 confirmed via UniProt REST; no clock series attempt beyond bounding.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Identical registry + scorer closure path as ZF-CLK-01."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "Xenopus paired measurements are sparser than zebrafish in the first pass."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Cross-species replication uses the same numeric multipliers registered in prediction_registry.json."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Literature extraction only."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New files under predictions/resolutions/."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Likely multi-paper unless one Xenopus clock paper reports both T and S."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Awaiting series, not blocked."
+        }
+      }
+    },
+    {
+      "id": "ZF-HH-01-PTC-DOMAINS",
+      "title": "Close ZF-HH-01: zebrafish Shh lipidation gradient-shape (ptc domain peak + tail)",
+      "gap": "ZF-HH-01 partially_resolved: lipidation requirement confirmed (doi:10.1039/C4SC01600A) but the registered gradient-shape claim—distal ptc expansion + reduced near-source peak upon lipidation loss—lacks paired domain measurements in zebrafish tissue.",
+      "done": "Extraction records wild-type vs lipidation-perturbed ptc1/ptc2 domain width and peak signal (or equivalent readout) from ≥1 zebrafish assay; direction matches registry (distal expansion + lower peak) → confirm; unchanged/steeper peak → refute; score_resolutions.py sets outcome.",
+      "tool_route": "Pre-register assay papers; predictions/resolutions/extractions/zebrafish_shh_ptc_domains.json; update predictions/resolutions/zebrafish.json ZF-HH-01; python3 predictions/score_resolutions.py. Do not reuse DM-HH-01 wing-disc numbers without a new registered cross-tissue prediction.",
+      "deciding_data": "In repo: UniProt Q92008 / protein_states for shha. Public: ZFIN shha (syu), HHAT-inhibition and ptc expression papers cited in registry test_source.",
+      "prior_attempts": "2026-10-26 zebrafish.json resolution: harder_than_predicted—expected current_plus_public_sources at conf 0.70 but gradient shape undecided; joined partial set (refuted META-RES-03 count of four partials). Fly HH gradient (DM-HH-01 confirmed) does not close this row.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "Final label still flows through resolutions + score_resolutions.py after quantitative domain extraction."
+        },
+        "data_in_hand": {
+          "score": 5,
+          "why": "Functional lipidation papers exist; quantitative ptc domain pairs were not extracted in round 1."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Directional peak/tail comparison is checkable, though peak normalization rules must be pre-registered to avoid taste."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "In situ quantification from figures is feasible but annotation-heavy."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New extraction + resolution entries; may need brief scorer doc note only in new files."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Often >one sitting to locate zebrafish-specific quantified panels."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route explicitly left open; ortholog fly evidence is not treated as a substitute."
+        }
+      }
+    },
+    {
+      "id": "META-RES-05-PREREG",
+      "title": "Register META-RES-05 before partial closure: how many of the five partials become fully decided?",
+      "gap": "Round-1 meta predictions (META-RES-01..04) are scored with stale logic: score_resolutions.py hardcodes META-RES-03 as partial==4 while the registry holds five partially_resolved rows after ZF-HH-01 joined the partial set; there is no blind meta forecast for round-2 extraction outcomes.",
+      "done": "Before any partial-closure extractions land, append a new meta_resolvability_predictions row via predictions/build_prediction_registry.py (new registration commit) stating e.g. exact count of partials that will reach confirmed/refuted after extractions; after resolutions updated, python3 predictions/score_resolutions.py must score the new meta row against tallies.fully_decided and partially_resolved.",
+      "tool_route": "Extend build_prediction_registry.py META list (new registration date, no edits to locked prediction text of round-1 rows); regenerate registry; register META-RES-05; run closure extractions; score_resolutions.py.",
+      "deciding_data": "In repo: prediction_registry.json scoring tallies (9 full, 5 partial on 2026-10-26) and predictions/score_resolutions.py meta_outcomes map.",
+      "prior_attempts": "META-RES-02 refuted (8 public-decided <10 forecast). META-RES-03 refuted (five partials, not four). META-RES-01 and META-RES-04 confirmed. Re-proposing 'exactly four partials' is blocked.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Meta outcome is computed entirely by score_resolutions.py from resolution outcomes once META-RES-05 is registered."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All inputs are in-repo registry + resolutions; no external fetch required to register the meta bet."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Meta falsifier is a count mismatch after scorer run—machine-checkable if the meta text states an exact integer."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Registry rebuild + scorer is minutes; extractions are separate work."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Registry builder/scorer edits conflict with zero-conflict scout rule unless done on a dedicated branch; meta registration is one coordinated PR."
+        },
+        "time_to_verdict": {
+          "score": 3,
+          "why": "Meta scores only after partial closures complete—multi-loop."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "META-RES-03 refutation blocks repeating the same 'four partials' claim; new meta must differ."
+        }
+      }
+    },
+    {
+      "id": "MM-ROUND2-CLK-PREREG",
+      "title": "Round-2 organism registration: Mus musculus clock-wavefront law test (runner-up in registry)",
+      "gap": "prediction_registry.json organism_selection.runner_up holds Mus musculus (10 refs, Bmp4/Shh in catalog, MGI) but no MM-* outcome rows exist; datasets/yap_excitable_segmentation and sequence_links mus_musculus Bmp4/Shh are unused by the registry lens.",
+      "done": "New registered row MM-CLK-01 (built via predictions/build_prediction_registry.py before scoring) states a blind biological prediction + resolvability forecast for mouse PSM S=u*T_clock; falsifier and test_source cite Hubaud 2017 (doi:10.1016/j.cell.2017.08.043) and MGI; status registered_untested until a resolutions batch exists; build --self-test passes.",
+      "tool_route": "python3 predictions/build_prediction_registry.py --self-test; add PREDICTIONS + RESOLVABILITY entries for Mus musculus clock_wavefront; commit registry JSON/CSV; later predictions/resolutions/mouse.json + score_resolutions.py.",
+      "deciding_data": "In repo: sequences/sequence_links.json mus_musculus Bmp4 (Q3ULR1) and Shh (Q62226); datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json; runner_up note in prediction_registry.json.",
+      "prior_attempts": "Round 1 selected Danio/Drosophila/Xenopus only (build_prediction_registry.py ORGANISMS dict). No MM prediction scored yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "build_prediction_registry.py is the authoritative registration instrument; scorer closes later."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Mouse clock/somite literature and in-repo Hubaud slot exist; paired T/S for MM row may still be partial_only like ZF-CLK-01."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done for registration phase is self-test + frozen prediction text; biological done mirrors ZF-CLK-01 numeric criteria once registered."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Registry build is fast; resolution may reuse clock extraction playbook."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Touches shared predictions/build_prediction_registry.py and registry outputs—needs dedicated branch, not parallel scout one-file rule."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Registration is one sitting; biological score follows extraction loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Runner-up explicitly held for next round; no refuted MM route on record."
+        }
+      }
+    },
+    {
+      "id": "XT-BMP-FULLLENGTH-PREREG",
+      "title": "Post–XT-DQ-01 registration: full-length Xenopus BMP4 Turing size-ratio prediction",
+      "gap": "XT-DQ-01 confirmed Q28FI5 is a fragment (69 aa vs Ensembl 469 aa), invalidating any BMP4 protein-state Turing conclusion on the old link; no new registered outcome row tests the full-length BMP4 mature-domain size prior after re-linking.",
+      "done": "After sequence_links.json is re-resolved to a full-length UniProt/Ensembl BMP4 entry (separate remediation PR), register XT-BMP-02 via build_prediction_registry.py with a D_inhibitor/D_activator size prior and falsifier; initial status registered_untested; optional in-repo confirm if only chain lengths are needed (current_datasets_only path like DM-DPP-01).",
+      "tool_route": "Remediation: fix xenopus_tropicalis bmp4 in sequence_links.json; python3 predictions/build_prediction_registry.py to append XT-BMP-02; score with predictions/resolutions/inrepo-quick.json or xenopus.json; python3 predictions/score_resolutions.py.",
+      "deciding_data": "In repo: XT-DQ-01 evidence in sequences/sequence_links.json and predictions/resolutions/inrepo-quick.json; ortholog pattern from danio_rerio bmp2b and drosophila dpp in registry.",
+      "prior_attempts": "XT-DQ-01 confirmed in-repo 2026-10-26. XT-BMP-01 confirmed on Noggin binding mechanism, not on BMP4 fragment state. Re-running fragment-based Turing ratios without re-link is blocked by XT-DQ-01.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "New blind row + scorer is the intended closure path; data-quality row already demonstrated in-repo decide for chain lengths."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Full-length entry is one UniProt/Ensembl fetch once fragment is rejected; mature-domain length may be decidable in-repo post re-link."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Mature-domain aa count band (~110–130 aa) in XT-DQ-01 quantitative_expectation is measurable; biological Turing test may stay directional."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Registry rebuild + sequence link fix are standard repo scripts."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Requires sequence_links.json edit plus registry builder—shared files, not scout-isolated."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "In-repo chain-length verdict can be one sitting; biological confirm may need public literature like ZF-TUR-01."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Fragment route refuted; full-length re-link is mandatory before BMP4 Turing claims."
+        }
+      },
+      "lens_note": "Sequence re-link alone is remediation/knowledge lens; this candidate is the registry row that must follow XT-DQ-01."
+    }
+  ]
+}
