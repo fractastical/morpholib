@@ -1,0 +1,36 @@
+{
+  "fix_id": "fix-002",
+  "candidate_rank": 2,
+  "candidate_id": "scout-008-c",
+  "status": "fixed",
+  "summary": "Registered hash-locked R30-OEIS-128-01 (SHA-256 of first 128 OEIS A051023 center-column bits) with a confirmed resolution. Independent rule30_prize_diagnostics(steps=1024) center_col[:128] matches datasets/conus/conus_textile_reference.json 128/128; no registry or model code change required.",
+  "root_cause": "Traceability gap only: OEIS benchmark was assert-locked in self_test() check 2 but lacked a separate registration/resolution artifact with SHA-256 and machine-readable verdict outside prediction_registry.json.",
+  "changed_files": [
+    "predictions/registrations/R30-OEIS-128-01.json",
+    "predictions/resolutions/rule30-oeis.json",
+    "tests/test_problem_fixer_oeis.py"
+  ],
+  "evidence": [
+    "datasets/conus/conus_textile_reference.json → rule30_prize_benchmarks.oeis_a051023_first_128 (128 bits)",
+    "SHA-256 concatenated bit string: a4d0748bb05e4a19738a0252b8f87b374385df59d0630c27dffb175d3fa98a5e",
+    "Code path: models/1984-wolfram-conus-textile-rule30.py rule30_prize_diagnostics(steps=1024) → run_eca(30, width=2*steps+5, init='single') → center_col[:128]",
+    "OEIS reference: https://oeis.org/A051023",
+    "models/1984-wolfram-conus-textile-rule30.py self_test() check 2 (OEIS A051023 assert)"
+  ],
+  "validation": [
+    {
+      "name": "OEIS problem fixer pytest",
+      "argv": ["python3", "-m", "pytest", "tests/test_problem_fixer_oeis.py", "-q"],
+      "exit_code": 0,
+      "output_summary": "3 passed in 2.69s"
+    },
+    {
+      "name": "Rule 30 model self test",
+      "argv": ["python3", "models/1984-wolfram-conus-textile-rule30.py", "--self-test-only"],
+      "exit_code": 0,
+      "output_summary": "Full self_test suite OK (~588s); includes OEIS A051023 128/128 check 2; final lines report morphometrics and theorem blocks OK"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
