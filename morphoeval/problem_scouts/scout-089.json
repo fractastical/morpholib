@@ -1,0 +1,319 @@
+{
+  "scout": "scout-089",
+  "ground": "nanopub",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "id": "NP-089-01",
+      "title": "Planarian HK-ATPase Pass 3 dataset provenance: stale scout_manifest + unpinned pass3 files",
+      "gap": "The merged Math-KG still flags `datasets/planarian_hk_atpase_anterior/scout_manifest.json` as describing the superseded 1493×564 Wikimedia image while the scored specimen is the 720×500 PlanformDB photo; `pass3_citations.bib` and `pass3_2d_mesh_guidance_neoblast_reference.json` are not in the script's SHA-256 lock table; six Pass 3 DOIs were transcribed offline and are unverified (`pk:evidenceAgainst` on the planarian overall assessment in `morphoeval/kg/math_of_biology.trig`).",
+      "done": "`2011-beane-planarian-hk-atpase-anterior.py` `--self-test` passes with digest count covering all five dataset files including the two Pass 3 JSON/bib paths; `scout_manifest.json` records PlanformDB provenance and scale-bar µm; every entry in `pass3_citations.bib` has a Crossref-resolved DOI noted in the bib header; a new `morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v3.yaml` exists with source-traceability evidence citing the verified bib; `morphoeval/kg/2026-10-19-planarian-hk-atpase-anterior-audit-v3/published.json` lists signed nanopubs whose `npx:supersedes` chain points at the v2 URIs; `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-planarian-hk-atpase-anterior-audit-v3/signed/*.trig` exits 0.",
+      "tool_route": "Patch dataset locks and manifest in the builder script; `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v3.yaml`; `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v3.yaml --conform --supersede-from morphoeval/kg/2026-10-19-planarian-hk-atpase-anterior-audit-v2`; `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-planarian-hk-atpase-anterior-audit-v3 --publish test`; `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-planarian-hk-atpase-anterior-audit-v3/signed/*.trig`.",
+      "deciding_data": "In repo: `datasets/planarian_hk_atpase_anterior/*`, `morphoeval/kg/2026-10-19-planarian-hk-atpase-anterior-audit-v2/published.json`, remediation strings in `morphoeval/kg/math_of_biology.trig`; public: Crossref API for the six Pass 3 DOIs named in `pass3_citations.bib`.",
+      "prior_attempts": "Cloud loop slot-081 (Pass 1→2, 59.2→91.3, 20 signed nanopubs) closed the Beane/Oviedo phenotype block but did not run Pass 3 or refresh the manifest; no v3 audit YAML or kg bundle exists yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Standard 12-step loop tools (measure → build_kg → sign → check_signed) close the flagged traceability weakness without new infrastructure."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Specimen, reference JSON, and bib are already vendored; only Crossref resolution is external."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Self-test digest count, check_signed exit code, and published.json supersede URIs are mechanically checkable."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Dataset edits plus one audit build/sign cycle fit in a few hours on the existing Python stack."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Work can land as new audit-v3 + kg dir files; parallel agents need not edit shared tracked paths if orchestrator isolation holds."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One remediation loop iteration yields a signed v3 bundle or a failing self-test with a precise bib/manifest diff."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt recorded a refutation of manifest re-pinning or Pass 3 SHA-256 extension for this slot."
+        }
+      }
+    },
+    {
+      "id": "NP-089-02",
+      "title": "Rule30 Grand Prizes Bayesian Delphi audit: unsigned nanopub bundle",
+      "gap": "`morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/` contains `rule30_grand_prizes_delphi.trig` and `.ttl` from `morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml` but has no `signed/` directory, no `published.json`, and no test-registry publication—so the Delphi bridge posteriors for OP-01..03 are not on the public nanopub network.",
+      "done": "Directory contains `signed/*.trig` for every unsigned root `*.trig`; `published.json` maps each file to a `https://w3id.org/np/RA…` URI; `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi --publish test` succeeds; `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/signed/*.trig` exits 0; Nanopub Query resolves at least the overall claim URI.",
+      "tool_route": "`python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml --conform`; `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi`; `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi --publish test`; `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/signed/*.trig`.",
+      "deciding_data": "In repo: audit YAML, generated TriG/TTL under `morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/`; public: test nanopub registry fetch after publish.",
+      "prior_attempts": "Audit YAML and graph artifacts were built 2026-10-20; signing step was never completed (only kg dir among 316 audit folders lacks `signed/`).",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Existing build_morphoeval_kg + sign_morphoeval + check_signed are exactly the missing pipeline steps."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All assertion content is already in the repo; no new measurements or literature fetches required."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Presence of signed files, manifest URIs, and WASM signature verification is binary."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Minutes of RDF signing plus registry POST on the standard stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Can complete entirely inside the existing kg subdirectory without touching other audits."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single sitting: build if needed, sign, test-publish, verify."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No record of a failed sign attempt for this bundle; STAGED template placeholders are absent from its TriG."
+        }
+      }
+    },
+    {
+      "id": "NP-089-03",
+      "title": "Coral calice septa Pass 3: SHA-256 lock gap + offline DOI flags",
+      "gap": "`morphoeval/kg/2026-10-19-coral-calice-septa-insertion-audit-v3/REPORT.md` lists Pass 3 `corallum3d_surge_reference.json` and `pass3_citations.bib` outside `EXPECTED_SHA256`, and marks multiple Pass 3 DOIs (plus carried BHL/Kunth entries) as `doi_verified_offline: false`, deducting source-traceability points despite an otherwise signed v3 bundle.",
+      "done": "`2013-thomas-coral-calice-septa-insertion.py` runtime verifier includes both Pass 3 files with matching digests; after online DOI resolution every Pass 3 row in `corallum3d_surge_reference.json` has `doi_verified_offline: true` or the DOI is removed; `morphoeval/audits/2026-10-19-coral-calice-septa-insertion-audit-v3.yaml` source-traceability score rises with line-pinned bib evidence; rebuilt kg with `--supersede` yields new trusty URIs and updated `published.json` history; `check_signed.mjs` passes on the new signed files.",
+      "tool_route": "Extend `EXPECTED_SHA256` in the coral script; verify DOIs (Crossref) and update bib/JSON flags; `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-coral-calice-septa-insertion-audit-v3.yaml`; `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-coral-calice-septa-insertion-audit-v3.yaml --conform --supersede`; `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-coral-calice-septa-insertion-audit-v3 --publish test`; `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-coral-calice-septa-insertion-audit-v3/signed/*.trig`.",
+      "deciding_data": "In repo: v3 audit, kg/REPORT remediation bullet at lines 39–40, datasets under `datasets/coral_calice_septa_insertion/`; public: Crossref for DOIs 10.6028/jres.060.043, 10.4319/lo.2005.50.1.0246, 10.4319/lo.2006.51.2.1134, 10.1109/TSMC.1979.4310076.",
+      "prior_attempts": "Pass 3 loop closed structural remediation (3D corallum, surge closure) but left the integrity gate open per v3 REPORT; bundle is signed locally with `published: null` entries (not yet test/prod).",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "One remediation pass: dataset lock + bib verification + standard MorphoEval re-score/sign pipeline."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Pass 3 JSON/bib already vendored; DOI metadata is one named public fetch away."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Digest table membership and `doi_verified_offline` flags are enumerable; sign/verify is mechanical."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Script self-test plus audit rebuild under an hour; no wet lab."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Touches the coral script and its dataset dir—shared flagship paths, but superseding kg is additive."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Verdict in one loop unless DOI resolution fails (then failure is also explicit)."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Offline DOI transcription was flagged as honest debt, not refuted as impossible."
+        }
+      }
+    },
+    {
+      "id": "NP-089-04",
+      "title": "Xenobot evolutionary biobots: flip Pass 3 `verified_offline: false` DOI flags",
+      "gap": "The Math-KG `pk:evidenceAgainst` on the xenobot overall assessment requires verifying four Pass 3 DOIs (Cortez 2001, Blake 1971, Goldman-Cox-Brenner 1967, Hiller & Lipson 2014) in `datasets/xenobot_evolutionary_biobots/lattice3d_stokes_capture_reference.json` and `pass3_citations.bib`, currently flagged `verified_offline: false`, costing source-traceability points in the Pass 3 assessment embedded in `math_of_biology.trig`.",
+      "done": "All four DOIs resolve via Crossref with title/author match recorded in the bib; corresponding JSON rows set `verified_offline: true` with a verification date; `--self-test` on `models/2020-kriegman-xenobot-evolutionary-biobots.py` still passes; a superseding MorphoEval audit (v3 or patch to v2 measurements) updates source-traceability evidence lines; signed nanopubs supersede the slot-083 v2 URIs with higher source-traceability score or an explicit `verified_offline: true` count of 4/4 in REPORT.md.",
+      "tool_route": "Online DOI check + bib/JSON edit; `python3 models/2020-kriegman-xenobot-evolutionary-biobots.py --self-test`; `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-xenobot-evolutionary-biobots-audit-v2.yaml --conform --supersede` (or new v3 audit YAML if Pass 3 scores are re-derived); `python3 morphoeval/sign_morphoeval.py morphoeval/kg/<audit-id> --publish test`; `node morphoeval/check_signed.mjs …`.",
+      "deciding_data": "In repo: `datasets/xenobot_evolutionary_biobots/lattice3d_stokes_capture_reference.json`, `pass3_citations.bib`, slot-083 loop scores; public: Crossref for the four DOIs.",
+      "prior_attempts": "Slot-083 Pass 1→2 (59.5→91.5) closed lattice/Stokes remediation but Pass 3 citation verification was explicitly deferred offline.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Remediation lens closes a single audit-flagged bib weakness via re-audit and resign."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Citations already listed; only resolution metadata missing."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Four boolean flags plus Crossref title match strings are scorer-checkable."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "No simulation changes required for the minimal route (bib/JSON only)."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Confined to xenobot dataset files and a superseding kg bundle."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sitting if network egress to Crossref is allowed."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Prior pass documented offline transcription as pending, not refuted."
+        }
+      }
+    },
+    {
+      "id": "NP-089-05",
+      "title": "Tracheal viscous fingering v3: verify four Pass 3 DOIs + McCray bib entry",
+      "gap": "`morphoeval/kg/2026-10-19-tracheal-viscous-fingering-audit-v3/REPORT.md` remediation bullet requires clearing `doi_verified_offline: false` on olver1974, harding1986, harding1996, metzger2008 and either adding McCray et al. 1992 to `paper_citations.bib` or removing the orphan code citation at L381—deductions already recorded in the signed v3 source-traceability nanopub.",
+      "done": "All four DOIs verified online with bib `note` fields updated; McCray 1992 has a bib entry referenced from L381 or the comment is removed; JSON flags flipped; v3 source-traceability dimension re-scored ≥ prior minus the -4 offline DOI deduction; superseding signed trig passes `check_signed.mjs`; `published.json` records test publication.",
+      "tool_route": "Bib/JSON edits; optional `python3 2015-sugimura-tracheal-viscous-fingering.py --self-test`; update `morphoeval/audits/2026-10-19-tracheal-viscous-fingering-audit-v3.yaml` evidence; `python3 morphoeval/build_morphoeval_kg.py … --supersede`; `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-tracheal-viscous-fingering-audit-v3 --publish test`; `node morphoeval/check_signed.mjs …`.",
+      "deciding_data": "In repo: v3 REPORT lines 40, `datasets/tracheal_viscous_fingering/paper_citations.bib`; public: Crossref for the four DOIs.",
+      "prior_attempts": "Pass 3 loop added pleural-cavity reference JSON and six new citations but could not verify DOIs offline in that pass.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Exact flagged item maps to bib fix + MorphoEval resign—no new science required."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Bib entries and JSON flags already exist in repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "DOI resolution and bib entry presence are enumerable."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Under an hour excluding optional full self-test."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Shared tracheal script path but kg supersession is isolated per audit id."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single remediation pass with clear before/after on flags."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not previously attempted online; offline flag is explicit debt."
+        }
+      }
+    },
+    {
+      "id": "NP-089-06",
+      "title": "Levin YouTube channel math: regenerate hand-edited `levin_youtube_kg.json` payload",
+      "gap": "`morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md` states `docs/bioelectricity/levin_youtube_kg.json` was hand-edited: eight `code_locus` values drift from `morphoeval/math_kg_loops/levin-youtube-channel-math.yaml`, stale domain_summary names remain, and builder-authored measurement entries under referee meas_ids violate the assessor/builder split—blocking code-traceability and repro-package closure.",
+      "done": "A committed generator script rebuilds `levin_youtube_kg.json` from the summary JSON + math-KG YAML + referee `.measurements.yaml`; regenerated file SHA differs from `301feb525c13a834…` and all eight loci match YAML line ranges; `python3 morphoeval/verify_integrity.py --loop-yaml` reports 0 violations; `python3 models/2026-levin-channel-math-synthesis.py --self-test` passes; v3 (or v4) audit code-traceability/repro-package scores increase with line-pinned evidence; superseding signed nanopubs published to test registry.",
+      "tool_route": "Add generator under `docs/bioelectricity/` or `morphoeval/`; `python3 <generator>`; `python3 morphoeval/verify_integrity.py --loop-yaml`; `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml --conform --supersede`; `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3 --publish test`; `node morphoeval/check_signed.mjs …`.",
+      "deciding_data": "In repo: v3 REPORT bullets 33–36, `morphoeval/math_kg_loops/levin-youtube-channel-math.yaml`, `morphoeval/runs/levin_youtube_channel_math_summary.json`, integrity incident ledger for the 93.8→26.4 self-audit.",
+      "prior_attempts": "Pass 3.1 referee (claude-fable-5-1) caught builder self-audit inflation; Pass 3.2 fixed many loci but left KG payload manual; cross-provider referee pass documented in `verify_integrity.py` header.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Remediation loop plus verify_integrity closes a documented audit weakness; wiring published measurements still needs the measure/build/sign chain."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "All inputs for regeneration already live in repo at pinned commits."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Locus equality YAML↔JSON and verify_integrity exit code are mechanical; score delta is in audit YAML numbers."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Generator + integrity + resign fits one session; specimen-match ceiling remains structural."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Touches shared Levin synthesis docs and kg; requires coordinated new files."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One loop closes payload drift; empirical specimen wiring is explicitly out of scope for this item."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Self-audit route refuted; generator route is the referee-prescribed fix, not yet executed."
+        }
+      }
+    },
+    {
+      "id": "NP-089-07",
+      "title": "Xenopus craniofacial remap: SHA-256 pin Pass 3 dataset files",
+      "gap": "`morphoeval/kg/math_of_biology.trig` lists remediation for `2019-bischof-xenopus-craniofacial-remap.py`: `cartilage_mmp_zymography_reference.json` and `pass3_citations.bib` are not in the SHA-256 digest table, self-test still expects four digests not five, and four Pass 3 DOIs (Galardy 1994 noted as missing) remain offline—hurting repro-package and source-traceability on the Pass 3 assessment.",
+      "done": "`verify_dataset_sha256` (or equivalent) includes both Pass 3 files with stable digests; `--self-test` asserts five digests; Galardy 1994 DOI added or explicitly marked absent with bib note; superseding audit records the pins in repro-package evidence; signed nanopubs supersede prior xenopus craniofacial bundle with passing `check_signed.mjs`.",
+      "tool_route": "Patch `2019-bischof-xenopus-craniofacial-remap.py` lock table; `python3 2019-bischof-xenopus-craniofacial-remap.py --self-test`; `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-xenopus-craniofacial-remap-audit-v3.yaml` (or v2 supersede); `python3 morphoeval/build_morphoeval_kg.py … --supersede`; sign + `check_signed.mjs`.",
+      "deciding_data": "In repo: xenopus dataset dir, remediation text in `math_of_biology.trig`; public: Crossref for Pass 3 DOIs including Galardy 1994 if resolvable.",
+      "prior_attempts": "Pass 3 loop added GM6001/MMP reference JSON and expanded measurements; integrity pinning item left open in merged KG.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Classic Pass-2-style repro-package fix via self-test + resign."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Pass 3 files already committed under `datasets/xenopus_craniofacial_remap/`."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Digest count in self-test output is an exact integer check."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Script self-test dominates runtime; audit rebuild is quick."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Localized to xenopus script/dataset plus new kg supersede."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One loop unless DOI for Galardy cannot be resolved (then documented null)."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of SHA-256 extension for this dataset."
+        }
+      }
+    },
+    {
+      "id": "NP-089-08",
+      "title": "Cow Turing OP-11 blind re-score + migration-wave colonisation (BLOCKED route)",
+      "gap": "Published kg `2026-10-26-bos-taurus-turing-wavelength-audit-v7` still lists remediation R11: independent re-score of the Pass 8+ tree before quoting Eden-vs-RD null results; `docs/open-problems.json` OP-11 records the same gap (builder-scored Pass 9, n=9, minimal Eden control).",
+      "done": "Would require a blinded assessor audit v8+ YAML, migration-wave variant in the murray script, superseding signed nanopubs—per OP-11 done field.",
+      "tool_route": "Would be: implement migration-wave in `models/1981-murray-bos-taurus-turing-wavelength.py`; blinded audit YAML; `build_morphoeval_kg.py --supersede-from morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7`; `sign_morphoeval.py --publish test`. Not proposed as active work.",
+      "deciding_data": "In repo: OP-11, v7 REPORT remediation R9/R11, `datasets/bos_taurus_turing_wavelength/` masks.",
+      "prior_attempts": "OP-11 status `refuted` in `docs/open-problems.json`; Fable blind audits 54.4/57.7 predate Pass 8 pipeline; human PI and panel listed—route treated as closed in the work queue.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Tools exist, but the work queue marks the follow-up refuted—tool_fit for new spend is low."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Coat masks and audit chain are in repo."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "OP-11 done criteria are explicit, but blocked."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Full pipeline re-run is hours of simulation plus audit."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Flagship murray script and published prod nanopubs—high merge conflict risk."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Multi-pass assessor work, not one sitting."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "OP-11 explicitly `refuted`; negative knowledge—do not re-propose as new."
+        }
+      }
+    }
+  ]
+}
