@@ -1,0 +1,38 @@
+{
+  "fix_id": "fix-008",
+  "candidate_rank": 45,
+  "candidate_id": "ZHANG-MKG-RULE3-01",
+  "status": "fixed",
+  "summary": "Reproduced Rule 3 failures on 4/6 Zhang sorting math-KG equations (ground `by decide` snippets classified as ground_arithmetic). Updated `lean_code` and `lean_locus` fields to lead with the quantified theorems from `Loop_zhang_sorting_morphogenesis.lean` (and supporting defs) while preserving the cited `lean_theorem` names and ground witness theorems where they exist in Lean.",
+  "root_cause": "`verify_integrity.classify_lean_theorem_signature` only inspects the first `theorem` in each `lean_code` block. Laws 2, 3, 5, and 6 led with constant ground-decide signatures (or the wrong theorem before the cited structural one), so Rule 3 flagged them even though the Loop file contains matching structural theorems at the declared loci.",
+  "changed_files": [
+    "morphoeval/math_kg_loops/zhang-sorting-morphogenesis.yaml",
+    "tests/test_problem_fixer_zhang_mathkg.py"
+  ],
+  "evidence": [
+    "Pre-fix: `python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/zhang-sorting-morphogenesis.yaml` exit 1 with four ground_arithmetic violations (Insertion, Coxeter/Lyapunov, Chimeric, Hoel CE2 laws).",
+    "morphoeval/lean/loops/Loop_zhang_sorting_morphogenesis.lean — structural signatures at bubble_adjacent_swap_preserves_left_partition (L48-L50), adjacent_swap_strictly_decreases_inversions_window3 (L173-L175), selection_nonlocal_swap_strictly_decreases_inversions_window3 (L193-L195).",
+    "Post-fix integrity gate exit 0; pytest tests/test_problem_fixer_zhang_mathkg.py passes."
+  ],
+  "validation": [
+    {
+      "name": "Zhang integrity gate",
+      "argv": [
+        "python3",
+        "morphoeval/verify_integrity.py",
+        "--loop-yaml",
+        "morphoeval/math_kg_loops/zhang-sorting-morphogenesis.yaml"
+      ],
+      "exit_code": 0,
+      "output_summary": "LOOP YAML INTEGRITY CHECK PASSED (0 violations)"
+    },
+    {
+      "name": "Zhang math-KG regression test",
+      "argv": ["python3", "-m", "pytest", "tests/test_problem_fixer_zhang_mathkg.py", "-q"],
+      "exit_code": 0,
+      "output_summary": "1 passed"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
