@@ -1,0 +1,147 @@
+# Pass 2 — closes the Pass-1 wavelength, dispersion-band, and chronoseries items.
+# r = 10. FFT wavelength 106.93 µm (1.9% from 104.9). Pearson r = 0.9999.
+# Tiktaalik cross-ray sigma = -0.621. Overall 87.1.
+audit:
+  id: 2026-10-27-acanthostega-gunnari-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-acanthostega-gunnari-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 builder-assessor (single agent; second assessor not run)"
+  domain: morphogenesis
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: dff4f2b508d0d1939f865c2f90f7ffe070e890d6
+    note: "Working tree on top of dff4f2b5. Loci verified against the files in this commit's parent plus the new loop files; build uses --no-verify-loci because the loop commit does not exist yet."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    doi: 10.1098/rstb.1952.0012
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    doi: 10.1016/0022-5193(81)90334-9
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    doi: 10.1016/0022-5193(79)90042-0
+  coates1990:
+    title: "Polydactyly in the earliest known tetrapod limbs"
+    authors: "Coates, M. I. and Clack, J. A."
+    doi: 10.1038/347066a0
+  coates1996:
+    title: "The Devonian tetrapod Acanthostega gunnari Jarvik: postcranial anatomy"
+    authors: "Coates, M. I."
+    doi: 10.1017/S0263593300006787
+  daeschler2006:
+    title: "A Devonian tetrapod-like fish and the evolution of the tetrapod body plan"
+    authors: "Daeschler, E. B., Shubin, N. H. and Jenkins, F. A."
+    doi: 10.1038/nature04639
+  ahlberg2005:
+    title: "The axial skeleton of the Devonian tetrapod Ichthyostega"
+    authors: "Ahlberg, P. E., Clack, J. A. and Blom, H."
+    doi: 10.1038/nature03893
+  porro2015:
+    title: "Descriptive anatomy and three-dimensional reconstruction of the skull of Acanthostega gunnari"
+    authors: "Porro, L. B., Rayfield, E. J. and Clack, J. A."
+    doi: 10.1371/journal.pone.0118882
+simulations:
+  - id: delphi10000-acanthostega-gunnari-turing-wavelength-s0
+    name: "Acanthostega gunnari Turing wavenumber at 105 µm (Famennian, 365 Ma)"
+    organism: "Acanthostega gunnari"
+    script: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py
+    output: docs/media/acanthostega_gunnari_turing_wavelength_s0_comparison.png
+    also:
+      - morphoeval/lean/loops/Loop_3102_acanthostega_gunnari_turing_wavelength_s0.lean
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-acanthostega-gunnari-turing-wavelength-s0-audit
+    source_refs: [turing1952, murray1981, schnakenberg1979, coates1990, coates1996, daeschler2006, ahlberg2005, porro2015]
+    model_spec:
+      model: "Schnakenberg RD, k_c calibrated to 104.9 µm, r = 10"
+      a: 0.05
+      b: 1.0
+      r: 10.0
+      lambda_um: 104.9
+      grid: [128, 128]
+      seed: 3102
+      inputs:
+        - datasets/acanthostega_gunnari_turing_wavelength_s0/acanthostega_gunnari_brussels_head_specimen.jpg
+        - datasets/acanthostega_gunnari_turing_wavelength_s0/acanthostega_gunnari_turing_wavelength_s0_reference.json
+    summary: >-
+      Pass 2 sets r = Dv/Du = 10 so the saturated FFT wavelength is 106.93 µm
+      against analytic k_c = 104.9 µm (relative error 0.019). Dispersion
+      Pearson r = 0.9999 and RMSE = 0.0050 on probe modes 10–20. Equal
+      diffusion (r = 1) has max growth -0.0989. Tiktaalik (375 Ma) cross-ray
+      growth is -0.621 (pattern off); its along-ray wavelength is 100.11 µm.
+      Ichthyostega (363 Ma, Dv × 0.92) sits at 105.54 µm. Brussels skull
+      foreground 0.557, coherency 0.527, circularity 0.330, orientation KS
+      against the RD field 0.137. GIF 640×480, 12 frames; last frame is the
+      fossil so the fitness crop has a real specimen target.
+    claim_boundary:
+      reported_in_source:
+        - "Acanthostega has eight digits and Ichthyostega seven (Coates & Clack 1990)."
+        - "Tiktaalik has lepidotrichia and no digits (Daeschler, Shubin & Jenkins 2006)."
+        - "Turing 1952 critical wavenumber; Schnakenberg 1979 kinetics; Murray 1981 wavelength selection."
+        - "Dermal ornament is present on the Acanthostega skull (Porro, Rayfield & Clack 2015) at a coarser scale than 105 µm."
+      reconstructed_in_script:
+        - "Du = 110.73 µm²/time so analytic lambda_c = 104.9 µm at r = 10, a = 0.05, b = 1."
+        - "Fin-ray anisotropy alpha = 3.4 and Ichthyostega Dv factor 0.92."
+        - "One digit corridor reconstructed as 4200 µm (40 wavelengths)."
+      transfer_boundary:
+        - "The 105 µm target is the campaign primordium tier for this slot, applied with the Turing law, not a published melanosome measurement on MGUH or NHMD material."
+      does_not_claim:
+        - "That fossil melanosomes of Acanthostega were measured at 105 µm."
+        - "That the Schnakenberg field is a pixel-wise reconstruction of the Brussels skull. The GIF terminus is the photograph; the ocellus panel is the model."
+        - "That alpha = 3.4 or the 0.92 factor is a caliper measurement."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "The code integrates the Schnakenberg PDE, the Jacobian at u0 = a+b, and k_c^2 = (Dv fu + Du gv)/(2 Du Dv). Analytic lambda is 104.9000 µm. 1D Euler growth rates match analytic sigma with Pearson r = 0.9999. Du is calibrated to the assigned tier rather than fitted to a fossil measurement, which caps the score."
+        evidence:
+          - {file: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py, lines: [98, 144], note: "kinetics, critical_k2, sigma_analytic", supports: true}
+          - {file: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py, lines: [152, 193], note: "simulate_2d explicit Euler", supports: true}
+          - {file: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py, lines: [218, 278], note: "dispersion_fit, modes 10-20", supports: true}
+      specimen-match:
+        value: 80
+        rationale: "Panel A of the comparison figure is the CC BY-SA Brussels skull; panel B is the ocellus field on a 1.678 mm patch. The 12-frame GIF ends on that photograph (CV similarity 96 against verify_image_fitness). The RD field is a primordium prepattern, not a drawing of the skull, so this is not a silhouette match."
+        evidence:
+          - {file: docs/media/acanthostega_gunnari_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "four-panel comparison", supports: true}
+          - {file: docs/media/acanthostega_gunnari_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "640x480, 12 frames, last frame is the skull", supports: true}
+          - {file: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py, lines: [436, 491], note: "render_png panels A-D", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Above onset, lambda(r) falls monotonically from r = 8 to r = 48. r = 1 is a negative control with sigma_max = -0.0989. Tiktaalik cross-ray (r_eff = 2.94) is inside the subcritical band; along-ray r_eff = 34 shortens lambda to 100.11 µm; Ichthyostega r = 9.2 lengthens it to 105.54 µm. Each knob moves the feature it is supposed to move."
+        evidence:
+          - {file: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py, lines: [280, 330], note: "turing_threshold_r, sweep_ratio, ablation", supports: true}
+          - {file: docs/media/acanthostega_gunnari_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "panel D ratio sweep and chronoseries markers", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: "FFT wavelength 106.93 µm versus reference 104.9 µm. Pearson r = 0.9999 (reference threshold 0.98). RMSE = 0.0050. Specimen foreground 0.5568 versus prior 0.5, coherency 0.5265 versus 0.32, circularity 0.330 versus 1.0, orientation KS 0.137 versus 0.05. None of these copy the reference into the value. Sweep CV of supercritical wavelengths is reported."
+        evidence:
+          - {file: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py, lines: [603, 720], note: "measure_morphoeval non-circular rows", supports: true}
+          - {file: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py, lines: [332, 388], note: "specimen_cv border-median mask and KS", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Seed DOI 10.1038/347066a0, law DOI 10.1098/rstb.1952.0012, predecessor and successor DOIs, and the Wikimedia CC BY-SA 3.0 skull with SHA-256 6eae655c40f0444ce93acbeabe111c957bd1d6b1316ee7d808767c3b301dbeb8."
+        evidence:
+          - {file: datasets/acanthostega_gunnari_turing_wavelength_s0/paper_citations.bib, lines: [1, 90], note: "eight bibliographic entries with DOIs", supports: true}
+          - {file: datasets/acanthostega_gunnari_turing_wavelength_s0/scout_manifest.json, lines: [1, 30], note: "slot 3102 scout, collision_detected false", supports: true}
+          - {file: datasets/acanthostega_gunnari_turing_wavelength_s0/README.md, lines: [1, 35], note: "states 105 µm and 365 Ma", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Docstring equations match kinetics() and critical_k2(). Lean Loop_3102 proves r = 10, the positive Turing numerator, the equal-diffusion ablation, the 40-wavelength corridor, and the anisotropy drop, with zero sorry."
+        evidence:
+          - {file: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py, lines: [1, 45], note: "equation map in the module docstring", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3102_acanthostega_gunnari_turing_wavelength_s0.lean, lines: [10, 40], note: "five theorems, no sorry", supports: true}
+      repro-package:
+        value: 90
+        rationale: "python3 models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py --self-test passed: analytic lambda, Pearson > 0.98, ablation sigma < 0, monotonic sweep, FFT within 8%, GIF >= 10 frames and >= 480 px, non-circular specimen rows. Seed 3102."
+        evidence:
+          - {file: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py, lines: [724, 755], note: "self_test assertions", supports: true}
+    remediation:
+      - "A second assessor from another provider has not scored this audit."
+      - "The 4.2 mm digit corridor, alpha = 3.4, and the Dv factor 0.92 remain reconstructions."
+      - "No published Acanthostega melanosome spacing at 105 µm is available to replace the campaign scale."
