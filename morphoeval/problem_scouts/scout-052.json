@@ -1,0 +1,143 @@
+{
+  "scout": "scout-052",
+  "ground": "lean",
+  "lens": "measure",
+  "candidates": [
+    {
+      "title": "Pin morphometric sidecars for ten canonical audits that never got measure_outputs.yaml",
+      "gap": "4325 audit YAML files exist but only 4315 have a sibling `.measurements.yaml`; the ten gaps include `2026-10-26-flagship15-audit-v1.yaml` (16 evaluated sims), `2026-10-21-foundational-canonical-audit-v2.yaml`, `2026-10-17-cervera-audit.yaml`, Bos taurus Pass 2–4 and Pass 6–7 trees, and the second-assessor Bos audits—so nanopub/kg merge cannot pin `spec_fingerprint`, `artifact_sha256`, or `quick_gate` for those scores.",
+      "done": "For each of the ten audit paths with no sibling sidecar today (`2026-10-17-cervera-audit.yaml`, `2026-10-21-foundational-canonical-audit-v2.yaml`, `2026-10-26-bos-taurus-turing-wavelength-audit-v2.yaml`, `-v3.yaml`, `-v4.yaml`, `-v6.yaml`, `-v7.yaml`, both second-assessor Bos audits, `2026-10-26-flagship15-audit-v1.yaml`), `python3 morphoeval/measure_outputs.py <audit>` exits 0 and writes `<audit-stem>.measurements.yaml` whose top-level `audit` id matches the source audit.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml (repeat for the other nine paths listed in `done`).",
+      "deciding_data": "In repo: `morphoeval/audits/` audit YAMLs; missing-sidecar list derivable locally. No external fetch.",
+      "prior_attempts": "OP-06 (`docs/open-problems.json`) records Flagship-15 Pass N+1 remediation as solved on behaviour/self-tests but does not record a committed measurements sidecar; OP-11 documents Bos Turing biology and v7 publication, not sidecar generation. No prior attempt refutes running measure_outputs on these canonical-schema files.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "measure_outputs.py already accepts nested `audit.id` schema and writes the sidecar on success (verified on flagship15 in this scout run)." },
+        "data_in_hand": { "score": 20, "why": "All ten audit YAMLs and most rendered outputs are in-repo; failures surface as `missing` entries, not absent audits." },
+        "falsifiable_done": { "score": 15, "why": "Done is ten specific files on disk with matching audit ids—checkable with `test -f` and a YAML key grep." },
+        "compute_in_repo": { "score": 12, "why": "Flagship15 run took ~55 s here; ten audits fit in one sitting though some sims may report measurement failures without blocking sidecar creation." },
+        "isolation": { "score": 9, "why": "Closing adds only new `.measurements.yaml` siblings; zero-conflict if no tracked audit YAML edits." },
+        "time_to_verdict": { "score": 9, "why": "Single loop: run tool, count ten new sidecars." },
+        "not_blocked": { "score": 5, "why": "No ledger entry or open-problems row refutes regenerating missing sidecars." }
+      }
+    },
+    {
+      "title": "Levin YouTube KG `verified_measurements` drift vs referee v3 measure_outputs sidecar",
+      "gap": "The authoritative referee sidecar `morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.measurements.yaml` documents two builder-altered KG records (m4, m5) and stale `code_locus` blocks in `docs/bioelectricity/levin_youtube_kg.json`; Lean/Math-KG formalisation is kernel-clean but morphometric-validation cannot move until external references exist—the sidecar already counts only 0 laws wired to published measurements.",
+      "done": "After `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml`, the regenerated sidecar’s `measurements.levin-youtube-channel-math` block is byte-identical to the committed referee sidecar OR a machine diff lists exactly the stale KG fields to fix; separately, count of measurements with `reference_value` and `reference_source` not matching `/Lean|script|this run/i` is reported (expected ≤ 2 per v3 REPORT).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml; diff against committed sidecar; cross-read `morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md` morphometric-validation section.",
+      "deciding_data": "In repo: audit v3 YAML, v3 `.measurements.yaml`, `docs/bioelectricity/levin_youtube_kg.json`, `morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean`, `morphoeval/math_kg_loops/levin-youtube-channel-math.yaml`. External literature (Chvykov, Pigozzi, etc.) is named in audits but not required to decide KG/sidecar drift.",
+      "prior_attempts": "model_integrity_ledger.jsonl incident `2026-10-24-gemini-4-argon-self-audit-and-tautology-incident`; referee v2/v3 closed tautology but v3 REPORT still lists structural ceiling (no wet-lab measurements). Re-running measure_outputs is not refuted; re-awarding high morphometric scores without external refs was refuted.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Sidecar is explicitly authored for measure_outputs provenance fields and quick_gate; regeneration is the intended pin mechanism." },
+        "data_in_hand": { "score": 20, "why": "All artefacts committed; script and PNG present at documented SHAs in sidecar provenance." },
+        "falsifiable_done": { "score": 14, "why": "Byte diff or structured field diff on measurement list is objective; external-ref count is a numeric threshold." },
+        "compute_in_repo": { "score": 14, "why": "Sub-minute script `--self-test` plus measure_outputs on one simulation." },
+        "isolation": { "score": 8, "why": "Verdict uses existing sidecar diff; fix may need KG regen (separate PR), but the scout decision is read-only remeasure." },
+        "time_to_verdict": { "score": 8, "why": "One measure_outputs invocation plus diff." },
+        "not_blocked": { "score": 4, "why": "Tautology route refuted in v2; remeasure/drift detection remains open." }
+      }
+    },
+    {
+      "title": "Batch Math-KG loops: decide empirical parity of sidecar fits vs pinned reference JSON (Lean proves placeholders)",
+      "gap": "Roughly 3000 `morphoeval/math_kg_loops/*.yaml` entries share the overnight template (`law1_invariant (a b : Int) := a * b`) while YAML `formula` fields cite Murray/Turing laws; matching Lean files (e.g. `Loop_2761_drosophila_teissieri_turing_wavelength.lean`) do not encode those PDEs. Legacy audits (~4000) store flat sidecars with Pearson/RMSE vs `datasets/*/*_reference.json` but cannot be re-run through measure_outputs because they use top-level `audit_id` instead of nested `audit.id`.",
+      "done": "For a pre-registered slot list (e.g. Drosophila teissieri turing wavelength slot 2761): re-derive `pearson_r` and `rmse` from `datasets/drosophila_teissieri_turing_wavelength/drosophila_teissieri_turing_wavelength_reference.json` only and assert equality with `morphoeval/audits/2026-10-22-drosophila-teissieri-turing-wavelength-audit.measurements.yaml` within 1e-4; publish count of slots where sidecar claims DOI-backed validation but reference JSON `empirical_series` is entirely parameter-generated (no digitised table id).",
+      "tool_route": "Manual parity script mirroring `models/2017-turissini-drosophila-teissieri-turing-wavelength.py` `run_multiscale_simulation` + compare to existing sidecar; full automation blocked until legacy audits are wrapped for `python3 morphoeval/measure_outputs.py` (currently raises `KeyError: 'audit'` on teissieri audit YAML).",
+      "deciding_data": "In repo: ~4019 legacy `.measurements.yaml`, ~3105 `morphoeval/math_kg_loops/*.yaml`, matching `morphoeval/lean/loops/Loop_*.lean`, and `datasets/*/*_reference.json` for batch slots.",
+      "prior_attempts": "`morphoeval/run_overnight_drosophila_1000.py` generated placeholder Lean/YAML/scripts; no open-problems entry claims these loops are biologically validated. Levin-style tautology refutation does not apply to the separate empirical_series JSON contract.",
+      "factors": {
+        "tool_fit": { "score": 12, "why": "Deciding evidence is sidecar vs reference JSON parity—the same contract measure_outputs uses—but batch audit schema blocks the tool as-is." },
+        "data_in_hand": { "score": 18, "why": "Reference JSON and sidecars exist in-repo; specimen JPEG may be absent without blocking JSON-only refit check." },
+        "falsifiable_done": { "score": 13, "why": "Numeric equality on r/RMSE plus schema field presence is machine-checkable." },
+        "compute_in_repo": { "score": 13, "why": "Per-slot numpy refit is milliseconds; enumerating 3000 slots is hours but parallelisable." },
+        "isolation": { "score": 10, "why": "Scout verdict is new JSON/report files only." },
+        "time_to_verdict": { "score": 6, "why": "One slot is one sitting; full grid needs batch job." },
+        "not_blocked": { "score": 5, "why": "No recorded refutation of JSON-vs-sidecar parity tests." }
+      }
+    },
+    {
+      "title": "Legacy audit schema prevents measure_outputs re-measurement on ~4000 loop audits",
+      "gap": "`morphoeval/measure_outputs.py` `main()` requires `audit['audit']['id']` and `scores.*.evidence` with `{value,rationale}` keys; ~4000 audits use `audit_id`, `overall_score`, and `score` fields (Drosophila multi-scale batch). They already have minimal sidecars but lack `provenance`, `quick_gate`, and `outputs` fingerprint blocks—4019 vs 296 full sidecars in repo.",
+      "done": "A manifest `legacy-audit-measure-blockers.json` lists every `morphoeval/audits/*-audit*.yaml` that raises `KeyError` or exits non-zero when passed to measure_outputs, with count ≤ 4000 and ≥ 3900 on current HEAD; alternatively, after a one-file adapter shim, count drops to 0.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-22-drosophila-teissieri-turing-wavelength-audit.yaml (expected failure mode documented); batch driver to enumerate failures—NOT solved by re-running on legacy files without shim.",
+      "deciding_data": "In repo: all audit YAML paths under `morphoeval/audits/`; failure modes observed in scout run.",
+      "prior_attempts": "No prior attempt logged in `docs/open-problems.json`; integrity ledger covers Levin tautology, not schema mismatch.",
+      "factors": {
+        "tool_fit": { "score": 8, "why": "Tool defines the blocker; it cannot resolve legacy audits without code change—scout records negative knowledge." },
+        "data_in_hand": { "score": 20, "why": "All legacy audits present locally." },
+        "falsifiable_done": { "score": 15, "why": "Exact failure count and stack trace class from batch run." },
+        "compute_in_repo": { "score": 10, "why": "Enumeration is CPU-only but ~4000 YAML parses may take tens of minutes." },
+        "isolation": { "score": 10, "why": "Manifest is a new file; no tracked edits." },
+        "time_to_verdict": { "score": 7, "why": "One batch script run." },
+        "not_blocked": { "score": 5, "why": "Schema gap not previously refuted." }
+      }
+    },
+    {
+      "title": "Bos taurus Turing Pass 7: missing rendered outputs vs v5 held-out metrics pin",
+      "gap": "`2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml` is canonical and evaluated but has no `.measurements.yaml`; OP-11 notes published negative biology. On this VM, `measure_outputs` reports missing `bos_taurus_turing_wavelength_comparison.png` and `quick_gate=10/100` with zero measurements—while v5 sidecar holds held-out distance v2 3.19 vs RD 3.60 from `bos_taurus_turing_wavelength_metrics.json`.",
+      "done": "With dataset PNGs present, `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml` yields ≥3 numeric measurements and `quick_gate.baseline_20 ≥ 10`; held-out distance v2 matches v5 reference within 0.05 OR documents explicit regression with artifact SHA delta.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml; compare to `morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v5.measurements.yaml` and `datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_metrics.json`.",
+      "deciding_data": "In repo when snapshot complete: audit v5/v7 YAML, metrics JSON, reference JSON; PNG/GIF binaries may be missing in sparse checkouts (decision distinguishes missing media vs model regression).",
+      "prior_attempts": "OP-11 status `refuted` for migration-wave/colonisation biology; Fable second-assessor audits pre-Pass-8. Re-measurement against v5 metrics is not refuted.",
+      "factors": {
+        "tool_fit": { "score": 18, "why": "measure_outputs is the prescribed pin tool; v5 shows the expected measurement pattern from metrics JSON when script exposes `measure_morphoeval` or audit-embedded measurements." },
+        "data_in_hand": { "score": 14, "why": "Metrics JSON and v5 sidecar in repo; rendered outputs may be absent in cloud snapshot." },
+        "falsifiable_done": { "score": 14, "why": "Numeric thresholds on distance v2 and quick_gate subscores." },
+        "compute_in_repo": { "score": 11, "why": "Full Bos script multi-specimen run ~55 s per v5 audit notes." },
+        "isolation": { "score": 9, "why": "New sidecar only if outputs exist." },
+        "time_to_verdict": { "score": 7, "why": "One measure_outputs run once media present." },
+        "not_blocked": { "score": 4, "why": "Biology refuted; measurement pin route still open." }
+      }
+    },
+    {
+      "title": "Mechanical tautology scan: sidecar measurements where value equals reference_value from script/Lean only",
+      "gap": "`morphoeval/verify_integrity.py` Rule 4 flags sidecars where `derived_from: script` and `value == reference_value` citing Lean/script; scout scan found ~830 such rows across `.measurements.yaml` files—undermining `quick_gate.baseline_20` for Math-KG loops whose Lean theorems are placeholder arithmetic.",
+      "done": "Batch report `tautology-measurement-ids.json` listing audit_id, measurement name, and value for every sidecar row matching Rule 4; after remeasure on canonical audits, count decreases relative to baseline OR each remaining row carries `reference_source` with an external DOI/figure locus not equal to `derived_from`.",
+      "tool_route": "python3 morphoeval/verify_integrity.py --report (Rule 4 section) plus spot-check via `python3 morphoeval/measure_outputs.py` on canonical audits named in the report header.",
+      "deciding_data": "In repo: all `morphoeval/audits/*.measurements.yaml`; Rule 4 definition in `morphoeval/verify_integrity.py` docstring.",
+      "prior_attempts": "Levin incident V3/V4 in model_integrity_ledger.jsonl refuted builder tautologies; repo-wide scan not yet closed.",
+      "factors": {
+        "tool_fit": { "score": 16, "why": "Rule 4 is implemented for sidecars measure_outputs writes; verify_integrity aggregates, remeasure regenerates canonical set." },
+        "data_in_hand": { "score": 20, "why": "All sidecars local." },
+        "falsifiable_done": { "score": 15, "why": "Exact integer count and enumerated ids." },
+        "compute_in_repo": { "score": 13, "why": "YAML scan minutes; remeasure subset longer." },
+        "isolation": { "score": 10, "why": "Report file only for scout pass." },
+        "time_to_verdict": { "score": 8, "why": "Single verify_integrity --report pass." },
+        "not_blocked": { "score": 5, "why": "Levin route refuted; fleet-wide enumeration open." }
+      }
+    },
+    {
+      "title": "Math-KG `code_locus` points at 3000 missing loop scripts—measure_outputs cannot fingerprint outputs",
+      "gap": "9528 `code_locus` entries in `morphoeval/math_kg_loops/*.yaml` reference model scripts; 3000 resolve to no file on disk (overnight batch slots). Matching Lean loops exist, but without scripts measure_outputs dynamic branch cannot call `measure_morphoeval()` and records empty measurements when audits claim evaluated status.",
+      "done": "CSV `missing-loop-script-sim-ids.csv` has exactly the sim_ids where YAML `code_locus` file is absent AND `morphoeval/audits/<date>-<slug>-audit.yaml` lists `status: evaluated`; measure_outputs on those audits reports `missing` for primary `output` paths OR zero measurements.",
+      "tool_route": "python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/<sim_id>.yaml (code_locus check); python3 morphoeval/measure_outputs.py <matching audit if canonical schema>.",
+      "deciding_data": "In repo: math_kg_loops YAML, lean loops, audit index; scripts absent by construction for batch slots.",
+      "prior_attempts": "Cloud orchestrator documents expected per-loop script creation; batch generator documented in `run_overnight_drosophila_1000.py`. No claim that measure_outputs succeeds without scripts.",
+      "factors": {
+        "tool_fit": { "score": 17, "why": "measure_outputs explicitly lists missing outputs and skips measurements when script import fails." },
+        "data_in_hand": { "score": 20, "why": "YAML and audits in-repo; missing scripts are a positive finding." },
+        "falsifiable_done": { "score": 14, "why": "Exact sim_id count and file existence checks." },
+        "compute_in_repo": { "score": 12, "why": "Full YAML scan ~10 s; per-audit measure_outputs varies." },
+        "isolation": { "score": 10, "why": "Inventory CSV only." },
+        "time_to_verdict": { "score": 7, "why": "One enumeration pass." },
+        "not_blocked": { "score": 5, "why": "Not previously refuted." }
+      }
+    },
+    {
+      "title": "Lean/Math-KG formal verification decoupled from morphometric validation (report-only for measure lens)",
+      "gap": "3072 of 9528 math-KG Lean snippets classify as `ground_arithmetic` under `verify_integrity.classify_lean_theorem_signature` (including all `law3_instability_criterion` `decide` checks); kernel `leanVerified` can be true while no rendered morphology is compared to literature. This is not decidable by remeasuring outputs alone—needs Lean audit / verify_integrity lens.",
+      "done": "N/A for measure lens; closure would be `verify_integrity.py --loop-yaml` reporting ≤ N ground_arithmetic theorems per sim_id with YAML `formula` mentioning calculus/PDE symbols.",
+      "tool_route": "Not measure_outputs: `python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/weisblat-hirudo-medicinalis-branching-tree.yaml` (example shows ground_arithmetic on Law 3).",
+      "deciding_data": "In repo: math_kg_loops + lean/loops; classifier in verify_integrity.py.",
+      "prior_attempts": "Levin v3 sidecar explicitly notes 'Quantified does not mean substantive'; not refuted as a classification task.",
+      "factors": {
+        "tool_fit": { "score": 2, "why": "measure_outputs does not parse Lean; verify_integrity owns Rule 3." },
+        "data_in_hand": { "score": 20, "why": "All Lean/YAML in repo." },
+        "falsifiable_done": { "score": 12, "why": "Classifier output is discrete per theorem." },
+        "compute_in_repo": { "score": 14, "why": "YAML scan only, no Lean compile required for signature class." },
+        "isolation": { "score": 10, "why": "Report-only." },
+        "time_to_verdict": { "score": 8, "why": "Batch classify loop." },
+        "not_blocked": { "score": 5, "why": "Open classification gap." }
+      }
+    }
+  ]
+}
