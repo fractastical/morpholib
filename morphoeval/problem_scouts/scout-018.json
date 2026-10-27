@@ -1,0 +1,311 @@
+{
+  "scout": "scout-018",
+  "ground": "thompson",
+  "lens": "registry",
+  "candidates": [
+    {
+      "title": "PanTHERIA→COMBINE blind body-mass prediction (mammals_pantheria_combine)",
+      "gap": "THOMPSON_DATASET_PORTFOLIO registered a genuinely blind split (train PanTHERIA 2009, predict COMBINE 2021-only species) for linear size traits on Upham et al. 2019, but the only executed mammal run is Leporidae 74-LM GM (0/3 hypotheses); the portfolio_id linkage is a placeholder, not the registered blind design.",
+      "done": "After hash-locking species-level log(body mass) predictions for all COMBINE-only tips (excluding imputed rows per portfolio protocol), median absolute error ratio of full-tree GLS vs grand-consensus < 0.80 with paired one-sided Wilcoxon p < 0.01 on n ≥ 30 matched species; recorded in predictions/resolutions/thompson-mammals.json with outcome_verdict confirmed or refuted.",
+      "tool_route": "Append TH-MAM-01 to predictions/prediction_registry.json via predictions/build_prediction_registry.py (or isolated registry patch); lock targets with thompson/preregister_blind_predictions.py pattern / SHA-256 manifest; score with a new zero-conflict runner morphoeval/resolvers/score_pantheria_combine_blind.py reading .thompson_cache or public COMBINE tables; write predictions/resolutions/thompson-mammals.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "Public: PanTHERIA (Jones et al. 2009 Ecology 90:2648), COMBINE (Soria et al. 2021 Ecology 102:e03344), Upham NS et al. 2019 PLoS Biol 17:e3000494 tree; repo: thompson/register_dataset_portfolio.py mammals_pantheria_combine row, docs/THOMPSON_DATASET_PORTFOLIO.md §2",
+      "prior_attempts": "Leporidae GM proxy only (Sherratt & Kraatz 2023, docs/portfolio/leporidae_skulls.md, 0/3); OP-04 partial (deep horizon, not this split); open-problems.json has no PanTHERIA/COMBINE closure",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Registry + score_resolutions is the stated closure path; scoring script for this split is not in repo yet but mirrors score_locked_predictions.py and preregister_blind_predictions.py."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Tree and portfolio protocol are in-repo; COMBINE/PanTHERIA tables are one named public fetch each, not vendored."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Fixed ratio threshold, alpha, and minimum n; scorer emits numeric medians and p without judgement."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Tree matching + univariate GLS on mass is hours on repo stack once tables are cached."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New registry row, resolution JSON, and runner only; no edits to main portfolio scored files required."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One loop after download/cache; not a single command today because the runner is missing."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt scored the registered PanTHERIA→COMBINE blind route; Leporidae GM is a different trait class."
+        }
+      }
+    },
+    {
+      "title": "Hash-locked a-priori antiparallel dipole-7 basis (B_dip7) on Vespinae wings",
+      "gap": "Post-run B_dip7 reaches 64.2% variance (+25.4 pp over Thompson-7) in vespinae_venation_mechanics.py but is explicitly NOT scored against locked D4; OP-10 lists Vespinae 0/7 pre-venation as portfolio residue without a blind, hash-locked positive prediction for the dipole repair.",
+      "done": "Pre-register basis construction (M0 + VEIN_EDGES only, no species means) in a new hypotheses JSON with SHA-256 in scout_preregistration_manifest; after commit, run scoring once: between-species variance share of B_dip7 on all 19 landmarks > 0.508 (beats D4 B_ven7 target); verdict in resolutions JSON → score_resolutions.py sets confirmed if share > 0.508 else refuted.",
+      "tool_route": "Commit thompson/portfolio/groups/vespinae_dipole7_hypotheses.json; python3 thompson/portfolio/groups/vespinae_dipole7.py (new file, extract build_postrun_antiparallel_dipole_basis from vespinae_venation_mechanics.py without interspecific D); register TH-VES-DIP-01 in prediction_registry.json; predictions/resolutions/thompson-vespinae-dipole.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: Perrard et al. 2014 wing landmarks (1,027 wings, 30 spp), thompson/portfolio/results/vespinae_wings.json; docs/portfolio/vespinae_venation_mechanics.md post-run diagnostics",
+      "prior_attempts": "W1–W7 on OpenTree (0/7, refuted, docs/portfolio/vespinae_wings.md); D1–D8 (7/8, D4 B_ven7 refuted at 42.6%); post-hoc dipole logged but not pre-registered — route blocked if re-proposed as D4 rerun without new registration",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Fits registry/resolutions/score_resolutions end-to-end; only needs a thin preregistered wrapper around existing basis code."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All wing coordinates and trees already used by vespinae portfolio scripts."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Single numeric threshold 0.508 on variance share; no expert taste."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Sub-minute GPA + projection on 30 species means."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New hypothesis file + script + registry/resolution only; D1–D8 documents stay untouched."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One prereg commit plus one scoring run in a single sitting."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "D4 locked B_ven7 route refuted; dipole outcome known post-hoc — fresh risk requires preregistration before reusing the same data."
+        }
+      }
+    },
+    {
+      "title": "Leporidae dorsal XY cranial profile vs lateral XZ (failed-clade representation)",
+      "gap": "leporidae_skulls_hypotheses.json states both dorsal XY and lateral XZ projections; LS1 scored only lateral (51.1% T7, failing the 55% bar) while inner cranial landmarks carry 67.8% unexplained variance vs 48.8% outer (thompson/portfolio/results/leporidae_skulls.json) — no registered test whether dorsal view restores fish-like Thompson share.",
+      "done": "Pre-register TH-LEP-DORS-01: Thompson-7 variance share on dorsal XY species means > 0.55 OR strictly greater than lateral share; paired verdict confirmed if either inequality holds with both shares written to resolution evidence JSON.",
+      "tool_route": "Register prediction; hash-lock view choice in new morphoeval/prereg/leporidae_dorsal_view.json; python3 thompson/portfolio/groups/leporidae_skulls.py --views dorsal,lateral (new flag, new file); predictions/resolutions/thompson-leporidae-dorsal.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: Sherratt & Kraatz 2023 Zenodo 7615230 symmetric component coords (referenced in docs/portfolio/leporidae_skulls.md), Matthee_Tree.nex",
+      "prior_attempts": "LS1–LS3 scored 2026-10-23 (0/3, docs/portfolio/leporidae_skulls.md); OP-10 partial autopsy without dorsal-view prediction",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Registry scoring applies; leporidae group runner exists but needs a zero-conflict view flag fork."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Same Zenodo landmark file already drives the scored lateral run."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Two comparable variance shares with explicit inequalities."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Reprojection + GPA on 18 tree species is minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New prereg + optional new runner file; no change to locked hypothesis JSON hashes."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single re-run after registration."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Dorsal-vs-lateral Thompson test was never registered or scored."
+        }
+      }
+    },
+    {
+      "title": "Portfolio P7 horizon rule on Leporidae (0.28 × crown age)",
+      "gap": "P7 in docs/THOMPSON_DATASET_PORTFOLIO.md predicts 95% coverage collapse below 75% at ~0.28 of clade crown age (fish: 50/177.5 Myr); Leporidae failed-clade LOO ratio 0.89 vs consensus with BM λ≈1 but no tau-binned coverage test on Matthee_Tree.nex (~48–55 Ma crown).",
+      "done": "Pre-register TH-LEP-P7-01: first tau bin (Myr MRCA to nearest training species) where median LOO full-space RMS/consensus RMS exceeds 1.0 lies within [0.14, 0.42] × sampled crown age (0.28 ± 50%); scorer outputs bin edges and ratio table in resolution JSON.",
+      "tool_route": "Register prediction; python3 morphoeval/resolvers/leporidae_horizon_p7.py (new) consuming thompson/portfolio/results/leporidae_skulls.json + Matthee_Tree.nex; predictions/resolutions/thompson-leporidae-p7.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: leporidae_skulls.json LOO medians, Matthee_Tree.nex; crown age from tree root-to-tip in same script",
+      "prior_attempts": "Fish internal hold-out horizon documented (docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md); bee B7 used 60 Myr split (docs/portfolio/bee_wings.md); P7 portfolio hypothesis subjective 40% — not scored per clade for Leporidae",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "Registry can score the numeric interval test but tau-bin LOO must be recomputed — not in current leporidae JSON."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Tree + landmarks in-repo; tau bins require recomputation from existing inputs only."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Interval on ratio crossing is checkable; bin width choice must be fixed in prereg to avoid taste."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "LOO phylogenetic prediction on 18 species is small but repeated per bin."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New resolver script and resolution file only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One recomputation loop once prereg fixes bin edges."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "P7 stated globally but Leporidae-specific horizon crossing not attempted; not refuted."
+        }
+      }
+    },
+    {
+      "title": "Monte Bolca BDmax time-slice null as registry prediction",
+      "gap": "OP-04 cites Monte Bolca 6/16 'closer than living' as partial deep-horizon evidence; docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md §6 reports 5/10 BDmax closer-than-living without a hash-locked registry row or binomial null against stasis.",
+      "done": "Register TH-BOCCA-01 before opening comparison: for the 10 BDmax/SL entries in datasets/thompson/monte_bolca_fossil_ratios.json, count fossils where |pred_lineage−fossil| < |living_mean−fossil|; confirmed if count ≥ 7, refuted if count ≤ 3, partially_resolved otherwise; store count and per-taxon table in resolutions JSON.",
+      "tool_route": "Register TH-BOCCA-01 in prediction_registry.json referencing thompson_phylogenetic_prediction_engine.json lineage states at fossil ages; python3 morphoeval/resolvers/score_monte_bolca_registry.py; predictions/resolutions/thompson-bolca.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: datasets/thompson/monte_bolca_fossil_ratios.json, thompson/thompson_phylogenetic_prediction_engine.json registered Bolca slices (docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md §5c)",
+      "prior_attempts": "Exploratory fossil table in run_phylogenetic_prediction_engine.py (2026); not pre-registered as prediction_registry row; OP-04 partial",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Pure registry resolution from existing JSON artifacts; small new aggregator script."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Fossil ratios and engine predictions already committed."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Exact count thresholds on 10 fossils."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Deterministic JSON join, seconds."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New registry entry + resolver only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate after registration if engine JSON is treated as locked prediction source."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "Counts already published in docs — registering now cannot be blind on same numbers; still resolves OP-04 null formally if labeled as confirmatory registry sync, not fresh blind."
+        }
+      }
+    },
+    {
+      "title": "Meta-resolution: portfolio P6 joint success count across eight non-fish groups",
+      "gap": "THOMPSON_DATASET_PORTFOLIO P6 registered 22% joint probability all eight non-fish groups beat consensus within horizon; PORTFOLIO_STATUS shows mixed LOO outcomes (e.g., waterfowl WB3 fail ratio 1.01, Varanus 1.00, Leporidae 0.89) but no prediction_registry row tying P6 to countable confirmed/refuted groups.",
+      "done": "Register TH-PORT-P6-01: count clades in {ants Pheidole, Morpho, Drosophila, waterfowl, Leporidae, Varanus, frogs, flowers} with LOO full/consensus ratio < 0.95 and Wilcoxon p < 0.05; confirmed if count ≥ 7, refuted if count ≤ 5, else partially_resolved; evidence = eight ratios pulled from thompson/portfolio/results/*.json.",
+      "tool_route": "Register TH-PORT-P6-01; python3 morphoeval/resolvers/portfolio_p6_tally.py reading thompson/portfolio/results/{pheidole_ants,morpho_butterflies,drosophilidae_wings,waterfowl_beaks,leporidae_skulls,varanus_lizards,australian_frogs,antillean_flowers}.json; predictions/resolutions/thompson-portfolio-p6.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: eight results JSON files and docs/portfolio/PORTFOLIO_STATUS.md",
+      "prior_attempts": "Per-clade hypothesis scores recorded; P6 product probability never registry-scored",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Ideal registry lens problem: aggregate existing scored JSON into one resolution row."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All deciding ratios already in thompson/portfolio/results/."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Integer count with fixed thresholds; edge case if p missing uses registered alpha rule in prereg."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Trivial JSON scan."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Meta-resolver + registry only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Minutes once prediction registered."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "P6 joint count not previously entered in prediction_registry/resolutions."
+        }
+      }
+    },
+    {
+      "title": "Bee forewing within-species P at species (not genus) granularity — OP-05",
+      "gap": "why_wings.md states bee P_tribe confounds C2; D7/D8 used genus-pooled replicates from bee_fossil spreadsheets (60% T7 in P_genus) but OP-05 still open: no hash-locked prediction that species-level P with n≥3 wings per species changes the 110 Myr among-tribe alignment metric used in C2.",
+      "done": "Pre-register TH-BEE-Psp-01: for species with ≥3 wings in bee_fossil_s001/s002, recompute C2 metrics (angle d_max vs p_max and share on first 3 within-PCs); confirmed if species-level P reduces among-tribe 3-PC share by ≥ 5 pp vs tribe-level P with same formulas; refuted if drop < 2 pp.",
+      "tool_route": "Register prediction; morphoeval/prereg/bee_species_p_matrix.json; python3 thompson/portfolio/groups/bee_species_why_wings.py (new fork of why_wings.py); predictions/resolutions/thompson-bee-pspec.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: bee wing xlsx paths referenced in docs/portfolio/vespinae_venation_mechanics.md D7; thompson/portfolio/results/why_wings.json baseline tribe metrics",
+      "prior_attempts": "C1–C8 why_wings (5/13); D7/D8 genus pooling (docs/portfolio/vespinae_venation_mechanics.md); OP-05 partial in open-problems.json — species-level route not scored",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Registry-compatible; requires new preregistered fork of why_wings metrics, not score_resolutions alone."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Spreadsheets cited in-repo; most species have n<3 so effective n may be small."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Fixed 5 pp / 2 pp drop thresholds on pre-defined C2 statistics."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Hours for GPA/P per species subset."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New script + prereg; locked C1–C8 files unchanged."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One loop but sparse per-species replication may force partially_resolved."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Genus-level D7/D8 partially addressed tribe pooling but not OP-05 species-level prediction."
+        }
+      }
+    },
+    {
+      "title": "Corrected FishShapes H4 (beat GLS root, not reef consensus) beyond 50 Myr — registry sync",
+      "gap": "THOMPSON_BLIND_TEST_RESULTS.md notes H4 failed because full-30 beat grand consensus at τ≥50 (ratio 0.52) while the scientific claim is degradation to clade-wide GLS root, not reef-biased consensus; no separate registry prediction encodes the corrected falsifier.",
+      "done": "Register TH-FISH-H4R-01 (post-hoc confirmatory): for FishShapes τ≥50 species, median |error| ratio of calibrated full-30 vs GLS root prediction < 0.95; refuted if ratio ≥ 1.05; use thompson/portfolio/results/fishshapes_v1.json or re-run score_blind_predictions.py with pre-declared root baseline column only.",
+      "tool_route": "Register TH-FISH-H4R-01; python3 morphoeval/resolvers/fishshapes_h4_root_baseline.py; predictions/resolutions/thompson-fish-h4r.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: thompson/portfolio/results/fishshapes_v1.json, docs/THOMPSON_BLIND_TEST_RESULTS.md horizon table",
+      "prior_attempts": "H4 scored refuted 2026-10-22 on consensus baseline (docs/THOMPSON_BLIND_TEST_RESULTS.md); reinterpretation documented post-hoc only",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "score_resolutions fits, but this is confirmatory on already-unblinded FishShapes — registry discipline is meta, not fresh blind."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "FishShapes scoring outputs already in repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Median ratio vs root with fixed 0.95/1.05 gates."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Re-aggregation from saved scores or one script rerun."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New registry row + resolver only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single aggregation pass."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Original H4 route on consensus is decided; H4R is a distinct baseline — not refuted, but not blind."
+        }
+      }
+    }
+  ]
+}
