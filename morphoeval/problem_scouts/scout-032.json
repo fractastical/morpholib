@@ -1,0 +1,145 @@
+{
+  "scout": "scout-032",
+  "ground": "turing",
+  "lens": "measure",
+  "candidates": [
+    {
+      "title": "Supersede stale Turing audit sidecar after Pass N+1 PDE GIF regeneration",
+      "gap": "The canonical MorphoEval sidecar `morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml` still fingerprints `turing_pearson_morphospace.png` and records `fraction of pattern pixels changed, first→last frame` = 0.0 (frozen pattern), while Pass N+1 replaced the montage asset with `docs/media/turing_gray_scott.gif` from the Gray–Scott PDE renderer (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`).",
+      "done": "A regenerated `.measurements.yaml` for an audit whose `simulations[].output` is `docs/media/turing_gray_scott.gif` reports `fraction of pattern pixels changed, first→last frame` > 0 and an `artifact_sha256` for that GIF distinct from the v2 PNG pin; `quick_gate.turing-gray-scott.result_quality` remains `validated` (total ≥ 80).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml (or a Turing-only superseding audit YAML pointing at the same GIF) → inspect `morphoeval/audits/<id>.measurements.yaml` fields `outputs.turing-gray-scott` and `measurements.turing-gray-scott`.",
+      "deciding_data": "In repo: `docs/media/turing_gray_scott.gif`, `morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml`, `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml`, `morphoeval/runs/2026-10-26-flagship15-loop-passN.md`.",
+      "prior_attempts": "Pass N+1 remediation (Sonnet + referee panel, 2026-10-26) regenerated the GIF and lowered the Turing overall score to 68.8 but did not commit a new Turing `.measurements.yaml` for the flagship audit; v2 sidecar remains tied to pre-remediation PNG bytes.",
+      "factors": {
+        "tool_fit": { "score": 24, "why": "`measure_outputs.py` already implements `measure_turing()` and writes the deciding GIF delta and sha256 fields." },
+        "data_in_hand": { "score": 20, "why": "Both the old sidecar and the new GIF are committed; no external fetch." },
+        "falsifiable_done": { "score": 15, "why": "Binary numeric checks on two YAML fields plus sha256 inequality vs v2." },
+        "compute_in_repo": { "score": 13, "why": "One `measure_outputs` invocation (~10–15 s including Pearson re-simulation)." },
+        "isolation": { "score": 9, "why": "Verdict is a new audit sidecar + optional scout note; no edits to `1952-turing-morpho.py` required to decide." },
+        "time_to_verdict": { "score": 10, "why": "Single command and diff against the frozen v2 sidecar." },
+        "not_blocked": { "score": 5, "why": "No prior record refutes re-measurement; Pass N+1 explicitly calls for honest re-derived scores." }
+      }
+    },
+    {
+      "title": "Audit `script:` path silently drops six Turing reference measurements",
+      "gap": "Turing audits (`2026-10-19-turing-audit-v2.yaml`, `2026-10-26-flagship15-audit-v1.yaml`) set `script: 1952-turing-morpho.py` at repo root, but the only checked-in entrypoint is `models/1952-turing-morpho.py`. When the root path is missing, `measure_turing()` returns only four GIF pixel metrics and omits Pearson/Turing-1952/specimen rows that carry literature `reference_value`s.",
+      "done": "`python3 morphoeval/measure_outputs.py <audit.yaml>` yields ≥ 10 `measurements.turing-gray-scott` entries with at least one row whose `reference_source` contains `Pearson 1993` and one whose `reference_source` contains `Kondo`; otherwise the verdict is FAIL with a logged `FileNotFoundError`-free partial list of length 4.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-turing-audit-v2.yaml && python3 -c \"import yaml; m=yaml.safe_load(open('morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml')); print(len(m['measurements']['turing-gray-scott']))\"",
+      "deciding_data": "In repo: audit YAMLs above, `models/1952-turing-morpho.py`, `morphoeval/measure_outputs.py` (`measure_turing`, L819–926).",
+      "prior_attempts": "v2 sidecar (2026-10-19) shows 10 measurements—likely generated when the script lived at root; Pass N+1 did not re-run `measure_outputs` on the relocated script path.",
+      "factors": {
+        "tool_fit": { "score": 25, "why": "The failure mode is observable entirely through `measure_outputs.py` output cardinality and reference fields." },
+        "data_in_hand": { "score": 20, "why": "All inputs are local files." },
+        "falsifiable_done": { "score": 15, "why": "Count ≥ 10 vs = 4 is machine-checkable." },
+        "compute_in_repo": { "score": 14, "why": "Two measure runs under one minute total." },
+        "isolation": { "score": 8, "why": "Fixing the path for a permanent verdict requires an audit YAML edit (conflict risk); the scout can still close the diagnostic via a new audit file only." },
+        "time_to_verdict": { "score": 10, "why": "Immediate on current tree (root script absent)." },
+        "not_blocked": { "score": 5, "why": "Not previously scored as closed; negative knowledge is the silent partial measure." }
+      }
+    },
+    {
+      "title": "Flagship-15 Turing re-score lacks morphology snapshot / quick_gate linkage",
+      "gap": "`morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` scores `turing-gray-scott` (overall 68.8, morphometric-validation 52) but no `2026-10-26-flagship15-audit-v1.measurements.yaml` exists, so the Pass N+1 Turing downgrade is not tied to pinned GIF morphometrics or `quick_gate` totals.",
+      "done": "File `morphoeval/audits/2026-10-26-flagship15-audit-v1.measurements.yaml` exists after running `measure_outputs` and includes `quick_gate.turing-gray-scott.total` plus specimen rows (`Pomacanthus imperator segmented skin stripe wavelength`, `Ostracion meleagris segmented Turing spots`).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml",
+      "deciding_data": "In repo: flagship audit YAML, `docs/media/turing_gray_scott.gif`, `datasets/turing/turing_reference.json`.",
+      "prior_attempts": "OP-06 (`docs/open-problems.json`) marked flagship structural debt solved at narrative level; Pass N+1 passN.md still lists open Turing growing-domain work and lowered Turing score without a measurements sidecar.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Standard audit→sidecar pipeline already defined in `measure_outputs.py` header." },
+        "data_in_hand": { "score": 20, "why": "Flagship audit and GIF already committed." },
+        "falsifiable_done": { "score": 14, "why": "File existence plus required YAML keys are objective." },
+        "compute_in_repo": { "score": 12, "why": "Full flagship audit measure touches 16 sims—minutes, still same-day." },
+        "isolation": { "score": 9, "why": "Adds only `.measurements.yaml` (and optional new audit copy) under morphoeval/audits." },
+        "time_to_verdict": { "score": 8, "why": "One batch measure run; longer than Turing-only but single sitting." },
+        "not_blocked": { "score": 5, "why": "No refutation of generating the sidecar; merely omitted so far." }
+      }
+    },
+    {
+      "title": "Pomacanthus Y-junction sidecar metric fails Kondo (1995) published dislocation band",
+      "gap": "Self-test in `models/1952-turing-morpho.py` discloses ~22 detected Y-junctions vs 2–3 published in the adult ROI (no longer gated), but the MorphoEval sidecar still stores `topological Y-branch junctions = 22` with reference `8–16 px (CV < 0.35)` on spacing only—no reference bound on junction count.",
+      "done": "After re-measure, either (a) add a sidecar row `Pomacanthus Y-branch junction count` with `reference_value` in [2, 4] and measured value inside that interval, or (b) a signed negative result document that measured count > 4 with unchanged detector, closing the specimen-match claim for Y-dislocations.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-turing-audit-v2.yaml --quick-gate; parse `measurements.turing-gray-scott` note field for `Y-branch junctions`; compare to `datasets/turing/turing_reference.json` stage table `y_branch_count` (max 4 at 7 cm) as literature prior.",
+      "deciding_data": "In repo: `datasets/turing/turing_reference.json` (`kondo_asai_1995_pomacanthus_growth.stages[].y_branch_count`), `datasets/turing/pomacanthus_imperator_stripes_specimen.jpg`, v2 measurements note line 94.",
+      "prior_attempts": "Pass N+1 (2026-10-26) removed Y-junction from self-test gates and disclosed over-detection; v3 Pomacanthus loop audit (`2026-10-19-pomacanthus-stripe-insertion-audit-v3`) scored 93.1 without reconciling flagship ROI junction counts.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Count is already emitted in `measure_turing()` script branch; verdict is re-measure + reference comparison, not retuning CV." },
+        "data_in_hand": { "score": 18, "why": "Specimen JPEG and JSON stage counts are vendored; published 2–3 figure count is cited in-script, not digitized." },
+        "falsifiable_done": { "score": 13, "why": "Integer inequality against [2,4] or explicit fail flag is scorer-safe." },
+        "compute_in_repo": { "score": 12, "why": "Reuses existing segmentation inside `run_pearson_morphospace_analysis`." },
+        "isolation": { "score": 9, "why": "Decision via new measurements YAML / audit patch file only." },
+        "time_to_verdict": { "score": 9, "why": "One measure pass; fixing the detector is out of scope for the verdict." },
+        "not_blocked": { "score": 4, "why": "Over-detection acknowledged; route is to record failure, not re-claim validation." }
+      }
+    },
+    {
+      "title": "Kondo ontogeny stripe table vs 1D PDE prediction — per-stage error not sidecarred",
+      "gap": "`measure_turing()` reports only aggregate `ontogenetic r` (≈0.998) while `datasets/turing/turing_reference.json` lists six `(body_length_cm, n_stripes)` stages; Pass N+1 flags `kondo_corr_r` as calibration consistency, not independent validation.",
+      "done": "Sidecar or derived JSON reports `max_abs_error = max_i |n_pred(i) - n_emp(i)|` over the six JSON stages with `max_abs_error <= 1` (PASS) or `> 1` (FAIL); values extracted from the same script run `measure_outputs` already triggers via `run_pearson_morphospace_analysis`.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-turing-audit-v2.yaml; cross-check script stdout CSV `/tmp/.../metrics.csv` or extend read of `bio['kondo_pred_stripes']` vs `datasets/turing/turing_reference.json` using a one-off `python3 -c` importer of `models/1952-turing-morpho.py` (no repo edits required for the diagnostic).",
+      "deciding_data": "In repo: `datasets/turing/turing_reference.json` stages block; script functions `simulate_kondo_asai_growing_domain_stripes` / `segment_biological_turing_specimens`.",
+      "prior_attempts": "Turing loop v2 audit (2026-10-19) celebrated high r; Pass N+1 passN.md explicitly demoted r to a non-gated calibration check.",
+      "factors": {
+        "tool_fit": { "score": 18, "why": "Data already computed inside the script path `measure_turing` loads; sidecar currently drops per-stage errors." },
+        "data_in_hand": { "score": 20, "why": "Empirical stage table is SHA-locked JSON in repo." },
+        "falsifiable_done": { "score": 14, "why": "Single scalar max error against a fixed six-row table." },
+        "compute_in_repo": { "score": 13, "why": "Subsumed in existing Pearson analysis runtime." },
+        "isolation": { "score": 10, "why": "Diagnostic can live in a new scout/run JSON without touching models." },
+        "time_to_verdict": { "score": 9, "why": "One script import + table diff." },
+        "not_blocked": { "score": 5, "why": "Independent per-stage test not previously recorded as refuted." }
+      }
+    },
+    {
+      "title": "Pearson (1993) simulated (F,k) regimes vs 12-class reference morphology table",
+      "gap": "The flagship script integrates five Gray–Scott regimes plus equal-diffusion control while `datasets/turing/turing_reference.json` documents all twelve Pearson classes (α–μ) with `(F,k)` and morphology labels; audits do not record whether each simulated regime’s `(F,k)` pair matches the cited class row and expected morphology family (spots vs labyrinth vs worms).",
+      "done": "Automated table: for each simulated regime id in `models/1952-turing-morpho.py`, `(F,k)` equals the matching `pearson_1993_12_classes[].{F,k}` entry within 1e-4 and `connected high-V components` ordering matches documented spot-vs-labyrinth ordering (mitosis spots components > coral labyrinth components per v2 sidecar reference_value 1 vs 52).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-turing-audit-v2.yaml; join `measurements.turing-gray-scott` component counts with `datasets/turing/turing_reference.json` and `CANONICAL_MODEL_SPECS['turing-gray-scott'].regimes` in `morphoeval/measure_outputs.py`.",
+      "deciding_data": "In repo: `datasets/turing/turing_reference.json` (`pearson_1993_12_classes`), v2 measurements rows for mitosis vs coral components, canonical spec block L66–81.",
+      "prior_attempts": "Turing v2 audit cited Pearson bifurcation implementation; no recorded attempt failed the five-regime vs twelve-class coverage check.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Component and spectral rows already in sidecar; JSON table gives exact references." },
+        "data_in_hand": { "score": 20, "why": "All (F,k) and morphology strings vendored." },
+        "falsifiable_done": { "score": 12, "why": "Pair match and inequality checks are mechanical; full morphology-class NLP is not required for the spot/labyrinth ordering test." },
+        "compute_in_repo": { "score": 13, "why": "Uses existing measure sidecar + JSON join." },
+        "isolation": { "score": 10, "why": "Analysis file only under morphoeval/runs or problem_scouts." },
+        "time_to_verdict": { "score": 9, "why": "Table join in one sitting." },
+        "not_blocked": { "score": 5, "why": "Coverage gap not previously closed or refuted." }
+      }
+    },
+    {
+      "title": "2D growing-domain Turing stripe insertion (flagship debt) — not decidable by measure alone",
+      "gap": "Flagship audit `does_not_claim` lists a real 2D growing-domain L(t) stripe-insertion solver; `1995-kondo-pomacanthus-stripe-insertion.py` implements growing 1D/sector solvers but flagship `1952-turing-morpho.py` keeps independent 1D stages (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md` still open).",
+      "done": "N/A for measure lens: would require new PDE output; a measure verdict would need a rendered growing-domain GIF with `fraction of pattern pixels changed, first→last frame` > 0 and monotonic stripe-count series matching `turing_reference.json` ontogeny—outputs do not exist yet.",
+      "tool_route": "Current `measure_outputs.py` cannot decide; after a fix, `python3 morphoeval/measure_outputs.py <new-audit.yaml>` on `docs/media/turing_gray_scott.gif` successor plus stripe-count series vs JSON.",
+      "deciding_data": "In repo: gap documentation in flagship audit YAML and passN.md; reference ontogeny in `datasets/turing/turing_reference.json`.",
+      "prior_attempts": "OP-06 (`docs/open-problems.json`) marked solved at checklist level; Pass N+1 and flagship audit text still list this as open—treat narrative closure as blocked for measurement until new media exists.",
+      "factors": {
+        "tool_fit": { "score": 3, "why": "No growing-domain 2D artifact to measure yet; tool applies only after an implementation scout lands output." },
+        "data_in_hand": { "score": 12, "why": "Reference ontogeny table exists; missing simulated growing-domain render." },
+        "falsifiable_done": { "score": 8, "why": "Done criteria are clear but preconditions unmet." },
+        "compute_in_repo": { "score": 5, "why": "Future PDE runs may take hours; not a re-measure of existing bytes." },
+        "isolation": { "score": 4, "why": "Real fix touches flagship script and media (high conflict)." },
+        "time_to_verdict": { "score": 2, "why": "Blocked on missing output." },
+        "not_blocked": { "score": 1, "why": "OP-06 'solved' vs passN open text is conflicting; do not re-propose as closed." }
+      },
+      "alternate_lens": "implementation / loop-builder scout (new solver + GIF), then re-enter measure lens."
+    },
+    {
+      "title": "Pomacanthus insertion fluctuation amplitude (nudge=0) — needs new simulation, not remeasure",
+      "gap": "Pass 3 Pomacanthus audit (`morphoeval/kg/2026-10-19-pomacanthus-stripe-insertion-audit-v3/REPORT.md`) requires a nudge=0 control and fluctuation sweep for growing-domain insertion; existing `.measurements.yaml` reports insertion with 0.004 background noise but no nudge=0 row.",
+      "done": "After code adds controls, `measure_morphoeval()` sidecar includes insertion at nudge=0 (expect FAIL) and documents finite `s*` vs amplitude; not obtainable from current committed GIF/PNG bytes alone.",
+      "tool_route": "Future: `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-pomacanthus-stripe-insertion-audit-v3.yaml` once script emits nudge sweep metrics via `measure_morphoeval()`.",
+      "deciding_data": "In repo: audit v3 YAML, REPORT remediation bullets; public source Kondo & Asai (1995) doi:10.1038/376765a0.",
+      "prior_attempts": "Pass 3 closed curvilinear/agent items at 93.1/100; fluctuation/nudge item explicitly left open in REPORT remediation list.",
+      "factors": {
+        "tool_fit": { "score": 5, "why": "Measure tool reads outputs; sweep does not exist in current `measure_morphoeval()` return list." },
+        "data_in_hand": { "score": 14, "why": "Audit and reference JSON present; missing nudge=0 simulation series." },
+        "falsifiable_done": { "score": 11, "why": "Clear once metrics exist; currently undefined." },
+        "compute_in_repo": { "score": 8, "why": "Requires new PDE runs inside kondo script." },
+        "isolation": { "score": 5, "why": "Needs edits to `1995-kondo-pomacanthus-stripe-insertion.py` (tracked flagship-adjacent loop)." },
+        "time_to_verdict": { "score": 3, "why": "Blocked until builder adds sweep." },
+        "not_blocked": { "score": 5, "why": "Route not refuted—explicitly queued as open remediation." }
+      },
+      "alternate_lens": "loop remediation agent implementing nudge sweep, then measure_outputs on updated audit."
+    }
+  ]
+}
