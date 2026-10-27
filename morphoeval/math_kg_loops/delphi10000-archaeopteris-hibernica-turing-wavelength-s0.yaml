@@ -1,0 +1,54 @@
+sim_id: delphi10000-archaeopteris-hibernica-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 3.096e-05
+log10_size_m: -4.509
+size_human: 31 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Archaeopteris hibernica (Late Devonian Famennian, 370 Ma)
+geological_age_ma: 370.0
+geological_period: Late Devonian (Famennian, 370 Ma)
+fossil_lineage_group: Paleobotanical Vascular & Leaf Fossil Series
+model_spec:
+  model: Schnakenberg 1979 kinetics with Turing 1952 dispersion; k_c = argmax sigma(k) = 2*pi/31 per micrometre
+  a: 0.118
+  b: 0.764
+  Du_um2_per_time: 3.1
+  Dv_um2_per_time: 74.4
+  gamma_per_time: 0.6636411260112325
+  domain_um: 186.0
+  grid: [96, 96]
+  seed: 3119
+  lambda_um: 31.0
+  age_ma: 370
+  inputs:
+    - datasets/archaeopteris_hibernica_turing_wavelength_s0/archaeopteris_hibernica_turing_wavelength_s0_reference.json
+    - datasets/archaeopteris_hibernica_turing_wavelength_s0/Archaeopteris_hibernica_NMNH.jpg
+    - datasets/archaeopteris_hibernica_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Schnakenberg Jacobian at the Famennian steady state
+    formula: f_u = -1 + 2b/(a+b), g_v = -(a+b)^2, trace = f_u + g_v < 0, det = f_u g_v - f_v g_u > 0
+    lean_decl: MathOfBiology.Loop_3119.turingCrossProxy
+    lean_theorem: MathOfBiology.Loop_3119.diffusionDrivenCrossPositive
+    lean_locus: morphoeval/lean/loops/Loop_3119_archaeopteris_hibernica_turing_wavelength_s0.lean#L36-L42
+    variables: a=0.118, b=0.764, Du=3.10, Dv=74.40
+    role: Diffusion-driven cross is positive, so the homogeneous epidermis is Turing-unstable
+    source_citation: Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0; Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py#L77-L112
+  - law_name: Fastest-growing epidermal wavelength
+    formula: k_c = argmax sigma(k), lambda_c = 2*pi/k_c = 31 um
+    lean_decl: MathOfBiology.Loop_3119.domainHoldsSixWavelengths
+    lean_theorem: MathOfBiology.Loop_3119.domainHoldsSixWavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3119_archaeopteris_hibernica_turing_wavelength_s0.lean#L14-L16
+    variables: domain 186 um holds 6 waves of 31 um
+    role: Selects the ocellus spacing on the planated Famennian lamina
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py#L87-L122
+  - law_name: Planation chronoseries of the wavelength
+    formula: lambda(h) = 31*(h/12.4)^0.62; 21 um < 31 um < 66 um
+    lean_decl: MathOfBiology.Loop_3119.planationThenMiniaturization
+    lean_theorem: MathOfBiology.Loop_3119.planationThenMiniaturization
+    lean_locus: morphoeval/lean/loops/Loop_3119_archaeopteris_hibernica_turing_wavelength_s0.lean#L24-L28
+    variables: Tetraxylopteris 66 um (385 Ma), Archaeopteris hibernica 31 um (370 Ma), Elkinsia 21 um (365 Ma)
+    role: States what changes at this scale and age relative to the unplanated predecessor and the thinner cupulate successor
+    source_citation: Boyce and Knoll (2002) DOI:10.1666/0094-8373(2002)028%3C0070:EODPAT%3E2.0.CO;2
+    code_locus: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py#L125-L128
