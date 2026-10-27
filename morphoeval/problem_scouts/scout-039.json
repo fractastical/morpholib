@@ -1,0 +1,142 @@
+{
+  "scout": "scout-039",
+  "ground": "turing",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "title": "Flagship Gray–Scott: integrated 2D growing-domain stripe insertion with L(t)",
+      "gap": "`1952-turing-morpho.py` still runs Kondo-style stripe doubling as independent 1D stages; the flagship Pass N+1 audit and `2026-10-19-turing-audit-v2` both flag the missing 2D adiabatic domain expansion L(t) solver that would produce spontaneous Y-branch insertion in space–time (claim boundary explicitly disclaims this today).",
+      "done": "`python3 models/1952-turing-morpho.py --self-test` includes a new check that fails on current HEAD and passes after fix: a single 2D Gray–Scott (or Kondo piecewise-linear) run on a domain whose linear size grows ≥2× reports ≥1 verified Y-junction insertion event (topological branch count increases monotonically during growth) with dilution term documented per Crampin–Gaffney–Maini (1999); `morphoeval/report/build_report.py collect` on a superseding audit shows `model-fidelity` ≥ prior Pass 2 value and the flagship `does_not_claim` line for 2D growing-domain is removed or replaced with a bounded claim backed by the new measurement row.",
+      "tool_route": "12-step MorphoEval loop on `1952-turing-morpho.py`: Pass 1 audit YAML from `morphoeval/audits/2026-10-19-turing-audit-v2.yaml` baseline; Step 12 implements solver (reuse patterns from `1995-kondo-pomacanthus-stripe-insertion.py` growing polar/2D blocks); Steps 6–8 `python3 models/1952-turing-morpho.py --self-test`, `python3 morphoeval/measure_outputs.py morphoeval/audits/<new-audit>.yaml`; Steps 9–10 `python3 morphoeval/build_morphoeval_kg.py … --check` and `python3 morphoeval/sign_morphoeval.py`; Step 12 blind re-score via dual-provider audit. Telemetry: `python3 morphoeval/track_loop.py init --run-id 2026-turing-flagship-growing-domain-loop`.",
+      "deciding_data": "In repo: `datasets/turing/turing_reference.json`, `datasets/turing/pomacanthus_imperator_stripes_specimen.jpg`, Kondo & Asai (1995) parameters already wired; reference growing-domain formulation Crampin et al. Bull. Math. Biol. 61:1093 (1999), doi:10.1006/bulm.1999.0132 (public, cited in cow second-assessor audits).",
+      "prior_attempts": "Full Pass 1→2 loop closed dispersion/Pearson/specimen gaps (`2026-10-19-turing-morpho-loop`, 38→85.5). Flagship Pass N+1 (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`) re-scored 85.5→68.8 and left 2D growing-domain open. `docs/open-problems.json` OP-06 lists growing-domain as solved at graph level, but `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` remediation still open — no integrated 2D solver landed on main.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Named loop tools (`--self-test`, `measure_outputs.py`, `build_morphoeval_kg.py`, dual audit) directly score the flagged audit item." },
+        "data_in_hand": { "score": 18, "why": "Gray–Scott/Kondo constants and specimen assets already live under `datasets/turing/`." },
+        "falsifiable_done": { "score": 14, "why": "Self-test gate on Y-junction count during one growing 2D run is binary before/after." },
+        "compute_in_repo": { "score": 11, "why": "2D IMEX on ≤256² grid for hundreds of growth steps fits hours on VM Python stack but is heavier than typical slot self-tests." },
+        "isolation": { "score": 3, "why": "Requires editing the shared flagship `1952-turing-morpho.py` and montage GIF — high merge conflict risk." },
+        "time_to_verdict": { "score": 6, "why": "One remediation pass can close the single top audit bullet, but dual re-score + KG may spill past one sitting." },
+        "not_blocked": { "score": 5, "why": "No prior attempt refuted the 2D growing-domain route; only deferred as structural debt." }
+      }
+    },
+    {
+      "title": "Pomacanthus imperator: SHA-pinned Y-junction ground truth for skeleton recall/precision",
+      "gap": "Automated segmentation on `pomacanthus_imperator_stripes_specimen.jpg` reports 22 Y-junctions vs ~2–3 in Kondo & Asai (1995); Pass N+1 removed the false validation gate but left no benchmark — `2026-10-19-turing-audit-v2` remediation still asks for manual landmark annotations.",
+      "done": "New file `datasets/turing/pomacanthus_imperator_y_junctions.json` lists ≥3 hand-placed junction pixel coordinates with annotator id and image SHA-256 matching the pinned specimen; `1952-turing-morpho.py --self-test` asserts skeleton junction recall ≥0.5 and precision ≥0.2 against that file (thresholds fixed in self-test, not rubric taste); failing on current over-detection, passing after detector/threshold fix or honest disclosure with updated `morphometric-validation` score in a superseding audit.",
+      "tool_route": "Remediation loop Steps 3–5: vendor JSON + edit detector in `1952-turing-morpho.py`; Step 8 `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-turing-audit-v2.yaml` (or v3 superseder) to record recall/precision measurement rows; Step 7 dual audit re-score; optional `python3 morphoeval/verify_image_fitness.py` entry for `turing-gray-scott` if fitness table updated in same branch.",
+      "deciding_data": "In repo: `datasets/turing/pomacanthus_imperator_stripes_specimen.jpg`, existing segmentation code in `1952-turing-morpho.py` (~L706–845 per audit evidence); external anchor counts from Kondo & Asai Nature 376:765 (1995), doi:10.1038/376765a0 (figure panel, not re-digitisation required for done gate).",
+      "prior_attempts": "Pass 2 Turing loop added CV segmentation but no GT landmarks. Flagship Pass N+1 disclosed over-detection and dropped gating without adding annotations (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`).",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Audit-listed remediation maps 1:1 to self-test morphometrics the loop already emits." },
+        "data_in_hand": { "score": 19, "why": "Specimen photograph and SHA pins already in `datasets/turing/`." },
+        "falsifiable_done": { "score": 15, "why": "Recall/precision against a committed JSON file is mechanically scorable." },
+        "compute_in_repo": { "score": 15, "why": "Annotation + detector retune runs in seconds on existing PNG." },
+        "isolation": { "score": 6, "why": "Mostly new JSON plus localized detector edits, but still touches the flagship script." },
+        "time_to_verdict": { "score": 9, "why": "Single loop pass: annotate, fix detector, re-run `--self-test` and measure." },
+        "not_blocked": { "score": 5, "why": "Route never attempted; disclosure-only partial fix already scored down, not refuted." }
+      }
+    },
+    {
+      "title": "Conus textile Meinhardt shell: autonomous activator–inhibitor without stochastic injection",
+      "gap": "`1984-wolfram-conus-textile-rule30.py` documents stochastic activator injection (p=0.18, +0.90) and clipping as stabilisers not in Meinhardt–Klingler; flagship audit lists “Autonomous Meinhardt parameterisation without stochastic injection/clipping (structural)” alongside OP-06 Meinhardt-autonomy debt.",
+      "done": "`python3 models/1984-wolfram-conus-textile-rule30.py --self-test` gains checks: (1) with injection probability forced to 0, Meinhardt kymograph peak contrast ≥90% of default run and shell IoU vs segmented specimen ≥0.80; (2) equal-diffusion control (D_a=D_h) shows no sustained pattern (σ below threshold); docstring claim boundary updated to state whether autonomy is achieved or injection remains required; superseding flagship audit entry clears the open remediation bullet or documents failure with negative result in KG.",
+      "tool_route": "12-step loop on `1984-wolfram-conus-textile-rule30.py`: baseline `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` Conus entry; Step 12 remove/replace injection path; Steps 6–8 render + `measure_outputs.py`; re-score via dual audit; `python3 morphoeval/track_loop.py` ledger for pass.",
+      "deciding_data": "In repo: vendored Conus specimen arrays referenced in flagship audit (1814 vs 667 fixture note), Meinhardt parameters in script header; Meinhardt & Klingler (1987) primary model citation in script/dataset bib.",
+      "prior_attempts": "Flagship Pass N+1 (Gemini/Sonnet panel) disclosed injection but did not remove it (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md` still-open list). OP-06 claimed Meinhardt autonomy solved without Conus-specific evidence on main.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Standard loop self-test + audit re-score is the repo’s closure path for flagship structural debt." },
+        "data_in_hand": { "score": 17, "why": "Specimen segmentation and kymograph data already vendored for Conus script." },
+        "falsifiable_done": { "score": 13, "why": "Injection-off contrast and IoU thresholds are explicit; failure is a valid negative outcome." },
+        "compute_in_repo": { "score": 8, "why": "Full `--self-test` ~303 s today per flagship audit; autonomy search may need parameter sweep within hours." },
+        "isolation": { "score": 2, "why": "Edits shared flagship Conus script and GIF under heavy parallel morphoeval traffic." },
+        "time_to_verdict": { "score": 5, "why": "Autonomy may require multi-trial tuning before audit re-score settles." },
+        "not_blocked": { "score": 4, "why": "Not refuted, but OP-06 ‘solved’ label means duplicate effort risk if graph state is trusted blindly." }
+      }
+    },
+    {
+      "title": "Kondo pomacanthus slot: nudge=0 fluctuation sweep for insertion nucleation",
+      "gap": "`1995-kondo-pomacanthus-stripe-insertion.py` growing-domain solvers inject mode-6/12 cosines (L402–406) and 0.004 white noise (L733); Pass 3 audit (`2026-10-19-pomacanthus-stripe-insertion-audit-v3`) requires a nudge=0 control and amplitude sweep reporting insertion scale s* vs fluctuation amplitude.",
+      "done": "CLI flags `--nudge-amplitude` including 0; `--self-test` asserts at amplitude 0 either (a) insertion still occurs at documented s* within 5% of default or (b) script records `insertion_requires_nudge: true` and sweep CSV monotonic in s*; new measurement rows in audit sidecar with reference column citing sweep endpoint; Pass 4 audit YAML supersedes v3 with remediation item struck.",
+      "tool_route": "MorphoEval loop Pass 12 on slot-004 script: baseline audit v3; implement sweep in script; `python3 models/1995-kondo-pomacanthus-stripe-insertion.py --self-test`; `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-pomacanthus-stripe-insertion-audit-v4.yaml`; KG build/sign; `morphoeval/cloud/dispatches/slot-004.json` pattern for run metadata.",
+      "deciding_data": "In repo: `datasets/pomacanthus_stripe_insertion/pomacanthus_stripe_insertion_reference.json`, specimen JPG, full Pass 3 solver code; Kondo & Asai (1995) doi:10.1038/376765a0.",
+      "prior_attempts": "Pass 3 closed curvilinear sector + agent coupling (92.0→93.1) but explicitly left fluctuation dependence open (`morphoeval/kg/2026-10-19-pomacanthus-stripe-insertion-audit-v3/REPORT.md` remediation list). Slot dispatch completed Pass 3, no Pass 4 on main.",
+      "factors": {
+        "tool_fit": { "score": 24, "why": "Single audit bullet maps to one CLI sweep + existing 16-check self-test harness." },
+        "data_in_hand": { "score": 20, "why": "All solver code and pinned datasets already in repo." },
+        "falsifiable_done": { "score": 15, "why": "CSV of s* vs amplitude plus boolean nudge=0 outcome is machine-checkable." },
+        "compute_in_repo": { "score": 14, "why": "Pass 3 self-test ~9 s; sweep of ≤10 amplitudes stays under an hour." },
+        "isolation": { "score": 5, "why": "Dedicated slot script branch isolates from flagship montage but still modifies a tracked model file." },
+        "time_to_verdict": { "score": 9, "why": "One remediation pass matches one open v3 item." },
+        "not_blocked": { "score": 5, "why": "Explicitly queued, never run." }
+      }
+    },
+    {
+      "title": "Meinhardt echinoderm pentaradial: replace templated ring PDE with integrated Gierer–Meinhardt dynamics",
+      "gap": "Pass 3 dispatch (`slot-075`) exposed Section 2 ‘Gierer-Meinhardt ring PDE’ as templated (hard-coded dispersion parabola, target-mode seeding, algebraic inhibitor) with r=1.0000 by construction; top open item is integrated PDE with derived σ(m), integrated inhibitor, no target-mode seed, equal-diffusion control.",
+      "done": "`python3 models/2005-meinhardt-echinoderm-pentaradial-symmetry.py --self-test` fails if `sigma(m)` is not computed from D_a/D_h/ρ at runtime; passes when ring modes emerge from time integration without prescribed mode index; equal-diffusion control yields flat field; OPR headline correlation reported as empirical (not identically 1.0000) in new measurement row; `2026-10-19-echinoderm-pentaradial-symmetry-audit-v4.yaml` clears first `pass3_remediation_open` item from dispatch JSON.",
+      "deciding_data": "In repo: `models/2005-meinhardt-echinoderm-pentaradial-symmetry.py`, `datasets/echinoderm_pentaradial_symmetry/`, Pass 3 reference JSON; Gierer & Meinhardt (1972) Kybernetik theory already cited in campaign slot YAML.",
+      "prior_attempts": "Pass 2 loop 52.7→91.8; Pass 3 Phase A/B completed (`morphoeval/cloud/dispatches/slot-075.json`) but score fell to 89.2 after templating exposure; integrated PDE replacement not attempted.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Dispatch lists exact line-level remediation; loop self-test + audit is the closure contract." },
+        "data_in_hand": { "score": 18, "why": "Specimen polar C5/C10 pipeline and OPR reference JSON already vendored." },
+        "falsifiable_done": { "score": 14, "why": "Checks on dynamic σ(m), no target-mode seed, and non-identity r are objective." },
+        "compute_in_repo": { "score": 12, "why": "3D OPR + ring PDE integration likely tens of minutes per self-test, within hours." },
+        "isolation": { "score": 7, "why": "Slot-075 branch targets a single script away from Turing flagship montage." },
+        "time_to_verdict": { "score": 7, "why": "One major remediation item, but re-score may expose follow-on defects." },
+        "not_blocked": { "score": 5, "why": "Open dispatch item; prior pass did not refute integrated PDE approach." }
+      }
+    },
+    {
+      "title": "Palate rugae Turing: shared noisy IC perturbation suite (no condition-specific seeds)",
+      "gap": "Pass 3 audit (`2026-10-19-palate-ruguga-turing-audit-v3`) flags FGF10-bead, cyclopamine, and coronal-cut phenotypes as seeded by condition-specific initial fields (L606–633) rather than emergent from barrier/bead/cyclopamine terms alone.",
+      "done": "All perturbation conditions start from identical noisy baseline field; `--self-test` verifies bifurcation index ordering matches reference table within documented tolerances or sets `emergent: false` for failed conditions; audit remediation first bullet struck in v4 YAML; Lean laws unchanged unless thresholds move.",
+      "tool_route": "12-step loop on `2012-economou-palate-ruguga-turing.py`: baseline v3 audit; Step 12 refactor IC block; `python3 models/2012-economou-palate-ruguga-turing.py --self-test`; `python3 morphoeval/measure_outputs.py` on new audit; dual re-score.",
+      "deciding_data": "In repo: `datasets/palate_ruguga_turing/`, `palate_ridge_mechanics_reference.json`, Economou 2012 model parameters in script.",
+      "prior_attempts": "Pass 3 added Kirchhoff plate (92.4→91.2) and left perturbation seeding as first open remediation (`morphoeval/audits/2026-10-19-palate-ruguga-turing-audit-v3.yaml`).",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Audit gives line-pinned fix and measurement expectations the loop already uses." },
+        "data_in_hand": { "score": 19, "why": "Full rugae dataset and reference mechanics JSON in repo." },
+        "falsifiable_done": { "score": 13, "why": "Emergence pass/fail per condition with pre-registered tolerance table in self-test." },
+        "compute_in_repo": { "score": 13, "why": "Palate script self-test historically ~1–2 min per v3 audit notes." },
+        "isolation": { "score": 8, "why": "Slot-008 script separate from flagship Turing montage tile." },
+        "time_to_verdict": { "score": 8, "why": "Single remediation bullet focused on IC refactor." },
+        "not_blocked": { "score": 5, "why": "Not attempted post-v3." }
+      }
+    },
+    {
+      "title": "Holstein cow coat audit: independent second-assessor re-score (R11) without revisiting mechanism",
+      "gap": "Published negative verdict on `1981-murray-bos-taurus-turing-wavelength.py` is builder-scored; audit v7 remediation R11 requires cross-provider re-score of Pass 8+ tree before RD-vs-Eden null is quoted externally; OP-11 notes blinded Fable audits predated scale-matched pipeline.",
+      "done": "New audit YAML `morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit-v3.yaml` (or superseder) with assessor ≠ builder, scores all seven dimensions with line evidence on current HEAD; `python3 morphoeval/report/build_report.py collect` includes second row; published.json records both assessors; no change to negative mechanism verdict required for closure.",
+      "tool_route": "Steps 7–11 only on frozen script: checkout commit pinned in v7 audit; dual-provider Pass 1 scoring via audit template; `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml`; `python3 morphoeval/build_morphoeval_kg.py … --check`; compare overall to builder 57.x/ published assessment in `datasets/bos_taurus_turing_wavelength/README.md`.",
+      "deciding_data": "In repo: full Pass 8+ script, 10 pinned coat specimens, held-out morphometrics JSON, v7 audit and second-assessor v2 YAML for template.",
+      "prior_attempts": "Second-assessor v1/v2 YAML exist (`morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit-v2.yaml`) but predate v7 publication checkpoint; OP-11 marked refuted for mechanism follow-ups, not for R11 process gap.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Loop Steps 7–11 (`build_report`, `measure_outputs`, KG) are designed for dual audit closure without code edits." },
+        "data_in_hand": { "score": 20, "why": "Entire evidence tree and specimens already vendored under `datasets/bos_taurus_turing_wavelength/`." },
+        "falsifiable_done": { "score": 12, "why": "Existence of second-assessor YAML with distinct provider id and seven numeric scores is checkable." },
+        "compute_in_repo": { "score": 14, "why": "Re-score is human/LLM audit time; script `--self-test` ~100 s." },
+        "isolation": { "score": 9, "why": "Can close as new audit YAML + KG dir only if script untouched." },
+        "time_to_verdict": { "score": 8, "why": "Audit pass without Step 12 code remediation." },
+        "not_blocked": { "score": 3, "why": "OP-11 partially overlaps (independent re-score named) but mechanism-variant routes are refuted; R11 remains open in v7." }
+      }
+    },
+    {
+      "title": "BLOCKED: Revive static or growing-domain Turing mechanism for Holstein-Friesian coats",
+      "gap": "OP-11 and audit v7 establish static Turing rejection and RD-vs-Eden indistinguishability on scale-matched coat statistics; any scout proposing new RD parameters to ‘recover’ Holstein spotting contradicts published negative verdict.",
+      "done": "N/A — do not schedule; scorer should verify `datasets/bos_taurus_turing_wavelength/README.md` still states TESTED NEGATIVE and held-out metrics unchanged.",
+      "tool_route": "Not recommended. If forced, only `python3 morphoeval/report/build_report.py collect` to confirm verdict documents — not Pass 12 remediation. **Lens misfit for mechanism discovery:** needs Delphi/evidence-synthesis lens, not remediation loop.",
+      "deciding_data": "In repo: v7 KG REPORT, held-out JSON, Wilcoxon p=0.91 noted in audit v7.",
+      "prior_attempts": "OP-11 status refuted; builder Pass 9 assessment published; Fable second-assessor drafts 54.4/57.7 on older pipeline (`docs/open-problems.json` OP-11).",
+      "factors": {
+        "tool_fit": { "score": 2, "why": "Remediation loop optimizes script fidelity, not overturning a registered negative hypothesis." },
+        "data_in_hand": { "score": 20, "why": "Deciding data exist but support null, not fix." },
+        "falsifiable_done": { "score": 15, "why": "Verdict is already falsifiable and closed." },
+        "compute_in_repo": { "score": 15, "why": "Re-running pipeline reproduces null quickly." },
+        "isolation": { "score": 10, "why": "Best outcome is no file changes." },
+        "time_to_verdict": { "score": 10, "why": "Immediate read of README/audit." },
+        "not_blocked": { "score": 0, "why": "OP-11 explicitly refuted this exact mechanism route." }
+      }
+    }
+  ]
+}
