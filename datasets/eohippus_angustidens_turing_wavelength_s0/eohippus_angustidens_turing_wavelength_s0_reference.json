@@ -1,0 +1,86 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "slot": 3219,
+  "sim_id": "delphi10000-eohippus-angustidens-turing-wavelength-s0",
+  "organism": {
+    "scientific_name": "Eohippus angustidens",
+    "common_name": "Early Eocene four-toed dawn horse (Hyracotherium)",
+    "aristotelian_taxonomy": "I. Enaima (Vertebrata) -> Mammalia (Zootoka) -> Eohippus",
+    "lineage": "Equid Autopod & Dental Chronospecies"
+  },
+  "phenomenon_scale": {
+    "phenomenon_size_m": 7.752e-05,
+    "size_human": "78 µm",
+    "log10_size_m": -4.111,
+    "scale_tier": "4_cellular_10um",
+    "tier_index": "4/8",
+    "detail_variant": "s0",
+    "structure": "Turing pigment stripe / ocellus wavelength in Eohippus angustidens (78 µm, detail scale)"
+  },
+  "paleobiology": {
+    "geological_age_ma": 52.0,
+    "geological_horizon": "Early Eocene (Wasatchian, 52.0 Ma)",
+    "chronoseries_name": "Eohippus angustidens",
+    "chronoseries_index": 1,
+    "chronoseries_length": 1,
+    "predecessor_chronospecies": null,
+    "predecessor_note": "Eohippus angustidens is stage 1 of 1 in its own chronoseries, so there is no earlier E. angustidens stage. The phenotypic outgroup is a phenacodontid condylarth; it is not assigned a Turing wavelength in this slot.",
+    "successor_chronospecies": {
+      "taxon": "Orohippus",
+      "representative_age_ma": 48.0,
+      "horizon": "Bridgerian (early middle Eocene)",
+      "source": "Froehlich 2002; MacFadden 1986"
+    },
+    "what_changes_at_this_scale": {
+      "versus_predecessor": "No prior E. angustidens chronospecies. At 78 µm the new quantity is a cell-biological wavelength (about 6.5 keratinocyte diameters), which a pre-equid outgroup comparison would not change merely by naming the genus.",
+      "versus_same_age_organ_scale": "The organ-tier sibling for this species uses lambda = 3.3 mm (0.003298 m, tier 6_organ_mm). Wavenumber ratio k_detail/k_organ = 0.003298/7.752e-05 = 42.54. This slot resolves the chromatophore spacing that the organ-scale model coarse-grains into a single pigment stripe. Diffusion ratio, rate constants, and domain size are refit here and are not copied from that sibling.",
+      "versus_successor_orohippus": "From Wasatchian Eohippus (52.0 Ma) to Bridgerian Orohippus (representative 48 Ma) body mass and cheek-tooth relief increase (MacFadden 1986 Cope's Law scaling; Froehlich 2002 taxonomy) while the manus stays tetradactyl. The cellular Turing wavelength is predicted to stay near 78 µm because D and the kinetic Jacobian are cell-biological, not autopod-size, parameters. Organ-scale stripe count N = L_flank/lambda_c can still increase if flank length grows. Delta lambda_c(cellular) across this step is therefore the conserved quantity; Delta N_organ is not."
+    }
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979: du/dt = D_u lap u + a - u + u^2 v; dv/dt = D_v lap v + b - u^2 v",
+    "steady_state": "u0 = a + b; v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u0 v0; f_v = u0^2; g_u = -2 u0 v0; g_v = -u0^2",
+    "dispersion": "sigma(k) = largest real eigenvalue of J - k^2 diag(D_u, D_v)",
+    "critical_wavenumber": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c",
+    "turing_conditions": "trace(J) < 0; det(J) > 0; D_v f_u + D_u g_v > 0; (D_v f_u + D_u g_v)^2 > 4 D_u D_v det(J)",
+    "boundary_conditions": "Periodic square patch (np.roll Laplacian). The patch is an epidermal field of view, not a whole-animal flank."
+  },
+  "parameters": {
+    "a": 0.062,
+    "b": 0.94,
+    "diffusion_ratio_Dv_over_Du": 8.22,
+    "lambda_c_m": 7.752e-05,
+    "lambda_px": 14.0,
+    "grid_n": 112,
+    "dt": 0.0035,
+    "seed": 3219,
+    "keratinocyte_diameter_m": 1.2e-05,
+    "organ_scale_sibling_lambda_m": 0.003298,
+    "notes": "a and b are dimensionless Schnakenberg rates chosen for this slot. D_u and D_v (grid units) are solved from the critical-wavenumber formula so lambda_c equals 7.752e-05 m on a grid with lambda_px = 14. They are not copied from the 3.3 mm sibling and they are not laboratory diffusivities measured on equid epidermis."
+  },
+  "empirical_claims": [
+    "Turing 1952: a homogeneous chemical steady state can be unstable to a finite band of wavenumbers when the inhibitor diffuses sufficiently faster than the activator.",
+    "Murray 1981: mammalian coat markings can be read as a chemical pre-pattern whose intrinsic wavelength is selected by that band; the number of stripes or spots then scales with domain size over wavelength.",
+    "Kondo and Miura 2010: observed pigment wavelengths are typically several cell diameters, which is the regime targeted here (78 µm / 12 µm ≈ 6.5 cells).",
+    "MacFadden 1986 and Froehlich 2002: Eohippus (Hyracotherium) is the Wasatchian start of the equid body-size and dental series; later genera are larger. That size trend is an organ-scale fact. It is not, by itself, a measurement of epidermal reaction-diffusion wavelength.",
+    "This slot does not claim that a fossil of Eohippus angustidens preserves a 78 µm pigment stripe. The wavelength is the phenomenon scale under test."
+  ],
+  "specimen": {
+    "file": "eohippus_angustidens_specimen.jpg",
+    "sha256": "4f492b7fff0d285dc090002b29f9aca4a757bad6f4c08a8f5dd93b8a1bcfc0bf",
+    "source": "datasets/species_gallery/I_Enaima_Vertebrata/Eohippus_angustidens.jpg",
+    "license": "Project gallery plate used as the canonical specimen for this taxon (Wikimedia Commons search returned no image).",
+    "scale_bar": {"label": "100 µm", "length_px": 111, "micrometres_per_pixel": 0.9009009009},
+    "image_size_px": [800, 600]
+  },
+  "sources": [
+    {"id": "turing1952", "doi": "10.1098/rstb.1952.0012"},
+    {"id": "schnakenberg1979", "doi": "10.1016/0022-5193(79)90042-0"},
+    {"id": "murray1981", "doi": "10.1016/0022-5193(81)90334-9"},
+    {"id": "kondo2010", "doi": "10.1126/science.1179047"},
+    {"id": "macfadden1986", "doi": "10.1017/s0094837300003109"},
+    {"id": "froehlich2002", "doi": "10.1046/j.1096-3642.2002.00005.x"},
+    {"id": "macfadden2005", "doi": "10.1126/science.1105458"}
+  ]
+}
