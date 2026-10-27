@@ -1,0 +1,137 @@
+# Pass 2 audit — closes the Pass 1 sweep, control, segmentation, and fit items.
+# Supersedes 2026-10-27-cloudina-hartmannae-turing-wavelength-s0-audit.
+audit:
+  id: 2026-10-27-cloudina-hartmannae-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-cloudina-hartmannae-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor). No second assessor was run."
+  publisher_orcid: "https://orcid.org/0000-0000-0000-0000"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 working tree. publisher_orcid is the nanopub setup-guide placeholder, not a person. No profile, so these nanopubs are unsigned and were not given npx:supersedes trusty URIs."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    doi: "10.1016/0022-5193(79)90042-0"
+  yang2020:
+    title: "Ultrastructure of Ediacaran cloudinids suggests diverse taphonomic histories and affinities with non-biomineralized annelids"
+    authors: "Yang, B. et al."
+    doi: "10.1038/s41598-019-56317-x"
+  grant1990:
+    title: "Shell structure and distribution of Cloudina, a potential index fossil for the terminal Proterozoic"
+    authors: "Grant, S. W. F."
+    url: "https://pubmed.ncbi.nlm.nih.gov/11538690/"
+  germs1972:
+    title: "New shelly fossils from Nama Group, South West Africa"
+    authors: "Germs, G. J. B."
+    doi: "10.2475/ajs.272.8.752"
+  penny2014:
+    title: "Ediacaran metazoan reefs from the Nama Group, Namibia"
+    authors: "Penny, A. M. et al."
+    doi: "10.1126/science.1253393"
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo, S. and Miura, T."
+    doi: "10.1126/science.1179047"
+simulations:
+  - id: delphi10000-cloudina-hartmannae-turing-wavelength-s0
+    name: "Cloudina hartmannae wall-normal Turing lamella at 2.397 µm (Pass 2)"
+    organism: "Cloudina hartmannae"
+    script: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py
+    output: docs/media/cloudina_hartmannae_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, yang2020, grant1990, germs1972, penny2014, kondo2010]
+    summary: >-
+      Re-run of the 2.397 µm wall-normal Schnakenberg model (a=0.0642, b=0.9915,
+      Dv/Du=8.65, seed 3149, Nama Group 549 Ma). Noise-seeded integration on the
+      19.176 µm layer selects 8 lamellae at 2.397 µm. Real-eigenvalue growth rates
+      match the analytical dispersion with Pearson r=0.99997 and RMSE=0.0312.
+      Scaling both diffusivities by s moves the peak wavelength monotonically
+      (sweep r=0.9999). Equal diffusion gives σmax=-0.124. Removing u^2 v drops
+      the activator standard deviation from 0.164 to ~1e-14. Species-card foreground
+      fraction 0.364 versus 0.635 on the Corumbá fossil photograph. GIF last-frame
+      CV similarity against the species card is 91.5 (12 frames, 640×480). The KS
+      test against N(2.75 µm, 1.125 µm) rejects (statistic 0.623, p=0.0016): the
+      simulator locks to one wavelength inside the Yang band and does not sample
+      the whole 0.5–5 µm range. Spacing standard deviation is 0 because the domain
+      is exactly eight critical wavelengths.
+    claim_boundary:
+      reported_in_source:
+        - "Yang et al. 2020: Namibian Cloudina organic lamellae 0.5–5 µm, up to eight per wall layer"
+        - "Grant 1990: shell layers 8–50 µm"
+        - "Turing 1952 critical wavenumber and Schnakenberg 1979 kinetics"
+        - "Penny et al. 2014: Omkyk ash 547.32 ± 0.31 Ma; slot age remains 549 Ma"
+      reconstructed_in_script:
+        - "Jacobian and diffusivities with lambda_c fixed at 2.397 µm and a small positive discriminant"
+        - "Noise-seeded nonlinear stack, equal-diffusion control, autocatalysis ablation, diffusivity sweep"
+        - "Segmentation of the species card and the CC BY 2.0 Corumbá photograph"
+      transfer_boundary:
+        - "Applying a reaction-diffusion lamella wavelength to Cloudina is a morphospace hypothesis"
+        - "Grant's cnidarian-grade reading and Yang's annelid-grade reading are both left open"
+      does_not_claim:
+        - "That Cloudina had ocelli or a measured pigment stripe at 2.397 µm"
+        - "That the species card or the Corumbá slab is a Nama Group lamella SEM"
+        - "That the Wikimedia life restoration is a fossil photograph"
+        - "That slot 1252 parameters were copied"
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "k_c is solved from the Jacobian so the critical wavelength is 2.397 µm, and the same stepper supplies the nonlinear field, the ablation, and the growth-rate probe. Complex long-wave eigenvalues are plotted and excluded from r, which matches the oscillation those modes actually have. The near-onset discriminant (0.010) is why the fastest real mode is n=8 rather than a longer wave."
+        evidence:
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [100, 134], note: "Du, Dv from k_c and the analytical growth rate", supports: true}
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [196, 233], note: "Real-eigenvalue filter for the dispersion comparison", supports: true}
+          - {file: datasets/cloudina_hartmannae_turing_wavelength_s0/cloudina_hartmannae_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "trace=-0.236, det=1.115, disc=0.010, Du=0.0545, Dv=0.472", supports: true}
+      specimen-match:
+        value: 84
+        rationale: "The growth GIF is a 12-frame 640×480 animation whose last frame scores 91.5 against the assigned Cloudina hartmannae species card on orientation, radial FFT, coherency, and occupancy. The activator panel shows eight wall-normal bands at the lamella wavelength. The card remains a 100 µm picture, so the score does not treat this as an SEM overlay of Nama lamellae."
+        evidence:
+          - {file: docs/media/cloudina_hartmannae_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "CV similarity 91.5, 12 frames, 640x480", supports: true}
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [353, 402], note: "Full-bleed card with growing lamella amplitude; titles sit outside the fitness crop", supports: true}
+          - {file: docs/media/cloudina_hartmannae_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Card, eight-band profile, dispersion, and sweep", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Multiplying both diffusivities by s in {0.64, 0.81, 1, 1.21, 1.44, 1.69, 1.96} moves the numerical peak wavelength with the analytical curve λ=2.397√s. Sweep Pearson r=0.9999 and the sequence is monotone. That is the expressivity check Pass 1 asked for. Equal diffusion, a separate axis, shuts the instability off."
+        evidence:
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [284, 318], note: "Parabolic peak and scale sweep", supports: true}
+          - {file: datasets/cloudina_hartmannae_turing_wavelength_s0/cloudina_hartmannae_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "sweep_pearson_r=0.9999, sweep_monotone=true", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Real-eigenvalue σ(k) agrees with the stepper at r=0.99997, RMSE=0.0312. Equal-diffusion σmax=-0.124. Ablation std is ~1e-14 against a patterned std of 0.164. Species-card foreground 0.364, coherency 0.832, circularity 0.057 versus Corumbá fossil 0.635, 0.342, 0.449; none of those pairs are copies. KS against the band-wide normal rejects (0.623, p=0.0016), which is reported as a spike at one wavelength rather than a fit to the whole 0.5–5 µm range. Spacing std is 0 on the commensurate domain, so the score stays below 90."
+        evidence:
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [273, 282], note: "Autocatalysis ablation", supports: true}
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [320, 351], note: "Foreground segmentation shared by the card and the Corumbá photograph", supports: true}
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [562, 678], note: "measure_morphoeval rows with literature references that are not copies of the values", supports: true}
+          - {file: datasets/cloudina_hartmannae_turing_wavelength_s0/cloudina_hartmannae_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "r=0.99997, RMSE=0.0312, KS=0.623, p=0.0016, CV=91.5", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Crossref confirmed Turing 1952, Schnakenberg 1979, Kondo and Miura 2010, Yang 2020, Germs 1972, and Penny 2014. Grant 1990 is cited by its PubMed URL because no DOI was returned. Image SHA-256 pins cover the species card, the CC BY-SA life restoration, and the CC BY 2.0 Corumbá photograph, and the restoration is labeled as not a fossil."
+        evidence:
+          - {file: datasets/cloudina_hartmannae_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "OpenAlex follow-up and the note that slot 1252 was excluded", supports: true}
+          - {file: datasets/cloudina_hartmannae_turing_wavelength_s0/README.md, lines: [1, 40], note: "Scale 2.4 µm and age 549 Ma, with the 104.2 µm contrast", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Dispersion, sweep, controls, segmentation, and rendering are separate functions, and the Lean module proves the band membership, the eight-lamella stack, the 43–44× funnel contrast, diffusion-rescaling of the discriminant, and the integer wavenumber balance. lean is not installed in this environment, so the proofs were not executed."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3149_cloudina_hartmannae_turing_wavelength_s0.lean, lines: [30, 67], note: "Theorems for the band, the Grant stack, the funnel ratio, rescaling, and k_c", supports: true}
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [1, 40], note: "Module docstring states the 2.397 µm versus 104.2 µm contrast", supports: true}
+      repro-package:
+        value: 90
+        rationale: "Self-test passed on this run: r>0.98, monotone sweep, equal-D σmax<0, ablation ratio <0.05, spacing within 8% of 2.397 µm, 12 frames, min side 480 px, CV>=58, stack inside 8–50 µm, age 549 Ma. Seed and image hashes are pinned. Nanopub signing was not available (~/.nanopub/profile.yml absent) and was not faked."
+        evidence:
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [695, 710], note: "Assertions that the self-test actually ran", supports: true}
+          - {file: datasets/cloudina_hartmannae_turing_wavelength_s0/cloudina_hartmannae_turing_wavelength_s0_reference.json, lines: [70, 109], note: "Pinned SHA-256 values for the three images", supports: true}
+    remediation:
+      - "Still open: a Nama Group thin-section of C. hartmannae lamellae would replace the species-card CV target and the band-midpoint comparison."
+      - "Still open: spacing standard deviation is 0 on a domain of exactly eight critical wavelengths; an incommensurate domain would separate mode selection from grid locking."
+      - "Still open: lean binary was not available, and no second assessor scored this audit."
+      - "Closed from Pass 1: diffusivity sweep (r=0.9999, monotone), equal-diffusion and ablation controls, card-versus-Corumbá segmentation, and dispersion r/RMSE with the KS rejection reported as a rejection."
