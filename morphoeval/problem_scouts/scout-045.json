@@ -1,0 +1,311 @@
+{
+  "scout": "scout-045",
+  "ground": "bioelectric",
+  "lens": "vision",
+  "candidates": [
+    {
+      "title": "Cervera 2H0T simulation frame vs Planform #24 double-head micrograph",
+      "gap": "MorphoEval audit `2026-10-17-cervera-audit-v2` scores specimen-match 42/100 because the GIF only swaps Planform cartoons on a fixed Schmidtea mask; no cv_sim is recorded against a real double-head photograph (Planform phenotype #24 in `datasets/planform/planform_multi_phenotype_specimens.jpg`).",
+      "done": "A scorer finds a new JSON artifact (agent-written, not edited index) where `cv_sim_similarity` from `compute_sim_vs_specimen_cv_similarity` between `docs/media/cervera_levin_mafe_gj_block.gif` (double-head frame) and a cropped #24 panel is ≥58.0, OR the same artifact reports the numeric score and it remains <58.0 (falsifying photo-level match).",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (refresh) plus a one-off Python import: `from morphoeval.verify_image_fitness import compute_specimen_cv_signature, compute_sim_vs_specimen_cv_similarity` with inputs `docs/media/cervera_levin_mafe_gj_block.gif` and cropped `datasets/planform/planform_multi_phenotype_specimens.jpg` (#24 tile).",
+      "deciding_data": "In repo: `docs/media/cervera_levin_mafe_gj_block.gif`, `datasets/planform/planform_multi_phenotype_specimens.jpg`, `docs/media/specimens/cervera-levin-mafe.jpg`.",
+      "prior_attempts": "GPT-5.6 Sol `2026-10-17-cervera-audit-v2` remediated territory-area on the WT photo and Planform frequency fits but explicitly left treated/double-head morphology unphotographed; that audit did not run GIF-vs-#24 cv_sim (current whole-body compare is 59.2 in `aristotelian_categories_index.json`).",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "`verify_image_fitness.py` already exposes GIF-vs-photo cv_sim for `cervera-levin-mafe`; only a crop target and frame pick are missing."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Both GIF and multi-phenotype specimen mosaic are vendored; no external fetch."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Threshold is the repo's fixed 58.0 cv_sim gate used elsewhere in the same script."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Single-GIF frame extraction and one CV signature comparison finish in minutes on CPU."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Verdict can live in a new JSON report under `morphoeval/problem_scouts/` without touching models or index."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One sitting: crop, run helper, read float."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No audit entry refutes GIF-vs-#24 cv_sim; only qualitative 'no treated specimen' notes exist."
+        }
+      }
+    },
+    {
+      "title": "Quantify Schmidtea photo vs Dugesia japonica PlanformDB proxy silhouettes",
+      "gap": "Knowledge-graph and Cervera audits state empirical PlanformDB rows are *Dugesia japonica* while the canonical bioelectric photograph is *Schmidtea mediterranea* (`docs/LEVIN_LATENT_SPACE_METHODS.md` Claim 5); cross-species contour mismatch is documented verbally but not scored.",
+      "done": "Report records `compute_specimen_cv_signature` for `datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg` and `datasets/species_gallery/II_Anaima_Invertebrata/Dugesia_japonica.jpg`; done when |Δaspect_ratio| and |Δcircularity| are both printed and either (a) both exceed 0.12, supporting proxy invalidity, or (b) both are ≤0.12, supporting proxy adequacy for CV-only comparisons.",
+      "tool_route": "python3 -c \"from pathlib import Path; from morphoeval.verify_image_fitness import compute_specimen_cv_signature; ...\" on the two JPEG paths; optional full pass `python3 morphoeval/verify_image_fitness.py` to compare `dugesia-japonica-bioelectric-polarity` vs `cervera-levin-mafe` entries.",
+      "deciding_data": "In repo: Schmidtea specimen, Dugesia gallery JPEG, Planform README cross-species note.",
+      "prior_attempts": "Cervera KG nanopubs (`morphoeval/kg/2026-10-17-cervera-audit/`) flag species split; no numeric CV distance filed. `docs/open-problems.json` has no OP for this metric.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Specimen CV signature is the core export of the vision lens tool."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Both photographs already pinned in datasets."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Numeric deltas on four published CV features; threshold 0.12 is explicit."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Two signature calls, no simulation."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Analysis-only JSON; zero tracked-file edits required."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate after import."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Species mismatch noted in audits but never quantified with this tool."
+        }
+      }
+    },
+    {
+      "title": "Diagnose Xenopus tropicalis bioelectric-polarity image-gate failure (cv_sim 53.8)",
+      "gap": "Expansion slot `xenopus-tropicalis-bioelectric-polarity` fails `passes_image_threshold` (cv_sim 53.8 < 58) while the same cohort's reference JSON reports Pearson r=0.999 on scalar series—image and tabular fitness disagree.",
+      "done": "After `python3 morphoeval/verify_image_fitness.py`, scorer confirms index row `xenopus-tropicalis-bioelectric-polarity` still has `passes_image_threshold: false` AND a companion report names the largest per-feature absolute delta (foreground_fraction, coherency, circularity, wavelength_norm) between simulation GIF frame and `datasets/xenopus_tropicalis_bioelectric_polarity/*specimen*.jpg` vs fallback `datasets/species_gallery/I_Enaima_Vertebrata/Xenopus_tropicalis.jpg`.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py; read `morphoeval/runs/aristotelian_categories_index.json` slug `xenopus-tropicalis-bioelectric-polarity`; optional `compute_sim_vs_specimen_cv_similarity` with both specimen paths on `docs/media/*xenopus_tropicalis*bioelectric*growth.gif` (glob).",
+      "deciding_data": "In repo: `datasets/xenopus_tropicalis_bioelectric_polarity/xenopus_tropicalis_bioelectric_polarity_reference.json`, species gallery JPEG, rendered growth GIF under `docs/media/`.",
+      "prior_attempts": "Expansion template scoring in `verify_image_fitness.py` (lines ~646–659) already suppresses unfitted waves; no remediation loop closed the Xenopus tropicalis photo mismatch. Not in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Index enrichment and cv_sim are produced by the named verifier run-as-is."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "All inputs vendored; GIF path resolved by existing slug/dataset_dir glob logic."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Boolean gate plus argmax feature delta is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Full verifier over 1k+ models takes tens of minutes; single-slug diagnosis is faster but full refresh is standard."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Diagnosis JSON is isolated; running verifier rewrites index unless run read-only via import-only path."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One loop if import-only; two if full index refresh required."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt recorded the dual-specimen-path ablation for this slot."
+        }
+      }
+    },
+    {
+      "title": "Beane planarian 2H0T GIF frame vs Planform #24/#2 double-head photos",
+      "gap": "Slot 081 audit validates ocelli on the WT `schmidtea_mediterranea_specimen.jpg` but 2H0T/0H2T silhouettes are synthesized; no cv_sim ties `docs/media/planarian_hk_atpase_anterior_growth.gif` 2H0T frames to published double-head micrographs (#24 or #2 in the Planform mosaic).",
+      "done": "Report lists cv_sim for 2H0T GIF frame vs cropped #24 and vs WT #1; done when either cv_sim(2H0T,#24) ≥ cv_sim(2H0T,#1)+5.0 (supports phenotype alignment) or the inequality fails (supports silhouette-only fidelity).",
+      "tool_route": "`compute_sim_vs_specimen_cv_similarity` on `docs/media/planarian_hk_atpase_anterior_growth.gif` with mosaic crops; baseline row from `python3 morphoeval/verify_image_fitness.py` slug `planarian-hk-atpase-anterior` (cv_sim 73.5 vs WT photo).",
+      "deciding_data": "In repo: planarian GIF, Planform mosaic, WT specimen under `datasets/planarian_hk_atpase_anterior/`.",
+      "prior_attempts": "`2026-10-19-planarian-hk-atpase-anterior-audit-v2` (Gemini/Claude) scored specimen-match 89 on WT segmentation; did not compare 2H0T frames to Planform photos.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Same GIF-vs-photo machinery used for the passing 73.5 WT compare."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "GIF and mosaic already in tree."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Fixed +5.0 margin between two cv_sim numbers."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Few GIF frames and three crops."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New JSON only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single-sitting crop and compare."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audit gap is documented; route not attempted."
+        }
+      }
+    },
+    {
+      "title": "Pietak slot-082 index species label vs planarian specimen photograph",
+      "gap": "`aristotelian_categories_index.json` lists Slot #082 (`2017-pietak-bioelectric-morphogen-coupling.py`) as *Xenopus laevis* but `specimen_rel` is `datasets/bioelectric_morphogen_coupling/planarian_ap_polarity_specimen.jpg` (planarian dorsal photo); wrong genus breaks species_gallery fallback logic in `verify_image_fitness.py`.",
+      "done": "Scorer verifies `cv_sim_similarity` between simulation GIF and planarian specimen exceeds cv_sim between the same GIF and `datasets/species_gallery/I_Enaima_Vertebrata/Xenopus_laevis.jpg` by ≥15.0 points, OR the opposite, deciding which label matches the held photo.",
+      "tool_route": "Import `compute_sim_vs_specimen_cv_similarity` with `docs/media/bioelectric_morphogen_coupling_growth.gif` and the two specimen paths; cross-check slug `bioelectric-brain-teratogenesis` in index after `python3 morphoeval/verify_image_fitness.py`.",
+      "deciding_data": "In repo: planarian AP specimen, Xenopus gallery JPEG, Pietak GIF, audit reference DOI 10.1098/rsif.2017.0425 (planarian-focused).",
+      "prior_attempts": "Pass 2 Pietak audit (referenced in `docs/LEVIN_LATENT_SPACE_METHODS.md` Slot 082, 93.8/100) used planarian photo segmentation; metadata inconsistency in index not scored. Not in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Direct dual-path cv_sim is native to the verifier helpers."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Both photos and GIF present."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "15-point margin between two floats is checkable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Two comparisons only."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Fixing index metadata would touch tracked files; diagnosis alone stays isolated."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Minutes."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior cv_sim A/B test recorded."
+        }
+      }
+    },
+    {
+      "title": "Bioelectric-polarity expansion cohort: rank sub-58 cv_sim slugs for specimen swaps",
+      "gap": "≥90 `*-bioelectric-polarity` expansion models (e.g. *Dugesia japonica* 57.0, *Pleurodeles waltl* 55.8, *Mus musculus* 52.1) share template-wave GIFs and fail the 58.0 cv_sim gate; no prioritized list ties failure mode to wrong gallery proxy vs unfitted animation.",
+      "done": "New JSON lists every slug with `efficient_cause` bioelectric polarity and `passes_image_threshold: false`, sorted by cv_sim ascending, with `specimen_rel` path; done when file length equals the count from index query and top-10 each include cv_sim and coherency from `cv_signature`.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py then python3 -c \"import json; ... filter slug endswith '-bioelectric-polarity' and not passes_image_threshold ...\" on `morphoeval/runs/aristotelian_categories_index.json`.",
+      "deciding_data": "In repo: full index + ~200 `datasets/*_bioelectric_polarity/` directories with gallery copies per README pattern.",
+      "prior_attempts": "`verify_image_fitness.py` summary in `morphoeval/runs/image_fitness_and_provenance.json` counts tiers but does not export per-slug remediation queue; library lens (scout-038 territory) overlaps but this vision-ranked list is not filed.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Verifier produces all fields; ranking is a deterministic JSON filter."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Index already populated locally; no download."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Count equality and sort order are objective."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Full verifier run is heavy but standard (~30–60 min)."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Output is a new scout/report JSON only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One sitting if index current; otherwise waits on full verify pass."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Tier counts exist but slug-level bioelectric queue not previously published."
+        }
+      }
+    },
+    {
+      "title": "BLOCKED: Raise Cervera audit specimen-match via whole-body cv_sim alone",
+      "gap": "Desire to close the 42/100 specimen-match weakness using only the existing Schmidtea mask photo compare.",
+      "done": "N/A — route refuted.",
+      "tool_route": "Would be `python3 morphoeval/verify_image_fitness.py` slug `cervera-levin-mafe` only.",
+      "deciding_data": "In repo; cv_sim already 59.2 with `passes_image_threshold: true` while audit specimen-match remains 42.",
+      "prior_attempts": "GPT-5.6 Sol `2026-10-17-cervera-audit-v2` explicitly states territory-area on a fixed mask does not generate or compare heads/auricles; re-running whole-body cv_sim cannot satisfy rubric specimen-match. **Do not re-propose.** Use simulation/remediation lens (cartoon deformation) or candidate #1 (phenotype photo compare) instead.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Tool runs but deciding evidence cannot move audit specimen-match dimension."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Data present; evidence type is wrong."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Already falsified: high cv_sim coexists with low specimen-match score."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Trivial to rerun."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "N/A"
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Already observed."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "Audit v2 refuted this exact route."
+        }
+      }
+    },
+    {
+      "title": "Picasso tadpole per-regime GIF cv_sim floor (Xenopus craniofacial remap)",
+      "gap": "Slot 085 passes overall audit (~89/100) but `xenopus-craniofacial-remap` cv_sim is 67.3—above 58 yet uneven across six regimes in `2019-bischof-xenopus-craniofacial-remap.py`; worst-regime photo fidelity is unknown.",
+      "done": "Report gives cv_sim for each labeled regime frame in `docs/media/xenopus_craniofacial_remap_growth.gif` against `datasets/xenopus_craniofacial_remap/xenopus_craniofacial_specimen.jpg`; done when min(cv_sim) ≥58.0 or the failing regime name is identified with score <58.0.",
+      "tool_route": "`compute_sim_vs_specimen_cv_similarity` per extracted GIF frame; baseline from index slug `xenopus-craniofacial-remap` after `python3 morphoeval/verify_image_fitness.py`.",
+      "deciding_data": "In repo: dedicated Picasso tadpole specimen JPEG, 24-frame GIF, audit `2026-10-19-xenopus-craniofacial-remap-audit-v2`.",
+      "prior_attempts": "Audit v2 documents specimen dorsal width r=0.9114 on static photo; per-regime animated cv_sim not split. Not in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "CV compare is supported; regime frame extraction is manual but uses the same helper."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Specimen and GIF vendored."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Min over six named regimes vs 58.0 threshold."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Six frame extractions plus six CV calls."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Report-only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sitting with frame map."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Per-regime split not previously recorded."
+        }
+      }
+    }
+  ]
+}
