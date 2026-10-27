@@ -1,0 +1,311 @@
+{
+  "scout": "scout-079",
+  "ground": "library",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "title": "Planform hub missing Step-1 scout dossier (datasets/planform/)",
+      "gap": "The PlanformDB / bioelectric fixture hub under datasets/planform/ documents SHA-256 pins and Lobo Lab notice in README.md but has no datasets/planform/scout_manifest.json, unlike ~2,102 per-model dataset folders that carry morphoeval-scout-dossier-1.0 manifests for MorphoEval Step 3 source traceability.",
+      "done": "datasets/planform/scout_manifest.json exists with schema_version morphoeval-scout-dossier-1.0, lists every pinned file in datasets/planform/README.md with matching sha256 fields, and python3 -c \"import json; json.load(open('datasets/planform/scout_manifest.json'))\" exits 0.",
+      "tool_route": "Step 1 scout: morphoeval/scout_literature.py --list-existing (collision check); Step 3 source: hand-authored dossier under datasets/planform/scout_manifest.json only (new file). Validation: python3 models/planform_bioelectric.py --validate datasets/planform/planform_bioelectric_series_v1.json.",
+      "deciding_data": "In repo: datasets/planform/README.md, planform_bioelectric_series_v1.json, damaged/manifest.json, paper_citations.bib; public pin: PlanformDB 2.5.0 at https://lobolab.umbc.edu/planform/ (sha256 in datasets/planform/planformDB.sha256).",
+      "prior_attempts": "Pass 2 audits routinely score source-traceability on scout_manifest.json + EXPECTED_SHA256 (e.g. morphoeval/kg/2026-10-19-zebrafish-three-cell-stripes-audit-v2/REPORT.md); no prior scout dossier for the shared planform hub is recorded in docs/open-problems.json.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "scout_literature.py is the named Step-1 emitter; planform_bioelectric.py --validate confirms the bioelectric fixture the dossier must reference."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "All cited paths and hashes already live in datasets/planform/README.md; no external fetch required beyond optional DOI resolution already in paper_citations.bib."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "File presence, JSON parse, and hash list parity with README are mechanically checkable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Authoring and validation are minutes of Python/JSON work on the existing stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as new files under datasets/planform/ (and this scout record) with zero edits to tracked model scripts."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One MorphoEval loop sitting: scout dossier + validate command yields pass/fail immediately."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No audit or open-problems entry refutes adding a planform hub scout manifest."
+        }
+      }
+    },
+    {
+      "title": "PlanformDB regeneration gate skipped when .edb is absent",
+      "gap": "models/planform_bioelectric.py --self-test skips the byte-identical regeneration check when PLANFORM_DB_PATH is unset or the file is not the pinned database; only datasets/planform/planformDB.sha256 is vendored, not planformDB_2.5.0.edb, so cloud agents never exercise the full fail-closed extraction path documented in datasets/planform/README.md.",
+      "done": "With planformDB_2.5.0.edb at a documented path whose sha256 equals 9effd13ddb87664b9ef7a9b6c9c1959b502fcdd6c1b06ee016501b2d0be83b89, python3 models/planform_bioelectric.py --self-test prints ok regenerated fixture is byte-identical to the file on disk (not skip regeneration).",
+      "tool_route": "Step 12 remed: vendor or fetch pinned DB to datasets/planform/planformDB_2.5.0.edb (new blob, git-lfs or download script in new file); run python3 models/planform_bioelectric.py --self-test; optional Step 8 measure_outputs on derived JSON parity.",
+      "deciding_data": "In repo: datasets/planform/planformDB.sha256, planform_bioelectric_series_v1.json; one named public fetch: Lobo Lab PlanformDB 2.5.0 .edb (744,448 bytes, hash above).",
+      "prior_attempts": "datasets/planform/README.md documents regeneration parity; MesmerPrism/rusty-matter upstream vendored derived JSON only (commit ad111fa7). No recorded successful in-repo regeneration CI on the full .edb.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "planform_bioelectric.py --self-test is the existing fail-closed validator; remediation only supplies the missing pinned input it already expects."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Fixture and hash are in-repo; the binary is one named download away and hash-locked."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Self-test stdout either contains the regeneration ok line or it does not."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Extraction from SQLite .edb completes in seconds once the file is present."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Can close by adding the .edb (or a new fetch helper script) without touching unrelated model code."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single self-test run after vendoring the DB."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Lobo Lab notice permits research use with citation; no prior attempt refuted vendoring, but license/size constraints are real."
+        }
+      }
+    },
+    {
+      "title": "Thirteen aggregate dataset roots lack scout_manifest.json",
+      "gap": "Top-level library corpora (bressloff, celegans, conus, levin_youtube_channel, odonata, phyllotaxis, planform, planform_multiway, ruliobiology, thompson, turing, venation, zhang_sorting_morphogenesis) have reference JSON and/or README pins but no morphoeval-scout-dossier-1.0 scout_manifest.json, breaking parity with the ~2,102 model-scoped dataset folders.",
+      "done": "For each of the thirteen directories, datasets/<name>/scout_manifest.json exists, parses as JSON, and records sha256 for every file listed in that directory's README provenance table; a scorer script reports count_missing == 0.",
+      "tool_route": "Step 1: morphoeval/scout_literature.py --list-existing; Step 3: emit thirteen new scout_manifest.json files (one loop per corpus or batch generator in a new morphoeval/tools/scout_manifest_batch.py); verify with python3 -m json.tool per file.",
+      "deciding_data": "In repo: datasets/*/README.md and pinned JSON/bib in those thirteen folders (e.g. datasets/levin_youtube_channel/levin_youtube_catalog.json, datasets/planform_multiway/planform_multiway_reference.json).",
+      "prior_attempts": "Per-model Pass 2 remediations added scout manifests (zebrafish-three-cell-stripes v2 audit); aggregate corpora were never backfilled—no entry in docs/open-problems.json.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "scout_literature.py defines the dossier schema used by successful Step-3 loops elsewhere in the repo."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Hashes and file lists are already documented in each corpus README; no new literature hunt required."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Thirteen-file checklist with hash cross-check is objective; minor gap if README tables omit a file."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Hashing and JSON authoring for thirteen small trees is sub-hour."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Purely additive files under datasets/<corpus>/."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Verdict after one batch pass over thirteen dirs, not a single model loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of backfilling aggregate scout manifests."
+        }
+      }
+    },
+    {
+      "title": "1,000 expansion_template models suppressed below ImgFit ≥ 70",
+      "gap": "morphoeval/runs/image_fitness_and_provenance.json reports models_suppressed_below_threshold: 1000 and tier_counts.expansion_template: 1000; morphoeval/runs/aristotelian_categories_index.json marks those entries audit_tier expansion_template with cv_sim_similarity below the 58.0 gate and many specimen_rel paths pointing at non-existent datasets/* specimen files (slots > 100).",
+      "done": "After one targeted Step-12 remediation on a named slug batch (e.g. ten consecutive expansion slots), re-running python3 morphoeval/verify_image_fitness.py increases models_passing_image_threshold by ≥10 and sets passes_image_threshold true and audit_tier ≠ expansion_template for each remediated slug in the index JSON.",
+      "tool_route": "Steps 5–6–8–12: remediate <year>-<author>-<slug>.py + docs/media/*_growth.gif using pattern in morphoeval/upgrade_zebrafish_and_fossil_gifs.py; gate with morphoeval/verify_image_fitness.py (CV ≥ 58, ImgFit ≥ 70); optional morphoeval/measure_outputs.py on the remediated script.",
+      "deciding_data": "In repo: morphoeval/runs/aristotelian_categories_index.json, morphoeval/runs/image_fitness_and_provenance.json, morphoeval/verify_image_fitness.py thresholds; species fallbacks in datasets/species_gallery/species_manifest.json.",
+      "prior_attempts": "morphoeval/upgrade_zebrafish_and_fossil_gifs.py closed ImgFit for Danio/Drosophila atlas rungs; bulk expansion slots #0101–#1100 remain template-tier per current summary JSON—no fleet-wide remediation recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "verify_image_fitness.py is the canonical scorer named in build_web_explorer.py; upgrade script shows the remediate-and-reverify loop."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Index and tier counts are in-repo; some slots still need specimen JPGs vendored into new datasets/<slug>/ trees."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Before/after counts in image_fitness_and_provenance.json and per-slug passes_image_threshold are numeric."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Full 1,000-model closure is multi-day; a scored batch of 10 is hours on the existing stack."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Each slot can be isolated to new script/media/dataset files, but verify_image_fitness.py rewrites the shared index JSON unless run in a forked copy."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Per-batch verdict is one sitting; entire 1,000-slot fleet is out of scope for one loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Template tier is an explicit suppressed state, not a refuted hypothesis."
+        }
+      }
+    },
+    {
+      "title": "Pass-3 add-on reference JSONs not fail-closed in EXPECTED_SHA256",
+      "gap": "Multiple Pass-3 audit REPORT.md files still deduct for reference JSON files that are loaded but not SHA-256 pinned in runtime verify_dataset_integrity / EXPECTED_SHA256 maps (e.g. yap_excitable_segmentation iridophore_ontogeny_reference.json −1; vascular_cube_law_branching Pass-3 JSON −3; fgf8_wavefront Pass-3 JSON −3; emiliania Pass-3 JSON −4).",
+      "done": "For a chosen audit slug, the remediated model script's EXPECTED_SHA256 (or verify_dataset_integrity) includes the Pass-3 reference filename with the digest recorded in the latest morphoeval/kg/*-audit-v3/REPORT.md input_dataset_sha256 block, and --self-test fails when that file is single-byte mutated.",
+      "tool_route": "Step 12 remed on the flagged <script>.py: extend EXPECTED_SHA256 + verify_dataset_integrity(); run python3 <script>.py --self-test; Step 7 re-audit via morphoeval/audits/*.yaml source-traceability dimension.",
+      "deciding_data": "In repo: morphoeval/kg/2026-10-19-yap-excitable-segmentation-audit-v3/REPORT.md, morphoeval/kg/2026-10-19-vascular-cube-law-branching-audit-v3/REPORT.md, morphoeval/kg/2026-10-19-fgf8-wavefront-somitogenesis-audit-v3/REPORT.md, corresponding datasets/*/pass3*_reference.json files.",
+      "prior_attempts": "Pass 2 loops added EXPECTED_SHA256 for primary reference JSON (zebrafish-three-cell-stripes L56–94); Pass 3 added secondary JSON without extending pins—documented as open deductions in v3 REPORTs, not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "verify_dataset_integrity / EXPECTED_SHA256 is the standard Pass-2 closure pattern copied from models/2009-nakamasu-zebrafish-three-cell-stripes.py."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Files and hashes already appear in audit REPORT input_dataset_sha256 lines."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Mutate-one-byte self-test failure is binary."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Per-model patch is small and self-test runs in seconds."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Requires editing an existing tracked model script—conflicts possible unless done on a dedicated loop branch."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One model per remediation loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audits explicitly request this pin; no prior attempt showed pinning is impossible."
+        }
+      }
+    },
+    {
+      "title": "Planform damaged-negative fixtures not gated in MorphoEval CI",
+      "gap": "datasets/planform/damaged/manifest.json defines five single-fault planform_bioelectric_series_v1.json negatives with expected E_* codes, and models/planform_bioelectric.py --self-test validates them when run manually, but no morphoeval runner invokes that self-test in the standard cloud validation path (AGENTS.md cites compileall/pytest only).",
+      "done": "python3 models/planform_bioelectric.py --self-test exits 0 in the cloud agent validation recipe, and temporarily renaming one damaged file to flip an expected_error_code causes exit code 1.",
+      "tool_route": "Step 12 remed: new morphoeval/run_library_integrity.sh (or extend .cursor/environment.json test hook) calling python3 models/planform_bioelectric.py --self-test; negative control by editing a copy under a new morphoeval/tests/fixtures/ path only.",
+      "deciding_data": "In repo: datasets/planform/damaged/*, models/planform_bioelectric.py self_test() L1140–1153.",
+      "prior_attempts": "Rusty-matter upstream documents the same five negatives; in-repo self-test PASSED on 2026-10-27 in cloud VM except regeneration skip—damaged checks themselves passed.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "planform_bioelectric.py --self-test already implements the fail-closed damaged-negative contract."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All five damaged JSON files and manifest sha256 pins are vendored."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Exit code 0 vs 1 on self-test is objective."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Self-test completes in under one second."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Wiring can be a new shell script or test module without touching planform fixtures."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Immediate on adding the hook and running once."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation; only absence of automation."
+        }
+      }
+    },
+    {
+      "title": "Levin YouTube Law 2 lacks Cervera/planform empirical overlay (specimen-match 24/100)",
+      "gap": "morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md scores specimen-match 24/100 and lists remediation to wire Law 2 to Cervera 2020 voltage levels; datasets/planform/ already vendors planform_bioelectric_series_v1.json and cervera_field_overlay_2d.json but models/2026-levin-channel-math-synthesis.py does not load or compare against them.",
+      "done": "Law 2 block in morphoeval/runs/levin_youtube_channel_math_summary.json includes at least one field compared against a numeric target from datasets/planform/cervera_field_overlay_2d.json or planform_bioelectric_series_v1.json with documented record_id, and --self-test asserts |model−reference| below a fixed tolerance.",
+      "tool_route": "Steps 5–8–12: extend models/2026-levin-channel-math-synthesis.py to load pinned planform JSON; compare in --self-test; re-run python3 morphoeval/verify_integrity.py --loop-yaml; Step 7 re-audit specimen-match dimension.",
+      "deciding_data": "In repo: datasets/planform/cervera_field_overlay_2d.json, planform_bioelectric_series_v1.json, datasets/levin_youtube_channel/levin_youtube_catalog.json; literature DOI 10.1016/j.bpj.2019.01.029 cited in planform README.",
+      "prior_attempts": "Pass 3.2 audit (2026-10-24-levin-youtube-channel-math-audit-v3) closed bibliographic issues but left specimen-match unchanged; Law 2 reference remains model-internal per REPORT measurement table.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Step-12 script + self-test remediation fits the loop; no single verify_image_fitness.py pass applies to this synthesis module."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Planform-derived calibration JSON is already vendored beside the YouTube catalog."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Tolerance check is numeric, but choosing which planform record maps to Law 2 requires a documented record_id rule."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Loading JSON and adding one assertion is modest; re-audit YAML/KG regeneration adds work."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Touches a flagship tracked script and shared docs/bioelectricity/levin_youtube_kg.json—high merge conflict risk."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Needs script change, self-test, integrity verify, and likely a partial re-audit to move specimen-match."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Audit v3 explicitly requests wiring to Cervera measurements; prior passes did not refute the link, but KG generator/provenance issues remain open on the same audit."
+        }
+      }
+    },
+    {
+      "title": "Multiscale_verified tier (2,000 models) lacks non-circular specimen measurements",
+      "gap": "image_fitness_and_provenance.json reports tier_counts.multiscale_verified: 2000 while core_models_with_non_circular_image_metrics: 113; verify_image_fitness.py promotes models to multiscale_verified from CV similarity without requiring measured_overlay entries in *.measurements.yaml.",
+      "done": "For a named slug already at multiscale_verified, after Step-12 remediation its morphoeval/audits/*.measurements.yaml contains ≥1 specimen_overlay measurement with derived_from ≠ script circular ref, verify_image_fitness.py sets audit_tier to pass3_audited or core_validated, and image_metric_summary cites ≥1 non-self reference.",
+      "tool_route": "Steps 6–8–12: add real specimen overlay to script + docs/media comparison; morphoeval/measure_outputs.py; morphoeval/verify_image_fitness.py to refresh index; pattern from Pass-2 audits that reached measured_overlay.",
+      "deciding_data": "In repo: morphoeval/runs/image_fitness_and_provenance.json tier_counts, morphoeval/verify_image_fitness.py audit_tier logic L617–711, per-model datasets/*/ specimen JPGs.",
+      "prior_attempts": "Pass 3 audited models (86 pass3_audited per summary) achieved deeper tiers; bulk multiscale tier was created by CV calibration, not refuted as invalid but flagged implicitly by core_models_with_non_circular_image_metrics metric.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "verify_image_fitness.py + measure_outputs.py are the named gates for tier promotion."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Specimen photos exist for many slugs; some multiscale entries still lack on-disk specimen paths."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Tier and measurement YAML fields are checkable, but 'non-circular' requires schema rules from verify_image_fitness.py inspection logic."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "One model closure is hours; 2,000-model fleet is not one pass."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Per-slug new media/measurements possible, but shared index and audit YAML edits conflict."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Single-slug tier upgrade is one loop; corpus-wide metric shift is not."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Tier naming is intentional; upgrading is enhancement, not fixing a refuted claim."
+        }
+      }
+    }
+  ]
+}
