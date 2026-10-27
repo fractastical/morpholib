@@ -1,0 +1,60 @@
+sim_id: delphi10000-alligator-mississippiensis-turing-wavelength-s0
+slot: 3105
+organism: Alligator mississippiensis
+age_ma: 0
+chronoseries: "1/1"
+scale_m: 0.001498
+math_family: Reaction-Diffusion & Turing Dispersion
+model_spec:
+  model: "Schnakenberg kinetics with Turing/Murray critical wavenumber fixed at lambda_c = 1.498 mm"
+  a: 0.13
+  b: 0.87
+  Du_mm2: 0.05
+  diffusivity_ratio: 16.4
+  anisotropy_fast_over_slow: 1.42
+  lambda_c_mm: 1.498
+  domain_mm: [17.976, 11.984]
+  grid: [144, 96]
+  dt: 0.0015
+  seed: 3105
+  age_ma: 0
+  inputs:
+    - datasets/alligator_mississippiensis_turing_wavelength_s0/Alligator_mississippiensis_2_babies.jpg
+    - datasets/alligator_mississippiensis_turing_wavelength_s0/alligator_mississippiensis_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Diffusion-free stability of the Schnakenberg steady state
+    formula: "tr J = f_u + g_v < 0 and det J = f_u g_v - f_v g_u > 0 at (u,v)=(a+b, b/(a+b)^2)"
+    lean_decl: MathOfBiology.Loop_3105.traceJacobian
+    lean_theorem: MathOfBiology.Loop_3105.diffusion_free_state_is_asymptotically_stable
+    lean_locus: morphoeval/lean/loops/Loop_3105_alligator_mississippiensis_turing_wavelength_s0.lean#L20-L28
+    variables: "f_u=0.74, g_v=-1 in units of gamma; scaled integers 74 and -100"
+    role: The homogeneous state of the 1.498 mm alligator flank patch is stable without diffusion
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0; Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py#L84-L104
+  - law_name: Critical wavenumber at 1.498 mm
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 1.498 mm"
+    lean_decl: MathOfBiology.Loop_3105.diffusionMargin
+    lean_theorem: MathOfBiology.Loop_3105.turing_inequality_holds_for_the_1498_um_mode
+    lean_locus: morphoeval/lean/loops/Loop_3105_alligator_mississippiensis_turing_wavelength_s0.lean#L30-L42
+    variables: "D_u=0.05 mm^2/time, D_v/D_u=16.4, gamma solved so lambda_c=1.498 mm, domain 12 by 8 wavelengths"
+    role: Turing wavenumber selection for the Holocene detail-scale pigment wavelength
+    source_citation: "Murray 1981 DOI:10.1016/0022-5193(81)90334-9; Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py#L95-L131
+  - law_name: Equal diffusion closes the band
+    formula: "D_u = D_v implies D_v f_u + D_u g_v < 0, so sigma(k_c) < 0"
+    lean_decl: MathOfBiology.Loop_3105.diffusionMargin
+    lean_theorem: MathOfBiology.Loop_3105.equal_diffusion_closes_the_band
+    lean_locus: morphoeval/lean/loops/Loop_3105_alligator_mississippiensis_turing_wavelength_s0.lean#L37-L38
+    variables: "D_u = D_v = 5 in the scaled integers, margin = -130"
+    role: Negative control for diffusion-driven instability
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py#L210-L230
+  - law_name: Holocene chronoseries is a single point
+    formula: "series_index = series_length = 1 and age = 0 Ma; 1498 um * 12 = 17976 um"
+    lean_decl: MathOfBiology.Loop_3105.seriesIndex
+    lean_theorem: MathOfBiology.Loop_3105.holocene_chronoseries_is_a_single_extant_point
+    lean_locus: morphoeval/lean/loops/Loop_3105_alligator_mississippiensis_turing_wavelength_s0.lean#L44-L49
+    variables: "no in-series predecessor or successor"
+    role: What changes at this age is observability of the pigment wavelength, not a shift inside the series
+    source_citation: "Vickaryous and Hall 2008 DOI:10.1002/jmor.10575"
+    code_locus: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py#L48-L55
