@@ -66,3 +66,16 @@
 
 ### Step 12 — `remed` (Remediate & re-score)
 - **Notes:** Pass 2: shared colour scale, 8 px bell body (circularity 0.462), gonad reference 4 with measured count 1. Gates: image_fitness 88.4, cv 96, frames 12, 540 px, pearson 0.9999, overall 85.0. Pass 3 not required.
+
+## Gates after pass 2
+
+All of these passed. Pass 3 was not run.
+
+- image_fitness 88.4 (threshold 70)
+- cv_sim_similarity 96.0 (threshold 58)
+- GIF frames 12 (threshold 6), shorter side 540 px (threshold 340)
+- non-circular specimen metrics include bell circularity 0.462 against 1, and gonad lobes 1 against 4
+- dispersion Pearson r 0.9999 (threshold 0.98)
+- audit overall 85.0 (threshold 85)
+
+201 µm is the assigned detail scale, not a length measured on the Karlsruhe photograph. Nanopub signing was not available (`~/.nanopub/profile.yml` absent). The lobe counter did not recover four gonads.
