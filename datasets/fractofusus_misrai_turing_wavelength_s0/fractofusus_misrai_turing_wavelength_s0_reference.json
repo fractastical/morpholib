@@ -1,0 +1,142 @@
+{
+  "sim_id": "delphi10000-fractofusus-misrai-turing-wavelength-s0",
+  "slot": 3227,
+  "organism": {
+    "binomial": "Fractofusus misrai",
+    "authority": "Gehling & Narbonne, 2007",
+    "common_name": "Ediacaran Four-Order Self-Similar Spindle Rangeomorph",
+    "megiston_genos": "II. Anaima (Invertebrata)",
+    "subaltern_genos": "Zoophyta & Vermes (Cnidaria/Platyhelminthes)",
+    "genus": "Fractofusus"
+  },
+  "phenomenon_scale": {
+    "phenomenon": "Turing pigment stripe / ocellus wavelength",
+    "phenomenon_size_m": 6.33e-05,
+    "size_human": "63 µm",
+    "log10_size_m": -4.199,
+    "scale_tier": "4_cellular_10um",
+    "tier_index": "4/8",
+    "detail_variant": "s0",
+    "note": "63 µm is the campaign detail-scale label of 6.33e-05 m. It is the wavelength at which k_c is fixed, not a thin-section measurement."
+  },
+  "paleobiology": {
+    "geological_age_ma": 565,
+    "geological_period": "Late Ediacaran (Newfoundland, 565 Ma)",
+    "locality": "Mistaken Point assemblage, Avalon Zone, Newfoundland",
+    "fossil_lineage_group": "Ediacaran-Cambrian Bodyplan Fossil Series",
+    "chronoseries": {
+      "index": "1/1",
+      "chronospecies": "Fractofusus misrai",
+      "predecessor_chronospecies": null,
+      "successor_chronospecies": null,
+      "age_window_reported_ma": [560, 575],
+      "age_window_source": "Gehling & Narbonne 2007: mid-Ediacaran, ca. 575–560 Ma"
+    },
+    "scale_neighbor": {
+      "relation": "organ-scale Turing module (same organism, coarser wavelength)",
+      "slot": 1251,
+      "sim_id": "mitchell-fractofusus-misrai-turing-wavelength",
+      "phenomenon_size_m": 0.003275,
+      "size_human": "3.3 mm",
+      "what_changes": "51 detail-scale wavelengths of 6.33e-05 m fit inside one 3.275 mm module and 52 do not. The 63 µm field is the branchlet/ocellus repeat; the 3.275 mm field is one primary module. Kinetics below are the detail-scale regime and are not the slot-1251 parameters."
+    }
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979",
+    "activator": "du/dt = D_u ∇²u + a - u + u² v",
+    "inhibitor": "dv/dt = D_v ∇²v + b - u² v",
+    "steady_state": "u0 = a + b, v0 = b / (a + b)²",
+    "jacobian": {
+      "f_u": "-1 + 2 b / (a + b)",
+      "f_v": "(a + b)²",
+      "g_u": "-2 b / (a + b)",
+      "g_v": "-(a + b)²"
+    },
+    "dispersion": "det(J - k² D) = D_u D_v k⁴ - (D_v f_u + D_u g_v) k² + (f_u g_v - f_v g_u)",
+    "critical_wavenumber": "k_c² = (D_v f_u + D_u g_v) / (2 D_u D_v)",
+    "critical_wavelength": "λ_c = 2 π / k_c",
+    "boundary_conditions": "periodic on a rectangular patch of the rangeomorph surface; no-flux is not used",
+    "turing_conditions": [
+      "trace(J) = f_u + g_v < 0",
+      "det(J) = f_u g_v - f_v g_u > 0",
+      "D_v f_u + D_u g_v > 0",
+      "(D_v f_u + D_u g_v)² > 4 D_u D_v det(J)"
+    ]
+  },
+  "parameters": {
+    "a": 0.09,
+    "b": 0.85,
+    "D_u": 0.12,
+    "D_v": 2.4,
+    "diffusion_ratio": 20,
+    "grid": [96, 128],
+    "dt": 0.04,
+    "steps": 1400,
+    "seed": 3227,
+    "length_unit": "grid spacing dx fixed so analytical λ_c = 6.33e-05 m",
+    "time_unit": "one Schnakenberg reaction time, mapped to 1 s when a physical diffusivity is quoted"
+  },
+  "state_variables": {
+    "u": "activator (local branchlet / pigment precursor)",
+    "v": "inhibitor (longer-range lateral inhibitor)"
+  },
+  "empirical_claims": [
+    {
+      "id": "gehling2007-taxon",
+      "statement": "Fractofusus misrai is a fusiform rangeomorph from the Mistaken Point assemblage, endemic to Newfoundland Avalonia, in communities below the photic zone during the mid-Ediacaran (ca. 575–560 Ma).",
+      "doi": "10.1139/e07-003",
+      "status": "reported_in_source"
+    },
+    {
+      "id": "hoyalcuthill2014-fractal",
+      "statement": "Rangeomorph fronds have a fractal body plan of self-similar, axial, apical, alternate branching that increases surface area, consistent with osmotrophy.",
+      "doi": "10.1073/pnas.1408542111",
+      "status": "reported_in_source"
+    },
+    {
+      "id": "mitchell2015-reproduction",
+      "statement": "Fractofusus on Mistaken Point bedding planes shows recurrent clusters produced by multigenerational stolon-like asexual reproduction, interspersed with dispersal by waterborne propagules.",
+      "doi": "10.1038/nature14646",
+      "status": "reported_in_source"
+    },
+    {
+      "id": "turing1952-kc",
+      "statement": "A homogeneous reaction-diffusion state can be unstable to a finite band of wavenumbers, selecting a stationary wavelength λ_c = 2π/k_c.",
+      "doi": "10.1098/rstb.1952.0012",
+      "status": "reported_in_source"
+    },
+    {
+      "id": "scale-assignment-63um",
+      "statement": "The detail-scale wavelength evaluated here is 63 µm (6.33e-05 m) at 565 Ma. No published Fractofusus thin section reports that pigment spacing.",
+      "status": "reconstructed_in_script"
+    }
+  ],
+  "specimen_image": {
+    "file": "fractofusus_misrai_specimen.jpg",
+    "sha256": "e423fba39900f0b8bb9cedd51f3ab45b7320287b39f8726f4a65e9c91e75ab86",
+    "source_url": "https://upload.wikimedia.org/wikipedia/commons/b/be/Fractofusus_misrai.jpg",
+    "commons_page": "https://commons.wikimedia.org/wiki/File:Fractofusus_misrai.jpg",
+    "artist": "djpmapleferryman",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "width": 810,
+    "height": 1564
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing 1952 dispersion relation and stationary-wave selection",
+      "Gehling & Narbonne 2007 taxonomic diagnosis and 575–560 Ma window",
+      "Hoyal Cuthill & Conway Morris 2014 fractal rangeomorph body plan",
+      "Mitchell et al. 2015 stolon-like multigenerational reproduction"
+    ],
+    "reconstructed_in_script": [
+      "Schnakenberg parameters a=0.09, b=0.85, D_u=0.12, D_v=2.40 with dx chosen so analytical λ_c = 6.33e-05 m",
+      "Chevron rendering of the activator inside a spindle mask, siltstone palette, as a visual hypothesis of a 63 µm branchlet repeat"
+    ],
+    "does_not_claim": [
+      "Does not claim a measured 63 µm pigment ocellus on Fractofusus",
+      "Does not claim Mistaken Point moulds resolve cellular reaction-diffusion stripes",
+      "Does not claim slot 1251's 3.3 mm module uses these kinetic constants"
+    ]
+  }
+}
