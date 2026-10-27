@@ -15,7 +15,12 @@
  .bar { display:inline-block; width:110px; height:9px; background:#d8c892;
    border:1px solid #7a5c2e; vertical-align:middle; margin-right:6px; }
  .fill { height:100%; }
- .cell { text-align:center; } .hit { background:#cfe0b8; } .miss { background:#e8c9c0; color:#8a4a3a; }
+ .cell { text-align:center; }
+ .badge { font-size:11px; font-weight:bold; padding:2px 6px; border:1px solid #5d4420; }
+ .badge.crit { background:#a33327; color:#fff; } .badge.high { background:#d98a4a; color:#fff; }
+ .badge.med { background:#e3cf6b; } .badge.ok { background:#7ba05b; color:#fff; }
+ tr.flag-critical td { background:#f3d9d2; } tr.flag-high td { background:#f7e3c8; }
+ tr.flag-resolved td { background:#dde8cf; } .hit { background:#cfe0b8; } .miss { background:#e8c9c0; color:#8a4a3a; }
  .totals { display:flex; gap:14px; flex-wrap:wrap; margin:16px 0; }
  .card { border:1.5px solid #7a5c2e; background:#efe4c4; padding:10px 16px; min-width:150px; }
  .card b { font-size:24px; display:block; }
@@ -106,7 +111,22 @@ record. Small samples are marked — three loops do not make a ranking.</p>
 <tr><td>gemini-4-argon-+-claude-sonnet-5-5-high</td><td class='num'>2</td><td class='num'>332.0s</td></tr>
 <tr><td>1979-vogel-phyllotaxis.py</td><td class='num'>1</td><td class='num'>3.7s</td></tr></table>
 
-<h2>VIII. The unranked fleets — a recording gap</h2>
+<h2>VIII. Red Flags — big gaps &amp; severe misreporting (8 active)</h2>
+<p class="dim">Each flag is a named detector rule over the same records; regenerate the dashboard
+and any threshold crossed since last time appears here. Resolved flags stay on the plate as
+precedent.</p>
+<table><tr><th>Severity</th><th>Flag</th><th>Evidence</th><th>Status</th></tr>
+<tr class='flag-critical'><td><span class="badge crit">CRITICAL</span></td><td><strong>Self-audit conflict of interest (caught)</strong><br><span class='dim'>Detector: <code>self-score − referee-score ≥ 20</code></span></td><td>gemini-4-argon scored its own work 93.8; independent referee claude-fable-5-1 recalibrated it to 26.4 (gap 67.4).</td><td>open — mitigated by cross-model refereeing</td></tr>
+<tr class='flag-critical'><td><span class="badge crit">CRITICAL</span></td><td><strong>Recorded integrity violations</strong><br><span class='dim'>Detector: <code>any row in model_integrity_violations</code></span></td><td>V1_SELF_AUDITING_CONFLICT_OF_INTEREST (critical) ×1; V2_STALE_AUDIT_ON_REWRITTEN_ARTEFACT (critical) ×1; V3_ONE_LINE_SCALAR_ARITHMETIC_AND_TAUTOLOGICAL_REFS (critical) ×1; V4_GROUND_DECIDE_ARITHMETIC_AND_RIGGED_CONSTANT_IN_LEAN (critical) ×1; V5_UNVERIFIED_OFFLINE_BIBLIOGRAPHY_HALLUCINATIONS (high) ×1; V6_UNEARNED_EPISTEMIC_TAGS_AND_HARDCODED_VERIFICATION_FLAG (high) ×1.</td><td>open</td></tr>
+<tr class='flag-high'><td><span class="badge high">HIGH</span></td><td><strong>Systemic pass-1 → pass-2 score inflation</strong><br><span class='dim'>Detector: <code>mean(slot pass2 − pass1) ≥ 15 points</code></span></td><td>Mean pass-1 55.9 → mean pass-2 94.6 (+38.6) across 2,201 slots; every slot gained ≥20 points. The two passes are not cross-calibrated, so pass-2 scores alone must not be quoted as quality.</td><td>open</td></tr>
+<tr class='flag-high'><td><span class="badge high">HIGH</span></td><td><strong>Lean corpus is mostly placeholder templates</strong><br><span class='dim'>Detector: <code>template-stub share ≥ 50%</code></span></td><td>3,000 of 3,106 Lean loop files (96.6%) are the overnight template (issue #268); slot records nonetheless recorded theorems as proved. Relabelled in PR #269; mechanism proofs are still outstanding.</td><td>labelled — proofs outstanding</td></tr>
+<tr class='flag-high'><td><span class="badge high">HIGH</span></td><td><strong>Single-model concentration</strong><br><span class='dim'>Detector: <code>top builder share ≥ 80%</code></span></td><td>gemini-4-argon built 103 of 106 tracked loops (97%) and was also primary assessor on most of them — builder/judge overlap is the surface the self-audit incident came from.</td><td>open</td></tr>
+<tr class='flag-medium'><td><span class="badge med">MEDIUM</span></td><td><strong>Pass-3 re-audits reversed earlier scores</strong><br><span class='dim'>Detector: <code>pass3_score_delta ≤ -10</code></span></td><td>5 slot(s) dropped ≥10 points on independent re-audit; worst: slot-037-allometric-compound-leaf (-24.9), slot-034-auxin-canalization-leaf-veins (-22.7), slot-036-microtubule-stress-meristem (-22.4).</td><td>open</td></tr>
+<tr class='flag-medium'><td><span class="badge med">MEDIUM</span></td><td><strong>Agents dispatched but never landed</strong><br><span class='dim'>Detector: <code>dispatch record exists, report/result absent on main</code></span></td><td>2 scout cell(s) unreturned (bioelectric/simulation, thompson/vision); fixer report(s) not on main: fix-004, fix-007.</td><td>open</td></tr>
+<tr class='flag-medium'><td><span class="badge med">MEDIUM</span></td><td><strong>Pipeline steps failed in tracked runs</strong><br><span class='dim'>Detector: <code>steps.status = &#x27;failed&#x27;</code></span></td><td>publish ×4 (all at the signing/publish step).</td><td>open</td></tr>
+<tr class='flag-resolved'><td><span class="badge ok">RESOLVED</span></td><td><strong>Fabricated &#x27;empirical&#x27; curves quarantined</strong><br><span class='dim'>Detector: <code>Problem-Scout candidate BIO-TPL-DQ-01, verified by fix-001</code></span></td><td>Three bioelectric_polarity &#x27;empirical&#x27; series were confirmed slot-seeded alpha templates and quarantined with provenance labels (PR #271); kept here as the worked example of a flag closing.</td><td>resolved</td></tr></table>
+
+<h2>IX. The unranked fleets — a recording gap</h2>
 <p>The 2,201 slot dispatches and the Cursor cloud fleets (100 scouts, 12 fixers) do not record
 which model each agent ran, so they cannot be ranked yet — the leaderboard above covers only the
 106 telemetry-tracked loops. Fleet outcomes by completion are in Plate I; recording the model in
