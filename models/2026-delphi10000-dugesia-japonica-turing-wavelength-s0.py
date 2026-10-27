@@ -455,6 +455,58 @@ def ocellus_mask(rgb: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return ndi.binary_dilation(out, iterations=1)
 
 
+def dominant_wavelength_um(field: np.ndarray, length_um: float) -> tuple[float, int]:
+    """Radial-FFT peak of a periodic patch, in micrometres. Skips the DC bin."""
+    win = field - np.mean(field)
+    power = np.abs(np.fft.fftshift(np.fft.fft2(win))) ** 2
+    n = field.shape[0]
+    cy = cx = n // 2
+    yy, xx = np.ogrid[:n, :n]
+    rr = np.hypot(xx - cx, yy - cy).astype(int)
+    prof = np.bincount(rr.ravel(), weights=power.ravel())
+    hi = min(16, len(prof) - 1)
+    kdom = int(np.argmax(prof[2:hi]) + 2)
+    return float(length_um / max(kdom, 1)), kdom
+
+
+def inat_wildtype_metrics() -> dict:
+    """Two pale worms on the Kalininsky CC BY 4.0 voucher, split from the dark substrate."""
+    rgb = load_specimen_rgb(SPECIMEN_INAT)
+    gray = _gray(rgb)
+    pale = (gray > np.percentile(gray, 82.0)) & ((rgb[:, :, 0] - rgb[:, :, 2]) > 20.0)
+    pale = ndi.binary_opening(pale, iterations=2)
+    pale = ndi.binary_closing(pale, iterations=3)
+    pale = ndi.binary_fill_holes(pale)
+    labeled, n = ndi.label(pale)
+    bodies = []
+    if n:
+        sizes = ndi.sum(pale, labeled, index=range(1, n + 1))
+        for i, size in enumerate(sizes, start=1):
+            if size > 8000:
+                bodies.append(mask_circularity(labeled == i))
+    return {
+        "n_bodies": len(bodies),
+        "mean_circularity": float(np.mean(bodies)) if bodies else 0.0,
+        "foreground_fraction": float(np.mean(pale)),
+    }
+
+
+def ks_specimen_vs_render(rendered: np.ndarray) -> dict:
+    """Two-sample KS distance between Nogi-plate interior gray values and the render."""
+    from scipy.stats import ks_2samp
+
+    spec = load_specimen_rgb(SPECIMEN_NOGI, size=rendered.shape[0])
+    mask = segment_bodies(spec)
+    g_spec = _gray(spec)[mask]
+    g_sim = _gray(rendered)[mask]
+    rng = np.random.default_rng(SEED)
+    n = int(min(4000, g_spec.size, g_sim.size))
+    a = rng.choice(g_spec, n, replace=False)
+    b = rng.choice(g_sim, n, replace=False)
+    stat = ks_2samp(a, b)
+    return {"statistic": float(stat.statistic), "pvalue": float(stat.pvalue), "n": n}
+
+
 def specimen_metrics() -> dict:
     rgb = load_specimen_rgb(SPECIMEN_NOGI)
     mask = segment_bodies(rgb)
@@ -492,25 +544,28 @@ def save_gif(images: list[Image.Image], path: Path) -> None:
     )
 
 
-def save_comparison(sim: dict, fit: dict, images: list[Image.Image], path: Path) -> None:
-    """Pass-1 figure: specimen, last simulation frame, activator field, dispersion."""
+def save_comparison(sim: dict, fit: dict, images: list[Image.Image], metrics: dict, path: Path) -> None:
+    """Pass-2 figure: specimen, render, field, dispersion, sweep, ablation."""
     path.parent.mkdir(parents=True, exist_ok=True)
     spec = load_specimen_rgb(SPECIMEN_NOGI)
     last = np.asarray(images[-1])
     u = sim["u_final"]
-    fig, axes = plt.subplots(2, 2, figsize=(10.4, 9.2), dpi=120)
+    fig, axes = plt.subplots(2, 3, figsize=(13.6, 8.6), dpi=110)
     axes[0, 0].imshow(spec.astype(np.uint8))
     axes[0, 0].set_title("Nogi et al. 2009 plate\nD. japonica pigment and ocelli")
     axes[0, 1].imshow(last)
     axes[0, 1].set_title("Simulation on segmented epithelium\nλ_c = 6.912 µm, age 0 Ma")
-    im = axes[1, 0].imshow(u, cmap="YlOrBr", origin="lower")
-    axes[1, 0].set_title(f"Activator on a {N_WAVES}×λ patch ({sim['length_um']:.3f} µm)")
-    fig.colorbar(im, ax=axes[1, 0], fraction=0.046, pad=0.04)
+    im = axes[0, 2].imshow(u, cmap="YlOrBr", origin="lower")
+    lam_nl = metrics["nonlinear_lambda_um"]
+    axes[0, 2].set_title(
+        f"Activator, {N_WAVES} linear waves\nnonlinear peak {lam_nl:.2f} µm (mode {metrics['nonlinear_mode']})"
+    )
+    fig.colorbar(im, ax=axes[0, 2], fraction=0.046, pad=0.04)
     ks = np.linspace(0.05, 2.2, 180)
     sig = dispersion_sigma(ks)
-    axes[1, 1].plot(ks, sig, color="#8c4a12", lw=2.0, label="analytic σ(k)")
+    axes[1, 0].plot(ks, sig, color="#8c4a12", lw=2.0, label="analytic σ(k)")
     rows = fit["rows"]
-    axes[1, 1].scatter(
+    axes[1, 0].scatter(
         [r["k_per_um"] for r in rows],
         [r["sigma_numeric"] for r in rows],
         c="#1f4e79",
@@ -518,17 +573,36 @@ def save_comparison(sim: dict, fit: dict, images: list[Image.Image], path: Path)
         label="integrated modes",
     )
     k_c = 2.0 * math.pi / LAMBDA_UM
-    axes[1, 1].axvline(k_c, color="#666666", ls="--", lw=1.0, label=f"k_c = {k_c:.3f} /µm")
-    axes[1, 1].axhline(0.0, color="#999999", lw=0.8)
-    axes[1, 1].set_xlabel("wavenumber k (1/µm)")
-    axes[1, 1].set_ylabel("growth rate σ")
-    axes[1, 1].set_title(f"Linear dispersion  r = {fit['pearson_r']:.4f}")
-    axes[1, 1].legend(fontsize=8, frameon=False)
+    axes[1, 0].axvline(k_c, color="#666666", ls="--", lw=1.0, label=f"k_c = {k_c:.3f} /µm")
+    axes[1, 0].axhline(0.0, color="#999999", lw=0.8)
+    axes[1, 0].set_xlabel("wavenumber k (1/µm)")
+    axes[1, 0].set_ylabel("growth rate σ")
+    axes[1, 0].set_title(f"Linear dispersion  r = {fit['pearson_r']:.4f}")
+    axes[1, 0].legend(fontsize=7, frameon=False)
+    sweep = metrics["sweep"]
+    axes[1, 1].plot(
+        [row["diffusion_ratio"] for row in sweep],
+        [row["lambda_um"] for row in sweep],
+        marker="o",
+        color="#8c4a12",
+    )
+    axes[1, 1].axhline(LAMBDA_UM, color="#666666", ls="--", lw=1.0)
+    axes[1, 1].set_xlabel("diffusion ratio D_v / D_u")
+    axes[1, 1].set_ylabel("λ_c (µm)")
+    axes[1, 1].set_title("Sweep: longer inhibitor range, shorter λ")
+    axes[1, 2].bar(
+        ["R = 48\nσ(k_c)", "R = 1\nmax σ"],
+        [metrics["sigma_at_kc"], metrics["ablation_max_sigma"]],
+        color=["#c47b2b", "#4d4d4d"],
+    )
+    axes[1, 2].axhline(0.0, color="#999999", lw=0.8)
+    axes[1, 2].set_ylabel("growth rate σ")
+    axes[1, 2].set_title("Ablation: equal diffusion is stable")
     for ax in (axes[0, 0], axes[0, 1]):
         ax.set_xticks([])
         ax.set_yticks([])
     fig.suptitle(
-        "Dugesia japonica  ·  Holocene 0 Ma  ·  Turing wavelength 6.912 µm (log10 = -5.160)",
+        "Dugesia japonica  ·  Holocene 0 Ma  ·  Turing wavelength 6.912 µm (log10 = -5.160)  ·  Pass 2",
         fontsize=12,
     )
     fig.tight_layout()
@@ -542,6 +616,8 @@ def collect_metrics(sim: dict | None = None, fit: dict | None = None) -> dict:
     if sim is None:
         sim = simulate_patch()
     spec = specimen_metrics()
+    lam_nl, kdom = dominant_wavelength_um(sim["u_final"], sim["length_um"])
+    inat = inat_wildtype_metrics()
     ab = ablation_equal_diffusion()
     sweep = diffusion_ratio_sweep()
     lambdas = [row["lambda_um"] for row in sweep if math.isfinite(row["lambda_um"])]
@@ -576,16 +652,34 @@ def collect_metrics(sim: dict | None = None, fit: dict | None = None) -> dict:
         "specimen_foreground_fraction": spec["foreground_fraction"],
         "specimen_n_bodies": spec["n_bodies"],
         "ellipse_circularity_reference": ELLIPSE_CIRCULARITY_REFERENCE,
+        "nonlinear_lambda_um": lam_nl,
+        "nonlinear_mode": kdom,
+        "inat_n_bodies": inat["n_bodies"],
+        "inat_mean_circularity": inat["mean_circularity"],
+        "inat_foreground_fraction": inat["foreground_fraction"],
         "dispersion_rows": fit["rows"],
         "grid_n": GRID_N,
         "seed": SEED,
-        "pass": 1,
+        "pass": 2,
     }
+
+
+def _ks_for_field(u_final: np.ndarray) -> dict:
+    rgb = load_specimen_rgb(SPECIMEN_NOGI, size=480)
+    mask = segment_bodies(rgb)
+    eyes = ocellus_mask(rgb, mask)
+    rendered = render_animal_frame(u_final, mask, eyes, contrast=1.0)
+    return ks_specimen_vs_render(rendered)
 
 
 def measure_morphoeval() -> list[dict]:
     """Morphometrics for morphoeval/measure_outputs.py. Values are not copied onto their references."""
-    metrics = collect_metrics()
+    fit = linear_dispersion_fit()
+    sim = simulate_patch()
+    metrics = collect_metrics(sim, fit)
+    ks = _ks_for_field(sim["u_final"])
+    metrics["ks_statistic"] = ks["statistic"]
+    metrics["ks_pvalue"] = ks["pvalue"]
     return [
         {
             "name": "Turing critical wavelength lambda_c of Dugesia japonica pigment field",
@@ -632,6 +726,33 @@ def measure_morphoeval() -> list[dict]:
             "method": "Dark connected components (area 8–800 px) inside the eroded body mask",
             "note": "value differs from the wild-type pair on purpose: the plate shows regenerated heads",
         },
+        {
+            "name": "nonlinear stripe wavelength of the saturated steady field",
+            "value": round(metrics["nonlinear_lambda_um"], 4),
+            "unit": "µm",
+            "reference_value": LAMBDA_UM,
+            "reference_source": "Linear critical wavelength λ_c = 6.912 µm from k_c at R = 48",
+            "method": "Radial FFT peak of the periodic activator patch after spectral integration (modes 2–15)",
+            "note": f"dominant Fourier mode {metrics['nonlinear_mode']} on a {metrics['patch_length_um']:.3f} µm patch; saturation shifts the peak off mode 7",
+        },
+        {
+            "name": "specimen image versus render interior gray KS distance",
+            "value": round(metrics["ks_statistic"], 4),
+            "unit": "KS D",
+            "reference_value": 0.5,
+            "reference_source": "Midpoint null (D = 0.5) used only as a fixed reference, not the measured distance",
+            "method": f"ks_2samp on {ks['n']} gray samples inside the Nogi body mask versus the rendered field",
+            "note": f"two-sided p = {metrics['ks_pvalue']:.3e}",
+        },
+        {
+            "name": "specimen image wild-type body circularity on the Kalininsky voucher",
+            "value": round(metrics["inat_mean_circularity"], 4),
+            "unit": "4πA/P²",
+            "reference_value": ELLIPSE_CIRCULARITY_REFERENCE,
+            "reference_source": "Same independent ellipse reference (0.55) used for the Nogi mask, not this photograph",
+            "method": "Pale-tan components larger than 8000 px on the CC BY 4.0 iNaturalist frame; mean circularity",
+            "note": f"bodies kept = {metrics['inat_n_bodies']}; foreground fraction of the pale mask = {metrics['inat_foreground_fraction']:.3f}",
+        },
     ]
 
 
@@ -666,6 +787,11 @@ def self_test() -> None:
     assert abs(sweep[2]["lambda_um"] - LAMBDA_UM) < 1e-6
     patch = simulate_patch(n_steps=900, n_save=4)
     assert float(np.std(patch["u_final"])) > 0.15, float(np.std(patch["u_final"]))
+    lam_nl, _kdom = dominant_wavelength_um(patch["u_final"], patch["length_um"])
+    assert 4.0 < lam_nl < 14.0, lam_nl
+    assert abs(lam_nl - LAMBDA_UM) > 0.15
+    inat = inat_wildtype_metrics()
+    assert inat["n_bodies"] >= 1 and 0.0 < inat["mean_circularity"] < 0.9
     assert CHRONOSERIES_LENGTH == 1 and AGE_MA == 0.0
     assert N_WAVES * LAMBDA_UM == 7 * 6.912
     spec = specimen_metrics()
@@ -697,8 +823,11 @@ def main() -> None:
     if min(images[0].size) < 480:
         raise SystemExit(f"GIF resolution {images[0].size} is below 480 px")
     save_gif(images, MEDIA_GIF)
-    save_comparison(sim, fit, images, MEDIA_PNG)
     metrics = collect_metrics(sim, fit)
+    ks = _ks_for_field(sim["u_final"])
+    metrics["ks_statistic"] = ks["statistic"]
+    metrics["ks_pvalue"] = ks["pvalue"]
+    save_comparison(sim, fit, images, metrics, MEDIA_PNG)
     metrics["gif_frames"] = len(images)
     metrics["gif_size"] = list(images[0].size)
     metrics["specimen_sha256"] = hashlib.sha256(SPECIMEN_NOGI.read_bytes()).hexdigest()
