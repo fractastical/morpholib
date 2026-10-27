@@ -1,0 +1,143 @@
+{
+  "scout": "scout-096",
+  "ground": "scaling",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "title": "Commit the literature em/s allometry check (972 µm vs 1821 µm embryos)",
+      "gap": "SPEED_COMPARISON.md and literature_benchmarks.py define embryo-relative (em/s) comparison across literature scenarios with different absolute embryo lengths, but no committed analysis_results/literature_comparison.json exists and the smoke subset CSV lacks embryo_length_px.",
+      "done": "After pre-registering embryo_length_um per run, literature_benchmarks.py writes JSON where each LITERATURE_BENCHMARKS id has within_range true/false for the run median cluster speed in em/s (speed_px_s / embryo_length_px), and a summary field reports whether short vs long single-embryo scenarios (ids single_embryo_short and single_embryo_long) agree on em/s within 25% or reject absolute-µm/s-only reporting.",
+      "tool_route": "python3 wave-vector-tiff-parser.py <TIFF_DIR> 0 --fps 1.0 --csv spark_tracks.csv; python3 wave-vector-analysis/spark_tracks_to_clusters.py spark_tracks.csv vector_clusters.csv; python3 wave-vector-analysis/literature_benchmarks.py spark_tracks.csv --output wave-vector-analysis/analysis_results/literature_comparison.json --embryo-length-um <from_literature_table>",
+      "deciding_data": "Primary TIFF stacks referenced by morphoeval xenopus-ca2-wave-vectors (Dietz et al., doi:10.1242/dev.199845; upstream path datasets/frog_embryo_data_processed not present in this checkout — one named public fetch). In-repo smoke: wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv (missing embryo_length_px; insufficient alone).",
+      "prior_attempts": "Documented method only (wave-vector-analysis/SPEED_COMPARISON.md, literature_benchmarks.py); no recorded refutation of the em/s collapse hypothesis in docs/open-problems.json or morphoeval audits.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "literature_benchmarks.py + spark_tracks_to_clusters.py are named entrypoints that emit the deciding JSON."},
+        "data_in_hand": {"score": 8, "why": "Full-decision tracks need external Xenopus Ca²⁺ TIFFs; repo holds method docs and a truncated smoke CSV only."},
+        "falsifiable_done": {"score": 14, "why": "within_range flags and a 25% em/s agreement rule are mechanically scorable from JSON."},
+        "compute_in_repo": {"score": 13, "why": "Parser + cluster + benchmark CLI fits one sitting once TIFFs are mounted."},
+        "isolation": {"score": 9, "why": "Outputs can live under wave-vector-analysis/analysis_results/ as new files only."},
+        "time_to_verdict": {"score": 7, "why": "Single pipeline pass per run; multi-length comparison needs two parsed runs."},
+        "not_blocked": {"score": 5, "why": "No prior attempt recorded as refuted for this exact benchmark-export route."}
+      }
+    },
+    {
+      "title": "Gasterosteus Miocene chronospecies shrink: does 2.0 em coupling hide absolute-size loss of neighbor transfer?",
+      "gap": "morphoeval/scale_and_paleo_catalog.py and datasets/species_gallery/species_manifest.json record Gasterosteus doryssus_early/mid/late characteristic_size_m falling 0.052→0.047 m across ~30 kyr, but wave-vector simulations never test whether fixed coupling_range_lengths=2.0 predicts unchanged secondary-embryo recruitment when embryo.length_px scales with those catalog ratios at fixed microscope spacing.",
+      "done": "For three embryo.length values in ratio 0.052:0.049:0.047 with fixed 700 px center-to-center spacing in two_embryos_coupled, spark_tracks_to_clusters.py yields secondary-embryo (B) post-poke cluster counts; verdict SUPPORTS if counts differ by >20% between largest and smallest, SUPPORTS em-only coupling if counts within 10%, else INCONCLUSIVE if isolated control also differs.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --scenario two_embryos_coupled --duration 30 --output sim_stickleback_<size>.csv (with programmatic Embryo.length scaled via a small new driver or inline scenario clone); python3 wave-vector-analysis/spark_tracks_to_clusters.py sim_stickleback_<size>.csv sim_clusters_<size>.csv; python3 wave-vector-analysis/analyze_experimental_hypotheses.py --tracks sim_stickleback_<size>.csv --clusters sim_clusters_<size>.csv; optional paired control: --compare-ab two_embryos_coupled two_embryos_isolated_control",
+      "deciding_data": "In repo: morphoeval/scale_and_paleo_catalog.py NINETY_NOVEL_AND_FOSSIL_TAXA Gasterosteus rows; datasets/species_gallery/species_manifest.json characteristic_size_m and geological_age_ma for the same taxa.",
+      "prior_attempts": "Gasterosteus clock_wavefront MorphoEval slots (e.g. datasets/gasterosteus_aculeatus_clock_wavefront/) address somite S=u·T scaling, not Ca²⁺ inter-embryo coupling; no wavepipe audit refutes this coupling-size test.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "generate_simulated_data.py, spark_tracks_to_clusters.py, and analyze_experimental_hypotheses.py implement the full chain without new biology."},
+        "data_in_hand": {"score": 18, "why": "Fossil chronospecies sizes and ages are already tabulated in-repo."},
+        "falsifiable_done": {"score": 14, "why": "Secondary-embryo cluster counts and 10%/20% thresholds are numeric."},
+        "compute_in_repo": {"score": 14, "why": "Three simulation sweeps plus clustering run in minutes on CPU."},
+        "isolation": {"score": 10, "why": "All artifacts can be new CSV/JSON under wave-vector-analysis/simulations/."},
+        "time_to_verdict": {"score": 9, "why": "One loop: generate → cluster → count B-embryo clusters."},
+        "not_blocked": {"score": 5, "why": "No recorded prior attempt on this fossil-lineage × coupling_range route."}
+      }
+    },
+    {
+      "title": "Danionin adult SL allometry (18–36 mm): inter-embryo reach at fixed field-of-view spacing",
+      "gap": "Danio margaritatus through D. albolineatus in the scale catalog span 2× characteristic_size_m (0.018–0.036 m) but the wave simulator’s default two-embryo geometry uses identical 400 px lengths; whether neighbor Ca²⁺ recruitment at fixed pixel spacing tightens with smaller catalog SL is untested.",
+      "done": "With center distance held at 700 px and coupling_range_lengths=2.0, run coupled simulations at embryo.length proportional to 0.018, 0.028, and 0.036 m (any positive calibration to px); done when JSON summary lists B-embryo cluster counts monotonic decreasing with decreasing catalog size (Spearman rho ≤ −0.8) or refutes with rho ≥ 0.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_coupled two_embryos_isolated_control --duration 30 --output-prefix sim_danionin_<slug>; python3 wave-vector-analysis/spark_tracks_to_clusters.py sim_danionin_<slug>_lane_a.csv vec_danionin_<slug>.csv; python3 wave-vector-analysis/generate_all_hypothesis_plots.py vec_danionin_<slug>.csv --output-dir wave-vector-analysis/analysis_results/danionin_scaling_<slug>/",
+      "deciding_data": "In repo: morphoeval/scale_and_paleo_catalog.py Danionin Pigment Evolution Series; datasets/species_gallery/species_manifest.json Danio margaritatus/albolineatus/nigrofasciatus/aesculapii rows.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json ZF-CLK-01 bound somite clock architecture for Danio rerio but did not test Ca²⁺ inter-embryo geometry vs danionin size series; no wavepipe refutation logged.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Standard simulation → cluster → hypothesis-plot chain covers recruitment and spatial spread."},
+        "data_in_hand": {"score": 17, "why": "All size anchors are in the catalog/manifest without fetch."},
+        "falsifiable_done": {"score": 13, "why": "Spearman rho on three numeric counts is objective."},
+        "compute_in_repo": {"score": 14, "why": "Three paired A/B simulation runs are lightweight."},
+        "isolation": {"score": 10, "why": "New outputs only under wave-vector-analysis/analysis_results/danionin_scaling_*."},
+        "time_to_verdict": {"score": 8, "why": "Verdict after three generate/cluster passes."},
+        "not_blocked": {"score": 5, "why": "No blocked record for danionin SL × wave coupling."}
+      }
+    },
+    {
+      "title": "Knightia vs Danio adult size ratio: absolute spacing breaks em-normalized coupling",
+      "gap": "Actinopterygian Axial Fossil Series lists Knightia eocaena at 0.095 m vs extant Danio rerio ~0.035 m (species_manifest), but simulations/catalog.json still assume threshold coupling in embryo lengths while real multi-embryo imaging keeps pixel spacing fixed as body size changes.",
+      "done": "Simulate two_embryos_head_head with embryo A length calibrated to Danio (1.0×) and B to Knightia/Danio ratio (≈2.71×) at unchanged 700 px center distance; compare B post-poke cluster count to a symmetric 1.0×/1.0× control. Done if ratio count_B / count_B_control < 0.5 (absolute spacing hypothesis) or > 0.9 (em-threshold hypothesis).",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --scenario two_embryos_head_head --duration 30 --output sim_knightia_mix.csv; python3 wave-vector-analysis/spark_tracks_to_clusters.py sim_knightia_mix.csv sim_knightia_mix_clusters.csv; python3 wave-vector-analysis/visualize_simulation.py sim_knightia_mix.csv --real-csv <symmetric_control.csv> --output wave-vector-analysis/analysis_results/knightia_danio_coupling.png",
+      "deciding_data": "In repo: datasets/species_gallery/species_manifest.json Knightia eocaena and Danio rerio characteristic_size_m; morphoeval/scale_and_paleo_catalog.py slots for Green River taxa.",
+      "prior_attempts": "MorphoEval Turing slots (e.g. Loop_1205_knightia_eocaena_turing_wavelength.lean) cover pigment wavelength, not Ca²⁺ neighbor coupling; no prior wavepipe verdict.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "Head-head scenario and cluster counts are native simulation outputs."},
+        "data_in_hand": {"score": 16, "why": "Fossil/extant size ratio is catalogued in-repo."},
+        "falsifiable_done": {"score": 14, "why": "0.5 and 0.9 count ratios are binary thresholds."},
+        "compute_in_repo": {"score": 14, "why": "Two simulation runs plus visualize_simulation.py."},
+        "isolation": {"score": 10, "why": "New sim CSV/PNG paths only."},
+        "time_to_verdict": {"score": 8, "why": "Single sitting for paired control vs asymmetric sizing."},
+        "not_blocked": {"score": 5, "why": "No documented failed attempt for Knightia×wave coupling."}
+      }
+    },
+    {
+      "title": "Reconcile xenopus-ca2-wave-vectors registry size (36 µm) with embryo-tier wave extent",
+      "gap": "morphoeval/runs/species_multiscale_registry.json ranks xenopus-ca2-wave-vectors at phenomenon_size_m ≈ 3.6×10⁻⁵ m (cellular tier) while Danio rerio mm-scale rung mm1-2-embryo-trunk-vascular-axis is 1.2×10⁻³ m; the pipeline’s ap_norm and dist_from_poke_px imply tissue-scale propagation, but no wavepipe run has compared median spatial spread in embryo meters to catalog tier bounds.",
+      "done": "On spark_tracks with embryo_length_px populated, add_embryo_unit_columns yields median dist_from_poke_em; multiply by catalog adult Xenopus laevis reference (~0.045 m from compute_phenomenon_scale defaults or measured embryo_length_um) to get meters. Pass if 0.001 m ≤ median spread m ≤ 0.01 m (tier 6 organ/embryo); fail if median spread m < 1×10⁻⁴ m (cellular tier tag confirmed).",
+      "tool_route": "python3 wave-vector-analysis/wave-vector-tiff-parser.py <TIFF_DIR> 0 --csv spark_tracks.csv; python3 wave-vector-analysis/spark_tracks_to_clusters.py spark_tracks.csv vector_clusters.csv; python3 wave-vector-analysis/literature_benchmarks.py spark_tracks.csv --output wave-vector-analysis/analysis_results/registry_scale_check/literature_comparison.json --embryo-length-um 1000; python3 wave-vector-analysis/generate_all_hypothesis_plots.py spark_tracks.csv --clusters-csv vector_clusters.csv --output-dir wave-vector-analysis/analysis_results/registry_scale_check/",
+      "deciding_data": "In repo: morphoeval/runs/species_multiscale_registry.json Xenopus laevis block; morphoeval/scale_and_paleo_catalog.py SCALE_TIERS and DANIO_SCALE_RUNGS for tier reference; parsed tracks require external Xenopus Ca²⁺ TIFFs (same gap as literature_comparison).",
+      "prior_attempts": "morphoeval/verify_image_fitness.py links xenopus-ca2-wave-vectors to the pipeline but scores GIF fitness, not meter-tier consistency; no refutation of tier mismatch.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "embryo_units + hypothesis plots operate on spark_tracks once parser fills embryo_length_px."},
+        "data_in_hand": {"score": 10, "why": "Tier bounds and registry metadata in-repo; deciding spread needs full TIFF parse."},
+        "falsifiable_done": {"score": 14, "why": "Tier interval [1e-4, 1e-2] m on median dist_from_poke_em is checkable."},
+        "compute_in_repo": {"score": 12, "why": "Depends on TIFF volume size; logic itself is hours-scale."},
+        "isolation": {"score": 9, "why": "New analysis_results/registry_scale_check/ only."},
+        "time_to_verdict": {"score": 6, "why": "Blocked on TIFF availability for one full parse."},
+        "not_blocked": {"score": 5, "why": "Registry tier mismatch not previously closed by wavepipe."}
+      }
+    },
+    {
+      "title": "Somite-rung scale (55 µm) vs Ca²⁺ cluster AP wavelength in embryo millimeters",
+      "gap": "DANIO_SCALE_RUNGS rung um55-somite-rosette-neuromast sets base_size_m=5.5×10⁻⁵ m (55 µm AP somite block) while docs/open-problems.json ZF-CLK-01 still lacks paired clock/somite measurements; no test asks whether vector_clusters AP extent in emm matches 550 emm when reference embryo length is ~1.2 mm (Danio mm1-2 rung).",
+      "done": "From vector_clusters.csv with ap_norm span per cluster, compute median (ap_max−ap_min)×embryo_length_px converted to µm using embryo_length_um=1200; pass if median within [40, 70] µm, fail if outside [25, 90] µm or if fewer than 50 clusters with valid ap_norm.",
+      "tool_route": "python3 wave-vector-tiff-parser.py <zebrafish_or_xenopus_Ca2_TIFFs> 0 --csv spark_tracks.csv; python3 wave-vector-analysis/spark_tracks_to_clusters.py spark_tracks.csv vector_clusters.csv; python3 wave-vector-analysis/analyze_experimental_hypotheses.py (cluster AP extent helper) or pandas aggregation on clusters; cross-check target 5.5e-5 m against morphoeval/scale_and_paleo_catalog.py DANIO_SCALE_RUNGS[5]",
+      "deciding_data": "In repo: morphoeval/scale_and_paleo_catalog.py somite rung metadata; datasets/danio_rerio_clock_wavefront/danio_rerio_clock_wavefront_reference.json for S=u·T context. Ca²⁺ TIFFs not in repo (Zebrafish Ca²⁺ imaging would be a named fetch distinct from embryo-blind/zebrafish-blind composition test).",
+      "prior_attempts": "ZF-CLK-01 partially resolved via literature in predictions/resolutions/zebrafish.json without wavepipe somite-wavelength test; OP-09 zebrafish-blind tests composition not Ca²⁺ somite scale.",
+      "factors": {
+        "tool_fit": {"score": 17, "why": "Cluster AP summaries come from spark_tracks_to_clusters + analyze_experimental_hypotheses."},
+        "data_in_hand": {"score": 7, "why": "Somite target size is catalogued; matching Ca²⁺ tracks are external."},
+        "falsifiable_done": {"score": 14, "why": "Fixed µm window [40,70] on median AP extent."},
+        "compute_in_repo": {"score": 11, "why": "Needs species-appropriate TIFF stack parse."},
+        "isolation": {"score": 9, "why": "New summary JSON under wave-vector-analysis/analysis_results/."},
+        "time_to_verdict": {"score": 5, "why": "Requires acquiring/deciding TIFF source first."},
+        "not_blocked": {"score": 4, "why": "ZF-CLK-01 partially addressed clock law but not this wavepipe somite-width route."}
+      }
+    },
+    {
+      "title": "Deep-time geological_age_ma vs Ca²⁺ wave speed (not decidable here)",
+      "gap": "NINETY_NOVEL_AND_FOSSIL_TAXA pairs geological_age_ma with base_size_m across 90 chronospecies, inviting evolutionary rate questions, but spark_tracks.csv carries no geological_age_ma column and the wave parser has no paleo time axis.",
+      "done": "N/A for wavepipe — a scorer would need a merged table with ≥10 taxa where both age_ma and measured speed_em_s from experiments exist; absent that, record explicit NULL verdict.",
+      "tool_route": "None as-is; would require wet-lab Ca²⁺ imaging across fossil lineages (impossible) or misusing simulate without calibration. Alternative lens: morphoeval simulation scripts with --self-test on clock_wavefront slots, or delphi scoring on OP-04 deep-horizon prediction.",
+      "deciding_data": "geological_age_ma only in morphoeval/scale_and_paleo_catalog.py and species_manifest.json; no Ca²⁺ time series tagged by Ma in repo.",
+      "prior_attempts": "docs/open-problems.json OP-04 (Prediction beyond ~50 Myr) attempted deep-horizon morphology prediction via Thompson engine, not Ca²⁺ waves; unrelated refutation of static Turing on Bos taurus (OP-11) must not be reused here.",
+      "factors": {
+        "tool_fit": {"score": 2, "why": "Wavepipe lacks any age axis; only notes cross-taxa metadata in catalog."},
+        "data_in_hand": {"score": 6, "why": "Ages and sizes exist, but not linked to spark_tracks."},
+        "falsifiable_done": {"score": 8, "why": "NULL verdict rule is checkable but not scientifically decisive."},
+        "compute_in_repo": {"score": 3, "why": "No in-repo path to Ma-labeled Ca²⁺ measurements."},
+        "isolation": {"score": 10, "why": "Documenting NULL avoids touching tracked files."},
+        "time_to_verdict": {"score": 9, "why": "Immediate NULL once schema inspected."},
+        "not_blocked": {"score": 5, "why": "No prior claim that wavepipe correlates speed with Ma."}
+      }
+    },
+    {
+      "title": "Equid / cetacean fossil body-size series vs segmentation-clock wavefront (wrong lens)",
+      "gap": "Equid and cetacean lineages in scale_and_paleo_catalog.py span 0.085–1.85 m with geological_age_ma grids and MorphoEval clock_wavefront Lean loops, but those loops formalize S=u·T somite scaling—not Ca²⁺ spark_tracks.",
+      "done": "For wavepipe: not closable. For simulation lens: re-run registered clock_wavefront model scripts with alpha_scale from datasets/*_clock_wavefront_reference.json and check S=u·T RMSE within registered tolerance (see predictions/resolutions xenopus/danio partials).",
+      "tool_route": "Wavepipe: no command. Simulation lens example: python3 <clock_wavefront_script>.py --self-test using datasets/eohippus_angustidens_clock_wavefront/ if present, or nakamasu-danio-rerio-clock-wavefront baseline.",
+      "deciding_data": "In repo: morphoeval/scale_and_paleo_catalog.py Equid/Cetacean tuples; morphoeval/lean/loops/Loop_1398_eohippus_angustidens_clock_wavefront.lean; no equid Ca²⁺ TIFFs.",
+      "prior_attempts": "ZF-CLK-01 and XT-CLK-01 in docs/open-problems.json registered_prediction_followups bound proportional somitogenesis but did not import fossil equid sizes into wave-vector-analysis.",
+      "factors": {
+        "tool_fit": {"score": 1, "why": "Spark-track chain does not ingest fossil clock parameters."},
+        "data_in_hand": {"score": 12, "why": "Fossil size/time tables and clock references exist for other tools."},
+        "falsifiable_done": {"score": 10, "why": "Clear hand-off criteria to simulation lens RMSE tests."},
+        "compute_in_repo": {"score": 5, "why": "Only via non-wavepipe model scripts."},
+        "isolation": {"score": 10, "why": "Scout JSON records boundary without editing loops."},
+        "time_to_verdict": {"score": 4, "why": "Wavepipe verdict is immediate NOT APPLICABLE."},
+        "not_blocked": {"score": 5, "why": "No refuted wavepipe route for equid fossil clocks."}
+      }
+    }
+  ]
+}
