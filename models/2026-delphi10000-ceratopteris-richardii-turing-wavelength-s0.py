@@ -54,8 +54,8 @@ DOMAIN_UM = 768.0  # three critical wavelengths
 N_GRID = 64
 N_STEPS = 25000
 DT = 0.1
-# Raised to 2 after Pass-1 remediation. Pass 1 leaves this at 1.
-REMEDIATION_PASS = 1
+# Pass 2 exercises the sweep, ablation, voucher segmentation, KS/RMSE, and plate lock.
+REMEDIATION_PASS = 2
 
 _CACHE: dict | None = None
 
@@ -293,10 +293,16 @@ def segment_voucher(path: Path = VOUCHER_PATH) -> dict:
     disk = gray > 140.0
     if int(disk.sum()) < 100:
         return {"tissue_fraction_of_disk": 0.0, "disk_fraction": 0.0}
-    tissue = disk & (gray < 175.0) & (small[:, :, 1] > small[:, :, 0])
+    # The empty agar is the bright mode. The gametophyte body is darker; the
+    # photo is warm, so a green-minus-red test marks nothing.
+    hist, edges = np.histogram(gray[disk], bins=40)
+    centers = 0.5 * (edges[:-1] + edges[1:])
+    agar_mode = float(centers[int(np.argmax(hist))])
+    tissue = disk & (gray < agar_mode - 18.0)
     return {
         "tissue_fraction_of_disk": float(tissue.sum() / disk.sum()),
         "disk_fraction": float(disk.mean()),
+        "agar_mode": agar_mode,
     }
 
 
