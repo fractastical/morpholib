@@ -1,0 +1,48 @@
+sim_id: delphi10000-chamaeleo-calyptratus-turing-wavelength-s0
+slot: 3144
+organism: Chamaeleo calyptratus
+common_name: Veiled chameleon
+age_Ma: 0.0
+horizon: Holocene (Extant)
+scale_m: 0.0002604
+scale_um: 260.4
+scale_tier: 5_primordium_100um
+scale_variant: detail
+math_family: Reaction-Diffusion & Turing Dispersion
+cohort: 1. Chemical Turing / RD
+form: Stripes, Spots & Ocelli
+law: Turing Wavenumber k_c
+chronoseries: 1/1
+chronoseries_note: >-
+  Single Holocene point at 0 Ma. No fossil chronospecies is in this slot.
+  The predecessor is the 80 µm sub-wavelength dermal-unit cutoff; the successor
+  is an adult lateral bar wider than 10 carrier wavelengths (2.604 mm).
+  k_c itself is not given an age correction.
+equations:
+- law_name: Schnakenberg activator-inhibitor kinetics
+  formula: 'du/dt = Du lap u + A - u + u^2 v ; dv/dt = Dv lap v + B - u^2 v'
+  lean_decl: MathOfBiology.Loop_3144.kcNumerator
+  lean_theorem: MathOfBiology.Loop_3144.kc_numerator_positive
+  lean_locus: morphoeval/lean/loops/Loop_3144_chamaeleo_calyptratus_turing_wavelength_s0.lean#L24-L36
+  variables: 'A=0.062, B=1.150, Du and Dv solved so k_peak = 2π per 260.4 µm; Dv_y/Dv_x=0.42'
+  role: Local melanophore activator and long-range inhibitor on the male flank
+  source_citation: 'Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0; Turing 1952 DOI:10.1098/rstb.1952.0012'
+  code_locus: models/2026-delphi10000-chamaeleo-calyptratus-turing-wavelength-s0.py
+- law_name: Most-unstable Turing wavenumber
+  formula: 'k_c = argmax sigma(k), sigma the larger eigenvalue of J - k^2 D; lambda_c = 2 pi / k_c'
+  lean_decl: MathOfBiology.Loop_3144.lambdaTenths
+  lean_theorem: MathOfBiology.Loop_3144.eight_modes_on_flank_patch
+  lean_locus: morphoeval/lean/loops/Loop_3144_chamaeleo_calyptratus_turing_wavelength_s0.lean#L10-L33
+  variables: 'lambda_c = 260.4 µm at the Holocene detail scale'
+  role: Quantitative law for this slot (Turing wavenumber k_c)
+  source_citation: 'Murray 1981 DOI:10.1016/0022-5193(81)90334-9'
+  code_locus: models/2026-delphi10000-chamaeleo-calyptratus-turing-wavelength-s0.py
+- law_name: Scale separation across the 1-point Holocene series
+  formula: 'predecessor 80 µm < lambda_c = 260.4 µm < successor 10 lambda_c = 2604 µm'
+  lean_decl: MathOfBiology.Loop_3144.predecessorTenths
+  lean_theorem: MathOfBiology.Loop_3144.predecessor_is_subwavelength
+  lean_locus: morphoeval/lean/loops/Loop_3144_chamaeleo_calyptratus_turing_wavelength_s0.lean#L13-L30
+  variables: 'age_Ma = 0; chronoseries length = 1'
+  role: What changes at this scale versus the sub-wavelength unit and the adult bar envelope
+  source_citation: 'Ligon & McGraw 2013 DOI:10.1098/rsbl.2013.0892 (species behaviour; not a micrometre period)'
+  code_locus: models/2026-delphi10000-chamaeleo-calyptratus-turing-wavelength-s0.py
