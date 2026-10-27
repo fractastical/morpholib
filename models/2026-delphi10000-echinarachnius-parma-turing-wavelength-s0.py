@@ -219,7 +219,8 @@ def goodness_of_fit(sweep: dict[str, list[float]]) -> dict[str, float]:
     pearson = float(np.corrcoef(pred, meas)[0, 1])
     rmse = float(np.sqrt(np.mean((pred - meas) ** 2)))
     # Two-sample KS between the measured wavelengths and the linear predictions.
-    ks = float(stats.ks_2samp(meas, pred).statistic)
+    # Seven wavelengths only: D moves in steps of 1/7. The spacing sample below is the distributional test.
+    ks = float(stats.ks_2samp(meas, pred, method="asymp").statistic)
     return {"pearson_r": pearson, "rmse_um": rmse, "ks_statistic": ks}
 
 
@@ -248,8 +249,11 @@ def domain_series() -> list[dict[str, float]]:
 def spot_spacings(field: np.ndarray, length_um: float) -> np.ndarray:
     """Nearest-neighbour distances (µm) of activator peaks on the periodic patch."""
     n = field.shape[0]
+    # One local maximum per 60 µm period. A 5 px window splits a single ocellus.
+    period_px = max(7, int(round(LAMBDA_UM * n / length_um)))
+    window = period_px if period_px % 2 == 1 else period_px + 1
     threshold = float(np.mean(field) + 0.45 * np.std(field))
-    local_max = field == ndi.maximum_filter(field, size=5)
+    local_max = field == ndi.maximum_filter(field, size=window)
     peaks = local_max & (field > threshold)
     ys, xs = np.nonzero(peaks)
     if len(xs) < 4:
@@ -296,6 +300,26 @@ def segment_specimen(path: Path = SPECIMEN) -> dict[str, float]:
     coherency = float(np.mean(coherency_map[mask])) if area > 20 else float(np.mean(coherency_map))
     fg = np.clip(rgb[mask], 0.0, 1.0)
     mean_rgb = fg.mean(axis=0) if area > 20 else np.array([0.84, 0.49, 0.38])
+    # Close the spine fringe, then split individuals. The union mask above stays
+    # the Pass 1 measurement; these discs are the per-test shape.
+    closed = ndi.binary_closing(mask, structure=np.ones((15, 15)))
+    closed = ndi.binary_fill_holes(closed)
+    closed = ndi.binary_opening(closed, structure=np.ones((5, 5)))
+    labeled, _n_lab = ndi.label(closed)
+    disc_circularity: list[float] = []
+    disc_aspect: list[float] = []
+    for label_id in range(1, int(labeled.max()) + 1):
+        component = labeled == label_id
+        comp_area = float(np.sum(component))
+        if comp_area < 5000:
+            continue
+        comp_eroded = ndi.binary_erosion(component)
+        comp_perim = float(np.sum(component ^ comp_eroded)) + 1e-6
+        disc_circularity.append(float(np.clip(4.0 * np.pi * comp_area / (comp_perim ** 2), 0.0, 1.0)))
+        cys, cxs = np.nonzero(component)
+        ch = float(cys.max() - cys.min() + 1)
+        cw = float(cxs.max() - cxs.min() + 1)
+        disc_aspect.append(cw / ch)
     return {
         "foreground_fraction": float(np.mean(mask)),
         "circularity": circularity,
@@ -306,6 +330,11 @@ def segment_specimen(path: Path = SPECIMEN) -> dict[str, float]:
         "mean_b": float(mean_rgb[2]),
         "width_px": float(gray.shape[1]),
         "height_px": float(gray.shape[0]),
+        "n_discs": len(disc_circularity),
+        "mean_disc_circularity": float(np.mean(disc_circularity)) if disc_circularity else 0.0,
+        "mean_disc_aspect": float(np.mean(disc_aspect)) if disc_aspect else 0.0,
+        "disc_circularity": disc_circularity,
+        "disc_aspect": disc_aspect,
     }
 
 
@@ -420,6 +449,18 @@ def write_comparison_png(
     values = [ablation_amp, turing_amp] + [row["amplitude"] for row in domains]
     colors = ["#9aa0a6", "#c47a3a"] + ["#6b4f3a"] * len(domains)
     axes[1, 1].bar(range(len(values)), values, color=colors)
+    for index, value in enumerate(values):
+        if value < 0.02:
+            axes[1, 1].annotate(
+                "quenched" if index >= 2 else "ablated",
+                (index, 0.03),
+                ha="center",
+                va="bottom",
+                fontsize=7,
+                color="#222222",
+            )
+            axes[1, 1].plot(index, 0.012, marker="v", color="#222222", ms=7)
+    axes[1, 1].set_ylim(0.0, max(values) * 1.25)
     axes[1, 1].set_xticks(range(len(labels)))
     axes[1, 1].set_xticklabels(labels, fontsize=7)
     axes[1, 1].set_ylabel("activator std")
@@ -429,7 +470,8 @@ def write_comparison_png(
         axes[1, 2].hist(spacings, bins=12, color="#c47a3a", edgecolor="white")
         axes[1, 2].axvline(float(np.mean(spacings)), color="#222222", ls="--", lw=1.0)
     axes[1, 2].set_title(
-        f"Spot nearest neighbours\nunion circularity {segment['circularity']:.3f}"
+        f"Spot nearest neighbours\n{segment.get('n_discs', 0)} discs, "
+        f"circ {segment.get('mean_disc_circularity', 0.0):.2f}"
     )
     axes[1, 2].set_xlabel("spacing (µm)")
 
@@ -473,7 +515,16 @@ def build_measurements(bundle: dict) -> list[dict]:
     domains = bundle["domains"]
     pred10 = next(row for row in domains if row["length_um"] == PREDECESSOR_UM)
     spacing_mean = float(np.mean(spacings)) if len(spacings) else float("nan")
-    spacing_cv = float(np.std(spacings) / spacing_mean) if len(spacings) and spacing_mean else float("nan")
+    spacing_std = float(np.std(spacings)) if len(spacings) else float("nan")
+    spacing_cv = float(spacing_std / spacing_mean) if len(spacings) and spacing_mean else float("nan")
+    if len(spacings) >= 5:
+        null_cdf = stats.norm(
+            loc=float(hero["wavelength_um"]),
+            scale=max(spacing_std, 1e-3),
+        ).cdf
+        spacing_ks = float(stats.kstest(spacings, null_cdf).statistic)
+    else:
+        spacing_ks = float("nan")
     rows = [
         _measurement(
             "linear dispersion peak wavelength",
@@ -533,8 +584,8 @@ def build_measurements(bundle: dict) -> list[dict]:
             round(pred10["amplitude"], 6),
             "std(u)",
             "same Du, Dv on a periodic patch of length 10 µm (below one wavelength)",
-            reference=0.0,
-            source="scale ladder at 0 Ma: the 10 µm tier is the predecessor of this 60 µm detail scale",
+            reference=round(float(hero["amplitude"]), 4),
+            source="scale ladder at 0 Ma: the reference is the 480 µm Turing amplitude, not a copy of the quenched value",
             note="chronoseries is 1/1, so the predecessor is a scale, not an older species",
         ),
         _measurement(
@@ -573,7 +624,44 @@ def build_measurements(bundle: dict) -> list[dict]:
             "periodic nearest-neighbour distance of activator peaks above mean + 0.45 std",
             reference=LAMBDA_UM,
             source="FFT wavelength is the row period; nearest neighbours of a spot lattice need not equal it",
-            note=f"spacing CV = {spacing_cv:.4f}; n_peaks = {len(spacings)}",
+            note=f"spacing CV = {spacing_cv:.4f}; n_peaks = {len(spacings)}; one-period peak window",
+        ),
+        _measurement(
+            "ocellus spacing KS against FFT wavelength",
+            round(spacing_ks, 4),
+            "KS D",
+            "one-sample KS of nearest-neighbour spacings against Normal(λ_FFT, s)",
+            reference=0.0,
+            source="the FFT wavelength is the null centre; D = 0 would mean the spacings are that normal",
+            note=f"λ_FFT = {float(hero['wavelength_um']):.4f} µm; spacing std = {spacing_std:.4f} µm",
+        ),
+        _measurement(
+            "ocellus spacing coefficient of variation",
+            round(spacing_cv, 4),
+            "CV",
+            "std(nearest neighbour) / mean(nearest neighbour) on the periodic patch",
+            reference=0.0,
+            source="a perfectly regular lattice would have CV 0",
+        ),
+        _measurement(
+            "specimen per-disc circularity",
+            round(segment["mean_disc_circularity"], 4),
+            "4πA/P²",
+            "mean circularity of connected components after a 15 px closing of the spine fringe; components under 5000 px dropped",
+            reference=round(segment["circularity"], 4),
+            source="USNM E39365; the reference is the union-mask circularity, which mixes three tests",
+            note=f"n_discs = {segment['n_discs']}; per-disc values = {segment['disc_circularity']}",
+            derived_from="specimen_image",
+        ),
+        _measurement(
+            "specimen per-disc aspect ratio",
+            round(segment["mean_disc_aspect"], 4),
+            "width/height",
+            "mean bounding-box aspect of the same closed components",
+            reference=round(segment["aspect_ratio"], 4),
+            source="USNM E39365; the reference is the union bounding box, which is wider than one test",
+            note=f"per-disc aspects = {segment['disc_aspect']}",
+            derived_from="specimen_image",
         ),
     ]
     return rows
@@ -679,12 +767,20 @@ def self_test() -> None:
     assert 0.15 < segment["foreground_fraction"] < 0.85
     assert segment["circularity"] < 0.85, "three tests on one plate are not one circle"
     assert segment["circularity"] != 1.0
+    assert segment["n_discs"] == 3, segment["n_discs"]
+    assert segment["mean_disc_circularity"] > 0.60
+    assert 0.85 < segment["mean_disc_aspect"] < 1.15
 
     print("[self-test] jacobian stable; Turing gap open at ratio 12 and closed at Du=Dv")
     print(f"[self-test] FFT λ = {hero['wavelength_um']:.3f} µm (slot {LAMBDA_UM:.0f} µm), amp = {hero['amplitude']:.3f}")
     print(f"[self-test] sweep Pearson r = {fit['pearson_r']:.4f}, RMSE = {fit['rmse_um']:.3f} µm, KS = {fit['ks_statistic']:.3f}")
     print(f"[self-test] ablation amp = {ablation['amplitude']:.3e}; 10 µm amp = {short['amplitude']:.3e}")
-    print(f"[self-test] specimen foreground {segment['foreground_fraction']:.3f}, circularity {segment['circularity']:.3f}")
+    print(
+        f"[self-test] specimen foreground {segment['foreground_fraction']:.3f}, "
+        f"union circularity {segment['circularity']:.3f}, "
+        f"discs {segment['n_discs']} circ {segment['mean_disc_circularity']:.3f} "
+        f"aspect {segment['mean_disc_aspect']:.3f}"
+    )
     print("[self-test] PASS")
 
 

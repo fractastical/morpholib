@@ -57,9 +57,22 @@
     "mean_g": 0.45306536768242806,
     "mean_b": 0.3321286780669874,
     "width_px": 1280.0,
-    "height_px": 834.0
+    "height_px": 834.0,
+    "n_discs": 3,
+    "mean_disc_circularity": 0.7297300494539778,
+    "mean_disc_aspect": 0.9938622021237081,
+    "disc_circularity": [
+      0.7339601983168107,
+      0.725236017359256,
+      0.7299939326858665
+    ],
+    "disc_aspect": [
+      1.0348101265822784,
+      0.9979959919839679,
+      0.948780487804878
+    ]
   },
-  "spacing_mean_um": 42.84074679195154,
+  "spacing_mean_um": 49.20786660318694,
   "measurements": [
     {
       "name": "linear dispersion peak wavelength",
@@ -126,8 +139,8 @@
       "unit": "std(u)",
       "method": "same Du, Dv on a periodic patch of length 10 \u00b5m (below one wavelength)",
       "derived_from": "script",
-      "reference_value": 0.0,
-      "reference_source": "scale ladder at 0 Ma: the 10 \u00b5m tier is the predecessor of this 60 \u00b5m detail scale",
+      "reference_value": 0.4371,
+      "reference_source": "scale ladder at 0 Ma: the reference is the 480 \u00b5m Turing amplitude, not a copy of the quenched value",
       "note": "chronoseries is 1/1, so the predecessor is a scale, not an older species"
     },
     {
@@ -161,13 +174,52 @@
     },
     {
       "name": "ocellus nearest-neighbour spacing",
-      "value": 42.8407,
+      "value": 49.2079,
       "unit": "\u00b5m",
       "method": "periodic nearest-neighbour distance of activator peaks above mean + 0.45 std",
       "derived_from": "script",
       "reference_value": 60.0,
       "reference_source": "FFT wavelength is the row period; nearest neighbours of a spot lattice need not equal it",
-      "note": "spacing CV = 0.4526; n_peaks = 78"
+      "note": "spacing CV = 0.3298; n_peaks = 71; one-period peak window"
+    },
+    {
+      "name": "ocellus spacing KS against FFT wavelength",
+      "value": 0.4151,
+      "unit": "KS D",
+      "method": "one-sample KS of nearest-neighbour spacings against Normal(\u03bb_FFT, s)",
+      "derived_from": "script",
+      "reference_value": 0.0,
+      "reference_source": "the FFT wavelength is the null centre; D = 0 would mean the spacings are that normal",
+      "note": "\u03bb_FFT = 60.3365 \u00b5m; spacing std = 16.2276 \u00b5m"
+    },
+    {
+      "name": "ocellus spacing coefficient of variation",
+      "value": 0.3298,
+      "unit": "CV",
+      "method": "std(nearest neighbour) / mean(nearest neighbour) on the periodic patch",
+      "derived_from": "script",
+      "reference_value": 0.0,
+      "reference_source": "a perfectly regular lattice would have CV 0"
+    },
+    {
+      "name": "specimen per-disc circularity",
+      "value": 0.7297,
+      "unit": "4\u03c0A/P\u00b2",
+      "method": "mean circularity of connected components after a 15 px closing of the spine fringe; components under 5000 px dropped",
+      "derived_from": "specimen_image",
+      "reference_value": 0.066,
+      "reference_source": "USNM E39365; the reference is the union-mask circularity, which mixes three tests",
+      "note": "n_discs = 3; per-disc values = [0.7339601983168107, 0.725236017359256, 0.7299939326858665]"
+    },
+    {
+      "name": "specimen per-disc aspect ratio",
+      "value": 0.9939,
+      "unit": "width/height",
+      "method": "mean bounding-box aspect of the same closed components",
+      "derived_from": "specimen_image",
+      "reference_value": 1.4134,
+      "reference_source": "USNM E39365; the reference is the union bounding box, which is wider than one test",
+      "note": "per-disc aspects = [1.0348101265822784, 0.9979959919839679, 0.948780487804878]"
     }
   ]
 }
