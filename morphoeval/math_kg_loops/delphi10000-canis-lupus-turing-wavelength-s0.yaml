@@ -1,0 +1,47 @@
+sim_id: delphi10000-canis-lupus-turing-wavelength-s0
+slot: 3139
+organism: Canis lupus
+common_name: Canine (MDCK)
+age_ma: 0.0
+scale_m: 1.781e-6
+scale_label: 1.8 µm
+scale_tier: 3_subcellular_um
+chronoseries: "1/1 Holocene (Extant)"
+math_family: Reaction-Diffusion & Turing Dispersion
+equations:
+- law_name: Schnakenberg Jacobian stability at the homogeneous state
+  formula: "tr(J) = f_u + g_v < 0 and det(J) = f_u*g_v - f_v*g_u > 0 at (u0, v0) = (a+b, b/(a+b)^2)"
+  lean_decl: MathOfBiology.Loop_3139.fu
+  lean_theorem: MathOfBiology.Loop_3139.homogeneous_state_is_stable
+  lean_locus: morphoeval/lean/loops/Loop_3139_canis_lupus_turing_wavelength_s0.lean#L19-L21
+  variables: "f_u, g_v, f_v, g_u scaled by 30 from gamma=40, a=0.10, b=1.10"
+  role: Homogeneous MDCK cortical state is stable in the absence of diffusion
+  source_citation: "Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0; Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py
+- law_name: Turing critical wavenumber
+  formula: "k_c^2 = (D_v*f_u + D_u*g_v) / (2*D_u*D_v), lambda_c = 2*pi/k_c = 1.781e-6 m"
+  lean_decl: MathOfBiology.Loop_3139.dv
+  lean_theorem: MathOfBiology.Loop_3139.inhibitor_outruns_activator
+  lean_locus: morphoeval/lean/loops/Loop_3139_canis_lupus_turing_wavelength_s0.lean#L27-L29
+  variables: "D_v/D_u = 12, both diffusivities scaled by 5"
+  role: Wavelength selection at the 1.8 µm detail scale
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py
+- law_name: Equal-diffusion quenching
+  formula: "D_v = D_u implies D_v*f_u + D_u*g_v = D_u*tr(J) < 0, so no Turing band"
+  lean_decl: MathOfBiology.Loop_3139.du
+  lean_theorem: MathOfBiology.Loop_3139.equal_diffusion_has_no_turing_instability
+  lean_locus: morphoeval/lean/loops/Loop_3139_canis_lupus_turing_wavelength_s0.lean#L32-L34
+  variables: "equal diffusivities at the activator value"
+  role: Negative control for stripes, spots and ocelli
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py
+- law_name: Holocene detail scale versus coat-scale pre-pattern
+  formula: "L_apical = 8 * 1781 nm = 14248 nm; lambda_coat / lambda_detail > 10000; age = 0 Ma; series length = 1"
+  lean_decl: MathOfBiology.Loop_3139.lambda_nm
+  lean_theorem: MathOfBiology.Loop_3139.holocene_detail_scale_versus_coat
+  lean_locus: morphoeval/lean/loops/Loop_3139_canis_lupus_turing_wavelength_s0.lean#L45-L50
+  variables: "lambda_nm = 1781, coat reference 2 cm, chronoseries length 1"
+  role: What changes at 1.781 µm and 0 Ma relative to a centimetre-scale coat pre-pattern
+  source_citation: "Murray (1981) DOI:10.1016/0022-5193(81)90334-9"
+  code_locus: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py
