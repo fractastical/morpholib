@@ -1,0 +1,280 @@
+{
+  "scout": "scout-036",
+  "ground": "turing",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "id": "TR-WV-01",
+      "title": "Kondo constant-wavelength prior vs Ca²⁺ inter-event regularity (ISI CV gate)",
+      "gap": "The Turing flagship and `datasets/turing/turing_reference.json` pin Kondo–Asai (1995) inter-stripe spacing at ~3.8 mm with <2% coefficient of variation across ontogeny, while the Xenopus Ca²⁺ wave-vector flagship (`xenopus-ca2-wave-vectors`) shares the literature label “reaction-diffusion wave” but never tests whether post-poke spark timing is as regular as a Turing stripe lattice. `EXPERIMENTAL_HYPOTHESES.md` lists Hypothesis 6 (spatial patterning) as testable without a numeric comparison to the locked Kondo CV prior.",
+      "done": "`morphoeval/scout_runs/scout-036-kondo-isi-cv.json` parses and reports `cv_isi` from `analyze_oscillatory_coherence()` on post-poke rows for embryos A and B separately, plus `kondo_spacing_cv_reference` copied from `datasets/turing/turing_reference.json` (max–min spacing / mean over stages). Scorer passes if for each embryo with ≥50 post-poke track onsets either (a) `cv_isi <= 0.05` (within Kondo spacing regularity band) or (b) `cv_isi > 0.15` with `verdict`: `bioelectric_not_kondo_regular` — a clear reject of the standing-RD analogy for Ca²⁺ timing.",
+      "tool_route": "python3 wave-vector-analysis/analyze_experimental_hypotheses.py spark_tracks.csv --clusters-csv vector_clusters.csv --analysis coherence --output morphoeval/scout_runs/scout-036-coherence.json (or python3 -c importing analyze_oscillatory_coherence); optional plots: python3 wave-vector-analysis/generate_all_hypothesis_plots.py spark_tracks.csv --clusters-csv vector_clusters.csv --output-dir morphoeval/scout_runs/scout-036-hypothesis-plots/",
+      "deciding_data": "In repo: `datasets/turing/turing_reference.json` (`kondo_asai_1995_pomacanthus_growth.stages[*].inter_stripe_spacing_mm`), `models/1952-turing-morpho.py` self-test stripe CV disclosures, `wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md`. Deciding CSV: `spark_tracks.csv` / `vector_clusters.csv` (gitignored; same paths as `wave-vector-analysis/README.md`, typically from `python3 wave-vector-analysis/wave-vector-tiff-parser.py <tiff_folder> 0 --fps 1.0 --csv spark_tracks.csv`).",
+      "prior_attempts": "Pass N+1 flagship audit (`morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml`, `turing-gray-scott`) closed GIF/Y-junction issues on fish stripes only; no Ca²⁺ ISI vs Kondo CV comparison in `docs/open-problems.json`. OP-06 marks flagship Turing structural debt solved at audit level, not this cross-flagship bioelectric test.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "`analyze_oscillatory_coherence()` is the named as-is function emitting `cv_isi`; Kondo prior is a JSON read, no new pipeline stage."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "Kondo reference table is vendored; deciding spark_tracks are one local mount/re-parse away (not in git)."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done is a JSON with numeric `cv_isi` per embryo and a two-branch threshold rule against a fixed reference CV."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Coherence analysis on one CSV is minutes; full TIFF re-parse is hours-scale on repo stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as new files under `morphoeval/scout_runs/` only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single CSV in, one analysis call out, same sitting when tracks exist."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of this ISI-vs-Kondo-CV route."
+        }
+      }
+    },
+    {
+      "id": "TR-WV-02",
+      "title": "Traveling Ca²⁺ front vs Pearson static labyrinth: circular concentration R gate",
+      "gap": "Pearson class η (`datasets/turing/turing_reference.json`, `morphology`: labyrinthine stripes with Y-junctions) is a steady Turing texture, whereas Hypotheses 3–4 in `EXPERIMENTAL_HYPOTHESES.md` report directed mean angles (~21.5° in A, ~4.9° in B) from propagating fronts. The repo lacks a locked numeric test that embryo Ca²⁺ cluster angles are concentrated (traveling wave) rather than isotropic (consistent with a frozen Turing field viewed as uncorrelated spark noise).",
+      "done": "`morphoeval/scout_runs/scout-036-traveling-vs-turing-R.json` records mean resultant length `R = 1 - circular_variance` from `analyze_wave_directionality()` for embryo A and B post-poke clusters, plus the same metric on a simulated traveling-wave control CSV from scenario `two_embryos_head_head`. Scorer passes if real `R >= 0.35` for at least one embryo AND simulated control `R >= 0.35`, OR if real `R < 0.15` for both embryos with `verdict`: `isotropic_not_traveling_wave`.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --scenario two_embryos_head_head --output morphoeval/scout_runs/scout-036-sim_travel.csv --duration 30.0 && python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scout_runs/scout-036-sim_travel.csv morphoeval/scout_runs/scout-036-sim_travel_clusters.csv && python3 wave-vector-analysis/analyze_experimental_hypotheses.py morphoeval/scout_runs/scout-036-sim_travel.csv --clusters-csv morphoeval/scout_runs/scout-036-sim_travel_clusters.csv --analysis directionality --embryo-id A ; repeat on real spark_tracks.csv; plots: python3 wave-vector-analysis/generate_all_hypothesis_plots.py <paths> --output-dir morphoeval/scout_runs/scout-036-hypothesis-plots/",
+      "deciding_data": "In repo: `datasets/turing/turing_reference.json` (Pearson η/κ morphologies), `wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md` (mean angles). Real tracks external; sim control generated locally.",
+      "prior_attempts": "Flagship Turing audit documents Y-junction over-count on fish photos (`morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml`); no cluster-level R metric compared to Ca²⁺ directionality plots.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "`analyze_wave_directionality()` plus sim→cluster chain are existing entrypoints; R is derived from returned `circular_variance`."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Simulated traveling-wave CSV can be generated in-repo without wet lab; real CSV is external mount."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Thresholds on scalar R for real vs sim are mechanically scorable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "30 s simulation plus directionality analysis fits hours budget."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Outputs only under `morphoeval/scout_runs/`."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Sim control plus one real CSV yields R verdict in one loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior negative result on this R gate."
+        }
+      }
+    },
+    {
+      "id": "TR-WV-03",
+      "title": "Secondary inter-embryo recruitment timing vs RD secondary-insertion narrative (Sick 2006 analogy)",
+      "gap": "MorphoEval Turing debt includes secondary Turing insertion (e.g. Sick et al. 2006 hair-follicle wave in `datasets/wnt_dkk_hair_follicle/` and growing-domain stripe doubling in Kondo models). The wave simulation catalog (`wave-vector-analysis/simulations/catalog.json`, entry `ca2-wave-inter-embryo-signaling-ab`) documents paired `--compare-ab` secondary-embryo recruitment curves but no checked-in JSON compares time-to-second-activity-peak in real `spark_tracks.csv` against the sim lane delta.",
+      "done": "`morphoeval/scout_runs/scout-036-secondary-peak.json` lists `t_peak_embryo_a_s`, `t_peak_embryo_b_s` from post-poke activity sums (same definition as Hypothesis 1 plots) for real data and for `--compare-ab two_embryos_coupled two_embryos_isolated_control` outputs. Scorer passes if `t_peak_embryo_b_real` is finite and `|t_peak_embryo_b_sim - t_peak_embryo_b_real| / t_peak_embryo_b_real <= 0.5` OR JSON records `secondary_peak_absent=true` for both real and isolated sim (null secondary insertion analog).",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_coupled two_embryos_isolated_control --output-a morphoeval/scout_runs/scout-036-coupled.csv --output-b morphoeval/scout_runs/scout-036-isolated.csv --duration 30.0 && python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scout_runs/scout-036-coupled.csv morphoeval/scout_runs/scout-036-coupled_clusters.csv && python3 wave-vector-analysis/generate_all_hypothesis_plots.py morphoeval/scout_runs/scout-036-coupled.csv --clusters-csv morphoeval/scout_runs/scout-036-coupled_clusters.csv --output-dir morphoeval/scout_runs/scout-036-sim-plots/ ; extract peaks via `analyze_calcium_activity()` in `analyze_experimental_hypotheses.py` on real spark_tracks.csv",
+      "deciding_data": "In repo: `wave-vector-analysis/simulations/catalog.json`, `datasets/wnt_dkk_hair_follicle/README.md` (secondary wave narrative). Real spark_tracks external.",
+      "prior_attempts": "WNT/DKK morphoeval audits score secondary insertion in `2002-sick-wnt-dkk-hair-follicle.py`, not Xenopus Ca²⁺ tracks. Simulation README describes compare-ab without a locked peak-timing JSON.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Paired sim `--compare-ab`, clusterer, hypothesis plots, and `analyze_calcium_activity()` are all named pipeline tools."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Sim lanes generated in-repo; real deciding CSV requires lab mount."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Peak times and ±50% relative error or explicit absent-secondary flag are objective."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Two 30 s sims plus plot generation are hours-scale."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New artifacts under `morphoeval/scout_runs/` only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Sim side completes in one sitting; real peak extraction adds path setup."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No open-problems entry refutes this compare-ab peak-timing route."
+        }
+      }
+    },
+    {
+      "id": "TR-WV-04",
+      "title": "Xenopus tropicalis Keller stripe-count scaling vs inter-embryo coupling range (embryo lengths)",
+      "gap": "`datasets/xenopus_tropicalis_turing_wavelength/xenopus_tropicalis_turing_wavelength_reference.json` locks Pearson r≈0.9998 body-size vs stripe-count growth, while `wave-vector-analysis/simulations/generate_simulated_data.py` exposes `WaveConfig.coupling_range_lengths` (default 2.0 embryo lengths) as the only inter-embryo RD-analog control. No repo artifact tests whether calibrated real coupling (from spatial spread in tracks) falls inside the Keller empirical growth series or contradicts it.",
+      "done": "`morphoeval/scout_runs/scout-036-coupling-vs-keller.json` contains `coupling_range_lengths_calibrated` from `calibrate_from_real_data.py` output field(s) describing inter-embryo distance at poke (or max B-recruitment distance in em), and `keller_body_length_cm_range` from the reference JSON empirical x series. Scorer passes if calibrated coupling in em is documented with source run_id and either lies within [min,max] Keller stage body lengths scaled to the same em convention OR JSON states `incommensurate_units=true` with both numbers present (still closes the missing comparison).",
+      "tool_route": "python3 wave-vector-analysis/simulations/calibrate_from_real_data.py spark_tracks.csv --clusters-csv vector_clusters.csv --output morphoeval/scout_runs/scout-036-calibrated_config.json && python3 wave-vector-analysis/simulations/generate_simulated_data.py --config morphoeval/scout_runs/scout-036-calibrated_config.json --output morphoeval/scout_runs/scout-036-from_calib.csv --duration 30.0 && python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scout_runs/scout-036-from_calib.csv morphoeval/scout_runs/scout-036-from_calib_clusters.csv ; read Keller prior from `datasets/xenopus_tropicalis_turing_wavelength/xenopus_tropicalis_turing_wavelength_reference.json`",
+      "deciding_data": "In repo: Keller reference JSON, `wave-vector-analysis/embryo_units.py`, `simulations/CALIBRATION_GUIDE.md`. Real spark_tracks external.",
+      "prior_attempts": "Slot-121 scout manifest (`datasets/xenopus_tropicalis_turing_wavelength/scout_manifest.json`) selects the Keller script; no wave-pipe calibration crosswalk recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "`calibrate_from_real_data.py` is the named extractor; Keller table is static JSON — comparison wrapper is trivial JSON merge."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Keller empirical series is vendored; real tracks are external but calibration CLI is documented."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Done requires two numeric fields and a boolean commensurability flag — scorable without taste."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Calibration plus one sim run is hours-scale once CSV exists."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New JSON/config under `morphoeval/scout_runs/`."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Unit alignment between Keller cm growth and em coupling may need one manual conversion note."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of calibrate-vs-Keller crosswalk."
+        }
+      }
+    },
+    {
+      "id": "TR-WV-05",
+      "title": "Hypothesis-6 AP spatial density: test for dominant mode vs Turing k_c (binned spark spectrum)",
+      "gap": "Turing (1952) dispersion in `datasets/turing/turing_reference.json` fixes a dominant mode (`ring_of_20_cells.dominant_mode_s = 4`, `critical_wavelength` ≈ 5.62 cell units). Hypothesis 6 claims Ca²⁺ waves can be spatially patterned (`spatial_heatmap.png`), but the pipeline never exports whether AP-binned post-poke event counts show a single dominant Fourier mode (Turing-like) or a flat/ broadband spectrum (consistent with propagating injury wave only).",
+      "done": "`morphoeval/scout_runs/scout-036-ap-spectrum.json` reports peak spatial frequency index and `peak_to_mean_power_ratio` from a 30-bin AP histogram of post-poke `spark_tracks.csv` rows with valid `ap_norm` (≥1000 rows). Scorer passes if `peak_to_mean_power_ratio >= 3.0` (Turing-like single mode) OR `peak_to_mean_power_ratio < 1.5` with `verdict`: `no_dominant_ap_mode` — using scipy FFT on the binned count vector produced in a one-off `morphoeval/scout_runs/scout-036-ap-fft.py` that reads the CSV only (new file allowed).",
+      "tool_route": "python3 wave-vector-analysis/generate_all_hypothesis_plots.py spark_tracks.csv --clusters-csv vector_clusters.csv --output-dir morphoeval/scout_runs/scout-036-hypothesis-plots/ (confirms spatial_heatmap) ; python3 morphoeval/scout_runs/scout-036-ap-fft.py spark_tracks.csv --out morphoeval/scout_runs/scout-036-ap-spectrum.json (thin wrapper around pandas+numpy FFT on ap_norm bins)",
+      "deciding_data": "In repo: `datasets/turing/turing_reference.json` (`turing_1952_linear_model.jacobian_parameters.critical_wavelength`), `wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md` Hypothesis 6. Real spark_tracks external.",
+      "prior_attempts": "1952-turing-morpho.py FFT radial power is on Gray–Scott fields, not Xenopus sparks; no morphoeval audit links AP spark spectrum to k_c.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Heatmap stage uses existing `generate_all_hypothesis_plots.py`; FFT binning needs a small new reader script (not in wavepipe as-is today)."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "Turing k_c reference in-repo; deciding CSV external with ap_norm coverage ~46% per EXPERIMENTAL_HYPOTHESES.md."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Peak-to-mean power ratio thresholds are numeric and checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Histogram+FFT on one CSV is minutes."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Requires one new helper script under `morphoeval/scout_runs/` plus JSON output."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single CSV analysis in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route not previously attempted or refuted."
+        }
+      }
+    },
+    {
+      "id": "TR-WV-06",
+      "title": "Growing-domain 2D Turing solver debt — not decidable on wavepipe (escalate to simulation lens)",
+      "gap": "Pass N+1 still lists a real 2D growing-domain stripe-insertion solver with L(t) as open Turing flagship debt (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`, `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` remediation on `1952-turing-morpho.py`). The Ca²⁺ wave-vector pipeline measures traveling sparks on fixed TIFF geometry and cannot validate L(t) stripe insertion or Y-junction zip dynamics on fish flank ROIs.",
+      "done": "Scorer records `blocked_for_lens_wavepipe: true` in scout notes; closure requires `models/1952-turing-morpho.py` or `models/1995-kondo-pomacanthus-stripe-insertion.py` `--self-test` passing a growing-domain L(t) assertion documented in a future audit — outside wavepipe.",
+      "tool_route": "Not wavepipe. Escalate to scout-034 (ground turing, lens simulation): `python3 models/1952-turing-morpho.py --self-test` and growing-domain solver work; wavepipe cannot substitute.",
+      "deciding_data": "In repo: flagship audit remediation bullets, `datasets/turing/turing_reference.json` Kondo stages. No spark_tracks involvement.",
+      "prior_attempts": "OP-06 in `docs/open-problems.json` marked solved at audit level for Pass N+1 honest re-score, but same audit YAML still lists growing-domain solver as remediation; not closed in code self-test.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "spark-track→cluster→hypothesis chain has no L(t) domain growth or Gray–Scott PDE interface."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Turing reference and scripts are fully in-repo."
+        },
+        "falsifiable_done": {
+          "score": 10,
+          "why": "Done is defined on simulation self-test, not wavepipe — only partially specifiable here."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "Growing-domain PDE exceeds wavepipe scope; belongs to model sweeps."
+        },
+        "isolation": {
+          "score": 5,
+          "why": "Fix touches flagship `models/*.py`, not zero-conflict for wavepipe agents."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Multi-hour PDE remediation, not one hypothesis-plot loop."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Problem open but wrong lens; not a refuted wavepipe route."
+        }
+      }
+    },
+    {
+      "id": "TR-WV-07",
+      "title": "Cow flank Turing migration-wave colonisation (OP-11) — wavepipe route blocked",
+      "gap": "`docs/open-problems.json` OP-11 documents a refuted static/growing RD vs Eden colonisation verdict on Holstein coat masks (`datasets/bos_taurus_turing_wavelength/`, audit v7). A proposed neural-crest migration-wave variant is coat-image morphology, not Ca²⁺ spark kinematics.",
+      "done": "Scorer confirms no `spark_tracks.csv` exists for bos taurus dataset and marks `prior_route_refuted: true` for repeating OP-11 blind re-score via wavepipe; negative knowledge entry only.",
+      "tool_route": "Do not re-propose OP-11 on wavepipe. If inter-embryo colonisation analogy is needed, use `generate_simulated_data.py --compare-ab` on Xenopus sim IDs only (TR-WV-03), not `models/1981-murray-bos-taurus-turing-wavelength.py` outputs.",
+      "deciding_data": "In repo: `docs/open-problems.json` OP-11 status refuted, `morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml`. No frog_embryo/coati spark CSV for cows.",
+      "prior_attempts": "OP-11 attempted by Fable, human PI, panel; pooled Delphi posterior 39.3% but status refuted on static RD vs Eden route. Re-scoring via wave-vector pipeline not attempted and inappropriate.",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "why": "Cow coat Turing audit uses image morphometrics, not spark_tracks→hypothesis plots."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Bos dataset and audits in-repo, but not in wave CSV schema."
+        },
+        "falsifiable_done": {
+          "score": 8,
+          "why": "Can record blocked status objectively, but cannot close OP-11 via wavepipe."
+        },
+        "compute_in_repo": {
+          "score": 5,
+          "why": "Murray bos script runs in-repo but outside wavepipe lens."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Negative-knowledge JSON only."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Immediate lens mismatch verdict."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "OP-11 exact migration-wave re-score route is recorded refuted; wavepipe must not reopen it."
+        }
+      }
+    }
+  ]
+}
