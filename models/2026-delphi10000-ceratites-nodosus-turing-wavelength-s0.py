@@ -499,11 +499,140 @@ def render_comparison(sim: dict, disp: dict, sweep: dict, control: dict, seg: di
     plt.close(fig)
 
 
-def run_pipeline() -> dict:
+def measure_discrete_dispersion(jac: dict[str, float], du: float, dv: float) -> dict:
+    """Resolved-mode growth versus the discrete Jacobian, which is the operator Euler steps.
+
+    Modes with continuous growth below -0.02 s^-1 are omitted so the stiff tail does not
+    dominate. The residual against the continuous symbol is the second-difference truncation.
+    """
+    length = 32.0 * LAMBDA_M
+    n = 384
+    dx = length / n
+    dt = 0.08 * dx * dx / (4.0 * dv)
+    x = np.arange(n) * dx
+    fu, fv, gu, gv = jac["fu"], jac["fv"], jac["gu"], jac["gv"]
+    discrete: list[float] = []
+    measured: list[float] = []
+    continuous: list[float] = []
+    for nmode in range(1, 90):
+        k = 2.0 * np.pi * nmode / length
+        k2 = (2.0 - 2.0 * np.cos(k * dx)) / (dx * dx)
+        matrix = np.array([[fu - du * k2, fv], [gu, gv - dv * k2]], dtype=float)
+        eigval, eigvec = np.linalg.eig(matrix)
+        idx = int(np.argmax(np.real(eigval)))
+        sig_d = float(np.real(eigval[idx]))
+        sig_c = float(sigma_continuous(np.array([k]), jac, du, dv)[0])
+        if sig_c < -0.02 and sig_d < -0.02:
+            continue
+        ev = np.real(eigvec[:, idx])
+        ev = ev / (ev[0] if abs(ev[0]) > 1e-9 else 1.0)
+        eps = 1e-6
+        up = eps * ev[0] * np.cos(k * x)
+        vp = eps * ev[1] * np.cos(k * x)
+        amp0 = float(np.sqrt(np.mean(up * up + vp * vp))) + 1e-30
+        lu = (np.roll(up, 1) + np.roll(up, -1) - 2.0 * up) / (dx * dx)
+        lv = (np.roll(vp, 1) + np.roll(vp, -1) - 2.0 * vp) / (dx * dx)
+        up2 = up + dt * (du * lu + fu * up + fv * vp)
+        vp2 = vp + dt * (dv * lv + gu * up + gv * vp)
+        amp1 = float(np.sqrt(np.mean(up2 * up2 + vp2 * vp2))) + 1e-30
+        discrete.append(float(np.log1p(dt * sig_d) / dt))
+        measured.append(float(np.log(amp1 / amp0) / dt))
+        continuous.append(sig_c)
+    d = np.asarray(discrete)
+    meas = np.asarray(measured)
+    cont = np.asarray(continuous)
+    band = cont > 0.0
+    return {
+        "pearson_r_discrete": float(np.corrcoef(d, meas)[0, 1]),
+        "rmse_discrete": float(np.sqrt(np.mean((d - meas) ** 2))),
+        "pearson_r_unstable_discrete": float(np.corrcoef(d[band], meas[band])[0, 1]),
+        "rmse_unstable_discrete": float(np.sqrt(np.mean((d[band] - meas[band]) ** 2))),
+        "pearson_r_unstable_continuous": float(np.corrcoef(cont[band], meas[band])[0, 1]),
+        "rmse_unstable_continuous": float(np.sqrt(np.mean((cont[band] - meas[band]) ** 2))),
+        "n_unstable": int(np.sum(band)),
+    }
+
+
+def subcritical_domain_control(jac: dict[str, float], du: float, dv: float) -> dict:
+    """A patch shorter than one wavelength has no unstable Fourier mode."""
+    length = 0.45 * LAMBDA_M
+    n = 48
+    dx = length / n
+    dt = 0.2 * dx * dx / (4.0 * dv)
+    k_min = 2.0 * np.pi / length
+    sig = float(sigma_continuous(np.array([k_min]), jac, du, dv)[0])
+    rng = np.random.default_rng(SEED + 7)
+    u = np.full((n, n), jac["u0"]) + 0.01 * rng.standard_normal((n, n))
+    v = np.full((n, n), jac["v0"]) + 0.01 * rng.standard_normal((n, n))
+    std0 = float(u.std())
+    for _ in range(2000):
+        uv = u * u * v
+        u = u + dt * (du * _laplacian(u, dx) + A_PARAM - u + uv)
+        v = v + dt * (dv * _laplacian(v, dx) + B_PARAM - uv)
+    std1 = float(u.std())
+    return {
+        "length_m": length,
+        "k_min": k_min,
+        "sigma_kmin": sig,
+        "std_initial": std0,
+        "std_final": std1,
+        "decayed": bool(sig < 0.0 and std1 < std0),
+    }
+
+
+def _orientation_hist(gray: np.ndarray) -> np.ndarray:
+    gx = ndi.sobel(gray, axis=1)
+    gy = ndi.sobel(gray, axis=0)
+    mag = np.hypot(gx, gy) + 1e-9
+    ang = (np.arctan2(gy, gx) + np.pi) % np.pi
+    hist, _ = np.histogram(ang, bins=12, range=(0.0, np.pi), weights=mag)
+    return hist / (np.sum(hist) + 1e-9)
+
+
+def orientation_cosine(specimen_gray: np.ndarray, field: np.ndarray) -> float:
+    """12-bin Sobel orientation cosine. 1 would mean the same edge-angle mix."""
+    spec = np.asarray(
+        Image.fromarray((np.clip(specimen_gray, 0, 1) * 255).astype(np.uint8)).resize((160, 120), Image.Resampling.BILINEAR),
+        dtype=np.float64,
+    ) / 255.0
+    sim = np.asarray(
+        Image.fromarray((np.clip(field, 0, 1) * 255).astype(np.uint8)).resize((160, 120), Image.Resampling.BILINEAR),
+        dtype=np.float64,
+    ) / 255.0
+    ha = _orientation_hist(spec)
+    hb = _orientation_hist(sim)
+    return float(np.dot(ha, hb) / (np.linalg.norm(ha) * np.linalg.norm(hb) + 1e-12))
+
+
+def bootstrap_wavelength_cv(field: np.ndarray, dx: float) -> dict:
+    """Coefficient of variation of the dominant wavelength across rows of the mantle patch."""
+    waves = []
+    for row in field:
+        power = np.abs(np.fft.rfft(row - np.mean(row)))
+        if power.size < 4:
+            continue
+        k = int(np.argmax(power[1:]) + 1)
+        waves.append((field.shape[1] / k) * dx)
+    arr = np.asarray(waves, dtype=float)
+    mean = float(arr.mean())
+    cv = float(arr.std() / mean) if mean > 0 else 0.0
+    return {"mean_m": mean, "cv": cv, "n_rows": int(arr.size)}
+
+
+def run_pipeline(gamma_factor: float = GAMMA_FACTOR) -> dict:
     verify_sha256()
     ref = load_reference()
     jac = jacobian_entries()
+    # Du is solved once, at 1.15× onset, so that k_c is 26 µm. A CLI gamma-factor
+    # keeps that Du and only lengthens or shortens the inhibitor. Retuning Du
+    # would hide the sweep by pinning lambda.
     diff = diffusivities(jac, GAMMA_FACTOR)
+    if abs(gamma_factor - GAMMA_FACTOR) > 1e-12:
+        gamma = gamma_factor * diff["gamma_c"]
+        du = diff["Du"]
+        dv = gamma * du
+        k_star, _smax = k_max_of(jac, du, dv)
+        diff = {**diff, "gamma": gamma, "Dv": dv, "k_c": k_star}
     disp = measure_dispersion(jac, diff["Du"], diff["Dv"])
     sim = simulate_mantle(jac, diff["Du"], diff["Dv"], n_frames=16)
     sim["Du"] = diff["Du"]
@@ -513,6 +642,8 @@ def run_pipeline() -> dict:
     sim["k_c"] = diff["k_c"]
     sweep = parameter_sweep(jac, diff["Du"])
     control = equal_diffusion_control(jac, diff["Du"])
+    short = subcritical_domain_control(jac, diff["Du"], diff["Dv"])
+    refined = measure_discrete_dispersion(jac, diff["Du"], diff["Dv"])
     seg = segment_specimen()
     # Resample the simulated field onto the specimen's segmentation grid for the KS comparison.
     field = _norm_field(sim["final_u"])
@@ -521,6 +652,8 @@ def run_pipeline() -> dict:
         dtype=np.float64,
     ) / 255.0
     ks = ks_radial(seg["radial"], radial_profile(field_small))
+    orient = orientation_cosine(seg["gray"], field)
+    wave_cv = bootstrap_wavelength_cv(sim["final_u"], sim["dx"])
     chrono = chronoseries_table()
     gif_info = render_growth_gif(sim["snaps"], (seg["rgb"] * 255).astype(np.uint8), MEDIA_GIF)
     render_comparison(sim, disp, sweep, control, seg, chrono)
@@ -535,6 +668,11 @@ def run_pipeline() -> dict:
         "rmse": disp["rmse"],
         "rmse_unstable_band": disp["rmse_unstable_band"],
         "ks_radial_specimen_vs_field": ks,
+        "gamma_factor": gamma_factor,
+        "discrete_dispersion": refined,
+        "subcritical_domain": short,
+        "orientation_cosine": orient,
+        "wavelength_row_cv": wave_cv,
         "lambda_m": sim["lambda_m"],
         "lambda_ratio": sim["lambda_ratio"],
         "k_c": diff["k_c"],
@@ -666,6 +804,46 @@ def measure_morphoeval() -> list[dict]:
             source="Goniatites crenistria predecessor at the same 26 µm wavelength (18 mm shell)",
             note="successor Dactylioceras commune holds 1641; organ-scale rib holds 42",
         ),
+        _metric(
+            "unstable-band Pearson r versus discrete Jacobian eigenvalue",
+            m["discrete_dispersion"]["pearson_r_unstable_discrete"],
+            "correlation",
+            "one Euler step on resolved modes of a 32-wavelength patch versus ln(1+dt*sigma_discrete)/dt",
+            reference=0.98,
+            source="Pass-2 gate on the discrete unstable band; 1.0 would be a perfect eigenmode match",
+            note=(
+                f"RMSE = {m['discrete_dispersion']['rmse_unstable_discrete']:.3e}; "
+                f"continuous-symbol band r = {m['discrete_dispersion']['pearson_r_unstable_continuous']:.4f} "
+                f"(stencil truncation, RMSE {m['discrete_dispersion']['rmse_unstable_continuous']:.4f})"
+            ),
+        ),
+        _metric(
+            "subcritical-domain ablation amplitude ratio",
+            m["subcritical_domain"]["std_final"] / m["subcritical_domain"]["std_initial"],
+            "ratio",
+            "Schnakenberg on a patch 0.45 wavelengths across, so the fundamental mode is stable",
+            reference=1.0,
+            source="a domain that admits an unstable mode would not decay",
+            note=f"sigma(k_min) = {m['subcritical_domain']['sigma_kmin']:.4f}",
+        ),
+        _metric(
+            "specimen versus field 12-bin orientation cosine",
+            m["orientation_cosine"],
+            "cosine",
+            "Sobel orientation histograms (12 bins) of the shell photograph and the simulated activator",
+            reference=1.0,
+            source="identical edge-angle mixes",
+            note="the fossil's ribs and the cellular ocelli do not share an orientation spectrum",
+        ),
+        _metric(
+            "row-wise wavelength coefficient of variation",
+            m["wavelength_row_cv"]["cv"],
+            "CV",
+            "std/mean of the dominant 1D wavelength on each row of the saturated mantle patch",
+            reference=0.0,
+            source="a single exact wavelength on every row",
+            note=f"row mean = {m['wavelength_row_cv']['mean_m']:.6e} m over {m['wavelength_row_cv']['n_rows']} rows",
+        ),
     ]
     return rows
 
@@ -718,25 +896,33 @@ def write_image_fitness(specimen_match: float, morphometric: float) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Ceratites nodosus 26 µm Turing wavelength")
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--gamma-factor", type=float, default=GAMMA_FACTOR, help="Dv/Du as a multiple of the Turing onset ratio")
     parser.add_argument("--specimen-match", type=float, default=None, help="Audit specimen-match score used in image_fitness")
     parser.add_argument("--morphometric", type=float, default=None, help="Audit morphometric-validation score used in image_fitness")
     args = parser.parse_args()
-    result = run_pipeline()
+    result = run_pipeline(gamma_factor=args.gamma_factor)
     print(
         f"[ceratites-3142] r={result['pearson_r']:.4f} rmse={result['rmse']:.4f} "
         f"lambda={result['lambda_m']:.6e} ratio={result['lambda_ratio']:.4f} "
         f"gif={result['gif']['n_frames']}@{result['gif']['width']}x{result['gif']['height']} "
-        f"ablation_decayed={result['control']['decayed']} sweep_mono={result['sweep']['monotonic_increasing']}"
+        f"ablation_decayed={result['control']['decayed']} sweep_mono={result['sweep']['monotonic_increasing']} "
+        f"discrete_band_r={result['discrete_dispersion']['pearson_r_unstable_discrete']:.6f} "
+        f"orient={result['orientation_cosine']:.3f} wave_cv={result['wavelength_row_cv']['cv']:.4f}"
     )
     if args.specimen_match is not None and args.morphometric is not None:
         fit = write_image_fitness(args.specimen_match, args.morphometric)
         print(f"[ceratites-3142] image_fitness={fit['image_fitness']} cv={fit['cv_sim_similarity']}")
     if args.self_test:
         assert result["pearson_r"] > 0.98, result["pearson_r"]
+        assert result["discrete_dispersion"]["pearson_r_unstable_discrete"] > 0.98
         assert result["phenomenon_size_m"] == LAMBDA_M
         assert result["geological_age_ma"] == AGE_MA
-        assert 0.90 <= result["lambda_ratio"] <= 1.10, result["lambda_ratio"]
+        if abs(args.gamma_factor - GAMMA_FACTOR) < 1e-9:
+            assert 0.90 <= result["lambda_ratio"] <= 1.10, result["lambda_ratio"]
+        else:
+            assert abs(result["lambda_ratio"] - 1.0) > 0.02, result["lambda_ratio"]
         assert result["control"]["decayed"]
+        assert result["subcritical_domain"]["decayed"]
         assert result["sweep"]["monotonic_increasing"]
         assert result["gif"]["n_frames"] >= 10
         assert min(result["gif"]["width"], result["gif"]["height"]) >= 480
