@@ -1,0 +1,133 @@
+{
+  "scout": "scout-025",
+  "ground": "wavevector",
+  "lens": "vision",
+  "candidates": [
+    {
+      "id": "WV-VIS-01",
+      "title": "Xenopus Ca²⁺ flagship passes image fitness on a taxonomy gallery photo, not a GCaMP frame",
+      "gap": "Foundational slug `xenopus-ca2-wave-vectors` sets `specimen_rel` to `datasets/species_gallery/I_Enaima_Vertebrata/Xenopus_laevis.jpg` while the phenomenon is embryonic GCaMP spark waves; `verify_image_fitness` therefore grades a clawed-frog stock photo against `docs/media/xenopus_ca2_wave_vectors_growth.gif` (index: cv_sim_similarity 94.4, image_fitness 92.9, passes ≥70) with no vendored Ca²⁺ max-projection in `datasets/`.",
+      "done": "A closure report records `cv_sim_gallery`, `cv_sim_gcmp`, and `delta = cv_sim_gallery - cv_sim_gcmp` from `compute_sim_vs_specimen_cv_similarity` with paths pinned in JSON; verdict supports replacing the gallery proxy if either (a) `cv_sim_gcmp < 58` while `cv_sim_gallery >= 70`, or (b) `delta >= 10` with both signatures `valid: true`.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (index slug `xenopus-ca2-wave-vectors`); python3 -c \"from pathlib import Path; from morphoeval.verify_image_fitness import compute_specimen_cv_signature, compute_sim_vs_specimen_cv_similarity; ROOT=Path('.'); sp_g=ROOT/'datasets/species_gallery/I_Enaima_Vertebrata/Xenopus_laevis.jpg'; sp_c=ROOT/'datasets/xenopus_ca2_wave_vectors/ca2_specimen_frame.jpg'; sim=ROOT/'docs/media/xenopus_ca2_wave_vectors_growth.gif'; ...\" after adding the GCaMP still.",
+      "deciding_data": "In repo: species gallery JPG, sim GIF, `morphoeval/runs/aristotelian_categories_index.json` fields for slug; one named fetch: Development doi:10.1242/dev.199845 supplementary/max-projection frame (paper cited in `morphoeval/verify_image_fitness.py` FOUNDATIONAL_DOIS). Raw TIFF stacks and `datasets/frog_embryo_data_processed/` masks are gitignored and not required for this still-image test.",
+      "prior_attempts": "Automated index enrichment via `verify_image_fitness.py` verified the gallery pairing (no recorded swap to GCaMP still). OP-07/08 blind panels refuted wave-feature neighbour transfer, not specimen-image fitness. No audit under `morphoeval/audits/` names `xenopus-ca2-wave-vectors`.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "`compute_specimen_cv_signature` and `compute_sim_vs_specimen_cv_similarity` decide the pairing once a GCaMP JPG path exists."},
+        "data_in_hand": {"score": 14, "why": "Gallery + GIF + index are vendored; deciding GCaMP frame is one DOI-linked download away."},
+        "falsifiable_done": {"score": 15, "why": "Numeric thresholds on cv_sim and delta are machine-checkable."},
+        "compute_in_repo": {"score": 14, "why": "Minutes of Pillow/scipy CV on three images after fetch."},
+        "isolation": {"score": 10, "why": "Closable as new JSON report + optional new specimen JPG under a new datasets subfolder."},
+        "time_to_verdict": {"score": 8, "why": "Single sitting once the supplementary frame is saved locally."},
+        "not_blocked": {"score": 5, "why": "No prior attempt refuted gallery-vs-GCaMP cv_sim comparison for this slug."}
+      }
+    },
+    {
+      "id": "WV-VIS-02",
+      "title": "Quantify OP-07 orientation confound via structure-tensor coherency on detection QA stills",
+      "gap": "OP-07 records neighbour-transfer LOOO AUC 0.484 while orientation alone reaches 0.833; `wave-vector-analysis/analysis_results/detection_summary/detection_summary.md` (and v6) encode head/tail compass strings per video but no image-level anisotropy score is tied to those labels.",
+      "done": "New JSON maps ≥40 videos with both a parsed orientation class (horizontal vs vertical from head/tail strings) and `structure_tensor_coherency` from `compute_specimen_cv_signature` on the matching QA raster; verdict `confound_supported` if |Pearson r| ≥ 0.45, `confound_weak` if |r| < 0.25, else inconclusive.",
+      "tool_route": "Rasterize pages of `wave-vector-analysis/analysis_results/detection_summary_old_new_speed_v6/detection_visualizations.pdf` (82 pages vendored) to PNG, then per page: `python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; ...\"`; join to rows in `detection_summary_old_new_speed_v6/detection_summary.md`.",
+      "deciding_data": "In repo: `detection_visualizations.pdf`, `detection_summary.md`, `detection_warnings.log` under `wave-vector-analysis/analysis_results/` (v6 bundle). Held-out TIFF stacks are not in repo; QA PDF pages are the specimen photographs for this test.",
+      "prior_attempts": "Multi-agent panel refuted OP-07 headline neighbour-transfer route (docs/open-problems.json status `refuted`). No recorded CV coherency-vs-orientation correlation on QA PDFs.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Coherency comes from verify_image_fitness CV; PDF rasterization is a thin wrapper not in the CLI."},
+        "data_in_hand": {"score": 18, "why": "PDF + markdown labels are already vendored."},
+        "falsifiable_done": {"score": 14, "why": "Correlation thresholds and n≥40 are objective."},
+        "compute_in_repo": {"score": 12, "why": "Rasterizing 82 pages plus CV is under an hour on repo stack."},
+        "isolation": {"score": 10, "why": "New JSON + optional raster cache only."},
+        "time_to_verdict": {"score": 7, "why": "One batch script pass after PDF export."},
+        "not_blocked": {"score": 4, "why": "Related to refuted OP-07 wave route but this image-metric route was not tried."}
+      }
+    },
+    {
+      "id": "WV-VIS-03",
+      "title": "OP-08 mirror hypothesis: left–right symmetry score on dual-embryo QA frames (pre-registered)",
+      "gap": "OP-08 (`partial`) reports exploratory HTHT mirror AUC 0.61–0.65 confounded with tail poke/headward direction; no hash-locked, image-only mirror-symmetry statistic on dual-embryo stills separable from poke vector.",
+      "done": "Pre-registration locks mean mirror-correlation (flip ROI Pearson r on segmented foreground) for HTHT-labeled vs TTBB-labeled QA pages; scorer confirms or refutes if HTHT mean exceeds TTBB mean by ≥0.05 with bootstrap 95% CI excluding 0.",
+      "tool_route": "Segment with Otsu pipeline inside `compute_specimen_cv_signature`; mirror r computed in a new isolation script importing `morphoeval.verify_image_fitness.compute_specimen_cv_signature`; inputs from `detection_visualizations.pdf` pages whose `detection_summary.md` rows match HTHT/TTBB contact classes in `wave-vector-analysis/bigpixel_illustration/BIGPIXEL_APPROACH.md` naming (e.g. WGD84 HTHT).",
+      "deciding_data": "In repo: detection PDF v6 + summary tables; literature anchor: Tung et al. 2024 inter-embryo injury wave (cited in BIGPIXEL_APPROACH.md). Full TIFF for WGD84 is Box-only — pre-register using PDF QA pages unless one public TIFF is fetched by name.",
+      "prior_attempts": "Multi-agent panel exploratory pixel mirror post-unblinding (OP-08 source PIXEL_BLIND_RESULTS.md — not vendored on main snapshot). No CV symmetry preregistration on record.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "Segmentation/metrics from verify_image_fitness; symmetry r is a small numpy layer."},
+        "data_in_hand": {"score": 11, "why": "QA PDF in repo; HTHT/TTBB labels partial in markdown; raw TIFF optional fetch."},
+        "falsifiable_done": {"score": 13, "why": "Pre-registered Δr with CI is scorer-checkable."},
+        "compute_in_repo": {"score": 12, "why": "Batch CV on tens of PNGs."},
+        "isolation": {"score": 10, "why": "New prereg + result JSON only."},
+        "time_to_verdict": {"score": 6, "why": "Needs prereg commit before label parsing."},
+        "not_blocked": {"score": 4, "why": "Exploratory pixel mirror exists but not this CV symmetry prereg."}
+      }
+    },
+    {
+      "id": "WV-VIS-04",
+      "title": "Automate detection_warnings volume-mismatch flags with foreground_area_fraction CV",
+      "gap": "`wave-vector-analysis/analysis_results/detection_summary/detection_warnings.log` lists dozens of manual volume-mismatch warnings (>30% area ratio, embryos spanning both blobs) without a machine cross-check from specimen segmentation.",
+      "done": "For every warning line containing `Volume mismatch` or `might encompass both embryos`, the matching QA raster yields `foreground_fraction` from `compute_specimen_cv_signature`; pass if ≥80% of flagged videos have either max foreground_fraction×100 > 15 or inferred dual-blob area ratio > 2.0.",
+      "tool_route": "Parse `detection_warnings.log`; map to PDF page index via `detection_summary_old_new_speed_v6/detection_summary.md` video keys; `compute_specimen_cv_signature` per rasterized page.",
+      "deciding_data": "In repo: warnings log, summary markdown, `detection_visualizations.pdf` (v6).",
+      "prior_attempts": "`generate_detection_summary.py` emits warnings; no verify_image_fitness crosswalk documented.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "Foreground fraction is a direct output of the specimen CV pipeline."},
+        "data_in_hand": {"score": 17, "why": "All three artifacts vendored under analysis_results."},
+        "falsifiable_done": {"score": 14, "why": "Precision/recall style pass rate ≥80% is countable."},
+        "compute_in_repo": {"score": 11, "why": "Requires PDF rasterization plus ~80 CV calls."},
+        "isolation": {"score": 10, "why": "New validation JSON only."},
+        "time_to_verdict": {"score": 7, "why": "One batch after page export."},
+        "not_blocked": {"score": 5, "why": "No prior refutation of CV-vs-warnings crosswalk."}
+      }
+    },
+    {
+      "id": "WV-VIS-05",
+      "title": "Pipeline hypothesis plot is a worse sim match than the taxonomy photo (misaligned audit anchor)",
+      "gap": "Downstream wave analysis ships `wave-vector-analysis/analysis_results/hypothesis1_activity.png` (spatial activity phenomenology) but the flagship sim is audited against the species gallery, not this plot — inviting false confidence in specimen-match.",
+      "done": "Closure JSON records `cv_sim_gallery`, `cv_sim_hypothesis`, and requires `cv_sim_gallery - cv_sim_hypothesis >= 10` with both specimens valid (expected from scout smoke: gallery ≈94.4, hypothesis ≈76.2 against the same GIF).",
+      "tool_route": "python3 -c \"from pathlib import Path; from morphoeval.verify_image_fitness import compute_specimen_cv_signature, compute_sim_vs_specimen_cv_similarity; ROOT=Path('.'); sim=ROOT/'docs/media/xenopus_ca2_wave_vectors_growth.gif'; ...\" comparing gallery JPG vs `hypothesis1_activity.png`.",
+      "deciding_data": "Fully in repo: gallery JPG, hypothesis PNG, sim GIF.",
+      "prior_attempts": "None recorded; index lists high CV vs gallery only.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Pure verify_image_fitness imports, no extra infrastructure."},
+        "data_in_hand": {"score": 20, "why": "All deciding images already committed."},
+        "falsifiable_done": {"score": 15, "why": "Fixed numeric delta threshold."},
+        "compute_in_repo": {"score": 15, "why": "Sub-minute CV on three files."},
+        "isolation": {"score": 10, "why": "Single new JSON result file."},
+        "time_to_verdict": {"score": 10, "why": "Immediate one-liner verdict."},
+        "not_blocked": {"score": 5, "why": "No prior attempt compared these two specimen proxies."}
+      }
+    },
+    {
+      "id": "WV-VIS-06",
+      "title": "Xenopus craniofacial specimen vs gallery: which image should anchor laevis embryonic models?",
+      "gap": "`datasets/xenopus_craniofacial_remap/xenopus_craniofacial_specimen.jpg` is a stage-specific tadpole photo with scout manifest provenance, while Ca²⁺ and other Xenopus slots fall back to the generic gallery icon — no CV distance audit between proxies.",
+      "done": "Report `cv_sim(craniofacial, sim_gif)` and `cv_sim(gallery, sim_gif)` for `xenopus_ca2_wave_vectors_growth.gif`; recommend craniofacial anchor if craniofacial cv_sim exceeds gallery by ≥5 points OR gallery cv_sim ≥90 while craniofacial <85 (document taxonomy-icon inflation).",
+      "tool_route": "Same `compute_sim_vs_specimen_cv_similarity` one-shot as WV-VIS-05 with craniofacial JPG path.",
+      "deciding_data": "In repo: craniofacial specimen JPG, gallery JPG, sim GIF, `datasets/xenopus_craniofacial_remap/scout_manifest.json`.",
+      "prior_attempts": "Scout manifest selected craniofacial Wikimedia specimen for slot 85; no cross-model Xenopus proxy harmonization.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Direct verify_image_fitness CV API on existing JPGs."},
+        "data_in_hand": {"score": 20, "why": "Both specimens and GIF vendored."},
+        "falsifiable_done": {"score": 14, "why": "Five-point cv_sim margin is numeric."},
+        "compute_in_repo": {"score": 15, "why": "Instant CV pairwise compare."},
+        "isolation": {"score": 10, "why": "JSON recommendation only."},
+        "time_to_verdict": {"score": 10, "why": "One command."},
+        "not_blocked": {"score": 5, "why": "Not previously scored for Ca²⁺ slug."}
+      }
+    },
+    {
+      "id": "WV-VIS-07",
+      "title": "OP-07 v2 ground-truth-geometry LOOO neighbour transfer (not decidable by specimen CV)",
+      "gap": "docs/open-problems.json OP-07 still asks for hash-locked v2 using ground-truth-geometry videos; missing piece is wave-feature LOOO scoring, not photograph segmentation.",
+      "done": "N/A for vision lens — would be satisfied only by registered LOOO AUC on held wave features with geometry oracle, per OP-07 done string.",
+      "tool_route": "Would require `wave-vector-analysis/` spark-track pipeline + embryo-blind scorer (lens `wavepipe` / `registry`), not `verify_image_fitness.py`.",
+      "deciding_data": "Held wave CSVs and blind manifests referenced in OP-07 sources (`embryo-blind/README.md`, `XENOPUS_BLIND_RESULTS.md`) — not present on current main tree snapshot.",
+      "prior_attempts": "Multi-agent panel refuted headline route (OP-07 status `refuted`); orientation confound documented (AUC 0.833). Re-proposing the same LOOO wave route is blocked.",
+      "factors": {
+        "tool_fit": {"score": 2, "why": "Specimen CV cannot score LOOO on wave features; wavepipe/registry lens required."},
+        "data_in_hand": {"score": 6, "why": "Blind docs missing from snapshot; tracks not vendored."},
+        "falsifiable_done": {"score": 12, "why": "OP-07 done criteria are clear but not reachable here."},
+        "compute_in_repo": {"score": 8, "why": "Parser+LOOO is hours if data appear."},
+        "isolation": {"score": 7, "why": "Would touch blind manifests if attempted."},
+        "time_to_verdict": {"score": 3, "why": "Needs prereg plus full track rebuild."},
+        "not_blocked": {"score": 0, "why": "Same neighbour-transfer LOOO route recorded refuted in open-problems.json."}
+      }
+    }
+  ]
+}
