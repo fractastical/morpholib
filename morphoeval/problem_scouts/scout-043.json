@@ -1,0 +1,133 @@
+{
+  "scout": "scout-043",
+  "ground": "bioelectric",
+  "lens": "lean",
+  "candidates": [
+    {
+      "id": "BIO-LEAN-081-P3-GHOST",
+      "title": "Planarian Slot 081: machine-check the three Pass-3 Lean theorems the audit already names",
+      "gap": "`models/2011-beane-planarian-hk-atpase-anterior.py` and the Pass-3 planarian audit cite `MathOfBiology.Loop_081.mesh_gj_flux_conservation`, `slit_midline_exclusion_and_collapse`, and `vmem_neoblast_rate_nonneg_monotone`, but `morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean` currently ends after three 1D laws (`beane_bistable_vmem_equilibria`, `gj_voltage_gate_symmetry_and_isolation`, `beane_four_regeneration_phenotypes`) with no Pass-3 identifiers.",
+      "done": "A new Lean loop file (zero `sorry`) defines those three theorem names as checkable discrete analogues of the Pass-3 claims (conserved signed gap-junction flux on a finite edge list, slit midline exclusion at y=0, nonnegativity and monotonicity of a V_mem-coupled neoblast rate), and `lean morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior_pass3.lean` exits 0; `python3 morphoeval/verify_integrity.py --loop-yaml` reports no lean_locus drift for Slot 081.",
+      "tool_route": "Lean 4 kernel on a new `morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior_pass3.lean`; gate with `python3 morphoeval/verify_integrity.py --loop-yaml` and `rg 'sorry' morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior_pass3.lean` (empty).",
+      "deciding_data": "In repo: `morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean`, `models/2011-beane-planarian-hk-atpase-anterior.py` (L35–41), `morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml` (Pass-3 Lean claims).",
+      "prior_attempts": "Pass-3 builder (`claude-fable-5-1`) closed mesh/slit/neoblast remediation in Python (`morphoeval/kg` Pass-3 planarian audit ~89/100) and recorded the three Lean names in audit text; no prior Lean pass-3 file landed in `Loop_081*.lean` (negative knowledge: not refuted, just missing).",
+      "factors": {
+        "tool_fit": { "score": 24, "why": "Pure Lean 4 `lean <file>` is the repo’s 0-sorry contract tool named in `docs/LEVIN_LATENT_SPACE_METHODS.md`." },
+        "data_in_hand": { "score": 18, "why": "All discrete-state inputs are already specified in the Pass-3 Python docstrings and audit measurements; no new wet-lab series." },
+        "falsifiable_done": { "score": 15, "why": "Exit code 0 plus absent `sorry` and three exact theorem name strings are mechanically scorable." },
+        "compute_in_repo": { "score": 14, "why": "Kernel checks are sub-second per loop file on the cloud image (Lean 4.35 per Levin audit)." },
+        "isolation": { "score": 10, "why": "Closes as one new `.lean` file under `morphoeval/lean/loops/` only." },
+        "time_to_verdict": { "score": 9, "why": "Single sitting: write discrete lemmas, run `lean`, fix until green." },
+        "not_blocked": { "score": 5, "why": "No audit refutes these structural lemmas; the gap is absent proofs, not a failed route." }
+      }
+    },
+    {
+      "id": "BIO-LEAN-GJ-DENOM",
+      "title": "Unify Pietak/Oviedo and Cervera gap-junction denominators in one Lean equivalence lemma",
+      "gap": "Planarian bioelectric code uses Bell isolation `D = V0^2 + dV^2` (`Loop_081`, `Loop_082`), while Cervera–Levin–Mafé uses `(1+b_i)(1+b_j)` (`MathOfBiology.lean` §6, `Loop_levin_youtube_channel_math.lean` Thm 2). Audits treat both as the same voltage-gating story, but no Lean theorem maps `(b_i,b_j)` to `(dV,V0)` and proves conductance ratios agree on the canonical WT/2H0T integers.",
+      "done": "New zero-`sorry` Lean file exports `theorem gj_bell_forms_equivalent_on_canonical_integers` showing the two denominators induce identical ordering on the four Beane/Oviedo phenotype tuples in `Loop_081.beane_four_regeneration_phenotypes`, and `lean` exits 0 on that file.",
+      "tool_route": "`lean morphoeval/lean/loops/Loop_bioelectric_gj_denominator_bridge.lean` (new); cross-check against existing `lean morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean` and `lean morphoeval/lean/MathOfBiology.lean` still exit 0.",
+      "deciding_data": "In repo: `morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean`, `morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean`, `morphoeval/lean/MathOfBiology.lean` (L648–667), `morphoeval/audits/2026-10-17-cervera-audit-v2.yaml` (symmetric GJ framing).",
+      "prior_attempts": "OpenAI `gpt-5.6-sol` Cervera audit v2 fixed Python symmetry and Planform linkage but explicitly left full-paper equation fidelity unverified; Levin YouTube synthesis Pass 3 re-proved Cervera/Pietak structurally in `Loop_levin_youtube_channel_math.lean` without cross-wiring Slot 081/082 denominators.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Only Lean can close a notation-bridge claim with a single checked lemma." },
+        "data_in_hand": { "score": 19, "why": "Canonical mV integers (-20,-65,-42, etc.) already pinned in Loop_081/082." },
+        "falsifiable_done": { "score": 14, "why": "Theorem name + `lean` exit 0; failure is a compile error or lingering `sorry`." },
+        "compute_in_repo": { "score": 15, "why": "Integer-only proof; no simulation sweep." },
+        "isolation": { "score": 10, "why": "One new bridge `.lean` file." },
+        "time_to_verdict": { "score": 8, "why": "One loop if the map is linear fractional on integers; may need two iterations." },
+        "not_blocked": { "score": 5, "why": "No prior attempt refuted equivalence; audits assumed it verbally." }
+      }
+    },
+    {
+      "id": "BIO-LEAN-082-SG-BOLTZ",
+      "title": "Scharfetter–Gummel zero-flux implies the Pietak Boltzmann 4.70× posterior enrichment",
+      "gap": "`Loop_082` proves integer `boltzmann_work 1 (-20) (-60) = 40` and flux cancellation, but Pass-3 `2017-pietak-bioelectric-morphogen-coupling.py` validates the 2D Voronoi solver against `exp(40/25.85)=4.7002` via floating self-test (L1904). There is no Lean theorem tying the SG discrete equilibrium `c_{i+1}/c_i = exp(-z ΔV/V_T)` used in Pass 3 to the headline 4.70× ratio.",
+      "done": "Zero-`sorry` Lean file proves (i) a rational SG flux identity `B(-u)/B(u)` at scaled integers and (ii) a bound `4695 ≤ 4705` on `10000 × (c_post/c_ant)` for the WT endpoints, matching the Python assert tolerance; `lean` exit 0 and `python3 models/2017-pietak-bioelectric-morphogen-coupling.py --self-test` still passes.",
+      "tool_route": "New `morphoeval/lean/loops/Loop_082_scharfetter_gummel_boltzmann.lean`; verify with `lean` on that file plus existing `lean morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean`; regression `python3 models/2017-pietak-bioelectric-morphogen-coupling.py --self-test`.",
+      "deciding_data": "In repo: `datasets/bioelectric_morphogen_coupling/bioelectric_morphogen_coupling_reference.json` (V_T_mV 25.85, WT voltages), `models/2017-pietak-bioelectric-morphogen-coupling.py` (Boltzmann assert L1904).",
+      "prior_attempts": "Pass-3 Pietak builder added 2D SG network and self-test; Lean Slot 082 stopped at integer Boltzmann work without transcendentals. Not refuted—scope stopped at core NP identities.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Lean can close the discrete SG↔Boltzmann link; floats stay in Python cross-check." },
+        "data_in_hand": { "score": 18, "why": "WT ΔV and V_T are pinned in reference JSON and Loop_082." },
+        "falsifiable_done": { "score": 13, "why": "Joint criterion: Lean exit 0 + Python self-test assert on 4.7002 unchanged." },
+        "compute_in_repo": { "score": 13, "why": "Self-test runs in minutes; Lean kernel seconds." },
+        "isolation": { "score": 10, "why": "One new `.lean` file; Python read-only." },
+        "time_to_verdict": { "score": 7, "why": "May need rational approximation lemmas beyond one sitting if Mathlib reals are avoided." },
+        "not_blocked": { "score": 5, "why": "Route not attempted in Lean; empirical 4.70× is accepted in Python." }
+      }
+    },
+    {
+      "id": "BIO-LEAN-0921-PLACEHOLDER",
+      "title": "Replace Xenopus tropicalis bioelectric-polarity Lean placeholders with Keller bistability laws",
+      "gap": "`Loop_0921_xenopus_tropicalis_bioelectric_polarity.lean` still proves generic `law1_positive_scaling` / `law2_exact_cancellation` stubs unrelated to the cohort title, while `datasets/xenopus_tropicalis_bioelectric_polarity/xenopus_tropicalis_bioelectric_polarity_reference.json` pins bistable parameters (`int_a=14`, `int_b=8`, `int_c=112`, attractor separation 90) and empirical series (Pearson r 0.9992).",
+      "done": "`lean morphoeval/lean/loops/Loop_0921_xenopus_tropicalis_bioelectric_polarity.lean` exits 0 with at least three theorems whose names match the three law comments (GJ balance, voltage-gated conductance, bistable separation) and whose statements use the reference integers (112, 22, 90); `python3 morphoeval/verify_integrity.py` classifies them as `structural` (not `ground_arithmetic` vacuity).",
+      "tool_route": "Edit via zero-conflict replacement file `Loop_0921_xenopus_tropicalis_bioelectric_polarity_v2.lean` OR in-place only if orchestrator allows; preferred scout closure: new `Loop_0921_xenopus_tropicalis_bioelectric_polarity.lean` content on a dedicated branch; verify `lean` + `python3 morphoeval/verify_integrity.py`.",
+      "deciding_data": "In repo: `datasets/xenopus_tropicalis_bioelectric_polarity/xenopus_tropicalis_bioelectric_polarity_reference.json`, current `morphoeval/lean/loops/Loop_0921_xenopus_tropicalis_bioelectric_polarity.lean`.",
+      "prior_attempts": "100-loop campaign mass-produced cohort IX loops with template proofs; Levin latent-space docs treat Xenopus craniofacial remapping as Slot 085 (substantive Lean) while species bioelectric slot 921 remained a scaffold.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Lean is the intended verifier for cohort IX bioelectric slots." },
+        "data_in_hand": { "score": 17, "why": "Reference JSON already encodes the deciding integers and fit quality." },
+        "falsifiable_done": { "score": 14, "why": "verify_integrity structural classification is an objective anti-tautology gate." },
+        "compute_in_repo": { "score": 14, "why": "Integer theorems only." },
+        "isolation": { "score": 9, "why": "Ideally one new loop file; may require math_kg_loops YAML touch unless kept name-stable." },
+        "time_to_verdict": { "score": 8, "why": "One sitting if modeled after Loop_081 law-3 threshold template." },
+        "not_blocked": { "score": 5, "why": "Placeholder status is acknowledged technical debt, not a refuted hypothesis." }
+      }
+    },
+    {
+      "id": "BIO-LEAN-081-082-COMPOSE",
+      "title": "Compose 2H0T cryptic-memory logic across Loop_081 voltage gates and Loop_082 beta-catenin gates",
+      "gap": "Levin bioelectric memory narrative requires that symmetric depolarization (`V_ant=V_post=-20`) forces double-head outcomes both via Ca_v head gates (`Loop_081`) and via collapsed 5-HT/B thresholds (`Loop_082.cryptic_two_headed_memory_phenotypes`), but no Lean theorem states the implication chain on shared integers.",
+      "done": "Zero-`sorry` Lean file proves `planarian_head_tail_counts (-20) (-20) (-42) = (2,0)` implies `pietak_ap_phenotype 14 18 50 = (2,0)` under explicit hypotheses linking V to B levels used in Slot 082, with `lean` exit 0.",
+      "tool_route": "New `morphoeval/lean/loops/Loop_bioelectric_2H0T_composition.lean` importing defs by copy (standalone lean files); checks `lean` + existing Loop_081/082 unchanged.",
+      "deciding_data": "In repo: `morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean`, `morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean`, `docs/LEVIN_LATENT_SPACE_METHODS.md` Claim 5 narrative.",
+      "prior_attempts": "Separate Slot 081/082 audits each scored >87/100 with independent Lean modules; cross-slot composition never machine-checked.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Composition is a pure entailment problem for Lean." },
+        "data_in_hand": { "score": 19, "why": "All integers already in the two loop files." },
+        "falsifiable_done": { "score": 14, "why": "Single composed theorem name + kernel exit 0." },
+        "compute_in_repo": { "score": 15, "why": "No PDE simulation required." },
+        "isolation": { "score": 10, "why": "One new `.lean` file." },
+        "time_to_verdict": { "score": 9, "why": "Straightforward once linking hypotheses are written as explicit Nat/Int tables." },
+        "not_blocked": { "score": 5, "why": "Biological controversy is about mechanism, not this integer consistency check." }
+      }
+    },
+    {
+      "id": "BIO-LEAN-CERVERA-DISCRETE",
+      "title": "Cervera reaction–diffusion: prove discrete charge conservation on the 3-node gap-junction chain",
+      "gap": "`MathOfBiology.cervera_equipotential_zero_current` only covers a single edge; the Cervera audit v2 (`gpt-5.6-sol`) flagged weak empirical transfer and an ad hoc bipolar cutoff, but the underlying PDE discretization still lacks a Lean proof that total GJ current sums to zero on a symmetric 3-node chain (Kirchhoff closure).",
+      "done": "New Lean file contains `theorem cervera_three_node_total_gj_current_zero` for arbitrary conductances and potentials on three nodes with antisymmetric pairwise currents; `lean` exit 0; no `sorry`.",
+      "tool_route": "`lean morphoeval/lean/loops/Loop_cervera_levin_mafe_discrete_conservation.lean` (new); optional alignment with `python3 models/planform_bioelectric.py --self-test` for empirical series unchanged.",
+      "deciding_data": "In repo: `morphoeval/lean/MathOfBiology.lean` (Cervera §), `datasets/planform/planform_bioelectric_series_v1.json`, `morphoeval/audits/2026-10-17-cervera-audit-v2.yaml` (symmetry/conservation remarks).",
+      "prior_attempts": "Cervera Python remediation and Planform extractor (`planform_bioelectric.py`) improved data plumbing; OpenAI audit did not add Lean beyond MathOfBiology symmetries; bipolar cutoff rule remains uncited (different problem—needs simulation/remediation lens).",
+      "factors": {
+        "tool_fit": { "score": 19, "why": "Lean proves discrete conservation; it cannot validate Planform RMSE fits." },
+        "data_in_hand": { "score": 16, "why": "Discrete topology is model-chosen; empirical S1–S9 JSON is for Python-side closure." },
+        "falsifiable_done": { "score": 15, "why": "Named theorem + `lean` exit 0." },
+        "compute_in_repo": { "score": 15, "why": "Pure integer proof." },
+        "isolation": { "score": 10, "why": "One new `.lean` file." },
+        "time_to_verdict": { "score": 9, "why": "Standard telescoping sum on three nodes." },
+        "not_blocked": { "score": 4, "why": "Empirical Cervera route partially audited; this specific Lean chain proof not attempted." }
+      }
+    },
+    {
+      "id": "BIO-LEAN-OP07-BLOCKED",
+      "title": "Xenopus Ca²⁺ wave neighbour-transfer v2 (OP-07) — not Lean-decidable",
+      "gap": "`docs/open-problems.json` OP-07 asks for hash-locked LOOO AUC on ground-truth-geometry embryo videos once orientation confounds are removed; deciding evidence is spark-track features and blind scores, not a closed-form theorem.",
+      "done": "N/A for Lean lens; closure would be pre-registered AUC from `embryo-blind/` scoring scripts meeting the hash-locked contract (pass or fail).",
+      "tool_route": "Would be `wave-vector-analysis/` + `embryo-blind/` preregistration (`registry`/`wavepipe` lens), not `lean morphoeval/lean/loops/*.lean`.",
+      "deciding_data": "In repo: `embryo-blind/README.md`, `XENOPUS_BLIND_RESULTS.md`; OP-07 status `refuted` for v1 panel route.",
+      "prior_attempts": "Multi-agent panel LOOO AUC 0.484 (headline negative); orientation subset 0.833; clean-geometry subset 0.802 flagged suspect—recorded as OP-07 refuted/partial, not reopening the same v1 route.",
+      "factors": {
+        "tool_fit": { "score": 2, "why": "Lean 0-sorry loops cannot score video LOOO AUC; wavepipe/registry lenses required." },
+        "data_in_hand": { "score": 12, "why": "Blind TIFF stacks and tracks exist, but geometry-ground-truth v2 prereg is not Lean input." },
+        "falsifiable_done": { "score": 13, "why": "Hash-locked AUC threshold is objective once preregistered." },
+        "compute_in_repo": { "score": 11, "why": "Parser + blind pipeline runs in-repo but hours-long, not kernel-check." },
+        "isolation": { "score": 7, "why": "Would touch prereg/scoring files, not a single Lean loop." },
+        "time_to_verdict": { "score": 4, "why": "Needs new prereg and full pipeline, not one Lean sitting." },
+        "not_blocked": { "score": 1, "why": "OP-07 v1 headline route refuted; re-proposing the same confounded test is blocked." }
+      }
+    }
+  ]
+}
