@@ -1,0 +1,143 @@
+{
+  "schema_version": "morphoeval-reference-2.0",
+  "slot": 3104,
+  "sim_id": "delphi10000-acropora-millepora-turing-wavelength-s0",
+  "organism": {
+    "scientific_name": "Acropora millepora",
+    "common_name": "Staghorn coral",
+    "aristotelian": {
+      "megiston_genos": "II. Anaima (Invertebrata)",
+      "subaltern_genos": "Zoophyta & Vermes (Cnidaria/Platyhelminthes)",
+      "genus": "Acropora"
+    }
+  },
+  "scale": {
+    "description": "Turing pigment stripe / ocellus wavelength in Acropora millepora (385 \u00b5m, detail scale)",
+    "length_m": 0.0003852,
+    "length_um": 385.2,
+    "log10_m": -3.414,
+    "tier_id": "5_primordium_100um",
+    "tier_index": "5/8",
+    "tier_label": "Tissue primordia (100 \u00b5m\u20131 mm)",
+    "variant": "detail"
+  },
+  "evolutionary_history": {
+    "stage": "Holocene (Extant)",
+    "age_ma": 0.0,
+    "lineage": "",
+    "chronoseries": "Acropora millepora 1/1",
+    "predecessor_chronospecies": null,
+    "successor_chronospecies": null,
+    "what_changes_at_this_node": "This chronoseries has a single node, the extant Holocene crown at 0 Ma, so there is no in-series predecessor and no successor. Pigment does not fossilize, and the 385.2 \u00b5m wavelength is a crown-group reconstruction, not a measurement carried by the Eocene Acropora record (Wallace & Rosen 2006, DOI 10.1098/rspb.2005.3307), which documents colony-scale skeletal diversity. Relative to the adjacent smaller tier (calicoblast, ~10\u201320 \u00b5m) the primordium patch holds zero wavelengths of this mode; relative to a corallite diameter of about 1.5 mm the same k_c packs about four wavelengths, so this slot is the fundamental pigment wavelength rather than the corallite harmonic. Nothing in the series shifts the age: \u0394t = 0 and \u03bb_c is stationary on the Holocene node."
+  },
+  "cohort": {
+    "efficient_cause": "1. Chemical Turing / RD",
+    "poion_form": "Stripes, Spots & Ocelli",
+    "poson_law": "Turing Wavenumber k_c"
+  },
+  "governing_equations": {
+    "kinetics": "Schnakenberg 1979",
+    "pde": [
+      "du/dt = a - u + u^2 v + D_u laplacian(u)",
+      "dv/dt = b - u^2 v + D_v laplacian(v)"
+    ],
+    "state_variables": {
+      "u": "activator (short-range; mapped to host chromoprotein / GFP-like pigment density)",
+      "v": "inhibitor (long-range)"
+    },
+    "steady_state": {
+      "u0": "a + b",
+      "v0": "b / (a + b)^2"
+    },
+    "jacobian": {
+      "f_u": "-1 + 2 u0 v0",
+      "f_v": "u0^2",
+      "g_u": "-2 u0 v0",
+      "g_v": "-u0^2"
+    },
+    "dispersion": "sigma(k^2) = 0.5 * (tau + sqrt(tau^2 - 4 delta)), tau = tr(J) - k^2 (D_u+D_v), delta = det(J) - k^2 (D_v f_u + D_u g_v) + k^4 D_u D_v",
+    "selected_wavenumber": "k_c = argmax_{k>0} sigma(k); lambda_c = 2 pi / k_c",
+    "band_center_not_used_as_target": "k_Delta^2 = (D_v f_u + D_u g_v) / (2 D_u D_v) is the Murray band center. Above onset it is shorter than the fastest-growing mode; this slot tunes D_u so that argmax sigma, not k_Delta, equals 2 pi / 385.2 \u00b5m.",
+    "boundary_conditions": "periodic on a square coenenchyme patch of side L = 8 * lambda_c = 3.0816 mm",
+    "initial_condition": "uniform steady state plus Gaussian noise, RNG seed 3104"
+  },
+  "parameter_table": {
+    "a": 0.12,
+    "b": 0.78,
+    "diffusivity_ratio_Dv_over_Du": 15.75,
+    "D_u_um2_per_s": "solved so argmax sigma(k) has lambda = 385.2 \u00b5m",
+    "grid_n": 128,
+    "n_wavelengths": 8,
+    "rng_seed": 3104,
+    "integration": "explicit Euler, dt = 0.35 * dx^2 / (4 D_v), T = 45",
+    "note": "These values are specific to slot 3104. They are not the integer scaling used by the colony-scale Acropora millepora Turing slot."
+  },
+  "empirical_claims": [
+    "Host GFP-like proteins, not the skeleton, make the conspicuous colour patterns of reef corals (Dove, Hoegh-Guldberg & Ranganathan 2001).",
+    "Coral fluorescent pigments are photoprotective (Salih et al. 2000) and, in Acropora millepora, blue light regulates host pigment (D'Angelo et al. 2008).",
+    "The 385.2 \u00b5m length is the assigned primordium-tier detail scale for this loop. It is not a published caliper measurement of A. millepora stripe spacing.",
+    "Linear theory places the fastest-growing wavelength at 385.2 \u00b5m; the nonlinear FFT on the 8-wavelength patch selects that same mode.",
+    "Equal diffusion (D_v = D_u) is below onset and the activator standard deviation decays."
+  ],
+  "specimen": {
+    "file": "datasets/acropora_millepora_turing_wavelength_s0/acropora_millepora_gbr_lundgren2013.jpg",
+    "sha256": "94c2290198c33f3907ac1f4834b3696f63d39073d583ae7d6fe225e3e09e46b9",
+    "source": "Wikimedia Commons, File:Acropora millepora, GBR.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Acropora_millepora,_GBR.jpg",
+    "license": "CC BY 4.0",
+    "creators": "Petra Lundgren, Juan C. Vera, Lesa Peplow, Stephanie Manel and Madeleine J. H. van Oppen",
+    "publication_doi": "10.1186/1471-2156-14-9",
+    "what_it_shows": "Great Barrier Reef colonies of Acropora millepora. Colony scale (centimetres), not a 385 \u00b5m micrograph. Used as the canonical CC-licensed specimen for computer-vision comparison.",
+    "width": 1304,
+    "height": 898
+  },
+  "outputs": {
+    "comparison_png": "docs/media/acropora_millepora_turing_wavelength_s0_comparison.png",
+    "growth_gif": "docs/media/acropora_millepora_turing_wavelength_s0_growth.gif",
+    "metrics_json": "datasets/acropora_millepora_turing_wavelength_s0/acropora_millepora_turing_wavelength_s0_metrics.json"
+  },
+  "empirical_series": {
+    "x_diffusivity_scale": [
+      0.55,
+      0.7142857142857143,
+      0.8785714285714286,
+      1.042857142857143,
+      1.2071428571428573,
+      1.3714285714285714,
+      1.5357142857142858,
+      1.7
+    ],
+    "y_linear_theory_um": [
+      285.52043092901624,
+      325.23179597054923,
+      361.38596265963565,
+      393.8728024988349,
+      423.08597962267135,
+      450.7233437610668,
+      478.062761685238,
+      503.421629816584
+    ],
+    "y_nonlinear_fft_um": [
+      288.64513919364873,
+      328.927963480801,
+      364.8682124334781,
+      397.5399717215762,
+      427.6333854272581,
+      455.7805618461138,
+      482.4251007537357,
+      507.6269632330595
+    ],
+    "pearson_r": 0.999986034670253,
+    "rmse_um": 4.061539658832168
+  },
+  "solved_parameters": {
+    "D_u_um2_per_s": 881.1347865705197,
+    "D_v_um2_per_s": 13877.872888485686,
+    "onset_ratio": 8.082946686715667,
+    "lambda_linear_um": 384.6584774952355,
+    "lambda_nonlinear_um": 383.57300471421155,
+    "lambda_murray_band_center_um": 319.41416968782227,
+    "analysis_pass": 2,
+    "dihedral": 6
+  }
+}
