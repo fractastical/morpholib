@@ -1,0 +1,63 @@
+# Problem-Scout 100 — dispatch 100 cloud agents hunting problems that
+# could be resolved with our tools, then rank candidates by resolvability.
+# Uses the CURSOR_API_KEY repo secret (set 2026-10-26); no laptop needed.
+name: Problem-Scout 100
+
+on:
+  workflow_dispatch:
+    inputs:
+      agents:
+        description: "Agent selector (e.g. 1-100, or 1-10 for a pilot)"
+        required: false
+        default: "1-100"
+        type: string
+      dry_run:
+        description: "Preview only, do not call the Cursor API"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dispatch-problem-scouts:
+    name: Dispatch Problem-Scout Agents
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install orchestrator dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+          pip install cursor-sdk || true
+      - name: Doctor (account gates)
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: python3 morphoeval/cloud_orchestrator.py doctor --repo "${{ github.repository }}"
+      - name: Dispatch scouts
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          ARGS=("dispatch" "--agents" "${{ inputs.agents }}" "--repo" "${{ github.repository }}")
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS+=("--dry-run"); fi
+          python3 morphoeval/problem_scout_100.py "${ARGS[@]}"
+      - name: Commit dispatch records
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add morphoeval/cloud/dispatches/problem-scout-*.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m "Problem-Scout 100: dispatch records for agents ${{ inputs.agents }}"
+            git push
+          else
+            echo "No dispatch records to commit."
+          fi
