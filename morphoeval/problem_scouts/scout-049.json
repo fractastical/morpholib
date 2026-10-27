@@ -1,0 +1,143 @@
+{
+  "scout": "scout-049",
+  "ground": "bioelectric",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "title": "Cervera–Levin–Mafe v3: wire PlanformDB S1–S9 hold-out calibration into the synthesis script",
+      "gap": "`models/planform_bioelectric.py` already extracts nine bioelectric series S1–S9 into `datasets/planform/planform_bioelectric_series_v1.json` (fit on S1, test S2–S9 per README), but `models/2021-Cervera–Levin–Mafe.py` still calibrates only the 14-record `rusty_matter_planformdb_derived_v0.json` octanol/RNAi crop subset; S3, S6, S7 (Beane hyperpolarization pole) and timing series S4–S5 are not scored in `--self-test` or the figure CSV.",
+      "done": "`python3 models/2021-Cervera–Levin–Mafe.py --self-test` exits 0 and prints a table with finite RMSE and Pearson r for every default held-out series (S2, S3, S6, S7 at minimum) using `planform_bioelectric.series_records()`; `morphoeval/audits/2026-10-17-cervera-audit-v3.yaml` exists with `morphometric-validation` dimension score >= 70 (up from 48 in v2).",
+      "tool_route": "Step 12 remed on run `2026-10-17-cervera-loop-v3`: `python3 morphoeval/track_loop.py init --run-id 2026-10-17-cervera-loop-v3 --target cervera-levin-mafe --paper 'Cervera Levin Mafe 2021'`, patch `models/2021-Cervera–Levin–Mafe.py` to import `planform_bioelectric.load_fixture` / `outcome_table`, re-run `python3 models/2021-Cervera–Levin–Mafe.py --self-test`, `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-cervera-audit-v3.yaml`, `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-17-cervera-audit-v3.yaml --conform --supersede-from morphoeval/kg/2026-10-17-cervera-audit-v2`.",
+      "deciding_data": "In repo: `datasets/planform/planform_bioelectric_series_v1.json`, `datasets/planform/rusty_matter_planformdb_derived_v0.json`, pinned `planformDB_2.5.0.edb` SHA in `datasets/planform/README.md` (optional regeneration via `python3 models/planform_bioelectric.py --self-test`).",
+      "prior_attempts": "OpenAI `gpt-5.6-sol` Pass 1 (44.9/100) and Pass 2 (55.6/100, `morphoeval/audits/2026-10-17-cervera-audit-v2.yaml`) fixed f3 inertness, PMID, and f2 inverse bisection (~0.42); held-out innexin RNAi RMSE 23.5 pts was flagged weak but multi-series S3/S6/S7 transfer was never attempted. `models/planform_bioelectric.py` (63-series layer) was motivated by this audit but is not yet a consumer of the main synthesis script.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Named 12-step loop tools (`track_loop.py`, `planform_bioelectric.py`, `measure_outputs.py`, `build_morphoeval_kg.py`) plus existing `--self-test` on the Cervera script produce the hold-out table and v3 audit scores." },
+        "data_in_hand": { "score": 20, "why": "All nine PlanformDB-derived series and damaged-negative fixtures are already vendored under `datasets/planform/` with SHA pins." },
+        "falsifiable_done": { "score": 15, "why": "Done is numeric RMSE/r per series in self-test output and a rubric dimension threshold in a committed audit YAML." },
+        "compute_in_repo": { "score": 12, "why": "Cervera full analysis self-test is ~12 minutes per v2 audit note; multi-series fit adds modest overhead but stays on one VM." },
+        "isolation": { "score": 6, "why": "Requires editing the tracked flagship script and adding audit/kg artifacts; not new-files-only, though series logic can live in a new helper module if needed." },
+        "time_to_verdict": { "score": 8, "why": "One Pass-2-style remediation loop (Steps 7–12) yields pass/fail on self-test and v3 morphometric score without wet lab." },
+        "not_blocked": { "score": 5, "why": "No prior attempt refuted multi-series calibration; v2 explicitly requested more independent experiments." }
+      }
+    },
+    {
+      "title": "Cervera v3: replace uncited pharynx-crossing cartoon rule with PlanformDB morphology-ID mapping",
+      "gap": "Audit v2 (`morphoeval/audits/2026-10-17-cervera-audit-v2.yaml`, code-traceability 60/100) states the bipolar switch uses renderer padding and a 100-unit pharynx drawing convention with no paper citation that m1/m2 crossing the posterior pharynx end implies morphology `#2` double-head; outcomes still collapse to two fixed Planform cartoons.",
+      "done": "Script emits a confusion matrix comparing predicted Planform morphology IDs (#1, #2, #20, #24) vs observed frequencies from `planform_bioelectric.outcome_table()` for S1–S6 rows; overall classification accuracy >= 0.85 on crop-position series OR the audit v3 explicitly tags the rule as `pk:assumption` with documented sensitivity bounds in `morphoeval/audits/2026-10-17-cervera-audit-v3.yaml` code-traceability evidence.",
+      "tool_route": "Step 12 remed: extend `models/2021-Cervera–Levin–Mafe.py` phenotype readout using `models/2013-lobo-planform-morphology.py` silhouette IDs + `planform_bioelectric.outcome_table`, then `python3 models/2021-Cervera–Levin–Mafe.py --self-test`, independent Pass 2 re-score into new `morphoeval/audits/2026-10-17-cervera-audit-v3.yaml` (cross-provider assessor per `morphoeval/cloud_orchestrator.py` Step 7).",
+      "deciding_data": "In repo: `datasets/planform/planform_canonical_silhouettes_v1.json`, `planform_bioelectric_series_v1.json`, Oviedo 2010 / Beane 2011 frequency columns in fixture records.",
+      "prior_attempts": "Pass 2 raised `x*_b` from wild-type pharynx geometry (`pharynx_boundary_fraction`) but left the biological rule uncited; no v3 audit or kg bundle exists under `morphoeval/kg/2026-10-17-cervera-audit-v3`.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "MorphoEval remediation loop plus existing Planform morphology decoder and bioelectric fixture API decide the mapping or force an explicit assumption flag." },
+        "data_in_hand": { "score": 19, "why": "Morphology ID frequencies are already normalized in the Planform-derived JSON fixtures." },
+        "falsifiable_done": { "score": 14, "why": "Confusion-matrix accuracy or an explicit assumption URI in audit YAML is machine-checkable." },
+        "compute_in_repo": { "score": 13, "why": "Table lookup and silhouette classification on vendored polygons only." },
+        "isolation": { "score": 6, "why": "Touches the shared Cervera script and adds a superseding audit file." },
+        "time_to_verdict": { "score": 7, "why": "Achievable in one audit cycle once mapping code lands." },
+        "not_blocked": { "score": 5, "why": "Audit v2 remediation bullet remains open; no refutation of Planform-ID mapping route." }
+      }
+    },
+    {
+      "title": "Slot 085 Xenopus Picasso craniofacial Pass 3: Maxwell cartilage + MMP zymography coupling",
+      "gap": "`morphoeval/audits/2026-10-19-xenopus-craniofacial-remap-audit-v2.yaml` Pass 2 (overall ~92/100) lists open remediation: couple 3D Maxwell viscoelastic cartilage rods (Meckel's, ceratohyal, palatoquadrate) and spatial MMP-2/MMP-9 zymography PDEs; `docs/LEVIN_LATENT_SPACE_METHODS.md` cites Pass 3 at 89.0/100 but there is no `*-audit-v3.yaml` or `morphoeval/kg/*craniofacial*v3` bundle.",
+      "done": "`python3 models/2019-bischof-xenopus-craniofacial-remap.py --self-test` includes new checks that Maxwell strain energy decreases monotonically and MMP-2/MMP-9 peak locations match reference ratios in `datasets/xenopus_craniofacial_remap/*_reference.json` within 5%; `morphoeval/audits/2026-10-19-xenopus-craniofacial-remap-audit-v3.yaml` published with signed kg under `morphoeval/kg/2026-10-19-xenopus-craniofacial-remap-audit-v3/`.",
+      "tool_route": "12-step loop `2026-10-19-xenopus-craniofacial-remap-loop-pass3`: Steps 5–6 extend `models/2019-bischof-xenopus-craniofacial-remap.py`, Step 7–8 `measure_outputs.py` on v3 audit, Steps 9–10 `build_morphoeval_kg.py` + `sign_morphoeval.py`, Step 12 re-run `--self-test`.",
+      "deciding_data": "In repo: `datasets/xenopus_craniofacial_remap/`, Vandenberg Adams Levin (2012) and Pinet et al. (2019) pins in script docstring and `morphoeval/math_kg_loops/bischof-xenopus-craniofacial-remap.yaml`.",
+      "prior_attempts": "Claude Fable/Sonnet Pass 1→2 closed Procrustes attractor and 6 NF-stage regimes (`morphoeval/kg/2026-10-19-xenopus-craniofacial-remap-audit-v2/`); Pass 3 biophysical extensions are named in LEVIN methods but not audit-registered in-repo.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Standard MorphoEval Pass-3 remediation on an existing `--self-test` flagship with Lean loop `Loop_085_xenopus_craniofacial_remap.lean`." },
+        "data_in_hand": { "score": 18, "why": "Reference JSON and specimen assets already vendored for Slot 085." },
+        "falsifiable_done": { "score": 14, "why": "Self-test inequalities plus published v3 audit dimension scores." },
+        "compute_in_repo": { "score": 11, "why": "Adding 3D Maxwell + RD fields increases runtime but remains script-local." },
+        "isolation": { "score": 5, "why": "Modifies tracked `2019-bischof-xenopus-craniofacial-remap.py` and shared audit/kg paths." },
+        "time_to_verdict": { "score": 6, "why": "Likely one full loop plus tuning; heavier than a parameter fix." },
+        "not_blocked": { "score": 5, "why": "Pass 3 scope is documented as intended work, not refuted." }
+      }
+    },
+    {
+      "title": "Slot 082 Pietak–Levin bioelectric–morphogen Pass 3: 2D Voronoi Scharfetter–Gummel tissue mesh",
+      "gap": "Pass 2 audit (`morphoeval/audits/2026-10-19-bioelectric-morphogen-coupling-audit-v2.yaml`, ~93.8/100) remediation still requests extending the 1D Scharfetter–Gummel Nernst–Planck solver to an irregular 2D Voronoi network matching BETSE tissue geometry; LEVIN methods claim Pass 3 2D Voronoi but no v3 audit/kg directory exists.",
+      "done": "`python3 models/2017-pietak-bioelectric-morphogen-coupling.py --self-test` verifies Boltzmann ratio 4.7002 on both 1D and 405-cell 2D Voronoi meshes and preserves zero head-count RMSE across six regimes; `morphoeval/audits/2026-10-19-bioelectric-morphogen-coupling-audit-v3.yaml` with `model-fidelity` >= 90.",
+      "tool_route": "Loop `2026-10-19-bioelectric-morphogen-coupling-pass3`: remed Step 12 on `models/2017-pietak-bioelectric-morphogen-coupling.py`, `lean morphoeval/lean/loops/Loop_082_bioelectric_morphogen_coupling.lean`, then measure/build/sign pipeline on v3 audit YAML.",
+      "deciding_data": "In repo: `datasets/bioelectric_morphogen_coupling/bioelectric_morphogen_coupling_reference.json`, Pietak & Levin (2017) doi:10.1098/rsif.2017.0425 cited in Pass 1 audit.",
+      "prior_attempts": "Pass 1 (59.x) → Pass 2 closed 1D SG, six regimes, ocelli segmentation per v2 audit; 2D Voronoi explicitly deferred in v2 remediation bullets.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Remediation lens maps directly to Pass 2 audit remediation list and existing self-test harness." },
+        "data_in_hand": { "score": 17, "why": "1D references and specimen image in repo; 2D mesh topology may be synthesized from paper parameters already in reference JSON." },
+        "falsifiable_done": { "score": 14, "why": "Equilibrium ratio and head-count RMSE are numeric self-test gates." },
+        "compute_in_repo": { "score": 10, "why": "405-cell Voronoi electrodiffusion is heavier but still hours-scale on cloud Python." },
+        "isolation": { "score": 5, "why": "Edits flagship Slot 082 script." },
+        "time_to_verdict": { "score": 6, "why": "One Pass-3 loop plausible; mesh debugging may spill past a single sitting." },
+        "not_blocked": { "score": 5, "why": "Open remediation item, not previously refuted." }
+      }
+    },
+    {
+      "title": "Slot 081 planarian H,K-ATPase Pass 3: 2D body mesh for slit/netrin-mediated photoreceptor guidance",
+      "gap": "Pass 2 (`morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml`, 91.3/100) remediation asks for 2D finite-element body mesh with mediolateral slit/netrin axon guidance and neoblast kinetics; LEVIN latent-space Claim 5 cites Pass 3 87.7/100 without an in-repo v3 audit or kg folder.",
+      "done": "`python3 models/2011-beane-planarian-hk-atpase-anterior.py --self-test` reports bilateral photoreceptor AP positions within 0.01 of reference x/L=0.0528 on the 2D mesh for all five drug regimes; new `morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v3.yaml` signed to kg v3.",
+      "tool_route": "12-step loop on Slot 081: remed script, verify `morphoeval/lean/loops/Loop_081_planarian_hk_atpase_anterior.lean`, `measure_outputs.py` + `build_morphoeval_kg.py --supersede-from morphoeval/kg/2026-10-19-planarian-hk-atpase-anterior-audit-v2`.",
+      "deciding_data": "In repo: `datasets/planarian_hk_atpase_anterior/`, Beane et al. (2011) doi:10.1016/j.chembiol.2010.11.012, specimen `schmidtea_mediterranea_specimen.jpg`.",
+      "prior_attempts": "Gemini/Sonnet Pass 1 (59.2) → Pass 2 (91.3) added Bell-form GJ coupling and five regimes; Pass 3 2D mesh listed in v2 remediation and LEVIN methods narrative only.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "MorphoEval remed loop with existing planarian self-test and Lean theorems for V_mem and GJ laws." },
+        "data_in_hand": { "score": 18, "why": "Specimen photo and reference metrics already SHA-pinned." },
+        "falsifiable_done": { "score": 13, "why": "Numeric ocelli AP localization and head-count RMSE are in self-test today and extend to 2D." },
+        "compute_in_repo": { "score": 10, "why": "2D FEM coupling is nontrivial but still in-process Python." },
+        "isolation": { "score": 5, "why": "Modifies shared planarian flagship script." },
+        "time_to_verdict": { "score": 5, "why": "Mesh + stochastic neoblast extension may exceed one sitting." },
+        "not_blocked": { "score": 5, "why": "Documented Pass 3 scope, not refuted." }
+      }
+    },
+    {
+      "title": "Cervera v3 repro-package: assert held-out RMSE ceilings in `--self-test` (close audit repro gap 84→90+)",
+      "gap": "Audit v2 repro-package 84/100 notes self-test checks finiteness of fit metrics but not correctness: no assertion that held-out innexin RNAi RMSE stays below a pre-registered bound, and no check that panel time-course legend fractions match simulated Durant/Oviedo timing series.",
+      "done": "After pre-registering thresholds in a new sidecar `morphoeval/audits/2026-10-17-cervera-audit-v3.prereg.yaml`, `python3 models/2021-Cervera–Levin–Mafe.py --self-test` fails if held-out RMSE > bound or if any panel D/E labeled percentage differs from recomputed simulation by >1 pp; v3 audit repro-package score >= 90.",
+      "tool_route": "Registry lens hybrid: write prereg YAML (Step 2), Step 12 patch self-test in Cervera script, Step 7 blind re-score to v3 audit, `python3 morphoeval/track_loop.py exec --run-id 2026-10-17-cervera-loop-v3 --step remed -- python3 models/2021-Cervera–Levin–Mafe.py --self-test`.",
+      "deciding_data": "In repo: current CSV metrics from solver (`cervera_levin_mafe_metrics.csv` generation path in script), v2 audit lines 287–305 evidence.",
+      "prior_attempts": "f2 inverse bisection bug was fixed post-v2 (see comment at `f2_for_shift` in script); re-proposing bisection-only remed is blocked. RMSE assertion gap remains open per v2 repro-package rationale.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Remediation pass extends existing `--self-test` and audit YAML; no new wet-lab instrument." },
+        "data_in_hand": { "score": 16, "why": "Held-out series and timing panels derive from vendored Planform fixtures already loaded by the script." },
+        "falsifiable_done": { "score": 15, "why": "Thresholded RMSE and percentage parity are binary self-test outcomes." },
+        "compute_in_repo": { "score": 13, "why": "Reuses existing render path (~12 min) with added assertions only." },
+        "isolation": { "score": 7, "why": "Mostly self-test + new prereg/audit files; small edit to shared script." },
+        "time_to_verdict": { "score": 8, "why": "Single self-test run gives immediate pass/fail once bounds are set." },
+        "not_blocked": { "score": 3, "why": "f2 inverse route refuted/fixed; this candidate targets RMSE/legend gaps only (partial overlap with prior audit bullets)." }
+      }
+    },
+    {
+      "title": "XT-CLK-01: Xenopus somitogenesis clock–wavefront multiplier test (registered prediction residue)",
+      "gap": "`docs/open-problems.json` registered follow-up XT-CLK-01 states Xenopus her/hes clock architecture is bound but paired clock-period + somite-length measurements under controlled wavefront are missing to test registered x0.80–x1.20 multipliers within 5 points.",
+      "done": "New resolution row in `predictions/resolutions/xenopus.json` with sourced T,S pairs and `python3 predictions/score_resolutions.py --organism xenopus` marks XT-CLK-01 resolved or refuted against registry hashes.",
+      "tool_route": "Primarily `registry` lens: literature extract → new resolution JSON → `score_resolutions.py`; optional Pass 2 on `2010-keller-xenopus-tropicalis-clock-wavefront.py` (already 93.8 in v2 audit) only after tabulated data land.",
+      "deciding_data": "Not in repo: requires named public somitogenesis perturbation series (e.g. linked primary literature from Xenopus clock reviews cited in open-problems.json); simulation scaffold and XT slot audits exist but do not contain the paired measurements.",
+      "prior_attempts": "Pass 2 closed the Keller clock-wavefront script audit at 93.8/100 (`morphoeval/audits/2026-10-19-xenopus-tropicalis-clock-wavefront-audit-v2.yaml`); registry scoring remains partial per 2026-10-26 snapshot.",
+      "factors": {
+        "tool_fit": { "score": 8, "why": "Remediation loop alone cannot decide without new tabulated data; registry + resolution scoring lens required first." },
+        "data_in_hand": { "score": 6, "why": "Mechanism bound in docs but deciding T,S series absent from repo." },
+        "falsifiable_done": { "score": 15, "why": "Registry hash-locked scoring is fully automatic once data JSON exists." },
+        "compute_in_repo": { "score": 11, "why": "Scoring is cheap; curation dominates." },
+        "isolation": { "score": 9, "why": "Resolution JSON can be added without touching flagship scripts." },
+        "time_to_verdict": { "score": 4, "why": "Blocked on finding/tabulating literature measurements." },
+        "not_blocked": { "score": 5, "why": "Explicitly listed as open partial resolution, not refuted." }
+      }
+    },
+    {
+      "title": "BLOCKED (negative knowledge): Xenopus embryo-neighbour transfer v2 under OP-07",
+      "gap": "OP-07 asks whether wave features predict neighbour identity after ground-truth geometry; headline LOOO AUC 0.484 with orientation confound (0.833).",
+      "done": "Would require `embryo-blind/` v2 prereg on geometry-ground-truth videos only per OP-07 — status in open-problems.json is `refuted` for the headline claim.",
+      "tool_route": "Not remediation-lens: `wave-vector-analysis/` + `embryo-blind/` hash-locked scorer (see OP-07 sources).",
+      "deciding_data": "In repo: `embryo-blind/README.md`, `XENOPUS_BLIND_RESULTS.md`; Ca2+ TIFF stacks under wave-vector-analysis workflows.",
+      "prior_attempts": "Multi-agent panel recorded in OP-07 (`status: refuted`); do not re-propose the same neighbour-transfer route as a fresh remediation win.",
+      "factors": {
+        "tool_fit": { "score": 14, "why": "Wave pipeline tools exist but remediation loop does not erase a refuted blind headline without a new prereg axis." },
+        "data_in_hand": { "score": 12, "why": "Videos and features exist; confound structure documented." },
+        "falsifiable_done": { "score": 13, "why": "Hash-locked AUC contract is clear." },
+        "compute_in_repo": { "score": 11, "why": "Re-scoring is feasible in-repo." },
+        "isolation": { "score": 8, "why": "Blind harness can add v2 files in isolation." },
+        "time_to_verdict": { "score": 4, "why": "Prior refutation means verdict already known for the original route." },
+        "not_blocked": { "score": 0, "why": "OP-07 explicitly refuted; exact neighbour-transfer remediation route is blocked." }
+      }
+    }
+  ]
+}
