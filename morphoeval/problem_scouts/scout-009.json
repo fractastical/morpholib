@@ -1,0 +1,127 @@
+{
+  "scout": "scout-009",
+  "ground": "rule30",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "title": "Conus Rule 30 — enforce 2D ANF carry morphometric gate (close 1D white-chord indiscriminability audit finding)",
+      "gap": "`compute_2d_chiral_and_anf_observables()` exists and Panel F claims Rule 30 vs Rule 90 separation via `anf_quad_carry_rate`, but Check 8 still scores only normalized 1D white-chord KS (Rule 90/150/110 match or beat Rule 30) and never asserts ANF separation; `morphoeval/kg/2026-10-19-conus-second-assessor-audit` lists this as open remediation.",
+      "done": "`python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only` exits 0 only if (a) `anf_quad_carry_rate(Rule30) - anf_quad_carry_rate(Rule90) >= 0.15` on the fixed seed-42 grid, (b) Rule 30 KS is strictly better than the best of Rules 90/150/110 on the same grid OR the metrics CSV marks `hypothesis_discriminator=anf_carry` with both rates exported, and (c) a superseding Pass-2 audit records morphometric-validation ≥ prior with this evidence pinned to line numbers.",
+      "tool_route": "MorphoEval Step 12 (`remed`): patch `models/1984-wolfram-conus-textile-rule30.py` (`self_test`, `write_metrics_csv`); Step 6 `python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only`; Step 8 `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml`; Step 9 `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<date>-conus-audit-v3.yaml --conform --supersede-from morphoeval/kg/2026-10-19-conus-second-assessor-audit`.",
+      "deciding_data": "In repo: `models/1984-wolfram-conus-textile-rule30.py`, `conus_textile_rule30_metrics.csv`, `datasets/conus/conus_textile_reference.json` (specimen masks), audit `morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml`.",
+      "prior_attempts": "Gemini 4 Argon blinded second assessor (2026-10-19) documented KS indiscriminability; Pass N+1 flagship loop (`morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml`) added Panel F annotation but left self-test/metrics gate unchanged.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Named 12-step loop with existing script self-test plus measure_outputs/build_morphoeval_kg rescoring." },
+        "data_in_hand": { "score": 18, "why": "Seed-42 ECA grids and vendored specimen masks already drive Check 8." },
+        "falsifiable_done": { "score": 14, "why": "Numeric thresholds on carry gap and KS ordering are machine-checkable." },
+        "compute_in_repo": { "score": 14, "why": "Sub-minute self-test rerun on the pinned grid size." },
+        "isolation": { "score": 4, "why": "Requires editing the shared flagship script, not new-file-only." },
+        "time_to_verdict": { "score": 9, "why": "One Pass-1→Pass-2 remediation sitting closes the audit item or not." },
+        "not_blocked": { "score": 5, "why": "Audit flagged the gap; no prior pass refuted ANF gating as infeasible." }
+      }
+    },
+    {
+      "title": "Conus Rule 30 — retire box-counting dimension false positives in morphometric CSV",
+      "gap": "`box_counting_dimension()` on the 148×92 tent crop returns D_box≈2.155 for iid random bits and ≈2.17 for Rule 30 (>2), so the `box_counting_dim` column in `conus_textile_rule30_metrics.csv` is an estimator artefact (scales 2..32), yet it is exported without a validity guard.",
+      "done": "Self-test asserts either (i) renamed metric `d_box_log_slope` documents the scale window and fails if iid-noise slope implies D>2.05, or (ii) the column is dropped from pass/fail and README/CSV headers say 'log–log slope (not Hausdorff D)'; regenerated CSV differs and Pass-2 morphometric-validation rationale cites the fix.",
+      "tool_route": "Step 12 remed on `models/1984-wolfram-conus-textile-rule30.py` (`box_counting_dimension`, Check 8, `write_metrics_csv`); verify with `python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only`; Step 8–9 measure + `build_morphoeval_kg.py` on a superseding conus audit YAML.",
+      "deciding_data": "In repo: `models/1984-wolfram-conus-textile-rule30.py` lines 9842+, `conus_textile_rule30_metrics.csv`, second-assessor audit remediation list.",
+      "prior_attempts": "2026-10-19 conus second assessor recorded the artefact; no subsequent commit removed the column or added the iid control guard.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Closure is a script self-test change plus standard MorphoEval remeasure/rescore." },
+        "data_in_hand": { "score": 20, "why": "Specimen and model grids used in Check 8 are already vendored." },
+        "falsifiable_done": { "score": 15, "why": "iid-noise control bound and CSV header text are objectively verifiable." },
+        "compute_in_repo": { "score": 15, "why": "Box-counting loop is seconds on the fixed crop." },
+        "isolation": { "score": 4, "why": "Touches the shared Conus script and tracked CSV outputs." },
+        "time_to_verdict": { "score": 8, "why": "Single remediation pass with immediate self-test feedback." },
+        "not_blocked": { "score": 5, "why": "Diagnosis is accepted; fix path (guard or rename) not previously attempted." }
+      }
+    },
+    {
+      "title": "Rule 30 kymograph — sync measured defect-front speeds and bioelectric D2 factor across panels/CSV",
+      "gap": "Panel D hard-codes `v_L=-0.26` while `compute_damage_cone_ensemble()` reports `vL_mean≈-0.26±0.10`; `D2_blocked=0.36*D1` in code conflicts with `0.40` in the CSV governing-law string and Panel F x-label (`morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml` remediation).",
+      "done": "After rebuild, `conus_rule30_defect_fronts.csv` and figure labels display the same `vL_mean`/`vL_std` and `D2_blocked/D1` ratio as computed at runtime (≤0.01 absolute on v_L, exact rational match on D2 factor); `python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only` includes an assert on label/CSV consistency.",
+      "tool_route": "Step 12 remed on `models/1984-wolfram-conus-textile-rule30.py` (render paths ~1426, 1495, 1272, 595); Step 6 regenerate `docs/media/conus_rule30_kymograph_defect_fronts.png` and CSV; Step 8 `measure_outputs.py` on conus audit; optional Step 5 `morphoeval/track_loop.py exec --step remed -- …`.",
+      "deciding_data": "In repo: `conus_rule30_defect_fronts.csv`, `docs/media/conus_rule30_kymograph_defect_fronts.png`, `models/1984-wolfram-conus-textile-rule30.py`, `docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md`.",
+      "prior_attempts": "Second assessor (2026-10-19) flagged inconsistencies; Pass N+1 flagship remediations focused on Raup T and Meinhardt kymograph normalization, not bioelectric panel literals.",
+      "factors": {
+        "tool_fit": { "score": 24, "why": "Pure code-traceability/morphometric-validation fix testable via existing self-test and measure_outputs." },
+        "data_in_hand": { "score": 20, "why": "Damage-cone ensemble and defect-front CSV already emitted by the script." },
+        "falsifiable_done": { "score": 14, "why": "String/numeric equality checks between compute paths and labels." },
+        "compute_in_repo": { "score": 15, "why": "Damage ensemble is a small seeded run inside self-test." },
+        "isolation": { "score": 4, "why": "Edits tracked script and regenerated media paths." },
+        "time_to_verdict": { "score": 10, "why": "Deterministic regen plus one audit rescore." },
+        "not_blocked": { "score": 5, "why": "No prior remediation chose the wrong measured values; item still open." }
+      }
+    },
+    {
+      "title": "Conus Rule 30 — align Wolfram 1986 and Meinhardt 1995 DOIs across script, bib, and README",
+      "gap": "Script header and `datasets/conus/paper_citations.bib` carry DOIs that Crossref resolves to unrelated volumes; audit integrator (2026-10-19) confirmed correct DOIs `10.1016/0196-8858(86)90028-X` and `10.1007/978-3-662-13135-0` but tracked files were not updated.",
+      "done": "All three surfaces (script module docstring, `datasets/conus/paper_citations.bib`, `datasets/conus/README.md`) list identical DOIs that return HTTP 200 on `https://doi.org/...`; `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml --check` reports no source-traceability conflict on those refs.",
+      "tool_route": "Step 12 remed (source-traceability axis): edit cited files; Step 9 `build_morphoeval_kg.py --check --conform`; optional Step 3 `python3 morphoeval/scout_literature.py` Crossref verify flags.",
+      "deciding_data": "In repo: `datasets/conus/paper_citations.bib`, script header; external named source: Crossref API for the two DOIs (already recorded in kg TTL evidenceAgainst).",
+      "prior_attempts": "Audit integrator resolved DOIs outside the blinded pass; builder Pass N+1 did not land the bib/script/README sync.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "MorphoEval build/check and scout_literature Crossref are the named verification tools." },
+        "data_in_hand": { "score": 19, "why": "Correct DOIs are already written in audit kg comments; no new literature hunt." },
+        "falsifiable_done": { "score": 13, "why": "Byte-identical DOI strings across files plus resolver HTTP status." },
+        "compute_in_repo": { "score": 15, "why": "Instant file edits plus optional Crossref fetch." },
+        "isolation": { "score": 3, "why": "Multi-file edits on shared conus assets (conflict-prone for parallel agents)." },
+        "time_to_verdict": { "score": 9, "why": "One remediation pass and kg --check." },
+        "not_blocked": { "score": 4, "why": "Partial attempt (integrator only); script-side fix still outstanding." }
+      }
+    },
+    {
+      "title": "Rule 30 script — split fast default self-test from full prize-theorem battery",
+      "gap": "Flagship audit (`morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml`) lists ~303s `--self-test-only` runtime because all prize-theorem blocks run unconditionally; repro-package score suffers and CI cannot run a quick gate before heavy verification.",
+      "done": "Default `python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only` finishes in <90s wall time on the cloud VM and exits 0; `python3 models/1984-wolfram-conus-textile-rule30.py --full-prize-proofs --self-test-only` runs the 47-theorem/necklace battery and exits 0; README documents both flags.",
+      "tool_route": "Step 12 remed (argparse + `self_test` factorization); Step 6 timed run via `morphoeval/track_loop.py exec --step remed -- /usr/bin/time -f … python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only`; Step 7 update flagship/conus audit repro-package score in new audit YAML.",
+      "deciding_data": "In repo: `models/1984-wolfram-conus-textile-rule30.py` (`self_test`, prize verify calls ~9918+), flagship audit remediation bullet.",
+      "prior_attempts": "Pass N+1 fixed Raup/Meinhardt/visual issues but explicitly left 'Gate 48 prize-theorem checks behind --full-prize-proofs' open.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Standard Step 12 script remed with track_loop timing evidence." },
+        "data_in_hand": { "score": 18, "why": "All theorem blocks already live in the same script." },
+        "falsifiable_done": { "score": 13, "why": "Wall-clock threshold and exit codes for two CLI modes." },
+        "compute_in_repo": { "score": 12, "why": "Full mode may still take minutes but runs on existing stack." },
+        "isolation": { "score": 4, "why": "Edits the monolithic Rule 30 script." },
+        "time_to_verdict": { "score": 6, "why": "May need iterative split to hit the 90s bound safely." },
+        "not_blocked": { "score": 5, "why": "Explicitly queued remediation; not previously refuted." }
+      }
+    },
+    {
+      "title": "OP-02 (Prize 2) — pre-registered Tier-B diagonal-sample density ledger (not a decorrelation proof)",
+      "gap": "`docs/open-problems.json` OP-02: crystal horizontal density 1/2 is proved but the moving diagonal sample `c_S=A_S(floor(S/2))` lacks a discrepancy bound; repo computes finite-horizon center density through t=1024 only, without a hash-locked long-horizon diagonal ledger for scorers.",
+      "done": "New artifact `rule30_diagonal_density_ledger.csv` (committed hash named in a pre-registration JSON) lists cumulative ones-density of `c_S` for S=1..S_max (e.g. 65536) with |density-0.5|≤ε column; self-test under `--full-prize-proofs` asserts ε≤0.01 at S_max; `docs/RULE30_PRIZE_STATUS_AND_GAPS.md` Tier B table cites the file without claiming Prize 2 closed.",
+      "tool_route": "Step 4 rules + Step 5 script extension in `models/1984-wolfram-conus-textile-rule30.py`; pre-register via `predictions/` hash-locked contract before generating ledger; Step 8–9 measure_outputs + build_morphoeval_kg on a new audit stub referencing OP-02 node p2.",
+      "deciding_data": "In repo: `docs/open-problems.json` OP-02, `models/1984-wolfram-conus-textile-rule30.py` midpoint identities (~4086+); OEIS A051023 bits in `datasets/conus/conus_textile_reference.json` for cross-check.",
+      "prior_attempts": "Delphi panel (2026-10-20, `morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml`) scored diagonal decorrelation subgoal P2.4 ~6.3/100; no registered blind ledger exists.",
+      "factors": {
+        "tool_fit": { "score": 19, "why": "MorphoEval can emit and score Tier-B evidence but cannot prove OP-02." },
+        "data_in_hand": { "score": 17, "why": "Single-seed light-cone machinery and reference bits already vendored." },
+        "falsifiable_done": { "score": 12, "why": "CSV row count, SHA-256, and ε bound are checkable; prize closure is not claimed." },
+        "compute_in_repo": { "score": 10, "why": "S up to 2^16 may take tens of minutes but stays in Python." },
+        "isolation": { "score": 6, "why": "Can add new CSV + registration file with minimal script hook." },
+        "time_to_verdict": { "score": 6, "why": "One loop delivers ledger or falsifies ε; proof gap remains." },
+        "not_blocked": { "score": 3, "why": "Empirical route does not refute need for decorrelation bound; math still open." }
+      }
+    },
+    {
+      "title": "OP-01 (Prize 1) — global Horizon Clash / transparent-gate lemma (NOT closable by MorphoEval remediation)",
+      "gap": "OP-01 (`docs/open-problems.json`): prove D_1(t)=1 hits some step with c_t=1 for all short runs 1≤a_i≤7 and all (t_0,Π); Delphi bridge posterior 11.52% (<15% green). Depth-1 right cylinder has positive entropy (~0.32 bits/step), so finite local windows cannot close the gap.",
+      "done": "Lean-checked proof of the Horizon Clash Lemma OR explicit counterexample word — either satisfies Wolfram Prize 1; a MorphoEval Pass-2 audit score alone does NOT count as done.",
+      "tool_route": "Not MorphoEval Step 12: would require `morphoeval/lean/MathOfBiology.lean` / new Loop Lean file plus possibly extended cylinder census in `models/1984-wolfram-conus-textile-rule30.py` under a formal-proof workflow; MorphoEval loop only documents Tier A/B status via `build_morphoeval_kg.py` on `2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml`.",
+      "deciding_data": "In repo: `docs/RULE30_PRIZE_STATUS_AND_GAPS.md` Tier C, `morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml` subgoal P1.4; literature: Wolfram Rule 30 Prize statement (rule30prize.org).",
+      "prior_attempts": "Multi-agent Delphi panel + extensive finite exhaustions (74.25M necklaces, 249500 pairs); evidence_against records transparent-gate absorption and entropy obstruction — route not refuted but not closed.",
+      "factors": {
+        "tool_fit": { "score": 2, "why": "12-step remediation scores scripts; it cannot discharge a global mixing lemma." },
+        "data_in_hand": { "score": 16, "why": "Large census outputs and Lean kernels exist, but the gap is logical, not missing CSV." },
+        "falsifiable_done": { "score": 3, "why": "Done requires proof/counterexample, not rubric points." },
+        "compute_in_repo": { "score": 8, "why": "More finite census is possible but known insufficient per audit." },
+        "isolation": { "score": 7, "why": "New Lean loop file could isolate, but prize touch remains shared." },
+        "time_to_verdict": { "score": 1, "why": "Not reachable in one MorphoEval sitting." },
+        "not_blocked": { "score": 2, "why": "Open problem; entropy argument blocks naive local-window remediation re-proposals." }
+      },
+      "lens_note": "Use a formal-proof / Lean-extension Problem-Scout lens (not remediation) for OP-01 closure attempts."
+    }
+  ]
+}
