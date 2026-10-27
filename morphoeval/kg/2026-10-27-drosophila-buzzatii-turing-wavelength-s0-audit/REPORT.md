@@ -1,6 +1,6 @@
 # MorphoEval report — audit `2026-10-27-drosophila-buzzatii-turing-wavelength-s0-audit`
 
-Rubric **0.1.0** · checkpoint `0c76d15d` · assessor `pkr:model/grok-4.7` (pk:LLMClaimAssessment) · tracked in —
+Rubric **0.1.0** · checkpoint `00782eec` · assessor `pkr:model/grok-4.7` (pk:LLMClaimAssessment) · tracked in —
 
 Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the Project Delphi rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
@@ -63,4 +63,4 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 - numpy: 2.5.4
 - scipy: 1.18.1
 
-Pass 1 checkpoint is the parent of the loop commit. Loop files are new in this PR; loci for those paths are re-checked after the loop commit lands.
+Checkpoint 00782eec is the loop commit that adds these slot files. The checkout origin URL carries an access token, so the builder's same-repo locus check does not run.
