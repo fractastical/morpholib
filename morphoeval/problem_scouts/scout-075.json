@@ -1,0 +1,319 @@
+{
+  "scout": "scout-075",
+  "ground": "library",
+  "lens": "vision",
+  "candidates": [
+    {
+      "id": "LIB-VIS-01",
+      "title": "FOUNDATIONAL gallery photograph taxon mismatch for anatomy-specific core models",
+      "gap": "`morphoeval/verify_image_fitness.py` `FOUNDATIONAL_SPECIMENS` pins `datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg` as the canonical photograph for `santella-wormguides-celegans` (Caenorhabditis elegans embryo atlas), `eshghi-odonata-wing-cells` (Odonata wing cells), and `hoffmann-wing-venation` (insect wing venation), while Pass-3 audits score morphometrics from unrelated assets (WormGUIDES renders, `datasets/odonata/`, wing-venation figures). Nothing in-repo proves the indexed `specimen_rel` depicts the declared species or anatomy, yet `cv_sim_similarity` for those slugs is high (79–90) against the fruit-fly portrait.",
+      "done": "A JSON report (new file under `morphoeval/runs/`, no index edits) lists the three slugs with: (1) `index_species` from `morphoeval/runs/aristotelian_categories_index.json`, (2) `cv_signature` from `compute_specimen_cv_signature` on the current `specimen_rel`, (3) `cv_signature_phenomenon` on the best matching in-repo alternative path documented in the audit (`docs/media/celegans_embryo_timeline.gif` first frame is out of lens—must be a still specimen JPG/PNG if one exists, else the audit-cited comparison PNG path), and (4) `taxon_consistent=false` when the gallery basename genus does not match `index_species` AND aspect_ratio or structure_tensor_coherency differs by >0.15 absolute from the phenomenon asset. Scorer passes only if all three slugs are flagged `taxon_consistent=false`, documenting the integrity defect without changing canonical paths.",
+      "tool_route": "Run `python3 morphoeval/verify_image_fitness.py` to refresh signatures, then a one-off analyzer that imports `compute_specimen_cv_signature` from `morphoeval/verify_image_fitness.py` (via `runpy.run_path`) for each slug’s `specimen_rel` and the audit-named phenomenon still. Inputs: slugs `santella-wormguides-celegans`, `eshghi-odonata-wing-cells`, `hoffmann-wing-venation`; index file `morphoeval/runs/aristotelian_categories_index.json`.",
+      "deciding_data": "In repo: `morphoeval/verify_image_fitness.py` (`FOUNDATIONAL_SPECIMENS`), enriched index JSON, `morphoeval/kg/2026-10-17-blinded-sample-audit/REPORT.md`. No external fetch required for the Drosophila gallery photograph.",
+      "prior_attempts": "Blinded-sample audit (2026-10-17) rated `eshghi-odonata-wing-cells` specimen-match 92/100 and `santella-wormguides-celegans` 74/100 using script outputs, not verifying the FOUNDATIONAL JPEG taxon. Not listed in `docs/open-problems.json`. Route not previously refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "`compute_specimen_cv_signature` runs as-is on any held JPG path named in the index."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All canonical and gallery paths plus audit citations are already vendored."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Boolean taxon_consistent flags with numeric aspect/coherency deltas are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Minutes of CV on a handful of images on the standard numpy/scipy/Pillow stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as a new JSON report file only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single sitting: three signatures and a genus basename check."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt recorded this FOUNDATIONAL mis-pinning as closed."
+        }
+      }
+    },
+    {
+      "id": "LIB-VIS-02",
+      "title": "Turing Gray–Scott dual-specimen canonical pairing unset in the fitness index",
+      "gap": "`datasets/turing/` ships two SHA-256-locked regime specimens (`pomacanthus_imperator_stripes_specimen.jpg` and `pomacanthus_imperator_flank_stripes_specimen.jpg` for angelfish stripes, `ostracion_meleagris_spots_specimen.jpg` for boxfish spots) and the Pass-3 audit segments both species, but `FOUNDATIONAL_SPECIMENS['turing-gray-scott']` forces only the flank-stripes file while the boxfish plate remains unused in the fitness index. The verifier never records which photograph pairs with which Pearson-class simulation GIF frame.",
+      "done": "For slug `turing-gray-scott`, compute `cv_sim_similarity` against all three Turing specimen JPGs and the resolved simulation GIF from `verify_image_fitness.resolve_sim_media_path`; write a JSON record where `canonical_specimen_rel` equals the path with strictly greater `cv_sim_similarity`, and `delta_cv` is recorded. Done when `morphoeval/runs/aristotelian_categories_index.json` entry’s `specimen_rel` matches that argmax path (after a remediation PR) OR a scout report documents mismatch with all scores—scorer checks numeric equality of reported scores recomputed from stored paths.",
+      "tool_route": "`python3 morphoeval/verify_image_fitness.py` then `python3 -c \"import runpy; m=runpy.run_path('morphoeval/verify_image_fitness.py'); ...\"` calling `compute_sim_vs_specimen_cv_similarity` with `datasets/turing/pomacanthus_imperator_stripes_specimen.jpg`, `datasets/turing/pomacanthus_imperator_flank_stripes_specimen.jpg`, `datasets/turing/ostracion_meleagris_spots_specimen.jpg`, and `docs/media/*turing*growth.gif` (resolved via `resolve_sim_media_path` on the index row).",
+      "deciding_data": "In repo: `datasets/turing/README.md`, both specimen JPEGs, `morphoeval/kg/2026-10-19-turing-audit-v2/` measurements on both species.",
+      "prior_attempts": "Turing audit v2 validated segmentation on both photographs; `verify_image_fitness` consolidation to a single FOUNDATIONAL path not audited for per-regime pairing. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "`compute_sim_vs_specimen_cv_similarity` is the exact pairing metric already used for ranking."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Both specimens and the animated GIF are vendored."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Argmax of two numeric `cv_sim_similarity` values is objective."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "One GIF and two photographs—seconds to minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Scout report or follow-up PR can be file-additive."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One model, two comparisons."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of dual-pairing test."
+        }
+      }
+    },
+    {
+      "id": "LIB-VIS-03",
+      "title": "Runions leaf venation: dedicated ginkgo open venation vs FOUNDATIONAL reticulate skeleton",
+      "gap": "Core slot `runions-leaf-venation` stores `datasets/venation/ginkgo_open_venation_specimen.jpg` in its dataset directory (ginkgo dichotomous open venation per `datasets/venation/`), but `FOUNDATIONAL_SPECIMENS` and the index `specimen_rel` point at `datasets/venation/reticulate_vein_skeleton_specimen.jpg`. Byte hashes differ; `verify_image_fitness` therefore scores simulation fidelity against the reticulate reference, not the vendored ginkgo plate.",
+      "done": "Recompute `cv_sim_similarity` for the Runions simulation GIF against both JPGs; publish `preferred_specimen_rel` as the argmax. Pass when a remediation sets index/FOUNDATIONAL to that path, or a scout JSON documents `cv_sim_reticulate - cv_sim_ginkgo >= 5.0` proving the current canonical choice is CV-superior (either outcome is a valid closed verdict).",
+      "tool_route": "`python3 morphoeval/verify_image_fitness.py` refresh; pairwise `compute_sim_vs_specimen_cv_similarity` on `datasets/venation/ginkgo_open_venation_specimen.jpg` vs `datasets/venation/reticulate_vein_skeleton_specimen.jpg` with GIF from `resolve_sim_media_path` for slug `runions-leaf-venation`.",
+      "deciding_data": "In repo: both venation specimen JPEGs, index row for `runions-leaf-venation`.",
+      "prior_attempts": "None in `docs/open-problems.json`; Runions audit v2 scored reticulate segmentation without comparing ginkgo plate. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Direct application of existing sim-vs-specimen CV metric."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Both photographs and GIF already present."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Two numeric scores and an argmax."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Single-core comparison."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Report-only scout closure possible."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Fresh integrity question."
+        }
+      }
+    },
+    {
+      "id": "LIB-VIS-04",
+      "title": "Petroff stromatolite canonical photo vs vendored biofilm micrograph",
+      "gap": "`petroff-stromatolite` models conical stromatolites (Petroff et al. 2010 PNAS) but `FOUNDATIONAL_SPECIMENS` overrides the dataset’s `datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_specimen.jpg` with the generic gallery icon `datasets/species_gallery/IV_Protista_Monera_Mycota/Bacillus_subtilis.jpg` (different SHA-256). Fitness scores therefore mix a colony biofilm portrait with a stromatolite simulation GIF.",
+      "done": "Compare `cv_sim_similarity` of the Petroff simulation GIF against both JPEGs; verdict JSON must show `cv_dedicated > cv_gallery` (remediate FOUNDATIONAL to dedicated file) OR the opposite with margin ≥3 points. Scorer recomputes both floats from paths—no manual judgment.",
+      "tool_route": "`compute_sim_vs_specimen_cv_similarity` via `runpy.run_path('morphoeval/verify_image_fitness.py')` inputs: slug `petroff-stromatolite`, paths `datasets/bacillus_biofilm_wrinkling/bacillus_biofilm_specimen.jpg` and `datasets/species_gallery/IV_Protista_Monera_Mycota/Bacillus_subtilis.jpg`.",
+      "deciding_data": "In repo: both images, Petroff audit assets under `datasets/` and `docs/media/`.",
+      "prior_attempts": "Petroff stromatolite audit did not cross-check FOUNDATIONAL override; not in open-problems queue. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Same CV pairing function used for all core models."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Both JPEGs vendored; index lists slug."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Inequality on two recomputed scores."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Trivial runtime."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New report file suffices for scout pass."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One comparison pair."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior closure."
+        }
+      }
+    },
+    {
+      "id": "LIB-VIS-05",
+      "title": "Planform wild-type micrograph segment vs `planform_canonical_silhouettes_v1` morphometrics",
+      "gap": "Cervera–Levin–Mafe audit v2 notes the Schmidtea photograph is used for backdrop area fractions but not compared quantitatively to PlanformDB-decoded wild-type morphometrics; `datasets/planform/planform_multi_phenotype_specimens.jpg` is a 12-panel composite while `planform_canonical_silhouettes_v1.json` lists WT `aspect: 4.653` and `ap_length: 557.6`. No automated check links segmented WT panel geometry to the JSON silhouette contract.",
+      "done": "Segment the `#1 Wild Type` panel in `planform_multi_phenotype_specimens.jpg` with `compute_specimen_cv_signature` foreground mask (or Otsu contour from the same helper), measure `aspect_ratio`, and require `abs(aspect_photo - 4.653) / 4.653 <= 0.15` OR document failure with both numbers in JSON. Secondary check: render WT polygon from JSON to 256×256 raster and compute IoU ≥0.55 with the segmented photo mask (deterministic rasterizer in new file).",
+      "tool_route": "`compute_specimen_cv_signature(Path('datasets/planform/planform_multi_phenotype_specimens.jpg'))` plus crop box constants from `morphoeval/upgrade_planarian_assets.py` panel layout; morphometrics reference `datasets/planform/planform_canonical_silhouettes_v1.json` morphology_id 1.",
+      "deciding_data": "In repo: composite JPG, silhouettes JSON, Cervera audit v2 report (`morphoeval/kg/2026-10-17-cervera-audit-v2/REPORT.md`).",
+      "prior_attempts": "Cervera audit v2 (2026-10-17) improved silhouette sampling but left specimen-match at 42/100; species note Schmidtea photo vs Dugesia japonica PlanformDB records documented in KG context, not CV-closed. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Specimen segmentation and aspect/coherency come from `compute_specimen_cv_signature`; IoU needs a small raster helper."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All images and JSON morphometrics are local."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Relative aspect error and IoU thresholds are numeric."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Under an hour including polygon raster IoU."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New analysis JSON + optional raster script only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One composite, one morphology."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Open audit gap, no negative result on CV linkage."
+        }
+      }
+    },
+    {
+      "id": "LIB-VIS-06",
+      "title": "Scout dossier Wikimedia candidates vs vendored specimen choice (reference fitness)",
+      "gap": "`datasets/*/scout_manifest.json` lists `candidate_specimens_wikimedia[]` (URLs, dimensions, licenses) but no workflow proves the committed `*_specimen.jpg` maximizes simulation-to-photo `cv_sim_similarity` against those candidates for the model’s GIF.",
+      "done": "For a pre-registered list of 5 scout manifests (e.g. `datasets/bacillus_biofilm_wrinkling/scout_manifest.json`, `datasets/hydractinia_stolon_vascular_net/scout_manifest.json`, `datasets/wing_disc_dome_folding/scout_manifest.json`, `datasets/emiliania_calcite_rosette/scout_manifest.json`, `datasets/xenobot_evolutionary_biobots/scout_manifest.json`), download or use cached Commons stills, compute `cv_sim_similarity` vs each candidate and the vendored specimen; pass if vendored file equals argmax for all five (or JSON lists failures with scores).",
+      "tool_route": "For each dataset: resolve simulation GIF via index slug matching `territory.proposed_sim_id`; `compute_sim_vs_specimen_cv_similarity` on vendored `*_specimen.jpg` and each Commons candidate saved under `morphoeval/runs/scout_candidate_cache/`; compare SHA-256 of argmax file to vendored hash.",
+      "deciding_data": "In repo: scout manifests with candidate arrays; vendored specimens. One-time fetch: Wikimedia URLs already listed in manifests (named public source).",
+      "prior_attempts": "Scout dossiers created 2026-10-20 without post-vendoring CV ranking; not in `docs/open-problems.json`. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "CV similarity is the designed specimen fitness metric."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Manifests and vendored JPGs local; Commons downloads are named URLs in-repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Argmax SHA-256 match across five datasets."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Five GIFs × ~4 images each, network fetch included."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Cache dir + JSON report only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One sitting with small batch."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior ranking audit."
+        }
+      }
+    },
+    {
+      "id": "LIB-VIS-07",
+      "title": "Expansion slots 101–1100: replace synthetic `cv_sim_similarity` with measured sim-vs-specimen scores",
+      "gap": "`morphoeval/runs/image_fitness_and_provenance.json` reports 1000 `expansion_template` models whose `cv_sim_similarity` is derived from `42 + 18*coherency` without comparing simulation GIFs (`verify_image_fitness.py` lines 621–646, 653–660). Library integrity claims SHA-256 locked specimens for all slots, but image fitness suppresses 1000 entries below threshold using a template-wave excuse rather than measured pixel fidelity.",
+      "done": "Pre-register 10 expansion slugs (one per megiston genus template). After running each species’ `*_turing_wavelength` script to ensure a `docs/media/*growth.gif` exists, re-run measured `compute_sim_vs_specimen_cv_similarity`; pass if ≥7/10 achieve `cv_sim_similarity >= 58.0` without the expansion synthetic branch, documented in a JSON scoreboard.",
+      "tool_route": "`python3 morphoeval/verify_image_fitness.py` (requires temporarily treating slots ≤1100 as non-expansion in a forked analyzer, or a new `morphoeval/runs/measure_expansion_cv.py` that calls `compute_sim_vs_specimen_cv_similarity` directly); inputs from `morphoeval/runs/aristotelian_categories_index.json` filtered `100 < slot <= 1100`.",
+      "deciding_data": "In repo: 1000 expansion rows in index, species gallery specimens, template simulation GIFs where already generated.",
+      "prior_attempts": "Related flagship debt OP-06 mentions growing-domain Turing and autonomy but not the expansion-slot synthetic CV bypass; no refutation of measured-CV remediation.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Needs a thin wrapper to force measured CV on expansion slots; core functions exist."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Specimens and index local; some GIFs may need regeneration."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "7/10 threshold at `cv_sim >= 58` is countable."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "May require running up to 10 model scripts plus CV."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Scoreboard JSON + optional helper script; avoid editing index in scout pass."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Multi-script batch exceeds one quick loop."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Synthetic branch is intentional suppression, not yet tested for replaceability."
+        }
+      }
+    },
+    {
+      "id": "LIB-VIS-NEG-01",
+      "title": "Planform bioelectric `damaged/` JSON negatives (validator fault codes)",
+      "gap": "Five fixtures under `datasets/planform/damaged/` inject single faults (`E_FREQ_SUM`, `E_NOTICE_MISSING`, etc.) per `manifest.json`, but faults are pure JSON fields with no photograph—specimen CV cannot adjudicate them.",
+      "done": "N/A for vision lens; closure belongs to `python3 planform_bioelectric.py --self-test` accepting zero damaged files.",
+      "tool_route": "Blocked for `verify_image_fitness.py`; use `python3 planform_bioelectric.py --self-test` (measure/remediation lens).",
+      "deciding_data": "In repo: `datasets/planform/damaged/manifest.json` and `datasets/planform/README.md`.",
+      "prior_attempts": "Documented in Planform README 2026-10-18; self-test ships with validator. CV route not attempted (would be category error).",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "why": "No specimen pixels to segment; JSON schema validation only."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Fixtures entirely local."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done criterion exists but for another tool."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Self-test is seconds."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Already isolated fixtures."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Instant for correct lens."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Validator route open under measure lens."
+        }
+      }
+    }
+  ]
+}
