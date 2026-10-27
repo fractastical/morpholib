@@ -1,0 +1,74 @@
+audit_id: 2026-10-27-bioelectric-polarity-alpha-template-data-quality
+audit_class: data_quality
+check_id: BIO-TPL-DQ-01
+fix_id: fix-001
+evaluated_at: '2026-10-27T00:00:00Z'
+repository: https://github.com/fractastical/morpholib
+checker: morphoeval/problem_fixers/check_bioelectric_template_artifact.py
+generator:
+  script: morphoeval/run_overnight_1000_loops.py
+  lines: 592-633
+  formula: alpha_scale * x_control**1.25 + beta_offset + slot_seeded_gaussian_noise
+  slot_alpha: round(1.15 + 0.08 * (slot % 9), 4)
+  slot_beta: round(0.25 + 0.03 * (slot % 7), 4)
+verdict: confirmed_template_artifacts
+summary: >
+  The three core bioelectric_polarity reference JSON files store 12-point
+  empirical_series curves that are synthetically generated from slot-derived
+  alpha_scale/beta_offset templates, not digitised measurements from the
+  seed papers named in paper_citations.bib. High Pearson r between y_empirical
+  and y_simulated therefore restates generator noise, not biological validation
+  of Bistable V_mem / G_ij Threshold assignments.
+thresholds:
+  min_pearson_r_y_empirical_vs_alpha_x: 0.99
+  min_pearson_r_y_empirical_vs_y_simulated: 0.99
+  expected_poson_law: Bistable V_mem / G_ij Threshold
+affected_datasets:
+- path: datasets/danio_rerio_bioelectric_polarity/danio_rerio_bioelectric_polarity_reference.json
+  sim_id: nakamasu-danio-rerio-bioelectric-polarity
+  slot: 931
+  seed_doi: 10.1073/pnas.2010.0931
+  correlations:
+    r_y_empirical_vs_alpha_x: 0.997759
+    r_y_empirical_vs_y_simulated: 0.999472
+    r_y_empirical_vs_slot_formula: 0.999583
+  parameters:
+    alpha_scale: 1.47
+    beta_offset: 0.25
+- path: datasets/drosophila_melanogaster_bioelectric_polarity/drosophila_melanogaster_bioelectric_polarity_reference.json
+  sim_id: lecuit-drosophila-melanogaster-bioelectric-polarity
+  slot: 941
+  seed_doi: 10.1038/ncb.2008.0941
+  correlations:
+    r_y_empirical_vs_alpha_x: 0.996998
+    r_y_empirical_vs_y_simulated: 0.999601
+    r_y_empirical_vs_slot_formula: 0.999682
+  parameters:
+    alpha_scale: 1.55
+    beta_offset: 0.34
+- path: datasets/xenopus_tropicalis_bioelectric_polarity/xenopus_tropicalis_bioelectric_polarity_reference.json
+  sim_id: keller-xenopus-tropicalis-bioelectric-polarity
+  slot: 921
+  seed_doi: 10.1126/science.2009.0921
+  correlations:
+    r_y_empirical_vs_alpha_x: 0.998641
+    r_y_empirical_vs_y_simulated: 0.999196
+    r_y_empirical_vs_slot_formula: 0.999289
+  parameters:
+    alpha_scale: 1.39
+    beta_offset: 0.37
+do_not_cite_as_biological_evidence:
+- empirical_series.y_empirical in the three reference JSON paths above
+- morphoeval/audits/2026-10-19-danio-rerio-bioelectric-polarity-audit*.yaml morphometric-validation
+  scores driven by empirical vs simulated parity
+- morphoeval/audits/2026-10-19-danio-rerio-bioelectric-polarity-audit*.measurements.yaml
+  "Empirical vs Simulated Morphometric Correlation r" tied to Nakamasu (2010) DOI
+- morphoeval/audits/2026-10-19-drosophila-melanogaster-bioelectric-polarity-audit*.yaml
+  and measurements sidecars with the same alpha_scale / r parity pattern
+- morphoeval/audits/2026-10-19-xenopus-tropicalis-bioelectric-polarity-audit*.yaml
+  and measurements sidecars with the same alpha_scale / r parity pattern
+- Any alpha_scale-derived poson_law mechanism claim; see predictions/build_prediction_registry.py
+  discipline note (alpha_scale / empirical_series slopes are shared template geometry)
+replacement_required_for:
+- Independent tabulated bioelectric polarity measurements with figure/page provenance
+- Prediction-registry biology scoring rows that need non-circular empirical_series
