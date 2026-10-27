@@ -1,0 +1,53 @@
+sim_id: delphi10000-felis-catus-turing-wavelength-s0
+organism: Felis catus
+common_name: Domestic Cat
+scale_um: 436
+scale_m: 0.0004356
+log10_m: -3.361
+tier_id: 5_primordium_100um
+age_ma: 0
+chronoseries: Holocene (Extant) 1/1
+math_family: Reaction-Diffusion & Turing Dispersion
+equations:
+- law_name: Turing dispersion growth rate
+  formula: sigma(k) = leading eigenvalue of J - k^2 D; k* = argmax sigma(k); lambda = 2*pi/k*
+  lean_decl: MathOfBiology.Loop_3226.diffusionDrive
+  lean_theorem: MathOfBiology.Loop_3226.diffusion_driven_instability
+  lean_locus: morphoeval/lean/loops/Loop_3226_felis_catus_turing_wavelength_s0.lean#L46-L48
+  variables: "D_v, D_u, f_u, g_v in thousandths at the Holocene Schnakenberg point"
+  role: Diffusion-driven instability that selects the 436 µm primordium wavelength
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py
+- law_name: Primordium wavelength bounds
+  formula: 100 < lambda_um < 1000, lambda_um = 436
+  lean_decl: MathOfBiology.Loop_3226.wavelengthUm
+  lean_theorem: MathOfBiology.Loop_3226.wavelength_in_primordium_tier
+  lean_locus: morphoeval/lean/loops/Loop_3226_felis_catus_turing_wavelength_s0.lean#L19-L21
+  variables: "wavelengthUm = 436"
+  role: Places this Holocene detail scale inside tier 5
+  source_citation: "Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+  code_locus: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py
+- law_name: Successor flank mode count
+  formula: N_waves(L) = L / lambda, 10 * 436 = 4360
+  lean_decl: MathOfBiology.Loop_3226.wavelengthUm
+  lean_theorem: MathOfBiology.Loop_3226.successor_flank_holds_ten_wavelengths
+  lean_locus: morphoeval/lean/loops/Loop_3226_felis_catus_turing_wavelength_s0.lean#L34-L36
+  variables: "L_successor = 4360 µm, lambda = 436 µm"
+  role: Stripe number changes on the larger domain; k* does not. No second chronospecies exists.
+  source_citation: "Kaelin, McGowan and Barsh 2021 DOI:10.1038/s41467-021-25348-2"
+  code_locus: models/2026-delphi10000-felis-catus-turing-wavelength-s0.py
+model_spec:
+  sim_id: delphi10000-felis-catus-turing-wavelength-s0
+  lambda_um: 436.0
+  age_ma: 0
+  A: 0.073
+  B: 1.186
+  Du: 0.031
+  Dv: 1.742
+  gamma: 6.0
+  grid: 96
+  n_waves: 5
+  seed: 3226
+  inputs:
+    - datasets/felis_catus_turing_wavelength_s0/felis_catus_specimen.jpg
+    - datasets/felis_catus_turing_wavelength_s0/felis_catus_turing_wavelength_s0_reference.json
