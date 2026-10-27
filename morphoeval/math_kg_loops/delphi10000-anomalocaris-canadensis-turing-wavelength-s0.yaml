@@ -1,0 +1,53 @@
+sim_id: delphi10000-anomalocaris-canadensis-turing-wavelength-s0
+slot: 3113
+math_family: Reaction-Diffusion & Turing Dispersion
+cohort: "1. Chemical Turing / RD"
+form: Stripes, Spots & Ocelli
+quantitative_law: Turing wavenumber k_c
+phenomenon_size_m: 2.397e-05
+log10_size_m: -4.62
+size_human: 24 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Anomalocaris canadensis (24 µm, detail scale)
+geological_age_ma: 508
+geological_period: Middle Cambrian (Burgess Shale, Wuliuan, 508 Ma)
+fossil_lineage_group: Trilobite Segmentation & Eye Fossil Series
+chronoseries: "1/1"
+organism: Anomalocaris canadensis
+equations:
+- law_name: Schnakenberg activator-inhibitor kinetics
+  formula: "du/dt = Du ∇²u + a - u + u²v ; dv/dt = Dv ∇²v + b - u²v"
+  lean_decl: MathOfBiology.Loop_3113.trace_scaled
+  lean_theorem: MathOfBiology.Loop_3113.homogeneous_state_is_stable
+  lean_locus: morphoeval/lean/loops/Loop_3113_anomalocaris_canadensis_turing_wavelength_s0.lean
+  variables: "u activator, v inhibitor, a=0.10, b=0.90, homogeneous state (1, 0.9)"
+  role: Spot-capable reaction terms whose Jacobian has negative trace at the homogeneous state
+  source_citation: "Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-anomalocaris-canadensis-turing-wavelength-s0.py
+- law_name: Turing wavenumber k_c
+  formula: "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv) ; lambda_c = 2 pi / k_c = 2.397e-05 m"
+  lean_decl: MathOfBiology.Loop_3113.lambda_nm
+  lean_theorem: MathOfBiology.Loop_3113.label_bounds_the_exact_length
+  lean_locus: morphoeval/lean/loops/Loop_3113_anomalocaris_canadensis_turing_wavelength_s0.lean
+  variables: "f_u=0.8, g_v=-1, Dv/Du=20, lambda_c pinned to the 24 µm slot length"
+  role: Quantitative law for this slot. Selects the sub-facet ocellus wavelength at 508 Ma.
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-anomalocaris-canadensis-turing-wavelength-s0.py
+- law_name: Diffusion-ratio gate versus equal-diffusion ablation
+  formula: "Dv/Du > 25/4 is required for these partial derivatives; Du = Dv fails it"
+  lean_decl: MathOfBiology.Loop_3113.inhibitor_diffuses_fast_enough
+  lean_theorem: MathOfBiology.Loop_3113.equal_diffusion_fails_ratio_gate
+  lean_locus: morphoeval/lean/loops/Loop_3113_anomalocaris_canadensis_turing_wavelength_s0.lean
+  variables: "Du and Dv in milli-units 608 and 12159"
+  role: Negative control. Equal diffusion cannot select k_c.
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-anomalocaris-canadensis-turing-wavelength-s0.py
+- law_name: Sub-facet chronoseries inequality
+  formula: "lambda_c (23.97 µm) < reconstructed Emu Bay facet spacing (266 µm) at 2.5 cm and 16000 lenses"
+  lean_decl: MathOfBiology.Loop_3113.emu_bay_facet_spacing_um
+  lean_theorem: MathOfBiology.Loop_3113.detail_wavelength_is_subfacet
+  lean_locus: morphoeval/lean/loops/Loop_3113_anomalocaris_canadensis_turing_wavelength_s0.lean
+  variables: "Burgess 508 Ma versus Emu Bay 515 Ma versus Fezouata young end 472 Ma"
+  role: States what is short at this scale relative to the predecessor facet lattice. Body size, not k_c, is what the Ordovician successor changes.
+  source_citation: "Paterson et al. (2011) DOI:10.1038/nature10689 ; Van Roy & Briggs (2011) DOI:10.1038/nature09920"
+  code_locus: models/2026-delphi10000-anomalocaris-canadensis-turing-wavelength-s0.py

@@ -1,0 +1,132 @@
+{
+  "slot": 3113,
+  "sim_id": "delphi10000-anomalocaris-canadensis-turing-wavelength-s0",
+  "organism": "Anomalocaris canadensis",
+  "common_frame": "Cambrian Burgess Shale radiodont apex predator (compound eye and oral cone)",
+  "aristotelian_path": "II. Anaima (Invertebrata) -> Entoma (Arthropoda) -> Anomalocaris",
+  "scale": {
+    "label": "24 µm",
+    "metres": 2.397e-05,
+    "micrometres": 23.97,
+    "log10_m": -4.62,
+    "tier": "4_cellular_10um",
+    "detail_variant": "Turing pigment stripe / ocellus wavelength",
+    "meaning": "Critical wavelength lambda_c = 2*pi/k_c of a Schnakenberg activator-inhibitor field on a corneal patch. Not the ommatidial facet diameter."
+  },
+  "age": {
+    "ma": 508,
+    "period": "Middle Cambrian (Burgess Shale, Wuliuan, 508 Ma)",
+    "chronoseries": "1/1",
+    "lineage": "Trilobite Segmentation & Eye Fossil Series"
+  },
+  "state_variables": [
+    {"symbol": "u", "role": "activator (local pigment precursor / short-range morphogen)", "units": "nondimensional concentration"},
+    {"symbol": "v", "role": "inhibitor (long-range antagonist)", "units": "nondimensional concentration"}
+  ],
+  "equations": [
+    {
+      "id": "schnakenberg_pde",
+      "source": "Schnakenberg 1979; Turing 1952 dispersion",
+      "formula": "du/dt = Du * laplacian(u) + a - u + u^2 v; dv/dt = Dv * laplacian(v) + b - u^2 v"
+    },
+    {
+      "id": "homogeneous_state",
+      "formula": "u0 = a + b; v0 = b / (a + b)^2"
+    },
+    {
+      "id": "jacobian",
+      "formula": "f_u = -1 + 2 u0 v0; f_v = u0^2; g_u = -2 u0 v0; g_v = -u0^2"
+    },
+    {
+      "id": "turing_wavenumber",
+      "law": "Turing wavenumber k_c",
+      "formula": "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv); lambda_c = 2 pi / k_c",
+      "instability": "(Dv f_u + Du g_v)^2 > 4 Du Dv det(J) and trace(J) < 0 and det(J) > 0"
+    },
+    {
+      "id": "discrete_growth_rate",
+      "formula": "sigma(q) from the Jacobian shifted by Du,Dv times the stencil symbol L(q) = 2 (cos q - 1)"
+    }
+  ],
+  "boundary_conditions": {
+    "corneal_patch": "no-flux (Neumann) on a rectangular patch of corneal epithelium",
+    "dispersion_calibration": "periodic interval, so the finite-difference symbol is exact",
+    "why_neumann": "A sub-facet patch does not exchange morphogen with the neighbouring facet across a sealed lateral membrane on the timescale of wavelength selection."
+  },
+  "parameters": {
+    "a": 0.1,
+    "b": 0.9,
+    "diffusion_ratio_Dv_over_Du": 20.0,
+    "cells_per_wavelength": 8,
+    "seed": 3113,
+    "lambda_m": 2.397e-05,
+    "age_ma": 508,
+    "note": "a and b place the homogeneous state at (u0, v0) = (1, 0.9), where trace(J) = -0.2 and det(J) = 1. Du is then fixed so that lambda_c equals the slot length on an 8-cell wave. These are not measured Anomalocaris rate constants."
+  },
+  "empirical_claims": [
+    {
+      "id": "paterson_eyes",
+      "doi": "10.1038/nature10689",
+      "claim": "Emu Bay Shale (~515 Ma) eyes assigned to Anomalocaris are 2-3 cm across and carry at least 16000 hexagonal lenses in one eye.",
+      "used_as": "predecessor optical scale in the eye fossil series"
+    },
+    {
+      "id": "daley_stalked_eyes",
+      "doi": "10.1666/13-067",
+      "claim": "Burgess Shale A. canadensis has paired stalked eyes against a small oval dorsal carapace and a triradial oral cone.",
+      "used_as": "anatomy of this 508 Ma node"
+    },
+    {
+      "id": "vanroy_giant",
+      "doi": "10.1038/nature09920",
+      "claim": "Early Ordovician (488-472 Ma) Fezouata anomalocaridids are larger than any Cambrian body.",
+      "used_as": "successor horizon; body size changes, tissue-local k_c does not have to"
+    },
+    {
+      "id": "lubensky_not_turing",
+      "doi": "10.1073/pnas.1015302108",
+      "claim": "The Drosophila R8 crystal is a switch-and-template lattice, mathematically distinct from a Turing instability.",
+      "used_as": "negative transfer: this script does not claim that mechanism for Anomalocaris"
+    },
+    {
+      "id": "commons_cast",
+      "claim": "TMP 2023.003.0003 (previously ROMIP 51211) is catalogued on Wikimedia as a Wuliuan Burgess Shale cast about 20 cm long.",
+      "used_as": "specimen photograph, not a 24 µm measurement"
+    }
+  ],
+  "chronoseries": {
+    "index": "1/1",
+    "this_node_ma": 508,
+    "this_wavelength_m": 2.397e-05,
+    "predecessor": {
+      "name": "Emu Bay Shale Anomalocaris eye",
+      "age_ma": 515,
+      "change": "Published observable is the facet lattice. A 2.5 cm hemisphere with 16000 hexagonal lenses reconstructs to about 266 µm center spacing, an order of magnitude above 23.97 µm."
+    },
+    "successor": {
+      "name": "Fezouata anomalocaridid",
+      "age_interval_ma": [472, 488],
+      "change": "Macroscopic size increases. The cellular wavenumber k_c is fixed by Du, Dv and the Jacobian, so lambda_c stays 2.397e-05 m unless those kinetic parameters change. No successor measurement of that wavelength is published."
+    }
+  },
+  "specimen_image": {
+    "file": "anomalocaris_canadensis_TMP2023_003_0003_tyrrell.jpg",
+    "sha256": "0dcc1da801bddc9bceb3d9f662b3cbc7f82d184da9b05380e2c8e5bd29eb510a",
+    "width": 2820,
+    "height": 4010,
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Anomalocaris_canadensis_(TMP_2023.003.0003),_Royal_Tyrrell_Museum,_Drumheller,_Alberta,_2025-07-13.jpg",
+    "artist": "Chris Woodrich",
+    "catalogue": "TMP 2023.003.0003 (previously ROMIP 51211)",
+    "institution": "Royal Tyrrell Museum, Drumheller",
+    "object": "cast (invert) of Burgess Shale Anomalocaris canadensis, Wuliuan",
+    "commons_length_cm": 20
+  },
+  "does_not_claim": [
+    "That Burgess Shale carbon films preserve a 24 µm pigment lattice.",
+    "That Schnakenberg a, b, Du, Dv were measured in anomalocaridid cornea.",
+    "That the Drosophila switch-and-template R8 circuit operated in A. canadensis.",
+    "That the 20 cm Commons length is a Daley & Edgecombe morphometric."
+  ]
+}
