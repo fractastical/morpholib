@@ -1,0 +1,192 @@
+# Pass 1 audit for slot 3122. Scores are uncalibrated rubric ratings.
+# Overall is the rubric-weighted mean (weights in morphoeval/rubric.yaml).
+
+audit:
+  id: 2026-10-27-aspergillus-nidulans-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent, primary assessor, pass 1)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 67f1491da9b5137f7d8845c371d3acf6d72c7479
+    environment:
+      python: "3.12"
+      numpy: "2.5.4"
+      matplotlib: "Agg"
+      Pillow: "13.0.0"
+      scipy: "1.18.1"
+    note: "Pass 1 checkpoint is replaced with the commit that contains these paths before the knowledge-graph build."
+  supersedes: null
+  supersedes_audit_id: null
+
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: 10.1007/BF00289234
+  adams1998:
+    title: "Asexual Sporulation in Aspergillus nidulans"
+    authors: "Adams TH, Wieser JK, Yu J-H"
+    venue: "Microbiol. Mol. Biol. Rev. 62:35-54 (1998)"
+    doi: 10.1128/MMBR.62.1.35-54.1998
+  clutterbuck1969:
+    title: "A mutational analysis of conidial development in Aspergillus nidulans"
+    authors: "Clutterbuck AJ"
+    venue: "Genetics 63:317-327 (1969)"
+    doi: 10.1093/genetics/63.2.317
+  rittenour2009:
+    title: "Hyphal morphogenesis in Aspergillus nidulans"
+    authors: "Rittenour WR, Si H, Harris SD"
+    venue: "Fungal Biology Reviews 23:20-29 (2009)"
+    doi: 10.1016/j.fbr.2009.08.001
+  trinci1974:
+    title: "A Study of the Kinetics of Hyphal Extension and Branch Initiation of Fungal Mycelia"
+    authors: "Trinci APJ"
+    venue: "J. Gen. Microbiol. 81:225-236 (1974)"
+    doi: 10.1099/00221287-81-1-225
+
+simulations:
+  - id: delphi10000-aspergillus-nidulans-turing-wavelength-s0
+    name: "Aspergillus nidulans Turing onset wavelength at 12.84 µm (nominal 13 µm), Holocene 0 Ma"
+    summary: >
+      Pass 1. Schnakenberg onset wavelength is fixed at 1.284e-05 m (12.84 µm,
+      nominal 13 µm) for the Holocene singleton at 0 Ma. Dispersion Pearson is
+      0.9977. The colony GIF is specimen-conditioned, so specimen-match is 76.
+      Sobel orientation, multi-seed CV, and the alpha measurement row are still open.
+    organism: "Aspergillus nidulans"
+    domain: morphogenesis
+    script: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py
+    output: docs/media/aspergillus_nidulans_turing_wavelength_s0_comparison.png
+    also:
+      - docs/media/aspergillus_nidulans_turing_wavelength_s0_growth.gif
+      - datasets/aspergillus_nidulans_turing_wavelength_s0/aspergillus_nidulans_turing_wavelength_s0_reference.json
+      - datasets/aspergillus_nidulans_turing_wavelength_s0/paper_citations.bib
+      - datasets/aspergillus_nidulans_turing_wavelength_s0/README.md
+    status: evaluated
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - gierer1972
+      - adams1998
+      - clutterbuck1969
+      - rittenour2009
+      - trinci1974
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952): diffusion-driven instability and a critical wavenumber."
+        - "Schnakenberg (1979): the a - u + u^2 v / b - u^2 v kinetics."
+        - "Adams, Wieser and Yu (1998) and Clutterbuck (1969): conidial pigment development in A. nidulans, without a reaction-diffusion wavelength."
+        - "Trinci (1974): radial hyphal-colony expansion."
+      reconstructed_in_script:
+        - "Jacobian, trace, determinant, cross term, discriminant, k_c and λ_c = 1.284e-05 m on a periodic grid with D_v/D_u = 9.295."
+        - "Equal-diffusion ablation, D_v sweep of λ_c, and PDE mode-growth versus the analytical eigenvalue."
+        - "Colony observable I = S * (1 - α + α (0.55 + 0.90 û)) with α = 0.12, revealed by a radial front."
+      transfer_boundary:
+        - "The 13 µm label is the slot detail scale, not a length measured on the colony photograph. The photograph does not resolve 13 µm."
+        - "(u, v) are not identified with the wA polyketide or yA laccase proteins."
+      does_not_claim:
+        - "Does not claim the spiral colony was predicted ab initio. The photograph supplies the macroscopic optical density."
+        - "Does not claim a predecessor chronospecies. The series is 1/1 at 0 Ma; the only comparison is to the 10 µm tier floor."
+    remediation:
+      - "Run the nonlinear integrator from at least three seeds and report the coefficient of variation of the measured wavelength."
+      - "Compare 12-bin Sobel orientation histograms of the specimen and the GIF last frame; the pass-1 KS is on grayscale intensity only."
+      - "Export the α-coupling sweep into measure_morphoeval so parameter expressivity is in the measurement sidecar."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >
+          Schnakenberg kinetics, the steady state, the Jacobian and the onset
+          formula k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v) are implemented
+          directly, and the PDE mode-growth Pearson against Re(σ) is 0.998.
+          The pigment identification and the 12.84 µm length are a transfer
+          onto A. nidulans, so this is not a line-by-line reproduction of a
+          fungus paper.
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [16, 27], note: "Equations (1)–(4) in the module docstring", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [89, 121], note: "Jacobian and Turing report including the four inequalities", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [154, 195], note: "Periodic explicit Euler of the Schnakenberg system", supports: true}
+      specimen-match:
+        value: 76
+        rationale: >
+          The comparison figure places the public-domain colony beside the
+          Otsu mask, the conditioned render, the activator stripes and the
+          flat ablation. The GIF last frame follows the colony because
+          equation (4) multiplies the photograph by a weak carrier (α = 0.12),
+          which is why computer-vision similarity is high. The spiral itself
+          is measured, not generated, so the rubric score stays below the
+          visual similarity number.
+        evidence:
+          - {file: docs/media/aspergillus_nidulans_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Six-panel comparison: specimen, Otsu mask, conditioned render, activator, ablation, dispersion", supports: true}
+          - {file: docs/media/aspergillus_nidulans_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "16-frame 640×480 radial expansion ending on the conditioned colony", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [337, 378], note: "Equation (4) carrier and Trinci-style radial mask", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >
+          Raising D_v shortens λ_c monotonically across 8.50–18, which is the
+          wavenumber control the law claims. Raising α lowers pixel Pearson
+          against the specimen monotonically. The α table is checked in the
+          self-test and is not yet a measurement-sidecar row.
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [263, 273], note: "D_v sweep and monotone-shortening check", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [426, 435], note: "α sweep of specimen Pearson", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >
+          Onset λ_c is 12.84 µm against the nominal 13 µm label. Dispersion
+          Pearson is 0.998 with RMSE 0.014. Specimen pixel Pearson is 0.997
+          against a pure-stripe null near 0. Otsu IoU is 0.982, not 1.
+          Equal-diffusion activator std is lower than the patterned std.
+          Intensity KS is not the 12-bin Sobel histogram, and the wavelength
+          was not repeated across seeds.
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [280, 298], note: "Analytical versus PDE σ(k) Pearson and RMSE on periodic modes", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [312, 330], note: "Otsu mask and IoU on the specimen", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [239, 253], note: "FFT wavelength of the nonlinear activator", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >
+          Seed DOIs were resolved on OpenAlex after the keyword query returned
+          unrelated hits. The colony file is the Commons public-domain
+          macrograph, SHA-256 pinned in the reference JSON. Slot 182 is a
+          different simulation id and is not reused.
+        evidence:
+          - {file: datasets/aspergillus_nidulans_turing_wavelength_s0/paper_citations.bib, lines: [1, 88], note: "Turing, Schnakenberg, Gierer–Meinhardt, Adams, Clutterbuck, Rittenour, Trinci, Riquelme", supports: true}
+          - {file: datasets/aspergillus_nidulans_turing_wavelength_s0/aspergillus_nidulans_turing_wavelength_s0_reference.json, lines: [1, 55], note: "Scale 1.284e-05 m, age 0 Ma, specimen SHA-256 and Commons URL", supports: true}
+          - {file: datasets/aspergillus_nidulans_turing_wavelength_s0/scout_manifest.json, lines: [1, 20], note: "Slot 3122 territory and collision note versus slot 182", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >
+          Docstring equations (1)–(4) match steady_state, jacobian, turing_report,
+          simulate and modulate. The Lean file records the 12840 nm wavelength,
+          the 9.295 diffusion ratio and the 0 Ma singleton series. It does not
+          encode the real-eigenvalue formula, so code-traceability is not complete.
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [16, 27], note: "Numbered equations tied to the integrator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3122_aspergillus_nidulans_turing_wavelength_s0.lean, lines: [14, 52], note: "Five theorems, zero sorry, slot-specific integers", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-aspergillus-nidulans-turing-wavelength-s0.yaml, lines: [16, 55], note: "Law entries point at the Lean theorems and the script", supports: true}
+      repro-package:
+        value: 88
+        rationale: >
+          Seed 3122, grid 84, D_v 9.295 and α 0.12 are module constants.
+          --self-test renders the PNG and the 16-frame GIF and checks the
+          Turing inequalities, the ablation, the monotone sweep, Pearson > 0.98,
+          frame count and resolution. Dependencies are the repo scientific stack.
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [67, 79], note: "Pinned parameters and GIF size", supports: true}
+          - {file: datasets/aspergillus_nidulans_turing_wavelength_s0/README.md, lines: [1, 21], note: "Scale, age, specimen licence and the self-test command", supports: true}
+          - {file: docs/media/aspergillus_nidulans_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "Rendered animation consumed by the self-test", supports: true}
