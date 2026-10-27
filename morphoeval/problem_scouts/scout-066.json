@@ -1,0 +1,324 @@
+{
+  "scout": "scout-066",
+  "ground": "predictions",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "id": "WAVEPIPE-CLK-RECIPE-01",
+      "title": "Prototype paired period-vs-extent extraction on simulated spark_tracks before touching ZF-CLK-01 / XT-CLK-01 held-out somitogenesis data",
+      "gap": "Registered resolutions for ZF-CLK-01 and XT-CLK-01 name a missing paired series (segmentation-clock period T plus somite length S at controlled wavefront speed u). The repo has no extractor that turns spark_tracks.csv into such a pair; without a validated recipe, agents may confuse Ca²⁺ poke-wave kinematics with the segmentation clock.",
+      "done": "A new JSON sidecar (under morphoeval/ or predictions/resolutions/) lists, for at least two generate_simulated_data.py scenarios with deliberately different WaveConfig.speed_px_per_s, the numeric pair (T_hat, S_hat) where T_hat is the median inter-cluster onset interval (seconds) and S_hat is the 90th-percentile AP extent (embryo-normalized via ap_norm or embryo_length_px) of post-poke clusters; the file also records Pearson r between T_hat and S_hat across scenarios and states whether |r| >= 0.9. Scorer passes if the sidecar exists, cites input CSV paths, and r is computed from cluster columns produced by spark_tracks_to_clusters.py (not hand-entered).",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --scenario two_embryos_head_head --output /tmp/sim_slow.csv --duration 30.0 && python3 wave-vector-analysis/simulations/generate_simulated_data.py --scenario two_embryos_head_head --output /tmp/sim_fast.csv --duration 30.0 --wave-speed 8.0 && python3 wave-vector-analysis/spark_tracks_to_clusters.py /tmp/sim_slow.csv /tmp/sim_slow_clusters.csv && python3 wave-vector-analysis/spark_tracks_to_clusters.py /tmp/sim_fast.csv /tmp/sim_fast_clusters.csv && python3 wave-vector-analysis/analyze_experimental_hypotheses.py (new thin wrapper or one-off script allowed as new file) to emit the sidecar.",
+      "deciding_data": "In repo: wave-vector-analysis/simulations/generate_simulated_data.py scenarios and spark_tracks_to_clusters.py schema; no real somitogenesis TIFFs required for this prototype step.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json and xenopus.json (2026-10-26 OpenAlex literature pass) bounded ZF-CLK-01/XT-CLK-01 but did not tabulate any imaging-derived T,S pair; docs/open-problems.json registered_prediction_followups repeats the same missing-evidence text.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Named parser→cluster→analysis scripts already implement the spark-track chain; only a small derived-metrics export is missing."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Simulated CSVs are generated locally with no external fetch."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Sidecar must contain r and scenario paths checkable against cluster CSV columns."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Two simulation runs plus clustering finish in minutes on the repo Python stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as new files only (sidecar + optional helper script)."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One agent loop can run sims, cluster, and write the sidecar."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt registered this simulation-first extraction route for clock predictions."
+        }
+      }
+    },
+    {
+      "id": "ZF-CLK-01",
+      "title": "ZF-CLK-01 decisive series is somitogenesis clock/somite morphometry — not Ca²⁺ wave-vector outputs (wavepipe negative routing)",
+      "gap": "Outcome still partially_resolved because no paired her1-period and somite-length measurements under controlled wavefront speed exist in one tabulated source; wave-vector-analysis measures injury-evoked Ca²⁺ spark fronts, not Her1 oscillation period or somite boundary length.",
+      "done": "A scorer-checked markdown or JSON bound file states decisive_for_ZF-CLK-01: false for every metric exportable from calibrate_from_real_data.py on any in-repo spark_tracks CSV (mean_speed, decay_rate, ap_mean, etc.) and lists the still-missing fields: T_clock perturbation levels and matched S multipliers within ±5 points of x0.80–x1.20. Pass requires explicit false flag plus at least one numeric wavepipe metric copied from calibrate_from_real_data.py output to prove the pipeline ran.",
+      "tool_route": "python3 wave-vector-analysis/simulations/calibrate_from_real_data.py wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv --output /tmp/wv_calib.json (add clusters path if present) && document mismatch vs datasets/danio_rerio_clock_wavefront/protein_states.json worked_sensitivity.",
+      "deciding_data": "In repo: spark_tracks_subset.csv smoke tracks, clock_wavefront sidecar sensitivity table; missing: zebrafish live her1 reporter + somite length under controlled u (ZFIN-linked literature cited in predictions/resolutions/zebrafish.json).",
+      "prior_attempts": "predictions/resolutions/zebrafish.json ZF-CLK-01 (2026-10-26): literature bound proportional architecture but explicitly NOT the multiplier test; protein_states.json claim_boundary marks Her1 period as literature_required.",
+      "factors": {
+        "tool_fit": {
+          "score": 12,
+          "why": "Wavepipe can only produce a formal negative bound, not the deciding T,S series."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "Smoke spark CSV exists; decisive zebrafish somitogenesis series do not."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Boolean decisive_for plus enumerated missing columns is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Calibration script is lightweight on the smoke CSV."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Bound file can be a new artifact only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single sitting: run calibrate + write bound."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Literature pass did not already execute this wavepipe negative certificate."
+        }
+      },
+      "alternate_lens": "literature (scout_literature.py / OpenAlex) to mine paired T,S tables; simulation (nakamasu clock-wavefront model) for in-silico S=u·T perturbations."
+    },
+    {
+      "id": "XT-CLK-01",
+      "title": "XT-CLK-01 needs Xenopus tropicalis somitogenesis T,S — wavepipe Xenopus laevis Ca²⁺ catalog is the wrong modality unless explicitly bridged",
+      "gap": "Same paired clock-period and somite-length gap as ZF-CLK-01; resolutions note Xenopus hes/clock framework but no tabulated perturbation series. Wave-vector pipeline targets X. laevis poke-evoked Ca²⁺ waves (see wave-vector-analysis/simulations/catalog.json), not X. tropicalis somite morphometry.",
+      "done": "Sidecar JSON maps XT-CLK-01 missing fields to (a) metrics wavepipe could supply after TIFF ingest (mean_cluster_speed, onset_lag_s from wave_laterality_analysis.py) and (b) metrics that remain absent until somitogenesis literature extraction; pass if (b) still includes T_clock and S multipliers and no row claims they were computed from spark_tracks alone.",
+      "tool_route": "After optional ingest: python3 wave-vector-analysis/wave-vector-tiff-parser.py <tiff_dir> 0 --fps 1.0 --csv spark_tracks.csv && python3 wave-vector-analysis/spark_tracks_to_clusters.py spark_tracks.csv vector_clusters.csv && python3 wave-vector-analysis/wave_laterality_analysis.py --catalog-dir wave-vector-analysis/analysis_results/wave_catalog (when catalog exists).",
+      "deciding_data": "Not in cloud checkout: datasets/frog_embryo_data_processed and analysis_results/wave_catalog referenced by wave-vector-tiff-parser.py and package_science_deliverables.py; somitogenesis decision data remain Xenbase literature (predictions/resolutions/xenopus.json).",
+      "prior_attempts": "predictions/resolutions/xenopus.json XT-CLK-01 (2026-10-26): OpenAlex pass mirrored ZF-CLK-01 partial outcome; no wavepipe batch was run.",
+      "factors": {
+        "tool_fit": {
+          "score": 10,
+          "why": "Pipeline can quantify Ca waves but not somite length or hes period without new bridging assumptions."
+        },
+        "data_in_hand": {
+          "score": 4,
+          "why": "Primary TIFF catalog and wave_laterality.csv are absent from this checkout."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Sidecar field checklist vs XT-CLK-01 quantitative_expectation is objectively scorable."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Full catalog rollup is hours of CPU once TIFFs are mounted; mapping alone is minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Mapping artifact can be new-only."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Verdict on XT-CLK-01 itself waits on somite data; routing verdict is one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of the modality-mismatch route."
+        }
+      },
+      "alternate_lens": "literature for Xenopus somitogenesis tables; registry lens to pre-register any future TIFF hash lock before unblinding."
+    },
+    {
+      "id": "WAVE-LAT-SERIES-01",
+      "title": "Missing committed wave_laterality.csv quantitative series for amphibian inter-embryo coupling (prediction follow-up infrastructure)",
+      "gap": "docs/open-problems.json lists five partially_resolved predictions lacking quantitative series; separately, wave-vector-analysis/wave_laterality_analysis.py defines testable series (onset_lag_s, neighbor_mean_front_speed, bidirectional_stim) used for calcium claims, but wave-vector-analysis/analysis_results/wave_catalog/ is empty in this repo snapshot, so those series are not reproducible here.",
+      "done": "wave_laterality.csv exists under morphoeval/artifacts/ or wave-vector-analysis/analysis_results/wave_catalog/ with >=10 rows, required columns onset_lag_s and neighbor_has_wave, and a SHA256 comment header from provenance.record_run; scorer verifies row count and column presence without interpreting biology.",
+      "tool_route": "python3 wave-vector-analysis/batch_wave_catalog.py <video_root> && python3 wave-vector-analysis/wave_laterality_analysis.py --catalog-dir wave-vector-analysis/analysis_results/wave_catalog (see SPARK_ANALYSIS_README.md steps 4–6).",
+      "deciding_data": "Named public/source: Levin-lab Xenopus embryo Ca²⁺ Box videos referenced in wave-vector-analysis/export_calcium_claims_to_pkg.py and morphoeval verify_image_fitness slug xenopus-ca2-wave-vectors (upstream TIFFs not vendored in morpholib).",
+      "prior_attempts": "package_science_deliverables.py lists expected wave_catalog/wave_laterality.csv deliverables; cloud VM checkout lacks them; prediction resolution pass did not generate this series.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "wave_laterality_analysis.py is the as-is named exporter for the quantitative series."
+        },
+        "data_in_hand": {
+          "score": 5,
+          "why": "Catalog videos are external to the git tree in this environment."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "CSV schema and row-count checks are taste-free."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Rollup plus laterality is batch CPU once TIFFs are available."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Outputs can live in new artifact paths; ingest may need LFS mount."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Blocked on data mount; one sitting after videos are present."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior failed attempt at this export for prediction follow-ups."
+        }
+      }
+    },
+    {
+      "id": "ZF-HH-01",
+      "title": "ZF-HH-01 gradient-shape outcome needs paired ptc1/ptc2 domain assays — not spark-track spatial spread",
+      "gap": "Lipidation fact resolved; missing paired ptc-expression domain widths/peaks for lipidation-perturbed vs wild-type zebrafish Shh (predictions/resolutions/zebrafish.json). Spark_tracks ap_norm and dist_from_poke_px describe Ca²⁺ injury waves, not Shh morphogen readouts.",
+      "done": "Table with >=2 conditions (WT vs lipidation-perturbed) each with numeric distal ptc domain boundary and near-source peak intensity from the same assay paper; scorer checks four numbers present. Wavepipe pass/fail for this problem is N/A unless a new CSV explicitly cites in situ quantification (not parser output).",
+      "tool_route": "None decisive in wavepipe; optional negative check: python3 wave-vector-analysis/check_data_availability.py <tracks.csv> showing no ptc columns.",
+      "deciding_data": "Public: ZFIN shha and HHAT-inhibition literature named in prediction_registry.json; in-repo UniProt Q92008 sidecar only covers lipidation state.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json ZF-HH-01 (2026-10-26): upgraded to partially_resolved; doi:10.1039/C4SC01600A establishes lipidation requirement but not registered gradient-shape claim.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Spark-track chain lacks Shh/ptc readouts; only documents absence."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "Protein state in repo; decisive imaging quantification is not."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Four-number table is an objective done criterion."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "Literature extraction dominates; wavepipe piece is trivial."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New table file only."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Depends on literature mining, not one parser run."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Wavepipe route not previously attempted for ZF-HH-01."
+        }
+      },
+      "alternate_lens": "literature for ptc domain measurements; vision for quantifying published in situ images."
+    },
+    {
+      "id": "ZF-VTX-01",
+      "title": "ZF-VTX-01 needs EVL shape-index time series — vertex packing is outside spark-track → cluster → hypothesis plots",
+      "gap": "Missing cell shape-index series across a zebrafish epithelial jamming transition near p0*=3.813 (predictions/resolutions/zebrafish.json). Embryo masks in wave-vector-analysis improve segmentation for Ca imaging but do not compute vertex-model shape index p0.",
+      "done": "CSV with >=20 time-ordered rows of shape index p0 computed from segmented cell polygons; scorer checks any value falls in [3.76, 3.87] to confirm or refute the registered band (or documents max/min if outside).",
+      "tool_route": "Not wavepipe: create_size_constrained_masks.py produces masks only; no shape-index stage exists in spark_tracks_to_clusters.py or generate_all_hypothesis_plots.py.",
+      "deciding_data": "Public epiboly/EVL imaging (OpenAlex search in resolutions found no tabulated series); in-repo law constant in datasets/danio_rerio_vertex_packing only.",
+      "prior_attempts": "predictions/resolutions/zebrafish.json ZF-VTX-01 (2026-10-26): partial as forecast; morphoeval/problem_scouts/leaderboard.json ranks ZF-VTX-01 with generic tool_fit 20 but not wavepipe-specific evidence.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Mask utilities exist; shape-index metric is not in the hypothesis-plot chain."
+        },
+        "data_in_hand": {
+          "score": 7,
+          "why": "Law value and citations in repo; cell polygon series absent."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Band membership on a numeric series is objective."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Image segmentation workload once source frames are fetched."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New CSV from new analysis script acceptable."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Multi-hour if images are available."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No wavepipe attempt recorded for vertex packing."
+        }
+      },
+      "alternate_lens": "vision (verify_image_fitness / cell segmentation) on published epiboly micrographs."
+    },
+    {
+      "id": "DM-MUR-NEG-01",
+      "title": "DM-MUR-NEG-01 tracheal diameter exponent — Murray law on tubes, not on Ca²⁺ wave branching",
+      "gap": "Missing tabulated Drosophila parent/daughter tracheal diameters to fit Murray exponent against 2.8–3.2 band (predictions/resolutions/drosophila.json). Vector_clusters summarize planar spark trajectories, not luminal radii.",
+      "done": "CSV with >=8 branch rows (r0,r1,r2 in µm or px with scale) plus fitted exponent and 95% CI; scorer checks exponent outside [2.8,3.2] confirms negative prediction or inside refutes.",
+      "tool_route": "Wavepipe not applicable; spark_tracks_to_clusters.py path_length and branch counts are not luminal morphometry.",
+      "deciding_data": "Public tracheal morphometry literature (OpenAlex pass in drosophila.json cited ant/insect Murray violations but not Drosophila-specific tables).",
+      "prior_attempts": "predictions/resolutions/drosophila.json DM-MUR-NEG-01 (2026-10-26): bounded via comparative insect literature, not Drosophila diameter fit.",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "why": "No repo script maps spark clusters to tracheal tube radii."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Murray law and negative rationale in dataset sidecar; diameters absent."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Exponent interval test is objective."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Fit is quick once diameters are tabulated."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New diameter table file only."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Literature extraction bound."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Wavepipe route not attempted."
+        }
+      },
+      "alternate_lens": "literature extraction; measure_outputs on published morphometry figures."
+    },
+    {
+      "id": "SIM-AB-DELTA-SERIES-01",
+      "title": "Export deterministic compare-ab delta curves as a quantitative series artifact for prediction-style sensitivity reporting",
+      "gap": "Registered clock predictions cite discrete S multipliers for ±10/20% T changes; wave-vector simulations support seed-locked Lane A vs B comparisons (--compare-ab) emitting paired delta metrics, but no committed JSON series links those outputs to the prediction registry partial follow-up workflow.",
+      "done": "JSON file lists, for each compare-ab pair in wave-vector-analysis/simulations/sim_paired_ab_summary.json schema, numeric deltas for active_tracks, total_area, spatial_spread, and secondary_embryo_recruitment with both lane CSV paths and RNG seed; scorer verifies >=1 pair and all four delta keys present.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_head_head two_embryos_tail_tail --output wave-vector-analysis/simulations/sim_paired_ab_lane_a.csv && python3 wave-vector-analysis/spark_tracks_to_clusters.py <lane_csvs> && python3 wave-vector-analysis/simulations/visualize_simulation.py --compare --real-csv <lane_a> (paired mode per README).",
+      "deciding_data": "In repo: simulations/catalog.json claim_boundary, sim_paired_ab_summary.json template, generate_simulated_data.py --compare-ab.",
+      "prior_attempts": "predictions/score_resolutions.py tallies partials but did not attach simulation delta series; META-RES-03 refuted on count (five partials after ZF-HH-01) without wavepipe artifacts.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "compare-ab and visualize_simulation.py already implement paired quantitative deltas."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Simulation entrypoints and summary stub live in repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "JSON keys and lane paths are mechanically verifiable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Sub-hour batch on standard hardware."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New JSON under morphoeval/artifacts acceptable."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One loop to regenerate paired lanes and dump metrics."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Partial sim summary exists but full delta export for prediction follow-ups not done; minor overlap risk only."
+        }
+      }
+    }
+  ]
+}
