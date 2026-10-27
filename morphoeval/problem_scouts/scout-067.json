@@ -1,0 +1,280 @@
+{
+  "scout": "scout-067",
+  "ground": "predictions",
+  "lens": "knowledge",
+  "candidates": [
+    {
+      "id": "PS-KG-01",
+      "title": "Poson prediction resolutions are scored in git but unpublished in the Project Delphi KG",
+      "gap": "All 14 outcome predictions and four META-RES rows are scored in predictions/prediction_registry.json with evidence in predictions/resolutions/*.json, but there is no morphoeval/kg/* audit directory, no build_morphoeval_kg.py output, and no signed https://w3id.org/np/RA… URIs (contrast nanopubs/thompson_predictions/, 70+ production nanopubs). The resolution pass is therefore an unsigned, unranked claim set relative to the Levin-lab knowledge graph.",
+      "done": "A new audit under morphoeval/audits/2026-10-26-poson-prediction-resolution-audit.yaml compiles to morphoeval/kg/2026-10-26-poson-prediction-resolution-audit/ with one pk:Claim (+ assessments) per prediction_id and META-RES id; python3 morphoeval/sign_morphoeval.py … --publish test succeeds; node morphoeval/check_signed.mjs morphoeval/kg/2026-10-26-poson-prediction-resolution-audit/signed/*.trig exits 0; published.json lists ≥18 entries whose prov:wasDerivedFrom includes predictions/prediction_registry.json and the matching resolutions batch file.",
+      "tool_route": "Author morphoeval/audits/2026-10-26-poson-prediction-resolution-audit.yaml (inputs: predictions/prediction_registry.json, predictions/resolutions/{inrepo-quick,zebrafish,drosophila,xenopus}.json) → python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-poson-prediction-resolution-audit.yaml --conform → python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-26-poson-prediction-resolution-audit --publish test → node morphoeval/check_signed.mjs morphoeval/kg/2026-10-26-poson-prediction-resolution-audit/signed/*.trig",
+      "deciding_data": "In repo: predictions/prediction_registry.json, predictions/resolutions/*.json, docs/open-problems.json registered_prediction_followups (for partial gaps).",
+      "prior_attempts": "2026-10-26 local resolution pass (predictions/resolutions/*.json, resolved_by notes 'cloud agents blocked by Cursor GitHub App gate; orchestrator batches resolved in-session') scored outcomes via predictions/score_resolutions.py but did not touch morphoeval/kg/. docs/open-problems.json lists the five partial follow-ups; no prior KG publish attempt recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "build_morphoeval_kg.py + sign_morphoeval.py + check_signed.mjs are the named publish path; no other repo tool mints signed Delphi claims from existing resolution JSON."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Every outcome verdict, DOI, and missing-data string already lives in the four resolution files and locked registry."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Scorer checks directory existence, signed file count ≥18, check_signed.mjs exit 0, and published.json URIs without human judgment."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "YAML audit + RDF build + test-registry sign is minutes on the cloud stack; needs ~/.nanopub/profile.yml only."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit YAML + new morphoeval/kg/<audit-id>/ tree only; registry and resolution JSON stay read-only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One MorphoEval publish loop from existing text evidence; no literature mining or image measurement."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded attempt to sign poson prediction resolutions; score_resolutions.py is a different route (local JSON only)."
+        }
+      }
+    },
+    {
+      "id": "PS-KG-02",
+      "title": "Five partial predictions: missing quantitative series exist as prose, not queryable pk:evidenceAgainst",
+      "gap": "ZF-HH-01, ZF-CLK-01, ZF-VTX-01, DM-MUR-NEG-01, and XT-CLK-01 are partially_resolved with exact missing_evidence strings in docs/open-problems.json and predictions/resolutions/*.json, but none are typed as pk:evidenceAgainst / pk:EvidenceItem triples linked to pkr:claim/prediction/<id>, so Nanodash and pk:evidenceAgainst queries cannot route follow-up agents to the precise series gap.",
+      "done": "The PS-KG-01 audit (or a sibling overall assessment) includes five pk:evidenceAgainst items whose dct:description matches the resolution missing-data sentence verbatim and whose prov:wasDerivedFrom pins predictions/resolutions/<batch>.json line ranges; a SPARQL or Nanodash query for each prediction_id returns exactly one evidenceAgainst node naming the missing series (ptc domains, paired T+S, shape-index series, tracheal diameters, Xenopus paired T+S).",
+      "tool_route": "Same as PS-KG-01, with audit overall.remediation / evidenceAgainst entries sourced from docs/open-problems.json registered_prediction_followups.items[*].missing_evidence → python3 morphoeval/build_morphoeval_kg.py … --conform → sign + check_signed.mjs",
+      "deciding_data": "In repo: docs/open-problems.json lines 307–339; predictions/resolutions/zebrafish.json (ZF-HH-01, ZF-CLK-01, ZF-VTX-01), drosophila.json (DM-MUR-NEG-01), xenopus.json (XT-CLK-01).",
+      "prior_attempts": "Resolution pass established bounds and named missing data (2026-10-26); morphoeval/problem_scout_100.py seed board lists ZF-VTX-01 and DM-MUR-NEG-01 under measure/vision lenses, not as KG gaps. No KG evidenceAgainst publish yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Only build_morphoeval_kg emits pk:evidenceAgainst from audit remediation/evidence entries; signing makes gaps public negative knowledge."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Missing-series text is already authored in open-problems and resolution JSON; no external fetch required to encode it."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done when five signed nanopubs (or one bundle) contain evidenceAgainst literals matching the five registry ids; string equality checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Encoding prose into audit YAML is O(1) per partial row; build+sign same as PS-KG-01."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit/kg files only; does not edit registry or resolutions."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Completes in the same publish sitting as PS-KG-01 if batched in one audit."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior signed evidenceAgainst for these five ids."
+        }
+      }
+    },
+    {
+      "id": "PS-KG-03",
+      "title": "META-RES-02 and META-RES-03 refutations are tallied in JSON but unassessed in the knowledge graph",
+      "gap": "Registry scoring refuted META-RES-02 (≥10 fully decided; actual 9) and META-RES-03 (exactly 4 partial; actual 5 because ZF-HH-01 was harder_than_predicted). predictions/scoring.note explains why, but there are no pk:Claim / pk:hasAssessment nanopubs for the meta-resolvability forecasts, so the refutation is not a signed, queryable Delphi verdict.",
+      "done": "Two signed claim nanopubs (META-RES-02, META-RES-03) with pk:hasVerdict refuted, pk:hasEvidence citing registry tallies fully_decided=9 and partially_resolved=5, and pk:hasEvidence linking ZF-HH-01 partial upgrade as the fifth partial; Nanopub Query resolves both head URIs.",
+      "tool_route": "Extend morphoeval/audits/2026-10-26-poson-prediction-resolution-audit.yaml with meta_resolvability section (inputs: prediction_registry.json meta_resolvability_predictions + scoring.tallies) → python3 morphoeval/build_morphoeval_kg.py … → sign_morphoeval.py --publish test → check_signed.mjs",
+      "deciding_data": "In repo: predictions/prediction_registry.json meta_resolvability_predictions and scoring.tallies; predictions/resolutions/zebrafish.json ZF-HH-01 resolvability_verdict harder_than_predicted.",
+      "prior_attempts": "predictions/score_resolutions.py (2026-10-26) computed meta outcomes locally; META-RES-01 and META-RES-04 confirmed in JSON only. No morphoeval audit references META-RES ids.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Meta rows are claims about resolvability; Delphi template assessments are exactly build_morphoeval_kg output."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Tallies and refutation rationale are fully specified in the locked registry scoring block."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Check signed trig for META-RES-02/03 labels, verdict refuted, and evidence literals 9 and 5."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Two extra claim nodes in the same audit build."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New files under morphoeval/audits and morphoeval/kg only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Same single publish loop as PS-KG-01."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Meta refutation never published to KG; local score_resolutions route is not a duplicate signed publish."
+        }
+      }
+    },
+    {
+      "id": "PS-KG-04",
+      "title": "ZF-HH-01 resolvability miss (harder_than_predicted) has no ranked assessment in the graph",
+      "gap": "Among 14 resolutions, only ZF-HH-01 carries resolvability_verdict harder_than_predicted (expected public-source decision at conf 0.70; gradient-shape outcome did not resolve). That calibration error is recorded in predictions/resolutions/zebrafish.json but not as an pk:LLMClaimAssessment on the separate resolvability forecast with pk:hasScore / pk:hasVerdict bands.",
+      "done": "Signed assessment nanopub pkr:assessment/poson-ZF-HH-01-resolvability with pk:assessmentType referencing resolvability forecast, pk:hasVerdict harder_than_predicted, pk:hasEvidence for bound (lipidation confirmed) vs pk:evidenceAgainst for missing ptc1/ptc2 paired domains; overall resolvability-calibration claim states 1/14 harder-than-predicted.",
+      "tool_route": "morphoeval/audits/2026-10-26-poson-prediction-resolution-audit.yaml simulation or claim row for ZF-HH-01 with dual assessments (outcome partial + resolvability harder_than_predicted) → build_morphoeval_kg.py → sign_morphoeval.py → check_signed.mjs",
+      "deciding_data": "In repo: predictions/resolutions/zebrafish.json ZF-HH-01; predictions/prediction_registry.json resolvability block for ZF-HH-01.",
+      "prior_attempts": "2026-10-26 zebrafish batch resolution; META-RES-03 refutation indirectly cites the fifth partial but does not rank resolvability accuracy per row.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Ranking resolvability vs outcome is a rubric-style pk:LLMClaimAssessment job, not literature or measurement."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Verdict text and evidence split already written in resolution JSON."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Signed trig must contain harder_than_predicted and the exact missing-data phrase about ptc1/ptc2 domains."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "One extra assessment in the batch audit."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit/kg artifacts only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Batch with PS-KG-01 in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No signed resolvability assessment for ZF-HH-01 exists."
+        }
+      }
+    },
+    {
+      "id": "PS-KG-05",
+      "title": "XT-SHH-01 tropicalis Shh lipidation: by-similarity evidence strength is confirmed in JSON but unweighted in KG",
+      "gap": "XT-SHH-01 was confirmed using reviewed X. laevis Q92000 (ECO:0000250 by similarity), while the repo link A0A803JKD3 remains unreviewed with no lipidation; predictions/resolutions/xenopus.json notes the caveat, but no pk:weightOfEvidence or pk:context boundary is published, so the claim reads as fully confirmed rather than proxy-graded.",
+      "done": "Signed claim nanopub for XT-SHH-01 with pk:context documenting laevis proxy accession Q92000, pk:weightOfEvidence in a documented lower band than DM-HH-01/DM-WG-01 direct UniProt rows, and pk:evidenceAgainst listing outstanding tropicalis-reviewed experimental annotation as the remaining falsifier.",
+      "tool_route": "Audit claim row XT-SHH-01 with claim_boundary.transfer_boundary + weightOfEvidence in morphoeval/audits/2026-10-26-poson-prediction-resolution-audit.yaml → python3 morphoeval/build_morphoeval_kg.py … → sign_morphoeval.py --publish test → check_signed.mjs",
+      "deciding_data": "In repo: predictions/resolutions/xenopus.json XT-SHH-01; sequences/sequence_links.json xenopus_tropicalis shh; UniProt ids cited in registry evidence_snapshot.",
+      "prior_attempts": "Xenopus batch resolution 2026-10-26 (live UniProt REST); no nanopub publish. Outcome confirmed in registry without KG weighting.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Evidence grading and claim boundaries are first-class build_morphoeval_kg fields (pk:weightOfEvidence, claim_boundary)."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Proxy accession and caveat text already in resolution evidence; optional one UniProt REST refresh is a named public fetch."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Signed trig must include Q92000, by-similarity wording, and weightOfEvidence numeric field below fully direct-evidence rows."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Single claim row; build+sign only."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit/kg files; registry read-only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One claim in the batch publish loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior signed XT-SHH-01 claim with weight boundary."
+        }
+      }
+    },
+    {
+      "id": "PS-KG-06",
+      "title": "Poson prediction registry lacks a cryptographic preregistration nanopub chain (unlike Thompson FishShapes blind)",
+      "gap": "predictions/prediction_registry.json was registered 2026-10-26 before resolutions, but unlike Thompson blind prereg (nanopub RAilN4nb… locking SHA-256 before unblinding), there is no signed preregistration nanopub with registry hash + commit pin, and no outcome nanopubs with prov:wasDerivedFrom that prereg head. Resolution evidence is therefore not cryptographically chained to registration.",
+      "done": "Retroactive prereg nanopub (test registry) asserts SHA-256 of predictions/prediction_registry.json at commit <registration-pin> and registered_on 2026-10-26; outcome bundle nanopub(s) from PS-KG-01 link prov:wasDerivedFrom prereg URI; check_signed.mjs passes; published.json records prereg head IRI distinct from outcome IRIs.",
+      "tool_route": "morphoeval/audits/2026-10-26-poson-prediction-prereg-audit.yaml (hash lock registry at fixed commit) → build_morphoeval_kg.py → sign_morphoeval.py --publish test; then PS-KG-01 audit with prov:wasDerivedFrom prereg → build → sign → check_signed.mjs (pattern mirrors thompson_predictions prereg/outcome pair in docs/thompson_1917_fish_transformations_manuscript.tex)",
+      "deciding_data": "In repo: predictions/prediction_registry.json; git history for registration commit; template reference nanopubs/thompson_predictions published_manifest_prod.txt prereg entry.",
+      "prior_attempts": "predictions/build_prediction_registry.py documents blind discipline; score_resolutions.py fills scoring fields only. No poson prereg nanopub in nanopubs/ or morphoeval/kg/.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Prereg/outcome chains are signed nanopub workflows; build_morphoeval_kg compiles the claims, sign_morphoeval seals them."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Registry file and resolutions exist; registration commit must be pinned from git log (one lookup)."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Verifier checks prereg trig contains registry SHA-256 match and outcome trig prov:wasDerivedFrom prereg IRI."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Two audit builds + signs; no wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audits/kg dirs only; registry remains immutable."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Two-step sign chain in one sitting if audits are prepared together."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Thompson prereg pattern exists but not applied to poson registry; not refuted, just never attempted."
+        }
+      }
+    },
+    {
+      "id": "PS-KG-07",
+      "title": "Close ZF-CLK-01 by mining paired clock-period and somite-length measurements (wrong lens for knowledge scout)",
+      "gap": "ZF-CLK-01 remains partially_resolved for lack of a tabulated paired T+S series under controlled wavefront (predictions/resolutions/zebrafish.json). That decisive gap is quantitative literature/data extraction, not an unsigned claim in the KG.",
+      "done": "A CSV morphoeval/measurements/poson-ZF-CLK-01-paired-T-S.csv with ≥3 rows (condition, T_period_min, somite_length_um, wavefront_control_note, DOI) and a script check that S/T ratios fall within ±5 points of registered multipliers for ≥2 perturbations — outside the knowledge lens.",
+      "tool_route": "Not knowledge: scout_literature.py or manual OpenAlex extraction → new sidecar CSV; optionally later ingested via measure_outputs.py / audit measurements YAML. Knowledge lens only publishes the already-known gap (PS-KG-02), not the series itself.",
+      "deciding_data": "Named public: zebrafish somitogenesis literature (doi:10.1371/journal.pbio.0050150, doi:10.1371/journal.pbio.1001364 cited in resolutions); not tabulated in repo.",
+      "prior_attempts": "2026-10-26 resolution bound architecture only; morphoeval/problem_scout_100.py seed assigns ZF-CLK-01 tool_fit 17 to registry/measure route, not KG.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "build_morphoeval_kg cannot create the missing measurements; literature or measure_outputs lens must supply the series."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "Papers are named but paired numbers are not in repo or a single public table."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "CSV row count and ratio arithmetic are machine-checkable once data exist."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Literature mining hours, not KG build."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New CSV/measurement files possible without touching registry."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Multi-paper extraction unlikely in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Quantitative close route not refuted; simply not attempted."
+        }
+      }
+    }
+  ]
+}
