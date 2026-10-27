@@ -383,6 +383,29 @@ def build_morphoswarm(data: dict, out_dir: Path, pred: dict | None = None) -> No
                      'These five are open precisely where the resolution record says the decisive series does not yet exist.</p>' + pcards)
     else:
         followups = ""
+    la_path = out_dir.parent / "predictions" / "live_arguments.json"
+    if la_path.exists():  # live-arguments candidates: Delphi-score before registering or attempting
+        la = json.loads(la_path.read_text())
+        feed["live_arguments"] = {
+            "note": "Contested literature questions (≥2 camps) mapped to repo datasets, genome tiers and the measurement that would settle each. Candidates only: Delphi-score the probability (recorded on the graph edge), then register, then score. Settled halves (e.g. LA-01) must not be re-litigated.",
+            "source": "predictions/live_arguments.json",
+            "items": [{"id": a["id"], "question": a["question"], "argument_status": a["argument_status"],
+                       "camps": [c["side"] for c in a["camps"]],
+                       "related_datasets": a["related_datasets"], "genome_tier": a["species"]["genome_tier"],
+                       "settling_measurement": a["settling_measurement"],
+                       "candidate_confidence": a["candidate_prediction"]["proposed_resolvability_confidence"]}
+                      for a in la["arguments"]]}
+        (out_dir / "open-problems.json").write_text(json.dumps(feed, indent=2) + "\n")
+        lacards = "".join(
+            f'<div class="card" id="{a["id"]}"><div class="row"><b>{a["id"]} · {a["species"]["name"]}</b>'
+            f'<span class="badge" style="background:#5A6CC0">LIVE ARGUMENT · CANDIDATE</span></div>'
+            f'<p class="small"><b>Question:</b> {a["question"]}</p>'
+            f'<p class="small"><b>Camps:</b> {" vs. ".join(c["side"] for c in a["camps"])}</p>'
+            f'<p class="small"><b>Settling measurement:</b> {a["settling_measurement"]}</p>'
+            f'<p class="small mut">Datasets: {", ".join(a["related_datasets"])} · Tier {a["species"]["genome_tier"]} · Source: predictions/live_arguments.json</p></div>'
+            for a in la["arguments"])
+        followups += ('<h2 style="font-size:18px">Live arguments — candidates for registration</h2>'
+                      '<p class="small">Contested questions mapped to datasets on 2026-10-26. First task on any of these is a Delphi probability score recorded on its graph edge — not an attempt.</p>' + lacards)
     html = MORPHOSWARM_TEMPLATE.replace("/*__CARDS__*/", "\n".join(cards)).replace("/*__PRED_FOLLOWUPS__*/", followups)
     (out_dir / "morphoswarm.html").write_text(html)
     print(f"wrote {out_dir / 'morphoswarm.html'} and {out_dir / 'open-problems.json'} ({len(problems)} open problems)")

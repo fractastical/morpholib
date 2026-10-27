@@ -1,0 +1,170 @@
+{
+  "schema_version": "live-arguments-1.0",
+  "created": "2026-10-26",
+  "purpose": "Map LIVE scientific arguments (contested questions with identifiable camps in the literature) to the repo datasets, genome tiers and knowledge-graph records that could settle them. An entry here is NOT a finding and NOT a registered prediction: it is a candidate for one. Promotion discipline: candidate -> Delphi-score its probability (recorded on the problem-graph edge, per the 2026-10-26 record-every-action rule) -> register the prediction before scoring -> resolution record -> nanopub.",
+  "selection_rule": "An argument qualifies only if (a) at least two identifiable camps disagree in print, (b) at least one repo dataset bears on it, (c) the species has genome tier A or B (assembly + gene annotation; see organism census), and (d) a named measurement or public record could in principle settle it. Arguments the literature has already settled are excluded or marked partly_settled with the live remainder stated.",
+  "genome_tiers": {
+    "A": "assembly + curated annotation + UniProt protein states + expression/phenotype atlas + mutant literature (Danio rerio GRCz11/ZFIN, Drosophila melanogaster BDGP6/FlyBase, Xenopus tropicalis UCB_Xtro_10/Xenbase, Mus musculus GRCm39/MGI)",
+    "B": "assembly + gene models, thin atlas/mutant layer (e.g. Bos taurus ARS-UCD2.0, Astyanax, Gasterosteus)",
+    "C": "congeneric transfer only, true-ortholog gated",
+    "D": "no DNA (fossil bracketing only) -- excluded from this map"
+  },
+  "arguments": [
+    {
+      "id": "LA-01",
+      "question": "How is the zebrafish BMP dorsoventral gradient formed: Chordin-mediated shuttling, regulated free diffusion/source-sink, or ECM/HSPG-shaped diffusion?",
+      "argument_status": "partly_settled",
+      "settled_part": "Repo prediction ZF-TUR-01 (scored 2026-10-26): free-diffusion size prior D_chd/D_bmp2b = 0.759 (mature-chain 0.51) is violated by published evidence; Chordin-mediated transport is required. Remaining live part: does the BMP signalling range SCALE across Danio species of different embryo size, and by which of the above mechanisms?",
+      "camps": [
+        {"side": "Shuttling essential", "claim": "BMP is transported as a BMP-Chordin complex and released by Tolloid cleavage; gradient shape is set by the shuttle, not by free BMP diffusion.", "representative_evidence": "Zinski et al. 2017 (systems model of zebrafish BMP gradient formation); Pomreinke et al. 2017 (Sog/Chordin shuttling in the sister Drosophila system); repo ZF-TUR-01/ZF-TUR-02 resolution records"},
+        {"side": "Regulated diffusion / source-sink sufficient", "claim": "Spatially regulated production, diffusion and receptor-mediated clearance can generate the observed gradient without obligatory long-range shuttling at every stage.", "representative_evidence": "Source-sink modelling literature on zebrafish gastrula BMP patterning; effective-mobility measurements that vary by stage and tissue"},
+        {"side": "ECM/HSPG-shaped", "claim": "Extracellular matrix and heparan-sulfate proteoglycans dominate effective BMP mobility, making both pure-diffusion and pure-shuttle accounts incomplete.", "representative_evidence": "HSPG/ECM perturbation studies of BMP distribution in fish and fly embryos"}
+      ],
+      "related_datasets": ["datasets/danio_rerio_turing_wavelength", "datasets/danio_rerio_morphogen_condensation", "datasets/danio_aesculapii_turing_wavelength", "datasets/danio_albolineatus_turing_wavelength", "datasets/danio_margaritatus_turing_wavelength"],
+      "species": {"name": "Danio rerio (+ congeners)", "taxon_id": 7955, "genome_tier": "A (congeners C)"},
+      "genes": ["bmp2b", "chd", "bmp4", "nog1"],
+      "kg_refs": {"graph_nodes": ["f4", "ZF-TUR-01", "ZF-TUR-02"], "sequence_catalog": ["danio_rerio:bmp2b", "danio_rerio:chd"]},
+      "settling_measurement": "Paired FRAP/effective-mobility measurements of tagged BMP and Chordin plus pSmad1/5 gradient ranges in at least two Danio species of different embryo size, under identical staging.",
+      "candidate_prediction": {
+        "statement": "Across Danio species, pSmad gradient range scales with embryo DV extent while free BMP mobility does not; the scaling variable is Chordin/Tolloid flux, so species with relatively larger chd expression domains show disproportionately longer BMP ranges.",
+        "falsifier": "BMP range is invariant across species once embryo size is normalised, or scales with measured free-BMP mobility instead of Chordin-domain size.",
+        "proposed_resolvability_confidence": 0.55,
+        "confidence_basis": "Zebrafish half decidable from public pSmad/FRAP records (as ZF-TUR-01 was); cross-species mobility series does not yet exist as a table and likely needs literature extraction or new measurement.",
+        "status": "candidate_not_registered"
+      },
+      "priority": {"contestation": "high", "decidability": "medium", "dataset_depth": "high", "rank_note": "Highest-value live remainder of an argument the repo has already partly settled; do not re-litigate the settled half."}
+    },
+    {
+      "id": "LA-02",
+      "question": "Are zebrafish stripes (and fish pigment patterns generally) a Turing reaction-diffusion system, or a cell-interaction network that only mimics one?",
+      "argument_status": "live",
+      "camps": [
+        {"side": "Turing / reaction-diffusion", "claim": "Pigment patterns arise from interacting diffusible signals with differential diffusion; wavelength is set by signal kinetics and should shift predictably when kinetics change.", "representative_evidence": "Kondo and coworkers' reaction-diffusion analyses of fish stripe formation and regeneration; wavelength changes in pattern mutants read as kinetic changes"},
+        {"side": "Cell-interaction network", "claim": "Stripes are generated by direct interactions among melanophores, xanthophores and iridophores (contact-dependent survival, repulsion, long projections); no diffusible Turing pair is required and the 'wavelength' is a cell-behaviour emergent.", "representative_evidence": "Singh & Nusslein-Volhard and coworkers on zebrafish pigment-cell interactions; iridophore-led stripe organisation; connexin (leopard) and csf1ra (pfeffer) mutant analyses"}
+      ],
+      "related_datasets": ["datasets/danio_rerio_turing_wavelength", "datasets/danio_albolineatus_turing_wavelength", "datasets/danio_nigrofasciatus_turing_wavelength", "datasets/bos_taurus_turing_wavelength", "datasets/equus_quagga_turing_wavelength"],
+      "species": {"name": "Danio rerio (+ congeners); Bos/Equus as mammalian outgroup tests", "taxon_id": 7955, "genome_tier": "A (Bos B)"},
+      "genes": ["csf1ra", "gja5b (connexin41.8/leopard)", "kita", "mitfa"],
+      "kg_refs": {"graph_nodes": ["f4", "b6"], "sequence_catalog": ["bos_taurus:KIT", "bos_taurus:MITF"]},
+      "settling_measurement": "Stripe wavelength and regeneration kinetics in cell-interaction mutants (leopard/gja5b, pfeffer/csf1ra) compared quantitatively against both model classes fitted on the same fish; the Turing account must predict the wavelength shift from a kinetic parameter, the cell account from interaction ranges.",
+      "candidate_prediction": {
+        "statement": "Across Danio species and the leopard mutant, stripe wavelength correlates with pigment-cell interaction ranges (projection length, iridophore spacing) and NOT with any morphogen size/diffusion prior derivable from candidate Turing-pair sequences.",
+        "falsifier": "Wavelength shifts are quantitatively predicted by a two-signal kinetic fit whose parameters are independently measured, while cell-interaction ranges stay constant.",
+        "proposed_resolvability_confidence": 0.6,
+        "confidence_basis": "Mutant phenotypes and much cell-behaviour data are public (ZFIN + primary literature); a head-to-head quantitative fit on identical specimens has not been published and is the missing piece.",
+        "status": "candidate_not_registered"
+      },
+      "priority": {"contestation": "high", "decidability": "medium", "dataset_depth": "high", "rank_note": "The repo's Bos dataset already shows the morphometric side can kill a Turing claim; this extends the same test to the system the Turing camp actually defends."}
+    },
+    {
+      "id": "LA-03",
+      "question": "Is vertebrate digit patterning a BMP-SOX9-WNT Turing system modulated by Hox dose, or a positional-gradient system in which Turing-like periodicity is secondary?",
+      "argument_status": "live",
+      "camps": [
+        {"side": "Turing (BSW) primary", "claim": "A BMP-SOX9-WNT reaction-diffusion network generates the periodic digit pattern; Hox genes modulate its wavelength, explaining digit number changes in Hox mutants.", "representative_evidence": "Raspopovic et al. 2014, Science (BSW Turing network in mouse digit patterning); wavelength phenotypes of Gli3/Hox compound mutants"},
+        {"side": "Positional / Hox primary", "claim": "Digit identities and much of the pattern are specified by positional information (Shh/Hox gradients); periodic condensation is a downstream mechanical/aggregation readout, not the pattern generator.", "representative_evidence": "Sheth et al. 2012, Science (Hox dose and digit pattern); classical positional-information analyses of the limb bud"}
+      ],
+      "related_datasets": ["datasets/mus_musculus_turing_wavelength", "datasets/mus_musculus_morphogen_condensation"],
+      "species": {"name": "Mus musculus", "taxon_id": 10090, "genome_tier": "A"},
+      "genes": ["Bmp4", "Shh", "Sox9", "Wnt (pathway)"],
+      "kg_refs": {"graph_nodes": ["f1", "f2"], "sequence_catalog": ["mus_musculus:Bmp4", "mus_musculus:Shh"]},
+      "settling_measurement": "Digit wavelength (condensation spacing) as a function of distal Hox dose in allelic series, tested against the BSW prediction that wavelength -- not just digit identity -- shifts continuously with Hox-modulated parameters.",
+      "candidate_prediction": {
+        "statement": "In published Hox/Gli3 allelic-series limb data, condensation spacing varies continuously and monotonically with Hox dose in the direction the BSW model requires; a pure positional account predicts identity changes at constant spacing.",
+        "falsifier": "Spacing is dose-invariant while identities change, or spacing changes stepwise at identity boundaries.",
+        "proposed_resolvability_confidence": 0.5,
+        "confidence_basis": "Phenotype series are public (MGI + primary papers) but spacing is rarely tabulated as a continuous variable; decidable by extraction, possibly only partly.",
+        "status": "candidate_not_registered"
+      },
+      "priority": {"contestation": "high", "decidability": "medium-low", "dataset_depth": "medium", "rank_note": "Mus was the prediction registry's named runner-up species; this is its strongest live argument."}
+    },
+    {
+      "id": "LA-04",
+      "question": "How is Hedgehog transported: extracellular diffusion (with Dispatched/Scube hand-off) or cytoneme-mediated delivery?",
+      "argument_status": "live",
+      "camps": [
+        {"side": "Extracellular diffusion / hand-off", "claim": "Lipidated Hh is released via Dispatched/Scube-type mechanisms and moves extracellularly; gradient range is set by release, extracellular carriers and reception.", "representative_evidence": "Vertebrate Shh release and neural-tube/limb gradient literature; effective-range measurements of lipidated vs unlipidated Hh (repo DM-HH-01, XT-SHH-01 records)"},
+        {"side": "Cytoneme delivery", "claim": "Signalling filopodia (cytonemes) deliver Hh directly between producing and receiving cells; apparent diffusion signatures are secondary to cytoneme dynamics.", "representative_evidence": "Sanders et al. 2013, Nature (Drosophila cytonemes in Hh gradient formation) and subsequent cytoneme imaging studies"}
+      ],
+      "related_datasets": ["datasets/danio_rerio_morphogen_condensation", "datasets/xenopus_tropicalis_morphogen_condensation", "datasets/drosophila_melanogaster_morphogen_condensation"],
+      "species": {"name": "Drosophila melanogaster / Danio rerio / Xenopus tropicalis", "taxon_id": 7227, "genome_tier": "A"},
+      "genes": ["hh", "shha", "shh", "dpp"],
+      "kg_refs": {"graph_nodes": ["DM-HH-01", "XT-SHH-01", "ZF-HH-01"], "sequence_catalog": ["drosophila_melanogaster:hh", "danio_rerio:shha", "xenopus_tropicalis:shh"]},
+      "settling_measurement": "Gradient range after cytoneme disruption that leaves secretion intact (and vice versa), in the same tissue, with the lipidation state of the transported species verified from sequence/protein state.",
+      "candidate_prediction": {
+        "statement": "In the fly wing disc, disrupting cytonemes shortens the Hh signalling range (ptc domain) by a larger factor than it changes total secreted Hh, while in the vertebrate neural tube the same class of disruption leaves range largely intact (diffusion/hand-off dominant) -- i.e. the answer is taxon-specific, not universal.",
+        "falsifier": "Both systems respond identically to cytoneme disruption, supporting a single universal transport mode.",
+        "proposed_resolvability_confidence": 0.45,
+        "confidence_basis": "ZF-HH-01 already scored only partially_resolved: lipidation facts are decidable from records, gradient-shape outcomes under transport perturbation are not tabulated publicly in comparable form.",
+        "status": "candidate_not_registered"
+      },
+      "priority": {"contestation": "high", "decidability": "low-medium", "dataset_depth": "medium", "rank_note": "Genuinely live but the least decidable from public records; likely needs an experimental collaborator rather than literature scoring."}
+    },
+    {
+      "id": "LA-05",
+      "question": "Does somite size scale with segmentation-clock period via wavefront speed (clock-and-wavefront), and what sets the scaling across species?",
+      "argument_status": "live",
+      "camps": [
+        {"side": "Clock-and-wavefront scaling", "claim": "Somite length = clock period x wavefront regression speed; species differences and experimental period changes should move somite size proportionally when wavefront speed is controlled.", "representative_evidence": "Classical clock-and-wavefront literature and cross-species clock comparisons (e.g. human vs mouse segmentation-clock period studies); repo clock_wavefront datasets in Danio/Xenopus"},
+        {"side": "PSM-growth / multi-factor control", "claim": "Somite size is jointly set by presomitic-mesoderm growth, axis elongation and clock properties; period alone does not predict size once growth is accounted for.", "representative_evidence": "PSM growth and axis-elongation analyses arguing period-size correlations break under growth perturbation"}
+      ],
+      "related_datasets": ["datasets/danio_rerio_clock_wavefront", "datasets/xenopus_tropicalis_clock_wavefront", "datasets/drosophila_melanogaster_clock_wavefront"],
+      "species": {"name": "Danio rerio / Xenopus tropicalis", "taxon_id": 7955, "genome_tier": "A"},
+      "genes": ["her1", "her7 (ortholog set)", "hes-family (ortholog set)"],
+      "kg_refs": {"graph_nodes": ["ZF-CLK-01", "XT-CLK-01"], "sequence_catalog": ["danio_rerio:her1"]},
+      "settling_measurement": "Paired clock-period and somite-length measurements with PSM length/wavefront speed recorded in the same embryos, across at least the fish and frog systems the repo holds.",
+      "candidate_prediction": {
+        "statement": "With wavefront speed controlled from published axis-elongation data, somite length / clock period is constant within each species but the proportionality differs between Danio and Xenopus by the ratio of their wavefront speeds -- a two-point scaling test the current piecemeal literature has not assembled.",
+        "falsifier": "Period changes (genetic or temperature) move somite size off the wavefront-corrected proportionality in either species.",
+        "proposed_resolvability_confidence": 0.5,
+        "confidence_basis": "Both repo rows (ZF-CLK-01, XT-CLK-01) scored partially_resolved for exactly the missing paired series; the argument stays live because that series has never been assembled in one place.",
+        "status": "candidate_not_registered"
+      },
+      "priority": {"contestation": "medium", "decidability": "medium", "dataset_depth": "medium", "rank_note": "The repo already knows precisely which table is missing; assembling it is the finding."}
+    },
+    {
+      "id": "LA-06",
+      "question": "How does the Dpp/BMP gradient scale with the growing Drosophila wing disc: degradation-mediated scaling, expansion-repression, or growth-coupled production?",
+      "argument_status": "live",
+      "camps": [
+        {"side": "Degradation / kinetics scaling", "claim": "Gradient length scales because effective degradation/clearance changes with tissue size; measured Dpp kinetics (Kicheva et al. 2007) plus size-dependent turnover explain scaling.", "representative_evidence": "Kicheva et al. 2007, Science (Dpp gradient formation kinetics); Wartlick et al. 2011, Science (Dpp gradient scaling with wing-disc growth)"},
+        {"side": "Expansion-repression / feedback scaling", "claim": "An expander molecule produced under Dpp control feeds back on gradient range, giving robust scaling that pure kinetics cannot; candidate expanders and feedback topologies remain disputed.", "representative_evidence": "Expansion-repression modelling and candidate-expander (e.g. Pentagone) literature following Ben-Zvi and coworkers"}
+      ],
+      "related_datasets": ["datasets/drosophila_melanogaster_morphogen_condensation", "datasets/drosophila_melanogaster_turing_wavelength"],
+      "species": {"name": "Drosophila melanogaster", "taxon_id": 7227, "genome_tier": "A"},
+      "genes": ["dpp", "wg", "pent (candidate expander)"],
+      "kg_refs": {"graph_nodes": ["DM-DPP-01", "f1"], "sequence_catalog": ["drosophila_melanogaster:dpp", "drosophila_melanogaster:wg"]},
+      "settling_measurement": "Dpp gradient length, disc size, Dpp turnover and candidate-expander expression measured across growth stages/genotypes in one quantitative series; the two camps predict different couplings between turnover and length.",
+      "candidate_prediction": {
+        "statement": "Across published growth-stage series, the Dpp decay length scales with disc size while measured Dpp half-life changes in the direction and magnitude the kinetics camp requires; if half-life is size-invariant, the feedback/expansion camp wins by elimination.",
+        "falsifier": "Half-life and decay length decouple across stages (length scales, turnover does not), falsifying the pure-kinetics account.",
+        "proposed_resolvability_confidence": 0.65,
+        "confidence_basis": "Core kinetics and scaling papers are public and quantitative; DM-DPP-01 showed the repo-side sequence facts (mature chain 132 aa) are already decidable in-repo at conf 0.95.",
+        "status": "candidate_not_registered"
+      },
+      "priority": {"contestation": "medium-high", "decidability": "high", "dataset_depth": "very high (621 Drosophila datasets)", "rank_note": "Best decidability-to-contestation ratio on this map; recommended first promotion to registration."}
+    },
+    {
+      "id": "LA-07",
+      "question": "Is the bioelectric (Vmem) prepattern instructive for Xenopus craniofacial/orientation patterning -- upstream information that biochemical gradients read out -- or a downstream correlate of conventional pathways?",
+      "argument_status": "live",
+      "camps": [
+        {"side": "Instructive bioelectric prepattern", "claim": "Spatial Vmem patterns, set by ion channels and gap junctions, encode target morphology and can respecify craniofacial/orientation outcomes when manipulated, upstream of gene expression changes.", "representative_evidence": "Cervera-Levin-Mafe modelling and Levin-lab Xenopus craniofacial Vmem studies; repo flagship 2021-Cervera-Levin-Mafe reproduction and xenopus datasets"},
+        {"side": "Conventional-pathway primacy", "claim": "Apparent bioelectric effects reduce to conventional signalling (BMP/Wnt/Shh, ion-sensitive but conventional transduction); Vmem is a correlate or modulator, not an independent information layer.", "representative_evidence": "Mainstream developmental-biology critiques requiring molecular intermediates for Vmem phenotypes; repo embryo-blind programme, whose neighbour-prediction tests scored negatively (Xenopus LOOO AUC 0.484)"}
+      ],
+      "related_datasets": ["datasets/xenopus_tropicalis_bioelectric_polarity", "datasets/xenopus_tropicalis_morphogen_condensation", "datasets/danio_rerio_bioelectric_polarity"],
+      "species": {"name": "Xenopus tropicalis", "taxon_id": 8364, "genome_tier": "A"},
+      "genes": ["bmp4", "nog", "shh"],
+      "kg_refs": {"graph_nodes": ["b2", "b5", "XT-BMP-01"], "sequence_catalog": ["xenopus_tropicalis:bmp4", "xenopus_tropicalis:nog", "xenopus_tropicalis:shh"]},
+      "settling_measurement": "Blinded, pre-registered ion-channel misexpression with BMP-pathway transcriptional readout and craniofacial scoring, where the bioelectric account predicts the readout change in advance and the conventional account predicts none without direct pathway manipulation. The repo's own blind-test contract (hash-locked, scorer refuses on mismatch) is the required format, given its earlier negative blind results.",
+      "candidate_prediction": {
+        "statement": "Under the repo's blinded contract, targeted Vmem perturbation changes bmp4/nog expression domains in the predicted direction at an effect size the conventional-primacy account does not predict; orientation geometry is controlled with ground-truth imaging (the confound that sank the earlier Xenopus blind test).",
+        "falsifier": "No directional expression change under blinded scoring, or the effect vanishes when geometry is ground-truth controlled.",
+        "proposed_resolvability_confidence": 0.4,
+        "confidence_basis": "Not decidable from public records alone: the repo's prior blind tests in this programme were negative, so an honest prior is low and a wet-lab collaborator is required. Included because the argument is live and the repo is unusually invested in it -- with its negative history stated, not hidden.",
+        "status": "candidate_not_registered"
+      },
+      "priority": {"contestation": "high (and local)", "decidability": "low from records, medium with collaborator", "dataset_depth": "medium", "rank_note": "Only entry where the settling measurement is an experiment rather than a literature assembly; promotion requires an experimental partner."}
+    }
+  ]
+}
