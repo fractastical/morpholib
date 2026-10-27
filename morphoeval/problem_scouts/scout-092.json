@@ -1,0 +1,133 @@
+{
+  "scout": "scout-092",
+  "ground": "scaling",
+  "lens": "measure",
+  "candidates": [
+    {
+      "id": "SCALE-MEAS-01",
+      "title": "Petroff stromatolite inter-cone spacing vs Yellowstone field scale (~1 cm)",
+      "gap": "measure_outputs.py on morphoeval/audits/2026-10-19-petroff-kahng-audit.yaml reports ell(tau=12 h)=0.6573 cm against reference_value 1.0 cm (Petroff et al. 2010 PNAS), and no Proterozoic/Archean fossil cone-spacing series is loaded; datasets/petroff/ does not exist.",
+      "done": "After datasets/petroff/cone_spacings.csv (modern Yellowstone + lab + fossil rows, SHA-256 pinned) lands, re-run measure_outputs and pass iff (a) |ell_script(12 h)-median(modern_field)|/median(modern_field) <= 0.10 for at least one (D, alpha, tau) triple documented in the CSV header, and (b) two-sample KS p >= 0.05 between simulated hex_lattice NN distances and the pinned modern spacing column.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-petroff-kahng-audit.yaml  # reads petroff-stromatolite measurements block; inputs datasets/petroff/cone_spacings.csv once added per morphoeval/kg/2026-10-19-petroff-kahng-audit/REPORT.md remediation",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-petroff-kahng-audit.measurements.yaml (ell=0.6573 cm), models/2010-petroff-stromatolite.py. Missing (named public): Petroff et al. 2010 PNAS 107(22):9956-9961 Table/Fig cone-spacing measurements (Yellowstone mats, lab cultures, Archean/Proterozoic fossils cited in audit claim_boundary).",
+      "prior_attempts": "Gemini 4 Argon primary and Claude Fable 5.1 second-assessor Petroff/Kahng audits (2026-10-19) scored morphometric validation ~25/100 for absent empirical spacing overlays; remediation explicitly requests datasets/petroff/ — not refuted, blocked on missing pinned table.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "measure_outputs already emits ell and lattice NN metrics for petroff-stromatolite; deciding test is a reference_value / distribution check once CSV exists."},
+        "data_in_hand": {"score": 11, "why": "Rendered outputs and sidecar measurements exist; deciding fossil/modern spacing table is not in repo yet (one literature transcription away)."},
+        "falsifiable_done": {"score": 14, "why": "10% relative error on ell plus KS p-threshold are numeric pass/fail without scorer taste."},
+        "compute_in_repo": {"score": 14, "why": "measure_outputs plus a CSV join runs in minutes on the cloud stack."},
+        "isolation": {"score": 10, "why": "Closable as new datasets/petroff/* and a superseding audit sidecar without touching parallel agents' code."},
+        "time_to_verdict": {"score": 8, "why": "Single measure_outputs loop once the spacing table is pinned."},
+        "not_blocked": {"score": 4, "why": "Audits flagged the gap but no prior attempt refuted the measure_outputs calibration route."}
+      }
+    },
+    {
+      "id": "SCALE-MEAS-02",
+      "title": "Raup (1966) W/D/T recovery tolerances on illustrative fossil-morphospace shells",
+      "gap": "measure_outputs measure_raup() recovers D=0.0003 for the involute Planispiral case (input D=0.0) in morphoeval/audits/2026-10-17-raup-audit.measurements.yaml; datasets/raup/variables.json states the six taxon-tagged parameter sets are illustrative, not measured from fossils, so numerical recovery slack is the only checkable bridge to the cephalopod fossil series in morphoeval/scale_and_paleo_catalog.py.",
+      "done": "Re-run measure_outputs on morphoeval/audits/2026-10-17-raup-audit.yaml and pass iff for every entry in datasets/raup/variables.json empirical_shells: |W_rec-W|<=0.01, |T_rec-T|<=0.01, and |D_rec-D|<=0.001 (with D=0 shells allowed |D_rec|<=0.001).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-raup-audit.yaml",
+      "deciding_data": "In repo: datasets/raup/variables.json, models/1966-raup.py, morphoeval/audits/2026-10-17-raup-audit.measurements.yaml, docs/media/raup_shell_coiling.gif.",
+      "prior_attempts": "MorphoEval Raup audit (2026-10-17) closed script-vs-definition recovery; no published attempt linked measured ammonoid suture D_f catalog values to rendered Raup meshes (that would need vision/simulation, not this sidecar).",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "measure_raup() is the named recovery path and already wired to the Raup audit simulation id."},
+        "data_in_hand": {"score": 19, "why": "All inputs and reference parameters are vendored under datasets/raup/."},
+        "falsifiable_done": {"score": 15, "why": "Per-shell absolute tolerances on W, D, T are mechanically checkable."},
+        "compute_in_repo": {"score": 15, "why": "Sub-minute measure_outputs run regenerating meshes via raup_shell()."},
+        "isolation": {"score": 10, "why": "Verdict is a sidecar/regeneration check only."},
+        "time_to_verdict": {"score": 9, "why": "One command, six shells."},
+        "not_blocked": {"score": 5, "why": "No refuted prior on this exact tolerance gate."}
+      }
+    },
+    {
+      "id": "SCALE-MEAS-03",
+      "title": "Odonata fossil wing cell-length invariance vs Hoffmann inhibition-length null (slope 0)",
+      "gap": "measure_outputs on morphoeval/audits/2026-10-14-odonata-audit.yaml reports median cell length scaling exponent -0.1673 (69 Mesozoic-Cenozoic fossils) against reference_value 0.0 for constant inhibition length; extant dragonfly/damselfly slopes are +0.22/+0.28, so deep-time allometry remains a quantitative open comparison.",
+      "done": "Re-run measure_outputs and pass iff (a) fossil median cell length over wings remains 0.78-0.99 mm (as in sidecar) AND (b) |slope_fossil| <= 0.20 with bootstrap 95% CI for slope overlapping 0 (computed from datasets/odonata/fossil_wing_resegmentation.csv, not hand-entered).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-14-odonata-audit.yaml  # eshghi-odonata-wing-cells simulation; cross-check datasets/odonata/fossil_wing_resegmentation.csv",
+      "deciding_data": "In repo: datasets/odonata/fossil_wing_resegmentation.csv, models/2026-eshghi-odonata-wing-cells.py, Zenodo 10.5281/zenodo.19899648 (cached by script). Public: Eshghi et al. 2026 inhibition-length claim via Hoffmann et al. 2018.",
+      "prior_attempts": "Claude Fable blinded odonata audit (2026-10-14, ~76/100) independently re-segmented fossils and reported approximate constant cell length; swapped Table S1 rows (#58/#59) documented — route not refuted, table fixes still affect slope CI.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "measure_outputs already extracts the fossil/extant log-log slopes with reference_values on the odonata audit."},
+        "data_in_hand": {"score": 17, "why": "CSV + script outputs are in repo; cold cache may fetch Zenodo once."},
+        "falsifiable_done": {"score": 13, "why": "Slope magnitude band plus bootstrap CI overlap 0 is checkable, though CI wiring is one script addition."},
+        "compute_in_repo": {"score": 13, "why": "Full odonata script run is tens of minutes with cache; measure_outputs alone is fast if CSV fixed."},
+        "isolation": {"score": 10, "why": "Analysis can live in new sidecar/CSV without editing core pipeline."},
+        "time_to_verdict": {"score": 7, "why": "One sitting if cache warm; longer on cold Zenodo fetch."},
+        "not_blocked": {"score": 4, "why": "Prior work supports approximate invariance but has not closed the strict slope-0 gate."}
+      }
+    },
+    {
+      "id": "SCALE-MEAS-04",
+      "title": "Monte Bolca (~50 Ma) published-ratio test reproducibility (OP-04 partial)",
+      "gap": "docs/open-problems.json OP-04 cites 6/16 Monte Bolca ratio measurements inside 50 Myr 95% intervals vs a stasis null; thompson_phylogenetic_prediction_engine.json embeds monte_bolca_published_ratio_test, but monte_bolca_fossil_test is empty because datasets/thompson/monte_bolca_fossil_landmarks.json is absent, so landmark-level deep-horizon morphology was never measured.",
+      "done": "Pass iff a fresh python3 thompson/run_phylogenetic_prediction_engine.py run reproduces counts inside_ci95_full30=6 and direction_of_change_correct_full30=7 on n=16 measurements when compared to datasets/thompson/monte_bolca_fossil_ratios.json inputs (max |Δ| on any fossil ratio <= 1e-6), and documents Eoplatax_papilio BDmax/SL falsification row explicitly.",
+      "tool_route": "python3 thompson/run_phylogenetic_prediction_engine.py  # emits monte_bolca_published_ratio_test; verify with python3 -c compare to thompson_phylogenetic_prediction_engine.json and datasets/thompson/monte_bolca_fossil_ratios.json",
+      "deciding_data": "In repo: datasets/thompson/monte_bolca_fossil_ratios.json, thompson_phylogenetic_prediction_engine.json, thompson/run_phylogenetic_prediction_engine.py. Missing: datasets/thompson/monte_bolca_fossil_landmarks.json (landmark-level test).",
+      "prior_attempts": "Claude Fable 5.1 Thinking High (OP-04 attempted_by); Thompson engine + FishShapes blind tests published; Bolca ratio null (6/16) recorded in docs — not refuted, landmark branch never executed.",
+      "factors": {
+        "tool_fit": {"score": 11, "why": "Ratio recount is engine JSON morphometrics, not measure_outputs pixels; measure_outputs applies only after a Thompson audit cites engine outputs (none today for Bolca)."},
+        "data_in_hand": {"score": 18, "why": "Published ratios and committed engine JSON are in repo; landmarks file is the only missing piece for the second test."},
+        "falsifiable_done": {"score": 15, "why": "Exact integer counts 6/16 and 7/16 plus per-taxon ratio equality checks are objective."},
+        "compute_in_repo": {"score": 12, "why": "Engine rerun is heavy but documented; ratio-only path skips missing landmarks."},
+        "isolation": {"score": 10, "why": "Verification can be a new report JSON without modifying scored audits."},
+        "time_to_verdict": {"score": 6, "why": "Ratio recount is quick; full engine rerun may exceed one hour."},
+        "not_blocked": {"score": 5, "why": "OP-04 is partial, not refuted; landmark route blocked separately on missing JSON."}
+      }
+    },
+    {
+      "id": "SCALE-MEAS-05",
+      "title": "Fossil-record chronospecies growth GIFs lack measure_outputs fingerprints",
+      "gap": "morphoeval/upgrade_zebrafish_and_fossil_gifs.py writes 17 docs/media/fossil_lin*_growth.gif files (565 Ma Ediacaran through Cenozoic lineages in morphoeval/scale_and_paleo_catalog.py), but ripgrep shows zero morphoeval/audits/*.yaml evidence entries referencing fossil_lin*.gif, so no sha256/morphometric sidecar exists for these scaling animations.",
+      "done": "Pass iff for each of the 17 fossil_lin*.gif files there is a measure_outputs-style sidecar (new audit stub or batch YAML) recording artifact_sha256, frame count, and dominant spatial wavelength in pixels with reference_value equal to characteristic_size_m from datasets/species_gallery/species_manifest.json for the lineage's anchor taxon (relative error <= 15% once px-to-meter scale from GIF metadata is recorded).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/<new-fossil-gif-batch-audit>.yaml  # after minimal audit lists each docs/media/fossil_lin*.gif as simulation output; optional cross-check morphoeval/upgrade_zebrafish_and_fossil_gifs.py",
+      "deciding_data": "In repo: docs/media/fossil_lin*.gif (17 files), datasets/species_gallery/species_manifest.json (characteristic_size_m + geological_age_ma), morphoeval/scale_and_paleo_catalog.py NINETY_NOVEL_AND_FOSSIL_TAXA.",
+      "prior_attempts": "upgrade_zebrafish_and_fossil_gifs.py verifies ImgFit>=70 via verify_image_fitness.py, not measure_outputs; no audit pass attempted on fossil GIF morphometrics.",
+      "factors": {
+        "tool_fit": {"score": 14, "why": "measure_outputs can fingerprint GIFs and run turing-style wavelength probes, but requires a new audit YAML listing outputs first."},
+        "data_in_hand": {"score": 16, "why": "GIFs and catalog sizes are already vendored; px calibration metadata is not yet recorded."},
+        "falsifiable_done": {"score": 12, "why": "Per-file sha256 plus wavelength ratio band is objective once px scale is pinned."},
+        "compute_in_repo": {"score": 12, "why": "Batch measure_outputs over 17 GIFs is minutes."},
+        "isolation": {"score": 9, "why": "Needs one new audit stub file plus sidecars; no changes to existing audits required."},
+        "time_to_verdict": {"score": 6, "why": "One batch run after audit stub lands."},
+        "not_blocked": {"score": 5, "why": "No prior refutation; simply unattempted."}
+      }
+    },
+    {
+      "id": "SCALE-MEAS-06",
+      "title": "Eocene amber Drosophila succini cross-mechanism L_char vs COHORT_SCALE_MULTIPLIER",
+      "gap": "Ten morphoeval/audits/*drosophila-succini*.measurements.yaml sidecars pin L_char from datasets/drosophila_succini_*/ reference JSON (geological_age_ma=44.0) but it is unchecked whether L_char ratios across the ten biophysical cohorts match COHORT_SCALE_MULTIPLIER in morphoeval/scale_and_paleo_catalog.py (same adult body size).",
+      "done": "Pass iff for every mechanism pair (i,j) in the succini sidecars, |log10(L_char_i/L_char_j) - log10(mult_i/mult_j)| <= 0.05 where mult comes from COHORT_SCALE_MULTIPLIER indices mapped to mechanism names (turing-wavelength→0 … collective-stigmergy→9).",
+      "tool_route": "Parse morphoeval/audits/*drosophila-succini*.measurements.yaml (Characteristic Phenomenon Spatial Scale L_char) and compare to morphoeval/scale_and_paleo_catalog.py COHORT_SCALE_MULTIPLIER; spot-check one mechanism via python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-22-drosophila-succini-turing-wavelength-audit-v2.yaml",
+      "deciding_data": "In repo: 10 succini audit sidecars, datasets/drosophila_succini_turing_wavelength/drosophila_succini_turing_wavelength_reference.json (paleobiology.geological_age_ma=44.0), morphoeval/scale_and_paleo_catalog.py.",
+      "prior_attempts": "Pass-2 multi-scale Drosophila audit wave (2026-10-22) introduced L_char sidecars with reference_value from reference JSON; no independent cross-mechanism allometry audit recorded.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Sidecar L_char fields are measurement artifacts; measure_outputs spot-checks one audit against reference JSON."},
+        "data_in_hand": {"score": 19, "why": "All succini sidecars and catalog multipliers are local."},
+        "falsifiable_done": {"score": 14, "why": "Pairwise log-ratio tolerance against catalog is a strict numeric gate."},
+        "compute_in_repo": {"score": 15, "why": "YAML parse plus optional single measure_outputs run."},
+        "isolation": {"score": 10, "why": "Checker can be a new JSON/MD report without editing existing sidecars."},
+        "time_to_verdict": {"score": 9, "why": "45 mechanism pairs, instant parse."},
+        "not_blocked": {"score": 5, "why": "Consistency check not previously attempted or refuted."}
+      }
+    },
+    {
+      "id": "SCALE-MEAS-07",
+      "title": "Ginkgoales leaf-dissection chronospecies models unaudited for L_char vs fossil leaf size",
+      "gap": "Forty models/models/*ginkgo*.py cover Jurassic–Holocene chronospecies in morphoeval/scale_and_paleo_catalog.py (Ginkgoales Leaf Dissection Chronospecies), but there is no morphoeval/audits/*ginkgo* YAML and only docs/media/fossil_lin12_ginkgo_chronospecies_growth.gif — no measure_outputs sidecar tying simulated wavelengths to characteristic_size_m 0.036–0.058 m in species_manifest.",
+      "done": "Pass iff a representative audit (e.g. zheng-ginkgo-apodes-turing-wavelength once YAML exists) yields measure_outputs L_char within 10% of phenomenon_size_m in the slot's reference JSON and within the same tier as classify_scale_tier(characteristic_size_m) for Ginkgo apodes (121 Ma).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/<ginkgo-apodes-turing-audit>.yaml  # blocked until audit exists; until then compare math_kg_loops/zheng-ginkgo-apodes-turing-wavelength.yaml phenomenon_size_m to species_manifest characteristic_size_m",
+      "deciding_data": "In repo: models/*ginkgo*.py, morphoeval/math_kg_loops/zheng-ginkgo-apodes-*.yaml, datasets/species_gallery/species_manifest.json, species gallery JPEGs. No datasets/zheng_ginkgo_apodes_* reference JSON tree yet.",
+      "prior_attempts": "Venation audit (2026-10-18) measures extant Ginkgo biloba open venation specimen only — not the fossil chronospecies slot grid.",
+      "factors": {
+        "tool_fit": {"score": 6, "why": "measure_outputs cannot run without an audit wiring comparison PNG/GIF outputs; remediation/knowledge lenses must mint the audit first."},
+        "data_in_hand": {"score": 13, "why": "Catalog sizes and loop YAML phenomenon_size_m exist; full reference JSON and rendered comparison assets are incomplete."},
+        "falsifiable_done": {"score": 11, "why": "10% L_char vs manifest size is checkable once outputs exist."},
+        "compute_in_repo": {"score": 11, "why": "After audit, standard measure_outputs timing."},
+        "isolation": {"score": 8, "why": "Requires new audit + datasets, but not editing existing flagship audits."},
+        "time_to_verdict": {"score": 4, "why": "Blocked on audit/dataset creation before one measure loop."},
+        "not_blocked": {"score": 5, "why": "Not previously attempted for chronospecies slots."}
+      }
+    }
+  ]
+}
