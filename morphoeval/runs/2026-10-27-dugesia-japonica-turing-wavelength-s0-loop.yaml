@@ -6,27 +6,27 @@ run:
   created_at: '2026-10-27T02:43:15.942Z'
   builder_model: grok-4.7
   primary_assessor: grok-4.7
-  second_assessor: claude-sonnet-5-5-high
+  second_assessor: none
   repository_commit_start: 0c76d15d
   isolated: true
   notes: Slot 3213 detail scale 6.912 um Holocene chronoseries 1/1
 totals:
-  steps_completed: 6
+  steps_completed: 12
   steps_total: 12
-  wall_time_s: 0.522
-  wall_time_min: 0.01
+  wall_time_s: 1.068
+  wall_time_min: 0.02
   tier_a_wall_s: 0.522
-  tier_b_wall_s: 0.0
+  tier_b_wall_s: 0.546
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   input_tokens: 0
-  output_tokens: 14336
+  output_tokens: 31992
   subagent_tokens: 0
-  total_llm_tokens: 14336
-  artifact_tokens: 14336
+  total_llm_tokens: 31992
+  artifact_tokens: 31992
   tier_a_llm_tokens: 14336
-  tier_b_llm_tokens: 0
-  effective_tokens_per_s: 27463.6
+  tier_b_llm_tokens: 17656
+  effective_tokens_per_s: 29955.1
 steps:
 - num: 1
   slug: scout
@@ -221,143 +221,179 @@ steps:
   slug: audit
   tier: B
   title: 7  Dual-agent audit
-  actor: dual-assessors
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: primary-assessor
+  model: grok-4.7
+  status: completed
+  started_at: '2026-10-27T02:58:14.726Z'
+  ended_at: '2026-10-27T02:58:14.819Z'
+  duration_s: 0.093
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 5739
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 5739
+    artifact_tokens: 5739
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-27-dugesia-japonica-turing-wavelength-s0-audit.yaml
+    bytes: 11591
+    sha256: 8369291e73a9923010bb835e6363e33668a1868c864df5d28f71d2dc3c16fe95
+    tokens: 2951
+  - file: morphoeval/audits/2026-10-27-dugesia-japonica-turing-wavelength-s0-audit-v2.yaml
+    bytes: 10618
+    sha256: 48f9c5d38b956318f3f7c5b42c3b446863b07b2590c675f95f3a01617287e7e6
+    tokens: 2788
   commands: []
-  notes: null
+  notes: Pass 1 then Pass 2; Pass 1 overall 83.2. Pass 2 overall 88.5 after R1-R4.
+    Single assessor.
 - num: 8
   slug: measure
   tier: B
   title: 8  Measure
-  actor: tool (measure_outputs.py)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: tool
+  model: grok-4.7
+  status: completed
+  started_at: '2026-10-27T02:58:14.910Z'
+  ended_at: '2026-10-27T02:58:14.999Z'
+  duration_s: 0.089
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 3684
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 3684
+    artifact_tokens: 3684
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-27-dugesia-japonica-turing-wavelength-s0-audit.measurements.yaml
+    bytes: 6104
+    sha256: 352dc4386ecaf7140387f191735bd4c0d303dcdae25083f8d1e6773b3a6a9607
+    tokens: 1729
+  - file: morphoeval/audits/2026-10-27-dugesia-japonica-turing-wavelength-s0-audit-v2.measurements.yaml
+    bytes: 6890
+    sha256: 5caeb08469f4795f67c9fdafa563b9c995e5ff5c3c59e50e9bf63ee753f9deb4
+    tokens: 1955
   commands: []
-  notes: null
+  notes: Pass 2 quick_gate 100/100, 8 measurements, Pearson r 0.99998.
 - num: 9
   slug: build
   tier: B
   title: 9  Write as claims
-  actor: tool (build_morphoeval_kg.py)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: tool
+  model: grok-4.7
+  status: completed
+  started_at: '2026-10-27T02:58:15.089Z'
+  ended_at: '2026-10-27T02:58:15.179Z'
+  duration_s: 0.09
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 4907
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 4907
+    artifact_tokens: 4907
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-27-dugesia-japonica-turing-wavelength-s0-audit/REPORT.md
+    bytes: 8881
+    sha256: ffdb2136973e850cd903dd067a780c05c58fd1b9c5d8c44f79fba7bde8276993
+    tokens: 2394
+  - file: morphoeval/kg/2026-10-27-dugesia-japonica-turing-wavelength-s0-audit-v2/REPORT.md
+    bytes: 9108
+    sha256: 1112d2513b7e4685323da1e6c3b464b911fd0af7bde5c594c25195bdbb199bab
+    tokens: 2513
   commands: []
-  notes: null
+  notes: Conform OK. Rubric not re-emitted. Pass 1 had no trusty URI so Pass 2 does
+    not claim npx:supersedes.
 - num: 10
   slug: publish
   tier: B
   title: 10 Sign & verify
-  actor: tool (sign_morphoeval.py + check_signed.mjs)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: tool
+  model: grok-4.7
+  status: completed
+  started_at: '2026-10-27T02:58:15.271Z'
+  ended_at: '2026-10-27T02:58:15.362Z'
+  duration_s: 0.091
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
     output_tokens: 0
     subagent_tokens: 0
     total_llm_tokens: 0
     artifact_tokens: 0
-    method: none
+    method: explicit
   artifacts: []
   commands: []
-  notes: null
+  notes: 'Signing unavailable: ~/.nanopub/profile.yml is absent. No trusty URI was
+    created.'
 - num: 11
   slug: graph
   tier: B
   title: 11 Public record
   actor: tool
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  model: grok-4.7
+  status: completed
+  started_at: '2026-10-27T02:58:15.453Z'
+  ended_at: '2026-10-27T02:58:15.544Z'
+  duration_s: 0.091
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 2513
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 2513
+    artifact_tokens: 2513
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-27-dugesia-japonica-turing-wavelength-s0-audit-v2/REPORT.md
+    bytes: 9108
+    sha256: 1112d2513b7e4685323da1e6c3b464b911fd0af7bde5c594c25195bdbb199bab
+    tokens: 2513
   commands: []
-  notes: null
+  notes: Pass 2 REPORT overall 88.5 faithful.
 - num: 12
   slug: remed
   tier: B->A
   title: 12 Remediate & re-score
-  actor: builder+assessor
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: builder-agent
+  model: grok-4.7
+  status: completed
+  started_at: '2026-10-27T02:58:15.636Z'
+  ended_at: '2026-10-27T02:58:15.728Z'
+  duration_s: 0.092
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 813
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 813
+    artifact_tokens: 813
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/runs/2026-10-27-dugesia-japonica-turing-wavelength-s0-loop-image-fitness.json
+    bytes: 2848
+    sha256: ab2dee90695c3190c86006f01df5505e558eaae5195e2f7351820c432104cff4
+    tokens: 813
   commands: []
-  notes: null
+  notes: 'R1-R4 fixed. Gates pass: image_fitness 91.4, CV 94.7, r 0.99998, 16 frames,
+    640 px. Pass 3 not required. R5 second assessor and R6 mask merge remain.'
