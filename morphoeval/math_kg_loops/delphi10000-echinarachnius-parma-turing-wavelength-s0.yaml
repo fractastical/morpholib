@@ -1,0 +1,60 @@
+sim_id: delphi10000-echinarachnius-parma-turing-wavelength-s0
+organism: Echinarachnius parma
+age_Ma: 0
+scale_um: 60
+scale_m: 6.0e-05
+math_family: Turing reaction-diffusion wavelength selection
+equations:
+- law_name: Schnakenberg homogeneous state
+  formula: u* = a + b, v* = b / (a + b)^2, with a = 0.10 and b = 0.90
+  lean_decl: MathOfBiology.Loop_3214.nWavelengths
+  lean_theorem: MathOfBiology.Loop_3214.wavelength_count_independent_of_age
+  lean_locus: morphoeval/lean/loops/Loop_3214_echinarachnius_parma_turing_wavelength_s0.lean#L31-L34
+  variables: a, b feed rates; u activator; v inhibitor
+  role: Stable base state (trace < 0, det > 0) on which diffusion can select a wavelength
+  source_citation: Schnakenberg (1979) J. Theor. Biol. 81:389-400 DOI:10.1016/0022-5193(79)90042-0
+  code_locus: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py#L85-L104
+- law_name: Turing wavenumber
+  formula: sigma(k) = larger eigenvalue of J - k^2 D; lambda = 2 pi / argmax sigma(k)
+  lean_decl: MathOfBiology.Loop_3214.turingTraceGap
+  lean_theorem: MathOfBiology.Loop_3214.holocene_ratio_12_opens_turing
+  lean_locus: morphoeval/lean/loops/Loop_3214_echinarachnius_parma_turing_wavelength_s0.lean#L50-L53
+  variables: Du, Dv diffusivities; fu, gv Jacobian entries
+  role: Selects the 60 µm pigment-ocellus wavelength on the Holocene epithelial patch
+  source_citation: Turing (1952) Phil. Trans. R. Soc. B 237:37-72 DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py#L107-L128
+- law_name: Scale-ladder wavelength count
+  formula: n(L) = floor(L / 60 µm); n(10)=0, n(480)=8, n(600)=10; age does not enter
+  lean_decl: MathOfBiology.Loop_3214.nWavelengths
+  lean_theorem: MathOfBiology.Loop_3214.holocene_480um_patch_holds_eight
+  lean_locus: morphoeval/lean/loops/Loop_3214_echinarachnius_parma_turing_wavelength_s0.lean#L36-L43
+  variables: L patch length in micrometres
+  role: What changes at 60 µm versus the 10 µm predecessor tier and the 600 µm successor tier, at 0 Ma
+  source_citation: Slot scale ladder; Seilacher (1979) Paleobiology 5:191-221 is the centimetre-scale test, not this wavelength
+  code_locus: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py#L232-L246
+- law_name: Equal-diffusion ablation
+  formula: turingTraceGap(Du, Du) < 0 when fu < |gv|
+  lean_decl: MathOfBiology.Loop_3214.turingTraceGap
+  lean_theorem: MathOfBiology.Loop_3214.equal_diffusion_closes_turing
+  lean_locus: morphoeval/lean/loops/Loop_3214_echinarachnius_parma_turing_wavelength_s0.lean#L45-L48
+  variables: Du = Dv
+  role: Negative control. Pattern amplitude collapses when the inhibitor is not the faster diffuser
+  source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py#L226-L230
+model_spec:
+  model: Schnakenberg 1979 kinetics with Turing 1952 dispersion peak, calibrated to a 60 µm Holocene epithelial patch
+  a: 0.10
+  b: 0.90
+  Du_um2_per_time: 28.00571711952237
+  Dv_um2_per_time: 336.0686054342684
+  diffusion_ratio: 12
+  grid_resolution: [128, 128]
+  domain_um: 480
+  steps: 520
+  dt: 0.25
+  seed: 3214
+  lambda_um: 60
+  age_Ma: 0
+  inputs:
+  - datasets/echinarachnius_parma_turing_wavelength_s0/echinarachnius_parma_usnm_e39365_specimen.jpeg
+  - datasets/echinarachnius_parma_turing_wavelength_s0/echinarachnius_parma_turing_wavelength_s0_reference.json
