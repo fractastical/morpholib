@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Fleet Registry — Agent Types &amp; Usage</title>
+<style>
+ body { background:#e8dcc0; color:#2b2118; font-family: Georgia, 'Times New Roman', serif; margin:0; }
+ .plate { max-width:1060px; margin:24px auto; background:#f5edd8; border:2px solid #7a5c2e;
+   box-shadow:0 2px 14px rgba(60,40,10,.35); padding:28px 34px; }
+ h1 { font-variant:small-caps; letter-spacing:.06em; border-bottom:3px double #7a5c2e; padding-bottom:8px; }
+ h2 { font-variant:small-caps; color:#5d4420; border-bottom:1px solid #b39b5e; margin-top:30px; }
+ table { border-collapse:collapse; width:100%; font-size:14px; }
+ th, td { border:1px solid #c4ab72; padding:5px 8px; text-align:left; vertical-align:top; }
+ th { background:#e2d2a4; }
+ td.num { text-align:right; font-variant-numeric:tabular-nums; }
+ .dim { color:#6d5a38; font-size:12.5px; }
+ .bar { display:inline-block; width:110px; height:9px; background:#d8c892;
+   border:1px solid #7a5c2e; vertical-align:middle; margin-right:6px; }
+ .fill { height:100%; }
+ .cell { text-align:center; } .hit { background:#cfe0b8; } .miss { background:#e8c9c0; color:#8a4a3a; }
+ .totals { display:flex; gap:14px; flex-wrap:wrap; margin:16px 0; }
+ .card { border:1.5px solid #7a5c2e; background:#efe4c4; padding:10px 16px; min-width:150px; }
+ .card b { font-size:24px; display:block; }
+ code { font-size:12px; }
+</style></head><body><div class="plate">
+<h1>Plate III — Registry of the Agent Fleet</h1>
+<p class="dim">Every agent type used so far, counted from the records the repository itself keeps
+(cloud dispatch records, returned reports, and loop telemetry). Chat-session subagents leave no
+repo record and are not counted. Regenerate: <code>python3 docs/build_fleet_dashboard.py</code>.</p>
+
+<div class="totals">
+ <div class="card"><b>2,313</b>cloud agents dispatched</div>
+ <div class="card"><b>2,201</b>loop-builder slots (#1–3100)</div>
+ <div class="card"><b>754</b>scout candidates returned</div>
+ <div class="card"><b>1,272</b>loop-role executions tracked</div>
+ <div class="card"><b>160</b>nanopubs signed by slot agents*</div>
+</div>
+
+<h2>I. The Fleet Roster — types &amp; how often used</h2>
+<table><tr><th>Agent type</th><th>Used</th><th>Outcome</th><th>Completion</th><th>Records</th></tr>
+<tr><td><strong>Loop-Builder (slot agent)</strong><br><span class='dim'>One cloud agent per MorphoEval slot: writes the model script, dataset, Lean module and nanopubs for one organism/mechanism loop.</span></td><td class='num'>2,201</td><td>2201 completed</td><td><div class="bar"><div class="fill" style="width:100.0%;background:#7a5c2e"></div></div><span class='dim'>100%</span></td><td><code>morphoeval/cloud/dispatches/slot-*.json</code></td></tr>
+<tr><td><strong>Problem-Scout</strong><br><span class='dim'>Hunts one hunting-ground x tool-lens cell for resolvable problems; returns candidates for the central resolvability ranker.</span></td><td class='num'>100</td><td>98 reports in tree · 754 candidates</td><td><div class="bar"><div class="fill" style="width:98.0%;background:#7a5c2e"></div></div><span class='dim'>98%</span></td><td><code>morphoeval/problem_scouts/scout-*.json</code></td></tr>
+<tr><td><strong>Problem-Fixer</strong><br><span class='dim'>Repairs one leaderboard candidate in an isolated PR under a path allowlist + trusted merge gate; never self-merges.</span></td><td class='num'>12</td><td>10 landed on main</td><td><div class="bar"><div class="fill" style="width:83.3%;background:#7a5c2e"></div></div><span class='dim'>83%</span></td><td><code>morphoeval/problem_fixers/results/*.json</code></td></tr>
+<tr><td><strong>Loop roles (12 canonical steps)</strong><br><span class='dim'>Not separate dispatches: the scout/paper/source/rules/script/output/audit/measure/build/publish/graph/remed roles each loop run executes, counted from track_loop telemetry.</span></td><td class='num'>1,272</td><td>106 tracked runs · 106 executions per role</td><td><div class="bar"><div class="fill" style="width:100.0%;background:#7a5c2e"></div></div><span class='dim'>100%</span></td><td><code>morphoeval/runs/telemetry.sqlite (steps)</code></td></tr></table>
+
+<h2>II. Problem-Scouts — hunting ground × tool lens (98 of 100 returned)</h2>
+<table><tr><th>ground \ lens</th><th>delphi</th><th>knowledge</th><th>lean</th><th>literature</th><th>measure</th><th>registry</th><th>remediation</th><th>simulation</th><th>vision</th><th>wavepipe</th><th>Σ</th></tr>
+<tr><th>bioelectric</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell miss">·</td><td class="cell hit">1</td><td class="cell hit">1</td><td class='num'>9</td></tr><tr><th>lean</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class='num'>10</td></tr><tr><th>library</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class='num'>10</td></tr><tr><th>nanopub</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class='num'>10</td></tr><tr><th>predictions</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class='num'>10</td></tr><tr><th>rule30</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class='num'>10</td></tr><tr><th>scaling</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class='num'>10</td></tr><tr><th>thompson</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell miss">·</td><td class="cell hit">1</td><td class='num'>9</td></tr><tr><th>turing</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class='num'>10</td></tr><tr><th>wavevector</th><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class="cell hit">1</td><td class='num'>10</td></tr></table>
+<p class="dim">Missing cells (·) are scouts that were dispatched but whose report has not landed on main.</p>
+
+<h2>III. Problem-Fixer Wave 1 — 10 of 12 landed on main</h2>
+<table><tr><th>Fix</th><th>Candidate</th><th>Rank</th><th>Policy</th><th>Agent-reported status</th></tr>
+<tr><td><code>fix-001</code></td><td>DATA-QUALITY: catalog bioelectric_polarity empirical curves are alpha-template artifacts (BIO-TPL-DQ-01)</td><td>#1</td><td>review</td><td>fixed</td></tr><tr><td><code>fix-002</code></td><td>OEIS A051023 center-column traceability (first 128 bits)</td><td>#2</td><td>review</td><td>fixed</td></tr><tr><td><code>fix-003</code></td><td>Cross-artifact viability sync: open-problems.json vs problem-graph DELPHI vs audit YAML</td><td>#3</td><td>auto</td><td>verified-no-change</td></tr><tr><td><code>fix-004</code></td><td>Newman 1979 limb dataset: scout_manifest seed DOI is a typo vs reference/bib</td><td>#9</td><td>review</td><td>report not on main (PR open / held)</td></tr><tr><td><code>fix-005</code></td><td>Global morphogenetic flow: scout seed DOI mismatches the Streichan 2018 eLife bib entry</td><td>#10</td><td>review</td><td>fixed</td></tr><tr><td><code>fix-006</code></td><td>Audit `script:` path silently drops six Turing reference measurements</td><td>#24</td><td>review</td><td>fixed</td></tr><tr><td><code>fix-007</code></td><td>Planarian HK-ATPase v2 sidecar still pins superseded specimen SHA-256 and morphology text</td><td>#32</td><td>review</td><td>report not on main (PR open / held)</td></tr><tr><td><code>fix-008</code></td><td>Zhang sorting morphogenesis: fix math_kg lean_code snippets to match structural Loop theorems</td><td>#45</td><td>auto</td><td>fixed</td></tr><tr><td><code>fix-009</code></td><td>Cervera gap-junction GIF missing from audit fingerprints</td><td>#58</td><td>review</td><td>fixed</td></tr><tr><td><code>fix-010</code></td><td>Planform damaged-negative fixtures not gated in MorphoEval CI</td><td>#69</td><td>auto</td><td>fixed</td></tr><tr><td><code>fix-011</code></td><td>Mechanical semantic gate: YAML `formula` tokens must appear in paired Lean defs</td><td>#82</td><td>review</td><td>fixed</td></tr><tr><td><code>fix-012</code></td><td>Machine-check DM-DPP-01 precursor vs mature Dpp mobility factors (0.61 / 0.78)</td><td>#8</td><td>review</td><td>fixed</td></tr></table>
+
+<h2>IV. Inside every loop — the 12 canonical roles (telemetry, 106 runs)</h2>
+<table><tr><th>Role</th><th>Tier</th><th>Executions</th><th>Share</th></tr>
+<tr><td>scout</td><td>Tier A</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>paper</td><td>Tier A</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>source</td><td>Tier A</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>rules</td><td>Tier A</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>script</td><td>Tier A</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>output</td><td>Tier A</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>audit</td><td>Tier B</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>measure</td><td>Tier B</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>build</td><td>Tier B</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>publish</td><td>Tier B</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>graph</td><td>Tier B</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr>
+<tr><td>remed</td><td>Tier B-&gt;A</td><td class='num'>106</td><td><div class="bar"><div class="fill" style="width:8.3%;background:#7a5c2e"></div></div></td></tr></table>
+
+<h2>V. Who (or what) filled the roles — top actors &amp; models in telemetry</h2>
+<table><tr><th>Actor (as recorded)</th><th>Steps</th></tr><tr><td>builder-agent</td><td class='num'>315</td></tr>
+<tr><td>tool</td><td class='num'>206</td></tr>
+<tr><td>builder-agent+tool</td><td class='num'>92</td></tr>
+<tr><td>dual-assessors</td><td class='num'>88</td></tr>
+<tr><td>builder+assessor</td><td class='num'>85</td></tr>
+<tr><td>tool (measure_outputs.py)</td><td class='num'>81</td></tr>
+<tr><td>tool (build_morphoeval_kg.py)</td><td class='num'>81</td></tr>
+<tr><td>tool (sign_morphoeval.py + check_signed.mjs)</td><td class='num'>79</td></tr>
+<tr><td>human+scout-agent</td><td class='num'>78</td></tr>
+<tr><td>scout-agent</td><td class='num'>25</td></tr></table>
+<table style="margin-top:10px"><tr><th>Model</th><th>Steps</th></tr><tr><td>gemini-4-argon</td><td class='num'>814</td></tr>
+<tr><td>claude-fable-5-1</td><td class='num'>23</td></tr>
+<tr><td>claude-fable-5.1</td><td class='num'>7</td></tr>
+<tr><td>deterministic-rdflib</td><td class='num'>6</td></tr>
+<tr><td>deterministic-python</td><td class='num'>5</td></tr>
+<tr><td>Gemini 4 Argon</td><td class='num'>5</td></tr></table>
+
+<p class="dim">* Slot-agent Lean/nanopub counts are as recorded at dispatch time; per issue #268 the
+overnight-slot Lean modules are placeholder templates, not mechanism proofs, so treat
+<code>lean_theorems_proved</code>-style tallies from those records as claims, not verifications.
+Telemetry runs span 2026-10-18T18:03:18.181Z – 2026-10-20T02:35:07.105Z.</p>
+</div></body></html>
