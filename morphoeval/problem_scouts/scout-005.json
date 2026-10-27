@@ -1,0 +1,311 @@
+{
+  "scout": "scout-005",
+  "ground": "rule30",
+  "lens": "vision",
+  "candidates": [
+    {
+      "title": "Regenerate St. John tent metrics from held Commons photo (fixture provenance break)",
+      "gap": "Second-assessor audit (2026-10-19-conus-second-assessor-audit.yaml) documents that stjohn_white_chord_runs_px (1814 runs, mean 26.9 px) cannot be reproduced from body_whorl_tents_148x92_bitstrings (667 runs, mean 11.5 px) and no in-repo segmentation path exists from photograph to fixture arrays (1984-wolfram-conus-textile-rule30.py unpack_specimen_masks only unpacks vendored bits).",
+      "done": "Pre-registered JSON report: from datasets/conus/conus_textile_reference.json bbox_px crop of SHA-256-verified stjohn_osu_24399204286 (after python3 models/1984-wolfram-conus-textile-rule30.py --download), CV-segmented horizontal white-run count and mean length differ from fixture white_chord_count=1814 and white_chord_mean_px=26.9107 by less than 10% OR a signed refutation documents the mismatch with p<0.05 KS on normalized run lengths.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --download; python3 -c \"from pathlib import Path; import json; from morphoeval.verify_image_fitness import compute_specimen_cv_signature; from PIL import Image; import numpy as np; fix=json.loads(Path('datasets/conus/conus_textile_reference.json').read_text()); bb=fix['specimens'][0]['bbox_px']; im=Image.open('.conus_cache/conus_textile_stjohn_ccby2.jpg').crop(tuple(bb)); im.save('/tmp/stjohn_crop.jpg'); print(compute_specimen_cv_signature(Path('/tmp/stjohn_crop.jpg')))\" plus a new zero-conflict helper morphoeval/problem_scouts/stjohn_white_run_extractor.py that thresholds the CV mask and emits run-length CSV for scorer comparison against fixture fields.",
+      "deciding_data": "In repo: datasets/conus/conus_textile_reference.json, datasets/conus/conus_textile_shell.jpg; one named public fetch: Wikimedia stjohn_osu_24399204286 via --download URLs in datasets/conus/README.md.",
+      "prior_attempts": "MorphoEval second assessor (2026-10-19-conus-second-assessor-audit.yaml) flagged broken fixture chain; 2026-10-18-conus-audit scored specimen-match 84 assuming vendored masks. No agent has closed regeneration; route not refuted, only gap documented.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "compute_specimen_cv_signature segments the crop as-is; full chord runs need a thin new extractor that reuses the same Otsu/Sobel mask logic."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Pinned fixture plus on-disk canonical JPG; Commons photo is one --download away with SHA-256 check in the model script."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done is numeric tolerance on run count/mean or KS p-value against fixture arrays."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Single-photo segmentation and run scan completes in minutes on the repo Python stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New files under morphoeval/problem_scouts/ and optional extractor only; no edits to 1984-wolfram-conus-textile-rule30.py required for the verdict."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One download plus one CV pass yields pass/fail on fixture consistency in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audits recorded the gap but did not execute an independent CV regeneration route."
+        }
+      }
+    },
+    {
+      "title": "Independent silhouette H/W from CV vs vendored 256×140 fixture (calibration vs validation)",
+      "gap": "Self-test asserts mesh silhouette H/W within 1.5% of fixture height_to_width=1.8330 using the same vendored silhouette_256x140_row_bounds; second assessor notes H/W/IoU are calibration loops, not independent validation from raw photos.",
+      "done": "Pre-registered: aspect_ratio from compute_specimen_cv_signature on bbox-cropped St. John photo lies within [1.75, 1.91] (±5% of 1.833) AND differs from aspect_ratio measured on datasets/conus/conus_textile_shell.jpg by at most 0.08 absolute; otherwise report refutes canonical card mismatch.",
+      "tool_route": "python3 -c \"from pathlib import Path; from morphoeval.verify_image_fitness import compute_specimen_cv_signature; import json; from PIL import Image; fix=json.load(open('datasets/conus/conus_textile_reference.json')); bb=fix['specimens'][0]['bbox_px']; paths=['datasets/conus/conus_textile_shell.jpg','.conus_cache/conus_textile_stjohn_ccby2.jpg']; ...\" comparing circularity and mask bounding-box aspect from each path.",
+      "deciding_data": "In repo: datasets/conus/conus_textile_shell.jpg, conus_textile_reference.json silhouette metadata; optional .conus_cache after --download.",
+      "prior_attempts": "2026-10-19 second assessor deduction 10 (mesh tuned to same outline); no CV-independent H/W closure attempted.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "verify_image_fitness.compute_specimen_cv_signature already returns segmentation-derived geometry from a held JPG path."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Canonical specimen and fixture bbox already vendored; no external hunt required."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Numeric band on aspect ratio and cross-photo delta."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Sub-second CV on two images."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Scorer reads photos and writes morphoeval/problem_scouts/stjohn_hw_verdict.json only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate after optional download."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior CV-only H/W verdict on record."
+        }
+      }
+    },
+    {
+      "title": "Blind cv_sim_similarity gate: Rule 30 GIF vs canonical specimen (≥70 image fitness contract)",
+      "gap": "Flagship montage and Aristotelian index claim Verified Fit (image_fitness≈90, cv_sim_similarity≈88.3) for wolfram-conus-textile-rule30, but second assessor argues 1D chord KS cannot separate Rule 30 from Rule 90; an independent, hash-locked CV-only gate on the held GIF and JPG is not part of the Rule 30 prize submission docs.",
+      "done": "After pre-registration, python3 morphoeval/verify_image_fitness.py emits morphoeval/runs/image_fitness_and_provenance.json where entry slug wolfram-conus-textile-rule30 has cv_sim_similarity≥58.0, image_fitness≥70.0, and passes_image_threshold=true; any regression below thresholds is a scored failure.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (reads morphoeval/runs/aristotelian_categories_index.json, specimen datasets/conus/conus_textile_shell.jpg, simulation docs/media/conus_textile_rule30.gif via resolve_sim_media_path).",
+      "deciding_data": "In repo: docs/media/conus_textile_rule30.gif, datasets/conus/conus_textile_shell.jpg, morphoeval/runs/aristotelian_categories_index.json.",
+      "prior_attempts": "Atlas enrichment at commit fb234bc (datasets/conus/README.md MorphoEval audit); full-index verify_image_fitness not re-run as a blind gate in open-problems.json.",
+      "factors": {
+        "tool_fit": {
+          "score": 25,
+          "why": "Named script run as-is produces cv_sim_similarity and passes_image_threshold for this slug."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All inputs already tracked in repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Boolean threshold on two floats in output JSON."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Full atlas pass is tens of minutes; single-slug inspection via index JSON after one run is acceptable within hours."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Default run mutates aristotelian_categories_index.json unless scorer copies index to morphoeval/problem_scouts/ first; isolation requires read-only wrapper documented in pre-reg."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Verdict after one verify run or reading existing enriched index if hash-locked to commit."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "CV gate distinct from refuted 1D chord KS discrimination route."
+        }
+      }
+    },
+    {
+      "title": "2D CV discrimination: Conus textile vs Rule-90-class symmetric tent texture (Sobel/radial FFT)",
+      "gap": "pass3_neural_clades_reference.json states 1D white-chord KS cannot separate Rule 30 (KS≈0.2623) from Rule 90 (KS≈0.2627); discriminating_2d_observables_reference proposes tent_wall_chirality_index and anf_quadratic_carry_density, but no held-specimen photograph metric closes the gap on real shells.",
+      "done": "Pre-registered: cv_sim_similarity(docs/media/conus_textile_rule30.gif, conus_textile_shell.jpg) exceeds cv_sim_similarity between the same specimen and a Rule-90-rendered mantle panel PNG exported from models/1984-wolfram-conus-textile-rule30.py self_test r90_grid by at least 5.0 points OR fails with documented margin; scorer uses compute_sim_vs_specimen_cv_similarity on static PNG frames if GIF absent.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only (materialize r90_grid/r30_grid arrays) plus python3 -c \"from morphoeval.verify_image_fitness import compute_sim_vs_specimen_cv_similarity, compute_specimen_cv_signature; from pathlib import Path; ...\" saving PNGs under morphoeval/problem_scouts/conus_r90_r30_panels.png.",
+      "deciding_data": "In repo: specimen JPG, Rule 30 GIF, self_test simulation grids inside 1984-wolfram-conus-textile-rule30.py; reference targets in datasets/conus/pass3_neural_clades_reference.json.",
+      "prior_attempts": "Second assessor (2026-10-19) refuted 1D chord KS discrimination; Pass 3 JSON explicitly marks 2D observables as open. CV sim route not attempted.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "compute_sim_vs_specimen_cv_similarity is the deciding function; requires exporting simulation rows to PNG (one-off, not in verify_image_fitness CLI)."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Specimen and Rule 30 media in repo; Rule 90 grid from deterministic self_test."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "5-point margin on cv_sim_similarity scores."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Self-test ~35s plus two CV comparisons."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New PNG exports and verdict JSON under morphoeval/problem_scouts/ only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single loop after self_test."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "1D KS route refuted; 2D CV route open but untested (partial credit: related failure mode known)."
+        }
+      }
+    },
+    {
+      "title": "Ling vs St. John inter-specimen CV consistency (second photo unused in self_test)",
+      "gap": "conus_textile_reference.json lists ling_commons_010 with white_chord_cv=1.131 versus stjohn white_chord_cv=0.6403, but self_test quantitative comparisons use only the St. John-derived vendored lattice; Ling photo is never scored in morphoeval/audits.",
+      "done": "Pre-registered: structure_tensor coherency and dominant_wavelength_norm from compute_specimen_cv_signature on Ling crop (after --download) and on conus_textile_shell.jpg differ by at least 0.05 coherency OR 0.10 wavelength_norm, confirming two photographs are not interchangeable calibrations; if below thresholds, verdict is 'single-specimen calibration sufficient'.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --download; python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; from pathlib import Path; ...\" on .conus_cache/conus_textile_010_pd.jpg vs datasets/conus/conus_textile_shell.jpg.",
+      "deciding_data": "In repo: fixture metadata; public Ling_commons_010 via datasets/conus/README.md SHA fdc05730….",
+      "prior_attempts": "2026-10-19 audit deduction 15 (only one specimen used quantitatively); no verify_image_fitness pairwise CV report.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Pure compute_specimen_cv_signature on two held paths."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "One photo vendored, second needs --download."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Thresholds on coherency and wavelength_norm deltas."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Minutes including download."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only on photos; write verdict JSON only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "One sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Gap noted; route not refuted."
+        }
+      }
+    },
+    {
+      "title": "OP-01 (Prize 1): global phase-spreading — not a specimen-photo problem",
+      "gap": "docs/open-problems.json OP-01: prove D1(t)=1 hits closed gates {c_t=1} for short runs 1≤a_i≤7; docs/RULE30_PRIZE_STATUS_AND_GAPS.md Tier C — transparent-gate loophole when c_t=0 absorbs defects; Delphi bridge pooled 11.52%.",
+      "done": "Lean-checked proof or explicit counterexample word per OP-01 done field (not CV-decidable).",
+      "tool_route": "Not resolve_image_fitness; would be morphoeval/lean/MathOfBiology.lean plus models/1984-wolfram-conus-textile-rule30.py --self-test-only prize diagnostics.",
+      "deciding_data": "In repo: Lean laws, finite census tables in RULE30 docs; no specimen photograph decides this.",
+      "prior_attempts": "docs/open-problems.json attempted_by: Multi-agent panel, Unattributed; OP-01 status open.",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "why": "Vision lens cannot segment a photo into a global phase-spreading invariant; needs proof/computation lens."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Formal artifacts in repo but not photographic evidence."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "OP-01 done is mathematically crisp for a proof agent."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "Finite searches done; full proof may exceed hours."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Lean edits conflict with parallel proof agents."
+        },
+        "time_to_verdict": {
+          "score": 1,
+          "why": "Not one-sitting for vision."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Many partial attempts; exact global lemma still open, not refuted."
+        }
+      }
+    },
+    {
+      "title": "OP-02 (Prize 2): diagonal-sample decorrelation — not a specimen-photo problem",
+      "gap": "docs/open-problems.json OP-02: no Weyl/exponential-sum bound for center column diagonal sample S↦A_S(floor(S/2)); crystal density 1/2 proved but diagonal equidistribution open; Delphi bridge 2.03%.",
+      "done": "Published discrepancy bound or impossibility proof per OP-02 done field.",
+      "tool_route": "Wrong lens; analytic/discrepancy tooling (1984-wolfram-conus-textile-rule30.py rule30_prize_diagnostics, not verify_image_fitness).",
+      "deciding_data": "OEIS A051023 bits in datasets/conus/conus_textile_reference.json; asymptotics not in a single JPG.",
+      "prior_attempts": "Multi-agent panel per open-problems.json; Tier B finite density checks in RULE30_PRIZE_STATUS_AND_GAPS.md.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Specimen CV measures shell tents, not binary submask correlation along S↦floor(S/2)."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "First 128 center bits and simulation outputs in repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "OP-02 done is a clear mathematical deliverable."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Empirical density checks yes; proof no."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Math edits overlap other Rule 30 agents."
+        },
+        "time_to_verdict": {
+          "score": 1,
+          "why": "Not vision one-loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No refutation of entire diagonal-decorrelation program."
+        }
+      }
+    },
+    {
+      "title": "OP-03 (Prize 3): fixed-seed Ω(T) lower bound — not a specimen-photo problem",
+      "gap": "docs/open-problems.json OP-03: multivariate deg(c_T)=2T−1 collapses on unit seed; uniform Ω(T) needs P-vs-EXP machinery; Delphi bridge 0.037% — barrier result expected.",
+      "done": "Formal barrier/relativisation or provable model per OP-03 done field.",
+      "tool_route": "Lean/complexity lens (MathOfBiology.lean Theorem 35(2)); verify_image_fitness irrelevant.",
+      "deciding_data": "In repo: ANF degree certificates in docs/RULE30_PRIZE_STATUS_AND_GAPS.md; no photograph.",
+      "prior_attempts": "Multi-agent panel; OP-03 open with guidance to pursue barrier not bound.",
+      "factors": {
+        "tool_fit": {
+          "score": 0,
+          "why": "No specimen segmentation measures Turing/RAM lower bounds."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Boolean sensitivity tables in repo only."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "OP-03 done is explicit for proof agents."
+        },
+        "compute_in_repo": {
+          "score": 7,
+          "why": "Multivariate lower bounds proved; uniform fixed-seed not."
+        },
+        "isolation": {
+          "score": 5,
+          "why": "Lean barrier work collides with proof fleet."
+        },
+        "time_to_verdict": {
+          "score": 0,
+          "why": "Outside vision scope."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Barrier route recommended, not refuted."
+        }
+      }
+    }
+  ]
+}
