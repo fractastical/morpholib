@@ -57,7 +57,7 @@ jobs:
           git add morphoeval/cloud/dispatches/problem-scout-*.json || true
           if ! git diff --cached --quiet; then
             git commit -m "Problem-Scout 100: dispatch records for agents ${{ inputs.agents }}"
-            git push
+            for i in 1 2 3 4 5; do git pull --rebase origin main && git push && break || sleep 15; done
           else
             echo "No dispatch records to commit."
           fi
