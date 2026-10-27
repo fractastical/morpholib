@@ -1,0 +1,280 @@
+{
+  "scout": "scout-090",
+  "ground": "nanopub",
+  "lens": "delphi",
+  "candidates": [
+    {
+      "id": "NP-BACKLOG-TRIAGE-01",
+      "title": "Delphi viability prior for the 3,055 signed-but-unpublished MorphoEval nanopubs",
+      "gap": "298 audit bundles under morphoeval/kg/*/signed/ have trustworthy URIs in published.json with published=null (zero test/prod registry posts), while visualize_kg_overview.py reports ~3,252 signed .trig files but only ~197 prod manifest entries. Swarm has no pooled Delphi posterior on whether batch test-registry publication (nanopubs/publish_batch.sh --test or morphoeval/sign_morphoeval.py --publish test) is worth a full loop before more auditing.",
+      "done": "A 3-model blind Delphi panel scores one proposition with weighted subgoals summing to 100, emits morphoeval/runs/2026-*-nanopub-backlog-delphi-edge-scoring.md with per-agent prior/for/against/net/BF/posterior rows passing the same arithmetic self-checks documented in morphoeval/runs/2026-10-26-bos-taurus-delphi-edge-scoring.md, and records pooled bridge posterior_percent plus panel_range_percent in a new docs/open-problems.json problem entry (or registered morphoeval/runs/*.json manifest) so docs/build_problem_graph_html.py can wire a NOT SCORED→scored edge without hand-invented probabilities.",
+      "tool_route": "Panel protocol: mirror morphoeval/runs/2026-10-26-bos-taurus-delphi-edge-scoring.md pooling rules; optional RDF emit via morphoeval/build_rule30_bayesian_delphi.py pooling helpers (prob_to_decibans, update_prob_with_db). Inventory inputs: python3 -c \"count published.json with published=null\" on morphoeval/kg; graph validation: python3 docs/build_problem_graph_html.py (self-checks must pass after canvas/docs sync).",
+      "deciding_data": "In repo: morphoeval/kg/*/published.json (3055 signed entries with published=null counted 2026-10-27), morphoeval/sign_morphoeval.py, morphoeval/visualize_kg_overview.py prod_nps accounting, nanopubs/publish_batch.sh.",
+      "prior_attempts": "Individual bundles are signed (sign_morphoeval.py + node morphoeval/check_signed.mjs) but fleet-wide test publish has not been Delphi-scored; docs/open-problems.json has no OP for publication backlog triage.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Bos edge-scoring runbook plus build_rule30_bayesian_delphi pooling and build_problem_graph_html validation are the established Delphi stack; no new scorer needed."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Exact backlog counts and manifest paths are computable from morphoeval/kg without external fetch."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done is a markdown table with checkable BF/posterior identities and a registered pooled percent, not prose."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Panel scoring is LLM-hours plus one inventory script; no registry writes required to close the Delphi task itself."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as new morphoeval/runs/*-delphi*.md plus optional new open-problems row in a separate PR; scout file only registers the problem."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sitting panel plus manifest script yields the viability prior without publishing anything."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of batch-publish viability scoring; gap is absence of any prior."
+        }
+      }
+    },
+    {
+      "id": "LEVIN-INTEGRITY-NP-01",
+      "title": "Delphi bridge posterior for reconciling stale Levin v1 production nanopubs after v3 supersession",
+      "gap": "model_integrity_ledger.jsonl incident 2026-10-24-gemini-4-argon-self-audit-and-tautology-incident still cites production_nanopub_* URIs from the superseded 2026-10-24-levin-youtube-channel-math-audit (self-score 93.8), while 2026-10-24-levin-youtube-channel-math-audit-v3 is prod-published at 63.5/100 and the v1 bundle retains its own prod entries. The knowledge graph therefore exposes conflicting immutable claims with no Delphi viability score on the remediation path (explicit npx:supersedes prod chain + ledger URI refresh).",
+      "done": "Pooled Delphi bridge posterior (percent) for the proposition \"Within repo means, integrity reconciliation succeeds: v3 overall/claim/validation prod URIs replace ledger + graph links and v1 prod entries are superseded without orphan URIs,\" recorded in morphoeval/runs/*-levin-integrity-delphi*.md with panel_range_percent, and verify_integrity.py --sync shows production_nanopub_* fields matching morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/published.json current URIs.",
+      "tool_route": "Read morphoeval/runs/model_integrity_ledger.jsonl and both published.json files; score with 3-model Delphi panel (bos runbook); wire graph via docs/build_problem_graph_html.py after adding DELPHI entry; supersession execution (later loop) uses morphoeval/sign_morphoeval.py --supersede on morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/signed/*.trig.",
+      "deciding_data": "In repo: morphoeval/runs/model_integrity_ledger.jsonl, morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit/published.json, morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/published.json, morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md.",
+      "prior_attempts": "Referee pass v2 (26.4) and v3 (63.5) closed the score inflation; v3 prod publish occurred 2026-10-25, but ledger production URIs were not updated and v1 prod manifests remain (verify_integrity.py documents the incident, no Delphi on network reconciliation).",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Delphi panel + problem-graph wiring is the lens; actual signing is deferred but sign_morphoeval.py --supersedes is the named downstream tool."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Conflicting URIs and scores are fully enumerated in-repo with no external dependency."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done pairs a checkable posterior table with a mechanical URI equality check against published.json."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Delphi scoring is hours; prod supersession is optional follow-up requiring keys."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Viability file and ledger sync can be new-file PRs; prod publish touches shared manifests and needs coordination."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Panel + URI diff completes in one loop; registry supersession may be a second loop."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Partial reconciliation (v3 prod) happened but the exact ledger+supersedes route is not scored or closed."
+        }
+      }
+    },
+    {
+      "id": "LEVIN-P4-REMEDIATE-01",
+      "title": "Delphi viability before Levin YouTube Pass-4 remediation (published-measurement overlay)",
+      "gap": "2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md states the structural ceiling: specimen-match 24 and morphometric-validation 51 because no cited paper figure is overlaid (Chvykov 2021, Pigozzi 2025, Cervera 2020, Pietak 2016). Pass-4 work is expensive (generator for docs/bioelectricity/levin_youtube_kg.json, integrity fixes, optional measurement wiring) but no Bayesian bridge posterior exists on whether one public figure overlay can move overall (pad.) above the 70 'light green' graph band.",
+      "done": "Pre-registered Delphi assessment YAML under morphoeval/audits/2026-*-levin-youtube-pass4-remediation-delphi.yaml with subgoals (generator closure, one external measurement wired, bio-val dimension delta, prod supersession) and pooled bridge posterior_percent; subgoal weights sum to 100 and each agent row satisfies prior×BF=posterior within 0.15 pp as enforced by docs/build_problem_graph_html.py validate().",
+      "tool_route": "Panel scores against morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md remediation list; emit assessment via pattern from morphoeval/build_rule30_bayesian_delphi.py (BayesianAssessment + LLMClaimAssessment) or bos markdown runbook; optional KG stub under morphoeval/kg/2026-*-levin-pass4-delphi/; validate docs/build_problem_graph_html.py.",
+      "deciding_data": "In repo: audit v3 REPORT.md and measurements sidecar; public overlays named in REPORT (e.g. Chvykov 2021 smarticle enrichment, Pigozzi 2025 conditioning curves) as fetch targets for a later measure lens, but Delphi panel may use only REPORT text without downloading figures.",
+      "prior_attempts": "Passes v1–v3 documented score trajectory 93.8→26.4→63.5; no Delphi viability on Pass-4 measurement wiring (docs/open-problems.json has no levin entry).",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Delphi scoring tools exist; executing measurement overlay is measure/vision lens, but viability prior is decisively a Delphi product."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Audit gap analysis and candidate DOIs are in-repo; figure pixels require a later public fetch."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "YAML/markdown with numeric subgoals and validated posterior arithmetic is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Panel + YAML generation hours; actual overlay work is out of scope for the Delphi-only deliverable."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Delphi audit YAML and run markdown can be new files only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Viability prior is one sitting; confirming bio-val lift requires remediation loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior Delphi attempt on Pass-4; remediation list is open."
+        }
+      }
+    },
+    {
+      "id": "SECOND-ASSESSOR-PUBLISH-01",
+      "title": "Delphi prior on publishing blind second-assessor nanopub bundles (six kg directories, all unpublished)",
+      "gap": "Six morphoeval/kg/*second-assessor* bundles (e.g. 2026-10-19-petroff-kahng-second-assessor-audit, 2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit) are fully signed with published:null on every entry. Head and second-assessor scores can diverge (bos second assessor overall 54.35 vs published v7 negative verdict) but MorphoSwarm has no viability score on the path \"publish second-assessor bundle to test/prod vs fold into head supersession only.\"",
+      "done": "Delphi panel scores proposition \"Publishing the second-assessor TriG bundle adds epistemic value net of duplication with head audit\" with pooled posterior_percent recorded in morphoeval/runs/*-second-assessor-publish-delphi.md and a manifest listing the six bundle paths with a boolean publish_recommendation when pooled ≥15%.",
+      "tool_route": "Inventory: ls morphoeval/kg/*second-assessor*/published.json; compare overall scores from morphoeval/audits/*second-assessor*.yaml vs head audit YAML; Delphi panel (bos runbook); future publish via morphoeval/sign_morphoeval.py --publish test per bundle.",
+      "deciding_data": "In repo: six second-assessor kg directories, paired morphoeval/audits/*second-assessor*.yaml, published.json null flags.",
+      "prior_attempts": "Second-assessor bos audit performed blind 2026-10-26; no publish or Delphi triage recorded. Petroff/Kahng bundle signed 2026-10-19, never registry-posted.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Delphi edge scoring is the decision tool; sign_morphoeval.py is downstream once prior clears 15%."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "All six bundles and YAML scores are local."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done is a pooled percent plus explicit bundle list threshold rule."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Panel + inventory only for the scout deliverable."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New run markdown and manifest; no edits to existing audits required for viability scoring."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Six-bundle inventory and one panel fit a single session."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route not previously scored or refuted."
+        }
+      }
+    },
+    {
+      "id": "BOS-PUBLISHED-EDGE-01",
+      "title": "Delphi score the realized Bos taurus prod-publication edge (currently NOT SCORED on the problem graph)",
+      "gap": "OP-11 Delphi entry `bos` scores only the follow-up path (re-score + migration-wave, pooled 39.3%). morphoeval/runs/2026-10-26-bos-taurus-delphi-edge-scoring.md explicitly states edges with no panel—including the realized bos publication edge—render NOT SCORED. After morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7 prod publish, the graph still lacks a retrospective viability posterior on \"was publishing the negative verdict at Pass 9 the right swarm spend?\"",
+      "done": "New Delphi subgoal set H_bos^publish with weights summing to 100, 3-agent panel, pooled bridge posterior_percent stored alongside OP-11 in docs/open-problems.json viability block or sibling OP entry, and problem-graph canvas edge for the published node carries prob equal to pooled posterior within 0.6 pp (build_problem_graph_html.py validate()).",
+      "tool_route": "Use morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/REPORT.md and published.json as evidence bundle; panel blind to OP-11 follow-up scores; record via morphoeval/runs/*-bos-published-edge-delphi.md; sync docs/open-problems.json + docs/build_problem_graph_html.py.",
+      "deciding_data": "In repo: v7 REPORT, published prod URIs, OP-11 viability in docs/open-problems.json, bos delphi edge runbook.",
+      "prior_attempts": "OP-11 follow-up Delphi scored 2026-10-26; retrospective publish-edge deliberately left NOT SCORED per same document. OP-11 status refuted for the Turing claim but publish decision unscored.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Exact extension of the bos Delphi workflow already in-repo; not blocked as duplicate OP-11 scoring."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Published assessment and morphometrics entirely in-repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Graph builder self-checks enforce posterior consistency on edges."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Panel + docs sync only."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Requires coordinated updates to open-problems.json and problem-graph canvas (not zero-conflict with graph editors)."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One panel sitting if canvas access is available."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Documented intentional NOT SCORED gap, not a refuted route."
+        }
+      }
+    },
+    {
+      "id": "OP-06-VIABILITY-REFRESH-01",
+      "title": "Stale Delphi viability on OP-06 (flagship debt marked solved but graph classification not_scored)",
+      "gap": "docs/open-problems.json OP-06 (node f3) status solved after flagship15 Pass N+1, yet viability.kind remains not_scored with note \"first swarm task is pre-registered Delphi scoring.\" morphoeval/kg holds Pass N+1 nanopub residue across Turing/Meinhardt/C. elegans audits without a pooled posterior on whether further remediation loops are dead ends vs still ≥15% pathways.",
+      "done": "Delphi bridge assessment for proposition \"No further flagship15 remediation loops beat current self-tests\" with pooled posterior_percent, panel_range_percent, and classification possible_pathway vs below_15_percent written into docs/open-problems.json OP-06 viability block; docs/build_problem_graph_html.py OPEN_PROBLEMS mirror updated and validate() exits 0.",
+      "tool_route": "Evidence: morphoeval/runs/2026-10-26-flagship15-loop-passN.md, morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml, related morphoeval/kg/*flagship* bundles; panel via bos/rule30 Delphi runbook; update docs/open-problems.json and run python3 docs/build_problem_graph_html.py.",
+      "deciding_data": "In repo: OP-06 entry, flagship15 run markdown, kg audit bundles for the three sub-items.",
+      "prior_attempts": "Multi-agent panel (gemini, gpt, grok, sonnet) closed structural debt per OP-06 source; Delphi viability never recorded post-solve.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Problem-graph + Delphi stack directly resolves the documented not_scored stale state."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Pass N+1 artifacts and OP-06 text are fully in-repo."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "open-problems.json fields and graph validator give objective closure, though \"solved\" vs posterior wording needs careful spec."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Panel hours plus docs regeneration."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Touches shared docs/open-problems.json and canvas—conflicts possible with other scouts editing OP list."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Panel is one sitting; docs/canvas sync may wait on merge queue."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Explicitly flagged as unscored, not refuted."
+        }
+      }
+    },
+    {
+      "id": "RULE30-KG-SYNC-01",
+      "title": "Delphi viability of syncing Rule30 Bayesian KG with MorphoSwarm open-problems OP-01..03",
+      "gap": "morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/ holds pk:BayesianAssessment bridge posteriors (docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md) wired to graph prizes p1–p3, while docs/open-problems.json OP-01..03 viability uses overlapping but separately maintained pooled percentages. No freshness check or Delphi re-panel is scheduled when Lean/cylinder assets change, so graph colour can drift from KG nanopub claims.",
+      "done": "Automated diff report where every OP-0i viability.pooled equals DELPHI.pi.pooled.posterior from docs/build_problem_graph_html.py extract within 0.01 pp OR a new Delphi re-panel YAML morphoeval/audits/2026-*-rule30-viability-refresh-delphi.yaml documents superseding posteriors with signed updated trig under morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/.",
+      "tool_route": "python3 morphoeval/build_rule30_bayesian_delphi.py --check-only (or custom diff script reading docs/open-problems.json + rule30 KG TTL); regenerate via morphoeval/build_rule30_bayesian_delphi.py; validate python3 docs/build_problem_graph_html.py; sign with morphoeval/sign_morphoeval.py if posteriors change.",
+      "deciding_data": "In repo: morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/, docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md, docs/open-problems.json OP-01..03.",
+      "prior_attempts": "2026-10-20 multi-agent Bayesian assessment (Fable/GPT/Gemini) published to KG; open-problems snapshot 2026-10-26 copies pooled values; no drift monitor recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "build_rule30_bayesian_delphi.py is the canonical named tool for this exact nanopub+Delphi coupling."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Both OP list and Rule30 KG live in-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Numeric diff tolerance or superseding signed trig is objectively checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Regenerate + validate runs in minutes on repo stack."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Fixing drift updates shared docs/open-problems.json and possibly signed KG—high merge coupling."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Diff script gives immediate verdict; re-panel only if mismatch."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No record that sync is impossible; gap is maintenance absence."
+        }
+      }
+    }
+  ]
+}
