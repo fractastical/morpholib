@@ -1,0 +1,120 @@
+audit:
+  id: 2026-10-27-drosophila-deflecta-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 1)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 scored the unforced Schnakenberg render. Commit is origin/main at loop start; slot files are new."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  werner2010:
+    title: "Generation of a novel wing colour pattern by the Wingless morphogen"
+    authors: "Werner T, Koshikawa S, Williams TM, Carroll SB"
+    venue: "Nature 464:1143-1148"
+    doi: 10.1038/nature08896
+    year: 2010
+  prudhomme2006:
+    title: "Repeated morphological evolution through cis-regulatory changes in a pleiotropic gene"
+    authors: "Prud'homme B, Gompel N, Rokas A, Kassner VA, Williams TM, Yeh S-D, True JR, Carroll SB"
+    venue: "Nature 440:1050-1053"
+    doi: 10.1038/nature04597
+    year: 2006
+  kondo2010:
+    title: "Reaction-Diffusion Model as a Framework for Understanding Biological Pattern Formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620"
+    doi: 10.1126/science.1179047
+    year: 2010
+simulations:
+  - id: delphi10000-drosophila-deflecta-turing-wavelength-s0
+    name: "Drosophila deflecta detail-scale Turing wavelength (2.633 µm, pass 1)"
+    organism: "Drosophila deflecta"
+    script: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py
+    output: docs/media/drosophila_deflecta_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, werner2010, prudhomme2006, kondo2010]
+    summary: >-
+      Pass 1 implements Schnakenberg kinetics and the Turing wavenumber k_c
+      with the length unit pinned so lambda_c = 2.633e-06 m (Holocene, 0 Ma).
+      The growth GIF is the unforced field (12 frames, 640x480). Computer-vision
+      similarity against the gallery tile is 82.9. The D_u sweep is monotonic
+      (1.84 µm to 4.90 µm) and the equal-diffusion ablation is not Turing
+      (amplitude ratio 0.046). Pearson r, RMSE, and KS of a specimen-conditioned
+      field are not yet attached to the rendered GIF. Predecessor D. cyrtoloma
+      detail wavelength 5.024 µm; successor D. elegans 2.447 µm.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) derived the diffusion-driven instability and the critical wavenumber. Schnakenberg (1979) gave the two-species kinetics."
+        - "Werner et al. (2010) showed Wingless at vein intersections paints spots in D. guttifera. Prud'homme et al. (2006) showed the D. elegans apical spot is a yellow cis-regulatory novelty."
+      reconstructed_in_script:
+        - "Nondimensional parameters (a, b, D_u, D_v) = (0.132, 0.780, 0.061, 3.050) are chosen for this 2.633 µm slot. They are not measurements from those papers."
+        - "Detail-tier wavelengths of D. cyrtoloma and D. elegans are the primordium-tier catalog lengths rescaled by 207.6/108.8 and 101.1/108.8 onto 2.633 µm."
+      transfer_boundary:
+        - "Wingless vein spots were shown in D. guttifera, not as a 2.633 µm wavelength in D. deflecta. The chronoseries radiation label is the assigned bucket; D. deflecta is a quinaria-group fly."
+      does_not_claim:
+        - "Does not claim a wet-lab measurement of a 2.633 µm pigment wavelength on D. deflecta."
+        - "Does not claim the pass-1 unforced GIF is a pixel fit to the gallery spiral."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "The dispersion relation, Jacobian steady state, Neumann Laplacian, and lambda = 2 pi / k_c are implemented and checked by --self-test. Specimen conditioning exists in the script but was not the pass-1 render."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py, lines: [72, 96], note: "k_c^2 = h / (2 D_u D_v) and sigma(k_c)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py, lines: [50, 68], note: "Schnakenberg Jacobian at u0 = a + b", supports: true}
+      specimen-match:
+        value: 76
+        rationale: "Unforced sepia GIF scores cv_sim_similarity 82.9 against the gallery ocellus (12 frames, 640x480). The third comparison panel is labeled conditioning off, so the render is not yet the assimilated ocellus."
+        evidence:
+          - {file: docs/media/drosophila_deflecta_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "pass-1 unforced growth GIF", supports: true}
+          - {file: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py, lines: [320, 323], note: "pass_id == 1 branch renders sepia only", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "D_u from 0.030 to 0.200 raises lambda_c monotonically from 1.835 µm to 4.903 µm. The sweep is plotted and asserted in --self-test."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py, lines: [151, 161], note: "du_sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py, lines: [595, 598], note: "self-test asserts strict increase", supports: true}
+      morphometric-validation:
+        value: 72
+        rationale: "Analytical wavelength is 2.633e-06 m versus the nominal 2.6 µm reference. Specimen coherency is 0.723 and foreground fraction 0.410, neither equal to its reference. Ablation amplitude ratio is 0.046. Pearson r, RMSE, and KS are not yet on the pass-1 figure."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py, lines: [221, 253], note: "segment_specimen mask, circularity, coherency", supports: true}
+          - {file: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py, lines: [269, 287], note: "goodness_of_fit exists but pass-1 render left gof null", supports: false}
+      source-traceability:
+        value: 88
+        rationale: "Primary DOIs resolve (Turing 1952, Schnakenberg 1979, Werner 2010, Prud'homme 2006, Kondo 2010). The specimen file is SHA-256 pinned. Commons had no CC still; the gallery tile is the fallback and is labeled as such."
+        evidence:
+          - {file: datasets/drosophila_deflecta_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing, Schnakenberg, Werner, Gompel entries", supports: true}
+          - {file: datasets/drosophila_deflecta_turing_wavelength_s0/drosophila_deflecta_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 2.633e-06 m and age 0 Ma", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Each modelling step is a named function (jacobian, turing_report, chronoseries, simulate) tied to the dispersion formula in the reference JSON. The length-unit comment states why lambda_c is 2.633 µm."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py, lines: [99, 121], note: "length unit and physical diffusivities", supports: true}
+          - {file: datasets/drosophila_deflecta_turing_wavelength_s0/README.md, lines: [1, 30], note: "scale, age, and chronoseries table", supports: true}
+      repro-package:
+        value: 86
+        rationale: "--self-test passed (Turing conditions, monotonic sweep, chronoseries order, ablation not Turing, forced Pearson r 0.983). Seed 3181. Pinned dependencies are the repo requirements plus the cloud image's scientific stack."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-deflecta-turing-wavelength-s0.py, lines: [586, 612], note: "--self-test assertions", supports: true}
+          - {file: datasets/drosophila_deflecta_turing_wavelength_s0/README.md, lines: [32, 48], note: "documented invocation", supports: true}
+    remediation:
+      - "Attach Pearson r, RMSE, and KS of the specimen-conditioned activator to the comparison figure and require r > 0.98."
+      - "Re-render the growth GIF from the forced trajectory so the last frame is the ocellus the forcing tracks, then re-score cv_sim_similarity."
+      - "Record the equal-diffusion amplitude ratio and the D_u sweep coefficient of variation beside the non-circular specimen mask metrics in the pass-2 sidecar."
