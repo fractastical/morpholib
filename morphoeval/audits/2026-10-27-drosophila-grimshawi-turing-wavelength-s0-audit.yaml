@@ -1,0 +1,133 @@
+audit:
+  id: 2026-10-27-drosophila-grimshawi-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: null
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, loop 3186 pass 1)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1. Checkpoint hash is updated to the commit that contains these paths before the KG build."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  edwards2007:
+    title: "A Database of Wing Diversity in the Hawaiian Drosophila"
+    authors: "Edwards KA, Doescher LT, Kaneshiro KY, Yamamoto D"
+    venue: "PLoS ONE 2(5):e487 (2007)"
+    doi: 10.1371/journal.pone.0000487
+    year: 2007
+  clark2007:
+    title: "Evolution of genes and genomes on the Drosophila phylogeny"
+    authors: "Clark AG et al."
+    venue: "Nature 450:203-218 (2007)"
+    doi: 10.1038/nature06341
+    year: 2007
+  werner2010:
+    title: "Generation of a novel wing colour pattern by the Wingless morphogen"
+    authors: "Werner T, Koshikawa S, Williams TM, Carroll SB"
+    venue: "Nature 464:1143-1148 (2010)"
+    doi: 10.1038/nature08896
+    year: 2010
+  koshikawa2020:
+    title: "Evolution of wing pigmentation in Drosophila"
+    authors: "Koshikawa S"
+    venue: "Development Growth & Differentiation 62:269-278 (2020)"
+    doi: 10.1111/dgd.12661
+    year: 2020
+simulations:
+  - id: delphi10000-drosophila-grimshawi-turing-wavelength-s0
+    name: "Drosophila grimshawi Turing wavelength at 2.8 µm (detail)"
+    organism: "Drosophila grimshawi"
+    script: models/2026-delphi10000-drosophila-grimshawi-turing-wavelength-s0.py
+    output: docs/media/drosophila_grimshawi_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, edwards2007, clark2007, werner2010, koshikawa2020]
+    summary: >-
+      Pass 1 of loop 3186. Schnakenberg kinetics with δ = D_v/D_u = 16.3186 place
+      the fastest-growing mode at 2.766 µm (slot anchor 2.765e-06 m, Holocene 0 Ma).
+      A cosine-seeded integration matches the exponential growth law at Pearson
+      r = 0.99974. The same kinetics at the predecessor (δ = 10.40, λ = 2.512 µm)
+      and successor (δ = 12.85, λ = 2.629 µm) keep grimshawi as the longest
+      detail-scale wavelength. The animation is a two-arm spiral at that
+      wavenumber, radially enveloped by the gallery specimen. Equal diffusion
+      gives σ_max = -0.717. Not yet in this pass: a plotted continuous δ sweep,
+      an orientation-histogram KS, an Otsu foreground comparison, and a rendered
+      ablation whose image-fitness drop is measured.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) and Schnakenberg (1979) supply the instability and the activator-inhibitor kinetics."
+        - "Edwards et al. (2007) document Hawaiian picture-wing diversity including D. grimshawi. Werner et al. (2010) show D. guttifera spots are Wingless-driven. Neither paper reports a 2.765 µm wavenumber."
+      reconstructed_in_script:
+        - "δ-dependent fastest mode, numerical growth-rate fit, and the chronoseries order ficusphila < guttifera < grimshawi at fixed D_u."
+        - "Spiral-wave render calibrated to the gallery asset's radial luminance envelope and melanin colour regression."
+      transfer_boundary:
+        - "The gallery frame is a project spiral asset, not a 2.8 µm micrograph. Wikimedia hits were envelope labels and were not used as the target."
+      does_not_claim:
+        - "Does not claim Edwards or Werner measured this wavelength."
+        - "Does not claim the saturated nonlinear Schnakenberg spot field stays at 2.765 µm; the reported law is the linear fastest mode."
+        - "Does not claim the 199 µm grimshawi primordium slot."
+    scores:
+      model-fidelity:
+        value: 87
+        rationale: "sigma_of_k is the Schnakenberg eigenvalue and the cosine-seeded PDE recovers it (r = 0.99974). The rendered spiral is the near-onset carrier, not a full 2D nonlinear saturation."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-grimshawi-turing-wavelength-s0.py, lines: [67, 79], note: "dispersion eigenvalue", supports: true}
+          - {file: models/2026-delphi10000-drosophila-grimshawi-turing-wavelength-s0.py, lines: [122, 173], note: "numerical growth fit", supports: true}
+      specimen-match:
+        value: 85
+        rationale: "Last GIF frame scores CV 93.8 against the gallery specimen (12 frames, 800x600). The match is a spiral in the specimen palette, and the asset is not a wing micrograph."
+        evidence:
+          - {file: docs/media/drosophila_grimshawi_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth GIF", supports: true}
+          - {file: docs/media/drosophila_grimshawi_turing_wavelength_s0_comparison.png, lines: [1, 1], note: "side-by-side comparison", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: "Three chronospecies δ values are plotted and a 12-point sweep is asserted monotone in the self-test, but the continuous sweep is not yet a figure panel."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-grimshawi-turing-wavelength-s0.py, lines: [100, 120], note: "chronoseries and δ sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-grimshawi-turing-wavelength-s0.py, lines: [41, 44], note: "species-specific δ", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: "Growth Pearson r = 0.99974 against the exponential law; radial envelope Pearson r = 0.99542 against the masked specimen. KS and Otsu segmentation are not yet reported."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-grimshawi-turing-wavelength-s0.py, lines: [368, 455], note: "measure_morphoeval", supports: true}
+          - {file: models/2026-delphi10000-drosophila-grimshawi-turing-wavelength-s0.py, lines: [204, 214], note: "radial envelope fit", supports: true}
+      source-traceability:
+        value: 88
+        rationale: "Seed DOI 10.1371/journal.pone.0000487, Turing and Schnakenberg DOIs, Werner 2010 for the successor, and a SHA-256 pin of the gallery specimen. Commons envelope labels were rejected as non-anatomical."
+        evidence:
+          - {file: datasets/drosophila_grimshawi_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing, Schnakenberg, Edwards", supports: true}
+          - {file: datasets/drosophila_grimshawi_turing_wavelength_s0/drosophila_grimshawi_turing_wavelength_s0_reference.json, lines: [1, 30], note: "scale 2.765e-06 m and age 0 Ma", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Dispersion, chronoseries, and the spiral carrier are separate functions with a Lean file for the integer consequences. The render's histogram match is a colour transfer, called out in the claim boundary."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3186_drosophila_grimshawi_turing_wavelength_s0.lean, lines: [16, 39], note: "five theorems, zero sorry", supports: true}
+          - {file: models/2026-delphi10000-drosophila-grimshawi-turing-wavelength-s0.py, lines: [226, 234], note: "spiral carrier", supports: true}
+      repro-package:
+        value: 87
+        rationale: "Deterministic seed 3186, SHA-pinned specimen, --self-test covering wavelength, stability, Pearson gates, and chronoseries order."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-grimshawi-turing-wavelength-s0.py, lines: [458, 493], note: "self-test gates", supports: true}
+          - {file: datasets/drosophila_grimshawi_turing_wavelength_s0/README.md, lines: [1, 24], note: "scale, age, invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Plot the continuous δ sweep (λ versus δ) on the comparison figure so parameter expressivity is visible, not only asserted."
+      - id: R2
+        item: "Add an orientation-histogram KS statistic and an Otsu foreground-fraction comparison between the specimen mask and the rendered equilibrium."
+      - id: R3
+        item: "Render an ablation (equal diffusion or zero-arm carrier) and record the drop in specimen CV relative to the Turing spiral."
