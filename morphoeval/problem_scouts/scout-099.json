@@ -1,0 +1,320 @@
+{
+  "scout": "scout-099",
+  "ground": "scaling",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "id": "SCALE-MPSM-01",
+      "title": "Ex-vivo mPSM: digitise Lauschke 2013 scaling curves and re-anchor Pearson r",
+      "gap": "datasets/ex_vivo_scaling_mPSM/ex_vivo_scaling_mPSM_reference.json observed_S1_um / observed_S5_um / observed_v_wave_1_um_per_min lack figure-digitisation provenance; morphoeval/kg/2026-10-19-ex-vivo-scaling-mPSM-audit-v3/REPORT.md prices the r=0.9997 fit as unverifiable against Lauschke Fig. 3d.",
+      "done": "reference.json contains a pass4_digitisation block with source DOI 10.1038/nature11842, figure panel ids (Fig. 3d segment-size vs explant radius; Fig. 4 wave speed), >=8 tabulated (R_um, S_um) pairs and >=4 (R_um, v_um_per_min) pairs; measure_morphoeval() Pearson r and RMSE for S vs R are recomputed from those points (not from hand-typed constants); python3 2014-lauschke-ex-vivo-scaling-mPSM.py --self-test passes; morphoeval/measure_outputs.py on morphoeval/audits/2026-10-19-ex-vivo-scaling-mPSM-audit-v3.yaml exits 0; a new morphoeval/audits/*-ex-vivo-scaling-mPSM-audit-v4.yaml overall morphometric-validation >= Pass 3 and documents the digitisation SHA in evidence.",
+      "tool_route": "12-step loop on slot Loop_026: (1) pre-register digitisation in morphoeval/runs/*-ex-vivo-scaling-mPSM-loop-pass4.md; (2) edit datasets/ex_vivo_scaling_mPSM/ex_vivo_scaling_mPSM_reference.json + 2014-lauschke-ex-vivo-scaling-mPSM.py measure_morphoeval(); (3) python3 2014-lauschke-ex-vivo-scaling-mPSM.py --self-test; (4) python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-ex-vivo-scaling-mPSM-audit-v3.yaml; (5) python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<new-v4>.yaml --check; (6) python3 morphoeval/track_loop.py init --run-id ex-vivo-scaling-mPSM-pass4.",
+      "deciding_data": "In repo: Lauschke et al. 2013 reference table stub and script measurements; public: Nature 2013 paper figures (doi:10.1038/nature11842) for digitisation.",
+      "prior_attempts": "Pass 3 (2026-10-19-ex-vivo-scaling-mPSM-audit-v3, assessor gemini-4-argon) closed FGF/Wnt gradient + reaggregate lattice items but explicitly left digitisation open; not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "MorphoEval loop + measure_outputs.py + --self-test directly score the scaling-law fit once reference points are tabulated."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Script and partial reference JSON exist; deciding (R,S) series requires one public figure digitisation pass."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done is countable digitised pairs, recomputed r/RMSE, and audit dimension threshold vs Pass 3."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Digitisation + script/audit regen runs in under a few hours on the standard Python stack."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Loop isolation allows new pass4 audit/kg/runs files; shared script/dataset edits are slot-scoped."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One remediation sitting: digitise, wire JSON, self-test, re-audit."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted figure-digitisation for this slot; v3 audit requested it explicitly."
+        }
+      }
+    },
+    {
+      "id": "SCALE-MPSM-02",
+      "title": "Ex-vivo mPSM: correct chick-vs-mouse specimen metadata without breaking SHA pins",
+      "gap": "mouse_mpsm_somites_specimen.jpg is a Gallus gallus SEM per ex_vivo_scaling_mPSM_reference.json source_url while filenames and Pass 2 audit label Mus musculus; specimen-match scored 85 with a -5 species mismatch deduction in audit v3.",
+      "done": "reference.json specimen block lists species Gallus gallus, documents the intentional SHA-256 pin of the legacy filename, and adds a CC-licensed Mus musculus mPSM explant or reaggregate image (or digitised Lauschke 2013 Fig. 1 outline) with its own SHA-256 in EXPECTED_SHA256; render_comparison_figure includes at least one panel with IoU or somite-count comparison against the new mouse-aligned asset; python3 2014-lauschke-ex-vivo-scaling-mPSM.py --self-test includes assert species metadata matches pins; superseding audit v4 specimen-match score >= 90.",
+      "tool_route": "Remediation pass4 on 2014-lauschke-ex-vivo-scaling-mPSM.py (verify_dataset_integrity, render panels) + datasets/ex_vivo_scaling_mPSM/; python3 morphoeval/verify_image_fitness.py on new specimen if added; measure_outputs.py + build_morphoeval_kg.py on new audit yaml.",
+      "deciding_data": "In repo: pinned chick SEM + bib; public: Lauschke 2013 Fig. 1 / Tsiairis 2016 Fig. 2 (CC or fair-use digitisation) or Wikimedia mouse explant with licence metadata.",
+      "prior_attempts": "Audit v3 (2026-10-19) flagged but did not close; Pass 3 added mechanisms without replacing specimen.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Loop Steps 8–10 (measure_outputs, audit yaml, KG) decide specimen-match from pinned metadata and panel checks."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Mislabelled specimen already vendored; mouse-true image likely one Commons fetch away."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "SHA pins, species field, and audit specimen-match numeric threshold are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Image vendoring + render + self-test within hours."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Mostly dataset + one script slot; parallel agents on other slots unaffected."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Single pass if image source is found quickly."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Open audit item; no refutation of metadata-fix route."
+        }
+      }
+    },
+    {
+      "id": "SCALE-CRAN-01",
+      "title": "Allometric cranial sutures: tie-aware Spearman for depth-profile monotonicity",
+      "gap": "2020-bailleul-allometric-cranial-sutures.py uses argsort-of-argsort Spearman (L762–768, L851–853); audit v3 reports -0.90 vs -1.0 for a monotone profile with saturated layers.",
+      "done": "Script imports scipy.stats.spearmanr (or equivalent tie-aware rank correlation) for the ectocranial–endocranial depth profile measurement; self_test asserts |rho+1| < 0.02 on the synthetic monotone profile used in the audit; measure_morphoeval() reports the tie-aware value; morphoeval/audits/*-allometric-cranial-sutures-audit-v4.yaml morphometric-validation score >= v3 and cites the fixed locus in evidence.",
+      "tool_route": "Pass4 loop on 2020-bailleul-allometric-cranial-sutures.py: python3 2020-bailleul-allometric-cranial-sutures.py --self-test; python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-allometric-cranial-sutures-audit-v3.yaml; build_morphoeval_kg.py --check on v4 audit.",
+      "deciding_data": "In repo: synthetic depth profile and reference targets in datasets/allometric_cranial_sutures/allometric_cranial_sutures_reference.json.",
+      "prior_attempts": "Audit v3 (2026-10-19-allometric-cranial-sutures-audit-v3) listed this exact fix; Pass 3 closed heterogeneous strain coupling but not Spearman.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "--self-test and measure_morphoeval are the named gates; fix is one remediation commit inside the loop."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All deciding arrays are generated in-repo; no external fetch."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Numeric rho threshold on synthetic profile is objective."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Minutes of CPU."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Slot-local script + new audit files."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Sub-hour remediation pass."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Explicit open audit line; not previously attempted."
+        }
+      }
+    },
+    {
+      "id": "SCALE-CRAN-02",
+      "title": "Allometric cranial sutures: restore lambdoid > sagittal SII ordering across nuchal scales",
+      "gap": "Gaussian vault strain + isotropic ICP fails reference lambdoid SII > sagittal SII (sim 0.885 vs ref 1.22) for every nuchal scale in sweep per audit v3 pk:evidenceAgainst on L322–344 and reference.json:135–180.",
+      "done": "After Pass4 thin-shell or Koiter/Kirchhoff-Love membrane solve on the ellipsoid (or vendored CT skull mesh cited in audit evidence), measure_morphoeval() reports SII_lambdoid / SII_sagittal >= 1.15 at the reference nuchal traction and across the documented nuchal scale sweep; self_test includes assert ratio >= 1.15; audit v4 model-fidelity and morphometric-validation both >= 88.",
+      "tool_route": "12-step loop on Loop_020: edit 2020-bailleul-allometric-cranial-sutures.py solver section; python3 2020-bailleul-allometric-cranial-sutures.py --self-test; measure_outputs.py; build_morphoeval_kg.py + optional track_loop.py telemetry.",
+      "deciding_data": "In repo: allometric_cranial_sutures_reference.json SII targets; optional public: open cranial CT mesh (e.g. MorphoSource) if ellipsoid proxy insufficient—named in audit.",
+      "prior_attempts": "Pass 3 added heterogeneous alpha(x) coupling; SII ordering still failing per v3 audit—route not refuted, marked open.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "MorphoEval loop scores the allometric comparison via self-test and audit rubric."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Reference SII ordering in JSON; mesh may need one named public fetch."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Ratio threshold 1.15 across sweep is numeric."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "FEM/thin-shell pass may take hours but fits repo stack."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Slot-local; larger diff in one script."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Likely multi-step within one loop if solver is hard."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Prior pass tried Gaussian/ICP only; thin-shell route still open per v3."
+        }
+      }
+    },
+    {
+      "id": "SCALE-RAUP-01",
+      "title": "Raup 1966 helicospiral: empirical (W,D,T,S) recovery beside a pinned shell specimen",
+      "gap": "Flagship morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml lists raup-shell-coiling does_not_claim: pin W,D,T,S to Raup 1966 and put a real shell beside a panel; specimen-match 48 after Pass N+1 geometry fixes; morphoeval/kg/2026-10-17-raup-audit still cites missing ammonoid/gastropod morphometric comparison.",
+      "done": "create_raup_animations.py or models/1966-raup.py recovers (W,D,T,S) from datasets/raup/variables.json or raup_shells_surface_mesh_3d.json for >=1 named taxon with relative error <=5% per parameter; comparison figure panel pairs simulated mesh with datasets/raup/raup_coiled_shells_specimen.jpg (or Raup 1967 table row) and reports Procrustes or parameter RMSE in measure_morphoeval(); --self-test asserts recovery errors; new or updated flagship audit documents closed remediation item with line-pinned evidence.",
+      "tool_route": "Pass N+2 on create_raup_animations.py + models/1966-raup.py: python3 models/1966-raup.py --self-test; python3 create_raup_animations.py (verify GIF frame count check retained); python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml; build_morphoeval_kg.py --check.",
+      "deciding_data": "In repo: datasets/raup/variables.json, raup_coiled_shells_specimen.jpg, paper_citations.bib; public: Raup 1967 ammonoid table (JSTOR) if JSON incomplete.",
+      "prior_attempts": "Pass N+1 (2026-10-26 flagship15) fixed S sweeps and GIF frame count; empirical shell match explicitly still open—not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Raup scripts already expose --self-test and flagship audit pipeline measures morphometrics."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Raup dataset folder and specimen photo already vendored."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Per-parameter <=5% recovery and panel RMSE are numeric."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Shell mesh fitting sweeps run in hours on CPU."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Flagship scripts are shared; remediation should use pass-specific audit files to avoid parallel conflict."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One loop if parameters already in JSON; longer if Raup 1967 digitisation needed."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Open flagship gap; prior pass improved code fidelity, not specimen match."
+        }
+      }
+    },
+    {
+      "id": "SCALE-NACRE-01",
+      "title": "Nacre spiral terraces: remove circular h0 um calibration tied to target 0.50 um",
+      "gap": "calibration_um_per_px = 0.50/25.1677 forces h_0 = 0.50 um on scale-bar-less Wikimedia SEM per nacre audit v3 (reference.json:38–44); undermines morphometric-validation of biomineral spacing scale.",
+      "done": "Either (A) vendored scale-barred SEM with documented um/px from Checa/Cartwright figure licence metadata, or (B) primary measurements promoted to px-only CV and aspect ratio with h_0 demoted to prediction; measure_morphoeval() no longer marks h_0 um as reference-anchored unless independent calibration exists; self_test passes; audit v4 source-traceability >= 92 and morphometric-validation >= 88.",
+      "tool_route": "Pass4 on 2007-cartwright-nacre-spiral-dislocation-terraces.py + datasets/nacre_spiral_dislocation_terraces/: verify_dataset_integrity; python3 2007-cartwright-nacre-spiral-dislocation-terraces.py --self-test; measure_outputs.py morphoeval/audits/2026-10-19-nacre-spiral-dislocation-terraces-audit-v3.yaml; build_morphoeval_kg.py.",
+      "deciding_data": "In repo: nacre_aragonite_tablets_specimen.jpg + reference JSON; public: Checa et al. 2011 or Cartwright & Checa 2007 figure with scale bar (DOI in dataset bib).",
+      "prior_attempts": "Pass 3 (audit v3) added membrane/terrace mechanisms but left calibration circularity open.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Standard MorphoEval remediation on an existing audited mollusc biomineral slot."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Specimen present but scale bar missing; one literature figure fetch likely required."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Branch A or B completion criteria are explicit and audit-scored."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "CV/segmentation + audit regen within hours."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Slot 073 nacre files are isolated from fossil YAML campaign."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One sitting if scale-bar figure is obtainable."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audit v3 lists exact remediation; not refuted."
+        }
+      }
+    },
+    {
+      "id": "SCALE-PLAN-01",
+      "title": "Planarian HK-ATPase anterior: replace magic length_px/1478 ocelli scale with physical units",
+      "gap": "2011-beane-planarian-hk-atpase-anterior.py L560–568 scales erosion/Gaussian kernels by length_px/1478.0 from a superseded image; morphoeval/kg documents magic-number scale and single-specimen eye-position reference.",
+      "done": "scout_manifest + reference JSON record scale-bar length (um) and original pixel dimensions for the pinned PlanformDB specimen; ocelli detector uses um/px from manifest; self_test compares |y|/L and x/L to reference mean +/- published tolerance band (>=3 specimens or cited morphometric table); audit pass4 specimen-match improves vs Pass 3 with line-pinned scale provenance.",
+      "tool_route": "Remediation loop on 2011-beane-planarian-hk-atpase-anterior.py + datasets/planarian_hk_atpase_anterior/; python3 morphoeval/scout_literature.py --slot 83 (if vendoring new specimen); --self-test; measure_outputs.py; build_morphoeval_kg.py.",
+      "deciding_data": "In repo: planarian specimen jpg + partial manifest; public: Beane 2011 paper / PlanformDB record for scale bar.",
+      "prior_attempts": "Audit evidenceAgainst recorded 2026-10-19; Pass 3 added mesh guidance but not ocelli scale fix.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Loop + self-test closes scale expressivity defect flagged in KG."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "Pinned specimen exists; scale metadata may need literature/PlanformDB lookup."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "um/px in manifest + tolerance band on normalized eye position."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "CV rescaling only; fast."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Planarian slot files only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One loop once scale bar sourced."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Open KG remediation line."
+        }
+      }
+    },
+    {
+      "id": "OP-04-NOT-REMEDIATION",
+      "title": "Thompson deep-horizon prediction beyond ~50 Myr (geological_age_ma collapse)",
+      "gap": "docs/open-problems.json OP-04: prediction engine collapses to clade prior beyond ~50 Myr; morphoeval/scale_and_paleo_catalog.py geological_age_ma spans 0–565 Ma but Thompson portfolio does not consume those fields for deep-time forecasts.",
+      "done": "Pre-registered deep-horizon test (hash-locked, FishShapes-style) beats clade-prior baseline beyond 50 Myr or publishes sharper null—per OP-04 done field.",
+      "tool_route": "Not closable by a single model-script remediation pass: requires thompson/ portfolio scripts + prediction registry (lens: registry/delphi), not Pass1→Pass2 on one audited simulation.",
+      "deciding_data": "In repo: docs/portfolio/, THOMPSON_* assets, Rabosky tree hooks; held-out FishShapes-style data per OP-04 protocol.",
+      "prior_attempts": "Claude Fable 5.1 Thinking High (OP-04 partial); Monte Bolca null 6/16; not refuted but not a MorphoEval slot remediation.",
+      "factors": {
+        "tool_fit": {
+          "score": 4,
+          "why": "Remediation lens targets per-slot audit weaknesses; OP-04 is a portfolio prediction problem."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Much Thompson data in-repo; blind held-out protocol still required."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "OP-04 done is already scorer-checkable."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Portfolio reruns are heavy but feasible."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Touches many portfolio files—not zero-conflict."
+        },
+        "time_to_verdict": {
+          "score": 3,
+          "why": "Exceeds one simulation remediation sitting."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Partial attempts exist; route is exploratory not closed."
+        },
+        "wrong_lens_note": "Use Problem-Scout cells with lens registry or delphi for OP-04; scaling scout reports geological_age_ma linkage only."
+      }
+    }
+  ]
+}
