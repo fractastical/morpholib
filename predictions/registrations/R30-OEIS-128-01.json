@@ -1,0 +1,27 @@
+{
+  "registration_id": "R30-OEIS-128-01",
+  "registered_on": "2026-10-27T04:19:00Z",
+  "registered_by": "Problem-Fixer fix-002 (MorphoEval Wave 1; scout-008-c)",
+  "discipline": "Separate registration artifact. The locked predictions/prediction_registry.json is NOT edited. This is not a blind biological prediction — it hash-locks the vendored OEIS A051023 center-column benchmark already cited in Conus Rule 30 prize narratives.",
+  "oeis_entry": "https://oeis.org/A051023",
+  "claim_under_test": "The first 128 bits of Wolfram Rule 30’s center column (single-cell initialization, standard ECA update) equal the vendored sequence datasets/conus/conus_textile_reference.json → rule30_prize_benchmarks.oeis_a051023_first_128.",
+  "expected_sequence": {
+    "source_fixture": "datasets/conus/conus_textile_reference.json",
+    "json_path": "rule30_prize_benchmarks.oeis_a051023_first_128",
+    "length_bits": 128,
+    "sha256_of_concatenated_bits": "a4d0748bb05e4a19738a0252b8f87b374385df59d0630c27dffb175d3fa98a5e",
+    "sha256_definition": "SHA-256 over the 128-character string formed by concatenating each bit as the ASCII characters '0' or '1' with no separators (same bit order as the JSON array)."
+  },
+  "computation_contract": {
+    "module": "models/1984-wolfram-conus-textile-rule30.py",
+    "functions": [
+      "rule30_prize_diagnostics(steps=1024)",
+      "run_eca(rule_num=30, width=2*steps+5, steps=steps, init='single')"
+    ],
+    "center_column_index": "width // 2 where width = 2 * steps + 5",
+    "slice": "center_col[:128]"
+  },
+  "falsifier": "Any bit mismatch between independently computed center_col[:128] and the fixture sequence refutes the claim.",
+  "confirmation_criterion": "outcome_verdict = confirmed iff all 128 bits match; refuted on any mismatch.",
+  "resolution_file": "predictions/resolutions/rule30-oeis.json"
+}
