@@ -1,0 +1,79 @@
+sim_id: delphi10000-drosophila-hydei-turing-wavelength-s0
+slot: 3189
+organism: Drosophila hydei
+phenomenon_size_m: 2.344e-06
+log10_size_m: -5.630
+size_human: "2.3 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila hydei (2.3 µm detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Subgenus Drosophila virilis–repleta–guttifera Radiation"
+chronoseries: "Drosophila 18/41"
+predecessor: Drosophila heteroneura
+successor: Drosophila kikkawai
+math_family: Reaction-Diffusion & Turing Dispersion (Turing Wavenumber k_c)
+model_spec:
+  model: "Schnakenberg (1979) kinetics with Turing (1952) critical wavenumber, length unit fixed so λ_c = 2.344 µm"
+  a: 0.10
+  b: 0.90
+  gamma: 1.0
+  Du: 1.0
+  Dv: 20.0
+  target_wavelength_m: 2.344e-06
+  domain_wavelengths: 4
+  grid_n: 96
+  dt: 0.002
+  t_end: 16.0
+  seed: 3189
+  boundary: periodic
+  inputs:
+    - datasets/drosophila_hydei_turing_wavelength_s0/drosophila_hydei_turing_wavelength_s0_reference.json
+    - datasets/drosophila_hydei_turing_wavelength_s0/drosophila_hydei_turing_wavelength_s0_specimen.jpg
+    - datasets/drosophila_hydei_turing_wavelength_s0/scout_manifest.json
+    - datasets/drosophila_hydei_turing_wavelength_s0/paper_citations.bib
+    - datasets/drosophila_hydei_turing_wavelength_s0/README.md
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+  - law_name: Well-mixed stability
+    formula: "trace(J) = f_u + g_v < 0 and det(J) = f_u g_v - f_v g_u > 0"
+    lean_decl: MathOfBiology.Loop_3189.trace_negative
+    lean_theorem: MathOfBiology.Loop_3189.determinant_positive
+    lean_locus: morphoeval/lean/loops/Loop_3189_drosophila_hydei_turing_wavelength_s0.lean#L25-L30
+    variables: "f_u=0.8, g_v=-1, det=1 at a=0.10, b=0.90, γ=1"
+    role: "Homogeneous steady state of the 2.344 µm hydei patch is stable without diffusion"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py#L87-L129
+  - law_name: Critical wavenumber
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); λ_c = 2π / k_c = 2.344 µm"
+    lean_decl: MathOfBiology.Loop_3189.diffusion_driven_instability
+    lean_theorem: MathOfBiology.Loop_3189.diffusion_driven_instability
+    lean_locus: morphoeval/lean/loops/Loop_3189_drosophila_hydei_turing_wavelength_s0.lean#L33-L36
+    variables: "D_u=1, D_v=20; scaled integers fu=8, fv=10, gu=-18, gv=-10"
+    role: "Selects the detail-scale pigment-stripe wavelength, 50× finer than the 117.2 µm primordium slot"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py#L106-L114
+  - law_name: Equal-diffusion ablation
+    formula: "D_u = D_v implies D_v f_u + D_u g_v = D (f_u + g_v) < 0"
+    lean_decl: MathOfBiology.Loop_3189.equal_diffusion_not_turing
+    lean_theorem: MathOfBiology.Loop_3189.equal_diffusion_not_turing
+    lean_locus: morphoeval/lean/loops/Loop_3189_drosophila_hydei_turing_wavelength_s0.lean#L39-L40
+    variables: "D_u=D_v=1"
+    role: "Negative control: no Turing band when the inhibitor is not longer-ranged"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py#L388-L406
+  - law_name: Chronoseries wavenumber jump at 0 Ma
+    formula: "λ_primordium = 50 λ_detail; λ_heteroneura > 74 λ_detail; λ_kikkawai > 39 λ_detail"
+    lean_decl: MathOfBiology.Loop_3189.primordium_is_fiftyfold_coarser
+    lean_theorem: MathOfBiology.Loop_3189.successor_wavelength_coarser
+    lean_locus: morphoeval/lean/loops/Loop_3189_drosophila_hydei_turing_wavelength_s0.lean#L43-L54
+    variables: "2344 nm detail; 117200 nm primordium; 175400 nm heteroneura; 93410 nm kikkawai; all ages 0 Ma"
+    role: "What changes versus predecessor D. heteroneura and successor D. kikkawai is the selected wavelength, not the geological age"
+    source_citation: "Slot scale 2.344e-06 m; sibling wavelengths from their reference JSON files"
+    code_locus: models/2026-delphi10000-drosophila-hydei-turing-wavelength-s0.py#L61-L63
