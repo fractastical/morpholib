@@ -1,0 +1,188 @@
+# MorphoEval audit — Antirrhinum majus Turing ocellus at 259 µm, Pass 1.
+# Builder and assessor are the same agent (grok-4.7). Not a dual-assessor consensus.
+# Checkpoint is the parent commit; the loop files are new in this working tree.
+
+audit:
+  id: 2026-10-27-antirrhinum-majus-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent Pass 1)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Pass 1 working tree on top of 0c76d15d. Loop files are not in that
+      commit. Signing was not available (~/.nanopub/profile.yml absent).
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  shang2010:
+    title: "The molecular basis for venation patterning of pigmentation and its effect on pollinator attraction in flowers of Antirrhinum"
+    authors: "Shang Y, Venail J, Mackay S, Bailey PC, Schwinn KE, Jameson PE, Martin CR, Davies KM"
+    venue: "New Phytologist 189:602-615 (2010)"
+    year: 2010
+    doi: 10.1111/j.1469-8137.2010.03498.x
+  schwinn2006:
+    title: "A small family of MYB-regulatory genes controls floral pigmentation intensity and patterning in the genus Antirrhinum"
+    authors: "Schwinn K et al."
+    venue: "The Plant Cell 18:831-851 (2006)"
+    year: 2006
+    doi: 10.1105/tpc.105.039255
+  noda1994:
+    title: "Flower colour intensity depends on specialized cell shape controlled by a Myb-related transcription factor"
+    authors: "Noda K, Glover BJ, Linstead P, Martin C"
+    venue: "Nature 369:661-664 (1994)"
+    year: 1994
+    doi: 10.1038/369661a0
+  coen2004:
+    title: "The genetics of geometry"
+    authors: "Coen E, Rolland-Lagan AG, Matthews M, Bangham JA, Prusinkiewicz P"
+    venue: "PNAS 101:4728-4735 (2004)"
+    year: 2004
+    doi: 10.1073/pnas.0306308101
+
+simulations:
+  - id: delphi10000-antirrhinum-majus-turing-wavelength-s0
+    name: "Antirrhinum majus Turing ocellus wavelength at 259 µm (Holocene, 0 Ma)"
+    organism: "Antirrhinum majus"
+    script: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py
+    output: docs/media/antirrhinum_majus_turing_wavelength_s0_growth.gif
+    extra_outputs:
+      - docs/media/antirrhinum_majus_turing_wavelength_s0_comparison.png
+      - datasets/antirrhinum_majus_turing_wavelength_s0/antirrhinum_majus_turing_wavelength_s0_metrics.json
+    status: evaluated
+    source_refs: [turing1952, shang2010, schwinn2006, noda1994, coen2004]
+    summary: >-
+      Two-species activator-inhibitor system on a periodic petal-epidermis
+      patch. Rates f_u, f_v, g_u, g_v = 1.25, -1.50, 2.00, -1.75 per hour;
+      D_u, D_v = 640, 4341 µm²/h. Trace -0.50, determinant 0.8125, Turing
+      margin positive, equal-diffusion control σ_max = -0.25 h⁻¹.
+      k_c = argmax σ(k) gives λ_c = 259.13 µm at 0 Ma (assigned 259.2 µm).
+      A joint diffusivity sweep (×0.35 to ×4) recovers k with Pearson
+      r = 0.9992 and RMSE 0.00114 µm⁻¹. The gallery field's 100 µm bar
+      (111 px) measures a ring pitch of 77.8 µm; KS against the simulated
+      ring gaps is 1.0 because the two pitches do not overlap. GIF is
+      800×600, 12 frames. Computer-vision similarity of the last frame to
+      the gallery field is 83.6. Overall 85.3. The radial PSD still reads
+      k about 7% low at unit scale (remediation R1).
+    claim_boundary:
+      reported_in_source:
+        - "Shang et al. 2010: Venosa MYB places anthocyanin over veins."
+        - "Noda et al. 1994: MIXTA conical epidermal cells intensify petal colour."
+        - "Turing 1952: diffusion-driven instability and a critical wavenumber."
+      reconstructed_in_script:
+        - "Integer diffusivities D_u=640, D_v=4341 chosen so argmax σ(k) is 259.13 µm."
+        - "Split-step cubic saturation and the rendered radial ocellus."
+      transfer_boundary:
+        - "Vein-locked Venosa pigment is not shown here to be a Turing instability."
+        - "The gallery ring pitch (77.8 µm) is a property of that asset, not a published histological wavelength."
+      does_not_claim:
+        - "That Antirrhinum uses these kinetic constants in vivo."
+        - "That 77.8 µm and 259.13 µm are the same measurement."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The script integrates the stated Jacobian, the dispersion
+          σ² − tr(k)σ + Δ(k) = 0, cubic saturation, and the equal-diffusion
+          ablation. k_c is argmax σ(k), which is the selected wavelength off
+          onset; the shortcut k² = h/(2 D_u D_v) is documented as a different
+          quantity. Ten Lean theorems with zero sorry encode the integer
+          trace, determinant, Turing margin, and the ablation. Deduction:
+          the rates are reconstructed for this 259 µm slot, not fitted in a
+          snapdragon paper, and the radial PSD that reads k back is biased
+          (R1).
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [124, 187], note: "trace, dispersion, k_c = argmax sigma, Turing margin", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3114_antirrhinum_majus_turing_wavelength_s0.lean, lines: [24, 42], note: "integer Turing margin and equal-diffusion closure, 0 sorry", supports: true}
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [197, 243], note: "integer-pixel radial binning is the biased readback", supports: false}
+      specimen-match:
+        value: 80
+        rationale: >-
+          The last GIF frame is a green radial ocellus in the same 800×600
+          framing as the gallery field. Direct CV similarity is 83.6
+          (orientation, radial FFT, coherency, occupancy). The gallery pitch
+          measured from its 100 µm bar is 77.8 µm, while the simulation is
+          one 259.13 µm wave per ring, so the resemblance is of pattern class,
+          not of physical pitch. The CC BY-SA Sète flower is an organ-scale
+          voucher and is not the image the GIF is scored against.
+        evidence:
+          - {file: docs/media/antirrhinum_majus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "gallery field beside the simulated critical mode", supports: true}
+          - {file: docs/media/antirrhinum_majus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 800×600 growth of the ocellus", supports: true}
+          - {file: datasets/antirrhinum_majus_turing_wavelength_s0/antirrhinum_majus_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "cv_sim_similarity 83.6; specimen pitch 77.8 µm", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          Scaling D_u and D_v together from ×0.35 to ×4 moves λ_c from
+          153 µm to 518 µm. Measured Fourier peaks track analytical k_c
+          with Pearson r = 0.9992 and RMSE 0.00114 µm⁻¹. The equal-diffusion
+          ablation is outside that sweep and stays stable, so the wavelength
+          control is the diffusivity scale, not a sign error.
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [255, 279], note: "eight-point diffusivity scale sweep and Pearson r", supports: true}
+          - {file: docs/media/antirrhinum_majus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "measured k versus analytical k lies on the identity", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          The gallery bar is detected as a 111 px white run and read as
+          100 µm. Four radial peaks give pitch 77.8 µm (CV of the gaps),
+          foreground fraction, circularity, and structure-tensor coherency.
+          Those values are not set equal to the model wavelength, so the
+          comparison is not self-referential. KS of ring-gap samples is 1.0.
+          Pearson r and RMSE are on the diffusivity sweep. Deduction: at
+          unit scale the PSD peak reports λ ≈ 279 µm against λ_c = 259 µm
+          (about 7% low in k). That bias is R1, not a hidden residual.
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [423, 488], note: "scale bar, radial peaks, foreground, coherency", supports: true}
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [513, 535], note: "KS between specimen gaps and simulated gaps", supports: true}
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [716, 743], note: "specimen metrics carry a reference that is not the measured value", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Turing 1952, Shang 2010, Schwinn 2006, Noda 1994, and Coen 2004
+          were checked against Crossref on 2026-10-27 (OpenAlex returned
+          429). Both images are SHA-256 pinned. The flower file is the
+          CC BY-SA 4.0 Sète photograph. Deduction: the gallery field is a
+          campaign asset with a drawn scale bar, not a DOI-backed micrograph.
+        evidence:
+          - {file: datasets/antirrhinum_majus_turing_wavelength_s0/paper_citations.bib, lines: [1, 70], note: "Crossref-checked DOIs", supports: true}
+          - {file: datasets/antirrhinum_majus_turing_wavelength_s0/antirrhinum_majus_turing_wavelength_s0_reference.json, lines: [48, 62], note: "SHA-256 of the gallery field and the CC flower", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          The module docstring states the PDE, the trace, the determinant,
+          and the distinction between argmax σ(k) and the Δ-minimizer.
+          trace_det, sigma_of_k2, k_c_and_sigma, and grow_ocellus follow
+          those lines. The Lean file names the same integers.
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [25, 54], note: "docstring equations and the 259.13 µm claim", supports: true}
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [310, 360], note: "split-step growth of cos(k_c r)", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          --self-test checks trace, determinant, Turing margin, λ_c within
+          1% of 259.2 µm, Pearson r > 0.98, the ablation, the 111 px bar,
+          and the sub-wavelength cell. Seed 3114. Dependencies are numpy,
+          scipy, pillow, matplotlib. Deduction: no per-script lockfile;
+          the checkpoint commit does not yet contain these files.
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [767, 805], note: "self_test assertions", supports: true}
+          - {file: datasets/antirrhinum_majus_turing_wavelength_s0/README.md, lines: [28, 32], note: "documented invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Radial PSD uses integer pixel bins and reads k about 7% low at unit diffusivity (measured λ ≈ 279 µm vs λ_c 259.13 µm). Re-bin in physical wavenumber and re-measure Pearson r and RMSE."
+      - id: R2
+        item: "Single assessor. A second provider has not scored this script."
+      - id: R3
+        item: "Annotate the kink in σ(k) at the edge of the unstable band so it is not mistaken for a numerical glitch."
