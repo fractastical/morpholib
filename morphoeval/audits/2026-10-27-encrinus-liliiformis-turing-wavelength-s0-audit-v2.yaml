@@ -1,0 +1,127 @@
+# Pass 2 audit — radial segmentation adopted; sweep and ablation re-scored.
+audit:
+  id: 2026-10-27-encrinus-liliiformis-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-encrinus-liliiformis-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 builder-assessor (single agent; second assessor still not run)"
+    homepage: "https://x.ai"
+  checkpoint:
+    repository: "https://github.com/fractastical/morpholib"
+    commit: "cd3c0ff20113e2850a5dd72a24dfd8d4e782b322"
+    note: "Pass 2 re-score of the same commit after adopting radial-bin segmentation."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: "10.1016/0022-5193(79)90042-0"
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer, A. and Meinhardt, H."
+    year: 1972
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: "10.1007/BF00289234"
+  stolarski2009:
+    title: "Nanostructural and geochemical features of the Jurassic isocrinid columnal ossicles"
+    authors: "Stolarski, Gorzelak, Mazur, Marrocchi and Meibom"
+    year: 2009
+    venue: "Acta Palaeontol. Pol. 54:69-75 (2009)"
+    doi: "10.4202/app.2009.0108"
+simulations:
+  - id: delphi10000-encrinus-liliiformis-turing-wavelength-s0
+    name: "Encrinus liliiformis Schnakenberg wavelength at 12 nm (Muschelkalk, 240 Ma)"
+    organism: "Encrinus liliiformis"
+    domain: morphogenesis
+    script: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py
+    output: docs/media/encrinus_liliiformis_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-encrinus-liliiformis-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, gierer1972, stolarski2009]
+    summary: >-
+      Same 12 nm, 240 Ma Schnakenberg point. Radial-bin sign agreement is 0.972,
+      Pearson r is 0.9996, RMSE is 0.0031, KS is 0.042, equal-diffusion amplitude
+      ratio is about 1.3e5, and GIF-to-slab CV similarity is 84.6. Pixel IoU 0.17
+      is retained as a failed mask, not as the segmentation.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and Schnakenberg 1979 kinetics."
+        - "Stolarski et al. 2009: crinoid stereom nanograins about 100 nm with gaps of a few nm."
+      reconstructed_in_script:
+        - "Onset wavelength 1.238e-8 m at a=0.047, b=1.153, delta=22.4, age 240 Ma."
+        - "Holocrinus 18.72 nm at 248 Ma (delta 18) and Chelocrinus 15.64 nm at 232 Ma (delta 15.6)."
+        - "Radial sign agreement, KS, RMSE, fossil coherency, and the equal-diffusion control."
+      transfer_boundary:
+        - "Jurassic nanograin diameters bound the window. They are not a 12 nm measurement on Encrinus."
+      does_not_claim:
+        - "Does not claim the Ingelfingen slab is a 12 nm micrograph."
+        - "Does not claim pixel IoU 0.17 is a successful spatial registration."
+        - "Does not claim an independent second assessor."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "The Jacobian, onset formula k_c^2 = (D_v f_u + D_u g_v)/(2 D_u D_v), dispersion eigenvalue, and periodic integrator are all in the script and the self-test checks them. The rendered disk uses harmonics of the image fundamental whose physical radius is n_wave times 12 nm. Above threshold the fastest mode shifts; that shift is reported rather than hidden."
+        evidence:
+          - {file: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py, lines: [106, 163], note: "regime, growth_rate, equal-diffusion control", supports: true}
+          - {file: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py, lines: [260, 302], note: "numerical Schnakenberg transect and ablation", supports: true}
+      specimen-match:
+        value: 76
+        rationale: "Last GIF frame versus the CC BY-SA Ingelfingen slab has CV similarity 84.6 (orientation, radial FFT, coherency, occupancy). The comparison figure shows the slab and the rings side by side. They are not the same silhouette: one is a crown on limestone, the other is the radial stereom mode. 76 credits the shared calcite palette and the radial profile overlay without calling them the same picture."
+        evidence:
+          - {file: docs/media/encrinus_liliiformis_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "four-panel comparison at 12 nm and 240 Ma", supports: true}
+          - {file: docs/media/encrinus_liliiformis_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "16-frame 800x600 growth sequence", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "Once delta exceeds the Turing threshold, lambda_c falls monotonically from about 25 nm toward 12 nm. delta=22.4 is the Encrinus point. Equal diffusion (delta=1) is stable. Holocrinus (delta 18, 18.72 nm, 248 Ma) and Chelocrinus (delta 15.6, 15.64 nm, 232 Ma) are separate parameter points, not rescalings of this one."
+        evidence:
+          - {file: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py, lines: [50, 76], note: "three chronospecies parameter blocks", supports: true}
+          - {file: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py, lines: [165, 187], note: "delta sweep", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Stereom radial Pearson r = 0.9996, RMSE = 0.0031, KS = 0.042 (reference is the 5% critical value, not the statistic). Radial-bin sign agreement is 0.972 against a chance reference of 0.5. Fossil coherency 0.612 is not the render coherency 0.943. Pixel IoU remains 0.17 and is not used as a pass. The radial fit is in-sample."
+        evidence:
+          - {file: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py, lines: [381, 386], note: "radial_sign_agreement", supports: true}
+          - {file: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py, lines: [539, 722], note: "Pearson, RMSE, KS, fossil CV, ablation ratio; values differ from references", supports: true}
+          - {file: datasets/encrinus_liliiformis_turing_wavelength_s0/encrinus_liliiformis_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "recorded r, rmse, ks, iou, cv", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "DOIs were checked on Crossref. The specimen file is the Ghedoghedo CC BY-SA 4.0 Muschelkalkmuseum photograph, SHA-256 pinned. The gallery stereom image is labeled as a 100 um rendering, not as the fossil."
+        evidence:
+          - {file: datasets/encrinus_liliiformis_turing_wavelength_s0/paper_citations.bib, lines: [1, 70], note: "Crossref-verified bibliography", supports: true}
+          - {file: datasets/encrinus_liliiformis_turing_wavelength_s0/README.md, lines: [1, 38], note: "12 nm and 240 Ma stated; license and SHA", supports: true}
+          - {file: datasets/encrinus_liliiformis_turing_wavelength_s0/scout_manifest.json, lines: [0, 0], note: "Wikimedia attribution and uniqueness check", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Docstring, regime(), and growth_rate() are the onset formula. Lean theorems muschelkalk_wavelength_is_chronoseries_minimum, schnakenberg_trace_negative, and inhibitor_drive_positive_and_equal_diffusion_fails are the integer forms of those claims. They use decide on concrete Nats, not mathlib analysis."
+        evidence:
+          - {file: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py, lines: [95, 146], note: "jacobian and dispersion", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-encrinus-liliiformis-turing-wavelength-s0.yaml, lines: [1, 63], note: "equation records point at Lean and code loci", supports: true}
+      repro-package:
+        value: 88
+        rationale: "python3 models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py --self-test passes: r>0.98, radial agreement >0.9, CV>=58, GIF >=10 frames and >=480 px, seed 3218. Signing was not available (no ~/.nanopub/profile.yml)."
+        evidence:
+          - {file: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py, lines: [775, 812], note: "self_test assertions", supports: true}
+    remediation:
+      - "Independent second assessor was not run. Scores are single-agent."
+      - "The radial Pearson fit is in-sample. A holdout of the outer radius does not extrapolate (Fourier harmonics are a poor extrapolant); that limit is recorded rather than patched."
+      - "Pixel dark-mask IoU remains 0.17. It is no longer the segmentation used for the score."
+    needs:
+      - id: N1
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "A second model provider has not scored this audit."
+        status: open
+        novelty_n: 0.2
+        contradiction_c: 0.0
+        depth_d: 0.5
+        age_days_a: 0

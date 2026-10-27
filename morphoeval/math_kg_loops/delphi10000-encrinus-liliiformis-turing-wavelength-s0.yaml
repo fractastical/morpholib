@@ -1,0 +1,63 @@
+sim_id: delphi10000-encrinus-liliiformis-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 1.238e-08
+log10_size_m: -7.907
+size_human: 12 nm
+scale_tier: 1_molecular_nm
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Encrinus liliiformis
+  (12 nm detail scale, Middle Triassic Muschelkalk, 240 Ma)
+geological_age_ma: 240.0
+geological_period: Middle Triassic (Muschelkalk, 240 Ma)
+fossil_lineage_group: Echinoderm Symmetry Evolution Series
+slot: 3218
+model_spec:
+  model: Schnakenberg (1979) kinetics with Turing (1952) onset wavenumber at 12 nm
+  a: 0.047
+  b: 1.153
+  delta: 22.4
+  lambda_m: 1.238e-08
+  seed: 3218
+  gif_size: [800, 600]
+  gif_frames: 16
+  inputs:
+    - datasets/encrinus_liliiformis_turing_wavelength_s0/encrinus_liliiformis_specimen.jpg
+    - datasets/encrinus_liliiformis_turing_wavelength_s0/encrinus_liliiformis_stereom_gyroid_canonical.jpg
+    - datasets/encrinus_liliiformis_turing_wavelength_s0/encrinus_liliiformis_turing_wavelength_s0_reference.json
+    - datasets/encrinus_liliiformis_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Schnakenberg trace is negative at the 12 nm point
+    formula: f_u + g_v = 553/600 - 36/25 < 0 for a=47/1000, b=1153/1000
+    lean_decl: MathOfBiology.Loop_3218.schnakenberg_trace_negative
+    lean_theorem: MathOfBiology.Loop_3218.schnakenberg_trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3218_encrinus_liliiformis_turing_wavelength_s0.lean#L34-L37
+    variables: a=0.047, b=1.153, lambda=1.238e-8 m, age=240 Ma
+    role: Homogeneous state is stable without diffusion
+    source_citation: Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py#L106-L135
+  - law_name: Inhibitor drive versus equal-diffusion ablation
+    formula: delta=112/5 gives delta*f_u + g_v > 0; delta=1 does not
+    lean_decl: MathOfBiology.Loop_3218.inhibitor_drive_positive_and_equal_diffusion_fails
+    lean_theorem: MathOfBiology.Loop_3218.inhibitor_drive_positive_and_equal_diffusion_fails
+    lean_locus: morphoeval/lean/loops/Loop_3218_encrinus_liliiformis_turing_wavelength_s0.lean#L39-L42
+    variables: delta=22.4 at 12 nm; ablation delta=1
+    role: Turing wavenumber exists only when the inhibitor diffuses faster
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py#L156-L163
+  - law_name: Muschelkalk wavelength is the chronoseries minimum
+    formula: 12.380 nm < 15.640 nm < 18.720 nm and 232 Ma < 240 Ma < 248 Ma
+    lean_decl: MathOfBiology.Loop_3218.muschelkalk_wavelength_is_chronoseries_minimum
+    lean_theorem: MathOfBiology.Loop_3218.muschelkalk_wavelength_is_chronoseries_minimum
+    lean_locus: morphoeval/lean/loops/Loop_3218_encrinus_liliiformis_turing_wavelength_s0.lean#L18-L21
+    variables: Holocrinus 248 Ma, Encrinus 240 Ma, Chelocrinus 232 Ma
+    role: What changes at this age relative to the neighboring grades
+    source_citation: Stolarski, Gorzelak et al. 2009 DOI:10.4202/app.2009.0108
+    code_locus: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py#L50-L76
+  - law_name: Nanograin mode packing and wavenumber peak
+    formula: 100 nm grain holds 8 wavelengths of 12.38 nm, more than the 15.64 nm or 18.72 nm neighbors
+    lean_decl: MathOfBiology.Loop_3218.nanograin_packs_more_encrinus_wavelengths
+    lean_theorem: MathOfBiology.Loop_3218.wavenumber_peaks_in_the_muschelkalk
+    lean_locus: morphoeval/lean/loops/Loop_3218_encrinus_liliiformis_turing_wavelength_s0.lean#L23-L48
+    variables: nanograin 100 nm from Stolarski et al. 2009; this slot wavelength 12 nm
+    role: Places the detail-scale wavelength inside one published nanograin
+    source_citation: Stolarski, Gorzelak et al. 2009 DOI:10.4202/app.2009.0108
+    code_locus: models/2026-delphi10000-encrinus-liliiformis-turing-wavelength-s0.py#L165-L187
