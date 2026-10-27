@@ -1,0 +1,46 @@
+{
+  "fix_id": "fix-007",
+  "candidate_rank": 32,
+  "candidate_id": "LIB-MEAS-02",
+  "status": "fixed",
+  "summary": "Re-pinned the planarian HK-ATPase v2 measurements sidecar, dataset README/reference JSON, and scout manifest to the live 720×500 specimen (sha256 0dde9f5e…). Regenerated morphometrics via measure_outputs.py after correcting the audit script path to models/2011-beane-planarian-hk-atpase-anterior.py.",
+  "root_cause": "Pass 3 replaced schmidtea_mediterranea_specimen.jpg with a PlanformDB bright-field photograph (0dde9f5e…, 720×500 px; segmentation length 626 px) and updated the simulation script pin, but the v2 .measurements.yaml sidecar, planarian_hk_atpase_anterior_reference.json, README, and scout_manifest still documented the superseded Wikimedia composite (466029cc…, 1493×564, length=1478 px). measure_outputs.py also could not import measure_morphoeval() because the audit listed the script at repo root instead of models/.",
+  "changed_files": [
+    "datasets/planarian_hk_atpase_anterior/README.md",
+    "datasets/planarian_hk_atpase_anterior/planarian_hk_atpase_anterior_reference.json",
+    "datasets/planarian_hk_atpase_anterior/scout_manifest.json",
+    "morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml",
+    "morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.measurements.yaml"
+  ],
+  "evidence": [
+    "sha256sum datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg → 0dde9f5e83a87dd9bdc3627e19ebc891cb4f8e99cf632fe637bccf082abfb990",
+    "JPEG SOF dimensions 720×500 (live file); superseded pins were 466029cc… and 1493×564",
+    "models/2011-beane-planarian-hk-atpase-anterior.py EXPECTED_SHA256 and segment_planarian_specimen docstring (626 px, x/L=0.0530)",
+    "morphoeval/kg/math_of_biology.ttl pk:evidenceAgainst on specimen swap (scout_manifest pin drift)",
+    "Stale sidecar text removed: length=1478 px, x/L=0.0528 with inter-ocelli spacing=67.1 px; replaced by length=626 px, x/L=0.0530, spacing=28.4 px, Pearson r=0.8868"
+  ],
+  "validation": [
+    {
+      "name": "Regenerate planarian measurements",
+      "argv": [
+        "python3",
+        "morphoeval/measure_outputs.py",
+        "morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml"
+      ],
+      "exit_code": 0,
+      "output_summary": "12 measurements, quick_gate=100/100 (validated); specimen digest 0dde9f5e… in provenance"
+    },
+    {
+      "name": "Specimen digest is present in sidecar",
+      "argv": [
+        "python3",
+        "-c",
+        "import hashlib,pathlib; p=pathlib.Path('datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg'); d=hashlib.sha256(p.read_bytes()).hexdigest(); s=pathlib.Path('morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.measurements.yaml').read_text(); assert d in s, d; print(d)"
+      ],
+      "exit_code": 0,
+      "output_summary": "validator ok 0dde9f5e83a87dd9bdc3627e19ebc891cb4f8e99cf632fe637bccf082abfb990"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
