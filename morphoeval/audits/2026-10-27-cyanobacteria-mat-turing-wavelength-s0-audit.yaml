@@ -1,0 +1,320 @@
+audit:
+  id: 2026-10-27-cyanobacteria-mat-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: '2026-10-27'
+  assessor:
+    id: grok-4.7
+    label: Grok 4.7 (builder and assessor, single-agent round)
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8c1db788ac0382399c6119652ec88de045be6725
+    note: Loop 3158 source, specimen, Lean module, and media are at this commit. Audits cite it.
+references:
+  turing1952:
+    title: The chemical basis of morphogenesis
+    authors: Turing, Alan Mathison
+    venue: Philosophical Transactions of the Royal Society of London B 237(641):37-72 (1952)
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: Simple chemical reaction systems with limit cycle behaviour
+    authors: Schnakenberg, Jürgen
+    venue: Journal of Theoretical Biology 81(3):389-400 (1979)
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  gierer1972:
+    title: A theory of biological pattern formation
+    authors: Gierer, Alfred and Meinhardt, Hans
+    venue: Kybernetik 12(1):30-39 (1972)
+    year: 1972
+    doi: 10.1007/BF00289234
+  petroff2010:
+    title: Biophysical basis for the geometry of conical stromatolites
+    authors: Petroff, Alexander P. and Sim, Min Sub and Maslov, Andrey and Krupenin, Mikhail and Rothman,
+      Daniel H. and Bosak, Tanja
+    venue: Proceedings of the National Academy of Sciences 107(22):9956-9961 (2010)
+    year: 2010
+    doi: 10.1073/pnas.1001973107
+  shepard2010:
+    title: Undirected motility of filamentous cyanobacteria produces reticulate mats
+    authors: Shepard, R. N. and Sumner, Dawn Y.
+    venue: Geobiology 8(3):179-190 (2010)
+    year: 2010
+    doi: 10.1111/j.1472-4669.2010.00235.x
+  polerecky2009:
+    title: Modular spectral imaging system for discrimination of pigments in cells and microbial communities
+    authors: Polerecky, Lubos and Bissett, Andrew and Al-Najjar, Mohammad and Faerber, Paul and Osmers,
+      Harald and Suci, Peter A. and Stoodley, Paul and de Beer, Dirk
+    venue: Applied and Environmental Microbiology 75(3):758-771 (2009)
+    year: 2009
+    doi: 10.1128/AEM.00819-08
+simulations:
+- id: delphi10000-cyanobacteria-mat-turing-wavelength-s0
+  name: Cyanobacteria mat Turing ocellus wavelength at 64.19 µm (Holocene, 0 Ma)
+  organism: Cyanobacteria mat (Stromatolite Mat)
+  script: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+  output: docs/media/cyanobacteria_mat_turing_wavelength_s0_comparison.png
+  extra_outputs:
+  - docs/media/cyanobacteria_mat_turing_wavelength_s0_growth.gif
+  - datasets/cyanobacteria_mat_turing_wavelength_s0/cyanobacteria_mat_turing_wavelength_s0_metrics.json
+  status: evaluated
+  source_refs:
+  - turing1952
+  - schnakenberg1979
+  - gierer1972
+  - petroff2010
+  - shepard2010
+  - polerecky2009
+  phenomenon_size_m: 6.419e-05
+  scale_tier: 4_cellular_10um
+  geological_age_ma: 0.0
+  geological_period: Holocene (Extant)
+  summary: Schnakenberg Turing system on a periodic 8-wavelength domain for a Holocene cyanobacteria mat
+    (chronoseries 1/1, age 0 Ma, tier 4_cellular_10um). The saturated activator locks to the Fourier shell
+    at 64.19 µm. Eigenvector growth rates match analytical sigma(k) with Pearson r = 0.999986 and RMSE
+    = 0.00558. A bin-mean estimator on the same run scores r = 0.529 and is retained as a negative control.
+    Equal diffusion decays (sigma_max = -0.059). The diffusivity sweep correlates with sqrt(gamma) at
+    r = 0.9995. The culture plate (137 colonies, area CV 1.642) is not the same size distribution as the
+    spots (65 peaks, area CV 0.295, KS = 0.453). GIF versus plate cv_sim_similarity = 90.7. Overall 85.6.
+  claim_boundary:
+    reported_in_source:
+    - Turing 1952 dispersion relation and the existence of a selected finite wavenumber
+    - Schnakenberg 1979 two-species kinetics
+    - Petroff et al. 2010 centimetre-scale conical stromatolite spacing
+    - Shepard and Sumner 2010 reticulate mats from filament motility
+    reconstructed_in_script:
+    - Diffusivities, including the measured finite-amplitude factor 1.08, so the saturated Fourier mode
+      is 64.19 µm
+    - Eigenvector single-mode growth rates, equal-diffusion ablation, and the diffusivity sweep
+    - A display transfer that paints activator peaks as beige colonies on illuminated agar for comparison
+      with the culture plate
+    transfer_boundary:
+    - The culture plate is macroscopic. Morphometrics that compare it to the 513.5 µm domain are scale-free
+      (CV spectra, median-normalised diameters).
+    does_not_claim:
+    - That a paper measured 64.19 µm as a pigment wavelength of this mat
+    - That the plate photograph is a 64 µm micrograph
+    - That colony-size distributions match the spots (KS = 0.453)
+    - That Petroff's cone equation is being integrated
+  scores:
+    model-fidelity:
+      value: 90
+      rationale: 'Pass 1: the script integrates Schnakenberg kinetics with the Turing dispersion sigma(k),
+        spectral diffusion, and an eigenvector probe of eleven exact Fourier modes. Slot parameters (a,
+        b, Dv/Du) = (0.11, 0.83, 16) are not the Anabaena heterocyst set. The factor 1.08 on both diffusivities
+        is an empirical finite-amplitude correction measured on this domain (scale 1.00 locks to mode
+        9 / 57 µm; 1.08 locks to mode 8 / 64.19 µm; 1.30 locks to mode 7). It is not a diffusivity reported
+        for a cyanobacterial mat.'
+      evidence:
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 14
+        - 28
+        note: PDE, steady state, and sigma(k) in the module docstring
+        supports: true
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 122
+        - 155
+        note: Jacobian and sigma(k)
+        supports: true
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 164
+        - 208
+        note: diffusivities, including finite-amplitude scale 1.08
+        supports: true
+      - file: morphoeval/lean/loops/Loop_3158_cyanobacteria_mat_turing_wavelength_s0.lean
+        lines:
+        - 15
+        - 20
+        note: Lean proof that the scaled trace is negative
+        supports: true
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 379
+        - 422
+        note: rejected bin-mean estimator, kept as a negative control (r = 0.529)
+        supports: false
+    specimen-match:
+      value: 80
+      rationale: 'Pass 1: the GIF last frame scores cv_sim_similarity 90.7 against the culture-plate photograph
+        (12 frames, 640x520). Beige colonies on a gold ground are the right pattern class for this plate.
+        The photograph is a macroscopic plate, not a 64 µm field, and the agar illumination in the display
+        transfer is not a biological field. KS = 0.453 on median-normalised diameters: the size distributions
+        do not match, and that disagreement is left in the figure.'
+      evidence:
+      - file: docs/media/cyanobacteria_mat_turing_wavelength_s0_comparison.png
+        lines:
+        - 0
+        - 0
+        note: side-by-side plate, activator, styled frame, dispersion, sweep
+        supports: true
+      - file: docs/media/cyanobacteria_mat_turing_wavelength_s0_growth.gif
+        lines:
+        - 0
+        - 0
+        note: 12-frame growth animation, 640x520
+        supports: true
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 547
+        - 584
+        note: 'display transfer: activator peaks on a deterministic agar ground'
+        supports: true
+      - file: datasets/cyanobacteria_mat_turing_wavelength_s0/cyanobacteria_mat_turing_wavelength_s0_metrics.json
+        lines:
+        - 0
+        - 0
+        note: cv_sim_similarity 90.7; KS 0.453
+        supports: true
+    parameter-expressivity:
+      value: 88
+      rationale: 'Pass 1: diffusivity scale gamma in (0.5, 1.0, 1.5, 2.0) moves the narrow-band wavelength
+        with Pearson r = 0.9995 against lambda * sqrt(gamma). An earlier integer-shell summary pinned
+        gamma = 1.5 and gamma = 2.0 to the same mode and scored r = 0.967; the narrow-band estimator is
+        the one reported. a and b are not swept.'
+      evidence:
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 272
+        - 281
+        note: narrow-band wavelength used by the sweep
+        supports: true
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 424
+        - 455
+        note: gamma sweep against the sqrt(gamma) prediction
+        supports: true
+      - file: datasets/cyanobacteria_mat_turing_wavelength_s0/cyanobacteria_mat_turing_wavelength_s0_metrics.json
+        lines:
+        - 0
+        - 0
+        note: sweep rows and pearson_r 0.9995
+        supports: true
+    morphometric-validation:
+      value: 84
+      rationale: 'Pass 1: saturated dominant shell is 64.19 µm; the linear k_* wavelength is 66.617 µm.
+        Eigenvector probe versus analytical sigma(k): Pearson r = 0.999986, RMSE = 0.00558 (11 modes).
+        The rejected bin-mean estimator scores r = 0.529 on the same diffusivities. Plate segmentation
+        finds 137 colonies (area CV 1.642) against 65 spots (area CV 0.295); two-sample KS = 0.453. Those
+        specimen numbers are not copies of the simulation. n = 1 plate, and the plate is not at 64 µm.'
+      evidence:
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 313
+        - 377
+        note: eigenvector cosine probe, modes 4..14
+        supports: true
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 485
+        - 545
+        note: plate segmentation, spot segmentation, KS on median-normalised diameters
+        supports: true
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 732
+        - 833
+        note: measure_morphoeval rows; values differ from their references
+        supports: true
+      - file: datasets/cyanobacteria_mat_turing_wavelength_s0/cyanobacteria_mat_turing_wavelength_s0_metrics.json
+        lines:
+        - 0
+        - 0
+        note: 'metrics json: wavelength, r, RMSE, KS, colony and spot counts'
+        supports: true
+    source-traceability:
+      value: 88
+      rationale: 'Pass 1: Turing 1952, Schnakenberg 1979, Gierer and Meinhardt 1972, Petroff 2010, Shepard
+        and Sumner 2010, and Polerecky et al. 2009 were resolved on OpenAlex or Crossref. The culture-plate
+        SHA-256 is pinned and checked at runtime. Crossref and OpenAlex expose only the family name Armitage
+        for 10.3389/fmicb.2012.00293, so that paper is not given guessed coauthors and is not used as
+        a parameter source. The gallery photograph has no separate licence sidecar.'
+      evidence:
+      - file: datasets/cyanobacteria_mat_turing_wavelength_s0/paper_citations.bib
+        lines:
+        - 1
+        - 77
+        note: BibTeX with DOIs; Armitage note records the truncated registry metadata
+        supports: true
+      - file: datasets/cyanobacteria_mat_turing_wavelength_s0/cyanobacteria_mat_turing_wavelength_s0_reference.json
+        lines:
+        - 1
+        - 40
+        note: scale 6.419e-5 m, age 0 Ma, chronoseries 1/1, specimen SHA-256
+        supports: true
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 881
+        - 884
+        note: runtime SHA-256 check of the plate
+        supports: true
+    code-traceability:
+      value: 85
+      rationale: 'Pass 1: the module docstring states the PDE, the dispersion, the chronoseries, and the
+        claim boundary. Lean theorems mirror the trace sign, the eight-wavelength domain, the diffusion
+        ratio 16, det J > 0, and Holocene versus the 3480 Ma Dresser photographs. There is no line-by-line
+        map onto numbered equations of Turing 1952.'
+      evidence:
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 1
+        - 68
+        note: 'docstring: equations, scale, age, claim boundary'
+        supports: true
+      - file: morphoeval/lean/loops/Loop_3158_cyanobacteria_mat_turing_wavelength_s0.lean
+        lines:
+        - 14
+        - 52
+        note: five theorems, no sorry
+        supports: true
+      - file: datasets/cyanobacteria_mat_turing_wavelength_s0/README.md
+        lines:
+        - 1
+        - 30
+        note: how to run and what the 64 µm node does and does not claim
+        supports: true
+    repro-package:
+      value: 88
+      rationale: 'Pass 1: seed 3158, --self-test, and a non-interactive default render. Self-test checks
+        the trace, the Turing inequality, the 64.19 µm shell, dispersion r > 0.98, RMSE < 0.05, ablation
+        sigma_max < 0, and the specimen digest. Dependencies are the repository requirements.txt, not
+        a per-script lock. One assessor scored this audit.'
+      evidence:
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 835
+        - 869
+        note: self_test assertions
+        supports: true
+      - file: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py
+        lines:
+        - 871
+        - 928
+        note: 'CLI: --self-test and default render paths'
+        supports: true
+      - file: datasets/cyanobacteria_mat_turing_wavelength_s0/README.md
+        lines:
+        - 18
+        - 31
+        note: documented invocation
+        supports: true
+  remediation:
+  - id: R1
+    item: Integer-shell sweep collapsed gamma=1.5 and gamma=2.0 onto one mode (r=0.967). Replace the sweep
+      summary with the narrow-band power-weighted wavelength.
+  - id: R2
+    item: Keep an equal-diffusion ablation with sigma_max < 0 and a decaying RMS ratio, and print it on
+      the comparison figure.
+  - id: R3
+    item: Segment the real culture plate and compare median-normalised diameters to activator peaks with
+      a KS statistic. Do not copy a simulation scalar into the specimen column.
+  - id: R4
+    item: Replace the broadband bin-mean dispersion fit (r=0.529) with eigenvector-initialised single-mode
+      growth, and keep the rejected r as a measured control.
