@@ -1,0 +1,311 @@
+{
+  "scout": "scout-037",
+  "ground": "turing",
+  "lens": "knowledge",
+  "candidates": [
+    {
+      "title": "Seal Flagship-15 MorphoEval assessments (Turing 68.8 / Conus 72.9) into Project Delphi",
+      "gap": "The canonical Pass N+1 audit `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` records honest re-scores for all 15 montage flagships (including Turing gray–Scott at 68.8 and Wolfram–Meinhardt Conus at 72.9 with explicit `does_not_claim` boundaries for growing-domain Turing and non-autonomous Meinhardt), but no trustworthy nanopubs exist: `build_morphoeval_kg.py --no-verify-loci` aborts during Turtle serialization because the species-scale ladder matches Thompson to taxon slug `scarus-->-pomacanthus`, producing an invalid URI `pkr:taxon/scarus-->-pomacanthus`.",
+      "done": "After a minimal `sp_slug` sanitizer in `build_morphoeval_kg.py`, `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --conform` exits 0 and writes ≥10 `.trig` files under a new `morphoeval/kg/2026-10-26-flagship15-audit-v1/`; `python3 morphoeval/sign_morphoeval.py` that directory signs all; `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-26-flagship15-audit-v1/signed/*.trig` reports 0 failures; `published.json` lists trusty `https://w3id.org/np/RA…` IRIs with `published` progressing test → prod for at least the `turing-gray-scott-*` and `wolfram-conus-textile-rule30-*` claim/overall nanopubs.",
+      "tool_route": "Patch URI slugging in `morphoeval/build_morphoeval_kg.py` (L1059–1060); then `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --no-verify-loci --conform -o morphoeval/kg/2026-10-26-flagship15-audit-v1`; `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-26-flagship15-audit-v1`; `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-26-flagship15-audit-v1/signed/*.trig`; `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-26-flagship15-audit-v1 --publish test` (and prod after human gate).",
+      "deciding_data": "In repo: `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml`, `morphoeval/runs/2026-10-26-flagship15-loop-passN.md`, `models/1952-turing-morpho.py`, `models/1984-wolfram-conus-textile-rule30.py`, `datasets/turing/turing_reference.json`, `datasets/conus/`.",
+      "prior_attempts": "Pass N+1 loop (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md` §KG nanopubs) attempted build+sign and stopped at rdflib URI error; signing was not attempted. `docs/open-problems.json` OP-06 marks structural simulation debt (growing-domain / autonomous Meinhardt) as solved at code level but does not record KG publication.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Named builder/signer/verifier pipeline produces the deciding trustworthy URIs once the one-line slug bug is fixed."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Complete audit YAML and checkpoint scripts already committed; no external fetch required."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Exit codes, file counts, check_signed.mjs pass/fail, and published.json registry fields are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "KG build+sign+verify is minutes; Conus `--self-test` is slow but not required for this knowledge task."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Requires a small edit to shared `build_morphoeval_kg.py` plus new files under `morphoeval/kg/…flagship15…`."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One agent loop can build, sign, and test-publish without wet lab."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Build failure is diagnosed; no prior refutation of the sign/publish route."
+        }
+      }
+    },
+    {
+      "title": "Supersede production Conus faithful@87.3 with Pass-N+1 72.9 assessment chain",
+      "gap": "The production Delphi head for `wolfram-conus-textile-rule30` still carries MorphoEval overall 87.3 / verdict faithful from `morphoeval/kg/2026-10-18-conus-audit/published.json` (`published: prod`), while the authoritative Pass N+1 re-score is 72.9 with disclosed stochastic Meinhardt injection and revised claim boundaries in `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` (entry `conus-textile-rule30`). The graph therefore overstates faithfulness relative to the repo’s own 2026-10-26 audit record.",
+      "done": "A superseding KG built from the Flagship-15 Conus slice (or a dedicated audit YAML pinned to the same commit) uses `build_morphoeval_kg.py --supersede-from morphoeval/kg/2026-10-18-conus-audit`; signed overall/claim nanopubs verify; Nanopub Query resolves the new URIs as heads; `published.json` shows supersession and overall pk:hasScore ≈ 0.729 (72.9/100) on the claim assessment.",
+      "tool_route": "`python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --only conus-textile-rule30 --supersede-from morphoeval/kg/2026-10-18-conus-audit --conform -o morphoeval/kg/2026-10-26-conus-flagship15-supersede` (exact `--only` flag per builder CLI); `python3 morphoeval/sign_morphoeval.py … --publish test`; `node morphoeval/check_signed.mjs …/signed/*.trig`.",
+      "deciding_data": "In repo: prod manifest `morphoeval/kg/2026-10-18-conus-audit/published.json`, Pass N+1 scores in flagship15 audit, script `models/1984-wolfram-conus-textile-rule30.py`, `datasets/conus/`.",
+      "prior_attempts": "Pass N+1 remediation lowered the honest score (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md` table Conus 87.3→72.9) but did not supersede production nanopubs. Blinded second-assessor audit exists separately at 50.5 (`morphoeval/kg/2026-10-19-conus-second-assessor-audit/`) and is also unpublished (`published: null`).",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Supersession is a first-class `build_morphoeval_kg.py` + sign/verify workflow tied to existing prod IRIs."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Both old prod URIs and new audit scores are already in the repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Head resolution and manifest supersession links are queryable without subjective judgment."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Build/sign only; no new simulation runs required."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Can be closed as a new `morphoeval/kg/2026-10-26-conus-flagship15-supersede/` tree once builder slug fix lands."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Depends on flagship15 KG build unblocking; otherwise same sitting after slug fix."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Supersede route not refuted; blocked only by the shared flagship15 build failure and prod publish gate."
+        }
+      }
+    },
+    {
+      "title": "Publish signed Turing gray–Scott v2 (85.5) and supersede with Flagship-15 68.8",
+      "gap": "`morphoeval/kg/2026-10-19-turing-audit-v2/` contains signed trustworthy URIs for overall 85.5 / verdict faithful, but every entry in published.json keeps published=null (never test- or prod-posted). Meanwhile Pass N+1 re-scored the same script at 68.8 with downgraded specimen/morphometric dimensions and explicit non-claims for 2D growing-domain Kondo dynamics—none of which rank in the public Delphi graph.",
+      "done": "(1) `sign_morphoeval.py … --publish test` then prod for v2 OR skip straight to supersession; (2) superseding assessment from flagship15 Turing entry yields new head URIs with overall score 68.8 and updated claim-boundary text; (3) `check_signed.mjs` all pass; (4) at least one published head differs from v2’s `turing-gray-scott-overall.trig` IRI and carries the lower score in RDF.",
+      "tool_route": "`python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-turing-audit-v2 --publish test`; then `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --only turing-gray-scott --supersede-from morphoeval/kg/2026-10-19-turing-audit-v2 --conform -o morphoeval/kg/2026-10-26-turing-flagship15-supersede`; sign + `node morphoeval/check_signed.mjs …`.",
+      "deciding_data": "In repo: `morphoeval/kg/2026-10-19-turing-audit-v2/published.json`, `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` (turing-gray-scott), `datasets/turing/turing_reference.json`, `models/1952-turing-morpho.py`.",
+      "prior_attempts": "2026-10-19 turing-morpho loop published v2 KG locally (`REPORT.md` 85.5) but registry publish step was not completed. Pass N+1 (`flagship15-loop-passN.md`) re-scored to 68.8 without KG update.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Pure sign/publish/supersede toolchain; no simulation changes needed to decide rank."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Signed trig files and both audit score sets already exist in-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Registry publication status and superseding head URIs are objectively checkable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Sub-hour cryptography and RDF build only."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New supersede directory; optional publish of existing v2 uses only manifest updates."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Can complete test-publish in one sitting if nanopub profile keys exist on the agent VM."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No documented refutation of publishing v2; only omitted registry step."
+        }
+      }
+    },
+    {
+      "title": "Register blind Holstein second-assessor Turing audits (54.4 / 57.7) against prod 74.6",
+      "gap": "Two blinded second-assessor YAML audits exist (`morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit.yaml` and `-v2.yaml`, overall 54.4 and 57.7) but there is no `morphoeval/kg/*second-assessor*bos*` directory. Production publishes the primary Pass 9 negative claim at 74.6 via `morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/published.json`, so Delphi ranks a single assessor and hides inter-rater disagreement on the same biological verdict.",
+      "done": "`build_morphoeval_kg.py` on each second-assessor audit emits assessments with `-second-assessor-claude-fable-5-1` suffixes linked to the same `murray-bos-taurus-turing-wavelength` claim; sign + verify; optional `--supersede` none (dual rank, not replacement); published.json exists for both KG dirs with check_signed 10/10 pass.",
+      "tool_route": "`python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit-v2.yaml --conform -o morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit-v2`; `python3 morphoeval/sign_morphoeval.py …`; `node morphoeval/check_signed.mjs …/signed/*.trig`. Repeat for v1 audit if both ranks should appear.",
+      "deciding_data": "In repo: second-assessor YAMLs, primary prod KG v7, `datasets/bos_taurus_turing_wavelength/`, `models/1981-murray-bos-taurus-turing-wavelength.py`.",
+      "prior_attempts": "Pass 4 and Pass 7 Fable loops (`morphoeval/runs/2026-10-26-bos-taurus-turing-wavelength-loop-pass4-fable.md`, `-pass7-fable2.md`) produced audits only. `docs/open-problems.json` OP-11 (independent re-score + migration-wave variant) is marked refuted—this candidate is the narrower knowledge task of publishing existing second-assessor YAMLs, not re-opening OP-11 remediation.",
+      "factors": {
+        "tool_fit": {
+          "score": 25,
+          "why": "Second-assessor suffixing is built into `build_morphoeval_kg.py`; YAML is ready to ingest."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All audits and datasets are committed; no external data."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Presence of paired assessment IRIs and signed files is mechanically verifiable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "KG build/sign only."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Wholly new `morphoeval/kg/…second-assessor…` trees; zero edits to simulation code."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Two build-sign cycles fit one sitting."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "OP-11 refutes a different follow-up route; publishing existing blind audits is not blocked, though it must not be mistaken for closing OP-11."
+        }
+      }
+    },
+    {
+      "title": "Publish Botryllus schlosseri Turing-wavelength audit (95.7) as nanopublication rank",
+      "gap": "Representative of the large `*-turing-wavelength.py` cohort: `morphoeval/audits/2026-10-19-botryllus-schlosseri-turing-wavelength-audit-v2.yaml` records overall 95.7 / faithful consensus, and the loop dispatch (`morphoeval/cloud/dispatches/slot-0167.json`) lists lean + dataset assets, yet `morphoeval/kg/` contains no `*botryllus*` entry—so a high-scoring Turing RD species claim is unranked in Project Delphi despite a finished audit.",
+      "done": "New `morphoeval/kg/2026-10-19-botryllus-schlosseri-turing-wavelength-audit-v2/` with 10 unsigned→signed trig files; `manni-botryllus-schlosseri-turing-wavelength-overall.trig` carries pk:hasScore 0.957; check_signed all pass; test registry publish records trusty URIs.",
+      "tool_route": "`python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-botryllus-schlosseri-turing-wavelength-audit-v2.yaml --conform -o morphoeval/kg/2026-10-19-botryllus-schlosseri-turing-wavelength-audit-v2`; `python3 morphoeval/sign_morphoeval.py …`; `node morphoeval/check_signed.mjs …/signed/*.trig`; optional `--publish test`.",
+      "deciding_data": "In repo: audit YAML, `models/2007-manni-botryllus-schlosseri-turing-wavelength.py`, `datasets/botryllus_schlosseri_turing_wavelength/`.",
+      "prior_attempts": "MorphoEval loop through audit v2 (slot-0167 dispatch) without KG phase completion; no `open-problems.json` entry blocking publication.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Standard audit→KG→sign path with no custom adapters."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Audit + dataset + script fully vendored."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Score 95.7 must appear in emitted overall assessment RDF."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Script self-test may take minutes but KG build does not require re-simulation."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New kg directory only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single-species publish loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior failed publish recorded for this audit."
+        }
+      }
+    },
+    {
+      "title": "Publish Conus blind second-assessor 50.5 alongside prod primary rank",
+      "gap": "`morphoeval/kg/2026-10-19-conus-second-assessor-audit/` is fully signed locally (overall 50.5, partially faithful per `REPORT.md`) but published.json shows published=null for all files, while production still advertises 87.3 faithful from the primary assessor—dual rank for the same RD flagship is therefore absent from the public graph.",
+      "done": "Test-publish (then prod) the existing signed directory without regenerating simulations; Nanopub registry returns 200 for each IRI; graph contains both primary prod assessments and second-assessor `-claude-fable-5-1` assessments for `wolfram-conus-textile-rule30`.",
+      "tool_route": "`python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-conus-second-assessor-audit --publish test`; `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-conus-second-assessor-audit/signed/*.trig` (re-verify); prod publish after gate.",
+      "deciding_data": "In repo: existing `morphoeval/kg/2026-10-19-conus-second-assessor-audit/signed/*.trig`, primary prod `morphoeval/kg/2026-10-18-conus-audit/published.json`.",
+      "prior_attempts": "Second-assessor pass documented in `REPORT.md` (2026-10-19); registry publish never run. Pass N+1 later lowered primary score to 72.9 but did not publish second-assessor rank either.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Sign/publish/verify only—artifacts already conformant."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Signed trig + manifest already on disk."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Registry HTTP success plus published.json test/prod flags are machine-readable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Network publish minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Manifest/registry updates only; no repo code edits."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Fastest candidate: publish pre-signed files."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No refutation; omission only."
+        }
+      }
+    },
+    {
+      "title": "Registry-publish limb chondrogenesis Turing v3 signed KG (unposted RD claim)",
+      "gap": "Turing-themed flagship debt includes non-flagship RD sims with signed but unposted KGs: `morphoeval/kg/2026-10-19-limb-chondrogenesis-turing-audit-v3/published.json` keeps published=null throughout, so a completed chondrogenesis Turing audit lacks public rank despite local signatures (same pattern as `2026-10-19-turing-audit-v2`).",
+      "done": "All nanopubs in that directory reach published=test then published=prod via sign_morphoeval.py --publish; check_signed passes; at least one overall assessment IRI resolves on Nanopub Query.",
+      "tool_route": "`python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-limb-chondrogenesis-turing-audit-v3 --publish test`; `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-limb-chondrogenesis-turing-audit-v3/signed/*.trig`.",
+      "deciding_data": "In repo: `morphoeval/kg/2026-10-19-limb-chondrogenesis-turing-audit-v3/`, corresponding audit under `morphoeval/audits/`, limb chondrogenesis dataset + script paths referenced in audit.",
+      "prior_attempts": "v3 loop completed remediation per kg REPORT; publish step skipped (manifest nulls).",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Direct sign/publish tool path on existing KG."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Signed artifacts in-repo; audit YAML present."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Manifest publish flags + registry resolution."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Publish-only workload."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "No source edits."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single-directory publish."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not previously attempted on registry."
+        }
+      }
+    },
+    {
+      "title": "Encode Pass-N+1 open RD structural limits as signed claim-boundary evidence (growing domain / Meinhardt autonomy)",
+      "gap": "Flagship15 audit YAML already states `does_not_claim` items for Turing (no 2D growing-domain L(t) solver) and Conus (no autonomous Meinhardt without stochastic injection), matching `morphoeval/runs/2026-10-26-flagship15-loop-passN.md` §Still open, but these negatives are not trustworthy pk:evidenceAgainst triples in Delphi—only prose in the audit—so the graph cannot rank what the simulation deliberately refuses to claim.",
+      "done": "Once flagship15 KG builds, claim nanopubs for `turing-gray-scott` and `wolfram-conus-textile-rule30` include remediation/`does_not_claim` strings as pk:evidenceAgainst entries matching audit YAML text; conform check passes; signed overall assessments retain lowered scores (68.8 / 72.9) with evidenceAgainst URIs present in TTL.",
+      "tool_route": "Depends on flagship15 KG build (`build_morphoeval_kg.py` already maps remediation to evidenceAgainst); verify with `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --check` then `--conform`; grep `pk:evidenceAgainst` in emitted `*-claim.trig`; sign/verify as above.",
+      "deciding_data": "In repo: flagship15 audit claim_boundary blocks, passN.md structural open list; not resolvable by wet lab in this task.",
+      "prior_attempts": "OP-06 closed simulation self-tests for growing-domain/Meinhardt autonomy at code level; knowledge encoding into nanopubs not done. Implementing the solvers themselves is out of scope for the knowledge lens (simulation/referee lens).",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Builder already emits evidenceAgainst from remediation lists; needs successful flagship15 build, not new science."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Textual boundaries already in audit YAML."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "RDF triple presence and string match to audit YAML are grep-able."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Build/sign only after slug fix."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Tied to flagship15 KG effort; no standalone new files unless build succeeds."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Blocked behind taxon URI builder fix."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Not refuted, but coupled to candidate #1."
+        }
+      }
+    }
+  ]
+}
