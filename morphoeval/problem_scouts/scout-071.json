@@ -1,0 +1,153 @@
+{
+  "scout": "scout-071",
+  "ground": "library",
+  "lens": "literature",
+  "candidates": [
+    {
+      "id": "LIB-PLANFORM-S9-01",
+      "title": "Planform bioelectric series S9: replace PlanformDB placeholder sample counts with Nogi 2009 cohort sizes",
+      "gap": "In `datasets/planform/planform_bioelectric_series_v1.json`, every S9 row (PlanformDB exps 516–536, Nogi et al. 2009 Fig. 1D–E) carries `placeholder_sample_count` because `ResultSet.Num` is 0 or 1 in PlanformDB 2.5.0, so the default `fit_policy` excludes the whole PZQ dose/window calibration series.",
+      "done": "A JSON sidecar `datasets/planform/s9_nogi2009_sample_sizes_v1.json` maps each `experiment_id` in S9 to an integer `n` extracted from Nogi et al. (2009) Fig. 1D–E (doi:10.1371/journal.pntd.0000464); for every mapped row, `abs(n_planformdb - n_literature) <= 1` OR the literature documents a pooled cohort explicitly covering that experiment id, and `planform_bioelectric.py --self-test` passes with a flag allowing literature-backed `n` overrides on S9 only.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Nogi praziquantel planarian regenerative polarity voltage\" --taxon \"Schmidtea mediterranea\" --dry-run (confirms OpenAlex hit doi:10.1371/journal.pntd.0000464 with OA PDF URL); then tabulate Fig. 1D–E cohort sizes from the OA PDF into the sidecar (human step after scout).",
+      "deciding_data": "In repo: `datasets/planform/planform_bioelectric_series_v1.json`, `datasets/planform/README.md` (S9 row flags). Named public source: Nogi et al. (2009) PLoS NTD doi:10.1371/journal.pntd.0000464 (OpenAlex OA PDF via scout_literature).",
+      "prior_attempts": "Fixture generation documented placeholders in `datasets/planform/README.md` (2026-10-18 read); no recorded attempt to back-fill `n` from the primary paper. Not refuted.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "scout_literature returns the authoritative OA paper and DOI; the missing evidence is that paper's figure tables."},
+        "data_in_hand": {"score": 18, "why": "Full S9 rows and flags are already in-repo; only the published cohort sizes are one OA PDF fetch away."},
+        "falsifiable_done": {"score": 14, "why": "Per-experiment integer `n` map is checkable against Fig. 1D–E without subjective scoring."},
+        "compute_in_repo": {"score": 13, "why": "Scout HTTP plus manual table extraction fits in hours on the repo stack."},
+        "isolation": {"score": 10, "why": "Closable as new JSON sidecar plus optional self-test hook; no edits to held-out blind hashes."},
+        "time_to_verdict": {"score": 7, "why": "Single-paper Fig. 1D–E tabulation is one sitting once the scout dossier pins the DOI."},
+        "not_blocked": {"score": 5, "why": "No prior attempt refuted literature-backed `n` for S9."}
+      }
+    },
+    {
+      "id": "LIB-SCOUT-OPENALEX-02",
+      "title": "Scout manifest integrity: ~2k dataset dossiers ship with empty OpenAlex paper slots",
+      "gap": "Automated census (2026-10-27) found ~2039 of ~2102 `datasets/*/scout_manifest.json` files have `candidate_papers_openalex: []` (e.g. `datasets/yap_excitable_segmentation/scout_manifest.json`), while Step 1 expects live literature candidates before Steps 2–12.",
+      "done": "For a preregistered sample of 20 slot-linked manifests, re-running `morphoeval/scout_literature.py --slot <N> --dry-run` yields `>=1` entry with a non-empty `doi` matching the slot's `seed_doi` in `morphoeval/cloud/campaign_100_slots.yaml` OR the top hit's `cited_by_count >= 20`; a batch report JSON lists slot, old SHA-256, new DOI count, pass/fail.",
+      "tool_route": "python3 morphoeval/scout_literature.py --slot 27 --dry-run; python3 morphoeval/scout_literature.py --slot 6 --dry-run; (repeat for preregistered slots) — optional write to `datasets/<slug>/scout_manifest_refresh.json` per zero-conflict policy.",
+      "deciding_data": "In repo: all `datasets/*/scout_manifest.json`, `morphoeval/cloud/campaign_100_slots.yaml`. Public: OpenAlex works API (no key).",
+      "prior_attempts": "Initial manifests were generated with `--no-network` or stale snapshots (empty `candidate_papers_openalex` arrays). No audit refuted re-scouting as a fix.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "scout_literature is the designated Step 1 CLI and fills `candidate_papers_openalex` when run with network."},
+        "data_in_hand": {"score": 20, "why": "Every manifest path and campaign slot metadata already lives in the repo."},
+        "falsifiable_done": {"score": 13, "why": "Pass/fail is DOI presence and seed_doi match counts, not taste."},
+        "compute_in_repo": {"score": 11, "why": "Full 2102 refresh is hours of HTTP; a 20-slot sample verdict is still repo-local."},
+        "isolation": {"score": 9, "why": "Refresh files can be new paths; replacing tracked manifests would violate parallel-agent isolation."},
+        "time_to_verdict": {"score": 6, "why": "Sample-of-20 re-scout completes in one agent loop."},
+        "not_blocked": {"score": 5, "why": "Empty arrays are documented debt, not a refuted route."}
+      }
+    },
+    {
+      "id": "LIB-SCOUT-COMMONS-03",
+      "title": "Scout manifest reference fitness: off-taxon Wikimedia specimens in Mus musculus slots",
+      "gap": "Several Mus-linked scout manifests embed unrelated Commons hits (e.g. `File:Ardea alba with prey...` inside `datasets/yap_excitable_segmentation/scout_manifest.json` and at least 15 other mouse slots), polluting downstream specimen provenance for `verify_image_fitness.py`.",
+      "done": "Re-scout with `--taxon \"Mus musculus\"` (or slot organism string) produces `candidate_specimens_wikimedia` where every entry's `title` contains `Mus` or `mouse` (case-insensitive) and zero entries contain `Ardea`; a checker script on the refreshed dossier exits 0.",
+      "tool_route": "python3 morphoeval/scout_literature.py --slot 27 --taxon \"Mus musculus segmentation clock\" --dry-run; python3 morphoeval/scout_literature.py --query \"Hubaud Yap segmentation clock mouse\" --taxon \"Mus musculus embryo\" --dry-run.",
+      "deciding_data": "In repo: affected `datasets/*/scout_manifest.json` files. Public: Wikimedia Commons API via scout_literature.",
+      "prior_attempts": "No formal remediation recorded; manifests were accepted as Step 1 placeholders. Bos taurus README (`datasets/bos_taurus_turing_wavelength/README.md`) documents a related species_gallery mis-label but not the Mus/Ardea scout issue.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "scout_literature owns the Commons search path that produced the bad hits."},
+        "data_in_hand": {"score": 19, "why": "Offending manifests are already in-repo and enumerable."},
+        "falsifiable_done": {"score": 14, "why": "Taxon token rules on Commons titles are machine-checkable."},
+        "compute_in_repo": {"score": 15, "why": "Pure API re-queries, minutes per slot."},
+        "isolation": {"score": 10, "why": "New refresh JSON per dataset; zero edits to parallel agents' files."},
+        "time_to_verdict": {"score": 8, "why": "One slot re-scout plus title filter proves the fix pattern."},
+        "not_blocked": {"score": 4, "why": "Not previously attempted; unrelated Bos gallery note shows awareness but no Mus scout fix."}
+      }
+    },
+    {
+      "id": "LIB-PLANFORM-OVID-434-04",
+      "title": "Planform series S4: resolve experiment 434 conflicting double-head control semantics via Oviedo 2010 source figure",
+      "gap": "`datasets/planform/README.md` flags experiment 434 (`conflicting_control_semantics`: octanol from 0 h stored as 0 % vs 100 % double head relative to exp 418); rows are excluded from default fits until the primary figure adjudicates the control outcome.",
+      "done": "Literature dossier cites Oviedo et al. (2010) doi:10.1016/j.ydbio.2009.12.012 Fig. 2 panel for the 0 h octanol control and records the published double-head frequency; a sidecar marks whether PlanformDB matches within 5 percentage points or documents a known curation error code.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Oviedo gap junction octanol planarian anterior posterior\" --taxon \"Schmidtea mediterranea\" --dry-run (expect top hit doi:10.1016/j.ydbio.2009.12.012 with OA link).",
+      "deciding_data": "In repo: `planform_bioelectric_series_v1.json` row for experiment 434 and README flag text. Public: Oviedo et al. (2010) Developmental Biology OA figure.",
+      "prior_attempts": "README excludes 434 from fits by default; no published repo note resolves the 0 vs 100 % branch. Not refuted.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "scout_literature locates the Oviedo DOI and OA figure that decide the control frequency."},
+        "data_in_hand": {"score": 17, "why": "Conflicting row and experiment metadata are already extracted in the fixture."},
+        "falsifiable_done": {"score": 14, "why": "Single frequency comparison to a figure panel is a numeric done criterion."},
+        "compute_in_repo": {"score": 14, "why": "Paper lookup plus one figure read; no wet lab."},
+        "isolation": {"score": 10, "why": "New adjudication sidecar only."},
+        "time_to_verdict": {"score": 7, "why": "One figure panel resolves the fork."},
+        "not_blocked": {"score": 5, "why": "Exclusion is documented; literature route not tried."}
+      }
+    },
+    {
+      "id": "LIB-GALLERY-BOS-05",
+      "title": "species_gallery Bos taurus reference: replace airway histology with CC Holstein coat photograph",
+      "gap": "`datasets/bos_taurus_turing_wavelength/README.md` states `datasets/species_gallery/I_Enaima_Vertebrata/Bos_taurus.jpg` is airway histology, not coat, while `verify_image_fitness.py` falls back to species_gallery paths — wrong taxonomy for Murray/Turing coat models if that file is resolved.",
+      "done": "scout_literature Commons query for `Bos taurus` returns at least one specimen whose title mentions Holstein or cattle coat/flank; chosen URL has CC/Public-Domain license metadata in the dossier; SHA-256 of downloaded bytes is logged in a new provenance sidecar distinct from the pinned `bos_taurus_specimen.jpg` in the Turing dataset.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Holstein Friesian cattle coat spotting flank\" --taxon \"Bos taurus Holstein\" --dry-run.",
+      "deciding_data": "In repo: wrong gallery file path documented in bos README; correct reference specimens `bos_taurus_specimen_02…10.jpg` metadata in `bos_taurus_turing_wavelength_reference.json`. Public: Wikimedia Commons Holstein uploads.",
+      "prior_attempts": "Cow Turing audit (`morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit.yaml`) remediation item asked for >=10 flank specimens — partially closed with Commons set in the Turing folder, but species_gallery mis-label remains noted in README. OP-11 follow-up is simulation re-score, not gallery repair.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "scout_literature is the repo tool for CC specimen discovery."},
+        "data_in_hand": {"score": 15, "why": "Correct coat photos already exist in the Turing dataset; gallery path is the gap."},
+        "falsifiable_done": {"score": 13, "why": "License field plus title keywords and SHA-256 are objective."},
+        "compute_in_repo": {"score": 15, "why": "Commons API plus one download."},
+        "isolation": {"score": 10, "why": "New sidecar + optional new gallery file path under datasets/ without touching audits."},
+        "time_to_verdict": {"score": 8, "why": "Single Commons query loop."},
+        "not_blocked": {"score": 4, "why": "Documented mismatch; replacement via scout not yet executed for species_gallery."}
+      }
+    },
+    {
+      "id": "LIB-PLANFORM-PROV-06",
+      "title": "Planform twelve-phenotype reference plate: machine-readable DOI provenance for all 12 morphology_ids",
+      "gap": "`datasets/planform/planform_multi_phenotype_specimens.jpg` displays 12 phenotypes but provenance strings live only in `morphoeval/upgrade_planarian_assets.py`; `issue1_model_vs_reference.py` labels non-#1 crops as \"(plate crop)\" without DOI pins, blocking automated `verify_image_fitness` provenance enrichment for phenotypes #2–#104.",
+      "done": "A `datasets/planform/planform_phenotype_literature_provenance_v1.json` lists all 12 `morphology_id` keys with `doi`, `figure`, and `openalex_work_id` where scout_literature OpenAlex search for the embedded citation string (author+year) returns a hit; at least 10/12 IDs must resolve to a DOI present in `morphoeval/scout_literature.py` exclusion scan or newly added with matching title tokens.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Nogi Levin planarian bipolar regeneration\" --taxon \"Schmidtea mediterranea\" --dry-run; python3 morphoeval/scout_literature.py --query \"Pietak Levin planarian angled growth computational\" --taxon \"Schmidtea mediterranea\" --dry-run; (one query per embedded citation in upgrade_planarian_assets.py).",
+      "deciding_data": "In repo: phenotype list and citation strings in `morphoeval/upgrade_planarian_assets.py` lines 263–275; composite JPEG in `datasets/planform/`. Public: OpenAlex per cited paper.",
+      "prior_attempts": "Human-readable credits were added during planarian asset upgrade (2026-10); no machine-readable DOI map in datasets/planform. Not refuted.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Each phenotype citation is recoverable via OpenAlex search queries emitted by scout_literature."},
+        "data_in_hand": {"score": 16, "why": "Author-year figure strings already curated in-repo; DOIs are one API call each."},
+        "falsifiable_done": {"score": 13, "why": "10/12 DOI resolution rate is countable."},
+        "compute_in_repo": {"score": 14, "why": "Twelve short OpenAlex queries."},
+        "isolation": {"score": 10, "why": "New JSON provenance file only."},
+        "time_to_verdict": {"score": 7, "why": "Batch queries fit one sitting."},
+        "not_blocked": {"score": 5, "why": "No prior attempt failed to find these well-known planarian papers."}
+      }
+    },
+    {
+      "id": "OP-05-LIT-07",
+      "title": "Within-species bee forewing landmarks (OP-05): locate a publishable specimen dataset via literature scout",
+      "gap": "`docs/open-problems.json` OP-05 and `docs/portfolio/bee_wings.md` state the hornet/bee causal comparison needs within-species bee wings, but the registered bee portfolio uses tribe-level units with 41 wings from literature drawings (Engel 2001 fossils entirely from drawings).",
+      "done": "scout_literature returns at least one OpenAlex work with an open dataset deposit (Zenodo or Dryad DOI) describing >=30 forewing landmarks from a single Apis or solitary-bee species with replicates; DOI is not already listed in `morphoeval/scout_literature.py` exclusion scan output (`--list-existing` dois set).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Apis mellifera forewing geometric morphometrics landmark dataset zenodo\" --taxon \"Apis mellifera\" --dry-run; python3 morphoeval/scout_literature.py --list-existing (DOI exclusion check).",
+      "deciding_data": "In repo: OP-05 problem statement, bee portfolio registration. Public: OpenAlex + linked repository DOI on candidate works.",
+      "prior_attempts": "Claude Fable 5.1 Thinking High scored the tribe-level bee portfolio (`docs/open-problems.json` OP-05); did not close the within-species dataset gap. Not refuted that such a dataset exists.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "Finding the deposit DOI is exactly the literature scout lens; running C1–C8 still needs thompson/portfolio tools."},
+        "data_in_hand": {"score": 7, "why": "Tribe-level bee landmarks are in-repo; within-species deposit must be discovered externally."},
+        "falsifiable_done": {"score": 13, "why": "Dataset DOI plus species name and landmark count are checkable."},
+        "compute_in_repo": {"score": 12, "why": "OpenAlex search hours; portfolio re-score is separate."},
+        "isolation": {"score": 10, "why": "Dossier or registry JSON as new file."},
+        "time_to_verdict": {"score": 6, "why": "Discovery verdict in one scout loop; full OP-05 close needs a follow-on agent."},
+        "not_blocked": {"score": 5, "why": "OP-05 remains partial; literature discovery route not refuted."},
+        "alt_lens": "registry + thompson/portfolio pipeline once a dataset DOI is pinned."
+      }
+    },
+    {
+      "id": "REG-DM-MUR-08",
+      "title": "DM-MUR-NEG-01: find tabulated Drosophila tracheal parent/daughter diameters in the literature",
+      "gap": "`docs/open-problems.json` registered_prediction_followups DM-MUR-NEG-01 names missing tabulated Drosophila tracheal diameters to test Murray exponent 2.8–3.2; repo holds the prediction law but not the measurement series.",
+      "done": "scout_literature query cycle (minimum three distinct `--query` strings including \"Drosophila trachea branch diameter morphometry\") yields at least one paper with DOI and OA PDF/HTML where a table or supplement lists >=10 parent/daughter diameter pairs with units; dossier JSON records DOI, table identifier, and row count.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Drosophila tracheal tube diameter branching morphometry\" --taxon \"Drosophila melanogaster trachea\" --dry-run; refine with \"tracheal metameric diameter dataset\" if first pass lacks quantitative tables.",
+      "deciding_data": "In repo: `predictions/resolutions/drosophila.json` and open-problems followup text. Public: OpenAlex + primary morphology/tracheal papers.",
+      "prior_attempts": "Partial resolution recorded 2026-10-26 with bound established but series missing; no refutation that literature tabulation is impossible.",
+      "factors": {
+        "tool_fit": {"score": 17, "why": "scout_literature finds candidate papers; extracting diameters needs measure/vision lens afterward."},
+        "data_in_hand": {"score": 9, "why": "Prediction registry in-repo; diameter table not yet pinned."},
+        "falsifiable_done": {"score": 14, "why": "DOI plus counted diameter pairs is objective."},
+        "compute_in_repo": {"score": 12, "why": "Search plus PDF table scrape in hours."},
+        "isolation": {"score": 10, "why": "New literature dossier file."},
+        "time_to_verdict": {"score": 5, "why": "May require multiple query refinements in one sitting."},
+        "not_blocked": {"score": 5, "why": "Missing series acknowledged; not refuted."},
+        "alt_lens": "measure_outputs.py + manual table extraction after DOI pin."
+      }
+    }
+  ]
+}
