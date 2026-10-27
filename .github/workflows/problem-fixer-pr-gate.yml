@@ -1,0 +1,165 @@
+# Problem-Fixer PR Gate — trusted base workflow for autonomous repair PRs.
+#
+# Security model: the queue, guard code, and this workflow come from the base
+# branch (pull_request_target). The PR head is checked out separately with no
+# persisted credentials and only a read-scoped validation token. A second job
+# may squash-merge only tasks explicitly marked merge_policy=auto in the
+# trusted queue, only when the agent reported fixed/verified-no-change, every
+# changed path is allowlisted, all task validators pass, and other PR checks
+# are green.
+name: Problem-Fixer PR Gate
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions: {}
+
+jobs:
+  validate:
+    name: Validate Problem-Fixer PR
+    if: startsWith(github.event.pull_request.title, 'Problem-Fixer fix-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      fix_id: ${{ steps.guard.outputs.fix_id }}
+      auto_merge_eligible: ${{ steps.guard.outputs.auto_merge_eligible }}
+      status: ${{ steps.guard.outputs.status }}
+    steps:
+      - name: Checkout trusted base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout Problem-Fixer PR head
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml rdflib
+          if [ -f pr/requirements.txt ]; then pip install -r pr/requirements.txt; fi
+
+      - name: Detect Lean requirement
+        id: lean
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          title = os.environ["PR_TITLE"]
+          m = re.search(r"fix-(\d+)", title)
+          fix_id = f"fix-{int(m.group(1)):03d}" if m else ""
+          queue = json.load(open("base/morphoeval/problem_fixers/fix_queue.json"))
+          task = next((t for t in queue["tasks"] if t["id"] == fix_id), {})
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"fix_id={fix_id}\n")
+              fh.write(f"requires_lean={'true' if task.get('requires_lean') else 'false'}\n")
+          PY
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+
+      - name: Install Lean 4
+        if: steps.lean.outputs.requires_lean == 'true'
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:stable
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Run trusted path/result/validator guard
+        id: guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          FIX_ID="${{ steps.lean.outputs.fix_id }}"
+          FIX_NUM="${FIX_ID#fix-}"
+          FIX_NUM=$((10#$FIX_NUM))
+          git -C pr fetch origin "${{ github.event.pull_request.base.sha }}" || true
+          set +e
+          python3 base/morphoeval/problem_fixer.py guard \
+            --fix "$FIX_NUM" \
+            --repo pr \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head "${{ github.event.pull_request.head.sha }}" \
+            --json > guard-report.json
+          GUARD_RC=$?
+          set -e
+          cat guard-report.json
+          python3 - <<'PY'
+          import json, os
+          try:
+              report = json.load(open("guard-report.json"))
+          except Exception:
+              report = {"fix_id": "", "auto_merge_eligible": False, "status": "guard-output-unreadable"}
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"fix_id={report.get('fix_id','')}\n")
+              fh.write(f"auto_merge_eligible={'true' if report.get('auto_merge_eligible') else 'false'}\n")
+              fh.write(f"status={report.get('status') or ''}\n")
+          PY
+          exit "$GUARD_RC"
+
+      - name: Upload guard report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: problem-fixer-guard-${{ github.event.pull_request.number }}
+          path: guard-report.json
+          if-no-files-found: ignore
+
+  automerge:
+    name: Auto-merge eligible deterministic fix
+    needs: validate
+    if: needs.validate.outputs.auto_merge_eligible == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+      statuses: read
+    steps:
+      - name: Wait for other PR checks and merge
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          pending=1
+          for attempt in $(seq 1 30); do
+            json=$(gh pr checks "$PR_NUMBER" --repo "$REPO" --json name,bucket,state 2>/dev/null || echo '[]')
+            pending=$(python3 -c 'import json,sys; rows=json.load(sys.stdin); rows=[r for r in rows if "Problem-Fixer" not in r.get("name","") and "Auto-merge eligible" not in r.get("name","")]; print(sum(r.get("bucket") in {"pending"} or r.get("state") in {"QUEUED","IN_PROGRESS","PENDING"} for r in rows))' <<<"$json")
+            failed=$(python3 -c 'import json,sys; rows=json.load(sys.stdin); rows=[r for r in rows if "Problem-Fixer" not in r.get("name","") and "Auto-merge eligible" not in r.get("name","")]; print(sum(r.get("bucket") in {"fail","cancel"} for r in rows))' <<<"$json")
+            if [ "$failed" -gt 0 ]; then
+              echo "Another PR check failed; refusing auto-merge."
+              gh pr checks "$PR_NUMBER" --repo "$REPO" || true
+              exit 1
+            fi
+            if [ "$pending" -eq 0 ]; then
+              break
+            fi
+            echo "Waiting for $pending other check(s)…"
+            sleep 60
+          done
+          if [ "$pending" -ne 0 ]; then
+            echo "Other PR checks are still pending; refusing auto-merge."
+            exit 1
+          fi
+          gh pr merge "$PR_NUMBER" --repo "$REPO" --squash --delete-branch --match-head-commit "$HEAD_SHA"
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body "Auto-merged by the Problem-Fixer PR Gate: trusted queue policy is \`auto\`, the path/result guard passed, task validators passed, the agent reported a completed fix, and no other PR checks were failing."

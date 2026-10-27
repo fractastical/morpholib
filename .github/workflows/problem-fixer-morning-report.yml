@@ -1,0 +1,102 @@
+# Problem-Fixer morning report — one updating GitHub issue for the wave.
+# Runs after the overnight dispatch window and can also be run manually.
+name: Problem-Fixer Morning Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 12:30 UTC ≈ morning in US Eastern, after overnight cloud agents have run.
+    - cron: "30 12 * * *"
+
+permissions:
+  contents: write
+  pull-requests: read
+  issues: write
+
+jobs:
+  report:
+    name: Build or update Wave 1 report issue
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install report dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+          pip install cursor-sdk || true
+      - name: Poll Cursor agents and build report body
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 morphoeval/problem_fixer.py status --poll > fixer-status.txt || true
+          gh pr list --repo "${{ github.repository }}" --state all --search "Problem-Fixer fix- in:title" --limit 100 \
+            --json number,title,state,mergedAt,url,mergeable,statusCheckRollup > fixer-prs.json || echo '[]' > fixer-prs.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          status = Path("fixer-status.txt").read_text(errors="replace").strip()
+          try:
+              prs = json.loads(Path("fixer-prs.json").read_text())
+          except Exception:
+              prs = []
+          lines = [
+              "## Problem-Fixer Wave 1 — overnight report",
+              "",
+              "This issue is updated by `.github/workflows/problem-fixer-morning-report.yml`. Agents were instructed not to self-merge or publish externally. Deterministic `auto` tasks may already have been squash-merged by the PR gate; `review` tasks remain in PRs below.",
+              "",
+              "### Agent and result status",
+              "",
+              "```text",
+              status or "No status output.",
+              "```",
+              "",
+              "### Fixer PRs",
+              "",
+          ]
+          if not prs:
+              lines.append("No Problem-Fixer PRs found yet.")
+          for pr in prs:
+              merged = f" merged {pr.get('mergedAt')}" if pr.get("mergedAt") else ""
+              lines.append(f"- [#{pr['number']}]({pr['url']}) — {pr['state']}{merged} — {pr['title']}")
+          lines += [
+              "",
+              "### Human morning checklist",
+              "",
+              "1. Review every `review`-policy PR, starting with blocked/needs-review reports in `morphoeval/problem_fixers/reports/`.",
+              "2. Check the PR gate report before merging; do not merge a PR whose agent performed external publication (the contract forbids it).",
+              "3. After merges, rerun the Problem-Scout ranker only if candidate status or evidence changed.",
+              "",
+              "Latest workflow run ID is available in the Actions tab for this workflow.",
+          ]
+          Path("morning-report.md").write_text("\n".join(lines) + "\n")
+          PY
+      - name: Commit polled dispatch state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add morphoeval/cloud/dispatches/problem-fixer-*.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m "Problem-Fixer Wave 1: overnight agent status"
+            for i in 1 2 3 4 5; do git pull --rebase origin main && git push && break || sleep 15; done
+          else
+            echo "No dispatch-state changes to commit."
+          fi
+      - name: Create or update the report issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          title="Problem-Fixer Wave 1 — morning report"
+          number=$(gh issue list --repo "${{ github.repository }}" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --repo "${{ github.repository }}" --body-file morning-report.md
+            echo "Updated issue #$number"
+          else
+            gh issue create --repo "${{ github.repository }}" --title "$title" --body-file morning-report.md
+          fi

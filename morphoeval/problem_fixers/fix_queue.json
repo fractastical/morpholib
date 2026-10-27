@@ -1,0 +1,348 @@
+{
+  "schema_version": "problem-fixer-queue/1.0",
+  "wave": "wave-1-integrity",
+  "description": "Sleep-safe first fixer wave selected from morphoeval/problem_scouts/leaderboard.json. Each task is one isolated PR. Auto-merge is restricted to deterministic, narrow-scope tasks; all other completed work remains in a PR for human review.",
+  "tasks": [
+    {
+      "id": "fix-001",
+      "slug": "bioelectric-template-artifact",
+      "leaderboard_rank": 1,
+      "candidate_id": "scout-048-c",
+      "source": "scout-048.json",
+      "title": "DATA-QUALITY: catalog bioelectric_polarity empirical curves are alpha-template artifacts (BIO-TPL-DQ-01)",
+      "merge_policy": "review",
+      "instructions": [
+        "Determine from primary in-repo evidence whether the three named bioelectric_polarity empirical curves are actually alpha_scale templates rather than biological observations.",
+        "Do not fabricate replacement biological data and do not silently overwrite empirical_series values.",
+        "If the claim is confirmed, quarantine it in a durable machine-readable way: add a focused checker plus a data-quality audit artifact that names every affected dataset, the exact correlations, and which downstream claims must not cite those curves as biological evidence.",
+        "If a legitimate non-template biological source is already present and merely mislabelled, correct only the provenance labelling and cite the source record; if replacement data would have to be invented or fetched ambiguously, report blocked instead of guessing."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "morphoeval/audits/*bioelectric*data-quality*.yaml",
+        "datasets/danio_rerio_bioelectric_polarity/**",
+        "datasets/drosophila_melanogaster_bioelectric_polarity/**",
+        "datasets/xenopus_tropicalis_bioelectric_polarity/**"
+      ],
+      "validators": [
+        {
+          "name": "python syntax for any new fixers tooling",
+          "argv": ["python3", "-m", "compileall", "-q", "morphoeval/problem_fixers"]
+        }
+      ]
+    },
+    {
+      "id": "fix-002",
+      "slug": "oeis-a051023-traceability",
+      "leaderboard_rank": 2,
+      "candidate_id": "scout-008-c",
+      "source": "scout-008.json",
+      "title": "OEIS A051023 center-column traceability (first 128 bits)",
+      "merge_policy": "review",
+      "instructions": [
+        "Independently recompute the Rule 30 center column and compare the first 128 bits with the vendored OEIS fixture.",
+        "Create a separate, clearly timestamped registration/resolution pair for R30-OEIS-128-01; do not edit predictions/prediction_registry.json or predictions/prediction_registry.csv and do not describe this as a blind biological prediction.",
+        "Include the SHA-256 of the expected 128-bit sequence, the exact code path used, and a machine-readable verdict."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "predictions/registrations/R30-OEIS-128-01.json",
+        "predictions/resolutions/rule30-oeis.json",
+        "tests/test_problem_fixer_oeis.py"
+      ],
+      "validators": [
+        {
+          "name": "OEIS-focused tests when added",
+          "argv": ["python3", "-m", "pytest", "tests/test_problem_fixer_oeis.py", "-q"]
+        },
+        {
+          "name": "Rule 30 model self test",
+          "argv": ["python3", "models/1984-wolfram-conus-textile-rule30.py", "--self-test-only"]
+        }
+      ]
+    },
+    {
+      "id": "fix-003",
+      "slug": "rule30-delphi-artifact-sync",
+      "leaderboard_rank": 3,
+      "candidate_id": "scout-010-c",
+      "source": "scout-010.json",
+      "title": "Cross-artifact viability sync: open-problems.json vs problem-graph DELPHI vs audit YAML",
+      "merge_policy": "auto",
+      "instructions": [
+        "Build the verifier at morphoeval/problem_scouts/verify_rule30_delphi_sync.py, comparing OP-01 through OP-03 across open-problems.json, the generated problem graph, and the audit YAML source of truth.",
+        "Run the canonical builders first; repair drift only in generated/derived artifacts or in the verifier's extraction logic. Do not change Delphi scores by hand.",
+        "The verifier must fail loudly with the offending prediction IDs and observed values when tolerances are exceeded."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_scouts/verify_rule30_delphi_sync.py",
+        "morphoeval/problem_fixers/**",
+        "docs/open-problems.json",
+        "docs/problem-graph.html",
+        "docs/build_problem_graph_html.py",
+        "morphoeval/build_rule30_bayesian_delphi.py",
+        "tests/test_problem_fixer_delphi_sync.py"
+      ],
+      "validators": [
+        {
+          "name": "Delphi sync verifier",
+          "argv": ["python3", "morphoeval/problem_scouts/verify_rule30_delphi_sync.py"]
+        },
+        {
+          "name": "Delphi sync focused tests when added",
+          "argv": ["python3", "-m", "pytest", "tests/test_problem_fixer_delphi_sync.py", "-q"]
+        }
+      ]
+    },
+    {
+      "id": "fix-004",
+      "slug": "newman-limb-doi",
+      "leaderboard_rank": 9,
+      "candidate_id": "LIB-DQ-LIMB-01",
+      "source": "scout-078.json",
+      "title": "Newman 1979 limb dataset: scout_manifest seed DOI is a typo vs reference/bib",
+      "merge_policy": "review",
+      "instructions": [
+        "Verify the Newman & Frisch 1979 primary-source DOI against Crossref or the publisher record; do not assume the candidate's preferred DOI merely because two repo files agree.",
+        "Correct the erroneous provenance field at the narrowest source of truth and record both the old and corrected DOI plus title evidence in the fixer report.",
+        "Search for hashes or generated references inside the allowed dataset that pin the changed file; if a required update falls outside the allowlist, stop as blocked and name it."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "datasets/limb_chondrogenesis_turing/**"
+      ],
+      "validators": [
+        {
+          "name": "DOI provenance consistency",
+          "argv": ["python3", "-c", "import json,re,pathlib; m=json.load(open('datasets/limb_chondrogenesis_turing/scout_manifest.json')); r=json.load(open('datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json')); b=pathlib.Path('datasets/limb_chondrogenesis_turing/paper_citations.bib').read_text(); doi='10.1126/science.462174'; assert doi in b; print(m.get('seed_doi') or m.get('territory',{}).get('seed_doi') or 'see report', doi)"]
+        }
+      ]
+    },
+    {
+      "id": "fix-005",
+      "slug": "global-morphogenetic-flow-doi",
+      "leaderboard_rank": 10,
+      "candidate_id": "LIB-DQ-GMF-01",
+      "source": "scout-078.json",
+      "title": "Global morphogenetic flow: scout seed DOI mismatches the Streichan 2018 eLife bib entry",
+      "merge_policy": "review",
+      "instructions": [
+        "Identify the actual Streichan et al. 2018 Global morphogenetic flow article from Crossref/eLife and reconcile scout_manifest seed_doi with the primary bib entry and seed_landmark_paper.",
+        "Correct only the erroneous provenance field; preserve any genuinely distinct citing DOI as a secondary citation rather than deleting evidence.",
+        "Record both DOIs, article title evidence, and the reason one is primary in the fixer report."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "datasets/global_morphogenetic_flow/**"
+      ],
+      "validators": [
+        {
+          "name": "GMF DOI consistency",
+          "argv": ["python3", "-c", "import json,pathlib; m=json.load(open('datasets/global_morphogenetic_flow/scout_manifest.json')); b=pathlib.Path('datasets/global_morphogenetic_flow/paper_citations.bib').read_text(); assert '10.7554/eLife.27454' in b; print(m)"]
+        }
+      ]
+    },
+    {
+      "id": "fix-006",
+      "slug": "turing-audit-script-path",
+      "leaderboard_rank": 24,
+      "candidate_id": "scout-032-c",
+      "source": "scout-032.json",
+      "title": "Audit `script:` path silently drops six Turing reference measurements",
+      "merge_policy": "review",
+      "instructions": [
+        "Diagnose whether the correct repair is canonical audit script paths, a resolver in measure_outputs.py, or both; prefer the smallest repair that makes measurement complete without rewriting scientific scores.",
+        "Regenerate the affected measurement sidecars with the repo tool rather than hand-editing computed values.",
+        "Prove that the Pearson 1993 and Kondo reference rows are present and that missing/broken paths fail visibly rather than silently producing a partial four-row result."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "morphoeval/measure_outputs.py",
+        "morphoeval/audits/2026-10-19-turing-audit-v2.yaml",
+        "morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml",
+        "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml",
+        "morphoeval/audits/2026-10-26-flagship15-audit-v1.measurements.yaml",
+        "tests/test_problem_fixer_turing_measurements.py"
+      ],
+      "validators": [
+        {
+          "name": "Regenerate Turing measurements",
+          "argv": ["python3", "morphoeval/measure_outputs.py", "morphoeval/audits/2026-10-19-turing-audit-v2.yaml"]
+        },
+        {
+          "name": "Measurement completeness check",
+          "argv": ["python3", "-c", "import yaml; m=yaml.safe_load(open('morphoeval/audits/2026-10-19-turing-audit-v2.measurements.yaml')); rows=m['measurements']['turing-gray-scott']; assert len(rows)>=10, len(rows); src=' '.join(str(x.get('reference_source','')) for x in rows); assert 'Pearson 1993' in src and 'Kondo' in src; print(len(rows))"]
+        }
+      ]
+    },
+    {
+      "id": "fix-007",
+      "slug": "planarian-stale-specimen-pins",
+      "leaderboard_rank": 32,
+      "candidate_id": "LIB-MEAS-02",
+      "source": "scout-072.json",
+      "title": "Planarian HK-ATPase v2 sidecar still pins superseded specimen SHA-256 and morphology text",
+      "merge_policy": "review",
+      "instructions": [
+        "Reconcile the v2 sidecar, scout_manifest, and README with the live specimen bytes and dimensions. Regenerate measured values with repo tools; do not hand-type hashes or morphometrics.",
+        "Do not replace the specimen image in this task. If the live image itself is taxonomically wrong, report that separately as blocked rather than fetching a substitute.",
+        "Cite the live SHA-256 and dimensions in the fixer report and show which stale text was removed."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "datasets/planarian_hk_atpase_anterior/**",
+        "morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml",
+        "morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.measurements.yaml"
+      ],
+      "validators": [
+        {
+          "name": "Regenerate planarian measurements",
+          "argv": ["python3", "morphoeval/measure_outputs.py", "morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml"]
+        },
+        {
+          "name": "Specimen digest is present in sidecar",
+          "argv": ["python3", "-c", "import hashlib,pathlib; p=pathlib.Path('datasets/planarian_hk_atpase_anterior/schmidtea_mediterranea_specimen.jpg'); d=hashlib.sha256(p.read_bytes()).hexdigest(); s=pathlib.Path('morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.measurements.yaml').read_text(); assert d in s, d; print(d)"]
+        }
+      ]
+    },
+    {
+      "id": "fix-008",
+      "slug": "zhang-mathkg-lean-snippets",
+      "leaderboard_rank": 45,
+      "candidate_id": "ZHANG-MKG-RULE3-01",
+      "source": "scout-059.json",
+      "title": "Zhang sorting morphogenesis: fix math_kg lean_code snippets to match structural Loop theorems",
+      "merge_policy": "auto",
+      "instructions": [
+        "Mirror the actual quantified theorem signatures from Loop_zhang_sorting_morphogenesis.lean in the math-KG lean_code fields.",
+        "Do not weaken verify_integrity.py and do not alter theorem statements merely to pass the gate.",
+        "If a KG rebuild is generated, include only artifacts directly produced by the documented tool route and explain them in the report."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "morphoeval/math_kg_loops/zhang-sorting-morphogenesis.yaml",
+        "morphoeval/kg/2026-10-22-zhang-sorting-morphogenesis-audit-v2/**",
+        "tests/test_problem_fixer_zhang_mathkg.py"
+      ],
+      "validators": [
+        {
+          "name": "Zhang integrity gate",
+          "argv": ["python3", "morphoeval/verify_integrity.py", "--loop-yaml", "morphoeval/math_kg_loops/zhang-sorting-morphogenesis.yaml"]
+        }
+      ]
+    },
+    {
+      "id": "fix-009",
+      "slug": "cervera-gif-audit-fingerprint",
+      "leaderboard_rank": 58,
+      "candidate_id": "scout-042-c",
+      "source": "scout-042.json",
+      "title": "Cervera gap-junction GIF missing from audit fingerprints",
+      "merge_policy": "review",
+      "instructions": [
+        "Create a superseding Cervera audit version that cites docs/media/cervera_levin_mafe_gj_block.gif correctly; do not rewrite the historical v2 audit as if it had always been correct.",
+        "Generate the measurement sidecar with measure_outputs.py and verify the GIF entry has a SHA-256 and at least 24 frames with no missing simulation output.",
+        "State explicitly what v3 supersedes and what scientific conclusions, if any, changed."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "morphoeval/audits/*cervera-audit-v3.yaml",
+        "morphoeval/audits/*cervera-audit-v3.measurements.yaml"
+      ],
+      "validators": [
+        {
+          "name": "Python syntax for any new fixers tooling",
+          "argv": ["python3", "-m", "compileall", "-q", "morphoeval/problem_fixers"]
+        }
+      ]
+    },
+    {
+      "id": "fix-010",
+      "slug": "planform-damaged-negative-ci-gate",
+      "leaderboard_rank": 69,
+      "candidate_id": "scout-079-c",
+      "source": "scout-079.json",
+      "title": "Planform damaged-negative fixtures not gated in MorphoEval CI",
+      "merge_policy": "auto",
+      "instructions": [
+        "Add a standard pytest gate that exercises all five damaged-negative fixtures and their expected error codes without mutating the committed fixtures.",
+        "Include a negative-control style test on temporary copies so a flipped expected_error_code is detected as a test failure by construction, while the normal suite remains green.",
+        "Do not modify GitHub workflow files in this task; making the test discoverable by the repo's standard pytest validation is the deliverable."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "tests/test_planform_damaged_negatives.py",
+        "models/planform_bioelectric.py"
+      ],
+      "validators": [
+        {
+          "name": "Planform model self-test",
+          "argv": ["python3", "models/planform_bioelectric.py", "--self-test"]
+        },
+        {
+          "name": "Planform damaged-negative pytest gate",
+          "argv": ["python3", "-m", "pytest", "tests/test_planform_damaged_negatives.py", "-q"]
+        }
+      ]
+    },
+    {
+      "id": "fix-011",
+      "slug": "lean-formula-alignment-gate",
+      "leaderboard_rank": 82,
+      "candidate_id": "scout-053-c",
+      "source": "scout-053.json",
+      "title": "Mechanical semantic gate: YAML `formula` tokens must appear in paired Lean defs",
+      "merge_policy": "review",
+      "instructions": [
+        "Implement morphoeval/check_lean_formula_alignment.py as a semantic alignment checker, not a token-count trick.",
+        "The checker must include a --self-test mode proving the documented positive control passes and the documented overnight-template negative control fails.",
+        "Do not mass-relabel or mass-rewrite the 3,000 placeholder YAML/Lean files in this task; report the pilot findings and the safe rollout path."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "morphoeval/check_lean_formula_alignment.py",
+        "tests/test_lean_formula_alignment.py"
+      ],
+      "validators": [
+        {
+          "name": "Lean formula alignment self-test",
+          "argv": ["python3", "morphoeval/check_lean_formula_alignment.py", "--self-test"]
+        },
+        {
+          "name": "Lean formula alignment focused tests when added",
+          "argv": ["python3", "-m", "pytest", "tests/test_lean_formula_alignment.py", "-q"]
+        }
+      ]
+    },
+    {
+      "id": "fix-012",
+      "slug": "dm-dpp-lean-certificate",
+      "leaderboard_rank": 8,
+      "candidate_id": "scout-063-c",
+      "source": "scout-063.json",
+      "title": "Machine-check DM-DPP-01 precursor vs mature Dpp mobility factors (0.61 / 0.78)",
+      "merge_policy": "review",
+      "requires_lean": true,
+      "instructions": [
+        "Read the mature-chain and precursor lengths directly from sequences/sequence_links.json and encode the registered DM-DPP-01 arithmetic without changing the locked prediction registry.",
+        "Prove the stated mobility and length-scale factors within explicit tolerances in a standalone Lean file with zero sorry declarations.",
+        "If Lean is unavailable in the environment, create the file plus a Python cross-check and mark the fixer result blocked on kernel verification rather than claiming Lean success."
+      ],
+      "allowed_paths": [
+        "morphoeval/problem_fixers/**",
+        "morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean",
+        "tests/test_problem_fixer_dm_dpp.py"
+      ],
+      "validators": [
+        {
+          "name": "Lean kernel check",
+          "argv": ["lean", "morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean"]
+        },
+        {
+          "name": "No sorry term in Lean certificate",
+          "argv": ["python3", "-c", "import re; from pathlib import Path; s=Path('morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean').read_text(); s=re.sub(r'--.*', '', s); assert not re.search(r'(?<![A-Za-z_])sorry(?:Ax)?(?![A-Za-z_])', s); print('no sorry term')"]
+        }
+      ]
+    }
+  ]
+}
