@@ -1,0 +1,193 @@
+# MorphoEval Pass 2 — Loop 3137 Brassica oleracea Turing wavelength at 172 µm.
+# Supersedes the Pass 1 audit. Weighted overall: 88.81.
+
+audit:
+  id: 2026-10-27-brassica-oleracea-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-brassica-oleracea-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-brassica-oleracea-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (MorphoEval loop 3137 Pass 2)"
+    homepage: https://x.ai
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 2 re-scores the same script after the Pass 1 remediations were
+      checked in the measurement table and the claim boundary. Weights are
+      the rubric.yaml weights. Overall 88.81.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    year: "1952"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    year: "1979"
+    doi: 10.1016/0022-5193(79)90042-0
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer, A. and Meinhardt, H."
+    venue: "Kybernetik 12:30-39 (1972)"
+    year: "1972"
+    doi: 10.1007/BF00289234
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo, S. and Miura, T."
+    venue: "Science 329:1616-1620 (2010)"
+    year: "2010"
+    doi: 10.1126/science.1179047
+  azpeitia2021:
+    title: "Cauliflower fractal forms arise from perturbations of floral gene networks"
+    authors: "Azpeitia, E. et al."
+    venue: "Science 373:192-197 (2021)"
+    year: "2021"
+    doi: 10.1126/science.abg5999
+  prusinkiewicz2007:
+    title: "Evolution and development of inflorescence architectures"
+    authors: "Prusinkiewicz, P. et al."
+    venue: "Science 316:1452-1456 (2007)"
+    year: "2007"
+    doi: 10.1126/science.1140429
+  duclos2008:
+    title: "Meristem identity gene expression during curd proliferation and flower initiation in Brassica oleracea"
+    authors: "Duclos, D. V. and Björkman, T."
+    venue: "Journal of Experimental Botany 59:421-433 (2008)"
+    year: "2008"
+    doi: 10.1093/jxb/erm327
+
+simulations:
+  - id: delphi10000-brassica-oleracea-turing-wavelength-s0
+    name: "Brassica oleracea Schnakenberg Turing wavelength at 172 µm (Holocene, 0 Ma)"
+    organism: "Brassica oleracea"
+    script: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py
+    output: docs/media/brassica_oleracea_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-brassica-oleracea-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, gierer1972, kondo2010, azpeitia2021, prusinkiewicz2007, duclos2008]
+    summary: >-
+      Pass 2 overall 88.81. Closes the Pass 1 gaps without raising the
+      nonlinear sweep correlation. Modal sigma(k) Pearson r is
+      0.9999999522 (RMSE 0.0036, KS 0.167) against reference gate 0.98.
+      The D_v sweep stays at r = 0.8266 with its own RMSE, and analytical
+      wavelength increases on 5/5 steps. Equal-diffusion ablation std is
+      0.00051 against pattern std 1.586, and sigma_max changes from +0.551
+      to -0.100. Curd circularity is 0.583 against a circle null of 1.
+      GIF cv_sim_similarity is 88.4 at 640x480 and 12 frames. Cell-scale
+      sigma at 15 µm is -14.56; the 100 µm tier is +0.406, below the
+      172 µm peak.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: linear dispersion selects a wavenumber k_c"
+        - "Schnakenberg 1979: du/dt = a - u + u^2 v + Du lap u and dv/dt = b - u^2 v + Dv lap v"
+        - "Azpeitia et al. 2021 DOI 10.1126/science.abg5999: Romanesco cones from a reiterated floral network"
+        - "Duclos and Björkman 2008: the curd is proliferating inflorescence meristem"
+      reconstructed_in_script:
+        - "Jacobian at a=0.10, b=0.90 and sigma(k) on a periodic grid"
+        - "D_v = 51.752 so the fastest mode is 172 µm (13 px, 24 waves, 4128 µm patch)"
+        - "Modal growth fit, D_v sweep with separate RMSE, equal-diffusion ablation, excess-green curd metrics"
+      transfer_boundary:
+        - "172 µm is the MorphoEval detail length for slot 3137, not a figure in Azpeitia or Duclos"
+        - "The animated field is a primordium-scale spot texture. The photograph is a macro curd. Fitness is statistical, not a registered overlay"
+        - "15 µm is the successor cell-scale boundary used to test stability, not a new measured epidermal diameter"
+      does_not_claim:
+        - "That Schnakenberg u and v are identified Brassica morphogens"
+        - "That this wavelength model replaces the Azpeitia plastochron account"
+        - "That the nonlinear sweep Pearson r exceeds 0.98 (it is 0.8266)"
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The integrator is operator-split Schnakenberg with a spectral
+          Laplacian. sigma(k) uses the standard trace and determinant.
+          D_v is the unique value whose fastest mode is 13 pixels, mapped
+          to 172 µm. The claim boundary says the kinetics are phenomenological.
+          Short of a higher score because the reactions are not a fitted
+          Brassica network.
+        evidence:
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [102, 198], note: "Jacobian, sigma(k), D_v solve, spectral Schnakenberg step", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3137_brassica_oleracea_turing_wavelength_s0.lean, lines: [17, 29], note: "24 waves on 4128 µm; 41 nominal-tier peaks; 11 cells per wave", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          cv_sim_similarity between the GIF last frame and the SHA-pinned
+          Romanesco photograph is 88.4 (640x480, 12 frames, mean absolute
+          frame change 0.124). The comparison figure shows the macro curd
+          beside the spot field and the dispersion curve with the 172, 100
+          and 15 µm lines. The score stays below 90 because the photograph
+          is not a 172 µm micrograph.
+        evidence:
+          - {file: docs/media/brassica_oleracea_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "Animated spot field, 12 frames, 640x480", supports: true}
+          - {file: docs/media/brassica_oleracea_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, spots, dispersion, D_v sweep", supports: true}
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [466, 476], note: "CV scored with verify_image_fitness on the GIF", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          Analytical wavelength increases at 5 of 5 D_v steps. The nonlinear
+          measured wavelength correlates at r = 0.8266; that number is
+          reported with its RMSE and is not replaced by the modal r.
+          Equal diffusion quenches the field (ablation std 0.00051 versus
+          pattern std 1.586; sigma_max from +0.551 to -0.100).
+        evidence:
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [280, 314], note: "Six-point D_v sweep and equal-diffusion control", supports: true}
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [490, 507], note: "Sweep RMSE stored separately from modal Pearson r", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: >-
+          Modal Pearson r is 0.9999999522 against gate 0.98, RMSE 0.0036,
+          KS 0.167. Full-field wavelength is 166.44 µm against 172 µm.
+          Specimen circularity is 0.583 against a circle null of 1, and
+          foreground fraction is 0.399 against a half-frame null of 0.5.
+          Cell-scale sigma is -14.56 against detail-mode sigma +0.551.
+        evidence:
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [543, 639], note: "measure_morphoeval rows: modal r, sweep r, ablation, circularity, cell-scale sigma, CV", supports: true}
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [320, 379], note: "Excess-green segmentation of the pinned photograph", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Seven BibTeX entries with OpenAlex-resolved DOIs. Azpeitia is
+          cited as 10.1126/science.abg5999. The specimen SHA-256 is
+          7306e7e95f1cbeccb6d0c1fbc7e9e210033186b5eecce65421c0ce867b4f03cd.
+          README states 172 µm and 0 Ma. The scout records that slot 3137
+          is not in the 100-slot campaign.
+        evidence:
+          - {file: datasets/brassica_oleracea_turing_wavelength_s0/paper_citations.bib, lines: [1, 74], note: "Turing, Schnakenberg, Gierer-Meinhardt, Kondo-Miura, Azpeitia, Prusinkiewicz, Duclos", supports: true}
+          - {file: datasets/brassica_oleracea_turing_wavelength_s0/brassica_oleracea_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 172 µm, age 0 Ma, solved D_v, claim boundary", supports: true}
+          - {file: datasets/brassica_oleracea_turing_wavelength_s0/README.md, lines: [1, 24], note: "172 µm and 0 Ma stated in the dataset README", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Docstring, Lean theorems and math-kg loci point at growth_rate,
+          the 4128 µm patch and the 15 µm successor. measure_morphoeval
+          names the method for each row. The math-kg yaml carries the same
+          three laws.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-brassica-oleracea-turing-wavelength-s0.yaml, lines: [1, 55], note: "Three laws with Lean loci and code loci", supports: true}
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [112, 130], note: "sigma(k) and argmax k_c", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          --self-test asserts the specimen digest, 24 by 172 patch, negative
+          cell-scale sigma, negative equal-diffusion sigma, and Pearson r
+          above 0.98. Seed, grid, dt and steps are constants. Cache and
+          media paths are slot-specific.
+        evidence:
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [641, 691], note: "Self-test gates", supports: true}
+          - {file: datasets/brassica_oleracea_turing_wavelength_s0/README.md, lines: [20, 34], note: "Documented invocation", supports: true}
+    remediation: []

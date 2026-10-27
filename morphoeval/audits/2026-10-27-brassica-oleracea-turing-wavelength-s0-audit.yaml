@@ -1,0 +1,158 @@
+# MorphoEval Pass 1 — Loop 3137 Brassica oleracea Turing wavelength at 172 µm.
+# Weighted overall from rubric.yaml weights: 77.14.
+
+audit:
+  id: 2026-10-27-brassica-oleracea-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (MorphoEval loop 3137 Pass 1)"
+    homepage: https://x.ai
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 1 scores the first full render of the slot 3137 script on top of
+      commit 0c76d15d. The loop commit is created after the audit chain.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    year: "1952"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    year: "1979"
+    doi: 10.1016/0022-5193(79)90042-0
+  azpeitia2021:
+    title: "Cauliflower fractal forms arise from perturbations of floral gene networks"
+    authors: "Azpeitia, E. et al."
+    venue: "Science 373:192-197 (2021)"
+    year: "2021"
+    doi: 10.1126/science.abg5999
+  duclos2008:
+    title: "Meristem identity gene expression during curd proliferation and flower initiation in Brassica oleracea"
+    authors: "Duclos, D. V. and Björkman, T."
+    venue: "Journal of Experimental Botany 59:421-433 (2008)"
+    year: "2008"
+    doi: 10.1093/jxb/erm327
+
+simulations:
+  - id: delphi10000-brassica-oleracea-turing-wavelength-s0
+    name: "Brassica oleracea Schnakenberg Turing wavelength at 172 µm (Holocene, 0 Ma)"
+    organism: "Brassica oleracea"
+    script: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py
+    output: docs/media/brassica_oleracea_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, azpeitia2021, duclos2008]
+    summary: >-
+      Pass 1 overall 77.14. The script solves Schnakenberg kinetics so the
+      fastest Turing mode is 172 µm on a 4128 µm patch (24 waves), with an
+      equal-diffusion ablation and a six-point D_v sweep. Modal growth rates
+      match linear theory (Pearson r = 0.9999999522, RMSE = 0.0036). The
+      nonlinear sweep only reaches r = 0.83 because of Fourier binning, and
+      the specimen photograph is a macro curd, so specimen-match and
+      parameter-expressivity stay below the Pass 2 bar.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation"
+        - "Schnakenberg 1979 quadratic autocatalysis"
+        - "Azpeitia et al. 2021 floral-network account of Romanesco cones (a different mechanism)"
+      reconstructed_in_script:
+        - "sigma(k) and D_v solved for lambda = 172 µm"
+        - "Modal growth-rate comparison on modes k = 1..6"
+      transfer_boundary:
+        - "172 µm is the slot scale, not a spacing measured by Azpeitia or Duclos"
+      does_not_claim:
+        - "That the studio photograph resolves 172 µm"
+        - "That Schnakenberg species are the Brassica morphogens"
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          growth_rate implements tr(k) and det(k) for the Schnakenberg Jacobian
+          and selects k_c by maximising sigma. D_v is solved so lambda is 13
+          pixels, which is 172 µm at dx = 172/13 µm. Kinetics are the published
+          Schnakenberg form, not a Brassica-specific reaction network.
+        evidence:
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [102, 142], note: "Jacobian, sigma(k), and D_v solve for the 172 µm mode", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3137_brassica_oleracea_turing_wavelength_s0.lean, lines: [17, 29], note: "Three theorems: 24 waves, nominal tier packs more peaks, cell scale is 11 per wave", supports: true}
+      specimen-match:
+        value: 74
+        rationale: >-
+          The comparison figure places the Ivar Leidus macrograph beside the
+          spot field, and the GIF scores cv_sim_similarity 88.4 against that
+          photograph. Pass 1 does not treat this as a registered 172 µm
+          micrograph. The curd silhouette is not the simulation domain.
+        evidence:
+          - {file: docs/media/brassica_oleracea_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Side-by-side macro curd and Schnakenberg spots", supports: true}
+          - {file: docs/media/brassica_oleracea_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640x480 growth GIF", supports: true}
+      parameter-expressivity:
+        value: 70
+        rationale: >-
+          Analytical wavelength rises at all five D_v steps from 0.60 to 1.90
+          times the 172 µm diffusivity. The nonlinear measured wavelength on
+          the 96x128 grid only reaches Pearson r = 0.83 because four of the
+          six runs share one Fourier bin. Equal diffusion is stable
+          (sigma_max = -0.10) but Pass 1 does not yet quote the sweep RMSE
+          next to the modal r.
+        evidence:
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [280, 314], note: "D_v sweep and equal-diffusion ablation", supports: true}
+      morphometric-validation:
+        value: 72
+        rationale: >-
+          Modal Pearson r, RMSE and KS are computed, and the full-field FFT
+          peak is 166.44 µm against the 172 µm target. Specimen circularity
+          and foreground fraction are segmented, but Pass 1 has not yet
+          required the measurement note to keep the sweep r distinct from the
+          modal r.
+        evidence:
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [221, 274], note: "Eigenvector-seeded modal growth versus analytical sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [320, 379], note: "Excess-green Otsu segmentation of the Romanesco photograph", supports: true}
+      source-traceability:
+        value: 86
+        rationale: >-
+          BibTeX and the reference JSON cite Turing 1952, Schnakenberg 1979,
+          Azpeitia et al. 2021 (DOI 10.1126/science.abg5999) and Duclos and
+          Björkman 2008. The specimen SHA-256 is pinned. Slot 3137 is outside
+          the 100-slot campaign file, so the scout used a query plus DOI lookups.
+        evidence:
+          - {file: datasets/brassica_oleracea_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Primary DOIs including abg5999 rather than the unresolved abg5935", supports: true}
+          - {file: datasets/brassica_oleracea_turing_wavelength_s0/README.md, lines: [1, 20], note: "States 172 µm and 0 Ma", supports: true}
+      code-traceability:
+        value: 78
+        rationale: >-
+          The module docstring and Lean file name the dispersion law and the
+          24-wave patch. Pass 1 does not yet tie every measurement row to a
+          line in measure_morphoeval.
+        evidence:
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [1, 45], note: "Docstring maps sigma(k) and the 172 µm patch", supports: true}
+      repro-package:
+        value: 80
+        rationale: >-
+          --self-test checks the specimen SHA, the 24 by 172 patch, sigma of
+          the cell-scale mode, the equal-diffusion sign, and Pearson r > 0.98.
+          Seed 3137 is fixed. Pass 1 has not yet re-measured after the sweep
+          RMSE field was required in the cache.
+        evidence:
+          - {file: models/2026-delphi10000-brassica-oleracea-turing-wavelength-s0.py, lines: [641, 688], note: "Deterministic self-test", supports: true}
+    remediation:
+      - "Keep the nonlinear D_v-sweep Pearson r (0.8266) and its RMSE in the measurement note, separate from the modal dispersion r (0.9999999522). Do not replace the binned sweep with the modal statistic."
+      - "State in the claim boundary that the gallery photograph is a macro curd and that 172 µm is the slot scale, not an Azpeitia measurement."
+      - "Re-run image fitness after that split and score specimen-match from the measured cv_sim_similarity (88.4) plus the non-circular curd circularity."
