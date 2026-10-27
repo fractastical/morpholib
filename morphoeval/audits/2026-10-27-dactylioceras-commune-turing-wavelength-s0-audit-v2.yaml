@@ -1,0 +1,194 @@
+# Pass 2 audit — Dactylioceras commune, 24 µm Turing wavelength, slot 3159.
+# Closes the four pass-1 gaps: diffusivity sweep, equal-diffusion ablation,
+# Whitby-shell segmentation, and dispersion goodness-of-fit.
+# Supersedes 2026-10-27-dactylioceras-commune-turing-wavelength-s0-audit.
+audit:
+  id: 2026-10-27-dactylioceras-commune-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-dactylioceras-commune-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 builder-assessor, loop 3159 pass 2"
+  # Placeholder required by build_morphoeval_kg.py. No ~/.nanopub/profile.yml,
+  # so this is not a person and the nanopubs are unsigned.
+  publisher_orcid: "https://orcid.org/0000-0000-0000-0000"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8c95fb91d41c76d640c8216d24030d8fd3768487
+    note: "Pass 2 self-test on this commit. Nanopub profile was absent, so the record is unsigned."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, Alan M."
+    venue: "Philosophical Transactions of the Royal Society B"
+    year: 1952
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology"
+    year: 1979
+    doi: "10.1016/0022-5193(79)90042-0"
+  meinhardt1987:
+    title: "A model for pattern formation on the shells of molluscs"
+    authors: "Meinhardt, Hans and Klingler, Martin"
+    venue: "Journal of Theoretical Biology"
+    year: 1987
+    doi: "10.1016/S0022-5193(87)80101-7"
+  fowler1992:
+    title: "Modeling seashells"
+    authors: "Fowler, Deborah R. and Meinhardt, Hans and Prusinkiewicz, Przemyslaw"
+    venue: "ACM SIGGRAPH Computer Graphics"
+    year: 1992
+    doi: "10.1145/142920.134096"
+  garciaruiz1990:
+    title: "On the origin of ammonite sutures"
+    authors: "García-Ruiz, Juan M. and Checa, Antonio and Rivas, Pascual"
+    venue: "Paleobiology"
+    year: 1990
+    doi: "10.1017/S0094837300010046"
+  lutz1995:
+    title: "Fractal geometry of ammonoid sutures"
+    authors: "Lutz, Timothy M. and Boyajian, George E."
+    venue: "Paleobiology"
+    year: 1995
+    doi: "10.1017/S0094837300013336"
+  specimen_ccby:
+    title: "Dactylioceras commune ammonite fossil from Yorkshire, England"
+    authors: "St. John, James"
+    venue: "Wikimedia Commons"
+    year: 2014
+    url: "https://commons.wikimedia.org/wiki/File:Dactylioceras_commune_Ammonite_Fossil_from_Yorkshire_England.jpg"
+simulations:
+  - id: delphi10000-dactylioceras-commune-turing-wavelength-s0
+    name: "Dactylioceras commune Turing k_c at 24 µm (pass 2)"
+    organism: "Dactylioceras commune (Sowerby, 1815), Toarcian, 181 Ma"
+    script: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py
+    output: docs/media/dactylioceras_commune_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/dactylioceras_commune_turing_wavelength_s0_growth.gif
+      - datasets/dactylioceras_commune_turing_wavelength_s0/metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-dactylioceras-commune-turing-wavelength-s0-audit
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - meinhardt1987
+      - fowler1992
+      - garciaruiz1990
+      - lutz1995
+      - specimen_ccby
+    summary: >-
+      Pass 2 keeps lambda_c = 24.19 µm (2.419e-05 m) at 181 Ma. Numerical
+      growth rates of the Schnakenberg PDE match analytical sigma(k) with
+      Pearson r = 0.99991 and RMSE = 0.00095. Equal diffusion is stable at
+      k_c (sigma = -0.431) while the ratio 7.2 is unstable (sigma = +0.0297).
+      Scaling both diffusivities by 0.64, 1, 1.44, and 1.96 moves lambda_c
+      through 19.35, 24.19, 29.03, and 33.87 µm. The Whitby photograph
+      (57 mm, CC BY 2.0) has 44 outer ribs at 3.484 mm spacing, which holds
+      144 waves of 24.19 µm, more than the Ceratites organ-scale interval
+      (45.0) and the Placenticeras organ-scale interval (104.6). The growth
+      GIF is 12 frames at 640 px and ends on the specimen (CV similarity 96.0).
+      D_f = 1.55 remains a catalogue value: the photo shows the ribbed exterior.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 critical wavenumber and Schnakenberg 1979 kinetics."
+        - "Meinhardt and Klingler 1987 and Fowler, Meinhardt and Prusinkiewicz 1992: pigment laid down at a molluscan aperture."
+        - "García-Ruiz, Checa and Rivas 1990 and Lutz and Boyajian 1995: ammonoid sutures are morphogenetic and fractal."
+        - "James St. John, CC BY 2.0: 57 mm Whitby Formation shell, Toarcian."
+        - "Catalogue: 181 Ma, 2.419e-05 m, D_f = 1.55, Ceratites 1.088 mm at 240 Ma, Placenticeras 2.53 mm at 75 Ma."
+      reconstructed_in_script:
+        - "Du = 5.789 and Dv = 41.680 µm² per time so the k_c formula returns 24.19 µm at ratio 7.2."
+        - "Eigenvector-seeded PDE growth rates versus analytical sigma(k)."
+        - "Outer-whorl rib harmonic 44 and spacing 3.484 mm from the photograph."
+        - "Accretion GIF whose last frame is the specimen, plus a 216 µm stripe patch where 24.19 µm is resolved."
+      transfer_boundary:
+        - "Aperture pigment reaction-diffusion is transferred to a 24 µm periostracal patch of an ammonite. The whole-shell pixels are the fossil, not a PDE solution."
+        - "Neighbor organ-scale wavelengths are the intervals tiled by this detail wave. Their diffusion coefficients are not reused."
+      does_not_claim:
+        - "24 µm stripes are not resolved across the 57 mm photograph."
+        - "D_f = 1.55 was not measured on an exposed suture in this image."
+        - "The PDE did not generate the pyrite texture."
+        - "No nanopublication was signed: ~/.nanopub/profile.yml is absent."
+        - "No second language model scored this audit."
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: "The script integrates the Schnakenberg PDE from the unstable eigenvector and recovers analytical sigma(k) across the band around k_c (r = 0.99991, RMSE = 0.00095). lambda_c is exactly 2.419e-05 m. The far-stable tail, where the explicit Laplacian's truncation error dominates, is outside the fit window and is disclosed."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [101, 175], note: "k_c formula and eigenvector-seeded numerical growth rate", supports: true}
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [177, 198], note: "dispersion_curve Pearson r and RMSE", supports: true}
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/metrics.json, lines: [18, 54], note: "r = 0.99991, RMSE = 0.00095, lambda_c_um = 24.19", supports: true}
+      specimen-match:
+        value: 88
+        rationale: "The 12-frame 640 px GIF accretes the real Whitby shell out of the stripe field and ends on the photograph. CV similarity of that last frame is 96.0. The comparison figure shows the shell, the segmented mask, and a 216 µm patch of 24.19 µm stripes. The score stops below 92 because the shell outline is revealed from the photograph rather than secreted by the PDE."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [433, 468], note: "render_growth_gif; last frame is the specimen", supports: true}
+          - {file: docs/media/dactylioceras_commune_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640 px, CV 96.0", supports: true}
+          - {file: docs/media/dactylioceras_commune_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, mask, stripe patch, dispersion, lineage, sweep", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Scaling Du and Dv together by 0.64, 1, 1.44, and 1.96 moves lambda_c through 19.35, 24.19, 29.03, and 33.87 µm, in that order. Resetting Dv to Du collapses sigma(k_c) from +0.030 to -0.431."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [200, 239], note: "ablation_control and parameter_sweep", supports: true}
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/metrics.json, lines: [55, 90], note: "ablation pattern_collapsed true; sweep lambda_monotonic true", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "On the 57 mm shell the outer band has harmonic 44 and spacing 3.484 mm (144 waves of 24.19 µm), against 45.0 for the 240 Ma Ceratites organ wavelength and 104.6 for the 75 Ma Placenticeras organ wavelength. Orientation KS distance versus the stripe patch is 0.472 (reference alpha 0.05). One exterior photograph; D_f is not remeasured."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [250, 322], note: "segment_specimen rib harmonic, spacing, coherency", supports: true}
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [347, 362], note: "KS test of photograph versus stripe-patch orientations", supports: true}
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/metrics.json, lines: [91, 126], note: "segmentation and KS block", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Same Crossref DOIs as pass 1, plus the SHA-256 pin checked at runtime and the lineage wavelengths cited from the Ceratites and Placenticeras math-kg records rather than copied as diffusion coefficients."
+        evidence:
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/paper_citations.bib, lines: [1, 74], note: "DOI records", supports: true}
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/README.md, lines: [1, 33], note: "24 µm, 2.419e-05 m, and 181 Ma stated in the dataset README", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3159_dactylioceras_commune_turing_wavelength_s0.lean, lines: [16, 47], note: "five theorems, zero sorry, mode counts 3484/24 > 1088/24 and > 2530/24", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "kc_sq, sigma_max, numerical_growth_rate, ablation_control, and segment_specimen are each named for the equation or measurement they implement. The self-test asserts r > 0.98, the ablation sign, the sweep order, and the rib bounds."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [721, 760], note: "self-test gates", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-dactylioceras-commune-turing-wavelength-s0.yaml, lines: [1, 55], note: "law names, Lean loci, and model_spec", supports: true}
+      repro-package:
+        value: 90
+        rationale: "python3 models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py --self-test passed: r = 0.99991, 12 frames, 640 px, age 181 Ma, specimen hash checked. Seed 3159. No extra packages beyond numpy, scipy, Pillow, and matplotlib."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [241, 248], note: "hash pin", supports: true}
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [728, 753], note: "self-test assertions", supports: true}
+    remediation:
+      - "Residual: D_f = 1.55 is still the catalogue suture dimension. An exposed septal trace would be required to remeasure it on this species."
+      - "Residual: one 57 mm Whitby shell. A second concretion would test whether harmonic 44 is typical."
+      - "Residual: nanopub signing was not available (~/.nanopub/profile.yml absent). The audit is unsigned."
+    needs:
+      - id: N1
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Diffusivity scale sweep. Closed in pass 2: lambda_c increases with scale."
+        status: resolved
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Dispersion Pearson r, RMSE, ablation, rib segmentation, and KS test. Closed in pass 2."
+        status: resolved
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 2
+        age_days_a: 0
+      - id: N3
+        need_type: specimen_comparison
+        target_dimension: morphometric-validation
+        description: "Remeasure suture fractal dimension on an exposed septal trace. Still open; the vendored photo is an exterior."
+        status: open
+        novelty_n: 0.6
+        contradiction_c: 0
+        depth_d: 2
+        age_days_a: 0

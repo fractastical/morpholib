@@ -1,0 +1,166 @@
+# Pass 1 audit — Dactylioceras commune, 24 µm Turing wavelength, slot 3159.
+# Stage 1 calibrated k_c and rendered a synthetic fibulate coil.
+# It did not yet sweep parameters, ablate diffusion, segment the Whitby shell,
+# or fit the dispersion curve. Those four gaps are the remediation list.
+audit:
+  id: 2026-10-27-dactylioceras-commune-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 builder-assessor, loop 3159 pass 1"
+  # Placeholder required by build_morphoeval_kg.py. No ~/.nanopub/profile.yml,
+  # so this is not a person and the nanopubs are unsigned.
+  publisher_orcid: "https://orcid.org/0000-0000-0000-0000"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8c95fb91d41c76d640c8216d24030d8fd3768487
+    note: "Pass 1 stage-1 path. Dispersion fit, ablation, sweep, and specimen segmentation are not in this run."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, Alan M."
+    venue: "Philosophical Transactions of the Royal Society B"
+    year: 1952
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology"
+    year: 1979
+    doi: "10.1016/0022-5193(79)90042-0"
+  meinhardt1987:
+    title: "A model for pattern formation on the shells of molluscs"
+    authors: "Meinhardt, Hans and Klingler, Martin"
+    venue: "Journal of Theoretical Biology"
+    year: 1987
+    doi: "10.1016/S0022-5193(87)80101-7"
+  fowler1992:
+    title: "Modeling seashells"
+    authors: "Fowler, Deborah R. and Meinhardt, Hans and Prusinkiewicz, Przemyslaw"
+    venue: "ACM SIGGRAPH Computer Graphics"
+    year: 1992
+    doi: "10.1145/142920.134096"
+  garciaruiz1990:
+    title: "On the origin of ammonite sutures"
+    authors: "García-Ruiz, Juan M. and Checa, Antonio and Rivas, Pascual"
+    venue: "Paleobiology"
+    year: 1990
+    doi: "10.1017/S0094837300010046"
+  lutz1995:
+    title: "Fractal geometry of ammonoid sutures"
+    authors: "Lutz, Timothy M. and Boyajian, George E."
+    venue: "Paleobiology"
+    year: 1995
+    doi: "10.1017/S0094837300013336"
+  specimen_ccby:
+    title: "Dactylioceras commune ammonite fossil from Yorkshire, England"
+    authors: "St. John, James"
+    venue: "Wikimedia Commons"
+    year: 2014
+    url: "https://commons.wikimedia.org/wiki/File:Dactylioceras_commune_Ammonite_Fossil_from_Yorkshire_England.jpg"
+simulations:
+  - id: delphi10000-dactylioceras-commune-turing-wavelength-s0
+    name: "Dactylioceras commune Turing k_c at 24 µm (pass 1, stage 1)"
+    organism: "Dactylioceras commune (Sowerby, 1815), Toarcian, 181 Ma"
+    script: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py
+    output: datasets/dactylioceras_commune_turing_wavelength_s0/pass1_growth.gif
+    status: evaluated
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - meinhardt1987
+      - fowler1992
+      - garciaruiz1990
+      - lutz1995
+      - specimen_ccby
+    summary: >-
+      Pass 1 solves the Schnakenberg critical wavenumber so lambda_c is
+      24.19 µm (2.419e-05 m) at diffusion ratio 7.2, just above onset
+      (6.724). Sigma at k_c is +0.0297. The stage-1 animation is a synthetic
+      44-rib coil, 12 frames at 640 px, computer-vision similarity 79.5
+      against the Whitby photograph. Pearson r of the dispersion curve,
+      the equal-diffusion ablation, the diffusivity sweep, and the rib
+      measurement on the real shell were not run.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability at a finite critical wavenumber."
+        - "Schnakenberg 1979: activator-inhibitor kinetics a - u + u^2 v, b - u^2 v."
+        - "Catalogue slot: 24 µm detail scale, SI size 2.419e-05 m, Toarcian 181 Ma, D_f = 1.55."
+        - "James St. John, CC BY 2.0: Whitby Formation Dactylioceras commune, stated width 57 mm."
+      reconstructed_in_script:
+        - "Du and Dv solved so k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv) returns 2.419e-05 m."
+        - "Stage-1 synthetic fibulate coil used only as a first visual check."
+      transfer_boundary:
+        - "Molluscan aperture pigment models are the transfer path onto an ammonite periostracum. Pass 1 does not test that transfer against the photograph."
+      does_not_claim:
+        - "Pass 1 does not claim a dispersion-curve Pearson r, an ablation, a parameter sweep, or a rib measurement."
+        - "Pass 1 does not claim that 24 µm stripes are visible on the 57 mm shell."
+        - "D_f = 1.55 is a catalogue input, not a measurement on this photograph."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "Stage 1 implements the Schnakenberg Jacobian and the textbook k_c formula and solves Du, Dv so lambda_c is 24.19 µm with sigma(k_c) = +0.0297, above the onset ratio 6.724. The numerical growth-rate comparison to sigma(k) is not in this pass."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [101, 119], note: "k_c^2 and sigma(k) from the Schnakenberg Jacobian", supports: true}
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/pass1_metrics.json, lines: [1, 19], note: "lambda_c_um 24.19, sigma_at_kc 0.0297, age 181", supports: true}
+      specimen-match:
+        value: 74
+        rationale: "The stage-1 GIF is a radial fibulate coil at 640 px and 12 frames. CV similarity to the Whitby photograph is 79.5. The coil has the right rib family and the wrong outline, matrix, and pyrite."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [410, 431], note: "render_pass1_gif synthetic coil", supports: true}
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/pass1_growth.gif, lines: [0, 0], note: "12-frame 640 px synthetic growth, CV 79.5", supports: true}
+      parameter-expressivity:
+        value: 54
+        rationale: "The diffusion ratio and the wavelength are fixed constants in stage 1. No diffusivity scale was varied, so monotonic control of lambda_c was not shown."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [56, 68], note: "A, B, ratio, and lambda are module constants; stage 1 does not sweep them", supports: true}
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [585, 592], note: "stage < 2 returns before parameter_sweep", supports: true}
+      morphometric-validation:
+        value: 58
+        rationale: "Stage 1 reports lambda_c and one growth rate. It does not measure ribs on the photograph, does not report Pearson r or RMSE, and does not run a KS test."
+        evidence:
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/pass1_metrics.json, lines: [3, 14], note: "only lambda, sigma, and CV; no rib spacing or dispersion r", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-checked DOIs for Turing, Schnakenberg, Meinhardt and Klingler, Fowler, García-Ruiz, and Lutz and Boyajian. The Whitby photograph is CC BY 2.0 with artist, URL, 57 mm width, and a SHA-256 pin."
+        evidence:
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/paper_citations.bib, lines: [1, 74], note: "seven source records", supports: true}
+          - {file: datasets/dactylioceras_commune_turing_wavelength_s0/dactylioceras_commune_turing_wavelength_s0_reference.json, lines: [1, 40], note: "24 µm, 2.419e-05 m, 181 Ma, specimen SHA-256", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "The module docstring and kc_sq map onto Schnakenberg and the k_c formula. Stage 1 does not yet call the dispersion, ablation, or segmentation functions those comments describe."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [1, 48], note: "docstring states equations, scale, age, and chronoseries neighbors", supports: true}
+      repro-package:
+        value: 82
+        rationale: "Stage 1 checks the specimen SHA-256, uses seed 3159, and writes pass1_metrics.json. The --self-test gates (Pearson r, ablation, sweep, rib bounds) belong to stage 2 and were not the pass-1 command."
+        evidence:
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [241, 248], note: "SHA-256 check against the reference JSON", supports: true}
+          - {file: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py, lines: [560, 592], note: "stage-1 return path", supports: true}
+    remediation:
+      - "R1 parameter-regime sweep: scale both diffusivities and show lambda_c moves monotonically."
+      - "R2 negative control: equal-diffusion ablation must be stable at k_c while the Turing ratio is unstable."
+      - "R3 real specimen CV segmentation: measure outer-whorl rib harmonic, rib spacing, coherency, and foreground on the Whitby photograph."
+      - "R4 goodness-of-fit: Pearson r and RMSE of numerical versus analytical sigma(k), plus a KS test of orientations."
+    needs:
+      - id: N1
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Diffusivity scale sweep with monotonic lambda_c."
+        status: open
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Dispersion Pearson r, RMSE, ablation, and specimen rib segmentation."
+        status: open
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 2
+        age_days_a: 0
