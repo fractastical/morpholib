@@ -1,0 +1,82 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-aspergillus-nidulans-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-aspergillus-nidulans-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-aspergillus-nidulans-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Aspergillus nidulans Turing onset wavelength at 12.84 µm (nominal 13 µm), Holocene 0 Ma — MorphoEval overall 83.8/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1. Schnakenberg onset wavelength is fixed at 1.284e-05 m (12.84 µm, nominal 13 µm) for the Holocene singleton at 0 Ma. Dispersion Pearson is 0.9977. The colony GIF is specimen-conditioned, so specimen-match is 76. Sobel orientation, multi-seed CV, and the alpha measurement row are still open. Overall 83.8/100 (faithfulness 82.0, reproducibility 88.1); rubric morphoeval 0.1.0; checkpoint commit 0c76d15d14afcec6c366e1b9274a6586a0de48fc; environment: python 3.12, numpy 2.5.4, matplotlib Agg, Pillow 13.0.0, scipy 1.18.1. Dimension assessments: Model fidelity to source 86, Morphological realism / specimen match 76, Parameter expressivity 86, Morphometric validation 84, Source and data traceability 90, Code-to-model traceability 86, Reproducibility package 88. Output judged: docs/media/aspergillus_nidulans_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py at 0c76d15d14afcec6c366e1b9274a6586a0de48fc, image/png, 275906 B, 1440×960 px, artifact_sha256 44bf1efce2b3c4b56ac56b363db0b1a0461956f82bb4a0ba2539fd98e6ec63bd (sha256 44bf1efce2b3c4b56ac56b363db0b1a0461956f82bb4a0ba2539fd98e6ec63bd), spec_fingerprint 8c34b8958cd42958d8cb0eb69ec1584db47478aa1296bac845f8f594052484e9. Dual provenance: spec_fingerprint: 8c34b8958cd42958d8cb0eb69ec1584db47478aa1296bac845f8f594052484e9; artifact_sha256: 44bf1efce2b3c4b56ac56b363db0b1a0461956f82bb4a0ba2539fd98e6ec63bd; input_dataset_sha256: {datasets/aspergillus_nidulans_turing_wavelength_s0/aspergillus_nidulans_turing_wavelength_s0_reference.json=6b16f2c6f118230e..., datasets/aspergillus_nidulans_turing_wavelength_s0/aspergillus_nidulans_turing_wavelength_s0_specimen.jpg=282a45a621880a69...}. Claim boundary: reported_in_source: Turing (1952): diffusion-driven instability and a critical wavenumber. | Schnakenberg (1979): the a - u + u^2 v / b - u^2 v kinetics. | Adams, Wieser and Yu (1998) and Clutterbuck (1969): conidial pigment development in A. nidulans, without a reaction-diffusion wavelength. | Trinci (1974): radial hyphal-colony expansion.; reconstructed_in_script: Jacobian, trace, determinant, cross term, discriminant, k_c and λ_c = 1.284e-05 m on a periodic grid with D_v/D_u = 9.295. | Equal-diffusion ablation, D_v sweep of λ_c, and PDE mode-growth versus the analytical eigenvalue. | Colony observable I = S * (1 - α + α (0.55 + 0.90 û)) with α = 0.12, revealed by a radial front.; transfer_boundary: The 13 µm label is the slot detail scale, not a length measured on the colony photograph. The photograph does not resolve 13 µm. | (u, v) are not identified with the wA polyketide or yA laccase proteins.; does_not_claim: Does not claim the spiral colony was predicted ab initio. The photograph supplies the macroscopic optical density. | Does not claim a predecessor chronospecies. The series is 1/1 at 0 Ma; the only comparison is to the 10 µm tier floor.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Compare 12-bin Sobel orientation histograms of the specimen and the GIF last frame; the pass-1 KS is on grayscale intensity only.",
+            "remediation needed: Export the α-coupling sweep into measure_morphoeval so parameter expressivity is in the measurement sidecar.",
+            "remediation needed: Run the nonlinear integrator from at least three seeds and report the coefficient of variation of the measured wavelength." ;
+        pk:hasScore "0.838"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (Cursor cloud agent, primary assessor, pass 1)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://x.ai> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00289234>,
+            <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1016/j.fbr.2009.08.001>,
+            <https://doi.org/10.1093/genetics/63.2.317>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1099/00221287-81-1-225>,
+            <https://doi.org/10.1128/MMBR.62.1.35-54.1998> .
+    <https://doi.org/10.1007/BF00289234> dct:date "1972"^^xsd:gYear ;
+        dct:title "A theory of biological pattern formation" .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:date "1979"^^xsd:gYear ;
+        dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1016/j.fbr.2009.08.001> dct:date "2009"^^xsd:gYear ;
+        dct:title "Hyphal morphogenesis in Aspergillus nidulans" .
+    <https://doi.org/10.1093/genetics/63.2.317> dct:date "1969"^^xsd:gYear ;
+        dct:title "A mutational analysis of conidial development in Aspergillus nidulans" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The Chemical Basis of Morphogenesis" .
+    <https://doi.org/10.1099/00221287-81-1-225> dct:date "1974"^^xsd:gYear ;
+        dct:title "A Study of the Kinetics of Hyphal Extension and Branch Initiation of Fungal Mycelia" .
+    <https://doi.org/10.1128/MMBR.62.1.35-54.1998> dct:date "1998"^^xsd:gYear ;
+        dct:title "Asexual Sporulation in Aspergillus nidulans" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Aspergillus nidulans Turing onset wavelength at 12.84 µm (nominal 13 µm), Holocene 0 Ma — MorphoEval overall 83.8/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:32:53Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-aspergillus-nidulans-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-aspergillus-nidulans-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
