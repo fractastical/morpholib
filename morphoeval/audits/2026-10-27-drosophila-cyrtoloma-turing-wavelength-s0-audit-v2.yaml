@@ -1,0 +1,170 @@
+# Pass 2 — Drosophila cyrtoloma 4.3 µm Turing carrier (slot 3180).
+# Closes the Pass 1 short-sweep failure (r = 0.906). Developed domain-length
+# fit: Pearson r = 0.9917, RMSE = 0.549 stripes. CV similarity of the GIF
+# last frame to the vendored plate = 92.8. Rubric overall 88.2.
+audit:
+  id: 2026-10-27-drosophila-cyrtoloma-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-drosophila-cyrtoloma-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent, loop 3180 primary assessor)"
+    homepage: https://x.ai
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 readout is the γt≈55 domain-length protocol in the same script. Loop files are new relative to this commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    year: 1981
+    venue: "J. Theor. Biol. 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo, S.; Miura, T."
+    year: 2010
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  edwards2007:
+    title: "A database of wing diversity in the Hawaiian Drosophila"
+    authors: "Edwards, K. A.; Doescher, L. T.; Kaneshiro, K. Y.; Yamamoto, D."
+    year: 2007
+    venue: "PLoS ONE 2:e487 (2007)"
+    doi: 10.1371/journal.pone.0000487
+  loeschcke1999:
+    title: "Reaction norms for thorax and wing size in Drosophila buzzatii"
+    authors: "Loeschcke, V.; Bundgaard, J.; Barker, J. S. F."
+    year: 1999
+    venue: "J. Evol. Biol. 12:605-623 (1999)"
+    doi: 10.1046/j.1420-9101.1999.00060.x
+  church2022:
+    title: "Phylotranscriptomics of Hawaiian Drosophila and Scaptomyza"
+    authors: "Church, S. H.; Extavour, C. G. M."
+    year: 2022
+    venue: "Mol. Biol. Evol. 39 (2022)"
+    doi: 10.1093/molbev/msac012
+  werner2010:
+    title: "Generation of a novel wing colour pattern by the Wingless morphogen"
+    authors: "Werner, T.; Koshikawa, S.; Williams, T. M.; Carroll, S. B."
+    year: 2010
+    venue: "Nature 464:1143-1148 (2010)"
+    doi: 10.1038/nature08896
+simulations:
+  - id: delphi10000-drosophila-cyrtoloma-turing-wavelength-s0
+    name: "Drosophila cyrtoloma Turing carrier at 4.3 µm (Pass 2)"
+    organism: "Drosophila cyrtoloma"
+    script: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py
+    output: docs/media/drosophila_cyrtoloma_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-cyrtoloma-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, kondo2010, edwards2007, loeschcke1999, church2022, werner2010]
+    model_spec:
+      model: "Schnakenberg 1979 with Turing 1952 k_c, 4.315 µm detail carrier"
+      a: 0.126779
+      b: 0.792366
+      gamma: 1.0
+      diffusion_ratio_Dv_over_Du: 18.0
+      lambda_m: 4.315e-06
+      grid: [96, 72]
+      seed: 3180
+      inputs:
+        - datasets/drosophila_cyrtoloma_turing_wavelength_s0/drosophila_cyrtoloma_specimen.jpg
+        - datasets/drosophila_cyrtoloma_turing_wavelength_s0/drosophila_cyrtoloma_turing_wavelength_s0_reference.json
+        - datasets/drosophila_cyrtoloma_turing_wavelength_s0/paper_citations.bib
+        - datasets/drosophila_cyrtoloma_turing_wavelength_s0/scout_manifest.json
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion conditions and critical wavenumber k_c"
+        - "Schnakenberg 1979 two-species kinetics"
+        - "Edwards et al. 2007 Hawaiian picture-wing diversity"
+        - "Loeschcke, Bundgaard and Barker 1999 buzzatii wing and thorax size reaction norms"
+        - "Werner et al. 2010 Wingless melanin-spot induction, measured on D. guttifera"
+      reconstructed_in_script:
+        - "Grid calibration that sets the nonlinear focal wavelength to 4.315 µm"
+        - "Linear k_c on that grid predicts 3.70 µm and is reported as a different number"
+        - "Buzzatii and deflecta diffusivity hypotheses; simulated carriers 8.07 µm and 6.83 µm"
+        - "Gallery spiral used as a frozen long-wave prepattern"
+      transfer_boundary:
+        - "The 4.3 µm figure is the slot's detail tier, not a published cyrtoloma measurement"
+        - "Deflecta simulated 6.83 µm versus the 6.05 µm hypothesis; order is preserved, the micrometre is not exact"
+      does_not_claim:
+        - "That 4.315 µm was measured on this species in the cited papers"
+        - "That buzzatii is a cladistic ancestor or deflecta a descendant"
+        - "That the gallery plate is a pinned-adult photograph"
+        - "That DOI 10.11646/zootaxa.2400.1.1 is about Drosophila cyrtoloma"
+    summary: >
+      At 0 Ma the focal carrier is the nonlinear Schnakenberg pattern calibrated
+      to 4.315 µm (Dv/Du = 18). Linear k_c on the same grid is 3.70 µm.
+      Stripe counts on widths 48–144 px correlate with L/λ_linear at r = 0.9917
+      (RMSE 0.549). Equal diffusion stays at activator std 0.0021 against 0.580
+      for the focal run. Simulated neighbours, same dx: buzzatii 8.07 µm,
+      deflecta 6.83 µm, both longer than cyrtoloma. GIF last-frame CV
+      similarity to the vendored plate is 92.8 (640×480, 12 frames).
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "The update is Schnakenberg's (a − u + u²v, b − u²v) and k_c is the Turing/Murray quotient. The Jacobian trace is negative and the equal-diffusion threshold fails, matching the Lean witness. The 4.315 µm value is a grid calibration of the nonlinear wavelength, disclosed as such, which keeps this below the low 90s."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [95, 133], note: "k_c from the Schnakenberg Jacobian", supports: true}
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [147, 197], note: "explicit Euler Schnakenberg step and saturation stop", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3180_drosophila_cyrtoloma_turing_wavelength_s0.lean, lines: [35, 55], note: "trace, determinant, equal-diffusion failure, Dv/Du = 18 threshold", supports: true}
+      specimen-match:
+        value: 86
+        rationale: "Last GIF frame versus the pinned plate scores CV similarity 92.8 (orientation, radial FFT, coherency, occupancy) at 640×480 with 12 frames. The plate is a gallery spiral with a 100 µm bar, not a located Commons photograph, so the score stays short of a verified micrograph overlay."
+        evidence:
+          - {file: docs/media/drosophila_cyrtoloma_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640×480, SHA-256 in simulation_metrics.json", supports: true}
+          - {file: docs/media/drosophila_cyrtoloma_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate, activator, composite, and fit panel", supports: true}
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [386, 411], note: "carrier amplitude grows across the plate", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Raising γt from 0.55 to about 55 turns a failed sweep (r = 0.906) into a domain-length count that tracks L/λ. Equal diffusion abolishes the pattern. Buzzatii, cyrtoloma, and deflecta keep the order long > mid > short."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [223, 245], note: "domain_length_series, the corrected protocol", supports: true}
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [270, 287], note: "σ sweep of both diffusivities", supports: true}
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [289, 319], note: "species_run for buzzatii, cyrtoloma, deflecta", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Pearson r = 0.9917 and RMSE = 0.549 stripes on seven widths. Spacing CV = 0.083 against a zero reference. Plate Otsu circularity is 0.772 against a disk reference of 1. Plate coherency is not set equal to the simulation coherency. Deflecta is 6.83 µm against a 6.05 µm hypothesis, which is why this is not 95."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [332, 384], note: "Otsu mask metrics and spacing CV / KS", supports: true}
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [595, 694], note: "measure_morphoeval rows with value != reference", supports: true}
+          - {file: datasets/drosophila_cyrtoloma_turing_wavelength_s0/simulation_metrics.json, lines: [0, 0], note: "pearson_r 0.9917, species micrometres, segmentations", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Twelve bibliography DOIs were resolved on Crossref or OpenAlex, including the corrected Werner 2010 DOI 10.1038/nature08896. Slot 3061's Zootaxa 2400 DOI is explicitly rejected. Specimen SHA-256 is the gallery byte copy."
+        evidence:
+          - {file: datasets/drosophila_cyrtoloma_turing_wavelength_s0/paper_citations.bib, lines: [1, 124], note: "bibliography", supports: true}
+          - {file: datasets/drosophila_cyrtoloma_turing_wavelength_s0/README.md, lines: [1, 40], note: "4.3 µm, 0 Ma, rejected DOI, plate provenance", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Each modelling step in the docstring maps to Turing, Murray, or Schnakenberg. The Lean file witnesses the same inequalities. The floating-point (a, b) pair is not re-derived from a cyrtoloma table, which caps the score."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [1, 36], note: "equation block and scale statement", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.yaml, lines: [24, 70], note: "equation records with Lean loci", supports: true}
+      repro-package:
+        value: 90
+        rationale: "python3 script --self-test checks the Turing flag, the equal-diffusion ablation, the wavelength order, and Pearson r > 0.98. Seed 3180 and SHA-256 pins are fixed. Nanopub signing is unavailable in this environment and is not pretended."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-cyrtoloma-turing-wavelength-s0.py, lines: [697, 731], note: "self-test assertions including r > 0.98", supports: true}
+          - {file: datasets/drosophila_cyrtoloma_turing_wavelength_s0/README.md, lines: [28, 42], note: "documented invocation", supports: true}
+    remediation:
+      - "A real CC photograph of a pinned D. cyrtoloma adult is still missing; Commons had none on 2026-10-27."
+      - "Deflecta simulated carrier is 6.83 µm against the 6.05 µm hypothesis. The order versus cyrtoloma and buzzatii holds; the micrometre does not."
+      - "Signing was not run: ~/.nanopub/profile.yml is absent."
