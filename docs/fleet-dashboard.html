@@ -65,7 +65,28 @@
  figure.plate-fig { margin:0; background:#faf5e6; border:1px solid #b39b5e; padding:10px; }
  figure.plate-fig img { width:100%; height:250px; object-fit:cover; object-position:top; display:block; border:1px solid #d8cbb0; }
  figure.plate-fig figcaption { font-size:12.5px; } figure.plate-fig figcaption b { font-size:14px; }
+ .pdf-link { text-align:right; font-size:12px; margin:0 0 6px; }
+ /* print / PDF: A4 landscape is within 30px of the plate's natural 1060px width */
+ @page { size: A4 landscape; margin: 11mm 12mm; }
+ @media print {
+   html, body { background:#f5edd8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+   .plate { max-width:none; margin:0; border:none; box-shadow:none; padding:0 4px; }
+   .pdf-link { display:none; }
+   h2 { break-after:avoid; page-break-after:avoid; }
+   tr, .specimen, figure, .card, .curator, .loopdiag { break-inside:avoid; page-break-inside:avoid; }
+   figure img { max-height:150mm; object-fit:contain; }
+   .curator { font-size:12.5px; padding:7px 12px; }
+   figure.chart { margin:8px 0 0; padding:6px; }
+   figure.chart img { max-height:80mm; }
+   figure.chart figcaption { padding-top:4px; font-size:12px; } figure.chart figcaption p { font-size:11.5px; }
+   .offices { grid-template-columns:repeat(4,1fr); }
+   .deposit { grid-template-columns:repeat(4,1fr); }
+   /* no CSS filters in print: they force Chrome to re-encode every JPEG as lossless PNG */
+   td.portrait img, .specimen .frame img { filter:none; }
+   a { color:inherit; text-decoration:none; }
+ }
 </style></head><body><div class="plate">
+<p class="pdf-link"><a href="fleet-dashboard.pdf">Printed catalogue (PDF)</a></p>
 <p class="museum">Museum of Morphogenesis · Project Delphi · Est. Oct. MMXXVI</p>
 <h1 class="lagoon">Aristotle's <i>Lagoon</i></h1>
 <p class="subtitle">Plate III — Registry of the Agent Fleet, exhibited as natural history —
@@ -80,7 +101,7 @@ are not counted. When enough morphology has been captured to let forms transform
 Thompson's manner, the Evolution Gallery at the foot of the page will open. Until then: no swimming.
 Regenerate: <code>python3 docs/build_fleet_dashboard.py</code>.</div>
 
-<figure class="chart"><img src="media/thompson_1913_fig2_lesbos_pyrrha_lagoon.png" alt="Insula Nobilis et Amoena — Lesbos &amp; the Lagoon of Pyrrha">
+<figure class="chart"><a href="media/thompson_1913_fig2_lesbos_pyrrha_lagoon.png" title="Full-resolution plate (PNG)"><img src="media/thompson_1913_fig2_lesbos_pyrrha_lagoon_print.jpg" alt="Insula Nobilis et Amoena — Lesbos &amp; the Lagoon of Pyrrha"></a>
 <figcaption><span class="acc">Accession 1913.1 — Plate II</span><b>Insula Nobilis et Amoena — Lesbos &amp; the Lagoon of Pyrrha</b>
 <i>Admiralty Chart No. 1665 (surveyed 1832–1849) with museum specimens</i><p>The chart of record for this collection. Port Kalloni, centre-left, is the ancient Lagoon of Pyrrha where Aristotle made the first field notes in this catalogue, c. 345 BC: starfish a pest, scallops dredged out, sea-urchins in season in winter, no octopus of either kind.</p></figcaption></figure>
 
@@ -172,7 +193,7 @@ Cervera audits and a seat on the Rule30 Delphi panel — so any heavier assessin
 chat sessions left no stamp and, by this dashboard's own rule, is not counted.</p>
 <table><tr><th>Assessor model</th><th>Audits judged (YAML)</th><th>Telemetry primary seat</th>
 <th>Telemetry second seat</th><th>Panels</th></tr>
-<tr><td><strong>gemini-4-argon</strong></td><td class='num'>0</td><td class='num'>103</td><td class='num'>3</td><td></td></tr><tr><td><strong>claude-fable-5-1</strong></td><td class='num'>0</td><td class='num'>3</td><td class='num'>0</td><td></td></tr><tr><td><strong>claude-sonnet-5-5-high</strong></td><td class='num'>0</td><td class='num'>0</td><td class='num'>103</td><td></td></tr></table>
+<tr><td><strong>claude-fable-5-1</strong></td><td class='num'>0</td><td class='num'>3</td><td class='num'>0</td><td></td></tr><tr><td><strong>claude-sonnet-5-5-high</strong></td><td class='num'>0</td><td class='num'>0</td><td class='num'>103</td><td></td></tr><tr><td><strong>gemini-4-argon</strong></td><td class='num'>0</td><td class='num'>103</td><td class='num'>3</td><td></td></tr></table>
 <table style="margin-top:10px"><tr><th>Model (steps, name-normalised)</th><th>Steps executed</th><th>Avg step time</th></tr>
 <tr><td>gemini-4-argon</td><td class='num'>819</td><td class='num'>37.5s</td></tr>
 <tr><td>claude-fable-5-1</td><td class='num'>30</td><td class='num'>348.2s</td></tr>

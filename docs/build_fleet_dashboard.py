@@ -22,16 +22,22 @@ docs/media/, and the species portraits this script stages into
 docs/media/specimens/lagoon_*.jpg (downscaled copies of tracked library photos,
 so GitHub Pages — which serves docs/ only — can show them).
 
-Usage: python3 docs/build_fleet_dashboard.py
+Usage: python3 docs/build_fleet_dashboard.py            # HTML
+       python3 docs/build_fleet_dashboard.py --pdf      # HTML + docs/fleet-dashboard.pdf
+                                                         # (headless Chrome; CHROME_BIN to override)
 """
 from __future__ import annotations
 
+import argparse
 import collections
 import glob
 import html
 import json
+import os
 import shutil
 import sqlite3
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -40,6 +46,7 @@ SCOUT_DIR = ROOT / "morphoeval" / "problem_scouts"
 FIXER_DIR = ROOT / "morphoeval" / "problem_fixers"
 TELEMETRY = ROOT / "morphoeval" / "runs" / "telemetry.sqlite"
 OUT = ROOT / "docs" / "fleet-dashboard.html"
+OUT_PDF = ROOT / "docs" / "fleet-dashboard.pdf"
 SPECIMEN_DIR = ROOT / "docs" / "media" / "specimens"
 GALLERY = "datasets/species_gallery"
 GH = "https://github.com/fractastical/morpholib/blob/main"
@@ -121,6 +128,26 @@ FLEET_SPECIES = {
 # and micrographs fall well outside this box.
 PLACEHOLDER_EDGE_VAR = (480.0, 620.0)
 PLACEHOLDER_MAX_COLOURS = 2600
+
+
+def stage_print_jpeg(src: Path, max_w: int = 1800, quality: int = 82) -> str:
+    """An 1800px JPEG twin of a large PNG plate, used for both the page and the
+    PDF (Chrome embeds PNGs losslessly, so the 3.8 MB Plate II alone would make
+    a 5 MB PDF page; the plate displays at ~1040px anyway). The PNG stays the
+    archival copy and is linked from the figure. Returns the docs-relative URL."""
+    dst = src.with_name(src.stem + "_print.jpg")
+    rel = dst.relative_to(ROOT / "docs").as_posix()
+    if not src.exists() or (dst.exists() and dst.stat().st_mtime >= src.stat().st_mtime):
+        return rel
+    try:
+        from PIL import Image
+        im = Image.open(src).convert("RGB")
+        if im.width > max_w:
+            im = im.resize((max_w, round(im.height * max_w / im.width)), Image.LANCZOS)
+        im.save(dst, "JPEG", quality=quality, optimize=True, progressive=True)
+    except Exception:
+        return src.relative_to(ROOT / "docs").as_posix()
+    return rel
 
 
 def is_placeholder_image(path: Path) -> bool | None:
@@ -596,7 +623,7 @@ def detect_red_flags(d: dict) -> list[dict]:
     return flags
 
 
-def main() -> int:
+def main(pdf: bool = False) -> int:
     d = census()
     slots, scouts, fixers, tele = d["slots"], d["scouts"], d["fixers"], d["telemetry"]
     total_cloud = slots["n"] + scouts["dispatched"] + fixers["dispatched"]
@@ -702,6 +729,7 @@ def main() -> int:
         )
 
     hero = MUSEUM_PLATES[0]
+    hero_print = stage_print_jpeg(ROOT / "docs" / hero[1], max_w=1800)
     deposit_plates = "".join(
         f'<figure class="plate-fig"><img src="{img}" alt="{html.escape(title)}" loading="lazy">'
         f'<figcaption><span class="acc">{html.escape(acc)}</span><b>{html.escape(title)}</b>'
@@ -872,7 +900,28 @@ def main() -> int:
  figure.plate-fig {{ margin:0; background:#faf5e6; border:1px solid #b39b5e; padding:10px; }}
  figure.plate-fig img {{ width:100%; height:250px; object-fit:cover; object-position:top; display:block; border:1px solid #d8cbb0; }}
  figure.plate-fig figcaption {{ font-size:12.5px; }} figure.plate-fig figcaption b {{ font-size:14px; }}
+ .pdf-link {{ text-align:right; font-size:12px; margin:0 0 6px; }}
+ /* print / PDF: A4 landscape is within 30px of the plate's natural 1060px width */
+ @page {{ size: A4 landscape; margin: 11mm 12mm; }}
+ @media print {{
+   html, body {{ background:#f5edd8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }}
+   .plate {{ max-width:none; margin:0; border:none; box-shadow:none; padding:0 4px; }}
+   .pdf-link {{ display:none; }}
+   h2 {{ break-after:avoid; page-break-after:avoid; }}
+   tr, .specimen, figure, .card, .curator, .loopdiag {{ break-inside:avoid; page-break-inside:avoid; }}
+   figure img {{ max-height:150mm; object-fit:contain; }}
+   .curator {{ font-size:12.5px; padding:7px 12px; }}
+   figure.chart {{ margin:8px 0 0; padding:6px; }}
+   figure.chart img {{ max-height:80mm; }}
+   figure.chart figcaption {{ padding-top:4px; font-size:12px; }} figure.chart figcaption p {{ font-size:11.5px; }}
+   .offices {{ grid-template-columns:repeat(4,1fr); }}
+   .deposit {{ grid-template-columns:repeat(4,1fr); }}
+   /* no CSS filters in print: they force Chrome to re-encode every JPEG as lossless PNG */
+   td.portrait img, .specimen .frame img {{ filter:none; }}
+   a {{ color:inherit; text-decoration:none; }}
+ }}
 </style></head><body><div class="plate">
+<p class="pdf-link"><a href="fleet-dashboard.pdf">Printed catalogue (PDF)</a></p>
 <p class="museum">Museum of Morphogenesis · Project Delphi · Est. Oct. MMXXVI</p>
 <h1 class="lagoon">Aristotle's <i>Lagoon</i></h1>
 <p class="subtitle">Plate III — Registry of the Agent Fleet, exhibited as natural history —
@@ -887,7 +936,7 @@ are not counted. When enough morphology has been captured to let forms transform
 Thompson's manner, the Evolution Gallery at the foot of the page will open. Until then: no swimming.
 Regenerate: <code>python3 docs/build_fleet_dashboard.py</code>.</div>
 
-<figure class="chart"><img src="{hero[1]}" alt="{html.escape(hero[2])}">
+<figure class="chart"><a href="{hero[1]}" title="Full-resolution plate (PNG)"><img src="{hero_print}" alt="{html.escape(hero[2])}"></a>
 <figcaption><span class="acc">{html.escape(hero[0])}</span><b>{html.escape(hero[2])}</b>
 <i>{html.escape(hero[3])}</i><p>{html.escape(hero[4])}</p></figcaption></figure>
 
@@ -1005,8 +1054,53 @@ Telemetry runs span {html.escape(str(tele['first']))} – {html.escape(str(tele[
     print(f"wrote {OUT} ({len(page):,} bytes)")
     print(f"cloud total={total_cloud:,} slots={slots['n']:,} scouts={scouts['dispatched']} "
           f"fixers={fixers['dispatched']} telemetry_steps={tele['steps']:,}")
+    if pdf:
+        return print_pdf()
+    return 0
+
+
+CHROME_CANDIDATES = [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome",
+]
+
+
+def find_chrome() -> str | None:
+    env = os.environ.get("CHROME_BIN")
+    if env and Path(env).exists():
+        return env
+    for c in CHROME_CANDIDATES:
+        if Path(c).exists():
+            return c
+        found = shutil.which(c)
+        if found:
+            return found
+    return None
+
+
+def print_pdf() -> int:
+    """Print the catalogue to docs/fleet-dashboard.pdf with headless Chrome
+    (A4 landscape via the page's @page rule; no browser header/footer)."""
+    chrome = find_chrome()
+    if not chrome:
+        print("no Chrome/Chromium found — set CHROME_BIN to print the PDF", file=sys.stderr)
+        return 2
+    cmd = [chrome, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
+           "--virtual-time-budget=4000", f"--print-to-pdf={OUT_PDF}", OUT.resolve().as_uri()]
+    res = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    if res.returncode != 0 or not OUT_PDF.exists():
+        print(res.stderr[-800:], file=sys.stderr)
+        return 1
+    print(f"wrote {OUT_PDF} ({OUT_PDF.stat().st_size:,} bytes)")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    ap = argparse.ArgumentParser(description="Build Aristotle's Lagoon (fleet dashboard).")
+    ap.add_argument("--pdf", action="store_true", help="also print docs/fleet-dashboard.pdf via headless Chrome")
+    ap.add_argument("--pdf-only", action="store_true", help="skip the HTML rebuild; just print the PDF")
+    args = ap.parse_args()
+    if args.pdf_only:
+        raise SystemExit(print_pdf())
+    raise SystemExit(main(pdf=args.pdf))
