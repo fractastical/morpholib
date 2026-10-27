@@ -1,0 +1,367 @@
+{
+  "scout": "scout-048",
+  "ground": "bioelectric",
+  "lens": "registry",
+  "candidates": [
+    {
+      "title": "Round-2 registry: no bioelectric_polarity outcome rows despite three canonical datasets",
+      "gap": "prediction_registry.json lists danio_rerio_bioelectric_polarity, drosophila_melanogaster_bioelectric_polarity, and xenopus_tropicalis_bioelectric_polarity in evidence_snapshot but registers zero predictions with mechanism bioelectric_polarity or poson_law Bistable V_mem / G_ij Threshold; Levin latent-space Claim 5–7 evidence (planform, Pietak, Picasso) is likewise outside the 14-row round.",
+      "done": "After hash-locked registration, predictions/prediction_registry.json contains at least three new prediction_id rows (one per registry organism) referencing the corresponding datasets/*_bioelectric_polarity paths, each with status scored and outcome in {confirmed, refuted, partially_resolved} via predictions/score_resolutions.py reading matching predictions/resolutions/*.json entries.",
+      "tool_route": "Extend predictions/build_prediction_registry.py PREDICTIONS + RESOLVABILITY maps (round-2 branch); python3 predictions/build_prediction_registry.py; add predictions/resolutions/bioelectric-round2.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: datasets/{danio_rerio,drosophila_melanogaster,xenopus_tropicalis}_bioelectric_polarity/*_reference.json, predictions/prediction_registry.json schema; public: FlyBase/ZFIN/Xenbase + Oviedo/Beane/Pai DOIs cited in planarian and Xenopus dataset READMEs.",
+      "prior_attempts": "Round-1 registry (2026-10-26) scored 14 predictions with no bioelectric rows (predictions/prediction_registry.csv). docs/open-problems.json registered_prediction_followups lists partials only for clock/vertex/morphogen rows, not bioelectric. MorphoEval Slot 081–085 audits closed simulation fidelity, not registry falsifiers.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "max": 25,
+          "why": "build_prediction_registry.py + score_resolutions.py is the designed close loop; only requires adding rows and a resolution batch file."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "max": 20,
+          "why": "All three bioelectric_polarity reference JSONs and planform_bioelectric_series_v1.json are already pinned in-repo; literature DOIs are named in dataset sidecars."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "max": 15,
+          "why": "Scorer checks countable new prediction_id rows, resolution file presence, and discrete outcome_verdict fields without qualitative judgment."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "max": 15,
+          "why": "Registry rebuild and scoring are minutes of Python; literature resolution is search/extraction, not wet lab."
+        },
+        "isolation": {
+          "score": 9,
+          "max": 10,
+          "why": "Round-2 work can live in new predictions/resolutions/bioelectric-round2.json plus a dedicated registry branch without touching parallel MorphoEval loop slots."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "max": 10,
+          "why": "One agent sitting can register, draft resolutions, and run score_resolutions.py; some rows may stay partial like ZF-CLK-01."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "No prior registry resolution attempted bioelectric_polarity; negative knowledge from OP-07 applies to embryo-blind waves, not this route."
+        }
+      }
+    },
+    {
+      "title": "DATA-QUALITY: catalog bioelectric_polarity empirical curves are alpha-template artifacts (BIO-TPL-DQ-01)",
+      "gap": "build_prediction_registry.py forbids alpha_scale-derived biology predictions because ~1.57*alpha_scale fits all 3,000 core laws, yet danio/drosophila/xenopus bioelectric_polarity references still carry pearson_r>0.999 y_simulated fits with no registered falsifier that the assignment is template-not-biology.",
+      "done": "Registered prediction BIO-TPL-DQ-01 is confirmed if, for each of the three *_bioelectric_polarity_reference.json files, Pearson r(y_empirical, alpha_scale*x_control) >= 0.99 AND r(y_empirical, y_simulated) >= 0.99 while poson_law text equals Bistable V_mem / G_ij Threshold; refuted if any file fails either inequality or uses a non-template empirical source documented in paper_citations.bib DOI.",
+      "tool_route": "Register BIO-TPL-DQ-01 in predictions/build_prediction_registry.py (class data_quality); resolve in predictions/resolutions/inrepo-quick.json or bioelectric-round2.json with a one-shot python3 -c JSON load/compute block; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo only: datasets/danio_rerio_bioelectric_polarity/danio_rerio_bioelectric_polarity_reference.json, datasets/drosophila_melanogaster_bioelectric_polarity/drosophila_melanogaster_bioelectric_polarity_reference.json, datasets/xenopus_tropicalis_bioelectric_polarity/xenopus_tropicalis_bioelectric_polarity_reference.json (empirical_series + parameters.alpha_scale).",
+      "prior_attempts": "Round-1 XT-DQ-01 confirmed fragment BMP4 accession via the same in-repo sequence_links discipline; no prior BIO-TPL row. MorphoEval bioelectric_polarity audits score alpha fit quality, not mechanism falsification.",
+      "factors": {
+        "tool_fit": {
+          "score": 25,
+          "max": 25,
+          "why": "Pure registry + in-repo numeric check mirrors XT-DQ-01 resolution pattern scored by score_resolutions.py."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "max": 20,
+          "why": "All deciding fields already exist in three reference JSON files; no external fetch required."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "max": 15,
+          "why": "Done is three Pearson inequalities and string equality on poson_law—machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "max": 15,
+          "why": "Sub-second Python on JSON files."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "New prediction row + resolution JSON only; no edits to shared dataset hashes required."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "max": 10,
+          "why": "Single loop: register, compute, score."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "Discipline note in registry header warns about alpha circularity but never registered an explicit test row."
+        }
+      }
+    },
+    {
+      "title": "NEGATIVE mechanism assignment: Drosophila bioelectric_polarity slot cites Lecuit epithelial mechanics, not planarian-style bistable memory (DM-BIO-NEG-01)",
+      "gap": "datasets/drosophila_melanogaster_bioelectric_polarity assigns poson_law Bistable V_mem / G_ij Threshold with placeholder bib doi 10.1038/ncb.2008.0941, but Lecuit et al. NCB work on apical constriction/cellularization—not gap-junction bistable regeneration attractors (contrast planarian 2H0T literature in datasets/planform/).",
+      "done": "Registered DM-BIO-NEG-01 outcome refuted (assignment fails) if FlyBase-linked literature for the cited Lecuit DOI and Drosophila segmentation epithelia shows no bistable V_mem attractor / innexin-threshold pole memory matching the registered law; confirmed only if a published Drosophila assay satisfies the registered quantitative_expectation text.",
+      "tool_route": "Add DM-BIO-NEG-01 to predictions/build_prediction_registry.py (class negative_mechanism_assignment); resolve via predictions/resolutions/bioelectric-round2.json using OpenAlex/Crossref abstract fetch for doi:10.1038/ncb.2008.0941 and FlyBase; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: datasets/drosophila_melanogaster_bioelectric_polarity/scout_manifest.json seed_doi, reference poson_law; public: Nature Cell Biology Lecuit 2008 (ncb.2008), FlyBase (https://flybase.org), comparison anchor Oviedo 2010 doi:10.1016/j.ydbio.2009.12.012 in datasets/planform/planform_bioelectric_series_v1.json citations.",
+      "prior_attempts": "DM-CLK-NEG-01 confirmed wrong clock_wavefront assignment for Drosophila (predictions/resolutions/drosophila.json); same negative-mechanism pattern not yet applied to bioelectric_polarity catalog slot 941.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "max": 25,
+          "why": "Identical workflow to DM-CLK-NEG-01 already scored in registry; only a new prediction_id and resolution entry."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "max": 20,
+          "why": "Assignment text and DOI are in-repo; deciding evidence is public paper abstracts, not measured V_mem series in repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "max": 15,
+          "why": "Verdict hinges on whether cited primary literature mentions bistable bioelectric attractors—scorer uses explicit keyword/phenotype checklist in resolution evidence string."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "max": 15,
+          "why": "Literature pass plus registry scoring fits one sitting; no new experiments."
+        },
+        "isolation": {
+          "score": 9,
+          "max": 10,
+          "why": "Registry/resolution files only on a round-2 branch."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "max": 10,
+          "why": "Single DOI + FlyBase sweep is bounded like DM-CLK-NEG-01 resolution time."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "No prior resolution row for DM-BIO-NEG-01 or bioelectric negative for fly."
+        }
+      }
+    },
+    {
+      "title": "NEGATIVE mechanism assignment: zebrafish bioelectric_polarity sim_id nakamasu is pigment RD, not bistable V_mem regeneration (ZF-BIO-NEG-01)",
+      "gap": "datasets/danio_rerio_bioelectric_polarity uses sim_id nakamasu-danio-rerio-bioelectric-polarity and poson_law Bistable V_mem / G_ij Threshold, but the real Nakamasu et al. 2009 PNAS 106:8429 work is already modeled at datasets/zebrafish_three_cell_stripes/ as pigment-cell Turing/agent coupling—not planarian-style gap-junction memory.",
+      "done": "Registered ZF-BIO-NEG-01 is confirmed (negative assignment holds) if resolution evidence cites Nakamasu 2009 doi:10.1073/pnas.0900848106 (or repo datasets/zebrafish_three_cell_stripes/scout_manifest.json) showing melanophore/xanthophore/iridophore interaction networks with no bistable regeneration attractor claim; refuted only if zebrafish V_mem bistability data are tied to the same sim_id in a reviewed publication.",
+      "tool_route": "Register ZF-BIO-NEG-01 in predictions/build_prediction_registry.py; resolve in predictions/resolutions/bioelectric-round2.json cross-walking datasets/danio_rerio_bioelectric_polarity/scout_manifest.json vs datasets/zebrafish_three_cell_stripes/zebrafish_three_cell_stripes_reference.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: both dataset reference/manifest files and models/2009-nakamasu-zebrafish-three-cell-stripes.py header citations; public: PNAS Nakamasu 2009 doi:10.1073/pnas.0900848106.",
+      "prior_attempts": "Round-1 zebrafish registry rows cover Turing/morphogen/clock only; docs/bioelectricity/math_of_biology_kg.json already separates nakamasu-zebrafish-three-cell-stripes sim_id from catalog bioelectric_polarity slot 931 without a registered falsifier.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "max": 25,
+          "why": "Cross-dataset sim_id collision is decidable via registry resolution text exactly like DM-CLK-NEG-01."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "max": 20,
+          "why": "Both conflicting dataset packages and the Nakamasu model script live in-repo; DOI is one public fetch away."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "max": 15,
+          "why": "Done compares sim_id/title fields and published phenomenon class (pigment RD vs bistable memory)."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "max": 15,
+          "why": "JSON diff plus abstract read only."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "No changes to pinned dataset SHA files required to score."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "max": 10,
+          "why": "One sitting: register, write resolution, score."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "No prior ZF-BIO registry row or resolution."
+        }
+      }
+    },
+    {
+      "title": "Planform S1: octanol gap-junction block increases double-head outcomes toward anterior crops (PLN-OCT-01)",
+      "gap": "datasets/planform/planform_bioelectric_series_v1.json encodes Oviedo 2010 octanol x crop-position outcome frequencies (series S1) but PlanformDB planarian biology is absent from round-1 prediction_registry organisms, leaving Levin Claim 5 pole-transfer evidence unscored by score_resolutions.py.",
+      "done": "Registered PLN-OCT-01 (organism Schmidtea mediterranea, mechanism bioelectric_polarity) is confirmed if extracted S1 rows show monotonic increase in combined double_head normalized_outcome frequency as crop position moves anterior along the registered series_axis (Spearman rho >= 0.6, p<0.05 on >=4 axis points); refuted if rho <= 0 or double-head rate is flat.",
+      "tool_route": "Round-2: extend ORGANISMS in predictions/build_prediction_registry.py for planarian; register PLN-OCT-01; resolve by python3 -c loading datasets/planform/planform_bioelectric_series_v1.json filtering series_id S1; write predictions/resolutions/planarian.json; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: datasets/planform/planform_bioelectric_series_v1.json (series S1 records, normalized_outcome vocabulary); public anchor Oviedo 2010 doi:10.1016/j.ydbio.2009.12.012 in fixture citations.",
+      "prior_attempts": "models/planform_bioelectric.py and 2021-Cervera–Levin–Mafe.py fit S1 for link parameters but no hash-locked registry outcome row; MorphoEval planarian audits (Slot 081–082) do not emit prediction_id resolutions.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "max": 25,
+          "why": "Fixture frequencies are designed for scoring; registry round-2 adds organism but uses the same score_resolutions.py path."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "max": 20,
+          "why": "Entire deciding table is already extracted in planform_bioelectric_series_v1.json."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "max": 15,
+          "why": "Spearman threshold on extracted frequencies is objective."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "max": 15,
+          "why": "JSON aggregation plus scipy/spearman in Python minutes."
+        },
+        "isolation": {
+          "score": 8,
+          "max": 10,
+          "why": "Requires editing build_prediction_registry.py (shared file) on a dedicated branch—still zero conflict if other agents avoid that file."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "max": 10,
+          "why": "One loop once round-2 registry merge lands."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "No prior PLN-OCT-01 registration or refutation."
+        }
+      }
+    },
+    {
+      "title": "Xenopus V_mem eye patterning: hyperpolarization shrinks eye field (XT-V-MEM-01)",
+      "gap": "Levin bioelectric Claim 6 cites Pai et al. 2012 doi:10.1242/dev.073759 (datasets/xenopus_craniofacial_remap/) but round-1 registry has no protein_state or law row for transmembrane voltage control of eye patterning in Xenopus tropicalis/laevis.",
+      "done": "Registered XT-V-MEM-01 is confirmed if Xenbase-linked literature for V_mem hyperpolarization (e.g., H,K-ATPase inhibition or channel block) reports reduced eye marker domain size versus depolarized controls in the direction stated in the registration; refuted if hyperpolarization expands eye field or shows no effect in >=2 independent studies cited in resolution evidence.",
+      "tool_route": "Add XT-V-MEM-01 to predictions/build_prediction_registry.py referencing datasets/xenopus_tropicalis_bioelectric_polarity plus datasets/xenopus_craniofacial_remap/xenopus_craniofacial_remap_reference.json DOI; resolve via predictions/resolutions/xenopus-bioelectric.json with Xenbase/OpenAlex; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: xenopus_craniofacial_remap primary_papers doi:10.1242/dev.073759; public: Xenbase (https://www.xenbase.org) eye development / bioelectric perturbation records.",
+      "prior_attempts": "XT-BMP-01 and XT-SHH-01 scored 2026-10-26 (predictions/resolutions/xenopus.json); XT-CLK-01 partial for lack of paired series; no V_mem row. docs/open-problems.json OP-07 refuted embryo-blind wave LOOO—not the same as Pai eye V_mem literature test.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "max": 25,
+          "why": "Same Xenopus resolution batch pattern as XT-BMP-01, but outcome direction needs literature extraction not UniProt."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "max": 20,
+          "why": "DOI and model context in-repo; quantitative eye-domain measurements only in publications via Xenbase."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "max": 15,
+          "why": "Directional eye-size claim is scorable, but magnitude tolerances must be pre-registered to avoid taste."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "max": 15,
+          "why": "Literature mining within hours; no wet lab."
+        },
+        "isolation": {
+          "score": 9,
+          "max": 10,
+          "why": "New registry/resolution files on round-2 branch."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "max": 10,
+          "why": "Often one sitting if Pai 2012 primary suffices; replication studies may yield partially_resolved."
+        },
+        "not_blocked": {
+          "score": 4,
+          "max": 5,
+          "why": "OP-07 blocked wave-neighbour blind route; this Pai V_mem literature route is distinct and not refuted."
+        }
+      }
+    },
+    {
+      "title": "NEGATIVE mechanism assignment: Xenopus flux_canalization carries plant auxin Golden Angle law (XT-FLUX-NEG-01)",
+      "gap": "datasets/xenopus_tropicalis_flux_canalization assigns poson_law Golden Angle / Auxin Flux and efficient_cause Polar Auxin & Turgor Stress to Xenopus tropicalis—a vertebrate—with the same template empirical_series shape as other catalog slots.",
+      "done": "Registered XT-FLUX-NEG-01 is confirmed if poson_law in datasets/xenopus_tropicalis_flux_canalization/xenopus_tropicalis_flux_canalization_reference.json equals Golden Angle / Auxin Flux and Xenbase/amphibian literature contains no phyllotaxis auxin flux canalization mechanism for X. tropicalis; refuted if a published Xenopus auxin-flux developmental assay matches the law.",
+      "tool_route": "Register XT-FLUX-NEG-01 (negative_mechanism_assignment) in predictions/build_prediction_registry.py; resolve in predictions/resolutions/bioelectric-round2.json via in-repo JSON read plus Xenbase search; python3 predictions/score_resolutions.py",
+      "deciding_data": "In repo: datasets/xenopus_tropicalis_flux_canalization/xenopus_tropicalis_flux_canalization_reference.json aristotelian_categories; public: Xenbase development bibliography.",
+      "prior_attempts": "DM-MUR-NEG-01 established negative Murray assignment pattern (partial morphometry); no flux_canalization negative row yet. README in same folder already mislabels Aristotelian division, signaling catalog QA gap.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "max": 25,
+          "why": "Direct clone of DM-CLK-NEG-01 / DM-MUR-NEG-01 registry negative workflow."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "max": 20,
+          "why": "Law string and organism are in-repo; biological absurdity check uses Xenbase, not measurements in repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "max": 15,
+          "why": "String match on poson_law plus absence/presence of auxin-flux evidence in Xenopus is binary for scorer."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "max": 15,
+          "why": "Quick literature absence check."
+        },
+        "isolation": {
+          "score": 10,
+          "max": 10,
+          "why": "Registry-only delta."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "max": 10,
+          "why": "Usually one loop unless Xenbase is ambiguous (partial)."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "No prior XT-FLUX-NEG resolution."
+        }
+      }
+    },
+    {
+      "title": "Levin Platonic-space / sorting ablations — not registry-decidable (report for lens handoff)",
+      "gap": "docs/LEVIN_LATENT_SPACE_METHODS.md Claim 1–3 require sorting-morphogenesis ablation outputs (audit_platonic_space_claims.py, quantify_emergence_ce2.py) and Lean CE theorems—not blind hash-locked rows in prediction_registry.json.",
+      "done": "N/A for registry lens; closure requires MorphoEval audit YAML scores and/or Lean 0-sorry checks recorded in morphoeval/audits and morphoeval/lean/loops/, not outcome_verdict in predictions/resolutions/.",
+      "tool_route": "Lens handoff: morphoeval/track_loop.py + sorting-morphogenesis/audit_platonic_space_claims.py; optional predictions lens only if reformulated as registered S_n tie-breaking predictions (not present today).",
+      "deciding_data": "In repo: sorting-morphogenesis/* and morphoeval/audits/2026-10-17-blinded-sample-audit.yaml; not in prediction_registry.json.",
+      "prior_attempts": "MorphoEval v2 94.1/100 on sorting (LEVIN_LATENT_SPACE_METHODS.md §4); no registry row attempts.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "max": 25,
+          "why": "score_resolutions.py never reads audit_platonic_space_claims.py outputs; needs MorphoEval audit lens."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "max": 20,
+          "why": "All simulation outputs reproducible from repo commands in LEVIN doc §5."
+        },
+        "falsifiable_done": {
+          "score": 10,
+          "max": 15,
+          "why": "Ablation metrics are numeric, but not wired to registry outcome_verdict schema."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "max": 15,
+          "why": "CE2 sweeps take hours but stay in-repo."
+        },
+        "isolation": {
+          "score": 7,
+          "max": 10,
+          "why": "Sorting artifacts are isolated paths, yet registry lens agents would duplicate MorphoEval work."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "max": 10,
+          "why": "Multi-command reproduction exceeds one registry scoring sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "max": 5,
+          "why": "Not previously refuted via registry; simply out of lens scope."
+        }
+      }
+    }
+  ]
+}
