@@ -1,0 +1,319 @@
+{
+  "scout": "scout-065",
+  "ground": "predictions",
+  "lens": "vision",
+  "candidates": [
+    {
+      "id": "ZF-VTX-01-vision",
+      "title": "Close ZF-VTX-01: per-cell shape index p0 series on zebrafish EVL/epiboly micrographs",
+      "gap": "Registry row ZF-VTX-01 is partially_resolved: the 3.813 vertex-model transition is in-repo but no zebrafish measured p0(t) series exists (predictions/resolutions/zebrafish.json missing_data).",
+      "done": "A JSON table with >=8 timepoints/stages listing mean p0 = perimeter/sqrt(area) per segmented EVL cell (>=200 cells per stage) plus bootstrap 95% CI; scorer confirms the fitted transition p0* lies inside registered band 3.76-3.87 or outside 3.7-3.9 (binary confirm/refute of ZF-VTX-01).",
+      "tool_route": "Pre-register held figure SHA-256 under morphoeval/specimen_holds/ (blind contract). Segment cells via Otsu/Sobel pipeline shared with morphoeval/verify_image_fitness.py (`compute_specimen_cv_signature` segmentation primitives). Batch driver: `python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; from pathlib import Path; import json; print(json.dumps(compute_specimen_cv_signature(Path('datasets/vertex_glass_jamming/human_epithelial_monolayer_specimen.jpg')), indent=2))\"` for pipeline smoke, then same module on each preregistered Nakamasu/Concha epiboly panel. Full index refresh optional: `python3 morphoeval/verify_image_fitness.py`.",
+      "deciding_data": "In-repo calibration specimen: datasets/vertex_glass_jamming/human_epithelial_monolayer_specimen.jpg (known p0* literature). Deciding zebrafish panels: Nakamasu et al. (2013) PNAS doi:10.1073/pnas.1219480110 (seed_doi on datasets/danio_rerio_vertex_packing/scout_manifest.json) — one named public figure fetch, not in repo yet.",
+      "prior_attempts": "2026-10-26 resolution pass (predictions/resolutions/zebrafish.json): OpenAlex literature search bound 3.813 but found no tabulated zebrafish shape-index series; outcome partially_resolved as forecast. No prior image-segmentation attempt recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "verify_image_fitness segmentation/CV is the intended route; per-cell p0 aggregation is a thin extension of existing Otsu/Sobel code, not a new stack."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Calibration monolayer JPG is in-repo; zebrafish EVL time series requires one OA figure download from the pinned Nakamasu DOI."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Registered numeric band 3.76-3.87 vs measured p0* with explicit confirm/refute thresholds."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Segmentation + bootstrap on <=20 micrograph panels fits in one sitting on the repo Python stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as new hold files + one JSON series under morphoeval/ without editing registry rows."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Verdict after preregistered panels are segmented; figure fetch is the main latency."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Literature-only partial did not refute the image-measurement route."
+        }
+      }
+    },
+    {
+      "id": "DM-MUR-NEG-01-vision",
+      "title": "Close DM-MUR-NEG-01: Murray exponent from Drosophila tracheal lumen micrographs",
+      "gap": "DM-MUR-NEG-01 partially_resolved: insect Murray non-optimality is bounded from ant/literature but no Drosophila parent/daughter diameter table exists to test exponent 2.8-3.2 (predictions/resolutions/drosophila.json missing_data).",
+      "done": "CSV with >=15 bifurcations (parent radius r0, daughters r1,r2 in µm with pixel scale from figure bar) and fitted exponent k in r0^k = r1^k + r2^k; scorer confirms k outside 2.8-3.2 (supports negative prediction) or inside band (refutes).",
+      "tool_route": "Pre-register EM/confocal figure crops (Ghabrial 2006 doi:10.1101/gad.1388206 — seed on datasets/drosophila_melanogaster_um32_tracheal_terminal_cell_branching_lumen_branching_tree/scout_manifest.json). Measure lumen foreground width along skeletonized masks using the same contrast/Otsu mask logic as `compute_specimen_cv_signature` in morphoeval/verify_image_fitness.py; emit diameters via `python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; ...\"` on each crop for QA, then dedicated width script reusing that module's imports.",
+      "deciding_data": "No tracheal specimen JPG in datasets/drosophila_melanogaster_branching_tree/ (only metadata); deciding micrographs from Ghabrial/Lecuit (doi:10.1038/ncb.2012.0641 on branching_tree scout_manifest) — named public EM figures.",
+      "prior_attempts": "2026-10-26 drosophila resolution batch: OpenAlex morphometry search partially_resolved; cited ant Murray violations (doi:10.1371/journal.pcbi.1007853) as bound only. Image digitization route not attempted.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Lumen segmentation and width measurement are specimen-CV tasks aligned with verify_image_fitness foreground/morphology extraction."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Fly gallery fallback is wrong tissue; real tracheal EM must be fetched once from pinned DOIs."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Registered Murray band 2.8-3.2 gives a hard confirm/refute on fitted k."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Manual scale bar + batch segmentation is hours-scale on existing scipy/Pillow stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New hold images + diameter CSV only; no registry edits."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Depends on number of bifurcations visible in 2-4 published panels."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Partial literature bound does not refute Drosophila-specific morphometry from images."
+        }
+      }
+    },
+    {
+      "id": "ZF-HH-01-vision",
+      "title": "Close ZF-HH-01 gradient-shape leg: ptc expression domain extent from zebrafish ISH panels",
+      "gap": "ZF-HH-01 partially_resolved: lipidation requirement is confirmed but paired ptc1/ptc2 domain shape (distal expansion + reduced near-source peak under lipidation loss) was not extracted (predictions/resolutions/zebrafish.json missing_data).",
+      "done": "For wild-type vs lipidation-perturbed panels, JSON records AP domain length (µm), peak stain intensity within 20 µm of source, and distal half-domain mean intensity; scorer checks registered direction (mutant distal length >= WT and peak ratio mutant/WT <= 0.85) on >=2 independent figure pairs.",
+      "tool_route": "Pre-register ISH figure pairs from doi:10.1039/C4SC01600A and companion zebrafish Shh gradient papers cited in the resolution note. Segment expression foreground with verify_image_fitness contrast thresholding; radial/AP profiles from mask moments via `python3 morphoeval/verify_image_fitness.py` enrichment pass or `compute_specimen_cv_signature` per panel.",
+      "deciding_data": "Not in repo; named public sources already cited in predictions/resolutions/zebrafish.json (C4SC01600A; doi:10.1002/bies.202100133 review figures).",
+      "prior_attempts": "2026-10-26 zebrafish batch: harder_than_predicted partial — lipidation fact decided, gradient-shape outcome not; OpenAlex text mining did not digitize domains.",
+      "factors": {
+        "tool_fit": {
+          "score": 14,
+          "why": "Domain segmentation and intensity profiling use the same specimen CV stack; peak/length metrics are extensions of foreground masks."
+        },
+        "data_in_hand": {
+          "score": 7,
+          "why": "Deciding ISH panels are one fetch away but not stored in repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Directional inequalities on length and peak ratio are machine-checkable against registered claim."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Few paired panels; no wet lab."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New hold images + metrics JSON; registry stays hash-locked."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Needs careful pairing of WT/mutant from same paper; may take >one hour."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted image-based ptc domain measurement."
+        }
+      }
+    },
+    {
+      "id": "ZF-CLK-01-vision-s-only",
+      "title": "Partial ZF-CLK-01 support: somite rosette AP width series from held zebrafish specimens",
+      "gap": "ZF-CLK-01 missing paired (T_clock, S) series; in-repo still images can supply S across stages but not period (predictions/resolutions/zebrafish.json).",
+      "done": "CSV of >=6 embryos/stages with somite width S (µm) from segmented rosette boundaries on datasets/her1_her7_delayed_oscillator/zebrafish_somites_specimen.jpg plus preregistered staged tailbud panels; scorer verifies monotonic S series exists — full ZF-CLK-01 still blocked until T is paired (explicit partial flag).",
+      "tool_route": "`python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; from pathlib import Path; import json; print(json.dumps(compute_specimen_cv_signature(Path('datasets/her1_her7_delayed_oscillator/zebrafish_somites_specimen.jpg')), indent=2))\"` then rosette boundary segmentation on same Otsu pipeline; optional cross-check coherency on datasets/neuromesodermal_jamming/zebrafish_tailbud_psm_specimen.jpg.",
+      "deciding_data": "In-repo: datasets/her1_her7_delayed_oscillator/zebrafish_somites_specimen.jpg, datasets/neuromesodermal_jamming/zebrafish_tailbud_psm_specimen.jpg; staged series from Giudicelli 2007 doi:10.1371/journal.pbio.0050150 (named in her1 scout_manifest).",
+      "prior_attempts": "2026-10-26 resolution: proportional clock architecture bounded from literature; no somite width digitization from repo specimens.",
+      "factors": {
+        "tool_fit": {
+          "score": 12,
+          "why": "Vision lens measures S from photographs but cannot read clock period T from stills — partial tool fit only."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Two relevant zebrafish specimen JPGs already pinned in datasets/."
+        },
+        "falsifiable_done": {
+          "score": 10,
+          "why": "Done criterion is checkable for S series alone; registered x0.80-x1.20 T multipliers remain undecidable without T."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Segmentation on a handful of images is lightweight."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New CSV only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Partial verdict on S inventory is one sitting; full ZF-CLK-01 needs another lens."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Somite-width CV route not previously refuted."
+        }
+      }
+    },
+    {
+      "id": "XT-CLK-01-vision-s-only",
+      "title": "Partial XT-CLK-01 support: Xenopus somite width from held embryo specimens",
+      "gap": "XT-CLK-01 mirrors ZF-CLK-01 gap — no paired period+somite table (predictions/resolutions/xenopus.json).",
+      "done": "CSV of >=5 Xenopus stages with somite width (µm) from segmented somite boundaries on datasets/clock_and_wavefront/somite_embryo_specimen.jpg and preregistered Xenbase-linked figures; scorer marks partial closure only (S without T).",
+      "tool_route": "Segment somite_embryo_specimen.jpg with verify_image_fitness Otsu masks; `python3 morphoeval/verify_image_fitness.py` optional index pass; extend with preregistered Xenopus somitogenesis micrographs (Xenbase — registry test_atlas).",
+      "deciding_data": "In-repo: datasets/clock_and_wavefront/somite_embryo_specimen.jpg; public: Xenopus hes/somitogenesis literature cited in xenopus resolution (OpenAlex pass 2026-10-26).",
+      "prior_attempts": "2026-10-26 xenopus batch: framework bounded, paired measurements missing; no specimen CV attempt.",
+      "factors": {
+        "tool_fit": {
+          "score": 11,
+          "why": "Same S-only limitation as ZF-CLK-01; clock period needs simulation or kymograph lens."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "One generic somite embryo JPG in-repo; Xenopus tropicalis-specific staged panels need fetch."
+        },
+        "falsifiable_done": {
+          "score": 10,
+          "why": "Somite width table is objective; full XT-CLK-01 multipliers remain unscored without T."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Small image set, repo stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New files only."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Partial S verdict only."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No refutation of image-based somite morphometry."
+        }
+      }
+    },
+    {
+      "id": "DM-MUR-specimen-integrity",
+      "title": "Blocker audit: drosophila_melanogaster_branching_tree lacks a Murray-valid specimen photograph",
+      "gap": "DM-MUR-NEG-01 dataset slot has no *specimen*.jpg; verify_image_fitness would fall back to species gallery (adult fly portrait), which cannot test tracheal Murray scaling.",
+      "done": "Report JSON listing resolved specimen path for Loop_0641 / danio_rerio analog check: either a tracheal micrograph path under datasets/drosophila_melanogaster_branching_tree/ with SHA-256 pin, or explicit FAIL if gallery fallback coherency/circularity matches Drosophila_melanogaster.jpg gallery file — scorer requires tracheal-appropriate foreground_fraction change >=0.15 vs gallery on preregistered EM crop.",
+      "tool_route": "`python3 morphoeval/verify_image_fitness.py` (inspect morphoeval/runs/image_fitness_and_provenance.json for drosophila-melanogaster-branching-tree slug) plus `compute_specimen_cv_signature` on datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg vs preregistered tracheal hold.",
+      "deciding_data": "In-repo gallery: datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg; target micrograph from doi:10.1101/gad.1388206 (public fetch).",
+      "prior_attempts": "Registry resolution 2026-10-26 flagged missing tabulated diameters but did not audit specimen provenance for the branching_tree dataset slot.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "verify_image_fitness exists precisely to audit specimen photograph fitness vs phenomenon scale."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "Gallery JPG in-repo; tracheal EM is one named fetch."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Binary pass/fail on pinned tracheal hold vs gallery fallback signature mismatch."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Minutes to run CV signatures."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New specimen hold + audit JSON only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single-sitting QA gate before Murray digitization."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Using adult fly gallery as tracheal Murray evidence would be invalid — this audit prevents that refuted shortcut."
+        }
+      }
+    },
+    {
+      "id": "ZF-VTX-neuromesodermal-bridge",
+      "title": "Cross-check ZF-VTX-01: tailbud jamming proxy metrics vs p0 on Mongera 2018 figure time series",
+      "gap": "ZF-VTX-01 asks for EVL shape-index transition; neuromesodermal tailbud jamming (related tissue fluid-solid transition) has an in-repo specimen but no CV time series tied to registry prediction.",
+      "done": "JSON time series of verify_image_fitness coherency and circularity on >=6 preregistered frames from Mongera et al. 2018 doi:10.1038/s41586-018-0479-2; scorer checks whether the frame of maximum coherency gradient aligns within ±1 stage of literature-reported jamming onset AND whether mean circularity shift direction matches solid-like packing (increase >=0.05) — auxiliary bound for ZF-VTX-01, not a substitute for p0.",
+      "tool_route": "Baseline in-repo: `python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; from pathlib import Path; import json; print(json.dumps(compute_specimen_cv_signature(Path('datasets/neuromesodermal_jamming/zebrafish_tailbud_psm_specimen.jpg')), indent=2))\"`; batch the same function on preregistered Mongera figure frames.",
+      "deciding_data": "In-repo anchor: datasets/neuromesodermal_jamming/zebrafish_tailbud_psm_specimen.jpg; time series from Nature 2018 doi:10.1038/s41586-018-0479-2 (scout_manifest seed).",
+      "prior_attempts": "Neuromesodermal jamming model audited separately; not linked to ZF-VTX-01 partial resolution pass.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "compute_specimen_cv_signature runs as-is on each frame; coherency/circularity are direct outputs."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "One tailbud JPG in-repo; full time series needs figure extraction from pinned DOI."
+        },
+        "falsifiable_done": {
+          "score": 11,
+          "why": "Thresholds on coherency gradient and circularity shift are checkable but proxy-only for p0=3.813."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Batch CV on <=10 frames is trivial."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New JSON series only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One sitting once frames are held."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of jamming-proxy CV on tailbud images."
+        }
+      }
+    },
+    {
+      "id": "META-RES-03-vision-negative",
+      "title": "Lens limit report: OpenAlex-only partial routes for the five registry partials (vision cannot alone decide ZF-CLK/XT-CLK)",
+      "gap": "META-RES-03 was refuted on literature grounds; two clock partials still need T_clock measurements not present in still specimen photos.",
+      "done": "Markdown-free JSON verdict listing each of ZF-CLK-01 and XT-CLK-01 with tool_fit score <=5 for vision-only closure and named alternate lens (registry/kymograph or wavepipe for T); scorer confirms document exists and matches registry partial IDs.",
+      "tool_route": "N/A for closure — document after running verify_image_fitness on all in-repo somite specimens to prove insufficient T readout; command: `python3 morphoeval/verify_image_fitness.py` and inspect cv_signature fields on clock/somite slugs.",
+      "deciding_data": "In-repo: prediction_registry.json partial rows; predictions/resolutions/*.json prior_attempts fields.",
+      "prior_attempts": "META-RES-03 scored refuted 2026-10-26 when ZF-HH-01 joined partial set; literature passes documented in registry scoring.note.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Vision lens explicitly cannot extract oscillation period; problem is negative knowledge for this scout cell."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All partial metadata already in-repo."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Done is a structured negative routing table checkable against registry IDs."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Documentation pass only."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Scout JSON entry only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate from existing resolutions."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Records blocked vision-only route for CLK rows — prevents re-proposing as new."
+        }
+      }
+    }
+  ]
+}
