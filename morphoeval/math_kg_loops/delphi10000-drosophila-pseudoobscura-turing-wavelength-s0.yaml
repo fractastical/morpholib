@@ -1,0 +1,81 @@
+sim_id: delphi10000-drosophila-pseudoobscura-turing-wavelength-s0
+slot: 3200
+organism: Drosophila pseudoobscura
+phenomenon_size_m: 1.961e-06
+log10_size_m: -5.708
+size_human: "2.0 µm"
+scale_tier: 3_subcellular_um
+variant: detail
+anatomical_structure: "Turing pigment stripe / ocellus wavelength in Drosophila pseudoobscura (2.0 µm, detail scale)"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Sophophora obscura & willistoni Clade
+chronoseries_index: "29/41"
+predecessor:
+  species: Drosophila planitibia
+  wavelength_m: 0.0001972
+  geological_age_ma: 0.0
+successor:
+  species: Drosophila santomea
+  wavelength_m: 0.000102
+  geological_age_ma: 0.0
+math_family: Turing Reaction-Diffusion Wavelength Selection (1. Chemical Turing / RD)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  model: "Turing 1952 two-species linear reaction-diffusion; k_c minimizes det(J-k^2 D); lambda_* = 2 pi / k_* of the fastest mode, held at 1.961 um"
+  slot: 3200
+  lambda_m: 1.961e-06
+  f_u: 0.84
+  f_v: -0.90
+  g_u: 1.55
+  g_v: -1.20
+  D_u_um2_s: 0.028046
+  D_v_um2_s: 0.131825
+  grid: [192, 128]
+  domain_wavelengths: [12, 8]
+  seed: 3200
+  age_ma: 0.0
+  inputs:
+    - datasets/drosophila_pseudoobscura_turing_wavelength_s0/drosophila_pseudoobscura_turing_wavelength_s0_reference.json
+    - datasets/drosophila_pseudoobscura_turing_wavelength_s0/drosophila_pseudoobscura_turing_wavelength_s0_specimen.jpg
+    - datasets/drosophila_pseudoobscura_turing_wavelength_s0/paper_citations.bib
+    - datasets/drosophila_pseudoobscura_turing_wavelength_s0/scout_manifest.json
+equations:
+  - law_name: Homogeneous stability of the reaction Jacobian
+    formula: "trace(J) = f_u + g_v < 0 and det(J) = f_u g_v - f_v g_u > 0"
+    lean_decl: MathOfBiology.Loop_3200.traceJ
+    lean_theorem: MathOfBiology.Loop_3200.homogeneous_steady_state_stable
+    lean_locus: morphoeval/lean/loops/Loop_3200_drosophila_pseudoobscura_turing_wavelength_s0.lean#L26-L27
+    variables: "f_u=0.84, f_v=-0.90, g_u=1.55, g_v=-1.20 s^-1 at the 1.961 um detail rung"
+    role: "Reaction-only stability is required before a diffusion-driven band can be called a Turing instability"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  - law_name: Detail rung finer than chronospecies neighbours
+    formula: "lambda_pseudoobscura_detail = 1.961 um < lambda_santomea = 102 um < lambda_planitibia = 197.2 um, all at 0 Ma"
+    lean_decl: MathOfBiology.Loop_3200.detail_rung_finer_than_chronospecies
+    lean_theorem: MathOfBiology.Loop_3200.detail_rung_finer_than_chronospecies
+    lean_locus: morphoeval/lean/loops/Loop_3200_drosophila_pseudoobscura_turing_wavelength_s0.lean#L31-L33
+    variables: "wavelengths in nanometres 1961, 102000, 197200"
+    role: "What changes at this chronoseries node is the spatial rung, not geological age"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  - law_name: Critical wavenumber and mode count
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); N = L / lambda with 12 lambda < 24 um < 13 lambda"
+    lean_decl: MathOfBiology.Loop_3200.mode_count_bracket_on_24um_patch
+    lean_theorem: MathOfBiology.Loop_3200.mode_count_bracket_on_24um_patch
+    lean_locus: morphoeval/lean/loops/Loop_3200_drosophila_pseudoobscura_turing_wavelength_s0.lean#L36-L38
+    variables: "D_u=0.028046 um^2/s, D_v=0.131825 um^2/s, lambda=1.961 um"
+    role: "Turing wavenumber k_c selects the 2.0 um detail wavelength"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  - law_name: Inhibitor diffuses faster, and equal diffusion is not Turing-unstable
+    formula: "D_v / D_u > 4.70; if D_u = D_v then D_v f_u + D_u g_v = D trace(J) < 0"
+    lean_decl: MathOfBiology.Loop_3200.inhibitor_diffuses_faster
+    lean_theorem: MathOfBiology.Loop_3200.equal_diffusion_numerator_negative
+    lean_locus: morphoeval/lean/loops/Loop_3200_drosophila_pseudoobscura_turing_wavelength_s0.lean#L41-L49
+    variables: "fixed-point diffusivities 28046 and 131825 (x 10^6 um^2/s)"
+    role: "Negative control for the wavelength-selection law"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
