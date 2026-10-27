@@ -1,0 +1,225 @@
+{
+  "age_Ma": 0.0,
+  "lambda_um_slot": 60.0,
+  "patch_um": 480.0,
+  "Du_um2": 28.00571711952237,
+  "Dv_um2": 336.0686054342684,
+  "seed": 3214,
+  "lambda_linear_um": 61.343056658763466,
+  "lambda_fft_um": 60.33647916294789,
+  "amplitude": 0.4371016751151545,
+  "fit": {
+    "pearson_r": 0.9965486153632587,
+    "rmse_um": 2.575339796934308,
+    "ks_statistic": 0.1428571428571429
+  },
+  "ablation_amplitude": 0.005686731484727457,
+  "trace_gap": 240.84916722789237,
+  "ablation_trace_gap": -5.601143423904471,
+  "domains": [
+    {
+      "length_um": 10.0,
+      "n_wavelengths_integer": 0,
+      "amplitude": 0.0,
+      "wavelength_um": 105.83333333333333
+    },
+    {
+      "length_um": 60.0,
+      "n_wavelengths_integer": 1,
+      "amplitude": 0.436554841342355,
+      "wavelength_um": 57.72727272727273
+    },
+    {
+      "length_um": 120.0,
+      "n_wavelengths_integer": 2,
+      "amplitude": 0.4290187196786563,
+      "wavelength_um": 67.99672067313179
+    },
+    {
+      "length_um": 480.0,
+      "n_wavelengths_integer": 8,
+      "amplitude": 0.4371016751151545,
+      "wavelength_um": 60.33647916294789
+    },
+    {
+      "length_um": 600.0,
+      "n_wavelengths_integer": 10,
+      "amplitude": 0.4408128576155768,
+      "wavelength_um": 59.093143774363035
+    }
+  ],
+  "segment": {
+    "foreground_fraction": 0.3574256220023981,
+    "circularity": 0.06596003982738949,
+    "aspect_ratio": 1.4134228187919462,
+    "coherency": 0.40353555565644755,
+    "mean_r": 0.7021692273946178,
+    "mean_g": 0.45306536768242806,
+    "mean_b": 0.3321286780669874,
+    "width_px": 1280.0,
+    "height_px": 834.0,
+    "n_discs": 3,
+    "mean_disc_circularity": 0.7297300494539778,
+    "mean_disc_aspect": 0.9938622021237081,
+    "disc_circularity": [
+      0.7339601983168107,
+      0.725236017359256,
+      0.7299939326858665
+    ],
+    "disc_aspect": [
+      1.0348101265822784,
+      0.9979959919839679,
+      0.948780487804878
+    ]
+  },
+  "spacing_mean_um": 49.20786660318694,
+  "measurements": [
+    {
+      "name": "linear dispersion peak wavelength",
+      "value": 61.3431,
+      "unit": "\u00b5m",
+      "method": "argmax of \u03c3(k), the larger eigenvalue of J \u2212 k\u00b2D, at Du, Dv",
+      "derived_from": "script",
+      "reference_value": 60.0,
+      "reference_source": "slot scale 60 \u00b5m; Turing 1952 dispersion; Schnakenberg 1979 Jacobian",
+      "note": "linear peak is deliberately a few micrometres off 60 so the equilibrated lattice, not the onset mode, carries the slot scale"
+    },
+    {
+      "name": "equilibrated activator FFT wavelength",
+      "value": 60.3365,
+      "unit": "\u00b5m",
+      "method": "parabolic interpolation of the radial power spectrum of u on the 480 \u00b5m periodic patch",
+      "derived_from": "script",
+      "reference_value": 60.0,
+      "reference_source": "detail scale 6e-05 m assigned to this Holocene epithelial patch",
+      "note": "amplitude std(u) = 0.4371; seed 3214"
+    },
+    {
+      "name": "dispersion-peak versus equilibrated wavelength Pearson r",
+      "value": 0.996549,
+      "unit": "Pearson r",
+      "method": "corr(\u03bb_linear(s), \u03bb_FFT(s)) across diffusivity scales s in {0.35, 0.55, 0.80, 1, 1.4, 2, 3}",
+      "derived_from": "script",
+      "reference_value": 0.98,
+      "reference_source": "goodness-of-fit gate for the Turing wavenumber law",
+      "note": "RMSE = 2.5753 \u00b5m; KS two-sample statistic = 0.1429"
+    },
+    {
+      "name": "wavelength sweep RMSE",
+      "value": 2.5753,
+      "unit": "\u00b5m",
+      "method": "root mean square of \u03bb_FFT \u2212 \u03bb_linear across the diffusivity sweep",
+      "derived_from": "script",
+      "reference_value": 0.0,
+      "reference_source": "zero residual would mean the nonlinear lattice sits on the linear peak",
+      "note": "a nonzero RMSE is the nonlinear shift above onset, not a missing sweep"
+    },
+    {
+      "name": "wavelength sweep KS statistic",
+      "value": 0.1429,
+      "unit": "KS D",
+      "method": "two-sample Kolmogorov-Smirnov statistic between linear and FFT wavelength samples",
+      "derived_from": "script",
+      "reference_value": 0.0,
+      "reference_source": "scipy.stats.ks_2samp"
+    },
+    {
+      "name": "equal-diffusion ablation amplitude",
+      "value": 0.005687,
+      "unit": "std(u)",
+      "method": "same integrator with Du = Dv = DU_UM2; Turing trace gap is negative",
+      "derived_from": "script",
+      "reference_value": 0.0,
+      "reference_source": "Turing 1952: equal diffusivities cannot destabilise a stable Jacobian",
+      "note": "Turing amplitude at ratio 12 is 0.4371"
+    },
+    {
+      "name": "10 \u00b5m predecessor-scale amplitude",
+      "value": 0.0,
+      "unit": "std(u)",
+      "method": "same Du, Dv on a periodic patch of length 10 \u00b5m (below one wavelength)",
+      "derived_from": "script",
+      "reference_value": 0.4371,
+      "reference_source": "scale ladder at 0 Ma: the reference is the 480 \u00b5m Turing amplitude, not a copy of the quenched value",
+      "note": "chronoseries is 1/1, so the predecessor is a scale, not an older species"
+    },
+    {
+      "name": "specimen USNM E39365 foreground fraction",
+      "value": 0.3574,
+      "unit": "area fraction",
+      "method": "pixels with luminance > 0.18 on the CC0 plate, opened and hole-filled",
+      "derived_from": "specimen_image",
+      "reference_value": 0.7,
+      "reference_source": "USNM E39365 aboral photographs; black museum ground, three tests",
+      "note": "reference 0.70 is a single-test fill prior; the plate holds three tests, so the fraction is lower"
+    },
+    {
+      "name": "specimen union-mask circularity",
+      "value": 0.066,
+      "unit": "4\u03c0A/P\u00b2",
+      "method": "circularity of the union of all bright tests, not of one individual",
+      "derived_from": "specimen_image",
+      "reference_value": 1.0,
+      "reference_source": "a single disc would be near 1; three separate tests on one plate are not",
+      "note": "bounding aspect ratio width/height = 1.4134"
+    },
+    {
+      "name": "specimen structure-tensor coherency",
+      "value": 0.4035,
+      "unit": "coherency",
+      "method": "mean (\u03bb1\u2212\u03bb2)/(\u03bb1+\u03bb2) of the Sobel structure tensor inside the foreground",
+      "derived_from": "specimen_image",
+      "reference_value": 0.25,
+      "reference_source": "spine canopy is locally oriented, so coherency exceeds an isotropic noise prior of 0.25"
+    },
+    {
+      "name": "ocellus nearest-neighbour spacing",
+      "value": 49.2079,
+      "unit": "\u00b5m",
+      "method": "periodic nearest-neighbour distance of activator peaks above mean + 0.45 std",
+      "derived_from": "script",
+      "reference_value": 60.0,
+      "reference_source": "FFT wavelength is the row period; nearest neighbours of a spot lattice need not equal it",
+      "note": "spacing CV = 0.3298; n_peaks = 71; one-period peak window"
+    },
+    {
+      "name": "ocellus spacing KS against FFT wavelength",
+      "value": 0.4151,
+      "unit": "KS D",
+      "method": "one-sample KS of nearest-neighbour spacings against Normal(\u03bb_FFT, s)",
+      "derived_from": "script",
+      "reference_value": 0.0,
+      "reference_source": "the FFT wavelength is the null centre; D = 0 would mean the spacings are that normal",
+      "note": "\u03bb_FFT = 60.3365 \u00b5m; spacing std = 16.2276 \u00b5m"
+    },
+    {
+      "name": "ocellus spacing coefficient of variation",
+      "value": 0.3298,
+      "unit": "CV",
+      "method": "std(nearest neighbour) / mean(nearest neighbour) on the periodic patch",
+      "derived_from": "script",
+      "reference_value": 0.0,
+      "reference_source": "a perfectly regular lattice would have CV 0"
+    },
+    {
+      "name": "specimen per-disc circularity",
+      "value": 0.7297,
+      "unit": "4\u03c0A/P\u00b2",
+      "method": "mean circularity of connected components after a 15 px closing of the spine fringe; components under 5000 px dropped",
+      "derived_from": "specimen_image",
+      "reference_value": 0.066,
+      "reference_source": "USNM E39365; the reference is the union-mask circularity, which mixes three tests",
+      "note": "n_discs = 3; per-disc values = [0.7339601983168107, 0.725236017359256, 0.7299939326858665]"
+    },
+    {
+      "name": "specimen per-disc aspect ratio",
+      "value": 0.9939,
+      "unit": "width/height",
+      "method": "mean bounding-box aspect of the same closed components",
+      "derived_from": "specimen_image",
+      "reference_value": 1.4134,
+      "reference_source": "USNM E39365; the reference is the union bounding box, which is wider than one test",
+      "note": "per-disc aspects = [1.0348101265822784, 0.9979959919839679, 0.948780487804878]"
+    }
+  ]
+}
