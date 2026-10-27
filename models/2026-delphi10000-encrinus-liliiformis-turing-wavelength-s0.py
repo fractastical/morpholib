@@ -506,18 +506,29 @@ def compute_specimen_cv_signature_array(rgb_u8: np.ndarray) -> dict:
     }
 
 
+def _plain_number(value):
+    """Python float/int that YAML can dump. Keep sub-micron SI values intact."""
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    if isinstance(value, (np.integer,)):
+        return int(value)
+    if isinstance(value, int) and not isinstance(value, bool):
+        return int(value)
+    if isinstance(value, (float, np.floating)):
+        return float(f"{float(value):.8g}")
+    return value
+
+
 def measurement(name, value, unit, method, reference=None, source=None, note=None):
     rec = {
         "name": name,
-        "value": float(value) if isinstance(value, (float, np.floating, int)) and not isinstance(value, bool) else value,
+        "value": _plain_number(value),
         "unit": unit,
         "method": method,
         "derived_from": "script",
     }
-    if isinstance(rec["value"], float):
-        rec["value"] = float(round(rec["value"], 6))
     if reference is not None:
-        rec["reference_value"] = reference
+        rec["reference_value"] = _plain_number(reference)
     if source:
         rec["reference_source"] = source
     if note:
