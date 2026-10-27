@@ -11,6 +11,11 @@ on:
         required: false
         default: "1-100"
         type: string
+      force:
+        description: "Re-dispatch agents that already have a dispatch record (stragglers)"
+        required: false
+        default: false
+        type: boolean
       dry_run:
         description: "Preview only, do not call the Cursor API"
         required: false
@@ -48,6 +53,7 @@ jobs:
         run: |
           ARGS=("dispatch" "--agents" "${{ inputs.agents }}" "--repo" "${{ github.repository }}")
           if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS+=("--dry-run"); fi
+          if [ "${{ inputs.force }}" = "true" ]; then ARGS+=("--force"); fi
           python3 morphoeval/problem_scout_100.py "${ARGS[@]}"
       - name: Commit dispatch records
         if: ${{ always() && inputs.dry_run != true }}
