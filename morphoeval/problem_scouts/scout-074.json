@@ -1,0 +1,280 @@
+{
+  "scout": "scout-074",
+  "ground": "library",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "id": "LIB-074-01",
+      "title": "Slots #0101–#1100: indexed model entrypoints absent while datasets and SHA pins exist",
+      "gap": "morphoeval/runs/aristotelian_categories_index.json names 1,000 unique Python scripts for expansion slots #0101–#1100 (e.g. 1998-turing-mus-musculus-turing-wavelength.py), but none of those paths exist under the repo root or models/; the companion datasets/*/ directories and *reference.json files are present and SHA-pinned.",
+      "done": "A machine report lists 0/1000 index script paths missing after either (a) vendoring the generator output into the tree, or (b) documenting an intentional index-only state; if (a), running `python3 <script> --self-test` exits 0 for all 1,000 scripts in one batch log with no failures.",
+      "tool_route": "python3 morphoeval/run_overnight_1000_loops.py --start 101 --end 1100 --workers 8 (materialize scripts from existing datasets); then a batch loop over morphoeval/runs/aristotelian_categories_index.json entries with 100 < slot <= 1100: python3 <script> --self-test",
+      "deciding_data": "In repo: morphoeval/runs/aristotelian_categories_index.json, datasets/* for all 1,000 expansion slots (e.g. datasets/mus_musculus_turing_wavelength/), morphoeval/run_overnight_1000_loops.py template that emits the missing scripts.",
+      "prior_attempts": "morphoeval/run_overnight_1000_loops.py documents the #0101–#1100 expansion engine; morphoeval/verify_image_fitness.py counts 1,000 audit_tier=expansion_template models (morphoeval/runs/image_fitness_and_provenance.json) but does not check script filesystem presence. No open-problems.json entry records this drift as closed.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "run_overnight_1000_loops.py plus per-script --self-test is the named materialization and verification path for expansion slots."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All 1,000 dataset folders and reference JSONs are already vendored; only the Python entrypoints are missing."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Missing-script count and batch self-test exit codes are objectively scorable without judgment."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Regenerating and self-testing 1,000 scripts is hours of CPU but needs no wet lab; requires matplotlib/numpy stack from requirements.txt."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Verdict can live in a new morphoeval/runs/*.json report without editing tracked index files."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Full 1,000-script batch exceeds one sitting; a 20-slot stratified sample can give a first verdict faster."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No audit or open-problems record refutes regenerating expansion scripts from pinned datasets."
+        }
+      }
+    },
+    {
+      "id": "LIB-074-02",
+      "title": "Expansion-slot --self-test validates JSON correlation only, not biophysical simulation",
+      "gap": "Generated expansion scripts (morphoeval/run_overnight_1000_loops.py template) implement run_model() by reading empirical_series.y_empirical and y_simulated from the reference JSON and asserting pearson_r > 0.98; they do not integrate a PDE, ODE, or agent model, so parameter ablation in reference JSON cannot fail the self-test.",
+      "done": "Static scan of all 1,000 expansion scripts reports 1,000/1,000 with zero calls to scipy.integrate/odeint/Gray-Scott-style solvers in run_model; ablation test on slot #0101 temporarily sets parameters.alpha_scale to 0 in datasets/mus_musculus_turing_wavelength/mus_musculus_turing_wavelength_reference.json and confirms --self-test still exits 0 while pearson_r unchanged (proving decoupling).",
+      "tool_route": "Ripgrep/AST sweep over materialized expansion scripts; python3 1998-turing-mus-musculus-turing-wavelength.py --self-test before/after controlled reference JSON perturbation (restore SHA afterward).",
+      "deciding_data": "In repo: datasets/mus_musculus_turing_wavelength/mus_musculus_turing_wavelength_reference.json (precomputed y_empirical/y_simulated), morphoeval/run_overnight_1000_loops.py lines ~760–778 (template run_model).",
+      "prior_attempts": "morphoeval/verify_image_fitness.py labels slots #0101–#1100 expansion_template and suppresses image fitness (tier_counts.expansion_template=1000); OP-06 flagged growing-domain Turing debt for flagship models, not expansion stubs. Vision lens (verify_image_fitness) detects unfitted templates; simulation lens detects missing dynamics.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "--self-test plus reference ablation directly demonstrates whether any simulation runs."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Reference JSON and generator template are vendored; no external fetch required."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Counts of forbidden integrator symbols and unchanged pearson_r under parameter ablation are checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Ablation on one slot is seconds; full 1,000-script grep is minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Analysis outputs only; ablation uses a temp copy or restored hash-locked file."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single-slot ablation plus template read gives a decisive negative in one loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Documented as expansion_template behavior, not previously refuted as a bug."
+        }
+      }
+    },
+    {
+      "id": "LIB-074-03",
+      "title": "Wolfram Planform multiway --self-test passes with live hg_evolve verification skipped",
+      "gap": "models/2026-wolfram-planform-multiway-rewriting.py Test 4 (live C++20 hg_evolve recomputation of 38 canonical hashes, Tier-1/B3 state counts) runs only when resolve_hg_evolve_binary() succeeds; otherwise live_hg_evolve_verified stays false but --self-test still prints [PASS] and exits 0.",
+      "done": "In an environment where hg_evolve is built or downloaded via --download, --self-test must finish with live_hg_evolve_verified=true; in CI without the binary, exit code must be non-zero OR a new flag --require-live-hg must fail closed when live_hg_evolve_verified=false.",
+      "tool_route": "python3 models/2026-wolfram-planform-multiway-rewriting.py --self-test --download (after pip install -r requirements.txt); inspect returned live_hg_evolve_verified and Tier-1 assert tier1_states==2738.",
+      "deciding_data": "In repo: datasets/planform_multiway/planform_multiway_reference.json (EXPECTED_REF_SHA256 pinned in script), datasets/planform/planform_bioelectric_series_v1.json (EXPECTED_BIO_SERIES_SHA256), WolframInstitute/HypergraphRewritingEngine v1.0.0-rc2 paclet URL in script.",
+      "prior_attempts": "Fable audit remediation added Tests 1–4 and SHA pins (models/2026-wolfram-planform-multiway-rewriting.py docstring); no recorded CI gate on live_hg_evolve_verified. measure/vision lenses cannot execute hg_evolve.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Named --self-test suite with explicit live_hg_evolve_verified boolean is the deciding instrument."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Fixtures pinned in repo; hg binary is one named download (PACLET_URL) when absent."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Boolean live_hg_evolve_verified plus exit code is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Building or downloading hg_evolve adds setup time but stays on-repo stack."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Fix may require a small script flag change; scout verdict can be a report-only gate proposal."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "First run needs paclet download/build; rerun is one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Optional Test 4 skip is undocumented as acceptable for production claims."
+        }
+      }
+    },
+    {
+      "id": "LIB-074-04",
+      "title": "Planform bioelectric fixture integrity is not coupled to Cervera–Levin–Mafe --self-test",
+      "gap": "models/planform_bioelectric.py --self-test runs validate_fixture(), census expectations, and datasets/planform/damaged/ negatives; models/2021-Cervera–Levin–Mafe.py --self-test checks RD wavefront algebra and CSV bookkeeping but never SHA-checks or validates datasets/planform/planform_bioelectric_series_v1.json, despite morphoeval/kg audits scoring Cervera against PlanformDB-derived frequencies.",
+      "done": "A cross-model report shows: (1) sha256(planform_bioelectric_series_v1.json)==b3fe2ef5… matches models/2026-wolfram-planform-multiway-rewriting.py EXPECTED_BIO_SERIES_SHA256; (2) Cervera held-out fit_rmse_test and fit_r_test from --self-test are recomputed against S1/S2 outcome_table frequencies extracted from the fixture via planform_bioelectric.outcome_table, with max absolute frequency mismatch < 0.01 or documented exclusions (e.g. S4 experiment 434 flags).",
+      "tool_route": "python3 models/planform_bioelectric.py --self-test; python3 models/2021-Cervera–Levin–Mafe.py --self-test; python3 -c inline reconciler importing planform_bioelectric.outcome_table and Cervera CSV outputs.",
+      "deciding_data": "In repo: datasets/planform/planform_bioelectric_series_v1.json, datasets/planform/damaged/manifest.json, docs/LEVIN_LATENT_SPACE_METHODS.md (planform_bioelectric extractor origin).",
+      "prior_attempts": "GPT 5.6 Sol Pass 1/2 Cervera audits (morphoeval/audits/2026-10-17-cervera-audit-v2.yaml) drove planform_bioelectric.py creation; planform self-test passes in cloud VM (2026-10-27). No record that Cervera self-test loads the fixture.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Both models expose --self-test; coupling is decidable by running them and comparing Planform-derived tables."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Fixture and damaged negatives are fully vendored."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "SHA match and numeric frequency deltas are objective; mapping crop rows to Planform records needs a written join key."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Both self-tests complete in minutes with matplotlib installed."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Reconciliation can ship as a new morphoeval/scripts/*.py without touching either model."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Single-pass reconcile after both self-tests run."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Partial overlap checked in wolfram multiway Test 3 (Oviedo fits) but not Cervera RMSE vs full fixture census."
+        }
+      }
+    },
+    {
+      "id": "LIB-074-05",
+      "title": "Planform damaged negative fixtures are not fail-closed across all Planform consumers",
+      "gap": "datasets/planform/damaged/manifest.json defines five single-fault Planform bioelectric JSON files (E_FREQ_SUM, E_NOTICE_MISSING, E_UNKNOWN_MORPHOLOGY, E_SHA_MISMATCH, E_UNKNOWN_MECHANISM_CLASS) intended so any validator accepting them is broken; only models/planform_bioelectric.py --self-test iterates them via validate_fixture().",
+      "done": "Consumer matrix JSON: for each of {planform_bioelectric.py --self-test, models/2026-wolfram-planform-multiway-rewriting.py load path, models/2021-Cervera–Levin–Mafe.py if it loads the series}, all five damaged files must yield a non-zero validation result matching expected_error_code; any consumer that parses damaged JSON without error is flagged FAIL.",
+      "tool_route": "python3 models/planform_bioelectric.py --self-test (baseline PASS on damaged/); python3 -c calling planform_bioelectric.validate_fixture on each datasets/planform/damaged/*.json for other consumers' load functions.",
+      "deciding_data": "In repo: datasets/planform/damaged/manifest.json and five pinned damaged JSON files; planform_bioelectric.validate_fixture implementation.",
+      "prior_attempts": "manifest.json states purpose explicitly (fail-closed self-test for validators); planform_bioelectric self-test ok on all damaged files (2026-10-27 run). Wolfram script SHA-checks clean fixture only.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "validate_fixture and --self-test are the named fail-closed tools; matrix is runnable."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Damaged negatives and manifest are entirely in-repo with pinned sha256 per file."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Per-file expected_error_code match is an exact scorer."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Five files × handful of consumers is seconds."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Matrix output is a new JSON report only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Negative fixtures were added precisely to detect missing validation; not refuted."
+        }
+      }
+    },
+    {
+      "id": "LIB-074-06",
+      "title": "Scout-manifest reference fitness: expansion reference series lack literature anchors for y_empirical",
+      "gap": "datasets/*/scout_manifest.json dossiers record seed_doi and proposed_script for core campaigns, but expansion-slot reference JSON (morphoeval-reference-2.0) stores synthetic empirical_series.y_empirical/y_simulated with pearson_r≈0.999 while omitting any literature_provenance or figure/table pointer; --self-test therefore certifies internal consistency, not reference fitness to the seeded paper.",
+      "done": "For all 1,000 expansion datasets, a report counts references missing a non-empty empirical_series.provenance or external_measurements block citing seed_doi from scout_manifest; done when either (a) count=0 after remediation, or (b) count=1000 and a signed exceptions list maps each slot to generator synthetic=true (hash-locked), verifiable against scout_manifest.scouted_at entries.",
+      "tool_route": "Batch JSON schema scan over datasets/*/*reference.json for slots 101–1100; optional simulation ablation: regenerate y_simulated via run_overnight template parameters and show mismatch if parameters change (LIB-074-02 protocol).",
+      "deciding_data": "In repo: ~1,000 expansion datasets/*/scout_manifest.json and *reference.json; exemplar datasets/bos_taurus_turing_wavelength/scout_manifest.json shows gap_found pattern for honest scouting.",
+      "prior_attempts": "Bos taurus scout_manifest explicitly records gap_found for wrong gallery specimen (datasets/bos_taurus_turing_wavelength/scout_manifest.json); expansion overnight generator fills series algorithmically (run_overnight_1000_loops.py). Literature lens (scout_literature.py) could fetch anchors; simulation lens can only certify synthetics via ablation.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "Simulation --self-test plus parameter ablation proves synthetics; full literature anchor needs scout_literature.py."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "All scout manifests and reference JSONs are local."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Missing-field counts and hash-locked exceptions list are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "JSON scan over 1,000 files is minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Report-only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Batch scan one sitting; ablation spot-check adds minutes."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Expansion synthetics are acknowledged in verify_image_fitness tiering, not refuted as errors."
+        }
+      }
+    },
+    {
+      "id": "LIB-074-07",
+      "title": "Multiscale slots #1101–#2100 self-test vs verify_image_fitness multiscale_verified tier",
+      "gap": "morphoeval/verify_image_fitness.py assigns audit_tier=multiscale_verified to ~2,000 models (slots >1100) using custom GIF CV similarity, while their --self-test scripts (materialized under models/) still follow the JSON-correlation template; no batch run proves self-test pass implies cv_sim_similarity≥58 or passes_image_threshold.",
+      "done": "Stratified sample of 50 multiscale scripts (1101–2100): run --self-test and read morphoeval/runs/aristotelian_categories_index.json image_fitness fields; report fraction where self-test PASS AND (passes_image_threshold=false OR cv_sim_similarity<58); done when fraction is computed and ≤ agreed tolerance (default 0.0 = any mismatch is a finding).",
+      "tool_route": "python3 models/<multiscale-script> --self-test for sampled slots; join on slug/sim_id to morphoeval/runs/aristotelian_categories_index.json enriched fields from morphoeval/verify_image_fitness.py output.",
+      "deciding_data": "In repo: 2,000 multiscale model scripts present (index audit 2026-10-27), morphoeval/runs/image_fitness_and_provenance.json tier_counts.multiscale_verified=2000, morphoeval/upgrade_zebrafish_and_fossil_gifs.py for GIF resolution rules.",
+      "prior_attempts": "run_overnight_scale_zebrafish_paleo_1000.py generated slots #1101–#2100; verify_image_fitness Pass 3 upgrade for multiscale GIF CV. Vision lens owns CV segmentation; simulation lens tests self-test vs tier consistency.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "Batch --self-test is simulation lens; CV thresholds come from verify_image_fitness (vision lens) as join-only data."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Scripts, index, and image_fitness JSON already in repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Mismatch fraction between PASS self-test and image threshold is numeric."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "50-script sample is tens of minutes; full 2,000 is hours."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Report-only join."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "50-slot sample feasible in one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Cross-tier inconsistency not previously scored."
+        }
+      }
+    }
+  ]
+}
