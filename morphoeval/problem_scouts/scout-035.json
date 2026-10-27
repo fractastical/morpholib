@@ -1,0 +1,144 @@
+{
+  "scout": "scout-035",
+  "ground": "turing",
+  "lens": "vision",
+  "candidates": [
+    {
+      "title": "Reconcile dual Pomacanthus imperator canonical specimens (flank crop vs full lateral)",
+      "gap": "The flagship script and SHA-locked `datasets/turing/turing_reference.json` segment `pomacanthus_imperator_stripes_specimen.jpg`, while `morphoeval/verify_image_fitness.py` FOUNDATIONAL_SPECIMENS, the Aristotelian index, and `upgrade_canonical_card_assets.py` score `pomacanthus_imperator_flank_stripes_specimen.jpg`—two different files with no single pinned ROI or hash in the reference JSON.",
+      "done": "Pre-register one canonical path; after re-run, `extract_cv_signature` on that path and on `docs/media/turing_gray_scott.gif` (last frame) agree with `1952-turing-morpho.py --self-test` inter-stripe spacing within 15% relative error on the ROI in `turing_reference.json` metadata (`roi_box_xyxy`), and index `specimen_rel` equals the registered path.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py (refreshes `cv_signature` / `cv_sim_similarity` for slug `turing-gray-scott`); python3 -c \"import sys; sys.path.insert(0,'morphoeval'); from pathlib import Path; from verify_image_fitness import extract_cv_signature, compute_sim_vs_specimen_cv_similarity, resolve_sim_media_path; ...\" comparing both JPGs; python3 models/1952-turing-morpho.py --self-test",
+      "deciding_data": "In repo: `datasets/turing/pomacanthus_imperator_stripes_specimen.jpg`, `datasets/turing/pomacanthus_imperator_flank_stripes_specimen.jpg`, `datasets/turing/turing_reference.json`, `docs/media/turing_gray_scott.gif`.",
+      "prior_attempts": "Pass N+1 flagship audit (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`) fixed GIF provenance and disclosed Y-junction over-count but did not unify specimen paths; `upgrade_canonical_card_assets.py` added the flank crop for card UX only.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "`verify_image_fitness.extract_cv_signature` and `compute_sim_vs_specimen_cv_similarity` run as-is on both pinned JPGs and the flagship GIF." },
+        "data_in_hand": { "score": 20, "why": "Both photographs and the reference ROI box are already vendored under `datasets/turing/`." },
+        "falsifiable_done": { "score": 14, "why": "Done is a hash/path equality check plus numeric spacing and CV feature thresholds, no referee taste." },
+        "compute_in_repo": { "score": 14, "why": "Minutes on CPU: one verify pass plus `--self-test`, no wet lab." },
+        "isolation": { "score": 9, "why": "Closing work can be a new prereg JSON + optional new flank/stripes harmonization note without touching parallel slot files." },
+        "time_to_verdict": { "score": 9, "why": "Single sitting: compare two CV signatures and one self-test log." },
+        "not_blocked": { "score": 5, "why": "No audit refutes harmonizing specimens; only partial disclosure so far." }
+      }
+    },
+    {
+      "title": "Ostracion meleagris spot-lattice CV vs Pearson δ-class Gray–Scott frame",
+      "gap": "Kondo–Asai boxfish spots are SHA-pinned and segmented in `1952-turing-morpho.py`, but MorphoEval image fitness for the flagship compares the whole montage GIF to the angelfish flank crop; there is no hash-locked CV decision that the Pearson class-δ (hex spots/stripes) panel matches the Ostracion specimen `dominant_wavelength_px`, coherency, and foreground fraction.",
+      "done": "Pre-register ROI `metadata.specimens.ostracion_meleagris_spots.roi_box_xyxy`; verdict PASS if last-frame δ-class panel (or isolated Pearson δ render) has `|wavelength_norm_specimen - wavelength_norm_sim| <= 0.12`, `|coherency_specimen - coherency_sim| <= 0.15`, and `cv_sim_similarity >= 70` for spec `datasets/turing/ostracion_meleagris_spots_specimen.jpg` vs that frame.",
+      "tool_route": "python3 -c \"import sys; sys.path.insert(0,'morphoeval'); from pathlib import Path; from verify_image_fitness import extract_cv_signature, compute_sim_vs_specimen_cv_similarity; spec=Path('datasets/turing/ostracion_meleagris_spots_specimen.jpg'); sim=Path('docs/media/turing_gray_scott.gif'); ...\"; python3 models/1952-turing-morpho.py --self-test (spot count gate already present)",
+      "deciding_data": "In repo: `datasets/turing/ostracion_meleagris_spots_specimen.jpg`, `datasets/turing/turing_reference.json` (Pearson class δ parameters), `docs/media/turing_gray_scott.gif`.",
+      "prior_attempts": "Flagship15 audit v1 (`morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml`) scored specimen-match 50/100 for Turing but did not emit a CV δ-panel contract; self-test gates spot count, not GIF panel alignment.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Specimen metrics and sim-vs-spec CV similarity are native to `verify_image_fitness.py`; panel cropping is a deterministic ROI step." },
+        "data_in_hand": { "score": 19, "why": "Specimen, reference JSON, and regenerated PDE GIF are vendored." },
+        "falsifiable_done": { "score": 13, "why": "Thresholds on coherency, wavelength_norm, and cv_sim_similarity are numeric." },
+        "compute_in_repo": { "score": 13, "why": "GIF frame extract + CV only, sub-hour." },
+        "isolation": { "score": 8, "why": "Can close as new prereg + scout measurement JSON without editing the flagship script." },
+        "time_to_verdict": { "score": 8, "why": "One loop once δ panel coordinates are registered." },
+        "not_blocked": { "score": 5, "why": "Not previously refuted; only unmeasured." }
+      }
+    },
+    {
+      "title": "High cv_sim_similarity vs low audit specimen-match on flagship Turing (CV–audit gap)",
+      "gap": "Aristotelian index lists `turing-gray-scott` with `cv_sim_similarity` 82.8 and `passes_image_threshold` true, while Pass N+1 audit specimen-match is 50/100—no registered mapping from CV features to the script’s pixel spacing/CV gates in `--self-test`.",
+      "done": "Pre-register a table linking `cv_signature` fields to `1952-turing-morpho.py --self-test` outputs (`poma_mean_spacing_px`, `poma_spacing_cv`, `ost_n_spots`); PASS if Spearman ρ ≥ 0.85 across ≥3 bootstrap ROI crops on the canonical specimen, or FAIL if ρ < 0.5 (proving CV score is non-substitute for morphometric gates).",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py; python3 models/1952-turing-morpho.py --self-test; read scores from `morphoeval/runs/aristotelian_categories_index.json` slug `turing-gray-scott` and `morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml` entry `turing-gray-scott`.",
+      "deciding_data": "In repo: index JSON, flagship audit YAML, `models/1952-turing-morpho.py` self-test stdout fields.",
+      "prior_attempts": "OP-06 (`docs/open-problems.json`) marked broader flagship structural debt solved after Pass N+1, but did not close this CV-vs-audit interpretability gap; Pass N+1 explicitly removed circular Y-junction and Kondo-r gates.",
+      "factors": {
+        "tool_fit": { "score": 18, "why": "Vision tool supplies `cv_signature`/`cv_sim_similarity`; script supplies independent spacing metrics—correlation is decidable without new code if preregistered." },
+        "data_in_hand": { "score": 18, "why": "All inputs already in repo outputs." },
+        "falsifiable_done": { "score": 12, "why": "Correlation threshold and pass/fail on ρ are objective." },
+        "compute_in_repo": { "score": 14, "why": "Self-test plus index read, minutes." },
+        "isolation": { "score": 9, "why": "Analysis-only new artifacts." },
+        "time_to_verdict": { "score": 8, "why": "One correlation table in one sitting." },
+        "not_blocked": { "score": 4, "why": "Partial prior work disclosed circular metrics but did not test CV–audit linkage." }
+      }
+    },
+    {
+      "title": "Slot #131 danio-rerio-turing-wavelength missing specimen file vs gallery fallback",
+      "gap": "Index points to `datasets/danio_rerio_turing_wavelength/danio_rerio_specimen.jpg`, which is absent; README cites gallery `Danio_rerio.jpg` while verify_image_fitness falls back and reports `cv_sim_similarity` 54.3 (suppressed template tier)—scale tier claims ~1.2 mm organ stripes but the fallback photo is whole-fish lateral.",
+      "done": "After vendoring the Nakamasu/CC-BY-SA specimen already used in `datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg` (SHA `850b2d4a…`) into the slot dataset path, re-run verify: `cv_sim_similarity` for slug `danio-rerio-turing-wavelength` increases by ≥10 points vs baseline 54.3 OR a preregistered FAIL documents that template GIF cannot reach 58 regardless of specimen swap.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py; optional single-slug probe: python3 -c \"import json; from pathlib import Path; e=[x for x in json.loads(Path('morphoeval/runs/aristotelian_categories_index.json').read_text()) if x['slug']=='danio-rerio-turing-wavelength'][0]; ...\" with `extract_cv_signature` / `resolve_sim_media_path`.",
+      "deciding_data": "In repo: `datasets/danio_rerio_turing_wavelength/README.md`, index entry slot 131, shared specimen in `datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg`; public source already named (Wikimedia Danio rerio lab right).",
+      "prior_attempts": "Expansion-template tier assignment in verify_image_fitness; no slot-131 loop closing specimen path mismatch documented in open-problems.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Missing-file fallback and cv_sim scoring are exactly what verify_image_fitness implements." },
+        "data_in_hand": { "score": 17, "why": "Correct specimen bytes exist elsewhere in repo; only path wiring missing." },
+        "falsifiable_done": { "score": 13, "why": "+10 cv_sim points or documented FAIL vs 58 threshold." },
+        "compute_in_repo": { "score": 13, "why": "Copy + verify run, no new infrastructure." },
+        "isolation": { "score": 7, "why": "Fix touches slot-131 dataset files (unique to that slug) plus optional new prereg." },
+        "time_to_verdict": { "score": 9, "why": "One verify pass after file vendoring." },
+        "not_blocked": { "score": 5, "why": "Route not refuted." }
+      }
+    },
+    {
+      "title": "Expansion-template Turing cohort triage by specimen coherency vs cv_sim suppression",
+      "gap": "~200+ slots in efficient cause `1. Chemical Turing / RD` carry `audit_tier=expansion_template` with `cv_sim_similarity` <58 (e.g. mus-musculus 52.1, xenopus-tropicalis 53.8, danio-rerio 54.3)—no ranked queue of which specimens already show stripe/spot coherency worthy of real PDE refit vs hopeless gallery mismatches.",
+      "done": "Emit a hash-locked CSV sorted by `cv_signature.coherency` descending among slugs with `cv_sim_similarity`<58; top-10 must each have coherency ≥0.55 and foreground_fraction ≥0.25 on the held specimen; bottom-10 document coherency <0.25 as vision-closed 'do not refit' without wet lab.",
+      "tool_route": "python3 morphoeval/verify_image_fitness.py; python3 -c \"import json; from pathlib import Path; entries=[e for e in json.loads(Path('morphoeval/runs/aristotelian_categories_index.json').read_text()) if e.get('efficient_cause')=='1. Chemical Turing / RD' and e.get('cv_sim_similarity',100)<58]; ...\"",
+      "deciding_data": "In repo: `morphoeval/runs/aristotelian_categories_index.json` (311 Turing/RD rows), per-slot `datasets/*_turing_wavelength/*specimen*.jpg` where present.",
+      "prior_attempts": "100-loop expansion stubs (#0101–#1100) documented in verify_image_fitness header; no vision-sorted triage list in open-problems.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Batch `extract_cv_signature` on index specimen paths is the tool’s core loop." },
+        "data_in_hand": { "score": 16, "why": "Index + most specimen JPGs in repo; some slots lack pinned photos (flagged by fallback)." },
+        "falsifiable_done": { "score": 12, "why": "Sorted lists with fixed coherency/foreground cutoffs." },
+        "compute_in_repo": { "score": 11, "why": "O(300) CV extractions, ~1 hour CPU." },
+        "isolation": { "score": 10, "why": "Read-only triage CSV is a new file only." },
+        "time_to_verdict": { "score": 7, "why": "First ranking in one batch run; refit decisions are follow-ups." },
+        "not_blocked": { "score": 5, "why": "No prior refutation of triage-by-coherency." }
+      }
+    },
+    {
+      "title": "Pomacanthus semicirculatus stripe-insertion specimen vs imperator flagship CV baseline",
+      "gap": "Slot 004 (`pomacanthus-stripe-insertion`) uses juvenile *P. semicirculatus* concentric arcs (`datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg`) while the Turing flagship uses adult *P. imperator* stripes; cv_sim 71.7 vs 82.8 with no cross-species CV report stating whether coherency/wavelength differences are biologically expected or indicate inconsistent segmentation pipelines.",
+      "done": "Pre-register both specimens; PASS if `|coherency_semicirculatus - coherency_imperator| >= 0.08` AND each specimen’s `wavelength_norm` matches its own script `--self-test` spacing within 20% (independent of cross-species simulation GIFs); FAIL if CV signatures are identical within floating-point tolerance (indicating accidental duplicate segmentation).",
+      "tool_route": "python3 -c \"import sys; sys.path.insert(0,'morphoeval'); from verify_image_fitness import extract_cv_signature; ...\" on both JPGs; python3 models/1995-kondo-pomacanthus-stripe-insertion.py --self-test; python3 models/1952-turing-morpho.py --self-test",
+      "deciding_data": "In repo: both dataset directories, Loop 004 reference JSON with arc-spacing metadata, flagship turing package.",
+      "prior_attempts": "Loop 004 Pass 3 added curvilinear arc fit (`datasets/pomacanthus_stripe_insertion/README.md`); no cross-flagship CV comparison.",
+      "factors": {
+        "tool_fit": { "score": 19, "why": "Specimen-only CV signatures decidable without sim GIF alignment." },
+        "data_in_hand": { "score": 20, "why": "Both photographs SHA-pinned in repo." },
+        "falsifiable_done": { "score": 11, "why": "Numeric coherency delta and duplicate-detection tolerance." },
+        "compute_in_repo": { "score": 14, "why": "Two CV extracts + two self-tests." },
+        "isolation": { "score": 9, "why": "Report-only new JSON." },
+        "time_to_verdict": { "score": 8, "why": "Single comparison sitting." },
+        "not_blocked": { "score": 5, "why": "Not attempted." }
+      }
+    },
+    {
+      "title": "OP-06 2D growing-domain Turing stripe insertion (not vision-decidable)",
+      "gap": "Pass N+1 still lists a real 2D growing-domain L(t) stripe-insertion solver as open (`morphoeval/runs/2026-10-26-flagship15-loop-passN.md`); flagship audit `does_not_claim` 2D growing domain; `1952-turing-morpho.py` uses independent 1D stages and calibration-consistency Kondo r, not spatially coupled 2D insertion on fish ROI.",
+      "done": "N/A for vision lens—would require numerical PDE acceptance tests (stripe count vs L(t) from Kondo stages in `turing_reference.json`) on simulation fields, not photograph segmentation alone.",
+      "tool_route": "morphoeval/verify_image_fitness.py cannot decide; use `python3 models/1952-turing-morpho.py --self-test` plus a future 2D solver scout; compare to `models/1995-kondo-pomacanthus-stripe-insertion.py` growing-domain integrator as engineering reference.",
+      "deciding_data": "In repo: audit transfer_boundary text, Kondo stage table in `datasets/turing/turing_reference.json`; literature Kondo & Asai 1995 doi:10.1038/376765a0.",
+      "prior_attempts": "OP-06 in `docs/open-problems.json` marked solved for honest re-score disclosure but Pass N+1 'Still open' section keeps 2D growing-domain solver; Pass N+1 removed counterfeit GIF and circular Y-junction gate without adding 2D PDE.",
+      "factors": {
+        "tool_fit": { "score": 2, "why": "Specimen CV cannot validate time-varying 2D simulation fields without sim frames tied to L(t)." },
+        "data_in_hand": { "score": 12, "why": "Stage tables and 1D references in repo; 2D ground-truth fish ontogeny series not vendored as aligned photo timecourse." },
+        "falsifiable_done": { "score": 10, "why": "PDE-side done is clear (stripe count vs L), but not reachable by this lens." },
+        "compute_in_repo": { "score": 5, "why": "2D growing-domain integration is hours–days of numerical work, not CV." },
+        "isolation": { "score": 6, "why": "New solver files possible, but not vision-scout closure." },
+        "time_to_verdict": { "score": 2, "why": "Exceeds one sitting for this lens." },
+        "not_blocked": { "score": 3, "why": "Engineering route open, but not via specimen CV." }
+      },
+      "lens_redirect": "numerical-PDE / morphoeval audit scorer with simulation self-tests"
+    },
+    {
+      "title": "Holstein cow coat: independent verify_image_fitness pass vs published morphometric negative (OP-11 boundary)",
+      "gap": "OP-11 documents a tested-negative Turing coat claim with custom coat-mask morphometry (Pass 8–9); `verify_image_fitness` has not scored `models/1981-murray-bos-taurus-turing-wavelength.py` animation/comparison PNG against `datasets/bos_taurus_turing_wavelength/bos_taurus_specimen.jpg` under the same CV contract as other Turing slots.",
+      "done": "Pre-register: on held-out specimen 01 JPG, `cv_sim_similarity` between specimen and `bos_taurus_turing_wavelength_comparison.png` (or full animation last frame) is reported; PASS if cv_sim ≤45 (consistent with few large patches vs fine Turing texture) OR cv_sim ≥70 would force FAIL of the negative-visual-consistency hypothesis and trigger audit R11-style re-review.",
+      "tool_route": "python3 -c \"import sys; sys.path.insert(0,'morphoeval'); from pathlib import Path; from verify_image_fitness import extract_cv_signature, compute_sim_vs_specimen_cv_similarity; spec=Path('datasets/bos_taurus_turing_wavelength/bos_taurus_specimen.jpg'); sim=Path('datasets/bos_taurus_turing_wavelength/bos_taurus_turing_wavelength_comparison.png'); ...\" (generate PNG via `python3 models/1981-murray-bos-taurus-turing-wavelength.py --no-show` if missing).",
+      "deciding_data": "In repo: `datasets/bos_taurus_turing_wavelength/` specimens + README verdict; audits v7; `docs/open-problems.json` OP-11.",
+      "prior_attempts": "OP-11 status refuted for Murray Turing mechanism and growing-RD vs Eden at p=0.91; Fable blind audits 54.4/57.7 predate Pass 8 scale-matched pipeline—does NOT refute an independent CV re-score route.",
+      "factors": {
+        "tool_fit": { "score": 17, "why": "Coat patch scale mismatch should appear in coherency/wavelength_norm/cv_sim even if mechanism is already negative." },
+        "data_in_hand": { "score": 18, "why": "Ten pinned Holstein specimens and comparison artifacts in dataset README." },
+        "falsifiable_done": { "score": 12, "why": "Preregistered cv_sim thresholds interpret visual consistency with negative morphometry." },
+        "compute_in_repo": { "score": 12, "why": "Script render + one CV call per specimen, under an hour." },
+        "isolation": { "score": 8, "why": "New prereg + measurement JSON; script outputs gitignored/regenerable." },
+        "time_to_verdict": { "score": 7, "why": "One specimen in one sitting; full n=10 optional extension." },
+        "not_blocked": { "score": 4, "why": "Mechanism refuted but CV independent check not done; avoid re-proposing Turing-positive mechanism claims." }
+      }
+    }
+  ]
+}
