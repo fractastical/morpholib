@@ -1,0 +1,71 @@
+sim_id: delphi10000-ammonia-beccarii-turing-wavelength-s0
+slot: 3108
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 3.137e-05
+log10_size_m: -4.503
+size_human: "31 µm"
+scale_tier: 4_cellular_10um
+detail_variant: true
+anatomical_structure: "Turing wavelength on the Ammonia beccarii test face (31 µm detail scale, Holocene extant)"
+geological_age_ma: 0.0
+geological_period: "Holocene (Extant)"
+fossil_lineage_group: "Ammonia chronoseries 1/1"
+chronoseries_index: 1
+chronoseries_length: 1
+predecessor_chronospecies: null
+successor_chronospecies: null
+model_spec:
+  model: "Schnakenberg (1979) kinetics with Turing (1952) critical wavenumber, γ set so λ_c = 31.37 µm"
+  a: 0.12
+  b: 0.88
+  Du_um2_per_tau: 1.0
+  Dv_um2_per_tau: 10.4
+  lambda_c_um: 31.37
+  phenomenon_size_m: 3.137e-05
+  domain_um: 600.0
+  grid_resolution: [160, 160]
+  steps: 7000
+  seed: 3108
+  geological_age_ma: 0.0
+  inputs:
+    - datasets/ammonia_beccarii_turing_wavelength_s0/ammonia_beccarii_turing_wavelength_s0_reference.json
+    - datasets/ammonia_beccarii_turing_wavelength_s0/Ammonia_beccarii_Hillewaert_2012.jpg
+    - datasets/ammonia_beccarii_turing_wavelength_s0/scout_manifest.json
+    - datasets/ammonia_beccarii_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Turing dispersion margin at the 31.37 µm operating point
+    formula: "(Dv f_u + Du g_v)^2 > 4 Du Dv det(J), cleared as 744769*5 > 208*15625"
+    lean_decl: MathOfBiology.Loop_3108.law1_turing_margin
+    lean_theorem: MathOfBiology.Loop_3108.law1_detail_band_is_unstable
+    lean_locus: morphoeval/lean/loops/Loop_3108_ammonia_beccarii_turing_wavelength_s0.lean#L14-L20
+    variables: "Du=1, Dv=10.4, fu=0.76, gv=-1, det=1 at a=0.12, b=0.88"
+    role: "Shows the Holocene 31 µm detail band is linearly unstable"
+    source_citation: "Turing 1952 doi:10.1098/rstb.1952.0012; Schnakenberg 1979 doi:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py#L130-L157
+  - law_name: Critical wavelength count across the caption test
+    formula: "N = floor(D / λ_c) = floor(600000 nm / 31370 nm) = 19"
+    lean_decl: MathOfBiology.Loop_3108.law2_wavelength_count
+    lean_theorem: MathOfBiology.Loop_3108.law2_nineteen_wavelengths_across_the_test
+    lean_locus: morphoeval/lean/loops/Loop_3108_ammonia_beccarii_turing_wavelength_s0.lean#L22-L28
+    variables: "D = 600 µm (Hillewaert caption), λ_c = 31.37 µm"
+    role: "Nineteen selected wavelengths across one adult test; not one test-scale patch"
+    source_citation: "Hillewaert 2012 Wikimedia File:Ammonia_beccarii.jpg"
+    code_locus: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py#L100-L115
+  - law_name: Pore, detail, and test modes are strictly ordered
+    formula: "0.564 µm < 31.37 µm < 600 µm"
+    lean_decl: MathOfBiology.Loop_3108.law3_scale_gap
+    lean_theorem: MathOfBiology.Loop_3108.law3_pore_detail_test_ordering
+    lean_locus: morphoeval/lean/loops/Loop_3108_ammonia_beccarii_turing_wavelength_s0.lean#L30-L36
+    variables: "pore diameter from Subba & Ghosh 2023; this slot; Hillewaert diameter"
+    role: "What changes at 0 Ma versus the finer pore mode and the coarser whole-test mode, with no other chronospecies in the 1/1 series"
+    source_citation: "Subba & Ghosh 2023 doi:10.2113/gsjfr.53.2.177"
+    code_locus: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py#L548-L560
+  - law_name: Holocene terminal of a one-point chronoseries
+    formula: "(length - index) + age_Ma = (1 - 1) + 0 = 0"
+    lean_decl: MathOfBiology.Loop_3108.law4_terminal
+    lean_theorem: MathOfBiology.Loop_3108.law4_holocene_terminal_extant
+    lean_locus: morphoeval/lean/loops/Loop_3108_ammonia_beccarii_turing_wavelength_s0.lean#L38-L44
+    variables: "index=1, length=1, age=0 Ma"
+    role: "No predecessor chronospecies and no successor chronospecies"
+    source_citation: "Slot 3108 chronoseries assignment"
+    code_locus: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py#L69-L76

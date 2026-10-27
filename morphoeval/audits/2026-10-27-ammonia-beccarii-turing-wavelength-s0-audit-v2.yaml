@@ -1,0 +1,206 @@
+# MorphoEval audit — Ammonia beccarii, 31 µm Turing wavelength, Holocene 0 Ma.
+# Pass 2. Supersedes the pass-1 audit. Same assessor (grok-4.7).
+# R1 and R2 from pass 1 are closed here. R3 and R4 stay open.
+
+audit:
+  id: 2026-10-27-ammonia-beccarii-turing-wavelength-s0-audit-v2
+  supersedes: 2026-10-27-ammonia-beccarii-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-ammonia-beccarii-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent pass; no second provider)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a46634a7d52b65a84c884100329f1df74d7ae443
+    note: "Pass-2 script adds the rim-excluded diameter and the 96/128/160 grid comparison."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  hayward2004:
+    title: "Morphological distinction of molecular types in Ammonia"
+    authors: "Hayward BW, Holzmann M, Grenfell HR, Pawlowski J, Triggs CM"
+    venue: "Marine Micropaleontology 50:237-271 (2004)"
+    doi: 10.1016/S0377-8398(03)00074-4
+  schoenfeld2021:
+    title: "Biometry and taxonomy of Adriatic Ammonia species from Bellaria–Igea Marina"
+    authors: "Schönfeld J, Beccari V, Schmidt S, Spezzaferri S"
+    venue: "Journal of Micropalaeontology 40:195-236 (2021)"
+    doi: 10.5194/jm-40-195-2021
+  petersen2016:
+    title: "Improved methodology for measuring pore patterns in the benthic foraminiferal genus Ammonia"
+    authors: "Petersen J, Riedel B, Barras C, Pays O, Jorissen FJ and others"
+    venue: "Marine Micropaleontology 128:1-13 (2016)"
+    doi: 10.1016/j.marmicro.2016.08.001
+  subba2023:
+    title: "Quantitative surface morphology of Ammonia cf. beccarii and Ammonia parkinsoniana by AFM"
+    authors: "Subba R, Ghosh A"
+    venue: "Journal of Foraminiferal Research 53:177-186 (2023)"
+    doi: 10.2113/gsjfr.53.2.177
+  hillewaert2012:
+    title: "Ammonia beccarii (Linnaeus, 1758), six tests, Belgian North Sea"
+    authors: "Hillewaert H"
+    venue: "Wikimedia Commons, CC BY-SA 4.0 (2012)"
+    url: https://commons.wikimedia.org/wiki/File:Ammonia_beccarii.jpg
+
+simulations:
+  - id: delphi10000-ammonia-beccarii-turing-wavelength-s0
+    name: "Ammonia beccarii Turing wavelength at 31 µm, Holocene 0 Ma"
+    organism: "Ammonia beccarii (benthic foraminifer)"
+    script: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py
+    output: docs/media/ammonia_beccarii_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/ammonia_beccarii_turing_wavelength_s0_growth.gif
+      - datasets/ammonia_beccarii_turing_wavelength_s0/ammonia_beccarii_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-ammonia-beccarii-turing-wavelength-s0-audit
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - hayward2004
+      - schoenfeld2021
+      - petersen2016
+      - subba2023
+      - hillewaert2012
+    summary: >-
+      Pass 2 of the 31.37 µm (3.137e-05 m) Schnakenberg wavelength on a
+      Holocene (0 Ma) Ammonia beccarii test face. Closes pass-1 R1 and R2.
+      The 500 µm bar is 127 px on the 720-wide plate (3.937 µm/px). The
+      gray>0.08 bounding boxes average 769.7 µm and the gray>0.32 cores
+      average 761.8 µm, so the rim is not the discrepancy: these six tests
+      are larger than the caption's rounded ~600 µm. FFT wavelengths are
+      31.18 µm (96²), 32.46 µm (128²), and 32.88 µm (160²), all within 5%
+      of λ_c and not forced to equal it. Dispersion monodromy r = 0.9999997.
+      γ sweep r = 0.995. GIF 12 frames at 720×540, CV similarity 92.2.
+      Chronoseries 1/1 still has no predecessor and no successor.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and critical wavenumber"
+        - "Schnakenberg 1979 kinetics"
+        - "Hillewaert 2012 caption diameter ~600 µm, drawn 500 µm scale bar, CC BY-SA 4.0 plate"
+        - "Subba & Ghosh 2023 pore diameter 0.564 µm and pore density 0.155 µm⁻² for Ammonia cf. beccarii"
+        - "Petersen et al. 2016 pore frame of 562 µm²"
+        - "Hayward et al. 2004 and Schönfeld et al. 2021 limits on the name A. beccarii"
+      reconstructed_in_script:
+        - "γ chosen so linear λ_c = 31.37 µm"
+        - "Dv = 10.4 µm²/τ narrow band"
+        - "Nonlinear field, γ sweep, equal-diffusion control, γ = 0 ablation"
+        - "Two masks on the plate (gray>0.08 and gray>0.32) and FFT wavelengths on 96², 128², and 160² grids"
+      transfer_boundary:
+        - "Pigment-stripe / ocellus cohort language is transferred onto calcite pustule spacing"
+        - "AFM pore numbers are Ammonia cf. beccarii, not the photographed North Sea individuals"
+        - "31.37 µm is the Delphi detail-scale assignment, not a spacing tabulated for this species"
+      does_not_claim:
+        - "That Ammonia beccarii has pigment ocelli"
+        - "That 31.37 µm equals the pore diameter"
+        - "That the caption's ~600 µm equals the bar-calibrated size of these six tests"
+        - "That a predecessor or successor chronospecies exists in this 1/1 series"
+        - "That the species-gallery Caryophyllia file is Ammonia"
+        - "That a second assessor or a Lean kernel check was performed"
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Unchanged from pass 1. The Schnakenberg Jacobian, Turing inequality,
+          k_c, and λ_c = 31.37 µm are implemented directly. Linearised Fourier
+          monodromy matches σ(k) at r = 0.9999997. Equal diffusion gives
+          σ(k_c) = −0.055. The kinetics are not a published foraminiferal
+          calcification model. Lean theorems remain source-level only.
+        evidence:
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [1, 36], note: "PDE, k_c, 31.37 µm, Holocene chronoseries 1/1", supports: true}
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [130, 210], note: "σ(k²), unstable band, and monodromy check", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3108_ammonia_beccarii_turing_wavelength_s0.lean, lines: [14, 44], note: "four theorems, 0 sorry; Lean 4 is not installed so they were not kernel-checked", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          Same render as pass 1. The last GIF frame is the Hillewaert plate
+          with the activator grown inside the six tests. CV similarity against
+          the photograph is 92.2 at 12 frames and 720×540. The spot lattice is
+          the model. Pores at 0.564 µm are not resolved on this plate, so the
+          match is the shell geometry plus a wavelength-scale texture, not a
+          pore-by-pore copy.
+        evidence:
+          - {file: docs/media/ammonia_beccarii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate, patterned plate, one 600 µm face, dispersion curve", supports: true}
+          - {file: docs/media/ammonia_beccarii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720×540", supports: true}
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [450, 470], note: "render_gif modulates only the segmented tests", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          Unchanged mechanism, re-run on the pass-2 script. γ factors 0.70–1.80
+          move measured FFT wavelengths from 38.7 to 23.0 µm against predictions
+          37.5 to 23.4 µm (r = 0.995, RMSE 0.94 µm). Equal diffusion and γ = 0
+          both kill the pattern. a and b stay fixed.
+        evidence:
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [282, 327], note: "wavelength_sweep and ablation_controls", supports: true}
+          - {file: datasets/ammonia_beccarii_turing_wavelength_s0/ammonia_beccarii_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "sweep arrays and controls", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Closes R1 and R2. Halo bounding boxes average 769.7 µm (CV 0.08 on
+          the six values) and rim-excluded cores average 761.8 µm, against the
+          caption reference 600 µm: the two masks agree with each other and
+          both disagree with the rounded caption, using the plate's own 500 µm
+          bar (127 px). Grid FFT peaks are 31.18, 32.46, and 32.88 µm on
+          96², 128², and 160², reference 31.37 µm, spread 1.7 µm. Dispersion
+          r = 0.9999997. Sweep r = 0.995, RMSE 0.94 µm. Spot-spacing CV 0.14,
+          KS distance 0.27 versus Normal(31.37 µm). None of these measured
+          values is copied onto its reference.
+        evidence:
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [329, 421], note: "segment_specimen halo bbox and gray>0.32 core", supports: true}
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [604, 610], note: "96/128/160 FFT wavelengths at the operating γ", supports: true}
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [659, 800], note: "measure_morphoeval rows with value != reference", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Unchanged sources. Crossref-resolved DOIs for Turing, Schnakenberg,
+          Hayward, Schönfeld, Petersen, and Subba & Ghosh. Specimen SHA-256
+          pinned and checked at runtime. The gallery Caryophyllia file was
+          rejected. AFM pores remain Ammonia cf. beccarii, not these six tests.
+        evidence:
+          - {file: datasets/ammonia_beccarii_turing_wavelength_s0/paper_citations.bib, lines: [1, 84], note: "bibliographic records", supports: true}
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [53, 91], note: "EXPECTED_SHA256 and verify_sha256", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          The new rim-excluded diameter and the three-grid FFT block sit next
+          to the segmentation and the production run they modify. Equation
+          functions are unchanged. The Lean file still encodes the margin,
+          the 19-wavelength count, the pore/detail/test order, and the
+          Holocene terminal.
+        evidence:
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [375, 390], note: "halo bbox and gray>0.32 core in the same loop", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-ammonia-beccarii-turing-wavelength-s0.yaml, lines: [1, 71], note: "four laws with Lean and code loci", supports: true}
+      repro-package:
+        value: 87
+        rationale: >-
+          --self-test passes on the pass-2 script and now also requires the
+          rim-excluded diameter to differ from the halo diameter and every
+          grid wavelength to lie within 15% of 31.37 µm. Seed 3108 and the
+          SHA-256 gate are unchanged. No per-script lockfile. Lean was not
+          executed.
+        evidence:
+          - {file: models/2026-delphi10000-ammonia-beccarii-turing-wavelength-s0.py, lines: [630, 660], note: "self-test assertions including rim diameter and grid band", supports: true}
+          - {file: datasets/ammonia_beccarii_turing_wavelength_s0/README.md, lines: [1, 38], note: "31 µm and 0 Ma stated, with the invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Closed. Halo boxes average 769.7 µm and gray>0.32 cores average 761.8 µm on the 500 µm bar. The caption's ~600 µm is a round number, not the size of these six tests."
+      - id: R2
+        item: "Closed. FFT wavelengths are 31.18 µm (96²), 32.46 µm (128²), and 32.88 µm (160²). All sit within 5% of 31.37 µm; the finer grids run slightly long and were not adjusted to match."
+      - id: R3
+        item: "Still open. Only grok-4.7 scored this audit. A second provider was not available in this run, and no second score was invented."
+      - id: R4
+        item: "Still open. Lean 4 is not installed in this environment, so Loop_3108 was not kernel-checked."
