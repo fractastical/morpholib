@@ -1,0 +1,311 @@
+{
+  "scout": "scout-002",
+  "ground": "rule30",
+  "lens": "measure",
+  "candidates": [
+    {
+      "title": "OP-02 finite-horizon center-column density registry (hash-locked empirical bridge)",
+      "gap": "docs/open-problems.json OP-02 and RULE30_PRIZE_STATUS_AND_GAPS.md Tier C still require a diagonal-sample decorrelation proof; there is no pre-registered, scorer-checkable table tying horizon T to measured center-column density rho(T) and block entropy against binomial/Wolfram nulls.",
+      "done": "A morphoeval audit sidecar (or appended measurements block) lists T in {256,512,1024,2048,4096,8192} with rho(T) from rule30_prize_diagnostics(steps=T), each row carrying reference_value 0.5 and a pass flag rho within 3/sqrt(T) of 0.5 OR the first T where it fails is explicitly recorded; SHA-256 of the prediction file is pinned before values are computed.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only (prize dict: final_density, block4_entropy_bits, density_z_score); then python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml --quick-gate and compare the Rule 30 Prize #2 center-column density row to the registry.",
+      "deciding_data": "In repo: models/1984-wolfram-conus-textile-rule30.py rule30_prize_diagnostics(); morphoeval/audits/2026-10-19-conus-second-assessor-audit.measurements.yaml (c_1024=0.4785 vs ref 0.5); datasets/conus/conus_textile_reference.json rule30_prize_benchmarks.prize_url.",
+      "prior_attempts": "Multi-agent Delphi panel (morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml) scored P2.3 torus/plateau evidence Tier B but left OP-02 open; measure_outputs already anchors T=1024 only (quick_gate 100/100 on 2026-10-19 second assessor).",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "measure_conus_textile() already emits density and entropy; extending the sidecar is a remeasure pass on the same script hook."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All horizons come from the existing ECA runner; no external fetch required for the core table."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Each row is a numeric inequality check against 0.5 with fixed T and no subjective scoring."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Each T is seconds of numpy ECA; full table fits in one self-test-scale run."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Can close as new audit.measurements.yaml + optional JSON registry without touching main script if values are injected from a scout loop file."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One measure_outputs regeneration plus diff against pinned SHA completes the loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Empirical density tracking is complementary to the open decorrelation proof; no audit refutes this measurement route."
+        }
+      }
+    },
+    {
+      "title": "Conus white-tent chord CV reference vs vendored run arrays (specimen-match integrity)",
+      "gap": "Second-assessor audit (morphoeval/kg/2026-10-19-conus-second-assessor-audit/REPORT.md) documents stjohn_white_chord_runs_px (1814 runs, CV 0.6403) as inconsistent with body_whorl bitstrings (667 runs) and missing regeneration code; measure_outputs still anchors Rule 30 CV to the vendored reference.",
+      "done": "measure_outputs reports two CV values: (A) CV recomputed from datasets/conus/conus_textile_reference.json specimens[0].white_chord_* fields and (B) CV from the script's spec_runs array; done when abs(A-B) < 0.002 OR the sidecar records both with reference_source tags and flags provenance_mismatch=true for auditors.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml; parse measurements Rule 30 white-tent chord-length CV versus datasets/conus/conus_textile_reference.json and conus_textile_rule30_metrics.csv if present.",
+      "deciding_data": "In repo: datasets/conus/conus_textile_reference.json (white_chord_cv 0.6403, count 1814); morphoeval/audits/2026-10-19-conus-second-assessor-audit.measurements.yaml reference_value 0.6403; audit REPORT fixture mismatch lines.",
+      "prior_attempts": "Claude Fable blind second assessor (2026-10-19-conus-second-assessor-audit) flagged broken fixture provenance; Pass N+1 flagship15 audit lists reproducible segmentation pipeline as open remediation.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "measure_conus_textile already outputs chord CV with a literature reference; dual-source comparison is a straight remeasure."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Reference JSON and script self_test outputs are already vendored; no new specimen download required to detect mismatch."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Binary outcome: CV equality within tolerance or explicit mismatch flag in YAML."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "self_test path completes in minutes on cloud VM per AGENTS.md."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Sidecar-only closure possible; fixing arrays would be a separate builder branch."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single measure_outputs run surfaces the contradiction immediately."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Prior work identified the bug but did not close the measurement contract; route not refuted."
+        }
+      }
+    },
+    {
+      "title": "Tier-B unit-seed k5=87867 and T_lock=117324 constant pin (Proposition 1 vs sidecar)",
+      "gap": "RULE30_PRIZE_STATUS_AND_GAPS.md and RULE30_DEFECT_FRONTS_MATH_REVIEW.md cite exact k_5=87867 and T_lock=117324, but morphoeval measurement sidecars do not expose these integers as reference-anchored rows—only informal self_test asserts inside the flagship script.",
+      "done": "Audit measurements include unit_seed_exact_k5=87867 and unit_seed_exact_tlock_k5=117324 with reference_value equal to those integers and method citing verify_mahler/kogge_stone tree export; pass when measure_outputs value equals reference on the pinned commit.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only (assert block on bs_diag / ks_tree); python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml after adding readout fields to self_test return dict consumed by measure_conus_textile.",
+      "deciding_data": "In repo: models/1984-wolfram-conus-textile-rule30.py lines ~736, ~10005, ~10021; docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md Table k_5; docs/media/rule30_prize_progress_poster.png as outreach plate.",
+      "prior_attempts": "Delphi P1.2 Tier B scores treat 249500-pair census as verified; independent referee audit in RULE30_PRIZE_STATUS_AND_GAPS.md accepted k5 branch sigma=01—no refutation of the numeric constants.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Requires one new numeric row in measure_conus_textile but still pure remeasure against script exports."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Constants are computed inside existing self_test; reference is documentation-aligned."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Exact integer equality—no tolerance judgment."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Kogge–Stone tree leg takes ~1.2s per doc but full self-test is ~300s."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Touching measure_outputs.py violates strict scout isolation unless done on another agent branch; sidecar-only read of JSON export avoids that."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One long self-test plus sidecar diff."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted k5=87867; only missing nanopub measurement rows."
+        }
+      }
+    },
+    {
+      "title": "Rendered Rule30/Conus artifact byte stability vs published nanopub hashes",
+      "gap": "Cross-library reproducibility is claimed in 2026-10-19-conus-second-assessor-audit.yaml (artifact_sha256 b204b836… for comparison PNG) but flagship15 notes ~303s self-test drift risk; there is no automated scorer check that regenerated GIF/PNG/CSV bytes match morphoeval/kg published trig fingerprints after dependency bumps.",
+      "done": "Running measure_outputs on the pinned audit reproduces identical artifact_sha256 for conus_textile_rule30_comparison.png, conus_textile_rule30.gif, and conus_textile_rule30_metrics.csv as recorded in morphoeval/audits/2026-10-19-conus-second-assessor-audit.measurements.yaml outputs[] (all three match) OR documents first diverging file hash in missing[]/note.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml; diff outputs[].artifact_sha256 against committed .measurements.yaml; optional python3 morphoeval/build_morphoeval_kg.py only if hashes match.",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-conus-second-assessor-audit.measurements.yaml; morphoeval/kg/2026-10-19-conus-second-assessor-audit/published.json; docs/media/conus_textile_rule30.gif if regenerated.",
+      "prior_attempts": "Second assessor explicitly regenerated outputs at numpy 2.4.2 / scipy 1.17.0 and matched primary hashes; primary 2026-10-18-conus-audit.measurements.yaml shows an older conus gif hash (61ea4422…) superseded by second assessor—route is established, not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 25,
+          "why": "measure_outputs.py exists precisely to hash cited outputs and is run as-is on the audit YAML."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Expected hashes already live in the sidecar and kg published.json."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "SHA-256 equality is bitwise objective."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Dominated by optional full script render; fingerprint-only pass is fast if artifacts exist."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Read-only verification loop; new scout YAML only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single CLI invocation and string compare."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Prior pass succeeded once; re-check is encouraged, not blocked."
+        }
+      }
+    },
+    {
+      "title": "2D ANF nonlinear carry rate separates Rule 30 from Rule 90 on mantle grids (Panel F claim)",
+      "gap": "Flagship script asserts 0.22 <= Rule30 anf_nonlinear_rate_vs_rule90 <= 0.28 and specimen ~0.36 (Panel F annotation) but measure_outputs quick_gate does not surface anf_nonlinear_rate as its own reference-backed row—only 1D chord CV, which audits note cannot separate Rule 30 from Rule 90.",
+      "done": "Sidecar includes three measurements with reference bands: Rule30 in [0.22,0.28], Rule90 = 0.0, specimen in [0.34,0.38] from compute_2d_chiral_and_anf_observables on self_test exports; pass when all three bands satisfied simultaneously.",
+      "tool_route": "python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only (clades + tent_eval metrics); python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --quick-gate once conus-textile-rule30 simulation block is evaluated with evidence files on disk.",
+      "deciding_data": "In repo: models/1984-wolfram-conus-textile-rule30.py asserts ~10428-10429 and metrics CSV export ~10533-10581; morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml Panel F remediation note.",
+      "prior_attempts": "Pass N+1 flagship15 added Panel F ANF annotation; 2026-10-19 second assessor did not score ANF rows—no refutation of measured rates.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Values already computed in self_test; measure lens only needs YAML rows mirroring asserts."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Specimen tent grid and Rule90/30 kymos are internal to the script run."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Interval membership checks are mechanical though bands are documented not literature-DOI."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Included in full self_test runtime budget."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Measurements sidecar or scout-only audit fragment."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One self_test parse plus gate scoring."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Discriminant claim is new audit surface, not a disproved hypothesis."
+        }
+      }
+    },
+    {
+      "title": "Jen diagonal dislocation index lock (k in {0,3,8,29,400}) zero bit-error contract",
+      "gap": "Theorem 2 table in RULE30_DEFECT_FRONTS_MATH_REVIEW.md and kymograph assets depend on exact dislocation indices, but the published measurement sidecar only mentions them in a note on Jen errors—not as explicit per-k reference equalities.",
+      "done": "measure_outputs lists five rows dislocation_k_* with reference_value equal to extract_diagonal_period_cascade() k indices and measured value 0 bit errors each for diagonal recursion vs light-cone; aggregate Jen measurement remains 0.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-conus-second-assessor-audit.yaml; inspect Jen (1990) left-bijective inverse row and note disloc_ks; cross-check docs/media/conus_rule30_kymograph_defect_fronts.png generation path in script main.",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-conus-second-assessor-audit.measurements.yaml note k=[0,3,8,29,400]; docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md Table section 3.1; datasets/conus/conus_textile_reference.json left_bijective_inverse string.",
+      "prior_attempts": "Jen 1990 classical proof; repo verify_boolean_jacobian + extract_diagonal_period_cascade in self_test—Tier A diagonal aperiodicity never disputed.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "measure_conus_textile already aggregates recursion_errors and lists disloc_ks in notes."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Light-cone simulation and Jen table are entirely in-repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Zero bit-error target is exact."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Sub-second diagonal extraction inside self_test."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Sidecar elaboration only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Immediate on existing measurement run."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Foundational check; no refuted route."
+        }
+      }
+    },
+    {
+      "title": "OP-01 transparent-gate loophole (global D1 vs c_t phase support)",
+      "gap": "docs/open-problems.json OP-01 / P1.4: proved D1(t)=1 infinitely often but not that defects hit closed gates c_t=1; depth-1 right cylinder still has ~0.32 bits/step entropy on short runs—no finite measurement can close the prize.",
+      "done": "Not achievable by measure_outputs alone; closure requires Lean-checked proof or counterexample word per OP-01 done field.",
+      "tool_route": "N/A for measure lens; diagnostic only: python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only reports prize periodic_found=false up to steps//4 (finite horizon), which does not satisfy OP-01 quantifiers.",
+      "deciding_data": "In repo: docs/RULE30_PRIZE_STATUS_AND_GAPS.md Tier C Problem 1; morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml P1.4 scores; morphoeval/lean/MathOfBiology.lean single-step kernels.",
+      "prior_attempts": "Multi-agent panel (open-problems.json attempted_by); Delphi pooled bridge 11.52% (<15% green); exhaustive (t0,Pi)<(500,500) census Tier B with 0 survivors—does not refute astronomical (t0,Pi).",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Finite periodicity scan and density tools cannot quantify forall t0, Pi; Lean/proof-scout lens required."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Census artifacts exist but do not cover the open quantifier."
+        },
+        "falsifiable_done": {
+          "score": 2,
+          "why": "OP-01 done is a proof or counterexample, not a morphometric threshold."
+        },
+        "compute_in_repo": {
+          "score": 5,
+          "why": "Finite scans already ran to huge domains but cannot finish the infinite case."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Reporting negative lens fit is isolation-safe."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Cannot reach OP-01 verdict in one sitting via measure_outputs."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Empirical route does not duplicate refuted proof attempts but also cannot succeed."
+        }
+      }
+    },
+    {
+      "title": "OP-03 fixed-seed uniform Omega(T) lower bound",
+      "gap": "docs/open-problems.json OP-03: multivariate deg(c_T)=2T-1 is proved but Wolfram prize asks for fixed seed x_j=delta_j0 from log T bits; measure_outputs has no RAM/circuit cost proxy.",
+      "done": "Formal barrier or specified machine model per OP-03; not a measurement delta against reference outputs.",
+      "tool_route": "measure_outputs.py morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml does not bind simulations; complexity-scout would run uniform lower-bound literature checks. Optional finite check: lyapunov_damage_spreading_speed from rule30_prize_diagnostics is already in script but is not Omega(T) for fixed seed.",
+      "deciding_data": "In repo: RULE30_PRIZE_STATUS_AND_GAPS.md Problem 3 gap; Delphi P3 posterior 0.04%; Theorem 35(2) in submission docs.",
+      "prior_attempts": "Panel flagged P-vs-EXP barrier (Delphi P3.4-P3.5); no repo audit refutes multivariate degree result—different question from fixed seed.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "measure_outputs morphometrics do not encode Turing/RAM step counts for fixed input."
+        },
+        "data_in_hand": {
+          "score": 6,
+          "why": "ANF degree is in Lean/script but not wired to measure_outputs references."
+        },
+        "falsifiable_done": {
+          "score": 1,
+          "why": "OP-03 done is a complexity theorem, not IoU/density/hash."
+        },
+        "compute_in_repo": {
+          "score": 4,
+          "why": "Could time naive bit simulation but that upper-bounds only, not Omega(T) lower bound."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Documenting lens mismatch is zero-conflict."
+        },
+        "time_to_verdict": {
+          "score": 1,
+          "why": "Not decidable by remeasurement loop."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Delphi advises barrier-result route, not repeated bound attempts—measure route unused, not refuted."
+        }
+      }
+    }
+  ]
+}
