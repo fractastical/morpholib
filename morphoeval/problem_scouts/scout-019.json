@@ -1,0 +1,152 @@
+{
+  "scout": "scout-019",
+  "ground": "thompson",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "id": "THOM-REM-01",
+      "title": "Digitise Thompson Fig.376 drawn grid and test Moebius constants against species fits",
+      "gap": "morphoeval/audits/2026-10-17-thompson-audit.yaml and morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml still list open remediation: Thompson's drawn coaxial grid is displayed from the pinned scan but never digitised, so fitted Moebius/coaxial constants are not compared constant-by-constant to his figure (model-fidelity rationale caps at 78 for this reason).",
+      "done": "After one Pass-2 loop, thompson_outline_metrics.csv (or successor metrics file named in the new audit) contains grid_digitised_vs_species rows with finite RMS for Moebius constants c and affine part, and morphoeval/audits/<date>-thompson-audit-v3.yaml documents whether |Δc| for each constant is below a pre-registered tolerance (default 0.05 in Procrustes-normalised units) or reports a measured exceedance; morphoeval/build_morphoeval_kg.py --check passes on that audit.",
+      "tool_route": "Builder extends thompson/1917-thompson-scarus-pomacanthus.py (grid digitisation from pinned SCAN_SHA256); python3 thompson/1917-thompson-scarus-pomacanthus.py --self-test; python3 morphoeval/measure_outputs.py morphoeval/audits/<date>-thompson-audit-v3.yaml; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<date>-thompson-audit-v3.yaml --check --supersede-from morphoeval/kg/2026-10-17-thompson-audit",
+      "deciding_data": "In repo: Internet Archive scan hash in thompson/1917-thompson-scarus-pomacanthus.py, datasets/thompson/trimmed_tps_Claverie2014.csv, rendered thompson_scarus_pomacanthus_outlines.png.",
+      "prior_attempts": "MorphoEval Pass 1→2 on thompson/1917-thompson-scarus-pomacanthus.py raised overall 70.2→76.6 (claude-fable-5-1, 2026-10-17); blinded second assessor 90.8 (gemini-4-argon). Flagship-15 Pass N+1 closed skimage/self-test debt but left this item in remediation[]. No digitisation attempt recorded.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "Named 12-step chain: script + measure_outputs + build_morphoeval_kg produces the deciding constant-comparison table."},
+        "data_in_hand": {"score": 18, "why": "Pinned scan, landmarks, and outline photos already hash-locked in the audited script."},
+        "falsifiable_done": {"score": 14, "why": "CSV rows and audit YAML either report |Δc| under tolerance or document exceedance without judgement."},
+        "compute_in_repo": {"score": 14, "why": "Offline rerun ~3 min including outline fetch cache hits."},
+        "isolation": {"score": 9, "why": "Loop can add new audit/kg date files; flagship script edit is the only shared touchpoint."},
+        "time_to_verdict": {"score": 9, "why": "Single builder+assessor pass closes one numbered remediation item."},
+        "not_blocked": {"score": 5, "why": "Explicitly queued since 2026-10-16; never attempted or refuted."}
+      }
+    },
+    {
+      "id": "THOM-REM-02",
+      "title": "Outline-semilandmark warp fit closes landmark-only outline IoU weakness",
+      "gap": "Audit remediation item 2 and specimen-match score 72: five map families are fitted to 17 landmarks and only applied to silhouettes; coaxial IoU 0.618 is worse than similarity 0.662 on the one Scarus→Pomacanthus photo pair, so Thompson's family has not had its best chance on the form he deformed.",
+      "done": "Pass-2 audit records paired outline IoU for fit_target=landmarks vs fit_target=outline_semilandmarks on the same hash-pinned photos; done if outline-fit coaxial IoU exceeds landmark-fit coaxial IoU by ≥0.01, OR if not, the audit's morphometric-validation rationale states the negative result with both numbers and thompson_outline_metrics.csv columns fit_target, coaxial_iou present for both.",
+      "tool_route": "Extend thompson/1917-thompson-scarus-pomacanthus.py outline_analysis() with sliding semilandmarks on both silhouettes; python3 morphoeval/measure_outputs.py morphoeval/audits/<date>-thompson-audit-v3.yaml; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<date>-thompson-audit-v3.yaml --check --supersede-from morphoeval/kg/2026-10-17-thompson-audit",
+      "deciding_data": "In repo: Commons photograph SHA-256 entries in thompson/1917-thompson-scarus-pomacanthus.py; thompson/1917-thompson-silhouette-area-paradox.py shows the repo already segments 600-point outlines (method reference, not a substitute test).",
+      "prior_attempts": "Pass 2 added landmark+outline test but kept landmark-only fitting (2026-10-17 audit). thompson/1917-thompson-silhouette-area-paradox.py fits silhouettes directly for fish pairs but is not wired into the MorphoEval-scored Scarus flagship script. Route not refuted.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Same audited flagship script + measure_outputs + kg supersede is the published remediation contract."},
+        "data_in_hand": {"score": 17, "why": "Silhouettes and landmarks already vendored or hash-cached; no new fetch required for the baseline pair."},
+        "falsifiable_done": {"score": 15, "why": "Two IoU numbers and a declared ≥0.01 margin or documented failure."},
+        "compute_in_repo": {"score": 13, "why": "Semilandmark fit adds tens of seconds per photo on CPU."},
+        "isolation": {"score": 8, "why": "Concentrates on one flagship script; parallel agents on other slots need not touch portfolio JSON."},
+        "time_to_verdict": {"score": 8, "why": "One remediation loop with self-test and re-audit."},
+        "not_blocked": {"score": 5, "why": "Open since first Thompson audit; silhouette paradox work is adjacent, not this exact test."}
+      }
+    },
+    {
+      "id": "THOM-REM-03",
+      "title": "Leporidae dorsal XY cranial view: close OP-10/T1917-055 partial-repo gap",
+      "gap": "thompson/portfolio/groups/leporidae_skulls_hypotheses.json and scout text promise lateral sagittal-facial XZ and dorsal XY views, but thompson/portfolio/run_all_scouted_clades.py score_leporidae_skulls() projects only coords_3d[:, [0, 2]] (lateral). T1917-055 marks mammalian skull work PARTIAL_REPO with only the lateral Leporidae run (0/3 hypotheses).",
+      "done": "thompson/portfolio/results/leporidae_skulls_dorsal.json exists with t7_variance_share, loo.ratio_full_vs_consensus, and LS1–LS3 pass booleans for the dorsal XY projection; docs/portfolio/leporidae_skulls.md or a sibling leporidae_skulls_dorsal.md reports the three verdicts. At least one of {LS1 pass on dorsal, LS1 pass on lateral} differs from the other (cross-view discrimination) OR both fail with documented t7 shares within 0.02 (same outcome either way is a valid negative).",
+      "tool_route": "New thompson/portfolio/groups/leporidae_skulls_dorsal.py (mirror engine call with [:, [0, 1]]); python3 thompson/portfolio/scout_and_preregister.py --group leporidae_skulls_dorsal before scoring; python3 thompson/portfolio/groups/leporidae_skulls_dorsal.py; optional MorphoEval wrap: python3 morphoeval/measure_outputs.py morphoeval/audits/<date>-leporidae-dorsal-portfolio-audit.yaml && python3 morphoeval/build_morphoeval_kg.py --check",
+      "deciding_data": "In repo cache: .thompson_cache/leporidae2023/symmetric_component_coords.csv, File_IDs.csv, Matthee_Tree.nex (Zenodo 7615230, already ingested).",
+      "prior_attempts": "2026-10-23 portfolio score (run_all_scouted_clades.py): lateral only, 0/3 LS hypotheses (docs/portfolio/leporidae_skulls.md). Claude Fable flagged OP-10 portfolio residue (docs/open-problems.json OP-10, partial). No dorsal projection attempt.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Portfolio GM engine + scout preregistration + optional measure_outputs mirror the fish flagship remediation pattern."},
+        "data_in_hand": {"score": 19, "why": "Full 3D symmetric coordinates and tree already cached; one projection index change."},
+        "falsifiable_done": {"score": 13, "why": "JSON verdict booleans and variance shares are machine-checkable against locked LS thresholds."},
+        "compute_in_repo": {"score": 14, "why": "317 specimens × 18 tree species LOO completes in minutes."},
+        "isolation": {"score": 10, "why": "New group script, results JSON, and doc only—no edits to locked leporidae_skulls_hypotheses.json."},
+        "time_to_verdict": {"score": 8, "why": "One preregistration commit plus one scoring run."},
+        "not_blocked": {"score": 5, "why": "View omission is documented; route not tried or refuted."}
+      }
+    },
+    {
+      "id": "THOM-REM-04",
+      "title": "Pre-register and score antiparallel vein-dipole basis B_dip7 (Vespinae D4 fresh-risk repair)",
+      "gap": "vespinae_venation_mechanics.md: locked hypothesis D4 (B_ven7 Laplacian truss) failed at 42.6% vs 38.8% Thompson-7 (+3.8 pts). Post-run B_dip7 antiparallel modes reach 64.2% but build_postrun_antiparallel_dipole_basis() is explicitly NOT used to score D4—Rule 2 forbids silently upgrading a failed preregistration.",
+      "done": "Before any scoring run: thompson/portfolio/groups/vespinae_dipole7_hypotheses.json is committed and listed in thompson/portfolio/scout_preregistration_manifest.json with SHA-256. After run: thompson/portfolio/results/vespinae_dipole7.json reports dipole7_variance_share_all and pass/fail for a registered statement mirroring D4 thresholds (>50.8% overall and zero landmarks with R²<0). Verdict is ✓ or ✗ in docs/portfolio/vespinae_dipole7.md.",
+      "tool_route": "python3 thompson/portfolio/scout_and_preregister.py; new thompson/portfolio/groups/vespinae_dipole7.py (move dipole construction from post-run block in vespinae_venation_mechanics.py into preregistered entrypoint); python3 morphoeval/track_loop.py init --loop-id vespinae-dipole7-remediation (telemetry); python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<date>-vespinae-dipole7-audit.yaml --check",
+      "deciding_data": "In repo: Perrard 2013/2015 tree + 1,027 wing landmarks already used in thompson/portfolio/groups/vespinae_venation_mechanics.py and .thompson_cache/vespinae/.",
+      "prior_attempts": "vespinae_wings.py 0/7 (OpenTree polytomy) 2026-10-22; vespinae_venation_mechanics.py 7/8 with D4 ✗ 2026-10-24 (Fable). Post-run dipole diagnostic documented but not preregistered.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "Portfolio preregistration manifest + group runner + MorphoEval audit/kg is the repo's Rule-2 repair pipeline."},
+        "data_in_hand": {"score": 18, "why": "Same hornet wing stack as the completed D1–D8 run."},
+        "falsifiable_done": {"score": 14, "why": "Hash-locked JSON hypotheses and numeric variance-share thresholds."},
+        "compute_in_repo": {"score": 13, "why": "Reuses existing engine; dipole basis is closed form on consensus M0."},
+        "isolation": {"score": 9, "why": "New hypotheses file and script; W1–W7 and D1–D8 docs stay immutable."},
+        "time_to_verdict": {"score": 7, "why": "Prereg commit plus one scoring pass; audit optional same sitting."},
+        "not_blocked": {"score": 4, "why": "D4 route on B_ven7 refuted; this is a distinct preregistered basis, not a rerun of D4."}
+      }
+    },
+    {
+      "id": "THOM-REM-05",
+      "title": "Leporidae LOO error by Matthee τ-bin tests mammalian ~50 Myr horizon (OP-04)",
+      "gap": "docs/THOMPSON_DATASET_PORTFOLIO.md P7 predicts coverage collapses near 0.28× crown age (~51 Myr for mammals), but docs/portfolio/leporidae_skulls.md reports only aggregate LOO (ratio 0.89, p=0.28) with no τ-binned table. docs/open-problems.json OP-04 (partial) asks for deep-horizon behaviour beyond fish; Leporidae has a calibrated Matthee_Tree.nex but no horizon stratification.",
+      "done": "thompson/portfolio/results/leporidae_skulls_horizon.json lists bins [<10, 10–25, 25–50, ≥50] Myr with n_species, median rms_full, ratio_full_vs_consensus, and one-sided Wilcoxon p vs consensus per bin; file states whether any bin with n≥5 has ratio<0.95 and p<0.05 (success) or none do (null for LS2-style prediction on mammals).",
+      "tool_route": "New thompson/portfolio/groups/leporidae_skulls_horizon.py calling the same run_standard_gm_engine LOO with patristic τ from Matthee_Tree.nex; python3 thompson/portfolio/groups/leporidae_skulls_horizon.py; feed summary into docs via thompson/portfolio/summarise_portfolio.py (new file only) OR standalone JSON consumed by OP-04 graph update.",
+      "deciding_data": "In repo: .thompson_cache/leporidae2023/matthee_tree.nex + symmetric_component_coords.csv; fish horizon template in thompson/run_phylogenetic_prediction_engine.json / docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md §3.",
+      "prior_attempts": "Fish held-out horizon table established (docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md). FishShapes blind test refined H4 wording failure (docs/THOMPSON_BLIND_TEST_RESULTS.md). OP-04 partial (Fable). No mammalian τ-bin LOO for Leporidae.",
+      "factors": {
+        "tool_fit": {"score": 19, "why": "Existing portfolio GM/LOO engine plus tree parser; remediation loop adds measured JSON, not new wet lab."},
+        "data_in_hand": {"score": 17, "why": "Calibrated lagomorph tree and landmarks cached; τ from branch lengths in-tree."},
+        "falsifiable_done": {"score": 12, "why": "Bin table with n, ratios, and p-values is automatically scorable against pre-stated LS2-like cutoffs."},
+        "compute_in_repo": {"score": 13, "why": "18 species LOO across bins is trivial CPU."},
+        "isolation": {"score": 10, "why": "New results JSON and helper script only."},
+        "time_to_verdict": {"score": 8, "why": "One script run produces the deciding table."},
+        "not_blocked": {"score": 4, "why": "Deep-horizon fish tests exist but do not subsume mammal τ bins; not refuted."}
+      }
+    },
+    {
+      "id": "THOM-REM-06",
+      "title": "Multi-specimen held-out outline IoU for Scarus/Pomacanthus (audit n=1 weakness)",
+      "gap": "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml remediation: 'More individuals per species / held-out outline test (n=1 per species at present)'. Specimen-match cannot rise while fin posture, dead-vs-living, and segmentation confounds are unquantified across replicates.",
+      "done": "≥3 additional Commons or Bishop Museum lateral photos per genus are hash-pinned in the script; leave-one-specimen-out outline coaxial IoU distribution reported with median, IQR, and n in thompson_outline_metrics.csv; morphoeval/audits/<date>-thompson-audit-v3.yaml morphometric-validation cites those columns and specimen-match value changes with line evidence.",
+      "tool_route": "Extend PHOTOS spec in thompson/1917-thompson-scarus-pomacanthus.py; python3 morphoeval/measure_outputs.py morphoeval/audits/<date>-thompson-audit-v3.yaml; python3 morphoeval/build_morphoeval_kg.py --check --supersede-from morphoeval/kg/2026-10-17-thompson-audit",
+      "deciding_data": "Named public: Wikimedia Commons URLs already in script; Bishop Museum collection cited in morphoeval/audits/2026-10-17-thompson-audit.yaml remediation text. One fetch per URL with SHA-256 gate.",
+      "prior_attempts": "Single pair S. ghobban / P. semicirculatus since Pass 2 outline test (2026-10-17). Remediation item 3 unchanged in flagship15. Not refuted.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Flagship script + measure_outputs + audit re-score is the standard remediation closure."},
+        "data_in_hand": {"score": 14, "why": "One photo per species in repo; extra specimens require named Commons/Bishop URLs only."},
+        "falsifiable_done": {"score": 13, "why": "CSV reports n, median IoU, IQR per genus with pinned photo hashes."},
+        "compute_in_repo": {"score": 12, "why": "Network fetches and segmentation scale linearly with photo count (<1 hr for ~6 photos)."},
+        "isolation": {"score": 8, "why": "Touches flagship script and new audit; photo cache files can live under datasets/thompson/."},
+        "time_to_verdict": {"score": 7, "why": "May need one sitting for fetch stability checks."},
+        "not_blocked": {"score": 5, "why": "Queued remediation; no prior multi-specimen outline test."}
+      }
+    },
+    {
+      "id": "THOM-REM-07",
+      "title": "MorphoEval measure_outputs fingerprint for portfolio clade runners (Leporidae/Vespinae residue)",
+      "gap": "Thompson fish flagship has measure_outputs.yaml sidecars and signed kg checkpoints; thompson/portfolio/groups/leporidae_skulls.py and vespinae_wings.py emit JSON/PNG but no morphoeval/audits/*-portfolio-* measurement contract, so OP-10 failure autopsy lacks Pass-1→Pass-2 falsifiable weak points (only narrative docs).",
+      "done": "morphoeval/measure_outputs.py accepts a portfolio audit stub and writes morphoeval/audits/<date>-portfolio-leporidae-audit.measurements.yaml with sha256 for thompson/portfolio/results/leporidae_skulls.json and docs/portfolio/fig_leporidae_skulls.png matching a fresh rerun of thompson/portfolio/groups/leporidae_skulls.py; build_morphoeval_kg.py --check passes on a minimal audit listing reproducibility dimensions only.",
+      "tool_route": "Extend morphoeval/measure_outputs.py portfolio mode; add morphoeval/audits/<date>-portfolio-leporidae-audit.yaml; python3 thompson/portfolio/groups/leporidae_skulls.py; python3 morphoeval/measure_outputs.py <audit>; python3 morphoeval/build_morphoeval_kg.py <audit> --check",
+      "deciding_data": "In repo: thompson/portfolio/results/leporidae_skulls.json, vespinae_wings.json, fig_*.png, cached clade data under .thompson_cache/.",
+      "prior_attempts": "Portfolio scored 2026-10-22–24 via run_all_scouted_clades.py (docs/portfolio/PORTFOLIO_STATUS.md). OP-10 partial autopsy requested (Fable); no MorphoEval audit trail for clade scripts. measure_outputs.py documents simulation scripts only today.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "measure_outputs + build_morphoeval_kg are the remediation lens tools; needs a small adapter for portfolio outputs."},
+        "data_in_hand": {"score": 16, "why": "Results JSON and figures already committed from prior scoring runs."},
+        "falsifiable_done": {"score": 11, "why": "SHA-256 match/mismatch on rerun is objective; audit --check is binary."},
+        "compute_in_repo": {"score": 12, "why": "Rerun one clade group in minutes."},
+        "isolation": {"score": 9, "why": "New audit yaml + measure_outputs extension can avoid editing existing portfolio hypotheses."},
+        "time_to_verdict": {"score": 6, "why": "Adapter plus one clade may span two short loops."},
+        "not_blocked": {"score": 5, "why": "Gap acknowledged in OP-10; no prior measure_outputs for portfolio."}
+      }
+    },
+    {
+      "id": "THOM-REM-08",
+      "title": "Monte Bolca–style fossil calibration for Leporidae (OP-04 deep horizon)",
+      "gap": "docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md §5c–6 gives a 50 Ma stem prediction test for teleost families; mammals/Leporidae have no analogous fossil scalar test in the portfolio, so OP-04 cannot close on non-fish clades.",
+      "done": "N/A for remediation lens as specified—requires new fossil measurements or literature tabulation not wired to measure_outputs today.",
+      "tool_route": "Would need registry lens (pre-registered prediction) plus literature scout; not closable by Pass-1→Pass-2 on an existing audited script alone.",
+      "deciding_data": "Not in repo; would require named fossil lagomorph cranial metrics (literature) absent from .thompson_cache/leporidae2023/.",
+      "prior_attempts": "Monte Bolca teleost test scored null vs stasis (docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md §6); OP-04 partial. No leporid fossil branch attempted.",
+      "factors": {
+        "tool_fit": {"score": 3, "why": "Remediation loop assumes an audited simulation script; no Leporidae fossil scorer exists."},
+        "data_in_hand": {"score": 4, "why": "Extant Leporidae GM only; fossil series not cached."},
+        "falsifiable_done": {"score": 10, "why": "Could be falsifiable once a preregistration exists, but not reachable now."},
+        "compute_in_repo": {"score": 8, "why": "Computation is easy once data exist; data acquisition is the blocker."},
+        "isolation": {"score": 7, "why": "Would be new files, but blocked upstream."},
+        "time_to_verdict": {"score": 2, "why": "Needs external fossil measurements first."},
+        "not_blocked": {"score": 3, "why": "Fish deep-horizon null recorded; mammal route untried but data-blocked."}
+      },
+      "lens_note": "Use registry or literature scout lens (scout-020 delphi on thompson ground, or predictions ground), not remediation."
+    }
+  ]
+}
