@@ -520,7 +520,7 @@ def public_metrics(result: dict) -> dict:
 
 def measure_morphoeval() -> list[dict]:
     """Morphometrics for measure_outputs.py. Values are not copies of their references."""
-    result = run_analysis()
+    result = json.loads(json.dumps(public_metrics(run_analysis()), default=float))
     species = result["species"]
     het = species["Drosophila heteroneura"]
     gut = species["Drosophila guttifera"]
