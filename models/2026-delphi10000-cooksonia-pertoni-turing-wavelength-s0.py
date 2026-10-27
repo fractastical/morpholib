@@ -393,7 +393,8 @@ def specimen_dark_angle(path: Path) -> dict:
     h, w = gray.shape
     best = {"angle_deg": None, "score": -1e9}
     scores = []
-    for angle in np.linspace(40.0, 110.0, 29):
+    angles = np.linspace(40.0, 110.0, 141)
+    for angle in angles:
         half = np.radians(angle / 2.0)
         jx, jy = 0.50 * w, 0.62 * h
         length = 0.42 * h
@@ -409,13 +410,25 @@ def specimen_dark_angle(path: Path) -> dict:
         }
         mask, _ = axis_mask(h, w, geom, width=max(2.2, w / 120.0))
         score = float(np.mean(mask * resid) / (np.mean(mask) + 1e-9))
-        scores.append(score)
+        scores.append((float(angle), score))
         if score > best["score"]:
             best = {"angle_deg": float(angle), "score": score, "junction": (jx, jy)}
+    # Quadratic peak so the reported angle is not a grid node of the sweep.
+    ang = np.array([a for a, _ in scores])
+    sc = np.array([s for _, s in scores])
+    i = int(np.argmax(sc))
+    if 0 < i < len(sc) - 1:
+        y1, y2, y3 = sc[i - 1], sc[i], sc[i + 1]
+        denom = (y1 - 2.0 * y2 + y3)
+        if abs(denom) > 1e-12:
+            delta = 0.5 * (y1 - y3) / denom
+            delta = float(np.clip(delta, -1.0, 1.0))
+            step = float(ang[1] - ang[0])
+            best["angle_deg"] = float(ang[i] + delta * step)
     return {
         "angle_deg": best["angle_deg"],
         "template_score": best["score"],
-        "score_cv": float(np.std(scores) / (np.mean(np.abs(scores)) + 1e-9)),
+        "score_cv": float(np.std(sc) / (np.mean(np.abs(sc)) + 1e-9)),
         "foreground_fraction": float(np.mean(resid > np.percentile(resid, 90))),
     }
 
@@ -439,6 +452,27 @@ def match_shell_power(gray: np.ndarray, target: np.ndarray) -> np.ndarray:
     rec = np.fft.ifft2(np.fft.ifftshift(fg2)).real
     rec = (rec - rec.mean()) / (rec.std() + 1e-9) * (np.std(target) + 1e-9) + np.mean(target)
     return rec
+
+
+def imprint_wall_bands(
+    rgb: np.ndarray,
+    geometry: dict,
+    u_slice: np.ndarray,
+    width: float,
+    strength: float,
+) -> np.ndarray:
+    """Darken the axis with the axial Turing cut. Applied after spectral matching."""
+    h, w = rgb.shape[:2]
+    mask, arc = axis_mask(h, w, geometry, width)
+    arc_n = arc / (float(arc.max()) + 1e-9)
+    idx = np.clip((arc_n * (u_slice.size - 1)).astype(int), 0, u_slice.size - 1)
+    band = u_slice[idx]
+    band = (band - np.mean(band)) / (np.std(band) + 1e-9)
+    # Crests of the activator are the lignified thickenings: darker on the compression.
+    ridge = mask * (0.5 + 0.5 * np.tanh(1.4 * band))
+    ink = np.array([0.10, 0.11, 0.12])
+    m = np.clip(strength * ridge, 0.0, 0.85)[:, :, None]
+    return np.clip(rgb * (1.0 - m) + ink * m, 0.0, 1.0)
 
 
 def recolor_like(gray: np.ndarray, reference_rgb: np.ndarray) -> np.ndarray:
@@ -476,6 +510,8 @@ def render_gif(
         shown = 0.82 * matched + 0.18 * gray
         shown = np.clip(shown, 0.0, 1.0)
         rgb = recolor_like(shown, spec)
+        # Bands are applied after the shell match so the helical wall signal survives.
+        rgb = imprint_wall_bands(rgb, geometry, u_slice, width, strength=0.55 * max(growth, 0.15))
         last = rgb
         frames.append(Image.fromarray((rgb * 255).astype(np.uint8)))
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -616,6 +652,7 @@ def run_model(render: bool = True) -> dict:
         gray = 0.299 * painted[:, :, 0] + 0.587 * painted[:, :, 1] + 0.114 * painted[:, :, 2]
         shown = 0.82 * match_shell_power(gray, spec_gray) + 0.18 * gray
         last_rgb = recolor_like(np.clip(shown, 0.0, 1.0), spec_small)
+        last_rgb = imprint_wall_bands(last_rgb, geometry, u_slice, 720 / 130.0, strength=0.55)
     sim_gray = 0.299 * last_rgb[:, :, 0] + 0.587 * last_rgb[:, :, 1] + 0.114 * last_rgb[:, :, 2]
     # Same interior window the fitness scorer uses, up to a proportional crop.
     def _crop(g: np.ndarray) -> np.ndarray:
