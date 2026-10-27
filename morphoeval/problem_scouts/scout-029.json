@@ -1,0 +1,361 @@
+{
+  "scout": "scout-029",
+  "ground": "wavevector",
+  "lens": "remediation",
+  "candidates": [
+    {
+      "id": "WV-R01",
+      "title": "xenopus-ca2-wave-vectors: close the MorphoEval Pass 1→2 packaging gap",
+      "gap": "The species index records sim_id xenopus-ca2-wave-vectors at pass2_score 91.0 (morphoeval/runs/aristotelian_categories_index.json) and links dataset_dir datasets/frog_embryo_data_processed, but that dataset tree is absent from the repo, there is no models/*xenopus-ca2* entrypoint with --self-test / measure_morphoeval(), no morphoeval/audits/*xenopus-ca2-wave-vectors*.yaml, and no Lean 4 loop file — so the 12-step loop cannot emit line-pinned remediation items or a superseding Pass 2 audit for the flagship pipeline.",
+      "done": "A new zero-conflict loop branch produces morphoeval/audits/<date>-xenopus-ca2-wave-vectors-audit.yaml (Pass 1) and -audit-v2.yaml (Pass 2 with supersedes_audit_id), python3 morphoeval/measure_outputs.py exits 0 on the v2 audit, and a wrapper script's --self-test passes using wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv (≥8 deterministic checks including SHA-256 pins for that CSV).",
+      "tool_route": {
+        "tools": [
+          "morphoeval/track_loop.py",
+          "morphoeval/cloud_orchestrator.py (12-step template)",
+          "morphoeval/measure_outputs.py",
+          "morphoeval/build_morphoeval_kg.py",
+          "wave-vector-analysis/wave-vector-tiff-parser.py",
+          "wave-vector-analysis/spark_tracks_to_clusters.py"
+        ],
+        "commands": [
+          "python3 morphoeval/track_loop.py init --run-id <date>-xenopus-ca2-wave-vectors-loop --target xenopus-ca2-wave-vectors --paper \"Dietz et al. (2026) dev.199845\"",
+          "python3 <new-wrapper>.py --self-test --tracks wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv",
+          "python3 morphoeval/measure_outputs.py morphoeval/audits/<date>-xenopus-ca2-wave-vectors-audit-v2.yaml"
+        ]
+      },
+      "deciding_data": "In repo: spark_tracks_subset.csv smoke tracks, docs/media/xenopus_ca2_wave_vectors_growth.gif, literature_benchmarks.LITERATURE_BENCHMARKS; missing but named: datasets/frog_embryo_data_processed (referenced only in index). Public anchor: doi:10.1242/dev.199845 (Tung et al. 2024 Nat Commun cited in wave-vector-analysis/README.md).",
+      "prior_attempts": "Portfolio score 91.0 is indexed without a matching audit YAML in morphoeval/audits/; verify_image_fitness.py maps xenopus-ca2-wave-vectors to the species gallery JPEG, not a pipeline specimen audit. No recorded Pass 1→2 remediation pass for this sim_id.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "The remediation loop tools (track_loop, measure_outputs, audit YAML) are exactly what closes a flagged packaging debt."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Smoke CSV and analysis_results plots exist; full TIFF stacks and frog_embryo_data_processed remain off-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Pass/fail on audit file presence, measure_outputs exit code, and --self-test checks."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Audits and wrapper self-test on subset CSV are hours-scale; full TIFF re-parse is optional and heavier."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Standard loop branch adds new audit, script, dataset, and Lean files only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Pass 1 audit + subset self-test can finish one sitting; full KG sign/publish may spill."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted this packaging route."
+        }
+      }
+    },
+    {
+      "id": "WV-R02",
+      "title": "Parser head/tail + embryo_id: implement documented vector validation (Pass 2)",
+      "gap": "HEAD_TAIL_ASSIGNMENT_LOGIC.md documents failure modes (B head on left, clipping gaps) and proposes vector-field validation using vx/vy, but wave-vector-tiff-parser.py has no --self-test and EXPERIMENTAL_HYPOTHESES.md reports only 46.1% valid embryo_id / ap_norm on the main track export — an audit weakness for any downstream hypothesis or blind feature that assumes A/B geometry.",
+      "done": "Pass 2 remediation adds vector-consistency checks after head/tail assignment; running the parser on the committed smoke TIFF path (or reusing spark_tracks_subset.csv regeneration) yields embryo_id non-null on ≥90% of post-poke rows and a new self-test check that fails on origin/main parser behavior and passes after remediation.",
+      "tool_route": {
+        "tools": [
+          "wave-vector-tiff-parser.py",
+          "generate_detection_summary.py",
+          "morphoeval/measure_outputs.py"
+        ],
+        "commands": [
+          "python3 wave-vector-analysis/wave-vector-tiff-parser.py <smoke_tiff_dir> 0 --fps 1.0 --csv /tmp/smoke_spark_tracks.csv",
+          "python3 wave-vector-analysis/generate_detection_summary.py /tmp/smoke_spark_tracks.csv --output-dir /tmp/detection_qa",
+          "python3 wave-vector-analysis/wave-vector-tiff-parser.py --self-test"
+        ]
+      },
+      "deciding_data": "In repo: spark_tracks_subset.csv (vx, vy present), HEAD_TAIL_ASSIGNMENT_LOGIC.md, analysis_results/head_tail_comparison.md; external manual labels blocked (COORDINATE_SYSTEM_WARNING.md).",
+      "prior_attempts": "Heuristic width-based head/tail and post-clip left/right forcing documented in HEAD_TAIL_ASSIGNMENT_LOGIC.md; compare_xy_coordinates / Excel route unreliable (median head diff 665 px on 8 matched pairs). Vector validation not implemented.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Pass 1 audit flags parser lines; Pass 2 edits the same entrypoint with self-test — core remediation pattern."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Smoke CSV and detection summary tooling are in-repo; full 33-folder Box TIFF tree is not."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Numeric embryo_id coverage threshold and self-test exit code."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Smoke subset is fast; full-folder batch (test_cement_gland_detection.py pattern) can run hours if pointed at local TIFFs."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Parser change touches a shared tracked file — loop must use a dedicated branch, not parallel zero-conflict on main."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One remediation pass plus smoke self-test yields a clear before/after."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Excel-validation route is refuted by coordinate mismatch; vector route itself is not refuted."
+        }
+      }
+    },
+    {
+      "id": "WV-R03",
+      "title": "Literature μm/s speeds: wire literature_benchmarks into audit measurements",
+      "gap": "literature_benchmarks.py defines LITERATURE_BENCHMARKS (Shannon 2017 / Tung 2024 bands in μm/s) and compare_run_to_literature(), but no morphoeval audit or measure_outputs.yaml entry reports in-band speeds from spark_tracks — propagation claims in the paper README cannot be closed by the scoring stack.",
+      "done": "Pass 2 adds a measurement sidecar where ≥5 benchmark ids each report measured_speed_um_s and in_band (true/false) for wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv with a declared embryo_length_um; measure_outputs.py validates every in_band against recomputed speeds.",
+      "tool_route": {
+        "tools": [
+          "wave-vector-analysis/literature_benchmarks.py",
+          "wave-vector-analysis/embryo_units.py",
+          "morphoeval/measure_outputs.py",
+          "morphoeval/build_morphoeval_kg.py"
+        ],
+        "commands": [
+          "python3 wave-vector-analysis/literature_benchmarks.py --tracks wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv --embryo-length-um 1000 --output /tmp/lit_compare.json",
+          "python3 morphoeval/measure_outputs.py morphoeval/audits/<date>-xenopus-ca2-wave-vectors-audit-v2.yaml"
+        ]
+      },
+      "deciding_data": "In repo: LITERATURE_BENCHMARKS table and smoke CSV; public: Shannon et al. 2017 Biophys J, Tung et al. 2024 Nat Commun (via README citations).",
+      "prior_attempts": "Hypothesis plots use px/s (EXPERIMENTAL_HYPOTHESES.md); no published in-band literature comparison artifact in morphoeval/kg/.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "measure_outputs.py is the named closer for audit-flagged missing measurements."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Benchmark constants and smoke tracks in-repo; per-video embryo_length_um may need parser metadata or a pinned assumption."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Boolean in_band per benchmark id is machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "JSON comparison on subset CSV is minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit measurements + optional thin wrapper; no main-file edits required if wired only in new audit YAML."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single loop iteration on smoke data."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route not previously attempted."
+        }
+      }
+    },
+    {
+      "id": "WV-R04",
+      "title": "OP-07 v2: MorphoEval Pass 1 audit of orientation confound + hash-locked prereg (not v1 LOOO replay)",
+      "gap": "docs/open-problems.json OP-07 records headline neighbour-transfer blind failure (LOOO AUC 0.484) with orientation feature at 0.833; ground-truth-geometry-only v2 prereg is the stated done-criterion but embryo-blind/XENOPUS_BLIND_RESULTS.md is not in the repo tree — the confound is documented in the graph, not closed by an audit-backed prereg pack tied to wave-vector features.",
+      "done": "Pass 1 audit YAML lists line-pinned evidence for orientation leakage; Pass 2 adds a new hash-locked preregistration file (features, geometry filter, scorer command) committed without unblinding held-out labels; verify_integrity.py-style hash check passes on the prereg manifest.",
+      "tool_route": {
+        "tools": [
+          "morphoeval/track_loop.py",
+          "morphoeval/verify_integrity.py",
+          "wave-vector-analysis/spark_tracks_to_clusters.py",
+          "wave-vector-analysis/wave_laterality_analysis.py",
+          "nanopubs/blind_preregistration_nanopub.py"
+        ],
+        "commands": [
+          "python3 morphoeval/track_loop.py init --run-id <date>-xenopus-neighbour-v2-prereg --target xenopus-neighbour-blind-v2",
+          "# Pass 1: morphoeval/audits/<date>-xenopus-neighbour-blind-audit.yaml with remediation: orientation ablation plan",
+          "python3 morphoeval/verify_integrity.py --prereg embryo-blind/<new-prereg>.json"
+        ]
+      },
+      "deciding_data": "Partially in repo: docs/open-problems.json OP-07, wave_laterality_analysis.py orientation parsing; missing: XENOPUS_BLIND_RESULTS.md (cited, not vendored). Feature CSVs assumed on Box / local TIFF root (same as parser DEFAULT paths).",
+      "prior_attempts": "Multi-agent panel ran v1 blind (status refuted in open-problems.json); clean-geometry subset AUC 0.802 flagged suspect. Retraining v1 LOOO without new prereg is blocked negative knowledge.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Remediation loop writes the audit + prereg artifact; actual scoring is registry lens — split across steps 7–12 and verify_integrity."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "Problem statement in-repo; held-out labels and v1 scorecards not vendored."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Hash-locked prereg file + integrity script exit 0 is checkable without unblinding."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Audit + prereg authoring is lightweight; full v2 LOOO needs feature rebuild on TIFFs."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New audit, prereg JSON, and optional embryo-blind/ files on a dedicated branch."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Prereg closure one sitting; biological verdict waits until unblind."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "v1 route refuted; v2 prereg route explicitly still open in OP-07."
+        }
+      }
+    },
+    {
+      "id": "WV-R05",
+      "title": "OP-08 v2: audit-separated mirror vs headward pixel features + prereg",
+      "gap": "OP-08 (partial) states post-unblinding HTHT mirror AUC 0.61–0.65 is exploratory and confounded with headward poke-at-tail; PIXEL_BLIND_RESULTS.md / PIXEL_V2_BLIND_RESULTS.md are cited in docs but absent from the repo, and wave-vector-analysis pixel pipeline (generate_pixel_brightness_vectors.py → rollup_pixel_vectors_to_waves.py) has no MorphoEval audit tying mirror-symmetric features to a registered scorer.",
+      "done": "Pass 1 audit documents the confound with line pins on batch_wave_catalog.py orientation tags and poke-at-tail prevalence; Pass 2 prereg specifies disjoint feature sets for mirror vs headward hypotheses and a scorer command that outputs two AUCs on a poke-position-stratified holdout manifest; prereg hash recorded before any label read.",
+      "tool_route": {
+        "tools": [
+          "wave-vector-analysis/generate_pixel_brightness_vectors.py",
+          "wave-vector-analysis/rollup_pixel_vectors_to_waves.py",
+          "wave-vector-analysis/batch_wave_catalog.py",
+          "morphoeval/track_loop.py",
+          "morphoeval/verify_integrity.py"
+        ],
+        "commands": [
+          "python3 wave-vector-analysis/batch_wave_catalog.py --root <tiff_root> --out /tmp/wave_catalog.csv",
+          "python3 wave-vector-analysis/rollup_pixel_vectors_to_waves.py --deltas <pixel_frame_deltas.csv> --out /tmp/wave_events.csv",
+          "# Pass 2: new morphoeval/audits/<date>-pixel-blind-v2-audit-v2.yaml + prereg JSON"
+        ]
+      },
+      "deciding_data": "In repo: pixel pipeline scripts, simulations catalog mirror-orientation scenarios; not in repo: PIXEL_V2_BLIND_RESULTS.md, held-out video list. Public: Tung et al. 2024 inter-embryo injury wave geometry.",
+      "prior_attempts": "Panel exploratory post-unblinding mirror signal (OP-08); treating that as confirmatory is blocked. v2 prereg separating hypotheses not yet filed in repo.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "Audit + prereg is remediation-shaped; feature engineering may need wavepipe lens co-work."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Code paths exist; deciding blind manifests and TIFF root off-repo."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Prereg hash + dual-scorer specification checkable pre-unblind."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Catalog batch on full Box library is heavy; prereg + audit on sample paths is not."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Mostly new audit/prereg files; batch scripts are shared."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Prereg one sitting; mirror verdict needs held-out scoring pass."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "Exploratory v1 mirror claim blocked; v2 separated prereg still open per OP-08."
+        }
+      }
+    },
+    {
+      "id": "WV-R06",
+      "title": "Landmark ΔF/F corroboration: vendor xy_ground_truth + --self-test (score_landmark_responses)",
+      "gap": "score_landmark_responses.py automates organ-landmark calcium corroboration but hard-codes DEFAULT_ROOT to a Box CloudStorage path and expects xy_ground_truth.csv — neither the CSV nor a pinned TIFF slice is in the repo, so Pass 1 code-traceability / reproducibility audits cannot close landmark-based claims (wave_laterality.csv is scored; landmark path is not).",
+      "done": "Pass 2 adds datasets/<slug>/xy_ground_truth.csv plus one pinned C-channel TIFF excerpt with SHA-256 in reference JSON; score_landmark_responses.py --self-test reports corroboration_rate and exits 0 on that fixture.",
+      "tool_route": {
+        "tools": [
+          "wave-vector-analysis/score_landmark_responses.py",
+          "wave-vector-analysis/parse_xy_coordinates.py",
+          "morphoeval/scout_literature.py",
+          "morphoeval/measure_outputs.py"
+        ],
+        "commands": [
+          "python3 wave-vector-analysis/score_landmark_responses.py --xy datasets/<slug>/xy_ground_truth.csv --root datasets/<slug>/tiffs --out /tmp/landmark_responses.csv --self-test",
+          "python3 morphoeval/measure_outputs.py morphoeval/audits/<date>-landmark-corroboration-audit-v2.yaml"
+        ]
+      },
+      "deciding_data": "Not in repo: xy_ground_truth.csv, Box TIFF tree; in repo: score_landmark_responses.py method doc, parse_xy_coordinates.py for Excel→CSV conversion once coordinate frame is fixed (COORDINATE_SYSTEM_WARNING.md).",
+      "prior_attempts": "Manual Excel annotations exist but compare_xy / overlay validation refuted without affine fix (Excel X up to 3604 px vs TIFF width ~2220–2960).",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Remediation adds pinned dataset + self-test — standard Step 3/5/12 loop closure."
+        },
+        "data_in_hand": {
+          "score": 7,
+          "why": "Requires vendoring a small landmark CSV + TIFF excerpt from off-repo Box data."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Self-test exit code and corroboration_rate numeric gate."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Disk sampling on one short TIFF stack is fast once files are vendored."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset directory + optional self-test flag; no main edits if wrapper-only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Depends on PI exporting one annotated video slice."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Raw Excel-in-TIFF-space route blocked; vendored ground-truth fixture route untried."
+        }
+      }
+    },
+    {
+      "id": "WV-BLK-01",
+      "title": "BLOCKED: Retrain v1 Xenopus neighbour LOOO using PCA side-split without geometry prereg",
+      "gap": "The v1 blind route already showed wave features at chance (LOOO AUC 0.484) while orientation alone scored 0.833; docs/open-problems.json marks OP-07 refuted and names v2 ground-truth-geometry prereg as the only forward done-criterion.",
+      "done": "N/A — scorer must reject re-opening this route; any new work must cite OP-07 refuted status and branch a new prereg id (see WV-R04).",
+      "tool_route": {
+        "tools": [
+          "docs/open-problems.json",
+          "morphoeval/problem_scout_100.py rank"
+        ],
+        "commands": [
+          "python3 -c \"import json; print([p for p in json.load(open('docs/open-problems.json'))['problems'] if p['id']=='OP-07'][0]['status'])\""
+        ]
+      },
+      "deciding_data": "In repo: docs/open-problems.json OP-07; cited but absent: embryo-blind/XENOPUS_BLIND_RESULTS.md.",
+      "prior_attempts": "Multi-agent panel v1 blind — refuted; clean-geometry subset 0.802 noted as suspect (same graph node b2).",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Remediation loop could document the block in an audit, but it cannot salvage v1 without new prereg — registry lens owns the fix."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Negative result is recorded in open-problems even if full scorecard MD is missing."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Status refuted is already a checkable field in open-problems.json."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "No compute needed to record the block."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Documentation-only negative knowledge."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Immediate."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "Exact v1 LOOO route explicitly refuted in OP-07."
+        }
+      }
+    }
+  ]
+}
