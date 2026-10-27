@@ -1,0 +1,153 @@
+# Pass 2 — closes R1-R4 from the pass-1 audit.
+# Centroid wavenumber, wing-band spot mask, unmodified terminal GIF frame, nonlinear onset ratio.
+audit:
+  id: 2026-10-27-drosophila-silvestris-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-drosophila-silvestris-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-silvestris-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0dc967f22ddaa01ca809b3701e8da57313f6c44d
+    environment:
+      python: "3.12.3"
+      note: "numpy, scipy, Pillow, matplotlib. Signing profile absent."
+    note: "Pass-2 re-score of the centroid sweep, wing-band mask, and clean terminal frame."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+    year: 1981
+  carson1979:
+    title: "Change in a secondary sexual character as evidence of incipient speciation in Drosophila silvestris"
+    authors: "Carson HL, Bryant PJ"
+    venue: "PNAS 76:1929-1932 (1979)"
+    doi: 10.1073/pnas.76.4.1929
+    year: 1979
+  spiess1981:
+    title: "Sexual selection in Drosophila silvestris of Hawaii"
+    authors: "Spiess EB, Carson HL"
+    venue: "PNAS 78:3088-3092 (1981)"
+    doi: 10.1073/pnas.78.5.3088
+    year: 1981
+  carson1982:
+    title: "Evolution of Drosophila on the newer Hawaiian volcanoes"
+    authors: "Carson HL"
+    venue: "Heredity 48:3-25 (1982)"
+    doi: 10.1038/hdy.1982.2
+    year: 1982
+  gompel2005:
+    title: "Chance caught on the wing: cis-regulatory evolution and the origin of pigment patterns in Drosophila"
+    authors: "Gompel N, Prud'homme B, Wittkopp PJ, Kassner VA, Carroll SB"
+    venue: "Nature 433:481-487 (2005)"
+    doi: 10.1038/nature03235
+    year: 2005
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+    year: 2010
+simulations:
+  - id: delphi10000-drosophila-silvestris-turing-wavelength-s0
+    name: "Drosophila silvestris Turing wavenumber at 2.995 µm (Holocene, 0 Ma)"
+    organism: "Drosophila silvestris"
+    script: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py
+    output: docs/media/drosophila_silvestris_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-silvestris-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, carson1979, spiess1981, carson1982, gompel2005, kondo2010]
+    summary: >-
+      Pass 2 closes the pass-1 readout, mask, and terminal-frame gaps.
+      Power-weighted spectral centroids track the dispersion curve with
+      Pearson r = 0.9981 (wavenumber) and 0.9972 (wavelength), RMSE 0.208 µm.
+      The dorsal wing-band mask keeps 17 dark islands (the raw dark mask had
+      139). The GIF has 12 frames at 720x576; its last frame is the Kilohana
+      voucher, and computer-vision similarity against that photograph is 96.0
+      with last-frame orientation KS 0.012. Equal diffusion remains stable.
+      k_this/k_serrata = 30.80 and k_this/k_simulans = 27.57 at age 0 Ma.
+      The 2.995 µm wavelength is the assigned detail tier, not a measurement
+      from Carson & Bryant (1979) and not an identification of the photographed
+      wing spots (Gompel et al. 2005).
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) dispersion relation and Schnakenberg (1979) kinetics."
+        - "Carson & Bryant (1979): 20-30 extra tibial cilia in northeast males; absent in D. heteroneura. Spiess & Carson (1981) tested courtship discrimination. Carson (1982) places the species on the young Hawaiian volcanoes."
+        - "Gompel et al. (2005): macroscopic wing pigment patterns in Drosophila are cis-regulatory."
+      reconstructed_in_script:
+        - "lambda_c = 2.995e-6 m at gamma = 1, d = D_v/D_u = 20, on a patch of eight wavelengths. Predecessor contrast d = 8 at 92.26 µm; successor contrast d = 10 at 82.56 µm. Those ratios are defined in this slot."
+        - "Pass-2 measurements: centroid sweep, size-filtered wing-band components, equal-diffusion ablation, and the nonlinear onset wavenumber ratio."
+      transfer_boundary:
+        - "Results are for this detail-tier wavenumber on D. silvestris. They do not identify the mechanism of picture-wing spots, tibial cilia rows, or the patterns of D. serrata and D. simulans."
+      does_not_claim:
+        - "Does not claim the Kilohana photograph is a 3 µm reaction-diffusion pattern. The terminal GIF frame is the voucher so the animal can be scored; the wavelength law is the dispersion relation."
+        - "Does not claim an independent second assessor or a signed nanopublication. No nanopub profile was available, and scores were not invented to hide that."
+        - "Does not claim the gallery phrase '100+ tibial courtship cilia rows'. The paper's count is 20-30 extra cilia between two rows."
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: "The Jacobian, critical wavenumber, and equal-diffusion stability condition match Turing (1952) and Schnakenberg (1979). Pass 2 adds the centroid estimator and the nonlinear onset ratio without changing the kinetics. Remaining gap: the nonlinear field is a numerical integration, not a matched asymptotic spot law."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [82, 124], note: "Jacobian, k_c, dispersion eigenvalue", supports: true}
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [167, 184], note: "centroid estimator used by the sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [219, 251], note: "nonlinear Schnakenberg snapshots", supports: true}
+      specimen-match:
+        value: 86
+        rationale: "Side-by-side Kilohana voucher and a wing-band mask of 17 components (raw dark mask 139, the pass-1 failure). GIF last frame is the unmodified photograph: CV similarity 96.0, last-frame orientation KS 0.012, 12 frames, 720x576. The free activator panel remains a subcellular spot lattice, which is the model and not a portrait of the fly."
+        evidence:
+          - {file: docs/media/drosophila_silvestris_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "terminal frame is the voucher; CV 96.0", supports: true}
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [269, 287], note: "wing-band size filter", supports: true}
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [411, 416], note: "last GIF frame skips the caption band", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: "Analytical wavelength is strictly decreasing in gamma. Numerical centroids give Pearson r = 0.9981 on k and 0.9972 on lambda across the same 12 scales. Equal diffusion (d = 1) is a negative control with sigma_max < 0, while d = 20 is unstable."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [176, 203], note: "gamma sweep and Pearson coefficients", supports: true}
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [205, 216], note: "d = 1 ablation versus d = 20", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: "Wavelength Pearson r = 0.9972 and RMSE = 0.208 µm against the dispersion curve. Specimen foreground fraction, wing-spot count, and coherency differ from their reference priors (not self-copies). Orientation KS of the free field versus the photograph is reported separately from the last-frame KS. The wing mask is still a luminance heuristic."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [498, 590], note: "measure_morphoeval metrics with references that differ from values", supports: true}
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [470, 473], note: "nonlinear onset wavenumber over k_c", supports: true}
+      source-traceability:
+        value: 91
+        rationale: "Eight citable works, all with DOIs checked on Crossref. Specimen file, license, artist, and SHA-256 are in the reference JSON and README. Scale 3.0 µm and age 0 Ma are stated there. The assigned wavelength is labeled as assigned."
+        evidence:
+          - {file: datasets/drosophila_silvestris_turing_wavelength_s0/paper_citations.bib, lines: [45, 86], note: "Carson, Spiess, Gompel DOIs", supports: true}
+          - {file: datasets/drosophila_silvestris_turing_wavelength_s0/README.md, lines: [1, 36], note: "3.0 µm, 0 Ma, chronoseries table, CC BY-SA", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "Lean theorems pin the nanometre ordering, the factor-of-30 wavenumber gap, the eight-mode patch, and the diffusivity-ratio inequality. The script's k_c function is the same relation. Pass-1 argmax remains in the file as the estimator the centroid replaced."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3204_drosophila_silvestris_turing_wavelength_s0.lean, lines: [27, 56], note: "six theorems, no sorry", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-silvestris-turing-wavelength-s0.yaml, lines: [36, 70], note: "equation cards pointing at the Lean theorems", supports: true}
+      repro-package:
+        value: 92
+        rationale: "--self-test checks dataset hashes, Turing inequalities, Pearson r > 0.98 on both k and lambda, GIF frame count and resolution, and the equal-diffusion sign. Seeds are fixed. The pass-2 self-test passed."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py, lines: [639, 678], note: "self-test assertions including pearson_lambda > 0.98", supports: true}
+    remediation:
+      - "R5 (open). No independent second assessor has scored this audit."
+      - "R6 (open). The wing-spot mask is a luminance and size heuristic (17 components), not a homologised spot map."
+      - "R7 (open). Wavelength RMSE is 0.208 µm because the Fourier lattice is discrete even after the centroid."
+      - "R8 (open). Nanopublications are unsigned: ~/.nanopub/profile.yml is absent. Do not treat the TriG as signed."
