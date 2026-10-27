@@ -1,6 +1,6 @@
 # MorphoEval report — audit `2026-10-27-eohippus-angustidens-turing-wavelength-s0-audit-v2`
 
-Rubric **0.1.0** · checkpoint `0c76d15d14afcec6c366e1b9274a6586a0de48fc` · assessor `pkr:model/grok-4.7` (pk:LLMClaimAssessment) · tracked in — · supersession chain `2026-10-27-eohippus-angustidens-turing-wavelength-s0-audit -> 2026-10-27-eohippus-angustidens-turing-wavelength-s0-audit-v2`
+Rubric **0.1.0** · checkpoint `b6fee985871268f23e54cff46ae5985cc017a4e8` · assessor `pkr:model/grok-4.7` (pk:LLMClaimAssessment) · tracked in — · supersession chain `2026-10-27-eohippus-angustidens-turing-wavelength-s0-audit -> 2026-10-27-eohippus-angustidens-turing-wavelength-s0-audit-v2`
 
 Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the Project Delphi rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
@@ -66,4 +66,4 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 ## Environment at checkpoint
 
 
-Pass 2 working tree on top of 0c76d15d. Nanopub signing was not available (~/.nanopub/profile.yml absent). Lean binary was not installed; the integer inequalities were checked with Python before being written as decide proofs.
+Slot 3219 model, specimen, GIF, and Lean file are in b6fee985. Nanopubs were not signed (~/.nanopub/profile.yml absent). Lean was not executed here; the integer inequalities were checked in Python and written as decide proofs.
