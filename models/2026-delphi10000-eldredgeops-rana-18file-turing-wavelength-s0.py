@@ -380,6 +380,9 @@ def core_results() -> dict:
 
 def measure_morphoeval() -> list[dict]:
     """Morphometrics for measure_outputs.py. Values are not copies of their references."""
+    import os
+    if os.environ.get("MORPHOEVAL_PASS") == "2":
+        return measure_morphoeval_pass2()
     r = core_results()
     return [
         {
@@ -698,7 +701,16 @@ def augment_pass2() -> dict:
 
 
 def measure_morphoeval_pass2() -> list[dict]:
-    base = measure_morphoeval()
+    import os
+    saved = os.environ.get("MORPHOEVAL_PASS")
+    os.environ["MORPHOEVAL_PASS"] = "1"
+    try:
+        base = measure_morphoeval()
+    finally:
+        if saved is None:
+            os.environ.pop("MORPHOEVAL_PASS", None)
+        else:
+            os.environ["MORPHOEVAL_PASS"] = saved
     if "pass2" not in _CACHE:
         augment_pass2()
     p2 = _CACHE["pass2"]
