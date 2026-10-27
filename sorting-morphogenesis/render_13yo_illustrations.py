@@ -777,7 +777,7 @@ def render_fig8_ai_vs_human_authorship_heatmap():
         [ 20,  60,  70,  60,  80],  # 7. Scoreboard Room (PI chose 3-pillar weights & D/P split; AI tallied)
         [ 15,  62,  85,  88,  90],  # 8. Conservation Lab / Methods (NeuroEval -> BioEval -> MorphoEval)
         [ 15,  58,  90,  92,  88],  # 9. Curator's Reply (Sweet critique chosen & Foresight paragraph by PI; walkthrough drafted by AI from locked audit files)
-        [ 10,  25,  40,  30,  60],  # 10. Annex (PI pasted ~5k-char draft + Deep Platonic AI Stack; AI copy-edited, added links/refs, drafted the override arithmetic paragraph)
+        [ 10,  25,  40,  30,  60],  # 10. Annex (PI pasted ~5k-char draft + Deep Platonic AI Stack; AI copy-edited, added links/refs, drafted the closing loop paragraph)
         [ 10,  40,  75,  80,  82],  # 11. Exit / Reading Room (Hellenic Tantra, Thompson 1913 / Aristotle psyche & conclusion by PI; scoreboard bullets by AI)
         [ 15,  72,  90,  60,  80],  # 12. Footnotes, the ++ & Problem Graph (PI: "81.6++%" idea + GIF; AI drafted footnote 3, built animation)
     ], dtype=float)
