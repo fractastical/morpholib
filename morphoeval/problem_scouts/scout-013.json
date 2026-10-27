@@ -1,0 +1,144 @@
+{
+  "scout": "scout-013",
+  "ground": "thompson",
+  "lens": "lean",
+  "candidates": [
+    {
+      "title": "Prove isotropic Laplacian truss compliance cannot span antiparallel vein dipoles (D4 barrier)",
+      "gap": "Pre-registered D4 required B_ven7 (3 global + 4 isotropic Schur modes) to beat Thompson-7 by ≥12 pp; the run gained only +3.8 pp and left five landmarks at negative R². The repo has a 2-landmark seesaw proof in Loop_perrard_vespinae_wing_mechanics.lean but no theorem that the locked isotropic 4-mode interior span is orthogonal to the (1,-1) dipole direction on the prestigma/basal-M pair.",
+      "done": "A new 0-sorry Lean file proves (for the discrete vein graph encoded in thompson/portfolio/groups/vespinae_venation_mechanics.py) that any linear combination of the three global modes plus four pinned-perimeter Laplacian compliance modes has zero coefficient on the antiparallel dipole for landmarks LM5 and LM14, matching the empirical LM5/LM14 R² signs in thompson/portfolio/results/vespinae_venation_mechanics.json. Pass: `lean morphoeval/lean/loops/Loop_<slot>_vespinae_isotropic_truss_dipole_barrier.lean` exit 0 and `python3 morphoeval/validate_loop_isolation.py --lean-file <that path> --skip-git-diff` reports 0 sorry.",
+      "tool_route": "Lean 4 loop file (0-sorry contract) via `morphoeval/validate_loop_isolation.py --lean-file …`; optional cross-check against `python3 thompson/portfolio/groups/vespinae_venation_mechanics.py` (reconfirms D4 numbers unchanged).",
+      "deciding_data": "In repo: VEIN_EDGES_1 / PERIMETER_LMS_0 / INTERIOR_LMS_0 in thompson/portfolio/groups/vespinae_venation_mechanics.py; scored metrics in thompson/portfolio/results/vespinae_venation_mechanics.json (hypotheses D3–D4).",
+      "prior_attempts": "Portfolio run 2026-10-24: D4 ✗ (+3.8 pp, not +12 pp). Partial Lean: `morphoeval/lean/loops/Loop_perrard_vespinae_wing_mechanics.lean` (Theorems 1–3, 2026) proves the 2-LM antiparallel seesaw and polytomy copy error, not the full truss rank barrier.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Extends an existing 0-sorry loop pattern to the exact pre-registered B_ven7 construction already implemented in Python." },
+        "data_in_hand": { "score": 18, "why": "Vein topology and D4 outcome JSON are committed; no new fetch." },
+        "falsifiable_done": { "score": 14, "why": "Kernel check plus explicit LM5/LM14 dipole orthogonality claims are machine-verifiable." },
+        "compute_in_repo": { "score": 14, "why": "Lean compile and optional venation script rerun finish in minutes on the cloud image." },
+        "isolation": { "score": 10, "why": "Adds only new Loop_*.lean (+ optional math_kg yaml) under morphoeval/." },
+        "time_to_verdict": { "score": 8, "why": "One loop sitting: formalize graph Laplacian modes as finite matrices in Int." },
+        "not_blocked": { "score": 5, "why": "D4 empirical failure is documented; the isotropic-span impossibility theorem was not previously claimed or refuted." }
+      }
+    },
+    {
+      "title": "Leporidae cranial LM pairs: classify antiparallel symmetry and predict negative Thompson-7 R²",
+      "gap": "Leporidae scored 0/3 (LS1–LS3); `inner_exceeds_outer` is true for T7 residuals but unlike Vespinae there is no Lean link from landmark pairing to negative per-LM R². Sherratt & Kraatz 2023 symmetric 74-LM configuration implies mirrored landmark pairs that may undergo antiparallel displacement under global modes.",
+      "done": "Lean theorem package: for each pre-registered symmetric pair (i,j) from leporidae_skulls_hypotheses.json / per_landmark residuals, either prove `explained_var_num < 0` under the symmetric (1,1) mode (same schema as Theorem 1 in Loop_perrard_vespinae_wing_mechanics.lean) or prove the pair is not antiparallel-locked. Scorer checks: `lean morphoeval/lean/loops/Loop_<slot>_leporidae_skull_dipole_pairs.lean` exit 0, and a JSON sidecar lists pairs with proved negative R² bound matching signs in thompson/portfolio/results/leporidae_skulls.json `landmark_residuals.per_landmark`.",
+      "tool_route": "New Lean loop + `python3 -c` snippet reading thompson/portfolio/results/leporidae_skulls.json to emit pair list (no change to portfolio scorer); verify with `morphoeval/validate_loop_isolation.py`.",
+      "deciding_data": "In repo: thompson/portfolio/results/leporidae_skulls.json, thompson/portfolio/groups/leporidae_skulls_hypotheses.json; Zenodo 7615230 landmarks cached under .thompson_cache when portfolio was scored.",
+      "prior_attempts": "thompson/portfolio/run_all_scouted_clades.py 2026-10-23: LS1–LS3 all ✗ (OP-10 portfolio residue). No Leporidae Lean module exists.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Direct reuse of antiparallel_vein_dipole_seesaw_theorem template on portfolio LM pairs." },
+        "data_in_hand": { "score": 17, "why": "Residual vector and hypothesis lock files are in-repo." },
+        "falsifiable_done": { "score": 13, "why": "Per-pair proved inequalities vs JSON sign pattern." },
+        "compute_in_repo": { "score": 13, "why": "Pair enumeration is O(74); Lean files stay small." },
+        "isolation": { "score": 10, "why": "New lean + optional generated pair manifest only." },
+        "time_to_verdict": { "score": 7, "why": "May need one iteration to pin the symmetric LM pairing table." },
+        "not_blocked": { "score": 4, "why": "Mammal-skull dipole story is not refuted; only the global LS hypotheses failed." }
+      }
+    },
+    {
+      "title": "Machine-check Thompson-7 tangent basis orthogonality to GPA rigid modes (QR step in thompson_mode_basis)",
+      "gap": "The engine projects seven analytic deformation fields orthogonal to translation/rotation/scale (thompson/run_phylogenetic_prediction_engine.py `thompson_mode_basis`), but MathOfBiology.lean only proves affine Jacobian facts—not that the 7×34 basis B satisfies BᵀRg = 0 and column normalization used in every portfolio LOO score.",
+      "done": "0-sorry Lean module defining the same seven field templates and four rigid templates on Int grids, constructing B via Gram–Schmidt against Rg, and proving `dot(B_k, Rg_j) = 0` for all k,j and `‖B_k‖² = 1` in the discrete inner product. Pass: `lean morphoeval/lean/loops/Loop_<slot>_thompson7_rigid_orthogonal.lean` exit 0.",
+      "tool_route": "Lean 4 loop; regression hook: `python3 -m compileall thompson/run_phylogenetic_prediction_engine.py` (syntax) plus optional numeric spot-check script comparing Float QR to Lean definitions on consensus from vespinae_wings.json.",
+      "deciding_data": "In repo: thompson/run_phylogenetic_prediction_engine.py lines 110–126; consensus coordinates in thompson/portfolio/results/vespinae_wings.json.",
+      "prior_attempts": "MathOfBiology.lean Section 4 (Thompson affine/TPS lemmas) — partial, does not cover the 7-mode QR pipeline used in portfolio scoring.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "Pure linear-algebra theorem matching the exact Python basis construction." },
+        "data_in_hand": { "score": 16, "why": "Field formulas and consensus M0 are fixed in repo JSON." },
+        "falsifiable_done": { "score": 15, "why": "Orthogonality and unit-norm are exact kernel goals." },
+        "compute_in_repo": { "score": 15, "why": "No datasets beyond fixed small landmark vectors." },
+        "isolation": { "score": 10, "why": "Single new Loop file; no edits to shared MathOfBiology.lean required." },
+        "time_to_verdict": { "score": 9, "why": "One sitting if discretized on 19×2 integer grid." },
+        "not_blocked": { "score": 5, "why": "Not previously attempted in Lean." }
+      }
+    },
+    {
+      "title": "Formalize non-positive phylogenetic gain ⇒ undefined W2 gain-share (Vespinae OpenTree + Leporidae)",
+      "gap": "W2 pre-registration failed with `defined: false` because full-space LOO did not beat consensus (gain_full ≤ 0). Leporidae LS2 shows the same (`gain_full` ≈ −4.2e−5). Portfolio code uses NaN guards but there is no machine-checked statement that apportioning 'share of prediction gain' is ill-posed when the denominator is non-positive.",
+      "done": "Lean theorems over Int costs: if `rms_full ≥ rms_consensus` then `gain_full := rms_consensus² − rms_full² ≤ 0`, and any ratio `gain_t7 / gain_full` with `gain_full ≤ 0` is either undefined or not a valid improvement metric. Scorer: new Loop file proves the implications; JSON check confirms vespinae_wings.json `hypotheses.W2.defined == false` and leporidae `gain_full` sign.",
+      "tool_route": "`lean morphoeval/lean/loops/Loop_<slot>_phylo_gain_share_guard.lean`; audit inputs read from thompson/portfolio/results/vespinae_wings.json and leporidae_skulls.json.",
+      "deciding_data": "In repo: thompson/portfolio/results/vespinae_wings.json (W2 note), leporidae_skulls.json (`loo.gain_full`).",
+      "prior_attempts": "vespinae_wings.py scored 2026-10-22: W2 ✗ with explicit undefined note; leporidae 0/3 same week. Not formalized in Lean.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Integer RMS/gain algebra fits 0-sorry loops (cf. Loop_085 procrustes_lyapunov_2x style)." },
+        "data_in_hand": { "score": 19, "why": "Deciding numbers already in portfolio JSON." },
+        "falsifiable_done": { "score": 14, "why": "Theorem + JSON field match is automatic." },
+        "compute_in_repo": { "score": 15, "why": "No simulation." },
+        "isolation": { "score": 10, "why": "New lean file only." },
+        "time_to_verdict": { "score": 9, "why": "Small arithmetic proof." },
+        "not_blocked": { "score": 5, "why": "Negative result recorded; formal guard not yet written." }
+      }
+    },
+    {
+      "title": "Representation-floor lower bound for Thompson-7 LOO error (links T7 to ~50 Myr collapse narrative)",
+      "gap": "THOMPSON_PHYLOGENETIC_PREDICTIONS.md states Thompson-7 error is bounded below by the representation floor (~0.017 Procrustes RMS) rather than phylogenetic signal; beyond ~50 Myr predictors collapse to consensus (OP-04). No Lean inequality chain connects oracle T7 RMS ≤ any T7 predictor RMS ≤ full predictor.",
+      "done": "Lean proof: for integer squared Procrustes costs, `rms_t7 ≥ rms_t7_oracle` and if predictor uses only columns of B then `rms ≥ rms_oracle`; instantiate oracle/medians from thompson/portfolio/results/vespinae_wings.json `loo_medians.rms_thompson7_oracle` vs `rms_thompson7`. Pass: 0-sorry loop + checker script verifying oracle ≤ reported medians for all portfolio clades with those fields.",
+      "tool_route": "Lean loop + `python3` one-liner scanning thompson/portfolio/results/*.json for oracle vs T7 median ordering.",
+      "deciding_data": "In repo: thompson_phylogenetic_prediction_engine.json (representation_floor_rms_thompson7) and per-clade portfolio JSON LOO medians.",
+      "prior_attempts": "Engine documented in docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md; FishShapes blind H4/H5 partial failures (docs/THOMPSON_BLIND_TEST_RESULTS.md). OP-04 open on deep-horizon beat, not on floor bound.",
+      "factors": {
+        "tool_fit": { "score": 18, "why": "Inequality proof is Lean-native; numeric floors verified from JSON." },
+        "data_in_hand": { "score": 17, "why": "Floors and medians committed." },
+        "falsifiable_done": { "score": 12, "why": "Oracle ≤ median check is mechanical across JSON files." },
+        "compute_in_repo": { "score": 14, "why": "Minutes." },
+        "isolation": { "score": 9, "why": "New lean + tiny verifier script in morphoeval/." },
+        "time_to_verdict": { "score": 7, "why": "Proof is short; JSON scan is batch." },
+        "not_blocked": { "score": 4, "why": "Narrative exists; formal link not done." }
+      }
+    },
+    {
+      "title": "Box-stretch (diagonal affine) cannot realize oblique shear needed for homology-anchored fish warps",
+      "gap": "thompson/run_box_vs_warping_audit.py shows 4-parameter box stretch explains 2.4% variance on Scarus→Pomacanthus homologous perimeter vs 30.7% for skew+nonlinear modes (Thompson 1917 Figs 375–376). MathOfBiology proves unit shear area-preserving but not that diagonal-only Jacobians fix off-diagonal shear to zero, blocking oblique pairs.",
+      "done": "Lean: if `g_xy = g_yx = 0` then horizontal-vertical shear parameter is identically zero; oblique shear with `g_xy ≠ 0` requires off-diagonal Jacobian per thompson_unit_shear_area_preserving extension. Optional numeric witness from datasets/thompson/thompson_1917_exact_species_landmarks.json embedded as Int constants. Pass: 0-sorry loop cited by audit YAML pointing to box audit JSON thompson_box_vs_warping_audit.json.",
+      "tool_route": "`lean morphoeval/lean/loops/Loop_<slot>_thompson_box_vs_oblique_shear.lean`; reproduce audit via `python3 thompson/run_box_vs_warping_audit.py` (read-only validation).",
+      "deciding_data": "In repo: datasets/thompson/thompson_1917_exact_species_landmarks.json, thompson_box_vs_warping_audit.json (generated by audit script).",
+      "prior_attempts": "run_box_vs_warping_audit.py and T1917-046 DONE_REPO refutation in docs/THOMPSON_1917_CLAIM_INVENTORY.md; not Lean-checked beyond affine_jacobian_det lemma.",
+      "factors": {
+        "tool_fit": { "score": 20, "why": "Builds directly on MathOfBiology affine_jacobian_det and audit numbers." },
+        "data_in_hand": { "score": 16, "why": "Landmarks and audit outputs in repo (regenerate audit if JSON missing)." },
+        "falsifiable_done": { "score": 13, "why": "Shear zero iff off-diagonal zero is exact." },
+        "compute_in_repo": { "score": 12, "why": "Audit script runtime modest." },
+        "isolation": { "score": 9, "why": "New lean file; audit script already exists." },
+        "time_to_verdict": { "score": 8, "why": "One loop plus audit rerun." },
+        "not_blocked": { "score": 5, "why": "Empirical audit done; formal shear barrier not filed." }
+      }
+    },
+    {
+      "title": "OP-04: beat clade prior beyond 50 Myr (deep-horizon phylogenetic skill)",
+      "gap": "Open problem OP-04 and THOMPSON_BLIND_TEST_RESULTS.md: beyond ~50 Myr, engine collapses toward clade prior; FishShapes H4 failed. Needs new pre-registered predictors (stem placement, non-Gaussian process), not algebraic Lean.",
+      "done": "Pre-registered deep-horizon test beating locked baseline ratio 0.52 vs consensus on tau≥50 Myr (FishShapes) or wider portfolio anchor—outside Lean 0-sorry scope.",
+      "tool_route": "Wrong lens: `thompson/score_locked_predictions.py` / `thompson/portfolio/score_fishbase_subjective.py` + Delphi scoring; Lean cannot decide without embedding full BM/GLS.",
+      "deciding_data": "In repo: docs/THOMPSON_BLIND_PREREGISTRATION.md, FishShapes scores; public Zenodo 6642650.",
+      "prior_attempts": "Claude Fable on OP-04 (open-problems.json); blind test H4/H5 ✗ 2026-10-22.",
+      "factors": {
+        "tool_fit": { "score": 2, "why": "Requires stochastic phylogenetic inference, not Lean 4 loop files." },
+        "data_in_hand": { "score": 14, "why": "FishShapes and engine JSON in repo." },
+        "falsifiable_done": { "score": 10, "why": "Hash-locked blind protocol exists." },
+        "compute_in_repo": { "score": 10, "why": "Engine reruns are hours-scale but feasible." },
+        "isolation": { "score": 6, "why": "Would touch thompson scoring paths." },
+        "time_to_verdict": { "score": 3, "why": "Multi-iteration modeling, not one loop." },
+        "not_blocked": { "score": 2, "why": "H4/H5 already falsified simple deep-horizon claims." }
+      },
+      "alternate_lens": "Python portfolio engine + pre-registered Delphi (scout with lens `python` or `stats`)."
+    },
+    {
+      "title": "BLOCKED (negative knowledge): Re-run Vespinae W1–W7 on OpenTree polytomy only to recover phylogenetic LOO skill",
+      "gap": "N/A — route refuted.",
+      "done": "Do not re-propose: W3 ratio 1.00, W5 white noise on OpenTree (docs/portfolio/vespinae_wings.md). Repair path D1–D5 with Perrard tree already scored 7/8.",
+      "tool_route": "Blocked; use resolved-tree + mechanics route (`vespinae_venation_mechanics.py`) instead.",
+      "deciding_data": "thompson/portfolio/results/vespinae_wings.json vs vespinae_venation_mechanics.json.",
+      "prior_attempts": "vespinae_wings.py 2026-10-22: 0/7; vespinae_venation_mechanics.py 2026-10-24: 7/8 with Lean partial formalization Loop_perrard_vespinae_wing_mechanics.lean.",
+      "factors": {
+        "tool_fit": { "score": 0, "why": "Empirical null already recorded; Lean cannot overturn without new data." },
+        "data_in_hand": { "score": 20, "why": "Both JSON outcomes in repo." },
+        "falsifiable_done": { "score": 15, "why": "W3/W5 failure criteria already met." },
+        "compute_in_repo": { "score": 15, "why": "N/A — do not run." },
+        "isolation": { "score": 0, "why": "Re-running would duplicate scored clade." },
+        "time_to_verdict": { "score": 0, "why": "Verdict already closed." },
+        "not_blocked": { "score": 0, "why": "Explicitly refuted pre-venation overhaul." }
+      }
+    }
+  ]
+}
