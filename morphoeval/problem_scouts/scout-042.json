@@ -1,0 +1,177 @@
+{
+  "scout": "scout-042",
+  "ground": "bioelectric",
+  "lens": "measure",
+  "candidates": [
+    {
+      "title": "Cervera gap-junction GIF missing from audit fingerprints",
+      "gap": "MorphoEval audit `2026-10-17-cervera-audit-v2` declares `output: cervera_levin_mafe_gj_block.gif` at repo root, but the rendered asset lives at `docs/media/cervera_levin_mafe_gj_block.gif`; `measure_outputs.py` therefore leaves the GIF in `missing` and no sha256/frame count is pinned in the sidecar.",
+      "done": "After re-running `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-cervera-audit-v2.yaml` (with audit evidence paths corrected in a new audit YAML only), `missing` is empty for simulation `cervera-levin-mafe` and `outputs.cervera-levin-mafe` contains an entry for `docs/media/cervera_levin_mafe_gj_block.gif` with `frames` >= 24 and a non-null `sha256`.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/<new>-cervera-audit-v3.yaml (audit YAML cites `docs/media/cervera_levin_mafe_gj_block.gif`; script already supports `--gif` via `models/2021-Cervera–Levin–Mafe.py`).",
+      "deciding_data": "In repo: `docs/media/cervera_levin_mafe_gj_block.gif`, `morphoeval/audits/2026-10-17-cervera-audit-v2.yaml`, existing sidecar `morphoeval/audits/2026-10-17-cervera-audit-v2.measurements.yaml` (`missing` lists `cervera_levin_mafe_gj_block.gif`).",
+      "prior_attempts": "OpenAI `gpt-5.6-sol` Pass 1/2 Cervera audits (`2026-10-17-cervera-audit-v2.yaml`) verified byte-identical PNG/CSV/GIF under `/tmp` but did not reconcile committed `docs/media/` paths with audit `output` fields.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "`measure_outputs.py` fingerprints cited evidence files and emits `missing` vs `outputs` deterministically." },
+        "data_in_hand": { "score": 20, "why": "GIF and audit YAML are already committed; no external fetch." },
+        "falsifiable_done": { "score": 15, "why": "Sidecar JSON/YAML fields `missing` length and GIF `sha256`/`frames` are machine-checkable." },
+        "compute_in_repo": { "score": 14, "why": "Single measure_outputs pass plus optional GIF re-render completes in minutes on the repo stack." },
+        "isolation": { "score": 9, "why": "Closable as new audit v3 YAML + regenerated `.measurements.yaml` only (zero-conflict pattern)." },
+        "time_to_verdict": { "score": 9, "why": "One command plus YAML path fix yields immediate sidecar verdict." },
+        "not_blocked": { "score": 5, "why": "No prior attempt recorded this exact fingerprint-path mismatch as closed." }
+      }
+    },
+    {
+      "title": "Cervera pharynx-threshold inverse f2_b numerically consistent",
+      "gap": "Audit `2026-10-17-cervera-audit-v2` remediation still cites a clipped `f2_for_shift` inversion (CSV threshold ~0.20 vs true ~0.42), while the script now bisects on `wavefront_for_f2` and self-test checks the inverse; the published sidecar does not encode an explicit pass/fail on `f2_b` and `x*(f2_b)=x*_b`.",
+      "done": "Regenerated `2026-10-17-cervera-audit-v2.measurements.yaml` measurement `pharynx-boundary criterion x*_b` has a `note` parsing `f2_b` with 0.35 <= f2_b <= 0.55 and |x*(f2_b) - x*_b| <= 0.01 AP fraction (values taken from sidecar, cross-checked against `models/2021-Cervera–Levin–Mafe.py` `self_test_model` L1455-L1457).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-cervera-audit-v2.yaml (uses built-in `measure_cervera()` importing the script and `run_integrated_analysis`).",
+      "deciding_data": "In repo: `models/2021-Cervera–Levin–Mafe.py`, `morphoeval/measure_outputs.py` (`measure_cervera`), `datasets/planform/planform_canonical_silhouettes_v1.json`.",
+      "prior_attempts": "`gpt-5.6-sol` audit v2 (`2026-10-17-cervera-audit-v2.yaml` L313) requested fixing `f2_for_shift`; builder patched bisection (script docstring L343-L347) and added self-test inverse check L1455-L1457; audit prose not re-scored for closure.",
+      "factors": {
+        "tool_fit": { "score": 24, "why": "`measure_cervera` already recomputes `f2_b`, `x_star_b`, and wavefront crossings from the live script." },
+        "data_in_hand": { "score": 20, "why": "All inputs are vendored Planform silhouettes and the Cervera script." },
+        "falsifiable_done": { "score": 14, "why": "Numeric intervals on `f2_b` and wavefront equality are scorer-checkable without judgment." },
+        "compute_in_repo": { "score": 13, "why": "Integrated analysis rerun is ~10-15 minutes per audit notes but sidecar-only import path is faster." },
+        "isolation": { "score": 8, "why": "Verdict is a regenerated measurements sidecar; optional new audit remark file only." },
+        "time_to_verdict": { "score": 8, "why": "One measure_outputs loop once Pillow/scipy deps are available." },
+        "not_blocked": { "score": 3, "why": "Core inversion fix likely landed; this route verifies closure rather than re-proposing the same patch." }
+      }
+    },
+    {
+      "title": "Oviedo innexin-RNAi held-out RMSE vs octanol training RMSE",
+      "gap": "Cervera crop-gradient model reports training RMSE ~4.2 percentage points on octanol crops but held-out triple-innexin RNAi RMSE ~23.5 points (r≈0.94); audits ask whether that gap is adequate but no sidecar encodes the train/test ratio as a decision statistic.",
+      "done": "Sidecar contains `Oviedo 2010 octanol crop-gradient training RMSE` value T and `Oviedo 2010 triple-innexin RNAi held-out RMSE` value H with H/T >= 4.0 and H >= 20.0 (percentage points), matching PlanformDB-derived frequencies in `datasets/planform/rusty_matter_planformdb_derived_v0.json` / `planform_bioelectric_series_v1.json` series S1/S2.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-cervera-audit-v2.yaml; optional cross-read `morphoeval/audits/2026-10-17-blinded-sample-audit.measurements.yaml` for duplicate Oviedo rows.",
+      "deciding_data": "In repo: Planform-derived JSON fixtures under `datasets/planform/`; sidecar values at `morphoeval/audits/2026-10-17-cervera-audit-v2.measurements.yaml` L62-L78.",
+      "prior_attempts": "`2026-10-17-cervera-audit-v2.yaml` and `2026-10-17-blinded-sample-audit.yaml` (L1190-L1195) documented the 23.5-point held-out error; no recorded attempt refuted remeasuring those two RMSE fields.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "`measure_cervera` exports both RMSE values on every sidecar regeneration." },
+        "data_in_hand": { "score": 19, "why": "Empirical frequencies are vendored from PlanformDB 2.5.0-derived fixtures." },
+        "falsifiable_done": { "score": 15, "why": "Ratio and absolute thresholds on two named measurements are automatic." },
+        "compute_in_repo": { "score": 13, "why": "Same Cervera integrated analysis as other planarian bioelectric checks." },
+        "isolation": { "score": 9, "why": "Read-only remeasurement of existing outputs; new sidecar or scout report only." },
+        "time_to_verdict": { "score": 9, "why": "Single sidecar regeneration." },
+        "not_blocked": { "score": 5, "why": "Audits flagged weakness but did not mark remeasurement as refuted." }
+      }
+    },
+    {
+      "title": "Rusty-matter planarian trace port parity bound",
+      "gap": "Cervera couples to MesmerPrism/rusty-matter reference traces (`datasets/planform/rusty_matter_planarian_traces.json`); the sidecar reports max |Δ|=0.0332 state units vs reference 0.0 with no explicit tolerance gate in MorphoEval scoring.",
+      "done": "Regenerated sidecar measurement `rusty-matter trace parity, max |Δ|` <= 0.05 state units (strict pass) or documented exceedance if greater, with reference pinned to rusty-matter commit ad111fa7ecfd8f43d292ff3b1d27d3af2741d828.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-17-cervera-audit-v2.yaml (`measure_cervera` max_trace_err).",
+      "deciding_data": "In repo: `datasets/planform/rusty_matter_planarian_traces.json` (SHA-256 in `datasets/planform/README.md`).",
+      "prior_attempts": "First Cervera audit verified all-frame parity qualitatively; v2 sidecar quantified max |Δ| but did not set a pass threshold in audits.",
+      "factors": {
+        "tool_fit": { "score": 25, "why": "Dedicated parity metric is first entry in `measure_cervera` output." },
+        "data_in_hand": { "score": 20, "why": "Reference traces vendored in-repo." },
+        "falsifiable_done": { "score": 15, "why": "Single numeric inequality on max |Δ|." },
+        "compute_in_repo": { "score": 14, "why": "Runs inside measure_cervera without wet lab." },
+        "isolation": { "score": 10, "why": "Sidecar-only delta." },
+        "time_to_verdict": { "score": 10, "why": "Fastest Cervera measurement tranche." },
+        "not_blocked": { "score": 5, "why": "Tolerance gate never adjudicated." }
+      }
+    },
+    {
+      "title": "Pietak 5-HT Boltzmann ratio vs analytical reference",
+      "gap": "Slot 082 audit claims quantitative Nernst-Planck equilibrium; sidecar shows c_post/c_ant=4.6984 vs analytical 4.6992/4.7002 with RMSE noted in text but no automated pass band in audit scoring.",
+      "done": "Regenerated `2026-10-19-bioelectric-morphogen-coupling-audit-v2.measurements.yaml` reports |c_post/c_ant - 4.7002| <= 0.002 and 9-point Boltzmann sweep Pearson r >= 0.9999 (values from `measure_morphoeval()` via measure_outputs dynamic path).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-bioelectric-morphogen-coupling-audit-v2.yaml (loads `models/2017-pietak-bioelectric-morphogen-coupling.py::measure_morphoeval`).",
+      "deciding_data": "In repo: `datasets/bioelectric_morphogen_coupling/bioelectric_morphogen_coupling_reference.json`; Pietak & Levin (2017) doi:10.1098/rsif.2017.0425 constants in script.",
+      "prior_attempts": "Pass 2 loop `2026-10-19-bioelectric-morphogen-coupling-loop` scored 93.8/100; remediation targets 2D Voronoi extension, not Boltzmann ratio re-measurement.",
+      "factors": {
+        "tool_fit": { "score": 23, "why": "measure_outputs invokes script-native `measure_morphoeval()` for Pietak." },
+        "data_in_hand": { "score": 20, "why": "Reference JSON and sidecar already committed." },
+        "falsifiable_done": { "score": 15, "why": "Absolute error and correlation thresholds are numeric." },
+        "compute_in_repo": { "score": 14, "why": "Script import-only measurements, no rendering required." },
+        "isolation": { "score": 9, "why": "Regenerated sidecar only." },
+        "time_to_verdict": { "score": 9, "why": "One measure_outputs invocation." },
+        "not_blocked": { "score": 5, "why": "No refutation of remeasure route." }
+      }
+    },
+    {
+      "title": "Pietak posterior beta-catenin suppression vs Fig 4 anchor",
+      "gap": "Sidecar records posterior beta-catenin suppression delta 0.9993 between WT and 8-octanol 2H0T vs literature anchor reference_value 0.72 (~39% relative gap), without an audit-level pass/fail on that morphogen readout.",
+      "done": "Remeasurement sidecar reports delta in [0.55, 0.90] (literature-consistent collapse band) OR flags `exceeds_reference_band` if outside; scorer reads single `value` and `reference_value` fields only.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-bioelectric-morphogen-coupling-audit-v2.yaml.",
+      "deciding_data": "In repo: sidecar L88-L98; Pietak & Levin (2017) Fig. 4 cited in measurement `reference_source`.",
+      "prior_attempts": "Pass 2 audit accepted qualitative 2H0T memory; did not close the 0.72 vs 0.9993 numeric tension.",
+      "factors": {
+        "tool_fit": { "score": 21, "why": "Same dynamic `measure_morphoeval()` export includes the delta_B measurement." },
+        "data_in_hand": { "score": 18, "why": "Reference constant embedded in sidecar; no new fetch." },
+        "falsifiable_done": { "score": 13, "why": "Interval check on one scalar; band width is pre-registered in done clause." },
+        "compute_in_repo": { "score": 14, "why": "Script-only re-evaluation." },
+        "isolation": { "score": 9, "why": "Sidecar regeneration." },
+        "time_to_verdict": { "score": 9, "why": "Single pass." },
+        "not_blocked": { "score": 4, "why": "Discrepancy noted implicitly but not adjudicated." }
+      }
+    },
+    {
+      "title": "Beane planarian V_mem AP polarization vs +45 mV reference",
+      "gap": "Slot 081 sidecar gives WT delta_V 50.5062 mV vs cited +45.0 mV reference (Beane 2011 / Pietak 2017 convention) without a documented tolerance for remeasurement gates.",
+      "done": "Regenerated `2026-10-19-planarian-hk-atpase-anterior-audit-v2.measurements.yaml` has `Wild-type planarian anteroposterior V_mem polarization delta` within [40.0, 55.0] mV inclusive.",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml (`models/2011-beane-planarian-hk-atpase-anterior.py::measure_morphoeval`).",
+      "deciding_data": "In repo: `datasets/planarian_hk_atpase_anterior/planarian_hk_atpase_anterior_reference.json`; sidecar L63-L73.",
+      "prior_attempts": "Pass 2 planarian HK-ATPase loop scored 93.5→87.7/100 per LEVIN methods doc; no record that remeasuring delta_V was refuted.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Beane script exposes `measure_morphoeval()` consumed by measure_outputs." },
+        "data_in_hand": { "score": 20, "why": "Reference JSON pinned in dataset folder." },
+        "falsifiable_done": { "score": 14, "why": "Closed interval on one measurement value." },
+        "compute_in_repo": { "score": 13, "why": "PDE steady-state evaluation only." },
+        "isolation": { "score": 9, "why": "Sidecar-only." },
+        "time_to_verdict": { "score": 9, "why": "One command." },
+        "not_blocked": { "score": 5, "why": "Open verification gap." }
+      }
+    },
+    {
+      "title": "Xenopus Picasso GM6001 craniofacial defect vs Pinet 2019 anchor",
+      "gap": "Slot 085 sidecar GM6001 Procrustes defect delta 0.2766 vs reference_value 0.145 (Pinet et al. 2019) — model exceeds cited anchor by ~91% relative without remeasurement gate.",
+      "done": "Remeasurement confirms defect delta >= 0.20 (MMP blockade materially impairs remodeling vs closed-loop) AND documents |delta - 0.145|/0.145 in sidecar note for scorer (>0.5 flags literature mismatch).",
+      "tool_route": "python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-xenopus-craniofacial-remap-audit-v2.yaml (`models/2019-bischof-xenopus-craniofacial-remap.py::measure_morphoeval`).",
+      "deciding_data": "In repo: `datasets/xenopus_craniofacial_remap/xenopus_craniofacial_remap_reference.json`; sidecar L86-L95.",
+      "prior_attempts": "Pass 2 xenopus craniofacial loop scored 89.0/100; remediation targets 3D cartilage/MMP fields, not this scalar remeasure.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Craniofacial script `measure_morphoeval()` includes GM6001 defect delta." },
+        "data_in_hand": { "score": 19, "why": "Reference JSON and PNG/GIF outputs in repo." },
+        "falsifiable_done": { "score": 13, "why": "Two numeric checks (floor and relative error) on one measurement." },
+        "compute_in_repo": { "score": 12, "why": "RK4 landmark integration across NF stages." },
+        "isolation": { "score": 9, "why": "Sidecar-only verdict." },
+        "time_to_verdict": { "score": 8, "why": "Single measure_outputs run." },
+        "not_blocked": { "score": 5, "why": "No prior refutation of remeasure route." }
+      }
+    },
+    {
+      "title": "Levin YouTube KG verified_measurements vs referee sidecar authority",
+      "gap": "Audit `2026-10-24-levin-youtube-channel-math-audit-v3` states `docs/bioelectricity/levin_youtube_kg.json` `verified_measurements` is stale/partly builder-rewritten (2 records altered, 17 stale cross-artefact refs per referee sidecar L75-L80), while the hand-maintained sidecar is declared authoritative.",
+      "done": "Automated diff: for each meas_id present in both `morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.measurements.yaml` and KG `verified_measurements`, `value` fields match exactly; count of KG entries whose `method` text references superseded Pass 3 code == 0. (Requires JSON parse; measure_outputs alone does not diff KG — partial lens.)",
+      "tool_route": "Primary: manual/JSON diff against `morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.measurements.yaml`. Supplementary: `python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml` for figure fingerprints (script lacks `measure_morphoeval`). Better lens: `verify_integrity` / KG builder agent.",
+      "deciding_data": "In repo: `docs/bioelectricity/levin_youtube_kg.json`, referee sidecar `morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.measurements.yaml`; audit header R5/R6 notes.",
+      "prior_attempts": "Claude Fable Pass 3.2 audit v3 (57.4/100) documented R5 NOT CLOSED / REGRESSED; `docs/open-problems.json` has no OP id for this KG drift (not scored there).",
+      "factors": {
+        "tool_fit": { "score": 8, "why": "measure_outputs fingerprints PNG and dynamic measurements but does not compare KG JSON to sidecar." },
+        "data_in_hand": { "score": 20, "why": "Both artefacts committed." },
+        "falsifiable_done": { "score": 14, "why": "Field-equality counts are objective once meas_id alignment is defined." },
+        "compute_in_repo": { "score": 15, "why": "JSON/YAML diff only." },
+        "isolation": { "score": 10, "why": "Scout report or new diff script file only." },
+        "time_to_verdict": { "score": 9, "why": "One sitting JSON diff." },
+        "not_blocked": { "score": 5, "why": "Audit explicitly leaves R5 open." }
+      }
+    },
+    {
+      "title": "Pharynx-crossing double-head rule empirically grounded",
+      "gap": "Cervera maps RD wavefront crossing posterior pharynx end (`x*_b` from Planform #1) to double-head morphology without a cited empirical test or Planform frequency table tying that geometric rule to phenotype #2 outcomes.",
+      "done": "N/A for measure lens — requires literature extraction or new PlanformDB contingency table linking wavefront position bins to morphology IDs.",
+      "tool_route": "Not decidable by `measure_outputs.py` alone; would need `planform_bioelectric.py` series analytics or manual PlanformDB queries plus new audit evidence.",
+      "deciding_data": "Partially in repo via `datasets/planform/planform_bioelectric_series_v1.json` (morphology frequencies) but not linked to x*_b rule in current script outputs.",
+      "prior_attempts": "`2026-10-17-cervera-audit-v2.yaml` remediation L312 explicitly requests cited or empirically tested morphogen-to-phenotype mapping; no closure recorded.",
+      "factors": {
+        "tool_fit": { "score": 2, "why": "Current measurements report x*_b geometry but do not test phenotype rule against Planform frequencies." },
+        "data_in_hand": { "score": 16, "why": "Planform series fixture exists but is not wired to the rule test." },
+        "falsifiable_done": { "score": 8, "why": "Could become a 2x2 contingency p-value once defined, but not with today's tool route." },
+        "compute_in_repo": { "score": 10, "why": "Would be SQL/JSON aggregation on pinned PlanformDB if route existed." },
+        "isolation": { "score": 7, "why": "Would need new analysis script file." },
+        "time_to_verdict": { "score": 4, "why": "Blocked on undefined join between wavefront bins and morphology IDs." },
+        "not_blocked": { "score": 5, "why": "Audit gap still open." }
+      }
+    }
+  ]
+}
