@@ -1,0 +1,158 @@
+# MorphoEval audit v2 — Drosophila berryi detail-scale Turing wavelength, loop 3173.
+# Closes Pass-1 R1 (equal-diffusion rate) and R2 (2D wavelength lock and D_v sweep).
+# Supersedes 2026-10-27-drosophila-berryi-turing-wavelength-s0-audit.
+audit:
+  id: 2026-10-27-drosophila-berryi-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-drosophila-berryi-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-berryi-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent; second assessor not run)"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: "Pass 2. Parent commit does not contain these new files; build uses --no-verify-loci."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: "10.1016/0022-5193(79)90042-0"
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    year: 1981
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: "10.1016/0022-5193(81)90334-9"
+  kondo2010:
+    title: "Reaction-Diffusion Model as a Framework for Understanding Biological Pattern Formation"
+    authors: "Kondo, S. and Miura, T."
+    year: 2010
+    venue: "Science 329:1616-1620 (2010)"
+    doi: "10.1126/science.1179047"
+  grimaldi1987:
+    title: "Amber fossil Drosophilidae (Diptera), with particular reference to the Hispaniolan taxa"
+    authors: "Grimaldi, D. A."
+    year: 1987
+    venue: "American Museum Novitates 2880 (1987)"
+    url: "https://www.biodiversitylibrary.org/item/171121"
+  grimaldi1995:
+    title: "The Age of Dominican Amber"
+    authors: "Grimaldi, D. A."
+    year: 1995
+    venue: "ACS Symposium Series (1995)"
+    doi: "10.1021/bk-1995-0617.ch011"
+  tamura2003:
+    title: "Temporal Patterns of Fruit Fly (Drosophila) Evolution Revealed by Mutation Clocks"
+    authors: "Tamura, K., Subramanian, S. and Kumar, S."
+    year: 2003
+    venue: "Molecular Biology and Evolution 21:36-44 (2003)"
+    doi: "10.1093/molbev/msg236"
+simulations:
+  - id: delphi10000-drosophila-berryi-turing-wavelength-s0
+    name: "Drosophila berryi detail-scale Turing wavelength at 1.754 µm (19 Ma)"
+    organism: "Drosophila berryi"
+    script: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py
+    output: docs/media/drosophila_berryi_turing_wavelength_s0_comparison.png
+    also:
+      - docs/media/drosophila_berryi_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-berryi-turing-wavelength-s0-audit
+    summary: >-
+      Pass 2 keeps the Schnakenberg critical wavenumber calibrated to 1.754 µm
+      at 19 Ma (Pearson r = 0.999998, RMSE = 0.000250 on nine modes). The
+      equal-diffusion control is now the real part of the complex eigenvalue:
+      measured envelope -0.4051 versus analytical -0.4099. A six-point D_v
+      sweep lengthens lambda_sigma monotonically from 1.960 µm to 2.614 µm.
+      The early 2D field locks to lambda_sigma = 2.253 µm. Detail wavelengths
+      at fixed mode number N = 55.87 are 2.040 µm (succini, 44 Ma), 1.754 µm
+      (berryi, 19 Ma) and 1.718 µm (affinis, 0 Ma). The gallery plate remains
+      an amber spiral, not a 1.8 µm micrograph.
+    source_refs: [turing1952, schnakenberg1979, murray1981, kondo2010, grimaldi1987, grimaldi1995, tamura2003]
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and the critical-wavenumber condition."
+        - "Schnakenberg 1979 kinetics f = a - u + u^2 v, g = b - u^2 v."
+        - "Grimaldi 1987 Hispaniolan amber Drosophilidae; Grimaldi 1995 on Dominican amber age."
+      reconstructed_in_script:
+        - "Parameters a=0.2305, b=0.7942, D_u=0.03686, D_v=1.721 with the unit set so lambda_c = 1.754 µm."
+        - "Chronoseries 2.040 → 1.754 → 1.718 µm at fixed mode number 98/1.754."
+        - "Complex-mode envelope for the equal-diffusion control and a six-point D_v sweep of lambda_sigma."
+      transfer_boundary:
+        - "Ages and tissue wavelengths are Project Delphi chronoseries assignments, not quotations from Grimaldi 1987."
+        - "Murray 1981 scale argument is transferred from coat markings to the amber chronospecies metric."
+      does_not_claim:
+        - "That a fossil micrograph at 1.754 µm was fitted pixel-for-pixel."
+        - "That the GIF terminal frame is a raw PDE field; it is the gallery plate after the growth sequence."
+        - "That raising D_v is how succini differs from berryi. The chronospecies change is the metric, and the D_v sweep is a separate expressivity test."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "The script evaluates the Schnakenberg Jacobian, the classical k_c formula, and the leading eigenvalue, including the complex pair that appears when D_v = D_u. Pass 2 seeds that complex mode and fits its envelope instead of a real cosine that aliased the oscillation."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py, lines: [95, 168], note: "Jacobian, k_c and sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py, lines: [335, 391], note: "complex-mode equal-diffusion envelope", supports: true}
+      specimen-match:
+        value: 82
+        rationale: "Comparison figure shows the gallery plate, the amber Schnakenberg field, the dispersion with the corrected control, and the chronoseries bars. Computer-vision similarity of the 12-frame 720x540 GIF against the plate is 96.0 because the terminal frame is the plate. Specimen-match stays at 82 because the plate is not a 1.8 µm micrograph of berryi pigment; foreground fraction 0.3445 versus an a priori target 0.55 records that gap."
+        evidence:
+          - {file: docs/media/drosophila_berryi_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass 2 comparison figure", supports: true}
+          - {file: docs/media/drosophila_berryi_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720x540", supports: true}
+          - {file: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py, lines: [440, 475], note: "specimen segmentation with independent reference targets", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Nine wavenumbers trace sigma(k). The D_v sweep from 0.90 to 3.40 lengthens lambda_sigma monotonically from 1.960 µm to 2.614 µm. Equal diffusion and deletion of u^2 v both decay. The chronoseries metric is a separate axis from this diffusivity sweep."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py, lines: [393, 416], note: "diffusivity_sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py, lines: [187, 268], note: "nine-mode growth-rate curve", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: "Pearson r = 0.999998 and RMSE = 0.000250 against the eigenvalue curve (KS statistic 0.111 versus an a priori mismatch threshold 0.45). Equal-diffusion envelope -0.4051 versus analytical -0.4099 (error 0.0048). The 2D FFT peak locks to lambda_sigma = 2.253 µm. Specimen foreground, coherency and radial wavelength use reference targets that are not copies of the measured values."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py, lines: [585, 710], note: "measurement records with Pearson, RMSE, KS, control rate and specimen rows", supports: true}
+          - {file: datasets/drosophila_berryi_turing_wavelength_s0/drosophila_berryi_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "Pass 2 metrics JSON", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref DOIs for Turing 1952, Schnakenberg 1979, Murray 1981, Kondo and Miura 2010, Grimaldi 1995 and Tamura 2003. Grimaldi 1987 is pinned by its Biodiversity Heritage Library URL and OpenAlex id. Specimen SHA-256 f00982007d1d2ba67d3795b961e75b6b8b53f24d68c137ff2fe186fc07c4ffa5."
+        evidence:
+          - {file: datasets/drosophila_berryi_turing_wavelength_s0/paper_citations.bib, lines: [1, 77], note: "citation file", supports: true}
+          - {file: datasets/drosophila_berryi_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "slot 3173 scout dossier and collision check", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "Docstrings name the Turing formula, the complex-mode control, the D_v sweep and the chronoseries. Lean theorems in namespace MathOfBiology.Loop_3173 encode the wavelength, the Miocene gap, the diffusion-ratio sign and the mode count, with no sorry."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py, lines: [1, 55], note: "module docstring", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3173_drosophila_berryi_turing_wavelength_s0.lean, lines: [8, 43], note: "four theorems, zero sorry", supports: true}
+      repro-package:
+        value: 90
+        rationale: "--self-test checks the 1.754 µm calibration, chronoseries order, Pearson r > 0.98, the equal-diffusion rate error below 0.02, ablation decay, the monotone D_v sweep and the specimen hash. Seed 3173. One command writes the PNG, the GIF and the metrics JSON."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py, lines: [772, 808], note: "self_test", supports: true}
+          - {file: datasets/drosophila_berryi_turing_wavelength_s0/README.md, lines: [1, 34], note: "invocation, 1.8 µm and 19 Ma", supports: true}
+    remediation:
+      - id: R1
+        item: "Closed in Pass 2. Equal-diffusion envelope is -0.4051 versus analytical Re(sigma) -0.4099."
+        status: resolved
+      - id: R2
+        item: "Closed in Pass 2. Early 2D FFT peak equals lambda_sigma (2.253 µm) and the D_v sweep is monotone."
+        status: resolved
+      - id: R3
+        item: "Open. No second assessor. The gallery plate is not a 1.8 µm fossil micrograph; specimen-match is not raised to the GIF crop score."
+        status: open
