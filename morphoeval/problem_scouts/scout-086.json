@@ -1,0 +1,280 @@
+{
+  "scout": "scout-086",
+  "ground": "nanopub",
+  "lens": "wavepipe",
+  "candidates": [
+    {
+      "id": "NP-XCA2-AUDIT-GAP-01",
+      "title": "Xenopus Ca²⁺ wave-vectors: Math-KG claim without MorphoEval signed audit bundle",
+      "gap": "`morphoeval/kg/math_of_biology.ttl` registers `pk:Claim` `morphoeval-xenopus-ca2-wave-vectors` (weightOfEvidence 0.89, aristotelian index P2=91) and links it on the Xenopus laevis multiscale ladder (`morphoeval/runs/species_multiscale_registry.json`, slot null), but there is no `morphoeval/kg/2026-*-xenopus-ca2-wave-vectors-audit/` directory with eight `pk:LLMClaimAssessment` nanopubs and `published.json`, unlike sibling claims such as `2026-10-19-xenopus-craniofacial-remap-audit-v3`.",
+      "done": "A new audit folder under `morphoeval/kg/` contains unsigned `*.trig` for claim + seven rubric dimensions, `signed/` copies verified by `node morphoeval/check_signed.mjs`, and `published.json` listing at least eight nanopub names; the morphometric-validation assessment cites ≥3 numeric measurements exported from `vector_clusters.csv` (e.g. median inter-embryo propagation delay, mean cluster speed in embryo units) with method strings pointing to `analyze_experimental_hypotheses.py` or `generate_all_hypothesis_plots.py` output paths.",
+      "tool_route": "From repo root with `datasets/frog_embryo_data_processed/` present locally (gitignored): `python3 wave-vector-analysis/wave-vector-tiff-parser.py <tiff_root> 0 --fps 1.0 --csv morphoeval/scratch/xca2/spark_tracks.csv` → `python3 wave-vector-analysis/spark_tracks_to_clusters.py morphoeval/scratch/xca2/spark_tracks.csv morphoeval/scratch/xca2/vector_clusters.csv` → `python3 wave-vector-analysis/generate_all_hypothesis_plots.py morphoeval/scratch/xca2/spark_tracks.csv --clusters-csv morphoeval/scratch/xca2/vector_clusters.csv --output-dir morphoeval/scratch/xca2/hypothesis_plots` → `python3 wave-vector-analysis/generate_detection_summary.py morphoeval/scratch/xca2/spark_tracks.csv --output-dir morphoeval/scratch/xca2/detection_summary`; then `python3 morphoeval/build_morphoeval_kg.py` + `python3 morphoeval/sign_morphoeval.py morphoeval/kg/<audit-id>`.",
+      "deciding_data": "Mask sidecars under `datasets/frog_embryo_data_processed/` (documented in root `README.md`, not vendored in git); smoke subset `wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv` for CI-only partial runs; DOI anchor `10.1242/dev.199845` in `morphoeval/verify_image_fitness.py`.",
+      "prior_attempts": "Pass-3 MorphoEval coverage for `bischof-xenopus-craniofacial-remap` is published (`morphoeval/kg/2026-10-19-xenopus-craniofacial-remap-audit-v3/published.json`); no referee pass or signed nanopub bundle exists for the Ca²⁺ wave-vector slug despite registry listing and gallery GIF `docs/media/xenopus_ca2_wave_vectors_growth.gif`.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Named spark-track → cluster → hypothesis-plot + detection-summary scripts are the intended audit evidence chain for this slug."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Pipeline code and smoke CSV are in-repo; full TIFF stacks and processed masks are local/Box-only per `.gitignore`."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Scorer checks for audit directory, eight signed trig files, published.json keys, and cited cluster CSV column names."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Full re-parse of all Box videos is hours on one machine; audit packaging from existing `spark_tracks.csv` is much faster."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as new files under `morphoeval/kg/<new-audit-id>/` and scratch outputs only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One sitting if tracks CSV already built; multi-hour if parser must rerun on full TIFF corpus."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior signed MorphoEval audit or refutation record for this slug; gap is absence of publication, not a failed route."
+        }
+      }
+    },
+    {
+      "id": "NP-CA-CLAIMS-PKG-01",
+      "title": "Calcium verbatim claims: morphopkg TriG export not in signed MorphoEval KG corpus",
+      "gap": "`wave-vector-analysis/export_calcium_claims_to_pkg.py` documents 19 probabilistic nanopubs (`analysis_results/calcium_claims.pkg.trig`, `calcium_claims_graph.json`) aligned to `nanopubs/waves/` shape, but those artifacts are not committed, not built through `morphoeval/build_morphoeval_kg.py`, and not listed in any `morphoeval/kg/*/published.json` among the ~327 published simulation audits.",
+      "done": "Running the export produces `calcium_claims.pkg.trig` where exactly 19 assertion blocks exist; after ingest/sign, `published.json` records 19 entries with non-null `nanopub` URIs and `published`=`test` or `prod`; inventory status counts match `generate_claims_inventory_pdf.py` tallies (16 TESTED + 3 NOT YET per `generate_tested_claims_summary.py` header).",
+      "tool_route": "`python3 wave-vector-analysis/batch_wave_catalog.py --root <Calcium videos>` → `python3 wave-vector-analysis/parse_xy_coordinates.py --xlsx \"<Box>/XY coordinates.xlsx\"` → `python3 wave-vector-analysis/score_landmark_responses.py` → `python3 wave-vector-analysis/wave_laterality_analysis.py` → `python3 wave-vector-analysis/export_calcium_claims_to_pkg.py --out-trig morphoeval/scratch/calcium_claims.pkg.trig`; bridge to KG via new audit stub + `python3 morphoeval/sign_morphoeval.py morphoeval/kg/<calcium-claims-audit-id> --publish test`.",
+      "deciding_data": "Verbatim claim text in `wave-vector-analysis/Calcium claims.docx` (parser default in `claims_doc_parser.py`); expected CSV inputs `analysis_results/wave_catalog/wave_laterality.csv` and `analysis_results/landmark_responses.csv` (generated locally, not in git).",
+      "prior_attempts": "Levin literature waves `nanopubs/waves/signed.np_levin_nanopubs_wave*.trig` are signed but do not encode the Dietz lab Ca²⁺ imaging verdicts; zebrafish blind has a separate outcome nanopub (`nanopubs/zebrafish_blind/`) unrelated to these 19 claims.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Export script is purpose-built to turn wave_laterality + landmark scores into signable TriG."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "Docx and scripts in-repo; deciding CSVs require local Box video pipeline outputs."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Count 19 nanopubs and match TESTED/NOT YET counts to inventory PDF logic."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Catalog + laterality is hours over full video set; export alone is minutes given CSVs."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New `morphoeval/kg/*-calcium-claims-audit/` tree only; no edits to existing audit bundles."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Needs prior wave_catalog/laterality CSV generation unless cached from a Box drop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No record of a failed sign/publish attempt for calcium_claims.pkg.trig in morphoeval/kg."
+        }
+      }
+    },
+    {
+      "id": "OP-07-GEO-V2-01",
+      "title": "Xenopus neighbour-transfer v2: hash-locked scorer using XY ground-truth geometry only",
+      "gap": "`docs/open-problems.json` OP-07 marks the headline neighbour-transfer blind test refuted (LOOO AUC 0.484; orientation confound AUC 0.833). The open item is a v2 pre-registration using only ground-truth-geometry videos; `wave_laterality_analysis.py` already prefers `analysis_results/xy_ground_truth.csv` over PCA side split when present, but no signed outcome nanopub or MorphoEval assessment closes OP-07 on that route.",
+      "done": "A preregistration JSON (hash-locked before unblind) names the feature columns from `wave_laterality.csv` restricted to videos with complete `xy_ground_truth.csv` rows; post-unblind script exits 0 and writes `results.json` with LOOO AUC for the preregistered feature set; AUC is either ≥0.55 with p<0.05 vs 0.5 or ≤0.52, and a superseding outcome TriG is signed under `nanopubs/` or `morphoeval/kg/`.",
+      "tool_route": "`python3 wave-vector-analysis/parse_xy_coordinates.py --xlsx <path>` → `python3 wave-vector-analysis/wave_laterality_analysis.py` (uses ground truth) → preregistered scorer consuming `wave-vector-analysis/analysis_results/wave_catalog/wave_laterality.csv`; mirror `embryo-blind/zebrafish-blind/score_zebrafish_blind.py --unblind` pattern for Xenopus neighbour labels.",
+      "deciding_data": "`wave-vector-analysis/parse_xy_coordinates.py` target `XY coordinates.xlsx` (Box path in script defaults); OP-07 narrative in `docs/open-problems.json` and problem-graph node `b2`.",
+      "prior_attempts": "Multi-agent panel ran v1 blind test → negative (`docs/open-problems.json` status refuted); `docs/media/make_problem_graph_animation.py` narrates chance-level AUC 0.484 for calcium-wave features under orientation confound.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Laterality + ground-truth CSV is the repo’s designated geometry-correct neighbour-wave scorer."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Excel ground truth and scripts in-repo; raw videos and derived laterality CSV not vendored."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Hash-locked prereg + fixed LOOO AUC threshold vs 0.5."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Laterality pass over annotated videos fits one sitting; wet-lab not required."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New prereg + outcome files under `embryo-blind/` or `nanopubs/` without touching main pipeline code."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One loop once CSV exists; blocked on regenerating catalog if missing."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "v1 neighbour-transfer route refuted; v2 is explicitly different (ground-truth-only subset) but still easy to confound with orientation."
+        }
+      }
+    },
+    {
+      "id": "OP-08-PIXEL-V2-01",
+      "title": "Pixel blind v2: separate mirror vs headward neighbour predictions where poke position splits them",
+      "gap": "OP-08 in `docs/open-problems.json`: post-unblinding HTHT mirror signal (AUC 0.61–0.65) is exploratory and confounded because pokes were at the tail; a registered test must separate mirror-image proximity from headward propagation using videos where poke position discriminates the hypotheses.",
+      "done": "Preregistered feature definitions from `analyze_pixel_waves.py` / `rollup_pixel_vectors_to_waves.py` (mirror-symmetric vs AP-headward neighbor metrics) on a hash-locked video list; scorer reports two LOOO AUCs and their difference with bootstrap 95% CI not crossing 0 on held-out folds; outcome recorded in signed nanopub analogous to `nanopubs/zebrafish_blind_outcome_nanopub.py`.",
+      "tool_route": "`python3 wave-vector-analysis/wave-vector-tiff-parser.py ... --csv spark_tracks.csv` → `python3 wave-vector-analysis/analyze_pixel_waves.py spark_tracks.csv --output-dir analysis_results/pixel_v2` → `python3 wave-vector-analysis/rollup_pixel_vectors_to_waves.py` on pixel vector outputs; preregister video IDs with posterior vs non-posterior poke from `xy_ground_truth.csv` poke-side column.",
+      "deciding_data": "Pixel pipeline docs `wave-vector-analysis/PIXEL_WAVE_ANALYSIS.md`; OP-08 sources `PIXEL_BLIND_RESULTS.md` / `PIXEL_V2_BLIND_RESULTS.md` (referenced in open-problems, may be local).",
+      "prior_attempts": "Panel exploratory post-unblinding mirror AUC 0.61–0.65 noted in OP-08 (partial status); not a registered v2 verdict.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Pixel wave scripts implement the mirror vs directional neighbor metrics OP-08 requires."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "Tools in-repo; labeled poke-position video list and spark_tracks for blind folds not in git."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Dual AUC + CI crossing rule is machine-checkable given prereg hash."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Pixel rollup on existing tracks is fast; parser rerun on full set is heavier."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New blind prereg/outcome files only."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Requires curating poke-position-stratified video list and blind labels."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "Exploratory mirror signal already seen; tail-poke confound not eliminated on this exact prereg route."
+        }
+      }
+    },
+    {
+      "id": "NP-XY-HEADTAIL-01",
+      "title": "KG traceability: parser head/tail vs manual Excel on matched video pairs",
+      "gap": "MorphoEval bioelectric/Xenopus KG claims assume correct embryo segmentation and AP axis; `COORDINATE_SYSTEM_WARNING.md` documents Excel coordinates exceeding TIFF widths, and `wave-vector-analysis/analysis_results/head_tail_comparison.md` shows only 8/67 matched pairs with median head error 665 px. No signed nanopub records whether `wave-vector-tiff-parser.py` head/tail labels meet a fixed pixel tolerance against manual annotations on the overlap set.",
+      "done": "On the matched subset (folder, video, embryo rows present in both manual and parser outputs), `compare_xy_coordinates.py` emits a CSV where ≥90% of rows have head and tail Euclidean error ≤100 px OR a signed negative report states the fraction below threshold with N, mean, and median errors; result cited in a new `specimen-match` or QA nanopub linked from `morphoeval-xenopus-ca2-wave-vectors` claim context.",
+      "tool_route": "`python3 wave-vector-analysis/compare_xy_coordinates.py \"/path/to/XY coordinates.xlsx\" spark_tracks.csv --output wave-vector-analysis/analysis_results/xy_compare_report.md` after parser run; optional QA plots from `generate_detection_summary.py` on same folders.",
+      "deciding_data": "Committed report stub `wave-vector-analysis/analysis_results/head_tail_comparison.md`; root `COORDINATE_SYSTEM_WARNING.md`; Excel path documented in `wave-vector-analysis/parse_xy_coordinates.py` defaults.",
+      "prior_attempts": "Manual comparison report generated (67 comparisons, 8 matches); coordinate mismatch documented but not closed with a pass/fail gate tied to KG publication.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "compare_xy_coordinates.py + parser outputs directly test the QA gap blocking trustworthy Ca²⁺ KG claims."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "Comparison markdown and warning doc in-repo; Excel and full spark_tracks off-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Fixed 100 px tolerance on matched pairs is a binary pass/fail for the overlap set."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Comparison script runs in minutes given spark_tracks.csv."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New QA report + optional nanopub only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single script run once tracks exist for overlapped videos."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Prior work documented large errors but did not refute the 100 px gate on the 8 matched pairs specifically."
+        }
+      }
+    },
+    {
+      "id": "NP-CA-MEMORY-01",
+      "title": "Layer-5 calcium claims (healed / memory / re-occurrence): pipeline marks NOT YET",
+      "gap": "`generate_claims_inventory_pdf.classify()` returns NOT YET for claims mentioning healed embryos, prior wound sites, or re-occurrence (`wave-vector-analysis/generate_claims_inventory_pdf.py` L157–163); these verbatim rows in `Calcium claims.docx` have no TESTED verdict and cannot be linked to signed evidence in the KG residue.",
+      "done": "Either (A) repeat-poke timeline TIFF folders are parsed with `wave-vector-tiff-parser.py` into `spark_tracks.csv` containing ≥2 poke events per video with frame indices, and `wave_laterality_analysis.py` reports memory-at-prior-site rate with binomial CI, or (B) a signed negative nanopub states N=0 repeat-poke videos in the catalog and closes the three claims as untestable-with-current-data.",
+      "tool_route": "Inventory: `python3 wave-vector-analysis/generate_claims_inventory_pdf.py` (NOT YET tally); if data arrives: `batch_wave_catalog.py` → custom poke-index column in tracks → extend `wave_laterality_analysis.py` memory flags → `export_calcium_claims_to_pkg.py`.",
+      "deciding_data": "Claim text via `claims_doc_parser.py`; no repeat-poke metadata in committed `spark_tracks_subset.csv` smoke file.",
+      "prior_attempts": "Classify logic explicitly defers these claims; `generate_tested_claims_summary.py` reports 3 NOT YET alongside 16 TESTED.",
+      "factors": {
+        "tool_fit": {
+          "score": 14,
+          "why": "Wavepipe can score only after repeat-poke tracks exist; classifier already defines the gap."
+        },
+        "data_in_hand": {
+          "score": 4,
+          "why": "Requires healed/re-poke timelines not described in repo datasets."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Binary: either measured rate with N≥5 videos or signed N=0 untestable statement."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Parser extensions are moderate; acquiring correct video metadata is the bottleneck."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Negative or positive closure via new analysis outputs and one nanopub bundle."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Blocked until repeat-poke TIFF series are cataloged or negative doc signed."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Route not refuted—never attempted for lack of timelines."
+        }
+      }
+    },
+    {
+      "id": "NP-LEVIN-LAW2-SPEC-01",
+      "title": "Levin YouTube Law 2 (Cervera GJ): audit cites zero Ca²⁺ imaging specimen match",
+      "gap": "`morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3` scores specimen-match ~0 and states Laws 2–4 cite Cervera/Pietak figures but load no published voltage or calcium trace (`REPORT.md` remediation: wire at least one published measurement). This is listed in Math-KG residue but is not a spark-track problem.",
+      "done": "N/A for wavepipe—close only if a scorer confirms no `spark_tracks.csv` column can validate Cervera 2020 voltage levels; record as blocked for lens wavepipe.",
+      "tool_route": "Not applicable; would need `models/2021-Cervera–Levin–Mafe.py --self-test` outputs or `measure_morphoeval()` on planarian silhouettes (lens: simulation / measure). Optional weak bridge: compare RD domain-wall kymograph speeds from `1984-wolfram-conus-textile-rule30.py` bioelectric panel to `vector_clusters.csv` AP speeds—different observables.",
+      "deciding_data": "Audit REPORT `morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/REPORT.md`; Cervera audit `morphoeval/kg/2026-10-17-cervera-audit-v2/`.",
+      "prior_attempts": "GPT-5.6 Sol Pass 1/2 Cervera audits (44.9→55.6) improved planarian frequency fit but not Ca²⁺ imaging; Levin YouTube v3 closed doc drift, not specimen wiring.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Spark-track pipeline measures GCaMP embryos, not planarian voltage profiles or 1D RD surrogates."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Published audits and Cervera scripts in-repo; no shared specimen with frog Ca²⁺ stack."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Specimen-match closure is rubric-scored elsewhere; wavepipe cannot emit the deciding evidence."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "Cervera self-test is minutes; Ca²⁺ cross-validation is ill-posed."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Documenting lens mismatch is a new scout/audit note only."
+        },
+        "time_to_verdict": {
+          "score": 3,
+          "why": "Verdict is immediate: wrong tool lens."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt claimed wavepipe validates Law 2."
+        }
+      }
+    }
+  ]
+}
