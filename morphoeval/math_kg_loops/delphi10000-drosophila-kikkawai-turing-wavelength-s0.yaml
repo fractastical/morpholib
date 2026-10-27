@@ -1,0 +1,79 @@
+sim_id: delphi10000-drosophila-kikkawai-turing-wavelength-s0
+slot: 3190
+organism: Drosophila kikkawai
+phenomenon_size_m: 2.343e-06
+log10_size_m: -5.630
+size_human: "2.3 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila kikkawai (2.3 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora ananassae–montium Clade"
+chronoseries:
+  index: 19
+  length: 41
+  predecessor: Drosophila hydei
+  successor: Drosophila mauritiana
+math_family: Reaction-Diffusion & Turing Dispersion
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  model: "Schnakenberg (1979) activator-substrate RD; Turing (1952) wavenumber k_c at the 2.343 µm detail scale"
+  a: 0.07
+  b: 0.94
+  Du: 0.02
+  Dv: 1.364
+  domain_um: 46.86
+  grid_resolution: [160, 160]
+  dt: 0.007
+  steps: 1600
+  seed: 3190
+  predecessor_Dv: 4.47
+  successor_Dv: 0.413
+  inputs:
+    - datasets/drosophila_kikkawai_turing_wavelength_s0/drosophila_kikkawai_turing_wavelength_s0_reference.json
+    - datasets/drosophila_kikkawai_turing_wavelength_s0/Drosophila_kikkawai_specimen.jpg
+    - datasets/drosophila_kikkawai_turing_wavelength_s0/scout_manifest.json
+    - datasets/drosophila_kikkawai_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Detail-scale wavelength order across the chronoseries
+    formula: "lambda(D. mauritiana) < lambda(D. kikkawai) < lambda(D. hydei) at 0 Ma"
+    lean_decl: MathOfBiology.Loop_3190.lamKikkawaiNm
+    lean_theorem: MathOfBiology.Loop_3190.wavelength_chronoseries_order
+    lean_locus: morphoeval/lean/loops/Loop_3190_drosophila_kikkawai_turing_wavelength_s0.lean#L14-L17
+    variables: "lambda in nanometres; Dv_maur=0.413, Dv_kikk=1.364, Dv_hydei=4.470; Du=0.020, a=0.070, b=0.940"
+    role: "What changes at 2.3 µm and 0 Ma relative to the predecessor and successor"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py
+  - law_name: Mode count on a 48 µm patch
+    formula: "N = floor(48000 nm / lambda_nm); N_hydei < N_kikkawai = 20 < N_mauritiana"
+    lean_decl: MathOfBiology.Loop_3190.modeCount
+    lean_theorem: MathOfBiology.Loop_3190.mode_count_increases_as_wavelength_falls
+    lean_locus: morphoeval/lean/loops/Loop_3190_drosophila_kikkawai_turing_wavelength_s0.lean#L20-L25
+    variables: "lamNm, modeCount"
+    role: "Shorter detail-scale wavelength packs more pigment repeats into the same patch"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py
+  - law_name: Focal differential diffusion versus equal-diffusion ablation
+    formula: "Dv - Du > 0 at the focal ratio; Dv - Du = 0 extinguishes the Turing gap"
+    lean_decl: MathOfBiology.Loop_3190.diffusionGap
+    lean_theorem: MathOfBiology.Loop_3190.focal_inhibitor_outruns_activator
+    lean_locus: morphoeval/lean/loops/Loop_3190_drosophila_kikkawai_turing_wavelength_s0.lean#L39-L46
+    variables: "Dv, Du in thousandths"
+    role: "Negative control for Turing wavenumber selection"
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py
+  - law_name: Dark-morph steady activator exceeds the light morph
+    formula: "u0 = a + b; u0(b=0.71) < u0(b=1.18)"
+    lean_decl: MathOfBiology.Loop_3190.activatorSteady
+    lean_theorem: MathOfBiology.Loop_3190.dark_morph_higher_steady_activator
+    lean_locus: morphoeval/lean/loops/Loop_3190_drosophila_kikkawai_turing_wavelength_s0.lean#L32-L36
+    variables: "a, b in hundredths"
+    role: "Gibert 1999 major-gene axis reconstructed as Schnakenberg substrate load b"
+    source_citation: "Gibert, Moreteau & David 1999 DOI:10.1023/a:1003704315194"
+    code_locus: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py
