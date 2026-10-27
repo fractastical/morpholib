@@ -1,0 +1,36 @@
+{
+  "fix_id": "fix-011",
+  "candidate_rank": 82,
+  "candidate_id": "scout-053-c",
+  "status": "fixed",
+  "summary": "Added morphoeval/check_lean_formula_alignment.py, a semantic gate that rejects overnight expansion stubs (a*b, p+q-q, lhs-rhs) when the declared formula names physics tokens (alpha_f, D_ij, …) and requires mechanism-linked Lean defs to map parameters back to formula/variables. Pilot: forterre passes; zhou stub YAML and the documented overnight law1 template fail as expected.",
+  "root_cause": "verify_integrity.py Rule 3 classifies theorem quantifier structure but never compares formula identifiers to lean_code def bodies, so run_overnight_1000_loops.py placeholder defs (law1_invariant := a*b) could pair with rich formulas and still satisfy structural checks.",
+  "changed_files": [
+    "morphoeval/check_lean_formula_alignment.py",
+    "tests/test_lean_formula_alignment.py"
+  ],
+  "evidence": [
+    "morphoeval/verify_integrity.py Rule 3 (classify_lean_theorem_signature only)",
+    "morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml lean_code law1_invariant := a*b vs formula dD_ij/dt = alpha_f |J_ij|^gamma - beta_d D_ij",
+    "morphoeval/run_overnight_1000_loops.py cohort idx 3 law1_formula (same physics string as self-test negative control)",
+    "morphoeval/math_kg_loops/forterre-venus-flytrap-snap-buckling.yaml (positive control, mechanism-linked defs)",
+    "python3 morphoeval/check_lean_formula_alignment.py morphoeval/math_kg_loops/zhou-ginkgo-yimaensis-flux-canalization.yaml → exit 1 (6 mismatches)",
+    "python3 morphoeval/check_lean_formula_alignment.py morphoeval/math_kg_loops/forterre-venus-flytrap-snap-buckling.yaml → exit 0"
+  ],
+  "validation": [
+    {
+      "name": "Lean formula alignment self-test",
+      "argv": ["python3", "morphoeval/check_lean_formula_alignment.py", "--self-test"],
+      "exit_code": 0,
+      "output_summary": "SELF-TEST PASSED (forterre, zhou, overnight stub)"
+    },
+    {
+      "name": "Lean formula alignment focused tests",
+      "argv": ["python3", "-m", "pytest", "tests/test_lean_formula_alignment.py", "-q"],
+      "exit_code": 0,
+      "output_summary": "4 passed in 0.08s"
+    }
+  ],
+  "blockers": [],
+  "external_publication_performed": false
+}
