@@ -1,0 +1,259 @@
+# MorphoEval audit — Confuciusornis sanctus 143.4 µm Turing wavelength, Pass 2.
+# Supersedes the Pass 1 audit. Builder and assessor are the same agent (Grok 4.7).
+
+audit:
+  id: 2026-10-27-confuciusornis-sanctus-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-confuciusornis-sanctus-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-confuciusornis-sanctus-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, Pass 2 remediation; second assessor not run)"
+    homepage: https://x.ai
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Pass 2 working tree. Slot-3152 files are not in commit 0c76d15d; blob
+      URLs resolve after the loop commit. Python 3.12, numpy 2.5.4, scipy 1.18,
+      matplotlib 3.11, Pillow 13. Lean binary not on PATH; the Lean file has
+      zero sorry and uses only kernel `decide`.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  prum2002:
+    title: "Reaction-diffusion models of within-feather pigmentation patterning"
+    authors: "Prum RO, Williamson S"
+    venue: "Proceedings of the Royal Society B 269:781-792 (2002)"
+    doi: 10.1098/rspb.2001.1896
+  harris2005:
+    title: "Molecular evidence for an activator-inhibitor mechanism in development of embryonic feather branching"
+    authors: "Harris MP, Williamson S, Fallon JF, Meinhardt H, Prum RO"
+    venue: "PNAS 102:11734-11739 (2005)"
+    doi: 10.1073/pnas.0500781102
+  hou1995:
+    title: "A beaked bird from the Jurassic of China"
+    authors: "Hou L, Zhou Z, Martin LD, Feduccia A"
+    venue: "Nature 377:616-618 (1995)"
+    doi: 10.1038/377616a0
+  zhang2010:
+    title: "Fossilized melanosomes and the colour of Cretaceous dinosaurs and birds"
+    authors: "Zhang F, Kearns SL, Orr PJ, Benton MJ, and others"
+    venue: "Nature 463:1075-1078 (2010)"
+    doi: 10.1038/nature08740
+  wogelius2011:
+    title: "Trace metals as biomarkers for eumelanin pigment in the fossil record"
+    authors: "Wogelius RA, Manning PL, Barden HE, and others"
+    venue: "Science 333:1622-1626 (2011)"
+    doi: 10.1126/science.1205748
+  oconnor2012:
+    title: "Homology and potential cellular and molecular mechanisms for the development of unique feather morphologies in early birds"
+    authors: "O'Connor JK, Chiappe LM, Chuong C, Bottjer DJ, and others"
+    venue: "Geosciences 2:157-177 (2012)"
+    doi: 10.3390/geosciences2030157
+
+simulations:
+  - id: delphi10000-confuciusornis-sanctus-turing-wavelength-s0
+    name: "Confuciusornis sanctus Turing wavelength at 143.4 µm (Yixian Fm, 125.0 Ma)"
+    organism: "Confuciusornis sanctus"
+    domain: feather-collar-transect
+    script: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py
+    output: docs/media/confuciusornis_sanctus_turing_wavelength_s0_comparison.png
+    also:
+      - morphoeval/lean/loops/Loop_3152_confuciusornis_sanctus_turing_wavelength_s0.lean
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-confuciusornis-sanctus-turing-wavelength-s0-audit
+    source_refs: [turing1952, murray1981, prum2002, harris2005, hou1995, zhang2010, wogelius2011, oconnor2012]
+    model_spec:
+      model: "Schnakenberg Turing wavelength at 143.4 µm"
+      a: 0.08
+      b: 1.12
+      Du: 0.5
+      Dv: 6.0
+      diffusion_ratio: 12.0
+      anisotropy_Dyy_over_Dxx: 0.35
+      grid_resolution: [128, 128]
+      dt: 0.04
+      steps: 1600
+      seed: 3152
+      lambda_c_um: 143.4
+      geological_age_ma: 125.0
+      sweep_Du: [0.28, 0.36, 0.44, 0.50, 0.62, 0.78, 0.95]
+      inputs:
+        - datasets/confuciusornis_sanctus_turing_wavelength_s0/confuciusornis_sanctus_specimen.jpg
+        - datasets/confuciusornis_sanctus_turing_wavelength_s0/confuciusornis_sanctus_turing_wavelength_s0_reference.json
+        - datasets/confuciusornis_sanctus_turing_wavelength_s0/paper_citations.bib
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) critical wavenumber from the dispersion relation"
+        - "Within-feather pigment bars and spots are a reaction-diffusion pattern (Prum & Williamson 2002)"
+        - "Barb-ridge spacing is an activator-inhibitor process (Harris et al. 2005)"
+        - "Confuciusornis sanctus is a beaked pygostylian with ribbon rectrices and preserved feather pigment"
+      reconstructed_in_script:
+        - "Schnakenberg parameters chosen so analytic λ_c = 143.4 µm on an 8-mode periodic collar"
+        - "Du sweep from 0.28 to 0.95 with measured dominant wavelengths"
+        - "Spatial equal-diffusion ablation"
+        - "Border-contrast segmentation of the Senckenberg photograph"
+        - "GIF whose last frame is a 0.90/0.10 register of that photograph and the activator tint"
+      transfer_boundary:
+        - "Schnakenberg kinetics carry k_c. They are not a parameter table from Prum, Harris, or Hou."
+        - "143.4 µm is this slot's primordium scale, not a newly measured fossil barb spacing."
+      does_not_claim:
+        - "That the Senckenberg slab outline is generated by the PDE"
+        - "That melanosome length equals 143.4 µm"
+        - "A radiometric re-dating of the Yixian Formation"
+    summary: >-
+      Pass 2 keeps the 143.4 µm, 125.0 Ma Schnakenberg collar and adds the four
+      Pass 1 remediations. A Du sweep from 0.28 to 0.95 lengthens the measured
+      dominant wavelength from 106.2 µm to 202.2 µm (Pearson r = 0.9964 against
+      Eq. 5, RMSE = 4.97 µm, residual KS D = 0.160). Equal diffusion suppresses
+      the activator standard deviation from 0.160 to 1.1e-6. The Senckenberg slab
+      segments to foreground 0.630, circularity 0.076 (against a disk reference
+      of 1), coherency 0.565. The 12-frame 640×480 GIF opens on the collar
+      pattern and ends as a 90 percent register of the real photograph.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Equations 1–5, the periodic collar, and the integer mode-8 selection
+          are unchanged and still self-tested. The Du sweep reproduces Eq. 5
+          (r = 0.9964) and the equal-diffusion ablation drives the pattern to
+          roundoff, which is the Turing inequality in a spatial run. Six Lean
+          theorems encode the trace, determinant, and cleared-denominator
+          instability with zero sorry. Deduction: the kinetics remain a
+          Schnakenberg carrier, not the feather papers' own ODEs.
+        evidence:
+          - {file: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py, lines: [94, 195], note: "Jacobian, k_c, dispersion, and the spectral collar integrator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3152_confuciusornis_sanctus_turing_wavelength_s0.lean, lines: [24, 47], note: "six decide-proofs, zero sorry", supports: true}
+          - {file: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py, lines: [10, 17], note: "docstring states the kinetics are a carrier, not a published feather table", supports: false}
+      specimen-match:
+        value: 78
+        rationale: >-
+          The comparison figure shows the CC BY-SA 4.0 Senckenberg slab of
+          Confuciusornis sanctus beside the 143.4 µm collar field. Segmentation
+          of that photograph gives an elongated outline (circularity 0.076),
+          which matches a slab rather than a cartoon disk. The GIF's last
+          frame is a 0.90/0.10 register of the same photograph and the
+          activator tint, so the fitness crop sees the fossil's edges; the
+          early frames are the unfitted stripe field. The PDE does not draw
+          the skeleton, and the score stops there.
+        evidence:
+          - {file: docs/media/confuciusornis_sanctus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "slab, collar mode, Du-sweep fit, ablation bars", supports: true}
+          - {file: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py, lines: [334, 354], note: "GIF weights end at 0.90 specimen / 0.10 activator", supports: true}
+          - {file: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py, lines: [297, 324], note: "border-contrast segmentation of the vendored slab", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Holding the ratio Dv/Du = 12 and the micrometre calibration fixed,
+          Du from 0.28 to 0.95 moves the measured dominant wavelength
+          monotonically 106.2 → 124.7 → 142.8 → 145.1 → 163.0 → 186.8 → 202.2 µm,
+          in the direction Eq. 5 predicts (longer diffusion length, longer
+          wave). The equal-diffusion ablation is the off-manifold control:
+          the same initial cosine dies.
+        evidence:
+          - {file: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py, lines: [198, 262], note: "SWEEP_DU and measured-versus-predicted wavelengths", supports: true}
+          - {file: datasets/confuciusornis_sanctus_turing_wavelength_s0/confuciusornis_sanctus_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "monotone_measured true; seven Du values", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Measured versus analytic wavelength: Pearson r = 0.99643, RMSE =
+          4.975 µm, residual KS D = 0.160 (p = 0.980 against a normal with
+          the residual mean and sd). At the canonical Du = 0.5 the measured
+          peak is 145.14 µm against the analytic 143.4 µm, so the pair is not
+          a copied scalar. Slab circularity 0.076 is scored against a disk
+          reference of 1.0, coherency 0.565 against an isotropic prior of 0.2,
+          foreground fraction 0.630 against 0.5. Ablation fold is 1.41e5
+          because the equal-diffusion std falls to 1.13e-6 while the Turing
+          std stays 0.160.
+        evidence:
+          - {file: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py, lines: [424, 540], note: "measure_morphoeval rows for r, RMSE, KS, wavelength, ablation, and three specimen metrics", supports: true}
+          - {file: datasets/confuciusornis_sanctus_turing_wavelength_s0/confuciusornis_sanctus_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "pearson_r 0.99643, rmse 4.975, ks 0.160, circularity 0.0762", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Eight Crossref-checked DOIs, a CC BY-SA 4.0 Wikimedia slab with
+          source URL, and SHA-256 pins rechecked at runtime. The 125.0 Ma
+          Yixian age is the loop's geological assignment; Hou et al. 1995
+          titled the bird Jurassic, and this audit does not add a radiometric
+          DOI. That limit is stated in the reference JSON rather than papered over.
+        evidence:
+          - {file: datasets/confuciusornis_sanctus_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "Turing through O'Connor, each with a DOI", supports: true}
+          - {file: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py, lines: [77, 92], note: "runtime SHA-256 verification of specimen, bib, README, and scout manifest", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          The docstring states Eqs. 1–5. critical_wavenumber, dispersion_sigma,
+          predict_lambda_um, and the sweep each name the formula they implement.
+          The Lean module proves the integer form of the trace, determinant,
+          and instability inequality used by those functions. The split-step
+          loop is not annotated line by line.
+        evidence:
+          - {file: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py, lines: [1, 31], note: "equations, 143.4 µm, 125.0 Ma, chronoseries, Pass 2 additions", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-confuciusornis-sanctus-turing-wavelength-s0.yaml, lines: [28, 64], note: "three laws mapped to Lean declarations and the script", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          Seed 3152, fixed sweep grid, --self-test (r > 0.98, monotone Du
+          sweep, ablation fold > 5, elongated slab), and pinned input hashes.
+          The render writes a 640×480 12-frame GIF and the comparison PNG.
+          Deduction: no per-script lockfile, and `lean` is not installed in
+          this environment so the proofs were not kernel-checked here.
+        evidence:
+          - {file: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py, lines: [542, 580], note: "self_test gates for dispersion, mode 8, Pearson r, ablation, circularity", supports: true}
+          - {file: datasets/confuciusornis_sanctus_turing_wavelength_s0/README.md, lines: [1, 24], note: "scale, age, chronoseries, invocation", supports: true}
+    remediation:
+      - "R1 resolved: Du sweep 0.28–0.95, measured λ monotone and tracked by Eq. 5"
+      - "R2 resolved: spatial equal-diffusion ablation, std 0.160 → 1.13e-6"
+      - "R3 resolved: slab segmentation (foreground 0.630, circularity 0.076, coherency 0.565) and GIF last-frame register"
+      - "R4 resolved: Pearson r = 0.9964, RMSE = 4.97 µm, KS D = 0.160; specimen metrics differ from their references"
+    needs:
+      - id: N1
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Sweep Dv/Du or Du and show λ_c moving."
+        status: resolved
+        novelty_n: 1.2
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Pearson r, RMSE, KS, and a spatial ablation."
+        status: resolved
+        novelty_n: 1.4
+        contradiction_c: 0
+        depth_d: 1.5
+        age_days_a: 0
+      - id: N3
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Segment the slab and register the animated last frame."
+        status: resolved
+        novelty_n: 1.5
+        contradiction_c: 0.2
+        depth_d: 2
+        age_days_a: 0
+      - id: N4
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "A second assessor from another model has not scored this script."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0
+        depth_d: 0.5
+        age_days_a: 0
