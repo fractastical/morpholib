@@ -1,0 +1,66 @@
+sim_id: delphi10000-danio-margaritatus-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 1.339e-05
+log10_size_m: -4.873
+size_human: "13.39 µm"
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Danio margaritatus (13.39 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Danionin Pigment Evolution Series
+chronoseries_index: "3/5"
+predecessor: Danio albolineatus
+successor: Danio nigrofasciatus
+model_spec:
+  sim_id: delphi10000-danio-margaritatus-turing-wavelength-s0
+  seed: 3162
+  grid: [96, 72]
+  domain_wavelengths: [12, 9]
+  lambda_c_m: 1.339e-05
+  kinetics: schnakenberg
+  boundary: zero-flux Neumann
+  parameters:
+    a: 0.062
+    b: 0.938
+    delta: 40.0
+    gamma_per_s: 1.0
+  inputs:
+    - datasets/danio_margaritatus_turing_wavelength_s0/danio_margaritatus_specimen.jpg
+    - datasets/danio_margaritatus_turing_wavelength_s0/danio_margaritatus_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Turing threshold separates margaritatus from albolineatus at 13.39 µm
+    formula: "delta_albo < delta_crit < delta_marg  (1.35 < 8.50 < 40)"
+    lean_decl: MathOfBiology.Loop_3162.deltaMargX100
+    lean_theorem: MathOfBiology.Loop_3162.margaritatus_unstable_albolineatus_stable
+    lean_locus: morphoeval/lean/loops/Loop_3162_danio_margaritatus_turing_wavelength_s0.lean#L24-L27
+    variables: "diffusion ratio D_v/D_u at the cellular detail rung"
+    role: "Predecessor is Turing-stable; focal species is Turing-unstable"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Nakamasu et al. 2009 DOI:10.1073/pnas.0808622106"
+    code_locus: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py
+  - law_name: Successor wavelength is longer at the same age (0 Ma)
+    formula: "lambda_marg = 1.339e-05 m < lambda_nigro = 1.780e-05 m"
+    lean_decl: MathOfBiology.Loop_3162.lambdaNigroNm
+    lean_theorem: MathOfBiology.Loop_3162.successor_wavelength_longer
+    lean_locus: morphoeval/lean/loops/Loop_3162_danio_margaritatus_turing_wavelength_s0.lean#L32-L34
+    variables: "critical wavelengths of margaritatus and nigrofasciatus"
+    role: "Broken-stripe successor selects a longer cellular wave than the pearl ocellus"
+    source_citation: "Quigley et al. 2004 DOI:10.1242/dev.01526; Spiewak et al. 2018 DOI:10.1371/journal.pgen.1007538"
+    code_locus: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py
+  - law_name: Mode count on a 12-wavelength detail window
+    formula: "N = L / lambda_c = 12 for margaritatus and 9 for nigrofasciatus"
+    lean_decl: MathOfBiology.Loop_3162.windowNm
+    lean_theorem: MathOfBiology.Loop_3162.mode_count_on_detail_window
+    lean_locus: morphoeval/lean/loops/Loop_3162_danio_margaritatus_turing_wavelength_s0.lean#L40-L42
+    variables: "window length and integer mode count"
+    role: "Same physical window holds fewer successor modes"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py
+  - law_name: Adult pearl gap is many elementary cells
+    formula: "38 * 13390 nm < 510101 nm < 39 * 13390 nm"
+    lean_decl: MathOfBiology.Loop_3162.lambdaMargNm
+    lean_theorem: MathOfBiology.Loop_3162.elementary_cell_is_not_the_adult_pearl
+    lean_locus: morphoeval/lean/loops/Loop_3162_danio_margaritatus_turing_wavelength_s0.lean#L48-L51
+    variables: "elementary wavelength versus adult nearest-neighbour scale"
+    role: "The photograph does not resolve the 13.39 µm mode"
+    source_citation: "Conway, Chen & Mayden 2008 DOI:10.11646/zootaxa.1686.1.1"
+    code_locus: models/2026-delphi10000-danio-margaritatus-turing-wavelength-s0.py
