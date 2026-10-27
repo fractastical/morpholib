@@ -1,0 +1,176 @@
+# Pass 1 — Holocene Gasterosteus aculeatus cellular Turing carrier, 56 µm, 0 Ma.
+# Builder and assessor are the same agent (Grok 4.7). Historical scalars are in
+# datasets/.../pass1_run_metrics.json (nearest-bin FFT, percentile darkness).
+
+audit:
+  id: 2026-10-27-gasterosteus-aculeatus-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent pass 1)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: "4fdc4af8f8347d55b64a1de2f47c8a0931a60888"
+    note: "Script, specimen, Lean module, and media at this commit. Audit text and nanopubs follow in the next commit."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  miller2007:
+    title: "cis-Regulatory changes in Kit ligand expression and parallel evolution of pigmentation in sticklebacks and humans"
+    authors: "Miller CT, Beleza S, Pollen AA, Schluter D, Kittles RA, Shriver MD, Kingsley DM"
+    venue: "Cell 131:1179-1189 (2007)"
+    year: 2007
+    doi: 10.1016/j.cell.2007.10.055
+  greenwood2011:
+    title: "The genetic basis of divergent pigment patterns in juvenile threespine sticklebacks"
+    authors: "Greenwood AK, Jones FC, Chan YF, Brady SD, Absher DM, Grimwood J, Schmutz J, Myers RM, Kingsley DM, Peichel CL"
+    venue: "Heredity 107:155-166 (2011)"
+    year: 2011
+    doi: 10.1038/hdy.2011.1
+  tapanes2024:
+    title: "The genetic basis of divergent melanic pigmentation in benthic and limnetic threespine stickleback"
+    authors: "Tapanes E, Rennison DJ"
+    venue: "Heredity 133:207-215 (2024)"
+    year: 2024
+    doi: 10.1038/s41437-024-00706-0
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    venue: "PNAS 106:8429-8434 (2009)"
+    year: 2009
+    doi: 10.1073/pnas.0808622106
+
+simulations:
+  - id: delphi10000-gasterosteus-aculeatus-turing-wavelength-s0
+    name: "Holocene Gasterosteus aculeatus cellular Turing wavelength (56 µm)"
+    organism: "Gasterosteus aculeatus"
+    script: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py
+    output: docs/media/gasterosteus_aculeatus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/gasterosteus_aculeatus_turing_wavelength_s0_growth.gif
+      - datasets/gasterosteus_aculeatus_turing_wavelength_s0/pass1_run_metrics.json
+    phenomenon_size_m: 5.632e-05
+    scale_tier: 4_cellular_10um
+    geological_age_ma: 0.0
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, miller2007, greenwood2011, tapanes2024, nakamasu2009]
+    summary: >
+      Pass 1 implements Schnakenberg kinetics whose analytic Holocene wavelength is
+      56.00 µm, with marine a=0.28 at 61.81 µm and benthic a=0.14 at 52.23 µm on the
+      same dx. Gamma sweep Pearson r against analytic λ_c was 0.9973 with RMSE 4.28 µm.
+      Equal diffusion decays. The growth GIF scores cv_sim_similarity 88.4 against the
+      Krisp specimen. Two readouts are not yet trustworthy: nearest-bin radial FFT and
+      a percentile darkness that sits at ~0.35 on both images.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 diffusion-driven instability"
+        - "Schnakenberg 1979 kinetics"
+        - "Miller 2007: freshwater Kitlg expression is reduced relative to marine sticklebacks"
+        - "Tapanes & Rennison 2024: melanophore density and lateral barring are separable traits"
+      reconstructed_in_script:
+        - "a, Du, Dv, gamma chosen so Holocene analytic λ_c = 56 µm"
+        - "a = 0.28/0.20/0.14 is a Kitlg-direction knob, not a measured rate"
+      transfer_boundary:
+        - "Nakamasu 2009 is a zebrafish pigment-cell network, not a stickleback measurement"
+      does_not_claim:
+        - "That 56 µm was measured on the photograph"
+        - "That the organ-scale bars are the critical mode k_c"
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: >
+          Jacobian, Turing conditions, k_c and the equal-diffusion control match the
+          Schnakenberg linearisation, and four Lean theorems check the cleared integers
+          (trace −58/75, det 108/75, discriminant 107296/625, and the 61.81 > 56.00 > 52.23
+          µm contraction). The parameters are reconstructed to the assigned 56 µm scale;
+          Greenwood 2011 and Miller 2007 do not publish this PDE.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [67, 107], note: "jacobian, turing_report, growth_rate", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3233_gasterosteus_aculeatus_turing_wavelength_s0.lean, lines: [20, 48], note: "four theorems, 0 sorry", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/gasterosteus_aculeatus_turing_wavelength_s0_reference.json, lines: [78, 95], note: "claim_boundary records the reconstruction", supports: false}
+      specimen-match:
+        value: 80
+        rationale: >
+          The 12-frame 960×548 growth GIF scores 88.4 on the canonical Sobel / radial-FFT /
+          coherency comparison to the CC BY 4.0 Krisp photograph. The composite keeps the
+          real background and paints bars inside the segmented body. It is not a pixel copy
+          (column-luminance r = 0.851). The cellular panel is a spot lattice at 56 µm, which
+          the photograph cannot resolve.
+        evidence:
+          - {file: docs/media/gasterosteus_aculeatus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, composite, cellular field, dispersion, sweep, flank profile", supports: true}
+          - {file: docs/media/gasterosteus_aculeatus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth GIF, 960x548", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/pass1_run_metrics.json, lines: [1, 40], note: "cv_sim_similarity 88.4, column_r 0.851", supports: true}
+      parameter-expressivity:
+        value: 78
+        rationale: >
+          γ in {3,4,6,8,10} moves analytic and measured wavelength together (r = 0.9973)
+          in the direction λ ∝ γ^(−1/2). Equal diffusion (Du = Dv) yields activator std
+          ~0 against pattern std 0.81. The nonlinear marine/Holocene/benthic separation
+          is compressed relative to the analytic 61.81 / 56.00 / 52.23 µm triple, and the
+          sweep RMSE is 4.28 µm.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [320, 338], note: "gamma_sweep", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/pass1_run_metrics.json, lines: [1, 25], note: "pass-1 r 0.9973, RMSE 4.28 µm, measured 60.82 / 58.95 / 57.19 µm", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [113, 141], note: "simulate used for the ablation with Du=Dv=1", supports: true}
+      morphometric-validation:
+        value: 70
+        rationale: >
+          Sweep Pearson r and the ablation KS are real comparisons with references that
+          the values do not copy. The body-darkness fraction in this pass was a within-image
+          percentile, so both images scored ~0.35 (pass1_run_metrics.json photo_dark_fraction
+          0.350 vs render 0.350). Posterior flank r is only 0.372. Those two readouts are
+          the remediation.
+        evidence:
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/pass1_run_metrics.json, lines: [1, 45], note: "percentile darkness ~0.35 both; posterior_r 0.372; ks_ablation 0.685", supports: false}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [676, 694], note: "self-test requires sweep r > 0.98 and measured λ != 56", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >
+          Seed DOI Greenwood 2011 was the top OpenAlex hit for the slot query. Turing 1952,
+          Schnakenberg 1979, Miller 2007, Tapanes 2024 and Nakamasu 2009 were checked against
+          Crossref or OpenAlex on 2026-10-27. The specimen is Holger Krisp, CC BY 4.0,
+          SHA-256 69b13a9c…b67f. The gallery JPEG was rejected because it is a synthetic field.
+        evidence:
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/paper_citations.bib, lines: [1, 98], note: "DOIs for the nine sources", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/gasterosteus_aculeatus_turing_wavelength_s0_reference.json, lines: [60, 77], note: "specimen URL, licence, SHA-256", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "slot 3233 scout; no slug collision", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >
+          Each modelling step maps to a formula in the module docstring and the reference
+          JSON. The Lean module cites the same cleared integers the script's Jacobian
+          produces at a=1/5, b=1, Du=1, Dv=30. There is no equation number in the
+          stickleback genetics papers to pin, and that limit is stated.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [1, 32], note: "docstring equations and chronoseries", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.yaml, lines: [1, 55], note: "math KG maps laws onto the Lean theorems", supports: true}
+      repro-package:
+        value: 86
+        rationale: >
+          Seed 3233, dt = 0.004 < 1/(4 Dv) = 0.0083, --self-test checks the analytic
+          triple, sweep r > 0.98, GIF frames and resolution. SHA-256 of the specimen is
+          checked at runtime. No per-slot lockfile beyond the cloud image.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [676, 716], note: "self_test and main", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [180, 186], note: "runtime SHA-256 check", supports: true}
+    remediation:
+      - "R1. Replace the within-image percentile darkness with an absolute luminance threshold so specimen and render fractions are not forced near 0.35."
+      - "R2. Replace nearest-bin radial FFT with parabolic sub-bin interpolation so nonlinear wavelengths are not quantized in ~5 µm steps."
+      - "R3. Re-measure marine, Holocene and benthic peaks after that interpolation and state whether the saturated benthic pattern actually shortens."
+      - "R4. Leave the posterior flank half out of the cosine fit; do not raise posterior r by fitting the test segment."
