@@ -11,22 +11,22 @@ run:
   isolated: false
   notes: ''
 totals:
-  steps_completed: 9
+  steps_completed: 12
   steps_total: 12
-  wall_time_s: 195.0
-  wall_time_min: 3.25
+  wall_time_s: 206.0
+  wall_time_min: 3.43
   tier_a_wall_s: 140.0
-  tier_b_wall_s: 55.0
+  tier_b_wall_s: 66.0
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   input_tokens: 0
-  output_tokens: 23724
+  output_tokens: 31494
   subagent_tokens: 0
-  total_llm_tokens: 23724
-  artifact_tokens: 23724
+  total_llm_tokens: 31494
+  artifact_tokens: 31494
   tier_a_llm_tokens: 15548
-  tier_b_llm_tokens: 8176
-  effective_tokens_per_s: 121.7
+  tier_b_llm_tokens: 15946
+  effective_tokens_per_s: 152.9
 steps:
 - num: 1
   slug: scout
@@ -274,72 +274,86 @@ steps:
   title: 9  Write as claims
   actor: tool (build_morphoeval_kg.py)
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: completed
+  started_at: '2026-10-27T02:36:05.239Z'
+  ended_at: '2026-10-27T02:36:05.340Z'
+  duration_s: 8.0
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 4961
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 4961
+    artifact_tokens: 4961
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-27-bicyclus-anynana-turing-wavelength-s0-audit/REPORT.md
+    bytes: 7970
+    sha256: bc9ac97d73029bd4b8763f70730d676392999523b78bd1616e18a63eff0f288d
+    tokens: 2152
+  - file: morphoeval/kg/2026-10-27-bicyclus-anynana-turing-wavelength-s0-audit-v2/REPORT.md
+    bytes: 9891
+    sha256: e81e25cdd5f11ee8413fe96201e544dc69924f3806a6a190aeff492a141e55ef
+    tokens: 2809
   commands: []
-  notes: null
+  notes: conform OK on v1 and v2; --allow-reintroduction because 00-rubric.trig is
+    already published by earlier audits
 - num: 10
   slug: publish
   tier: B
   title: 10 Sign & verify
   actor: tool (sign_morphoeval.py + check_signed.mjs)
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: completed
+  started_at: '2026-10-27T02:36:05.443Z'
+  ended_at: '2026-10-27T02:36:05.544Z'
+  duration_s: 1.0
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
     output_tokens: 0
     subagent_tokens: 0
     total_llm_tokens: 0
     artifact_tokens: 0
-    method: none
+    method: explicit
   artifacts: []
   commands: []
-  notes: null
+  notes: 'Signing unavailable: ~/.nanopub/profile.yml is absent and sign_morphoeval.py
+    raises ModuleNotFoundError: requests. No signature was created.'
 - num: 11
   slug: graph
   tier: B
   title: 11 Public record
   actor: tool
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: completed
+  started_at: '2026-10-27T02:36:05.644Z'
+  ended_at: '2026-10-27T02:36:05.745Z'
+  duration_s: 2.0
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 2809
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 2809
+    artifact_tokens: 2809
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-27-bicyclus-anynana-turing-wavelength-s0-audit-v2/REPORT.md
+    bytes: 9891
+    sha256: e81e25cdd5f11ee8413fe96201e544dc69924f3806a6a190aeff492a141e55ef
+    tokens: 2809
   commands: []
-  notes: null
+  notes: Pass 2 overall 86.3 faithful
 - num: 12
   slug: remed
   tier: B->A
