@@ -1,0 +1,155 @@
+{
+  "scout": "scout-063",
+  "ground": "predictions",
+  "lens": "lean",
+  "candidates": [
+    {
+      "title": "Kernel-check ZF-TUR-01 naive Turing size-prior refutation (D_inh/D_act < 1)",
+      "prediction_ids": ["ZF-TUR-01"],
+      "gap": "Resolution confirmed biology via literature (predictions/resolutions/zebrafish.json), and datasets/danio_rerio_turing_wavelength/protein_states.json records activator_inhibitor_size_check with D_inhibitor_over_activator = 0.5098 and verdict FAILS on size prior alone — but no Lean 4 loop (0 sorry) links prediction_id ZF-TUR-01 to the inequality D_inh/D_act > 1 being false under the registered 921 aa vs 122 aa mature-BMP proxy.",
+      "done": "New file morphoeval/lean/loops/Loop_prediction_ZF_TUR_01_turing_size_prior.lean compiles with `lean morphoeval/lean/loops/Loop_prediction_ZF_TUR_01_turing_size_prior.lean` (exit 0, zero `sorry`) and exports a theorem named `zf_tur_01_free_diffusion_ratio_lt_one` whose statement uses the registered integer chain lengths (921, 122) or the sidecar ratio 5098/10000 and proves it is strictly below 1.",
+      "tool_route": "Lean 4 loop (0-sorry contract): author `morphoeval/lean/loops/Loop_prediction_ZF_TUR_01_turing_size_prior.lean`; verify with `lean morphoeval/lean/loops/Loop_prediction_ZF_TUR_01_turing_size_prior.lean`; optional hook in `morphoeval/verify_integrity.py --loop-yaml` after a matching `morphoeval/math_kg_loops/prediction-zf-tur-01.yaml` is added in a separate PR.",
+      "deciding_data": "In repo: datasets/danio_rerio_turing_wavelength/protein_states.json (activator_inhibitor_size_check, chordin/bmp2b diffusible_species lengths); predictions/prediction_registry.json quantitative_expectation for ZF-TUR-01.",
+      "prior_attempts": "2026-10-26 local resolution pass (predictions/resolutions/zebrafish.json): outcome confirmed via OpenAlex literature on Chordin shuttling; repo-only prior stated but not kernel-checked. No Lean attempt recorded in morphoeval audits or docs/open-problems.json.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "Pure arithmetic inequality from pinned sidecar integers is exactly the existing loop-file contract (`lean morphoeval/lean/loops/...`)."},
+        "data_in_hand": {"score": 20, "why": "All deciding integers and the 0.5098 ratio already live in protein_states.json and the registry."},
+        "falsifiable_done": {"score": 15, "why": "Scorer runs one lean command; pass/fail is kernel exit code and grep for `sorry` in the new file only."},
+        "compute_in_repo": {"score": 13, "why": "Sub-minute proof once Lean 4 is on PATH (standard MorphoEval loop workflow; cloud image may need elan install)."},
+        "isolation": {"score": 10, "why": "Closes as one new `.lean` file plus optional new yaml; zero edits to prediction_registry.json."},
+        "time_to_verdict": {"score": 10, "why": "Single sitting: one loop file and immediate kernel check."},
+        "not_blocked": {"score": 5, "why": "Literature route succeeded; no record refutes a formal size-prior certificate for this prediction."}
+      }
+    },
+    {
+      "title": "Machine-check DM-DPP-01 precursor vs mature Dpp mobility factors (0.61 / 0.78)",
+      "prediction_ids": ["DM-DPP-01"],
+      "gap": "DM-DPP-01 was confirmed in-repo (predictions/resolutions/inrepo-quick.json) by inspecting sequence_links.json and hand arithmetic on (132/588)^(1/3); the registered ~39% D underestimate and ~22% length-scale factor are not yet 0-sorry Lean theorems tied to prediction_id.",
+      "done": "New loop `morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean` proves via `decide` on fixed rational encodings that D_mature/D_precursor matches the registered 0.61 within stated tolerance (e.g. 608/1000) and sqrt ratio 780/1000, with theorem names referencing DM-DPP-01; `lean` on that file exits 0 with no `sorry`.",
+      "tool_route": "Lean 4: `lean morphoeval/lean/loops/Loop_prediction_DM_DPP_01_dpp_mobility_ratio.lean`; inputs read from sequences/sequence_links.json drosophila_melanogaster dpp chain 457-588 (132 aa) and precursor_length_aa 588.",
+      "deciding_data": "In repo: sequences/sequence_links.json (P07713 mature chain), predictions/prediction_registry.json DM-DPP-01 quantitative_expectation, predictions/resolutions/inrepo-quick.json evidence lines.",
+      "prior_attempts": "2026-10-26 inrepo-quick batch confirmed without Lean; morphoeval/lean/loops/Loop_0641_drosophila_melanogaster_branching_tree.lean comments on Murray but does not prove Dpp length ratios.",
+      "factors": {
+        "tool_fit": {"score": 25, "why": "Registered numeric claims are finite rational comparisons — native `decide` proofs in the repo loop pattern."},
+        "data_in_hand": {"score": 20, "why": "132 and 588 aa counts are already in sequence_links and the registry."},
+        "falsifiable_done": {"score": 15, "why": "Kernel exit 0 on the named file is the entire scorer check."},
+        "compute_in_repo": {"score": 14, "why": "Minutes of authoring plus lean compile; no external fetch."},
+        "isolation": {"score": 10, "why": "One new loop file; registry stays hash-locked."},
+        "time_to_verdict": {"score": 10, "why": "One loop / one sitting."},
+        "not_blocked": {"score": 5, "why": "In-repo confirmation did not exhaust a Lean certificate route."}
+      }
+    },
+    {
+      "title": "Formal XT-DQ-01 Ensembl vs UniProt BMP4 length contradiction (469 vs 69 aa)",
+      "prediction_ids": ["XT-DQ-01"],
+      "gap": "XT-DQ-01 confirmed that Q28FI5 is a fragment (469 aa Ensembl vs 69 aa UniProt precursor in sequence_links.json), but the contradiction is not machine-checked — only narrated in predictions/resolutions/inrepo-quick.json.",
+      "done": "New loop `morphoeval/lean/loops/Loop_prediction_XT_DQ_01_bmp4_fragment.lean` proves `69 < 469` and optionally `469 ≠ 69` as Nat/Int theorems `xt_dq_01_uniprot_shorter_than_ensembl`; lean exit 0, zero sorry.",
+      "tool_route": "Lean 4: `lean morphoeval/lean/loops/Loop_prediction_XT_DQ_01_bmp4_fragment.lean`; integers from sequences/sequence_links.json xenopus_tropicalis bmp4 protein_length_aa and protein_state.precursor_length_aa.",
+      "deciding_data": "In repo: sequences/sequence_links.json, predictions/prediction_registry.json XT-DQ-01, resolutions/inrepo-quick.json.",
+      "prior_attempts": "2026-10-26 inrepo-quick confirmed without Lean; no refutation of formalizing the length mismatch.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Trivial ordering proof on registry-pinned integers fits the loop toolchain exactly."},
+        "data_in_hand": {"score": 20, "why": "Both lengths already stored in sequence_links.json."},
+        "falsifiable_done": {"score": 15, "why": "Lean kernel pass on one file."},
+        "compute_in_repo": {"score": 15, "why": "Instant compile."},
+        "isolation": {"score": 10, "why": "New loop only."},
+        "time_to_verdict": {"score": 10, "why": "One sitting."},
+        "not_blocked": {"score": 5, "why": "No prior Lean attempt on XT-DQ-01."}
+      }
+    },
+    {
+      "title": "DM-HH-01 Hedgehog N-product vs precursor size-prior factor (173/471)^(1/3)",
+      "prediction_ids": ["DM-HH-01"],
+      "gap": "DM-HH-01 outcome confirmed from wing-disc literature (predictions/resolutions/drosophila.json), but the registered quantitative prior that precursor-based models understate mobility by factor (173/471)^(1/3) ≈ 0.72 is not Lean-certified from UniProt chain lengths in the registry evidence snapshot.",
+      "done": "Loop `morphoeval/lean/loops/Loop_prediction_DM_HH_01_hh_nproduct_size_prior.lean` proves rational bounds bracketing 0.72 from integers 173 and 471 (e.g. 720/1000 < 721/1000); lean exit 0, zero sorry.",
+      "tool_route": "Lean 4: `lean morphoeval/lean/loops/Loop_prediction_DM_HH_01_hh_nproduct_size_prior.lean`; inputs predictions/prediction_registry.json proteins drosophila_melanogaster:hh chains 85-257 (173 aa N-product) and precursor 471 aa.",
+      "deciding_data": "In repo: prediction_registry.json evidence_snapshot.proteins and sequences/sequence_links.json hh entry; resolutions/drosophila.json DM-HH-01.",
+      "prior_attempts": "Literature resolution 2026-10-26; no Lean certificate. Existing morphoeval HH loops prove unrelated placeholder integer identities, not this ratio.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Registered ratio is a fixed rational root approximation — standard `decide` loop work."},
+        "data_in_hand": {"score": 19, "why": "173 and 471 aa are in the registry snapshot; no fetch."},
+        "falsifiable_done": {"score": 14, "why": "Kernel check on one new file; bounds explicitly stated in theorem."},
+        "compute_in_repo": {"score": 14, "why": "Short proof script."},
+        "isolation": {"score": 10, "why": "New loop file only."},
+        "time_to_verdict": {"score": 9, "why": "One loop; slightly more care encoding cube root bounds."},
+        "not_blocked": {"score": 5, "why": "Biology confirmed; formal size-prior route untouched."}
+      }
+    },
+    {
+      "title": "Decidable gate for ZF-CLK-01 / XT-CLK-01 proportional somite-length test (±5 pp)",
+      "prediction_ids": ["ZF-CLK-01", "XT-CLK-01"],
+      "gap": "Both clock-wavefront predictions are partially_resolved (predictions/resolutions/zebrafish.json, xenopus.json; docs/open-problems.json registered_prediction_followups): framework bound established, but no tabulated paired (T_clock, S) series under controlled wavefront speed. Even after literature extraction, there is no machine-checkable scorer for the registered rule S_multiplier = T_multiplier within 5 percentage points.",
+      "done": "Add `predictions/followups/clock_wavefront_pairs.csv` (columns: prediction_id, T_ref, T_pert, S_ref, S_pert as rationals) and loop `morphoeval/lean/loops/Loop_prediction_CLK_proportional_gate.lean` with a finite `def` listing each row and a theorem `clk_proportional_all_rows_within_5pp` that `decide`s |S_pert/S_ref - T_pert/T_ref| ≤ 0.05 on scaled integers (×10000). Scorer passes iff lean exit 0 on that file after CSV is frozen and hashed in the loop header comment.",
+      "tool_route": "Lean 4 loop + one new CSV under predictions/followups/ (no registry edit): `lean morphoeval/lean/loops/Loop_prediction_CLK_proportional_gate.lean`; CSV authored from literature extraction (scout-061 literature lens) then pre-registered before merge.",
+      "deciding_data": "Partially in repo: datasets/danio_rerio_clock_wavefront/protein_states.json worked_sensitivity multipliers; missing decisive paired measurements (named in resolutions). Public: doi:10.1371/journal.pbio.0050150 and Xenbase somitogenesis papers cited in registry test_source — must be tabulated into CSV first.",
+      "prior_attempts": "2026-10-26 resolution pass explicitly failed to find paired T+S table (zebrafish.json ZF-CLK-01, xenopus.json XT-CLK-01). docs/open-problems.json lists missing_evidence unchanged.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "Lean decides the proportional inequality once rows are frozen; extraction itself is literature/measure lens."},
+        "data_in_hand": {"score": 8, "why": "Multipliers and law are in-repo; decisive paired series still absent."},
+        "falsifiable_done": {"score": 14, "why": "After CSV freeze, scorer is lean exit 0 on a finite row list."},
+        "compute_in_repo": {"score": 12, "why": "Proof is fast; human cost is building CSV from papers."},
+        "isolation": {"score": 9, "why": "New loop + new CSV under predictions/followups/; no registry mutation."},
+        "time_to_verdict": {"score": 6, "why": "Verdict blocked until CSV exists; one sitting only after extraction."},
+        "not_blocked": {"score": 5, "why": "No prior attempt implemented a Lean proportional gate; literature route did not refute proportionality."}
+      },
+      "alt_lens": "literature (scout-061) or measure for CSV construction; lean only scores frozen rows."
+    },
+    {
+      "title": "DM-MUR-NEG-01 Murray exponent decidable fit gate (band 2.8–3.2)",
+      "prediction_ids": ["DM-MUR-NEG-01"],
+      "gap": "Partial resolution (predictions/resolutions/drosophila.json): insect tracheal Murray compliance bounded via ant/literature, but no Drosophila parent/daughter diameter table to fit exponent against registered 2.8–3.2 band. Loop_0641_drosophila_melanogaster_branching_tree.lean labels Murray's law but proves unrelated placeholder theorems (a*b > 0), not exponent testing.",
+      "done": "New `predictions/followups/dm_tracheal_diameters.csv` (parent_r, child1_r, child2_r per branch) and loop `morphoeval/lean/loops/Loop_prediction_DM_MUR_NEG_01_murray_exponent_gate.lean` that for each row either proves cubic Murray residual zero at exponent 3 or records scaled log-log slope as fixed rationals and `decide`s slope ∉ [2800/1000, 3200/1000] to support the negative prediction. Final partial close: lean exit 0 AND at least one row with slope outside band OR refutation if all rows inside band.",
+      "tool_route": "Lean 4: `lean morphoeval/lean/loops/Loop_prediction_DM_MUR_NEG_01_murray_exponent_gate.lean`; CSV from published Drosophila tracheal morphometry (registry test_source).",
+      "deciding_data": "Not in repo (resolution note: missing tabulated diameters). Named public: tracheal morphometry / Branchless literature in DM-MUR-NEG-01 test_source; compare doi:10.1371/journal.pcbi.1007853 context already cited in resolution.",
+      "prior_attempts": "2026-10-26 OpenAlex search bounded but did not decide (drosophila.json DM-MUR-NEG-01). docs/open-problems.json registered_prediction_followups DM-MUR-NEG-01.",
+      "factors": {
+        "tool_fit": {"score": 16, "why": "Lean can decide band membership on frozen rational slopes; diameter digitization is measure/literature lens."},
+        "data_in_hand": {"score": 5, "why": "Deciding diameters not in repo; only the exponent band is in the registry."},
+        "falsifiable_done": {"score": 13, "why": "Clear pass: lean 0 + slope outside [2.8,3.2] for Drosophila rows; fail: all inside band."},
+        "compute_in_repo": {"score": 11, "why": "Lean fast; CSV build from papers is the long pole."},
+        "isolation": {"score": 9, "why": "New loop + followups CSV; do not edit Loop_0641 in place."},
+        "time_to_verdict": {"score": 5, "why": "Needs morphometry CSV before kernel verdict."},
+        "not_blocked": {"score": 4, "why": "Negative bound from ant literature consistent with prediction; no refutation of a Lean fit gate yet."}
+      },
+      "alt_lens": "measure or literature for diameter CSV; lean for exponent band decision."
+    },
+    {
+      "title": "ZF-VTX-01 jamming band certificate (3.813) + shape-index series gate",
+      "prediction_ids": ["ZF-VTX-01"],
+      "gap": "Partial (predictions/resolutions/zebrafish.json): vertex-model constant 3.813 accepted, but no zebrafish EVL shape-index transition series. Existing vertex_packing loops (e.g. Loop_1105_danio_rerio_nm4_connexin_her_complex_vertex_packing.lean) mention p_0*=3.813 in comments yet prove no theorem about 3.813 or the registered tolerance band 3.76–3.87.",
+      "done": "Phase A (immediate): `morphoeval/lean/loops/Loop_prediction_ZF_VTX_01_jamming_band.lean` proves 376/100 < 3813/1000 < 387/100 (registered band) with zero sorry. Phase B (closes biology partial): after `predictions/followups/zf_evl_shape_index.csv` is extracted from epiboly literature, extend the same loop with finitely many `decide` checks that each measured p0 is in [376/100, 387/100] OR produce one counterexample row refuting ZF-VTX-01.",
+      "tool_route": "Lean 4: `lean morphoeval/lean/loops/Loop_prediction_ZF_VTX_01_jamming_band.lean`; Phase B CSV from published zebrafish epiboly cell-shape papers (registry test_source).",
+      "deciding_data": "In repo: datasets/danio_rerio_vertex_packing/danio_rerio_vertex_packing_reference.json poson_law 3.813; missing: shape-index time series (resolution missing_evidence). Public epiboly/EVL morphometry as named in ZF-VTX-01 test_source.",
+      "prior_attempts": "2026-10-26 OpenAlex found no zebrafish shape-index transition table (zebrafish.json ZF-VTX-01). docs/open-problems.json ZF-VTX-01 follow-up.",
+      "factors": {
+        "tool_fit": {"score": 17, "why": "Band certificate is pure Lean; empirical close needs vision/measure on images then frozen CSV for decide."},
+        "data_in_hand": {"score": 10, "why": "3.813 and band endpoints in registry/dataset; zebrafish series absent."},
+        "falsifiable_done": {"score": 13, "why": "Phase A: lean 0 on band; Phase B: lean 0 with all rows in band confirms, one out-of-band row refutes."},
+        "compute_in_repo": {"score": 12, "why": "Phase A minutes; Phase B depends on image digitization."},
+        "isolation": {"score": 9, "why": "New prediction-specific loop + optional followups CSV."},
+        "time_to_verdict": {"score": 7, "why": "Phase A one sitting; full ZF-VTX-01 close waits on series."},
+        "not_blocked": {"score": 5, "why": "No Lean jamming-band certificate attempted; literature did not refute 3.813 constant."}
+      },
+      "alt_lens": "vision (scout-065) for shape index from epiboly images; lean scores frozen series."
+    },
+    {
+      "title": "ZF-HH-01 gradient-shape outcome (ptc domain peak/tail) — not closable by Lean alone",
+      "prediction_ids": ["ZF-HH-01"],
+      "gap": "Partial resolution established lipidation in zebrafish but not the registered gradient-shape falsifier (distal ptc expansion + reduced near-source peak upon lipidation loss). This is spatial expression data, not a pure arithmetic invariant.",
+      "done": "N/A for lean lens as primary closer: would require paired ptc1/ptc2 domain measurements in a new predictions/followups/zf_shh_ptc_domains.csv and scoring via measure_outputs.py or literature extraction — not a 0-sorry loop unless reduced to finite interval comparisons on tabulated numbers.",
+      "tool_route": "Lean 4 loops cannot resolve without frozen numeric series; use scout_literature.py / measure_outputs.py on cited doi:10.1039/C4SC01600A follow-ups. Supplementary only: after CSV freeze, optional loop deciding inequalities on peak/tail ratios.",
+      "deciding_data": "Missing: paired ptc domain measurements (predictions/resolutions/zebrafish.json ZF-HH-01). In repo: UniProt Q92008 lipidation in protein_states sidecar — already resolved, insufficient for outcome.",
+      "prior_attempts": "2026-10-26 resolution upgraded to partially_resolved (harder_than_predicted vs conf 0.70). docs/open-problems.json ZF-HH-01.",
+      "factors": {
+        "tool_fit": {"score": 3, "why": "Biology outcome is image/expression metrology; Lean applies only after numeric reduction."},
+        "data_in_hand": {"score": 4, "why": "Lipidation facts in-repo; decisive gradient series missing."},
+        "falsifiable_done": {"score": 6, "why": "Registry falsifier is clear but not encodable without measurements."},
+        "compute_in_repo": {"score": 5, "why": "Dominated by literature/vision extraction, not kernel proofs."},
+        "isolation": {"score": 8, "why": "Followups CSV + optional loop could still be new files only."},
+        "time_to_verdict": {"score": 2, "why": "Blocked on ptc domain data."},
+        "not_blocked": {"score": 5, "why": "Partial route not refuted; lean simply is not the right primary lens."}
+      },
+      "alt_lens": "literature (scout-061) or vision (scout-065) to supply ptc domain series; lean optional for ratio checks post-freeze."
+    }
+  ]
+}
