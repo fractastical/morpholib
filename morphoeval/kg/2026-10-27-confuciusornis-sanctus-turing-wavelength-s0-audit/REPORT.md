@@ -1,6 +1,6 @@
 # MorphoEval report — audit `2026-10-27-confuciusornis-sanctus-turing-wavelength-s0-audit`
 
-Rubric **0.1.0** · checkpoint `0c76d15d14afcec6c366e1b9274a6586a0de48fc` · assessor `pkr:model/grok-4.7` (pk:LLMClaimAssessment) · tracked in —
+Rubric **0.1.0** · checkpoint `fbd09a11bf97bd7e131df1afb92f62af0b4105ba` · assessor `pkr:model/grok-4.7` (pk:LLMClaimAssessment) · tracked in —
 
 Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the Project Delphi rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
@@ -15,19 +15,19 @@ Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not 
 Pass 1 implements Schnakenberg kinetics whose analytic critical wavelength is 143.4 µm (log10 size -3.843) at the Yixian 125.0 Ma horizon. The periodic collar of 1147.2 µm selects Fourier mode 8. The equal-diffusion control is analytic only (σ_max < 0). The comparison figure shows the CC BY-SA 4.0 Senckenberg slab beside the stripe field; the GIF is the unfitted stripe field (12 frames, 640×480). No diffusion-ratio sweep, spatial ablation, specimen CV segmentation, or Pearson/RMSE/KS fit yet.
 
 - **Model fidelity to source: 82** — Equations 1–5 are the Schnakenberg system, its Jacobian, and Turing's k_c formula. Self-test checks trace < 0, det > 0, the instability margin, λ_c = 143.4 µm, a positive critical growth rate, and a stable equal-diffusion spectrum. Six Lean theorems encode the same integer inequality with zero sorry. Deduction: the kinetics are a reconstructed carrier, not Prum & Williamson or Harris et al. parameter values.  
-  evidence: `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L91–141; `morphoeval/lean/loops/Loop_3152_confuciusornis_sanctus_turing_wavelength_s0.lean` L24–47; `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L53–61
+  evidence: `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L94–145; `morphoeval/lean/loops/Loop_3152_confuciusornis_sanctus_turing_wavelength_s0.lean` L24–47; `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L56–64
 - **Morphological realism / specimen match: 48** — The comparison PNG places the real Senckenberg Confuciusornis sanctus photograph beside the simulated collar. The stripe field does not resemble the slab, and the GIF's last frame is that stripe field rather than the fossil. Score stays moderate: the specimen is shown, the pattern is not yet registered to it.  
   evidence: `docs/media/confuciusornis_sanctus_turing_wavelength_s0_comparison.png` L0–0; `docs/media/confuciusornis_sanctus_turing_wavelength_s0_growth.gif` L0–0
 - **Parameter expressivity: 38** — One diffusion ratio (Dv/Du = 12) and one domain (8 wavelengths) are integrated. The analytic equal-diffusion ceiling shows that the ratio matters, but there is no sweep and no rendered ablation. Anisotropy is a fixed constant.  
-  evidence: `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L53–61; `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L138–141
+  evidence: `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L56–64; `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L141–145
 - **Morphometric validation: 44** — The saturated field's dominant Fourier mode is 8, matching N = L/λ_c, and σ(k_c) = 0.0425. The wavelength value equals its calibration reference, so it is not an independent specimen measurement. Pearson r, RMSE, and a KS comparison are absent, and the photograph is not segmented.  
-  evidence: `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L267–323; `datasets/confuciusornis_sanctus_turing_wavelength_s0/confuciusornis_sanctus_turing_wavelength_s0_metrics.json` L0–0
+  evidence: `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L424–540; `datasets/confuciusornis_sanctus_turing_wavelength_s0/confuciusornis_sanctus_turing_wavelength_s0_metrics.json` L0–0
 - **Source and data traceability: 88** — Eight Crossref-checked DOIs are in the bib file. The specimen is a CC BY-SA 4.0 Wikimedia photograph of the Senckenberg slab, SHA-256 pinned and rechecked at runtime. Deduction: the 125.0 Ma Yixian age is the loop assignment; Hou et al. 1995 titled the bird Jurassic, and this audit does not add a radiometric dating DOI.  
-  evidence: `datasets/confuciusornis_sanctus_turing_wavelength_s0/paper_citations.bib` L1–40; `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L74–89
+  evidence: `datasets/confuciusornis_sanctus_turing_wavelength_s0/paper_citations.bib` L1–40; `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L77–92
 - **Code-to-model traceability: 76** — The module docstring states Eqs. 1–5 and critical_wavenumber cites Eqs. 4–5. Lean declarations name the same trace, determinant, and wavenumber inequality. The split-step loop itself is not annotated equation-by-equation.  
   evidence: `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L1–36; `morphoeval/math_kg_loops/delphi10000-confuciusornis-sanctus-turing-wavelength-s0.yaml` L1–40
 - **Reproducibility package: 80** — Seed 3152, spectral timestep 0.04, --self-test, and pinned input hashes. The full render writes a 640×480 12-frame GIF and the comparison PNG. Deduction: no per-script dependency lock, and the checkpoint commit does not yet contain these files.  
-  evidence: `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L325–351; `datasets/confuciusornis_sanctus_turing_wavelength_s0/README.md` L1–24
+  evidence: `models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py` L542–580; `datasets/confuciusornis_sanctus_turing_wavelength_s0/README.md` L1–24
 
 Remediation:
 - R1 parameter-regime sweep: vary Dv/Du and record λ_c and the selected mode
