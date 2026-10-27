@@ -1,0 +1,319 @@
+{
+  "scout": "scout-021",
+  "ground": "wavevector",
+  "lens": "literature",
+  "candidates": [
+    {
+      "id": "WV-LIT-01",
+      "title": "Citeable provenance for literature_benchmarks.py speed–distance tables",
+      "gap": "`wave-vector-analysis/literature_benchmarks.py` hard-codes ten μm/s ranges copied from unnamed “reference figures” (`SPEED_COMPARISON.md`); there is no DOI, figure panel, or supplementary table ID tying each scenario (e.g. head–head neighbor 97.64–130.19 μm/s) to a published measurement, so `literature_comparison.json` outputs are not auditable.",
+      "done": "A scout dossier under `datasets/wavevector_literature_benchmarks/scout_manifest.json` maps every entry in `LITERATURE_BENCHMARKS` to ≥1 OpenAlex work with DOI plus a quoted table/figure location (section, panel, or SI file name) whose numeric range matches the stored min/max within 5%; any scenario with no match is explicitly listed as `unmapped` with the search query used.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Embryos assist morphogenesis calcium ATP collective teratogen Tung\" --taxon \"Xenopus laevis\" --out datasets/wavevector_literature_benchmarks/scout_manifest.json && python3 morphoeval/scout_literature.py --query \"inter-embryo calcium wave propagation speed Xenopus GCaMP\" --taxon \"Xenopus laevis\" --out datasets/wavevector_literature_benchmarks/scout_manifest_supplement.json",
+      "deciding_data": "Public OA primary: doi:10.1038/s41467-023-44522-2 (Angela Tung et al., Nat Commun 2024; OpenAlex gold OA PDF). Preprint twin: doi:10.31219/osf.io/ps987. Repo anchor: `wave-vector-analysis/literature_benchmarks.py`, `wave-vector-analysis/SPEED_COMPARISON.md`.",
+      "prior_attempts": "No prior literature-provenance pass recorded in `docs/open-problems.json` or morphoeval audits; benchmarks were transcribed manually into code. Related but distinct: simulation catalog `ca2-wave-inter-embryo-signaling-ab` documents model boundaries, not empirical citation.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "`scout_literature.py` OpenAlex search already returns doi:10.1038/s41467-023-44522-2 for the inter-embryo Ca/ATP query used in this cell."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Benchmark numbers and comparison CLI are in-repo; deciding PDF is one public fetch, not private TIFF stacks."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Scorer can diff `LITERATURE_BENCHMARKS` ids against manifest rows and check numeric range parity without judgment calls."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Two scout HTTP calls plus human/PDF table transcription; no wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closes as new files under `datasets/wavevector_literature_benchmarks/` only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sitting to map all ten scenarios or mark unmapped."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of a literature-anchoring route for these benchmarks."
+        }
+      }
+    },
+    {
+      "id": "WV-LIT-02",
+      "title": "Replace ad hoc 1000 μm embryo length with staged NF length table",
+      "gap": "`literature_benchmarks.py` and `SPEED_COMPARISON.md` convert px/s→μm/s using an assumed embryo length (example 1000 μm) rather than Nieuwkoop–Faber stage-matched lengths for the WG/PS/WGD video cohort, so cross-zoom μm/s comparisons can be systematically biased.",
+      "done": "Scout dossier `datasets/wavevector_staging_scale/scout_manifest.json` contains ≥1 DOI pointing to a tabulated Xenopus laevis stage→body-length (or A–P length) series; a companion CSV `stage_length_um.csv` lists every NF stage referenced in repo video prefixes with `length_um` and `source_doi`; `literature_benchmarks.py` test run with `--embryo-length-um` taken from that CSV (not 1000) is recorded in a new `analysis_results/literature_comparison_staged.example.json` sidecar.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Normal Table of Xenopus development graphical resource stage length\" --taxon \"Xenopus laevis\" --out datasets/wavevector_staging_scale/scout_manifest.json",
+      "deciding_data": "OpenAlex hit doi:10.1242/dev.200356 (“Normal Table of Xenopus development: a new graphical resource”, Development 2012). Repo gap documented in `wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md` §8 (age/stage metadata missing).",
+      "prior_attempts": "Detection summaries note Excel/transform issues but not staged μm scale (`COORDINATE_SYSTEM_WARNING.md`). No audit closes staged μm conversion.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Scout query surfaces the standard staging atlas paper via OpenAlex without custom parsers."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Video ID prefixes and zoom tags exist in code (`parse_xy_coordinates.py`, `wave_laterality_analysis.py`); stage→μm table is one literature fetch away."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Done when CSV rows cite DOI+table and staged example JSON differs from the 1000 μm default on at least one catalogued run id."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Table extraction + one `literature_benchmarks.py` invocation per run id."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset dir + example comparison JSON only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Needs mapping video prefixes to NF stages from methods text, not just scout HTTP."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt refuted staged μm scaling; only an undocumented default exists."
+        }
+      }
+    },
+    {
+      "id": "WV-LIT-03",
+      "title": "Resolve the Shannon et al. 2017 Biophys J wound-Ca²⁺ citation to a DOI",
+      "gap": "`wave-vector-analysis/README.md` and `wave-vector.md` cite “Shannon et al. 2017 (Biophys J)” for wound-induced GCaMP dynamics, but `morphoeval/scout_literature.py --list-existing` shows no matching DOI in repo audits, blocking reproducible calibration against that primary dataset.",
+      "done": "Scout dossier `datasets/wavevector_shannon2017/scout_manifest.json` either (A) lists exactly one OpenAlex/Crossref work with DOI, year 2016–2018, and abstract mentioning wound + GCaMP/calcium wave in epithelium, or (B) documents a negative search log (≥3 distinct queries, all top hits recorded) proving the citation is misattributed—either outcome closes the gap.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"wound-induced calcium signal dynamics GCaMP epithelial Biophysical Journal 2017\" --taxon \"Xenopus\" --out datasets/wavevector_shannon2017/scout_manifest.json && python3 morphoeval/scout_literature.py --query \"laser-induced epithelial wounds calcium Shannon GCaMP\" --taxon \"Xenopus laevis\" --out datasets/wavevector_shannon2017/scout_manifest_alt.json",
+      "deciding_data": "Repo references only (`wave-vector-analysis/README.md`). Nearby quantitative model: doi:10.1091/mbc.e22-08-0361 (2022, laser-wound calcium model—fallback benchmark if Shannon primary remains unresolved).",
+      "prior_attempts": "None recorded; Shannon citation appears in docs only, never DOI-locked in morphoeval/kg.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Scout CLI is the designated resolver, but OpenAlex recall for the exact Biophys J title is weak—may need manual PDF match."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Citation string in-repo; external paper is a named fetch, not local TIFF data."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Binary: manifest contains one accepted DOI or a structured negative search with query strings."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "HTTP scout only."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset directory only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single scout sitting unless human verifies PDF abstract."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of DOI-resolution route."
+        }
+      }
+    },
+    {
+      "id": "WV-LIT-04",
+      "title": "Literature source for WGD no-contact video geometry (XY ground-truth gap)",
+      "gap": "`generate_claims_nomask_report.py` documents that WGD* no-contact videos have zero rows in `XY coordinates.xlsx`, so Claim 12 geometry-based side-region tests report n=0 for no-contact (`wave-vector-analysis/generate_claims_nomask_report.py` DATA GAP text); the wave catalog still lists WGD82–WGD86 (`render_pretty_wave_vectors.py`).",
+      "done": "Scout dossier `datasets/wavevector_wgd_geometry/scout_manifest.json` identifies whether doi:10.1038/s41467-023-44522-2 (or its OSF preprint) publishes supplementary coordinates, stage layout figures, or methods text specifying embryo placement for no-contact (“distance”) assays matching WGD prefixes; done if manifest cites SI file/table name OR states ‘no public coordinates’ with quoted methods sentence on spacing.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"no physical contact xenopus embryo calcium wave distance assay WGD\" --taxon \"Xenopus laevis\" --out datasets/wavevector_wgd_geometry/scout_manifest.json",
+      "deciding_data": "In-repo: `parse_xy_coordinates.py` prefix taxonomy (WGD81…WGD86), `wave_laterality_analysis.py` contact flag. Public: Tung et al. Nat Commun doi:10.1038/s41467-023-44522-2 OA PDF/SI.",
+      "prior_attempts": "Panel scored contact vs no-contact waves in catalog summaries (`generate_claims_inventory_pdf.py`) but did not close the XY annotation gap; not a refutation of literature lookup.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Scout finds the primary inter-embryo paper; SI coordinate discovery is literature/PDF work the tool starts."
+        },
+        "data_in_hand": {
+          "score": 13,
+          "why": "WGD video list and gap text are in-repo; deciding SI is public OA."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Manifest must name an SI asset or quote a methods spacing measurement, checkable against PDF."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Scout + PDF/SI inspection hours, no lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout dataset dir; downstream XY parse remains separate."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "May require downloading and searching SI zip, not only OpenAlex JSON."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Coordinate-free segmentation was suggested in-repo but not executed; literature route still open."
+        }
+      }
+    },
+    {
+      "id": "WV-LIT-05",
+      "title": "OP-08: literature matrix for poke site separating mirror vs headward neighbor Ca²⁺",
+      "gap": "OP-08 (`docs/open-problems.json`): post-unblinding HTHT mirror AUC 0.61–0.65 is confounded because pokes were at the tail; a registered test needs published experiments where poke position orthogonalizes mirror-image vs headward propagation predictions.",
+      "done": "Scout dossier `datasets/wavevector_poke_design/scout_manifest.json` lists ≥2 papers (with DOI) reporting inter-embryo or neighbor Ca²⁺/GCaMP assays with explicitly different poke/injury sites (head vs tail vs flank) and quantitative neighbor-response metrics; a markdown table `poke_design_matrix.md` in the same dir maps each paper’s conditions to mirror vs headward distinguishability (yes/no) with quoted figure/table.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Xenopus embryo poke tail head calcium wave neighbor mirror orientation\" --taxon \"Xenopus laevis\" --out datasets/wavevector_poke_design/scout_manifest.json",
+      "deciding_data": "OP-08 graph node b3 (`docs/open-problems.json`, status partial). Primary candidate source: doi:10.1038/s41467-023-44522-2 methods/figures; supplemental laser-wound kinematics doi:10.1091/mbc.e22-08-0361 for within-embryo poke geometry vocabulary.",
+      "prior_attempts": "Multi-agent panel exploratory pixel-v2 mirror signal (OP-08); not a preregistered poke-separated design—record as partial, not refuted. OP-07 v2 ground-truth-geometry blind (status refuted, LOOO AUC 0.484) blocks reusing orientation-only features, not literature discovery for poke design.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "Scout surfaces inter-embryo Ca papers; human must classify poke-site orthogonality from PDFs."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Blind-test confound analysis is documented; external experimental designs are literature fetches."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Done when matrix lists papers with yes/no orthogonality backed by quoted methods lines."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Literature review hours; preregistration/scoring is a later wavepipe/registry step."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset dir only."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Full OP-08 close needs prereg + held-out videos, not one scout loop."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Exploratory mirror AUC exists but literature design matrix route was not attempted; partial overlap with OP-08 exploratory scoring lowers score slightly."
+        }
+      }
+    },
+    {
+      "id": "WV-LIT-06",
+      "title": "Document or debunk the Excel-vs-TIFF coordinate frame for manual XY annotations",
+      "gap": "`COORDINATE_SYSTEM_WARNING.md` shows Excel `XY coordinates.xlsx` X values up to ~3604 px on TIFFs ~2220–2265 px wide (head/tail diffs ~564–1441 px in `analysis_results/head_tail_comparison.md`); provenance of the annotation coordinate system is unknown, blocking validation of head/tail and OP-07 “ground-truth geometry”.",
+      "done": "Scout dossier `datasets/wavevector_xy_provenance/scout_manifest.json` contains either (A) a DOI to Levin-lab or collaborator methods describing the microscope/stitch/ROI frame used for calcium-video annotations, or (B) a negative dossier showing no public methods paper mentions the Box Excel sheet and recommending re-annotation—either outcome recorded with ≥3 scout queries logged in the manifest.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Xenopus GCaMP calcium imaging manual annotation coordinates embryo video\" --taxon \"Xenopus laevis\" --out datasets/wavevector_xy_provenance/scout_manifest.json",
+      "deciding_data": "In-repo evidence: `COORDINATE_SYSTEM_WARNING.md`, `wave-vector-analysis/analysis_results/head_tail_comparison.md`. Private sheet path referenced in `parse_xy_coordinates.py` (Box); not in git.",
+      "prior_attempts": "Detection summaries apply scaling/y-flip heuristics (`detection_summary_old_new_speed_v6/DATA_SOURCES_AND_ASSUMPTIONS.md`) without resolving source frame. OP-07 refuted neighbor-transfer blind using orientation-heavy features—not the same as finding annotation provenance.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "Scout can find methods papers but unlikely to retrieve proprietary Excel metadata automatically."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Mismatch statistics are in-repo; deciding documentation may be absent publicly."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Accept DOI+quoted methods paragraph or structured negative search."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Scout HTTP + PDF review."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New dataset dir."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "May end at defensible negative if annotations are internal-only."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Transform heuristics tried; literature provenance route not closed."
+        }
+      }
+    },
+    {
+      "id": "WV-LIT-07",
+      "title": "Age/stage metadata for EXPERIMENTAL_HYPOTHESES §8 (blocked without literature)",
+      "gap": "Claim “posterior response gets more localized with age” is marked CANNOT TEST because embryo age/stage metadata is missing (`wave-vector-analysis/EXPERIMENTAL_HYPOTHESES.md` §8); repo video IDs embed numeric tokens (e.g. WG30) without NF stage mapping.",
+      "done": "Scout dossier `datasets/wavevector_age_metadata/scout_manifest.json` links each major video-prefix family (WG, PS, WS, WGD) to NF stage ranges with DOI-backed methods quotes; CSV `video_prefix_stage_map.csv` has columns `prefix`, `nf_stage_min`, `nf_stage_max`, `source_doi`, `quote` covering ≥90% of prefixes listed in `parse_xy_coordinates.py` docstring.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Xenopus laevis GCaMP calcium imaging embryo stage neurula tailbud methods\" --taxon \"Xenopus laevis\" --out datasets/wavevector_age_metadata/scout_manifest.json",
+      "deciding_data": "Repo: EXPERIMENTAL_HYPOTHESES §8. Public: doi:10.1038/s41467-023-44522-2 methods (embryo staging/housing), doi:10.1242/dev.200356 staging atlas.",
+      "prior_attempts": "None beyond marking claim untestable in markdown.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Literature supplies stage definitions; scout locates primary methods."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Prefix list inferable from code; stage map requires literature extraction."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "CSV coverage percentage and DOI quotes are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Scout + CSV authoring."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New files under datasets/ only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Prefix→stage mapping may need PI confirmation for undocumented cohorts."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt."
+        }
+      }
+    },
+    {
+      "id": "WV-LIT-08",
+      "title": "Xenopus blind neighbour-transfer v2 (OP-07) — literature lens insufficient",
+      "gap": "OP-07 asks for hash-locked v2 blind scoring on ground-truth-geometry videos after orientation confound (LOOO AUC 0.484 headline; orientation AUC 0.833); missing piece is held-out video features + preregistration, not a findable paper.",
+      "done": "N/A for literature lens—scorer should verify OP-07 status remains refuted and no scout dossier re-opens the same feature set without new held-out protocol.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Xenopus embryo calcium wave neighbor prediction machine learning blind\" --dry-run (expected: does not supply private Box TIFFs or sealed labels)",
+      "deciding_data": "docs/open-problems.json OP-07 (status refuted); sources cite missing `embryo-blind/XENOPUS_BLIND_RESULTS.md` on main snapshot.",
+      "prior_attempts": "Multi-agent panel ran headline blind (negative); orientation subset suspect (clean-geometry AUC 0.802). Re-running the same LOOO route is blocked.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Scout literature cannot produce sealed blind labels or execute LOOO scoring—needs wavepipe + registry lenses."
+        },
+        "data_in_hand": {
+          "score": 4,
+          "why": "Calcium videos and blind artifacts are not in the public repo tree."
+        },
+        "falsifiable_done": {
+          "score": 10,
+          "why": "OP-07 done-criteria exist but are not literature-resolvable."
+        },
+        "compute_in_repo": {
+          "score": 5,
+          "why": "Requires private data mount and blind scorer not satisfiable by OpenAlex."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Reporting blocked status can be a new JSON note only."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Not reachable in one literature scout loop."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "OP-07 exact neighbour-transfer blind route recorded refuted; do not re-propose as new."
+        }
+      }
+    }
+  ]
+}
