@@ -1,0 +1,77 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-dasypus-novemcinctus-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-dasypus-novemcinctus-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-dasypus-novemcinctus-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Schnakenberg Turing wavelength at 4.108 µm on Holocene Dasypus novemcinctus dermis (Pass 1) — MorphoEval overall 77.2/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1 overall 77.2/100. The script implements Schnakenberg kinetics and the Turing wavenumber identity at 4.108 µm (0 Ma, Holocene, chronoseries length 1) and renders a 12-frame 640×480 GIF next to a CC BY-SA specimen photograph. The saturated lattice measures 4.56 µm, longer than the linear target. No sweep, ablation, specimen segmentation, or goodness-of-fit is present yet. Overall 77.2/100 (faithfulness 73.7, reproducibility 85.5); rubric morphoeval 0.1.0; checkpoint commit 0c76d15d; environment: python 3.12.3, numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2, Pillow 13.0.0. Dimension assessments: Model fidelity to source 86, Morphological realism / specimen match 76, Parameter expressivity 58, Morphometric validation 64, Source and data traceability 90, Code-to-model traceability 82, Reproducibility package 84. Output judged: docs/media/dasypus_novemcinctus_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-dasypus-novemcinctus-turing-wavelength-s0.py at 0c76d15d, image/png, 850647 B, 1512×528 px, artifact_sha256 57b258b8330bd9d03eb0c2b0283251f87befd4ed531df7775b25e87c246d3914 (sha256 57b258b8330bd9d03eb0c2b0283251f87befd4ed531df7775b25e87c246d3914), spec_fingerprint 0ed1ba81083be6f146345ad2f0ef47d7ab333edbbcd8e4d2c467f1b152acb7c7. Dual provenance: spec_fingerprint: 0ed1ba81083be6f146345ad2f0ef47d7ab333edbbcd8e4d2c467f1b152acb7c7; artifact_sha256: 57b258b8330bd9d03eb0c2b0283251f87befd4ed531df7775b25e87c246d3914; input_dataset_sha256: {datasets/dasypus_novemcinctus_turing_wavelength_s0/dasypus_novemcinctus_specimen.jpg=7f1ba0e3ab8bdb13..., datasets/dasypus_novemcinctus_turing_wavelength_s0/dasypus_novemcinctus_turing_wavelength_s0_reference.json=e8ce5113e12fa07c...}. Claim boundary: reported_in_source: Vickaryous and Hall (2006) describe five osteoderm shields and hexagonal rosettes on the Dasypus novemcinctus carapace, developed intramembranously in the dermis. | Chen et al. (2011) report mechanical tests and microstructure of mineralized armadillo osteoderm. | Turing (1952) and Schnakenberg (1979) give the two-species reaction-diffusion dispersion relation.; reconstructed_in_script: Schnakenberg parameters a=0.10, b=0.90, D_v/D_u=20, with D_u solved so the linear wavelength is 4.108 µm on a periodic 12-wavelength patch. | Saturated activator wavelength 4.56 µm against the linear target 4.108 µm, and σ(k_c)=0.219 > 0 while σ(0)<0.; transfer_boundary: The 4.108 µm figure is this loop's subcellular detail rung, not a wavelength measured by Chen or Vickaryous. The photograph is an organism-scale carapace, not a 4.1 µm micrograph.; does_not_claim: That nine-banded armadillo osteoderm rosettes are caused by a 4.1 µm Turing instability. | A parameter sweep, an equal-diffusion ablation, or a Pearson/RMSE/KS fit (those are Pass 1 gaps).." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: {'id': 'R1', 'item': 'Parameter-regime sweep: vary the diffusion scale and show that measured wavelength tracks the analytic square-root law.'}",
+            "remediation needed: {'id': 'R2', 'item': 'Negative control: set D_u = D_v and show that the activator amplitude collapses.'}",
+            "remediation needed: {'id': 'R3', 'item': 'Segment the real specimen photograph (foreground, contour circularity, structure-tensor coherency, movable-band count, osteoderm spacing).'}",
+            "remediation needed: {'id': 'R4', 'item': 'Goodness-of-fit on the sweep: Pearson r, RMSE, a KS statistic, and the coefficient of variation across seeds.'}",
+            "remediation needed: {'id': 'R5', 'item': 'Independent second assessor. This pass is single-assessor.'}",
+            "remediation needed: {'id': 'R6', 'item': 'Decompose the 4.56 µm versus 4.108 µm red-shift (finite amplitude versus the linear dispersion curve).'}" ;
+        pk:hasScore "0.772"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (single builder-assessor; no second provider on this pass)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jmor.10475>,
+            <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1016/0022-5193(81)90334-9>,
+            <https://doi.org/10.1016/j.jmbbm.2010.12.013>,
+            <https://doi.org/10.1098/rstb.1952.0012> .
+    <https://doi.org/10.1002/jmor.10475> dct:date "2006"^^xsd:gYear ;
+        dct:title "Osteoderm morphology and development in the nine-banded armadillo, Dasypus novemcinctus" .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:date "1979"^^xsd:gYear ;
+        dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1016/0022-5193(81)90334-9> dct:date "1981"^^xsd:gYear ;
+        dct:title "A pre-pattern formation mechanism for animal coat markings" .
+    <https://doi.org/10.1016/j.jmbbm.2010.12.013> dct:date "2011"^^xsd:gYear ;
+        dct:title "Armadillo armor: Mechanical testing and micro-structural evaluation" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Schnakenberg Turing wavelength at 4.108 µm on Holocene Dasypus novemcinctus dermis (Pass 1) — MorphoEval overall 77.2/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:39:53Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-dasypus-novemcinctus-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-dasypus-novemcinctus-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
